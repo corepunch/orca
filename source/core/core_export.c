@@ -16,9 +16,6 @@ extern struct game* luaX_checkgame(lua_State *L, int index);
 // Property
 extern void luaX_pushProperty(lua_State *L, struct Property const* value);
 extern struct Property* luaX_checkProperty(lua_State *L, int index);
-// KeyframeAnim
-extern void luaX_pushKeyframeAnim(lua_State *L, struct KeyframeAnim const* value);
-extern struct KeyframeAnim* luaX_checkKeyframeAnim(lua_State *L, int index);
 // lua_State
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
@@ -38,6 +35,10 @@ ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
 ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
+ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")
+ENUM(PlaybackMode, "Normal", "Reverse", "PingPong")
+ENUM(InterpolationMode, "Linear", "Const", "Back", "Bounce", "Circ", "Cubic", "Elastic", "Expo", "Quad", "Quart", "Quint", "Sine")
+ENUM(Easing, "InOut", "In", "Out")
 
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
@@ -268,33 +269,19 @@ int f_OBJ_SetStyle(lua_State *L) {
 	OBJ_SetStyle(this_, style );
 	return 0;
 }
-int f_OBJ_Play(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* animation = luaL_checkstring(L, 2);
-	OBJ_Play(this_, animation );
-	return 0;
-}
 int f_OBJ_DoTween(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_DoTween(L, this_ );
+	const char* property = luaL_checkstring(L, 2);
+	int32_t duration = (int32_t)luaL_checkinteger(L, 3);
+	enum InterpolationMode ipo = luaX_checkInterpolationMode(L, 4);
+	enum Easing easing = luaX_checkEasing(L, 5);
+	OBJ_DoTween(L, this_, property, duration, ipo, easing );
 	return 0;
 }
-int f_OBJ_SetAnimation(lua_State *L) {
+int f_OBJ_AddComponentByName(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	OBJ_SetAnimation(this_, name );
-	return 0;
-}
-int f_OBJ_GetAnimation(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim const* result_ = OBJ_GetAnimation(this_);
-	luaX_pushKeyframeAnim(L, result_);
-	return 1;
-}
-int f_OBJ_AddAnimation(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim* animation = NULL;
-	OBJ_AddAnimation(this_, animation );
+	const char* className = luaL_checkstring(L, 2);
+	OBJ_AddComponentByName(L, this_, className );
 	return 0;
 }
 int f_OBJ_SetFocus(lua_State *L) {
@@ -504,11 +491,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "addStyleSheet", f_OBJ_AddStyleSheet },
 		{ "getStyle", f_OBJ_GetStyle },
 		{ "setStyle", f_OBJ_SetStyle },
-		{ "play", f_OBJ_Play },
 		{ "doTween", f_OBJ_DoTween },
-		{ "setAnimation", f_OBJ_SetAnimation },
-		{ "getAnimation", f_OBJ_GetAnimation },
-		{ "addAnimation", f_OBJ_AddAnimation },
+		{ "addComponentByName", f_OBJ_AddComponentByName },
 		{ "setFocus", f_OBJ_SetFocus },
 		{ "isFocused", f_OBJ_IsFocused },
 		{ "setHover", f_OBJ_SetHover },
@@ -618,13 +602,30 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
+static struct PropertyType _Keyframe[] = {
+	DECL(0xdfe4e404, Keyframe, Time, time, kDataTypeFloat), // Keyframe.Time
+	DECL(0xd147f96a, Keyframe, Value, value, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.Value
+	DECL(0xbe5410b1, Keyframe, InSlope, inSlope, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.InSlope
+	DECL(0xc3a6b78e, Keyframe, OutSlope, outSlope, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.OutSlope
+	DECL(0xfd369606, Keyframe, InWeight, inWeight, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.InWeight
+	DECL(0xdac7b09b, Keyframe, OutWeight, outWeight, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.OutWeight
+	DECL(0x153369e9, Keyframe, TangentMode, tangentMode, kDataTypeInt), // Keyframe.TangentMode
+	DECL(0xf0555d63, Keyframe, WeightedMode, weightedMode, kDataTypeInt), // Keyframe.WeightedMode
+};
+static luaL_Reg _Keyframe_Methods[] = {
+	{ NULL, NULL }
+};
 
+STRUCT(Keyframe, Keyframe);
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_CreateEventArgs[] = {
 };
 static luaL_Reg _Object_StartEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_StartEventArgs[] = {
+};
+static luaL_Reg _Object_AnimateEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_AnimateEventArgs[] = {
 };
 static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_ThemeChangedEventArgs[] = {
@@ -646,15 +647,44 @@ static luaL_Reg _Object_TimerEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_TimerEventArgs[] = {
 	DECL(0x4903ce0f, Object_TimerEventArgs, timerId, timerId, kDataTypeInt), // Object_TimerEventArgs.timerId
 };
+static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_StopEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_StopEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_PauseEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_PauseEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_StartedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_StartedEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_StoppedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
+STRUCT(Object_AnimateEventArgs, Object_AnimateEventArgs);
 STRUCT(Object_ThemeChangedEventArgs, Object_ThemeChangedEventArgs);
 STRUCT(Object_PropertyChangedEventArgs, Object_PropertyChangedEventArgs);
 STRUCT(Object_AttachedEventArgs, Object_AttachedEventArgs);
 STRUCT(Object_ReleaseEventArgs, Object_ReleaseEventArgs);
 STRUCT(Object_DestroyEventArgs, Object_DestroyEventArgs);
 STRUCT(Object_TimerEventArgs, Object_TimerEventArgs);
+STRUCT(AnimationPlayer_PlayEventArgs, AnimationPlayer_PlayEventArgs);
+STRUCT(AnimationPlayer_ResumeEventArgs, AnimationPlayer_ResumeEventArgs);
+STRUCT(AnimationPlayer_StopEventArgs, AnimationPlayer_StopEventArgs);
+STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
+STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
+STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
+STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -669,7 +699,135 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
-
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
+static struct PropertyType const AnimationCurveProperties[kAnimationCurveNumProperties] = {
+	DECL(0xeb66e456, AnimationCurve, Path, Path, kDataTypeString), // AnimationCurve.Path
+	DECL(0x5221f9e8, AnimationCurve, Property, Property, kDataTypeString), // AnimationCurve.Property
+	ARRAY_DECL(0xf893ff8e, AnimationCurve, Keyframes, Keyframes, kDataTypeStruct, .TypeString = "Keyframe"), // AnimationCurve.Keyframes
+	DECL(0x33ee8bf8, AnimationCurve, NumKeyframes, NumKeyframes, kDataTypeInt), // AnimationCurve.NumKeyframes
+};
+static struct AnimationCurve AnimationCurveDefaults = {
+};
+LRESULT AnimationCurveProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message&MSG_DATA_MASK) {
+	}
+	return FALSE;
+}
+void luaX_pushAnimationCurve(lua_State *L, struct AnimationCurve const* AnimationCurve) {
+	luaX_pushObject(L, CMP_GetObject(AnimationCurve));
+}
+struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx) {
+	return GetAnimationCurve(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(AnimationCurve, 0);
+HANDLER(AnimationClip, Object, Start);
+static struct PropertyType const AnimationClipProperties[kAnimationClipNumProperties] = {
+	DECL(0x534e7732, AnimationClip, Mode, Mode, kDataTypeEnum, .EnumValues = _AnimationMode), // AnimationClip.Mode
+	DECL(0xd6195a6e, AnimationClip, StartTime, StartTime, kDataTypeFloat), // AnimationClip.StartTime
+	DECL(0x03274144, AnimationClip, StopTime, StopTime, kDataTypeFloat), // AnimationClip.StopTime
+};
+static struct AnimationClip AnimationClipDefaults = {
+};
+LRESULT AnimationClipProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
+	}
+	return FALSE;
+}
+void luaX_pushAnimationClip(lua_State *L, struct AnimationClip const* AnimationClip) {
+	luaX_pushObject(L, CMP_GetObject(AnimationClip));
+}
+struct AnimationClip* luaX_checkAnimationClip(lua_State *L, int idx) {
+	return GetAnimationClip(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(AnimationClip, 0);
+HANDLER(AnimationPlayer, Object, Start);
+HANDLER(AnimationPlayer, Object, Animate);
+HANDLER(AnimationPlayer, AnimationPlayer, Play);
+HANDLER(AnimationPlayer, AnimationPlayer, Resume);
+HANDLER(AnimationPlayer, AnimationPlayer, Stop);
+HANDLER(AnimationPlayer, AnimationPlayer, Pause);
+static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
+	DECL(0xd33ddb1b, AnimationPlayer, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationPlayer.Clip
+	DECL(0xdf450ad5, AnimationPlayer, Playing, Playing, kDataTypeBool), // AnimationPlayer.Playing
+	DECL(0x343782cd, AnimationPlayer, Looping, Looping, kDataTypeBool), // AnimationPlayer.Looping
+	DECL(0x0a6b8020, AnimationPlayer, Speed, Speed, kDataTypeFloat), // AnimationPlayer.Speed
+	DECL(0x0d3e3b9b, AnimationPlayer, CurrentTime, CurrentTime, kDataTypeFloat), // AnimationPlayer.CurrentTime
+	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
+	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
+	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
+	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
+	DECL(0x29ab6f83, AnimationPlayer, Play, Play, kDataTypeEvent, .TypeString = "AnimationPlayer_PlayEventArgs"), // AnimationPlayer.Play
+	DECL(0x454d1d8a, AnimationPlayer, Resume, Resume, kDataTypeEvent, .TypeString = "AnimationPlayer_ResumeEventArgs"), // AnimationPlayer.Resume
+	DECL(0x4b7f7705, AnimationPlayer, Stop, Stop, kDataTypeEvent, .TypeString = "AnimationPlayer_StopEventArgs"), // AnimationPlayer.Stop
+	DECL(0x44f9bf2d, AnimationPlayer, Pause, Pause, kDataTypeEvent, .TypeString = "AnimationPlayer_PauseEventArgs"), // AnimationPlayer.Pause
+	DECL(0x97b5823e, AnimationPlayer, Started, Started, kDataTypeEvent, .TypeString = "AnimationPlayer_StartedEventArgs"), // AnimationPlayer.Started
+	DECL(0x863f19ee, AnimationPlayer, Stopped, Stopped, kDataTypeEvent, .TypeString = "AnimationPlayer_StoppedEventArgs"), // AnimationPlayer.Stopped
+	DECL(0xec88aab2, AnimationPlayer, Completed, Completed, kDataTypeEvent, .TypeString = "AnimationPlayer_CompletedEventArgs"), // AnimationPlayer.Completed
+};
+static struct AnimationPlayer AnimationPlayerDefaults = {
+		
+  .Speed = 1.0,
+};
+LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Animate&MSG_DATA_MASK: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_AnimationPlayer_Play&MSG_DATA_MASK: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
+		case ID_AnimationPlayer_Resume&MSG_DATA_MASK: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
+		case ID_AnimationPlayer_Stop&MSG_DATA_MASK: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
+		case ID_AnimationPlayer_Pause&MSG_DATA_MASK: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
+	}
+	return FALSE;
+}
+void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer) {
+	luaX_pushObject(L, CMP_GetObject(AnimationPlayer));
+}
+struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
+	return GetAnimationPlayer(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0);
+HANDLER(PropertyAnimation, Object, Animate);
+static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationNumProperties] = {
+	DECL(0x5221f9e8, PropertyAnimation, Property, Property, kDataTypeString), // PropertyAnimation.Property
+	DECL(0x18743595, PropertyAnimation, From, From, kDataTypeString), // PropertyAnimation.From
+	DECL(0x41f59644, PropertyAnimation, To, To, kDataTypeString), // PropertyAnimation.To
+	DECL(0x77818ebd, PropertyAnimation, Interpolation, Interpolation, kDataTypeEnum, .EnumValues = _InterpolationMode), // PropertyAnimation.Interpolation
+	DECL(0xa3116148, PropertyAnimation, Easing, Easing, kDataTypeEnum, .EnumValues = _Easing), // PropertyAnimation.Easing
+	DECL(0x0ae8097f, PropertyAnimation, Start, Start, kDataTypeInt), // PropertyAnimation.Start
+	DECL(0xd4c7492d, PropertyAnimation, Duration, Duration, kDataTypeInt), // PropertyAnimation.Duration
+};
+static struct PropertyAnimation PropertyAnimationDefaults = {
+};
+LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Animate&MSG_DATA_MASK: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+	}
+	return FALSE;
+}
+void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation) {
+	luaX_pushObject(L, CMP_GetObject(PropertyAnimation));
+}
+struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
+	return GetPropertyAnimation(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -687,15 +845,28 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Object_AnimateEventArgs(L), -2), "Object_AnimateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedEventArgs(L), -2), "Object_ThemeChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseEventArgs(L), -2), "Object_ReleaseEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_DestroyEventArgs(L), -2), "Object_DestroyEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_TimerEventArgs(L), -2), "Object_TimerEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PlayEventArgs(L), -2), "AnimationPlayer_PlayEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_ResumeEventArgs(L), -2), "AnimationPlayer_ResumeEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StopEventArgs(L), -2), "AnimationPlayer_StopEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PauseEventArgs(L), -2), "AnimationPlayer_PauseEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
+	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
+	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
+	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
+	lua_setfield(L, ((void)lua_pushclass(L, &_PropertyAnimation), -2), "PropertyAnimation");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;

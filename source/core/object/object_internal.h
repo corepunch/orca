@@ -17,16 +17,12 @@ struct Object
   LPSTR SourceFile;
   LPSTR TextContent;
   LPSTR ClassName;
-  
-  lpcKeyframeAnim_t animation;
-  lpKeyframeAnim_t animlib;
 
   union
   {
     struct
     {
       struct component* components;
-      struct property_animation* animations;
       struct Property* properties;
       struct state_manager* stateManager;
       struct style_class* classes;
@@ -51,7 +47,5 @@ struct Object
   
   byte_t   data[MAX_OBJECT_DATA];
 };
-
-lpKeyframeAnim_t ANIM_FindByName(lpKeyframeAnim_t anims, lpcString_t name);
 
 #endif /* __OBJECT_INTERNAL_H__ */

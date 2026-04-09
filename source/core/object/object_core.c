@@ -104,11 +104,7 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
     }
     PROP_Clear(p);
   }
-  
-  if (pobj->animlib) {
-    ANIM_Release(pobj->animlib);
-  }
-  OBJ_ReleaseAnimations(pobj);
+
   OBJ_ClearStyleClasses(pobj);
   OBJ_ReleaseComponents(pobj);
   OBJ_ReleaseProperties(pobj);
@@ -137,6 +133,21 @@ void*
 OBJ_GetObjectComponent(lpObject_t pobj, enum component_type c)
 {
   return &pobj->comps[c];
+}
+
+void
+OBJ_AddComponentByName(lua_State* L, lpObject_t pobj, lpcString_t className)
+{
+  lpcClassDesc_t cls = OBJ_FindClass(className);
+  if (!cls) {
+    luaL_error(L, "addComponent: class '%s' not found", className);
+    return;
+  }
+  if (!cls->IsAttachOnly) {
+    luaL_error(L, "addComponent: class '%s' is not attach-only; use it as a standalone object instead", className);
+    return;
+  }
+  OBJ_AddComponent(pobj, cls->ClassID);
 }
 
 static uint8_t find_tag(lpcString_t tag) {

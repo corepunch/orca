@@ -30,6 +30,7 @@
 
 #include <include/orca.h>
 #include <include/shared.h>
+#include <source/core/core_local.h>
 
 #define USE_ELASTIC_BLEND
 
@@ -78,26 +79,26 @@ elastic_blend(float time, float change, float duration, float amplitude,
 #endif
 
 float
-anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
+anim_interpolate(enum InterpolationMode ipo, enum Easing easing, float time)
 {
   /* float const overshoot = 1.3f; */
   float const amplitude = 1.5f;
   float const period = 2.f;
   switch (ipo) {
-    case IPO_LINEAR:
+    case kInterpolationModeLinear:
       return time;
-    case IPO_CONST:
+    case kInterpolationModeConst:
       return 1.0f;
-    case IPO_BACK: {
+    case kInterpolationModeBack: {
       /* overshoot = 1.3f: constants below are (overshoot+1) and overshoot */
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return time * time * (2.3f * time - 1.3f);
-        case IPO_EASE_OUT:
+        case kEasingOut:
           t2 = time - 1.0f;
           return t2 * t2 * (2.3f * t2 + 1.3f) + 1.0f;
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           /* overshoot *= 1.525f → 1.3f*1.525f ≈ 1.9825f; constants are (os+1) and os */
           t2 = time * 2.0f;
           if (t2 < 1.0f)
@@ -107,27 +108,28 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_BOUNCE:
+    case kInterpolationModeBounce: {
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return bounce_ease_in(time);
-        case IPO_EASE_OUT:
+        case kEasingOut:
           return bounce_ease_out(time);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           if (time < 0.5f)
             return bounce_ease_in(time * 2.0f) * 0.5f;
           return bounce_ease_out(time * 2.0f - 1.0f) * 0.5f + 0.5f;
       }
       break;
-    case IPO_CIRC: {
+    }
+    case kInterpolationModeCirc: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return 1.0f - sqrtf(1.0f - time * time);
-        case IPO_EASE_OUT:
+        case kEasingOut:
           t2 = time - 1.0f;
           return sqrtf(1.0f - t2 * t2);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           t2 = time * 2.0f;
           if (t2 < 1.0f)
             return -0.5f * (sqrtf(1.0f - t2 * t2) - 1.0f);
@@ -136,15 +138,15 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_CUBIC: {
+    case kInterpolationModeCubic: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return time * time * time;
-        case IPO_EASE_OUT:
+        case kEasingOut:
           t2 = time - 1.0f;
           return t2 * t2 * t2 + 1.0f;
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           t2 = time * 2.0f;
           if (t2 < 1.0f)
             return 0.5f * t2 * t2 * t2;
@@ -153,10 +155,10 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_ELASTIC: {
+    case kInterpolationModeElastic: {
       float s, f = 1.0f, t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           if (time == 0.0f) return 0.0f;
           if (time == 1.0f) return 1.0f;
           t2 = time - 1.0f;
@@ -166,7 +168,7 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
 #endif
           return -(f * amplitude * powf(2.0f, 10.0f * t2) *
                    sinf((t2 - s) * (2.0f * (float)M_PI) / period));
-        case IPO_EASE_OUT:
+        case kEasingOut:
           if (time == 0.0f) return 0.0f;
           if (time == 1.0f) return 1.0f;
           t2 = -time;
@@ -176,7 +178,7 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
 #endif
           return f * amplitude * powf(2.0f, 10.0f * t2) *
           sinf((t2 - s) * (2.0f * (float)M_PI) / period) + 1.0f;
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           if (time == 0.0f) return 0.0f;
           if ((t2 = time * 2.0f) == 2.0f) return 1.0f;
           t2 -= 1.0f;
@@ -194,14 +196,14 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_EXPO: {
+    case kInterpolationModeExpo: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return (time == 0.0f) ? 0.0f : powf(2.0f, 10.0f * (time - 1.0f));
-        case IPO_EASE_OUT:
+        case kEasingOut:
           return (time == 1.0f) ? 1.0f : 1.0f - powf(2.0f, -10.0f * time);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           if (time == 0.0f) return 0.0f;
           if (time == 1.0f) return 1.0f;
           t2 = time * 2.0f;
@@ -212,14 +214,14 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_QUAD: {
+    case kInterpolationModeQuad: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return time * time;
-        case IPO_EASE_OUT:
+        case kEasingOut:
           return -time * (time - 2.0f);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           t2 = time * 2.0f;
           if (t2 < 1.0f)
             return 0.5f * t2 * t2;
@@ -228,15 +230,15 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_QUART: {
+    case kInterpolationModeQuart: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return time * time * time * time;
-        case IPO_EASE_OUT:
+        case kEasingOut:
           t2 = time - 1.0f;
           return -(t2 * t2 * t2 * t2 - 1.0f);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           t2 = time * 2.0f;
           if (t2 < 1.0f)
             return 0.5f * t2 * t2 * t2 * t2;
@@ -245,15 +247,15 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_QUINT: {
+    case kInterpolationModeQuint: {
       float t2;
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return time * time * time * time * time;
-        case IPO_EASE_OUT:
+        case kEasingOut:
           t2 = time - 1.0f;
           return t2 * t2 * t2 * t2 * t2 + 1.0f;
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           t2 = time * 2.0f;
           if (t2 < 1.0f)
             return 0.5f * t2 * t2 * t2 * t2 * t2;
@@ -262,16 +264,122 @@ anim_interpolate(enum ipo_type ipo, enum easing easing, float time)
       }
       break;
     }
-    case IPO_SINE:
+    case kInterpolationModeSine: {
       switch (easing) {
-        case IPO_EASE_IN:
+        case kEasingIn:
           return 1.0f - cosf(time * (float)M_PI_2);
-        case IPO_EASE_OUT:
+        case kEasingOut:
           return sinf(time * (float)M_PI_2);
-        case IPO_EASE_IN_OUT:
+        case kEasingInOut:
           return -0.5f * (cosf((float)M_PI * time) - 1.0f);
       }
       break;
+    }
   }
   return 1.0f;
 }
+
+extern struct game core;
+
+// Scalar lerp helper (non-struct types)
+static float float_lerp(float a, float b, float t) { return a + (b - a) * t; }
+
+HANDLER(PropertyAnimation, Object, Animate) {
+    if (!pPropertyAnimation->_property) {
+        CMP_Detach(pPropertyAnimation);
+        return FALSE;
+    }
+
+    int duration = pPropertyAnimation->Duration;
+    float t = (duration <= 0)
+        ? 1.0f
+        : (float)(core.realtime - pPropertyAnimation->Start) / (float)duration;
+    if (t > 1.0f) t = 1.0f;
+
+    float interp_t = anim_interpolate(pPropertyAnimation->Interpolation,
+                                      pPropertyAnimation->Easing, t);
+
+    enum DataType type = PROP_GetType(pPropertyAnimation->_property);
+
+    if (type == kDataTypeFloat) {
+        // Use memcpy to avoid undefined behaviour from unaligned reads on byte_t[].
+        float from_val, to_val;
+        memcpy(&from_val, pPropertyAnimation->From, sizeof(float));
+        memcpy(&to_val,   pPropertyAnimation->To,   sizeof(float));
+        float value = float_lerp(from_val, to_val, interp_t);
+        PROP_SetValue(pPropertyAnimation->_property, &value);
+    } else if (type == kDataTypeStruct) {
+        // For structured types (Transform2D, Transform3D) we interpolate
+        // component-by-component as raw floats.  Both from/to were captured
+        // with memcpy so the layout matches.
+        size_t size = PROP_GetSize(pPropertyAnimation->_property);
+        uint32_t n = (uint32_t)(size / sizeof(float));
+        float result[MAX_PROPERTY_STRING / sizeof(float)];
+        for (uint32_t i = 0; i < n; i++) {
+            float fv, tv;
+            memcpy(&fv, pPropertyAnimation->From + i * sizeof(float), sizeof(float));
+            memcpy(&tv, pPropertyAnimation->To   + i * sizeof(float), sizeof(float));
+            result[i] = float_lerp(fv, tv, interp_t);
+        }
+        PROP_SetValue(pPropertyAnimation->_property, result);
+    }
+
+    if (t >= 1.0f) {
+        CMP_Detach(pPropertyAnimation);
+    }
+    return FALSE;
+}
+
+void
+OBJ_DoTween(lua_State* L,
+            struct Object* self,
+            const char* property,
+            int32_t duration,
+            enum InterpolationMode ipo,
+            enum Easing easing)
+{
+  lpProperty_t hprop = PROP_FindByFullName(OBJ_GetProperties(self), property);
+  if (!hprop) {
+    luaL_error(L, "Can't find property %s", property);
+    return;
+  }
+  struct component *cmp = OBJ_AddComponent(self, ID_PropertyAnimation);
+  if (!cmp) {
+    luaL_error(L, "Failed to create PropertyAnimation component");
+    return;
+  }
+  struct PropertyAnimation *anim = (struct PropertyAnimation*)CMP_GetUserData(cmp);
+  PROP_CopyValue(hprop, (void*)anim->From);
+  anim->_property = hprop;
+  anim->Duration = duration;
+  anim->Interpolation = ipo;
+  anim->Easing = easing;
+  anim->Start = (uint32_t)core.realtime;
+  if (PROP_GetType(hprop) == kDataTypeFloat) {
+//    luaX_parsefield(float, to, 2, luaL_checknumber);
+    float to = luaL_checknumber(L, 6);
+    memcpy((void*)(anim->To = malloc(sizeof(to))), &to, sizeof(to));
+  } else if (PROP_GetType(hprop) == kDataTypeStruct && !strcmp("Transform2D", PROP_GetUserData(hprop))) {
+//    luaX_parsefield(struct transform2*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
+    struct transform2* to = luaL_checkudata(L, 6, PROP_GetUserData(hprop));
+    memcpy((void*)(anim->To = malloc(sizeof(*to))), to, sizeof(*to));
+  } else if (PROP_GetType(hprop) == kDataTypeStruct && !strcmp("Transform3D", PROP_GetUserData(hprop))) {
+//    luaX_parsefield(struct transform3*, to, 2, luaL_checkudata, PROP_GetUserData(hprop));
+    struct transform3* to = luaL_checkudata(L, 6, PROP_GetUserData(hprop));
+    memcpy((void*)(anim->To = malloc(sizeof(*to))), to, sizeof(*to));
+  } else {
+    CMP_Detach(anim);
+    luaL_error(L, "Unknown property type for tween");
+    return;
+  }
+}
+
+void
+OBJ_Animate(lua_State* L, lpObject_t object)
+{
+  if (OBJ_IsHidden(object))
+    return;
+  OBJ_SendMessageW(object, ID_Object_Animate, 0, NULL);
+  FOR_EACH_OBJECT(it, object) OBJ_Animate(L, it);
+}
+

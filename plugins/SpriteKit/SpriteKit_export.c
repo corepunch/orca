@@ -133,6 +133,21 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
 	DECL(0x590ca79a, SpriteAnimation, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteAnimation.Image
 	DECL(0xbebf2a84, SpriteAnimation, Framerate, Framerate, kDataTypeFloat), // SpriteAnimation.Framerate
@@ -273,7 +288,6 @@ struct SKView* luaX_checkSKView(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(SKView, ID_Node2D, 0);
-
 
 ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 

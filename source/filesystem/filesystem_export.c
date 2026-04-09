@@ -164,6 +164,21 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
 	DECL(0x23d83fd3, Workspace, ReadCommands, ReadCommands, kDataTypeEvent, .TypeString = "Workspace_ReadCommandsEventArgs"), // Workspace.ReadCommands
 };
@@ -451,7 +466,6 @@ struct ThemeDefaultValuesDictionary* luaX_checkThemeDefaultValuesDictionary(lua_
 	return GetThemeDefaultValuesDictionary(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(ThemeDefaultValuesDictionary, 0);
-
 int f_FS_GetBaseName(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	const char* result_ = FS_GetBaseName(path);
