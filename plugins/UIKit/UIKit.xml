@@ -424,12 +424,6 @@
             <field name="force" type="bool">Indicates if the update is forced</field>
           </fields>
         </message>
-        <message name="PushProperty" routing="TunnelingBubbling">
-          <summary>Propagates an inherited property value down or up the node hierarchy.</summary>
-          <fields>
-            <field name="Placeholder" type="int"/>
-          </fields>
-        </message>
         <message name="LoadView" routing="Direct">
           <summary>Initializes the component's Lua view state.</summary>
           <fields>

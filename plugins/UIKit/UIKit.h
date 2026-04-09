@@ -25,7 +25,6 @@ struct lua_State;
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_AwakeEventArgs Node_AwakeMsg_t,* Node_AwakeMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
-typedef struct Node_PushPropertyEventArgs Node_PushPropertyMsg_t,* Node_PushPropertyMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
 typedef struct Node_IsVisibleEventArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
@@ -541,12 +540,6 @@ struct Node_UpdateMatrixEventArgs {
 };
 ORCA_API void luaX_pushNode_UpdateMatrixEventArgs(lua_State *L, struct Node_UpdateMatrixEventArgs const* data);
 ORCA_API struct Node_UpdateMatrixEventArgs* luaX_checkNode_UpdateMatrixEventArgs(lua_State *L, int idx);
-/** Node_PushPropertyEventArgs struct */
-struct Node_PushPropertyEventArgs {
-	int32_t Placeholder;
-};
-ORCA_API void luaX_pushNode_PushPropertyEventArgs(lua_State *L, struct Node_PushPropertyEventArgs const* data);
-ORCA_API struct Node_PushPropertyEventArgs* luaX_checkNode_PushPropertyEventArgs(lua_State *L, int idx);
 /** Node_LoadViewEventArgs struct */
 struct Node_LoadViewEventArgs {
 	struct lua_State* lua_state;
@@ -808,7 +801,6 @@ struct Node {
 	long _tags; ///< Calculated tags value
 	event_t Awake;
 	event_t UpdateMatrix;
-	event_t PushProperty;
 	event_t LoadView;
 	event_t HitTest;
 	event_t IsVisible;
