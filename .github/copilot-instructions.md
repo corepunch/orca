@@ -128,89 +128,253 @@ Each plugin module is compiled into its own shared library (`.so` / `.dll`) and 
 
 ORCA uses an **Object/Component** architecture. An `Object` is the universal scene node — a named, hierarchical container. Functionality is added by attaching **components** (also called classes) to it.
 
-### Object (`source/core/object.c`)
+### Object (`source/core/object/object_internal.h`)
 
-Every scene element is an `Object`. Objects form a parent→children tree and carry:
+Every scene element is an `Object`. Objects form a parent→children tree. Key fields:
 
-- A name, class name, and source file
-- A component linked-list (see below)
-- A flat byte buffer (`data[]`) for property storage
-- A Lua state pointer for scripting
+- Identity: `Name`, `ClassName`, `identifier` (FNV1a hash), `SourceFile`
+- Hierarchy: `parent`, `children` (first child), `next` (next sibling)
+- A union of subsystem pointers (see refactoring section below)
+- A flat `data[]` byte buffer for property value storage
+- A `lua_State *domain` for scripting
 
-### Components (`source/core/component.c`)
-
-A component is a block of typed data + a message-handler function attached to an Object. Each component is described by a `ClassDesc` (`include/orca.h`):
+The subsystem union provides **indexed O(1) access** via `comps[kCompCount]` and named struct fields simultaneously:
 
 ```c
-struct ClassDesc {
-  objectProc_t ObjProc;        // Message handler — dispatches kMsg* events
-  lpcPropertyType_t Properties;// Sorted array of property descriptors
-  lpcString_t ClassName;       // Human-readable name (e.g. "Button")
-  uint32_t ParentClasses[16];  // Inherited class IDs (inheritance chain)
-  uint32_t NumProperties;      // Number of directly owned properties
-  uint32_t ClassID;            // FNV1a hash of ClassName
-  uint32_t ClassSize;          // Size of instance data
-  void const *Defaults;        // Default property values struct
+union {
+    struct {
+        struct component*          components;   // attached component chain
+        struct property_animation* animations;   // tween queue (legacy)
+        struct Property*           properties;
+        struct state_manager*      stateManager;
+        struct style_class*        classes;
+        struct style_sheet*        stylesheet;
+        struct timer*              timers;
+        struct alias*              aliases;
+    };
+    void* comps[kCompCount]; // indexed by enum component_type
 };
 ```
 
-Call `OBJ_RegisterClass(&desc)` at module init to register a component type. Call `OBJ_AddComponent(obj, classID)` to attach it to an object at runtime.
+Fields marked **legacy** are being progressively replaced by proper components (see "Object Struct Refactoring" below).
+
+### Components (`source/core/component.c`)
+
+A component is a block of typed data + a message-handler function attached to an Object. Each component type is described by a `ClassDesc` (`include/orca.h`):
+
+```c
+struct ClassDesc {
+  objectProc_t      ObjProc;          // message handler function
+  lpcPropertyType_t Properties;       // property descriptor table
+  lpcString_t       ClassName;        // human-readable name (e.g. "Button")
+  lpcString_t       DefaultName;      // name used when none supplied
+  lpcString_t       ContentType;      // for package auto-detection
+  lpcString_t       Xmlns;            // XML namespace
+  uint32_t          ParentClasses[16];// base class IDs, zero-terminated
+  uint32_t          NumProperties;    // property count
+  uint32_t          ClassID;          // FNV1a hash of ClassName
+  uint32_t          ClassSize;        // sizeof(struct ClassName)
+  uint32_t          MemorySize;       // total size including parents
+  void const       *Defaults;         // default values struct
+  bool_t            IsAttachOnly;     // cannot be instantiated standalone
+};
+```
+
+**`objectProc_t` signature** — note the `void* cmp` second parameter:
+
+```c
+typedef LRESULT (*objectProc_t)(lpObject_t obj,   // owning Object
+                                void*       cmp,   // component data block
+                                uint32_t    msg,   // message ID (masked)
+                                wParam_t    wParam,
+                                lParam_t    lParam);
+```
+
+`cmp` is the component's `pUserData` (already allocated alongside the `struct component` header). Handlers cast it implicitly to `struct ClassName*` in C.
+
+**Standalone vs. attach-only:**
+
+| XML attribute | Macro in `*_export.c` | Can create standalone? |
+|---|---|---|
+| *(none)* | `REGISTER_CLASS` | Yes |
+| `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | No — must use `addComponent` |
+
+Call `OBJ_RegisterClass(&_ClassName)` at module init. Call `OBJ_AddComponent(obj, ID_ClassName)` (C) or `obj:addComponent("ClassName")` (Lua) to attach at runtime.
+
+### HANDLER macro — the message-handler pattern
+
+Every message a component handles is declared with `<handle message="NS.Event"/>` in XML. This generates a forward-declaration in `*_export.c` using the `HANDLER` macro and a switch case in the component's Proc. The implementation goes in the companion `.c` file:
+
+```c
+// *_export.c (generated) — forward-declarations:
+HANDLER(AnimationPlayer, Object, Start);
+HANDLER(AnimationPlayer, Object, Animate);
+
+// AnimationPlayer.c (hand-written) — implementations:
+HANDLER(AnimationPlayer, Object, Start) {
+    // hObject         — the owning Object
+    // pAnimationPlayer — this component's data (= cmp, already cast)
+    // pStart          — Object_StartMsgPtr (empty for this message)
+    pAnimationPlayer->CurrentTime = 0.0f;
+    return FALSE;
+}
+
+HANDLER(AnimationPlayer, Object, Animate) {
+    if (!pAnimationPlayer->Playing) return FALSE;
+    // advance CurrentTime, evaluate curves…
+    return FALSE;
+}
+```
+
+`HANDLER(CLASS, NS, EVENT)` expands to:
+```c
+LRESULT CLASS##_##EVENT(struct Object* hObject,
+                        struct CLASS*  p##CLASS,
+                        wParam_t       wParam,
+                        NS##_##EVENT##MsgPtr p##EVENT)
+```
 
 ### How to add a new component type
 
-1. **Define the component in XML** (in the module's `.xml` file):
+1. **Declare in XML** (in the module's `.xml` file):
    ```xml
-   <class name="MyComponent" export="MyComponent">
+   <class name="MyComponent" attach-only="true">
      <summary>What this component does.</summary>
-     <property name="Speed" type="float">Movement speed</property>
+     <handles>
+       <handle message="Object.Start"/>
+       <handle message="Object.Animate"/>
+     </handles>
+     <properties>
+       <property name="Speed" type="float" default="1.0">Movement speed</property>
+     </properties>
    </class>
    ```
 
-2. **Run the code generator** to regenerate the header, properties, and export files:
+2. **Run the code generator**:
    ```bash
    cd tools && make
    ```
 
-3. **Write the C implementation** (e.g. `source/mymodule/mycomponent.c`):
+3. **Implement handlers** in `source/<module>/components/MyComponent.c`:
    ```c
-   #include "mymodule_properties.h"
-   
-   struct MyComponent { float Speed; };
-   
-   static LRESULT MyComponent_Proc(lpObject_t obj, uint32_t msg,
-                                    wParam_t wParam, lParam_t lParam) {
-     struct MyComponent *self = GetMyComponent(obj);
-     switch (msg) {
-       case kEventCreate: self->Speed = 1.0f; break;
-     }
-     return 0;
+   #include <source/core/core_local.h>
+   #include "<module>_properties.h"
+
+   HANDLER(MyComponent, Object, Start) {
+       pMyComponent->Speed = 1.0f;
+       return FALSE;
    }
-   
-   static struct MyComponent defaults = { .Speed = 1.0f };
-   
-   static ClassDesc MyComponentClass = {
-     .ObjProc       = MyComponent_Proc,
-     .ClassName     = "MyComponent",
-     .ClassID       = ID_MyComponent,   // generated hash
-     .ClassSize     = sizeof(struct MyComponent),
-     .Defaults      = &defaults,
-   };
+
+   HANDLER(MyComponent, Object, Animate) {
+       // per-frame update
+       return FALSE;
+   }
    ```
 
-4. **Register at module init**:
-   ```c
-   OBJ_RegisterClass(&MyComponentClass);
-   ```
+4. **Register at module init** — the `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`; call `OBJ_RegisterClass(&_MyComponent)` in `on_mymodule_registered`.
 
-5. **Use from Lua** (bindings are auto-generated):
+5. **Use from Lua**:
    ```lua
-   local obj = orca.create("MyComponent")
+   obj:addComponent("MyComponent")
    obj.Speed = 5.0
    ```
 
 ---
 
-## Plugin System
+## Object Struct Refactoring
+
+The `struct Object` currently has a number of **legacy embedded fields** — timers, tweens, state managers, style sheets, class lists, and animation data — that predate the component architecture and create tight coupling in `OBJ_Release`.
+
+**Architectural goal: zero subsystem fields in Object.** Every subsystem moves into a proper `attach-only` component:
+
+| Legacy field | Target component | Status |
+|---|---|---|
+| `animation` / `animlib` | `AnimationPlayer` / `AnimationClip` | In progress |
+| `animations` (tweens) | `PropertyAnimation` | Planned |
+| `timers` | `Timer` | Planned |
+| `stateManager` | `StateManager` | Planned |
+| `stylesheet` / `classes` | `StyleSheet` / `StyleClass` | Planned |
+| `aliases` | `Alias` | Planned |
+
+**Migration checklist for each field:**
+1. Implement the component with `<handles>` for all messages it needs.
+2. Register it as `attach-only` via `REGISTER_ATTACH_ONLY_CLASS`.
+3. Remove the field from `struct Object`.
+4. Remove the `_GetXxx(obj)` macro from `core_local.h`.
+5. Remove the manual release call from `OBJ_Release`.
+6. Remove the corresponding `kComp*` entry from `enum component_type`.
+
+When adding new functionality, **always use a component** — never add new fields to `struct Object`.
+
+---
+
+## C Macros Quick Reference
+
+Full reference: `docs/architecture/macros-reference.md`. The most important macros for day-to-day component work:
+
+### `HANDLER(CLASS, NS, EVENT)` — implement a message handler
+
+```c
+// In MyComponent.c:
+HANDLER(MyComponent, Object, Start) {
+    // hObject         — owning Object
+    // pMyComponent    — component data (struct MyComponent*)
+    // pStart          — Object_StartMsgPtr
+    pMyComponent->Value = 0.0f;
+    return FALSE; // continue dispatching to other components
+}
+```
+
+Declared (forward) in `*_export.c` from `<handle message="NS.Event"/>` XML. Returns non-zero to stop dispatch.
+
+### `DECL` / `ARRAY_DECL` — property table entry (generated, do not write by hand)
+
+```c
+DECL(SHORT_HASH, ClassName, PropertyName, StructField, kDataTypeFloat)
+ARRAY_DECL(SHORT_HASH, ClassName, Keyframes, Keyframes, kDataTypeStruct, .TypeString = "Keyframe")
+```
+
+Builds a `PropertyType` row: name, category, identifiers, offset, size, type.
+
+### `_SendMessage(OBJECT, CLASS, MESSAGE, …)` — dispatch a typed message
+
+```c
+_SendMessage(object, Object, Start);
+_SendMessage(object, Object, PropertyChanged, .Property = myProp);
+_SendMessage(object, AnimationPlayer, Play);
+```
+
+### `REGISTER_CLASS(NAME, parent_ids…)` / `REGISTER_ATTACH_ONLY_CLASS(NAME, …)` — define ClassDesc (generated)
+
+```c
+REGISTER_CLASS(AnimationClip, 0);              // standalone
+REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0); // attach-only
+```
+
+### `FOR_EACH_OBJECT(var, parent)` / `FOR_EACH_LIST(TYPE, var, head)`
+
+```c
+FOR_EACH_OBJECT(child, object) { OBJ_Animate(L, child); }
+FOR_EACH_LIST(struct timer, t, _GetTimers(obj)) { /* … */ }
+```
+
+### Message ID routing bits
+
+Switch cases **must** mask with `MSG_DATA_MASK`:
+```c
+case ID_Object_Start & MSG_DATA_MASK:   // ← correct
+case ID_Object_Start:                   // ← wrong — routing bits included
+```
+
+### `GetClassName(obj)` accessor macro
+
+Generated in `*_properties.h` for each class. Returns `NULL` if the component is not attached:
+```c
+struct AnimationPlayer *ap = GetAnimationPlayer(object);
+if (ap) { ap->Playing = TRUE; }
+```
+
+---
 
 ORCA supports two distinct kinds of plugins:
 
@@ -238,19 +402,27 @@ plugins/UIKit/
 3. The `on_luaopen` callback (e.g. `on_ui_module_registered`) calls `OBJ_RegisterClass()` for each component type.
 4. Lua scripts can then instantiate components: `local btn = UIKit.Button()`.
 
-**Message handling** — each component's `ObjProc` receives messages defined in `source/core/core_properties.h`:
+**Message handling** — component message handlers use the `HANDLER` macro. The generated Proc dispatches to them:
 
 ```c
-LRESULT Button_Proc(lpObject_t obj, uint32_t msg, wParam_t wParam, lParam_t lParam) {
-  struct Button *self = GetButton(obj);
-  switch (msg) {
-    case kEventCreate:   /* initialize */ break;
-    case kEventDestroy:  /* cleanup    */ break;
-    case kEventDraw:     /* render     */ break;
-    case kMsgMouseUp:    /* input      */ break;
-  }
-  return 0;
+// In Button.c — implemented with HANDLER:
+HANDLER(Button, Node, LeftMouseUp) {
+    // hObject  — owning Object
+    // pButton  — component data (struct Button*)
+    // pLeftMouseUp — Node_LeftMouseUpMsgPtr
+    SV_PostMessage(hObject, "Click", 0, hObject);
+    return TRUE; // handled — stop dispatch
 }
+
+// The generated ButtonProc in UIKit_export.c calls:
+//   case ID_Node_LeftMouseUp & MSG_DATA_MASK:
+//       return Button_LeftMouseUp(object, cmp, wparm, lparm);
+```
+
+The `objectProc_t` signature (for reference — use `HANDLER`, not a raw Proc):
+```c
+LRESULT MyProc(lpObject_t obj, void* cmp, uint32_t msg, wParam_t wParam, lParam_t lParam);
+//                              ^^^^^^^^ component data block — cast to struct ClassName*
 ```
 
 **Inheritance** — set `ParentClasses` to inherit properties and message handling:

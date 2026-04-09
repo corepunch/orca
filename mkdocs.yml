@@ -10,6 +10,7 @@ nav:
     - Object + Component System: architecture/object-component-system.md
     - Plugin System: architecture/plugin-system.md
     - Code Generation: architecture/code-generation.md
+    - Macros Reference: architecture/macros-reference.md
   - API Reference:
     - Overview: api/index.md
     - geometry: api/geometry/README.md
