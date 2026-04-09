@@ -31,7 +31,6 @@ struct Object
       struct state_manager* stateManager;
       struct style_class* classes;
       struct style_sheet* stylesheet;
-      struct timer* timers;
       struct alias* aliases;
     };
     void* comps[kCompCount];

@@ -45,9 +45,6 @@
 #define _GetStyles(obj)                                                        \
   (*(struct style_sheet**)OBJ_GetObjectComponent(obj, kCompStyles))
 
-#define _GetTimers(obj)                                                        \
-  (*(struct timer**)OBJ_GetObjectComponent(obj, kCompTimers))
-
 #define _GetAliases(obj)                                                       \
   (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
 
@@ -66,7 +63,6 @@ struct style_sheet;
 struct style_class;
 struct state_manager;
 struct property_animation;
-struct timer;
 struct alias;
 struct script_callback;
 
@@ -78,7 +74,6 @@ enum component_type
   kCompStateManager,
   kCompClasses,
   kCompStyles,
-  kCompTimers,
   kCompAliases,
   kCompCount,
 };
@@ -208,10 +203,6 @@ void*
 OBJ_GetObjectComponent(lpObject_t, enum component_type);
 void
 OBJ_ReleaseAnimations(lpObject_t);
-void
-OBJ_UpdateTimers(lpObject_t);
-void
-OBJ_ReleaseTimers(lpObject_t);
 void
 OBJ_ReleaseComponents(lpObject_t);
 void

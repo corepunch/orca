@@ -86,7 +86,6 @@
 		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53262D90344E00122823 /* state_manager.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
-		781CA77A2E1557A900FFCFD9 /* timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53292D90719800122823 /* timer.c */; };
 		781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737C42B8F620100FD598E /* core_main.c */; };
 		781CA77C2E1557A900FFCFD9 /* object_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737692B8F60C600FD598E /* object_lua.c */; };
 		781CA77D2E1557EC00FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
@@ -716,7 +715,6 @@
 		78FD53222D8F2A8800122823 /* property_program.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_program.c; sourceTree = "<group>"; };
 		78FD53242D8F405600122823 /* component.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = component.c; sourceTree = "<group>"; };
 		78FD53262D90344E00122823 /* state_manager.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = state_manager.c; sourceTree = "<group>"; };
-		78FD53292D90719800122823 /* timer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = timer.c; sourceTree = "<group>"; };
 		78FD532B2D90746900122823 /* alias.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = alias.c; sourceTree = "<group>"; };
 		78FD532F2D929AFE00122823 /* debug.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = debug.c; sourceTree = "<group>"; };
 		78FD53312D940BB200122823 /* dataplugin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dataplugin.c; sourceTree = "<group>"; };
@@ -1304,7 +1302,6 @@
 				78E4A9A12E93DD4200E3A503 /* known_prefabs.c */,
 				78FD53262D90344E00122823 /* state_manager.c */,
 				78688D2A2D89DD69008DE67B /* style.c */,
-				78FD53292D90719800122823 /* timer.c */,
 				78C7375C2B8F60C600FD598E /* animation.h */,
 				78C737652B8F60C600FD598E /* core_local.h */,
 				787040442F6F197000A84406 /* core_properties.h */,
@@ -2177,7 +2174,6 @@
 				7870417F2F6FDDD800A84406 /* object_core.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* state_manager.c in Sources */,
 				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
-				781CA77A2E1557A900FFCFD9 /* timer.c in Sources */,
 				781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */,
 				781CA77C2E1557A900FFCFD9 /* object_lua.c in Sources */,
 			);

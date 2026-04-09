@@ -108,8 +108,6 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   if (pobj->animlib) {
     ANIM_Release(pobj->animlib);
   }
-
-  OBJ_ReleaseTimers(pobj);
   OBJ_ReleaseAnimations(pobj);
   OBJ_ClearStyleClasses(pobj);
   OBJ_ReleaseComponents(pobj);
@@ -166,6 +164,11 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
   }
   free(tmp);
   return tags;
+}
+
+int OBJ_SetTimer(lpObject_t self, int duration)
+{
+  return WI_SetTimer(self, MAX(duration, 1), NULL, TRUE);;
 }
 
 #include <source/editor/ed_stab_object.h>
