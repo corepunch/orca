@@ -189,7 +189,7 @@ OBJ_AddClass(lpObject_t hobj, lpcString_t cls)
 // ============================================================================
 
 // Lua state is stored while processing a stylesheet table so that
-// parse_property (called from _OBJ_ApplyRule) can resolve Lua values
+// parse_property (called from _ApplyRule) can resolve Lua values
 static lua_State* g_L = NULL;
 
 // Parse a Lua table of CSS rules and register them on an object (or globally)
@@ -308,7 +308,7 @@ parse_property(lua_State* L, const char* str, struct PropertyType const* prop, v
 
 // Apply a single stylesheet rule to a property on the target object
 static void
-_OBJ_ApplyRule(lpObject_t pobj, struct style_sheet* ss, void* parm)
+_ApplyRule(lpObject_t pobj, struct style_sheet* ss, void* parm)
 {
   lpProperty_t hProperty;
   if (SUCCEEDED(OBJ_FindShortProperty(pobj, ss->name, &hProperty))) {
@@ -340,10 +340,10 @@ uint32_t
 OBJ_GetStyleFlags(lpObject_t pobj)
 {
   uint32_t dwValue = 0;
-  if (core_GetHover() == pobj)          dwValue |= STYLE_HOVER;
-  if (core_GetFocus() == pobj)          dwValue |= STYLE_FOCUS;
+  if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
+  if (core_GetFocus() == pobj) dwValue |= STYLE_FOCUS;
   if (OBJ_GetFlags(pobj) & OF_SELECTED) dwValue |= STYLE_SELECT;
-  if (WI_IsDarkTheme())                 dwValue |= STYLE_DARK;
+  if (WI_IsDarkTheme()) dwValue |= STYLE_DARK;
   return dwValue;
 }
 
@@ -388,7 +388,7 @@ HANDLER(StyleController, StyleController, ApplyStyles) {
   if (!OBJ_GetParent(hObject)) {
     FOR_EACH_LIST(struct style_sheet, ss, pStyleController->stylesheet) {
       if (*(uint32_t const*)ss->classname == *(uint32_t const*)"body") {
-        _OBJ_ApplyRule(hObject, ss, &(struct style_class){ .opacity = 100 });
+        _ApplyRule(hObject, ss, &(struct style_class){ .opacity = 100 });
       }
     }
   }
@@ -396,7 +396,7 @@ HANDLER(StyleController, StyleController, ApplyStyles) {
   // Apply each class whose state flags match the current object state
   FOR_EACH_LIST(struct style_class, cls, pStyleController->classes) {
     if ((OBJ_GetStyleFlags(hObject) & cls->flags) == cls->flags) {
-      OBJ_EnumStyleClasses(hObject, cls->value, _OBJ_ApplyRule, cls);
+      OBJ_EnumStyleClasses(hObject, cls->value, _ApplyRule, cls);
     }
   }
 

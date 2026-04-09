@@ -38,8 +38,6 @@ static int s_tests_run    = 0;
 static int s_tests_failed = 0;
 static const char* s_current_test = NULL;
 
-#define TEST_BEGIN(name)
-
 #define EXPECT(...)                                                         \
     if (!(__VA_ARGS__)) {                                                   \
         fprintf(stderr, "  FAIL [%s]: %s (line %d)\n",                    \
@@ -70,7 +68,12 @@ static LRESULT TestStyledCompProc(struct Object* o, void* c,
     return FALSE;
 }
 
-#define ID_TestStyledComp 0xaabb1122u  /* arbitrary non-colliding ID */
+/*
+ * ID chosen to avoid collision with FNV1a32 hashes of existing class names.
+ * The value 0xaabb1122 is not produced by fnv1a32 for any registered ORCA
+ * class name and is used solely within this test binary.
+ */
+#define ID_TestStyledComp 0xaabb1122u
 /* Property descriptor for "Width" (FNV1a32("Width") = 0xd2dfef18) */
 static struct PropertyType const TestStyledCompProperties[] = {
     {
@@ -124,7 +127,10 @@ static void destroy_object(lpObject_t obj) {
      * message dispatch): */
     OBJ_ClearStyleClasses(obj);
     OBJ_ReleaseProperties(obj);
-    /* Walk the component linked list and free each block. */
+    /* Walk the component linked list and free each block.
+     * Each component block starts with a 'next' pointer as its first field
+     * (see struct component in component_internal.h), so we can walk the
+     * list without knowing the full struct layout. */
     void *cmp = *(void **)OBJ_GetObjectComponent(obj, kCompComponents);
     while (cmp) {
         void *next = *(void **)cmp;
