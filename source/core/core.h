@@ -307,8 +307,8 @@ ORCA_API int
 OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
 
 /// @brief Set a timer on the object.
-ORCA_API int
-OBJ_SetTimer(struct lua_State*, struct Object*);
+ORCA_API int32_t
+OBJ_SetTimer(struct Object*, int32_t);
 
 /// @name Identity and State
 /// Accesses name, class, flags, aliases, text content, and Lua state.

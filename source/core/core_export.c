@@ -320,7 +320,10 @@ int f_OBJ_ShowModal(lua_State *L) {
 }
 int f_OBJ_SetTimer(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	return OBJ_SetTimer(L, this_);
+	int32_t duration = (int32_t)luaL_checkinteger(L, 2);
+	int32_t result_ = OBJ_SetTimer(this_, duration);
+	lua_pushinteger(L, result_);
+	return 1;
 }
 int f_OBJ_GetName(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);

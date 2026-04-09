@@ -302,10 +302,11 @@
           <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>
           <returns type="nresults">Starts a coroutine</returns>
         </method>
-        <method name="SetTimer" lua="true">
+        <method name="SetTimer">
           <summary>Set a timer on the object.</summary>
           <details>Creates and starts a timer associated with this object. Timers can be one-shot or repeating, and execute callback functions after specified delays or intervals. The timer is automatically cleaned up when the object is destroyed. Multiple timers can be active on the same object simultaneously. Timers integrate with the game's update loop and respect pause states.</details>
-          <returns type="nresults">Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires</returns>
+          <arg name="duration" type="int">Duration of the timer in milliseconds</arg>
+          <returns type="int">Handle or identifier for the created timer, which can be used to control or cancel the timer before it expires</returns>
         </method>
         <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
         <method name="GetName" const="true">
