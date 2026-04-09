@@ -36,7 +36,7 @@ ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")
-ENUM(PlaybackMode, "Normal", "Reverse", "Pingpong")
+ENUM(PlaybackMode, "Normal", "Reverse", "PingPong")
 
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);

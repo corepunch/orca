@@ -697,7 +697,7 @@
 		78C7376E2B8F60C600FD598E /* Viewport3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Viewport3D.c; sourceTree = "<group>"; };
 		78C737742B8F60C600FD598E /* PlaneMeshNode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PlaneMeshNode.c; sourceTree = "<group>"; };
 		78C737752B8F60C600FD598E /* TrajectoryList3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TrajectoryList3D.c; sourceTree = "<group>"; };
-		78C737AA2B8F616A00FD598E /* easing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = easing.c; sourceTree = "<group>"; };
+		78C737AA2B8F616A00FD598E /* easing.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = components/easing.c; sourceTree = "<group>"; };
 
 		78C737AC2B8F616A00FD598E /* object_tween.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = object_tween.c; sourceTree = "<group>"; };
 		78C737C42B8F620100FD598E /* core_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = core_main.c; sourceTree = "<group>"; };

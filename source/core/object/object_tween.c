@@ -2,7 +2,7 @@
 
 #include <source/core/core_local.h>
 
-void
+static void
 float_LERP(float const* a, float const* b, float t, float* out)
 {
   *out = LERP(*a, *b, t);

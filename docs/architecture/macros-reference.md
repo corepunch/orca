@@ -36,7 +36,7 @@ The `ParentClasses` variadic list comes from the XML `<class>` element's inherit
 
 ### `REGISTER_ATTACH_ONLY_CLASS(NAME, parent_ids…)`
 
-Same as `REGISTER_CLASS` but sets `.IsAttachOnly = TRUE`. Attach-only components **cannot be instantiated standalone**; they must be added to an existing object with `OBJ_AddComponent`. Examples: `AnimationPlayer`, `AnimationCurve`.
+Same as `REGISTER_CLASS` but sets `.IsAttachOnly = TRUE`. Attach-only components **cannot be instantiated standalone**; they must be added to an existing object with `OBJ_AddComponent`. Example: `AnimationPlayer`.
 
 The `attach-only="true"` attribute in the XML `<class>` element triggers this macro instead of `REGISTER_CLASS`.
 

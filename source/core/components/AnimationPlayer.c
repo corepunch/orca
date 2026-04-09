@@ -31,6 +31,8 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
         struct Keyframe const *b = &kf[j];
         if (b->time >= time) {
             float dt = b->time - a->time;
+            // Guard against degenerate (zero or negative) segments to avoid INF/NaN.
+            if (dt <= 0.0f) return vec4_get(&b->value, xyzw);
             float t  = (time - a->time) / dt;
             float v0 = vec4_get(&a->value,     xyzw);
             float v1 = vec4_get(&b->value,     xyzw);
@@ -54,11 +56,15 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
     return vec4_get(&kf[0].value, xyzw);
 }
 
-// tangentMode == 0 means cubic bezier (Unity default); any other value uses linear.
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (clip) {
         pAnimationPlayer->CurrentTime = clip->StartTime;
+    }
+    if (pAnimationPlayer->AutoplayEnabled) {
+        pAnimationPlayer->Playing = TRUE;
+        pAnimationPlayer->_prevRealtime = 0;
+        _SendMessage(hObject, AnimationPlayer, Started);
     }
     return FALSE;
 }
@@ -79,7 +85,8 @@ HANDLER(AnimationPlayer, Object, Animate) {
 
     float dt = (float)(core.realtime - pAnimationPlayer->_prevRealtime) / 1000.0f;
     pAnimationPlayer->_prevRealtime = core.realtime;
-    pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed;
+    float scale = pAnimationPlayer->DurationScale > 0.0f ? pAnimationPlayer->DurationScale : 1.0f;
+    pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed * scale;
 
     // Evaluate all AnimationCurve child objects of the clip
     lpObject_t clipObj = CMP_GetObject(clip);
@@ -121,15 +128,28 @@ HANDLER(AnimationPlayer, Object, Animate) {
     }
 
     // Check for end of clip
-    if (clip->StopTime > 0.0f && pAnimationPlayer->CurrentTime >= clip->StopTime) {
-        if (pAnimationPlayer->Looping) {
+    if (clip->StopTime > 0.0f) {
+        if (pAnimationPlayer->CurrentTime >= clip->StopTime) {
+            if (pAnimationPlayer->PlaybackMode == kPlaybackModePingPong) {
+                // Reverse direction and clamp to StopTime for the next frame.
+                pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
+                pAnimationPlayer->CurrentTime = clip->StopTime;
+                pAnimationPlayer->_prevRealtime = 0;
+            } else if (pAnimationPlayer->Looping) {
+                pAnimationPlayer->CurrentTime = clip->StartTime;
+                pAnimationPlayer->_prevRealtime = 0;
+            } else {
+                pAnimationPlayer->CurrentTime = clip->StopTime;
+                pAnimationPlayer->Playing = FALSE;
+                pAnimationPlayer->_prevRealtime = 0;
+                _SendMessage(hObject, AnimationPlayer, Completed);
+            }
+        } else if (pAnimationPlayer->PlaybackMode == kPlaybackModePingPong &&
+                   pAnimationPlayer->CurrentTime <= clip->StartTime) {
+            // Reverse direction at the start boundary during ping-pong reverse pass.
+            pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
             pAnimationPlayer->CurrentTime = clip->StartTime;
             pAnimationPlayer->_prevRealtime = 0;
-        } else {
-            pAnimationPlayer->CurrentTime = clip->StopTime;
-            pAnimationPlayer->Playing = FALSE;
-            pAnimationPlayer->_prevRealtime = 0;
-            _SendMessage(hObject, AnimationPlayer, Completed);
         }
     }
     return FALSE;

@@ -112,7 +112,7 @@ ORCA_API void luaX_pushAnimationMode(lua_State *L, enum AnimationMode value);
 typedef enum PlaybackMode {
 	kPlaybackModeNormal, ///< Standard forward playback
 	kPlaybackModeReverse, ///< Reverse playback from end to start
-	kPlaybackModePingpong, ///< Alternating forward/reverse playback
+	kPlaybackModePingPong, ///< Alternating forward/reverse playback
 } ePlaybackMode_t;
 #define PlaybackMode_Count 3
 ORCA_API const char *PlaybackModeToString(enum PlaybackMode value);

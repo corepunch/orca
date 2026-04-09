@@ -54,7 +54,7 @@
       <summary>Animation playback behavior modes</summary>
       <value name="Normal">Standard forward playback</value>
       <value name="Reverse">Reverse playback from end to start</value>
-      <value name="Pingpong">Alternating forward/reverse playback</value>
+      <value name="PingPong">Alternating forward/reverse playback</value>
     </enum>
   </enums>
   <structs>

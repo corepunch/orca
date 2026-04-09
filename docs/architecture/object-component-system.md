@@ -128,7 +128,7 @@ The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defau
 | Kind | XML attribute | Macro | Use |
 |---|---|---|---|
 | Standalone | *(default)* | `REGISTER_CLASS` | May be created as a root object or attached as a component (e.g. `AnimationClip`) |
-| Attach-only | `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`, `AnimationCurve`) |
+| Attach-only | `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`) |
 
 Attach-only components set `IsAttachOnly = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `IsAttachOnly` and raises an error if a non-attach-only class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
 

@@ -6,12 +6,6 @@ This document records design issues, gotchas, misleading patterns, and known imp
 
 ## Animation System
 
-### `animation2.c` is entirely commented out
-`source/core/components/animation2.c` contains only commented-out code — the full property animation tween API that was replaced by the `PropertyAnimation` attach-only component. The file was kept to preserve context but adds confusion. It should be removed once the new component-based tween system is confirmed stable.
-
-### `animation.c` has two disabled interpolation algorithms
-`animation_evaluate()` in `source/core/components/animation.c` is compiled with `#define USE_CUBIC_BEZIER`. The Hermite and linear variants are inside `#elif` / `#else` blocks that are never compiled. Only one algorithm should exist; the dead variants should be removed.
-
 ### `AnimationCurve` was initially `attach-only` (wrong design)
 The first version of the component system made `AnimationCurve` an attach-only component bolted onto the `AnimationClip` object's component list. This was wrong: `AnimationCurve` is a data object that belongs as a **child** of `AnimationClip` in the object hierarchy, not as an attached component. Components are for behaviour; child objects are for data. The rule is: if something has identity (a name, can be referenced, carries data that outlives a single message) it should be a child object, not an attach-only component.
 
