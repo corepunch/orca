@@ -7,6 +7,8 @@
     <external struct="game"/>
     <external struct="Property"/>
     <external struct="lua_State"/>
+    <external struct="style_class"/>
+    <external struct="style_sheet"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -588,6 +590,18 @@
       </properties>
       <fields>
         <field name="_property" type="Property" pointer="true">The property being animated</field>
+      </fields>
+    </class>
+    <class name="StyleController" attach-only="true">
+      <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
+      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. Stylesheets can be loaded from external .css files or defined inline. This component is automatically attached to Node2D and any other visual elements that support styling.</details>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.Release"/>
+      </handles>
+      <fields>
+        <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
+        <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
     </class>
   </classes>

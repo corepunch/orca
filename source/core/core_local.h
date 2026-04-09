@@ -36,11 +36,16 @@
 #define _GetStateManager(obj)                                                  \
   (*(struct state_manager**)OBJ_GetObjectComponent(obj, kCompStateManager))
 
+// StyleController component accessor — returns NULL if component not attached
+#define _GetStyleController(obj)                                               \
+  GetStyleController(obj)
+
+// Convenience lvalue macros for accessing style data (caller must ensure StyleController exists)
 #define _GetClasses(obj)                                                       \
-  (*(struct style_class**)OBJ_GetObjectComponent(obj, kCompClasses))
+  (_GetStyleController(obj)->classes)
 
 #define _GetStyles(obj)                                                        \
-  (*(struct style_sheet**)OBJ_GetObjectComponent(obj, kCompStyles))
+  (_GetStyleController(obj)->stylesheet)
 
 #define _GetAliases(obj)                                                       \
   (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
@@ -67,9 +72,8 @@ enum component_type
   kCompComponents,
   kCompProperties,
   kCompStateManager,
-  kCompClasses,
-  kCompStyles,
   kCompAliases,
+  // kCompClasses and kCompStyles removed — now accessed via StyleController component
   kCompCount,
 };
 

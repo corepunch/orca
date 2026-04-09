@@ -595,7 +595,7 @@
         </message>
       </messages>
     </class>
-    <class name="Node2D" parent="Node" children="Node2D">
+    <class name="Node2D" parent="Node,StyleController" children="Node2D">
       <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
       <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>

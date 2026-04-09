@@ -1168,7 +1168,8 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 	return GetNode2D(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-REGISTER_CLASS(Node2D, ID_Node, 0);
+#define ID_StyleController 0x70b793e6
+REGISTER_CLASS(Node2D, ID_Node, ID_StyleController, 0);
 HANDLER(PrefabView2D, Node, LoadView);
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA

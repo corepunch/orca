@@ -12,6 +12,8 @@ struct localization;
 struct game;
 struct Property;
 struct lua_State;
+struct style_class;
+struct style_sheet;
 
 
 #include "core_properties.h"
@@ -628,5 +630,16 @@ struct PropertyAnimation {
 };
 ORCA_API void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation);
 ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx);
+
+/// @brief Manages CSS-style classes and stylesheet rules for an object.
+/** StyleController component */
+typedef struct StyleController StyleController_t, *StyleControllerPtr, *lpStyleController_t;
+typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t;
+struct StyleController {
+	struct style_class* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
+	struct style_sheet* stylesheet; ///< Linked list of style rules (selector to property to value mappings)
+};
+ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
+ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);
 
 #endif

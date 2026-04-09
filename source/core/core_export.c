@@ -19,6 +19,12 @@ extern struct Property* luaX_checkProperty(lua_State *L, int index);
 // lua_State
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
+// style_class
+extern void luaX_pushstyle_class(lua_State *L, struct style_class const* value);
+extern struct style_class* luaX_checkstyle_class(lua_State *L, int index);
+// style_sheet
+extern void luaX_pushstyle_sheet(lua_State *L, struct style_sheet const* value);
+extern struct style_sheet* luaX_checkstyle_sheet(lua_State *L, int index);
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -828,6 +834,26 @@ struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 	return GetPropertyAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
+HANDLER(StyleController, Object, Create);
+HANDLER(StyleController, Object, Release);
+static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
+};
+static struct StyleController StyleControllerDefaults = {
+};
+LRESULT StyleControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Create&MSG_DATA_MASK: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Release&MSG_DATA_MASK: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
+	}
+	return FALSE;
+}
+void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController) {
+	luaX_pushObject(L, CMP_GetObject(StyleController));
+}
+struct StyleController* luaX_checkStyleController(lua_State *L, int idx) {
+	return GetStyleController(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -867,6 +893,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PropertyAnimation), -2), "PropertyAnimation");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StyleController), -2), "StyleController");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;
