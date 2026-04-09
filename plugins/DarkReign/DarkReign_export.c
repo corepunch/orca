@@ -114,6 +114,21 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
 HANDLER(FtgPackage, Project, LoadProject);
 HANDLER(FtgPackage, Project, OpenFile);
 HANDLER(FtgPackage, Project, FileExists);
@@ -142,7 +157,6 @@ struct FtgPackage* luaX_checkFtgPackage(lua_State *L, int idx) {
 }
 #define ID_Bundle 0xe6397a25
 REGISTER_CLASS(FtgPackage, ID_Bundle, 0);
-
 
 ORCA_API int luaopen_orca_DarkReign(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 

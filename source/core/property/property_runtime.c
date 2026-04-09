@@ -288,33 +288,7 @@ tok_op(COLOR4) {
   }
 }
 tok_op(ANIMATE) {
- /* if (regs[1].type == kDataTypeFixed && regs[0].type < kDataTypeFixed) {
-    handle_t Animation_Register(xmlDocPtr);
-    float animation_evaluate(struct curve*, float, int);
-    // handle_t anim = Animation_Register((lpcString_t )regs[1].value);
-    lpcString_t path = NULL;
-    if (token->args[1]->type == tok_string) {
-      path = token->args[1]->text;
-    } else {
-      path = VM_REG_STR(&regs[1]);
-    }
-    if (!token->cache.animation) {
-      token->cache.animation = ZeroAlloc(sizeof(struct curve));
-      struct _xmlDoc* (*LoadXmlDoc)(lpcString_t) = token->userdata;
-      if (!token->userdata) {
-        Con_Error("No userdata set in ANIMATE token");
-        return FALSE;
-      }
-      WITH(xmlDoc, doc, LoadXmlDoc(path), xmlFreeDoc) {
-        SafeSet(token->cache.animation, Animation_Register(doc), free);
-      }
-    }
-    InitOutput(output, kDataTypeFloat, sizeof(float));
-    output->value[0] = animation_evaluate(token->cache.animation, regs[0].value[0], 0);
-    return TRUE;
-  } else*/ {
-    return FALSE;
-  }
+  return FALSE;
 }
 
 OPERATOR(ADD, v[0] + v[1]);

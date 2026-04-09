@@ -53,29 +53,6 @@ FWD_STRUCT(PropertyType);
 #define STRINGIZE(x) #x
 #define TO_STRING(x) STRINGIZE(x)
 
-enum ipo_type
-{
-  IPO_LINEAR,
-  IPO_CONST,
-  IPO_BACK,
-  IPO_BOUNCE,
-  IPO_CIRC,
-  IPO_CUBIC,
-  IPO_ELASTIC,
-  IPO_EXPO,
-  IPO_QUAD,
-  IPO_QUART,
-  IPO_QUINT,
-  IPO_SINE,
-};
-
-enum easing
-{
-  IPO_EASE_IN_OUT,
-  IPO_EASE_IN,
-  IPO_EASE_OUT,
-};
-
 enum message_type
 {
   kMessageTypeNormal,
@@ -129,60 +106,6 @@ struct token
   char text[4];
 };
 
-enum keyframe_mode {
-  Key_Free,
-  Key_Auto,
-  Key_Linear,
-  Key_Constant,
-  Key_ClampedAuto,
-};
-
-struct keyframe
-{
-  float value[4];
-  float inSlope[4];
-  float outSlope[4];
-  float inWeight[4];
-  float outWeight[4];
-  float time;
-  int tangentMode;
-  int weightedMode;
-};
-
-struct curve
-{
-  shortStr_t path;
-  shortStr_t property;
-  uint32_t num_keyframes;
-  struct curve *next;
-  struct keyframe keyframes[];
-};
-
-enum animation_mode {
-  kAnimationPlayOnce,
-  kAnimationLoop,
-  kAnimationPingPong,
-};
-
-FWD_STRUCT(KeyframeAnim);
-
-struct KeyframeAnim
-{
-  longTime_t timer;
-  float start_time;
-  float stop_time;
-  enum animation_mode mode;
-  LPSTR name;
-  LPSTR filename;
-  struct curve *curves;
-  lpKeyframeAnim_t next;
-};
-
-ORCA_API lpKeyframeAnim_t
-ANIM_Load(struct _xmlDoc*);
-
-void
-ANIM_Release(lpKeyframeAnim_t);
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 WI_PostMessageW(OBJ, fnv1a32(MSG), _W, _L);
@@ -421,6 +344,7 @@ struct ClassDesc
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
   uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
   void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
+  bool_t IsAttachOnly; // if true, this class can only be added as a component to an existing object, not instantiated standalone
 };
 
 struct component;

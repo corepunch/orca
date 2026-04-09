@@ -144,21 +144,3 @@ OBJ_GetPropertyAtIndex(lpObject_t object,
   lpProperty_t* props = (void*)(userdata + classsize);
   return props[index];
 }
-
-void
-OBJ_SetAnimation(lpObject_t object, lpcString_t name)
-{
-  object->animation = ANIM_FindByName(object->animlib, name);
-}
-
-lpcKeyframeAnim_t
-OBJ_GetAnimation(lpcObject_t object)
-{
-  return object->animation;
-}
-
-void
-OBJ_AddAnimation(lpObject_t object, lpKeyframeAnim_t anim)
-{
-  ADD_TO_LIST(anim, object->animlib);
-}

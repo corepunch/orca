@@ -278,18 +278,6 @@ ORCA_API const char *BorderStyleToString(enum BorderStyle value);
 ORCA_API enum BorderStyle luaX_checkBorderStyle(lua_State *L, int idx);
 ORCA_API void luaX_pushBorderStyle(lua_State *L, enum BorderStyle value);
 
-/// @brief Animation playback behavior modes
-/** PlaybackMode enum */
-typedef enum PlaybackMode {
-	kPlaybackModeNormal, ///< Standard forward playback
-	kPlaybackModeReverse, ///< Reverse playback from end to start
-	kPlaybackModePingpong, ///< Alternating forward/reverse playback
-} ePlaybackMode_t;
-#define PlaybackMode_Count 3
-ORCA_API const char *PlaybackModeToString(enum PlaybackMode value);
-ORCA_API enum PlaybackMode luaX_checkPlaybackMode(lua_State *L, int idx);
-ORCA_API void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value);
-
 /// @brief Button behavior types for different interaction patterns
 /** ButtonType enum */
 typedef enum ButtonType {
@@ -715,22 +703,6 @@ struct DataObject {
 };
 ORCA_API void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject);
 ORCA_API struct DataObject* luaX_checkDataObject(lua_State *L, int idx);
-
-/// @brief Controls playback of animations within the UI engine.
-/** AnimationPlayer component */
-typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimationPlayer_t;
-typedef struct AnimationPlayer const *AnimationPlayerCPtr, *lpcAnimationPlayer_t;
-struct AnimationPlayer {
-	bool_t AutoplayEnabled; ///< Enables or disables automatic playback on initialization.
-	float DurationScale; ///< Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.
-	enum PlaybackMode PlaybackMode; ///< Defines how the animation should be played.
-	bool_t RelativePlayback; ///< When true, playback is relative to the current state rather than starting from an absolute base state.
-	int32_t RepeatCount; ///< Number of times the animation should repeat. Use -1 (or another sentinel value, depending on implementation) to indicate infinite looping.
-	bool_t RestoreOriginalValuesAfterPlayback; ///< Restores the original property values after the animation ends.
-	struct Timeline* Timeline; ///< Reference to the animation timeline that defines keyframes and transitions.
-};
-ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
-ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
 
 /// @brief Base class for event-driven actions within the UI system
 /** Trigger component */

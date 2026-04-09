@@ -53,7 +53,6 @@ ENUM(JustifyContent, "Start", "End", "Center", "SpaceBetween", "SpaceAround", "S
 ENUM(FontWeight, "Normal", "Bold")
 ENUM(FontStyle, "Normal", "Italic")
 ENUM(BorderStyle, "None", "Hidden", "Dotted", "Dashed", "Solid", "Double", "Groove", "Ridge", "Inset", "Outset")
-ENUM(PlaybackMode, "Normal", "Reverse", "Pingpong")
 ENUM(ButtonType, "Normal", "Submit")
 ENUM(InputType, "Text", "Password", "Number", "Checkbox", "Radio")
 ENUM(Sizing, "PlusMargin", "SizeOnly", "MinusPadding")
@@ -680,6 +679,21 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 };
+#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = #NAME, \
+	.DefaultName = #NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { __VA_ARGS__ }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = NAME##Properties, \
+	.ObjProc = NAME##Proc, \
+	.Defaults = &NAME##Defaults, \
+	.NumProperties = k##NAME##NumProperties, \
+	.IsAttachOnly = TRUE, \
+};
 static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
 };
 static struct DataObject DataObjectDefaults = {
@@ -696,29 +710,6 @@ struct DataObject* luaX_checkDataObject(lua_State *L, int idx) {
 	return GetDataObject(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(DataObject, 0);
-static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
-	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
-	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
-	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
-	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
-	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
-	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
-	DECL(0x30d783f6, AnimationPlayer, Timeline, Timeline, kDataTypeObject, .TypeString = "Timeline"), // AnimationPlayer.Timeline
-};
-static struct AnimationPlayer AnimationPlayerDefaults = {
-};
-LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-	}
-	return FALSE;
-}
-void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer) {
-	luaX_pushObject(L, CMP_GetObject(AnimationPlayer));
-}
-struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
-	return GetAnimationPlayer(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(AnimationPlayer, 0);
 HANDLER(Trigger, Object, PropertyChanged);
 HANDLER(Trigger, Object, Attached);
 static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
@@ -741,7 +732,7 @@ void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger) {
 struct Trigger* luaX_checkTrigger(lua_State *L, int idx) {
 	return GetTrigger(luaX_checkObject(L, idx));
 }
-REGISTER_CLASS(Trigger, 0);
+REGISTER_ATTACH_ONLY_CLASS(Trigger, 0);
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged);
 static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
 	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
@@ -762,7 +753,7 @@ struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L
 	return GetOnPropertyChangedTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-REGISTER_CLASS(OnPropertyChangedTrigger, ID_Trigger, 0);
+REGISTER_ATTACH_ONLY_CLASS(OnPropertyChangedTrigger, ID_Trigger, 0);
 HANDLER(OnAttachedTrigger, Object, Attached);
 static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
 };
@@ -781,7 +772,7 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 	return GetOnAttachedTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
+REGISTER_ATTACH_ONLY_CLASS(OnAttachedTrigger, ID_Trigger, 0);
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
@@ -799,7 +790,7 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 	return GetEventTrigger(luaX_checkObject(L, idx));
 }
 #define ID_Trigger 0xa5ea0da3
-REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
+REGISTER_ATTACH_ONLY_CLASS(EventTrigger, ID_Trigger, 0);
 HANDLER(Setter, Trigger, Triggered);
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
@@ -820,7 +811,7 @@ void luaX_pushSetter(lua_State *L, struct Setter const* Setter) {
 struct Setter* luaX_checkSetter(lua_State *L, int idx) {
 	return GetSetter(luaX_checkObject(L, idx));
 }
-REGISTER_CLASS(Setter, 0);
+REGISTER_ATTACH_ONLY_CLASS(Setter, 0);
 HANDLER(Handler, Trigger, Triggered);
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
@@ -841,7 +832,7 @@ void luaX_pushHandler(lua_State *L, struct Handler const* Handler) {
 struct Handler* luaX_checkHandler(lua_State *L, int idx) {
 	return GetHandler(luaX_checkObject(L, idx));
 }
-REGISTER_CLASS(Handler, 0);
+REGISTER_ATTACH_ONLY_CLASS(Handler, 0);
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
@@ -1658,7 +1649,6 @@ struct Style* luaX_checkStyle(lua_State *L, int idx) {
 }
 REGISTER_CLASS(Style, 0);
 
-
 ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
@@ -1723,7 +1713,6 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
-	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");

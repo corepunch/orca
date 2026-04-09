@@ -77,36 +77,50 @@ Every module XML file follows this skeleton:
   <!-- Pull in types from another module -->
   <require file="../geometry/geometry.xml"/>
 
-  <!-- Enumerate a C enum -->
-  <enums name="Direction">
-    <enum name="Horizontal">Left-to-right layout</enum>
-    <enum name="Vertical">Top-to-bottom layout</enum>
+  <!-- Enumerate a C enum — note: <enums> wraps <enum name="..."> types -->
+  <enums>
+    <enum name="Direction">
+      <value name="Horizontal">Left-to-right layout</value>
+      <value name="Vertical">Top-to-bottom layout</value>
+    </enum>
   </enums>
 
   <!-- Declare a C struct with Lua bindings -->
-  <struct name="MyStruct" export="MyStruct">
-    <field name="X" type="float"/>
-    <method name="Normalize" lua="true">
-      <summary>Normalize the vector in-place.</summary>
-    </method>
+  <struct name="MyStruct">
+    <fields>
+      <field name="X" type="float"/>
+    </fields>
+    <methods>
+      <method name="Normalize" lua="true">
+        <summary>Normalize the vector in-place.</summary>
+      </method>
+    </methods>
   </struct>
 
   <!-- Declare an abstract interface (global functions grouped by prefix) -->
   <interface name="Object" prefix="OBJ_" export="Object">
-    <method name="Create" static="true" lua="true">
-      <summary>Create a new Object.</summary>
-      <returns type="Object" pointer="true"/>
-    </method>
+    <methods>
+      <method name="Create" static="true" lua="true">
+        <summary>Create a new Object.</summary>
+        <returns type="Object" pointer="true"/>
+      </method>
+    </methods>
   </interface>
 
-  <!-- Declare a component (attaches to Objects) -->
-  <class name="MyComponent" export="MyComponent">
+  <!-- Declare a component (attach-only: must use addComponent) -->
+  <class name="MyComponent" attach-only="true">
     <summary>Moves an object at a configurable speed.</summary>
-    <property name="Speed" type="float">Movement speed</property>
+    <handles>
+      <handle message="Object.Start"/>
+      <handle message="Object.Animate"/>
+    </handles>
+    <properties>
+      <property name="Speed" type="float" default="1.0">Movement speed</property>
+    </properties>
+    <messages>
+      <message name="OnValueChanged" routing="Direct"/>
+    </messages>
   </class>
-
-  <!-- Declare a custom event -->
-  <message name="OnValueChanged"/>
 
 </module>
 ```
@@ -117,17 +131,17 @@ See the [Module XML Guide](../MODULE_XML_GUIDE.md) for a complete element refere
 
 ## PHP Data Model
 
-The templates access the parsed XML through the `Controller` class defined in `tools/model/module.php`:
+The templates access the parsed XML through the `Model` class defined in `tools/model/module.php`:
 
 ```php
-$controller = new Controller($argv[1]);  // parse the XML file
+$model = new Model($argv[1]);  // parse the XML file
 
-$controller->getInterfaces();   // array of Interface objects
-$controller->getStructs();      // array of Struct objects
-$controller->getEnums();        // array of Enum objects
-$controller->getComponents();   // array of Component (class) objects
-$controller->getFunctions();    // array of Method objects (global functions)
-$controller->getEvents();       // array of Event objects
+$model->getInterfaces();   // array of Interface objects
+$model->getStructs();      // array of Struct objects
+$model->getEnums();        // array of Enum objects
+$model->getComponents();   // array of Component (class) objects
+$model->getFunctions();    // array of Method objects (global functions)
+$model->getEvents();       // array of Event objects
 ```
 
 Templates iterate these collections to emit C or Markdown output.

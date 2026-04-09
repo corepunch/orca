@@ -129,6 +129,7 @@
   concept CDATA #IMPLIED
   prefix CDATA #IMPLIED
   export CDATA #IMPLIED
+  attach-only (true|false) #IMPLIED
 >
 
 <!-- Function Definition (global functions) -->

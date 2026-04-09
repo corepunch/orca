@@ -413,6 +413,7 @@ class Component extends Struct {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$this->extension = $elem["extension"] ?? null;
+		$this->attach_only = ((string)($elem["attach-only"] ?? "")) === "true";
 	}
 
 	function getProperties($recursive = true) {
