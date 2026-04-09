@@ -22,7 +22,7 @@ HANDLER(PropertyAnimation, Object, Animate) {
     float interp_t = anim_interpolate(pPropertyAnimation->ipo,
                                       pPropertyAnimation->easing, t);
 
-    enum data_type type = PROP_GetType(pPropertyAnimation->target);
+    enum DataType type = PROP_GetType(pPropertyAnimation->target);
 
     if (type == kDataTypeFloat) {
         // Use memcpy to avoid undefined behaviour from unaligned reads on byte_t[].
