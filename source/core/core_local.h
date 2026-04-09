@@ -40,13 +40,6 @@
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
 
-// Convenience lvalue macros for accessing style data (caller must ensure StyleController exists)
-#define _GetClasses(obj)                                                       \
-  (_GetStyleController(obj)->classes)
-
-#define _GetStyles(obj)                                                        \
-  (_GetStyleController(obj)->stylesheet)
-
 #define _GetAliases(obj)                                                       \
   (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
 
