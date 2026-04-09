@@ -10,6 +10,9 @@ animation_size(uint32_t num_keyframes);
 float
 animation_evaluate(struct curve* animation, float time, int xyzw);
 
+float
+anim_interpolate(enum ipo_type ipo, enum easing easing, float time);
+
 void
 ANIM_Release(lpKeyframeAnim_t anim);
 

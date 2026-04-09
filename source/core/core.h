@@ -288,9 +288,9 @@ OBJ_SetStyle(struct Object*, uint32_t);
 ORCA_API void
 OBJ_DoTween(struct lua_State*, struct Object*);
 
-/// @brief Attaches a component class to this object.
+/// @brief Attaches a component class to this object by class name (Lua bridge).
 ORCA_API void
-OBJ_AddComponent(struct lua_State*, struct Object*, const char*);
+OBJ_AddComponentByName(struct lua_State*, struct Object*, const char*);
 
 /// @name Focus and Input
 /// Controls focus state, hover, modal presentation, and timers.
@@ -529,8 +529,25 @@ struct AnimationPlayer {
 	event_t Play;
 	event_t Stop;
 	event_t Pause;
+	longTime_t _prevRealtime; ///< Internal: realtime of last Animate tick (milliseconds)
 };
 ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
 ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
+
+/// @brief Attach-only component that tweens one property value to a target, then self-destructs.
+/** PropertyAnimation component */
+typedef struct PropertyAnimation PropertyAnimation_t, *PropertyAnimationPtr, *lpPropertyAnimation_t;
+typedef struct PropertyAnimation const *PropertyAnimationCPtr, *lpcPropertyAnimation_t;
+struct PropertyAnimation {
+	struct Property* target; ///< The property being animated
+	byte_t from[MAX_PROPERTY_STRING]; ///< Start value (raw bytes)
+	byte_t to[MAX_PROPERTY_STRING];   ///< End value (raw bytes)
+	enum ipo_type ipo;
+	enum easing easing;
+	longTime_t start; ///< core.realtime when animation started
+	int duration;     ///< Duration in milliseconds
+};
+ORCA_API void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation);
+ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx);
 
 #endif

@@ -492,6 +492,9 @@
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Animate"/>
+        <handle message="AnimationPlayer.Play"/>
+        <handle message="AnimationPlayer.Stop"/>
+        <handle message="AnimationPlayer.Pause"/>
       </handles>
       <properties>
         <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
@@ -511,6 +514,13 @@
           <summary>Pauses animation playback without resetting CurrentTime.</summary>
         </message>
       </messages>
+    </class>
+    <class name="PropertyAnimation" attach-only="true">
+      <summary>Attach-only component that tweens one property value to a target, then self-destructs.</summary>
+      <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
+      <handles>
+        <handle message="Object.Animate"/>
+      </handles>
     </class>
   </classes>
   <functions>

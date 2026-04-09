@@ -54,6 +54,14 @@ enum AnimationPlayerProperties {
 	kAnimationPlayerStop,
 	kAnimationPlayerPause,
 };
+// PropertyAnimation
+#define ID_PropertyAnimation 0xe1a7f302
+#define GetPropertyAnimation(_P) ((struct PropertyAnimation*)((_P)?OBJ_GetComponent(_P,ID_PropertyAnimation):NULL))
+#define PropertyAnimation_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PropertyAnimation,sizeof(struct PropertyAnimation),_N)
+#define kPropertyAnimationNumProperties 0
+enum PropertyAnimationProperties {
+	kPropertyAnimationDummy_, // placeholder — no exposed properties
+};
 
 #define ID_Object_Create ((0x5ad07ee8&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Create
 #define ID_Object_Start ((0x01629a90&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Start

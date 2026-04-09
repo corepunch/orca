@@ -97,13 +97,6 @@ local specials = {
 		if not ok then error(result) end
 		return result
 	end,
-	Animation = function(node, element)
-		local clipname = element:get "Clip"
-		assert(clipname, "Animation element requires a Clip attribute")
-		local clip = require(clipname)
-		assert(clip, "Could not load animation clip: "..clipname)
-		node:addAnimation(clip)
-	end,
 	EventListener = function(node, element)
 		print("Adding event listener for event: "..element:get "Event")
 	end,
@@ -128,9 +121,20 @@ local specials = {
 			end
 		end
 	end,
-	AnimationPlayer = function () end,
 	ValueTicker = function () end,
 }
+
+-- Handler for attach-only component child elements (e.g. <AnimationPlayer Playing="true"/>).
+-- Attaches the named component to the parent node, then parses its attributes as properties.
+local function attach_only_component(node, element)
+	node:addComponent(element.tag)
+	for k, v in element.attributes do
+		xpcall(Property.parse, print, node, k, v)
+	end
+end
+
+specials.AnimationPlayer = attach_only_component
+specials.AnimationCurve  = attach_only_component
 
 local function construct_node(element)
 	local class =
