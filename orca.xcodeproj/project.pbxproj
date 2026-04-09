@@ -235,6 +235,8 @@
 		789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* DRPalette.c */; };
 		789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* DRPalette.h */; };
 		78A441A52F87991000AF52A4 /* AnimationPlayer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A441A42F87990900AF52A4 /* AnimationPlayer.c */; };
+		78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */; };
+		78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BB2F87FA8100AF52A4 /* AnimationClip.c */; };
 		78A5AFA42F66BA0200E6A765 /* Package.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* Package.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -635,6 +637,8 @@
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
 		78A441A42F87990900AF52A4 /* AnimationPlayer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AnimationPlayer.c; sourceTree = "<group>"; };
+		78A442BB2F87FA8100AF52A4 /* AnimationClip.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AnimationClip.c; sourceTree = "<group>"; };
+		78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PropertyAnimation.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A5AFA32F66B9FA00E6A765 /* Package.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Package.c; sourceTree = "<group>"; };
 		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
@@ -1175,7 +1179,9 @@
 		78A441A62F879A1700AF52A4 /* components */ = {
 			isa = PBXGroup;
 			children = (
+				78A442BB2F87FA8100AF52A4 /* AnimationClip.c */,
 				78A441A42F87990900AF52A4 /* AnimationPlayer.c */,
+				78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */,
 			);
 			path = components;
 			sourceTree = "<group>";
@@ -2166,6 +2172,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
+				78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */,
+				78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */,
 				781CA7D22E15783F00FFCFD9 /* debug.c in Sources */,
 				781CA76A2E1557A900FFCFD9 /* alias.c in Sources */,
 				781CA76B2E1557A900FFCFD9 /* animation.c in Sources */,
