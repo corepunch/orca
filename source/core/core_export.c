@@ -641,6 +641,7 @@ static struct PropertyType _Object_DestroyEventArgs[] = {
 };
 static luaL_Reg _Object_TimerEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_TimerEventArgs[] = {
+	DECL(0x4903ce0f, Object_TimerEventArgs, timerId, timerId, kDataTypeInt), // Object_TimerEventArgs.timerId
 };
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);

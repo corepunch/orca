@@ -452,6 +452,9 @@
         </message>
         <message name="Timer" routing="Direct">
           <summary>Sent on each timer tick registered for this object.</summary>
+          <fields>
+            <field name="timerId" type="int">Timer identifier returned by setTimer</field>
+          </fields>
         </message>
       </messages>
     </interface>

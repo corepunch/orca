@@ -32,6 +32,7 @@
 
 #define ID_Object_TimerEventArgs 0x75284ba1
 
+#define ID_Object_TimerEventArgs_timerId 0x9555bf27 // Object_TimerEventArgs.timerId
 	
 
 #endif

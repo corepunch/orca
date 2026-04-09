@@ -447,6 +447,7 @@ ORCA_API void luaX_pushObject_DestroyEventArgs(lua_State *L, struct Object_Destr
 ORCA_API struct Object_DestroyEventArgs* luaX_checkObject_DestroyEventArgs(lua_State *L, int idx);
 /** Object_TimerEventArgs struct */
 struct Object_TimerEventArgs {
+	int32_t timerId; ///< Timer identifier returned by setTimer
 };
 ORCA_API void luaX_pushObject_TimerEventArgs(lua_State *L, struct Object_TimerEventArgs const* data);
 ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State *L, int idx);
