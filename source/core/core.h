@@ -86,6 +86,16 @@ ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
 
+typedef enum AnimationMode {
+	kAnimationModePlayOnce, ///< Play the animation once and stop at the last frame
+	kAnimationModeLoop, ///< Restart from the beginning when the animation reaches the end
+	kAnimationModePingPong, ///< Alternate between playing forward and backward
+} eAnimationMode_t;
+#define AnimationMode_Count 3
+ORCA_API const char *AnimationModeToString(enum AnimationMode value);
+ORCA_API enum AnimationMode luaX_checkAnimationMode(lua_State *L, int idx);
+ORCA_API void luaX_pushAnimationMode(lua_State *L, enum AnimationMode value);
+
 
 
 /// @brief Retrieves currently active object.
@@ -442,10 +452,10 @@ ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State
 struct Keyframe {
 	float time; ///< Time position of this keyframe in seconds
 	float value[4]; ///< Animated value (up to 4 components for vectors/colors)
-	float inSlope[4]; ///< Incoming tangent slope for bezier interpolation
-	float outSlope[4]; ///< Outgoing tangent slope for bezier interpolation
-	float inWeight[4]; ///< Incoming tangent weight for weighted bezier interpolation
-	float outWeight[4]; ///< Outgoing tangent weight for weighted bezier interpolation
+	struct vec4 inSlope; ///< Incoming tangent slope for bezier interpolation
+	struct vec4 outSlope; ///< Outgoing tangent slope for bezier interpolation
+	struct vec4 inWeight; ///< Incoming tangent weight for weighted bezier interpolation
+	struct vec4 outWeight; ///< Outgoing tangent weight for weighted bezier interpolation
 	int tangentMode; ///< Interpolation mode for this keyframe (free, auto, linear, constant)
 	int weightedMode; ///< Whether tangent weights are used for this keyframe
 };
@@ -465,7 +475,7 @@ ORCA_API struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx);
 
 /** AnimationClip component */
 struct AnimationClip {
-	const char* Mode; ///< Playback mode: "PlayOnce", "Loop", or "PingPong"
+	enum AnimationMode Mode; ///< Playback mode
 	float StartTime; ///< Start time of the active region in seconds
 	float StopTime; ///< End time of the active region in seconds
 };

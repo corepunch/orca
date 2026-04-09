@@ -44,6 +44,12 @@
       <value name="VectorZ">Bind to the Z component of a vector property</value>
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
+    <enum name="AnimationMode">
+      <summary>Defines how an animation clip repeats after reaching its end.</summary>
+      <value name="PlayOnce">Play the animation once and stop at the last frame</value>
+      <value name="Loop">Restart from the beginning when the animation reaches the end</value>
+      <value name="PingPong">Alternate between playing forward and backward</value>
+    </enum>
   </enums>
   <structs>
     <struct name="Keyframe" sealed="true">
@@ -51,10 +57,10 @@
       <fields>
         <field name="time" type="float">Time position of this keyframe in seconds</field>
         <field name="value" type="float" fixed-array="4">Animated value (up to 4 components for vectors/colors)</field>
-        <field name="inSlope" type="float" fixed-array="4">Incoming tangent slope for bezier interpolation</field>
-        <field name="outSlope" type="float" fixed-array="4">Outgoing tangent slope for bezier interpolation</field>
-        <field name="inWeight" type="float" fixed-array="4">Incoming tangent weight for weighted bezier interpolation</field>
-        <field name="outWeight" type="float" fixed-array="4">Outgoing tangent weight for weighted bezier interpolation</field>
+        <field name="inSlope" type="vec4">Incoming tangent slope for bezier interpolation</field>
+        <field name="outSlope" type="vec4">Outgoing tangent slope for bezier interpolation</field>
+        <field name="inWeight" type="vec4">Incoming tangent weight for weighted bezier interpolation</field>
+        <field name="outWeight" type="vec4">Outgoing tangent weight for weighted bezier interpolation</field>
         <field name="tangentMode" type="int">Interpolation mode for this keyframe (free, auto, linear, constant)</field>
         <field name="weightedMode" type="int">Whether tangent weights are used for this keyframe</field>
       </fields>
@@ -472,7 +478,7 @@
         <handle message="Object.Start"/>
       </handles>
       <properties>
-        <property name="Mode" type="string">Playback mode: "PlayOnce", "Loop", or "PingPong"</property>
+        <property name="Mode" type="AnimationMode">Playback mode: PlayOnce stops at end, Loop restarts, PingPong alternates direction</property>
         <property name="StartTime" type="float">Start time of the active region in seconds (default 0)</property>
         <property name="StopTime" type="float">End time of the active region in seconds</property>
       </properties>

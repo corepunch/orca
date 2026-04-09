@@ -35,6 +35,9 @@
 
 	
 
+// AnimationMode enum
+#define ID_AnimationMode 0x994e984a
+
 // AnimationCurve component IDs
 #define ID_AnimationCurve 0xdbe5783c
 #define ID_AnimationCurve_Path 0xdda91d5d // AnimationCurve.Path
