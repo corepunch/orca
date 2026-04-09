@@ -93,10 +93,6 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
-	/* Register the struct in the Lua registry */ \
-	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
-	lua_pushvalue(L, -2); \
-	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -130,30 +126,30 @@ STRUCT(ProjectReference, ProjectReference);
 STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
 
-static luaL_Reg _Workspace_ReadCommandsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Workspace_ReadCommandsMsgArgs[] = {
+static luaL_Reg _Workspace_ReadCommandsEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Workspace_ReadCommandsEventArgs[] = {
 };
-static luaL_Reg _Project_OpenFileMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Project_OpenFileMsgArgs[] = {
-	DECL(0x5ffdd888, Project_OpenFileMsgArgs, FileName, FileName, kDataTypeString), // Project_OpenFileMsgArgs.FileName
+static luaL_Reg _Project_OpenFileEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_OpenFileEventArgs[] = {
+	DECL(0x5ffdd888, Project_OpenFileEventArgs, FileName, FileName, kDataTypeString), // Project_OpenFileEventArgs.FileName
 };
-static luaL_Reg _Project_FileExistsMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Project_FileExistsMsgArgs[] = {
-	DECL(0x5ffdd888, Project_FileExistsMsgArgs, FileName, FileName, kDataTypeString), // Project_FileExistsMsgArgs.FileName
+static luaL_Reg _Project_FileExistsEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_FileExistsEventArgs[] = {
+	DECL(0x5ffdd888, Project_FileExistsEventArgs, FileName, FileName, kDataTypeString), // Project_FileExistsEventArgs.FileName
 };
-static luaL_Reg _Project_HasChangedFilesMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Project_HasChangedFilesMsgArgs[] = {
+static luaL_Reg _Project_HasChangedFilesEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_HasChangedFilesEventArgs[] = {
 };
-static luaL_Reg _Project_LoadProjectMsgArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Project_LoadProjectMsgArgs[] = {
-	DECL(0xeb66e456, Project_LoadProjectMsgArgs, Path, Path, kDataTypeString), // Project_LoadProjectMsgArgs.Path
+static luaL_Reg _Project_LoadProjectEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Project_LoadProjectEventArgs[] = {
+	DECL(0xeb66e456, Project_LoadProjectEventArgs, Path, Path, kDataTypeString), // Project_LoadProjectEventArgs.Path
 };
 
-STRUCT(Workspace_ReadCommandsMsgArgs, Workspace_ReadCommandsMsgArgs);
-STRUCT(Project_OpenFileMsgArgs, Project_OpenFileMsgArgs);
-STRUCT(Project_FileExistsMsgArgs, Project_FileExistsMsgArgs);
-STRUCT(Project_HasChangedFilesMsgArgs, Project_HasChangedFilesMsgArgs);
-STRUCT(Project_LoadProjectMsgArgs, Project_LoadProjectMsgArgs);
+STRUCT(Workspace_ReadCommandsEventArgs, Workspace_ReadCommandsEventArgs);
+STRUCT(Project_OpenFileEventArgs, Project_OpenFileEventArgs);
+STRUCT(Project_FileExistsEventArgs, Project_FileExistsEventArgs);
+STRUCT(Project_HasChangedFilesEventArgs, Project_HasChangedFilesEventArgs);
+STRUCT(Project_LoadProjectEventArgs, Project_LoadProjectEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -164,21 +160,17 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
-};
-static struct MessageType WorkspaceMessageTypes[kWorkspaceNumMessageTypes] = {	
-	{ "Workspace.ReadCommands", ID_Workspace_ReadCommands, 0x23d83fd3, kMessageRoutingDirect, sizeof(struct Workspace_ReadCommandsMsgArgs) },
 };
 static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
+	DECL(0x23d83fd3, Workspace, ReadCommands, ReadCommands, kDataTypeEvent, .TypeString = "Workspace_ReadCommandsEventArgs"), // Workspace.ReadCommands
 };
 static struct Workspace WorkspaceDefaults = {
 };
 LRESULT WorkspaceProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -189,15 +181,13 @@ struct Workspace* luaX_checkWorkspace(lua_State *L, int idx) {
 	return GetWorkspace(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Workspace, 0);
-static struct MessageType LibraryMessageTypes[kLibraryNumMessageTypes] = {	
-};
 static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
 	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
 };
 static struct Library LibraryDefaults = {
 };
 LRESULT LibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -209,12 +199,6 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 }
 REGISTER_CLASS(Library, 0);
 HANDLER(Project, Object, Start);
-static struct MessageType ProjectMessageTypes[kProjectNumMessageTypes] = {	
-	{ "Project.OpenFile", ID_Project_OpenFile, 0xa2c038cf, kMessageRoutingDirect, sizeof(struct Project_OpenFileMsgArgs) },
-	{ "Project.FileExists", ID_Project_FileExists, 0x38dfc973, kMessageRoutingDirect, sizeof(struct Project_FileExistsMsgArgs) },
-	{ "Project.HasChangedFiles", ID_Project_HasChangedFiles, 0x5390a564, kMessageRoutingDirect, sizeof(struct Project_HasChangedFilesMsgArgs) },
-	{ "Project.LoadProject", ID_Project_LoadProject, 0x31b9fee2, kMessageRoutingDirect, sizeof(struct Project_LoadProjectMsgArgs) },
-};
 static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
 	DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear
@@ -289,12 +273,16 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x9ef864fd, Project, SpriteAnimationLibrary, SpriteAnimationLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SpriteAnimationLibrary
 	DECL(0x533a469d, Project, ImageLibrary, ImageLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ImageLibrary
 	DECL(0xb033dd0b, Project, FontLibrary, FontLibrary, kDataTypeObject, .TypeString = "Library"), // Project.FontLibrary
+	DECL(0xa2c038cf, Project, OpenFile, OpenFile, kDataTypeEvent, .TypeString = "Project_OpenFileEventArgs"), // Project.OpenFile
+	DECL(0x38dfc973, Project, FileExists, FileExists, kDataTypeEvent, .TypeString = "Project_FileExistsEventArgs"), // Project.FileExists
+	DECL(0x5390a564, Project, HasChangedFiles, HasChangedFiles, kDataTypeEvent, .TypeString = "Project_HasChangedFilesEventArgs"), // Project.HasChangedFiles
+	DECL(0x31b9fee2, Project, LoadProject, LoadProject, kDataTypeEvent, .TypeString = "Project_LoadProjectEventArgs"), // Project.LoadProject
 };
 static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return Project_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Start&MSG_DATA_MASK: return Project_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -310,20 +298,18 @@ HANDLER(Directory, Project, OpenFile);
 HANDLER(Directory, Project, FileExists);
 HANDLER(Directory, Project, HasChangedFiles);
 HANDLER(Directory, Object, Destroy);
-static struct MessageType DirectoryMessageTypes[kDirectoryNumMessageTypes] = {	
-};
 static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
 	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
 };
 static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Project_LoadProject&MSG_DATA_MASK: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile&MSG_DATA_MASK: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists&MSG_DATA_MASK: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles&MSG_DATA_MASK: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy&MSG_DATA_MASK: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -340,20 +326,18 @@ HANDLER(Package, Project, OpenFile);
 HANDLER(Package, Project, FileExists);
 HANDLER(Package, Project, HasChangedFiles);
 HANDLER(Package, Object, Destroy);
-static struct MessageType PackageMessageTypes[kPackageNumMessageTypes] = {	
-};
 static struct PropertyType const PackageProperties[kPackageNumProperties] = {
 	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
 };
 static struct Package PackageDefaults = {
 };
 LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Project_LoadProject&MSG_DATA_MASK: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile&MSG_DATA_MASK: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists&MSG_DATA_MASK: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles&MSG_DATA_MASK: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy&MSG_DATA_MASK: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -365,14 +349,12 @@ struct Package* luaX_checkPackage(lua_State *L, int idx) {
 }
 #define ID_Project 0x7b5fea5e
 REGISTER_CLASS(Package, ID_Project, 0);
-static struct MessageType LocaleReferenceItemMessageTypes[kLocaleReferenceItemNumMessageTypes] = {	
-};
 static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
 };
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
 };
 LRESULT LocaleReferenceItemProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -383,15 +365,13 @@ struct LocaleReferenceItem* luaX_checkLocaleReferenceItem(lua_State *L, int idx)
 	return GetLocaleReferenceItem(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(LocaleReferenceItem, 0);
-static struct MessageType TagMessageTypes[kTagNumMessageTypes] = {	
-};
 static struct PropertyType const TagProperties[kTagNumProperties] = {
 	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
 };
 static struct Tag TagDefaults = {
 };
 LRESULT TagProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -403,8 +383,6 @@ struct Tag* luaX_checkTag(lua_State *L, int idx) {
 }
 REGISTER_CLASS(Tag, 0);
 HANDLER(ThemeGroup, Object, Attached);
-static struct MessageType ThemeGroupMessageTypes[kThemeGroupNumMessageTypes] = {	
-};
 static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
 	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
 	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
@@ -412,8 +390,8 @@ static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] 
 static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
+	switch (message&MSG_DATA_MASK) {
+		case ID_Object_Attached&MSG_DATA_MASK: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -424,15 +402,13 @@ struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx) {
 	return GetThemeGroup(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(ThemeGroup, 0);
-static struct MessageType ThemeMessageTypes[kThemeNumMessageTypes] = {	
-};
 static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
 	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
 };
 static struct Theme ThemeDefaults = {
 };
 LRESULT ThemeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -443,14 +419,12 @@ struct Theme* luaX_checkTheme(lua_State *L, int idx) {
 	return GetTheme(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Theme, 0);
-static struct MessageType EntryMessageTypes[kEntryNumMessageTypes] = {	
-};
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {
 };
 LRESULT EntryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -461,14 +435,12 @@ struct Entry* luaX_checkEntry(lua_State *L, int idx) {
 	return GetEntry(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Entry, 0);
-static struct MessageType ThemeDefaultValuesDictionaryMessageTypes[kThemeDefaultValuesDictionaryNumMessageTypes] = {	
-};
 static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
 };
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {
 };
 LRESULT ThemeDefaultValuesDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	}
 	return FALSE;
 }
@@ -565,11 +537,11 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
-	lua_setfield(L, ((void)luaopen_orca_Workspace_ReadCommandsMsgArgs(L), -2), "Workspace_ReadCommandsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Project_OpenFileMsgArgs(L), -2), "Project_OpenFileMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Project_FileExistsMsgArgs(L), -2), "Project_FileExistsMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Project_HasChangedFilesMsgArgs(L), -2), "Project_HasChangedFilesMsgArgs");
-	lua_setfield(L, ((void)luaopen_orca_Project_LoadProjectMsgArgs(L), -2), "Project_LoadProjectMsgArgs");
+	lua_setfield(L, ((void)luaopen_orca_Workspace_ReadCommandsEventArgs(L), -2), "Workspace_ReadCommandsEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_OpenFileEventArgs(L), -2), "Project_OpenFileEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_FileExistsEventArgs(L), -2), "Project_FileExistsEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_HasChangedFilesEventArgs(L), -2), "Project_HasChangedFilesEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Project_LoadProjectEventArgs(L), -2), "Project_LoadProjectEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Workspace), -2), "Workspace");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Library), -2), "Library");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Project), -2), "Project");

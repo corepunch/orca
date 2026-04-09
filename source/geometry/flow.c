@@ -58,6 +58,9 @@ parse_property(lua_State* L,
         // *(void**)valueptr = object;
 //      }
       return TRUE;
+    case kDataTypeEvent:
+      
+      return TRUE;
     default:
       return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
   }
@@ -125,6 +128,20 @@ read_property(lua_State *L,
         luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
         break;
       }
+    case kDataTypeEvent:
+      if (*(event_t *)valueptr) {
+        luaL_unref(L, LUA_REGISTRYINDEX, *(event_t *)valueptr);
+        *(event_t *)valueptr = 0;
+      }
+      if (lua_type(L, idx) == LUA_TFUNCTION) {
+        *(event_t *)valueptr = luaL_ref(L, LUA_REGISTRYINDEX);
+      } else if (lua_type(L, idx) == LUA_TSTRING) {
+        parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
+        break;
+      } else {
+        luaL_error(L, "Unsupported input type %d for property %s of type event", lua_type(L, idx), prop->Name);
+      }
+      break;
     default:
       luaL_error(L, "Unsupported property type");
       break;
@@ -171,6 +188,11 @@ write_property(lua_State *L,
       case kDataTypeStruct:
         memcpy(lua_newuserdata(L, prop->DataSize), valueptr, prop->DataSize);
         luaL_setmetatable(L, prop->TypeString);
+        break;
+      case kDataTypeEvent:
+        assert(!"Not implemented due to OBJ_MsgSend dependency");
+//        lua_pushfstring(L, "%s.%s", prop->Category, prop->Name);
+//        lua_pushcclosure(L, f_msgSend, 1);
         break;
       case kDataTypeObject:
         if (*(char**)valueptr) {

@@ -46,17 +46,6 @@
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
   </enums>
-  <structs>
-    <struct name="MessageType">
-      <fields>
-        <field name="Name" type="string">The name of the message</field>
-        <field name="FullIdentifier" type="uint">The full identifier of the message</field>
-        <field name="ShortIdentifier" type="uint">The short identifier of the message</field>
-        <field name="Routing" type="MessageRouting">The routing strategy for this message</field>
-        <field name="Size" type="uint">The size of the message</field>
-      </fields>
-    </struct>
-  </structs>
   <interfaces>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
       <summary>Core engine host object.</summary>
@@ -176,12 +165,6 @@
           <summary>Send a message to directly to the object ignoring queue.</summary>
           <details>Messge sent will be immediately processed without using coroutines.</details>
           <arg name="message" type="string">The name of the message to send</arg>
-        </method>
-        <method name="FindCallbackForID">
-          <summary>Retrieves callback function name for event ID</summary>
-          <details>Looks up the registered callback function associated with a specific event identifier for event handling.</details>
-          <arg name="event" type="uint">Event ID to find callback for</arg>
-          <returns type="string">Name of callback function, or empty if none registered</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
         <method name="SetProperty" export="__setproperty" lua="true">
@@ -448,9 +431,6 @@
         </message>
         <message name="Start" routing="Direct">
           <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
-        </message>
-        <message name="Awake" routing="Direct">
-          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
         </message>
         <message name="ThemeChanged" routing="Direct">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>

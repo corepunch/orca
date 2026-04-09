@@ -222,3 +222,14 @@ lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {
   assert(!"Not implemented");
   return NULL;
 }
+
+ORCA_API lpProperty_t
+luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id)
+{
+  lpProperty_t event = PROP_FindByLongID(OBJ_GetProperties(object), id);
+  if (event && PROP_GetType(event) == kDataTypeEvent) {
+    lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
+    return event;
+  }
+  return NULL;
+}

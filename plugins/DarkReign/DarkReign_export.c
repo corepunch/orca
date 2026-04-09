@@ -90,10 +90,6 @@ int luaopen_orca_##NAME(lua_State *L) { \
 		{ NULL, NULL }, \
 	}), 0); \
 	luaL_setfuncs(L, _##NAME##_Methods, 0); \
-	/* Register the struct in the Lua registry */ \
-	lua_pushlightuserdata(L, (void*)(intptr_t)ID_##NAME); \
-	lua_pushvalue(L, -2); \
-	lua_settable(L, LUA_REGISTRYINDEX); \
 	/* Make struct creatable via constructor-like syntax */ \
 	lua_newtable(L); \
 	lua_pushcfunction(L, f_##NAME##___call); \
@@ -114,31 +110,27 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 HANDLER(FtgPackage, Project, LoadProject);
 HANDLER(FtgPackage, Project, OpenFile);
 HANDLER(FtgPackage, Project, FileExists);
 HANDLER(FtgPackage, Project, HasChangedFiles);
 HANDLER(FtgPackage, Object, Destroy);
-static struct MessageType FtgPackageMessageTypes[kFtgPackageNumMessageTypes] = {	
-};
 static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
 	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
 };
 static struct FtgPackage FtgPackageDefaults = {
 };
 LRESULT FtgPackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message&MSG_DATA_MASK) {
+		case ID_Project_LoadProject&MSG_DATA_MASK: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile&MSG_DATA_MASK: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists&MSG_DATA_MASK: return FtgPackage_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles&MSG_DATA_MASK: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy&MSG_DATA_MASK: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }

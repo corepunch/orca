@@ -433,6 +433,9 @@
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
+        <message name="Awake" routing="Direct">
+          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
+        </message>
         <message name="UpdateMatrix" routing="Direct">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
@@ -970,7 +973,7 @@
       </handles>
       <properties>
         <property name="Src" type="string">Image source path or resource identifier </property>
-        <property name="Image" type="Texture" pointer="true">Direct reference to loaded image </property>
+        <property name="Source" type="Texture" pointer="true">Direct reference to loaded image </property>
         <property name="Edges" type="vec4">Edge inset values for nine-patch rendering </property>
         <property name="Insets" type="vec4">Content inset values for image positioning </property>
         <property name="Viewbox" type="vec4" default="0,0,1,1">Viewport rectangle for image cropping/scaling </property>

@@ -520,19 +520,19 @@ class Event extends Type {
 
 	// Returns the C type declaration string (without *) for events without inline fields
 	function getEffectiveTypeDecl() {
-		if ($this->hasFields()) return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
+		if ($this->hasFields()) return "struct " . $this->msgns . "_" . $this->name . "EventArgs";
 		$parent = $this->getParentEvent();
 		if ($parent) return $parent->getEffectiveTypeDecl();
 		if (strval($this) == "void") {
-			return "struct " . $this->msgns . "_" . $this->name . "MsgArgs";
+			return "struct " . $this->msgns . "_" . $this->name . "EventArgs";
 		}
 		return strval($this); // delegates to Type::__toString() for kind-based formatting
 	}
 
-	// Returns the MsgArgs struct name to alias when a child has no own fields
+	// Returns the EventArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return $this->msgns . "_" . $this->name . "MsgArgs";
+		if ($this->hasFields()) return $this->msgns . "_" . $this->name . "EventArgs";
 		$parent = $this->getParentEvent();
 		return $parent ? $parent->getEffectiveStructName() : null;
 	}
@@ -702,10 +702,10 @@ class Model {
 		if ($r) {
 			return ["external_struct", $r];
 		}
-		// Check if type is an event-generated args struct (e.g. "Node_HandleMessageMsgArgs")
-		if (str_ends_with($_type, "MsgArgs")) {
+		// Check if type is an event-generated args struct (e.g. "Node_HandleMessageEventArgs")
+		if (str_ends_with($_type, "EventArgs")) {
 			foreach ($this->events as $evname => $ev) {
-				if ($ev->hasFields() && ($ev->msgns . "_" . $evname . "MsgArgs") === $_type) {
+				if ($ev->hasFields() && ($ev->msgns . "_" . $evname . "EventArgs") === $_type) {
 					return ["struct", null];
 				}
 			}

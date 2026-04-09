@@ -25,7 +25,7 @@
 
 #include <include/orca.h>
 
-#define LUASTATE_IN_OBJECT 164
+#define LUASTATE_IN_OBJECT 156
 #define INLINE static inline
 
 #define luaX_parsefield(type, name, unit, func, ...)                            \

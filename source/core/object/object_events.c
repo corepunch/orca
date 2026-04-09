@@ -23,21 +23,21 @@ PROP_ExecuteChangedCallback(lua_State* L,
   }
 }
 
+#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
+
 void
 OBJ_Awake(lua_State* L, lpObject_t object)
 {
   if (!(object->flags & OF_UPDATED_ONCE)) {
-    lpcString_t cb = OBJ_FindCallbackForID(object, kMsgAwake);
-    if (cb) {
+    lpProperty_t event = PROP_FindByLongID(OBJ_GetProperties(object), ID_Node_Awake);
+    if (event) {
+      lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
       luaX_pushObject(L, object);
-      lua_getfield(L, -1, cb);
-      lua_insert(L, -2); // Move callback before obj
       if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
         Con_Error("%s", luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
     }
-    _SendMessage(object, Object, Awake);
     OBJ_ApplyStyles(object, FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }

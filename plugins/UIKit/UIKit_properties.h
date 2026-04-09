@@ -7,14 +7,11 @@
 #define ID_DataObject 0xeb3560da
 #define GetDataObject(_P) ((struct DataObject*)((_P)?OBJ_GetComponent(_P,ID_DataObject):NULL))
 #define DataObject_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_DataObject,sizeof(struct DataObject),_N)
-#define DataObject_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_DataObject,_N)
-#define kDataObjectNumMessageTypes 0
 #define kDataObjectNumProperties 0
 // AnimationPlayer
 #define ID_AnimationPlayer 0x81ac71d8
 #define GetAnimationPlayer(_P) ((struct AnimationPlayer*)((_P)?OBJ_GetComponent(_P,ID_AnimationPlayer):NULL))
 #define AnimationPlayer_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationPlayer,sizeof(struct AnimationPlayer),_N)
-#define AnimationPlayer_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_AnimationPlayer,_N)
 #define ID_AnimationPlayer_AutoplayEnabled 0xbb4b7f90 // AnimationPlayer.AutoplayEnabled
 #define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
 #define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
@@ -22,7 +19,6 @@
 #define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
 #define ID_AnimationPlayer_RestoreOriginalValuesAfterPlayback 0xb982b350 // AnimationPlayer.RestoreOriginalValuesAfterPlayback
 #define ID_AnimationPlayer_Timeline 0x17c5cb89 // AnimationPlayer.Timeline
-#define kAnimationPlayerNumMessageTypes 0
 #define kAnimationPlayerNumProperties 7
 enum AnimationPlayerProperties {
 	kAnimationPlayerAutoplayEnabled,
@@ -37,27 +33,21 @@ enum AnimationPlayerProperties {
 #define ID_Trigger 0xa5ea0da3
 #define GetTrigger(_P) ((struct Trigger*)((_P)?OBJ_GetComponent(_P,ID_Trigger):NULL))
 #define Trigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Trigger,sizeof(struct Trigger),_N)
-#define Trigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Trigger,_N)
 #define ID_Trigger_Property 0x7a6c1a46 // Trigger.Property
 #define ID_Trigger_Value 0x5229f3cc // Trigger.Value
-#define kTriggerNumMessageTypes 1
-enum TriggerMessages {
-	kTriggerTriggered,
-};
 #define ID_Trigger_Triggered ((0x729dabf0&MSG_DATA_MASK)|ROUTING_BUBBLE) // Trigger.Triggered
-#define kTriggerNumProperties 2
+#define kTriggerNumProperties 3
 enum TriggerProperties {
 	kTriggerProperty,
 	kTriggerValue,
+	kTriggerTriggered,
 };
 // OnPropertyChangedTrigger
 #define ID_OnPropertyChangedTrigger 0xde0f7949
 #define GetOnPropertyChangedTrigger(_P) ((struct OnPropertyChangedTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnPropertyChangedTrigger):NULL))
 #define OnPropertyChangedTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnPropertyChangedTrigger,sizeof(struct OnPropertyChangedTrigger),_N)
-#define OnPropertyChangedTrigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_OnPropertyChangedTrigger,_N)
 #define ID_OnPropertyChangedTrigger_SourceNode 0x5d55b664 // OnPropertyChangedTrigger.SourceNode
 #define ID_OnPropertyChangedTrigger_Property 0x8664fe08 // OnPropertyChangedTrigger.Property
-#define kOnPropertyChangedTriggerNumMessageTypes 0
 #define kOnPropertyChangedTriggerNumProperties 2
 enum OnPropertyChangedTriggerProperties {
 	kOnPropertyChangedTriggerSourceNode,
@@ -67,16 +57,12 @@ enum OnPropertyChangedTriggerProperties {
 #define ID_OnAttachedTrigger 0x677fe670
 #define GetOnAttachedTrigger(_P) ((struct OnAttachedTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnAttachedTrigger):NULL))
 #define OnAttachedTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnAttachedTrigger,sizeof(struct OnAttachedTrigger),_N)
-#define OnAttachedTrigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_OnAttachedTrigger,_N)
-#define kOnAttachedTriggerNumMessageTypes 0
 #define kOnAttachedTriggerNumProperties 0
 // EventTrigger
 #define ID_EventTrigger 0x88bab1a1
 #define GetEventTrigger(_P) ((struct EventTrigger*)((_P)?OBJ_GetComponent(_P,ID_EventTrigger):NULL))
 #define EventTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_EventTrigger,sizeof(struct EventTrigger),_N)
-#define EventTrigger_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_EventTrigger,_N)
 #define ID_EventTrigger_RoutedEvent 0x0c5f2982 // EventTrigger.RoutedEvent
-#define kEventTriggerNumMessageTypes 0
 #define kEventTriggerNumProperties 1
 enum EventTriggerProperties {
 	kEventTriggerRoutedEvent,
@@ -85,11 +71,9 @@ enum EventTriggerProperties {
 #define ID_Setter 0xf849aee6
 #define GetSetter(_P) ((struct Setter*)((_P)?OBJ_GetComponent(_P,ID_Setter):NULL))
 #define Setter_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Setter,sizeof(struct Setter),_N)
-#define Setter_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Setter,_N)
 #define ID_Setter_Trigger 0xd1fad954 // Setter.Trigger
 #define ID_Setter_Property 0x89d17a41 // Setter.Property
 #define ID_Setter_Value 0x8fd76d09 // Setter.Value
-#define kSetterNumMessageTypes 0
 #define kSetterNumProperties 3
 enum SetterProperties {
 	kSetterTrigger,
@@ -100,11 +84,9 @@ enum SetterProperties {
 #define ID_Handler 0x04d66a13
 #define GetHandler(_P) ((struct Handler*)((_P)?OBJ_GetComponent(_P,ID_Handler):NULL))
 #define Handler_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Handler,sizeof(struct Handler),_N)
-#define Handler_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Handler,_N)
 #define ID_Handler_Trigger 0x0ef3b2a9 // Handler.Trigger
 #define ID_Handler_Target 0x2798724a // Handler.Target
 #define ID_Handler_Function 0x595dd2a7 // Handler.Function
-#define kHandlerNumMessageTypes 0
 #define kHandlerNumProperties 3
 enum HandlerProperties {
 	kHandlerTrigger,
@@ -115,16 +97,12 @@ enum HandlerProperties {
 #define ID_Brush 0xccbef093
 #define GetBrush(_P) ((struct Brush*)((_P)?OBJ_GetComponent(_P,ID_Brush):NULL))
 #define Brush_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Brush,sizeof(struct Brush),_N)
-#define Brush_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Brush,_N)
-#define kBrushNumMessageTypes 0
 #define kBrushNumProperties 0
 // ColorBrush
 #define ID_ColorBrush 0x2077ee58
 #define GetColorBrush(_P) ((struct ColorBrush*)((_P)?OBJ_GetComponent(_P,ID_ColorBrush):NULL))
 #define ColorBrush_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ColorBrush,sizeof(struct ColorBrush),_N)
-#define ColorBrush_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ColorBrush,_N)
 #define ID_ColorBrush_Color 0xb7f26275 // ColorBrush.Color
-#define kColorBrushNumMessageTypes 0
 #define kColorBrushNumProperties 1
 enum ColorBrushProperties {
 	kColorBrushColor,
@@ -133,7 +111,6 @@ enum ColorBrushProperties {
 #define ID_Node 0x3468032d
 #define GetNode(_P) ((struct Node*)((_P)?OBJ_GetComponent(_P,ID_Node):NULL))
 #define Node_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Node,sizeof(struct Node),_N)
-#define Node_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Node,_N)
 #define ID_Node_Size 0xc8371588 // Node.Size
 #define ID_Node_HorizontalSize 0x8dd5feec // Node.HorizontalSize
 #define ID_Node_Width 0xc28a97d3 // Node.Width
@@ -201,39 +178,7 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define kNodeNumMessageTypes 30
-enum NodeMessages {
-	kNodeUpdateMatrix,
-	kNodePushProperty,
-	kNodeLoadView,
-	kNodeHitTest,
-	kNodeIsVisible,
-	kNodeViewDidLoad,
-	kNodeKillFocus,
-	kNodeSetFocus,
-	kNodeGetSize,
-	kNodeMouseMessage,
-	kNodeLeftMouseDown,
-	kNodeRightMouseDown,
-	kNodeOtherMouseDown,
-	kNodeLeftMouseUp,
-	kNodeRightMouseUp,
-	kNodeOtherMouseUp,
-	kNodeLeftMouseDragged,
-	kNodeRightMouseDragged,
-	kNodeOtherMouseDragged,
-	kNodeLeftDoubleClick,
-	kNodeRightDoubleClick,
-	kNodeOtherDoubleClick,
-	kNodeMouseMoved,
-	kNodeScrollWheel,
-	kNodeDragDrop,
-	kNodeDragEnter,
-	kNodeKeyMessage,
-	kNodeKeyDown,
-	kNodeKeyUp,
-	kNodeTextInput,
-};
+#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
 #define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
@@ -264,7 +209,7 @@ enum NodeMessages {
 #define ID_Node_KeyDown ((0xfc8dc15c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyDown
 #define ID_Node_KeyUp ((0x9282bc1d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyUp
 #define ID_Node_TextInput ((0xaf29a9ae&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.TextInput
-#define kNodeNumProperties 67
+#define kNodeNumProperties 98
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -333,12 +278,42 @@ enum NodeProperties {
 	kNodeOpacity,
 	kNodeTags,
 	kNodeDataContext,
+	kNodeAwake,
+	kNodeUpdateMatrix,
+	kNodePushProperty,
+	kNodeLoadView,
+	kNodeHitTest,
+	kNodeIsVisible,
+	kNodeViewDidLoad,
+	kNodeKillFocus,
+	kNodeSetFocus,
+	kNodeGetSize,
+	kNodeMouseMessage,
+	kNodeLeftMouseDown,
+	kNodeRightMouseDown,
+	kNodeOtherMouseDown,
+	kNodeLeftMouseUp,
+	kNodeRightMouseUp,
+	kNodeOtherMouseUp,
+	kNodeLeftMouseDragged,
+	kNodeRightMouseDragged,
+	kNodeOtherMouseDragged,
+	kNodeLeftDoubleClick,
+	kNodeRightDoubleClick,
+	kNodeOtherDoubleClick,
+	kNodeMouseMoved,
+	kNodeScrollWheel,
+	kNodeDragDrop,
+	kNodeDragEnter,
+	kNodeKeyMessage,
+	kNodeKeyDown,
+	kNodeKeyUp,
+	kNodeTextInput,
 };
 // TextRun
 #define ID_TextRun 0x4362c3d7
 #define GetTextRun(_P) ((struct TextRun*)((_P)?OBJ_GetComponent(_P,ID_TextRun):NULL))
 #define TextRun_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextRun,sizeof(struct TextRun),_N)
-#define TextRun_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_TextRun,_N)
 #define ID_TextRun_Text 0xcba1ea6c // TextRun.Text
 #define ID_TextRun_Font 0x3900dfa2 // TextRun.Font
 #define ID_TextRun_FontWeight 0x69432eea // TextRun.FontWeight
@@ -354,7 +329,6 @@ enum NodeProperties {
 #define ID_TextRun_CharacterSpacing 0xda8217e7 // TextRun.CharacterSpacing
 #define ID_TextRun_FixedCharacterWidth 0xb71765fa // TextRun.FixedCharacterWidth
 #define ID_TextRun_RemoveSideBearingsProperty 0xc20f6de6 // TextRun.RemoveSideBearingsProperty
-#define kTextRunNumMessageTypes 0
 #define kTextRunNumProperties 15
 enum TextRunProperties {
 	kTextRunText,
@@ -377,7 +351,6 @@ enum TextRunProperties {
 #define ID_TextBlockConcept 0x4903089d
 #define GetTextBlockConcept(_P) ((struct TextBlockConcept*)((_P)?OBJ_GetComponent(_P,ID_TextBlockConcept):NULL))
 #define TextBlockConcept_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextBlockConcept,sizeof(struct TextBlockConcept),_N)
-#define TextBlockConcept_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_TextBlockConcept,_N)
 #define ID_TextBlockConcept_TextResourceID 0x7617ef4f // TextBlockConcept.TextResourceID
 #define ID_TextBlockConcept_TextResourceConfiguration 0x445231c0 // TextBlockConcept.TextResourceConfiguration
 #define ID_TextBlockConcept_PlaceholderText 0xadd54a35 // TextBlockConcept.PlaceholderText
@@ -392,12 +365,8 @@ enum TextRunProperties {
 #define ID_TextBlockConcept_TextWrapping 0x709f2f06 // TextBlockConcept.TextWrapping
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b // TextBlockConcept.TextHorizontalAlignment
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5 // TextBlockConcept.TextVerticalAlignment
-#define kTextBlockConceptNumMessageTypes 1
-enum TextBlockConceptMessages {
-	kTextBlockConceptMakeText,
-};
 #define ID_TextBlockConcept_MakeText ((0x66218f84&MSG_DATA_MASK)|ROUTING_DIRECT) // TextBlockConcept.MakeText
-#define kTextBlockConceptNumProperties 14
+#define kTextBlockConceptNumProperties 15
 enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceID,
 	kTextBlockConceptTextResourceConfiguration,
@@ -413,12 +382,12 @@ enum TextBlockConceptProperties {
 	kTextBlockConceptTextWrapping,
 	kTextBlockConceptTextHorizontalAlignment,
 	kTextBlockConceptTextVerticalAlignment,
+	kTextBlockConceptMakeText,
 };
 // Node2D
 #define ID_Node2D 0x6c63a2ab
 #define GetNode2D(_P) ((struct Node2D*)((_P)?OBJ_GetComponent(_P,ID_Node2D):NULL))
 #define Node2D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Node2D,sizeof(struct Node2D),_N)
-#define Node2D_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Node2D,_N)
 #define ID_Node2D_LayoutTransform 0x7c78c87b // Node2D.LayoutTransform
 #define ID_Node2D_LayoutTransformTranslation 0x2407475a // Node2D.LayoutTransformTranslation
 #define ID_Node2D_LayoutTransformRotation 0x40a04c55 // Node2D.LayoutTransformRotation
@@ -463,17 +432,6 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
 #define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
-#define kNode2DNumMessageTypes 8
-enum Node2DMessages {
-	kNode2DDrawBrush,
-	kNode2DMeasure,
-	kNode2DArrange,
-	kNode2DMeasureOverride,
-	kNode2DArrangeOverride,
-	kNode2DForegroundContent,
-	kNode2DUpdateGeometry,
-	kNode2DSetScrollTop,
-};
 #define ID_Node2D_DrawBrush ((0x8272196b&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.DrawBrush
 #define ID_Node2D_Measure ((0x5ea52a4d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Measure
 #define ID_Node2D_Arrange ((0x211d274d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Arrange
@@ -482,7 +440,7 @@ enum Node2DMessages {
 #define ID_Node2D_ForegroundContent ((0x61bfb2f7&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.ForegroundContent
 #define ID_Node2D_UpdateGeometry ((0x0cc412c2&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.UpdateGeometry
 #define ID_Node2D_SetScrollTop ((0xa3d79fef&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.SetScrollTop
-#define kNode2DNumProperties 44
+#define kNode2DNumProperties 52
 enum Node2DProperties {
 	kNode2DLayoutTransform,
 	kNode2DLayoutTransformTranslation,
@@ -528,15 +486,21 @@ enum Node2DProperties {
 	kNode2DHovered,
 	kNode2DIgnoreHitTest,
 	kNode2DForegroundHint,
+	kNode2DDrawBrush,
+	kNode2DMeasure,
+	kNode2DArrange,
+	kNode2DMeasureOverride,
+	kNode2DArrangeOverride,
+	kNode2DForegroundContent,
+	kNode2DUpdateGeometry,
+	kNode2DSetScrollTop,
 };
 // PrefabView2D
 #define ID_PrefabView2D 0xe741d328
 #define GetPrefabView2D(_P) ((struct PrefabView2D*)((_P)?OBJ_GetComponent(_P,ID_PrefabView2D):NULL))
 #define PrefabView2D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PrefabView2D,sizeof(struct PrefabView2D),_N)
-#define PrefabView2D_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_PrefabView2D,_N)
 #define ID_PrefabView2D_SCA 0x1ab11f83 // PrefabView2D.SCA
 #define ID_PrefabView2D_Prefab 0xef0b7c70 // PrefabView2D.Prefab
-#define kPrefabView2DNumMessageTypes 0
 #define kPrefabView2DNumProperties 2
 enum PrefabView2DProperties {
 	kPrefabView2DSCA,
@@ -546,20 +510,16 @@ enum PrefabView2DProperties {
 #define ID_TextBlock 0x40f4d77b
 #define GetTextBlock(_P) ((struct TextBlock*)((_P)?OBJ_GetComponent(_P,ID_TextBlock):NULL))
 #define TextBlock_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TextBlock,sizeof(struct TextBlock),_N)
-#define TextBlock_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_TextBlock,_N)
-#define kTextBlockNumMessageTypes 0
 #define kTextBlockNumProperties 0
 // Input
 #define ID_Input 0x9f93e11b
 #define GetInput(_P) ((struct Input*)((_P)?OBJ_GetComponent(_P,ID_Input):NULL))
 #define Input_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Input,sizeof(struct Input),_N)
-#define Input_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Input,_N)
 #define ID_Input_Name 0x56849c4c // Input.Name
 #define ID_Input_Type 0x84bfe237 // Input.Type
 #define ID_Input_Cursor 0xb89f7b0d // Input.Cursor
 #define ID_Input_Multiline 0xa42cd2d2 // Input.Multiline
 #define ID_Input_Checked 0x62ce5658 // Input.Checked
-#define kInputNumMessageTypes 0
 #define kInputNumProperties 5
 enum InputProperties {
 	kInputName,
@@ -572,9 +532,7 @@ enum InputProperties {
 #define ID_Button 0x33881a91
 #define GetButton(_P) ((struct Button*)((_P)?OBJ_GetComponent(_P,ID_Button):NULL))
 #define Button_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Button,sizeof(struct Button),_N)
-#define Button_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Button,_N)
 #define ID_Button_Type 0x843eb785 // Button.Type
-#define kButtonNumMessageTypes 0
 #define kButtonNumProperties 1
 enum ButtonProperties {
 	kButtonType,
@@ -583,9 +541,7 @@ enum ButtonProperties {
 #define ID_Label 0x9eccf29d
 #define GetLabel(_P) ((struct Label*)((_P)?OBJ_GetComponent(_P,ID_Label):NULL))
 #define Label_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Label,sizeof(struct Label),_N)
-#define Label_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Label,_N)
 #define ID_Label_For 0x8ea77d4c // Label.For
-#define kLabelNumMessageTypes 0
 #define kLabelNumProperties 1
 enum LabelProperties {
 	kLabelFor,
@@ -594,13 +550,11 @@ enum LabelProperties {
 #define ID_StackView 0x56aa550a
 #define GetStackView(_P) ((struct StackView*)((_P)?OBJ_GetComponent(_P,ID_StackView):NULL))
 #define StackView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StackView,sizeof(struct StackView),_N)
-#define StackView_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_StackView,_N)
 #define ID_StackView_Reversed 0x4f7ea66a // StackView.Reversed
 #define ID_StackView_Direction 0x4f1430fd // StackView.Direction
 #define ID_StackView_AlignItems 0x4d502153 // StackView.AlignItems
 #define ID_StackView_JustifyContent 0x6b245371 // StackView.JustifyContent
 #define ID_StackView_Spacing 0xf9ff1755 // StackView.Spacing
-#define kStackViewNumMessageTypes 0
 #define kStackViewNumProperties 5
 enum StackViewProperties {
 	kStackViewReversed,
@@ -613,25 +567,18 @@ enum StackViewProperties {
 #define ID_Form 0xc0851367
 #define GetForm(_P) ((struct Form*)((_P)?OBJ_GetComponent(_P,ID_Form):NULL))
 #define Form_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Form,sizeof(struct Form),_N)
-#define Form_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Form,_N)
-#define kFormNumMessageTypes 1
-enum FormMessages {
-	kFormSubmit,
-};
 #define ID_Form_Submit ((0xef0f357b&MSG_DATA_MASK)|ROUTING_BUBBLE) // Form.Submit
-#define kFormNumProperties 0
+#define kFormNumProperties 1
 // Control
 #define ID_Control 0x8347bf3e
 #define GetControl(_P) ((struct Control*)((_P)?OBJ_GetComponent(_P,ID_Control):NULL))
 #define Control_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Control,sizeof(struct Control),_N)
-#define Control_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Control,_N)
 #define ID_Control_Pressed 0x0bfbf446 // Control.Pressed
 #define ID_Control_Disabled 0x08680018 // Control.Disabled
 #define ID_Control_Hovered 0xd61b4c93 // Control.Hovered
 #define ID_Control_Focused 0x9d297c69 // Control.Focused
 #define ID_Control_Value 0xbb44f9c1 // Control.Value
 #define ID_Control_Scale 0xb46d6752 // Control.Scale
-#define kControlNumMessageTypes 0
 #define kControlNumProperties 6
 enum ControlProperties {
 	kControlPressed,
@@ -645,33 +592,27 @@ enum ControlProperties {
 #define ID_Screen 0x9bd8c631
 #define GetScreen(_P) ((struct Screen*)((_P)?OBJ_GetComponent(_P,ID_Screen):NULL))
 #define Screen_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Screen,sizeof(struct Screen),_N)
-#define Screen_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Screen,_N)
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
 #define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
-#define kScreenNumMessageTypes 2
-enum ScreenMessages {
-	kScreenUpdateLayout,
-	kScreenRenderScreen,
-};
 #define ID_Screen_UpdateLayout ((0x7d9d5a12&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.UpdateLayout
 #define ID_Screen_RenderScreen ((0xd1601cf1&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.RenderScreen
-#define kScreenNumProperties 3
+#define kScreenNumProperties 5
 enum ScreenProperties {
 	kScreenClearColor,
 	kScreenResizeMode,
 	kScreenDialogResult,
+	kScreenUpdateLayout,
+	kScreenRenderScreen,
 };
 // Cinematic
 #define ID_Cinematic 0xc04cee0e
 #define GetCinematic(_P) ((struct Cinematic*)((_P)?OBJ_GetComponent(_P,ID_Cinematic):NULL))
 #define Cinematic_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Cinematic,sizeof(struct Cinematic),_N)
-#define Cinematic_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Cinematic,_N)
 #define ID_Cinematic_FileName 0xabe998d5 // Cinematic.FileName
 #define ID_Cinematic_FrameRate 0xead5c9cf // Cinematic.FrameRate
 #define ID_Cinematic_NumFrames 0x46a2037a // Cinematic.NumFrames
 #define ID_Cinematic_FadeOut 0x314b07da // Cinematic.FadeOut
-#define kCinematicNumMessageTypes 0
 #define kCinematicNumProperties 4
 enum CinematicProperties {
 	kCinematicFileName,
@@ -683,14 +624,12 @@ enum CinematicProperties {
 #define ID_Grid 0x2fb366b1
 #define GetGrid(_P) ((struct Grid*)((_P)?OBJ_GetComponent(_P,ID_Grid):NULL))
 #define Grid_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Grid,sizeof(struct Grid),_N)
-#define Grid_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Grid,_N)
 #define ID_Grid_Columns 0x5d28e334 // Grid.Columns
 #define ID_Grid_Rows 0x1a2b78b0 // Grid.Rows
 #define ID_Grid_Direction 0x252effe2 // Grid.Direction
 #define ID_Grid_Spacing 0x5d2ffdd6 // Grid.Spacing
 #define ID_Grid_CellWidth 0x534e3267 // Grid.CellWidth
 #define ID_Grid_CellHeight 0xa97554ea // Grid.CellHeight
-#define kGridNumMessageTypes 0
 #define kGridNumProperties 6
 enum GridProperties {
 	kGridColumns,
@@ -704,18 +643,16 @@ enum GridProperties {
 #define ID_ImageView 0xfe686eb3
 #define GetImageView(_P) ((struct ImageView*)((_P)?OBJ_GetComponent(_P,ID_ImageView):NULL))
 #define ImageView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ImageView,sizeof(struct ImageView),_N)
-#define ImageView_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_ImageView,_N)
 #define ID_ImageView_Src 0xe2534f6b // ImageView.Src
-#define ID_ImageView_Image 0x0b666f9c // ImageView.Image
+#define ID_ImageView_Source 0xec613792 // ImageView.Source
 #define ID_ImageView_Edges 0xbc1ab5c3 // ImageView.Edges
 #define ID_ImageView_Insets 0xddc76755 // ImageView.Insets
 #define ID_ImageView_Viewbox 0x4fff923f // ImageView.Viewbox
 #define ID_ImageView_Stretch 0x13aa1da4 // ImageView.Stretch
-#define kImageViewNumMessageTypes 0
 #define kImageViewNumProperties 6
 enum ImageViewProperties {
 	kImageViewSrc,
-	kImageViewImage,
+	kImageViewSource,
 	kImageViewEdges,
 	kImageViewInsets,
 	kImageViewViewbox,
@@ -725,7 +662,6 @@ enum ImageViewProperties {
 #define ID_NinePatchImage 0xbd86cb1e
 #define GetNinePatchImage(_P) ((struct NinePatchImage*)((_P)?OBJ_GetComponent(_P,ID_NinePatchImage):NULL))
 #define NinePatchImage_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_NinePatchImage,sizeof(struct NinePatchImage),_N)
-#define NinePatchImage_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_NinePatchImage,_N)
 #define ID_NinePatchImage_StretchTypeTop 0x9375dc9c // NinePatchImage.StretchTypeTop
 #define ID_NinePatchImage_StretchTypeBottom 0x400be60a // NinePatchImage.StretchTypeBottom
 #define ID_NinePatchImage_StretchTypeLeft 0xee979d50 // NinePatchImage.StretchTypeLeft
@@ -740,7 +676,6 @@ enum ImageViewProperties {
 #define ID_NinePatchImage_ImageBottomLeft 0xe446356f // NinePatchImage.ImageBottomLeft
 #define ID_NinePatchImage_ImageBottom 0xc398b8c2 // NinePatchImage.ImageBottom
 #define ID_NinePatchImage_ImageBottomRight 0x87575d60 // NinePatchImage.ImageBottomRight
-#define kNinePatchImageNumMessageTypes 0
 #define kNinePatchImageNumProperties 14
 enum NinePatchImageProperties {
 	kNinePatchImageStretchTypeTop,
@@ -762,13 +697,11 @@ enum NinePatchImageProperties {
 #define ID_TerminalView 0xb1477a0c
 #define GetTerminalView(_P) ((struct TerminalView*)((_P)?OBJ_GetComponent(_P,ID_TerminalView):NULL))
 #define TerminalView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TerminalView,sizeof(struct TerminalView),_N)
-#define TerminalView_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_TerminalView,_N)
 #define ID_TerminalView_BufferWidth 0xdf51183c // TerminalView.BufferWidth
 #define ID_TerminalView_BufferHeight 0xfd169aab // TerminalView.BufferHeight
 #define ID_TerminalView_Cursor 0x550c9034 // TerminalView.Cursor
 #define ID_TerminalView_SelectedIndex 0xc6c048a5 // TerminalView.SelectedIndex
 #define ID_TerminalView_DropShadow 0x8c72c3cb // TerminalView.DropShadow
-#define kTerminalViewNumMessageTypes 0
 #define kTerminalViewNumProperties 5
 enum TerminalViewProperties {
 	kTerminalViewBufferWidth,
@@ -781,11 +714,9 @@ enum TerminalViewProperties {
 #define ID_Page 0xe83d9196
 #define GetPage(_P) ((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))
 #define Page_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Page,sizeof(struct Page),_N)
-#define Page_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Page,_N)
 #define ID_Page_Title 0x31e209ce // Page.Title
 #define ID_Page_Path 0x20109b7f // Page.Path
 #define ID_Page_Transition 0xb60425fb // Page.Transition
-#define kPageNumMessageTypes 0
 #define kPageNumProperties 3
 enum PageProperties {
 	kPageTitle,
@@ -796,34 +727,26 @@ enum PageProperties {
 #define ID_PageHost 0x6f2dc6c0
 #define GetPageHost(_P) ((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))
 #define PageHost_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
-#define PageHost_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_PageHost,_N)
 #define ID_PageHost_ActivePage 0xb276c4f7 // PageHost.ActivePage
-#define kPageHostNumMessageTypes 2
-enum PageHostMessages {
-	kPageHostNavigateToPage,
-	kPageHostNavigateBack,
-};
 #define ID_PageHost_NavigateToPage ((0x3e8b196b&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateToPage
 #define ID_PageHost_NavigateBack ((0x94f6fcce&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateBack
-#define kPageHostNumProperties 1
+#define kPageHostNumProperties 3
 enum PageHostProperties {
 	kPageHostActivePage,
+	kPageHostNavigateToPage,
+	kPageHostNavigateBack,
 };
 // PageViewport
 #define ID_PageViewport 0x61a2c1e0
 #define GetPageViewport(_P) ((struct PageViewport*)((_P)?OBJ_GetComponent(_P,ID_PageViewport):NULL))
 #define PageViewport_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageViewport,sizeof(struct PageViewport),_N)
-#define PageViewport_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_PageViewport,_N)
-#define kPageViewportNumMessageTypes 0
 #define kPageViewportNumProperties 0
 // Style
 #define ID_Style 0x5467ec76
 #define GetStyle(_P) ((struct Style*)((_P)?OBJ_GetComponent(_P,ID_Style):NULL))
 #define Style_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Style,sizeof(struct Style),_N)
-#define Style_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_Style,_N)
 #define ID_Style_TargetType 0x26cf4319 // Style.TargetType
 #define ID_Style_Type 0x8f053d80 // Style.Type
-#define kStyleNumMessageTypes 0
 #define kStyleNumProperties 2
 enum StyleProperties {
 	kStyleTargetType,
@@ -923,262 +846,264 @@ enum StyleProperties {
 #define ID_SizeShorthand_DepthScroll 0x60ff3f79 // SizeShorthand.DepthScroll
 	
 
-#define ID_Trigger_TriggeredMsgArgs 0x88ad28c7
+#define ID_Trigger_TriggeredEventArgs 0x86976046
 
-#define ID_Trigger_TriggeredMsgArgs_Trigger 0x6836eb95 // Trigger_TriggeredMsgArgs.Trigger
-#define ID_Node_UpdateMatrixMsgArgs 0x4eaaa2d2
+#define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger
+#define ID_Node_AwakeEventArgs 0x53009d32
 
-#define ID_Node_UpdateMatrixMsgArgs_parent 0x07b4a59c // Node_UpdateMatrixMsgArgs.parent
-#define ID_Node_UpdateMatrixMsgArgs_opacity 0x4442b1e1 // Node_UpdateMatrixMsgArgs.opacity
-#define ID_Node_UpdateMatrixMsgArgs_force 0xce285387 // Node_UpdateMatrixMsgArgs.force
-#define ID_Node_PushPropertyMsgArgs 0xe755d911
+#define ID_Node_UpdateMatrixEventArgs 0xb9c33fb7
 
-#define ID_Node_PushPropertyMsgArgs_Placeholder 0x6043a0f2 // Node_PushPropertyMsgArgs.Placeholder
-#define ID_Node_LoadViewMsgArgs 0x4fa1e14d
+#define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
+#define ID_Node_UpdateMatrixEventArgs_opacity 0x1bb1efd0 // Node_UpdateMatrixEventArgs.opacity
+#define ID_Node_UpdateMatrixEventArgs_force 0x04845b66 // Node_UpdateMatrixEventArgs.force
+#define ID_Node_PushPropertyEventArgs 0x9207bfe8
 
-#define ID_Node_LoadViewMsgArgs_lua_state 0x2ddc5e3b // Node_LoadViewMsgArgs.lua_state
-#define ID_Node_HitTestMsgArgs 0x2d942339
+#define ID_Node_PushPropertyEventArgs_Placeholder 0xf2cb3b77 // Node_PushPropertyEventArgs.Placeholder
+#define ID_Node_LoadViewEventArgs 0x361e935c
 
-#define ID_Node_HitTestMsgArgs_x 0x12a98037 // Node_HitTestMsgArgs.x
-#define ID_Node_HitTestMsgArgs_y 0x11a97ea4 // Node_HitTestMsgArgs.y
-#define ID_Node_IsVisibleMsgArgs 0xe9b990cc
+#define ID_Node_LoadViewEventArgs_lua_state 0x96df0d0e // Node_LoadViewEventArgs.lua_state
+#define ID_Node_HitTestEventArgs 0xbac9d590
 
-#define ID_Node_ViewDidLoadMsgArgs 0xf85c5ec0
+#define ID_Node_HitTestEventArgs_x 0xf421a846 // Node_HitTestEventArgs.x
+#define ID_Node_HitTestEventArgs_y 0xf521a9d9 // Node_HitTestEventArgs.y
+#define ID_Node_IsVisibleEventArgs 0x6a63fae9
 
-#define ID_Node_KillFocusMsgArgs 0xaf6be20e
+#define ID_Node_ViewDidLoadEventArgs 0x2d915aa5
 
-#define ID_Node_SetFocusMsgArgs 0x24a06502
+#define ID_Node_KillFocusEventArgs 0xb6f00bfb
 
-#define ID_Node_GetSizeMsgArgs 0x5dc43561
+#define ID_Node_SetFocusEventArgs 0x9a763fc7
 
-#define ID_Node_MouseMessageMsgArgs 0x5e806e7c
+#define ID_Node_GetSizeEventArgs 0x81cb33d8
 
-#define ID_Node_MouseMessageMsgArgs_x 0x57e4de2a // Node_MouseMessageMsgArgs.x
-#define ID_Node_MouseMessageMsgArgs_y 0x58e4dfbd // Node_MouseMessageMsgArgs.y
-#define ID_Node_MouseMessageMsgArgs_deltaX 0xaf2752f8 // Node_MouseMessageMsgArgs.deltaX
-#define ID_Node_MouseMessageMsgArgs_deltaY 0xb027548b // Node_MouseMessageMsgArgs.deltaY
-#define ID_Node_MouseMessageMsgArgs_button 0x9b1e3776 // Node_MouseMessageMsgArgs.button
-#define ID_Node_MouseMessageMsgArgs_clickCount 0xf6ccedf5 // Node_MouseMessageMsgArgs.clickCount
-#define ID_Node_LeftMouseDownMsgArgs 0x34927b0e
+#define ID_Node_MouseMessageEventArgs 0x4b089af9
 
-#define ID_Node_LeftMouseDownMsgArgs_x 0xcd014ec8 // Node_LeftMouseDownMsgArgs.x
-#define ID_Node_LeftMouseDownMsgArgs_y 0xce01505b // Node_LeftMouseDownMsgArgs.y
-#define ID_Node_LeftMouseDownMsgArgs_deltaX 0xcc32f43a // Node_LeftMouseDownMsgArgs.deltaX
-#define ID_Node_LeftMouseDownMsgArgs_deltaY 0xcd32f5cd // Node_LeftMouseDownMsgArgs.deltaY
-#define ID_Node_LeftMouseDownMsgArgs_button 0xf1a8e514 // Node_LeftMouseDownMsgArgs.button
-#define ID_Node_LeftMouseDownMsgArgs_clickCount 0x94cc98d7 // Node_LeftMouseDownMsgArgs.clickCount
-#define ID_Node_RightMouseDownMsgArgs 0xb4c614c1
+#define ID_Node_MouseMessageEventArgs_x 0x97ff5477 // Node_MouseMessageEventArgs.x
+#define ID_Node_MouseMessageEventArgs_y 0x96ff52e4 // Node_MouseMessageEventArgs.y
+#define ID_Node_MouseMessageEventArgs_deltaX 0xaa801d6b // Node_MouseMessageEventArgs.deltaX
+#define ID_Node_MouseMessageEventArgs_deltaY 0xa9801bd8 // Node_MouseMessageEventArgs.deltaY
+#define ID_Node_MouseMessageEventArgs_button 0x563796c1 // Node_MouseMessageEventArgs.button
+#define ID_Node_MouseMessageEventArgs_clickCount 0x457c8aa6 // Node_MouseMessageEventArgs.clickCount
+#define ID_Node_LeftMouseDownEventArgs 0xeaaeccfb
 
-#define ID_Node_RightMouseDownMsgArgs_x 0x3716889f // Node_RightMouseDownMsgArgs.x
-#define ID_Node_RightMouseDownMsgArgs_y 0x3616870c // Node_RightMouseDownMsgArgs.y
-#define ID_Node_RightMouseDownMsgArgs_deltaX 0xa13315d3 // Node_RightMouseDownMsgArgs.deltaX
-#define ID_Node_RightMouseDownMsgArgs_deltaY 0xa0331440 // Node_RightMouseDownMsgArgs.deltaY
-#define ID_Node_RightMouseDownMsgArgs_button 0xa83c1049 // Node_RightMouseDownMsgArgs.button
-#define ID_Node_RightMouseDownMsgArgs_clickCount 0x9fa96c3e // Node_RightMouseDownMsgArgs.clickCount
-#define ID_Node_OtherMouseDownMsgArgs 0x90945b79
+#define ID_Node_LeftMouseDownEventArgs_x 0xaef95f95 // Node_LeftMouseDownEventArgs.x
+#define ID_Node_LeftMouseDownEventArgs_y 0xadf95e02 // Node_LeftMouseDownEventArgs.y
+#define ID_Node_LeftMouseDownEventArgs_deltaX 0x3654571d // Node_LeftMouseDownEventArgs.deltaX
+#define ID_Node_LeftMouseDownEventArgs_deltaY 0x3554558a // Node_LeftMouseDownEventArgs.deltaY
+#define ID_Node_LeftMouseDownEventArgs_button 0x2c230f5f // Node_LeftMouseDownEventArgs.button
+#define ID_Node_LeftMouseDownEventArgs_clickCount 0xfbb27808 // Node_LeftMouseDownEventArgs.clickCount
+#define ID_Node_RightMouseDownEventArgs 0xa21e5cb8
 
-#define ID_Node_OtherMouseDownMsgArgs_x 0x390e48f7 // Node_OtherMouseDownMsgArgs.x
-#define ID_Node_OtherMouseDownMsgArgs_y 0x380e4764 // Node_OtherMouseDownMsgArgs.y
-#define ID_Node_OtherMouseDownMsgArgs_deltaX 0xfe33daeb // Node_OtherMouseDownMsgArgs.deltaX
-#define ID_Node_OtherMouseDownMsgArgs_deltaY 0xfd33d958 // Node_OtherMouseDownMsgArgs.deltaY
-#define ID_Node_OtherMouseDownMsgArgs_button 0xa9eb5441 // Node_OtherMouseDownMsgArgs.button
-#define ID_Node_OtherMouseDownMsgArgs_clickCount 0xa20ea026 // Node_OtherMouseDownMsgArgs.clickCount
-#define ID_Node_LeftMouseUpMsgArgs 0x618e43e1
+#define ID_Node_RightMouseDownEventArgs_x 0x2bbfcdae // Node_RightMouseDownEventArgs.x
+#define ID_Node_RightMouseDownEventArgs_y 0x2cbfcf41 // Node_RightMouseDownEventArgs.y
+#define ID_Node_RightMouseDownEventArgs_deltaX 0xf69f68a4 // Node_RightMouseDownEventArgs.deltaX
+#define ID_Node_RightMouseDownEventArgs_deltaY 0xf79f6a37 // Node_RightMouseDownEventArgs.deltaY
+#define ID_Node_RightMouseDownEventArgs_button 0x41ea39ea // Node_RightMouseDownEventArgs.button
+#define ID_Node_RightMouseDownEventArgs_clickCount 0x52c29d69 // Node_RightMouseDownEventArgs.clickCount
+#define ID_Node_OtherMouseDownEventArgs 0x7ca437d0
 
-#define ID_Node_LeftMouseUpMsgArgs_x 0xd9481dbf // Node_LeftMouseUpMsgArgs.x
-#define ID_Node_LeftMouseUpMsgArgs_y 0xd8481c2c // Node_LeftMouseUpMsgArgs.y
-#define ID_Node_LeftMouseUpMsgArgs_deltaX 0x06066b33 // Node_LeftMouseUpMsgArgs.deltaX
-#define ID_Node_LeftMouseUpMsgArgs_deltaY 0x050669a0 // Node_LeftMouseUpMsgArgs.deltaY
-#define ID_Node_LeftMouseUpMsgArgs_button 0xf94e11e9 // Node_LeftMouseUpMsgArgs.button
-#define ID_Node_LeftMouseUpMsgArgs_clickCount 0xd0a5581e // Node_LeftMouseUpMsgArgs.clickCount
-#define ID_Node_RightMouseUpMsgArgs 0x4311b98a
+#define ID_Node_OtherMouseDownEventArgs_x 0x4e05ab06 // Node_OtherMouseDownEventArgs.x
+#define ID_Node_OtherMouseDownEventArgs_y 0x4f05ac99 // Node_OtherMouseDownEventArgs.y
+#define ID_Node_OtherMouseDownEventArgs_deltaX 0x6265dc3c // Node_OtherMouseDownEventArgs.deltaX
+#define ID_Node_OtherMouseDownEventArgs_deltaY 0x6365ddcf // Node_OtherMouseDownEventArgs.deltaY
+#define ID_Node_OtherMouseDownEventArgs_button 0x4efec082 // Node_OtherMouseDownEventArgs.button
+#define ID_Node_OtherMouseDownEventArgs_clickCount 0x777f1591 // Node_OtherMouseDownEventArgs.clickCount
+#define ID_Node_LeftMouseUpEventArgs 0x77942658
 
-#define ID_Node_RightMouseUpMsgArgs_x 0xe8058b3c // Node_RightMouseUpMsgArgs.x
-#define ID_Node_RightMouseUpMsgArgs_y 0xe9058ccf // Node_RightMouseUpMsgArgs.y
-#define ID_Node_RightMouseUpMsgArgs_deltaX 0x43f1f7e6 // Node_RightMouseUpMsgArgs.deltaX
-#define ID_Node_RightMouseUpMsgArgs_deltaY 0x44f1f979 // Node_RightMouseUpMsgArgs.deltaY
-#define ID_Node_RightMouseUpMsgArgs_button 0x7a491de8 // Node_RightMouseUpMsgArgs.button
-#define ID_Node_RightMouseUpMsgArgs_clickCount 0x07b0661b // Node_RightMouseUpMsgArgs.clickCount
-#define ID_Node_OtherMouseUpMsgArgs 0xce14a5c2
+#define ID_Node_LeftMouseUpEventArgs_x 0x6f03f5ce // Node_LeftMouseUpEventArgs.x
+#define ID_Node_LeftMouseUpEventArgs_y 0x7003f761 // Node_LeftMouseUpEventArgs.y
+#define ID_Node_LeftMouseUpEventArgs_deltaX 0x47173104 // Node_LeftMouseUpEventArgs.deltaX
+#define ID_Node_LeftMouseUpEventArgs_deltaY 0x48173297 // Node_LeftMouseUpEventArgs.deltaY
+#define ID_Node_LeftMouseUpEventArgs_button 0x4fe7348a // Node_LeftMouseUpEventArgs.button
+#define ID_Node_LeftMouseUpEventArgs_clickCount 0xd07b9e49 // Node_LeftMouseUpEventArgs.clickCount
+#define ID_Node_RightMouseUpEventArgs 0xdd5538ef
 
-#define ID_Node_OtherMouseUpMsgArgs_x 0x296342b4 // Node_OtherMouseUpMsgArgs.x
-#define ID_Node_OtherMouseUpMsgArgs_y 0x2a634447 // Node_OtherMouseUpMsgArgs.y
-#define ID_Node_OtherMouseUpMsgArgs_deltaX 0x0709b1be // Node_OtherMouseUpMsgArgs.deltaX
-#define ID_Node_OtherMouseUpMsgArgs_deltaY 0x0809b351 // Node_OtherMouseUpMsgArgs.deltaY
-#define ID_Node_OtherMouseUpMsgArgs_button 0xa79022e0 // Node_OtherMouseUpMsgArgs.button
-#define ID_Node_OtherMouseUpMsgArgs_clickCount 0xffee0943 // Node_OtherMouseUpMsgArgs.clickCount
-#define ID_Node_LeftMouseDraggedMsgArgs 0x0d51857c
+#define ID_Node_RightMouseUpEventArgs_x 0x54820231 // Node_RightMouseUpEventArgs.x
+#define ID_Node_RightMouseUpEventArgs_y 0x5382009e // Node_RightMouseUpEventArgs.y
+#define ID_Node_RightMouseUpEventArgs_deltaX 0x0e0af2f1 // Node_RightMouseUpEventArgs.deltaX
+#define ID_Node_RightMouseUpEventArgs_deltaY 0x0d0af15e // Node_RightMouseUpEventArgs.deltaY
+#define ID_Node_RightMouseUpEventArgs_button 0x3bd7d75b // Node_RightMouseUpEventArgs.button
+#define ID_Node_RightMouseUpEventArgs_clickCount 0xff0d7974 // Node_RightMouseUpEventArgs.clickCount
+#define ID_Node_OtherMouseUpEventArgs 0x2bc11d87
 
-#define ID_Node_LeftMouseDraggedMsgArgs_x 0xde9d4d2a // Node_LeftMouseDraggedMsgArgs.x
-#define ID_Node_LeftMouseDraggedMsgArgs_y 0xdf9d4ebd // Node_LeftMouseDraggedMsgArgs.y
-#define ID_Node_LeftMouseDraggedMsgArgs_deltaX 0xdd6cdff8 // Node_LeftMouseDraggedMsgArgs.deltaX
-#define ID_Node_LeftMouseDraggedMsgArgs_deltaY 0xde6ce18b // Node_LeftMouseDraggedMsgArgs.deltaY
-#define ID_Node_LeftMouseDraggedMsgArgs_button 0xc963c476 // Node_LeftMouseDraggedMsgArgs.button
-#define ID_Node_LeftMouseDraggedMsgArgs_clickCount 0x631e4af5 // Node_LeftMouseDraggedMsgArgs.clickCount
-#define ID_Node_RightMouseDraggedMsgArgs 0xdac441f5
+#define ID_Node_OtherMouseUpEventArgs_x 0xb3aa5809 // Node_OtherMouseUpEventArgs.x
+#define ID_Node_OtherMouseUpEventArgs_y 0xb2aa5676 // Node_OtherMouseUpEventArgs.y
+#define ID_Node_OtherMouseUpEventArgs_deltaX 0x593eb3a9 // Node_OtherMouseUpEventArgs.deltaX
+#define ID_Node_OtherMouseUpEventArgs_deltaY 0x583eb216 // Node_OtherMouseUpEventArgs.deltaY
+#define ID_Node_OtherMouseUpEventArgs_button 0xf3978bb3 // Node_OtherMouseUpEventArgs.button
+#define ID_Node_OtherMouseUpEventArgs_clickCount 0x9fa5dfdc // Node_OtherMouseUpEventArgs.clickCount
+#define ID_Node_LeftMouseDraggedEventArgs 0xd1c109f9
 
-#define ID_Node_RightMouseDraggedMsgArgs_x 0x3f97543b // Node_RightMouseDraggedMsgArgs.x
-#define ID_Node_RightMouseDraggedMsgArgs_y 0x3e9752a8 // Node_RightMouseDraggedMsgArgs.y
-#define ID_Node_RightMouseDraggedMsgArgs_deltaX 0x77815637 // Node_RightMouseDraggedMsgArgs.deltaX
-#define ID_Node_RightMouseDraggedMsgArgs_deltaY 0x768154a4 // Node_RightMouseDraggedMsgArgs.deltaY
-#define ID_Node_RightMouseDraggedMsgArgs_button 0xc133aa35 // Node_RightMouseDraggedMsgArgs.button
-#define ID_Node_RightMouseDraggedMsgArgs_clickCount 0xdff0659a // Node_RightMouseDraggedMsgArgs.clickCount
-#define ID_Node_OtherMouseDraggedMsgArgs 0x5700855d
+#define ID_Node_LeftMouseDraggedEventArgs_x 0x9c8adb77 // Node_LeftMouseDraggedEventArgs.x
+#define ID_Node_LeftMouseDraggedEventArgs_y 0x9b8ad9e4 // Node_LeftMouseDraggedEventArgs.y
+#define ID_Node_LeftMouseDraggedEventArgs_deltaX 0xe438f26b // Node_LeftMouseDraggedEventArgs.deltaX
+#define ID_Node_LeftMouseDraggedEventArgs_deltaY 0xe338f0d8 // Node_LeftMouseDraggedEventArgs.deltaY
+#define ID_Node_LeftMouseDraggedEventArgs_button 0x8ff06bc1 // Node_LeftMouseDraggedEventArgs.button
+#define ID_Node_LeftMouseDraggedEventArgs_clickCount 0x332dafa6 // Node_LeftMouseDraggedEventArgs.clickCount
+#define ID_Node_RightMouseDraggedEventArgs 0x8fdfdde4
 
-#define ID_Node_OtherMouseDraggedMsgArgs_x 0x73b62de3 // Node_OtherMouseDraggedMsgArgs.x
-#define ID_Node_OtherMouseDraggedMsgArgs_y 0x72b62c50 // Node_OtherMouseDraggedMsgArgs.y
-#define ID_Node_OtherMouseDraggedMsgArgs_deltaX 0x712dde9f // Node_OtherMouseDraggedMsgArgs.deltaX
-#define ID_Node_OtherMouseDraggedMsgArgs_deltaY 0x702ddd0c // Node_OtherMouseDraggedMsgArgs.deltaY
-#define ID_Node_OtherMouseDraggedMsgArgs_button 0x277f939d // Node_OtherMouseDraggedMsgArgs.button
-#define ID_Node_OtherMouseDraggedMsgArgs_clickCount 0x7f7363f2 // Node_OtherMouseDraggedMsgArgs.clickCount
-#define ID_Node_LeftDoubleClickMsgArgs 0xbc0e2b2e
+#define ID_Node_RightMouseDraggedEventArgs_x 0xf2177ef2 // Node_RightMouseDraggedEventArgs.x
+#define ID_Node_RightMouseDraggedEventArgs_y 0xf3178085 // Node_RightMouseDraggedEventArgs.y
+#define ID_Node_RightMouseDraggedEventArgs_deltaX 0xd4c9d1a0 // Node_RightMouseDraggedEventArgs.deltaX
+#define ID_Node_RightMouseDraggedEventArgs_deltaY 0xd5c9d333 // Node_RightMouseDraggedEventArgs.deltaY
+#define ID_Node_RightMouseDraggedEventArgs_button 0x6d81777e // Node_RightMouseDraggedEventArgs.button
+#define ID_Node_RightMouseDraggedEventArgs_clickCount 0xf395ed2d // Node_RightMouseDraggedEventArgs.clickCount
+#define ID_Node_OtherMouseDraggedEventArgs 0x891d3a4c
 
-#define ID_Node_LeftDoubleClickMsgArgs_x 0xb04e5fe8 // Node_LeftDoubleClickMsgArgs.x
-#define ID_Node_LeftDoubleClickMsgArgs_y 0xb14e617b // Node_LeftDoubleClickMsgArgs.y
-#define ID_Node_LeftDoubleClickMsgArgs_deltaX 0x4c59bd9a // Node_LeftDoubleClickMsgArgs.deltaX
-#define ID_Node_LeftDoubleClickMsgArgs_deltaY 0x4d59bf2d // Node_LeftDoubleClickMsgArgs.deltaY
-#define ID_Node_LeftDoubleClickMsgArgs_button 0x1afe90b4 // Node_LeftDoubleClickMsgArgs.button
-#define ID_Node_LeftDoubleClickMsgArgs_clickCount 0x9610b437 // Node_LeftDoubleClickMsgArgs.clickCount
-#define ID_Node_RightDoubleClickMsgArgs 0x8ee4d2c1
+#define ID_Node_OtherMouseDraggedEventArgs_x 0x2393999a // Node_OtherMouseDraggedEventArgs.x
+#define ID_Node_OtherMouseDraggedEventArgs_y 0x24939b2d // Node_OtherMouseDraggedEventArgs.y
+#define ID_Node_OtherMouseDraggedEventArgs_deltaX 0xf2dbed68 // Node_OtherMouseDraggedEventArgs.deltaX
+#define ID_Node_OtherMouseDraggedEventArgs_deltaY 0xf3dbeefb // Node_OtherMouseDraggedEventArgs.deltaY
+#define ID_Node_OtherMouseDraggedEventArgs_button 0xef7fbb06 // Node_OtherMouseDraggedEventArgs.button
+#define ID_Node_OtherMouseDraggedEventArgs_clickCount 0x35f6b465 // Node_OtherMouseDraggedEventArgs.clickCount
+#define ID_Node_LeftDoubleClickEventArgs 0x031dea9b
 
-#define ID_Node_RightDoubleClickMsgArgs_x 0xd03e769f // Node_RightDoubleClickMsgArgs.x
-#define ID_Node_RightDoubleClickMsgArgs_y 0xcf3e750c // Node_RightDoubleClickMsgArgs.y
-#define ID_Node_RightDoubleClickMsgArgs_deltaX 0x9f9f5fd3 // Node_RightDoubleClickMsgArgs.deltaX
-#define ID_Node_RightDoubleClickMsgArgs_deltaY 0x9e9f5e40 // Node_RightDoubleClickMsgArgs.deltaY
-#define ID_Node_RightDoubleClickMsgArgs_button 0xa6a85a49 // Node_RightDoubleClickMsgArgs.button
-#define ID_Node_RightDoubleClickMsgArgs_clickCount 0xe310563e // Node_RightDoubleClickMsgArgs.clickCount
-#define ID_Node_OtherDoubleClickMsgArgs 0xd56582a9
+#define ID_Node_LeftDoubleClickEventArgs_x 0xe488fbb5 // Node_LeftDoubleClickEventArgs.x
+#define ID_Node_LeftDoubleClickEventArgs_y 0xe388fa22 // Node_LeftDoubleClickEventArgs.y
+#define ID_Node_LeftDoubleClickEventArgs_deltaX 0x676b4c7d // Node_LeftDoubleClickEventArgs.deltaX
+#define ID_Node_LeftDoubleClickEventArgs_deltaY 0x666b4aea // Node_LeftDoubleClickEventArgs.deltaY
+#define ID_Node_LeftDoubleClickEventArgs_button 0x1d3b32ff // Node_LeftDoubleClickEventArgs.button
+#define ID_Node_LeftDoubleClickEventArgs_clickCount 0xf8711868 // Node_LeftDoubleClickEventArgs.clickCount
+#define ID_Node_RightDoubleClickEventArgs 0x3b464ab8
 
-#define ID_Node_OtherDoubleClickMsgArgs_x 0x6de59c47 // Node_OtherDoubleClickMsgArgs.x
-#define ID_Node_OtherDoubleClickMsgArgs_y 0x6ce59ab4 // Node_OtherDoubleClickMsgArgs.y
-#define ID_Node_OtherDoubleClickMsgArgs_deltaX 0x3fbde63b // Node_OtherDoubleClickMsgArgs.deltaX
-#define ID_Node_OtherDoubleClickMsgArgs_deltaY 0x3ebde4a8 // Node_OtherDoubleClickMsgArgs.deltaY
-#define ID_Node_OtherDoubleClickMsgArgs_button 0xb2e08631 // Node_OtherDoubleClickMsgArgs.button
-#define ID_Node_OtherDoubleClickMsgArgs_clickCount 0x67b31bf6 // Node_OtherDoubleClickMsgArgs.clickCount
-#define ID_Node_MouseMovedMsgArgs 0xe90a3508
+#define ID_Node_RightDoubleClickEventArgs_x 0xe08c6bae // Node_RightDoubleClickEventArgs.x
+#define ID_Node_RightDoubleClickEventArgs_y 0xe18c6d41 // Node_RightDoubleClickEventArgs.y
+#define ID_Node_RightDoubleClickEventArgs_deltaX 0x804dc2a4 // Node_RightDoubleClickEventArgs.deltaX
+#define ID_Node_RightDoubleClickEventArgs_deltaY 0x814dc437 // Node_RightDoubleClickEventArgs.deltaY
+#define ID_Node_RightDoubleClickEventArgs_button 0xcb9893ea // Node_RightDoubleClickEventArgs.button
+#define ID_Node_RightDoubleClickEventArgs_clickCount 0xd77c9769 // Node_RightDoubleClickEventArgs.clickCount
+#define ID_Node_OtherDoubleClickEventArgs 0x2eeca4a0
 
-#define ID_Node_MouseMovedMsgArgs_x 0x58cfa99e // Node_MouseMovedMsgArgs.x
-#define ID_Node_MouseMovedMsgArgs_y 0x59cfab31 // Node_MouseMovedMsgArgs.y
-#define ID_Node_MouseMovedMsgArgs_deltaX 0x57bb9294 // Node_MouseMovedMsgArgs.deltaX
-#define ID_Node_MouseMovedMsgArgs_deltaY 0x58bb9427 // Node_MouseMovedMsgArgs.deltaY
-#define ID_Node_MouseMovedMsgArgs_button 0x884fe43a // Node_MouseMovedMsgArgs.button
-#define ID_Node_MouseMovedMsgArgs_clickCount 0x4c3b9519 // Node_MouseMovedMsgArgs.clickCount
-#define ID_Node_ScrollWheelMsgArgs 0x8ebd224e
+#define ID_Node_OtherDoubleClickEventArgs_x 0xca97cdf6 // Node_OtherDoubleClickEventArgs.x
+#define ID_Node_OtherDoubleClickEventArgs_y 0xcb97cf89 // Node_OtherDoubleClickEventArgs.y
+#define ID_Node_OtherDoubleClickEventArgs_deltaX 0x906143ac // Node_OtherDoubleClickEventArgs.deltaX
+#define ID_Node_OtherDoubleClickEventArgs_deltaY 0x9161453f // Node_OtherDoubleClickEventArgs.deltaY
+#define ID_Node_OtherDoubleClickEventArgs_button 0xf76bfe52 // Node_OtherDoubleClickEventArgs.button
+#define ID_Node_OtherDoubleClickEventArgs_clickCount 0xc9ffe6c1 // Node_OtherDoubleClickEventArgs.clickCount
+#define ID_Node_MouseMovedEventArgs 0xdeaf328d
 
-#define ID_Node_ScrollWheelMsgArgs_x 0x6ab53188 // Node_ScrollWheelMsgArgs.x
-#define ID_Node_ScrollWheelMsgArgs_y 0x6bb5331b // Node_ScrollWheelMsgArgs.y
-#define ID_Node_ScrollWheelMsgArgs_deltaX 0x844a34fa // Node_ScrollWheelMsgArgs.deltaX
-#define ID_Node_ScrollWheelMsgArgs_deltaY 0x854a368d // Node_ScrollWheelMsgArgs.deltaY
-#define ID_Node_ScrollWheelMsgArgs_button 0xeba616d4 // Node_ScrollWheelMsgArgs.button
-#define ID_Node_ScrollWheelMsgArgs_clickCount 0x0b8cb597 // Node_ScrollWheelMsgArgs.clickCount
-#define ID_Node_DragDropMsgArgs 0xd8df62fb
+#define ID_Node_MouseMovedEventArgs_x 0xb343e433 // Node_MouseMovedEventArgs.x
+#define ID_Node_MouseMovedEventArgs_y 0xb243e2a0 // Node_MouseMovedEventArgs.y
+#define ID_Node_MouseMovedEventArgs_deltaX 0x4cdbf8ef // Node_MouseMovedEventArgs.deltaX
+#define ID_Node_MouseMovedEventArgs_deltaY 0x4bdbf75c // Node_MouseMovedEventArgs.deltaY
+#define ID_Node_MouseMovedEventArgs_button 0x4e82eb0d // Node_MouseMovedEventArgs.button
+#define ID_Node_MouseMovedEventArgs_clickCount 0xefc1d982 // Node_MouseMovedEventArgs.clickCount
+#define ID_Node_ScrollWheelEventArgs 0x00b0123b
 
-#define ID_Node_DragDropMsgArgs_x 0xb462e595 // Node_DragDropMsgArgs.x
-#define ID_Node_DragDropMsgArgs_y 0xb362e402 // Node_DragDropMsgArgs.y
-#define ID_Node_DragDropMsgArgs_deltaX 0x03df691d // Node_DragDropMsgArgs.deltaX
-#define ID_Node_DragDropMsgArgs_deltaY 0x02df678a // Node_DragDropMsgArgs.deltaY
-#define ID_Node_DragDropMsgArgs_button 0xf9ae215f // Node_DragDropMsgArgs.button
-#define ID_Node_DragDropMsgArgs_clickCount 0xf35caa08 // Node_DragDropMsgArgs.clickCount
-#define ID_Node_DragEnterMsgArgs 0xd0d02fb6
+#define ID_Node_ScrollWheelEventArgs_x 0xdb001055 // Node_ScrollWheelEventArgs.x
+#define ID_Node_ScrollWheelEventArgs_y 0xda000ec2 // Node_ScrollWheelEventArgs.y
+#define ID_Node_ScrollWheelEventArgs_deltaX 0xf28672dd // Node_ScrollWheelEventArgs.deltaX
+#define ID_Node_ScrollWheelEventArgs_deltaY 0xf186714a // Node_ScrollWheelEventArgs.deltaY
+#define ID_Node_ScrollWheelEventArgs_button 0x8d22851f // Node_ScrollWheelEventArgs.button
+#define ID_Node_ScrollWheelEventArgs_clickCount 0x62fcf1c8 // Node_ScrollWheelEventArgs.clickCount
+#define ID_Node_DragDropEventArgs 0x34528692
 
-#define ID_Node_DragEnterMsgArgs_x 0xb341cf90 // Node_DragEnterMsgArgs.x
-#define ID_Node_DragEnterMsgArgs_y 0xb441d123 // Node_DragEnterMsgArgs.y
-#define ID_Node_DragEnterMsgArgs_deltaX 0xa22debc2 // Node_DragEnterMsgArgs.deltaX
-#define ID_Node_DragEnterMsgArgs_deltaY 0xa32ded55 // Node_DragEnterMsgArgs.deltaY
-#define ID_Node_DragEnterMsgArgs_button 0x97d6adfc // Node_DragEnterMsgArgs.button
-#define ID_Node_DragEnterMsgArgs_clickCount 0xf32b71cf // Node_DragEnterMsgArgs.clickCount
-#define ID_Node_KeyMessageMsgArgs 0x03efcb5c
+#define ID_Node_DragDropEventArgs_x 0x57863764 // Node_DragDropEventArgs.x
+#define ID_Node_DragDropEventArgs_y 0x588638f7 // Node_DragDropEventArgs.y
+#define ID_Node_DragDropEventArgs_deltaX 0x555d57ee // Node_DragDropEventArgs.deltaX
+#define ID_Node_DragDropEventArgs_deltaY 0x565d5981 // Node_DragDropEventArgs.deltaY
+#define ID_Node_DragDropEventArgs_button 0x3ad3bd30 // Node_DragDropEventArgs.button
+#define ID_Node_DragDropEventArgs_clickCount 0x4304c7f3 // Node_DragDropEventArgs.clickCount
+#define ID_Node_DragEnterEventArgs 0x469d4d03
 
-#define ID_Node_KeyMessageMsgArgs_keyCode 0xfcc075ec // Node_KeyMessageMsgArgs.keyCode
-#define ID_Node_KeyMessageMsgArgs_character 0x80d7a721 // Node_KeyMessageMsgArgs.character
-#define ID_Node_KeyMessageMsgArgs_modifiers 0xf2f7cd98 // Node_KeyMessageMsgArgs.modifiers
-#define ID_Node_KeyMessageMsgArgs_text 0xb35f74a5 // Node_KeyMessageMsgArgs.text
-#define ID_Node_KeyMessageMsgArgs_modifiersString 0x2b38c841 // Node_KeyMessageMsgArgs.modifiersString
-#define ID_Node_KeyMessageMsgArgs_hotKey 0xb30c2108 // Node_KeyMessageMsgArgs.hotKey
-#define ID_Node_KeyDownMsgArgs 0x6257c4db
+#define ID_Node_DragEnterEventArgs_x 0x0da5da7d // Node_DragEnterEventArgs.x
+#define ID_Node_DragEnterEventArgs_y 0x0ca5d8ea // Node_DragEnterEventArgs.y
+#define ID_Node_DragEnterEventArgs_deltaX 0x49c75605 // Node_DragEnterEventArgs.deltaX
+#define ID_Node_DragEnterEventArgs_deltaY 0x48c75472 // Node_DragEnterEventArgs.deltaY
+#define ID_Node_DragEnterEventArgs_button 0xd7ad1647 // Node_DragEnterEventArgs.button
+#define ID_Node_DragEnterEventArgs_clickCount 0x9f171300 // Node_DragEnterEventArgs.clickCount
+#define ID_Node_KeyMessageEventArgs 0x31a320d9
 
-#define ID_Node_KeyDownMsgArgs_keyCode 0xce1239eb // Node_KeyDownMsgArgs.keyCode
-#define ID_Node_KeyDownMsgArgs_character 0xe5ee2e96 // Node_KeyDownMsgArgs.character
-#define ID_Node_KeyDownMsgArgs_modifiers 0x6abc4d5f // Node_KeyDownMsgArgs.modifiers
-#define ID_Node_KeyDownMsgArgs_text 0x5e29b458 // Node_KeyDownMsgArgs.text
-#define ID_Node_KeyDownMsgArgs_modifiersString 0x222137aa // Node_KeyDownMsgArgs.modifiersString
-#define ID_Node_KeyDownMsgArgs_hotKey 0x7dd49b65 // Node_KeyDownMsgArgs.hotKey
-#define ID_Node_KeyUpMsgArgs 0xde83ac28
+#define ID_Node_KeyMessageEventArgs_keyCode 0xc45b7b79 // Node_KeyMessageEventArgs.keyCode
+#define ID_Node_KeyMessageEventArgs_character 0xd10511a0 // Node_KeyMessageEventArgs.character
+#define ID_Node_KeyMessageEventArgs_modifiers 0xc57fbc09 // Node_KeyMessageEventArgs.modifiers
+#define ID_Node_KeyMessageEventArgs_text 0x7246b7ae // Node_KeyMessageEventArgs.text
+#define ID_Node_KeyMessageEventArgs_modifiersString 0xcdc743c4 // Node_KeyMessageEventArgs.modifiersString
+#define ID_Node_KeyMessageEventArgs_hotKey 0xa26f0a63 // Node_KeyMessageEventArgs.hotKey
+#define ID_Node_KeyDownEventArgs 0x768f6172
 
-#define ID_Node_KeyUpMsgArgs_keyCode 0x77382d90 // Node_KeyUpMsgArgs.keyCode
-#define ID_Node_KeyUpMsgArgs_character 0x074c95a5 // Node_KeyUpMsgArgs.character
-#define ID_Node_KeyUpMsgArgs_modifiers 0xcba163b4 // Node_KeyUpMsgArgs.modifiers
-#define ID_Node_KeyUpMsgArgs_text 0x4c7ae879 // Node_KeyUpMsgArgs.text
-#define ID_Node_KeyUpMsgArgs_modifiersString 0x63cc35b5 // Node_KeyUpMsgArgs.modifiersString
-#define ID_Node_KeyUpMsgArgs_hotKey 0x83cc2fac // Node_KeyUpMsgArgs.hotKey
-#define ID_Node_TextInputMsgArgs 0x2fd35721
+#define ID_Node_KeyDownEventArgs_keyCode 0x86146eca // Node_KeyDownEventArgs.keyCode
+#define ID_Node_KeyDownEventArgs_character 0x0ba694db // Node_KeyDownEventArgs.character
+#define ID_Node_KeyDownEventArgs_modifiers 0x2a28bbe2 // Node_KeyDownEventArgs.modifiers
+#define ID_Node_KeyDownEventArgs_text 0x74b1d6c3 // Node_KeyDownEventArgs.text
+#define ID_Node_KeyDownEventArgs_modifiersString 0x12417f3b // Node_KeyDownEventArgs.modifiersString
+#define ID_Node_KeyDownEventArgs_hotKey 0x5ec0ec16 // Node_KeyDownEventArgs.hotKey
+#define ID_Node_KeyUpEventArgs 0x83e649ad
 
-#define ID_Node_TextInputMsgArgs_keyCode 0x59bfa1c1 // Node_TextInputMsgArgs.keyCode
-#define ID_Node_TextInputMsgArgs_character 0xff3ffac8 // Node_TextInputMsgArgs.character
-#define ID_Node_TextInputMsgArgs_modifiers 0xe8801621 // Node_TextInputMsgArgs.modifiers
-#define ID_Node_TextInputMsgArgs_text 0x580f7d06 // Node_TextInputMsgArgs.text
-#define ID_Node_TextInputMsgArgs_modifiersString 0xbb53917c // Node_TextInputMsgArgs.modifiersString
-#define ID_Node_TextInputMsgArgs_hotKey 0x1f24c02b // Node_TextInputMsgArgs.hotKey
-#define ID_TextBlockConcept_MakeTextMsgArgs 0x9ac28551
+#define ID_Node_KeyUpEventArgs_keyCode 0x2ad2ffc5 // Node_KeyUpEventArgs.keyCode
+#define ID_Node_KeyUpEventArgs_character 0x5ed502ec // Node_KeyUpEventArgs.character
+#define ID_Node_KeyUpEventArgs_modifiers 0x81da073d // Node_KeyUpEventArgs.modifiers
+#define ID_Node_KeyUpEventArgs_text 0x47e68ffa // Node_KeyUpEventArgs.text
+#define ID_Node_KeyUpEventArgs_modifiersString 0xc2676db0 // Node_KeyUpEventArgs.modifiersString
+#define ID_Node_KeyUpEventArgs_hotKey 0xe53c200f // Node_KeyUpEventArgs.hotKey
+#define ID_Node_TextInputEventArgs 0xe5666e98
 
-#define ID_TextBlockConcept_MakeTextMsgArgs_text 0xd31635b6 // TextBlockConcept_MakeTextMsgArgs.text
-#define ID_TextBlockConcept_MakeTextMsgArgs_availableSpace 0x1e49e1b6 // TextBlockConcept_MakeTextMsgArgs.availableSpace
-#define ID_Node2D_DrawBrushMsgArgs 0xda392a9e
+#define ID_Node_TextInputEventArgs_keyCode 0x7806eba0 // Node_TextInputEventArgs.keyCode
+#define ID_Node_TextInputEventArgs_character 0x1ca6a7f5 // Node_TextInputEventArgs.character
+#define ID_Node_TextInputEventArgs_modifiers 0x65aed464 // Node_TextInputEventArgs.modifiers
+#define ID_Node_TextInputEventArgs_text 0x4f7a5129 // Node_TextInputEventArgs.text
+#define ID_Node_TextInputEventArgs_modifiersString 0x3a2b2e05 // Node_TextInputEventArgs.modifiersString
+#define ID_Node_TextInputEventArgs_hotKey 0xf8911dfc // Node_TextInputEventArgs.hotKey
+#define ID_TextBlockConcept_MakeTextEventArgs 0x57b8c928
 
-#define ID_Node2D_DrawBrushMsgArgs_projection 0xdcca635d // Node2D_DrawBrushMsgArgs.projection
-#define ID_Node2D_DrawBrushMsgArgs_image 0xed3db60d // Node2D_DrawBrushMsgArgs.image
-#define ID_Node2D_DrawBrushMsgArgs_brush 0x49906210 // Node2D_DrawBrushMsgArgs.brush
-#define ID_Node2D_DrawBrushMsgArgs_borderOffset 0x7ad7aa59 // Node2D_DrawBrushMsgArgs.borderOffset
-#define ID_Node2D_DrawBrushMsgArgs_borderWidth 0x42d45e2a // Node2D_DrawBrushMsgArgs.borderWidth
-#define ID_Node2D_DrawBrushMsgArgs_foreground 0x1720c701 // Node2D_DrawBrushMsgArgs.foreground
-#define ID_Node2D_DrawBrushMsgArgs_viewdef 0xaa3731b8 // Node2D_DrawBrushMsgArgs.viewdef
-#define ID_Node2D_MeasureMsgArgs 0x254a3fd4
+#define ID_TextBlockConcept_MakeTextEventArgs_text 0x45faff79 // TextBlockConcept_MakeTextEventArgs.text
+#define ID_TextBlockConcept_MakeTextEventArgs_availableSpace 0x674d6dc1 // TextBlockConcept_MakeTextEventArgs.availableSpace
+#define ID_Node2D_DrawBrushEventArgs 0x4c43d1ab
 
-#define ID_Node2D_MeasureMsgArgs_Width 0x4e61a22a // Node2D_MeasureMsgArgs.Width
-#define ID_Node2D_MeasureMsgArgs_Height 0x4adcff45 // Node2D_MeasureMsgArgs.Height
-#define ID_Node2D_ArrangeMsgArgs 0x399c1494
+#define ID_Node2D_DrawBrushEventArgs_projection 0x068baeea // Node2D_DrawBrushEventArgs.projection
+#define ID_Node2D_DrawBrushEventArgs_image 0x86f13a44 // Node2D_DrawBrushEventArgs.image
+#define ID_Node2D_DrawBrushEventArgs_brush 0x5e46bb1d // Node2D_DrawBrushEventArgs.brush
+#define ID_Node2D_DrawBrushEventArgs_borderOffset 0xfcefe6a6 // Node2D_DrawBrushEventArgs.borderOffset
+#define ID_Node2D_DrawBrushEventArgs_borderWidth 0x84bfc1f3 // Node2D_DrawBrushEventArgs.borderWidth
+#define ID_Node2D_DrawBrushEventArgs_foreground 0xadede5f6 // Node2D_DrawBrushEventArgs.foreground
+#define ID_Node2D_DrawBrushEventArgs_viewdef 0xd518da01 // Node2D_DrawBrushEventArgs.viewdef
+#define ID_Node2D_MeasureEventArgs 0x40c88ef1
 
-#define ID_Node2D_ArrangeMsgArgs_X 0x9058cc22 // Node2D_ArrangeMsgArgs.X
-#define ID_Node2D_ArrangeMsgArgs_Y 0x9158cdb5 // Node2D_ArrangeMsgArgs.Y
-#define ID_Node2D_ArrangeMsgArgs_Width 0x34d1776a // Node2D_ArrangeMsgArgs.Width
-#define ID_Node2D_ArrangeMsgArgs_Height 0xe6359e85 // Node2D_ArrangeMsgArgs.Height
-#define ID_Node2D_MeasureOverrideMsgArgs 0x240d735c
+#define ID_Node2D_MeasureEventArgs_Width 0x141da717 // Node2D_MeasureEventArgs.Width
+#define ID_Node2D_MeasureEventArgs_Height 0x06f6d85a // Node2D_MeasureEventArgs.Height
+#define ID_Node2D_ArrangeEventArgs 0x6fd4edb1
 
-#define ID_Node2D_MeasureOverrideMsgArgs_Width 0x11649722 // Node2D_MeasureOverrideMsgArgs.Width
-#define ID_Node2D_MeasureOverrideMsgArgs_Height 0x9f38e43d // Node2D_MeasureOverrideMsgArgs.Height
-#define ID_Node2D_ArrangeOverrideMsgArgs 0x26575e1c
+#define ID_Node2D_ArrangeEventArgs_X 0x94d0e40f // Node2D_ArrangeEventArgs.X
+#define ID_Node2D_ArrangeEventArgs_Y 0x93d0e27c // Node2D_ArrangeEventArgs.Y
+#define ID_Node2D_ArrangeEventArgs_Width 0xc723b657 // Node2D_ArrangeEventArgs.Width
+#define ID_Node2D_ArrangeEventArgs_Height 0x89081d9a // Node2D_ArrangeEventArgs.Height
+#define ID_Node2D_MeasureOverrideEventArgs 0xcfdd08d9
 
-#define ID_Node2D_ArrangeOverrideMsgArgs_X 0xbd1dceaa // Node2D_ArrangeOverrideMsgArgs.X
-#define ID_Node2D_ArrangeOverrideMsgArgs_Y 0xbe1dd03d // Node2D_ArrangeOverrideMsgArgs.Y
-#define ID_Node2D_ArrangeOverrideMsgArgs_Width 0xea69d062 // Node2D_ArrangeOverrideMsgArgs.Width
-#define ID_Node2D_ArrangeOverrideMsgArgs_Height 0x3f62597d // Node2D_ArrangeOverrideMsgArgs.Height
-#define ID_Node2D_ForegroundContentMsgArgs 0x3b4334aa
+#define ID_Node2D_MeasureOverrideEventArgs_Width 0x7640f96f // Node2D_MeasureOverrideEventArgs.Width
+#define ID_Node2D_MeasureOverrideEventArgs_Height 0xa36a2d12 // Node2D_MeasureOverrideEventArgs.Height
+#define ID_Node2D_ArrangeOverrideEventArgs 0xfc6e4f99
 
-#define ID_Node2D_UpdateGeometryMsgArgs 0xb9a3b927
+#define ID_Node2D_ArrangeOverrideEventArgs_X 0x1caa4037 // Node2D_ArrangeOverrideEventArgs.X
+#define ID_Node2D_ArrangeOverrideEventArgs_Y 0x1baa3ea4 // Node2D_ArrangeOverrideEventArgs.Y
+#define ID_Node2D_ArrangeOverrideEventArgs_Width 0xa8339daf // Node2D_ArrangeOverrideEventArgs.Width
+#define ID_Node2D_ArrangeOverrideEventArgs_Height 0x01e78b52 // Node2D_ArrangeOverrideEventArgs.Height
+#define ID_Node2D_ForegroundContentEventArgs 0x955c578f
 
-#define ID_Node2D_SetScrollTopMsgArgs 0xd1331b64
+#define ID_Node2D_UpdateGeometryEventArgs 0x13a29e26
 
-#define ID_Node2D_SetScrollTopMsgArgs_Value 0xa4474e9f // Node2D_SetScrollTopMsgArgs.Value
-#define ID_Form_SubmitMsgArgs 0x6d531060
+#define ID_Node2D_SetScrollTopEventArgs 0x64d56721
 
-#define ID_Screen_UpdateLayoutMsgArgs 0xa55e3957
+#define ID_Node2D_SetScrollTopEventArgs_Value 0xce539fc2 // Node2D_SetScrollTopEventArgs.Value
+#define ID_Form_SubmitEventArgs 0x940ec545
 
-#define ID_Screen_UpdateLayoutMsgArgs_Width 0xb91f863d // Screen_UpdateLayoutMsgArgs.Width
-#define ID_Screen_UpdateLayoutMsgArgs_Height 0x0bf83e94 // Screen_UpdateLayoutMsgArgs.Height
-#define ID_Screen_RenderScreenMsgArgs 0x20c6aa62
+#define ID_Screen_UpdateLayoutEventArgs 0xe31efe36
 
-#define ID_Screen_RenderScreenMsgArgs_width 0x16a8c7a0 // Screen_RenderScreenMsgArgs.width
-#define ID_Screen_RenderScreenMsgArgs_height 0xeac9e4d7 // Screen_RenderScreenMsgArgs.height
-#define ID_Screen_RenderScreenMsgArgs_stereo 0x696a5940 // Screen_RenderScreenMsgArgs.stereo
-#define ID_Screen_RenderScreenMsgArgs_angle 0x7979495f // Screen_RenderScreenMsgArgs.angle
-#define ID_Screen_RenderScreenMsgArgs_target 0xe57258ad // Screen_RenderScreenMsgArgs.target
-#define ID_PageHost_NavigateToPageMsgArgs 0x2ac87988
+#define ID_Screen_UpdateLayoutEventArgs_Width 0xe73421c4 // Screen_UpdateLayoutEventArgs.Width
+#define ID_Screen_UpdateLayoutEventArgs_Height 0x8cbbbaf3 // Screen_UpdateLayoutEventArgs.Height
+#define ID_Screen_RenderScreenEventArgs 0xe82fdc27
 
-#define ID_PageHost_NavigateToPageMsgArgs_URL 0x78fc3e3b // PageHost_NavigateToPageMsgArgs.URL
-#define ID_PageHost_NavigateToPageMsgArgs_TransitionType 0x68d1f249 // PageHost_NavigateToPageMsgArgs.TransitionType
-#define ID_PageHost_NavigateBackMsgArgs 0xd00ab34b
+#define ID_Screen_RenderScreenEventArgs_width 0x3b5d04ad // Screen_RenderScreenEventArgs.width
+#define ID_Screen_RenderScreenEventArgs_height 0x4a6e2404 // Screen_RenderScreenEventArgs.height
+#define ID_Screen_RenderScreenEventArgs_stereo 0x14234527 // Screen_RenderScreenEventArgs.stereo
+#define ID_Screen_RenderScreenEventArgs_angle 0xd956701a // Screen_RenderScreenEventArgs.angle
+#define ID_Screen_RenderScreenEventArgs_target 0xf85bed2e // Screen_RenderScreenEventArgs.target
+#define ID_PageHost_NavigateToPageEventArgs 0x0b5e4b0d
 
-#define ID_PageHost_NavigateBackMsgArgs_TransitionType 0x0c1dfab8 // PageHost_NavigateBackMsgArgs.TransitionType
+#define ID_PageHost_NavigateToPageEventArgs_URL 0x5085360a // PageHost_NavigateToPageEventArgs.URL
+#define ID_PageHost_NavigateToPageEventArgs_TransitionType 0x972d66de // PageHost_NavigateToPageEventArgs.TransitionType
+#define ID_PageHost_NavigateBackEventArgs 0xa3f6a342
+
+#define ID_PageHost_NavigateBackEventArgs_TransitionType 0x0531cd67 // PageHost_NavigateBackEventArgs.TransitionType
 	
 
 #endif

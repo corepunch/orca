@@ -8,11 +8,9 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
-	.MessageTypes = NAME##MessageTypes, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
-	.NumMessageTypes = k##NAME##NumMessageTypes, \
 };
 <?php foreach ($components as $name => $component):?>
 	<?php foreach ($component->getEventHandlers() as $event): ?>
@@ -21,13 +19,11 @@ ORCA_API struct ClassDesc _##NAME = { \
 					$ident = str_replace('.', ', ', $event); ?>
 HANDLER(<?= $name ?>, <?= $ident ?>);
 	<?php endforeach ?>
-static struct MessageType <?= $name ?>MessageTypes[k<?= $name ?>NumMessageTypes] = {	
-	<?php foreach ($component->getMessages() as $event): ?>
-	{ "<?= $name ?>.<?= $event->name ?>", ID_<?= $name ?>_<?= $event->name ?>, 0x<?= hash('fnv1a32', $event->name) ?>, kMessageRouting<?= $event->routing ?>, sizeof(<?= $event->getEffectiveTypeDecl() ?>) },
-	<?php endforeach ?>
-};
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
 	<?php include_template("export/properties", ['properties' => $component->getProperties(), 'name' => $name]) ?>
+	<?php foreach ($component->getMessages() as $e) 
+		$id = hash('fnv1a32',$e->name);
+		echo "\tDECL(0x{$id}, {$name}, {$e->name}, {$e->name}, kDataTypeEvent, .TypeString = \"{$name}_{$e->name}EventArgs\"), // {$name}.{$e->name}\n"; ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		
@@ -35,12 +31,12 @@ static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php endforeach ?>
 };
 LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+	switch (message&MSG_DATA_MASK) {
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		<?php $pos = strrpos($event, '.');
 					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
 					$ident = str_replace('.', '_', $event); ?>
-		case ID_<?= $ident ?>: return <?= $name ?>_<?= $after ?>(object, cmp, wparm, lparm); // <?= $event ?>
+		case ID_<?= $ident ?>&MSG_DATA_MASK: return <?= $name ?>_<?= $after ?>(object, cmp, wparm, lparm); // <?= $event ?>
 	<?php endforeach ?>
 	}
 	return FALSE;

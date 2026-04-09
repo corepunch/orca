@@ -195,6 +195,7 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   return 0;
 }
 
+int f_msgSend(lua_State *L);
 void _pushproperty(lua_State* L,
                    void *value,
                    lpcPropertyType_t type)
@@ -223,7 +224,8 @@ void _pushproperty(lua_State* L,
       lua_pushstring(L, *(lpcString_t*)value);
       break;
     case kDataTypeEvent:
-      lua_pushstring(L, value);
+      lua_pushfstring(L, "%s.%s", type->Category, type->Name);
+      lua_pushcclosure(L, f_msgSend, 1);
       break;
     case kDataTypeNone:
       lua_pushnil(L);

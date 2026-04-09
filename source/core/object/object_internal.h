@@ -33,7 +33,6 @@ struct Object
       struct style_sheet* stylesheet;
       struct timer* timers;
       struct alias* aliases;
-      struct script_callback* callbacks2;
     };
     void* comps[kCompCount];
   };

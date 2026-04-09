@@ -8,7 +8,6 @@
 
 typedef struct lua_State lua_State;
 
-struct WI_Message;
 struct localization;
 struct game;
 struct Property;
@@ -19,15 +18,14 @@ struct lua_State;
 #include "core_properties.h"
 #include "../geometry/geometry.h"
 
-typedef struct Object_CreateMsgArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
-typedef struct Object_StartMsgArgs Object_StartMsg_t,* Object_StartMsgPtr;
-typedef struct Object_AwakeMsgArgs Object_AwakeMsg_t,* Object_AwakeMsgPtr;
-typedef struct Object_ThemeChangedMsgArgs Object_ThemeChangedMsg_t,* Object_ThemeChangedMsgPtr;
-typedef struct Object_PropertyChangedMsgArgs Object_PropertyChangedMsg_t,* Object_PropertyChangedMsgPtr;
-typedef struct Object_AttachedMsgArgs Object_AttachedMsg_t,* Object_AttachedMsgPtr;
-typedef struct Object_ReleaseMsgArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
-typedef struct Object_DestroyMsgArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
-typedef struct Object_TimerMsgArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
+typedef struct Object_CreateEventArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
+typedef struct Object_StartEventArgs Object_StartMsg_t,* Object_StartMsgPtr;
+typedef struct Object_ThemeChangedEventArgs Object_ThemeChangedMsg_t,* Object_ThemeChangedMsgPtr;
+typedef struct Object_PropertyChangedEventArgs Object_PropertyChangedMsg_t,* Object_PropertyChangedMsgPtr;
+typedef struct Object_AttachedEventArgs Object_AttachedMsg_t,* Object_AttachedMsgPtr;
+typedef struct Object_ReleaseEventArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
+typedef struct Object_DestroyEventArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
+typedef struct Object_TimerEventArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -89,8 +87,6 @@ ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
 ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
 
-typedef struct MessageType MessageType_t, *lpMessageType_t;
-typedef struct MessageType const cMessageType_t, *lpcMessageType_t;
 
 
 /// @brief Retrieves currently active object.
@@ -194,10 +190,6 @@ OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
 /// @brief Send a message to directly to the object ignoring queue.
 ORCA_API void
 OBJ_MsgSend(struct lua_State*, struct Object*, const char*);
-
-/// @brief Retrieves callback function name for event ID
-ORCA_API const char*
-OBJ_FindCallbackForID(struct Object*, uint32_t);
 
 /// @name Properties
 /// Reads and writes typed properties, applying and observing changes.
@@ -416,63 +408,48 @@ OBJ_AddAlias(struct Object*, const char*, const char*);
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
-/** MessageType struct */
-struct MessageType {
-	const char* Name; ///< The name of the message
-	uint32_t FullIdentifier; ///< The full identifier of the message
-	uint32_t ShortIdentifier; ///< The short identifier of the message
-	enum MessageRouting Routing; ///< The routing strategy for this message
-	uint32_t Size; ///< The size of the message
-};
-ORCA_API void luaX_pushMessageType(lua_State *L, struct MessageType const* MessageType);
-ORCA_API struct MessageType* luaX_checkMessageType(lua_State *L, int idx);
 
-/** Object_CreateMsgArgs struct */
-struct Object_CreateMsgArgs {
+/** Object_CreateEventArgs struct */
+struct Object_CreateEventArgs {
 };
-ORCA_API void luaX_pushObject_CreateMsgArgs(lua_State *L, struct Object_CreateMsgArgs const* data);
-ORCA_API struct Object_CreateMsgArgs* luaX_checkObject_CreateMsgArgs(lua_State *L, int idx);
-/** Object_StartMsgArgs struct */
-struct Object_StartMsgArgs {
+ORCA_API void luaX_pushObject_CreateEventArgs(lua_State *L, struct Object_CreateEventArgs const* data);
+ORCA_API struct Object_CreateEventArgs* luaX_checkObject_CreateEventArgs(lua_State *L, int idx);
+/** Object_StartEventArgs struct */
+struct Object_StartEventArgs {
 };
-ORCA_API void luaX_pushObject_StartMsgArgs(lua_State *L, struct Object_StartMsgArgs const* data);
-ORCA_API struct Object_StartMsgArgs* luaX_checkObject_StartMsgArgs(lua_State *L, int idx);
-/** Object_AwakeMsgArgs struct */
-struct Object_AwakeMsgArgs {
+ORCA_API void luaX_pushObject_StartEventArgs(lua_State *L, struct Object_StartEventArgs const* data);
+ORCA_API struct Object_StartEventArgs* luaX_checkObject_StartEventArgs(lua_State *L, int idx);
+/** Object_ThemeChangedEventArgs struct */
+struct Object_ThemeChangedEventArgs {
 };
-ORCA_API void luaX_pushObject_AwakeMsgArgs(lua_State *L, struct Object_AwakeMsgArgs const* data);
-ORCA_API struct Object_AwakeMsgArgs* luaX_checkObject_AwakeMsgArgs(lua_State *L, int idx);
-/** Object_ThemeChangedMsgArgs struct */
-struct Object_ThemeChangedMsgArgs {
-};
-ORCA_API void luaX_pushObject_ThemeChangedMsgArgs(lua_State *L, struct Object_ThemeChangedMsgArgs const* data);
-ORCA_API struct Object_ThemeChangedMsgArgs* luaX_checkObject_ThemeChangedMsgArgs(lua_State *L, int idx);
-/** Object_PropertyChangedMsgArgs struct */
-struct Object_PropertyChangedMsgArgs {
+ORCA_API void luaX_pushObject_ThemeChangedEventArgs(lua_State *L, struct Object_ThemeChangedEventArgs const* data);
+ORCA_API struct Object_ThemeChangedEventArgs* luaX_checkObject_ThemeChangedEventArgs(lua_State *L, int idx);
+/** Object_PropertyChangedEventArgs struct */
+struct Object_PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
 };
-ORCA_API void luaX_pushObject_PropertyChangedMsgArgs(lua_State *L, struct Object_PropertyChangedMsgArgs const* data);
-ORCA_API struct Object_PropertyChangedMsgArgs* luaX_checkObject_PropertyChangedMsgArgs(lua_State *L, int idx);
-/** Object_AttachedMsgArgs struct */
-struct Object_AttachedMsgArgs {
+ORCA_API void luaX_pushObject_PropertyChangedEventArgs(lua_State *L, struct Object_PropertyChangedEventArgs const* data);
+ORCA_API struct Object_PropertyChangedEventArgs* luaX_checkObject_PropertyChangedEventArgs(lua_State *L, int idx);
+/** Object_AttachedEventArgs struct */
+struct Object_AttachedEventArgs {
 };
-ORCA_API void luaX_pushObject_AttachedMsgArgs(lua_State *L, struct Object_AttachedMsgArgs const* data);
-ORCA_API struct Object_AttachedMsgArgs* luaX_checkObject_AttachedMsgArgs(lua_State *L, int idx);
-/** Object_ReleaseMsgArgs struct */
-struct Object_ReleaseMsgArgs {
+ORCA_API void luaX_pushObject_AttachedEventArgs(lua_State *L, struct Object_AttachedEventArgs const* data);
+ORCA_API struct Object_AttachedEventArgs* luaX_checkObject_AttachedEventArgs(lua_State *L, int idx);
+/** Object_ReleaseEventArgs struct */
+struct Object_ReleaseEventArgs {
 };
-ORCA_API void luaX_pushObject_ReleaseMsgArgs(lua_State *L, struct Object_ReleaseMsgArgs const* data);
-ORCA_API struct Object_ReleaseMsgArgs* luaX_checkObject_ReleaseMsgArgs(lua_State *L, int idx);
-/** Object_DestroyMsgArgs struct */
-struct Object_DestroyMsgArgs {
+ORCA_API void luaX_pushObject_ReleaseEventArgs(lua_State *L, struct Object_ReleaseEventArgs const* data);
+ORCA_API struct Object_ReleaseEventArgs* luaX_checkObject_ReleaseEventArgs(lua_State *L, int idx);
+/** Object_DestroyEventArgs struct */
+struct Object_DestroyEventArgs {
 };
-ORCA_API void luaX_pushObject_DestroyMsgArgs(lua_State *L, struct Object_DestroyMsgArgs const* data);
-ORCA_API struct Object_DestroyMsgArgs* luaX_checkObject_DestroyMsgArgs(lua_State *L, int idx);
-/** Object_TimerMsgArgs struct */
-struct Object_TimerMsgArgs {
+ORCA_API void luaX_pushObject_DestroyEventArgs(lua_State *L, struct Object_DestroyEventArgs const* data);
+ORCA_API struct Object_DestroyEventArgs* luaX_checkObject_DestroyEventArgs(lua_State *L, int idx);
+/** Object_TimerEventArgs struct */
+struct Object_TimerEventArgs {
 };
-ORCA_API void luaX_pushObject_TimerMsgArgs(lua_State *L, struct Object_TimerMsgArgs const* data);
-ORCA_API struct Object_TimerMsgArgs* luaX_checkObject_TimerMsgArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushObject_TimerEventArgs(lua_State *L, struct Object_TimerEventArgs const* data);
+ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State *L, int idx);
 
 
 #endif

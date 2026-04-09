@@ -7,12 +7,10 @@
 #define ID_SpriteAnimation 0x261d60ba
 #define GetSpriteAnimation(_P) ((struct SpriteAnimation*)((_P)?OBJ_GetComponent(_P,ID_SpriteAnimation):NULL))
 #define SpriteAnimation_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SpriteAnimation,sizeof(struct SpriteAnimation),_N)
-#define SpriteAnimation_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SpriteAnimation,_N)
 #define ID_SpriteAnimation_Image 0xb710ed59 // SpriteAnimation.Image
 #define ID_SpriteAnimation_Framerate 0xc51f93cb // SpriteAnimation.Framerate
 #define ID_SpriteAnimation_Frames 0xcbc4645e // SpriteAnimation.Frames
 #define ID_SpriteAnimation_NumFrames 0x37cc69de // SpriteAnimation.NumFrames
-#define kSpriteAnimationNumMessageTypes 0
 #define kSpriteAnimationNumProperties 4
 enum SpriteAnimationProperties {
 	kSpriteAnimationImage,
@@ -24,33 +22,26 @@ enum SpriteAnimationProperties {
 #define ID_SKNode 0x819821fb
 #define GetSKNode(_P) ((struct SKNode*)((_P)?OBJ_GetComponent(_P,ID_SKNode):NULL))
 #define SKNode_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SKNode,sizeof(struct SKNode),_N)
-#define SKNode_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SKNode,_N)
 #define ID_SKNode_Position 0xa99d4e4c // SKNode.Position
 #define ID_SKNode_Size 0xeaed98c6 // SKNode.Size
 #define ID_SKNode_Anchor 0xf86abfb6 // SKNode.Anchor
-#define kSKNodeNumMessageTypes 1
-enum SKNodeMessages {
-	kSKNodeRender,
-};
 #define ID_SKNode_Render ((0x450c46e3&MSG_DATA_MASK)|ROUTING_DIRECT) // SKNode.Render
-#define kSKNodeNumProperties 3
+#define kSKNodeNumProperties 4
 enum SKNodeProperties {
 	kSKNodePosition,
 	kSKNodeSize,
 	kSKNodeAnchor,
+	kSKNodeRender,
 };
 // SKScene
 #define ID_SKScene 0xb8c15a09
 #define GetSKScene(_P) ((struct SKScene*)((_P)?OBJ_GetComponent(_P,ID_SKScene):NULL))
 #define SKScene_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SKScene,sizeof(struct SKScene),_N)
-#define SKScene_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SKScene,_N)
-#define kSKSceneNumMessageTypes 0
 #define kSKSceneNumProperties 0
 // SKSpriteNode
 #define ID_SKSpriteNode 0x4f1c372e
 #define GetSKSpriteNode(_P) ((struct SKSpriteNode*)((_P)?OBJ_GetComponent(_P,ID_SKSpriteNode):NULL))
 #define SKSpriteNode_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SKSpriteNode,sizeof(struct SKSpriteNode),_N)
-#define SKSpriteNode_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SKSpriteNode,_N)
 #define ID_SKSpriteNode_Animation 0xdfc01dce // SKSpriteNode.Animation
 #define ID_SKSpriteNode_Animation2 0x376f33b4 // SKSpriteNode.Animation2
 #define ID_SKSpriteNode_Image 0x7d43a6bd // SKSpriteNode.Image
@@ -61,7 +52,6 @@ enum SKNodeProperties {
 #define ID_SKSpriteNode_UvRectY 0xfa23c4bc // SKSpriteNode.UvRectY
 #define ID_SKSpriteNode_UvRectWidth 0xfcdbf497 // SKSpriteNode.UvRectWidth
 #define ID_SKSpriteNode_UvRectHeight 0xea8ad8da // SKSpriteNode.UvRectHeight
-#define kSKSpriteNodeNumMessageTypes 0
 #define kSKSpriteNodeNumProperties 10
 enum SKSpriteNodeProperties {
 	kSKSpriteNodeAnimation,
@@ -79,9 +69,7 @@ enum SKSpriteNodeProperties {
 #define ID_SKLabelNode 0x01306533
 #define GetSKLabelNode(_P) ((struct SKLabelNode*)((_P)?OBJ_GetComponent(_P,ID_SKLabelNode):NULL))
 #define SKLabelNode_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SKLabelNode,sizeof(struct SKLabelNode),_N)
-#define SKLabelNode_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SKLabelNode,_N)
 #define ID_SKLabelNode_Color 0x84bf37d6 // SKLabelNode.Color
-#define kSKLabelNodeNumMessageTypes 0
 #define kSKLabelNodeNumProperties 1
 enum SKLabelNodeProperties {
 	kSKLabelNodeColor,
@@ -90,11 +78,9 @@ enum SKLabelNodeProperties {
 #define ID_SKView 0x7c02453e
 #define GetSKView(_P) ((struct SKView*)((_P)?OBJ_GetComponent(_P,ID_SKView):NULL))
 #define SKView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SKView,sizeof(struct SKView),_N)
-#define SKView_GetMessageType(_P,_N) OBJ_GetMessageTypeAtIndex(_P,ID_SKView,_N)
 #define ID_SKView_ReferenceWidth 0x5c81a8f7 // SKView.ReferenceWidth
 #define ID_SKView_ReferenceHeight 0x4b5832ba // SKView.ReferenceHeight
 #define ID_SKView_Scene 0x71075038 // SKView.Scene
-#define kSKViewNumMessageTypes 0
 #define kSKViewNumProperties 3
 enum SKViewProperties {
 	kSKViewReferenceWidth,
@@ -116,9 +102,9 @@ enum SKViewProperties {
 #define ID_SpriteFrame_UvRectHeight 0x3fb6116b // SpriteFrame.UvRectHeight
 	
 
-#define ID_SKNode_RenderMsgArgs 0x87a6580c
+#define ID_SKNode_RenderEventArgs 0x5e961f29
 
-#define ID_SKNode_RenderMsgArgs_ViewDef 0x614bd7e6 // SKNode_RenderMsgArgs.ViewDef
+#define ID_SKNode_RenderEventArgs_ViewDef 0xe1fdb95f // SKNode_RenderEventArgs.ViewDef
 	
 
 #endif

@@ -4,29 +4,29 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
+extern lpProperty_t
+luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id);
+
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    lpcString_t szCallback = OBJ_FindCallbackForID(hobj, msg->message);
-    if (szCallback)
-    {
+    lpProperty_t handler = luaX_getobjectcallback(L, hobj, msg->message);
+    if (handler) {
       luaX_import(L, "orca", "async");
-      luaX_pushObject(L, hobj);
-      assert(!lua_isnil(L, -1));
-      // lua_getfield(L, -1, "handleEvent");
-      // lua_insert(L, -2); // Move callback before obj
-      lua_getfield(L, -1, szCallback);
-      lua_insert(L, -2); // Move callback before obj
-      luaX_pushObject(L, hobj);
-      uint32_t numargs = 3;
-      if (msg->message == ID_Object_Timer && msg->lParam) {
-        lua_pushstring(L, msg->lParam);
-        numargs++;
-      }
-      if (lua_pcall(L, numargs, 0, 0) != LUA_OK) {
-        Con_Error("%s(): %s", szCallback, luaL_checkstring(L, -1));
+      lua_insert(L, -2);
+      luaX_pushObject(L, hobj); // self
+      luaX_pushObject(L, msg->target); // sender
+
+      // push event data
+      luaL_getmetatable(L, PROP_GetDesc(handler)->TypeString);
+      lua_pushlightuserdata(L, msg->lParam);
+      lua_call(L, 1, 1);
+
+      // call orca.async
+      if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
+        Con_Error("Message handler 0x%08x: %s", msg->message, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
       return TRUE;
@@ -81,55 +81,55 @@ convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessage
   }
   return true;
 }
-
-static int
-lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
-{
-  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
-#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
-  if (GetNode2D(obj)) {
-    struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
-    point = MAT4_MultiplyVector3D(&inv, &point);
-  }
-#endif
-  uint32_t msg;
-  Node_MouseMessageMsg_t mouse;
-  if (!convert_mouse_message(e, &msg, &mouse)) {
-    return 0;
-  }
-  switch (e->message) {
-    case kEventMouseMoved:
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventScrollWheel:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
-      {
-        lua_pushlightuserdata(L, (void*)(intptr_t)msg);
-        lua_gettable(L, LUA_REGISTRYINDEX);
-        // luaL_checktype(L, -1, LUA_TTABLE);
-        lua_pushlightuserdata(L, &mouse);
-        lua_call(L, 1, 1);
-      }
-      // luaX_pushMouse_MouseMessageMsgArgs(L, &mouse);
-      return 1;
-    case kEventDragDrop:
-    case kEventDragEnter:
-      lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
-      // lua_pushnumber(L, LOWORD(e->wParam));
-      // lua_pushnumber(L, HIWORD(e->wParam));
-      lua_pushnumber(L, point.x);
-      lua_pushnumber(L, point.y);
-      return 3;
-    default:
-      return 0;
-  }
-}
+//
+//static int
+//lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
+//{
+//  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
+//#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
+//  if (GetNode2D(obj)) {
+//    struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
+//    point = MAT4_MultiplyVector3D(&inv, &point);
+//  }
+//#endif
+//  uint32_t msg;
+//  Node_MouseMessageMsg_t mouse;
+//  if (!convert_mouse_message(e, &msg, &mouse)) {
+//    return 0;
+//  }
+//  switch (e->message) {
+//    case kEventMouseMoved:
+//    case kEventLeftMouseDown:
+//    case kEventRightMouseDown:
+//    case kEventOtherMouseDown:
+//    case kEventLeftMouseUp:
+//    case kEventRightMouseUp:
+//    case kEventOtherMouseUp:
+//    case kEventScrollWheel:
+//    case kEventLeftMouseDragged:
+//    case kEventRightMouseDragged:
+//    case kEventOtherMouseDragged:
+//      {
+//        lua_pushlightuserdata(L, (void*)(intptr_t)msg);
+//        lua_gettable(L, LUA_REGISTRYINDEX);
+//        // luaL_checktype(L, -1, LUA_TTABLE);
+//        lua_pushlightuserdata(L, &mouse);
+//        lua_call(L, 1, 1);
+//      }
+//      // luaX_pushMouse_MouseMessageEventArgs(L, &mouse);
+//      return 1;
+//    case kEventDragDrop:
+//    case kEventDragEnter:
+//      lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
+//      // lua_pushnumber(L, LOWORD(e->wParam));
+//      // lua_pushnumber(L, HIWORD(e->wParam));
+//      lua_pushnumber(L, point.x);
+//      lua_pushnumber(L, point.y);
+//      return 3;
+//    default:
+//      return 0;
+//  }
+//}
 
 static void
 process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
@@ -319,7 +319,7 @@ bool_t
 UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 {
   uint32_t msg;
-  struct Node_KeyMessageMsgArgs key = {0};
+  struct Node_KeyMessageEventArgs key = {0};
   build_key_msg(e, &key, &msg);
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
     .target = core_GetFocus(),
@@ -339,7 +339,7 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
   //     luaX_pushObject(L, core_GetFocus());
   //     Keyboard_KeyMessageMsg_t key = {0};
   //     build_key_msg(e, &key);
-  //     luaX_pushKeyboard_KeyMessageMsgArgs(L, &key);
+  //     luaX_pushKeyboard_KeyMessageEventArgs(L, &key);
   //     /* Stack: [orca.async, obj.handleEvent, obj, szCallback, focusedObj, keyMsg]
   //      * Calls: obj.handleEvent(obj, szCallback, focusedObj, keyMsg) */
   //     if (lua_pcall(L, 5, 1, 0) != LUA_OK) {

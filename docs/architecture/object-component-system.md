@@ -79,7 +79,7 @@ Messages and events are `uint32_t` constants defined in `source/core/core_proper
 | `kMsgUpdate` | Per-frame update tick |
 | `kMsgMouseUp` | Mouse/touch release over this object |
 | `kMsgMouseDown` | Mouse/touch press over this object |
-| `kMsgHitTest` | Pointer-event hit test — lParam is `HitTestMsgArgs*` with `x`/`y` inputs; returns the hit object as `LRESULT` |
+| `kMsgHitTest` | Pointer-event hit test — lParam is `HitTestEventArgs*` with `x`/`y` inputs; returns the hit object as `LRESULT` |
 
 Use `_SendMessage` with named field initializers to dispatch messages that carry input parameters. When the result is returned via `LRESULT` (like `OpenFile`, `HitTest`), cast the return value to the expected pointer type:
 

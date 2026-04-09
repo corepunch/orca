@@ -80,7 +80,6 @@ enum component_type
   kCompStyles,
   kCompTimers,
   kCompAliases,
-  kCompCallbacks,
   kCompCount,
 };
 
@@ -146,9 +145,6 @@ OBJ_MoveToFront(lpObject_t);
 
 void
 OBJ_ClearStyleClasses(lpObject_t);
-
-void
-OBJ_RegisterCallback(lpObject_t, lpcString_t);
 
 void
 OBJ_SetLuaObject(lpObject_t , uint32_t);
