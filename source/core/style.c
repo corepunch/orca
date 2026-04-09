@@ -79,7 +79,9 @@ static void
 _AddRuleToStylesheet(lpObject_t obj, struct style_sheet* ss)
 {
   if (obj) {
-    ADD_TO_LIST(ss, _GetStyles(obj));
+    struct StyleController* sc = GetStyleController(obj);
+    if (sc) ADD_TO_LIST(ss, sc->stylesheet);
+    else free(ss); // object has no StyleController — discard the rule
   } else {
     ADD_TO_LIST(ss, static_sheet);
   }
@@ -97,6 +99,8 @@ OBJ_AddStyleClass(lpObject_t obj,
                   lpcString_t value,
                   uint32_t flags)
 {
+  struct StyleController* sc = GetStyleController(obj);
+  if (!sc) return;
   struct style_sheet* ss = ZeroAlloc(sizeof(struct style_sheet));
   strncpy(ss->classname, name, sizeof(ss->classname));
   strncpy(ss->value, value, sizeof(ss->value));
@@ -105,7 +109,7 @@ OBJ_AddStyleClass(lpObject_t obj,
   ss->prop_id = fnv1a32(property);
   ss->flags = flags;
   ss->next = NULL;
-  ADD_TO_LIST_END(struct style_sheet, ss, _GetStyles(obj));
+  ADD_TO_LIST_END(struct style_sheet, ss, sc->stylesheet);
 }
 
 // Callback used by OBJ_AddStyleSheet's @apply handler:
@@ -150,7 +154,9 @@ _ParseClass(lpcString_t str)
 void
 _AddClass(lpObject_t obj, struct style_class* cls)
 {
-  ADD_TO_LIST_END(struct style_class, cls, _GetClasses(obj));
+  struct StyleController* sc = GetStyleController(obj);
+  if (!sc) { free(cls); return; }
+  ADD_TO_LIST_END(struct style_class, cls, sc->classes);
   if (cls->flags & STYLE_HOVER) {
     OBJ_SetFlags(obj, OBJ_GetFlags(obj) | OF_HOVERABLE);
   }

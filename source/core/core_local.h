@@ -50,9 +50,6 @@
 #define _GetAliases(obj)                                                       \
   (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
 
-#define _GetCallbacks(obj)                                                     \
-  (*(struct script_callback**)OBJ_GetObjectComponent(obj, kCompCallbacks))
-
 #define MAX_NODE_PACKAGES 16
 
 #define STYLE_HOVER 1
@@ -65,7 +62,6 @@ struct style_sheet;
 struct style_class;
 struct state_manager;
 struct alias;
-struct script_callback;
 
 enum component_type
 {
