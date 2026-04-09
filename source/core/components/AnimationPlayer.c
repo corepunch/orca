@@ -133,14 +133,26 @@ HANDLER(AnimationPlayer, Object, Animate) {
             pAnimationPlayer->CurrentTime = clip->StopTime;
             pAnimationPlayer->Playing = FALSE;
             pAnimationPlayer->_prevRealtime = 0;
+            _SendMessage(hObject, AnimationPlayer, Completed);
         }
     }
     return FALSE;
 }
 
 HANDLER(AnimationPlayer, AnimationPlayer, Play) {
+    struct AnimationClip *clip = pAnimationPlayer->Clip;
+    pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
     pAnimationPlayer->Playing = TRUE;
     pAnimationPlayer->_prevRealtime = 0;
+    _SendMessage(hObject, AnimationPlayer, Started);
+    return FALSE;
+}
+
+HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
+    // Resume differs from Play: it continues from the current position without resetting CurrentTime.
+    pAnimationPlayer->Playing = TRUE;
+    pAnimationPlayer->_prevRealtime = 0;
+    _SendMessage(hObject, AnimationPlayer, Started);
     return FALSE;
 }
 
@@ -149,12 +161,14 @@ HANDLER(AnimationPlayer, AnimationPlayer, Stop) {
     pAnimationPlayer->_prevRealtime = 0;
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
+    _SendMessage(hObject, AnimationPlayer, Stopped);
     return FALSE;
 }
 
 HANDLER(AnimationPlayer, AnimationPlayer, Pause) {
     pAnimationPlayer->Playing = FALSE;
     pAnimationPlayer->_prevRealtime = 0;
+    _SendMessage(hObject, AnimationPlayer, Stopped);
     return FALSE;
 }
 

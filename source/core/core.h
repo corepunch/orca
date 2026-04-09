@@ -12,6 +12,7 @@ struct localization;
 struct game;
 struct Property;
 struct lua_State;
+struct Timeline;
 
 
 #include "core_properties.h"
@@ -27,8 +28,12 @@ typedef struct Object_ReleaseEventArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPt
 typedef struct Object_DestroyEventArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
 typedef struct Object_TimerEventArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
 typedef struct AnimationPlayer_PlayEventArgs AnimationPlayer_PlayMsg_t,* AnimationPlayer_PlayMsgPtr;
+typedef struct AnimationPlayer_ResumeEventArgs AnimationPlayer_ResumeMsg_t,* AnimationPlayer_ResumeMsgPtr;
 typedef struct AnimationPlayer_StopEventArgs AnimationPlayer_StopMsg_t,* AnimationPlayer_StopMsgPtr;
 typedef struct AnimationPlayer_PauseEventArgs AnimationPlayer_PauseMsg_t,* AnimationPlayer_PauseMsgPtr;
+typedef struct AnimationPlayer_StartedEventArgs AnimationPlayer_StartedMsg_t,* AnimationPlayer_StartedMsgPtr;
+typedef struct AnimationPlayer_StoppedEventArgs AnimationPlayer_StoppedMsg_t,* AnimationPlayer_StoppedMsgPtr;
+typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t,* AnimationPlayer_CompletedMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -101,6 +106,18 @@ typedef enum AnimationMode {
 ORCA_API const char *AnimationModeToString(enum AnimationMode value);
 ORCA_API enum AnimationMode luaX_checkAnimationMode(lua_State *L, int idx);
 ORCA_API void luaX_pushAnimationMode(lua_State *L, enum AnimationMode value);
+
+/// @brief Animation playback behavior modes
+/** PlaybackMode enum */
+typedef enum PlaybackMode {
+	kPlaybackModeNormal, ///< Standard forward playback
+	kPlaybackModeReverse, ///< Reverse playback from end to start
+	kPlaybackModePingpong, ///< Alternating forward/reverse playback
+} ePlaybackMode_t;
+#define PlaybackMode_Count 3
+ORCA_API const char *PlaybackModeToString(enum PlaybackMode value);
+ORCA_API enum PlaybackMode luaX_checkPlaybackMode(lua_State *L, int idx);
+ORCA_API void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value);
 
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
@@ -479,6 +496,11 @@ struct AnimationPlayer_PlayEventArgs {
 };
 ORCA_API void luaX_pushAnimationPlayer_PlayEventArgs(lua_State *L, struct AnimationPlayer_PlayEventArgs const* data);
 ORCA_API struct AnimationPlayer_PlayEventArgs* luaX_checkAnimationPlayer_PlayEventArgs(lua_State *L, int idx);
+/** AnimationPlayer_ResumeEventArgs struct */
+struct AnimationPlayer_ResumeEventArgs {
+};
+ORCA_API void luaX_pushAnimationPlayer_ResumeEventArgs(lua_State *L, struct AnimationPlayer_ResumeEventArgs const* data);
+ORCA_API struct AnimationPlayer_ResumeEventArgs* luaX_checkAnimationPlayer_ResumeEventArgs(lua_State *L, int idx);
 /** AnimationPlayer_StopEventArgs struct */
 struct AnimationPlayer_StopEventArgs {
 };
@@ -489,6 +511,21 @@ struct AnimationPlayer_PauseEventArgs {
 };
 ORCA_API void luaX_pushAnimationPlayer_PauseEventArgs(lua_State *L, struct AnimationPlayer_PauseEventArgs const* data);
 ORCA_API struct AnimationPlayer_PauseEventArgs* luaX_checkAnimationPlayer_PauseEventArgs(lua_State *L, int idx);
+/** AnimationPlayer_StartedEventArgs struct */
+struct AnimationPlayer_StartedEventArgs {
+};
+ORCA_API void luaX_pushAnimationPlayer_StartedEventArgs(lua_State *L, struct AnimationPlayer_StartedEventArgs const* data);
+ORCA_API struct AnimationPlayer_StartedEventArgs* luaX_checkAnimationPlayer_StartedEventArgs(lua_State *L, int idx);
+/** AnimationPlayer_StoppedEventArgs struct */
+struct AnimationPlayer_StoppedEventArgs {
+};
+ORCA_API void luaX_pushAnimationPlayer_StoppedEventArgs(lua_State *L, struct AnimationPlayer_StoppedEventArgs const* data);
+ORCA_API struct AnimationPlayer_StoppedEventArgs* luaX_checkAnimationPlayer_StoppedEventArgs(lua_State *L, int idx);
+/** AnimationPlayer_CompletedEventArgs struct */
+struct AnimationPlayer_CompletedEventArgs {
+};
+ORCA_API void luaX_pushAnimationPlayer_CompletedEventArgs(lua_State *L, struct AnimationPlayer_CompletedEventArgs const* data);
+ORCA_API struct AnimationPlayer_CompletedEventArgs* luaX_checkAnimationPlayer_CompletedEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -526,9 +563,20 @@ struct AnimationPlayer {
 	bool_t Looping; ///< If true, the animation restarts from StartTime when it reaches StopTime
 	float Speed; ///< Playback speed multiplier (1.0 = normal speed)
 	float CurrentTime; ///< Current playback position within the animation in seconds
+	bool_t AutoplayEnabled; ///< Enables or disables automatic playback on initialization.
+	bool_t RelativePlayback; ///< When true, playback is relative to the current state rather than starting from an absolute base state.
+	bool_t RestoreOriginalValuesAfterPlayback; ///< Restores the original property values after the animation ends.
+	enum PlaybackMode PlaybackMode; ///< Defines how the animation should be played.
+	float DurationScale; ///< Scales the playback speed of the animation.
+	int32_t RepeatCount; ///< Number of times the animation should repeat. Use -1 to indicate infinite looping.
+	struct Timeline* Timeline; ///< Reference to the animation timeline that defines keyframes and transitions.
 	event_t Play;
+	event_t Resume;
 	event_t Stop;
 	event_t Pause;
+	event_t Started;
+	event_t Stopped;
+	event_t Completed;
 	longTime_t _prevRealtime; ///< Internal: realtime of last Animate tick (milliseconds)
 };
 ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);

@@ -36,6 +36,7 @@ ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")
+ENUM(PlaybackMode, "Normal", "Reverse", "Pingpong")
 
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
@@ -639,11 +640,23 @@ static struct PropertyType _Object_TimerEventArgs[] = {
 static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
 };
+static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
+};
 static luaL_Reg _AnimationPlayer_StopEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_StopEventArgs[] = {
 };
 static luaL_Reg _AnimationPlayer_PauseEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_PauseEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_StartedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_StartedEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_StoppedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
+};
+static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
 };
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
@@ -656,8 +669,12 @@ STRUCT(Object_ReleaseEventArgs, Object_ReleaseEventArgs);
 STRUCT(Object_DestroyEventArgs, Object_DestroyEventArgs);
 STRUCT(Object_TimerEventArgs, Object_TimerEventArgs);
 STRUCT(AnimationPlayer_PlayEventArgs, AnimationPlayer_PlayEventArgs);
+STRUCT(AnimationPlayer_ResumeEventArgs, AnimationPlayer_ResumeEventArgs);
 STRUCT(AnimationPlayer_StopEventArgs, AnimationPlayer_StopEventArgs);
 STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
+STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
+STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
+STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -731,6 +748,7 @@ REGISTER_CLASS(AnimationClip, 0);
 HANDLER(AnimationPlayer, Object, Start);
 HANDLER(AnimationPlayer, Object, Animate);
 HANDLER(AnimationPlayer, AnimationPlayer, Play);
+HANDLER(AnimationPlayer, AnimationPlayer, Resume);
 HANDLER(AnimationPlayer, AnimationPlayer, Stop);
 HANDLER(AnimationPlayer, AnimationPlayer, Pause);
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
@@ -739,9 +757,20 @@ static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumPr
 	DECL(0x343782cd, AnimationPlayer, Looping, Looping, kDataTypeBool), // AnimationPlayer.Looping
 	DECL(0x0a6b8020, AnimationPlayer, Speed, Speed, kDataTypeFloat), // AnimationPlayer.Speed
 	DECL(0x0d3e3b9b, AnimationPlayer, CurrentTime, CurrentTime, kDataTypeFloat), // AnimationPlayer.CurrentTime
+	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
+	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
+	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
+	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
+	DECL(0x30d783f6, AnimationPlayer, Timeline, Timeline, kDataTypeObject, .TypeString = "Timeline"), // AnimationPlayer.Timeline
 	DECL(0x29ab6f83, AnimationPlayer, Play, Play, kDataTypeEvent, .TypeString = "AnimationPlayer_PlayEventArgs"), // AnimationPlayer.Play
+	DECL(0x454d1d8a, AnimationPlayer, Resume, Resume, kDataTypeEvent, .TypeString = "AnimationPlayer_ResumeEventArgs"), // AnimationPlayer.Resume
 	DECL(0x4b7f7705, AnimationPlayer, Stop, Stop, kDataTypeEvent, .TypeString = "AnimationPlayer_StopEventArgs"), // AnimationPlayer.Stop
 	DECL(0x44f9bf2d, AnimationPlayer, Pause, Pause, kDataTypeEvent, .TypeString = "AnimationPlayer_PauseEventArgs"), // AnimationPlayer.Pause
+	DECL(0x97b5823e, AnimationPlayer, Started, Started, kDataTypeEvent, .TypeString = "AnimationPlayer_StartedEventArgs"), // AnimationPlayer.Started
+	DECL(0x863f19ee, AnimationPlayer, Stopped, Stopped, kDataTypeEvent, .TypeString = "AnimationPlayer_StoppedEventArgs"), // AnimationPlayer.Stopped
+	DECL(0xec88aab2, AnimationPlayer, Completed, Completed, kDataTypeEvent, .TypeString = "AnimationPlayer_CompletedEventArgs"), // AnimationPlayer.Completed
 };
 static struct AnimationPlayer AnimationPlayerDefaults = {
 		
@@ -752,6 +781,7 @@ LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, 
 		case ID_Object_Start&MSG_DATA_MASK: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
 		case ID_Object_Animate&MSG_DATA_MASK: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
 		case ID_AnimationPlayer_Play&MSG_DATA_MASK: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
+		case ID_AnimationPlayer_Resume&MSG_DATA_MASK: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
 		case ID_AnimationPlayer_Stop&MSG_DATA_MASK: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
 		case ID_AnimationPlayer_Pause&MSG_DATA_MASK: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
 	}

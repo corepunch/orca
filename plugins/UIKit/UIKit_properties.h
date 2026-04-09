@@ -8,27 +8,6 @@
 #define GetDataObject(_P) ((struct DataObject*)((_P)?OBJ_GetComponent(_P,ID_DataObject):NULL))
 #define DataObject_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_DataObject,sizeof(struct DataObject),_N)
 #define kDataObjectNumProperties 0
-// AnimationPlayer
-#define ID_AnimationPlayer 0x81ac71d8
-#define GetAnimationPlayer(_P) ((struct AnimationPlayer*)((_P)?OBJ_GetComponent(_P,ID_AnimationPlayer):NULL))
-#define AnimationPlayer_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationPlayer,sizeof(struct AnimationPlayer),_N)
-#define ID_AnimationPlayer_AutoplayEnabled 0xbb4b7f90 // AnimationPlayer.AutoplayEnabled
-#define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
-#define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
-#define ID_AnimationPlayer_RelativePlayback 0xb10f4317 // AnimationPlayer.RelativePlayback
-#define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
-#define ID_AnimationPlayer_RestoreOriginalValuesAfterPlayback 0xb982b350 // AnimationPlayer.RestoreOriginalValuesAfterPlayback
-#define ID_AnimationPlayer_Timeline 0x17c5cb89 // AnimationPlayer.Timeline
-#define kAnimationPlayerNumProperties 7
-enum AnimationPlayerProperties {
-	kAnimationPlayerAutoplayEnabled,
-	kAnimationPlayerDurationScale,
-	kAnimationPlayerPlaybackMode,
-	kAnimationPlayerRelativePlayback,
-	kAnimationPlayerRepeatCount,
-	kAnimationPlayerRestoreOriginalValuesAfterPlayback,
-	kAnimationPlayerTimeline,
-};
 // Trigger
 #define ID_Trigger 0xa5ea0da3
 #define GetTrigger(_P) ((struct Trigger*)((_P)?OBJ_GetComponent(_P,ID_Trigger):NULL))

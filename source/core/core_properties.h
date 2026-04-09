@@ -40,19 +40,41 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_Looping 0x02535bc8 // AnimationPlayer.Looping
 #define ID_AnimationPlayer_Speed 0x4a1ae835 // AnimationPlayer.Speed
 #define ID_AnimationPlayer_CurrentTime 0xbc48783a // AnimationPlayer.CurrentTime
+#define ID_AnimationPlayer_AutoplayEnabled 0xbb4b7f90 // AnimationPlayer.AutoplayEnabled
+#define ID_AnimationPlayer_RelativePlayback 0xb10f4317 // AnimationPlayer.RelativePlayback
+#define ID_AnimationPlayer_RestoreOriginalValuesAfterPlayback 0xb982b350 // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+#define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
+#define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
+#define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
+#define ID_AnimationPlayer_Timeline 0x17c5cb89 // AnimationPlayer.Timeline
 #define ID_AnimationPlayer_Play ((0x389b07cc&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Play
+#define ID_AnimationPlayer_Resume ((0x6c36db2d&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Resume
 #define ID_AnimationPlayer_Stop ((0x59228a5a&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Stop
 #define ID_AnimationPlayer_Pause ((0xafb93ba4&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Pause
-#define kAnimationPlayerNumProperties 8
+#define ID_AnimationPlayer_Started ((0x6f97130b&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Started
+#define ID_AnimationPlayer_Stopped ((0x845c891f&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Stopped
+#define ID_AnimationPlayer_Completed ((0xa2ffe357&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Completed
+#define kAnimationPlayerNumProperties 19
 enum AnimationPlayerProperties {
 	kAnimationPlayerClip,
 	kAnimationPlayerPlaying,
 	kAnimationPlayerLooping,
 	kAnimationPlayerSpeed,
 	kAnimationPlayerCurrentTime,
+	kAnimationPlayerAutoplayEnabled,
+	kAnimationPlayerRelativePlayback,
+	kAnimationPlayerRestoreOriginalValuesAfterPlayback,
+	kAnimationPlayerPlaybackMode,
+	kAnimationPlayerDurationScale,
+	kAnimationPlayerRepeatCount,
+	kAnimationPlayerTimeline,
 	kAnimationPlayerPlay,
+	kAnimationPlayerResume,
 	kAnimationPlayerStop,
 	kAnimationPlayerPause,
+	kAnimationPlayerStarted,
+	kAnimationPlayerStopped,
+	kAnimationPlayerCompleted,
 };
 // PropertyAnimation
 #define ID_PropertyAnimation 0xe1a7f302
