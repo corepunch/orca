@@ -233,6 +233,7 @@
 		789AE3E12F687BDE0067DC75 /* liborca.filesystem.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* DRPalette.c */; };
 		789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* DRPalette.h */; };
+		78A441A52F87991000AF52A4 /* AnimationPlayer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A441A42F87990900AF52A4 /* AnimationPlayer.c */; };
 		78A5AFA42F66BA0200E6A765 /* Package.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* Package.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -632,6 +633,7 @@
 		789AE44E2F694F180067DC75 /* DRPalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRPalette.h; sourceTree = "<group>"; };
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
 		789ED2E92C8EE475003A3CDF /* localization.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = localization.c; sourceTree = "<group>"; };
+		78A441A42F87990900AF52A4 /* AnimationPlayer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AnimationPlayer.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A5AFA32F66B9FA00E6A765 /* Package.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Package.c; sourceTree = "<group>"; };
 		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
@@ -1168,6 +1170,14 @@
 			path = DarkReign;
 			sourceTree = "<group>";
 		};
+		78A441A62F879A1700AF52A4 /* components */ = {
+			isa = PBXGroup;
+			children = (
+				78A441A42F87990900AF52A4 /* AnimationPlayer.c */,
+			);
+			path = components;
+			sourceTree = "<group>";
+		};
 		78A5B0672F6828CA00E6A765 /* plugins */ = {
 			isa = PBXGroup;
 			children = (
@@ -1289,6 +1299,7 @@
 		78C7374E2B8F60C600FD598E /* core */ = {
 			isa = PBXGroup;
 			children = (
+				78A441A62F879A1700AF52A4 /* components */,
 				787040532F6F1A3200A84406 /* object */,
 				787040522F6F199900A84406 /* property */,
 				78FD532B2D90746900122823 /* alias.c */,
@@ -2139,6 +2150,7 @@
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
+				78A441A52F87991000AF52A4 /* AnimationPlayer.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
 				786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */,
