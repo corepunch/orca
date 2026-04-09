@@ -5,7 +5,7 @@ import Users, Chats, Messages from require "model"
 class MessagesView extends ui.StackView
 	new: (@params) => 
 		super ".flex-col.p-4.overflow-y-scroll.h-full.w-full", ClipChildren: "true"
-		@setTimer duration: 2000
+		@setTimer 2000
 
 	body: =>
 		@user = Users\auth!

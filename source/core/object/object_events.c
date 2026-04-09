@@ -5,7 +5,6 @@ OBJ_EmitPropertyChangedEvents(lua_State* L, lpObject_t object)
 {
   SM_EnsureStateManagerInitialized(object);
   PROP_ProcessEvents(L, OBJ_GetProperties(object), object);
-  OBJ_UpdateTimers(object);
   FOR_EACH_OBJECT(it, object) OBJ_EmitPropertyChangedEvents(L, it);
 }
 
