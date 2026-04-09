@@ -268,33 +268,15 @@ int f_OBJ_SetStyle(lua_State *L) {
 	OBJ_SetStyle(this_, style );
 	return 0;
 }
-int f_OBJ_Play(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* animation = luaL_checkstring(L, 2);
-	OBJ_Play(this_, animation );
-	return 0;
-}
 int f_OBJ_DoTween(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_DoTween(L, this_ );
 	return 0;
 }
-int f_OBJ_SetAnimation(lua_State *L) {
+int f_OBJ_AddComponent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	OBJ_SetAnimation(this_, name );
-	return 0;
-}
-int f_OBJ_GetAnimation(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim const* result_ = OBJ_GetAnimation(this_);
-	luaX_pushKeyframeAnim(L, result_);
-	return 1;
-}
-int f_OBJ_AddAnimation(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct KeyframeAnim* animation = NULL;
-	OBJ_AddAnimation(this_, animation );
+	const char* className = luaL_checkstring(L, 2);
+	OBJ_AddComponent_ByName(L, this_, className);
 	return 0;
 }
 int f_OBJ_SetFocus(lua_State *L) {

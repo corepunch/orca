@@ -6,7 +6,6 @@
     <external struct="localization"/>
     <external struct="game"/>
     <external struct="Property"/>
-    <external struct="KeyframeAnim"/>
     <external struct="lua_State"/>
   </externals>
   <enums>
@@ -46,6 +45,21 @@
       <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
   </enums>
+  <structs>
+    <struct name="Keyframe" sealed="true">
+      <summary>A single keyframe in an animation curve.</summary>
+      <fields>
+        <field name="time" type="float">Time position of this keyframe in seconds</field>
+        <field name="value" type="float" fixed-array="4">Animated value (up to 4 components for vectors/colors)</field>
+        <field name="inSlope" type="float" fixed-array="4">Incoming tangent slope for bezier interpolation</field>
+        <field name="outSlope" type="float" fixed-array="4">Outgoing tangent slope for bezier interpolation</field>
+        <field name="inWeight" type="float" fixed-array="4">Incoming tangent weight for weighted bezier interpolation</field>
+        <field name="outWeight" type="float" fixed-array="4">Outgoing tangent weight for weighted bezier interpolation</field>
+        <field name="tangentMode" type="int">Interpolation mode for this keyframe (free, auto, linear, constant)</field>
+        <field name="weightedMode" type="int">Whether tangent weights are used for this keyframe</field>
+      </fields>
+    </struct>
+  </structs>
   <interfaces>
     <interface name="Object" prefix="OBJ_" export="Object" no-check="true">
       <summary>Core engine host object.</summary>
@@ -258,29 +272,14 @@
           <arg name="style" type="uint">Style flags bitmask to apply</arg>
         </method>
         <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
-        <method name="Play">
-          <summary>Play an animation or resource on the object.</summary>
-          <details>Initiates playback of the specified animation or media resource on this object. The animation name is resolved against the object's animation library or external animation resources. This triggers the animation system to begin updating the object's properties over time according to the animation's keyframes and timeline.</details>
-          <arg name="animation" type="string">Name or identifier of the animation to play, resolved from the object's animation library</arg>
-        </method>
         <method name="DoTween" lua="true">
           <summary>Tween an object property over time.</summary>
           <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
         </method>
-        <method name="SetAnimation">
-          <summary>Sets the active animation by name</summary>
-          <details>Looks up an animation by name in the object's animation library and sets it as the current active animation. The animation must have been previously added to the object's library using AddAnimation. If the animation name is not found, the active animation will be set to null.</details>
-          <arg name="name" type="string">The name of the animation to activate</arg>
-        </method>
-        <method name="GetAnimation" const="true">
-          <summary>Gets the currently active animation</summary>
-          <details>Returns a pointer to the keyframe animation that is currently set as active for this object, or null if no animation is active.  The active animation is set via SetAnimation and selected from the object's animation library.</details>
-          <returns type="KeyframeAnim" pointer="true" const="true">Pointer to the active keyframe animation, or null if none is set</returns>
-        </method>
-        <method name="AddAnimation">
-          <summary>Adds a keyframe animation to the object's animation library</summary>
-          <details>Registers a keyframe animation in the object's animation library, making it available for activation via SetAnimation. Multiple animations can be added to an object's library and switched between at runtime. The animation is added to a linked list of animations maintained by the object.</details>
-          <arg name="animation" type="KeyframeAnim" pointer="true">The keyframe animation to add to the library</arg>
+        <method name="AddComponent" lua="true">
+          <summary>Attaches a component class to this object.</summary>
+          <details>Adds the component identified by the given class name to this object's component list. The component's properties become immediately accessible on the object. Useful for dynamically composing behaviour at runtime, e.g. attaching an AnimationPlayer or Trigger to an existing node.</details>
+          <arg name="className" type="string">The class name of the component to attach (e.g. "AnimationPlayer")</arg>
         </method>
         <topic title="Focus and Input">Controls focus state, hover, modal presentation, and timers.</topic>
         <method name="SetFocus">
@@ -457,19 +456,52 @@
     </interface>
   </interfaces>
   <classes>
-    <class name="AnimationPlayer">
-      <summary>Component for managing and playing animations on UI elements.</summary>
-      <details>AnimationPlayer allows you to define and control animations that can be applied to properties of UI components. It supports keyframe-based animations, allowing you to specify property values at specific times, and handles interpolation between keyframes. You can play, pause, stop, and seek within animations, making it a powerful tool for creating dynamic and engaging user interfaces.</details>
+    <class name="AnimationCurve" attach-only="true">
+      <summary>A single animated property curve, consisting of keyframes for one property on one target object.</summary>
+      <details>AnimationCurve is an attach-only component that describes how a single property on a target object changes over time. It holds an array of Keyframe values and is always attached to an AnimationClip object as a component.</details>
+      <properties>
+        <property name="Path" type="string">Relative path from the AnimationClip's host object to the target object (empty string means the host object itself)</property>
+        <property name="Property" type="string">Short name of the property to animate (e.g. "Opacity", "Position")</property>
+        <property name="Keyframes" type="Keyframe" array="true">Array of keyframes that define this curve</property>
+      </properties>
+    </class>
+    <class name="AnimationClip">
+      <summary>A reusable, self-loading animation asset containing one or more AnimationCurve components.</summary>
+      <details>AnimationClip is an object class (like Image or Shader) that loads itself from XML. Each child AnimationCurve component describes how one property changes over time. Once loaded, an AnimationClip can be referenced by an AnimationPlayer component via its Clip property. ANIM_Load is no longer needed — simply load the clip's XML file with require().</details>
       <handles>
         <handle message="Object.Start"/>
       </handles>
       <properties>
-        <property name="AnimationName" type="string">The name of the animation to play. This should correspond to a defined animation sequence within the component.</property>
-        <property name="Playing" type="bool">Indicates whether the animation is currently playing.</property>
-        <property name="Looping" type="bool">Determines if the animation should loop when it reaches the end.</property>
-        <property name="Speed" type="float">The playback speed of the animation. A value of 1.0 plays at normal speed, while values greater than 1.0 speed up the animation and values less than 1.0 slow it down.</property>
-        <property name="CurrentTime" type="float">The current time position within the animation, in seconds. This can be used to seek to a specific point in the animation.</property>
+        <property name="Mode" type="string">Playback mode: "PlayOnce", "Loop", or "PingPong"</property>
+        <property name="StartTime" type="float">Start time of the active region in seconds (default 0)</property>
+        <property name="StopTime" type="float">End time of the active region in seconds</property>
       </properties>
+    </class>
+    <class name="AnimationPlayer" attach-only="true">
+      <summary>Component for managing and playing animations on UI elements.</summary>
+      <details>AnimationPlayer is an attach-only component that drives keyframe animation on the object it is attached to. Attach it to any node with addComponent("AnimationPlayer") or as an XML child element. Set the Clip property to an AnimationClip object, then set Playing=true (or send the Play message) to start playback. The component advances CurrentTime each frame when it receives the Object.Animate message and evaluates all AnimationCurves in the clip.</details>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.Animate"/>
+      </handles>
+      <properties>
+        <property name="Clip" type="Object" pointer="true">The AnimationClip object that supplies the curves to animate</property>
+        <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
+        <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
+        <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
+        <property name="CurrentTime" type="float">Current playback position within the animation in seconds</property>
+      </properties>
+      <messages>
+        <message name="Play" routing="Direct">
+          <summary>Starts or resumes animation playback.</summary>
+        </message>
+        <message name="Stop" routing="Direct">
+          <summary>Stops animation playback and resets CurrentTime to the clip's StartTime.</summary>
+        </message>
+        <message name="Pause" routing="Direct">
+          <summary>Pauses animation playback without resetting CurrentTime.</summary>
+        </message>
+      </messages>
     </class>
   </classes>
   <functions>

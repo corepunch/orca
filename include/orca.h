@@ -421,6 +421,7 @@ struct ClassDesc
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
   uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
   void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
+  bool_t IsAttachOnly; // if true, this class can only be added as a component to an existing object, not instantiated standalone
 };
 
 struct component;

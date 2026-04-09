@@ -318,7 +318,7 @@
         <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
       </properties>
     </class>
-    <class name="Trigger">
+    <class name="Trigger" attach-only="true">
       <summary>Base class for event-driven actions within the UI system</summary>
       <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -339,7 +339,7 @@
         </message>
       </messages>
     </class>
-    <class name="OnPropertyChangedTrigger" parent="Trigger">
+    <class name="OnPropertyChangedTrigger" parent="Trigger" attach-only="true">
       <summary>Responds to property value changes on specified nodes</summary>
       <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -351,7 +351,7 @@
         <property name="Property" type="string">Property name to watch for changes </property>
       </properties>
     </class>
-    <class name="OnAttachedTrigger" parent="Trigger">
+    <class name="OnAttachedTrigger" parent="Trigger" attach-only="true">
       <summary>Triggers when an element is attached to the visual tree</summary>
       <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -359,7 +359,7 @@
         <handle message="Object.Attached"/>
       </handles>
     </class>
-    <class name="EventTrigger" parent="Trigger">
+    <class name="EventTrigger" parent="Trigger" attach-only="true">
       <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
       <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -370,7 +370,7 @@
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
       </properties>
     </class>
-    <class name="Setter">
+    <class name="Setter" attach-only="true">
       <summary>Applies property values when triggered by specified conditions</summary>
       <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -383,7 +383,7 @@
         <property name="Value" type="string">Value to apply to the property </property>
       </properties>
     </class>
-    <class name="Handler">
+    <class name="Handler" attach-only="true">
       <summary>Executes custom functions when triggered by specified conditions</summary>
       <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
