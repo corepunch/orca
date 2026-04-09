@@ -456,6 +456,22 @@
       </messages>
     </interface>
   </interfaces>
+  <classes>
+    <class name="AnimationPlayer">
+      <summary>Component for managing and playing animations on UI elements.</summary>
+      <details>AnimationPlayer allows you to define and control animations that can be applied to properties of UI components. It supports keyframe-based animations, allowing you to specify property values at specific times, and handles interpolation between keyframes. You can play, pause, stop, and seek within animations, making it a powerful tool for creating dynamic and engaging user interfaces.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+      <properties>
+        <property name="AnimationName" type="string">The name of the animation to play. This should correspond to a defined animation sequence within the component.</property>
+        <property name="Playing" type="bool">Indicates whether the animation is currently playing.</property>
+        <property name="Looping" type="bool">Determines if the animation should loop when it reaches the end.</property>
+        <property name="Speed" type="float">The playback speed of the animation. A value of 1.0 plays at normal speed, while values greater than 1.0 speed up the animation and values less than 1.0 slow it down.</property>
+        <property name="CurrentTime" type="float">The current time position within the animation, in seconds. This can be used to seek to a specific point in the animation.</property>
+      </properties>
+    </class>
+  </classes>
   <functions>
     <function name="GetFocus">
       <summary>Retrieves currently active object.</summary>
