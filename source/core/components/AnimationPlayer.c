@@ -59,7 +59,13 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (clip) {
-        pAnimationPlayer->CurrentTime = clip->StartTime;
+        if (pAnimationPlayer->PlaybackMode == kPlaybackModeReverse) {
+            pAnimationPlayer->CurrentTime = clip->StopTime;
+            if (pAnimationPlayer->Speed > 0.0f)
+                pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
+        } else {
+            pAnimationPlayer->CurrentTime = clip->StartTime;
+        }
     }
     if (pAnimationPlayer->AutoplayEnabled) {
         pAnimationPlayer->Playing = TRUE;
@@ -129,13 +135,23 @@ HANDLER(AnimationPlayer, Object, Animate) {
 
     // Check for end of clip
     if (clip->StopTime > 0.0f) {
+        // clip->Mode is the authoritative source; AnimationPlayer.Looping/PlaybackMode
+        // are consulted only when clip->Mode is PlayOnce (the default).
+        bool_t looping, pingpong;
+        if (clip->Mode != kAnimationModePlayOnce) {
+            looping  = (clip->Mode == kAnimationModeLoop);
+            pingpong = (clip->Mode == kAnimationModePingPong);
+        } else {
+            looping  = pAnimationPlayer->Looping;
+            pingpong = (pAnimationPlayer->PlaybackMode == kPlaybackModePingPong);
+        }
+
         if (pAnimationPlayer->CurrentTime >= clip->StopTime) {
-            if (pAnimationPlayer->PlaybackMode == kPlaybackModePingPong) {
-                // Reverse direction and clamp to StopTime for the next frame.
+            if (pingpong) {
                 pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
                 pAnimationPlayer->CurrentTime = clip->StopTime;
                 pAnimationPlayer->_prevRealtime = 0;
-            } else if (pAnimationPlayer->Looping) {
+            } else if (looping) {
                 pAnimationPlayer->CurrentTime = clip->StartTime;
                 pAnimationPlayer->_prevRealtime = 0;
             } else {
@@ -144,12 +160,19 @@ HANDLER(AnimationPlayer, Object, Animate) {
                 pAnimationPlayer->_prevRealtime = 0;
                 _SendMessage(hObject, AnimationPlayer, Completed);
             }
-        } else if (pAnimationPlayer->PlaybackMode == kPlaybackModePingPong &&
-                   pAnimationPlayer->CurrentTime <= clip->StartTime) {
-            // Reverse direction at the start boundary during ping-pong reverse pass.
-            pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
-            pAnimationPlayer->CurrentTime = clip->StartTime;
-            pAnimationPlayer->_prevRealtime = 0;
+        } else if (pAnimationPlayer->CurrentTime <= clip->StartTime &&
+                   pAnimationPlayer->Speed < 0.0f) {
+            if (pingpong) {
+                pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
+                pAnimationPlayer->CurrentTime = clip->StartTime;
+                pAnimationPlayer->_prevRealtime = 0;
+            } else {
+                // Reverse or ping-pong back-pass reached start — stop.
+                pAnimationPlayer->CurrentTime = clip->StartTime;
+                pAnimationPlayer->Playing = FALSE;
+                pAnimationPlayer->_prevRealtime = 0;
+                _SendMessage(hObject, AnimationPlayer, Completed);
+            }
         }
     }
     return FALSE;
@@ -157,7 +180,13 @@ HANDLER(AnimationPlayer, Object, Animate) {
 
 HANDLER(AnimationPlayer, AnimationPlayer, Play) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
-    pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
+    if (pAnimationPlayer->PlaybackMode == kPlaybackModeReverse) {
+        pAnimationPlayer->CurrentTime = clip ? clip->StopTime : 0.0f;
+        if (pAnimationPlayer->Speed > 0.0f)
+            pAnimationPlayer->Speed = -pAnimationPlayer->Speed;
+    } else {
+        pAnimationPlayer->CurrentTime = clip ? clip->StartTime : 0.0f;
+    }
     pAnimationPlayer->Playing = TRUE;
     pAnimationPlayer->_prevRealtime = 0;
     _SendMessage(hObject, AnimationPlayer, Started);
