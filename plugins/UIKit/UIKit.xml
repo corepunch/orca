@@ -128,12 +128,6 @@
       <value name="Inset">3D inset border effect</value>
       <value name="Outset">3D outset border effect</value>
     </enum>
-    <enum name="PlaybackMode">
-      <summary>Animation playback behavior modes</summary>
-      <value name="Normal">Standard forward playback</value>
-      <value name="Reverse">Reverse playback from end to start</value>
-      <value name="Pingpong">Alternating forward/reverse playback</value>
-    </enum>
     <enum name="ButtonType">
       <summary>Button behavior types for different interaction patterns</summary>
       <value name="Normal">Standard interactive button</value>
@@ -303,20 +297,6 @@
     <class name="DataObject">
       <summary>Base class for data-holding objects within the framework</summary>
       <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
-    </class>
-    <class name="AnimationPlayer">
-      <summary>Controls playback of animations within the UI engine.</summary>
-      <details>Provides functionality for starting, stopping, and repeating animations on scene objects. Supports different playback modes, timing adjustments, and restoration of original property values.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <properties>
-        <property name="AutoplayEnabled" type="bool">Enables or disables automatic playback on initialization.</property>
-        <property name="DurationScale" type="float">Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.</property>
-        <property name="PlaybackMode" type="PlaybackMode">Defines how the animation should be played.</property>
-        <property name="RelativePlayback" type="bool">When true, playback is relative to the current state rather than starting from an absolute base state.</property>
-        <property name="RepeatCount" type="int"> Number of times the animation should repeat. Use -1 (or another sentinel value, depending on implementation) to indicate infinite looping.</property>
-        <property name="RestoreOriginalValuesAfterPlayback" type="bool">Restores the original property values after the animation ends.</property>
-        <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
-      </properties>
     </class>
     <class name="Trigger" attach-only="true">
       <summary>Base class for event-driven actions within the UI system</summary>

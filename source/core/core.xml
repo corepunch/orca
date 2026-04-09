@@ -50,6 +50,12 @@
       <value name="Loop">Restart from the beginning when the animation reaches the end</value>
       <value name="PingPong">Alternate between playing forward and backward</value>
     </enum>
+    <enum name="PlaybackMode">
+      <summary>Animation playback behavior modes</summary>
+      <value name="Normal">Standard forward playback</value>
+      <value name="Reverse">Reverse playback from end to start</value>
+      <value name="PingPong">Alternating forward/reverse playback</value>
+    </enum>
   </enums>
   <structs>
     <struct name="Keyframe" sealed="true">
@@ -465,9 +471,9 @@
     </interface>
   </interfaces>
   <classes>
-    <class name="AnimationCurve" attach-only="true">
+    <class name="AnimationCurve">
       <summary>A single animated property curve, consisting of keyframes for one property on one target object.</summary>
-      <details>AnimationCurve is an attach-only component that describes how a single property on a target object changes over time. It holds an array of Keyframe values and is always attached to an AnimationClip object as a component.</details>
+      <details>AnimationCurve is a standalone object that describes how a single property on a target object changes over time. It holds an array of Keyframe values and is typically created as a child of an AnimationClip object.</details>
       <properties>
         <property name="Path" type="string">Relative path from the AnimationClip's host object to the target object (empty string means the host object itself)</property>
         <property name="Property" type="string">Short name of the property to animate (e.g. "Opacity", "Position")</property>
@@ -492,6 +498,10 @@
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Animate"/>
+        <handle message="AnimationPlayer.Play"/>
+        <handle message="AnimationPlayer.Resume"/>
+        <handle message="AnimationPlayer.Stop"/>
+        <handle message="AnimationPlayer.Pause"/>
       </handles>
       <properties>
         <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
@@ -499,10 +509,20 @@
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
         <property name="CurrentTime" type="float">Current playback position within the animation in seconds</property>
+        <property name="AutoplayEnabled" type="bool">Enables or disables automatic playback on initialization.</property>
+        <property name="RelativePlayback" type="bool">When true, playback is relative to the current state rather than starting from an absolute base state.</property>
+        <property name="RestoreOriginalValuesAfterPlayback" type="bool">Restores the original property values after the animation ends.</property>
+        <property name="PlaybackMode" type="PlaybackMode">Defines how the animation should be played.</property>
+        <property name="DurationScale" type="float">Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.</property>
+        <property name="RepeatCount" type="int">Number of times the animation should repeat. Use -1 to indicate infinite looping.</property>
+        <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
       </properties>
       <messages>
         <message name="Play" routing="Direct">
           <summary>Starts or resumes animation playback.</summary>
+        </message>
+        <message name="Resume" routing="Direct">
+          <summary>Resumes animation playback from the current position without resetting.</summary>
         </message>
         <message name="Stop" routing="Direct">
           <summary>Stops animation playback and resets CurrentTime to the clip's StartTime.</summary>
@@ -510,7 +530,23 @@
         <message name="Pause" routing="Direct">
           <summary>Pauses animation playback without resetting CurrentTime.</summary>
         </message>
+        <message name="Started" routing="Bubbling">
+          <summary>Sent when animation playback begins.</summary>
+        </message>
+        <message name="Stopped" routing="Bubbling">
+          <summary>Sent when animation playback stops (via Stop or Pause).</summary>
+        </message>
+        <message name="Completed" routing="Bubbling">
+          <summary>Sent when animation playback reaches the end of the clip without looping.</summary>
+        </message>
       </messages>
+    </class>
+    <class name="PropertyAnimation" attach-only="true">
+      <summary>Attach-only component that tweens one property value to a target, then self-destructs.</summary>
+      <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
+      <handles>
+        <handle message="Object.Animate"/>
+      </handles>
     </class>
   </classes>
   <functions>

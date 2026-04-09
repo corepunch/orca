@@ -41,8 +41,6 @@ int f_find_module(lua_State* L);
 ORCA_API void luaX_pushProperty(lua_State*, lpcProperty_t);
 ORCA_API int luaX_readProperty(lua_State*, int, lpProperty_t);
 
-ORCA_API void luaX_pushKeyframeAnim(lua_State*, lpcKeyframeAnim_t);
-ORCA_API lpKeyframeAnim_t luaX_checkKeyframeAnim(lua_State*, int);
 
 #define API_MODULE_SHUTDOWN(L, func)                                           \
   lua_newtable(L);                                                             \

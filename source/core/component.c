@@ -1,12 +1,5 @@
 #include "core_local.h"
-
-struct component
-{
-  struct component* next;
-  lpcClassDesc_t pcls;
-  lpObject_t pobj;
-  char pUserData[];
-};
+#include "component_internal.h"
 
 struct component*
 OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
@@ -221,6 +214,18 @@ OBJ_ReleaseComponents(lpObject_t pobj)
   {
     free(cmp);
   }
+}
+
+void
+CMP_Detach(void* userdata)
+{
+  if (!userdata) return;
+  // pUserData is a flexible array member at the end of struct component.
+  // Subtract its offset to recover the containing struct component pointer.
+  struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
+  lpObject_t pobj = self->pobj;
+  REMOVE_FROM_LIST(struct component, self, _GetComponents(pobj));
+  free(self);
 }
 
 lpObject_t

@@ -30,9 +30,6 @@
 #define _GetComponents(obj)                                                    \
   (*(struct component**)OBJ_GetObjectComponent(obj, kCompComponents))
 
-#define _GetAnimations(obj)                                                    \
-  (*(struct property_animation**)OBJ_GetObjectComponent(obj, kCompAnimations))
-
 #define _GetProperties(obj)                                                    \
   (*(lpProperty_t*)OBJ_GetObjectComponent(obj, kCompProperties))
 
@@ -65,7 +62,6 @@ struct lua_State;
 struct style_sheet;
 struct style_class;
 struct state_manager;
-struct property_animation;
 struct timer;
 struct alias;
 struct script_callback;
@@ -73,7 +69,6 @@ struct script_callback;
 enum component_type
 {
   kCompComponents,
-  kCompAnimations,
   kCompProperties,
   kCompStateManager,
   kCompClasses,
@@ -207,8 +202,6 @@ SM_HandleControllerChange(lpObject_t, lpProperty_t);
 void*
 OBJ_GetObjectComponent(lpObject_t, enum component_type);
 void
-OBJ_ReleaseAnimations(lpObject_t);
-void
 OBJ_UpdateTimers(lpObject_t);
 void
 OBJ_ReleaseTimers(lpObject_t);
@@ -218,6 +211,8 @@ void
 OBJ_ReleaseProperties(lpObject_t);
 void
 OBJ_ReleaseAliases(lpObject_t);
+void
+CMP_Detach(void* userdata);
 
 lpObject_t
 OBJ_FindChildByAlias(lpObject_t, uint32_t);
