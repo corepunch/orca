@@ -137,7 +137,6 @@ enum PropertyAnimationProperties {
 #define ID_Object_TimerEventArgs 0x75284ba1
 
 #define ID_Object_TimerEventArgs_timerId 0x9555bf27 // Object_TimerEventArgs.timerId
-
 #define ID_AnimationPlayer_PlayEventArgs 0x1e984720
 
 #define ID_AnimationPlayer_ResumeEventArgs 0xf37671df
