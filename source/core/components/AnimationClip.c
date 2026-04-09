@@ -1,7 +1,8 @@
 #include <source/core/core_local.h>
 
-// AnimationCurve components are attached to the AnimationClip host object by
-// the XML loader, so there is nothing extra to set up on Start.
+// AnimationCurve objects are added as children of the AnimationClip by
+// the XML loader before Object.Start is sent, so there is nothing extra
+// to set up here.
 HANDLER(AnimationClip, Object, Start) {
     return FALSE;
 }

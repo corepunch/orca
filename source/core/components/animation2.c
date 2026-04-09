@@ -1,3 +1,7 @@
+// Legacy property-animation tween API — all code below is commented out.
+// Preserved for reference during the transition to the PropertyAnimation
+// attach-only component. Scheduled for removal once the new system is stable.
+
 #include <include/orca.h>
 #include <include/shared.h>
 

@@ -465,9 +465,9 @@
     </interface>
   </interfaces>
   <classes>
-    <class name="AnimationCurve" attach-only="true">
+    <class name="AnimationCurve">
       <summary>A single animated property curve, consisting of keyframes for one property on one target object.</summary>
-      <details>AnimationCurve is an attach-only component that describes how a single property on a target object changes over time. It holds an array of Keyframe values and is always attached to an AnimationClip object as a component.</details>
+      <details>AnimationCurve is a standalone object that describes how a single property on a target object changes over time. It holds an array of Keyframe values and is typically created as a child of an AnimationClip object.</details>
       <properties>
         <property name="Path" type="string">Relative path from the AnimationClip's host object to the target object (empty string means the host object itself)</property>
         <property name="Property" type="string">Short name of the property to animate (e.g. "Opacity", "Position")</property>

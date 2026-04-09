@@ -133,8 +133,25 @@ local function attach_only_component(node, element)
 	end
 end
 
+-- AnimationCurve is a regular child object of AnimationClip (not attach-only).
+-- Create it as a child node and parse its attributes as properties.
+local function animation_curve_child(node, element)
+	local curve = orca.AnimationCurve()
+	for k, v in element.attributes do
+		xpcall(Property.parse, print, curve, k, v)
+	end
+	-- Parse child property elements (e.g. Keyframes array)
+	for sub in element.children do
+		if curve:findExplicitProperty(sub.tag) then
+			xpcall(Property.construct, print, curve, curve:findExplicitProperty(sub.tag), sub)
+		end
+	end
+	curve:msgSend("Object.Start")
+	node:addChild(curve)
+end
+
 specials.AnimationPlayer = attach_only_component
-specials.AnimationCurve  = attach_only_component
+specials.AnimationCurve  = animation_curve_child
 
 local function construct_node(element)
 	local class =

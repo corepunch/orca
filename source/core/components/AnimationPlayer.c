@@ -1,6 +1,5 @@
 #include <source/core/core_local.h>
 #include <source/core/animation.h>
-#include <source/core/component_internal.h>
 
 extern struct game core;
 
@@ -86,12 +85,12 @@ HANDLER(AnimationPlayer, Object, Animate) {
     pAnimationPlayer->_prevRealtime = core.realtime;
     pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed;
 
-    // Evaluate all AnimationCurve components attached to the clip's host object
+    // Evaluate all AnimationCurve child objects of the clip
     lpObject_t clipObj = CMP_GetObject(clip);
     if (clipObj) {
-        FOR_EACH_LIST(struct component, cmp, _GetComponents(clipObj)) {
-            if (cmp->pcls->ClassID != ID_AnimationCurve) continue;
-            struct AnimationCurve *curve = (struct AnimationCurve*)cmp->pUserData;
+        FOR_EACH_OBJECT(child, clipObj) {
+            struct AnimationCurve *curve = GetAnimationCurve(child);
+            if (!curve) continue;
             if (!curve->Keyframes || curve->NumKeyframes == 0) continue;
             if (!curve->Property || !curve->Property[0]) continue;
 
