@@ -100,6 +100,10 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
+  } else if (lua_type(L, 3) == LUA_TFUNCTION) {
+    void OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name);
+    OBJ_RegisterPropertyChangedCallback(self, name); // TODO: move to implocit callbacks registration?
+    return FALSE;
   } else {
 //    fprintf(stderr, "Can't find property %s\n", name);
     return FALSE;
@@ -187,7 +191,7 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   
   lpcProperty_t property = NULL;
-  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);  
+  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
   if (OBJ_PushClassProperty(L, self, ident)) {
     return 1;
   } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {

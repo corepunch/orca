@@ -147,3 +147,25 @@ OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value)
   }
   return hr;
 }
+
+#define SUFFIX "Changed"
+#define SUFFIX_LEN 7
+
+void
+OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name)
+{
+  if (strncmp(name, "on", 2) || !isupper(name[2]))
+    return;
+  size_t str_len = strlen(name);
+  if (str_len >= SUFFIX_LEN && strcmp(name + str_len - SUFFIX_LEN, SUFFIX) == 0) {
+    size_t property_len = str_len - SUFFIX_LEN;
+    shortStr_t pname = { 0 };
+    lpProperty_t pProp = NULL;
+    strncpy(pname, name + 2, property_len - 2);
+    if (SUCCEEDED(OBJ_FindShortProperty(object, pname, &pProp))) {
+      PROP_SetFlag(pProp, PF_HASCHANGECALLBACK);
+    } else {
+      Con_Error("Could not find property for %s", name);
+    }
+  }
+}
