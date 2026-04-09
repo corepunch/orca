@@ -989,14 +989,13 @@
         <property name="ImageBottomRight" type="Texture" pointer="true">Bottom-right corner image (non-stretchable) </property>
       </properties>
     </class>
-    <class name="TerminalView" parent="Node2D">
+    <class name="ConsoleView" parent="Node2D">
       <summary>Displays a fixed-size text grid using a monospace layout</summary>
       <details>Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="Node.PushProperty"/>
         <handle message="Node.ScrollWheel"/>
       </handles>
       <properties>

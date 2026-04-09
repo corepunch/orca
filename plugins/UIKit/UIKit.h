@@ -1143,10 +1143,10 @@ ORCA_API void luaX_pushNinePatchImage(lua_State *L, struct NinePatchImage const*
 ORCA_API struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx);
 
 /// @brief Displays a fixed-size text grid using a monospace layout
-/** TerminalView component */
-typedef struct TerminalView TerminalView_t, *TerminalViewPtr, *lpTerminalView_t;
-typedef struct TerminalView const *TerminalViewCPtr, *lpcTerminalView_t;
-struct TerminalView {
+/** ConsoleView component */
+typedef struct ConsoleView ConsoleView_t, *ConsoleViewPtr, *lpConsoleView_t;
+typedef struct ConsoleView const *ConsoleViewCPtr, *lpcConsoleView_t;
+struct ConsoleView {
 	int32_t BufferWidth; ///< Buffer width
 	int32_t BufferHeight; ///< Buffer height
 	int32_t Cursor; ///< Cursor position
@@ -1156,8 +1156,8 @@ struct TerminalView {
 	struct vec2 _scroll; ///< Scroll position
 	int32_t _contentHeight; ///< Current page length
 };
-ORCA_API void luaX_pushTerminalView(lua_State *L, struct TerminalView const* TerminalView);
-ORCA_API struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx);
+ORCA_API void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView);
+ORCA_API struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx);
 
 /// @brief Represents a single page within a document or UI container.
 /** Page component */

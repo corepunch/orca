@@ -99,6 +99,12 @@ int f_CornerRadius_TextConvert(lua_State* L) {
 
 bool_t is_server = FALSE;
 
+extern int f_ConsoleView_println(lua_State *L);
+extern int f_ConsoleView_erase(lua_State *L);
+extern int f_ConsoleView_invalidate(lua_State *L);
+extern int f_ConsoleView_getIndexPosition(lua_State *L);
+extern int f_ConsoleView_unpack(lua_State *L);
+
 extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg);
 
@@ -124,5 +130,32 @@ void on_ui_module_registered(lua_State* L) {
   OVERRIDE_FROMSTRING(EdgeShorthand)
   OVERRIDE_FROMSTRING(CornerRadius)
 #undef OVERRIDE_FROMSTRING
+
+  // Add methods to ConsoleView class
+  lua_getfield(L, -1, "ConsoleView");
+  lua_getfield(L, -1, "__base");
+  lua_pushcfunction(L, f_ConsoleView_println);
+  lua_setfield(L, -2, "println");
+  lua_pushcfunction(L, f_ConsoleView_erase);
+  lua_setfield(L, -2, "erase");
+  lua_pushcfunction(L, f_ConsoleView_invalidate);
+  lua_setfield(L, -2, "invalidate");
+  lua_pushcfunction(L, f_ConsoleView_getIndexPosition);
+  lua_setfield(L, -2, "getIndexPosition");
+  lua_pushcfunction(L, f_ConsoleView_unpack);
+  lua_setfield(L, -2, "unpack");
+  lua_pop(L, 2); // pop __base and ConsoleView
+
+  // Register UIKit table in package.loaded so TerminalView.lua can require it
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "loaded");
+  lua_pushvalue(L, -3); // UIKit table
+  lua_setfield(L, -2, "orca.UIKit");
+  lua_pop(L, 2); // pop loaded, package
+
+  // Load TerminalView Lua extension and expose it as UIKit.TerminalView
+  if (API_CallRequire(L, "orca.UIKit.TerminalView", 1) == LUA_OK) {
+    lua_setfield(L, -2, "TerminalView");
+  }
 }
 

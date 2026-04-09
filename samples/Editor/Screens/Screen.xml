@@ -11,6 +11,6 @@
 		</Grid>
 	</Grid>
 	<Node2D Name="DragItem" Width="0" Height="0" Visible="false" IgnoreHitTest="true">
-		<TerminalView Name="Label" Width="256" Height="16" BufferWidth="256" BufferHeight="1" />
+		<LayerPrefabPlaceholder Name="Label" Width="256" Height="16" BufferWidth="256" BufferHeight="1" PlaceholderTemplate="orca.UIKit.TerminalView" />
 	</Node2D>
 </Screen>

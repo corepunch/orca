@@ -4,7 +4,6 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-#define ITEMS_LIST "__items"
 #define SCROLL_SENSIVITY 1.2f
 #define BUFFER_WIDTH 256
 #define BUFFER_HEIGHT 256
@@ -14,7 +13,7 @@
 #define kMsgPaint 0x36b37bd3
 
 static uint32_t
-PointToData(TerminalViewCPtr t, int mx, int my, uint32_t *cursor)
+PointToData(ConsoleViewCPtr t, int mx, int my, uint32_t *cursor)
 {
   vec2_t scrolled = VEC2_Sub(&(vec2_t){mx, my}, &t->_scroll);
   uint32_t x = scrolled.x / CONSOLE_CHAR_WIDTH;
@@ -34,7 +33,7 @@ struct tstate {
 };
 
 static lpcString_t
-_cmd(TerminalViewPtr t, lpcString_t str, struct tstate *state)
+_cmd(ConsoleViewPtr t, lpcString_t str, struct tstate *state)
 {
   uint32_t v[3];
   uint8_t cmd;
@@ -72,23 +71,10 @@ _cmd(TerminalViewPtr t, lpcString_t str, struct tstate *state)
   return str;
 }
 
-static int f_println(lua_State *L) {
+int f_ConsoleView_println(lua_State *L) {
   struct tstate state = { .foreground = 7 };
-  TerminalViewPtr t = GetTerminalView(luaX_checkObject(L, 1));
-  lua_Integer len = 0;
-  lua_getfield(L, 1, ITEMS_LIST);
-  if (!lua_isnil(L, -1)) {
-    lua_len(L, -1);
-    len = lua_tointeger(L, -1);
-    lua_pop(L, 1);
-  }
-  if (lua_isnil(L, 2)) {
-    len = 0;
-  } else {
-    lua_pushvalue(L, 2);
-    lua_seti(L, -2, ++len);
-  }
-  lua_pop(L, 1);
+  ConsoleViewPtr t = GetConsoleView(luaX_checkObject(L, 1));
+  lua_Integer len = luaL_checkinteger(L, 2);
   int n = lua_gettop(L), c = t->Cursor;
   state.item = len;
   for (int arg = 3; arg <= n; arg++) {
@@ -119,7 +105,7 @@ static int f_println(lua_State *L) {
   return 1;
 }
 
-static int f_unpack(lua_State *L) {
+int f_ConsoleView_unpack(lua_State *L) {
   float x = luaL_checknumber(L, 2);
   float y = luaL_checknumber(L, 3);
   lpObject_t obj = luaX_checkObject(L, 1);
@@ -129,36 +115,30 @@ static int f_unpack(lua_State *L) {
   struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
   struct vec3 out = MAT4_MultiplyVector3D(&inv, &(struct vec3){x,y,0});
 #endif
-  TerminalViewPtr t = GetTerminalView(obj);
+  ConsoleViewPtr t = GetConsoleView(obj);
   uint32_t data = PointToData(t, out.x, out.y, NULL);
-  
-  lua_getfield(L, 1, ITEMS_LIST);
-  lua_geti(L, -1, data>>16);
-  lua_replace(L, -2);
 
   lua_pushinteger(L, data>>16);
   lua_pushlstring(L, (char*)&data, 1);
-  return 3;
+  return 2;
 }
 
-static int f_erase(lua_State *L) {
-  TerminalViewPtr t = GetTerminalView(luaX_checkObject(L, 1));
+int f_ConsoleView_erase(lua_State *L) {
+  ConsoleViewPtr t = GetConsoleView(luaX_checkObject(L, 1));
   memset(t->_buffer, 0, MEMSIZE(t));
   t->Cursor = 0;
   t->_contentHeight = 0;
-  lua_newtable(L);
-  lua_setfield(L, 1, ITEMS_LIST);
   return 0;
 }
 
-static int f_invalidate(lua_State *L) {
+int f_ConsoleView_invalidate(lua_State *L) {
   WI_PostMessageW(luaX_checkObject(L, 1), kMsgPaint, 0, NULL);
   return 0;
 }
 
-static int f_getIndexPosition(lua_State *L) {
+int f_ConsoleView_getIndexPosition(lua_State *L) {
   lpObject_t o = luaX_checkObject(L, 1);
-  TerminalViewPtr t = GetTerminalView(o);
+  ConsoleViewPtr t = GetConsoleView(o);
   lua_Integer i = luaL_checkinteger(L, 2);
   lua_Integer offx = luaL_optinteger(L, 3, 0);
   lua_Integer offy = luaL_optinteger(L, 4, 0);
@@ -184,53 +164,23 @@ static int f_getIndexPosition(lua_State *L) {
   return 0;
 }
 
-HANDLER(TerminalView, Object, Create) {
-  pTerminalView->_buffer = ZeroAlloc(MEMSIZE(pTerminalView));
+HANDLER(ConsoleView, Object, Create) {
+  pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
   WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 
-HANDLER(TerminalView, Node, PushProperty) {
-  lua_State* L = (lua_State*)pPushProperty;
-  switch (wParam) {
-    case 0x18bff8a6: // println
-      lua_pushcfunction(L, f_println);
-      return 1;
-    case 0x317e3e33: // unpack
-      lua_pushcfunction(L, f_unpack);
-      return 1;
-    case 0x3c41ddd5: // erase
-      lua_pushcfunction(L, f_erase);
-      return 1;
-    case 0x9defbf10: // invalidate
-      lua_pushcfunction(L, f_invalidate);
-      return 1;
-    case 0x4f84ed12: // getIndexPosition
-      lua_pushcfunction(L, f_getIndexPosition);
-      return 1;
-    case 0x5a29274b: // selectedItem
-      lua_getfield(L, 1, ITEMS_LIST);
-      lua_geti(L, -1, GetTerminalView(luaX_checkObject(L, 1))->SelectedIndex);
-      return 1;
-    case 0xc3eb86a5: // numItems
-      lua_getfield(L, 1, ITEMS_LIST);
-      lua_len(L, -1);
-      return 1;
-  }
-  return 0;
-}
-
-HANDLER(TerminalView, Node2D, DrawBrush) {
+HANDLER(ConsoleView, Node2D, DrawBrush) {
   bool_t bFocused = OBJ_IsFocused(hObject)||OBJ_GetFlags(hObject)&OF_NOACTIVATE;
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
-    .Buffer = pTerminalView->_buffer,
-    .Width = pTerminalView->BufferWidth,
-    .Height = pTerminalView->_contentHeight+1,
-    .Scroll = pTerminalView->_scroll,
-    .Cursor = pTerminalView->Cursor,
-    .SelectedItem = pTerminalView->SelectedIndex,
+    .Buffer = pConsoleView->_buffer,
+    .Width = pConsoleView->BufferWidth,
+    .Height = pConsoleView->_contentHeight+1,
+    .Scroll = pConsoleView->_scroll,
+    .Cursor = pConsoleView->Cursor,
+    .SelectedItem = pConsoleView->SelectedIndex,
     .SoftSelection = !bFocused,
-    .DrawShadow = pTerminalView->DropShadow,
+    .DrawShadow = pConsoleView->DropShadow,
     .Rect = (struct rect) {
       GetNode2D(hObject)->Matrix.v[12],
       GetNode2D(hObject)->Matrix.v[13],
@@ -241,11 +191,11 @@ HANDLER(TerminalView, Node2D, DrawBrush) {
   return TRUE;
 }
 
-HANDLER(TerminalView, Node, ScrollWheel) {
-  int const h = (pTerminalView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
+HANDLER(ConsoleView, Node, ScrollWheel) {
+  int const h = (pConsoleView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
-  pTerminalView->_scroll.y += pScrollWheel->deltaY / SCROLL_SENSIVITY;
-  pTerminalView->_scroll.y = MAX(space, pTerminalView->_scroll.y);
-  pTerminalView->_scroll.y = MIN(0, pTerminalView->_scroll.y);
+  pConsoleView->_scroll.y += pScrollWheel->deltaY / SCROLL_SENSIVITY;
+  pConsoleView->_scroll.y = MAX(space, pConsoleView->_scroll.y);
+  pConsoleView->_scroll.y = MIN(0, pConsoleView->_scroll.y);
   return TRUE;
 }

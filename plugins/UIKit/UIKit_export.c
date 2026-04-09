@@ -1531,40 +1531,39 @@ struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
-HANDLER(TerminalView, Object, Create);
-HANDLER(TerminalView, Node2D, DrawBrush);
-HANDLER(TerminalView, Node, PushProperty);
-HANDLER(TerminalView, Node, ScrollWheel);
-static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
-	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
-	DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight
-	DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor
-	DECL(0x98eca570, TerminalView, SelectedIndex, SelectedIndex, kDataTypeInt), // TerminalView.SelectedIndex
-	DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow
+HANDLER(ConsoleView, Object, Create);
+HANDLER(ConsoleView, Node2D, DrawBrush);
+HANDLER(ConsoleView, Node, ScrollWheel);
+static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
+	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
+	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
+	DECL(0x558a502f, ConsoleView, Cursor, Cursor, kDataTypeInt), // ConsoleView.Cursor
+	DECL(0x98eca570, ConsoleView, SelectedIndex, SelectedIndex, kDataTypeInt), // ConsoleView.SelectedIndex
+	DECL(0x87f68bc8, ConsoleView, DropShadow, DropShadow, kDataTypeBool), // ConsoleView.DropShadow
 };
-static struct TerminalView TerminalViewDefaults = {
+static struct ConsoleView ConsoleViewDefaults = {
 		
   .BufferWidth = 256,
 		
   .BufferHeight = 256,
 };
-LRESULT TerminalViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+LRESULT ConsoleViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Create&MSG_DATA_MASK: return TerminalView_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node2D_DrawBrush&MSG_DATA_MASK: return TerminalView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_Node_PushProperty&MSG_DATA_MASK: return TerminalView_PushProperty(object, cmp, wparm, lparm); // Node.PushProperty
-		case ID_Node_ScrollWheel&MSG_DATA_MASK: return TerminalView_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
+		case ID_Object_Create&MSG_DATA_MASK: return ConsoleView_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node2D_DrawBrush&MSG_DATA_MASK: return ConsoleView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Node_ScrollWheel&MSG_DATA_MASK: return ConsoleView_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
 	}
 	return FALSE;
 }
-void luaX_pushTerminalView(lua_State *L, struct TerminalView const* TerminalView) {
-	luaX_pushObject(L, CMP_GetObject(TerminalView));
+void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView) {
+	luaX_pushObject(L, CMP_GetObject(ConsoleView));
 }
-struct TerminalView* luaX_checkTerminalView(lua_State *L, int idx) {
-	return GetTerminalView(luaX_checkObject(L, idx));
+struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx) {
+	return GetConsoleView(luaX_checkObject(L, idx));
 }
+#define ID_ConsoleView 0x2ad7c563
 #define ID_Node2D 0x6c63a2ab
-REGISTER_CLASS(TerminalView, ID_Node2D, 0);
+REGISTER_CLASS(ConsoleView, ID_Node2D, 0);
 HANDLER(Page, Object, Create);
 static struct PropertyType const PageProperties[kPageNumProperties] = {
 	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
@@ -1738,7 +1737,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Grid), -2), "Grid");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ImageView), -2), "ImageView");
 	lua_setfield(L, ((void)lua_pushclass(L, &_NinePatchImage), -2), "NinePatchImage");
-	lua_setfield(L, ((void)lua_pushclass(L, &_TerminalView), -2), "TerminalView");
+	lua_setfield(L, ((void)lua_pushclass(L, &_ConsoleView), -2), "ConsoleView");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Page), -2), "Page");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PageHost), -2), "PageHost");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PageViewport), -2), "PageViewport");

@@ -1896,19 +1896,18 @@ static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProp
 };
 static struct NinePatchImage NinePatchImageDefaults = {
 };
-LRESULT TerminalView_Create(struct Object*, struct TerminalView*, wParam_t, CreatePtr);
-LRESULT TerminalView_DrawBrush(struct Object*, struct TerminalView*, wParam_t, DrawBrushPtr);
-LRESULT TerminalView_PushProperty(struct Object*, struct TerminalView*, wParam_t, PushPropertyPtr);
-LRESULT TerminalView_ScrollWheel(struct Object*, struct TerminalView*, wParam_t, ScrollWheelPtr);
+LRESULT ConsoleView_Create(struct Object*, struct ConsoleView*, wParam_t, CreatePtr);
+LRESULT ConsoleView_DrawBrush(struct Object*, struct ConsoleView*, wParam_t, DrawBrushPtr);
+LRESULT ConsoleView_ScrollWheel(struct Object*, struct ConsoleView*, wParam_t, ScrollWheelPtr);
 
-static struct PropertyType const TerminalViewProperties[kTerminalViewNumProperties] = {
-	DECL(0xdd1f241d, TerminalView, BufferWidth, BufferWidth, kDataTypeInt), // TerminalView.BufferWidth
-	DECL(0xd75e2af4, TerminalView, BufferHeight, BufferHeight, kDataTypeInt), // TerminalView.BufferHeight
-	DECL(0x558a502f, TerminalView, Cursor, Cursor, kDataTypeInt), // TerminalView.Cursor
-	DECL(0x98eca570, TerminalView, SelectedIndex, SelectedIndex, kDataTypeInt), // TerminalView.SelectedIndex
-	DECL(0x87f68bc8, TerminalView, DropShadow, DropShadow, kDataTypeBool), // TerminalView.DropShadow
+static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
+	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
+	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
+	DECL(0x558a502f, ConsoleView, Cursor, Cursor, kDataTypeInt), // ConsoleView.Cursor
+	DECL(0x98eca570, ConsoleView, SelectedIndex, SelectedIndex, kDataTypeInt), // ConsoleView.SelectedIndex
+	DECL(0x87f68bc8, ConsoleView, DropShadow, DropShadow, kDataTypeBool), // ConsoleView.DropShadow
 };
-static struct TerminalView TerminalViewDefaults = {
+static struct ConsoleView ConsoleViewDefaults = {
   .BufferWidth = 256,
   .BufferHeight = 256,
 };
@@ -2015,7 +2014,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, (lua_pushclass(L, &_Grid), -2), "Grid");
 	lua_setfield(L, (lua_pushclass(L, &_ImageView), -2), "ImageView");
 	lua_setfield(L, (lua_pushclass(L, &_NinePatchImage), -2), "NinePatchImage");
-	lua_setfield(L, (lua_pushclass(L, &_TerminalView), -2), "TerminalView");
+	lua_setfield(L, (lua_pushclass(L, &_ConsoleView), -2), "ConsoleView");
 	lua_setfield(L, (lua_pushclass(L, &_Page), -2), "Page");
 	lua_setfield(L, (lua_pushclass(L, &_PageHost), -2), "PageHost");
 	lua_setfield(L, (lua_pushclass(L, &_PageViewport), -2), "PageViewport");

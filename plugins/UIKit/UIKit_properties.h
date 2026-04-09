@@ -672,22 +672,22 @@ enum NinePatchImageProperties {
 	kNinePatchImageImageBottom,
 	kNinePatchImageImageBottomRight,
 };
-// TerminalView
-#define ID_TerminalView 0xb1477a0c
-#define GetTerminalView(_P) ((struct TerminalView*)((_P)?OBJ_GetComponent(_P,ID_TerminalView):NULL))
-#define TerminalView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TerminalView,sizeof(struct TerminalView),_N)
-#define ID_TerminalView_BufferWidth 0xdf51183c // TerminalView.BufferWidth
-#define ID_TerminalView_BufferHeight 0xfd169aab // TerminalView.BufferHeight
-#define ID_TerminalView_Cursor 0x550c9034 // TerminalView.Cursor
-#define ID_TerminalView_SelectedIndex 0xc6c048a5 // TerminalView.SelectedIndex
-#define ID_TerminalView_DropShadow 0x8c72c3cb // TerminalView.DropShadow
-#define kTerminalViewNumProperties 5
-enum TerminalViewProperties {
-	kTerminalViewBufferWidth,
-	kTerminalViewBufferHeight,
-	kTerminalViewCursor,
-	kTerminalViewSelectedIndex,
-	kTerminalViewDropShadow,
+// ConsoleView
+#define ID_ConsoleView 0x2ad7c563
+#define GetConsoleView(_P) ((struct ConsoleView*)((_P)?OBJ_GetComponent(_P,ID_ConsoleView):NULL))
+#define ConsoleView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ConsoleView,sizeof(struct ConsoleView),_N)
+#define ID_ConsoleView_BufferWidth 0x83573a57 // ConsoleView.BufferWidth
+#define ID_ConsoleView_BufferHeight 0xce20e99a // ConsoleView.BufferHeight
+#define ID_ConsoleView_Cursor 0x0e1d2fa5 // ConsoleView.Cursor
+#define ID_ConsoleView_SelectedIndex 0x8f71f73a // ConsoleView.SelectedIndex
+#define ID_ConsoleView_DropShadow 0x861e7f0e // ConsoleView.DropShadow
+#define kConsoleViewNumProperties 5
+enum ConsoleViewProperties {
+	kConsoleViewBufferWidth,
+	kConsoleViewBufferHeight,
+	kConsoleViewCursor,
+	kConsoleViewSelectedIndex,
+	kConsoleViewDropShadow,
 };
 // Page
 #define ID_Page 0xe83d9196
