@@ -30,7 +30,7 @@ void luaX_pushObject(lua_State* L, lpcObject_t self)
 }
 
 static void
-_parse_args(lua_State* L, lpObject_t hobj)
+_ParseArguments(lua_State* L, lpObject_t hobj)
 {
   if (lua_type(L, 2) == LUA_TSTRING) {
     lpcString_t arg = luaL_checkstring(L, 2);
@@ -55,6 +55,7 @@ _parse_args(lua_State* L, lpObject_t hobj)
   if (lua_type(L, 2) == LUA_TTABLE) {
     lua_pushnil(L);
     while (lua_next(L, 2)) {
+      luaL_checktype(L, -2, LUA_TSTRING);
       shortStr_t _key;
       strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
       lua_settable(L, 1);
@@ -88,30 +89,33 @@ _parse_args(lua_State* L, lpObject_t hobj)
   }
 }
 
-static void
-_assign_callbacks(lua_State* L, lpObject_t pobj, int idx)
+static int
+set_prop(lua_State* L)
 {
-  luaX_pushObject(L, pobj);
-  int obj_index = lua_gettop(L);
+  OBJ_SetProperty(L, luaX_checkObject(L, 1), luaL_checkstring(L, 2));
+  return 0;
+}
+
+static void
+_AssignProperties(lua_State* L, lpObject_t pobj, int idx)
+{
   lua_pushvalue(L, idx);
   while (lua_type(L, -1) != LUA_TNIL) {
     lua_pushnil(L);
     while (lua_next(L, -2)) {
-      shortStr_t _key;
-      strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
-      if (strncmp(_key, "__", 2)) {
-        lua_settable(L, obj_index);
-        lua_pushstring(L, _key);
-      } else {
-        lua_pop(L, 1);
-      }
+      lua_pushcfunction(L, set_prop);
+      luaX_pushObject(L, pobj);
+      lua_pushvalue(L, -4);
+      lua_pushvalue(L, -4);
+      lua_call(L, 3, 0);
+      lua_pop(L, 1);
     }
     if (!lua_getmetatable(L, -1)) {
       break;
     }
     lua_remove(L, -2);
   }
-  lua_pop(L, 2);
+  lua_pop(L, 1);
 }
 
 int OBJ_CreateFromLuaState(lua_State *L) {
@@ -140,8 +144,8 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   // send "create" message
   OBJ_SendMessageW(pobj, ID_Object_Create, 0, L);
   
-  _assign_callbacks(L, pobj, 1);
-  _parse_args(L, pobj);
+  _AssignProperties(L, pobj, 1);
+  _ParseArguments(L, pobj);
 
   // TODO: is there a better way to add class-default style?
   lua_getfield(L, 1, "apply");

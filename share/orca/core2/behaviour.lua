@@ -113,11 +113,16 @@ local _class_0 = setmetatable({
     _base_1.__index = function(_self_0, key)
       local ud = rawget(_self_0, '__userdata')
       local mt = getmetatable(_base_1) or {}
-      return 
+      local vl = 
 				rawget(_base_1, key) or 
 				mt[key] or 
 				(ud and (orca.core.Object[key] or orca.core.Object.__getproperty(_self_0, key))) or 
 				(mt.__class and mt.__class[key]) -- this is needed to access inherited classes (ui.Node2D)
+      if type(vl) == 'function' then
+        return vl, _self_0
+      else
+        return vl
+      end      
     end
     
     _base_1.__newindex = function(_self_0, key, value)
@@ -130,6 +135,8 @@ local _class_0 = setmetatable({
     self.print = print
     self.assert = assert
     self.string = string
+    self.ipairs = ipairs
+    self.pairs = pairs
     self:rebuild()
   end,
   __base = _base_0,
