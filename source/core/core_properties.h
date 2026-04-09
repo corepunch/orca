@@ -46,7 +46,6 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
 #define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
 #define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
-#define ID_AnimationPlayer_Timeline 0x17c5cb89 // AnimationPlayer.Timeline
 #define ID_AnimationPlayer_Play ((0x389b07cc&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Play
 #define ID_AnimationPlayer_Resume ((0x6c36db2d&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Resume
 #define ID_AnimationPlayer_Stop ((0x59228a5a&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Stop
@@ -54,7 +53,7 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_Started ((0x6f97130b&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Started
 #define ID_AnimationPlayer_Stopped ((0x845c891f&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Stopped
 #define ID_AnimationPlayer_Completed ((0xa2ffe357&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Completed
-#define kAnimationPlayerNumProperties 19
+#define kAnimationPlayerNumProperties 18
 enum AnimationPlayerProperties {
 	kAnimationPlayerClip,
 	kAnimationPlayerPlaying,
@@ -67,7 +66,6 @@ enum AnimationPlayerProperties {
 	kAnimationPlayerPlaybackMode,
 	kAnimationPlayerDurationScale,
 	kAnimationPlayerRepeatCount,
-	kAnimationPlayerTimeline,
 	kAnimationPlayerPlay,
 	kAnimationPlayerResume,
 	kAnimationPlayerStop,
@@ -77,12 +75,25 @@ enum AnimationPlayerProperties {
 	kAnimationPlayerCompleted,
 };
 // PropertyAnimation
-#define ID_PropertyAnimation 0xe1a7f302
+#define ID_PropertyAnimation 0xd2fdd366
 #define GetPropertyAnimation(_P) ((struct PropertyAnimation*)((_P)?OBJ_GetComponent(_P,ID_PropertyAnimation):NULL))
 #define PropertyAnimation_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PropertyAnimation,sizeof(struct PropertyAnimation),_N)
-#define kPropertyAnimationNumProperties 0
+#define ID_PropertyAnimation_Property 0x02301fc1 // PropertyAnimation.Property
+#define ID_PropertyAnimation_From 0x642f4068 // PropertyAnimation.From
+#define ID_PropertyAnimation_To 0xec0b5ad1 // PropertyAnimation.To
+#define ID_PropertyAnimation_Interpolation 0xadb6aa4e // PropertyAnimation.Interpolation
+#define ID_PropertyAnimation_Easing 0xa4c33685 // PropertyAnimation.Easing
+#define ID_PropertyAnimation_Start 0x238f4404 // PropertyAnimation.Start
+#define ID_PropertyAnimation_Duration 0x88219fc8 // PropertyAnimation.Duration
+#define kPropertyAnimationNumProperties 7
 enum PropertyAnimationProperties {
-	kPropertyAnimationDummy_, // placeholder — no exposed properties
+	kPropertyAnimationProperty,
+	kPropertyAnimationFrom,
+	kPropertyAnimationTo,
+	kPropertyAnimationInterpolation,
+	kPropertyAnimationEasing,
+	kPropertyAnimationStart,
+	kPropertyAnimationDuration,
 };
 
 #define ID_Object_Create ((0x5ad07ee8&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Create
@@ -127,9 +138,17 @@ enum PropertyAnimationProperties {
 
 #define ID_AnimationPlayer_PlayEventArgs 0x1e984720
 
+#define ID_AnimationPlayer_ResumeEventArgs 0xf37671df
+
 #define ID_AnimationPlayer_StopEventArgs 0xa977f29a
 
 #define ID_AnimationPlayer_PauseEventArgs 0x68215542
+
+#define ID_AnimationPlayer_StartedEventArgs 0x9649588b
+
+#define ID_AnimationPlayer_StoppedEventArgs 0x272b2fdb
+
+#define ID_AnimationPlayer_CompletedEventArgs 0xacaaf6c7
 
 	
 

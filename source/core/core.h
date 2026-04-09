@@ -12,7 +12,6 @@ struct localization;
 struct game;
 struct Property;
 struct lua_State;
-struct Timeline;
 
 
 #include "core_properties.h"
@@ -118,6 +117,37 @@ typedef enum PlaybackMode {
 ORCA_API const char *PlaybackModeToString(enum PlaybackMode value);
 ORCA_API enum PlaybackMode luaX_checkPlaybackMode(lua_State *L, int idx);
 ORCA_API void luaX_pushPlaybackMode(lua_State *L, enum PlaybackMode value);
+/** InterpolationMode enum */
+typedef enum InterpolationMode {
+	kInterpolationModeLinear, ///< Linear interpolation
+	kInterpolationModeConst, ///< Constant interpolation
+	kInterpolationModeBack, ///< Back interpolation
+	kInterpolationModeBounce, ///< Bounce interpolation
+	kInterpolationModeCirc, ///< Circular interpolation
+	kInterpolationModeCubic, ///< Cubic interpolation
+	kInterpolationModeElastic, ///< Elastic interpolation
+	kInterpolationModeExpo, ///< Exponential interpolation
+	kInterpolationModeQuad, ///< Quadratic interpolation
+	kInterpolationModeQuart, ///< Quartic interpolation
+	kInterpolationModeQuint, ///< Quintic interpolation
+	kInterpolationModeSine, ///< Sine interpolation
+} eInterpolationMode_t;
+#define InterpolationMode_Count 12
+ORCA_API const char *InterpolationModeToString(enum InterpolationMode value);
+ORCA_API enum InterpolationMode luaX_checkInterpolationMode(lua_State *L, int idx);
+ORCA_API void luaX_pushInterpolationMode(lua_State *L, enum InterpolationMode value);
+
+/// @brief Defines easing functions for animation interpolation.
+/** Easing enum */
+typedef enum Easing {
+	kEasingInOut, ///< Easing function that starts slow, speeds up in the middle, and slows down at the end
+	kEasingIn, ///< Easing function that starts slow and speeds up towards the end
+	kEasingOut, ///< Easing function that starts fast and slows down towards the end
+} eEasing_t;
+#define Easing_Count 3
+ORCA_API const char *EasingToString(enum Easing value);
+ORCA_API enum Easing luaX_checkEasing(lua_State *L, int idx);
+ORCA_API void luaX_pushEasing(lua_State *L, enum Easing value);
 
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
@@ -303,9 +333,9 @@ OBJ_SetStyle(struct Object*, uint32_t);
 
 /// @brief Tween an object property over time.
 ORCA_API void
-OBJ_DoTween(struct lua_State*, struct Object*);
+OBJ_DoTween(struct lua_State*, struct Object*, const char*, int32_t, enum InterpolationMode, enum Easing);
 
-/// @brief Attaches a component class to this object by class name (Lua bridge).
+/// @brief Attaches a component class to this object.
 ORCA_API void
 OBJ_AddComponentByName(struct lua_State*, struct Object*, const char*);
 
@@ -567,9 +597,9 @@ struct AnimationPlayer {
 	bool_t RelativePlayback; ///< When true, playback is relative to the current state rather than starting from an absolute base state.
 	bool_t RestoreOriginalValuesAfterPlayback; ///< Restores the original property values after the animation ends.
 	enum PlaybackMode PlaybackMode; ///< Defines how the animation should be played.
-	float DurationScale; ///< Scales the playback speed of the animation.
+	float DurationScale; ///< Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.
 	int32_t RepeatCount; ///< Number of times the animation should repeat. Use -1 to indicate infinite looping.
-	struct Timeline* Timeline; ///< Reference to the animation timeline that defines keyframes and transitions.
+	long _prevRealtime; ///< The last real time when the animation was updated, used to calculate delta time for advancing CurrentTime
 	event_t Play;
 	event_t Resume;
 	event_t Stop;
@@ -577,7 +607,6 @@ struct AnimationPlayer {
 	event_t Started;
 	event_t Stopped;
 	event_t Completed;
-	longTime_t _prevRealtime; ///< Internal: realtime of last Animate tick (milliseconds)
 };
 ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
 ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
@@ -587,13 +616,14 @@ ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx
 typedef struct PropertyAnimation PropertyAnimation_t, *PropertyAnimationPtr, *lpPropertyAnimation_t;
 typedef struct PropertyAnimation const *PropertyAnimationCPtr, *lpcPropertyAnimation_t;
 struct PropertyAnimation {
-	struct Property* target; ///< The property being animated
-	byte_t from[MAX_PROPERTY_STRING]; ///< Start value (raw bytes)
-	byte_t to[MAX_PROPERTY_STRING];   ///< End value (raw bytes)
-	enum ipo_type ipo;
-	enum easing easing;
-	longTime_t start; ///< core.realtime when animation started
-	int duration;     ///< Duration in milliseconds
+	const char* Property; ///< Property to animate
+	const char* From; ///< Start value (raw bytes)
+	const char* To; ///< End value (raw bytes)
+	enum InterpolationMode Interpolation; ///< Interpolation method
+	enum Easing Easing; ///< Easing function
+	int32_t Start; ///< Timestamp when animation started
+	int32_t Duration; ///< Duration in milliseconds
+	struct Property* _property; ///< The property being animated
 };
 ORCA_API void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation);
 ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx);

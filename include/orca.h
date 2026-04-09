@@ -53,29 +53,6 @@ FWD_STRUCT(PropertyType);
 #define STRINGIZE(x) #x
 #define TO_STRING(x) STRINGIZE(x)
 
-enum ipo_type
-{
-  IPO_LINEAR,
-  IPO_CONST,
-  IPO_BACK,
-  IPO_BOUNCE,
-  IPO_CIRC,
-  IPO_CUBIC,
-  IPO_ELASTIC,
-  IPO_EXPO,
-  IPO_QUAD,
-  IPO_QUART,
-  IPO_QUINT,
-  IPO_SINE,
-};
-
-enum easing
-{
-  IPO_EASE_IN_OUT,
-  IPO_EASE_IN,
-  IPO_EASE_OUT,
-};
-
 enum message_type
 {
   kMessageTypeNormal,

@@ -56,6 +56,26 @@
       <value name="Reverse">Reverse playback from end to start</value>
       <value name="PingPong">Alternating forward/reverse playback</value>
     </enum>
+    <enum name="InterpolationMode">
+      <value name="Linear">Linear interpolation</value>
+      <value name="Const">Constant interpolation</value>
+      <value name="Back">Back interpolation</value>
+      <value name="Bounce">Bounce interpolation</value>
+      <value name="Circ">Circular interpolation</value>
+      <value name="Cubic">Cubic interpolation</value>
+      <value name="Elastic">Elastic interpolation</value>
+      <value name="Expo">Exponential interpolation</value>
+      <value name="Quad">Quadratic interpolation</value>
+      <value name="Quart">Quartic interpolation</value>
+      <value name="Quint">Quintic interpolation</value>
+      <value name="Sine">Sine interpolation</value>
+    </enum>
+    <enum name="Easing">
+      <summary>Defines easing functions for animation interpolation.</summary>
+      <value name="InOut">Easing function that starts slow, speeds up in the middle, and slows down at the end</value>
+      <value name="In">Easing function that starts slow and speeds up towards the end</value>
+      <value name="Out">Easing function that starts fast and slows down towards the end</value>
+    </enum>
   </enums>
   <structs>
     <struct name="Keyframe" sealed="true">
@@ -287,8 +307,12 @@
         <method name="DoTween" lua="true">
           <summary>Tween an object property over time.</summary>
           <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
+          <arg name="property" type="string">Property to tween</arg>
+          <arg name="duration" type="int">Duration of the tween in seconds</arg>
+          <arg name="ipo" type="InterpolationMode">Interpolation mode for the tween</arg>
+          <arg name="easing" type="Easing">Easing function for the tween</arg>
         </method>
-        <method name="AddComponent" lua="true">
+        <method name="AddComponentByName" lua="true">
           <summary>Attaches a component class to this object.</summary>
           <details>Adds the component identified by the given class name to this object's component list. The component's properties become immediately accessible on the object. Useful for dynamically composing behaviour at runtime, e.g. attaching an AnimationPlayer or Trigger to an existing node.</details>
           <arg name="className" type="string">The class name of the component to attach (e.g. "AnimationPlayer")</arg>
@@ -515,8 +539,10 @@
         <property name="PlaybackMode" type="PlaybackMode">Defines how the animation should be played.</property>
         <property name="DurationScale" type="float">Scales the playback speed of the animation. A value greater than 1.0 speeds up playback, while values between 0.0 and 1.0 slow it down.</property>
         <property name="RepeatCount" type="int">Number of times the animation should repeat. Use -1 to indicate infinite looping.</property>
-        <property name="Timeline" type="Timeline" pointer="true">Reference to the animation timeline that defines keyframes and transitions.</property>
       </properties>
+      <fields>
+        <field name="_prevRealtime" type="long">The last real time when the animation was updated, used to calculate delta time for advancing CurrentTime</field>
+      </fields>
       <messages>
         <message name="Play" routing="Direct">
           <summary>Starts or resumes animation playback.</summary>
@@ -547,6 +573,18 @@
       <handles>
         <handle message="Object.Animate"/>
       </handles>
+      <properties>
+        <property name="Property" type="string">Property to animate</property>
+	      <property name="From" type="string">Start value (raw bytes)</property>
+	      <property name="To" type="string">End value (raw bytes)</property>
+        <property name="Interpolation" type="InterpolationMode">Interpolation method</property>
+        <property name="Easing" type="Easing">Easing function</property>
+        <property name="Start" type="int">Timestamp when animation started</property>
+        <property name="Duration" type="int">Duration in milliseconds</property>
+      </properties>
+      <fields>
+        <field name="_property" type="Property" pointer="true">The property being animated</field>
+      </fields>
     </class>
   </classes>
   <functions>
