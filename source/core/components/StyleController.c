@@ -223,7 +223,7 @@ static lua_State* g_L = NULL;
 // name: selector string (e.g., ".button:hover"); table at stack index 3
 void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
 {
-  uint32_t classID = *name == '.' ? fnv1a32(name + 1) : 0;
+  uint32_t classID = fnv1a32(*name == '.' ? name + 1 : name);
   if (lua_type(L, 3) != LUA_TTABLE) {
     lua_error(L);
     return;

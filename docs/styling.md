@@ -74,8 +74,8 @@ Tokens are space-separated; each token is parsed into a `style_class` node.
 -- At object creation (via the property table):
 local btn = UIKit.Button { class = "primary:hover" }
 
--- At runtime:
-core.addClassToObject(btn, "selected")
+-- At runtime (assign a space-separated class string):
+btn.class = "selected"
 ```
 
 ### C API
@@ -83,9 +83,6 @@ core.addClassToObject(btn, "selected")
 ```c
 // Parse a full space-separated class attribute string (called during XML load)
 OBJ_ParseClassAttribute(lpObject_t obj, const char* classAttr);
-
-// Add a single class token at runtime
-OBJ_AddClass(lpObject_t obj, const char* token);  // e.g., "primary:hover"
 ```
 
 ---

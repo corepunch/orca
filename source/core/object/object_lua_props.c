@@ -184,7 +184,11 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
 
+  /* ID_Node_PushProperty is defined in plugins/UIKit/UIKit_properties.h.
+   * It is duplicated here because source/core cannot include UIKit headers. */
+#ifndef ID_Node_PushProperty
 #define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
+#endif
   LRESULT found = OBJ_SendMessageW(self, ID_Node_PushProperty, ident, L);
   if (found) {
     return (int)found;

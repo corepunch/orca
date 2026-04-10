@@ -167,6 +167,10 @@ HANDLER(ConsoleView, ConsoleView, Invalidate) {
   return FALSE;
 }
 
+HANDLER(ConsoleView, Node, PushProperty) {
+  return FALSE;
+}
+
 HANDLER(ConsoleView, Object, Create) {
   pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
   WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
