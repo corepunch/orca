@@ -111,9 +111,17 @@ enum PropertyAnimationProperties {
 #define ID_StateManagerController 0x69d899d1
 #define GetStateManagerController(_P) ((struct StateManagerController*)((_P)?OBJ_GetComponent(_P,ID_StateManagerController):NULL))
 #define StateManagerController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateManagerController,sizeof(struct StateManagerController),_N)
+#define ID_StateManagerController_StateManager 0xb09e0f5d // StateManagerController.StateManager
 #define ID_StateManagerController_Load 0x3772ec91 // StateManagerController.Load
+#define ID_StateManagerController_Reload 0x0d15b614 // StateManagerController.Reload
 #define ID_StateManagerController_ControllerChanged 0x0d0ee8c7 // StateManagerController.ControllerChanged
-#define kStateManagerControllerNumProperties 2
+#define kStateManagerControllerNumProperties 4
+enum StateManagerControllerProperties {
+	kStateManagerControllerStateManager,
+	kStateManagerControllerLoad,
+	kStateManagerControllerReload,
+	kStateManagerControllerControllerChanged,
+};
 
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
@@ -183,8 +191,11 @@ enum PropertyAnimationProperties {
 #define ID_StyleController_AddClassesEventArgs_ClassNames 0xbeac48c3 // StyleController_AddClassesEventArgs.ClassNames
 #define ID_StateManagerController_LoadEventArgs 0x87430117
 
+#define ID_StateManagerController_ReloadEventArgs 0x39d80f24
+
 #define ID_StateManagerController_ControllerChangedEventArgs 0x12c11cb3
 
+#define ID_StateManagerController_ControllerChangedEventArgs_Property 0x1ed8c3b6 // StateManagerController_ControllerChangedEventArgs.Property
 	
 
 #endif

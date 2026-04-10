@@ -24,7 +24,7 @@ typedef struct _STATGROUP
 static propertyParser_t _parser;
 
 // ============================================================================
-// INTERNAL HELPERS (formerly in state_manager.c)
+// INTERNAL HELPERS
 // ============================================================================
 
 static void
@@ -178,6 +178,26 @@ _HandleControllerChange(struct StateManagerController* sm,
   }
 }
 
+// Load the XML document from the path stored in sm->StateManager.
+static void
+_LoadFromPath(struct StateManagerController* sm, lpObject_t object)
+{
+  if (!sm->StateManager || !*sm->StateManager)
+    return;
+  xmlDocPtr doc = (xmlDocPtr)FS_LoadXML(sm->StateManager);
+  if (!doc) {
+    Con_Error("StateManagerController: failed to load \"%s\"", sm->StateManager);
+    return;
+  }
+  _ReleaseDoc(sm);
+  sm->doc = doc;
+  // Immediately initialize if the object is already started.
+  if (OBJ_GetFlags(object) & OF_UPDATED_ONCE) {
+    _InitStateGroups(sm, object);
+    sm->initialized = TRUE;
+  }
+}
+
 // ============================================================================
 // COMPONENT HANDLERS
 // ============================================================================
@@ -194,7 +214,7 @@ HANDLER(StateManagerController, Object, Release) {
   return FALSE;
 }
 
-// Lazily resolve state groups on the first Start (matching former SM_EnsureStateManagerInitialized).
+// Lazily resolve state groups on the first Start.
 HANDLER(StateManagerController, Object, Start) {
   if (pStateManagerController->doc && !pStateManagerController->initialized) {
     _InitStateGroups(pStateManagerController, hObject);
@@ -203,31 +223,40 @@ HANDLER(StateManagerController, Object, Start) {
   return FALSE;
 }
 
-// Replace SM_ReadStateManager: install a new XML document into the component.
-// The caller must use OBJ_SendMessageW directly:
-//   OBJ_SendMessageW(obj, ID_StateManagerController_Load,
-//                    (wParam_t)(uintptr_t)doc, (lParam_t)(uintptr_t)parser);
-// wParam carries the xmlDocPtr; lParam carries the propertyParser_t callback.
-// In this HANDLER, lParam arrives as the 4th argument (pLoad), so we recover
-// it via (uintptr_t)pLoad.
+// When the StateManager string property is set, automatically load the XML file.
+HANDLER(StateManagerController, Object, PropertyChanged) {
+  if (pPropertyChanged->Property &&
+      PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_StateManagerController_StateManager) {
+    _LoadFromPath(pStateManagerController, hObject);
+  }
+  return FALSE;
+}
+
+// C-only API: install a pre-parsed xmlDocPtr directly (e.g. from editor or
+// embedded data).  wParam carries the xmlDocPtr; lParam carries the
+// propertyParser_t callback (passed as the 4th argument = pLoad in HANDLER).
 HANDLER(StateManagerController, StateManagerController, Load) {
   _ReleaseDoc(pStateManagerController);
   pStateManagerController->doc = (void*)(uintptr_t)wParam;
-  // pLoad == (StateManagerController_LoadMsgPtr)lParam; recover parser from it
   if (pLoad) {
     _parser = (propertyParser_t)(uintptr_t)(void*)pLoad;
   }
   return TRUE;
 }
 
-// Replace SM_HandleControllerChange: called from property_events when a
-// PF_USED_IN_STATE_MANAGER property changes value.
-// wParam = lpProperty_t
+// Re-read the XML file at the path stored in the StateManager property.
+HANDLER(StateManagerController, StateManagerController, Reload) {
+  _LoadFromPath(pStateManagerController, hObject);
+  return TRUE;
+}
+
+// Called from property_events when a PF_USED_IN_STATE_MANAGER property changes.
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
   if (!pStateManagerController->initialized) {
     _InitStateGroups(pStateManagerController, hObject);
     pStateManagerController->initialized = TRUE;
   }
-  _HandleControllerChange(pStateManagerController, hObject, (lpProperty_t)(uintptr_t)wParam);
+  _HandleControllerChange(pStateManagerController, hObject, pControllerChanged->Property);
   return FALSE;
 }
+

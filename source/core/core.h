@@ -38,6 +38,7 @@ typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t
 typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_LoadEventArgs StateManagerController_LoadMsg_t,* StateManagerController_LoadMsgPtr;
+typedef struct StateManagerController_ReloadEventArgs StateManagerController_ReloadMsg_t,* StateManagerController_ReloadMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
 
 
@@ -584,8 +585,14 @@ struct StateManagerController_LoadEventArgs {
 };
 ORCA_API void luaX_pushStateManagerController_LoadEventArgs(lua_State *L, struct StateManagerController_LoadEventArgs const* data);
 ORCA_API struct StateManagerController_LoadEventArgs* luaX_checkStateManagerController_LoadEventArgs(lua_State *L, int idx);
+/** StateManagerController_ReloadEventArgs struct */
+struct StateManagerController_ReloadEventArgs {
+};
+ORCA_API void luaX_pushStateManagerController_ReloadEventArgs(lua_State *L, struct StateManagerController_ReloadEventArgs const* data);
+ORCA_API struct StateManagerController_ReloadEventArgs* luaX_checkStateManagerController_ReloadEventArgs(lua_State *L, int idx);
 /** StateManagerController_ControllerChangedEventArgs struct */
 struct StateManagerController_ControllerChangedEventArgs {
+	struct Property* Property; ///< The property whose value changed, triggering state group evaluation
 };
 ORCA_API void luaX_pushStateManagerController_ControllerChangedEventArgs(lua_State *L, struct StateManagerController_ControllerChangedEventArgs const* data);
 ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkStateManagerController_ControllerChangedEventArgs(lua_State *L, int idx);
@@ -682,10 +689,12 @@ ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx
 typedef struct StateManagerController StateManagerController_t, *StateManagerControllerPtr, *lpStateManagerController_t;
 typedef struct StateManagerController const *StateManagerControllerCPtr, *lpcStateManagerController_t;
 struct StateManagerController {
+	const char* StateManager; ///< Path to the StateManager XML file. Setting this property automatically loads and activates the document.
 	void* doc; ///< Parsed XML document that contains the StateGroup definitions (xmlDocPtr)
 	void* stategroups; ///< Linked list of resolved STATEGRP entries (PSTATEGRP)
 	bool_t initialized; ///< TRUE once the state groups have been resolved against the object's properties
 	event_t Load;
+	event_t Reload;
 	event_t ControllerChanged;
 };
 ORCA_API void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController);

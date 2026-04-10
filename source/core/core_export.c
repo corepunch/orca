@@ -680,8 +680,12 @@ static struct PropertyType _StyleController_AddClassesEventArgs[] = {
 static luaL_Reg _StateManagerController_LoadEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StateManagerController_LoadEventArgs[] = {
 };
+static luaL_Reg _StateManagerController_ReloadEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StateManagerController_ReloadEventArgs[] = {
+};
 static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
+	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
 };
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
@@ -703,6 +707,7 @@ STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_LoadEventArgs, StateManagerController_LoadEventArgs);
+STRUCT(StateManagerController_ReloadEventArgs, StateManagerController_ReloadEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
@@ -881,10 +886,14 @@ REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
 HANDLER(StateManagerController, Object, Create);
 HANDLER(StateManagerController, Object, Release);
 HANDLER(StateManagerController, Object, Start);
+HANDLER(StateManagerController, Object, PropertyChanged);
 HANDLER(StateManagerController, StateManagerController, Load);
 HANDLER(StateManagerController, StateManagerController, ControllerChanged);
+HANDLER(StateManagerController, StateManagerController, Reload);
 static struct PropertyType const StateManagerControllerProperties[kStateManagerControllerNumProperties] = {
+	DECL(0xe76f2815, StateManagerController, StateManager, StateManager, kDataTypeString), // StateManagerController.StateManager
 	DECL(0x68afa209, StateManagerController, Load, Load, kDataTypeEvent, .TypeString = "StateManagerController_LoadEventArgs"), // StateManagerController.Load
+	DECL(0x1a43a2ac, StateManagerController, Reload, Reload, kDataTypeEvent, .TypeString = "StateManagerController_ReloadEventArgs"), // StateManagerController.Reload
 	DECL(0xda0795ff, StateManagerController, ControllerChanged, ControllerChanged, kDataTypeEvent, .TypeString = "StateManagerController_ControllerChangedEventArgs"), // StateManagerController.ControllerChanged
 };
 static struct StateManagerController StateManagerControllerDefaults = {
@@ -894,8 +903,10 @@ LRESULT StateManagerControllerProc(struct Object* object, void* cmp, uint32_t me
 		case ID_Object_Create: return StateManagerController_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Release: return StateManagerController_Release(object, cmp, wparm, lparm); // Object.Release
 		case ID_Object_Start: return StateManagerController_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return StateManagerController_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_StateManagerController_Load: return StateManagerController_Load(object, cmp, wparm, lparm); // StateManagerController.Load
 		case ID_StateManagerController_ControllerChanged: return StateManagerController_ControllerChanged(object, cmp, wparm, lparm); // StateManagerController.ControllerChanged
+		case ID_StateManagerController_Reload: return StateManagerController_Reload(object, cmp, wparm, lparm); // StateManagerController.Reload
 	}
 	return FALSE;
 }
@@ -944,6 +955,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StateManagerController_LoadEventArgs(L), -2), "StateManagerController_LoadEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ReloadEventArgs(L), -2), "StateManagerController_ReloadEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");

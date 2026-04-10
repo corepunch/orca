@@ -636,14 +636,19 @@
     </class>
     <class name="StateManagerController" attach-only="true">
       <summary>Manages XML-driven state groups that reactively apply property values when controller properties change.</summary>
-      <details>StateManagerController is an attach-only component that loads a Kanzi-style StateManager XML document and evaluates its StateGroup entries whenever a tracked controller property changes value. Attach it to any object and send the Load message with an xmlDocPtr to activate it. The component lazily initializes its internal state group list on the first Object.Start and then fires ControllerChanged whenever a property marked PF_USED_IN_STATE_MANAGER is modified.</details>
+      <details>StateManagerController is an attach-only component that loads a Kanzi-style StateManager XML document and evaluates its StateGroup entries whenever a tracked controller property changes value. Set the StateManager property to a file path to load and activate a state manager document transparently. The component lazily initializes its internal state group list on the first Object.Start and then dispatches ControllerChanged whenever a property marked PF_USED_IN_STATE_MANAGER is modified.</details>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
         <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="StateManagerController.Load"/>
         <handle message="StateManagerController.ControllerChanged"/>
+        <handle message="StateManagerController.Reload"/>
       </handles>
+      <properties>
+        <property name="StateManager" type="string">Path to the StateManager XML file. Setting this property automatically loads and activates the document.</property>
+      </properties>
       <fields>
         <field name="doc" type="void" pointer="true">Parsed XML document that contains the StateGroup definitions (xmlDocPtr)</field>
         <field name="stategroups" type="void" pointer="true">Linked list of resolved STATEGRP entries (PSTATEGRP)</field>
@@ -654,9 +659,16 @@
           <summary>Load a StateManager XML document into this component.</summary>
           <details>Replaces any previously loaded document. The old document and all resolved state groups are released before the new one is installed. Initialization is deferred until the next Object.Start or the first ControllerChanged. Pass the xmlDocPtr in wParam and the propertyParser_t in lParam.</details>
         </message>
+        <message name="Reload" routing="Direct">
+          <summary>Reload the StateManager XML document from the current StateManager file path.</summary>
+          <details>Re-reads the file at the path stored in the StateManager property, replacing any previously loaded document and resetting all resolved state groups. Useful after the source file has been modified on disk.</details>
+        </message>
         <message name="ControllerChanged" routing="Direct">
           <summary>Evaluate all state groups whose controller property matches the changed property.</summary>
-          <details>Called automatically by the property event system whenever a property flagged with PF_USED_IN_STATE_MANAGER changes value. Pass the lpProperty_t in wParam.</details>
+          <details>Called automatically by the property event system whenever a property flagged with PF_USED_IN_STATE_MANAGER changes value. Iterates each matching StateGroup and applies the matching State's property overrides to the object tree.</details>
+          <fields>
+            <field name="Property" type="Property" pointer="true">The property whose value changed, triggering state group evaluation</field>
+          </fields>
         </message>
       </messages>
     </class>
