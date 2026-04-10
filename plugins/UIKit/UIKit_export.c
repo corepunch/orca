@@ -327,6 +327,9 @@ static struct PropertyType _Node_UpdateMatrixEventArgs[] = {
 	DECL(0xc6c2dd66, Node_UpdateMatrixEventArgs, opacity, opacity, kDataTypeFloat), // Node_UpdateMatrixEventArgs.opacity
 	DECL(0x79a98884, Node_UpdateMatrixEventArgs, force, force, kDataTypeBool), // Node_UpdateMatrixEventArgs.force
 };
+static luaL_Reg _Node_PushPropertyEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_PushPropertyEventArgs[] = {
+};
 static luaL_Reg _Node_LoadViewEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LoadViewEventArgs[] = {
 	DECL(0x187f5b0f, Node_LoadViewEventArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // Node_LoadViewEventArgs.lua_state
@@ -629,6 +632,7 @@ static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
 STRUCT(Node_AwakeEventArgs, Node_AwakeEventArgs);
 STRUCT(Node_UpdateMatrixEventArgs, Node_UpdateMatrixEventArgs);
+STRUCT(Node_PushPropertyEventArgs, Node_PushPropertyEventArgs);
 STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
 STRUCT(Node_HitTestEventArgs, Node_HitTestEventArgs);
 STRUCT(Node_IsVisibleEventArgs, Node_IsVisibleEventArgs);
@@ -876,7 +880,6 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 }
 #define ID_Brush 0xccbef093
 REGISTER_CLASS(ColorBrush, ID_Brush, 0);
-HANDLER(Node, Object, ThemeChanged);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
@@ -949,6 +952,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 	DECL(0x7f460f7c, Node, Awake, Awake, kDataTypeEvent, .TypeString = "Node_AwakeEventArgs"), // Node.Awake
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
+	DECL(0xc5ebaf40, Node, PushProperty, PushProperty, kDataTypeEvent, .TypeString = "Node_PushPropertyEventArgs"), // Node.PushProperty
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
 	DECL(0x898160ea, Node, HitTest, HitTest, kDataTypeEvent, .TypeString = "Node_HitTestEventArgs"), // Node.HitTest
 	DECL(0x608d20d1, Node, IsVisible, IsVisible, kDataTypeEvent, .TypeString = "Node_IsVisibleEventArgs"), // Node.IsVisible
@@ -1176,7 +1180,8 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 	return GetNode2D(luaX_checkObject(L, idx));
 }
 #define ID_Node 0x3468032d
-REGISTER_CLASS(Node2D, ID_Node, 0);
+#define ID_StyleController 0x70b793e6
+REGISTER_CLASS(Node2D, ID_Node, ID_StyleController, 0);
 HANDLER(PrefabView2D, Node, LoadView);
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
@@ -1541,6 +1546,7 @@ struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx) {
 REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
 HANDLER(ConsoleView, Object, Create);
 HANDLER(ConsoleView, Node2D, DrawBrush);
+HANDLER(ConsoleView, Node, PushProperty);
 HANDLER(ConsoleView, Node, ScrollWheel);
 HANDLER(ConsoleView, ConsoleView, Println);
 HANDLER(ConsoleView, ConsoleView, Erase);
@@ -1685,6 +1691,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_AwakeEventArgs(L), -2), "Node_AwakeEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Node_PushPropertyEventArgs(L), -2), "Node_PushPropertyEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_HitTestEventArgs(L), -2), "Node_HitTestEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleEventArgs(L), -2), "Node_IsVisibleEventArgs");

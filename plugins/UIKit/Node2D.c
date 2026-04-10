@@ -183,14 +183,6 @@ HANDLER(Node2D, Node, UpdateMatrix)
 //     }
 // }
 
-// HACK: Move?
-
-HANDLER(Node, Object, ThemeChanged)
-{
-	OBJ_ApplyStyles(hObject, FALSE);
-  return TRUE;
-}
-
 HANDLER(Node, Node, GetSize)
 {
   return MAKEDWORD(pNode->Size.Axis[0].Actual, pNode->Size.Axis[1].Actual);
