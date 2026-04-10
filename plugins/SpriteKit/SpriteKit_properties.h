@@ -25,7 +25,7 @@ enum SpriteAnimationProperties {
 #define ID_SKNode_Position 0xa99d4e4c // SKNode.Position
 #define ID_SKNode_Size 0xeaed98c6 // SKNode.Size
 #define ID_SKNode_Anchor 0xf86abfb6 // SKNode.Anchor
-#define ID_SKNode_Render ((0x450c46e3&MSG_DATA_MASK)|ROUTING_DIRECT) // SKNode.Render
+#define ID_SKNode_Render 0x450c46e3 // SKNode.Render
 #define kSKNodeNumProperties 4
 enum SKNodeProperties {
 	kSKNodePosition,

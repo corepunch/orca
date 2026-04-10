@@ -19,7 +19,7 @@
 #define ID_Node3D_ContentOffset 0x660ce5d6 // Node3D.ContentOffset
 #define ID_Node3D_Matrix 0xffeed605 // Node3D.Matrix
 #define ID_Node3D_CalculatedOffset 0x7f8022a7 // Node3D.CalculatedOffset
-#define ID_Node3D_Render ((0x74fae2ac&MSG_DATA_MASK)|ROUTING_DIRECT) // Node3D.Render
+#define ID_Node3D_Render 0x74fae2ac // Node3D.Render
 #define kNode3DNumProperties 13
 enum Node3DProperties {
 	kNode3DLayoutTransform,

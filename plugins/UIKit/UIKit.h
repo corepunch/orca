@@ -65,11 +65,11 @@ typedef struct Node2D_SetScrollTopEventArgs Node2D_SetScrollTopMsg_t,* Node2D_Se
 typedef struct Form_SubmitEventArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
-typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
-typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
 typedef struct ConsoleView_EraseEventArgs ConsoleView_EraseMsg_t,* ConsoleView_EraseMsgPtr;
 typedef struct ConsoleView_InvalidateEventArgs ConsoleView_InvalidateMsg_t,* ConsoleView_InvalidateMsgPtr;
+typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
+typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
 
 
 /// @brief Defines the primary axis for layout operations
@@ -676,6 +676,23 @@ struct Screen_RenderScreenEventArgs {
 };
 ORCA_API void luaX_pushScreen_RenderScreenEventArgs(lua_State *L, struct Screen_RenderScreenEventArgs const* data);
 ORCA_API struct Screen_RenderScreenEventArgs* luaX_checkScreen_RenderScreenEventArgs(lua_State *L, int idx);
+/** ConsoleView_PrintlnEventArgs struct */
+struct ConsoleView_PrintlnEventArgs {
+	int32_t Index;
+	const char* Text;
+};
+ORCA_API void luaX_pushConsoleView_PrintlnEventArgs(lua_State *L, struct ConsoleView_PrintlnEventArgs const* data);
+ORCA_API struct ConsoleView_PrintlnEventArgs* luaX_checkConsoleView_PrintlnEventArgs(lua_State *L, int idx);
+/** ConsoleView_EraseEventArgs struct */
+struct ConsoleView_EraseEventArgs {
+};
+ORCA_API void luaX_pushConsoleView_EraseEventArgs(lua_State *L, struct ConsoleView_EraseEventArgs const* data);
+ORCA_API struct ConsoleView_EraseEventArgs* luaX_checkConsoleView_EraseEventArgs(lua_State *L, int idx);
+/** ConsoleView_InvalidateEventArgs struct */
+struct ConsoleView_InvalidateEventArgs {
+};
+ORCA_API void luaX_pushConsoleView_InvalidateEventArgs(lua_State *L, struct ConsoleView_InvalidateEventArgs const* data);
+ORCA_API struct ConsoleView_InvalidateEventArgs* luaX_checkConsoleView_InvalidateEventArgs(lua_State *L, int idx);
 /** PageHost_NavigateToPageEventArgs struct */
 struct PageHost_NavigateToPageEventArgs {
 	const char* URL; ///< The URL of the page to navigate to.
@@ -1156,23 +1173,6 @@ struct ConsoleView {
 };
 ORCA_API void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView);
 ORCA_API struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx);
-/** ConsoleView_PrintlnEventArgs struct */
-struct ConsoleView_PrintlnEventArgs {
-	int32_t Index;
-	const char* Text;
-};
-ORCA_API void luaX_pushConsoleView_PrintlnEventArgs(lua_State *L, struct ConsoleView_PrintlnEventArgs const* data);
-ORCA_API struct ConsoleView_PrintlnEventArgs* luaX_checkConsoleView_PrintlnEventArgs(lua_State *L, int idx);
-/** ConsoleView_EraseEventArgs struct */
-struct ConsoleView_EraseEventArgs {
-};
-ORCA_API void luaX_pushConsoleView_EraseEventArgs(lua_State *L, struct ConsoleView_EraseEventArgs const* data);
-ORCA_API struct ConsoleView_EraseEventArgs* luaX_checkConsoleView_EraseEventArgs(lua_State *L, int idx);
-/** ConsoleView_InvalidateEventArgs struct */
-struct ConsoleView_InvalidateEventArgs {
-};
-ORCA_API void luaX_pushConsoleView_InvalidateEventArgs(lua_State *L, struct ConsoleView_InvalidateEventArgs const* data);
-ORCA_API struct ConsoleView_InvalidateEventArgs* luaX_checkConsoleView_InvalidateEventArgs(lua_State *L, int idx);
 
 /// @brief Represents a single page within a document or UI container.
 /** Page component */

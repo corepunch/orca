@@ -155,17 +155,16 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_PostMessage(lua_State *L) {
+int f_OBJ_send(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_PostMessage(L, this_, message );
+	OBJ_send(L, this_, message );
 	return 0;
 }
-int f_OBJ_MsgSend(lua_State *L) {
+int f_OBJ_fetch(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_MsgSend(L, this_, message );
-	return 0;
+	return OBJ_fetch(L, this_, message);
 }
 int f_OBJ_SetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -473,8 +472,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findChildByAlias", f_OBJ_FindChildByAlias },
 		{ "findChildOfClass", f_OBJ_FindChildOfClass },
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
-		{ "postMessage", f_OBJ_PostMessage },
-		{ "msgSend", f_OBJ_MsgSend },
+		{ "send", f_OBJ_send },
+		{ "fetch", f_OBJ_fetch },
 		{ "__setproperty", f_OBJ_SetProperty },
 		{ "__getproperty", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },
@@ -732,7 +731,7 @@ static struct PropertyType const AnimationCurveProperties[kAnimationCurveNumProp
 static struct AnimationCurve AnimationCurveDefaults = {
 };
 LRESULT AnimationCurveProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -752,8 +751,8 @@ static struct PropertyType const AnimationClipProperties[kAnimationClipNumProper
 static struct AnimationClip AnimationClipDefaults = {
 };
 LRESULT AnimationClipProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Start&MSG_DATA_MASK: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message) {
+		case ID_Object_Start: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -797,13 +796,13 @@ static struct AnimationPlayer AnimationPlayerDefaults = {
   .Speed = 1.0,
 };
 LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Start&MSG_DATA_MASK: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Animate&MSG_DATA_MASK: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
-		case ID_AnimationPlayer_Play&MSG_DATA_MASK: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
-		case ID_AnimationPlayer_Resume&MSG_DATA_MASK: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
-		case ID_AnimationPlayer_Stop&MSG_DATA_MASK: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
-		case ID_AnimationPlayer_Pause&MSG_DATA_MASK: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
+	switch (message) {
+		case ID_Object_Start: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Animate: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_AnimationPlayer_Play: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
+		case ID_AnimationPlayer_Resume: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
+		case ID_AnimationPlayer_Stop: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
+		case ID_AnimationPlayer_Pause: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
 	}
 	return FALSE;
 }
@@ -827,8 +826,8 @@ static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationN
 static struct PropertyAnimation PropertyAnimationDefaults = {
 };
 LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Animate&MSG_DATA_MASK: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+	switch (message) {
+		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
 	}
 	return FALSE;
 }

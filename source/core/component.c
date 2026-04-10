@@ -147,7 +147,7 @@ OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lPar
 LRESULT
 OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
 {
-  return OBJ_SendMessageW(pobj, fnv1a32(Msg)&MSG_DATA_MASK, wParam, lParam);
+  return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
 //LRESULT

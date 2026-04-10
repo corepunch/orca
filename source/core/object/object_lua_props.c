@@ -115,7 +115,7 @@ int f_msgSend(lua_State *L) {
   const char* message = lua_tostring(L, lua_upvalueindex(1));
   lua_pushstring(L, message);
   lua_insert(L, 2);
-  OBJ_MsgSend(L, this_, message); // your function handles the args internally
+  OBJ_fetch(L, this_, message); // your function handles the args internally
   return 0;
 }
 

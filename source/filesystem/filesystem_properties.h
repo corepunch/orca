@@ -7,7 +7,7 @@
 #define ID_Workspace 0x27419f56
 #define GetWorkspace(_P) ((struct Workspace*)((_P)?OBJ_GetComponent(_P,ID_Workspace):NULL))
 #define Workspace_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Workspace,sizeof(struct Workspace),_N)
-#define ID_Workspace_ReadCommands ((0xea5a6972&MSG_DATA_MASK)|ROUTING_DIRECT) // Workspace.ReadCommands
+#define ID_Workspace_ReadCommands 0xea5a6972 // Workspace.ReadCommands
 #define kWorkspaceNumProperties 1
 // Library
 #define ID_Library 0xa8532270
@@ -95,10 +95,10 @@ enum LibraryProperties {
 #define ID_Project_SpriteAnimationLibrary 0x664d619c // Project.SpriteAnimationLibrary
 #define ID_Project_ImageLibrary 0x07fed878 // Project.ImageLibrary
 #define ID_Project_FontLibrary 0x8f87dd48 // Project.FontLibrary
-#define ID_Project_OpenFile ((0xa96ca9ee&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.OpenFile
-#define ID_Project_FileExists ((0x1f1e5ece&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.FileExists
-#define ID_Project_HasChangedFiles ((0x8e1eef4b&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.HasChangedFiles
-#define ID_Project_LoadProject ((0x68eebf01&MSG_DATA_MASK)|ROUTING_DIRECT) // Project.LoadProject
+#define ID_Project_OpenFile 0xa96ca9ee // Project.OpenFile
+#define ID_Project_FileExists 0x1f1e5ece // Project.FileExists
+#define ID_Project_HasChangedFiles 0x8e1eef4b // Project.HasChangedFiles
+#define ID_Project_LoadProject 0x68eebf01 // Project.LoadProject
 #define kProjectNumProperties 77
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,

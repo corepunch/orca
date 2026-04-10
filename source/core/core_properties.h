@@ -48,13 +48,13 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
 #define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
 #define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
-#define ID_AnimationPlayer_Play ((0x389b07cc&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Play
-#define ID_AnimationPlayer_Resume ((0x6c36db2d&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Resume
-#define ID_AnimationPlayer_Stop ((0x59228a5a&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Stop
-#define ID_AnimationPlayer_Pause ((0xafb93ba4&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Pause
-#define ID_AnimationPlayer_Started ((0x6f97130b&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Started
-#define ID_AnimationPlayer_Stopped ((0x845c891f&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Stopped
-#define ID_AnimationPlayer_Completed ((0xa2ffe357&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Completed
+#define ID_AnimationPlayer_Play 0x389b07cc // AnimationPlayer.Play
+#define ID_AnimationPlayer_Resume 0x6c36db2d // AnimationPlayer.Resume
+#define ID_AnimationPlayer_Stop 0x59228a5a // AnimationPlayer.Stop
+#define ID_AnimationPlayer_Pause 0xafb93ba4 // AnimationPlayer.Pause
+#define ID_AnimationPlayer_Started 0x6f97130b // AnimationPlayer.Started
+#define ID_AnimationPlayer_Stopped 0x845c891f // AnimationPlayer.Stopped
+#define ID_AnimationPlayer_Completed 0xa2ffe357 // AnimationPlayer.Completed
 #define kAnimationPlayerNumProperties 20
 enum AnimationPlayerProperties {
 	kAnimationPlayerClip,
@@ -100,15 +100,15 @@ enum PropertyAnimationProperties {
 	kPropertyAnimationDuration,
 };
 
-#define ID_Object_Create ((0x5ad07ee8&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Create
-#define ID_Object_Start ((0x01629a90&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Start
-#define ID_Object_Animate ((0xc8c0972b&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Animate
-#define ID_Object_ThemeChanged ((0x6d440f67&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.ThemeChanged
-#define ID_Object_PropertyChanged ((0x00d8cdf3&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.PropertyChanged
-#define ID_Object_Attached ((0xc920ef48&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Attached
-#define ID_Object_Release ((0x10360cb1&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Release
-#define ID_Object_Destroy ((0x8ef01bbe&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Destroy
-#define ID_Object_Timer ((0x6e6ade9d&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Timer
+#define ID_Object_Create 0x5ad07ee8 // Object.Create
+#define ID_Object_Start 0x01629a90 // Object.Start
+#define ID_Object_Animate 0xc8c0972b // Object.Animate
+#define ID_Object_ThemeChanged 0x6d440f67 // Object.ThemeChanged
+#define ID_Object_PropertyChanged 0x00d8cdf3 // Object.PropertyChanged
+#define ID_Object_Attached 0xc920ef48 // Object.Attached
+#define ID_Object_Release 0x10360cb1 // Object.Release
+#define ID_Object_Destroy 0x8ef01bbe // Object.Destroy
+#define ID_Object_Timer 0x6e6ade9d // Object.Timer
 
 #define ID_AnimationClipReference 0x9309ab18
 #define ID_AnimationClipReference_Name 0x5b67cfe9 // AnimationClipReference.Name

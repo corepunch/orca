@@ -41,7 +41,7 @@
         <field name="_opacity" type="float"/>
       </fields>
       <messages>
-        <message name="Render" routing="Direct">
+        <message name="Render">
           <summary>Requests the sprite node to render itself using the provided view definition.</summary>
           <fields>
             <field name="ViewDef" type="ViewDef" pointer="true">The view definition for rendering</field>

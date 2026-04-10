@@ -210,15 +210,16 @@
           <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
         </method>
         <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
-        <method name="PostMessage" lua="true">
-          <summary>Posts a message to the global message queue.</summary>
-          <details>Places a message on the global queue for asynchronous processing without waiting for the receiver to process it.</details>
-          <arg name="message" type="string">The name of the message to post</arg>
-        </method>
-        <method name="MsgSend" lua="true">
-          <summary>Send a message to directly to the object ignoring queue.</summary>
-          <details>Messge sent will be immediately processed without using coroutines.</details>
+        <method name="send" lua="true">
+          <summary>Posts a message asynchronously, bubbling through the object hierarchy.</summary>
+          <details>Places a message on the global queue for asynchronous processing. The message bubbles up through the parent chain until a handler claims it. Does not return a value.</details>
           <arg name="message" type="string">The name of the message to send</arg>
+        </method>
+        <method name="fetch" lua="true">
+          <summary>Sends a message synchronously to the current object only and returns the result.</summary>
+          <details>Dispatches a message directly to this object's components without bubbling. Returns the result of the first component that handles the message, or nil if unhandled.</details>
+          <arg name="message" type="string">The name of the message to send</arg>
+          <returns type="nresults">The return value from the handler, or nil if unhandled</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
         <method name="SetProperty" export="__setproperty" lua="true">
@@ -470,34 +471,34 @@
         </method>
       </methods>
       <messages>
-        <message name="Create" routing="Direct">
+        <message name="Create">
           <summary>Sent once when the component is first created and attached to an object.</summary>
         </message>
-        <message name="Start" routing="Direct">
+        <message name="Start">
           <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
         </message>
-        <message name="Animate" routing="Direct">
+        <message name="Animate">
           <summary>Requested when an animation update is needed.</summary>
         </message>
-        <message name="ThemeChanged" routing="Direct">
+        <message name="ThemeChanged">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
         </message>
-        <message name="PropertyChanged" routing="Direct">
+        <message name="PropertyChanged">
           <summary>Sent when a property value on the object changes.</summary>
           <fields>
             <field name="Property" type="Property" pointer="true">The property that changed</field>
           </fields>
         </message>
-        <message name="Attached" routing="Direct">
+        <message name="Attached">
           <summary>Sent when the object is attached to a parent object in the hierarchy.</summary>
         </message>
-        <message name="Release" routing="Direct">
+        <message name="Release">
           <summary>Sent when the object is being released and its resources should be freed.</summary>
         </message>
-        <message name="Destroy" routing="Direct">
+        <message name="Destroy">
           <summary>Sent just before the object is destroyed and removed from the scene.</summary>
         </message>
-        <message name="Timer" routing="Direct">
+        <message name="Timer">
           <summary>Sent on each timer tick registered for this object.</summary>
           <fields>
             <field name="timerId" type="int">Timer identifier returned by setTimer</field>
@@ -557,28 +558,28 @@
         <field name="_prevRealtime" type="long">The last real time when the animation was updated, used to calculate delta time for advancing CurrentTime</field>
       </fields>
       <messages>
-        <message name="Play" routing="Direct">
+        <message name="Play">
           <summary>Starts or resumes animation playback.</summary>
           <fields>
             <field name="Name" type="string">Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)</field>
           </fields>
         </message>
-        <message name="Resume" routing="Direct">
+        <message name="Resume">
           <summary>Resumes animation playback from the current position without resetting.</summary>
         </message>
-        <message name="Stop" routing="Direct">
+        <message name="Stop">
           <summary>Stops animation playback and resets CurrentTime to the clip's StartTime.</summary>
         </message>
-        <message name="Pause" routing="Direct">
+        <message name="Pause">
           <summary>Pauses animation playback without resetting CurrentTime.</summary>
         </message>
-        <message name="Started" routing="Bubbling">
+        <message name="Started">
           <summary>Sent when animation playback begins.</summary>
         </message>
-        <message name="Stopped" routing="Bubbling">
+        <message name="Stopped">
           <summary>Sent when animation playback stops (via Stop or Pause).</summary>
         </message>
-        <message name="Completed" routing="Bubbling">
+        <message name="Completed">
           <summary>Sent when animation playback reaches the end of the clip without looping.</summary>
         </message>
       </messages>

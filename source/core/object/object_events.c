@@ -22,7 +22,7 @@ PROP_ExecuteChangedCallback(lua_State* L,
   }
 }
 
-#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
+#define ID_Node_Awake 0x2facb9c8 // Node.Awake
 
 void
 OBJ_Awake(lua_State* L, lpObject_t object)
