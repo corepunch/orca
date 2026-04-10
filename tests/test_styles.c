@@ -191,6 +191,7 @@ static void test_add_class_hover(void) {
 
 /* OBJ_AddStyleClass is null-safe on objects without StyleController */
 static void test_add_style_class_no_component(void) {
+    do {
     /*
      * Build a bare object that has no StyleController.  We construct it by
      * allocating a raw Object without any class — we can't use
@@ -204,14 +205,17 @@ static void test_add_style_class_no_component(void) {
     /* Must not crash — object has no components, GetStyleController returns NULL */
     OBJ_AddStyleClass(obj, ".btn", "Width", "100", 0);
     free(obj);
+    } while(0);
 }
 
 /* OBJ_ClearStyleClasses is null-safe on objects without StyleController */
 static void test_clear_style_classes_no_component(void) {
+    do {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
     OBJ_ClearStyleClasses(obj);  /* must not crash */
     free(obj);
+    } while(0);
 }
 
 /* OBJ_ClearStyleClasses frees class list and stylesheet */
@@ -261,10 +265,12 @@ static void test_apply_styles_float_property(void) {
  * Sending the message to a bare object must not crash.
  */
 static void test_apply_styles_no_component(void) {
+    do {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
     _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);  /* must not crash */
     free(obj);
+    } while(0);
 }
 
 /* Multi-pseudo-state "btn:hover:focus" — both flags must be set */
