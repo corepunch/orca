@@ -75,11 +75,11 @@ static LRESULT TestStyledCompProc(struct Object* o, void* c,
  * class name and is used solely within this test binary.
  */
 #define ID_TestStyledComp 0xaabb1122u
-/* Property descriptor for "Width" (FNV1a32("Width") = 0xd2dfef18) */
+/* Property descriptor for "Width" (fnv1a32("Width") = 0x3b42dfbf) */
 static struct PropertyType const TestStyledCompProperties[] = {
     {
-        .ShortIdentifier = 0xd2dfef18u, /* fnv1a32("Width")  */
-        .FullIdentifier  = 0xd2dfef18u,
+        .ShortIdentifier = 0x3b42dfbfu, /* fnv1a32("Width") */
+        .FullIdentifier  = 0xbfbb7a5bu, /* fnv1a32("TestStyledComp.Width") */
         .Name            = "Width",
         .DataType        = kDataTypeFloat,
         .DataSize        = sizeof(float),
