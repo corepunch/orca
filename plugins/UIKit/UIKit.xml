@@ -392,7 +392,6 @@
       <details>Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Object.ThemeChanged"/>
         <handle message="Node.GetSize"/>
         <handle message="Node.IsVisible"/>
       </handles>
@@ -422,6 +421,12 @@
             <field name="parent" type="mat4">The parent matrix</field>
             <field name="opacity" type="float">The opacity value</field>
             <field name="force" type="bool">Indicates if the update is forced</field>
+          </fields>
+        </message>
+        <message name="PushProperty" routing="TunnelingBubbling">
+          <summary>Propagates an inherited property value down or up the node hierarchy.</summary>
+          <fields>
+            <field name="Placeholder" type="int"/>
           </fields>
         </message>
         <message name="LoadView" routing="Direct">
@@ -589,7 +594,7 @@
         </message>
       </messages>
     </class>
-    <class name="Node2D" parent="Node" children="Node2D">
+    <class name="Node2D" parent="Node,StyleController" children="Node2D">
       <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
       <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -983,17 +988,15 @@
         <property name="ImageBottomRight" type="Texture" pointer="true">Bottom-right corner image (non-stretchable) </property>
       </properties>
     </class>
-    <class name="ConsoleView" parent="Node2D">
+    <class name="TerminalView" parent="Node2D">
       <summary>Displays a fixed-size text grid using a monospace layout</summary>
       <details>Renders a character matrix (e.g., 80×24) where each cell represents a single glyph. Functions like a monospace canvas for text-mode visualization, ideal for console-style output, terminal emulation, or retro graphics where characters act as pixels.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="Node.PushProperty"/>
         <handle message="Node.ScrollWheel"/>
-        <handle message="ConsoleView.Println"/>
-        <handle message="ConsoleView.Erase"/>
-        <handle message="ConsoleView.Invalidate"/>
       </handles>
       <properties>
         <property name="BufferWidth" type="int" default="256">Buffer width</property>
@@ -1001,27 +1004,12 @@
         <property name="Cursor" type="int">Cursor position</property>
         <property name="SelectedIndex" type="int">Selected item index</property>
         <property name="DropShadow" type="bool">Draw shadow underneath this view</property>
-        <property name="ContentHeight" type="int">Current content height in lines</property>
       </properties>
       <fields>
         <field name="_buffer" type="int" pointer="true">Buffer used for characters</field>
         <field name="_scroll" type="vec2">Scroll position</field>
+        <field name="_contentHeight" type="int">Current page length</field>
       </fields>
-      <messages>
-        <message name="Println" routing="Direct">
-          <summary>Write a formatted text line to the character buffer</summary>
-          <fields>
-            <field name="Index" type="int"/>
-            <field name="Text" type="string"/>
-          </fields>
-        </message>
-        <message name="Erase" routing="Direct">
-          <summary>Clear the character buffer and reset cursor</summary>
-        </message>
-        <message name="Invalidate" routing="Direct">
-          <summary>Request a repaint of this view</summary>
-        </message>
-      </messages>
     </class>
     <class name="Page" parent="Node2D">
       <summary>Represents a single page within a document or UI container.</summary>

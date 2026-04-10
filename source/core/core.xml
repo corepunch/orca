@@ -7,6 +7,8 @@
     <external struct="game"/>
     <external struct="Property"/>
     <external struct="lua_State"/>
+    <external struct="style_class"/>
+    <external struct="style_sheet"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -78,14 +80,6 @@
     </enum>
   </enums>
   <structs>
-    <struct name="AnimationClipReference" sealed="true">
-      <summary>A named animation clip entry used in an AnimationPlayer's Clips array.</summary>
-      <details>Pairs a short identifying name with an AnimationClip object so that a single AnimationPlayer can hold a library of clips and play any of them by name.</details>
-      <fields>
-        <field name="Name" type="string">Short name used to identify and select this clip (e.g. "idle", "walk")</field>
-        <field name="Clip" type="AnimationClip" pointer="true">The AnimationClip object for this entry</field>
-      </fields>
-    </struct>
     <struct name="Keyframe" sealed="true">
       <summary>A single keyframe in an animation curve.</summary>
       <fields>
@@ -290,11 +284,6 @@
           <summary>Clears dirty flags, marks object as recalculated</summary>
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
-        <method name="ApplyStyles">
-          <summary>Applies style changes to object hierarchy</summary>
-          <details>Forces style recalculation and application, optionally propagating changes to child objects in the hierarchy.</details>
-          <arg name="recursive" type="bool">Whether to apply styles to child objects recursively</arg>
-        </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
         <method name="AddStyleSheet" lua="true">
           <summary>Add a stylesheet to the object.</summary>
@@ -481,6 +470,9 @@
         </message>
         <message name="ThemeChanged" routing="Direct">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
+          <fields>
+            <field name="recursive" type="bool">Whether to propagate the theme change to child objects</field>
+          </fields>
         </message>
         <message name="PropertyChanged" routing="Direct">
           <summary>Sent when a property value on the object changes.</summary>
@@ -541,7 +533,6 @@
       </handles>
       <properties>
         <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
-        <property name="Clips" type="AnimationClipReference" array="true">Array of named animation clips available to this player; use the Play message with a Name to select one by name</property>
         <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
@@ -559,9 +550,6 @@
       <messages>
         <message name="Play" routing="Direct">
           <summary>Starts or resumes animation playback.</summary>
-          <fields>
-            <field name="Name" type="string">Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)</field>
-          </fields>
         </message>
         <message name="Resume" routing="Direct">
           <summary>Resumes animation playback from the current position without resetting.</summary>
@@ -601,6 +589,29 @@
       <fields>
         <field name="_property" type="Property" pointer="true">The property being animated</field>
       </fields>
+    </class>
+    <class name="StyleController" attach-only="true">
+      <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
+      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. Stylesheets can be loaded from external .css files or defined inline. This component is automatically attached to Node2D and any other visual elements that support styling.</details>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.Release"/>
+        <handle message="Object.ThemeChanged"/>
+        <handle message="StyleController.ThemeChanged"/>
+      </handles>
+      <fields>
+        <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
+        <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
+      </fields>
+      <messages>
+        <message name="ThemeChanged" routing="Direct">
+          <summary>Applies styles to this object.</summary>
+          <details>Triggers style recalculation on this object. When recursive is TRUE, also sends ThemeChanged to every direct child. Preferred over the removed OBJ_ApplyStyles() function.</details>
+          <fields>
+            <field name="recursive" type="bool">When TRUE, also sends ThemeChanged to every direct child</field>
+          </fields>
+        </message>
+      </messages>
     </class>
   </classes>
   <functions>

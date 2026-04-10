@@ -25,9 +25,8 @@ struct Object
       struct component* components;
       struct Property* properties;
       struct state_manager* stateManager;
-      struct style_class* classes;
-      struct style_sheet* stylesheet;
       struct alias* aliases;
+      // classes and stylesheet moved to StyleController component
     };
     void* comps[kCompCount];
   };

@@ -445,7 +445,13 @@ class Component extends Struct {
 
 	function getParents() {
 		if ($this->_elem["parent"]) {
-			yield $this->_elem["parent"];
+			$parts = explode(",", strval($this->_elem["parent"]));
+			foreach ($parts as $p) {
+				$trimmed = trim($p);
+				if ($trimmed !== "") {
+					yield $trimmed;
+				}
+			}
 		}
 		if ($this->_elem["concept"]) {
 			yield $this->_elem["concept"];

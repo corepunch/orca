@@ -105,7 +105,8 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
     PROP_Clear(p);
   }
 
-  OBJ_ClearStyleClasses(pobj);
+  // Dispatch Object.Release so attach-only components (e.g., StyleController) can clean up
+  OBJ_SendMessageW(pobj, ID_Object_Release, 0, NULL);
   OBJ_ReleaseComponents(pobj);
   OBJ_ReleaseProperties(pobj);
   OBJ_ReleaseAliases(pobj);
