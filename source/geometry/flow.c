@@ -58,9 +58,8 @@ parse_property(lua_State* L,
         // *(void**)valueptr = object;
 //      }
       return TRUE;
-    case kDataTypeEvent:
-      
-      return TRUE;
+//    case kDataTypeEvent:
+//      return TRUE;
     default:
       return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
   }

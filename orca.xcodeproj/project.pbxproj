@@ -180,7 +180,7 @@
 		786865662F50A9BD00DC87FC /* SpriteKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 786865572F50A9BD00DC87FC /* SpriteKit.h */; };
 		7868656C2F50B4E100DC87FC /* SKLabelNode.c in Sources */ = {isa = PBXBuildFile; fileRef = 7868656B2F50B4DE00DC87FC /* SKLabelNode.c */; };
 		7868656E2F50B55100DC87FC /* liborca/UIKit.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786A4BD02E86B05E00C40C9F /* TerminalView.c */; };
+		7868DA172F88E30A00519F18 /* ConsoleView.c in Sources */ = {isa = PBXBuildFile; fileRef = 7868DA162F88E30A00519F18 /* ConsoleView.c */; };
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
 		7870404B2F6F197000A84406 /* property_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040472F6F197000A84406 /* property_core.c */; };
 		7870404C2F6F197000A84406 /* property_accessors.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040462F6F197000A84406 /* property_accessors.c */; };
@@ -562,7 +562,7 @@
 		78688D242D81C034008DE67B /* Form.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Form.c; sourceTree = "<group>"; };
 		78688D262D81E9E2008DE67B /* Label.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Label.c; sourceTree = "<group>"; };
 		78688D2A2D89DD69008DE67B /* style.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = style.c; sourceTree = "<group>"; };
-		786A4BD02E86B05E00C40C9F /* TerminalView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TerminalView.c; sourceTree = "<group>"; };
+		7868DA162F88E30A00519F18 /* ConsoleView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ConsoleView.c; sourceTree = "<group>"; };
 		786BFC852AF7E97900216782 /* w_filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_filesystem.c; sourceTree = "<group>"; };
 		786BFCA82AF9013A00216782 /* plugapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = plugapi.h; sourceTree = "<group>"; };
 		786BFCD72AFA403F00216782 /* orcalib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = orcalib.c; sourceTree = "<group>"; };
@@ -1322,6 +1322,7 @@
 			children = (
 				78688D222D7E1F2D008DE67B /* Button.c */,
 				78423AA72BE526EF0052D403 /* Cinematic.c */,
+				7868DA162F88E30A00519F18 /* ConsoleView.c */,
 				78688D242D81C034008DE67B /* Form.c */,
 				78C737552B8F60C600FD598E /* Grid.c */,
 				78C737532B8F60C600FD598E /* ImageView.c */,
@@ -1333,7 +1334,6 @@
 				78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */,
 				78688D1B2D6F28AE008DE67B /* Screen.c */,
 				78C737582B8F60C600FD598E /* StackView.c */,
-				786A4BD02E86B05E00C40C9F /* TerminalView.c */,
 				78C7375B2B8F60C600FD598E /* TextBlock.c */,
 				78CDFED42CC13EE200D247E4 /* Trigger.c */,
 				78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */,
@@ -2144,10 +2144,10 @@
 				781CA75B2E15571400FFCFD9 /* Screen.c in Sources */,
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
+				7868DA172F88E30A00519F18 /* ConsoleView.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
-				786A4BD12E86B06500C40C9F /* TerminalView.c in Sources */,
 				781CA7612E15571400FFCFD9 /* Trigger.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
