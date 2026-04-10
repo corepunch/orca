@@ -408,8 +408,10 @@ HANDLER(StyleController, Object, Release) {
 // pThemeChanged->recursive controls whether child objects are also updated.
 // Called automatically when hover state, focus, or the system theme changes.
 // Also called explicitly via OBJ_ApplyStyles().
+// Note: pThemeChanged may be NULL when the message is dispatched via
+// SV_PostMessage with lParam=0; treat NULL as recursive=FALSE.
 HANDLER(StyleController, Object, ThemeChanged) {
-  bool_t recursive = pThemeChanged && pThemeChanged->recursive;
+  bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
 
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 

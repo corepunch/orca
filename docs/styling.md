@@ -183,7 +183,7 @@ _SendMessage(object, Object, ThemeChanged, .recursive = TRUE);
 ```
 
 ```lua
--- Lua — method call (wraps OBJ_ApplyStyles)
+-- Lua — applies styles to this object and optionally to children
 node:applyStyles(recursive --[[bool]])
 ```
 
