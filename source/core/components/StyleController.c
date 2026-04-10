@@ -59,17 +59,23 @@ struct _ADDCLASSSTRUCT
 // INTERNAL HELPERS
 // ============================================================================
 
-// Parse pseudo-state flags from a colon-separated class string
+// Parse pseudo-state flags from a colon-separated class string.
+// Compares each token that comes AFTER a ':' separator.
 // e.g., "button:hover:focus" → STYLE_HOVER | STYLE_FOCUS
 static uint32_t
 _ParsePseudoStateFlags(lpcString_t str)
 {
   uint32_t flags = 0;
-  for (lpcString_t s = strchr(str, ':'); s; s = strchr((str = s + 1), ':')) {
-    if      (!strncmp(str, "hover",  s - str)) flags |= STYLE_HOVER;
-    else if (!strncmp(str, "focus",  s - str)) flags |= STYLE_FOCUS;
-    else if (!strncmp(str, "active", s - str)) flags |= STYLE_SELECT;
-    else if (!strncmp(str, "dark",   s - str)) flags |= STYLE_DARK;
+  lpcString_t token = strchr(str, ':');
+  while (token) {
+    lpcString_t start = token + 1;
+    lpcString_t end = strchr(start, ':');
+    size_t len = end ? (size_t)(end - start) : strlen(start);
+    if      (len == 5 && !strncmp(start, "hover",  len)) flags |= STYLE_HOVER;
+    else if (len == 5 && !strncmp(start, "focus",  len)) flags |= STYLE_FOCUS;
+    else if (len == 6 && !strncmp(start, "active", len)) flags |= STYLE_SELECT;
+    else if (len == 4 && !strncmp(start, "dark",   len)) flags |= STYLE_DARK;
+    token = end;
   }
   return flags;
 }
@@ -91,7 +97,9 @@ _AddRuleToStylesheet(lpObject_t obj, struct style_sheet* ss)
 // PUBLIC STYLE API
 // ============================================================================
 
-// Add a single stylesheet rule directly to an object (used by C callers)
+// Add a single stylesheet rule directly to an object (used by C callers).
+// `name` may start with '.' (e.g., ".btn") or not (e.g., "btn") — both forms
+// are normalized to the same class_id to match tokens from OBJ_ParseClassAttribute.
 void
 OBJ_AddStyleClass(lpObject_t obj,
                   lpcString_t name,
@@ -105,7 +113,10 @@ OBJ_AddStyleClass(lpObject_t obj,
   strncpy(ss->classname, name, sizeof(ss->classname));
   strncpy(ss->value, value, sizeof(ss->value));
   strncpy(ss->name, property, sizeof(ss->name));
-  ss->class_id = fnv1a32(name);
+  // Normalize: strip a leading '.' so ".btn" and "btn" hash to the same ID,
+  // matching the tokens produced by OBJ_ParseClassAttribute / OBJ_AddStyleSheet.
+  lpcString_t key = (*name == '.') ? name + 1 : name;
+  ss->class_id = fnv1a32(key);
   ss->prop_id = fnv1a32(property);
   ss->flags = flags;
   ss->next = NULL;
@@ -127,8 +138,9 @@ _EnumApplyStyleClass(lpObject_t obj, struct style_sheet* other, void* param)
   _AddRuleToStylesheet(obj, ss);
 }
 
-// Parse a single style class token (e.g., "blue/50:hover")
-// Returns a newly allocated style_class with parsed name, opacity, and pseudo-state flags
+// Parse a single style class token (e.g., "blue/50:hover", "btn:hover:focus")
+// Returns a newly allocated style_class with parsed base name, opacity, and pseudo-state flags.
+// cls->value holds the base name only — everything up to the first ':' or '/'.
 struct style_class*
 _ParseClass(lpcString_t str)
 {
@@ -137,13 +149,28 @@ _ParseClass(lpcString_t str)
   // Extract pseudo-state flags from colon-separated suffixes (e.g., ":hover:focus")
   cls->flags = _ParsePseudoStateFlags(str);
 
-  // Extract opacity from /N syntax (e.g., "blue/50" → opacity=50)
+  // Find the earliest delimiter: '/' for opacity, ':' for pseudo-states.
+  // cls->value must be the base class name only — stop at whichever comes first.
   lpcString_t szOpacity = strchr(str, '/');
+  lpcString_t szState   = strchr(str, ':');
+  lpcString_t szEnd;
+  if (szOpacity && szState) {
+    szEnd = (szOpacity < szState) ? szOpacity : szState;
+  } else if (szOpacity) {
+    szEnd = szOpacity;
+  } else {
+    szEnd = szState;
+  }
+
+  size_t len = szEnd ? (size_t)(szEnd - str) : strlen(str);
+  len = MIN(len, sizeof(shortStr_t) - 1);
+  memcpy(cls->value, str, len);
+  cls->value[len] = '\0';
+
+  // Extract opacity from /N syntax (e.g., "blue/50" → opacity=50)
   if (szOpacity) {
-    strncpy(cls->value, str, MIN(sizeof(shortStr_t), szOpacity - str));
     cls->opacity = atoi(szOpacity + 1);
   } else {
-    strncpy(cls->value, str, sizeof(shortStr_t));
     cls->opacity = 100; // default: fully opaque
   }
 

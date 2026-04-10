@@ -266,6 +266,61 @@ static void test_apply_styles_no_component(void) {
     free(obj);
 }
 
+/* Multi-pseudo-state "btn:hover:focus" — both flags must be set */
+static void test_parse_class_multiple_pseudo_states(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        OBJ_ParseClassAttribute(obj, "btn:hover:focus");
+        struct StyleController* sc = GetStyleController(obj);
+        EXPECT(sc != NULL);
+        EXPECT(sc->classes != NULL);
+        /* Both STYLE_HOVER and STYLE_FOCUS must be set */
+        EXPECT((sc->classes->flags & STYLE_HOVER) != 0);
+        EXPECT((sc->classes->flags & STYLE_FOCUS) != 0);
+    }
+}
+
+/* _ParseClass must store only the base name, not pseudo-states */
+static void test_parse_class_base_name_only(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        OBJ_ParseClassAttribute(obj, "myclass:hover");
+        struct StyleController* sc = GetStyleController(obj);
+        EXPECT(sc != NULL);
+        EXPECT(sc->classes != NULL);
+        /* cls->value must be "myclass", not "myclass:hover" */
+        EXPECT(!strcmp(sc->classes->value, "myclass"));
+    }
+}
+
+/* _ParseClass with opacity: base name is the part before '/' */
+static void test_parse_class_opacity_extraction(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        OBJ_ParseClassAttribute(obj, "blue/50");
+        struct StyleController* sc = GetStyleController(obj);
+        EXPECT(sc != NULL);
+        EXPECT(sc->classes != NULL);
+        EXPECT(!strcmp(sc->classes->value, "blue"));
+        EXPECT(sc->classes->opacity == 50);
+    }
+}
+
+/*
+ * OBJ_AddStyleClass: rule added with ".btn" selector must match parsed
+ * class "btn" (with leading-dot normalization).
+ */
+static void test_add_style_class_dot_selector_matches(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        /* Rule registered with ".btn" selector */
+        OBJ_AddStyleClass(obj, ".btn", "Width", "77", 0);
+        /* Class parsed without dot */
+        OBJ_ParseClassAttribute(obj, "btn");
+        OBJ_ApplyStyles(obj, FALSE);
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        EXPECT(!PROP_IsNull(prop));
+        EXPECT(*(float *)PROP_GetValue(prop) == 77.f);
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* Test runner                                                         */
 /* ------------------------------------------------------------------ */
@@ -292,6 +347,10 @@ int main(void) {
         DECL_TEST(test_get_style_flags_none),
         DECL_TEST(test_apply_styles_float_property),
         DECL_TEST(test_apply_styles_no_component),
+        DECL_TEST(test_parse_class_multiple_pseudo_states),
+        DECL_TEST(test_parse_class_base_name_only),
+        DECL_TEST(test_parse_class_opacity_extraction),
+        DECL_TEST(test_add_style_class_dot_selector_matches),
     };
 
     for (size_t i = 0; i < sizeof(tests)/sizeof(*tests); i++) {

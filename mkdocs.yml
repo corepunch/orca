@@ -25,6 +25,7 @@ nav:
   - Developer Notes:
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
+    - Style System: styling.md
     - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md
 
