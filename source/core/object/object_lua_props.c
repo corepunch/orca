@@ -71,9 +71,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 				luaL_checktype(L, 3, LUA_TTABLE);
 				lua_pushnil(L);
 				while (lua_next(L, 3)) {
-					struct style_class* _ParseClass(lpcString_t str);
-					void _AddClass(lpObject_t obj, struct style_class* cls);
-					_AddClass(self, _ParseClass(luaL_checkstring(L, -1)));
+          _SendMessage(self, StyleController, AddClass, luaL_checkstring(L, -1));
 					lua_pop(L, 1);
 				}
 				lua_pop(L, 1);
