@@ -72,7 +72,7 @@ _cmd(ConsoleViewPtr t, lpcString_t str, struct tstate *state)
 }
 
 static void
-_println(ConsoleViewPtr t, lua_Integer index, lpcString_t text, size_t slen)
+_println(ConsoleViewPtr t, int32_t index, lpcString_t text, size_t slen)
 {
   struct tstate state = { .foreground = 7, .item = (uint16_t)index };
   int c = t->Cursor;
@@ -145,7 +145,7 @@ int f_ConsoleView_getIndexPosition(lua_State *L) {
 HANDLER(ConsoleView, ConsoleView, Println) {
   if (!pConsoleView->_buffer) return FALSE;
   lpcString_t text = pPrintln ? pPrintln->Text : NULL;
-  lua_Integer index = pPrintln ? pPrintln->Index : 0;
+  int32_t index = pPrintln ? pPrintln->Index : 0;
   if (text) {
     _println(pConsoleView, index, text, strlen(text));
   } else {

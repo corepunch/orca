@@ -141,7 +141,10 @@ void on_ui_module_registered(lua_State* L) {
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
 
-  // Load TerminalView Lua extension and expose it as UIKit.TerminalView
+  // Load TerminalView Lua extension and expose it as UIKit.TerminalView.
+  // Guard against recursive require() returning package.loaded's in-progress
+  // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()
+  // during this same luaopen call — only assign if a real table/function was returned.
   if (API_CallRequire(L, "orca.UIKit.TerminalView", 1) == LUA_OK) {
     if (lua_istable(L, -1) || lua_isfunction(L, -1)) {
       lua_setfield(L, -2, "TerminalView");

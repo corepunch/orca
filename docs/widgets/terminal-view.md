@@ -28,7 +28,7 @@ In your Lua code, you always work with `ui.TerminalView`. `ui.ConsoleView` is av
 | 15–12 | background colour | 4-bit palette index (0–15) |
 | 31–16 | item index | 16-bit integer passed to `println` |
 
-Each glyph is rendered in a fixed 8×16 pixel cell (`CONSOLE_CHAR_WIDTH = 8`, `CONSOLE_CHAR_HEIGHT = 16`). The physical size of the widget in pixels is therefore `BufferWidth × 8` by `BufferHeight × 16` at most, though only the rows written so far (`_contentHeight`) are drawn.
+Each glyph is rendered in a fixed 8×16 pixel cell (`CONSOLE_CHAR_WIDTH = 8`, `CONSOLE_CHAR_HEIGHT = 16`). The physical size of the widget in pixels is therefore `BufferWidth × 8` by `BufferHeight × 16` at most, though only the rows written so far (`ContentHeight`) are drawn.
 
 ---
 
@@ -62,7 +62,7 @@ Each glyph is rendered in a fixed 8×16 pixel cell (`CONSOLE_CHAR_WIDTH = 8`, `C
 cv:println(item, ...)
 ```
 
-**TerminalView** appends `item` to `__items`, then delegates to `ConsoleView.println` with the item's 1-based index. The extra `...` arguments are converted to strings (via `tostring`) and concatenated into the current row.
+**TerminalView** appends `item` to `__items`, then dispatches a `ConsoleView.Println` message with the item's 1-based index. The extra `...` arguments are converted to strings (via `tostring`) and concatenated into the current row.
 
 Passing `nil` as `item` writes a header/separator row that has no associated item and **resets `__items`** to an empty table. This is convenient for separating sections of output:
 
@@ -71,21 +71,22 @@ tv:println(nil, "\x21[0;15m== Section ==")   -- header row, no item
 tv:println(some_object, "  ", some_object.name)
 ```
 
-**ConsoleView** version takes an integer index directly:
+**ConsoleView** dispatches the `Println` message directly using table syntax:
 
 ```lua
-cv:println(42, "text for row 42")
+cv:Println { Index = 42, Text = "text for row 42" }
 ```
 
-Return value: the item index stored for this row (`len` in TerminalView, the integer passed in ConsoleView).
+Return value: TerminalView's `println` returns the item index stored for this row (`len`), or 0 if `item` was nil.
 
 ### `erase()` — clear the buffer
 
 ```lua
-cv:erase()
+tv:erase()    -- TerminalView
+cv:Erase()    -- ConsoleView (message dispatch)
 ```
 
-Zeroes the entire character buffer, resets `Cursor` to 0, `_contentHeight` to 0.  
+Zeroes the entire character buffer, resets `Cursor` to 0, `ContentHeight` to 0.  
 **TerminalView** also clears `__items`.  
 Call this at the start of every `onPaint` to redraw from scratch.
 
@@ -117,7 +118,8 @@ Returns nothing when `index == 0` or the index is not found.
 ### `invalidate()` — request repaint
 
 ```lua
-cv:invalidate()
+tv:invalidate()    -- TerminalView
+cv:Invalidate()    -- ConsoleView (message dispatch)
 ```
 
 Posts a paint message to the widget. Call this after changing `SelectedIndex` or any other property that should update the display.

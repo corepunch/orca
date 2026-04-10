@@ -16,10 +16,17 @@ local TerminalView = ui.ConsoleView:extend {
   end,
 
   println = function(self, item, ...)
-    local parts = {}
     local n = select('#', ...)
-    for i = 1, n do parts[i] = tostring(select(i, ...)) end
-    local text = table.concat(parts)
+    local text
+    if n == 1 then
+      text = tostring(select(1, ...))
+    elseif n == 0 then
+      text = ""
+    else
+      local parts = {}
+      for i = 1, n do parts[i] = tostring(select(i, ...)) end
+      text = table.concat(parts)
+    end
     if item ~= nil then
       local items = self.__items or {}
       self.__items = items
