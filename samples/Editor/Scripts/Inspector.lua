@@ -228,9 +228,9 @@ local Inspector = ui.TerminalView:extend {
 	end
 }
 
-core.addCommands(function(self) return self:is(Inspector) and self.selectedItem end, {
+core.addCommands(function(self) return self:is(Inspector) and self:selectedItem() end, {
 	["inspector:edit-item"] = function (self)
-		self:editProperty(self.selectedItem, self.SelectedIndex)
+		self:editProperty(self:selectedItem(), self.SelectedIndex)
 		self:invalidate()
 	end,
 	["inspector:undo"] = function (self)
@@ -244,7 +244,7 @@ core.addCommands(function(self) return self:is(Inspector) and self.selectedItem 
 		self:invalidate()
 	end,
 	["inspector:expand-item"] = function (self)
-		local item = self.selectedItem
+		local item = self:selectedItem()
 		if item:get'data-compound' then
 			self.expanded[item:getPath()] = true
 		elseif item:get'data-type'=='enum' then
@@ -253,7 +253,7 @@ core.addCommands(function(self) return self:is(Inspector) and self.selectedItem 
 		self:invalidate()
 	end,
 	["inspector:collapse-item"] = function (self)
-		local item = self.selectedItem
+		local item = self:selectedItem()
 		if item:get'data-compound' then
 			self.expanded[item:getPath()] = nil
 		elseif item:get'data-type'=='enum' then

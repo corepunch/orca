@@ -82,7 +82,7 @@ local OultineView = ui.TerminalView:extend {
 				onAccept = function(name)
  					Workspace.process:post('node/%s?class=%s&name=%s', path, cmd:get'name', name)
 					Workspace.inspector:showPathInInspector(path, name)
-					self.SelectedIndex = index + #self.selectedItem + 1
+					self.SelectedIndex = index + #self:selectedItem() + 1
 					self.expanded[path] = true
 					self.newIndex = -1
 					self.doc = Workspace.process:get(self.URL)
@@ -137,7 +137,7 @@ local OultineView = ui.TerminalView:extend {
 		else return config.icons.collapsed end
 	end,
 	printTreeNode = function(self, node, indent)
-		local expanded = self.numItems+1 == self.newIndex
+		local expanded = self:numItems()+1 == self.newIndex
 		local triangle = self:getTriangle(node, expanded)
 		local color = config.colors[node:get'data-type'] or config.colors.default
 		if self.searching then
@@ -182,46 +182,48 @@ core.addCommands(ui.TerminalView, {
 	end,
 	["terminal:next-item"] = function (self) 
 		if self.selectIndex then
-			self:selectIndex(math.min(self.numItems, self.SelectedIndex + 1))
+			self:selectIndex(math.min(self:numItems(), self.SelectedIndex + 1))
 		else
-			self.SelectedIndex = math.min(self.numItems, self.SelectedIndex + 1)
+			self.SelectedIndex = math.min(self:numItems(), self.SelectedIndex + 1)
 		end
 	end,
 })
 
-core.addCommands(function(self) return self:is(OultineView) and self.selectedItem end, {
+core.addCommands(function(self) return self:is(OultineView) and self:selectedItem() end, {
 	["outline:expand-item"] = function (self)
-		self.expanded[self.selectedItem:getPath()] = true
+		self.expanded[self:selectedItem():getPath()] = true
 		self:invalidate()
 	end,
 
 	["outline:collapse-item"] = function (self)
-		self.expanded[self.selectedItem:getPath()] = nil
+		self.expanded[self:selectedItem():getPath()] = nil
 		self:invalidate()
 	end,
 	
 	["outline:toggle-quickhide"] = function (self)
-		local doc = Workspace.process:get("node/%s\n", self.selectedItem:getPath())
+		local item = self:selectedItem()
+		local doc = Workspace.process:get("node/%s\n", item:getPath())
 		local QuickHide = doc.root:get("QuickHide")
 		if QuickHide then
 			local value = QuickHide == 'true' and 'false' or 'true'
-			-- self.selectedItem:set('data-hidden', value)
-			Workspace:setValue(self.selectedItem:getPath(), 'QuickHide', value)
+			-- item:set('data-hidden', value)
+			Workspace:setValue(item:getPath(), 'QuickHide', value)
 			self:invalidate()
 		end
 	end,
 	["outline:rename-item"] = function (self)
 		local index = self.selectedIndex
-		local path = self.selectedItem:getPath()
+		local item = self:selectedItem()
+		local path = item:getPath()
 		local x, y = self:getIndexPosition(index, #self.indents[index])
 		self.modal = TextInput {
-			text = self.selectedItem:get'name',
-			minwidth = #self.selectedItem:get'name',
+			text = item:get'name',
+			minwidth = #item:get'name',
 			nopadding = true,
 			LayoutTransformTranslation = geom.Vector2D.new(x, y),
 			onAccept = function(name)
 				Workspace.process:put('node/%s?Name=%s', path, name)
-				Workspace.inspector:showPathInInspector(self.selectedItem.parent:getPath(), name)
+				Workspace.inspector:showPathInInspector(item.parent:getPath(), name)
 				self.doc = Workspace.process:get(self.URL)
 				self:invalidate()
 			end,

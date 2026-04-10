@@ -4,7 +4,7 @@ local workspace = require "Editor.Scripts.Workspace"
 
 local keymap = {
 	up = function (self) self.SelectedIndex = math.max(1, self.SelectedIndex - 1) end,
-	down = function (self) self.SelectedIndex = math.min(self.numItems, self.SelectedIndex + 1) end,
+	down = function (self) self.SelectedIndex = math.min(self:numItems(), self.SelectedIndex + 1) end,
 -- 	right = function (self, name) self.expanded[name] = true return true end,
 -- 	left = function (self, name) self.expanded[name] = nil return true end,
 }
