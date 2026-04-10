@@ -150,44 +150,6 @@ OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lPar
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
-//LRESULT
-//OBJ_RaiseEvent(lpObject_t pobj, struct MessageType const *type, void* param)
-//{
-//  LRESULT result;
-//  if (!pobj) return 0;
-//  switch (type->Routing) {
-//    case kMessageRoutingDirect:
-//      return OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
-//    case kMessageRoutingBubbling:
-//      result = OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
-//      return result ? result : OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
-//    case kMessageRoutingTunneling:
-//      result = OBJ_RaiseEvent(OBJ_GetParent(pobj), type, param);
-//      return result ? result : OBJ_SendMessageW(pobj, type->FullIdentifier, 0, param);
-//    case kMessageRoutingTunnelingBubbling: {
-//      struct MessageType tmp = *type;
-//      tmp.Routing = kMessageRoutingTunneling;
-//      result = OBJ_RaiseEvent(pobj, &tmp, param);
-//      tmp.Routing = kMessageRoutingBubbling;
-//      return result ? result : OBJ_RaiseEvent(pobj, &tmp, param);
-//    }
-//  }
-//}
-
-//lpProperty_t
-//OBJ_AddComponentProperty2(lua_State* L, struct component* pcmp, lpcString_t name)
-//{
-//  uint32_t dwIdentifier = fnv1a32(name);
-//  FOR_LOOP(n, pcmp->pcls->NumProperties)
-//  {
-//    lpcPropertyType_t desc = &pcmp->pcls->Properties[n];
-//    if (desc->short_identifier == dwIdentifier) {
-//      return OBJ_AddComponentProperty(L, pcmp, desc);
-//    }
-//  }
-//  return NULL;
-//}
-
 void*
 CMP_GetUserData(struct component* component)
 {
