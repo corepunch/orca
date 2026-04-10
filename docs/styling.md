@@ -164,28 +164,34 @@ obj:addStyleSheet(".selector[:pseudo-state...]", { property = value, ... })
 
 ### `Object.ThemeChanged` — the style trigger
 
-Styles are applied by sending `Object.ThemeChanged` to an object.
-`StyleController` handles this message and recalculates all matching rules.
+Styles are applied by sending `Object.ThemeChanged` or `StyleController.ThemeChanged` to an object.
+`StyleController` handles both messages and recalculates all matching rules.
 Objects without a `StyleController` silently ignore the message.
 
-The message has a single field:
+Both messages have a single field:
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `recursive` | `bool_t` | When `TRUE`, the message is forwarded to every child object |
 
 ```c
-// C — convenience wrapper (sends Object.ThemeChanged internally)
-OBJ_ApplyStyles(lpObject_t object, bool_t recursive);
-
-// Alternatively, send the typed message directly:
+// C — send the typed message directly:
 _SendMessage(object, Object, ThemeChanged, .recursive = TRUE);
 ```
 
 ```lua
--- Lua — applies styles to this object and optionally to children
-node:applyStyles(recursive --[[bool]])
+-- Lua — raises StyleController.ThemeChanged on this object (applies styles)
+node:ThemeChanged()
+
+-- With recursive descent into children:
+node:ThemeChanged(StyleController_ThemeChangedEventArgs{ recursive = true })
 ```
+
+!!! tip "Lua event syntax"
+    `self:ThemeChanged()` works because `ThemeChanged` is an **event property** on `StyleController`.
+    Accessing any event property as `self.EventName` returns a callable closure that sends the message.
+    This pattern applies to all component events — for example, `player:Play()` sends `AnimationPlayer.Play`.
+    See [Lua events and properties](#lua-events-and-properties) below.
 
 ### Resolution order
 
@@ -321,5 +327,70 @@ local myBtn = screen + ui.Button {
 }
 
 -- Apply styles initially
-myBtn:applyStyles(false)
+myBtn:ThemeChanged()
 ```
+
+---
+
+## Lua events and properties
+
+ORCA objects expose a uniform Lua API for **reading and writing properties** and for **sending messages** through the component property system.
+
+### Property access
+
+Any property declared in a component's XML definition can be read and written directly on the Lua object:
+
+```lua
+-- Read a property
+local w = node.Width          -- returns the current Width value
+
+-- Write a property
+node.Width = 120              -- sets Width; may trigger layout/render
+node.Text  = "Hello"
+node.Color = "#4a90d9"
+```
+
+Setting a property that is bound to layout or rendering automatically marks the object dirty and triggers the next paint cycle.
+
+### Events (self:EventName)
+
+Every **message** declared in a component's `<messages>` block becomes an **event property** accessible via `self.EventName`.  Reading the property returns a callable closure that sends the message synchronously:
+
+```lua
+-- AnimationPlayer events
+player:Play()                       -- sends AnimationPlayer.Play
+player:Stop()                       -- sends AnimationPlayer.Stop
+player:Pause()                      -- sends AnimationPlayer.Pause
+
+-- StyleController.ThemeChanged — apply styles
+node:ThemeChanged()                  -- non-recursive (default)
+
+-- Pass an EventArgs table for messages that carry data:
+node:ThemeChanged(StyleController_ThemeChangedEventArgs{ recursive = true })
+```
+
+The pattern works for any component that defines messages:
+
+| Call | Component | Message sent |
+|------|-----------|--------------|
+| `player:Play()` | `AnimationPlayer` | `AnimationPlayer.Play` |
+| `player:Stop()` | `AnimationPlayer` | `AnimationPlayer.Stop` |
+| `node:ThemeChanged()` | `StyleController` | `StyleController.ThemeChanged` |
+
+### Event callbacks (self.EventName = function)
+
+Assigning a Lua function to an event property registers it as a **callback** that fires when the corresponding message is dispatched to the object:
+
+```lua
+-- Called when the animation finishes
+function player:Completed(event, sender)
+    print("animation done")
+end
+
+-- Equivalent to:
+player.Completed = function(self, event, sender)
+    print("animation done")
+end
+```
+
+The callback receives `(self, event, sender)` where `event` is the EventArgs struct pushed as a userdata (or nil for messages with no fields) and `sender` is the originating object.

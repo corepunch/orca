@@ -284,11 +284,6 @@
           <summary>Clears dirty flags, marks object as recalculated</summary>
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
-        <method name="ApplyStyles">
-          <summary>Applies style changes to object hierarchy</summary>
-          <details>Forces style recalculation and application, optionally propagating changes to child objects in the hierarchy.</details>
-          <arg name="recursive" type="bool">Whether to apply styles to child objects recursively</arg>
-        </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
         <method name="AddStyleSheet" lua="true">
           <summary>Add a stylesheet to the object.</summary>
@@ -602,11 +597,21 @@
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
         <handle message="Object.ThemeChanged"/>
+        <handle message="StyleController.ThemeChanged"/>
       </handles>
       <fields>
         <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
         <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
+      <messages>
+        <message name="ThemeChanged" routing="Direct">
+          <summary>Applies styles to this object.</summary>
+          <details>Triggers style recalculation on this object. When recursive is TRUE, also sends ThemeChanged to every direct child. Preferred over the removed OBJ_ApplyStyles() function.</details>
+          <fields>
+            <field name="recursive" type="bool">When TRUE, also sends ThemeChanged to every direct child</field>
+          </fields>
+        </message>
+      </messages>
     </class>
   </classes>
   <functions>

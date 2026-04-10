@@ -99,7 +99,11 @@ enum PropertyAnimationProperties {
 #define ID_StyleController 0x70b793e6
 #define GetStyleController(_P) ((struct StyleController*)((_P)?OBJ_GetComponent(_P,ID_StyleController):NULL))
 #define StyleController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleController,sizeof(struct StyleController),_N)
-#define kStyleControllerNumProperties 0
+#define kStyleControllerNumProperties 1
+
+#define ID_StyleController_ThemeChanged ((0xe51e8073&MSG_DATA_MASK)|ROUTING_DIRECT) // StyleController.ThemeChanged
+#define ID_StyleController_ThemeChangedEventArgs 0x0ee8d735
+#define ID_StyleController_ThemeChangedEventArgs_recursive 0xa1d9af6b // StyleController_ThemeChangedEventArgs.recursive
 
 #define ID_Object_Create ((0x5ad07ee8&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Create
 #define ID_Object_Start ((0x01629a90&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Start

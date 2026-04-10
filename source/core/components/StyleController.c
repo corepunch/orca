@@ -407,7 +407,8 @@ HANDLER(StyleController, Object, Release) {
 // Recalculate and apply all active style rules to this object.
 // pThemeChanged->recursive controls whether child objects are also updated.
 // Called automatically when hover state, focus, or the system theme changes.
-// Also called explicitly via OBJ_ApplyStyles().
+// Triggered via Object.ThemeChanged (from the engine) or StyleController.ThemeChanged
+// (from Lua via self:ThemeChanged()). Both share the same implementation.
 // Note: pThemeChanged may be NULL when the message is dispatched via
 // SV_PostMessage with lParam=0; treat NULL as recursive=FALSE.
 HANDLER(StyleController, Object, ThemeChanged) {
@@ -438,13 +439,5 @@ HANDLER(StyleController, Object, ThemeChanged) {
   }
 
   return FALSE;
-}
-
-// Convenience wrapper: apply styles by sending Object.ThemeChanged.
-// Objects without a StyleController silently ignore this message.
-void
-OBJ_ApplyStyles(lpObject_t object, bool_t recursive)
-{
-  _SendMessage(object, Object, ThemeChanged, .recursive = recursive);
 }
 

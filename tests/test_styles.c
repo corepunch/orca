@@ -8,7 +8,7 @@
  *     StyleController
  *   - OBJ_ClearStyleClasses: frees all memory, idempotent on no-StyleController
  *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
- *   - OBJ_ApplyStyles (via Object.ThemeChanged): applies a float rule to a property
+ *   - Object.ThemeChanged (via _SendMessage): applies a float rule to a property
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
  *
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
@@ -235,7 +235,7 @@ static void test_get_style_flags_none(void) {
 }
 
 /*
- * OBJ_ApplyStyles (via Object.ThemeChanged with recursive=FALSE):
+ * ThemeChanged via _SendMessage (replaces OBJ_ApplyStyles):
  * Add a ".btn" → Width=42 rule, parse the "btn" class, then apply.
  * Verify that the Width property was updated to 42.
  */
@@ -246,7 +246,7 @@ static void test_apply_styles_float_property(void) {
         /* Apply the "btn" class */
         OBJ_ParseClassAttribute(obj, "btn");
         /* Apply styles — sends Object.ThemeChanged message */
-        OBJ_ApplyStyles(obj, FALSE);
+        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
         /* Verify the Width property was set to 42 */
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
@@ -256,13 +256,13 @@ static void test_apply_styles_float_property(void) {
 }
 
 /*
- * OBJ_ApplyStyles is silent on objects without StyleController.
+ * ThemeChanged is silent on objects without StyleController.
  * Sending the message to a bare object must not crash.
  */
 static void test_apply_styles_no_component(void) {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
-    OBJ_ApplyStyles(obj, FALSE);  /* must not crash */
+    _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);  /* must not crash */
     free(obj);
 }
 
@@ -313,7 +313,7 @@ static void test_add_style_class_dot_selector_matches(void) {
         OBJ_AddStyleClass(obj, ".btn", "Width", "77", 0);
         /* Class parsed without dot */
         OBJ_ParseClassAttribute(obj, "btn");
-        OBJ_ApplyStyles(obj, FALSE);
+        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));

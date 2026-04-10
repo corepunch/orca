@@ -28,6 +28,7 @@ typedef struct Object_AttachedEventArgs Object_AttachedMsg_t,* Object_AttachedMs
 typedef struct Object_ReleaseEventArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
 typedef struct Object_DestroyEventArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
 typedef struct Object_TimerEventArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
+typedef struct StyleController_ThemeChangedEventArgs StyleController_ThemeChangedMsg_t,* StyleController_ThemeChangedMsgPtr;
 typedef struct AnimationPlayer_PlayEventArgs AnimationPlayer_PlayMsg_t,* AnimationPlayer_PlayMsgPtr;
 typedef struct AnimationPlayer_ResumeEventArgs AnimationPlayer_ResumeMsg_t,* AnimationPlayer_ResumeMsgPtr;
 typedef struct AnimationPlayer_StopEventArgs AnimationPlayer_StopMsg_t,* AnimationPlayer_StopMsgPtr;
@@ -310,10 +311,6 @@ OBJ_SetDirty(struct Object*);
 /// @brief Clears dirty flags, marks object as recalculated
 ORCA_API void
 OBJ_ClearDirtyFlags(struct Object*);
-
-/// @brief Applies style changes to object hierarchy
-ORCA_API void
-OBJ_ApplyStyles(struct Object*, bool_t);
 
 /// @name Style
 /// Manages style sheets and resolves computed style values.
@@ -639,8 +636,16 @@ typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t
 struct StyleController {
 	struct style_class* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
 	struct style_sheet* stylesheet; ///< Linked list of style rules (selector to property to value mappings)
+	event_t ThemeChanged; ///< Event slot for the StyleController.ThemeChanged message
 };
 ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
 ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);
+
+/** StyleController_ThemeChangedEventArgs struct */
+struct StyleController_ThemeChangedEventArgs {
+	bool_t recursive; ///< When TRUE, also sends ThemeChanged to every direct child
+};
+ORCA_API void luaX_pushStyleController_ThemeChangedEventArgs(lua_State *L, struct StyleController_ThemeChangedEventArgs const* data);
+ORCA_API struct StyleController_ThemeChangedEventArgs* luaX_checkStyleController_ThemeChangedEventArgs(lua_State *L, int idx);
 
 #endif
