@@ -127,7 +127,7 @@ local specials = {
 -- Handler for attach-only component child elements (e.g. <AnimationPlayer Playing="true"/>).
 -- Attaches the named component to the parent node, then parses its attributes as properties.
 local function attach_only_component(node, element)
-	node:addComponent(element.tag)
+	node:addComponentByName(element.tag)
 	for k, v in element.attributes do
 		xpcall(Property.parse, print, node, k, v)
 	end
@@ -153,9 +153,26 @@ end
 specials.AnimationPlayer = attach_only_component
 specials.AnimationCurve  = animation_curve_child
 
+-- StateManagerController is an attach-only component.  Attributes are set as
+-- properties on the host node.  An optional inline <StateManager> child element
+-- is constructed as a StateManager object and assigned to the StateManager property.
+specials.StateManagerController = function(node, element)
+	node:addComponentByName("StateManagerController")
+	for k, v in element.attributes do
+		xpcall(Property.parse, print, node, k, v)
+	end
+	for sub in element.children do
+		if sub.tag == "StateManager" then
+			local sm = construct_node(sub)
+			node.StateManager = sm
+		end
+	end
+end
+
 local function construct_node(element)
 	local class =
 		try_prefab_placeholder(element) or
+		try_require_memeber("orca.core", element.tag) or
 		try_require_memeber("orca.UIKit", element.tag) or
 		try_require_memeber("orca.SceneKit", element.tag) or
 		try_require_memeber("orca.SpriteKit", element.tag) or

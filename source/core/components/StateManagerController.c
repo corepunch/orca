@@ -1,262 +1,131 @@
 #include <source/core/core_local.h>
-
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
-#define IGNORE_OBJECT_ATTR(attr)                                               \
-!xmlStrcmp(attr->name, XMLSTR("IDInImportSource")) ||                         \
-!xmlStrcmp(attr->name, XMLSTR("GpuResourceMemoryType")) ||                    \
-!xmlStrcmp(attr->name, XMLSTR("IsDisabled")) ||                               \
-!xmlStrcmp(attr->name, XMLSTR("PlaceholderTemplate")) ||                      \
-!xmlStrcmp(attr->name, XMLSTR("Kanzi.OnPropertyChangedTrigger"))
-
-typedef xmlChar* xmlCharPtr;
-
-typedef struct _STATGROUP
-{
-  lpProperty_t property;
-  xmlNodePtr xml;
-  xmlCharPtr name;
-  struct _STATGROUP* next;
-}* PSTATEGRP;
-
-// Global property parser callback, set once on Load and reused for all ApplyStateGroup calls.
-static propertyParser_t _parser;
+#include <math.h>
 
 // ============================================================================
 // INTERNAL HELPERS
 // ============================================================================
 
+// Declare parse_property (defined in core_main.c; used the same way as in StyleController).
+extern int parse_property(lua_State* L,
+                          const char* str,
+                          struct PropertyType const* prop,
+                          void* valueptr);
+
+// Walk StateManager's StateGroup children and set PF_USED_IN_STATE_MANAGER on
+// each property referenced by a ControllerProperty attribute.
 static void
-_ReleaseStateGroup(PSTATEGRP stategroup)
+_InitControllerProperties(struct StateManagerController* smc, lpObject_t host)
 {
-  if (stategroup->next) {
-    _ReleaseStateGroup(stategroup->next);
-  }
-  xmlFree(stategroup->name);
-  free(stategroup);
-}
-
-static void
-_ReleaseDoc(struct StateManagerController* sm)
-{
-  if (sm->doc) {
-    xmlFreeDoc((xmlDocPtr)sm->doc);
-    sm->doc = NULL;
-  }
-  if (sm->stategroups) {
-    _ReleaseStateGroup((PSTATEGRP)sm->stategroups);
-    sm->stategroups = NULL;
-  }
-  sm->initialized = FALSE;
-}
-
-static void
-_InitStateGroups(struct StateManagerController* sm, lpObject_t object)
-{
-  xmlDocPtr doc = (xmlDocPtr)sm->doc;
-  if (!doc)
-    return;
-  xmlForEach(stateGroupObject, xmlDocGetRootElement(doc)) {
-    if (xmlStrcmp(stateGroupObject->name, XMLSTR("StateGroup")))
-      continue;
-    xmlCharPtr contprop = xmlGetProp(stateGroupObject, XMLSTR("ControllerProperty"));
-    if (!xmlStrcmp(contprop, XMLSTR("StateToolsEditStateEnabled"))) {
-      xmlFree(contprop);
-      continue;
-    }
-    if (contprop == NULL) {
-      Con_Error("No ControllerProperty %s", doc->URL);
-      continue;
-    }
-    PSTATEGRP stateGroup = ZeroAlloc(sizeof(struct _STATGROUP));
-    if (SUCCEEDED(OBJ_FindShortProperty(
-          object, (lpcString_t)contprop, &stateGroup->property))) {
-      PROP_SetFlag(stateGroup->property, PF_USED_IN_STATE_MANAGER);
-    } else {
-#ifdef LOG_MISSING_PROPERTIES
-      Con_Error("%s: can't find property \"%s\" in object \"%s\"",
-                 (lpcString_t)doc->URL,
-                 contprop,
-                 object->name);
-#endif
-    }
-    stateGroup->xml = stateGroupObject;
-    stateGroup->name = contprop;
-    PSTATEGRP list = (PSTATEGRP)sm->stategroups;
-    ADD_TO_LIST(stateGroup, list);
-    sm->stategroups = list;
-  }
-}
-
-static void
-_ApplyStateGroup(lpObject_t object,
-                 xmlCharPtr controllerProperty,
-                 xmlNodePtr stateObject,
-                 bool_t debug)
-{
-  WITH(xmlChar, Path, xmlGetProp(stateObject, XMLSTR("Path")), xmlFree)
-  {
-    object = OBJ_FindByPath(object, (lpcString_t)Path);
-    if (!object) {
-#ifdef LOG_MISSING_OBJECTS
-      Con_Error("state manager: can't find child object \"%s\"",
-                 (lpcString_t)Path);
-#endif
-      return;
-    }
-  }
-
-  if (!object)
-    return;
-
-  FOR_EACH_LIST(xmlAttr, attr, stateObject->properties)
-  {
-    if (!xmlStrcmp(attr->name, XMLSTR("Path")) ||
-        !xmlStrcmp(attr->name, XMLSTR("Name")) ||
-        !xmlStrcmp(attr->name, XMLSTR("id")) ||
-        !xmlStrcmp(attr->name, BAD_CAST controllerProperty) ||
-        IGNORE_OBJECT_ATTR(attr)) {
-      continue;
-    }
-
-    WITH(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree)
-    {
-      lua_State* L = core.L;
-      if (FAILED(_parser(L, object, (lpcString_t)attr->name, (lpcString_t)value))) {
-        Con_Error("state_manager: undefined property type %s=\"%s\" in object \"%s\"",
-                  (lpcString_t)attr->name,
-                  (lpcString_t)value,
-                  OBJ_GetName(object));
-      }
-    }
-  }
-
-  xmlForEach(substate, stateObject)
-  {
-    if (!xmlStrcmp(substate->name, XMLSTR("State"))) {
-      _ApplyStateGroup(object, controllerProperty, substate, debug);
+  if (!smc->StateManager) return;
+  lpObject_t smObj = CMP_GetObject(smc->StateManager);
+  if (!smObj) return;
+  FOR_EACH_OBJECT(sgObj, smObj) {
+    struct StateGroup* sg = GetStateGroup(sgObj);
+    if (!sg || !sg->ControllerProperty || !sg->ControllerProperty[0]) continue;
+    lpProperty_t prop = NULL;
+    if (SUCCEEDED(OBJ_FindShortProperty(host, sg->ControllerProperty, &prop))) {
+      PROP_SetFlag(prop, PF_USED_IN_STATE_MANAGER);
     }
   }
 }
 
+// Apply all StatePropertySetter children of `stateObj` to `target`.
 static void
-_HandleControllerChange(struct StateManagerController* sm,
-                        lpObject_t hobj,
-                        lpProperty_t prop)
+_ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
 {
-  FOR_EACH_LIST(struct _STATGROUP, stategroup, (PSTATEGRP)sm->stategroups)
-  {
-    if (stategroup->property != prop)
-      continue;
-    xmlForEach(state, stategroup->xml)
-    {
-      if (xmlStrcmp(state->name, XMLSTR("State")))
-        continue;
-      WITH(xmlChar, value, xmlGetProp(state, stategroup->name), xmlFree)
-      {
-        lpProperty_t p = stategroup->property;
-        float pval = *(float*)PROP_GetValue(p);
-        if (PROP_GetType(p) < kDataTypeFloat) {
-          pval = *(int*)PROP_GetValue(p);
-        }
-        bool_t debug = xmlHasProp(stategroup->xml, XMLSTR("Debug")) != NULL;
-        if (debug) {
-          Con_Error("Processing stategroup %s with value %d", stategroup->name, (int)pval);
-        }
-        if (PROP_GetType(p) == kDataTypeBool && isalpha(*value)) {
-          if (!pval == !xmlStrcmp(value, XMLSTR("false"))) {
-            _ApplyStateGroup(hobj, stategroup->name, state, debug);
-            next = NULL; // stop iterating states once a match is applied
-          }
-        } else if (fabs(pval - atof((lpcString_t)value)) < 0.01f) {
-          _ApplyStateGroup(hobj, stategroup->name, state, debug);
-          next = NULL; // stop iterating states once a match is applied
-        }
-      }
-    }
+  FOR_EACH_OBJECT(setterObj, stateObj) {
+    struct StatePropertySetter* sp = GetStatePropertySetter(setterObj);
+    if (!sp || !sp->Property || !sp->Property[0] || !sp->Value) continue;
+    lpProperty_t hprop = NULL;
+    if (FAILED(OBJ_FindShortProperty(target, sp->Property, &hprop))) continue;
+    char buf[MAX_PROPERTY_STRING] = { 0 };
+    parse_property(core.L, sp->Value, PROP_GetDesc(hprop), buf);
+    PROP_SetValue(hprop, buf);
+  }
+  // Recurse into nested State children (sub-states targeting child objects).
+  FOR_EACH_OBJECT(child, stateObj) {
+    struct State* sub = GetState(child);
+    if (!sub) continue;
+    lpObject_t subtarget = (sub->Path && sub->Path[0])
+      ? OBJ_FindByPath(host, sub->Path) : host;
+    if (subtarget) _ApplyState(host, subtarget, child);
   }
 }
 
-// Load the XML document from the path stored in sm->StateManager.
-static void
-_LoadFromPath(struct StateManagerController* sm, lpObject_t object)
+// Returns true if the controller property `prop` matches the State's Value string.
+static bool_t
+_StateMatches(lpProperty_t prop, lpcString_t value)
 {
-  if (!sm->StateManager || !*sm->StateManager)
-    return;
-  xmlDocPtr doc = (xmlDocPtr)FS_LoadXML(sm->StateManager);
-  if (!doc) {
-    Con_Error("StateManagerController: failed to load \"%s\"", sm->StateManager);
-    return;
+  if (!value || !value[0]) return FALSE;
+  eDataType_t type = PROP_GetType(prop);
+  if (type == kDataTypeBool && isalpha((unsigned char)*value)) {
+    // Bool comparison: match "true"/"false" strings.
+    float pval = (type < kDataTypeFloat)
+      ? (float)*(int*)PROP_GetValue(prop)
+      : *(float*)PROP_GetValue(prop);
+    bool_t propTrue = (pval != 0.0f);
+    bool_t valTrue  = (strcmp(value, "false") != 0);
+    return propTrue == valTrue;
   }
-  _ReleaseDoc(sm);
-  sm->doc = doc;
-  // Immediately initialize if the object is already started.
-  if (OBJ_GetFlags(object) & OF_UPDATED_ONCE) {
-    _InitStateGroups(sm, object);
-    sm->initialized = TRUE;
-  }
+  // Numeric comparison.
+  float pval = (type < kDataTypeFloat)
+    ? (float)*(int*)PROP_GetValue(prop)
+    : *(float*)PROP_GetValue(prop);
+  return fabsf(pval - (float)atof(value)) < 0.01f;
 }
 
 // ============================================================================
 // COMPONENT HANDLERS
 // ============================================================================
 
-HANDLER(StateManagerController, Object, Create) {
-  pStateManagerController->doc         = NULL;
-  pStateManagerController->stategroups = NULL;
-  pStateManagerController->initialized = FALSE;
-  return FALSE;
-}
-
-HANDLER(StateManagerController, Object, Release) {
-  _ReleaseDoc(pStateManagerController);
-  return FALSE;
-}
-
-// Lazily resolve state groups on the first Start.
+// On Start: mark all tracked controller properties so property_events.c knows
+// to fire ControllerChanged when they change.
 HANDLER(StateManagerController, Object, Start) {
-  if (pStateManagerController->doc && !pStateManagerController->initialized) {
-    _InitStateGroups(pStateManagerController, hObject);
-    pStateManagerController->initialized = TRUE;
-  }
+  _InitControllerProperties(pStateManagerController, hObject);
   return FALSE;
 }
 
-// When the StateManager string property is set, automatically load the XML file.
+// When the StateManager object property is changed, re-initialise the tracked
+// property flags against the new StateManager object.
 HANDLER(StateManagerController, Object, PropertyChanged) {
   if (pPropertyChanged->Property &&
-      PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_StateManagerController_StateManager) {
-    _LoadFromPath(pStateManagerController, hObject);
+      PROP_GetLongIdentifier(pPropertyChanged->Property) ==
+        ID_StateManagerController_StateManager) {
+    _InitControllerProperties(pStateManagerController, hObject);
   }
   return FALSE;
 }
 
-// C-only API: install a pre-parsed xmlDocPtr directly (e.g. from editor or
-// embedded data).  wParam carries the xmlDocPtr; lParam carries the
-// propertyParser_t callback (passed as the 4th argument = pLoad in HANDLER).
-HANDLER(StateManagerController, StateManagerController, Load) {
-  _ReleaseDoc(pStateManagerController);
-  pStateManagerController->doc = (void*)(uintptr_t)wParam;
-  if (pLoad) {
-    _parser = (propertyParser_t)(uintptr_t)(void*)pLoad;
-  }
-  return TRUE;
-}
-
-// Re-read the XML file at the path stored in the StateManager property.
-HANDLER(StateManagerController, StateManagerController, Reload) {
-  _LoadFromPath(pStateManagerController, hObject);
-  return TRUE;
-}
-
-// Called from property_events when a PF_USED_IN_STATE_MANAGER property changes.
+// Dispatched by property_events.c whenever a PF_USED_IN_STATE_MANAGER property
+// changes value.  Walk the StateManager's StateGroup children, find the one
+// that tracks `pControllerChanged->Property`, then find the first matching
+// State child and apply its StatePropertySetter values.
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
-  if (!pStateManagerController->initialized) {
-    _InitStateGroups(pStateManagerController, hObject);
-    pStateManagerController->initialized = TRUE;
+  if (!pStateManagerController->StateManager) return FALSE;
+  lpObject_t smObj = CMP_GetObject(pStateManagerController->StateManager);
+  if (!smObj) return FALSE;
+
+  lpProperty_t prop = pControllerChanged->Property;
+  if (!prop) return FALSE;
+  lpcString_t propName = PROP_GetName(prop);
+
+  FOR_EACH_OBJECT(sgObj, smObj) {
+    struct StateGroup* sg = GetStateGroup(sgObj);
+    if (!sg || !sg->ControllerProperty) continue;
+    if (strcmp(sg->ControllerProperty, propName) != 0) continue;
+
+    // Find the first State whose Value matches the current property value.
+    FOR_EACH_OBJECT(stateObj, sgObj) {
+      struct State* st = GetState(stateObj);
+      if (!st) continue;
+      if (!_StateMatches(prop, st->Value)) continue;
+      // Resolve optional target path.
+      lpObject_t target = (st->Path && st->Path[0])
+        ? OBJ_FindByPath(hObject, st->Path) : hObject;
+      if (target) _ApplyState(hObject, target, stateObj);
+      break; // only apply the first matching state per StateGroup
+    }
   }
-  _HandleControllerChange(pStateManagerController, hObject, pControllerChanged->Property);
   return FALSE;
 }
 

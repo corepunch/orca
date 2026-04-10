@@ -48,7 +48,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager
 
 default: directories modules unite
 all: default
@@ -198,6 +198,9 @@ test-properties: platform $(SOURCEMODULES2) buildlib
 test-styles: platform $(SOURCEMODULES2) buildlib
 	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_styles.c -o $(TEST_STYLES_BIN) $(TEST_LDFLAGS)
 	$(TEST_STYLES_BIN)
+
+test-state-manager: app copyshare
+	$(TARGET) -test=tests/test_state_manager.lua
 
 test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua

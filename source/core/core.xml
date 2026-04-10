@@ -634,38 +634,48 @@
         </message>
       </messages>
     </class>
+    <class name="StateManager">
+      <summary>Container object for StateGroup definitions.</summary>
+      <details>StateManager is a standalone object (like AnimationClip or Shader) that holds one or more StateGroup children. Load it from an XML file via require() and assign it to StateManagerController.StateManager on the target node. The framework then automatically tracks the declared controller properties and applies the matching state property overrides whenever those properties change.</details>
+    </class>
+    <class name="StateGroup">
+      <summary>Tracks one controller property and maps its values to State objects.</summary>
+      <details>Each StateGroup inside a StateManager watches a single host-object property (named by ControllerProperty). When that property changes value, StateManagerController iterates the child State objects to find the first one whose Value matches and applies its StatePropertySetter children to the host object tree.</details>
+      <properties>
+        <property name="ControllerProperty" type="string">Short name of the property on the host object to watch (e.g. "IsActive")</property>
+      </properties>
+    </class>
+    <class name="State">
+      <summary>Defines property overrides to apply when the parent StateGroup's controller property matches Value.</summary>
+      <details>A State is a child of a StateGroup. When the controller property equals Value, every StatePropertySetter child of this State is applied to the object identified by Path (or the host object if Path is empty).</details>
+      <properties>
+        <property name="Value" type="string">The value of the controller property that activates this state (compared as a number; for booleans "true"/"false" are also accepted)</property>
+        <property name="Path" type="string">Optional path from the host object to the target object. Empty string means the host object itself.</property>
+      </properties>
+    </class>
+    <class name="StatePropertySetter">
+      <summary>Sets one property on the target object when the parent State is activated.</summary>
+      <details>A StatePropertySetter is a child of a State. When its parent State becomes active, Property is looked up on the target object (identified by State.Path) and set to Value using the standard property parser.</details>
+      <properties>
+        <property name="Property" type="string">Short name of the property to set on the target object</property>
+        <property name="Value" type="string">String representation of the value to assign (parsed the same way as XML attribute values)</property>
+      </properties>
+    </class>
     <class name="StateManagerController" attach-only="true">
-      <summary>Manages XML-driven state groups that reactively apply property values when controller properties change.</summary>
-      <details>StateManagerController is an attach-only component that loads a Kanzi-style StateManager XML document and evaluates its StateGroup entries whenever a tracked controller property changes value. Set the StateManager property to a file path to load and activate a state manager document transparently. The component lazily initializes its internal state group list on the first Object.Start and then dispatches ControllerChanged whenever a property marked PF_USED_IN_STATE_MANAGER is modified.</details>
+      <summary>Attach-only component that applies state-driven property overrides from a StateManager object.</summary>
+      <details>StateManagerController is an attach-only component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies all its StatePropertySetter children to the target object.</details>
       <handles>
-        <handle message="Object.Create"/>
-        <handle message="Object.Release"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
-        <handle message="StateManagerController.Load"/>
         <handle message="StateManagerController.ControllerChanged"/>
-        <handle message="StateManagerController.Reload"/>
       </handles>
       <properties>
-        <property name="StateManager" type="string">Path to the StateManager XML file. Setting this property automatically loads and activates the document.</property>
+        <property name="StateManager" type="StateManager" pointer="true">The StateManager object that supplies the StateGroup definitions. Setting this property automatically marks all tracked controller properties.</property>
       </properties>
-      <fields>
-        <field name="doc" type="void" pointer="true">Parsed XML document that contains the StateGroup definitions (xmlDocPtr)</field>
-        <field name="stategroups" type="void" pointer="true">Linked list of resolved STATEGRP entries (PSTATEGRP)</field>
-        <field name="initialized" type="bool">TRUE once the state groups have been resolved against the object's properties</field>
-      </fields>
       <messages>
-        <message name="Load" routing="Direct">
-          <summary>Load a StateManager XML document into this component.</summary>
-          <details>Replaces any previously loaded document. The old document and all resolved state groups are released before the new one is installed. Initialization is deferred until the next Object.Start or the first ControllerChanged. Pass the xmlDocPtr in wParam and the propertyParser_t in lParam.</details>
-        </message>
-        <message name="Reload" routing="Direct">
-          <summary>Reload the StateManager XML document from the current StateManager file path.</summary>
-          <details>Re-reads the file at the path stored in the StateManager property, replacing any previously loaded document and resetting all resolved state groups. Useful after the source file has been modified on disk.</details>
-        </message>
         <message name="ControllerChanged" routing="Direct">
           <summary>Evaluate all state groups whose controller property matches the changed property.</summary>
-          <details>Called automatically by the property event system whenever a property flagged with PF_USED_IN_STATE_MANAGER changes value. Iterates each matching StateGroup and applies the matching State's property overrides to the object tree.</details>
+          <details>Dispatched automatically by the property event system whenever a property flagged with PF_USED_IN_STATE_MANAGER changes value. Iterates each matching StateGroup and applies the matching State's property overrides to the object tree.</details>
           <fields>
             <field name="Property" type="Property" pointer="true">The property whose value changed, triggering state group evaluation</field>
           </fields>
