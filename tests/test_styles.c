@@ -18,6 +18,7 @@
 
 #include <source/core/core_local.h>
 #include <source/core/core.h>
+#include <source/core/object/object_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -183,7 +184,7 @@ static void test_parse_class_no_hover(void) {
 static void test_add_class_hover(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         EXPECT(!(OBJ_GetFlags(obj) & OF_HOVERABLE));
-        OBJ_AddClass(obj, "card:hover");
+        _SendMessage(obj, StyleController, AddClass, "card:hover");
         EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
     }
 }
@@ -223,7 +224,7 @@ static void test_clear_style_classes(void) {
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes    == NULL);
-        EXPECT(sc->stylesheet == NULL);
+        EXPECT(sc->rules == NULL);
     }
 }
 
