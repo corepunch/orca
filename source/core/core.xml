@@ -145,7 +145,13 @@
         <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
         <method name="AddChild">
           <summary>Add a child object.</summary>
-          <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
+          <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.
+
+In Lua the + operator is a shorthand for addChild that also returns the child, enabling concise tree construction:
+
+  local child = parent + ChildClass { ... }
+
+This is the idiomatic way to build object hierarchies in Lua scripts and tests.</details>
           <arg name="child" type="Object" pointer="true">The child object to add to this object's hierarchy</arg>
           <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
           <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
