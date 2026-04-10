@@ -71,10 +71,10 @@ _ParsePseudoStateFlags(lpcString_t str)
     lpcString_t start = token + 1;
     lpcString_t end = strchr(start, ':');
     size_t len = end ? (size_t)(end - start) : strlen(start);
-    if      (len == 5 && !strncmp(start, "hover",  len)) flags |= STYLE_HOVER;
-    else if (len == 5 && !strncmp(start, "focus",  len)) flags |= STYLE_FOCUS;
-    else if (len == 6 && !strncmp(start, "active", len)) flags |= STYLE_SELECT;
-    else if (len == 4 && !strncmp(start, "dark",   len)) flags |= STYLE_DARK;
+  if      (len == sizeof("hover") -1 && !strncmp(start, "hover",  len)) flags |= STYLE_HOVER;
+    else if (len == sizeof("focus") -1 && !strncmp(start, "focus",  len)) flags |= STYLE_FOCUS;
+    else if (len == sizeof("active")-1 && !strncmp(start, "active", len)) flags |= STYLE_SELECT;
+    else if (len == sizeof("dark")  -1 && !strncmp(start, "dark",   len)) flags |= STYLE_DARK;
     token = end;
   }
   return flags;
@@ -285,7 +285,10 @@ void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
         return;
     }
 
-    ss->class_id = fnv1a32(ss->classname + 1);
+    // Normalize: strip leading '.' so ".btn" and "btn" hash identically,
+    // matching the tokens produced by OBJ_ParseClassAttribute.
+    // ss->classname was truncated at ':' by strtok above (e.g., ".btn:hover" → ".btn").
+    ss->class_id = fnv1a32(*ss->classname == '.' ? ss->classname + 1 : ss->classname);
     _AddRuleToStylesheet(self, ss);
     lua_pop(L, 1);
   }
