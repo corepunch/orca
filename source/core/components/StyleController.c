@@ -86,7 +86,7 @@ _AddRuleToStylesheet(lpObject_t obj, struct style_sheet* ss)
 {
   if (obj) {
     struct StyleController* sc = GetStyleController(obj);
-    if (sc) ADD_TO_LIST(ss, sc->stylesheet);
+    if (sc) { ADD_TO_LIST(ss, sc->stylesheet); }
     else free(ss); // object has no StyleController — discard the rule
   } else {
     ADD_TO_LIST(ss, static_sheet);
@@ -414,7 +414,7 @@ HANDLER(StyleController, Object, Release) {
 // (from Lua via self:ThemeChanged()). Both share the same implementation.
 // Note: pThemeChanged may be NULL when the message is dispatched via
 // SV_PostMessage with lParam=0; treat NULL as recursive=FALSE.
-HANDLER(StyleController, Object, ThemeChanged) {
+HANDLER(StyleController, StyleController, ThemeChanged) {
   bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
 
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
@@ -437,7 +437,7 @@ HANDLER(StyleController, Object, ThemeChanged) {
 
   if (recursive) {
     FOR_EACH_OBJECT(child, hObject) {
-      _SendMessage(child, Object, ThemeChanged, .recursive = TRUE);
+      _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
     }
   }
 

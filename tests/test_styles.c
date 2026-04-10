@@ -8,7 +8,7 @@
  *     StyleController
  *   - OBJ_ClearStyleClasses: frees all memory, idempotent on no-StyleController
  *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
- *   - Object.ThemeChanged (via _SendMessage): applies a float rule to a property
+ *   - StyleController.ThemeChanged (via _SendMessage): applies a float rule to a property
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
  *
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
@@ -245,8 +245,8 @@ static void test_apply_styles_float_property(void) {
         OBJ_AddStyleClass(obj, ".btn", "Width", "42", 0);
         /* Apply the "btn" class */
         OBJ_ParseClassAttribute(obj, "btn");
-        /* Apply styles — sends Object.ThemeChanged message */
-        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
+        /* Apply styles — sends StyleController.ThemeChanged message */
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         /* Verify the Width property was set to 42 */
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
@@ -262,7 +262,7 @@ static void test_apply_styles_float_property(void) {
 static void test_apply_styles_no_component(void) {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
-    _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);  /* must not crash */
+    _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);  /* must not crash */
     free(obj);
 }
 
@@ -313,7 +313,7 @@ static void test_add_style_class_dot_selector_matches(void) {
         OBJ_AddStyleClass(obj, ".btn", "Width", "77", 0);
         /* Class parsed without dot */
         OBJ_ParseClassAttribute(obj, "btn");
-        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
