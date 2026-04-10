@@ -16,27 +16,41 @@ local TerminalView = ui.ConsoleView:extend {
   end,
 
   println = function(self, item, ...)
+    local parts = {}
+    local n = select('#', ...)
+    for i = 1, n do parts[i] = tostring(select(i, ...)) end
+    local text = table.concat(parts)
     if item ~= nil then
       local items = self.__items or {}
       self.__items = items
       local len = #items + 1
       items[len] = item
-      return ui.ConsoleView.println(self, len, ...)
+      self:Println { Index = len, Text = text }
+      return len
     else
       self.__items = {}
-      return ui.ConsoleView.println(self, 0, ...)
+      self:Println { Index = 0, Text = text }
+      return 0
     end
   end,
 
   erase = function(self)
     self.__items = {}
-    return ui.ConsoleView.erase(self)
+    self:Erase()
   end,
 
   unpack = function(self, x, y)
-    local index, char = ui.ConsoleView.unpack(self, x, y)
+    local index, char = ui.consoleViewUnpack(self, x, y)
     local items = self.__items
     return items and items[index], index, char
+  end,
+
+  getIndexPosition = function(self, ...)
+    return ui.consoleViewGetIndexPosition(self, ...)
+  end,
+
+  invalidate = function(self)
+    self:Invalidate()
   end,
 }
 

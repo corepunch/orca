@@ -67,6 +67,9 @@ typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_Up
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
 typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
 typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
+typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
+typedef struct ConsoleView_EraseEventArgs ConsoleView_EraseMsg_t,* ConsoleView_EraseMsgPtr;
+typedef struct ConsoleView_InvalidateEventArgs ConsoleView_InvalidateMsg_t,* ConsoleView_InvalidateMsgPtr;
 
 
 /// @brief Defines the primary axis for layout operations
@@ -1144,12 +1147,32 @@ struct ConsoleView {
 	int32_t Cursor; ///< Cursor position
 	int32_t SelectedIndex; ///< Selected item index
 	bool_t DropShadow; ///< Draw shadow underneath this view
+	int32_t ContentHeight; ///< Current content height in lines
 	int32_t* _buffer; ///< Buffer used for characters
 	struct vec2 _scroll; ///< Scroll position
-	int32_t _contentHeight; ///< Current page length
+	event_t Println;
+	event_t Erase;
+	event_t Invalidate;
 };
 ORCA_API void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView);
 ORCA_API struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx);
+/** ConsoleView_PrintlnEventArgs struct */
+struct ConsoleView_PrintlnEventArgs {
+	int32_t Index;
+	const char* Text;
+};
+ORCA_API void luaX_pushConsoleView_PrintlnEventArgs(lua_State *L, struct ConsoleView_PrintlnEventArgs const* data);
+ORCA_API struct ConsoleView_PrintlnEventArgs* luaX_checkConsoleView_PrintlnEventArgs(lua_State *L, int idx);
+/** ConsoleView_EraseEventArgs struct */
+struct ConsoleView_EraseEventArgs {
+};
+ORCA_API void luaX_pushConsoleView_EraseEventArgs(lua_State *L, struct ConsoleView_EraseEventArgs const* data);
+ORCA_API struct ConsoleView_EraseEventArgs* luaX_checkConsoleView_EraseEventArgs(lua_State *L, int idx);
+/** ConsoleView_InvalidateEventArgs struct */
+struct ConsoleView_InvalidateEventArgs {
+};
+ORCA_API void luaX_pushConsoleView_InvalidateEventArgs(lua_State *L, struct ConsoleView_InvalidateEventArgs const* data);
+ORCA_API struct ConsoleView_InvalidateEventArgs* luaX_checkConsoleView_InvalidateEventArgs(lua_State *L, int idx);
 
 /// @brief Represents a single page within a document or UI container.
 /** Page component */

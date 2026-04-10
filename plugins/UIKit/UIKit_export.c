@@ -614,6 +614,17 @@ static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
 	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
 };
+static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_PrintlnEventArgs[] = {
+	DECL(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index, kDataTypeInt), // ConsoleView_PrintlnEventArgs.Index
+	DECL(0x3e142d5e, ConsoleView_PrintlnEventArgs, Text, Text, kDataTypeString), // ConsoleView_PrintlnEventArgs.Text
+};
+static luaL_Reg _ConsoleView_EraseEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_EraseEventArgs[] = {
+};
+static luaL_Reg _ConsoleView_InvalidateEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_InvalidateEventArgs[] = {
+};
 
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
 STRUCT(Node_AwakeEventArgs, Node_AwakeEventArgs);
@@ -660,6 +671,9 @@ STRUCT(Screen_UpdateLayoutEventArgs, Screen_UpdateLayoutEventArgs);
 STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
+STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
+STRUCT(ConsoleView_EraseEventArgs, ConsoleView_EraseEventArgs);
+STRUCT(ConsoleView_InvalidateEventArgs, ConsoleView_InvalidateEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -1528,12 +1542,19 @@ REGISTER_CLASS(NinePatchImage, ID_Node2D, 0);
 HANDLER(ConsoleView, Object, Create);
 HANDLER(ConsoleView, Node2D, DrawBrush);
 HANDLER(ConsoleView, Node, ScrollWheel);
+HANDLER(ConsoleView, ConsoleView, Println);
+HANDLER(ConsoleView, ConsoleView, Erase);
+HANDLER(ConsoleView, ConsoleView, Invalidate);
 static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
 	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
 	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
 	DECL(0x558a502f, ConsoleView, Cursor, Cursor, kDataTypeInt), // ConsoleView.Cursor
 	DECL(0x98eca570, ConsoleView, SelectedIndex, SelectedIndex, kDataTypeInt), // ConsoleView.SelectedIndex
 	DECL(0x87f68bc8, ConsoleView, DropShadow, DropShadow, kDataTypeBool), // ConsoleView.DropShadow
+	DECL(0xe2847271, ConsoleView, ContentHeight, ContentHeight, kDataTypeInt), // ConsoleView.ContentHeight
+	DECL(0x9f626046, ConsoleView, Println, Println, kDataTypeEvent, .TypeString = "ConsoleView_PrintlnEventArgs"), // ConsoleView.Println
+	DECL(0x0e3c6075, ConsoleView, Erase, Erase, kDataTypeEvent, .TypeString = "ConsoleView_EraseEventArgs"), // ConsoleView.Erase
+	DECL(0xb4ac3630, ConsoleView, Invalidate, Invalidate, kDataTypeEvent, .TypeString = "ConsoleView_InvalidateEventArgs"), // ConsoleView.Invalidate
 };
 static struct ConsoleView ConsoleViewDefaults = {
 		
@@ -1546,6 +1567,9 @@ LRESULT ConsoleViewProc(struct Object* object, void* cmp, uint32_t message, wPar
 		case ID_Object_Create&MSG_DATA_MASK: return ConsoleView_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Node2D_DrawBrush&MSG_DATA_MASK: return ConsoleView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 		case ID_Node_ScrollWheel&MSG_DATA_MASK: return ConsoleView_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
+		case ID_ConsoleView_Println&MSG_DATA_MASK: return ConsoleView_Println(object, cmp, wparm, lparm); // ConsoleView.Println
+		case ID_ConsoleView_Erase&MSG_DATA_MASK: return ConsoleView_Erase(object, cmp, wparm, lparm); // ConsoleView.Erase
+		case ID_ConsoleView_Invalidate&MSG_DATA_MASK: return ConsoleView_Invalidate(object, cmp, wparm, lparm); // ConsoleView.Invalidate
 	}
 	return FALSE;
 }
@@ -1703,6 +1727,9 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_InvalidateEventArgs(L), -2), "ConsoleView_InvalidateEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");

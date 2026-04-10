@@ -99,9 +99,6 @@ int f_CornerRadius_TextConvert(lua_State* L) {
 
 bool_t is_server = FALSE;
 
-extern int f_ConsoleView_println(lua_State *L);
-extern int f_ConsoleView_erase(lua_State *L);
-extern int f_ConsoleView_invalidate(lua_State *L);
 extern int f_ConsoleView_getIndexPosition(lua_State *L);
 extern int f_ConsoleView_unpack(lua_State *L);
 
@@ -131,20 +128,11 @@ void on_ui_module_registered(lua_State* L) {
   OVERRIDE_FROMSTRING(CornerRadius)
 #undef OVERRIDE_FROMSTRING
 
-  // Add methods to ConsoleView class
-  lua_getfield(L, -1, "ConsoleView");
-  lua_getfield(L, -1, "__base");
-  lua_pushcfunction(L, f_ConsoleView_println);
-  lua_setfield(L, -2, "println");
-  lua_pushcfunction(L, f_ConsoleView_erase);
-  lua_setfield(L, -2, "erase");
-  lua_pushcfunction(L, f_ConsoleView_invalidate);
-  lua_setfield(L, -2, "invalidate");
-  lua_pushcfunction(L, f_ConsoleView_getIndexPosition);
-  lua_setfield(L, -2, "getIndexPosition");
+  // Expose ConsoleView query helpers as module-level functions
   lua_pushcfunction(L, f_ConsoleView_unpack);
-  lua_setfield(L, -2, "unpack");
-  lua_pop(L, 2); // pop __base and ConsoleView
+  lua_setfield(L, -2, "consoleViewUnpack");
+  lua_pushcfunction(L, f_ConsoleView_getIndexPosition);
+  lua_setfield(L, -2, "consoleViewGetIndexPosition");
 
   // Register UIKit table in package.loaded so TerminalView.lua can require it
   lua_getglobal(L, "package");
@@ -155,7 +143,11 @@ void on_ui_module_registered(lua_State* L) {
 
   // Load TerminalView Lua extension and expose it as UIKit.TerminalView
   if (API_CallRequire(L, "orca.UIKit.TerminalView", 1) == LUA_OK) {
-    lua_setfield(L, -2, "TerminalView");
+    if (lua_istable(L, -1) || lua_isfunction(L, -1)) {
+      lua_setfield(L, -2, "TerminalView");
+    } else {
+      lua_pop(L, 1);
+    }
   }
 }
 

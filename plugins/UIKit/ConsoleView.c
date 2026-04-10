@@ -71,38 +71,29 @@ _cmd(ConsoleViewPtr t, lpcString_t str, struct tstate *state)
   return str;
 }
 
-int f_ConsoleView_println(lua_State *L) {
-  struct tstate state = { .foreground = 7 };
-  ConsoleViewPtr t = GetConsoleView(luaX_checkObject(L, 1));
-  lua_Integer len = luaL_checkinteger(L, 2);
-  int n = lua_gettop(L), c = t->Cursor;
-  state.item = len;
-  for (int arg = 3; arg <= n; arg++) {
-    size_t slen;
-    uint8_t prev = 0;
-    const char *str = luaL_tolstring(L, arg, &slen);
-    for (lpcString_t s = str; s - str < slen; prev = *s, s++) {
-      if (*s == '\x21' && *(s+1) == '[') {
-        s = _cmd(t, ++s, &state);
-      } else if (*s == '\n') {
-        t->Cursor = ((t->Cursor / t->BufferWidth) + 1) * t->BufferWidth;
-      } else if (*s == '\t') {
-        int start = (t->Cursor / t->BufferWidth) * t->BufferWidth;
-        t->Cursor = start + (((t->Cursor - start) / TAB_SIZE) + 1) * TAB_SIZE;
-      } else {
-        state.glyph = (uint8_t)*s;
-        t->_buffer[t->Cursor++] = *(uint32_t*)&state;
-      }
+static void
+_println(ConsoleViewPtr t, lua_Integer index, lpcString_t text, size_t slen)
+{
+  struct tstate state = { .foreground = 7, .item = (uint16_t)index };
+  int c = t->Cursor;
+  for (lpcString_t s = text; s - text < (ptrdiff_t)slen; s++) {
+    if (*s == '\x21' && *(s+1) == '[') {
+      s = _cmd(t, ++s, &state);
+    } else if (*s == '\n') {
+      t->Cursor = ((t->Cursor / t->BufferWidth) + 1) * t->BufferWidth;
+    } else if (*s == '\t') {
+      int start = (t->Cursor / t->BufferWidth) * t->BufferWidth;
+      t->Cursor = start + (((t->Cursor - start) / TAB_SIZE) + 1) * TAB_SIZE;
+    } else {
+      state.glyph = (uint8_t)*s;
+      t->_buffer[t->Cursor++] = *(uint32_t*)&state;
     }
-    lua_pop(L, 1);
   }
   while (t->Cursor % t->BufferWidth) {
     state.glyph = 0;
     t->_buffer[t->Cursor++] = *(uint32_t*)&state;
   }
-  t->_contentHeight += MAX(1, (t->Cursor - c) / t->BufferWidth);
-  lua_pushinteger(L, len);
-  return 1;
+  t->ContentHeight += MAX(1, (t->Cursor - c) / t->BufferWidth);
 }
 
 int f_ConsoleView_unpack(lua_State *L) {
@@ -121,19 +112,6 @@ int f_ConsoleView_unpack(lua_State *L) {
   lua_pushinteger(L, data>>16);
   lua_pushlstring(L, (char*)&data, 1);
   return 2;
-}
-
-int f_ConsoleView_erase(lua_State *L) {
-  ConsoleViewPtr t = GetConsoleView(luaX_checkObject(L, 1));
-  memset(t->_buffer, 0, MEMSIZE(t));
-  t->Cursor = 0;
-  t->_contentHeight = 0;
-  return 0;
-}
-
-int f_ConsoleView_invalidate(lua_State *L) {
-  WI_PostMessageW(luaX_checkObject(L, 1), kMsgPaint, 0, NULL);
-  return 0;
 }
 
 int f_ConsoleView_getIndexPosition(lua_State *L) {
@@ -164,6 +142,31 @@ int f_ConsoleView_getIndexPosition(lua_State *L) {
   return 0;
 }
 
+HANDLER(ConsoleView, ConsoleView, Println) {
+  if (!pConsoleView->_buffer) return FALSE;
+  lpcString_t text = pPrintln ? pPrintln->Text : NULL;
+  lua_Integer index = pPrintln ? pPrintln->Index : 0;
+  if (text) {
+    _println(pConsoleView, index, text, strlen(text));
+  } else {
+    _println(pConsoleView, index, "", 0);
+  }
+  return FALSE;
+}
+
+HANDLER(ConsoleView, ConsoleView, Erase) {
+  if (!pConsoleView->_buffer) return FALSE;
+  memset(pConsoleView->_buffer, 0, MEMSIZE(pConsoleView));
+  pConsoleView->Cursor = 0;
+  pConsoleView->ContentHeight = 0;
+  return FALSE;
+}
+
+HANDLER(ConsoleView, ConsoleView, Invalidate) {
+  WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
+  return FALSE;
+}
+
 HANDLER(ConsoleView, Object, Create) {
   pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
   WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
@@ -175,7 +178,7 @@ HANDLER(ConsoleView, Node2D, DrawBrush) {
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
     .Buffer = pConsoleView->_buffer,
     .Width = pConsoleView->BufferWidth,
-    .Height = pConsoleView->_contentHeight+1,
+    .Height = pConsoleView->ContentHeight+1,
     .Scroll = pConsoleView->_scroll,
     .Cursor = pConsoleView->Cursor,
     .SelectedItem = pConsoleView->SelectedIndex,
@@ -192,7 +195,7 @@ HANDLER(ConsoleView, Node2D, DrawBrush) {
 }
 
 HANDLER(ConsoleView, Node, ScrollWheel) {
-  int const h = (pConsoleView->_contentHeight) * CONSOLE_CHAR_HEIGHT;
+  int const h = (pConsoleView->ContentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;
   pConsoleView->_scroll.y += pScrollWheel->deltaY / SCROLL_SENSIVITY;
   pConsoleView->_scroll.y = MAX(space, pConsoleView->_scroll.y);

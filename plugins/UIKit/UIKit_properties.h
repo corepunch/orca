@@ -679,14 +679,27 @@ enum NinePatchImageProperties {
 #define ID_ConsoleView_Cursor 0x0e1d2fa5 // ConsoleView.Cursor
 #define ID_ConsoleView_SelectedIndex 0x8f71f73a // ConsoleView.SelectedIndex
 #define ID_ConsoleView_DropShadow 0x861e7f0e // ConsoleView.DropShadow
-#define kConsoleViewNumProperties 5
+#define ID_ConsoleView_ContentHeight 0xcbb6893b // ConsoleView.ContentHeight
+#define ID_ConsoleView_Println ((0xb19dac78&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Println
+#define ID_ConsoleView_Erase ((0xab38bbeb&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Erase
+#define ID_ConsoleView_Invalidate ((0xdc68fe5a&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Invalidate
+#define kConsoleViewNumProperties 9
 enum ConsoleViewProperties {
 	kConsoleViewBufferWidth,
 	kConsoleViewBufferHeight,
 	kConsoleViewCursor,
 	kConsoleViewSelectedIndex,
 	kConsoleViewDropShadow,
+	kConsoleViewContentHeight,
+	kConsoleViewPrintln,
+	kConsoleViewErase,
+	kConsoleViewInvalidate,
 };
+#define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
+#define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index
+#define ID_ConsoleView_PrintlnEventArgs_Text 0x123171ef // ConsoleView_PrintlnEventArgs.Text
+#define ID_ConsoleView_EraseEventArgs 0xfc2f86cb
+#define ID_ConsoleView_InvalidateEventArgs 0xd692d03a
 // Page
 #define ID_Page 0xe83d9196
 #define GetPage(_P) ((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))

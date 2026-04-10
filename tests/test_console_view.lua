@@ -8,75 +8,75 @@ local ui = require "orca.UIKit"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
--- ConsoleView: println advances Cursor and _contentHeight
+-- ConsoleView: Println message advances Cursor and ContentHeight
 -- ---------------------------------------------------------------------------
 local function test_console_view_println_advances_state()
 	local cv = screen + ui.ConsoleView { BufferWidth = 80, BufferHeight = 24 }
 
 	assert(cv.Cursor == 0, "cursor should start at 0")
-	assert(cv._contentHeight == 0, "contentHeight should start at 0")
+	assert(cv.ContentHeight == 0, "ContentHeight should start at 0")
 
-	cv:println(1, "hello")
+	cv:Println { Index = 1, Text = "hello" }
 
-	-- println pads to end of line, so cursor lands at start of next row
-	assert(cv.Cursor % cv.BufferWidth == 0, "cursor should be at start of a row after println")
-	assert(cv.Cursor > 0, "cursor should have advanced after println")
-	assert(cv._contentHeight == 1, "contentHeight should be 1 after one println")
+	-- Println pads to end of line, so cursor lands at start of next row
+	assert(cv.Cursor % cv.BufferWidth == 0, "cursor should be at start of a row after Println")
+	assert(cv.Cursor > 0, "cursor should have advanced after Println")
+	assert(cv.ContentHeight == 1, "ContentHeight should be 1 after one Println")
 
 	cv:removeFromParent()
 	print("PASS: test_console_view_println_advances_state")
 end
 
 -- ---------------------------------------------------------------------------
--- ConsoleView: multiple printlns accumulate _contentHeight
+-- ConsoleView: multiple Printlns accumulate ContentHeight
 -- ---------------------------------------------------------------------------
 local function test_console_view_multiple_println()
 	local cv = screen + ui.ConsoleView { BufferWidth = 80, BufferHeight = 24 }
 
-	cv:println(1, "line one")
-	cv:println(2, "line two")
-	cv:println(3, "line three")
+	cv:Println { Index = 1, Text = "line one" }
+	cv:Println { Index = 2, Text = "line two" }
+	cv:Println { Index = 3, Text = "line three" }
 
-	assert(cv._contentHeight == 3,
-		string.format("expected contentHeight=3, got %d", cv._contentHeight))
+	assert(cv.ContentHeight == 3,
+		string.format("expected ContentHeight=3, got %d", cv.ContentHeight))
 
 	cv:removeFromParent()
 	print("PASS: test_console_view_multiple_println")
 end
 
 -- ---------------------------------------------------------------------------
--- ConsoleView: erase resets cursor and contentHeight
+-- ConsoleView: Erase message resets cursor and ContentHeight
 -- ---------------------------------------------------------------------------
 local function test_console_view_erase_resets_state()
 	local cv = screen + ui.ConsoleView { BufferWidth = 80, BufferHeight = 24 }
 
-	cv:println(1, "line one")
-	cv:println(2, "line two")
-	cv:erase()
+	cv:Println { Index = 1, Text = "line one" }
+	cv:Println { Index = 2, Text = "line two" }
+	cv:Erase()
 
 	assert(cv.Cursor == 0,
-		string.format("cursor should be 0 after erase, got %d", cv.Cursor))
-	assert(cv._contentHeight == 0,
-		string.format("contentHeight should be 0 after erase, got %d", cv._contentHeight))
+		string.format("cursor should be 0 after Erase, got %d", cv.Cursor))
+	assert(cv.ContentHeight == 0,
+		string.format("ContentHeight should be 0 after Erase, got %d", cv.ContentHeight))
 
 	cv:removeFromParent()
 	print("PASS: test_console_view_erase_resets_state")
 end
 
 -- ---------------------------------------------------------------------------
--- ConsoleView: println returns the item index passed in
+-- TerminalView: println returns the item index
 -- ---------------------------------------------------------------------------
-local function test_console_view_println_returns_index()
-	local cv = screen + ui.ConsoleView { BufferWidth = 80, BufferHeight = 24 }
+local function test_terminal_view_println_returns_index()
+	local tv = screen + ui.TerminalView { BufferWidth = 80, BufferHeight = 24 }
 
-	local ret = cv:println(42, "text")
-	assert(ret == 42, string.format("println should return the index passed in, got %s", tostring(ret)))
+	local ret = tv:println("item", "text")
+	assert(ret == 1, string.format("println should return 1 for first item, got %s", tostring(ret)))
 
-	local ret2 = cv:println(0, "text")
-	assert(ret2 == 0, string.format("println(0) should return 0, got %s", tostring(ret2)))
+	local ret2 = tv:println(nil, "text")
+	assert(ret2 == 0, string.format("println(nil) should return 0, got %s", tostring(ret2)))
 
-	cv:removeFromParent()
-	print("PASS: test_console_view_println_returns_index")
+	tv:removeFromParent()
+	print("PASS: test_terminal_view_println_returns_index")
 end
 
 -- ---------------------------------------------------------------------------
@@ -137,8 +137,8 @@ local function test_terminal_view_erase_clears_items()
 		string.format("numItems should be 0 after erase, got %d", tv:numItems()))
 	assert(tv.Cursor == 0,
 		string.format("cursor should be 0 after erase, got %d", tv.Cursor))
-	assert(tv._contentHeight == 0,
-		string.format("contentHeight should be 0 after erase, got %d", tv._contentHeight))
+	assert(tv.ContentHeight == 0,
+		string.format("ContentHeight should be 0 after erase, got %d", tv.ContentHeight))
 
 	tv:removeFromParent()
 	print("PASS: test_terminal_view_erase_clears_items")
@@ -201,7 +201,7 @@ end
 test_console_view_println_advances_state()
 test_console_view_multiple_println()
 test_console_view_erase_resets_state()
-test_console_view_println_returns_index()
+test_terminal_view_println_returns_index()
 test_terminal_view_items_accumulate()
 test_terminal_view_selected_item()
 test_terminal_view_erase_clears_items()
