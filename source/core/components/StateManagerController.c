@@ -167,11 +167,11 @@ _HandleControllerChange(struct StateManagerController* sm,
         if (PROP_GetType(p) == kDataTypeBool && isalpha(*value)) {
           if (!pval == !xmlStrcmp(value, XMLSTR("false"))) {
             _ApplyStateGroup(hobj, stategroup->name, state, debug);
-            next = NULL;
+            next = NULL; // stop iterating states once a match is applied
           }
         } else if (fabs(pval - atof((lpcString_t)value)) < 0.01f) {
           _ApplyStateGroup(hobj, stategroup->name, state, debug);
-          next = NULL;
+          next = NULL; // stop iterating states once a match is applied
         }
       }
     }
@@ -204,12 +204,18 @@ HANDLER(StateManagerController, Object, Start) {
 }
 
 // Replace SM_ReadStateManager: install a new XML document into the component.
-// wParam = xmlDocPtr, lParam = propertyParser_t (arrives as pLoad)
+// The caller must use OBJ_SendMessageW directly:
+//   OBJ_SendMessageW(obj, ID_StateManagerController_Load,
+//                    (wParam_t)(uintptr_t)doc, (lParam_t)(uintptr_t)parser);
+// wParam carries the xmlDocPtr; lParam carries the propertyParser_t callback.
+// In this HANDLER, lParam arrives as the 4th argument (pLoad), so we recover
+// it via (uintptr_t)pLoad.
 HANDLER(StateManagerController, StateManagerController, Load) {
   _ReleaseDoc(pStateManagerController);
-  pStateManagerController->doc = (void*)wParam;
+  pStateManagerController->doc = (void*)(uintptr_t)wParam;
+  // pLoad == (StateManagerController_LoadMsgPtr)lParam; recover parser from it
   if (pLoad) {
-    _parser = (propertyParser_t)(uintptr_t)pLoad;
+    _parser = (propertyParser_t)(uintptr_t)(void*)pLoad;
   }
   return TRUE;
 }

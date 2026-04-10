@@ -636,7 +636,7 @@
     </class>
     <class name="StateManagerController" attach-only="true">
       <summary>Manages XML-driven state groups that reactively apply property values when controller properties change.</summary>
-      <details>StateManagerController is an attach-only component that loads a Kanzi-style StateManager XML document and evaluates its StateGroup entries whenever a tracked controller property changes value. Attach it to any object and send the Load message with an xmlDocPtr to activate it. The component lazily initialises its internal state group list on the first Object.Start and then fires ControllerChanged whenever a property marked PF_USED_IN_STATE_MANAGER is modified.</details>
+      <details>StateManagerController is an attach-only component that loads a Kanzi-style StateManager XML document and evaluates its StateGroup entries whenever a tracked controller property changes value. Attach it to any object and send the Load message with an xmlDocPtr to activate it. The component lazily initializes its internal state group list on the first Object.Start and then fires ControllerChanged whenever a property marked PF_USED_IN_STATE_MANAGER is modified.</details>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
@@ -652,7 +652,7 @@
       <messages>
         <message name="Load" routing="Direct">
           <summary>Load a StateManager XML document into this component.</summary>
-          <details>Replaces any previously loaded document. The old document and all resolved state groups are released before the new one is installed. Initialisation is deferred until the next Object.Start or the first ControllerChanged. Pass the xmlDocPtr in wParam and the propertyParser_t in lParam.</details>
+          <details>Replaces any previously loaded document. The old document and all resolved state groups are released before the new one is installed. Initialization is deferred until the next Object.Start or the first ControllerChanged. Pass the xmlDocPtr in wParam and the propertyParser_t in lParam.</details>
         </message>
         <message name="ControllerChanged" routing="Direct">
           <summary>Evaluate all state groups whose controller property matches the changed property.</summary>
