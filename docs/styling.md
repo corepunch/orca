@@ -1,7 +1,7 @@
 # Style System
 
 ORCA's style system implements a **CSS-like approach** for setting component properties on visual objects.
-Style _classes_ are attached to objects at load time; _stylesheet rules_ map selectors to property values and are resolved when `StyleController.ApplyStyles` is dispatched.
+Style _classes_ are attached to objects at load time; _stylesheet rules_ map selectors to property values and are resolved when `Object.ThemeChanged` is dispatched.
 
 ---
 
@@ -162,27 +162,34 @@ obj:addStyleSheet(".selector[:pseudo-state...]", { property = value, ... })
 
 ## Applying styles
 
-### `StyleController.ApplyStyles` message
+### `Object.ThemeChanged` — the style trigger
 
-Styles are applied by sending the `StyleController.ApplyStyles` message.
-Objects without a `StyleController` silently ignore this message.
+Styles are applied by sending `Object.ThemeChanged` to an object.
+`StyleController` handles this message and recalculates all matching rules.
+Objects without a `StyleController` silently ignore the message.
+
+The message has a single field:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `recursive` | `bool_t` | When `TRUE`, the message is forwarded to every child object |
 
 ```c
-// C — thin public wrapper around the message
+// C — convenience wrapper (sends Object.ThemeChanged internally)
 OBJ_ApplyStyles(lpObject_t object, bool_t recursive);
 
-// recursive=TRUE walks the entire child tree and applies styles depth-first
-OBJ_ApplyStyles(rootNode, TRUE);
+// Alternatively, send the typed message directly:
+_SendMessage(object, Object, ThemeChanged, .recursive = TRUE);
 ```
 
 ```lua
--- Lua — direct method call
+-- Lua — method call (wraps OBJ_ApplyStyles)
 node:applyStyles(recursive --[[bool]])
 ```
 
 ### Resolution order
 
-When `StyleController.ApplyStyles` fires for an object:
+When `StyleController` receives `Object.ThemeChanged` for an object:
 
 1. `PROP_ClearSpecialized` resets any previously applied specialised values.
 2. **Body rules** — if the object is a root node (no parent), rules with the selector `"body"` in its own stylesheet are applied first.
@@ -191,19 +198,11 @@ When `StyleController.ApplyStyles` fires for an object:
    - `OBJ_EnumStyleClasses()` walks the global stylesheet first, then each ancestor's stylesheet bottom-up, and invokes `_ApplyRule` for every matching rule.
 4. **Specialised-flag guard** — for each property hit by a state-gated rule, `PF_SPECIALIZED` is set.
    Any subsequent un-gated (default) rule for the same property is skipped when `PF_SPECIALIZED` is already set, ensuring the state-specific value wins.
-5. **Recursive descent** — if `recursive=TRUE`, `OBJ_ApplyStyles(child, TRUE)` is called for every direct child.
+5. **Recursive descent** — if `recursive=TRUE`, `Object.ThemeChanged` with `recursive=TRUE` is sent to every direct child.
 
 ### When styles are applied automatically
 
-- On `Object.ThemeChanged` — sent when the system dark/light theme changes or hover state changes (`CORE_UpdateHover`).  `Node2D` handles this:
-
-  ```c
-  HANDLER(Node, Object, ThemeChanged) {
-      OBJ_ApplyStyles(hObject, FALSE);
-      return FALSE;
-  }
-  ```
-
+- On `Object.ThemeChanged` (non-recursive) — sent automatically by the engine when hover state changes (`CORE_UpdateHover`) or focus changes (`OBJ_SetFocus`). `StyleController` handles this message directly; no intermediate Node handler is needed.
 - On `Object.PropertyChanged` for the `class` property — when Lua sets `node.class = "…"`.
 - Explicitly by application code after state changes.
 
@@ -234,7 +233,7 @@ screen:addStyleSheet(".card:dark", {
 <Node2D class="card" />
 ```
 
-When the user switches to dark mode, `Object.ThemeChanged` is broadcast, `OBJ_ApplyStyles` re-runs, and the `:dark` rule takes precedence.
+When the user switches to dark mode, `Object.ThemeChanged` is broadcast, `StyleController` re-runs style application, and the `:dark` rule takes precedence.
 
 ---
 

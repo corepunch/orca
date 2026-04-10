@@ -8,7 +8,7 @@
  *     StyleController
  *   - OBJ_ClearStyleClasses: frees all memory, idempotent on no-StyleController
  *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
- *   - StyleController.ApplyStyles message: applies a float rule to a property
+ *   - OBJ_ApplyStyles (via Object.ThemeChanged): applies a float rule to a property
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
  *
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
@@ -235,7 +235,7 @@ static void test_get_style_flags_none(void) {
 }
 
 /*
- * OBJ_ApplyStyles (StyleController.ApplyStyles message):
+ * OBJ_ApplyStyles (via Object.ThemeChanged with recursive=FALSE):
  * Add a ".btn" → Width=42 rule, parse the "btn" class, then apply.
  * Verify that the Width property was updated to 42.
  */
@@ -245,7 +245,7 @@ static void test_apply_styles_float_property(void) {
         OBJ_AddStyleClass(obj, ".btn", "Width", "42", 0);
         /* Apply the "btn" class */
         OBJ_ParseClassAttribute(obj, "btn");
-        /* Apply styles — sends StyleController.ApplyStyles message */
+        /* Apply styles — sends Object.ThemeChanged message */
         OBJ_ApplyStyles(obj, FALSE);
         /* Verify the Width property was set to 42 */
         lpProperty_t prop;

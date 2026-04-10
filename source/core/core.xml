@@ -475,6 +475,9 @@
         </message>
         <message name="ThemeChanged" routing="Direct">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
+          <fields>
+            <field name="recursive" type="bool">Whether to propagate the theme change to child objects</field>
+          </fields>
         </message>
         <message name="PropertyChanged" routing="Direct">
           <summary>Sent when a property value on the object changes.</summary>
@@ -598,18 +601,12 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
-        <handle message="StyleController.ApplyStyles"/>
+        <handle message="Object.ThemeChanged"/>
       </handles>
       <fields>
         <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
         <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
-      <messages>
-        <message name="ApplyStyles" routing="Direct">
-          <summary>Recalculates and applies all active style rules to this object.</summary>
-          <details>Clears any specialised property flags, then applies each matching stylesheet rule based on the current pseudo-state (hover, focus, dark, selected). Pass wParam=TRUE to recursively apply styles to child objects.</details>
-        </message>
-      </messages>
     </class>
   </classes>
   <functions>

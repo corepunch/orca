@@ -635,6 +635,7 @@ static struct PropertyType _Object_AnimateEventArgs[] = {
 };
 static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_ThemeChangedEventArgs[] = {
+	DECL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // Object_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_PropertyChangedEventArgs[] = {
@@ -674,9 +675,6 @@ static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
 static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
 };
-static luaL_Reg _StyleController_ApplyStylesEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_ApplyStylesEventArgs[] = {
-};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -694,7 +692,6 @@ STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
 STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
 STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
-STRUCT(StyleController_ApplyStylesEventArgs, StyleController_ApplyStylesEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -840,9 +837,8 @@ struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
 HANDLER(StyleController, Object, Create);
 HANDLER(StyleController, Object, Release);
-HANDLER(StyleController, StyleController, ApplyStyles);
+HANDLER(StyleController, Object, ThemeChanged);
 static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
-	DECL(0x1076385d, StyleController, ApplyStyles, ApplyStyles, kDataTypeEvent, .TypeString = "StyleController_ApplyStylesEventArgs"), // StyleController.ApplyStyles
 };
 static struct StyleController StyleControllerDefaults = {
 };
@@ -850,7 +846,7 @@ LRESULT StyleControllerProc(struct Object* object, void* cmp, uint32_t message, 
 	switch (message&MSG_DATA_MASK) {
 		case ID_Object_Create&MSG_DATA_MASK: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Release&MSG_DATA_MASK: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
-		case ID_StyleController_ApplyStyles&MSG_DATA_MASK: return StyleController_ApplyStyles(object, cmp, wparm, lparm); // StyleController.ApplyStyles
+		case ID_Object_ThemeChanged&MSG_DATA_MASK: return StyleController_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
 	}
 	return FALSE;
 }
@@ -895,7 +891,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StyleController_ApplyStylesEventArgs(L), -2), "StyleController_ApplyStylesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");

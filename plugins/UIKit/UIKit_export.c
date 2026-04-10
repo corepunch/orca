@@ -867,7 +867,6 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 }
 #define ID_Brush 0xccbef093
 REGISTER_CLASS(ColorBrush, ID_Brush, 0);
-HANDLER(Node, Object, ThemeChanged);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
@@ -980,7 +979,6 @@ static struct Node NodeDefaults = {
 };
 LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message&MSG_DATA_MASK) {
-		case ID_Object_ThemeChanged&MSG_DATA_MASK: return Node_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
 		case ID_Node_GetSize&MSG_DATA_MASK: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
 		case ID_Node_IsVisible&MSG_DATA_MASK: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
 	}

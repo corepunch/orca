@@ -405,9 +405,11 @@ HANDLER(StyleController, Object, Release) {
 }
 
 // Recalculate and apply all active style rules to this object.
-// wParam: bool_t recursive — if TRUE, also apply to child objects
-HANDLER(StyleController, StyleController, ApplyStyles) {
-  bool_t recursive = (bool_t)wParam;
+// pThemeChanged->recursive controls whether child objects are also updated.
+// Called automatically when hover state, focus, or the system theme changes.
+// Also called explicitly via OBJ_ApplyStyles().
+HANDLER(StyleController, Object, ThemeChanged) {
+  bool_t recursive = pThemeChanged && pThemeChanged->recursive;
 
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 
@@ -428,17 +430,19 @@ HANDLER(StyleController, StyleController, ApplyStyles) {
   }
 
   if (recursive) {
-    FOR_EACH_CHILD(hObject, OBJ_ApplyStyles, TRUE);
+    FOR_EACH_OBJECT(child, hObject) {
+      _SendMessage(child, Object, ThemeChanged, .recursive = TRUE);
+    }
   }
 
   return FALSE;
 }
 
-// Thin public wrapper: send StyleController.ApplyStyles message to the object.
-// Objects without a StyleController silently ignore this (no handler is called).
+// Convenience wrapper: apply styles by sending Object.ThemeChanged.
+// Objects without a StyleController silently ignore this message.
 void
 OBJ_ApplyStyles(lpObject_t object, bool_t recursive)
 {
-  OBJ_SendMessageW(object, ID_StyleController_ApplyStyles, recursive, NULL);
+  _SendMessage(object, Object, ThemeChanged, .recursive = recursive);
 }
 
