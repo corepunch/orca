@@ -78,6 +78,7 @@ Each `AnimationCurve` is a child object of an `AnimationClip`. It targets exactl
 | `Property` | string | Short property name to animate, e.g. `"Opacity"`, `"Position"` |
 | `Path` | string | Relative path from the player's host object to the target object. Empty means the host itself |
 | `Keyframes` | `Keyframe[]` | The keyframe array (see format below) |
+| `NumKeyframes` | int | Number of keyframes in the array (auto-generated from `array="true"`) |
 
 ### `Keyframe` struct
 
@@ -149,6 +150,7 @@ obj.Clip = require("MyApp/Animations/FadeOut")
 |---|---|---|---|
 | `Clip` | `AnimationClip*` | — | Single active clip (used when no named clip is selected via `Clips`) |
 | `Clips` | `AnimationClipReference[]` | — | Library of named clips; play any of them by name via the `Play` message |
+| `NumClips` | int | `0` | Number of entries in the `Clips` array (auto-generated from `array="true"`) |
 | `Playing` | bool | `false` | `true` while the animation is advancing each frame |
 | `Looping` | bool | `false` | Loop when `StopTime` is reached (only when `AnimationClip.Mode == PlayOnce`) |
 | `Speed` | float | `1.0` | Playback speed multiplier. Negative values play in reverse |
@@ -225,6 +227,8 @@ end)
 1. If `Play` is sent with a non-empty `Name`, the player searches `Clips` for a matching entry and sets it as `Clip` before starting.
 2. If the name is not found, the existing `Clip` is kept unchanged.
 3. If `Play` is sent without a name (or with an empty name), `Clip` is used as-is.
+
+> **`NumClips`** is an `int` property automatically generated alongside `Clips` because `Clips` is declared with `array="true"` in the module XML. It reflects the number of entries in the array and can be read as `obj.NumClips` from Lua.
 
 ---
 
