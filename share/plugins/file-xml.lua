@@ -147,7 +147,7 @@ local function animation_curve_child(node, element)
 		end
 	end
 	node:addChild(curve)
-	curve:fetch("Object.Start")
+	curve:send("Object.Start")
 end
 
 specials.AnimationPlayer = attach_only_component
@@ -179,7 +179,7 @@ local function construct_node(element)
 			xpcall(node.addChild, print, node, construct_node(sub))
 		end
 	end
-	node:fetch("Object.Start")
+	node:send("Object.Start")
 	return node
 end
 

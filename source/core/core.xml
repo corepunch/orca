@@ -210,16 +210,16 @@
           <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
         </method>
         <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
-        <method name="send" lua="true">
+        <method name="post" lua="true">
           <summary>Posts a message asynchronously, bubbling through the object hierarchy.</summary>
           <details>Places a message on the global queue for asynchronous processing. The message bubbles up through the parent chain until a handler claims it. Does not return a value.</details>
-          <arg name="message" type="string">The name of the message to send</arg>
+          <arg name="message" type="string">The name of the message to post</arg>
         </method>
-        <method name="fetch" lua="true">
-          <summary>Sends a message synchronously to the current object only and returns the result.</summary>
-          <details>Dispatches a message directly to this object's components without bubbling. Returns the result of the first component that handles the message, or nil if unhandled.</details>
+        <method name="send" lua="true">
+          <summary>Sends a message synchronously to the current object and returns the result.</summary>
+          <details>Dispatches a message directly to this object's components without bubbling. Returns the LRESULT from the first component that handles the message as an integer, or nil if unhandled (LRESULT == 0).</details>
           <arg name="message" type="string">The name of the message to send</arg>
-          <returns type="nresults">The return value from the handler, or nil if unhandled</returns>
+          <returns type="nresults">The LRESULT as integer, or nil if unhandled</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
         <method name="SetProperty" export="__setproperty" lua="true">

@@ -251,11 +251,11 @@ OBJ_FindParentOfClass(struct Object*, uint32_t);
 
 /// @brief Posts a message asynchronously, bubbling through the object hierarchy.
 ORCA_API void
-OBJ_send(struct lua_State*, struct Object*, const char*);
+OBJ_post(struct lua_State*, struct Object*, const char*);
 
-/// @brief Sends a message synchronously to the current object only and returns the result.
+/// @brief Sends a message synchronously to the current object and returns the result.
 ORCA_API int
-OBJ_fetch(struct lua_State*, struct Object*, const char*);
+OBJ_send(struct lua_State*, struct Object*, const char*);
 
 /// @name Properties
 /// Reads and writes typed properties, applying and observing changes.

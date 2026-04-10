@@ -155,16 +155,16 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
+int f_OBJ_post(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	const char* message = luaL_checkstring(L, 2);
+	OBJ_post(L, this_, message );
+	return 0;
+}
 int f_OBJ_send(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_send(L, this_, message );
-	return 0;
-}
-int f_OBJ_fetch(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* message = luaL_checkstring(L, 2);
-	return OBJ_fetch(L, this_, message);
+	return OBJ_send(L, this_, message);
 }
 int f_OBJ_SetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -472,8 +472,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findChildByAlias", f_OBJ_FindChildByAlias },
 		{ "findChildOfClass", f_OBJ_FindChildOfClass },
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
+		{ "post", f_OBJ_post },
 		{ "send", f_OBJ_send },
-		{ "fetch", f_OBJ_fetch },
 		{ "__setproperty", f_OBJ_SetProperty },
 		{ "__getproperty", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },

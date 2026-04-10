@@ -22,7 +22,7 @@ static handle_t write_event_data(lua_State* L, size_t size, const void *udata) {
   return data;
 }
 
-void OBJ_send(lua_State* L, lpObject_t self, lpcString_t message)
+void OBJ_post(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -45,7 +45,7 @@ void OBJ_send(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
-int OBJ_fetch(lua_State* L, lpObject_t self, lpcString_t message)
+int OBJ_send(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -67,7 +67,11 @@ int OBJ_fetch(lua_State* L, lpObject_t self, lpcString_t message)
     lua_pop(L, 1); // Pop the metatable result
     result = OBJ_SendMessage(self, message, 0, NULL);
   }
-  lua_pushinteger(L, result);
+  if (result) {
+    lua_pushinteger(L, (intptr_t)result);
+  } else {
+    lua_pushnil(L);
+  }
   return 1;
 }
 

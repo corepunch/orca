@@ -115,8 +115,7 @@ int f_msgSend(lua_State *L) {
   const char* message = lua_tostring(L, lua_upvalueindex(1));
   lua_pushstring(L, message);
   lua_insert(L, 2);
-  OBJ_fetch(L, this_, message); // your function handles the args internally
-  return 0;
+  return OBJ_send(L, this_, message); // sync+direct, returns value or nil
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
