@@ -989,7 +989,6 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="Node.PushProperty"/>
         <handle message="Node.ScrollWheel"/>
         <handle message="ConsoleView.Println"/>
         <handle message="ConsoleView.Erase"/>

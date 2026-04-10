@@ -258,7 +258,6 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeAwake,
 	kNodeUpdateMatrix,
-	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
 	kNodeIsVisible,
@@ -842,8 +841,6 @@ enum StyleProperties {
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
 #define ID_Node_UpdateMatrixEventArgs_opacity 0x1bb1efd0 // Node_UpdateMatrixEventArgs.opacity
 #define ID_Node_UpdateMatrixEventArgs_force 0x04845b66 // Node_UpdateMatrixEventArgs.force
-#define ID_Node_PushPropertyEventArgs 0x9207bfe8
-
 #define ID_Node_LoadViewEventArgs 0x361e935c
 
 #define ID_Node_LoadViewEventArgs_lua_state 0x96df0d0e // Node_LoadViewEventArgs.lua_state

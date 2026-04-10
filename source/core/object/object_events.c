@@ -37,7 +37,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
         lua_pop(L, 1);
       }
     }
-    _SendMessage(object, Object, ThemeChanged, .recursive = FALSE);
+    _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }
   FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);

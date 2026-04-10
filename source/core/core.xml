@@ -80,6 +80,14 @@
     </enum>
   </enums>
   <structs>
+    <struct name="AnimationClipReference" sealed="true">
+      <summary>A named animation clip entry used in an AnimationPlayer's Clips array.</summary>
+      <details>Pairs a short identifying name with an AnimationClip object so that a single AnimationPlayer can hold a library of clips and play any of them by name.</details>
+      <fields>
+        <field name="Name" type="string">Short name used to identify and select this clip (e.g. "idle", "walk")</field>
+        <field name="Clip" type="AnimationClip" pointer="true">The AnimationClip object for this entry</field>
+      </fields>
+    </struct>
     <struct name="Keyframe" sealed="true">
       <summary>A single keyframe in an animation curve.</summary>
       <fields>
@@ -534,6 +542,7 @@
       </handles>
       <properties>
         <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
+        <property name="Clips" type="AnimationClipReference" array="true">Array of named animation clips available to this player; use the Play message with a Name to select one by name</property>
         <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
@@ -551,6 +560,9 @@
       <messages>
         <message name="Play">
           <summary>Starts or resumes animation playback.</summary>
+          <fields>
+            <field name="Name" type="string">Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)</field>
+          </fields>
         </message>
         <message name="Resume">
           <summary>Resumes animation playback from the current position without resetting.</summary>
@@ -597,7 +609,6 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
-        <handle message="Object.ThemeChanged"/>
         <handle message="StyleController.ThemeChanged"/>
       </handles>
       <fields>

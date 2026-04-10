@@ -55,11 +55,11 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 			if (lua_toboolean(L, 3)) {
 				if (!(flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags | OF_SELECTED);
-					_SendMessage(self, Object, ThemeChanged, .recursive = TRUE);
+					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
 				}
 			} else if ((flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags & ~OF_SELECTED);
-					_SendMessage(self, Object, ThemeChanged, .recursive = TRUE);
+					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
 			}
 			return TRUE;
 		}
@@ -181,16 +181,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   if (!strcmp(name, "ActualY") && GetNode2D(self)) {
     lua_pushnumber(L, GetNode2D(self)->_actual_pos[1]);
     return 1;
-  }
-
-  /* ID_Node_PushProperty is defined in plugins/UIKit/UIKit_properties.h.
-   * It is duplicated here because source/core cannot include UIKit headers. */
-#ifndef ID_Node_PushProperty
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
-#endif
-  LRESULT found = OBJ_SendMessageW(self, ID_Node_PushProperty, ident, L);
-  if (found) {
-    return (int)found;
   }
   
   lpcProperty_t property = NULL;
