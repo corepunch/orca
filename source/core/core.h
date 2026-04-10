@@ -12,8 +12,8 @@ struct localization;
 struct game;
 struct Property;
 struct lua_State;
-struct style_class;
-struct style_sheet;
+struct style_class_selector;
+struct style_rule;
 
 
 #include "core_properties.h"
@@ -35,6 +35,8 @@ typedef struct AnimationPlayer_PauseEventArgs AnimationPlayer_PauseMsg_t,* Anima
 typedef struct AnimationPlayer_StartedEventArgs AnimationPlayer_StartedMsg_t,* AnimationPlayer_StartedMsgPtr;
 typedef struct AnimationPlayer_StoppedEventArgs AnimationPlayer_StoppedMsg_t,* AnimationPlayer_StoppedMsgPtr;
 typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t,* AnimationPlayer_CompletedMsgPtr;
+typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
+typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -318,7 +320,7 @@ OBJ_ClearDirtyFlags(struct Object*);
 
 /// @brief Add a stylesheet to the object.
 ORCA_API void
-OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
+OBJ_AddStyleRule(struct lua_State*, struct Object*, const char*);
 
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
@@ -432,10 +434,6 @@ OBJ_GetDomain(struct Object*);
 /// @brief Set the current context object where newly created objects will be parented.
 ORCA_API void
 OBJ_SetContext(struct lua_State*, struct Object*);
-
-/// @brief Parses and applies multiple class names from a class attribute string
-ORCA_API void
-OBJ_ParseClassAttribute(struct Object*, const char*);
 
 /// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
@@ -567,6 +565,18 @@ struct AnimationPlayer_CompletedEventArgs {
 };
 ORCA_API void luaX_pushAnimationPlayer_CompletedEventArgs(lua_State *L, struct AnimationPlayer_CompletedEventArgs const* data);
 ORCA_API struct AnimationPlayer_CompletedEventArgs* luaX_checkAnimationPlayer_CompletedEventArgs(lua_State *L, int idx);
+/** StyleController_AddClassEventArgs struct */
+struct StyleController_AddClassEventArgs {
+	const char* ClassName; ///< Name of the class to add
+};
+ORCA_API void luaX_pushStyleController_AddClassEventArgs(lua_State *L, struct StyleController_AddClassEventArgs const* data);
+ORCA_API struct StyleController_AddClassEventArgs* luaX_checkStyleController_AddClassEventArgs(lua_State *L, int idx);
+/** StyleController_AddClassesEventArgs struct */
+struct StyleController_AddClassesEventArgs {
+	const char* ClassNames; ///< Space-separated list of class names to add
+};
+ORCA_API void luaX_pushStyleController_AddClassesEventArgs(lua_State *L, struct StyleController_AddClassesEventArgs const* data);
+ORCA_API struct StyleController_AddClassesEventArgs* luaX_checkStyleController_AddClassesEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -646,9 +656,11 @@ ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int
 typedef struct StyleController StyleController_t, *StyleControllerPtr, *lpStyleController_t;
 typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t;
 struct StyleController {
-	struct style_class* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
-	struct style_sheet* stylesheet; ///< Linked list of style rules (selector to property to value mappings)
+	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
+	struct style_rule* rules; ///< Linked list of style rules (selector to property to value mappings)
 	event_t ThemeChanged;
+	event_t AddClass;
+	event_t AddClasses;
 };
 ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
 ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);

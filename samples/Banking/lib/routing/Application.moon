@@ -44,7 +44,7 @@ class Application extends ui.Screen
 					@routes[k] = v
 		for style in *@__styles
 			for k, v in pairs style
-				@addStyleSheet k, v
+				@addStyleRule k, v
 		@navigate "/"
 		@ready!
 

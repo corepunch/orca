@@ -19,12 +19,12 @@ extern struct Property* luaX_checkProperty(lua_State *L, int index);
 // lua_State
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
-// style_class
-extern void luaX_pushstyle_class(lua_State *L, struct style_class const* value);
-extern struct style_class* luaX_checkstyle_class(lua_State *L, int index);
-// style_sheet
-extern void luaX_pushstyle_sheet(lua_State *L, struct style_sheet const* value);
-extern struct style_sheet* luaX_checkstyle_sheet(lua_State *L, int index);
+// style_class_selector
+extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selector const* value);
+extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
+// style_rule
+extern void luaX_pushstyle_rule(lua_State *L, struct style_rule const* value);
+extern struct style_rule* luaX_checkstyle_rule(lua_State *L, int index);
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -250,10 +250,10 @@ int f_OBJ_ClearDirtyFlags(lua_State *L) {
 	OBJ_ClearDirtyFlags(this_ );
 	return 0;
 }
-int f_OBJ_AddStyleSheet(lua_State *L) {
+int f_OBJ_AddStyleRule(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* source = luaL_checkstring(L, 2);
-	OBJ_AddStyleSheet(L, this_, source );
+	OBJ_AddStyleRule(L, this_, source );
 	return 0;
 }
 int f_OBJ_GetStyle(lua_State *L) {
@@ -413,12 +413,6 @@ int f_OBJ_SetContext(lua_State *L) {
 	OBJ_SetContext(L, this_ );
 	return 0;
 }
-int f_OBJ_ParseClassAttribute(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* classString = luaL_checkstring(L, 2);
-	OBJ_ParseClassAttribute(this_, classString );
-	return 0;
-}
 int f_OBJ_Instantiate(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* result_ = OBJ_Instantiate(L, this_);
@@ -486,7 +480,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getInteger", f_OBJ_GetInteger },
 		{ "setDirty", f_OBJ_SetDirty },
 		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
-		{ "addStyleSheet", f_OBJ_AddStyleSheet },
+		{ "addStyleRule", f_OBJ_AddStyleRule },
 		{ "getStyle", f_OBJ_GetStyle },
 		{ "setStyle", f_OBJ_SetStyle },
 		{ "doTween", f_OBJ_DoTween },
@@ -513,7 +507,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getLuaObject", f_OBJ_GetLuaObject },
 		{ "getDomain", f_OBJ_GetDomain },
 		{ "__setcontext", f_OBJ_SetContext },
-		{ "parseClassAttribute", f_OBJ_ParseClassAttribute },
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
@@ -676,6 +669,14 @@ static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
 static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
 };
+static luaL_Reg _StyleController_AddClassEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_AddClassEventArgs[] = {
+	DECL(0x2ecda0bc, StyleController_AddClassEventArgs, ClassName, ClassName, kDataTypeString), // StyleController_AddClassEventArgs.ClassName
+};
+static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_AddClassesEventArgs[] = {
+	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -693,6 +694,8 @@ STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
 STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
 STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
+STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
+STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -841,8 +844,12 @@ REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
 HANDLER(StyleController, Object, Create);
 HANDLER(StyleController, Object, Release);
 HANDLER(StyleController, StyleController, ThemeChanged);
+HANDLER(StyleController, StyleController, AddClass);
+HANDLER(StyleController, StyleController, AddClasses);
 static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
 	DECL(0x064087a6, StyleController, ThemeChanged, ThemeChanged, kDataTypeEvent, .TypeString = "StyleController_ThemeChangedEventArgs"), // StyleController.ThemeChanged
+	DECL(0x543ca51c, StyleController, AddClass, AddClass, kDataTypeEvent, .TypeString = "StyleController_AddClassEventArgs"), // StyleController.AddClass
+	DECL(0x41acd398, StyleController, AddClasses, AddClasses, kDataTypeEvent, .TypeString = "StyleController_AddClassesEventArgs"), // StyleController.AddClasses
 };
 static struct StyleController StyleControllerDefaults = {
 };
@@ -851,6 +858,8 @@ LRESULT StyleControllerProc(struct Object* object, void* cmp, uint32_t message, 
 		case ID_Object_Create: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Release: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
 		case ID_StyleController_ThemeChanged: return StyleController_ThemeChanged(object, cmp, wparm, lparm); // StyleController.ThemeChanged
+		case ID_StyleController_AddClass: return StyleController_AddClass(object, cmp, wparm, lparm); // StyleController.AddClass
+		case ID_StyleController_AddClasses: return StyleController_AddClasses(object, cmp, wparm, lparm); // StyleController.AddClasses
 	}
 	return FALSE;
 }
@@ -896,6 +905,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");

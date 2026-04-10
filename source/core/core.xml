@@ -7,8 +7,8 @@
     <external struct="game"/>
     <external struct="Property"/>
     <external struct="lua_State"/>
-    <external struct="style_class"/>
-    <external struct="style_sheet"/>
+    <external struct="style_class_selector"/>
+    <external struct="style_rule"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -294,7 +294,7 @@
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
-        <method name="AddStyleSheet" lua="true">
+        <method name="AddStyleRule" lua="true">
           <summary>Add a stylesheet to the object.</summary>
           <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
           <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
@@ -434,11 +434,6 @@
         <method name="SetContext" export="__setcontext" lua="true">
           <summary>Set the current context object where newly created objects will be parented.</summary>
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
-        </method>
-        <method name="ParseClassAttribute">
-          <summary>Parses and applies multiple class names from a class attribute string</summary>
-          <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
-          <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
         </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
         <method name="Instantiate" lua="true">
@@ -610,10 +605,12 @@
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
         <handle message="StyleController.ThemeChanged"/>
+        <handle message="StyleController.AddClass"/>
+        <handle message="StyleController.AddClasses"/>
       </handles>
       <fields>
-        <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
-        <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
+        <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
+        <field name="rules" type="style_rule" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">
@@ -621,6 +618,18 @@
           <details>Triggers style recalculation on this object. When recursive is TRUE, also sends ThemeChanged to every direct child. Preferred over the removed OBJ_ApplyStyles() function.</details>
           <fields>
             <field name="recursive" type="bool">When TRUE, also sends ThemeChanged to every direct child</field>
+          </fields>
+        </message>
+        <message name="AddClass">
+          <summary>Adds single styling class</summary>
+          <fields>
+            <field name="ClassName" type="string">Name of the class to add</field>
+          </fields>
+        </message>
+        <message name="AddClasses">
+          <summary>Adds multiple styling classes</summary>
+          <fields>
+            <field name="ClassNames" type="string">Space-separated list of class names to add</field>
           </fields>
         </message>
       </messages>

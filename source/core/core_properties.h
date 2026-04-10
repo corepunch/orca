@@ -104,7 +104,9 @@ enum PropertyAnimationProperties {
 #define GetStyleController(_P) ((struct StyleController*)((_P)?OBJ_GetComponent(_P,ID_StyleController):NULL))
 #define StyleController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleController,sizeof(struct StyleController),_N)
 #define ID_StyleController_ThemeChanged 0xe51e8073 // StyleController.ThemeChanged
-#define kStyleControllerNumProperties 1
+#define ID_StyleController_AddClass 0x8534805d // StyleController.AddClass
+#define ID_StyleController_AddClasses 0x2b139741 // StyleController.AddClasses
+#define kStyleControllerNumProperties 3
 
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
@@ -166,6 +168,12 @@ enum PropertyAnimationProperties {
 
 #define ID_AnimationPlayer_CompletedEventArgs 0xacaaf6c7
 
+#define ID_StyleController_AddClassEventArgs 0x6838e65b
+
+#define ID_StyleController_AddClassEventArgs_ClassName 0xb3e910ea // StyleController_AddClassEventArgs.ClassName
+#define ID_StyleController_AddClassesEventArgs 0xc1f36253
+
+#define ID_StyleController_AddClassesEventArgs_ClassNames 0xbeac48c3 // StyleController_AddClassesEventArgs.ClassNames
 	
 
 #endif

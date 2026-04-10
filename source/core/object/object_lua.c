@@ -39,15 +39,15 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
       {
         OBJ_SetName(hobj, strtok(dup, "."));
         while ((arg = strtok(NULL, ".")))
-          OBJ_AddClass(hobj, arg);
+          _SendMessage(hobj, StyleController, AddClass, arg);
         lua_remove(L, 2);
       }
     } else if (*arg == '.') {
       WITH(char, dup, strdup(++arg), free)
       {
-        OBJ_AddClass(hobj, strtok(dup, "."));
+        _SendMessage(hobj, StyleController, AddClass, strtok(dup, "."));
         while ((arg = strtok(NULL, ".")))
-          OBJ_AddClass(hobj, arg);
+          _SendMessage(hobj, StyleController, AddClass, arg);
         lua_remove(L, 2);
       }
     }
@@ -154,7 +154,7 @@ int OBJ_CreateFromLuaState(lua_State *L) {
     if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
       Con_Error("Can't execute apply()");
     } else {
-      OBJ_ParseClassAttribute(pobj, luaL_checkstring(L, -1));
+      _SendMessage(pobj, StyleController, AddClasses, luaL_checkstring(L, -1));
     }
   }
   lua_pop(L, 1);

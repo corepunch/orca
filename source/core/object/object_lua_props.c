@@ -65,7 +65,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 		}
 		case p_class:
 			if (lua_type(L, 3) == LUA_TSTRING) {
-				OBJ_ParseClassAttribute(self, luaL_checkstring(L, 3));
+        _SendMessage(self, StyleController, AddClasses, luaL_checkstring(L, 3));
 				return TRUE;
 			} else {
 				luaL_checktype(L, 3, LUA_TTABLE);

@@ -147,7 +147,7 @@ union {
         struct Property*           properties;
         struct state_manager*      stateManager;
         struct style_class*        classes;
-        struct style_sheet*        stylesheet;
+        struct style_rule*        stylesheet;
         struct timer*              timers;
         struct alias*              aliases;
     };

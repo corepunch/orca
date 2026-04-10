@@ -51,7 +51,7 @@
 #define STYLE_SELECT 8
 
 struct lua_State;
-struct style_sheet;
+struct style_rule;
 struct style_class;
 struct state_manager;
 struct alias;
@@ -94,7 +94,7 @@ struct game
 void
 API_PrintStackTrace(lua_State* L);
 
-typedef void (*STYLEPROC)(lpObject_t, struct style_sheet*, void*);
+typedef void (*STYLEPROC)(lpObject_t, struct style_rule*, void*);
 
 lpObject_t
 OBJ_Create(lua_State*, lpcClassDesc_t cdesc);
@@ -200,9 +200,6 @@ CMP_Detach(void* userdata);
 
 lpObject_t
 OBJ_FindChildByAlias(lpObject_t, uint32_t);
-
-void
-OBJ_AddClass(lpObject_t, lpcString_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);
