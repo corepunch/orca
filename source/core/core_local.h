@@ -36,17 +36,12 @@
 #define _GetStateManager(obj)                                                  \
   (*(struct state_manager**)OBJ_GetObjectComponent(obj, kCompStateManager))
 
-#define _GetClasses(obj)                                                       \
-  (*(struct style_class**)OBJ_GetObjectComponent(obj, kCompClasses))
-
-#define _GetStyles(obj)                                                        \
-  (*(struct style_sheet**)OBJ_GetObjectComponent(obj, kCompStyles))
+// StyleController component accessor — returns NULL if component not attached
+#define _GetStyleController(obj)                                               \
+  GetStyleController(obj)
 
 #define _GetAliases(obj)                                                       \
   (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
-
-#define _GetCallbacks(obj)                                                     \
-  (*(struct script_callback**)OBJ_GetObjectComponent(obj, kCompCallbacks))
 
 #define MAX_NODE_PACKAGES 16
 
@@ -60,16 +55,14 @@ struct style_sheet;
 struct style_class;
 struct state_manager;
 struct alias;
-struct script_callback;
 
 enum component_type
 {
   kCompComponents,
   kCompProperties,
   kCompStateManager,
-  kCompClasses,
-  kCompStyles,
   kCompAliases,
+  // kCompClasses and kCompStyles removed — now accessed via StyleController component
   kCompCount,
 };
 

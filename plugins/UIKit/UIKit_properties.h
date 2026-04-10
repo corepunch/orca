@@ -159,6 +159,7 @@ enum ColorBrushProperties {
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
 #define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
+#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
 #define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
 #define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
@@ -258,6 +259,7 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeAwake,
 	kNodeUpdateMatrix,
+	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
 	kNodeIsVisible,
@@ -846,6 +848,8 @@ enum StyleProperties {
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
 #define ID_Node_UpdateMatrixEventArgs_opacity 0x1bb1efd0 // Node_UpdateMatrixEventArgs.opacity
 #define ID_Node_UpdateMatrixEventArgs_force 0x04845b66 // Node_UpdateMatrixEventArgs.force
+#define ID_Node_PushPropertyEventArgs 0x9207bfe8
+
 #define ID_Node_LoadViewEventArgs 0x361e935c
 
 #define ID_Node_LoadViewEventArgs_lua_state 0x96df0d0e // Node_LoadViewEventArgs.lua_state
