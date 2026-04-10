@@ -167,6 +167,7 @@ HANDLER(ConsoleView, ConsoleView, Invalidate) {
   return FALSE;
 }
 
+/* ConsoleView does not participate in inherited property propagation. */
 HANDLER(ConsoleView, Node, PushProperty) {
   return FALSE;
 }
