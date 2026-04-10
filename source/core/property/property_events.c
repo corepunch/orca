@@ -29,7 +29,7 @@ PROP_ProcessEvents(lua_State* L,
       continue;
     PROP_Update(property);
     if (property->flags & PF_USED_IN_STATE_MANAGER) {
-      SM_HandleControllerChange(object, property);
+      OBJ_SendMessageW(object, ID_StateManagerController_ControllerChanged, (wParam_t)(uintptr_t)property, 0);
     }
     if (property->flags & PF_HASCHANGECALLBACK) {
       static path_t str;

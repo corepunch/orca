@@ -107,6 +107,13 @@ enum PropertyAnimationProperties {
 #define ID_StyleController_AddClass 0x8534805d // StyleController.AddClass
 #define ID_StyleController_AddClasses 0x2b139741 // StyleController.AddClasses
 #define kStyleControllerNumProperties 3
+// StateManagerController
+#define ID_StateManagerController 0x69d899d1
+#define GetStateManagerController(_P) ((struct StateManagerController*)((_P)?OBJ_GetComponent(_P,ID_StateManagerController):NULL))
+#define StateManagerController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateManagerController,sizeof(struct StateManagerController),_N)
+#define ID_StateManagerController_Load 0x3772ec91 // StateManagerController.Load
+#define ID_StateManagerController_ControllerChanged 0x0d0ee8c7 // StateManagerController.ControllerChanged
+#define kStateManagerControllerNumProperties 2
 
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
@@ -174,6 +181,10 @@ enum PropertyAnimationProperties {
 #define ID_StyleController_AddClassesEventArgs 0xc1f36253
 
 #define ID_StyleController_AddClassesEventArgs_ClassNames 0xbeac48c3 // StyleController_AddClassesEventArgs.ClassNames
+#define ID_StateManagerController_LoadEventArgs 0x87430117
+
+#define ID_StateManagerController_ControllerChangedEventArgs 0x12c11cb3
+
 	
 
 #endif

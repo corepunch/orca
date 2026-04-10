@@ -43,7 +43,7 @@ void UI_FillOutObjectView(HOBJ object, LPOBJDEF lpOut) {
   lpOut->lpFlags      = &object->rdflags;
   lpOut->lpUserData   = &object->userdata;
   lpOut->bHasChildren = object->children != NULL;
-  lpOut->stateman     = object->stateManager;
+  lpOut->stateman     = GetStateManagerController(object);
   lpOut->szClass      = OBJ_GetClassName(object);
   lpOut->dwItemType   = -1;
   lpOut->lpObjectItself = object;

@@ -24,9 +24,9 @@ struct Object
     {
       struct component* components;
       struct Property* properties;
-      struct state_manager* stateManager;
       struct alias* aliases;
       // classes and stylesheet moved to StyleController component
+      // stateManager moved to StateManagerController component
     };
     void* comps[kCompCount];
   };

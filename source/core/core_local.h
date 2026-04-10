@@ -33,9 +33,6 @@
 #define _GetProperties(obj)                                                    \
   (*(lpProperty_t*)OBJ_GetObjectComponent(obj, kCompProperties))
 
-#define _GetStateManager(obj)                                                  \
-  (*(struct state_manager**)OBJ_GetObjectComponent(obj, kCompStateManager))
-
 // StyleController component accessor — returns NULL if component not attached
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
@@ -51,7 +48,6 @@
 #define STYLE_SELECT 8
 
 struct lua_State;
-struct state_manager;
 struct alias;
 
 // Parsed style class selector (e.g., "button:hover/50")
@@ -79,7 +75,6 @@ enum component_type
 {
   kCompComponents,
   kCompProperties,
-  kCompStateManager,
   kCompAliases,
   // kCompClasses and kCompStyles removed — now accessed via StyleController component
   kCompCount,
@@ -198,13 +193,6 @@ void
 PROP_SetValuePtr(lpProperty_t, void*);
 lpObject_t
 PROP_GetObject(lpcProperty_t);
-
-void
-SM_ReleaseStateManager(lpObject_t);
-void
-SM_EnsureStateManagerInitialized(lpObject_t);
-void
-SM_HandleControllerChange(lpObject_t, lpProperty_t);
 
 void*
 OBJ_GetObjectComponent(lpObject_t, enum component_type);

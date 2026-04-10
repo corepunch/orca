@@ -677,6 +677,12 @@ static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL 
 static struct PropertyType _StyleController_AddClassesEventArgs[] = {
 	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
 };
+static luaL_Reg _StateManagerController_LoadEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StateManagerController_LoadEventArgs[] = {
+};
+static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -696,6 +702,8 @@ STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
+STRUCT(StateManagerController_LoadEventArgs, StateManagerController_LoadEventArgs);
+STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -870,6 +878,34 @@ struct StyleController* luaX_checkStyleController(lua_State *L, int idx) {
 	return GetStyleController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
+HANDLER(StateManagerController, Object, Create);
+HANDLER(StateManagerController, Object, Release);
+HANDLER(StateManagerController, Object, Start);
+HANDLER(StateManagerController, StateManagerController, Load);
+HANDLER(StateManagerController, StateManagerController, ControllerChanged);
+static struct PropertyType const StateManagerControllerProperties[kStateManagerControllerNumProperties] = {
+	DECL(0x68afa209, StateManagerController, Load, Load, kDataTypeEvent, .TypeString = "StateManagerController_LoadEventArgs"), // StateManagerController.Load
+	DECL(0xda0795ff, StateManagerController, ControllerChanged, ControllerChanged, kDataTypeEvent, .TypeString = "StateManagerController_ControllerChangedEventArgs"), // StateManagerController.ControllerChanged
+};
+static struct StateManagerController StateManagerControllerDefaults = {
+};
+LRESULT StateManagerControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Create: return StateManagerController_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Release: return StateManagerController_Release(object, cmp, wparm, lparm); // Object.Release
+		case ID_Object_Start: return StateManagerController_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_StateManagerController_Load: return StateManagerController_Load(object, cmp, wparm, lparm); // StateManagerController.Load
+		case ID_StateManagerController_ControllerChanged: return StateManagerController_ControllerChanged(object, cmp, wparm, lparm); // StateManagerController.ControllerChanged
+	}
+	return FALSE;
+}
+void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController) {
+	luaX_pushObject(L, CMP_GetObject(StateManagerController));
+}
+struct StateManagerController* luaX_checkStateManagerController(lua_State *L, int idx) {
+	return GetStateManagerController(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -907,12 +943,15 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StateManagerController_LoadEventArgs(L), -2), "StateManagerController_LoadEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PropertyAnimation), -2), "PropertyAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StyleController), -2), "StyleController");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StateManagerController), -2), "StateManagerController");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;

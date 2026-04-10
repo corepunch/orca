@@ -37,6 +37,8 @@ typedef struct AnimationPlayer_StoppedEventArgs AnimationPlayer_StoppedMsg_t,* A
 typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t,* AnimationPlayer_CompletedMsgPtr;
 typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
+typedef struct StateManagerController_LoadEventArgs StateManagerController_LoadMsg_t,* StateManagerController_LoadMsgPtr;
+typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -577,6 +579,16 @@ struct StyleController_AddClassesEventArgs {
 };
 ORCA_API void luaX_pushStyleController_AddClassesEventArgs(lua_State *L, struct StyleController_AddClassesEventArgs const* data);
 ORCA_API struct StyleController_AddClassesEventArgs* luaX_checkStyleController_AddClassesEventArgs(lua_State *L, int idx);
+/** StateManagerController_LoadEventArgs struct */
+struct StateManagerController_LoadEventArgs {
+};
+ORCA_API void luaX_pushStateManagerController_LoadEventArgs(lua_State *L, struct StateManagerController_LoadEventArgs const* data);
+ORCA_API struct StateManagerController_LoadEventArgs* luaX_checkStateManagerController_LoadEventArgs(lua_State *L, int idx);
+/** StateManagerController_ControllerChangedEventArgs struct */
+struct StateManagerController_ControllerChangedEventArgs {
+};
+ORCA_API void luaX_pushStateManagerController_ControllerChangedEventArgs(lua_State *L, struct StateManagerController_ControllerChangedEventArgs const* data);
+ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkStateManagerController_ControllerChangedEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -664,5 +676,19 @@ struct StyleController {
 };
 ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
 ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);
+
+/// @brief Manages XML-driven state groups that reactively apply property values when controller properties change.
+/** StateManagerController component */
+typedef struct StateManagerController StateManagerController_t, *StateManagerControllerPtr, *lpStateManagerController_t;
+typedef struct StateManagerController const *StateManagerControllerCPtr, *lpcStateManagerController_t;
+struct StateManagerController {
+	void* doc; ///< Parsed XML document that contains the StateGroup definitions (xmlDocPtr)
+	void* stategroups; ///< Linked list of resolved STATEGRP entries (PSTATEGRP)
+	bool_t initialized; ///< TRUE once the state groups have been resolved against the object's properties
+	event_t Load;
+	event_t ControllerChanged;
+};
+ORCA_API void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController);
+ORCA_API struct StateManagerController* luaX_checkStateManagerController(lua_State *L, int idx);
 
 #endif
