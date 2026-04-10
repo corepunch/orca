@@ -8,6 +8,16 @@ extern struct game core;
 // Small time delta (seconds) used to detect rising/falling edge for bool properties.
 #define BOOL_EDGE_DELTA 0.001f
 
+// Look up a clip by name from the player's Clips array. Returns NULL if not found.
+static struct AnimationClip *find_clip_by_name(struct AnimationPlayer const *p, const char *name) {
+    if (!name || !name[0] || !p->Clips) return NULL;
+    for (int32_t i = 0; i < p->NumClips; i++) {
+        if (p->Clips[i].Name && strcmp(p->Clips[i].Name, name) == 0)
+            return p->Clips[i].Clip;
+    }
+    return NULL;
+}
+
 // Internal: evaluate one component of a Keyframe array at the given time.
 
 static float vec4_get(struct vec4 const *v, int i) {
@@ -179,6 +189,10 @@ HANDLER(AnimationPlayer, Object, Animate) {
 }
 
 HANDLER(AnimationPlayer, AnimationPlayer, Play) {
+    if (pPlay->Name && pPlay->Name[0]) {
+        struct AnimationClip *named = find_clip_by_name(pAnimationPlayer, pPlay->Name);
+        if (named) pAnimationPlayer->Clip = named;
+    }
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (pAnimationPlayer->PlaybackMode == kPlaybackModeReverse) {
         pAnimationPlayer->CurrentTime = clip ? clip->StopTime : 0.0f;

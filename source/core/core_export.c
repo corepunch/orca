@@ -602,6 +602,13 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
+static struct PropertyType _AnimationClipReference[] = {
+	DECL(0x0fe07306, AnimationClipReference, Name, Name, kDataTypeString), // AnimationClipReference.Name
+	DECL(0xd33ddb1b, AnimationClipReference, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationClipReference.Clip
+};
+static luaL_Reg _AnimationClipReference_Methods[] = {
+	{ NULL, NULL }
+};
 static struct PropertyType _Keyframe[] = {
 	DECL(0xdfe4e404, Keyframe, Time, time, kDataTypeFloat), // Keyframe.Time
 	DECL(0xd147f96a, Keyframe, Value, value, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.Value
@@ -616,6 +623,7 @@ static luaL_Reg _Keyframe_Methods[] = {
 	{ NULL, NULL }
 };
 
+STRUCT(AnimationClipReference, AnimationClipReference);
 STRUCT(Keyframe, Keyframe);
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
@@ -649,6 +657,7 @@ static struct PropertyType _Object_TimerEventArgs[] = {
 };
 static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
+	DECL(0x0fe07306, AnimationPlayer_PlayEventArgs, Name, Name, kDataTypeString), // AnimationPlayer_PlayEventArgs.Name
 };
 static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
@@ -763,6 +772,8 @@ HANDLER(AnimationPlayer, AnimationPlayer, Stop);
 HANDLER(AnimationPlayer, AnimationPlayer, Pause);
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0xd33ddb1b, AnimationPlayer, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationPlayer.Clip
+	ARRAY_DECL(0xf26064b8, AnimationPlayer, Clips, Clips, kDataTypeStruct, .TypeString = "AnimationClipReference"), // AnimationPlayer.Clips
+	DECL(0x090c1a52, AnimationPlayer, NumClips, NumClips, kDataTypeInt), // AnimationPlayer.NumClips
 	DECL(0xdf450ad5, AnimationPlayer, Playing, Playing, kDataTypeBool), // AnimationPlayer.Playing
 	DECL(0x343782cd, AnimationPlayer, Looping, Looping, kDataTypeBool), // AnimationPlayer.Looping
 	DECL(0x0a6b8020, AnimationPlayer, Speed, Speed, kDataTypeFloat), // AnimationPlayer.Speed
@@ -845,6 +856,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");

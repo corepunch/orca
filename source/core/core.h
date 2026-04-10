@@ -149,6 +149,8 @@ ORCA_API const char *EasingToString(enum Easing value);
 ORCA_API enum Easing luaX_checkEasing(lua_State *L, int idx);
 ORCA_API void luaX_pushEasing(lua_State *L, enum Easing value);
 
+typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClipReference_t;
+typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
 
@@ -460,6 +462,14 @@ OBJ_AddAlias(struct Object*, const char*, const char*);
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
+/// @brief A named animation clip entry used in an AnimationPlayer's Clips array.
+/** AnimationClipReference struct */
+struct AnimationClipReference {
+	const char* Name; ///< Short name used to identify and select this clip (e.g. "idle", "walk")
+	struct AnimationClip* Clip; ///< The AnimationClip object for this entry
+};
+ORCA_API void luaX_pushAnimationClipReference(lua_State *L, struct AnimationClipReference const* AnimationClipReference);
+ORCA_API struct AnimationClipReference* luaX_checkAnimationClipReference(lua_State *L, int idx);
 /// @brief A single keyframe in an animation curve.
 /** Keyframe struct */
 struct Keyframe {
@@ -524,6 +534,7 @@ ORCA_API void luaX_pushObject_TimerEventArgs(lua_State *L, struct Object_TimerEv
 ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State *L, int idx);
 /** AnimationPlayer_PlayEventArgs struct */
 struct AnimationPlayer_PlayEventArgs {
+	const char* Name; ///< Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)
 };
 ORCA_API void luaX_pushAnimationPlayer_PlayEventArgs(lua_State *L, struct AnimationPlayer_PlayEventArgs const* data);
 ORCA_API struct AnimationPlayer_PlayEventArgs* luaX_checkAnimationPlayer_PlayEventArgs(lua_State *L, int idx);
@@ -590,6 +601,8 @@ typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimat
 typedef struct AnimationPlayer const *AnimationPlayerCPtr, *lpcAnimationPlayer_t;
 struct AnimationPlayer {
 	struct AnimationClip* Clip; ///< The AnimationClip object that supplies the curves to animate
+	struct AnimationClipReference* Clips; ///< Array of named animation clips available to this player; use the Play message with a Name to select one by name
+	int32_t NumClips;
 	bool_t Playing; ///< Whether the animation is currently advancing each frame
 	bool_t Looping; ///< If true, the animation restarts from StartTime when it reaches StopTime
 	float Speed; ///< Playback speed multiplier (1.0 = normal speed)
