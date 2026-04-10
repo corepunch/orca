@@ -65,7 +65,7 @@ Multiple pseudo-states can be chained: `button:hover:focus` requires both hover 
 <Button class="button:hover primary/80" />
 ```
 
-The `class` XML attribute is parsed by `OBJ_ParseClassAttribute()` at load time.
+The `class` XML attribute is parsed by `StyleController.AddClasses()` at load time.
 Tokens are space-separated; each token is parsed into a `style_class` node.
 
 ### Setting classes from Lua
