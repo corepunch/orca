@@ -36,6 +36,8 @@ enum AnimationClipProperties {
 #define GetAnimationPlayer(_P) ((struct AnimationPlayer*)((_P)?OBJ_GetComponent(_P,ID_AnimationPlayer):NULL))
 #define AnimationPlayer_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationPlayer,sizeof(struct AnimationPlayer),_N)
 #define ID_AnimationPlayer_Clip 0xbc835a74 // AnimationPlayer.Clip
+#define ID_AnimationPlayer_Clips 0xc9c6b905 // AnimationPlayer.Clips
+#define ID_AnimationPlayer_NumClips 0x7a1df25d // AnimationPlayer.NumClips
 #define ID_AnimationPlayer_Playing 0xdd2ed06c // AnimationPlayer.Playing
 #define ID_AnimationPlayer_Looping 0x02535bc8 // AnimationPlayer.Looping
 #define ID_AnimationPlayer_Speed 0x4a1ae835 // AnimationPlayer.Speed
@@ -53,9 +55,11 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_Started ((0x6f97130b&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Started
 #define ID_AnimationPlayer_Stopped ((0x845c891f&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Stopped
 #define ID_AnimationPlayer_Completed ((0xa2ffe357&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Completed
-#define kAnimationPlayerNumProperties 18
+#define kAnimationPlayerNumProperties 20
 enum AnimationPlayerProperties {
 	kAnimationPlayerClip,
+	kAnimationPlayerClips,
+	kAnimationPlayerNumClips,
 	kAnimationPlayerPlaying,
 	kAnimationPlayerLooping,
 	kAnimationPlayerSpeed,
@@ -106,6 +110,9 @@ enum PropertyAnimationProperties {
 #define ID_Object_Destroy ((0x8ef01bbe&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Destroy
 #define ID_Object_Timer ((0x6e6ade9d&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Timer
 
+#define ID_AnimationClipReference 0x9309ab18
+#define ID_AnimationClipReference_Name 0x5b67cfe9 // AnimationClipReference.Name
+#define ID_AnimationClipReference_Clip 0xce2a9734 // AnimationClipReference.Clip
 #define ID_Keyframe 0xf2057289
 #define ID_Keyframe_Time 0x5e026ae4 // Keyframe.Time
 #define ID_Keyframe_Value 0x79c3b0ca // Keyframe.Value
@@ -139,6 +146,7 @@ enum PropertyAnimationProperties {
 #define ID_Object_TimerEventArgs_timerId 0x9555bf27 // Object_TimerEventArgs.timerId
 #define ID_AnimationPlayer_PlayEventArgs 0x1e984720
 
+#define ID_AnimationPlayer_PlayEventArgs_Name 0xc73b23f1 // AnimationPlayer_PlayEventArgs.Name
 #define ID_AnimationPlayer_ResumeEventArgs 0xf37671df
 
 #define ID_AnimationPlayer_StopEventArgs 0xa977f29a

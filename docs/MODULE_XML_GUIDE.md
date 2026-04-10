@@ -401,6 +401,7 @@ Defines a property on a component. Properties are always inside a `<properties>`
 - `readonly` (optional) - If "true", property is read-only
 - `pointer` (optional) - If "true", property holds a pointer
 - `default` (optional) - Default value for the property
+- `array` (optional) - If "true", generates an array property (see below)
 
 **Example:**
 ```xml
@@ -409,6 +410,52 @@ Defines a property on a component. Properties are always inside a `<properties>`
   <property name="Image" type="Texture" pointer="true">Texture to display.</property>
 </properties>
 ```
+
+#### Array properties (`array="true"`)
+
+Setting `array="true"` on a `<property>` declares a dynamically-sized array of the given type. The code generator automatically produces **two** C struct fields and **two** property table entries from a single XML declaration:
+
+| Generated name | C type | Description |
+|---|---|---|
+| `<Name>` | `struct <Type>*` | Pointer to the first element of the heap-allocated array |
+| `Num<Name>` | `int32_t` | Number of elements currently stored in the array |
+
+Both are exposed as Lua-accessible properties. There is no separate `<property>` declaration needed for the count — it is created implicitly.
+
+**Example declaration:**
+```xml
+<properties>
+  <property name="Clips" type="AnimationClipReference" array="true">
+    Named clips available to this player
+  </property>
+</properties>
+```
+
+**Generated C struct fields:**
+```c
+struct AnimationPlayer {
+    struct AnimationClipReference* Clips;  /* the array */
+    int32_t                        NumClips; /* auto-generated count */
+    /* … other fields … */
+};
+```
+
+**Generated property table entries (in `*_export.c`):**
+```c
+ARRAY_DECL(…, AnimationPlayer, Clips,    Clips,    kDataTypeStruct, .TypeString = "AnimationClipReference"),
+DECL      (…, AnimationPlayer, NumClips, NumClips, kDataTypeInt),
+```
+
+**Lua usage:**
+```lua
+-- Read the count
+print(obj.NumClips)
+
+-- The array itself is managed by the engine XML loader;
+-- individual entries are accessible via the property system
+```
+
+The same pattern applies to any `array="true"` property. For example, `AnimationCurve.Keyframes` generates `Keyframes*` and `NumKeyframes`.
 
 ### `<handles>` and `<handle>` — Message Handlers
 

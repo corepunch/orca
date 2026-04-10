@@ -22,6 +22,7 @@ nav:
   - Module XML Guide: MODULE_XML_GUIDE.md
   - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
   - WebGL / Emscripten: webgl.md
+  - Animations: animations.md
   - Developer Notes:
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
