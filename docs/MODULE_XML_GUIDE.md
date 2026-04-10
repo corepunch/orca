@@ -199,8 +199,8 @@ Similar to `<struct>`, but defines an abstract interface. Methods and topics are
       </method>
     </methods>
     <messages>
-      <message name="Create" routing="Direct"/>
-      <message name="Destroy" routing="Direct"/>
+      <message name="Create"/>
+      <message name="Destroy"/>
     </messages>
   </interface>
 </interfaces>
@@ -299,7 +299,6 @@ Declares a message that can be handled by components. Fields inside messages are
 - `name` (required) - Message name
 - `type` (optional) - Message parameter type (external struct)
 - `same-as` (optional) - Inherit fields from another message
-- `routing` (optional) - Routing strategy: `Bubbling`, `TunnelingBubbling`, `Tunneling`, or `Direct`
 
 **Child Elements:**
 - `<summary>`, `<details>`
@@ -307,7 +306,7 @@ Declares a message that can be handled by components. Fields inside messages are
 
 **Example:**
 ```xml
-<message name="PropertyChanged" routing="Direct">
+<message name="PropertyChanged">
   <fields>
     <field name="Property" type="Property" pointer="true">The property that changed</field>
   </fields>

@@ -8,7 +8,7 @@
  *     StyleController
  *   - OBJ_ClearStyleClasses: frees all memory, idempotent on no-StyleController
  *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
- *   - Object.ThemeChanged (via _SendMessage): applies a float rule to a property
+ *   - StyleController.ThemeChanged (via _SendMessage): applies a float rule to a property
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
  *
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
@@ -18,6 +18,7 @@
 
 #include <source/core/core_local.h>
 #include <source/core/core.h>
+#include <source/core/object/object_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,11 +75,11 @@ static LRESULT TestStyledCompProc(struct Object* o, void* c,
  * class name and is used solely within this test binary.
  */
 #define ID_TestStyledComp 0xaabb1122u
-/* Property descriptor for "Width" (FNV1a32("Width") = 0xd2dfef18) */
+/* Property descriptor for "Width" (fnv1a32("Width") = 0x3b42dfbf) */
 static struct PropertyType const TestStyledCompProperties[] = {
     {
-        .ShortIdentifier = 0xd2dfef18u, /* fnv1a32("Width")  */
-        .FullIdentifier  = 0xd2dfef18u,
+        .ShortIdentifier = 0x3b42dfbfu, /* fnv1a32("Width") */
+        .FullIdentifier  = 0xbfbb7a5bu, /* fnv1a32("TestStyledComp.Width") */
         .Name            = "Width",
         .DataType        = kDataTypeFloat,
         .DataSize        = sizeof(float),
@@ -156,7 +157,7 @@ static void test_parse_class_hover_flag(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         /* Before parsing: no HOVERABLE flag */
         EXPECT(!(OBJ_GetFlags(obj) & OF_HOVERABLE));
-        OBJ_ParseClassAttribute(obj, "btn:hover");
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover");
         /* After parsing: the :hover pseudo-class sets OF_HOVERABLE */
         EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
     }
@@ -166,7 +167,7 @@ static void test_parse_class_hover_flag(void) {
 static void test_parse_multiple_classes(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         /* Only the class with :hover should flip OF_HOVERABLE */
-        OBJ_ParseClassAttribute(obj, "base secondary:hover extra");
+        _SendMessage(obj, StyleController, AddClasses, "base secondary:hover extra");
         EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
     }
 }
@@ -174,7 +175,7 @@ static void test_parse_multiple_classes(void) {
 /* Parsing a class with no pseudo-state does not set OF_HOVERABLE */
 static void test_parse_class_no_hover(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        OBJ_ParseClassAttribute(obj, "primary");
+        _SendMessage(obj, StyleController, AddClasses, "primary");
         EXPECT(!(OBJ_GetFlags(obj) & OF_HOVERABLE));
     }
 }
@@ -183,13 +184,14 @@ static void test_parse_class_no_hover(void) {
 static void test_add_class_hover(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         EXPECT(!(OBJ_GetFlags(obj) & OF_HOVERABLE));
-        OBJ_AddClass(obj, "card:hover");
+        _SendMessage(obj, StyleController, AddClass, "card:hover");
         EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
     }
 }
 
 /* OBJ_AddStyleClass is null-safe on objects without StyleController */
 static void test_add_style_class_no_component(void) {
+    do {
     /*
      * Build a bare object that has no StyleController.  We construct it by
      * allocating a raw Object without any class — we can't use
@@ -203,27 +205,30 @@ static void test_add_style_class_no_component(void) {
     /* Must not crash — object has no components, GetStyleController returns NULL */
     OBJ_AddStyleClass(obj, ".btn", "Width", "100", 0);
     free(obj);
+    } while(0);
 }
 
 /* OBJ_ClearStyleClasses is null-safe on objects without StyleController */
 static void test_clear_style_classes_no_component(void) {
+    do {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
     OBJ_ClearStyleClasses(obj);  /* must not crash */
     free(obj);
+    } while(0);
 }
 
 /* OBJ_ClearStyleClasses frees class list and stylesheet */
 static void test_clear_style_classes(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        OBJ_ParseClassAttribute(obj, "btn:hover secondary");
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover secondary");
         OBJ_AddStyleClass(obj, ".btn", "Width", "50", 0);
         /* After clearing, the StyleController lists are both NULL */
         OBJ_ClearStyleClasses(obj);
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes    == NULL);
-        EXPECT(sc->stylesheet == NULL);
+        EXPECT(sc->rules == NULL);
     }
 }
 
@@ -244,9 +249,9 @@ static void test_apply_styles_float_property(void) {
         /* Register the rule: ".btn { Width: 42 }" */
         OBJ_AddStyleClass(obj, ".btn", "Width", "42", 0);
         /* Apply the "btn" class */
-        OBJ_ParseClassAttribute(obj, "btn");
-        /* Apply styles — sends Object.ThemeChanged message */
-        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
+        _SendMessage(obj, StyleController, AddClasses, "btn");
+        /* Apply styles — sends StyleController.ThemeChanged message */
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         /* Verify the Width property was set to 42 */
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
@@ -260,16 +265,18 @@ static void test_apply_styles_float_property(void) {
  * Sending the message to a bare object must not crash.
  */
 static void test_apply_styles_no_component(void) {
+    do {
     lpObject_t obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
-    _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);  /* must not crash */
+    _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);  /* must not crash */
     free(obj);
+    } while(0);
 }
 
 /* Multi-pseudo-state "btn:hover:focus" — both flags must be set */
 static void test_parse_class_multiple_pseudo_states(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        OBJ_ParseClassAttribute(obj, "btn:hover:focus");
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover:focus");
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes != NULL);
@@ -282,7 +289,7 @@ static void test_parse_class_multiple_pseudo_states(void) {
 /* _ParseClass must store only the base name, not pseudo-states */
 static void test_parse_class_base_name_only(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        OBJ_ParseClassAttribute(obj, "myclass:hover");
+        _SendMessage(obj, StyleController, AddClasses, "myclass:hover");
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes != NULL);
@@ -294,7 +301,7 @@ static void test_parse_class_base_name_only(void) {
 /* _ParseClass with opacity: base name is the part before '/' */
 static void test_parse_class_opacity_extraction(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        OBJ_ParseClassAttribute(obj, "blue/50");
+        _SendMessage(obj, StyleController, AddClasses, "blue/50");
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes != NULL);
@@ -312,8 +319,8 @@ static void test_add_style_class_dot_selector_matches(void) {
         /* Rule registered with ".btn" selector */
         OBJ_AddStyleClass(obj, ".btn", "Width", "77", 0);
         /* Class parsed without dot */
-        OBJ_ParseClassAttribute(obj, "btn");
-        _SendMessage(obj, Object, ThemeChanged, .recursive = FALSE);
+        _SendMessage(obj, StyleController, AddClasses, "btn");
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         lpProperty_t prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));

@@ -144,7 +144,7 @@ static int f_styles_newindex(lua_State* L) {
   lua_rawset(L, 1);
   // Register in the global static stylesheet (stack: 1=table, 2=key, 3=value)
   if (lua_type(L, 3) == LUA_TTABLE) {
-    OBJ_AddStyleSheet(L, NULL, name);
+    OBJ_AddStyleRule(L, NULL, name);
   }
   return 0;
 }

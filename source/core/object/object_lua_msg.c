@@ -22,7 +22,7 @@ static handle_t write_event_data(lua_State* L, size_t size, const void *udata) {
   return data;
 }
 
-void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
+void OBJ_post(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -45,8 +45,7 @@ void OBJ_PostMessage(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
-// HACK: hacked in quickly
-void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
+int OBJ_send(lua_State* L, lpObject_t self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -56,16 +55,23 @@ void OBJ_MsgSend(lua_State* L, lpObject_t self, lpcString_t message)
   for (char *p = qualified; *p; p++) if (*p == '.') *p = '_';
   snprintf(argtype, sizeof(argtype), "%sEventArgs", qualified);
   
+  LRESULT result;
   if (luaL_testudata(L, 3, argtype)) {
-    OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
+    result = OBJ_SendMessage(self, message, 0, lua_touserdata(L, 3));
   } else if (luaL_getmetatable(L, argtype)) { // Check if a constructor exists for this message args type
     lua_insert(L, 3); // Move the constructor below the message args on the stack
     lua_call(L, nargs, 1); // Call the constructor to create the message args struct
-    OBJ_SendMessage(self, message, 0, lua_touserdata(L, -1)); // Send the message with the constructed args
+    result = OBJ_SendMessage(self, message, 0, lua_touserdata(L, -1)); // Send the message with the constructed args
     lua_pop(L, 1); // Pop the result of the message args constructor
   } else {
     lua_pop(L, 1); // Pop the metatable result
-    OBJ_SendMessage(self, message, 0, NULL);
+    result = OBJ_SendMessage(self, message, 0, NULL);
   }
+  if (result) {
+    lua_pushinteger(L, (intptr_t)result);
+  } else {
+    lua_pushnil(L);
+  }
+  return 1;
 }
 

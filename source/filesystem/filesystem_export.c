@@ -185,7 +185,7 @@ static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = 
 static struct Workspace WorkspaceDefaults = {
 };
 LRESULT WorkspaceProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -202,7 +202,7 @@ static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
 static struct Library LibraryDefaults = {
 };
 LRESULT LibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -296,8 +296,8 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 static struct Project ProjectDefaults = {
 };
 LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Start&MSG_DATA_MASK: return Project_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message) {
+		case ID_Object_Start: return Project_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -319,12 +319,12 @@ static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = 
 static struct Directory DirectoryDefaults = {
 };
 LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Project_LoadProject&MSG_DATA_MASK: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile&MSG_DATA_MASK: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists&MSG_DATA_MASK: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles&MSG_DATA_MASK: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy&MSG_DATA_MASK: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message) {
+		case ID_Project_LoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -347,12 +347,12 @@ static struct PropertyType const PackageProperties[kPackageNumProperties] = {
 static struct Package PackageDefaults = {
 };
 LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Project_LoadProject&MSG_DATA_MASK: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile&MSG_DATA_MASK: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists&MSG_DATA_MASK: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles&MSG_DATA_MASK: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy&MSG_DATA_MASK: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	switch (message) {
+		case ID_Project_LoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
+		case ID_Project_OpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
+		case ID_Project_FileExists: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
+		case ID_Project_HasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
+		case ID_Object_Destroy: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 	}
 	return FALSE;
 }
@@ -369,7 +369,7 @@ static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceI
 static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
 };
 LRESULT LocaleReferenceItemProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -386,7 +386,7 @@ static struct PropertyType const TagProperties[kTagNumProperties] = {
 static struct Tag TagDefaults = {
 };
 LRESULT TagProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -405,8 +405,8 @@ static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] 
 static struct ThemeGroup ThemeGroupDefaults = {
 };
 LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Attached&MSG_DATA_MASK: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
+	switch (message) {
+		case ID_Object_Attached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -423,7 +423,7 @@ static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
 static struct Theme ThemeDefaults = {
 };
 LRESULT ThemeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -439,7 +439,7 @@ static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 static struct Entry EntryDefaults = {
 };
 LRESULT EntryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -455,7 +455,7 @@ static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDe
 static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {
 };
 LRESULT ThemeDefaultValuesDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }

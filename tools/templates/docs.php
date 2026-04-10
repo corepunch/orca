@@ -68,8 +68,6 @@ function messageSection($messages) {
     $md = "";
     foreach ($messages as $event) {
         $md .= "### `" . $event->name . "`\n\n";
-        $routing = $event->routing;
-        $md .= "**Routing:** `" . $routing . "`\n\n";
         if ($event->doc) {
             $md .= strval($event->doc) . "\n\n";
         }

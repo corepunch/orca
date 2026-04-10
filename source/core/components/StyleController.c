@@ -9,42 +9,23 @@
 //
 // The styling system implements a CSS-like approach with classes and stylesheets:
 //
-// style_class: Represents a single parsed class name (e.g., "button", "hover")
+// style_class_selector: Represents a single parsed class name (e.g., "button", "hover")
 //   - value: the base class name string (e.g., "button", "blue")
 //   - flags: pseudo-state bits (STYLE_HOVER, STYLE_FOCUS, STYLE_DARK, STYLE_SELECT)
 //   - opacity: percentage from /N syntax (e.g., "blue/50" = 50% opacity)
 //   - Forms a linked list per object (StyleController.classes)
 //
-// style_sheet: Represents a single style rule (selector + property + value)
+// style_rule: Represents a single style rule (selector + property + value)
 //   - classname: CSS class selector (e.g., ".button")
 //   - name: property name (e.g., "background-color")
 //   - value: property value string (e.g., "#ff0000")
 //   - class_id: FNV1a hash of classname for fast matching
 //   - prop_id: FNV1a hash of property name
 //   - flags: state mask — rule applies only when (object flags & rule flags) == rule flags
-//   - Forms a linked list (StyleController.stylesheet per-object, or global static_sheet)
-
-struct style_class
-{
-  struct style_class* next;
-  shortStr_t value;    // base class name (without pseudo-states or opacity suffix)
-  byte_t flags;        // STYLE_HOVER / STYLE_FOCUS / STYLE_DARK / STYLE_SELECT bits
-  byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
-};
-
-struct style_sheet
-{
-  struct style_sheet* next;
-  uint32_t class_id;   // FNV1a hash of classname (for O(1) matching)
-  uint32_t prop_id;    // FNV1a hash of name
-  uint32_t flags;      // state mask: rule is active when (obj state & flags) == flags
-  shortStr_t classname; // selector (e.g., ".button")
-  shortStr_t name;      // property name (e.g., "background-color")
-  shortStr_t value;     // property value (e.g., "#ff0000")
-};
+//   - Forms a linked list (StyleController.rules per-object, or global static_sheet)
 
 // Global stylesheet rules (shared across all objects; applied before per-object rules)
-static struct style_sheet* static_sheet = NULL;
+static struct style_rule* static_sheet = NULL;
 
 // Helper struct for @apply callback — carries selector info into _EnumApplyStyleClass
 struct _ADDCLASSSTRUCT
@@ -82,11 +63,11 @@ _ParsePseudoStateFlags(lpcString_t str)
 
 // Add a rule to an object's local stylesheet (or to the global sheet if obj is NULL)
 static void
-_AddRuleToStylesheet(lpObject_t obj, struct style_sheet* ss)
+_AddRuleToStylesheet(lpObject_t obj, struct style_rule* ss)
 {
   if (obj) {
     struct StyleController* sc = GetStyleController(obj);
-    if (sc) ADD_TO_LIST(ss, sc->stylesheet);
+    if (sc) { ADD_TO_LIST(ss, sc->rules); }
     else free(ss); // object has no StyleController — discard the rule
   } else {
     ADD_TO_LIST(ss, static_sheet);
@@ -99,7 +80,7 @@ _AddRuleToStylesheet(lpObject_t obj, struct style_sheet* ss)
 
 // Add a single stylesheet rule directly to an object (used by C callers).
 // `name` may start with '.' (e.g., ".btn") or not (e.g., "btn") — both forms
-// are normalized to the same class_id to match tokens from OBJ_ParseClassAttribute.
+// are normalized to the same class_id to match tokens from StyleController.AddClasses.
 void
 OBJ_AddStyleClass(lpObject_t obj,
                   lpcString_t name,
@@ -109,28 +90,28 @@ OBJ_AddStyleClass(lpObject_t obj,
 {
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) return;
-  struct style_sheet* ss = ZeroAlloc(sizeof(struct style_sheet));
+  struct style_rule* ss = ZeroAlloc(sizeof(struct style_rule));
   strncpy(ss->classname, name, sizeof(ss->classname));
   strncpy(ss->value, value, sizeof(ss->value));
   strncpy(ss->name, property, sizeof(ss->name));
   // Normalize: strip a leading '.' so ".btn" and "btn" hash to the same ID,
-  // matching the tokens produced by OBJ_ParseClassAttribute / OBJ_AddStyleSheet.
+  // matching the tokens produced by StyleController.AddClasses / OBJ_AddStyleRule.
   lpcString_t key = (*name == '.') ? name + 1 : name;
   ss->class_id = fnv1a32(key);
   ss->prop_id = fnv1a32(property);
   ss->flags = flags;
   ss->next = NULL;
-  ADD_TO_LIST_END(struct style_sheet, ss, sc->stylesheet);
+  ADD_TO_LIST_END(struct style_rule, ss, sc->rules);
 }
 
-// Callback used by OBJ_AddStyleSheet's @apply handler:
+// Callback used by OBJ_AddStyleRule's @apply handler:
 // copies a matched global rule into the current object's stylesheet with a new selector
 static void
-_EnumApplyStyleClass(lpObject_t obj, struct style_sheet* other, void* param)
+_EnumApplyStyleClass(lpObject_t obj, struct style_rule* other, void* param)
 {
   struct _ADDCLASSSTRUCT* inp = param;
-  struct style_sheet* ss = ZeroAlloc(sizeof(struct style_sheet));
-  memcpy(ss, other, sizeof(struct style_sheet));
+  struct style_rule* ss = ZeroAlloc(sizeof(struct style_rule));
+  memcpy(ss, other, sizeof(struct style_rule));
   strncpy(ss->classname, inp->name, sizeof(shortStr_t));
   ss->class_id = inp->id;
   ss->flags = inp->flags;
@@ -139,12 +120,12 @@ _EnumApplyStyleClass(lpObject_t obj, struct style_sheet* other, void* param)
 }
 
 // Parse a single style class token (e.g., "blue/50:hover", "btn:hover:focus")
-// Returns a newly allocated style_class with parsed base name, opacity, and pseudo-state flags.
+// Returns a newly allocated style_class_selector with parsed base name, opacity, and pseudo-state flags.
 // cls->value holds the base name only — everything up to the first ':' or '/'.
-struct style_class*
+struct style_class_selector*
 _ParseClass(lpcString_t str)
 {
-  struct style_class* cls = ZeroAlloc(sizeof(struct style_class));
+  struct style_class_selector* cls = ZeroAlloc(sizeof(struct style_class_selector));
 
   // Extract pseudo-state flags from colon-separated suffixes (e.g., ":hover:focus")
   cls->flags = _ParsePseudoStateFlags(str);
@@ -177,38 +158,16 @@ _ParseClass(lpcString_t str)
   return cls;
 }
 
-// Append a parsed style_class to the object's class list and update hover flag if needed
+// Append a parsed style_class_selector to the object's class list and update hover flag if needed
 void
-_AddClass(lpObject_t obj, struct style_class* cls)
+_AddClass(lpObject_t obj, struct style_class_selector* cls)
 {
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) { free(cls); return; }
-  ADD_TO_LIST_END(struct style_class, cls, sc->classes);
+  ADD_TO_LIST_END(struct style_class_selector, cls, sc->classes);
   if (cls->flags & STYLE_HOVER) {
     OBJ_SetFlags(obj, OBJ_GetFlags(obj) | OF_HOVERABLE);
   }
-}
-
-// Parse space-separated class attribute string (e.g., "button:hover blue/50 dark")
-// and attach each parsed class to the object's StyleController
-void
-OBJ_ParseClassAttribute(lpObject_t obj, lpcString_t original)
-{
-  if (!*original)
-    return;
-  WITH(char, classes, strdup(original), free)
-  {
-    for (lpcString_t s = strtok(classes, " "); s; s = strtok(NULL, " ")) {
-      _AddClass(obj, _ParseClass(s));
-    }
-  }
-}
-
-// Add a single class token to an object at runtime
-void
-OBJ_AddClass(lpObject_t hobj, lpcString_t cls)
-{
-  _AddClass(hobj, _ParseClass(cls));
 }
 
 // ============================================================================
@@ -221,7 +180,7 @@ static lua_State* g_L = NULL;
 
 // Parse a Lua table of CSS rules and register them on an object (or globally)
 // name: selector string (e.g., ".button:hover"); table at stack index 3
-void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
+void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t name)
 {
   uint32_t classID = fnv1a32(*name == '.' ? name + 1 : name);
   if (lua_type(L, 3) != LUA_TTABLE) {
@@ -239,7 +198,7 @@ void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
     if (propID == CSS_APPLY) {
       LPSTR str = strdup(luaL_checkstring(L, -1));
       for (lpcString_t s = strtok(str, " "); s; s = strtok(NULL, " ")) {
-        struct style_class* cls = _ParseClass(s);
+        struct style_class_selector* cls = _ParseClass(s);
         struct _ADDCLASSSTRUCT add_class = {
           .name = name,
           .id = classID,
@@ -254,31 +213,31 @@ void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
       continue;
     }
 
-    struct style_sheet* ss = ZeroAlloc(sizeof(struct style_sheet));
-    ss->class_id = classID;
-    ss->prop_id = propID;
-    strncpy(ss->classname, name, sizeof(shortStr_t));
-    strncpy(ss->name, prop, sizeof(shortStr_t));
+    struct style_rule* rule = ZeroAlloc(sizeof(struct style_rule));
+    rule->class_id = classID;
+    rule->prop_id = propID;
+    strncpy(rule->classname, name, sizeof(shortStr_t));
+    strncpy(rule->name, prop, sizeof(shortStr_t));
 
     // Parse pseudo-state flags from selector (e.g., ".button:hover" → STYLE_HOVER)
-    strtok(ss->classname, ":");
+    strtok(rule->classname, ":");
     for (lpcString_t s = strtok(NULL, ":"); s; s = strtok(NULL, ":")) {
-      if      (!strcmp(s, "hover"))  ss->flags |= STYLE_HOVER;
-      else if (!strcmp(s, "focus"))  ss->flags |= STYLE_FOCUS;
-      else if (!strcmp(s, "active")) ss->flags |= STYLE_SELECT;
-      else if (!strcmp(s, "dark"))   ss->flags |= STYLE_DARK;
+      if      (!strcmp(s, "hover"))  rule->flags |= STYLE_HOVER;
+      else if (!strcmp(s, "focus"))  rule->flags |= STYLE_FOCUS;
+      else if (!strcmp(s, "active")) rule->flags |= STYLE_SELECT;
+      else if (!strcmp(s, "dark"))   rule->flags |= STYLE_DARK;
     }
 
     // Read property value from the Lua stack (string, number, or boolean)
     switch (lua_type(L, -1)) {
       case LUA_TSTRING:
-        strncpy(ss->value, luaL_checkstring(L, -1), sizeof(shortStr_t));
+        strncpy(rule->value, luaL_checkstring(L, -1), sizeof(shortStr_t));
         break;
       case LUA_TNUMBER:
-        sprintf(ss->value, "%f", luaL_checknumber(L, -1));
+        sprintf(rule->value, "%f", luaL_checknumber(L, -1));
         break;
       case LUA_TBOOLEAN:
-        strcpy(ss->value, lua_toboolean(L, -1) ? "true" : "false");
+        strcpy(rule->value, lua_toboolean(L, -1) ? "true" : "false");
         break;
       default:
         lua_error(L);
@@ -286,10 +245,10 @@ void OBJ_AddStyleSheet(lua_State* L, lpObject_t self, lpcString_t name)
     }
 
     // Normalize: strip leading '.' so ".btn" and "btn" hash identically,
-    // matching the tokens produced by OBJ_ParseClassAttribute.
+    // matching the tokens produced by StyleController.AddClasses.
     // ss->classname was truncated at ':' by strtok above (e.g., ".btn:hover" → ".btn").
-    ss->class_id = fnv1a32(*ss->classname == '.' ? ss->classname + 1 : ss->classname);
-    _AddRuleToStylesheet(self, ss);
+    rule->class_id = fnv1a32(*rule->classname == '.' ? rule->classname + 1 : rule->classname);
+    _AddRuleToStylesheet(self, rule);
     lua_pop(L, 1);
   }
   lua_pop(L, 1);
@@ -311,7 +270,7 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   uint32_t objFlags = OBJ_GetStyleFlags(pobj);
 
   // Check global stylesheet first
-  FOR_EACH_LIST(struct style_sheet, ss, static_sheet) {
+  FOR_EACH_LIST(struct style_rule, ss, static_sheet) {
     if (ss->class_id != dwClassID) continue;
     if (ss->flags & STYLE_HOVER) OBJ_SetFlags(pobj, OF_HOVERABLE);
     if ((objFlags & ss->flags) == ss->flags) {
@@ -323,7 +282,7 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   for (lpObject_t p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc) continue;
-    FOR_EACH_LIST(struct style_sheet, ss, sc->stylesheet) {
+    FOR_EACH_LIST(struct style_rule, ss, sc->rules) {
       if (ss->class_id != dwClassID) continue;
       if (ss->flags & STYLE_HOVER) OBJ_SetFlags(pobj, OF_HOVERABLE);
       if ((objFlags & ss->flags) == ss->flags) {
@@ -338,7 +297,7 @@ parse_property(lua_State* L, const char* str, struct PropertyType const* prop, v
 
 // Apply a single stylesheet rule to a property on the target object
 static void
-_ApplyRule(lpObject_t pobj, struct style_sheet* ss, void* parm)
+_ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
 {
   lpProperty_t hProperty;
   if (SUCCEEDED(OBJ_FindShortProperty(pobj, ss->name, &hProperty))) {
@@ -357,7 +316,7 @@ _ApplyRule(lpObject_t pobj, struct style_sheet* ss, void* parm)
     if (PROP_GetType(hProperty) == kDataTypeColor && parm) {
       struct color clr;
       PROP_CopyValue(hProperty, &clr);
-      clr.a = ((struct style_class*)parm)->opacity / 100.f;
+      clr.a = ((struct style_class_selector*)parm)->opacity / 100.f;
       PROP_SetValue(hProperty, &clr);
     }
   } else {
@@ -384,10 +343,10 @@ OBJ_ClearStyleClasses(lpObject_t pobj)
 {
   struct StyleController* sc = GetStyleController(pobj);
   if (!sc) return;
-  FOR_EACH_LIST(struct style_class, cls, sc->classes) free(cls);
-  FOR_EACH_LIST(struct style_sheet, ss, sc->stylesheet) free(ss);
+  FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) free(cls);
+  FOR_EACH_LIST(struct style_rule, ss, sc->rules) free(ss);
   sc->classes = NULL;
-  sc->stylesheet = NULL;
+  sc->rules = NULL;
 }
 
 // ============================================================================
@@ -397,7 +356,7 @@ OBJ_ClearStyleClasses(lpObject_t pobj)
 // Initialize both style lists to NULL (ZeroAlloc already does this, but explicit for clarity)
 HANDLER(StyleController, Object, Create) {
   pStyleController->classes = NULL;
-  pStyleController->stylesheet = NULL;
+  pStyleController->rules = NULL;
   return FALSE;
 }
 
@@ -414,22 +373,22 @@ HANDLER(StyleController, Object, Release) {
 // (from Lua via self:ThemeChanged()). Both share the same implementation.
 // Note: pThemeChanged may be NULL when the message is dispatched via
 // SV_PostMessage with lParam=0; treat NULL as recursive=FALSE.
-HANDLER(StyleController, Object, ThemeChanged) {
+HANDLER(StyleController, StyleController, ThemeChanged) {
   bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
 
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 
   // Root objects: apply "body" rules from the local stylesheet
   if (!OBJ_GetParent(hObject)) {
-    FOR_EACH_LIST(struct style_sheet, ss, pStyleController->stylesheet) {
+    FOR_EACH_LIST(struct style_rule, ss, pStyleController->rules) {
       if (*(uint32_t const*)ss->classname == *(uint32_t const*)"body") {
-        _ApplyRule(hObject, ss, &(struct style_class){ .opacity = 100 });
+        _ApplyRule(hObject, ss, &(struct style_class_selector){ .opacity = 100 });
       }
     }
   }
 
   // Apply each class whose state flags match the current object state
-  FOR_EACH_LIST(struct style_class, cls, pStyleController->classes) {
+  FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes) {
     if ((OBJ_GetStyleFlags(hObject) & cls->flags) == cls->flags) {
       OBJ_EnumStyleClasses(hObject, cls->value, _ApplyRule, cls);
     }
@@ -437,10 +396,29 @@ HANDLER(StyleController, Object, ThemeChanged) {
 
   if (recursive) {
     FOR_EACH_OBJECT(child, hObject) {
-      _SendMessage(child, Object, ThemeChanged, .recursive = TRUE);
+      _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
     }
   }
 
   return FALSE;
 }
 
+// Add a single class token to an object at runtime
+HANDLER(StyleController, StyleController, AddClass)
+{
+  _AddClass(hObject, _ParseClass(pAddClass->ClassName));
+  return TRUE;
+}
+
+// Parse space-separated class attribute string (e.g., "button:hover blue/50 dark")
+// and attach each parsed class to the object's StyleController
+HANDLER(StyleController, StyleController, AddClasses)
+{
+  WITH(char, classes, strdup(pAddClasses->ClassNames), free)
+  {
+    for (lpcString_t s = strtok(classes, " "); s; s = strtok(NULL, " ")) {
+      _AddClass(hObject, _ParseClass(s));
+    }
+  }
+  return TRUE;
+}

@@ -36,7 +36,7 @@ struct Object {
             struct Property*      properties;
             struct state_manager* stateManager; // → StateManager component (planned)
             struct style_class*   classes;      // → StyleClass component (planned)
-            struct style_sheet*   stylesheet;   // → StyleSheet component (planned)
+            struct style_rule*   stylesheet;   // → StyleSheet component (planned)
             struct timer*         timers;       // → Timer component (planned)
             struct alias*         aliases;      // → Alias component (planned)
         };

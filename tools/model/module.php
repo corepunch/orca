@@ -487,9 +487,7 @@ class Event extends Type {
 	function __construct($elem, $model) {
 		parent::__construct($elem, $model);
 		$p = $elem["same-as"];
-		$routing = $elem["routing"] ?? "TunnelingBubbling";
 		$this->parent_name = $p ? strval($p) : null;
-		$this->routing = strval($routing);
 		// Derive namespace from grandparent element (<message> -> <messages> -> <interface|class>)
 		$this->msgns = "";
 	}

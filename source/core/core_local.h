@@ -51,10 +51,29 @@
 #define STYLE_SELECT 8
 
 struct lua_State;
-struct style_sheet;
-struct style_class;
 struct state_manager;
 struct alias;
+
+// Parsed style class selector (e.g., "button:hover/50")
+struct style_class_selector
+{
+  struct style_class_selector* next;
+  shortStr_t value;    // base class name (without pseudo-states or opacity suffix)
+  byte_t flags;        // STYLE_HOVER / STYLE_FOCUS / STYLE_DARK / STYLE_SELECT bits
+  byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
+};
+
+// Style rule (selector + property name + property value)
+struct style_rule
+{
+  struct style_rule* next;
+  uint32_t class_id;    // FNV1a hash of classname (for O(1) matching)
+  uint32_t prop_id;     // FNV1a hash of name
+  uint32_t flags;       // state mask: rule active when (obj state & flags) == flags
+  shortStr_t classname; // selector (e.g., ".button")
+  shortStr_t name;      // property name (e.g., "background-color")
+  shortStr_t value;     // property value (e.g., "#ff0000")
+};
 
 enum component_type
 {
@@ -94,7 +113,7 @@ struct game
 void
 API_PrintStackTrace(lua_State* L);
 
-typedef void (*STYLEPROC)(lpObject_t, struct style_sheet*, void*);
+typedef void (*STYLEPROC)(lpObject_t, struct style_rule*, void*);
 
 lpObject_t
 OBJ_Create(lua_State*, lpcClassDesc_t cdesc);
@@ -200,9 +219,6 @@ CMP_Detach(void* userdata);
 
 lpObject_t
 OBJ_FindChildByAlias(lpObject_t, uint32_t);
-
-void
-OBJ_AddClass(lpObject_t, lpcString_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);

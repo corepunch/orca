@@ -12,8 +12,8 @@ struct localization;
 struct game;
 struct Property;
 struct lua_State;
-struct style_class;
-struct style_sheet;
+struct style_class_selector;
+struct style_rule;
 
 
 #include "core_properties.h"
@@ -22,13 +22,12 @@ struct style_sheet;
 typedef struct Object_CreateEventArgs Object_CreateMsg_t,* Object_CreateMsgPtr;
 typedef struct Object_StartEventArgs Object_StartMsg_t,* Object_StartMsgPtr;
 typedef struct Object_AnimateEventArgs Object_AnimateMsg_t,* Object_AnimateMsgPtr;
-typedef struct Object_ThemeChangedEventArgs Object_ThemeChangedMsg_t,* Object_ThemeChangedMsgPtr;
+typedef struct StyleController_ThemeChangedEventArgs StyleController_ThemeChangedMsg_t,* StyleController_ThemeChangedMsgPtr;
 typedef struct Object_PropertyChangedEventArgs Object_PropertyChangedMsg_t,* Object_PropertyChangedMsgPtr;
 typedef struct Object_AttachedEventArgs Object_AttachedMsg_t,* Object_AttachedMsgPtr;
 typedef struct Object_ReleaseEventArgs Object_ReleaseMsg_t,* Object_ReleaseMsgPtr;
 typedef struct Object_DestroyEventArgs Object_DestroyMsg_t,* Object_DestroyMsgPtr;
 typedef struct Object_TimerEventArgs Object_TimerMsg_t,* Object_TimerMsgPtr;
-typedef struct StyleController_ThemeChangedEventArgs StyleController_ThemeChangedMsg_t,* StyleController_ThemeChangedMsgPtr;
 typedef struct AnimationPlayer_PlayEventArgs AnimationPlayer_PlayMsg_t,* AnimationPlayer_PlayMsgPtr;
 typedef struct AnimationPlayer_ResumeEventArgs AnimationPlayer_ResumeMsg_t,* AnimationPlayer_ResumeMsgPtr;
 typedef struct AnimationPlayer_StopEventArgs AnimationPlayer_StopMsg_t,* AnimationPlayer_StopMsgPtr;
@@ -36,6 +35,8 @@ typedef struct AnimationPlayer_PauseEventArgs AnimationPlayer_PauseMsg_t,* Anima
 typedef struct AnimationPlayer_StartedEventArgs AnimationPlayer_StartedMsg_t,* AnimationPlayer_StartedMsgPtr;
 typedef struct AnimationPlayer_StoppedEventArgs AnimationPlayer_StoppedMsg_t,* AnimationPlayer_StoppedMsgPtr;
 typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t,* AnimationPlayer_CompletedMsgPtr;
+typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
+typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -152,6 +153,8 @@ ORCA_API const char *EasingToString(enum Easing value);
 ORCA_API enum Easing luaX_checkEasing(lua_State *L, int idx);
 ORCA_API void luaX_pushEasing(lua_State *L, enum Easing value);
 
+typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClipReference_t;
+typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
 
@@ -250,13 +253,13 @@ OBJ_FindParentOfClass(struct Object*, uint32_t);
 /// @name Messaging
 /// Dispatches events and sends messages between objects.
 
-/// @brief Posts a message to the global message queue.
+/// @brief Posts a message asynchronously, bubbling through the object hierarchy.
 ORCA_API void
-OBJ_PostMessage(struct lua_State*, struct Object*, const char*);
+OBJ_post(struct lua_State*, struct Object*, const char*);
 
-/// @brief Send a message to directly to the object ignoring queue.
-ORCA_API void
-OBJ_MsgSend(struct lua_State*, struct Object*, const char*);
+/// @brief Sends a message synchronously to the current object and returns the result.
+ORCA_API int
+OBJ_send(struct lua_State*, struct Object*, const char*);
 
 /// @name Properties
 /// Reads and writes typed properties, applying and observing changes.
@@ -317,7 +320,7 @@ OBJ_ClearDirtyFlags(struct Object*);
 
 /// @brief Add a stylesheet to the object.
 ORCA_API void
-OBJ_AddStyleSheet(struct lua_State*, struct Object*, const char*);
+OBJ_AddStyleRule(struct lua_State*, struct Object*, const char*);
 
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
@@ -432,10 +435,6 @@ OBJ_GetDomain(struct Object*);
 ORCA_API void
 OBJ_SetContext(struct lua_State*, struct Object*);
 
-/// @brief Parses and applies multiple class names from a class attribute string
-ORCA_API void
-OBJ_ParseClassAttribute(struct Object*, const char*);
-
 /// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
 
@@ -459,6 +458,14 @@ OBJ_AddAlias(struct Object*, const char*, const char*);
 ORCA_API void
 OBJ_AssignAliases(struct Object*, const char*);
 
+/// @brief A named animation clip entry used in an AnimationPlayer's Clips array.
+/** AnimationClipReference struct */
+struct AnimationClipReference {
+	const char* Name; ///< Short name used to identify and select this clip (e.g. "idle", "walk")
+	struct AnimationClip* Clip; ///< The AnimationClip object for this entry
+};
+ORCA_API void luaX_pushAnimationClipReference(lua_State *L, struct AnimationClipReference const* AnimationClipReference);
+ORCA_API struct AnimationClipReference* luaX_checkAnimationClipReference(lua_State *L, int idx);
 /// @brief A single keyframe in an animation curve.
 /** Keyframe struct */
 struct Keyframe {
@@ -489,12 +496,12 @@ struct Object_AnimateEventArgs {
 };
 ORCA_API void luaX_pushObject_AnimateEventArgs(lua_State *L, struct Object_AnimateEventArgs const* data);
 ORCA_API struct Object_AnimateEventArgs* luaX_checkObject_AnimateEventArgs(lua_State *L, int idx);
-/** Object_ThemeChangedEventArgs struct */
-struct Object_ThemeChangedEventArgs {
-	bool_t recursive; ///< Whether to propagate the theme change to child objects
+/** StyleController_ThemeChangedEventArgs struct */
+struct StyleController_ThemeChangedEventArgs {
+	bool_t recursive; ///< When TRUE, also sends ThemeChanged to every direct child
 };
-ORCA_API void luaX_pushObject_ThemeChangedEventArgs(lua_State *L, struct Object_ThemeChangedEventArgs const* data);
-ORCA_API struct Object_ThemeChangedEventArgs* luaX_checkObject_ThemeChangedEventArgs(lua_State *L, int idx);
+ORCA_API void luaX_pushStyleController_ThemeChangedEventArgs(lua_State *L, struct StyleController_ThemeChangedEventArgs const* data);
+ORCA_API struct StyleController_ThemeChangedEventArgs* luaX_checkStyleController_ThemeChangedEventArgs(lua_State *L, int idx);
 /** Object_PropertyChangedEventArgs struct */
 struct Object_PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
@@ -524,6 +531,7 @@ ORCA_API void luaX_pushObject_TimerEventArgs(lua_State *L, struct Object_TimerEv
 ORCA_API struct Object_TimerEventArgs* luaX_checkObject_TimerEventArgs(lua_State *L, int idx);
 /** AnimationPlayer_PlayEventArgs struct */
 struct AnimationPlayer_PlayEventArgs {
+	const char* Name; ///< Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)
 };
 ORCA_API void luaX_pushAnimationPlayer_PlayEventArgs(lua_State *L, struct AnimationPlayer_PlayEventArgs const* data);
 ORCA_API struct AnimationPlayer_PlayEventArgs* luaX_checkAnimationPlayer_PlayEventArgs(lua_State *L, int idx);
@@ -557,6 +565,18 @@ struct AnimationPlayer_CompletedEventArgs {
 };
 ORCA_API void luaX_pushAnimationPlayer_CompletedEventArgs(lua_State *L, struct AnimationPlayer_CompletedEventArgs const* data);
 ORCA_API struct AnimationPlayer_CompletedEventArgs* luaX_checkAnimationPlayer_CompletedEventArgs(lua_State *L, int idx);
+/** StyleController_AddClassEventArgs struct */
+struct StyleController_AddClassEventArgs {
+	const char* ClassName; ///< Name of the class to add
+};
+ORCA_API void luaX_pushStyleController_AddClassEventArgs(lua_State *L, struct StyleController_AddClassEventArgs const* data);
+ORCA_API struct StyleController_AddClassEventArgs* luaX_checkStyleController_AddClassEventArgs(lua_State *L, int idx);
+/** StyleController_AddClassesEventArgs struct */
+struct StyleController_AddClassesEventArgs {
+	const char* ClassNames; ///< Space-separated list of class names to add
+};
+ORCA_API void luaX_pushStyleController_AddClassesEventArgs(lua_State *L, struct StyleController_AddClassesEventArgs const* data);
+ORCA_API struct StyleController_AddClassesEventArgs* luaX_checkStyleController_AddClassesEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -590,6 +610,8 @@ typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimat
 typedef struct AnimationPlayer const *AnimationPlayerCPtr, *lpcAnimationPlayer_t;
 struct AnimationPlayer {
 	struct AnimationClip* Clip; ///< The AnimationClip object that supplies the curves to animate
+	struct AnimationClipReference* Clips; ///< Array of named animation clips available to this player; use the Play message with a Name to select one by name
+	int32_t NumClips;
 	bool_t Playing; ///< Whether the animation is currently advancing each frame
 	bool_t Looping; ///< If true, the animation restarts from StartTime when it reaches StopTime
 	float Speed; ///< Playback speed multiplier (1.0 = normal speed)
@@ -634,18 +656,13 @@ ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int
 typedef struct StyleController StyleController_t, *StyleControllerPtr, *lpStyleController_t;
 typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t;
 struct StyleController {
-	struct style_class* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
-	struct style_sheet* stylesheet; ///< Linked list of style rules (selector to property to value mappings)
-	event_t ThemeChanged; ///< Event slot for the StyleController.ThemeChanged message
+	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
+	struct style_rule* rules; ///< Linked list of style rules (selector to property to value mappings)
+	event_t ThemeChanged;
+	event_t AddClass;
+	event_t AddClasses;
 };
 ORCA_API void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController);
 ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx);
-
-/** StyleController_ThemeChangedEventArgs struct */
-struct StyleController_ThemeChangedEventArgs {
-	bool_t recursive; ///< When TRUE, also sends ThemeChanged to every direct child
-};
-ORCA_API void luaX_pushStyleController_ThemeChangedEventArgs(lua_State *L, struct StyleController_ThemeChangedEventArgs const* data);
-ORCA_API struct StyleController_ThemeChangedEventArgs* luaX_checkStyleController_ThemeChangedEventArgs(lua_State *L, int idx);
 
 #endif

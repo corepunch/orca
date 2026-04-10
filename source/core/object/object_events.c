@@ -22,7 +22,7 @@ PROP_ExecuteChangedCallback(lua_State* L,
   }
 }
 
-#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
+#define ID_Node_Awake 0x2facb9c8 // Node.Awake
 
 void
 OBJ_Awake(lua_State* L, lpObject_t object)
@@ -37,7 +37,7 @@ OBJ_Awake(lua_State* L, lpObject_t object)
         lua_pop(L, 1);
       }
     }
-    _SendMessage(object, Object, ThemeChanged, .recursive = FALSE);
+    _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
     object->flags |= OF_UPDATED_ONCE;
   }
   FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);

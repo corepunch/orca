@@ -11,7 +11,7 @@ Style _classes_ are attached to objects at load time; _stylesheet rules_ map sel
 Object
   └─ StyleController (attach-only component)
        ├─ classes:    style_class* ─── linked list of parsed class tokens
-       └─ stylesheet: style_sheet* ─── linked list of CSS-like rules
+       └─ stylesheet: style_rule* ─── linked list of CSS-like rules
 ```
 
 When styles are applied, each class token on the object is looked up in the stylesheet chain.
@@ -35,7 +35,7 @@ struct StyleController* sc = GetStyleController(object);
 | Field       | Type              | Description |
 |-------------|-------------------|-------------|
 | `classes`   | `style_class*`    | Linked list of parsed style class tokens (owned by this component) |
-| `stylesheet`| `style_sheet*`    | Linked list of per-object stylesheet rules (owned by this component) |
+| `stylesheet`| `style_rule*`    | Linked list of per-object stylesheet rules (owned by this component) |
 
 A second **global stylesheet** (`static_sheet` in `StyleController.c`) holds rules that are visible to all objects and checked before the per-object chain.
 
@@ -65,7 +65,7 @@ Multiple pseudo-states can be chained: `button:hover:focus` requires both hover 
 <Button class="button:hover primary/80" />
 ```
 
-The `class` XML attribute is parsed by `OBJ_ParseClassAttribute()` at load time.
+The `class` XML attribute is parsed by `StyleController.AddClasses()` at load time.
 Tokens are space-separated; each token is parsed into a `style_class` node.
 
 ### Setting classes from Lua
@@ -100,12 +100,12 @@ The selector is a class name (with or without a leading `.`); the optional pseud
 
 ### Loading stylesheets from Lua
 
-`addStyleSheet()` is a Lua method available on any `Node2D` (or any object with `StyleController`).
+`addStyleRule()` is a Lua method available on any `Node2D` (or any object with `StyleController`).
 It registers rules on the calling object's `StyleController.stylesheet`.
 
 ```lua
 -- Attach a stylesheet to a specific object
-btn:addStyleSheet(".button", {
+btn:addStyleRule(".button", {
     Background = "#3c6",
     Foreground = "white",
     Width      = 120,
@@ -113,23 +113,23 @@ btn:addStyleSheet(".button", {
 })
 
 -- Pseudo-state rules
-btn:addStyleSheet(".button:hover", {
+btn:addStyleRule(".button:hover", {
     Background = "#5e8",
 })
 
-btn:addStyleSheet(".button:active", {
+btn:addStyleRule(".button:active", {
     Background = "#2a4",
 })
 ```
 
-Rules for the same selector can be split across multiple `addStyleSheet()` calls; they are appended to the list and applied in order.
+Rules for the same selector can be split across multiple `addStyleRule()` calls; they are appended to the list and applied in order.
 
 ### `@apply` directive
 
 The `@apply` key inside a rule table includes the rules from another selector (similar to Tailwind/PostCSS `@apply`):
 
 ```lua
-btn:addStyleSheet(".special-button", {
+btn:addStyleRule(".special-button", {
     ["@apply"] = "button",   -- inherit all ".button" rules
     Background = "#a0f",     -- override background
 })
@@ -151,8 +151,8 @@ OBJ_AddStyleClass(
 ### Lua API
 
 ```lua
--- addStyleSheet is exposed on every Node2D via core_export.c
-obj:addStyleSheet(".selector[:pseudo-state...]", { property = value, ... })
+-- addStyleRule is exposed on every Node2D via core_export.c
+obj:addStyleRule(".selector[:pseudo-state...]", { property = value, ... })
 ```
 
 ---
@@ -223,11 +223,11 @@ When `StyleController` receives `Object.ThemeChanged` for an object:
 ### Example: dark-mode background
 
 ```lua
-screen:addStyleSheet(".card", {
+screen:addStyleRule(".card", {
     Background = "white",
 })
 
-screen:addStyleSheet(".card:dark", {
+screen:addStyleRule(".card:dark", {
     Background = "#1e1e2e",
 })
 ```
@@ -266,11 +266,11 @@ struct style_class {
 };
 ```
 
-### `style_sheet` (internal rule record)
+### `style_rule` (internal rule record)
 
 ```c
-struct style_sheet {
-    struct style_sheet* next;
+struct style_rule {
+    struct style_rule* next;
     uint32_t class_id;    // FNV1a32 of base selector (without leading '.')
     uint32_t prop_id;     // FNV1a32 of property name
     uint32_t flags;       // pseudo-state gate mask (same bit layout as style_class.flags)
@@ -300,18 +300,18 @@ local ui   = require "orca.UIKit"
 local screen = ui.Screen { Width = 800, Height = 600, ResizeMode = "NoResize" }
 
 -- Define a global stylesheet on the root screen
-screen:addStyleSheet(".btn", {
+screen:addStyleRule(".btn", {
     Background = "#4a90d9",
     Foreground = "white",
     CornerRadius = 6,
     Padding = 8,
 })
 
-screen:addStyleSheet(".btn:hover", {
+screen:addStyleRule(".btn:hover", {
     Background = "#3a80c9",
 })
 
-screen:addStyleSheet(".btn:active", {
+screen:addStyleRule(".btn:active", {
     Background = "#2a70b9",
 })
 

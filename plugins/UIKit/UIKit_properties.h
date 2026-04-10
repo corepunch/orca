@@ -14,7 +14,7 @@
 #define Trigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Trigger,sizeof(struct Trigger),_N)
 #define ID_Trigger_Property 0x7a6c1a46 // Trigger.Property
 #define ID_Trigger_Value 0x5229f3cc // Trigger.Value
-#define ID_Trigger_Triggered ((0x729dabf0&MSG_DATA_MASK)|ROUTING_BUBBLE) // Trigger.Triggered
+#define ID_Trigger_Triggered 0x729dabf0 // Trigger.Triggered
 #define kTriggerNumProperties 3
 enum TriggerProperties {
 	kTriggerProperty,
@@ -157,38 +157,37 @@ enum ColorBrushProperties {
 #define ID_Node_Opacity 0xb6882472 // Node.Opacity
 #define ID_Node_Tags 0xec56af24 // Node.Tags
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
-#define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
-#define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
-#define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
-#define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
-#define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
-#define ID_Node_ViewDidLoad ((0x71bab7e1&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.ViewDidLoad
-#define ID_Node_KillFocus ((0x2bdb09fb&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.KillFocus
-#define ID_Node_SetFocus ((0x5f1c2071&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.SetFocus
-#define ID_Node_GetSize ((0x2282f1da&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.GetSize
-#define ID_Node_MouseMessage ((0x8633bad7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.MouseMessage
-#define ID_Node_LeftMouseDown ((0x34ecec23&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseDown
-#define ID_Node_RightMouseDown ((0x379ed064&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseDown
-#define ID_Node_OtherMouseDown ((0x5b61ba9c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseDown
-#define ID_Node_LeftMouseUp ((0x87d20362&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseUp
-#define ID_Node_RightMouseUp ((0xf135e605&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseUp
-#define ID_Node_OtherMouseUp ((0x51ca895d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseUp
-#define ID_Node_LeftMouseDragged ((0x845ee787&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftMouseDragged
-#define ID_Node_RightMouseDragged ((0xc2e805f6&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightMouseDragged
-#define ID_Node_OtherMouseDragged ((0xbab6f63e&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherMouseDragged
-#define ID_Node_LeftDoubleClick ((0x4de79e13&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.LeftDoubleClick
-#define ID_Node_RightDoubleClick ((0x9104b1b4&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.RightDoubleClick
-#define ID_Node_OtherDoubleClick ((0x4a967bfc&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.OtherDoubleClick
-#define ID_Node_MouseMoved ((0x9922448b&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.MouseMoved
-#define ID_Node_ScrollWheel ((0x54e1d1f7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.ScrollWheel
-#define ID_Node_DragDrop ((0xc40ddaee&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.DragDrop
-#define ID_Node_DragEnter ((0xadc27c43&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.DragEnter
-#define ID_Node_KeyMessage ((0x8c3d8ec7&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyMessage
-#define ID_Node_KeyDown ((0xfc8dc15c&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyDown
-#define ID_Node_KeyUp ((0x9282bc1d&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.KeyUp
-#define ID_Node_TextInput ((0xaf29a9ae&MSG_DATA_MASK)|ROUTING_BUBBLE) // Node.TextInput
-#define kNodeNumProperties 98
+#define ID_Node_Awake 0x2facb9c8 // Node.Awake
+#define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
+#define ID_Node_LoadView 0xe3c6ed08 // Node.LoadView
+#define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
+#define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
+#define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
+#define ID_Node_KillFocus 0x2bdb09fb // Node.KillFocus
+#define ID_Node_SetFocus 0x5f1c2071 // Node.SetFocus
+#define ID_Node_GetSize 0x2282f1da // Node.GetSize
+#define ID_Node_MouseMessage 0x8633bad7 // Node.MouseMessage
+#define ID_Node_LeftMouseDown 0x34ecec23 // Node.LeftMouseDown
+#define ID_Node_RightMouseDown 0x379ed064 // Node.RightMouseDown
+#define ID_Node_OtherMouseDown 0x5b61ba9c // Node.OtherMouseDown
+#define ID_Node_LeftMouseUp 0x87d20362 // Node.LeftMouseUp
+#define ID_Node_RightMouseUp 0xf135e605 // Node.RightMouseUp
+#define ID_Node_OtherMouseUp 0x51ca895d // Node.OtherMouseUp
+#define ID_Node_LeftMouseDragged 0x845ee787 // Node.LeftMouseDragged
+#define ID_Node_RightMouseDragged 0xc2e805f6 // Node.RightMouseDragged
+#define ID_Node_OtherMouseDragged 0xbab6f63e // Node.OtherMouseDragged
+#define ID_Node_LeftDoubleClick 0x4de79e13 // Node.LeftDoubleClick
+#define ID_Node_RightDoubleClick 0x9104b1b4 // Node.RightDoubleClick
+#define ID_Node_OtherDoubleClick 0x4a967bfc // Node.OtherDoubleClick
+#define ID_Node_MouseMoved 0x9922448b // Node.MouseMoved
+#define ID_Node_ScrollWheel 0x54e1d1f7 // Node.ScrollWheel
+#define ID_Node_DragDrop 0xc40ddaee // Node.DragDrop
+#define ID_Node_DragEnter 0xadc27c43 // Node.DragEnter
+#define ID_Node_KeyMessage 0x8c3d8ec7 // Node.KeyMessage
+#define ID_Node_KeyDown 0xfc8dc15c // Node.KeyDown
+#define ID_Node_KeyUp 0x9282bc1d // Node.KeyUp
+#define ID_Node_TextInput 0xaf29a9ae // Node.TextInput
+#define kNodeNumProperties 97
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -259,7 +258,6 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeAwake,
 	kNodeUpdateMatrix,
-	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
 	kNodeIsVisible,
@@ -344,7 +342,7 @@ enum TextRunProperties {
 #define ID_TextBlockConcept_TextWrapping 0x709f2f06 // TextBlockConcept.TextWrapping
 #define ID_TextBlockConcept_TextHorizontalAlignment 0xe480096b // TextBlockConcept.TextHorizontalAlignment
 #define ID_TextBlockConcept_TextVerticalAlignment 0xbf0260e5 // TextBlockConcept.TextVerticalAlignment
-#define ID_TextBlockConcept_MakeText ((0x66218f84&MSG_DATA_MASK)|ROUTING_DIRECT) // TextBlockConcept.MakeText
+#define ID_TextBlockConcept_MakeText 0x66218f84 // TextBlockConcept.MakeText
 #define kTextBlockConceptNumProperties 15
 enum TextBlockConceptProperties {
 	kTextBlockConceptTextResourceID,
@@ -411,14 +409,14 @@ enum TextBlockConceptProperties {
 #define ID_Node2D_Hovered 0x982d5e3e // Node2D.Hovered
 #define ID_Node2D_IgnoreHitTest 0x0943bf6a // Node2D.IgnoreHitTest
 #define ID_Node2D_ForegroundHint 0x1a0ea5e3 // Node2D.ForegroundHint
-#define ID_Node2D_DrawBrush ((0x8272196b&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.DrawBrush
-#define ID_Node2D_Measure ((0x5ea52a4d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Measure
-#define ID_Node2D_Arrange ((0x211d274d&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.Arrange
-#define ID_Node2D_MeasureOverride ((0x6e565d45&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.MeasureOverride
-#define ID_Node2D_ArrangeOverride ((0xe3b0fa45&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.ArrangeOverride
-#define ID_Node2D_ForegroundContent ((0x61bfb2f7&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.ForegroundContent
-#define ID_Node2D_UpdateGeometry ((0x0cc412c2&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.UpdateGeometry
-#define ID_Node2D_SetScrollTop ((0xa3d79fef&MSG_DATA_MASK)|ROUTING_DIRECT) // Node2D.SetScrollTop
+#define ID_Node2D_DrawBrush 0x8272196b // Node2D.DrawBrush
+#define ID_Node2D_Measure 0x5ea52a4d // Node2D.Measure
+#define ID_Node2D_Arrange 0x211d274d // Node2D.Arrange
+#define ID_Node2D_MeasureOverride 0x6e565d45 // Node2D.MeasureOverride
+#define ID_Node2D_ArrangeOverride 0xe3b0fa45 // Node2D.ArrangeOverride
+#define ID_Node2D_ForegroundContent 0x61bfb2f7 // Node2D.ForegroundContent
+#define ID_Node2D_UpdateGeometry 0x0cc412c2 // Node2D.UpdateGeometry
+#define ID_Node2D_SetScrollTop 0xa3d79fef // Node2D.SetScrollTop
 #define kNode2DNumProperties 52
 enum Node2DProperties {
 	kNode2DLayoutTransform,
@@ -546,7 +544,7 @@ enum StackViewProperties {
 #define ID_Form 0xc0851367
 #define GetForm(_P) ((struct Form*)((_P)?OBJ_GetComponent(_P,ID_Form):NULL))
 #define Form_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Form,sizeof(struct Form),_N)
-#define ID_Form_Submit ((0xef0f357b&MSG_DATA_MASK)|ROUTING_BUBBLE) // Form.Submit
+#define ID_Form_Submit 0xef0f357b // Form.Submit
 #define kFormNumProperties 1
 // Control
 #define ID_Control 0x8347bf3e
@@ -574,8 +572,8 @@ enum ControlProperties {
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
 #define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
-#define ID_Screen_UpdateLayout ((0x7d9d5a12&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.UpdateLayout
-#define ID_Screen_RenderScreen ((0xd1601cf1&MSG_DATA_MASK)|ROUTING_DIRECT) // Screen.RenderScreen
+#define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
+#define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
 #define kScreenNumProperties 5
 enum ScreenProperties {
 	kScreenClearColor,
@@ -682,9 +680,9 @@ enum NinePatchImageProperties {
 #define ID_ConsoleView_SelectedIndex 0x8f71f73a // ConsoleView.SelectedIndex
 #define ID_ConsoleView_DropShadow 0x861e7f0e // ConsoleView.DropShadow
 #define ID_ConsoleView_ContentHeight 0xcbb6893b // ConsoleView.ContentHeight
-#define ID_ConsoleView_Println ((0xb19dac78&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Println
-#define ID_ConsoleView_Erase ((0xab38bbeb&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Erase
-#define ID_ConsoleView_Invalidate ((0xdc68fe5a&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Invalidate
+#define ID_ConsoleView_Println 0xb19dac78 // ConsoleView.Println
+#define ID_ConsoleView_Erase 0xab38bbeb // ConsoleView.Erase
+#define ID_ConsoleView_Invalidate 0xdc68fe5a // ConsoleView.Invalidate
 #define kConsoleViewNumProperties 9
 enum ConsoleViewProperties {
 	kConsoleViewBufferWidth,
@@ -697,11 +695,6 @@ enum ConsoleViewProperties {
 	kConsoleViewErase,
 	kConsoleViewInvalidate,
 };
-#define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
-#define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index
-#define ID_ConsoleView_PrintlnEventArgs_Text 0x123171ef // ConsoleView_PrintlnEventArgs.Text
-#define ID_ConsoleView_EraseEventArgs 0xfc2f86cb
-#define ID_ConsoleView_InvalidateEventArgs 0xd692d03a
 // Page
 #define ID_Page 0xe83d9196
 #define GetPage(_P) ((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))
@@ -720,8 +713,8 @@ enum PageProperties {
 #define GetPageHost(_P) ((struct PageHost*)((_P)?OBJ_GetComponent(_P,ID_PageHost):NULL))
 #define PageHost_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PageHost,sizeof(struct PageHost),_N)
 #define ID_PageHost_ActivePage 0xb276c4f7 // PageHost.ActivePage
-#define ID_PageHost_NavigateToPage ((0x3e8b196b&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateToPage
-#define ID_PageHost_NavigateBack ((0x94f6fcce&MSG_DATA_MASK)|ROUTING_DIRECT) // PageHost.NavigateBack
+#define ID_PageHost_NavigateToPage 0x3e8b196b // PageHost.NavigateToPage
+#define ID_PageHost_NavigateBack 0x94f6fcce // PageHost.NavigateBack
 #define kPageHostNumProperties 3
 enum PageHostProperties {
 	kPageHostActivePage,
@@ -848,8 +841,6 @@ enum StyleProperties {
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
 #define ID_Node_UpdateMatrixEventArgs_opacity 0x1bb1efd0 // Node_UpdateMatrixEventArgs.opacity
 #define ID_Node_UpdateMatrixEventArgs_force 0x04845b66 // Node_UpdateMatrixEventArgs.force
-#define ID_Node_PushPropertyEventArgs 0x9207bfe8
-
 #define ID_Node_LoadViewEventArgs 0x361e935c
 
 #define ID_Node_LoadViewEventArgs_lua_state 0x96df0d0e // Node_LoadViewEventArgs.lua_state
@@ -1088,6 +1079,14 @@ enum StyleProperties {
 #define ID_Screen_RenderScreenEventArgs_stereo 0x14234527 // Screen_RenderScreenEventArgs.stereo
 #define ID_Screen_RenderScreenEventArgs_angle 0xd956701a // Screen_RenderScreenEventArgs.angle
 #define ID_Screen_RenderScreenEventArgs_target 0xf85bed2e // Screen_RenderScreenEventArgs.target
+#define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
+
+#define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index
+#define ID_ConsoleView_PrintlnEventArgs_Text 0x123171ef // ConsoleView_PrintlnEventArgs.Text
+#define ID_ConsoleView_EraseEventArgs 0xfc2f86cb
+
+#define ID_ConsoleView_InvalidateEventArgs 0xd692d03a
+
 #define ID_PageHost_NavigateToPageEventArgs 0x0b5e4b0d
 
 #define ID_PageHost_NavigateToPageEventArgs_URL 0x5085360a // PageHost_NavigateToPageEventArgs.URL

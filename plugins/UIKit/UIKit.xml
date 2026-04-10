@@ -311,7 +311,7 @@
         <property name="Value" type="int">Associated value for the trigger condition </property>
       </properties>
       <messages>
-        <message name="Triggered" routing="Bubbling">
+        <message name="Triggered">
           <summary>Fired when the trigger condition is met, carrying a reference to the trigger that activated.</summary>
           <fields>
             <field name="Trigger" type="Trigger" pointer="true"/>
@@ -412,10 +412,10 @@
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
-        <message name="Awake" routing="Direct">
+        <message name="Awake">
           <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
         </message>
-        <message name="UpdateMatrix" routing="Direct">
+        <message name="UpdateMatrix">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
             <field name="parent" type="mat4">The parent matrix</field>
@@ -423,38 +423,35 @@
             <field name="force" type="bool">Indicates if the update is forced</field>
           </fields>
         </message>
-        <message name="PushProperty" routing="TunnelingBubbling">
-          <summary>Propagates an inherited property value down or up the node hierarchy.</summary>
-        </message>
-        <message name="LoadView" routing="Direct">
+        <message name="LoadView">
           <summary>Initializes the component's Lua view state.</summary>
           <fields>
             <field name="lua_state" type="lua_State" pointer="true"/>
           </fields>
         </message>
-        <message name="HitTest" routing="Direct">
+        <message name="HitTest">
           <summary>Queries whether a screen-space point falls within the bounds of this node.</summary>
           <fields>
             <field name="x" type="int">X coordinate of the hit test point</field>
             <field name="y" type="int">Y coordinate of the hit test point</field>
           </fields>
         </message>
-        <message name="IsVisible" routing="Direct">
+        <message name="IsVisible">
           <summary>Queries whether the node is currently visible in the scene.</summary>
         </message>
-        <message name="ViewDidLoad" routing="Direct">
+        <message name="ViewDidLoad">
           <summary>Notifies the component that its view has finished loading.</summary>
         </message>
-        <message name="KillFocus" routing="Direct">
+        <message name="KillFocus">
           <summary>Removes keyboard focus from this node.</summary>
         </message>
-        <message name="SetFocus" routing="Direct">
+        <message name="SetFocus">
           <summary>Gives keyboard focus to this node.</summary>
         </message>
-        <message name="GetSize" routing="Direct">
+        <message name="GetSize">
           <summary>Queries the current layout size of this node.</summary>
         </message>
-        <message name="MouseMessage" routing="Bubbling">
+        <message name="MouseMessage">
           <summary>Base mouse event providing pointer position.</summary>
           <fields>
             <field name="x" type="float">Horizontal pointer position in local space</field>
@@ -465,55 +462,55 @@
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
           </fields>
         </message>
-        <message name="LeftMouseDown" routing="Bubbling" same-as="MouseMessage">
+        <message name="LeftMouseDown" same-as="MouseMessage">
           <summary>Fired when the left mouse button is pressed down over an object.</summary>
         </message>
-        <message name="RightMouseDown" routing="Bubbling" same-as="MouseMessage">
+        <message name="RightMouseDown" same-as="MouseMessage">
           <summary>Fired when the right mouse button is pressed down over an object.</summary>
         </message>
-        <message name="OtherMouseDown" routing="Bubbling" same-as="MouseMessage">
+        <message name="OtherMouseDown" same-as="MouseMessage">
           <summary>Fired when a non-primary, non-secondary mouse button is pressed down over an object.</summary>
         </message>
-        <message name="LeftMouseUp" routing="Bubbling" same-as="MouseMessage">
+        <message name="LeftMouseUp" same-as="MouseMessage">
           <summary>Fired when the left mouse button is released over an object.</summary>
         </message>
-        <message name="RightMouseUp" routing="Bubbling" same-as="MouseMessage">
+        <message name="RightMouseUp" same-as="MouseMessage">
           <summary>Fired when the right mouse button is released over an object.</summary>
         </message>
-        <message name="OtherMouseUp" routing="Bubbling" same-as="MouseMessage">
+        <message name="OtherMouseUp" same-as="MouseMessage">
           <summary>Fired when a non-primary, non-secondary mouse button is released over an object.</summary>
         </message>
-        <message name="LeftMouseDragged" routing="Bubbling" same-as="MouseMessage">
+        <message name="LeftMouseDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with the left button held down.</summary>
         </message>
-        <message name="RightMouseDragged" routing="Bubbling" same-as="MouseMessage">
+        <message name="RightMouseDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with the right button held down.</summary>
         </message>
-        <message name="OtherMouseDragged" routing="Bubbling" same-as="MouseMessage">
+        <message name="OtherMouseDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with a non-primary, non-secondary button held down.</summary>
         </message>
-        <message name="LeftDoubleClick" routing="Bubbling" same-as="MouseMessage">
+        <message name="LeftDoubleClick" same-as="MouseMessage">
           <summary>Fired when the left mouse button is double-clicked over an object.</summary>
         </message>
-        <message name="RightDoubleClick" routing="Bubbling" same-as="MouseMessage">
+        <message name="RightDoubleClick" same-as="MouseMessage">
           <summary>Fired when the right mouse button is double-clicked over an object.</summary>
         </message>
-        <message name="OtherDoubleClick" routing="Bubbling" same-as="MouseMessage">
+        <message name="OtherDoubleClick" same-as="MouseMessage">
           <summary>Fired when a non-primary, non-secondary mouse button is double-clicked over an object.</summary>
         </message>
-        <message name="MouseMoved" routing="Bubbling" same-as="MouseMessage">
+        <message name="MouseMoved" same-as="MouseMessage">
           <summary>Fired when the mouse pointer moves over an object without any button held down.</summary>
         </message>
-        <message name="ScrollWheel" routing="Bubbling" same-as="MouseMessage">
+        <message name="ScrollWheel" same-as="MouseMessage">
           <summary>Fired when the scroll wheel is rotated while the pointer is over an object.</summary>
         </message>
-        <message name="DragDrop" routing="Bubbling" same-as="MouseMessage">
+        <message name="DragDrop" same-as="MouseMessage">
           <summary>Fired when a drag operation is completed and the dragged item is dropped onto an object.</summary>
         </message>
-        <message name="DragEnter" routing="Bubbling" same-as="MouseMessage">
+        <message name="DragEnter" same-as="MouseMessage">
           <summary>Fired when a dragged item enters the bounds of an object.</summary>
         </message>
-        <message name="KeyMessage" routing="Bubbling">
+        <message name="KeyMessage">
           <summary>Base keyboard event providing key information.</summary>
           <fields>
             <field name="keyCode" type="int">The key involved in this event</field>
@@ -524,13 +521,13 @@
             <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
           </fields>
         </message>
-        <message name="KeyDown" routing="Bubbling" same-as="KeyMessage">
+        <message name="KeyDown" same-as="KeyMessage">
           <summary>Fired when a keyboard key is pressed down.</summary>
         </message>
-        <message name="KeyUp" routing="Bubbling" same-as="KeyMessage">
+        <message name="KeyUp" same-as="KeyMessage">
           <summary>Fired when a keyboard key is released.</summary>
         </message>
-        <message name="TextInput" routing="Bubbling" same-as="KeyMessage">
+        <message name="TextInput" same-as="KeyMessage">
           <summary>Fired when a printable character is entered via the keyboard, providing the resulting text.</summary>
         </message>
       </messages>
@@ -582,7 +579,7 @@
         <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
       </fields>
       <messages>
-        <message name="MakeText" routing="Direct">
+        <message name="MakeText">
           <summary>Requests the component to lay out and render its text content.</summary>
           <fields>
             <field name="text" type="ViewText" pointer="true">Text view to render</field>
@@ -685,7 +682,7 @@
         </method>
       </methods>
       <messages>
-        <message name="DrawBrush" routing="Direct">
+        <message name="DrawBrush">
           <summary>Requests rendering of a brush into the component's visual output.</summary>
           <fields>
             <field name="projection" type="mat4">Projection matrix for 3D to 2D transformation</field>
@@ -697,14 +694,14 @@
             <field name="viewdef" type="ViewDef" pointer="true">View definition context for rendering</field>
           </fields>
         </message>
-        <message name="Measure" routing="Direct">
+        <message name="Measure">
           <summary>Asks the node to compute its desired size given the available space.</summary>
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="Arrange" routing="Direct">
+        <message name="Arrange">
           <summary>Instructs the node to position and size itself within the given bounding rectangle.</summary>
           <fields>
             <field name="X" type="float"/>
@@ -713,19 +710,19 @@
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="MeasureOverride" routing="Direct" same-as="Measure">
+        <message name="MeasureOverride" same-as="Measure">
           <summary>Override hook called during the measure pass, allowing subclasses to customise size calculation.</summary>
         </message>
-        <message name="ArrangeOverride" routing="Direct" same-as="Arrange">
+        <message name="ArrangeOverride" same-as="Arrange">
           <summary>Override hook called during the arrange pass, allowing subclasses to customise child positioning.</summary>
         </message>
-        <message name="ForegroundContent" routing="Direct">
+        <message name="ForegroundContent">
           <summary>Requests the node to draw its foreground content layer on top of background and children.</summary>
         </message>
-        <message name="UpdateGeometry" routing="Direct">
+        <message name="UpdateGeometry">
           <summary>Notifies the node that its geometry (bounds or shape) has changed and rendering caches should be invalidated.</summary>
         </message>
-        <message name="SetScrollTop" routing="Direct">
+        <message name="SetScrollTop">
           <summary>Sets the vertical scroll offset of the node's scrollable content.</summary>
           <fields>
             <field name="Value" type="float"/>
@@ -838,7 +835,7 @@
         <handle message="Form.Submit"/>
       </handles>
       <messages>
-        <message name="Submit" routing="Bubbling">
+        <message name="Submit">
           <summary>Fired when the form is submitted, typically triggered by an action within the form.</summary>
         </message>
       </messages>
@@ -879,14 +876,14 @@
         <field name="_size" type="uint">Currently set size (to resize window when changed).</field>
       </fields>
       <messages>
-        <message name="UpdateLayout" routing="Direct">
+        <message name="UpdateLayout">
           <summary>Requests the screen to recompute its layout for the given dimensions.</summary>
           <fields>
             <field name="Width" type="float"/>
             <field name="Height" type="float"/>
           </fields>
         </message>
-        <message name="RenderScreen" routing="Direct">
+        <message name="RenderScreen">
           <summary>Requests the screen to render a frame to the specified render target.</summary>
           <fields>
             <field name="width" type="uint">The width of the render screen</field>
@@ -992,7 +989,6 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="Node.PushProperty"/>
         <handle message="Node.ScrollWheel"/>
         <handle message="ConsoleView.Println"/>
         <handle message="ConsoleView.Erase"/>
@@ -1011,17 +1007,17 @@
         <field name="_scroll" type="vec2">Scroll position</field>
       </fields>
       <messages>
-        <message name="Println" routing="Direct">
+        <message name="Println">
           <summary>Write a formatted text line to the character buffer</summary>
           <fields>
             <field name="Index" type="int"/>
             <field name="Text" type="string"/>
           </fields>
         </message>
-        <message name="Erase" routing="Direct">
+        <message name="Erase">
           <summary>Clear the character buffer and reset cursor</summary>
         </message>
-        <message name="Invalidate" routing="Direct">
+        <message name="Invalidate">
           <summary>Request a repaint of this view</summary>
         </message>
       </messages>
@@ -1057,14 +1053,14 @@
         <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
       </fields>
       <messages>
-        <message name="NavigateToPage" routing="Direct">
+        <message name="NavigateToPage">
           <summary>Navigates to a new page URL with an optional transition animation.</summary>
           <fields>
             <field name="URL" type="string">The URL of the page to navigate to.</field>
             <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
           </fields>
         </message>
-        <message name="NavigateBack" routing="Direct">
+        <message name="NavigateBack">
           <summary>Navigates back to the previous page with an optional transition animation.</summary>
           <fields>
             <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>

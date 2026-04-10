@@ -69,7 +69,6 @@
   name CDATA #REQUIRED
   type CDATA #IMPLIED
   same-as CDATA #IMPLIED
-  routing (Bubbling|TunnelingBubbling|Tunneling|Direct) #IMPLIED
 >
 
 <!-- Grouped message declarations -->

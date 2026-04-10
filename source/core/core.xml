@@ -7,8 +7,8 @@
     <external struct="game"/>
     <external struct="Property"/>
     <external struct="lua_State"/>
-    <external struct="style_class"/>
-    <external struct="style_sheet"/>
+    <external struct="style_class_selector"/>
+    <external struct="style_rule"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -80,6 +80,14 @@
     </enum>
   </enums>
   <structs>
+    <struct name="AnimationClipReference" sealed="true">
+      <summary>A named animation clip entry used in an AnimationPlayer's Clips array.</summary>
+      <details>Pairs a short identifying name with an AnimationClip object so that a single AnimationPlayer can hold a library of clips and play any of them by name.</details>
+      <fields>
+        <field name="Name" type="string">Short name used to identify and select this clip (e.g. "idle", "walk")</field>
+        <field name="Clip" type="AnimationClip" pointer="true">The AnimationClip object for this entry</field>
+      </fields>
+    </struct>
     <struct name="Keyframe" sealed="true">
       <summary>A single keyframe in an animation curve.</summary>
       <fields>
@@ -204,15 +212,16 @@
           <returns type="Object" pointer="true">Pointer to the matching parent object, or null if not found</returns>
         </method>
         <topic title="Messaging">Dispatches events and sends messages between objects.</topic>
-        <method name="PostMessage" lua="true">
-          <summary>Posts a message to the global message queue.</summary>
-          <details>Places a message on the global queue for asynchronous processing without waiting for the receiver to process it.</details>
+        <method name="post" lua="true">
+          <summary>Posts a message asynchronously, bubbling through the object hierarchy.</summary>
+          <details>Places a message on the global queue for asynchronous processing. The message bubbles up through the parent chain until a handler claims it. Does not return a value.</details>
           <arg name="message" type="string">The name of the message to post</arg>
         </method>
-        <method name="MsgSend" lua="true">
-          <summary>Send a message to directly to the object ignoring queue.</summary>
-          <details>Messge sent will be immediately processed without using coroutines.</details>
+        <method name="send" lua="true">
+          <summary>Sends a message synchronously to the current object and returns the result.</summary>
+          <details>Dispatches a message directly to this object's components without bubbling. Returns the LRESULT from the first component that handles the message as an integer, or nil if unhandled (LRESULT == 0).</details>
           <arg name="message" type="string">The name of the message to send</arg>
+          <returns type="nresults">The LRESULT as integer, or nil if unhandled</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
         <method name="SetProperty" export="__setproperty" lua="true">
@@ -285,7 +294,7 @@
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
-        <method name="AddStyleSheet" lua="true">
+        <method name="AddStyleRule" lua="true">
           <summary>Add a stylesheet to the object.</summary>
           <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
           <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
@@ -426,11 +435,6 @@
           <summary>Set the current context object where newly created objects will be parented.</summary>
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
         </method>
-        <method name="ParseClassAttribute">
-          <summary>Parses and applies multiple class names from a class attribute string</summary>
-          <details>Parses a space-separated class attribute string (e.g., class="button primary large"). The function splits the string by spaces and adds each class name to the object.  This is typically called during XML/markup parsing when processing class="..." attributes, allowing UI elements to be assigned multiple class names for styling and identification purposes.  Empty strings are ignored.</details>
-          <arg name="classString" type="string">Space-separated class names, as from a class="..." attribute</arg>
-        </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
         <method name="Instantiate" lua="true">
           <summary>Instantiates a new object from this prefab.</summary>
@@ -459,37 +463,37 @@
         </method>
       </methods>
       <messages>
-        <message name="Create" routing="Direct">
+        <message name="Create">
           <summary>Sent once when the component is first created and attached to an object.</summary>
         </message>
-        <message name="Start" routing="Direct">
+        <message name="Start">
           <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
         </message>
-        <message name="Animate" routing="Direct">
+        <message name="Animate">
           <summary>Requested when an animation update is needed.</summary>
         </message>
-        <message name="ThemeChanged" routing="Direct">
+        <message name="ThemeChanged">
           <summary>Sent when the active theme is changed, allowing components to refresh their styled resources.</summary>
           <fields>
             <field name="recursive" type="bool">Whether to propagate the theme change to child objects</field>
           </fields>
         </message>
-        <message name="PropertyChanged" routing="Direct">
+        <message name="PropertyChanged">
           <summary>Sent when a property value on the object changes.</summary>
           <fields>
             <field name="Property" type="Property" pointer="true">The property that changed</field>
           </fields>
         </message>
-        <message name="Attached" routing="Direct">
+        <message name="Attached">
           <summary>Sent when the object is attached to a parent object in the hierarchy.</summary>
         </message>
-        <message name="Release" routing="Direct">
+        <message name="Release">
           <summary>Sent when the object is being released and its resources should be freed.</summary>
         </message>
-        <message name="Destroy" routing="Direct">
+        <message name="Destroy">
           <summary>Sent just before the object is destroyed and removed from the scene.</summary>
         </message>
-        <message name="Timer" routing="Direct">
+        <message name="Timer">
           <summary>Sent on each timer tick registered for this object.</summary>
           <fields>
             <field name="timerId" type="int">Timer identifier returned by setTimer</field>
@@ -533,6 +537,7 @@
       </handles>
       <properties>
         <property name="Clip" type="AnimationClip" pointer="true">The AnimationClip object that supplies the curves to animate</property>
+        <property name="Clips" type="AnimationClipReference" array="true">Array of named animation clips available to this player; use the Play message with a Name to select one by name</property>
         <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
@@ -548,25 +553,28 @@
         <field name="_prevRealtime" type="long">The last real time when the animation was updated, used to calculate delta time for advancing CurrentTime</field>
       </fields>
       <messages>
-        <message name="Play" routing="Direct">
+        <message name="Play">
           <summary>Starts or resumes animation playback.</summary>
+          <fields>
+            <field name="Name" type="string">Name of the clip to play (optional; if set, selects a clip from the Clips array before starting)</field>
+          </fields>
         </message>
-        <message name="Resume" routing="Direct">
+        <message name="Resume">
           <summary>Resumes animation playback from the current position without resetting.</summary>
         </message>
-        <message name="Stop" routing="Direct">
+        <message name="Stop">
           <summary>Stops animation playback and resets CurrentTime to the clip's StartTime.</summary>
         </message>
-        <message name="Pause" routing="Direct">
+        <message name="Pause">
           <summary>Pauses animation playback without resetting CurrentTime.</summary>
         </message>
-        <message name="Started" routing="Bubbling">
+        <message name="Started">
           <summary>Sent when animation playback begins.</summary>
         </message>
-        <message name="Stopped" routing="Bubbling">
+        <message name="Stopped">
           <summary>Sent when animation playback stops (via Stop or Pause).</summary>
         </message>
-        <message name="Completed" routing="Bubbling">
+        <message name="Completed">
           <summary>Sent when animation playback reaches the end of the clip without looping.</summary>
         </message>
       </messages>
@@ -596,12 +604,13 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
-        <handle message="Object.ThemeChanged"/>
         <handle message="StyleController.ThemeChanged"/>
+        <handle message="StyleController.AddClass"/>
+        <handle message="StyleController.AddClasses"/>
       </handles>
       <fields>
-        <field name="classes" type="style_class" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
-        <field name="stylesheet" type="style_sheet" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
+        <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
+        <field name="rules" type="style_rule" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">
@@ -609,6 +618,18 @@
           <details>Triggers style recalculation on this object. When recursive is TRUE, also sends ThemeChanged to every direct child. Preferred over the removed OBJ_ApplyStyles() function.</details>
           <fields>
             <field name="recursive" type="bool">When TRUE, also sends ThemeChanged to every direct child</field>
+          </fields>
+        </message>
+        <message name="AddClass">
+          <summary>Adds single styling class</summary>
+          <fields>
+            <field name="ClassName" type="string">Name of the class to add</field>
+          </fields>
+        </message>
+        <message name="AddClasses">
+          <summary>Adds multiple styling classes</summary>
+          <fields>
+            <field name="ClassNames" type="string">Space-separated list of class names to add</field>
           </fields>
         </message>
       </messages>

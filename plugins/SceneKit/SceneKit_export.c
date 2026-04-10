@@ -163,8 +163,8 @@ static struct Node3D Node3DDefaults = {
   .RenderTransform = {.scale={1,1,1}},
 };
 LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node_UpdateMatrix&MSG_DATA_MASK: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+	switch (message) {
+		case ID_Node_UpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -189,8 +189,8 @@ static struct PropertyType const SceneProperties[kSceneNumProperties] = {
 static struct Scene SceneDefaults = {
 };
 LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node_UpdateMatrix&MSG_DATA_MASK: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+	switch (message) {
+		case ID_Node_UpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -210,8 +210,8 @@ static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
 static struct Model3D Model3DDefaults = {
 };
 LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node3D_Render&MSG_DATA_MASK: return Model3D_Render(object, cmp, wparm, lparm); // Node3D.Render
+	switch (message) {
+		case ID_Node3D_Render: return Model3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -236,8 +236,8 @@ static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProper
 static struct PlaneMeshNode PlaneMeshNodeDefaults = {
 };
 LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node3D_Render&MSG_DATA_MASK: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Node3D.Render
+	switch (message) {
+		case ID_Node3D_Render: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -263,7 +263,7 @@ static struct PropertyType const CameraProperties[kCameraNumProperties] = {
 static struct Camera CameraDefaults = {
 };
 LRESULT CameraProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -287,8 +287,8 @@ static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNum
 static struct TrajectoryList3D TrajectoryList3DDefaults = {
 };
 LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node_UpdateMatrix&MSG_DATA_MASK: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
+	switch (message) {
+		case ID_Node_UpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
 	}
 	return FALSE;
 }
@@ -311,8 +311,8 @@ static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] 
 static struct Viewport3D Viewport3DDefaults = {
 };
 LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node2D_ForegroundContent&MSG_DATA_MASK: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
+	switch (message) {
+		case ID_Node2D_ForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 	}
 	return FALSE;
 }
@@ -332,8 +332,8 @@ static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperti
 static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node_LoadView&MSG_DATA_MASK: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
+	switch (message) {
+		case ID_Node_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
 }
@@ -350,7 +350,7 @@ static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] 
 static struct RenderPass RenderPassDefaults = {
 };
 LRESULT RenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -367,7 +367,7 @@ static struct PropertyType const CompositionTargetRenderPassProperties[kComposit
 static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
 };
 LRESULT CompositionTargetRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -384,7 +384,7 @@ static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProp
 static struct BlitRenderPass BlitRenderPassDefaults = {
 };
 LRESULT BlitRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -404,7 +404,7 @@ static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumPr
 static struct ClearRenderPass ClearRenderPassDefaults = {
 };
 LRESULT ClearRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -424,7 +424,7 @@ static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRen
 static struct DrawObjectsRenderPass DrawObjectsRenderPassDefaults = {
 };
 LRESULT DrawObjectsRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -461,7 +461,7 @@ static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
   .ScissorMode = kViewportModeRelative,
 };
 LRESULT PipelineStateRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -480,9 +480,9 @@ static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties
 static struct TextBlock3D TextBlock3DDefaults = {
 };
 LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node3D_Render&MSG_DATA_MASK: return TextBlock3D_Render(object, cmp, wparm, lparm); // Node3D.Render
-		case ID_Object_Create&MSG_DATA_MASK: return TextBlock3D_Create(object, cmp, wparm, lparm); // Object.Create
+	switch (message) {
+		case ID_Node3D_Render: return TextBlock3D_Render(object, cmp, wparm, lparm); // Node3D.Render
+		case ID_Object_Create: return TextBlock3D_Create(object, cmp, wparm, lparm); // Object.Create
 	}
 	return FALSE;
 }
@@ -510,8 +510,8 @@ static struct Light3D Light3DDefaults = {
   .Range = 10,
 };
 LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node3D_Render&MSG_DATA_MASK: return Light3D_Render(object, cmp, wparm, lparm); // Node3D.Render
+	switch (message) {
+		case ID_Node3D_Render: return Light3D_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }
@@ -531,8 +531,8 @@ static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] 
 static struct SpriteView SpriteViewDefaults = {
 };
 LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Node3D_Render&MSG_DATA_MASK: return SpriteView_Render(object, cmp, wparm, lparm); // Node3D.Render
+	switch (message) {
+		case ID_Node3D_Render: return SpriteView_Render(object, cmp, wparm, lparm); // Node3D.Render
 	}
 	return FALSE;
 }

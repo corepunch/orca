@@ -55,25 +55,23 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 			if (lua_toboolean(L, 3)) {
 				if (!(flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags | OF_SELECTED);
-					_SendMessage(self, Object, ThemeChanged, .recursive = TRUE);
+					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
 				}
 			} else if ((flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags & ~OF_SELECTED);
-					_SendMessage(self, Object, ThemeChanged, .recursive = TRUE);
+					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
 			}
 			return TRUE;
 		}
 		case p_class:
 			if (lua_type(L, 3) == LUA_TSTRING) {
-				OBJ_ParseClassAttribute(self, luaL_checkstring(L, 3));
+        _SendMessage(self, StyleController, AddClasses, luaL_checkstring(L, 3));
 				return TRUE;
 			} else {
 				luaL_checktype(L, 3, LUA_TTABLE);
 				lua_pushnil(L);
 				while (lua_next(L, 3)) {
-					struct style_class* _ParseClass(lpcString_t str);
-					void _AddClass(lpObject_t obj, struct style_class* cls);
-					_AddClass(self, _ParseClass(luaL_checkstring(L, -1)));
+          _SendMessage(self, StyleController, AddClass, luaL_checkstring(L, -1));
 					lua_pop(L, 1);
 				}
 				lua_pop(L, 1);
@@ -115,8 +113,7 @@ int f_msgSend(lua_State *L) {
   const char* message = lua_tostring(L, lua_upvalueindex(1));
   lua_pushstring(L, message);
   lua_insert(L, 2);
-  OBJ_MsgSend(L, this_, message); // your function handles the args internally
-  return 0;
+  return OBJ_send(L, this_, message); // sync+direct, returns value or nil
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
@@ -182,16 +179,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   if (!strcmp(name, "ActualY") && GetNode2D(self)) {
     lua_pushnumber(L, GetNode2D(self)->_actual_pos[1]);
     return 1;
-  }
-
-  /* ID_Node_PushProperty is defined in plugins/UIKit/UIKit_properties.h.
-   * It is duplicated here because source/core cannot include UIKit headers. */
-#ifndef ID_Node_PushProperty
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
-#endif
-  LRESULT found = OBJ_SendMessageW(self, ID_Node_PushProperty, ident, L);
-  if (found) {
-    return (int)found;
   }
   
   lpcProperty_t property = NULL;

@@ -19,12 +19,12 @@ extern struct Property* luaX_checkProperty(lua_State *L, int index);
 // lua_State
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
-// style_class
-extern void luaX_pushstyle_class(lua_State *L, struct style_class const* value);
-extern struct style_class* luaX_checkstyle_class(lua_State *L, int index);
-// style_sheet
-extern void luaX_pushstyle_sheet(lua_State *L, struct style_sheet const* value);
-extern struct style_sheet* luaX_checkstyle_sheet(lua_State *L, int index);
+// style_class_selector
+extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selector const* value);
+extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
+// style_rule
+extern void luaX_pushstyle_rule(lua_State *L, struct style_rule const* value);
+extern struct style_rule* luaX_checkstyle_rule(lua_State *L, int index);
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -161,17 +161,16 @@ int f_OBJ_FindParentOfClass(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_PostMessage(lua_State *L) {
+int f_OBJ_post(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_PostMessage(L, this_, message );
+	OBJ_post(L, this_, message );
 	return 0;
 }
-int f_OBJ_MsgSend(lua_State *L) {
+int f_OBJ_send(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* message = luaL_checkstring(L, 2);
-	OBJ_MsgSend(L, this_, message );
-	return 0;
+	return OBJ_send(L, this_, message);
 }
 int f_OBJ_SetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
@@ -251,10 +250,10 @@ int f_OBJ_ClearDirtyFlags(lua_State *L) {
 	OBJ_ClearDirtyFlags(this_ );
 	return 0;
 }
-int f_OBJ_AddStyleSheet(lua_State *L) {
+int f_OBJ_AddStyleRule(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* source = luaL_checkstring(L, 2);
-	OBJ_AddStyleSheet(L, this_, source );
+	OBJ_AddStyleRule(L, this_, source );
 	return 0;
 }
 int f_OBJ_GetStyle(lua_State *L) {
@@ -414,12 +413,6 @@ int f_OBJ_SetContext(lua_State *L) {
 	OBJ_SetContext(L, this_ );
 	return 0;
 }
-int f_OBJ_ParseClassAttribute(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* classString = luaL_checkstring(L, 2);
-	OBJ_ParseClassAttribute(this_, classString );
-	return 0;
-}
 int f_OBJ_Instantiate(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* result_ = OBJ_Instantiate(L, this_);
@@ -473,8 +466,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findChildByAlias", f_OBJ_FindChildByAlias },
 		{ "findChildOfClass", f_OBJ_FindChildOfClass },
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
-		{ "postMessage", f_OBJ_PostMessage },
-		{ "msgSend", f_OBJ_MsgSend },
+		{ "post", f_OBJ_post },
+		{ "send", f_OBJ_send },
 		{ "__setproperty", f_OBJ_SetProperty },
 		{ "__getproperty", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },
@@ -487,7 +480,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getInteger", f_OBJ_GetInteger },
 		{ "setDirty", f_OBJ_SetDirty },
 		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
-		{ "addStyleSheet", f_OBJ_AddStyleSheet },
+		{ "addStyleRule", f_OBJ_AddStyleRule },
 		{ "getStyle", f_OBJ_GetStyle },
 		{ "setStyle", f_OBJ_SetStyle },
 		{ "doTween", f_OBJ_DoTween },
@@ -514,7 +507,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getLuaObject", f_OBJ_GetLuaObject },
 		{ "getDomain", f_OBJ_GetDomain },
 		{ "__setcontext", f_OBJ_SetContext },
-		{ "parseClassAttribute", f_OBJ_ParseClassAttribute },
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
@@ -601,6 +593,13 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
+static struct PropertyType _AnimationClipReference[] = {
+	DECL(0x0fe07306, AnimationClipReference, Name, Name, kDataTypeString), // AnimationClipReference.Name
+	DECL(0xd33ddb1b, AnimationClipReference, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationClipReference.Clip
+};
+static luaL_Reg _AnimationClipReference_Methods[] = {
+	{ NULL, NULL }
+};
 static struct PropertyType _Keyframe[] = {
 	DECL(0xdfe4e404, Keyframe, Time, time, kDataTypeFloat), // Keyframe.Time
 	DECL(0xd147f96a, Keyframe, Value, value, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.Value
@@ -615,6 +614,7 @@ static luaL_Reg _Keyframe_Methods[] = {
 	{ NULL, NULL }
 };
 
+STRUCT(AnimationClipReference, AnimationClipReference);
 STRUCT(Keyframe, Keyframe);
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
@@ -626,9 +626,9 @@ static struct PropertyType _Object_StartEventArgs[] = {
 static luaL_Reg _Object_AnimateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_AnimateEventArgs[] = {
 };
-static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_ThemeChangedEventArgs[] = {
-	DECL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // Object_ThemeChangedEventArgs.recursive
+static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
+	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_PropertyChangedEventArgs[] = {
@@ -649,6 +649,7 @@ static struct PropertyType _Object_TimerEventArgs[] = {
 };
 static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
+	DECL(0x0fe07306, AnimationPlayer_PlayEventArgs, Name, Name, kDataTypeString), // AnimationPlayer_PlayEventArgs.Name
 };
 static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
@@ -668,11 +669,19 @@ static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
 static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
 };
+static luaL_Reg _StyleController_AddClassEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_AddClassEventArgs[] = {
+	DECL(0x2ecda0bc, StyleController_AddClassEventArgs, ClassName, ClassName, kDataTypeString), // StyleController_AddClassEventArgs.ClassName
+};
+static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_AddClassesEventArgs[] = {
+	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
 STRUCT(Object_AnimateEventArgs, Object_AnimateEventArgs);
-STRUCT(Object_ThemeChangedEventArgs, Object_ThemeChangedEventArgs);
+STRUCT(StyleController_ThemeChangedEventArgs, StyleController_ThemeChangedEventArgs);
 STRUCT(Object_PropertyChangedEventArgs, Object_PropertyChangedEventArgs);
 STRUCT(Object_AttachedEventArgs, Object_AttachedEventArgs);
 STRUCT(Object_ReleaseEventArgs, Object_ReleaseEventArgs);
@@ -685,11 +694,8 @@ STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
 STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
 STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
-static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
-	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
-};
-STRUCT(StyleController_ThemeChangedEventArgs, StyleController_ThemeChangedEventArgs);
+STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
+STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -728,7 +734,7 @@ static struct PropertyType const AnimationCurveProperties[kAnimationCurveNumProp
 static struct AnimationCurve AnimationCurveDefaults = {
 };
 LRESULT AnimationCurveProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
+	switch (message) {
 	}
 	return FALSE;
 }
@@ -748,8 +754,8 @@ static struct PropertyType const AnimationClipProperties[kAnimationClipNumProper
 static struct AnimationClip AnimationClipDefaults = {
 };
 LRESULT AnimationClipProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Start&MSG_DATA_MASK: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
+	switch (message) {
+		case ID_Object_Start: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -768,6 +774,8 @@ HANDLER(AnimationPlayer, AnimationPlayer, Stop);
 HANDLER(AnimationPlayer, AnimationPlayer, Pause);
 static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
 	DECL(0xd33ddb1b, AnimationPlayer, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationPlayer.Clip
+	ARRAY_DECL(0xf26064b8, AnimationPlayer, Clips, Clips, kDataTypeStruct, .TypeString = "AnimationClipReference"), // AnimationPlayer.Clips
+	DECL(0x090c1a52, AnimationPlayer, NumClips, NumClips, kDataTypeInt), // AnimationPlayer.NumClips
 	DECL(0xdf450ad5, AnimationPlayer, Playing, Playing, kDataTypeBool), // AnimationPlayer.Playing
 	DECL(0x343782cd, AnimationPlayer, Looping, Looping, kDataTypeBool), // AnimationPlayer.Looping
 	DECL(0x0a6b8020, AnimationPlayer, Speed, Speed, kDataTypeFloat), // AnimationPlayer.Speed
@@ -791,13 +799,13 @@ static struct AnimationPlayer AnimationPlayerDefaults = {
   .Speed = 1.0,
 };
 LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Start&MSG_DATA_MASK: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Animate&MSG_DATA_MASK: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
-		case ID_AnimationPlayer_Play&MSG_DATA_MASK: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
-		case ID_AnimationPlayer_Resume&MSG_DATA_MASK: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
-		case ID_AnimationPlayer_Stop&MSG_DATA_MASK: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
-		case ID_AnimationPlayer_Pause&MSG_DATA_MASK: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
+	switch (message) {
+		case ID_Object_Start: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Animate: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_AnimationPlayer_Play: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
+		case ID_AnimationPlayer_Resume: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
+		case ID_AnimationPlayer_Stop: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
+		case ID_AnimationPlayer_Pause: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
 	}
 	return FALSE;
 }
@@ -821,8 +829,8 @@ static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationN
 static struct PropertyAnimation PropertyAnimationDefaults = {
 };
 LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Animate&MSG_DATA_MASK: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+	switch (message) {
+		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
 	}
 	return FALSE;
 }
@@ -835,18 +843,23 @@ struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
 HANDLER(StyleController, Object, Create);
 HANDLER(StyleController, Object, Release);
-HANDLER(StyleController, Object, ThemeChanged);
+HANDLER(StyleController, StyleController, ThemeChanged);
+HANDLER(StyleController, StyleController, AddClass);
+HANDLER(StyleController, StyleController, AddClasses);
 static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
 	DECL(0x064087a6, StyleController, ThemeChanged, ThemeChanged, kDataTypeEvent, .TypeString = "StyleController_ThemeChangedEventArgs"), // StyleController.ThemeChanged
+	DECL(0x543ca51c, StyleController, AddClass, AddClass, kDataTypeEvent, .TypeString = "StyleController_AddClassEventArgs"), // StyleController.AddClass
+	DECL(0x41acd398, StyleController, AddClasses, AddClasses, kDataTypeEvent, .TypeString = "StyleController_AddClassesEventArgs"), // StyleController.AddClasses
 };
 static struct StyleController StyleControllerDefaults = {
 };
 LRESULT StyleControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message&MSG_DATA_MASK) {
-		case ID_Object_Create&MSG_DATA_MASK: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_Release&MSG_DATA_MASK: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
-		case ID_Object_ThemeChanged&MSG_DATA_MASK: return StyleController_ThemeChanged(object, cmp, wparm, lparm); // Object.ThemeChanged
-		case ID_StyleController_ThemeChanged&MSG_DATA_MASK: return StyleController_ThemeChanged(object, cmp, wparm, (Object_ThemeChangedMsgPtr)lparm); // StyleController.ThemeChanged — same layout as Object.ThemeChanged
+	switch (message) {
+		case ID_Object_Create: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Release: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
+		case ID_StyleController_ThemeChanged: return StyleController_ThemeChanged(object, cmp, wparm, lparm); // StyleController.ThemeChanged
+		case ID_StyleController_AddClass: return StyleController_AddClass(object, cmp, wparm, lparm); // StyleController.AddClass
+		case ID_StyleController_AddClasses: return StyleController_AddClasses(object, cmp, wparm, lparm); // StyleController.AddClasses
 	}
 	return FALSE;
 }
@@ -874,11 +887,12 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_AnimateEventArgs(L), -2), "Object_AnimateEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedEventArgs(L), -2), "Object_ThemeChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StyleController_ThemeChangedEventArgs(L), -2), "StyleController_ThemeChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseEventArgs(L), -2), "Object_ReleaseEventArgs");
@@ -891,7 +905,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StyleController_ThemeChangedEventArgs(L), -2), "StyleController_ThemeChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");

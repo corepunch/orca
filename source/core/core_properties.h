@@ -36,6 +36,8 @@ enum AnimationClipProperties {
 #define GetAnimationPlayer(_P) ((struct AnimationPlayer*)((_P)?OBJ_GetComponent(_P,ID_AnimationPlayer):NULL))
 #define AnimationPlayer_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_AnimationPlayer,sizeof(struct AnimationPlayer),_N)
 #define ID_AnimationPlayer_Clip 0xbc835a74 // AnimationPlayer.Clip
+#define ID_AnimationPlayer_Clips 0xc9c6b905 // AnimationPlayer.Clips
+#define ID_AnimationPlayer_NumClips 0x7a1df25d // AnimationPlayer.NumClips
 #define ID_AnimationPlayer_Playing 0xdd2ed06c // AnimationPlayer.Playing
 #define ID_AnimationPlayer_Looping 0x02535bc8 // AnimationPlayer.Looping
 #define ID_AnimationPlayer_Speed 0x4a1ae835 // AnimationPlayer.Speed
@@ -46,16 +48,18 @@ enum AnimationClipProperties {
 #define ID_AnimationPlayer_PlaybackMode 0xb886a1a0 // AnimationPlayer.PlaybackMode
 #define ID_AnimationPlayer_DurationScale 0x742d0c5c // AnimationPlayer.DurationScale
 #define ID_AnimationPlayer_RepeatCount 0x02afaefc // AnimationPlayer.RepeatCount
-#define ID_AnimationPlayer_Play ((0x389b07cc&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Play
-#define ID_AnimationPlayer_Resume ((0x6c36db2d&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Resume
-#define ID_AnimationPlayer_Stop ((0x59228a5a&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Stop
-#define ID_AnimationPlayer_Pause ((0xafb93ba4&MSG_DATA_MASK)|ROUTING_DIRECT) // AnimationPlayer.Pause
-#define ID_AnimationPlayer_Started ((0x6f97130b&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Started
-#define ID_AnimationPlayer_Stopped ((0x845c891f&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Stopped
-#define ID_AnimationPlayer_Completed ((0xa2ffe357&MSG_DATA_MASK)|ROUTING_BUBBLE) // AnimationPlayer.Completed
-#define kAnimationPlayerNumProperties 18
+#define ID_AnimationPlayer_Play 0x389b07cc // AnimationPlayer.Play
+#define ID_AnimationPlayer_Resume 0x6c36db2d // AnimationPlayer.Resume
+#define ID_AnimationPlayer_Stop 0x59228a5a // AnimationPlayer.Stop
+#define ID_AnimationPlayer_Pause 0xafb93ba4 // AnimationPlayer.Pause
+#define ID_AnimationPlayer_Started 0x6f97130b // AnimationPlayer.Started
+#define ID_AnimationPlayer_Stopped 0x845c891f // AnimationPlayer.Stopped
+#define ID_AnimationPlayer_Completed 0xa2ffe357 // AnimationPlayer.Completed
+#define kAnimationPlayerNumProperties 20
 enum AnimationPlayerProperties {
 	kAnimationPlayerClip,
+	kAnimationPlayerClips,
+	kAnimationPlayerNumClips,
 	kAnimationPlayerPlaying,
 	kAnimationPlayerLooping,
 	kAnimationPlayerSpeed,
@@ -99,22 +103,24 @@ enum PropertyAnimationProperties {
 #define ID_StyleController 0x70b793e6
 #define GetStyleController(_P) ((struct StyleController*)((_P)?OBJ_GetComponent(_P,ID_StyleController):NULL))
 #define StyleController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleController,sizeof(struct StyleController),_N)
-#define kStyleControllerNumProperties 1
+#define ID_StyleController_ThemeChanged 0xe51e8073 // StyleController.ThemeChanged
+#define ID_StyleController_AddClass 0x8534805d // StyleController.AddClass
+#define ID_StyleController_AddClasses 0x2b139741 // StyleController.AddClasses
+#define kStyleControllerNumProperties 3
 
-#define ID_StyleController_ThemeChanged ((0xe51e8073&MSG_DATA_MASK)|ROUTING_DIRECT) // StyleController.ThemeChanged
-#define ID_StyleController_ThemeChangedEventArgs 0x0ee8d735
-#define ID_StyleController_ThemeChangedEventArgs_recursive 0xa1d9af6b // StyleController_ThemeChangedEventArgs.recursive
+#define ID_Object_Create 0x5ad07ee8 // Object.Create
+#define ID_Object_Start 0x01629a90 // Object.Start
+#define ID_Object_Animate 0xc8c0972b // Object.Animate
+#define ID_Object_ThemeChanged 0x6d440f67 // Object.ThemeChanged
+#define ID_Object_PropertyChanged 0x00d8cdf3 // Object.PropertyChanged
+#define ID_Object_Attached 0xc920ef48 // Object.Attached
+#define ID_Object_Release 0x10360cb1 // Object.Release
+#define ID_Object_Destroy 0x8ef01bbe // Object.Destroy
+#define ID_Object_Timer 0x6e6ade9d // Object.Timer
 
-#define ID_Object_Create ((0x5ad07ee8&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Create
-#define ID_Object_Start ((0x01629a90&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Start
-#define ID_Object_Animate ((0xc8c0972b&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Animate
-#define ID_Object_ThemeChanged ((0x6d440f67&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.ThemeChanged
-#define ID_Object_PropertyChanged ((0x00d8cdf3&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.PropertyChanged
-#define ID_Object_Attached ((0xc920ef48&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Attached
-#define ID_Object_Release ((0x10360cb1&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Release
-#define ID_Object_Destroy ((0x8ef01bbe&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Destroy
-#define ID_Object_Timer ((0x6e6ade9d&MSG_DATA_MASK)|ROUTING_DIRECT) // Object.Timer
-
+#define ID_AnimationClipReference 0x9309ab18
+#define ID_AnimationClipReference_Name 0x5b67cfe9 // AnimationClipReference.Name
+#define ID_AnimationClipReference_Clip 0xce2a9734 // AnimationClipReference.Clip
 #define ID_Keyframe 0xf2057289
 #define ID_Keyframe_Time 0x5e026ae4 // Keyframe.Time
 #define ID_Keyframe_Value 0x79c3b0ca // Keyframe.Value
@@ -132,9 +138,9 @@ enum PropertyAnimationProperties {
 
 #define ID_Object_AnimateEventArgs 0xc80c1167
 
-#define ID_Object_ThemeChangedEventArgs 0x22275cf1
+#define ID_StyleController_ThemeChangedEventArgs 0x0ee8d735
 
-#define ID_Object_ThemeChangedEventArgs_recursive 0x09fa891f // Object_ThemeChangedEventArgs.recursive
+#define ID_StyleController_ThemeChangedEventArgs_recursive 0xa1d9af6b // StyleController_ThemeChangedEventArgs.recursive
 #define ID_Object_PropertyChangedEventArgs 0x530ec22f
 
 #define ID_Object_PropertyChangedEventArgs_Property 0xc7308dfa // Object_PropertyChangedEventArgs.Property
@@ -149,6 +155,7 @@ enum PropertyAnimationProperties {
 #define ID_Object_TimerEventArgs_timerId 0x9555bf27 // Object_TimerEventArgs.timerId
 #define ID_AnimationPlayer_PlayEventArgs 0x1e984720
 
+#define ID_AnimationPlayer_PlayEventArgs_Name 0xc73b23f1 // AnimationPlayer_PlayEventArgs.Name
 #define ID_AnimationPlayer_ResumeEventArgs 0xf37671df
 
 #define ID_AnimationPlayer_StopEventArgs 0xa977f29a
@@ -161,6 +168,12 @@ enum PropertyAnimationProperties {
 
 #define ID_AnimationPlayer_CompletedEventArgs 0xacaaf6c7
 
+#define ID_StyleController_AddClassEventArgs 0x6838e65b
+
+#define ID_StyleController_AddClassEventArgs_ClassName 0xb3e910ea // StyleController_AddClassEventArgs.ClassName
+#define ID_StyleController_AddClassesEventArgs 0xc1f36253
+
+#define ID_StyleController_AddClassesEventArgs_ClassNames 0xbeac48c3 // StyleController_AddClassesEventArgs.ClassNames
 	
 
 #endif
