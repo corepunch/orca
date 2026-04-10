@@ -28,6 +28,8 @@ nav:
     - Lua Scripting: lua-scripting.md
     - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md
+  - Widgets:
+    - TerminalView: widgets/terminal-view.md
 
 theme:
   name: material

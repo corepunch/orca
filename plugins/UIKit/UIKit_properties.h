@@ -159,7 +159,6 @@ enum ColorBrushProperties {
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
 #define ID_Node_Awake ((0x2facb9c8&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.Awake
 #define ID_Node_UpdateMatrix ((0x35cdb821&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.UpdateMatrix
-#define ID_Node_PushProperty ((0xaca786d4&MSG_DATA_MASK)|ROUTING_TUNNELING_BUBBLING) // Node.PushProperty
 #define ID_Node_LoadView ((0xe3c6ed08&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.LoadView
 #define ID_Node_HitTest ((0xbc0e5546&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.HitTest
 #define ID_Node_IsVisible ((0xa03cfb85&MSG_DATA_MASK)|ROUTING_DIRECT) // Node.IsVisible
@@ -259,7 +258,6 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeAwake,
 	kNodeUpdateMatrix,
-	kNodePushProperty,
 	kNodeLoadView,
 	kNodeHitTest,
 	kNodeIsVisible,
@@ -672,23 +670,36 @@ enum NinePatchImageProperties {
 	kNinePatchImageImageBottom,
 	kNinePatchImageImageBottomRight,
 };
-// TerminalView
-#define ID_TerminalView 0xb1477a0c
-#define GetTerminalView(_P) ((struct TerminalView*)((_P)?OBJ_GetComponent(_P,ID_TerminalView):NULL))
-#define TerminalView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TerminalView,sizeof(struct TerminalView),_N)
-#define ID_TerminalView_BufferWidth 0xdf51183c // TerminalView.BufferWidth
-#define ID_TerminalView_BufferHeight 0xfd169aab // TerminalView.BufferHeight
-#define ID_TerminalView_Cursor 0x550c9034 // TerminalView.Cursor
-#define ID_TerminalView_SelectedIndex 0xc6c048a5 // TerminalView.SelectedIndex
-#define ID_TerminalView_DropShadow 0x8c72c3cb // TerminalView.DropShadow
-#define kTerminalViewNumProperties 5
-enum TerminalViewProperties {
-	kTerminalViewBufferWidth,
-	kTerminalViewBufferHeight,
-	kTerminalViewCursor,
-	kTerminalViewSelectedIndex,
-	kTerminalViewDropShadow,
+// ConsoleView
+#define ID_ConsoleView 0x2ad7c563
+#define GetConsoleView(_P) ((struct ConsoleView*)((_P)?OBJ_GetComponent(_P,ID_ConsoleView):NULL))
+#define ConsoleView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ConsoleView,sizeof(struct ConsoleView),_N)
+#define ID_ConsoleView_BufferWidth 0x83573a57 // ConsoleView.BufferWidth
+#define ID_ConsoleView_BufferHeight 0xce20e99a // ConsoleView.BufferHeight
+#define ID_ConsoleView_Cursor 0x0e1d2fa5 // ConsoleView.Cursor
+#define ID_ConsoleView_SelectedIndex 0x8f71f73a // ConsoleView.SelectedIndex
+#define ID_ConsoleView_DropShadow 0x861e7f0e // ConsoleView.DropShadow
+#define ID_ConsoleView_ContentHeight 0xcbb6893b // ConsoleView.ContentHeight
+#define ID_ConsoleView_Println ((0xb19dac78&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Println
+#define ID_ConsoleView_Erase ((0xab38bbeb&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Erase
+#define ID_ConsoleView_Invalidate ((0xdc68fe5a&MSG_DATA_MASK)|ROUTING_DIRECT) // ConsoleView.Invalidate
+#define kConsoleViewNumProperties 9
+enum ConsoleViewProperties {
+	kConsoleViewBufferWidth,
+	kConsoleViewBufferHeight,
+	kConsoleViewCursor,
+	kConsoleViewSelectedIndex,
+	kConsoleViewDropShadow,
+	kConsoleViewContentHeight,
+	kConsoleViewPrintln,
+	kConsoleViewErase,
+	kConsoleViewInvalidate,
 };
+#define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
+#define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index
+#define ID_ConsoleView_PrintlnEventArgs_Text 0x123171ef // ConsoleView_PrintlnEventArgs.Text
+#define ID_ConsoleView_EraseEventArgs 0xfc2f86cb
+#define ID_ConsoleView_InvalidateEventArgs 0xd692d03a
 // Page
 #define ID_Page 0xe83d9196
 #define GetPage(_P) ((struct Page*)((_P)?OBJ_GetComponent(_P,ID_Page):NULL))
@@ -835,9 +846,6 @@ enum StyleProperties {
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
 #define ID_Node_UpdateMatrixEventArgs_opacity 0x1bb1efd0 // Node_UpdateMatrixEventArgs.opacity
 #define ID_Node_UpdateMatrixEventArgs_force 0x04845b66 // Node_UpdateMatrixEventArgs.force
-#define ID_Node_PushPropertyEventArgs 0x9207bfe8
-
-#define ID_Node_PushPropertyEventArgs_Placeholder 0xf2cb3b77 // Node_PushPropertyEventArgs.Placeholder
 #define ID_Node_LoadViewEventArgs 0x361e935c
 
 #define ID_Node_LoadViewEventArgs_lua_state 0x96df0d0e // Node_LoadViewEventArgs.lua_state

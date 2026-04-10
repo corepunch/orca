@@ -200,5 +200,6 @@ test: test-headless test-properties
 
 test-headless: test-properties copyshare
 	$(TARGET) -test=tests/test_layout.lua
+	$(TARGET) -test=tests/test_console_view.lua
 
 include Makefile.webgl
