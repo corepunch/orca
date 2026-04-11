@@ -437,7 +437,12 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* e) {
 void
 on_core_module_registered(lua_State* L)
 {
+  // Preserve registered classes: lua_pushclass calls OBJ_RegisterClass before
+  // this function runs, so we must not zero core.classes[] here.
+  lpcClassDesc_t saved_classes[MAX_CLASSES];
+  memcpy(saved_classes, core.classes, sizeof(core.classes));
   memset(&core, 0, sizeof(struct game));
+  memcpy(core.classes, saved_classes, sizeof(core.classes));
   core.realtime = WI_GetMilliseconds();
   core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);

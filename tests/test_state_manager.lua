@@ -64,12 +64,12 @@ local function test_controller_changed_applies_state()
 
   -- Drive Opacity to 0; State "0" should apply Opacity=0.0.
   node.Opacity = 0
-  node:send("Object.Animate")
+  node:emitPropertyChangedEvents()
   expect_near(node.Opacity, 0.0, 0.01, "test_controller_changed_applies_state: Opacity → 0")
 
   -- Drive back to 1; State "1" → Opacity=1.0.
   node.Opacity = 1
-  node:send("Object.Animate")
+  node:emitPropertyChangedEvents()
   expect_near(node.Opacity, 1.0, 0.01, "test_controller_changed_applies_state: Opacity → 1")
 
   node:removeFromParent()
@@ -97,11 +97,11 @@ local function test_state_group_width()
   node:send("Object.Start")
 
   node.Width = 50
-  node:send("Object.Animate")
+  node:emitPropertyChangedEvents()
   expect_near(node.Width, 50, 0.01, "test_state_group_width: Width → 50")
 
   node.Width = 200
-  node:send("Object.Animate")
+  node:emitPropertyChangedEvents()
   expect_near(node.Width, 200, 0.01, "test_state_group_width: Width → 200")
 
   node:removeFromParent()
@@ -126,10 +126,12 @@ local function test_state_manager_reassignment()
   local sp2 = s2  + core.StatePropertySetter(); sp2.Property = "Opacity"; sp2.Value = "0.5"
 
   node.StateManager = sm2
-  node:send("Object.Start")
+  -- No extra Object.Start here: the new StateManager is picked up via
+  -- Object.PropertyChanged dispatched when node.StateManager was reassigned.
+  node:emitPropertyChangedEvents()  -- fires Object.PropertyChanged for StateManager
 
   node.Opacity = 0
-  node:send("Object.Animate")
+  node:emitPropertyChangedEvents()
   expect_near(node.Opacity, 0.5, 0.01, "test_state_manager_reassignment: Opacity after reassign → 0")
 
   node:removeFromParent()
@@ -155,7 +157,7 @@ local function test_state_path_to_child()
   parent:send("Object.Start")
 
   parent.Width = 200
-  parent:send("Object.Animate")
+  parent:emitPropertyChangedEvents()
   -- Parent's own Width is still 200; only the child's Width should change to 77.
   expect_near(child.Width, 77, 0.01, "test_state_path_to_child: child.Width → 77")
 

@@ -38,9 +38,13 @@ _ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
     if (!sp || !sp->Property || !sp->Property[0] || !sp->Value) continue;
     lpProperty_t hprop = NULL;
     if (FAILED(OBJ_FindShortProperty(target, sp->Property, &hprop))) continue;
-    char buf[MAX_PROPERTY_STRING] = { 0 };
-    parse_property(core.L, sp->Value, PROP_GetDesc(hprop), buf);
-    PROP_SetValue(hprop, buf);
+    if (PROP_GetType(hprop) == kDataTypeString) {
+      PROP_SetStringValue(hprop, sp->Value);
+    } else {
+      char buf[MAX_PROPERTY_STRING] = { 0 };
+      parse_property(core.L, sp->Value, PROP_GetDesc(hprop), buf);
+      PROP_SetValue(hprop, buf);
+    }
   }
   // Recurse into nested State children (sub-states targeting child objects).
   FOR_EACH_OBJECT(child, stateObj) {
@@ -79,9 +83,14 @@ _StateMatches(lpProperty_t prop, lpcString_t value)
 // ============================================================================
 
 // On Start: mark all tracked controller properties so property_events.c knows
-// to fire ControllerChanged when they change.
+// to fire ControllerChanged when they change.  Also mark the StateManager
+// property itself with PF_USED_IN_TRIGGER so Object.PropertyChanged fires
+// when the StateManager is replaced at runtime.
 HANDLER(StateManagerController, Object, Start) {
   _InitControllerProperties(pStateManagerController, hObject);
+  lpProperty_t smProp = PROP_FindByLongID(OBJ_GetProperties(hObject),
+                                          ID_StateManagerController_StateManager);
+  if (smProp) PROP_SetFlag(smProp, PF_USED_IN_TRIGGER);
   return FALSE;
 }
 
@@ -97,9 +106,9 @@ HANDLER(StateManagerController, Object, PropertyChanged) {
 }
 
 // Dispatched by property_events.c whenever a PF_USED_IN_STATE_MANAGER property
-// changes value.  Walk the StateManager's StateGroup children, find the one
-// that tracks `pControllerChanged->Property`, then find the first matching
-// State child and apply its StatePropertySetter values.
+// changes value.  Refresh tracked controller-property bindings first so that
+// runtime StateManager swaps (which re-initialise via Object.PropertyChanged)
+// are already reflected before evaluating states.
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
   if (!pStateManagerController->StateManager) return FALSE;
   lpObject_t smObj = CMP_GetObject(pStateManagerController->StateManager);
