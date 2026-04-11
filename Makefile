@@ -48,7 +48,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua
 
 default: directories modules unite
 all: default
@@ -202,11 +202,24 @@ test-styles: platform $(SOURCEMODULES2) buildlib
 test-state-manager: app copyshare
 	$(TARGET) -test=tests/test_state_manager.lua
 
+test-animations: app copyshare
+	$(TARGET) -test=tests/test_animations.lua
+
+test-timers: app copyshare
+	$(TARGET) -test=tests/test_timers.lua
+
+test-styles-lua: app copyshare
+	$(TARGET) -test=tests/test_styles_lua.lua
+
 test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
 test-headless: test-properties test-styles copyshare
 	$(TARGET) -test=tests/test_layout.lua
+	$(TARGET) -test=tests/test_state_manager.lua
+	$(TARGET) -test=tests/test_animations.lua
+	$(TARGET) -test=tests/test_timers.lua
+	$(TARGET) -test=tests/test_styles_lua.lua
 
 include Makefile.webgl
