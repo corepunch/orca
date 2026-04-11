@@ -57,7 +57,7 @@ local function test_animation_player_autoplay()
   node:addComponentByName("AnimationPlayer")
   node.AutoplayEnabled = true
 
-  expect(node.Playing == false, "Playing is false before Start")
+  expect(not node.Playing, "Playing is false before Start")
   node:send("Object.Start")
   expect(node.Playing == true,  "Playing is true after Start with AutoplayEnabled")
 
