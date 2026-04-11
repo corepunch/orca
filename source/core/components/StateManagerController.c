@@ -107,9 +107,10 @@ HANDLER(StateManagerController, Object, PropertyChanged) {
 
 // Dispatched by property_events.c whenever a PF_USED_IN_STATE_MANAGER property
 // changes value.  Refresh tracked controller-property bindings first so that
-// runtime StateManager swaps (which re-initialise via Object.PropertyChanged)
-// are already reflected before evaluating states.
+// runtime StateManager swaps are handled even if Object.PropertyChanged for the
+// StateManager property was not dispatched (e.g., assigned before Start ran).
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
+  _InitControllerProperties(pStateManagerController, hObject);
   if (!pStateManagerController->StateManager) return FALSE;
   lpObject_t smObj = CMP_GetObject(pStateManagerController->StateManager);
   if (!smObj) return FALSE;

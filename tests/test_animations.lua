@@ -28,9 +28,6 @@ local function expect_near(actual, expected, eps, label)
   end
 end
 
--- Make orca.async synchronous so event callbacks fire immediately in tests.
-orca.async = function(cb) cb() end
-
 -- ---------------------------------------------------------------------------
 -- Test 1: AnimationPlayer starts as not-playing
 -- ---------------------------------------------------------------------------
