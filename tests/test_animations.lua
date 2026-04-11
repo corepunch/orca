@@ -36,11 +36,12 @@ local function test_animation_player_initial_state()
   local node   = screen + ui.Node2D {}
 
   node:addComponentByName("AnimationPlayer")
+  node:send("Object.Start")
 
-  expect(node.Playing == false,  "initial Playing should be false")
-  expect(node.Looping == false,  "initial Looping should be false")
+  expect(not node.Playing,  "initial Playing should be false")
+  expect(not node.Looping,  "initial Looping should be false")
   expect(node.Speed   == 1.0,    "initial Speed should be 1.0")
-  expect(node.AutoplayEnabled == false, "initial AutoplayEnabled should be false")
+  expect(not node.AutoplayEnabled, "initial AutoplayEnabled should be false")
 
   node:removeFromParent()
   print("PASS: test_animation_player_initial_state")
