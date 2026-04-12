@@ -287,8 +287,8 @@ static float float_lerp(float a, float b, float t) { return a + (b - a) * t; }
 static void
 _PropertyAnimation_FreeBuffers(struct PropertyAnimation *anim)
 {
-    if (anim->From) { free((void*)anim->From); anim->From = NULL; }
-    if (anim->To)   { free((void*)anim->To);   anim->To   = NULL; }
+    free((char*)anim->From); anim->From = NULL;
+    free((char*)anim->To);   anim->To   = NULL;
 }
 
 HANDLER(PropertyAnimation, Object, Release) {
@@ -365,6 +365,11 @@ OBJ_DoTween(lua_State* L,
   struct PropertyAnimation *anim = (struct PropertyAnimation*)CMP_GetUserData(cmp);
   size_t prop_size = PROP_GetSize(hprop);
   anim->From = malloc(prop_size);
+  if (!anim->From) {
+    CMP_Detach(anim);
+    luaL_error(L, "Out of memory allocating PropertyAnimation.From");
+    return;
+  }
   PROP_CopyValue(hprop, (void*)anim->From);
   anim->_property = hprop;
   anim->Duration = duration;
