@@ -59,7 +59,7 @@ local function test_animation_player_autoplay()
 
   expect(not node.Playing, "Playing is false before Start")
   node:send("Object.Start")
-  expect(node.Playing == true,  "Playing is true after Start with AutoplayEnabled")
+  expect(node.Playing,  "Playing is true after Start with AutoplayEnabled")
 
   node:removeFromParent()
   print("PASS: test_animation_player_autoplay")
@@ -76,7 +76,7 @@ local function test_animation_player_play_stop()
 
   -- Play starts playback
   node:send("AnimationPlayer.Play")
-  expect(node.Playing == true,  "Playing=true after Play message")
+  expect(node.Playing,  "Playing=true after Play message")
 
   -- Stop ends playback and resets CurrentTime
   local clip = core.AnimationClip()
@@ -85,7 +85,7 @@ local function test_animation_player_play_stop()
   node.Clip = clip
   node.CurrentTime = 1.2
   node:send("AnimationPlayer.Stop")
-  expect(node.Playing == false, "Playing=false after Stop message")
+  expect(not node.Playing, "Playing=false after Stop message")
   -- After Stop the player resets CurrentTime to clip.StartTime
   expect_near(node.CurrentTime, 0.5, 0.001, "CurrentTime reset to StartTime on Stop")
 
@@ -105,11 +105,11 @@ local function test_animation_player_pause_resume()
   node.CurrentTime = 0.75
   node:send("AnimationPlayer.Pause")
 
-  expect(node.Playing == false, "Playing=false after Pause")
+  expect(not node.Playing, "Playing=false after Pause")
   expect_near(node.CurrentTime, 0.75, 0.001, "CurrentTime preserved after Pause")
 
   node:send("AnimationPlayer.Resume")
-  expect(node.Playing == true, "Playing=true after Resume")
+  expect(node.Playing, "Playing=true after Resume")
   -- CurrentTime should still be at the paused position
   expect_near(node.CurrentTime, 0.75, 0.001, "CurrentTime preserved after Resume")
 
@@ -182,9 +182,9 @@ local function test_animation_player_named_clips()
 
   -- Verify Playing transitions
   node:send("AnimationPlayer.Play")
-  expect(node.Playing == true,  "Playing=true after Play")
+  expect(node.Playing,  "Playing=true after Play")
   node:send("AnimationPlayer.Stop")
-  expect(node.Playing == false, "Playing=false after Stop")
+  expect(not node.Playing, "Playing=false after Stop")
 
   node:removeFromParent()
   print("PASS: test_animation_player_named_clips")
@@ -256,7 +256,7 @@ local function test_animation_player_and_dotween_coexist()
 
   node:addComponentByName("AnimationPlayer")
   node:send("AnimationPlayer.Play")
-  expect(node.Playing == true, "AnimationPlayer Playing=true")
+  expect(node.Playing, "AnimationPlayer Playing=true")
 
   -- doTween should not interfere with AnimationPlayer state
   node.Opacity = 1.0
@@ -264,7 +264,7 @@ local function test_animation_player_and_dotween_coexist()
   node:send("Object.Animate")
 
   expect_near(node.Opacity, 0.3, 0.01, "doTween applied alongside AnimationPlayer")
-  expect(node.Playing == true, "AnimationPlayer still Playing after doTween tick")
+  expect(node.Playing, "AnimationPlayer still Playing after doTween tick")
 
   node:removeFromParent()
   print("PASS: test_animation_player_and_dotween_coexist")
