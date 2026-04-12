@@ -74,6 +74,7 @@ read_property(lua_State *L,
               void* valueptr)
 {
   // void* valueptr = ((char*)struct_ptr + prop->Offset);
+  if (lua_isnoneornil(L, idx)) return; // absent/nil arg → leave value zero-initialised
   switch (prop->DataType) {
     case kDataTypeBool:
       *(int*)valueptr = lua_toboolean(L, idx) != 0;
