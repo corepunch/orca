@@ -163,13 +163,13 @@ HANDLER(ConsoleView, ConsoleView, Erase) {
 }
 
 HANDLER(ConsoleView, ConsoleView, Invalidate) {
-  WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
+  axPostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 
 HANDLER(ConsoleView, Object, Create) {
   pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
-  WI_PostMessageW(hObject, kMsgPaint, 0, NULL);
+  axPostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 

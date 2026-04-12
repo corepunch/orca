@@ -56,7 +56,7 @@ HANDLER(Button, Node, LeftMouseUp)
 {
   SV_PostMessage(hObject, "Click", 0, hObject);
   if (pButton->Type == kButtonTypeSubmit) {
-    WI_PostMessageW(hObject, ID_Form_Submit, 0, hObject);
+    axPostMessageW(hObject, ID_Form_Submit, 0, hObject);
   }
   return FALSE;
 }
@@ -69,7 +69,7 @@ HANDLER(Button, Object, Create)
 
 HANDLER(Button, Node, KeyDown)
 {
-  if (pKeyDown->keyCode == WI_KEY_TAB) {
+  if (pKeyDown->keyCode == AX_KEY_TAB) {
     _NextTabStop(hObject);
     return TRUE;
   } else {

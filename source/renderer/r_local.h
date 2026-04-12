@@ -51,7 +51,7 @@
   func(__VA_ARGS__);                                                           \
   GetError();
 #define MAKE_TEX_SIZE(width, height)                                           \
-  (struct WI_Size)                                                              \
+  (struct AXsize)                                                              \
   {                                                                            \
     (width), (height)                                                          \
   }
@@ -366,13 +366,13 @@ R_SetBlendMode(enum blend_mode blendMode);
 void
 R_SetDepthState(struct depth_state const* depth_state);
 
-struct WI_Size
+struct AXsize
 R_TexImage(GLenum target,
-           struct WI_Buffer* sb,
+           struct AXbuffer* sb,
            struct Texture* tex,
            struct Image* img);
 
-struct WI_Size
+struct AXsize
 texture_make_error(GLenum target);
 
 extern struct renderer tr;

@@ -125,7 +125,7 @@
     // guarantees these properties are integers (long), so touch targetX/Y will
     // always be whole numbers.
     // snapCanvas is exposed as window.snapCanvas so the WASM-side EM_ASM in
-    // r_main.c can call it as a defense-in-depth snap after WI_Init().
+    // r_main.c can call it as a defense-in-depth snap after axInit().
     var IOS_ORIENTATION_SETTLE_MS = 100; // iOS defers viewport update after rotation
     window.snapCanvas = function () {
       var canvas = document.getElementById('canvas');

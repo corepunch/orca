@@ -138,9 +138,9 @@ The `libs/platform/webgl/` directory contains three source files:
 
 | File                      | Purpose |
 |---------------------------|---------|
-| `webgl_system.c`          | `WI_Init` / `WI_Shutdown`, timing, platform strings |
-| `webgl_window.c`          | Canvas sizing, WebGL context, `WI_BeginPaint`/`WI_EndPaint` |
-| `webgl_event.c`           | Emscripten input callbacks → internal event queue; `WI_PollEvent` |
+| `webgl_system.c`          | `axInit` / `axShutdown`, timing, platform strings |
+| `webgl_window.c`          | Canvas sizing, WebGL context, `axBeginPaint`/`axEndPaint` |
+| `webgl_event.c`           | Emscripten input callbacks → internal event queue; `axPollEvent` |
 
 The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
 `emmake` and selects only the `webgl/` sources.
@@ -148,12 +148,12 @@ The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
 ### Main Loop
 
 The engine's main loop is a Lua `while true do … end` that polls for events
-via `WI_PollEvent`.  Browsers cannot run a blocking loop on the main thread;
+via `axPollEvent`.  Browsers cannot run a blocking loop on the main thread;
 the JavaScript event loop must be allowed to yield periodically.
 
 **Solution:** The WebGL platform backend registers the main loop iteration
 function with `emscripten_set_main_loop` so the browser schedules each frame
-via `requestAnimationFrame`.  When the event queue is empty, `WI_PollEvent`
+via `requestAnimationFrame`.  When the event queue is empty, `axPollEvent`
 returns immediately, letting the browser handle input callbacks and repaints
 before the next iteration.
 
@@ -212,11 +212,11 @@ the main engine were identified.  They are candidates to be abstracted into
 derives `LIBDIR`, `SHAREDIR`, and `PLUGDIR` from it.
 
 In WebGL there is no executable on a filesystem.  The engine currently falls
-back to the `WI_LibDirectory()` / `WI_ShareDirectory()` helpers already
+back to the `axLibDirectory()` / `axShareDirectory()` helpers already
 provided by `platform.h`, but the path-stripping logic (`strrchr(exename, '/')
  strip two segments`) still runs.
 
-**Recommendation:** Add a `WI_GetExecutablePath(char *buf, size_t sz)` to
+**Recommendation:** Add a `axGetExecutablePath(char *buf, size_t sz)` to
 `platform.h` and implement it per-platform (including a no-op for WebGL that
 fills `buf` with `"."`) so `orca.c` has a single call for all platforms.
 
@@ -264,17 +264,17 @@ Emscripten's VFS; network operations require replacing curl/sockets with
 Emscripten's `emscripten_fetch` API.
 
 **Recommendation:** Move the network abstraction into `libs/platform`
-(`WI_FetchURL`, `WI_OpenSocket`) so the engine calls a single API and each
+(`axFetchURL`, `axOpenSocket`) so the engine calls a single API and each
 platform provides the appropriate implementation (POSIX vs. Fetch API).
 
-### 5. `WI_Sleep` / Frame Pacing
+### 5. `axSleep` / Frame Pacing
 
-`WI_Sleep(ms)` is currently a `nanosleep` on POSIX and a no-op on WebGL.
+`axSleep(ms)` is currently a `nanosleep` on POSIX and a no-op on WebGL.
 The comment in `webgl_system.c` suggests using `emscripten_sleep(msec)` (with
 ASYNCIFY) for a proper sleep.  This is already partially handled by the
 `emscripten_sleep(0)` yield in `queue.c`, but a non-zero duration sleep may
 be useful for CPU throttling.
 
-**Recommendation:** Implement `WI_Sleep` in `webgl_system.c` as
+**Recommendation:** Implement `axSleep` in `webgl_system.c` as
 `emscripten_sleep(msec)` once ASYNCIFY is confirmed stable.  The ASYNCIFY
 build flag is already set in the `webgl` Makefile target.

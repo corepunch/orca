@@ -218,7 +218,7 @@ When `StyleController` receives `Object.ThemeChanged` for an object:
 | `hover` | `STYLE_HOVER`  | `core_GetHover() == object` |
 | `focus` | `STYLE_FOCUS`  | `core_GetFocus() == object` |
 | `active`| `STYLE_SELECT` | `OBJ_GetFlags(object) & OF_SELECTED` |
-| `dark`  | `STYLE_DARK`   | `WI_IsDarkTheme()` (system-wide) |
+| `dark`  | `STYLE_DARK`   | `axIsDarkTheme()` (system-wide) |
 
 ### Example: dark-mode background
 

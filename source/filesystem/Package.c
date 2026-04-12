@@ -46,7 +46,7 @@ typedef struct _PACKFILE
   uint32_t filepos;
   uint32_t filelen;
   uint32_t decompsize;
-  struct WI_Size imagesize;
+  struct AXsize imagesize;
 }* PPACKFILE;
 
 #ifndef ORCA_NO_ZIP

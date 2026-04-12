@@ -515,7 +515,7 @@
           <fields>
             <field name="keyCode" type="int">The key involved in this event</field>
             <field name="character" type="int">The character produced by this key event</field>
-            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of WI_MOD_* flags)</field>
+            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of AX_MOD_* flags)</field>
             <field name="text" type="string">The text produced by this key event as a UTF-8 string (empty for non-printable keys)</field>
             <field name="modifiersString" type="string">Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")</field>
             <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>

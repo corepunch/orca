@@ -795,7 +795,7 @@ ORCA_API BOOL ED_IsRunning(void) {
   return !editor.bHasFinished;
 }
 
-static LRESULT _DispatchMessage(lua_State *L, struct WI_Message *msg) {
+static LRESULT _DispatchMessage(lua_State *L, struct AXmessage *msg) {
   return ED_DispatchMessage(msg->message, msg->wParam, msg->lParam);
 }
 
@@ -814,12 +814,12 @@ ORCA_API int luaopen_orca_editor(lua_State* L)
 {
   luaL_newlib(L, lib_editor);
 
-  lpcString_t WI_KeynumToString(uint32_t);
+  lpcString_t axKeynumToString(uint32_t);
   
   ED_Init((EDIMPORT) {
-    .GetOpenFileName = WI_GetOpenFileName,
-    .GetFolderName = WI_GetFolderName,
-//    .WI_KeynumToString = WI_KeynumToString,
+    .GetOpenFileName = AX_GetOpenFileName,
+    .GetFolderName = AX_GetFolderName,
+//    .AX_KeynumToString = AX_KeynumToString,
   });
   
   editor.L = L;

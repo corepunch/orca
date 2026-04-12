@@ -11,7 +11,7 @@ struct renderer;
 struct game;
 struct localization;
 struct uniform;
-struct WI_Buffer;
+struct AXbuffer;
 struct ViewText;
 struct ViewEntity;
 struct ViewDef;
@@ -108,7 +108,7 @@ struct token
 
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
-WI_PostMessageW(OBJ, fnv1a32(MSG), _W, _L);
+axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);
 
 /*
  Fowler–Noll–Vo hash function
@@ -370,10 +370,10 @@ ORCA_API void*
 CMP_GetUserData(struct component*);
 
 ORCA_API bool_t
-SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
+SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
 
 ORCA_API bool_t
-SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message*));
+SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
 
 ORCA_API void
 OBJ_Release(lua_State *L, lpObject_t);
@@ -455,7 +455,7 @@ struct Package;
 
 ORCA_API struct file* FS_LoadFile(lpcString_t);
 ORCA_API HRESULT FS_FreeFile(struct file*);
-//ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct WI_Size*);
+//ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct AXsize*);
 ORCA_API struct _xmlDoc* FS_LoadXML(lpcString_t);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
 
@@ -474,8 +474,8 @@ typedef void (*SERVICEREADPROC)(struct network_service*);
 // void net_close_socket(int net_socket);
 // int  net_accept(int net_socket);
 // int  net_connect(lpcString_t  addr, int port);
-// int  net_packet(int net_socket, struct WI_Buffer* net_message);
-// int  net_send_packet(int net_socket, struct WI_Buffer* net_message);
+// int  net_packet(int net_socket, struct AXbuffer* net_message);
+// int  net_send_packet(int net_socket, struct AXbuffer* net_message);
 // int  net_set_nonblocking(int sockfd);
 // bool_t net_has_no_error(void);
 

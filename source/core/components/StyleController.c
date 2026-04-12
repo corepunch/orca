@@ -332,7 +332,7 @@ OBJ_GetStyleFlags(lpObject_t pobj)
   if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
   if (core_GetFocus() == pobj) dwValue |= STYLE_FOCUS;
   if (OBJ_GetFlags(pobj) & OF_SELECTED) dwValue |= STYLE_SELECT;
-  if (WI_IsDarkTheme()) dwValue |= STYLE_DARK;
+  if (axIsDarkTheme()) dwValue |= STYLE_DARK;
   return dwValue;
 }
 

@@ -5,25 +5,25 @@
 
 int f_event_message(lua_State* L)
 {
-  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  struct AXmessage const* msg = luaL_checkudata(L, 1, "Event");
   lua_pushinteger(L, msg->message);
   return 1;
 }
 
 int f_event_is(lua_State* L)
 {
-  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  struct AXmessage const* msg = luaL_checkudata(L, 1, "Event");
   lpcString_t name = luaL_checkstring(L, 2);
   lua_pushboolean(L, msg->message == fnv1a32(name));
   return 1;
 }
 
-void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
-void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
+void axBuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void axKeyEventToText(struct AXmessage const* e, char* buf, size_t size);
 
 int f_event_index(lua_State* L)
 {
-  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  struct AXmessage const* msg = luaL_checkudata(L, 1, "Event");
   lpcString_t name = luaL_checkstring(L, 2);
   if (!strcmp(name, "is")) {
     lua_pushcfunction(L, f_event_is);
@@ -63,13 +63,13 @@ int f_event_index(lua_State* L)
   }
   if (!strcmp(name, "modifiers")) {
     char comp[32] = {0};
-    WI_BuildModifiersString(msg->wParam, comp, sizeof(comp));
+    axBuildModifiersString(msg->wParam, comp, sizeof(comp));
     lua_pushstring(L, comp);
     return 1;
   }
   if (!strcmp(name, "text")) {
     char text[MAX_NAMELEN] = {0};
-    WI_KeyEventToText(msg, text, sizeof(text));
+    axKeyEventToText(msg, text, sizeof(text));
     lua_pushstring(L, text);
     return 1;
   }
@@ -86,7 +86,7 @@ static lpObject_t f_checkObject(lua_State* L, int arg) {
 }
 
 int f_event_new(lua_State* L) {
-  struct WI_Message* msg = lua_newuserdata(L, sizeof(struct WI_Message));
+  struct AXmessage* msg = lua_newuserdata(L, sizeof(struct AXmessage));
   luaL_setmetatable(L, "Event");
   if (lua_type(L, 1) == LUA_TTABLE) {
     lua_pushnil(L);  // first key

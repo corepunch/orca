@@ -407,17 +407,17 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   return S_OK;
 }
 
-static struct WI_Size
+static struct AXsize
 _GetRenderTargetSize(void)
 {
   if (tr.currentRenderTarget) {
-    return (struct WI_Size) {
-      tr.currentRenderTarget->Width / WI_GetScaling(),
-      tr.currentRenderTarget->Height / WI_GetScaling(),
+    return (struct AXsize) {
+      tr.currentRenderTarget->Width / axGetScaling(),
+      tr.currentRenderTarget->Height / axGetScaling(),
     };
   } else {
-    struct WI_Size screensize;
-    WI_GetSize(&screensize);
+    struct AXsize screensize;
+    axGetSize(&screensize);
     return screensize;
   }
 }
@@ -426,7 +426,7 @@ HRESULT
 R_DrawImage(PDRAWIMAGESTRUCT parm)
 {
   struct Texture* image = parm->img ? parm->img : tr.textures[TX_WHITE];
-  struct WI_Size screen = _GetRenderTargetSize();
+  struct AXsize screen = _GetRenderTargetSize();
   struct ViewDef view = { 0 };
   struct ViewEntity ent = {
     .bbox = BOX3_FromRect(parm->rect),
@@ -497,7 +497,7 @@ R_SetDefaultPipelineState(uint32_t width, uint32_t height)
   return R_SetPipelineState(&state);
 }
 
-extern struct WI_Size R_TexImagePNG(GLenum, struct WI_Buffer*, bool_t);
+extern struct AXsize R_TexImagePNG(GLenum, struct AXbuffer*, bool_t);
 
 void
 R_SetPointFiltering(void)
@@ -590,18 +590,18 @@ static void Texture_CreateCharset(struct Texture** img) {
   *img = ZeroAlloc(sizeof(struct Texture));
   R_Call(glGenTextures, 1, &(*img)->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  extern struct WI_Size R_TexImagePNG(GLenum, struct WI_Buffer*, bool_t);
+  extern struct AXsize R_TexImagePNG(GLenum, struct AXbuffer*, bool_t);
 #ifndef USE_8x8_CHARSET
   extern const unsigned char images_vga8x12_extra_chars_png[];
   extern const int images_vga8x12_extra_chars_png_size;
-  R_TexImagePNG(GL_TEXTURE_2D, &(struct WI_Buffer){
+  R_TexImagePNG(GL_TEXTURE_2D, &(struct AXbuffer){
     .data = (byte_t*)images_vga8x12_extra_chars_png,
     .cursize = images_vga8x12_extra_chars_png_size
   }, FALSE);
 #else
   extern unsigned char charset[];
   extern unsigned int charset_size;
-  R_TexImagePNG(GL_TEXTURE_2D, &(struct WI_Buffer){
+  R_TexImagePNG(GL_TEXTURE_2D, &(struct AXbuffer){
     .data = (byte*)charset,
     .cursize = charset_size
   }, FALSE);
@@ -613,10 +613,10 @@ static void Texture_CreateToolbar(struct Texture** img) {
   *img = ZeroAlloc(sizeof(struct Texture));
   R_Call(glGenTextures, 1, &(*img)->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, (*img)->texnum);
-  extern struct WI_Size R_TexImagePNG(GLenum, struct WI_Buffer*, bool_t);
+  extern struct AXsize R_TexImagePNG(GLenum, struct AXbuffer*, bool_t);
   extern unsigned char Maintoolbar_24_png[];
   extern unsigned int Maintoolbar_24_png_len;
-  R_TexImagePNG(GL_TEXTURE_2D, &(struct WI_Buffer){
+  R_TexImagePNG(GL_TEXTURE_2D, &(struct AXbuffer){
     .data = Maintoolbar_24_png,
     .cursize = Maintoolbar_24_png_len
   }, FALSE);
@@ -688,13 +688,13 @@ static void
 _InitFullscreen(struct ViewDef* view)
 {
   GLint vp[4];
-  struct WI_Size window;
-  WI_GetSize(&window);
+  struct AXsize window;
+  axGetSize(&window);
 
   R_Call(glGetIntegerv, GL_VIEWPORT, vp);
 
-  view->viewSize.x = vp[2] / WI_GetScaling();
-  view->viewSize.y = vp[3] / WI_GetScaling();
+  view->viewSize.x = vp[2] / axGetScaling();
+  view->viewSize.y = vp[3] / axGetScaling();
 
   view->projectionMatrix=MAT4_Ortho(0,window.width,window.height,0,-1,1);
   view->viewMatrix = MAT4_Identity();
@@ -954,10 +954,10 @@ R_InitBuffers(void)
 HRESULT
 R_BeginFrame(struct color color)
 {
-  struct WI_Size size;
+  struct AXsize size;
   
-  WI_GetSize(&size);
-  WI_BeginPaint();
+  axGetSize(&size);
+  axBeginPaint();
 
   R_SetDefaultPipelineState(size.width, size.height);
   R_ClearScreen(color, 1, 0);
@@ -974,7 +974,7 @@ R_EndFrame(void)
 
   glFlush();
 
-  WI_EndPaint();
+  axEndPaint();
 
   return NOERROR;
 }
@@ -991,10 +991,10 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
 
   if (bOffscreen) {
     Con_Printf("Initializing offscreen surface...");
-    WI_CreateSurface(dwWidth, dwHeight);
+    axCreateSurface(dwWidth, dwHeight);
   } else {
     Con_Printf("Initializing window...");
-    WI_CreateWindow("Window", dwWidth, dwHeight, 0);
+    axCreateWindow("Window", dwWidth, dwHeight, 0);
   }
 
   R_InitResources();
@@ -1045,7 +1045,7 @@ renderer_Shutdown(void)
 
   Con_Printf("Shutting down renderer...");
 
-  WI_MakeCurrentContext();
+  axMakeCurrentContext();
 
   R_ClearTextCache();
 
@@ -1066,16 +1066,16 @@ static int renderer_gc(lua_State* L)
   void FT_Shutdown(void);
   renderer_Shutdown();
   FT_Shutdown();
-  WI_Shutdown();
+  axShutdown();
   return 0;
 }
 
 void on_renderer_module_registered(lua_State* L) {
   API_MODULE_SHUTDOWN(L, renderer_gc);
-  WI_Init();
+  axInit();
 #ifdef __EMSCRIPTEN__
   /* Defense-in-depth: snap canvas CSS to integer-pixel dimensions right after
-   * WI_Init so that Emscripten's touch-event glue always receives whole-number
+   * AX_Init so that Emscripten's touch-event glue always receives whole-number
    * targetX/Y coordinates.  On high-DPI iOS devices (e.g. iPhone 14 Pro Max,
    * DPR=3), CSS "width:100%" can resolve to a fractional value (355.666px =
    * 1067px / 3), causing SAFE_HEAP to abort with "attempt to write non-integer

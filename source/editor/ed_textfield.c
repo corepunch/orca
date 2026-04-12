@@ -34,11 +34,11 @@ static void ED_AcceptInput(void) {
 
 void ED_HandleTextInput(wParam_t wparam) {
   WORD keyName = wparam;
-  if (keyName == WI_KEY_DOWNARROW) {
+  if (keyName == AX_KEY_DOWNARROW) {
     editor.textEdit.callback(TEXTEDIT_DOWN, editor.textEdit.parm);
-  } else if (keyName == WI_KEY_UPARROW) {
+  } else if (keyName == AX_KEY_UPARROW) {
     editor.textEdit.callback(TEXTEDIT_UP, editor.textEdit.parm);
-  } else if (keyName == WI_KEY_ENTER) {
+  } else if (keyName == AX_KEY_ENTER) {
     if (editor.textEdit.callback) {
       editor.textEdit.callback(TEXTEDIT_ACCEPT, editor.textEdit.parm);
       ED_CancelInput();
@@ -46,30 +46,30 @@ void ED_HandleTextInput(wParam_t wparam) {
       ED_AcceptInput();
     }
     return;
-  } else if (keyName == WI_KEY_ESCAPE) {
+  } else if (keyName == AX_KEY_ESCAPE) {
     if (editor.textEdit.callback) {
       editor.textEdit.callback(TEXTEDIT_CANCEL, editor.textEdit.parm);
     }
     ED_CancelInput();
   } else if (keyName > 32 && keyName < 127) {
-    _InstertChar((wparam & WI_MOD_SHIFT) ? keyName : tolower(keyName));
+    _InstertChar((wparam & AX_MOD_SHIFT) ? keyName : tolower(keyName));
     if (editor.textEdit.callback) {
       editor.textEdit.callback(TEXTEDIT_INPUT, editor.textEdit.parm);
     }
-  } else if (keyName == WI_KEY_SPACE) {
+  } else if (keyName == AX_KEY_SPACE) {
     _InstertChar(' ');
-  } else if (keyName == WI_KEY_TAB) {
+  } else if (keyName == AX_KEY_TAB) {
     ED_AcceptInput();
     ED_SendMessage(editor.focus, kEventKeyDown, wparam, NULL);
-  } else if (keyName == WI_KEY_LEFTARROW) {
+  } else if (keyName == AX_KEY_LEFTARROW) {
     if (editor.textEditCursor > 0) {
       editor.textEditCursor--;
     }
-  } else if (keyName == WI_KEY_RIGHTARROW) {
+  } else if (keyName == AX_KEY_RIGHTARROW) {
     if (editor.textEditCursor < strlen(editor.textEditBuffer)) {
       editor.textEditCursor++;
     }
-  } else if (keyName == WI_KEY_BACKSPACE) {
+  } else if (keyName == AX_KEY_BACKSPACE) {
     if (editor.textEditCursor > 0) {
       editor.textEditCursor--;
       for (DWORD i = editor.textEditCursor; i < MAX_TEXT_EDIT - 1; i++) {

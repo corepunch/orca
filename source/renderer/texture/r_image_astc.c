@@ -47,8 +47,8 @@ struct astc_header
   uint8_t zsize[3];
 };
 
-struct WI_Size
-R_TexImageASTC(GLenum target, struct WI_Buffer* sb)
+struct AXsize
+R_TexImageASTC(GLenum target, struct AXbuffer* sb)
 {
   struct astc_header const* header = (void*)sb->data;
   if (*(int*)sb->data != ASTC_HEADER) {

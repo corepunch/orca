@@ -130,13 +130,13 @@ static int f_list_dir(lua_State *L) {
 
 static int f_getTime(lua_State* L)
 {
-  lua_pushinteger(L, WI_GetMilliseconds());
+  lua_pushinteger(L, axGetMilliseconds());
   return 1;
 }
 
 static int f_sleep(lua_State* L)
 {
-  WI_Sleep(luaL_checkinteger(L, 1));
+  axSleep(luaL_checkinteger(L, 1));
   return 0;
 }
 
@@ -160,8 +160,8 @@ static int f_set_clipboard(lua_State* L)
 static int f_get_time_span(lua_State* L)
 {
   static longTime_t old = 0;
-  lua_pushnumber(L, (WI_GetMilliseconds() - old) / 1000.f);
-  old = WI_GetMilliseconds();
+  lua_pushnumber(L, (axGetMilliseconds() - old) / 1000.f);
+  old = axGetMilliseconds();
   return 1;
 }
 
@@ -169,7 +169,7 @@ static bool_t dark_theme = FALSE;
 
 #ifndef __EMSCRIPTEN__
 bool_t
-WI_IsDarkTheme(void)
+axIsDarkTheme(void)
 {
   return dark_theme;
 }
@@ -216,10 +216,10 @@ ORCA_API int luaopen_orca_system(lua_State* L)
   //	lua_setfield(L, LUA_REGISTRYINDEX, IID_SYSTEM);
   luaL_newlib(L, lib_system);
 
-  lua_pushstring(L, WI_GetPlatform());
+  lua_pushstring(L, axGetPlatform());
   lua_setglobal(L, "PLATFORM");
 
-  lua_pushstring(L, WI_SettingsDirectory());
+  lua_pushstring(L, axSettingsDirectory());
   lua_setglobal(L, "SETTINGS");
 
   luaL_newmetatable(L, "Event");

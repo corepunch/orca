@@ -1,6 +1,6 @@
 #include "SpriteKit.h"
 
-extern unsigned long WI_GetMilliseconds(void);
+extern unsigned long axGetMilliseconds(void);
 struct vec2 SKNode_GetReferenceSize(lpObject_t node);
 
 enum {
@@ -31,7 +31,7 @@ get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
   if (freeze_frame >= 0) {
     return (uint32_t)freeze_frame % num_frames;
   }
-  unsigned long ms = WI_GetMilliseconds();
+  unsigned long ms = axGetMilliseconds();
   return (uint32_t)((double)ms * framerate / 1000.0) % num_frames;
 }
 

@@ -111,22 +111,22 @@ HANDLER(Input, Node, KeyDown)
   uint32_t dwLength = (uint32_t)strlen(szText);
 
   switch (pKeyDown->keyCode) {
-    case WI_KEY_BACKSPACE:
+    case AX_KEY_BACKSPACE:
       if (pInput->Cursor > 0) {
         pInput->Cursor--;
         for (char *a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
           ;
       }
       break;
-    case WI_KEY_ESCAPE:
+    case AX_KEY_ESCAPE:
       OBJ_SetFocus(NULL);
       break;
-    case WI_KEY_TAB: {
+    case AX_KEY_TAB: {
       lpObject_t a = _FindNextTabStop(hObject);
       OBJ_SetFocus(a ? a : _NextTabStop(hObject));
       break;
     }
-    case WI_KEY_ENTER:
+    case AX_KEY_ENTER:
       if (!pInput->Multiline) {
         OBJ_SetFocus(NULL);
         SV_PostMessage(hObject, "Submit", 0, szText);
@@ -141,16 +141,16 @@ HANDLER(Input, Node, KeyDown)
         SV_PostMessage(hObject, "Char", 0, 0);
       }
       break;
-    case WI_KEY_LEFTARROW:
+    case AX_KEY_LEFTARROW:
       pInput->Cursor = MAX(pInput->Cursor - 1, 0);
       break;
-    case WI_KEY_UPARROW:
+    case AX_KEY_UPARROW:
       pInput->Cursor = dwLength;
       break;
-    case WI_KEY_DOWNARROW:
+    case AX_KEY_DOWNARROW:
       pInput->Cursor = 0;
       break;
-    case WI_KEY_RIGHTARROW:
+    case AX_KEY_RIGHTARROW:
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:

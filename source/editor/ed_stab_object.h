@@ -349,7 +349,7 @@ ORCA_API bool_t OBJ_SaveDocument(lpObject_t object) {
 }
 
 ORCA_API void UI_StepTime(lpObject_t object) {
-  core.realtime = WI_GetMilliseconds();
+  core.realtime = axGetMilliseconds();
   core.frame++;
 }
 // post/node/Example/Prefabs?source=Example/Screens/Application/Image&name=Image

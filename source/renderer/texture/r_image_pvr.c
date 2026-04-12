@@ -24,8 +24,8 @@ struct pvr_header
   int metadataSize;
 };
 
-struct WI_Size
-R_TexImagePVR(GLenum target, struct WI_Buffer* sb)
+struct AXsize
+R_TexImagePVR(GLenum target, struct AXbuffer* sb)
 {
   struct pvr_header const* header = (void const*)sb->data;
   if (header->version != PVR_HEADER) {

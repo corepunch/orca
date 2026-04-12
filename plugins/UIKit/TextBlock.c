@@ -152,7 +152,7 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   pViewText->availableWidth = pMakeText->availableSpace;
   pViewText->textWrapping = (enum text_wrap)pTextBlockConcept->TextWrapping;
   pViewText->textOverflow = (enum text_overflow)pTextBlockConcept->TextOverflow;
-  pViewText->scale = WI_GetScaling();
+  pViewText->scale = axGetScaling();
   return TRUE;
 }
 

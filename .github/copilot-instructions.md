@@ -757,9 +757,9 @@ When editing PHP templates in `tools/templates/`:
 
 ### Renderer Lifecycle — `tr.buffer` as Initialization Sentinel
 
-`renderer_Init()` (`source/renderer/r_main.c`) is the only function that creates the OpenGL context and calls `R_InitBuffers()` → `glGenBuffers()`, which sets `tr.buffer` to a non-zero value. Requiring `orca.renderer` (via `luaopen_orca_renderer`) only calls `WI_Init()` — it does **not** initialize the full renderer.
+`renderer_Init()` (`source/renderer/r_main.c`) is the only function that creates the OpenGL context and calls `R_InitBuffers()` → `glGenBuffers()`, which sets `tr.buffer` to a non-zero value. Requiring `orca.renderer` (via `luaopen_orca_renderer`) only calls `axInit()` — it does **not** initialize the full renderer.
 
-**Gotcha:** Calling `renderer_Shutdown()` without having first called `renderer_Init()` crashes in `WI_MakeCurrentContext()` because no GL context exists. The guard `if (!tr.buffer) return;` at the top of `renderer_Shutdown` short-circuits this path. Always check `tr.buffer` before performing any GL teardown.
+**Gotcha:** Calling `renderer_Shutdown()` without having first called `renderer_Init()` crashes in `axMakeCurrentContext()` because no GL context exists. The guard `if (!tr.buffer) return;` at the top of `renderer_Shutdown` short-circuits this path. Always check `tr.buffer` before performing any GL teardown.
 
 This matters in test harnesses (`RunTest` in `source/orca.c`) that `require "orca.renderer"` for XML parsing but never create a window.
 
@@ -771,7 +771,7 @@ The XML attribute iterator in `source/parsers/p_xml.c` previously used `xmlNodeL
 
 ### Screen ResizeMode in Tests and Headless Contexts
 
-`Screen.MeasureOverride` calls `WI_GetSize()` and overrides the screen's requested `Width`/`Height` with the actual window dimensions when `ResizeMode == kResizeModeCanResize` (the **default** value). On a virtual framebuffer (e.g., `xvfb-run` in CI), the window is 640×480, so any test that creates a `Screen { Width = 1000, Height = 1000 }` without setting `ResizeMode` will silently get a 640×480 screen — causing layout assertions to fail.
+`Screen.MeasureOverride` calls `axGetSize()` and overrides the screen's requested `Width`/`Height` with the actual window dimensions when `ResizeMode == kResizeModeCanResize` (the **default** value). On a virtual framebuffer (e.g., `xvfb-run` in CI), the window is 640×480, so any test that creates a `Screen { Width = 1000, Height = 1000 }` without setting `ResizeMode` will silently get a 640×480 screen — causing layout assertions to fail.
 
 **Fix:** Always set `ResizeMode = "NoResize"` (Lua) or `ResizeMode="NoResize"` (XML attribute) for test screens that must keep their explicit dimensions.
 

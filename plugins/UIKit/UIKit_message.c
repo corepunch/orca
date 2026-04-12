@@ -8,7 +8,7 @@ extern lpProperty_t
 luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id);
 
 bool_t
-CORE_HandleObjectMessage(lua_State *L, struct WI_Message* msg)
+CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
   for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
@@ -48,7 +48,7 @@ f_beginDraggingSession(lua_State *L)
 }
 
 static bool
-convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessageMsg_t* out_mouse)
+convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageMsg_t* out_mouse)
 {
   *out_mouse = (Node_MouseMessageMsg_t){
     .x = e->x,
@@ -80,7 +80,7 @@ convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessage
 }
 //
 //static int
-//lua_pushmousevent(lua_State* L, lpObject_t obj, struct WI_Message* e)
+//lua_pushmousevent(lua_State* L, lpObject_t obj, struct AXmessage* e)
 //{
 //  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
 //#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
@@ -129,7 +129,7 @@ convert_mouse_message(struct WI_Message* e, uint32_t* out_msg, Node_MouseMessage
 //}
 
 static void
-process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
+process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
 {
   switch (e->message) {
     case kEventLeftMouseDown:
@@ -180,11 +180,11 @@ process_dragndrop(lua_State *L, struct WI_Message *e, lpObject_t sender)
   }
 }
 
-void WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size);
-void WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size);
+void axBuildModifiersString(wParam_t wParam, char* buf, size_t size);
+void axKeyEventToText(struct AXmessage const* e, char* buf, size_t size);
 
 static bool
-build_key_msg(struct WI_Message const* e, Node_KeyMessageMsg_t* key, uint32_t *msg)
+build_key_msg(struct AXmessage const* e, Node_KeyMessageMsg_t* key, uint32_t *msg)
 {
   static char modifiersString[MAX_PROPERTY_STRING];
   static char hotKey[MAX_PROPERTY_STRING];
@@ -198,18 +198,18 @@ build_key_msg(struct WI_Message const* e, Node_KeyMessageMsg_t* key, uint32_t *m
   }
   key->keyCode = e->keyCode;
   key->character = *(unsigned char*)&e->lParam;
-  key->modifiers = e->wParam & (WI_MOD_SHIFT|WI_MOD_CTRL|WI_MOD_ALT|WI_MOD_CMD);
+  key->modifiers = e->wParam & (AX_MOD_SHIFT|AX_MOD_CTRL|AX_MOD_ALT|AX_MOD_CMD);
   key->modifiersString = modifiersString;
   key->hotKey = hotKey;
   key->text = text;
-  WI_KeyEventToText(e, text, sizeof(text));
-  WI_BuildModifiersString(e->wParam, modifiersString, sizeof(modifiersString));
+  axKeyEventToText(e, text, sizeof(text));
+  axBuildModifiersString(e->wParam, modifiersString, sizeof(modifiersString));
   snprintf(hotKey, sizeof(hotKey), "%s%s", key->modifiersString, key->text);
   return true;
 }
 
 LRESULT
-UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct WI_Message* e)
+UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
 {
   uint16_t x = LOWORD(e->wParam), y = HIWORD(e->wParam);
   lpObject_t sender = NULL;
@@ -258,7 +258,7 @@ handle:
   convert_mouse_message(e, &msg, &mouse);
 
   // Route the event up the parent chain until it's handled.
-  success = CORE_HandleObjectMessage(L, &(struct WI_Message) {
+  success = CORE_HandleObjectMessage(L, &(struct AXmessage) {
     .target = sender,
     .message = msg,
     .wParam = 0,
@@ -313,12 +313,12 @@ handle:
 }
 
 bool_t
-UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
+UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
 {
   uint32_t msg;
   struct Node_KeyMessageEventArgs key = {0};
   build_key_msg(e, &key, &msg);
-  return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct WI_Message) {
+  return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct AXmessage) {
     .target = core_GetFocus(),
     .message = msg,
     .wParam = 0,
@@ -353,7 +353,7 @@ UI_HandleKeyEvent(lua_State *L, struct WI_Message* e)
 }
 
 
-LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
+LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
   int tmp;
   switch (msg->message) {
     case kEventLeftMouseDown:
@@ -378,13 +378,13 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
     case kEventResumeCoroutine:
       switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
         case LUA_OK:
-          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
+          axPostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
           break;
         case LUA_YIELD:
-          WI_PostMessageW(msg->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
+          axPostMessageW(msg->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
           break;
         default:
-          WI_PostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
+          axPostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
           if (!lua_isnil(msg->target, -1)) {
             lpcString_t err = lua_tostring(msg->target, -1);
             if (err) fprintf(stderr, "co.resume(): %s\n", err);
@@ -395,8 +395,8 @@ LRESULT ui_handle_event(lua_State *L, struct WI_Message* msg) {
       return FALSE;
     case kEventStopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
-      WI_RemoveFromQueue(msg->target);
-      WI_PostMessageW(NULL, kEventWindowPaint, WI_GetSize(NULL), 0);
+      axRemoveFromQueue(msg->target);
+      axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), 0);
       return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);

@@ -64,7 +64,7 @@ HANDLER(RenderTargetTexture, Object, Start) {
   _RenderTexture_Create(&(CREATERTSTRUCT) {
     .Width = pRenderTargetTexture->Width,
     .Height = pRenderTargetTexture->Height,
-    .Scale = WI_GetScaling()
+    .Scale = axGetScaling()
   }, GetTexture(hObject));
   return TRUE;
 }

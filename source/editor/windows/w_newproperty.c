@@ -37,7 +37,7 @@ ED_NewProperty(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
       ED_ReleaseUserData(wnd);
       return 1;
     case EVT_CCLICK:
-      ED_HandleTextInput(WI_KEY_ENTER);
+      ED_HandleTextInput(AX_KEY_ENTER);
       return 1;
     case EVT_CGRAB:
       ED_SetSelectedItem(wnd, wparm);

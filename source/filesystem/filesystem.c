@@ -115,13 +115,13 @@ FS_JoinPaths(lpcString_t buffer, int32_t size, lpcString_t base, lpcString_t rel
 //         (int)buffer[0] << 24;
 //}
 //
-//struct WI_Size
+//struct AXsize
 //read_image_size(FILE* fp)
 //{
 //  byte_t PNG[] = "\x89PNG\r\n\x1A\n";
 //  byte_t IHDR[] = "IHDR";
 //  byte_t header[20];
-//  struct WI_Size size = { 0, 0 };
+//  struct AXsize size = { 0, 0 };
 //  fread(header, 8, 1, fp);
 //  if (memcmp(header, PNG, 8))
 //    return size;
@@ -135,7 +135,7 @@ FS_JoinPaths(lpcString_t buffer, int32_t size, lpcString_t base, lpcString_t rel
 //}
 //
 //HRESULT
-//FS_GetImageSize(lpcString_t filename, struct WI_Size* pImgSize) {
+//FS_GetImageSize(lpcString_t filename, struct AXsize* pImgSize) {
 //  FILE* fp = NULL;
 //  struct _PACKFILE pf = { 0 };
 //  lpcString_t args = strchr(filename, '?');

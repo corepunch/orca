@@ -15,7 +15,7 @@ OBJ_MakeNativeObject(uint32_t class_id) {
 lpcClassDesc_t cls = OBJ_FindClassW(class_id);
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->components = OBJ_AddComponent(object, cls->ClassID);
-//  object->window = WI_Get(L);
+//  object->window = axGet(L);
 //  object->game = GetGame(L);
 //  object->localization = GetLocalization(L);
   object->unique = ++unique_counter;
@@ -81,7 +81,7 @@ OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
   OBJ_Clear(L, self);
-  WI_RemoveFromQueue(self);
+  axRemoveFromQueue(self);
   if (self->luaObject) {
     luaL_unref(L, LUA_REGISTRYINDEX, self->luaObject);
     self->luaObject = 0;
@@ -181,7 +181,7 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
 
 int OBJ_SetTimer(lpObject_t self, int duration)
 {
-  return WI_SetTimer(self, MAX(duration, 1), NULL, TRUE);;
+  return axSetTimer(self, MAX(duration, 1), NULL, TRUE);;
 }
 
 #include <source/editor/ed_stab_object.h>
