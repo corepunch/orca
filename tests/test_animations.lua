@@ -218,7 +218,7 @@ local function test_property_animation_to_value()
   local node   = screen + ui.Node2D { Width = 100 }
 
   -- Tween Width 100 → 250 instantly
-  node:doTween("Node2D.Width", 0, "Linear", "InOut", 250)
+  node:doTween("Node.Width", 0, "Linear", "InOut", 250)
   node:send("Object.Animate")
   expect_near(node.Width, 250, 0.5, "Width→250 after instant doTween")
 
