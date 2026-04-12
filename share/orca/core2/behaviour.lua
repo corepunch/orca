@@ -126,7 +126,11 @@ local _class_0 = setmetatable({
     _base_1.__newindex = function(_self_0, key, value)
       local ud = rawget(_self_0, '__userdata')
       local set = orca.core.Object.__setproperty
-      return ud and set(_self_0, key, value) or rawset(_self_0, key, value)
+      if ud and key:find('.', 1, true) then
+        rawset(_self_0, key, value)
+      else
+        return ud and set(_self_0, key, value) or rawset(_self_0, key, value)
+      end
     end
 
     orca.core.Object.new(self, ...)

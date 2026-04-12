@@ -5,12 +5,6 @@
 // INTERNAL HELPERS
 // ============================================================================
 
-// Declare parse_property (defined in core_main.c; used the same way as in StyleController).
-extern int parse_property(lua_State* L,
-                          const char* str,
-                          struct PropertyType const* prop,
-                          void* valueptr);
-
 // Walk StateManager's StateGroup children and set PF_USED_IN_STATE_MANAGER on
 // each property referenced by a ControllerProperty attribute.
 static void
@@ -29,22 +23,32 @@ _InitControllerProperties(struct StateManagerController* smc, lpObject_t host)
   }
 }
 
-// Apply all StatePropertySetter children of `stateObj` to `target`.
+// Apply all attached properties of `stateObj` to `target`.
+// Attached properties are stored in the State's Lua table as raw key-value
+// pairs with a dotted full name (e.g. "Node.Opacity" = 0.5).
 static void
 _ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
 {
-  FOR_EACH_OBJECT(setterObj, stateObj) {
-    struct StatePropertySetter* sp = GetStatePropertySetter(setterObj);
-    if (!sp || !sp->Property || !sp->Property[0] || !sp->Value) continue;
-    lpProperty_t hprop = NULL;
-    if (FAILED(OBJ_FindShortProperty(target, sp->Property, &hprop))) continue;
-    if (PROP_GetType(hprop) == kDataTypeString) {
-      PROP_SetStringValue(hprop, sp->Value);
-    } else {
-      char buf[MAX_PROPERTY_STRING] = { 0 };
-      parse_property(core.L, sp->Value, PROP_GetDesc(hprop), buf);
-      PROP_SetValue(hprop, buf);
+  lua_State* L = core.L;
+  if (OBJ_GetLuaObject(stateObj)) {
+    luaX_pushObject(L, stateObj);
+    int tbl = lua_gettop(L);
+    lua_pushnil(L);
+    while (lua_next(L, tbl)) {
+      if (lua_type(L, -2) == LUA_TSTRING) {
+        const char* key = lua_tostring(L, -2);
+        // Only process dotted full-property-names like "Node.Opacity".
+        // Skip internal Lua fields that start with '_'.
+        if (key[0] != '_' && strchr(key, '.')) {
+          lpProperty_t hprop = NULL;
+          if (SUCCEEDED(OBJ_FindLongProperty(target, fnv1a32(key), &hprop))) {
+            luaX_readProperty(L, -1, hprop);
+          }
+        }
+      }
+      lua_pop(L, 1); // pop value, keep key for next lua_next
     }
+    lua_pop(L, 1); // pop table
   }
   // Recurse into nested State children (sub-states targeting child objects).
   FOR_EACH_OBJECT(child, stateObj) {

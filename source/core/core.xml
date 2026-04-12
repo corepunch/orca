@@ -647,30 +647,22 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="StateGroup">
       <summary>Tracks one controller property and maps its values to State objects.</summary>
-      <details>Each StateGroup inside a StateManager watches a single host-object property (named by ControllerProperty). When that property changes value, StateManagerController iterates the child State objects to find the first one whose Value matches and applies its StatePropertySetter children to the host object tree.</details>
+      <details>Each StateGroup inside a StateManager watches a single host-object property (named by ControllerProperty). When that property changes value, StateManagerController iterates the child State objects to find the first one whose Value matches and applies its attached properties to the host object tree.</details>
       <properties>
         <property name="ControllerProperty" type="string">Short name of the property on the host object to watch (e.g. "IsActive")</property>
       </properties>
     </class>
     <class name="State">
       <summary>Defines property overrides to apply when the parent StateGroup's controller property matches Value.</summary>
-      <details>A State is a child of a StateGroup. When the controller property equals Value, every StatePropertySetter child of this State is applied to the object identified by Path (or the host object if Path is empty).</details>
+      <details>A State is a child of a StateGroup. When the controller property equals Value, attached properties on this State (e.g. 'Node.Opacity' = 0.5) are applied to the object identified by Path (or the host object if Path is empty).</details>
       <properties>
         <property name="Value" type="string">The value of the controller property that activates this state (compared as a number; for booleans "true"/"false" are also accepted)</property>
         <property name="Path" type="string">Optional path from the host object to the target object. Empty string means the host object itself.</property>
       </properties>
     </class>
-    <class name="StatePropertySetter">
-      <summary>Sets one property on the target object when the parent State is activated.</summary>
-      <details>A StatePropertySetter is a child of a State. When its parent State becomes active, Property is looked up on the target object (identified by State.Path) and set to Value using the standard property parser.</details>
-      <properties>
-        <property name="Property" type="string">Short name of the property to set on the target object</property>
-        <property name="Value" type="string">String representation of the value to assign (parsed the same way as XML attribute values)</property>
-      </properties>
-    </class>
     <class name="StateManagerController" attach-only="true">
       <summary>Attach-only component that applies state-driven property overrides from a StateManager object.</summary>
-      <details>StateManagerController is an attach-only component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies all its StatePropertySetter children to the target object.</details>
+      <details>StateManagerController is an attach-only component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies its attached properties to the target object.</details>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
