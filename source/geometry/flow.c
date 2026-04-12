@@ -1,4 +1,6 @@
 #include <include/api.h>
+#include <source/geometry/geometry.h>
+#include <source/core/core.h>
 
 ORCA_API int
 parse_property(lua_State* L,

@@ -38,8 +38,9 @@ end
 -- ---------------------------------------------------------------------------
 local function make_state_manager()
   local sm = core.StateManager()
-  local sg = sm + core.StateGroup()
-  sg.ControllerProperty = "Opacity"
+  local sg = sm + core.StateGroup {
+    ControllerProperty = "Opacity"
+  }
 
   local s0 = sg + core.State(); s0.Value = "0"
   local sp0 = s0 + core.StatePropertySetter(); sp0.Property = "Opacity"; sp0.Value = "0.0"
