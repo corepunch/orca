@@ -928,24 +928,6 @@ struct State* luaX_checkState(lua_State *L, int idx) {
 	return GetState(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(State, 0);
-static struct PropertyType const StatePropertySetterProperties[kStatePropertySetterNumProperties] = {
-	DECL(0x5221f9e8, StatePropertySetter, Property, Property, kDataTypeString), // StatePropertySetter.Property
-	DECL(0xd147f96a, StatePropertySetter, Value, Value, kDataTypeString), // StatePropertySetter.Value
-};
-static struct StatePropertySetter StatePropertySetterDefaults = {
-};
-LRESULT StatePropertySetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
-void luaX_pushStatePropertySetter(lua_State *L, struct StatePropertySetter const* StatePropertySetter) {
-	luaX_pushObject(L, CMP_GetObject(StatePropertySetter));
-}
-struct StatePropertySetter* luaX_checkStatePropertySetter(lua_State *L, int idx) {
-	return GetStatePropertySetter(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(StatePropertySetter, 0);
 HANDLER(StateManagerController, Object, Start);
 HANDLER(StateManagerController, Object, PropertyChanged);
 HANDLER(StateManagerController, StateManagerController, ControllerChanged);
@@ -1017,7 +999,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateManager), -2), "StateManager");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateGroup), -2), "StateGroup");
 	lua_setfield(L, ((void)lua_pushclass(L, &_State), -2), "State");
-	lua_setfield(L, ((void)lua_pushclass(L, &_StatePropertySetter), -2), "StatePropertySetter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateManagerController), -2), "StateManagerController");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);

@@ -132,17 +132,6 @@ enum StateProperties {
 	kStateValue,
 	kStatePath,
 };
-// StatePropertySetter
-#define ID_StatePropertySetter 0x839cf9a4
-#define GetStatePropertySetter(_P) ((struct StatePropertySetter*)((_P)?OBJ_GetComponent(_P,ID_StatePropertySetter):NULL))
-#define StatePropertySetter_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StatePropertySetter,sizeof(struct StatePropertySetter),_N)
-#define ID_StatePropertySetter_Property 0xe4c64d8b // StatePropertySetter.Property
-#define ID_StatePropertySetter_Value 0x79cf4c5f // StatePropertySetter.Value
-#define kStatePropertySetterNumProperties 2
-enum StatePropertySetterProperties {
-	kStatePropertySetterProperty,
-	kStatePropertySetterValue,
-};
 // StateManagerController
 #define ID_StateManagerController 0x69d899d1
 #define GetStateManagerController(_P) ((struct StateManagerController*)((_P)?OBJ_GetComponent(_P,ID_StateManagerController):NULL))

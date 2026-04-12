@@ -1,5 +1,7 @@
--- Headless tests for the StateManagerController component and the new
--- StateManager / StateGroup / State / StatePropertySetter object hierarchy.
+-- Headless tests for the StateManagerController component and the
+-- StateManager / StateGroup / State object hierarchy.
+-- States now use attached properties (dotted full names like 'Node.Opacity')
+-- directly on the State object instead of StatePropertySetter children.
 --
 -- Run with: $(TARGET) -test=tests/test_state_manager.lua
 --
@@ -27,14 +29,12 @@ local function expect_near(actual, expected, eps, label)
 end
 
 -- ---------------------------------------------------------------------------
--- Build a small StateManager tree using the + operator:
+-- Build a small StateManager tree using attached properties on State:
 --
 --   StateManager
 --     StateGroup  (ControllerProperty = "Opacity")
---       State  Value="0"
---         StatePropertySetter  Property="Opacity"  Value="0.0"
---       State  Value="1"
---         StatePropertySetter  Property="Opacity"  Value="1.0"
+--       State  { Value = "0", ['Node.Opacity'] = 0.0 }
+--       State  { Value = "1", ['Node.Opacity'] = 1.0 }
 -- ---------------------------------------------------------------------------
 local function make_state_manager()
   local sm = core.StateManager()
@@ -42,11 +42,8 @@ local function make_state_manager()
     ControllerProperty = "Opacity"
   }
 
-  local s0 = sg + core.State(); s0.Value = "0"
-  local sp0 = s0 + core.StatePropertySetter(); sp0.Property = "Opacity"; sp0.Value = "0.0"
-
-  local s1 = sg + core.State(); s1.Value = "1"
-  local sp1 = s1 + core.StatePropertySetter(); sp1.Property = "Opacity"; sp1.Value = "1.0"
+  sg:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.0 })
+  sg:addChild(core.State { Value = "1", ['Node.Opacity'] = 1.0 })
 
   return sm
 end
@@ -85,13 +82,10 @@ local function test_state_group_width()
   local node   = screen + ui.Node2D { Width = 100 }
 
   local sm = core.StateManager()
-  local sg = sm + core.StateGroup(); sg.ControllerProperty = "Width"
+  local sg = sm + core.StateGroup { ControllerProperty = "Width" }
 
-  local s50  = sg + core.State(); s50.Value = "50"
-  local sp50 = s50 + core.StatePropertySetter(); sp50.Property = "Width"; sp50.Value = "50"
-
-  local s200  = sg + core.State(); s200.Value = "200"
-  local sp200 = s200 + core.StatePropertySetter(); sp200.Property = "Width"; sp200.Value = "200"
+  sg:addChild(core.State { Value = "50",  ['Node.Width'] = 50  })
+  sg:addChild(core.State { Value = "200", ['Node.Width'] = 200 })
 
   node:addComponentByName("StateManagerController")
   node.StateManager = sm
@@ -122,9 +116,8 @@ local function test_state_manager_reassignment()
 
   -- Build a second StateManager that drives Opacity to 0.5 when Opacity == 0.
   local sm2 = core.StateManager()
-  local sg2 = sm2 + core.StateGroup(); sg2.ControllerProperty = "Opacity"
-  local s2  = sg2 + core.State(); s2.Value = "0"
-  local sp2 = s2  + core.StatePropertySetter(); sp2.Property = "Opacity"; sp2.Value = "0.5"
+  local sg2 = sm2 + core.StateGroup { ControllerProperty = "Opacity" }
+  sg2:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.5 })
 
   node.StateManager = sm2
   -- No extra Object.Start here: the new StateManager is picked up via
@@ -140,7 +133,7 @@ local function test_state_manager_reassignment()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 4: State.Path — apply setters to a named child object
+-- Test 4: State.Path — apply properties to a named child object
 -- ---------------------------------------------------------------------------
 local function test_state_path_to_child()
   local screen = ui.Screen { Width = 400, Height = 400, ResizeMode = "NoResize" }
@@ -149,9 +142,8 @@ local function test_state_path_to_child()
   child:setName("innerNode")
 
   local sm = core.StateManager()
-  local sg = sm + core.StateGroup(); sg.ControllerProperty = "Width"
-  local s  = sg + core.State(); s.Value = "200"; s.Path = "innerNode"
-  local sp = s  + core.StatePropertySetter(); sp.Property = "Width"; sp.Value = "77"
+  local sg = sm + core.StateGroup { ControllerProperty = "Width" }
+  sg:addChild(core.State { Value = "200", Path = "innerNode", ['Node.Width'] = 77 })
 
   parent:addComponentByName("StateManagerController")
   parent.StateManager = sm
@@ -167,11 +159,47 @@ local function test_state_path_to_child()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 5: Multiple attached properties on a single State are all applied
+-- ---------------------------------------------------------------------------
+local function test_multiple_attached_properties()
+  local screen = ui.Screen { Width = 500, Height = 500, ResizeMode = "NoResize" }
+  local node   = screen + ui.Node2D { Width = 100, Height = 100 }
+
+  local sm = core.StateManager()
+  local sg = sm + core.StateGroup { ControllerProperty = "Opacity" }
+  -- State "0" sets three properties at once.
+  sg:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.3, ['Node.Width'] = 42, ['Node.Height'] = 77 })
+  sg:addChild(core.State { Value = "1", ['Node.Opacity'] = 1.0, ['Node.Width'] = 100, ['Node.Height'] = 100 })
+
+  node:addComponentByName("StateManagerController")
+  node.StateManager = sm
+  node:send("Object.Start")
+
+  -- Activate State "0" — all three overrides must be applied.
+  node.Opacity = 0
+  node:emitPropertyChangedEvents()
+  expect_near(node.Opacity, 0.3,  0.01, "test_multiple_attached_properties: Opacity → 0.3")
+  expect_near(node.Width,   42,   0.01, "test_multiple_attached_properties: Width → 42")
+  expect_near(node.Height,  77,   0.01, "test_multiple_attached_properties: Height → 77")
+
+  -- Activate State "1" — all three must be restored.
+  node.Opacity = 1
+  node:emitPropertyChangedEvents()
+  expect_near(node.Opacity, 1.0,  0.01, "test_multiple_attached_properties: Opacity → 1.0")
+  expect_near(node.Width,   100,  0.01, "test_multiple_attached_properties: Width → 100")
+  expect_near(node.Height,  100,  0.01, "test_multiple_attached_properties: Height → 100")
+
+  node:removeFromParent()
+  print("PASS: test_multiple_attached_properties")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_controller_changed_applies_state()
 test_state_group_width()
 test_state_manager_reassignment()
 test_state_path_to_child()
+test_multiple_attached_properties()
 
 print("All StateManager tests passed.")

@@ -702,17 +702,6 @@ struct State {
 ORCA_API void luaX_pushState(lua_State *L, struct State const* State);
 ORCA_API struct State* luaX_checkState(lua_State *L, int idx);
 
-/// @brief Sets one property on the target object when the parent State is activated.
-/** StatePropertySetter component */
-typedef struct StatePropertySetter StatePropertySetter_t, *StatePropertySetterPtr, *lpStatePropertySetter_t;
-typedef struct StatePropertySetter const *StatePropertySetterCPtr, *lpcStatePropertySetter_t;
-struct StatePropertySetter {
-	const char* Property; ///< Short name of the property to set on the target object
-	const char* Value; ///< String representation of the value to assign (parsed the same way as XML attribute values)
-};
-ORCA_API void luaX_pushStatePropertySetter(lua_State *L, struct StatePropertySetter const* StatePropertySetter);
-ORCA_API struct StatePropertySetter* luaX_checkStatePropertySetter(lua_State *L, int idx);
-
 /// @brief Attach-only component that applies state-driven property overrides from a StateManager object.
 /** StateManagerController component */
 typedef struct StateManagerController StateManagerController_t, *StateManagerControllerPtr, *lpStateManagerController_t;
