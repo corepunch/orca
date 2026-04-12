@@ -817,8 +817,8 @@ ORCA_API int luaopen_orca_editor(lua_State* L)
   lpcString_t axKeynumToString(uint32_t);
   
   ED_Init((EDIMPORT) {
-    .GetOpenFileName = AX_GetOpenFileName,
-    .GetFolderName = AX_GetFolderName,
+    .GetOpenFileName = axGetOpenFileName,
+    .GetFolderName = axGetFolderName,
 //    .AX_KeynumToString = AX_KeynumToString,
   });
   
