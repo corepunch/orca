@@ -159,11 +159,48 @@ local function test_state_path_to_child()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 5: Multiple attached properties on a single State are all applied
+-- ---------------------------------------------------------------------------
+local function test_multiple_attached_properties()
+  local screen = ui.Screen { Width = 500, Height = 500, ResizeMode = "NoResize" }
+  local node   = screen + ui.Node2D { Width = 100, Height = 100 }
+
+  local sm = core.StateManager()
+  local sg = sm + core.StateGroup { ControllerProperty = "Opacity" }
+  -- State "0" sets three properties at once.
+  sg + core.State { Value = "0", ['Node.Opacity'] = 0.3, ['Node.Width'] = 42, ['Node.Height'] = 77 }
+  -- State "1" restores them.
+  sg + core.State { Value = "1", ['Node.Opacity'] = 1.0, ['Node.Width'] = 100, ['Node.Height'] = 100 }
+
+  node:addComponentByName("StateManagerController")
+  node.StateManager = sm
+  node:send("Object.Start")
+
+  -- Activate State "0" — all three overrides must be applied.
+  node.Opacity = 0
+  node:emitPropertyChangedEvents()
+  expect_near(node.Opacity, 0.3,  0.01, "test_multiple_attached_properties: Opacity → 0.3")
+  expect_near(node.Width,   42,   0.01, "test_multiple_attached_properties: Width → 42")
+  expect_near(node.Height,  77,   0.01, "test_multiple_attached_properties: Height → 77")
+
+  -- Activate State "1" — all three must be restored.
+  node.Opacity = 1
+  node:emitPropertyChangedEvents()
+  expect_near(node.Opacity, 1.0,  0.01, "test_multiple_attached_properties: Opacity → 1.0")
+  expect_near(node.Width,   100,  0.01, "test_multiple_attached_properties: Width → 100")
+  expect_near(node.Height,  100,  0.01, "test_multiple_attached_properties: Height → 100")
+
+  node:removeFromParent()
+  print("PASS: test_multiple_attached_properties")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_controller_changed_applies_state()
 test_state_group_width()
 test_state_manager_reassignment()
 test_state_path_to_child()
+test_multiple_attached_properties()
 
 print("All StateManager tests passed.")
