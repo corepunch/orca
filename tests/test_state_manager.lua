@@ -42,8 +42,8 @@ local function make_state_manager()
     ControllerProperty = "Opacity"
   }
 
-  sg + core.State { Value = "0", ['Node.Opacity'] = 0.0 }
-  sg + core.State { Value = "1", ['Node.Opacity'] = 1.0 }
+  sg:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.0 })
+  sg:addChild(core.State { Value = "1", ['Node.Opacity'] = 1.0 })
 
   return sm
 end
@@ -84,8 +84,8 @@ local function test_state_group_width()
   local sm = core.StateManager()
   local sg = sm + core.StateGroup { ControllerProperty = "Width" }
 
-  sg + core.State { Value = "50",  ['Node.Width'] = 50  }
-  sg + core.State { Value = "200", ['Node.Width'] = 200 }
+  sg:addChild(core.State { Value = "50",  ['Node.Width'] = 50  })
+  sg:addChild(core.State { Value = "200", ['Node.Width'] = 200 })
 
   node:addComponentByName("StateManagerController")
   node.StateManager = sm
@@ -117,7 +117,7 @@ local function test_state_manager_reassignment()
   -- Build a second StateManager that drives Opacity to 0.5 when Opacity == 0.
   local sm2 = core.StateManager()
   local sg2 = sm2 + core.StateGroup { ControllerProperty = "Opacity" }
-  sg2 + core.State { Value = "0", ['Node.Opacity'] = 0.5 }
+  sg2:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.5 })
 
   node.StateManager = sm2
   -- No extra Object.Start here: the new StateManager is picked up via
@@ -143,7 +143,7 @@ local function test_state_path_to_child()
 
   local sm = core.StateManager()
   local sg = sm + core.StateGroup { ControllerProperty = "Width" }
-  sg + core.State { Value = "200", Path = "innerNode", ['Node.Width'] = 77 }
+  sg:addChild(core.State { Value = "200", Path = "innerNode", ['Node.Width'] = 77 })
 
   parent:addComponentByName("StateManagerController")
   parent.StateManager = sm
@@ -168,9 +168,8 @@ local function test_multiple_attached_properties()
   local sm = core.StateManager()
   local sg = sm + core.StateGroup { ControllerProperty = "Opacity" }
   -- State "0" sets three properties at once.
-  sg + core.State { Value = "0", ['Node.Opacity'] = 0.3, ['Node.Width'] = 42, ['Node.Height'] = 77 }
-  -- State "1" restores them.
-  sg + core.State { Value = "1", ['Node.Opacity'] = 1.0, ['Node.Width'] = 100, ['Node.Height'] = 100 }
+  sg:addChild(core.State { Value = "0", ['Node.Opacity'] = 0.3, ['Node.Width'] = 42, ['Node.Height'] = 77 })
+  sg:addChild(core.State { Value = "1", ['Node.Opacity'] = 1.0, ['Node.Width'] = 100, ['Node.Height'] = 100 })
 
   node:addComponentByName("StateManagerController")
   node.StateManager = sm
