@@ -176,7 +176,7 @@
     </enum>
   </enums>
   <interfaces>
-    <interface name="Window" prefix="WI_" export="Window">
+    <interface name="Window" prefix="AX_" export="Window">
       <summary>Window interface abstraction.</summary>
       <details>
         <p>The `Window` interface defines the contract for window creation and management inside the framework. Each window instance operates in isolation, backed by its own `lua_State`, similar in spirit to Electron processes. This ensures complete separation of state and scripts across windows, avoiding unintended side effects between them.</p>

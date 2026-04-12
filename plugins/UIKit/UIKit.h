@@ -596,7 +596,7 @@ ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs
 struct Node_KeyMessageEventArgs {
 	int32_t keyCode; ///< The key involved in this event
 	int32_t character; ///< The character produced by this key event
-	int32_t modifiers; ///< Active modifier keys during the event (bitmask of WI_MOD_* flags)
+	int32_t modifiers; ///< Active modifier keys during the event (bitmask of AX_MOD_* flags)
 	const char* text; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys)
 	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
 	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")

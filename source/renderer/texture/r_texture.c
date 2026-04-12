@@ -45,14 +45,14 @@
 //	return 0.0f; // "to right"
 //}
 
-struct WI_Size R_TexImagePNG(GLenum target, struct WI_Buffer* sb, bool_t premultiply_alpha);
-struct WI_Size R_TexImageDDS(GLenum target, struct WI_Buffer* sb);
-struct WI_Size R_TexImagePVR(GLenum target, struct WI_Buffer* sb);
-struct WI_Size R_TexImageSVG(GLenum target, struct WI_Buffer* sb, uint32_t scale, struct Texture* pImage, bool_t ismask);
-// struct WI_Size R_TexImageS3TC(GLenum target, struct WI_Buffer* sb);
-struct WI_Size R_TexImageASTC(GLenum target, struct WI_Buffer* sb);
-struct WI_Size R_TexImageJPEG(GLenum target, struct WI_Buffer* rgb);
-struct WI_Size R_TexImageJPEGwithAlpha(GLenum target,struct WI_Buffer* rgb,struct WI_Buffer* alpha,bool_t premultiply_alpha);
+struct AXsize R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha);
+struct AXsize R_TexImageDDS(GLenum target, struct AXbuffer* sb);
+struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
+struct AXsize R_TexImageSVG(GLenum target, struct AXbuffer* sb, uint32_t scale, struct Texture* pImage, bool_t ismask);
+// struct AXsize R_TexImageS3TC(GLenum target, struct AXbuffer* sb);
+struct AXsize R_TexImageASTC(GLenum target, struct AXbuffer* sb);
+struct AXsize R_TexImageJPEG(GLenum target, struct AXbuffer* rgb);
+struct AXsize R_TexImageJPEGwithAlpha(GLenum target,struct AXbuffer* rgb,struct AXbuffer* alpha,bool_t premultiply_alpha);
 
 void
 Texture_Cleanup(struct Texture* image)
@@ -231,7 +231,7 @@ Texture_Create(PCREATEIMGSTRUCT _in, struct Texture** pImage)
   return S_OK;
 }
 
-struct WI_Size
+struct AXsize
 texture_make_error(GLenum target)
 {
   int error[] = { 0xff800080, 0xff400040, 0xff800080, 0xff400040 };
@@ -240,9 +240,9 @@ texture_make_error(GLenum target)
   return MAKE_TEX_SIZE(64, 64);
 }
 
-struct WI_Size
+struct AXsize
 R_TexImage(GLenum target,
-           struct WI_Buffer* sb,
+           struct AXbuffer* sb,
            struct Texture* pTexture,
            struct Image* pImage)
 {
@@ -269,11 +269,11 @@ R_TexImage(GLenum target,
       //		struct file * pFile;
       //		if ((pFile = FS_LoadFile(path)))
       //		{
-      //			struct WI_Buffer alpha = {
+      //			struct AXbuffer alpha = {
       //				(void *)pFile->data, pFile->size,
       // pFile->size, 0
       //			};
-      //			struct WI_Size const size =
+      //			struct AXsize const size =
       //R_TexImageJPEGwithAlpha( 				target, sb, &alpha, premulalpha
       //			);
       //			FS_FreeFile(pFile);
@@ -312,7 +312,7 @@ R_MakeGradientTexture(float angle, struct color a, struct color b);
 //_Texture_Load(PLOADIMGSTRUCT cmd, struct Texture** img)
 //{
 //  struct Texture* pTexture = NULL;
-//  struct WI_Size size;
+//  struct AXsize size;
 //  HRESULT hr = Texture_Create(&(CREATEIMGSTRUCT){
 //    .Width = 64,
 //    .Height = 64,
@@ -345,13 +345,13 @@ R_MakeGradientTexture(float angle, struct color a, struct color b);
 //}
 
 HANDLER(Image, Object, Start) {
-  struct WI_Size tex = MAKE_TEX_SIZE(0, 0);
+  struct AXsize tex = MAKE_TEX_SIZE(0, 0);
   struct file* pFile;
   struct Texture* pTexture = GetTexture(hObject);
   R_Call(glGenTextures, 1, &pTexture->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, pTexture->texnum);
   if ((pFile = FS_LoadFile(pImage->Source))) {
-    struct WI_Buffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
+    struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
     tex = R_TexImage(GL_TEXTURE_2D, &sb, pTexture, pImage);
     R_ApplyImageParms(pTexture, GL_TEXTURE_2D, pImage->HasMipmaps);
     // Con_Error("%d %d %s", texture_size.width, texture_size.height, filename);
@@ -417,7 +417,7 @@ R_BindFramebuffer(struct Texture* image)
     R_Call(glBindFramebuffer, GL_FRAMEBUFFER, image->framebuffer);
     R_ClearScreen(color_new(0, 0, 0, 0), 1, 0);
   } else {
-    WI_BindFramebuffer();
+    axBindFramebuffer();
   }
   tr.currentRenderTarget = image;
   return S_OK;
@@ -440,7 +440,7 @@ Image_GetInfo(struct Texture const* img, struct image_info* dst)
 lpObject_t
 R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
 {
-  struct WI_Buffer sb = { pBuffer, dwSize, dwSize, 0 };
+  struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };
   if (luaL_dostring(L, "return require('orca.renderer').Texture()") != LUA_OK) {
     Con_Error("%s", lua_tostring(L, -1));
     lua_pop(L, 1);
@@ -450,7 +450,7 @@ R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
 //  lua_pop(L, 1);
   R_Call(glGenTextures, 1, &texture->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, texture->texnum);
-  struct WI_Size size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
+  struct AXsize size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
                                   &(struct Image) {.Source = "[Memory]"});
   if (size.width == 0 || size.height == 0) {
     size = texture_make_error(GL_TEXTURE_2D);

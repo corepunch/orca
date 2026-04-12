@@ -40,7 +40,7 @@ static DWORD
 _NewFile(LPVOID lpObject, lpcString_t szName, DWORD dwType) {
   if (dwType == PROJITEM_PROJECT) {
     path_t pPath={0};
-    if (eimp.GetFolderName(&(WI_OpenFileName) {
+    if (eimp.GetFolderName(&(AXopenfilename) {
       .lpstrFile = pPath,
       .nMaxFile = sizeof(pPath),
     })) {

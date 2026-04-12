@@ -21,7 +21,7 @@ EDWINPROC(Plugins);
 
 HEDWND ED_InitLayout(void) {
   SIZE2 size;
-  WI_GetSize(&size);
+  axGetSize(&size);
   RECT rect = { 0, 0, size.width, size.height };
   return ED_CreateWindow(ED_RootWindow, 0, &rect, NULL, &(SPLITVIEWDESC) {
     .left = { ED_SplitView, 0, &(SPLITVIEWDESC) {

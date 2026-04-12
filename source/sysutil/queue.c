@@ -4,9 +4,9 @@
 
 int f_peek_iterator(lua_State* L)
 {
-  struct WI_Message msg = {0};
+  struct AXmessage msg = {0};
   lpObject_t __userdata = lua_touserdata(L, lua_upvalueindex(1));
-  int has_event = WI_PollEvent(&msg);
+  int has_event = axPollEvent(&msg);
 #if __EMSCRIPTEN__
   /* Return nil when the queue is empty so the Lua for-loop terminates and
      the main coroutine can yield back to emscripten_set_main_loop. */
@@ -58,9 +58,9 @@ int f_peek_iterator(lua_State* L)
       msg.target = __userdata;
       break;
   }
-  struct WI_Message* out = lua_newuserdata(L, sizeof(struct WI_Message));
+  struct AXmessage* out = lua_newuserdata(L, sizeof(struct AXmessage));
   luaL_setmetatable(L, "Event");
-  memcpy(out, &msg, sizeof(struct WI_Message));
+  memcpy(out, &msg, sizeof(struct AXmessage));
   return 1;
 }
 
@@ -72,10 +72,10 @@ int f_peek_message(lua_State* L) {
 }
 
 //void
-//WI_PostMessageW(lpObject_t hobj, uint32_t Msg, wParam_t wParam, lParam_t lParam)
+//axPostMessageW(lpObject_t hobj, uint32_t Msg, wParam_t wParam, lParam_t lParam)
 //{
 //  static uint32_t message_id = 0;
-//  struct WI_Message data = { hobj, Msg, wParam, lParam, message_id++ };
+//  struct AXmessage data = { hobj, Msg, wParam, lParam, message_id++ };
 //  // HACK: unclear why this happens
 //  if (Msg == kMsgWindowPaint) {
 //    for (uint16_t r = queue.read; r != queue.write; r++) {
@@ -93,15 +93,15 @@ int f_peek_message(lua_State* L) {
 //void
 //SV_PostMessage(lpObject_t hobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
 //{
-//  WI_PostMessageW(hobj, fnv1a32(Msg), wParam, lParam);
+//  axPostMessageW(hobj, fnv1a32(Msg), wParam, lParam);
 //}
 
 #define MAX_CLIENTS 256
 #define kMsgReadCommands 0x23d83fd3
-typedef LRESULT (*message_proc_t)(lua_State*, struct WI_Message*);
+typedef LRESULT (*message_proc_t)(lua_State*, struct AXmessage*);
 static message_proc_t clients[MAX_CLIENTS];
 
-bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
+bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   if (!msg->target && msg->message != kMsgReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -113,16 +113,16 @@ bool_t SV_DispatchMessage(lua_State* L, struct WI_Message* msg) {
 }
 
 ORCA_API void
-WI_BuildModifiersString(wParam_t wParam, char* buf, size_t size)
+axBuildModifiersString(wParam_t wParam, char* buf, size_t size)
 {
   buf[0] = '\0';
-  if (wParam & WI_MOD_CTRL)  strncat(buf, "ctrl+",  size - strlen(buf) - 1);
-  if (wParam & WI_MOD_ALT)   strncat(buf, "alt+",   size - strlen(buf) - 1);
-  if (wParam & WI_MOD_SHIFT) strncat(buf, "shift+", size - strlen(buf) - 1);
-  if (wParam & WI_MOD_CMD)   strncat(buf, "cmd+",   size - strlen(buf) - 1);
+  if (wParam & AX_MOD_CTRL)  strncat(buf, "ctrl+",  size - strlen(buf) - 1);
+  if (wParam & AX_MOD_ALT)   strncat(buf, "alt+",   size - strlen(buf) - 1);
+  if (wParam & AX_MOD_SHIFT) strncat(buf, "shift+", size - strlen(buf) - 1);
+  if (wParam & AX_MOD_CMD)   strncat(buf, "cmd+",   size - strlen(buf) - 1);
 }
 
-lpcString_t WI_KeynumToString(uint32_t keynum);
+lpcString_t axKeynumToString(uint32_t keynum);
 
 /* Only ASCII printable range: translating extended/Unicode characters requires
    UTF-8 decoding, which is left to higher-level key handlers. */
@@ -140,20 +140,20 @@ static char apply_shift(char ch) {
 }
 
 int f_translate_message(lua_State* L) {
-  struct WI_Message const* msg = luaL_checkudata(L, 1, "Event");
+  struct AXmessage const* msg = luaL_checkudata(L, 1, "Event");
   if (msg->message == kEventKeyDown && is_printable_char(msg->wParam & 0xff)) {
     char ch = msg->wParam & 0xff;
-    if (msg->wParam & WI_MOD_SHIFT)
+    if (msg->wParam & AX_MOD_SHIFT)
       ch = apply_shift(ch);
     lParam_t lp = 0;
     *(char*)&lp = ch;
-    WI_PostMessageW(msg->target, kEventChar, msg->wParam, lp);
+    axPostMessageW(msg->target, kEventChar, msg->wParam, lp);
   }
   return 0;
 }
 
 ORCA_API void
-WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size)
+axKeyEventToText(struct AXmessage const* e, char* buf, size_t size)
 {
   if (e->message == kEventChar) {
     /* lParam stores the computed character written by f_translate_message. */
@@ -172,7 +172,7 @@ WI_KeyEventToText(struct WI_Message const* e, char* buf, size_t size)
     memcpy(buf, &e->lParam, len);
     buf[len] = '\0';
 #else
-    snprintf(buf, size, "%s", WI_KeynumToString(e->wParam));
+    snprintf(buf, size, "%s", axKeynumToString(e->wParam));
 #endif
   }
 }
@@ -192,13 +192,13 @@ int f_dispatch_message(lua_State* L) {
   return 1;
 }
 
-bool_t SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message *)) {
+bool_t SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage *)) {
   memmove(&clients[1], &clients[0], (MAX_CLIENTS - 1) * sizeof(clients[0]));
   clients[0] = proc;
   return FALSE;
 }
 
-bool_t SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct WI_Message *)) {
+bool_t SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage *)) {
   for (int i = 0; i < MAX_CLIENTS; i++) {
     if (clients[i] == proc) {
       int remaining = MAX_CLIENTS - i - 1;

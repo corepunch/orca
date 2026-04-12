@@ -496,7 +496,7 @@ LRESULT ED_TextEditorCommand(LPTERMINAL con, LPTEXTEDITORSTRUCT te, wParam_t cmd
 }
 
 static void InsertChar(wParam_t wparam, LPTERMINAL con, LPTEXTEDITORSTRUCT te) {
-  DWORD chr = (wparam & WI_MOD_SHIFT) ? wparam&0xFFFF : tolower(wparam&0xFFFF);
+  DWORD chr = (wparam & AX_MOD_SHIFT) ? wparam&0xFFFF : tolower(wparam&0xFFFF);
   if (TE_IsSelectonActive(te)) {
     TE_AddUndo(con, te, TA_DELETESELECTION, TRUE);
   }
@@ -530,7 +530,7 @@ LRESULT ED_TextEditor(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_SetFocusedPanel(wnd);
       return 1;
     case kEventKeyDown:
-      if ((wparm&WI_MOD_SHIFT)|(wparm&WI_MOD_ALT)|(wparm&WI_MOD_CMD)) {
+      if ((wparm&AX_MOD_SHIFT)|(wparm&AX_MOD_ALT)|(wparm&AX_MOD_CMD)) {
         return 0;
       } else {
         InsertChar(wparm, ED_GetClient(wnd), te);

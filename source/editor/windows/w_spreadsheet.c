@@ -12,12 +12,12 @@
 #if 0
 
 static EDCMD spreadsheet_commands[] = {
-    { WI_KEY_RIGHTARROW, spreadsheet_next_column },
-    { WI_KEY_LEFTARROW, spreadsheet_previous_column },
-    { WI_KEY_DOWNARROW, spreadsheet_next_row },
-    { WI_KEY_UPARROW, spreadsheet_previous_row },
-    { WI_KEY_RIGHTARROW|WI_MOD_CMD, spreadsheet_next_sheet },
-    { WI_KEY_LEFTARROW|WI_MOD_CMD, spreadsheet_previous_sheet },
+    { AX_KEY_RIGHTARROW, spreadsheet_next_column },
+    { AX_KEY_LEFTARROW, spreadsheet_previous_column },
+    { AX_KEY_DOWNARROW, spreadsheet_next_row },
+    { AX_KEY_UPARROW, spreadsheet_previous_row },
+    { AX_KEY_RIGHTARROW|AX_MOD_CMD, spreadsheet_next_sheet },
+    { AX_KEY_LEFTARROW|AX_MOD_CMD, spreadsheet_previous_sheet },
     { 0, NULL },
 };
 

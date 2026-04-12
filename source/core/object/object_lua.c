@@ -184,7 +184,7 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
     lua_setfield(L, 1, "body");
     OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_CLEARBODY);
   }
-  WI_PostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
+  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
 
@@ -203,7 +203,7 @@ static int f_rebuild(lua_State *L) {
     OBJ_SetTextContent(self, luaL_checkstring(L, -1));
   }
   lua_pop(L, 1);
-  WI_PostMessageW(self, ID_Node_ViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
+  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
   return 0;
 }
 
@@ -214,7 +214,7 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
   lua_xmove(L, co, nargs);
-  WI_PostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
+  axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 
 lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {

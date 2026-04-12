@@ -13,7 +13,7 @@
 static void
 png_readcallback(png_struct* ps, png_byte* data, png_size_t length)
 {
-  struct WI_Buffer* sb = png_get_io_ptr(ps);
+  struct AXbuffer* sb = png_get_io_ptr(ps);
   if (sb->readcount + length > sb->cursize) {
     png_error(ps, "Read Error!");
   } else {
@@ -80,8 +80,8 @@ png_readcallback(png_struct* ps, png_byte* data, png_size_t length)
 //  return TRUE;
 //}
 
-struct WI_Size
-R_TexImagePNG(GLenum target, struct WI_Buffer* sb, bool_t premultiply_alpha)
+struct AXsize
+R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha)
 {
   if (png_sig_cmp(sb->data, 0, 8)) {
     PNG_ERROR("File is not a PNG.");

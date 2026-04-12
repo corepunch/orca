@@ -162,14 +162,14 @@ R_SetBlendMode(enum blend_mode value)
 void
 R_SetViewportRect(struct rect const *rect)
 {
-  float s = WI_GetScaling();
+  float s = axGetScaling();
   R_Call(glViewport, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 
 void
 R_SetScissorRect(struct rect const *rect)
 {
-  float s = WI_GetScaling();
+  float s = axGetScaling();
   R_Call(glScissor, rect->x * s, rect->y * s, rect->width * s, rect->height * s);
 }
 

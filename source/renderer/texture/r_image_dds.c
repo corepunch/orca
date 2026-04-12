@@ -7,8 +7,8 @@
 #define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
 #define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
 
-struct WI_Size
-R_TexImageDDS(GLenum target, struct WI_Buffer* sb)
+struct AXsize
+R_TexImageDDS(GLenum target, struct AXbuffer* sb)
 {
   uint32_t blockSize;
   uint32_t format;

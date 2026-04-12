@@ -20,11 +20,11 @@ R_LoadImageFromSource(GLenum target,
                       struct Texture* tex,
                       struct Image* img)
 {
-  struct WI_Size texture_size = MAKE_TEX_SIZE(0, 0);
+  struct AXsize texture_size = MAKE_TEX_SIZE(0, 0);
   struct file* pFile = FS_LoadFile(img->Source);
 
   if (pFile) {
-    struct WI_Buffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
+    struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
     texture_size = R_TexImage(target, &sb, tex, img);
     FS_FreeFile(pFile);
   } else {

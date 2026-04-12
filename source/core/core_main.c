@@ -390,18 +390,18 @@ static int f_parse_property(lua_State* L) {
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
-LRESULT CORE_ProcessMessage(lua_State *L, struct WI_Message* e) {
+LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   shortStr_t comp={0};
-  if (e->wParam & WI_MOD_CTRL) strcat(comp, "ctrl+");
-  if (e->wParam & WI_MOD_ALT) strcat(comp, "alt+");
-  if (e->wParam & WI_MOD_SHIFT) strcat(comp, "shift+");
-  if (e->wParam & WI_MOD_CMD) strcat(comp, "cmd+");
-  strcat(comp, WI_KeynumToString(e->wParam));
+  if (e->wParam & AX_MOD_CTRL) strcat(comp, "ctrl+");
+  if (e->wParam & AX_MOD_ALT) strcat(comp, "alt+");
+  if (e->wParam & AX_MOD_SHIFT) strcat(comp, "shift+");
+  if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
+  strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
     case kEventWindowPaint:
     case kEventWindowResized:
-      _fps[_counter++%MAX_FPS_CACHE] = (int)(WI_GetMilliseconds() - core.realtime);
-      core.realtime = WI_GetMilliseconds();
+      _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);
+      core.realtime = axGetMilliseconds();
       core.frame++;
       return FALSE;
     case kEventKeyDown:
@@ -438,7 +438,7 @@ void
 on_core_module_registered(lua_State* L)
 {
   memset(&core, 0, sizeof(struct game));
-  core.realtime = WI_GetMilliseconds();
+  core.realtime = axGetMilliseconds();
   core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
   

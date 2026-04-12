@@ -18,12 +18,12 @@ static void WriteWindowCommands(HEDWND wnd, HEDWND subject) {
 //      } else {
 //        ED_Echo(wnd, "\033[12;4m ");
 //      }
-//      if (cmd->dwKey & WI_MOD_CMD) ED_Echo(wnd, "Cmd+");
-//      if (cmd->dwKey & WI_MOD_CTRL) ED_Echo(wnd, "Ctrl+");
-//      if (cmd->dwKey & WI_MOD_ALT) ED_Echo(wnd, "Alt+");
-//      if (cmd->dwKey & WI_MOD_SHIFT) ED_Echo(wnd, "Shift+");
+//      if (cmd->dwKey & AX_MOD_CMD) ED_Echo(wnd, "Cmd+");
+//      if (cmd->dwKey & AX_MOD_CTRL) ED_Echo(wnd, "Ctrl+");
+//      if (cmd->dwKey & AX_MOD_ALT) ED_Echo(wnd, "Alt+");
+//      if (cmd->dwKey & AX_MOD_SHIFT) ED_Echo(wnd, "Shift+");
 //      DWORD key = cmd->dwKey & 0xff;
-//      for (lpcString_t s = eimp.WI_KeynumToString(key); *s; s++) {
+//      for (lpcString_t s = eimp.axKeynumToString(key); *s; s++) {
 //        
 //        ED_Echo(wnd, "%c", toupper(*s));
 //      }

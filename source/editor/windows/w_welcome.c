@@ -18,7 +18,7 @@ static LRESULT NewProject(HEDWND hWnd) {
 
 static LRESULT OpenProject(HEDWND hWnd) {
   path_t path={0};
-  eimp.GetOpenFileName(&(WI_OpenFileName){
+  eimp.GetOpenFileName(&(AXopenfilename){
     .lpstrFile = path,
     .nMaxFile = sizeof(path),
   });
@@ -69,7 +69,7 @@ LRESULT ED_WelcomeView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_Echo(wnd, PADDING "Recent\n");
       return 1;
     case kEventKeyDown:
-      if ((wparm&0xffff) == WI_KEY_ENTER && ED_GetSelectedItem(wnd) > 0) {
+      if ((wparm&0xffff) == AX_KEY_ENTER && ED_GetSelectedItem(wnd) > 0) {
         cmds[ED_GetSelectedItem(wnd)-1].lpProc(wnd);
         return 1;
       } else {

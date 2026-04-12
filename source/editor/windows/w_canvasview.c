@@ -225,7 +225,7 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
     SIZE2 window;
     MATRIX4 proj;
     float scale = 1;
-    WI_GetSize(&window);
+    axGetSize(&window);
     if (FixedScaling(scene)) {
       float w = GetNode(scene)->Size.Axis[0].Requested;
       float h = GetNode(scene)->Size.Axis[1].Requested;
@@ -278,8 +278,8 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_SetWindowFlags(wnd, EDWF_TOOLBAR);
       ED_SendMessage(wnd, TB_ADDBUTTONS, sizeof(toolbar)/sizeof(*toolbar), toolbar);
       RenderTexture_Create(&(CREATERTSTRUCT) {
-        .Width = ED_GetClientRect(wnd).width * WI_GetScaling(),
-        .Height = ED_GetClientRect(wnd).height * WI_GetScaling(),
+        .Width = ED_GetClientRect(wnd).width * axGetScaling(),
+        .Height = ED_GetClientRect(wnd).height * axGetScaling(),
       }, &data->scene_texture);
       return 0;
     case EVT_SIZE:
@@ -287,8 +287,8 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
         Texture_Release(data->scene_texture);
       }
       RenderTexture_Create(&(CREATERTSTRUCT) {
-        .Width = LOWORD(wparm) * WI_GetScaling(),
-        .Height = HIWORD(wparm) * WI_GetScaling(),
+        .Width = LOWORD(wparm) * axGetScaling(),
+        .Height = HIWORD(wparm) * axGetScaling(),
       }, &data->scene_texture);
       return 1;
     case EVT_PAINT:

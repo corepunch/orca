@@ -270,8 +270,8 @@ HANDLER(Screen, Screen, RenderScreen) {
     height = node->Size.Axis[1].Requested;
     if (!pScreen->_rt) {
       RenderTexture_Create(&(CREATERTSTRUCT) {
-        .Width = width * WI_GetScaling(),
-        .Height = height * WI_GetScaling(),
+        .Width = width * axGetScaling(),
+        .Height = height * axGetScaling(),
       }, &pScreen->_rt);
     }
     rt = pScreen->_rt;
@@ -500,8 +500,8 @@ HANDLER(Screen, Node2D, MeasureOverride) {
   
 //#if defined(__EMSCRIPTEN__) || defined(__QNX__)
   if (pScreen->ResizeMode == kResizeModeCanResize) {
-    struct WI_Size size;
-    if (WI_GetSize(&size)) {
+    struct AXsize size;
+    if (axGetSize(&size)) {
       NodePtr node = GetNode(hObject);
       node->Size.Axis[0].Requested = (float)size.width;
       node->Size.Axis[1].Requested = (float)size.height;
@@ -517,7 +517,7 @@ HANDLER(Screen, Node2D, MeasureOverride) {
   }
   uint32_t newsize = MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
   if (pScreen->_size != newsize) {
-//    WI_SetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
+//    axSetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
   FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Measure,
@@ -528,17 +528,17 @@ HANDLER(Screen, Node2D, MeasureOverride) {
 
 //HANDLER(Screen, Object, Create) {
 //  extern bool_t is_server;
-//  pScreen->_size = WI_GetSize(NULL);
+//  pScreen->_size = axGetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
-//  WI_PostMessageW(hObject, ID_Window_Paint, pScreen->_size, NULL);
+//  axPostMessageW(hObject, ID_Window_Paint, pScreen->_size, NULL);
 //  return FALSE;
 //}
 
 
 HANDLER(Screen, Object, Create) {
-//  struct WI_Size size;
+//  struct AXsize size;
 //  if (pScreen->ResizeMode == kResizeModeCanResize) {
-//    if (WI_GetSize(&size)) {
+//    if (axGetSize(&size)) {
 //      NodePtr node = GetNode(hObject);
 //      node->Size.Axis[0].Requested = (float)size.width;
 //      node->Size.Axis[1].Requested = (float)size.height;

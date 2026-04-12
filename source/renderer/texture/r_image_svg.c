@@ -7,9 +7,9 @@
 #include "nanosvg.h"
 #include "nanosvgrast.h"
 
-struct WI_Size
+struct AXsize
 R_TexImageSVG(GLenum target,
-              struct WI_Buffer* sb,
+              struct AXbuffer* sb,
               uint32_t backingScale,
               struct Texture* pImage,
               bool_t is_mask)

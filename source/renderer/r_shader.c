@@ -542,8 +542,8 @@ Shader_BindMaterial(struct shader const* shader,
   struct rect fviewport = {
     .x = 0,
     .y = 0,
-    .width = view->viewSize.x * WI_GetScaling(),
-    .height = view->viewSize.y * WI_GetScaling(),
+    .width = view->viewSize.x * axGetScaling(),
+    .height = view->viewSize.y * axGetScaling(),
   };
 
   if (ent->text && ent->text->numTextRuns && ent->text->run->string) {

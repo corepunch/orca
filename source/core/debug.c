@@ -33,7 +33,7 @@ static struct color32 stats[STATS_SIZE * STATS_SIZE];
 //static struct rect
 //GetHierarchyRect(renderer const* tr)
 //{
-//  struct WI_Size size = R_GetWindowSize(tr);
+//  struct AXsize size = R_GetWindowSize(tr);
 //  float width = (DEBUG_WIDTH + INSPECTOR_WIDTH) * CONSOLE_CHAR_WIDTH;
 //  return (struct rect){
 //    size.width - width, 0, DEBUG_WIDTH * CONSOLE_CHAR_WIDTH, size.height
@@ -43,7 +43,7 @@ static struct color32 stats[STATS_SIZE * STATS_SIZE];
 //static struct rect
 //GetInspectorRect(renderer const* tr)
 //{
-//  struct WI_Size size = R_GetWindowSize(tr);
+//  struct AXsize size = R_GetWindowSize(tr);
 //  float width = INSPECTOR_WIDTH * CONSOLE_CHAR_WIDTH;
 //  return (struct rect){ size.width - width, 0, width, size.height };
 //}
@@ -89,7 +89,7 @@ PrintLine(struct color32* buffer,
 //static void
 //PrintNode(lpObject_t hobj,
 //          struct color32* buffer,
-//          struct WI_Size const* size,
+//          struct AXsize const* size,
 //          uint32_t indent,
 //          uint32_t* line)
 //{
@@ -121,7 +121,7 @@ PrintLine(struct color32* buffer,
 //  PrintLine(&buffer[line++ * size->width], size->width, 0, __VA_ARGS__);
 //
 //static void
-//PrintInspector(lpObject_t hobj, struct color32* buffer, struct WI_Size const* size)
+//PrintInspector(lpObject_t hobj, struct color32* buffer, struct AXsize const* size)
 //{
 //  if (!hobj)
 //    return;
@@ -178,8 +178,8 @@ DEBUG_Draw(float fps, int bindings)
 //	memset(inspector, 0, sizeof(inspector));
 //	memset(objects, 0, sizeof(objects));
 //	
-//	PrintNode(root,hierarchy,&(struct WI_Size){ DEBUG_WIDTH, DEBUG_HEIGHT }, 0, &(uint32_t){ 0 });
-//	PrintInspector(selected, inspector, &(struct WI_Size){ INSPECTOR_WIDTH, DEBUG_HEIGHT });
+//	PrintNode(root,hierarchy,&(struct AXsize){ DEBUG_WIDTH, DEBUG_HEIGHT }, 0, &(uint32_t){ 0 });
+//	PrintInspector(selected, inspector, &(struct AXsize){ INSPECTOR_WIDTH, DEBUG_HEIGHT });
 //	
 //	R_DrawConsole(domain,
 //								&(DRAWCONSOLESTRUCT){
@@ -204,7 +204,7 @@ DEBUG_Draw(float fps, int bindings)
 //{
 ////  luaX_parsefield(lpObject_t, root, 1, luaX_checkObject);
 //
-//	DEBUG_Draw(WI_Get(L), 0);
+//	DEBUG_Draw(axGet(L), 0);
 //	
 //  return 0;
 //}
@@ -216,7 +216,7 @@ DEBUG_Draw(float fps, int bindings)
 //}
 //
 //bool_t
-//DEBUG_HandleMouseEvent(struct WI_Message const* e)
+//DEBUG_HandleMouseEvent(struct AXmessage const* e)
 //{
 //  if (!bDebugVisible) {
 //    return FALSE;

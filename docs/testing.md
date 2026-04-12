@@ -75,7 +75,7 @@ XML test files are loaded by `doxmlfile()`. Any `<script>` element inside the ro
 
 ### Screen dimensions are overridden by the window size
 
-`Screen.MeasureOverride` calls `WI_GetSize()` and overrides the screen's `Width`/`Height` with the actual window dimensions **when `ResizeMode == kResizeModeCanResize`**, which is the default.
+`Screen.MeasureOverride` calls `axGetSize()` and overrides the screen's `Width`/`Height` with the actual window dimensions **when `ResizeMode == kResizeModeCanResize`**, which is the default.
 
 On CI virtual displays (`xvfb-run`), the window is typically 640×480 — so a screen created without `ResizeMode = "NoResize"` silently becomes 640×480 instead of your intended size, causing layout assertions like `assert(screen.Width == 1000)` to fail.
 

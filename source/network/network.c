@@ -17,7 +17,7 @@ typedef struct
 #ifndef __EMSCRIPTEN__
 
 void
-SZ_Init(struct WI_Buffer* buf, void* data, int length)
+SZ_Init(struct AXbuffer* buf, void* data, int length)
 {
   memset(buf, 0, sizeof(*buf));
   buf->data = data;
@@ -25,13 +25,13 @@ SZ_Init(struct WI_Buffer* buf, void* data, int length)
 }
 
 void
-SZ_Clear(struct WI_Buffer* buf)
+SZ_Clear(struct AXbuffer* buf)
 {
   buf->cursize = 0;
 }
 
 void*
-SZ_GetSpace(struct WI_Buffer* buf, int length)
+SZ_GetSpace(struct AXbuffer* buf, int length)
 {
   if (buf->cursize + length > buf->maxsize)
     SZ_Clear(buf);
@@ -43,22 +43,22 @@ void
 net_close_socket(int net_socket);
 int net_accept(int net_socket);
 int net_connect(lpcString_t addr, int port);
-int net_packet(int net_socket, struct WI_Buffer* net_message);
-int net_send_packet(int net_socket, struct WI_Buffer* net_message);
+int net_packet(int net_socket, struct AXbuffer* net_message);
+int net_send_packet(int net_socket, struct AXbuffer* net_message);
 int net_set_nonblocking(int sockfd);
 bool_t
 net_has_no_error(void);
 
 static void
 service_read_server_message(struct network_service* service,
-                            struct WI_Buffer* net_message)
+                            struct AXbuffer* net_message)
 {
 }
 
 void
 _ServiceRead(struct network_service* service)
 {
-  struct WI_Buffer net_message;
+  struct AXbuffer net_message;
   byte_t net_message_buffer[MAX_MSGLEN];
   SZ_Init(&net_message, net_message_buffer, MAX_MSGLEN);
   do {

@@ -175,11 +175,11 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
   return TRUE;
 }
 
-static struct WI_Size
+static struct AXsize
 T_GetSize(struct ViewText const* text,
           struct rect* rcursor)
 {
-  struct WI_Size textSize = { 0 };
+  struct AXsize textSize = { 0 };
   FT_Int textwidth = 0;
   FT_Int wordwidth = 0;
   FT_Int cursor = 0;
@@ -271,7 +271,7 @@ T_GetSize(struct ViewText const* text,
       }
     }
   }
-  struct WI_Size result = {MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
+  struct AXsize result = {MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
   if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0) {
     result.width = MIN(result.width, (int)(text->availableWidth * text->scale));
   }
@@ -293,7 +293,7 @@ T_GetEllipsisWidth(FT_Face face)
 }
 
 static void write_char(FT_Bitmap *bitmap, uint8_t *image_data,
-                       const struct WI_Size *textSize, FT_Pos x, FT_Pos y) {
+                       const struct AXsize *textSize, FT_Pos x, FT_Pos y) {
   for (FT_Pos i = 0, row = y; i < bitmap->rows; i++, row++) {
     for (FT_Pos j = 0, column = x; j < (int)bitmap->width; j++, column++) {
       uint8_t p = bitmap->buffer[i * bitmap->pitch + j];
@@ -310,7 +310,7 @@ Text_Print(struct ViewText const* pViewText,
            struct Texture** pTexture,
            bool_t bReuseTexture)
 {
-  struct WI_Size textSize = T_GetSize(pViewText, NULL);
+  struct AXsize textSize = T_GetSize(pViewText, NULL);
 
   if (textSize.width == 0)
     return E_INVALIDARG;
@@ -629,7 +629,7 @@ HRESULT
 Text_GetInfo(struct ViewText const* pViewText,
              struct text_info* info)
 {
-  struct WI_Size textSize = T_GetSize(pViewText, &info->cursor);
+  struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
   info->txWidth = textSize.width / pViewText->scale;
   info->txHeight = textSize.height / pViewText->scale;
   info->cursor.x /= pViewText->scale;

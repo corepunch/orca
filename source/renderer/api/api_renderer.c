@@ -5,15 +5,15 @@
 #define API_TYPE_WINDOW "renderer"
 
 #define WINAPI(NAME, ...) \
-WI_##NAME(lua_State *L, renderer* self, ##__VA_ARGS__)
+AX_##NAME(lua_State *L, renderer* self, ##__VA_ARGS__)
 
 // int f_beginFrame(lua_State *L) {
-//	R_BeginFrame(WI_Get(L), (struct color){0});
+//	R_BeginFrame(axGet(L), (struct color){0});
 //	return 0;
 // }
 
 // int f_endFrame(lua_State *L) {
-//	R_EndFrame(WI_Get(L));
+//	R_EndFrame(axGet(L));
 //	return 0;
 // }
 
@@ -24,7 +24,7 @@ WI_##NAME(lua_State *L, renderer* self, ##__VA_ARGS__)
 //    &(CREATERTSTRUCT){
 //      .Width = width,
 //      .Height = height,
-//      .Scale = WI_GetScaling(),
+//      .Scale = axGetScaling(),
 //    },
 //    &texture);
 //  return texture;
@@ -53,8 +53,8 @@ renderer_CreateShader(lua_State* L, lpcString_t vert, lpcString_t frag) {
 }
 
 int renderer_GetSize(lua_State* L) {
-  struct WI_Size size;
-  WI_GetSize(&size);
+  struct AXsize size;
+  axGetSize(&size);
   lua_pushnumber(L, size.width);
   lua_pushnumber(L, size.height);
   return 2;

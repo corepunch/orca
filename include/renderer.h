@@ -569,7 +569,7 @@ enum ServerWindowProperties
 typedef struct _DRAWSTRETCHRAWSTRUCT
 {
   struct rect rect;
-  struct WI_Size size;
+  struct AXsize size;
   struct color32* palette;
   byte_t* data;
   float opacity;
@@ -604,9 +604,9 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 // Window operations
 
 //struct windowAPI {
-//  int (*WI_GetScaling)(void);
-//  void (*WI_SetSize)(int width, int height);
-//  struct WI_Size (*WI_GetSize)(void);
+//  int (*AX_GetScaling)(void);
+//  void (*AX_SetSize)(int width, int height);
+//  struct AXsize (*AX_GetSize)(void);
 //};
 //
 // Resource operations
@@ -620,8 +620,8 @@ ORCA_API void R_SetScissorRect(struct rect const *rect);
 
 ORCA_API HRESULT R_CreateIOSurfaceTexture(uint32_t, struct Texture**);
 
-//ORCA_API bool_t WI_SetSize(uint32_t width, uint32_t height, bool_t centered);
-//ORCA_API bool_t WI_GetSize(struct WI_Size * pSize);
-//ORCA_API int WI_GetScaling(void);
+//ORCA_API bool_t axSetSize(uint32_t width, uint32_t height, bool_t centered);
+//ORCA_API bool_t axGetSize(struct AXsize * pSize);
+//ORCA_API int axGetScaling(void);
 
 #endif

@@ -16,7 +16,7 @@ static int API_ImageRenderTexture(lua_State* L)
   RenderTexture_Create(
     &(CREATERTSTRUCT){ .Width = width,
                        .Height = height,
-                       .Scale = WI_GetScaling() },
+                       .Scale = axGetScaling() },
     self);
   return 1;
 }

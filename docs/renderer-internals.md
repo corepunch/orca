@@ -128,7 +128,7 @@ The renderer has two distinct stages of initialization that are easy to conflate
 
 | Stage | Trigger | What it does |
 |---|---|---|
-| **Module load** | `require "orca.renderer"` → `luaopen_orca_renderer` → `on_renderer_module_registered` | Calls `WI_Init()` (platform window/display system) and `FT_Init()` (FreeType). No OpenGL context yet. |
+| **Module load** | `require "orca.renderer"` → `luaopen_orca_renderer` → `on_renderer_module_registered` | Calls `axInit()` (platform window/display system) and `FT_Init()` (FreeType). No OpenGL context yet. |
 | **Full init** | `renderer.init(width, height, offscreen)` | Creates the GL context, calls `R_InitBuffers()` (sets `tr.buffer`), loads built-in shaders and textures. |
 
 ### The `tr.buffer` Sentinel
@@ -145,7 +145,7 @@ if (!tr.buffer) {
 
 ### Shutdown Safety
 
-The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `FT_Shutdown` → `WI_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). If the renderer was never fully initialized, `renderer_Shutdown` returns early and `WI_Shutdown` tears down the window system cleanly.
+The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `FT_Shutdown` → `AX_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). If the renderer was never fully initialized, `renderer_Shutdown` returns early and `AX_Shutdown` tears down the window system cleanly.
 
 > **Contributor note:** If you add new resources to `struct renderer`, ensure they are initialized with a sentinel value that `renderer_Shutdown` can detect before cleaning them up. The simplest pattern is to initialize to `NULL`/`0` (the `memset(&tr, 0, ...)` in `renderer_Shutdown` already clears them) and guard deletions with `SafeDelete`.
 

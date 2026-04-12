@@ -103,7 +103,7 @@ extern int f_ConsoleView_getIndexPosition(lua_State *L);
 extern int f_ConsoleView_unpack(lua_State *L);
 
 extern int f_beginDraggingSession(lua_State *L);
-extern LRESULT ui_handle_event(lua_State* L, struct WI_Message *msg);
+extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 
 void on_ui_module_registered(lua_State* L) {
   API_CallRequire(L, "orca.core", 0);

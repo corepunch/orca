@@ -19,7 +19,7 @@ typedef uint16_t WORD;
 typedef longTime_t TIME;
 typedef void *lParam_t, *LPVOID;
 typedef struct state_manager *HSTATEMAN;
-typedef struct WI_Size SIZE2;
+typedef struct AXsize SIZE2;
 typedef struct rect RECT;
 typedef struct rect RECT, *LPRECT;
 typedef struct rect const *LPCRECT;
@@ -46,9 +46,9 @@ typedef enum {
 } EDSTATE;
 
 typedef struct _EDIMPORT {
-  bool_t (*GetOpenFileName)(struct _WI_OpenFileName const *);
-  bool_t (*GetSaveFileName)(struct _WI_OpenFileName const *);
-  bool_t (*GetFolderName)(struct _WI_OpenFileName const *);
+  bool_t (*GetOpenFileName)(struct _AXopenfilename const *);
+  bool_t (*GetSaveFileName)(struct _AXopenfilename const *);
+  bool_t (*GetFolderName)(struct _AXopenfilename const *);
 
 } EDIMPORT;
 

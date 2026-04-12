@@ -336,7 +336,7 @@ static int filesystem_gc(lua_State* L)
 //}
 
 int luaopen_orca_pipe(lua_State *L);
-LRESULT filesystem_handle_event(lua_State *L, struct WI_Message *msg);
+LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg);
 
 int f_init(lua_State* L)
 {
@@ -350,7 +350,7 @@ int f_init(lua_State* L)
   lua_getglobal(L, "SERVER");
   if (lua_toboolean(L, -1)) {
     SV_RegisterMessageProc(filesystem_handle_event);
-    WI_PostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
+    axPostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
   }
   luaX_pushObject(L, object);
   return 1;

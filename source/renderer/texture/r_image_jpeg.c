@@ -16,7 +16,7 @@ struct jpeg_imageinfo
 };
 
 static struct jpeg_imageinfo
-jpeg_readimage(struct WI_Buffer* buf)
+jpeg_readimage(struct AXbuffer* buf)
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
@@ -50,8 +50,8 @@ jpeg_releaseimage(struct jpeg_imageinfo const* image)
   free(image->data);
 }
 
-struct WI_Size
-R_TexImageJPEG(GLenum target, struct WI_Buffer* rgb)
+struct AXsize
+R_TexImageJPEG(GLenum target, struct AXbuffer* rgb)
 {
   struct jpeg_imageinfo const image = jpeg_readimage(rgb);
 
@@ -76,10 +76,10 @@ R_TexImageJPEG(GLenum target, struct WI_Buffer* rgb)
   return MAKE_TEX_SIZE(image.width, image.height);
 }
 
-struct WI_Size
+struct AXsize
 R_TexImageJPEGwithAlpha(GLenum target,
-                        struct WI_Buffer* buf_rgb,
-                        struct WI_Buffer* buf_alpha,
+                        struct AXbuffer* buf_rgb,
+                        struct AXbuffer* buf_alpha,
                         bool_t premultiply_alpha)
 {
   struct jpeg_imageinfo const rgb = jpeg_readimage(buf_rgb);

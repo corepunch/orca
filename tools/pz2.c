@@ -39,13 +39,13 @@ static int read_big_endian_int(FILE* fp)
          (int)buffer[0] << 24;
 }
 
-struct WI_Size
+struct AXsize
 read_image_size(FILE* fp)
 {
   unsigned char PNG[] = "\x89PNG\r\n\x1A\n";
   unsigned char IHDR[] = "IHDR";
   unsigned char header[20];
-  struct WI_Size size = { 0, 0 };
+  struct AXsize size = { 0, 0 };
   fread(header, 8, 1, fp);
   if (memcmp(header, PNG, 8))
     return size;
