@@ -822,6 +822,7 @@ struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 }
 REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0);
 HANDLER(PropertyAnimation, Object, Animate);
+HANDLER(PropertyAnimation, Object, Release);
 static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationNumProperties] = {
 	DECL(0x5221f9e8, PropertyAnimation, Property, Property, kDataTypeString), // PropertyAnimation.Property
 	DECL(0x18743595, PropertyAnimation, From, From, kDataTypeString), // PropertyAnimation.From
@@ -835,7 +836,8 @@ static struct PropertyAnimation PropertyAnimationDefaults = {
 };
 LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_Object_Animate:  return PropertyAnimation_Animate (object, cmp, wparm, lparm); // Object.Animate
+		case ID_Object_Release:  return PropertyAnimation_Release (object, cmp, wparm, lparm); // Object.Release
 	}
 	return FALSE;
 }

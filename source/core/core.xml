@@ -590,6 +590,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
       <handles>
         <handle message="Object.Animate"/>
+        <handle message="Object.Release"/>
       </handles>
       <properties>
         <property name="Property" type="string">Property to animate</property>

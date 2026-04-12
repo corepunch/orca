@@ -284,8 +284,21 @@ extern struct game core;
 // Scalar lerp helper (non-struct types)
 static float float_lerp(float a, float b, float t) { return a + (b - a) * t; }
 
+static void
+_PropertyAnimation_FreeBuffers(struct PropertyAnimation *anim)
+{
+    if (anim->From) { free((void*)anim->From); anim->From = NULL; }
+    if (anim->To)   { free((void*)anim->To);   anim->To   = NULL; }
+}
+
+HANDLER(PropertyAnimation, Object, Release) {
+    _PropertyAnimation_FreeBuffers(pPropertyAnimation);
+    return FALSE;
+}
+
 HANDLER(PropertyAnimation, Object, Animate) {
     if (!pPropertyAnimation->_property) {
+        _PropertyAnimation_FreeBuffers(pPropertyAnimation);
         CMP_Detach(pPropertyAnimation);
         return FALSE;
     }
@@ -325,6 +338,7 @@ HANDLER(PropertyAnimation, Object, Animate) {
     }
 
     if (t >= 1.0f) {
+        _PropertyAnimation_FreeBuffers(pPropertyAnimation);
         CMP_Detach(pPropertyAnimation);
     }
     return FALSE;
@@ -349,6 +363,8 @@ OBJ_DoTween(lua_State* L,
     return;
   }
   struct PropertyAnimation *anim = (struct PropertyAnimation*)CMP_GetUserData(cmp);
+  size_t prop_size = PROP_GetSize(hprop);
+  anim->From = malloc(prop_size);
   PROP_CopyValue(hprop, (void*)anim->From);
   anim->_property = hprop;
   anim->Duration = duration;
@@ -368,6 +384,7 @@ OBJ_DoTween(lua_State* L,
     struct transform3* to = luaL_checkudata(L, 6, PROP_GetUserData(hprop));
     memcpy((void*)(anim->To = malloc(sizeof(*to))), to, sizeof(*to));
   } else {
+    _PropertyAnimation_FreeBuffers(anim);
     CMP_Detach(anim);
     luaL_error(L, "Unknown property type for tween");
     return;
