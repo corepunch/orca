@@ -316,7 +316,6 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 //typedef lpObject_t* EVENT_PTR(HitTest);
 
 #define OF_UPDATED_ONCE (1 << 0)
-#define OF_STATEMANAGER_INITIALIZED (1 << 1)
 #define OF_LOADED_FROM_PREFAB (1 << 2)
 #define OF_ACTIVATED (1 << 3)
 #define OF_TEMPLATE (1 << 4)
@@ -401,9 +400,6 @@ OBJ_AddStyleClass(lpObject_t,
 
 typedef int
 (*propertyParser_t)(lua_State*,lpObject_t,lpcString_t,lpcString_t);
-
-ORCA_API HRESULT
-SM_ReadStateManager(lua_State*, lpObject_t, struct _xmlDoc*, propertyParser_t);
 
 ORCA_API bool_t
 OBJ_RegisterClass(lpcClassDesc_t);

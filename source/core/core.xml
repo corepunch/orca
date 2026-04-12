@@ -145,7 +145,13 @@
         <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
         <method name="AddChild">
           <summary>Add a child object.</summary>
-          <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.</details>
+          <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.
+
+In Lua the + operator is a shorthand for addChild that also returns the child, enabling concise tree construction:
+
+  local child = parent + ChildClass { ... }
+
+This is the idiomatic way to build object hierarchies in Lua scripts and tests.</details>
           <arg name="child" type="Object" pointer="true">The child object to add to this object's hierarchy</arg>
           <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
           <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
@@ -584,6 +590,7 @@
       <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
       <handles>
         <handle message="Object.Animate"/>
+        <handle message="Object.Release"/>
       </handles>
       <properties>
         <property name="Property" type="string">Property to animate</property>
@@ -630,6 +637,54 @@
           <summary>Adds multiple styling classes</summary>
           <fields>
             <field name="ClassNames" type="string">Space-separated list of class names to add</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
+    <class name="StateManager">
+      <summary>Container object for StateGroup definitions.</summary>
+      <details>StateManager is a standalone object (like AnimationClip or Shader) that holds one or more StateGroup children. Load it from an XML file via require() and assign it to StateManagerController.StateManager on the target node. The framework then automatically tracks the declared controller properties and applies the matching state property overrides whenever those properties change.</details>
+    </class>
+    <class name="StateGroup">
+      <summary>Tracks one controller property and maps its values to State objects.</summary>
+      <details>Each StateGroup inside a StateManager watches a single host-object property (named by ControllerProperty). When that property changes value, StateManagerController iterates the child State objects to find the first one whose Value matches and applies its StatePropertySetter children to the host object tree.</details>
+      <properties>
+        <property name="ControllerProperty" type="string">Short name of the property on the host object to watch (e.g. "IsActive")</property>
+      </properties>
+    </class>
+    <class name="State">
+      <summary>Defines property overrides to apply when the parent StateGroup's controller property matches Value.</summary>
+      <details>A State is a child of a StateGroup. When the controller property equals Value, every StatePropertySetter child of this State is applied to the object identified by Path (or the host object if Path is empty).</details>
+      <properties>
+        <property name="Value" type="string">The value of the controller property that activates this state (compared as a number; for booleans "true"/"false" are also accepted)</property>
+        <property name="Path" type="string">Optional path from the host object to the target object. Empty string means the host object itself.</property>
+      </properties>
+    </class>
+    <class name="StatePropertySetter">
+      <summary>Sets one property on the target object when the parent State is activated.</summary>
+      <details>A StatePropertySetter is a child of a State. When its parent State becomes active, Property is looked up on the target object (identified by State.Path) and set to Value using the standard property parser.</details>
+      <properties>
+        <property name="Property" type="string">Short name of the property to set on the target object</property>
+        <property name="Value" type="string">String representation of the value to assign (parsed the same way as XML attribute values)</property>
+      </properties>
+    </class>
+    <class name="StateManagerController" attach-only="true">
+      <summary>Attach-only component that applies state-driven property overrides from a StateManager object.</summary>
+      <details>StateManagerController is an attach-only component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies all its StatePropertySetter children to the target object.</details>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="StateManagerController.ControllerChanged"/>
+      </handles>
+      <properties>
+        <property name="StateManager" type="StateManager" pointer="true">The StateManager object that supplies the StateGroup definitions. Setting this property automatically marks all tracked controller properties.</property>
+      </properties>
+      <messages>
+        <message name="ControllerChanged" routing="Direct">
+          <summary>Evaluate all state groups whose controller property matches the changed property.</summary>
+          <details>Dispatched automatically by the property event system whenever a property flagged with PF_USED_IN_STATE_MANAGER changes value. Iterates each matching StateGroup and applies the matching State's property overrides to the object tree.</details>
+          <fields>
+            <field name="Property" type="Property" pointer="true">The property whose value changed, triggering state group evaluation</field>
           </fields>
         </message>
       </messages>

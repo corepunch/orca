@@ -107,6 +107,53 @@ enum PropertyAnimationProperties {
 #define ID_StyleController_AddClass 0x8534805d // StyleController.AddClass
 #define ID_StyleController_AddClasses 0x2b139741 // StyleController.AddClasses
 #define kStyleControllerNumProperties 3
+// StateManager
+#define ID_StateManager 0xe76f2815
+#define GetStateManager(_P) ((struct StateManager*)((_P)?OBJ_GetComponent(_P,ID_StateManager):NULL))
+#define StateManager_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateManager,sizeof(struct StateManager),_N)
+#define kStateManagerNumProperties 0
+// StateGroup
+#define ID_StateGroup 0xc71ce3c9
+#define GetStateGroup(_P) ((struct StateGroup*)((_P)?OBJ_GetComponent(_P,ID_StateGroup):NULL))
+#define StateGroup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateGroup,sizeof(struct StateGroup),_N)
+#define ID_StateGroup_ControllerProperty 0xa362303c // StateGroup.ControllerProperty
+#define kStateGroupNumProperties 1
+enum StateGroupProperties {
+	kStateGroupControllerProperty,
+};
+// State
+#define ID_State 0x1deca496
+#define GetState(_P) ((struct State*)((_P)?OBJ_GetComponent(_P,ID_State):NULL))
+#define State_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_State,sizeof(struct State),_N)
+#define ID_State_Value 0x60339e79 // State.Value
+#define ID_State_Path 0xf7b1147f // State.Path
+#define kStateNumProperties 2
+enum StateProperties {
+	kStateValue,
+	kStatePath,
+};
+// StatePropertySetter
+#define ID_StatePropertySetter 0x839cf9a4
+#define GetStatePropertySetter(_P) ((struct StatePropertySetter*)((_P)?OBJ_GetComponent(_P,ID_StatePropertySetter):NULL))
+#define StatePropertySetter_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StatePropertySetter,sizeof(struct StatePropertySetter),_N)
+#define ID_StatePropertySetter_Property 0xe4c64d8b // StatePropertySetter.Property
+#define ID_StatePropertySetter_Value 0x79cf4c5f // StatePropertySetter.Value
+#define kStatePropertySetterNumProperties 2
+enum StatePropertySetterProperties {
+	kStatePropertySetterProperty,
+	kStatePropertySetterValue,
+};
+// StateManagerController
+#define ID_StateManagerController 0x69d899d1
+#define GetStateManagerController(_P) ((struct StateManagerController*)((_P)?OBJ_GetComponent(_P,ID_StateManagerController):NULL))
+#define StateManagerController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StateManagerController,sizeof(struct StateManagerController),_N)
+#define ID_StateManagerController_StateManager 0xb09e0f5d // StateManagerController.StateManager
+#define ID_StateManagerController_ControllerChanged 0x0d0ee8c7 // StateManagerController.ControllerChanged
+#define kStateManagerControllerNumProperties 2
+enum StateManagerControllerProperties {
+	kStateManagerControllerStateManager,
+	kStateManagerControllerControllerChanged,
+};
 
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
@@ -174,6 +221,9 @@ enum PropertyAnimationProperties {
 #define ID_StyleController_AddClassesEventArgs 0xc1f36253
 
 #define ID_StyleController_AddClassesEventArgs_ClassNames 0xbeac48c3 // StyleController_AddClassesEventArgs.ClassNames
+#define ID_StateManagerController_ControllerChangedEventArgs 0x12c11cb3
+
+#define ID_StateManagerController_ControllerChangedEventArgs_Property 0x1ed8c3b6 // StateManagerController_ControllerChangedEventArgs.Property
 	
 
 #endif

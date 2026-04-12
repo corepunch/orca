@@ -18,7 +18,7 @@ typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef longTime_t TIME;
 typedef void *lParam_t, *LPVOID;
-typedef struct state_manager *HSTATEMAN;
+typedef struct StateManagerController *HSTATEMAN;
 typedef struct AXsize SIZE2;
 typedef struct rect RECT;
 typedef struct rect RECT, *LPRECT;

@@ -677,6 +677,10 @@ static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL 
 static struct PropertyType _StyleController_AddClassesEventArgs[] = {
 	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
 };
+static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
+	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -696,6 +700,7 @@ STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
+STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -817,6 +822,7 @@ struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 }
 REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0);
 HANDLER(PropertyAnimation, Object, Animate);
+HANDLER(PropertyAnimation, Object, Release);
 static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationNumProperties] = {
 	DECL(0x5221f9e8, PropertyAnimation, Property, Property, kDataTypeString), // PropertyAnimation.Property
 	DECL(0x18743595, PropertyAnimation, From, From, kDataTypeString), // PropertyAnimation.From
@@ -831,6 +837,7 @@ static struct PropertyAnimation PropertyAnimationDefaults = {
 LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_Object_Release: return PropertyAnimation_Release(object, cmp, wparm, lparm); // Object.Release
 	}
 	return FALSE;
 }
@@ -870,6 +877,99 @@ struct StyleController* luaX_checkStyleController(lua_State *L, int idx) {
 	return GetStyleController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
+static struct PropertyType const StateManagerProperties[kStateManagerNumProperties] = {
+};
+static struct StateManager StateManagerDefaults = {
+};
+LRESULT StateManagerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushStateManager(lua_State *L, struct StateManager const* StateManager) {
+	luaX_pushObject(L, CMP_GetObject(StateManager));
+}
+struct StateManager* luaX_checkStateManager(lua_State *L, int idx) {
+	return GetStateManager(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(StateManager, 0);
+static struct PropertyType const StateGroupProperties[kStateGroupNumProperties] = {
+	DECL(0xd9dc005c, StateGroup, ControllerProperty, ControllerProperty, kDataTypeString), // StateGroup.ControllerProperty
+};
+static struct StateGroup StateGroupDefaults = {
+};
+LRESULT StateGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushStateGroup(lua_State *L, struct StateGroup const* StateGroup) {
+	luaX_pushObject(L, CMP_GetObject(StateGroup));
+}
+struct StateGroup* luaX_checkStateGroup(lua_State *L, int idx) {
+	return GetStateGroup(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(StateGroup, 0);
+static struct PropertyType const StateProperties[kStateNumProperties] = {
+	DECL(0xd147f96a, State, Value, Value, kDataTypeString), // State.Value
+	DECL(0xeb66e456, State, Path, Path, kDataTypeString), // State.Path
+};
+static struct State StateDefaults = {
+};
+LRESULT StateProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushState(lua_State *L, struct State const* State) {
+	luaX_pushObject(L, CMP_GetObject(State));
+}
+struct State* luaX_checkState(lua_State *L, int idx) {
+	return GetState(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(State, 0);
+static struct PropertyType const StatePropertySetterProperties[kStatePropertySetterNumProperties] = {
+	DECL(0x5221f9e8, StatePropertySetter, Property, Property, kDataTypeString), // StatePropertySetter.Property
+	DECL(0xd147f96a, StatePropertySetter, Value, Value, kDataTypeString), // StatePropertySetter.Value
+};
+static struct StatePropertySetter StatePropertySetterDefaults = {
+};
+LRESULT StatePropertySetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushStatePropertySetter(lua_State *L, struct StatePropertySetter const* StatePropertySetter) {
+	luaX_pushObject(L, CMP_GetObject(StatePropertySetter));
+}
+struct StatePropertySetter* luaX_checkStatePropertySetter(lua_State *L, int idx) {
+	return GetStatePropertySetter(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(StatePropertySetter, 0);
+HANDLER(StateManagerController, Object, Start);
+HANDLER(StateManagerController, Object, PropertyChanged);
+HANDLER(StateManagerController, StateManagerController, ControllerChanged);
+static struct PropertyType const StateManagerControllerProperties[kStateManagerControllerNumProperties] = {
+	DECL(0xe76f2815, StateManagerController, StateManager, StateManager, kDataTypeObject, .TypeString = "StateManager"), // StateManagerController.StateManager
+	DECL(0xda0795ff, StateManagerController, ControllerChanged, ControllerChanged, kDataTypeEvent, .TypeString = "StateManagerController_ControllerChangedEventArgs"), // StateManagerController.ControllerChanged
+};
+static struct StateManagerController StateManagerControllerDefaults = {
+};
+LRESULT StateManagerControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Start: return StateManagerController_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return StateManagerController_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_StateManagerController_ControllerChanged: return StateManagerController_ControllerChanged(object, cmp, wparm, lparm); // StateManagerController.ControllerChanged
+	}
+	return FALSE;
+}
+void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController) {
+	luaX_pushObject(L, CMP_GetObject(StateManagerController));
+}
+struct StateManagerController* luaX_checkStateManagerController(lua_State *L, int idx) {
+	return GetStateManagerController(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -907,12 +1007,18 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PropertyAnimation), -2), "PropertyAnimation");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StyleController), -2), "StyleController");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StateManager), -2), "StateManager");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StateGroup), -2), "StateGroup");
+	lua_setfield(L, ((void)lua_pushclass(L, &_State), -2), "State");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StatePropertySetter), -2), "StatePropertySetter");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StateManagerController), -2), "StateManagerController");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;
