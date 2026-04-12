@@ -836,8 +836,8 @@ static struct PropertyAnimation PropertyAnimationDefaults = {
 };
 LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Animate:  return PropertyAnimation_Animate (object, cmp, wparm, lparm); // Object.Animate
-		case ID_Object_Release:  return PropertyAnimation_Release (object, cmp, wparm, lparm); // Object.Release
+		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
+		case ID_Object_Release: return PropertyAnimation_Release(object, cmp, wparm, lparm); // Object.Release
 	}
 	return FALSE;
 }
