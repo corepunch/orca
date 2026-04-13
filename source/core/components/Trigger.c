@@ -1,5 +1,4 @@
-#include <plugins/UIKit/UIKit.h>
-
+#include <source/core/core_local.h>
 
 #define kMsgTriggered 0x3b1c3ae2
 

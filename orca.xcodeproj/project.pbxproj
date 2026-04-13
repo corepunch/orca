@@ -81,6 +81,8 @@
 		781CA76E2E1557A900FFCFD9 /* object_component.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53242D8F405600122823 /* object_component.c */; };
 		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A444002F881D1C00AF52A4 /* StateManagerController.c */; };
+		7800000001000000000000001 /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000002 /* Node.c */; };
+		7800000001000000000000003 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000004 /* Trigger.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
 		781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA77A2E1557B900FFCFD9 /* Locale.c */; };
 		781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737C42B8F620100FD598E /* core_main.c */; };
@@ -635,6 +637,8 @@
 		78A442BC2F87FA8100AF52A4 /* property_animation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_animation.c; sourceTree = "<group>"; };
 		78A443C82F881D1C00AF52A4 /* easing_curve.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = easing_curve.c; sourceTree = "<group>"; };
 		78A444002F881D1C00AF52A4 /* StateManagerController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = StateManagerController.c; sourceTree = "<group>"; };
+		7800000001000000000000002 /* Node.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node.c; sourceTree = "<group>"; };
+		7800000001000000000000004 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A5AFA32F66B9FA00E6A765 /* Package.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Package.c; sourceTree = "<group>"; };
 		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
@@ -1157,6 +1161,8 @@
 				78A442BC2F87FA8100AF52A4 /* property_animation.c */,
 				78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */,
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
+				7800000001000000000000002 /* Node.c */,
+				7800000001000000000000004 /* Trigger.c */,
 				781CA7792E1557B900FFCFD9 /* Aliases.c */,
 				781CA77A2E1557B900FFCFD9 /* Locale.c */,
 			);
@@ -2112,6 +2118,8 @@
 				78A443C92F881D1C00AF52A4 /* easing_curve.c in Sources */,
 				78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
+				7800000001000000000000001 /* Node.c in Sources */,
+				7800000001000000000000003 /* Trigger.c in Sources */,
 				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */,
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,

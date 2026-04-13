@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered">
+  <require file="../../source/core/core.xml"/>
   <require file="../../source/renderer/api/renderer.xml"/>
   <includes>
     <include file="include/renderer.h"/>
@@ -54,20 +55,6 @@
       <value name="Bottom">Align text to the bottom</value>
       <value name="Baseline">Align to text baseline</value>
     </enum>
-    <enum name="HorizontalAlignment">
-      <summary>Horizontal alignment of elements within their parent container</summary>
-      <value name="Stretch">Stretch to fill container width</value>
-      <value name="Left">Align to left edge of container</value>
-      <value name="Center">Center within container</value>
-      <value name="Right">Align to right edge of container</value>
-    </enum>
-    <enum name="VerticalAlignment">
-      <summary>Vertical alignment of elements within their parent container</summary>
-      <value name="Stretch">Stretch to fill container height</value>
-      <value name="Top">Align to top edge of container</value>
-      <value name="Center">Center within container</value>
-      <value name="Bottom">Align to bottom edge of container</value>
-    </enum>
     <enum name="AlignItems">
       <summary>Cross-axis alignment in flexbox-style layout containers</summary>
       <value name="Start">Align to start of cross axis</value>
@@ -75,13 +62,6 @@
       <value name="End">Align to end of cross axis</value>
       <value name="Stretch">Stretch across cross axis</value>
       <value name="Baseline">Align to text baseline</value>
-    </enum>
-    <enum name="DepthAlignment">
-      <summary>3D depth alignment options for positioning along Z-axis</summary>
-      <value name="Near">Align to near clipping plane</value>
-      <value name="Center">Center in depth</value>
-      <value name="Far">Align to far clipping plane</value>
-      <value name="Stretch">Stretch across depth</value>
     </enum>
     <enum name="Overflow">
       <summary>Content overflow handling strategies</summary>
@@ -115,19 +95,6 @@
       <value name="Normal">Regular font style</value>
       <value name="Italic">Italic font style</value>
     </enum>
-    <enum name="BorderStyle">
-      <summary>Visual styles for element borders</summary>
-      <value name="None">No border</value>
-      <value name="Hidden">Hidden border (takes space but invisible)</value>
-      <value name="Dotted">Dotted border pattern</value>
-      <value name="Dashed">Dashed border pattern</value>
-      <value name="Solid">Solid continuous border</value>
-      <value name="Double">Double line border</value>
-      <value name="Groove">3D grooved border effect</value>
-      <value name="Ridge">3D ridged border effect</value>
-      <value name="Inset">3D inset border effect</value>
-      <value name="Outset">3D outset border effect</value>
-    </enum>
     <enum name="ButtonType">
       <summary>Button behavior types for different interaction patterns</summary>
       <value name="Normal">Standard interactive button</value>
@@ -140,12 +107,6 @@
       <value name="Number">Numeric input with validation </value>
       <value name="Checkbox">Boolean checkbox control </value>
       <value name="Radio">Radio button for exclusive selection </value>
-    </enum>
-    <enum name="Sizing">
-      <summary>Size calculation modes for layout operations</summary>
-      <value name="PlusMargin">Include margins in size calculation</value>
-      <value name="SizeOnly">Return only the base size</value>
-      <value name="MinusPadding">Subtract padding from size</value>
     </enum>
     <enum name="ResizeMode">
       <summary>Defines how the window can be resized by the user or system.</summary>
@@ -173,53 +134,8 @@
       <value name="Generic">Base style applied to all components of the specified target type. Serves as a default visual definition.</value>
       <value name="Named">Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.</value>
     </enum>
-    <enum name="MouseButton">
-      <summary>Identifies which mouse button was involved in a mouse button event.</summary>
-      <value name="None">No mouse button used for mouse move and scroll events</value>
-      <value name="Left">The left (primary) mouse button</value>
-      <value name="Right">The right (secondary) mouse button</value>
-      <value name="Middle">The middle mouse button</value>
-    </enum>
-    <enum name="ResourceEntryType">
-      <summary>Discriminates how the string value of a LocaleEntry should be interpreted.</summary>
-      <value name="Undefined">Unrecognised or unset type</value>
-      <value name="Text">A display string (may contain format tags)</value>
-      <value name="Resource">An asset path (returned verbatim)</value>
-    </enum>
   </enums>
   <structs>
-    <struct name="ResourceEntry" sealed="true">
-      <summary>A single entry resource, representing an asset reference.</summary>
-      <fields>
-        <field name="Key" type="string">The unique key identifying this locale entry (e.g. "MainMenu.StartButton")</field>
-        <field name="Value" type="string">The localized string value or asset path for this entry</field>
-        <field name="Type" type="ResourceEntryType">Indicates how to interpret the Value field (e.g. Text, Resource)</field>
-      </fields>
-    </struct>
-    <struct name="CornerRadius">
-      <summary>Corner rounding configuration for rectangular elements</summary>
-      <details>Allows independent control of each corner's rounding radius.</details>
-      <fields>
-        <field name="TopLeftRadius" type="float">Top-left corner radius</field>
-        <field name="TopRightRadius" type="float">Top-right corner radius</field>
-        <field name="BottomRightRadius" type="float">Bottom-right corner radius</field>
-        <field name="BottomLeftRadius" type="float">Bottom-left corner radius</field>
-      </fields>
-    </struct>
-    <struct name="EdgeShorthand" unwrap="true">
-      <summary>Spacing values for opposite edges of an axis</summary>
-      <fields>
-        <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
-        <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
-      </fields>
-    </struct>
-    <struct name="AlignmentShorthand">
-      <summary>Axis-specific alignment parameters.</summary>
-      <details>Stores per-axis alignment information (e.g., Horizontal, Vertical, Depth). Used by Node and its derived classes to control alignment.</details>
-      <fields>
-        <field name="Axis" type="int" fixed-array="3">Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).</field>
-      </fields>
-    </struct>
     <struct name="FontShorthand">
       <summary>Complete font specification including weight, style, size, and family</summary>
       <fields>
@@ -273,123 +189,8 @@
         <field name="Color" type="color">Color of the underline.</field>
       </fields>
     </struct>
-    <struct name="Thickness">
-      <summary>External spacing configuration for rectangular elements</summary>
-      <details>Allows independent control of the external spacing applied to each edge of an element.</details>
-      <fields>
-        <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
-      </fields>
-    </struct>
-    <struct name="BorderShorthand">
-      <summary>Complete border definition for rectangular element</summary>
-      <fields>
-        <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge</field>
-        <field name="Color" type="color">Border color</field>
-        <field name="Style" type="BorderStyle">Visual style of the border</field>
-        <field name="Radius" type="CornerRadius">Border radius definition per corner</field>
-      </fields>
-    </struct>
-    <struct name="SizeAxisShorthand">
-      <summary>Complete sizing definition for one axis</summary>
-      <fields>
-        <field name="Requested" type="float">Requested {0} size in pixels</field>
-        <field name="Desired" type="float">Desired {0} size in pixels</field>
-        <field name="Min" type="float">Minimum allowable {0} size along</field>
-        <field name="Actual" type="float">Actual (calculated) {0} size after layout resolution</field>
-        <field name="Scroll" type="float">Total {0} size required for scrolling content</field>
-      </fields>
-    </struct>
-    <struct name="SizeShorthand">
-      <summary>Sizing configuration of elements (e.g., Width, Height, Depth)</summary>
-      <details>You can set values and the engine will try it's best to preserve those.</details>
-      <fields>
-        <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
-      </fields>
-    </struct>
   </structs>
   <classes>
-    <class name="DataObject">
-      <summary>Base class for data-holding objects within the framework</summary>
-      <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
-    </class>
-    <class name="Trigger" attach-only="true">
-      <summary>Base class for event-driven actions within the UI system</summary>
-      <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.PropertyChanged"/>
-        <handle message="Object.Attached"/>
-      </handles>
-      <properties>
-        <property name="Property" type="string">Target property name to monitor or modify </property>
-        <property name="Value" type="int">Associated value for the trigger condition </property>
-      </properties>
-      <messages>
-        <message name="Triggered">
-          <summary>Fired when the trigger condition is met, carrying a reference to the trigger that activated.</summary>
-          <fields>
-            <field name="Trigger" type="Trigger" pointer="true"/>
-          </fields>
-        </message>
-      </messages>
-    </class>
-    <class name="OnPropertyChangedTrigger" parent="Trigger" attach-only="true">
-      <summary>Responds to property value changes on specified nodes</summary>
-      <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.PropertyChanged"/>
-      </handles>
-      <properties>
-        <property name="SourceNode" type="string">Name or identifier of the node to monitor </property>
-        <property name="Property" type="string">Property name to watch for changes </property>
-      </properties>
-    </class>
-    <class name="OnAttachedTrigger" parent="Trigger" attach-only="true">
-      <summary>Triggers when an element is attached to the visual tree</summary>
-      <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.Attached"/>
-      </handles>
-    </class>
-    <class name="EventTrigger" parent="Trigger" attach-only="true">
-      <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
-      <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <!-- <handle message="Node.HandleMessage"/> -->
-      </handles>
-      <properties>
-        <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
-      </properties>
-    </class>
-    <class name="Setter" attach-only="true">
-      <summary>Applies property values when triggered by specified conditions</summary>
-      <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Trigger.Triggered"/>
-      </handles>
-      <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-        <property name="Property" type="string">Target property name to set </property>
-        <property name="Value" type="string">Value to apply to the property </property>
-      </properties>
-    </class>
-    <class name="Handler" attach-only="true">
-      <summary>Executes custom functions when triggered by specified conditions</summary>
-      <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Trigger.Triggered"/>
-      </handles>
-      <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-        <property name="Target" type="Node" pointer="true">Target object to call function on </property>
-        <property name="Function" type="string">Function name to execute on target </property>
-      </properties>
-    </class>
     <class name="Brush">
       <summary>Base class for all brush types used in rendering.</summary>
       <details>Brush defines the general interface for drawing surfaces or filling shapes with visual content. It serves as the root for more specific brushes like ColorBrush, TextureBrush, and MaterialBrush, which define concrete rendering behaviors.</details>
@@ -400,153 +201,6 @@
       <properties>
         <property name="Color" type="color">The color value used to fill the target area.</property>
       </properties>
-    </class>
-    <class name="Node">
-      <summary>Base class for all UI engine nodes.</summary>
-      <details>Node is the fundamental class for all engine objects (e.g., Node2D, Node3D, RenderPass). It manages shared functionality such as size, layout, visibility, opacity, tags, and data context. You normally work with derived classes rather than creating instances of Node directly.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.GetSize"/>
-        <handle message="Node.IsVisible"/>
-        <handle message="Object.Start"/>
-      </handles>
-      <properties>
-        <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
-        <property name="Margin" type="Thickness">External spacing around the element</property>
-        <property name="Padding" type="Thickness">Internal spacing between element border and content</property>
-        <property name="Border" type="BorderShorthand">Border definition along each axis</property>
-        <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
-        <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>
-        <property name="QuickHide" type="bool">If true, node is quickly hidden without triggering full visibility transitions.</property>
-        <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>
-        <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
-        <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
-        <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
-        <property name="Resources" type="ResourceEntry" array="true">Array of resources associated with this node. Can be aliases to objects or other resources.</property> 
-      </properties>
-      <fields>
-        <field name="_tags" type="long">Calculated tags value</field>
-      </fields>
-      <messages>
-        <message name="Awake">
-          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
-        </message>
-        <message name="UpdateMatrix">
-          <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
-          <fields>
-            <field name="parent" type="mat4">The parent matrix</field>
-            <field name="opacity" type="float">The opacity value</field>
-            <field name="force" type="bool">Indicates if the update is forced</field>
-          </fields>
-        </message>
-        <message name="LoadView">
-          <summary>Initializes the component's Lua view state.</summary>
-          <fields>
-            <field name="lua_state" type="lua_State" pointer="true"/>
-          </fields>
-        </message>
-        <message name="HitTest">
-          <summary>Queries whether a screen-space point falls within the bounds of this node.</summary>
-          <fields>
-            <field name="x" type="int">X coordinate of the hit test point</field>
-            <field name="y" type="int">Y coordinate of the hit test point</field>
-          </fields>
-        </message>
-        <message name="IsVisible">
-          <summary>Queries whether the node is currently visible in the scene.</summary>
-        </message>
-        <message name="ViewDidLoad">
-          <summary>Notifies the component that its view has finished loading.</summary>
-        </message>
-        <message name="KillFocus">
-          <summary>Removes keyboard focus from this node.</summary>
-        </message>
-        <message name="SetFocus">
-          <summary>Gives keyboard focus to this node.</summary>
-        </message>
-        <message name="GetSize">
-          <summary>Queries the current layout size of this node.</summary>
-        </message>
-        <message name="MouseMessage">
-          <summary>Base mouse event providing pointer position.</summary>
-          <fields>
-            <field name="x" type="float">Horizontal pointer position in local space</field>
-            <field name="y" type="float">Vertical pointer position in local space</field>
-            <field name="deltaX" type="int">Scroll wheel rotation amount along the X axis; positive values scroll right/forward</field>
-            <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
-            <field name="button" type="MouseButton">The mouse button involved in this event</field>
-            <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
-          </fields>
-        </message>
-        <message name="LeftMouseDown" same-as="MouseMessage">
-          <summary>Fired when the left mouse button is pressed down over an object.</summary>
-        </message>
-        <message name="RightMouseDown" same-as="MouseMessage">
-          <summary>Fired when the right mouse button is pressed down over an object.</summary>
-        </message>
-        <message name="OtherMouseDown" same-as="MouseMessage">
-          <summary>Fired when a non-primary, non-secondary mouse button is pressed down over an object.</summary>
-        </message>
-        <message name="LeftMouseUp" same-as="MouseMessage">
-          <summary>Fired when the left mouse button is released over an object.</summary>
-        </message>
-        <message name="RightMouseUp" same-as="MouseMessage">
-          <summary>Fired when the right mouse button is released over an object.</summary>
-        </message>
-        <message name="OtherMouseUp" same-as="MouseMessage">
-          <summary>Fired when a non-primary, non-secondary mouse button is released over an object.</summary>
-        </message>
-        <message name="LeftMouseDragged" same-as="MouseMessage">
-          <summary>Fired continuously while the mouse moves with the left button held down.</summary>
-        </message>
-        <message name="RightMouseDragged" same-as="MouseMessage">
-          <summary>Fired continuously while the mouse moves with the right button held down.</summary>
-        </message>
-        <message name="OtherMouseDragged" same-as="MouseMessage">
-          <summary>Fired continuously while the mouse moves with a non-primary, non-secondary button held down.</summary>
-        </message>
-        <message name="LeftDoubleClick" same-as="MouseMessage">
-          <summary>Fired when the left mouse button is double-clicked over an object.</summary>
-        </message>
-        <message name="RightDoubleClick" same-as="MouseMessage">
-          <summary>Fired when the right mouse button is double-clicked over an object.</summary>
-        </message>
-        <message name="OtherDoubleClick" same-as="MouseMessage">
-          <summary>Fired when a non-primary, non-secondary mouse button is double-clicked over an object.</summary>
-        </message>
-        <message name="MouseMoved" same-as="MouseMessage">
-          <summary>Fired when the mouse pointer moves over an object without any button held down.</summary>
-        </message>
-        <message name="ScrollWheel" same-as="MouseMessage">
-          <summary>Fired when the scroll wheel is rotated while the pointer is over an object.</summary>
-        </message>
-        <message name="DragDrop" same-as="MouseMessage">
-          <summary>Fired when a drag operation is completed and the dragged item is dropped onto an object.</summary>
-        </message>
-        <message name="DragEnter" same-as="MouseMessage">
-          <summary>Fired when a dragged item enters the bounds of an object.</summary>
-        </message>
-        <message name="KeyMessage">
-          <summary>Base keyboard event providing key information.</summary>
-          <fields>
-            <field name="keyCode" type="int">The key involved in this event</field>
-            <field name="character" type="int">The character produced by this key event</field>
-            <field name="modifiers" type="int">Active modifier keys during the event (bitmask of AX_MOD_* flags)</field>
-            <field name="text" type="string">The text produced by this key event as a UTF-8 string (empty for non-printable keys)</field>
-            <field name="modifiersString" type="string">Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")</field>
-            <field name="hotKey" type="string">Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")</field>
-          </fields>
-        </message>
-        <message name="KeyDown" same-as="KeyMessage">
-          <summary>Fired when a keyboard key is pressed down.</summary>
-        </message>
-        <message name="KeyUp" same-as="KeyMessage">
-          <summary>Fired when a keyboard key is released.</summary>
-        </message>
-        <message name="TextInput" same-as="KeyMessage">
-          <summary>Fired when a printable character is entered via the keyboard, providing the resulting text.</summary>
-        </message>
-      </messages>
     </class>
     <class name="TextRun">
       <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
