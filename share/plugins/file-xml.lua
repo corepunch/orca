@@ -100,14 +100,6 @@ local specials = {
 	EventListener = function(node, element)
 		print("Adding event listener for event: "..element:get "Event")
 	end,
-	Entry = function(node, element)
-		node:addAlias(element:get("Key"), element.text)
-	end,
-	ResourceDictionaryItem = function(node, element)
-		for entry in element.children do
-			node:addResource(entry:get("id"), entry.text)
-		end
-	end,
 	StyleSheet = function(node, element)
 		local xml = require "orca.parsers.xml"
 		local doc = xml.load(element.text)

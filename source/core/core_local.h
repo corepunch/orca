@@ -27,9 +27,6 @@
     lua_pop(L, 1);                                                             \
   }
 
-#define _GetComponents(obj)                                                    \
-  (*(struct component**)OBJ_GetObjectComponent(obj, kCompComponents))
-
 #define _GetProperties(obj)                                                    \
   (*(lpProperty_t*)OBJ_GetObjectComponent(obj, kCompProperties))
 
@@ -66,15 +63,6 @@ struct style_rule
   shortStr_t classname; // selector (e.g., ".button")
   shortStr_t name;      // property name (e.g., "background-color")
   shortStr_t value;     // property value (e.g., "#ff0000")
-};
-
-enum component_type
-{
-  kCompComponents,
-  kCompProperties,
-  // kCompAliases removed — now accessed via the Aliases attach-only component
-  // kCompClasses and kCompStyles removed — now accessed via StyleController component
-  kCompCount,
 };
 
 struct vm_register
@@ -146,6 +134,8 @@ OBJ_SetLuaObject(lpObject_t , uint32_t);
 ORCA_API void
 OBJ_SetAlias(lpObject_t, uint32_t);
 
+
+struct timer;
 void
 OBJ_AddTimer(lpObject_t, struct timer*);
 
@@ -190,9 +180,6 @@ void
 PROP_SetValuePtr(lpProperty_t, void*);
 lpObject_t
 PROP_GetObject(lpcProperty_t);
-
-void*
-OBJ_GetObjectComponent(lpObject_t, enum component_type);
 void
 OBJ_ReleaseComponents(lpObject_t);
 void

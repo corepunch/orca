@@ -82,7 +82,7 @@ PROP_Clear(lpProperty_t property)
   }
 }
 
-static lpProperty_t
+/*static */lpProperty_t
 _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
   lpProperty_t property = ZeroAlloc(sizeof(struct Property) + pt->DataSize * PropertyState_Count);
@@ -99,16 +99,6 @@ PROP_Create(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
   lpProperty_t property = _PropertyAlloc(L, object, pt);
   _RegisterProperty(object, property);
-  return property;
-}
-
-lpProperty_t
-OBJ_AddComponentProperty(lua_State* L, struct component* comp, lpcPropertyType_t desc)
-{
-  lpObject_t object = CMP_GetOwner(comp);
-  lpProperty_t property = _PropertyAlloc(L, object, desc);
-  PROP_AddToList(property, &_GetProperties(object));
-  CMP_SetProperty(comp, property);
   return property;
 }
 

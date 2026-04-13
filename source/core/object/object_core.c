@@ -130,12 +130,6 @@ _RegisterProperty(lpObject_t object, lpProperty_t property)
   return NOERROR;
 }
 
-void*
-OBJ_GetObjectComponent(lpObject_t pobj, enum component_type c)
-{
-  return &pobj->comps[c];
-}
-
 void
 OBJ_AddComponentByName(lua_State* L, lpObject_t pobj, lpcString_t className)
 {

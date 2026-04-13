@@ -169,3 +169,17 @@ OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name)
     }
   }
 }
+
+
+lpProperty_t
+OBJ_AddComponentProperty(lua_State* L, struct component* comp, lpcPropertyType_t desc)
+{
+  /*static */lpProperty_t
+  _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt);
+
+  lpObject_t object = CMP_GetOwner(comp);
+  lpProperty_t property = _PropertyAlloc(L, object, desc);
+  PROP_AddToList(property, &object->properties);
+  CMP_SetProperty(comp, property);
+  return property;
+}

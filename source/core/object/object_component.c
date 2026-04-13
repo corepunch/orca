@@ -1,5 +1,5 @@
 #include "core_local.h"
-#include "component_internal.h"
+#include "object_internal.h"
 
 struct component*
 OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
@@ -22,7 +22,7 @@ OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
   comp->pcls = cls;
   comp->pobj = pobj;
   
-  ADD_TO_LIST_END(struct component, comp, _GetComponents(pobj));
+  ADD_TO_LIST_END(struct component, comp, pobj->components);
 
   for (uint32_t const* p = cls->ParentClasses; *p; OBJ_AddComponent(pobj, *(p++)));
 
@@ -38,7 +38,7 @@ CMP_GetOwner(struct component* hcmp)
 lpProperty_t
 _CreateClassProperty(lpObject_t object, uint32_t ident)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object))
+  FOR_EACH_LIST(struct component, cmp, object->components)
   {
     FOR_LOOP(i, cmp->pcls->NumProperties)
     {
@@ -58,7 +58,7 @@ OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
 //  return PROP_FindByShortID(object->properties, identifier);
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+  FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == identifier) {
@@ -74,7 +74,7 @@ OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
   //  return PROP_FindByShortID(object->properties, identifier);
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+  FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->FullIdentifier == identifier) {
@@ -94,7 +94,7 @@ OBJ_EnumClassProperties(lpObject_t object,
                                        void*),
                         void* parm)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+  FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
@@ -132,7 +132,7 @@ OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lPar
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))
+  FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
     if (cmp->pcls->ObjProc) {
       LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData, MsgID, wParam, lParam);
@@ -159,7 +159,7 @@ CMP_GetUserData(struct component* component)
 void*
 OBJ_GetComponent(lpObject_t pobj, uint32_t id)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))
+  FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
     if (cmp->pcls->ClassID == id) {
       return cmp->pUserData;
@@ -171,7 +171,7 @@ OBJ_GetComponent(lpObject_t pobj, uint32_t id)
 void
 OBJ_ReleaseComponents(lpObject_t pobj)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj))
+  FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
     free(cmp);
   }
@@ -185,7 +185,7 @@ CMP_Detach(void* userdata)
   // Subtract its offset to recover the containing struct component pointer.
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
   lpObject_t pobj = self->pobj;
-  REMOVE_FROM_LIST(struct component, self, _GetComponents(pobj));
+  REMOVE_FROM_LIST(struct component, self, pobj->components);
   free(self);
 }
 
@@ -204,7 +204,7 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
                       void (*fnProc)(lpcClassDesc_t, void*),
                       void* param)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(pobj)) {
+  FOR_EACH_LIST(struct component, cmp, pobj->components) {
     fnProc(cmp->pcls, param);
   }
 }
@@ -214,7 +214,7 @@ void _pushproperty(lua_State*, void *, lpcPropertyType_t);
 bool_t
 OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(object)) {
+  FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == id) {
@@ -230,7 +230,7 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
 lpcPropertyType_t
 MSG_FindByShortID(lpObject_t obj, uint32_t ident)
 {
-  FOR_EACH_LIST(struct component, cmp, _GetComponents(obj)) {
+  FOR_EACH_LIST(struct component, cmp, obj->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       lpcPropertyType_t msg = &cmp->pcls->Properties[i];
       if (msg->DataType == kDataTypeEvent && msg->ShortIdentifier == ident) {

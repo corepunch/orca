@@ -195,7 +195,7 @@ HANDLER(Node, Node, IsVisible)
 HANDLER(Node, Object, Start)
 {
   FOR_LOOP(i, pNode->NumResources) {
-    struct LocaleEntry* alias = &pNode->Resources[i];
+    struct ResourceEntry* alias = &pNode->Resources[i];
     lpObject_t aliasedobj = OBJ_FindByPath(hObject, alias->Value);
     if (!aliasedobj || !alias->Value || !*alias->Value)
       continue;
