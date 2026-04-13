@@ -72,6 +72,12 @@
       <value name="Quint">Quintic interpolation</value>
       <value name="Sine">Sine interpolation</value>
     </enum>
+    <enum name="LocaleEntryType">
+      <summary>Discriminates how the string value of a LocaleEntry should be interpreted.</summary>
+      <value name="Undefined">Unrecognised or unset type</value>
+      <value name="Text">A display string (may contain format tags)</value>
+      <value name="Resource">An asset path (returned verbatim)</value>
+    </enum>
     <enum name="Easing">
       <summary>Defines easing functions for animation interpolation.</summary>
       <value name="InOut">Easing function that starts slow, speeds up in the middle, and slows down at the end</value>
@@ -99,6 +105,14 @@
         <field name="outWeight" type="vec4">Outgoing tangent weight for weighted bezier interpolation</field>
         <field name="tangentMode" type="int">Interpolation mode for this keyframe (free, auto, linear, constant)</field>
         <field name="weightedMode" type="int">Whether tangent weights are used for this keyframe</field>
+      </fields>
+    </struct>
+    <struct name="LocaleEntry" sealed="true">
+      <summary>A single entry in a Locale resource, representing a localized string or asset reference.</summary>
+      <fields>
+        <field name="Key" type="string">The unique key identifying this locale entry (e.g. "MainMenu.StartButton")</field>
+        <field name="Value" type="string">The localized string value or asset path for this entry</field>
+        <field name="Type" type="LocaleEntryType">Indicates how to interpret the Value field (e.g. Text, Resource)</field>
       </fields>
     </struct>
   </structs>
@@ -456,17 +470,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Returns true if this object is a PrefabView, which is a special container that can dynamically load and instantiate different prefab templates based on its source property. Similar to Kanzi's PrefabView, this allows for runtime loading of reusable UI component templates by changing the source string, making it useful for dynamic UI composition and template-based layouts.</details>
           <returns type="bool">True if this object is a PrefabView, false otherwise</returns>
         </method>
-        <method name="AddAlias">
-          <summary>Registers an alias for a child object path</summary>
-          <details>Adds a named alias that provides a shorthand reference to a child object path. This is called during the loading phase to register aliases.  Once registered, the aliased path can be referenced using the syntax #AliasName/Child/Property instead of the full path Full/Path/Child/Property.  Aliases simplify references to frequently accessed objects and make UI definitions more maintainable.</details>
-          <arg name="name" type="string">The alias name (used as #name in references)</arg>
-          <arg name="path" type="string">The full path to the object being aliased</arg>
-        </method>
-        <method name="AssignAliases">
-          <summary>Resolves and assigns all registered aliases for an object</summary>
-          <details>Called after the loading phase to resolve alias references and assign aliased children to internal structures. This compilation step processes all aliases registered via AddAlias and updates internal pointers to the actual objects referenced by the given path. This ensures that alias references like #AliasName/Child/Property are properly resolved and ready for use at runtime.</details>
-          <arg name="pathToObject" type="string">The path to the object being processed for alias resolution</arg>
-        </method>
       </methods>
       <messages>
         <message name="Create">
@@ -680,6 +683,18 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           </fields>
         </message>
       </messages>
+    </class>
+    <class name="ResourceDictionary">
+      <summary>Base class for resource containers such as aliases and locale entries.</summary>
+      <details>ResourceDictionary is a standalone component that serves as the common base for Aliases and Locale. It acts as a logical container for named resources that can be looked up by the engine at runtime.</details>
+    </class>
+    <class name="Locale" parent="ResourceDictionary">
+      <summary>Localization resource component that provides text and resource strings for a given language.</summary>
+      <details>Locale is a standalone component (similar to StateManager) that holds locale entries as child LocaleEntry objects. Set the Language property to the BCP-47 language code.</details>
+      <properties>
+        <property name="Language" type="string">BCP-47 language code for this locale (e.g. "en", "fr-CA")</property>
+        <property name="Entries" type="LocaleEntry" array="true">Array of locale entries contained in this locale</property> 
+      </properties>
     </class>
   </classes>
   <functions>

@@ -143,6 +143,24 @@ enum StateManagerControllerProperties {
 	kStateManagerControllerStateManager,
 	kStateManagerControllerControllerChanged,
 };
+// ResourceDictionary
+#define ID_ResourceDictionary 0xde7febc5
+#define GetResourceDictionary(_P) ((struct ResourceDictionary*)((_P)?OBJ_GetComponent(_P,ID_ResourceDictionary):NULL))
+#define ResourceDictionary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ResourceDictionary,sizeof(struct ResourceDictionary),_N)
+#define kResourceDictionaryNumProperties 0
+// Locale
+#define ID_Locale 0xdd6e5bb7
+#define GetLocale(_P) ((struct Locale*)((_P)?OBJ_GetComponent(_P,ID_Locale):NULL))
+#define Locale_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Locale,sizeof(struct Locale),_N)
+#define ID_Locale_Language 0x665b5d0d // Locale.Language
+#define ID_Locale_Entries 0x8c51cbd9 // Locale.Entries
+#define ID_Locale_NumEntries 0x883914cf // Locale.NumEntries
+#define kLocaleNumProperties 3
+enum LocaleProperties {
+	kLocaleLanguage,
+	kLocaleEntries,
+	kLocaleNumEntries,
+};
 
 #define ID_Object_Create 0x5ad07ee8 // Object.Create
 #define ID_Object_Start 0x01629a90 // Object.Start
@@ -166,6 +184,10 @@ enum StateManagerControllerProperties {
 #define ID_Keyframe_OutWeight 0x1061c43b // Keyframe.OutWeight
 #define ID_Keyframe_TangentMode 0x075e3c89 // Keyframe.TangentMode
 #define ID_Keyframe_WeightedMode 0x7101cd83 // Keyframe.WeightedMode
+#define ID_LocaleEntry 0x4e4d5c51
+#define ID_LocaleEntry_Key 0xb57c4b84 // LocaleEntry.Key
+#define ID_LocaleEntry_Value 0xb599c6f2 // LocaleEntry.Value
+#define ID_LocaleEntry_Type 0xddf9bec5 // LocaleEntry.Type
 	
 
 #define ID_Object_CreateEventArgs 0xd370143c

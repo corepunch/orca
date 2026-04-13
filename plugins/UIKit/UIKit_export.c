@@ -61,6 +61,7 @@ ENUM(Stretch, "Uniform", "None", "Fill", "UniformToFill")
 ENUM(TransitionType, "None", "Slide", "Fade")
 ENUM(StyleType, "Generic", "Named")
 ENUM(MouseButton, "None", "Left", "Right", "Middle")
+ENUM(ResourceEntryType, "Undefined", "Text", "Resource")
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
@@ -136,6 +137,14 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	lua_setmetatable(L, -2); \
 	return 1; \
 }
+static struct PropertyType _ResourceEntry[] = {
+	DECL(0xcd1ac90c, ResourceEntry, Key, Key, kDataTypeString), // ResourceEntry.Key
+	DECL(0xd147f96a, ResourceEntry, Value, Value, kDataTypeString), // ResourceEntry.Value
+	DECL(0xd155d06d, ResourceEntry, Type, Type, kDataTypeEnum, .EnumValues = _ResourceEntryType), // ResourceEntry.Type
+};
+static luaL_Reg _ResourceEntry_Methods[] = {
+	{ NULL, NULL }
+};
 static struct PropertyType _CornerRadius[] = {
 	DECL(0xd5ac3a0b, CornerRadius, TopLeftRadius, TopLeftRadius, kDataTypeFloat), // CornerRadius.TopLeftRadius
 	DECL(0xdbe5a724, CornerRadius, TopRightRadius, TopRightRadius, kDataTypeFloat), // CornerRadius.TopRightRadius
@@ -279,6 +288,7 @@ static luaL_Reg _SizeShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 
+STRUCT(ResourceEntry, ResourceEntry);
 STRUCT(CornerRadius, CornerRadius);
 STRUCT(EdgeShorthand, EdgeShorthand);
 STRUCT(AlignmentShorthand, AlignmentShorthand);
@@ -878,6 +888,7 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 REGISTER_CLASS(ColorBrush, ID_Brush, 0);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
+HANDLER(Node, Object, Start);
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
 	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
@@ -946,6 +957,8 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
 	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
+	ARRAY_DECL(0x9564a892, Node, Resources, Resources, kDataTypeStruct, .TypeString = "ResourceEntry"), // Node.Resources
+	DECL(0x25139ae4, Node, NumResources, NumResources, kDataTypeInt), // Node.NumResources
 	DECL(0x7f460f7c, Node, Awake, Awake, kDataTypeEvent, .TypeString = "Node_AwakeEventArgs"), // Node.Awake
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
@@ -989,6 +1002,7 @@ LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wp
 	switch (message) {
 		case ID_Node_GetSize: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
 		case ID_Node_IsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
+		case ID_Object_Start: return Node_Start(object, cmp, wparm, lparm); // Object.Start
 	}
 	return FALSE;
 }
@@ -1668,6 +1682,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
+	lua_setfield(L, ((void)luaopen_orca_ResourceEntry(L), -2), "ResourceEntry");
 	lua_setfield(L, ((void)luaopen_orca_CornerRadius(L), -2), "CornerRadius");
 	lua_setfield(L, ((void)luaopen_orca_EdgeShorthand(L), -2), "EdgeShorthand");
 	lua_setfield(L, ((void)luaopen_orca_AlignmentShorthand(L), -2), "AlignmentShorthand");

@@ -37,9 +37,6 @@
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
 
-#define _GetAliases(obj)                                                       \
-  (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
-
 #define MAX_NODE_PACKAGES 16
 
 #define STYLE_HOVER 1
@@ -75,7 +72,7 @@ enum component_type
 {
   kCompComponents,
   kCompProperties,
-  kCompAliases,
+  // kCompAliases removed — now accessed via the Aliases attach-only component
   // kCompClasses and kCompStyles removed — now accessed via StyleController component
   kCompCount,
 };
@@ -146,8 +143,8 @@ OBJ_ClearStyleClasses(lpObject_t);
 void
 OBJ_SetLuaObject(lpObject_t , uint32_t);
   
-void
-OBJ_SetAlias(lpObject_t , uint32_t);
+ORCA_API void
+OBJ_SetAlias(lpObject_t, uint32_t);
 
 void
 OBJ_AddTimer(lpObject_t, struct timer*);
@@ -201,12 +198,7 @@ OBJ_ReleaseComponents(lpObject_t);
 void
 OBJ_ReleaseProperties(lpObject_t);
 void
-OBJ_ReleaseAliases(lpObject_t);
-void
 CMP_Detach(void* userdata);
-
-lpObject_t
-OBJ_FindChildByAlias(lpObject_t, uint32_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);

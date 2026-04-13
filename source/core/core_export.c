@@ -44,6 +44,7 @@ ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA",
 ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")
 ENUM(PlaybackMode, "Normal", "Reverse", "PingPong")
 ENUM(InterpolationMode, "Linear", "Const", "Back", "Bounce", "Circ", "Cubic", "Elastic", "Expo", "Quad", "Quart", "Quint", "Sine")
+ENUM(LocaleEntryType, "Undefined", "Text", "Resource")
 ENUM(Easing, "InOut", "In", "Out")
 
 int f_OBJ_CreateFromLuaState(lua_State *L) {
@@ -430,19 +431,6 @@ int f_OBJ_IsPrefabView(lua_State *L) {
 	lua_pushboolean(L, result_);
 	return 1;
 }
-int f_OBJ_AddAlias(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* name = luaL_checkstring(L, 2);
-	const char* path = luaL_checkstring(L, 3);
-	OBJ_AddAlias(this_, name, path );
-	return 0;
-}
-int f_OBJ_AssignAliases(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* pathToObject = luaL_checkstring(L, 2);
-	OBJ_AssignAliases(this_, pathToObject );
-	return 0;
-}
 
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
@@ -510,8 +498,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
-		{ "addAlias", f_OBJ_AddAlias },
-		{ "assignAliases", f_OBJ_AssignAliases },
 		{ NULL, NULL },
 	}), 0);
 	lua_pushvalue(L, -1);
@@ -613,9 +599,18 @@ static struct PropertyType _Keyframe[] = {
 static luaL_Reg _Keyframe_Methods[] = {
 	{ NULL, NULL }
 };
+static struct PropertyType _LocaleEntry[] = {
+	DECL(0xcd1ac90c, LocaleEntry, Key, Key, kDataTypeString), // LocaleEntry.Key
+	DECL(0xd147f96a, LocaleEntry, Value, Value, kDataTypeString), // LocaleEntry.Value
+	DECL(0xd155d06d, LocaleEntry, Type, Type, kDataTypeEnum, .EnumValues = _LocaleEntryType), // LocaleEntry.Type
+};
+static luaL_Reg _LocaleEntry_Methods[] = {
+	{ NULL, NULL }
+};
 
 STRUCT(AnimationClipReference, AnimationClipReference);
 STRUCT(Keyframe, Keyframe);
+STRUCT(LocaleEntry, LocaleEntry);
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_CreateEventArgs[] = {
@@ -952,6 +947,42 @@ struct StateManagerController* luaX_checkStateManagerController(lua_State *L, in
 	return GetStateManagerController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
+static struct PropertyType const ResourceDictionaryProperties[kResourceDictionaryNumProperties] = {
+};
+static struct ResourceDictionary ResourceDictionaryDefaults = {
+};
+LRESULT ResourceDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary) {
+	luaX_pushObject(L, CMP_GetObject(ResourceDictionary));
+}
+struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, int idx) {
+	return GetResourceDictionary(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(ResourceDictionary, 0);
+static struct PropertyType const LocaleProperties[kLocaleNumProperties] = {
+	DECL(0x9a73db9b, Locale, Language, Language, kDataTypeString), // Locale.Language
+	ARRAY_DECL(0xdcaca293, Locale, Entries, Entries, kDataTypeStruct, .TypeString = "LocaleEntry"), // Locale.Entries
+	DECL(0x67d575c1, Locale, NumEntries, NumEntries, kDataTypeInt), // Locale.NumEntries
+};
+static struct Locale LocaleDefaults = {
+};
+LRESULT LocaleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushLocale(lua_State *L, struct Locale const* Locale) {
+	luaX_pushObject(L, CMP_GetObject(Locale));
+}
+struct Locale* luaX_checkLocale(lua_State *L, int idx) {
+	return GetLocale(luaX_checkObject(L, idx));
+}
+#define ID_ResourceDictionary 0xde7febc5
+REGISTER_CLASS(Locale, ID_ResourceDictionary, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -971,6 +1002,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
+	lua_setfield(L, ((void)luaopen_orca_LocaleEntry(L), -2), "LocaleEntry");
 	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object_AnimateEventArgs(L), -2), "Object_AnimateEventArgs");
@@ -1000,6 +1032,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateGroup), -2), "StateGroup");
 	lua_setfield(L, ((void)lua_pushclass(L, &_State), -2), "State");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateManagerController), -2), "StateManagerController");
+	lua_setfield(L, ((void)lua_pushclass(L, &_ResourceDictionary), -2), "ResourceDictionary");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Locale), -2), "Locale");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;

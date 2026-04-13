@@ -1,4 +1,4 @@
-#include <include/api.h>
+#include <source/core/core_local.h>
 #include <libxml/tree.h>
 
 typedef struct _LOCALE
@@ -21,10 +21,10 @@ typedef struct _FORMATARG
 
 #define VARIABLE(NAME) { #NAME, NAME }
 #define FMTF(NAME, FORMAT, VALUE)                                              \
-  void NAME(LPSTR szOutput, uint32_t dwLength)                                 \
-  {                                                                            \
-    snprintf(szOutput, dwLength, FORMAT, VALUE);                               \
-  }
+void NAME(LPSTR szOutput, uint32_t dwLength)                                 \
+{                                                                            \
+snprintf(szOutput, dwLength, FORMAT, VALUE);                               \
+}
 
 FMTF(data_FirstName, "%s", "John");
 FMTF(data_LastName, "%s", "Doe");
@@ -38,7 +38,7 @@ static FORMATARG args[] = {
   VARIABLE(data_Age),
   VARIABLE(data_Email),
   VARIABLE(data_Greeting),
-
+  
   { NULL }
 };
 
@@ -100,79 +100,4 @@ Loc_GetString(lpcString_t szName, LOCALE_TYPE type)
     }
   }
   return szName;
-}
-
-bool_t
-Locale_Load(xmlNodePtr xml)
-{
-  if (!xmlStrcmp(xml->name, XMLSTR("Locale"))) {
-    xmlForEach(entry, xml)
-    {
-      WITH(xmlChar, name, xmlGetProp(entry, XMLSTR("Key")), xmlFree)
-      {
-        WITH(xmlChar, type, xmlGetProp(entry, XMLSTR("Type")), xmlFree)
-        {
-          WITH(xmlChar, content, xmlNodeGetContent(entry), xmlFree)
-          {
-            PLOCALE locale =
-              ZeroAlloc(sizeof(struct _LOCALE) + xmlStrlen(content));
-            locale->ident = fnv1a32((lpcString_t)name);
-            if (!xmlStrcmp(type, XMLSTR("TEXT"))) {
-              locale->type = LOC_TEXT;
-            } else if (!xmlStrcmp(type, XMLSTR("RESOURCE"))) {
-              locale->type = LOC_RESOURCE;
-            } else {
-              locale->type = LOC_UNDEFINED;
-            }
-            memcpy(locale->text, content, xmlStrlen(content));
-            ADD_TO_LIST(locale, locales);
-          }
-        }
-      }
-    }
-    return TRUE;
-  } else {
-    Con_Error("Localization object have tag \"Locale\"");
-    return FALSE;
-  }
-}
-
-static int f_load_localization(lua_State* L)
-{
-	lpcString_t source = luaL_checkstring(L, 1);
-  bool_t loaded = FALSE;
-  WITH(struct _xmlDoc, doc, FS_LoadXML(source), xmlFreeDoc)
-  {
-    loaded = Locale_Load(xmlDocGetRootElement(doc));
-  }
-  lua_pushboolean(L, loaded);
-  return 1;
-}
-
-int w_localization_shutdown(lua_State* L)
-{
-  Con_Printf("Shutting down localization");
-  FOR_EACH_LIST(struct _LOCALE, loc, locales)
-  {
-    free(loc);
-  }
-  return 0;
-}
-
-static luaL_Reg const lib_files[] = { { "load", f_load_localization },
-                                      { NULL, NULL } };
-
-ORCA_API int luaopen_orca_localization(lua_State* L)
-{
-  Con_Printf("Initializing localization");
-  
-  locales = 0;
-  
-//  ALLOCATE_MODULE(L, IID_LOCALIZATION, struct localization);
-
-  luaL_newlib(L, lib_files);
-
-  API_MODULE_SHUTDOWN(L, w_localization_shutdown);
-
-  return 1;
 }

@@ -379,6 +379,20 @@ ORCA_API const char *MouseButtonToString(enum MouseButton value);
 ORCA_API enum MouseButton luaX_checkMouseButton(lua_State *L, int idx);
 ORCA_API void luaX_pushMouseButton(lua_State *L, enum MouseButton value);
 
+/// @brief Discriminates how the string value of a LocaleEntry should be interpreted.
+/** ResourceEntryType enum */
+typedef enum ResourceEntryType {
+	kResourceEntryTypeUndefined, ///< Unrecognised or unset type
+	kResourceEntryTypeText, ///< A display string (may contain format tags)
+	kResourceEntryTypeResource, ///< An asset path (returned verbatim)
+} eResourceEntryType_t;
+#define ResourceEntryType_Count 3
+ORCA_API const char *ResourceEntryTypeToString(enum ResourceEntryType value);
+ORCA_API enum ResourceEntryType luaX_checkResourceEntryType(lua_State *L, int idx);
+ORCA_API void luaX_pushResourceEntryType(lua_State *L, enum ResourceEntryType value);
+
+typedef struct ResourceEntry ResourceEntry_t, *lpResourceEntry_t;
+typedef struct ResourceEntry const cResourceEntry_t, *lpcResourceEntry_t;
 typedef struct CornerRadius CornerRadius_t, *lpCornerRadius_t;
 typedef struct CornerRadius const cCornerRadius_t, *lpcCornerRadius_t;
 typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
@@ -408,6 +422,15 @@ typedef struct SizeShorthand const cSizeShorthand_t, *lpcSizeShorthand_t;
 
 
 
+/// @brief A single entry resource, representing an asset reference.
+/** ResourceEntry struct */
+struct ResourceEntry {
+	const char* Key; ///< The unique key identifying this locale entry (e.g. "MainMenu.StartButton")
+	const char* Value; ///< The localized string value or asset path for this entry
+	enum ResourceEntryType Type; ///< Indicates how to interpret the Value field (e.g. Text, Resource)
+};
+ORCA_API void luaX_pushResourceEntry(lua_State *L, struct ResourceEntry const* ResourceEntry);
+ORCA_API struct ResourceEntry* luaX_checkResourceEntry(lua_State *L, int idx);
 /// @brief Corner rounding configuration for rectangular elements
 /** CornerRadius struct */
 struct CornerRadius {
@@ -818,6 +841,8 @@ struct Node {
 	float Opacity; ///< Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
+	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
+	int32_t NumResources;
 	long _tags; ///< Calculated tags value
 	event_t Awake;
 	event_t UpdateMatrix;

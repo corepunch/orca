@@ -180,8 +180,22 @@
       <value name="Right">The right (secondary) mouse button</value>
       <value name="Middle">The middle mouse button</value>
     </enum>
+    <enum name="ResourceEntryType">
+      <summary>Discriminates how the string value of a LocaleEntry should be interpreted.</summary>
+      <value name="Undefined">Unrecognised or unset type</value>
+      <value name="Text">A display string (may contain format tags)</value>
+      <value name="Resource">An asset path (returned verbatim)</value>
+    </enum>
   </enums>
   <structs>
+    <struct name="ResourceEntry" sealed="true">
+      <summary>A single entry resource, representing an asset reference.</summary>
+      <fields>
+        <field name="Key" type="string">The unique key identifying this locale entry (e.g. "MainMenu.StartButton")</field>
+        <field name="Value" type="string">The localized string value or asset path for this entry</field>
+        <field name="Type" type="ResourceEntryType">Indicates how to interpret the Value field (e.g. Text, Resource)</field>
+      </fields>
+    </struct>
     <struct name="CornerRadius">
       <summary>Corner rounding configuration for rectangular elements</summary>
       <details>Allows independent control of each corner's rounding radius.</details>
@@ -394,6 +408,7 @@
       <handles>
         <handle message="Node.GetSize"/>
         <handle message="Node.IsVisible"/>
+        <handle message="Object.Start"/>
       </handles>
       <properties>
         <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
@@ -407,6 +422,7 @@
         <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
         <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
         <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
+        <property name="Resources" type="ResourceEntry" array="true">Array of resources associated with this node. Can be aliases to objects or other resources.</property> 
       </properties>
       <fields>
         <field name="_tags" type="long">Calculated tags value</field>
