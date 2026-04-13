@@ -37,8 +37,9 @@
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
 
+// Aliases component accessor — returns the alias linked list head, or NULL
 #define _GetAliases(obj)                                                       \
-  (*(struct alias**)OBJ_GetObjectComponent(obj, kCompAliases))
+  (GetAliases(obj) ? GetAliases(obj)->aliases : NULL)
 
 #define MAX_NODE_PACKAGES 16
 
@@ -75,7 +76,7 @@ enum component_type
 {
   kCompComponents,
   kCompProperties,
-  kCompAliases,
+  // kCompAliases removed — now accessed via the Aliases attach-only component
   // kCompClasses and kCompStyles removed — now accessed via StyleController component
   kCompCount,
 };

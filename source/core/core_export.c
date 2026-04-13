@@ -681,6 +681,15 @@ static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = {
 static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
 	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
 };
+static luaL_Reg _Aliases_AddEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Aliases_AddEventArgs[] = {
+	DECL(0x0fe07306, Aliases_AddEventArgs, Name, Name, kDataTypeString), // Aliases_AddEventArgs.Name
+	DECL(0xeb66e456, Aliases_AddEventArgs, Path, Path, kDataTypeString), // Aliases_AddEventArgs.Path
+};
+static luaL_Reg _Aliases_AssignEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Aliases_AssignEventArgs[] = {
+	DECL(0x0a121300, Aliases_AssignEventArgs, PathToObject, PathToObject, kDataTypeString), // Aliases_AssignEventArgs.PathToObject
+};
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -701,6 +710,8 @@ STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
+STRUCT(Aliases_AddEventArgs, Aliases_AddEventArgs);
+STRUCT(Aliases_AssignEventArgs, Aliases_AssignEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
@@ -952,6 +963,81 @@ struct StateManagerController* luaX_checkStateManagerController(lua_State *L, in
 	return GetStateManagerController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
+static struct PropertyType const ResourceDictionaryProperties[kResourceDictionaryNumProperties] = {
+};
+static struct ResourceDictionary ResourceDictionaryDefaults = {
+};
+LRESULT ResourceDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary) {
+	luaX_pushObject(L, CMP_GetObject(ResourceDictionary));
+}
+struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, int idx) {
+	return GetResourceDictionary(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(ResourceDictionary, 0);
+HANDLER(Aliases, Object, Release);
+HANDLER(Aliases, Aliases, Add);
+HANDLER(Aliases, Aliases, Assign);
+static struct PropertyType const AliasesProperties[kAliasesNumProperties] = {
+};
+static struct Aliases AliasesDefaults = {
+};
+LRESULT AliasesProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Release: return Aliases_Release(object, cmp, wparm, lparm); // Object.Release
+		case ID_Aliases_Add: return Aliases_Add(object, cmp, wparm, lparm); // Aliases.Add
+		case ID_Aliases_Assign: return Aliases_Assign(object, cmp, wparm, lparm); // Aliases.Assign
+	}
+	return FALSE;
+}
+void luaX_pushAliases(lua_State *L, struct Aliases const* Aliases) {
+	luaX_pushObject(L, CMP_GetObject(Aliases));
+}
+struct Aliases* luaX_checkAliases(lua_State *L, int idx) {
+	return GetAliases(luaX_checkObject(L, idx));
+}
+REGISTER_ATTACH_ONLY_CLASS(Aliases, ID_ResourceDictionary, 0);
+HANDLER(Locale, Object, Start);
+static struct PropertyType const LocaleProperties[kLocaleNumProperties] = {
+	DECL(0x9a73db9b, Locale, Language, Language, kDataTypeString), // Locale.Language
+};
+static struct Locale LocaleDefaults = {
+};
+LRESULT LocaleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Start: return Locale_Start(object, cmp, wparm, lparm); // Object.Start
+	}
+	return FALSE;
+}
+void luaX_pushLocale(lua_State *L, struct Locale const* Locale) {
+	luaX_pushObject(L, CMP_GetObject(Locale));
+}
+struct Locale* luaX_checkLocale(lua_State *L, int idx) {
+	return GetLocale(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(Locale, ID_ResourceDictionary, 0);
+static struct PropertyType const LocaleEntryProperties[kLocaleEntryNumProperties] = {
+	DECL(0xcd1ac90c, LocaleEntry, Key, Key, kDataTypeString), // LocaleEntry.Key
+	DECL(0xd155d06d, LocaleEntry, Type, Type, kDataTypeString), // LocaleEntry.Type
+};
+static struct LocaleEntry LocaleEntryDefaults = {
+};
+LRESULT LocaleEntryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushLocaleEntry(lua_State *L, struct LocaleEntry const* LocaleEntry) {
+	luaX_pushObject(L, CMP_GetObject(LocaleEntry));
+}
+struct LocaleEntry* luaX_checkLocaleEntry(lua_State *L, int idx) {
+	return GetLocaleEntry(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(LocaleEntry, 0);
 int f_core_GetFocus(lua_State *L) {
 	struct Object* result_ = core_GetFocus();
 	luaX_pushObject(L, result_);
@@ -990,6 +1076,9 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Aliases_AddEventArgs(L), -2), "Aliases_AddEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Aliases_AssignEventArgs(L), -2), "Aliases_AssignEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Locale_LoadEventArgs(L), -2), "Locale_LoadEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
@@ -1000,6 +1089,9 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateGroup), -2), "StateGroup");
 	lua_setfield(L, ((void)lua_pushclass(L, &_State), -2), "State");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateManagerController), -2), "StateManagerController");
+	lua_setfield(L, ((void)lua_pushclass(L, &_ResourceDictionary), -2), "ResourceDictionary");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Aliases), -2), "Aliases");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Locale), -2), "Locale");
 	void on_core_module_registered(lua_State *L);
 	on_core_module_registered(L);
 	return 1;

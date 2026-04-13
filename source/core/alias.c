@@ -24,13 +24,17 @@ UI_EnumObjectAliases(lpObject_t object, EnumAliasProc proc, void* args)
 void
 OBJ_AddAlias(lpObject_t object, lpcString_t szName, lpcString_t szPath)
 {
+  if (!GetAliases(object))
+    OBJ_AddComponent(object, ID_Aliases);
+  struct Aliases* ac = GetAliases(object);
+  if (!ac) return;
   struct alias* alias = ZeroAlloc(sizeof(struct alias));
 #ifdef EDITOR_LIB
   alias->name = strdup(szName);
 #endif
   alias->path = strdup(szPath);
   alias->identifier = fnv1a32(szName);
-  ADD_TO_LIST(alias, _GetAliases(object));
+  ADD_TO_LIST(alias, ac->aliases);
 }
 
 lpObject_t
@@ -52,7 +56,9 @@ OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
 void
 OBJ_ReleaseAliases(lpObject_t hobj)
 {
-  FOR_EACH_LIST(struct alias, alias, _GetAliases(hobj))
+  struct Aliases* ac = GetAliases(hobj);
+  if (!ac) return;
+  FOR_EACH_LIST(struct alias, alias, ac->aliases)
   {
     free(alias->path);
 #ifdef EDITOR_LIB
@@ -60,6 +66,7 @@ OBJ_ReleaseAliases(lpObject_t hobj)
 #endif
     free(alias);
   }
+  ac->aliases = NULL;
 }
 
 void

@@ -110,7 +110,6 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   OBJ_SendMessageW(pobj, ID_Object_Release, 0, L);
   OBJ_ReleaseComponents(pobj);
   OBJ_ReleaseProperties(pobj);
-  OBJ_ReleaseAliases(pobj);
 
   SafeFree(pobj->SourceFile);
   SafeFree(pobj->TextContent);

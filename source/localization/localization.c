@@ -103,7 +103,7 @@ Loc_GetString(lpcString_t szName, LOCALE_TYPE type)
 }
 
 bool_t
-Locale_Load(xmlNodePtr xml)
+Loc_LoadFromXML(xmlNodePtr xml)
 {
   if (!xmlStrcmp(xml->name, XMLSTR("Locale"))) {
     xmlForEach(entry, xml)
@@ -143,7 +143,7 @@ static int f_load_localization(lua_State* L)
   bool_t loaded = FALSE;
   WITH(struct _xmlDoc, doc, FS_LoadXML(source), xmlFreeDoc)
   {
-    loaded = Locale_Load(xmlDocGetRootElement(doc));
+    loaded = Loc_LoadFromXML(xmlDocGetRootElement(doc));
   }
   lua_pushboolean(L, loaded);
   return 1;

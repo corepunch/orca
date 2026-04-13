@@ -24,8 +24,7 @@ struct Object
     {
       struct component* components;
       struct Property* properties;
-      struct alias* aliases;
-      // classes and stylesheet moved to StyleController component
+      // aliases moved to the Aliases attach-only component
       // stateManager moved to StateManagerController component
     };
     void* comps[kCompCount];
