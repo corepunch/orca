@@ -37,10 +37,6 @@
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
 
-// Aliases component accessor — returns the alias linked list head, or NULL
-#define _GetAliases(obj)                                                       \
-  (GetAliases(obj) ? GetAliases(obj)->aliases : NULL)
-
 #define MAX_NODE_PACKAGES 16
 
 #define STYLE_HOVER 1
@@ -147,8 +143,8 @@ OBJ_ClearStyleClasses(lpObject_t);
 void
 OBJ_SetLuaObject(lpObject_t , uint32_t);
   
-void
-OBJ_SetAlias(lpObject_t , uint32_t);
+ORCA_API void
+OBJ_SetAlias(lpObject_t, uint32_t);
 
 void
 OBJ_AddTimer(lpObject_t, struct timer*);
@@ -202,12 +198,7 @@ OBJ_ReleaseComponents(lpObject_t);
 void
 OBJ_ReleaseProperties(lpObject_t);
 void
-OBJ_ReleaseAliases(lpObject_t);
-void
 CMP_Detach(void* userdata);
-
-lpObject_t
-OBJ_FindChildByAlias(lpObject_t, uint32_t);
 
 void
 UI_ProcessCommands(struct lua_State* L, lpObject_t root);

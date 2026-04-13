@@ -142,6 +142,18 @@ ORCA_API const char *InterpolationModeToString(enum InterpolationMode value);
 ORCA_API enum InterpolationMode luaX_checkInterpolationMode(lua_State *L, int idx);
 ORCA_API void luaX_pushInterpolationMode(lua_State *L, enum InterpolationMode value);
 
+/// @brief Discriminates how the string value of a LocaleEntry should be interpreted.
+/** LocaleEntryType enum */
+typedef enum LocaleEntryType {
+	kLocaleEntryTypeUndefined, ///< Unrecognised or unset type
+	kLocaleEntryTypeText, ///< A display string (may contain format tags)
+	kLocaleEntryTypeResource, ///< An asset path (returned verbatim)
+} eLocaleEntryType_t;
+#define LocaleEntryType_Count 3
+ORCA_API const char *LocaleEntryTypeToString(enum LocaleEntryType value);
+ORCA_API enum LocaleEntryType luaX_checkLocaleEntryType(lua_State *L, int idx);
+ORCA_API void luaX_pushLocaleEntryType(lua_State *L, enum LocaleEntryType value);
+
 /// @brief Defines easing functions for animation interpolation.
 /** Easing enum */
 typedef enum Easing {
@@ -158,6 +170,8 @@ typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClip
 typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
+typedef struct LocaleEntry LocaleEntry_t, *lpLocaleEntry_t;
+typedef struct LocaleEntry const cLocaleEntry_t, *lpcLocaleEntry_t;
 
 
 /// @brief Retrieves currently active object.
@@ -451,14 +465,6 @@ OBJ_LoadPrefabs(struct lua_State*, struct Object*);
 ORCA_API bool_t
 OBJ_IsPrefabView(struct Object const*);
 
-/// @brief Registers an alias for a child object path
-ORCA_API void
-OBJ_AddAlias(struct Object*, const char*, const char*);
-
-/// @brief Resolves and assigns all registered aliases for an object
-ORCA_API void
-OBJ_AssignAliases(struct Object*, const char*);
-
 /// @brief A named animation clip entry used in an AnimationPlayer's Clips array.
 /** AnimationClipReference struct */
 struct AnimationClipReference {
@@ -481,6 +487,15 @@ struct Keyframe {
 };
 ORCA_API void luaX_pushKeyframe(lua_State *L, struct Keyframe const* Keyframe);
 ORCA_API struct Keyframe* luaX_checkKeyframe(lua_State *L, int idx);
+/// @brief A single entry in a Locale resource, representing a localized string or asset reference.
+/** LocaleEntry struct */
+struct LocaleEntry {
+	const char* Key; ///< The unique key identifying this locale entry (e.g. "MainMenu.StartButton")
+	const char* Value; ///< The localized string value or asset path for this entry
+	enum LocaleEntryType Type; ///< Indicates how to interpret the Value field (e.g. Text, Resource)
+};
+ORCA_API void luaX_pushLocaleEntry(lua_State *L, struct LocaleEntry const* LocaleEntry);
+ORCA_API struct LocaleEntry* luaX_checkLocaleEntry(lua_State *L, int idx);
 
 /** Object_CreateEventArgs struct */
 struct Object_CreateEventArgs {
@@ -722,35 +737,16 @@ struct ResourceDictionary {
 ORCA_API void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary);
 ORCA_API struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, int idx);
 
-/// @brief Attach-only component that manages named aliases for child object paths.
-/** Aliases component */
-typedef struct Aliases Aliases_t, *AliasesPtr, *lpAliases_t;
-typedef struct Aliases const *AliasesCPtr, *lpcAliases_t;
-struct Aliases {
-	struct alias* aliases; ///< Linked list of alias entries (name hash -> path string)
-};
-ORCA_API void luaX_pushAliases(lua_State *L, struct Aliases const* Aliases);
-ORCA_API struct Aliases* luaX_checkAliases(lua_State *L, int idx);
-
-/// @brief Localization resource component.
+/// @brief Localization resource component that provides text and resource strings for a given language.
 /** Locale component */
 typedef struct Locale Locale_t, *LocalePtr, *lpLocale_t;
 typedef struct Locale const *LocaleCPtr, *lpcLocale_t;
 struct Locale {
 	const char* Language; ///< BCP-47 language code for this locale (e.g. "en", "fr-CA")
+	struct LocaleEntry* Entries; ///< Array of locale entries contained in this locale
+	int32_t NumEntries;
 };
 ORCA_API void luaX_pushLocale(lua_State *L, struct Locale const* Locale);
 ORCA_API struct Locale* luaX_checkLocale(lua_State *L, int idx);
-
-/// @brief A single locale string entry that is a child of a Locale object.
-/** LocaleEntry component */
-typedef struct LocaleEntry LocaleEntry_t, *LocaleEntryPtr, *lpLocaleEntry_t;
-typedef struct LocaleEntry const *LocaleEntryCPtr, *lpcLocaleEntry_t;
-struct LocaleEntry {
-	const char* Key; ///< Lookup key used to retrieve this entry via Loc_GetString
-	const char* Type; ///< Entry type: "TEXT" for display strings, "RESOURCE" for asset paths
-};
-ORCA_API void luaX_pushLocaleEntry(lua_State *L, struct LocaleEntry const* LocaleEntry);
-ORCA_API struct LocaleEntry* luaX_checkLocaleEntry(lua_State *L, int idx);
 
 #endif

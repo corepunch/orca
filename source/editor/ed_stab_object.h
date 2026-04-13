@@ -213,7 +213,7 @@ BOOL UI_GetObjectProperty(HOBJ      object,
 
 lpcClassDesc_t get_node_class_desc(lpObject_t object);
 void ED_WriteBindings(HPROP, xmlNodePtr);
-void ED_WriteAliases(struct alias *, xmlNodePtr);
+//void ED_WriteAliases(struct alias *, xmlNodePtr);
 
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url) {
   FOR_EACH_LIST(xmlNs, cur, node->nsDef) {
@@ -284,9 +284,9 @@ ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent) {
   if (object->Name) {
     xmlSetProp(node, XMLSTR("Name"), XMLSTR(object->Name));
   }
-  if (object->aliases) {
-    ED_WriteAliases(object->aliases, node);
-  }
+//  if (object->aliases) {
+//    ED_WriteAliases(object->aliases, node);
+//  }
   FOR_EACH_PROPERTY(p, object->properties) {
     char buffer[256];
     memset(buffer, 0, sizeof(buffer));
