@@ -102,6 +102,17 @@ Loc_GetString(lpcString_t szName, LOCALE_TYPE type)
   return szName;
 }
 
+void
+Loc_AddEntry(lpcString_t key, lpcString_t value, LOCALE_TYPE type)
+{
+  if (!key || !value) return;
+  PLOCALE locale = ZeroAlloc(sizeof(struct _LOCALE) + strlen(value));
+  locale->ident = fnv1a32(key);
+  locale->type = type;
+  memcpy(locale->text, value, strlen(value));
+  ADD_TO_LIST(locale, locales);
+}
+
 bool_t
 Loc_LoadFromXML(xmlNodePtr xml)
 {

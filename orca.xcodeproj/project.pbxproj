@@ -81,7 +81,6 @@
 		781CA76E2E1557A900FFCFD9 /* component.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53242D8F405600122823 /* component.c */; };
 		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A444002F881D1C00AF52A4 /* StateManagerController.c */; };
-		781CA7792E1557A900FFCFD9 /* Aliases.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7792E1557B900FFCFD9 /* Aliases.c */; };
 		781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA77A2E1557B900FFCFD9 /* Locale.c */; };
 		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
 		781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737C42B8F620100FD598E /* core_main.c */; };
@@ -718,7 +717,6 @@
 		78FD53222D8F2A8800122823 /* property_program.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_program.c; sourceTree = "<group>"; };
 		78FD53242D8F405600122823 /* component.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = component.c; sourceTree = "<group>"; };
 		78A444002F881D1C00AF52A4 /* StateManagerController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = StateManagerController.c; sourceTree = "<group>"; };
-		781CA7792E1557B900FFCFD9 /* Aliases.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Aliases.c; sourceTree = "<group>"; };
 		781CA77A2E1557B900FFCFD9 /* Locale.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Locale.c; sourceTree = "<group>"; };
 		78FD532B2D90746900122823 /* alias.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = alias.c; sourceTree = "<group>"; };
 		78FD532F2D929AFE00122823 /* debug.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = debug.c; sourceTree = "<group>"; };
@@ -1181,7 +1179,6 @@
 				78A442BC2F87FA8100AF52A4 /* property_animation.c */,
 				78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */,
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
-				781CA7792E1557B900FFCFD9 /* Aliases.c */,
 				781CA77A2E1557B900FFCFD9 /* Locale.c */,
 			);
 			path = components;
@@ -2169,7 +2166,6 @@
 				78A443C92F881D1C00AF52A4 /* easing_curve.c in Sources */,
 				78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
-				781CA7792E1557A900FFCFD9 /* Aliases.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */,
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
 				78A442BD2F87FA8200AF52A4 /* property_animation.c in Sources */,

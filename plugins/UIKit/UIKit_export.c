@@ -946,6 +946,8 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
 	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
+	ARRAY_DECL(0x9564a892, Node, Resources, Resources, kDataTypeStruct, .TypeString = "Entry"), // Node.Resources
+	DECL(0x25139ae4, Node, NumResources, NumResources, kDataTypeInt), // Node.NumResources
 	DECL(0x7f460f7c, Node, Awake, Awake, kDataTypeEvent, .TypeString = "Node_AwakeEventArgs"), // Node.Awake
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView

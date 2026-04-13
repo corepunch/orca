@@ -37,10 +37,6 @@
 #define _GetStyleController(obj)                                               \
   GetStyleController(obj)
 
-// Aliases component accessor — returns the alias linked list head, or NULL
-#define _GetAliases(obj)                                                       \
-  (GetAliases(obj) ? GetAliases(obj)->aliases : NULL)
-
 #define MAX_NODE_PACKAGES 16
 
 #define STYLE_HOVER 1

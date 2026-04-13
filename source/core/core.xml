@@ -78,6 +78,7 @@
       <value name="Text">A display string (may contain format tags)</value>
       <value name="Resource">An asset path (returned verbatim)</value>
     </enum>
+    <enum name="Easing">
       <summary>Defines easing functions for animation interpolation.</summary>
       <value name="InOut">Easing function that starts slow, speeds up in the middle, and slows down at the end</value>
       <value name="In">Easing function that starts slow and speeds up towards the end</value>
@@ -85,6 +86,14 @@
     </enum>
   </enums>
   <structs>
+    <struct name="Entry" sealed="true">
+      <summary>A generic key-value-type record used for resources and locale entries.</summary>
+      <fields>
+        <field name="Key" type="string">Lookup key</field>
+        <field name="Value" type="string">String value</field>
+        <field name="Type" type="LocaleEntryType">Entry type: Undefined, Text, or Resource</field>
+      </fields>
+    </struct>
     <struct name="AnimationClipReference" sealed="true">
       <summary>A named animation clip entry used in an AnimationPlayer's Clips array.</summary>
       <details>Pairs a short identifying name with an AnimationClip object so that a single AnimationPlayer can hold a library of clips and play any of them by name.</details>
@@ -686,50 +695,15 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
       </messages>
     </class>
-    <class name="ResourceDictionary">
-      <summary>Base class for resource containers such as aliases and locale entries.</summary>
-      <details>ResourceDictionary is a standalone component that serves as the common base for Aliases and Locale. It acts as a logical container for named resources that can be looked up by the engine at runtime.</details>
-    </class>
-    <class name="Aliases" parent="ResourceDictionary" attach-only="true">
-      <summary>Attach-only component that manages named aliases for child object paths.</summary>
-      <details>Aliases replaces the legacy per-object alias slot on struct Object. Attach it to any object (automatically done the first time addAlias is called). Alias entries map a short name to a child object path so that references like #AliasName/Sub/Property can be resolved without knowing the full path. All alias operations (add, assign, resolve) are available as direct messages and C API functions.</details>
-      <handles>
-        <handle message="Object.Release"/>
-        <handle message="Aliases.Add"/>
-        <handle message="Aliases.Assign"/>
-      </handles>
-      <messages>
-        <message name="Add" routing="Direct">
-          <summary>Registers a named alias for a child object path.</summary>
-          <fields>
-            <field name="Name" type="string">The alias name used in #Name references</field>
-            <field name="Path" type="string">The path to the child object being aliased</field>
-          </fields>
-        </message>
-        <message name="Assign" routing="Direct">
-          <summary>Resolves all registered aliases and assigns alias IDs to the referenced objects.</summary>
-          <fields>
-            <field name="PathToObject" type="string">Path to the object being processed for alias resolution</field>
-          </fields>
-        </message>
-      </messages>
-    </class>
-    <class name="Locale" parent="ResourceDictionary">
+    <class name="Locale">
       <summary>Localization resource component that provides text and resource strings for a given language.</summary>
-      <details>Locale is a standalone component (similar to StateManager) that holds locale entries as child LocaleEntry objects. Set the Language property to the BCP-47 language code. When the object receives Object.Start it registers all child LocaleEntry objects into the global locale table so that Loc_GetString can find them.</details>
+      <details>Locale holds locale entries as an array of Entry values. Set the Language property to the BCP-47 language code. On Object.Start, all Entries are registered into the global locale table for Loc_GetString.</details>
       <handles>
         <handle message="Object.Start"/>
       </handles>
       <properties>
         <property name="Language" type="string">BCP-47 language code for this locale (e.g. "en", "fr-CA")</property>
-      </properties>
-    </class>
-    <class name="LocaleEntry">
-      <summary>A single locale string entry that is a child of a Locale object.</summary>
-      <details>LocaleEntry holds one key-value pair. Key is the lookup identifier, Type is either "TEXT" (formatted string) or "RESOURCE" (asset path), and the text content of the element is the value. LocaleEntry objects are created by the XML loader as direct children of a Locale and are registered in the global locale table when their parent Locale receives Object.Start.</details>
-      <properties>
-        <property name="Key" type="string">Lookup key used to retrieve this entry via Loc_GetString</property>
-        <property name="Type" type="string">Entry type: "TEXT" for display strings, "RESOURCE" for asset paths</property>
+        <property name="Entries" type="Entry" array="true">Locale key-value entries</property>
       </properties>
     </class>
   </classes>

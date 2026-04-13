@@ -214,44 +214,24 @@ enum StateManagerControllerProperties {
 
 #define ID_StateManagerController_ControllerChangedEventArgs_Property 0x1ed8c3b6 // StateManagerController_ControllerChangedEventArgs.Property
 
-// ResourceDictionary
-#define ID_ResourceDictionary 0xde7febc5
-#define GetResourceDictionary(_P) ((struct ResourceDictionary*)((_P)?OBJ_GetComponent(_P,ID_ResourceDictionary):NULL))
-#define ResourceDictionary_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ResourceDictionary,sizeof(struct ResourceDictionary),_N)
-#define kResourceDictionaryNumProperties 0
-// Aliases
-#define ID_Aliases 0x5c69c4bf
-#define GetAliases(_P) ((struct Aliases*)((_P)?OBJ_GetComponent(_P,ID_Aliases):NULL))
-#define Aliases_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Aliases,sizeof(struct Aliases),_N)
-#define ID_Aliases_Add 0x0f02fca6 // Aliases.Add
-#define ID_Aliases_Assign 0x8ded47ea // Aliases.Assign
-#define kAliasesNumProperties 0
+// Entry (struct)
+#define ID_Entry 0x9cbfed33
+#define ID_Entry_Key 0x4f29d17e // Entry.Key
+#define ID_Entry_Value 0x9f0080dc // Entry.Value
+#define ID_Entry_Type 0xdd5d015f // Entry.Type
 // Locale
 #define ID_Locale 0xdd6e5bb7
 #define GetLocale(_P) ((struct Locale*)((_P)?OBJ_GetComponent(_P,ID_Locale):NULL))
 #define Locale_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Locale,sizeof(struct Locale),_N)
 #define ID_Locale_Language 0x665b5d0d // Locale.Language
-#define kLocaleNumProperties 1
+#define ID_Locale_Entries 0x8c51cbd9 // Locale.Entries
+#define ID_Locale_NumEntries 0x883914cf // Locale.NumEntries
+#define kLocaleNumProperties 3
 enum LocaleProperties {
 	kLocaleLanguage,
+	kLocaleEntries,
+	kLocaleNumEntries,
 };
-// LocaleEntry
-#define ID_LocaleEntry 0x4e4d5c51
-#define GetLocaleEntry(_P) ((struct LocaleEntry*)((_P)?OBJ_GetComponent(_P,ID_LocaleEntry):NULL))
-#define LocaleEntry_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_LocaleEntry,sizeof(struct LocaleEntry),_N)
-#define ID_LocaleEntry_Key 0xb57c4b84 // LocaleEntry.Key
-#define ID_LocaleEntry_Type 0xddf9bec5 // LocaleEntry.Type
-#define kLocaleEntryNumProperties 2
-enum LocaleEntryProperties {
-	kLocaleEntryKey,
-	kLocaleEntryType,
-};
-
-#define ID_Aliases_AddEventArgs 0x6fce3420
-#define ID_Aliases_AddEventArgs_Name 0x3309aaf1 // Aliases_AddEventArgs.Name
-#define ID_Aliases_AddEventArgs_Path 0xecb407d9 // Aliases_AddEventArgs.Path
-#define ID_Aliases_AssignEventArgs 0xc0958a7e
-#define ID_Aliases_AssignEventArgs_PathToObject 0xcc1b0df9 // Aliases_AssignEventArgs.PathToObject
 	
 
 #endif

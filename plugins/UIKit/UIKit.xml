@@ -407,6 +407,7 @@
         <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
         <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
         <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
+        <property name="Resources" type="Entry" array="true">Named resource entries (key-value-type) associated with this node.</property>
       </properties>
       <fields>
         <field name="_tags" type="long">Calculated tags value</field>

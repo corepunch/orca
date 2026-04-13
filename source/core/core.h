@@ -154,6 +154,19 @@ ORCA_API const char *EasingToString(enum Easing value);
 ORCA_API enum Easing luaX_checkEasing(lua_State *L, int idx);
 ORCA_API void luaX_pushEasing(lua_State *L, enum Easing value);
 
+/** LocaleEntryType enum */
+typedef enum LocaleEntryType {
+	kLocaleEntryTypeUndefined, ///< Unrecognised or unset type
+	kLocaleEntryTypeText, ///< A display string (may contain format tags)
+	kLocaleEntryTypeResource, ///< An asset path (returned verbatim)
+} eLocaleEntryType_t;
+#define LocaleEntryType_Count 3
+ORCA_API const char *LocaleEntryTypeToString(enum LocaleEntryType value);
+ORCA_API enum LocaleEntryType luaX_checkLocaleEntryType(lua_State *L, int idx);
+ORCA_API void luaX_pushLocaleEntryType(lua_State *L, enum LocaleEntryType value);
+
+typedef struct Entry Entry_t, *lpEntry_t;
+typedef struct Entry const cEntry_t, *lpcEntry_t;
 typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClipReference_t;
 typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
@@ -461,6 +474,13 @@ OBJ_AssignAliases(struct Object*, const char*);
 
 /// @brief A named animation clip entry used in an AnimationPlayer's Clips array.
 /** AnimationClipReference struct */
+struct Entry {
+	const char* Key; ///< Lookup key
+	const char* Value; ///< String value
+	enum LocaleEntryType Type; ///< Entry type: Undefined, Text, or Resource
+};
+ORCA_API void luaX_pushEntry(lua_State *L, struct Entry const* Entry);
+ORCA_API struct Entry* luaX_checkEntry(lua_State *L, int idx);
 struct AnimationClipReference {
 	const char* Name; ///< Short name used to identify and select this clip (e.g. "idle", "walk")
 	struct AnimationClip* Clip; ///< The AnimationClip object for this entry
@@ -713,44 +733,16 @@ struct StateManagerController {
 ORCA_API void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController);
 ORCA_API struct StateManagerController* luaX_checkStateManagerController(lua_State *L, int idx);
 
-/// @brief Base class for resource containers such as aliases and locale entries.
-/** ResourceDictionary component */
-typedef struct ResourceDictionary ResourceDictionary_t, *ResourceDictionaryPtr, *lpResourceDictionary_t;
-typedef struct ResourceDictionary const *ResourceDictionaryCPtr, *lpcResourceDictionary_t;
-struct ResourceDictionary {
-};
-ORCA_API void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary);
-ORCA_API struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, int idx);
-
-/// @brief Attach-only component that manages named aliases for child object paths.
-/** Aliases component */
-typedef struct Aliases Aliases_t, *AliasesPtr, *lpAliases_t;
-typedef struct Aliases const *AliasesCPtr, *lpcAliases_t;
-struct Aliases {
-	struct alias* aliases; ///< Linked list of alias entries (name hash -> path string)
-};
-ORCA_API void luaX_pushAliases(lua_State *L, struct Aliases const* Aliases);
-ORCA_API struct Aliases* luaX_checkAliases(lua_State *L, int idx);
-
 /// @brief Localization resource component.
 /** Locale component */
 typedef struct Locale Locale_t, *LocalePtr, *lpLocale_t;
 typedef struct Locale const *LocaleCPtr, *lpcLocale_t;
 struct Locale {
 	const char* Language; ///< BCP-47 language code for this locale (e.g. "en", "fr-CA")
+	struct Entry* Entries; ///< Array of locale key-value entries
+	int32_t NumEntries; ///< Number of entries in the Entries array
 };
 ORCA_API void luaX_pushLocale(lua_State *L, struct Locale const* Locale);
 ORCA_API struct Locale* luaX_checkLocale(lua_State *L, int idx);
-
-/// @brief A single locale string entry that is a child of a Locale object.
-/** LocaleEntry component */
-typedef struct LocaleEntry LocaleEntry_t, *LocaleEntryPtr, *lpLocaleEntry_t;
-typedef struct LocaleEntry const *LocaleEntryCPtr, *lpcLocaleEntry_t;
-struct LocaleEntry {
-	const char* Key; ///< Lookup key used to retrieve this entry via Loc_GetString
-	const char* Type; ///< Entry type: "TEXT" for display strings, "RESOURCE" for asset paths
-};
-ORCA_API void luaX_pushLocaleEntry(lua_State *L, struct LocaleEntry const* LocaleEntry);
-ORCA_API struct LocaleEntry* luaX_checkLocaleEntry(lua_State *L, int idx);
 
 #endif

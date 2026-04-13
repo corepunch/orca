@@ -574,6 +574,8 @@ typedef enum
 
 ORCA_API lpcString_t
 Loc_GetString(lpcString_t, LOCALE_TYPE);
+ORCA_API void
+Loc_AddEntry(lpcString_t key, lpcString_t value, LOCALE_TYPE type);
 
 
 ORCA_API struct token*

@@ -818,6 +818,8 @@ struct Node {
 	float Opacity; ///< Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
 	const char* Tags; ///< Tag collection for categorizing or querying nodes.
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
+	struct Entry* Resources; ///< Named resource entries (key-value-type) associated with this node.
+	int32_t NumResources; ///< Number of entries in the Resources array.
 	long _tags; ///< Calculated tags value
 	event_t Awake;
 	event_t UpdateMatrix;
