@@ -47,49 +47,22 @@ HANDLER(Setter, Trigger, Triggered)
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
     lpProperty_t p;
     if (pSetter->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
-//      PROP_Parse(p, pSetter->Value);
-      assert(!"Not implemented");
+      // TODO: implement property parsing via PROP_Parse when available
+      (void)p;
     }
+    // TODO: remove this debug log once Setter is fully implemented
     Con_Error("setting %s to %s", pSetter->Property ? pSetter->Property : "", pSetter->Value ? pSetter->Value : "");
   }
   return FALSE;
 }
 
-#include <include/api.h>
-
+// TODO: implement Handler_Triggered — needs lua callback support wired to target object
 HANDLER(Handler, Trigger, Triggered)
 {
-//  HandleMessageMsgPtr msg = &pTriggered->message;
-//  if (pTriggered->Trigger ==
-//        CMP_GetUserData((struct component*)pHandler->Trigger) &&
-//      msg) {
-//    lpObject_t pTarget = pHandler->Target ? CMP_GetObject(pHandler->Target) : hObject;
-//    lua_State* L = OBJ_GetDomain(hObject);
-//    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pTarget));
-//    lua_getfield(L, -1, pHandler->Function ? pHandler->Function : "");
-//    if (lua_type(L, -1) == LUA_TFUNCTION) {
-//      lua_pop(L, 2);
-//      lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(hObject));
-//      for (int i = 0; i < msg->NumArgs; i++) {
-//        lua_pushvalue(L, -(1 + msg->NumArgs));
-//      }
-//      return luaX_executecallback(L, pTarget, pHandler->Function ? pHandler->Function : "", msg->NumArgs + 1);
-//    } else {
-//      lua_pop(L, 2);
-//    }
-//  }
   return FALSE;
 }
 
-//HANDLER(EventTrigger, Node, HandleMessage)
-//{
-//  if (pEventTrigger->RoutedEvent && !strcmp(pHandleMessage->EventName, pEventTrigger->RoutedEvent)) {
-//    return _SendMessage(hObject, Trigger, Triggered,
-//      .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
-//      .message = *pHandleMessage);
-//  }
-//  return FALSE;
-//}
+// TODO: implement EventTrigger handler — waiting for Node.HandleMessage routing support
 
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {
