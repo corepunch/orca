@@ -132,7 +132,7 @@ static void destroy_object(lpObject_t obj) {
      * Each component block starts with a 'next' pointer as its first field
      * (see struct component in component_internal.h), so we can walk the
      * list without knowing the full struct layout. */
-    void *cmp = *(void **)OBJ_GetObjectComponent(obj, kCompComponents);
+    void *cmp = obj->components;
     while (cmp) {
         void *next = *(void **)cmp;
         free(cmp);
