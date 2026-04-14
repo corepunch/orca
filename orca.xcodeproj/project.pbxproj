@@ -253,6 +253,7 @@
 		78E4A9A92E93E59800E3A503 /* liborca.parsers.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */; };
 		78E4A9BB2E941A0300E3A503 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = 781FC4A72E8D7CB800571445 /* server.c */; };
 		78E4A9CB2E94204D00E3A503 /* w_system.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B1378A2AF3CC4E00AAAE53 /* w_system.c */; };
+		78ED00012F000000000000001 /* ed_stubs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78ED00002F000000000000001 /* ed_stubs.c */; };
 		78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 78E4A9C62E941ECD00E3A503 /* liborca.system.so */; };
 		78E4A9CE2E942C4400E3A503 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		78E4A9D12E95189700E3A503 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
@@ -589,6 +590,7 @@
 		786F2B192E12EE7F00B519AB /* ed_textfield.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_textfield.c; sourceTree = "<group>"; };
 		786F2B1A2E12EE7F00B519AB /* ed_undo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_undo.c; sourceTree = "<group>"; };
 		786F2B1B2E12EE7F00B519AB /* ed_utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_utils.c; sourceTree = "<group>"; };
+		78ED00002F000000000000001 /* ed_stubs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_stubs.c; sourceTree = "<group>"; };
 		786F2B342E12EF1100B519AB /* editor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = editor.h; sourceTree = "<group>"; };
 		786F2B352E12FE8E00B519AB /* module.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = module.h; sourceTree = "<group>"; };
 		787040442F6F197000A84406 /* core_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core_properties.h; sourceTree = "<group>"; };
@@ -1062,6 +1064,7 @@
 				786F2B192E12EE7F00B519AB /* ed_textfield.c */,
 				786F2B1A2E12EE7F00B519AB /* ed_undo.c */,
 				786F2B1B2E12EE7F00B519AB /* ed_utils.c */,
+				78ED00002F000000000000001 /* ed_stubs.c */,
 				786F2B152E12EE7F00B519AB /* ed_local.h */,
 				781CA6B12E13E08400FFCFD9 /* ed_stab_component.h */,
 				781CA6B32E14073300FFCFD9 /* ed_stab_filesystem.h */,
@@ -1162,6 +1165,7 @@
 			isa = PBXGroup;
 			children = (
 				789AE3CF2F687B250067DC75 /* DarkReign */,
+				786F2B1D2E12EE7F00B519AB /* editor */,
 				78346DE52C96EFC900E0CFD1 /* SceneKit */,
 				7868655D2F50A9BD00DC87FC /* SpriteKit */,
 				78C7374F2B8F60C600FD598E /* UIKit */,
@@ -1235,7 +1239,6 @@
 			children = (
 				78B137AD2AF3CC4E00AAAE53 /* orca.c */,
 				78C7374E2B8F60C600FD598E /* core */,
-				786F2B1D2E12EE7F00B519AB /* editor */,
 				7810D2662D58B1B800DB632F /* filesystem */,
 				789A97D32F65490800FD32A9 /* geometry */,
 				786BFD062AFBA00D00216782 /* network */,
@@ -2164,6 +2167,7 @@
 				78EE10ED2E44A6220005DB2A /* w_gameview.c in Sources */,
 				781CA7FE2E19371400FFCFD9 /* w_bindings.c in Sources */,
 				78E4A9BB2E941A0300E3A503 /* server.c in Sources */,
+				78ED00012F000000000000001 /* ed_stubs.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

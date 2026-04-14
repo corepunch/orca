@@ -6,7 +6,6 @@ BOOL UI_GetProperty(DWORD dwIndex, LPPROPDEF lpOut);
 void UI_RefreshProperty(DWORD dwIndex);
 //BOOL UI_EnumObjectAliases(HOBJ, EnumAliasProc, LPVOID);
 BOOL UI_EnumObjectProperties(HOBJ, EnumPropertyProc, LPVOID);
-bool_t OBJ_IsPrefabView(lpcObject_t object);
 
 HANDLE jwObjectGetUniqueID(HOBJ object) {
   return object->unique;
@@ -142,21 +141,21 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   return NULL; // No match
 }
 
-static void _FilterObjects(HOBJ obj, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
+static void _FilterObjectsImpl(HOBJ obj, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
   if (stristr(obj->Name, filter)) {
     struct _OBJDEF ov;
     UI_FillOutObjectView(obj, &ov);
     proc(&ov, parm);
   }
   FOR_EACH_OBJECT(child, obj) {
-    _FilterObjects(child, filter, proc, parm);
+    _FilterObjectsImpl(child, filter, proc, parm);
   }
 }
 
 void UI_FilterObjects(HOBJ root, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
   if (strlen(filter) == 0)
     return;
-  _FilterObjects(root, filter, proc, parm);
+  _FilterObjectsImpl(root, filter, proc, parm);
 }
 
 BOOL UI_GetObject(HOBJ object, LPOBJDEF lpObjDef) {
@@ -354,24 +353,7 @@ ORCA_API void UI_StepTime(lpObject_t object) {
 }
 // post/node/Example/Prefabs?source=Example/Screens/Application/Image&name=Image
 
+#ifndef default_url
 #define default_url "http://schemas.corepunch.com/orca/2006/xml/presentation"
+#endif
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url);
-
-bool_t
-UI_EnumObjectAliases(lpObject_t object, EnumAliasProc proc, void* args)
-{
-  FOR_LOOP(i, GetNode(object) ? GetNode(object)->NumResources : 0) {
-    proc(GetNode(object)->Resources[i].Key, GetNode(object)->Resources[i].Value, args);
-  }
-  return TRUE;
-}
-//
-//void ED_WriteAliases(struct alias *it, xmlNodePtr node) {
-//  if (it->next) {
-//    ED_WriteAliases(it->next, node);
-//  }
-//  xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
-//  xmlNodePtr xml = xmlNewChild(node, ns, XMLSTR("Resource"), BAD_CAST it->path);
-//  xmlSetProp(xml, XMLSTR("id"), BAD_CAST it->name);
-//}
-//

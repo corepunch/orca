@@ -198,4 +198,11 @@ OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
   }
 }
 
-#include <source/editor/ed_stab_object.h>
+ORCA_API bool_t
+UI_EnumObjectAliases(lpObject_t object, EnumAliasProc proc, void* args)
+{
+  FOR_LOOP(i, GetNode(object) ? GetNode(object)->NumResources : 0) {
+    proc(GetNode(object)->Resources[i].Key, GetNode(object)->Resources[i].Value, args);
+  }
+  return TRUE;
+}

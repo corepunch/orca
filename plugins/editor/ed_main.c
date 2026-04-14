@@ -525,7 +525,7 @@ static LRESULT HandleCommand(DWORD msg, wParam_t wparam, lParam_t lparam) {
 
 static BOOL bEditorVisible = FALSE;
 
-#include "../renderer/r_local.h"
+#include <source/renderer/r_local.h>
 
 static DWORD _LocalCoord(HEDWND wnd, DWORD wparam) {
   if (!wnd) return wparam;

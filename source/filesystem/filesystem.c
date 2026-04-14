@@ -423,5 +423,5 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 }
 
-#include <source/editor/ed_stab_filesystem.h>
+
 

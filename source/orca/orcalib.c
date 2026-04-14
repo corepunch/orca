@@ -35,16 +35,12 @@ int luaopen_orca_parsers_json(lua_State*);
 int luaopen_orca_parsers_xml(lua_State*);
 int luaopen_orca_renderer(lua_State*);
 int luaopen_orca_system(lua_State*);
-int luaopen_orca_editor(lua_State*);
 
 static luaL_Reg const orca_modules[] = {
   { "orca.core", luaopen_orca_core },
   { "orca.filesystem", luaopen_orca_filesystem },
   { "orca.filesystem.native", luaopen_orca_filesystem_native },
   { "orca.geometry", luaopen_orca_geometry },
-#ifndef __EMSCRIPTEN__
-  { "orca.editor", luaopen_orca_editor },
-#endif
   { "orca.network", luaopen_orca_network },
   { "orca.parsers.json", luaopen_orca_parsers_json },
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
