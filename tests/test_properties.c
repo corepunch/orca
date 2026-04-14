@@ -32,6 +32,7 @@
 
 #include <source/core/core_local.h>
 #include <source/core/core.h>
+#include <source/core/object/object_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -200,6 +201,53 @@ static void register_runtime_class(void)
 
 static lpObject_t make_rt_object(void) {
     return OBJ_MakeNativeObject(fnv1a32("RTComp"));
+}
+
+/* ------------------------------------------------------------------ */
+/* RTString2Comp — two string properties for source→target binding    */
+/* tests.  FullIdentifiers are plain fnv1a32(name) so {./Source} and  */
+/* {./Target} resolve correctly via OBJ_FindPropertyByPath.           */
+/* ------------------------------------------------------------------ */
+
+struct RTString2Comp {
+    const char* Source;
+    const char* Target;
+};
+
+/* fnv1a32("Source") = 0x5b67e082  fnv1a32("Target") = 0x6d9978b7 */
+static struct PropertyType s_rtString2Props[2] = {
+    { .Name = "Source", .Key = "Source", .DataType = kDataTypeString,
+      .DataSize = sizeof(const char*),
+      .Offset = offsetof(struct RTString2Comp, Source) },
+    { .Name = "Target", .Key = "Target", .DataType = kDataTypeString,
+      .DataSize = sizeof(const char*),
+      .Offset = offsetof(struct RTString2Comp, Target) },
+};
+
+static LRESULT RTString2Comp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+                                   wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_rtString2Class = {
+    .ObjProc       = RTString2Comp_Proc,
+    .Properties    = s_rtString2Props,
+    .ClassName     = "RTString2Comp",
+    .ClassSize     = sizeof(struct RTString2Comp),
+    .NumProperties = 2,
+    .DefaultName   = "rtstring2comp",
+};
+
+static void register_rtstring2_class(void) {
+    s_rtString2Props[0].ShortIdentifier = s_rtString2Props[0].FullIdentifier = fnv1a32("Source");
+    s_rtString2Props[1].ShortIdentifier = s_rtString2Props[1].FullIdentifier = fnv1a32("Target");
+    s_rtString2Class.ClassID = fnv1a32("RTString2Comp");
+    OBJ_RegisterClass(&s_rtString2Class);
+}
+
+static lpObject_t make_rtstring2_object(void) {
+    return OBJ_MakeNativeObject(fnv1a32("RTString2Comp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -737,6 +785,125 @@ static void test_runtime_if_string_branch(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* String property binding tests                                       */
+/*                                                                     */
+/* These cover the scenario from the problem report:                   */
+/*   *(char**)PROP_GetValue(p)  -- outputs (null)                      */
+/*                                                                     */
+/* A never-set string component property holds NULL in its char*       */
+/* field.  PROP_Export must convert that NULL to an empty string ""    */
+/* (via vm_strtmp), not crash or propagate NULL to the target.        */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Running a binding expression {./Label} on an object whose Label
+ * string property was never set must produce an empty-string register,
+ * not a NULL pointer or a crash.
+ */
+static void test_string_export_unset_produces_empty(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        /* Label was never set — the RTComp.Label char* field is NULL. */
+        struct vm_register r = {0};
+        RUN_PROG(obj, "{./Label}", &r);
+        EXPECT(r.type == kDataTypeString);
+        const char *str = *(const char *const *)r.value;
+        EXPECT(str != NULL);        /* vm_strtmp(NULL) returns "" not NULL */
+        EXPECT_STR_EQ(str, "");
+    }
+}
+
+/*
+ * PROP_AttachProgram + PROP_Update with an unset string source:
+ * the target string property must be set to "" after the update,
+ * never left as NULL.
+ */
+static void test_string_binding_unset_source_gives_empty(void) {
+    WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
+        lpProperty_t target;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
+        /* Source is never set — its char* is NULL. */
+        struct token *prog = Token_Create("{./Source}");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(target, kPropertyAttributeWholeProperty,
+                           prog, "{./Source}");
+        EXPECT(PROP_HasProgram(target));
+        core.frame++;
+        EXPECT(PROP_Update(target));
+        EXPECT(!PROP_IsNull(target));
+        EXPECT_STR_EQ(*(const char**)PROP_GetValue(target), "");
+    }
+}
+
+/*
+ * When the source string is set, PROP_Update must propagate its value
+ * to the target property.
+ */
+static void test_string_binding_value_propagates(void) {
+    WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
+        lpProperty_t source, target;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Source", &source));
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
+
+        PROP_SetValue(source, PROP_STR("hello"));
+        EXPECT_STR_EQ(*(const char**)PROP_GetValue(source), "hello");
+
+        struct token *prog = Token_Create("{./Source}");
+        EXPECT(prog != NULL);
+        PROP_AttachProgram(target, kPropertyAttributeWholeProperty,
+                           prog, "{./Source}");
+        core.frame++;
+        EXPECT(PROP_Update(target));
+        EXPECT(!PROP_IsNull(target));
+        EXPECT_STR_EQ(*(const char**)PROP_GetValue(target), "hello");
+    }
+}
+
+/*
+ * Parent-child binding path {../Label}: OBJ_RunProgram resolves ".."
+ * to the parent object and reads its string property.
+ */
+static void test_string_binding_parent_label(void) {
+    WITH(struct Object, parent, make_rt_object(), destroy_object) {
+        WITH(struct Object, child, make_rt_object(), destroy_object) {
+            child->parent = parent;
+
+            lpProperty_t parentLabel;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "Label", &parentLabel));
+            PROP_SetValue(parentLabel, PROP_STR("world"));
+
+            struct vm_register r = {0};
+            RUN_PROG(child, "{../Label}", &r);
+            EXPECT(r.type == kDataTypeString);
+            EXPECT_STR_EQ(*(const char *const *)r.value, "world");
+
+            child->parent = NULL;
+        }
+    }
+}
+
+/*
+ * Parent-child binding when the parent's string property is unset:
+ * the binding must produce "" not NULL or a crash.
+ */
+static void test_string_binding_parent_label_unset(void) {
+    WITH(struct Object, parent, make_rt_object(), destroy_object) {
+        WITH(struct Object, child, make_rt_object(), destroy_object) {
+            child->parent = parent;
+
+            /* Parent's Label is never set — char* is NULL. */
+            struct vm_register r = {0};
+            RUN_PROG(child, "{../Label}", &r);
+            EXPECT(r.type == kDataTypeString);
+            const char *str = *(const char *const *)r.value;
+            EXPECT(str != NULL);
+            EXPECT_STR_EQ(str, "");
+
+            child->parent = NULL;
+        }
+    }
+}
+
+/* ------------------------------------------------------------------ */
 /* kDataTypeColor — General property tests                             */
 /* ------------------------------------------------------------------ */
 
@@ -1075,6 +1242,7 @@ int main(void) {
 
     register_test_class();
     register_runtime_class();
+    register_rtstring2_class();
     register_color_class();
     register_rt_color_class();
     register_project_types();
@@ -1121,6 +1289,11 @@ int main(void) {
         DECL_TEST(test_runtime_if_true_branch),
         DECL_TEST(test_runtime_if_false_branch),
         DECL_TEST(test_runtime_if_string_branch),
+        DECL_TEST(test_string_export_unset_produces_empty),
+        DECL_TEST(test_string_binding_unset_source_gives_empty),
+        DECL_TEST(test_string_binding_value_propagates),
+        DECL_TEST(test_string_binding_parent_label),
+        DECL_TEST(test_string_binding_parent_label_unset),
         DECL_TEST(test_project_string_property_set_get),
         DECL_TEST(test_color_property_basic),
         DECL_TEST(test_color_property_reassign),
