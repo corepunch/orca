@@ -336,7 +336,6 @@ static int filesystem_gc(lua_State* L)
 //}
 
 int luaopen_orca_pipe(lua_State *L);
-LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg);
 
 int f_init(lua_State* L)
 {
@@ -347,11 +346,6 @@ int f_init(lua_State* L)
   }
   FS_SetWorkspace(luaX_checkObject(L, -1));
   struct Object* object = FS_LoadBundle(L, luaL_checkstring(L, 1));
-  lua_getglobal(L, "SERVER");
-  if (lua_toboolean(L, -1)) {
-    SV_RegisterMessageProc(filesystem_handle_event);
-    axPostMessageW(NULL, kEventReadCommands, 0, NULL); // launch reader
-  }
   luaX_pushObject(L, object);
   return 1;
 }

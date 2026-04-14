@@ -795,6 +795,8 @@ ORCA_API BOOL ED_IsRunning(void) {
   return !editor.bHasFinished;
 }
 
+LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg);
+
 static LRESULT _DispatchMessage(lua_State *L, struct AXmessage *msg) {
   return ED_DispatchMessage(msg->message, msg->wParam, msg->lParam);
 }
@@ -825,6 +827,12 @@ ORCA_API int luaopen_orca_editor(lua_State* L)
   editor.L = L;
   
   SV_RegisterMessageProc(_DispatchMessage);
+  lua_getglobal(L, "SERVER");
+  if (lua_toboolean(L, -1)) {
+    SV_RegisterMessageProc(filesystem_handle_event);
+    axPostMessageW(NULL, kEventReadCommands, 0, NULL); // launch server reader
+  }
+  lua_pop(L, 1);
   
   return 1;
 }
