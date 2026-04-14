@@ -623,6 +623,19 @@ The `pyphp` Python-PHP bridge has several quirks:
 
 ---
 
+## Feature Development Workflow
+
+When implementing a new component, property, message, or any other API addition, always follow this order:
+
+1. **XML first** — Define the public API in the module's `.xml` file (class, properties, messages, handles, methods).
+2. **Code generation** — Run `cd tools && make` to regenerate `*.h`, `*_properties.h`, and `*_export.c` from the updated XML.
+3. **HANDLER implementations** — Write the hand-coded `.c` handler bodies using the `HANDLER` macro; never edit generated files.
+4. **Tests** — Add or update tests (Lua layout tests, C unit tests) and verify with `make test-headless` / `xvfb-run make test`.
+
+> **Never skip step 2.** Editing `.h` or `_export.c` by hand will be overwritten on the next `make`. Commit generated files alongside your XML changes.
+
+---
+
 ## Common Tasks
 
 ### Add a new element type to the XML schema
