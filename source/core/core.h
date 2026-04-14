@@ -38,6 +38,37 @@ typedef struct AnimationPlayer_CompletedEventArgs AnimationPlayer_CompletedMsg_t
 typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
+typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
+typedef struct Node_AwakeEventArgs Node_AwakeMsg_t,* Node_AwakeMsgPtr;
+typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
+typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
+typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
+typedef struct Node_IsVisibleEventArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
+typedef struct Node_ViewDidLoadEventArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
+typedef struct Node_KillFocusEventArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
+typedef struct Node_SetFocusEventArgs Node_SetFocusMsg_t,* Node_SetFocusMsgPtr;
+typedef struct Node_GetSizeEventArgs Node_GetSizeMsg_t,* Node_GetSizeMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_MouseMessageMsg_t,* Node_MouseMessageMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseDownMsg_t,* Node_LeftMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseDownMsg_t,* Node_RightMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseDownMsg_t,* Node_OtherMouseDownMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseUpMsg_t,* Node_LeftMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseUpMsg_t,* Node_RightMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseUpMsg_t,* Node_OtherMouseUpMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftMouseDraggedMsg_t,* Node_LeftMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightMouseDraggedMsg_t,* Node_RightMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherMouseDraggedMsg_t,* Node_OtherMouseDraggedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_LeftDoubleClickMsg_t,* Node_LeftDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_RightDoubleClickMsg_t,* Node_RightDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_OtherDoubleClickMsg_t,* Node_OtherDoubleClickMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_MouseMovedMsg_t,* Node_MouseMovedMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_ScrollWheelMsg_t,* Node_ScrollWheelMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_DragDropMsg_t,* Node_DragDropMsgPtr;
+typedef struct Node_MouseMessageEventArgs Node_DragEnterMsg_t,* Node_DragEnterMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyMessageMsg_t,* Node_KeyMessageMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyDownMsg_t,* Node_KeyDownMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_KeyUpMsg_t,* Node_KeyUpMsgPtr;
+typedef struct Node_KeyMessageEventArgs Node_TextInputMsg_t,* Node_TextInputMsgPtr;
 
 
 /// @brief Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.
@@ -166,12 +197,123 @@ ORCA_API const char *EasingToString(enum Easing value);
 ORCA_API enum Easing luaX_checkEasing(lua_State *L, int idx);
 ORCA_API void luaX_pushEasing(lua_State *L, enum Easing value);
 
+/// @brief Horizontal alignment of elements within their parent container
+/** HorizontalAlignment enum */
+typedef enum HorizontalAlignment {
+	kHorizontalAlignmentStretch, ///< Stretch to fill container width
+	kHorizontalAlignmentLeft, ///< Align to left edge of container
+	kHorizontalAlignmentCenter, ///< Center within container
+	kHorizontalAlignmentRight, ///< Align to right edge of container
+} eHorizontalAlignment_t;
+#define HorizontalAlignment_Count 4
+ORCA_API const char *HorizontalAlignmentToString(enum HorizontalAlignment value);
+ORCA_API enum HorizontalAlignment luaX_checkHorizontalAlignment(lua_State *L, int idx);
+ORCA_API void luaX_pushHorizontalAlignment(lua_State *L, enum HorizontalAlignment value);
+
+/// @brief Vertical alignment of elements within their parent container
+/** VerticalAlignment enum */
+typedef enum VerticalAlignment {
+	kVerticalAlignmentStretch, ///< Stretch to fill container height
+	kVerticalAlignmentTop, ///< Align to top edge of container
+	kVerticalAlignmentCenter, ///< Center within container
+	kVerticalAlignmentBottom, ///< Align to bottom edge of container
+} eVerticalAlignment_t;
+#define VerticalAlignment_Count 4
+ORCA_API const char *VerticalAlignmentToString(enum VerticalAlignment value);
+ORCA_API enum VerticalAlignment luaX_checkVerticalAlignment(lua_State *L, int idx);
+ORCA_API void luaX_pushVerticalAlignment(lua_State *L, enum VerticalAlignment value);
+
+/// @brief 3D depth alignment options for positioning along Z-axis
+/** DepthAlignment enum */
+typedef enum DepthAlignment {
+	kDepthAlignmentNear, ///< Align to near clipping plane
+	kDepthAlignmentCenter, ///< Center in depth
+	kDepthAlignmentFar, ///< Align to far clipping plane
+	kDepthAlignmentStretch, ///< Stretch across depth
+} eDepthAlignment_t;
+#define DepthAlignment_Count 4
+ORCA_API const char *DepthAlignmentToString(enum DepthAlignment value);
+ORCA_API enum DepthAlignment luaX_checkDepthAlignment(lua_State *L, int idx);
+ORCA_API void luaX_pushDepthAlignment(lua_State *L, enum DepthAlignment value);
+
+/// @brief Size calculation modes for layout operations
+/** Sizing enum */
+typedef enum Sizing {
+	kSizingPlusMargin, ///< Include margins in size calculation
+	kSizingSizeOnly, ///< Return only the base size
+	kSizingMinusPadding, ///< Subtract padding from size
+} eSizing_t;
+#define Sizing_Count 3
+ORCA_API const char *SizingToString(enum Sizing value);
+ORCA_API enum Sizing luaX_checkSizing(lua_State *L, int idx);
+ORCA_API void luaX_pushSizing(lua_State *L, enum Sizing value);
+
+/// @brief Visual styles for element borders
+/** BorderStyle enum */
+typedef enum BorderStyle {
+	kBorderStyleNone, ///< No border
+	kBorderStyleHidden, ///< Hidden border (takes space but invisible)
+	kBorderStyleDotted, ///< Dotted border pattern
+	kBorderStyleDashed, ///< Dashed border pattern
+	kBorderStyleSolid, ///< Solid continuous border
+	kBorderStyleDouble, ///< Double line border
+	kBorderStyleGroove, ///< 3D grooved border effect
+	kBorderStyleRidge, ///< 3D ridged border effect
+	kBorderStyleInset, ///< 3D inset border effect
+	kBorderStyleOutset, ///< 3D outset border effect
+} eBorderStyle_t;
+#define BorderStyle_Count 10
+ORCA_API const char *BorderStyleToString(enum BorderStyle value);
+ORCA_API enum BorderStyle luaX_checkBorderStyle(lua_State *L, int idx);
+ORCA_API void luaX_pushBorderStyle(lua_State *L, enum BorderStyle value);
+
+/// @brief Identifies which mouse button was involved in a mouse button event.
+/** MouseButton enum */
+typedef enum MouseButton {
+	kMouseButtonNone, ///< No mouse button used for mouse move and scroll events
+	kMouseButtonLeft, ///< The left (primary) mouse button
+	kMouseButtonRight, ///< The right (secondary) mouse button
+	kMouseButtonMiddle, ///< The middle mouse button
+} eMouseButton_t;
+#define MouseButton_Count 4
+ORCA_API const char *MouseButtonToString(enum MouseButton value);
+ORCA_API enum MouseButton luaX_checkMouseButton(lua_State *L, int idx);
+ORCA_API void luaX_pushMouseButton(lua_State *L, enum MouseButton value);
+
+/// @brief Discriminates how the string value of a ResourceEntry should be interpreted.
+/** ResourceEntryType enum */
+typedef enum ResourceEntryType {
+	kResourceEntryTypeUndefined, ///< Unrecognised or unset type
+	kResourceEntryTypeText, ///< A display string (may contain format tags)
+	kResourceEntryTypeResource, ///< An asset path (returned verbatim)
+} eResourceEntryType_t;
+#define ResourceEntryType_Count 3
+ORCA_API const char *ResourceEntryTypeToString(enum ResourceEntryType value);
+ORCA_API enum ResourceEntryType luaX_checkResourceEntryType(lua_State *L, int idx);
+ORCA_API void luaX_pushResourceEntryType(lua_State *L, enum ResourceEntryType value);
+
 typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClipReference_t;
 typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
 typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
 typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
 typedef struct LocaleEntry LocaleEntry_t, *lpLocaleEntry_t;
 typedef struct LocaleEntry const cLocaleEntry_t, *lpcLocaleEntry_t;
+typedef struct ResourceEntry ResourceEntry_t, *lpResourceEntry_t;
+typedef struct ResourceEntry const cResourceEntry_t, *lpcResourceEntry_t;
+typedef struct CornerRadius CornerRadius_t, *lpCornerRadius_t;
+typedef struct CornerRadius const cCornerRadius_t, *lpcCornerRadius_t;
+typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
+typedef struct EdgeShorthand const cEdgeShorthand_t, *lpcEdgeShorthand_t;
+typedef struct AlignmentShorthand AlignmentShorthand_t, *lpAlignmentShorthand_t;
+typedef struct AlignmentShorthand const cAlignmentShorthand_t, *lpcAlignmentShorthand_t;
+typedef struct Thickness Thickness_t, *lpThickness_t;
+typedef struct Thickness const cThickness_t, *lpcThickness_t;
+typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
+typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
+typedef struct SizeAxisShorthand SizeAxisShorthand_t, *lpSizeAxisShorthand_t;
+typedef struct SizeAxisShorthand const cSizeAxisShorthand_t, *lpcSizeAxisShorthand_t;
+typedef struct SizeShorthand SizeShorthand_t, *lpSizeShorthand_t;
+typedef struct SizeShorthand const cSizeShorthand_t, *lpcSizeShorthand_t;
 
 
 /// @brief Retrieves currently active object.
@@ -496,6 +638,75 @@ struct LocaleEntry {
 };
 ORCA_API void luaX_pushLocaleEntry(lua_State *L, struct LocaleEntry const* LocaleEntry);
 ORCA_API struct LocaleEntry* luaX_checkLocaleEntry(lua_State *L, int idx);
+/// @brief A single entry resource, representing an asset reference.
+/** ResourceEntry struct */
+struct ResourceEntry {
+	const char* Key; ///< The unique key identifying this resource entry
+	const char* Value; ///< The localized string value or asset path for this entry
+	enum ResourceEntryType Type; ///< Indicates how to interpret the Value field (e.g. Text, Resource)
+};
+ORCA_API void luaX_pushResourceEntry(lua_State *L, struct ResourceEntry const* ResourceEntry);
+ORCA_API struct ResourceEntry* luaX_checkResourceEntry(lua_State *L, int idx);
+/// @brief Corner rounding configuration for rectangular elements
+/** CornerRadius struct */
+struct CornerRadius {
+	float TopLeftRadius; ///< Top-left corner radius
+	float TopRightRadius; ///< Top-right corner radius
+	float BottomRightRadius; ///< Bottom-right corner radius
+	float BottomLeftRadius; ///< Bottom-left corner radius
+};
+ORCA_API void luaX_pushCornerRadius(lua_State *L, struct CornerRadius const* CornerRadius);
+ORCA_API struct CornerRadius* luaX_checkCornerRadius(lua_State *L, int idx);
+/// @brief Spacing values for opposite edges of an axis
+/** EdgeShorthand struct */
+struct EdgeShorthand {
+	float Left; ///< Leading edge value (left for horizontal, top for vertical, near for depth)
+	float Right; ///< Trailing edge value (right for horizontal, bottom for vertical, far for depth)
+};
+ORCA_API void luaX_pushEdgeShorthand(lua_State *L, struct EdgeShorthand const* EdgeShorthand);
+ORCA_API struct EdgeShorthand* luaX_checkEdgeShorthand(lua_State *L, int idx);
+/// @brief Axis-specific alignment parameters.
+/** AlignmentShorthand struct */
+struct AlignmentShorthand {
+	int32_t Axis[3]; ///< Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).
+};
+ORCA_API void luaX_pushAlignmentShorthand(lua_State *L, struct AlignmentShorthand const* AlignmentShorthand);
+ORCA_API struct AlignmentShorthand* luaX_checkAlignmentShorthand(lua_State *L, int idx);
+/// @brief External spacing configuration for rectangular elements
+/** Thickness struct */
+struct Thickness {
+	struct EdgeShorthand Axis[3]; ///< External spacing per axis
+};
+ORCA_API void luaX_pushThickness(lua_State *L, struct Thickness const* Thickness);
+ORCA_API struct Thickness* luaX_checkThickness(lua_State *L, int idx);
+/// @brief Complete border definition for rectangular element
+/** BorderShorthand struct */
+struct BorderShorthand {
+	struct Thickness Width; ///< Border thickness in pixels, specified for each edge
+	struct color Color; ///< Border color
+	enum BorderStyle Style; ///< Visual style of the border
+	struct CornerRadius Radius; ///< Border radius definition per corner
+};
+ORCA_API void luaX_pushBorderShorthand(lua_State *L, struct BorderShorthand const* BorderShorthand);
+ORCA_API struct BorderShorthand* luaX_checkBorderShorthand(lua_State *L, int idx);
+/// @brief Complete sizing definition for one axis
+/** SizeAxisShorthand struct */
+struct SizeAxisShorthand {
+	float Requested; ///< Requested {0} size in pixels
+	float Desired; ///< Desired {0} size in pixels
+	float Min; ///< Minimum allowable {0} size along
+	float Actual; ///< Actual (calculated) {0} size after layout resolution
+	float Scroll; ///< Total {0} size required for scrolling content
+};
+ORCA_API void luaX_pushSizeAxisShorthand(lua_State *L, struct SizeAxisShorthand const* SizeAxisShorthand);
+ORCA_API struct SizeAxisShorthand* luaX_checkSizeAxisShorthand(lua_State *L, int idx);
+/// @brief Sizing configuration of elements (e.g., Width, Height, Depth)
+/** SizeShorthand struct */
+struct SizeShorthand {
+	struct SizeAxisShorthand Axis[3]; ///< A number value per axis
+};
+ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
+ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
 
 /** Object_CreateEventArgs struct */
 struct Object_CreateEventArgs {
@@ -599,6 +810,85 @@ struct StateManagerController_ControllerChangedEventArgs {
 };
 ORCA_API void luaX_pushStateManagerController_ControllerChangedEventArgs(lua_State *L, struct StateManagerController_ControllerChangedEventArgs const* data);
 ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkStateManagerController_ControllerChangedEventArgs(lua_State *L, int idx);
+/** Trigger_TriggeredEventArgs struct */
+struct Trigger_TriggeredEventArgs {
+	struct Trigger* Trigger;
+};
+ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
+ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
+/** Node_AwakeEventArgs struct */
+struct Node_AwakeEventArgs {
+};
+ORCA_API void luaX_pushNode_AwakeEventArgs(lua_State *L, struct Node_AwakeEventArgs const* data);
+ORCA_API struct Node_AwakeEventArgs* luaX_checkNode_AwakeEventArgs(lua_State *L, int idx);
+/** Node_UpdateMatrixEventArgs struct */
+struct Node_UpdateMatrixEventArgs {
+	struct mat4 parent; ///< The parent matrix
+	float opacity; ///< The opacity value
+	bool_t force; ///< Indicates if the update is forced
+};
+ORCA_API void luaX_pushNode_UpdateMatrixEventArgs(lua_State *L, struct Node_UpdateMatrixEventArgs const* data);
+ORCA_API struct Node_UpdateMatrixEventArgs* luaX_checkNode_UpdateMatrixEventArgs(lua_State *L, int idx);
+/** Node_LoadViewEventArgs struct */
+struct Node_LoadViewEventArgs {
+	struct lua_State* lua_state;
+};
+ORCA_API void luaX_pushNode_LoadViewEventArgs(lua_State *L, struct Node_LoadViewEventArgs const* data);
+ORCA_API struct Node_LoadViewEventArgs* luaX_checkNode_LoadViewEventArgs(lua_State *L, int idx);
+/** Node_HitTestEventArgs struct */
+struct Node_HitTestEventArgs {
+	int32_t x; ///< X coordinate of the hit test point
+	int32_t y; ///< Y coordinate of the hit test point
+};
+ORCA_API void luaX_pushNode_HitTestEventArgs(lua_State *L, struct Node_HitTestEventArgs const* data);
+ORCA_API struct Node_HitTestEventArgs* luaX_checkNode_HitTestEventArgs(lua_State *L, int idx);
+/** Node_IsVisibleEventArgs struct */
+struct Node_IsVisibleEventArgs {
+};
+ORCA_API void luaX_pushNode_IsVisibleEventArgs(lua_State *L, struct Node_IsVisibleEventArgs const* data);
+ORCA_API struct Node_IsVisibleEventArgs* luaX_checkNode_IsVisibleEventArgs(lua_State *L, int idx);
+/** Node_ViewDidLoadEventArgs struct */
+struct Node_ViewDidLoadEventArgs {
+};
+ORCA_API void luaX_pushNode_ViewDidLoadEventArgs(lua_State *L, struct Node_ViewDidLoadEventArgs const* data);
+ORCA_API struct Node_ViewDidLoadEventArgs* luaX_checkNode_ViewDidLoadEventArgs(lua_State *L, int idx);
+/** Node_KillFocusEventArgs struct */
+struct Node_KillFocusEventArgs {
+};
+ORCA_API void luaX_pushNode_KillFocusEventArgs(lua_State *L, struct Node_KillFocusEventArgs const* data);
+ORCA_API struct Node_KillFocusEventArgs* luaX_checkNode_KillFocusEventArgs(lua_State *L, int idx);
+/** Node_SetFocusEventArgs struct */
+struct Node_SetFocusEventArgs {
+};
+ORCA_API void luaX_pushNode_SetFocusEventArgs(lua_State *L, struct Node_SetFocusEventArgs const* data);
+ORCA_API struct Node_SetFocusEventArgs* luaX_checkNode_SetFocusEventArgs(lua_State *L, int idx);
+/** Node_GetSizeEventArgs struct */
+struct Node_GetSizeEventArgs {
+};
+ORCA_API void luaX_pushNode_GetSizeEventArgs(lua_State *L, struct Node_GetSizeEventArgs const* data);
+ORCA_API struct Node_GetSizeEventArgs* luaX_checkNode_GetSizeEventArgs(lua_State *L, int idx);
+/** Node_MouseMessageEventArgs struct */
+struct Node_MouseMessageEventArgs {
+	float x; ///< Horizontal pointer position in local space
+	float y; ///< Vertical pointer position in local space
+	int32_t deltaX; ///< Scroll wheel rotation amount along the X axis; positive values scroll right/forward
+	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
+	enum MouseButton button; ///< The mouse button involved in this event
+	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
+};
+ORCA_API void luaX_pushNode_MouseMessageEventArgs(lua_State *L, struct Node_MouseMessageEventArgs const* data);
+ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs(lua_State *L, int idx);
+/** Node_KeyMessageEventArgs struct */
+struct Node_KeyMessageEventArgs {
+	int32_t keyCode; ///< The key involved in this event
+	int32_t character; ///< The character produced by this key event
+	int32_t modifiers; ///< Active modifier keys during the event (bitmask of AX_MOD_* flags)
+	const char* text; ///< The text produced by this key event as a UTF-8 string (empty for non-printable keys)
+	const char* modifiersString; ///< Active modifier keys as a human-readable prefix string (e.g. "ctrl+shift+")
+	const char* hotKey; ///< Combined modifier+key string for hotkey matching (e.g. "ctrl+alt+w")
+};
+ORCA_API void luaX_pushNode_KeyMessageEventArgs(lua_State *L, struct Node_KeyMessageEventArgs const* data);
+ORCA_API struct Node_KeyMessageEventArgs* luaX_checkNode_KeyMessageEventArgs(lua_State *L, int idx);
 
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
@@ -748,5 +1038,133 @@ struct Locale {
 };
 ORCA_API void luaX_pushLocale(lua_State *L, struct Locale const* Locale);
 ORCA_API struct Locale* luaX_checkLocale(lua_State *L, int idx);
+
+/// @brief Base class for data-holding objects within the framework
+/** DataObject component */
+typedef struct DataObject DataObject_t, *DataObjectPtr, *lpDataObject_t;
+typedef struct DataObject const *DataObjectCPtr, *lpcDataObject_t;
+struct DataObject {
+};
+ORCA_API void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject);
+ORCA_API struct DataObject* luaX_checkDataObject(lua_State *L, int idx);
+
+/// @brief Base class for event-driven actions within the UI system
+/** Trigger component */
+typedef struct Trigger Trigger_t, *TriggerPtr, *lpTrigger_t;
+typedef struct Trigger const *TriggerCPtr, *lpcTrigger_t;
+struct Trigger {
+	const char* Property; ///< Target property name to monitor or modify
+	int32_t Value; ///< Associated value for the trigger condition
+	event_t Triggered;
+};
+ORCA_API void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger);
+ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
+
+/// @brief Responds to property value changes on specified nodes
+/** OnPropertyChangedTrigger component */
+typedef struct OnPropertyChangedTrigger OnPropertyChangedTrigger_t, *OnPropertyChangedTriggerPtr, *lpOnPropertyChangedTrigger_t;
+typedef struct OnPropertyChangedTrigger const *OnPropertyChangedTriggerCPtr, *lpcOnPropertyChangedTrigger_t;
+struct OnPropertyChangedTrigger {
+	const char* SourceNode; ///< Name or identifier of the node to monitor
+	const char* Property; ///< Property name to watch for changes
+};
+ORCA_API void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTrigger const* OnPropertyChangedTrigger);
+ORCA_API struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L, int idx);
+
+/// @brief Triggers when an element is attached to the visual tree
+/** OnAttachedTrigger component */
+typedef struct OnAttachedTrigger OnAttachedTrigger_t, *OnAttachedTriggerPtr, *lpOnAttachedTrigger_t;
+typedef struct OnAttachedTrigger const *OnAttachedTriggerCPtr, *lpcOnAttachedTrigger_t;
+struct OnAttachedTrigger {
+};
+ORCA_API void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* OnAttachedTrigger);
+ORCA_API struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx);
+
+/// @brief Responds to routed UI events (mouse, keyboard, etc.)
+/** EventTrigger component */
+typedef struct EventTrigger EventTrigger_t, *EventTriggerPtr, *lpEventTrigger_t;
+typedef struct EventTrigger const *EventTriggerCPtr, *lpcEventTrigger_t;
+struct EventTrigger {
+	const char* RoutedEvent; ///< Name of the routed event to handle (e.g., "MouseDown", "KeyPress")
+};
+ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
+ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
+
+/// @brief Applies property values when triggered by specified conditions
+/** Setter component */
+typedef struct Setter Setter_t, *SetterPtr, *lpSetter_t;
+typedef struct Setter const *SetterCPtr, *lpcSetter_t;
+struct Setter {
+	struct Trigger* Trigger; ///< Triggering condition or state image
+	const char* Property; ///< Target property name to set
+	const char* Value; ///< Value to apply to the property
+};
+ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
+ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
+
+/// @brief Executes custom functions when triggered by specified conditions
+/** Handler component */
+typedef struct Handler Handler_t, *HandlerPtr, *lpHandler_t;
+typedef struct Handler const *HandlerCPtr, *lpcHandler_t;
+struct Handler {
+	struct Trigger* Trigger; ///< Triggering condition or state image
+	struct Node* Target; ///< Target object to call function on
+	const char* Function; ///< Function name to execute on target
+};
+ORCA_API void luaX_pushHandler(lua_State *L, struct Handler const* Handler);
+ORCA_API struct Handler* luaX_checkHandler(lua_State *L, int idx);
+
+/// @brief Base class for all UI engine nodes.
+/** Node component */
+typedef struct Node Node_t, *NodePtr, *lpNode_t;
+typedef struct Node const *NodeCPtr, *lpcNode_t;
+struct Node {
+	struct SizeShorthand Size; ///< Sizing configuration of this element
+	struct Thickness Margin; ///< External spacing around the element
+	struct Thickness Padding; ///< Internal spacing between element border and content
+	struct BorderShorthand Border; ///< Border definition along each axis
+	struct AlignmentShorthand Alignment; ///< Alignment definition for each axis.
+	bool_t Visible; ///< Whether this node is visible in the scene.
+	bool_t QuickHide; ///< If true, node is quickly hidden without triggering full visibility transitions.
+	float VisibleAmountInParent; ///< Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].
+	float Opacity; ///< Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].
+	const char* Tags; ///< Tag collection for categorizing or querying nodes.
+	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
+	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
+	int32_t NumResources;
+	long _tags; ///< Calculated tags value
+	event_t Awake;
+	event_t UpdateMatrix;
+	event_t LoadView;
+	event_t HitTest;
+	event_t IsVisible;
+	event_t ViewDidLoad;
+	event_t KillFocus;
+	event_t SetFocus;
+	event_t GetSize;
+	event_t MouseMessage;
+	event_t LeftMouseDown;
+	event_t RightMouseDown;
+	event_t OtherMouseDown;
+	event_t LeftMouseUp;
+	event_t RightMouseUp;
+	event_t OtherMouseUp;
+	event_t LeftMouseDragged;
+	event_t RightMouseDragged;
+	event_t OtherMouseDragged;
+	event_t LeftDoubleClick;
+	event_t RightDoubleClick;
+	event_t OtherDoubleClick;
+	event_t MouseMoved;
+	event_t ScrollWheel;
+	event_t DragDrop;
+	event_t DragEnter;
+	event_t KeyMessage;
+	event_t KeyDown;
+	event_t KeyUp;
+	event_t TextInput;
+};
+ORCA_API void luaX_pushNode(lua_State *L, struct Node const* Node);
+ORCA_API struct Node* luaX_checkNode(lua_State *L, int idx);
 
 #endif

@@ -315,15 +315,7 @@ static lpObject_t make_object(void) {
 static void destroy_object(lpObject_t obj) {
     if (!obj) return;
     OBJ_ReleaseProperties(obj);
-    /* Walk the component linked list and free each block.
-     * struct component has `next` as its first field (see component.c),
-     * so we can walk without knowing the full struct layout. */
-    void *cmp = *(void **)OBJ_GetObjectComponent(obj, kCompComponents);
-    while (cmp) {
-        void *next = *(void **)cmp; /* next pointer is first field */
-        free(cmp);
-        cmp = next;
-    }
+    OBJ_ReleaseComponents(obj);
     free(obj);
 }
 

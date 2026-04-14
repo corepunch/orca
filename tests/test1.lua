@@ -15,8 +15,8 @@ local function test_text_block_layout()
 		Name = "Text", 
 		Text = config.text,
 		HorizontalAlignment = "Left",
-		HorizontalMargin = ui.EdgeShorthand(config.margin.left, config.margin.right),
-		BorderRadius = ui.CornerRadius(config.radius), -- this should apply the same radius to all corners
+		HorizontalMargin = core.EdgeShorthand(config.margin.left, config.margin.right),
+		BorderRadius = core.CornerRadius(config.radius), -- this should apply the same radius to all corners
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
@@ -43,10 +43,10 @@ local function test_text_block_layout()
 
 	-- Verify that common classes and properties are available
 	assert(type(ui.TextBlock) == 'table', "ui.TextBlock should be a table")
-	assert(type(ui.EdgeShorthand) == 'table', "ui.EdgeShorthand should be a table")
+	assert(type(core.EdgeShorthand) == 'table', "core.EdgeShorthand should be a table")
 
 	text:setFocus()
-	text.Padding = ui.Thickness(config.padding)
+	text.Padding = core.Thickness(config.padding)
 
 	-- Verify that the text block is focused after calling setFocus()
 	assert(text:isFocused(), "Text block should be focused after setFocus()")
@@ -93,7 +93,7 @@ local function test_stack_view_layout()
 		Name = "test_stack_view_layout",
 		Direction = "Vertical",
 		VerticalAlignment = "Top",
-		Margin = ui.Thickness(config.stack_margin),
+		Margin = core.Thickness(config.stack_margin),
 		Spacing = config.stack_spacing
 	}
 	local node1 = stack + ui.TextBlock {
@@ -103,7 +103,7 @@ local function test_stack_view_layout()
 	local node2 = stack + ui.TextBlock {
 		Text = "Node with margin",
 		Height = config.node_height,
-		Margin = ui.Thickness(config.node_margin)
+		Margin = core.Thickness(config.node_margin)
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
@@ -164,9 +164,9 @@ local function test_grid_view_layout()
 	}
 	local rows = string.format("%dpx auto %dpx", config.header, config.footer)
 	local grid = screen + ui.Grid { Rows = rows }
-	local header = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
-	local content = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
-	local footer = grid + ui.Node2D { Margin = ui.Thickness(config.margin) }
+	local header = grid + ui.Node2D { Margin = core.Thickness(config.margin) }
+	local content = grid + ui.Node2D { Margin = core.Thickness(config.margin) }
+	local footer = grid + ui.Node2D { Margin = core.Thickness(config.margin) }
 	screen:UpdateLayout(screen.Width, screen.Height)
 	assert(grid.ActualWidth == screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
 	assert(grid.ActualHeight == screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
@@ -202,10 +202,10 @@ local function test_grid_view_in_stack_layout()
 	local stack = screen + ui.StackView { Direction = "Vertical", Spacing = config.stack_spacing }
 	local row1 = stack + ui.Grid { Columns = "auto auto" }
 	local row2 = stack + ui.Grid { Columns = "auto auto" }
-	local text11 = row1 + ui.TextBlock { Text = "Text", Margin = ui.Thickness(config.grid_margin), FontSize = 16 }
-	local text12 = row1 + ui.TextBlock { Text = "Text", Margin = ui.Thickness(config.grid_margin), FontSize = 24 }
-	local text21 = row2 + ui.TextBlock { Text = "Text", Margin = ui.Thickness(config.grid_margin), FontSize = 18, VerticalAlignment= "Top" }
-	local text22 = row2 + ui.TextBlock { Text = "Text", Margin = ui.Thickness(config.grid_margin), FontSize = 32, VerticalAlignment= "Top" }
+	local text11 = row1 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 16 }
+	local text12 = row1 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 24 }
+	local text21 = row2 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 18, VerticalAlignment= "Top" }
+	local text22 = row2 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 32, VerticalAlignment= "Top" }
 	
 	assert(row1.ActualHeight == 0, "Row 1 should have zero height before layout update")
 
@@ -239,7 +239,7 @@ local function test_horizontal_stack_view_layout()
 	local node2 = stack + ui.TextBlock {
 		Text = "Item 2",
 		Width = config.node_width,
-		Margin = ui.Thickness(config.node_margin),
+		Margin = core.Thickness(config.node_margin),
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
@@ -452,7 +452,7 @@ local function test_node2d_container_height()
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	local container = outer + ui.Node2D {
 		Width = 140,
-		Padding = ui.Thickness(padding),
+		Padding = core.Thickness(padding),
 	}
 	local label = container + ui.TextBlock {
 		Text = "2.4 M",

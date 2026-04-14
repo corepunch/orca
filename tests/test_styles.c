@@ -128,16 +128,7 @@ static void destroy_object(lpObject_t obj) {
      * message dispatch): */
     OBJ_ClearStyleClasses(obj);
     OBJ_ReleaseProperties(obj);
-    /* Walk the component linked list and free each block.
-     * Each component block starts with a 'next' pointer as its first field
-     * (see struct component in component_internal.h), so we can walk the
-     * list without knowing the full struct layout. */
-    void *cmp = *(void **)OBJ_GetObjectComponent(obj, kCompComponents);
-    while (cmp) {
-        void *next = *(void **)cmp;
-        free(cmp);
-        cmp = next;
-    }
+    OBJ_ReleaseComponents(obj);
     free(obj);
 }
 

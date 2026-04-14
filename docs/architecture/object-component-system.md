@@ -30,18 +30,8 @@ struct Object {
     LPSTR TextContent;
     LPSTR ClassName;
 
-    union {
-        struct {
-            struct component*     components;   // component chain
-            struct Property*      properties;
-            struct state_manager* stateManager; // → StateManager component (planned)
-            struct style_class*   classes;      // → StyleClass component (planned)
-            struct style_rule*   stylesheet;   // → StyleSheet component (planned)
-            struct timer*         timers;       // → Timer component (planned)
-            struct alias*         aliases;      // → Alias component (planned)
-        };
-        void* comps[kCompCount]; // indexed access by enum component_type
-    };
+    struct component*     components;   // component chain
+    struct Property*      properties;
 
     uint32_t alias, unique, userdata, luaObject, flags, rdflags, datasize;
     objectTags_t tags;
@@ -51,8 +41,6 @@ struct Object {
     byte_t data[MAX_OBJECT_DATA]; // extra property values stored here
 };
 ```
-
-The `comps[kCompCount]` array allows O(1) access to the most common sub-systems by index (`kCompComponents`, `kCompTimers`, etc.). New functionality should be implemented as proper components and accessed via `OBJ_GetComponent(obj, ID_ClassName)` instead of adding new fields to this struct.
 
 ---
 

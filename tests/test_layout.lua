@@ -79,7 +79,7 @@ local function test_node2d_container_height()
 	local padding = 20
 	local child_h = 35
 	local outer     = screen + ui.StackView { Direction = "Vertical" }
-	local container = outer  + ui.Node2D { Width = 140, Padding = ui.Thickness(padding) }
+	local container = outer  + ui.Node2D { Width = 140, Padding = core.Thickness(padding) }
 	local inner     = container + ui.Node2D { Height = child_h }
 
 	screen:UpdateLayout(screen.Width, screen.Height)

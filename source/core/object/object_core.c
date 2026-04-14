@@ -177,4 +177,25 @@ int OBJ_SetTimer(lpObject_t self, int duration)
   return axSetTimer(self, MAX(duration, 1), NULL, TRUE);;
 }
 
+lpObject_t
+OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
+{
+  struct Node* node = GetNode(object);
+  FOR_LOOP(i, node ? node->NumResources : 0) {
+    lpcString_t key = node->Resources[i].Key;
+    lpcString_t value = node->Resources[i].Value;
+    if (!key || !*key || !value || !*value) {
+      continue;
+    }
+    if (fnv1a32(key) == lParam) {
+      return OBJ_FindByPath(object, value);
+    }
+  }
+  if (OBJ_GetParent(object)) {
+    return OBJ_FindChildByAlias(OBJ_GetParent(object), lParam);
+  } else {
+    return NULL;
+  }
+}
+
 #include <source/editor/ed_stab_object.h>
