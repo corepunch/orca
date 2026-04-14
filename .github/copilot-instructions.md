@@ -935,3 +935,38 @@ Always verify the migration is *complete*: the old code path is deleted, and all
 **Anti-pattern 5: Skipping tests**
 
 All component refactors that went smoothly (StyleController, StateManagerController, AnimationPlayer) had dedicated test files written alongside the implementation.  Refactors that ran into problems (Aliases, Locale) had none.  Always add `tests/test_<componentname>.lua` covering attach, property set/get, and at least one message roundtrip.
+
+### System-Level Message Handlers — `SV_RegisterMessageProc`
+
+Plugins and modules can register a **system-level message handler** (separate from per-object `ObjProc`) to receive raw platform events before they reach the object tree.
+
+**Signature:**
+```c
+LRESULT my_handler(lua_State *L, struct AXmessage *msg);
+```
+Return `TRUE` to consume the event; `FALSE` to let subsequent handlers run. Handlers are called in reverse registration order (LIFO).
+
+**Registration — always from the `on-luaopen` callback:**
+```c
+void on_myplugin_registered(lua_State *L) {
+    SV_RegisterMessageProc(my_handler);
+}
+```
+For conditional registration (e.g. feature-flagged):
+```c
+lua_getglobal(L, "MY_FLAG");
+if (lua_toboolean(L, -1)) {
+    SV_RegisterMessageProc(my_handler);
+    axPostMessageW(NULL, kEventReadCommands, 0, NULL);  /* seed event pump if needed */
+}
+lua_pop(L, 1);
+```
+
+**Three canonical examples in the codebase:**
+- `CORE_ProcessMessage` (`source/core/core_main.c`) — keyboard shortcuts and window paint/resize
+- `ui_handle_event` (`plugins/UIKit/UIKit_message.c`) — mouse, keyboard, coroutine events for UI nodes
+- `filesystem_handle_event` (`source/editor/server.c`) — HTTP-style editor command server loop on `kEventReadCommands`
+
+**The `kEventReadCommands` loop pattern** used by `filesystem_handle_event`: register under a `SERVER` global guard, post the first `kEventReadCommands` event to start the pump, then re-arm at the end of each invocation with another `axPostMessageW(msg->target, kEventReadCommands, 0, NULL)`.
+
+Full documentation: `docs/architecture/plugin-system.md` → "System-Level Message Handlers".

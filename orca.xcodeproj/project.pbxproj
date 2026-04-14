@@ -927,7 +927,6 @@
 				78B136F42AF3CC4E00AAAE53 /* filesystem.c */,
 				78A5AFA32F66B9FA00E6A765 /* Package.c */,
 				781FC4A52E894AC400571445 /* popen2.c */,
-				781FC4A72E8D7CB800571445 /* server.c */,
 				786BFC852AF7E97900216782 /* w_filesystem.c */,
 				782E9EE82E97EF6F009C3946 /* filesystem_properties.h */,
 				782E9EE62E97EF6F009C3946 /* filesystem.h */,
@@ -1058,6 +1057,7 @@
 				786F2B142E12EE7F00B519AB /* ed_keymap.c */,
 				786F2B162E12EE7F00B519AB /* ed_main.c */,
 				786F2B172E12EE7F00B519AB /* ed_project.c */,
+				781FC4A72E8D7CB800571445 /* server.c */,
 				786F2B182E12EE7F00B519AB /* ed_terminal.c */,
 				786F2B192E12EE7F00B519AB /* ed_textfield.c */,
 				786F2B1A2E12EE7F00B519AB /* ed_undo.c */,
@@ -2004,7 +2004,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78E4A9BB2E941A0300E3A503 /* server.c in Sources */,
 				781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */,
 				78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */,
 				78A5AFAC2F673B6000E6A765 /* io_open.c in Sources */,
@@ -2164,6 +2163,7 @@
 				781CA7AF2E155D1400FFCFD9 /* w_welcome.c in Sources */,
 				78EE10ED2E44A6220005DB2A /* w_gameview.c in Sources */,
 				781CA7FE2E19371400FFCFD9 /* w_bindings.c in Sources */,
+				78E4A9BB2E941A0300E3A503 /* server.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

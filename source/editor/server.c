@@ -1,7 +1,7 @@
 #include <unistd.h>
 
-#include "fs_local.h"
-#include "../core/core_local.h"
+#include <source/filesystem/fs_local.h>
+#include <source/core/core_local.h>
 
 #include <source/core/core.h>
 #include <plugins/UIKit/UIKit.h>
