@@ -182,8 +182,13 @@ OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
 {
   struct Node* node = GetNode(object);
   FOR_LOOP(i, node ? node->NumResources : 0) {
-    if (fnv1a32(node->Resources[i].Key) == lParam) {
-      return OBJ_FindByPath(object, node->Resources[i].Value);
+    lpcString_t key = node->Resources[i].Key;
+    lpcString_t value = node->Resources[i].Value;
+    if (!key || !*key || !value || !*value) {
+      continue;
+    }
+    if (fnv1a32(key) == lParam) {
+      return OBJ_FindByPath(object, value);
     }
   }
   if (OBJ_GetParent(object)) {
