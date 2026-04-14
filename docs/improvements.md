@@ -4,6 +4,53 @@ This document records design issues, gotchas, misleading patterns, and known imp
 
 ---
 
+## Component Development Workflow
+
+### The mandatory order: XML → codegen → C handlers → Xcode → tests
+
+Every successful component addition in this repo (StyleController, StateManagerController, AnimationPlayer, PropertyAnimation) followed the same order:
+
+1. Declare the `<class>` with all `<handle>`, `<property>`, and `<message>` entries in the module XML
+2. Run `cd tools && make` to regenerate the struct, property IDs, and the Proc switch
+3. Implement the `HANDLER(...)` functions in a new `.c` file
+4. Call `OBJ_RegisterClass(&_ClassName)` in the `on-luaopen` callback
+5. Add the `.c` file to `orca.xcodeproj/project.pbxproj` (four places)
+6. Write a test file `tests/test_classname.lua`
+
+**Skipping or reordering any step causes silent, hard-to-diagnose failures.** The concrete case studies below show exactly what breaks when each step is missed.
+
+### Case study: Aliases component — XML class never declared
+
+`source/core/components/Aliases.c` was written with `HANDLER(Aliases, ...)` macros and `pAliases->aliases` field accesses, but no `<class name="Aliases">` was ever added to `core.xml`.  Consequences:
+
+- `struct Aliases` was never generated → the file cannot compile
+- `AliasesProc` was never generated → the `HANDLER` functions have no dispatch table
+- `REGISTER_CLASS(Aliases)` was never generated → the class is never registered with the engine
+- `ID_Aliases_Add`, `ID_Aliases_Assign` were never generated → the message IDs resolve to undefined
+
+The component is entirely inert, yet it looks complete at first glance because the C file exists and the logic looks correct.  **Write the XML first, run codegen, and verify the generated `*_export.c` contains the expected `case` entries in the Proc switch before writing any C.**
+
+### Case study: Locale component — XML declared, implementation disconnected
+
+`source/core/core.xml` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
+
+Consequences:
+- Attaching a `Locale` component and setting `Language` + `Entries` does nothing
+- `Loc_GetString` continues to query the old global list, which is never populated by the new component lifecycle
+- The migration from "localization as a global module" to "localization as a component" is incomplete
+
+The fix requires: adding `<handle>` entries to the XML, running codegen to populate `LocaleProc`, implementing `HANDLER(Locale, ...)` functions that populate the internal list from `pLocale->Entries`, and deleting the old global list.
+
+### No-test = silent regression
+
+Neither the Aliases nor the Locale migration had any test coverage.  Both StyleController and StateManagerController did (`test_styles.c`, `test_styles_lua.lua`, `test_state_manager.lua`).  The test files caught integration gaps immediately during development.  A minimum test for any component migration should verify attach, at least one property round-trip, and one message dispatch.
+
+### Core must not include plugin headers
+
+`source/core/alias.c` and several other core files `#include <plugins/UIKit/UIKit.h>` to access `struct Node`.  This is an architectural violation: **plugins depend on core; core must not depend on plugins**.  The violation causes circular build dependencies and makes the core untestable in isolation.  When migrating alias lookup into a proper component, the `GetNode()` call must be replaced with a message-based lookup or a registered accessor, not a direct struct access via a plugin header.
+
+---
+
 ## Animation System
 
 ### `AnimationCurve` was initially `attach-only` (wrong design)
