@@ -119,7 +119,6 @@
 		781CA7C22E15642900FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA7C52E15657A00FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		781CA7C62E15658900FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
-		781CA7CA2E1566FB00FFCFD9 /* liborca.editor.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7922E155D0500FFCFD9 /* liborca.editor.so */; };
 		781CA7CC2E1566FC00FFCFD9 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		781CA7D22E15783F00FFCFD9 /* debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532F2D929AFE00122823 /* debug.c */; };
 		781CA7DC2E15B24400FFCFD9 /* p_json.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BC7E1E2D4BE7D800907913 /* p_json.c */; };
@@ -253,13 +252,13 @@
 		78E4A9A92E93E59800E3A503 /* liborca.parsers.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */; };
 		78E4A9BB2E941A0300E3A503 /* server.c in Sources */ = {isa = PBXBuildFile; fileRef = 781FC4A72E8D7CB800571445 /* server.c */; };
 		78E4A9CB2E94204D00E3A503 /* w_system.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B1378A2AF3CC4E00AAAE53 /* w_system.c */; };
-		78ED00012F000000000000001 /* ed_stubs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78ED00002F000000000000001 /* ed_stubs.c */; };
 		78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 78E4A9C62E941ECD00E3A503 /* liborca.system.so */; };
 		78E4A9CE2E942C4400E3A503 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		78E4A9D12E95189700E3A503 /* liborca.core.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7662E15575600FFCFD9 /* liborca.core.so */; };
 		78E4A9D52E9548BD00E3A503 /* r_render_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D42E9548B800E3A503 /* r_render_texture.c */; };
 		78E4A9D72E95497D00E3A503 /* r_cube_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D62E95497900E3A503 /* r_cube_texture.c */; };
 		78E4A9D92E9549F700E3A503 /* r_gradient_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D82E9549F200E3A503 /* r_gradient_texture.c */; };
+		78ED00012F000000000000001 /* ed_stubs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78ED00002F000000000000001 /* ed_stubs.c */; };
 		78EE10E62E4349E60005DB2A /* w_splitview.c in Sources */ = {isa = PBXBuildFile; fileRef = 78EE10E52E4349DE0005DB2A /* w_splitview.c */; };
 		78EE10EA2E4389200005DB2A /* w_sceneview.c in Sources */ = {isa = PBXBuildFile; fileRef = 78EE10E92E43891D0005DB2A /* w_sceneview.c */; };
 		78EE10ED2E44A6220005DB2A /* w_gameview.c in Sources */ = {isa = PBXBuildFile; fileRef = 78EE10EC2E44A61D0005DB2A /* w_gameview.c */; };
@@ -505,7 +504,7 @@
 		781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/UIKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7662E15575600FFCFD9 /* liborca.core.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.core.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA77A2E1557B900FFCFD9 /* Locale.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Locale.c; sourceTree = "<group>"; };
-		781CA7922E155D0500FFCFD9 /* liborca.editor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.editor.so; sourceTree = BUILT_PRODUCTS_DIR; };
+		781CA7922E155D0500FFCFD9 /* liborca/EditorKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/EditorKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.parsers.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7E52E15B2D000FFCFD9 /* liborca.network.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.network.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7F32E15B37800FFCFD9 /* liborca/vsomeip.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/vsomeip.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -590,7 +589,6 @@
 		786F2B192E12EE7F00B519AB /* ed_textfield.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_textfield.c; sourceTree = "<group>"; };
 		786F2B1A2E12EE7F00B519AB /* ed_undo.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_undo.c; sourceTree = "<group>"; };
 		786F2B1B2E12EE7F00B519AB /* ed_utils.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_utils.c; sourceTree = "<group>"; };
-		78ED00002F000000000000001 /* ed_stubs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_stubs.c; sourceTree = "<group>"; };
 		786F2B342E12EF1100B519AB /* editor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = editor.h; sourceTree = "<group>"; };
 		786F2B352E12FE8E00B519AB /* module.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = module.h; sourceTree = "<group>"; };
 		787040442F6F197000A84406 /* core_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = core_properties.h; sourceTree = "<group>"; };
@@ -704,6 +702,7 @@
 		78E4A9D42E9548B800E3A503 /* r_render_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_render_texture.c; sourceTree = "<group>"; };
 		78E4A9D62E95497900E3A503 /* r_cube_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_cube_texture.c; sourceTree = "<group>"; };
 		78E4A9D82E9549F200E3A503 /* r_gradient_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_gradient_texture.c; sourceTree = "<group>"; };
+		78ED00002F000000000000001 /* ed_stubs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_stubs.c; sourceTree = "<group>"; };
 		78EE10E52E4349DE0005DB2A /* w_splitview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_splitview.c; sourceTree = "<group>"; };
 		78EE10E92E43891D0005DB2A /* w_sceneview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_sceneview.c; sourceTree = "<group>"; };
 		78EE10EC2E44A61D0005DB2A /* w_gameview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_gameview.c; sourceTree = "<group>"; };
@@ -746,7 +745,6 @@
 				78E4A9CD2E94206B00E3A503 /* liborca.system.so in Frameworks */,
 				781CA7EB2E15B30100FFCFD9 /* liborca.network.so in Frameworks */,
 				781CA7DE2E15B26900FFCFD9 /* liborca.parsers.so in Frameworks */,
-				781CA7CA2E1566FB00FFCFD9 /* liborca.editor.so in Frameworks */,
 				781CA6E72E15246B00FFCFD9 /* liborca.filesystem.so in Frameworks */,
 				781CA6DC2E1502A900FFCFD9 /* liborca.geometry.so in Frameworks */,
 				781CA7CC2E1566FC00FFCFD9 /* liborca.core.so in Frameworks */,
@@ -1051,7 +1049,7 @@
 			path = windows;
 			sourceTree = "<group>";
 		};
-		786F2B1D2E12EE7F00B519AB /* editor */ = {
+		786F2B1D2E12EE7F00B519AB /* EditorKit */ = {
 			isa = PBXGroup;
 			children = (
 				784E7BC32E420C9000530E64 /* ed_layout.c */,
@@ -1073,7 +1071,7 @@
 				786F2B0E2E12EE7F00B519AB /* ed_tabview.h */,
 				786F2B122E12EE7F00B519AB /* windows */,
 			);
-			path = editor;
+			path = EditorKit;
 			sourceTree = "<group>";
 		};
 		787040522F6F199900A84406 /* property */ = {
@@ -1165,7 +1163,7 @@
 			isa = PBXGroup;
 			children = (
 				789AE3CF2F687B250067DC75 /* DarkReign */,
-				786F2B1D2E12EE7F00B519AB /* editor */,
+				786F2B1D2E12EE7F00B519AB /* EditorKit */,
 				78346DE52C96EFC900E0CFD1 /* SceneKit */,
 				7868655D2F50A9BD00DC87FC /* SpriteKit */,
 				78C7374F2B8F60C600FD598E /* UIKit */,
@@ -1203,7 +1201,7 @@
 				781CA7352E154DE300FFCFD9 /* liborca/SceneKit.so */,
 				781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */,
 				781CA7662E15575600FFCFD9 /* liborca.core.so */,
-				781CA7922E155D0500FFCFD9 /* liborca.editor.so */,
+				781CA7922E155D0500FFCFD9 /* liborca/EditorKit.so */,
 				781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */,
 				781CA7E52E15B2D000FFCFD9 /* liborca.network.so */,
 				781CA7F32E15B37800FFCFD9 /* liborca/vsomeip.so */,
@@ -1700,9 +1698,9 @@
 			productReference = 781CA7662E15575600FFCFD9 /* liborca.core.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		781CA7912E155D0500FFCFD9 /* orca.editor */ = {
+		781CA7912E155D0500FFCFD9 /* orca/EditorKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 781CA7932E155D0500FFCFD9 /* Build configuration list for PBXNativeTarget "orca.editor" */;
+			buildConfigurationList = 781CA7932E155D0500FFCFD9 /* Build configuration list for PBXNativeTarget "orca/EditorKit" */;
 			buildPhases = (
 				781CA78E2E155D0500FFCFD9 /* Headers */,
 				781CA78F2E155D0500FFCFD9 /* Sources */,
@@ -1714,11 +1712,11 @@
 			dependencies = (
 				787044302F7481BF00A84406 /* PBXTargetDependency */,
 			);
-			name = orca.editor;
+			name = orca/EditorKit;
 			packageProductDependencies = (
 			);
 			productName = orca.editor;
-			productReference = 781CA7922E155D0500FFCFD9 /* liborca.editor.so */;
+			productReference = 781CA7922E155D0500FFCFD9 /* liborca/EditorKit.so */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		781CA7D62E15B22500FFCFD9 /* orca.parsers */ = {
@@ -1962,7 +1960,6 @@
 				781CA6E02E15241200FFCFD9 /* orca.filesystem */,
 				781CA7042E15369F00FFCFD9 /* orca.renderer */,
 				781CA7652E15575600FFCFD9 /* orca.core */,
-				781CA7912E155D0500FFCFD9 /* orca.editor */,
 				781CA7D62E15B22500FFCFD9 /* orca.parsers */,
 				781CA7E42E15B2D000FFCFD9 /* orca.network */,
 				78E4A9BD2E941ECD00E3A503 /* orca.system */,
@@ -1972,6 +1969,7 @@
 				781CA7342E154DE300FFCFD9 /* orca/SceneKit */,
 				7868651B2F50A96100DC87FC /* orca/SpriteKit */,
 				789AE3AF2F687AF90067DC75 /* orca/DarkReign */,
+				781CA7912E155D0500FFCFD9 /* orca/EditorKit */,
 			);
 		};
 /* End PBXProject section */
@@ -3230,7 +3228,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		781CA7932E155D0500FFCFD9 /* Build configuration list for PBXNativeTarget "orca.editor" */ = {
+		781CA7932E155D0500FFCFD9 /* Build configuration list for PBXNativeTarget "orca/EditorKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				781CA7942E155D0500FFCFD9 /* Debug */,
