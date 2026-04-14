@@ -56,7 +56,7 @@ XML is the native declarative format for ORCA screens and components. It is the 
 <Screen Name="Application" Height="768" Width="1024">
   <Grid Name="Layout">
     <Grid.Columns Value="auto auto"/>
-    <ImageView Name="Image" Image="MyProject/Images/logo" Stretch="None"/>
+    <ImageView Name="Image" Source="MyProject/Images/logo" Stretch="None"/>
     <TextBlock Name="Greeting" FontSize="40" LayoutTransform="10 10 0 1 1"
                Text="Hello, ORCA!"/>
   </Grid>

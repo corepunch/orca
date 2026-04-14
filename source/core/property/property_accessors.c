@@ -71,6 +71,7 @@ PROP_GetUserData(lpcProperty_t property)
 void const*
 PROP_GetValue(lpcProperty_t property)
 {
+  // If this is a component, not a direct object reference
   if (property->type == kDataTypeObject && property->pdesc->TypeString) {
     static lpObject_t obj[256];
     static uint8_t i = 0;

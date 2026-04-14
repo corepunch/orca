@@ -28,7 +28,7 @@
 						<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="1.2 ms" Card.Subtitle="Frame time" Card.PrimaryColor="accent-blue"/>
 					</Grid>
 				</StackView>
-				<ImageView Name="HeroImage" Image="Example/Images/people" Stretch="UniformToFill">
+				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill">
 					<Node.Visible>STEP(640, {../../../Node.ActualWidth})</Node.Visible>
 				</ImageView>
 				<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>
@@ -43,7 +43,7 @@
 					Card.Body="Grid and stack containers that adapt to any resolution, defined declaratively in XML."
 					Card.PrimaryColor="accent-green" Card.IconBackground="icon-bg-green"/>
 				<StackView Name="CardImage" Direction="Vertical" Spacing="10" BackgroundColor="card-background" Padding="28">
-					<ImageView Name="CardImageThumb" Image="Example/Images/dog" Width="200" Height="80"/>
+					<ImageView Name="CardImageThumb" Source="Example/Images/dog" Width="200" Height="80"/>
 					<TextBlock Name="CardImageTitle" Text="Image Integration" FontSize="16" ForegroundColor="text-primary"/>
 					<TextBlock Name="CardImageBody"
 						Text="Fast texture loading with stretch, crop, and nine-patch rendering built in."

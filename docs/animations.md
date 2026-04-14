@@ -133,7 +133,7 @@ Bool properties are driven by a **rising-edge** heuristic: when the value crosse
 
 ```xml
 <!-- Inline attachment in a Screen/Node/etc. file -->
-<ImageView Name="Icon" Image="MyApp/Images/icon">
+<ImageView Name="Icon" Source="MyApp/Images/icon">
   <AnimationPlayer Clip="{FadeOutClip}" AutoplayEnabled="false"/>
 </ImageView>
 ```
@@ -284,7 +284,7 @@ This internally creates a `PropertyAnimation` attach-only component that removes
   </AnimationClip>
 
   <!-- Badge node with a player that holds both clips -->
-  <ImageView Name="Badge" Image="MyApp/Images/badge">
+  <ImageView Name="Badge" Source="MyApp/Images/badge">
     <AnimationPlayer AutoplayEnabled="false">
       <AnimationPlayer.Clips>
         <AnimationClipReference Name="pulse"    Clip="{PulseClip}"/>

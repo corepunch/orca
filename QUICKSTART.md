@@ -62,7 +62,7 @@ XML is the native format for declarative UI definitions in ORCA. It provides a c
 <?xml version="1.0"?>
 <Screen Name="Application" Height="768" Width="1024">
   <TextBlock Name="TextBlock" FontSize="40" LayoutTransform="400 20 0 1 1" Text="Hello World"/>
-  <ImageView Name="Image" Image="MyProject/Images/peacock"/>
+  <ImageView Name="Image" Source="MyProject/Images/peacock"/>
 </Screen>
 ```
 

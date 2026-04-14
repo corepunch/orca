@@ -780,7 +780,7 @@
 <!ENTITY % ImageViewAttribs "
 	%Node2DAttribs;
 	Src CDATA #IMPLIED
-	Image CDATA #IMPLIED
+	Source CDATA #IMPLIED
 	Edges CDATA #IMPLIED
 	Insets CDATA #IMPLIED
 	Viewbox CDATA #IMPLIED
@@ -788,8 +788,8 @@
 ">
 <!ELEMENT ImageView.Src (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Src Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT ImageView.Image (#PCDATA | Binding)*>
-<!ATTLIST ImageView.Image Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT ImageView.Source (#PCDATA | Binding)*>
+<!ATTLIST ImageView.Source Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT ImageView.Edges (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Edges Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT ImageView.Insets (#PCDATA | Binding)*>
@@ -798,7 +798,7 @@
 <!ATTLIST ImageView.Viewbox Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT ImageView.Stretch (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Stretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ImageViewElements "ImageView.Src|ImageView.Image|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
+<!ENTITY % ImageViewElements "ImageView.Src|ImageView.Source|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
 <!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|TerminalView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
 <!ATTLIST ImageView %ImageViewAttribs;>
 <!ENTITY % NinePatchImageAttribs "

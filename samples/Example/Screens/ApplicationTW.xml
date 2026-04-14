@@ -44,7 +44,7 @@
             </Grid>
           </StackView>
         </Node2D>
-        <ImageView id="HeroImage" Image="Example/Images/people" Stretch="UniformToFill" class="mr-14"/>
+        <ImageView id="HeroImage" Source="Example/Images/people" Stretch="UniformToFill" class="mr-14"/>
       </Grid>
 
       <Node2D id="FeatureSection" class="bg-gray-950 p-10">
@@ -70,7 +70,7 @@
 
           <Node2D id="CardImage" class="bg-gray-900 p-7">
             <StackView id="CardImageStack" Direction="Vertical" class="flex-col gap-2">
-              <ImageView id="CardImageThumb" Image="Example/Images/dog" class="w-48 h-20"/>
+              <ImageView id="CardImageThumb" Source="Example/Images/dog" class="w-48 h-20"/>
               <TextBlock id="CardImageTitle" class="text-base text-slate-100">Image Integration</TextBlock>
               <TextBlock id="CardImageBody" class="text-xs text-gray-600 flex-wrap">Fast texture loading with stretch, crop, and nine-patch rendering built in.</TextBlock>
             </StackView>

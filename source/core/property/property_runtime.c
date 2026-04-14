@@ -706,6 +706,9 @@ tok_op(argument)
     }
   } else if (*token->text == '.') {
     p = OBJ_FindPropertyByPath(object, token->text);
+    if (!strcmp(token->text, "../Card.Title")) {
+      printf("%s\n", *(char**)PROP_GetValue(p));
+    }
   } else if (!strncmp(token->text, "DataContext/", 12)) {
     for (lpObject_t it = object; it; it = OBJ_GetParent(it)) {
       struct Node* node = GetNode(it);

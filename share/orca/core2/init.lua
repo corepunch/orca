@@ -27,7 +27,7 @@ end
 function core.load_screen(path)
 	io.stderr:write("Loading startup screen: "..path.."\n")
 	local ok, class = pcall(require, path)
-	assert(ok, "Failed to load screen: "..path)
+	assert(ok, "Failed to load screen: "..path..", "..tostring(class))
 	core.screen = class()
 end
 
