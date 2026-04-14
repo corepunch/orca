@@ -32,6 +32,7 @@
 #include <lualib.h>
 #endif
 
+#include <libxml/parser.h>
 #include <libxml/tree.h>
 
 #include "someip.h"
@@ -149,7 +150,13 @@ on_client_added(LPMYSERVICE hService, client_t client);
 void
 on_service_added(LPMYSERVICE hService, service_data_t* sv);
 
-struct _xmlDoc* FS_LoadXML(char const*);
+static struct _xmlDoc*
+FS_LoadXML(char const* szObjectName)
+{
+  char pszFileName[MAX_OSPATH];
+  snprintf(pszFileName, sizeof(pszFileName), "%s.xml", szObjectName);
+  return xmlReadFile(pszFileName, NULL, XML_FLAGS);
+}
 
 int new_SpeedTest(lua_State* L)
 {

@@ -185,20 +185,6 @@ FS_JoinPaths(lpcString_t buffer, int32_t size, lpcString_t base, lpcString_t rel
 //
 // }
 
-struct _xmlDoc*
-FS_LoadXML(lpcString_t szObjectName)
-{
-  path_t pszFileName = { 0 };
-  strcpy(pszFileName, szObjectName);
-  strcat(pszFileName, ".xml");
-  struct _xmlDoc* doc = NULL;
-  
-  WITH(struct file, file, FS_LoadFile(pszFileName), FS_FreeFile) {
-    doc = xmlReadMemory((char*)file->data, file->size, szObjectName, NULL, XML_FLAGS);
-  }
-  return doc;
-}
-
 //static void FS_Release(struct Package *search) {
 //  SafeDelete(search->next, FS_Release);
 //  SafeDelete(search->pack, _FreePack);
