@@ -15,8 +15,10 @@ HANDLER(Node, Object, Start)
 {
   FOR_LOOP(i, pNode->NumResources) {
     struct ResourceEntry* alias = &pNode->Resources[i];
+    if (!alias->Value || !*alias->Value || !alias->Key || !*alias->Key)
+      continue;
     lpObject_t aliasedobj = OBJ_FindByPath(hObject, alias->Value);
-    if (!aliasedobj || !alias->Value || !*alias->Value)
+    if (!aliasedobj)
       continue;
     if (OBJ_GetAlias(aliasedobj)) {
       Con_Error("Erasing alias to %s from object %s\n", OBJ_GetName(aliasedobj), OBJ_GetName(hObject));

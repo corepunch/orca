@@ -480,7 +480,7 @@ static int f_Thickness_TextConvert(lua_State* L) {
       self.Axis[1] = (struct EdgeShorthand){a, a};
       return (luaX_pushThickness(L, &self), 1);
     default:
-      return 0;
+      return luaL_error(L, "Thickness.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
   }
 }
 
@@ -503,7 +503,7 @@ static int f_EdgeShorthand_TextConvert(lua_State* L) {
     case 1:
       return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, a}), 1);
     default:
-      return 0;
+      return luaL_error(L, "EdgeShorthand.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
   }
 }
 
@@ -526,7 +526,7 @@ static int f_CornerRadius_TextConvert(lua_State* L) {
     case 1:
       return (luaX_pushCornerRadius(L, &(struct CornerRadius){a, a, a, a}), 1);
     default:
-      return 0;
+      return luaL_error(L, "CornerRadius.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
   }
 }
 

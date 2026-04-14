@@ -228,7 +228,7 @@
     </struct>
     <struct name="SizeShorthand">
       <summary>Sizing configuration of elements (e.g., Width, Height, Depth)</summary>
-      <details>You can set values and the engine will try it's best to preserve those.</details>
+      <details>You can set values and the engine will try its best to preserve those.</details>
       <fields>
         <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
       </fields>
