@@ -23,6 +23,7 @@ nav:
   - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
   - WebGL / Emscripten: webgl.md
   - Developer Notes:
+    - Way of Working: way-of-working.md
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
     - Style System: styling.md

@@ -215,7 +215,11 @@ Migration rules:
 
 ## How to Add a New Component Type
 
-### 1. Declare in XML
+> **Rule: XML → codegen → handlers → Xcode project → tests.**  Do not skip or reorder any step.  Skipping the XML step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — the C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
+
+### 1. Declare in the module XML
+
+Add a `<class>` entry to the relevant module `.xml` file (e.g. `source/core/core.xml`). Every message handler must have a matching `<handle>` entry, and every message the component dispatches must be declared under `<messages>`.  **Handlers without `<handle>` entries are orphaned — the generated Proc switch will not contain them and they will never be called.**
 
 ```xml
 <class name="MyComponent" attach-only="true">
@@ -227,10 +231,17 @@ Migration rules:
   <properties>
     <property name="Speed" type="float" default="1.0">Movement speed</property>
   </properties>
+  <messages>
+    <message name="SpeedChanged" routing="Direct">
+      <fields>
+        <field name="NewSpeed" type="float"/>
+      </fields>
+    </message>
+  </messages>
 </class>
 ```
 
-Use `attach-only="true"` if the component must be added to an existing object rather than created standalone.
+Use `attach-only="true"` for components that augment existing objects; omit it for standalone data objects (like `AnimationClip`) that may be created as root objects.
 
 ### 2. Regenerate bindings
 
@@ -238,11 +249,11 @@ Use `attach-only="true"` if the component must be added to an existing object ra
 cd tools && make
 ```
 
-Produces `<module>.h`, `<module>_properties.h`, and `<module>_export.c`.
+This regenerates `<module>.h` (struct + accessor macro), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings). **After regenerating, open `<module>_export.c` and verify that `MyComponentProc` contains `case` entries for every declared message.** An empty `switch {}` means the XML step was incomplete.
 
-### 3. Write the C implementation
+### 3. Write the C handlers
 
-Create `source/<module>/components/MyComponent.c`:
+Create `source/<module>/components/MyComponent.c`. The file includes only the module-local header and the generated properties header:
 
 ```c
 #include <source/core/core_local.h>
@@ -260,19 +271,39 @@ HANDLER(MyComponent, Object, Animate) {
 }
 ```
 
-The `HANDLER` macro provides the correct function signature; the `*_export.c` forward-declares it and wires it into the generated `MyComponentProc` switch. See [Macros Reference](macros-reference.md).
+The `HANDLER` macro provides the correct function signature. `*_export.c` forward-declares each handler and wires it into `MyComponentProc`. See [Macros Reference](macros-reference.md).
 
-### 4. Register at module init
+> **Do not include plugin headers from core.** `source/core/` must never `#include <plugins/UIKit/UIKit.h>` or any other plugin header. The dependency direction is plugins → core, not the reverse.
 
-The `REGISTER_CLASS` / `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines the `ClassDesc`. Wire it up in the `on-luaopen` callback:
+### 4. Register the class at module init
+
+The `REGISTER_CLASS` / `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`.  Wire it into the module's `on-luaopen` callback:
 
 ```c
-void on_mymodule_registered(lua_State *L) {
-    OBJ_RegisterClass(&_MyComponent);
-}
+OBJ_RegisterClass(&_MyComponent);
 ```
 
-### 5. Use from Lua
+### 5. Register the file in the Xcode project
+
+New `.c` files must be added to `orca.xcodeproj/project.pbxproj` in **four** places — `PBXBuildFile`, `PBXFileReference`, `PBXGroup` (components group), and `PBXSourcesBuildPhase`.  Omitting this step silently excludes the file from the macOS/Xcode build.
+
+### 6. Write tests
+
+Add a Lua test file `tests/test_mycomponent.lua` covering:
+- Object creation, component attachment
+- Property set/get round-trips
+- At least one message dispatch with observable side-effects
+
+Run tests with:
+
+```bash
+make test-headless          # layout/property tests, no display
+xvfb-run make test          # full suite, needs virtual framebuffer
+```
+
+Without tests, an empty `MyComponentProc` (caused by missing `<handle>` entries in XML) will silently do nothing — impossible to distinguish from correct code that simply has no visible output.
+
+### 7. Use from Lua
 
 ```lua
 -- Standalone class:
@@ -284,3 +315,16 @@ obj:addComponent("AnimationPlayer")
 obj.Clip    = clip
 obj.Playing = true
 ```
+
+---
+
+## Common Component Development Pitfalls
+
+| Anti-pattern | Symptom | Fix |
+|---|---|---|
+| Writing C handlers without a `<class>` in XML | Does not compile: `struct MyComponent` undefined | Write the XML first, then run codegen |
+| `<class>` declared but no `<handle>` entries | Component attaches but does nothing silently | Add `<handle message="..."/>` for every handler |
+| Old global implementation left alongside new component | Duplicate paths; component does nothing, old code still runs | Delete the old code path once the component is complete |
+| `#include <plugins/...>` inside `source/core/` | Circular build dependency; breaks plugin-free builds | Remove the include; use a message or registered accessor instead |
+| No test file | Silent regressions and empty-Proc bugs undetected | Always write a Lua test alongside the implementation |
+| Xcode project not updated | macOS/Xcode build fails with missing symbol | Add the file to `project.pbxproj` in all four sections |

@@ -233,50 +233,106 @@ LRESULT CLASS##_##EVENT(struct Object* hObject,
                         NS##_##EVENT##MsgPtr p##EVENT)
 ```
 
-### How to add a new component type
+### Add a new component type — the mandatory workflow
 
-1. **Declare in XML** (in the module's `.xml` file):
-   ```xml
-   <class name="MyComponent" attach-only="true">
-     <summary>What this component does.</summary>
-     <handles>
-       <handle message="Object.Start"/>
-       <handle message="Object.Animate"/>
-     </handles>
-     <properties>
-       <property name="Speed" type="float" default="1.0">Movement speed</property>
-     </properties>
-   </class>
-   ```
+**Rule: XML → codegen → handlers → Xcode → tests. Do not skip or reorder any step.**
 
-2. **Run the code generator**:
-   ```bash
-   cd tools && make
-   ```
+Skipping the XML step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — your C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
 
-3. **Implement handlers** in `source/<module>/components/MyComponent.c`:
-   ```c
-   #include <source/core/core_local.h>
-   #include "<module>_properties.h"
+#### Step 1 — Declare in the module XML
 
-   HANDLER(MyComponent, Object, Start) {
-       pMyComponent->Speed = 1.0f;
-       return FALSE;
-   }
+Add a `<class>` to the relevant `.xml` file (e.g. `source/core/core.xml`). Every handler must have a matching `<handle>` entry, and every message the component dispatches must have a `<message>` declaration. **Handlers without `<handle>` entries are orphaned — they will never be called.**
 
-   HANDLER(MyComponent, Object, Animate) {
-       // per-frame update
-       return FALSE;
-   }
-   ```
+```xml
+<class name="MyComponent" attach-only="true">
+  <summary>What this component does.</summary>
+  <handles>
+    <handle message="Object.Start"/>
+    <handle message="Object.Animate"/>
+  </handles>
+  <properties>
+    <property name="Speed" type="float" default="1.0">Movement speed</property>
+  </properties>
+  <messages>
+    <message name="SpeedChanged" routing="Direct">
+      <fields>
+        <field name="NewSpeed" type="float"/>
+      </fields>
+    </message>
+  </messages>
+</class>
+```
 
-4. **Register at module init** — the `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`; call `OBJ_RegisterClass(&_MyComponent)` in `on_mymodule_registered`.
+Use `attach-only="true"` for components meant to augment existing objects.  Omit it for standalone components that can be created as root objects (like `AnimationClip`).
 
-5. **Use from Lua**:
-   ```lua
-   obj:addComponent("MyComponent")
-   obj.Speed = 5.0
-   ```
+#### Step 2 — Run code generation
+
+```bash
+cd tools && make
+```
+
+This regenerates `<module>.h` (struct + accessor), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings).  **Verify the generated `MyComponentProc` switch now contains `case` entries for every declared message.**  An empty `switch {}` means the XML step was incomplete.
+
+#### Step 3 — Implement the C handlers
+
+Create `source/<module>/components/MyComponent.c`:
+
+```c
+#include <source/core/core_local.h>
+#include "<module>_properties.h"
+
+HANDLER(MyComponent, Object, Start) {
+    pMyComponent->Speed = 1.0f;
+    return FALSE;
+}
+
+HANDLER(MyComponent, Object, Animate) {
+    if (!pMyComponent->Speed) return FALSE;
+    // per-frame logic
+    return FALSE;
+}
+```
+
+The `HANDLER` macro expands to the correct function signature; `*_export.c` forward-declares each handler and wires it into the generated `MyComponentProc` switch.
+
+**Do not `#include <plugins/UIKit/UIKit.h>` (or any plugin header) from `source/core/`.** Core must not depend on plugins; this is an architectural violation that causes circular build dependencies.
+
+#### Step 4 — Register the class at module init
+
+The `REGISTER_CLASS` / `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`.  The generated `on_mymodule_registered` callback must call:
+
+```c
+OBJ_RegisterClass(&_MyComponent);
+```
+
+If the module's `on-luaopen` callback is hand-written (rather than auto-generated), add the call there.
+
+#### Step 5 — Register the new file in the Xcode project
+
+New `.c` files under `source/core/components/` or `plugins/*/` must be added to `orca.xcodeproj/project.pbxproj` in **four** places:
+
+1. `PBXBuildFile` section — one line: `<UUID> /* MyComponent.c in Sources */`
+2. `PBXFileReference` section — one line: `<UUID> /* MyComponent.c */`
+3. `PBXGroup` section (under the `components` group) — reference UUID
+4. `PBXSourcesBuildPhase` section — build file UUID
+
+Omitting this step means the file is silently excluded from the macOS/Xcode build even though the Makefile build succeeds.
+
+#### Step 6 — Write tests
+
+Add at minimum a Lua test file (e.g. `tests/test_mycomponent.lua`) that:
+- Creates an object, attaches the component
+- Exercises each property and message handler
+- Asserts observable side effects
+
+Without tests, an empty `switch {}` in a generated Proc (caused by missing `<handle>` entries in XML) will silently do nothing and remain undetected until production.  All successful component refactors in this repo (StyleController, StateManager, AnimationPlayer) had tests written alongside.
+
+#### Step 7 — Build and test
+
+```bash
+make unite               # C-only build (fast)
+xvfb-run make test       # full test suite
+```
 
 ---
 
@@ -798,3 +854,38 @@ The property VM supports an `IF(cond, true-val, false-val)` operator following E
   <Binding>IF(EQUAL({./IsActive}, 1), "On", "Off")</Binding>
 </property>
 ```
+
+### Component Development — What Goes Wrong
+
+These anti-patterns have caused real integration failures.  Avoid them.
+
+**Anti-pattern 1: Writing C handlers without declaring the class in XML**
+
+If you create `source/core/components/Foo.c` with `HANDLER(Foo, ...)` macros but never add `<class name="Foo">` to the module XML, then:
+- `struct Foo` is never generated → the file does not compile
+- `FooProc` is never generated → the handlers have no dispatch table
+- `REGISTER_CLASS(Foo)` is never generated → the class is never registered
+- Message IDs like `ID_Foo_Bar` are never generated → any switch case silently resolves to 0
+
+The fix is always: **write the XML first, run codegen, then write the C**.
+
+**Anti-pattern 2: Declaring the class in XML but not wiring any `<handle>` entries**
+
+A class with no `<handles>` generates an empty `FooProc` switch.  The component exists and can be attached to objects, but **it does nothing** — silently.  Every message that needs a response must have a matching `<handle message="..."/>` in XML and a `HANDLER(Foo, NS, Event)` implementation in C.
+
+**Anti-pattern 3: Declaring and partly implementing a class but not connecting old and new code**
+
+When migrating a global/singleton system into a component:
+- The new component struct may exist in XML (generating the class)
+- But the old implementation (e.g. a `static` global list) is never replaced
+- Result: the component is registered and attachable, but its Proc does nothing; the old global code still runs outside the component lifecycle
+
+Always verify the migration is *complete*: the old code path is deleted, and all behaviour is driven through the new component's message handlers.
+
+**Anti-pattern 4: Including plugin headers from core**
+
+`source/core/` must never `#include <plugins/UIKit/UIKit.h>` or any other plugin header.  The dependency direction is: **plugins depend on core; core does not depend on plugins**.  Violating this creates circular build dependencies, breaks cross-platform builds, and makes the core untestable in isolation.  If core code needs a type from UIKit (e.g. `struct Node`), refactor so the lookup goes through a generic message or a registered accessor.
+
+**Anti-pattern 5: Skipping tests**
+
+All component refactors that went smoothly (StyleController, StateManagerController, AnimationPlayer) had dedicated test files written alongside the implementation.  Refactors that ran into problems (Aliases, Locale) had none.  Always add `tests/test_<componentname>.lua` covering attach, property set/get, and at least one message roundtrip.
