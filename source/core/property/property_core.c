@@ -150,4 +150,61 @@ PROP_SetValuePtr(lpProperty_t prop, void* data)
   prop->value = data;
 }
 
-#include <source/editor/ed_stab_property.h>
+ORCA_API void
+PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf)
+{
+  switch (pdesc->DataType) {
+    case kDataTypeBool:
+      strcpy(buffer, *(int*)pf ? "true" : "false");
+      break;
+    case kDataTypeInt:
+      snprintf(buffer, len, "%dd", *(int*)pf);
+      break;
+    case kDataTypeEnum:
+      strncpy(buffer, pdesc->EnumValues[*(int*)pf], len);
+      break;
+    case kDataTypeColor: {
+      byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[3] * 255;
+      if (pf[3] < 1) {
+        snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
+      } else {
+        snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
+      }
+      break;
+    }
+    case kDataTypeStruct:
+    case kDataTypeFloat:
+      snprintf(buffer, len, "%g", pf[0]);
+      FOR_LOOP(i, (int)pdesc->DataSize/sizeof(float)-1) {
+        size_t buflen = strlen(buffer);
+        snprintf(buffer + buflen, len - buflen, " %g", pf[i+1]);
+      }
+      break;
+    case kDataTypeString:
+      if (pf) {
+        strncpy(buffer, (lpcString_t)pf, len);
+      }
+      break;
+    case kDataTypeObject:
+      if (*(handle_t *)pf) {
+        lpcString_t s = "nil";
+        if (s) {
+          strncpy(buffer, s, len);
+        } else {
+          *buffer = 0;
+        }
+      } else {
+        strncpy(buffer, "nil", len);
+      }
+      break;
+    default:
+      Con_Error("Unknown type %d in property %s\n", pdesc->DataType, pdesc->Name);
+      break;
+  }
+}
+
+ORCA_API void
+PROP_Print(lpProperty_t p, LPSTR buffer, uint32_t len)
+{
+  PDESC_Print(p->pdesc, buffer, len, PROP_GetValue(p));
+}

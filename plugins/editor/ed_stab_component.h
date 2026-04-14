@@ -10,19 +10,6 @@ get_node_class_desc(lpObject_t object)
   return object->components ? object->components->pcls : NULL;
 }
 
-bool_t
-OBJ_IsPrefabView(lpcObject_t object)
-{
-  FOR_EACH_LIST(struct component, cmp, object ? object->components : NULL) {
-    switch (cmp->pcls->ClassID) {
-      case ID_PrefabView2D:
-      case ID_PrefabView3D:
-        return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 void
 UI_EnumObjectPropertyTypes(HOBJ object,
                            EnumPropertyTypeProc fnProc,
@@ -31,14 +18,11 @@ UI_EnumObjectPropertyTypes(HOBJ object,
   if (!object)
     return;
   lpObject_t HACK_GetRootView(void);
-  // lpcString_t propertyTypes[MAX_OBJECT_PROPERTIES];
-  // DWORD  numprops = 0;
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       LPCPDESC pdesc = cmp->pcls->Properties+i;
       if (PROP_FindByLongID(OBJ_GetProperties(object), pdesc->ShortIdentifier))
         continue;
-//      Con_Error("%s.%s", cmp->pcls->ClassName, pdesc->name);
       fnProc(pdesc->Name, lpParam);
     }
   }

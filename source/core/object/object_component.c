@@ -240,4 +240,15 @@ MSG_FindByShortID(lpObject_t obj, uint32_t ident)
   return 0;
 }
 
-#include <source/editor/ed_stab_component.h>
+bool_t
+OBJ_IsPrefabView(lpcObject_t object)
+{
+  FOR_EACH_LIST(struct component, cmp, object ? object->components : NULL) {
+    switch (cmp->pcls->ClassID) {
+      case 0xe741d328: /* ID_PrefabView2D */
+      case 0x8d451711: /* ID_PrefabView3D */
+        return TRUE;
+    }
+  }
+  return FALSE;
+}
