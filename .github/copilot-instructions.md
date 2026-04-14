@@ -84,6 +84,39 @@ orca/
 
 ---
 
+## Specialist Areas
+
+ORCA is a C game engine with a layered architecture.  Working effectively on any given part requires a different mindset.  The table below maps each area to the files it owns and the skills it demands — use it to orient yourself before diving in.
+
+| Area | Files | Key skills |
+|---|---|---|
+| **Core / Object system** | `source/core/`, `include/orca.h`, `include/orcadef.h` | C, FNV1a hashing, message dispatch, `HANDLER` macro, component lifecycle |
+| **Renderer** | `source/renderer/` | OpenGL ES, GLSL shaders, texture/mesh boxing (`BOX_PTR`), `ViewEntity` / `ViewDef` structs |
+| **Geometry / Math** | `source/geometry/` | `vec2`, `vec3`, `mat4`, quaternion, `box3` math in C |
+| **UIKit plugin** | `plugins/UIKit/` | Component architecture, layout engine (`MeasureOverride`/`ArrangeOverride`), Node2D message routing |
+| **SceneKit / SpriteKit plugins** | `plugins/SceneKit/`, `plugins/SpriteKit/` | 3D scene graph, camera/light components, 2D sprite animation |
+| **Lua scripting bridge** | `source/core/object/object_lua_*.c`, `share/orca/` | Lua C API, property binding, `send`/`fetch` dispatch, `behaviour.lua` |
+| **Code generation toolchain** | `tools/`, `*.xml` module files | PHP (via pyphp), XML parsing, C codegen templates, Makefile |
+| **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode project structure |
+| **Test harness** | `tests/`, `source/orca.c` (`RunTest`) | Lua test patterns, `assert`, `xvfb-run`, headless layout testing |
+| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, module XML → API doc pipeline |
+| **DarkReign / asset formats** | `plugins/DarkReign/` | Binary format parsing, palette-indexed sprites, `.pz2` package files |
+
+### Navigating by intent
+
+| "I want to…" | Start here |
+|---|---|
+| Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
+| Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
+| Add a UI widget to UIKit | `plugins/UIKit/UIKit.xml` + `plugins/UIKit/Button.c` as a reference |
+| Add a property binding or formula | `source/core/property/` + Module XML Guide |
+| Change what Lua exposes | Edit the module XML, run `cd tools && make` |
+| Debug a rendering issue | `source/renderer/r_main.c`, `r_draw.c`; check `BOX_IS_PTR` before dereferencing mesh/shader fields |
+| Add or fix a test | `tests/` — look at `test_styles_lua.lua` or `test_state_manager.lua` for patterns |
+| Build the project locally | See [Building the Project](#building-the-project) above; install submodules + pyphp first |
+
+---
+
 ## Module Structure
 
 Every C module lives in `source/<module>/` or `plugins/<name>/` and follows the same structure:

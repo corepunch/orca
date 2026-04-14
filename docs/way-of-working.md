@@ -4,6 +4,38 @@ This guide captures the development conventions used in ORCA and explains *why* 
 
 ---
 
+## Specialist Areas
+
+ORCA is structured like a team of specialists, each owning a distinct layer.  The WPF analogy: just as WPF had separate framework architects, rendering engineers, controls engineers, scripting engineers, and test engineers, ORCA's codebase maps to the same separation of concerns.
+
+| Specialist role | Files | Key knowledge |
+|---|---|---|
+| **Core / object system** | `source/core/`, `include/orca.h` | Component lifecycle, `HANDLER` macro, message dispatch, FNV1a hashing, `struct Object` layout |
+| **Renderer** | `source/renderer/` | OpenGL ES, GLSL, texture/mesh `BOX_PTR` boxing, `ViewDef`/`ViewEntity`, palette textures |
+| **Geometry / math** | `source/geometry/` | `vec2`, `vec3`, `mat4`, quaternion, `box3` in C |
+| **UIKit plugin** | `plugins/UIKit/` | Layout (`MeasureOverride`/`ArrangeOverride`), Node2D/Node3D, button/label/grid components |
+| **SceneKit / SpriteKit** | `plugins/SceneKit/`, `plugins/SpriteKit/` | 3D scene graph, cameras, lights, 2D sprite animation |
+| **Lua scripting bridge** | `source/core/object/object_lua_*.c`, `share/orca/` | Lua C API, property bindings, `send`/`fetch`, `behaviour.lua` |
+| **Code generation** | `tools/`, `*.xml` module files | PHP (pyphp), XML parsing, codegen templates, `make -C tools` |
+| **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode `project.pbxproj` |
+| **Test harness** | `tests/`, `source/orca.c` | Lua test patterns, `assert`, `xvfb-run`, `make test-headless` |
+| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, module XML → API doc pipeline |
+
+### Quick navigation by intent
+
+| "I want to…" | Start here |
+|---|---|
+| Add a new component | [Component workflow](#the-component-workflow) below |
+| Understand message routing | [Object + Component System](architecture/object-component-system.md) → Message Dispatch |
+| Add a UIKit widget | `plugins/UIKit/UIKit.xml` + `plugins/UIKit/Button.c` as a reference |
+| Add a property formula/binding | `source/core/property/` + [Module XML Guide](../MODULE_XML_GUIDE.md) |
+| Change what Lua exposes | Edit the module XML, run `cd tools && make` |
+| Debug a rendering issue | `source/renderer/r_main.c`, `r_draw.c`; check `BOX_IS_PTR` before dereferencing |
+| Add or fix a test | `tests/` — `test_styles_lua.lua` and `test_state_manager.lua` are good templates |
+| Build the project locally | `git submodule update --init --recursive && pip install -e tools/pyphp && make` |
+
+---
+
 ## The component workflow
 
 When you add any component to ORCA — whether refactoring an existing system or building something new — follow this order without exception:
