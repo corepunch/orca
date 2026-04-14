@@ -1,4 +1,3 @@
-#include "core_local.h"
 #include "object_internal.h"
 
 struct component*

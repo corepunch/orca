@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7800000001000000000000001 /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000002 /* Node.c */; };
+		7800000001000000000000003 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000004 /* Trigger.c */; };
 		7810D29C2D58C98700DB632F /* orcalib.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCD72AFA403F00216782 /* orcalib.c */; };
 		7810D3102D58F7FE00DB632F /* fs_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 7810D30F2D58F7FA00DB632F /* fs_local.h */; };
 		7810D3132D5902C200DB632F /* liborca.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7810D25E2D58A81100DB632F /* liborca.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -76,14 +78,9 @@
 		781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */; };
 		781CA75F2E15571400FFCFD9 /* StackView.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737582B8F60C600FD598E /* StackView.c */; };
 		781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C7375B2B8F60C600FD598E /* TextBlock.c */; };
-		781CA7612E15571400FFCFD9 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 78CDFED42CC13EE200D247E4 /* Trigger.c */; };
-		781CA76A2E1557A900FFCFD9 /* alias.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD532B2D90746900122823 /* alias.c */; };
 		781CA76E2E1557A900FFCFD9 /* object_component.c in Sources */ = {isa = PBXBuildFile; fileRef = 78FD53242D8F405600122823 /* object_component.c */; };
 		781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A8213E2C873EF400ACD0A9 /* property_runtime.c */; };
 		781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A444002F881D1C00AF52A4 /* StateManagerController.c */; };
-		7800000001000000000000001 /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000002 /* Node.c */; };
-		7800000001000000000000003 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000004 /* Trigger.c */; };
-		781CA7792E1557A900FFCFD9 /* style.c in Sources */ = {isa = PBXBuildFile; fileRef = 78688D2A2D89DD69008DE67B /* style.c */; };
 		781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA77A2E1557B900FFCFD9 /* Locale.c */; };
 		781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737C42B8F620100FD598E /* core_main.c */; };
 		781CA77C2E1557A900FFCFD9 /* object_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C737692B8F60C600FD598E /* object_lua.c */; };
@@ -160,7 +157,6 @@
 		783C97122F26448A00612323 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		783C97132F26449B00612323 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		7843AD852E297C6000122080 /* w_menu.c in Sources */ = {isa = PBXBuildFile; fileRef = 7843AD842E297C5A00122080 /* w_menu.c */; };
-		7843AD872E2E366900122080 /* ed_stab_aliases.h in Headers */ = {isa = PBXBuildFile; fileRef = 7843AD862E2E366500122080 /* ed_stab_aliases.h */; };
 		784E7BC42E420C9500530E64 /* ed_layout.c in Sources */ = {isa = PBXBuildFile; fileRef = 784E7BC32E420C9000530E64 /* ed_layout.c */; };
 		78623C2D2F5452A4003BFDA3 /* share in CopyFiles */ = {isa = PBXBuildFile; fileRef = 78623C292F5451F6003BFDA3 /* share */; };
 		78623C9C2F55EEAC003BFDA3 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
@@ -228,10 +224,10 @@
 		789AE3E12F687BDE0067DC75 /* liborca.filesystem.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		789AE44D2F694ED30067DC75 /* DRPalette.c in Sources */ = {isa = PBXBuildFile; fileRef = 789AE44C2F694ECE0067DC75 /* DRPalette.c */; };
 		789AE44F2F694F1C0067DC75 /* DRPalette.h in Headers */ = {isa = PBXBuildFile; fileRef = 789AE44E2F694F180067DC75 /* DRPalette.h */; };
-		78A442BD2F87FA8200AF52A4 /* property_animation.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BC2F87FA8100AF52A4 /* property_animation.c */; };
-		78A442BE2F87FA8200AF52A4 /* animation_clip.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BB2F87FA8100AF52A4 /* animation_clip.c */; };
-		78A443C72F881CFC00AF52A4 /* animation_player.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A441A42F87990900AF52A4 /* animation_player.c */; };
-		78A443C92F881D1C00AF52A4 /* easing_curve.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A443C82F881D1C00AF52A4 /* easing_curve.c */; };
+		78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */; };
+		78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A442BB2F87FA8100AF52A4 /* AnimationClip.c */; };
+		78A443C72F881CFC00AF52A4 /* AnimationPlayer.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A441A42F87990900AF52A4 /* AnimationPlayer.c */; };
+		78A443C92F881D1C00AF52A4 /* EasingCurve.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A443C82F881D1C00AF52A4 /* EasingCurve.c */; };
 		78A5AFA42F66BA0200E6A765 /* Package.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA32F66B9FA00E6A765 /* Package.c */; };
 		78A5AFA52F66C81E00E6A765 /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78A5AFAA2F67395E00E6A765 /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -487,6 +483,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7800000001000000000000002 /* Node.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node.c; sourceTree = "<group>"; };
+		7800000001000000000000004 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
 		7808CD8D2D9EC93A00D484F9 /* backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = backend.c; sourceTree = "<group>"; };
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		780C82682E01EE7100228DEC /* Light3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Light3D.c; sourceTree = "<group>"; };
@@ -505,7 +503,6 @@
 		781CA7352E154DE300FFCFD9 /* liborca/SceneKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/SceneKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA74D2E1556FF00FFCFD9 /* liborca/UIKit.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca/UIKit.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7662E15575600FFCFD9 /* liborca.core.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.core.so; sourceTree = BUILT_PRODUCTS_DIR; };
-		781CA7792E1557B900FFCFD9 /* Aliases.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Aliases.c; sourceTree = "<group>"; };
 		781CA77A2E1557B900FFCFD9 /* Locale.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Locale.c; sourceTree = "<group>"; };
 		781CA7922E155D0500FFCFD9 /* liborca.editor.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.editor.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.parsers.so; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -537,7 +534,6 @@
 		78423AA72BE526EF0052D403 /* Cinematic.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Cinematic.c; sourceTree = "<group>"; };
 		78423AA92BE52ADF0052D403 /* r_cinematic.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_cinematic.c; sourceTree = "<group>"; };
 		7843AD842E297C5A00122080 /* w_menu.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_menu.c; sourceTree = "<group>"; };
-		7843AD862E2E366500122080 /* ed_stab_aliases.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ed_stab_aliases.h; sourceTree = "<group>"; };
 		784A383C2B038545006A2A86 /* orcaerror.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = orcaerror.h; sourceTree = "<group>"; };
 		784E7BC32E420C9000530E64 /* ed_layout.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_layout.c; sourceTree = "<group>"; };
 		785CE1142B73B0F900FAF66A /* r_builtin_charset.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset.c; sourceTree = "<group>"; };
@@ -562,7 +558,6 @@
 		78688D222D7E1F2D008DE67B /* Button.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Button.c; sourceTree = "<group>"; };
 		78688D242D81C034008DE67B /* Form.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Form.c; sourceTree = "<group>"; };
 		78688D262D81E9E2008DE67B /* Label.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Label.c; sourceTree = "<group>"; };
-		78688D2A2D89DD69008DE67B /* style.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = style.c; sourceTree = "<group>"; };
 		7868DA162F88E30A00519F18 /* ConsoleView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ConsoleView.c; sourceTree = "<group>"; };
 		786BFC852AF7E97900216782 /* w_filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_filesystem.c; sourceTree = "<group>"; };
 		786BFCA82AF9013A00216782 /* plugapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = plugapi.h; sourceTree = "<group>"; };
@@ -632,13 +627,11 @@
 		789AE44C2F694ECE0067DC75 /* DRPalette.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = DRPalette.c; sourceTree = "<group>"; };
 		789AE44E2F694F180067DC75 /* DRPalette.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DRPalette.h; sourceTree = "<group>"; };
 		789D74F52BCA6ABB00E2ADB9 /* api_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = api_renderer.c; sourceTree = "<group>"; };
-		78A441A42F87990900AF52A4 /* animation_player.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = animation_player.c; sourceTree = "<group>"; };
-		78A442BB2F87FA8100AF52A4 /* animation_clip.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = animation_clip.c; sourceTree = "<group>"; };
-		78A442BC2F87FA8100AF52A4 /* property_animation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_animation.c; sourceTree = "<group>"; };
-		78A443C82F881D1C00AF52A4 /* easing_curve.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = easing_curve.c; sourceTree = "<group>"; };
+		78A441A42F87990900AF52A4 /* AnimationPlayer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AnimationPlayer.c; sourceTree = "<group>"; };
+		78A442BB2F87FA8100AF52A4 /* AnimationClip.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = AnimationClip.c; sourceTree = "<group>"; };
+		78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PropertyAnimation.c; sourceTree = "<group>"; };
+		78A443C82F881D1C00AF52A4 /* EasingCurve.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = EasingCurve.c; sourceTree = "<group>"; };
 		78A444002F881D1C00AF52A4 /* StateManagerController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = StateManagerController.c; sourceTree = "<group>"; };
-		7800000001000000000000002 /* Node.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node.c; sourceTree = "<group>"; };
-		7800000001000000000000004 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
 		78A5AD052B7CFBCB005BF50C /* r_shape.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_shape.c; sourceTree = "<group>"; };
 		78A5AFA32F66B9FA00E6A765 /* Package.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Package.c; sourceTree = "<group>"; };
 		78A5AFA92F67395B00E6A765 /* Directory.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Directory.c; sourceTree = "<group>"; };
@@ -698,7 +691,6 @@
 		78C737742B8F60C600FD598E /* PlaneMeshNode.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = PlaneMeshNode.c; sourceTree = "<group>"; };
 		78C737752B8F60C600FD598E /* TrajectoryList3D.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TrajectoryList3D.c; sourceTree = "<group>"; };
 		78C737C42B8F620100FD598E /* core_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = core_main.c; sourceTree = "<group>"; };
-		78CDFED42CC13EE200D247E4 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
 		78CDFED62CC6ABAF00D247E4 /* Gudea_Regular_ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Gudea_Regular_ttf.h; sourceTree = "<group>"; };
 		78CDFEDA2CC6C25D00D247E4 /* Gudea_Bold_ttf.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Gudea_Bold_ttf.h; sourceTree = "<group>"; };
 		78D75A542E3E5286004EA6DA /* MainToolbar.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MainToolbar.c; sourceTree = "<group>"; };
@@ -717,7 +709,6 @@
 		78F2231B2C635B0C008D5CA3 /* PrefabView2D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PrefabView2D.c; sourceTree = "<group>"; };
 		78FD53222D8F2A8800122823 /* property_program.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_program.c; sourceTree = "<group>"; };
 		78FD53242D8F405600122823 /* object_component.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_component.c; sourceTree = "<group>"; };
-		78FD532B2D90746900122823 /* alias.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = alias.c; sourceTree = "<group>"; };
 		78FD532F2D929AFE00122823 /* debug.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = debug.c; sourceTree = "<group>"; };
 		78FD53312D940BB200122823 /* dataplugin.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = dataplugin.c; sourceTree = "<group>"; };
 		78FD53342D940BB200122823 /* someip.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = someip.h; sourceTree = "<group>"; };
@@ -1072,7 +1063,6 @@
 				786F2B1A2E12EE7F00B519AB /* ed_undo.c */,
 				786F2B1B2E12EE7F00B519AB /* ed_utils.c */,
 				786F2B152E12EE7F00B519AB /* ed_local.h */,
-				7843AD862E2E366500122080 /* ed_stab_aliases.h */,
 				781CA6B12E13E08400FFCFD9 /* ed_stab_component.h */,
 				781CA6B32E14073300FFCFD9 /* ed_stab_filesystem.h */,
 				781CA6AD2E13CA7E00FFCFD9 /* ed_stab_object.h */,
@@ -1155,15 +1145,14 @@
 		78A441A62F879A1700AF52A4 /* components */ = {
 			isa = PBXGroup;
 			children = (
-				78A443C82F881D1C00AF52A4 /* easing_curve.c */,
-				78A442BB2F87FA8100AF52A4 /* animation_clip.c */,
-				78A441A42F87990900AF52A4 /* animation_player.c */,
-				78A442BC2F87FA8100AF52A4 /* property_animation.c */,
+				78A443C82F881D1C00AF52A4 /* EasingCurve.c */,
+				78A442BB2F87FA8100AF52A4 /* AnimationClip.c */,
+				78A441A42F87990900AF52A4 /* AnimationPlayer.c */,
+				78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */,
 				78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */,
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
 				7800000001000000000000002 /* Node.c */,
 				7800000001000000000000004 /* Trigger.c */,
-				781CA7792E1557B900FFCFD9 /* Aliases.c */,
 				781CA77A2E1557B900FFCFD9 /* Locale.c */,
 			);
 			path = components;
@@ -1291,12 +1280,10 @@
 				78A441A62F879A1700AF52A4 /* components */,
 				787040532F6F1A3200A84406 /* object */,
 				787040522F6F199900A84406 /* property */,
-				78FD532B2D90746900122823 /* alias.c */,
 				7839770D2E60A5AB00DCFC0F /* core_export.c */,
 				78C737C42B8F620100FD598E /* core_main.c */,
 				78FD532F2D929AFE00122823 /* debug.c */,
 				78E4A9A12E93DD4200E3A503 /* known_prefabs.c */,
-				78688D2A2D89DD69008DE67B /* style.c */,
 				78C737652B8F60C600FD598E /* core_local.h */,
 				787040442F6F197000A84406 /* core_properties.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
@@ -1323,7 +1310,6 @@
 				78688D1B2D6F28AE008DE67B /* Screen.c */,
 				78C737582B8F60C600FD598E /* StackView.c */,
 				78C7375B2B8F60C600FD598E /* TextBlock.c */,
-				78CDFED42CC13EE200D247E4 /* Trigger.c */,
 				78BCC20F2E62FA3A00CA0A41 /* UIKit_export.c */,
 				787045162F7EF53100A84406 /* UIKit_message.c */,
 				78AF62CA2F58BE5B008D08A3 /* UIKit.c */,
@@ -1484,7 +1470,6 @@
 				781CA7A12E155D1400FFCFD9 /* ed_stab_filesystem.h in Headers */,
 				781CA7A02E155D1400FFCFD9 /* ed_stab_component.h in Headers */,
 				781CA7A22E155D1400FFCFD9 /* ed_stab_object.h in Headers */,
-				7843AD872E2E366900122080 /* ed_stab_aliases.h in Headers */,
 				781CA79F2E155D1400FFCFD9 /* ed_local.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2106,7 +2091,6 @@
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
-				781CA7612E15571400FFCFD9 /* Trigger.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2114,19 +2098,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78A443C72F881CFC00AF52A4 /* animation_player.c in Sources */,
-				78A443C92F881D1C00AF52A4 /* easing_curve.c in Sources */,
+				78A443C72F881CFC00AF52A4 /* AnimationPlayer.c in Sources */,
+				78A443C92F881D1C00AF52A4 /* EasingCurve.c in Sources */,
 				78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
 				7800000001000000000000001 /* Node.c in Sources */,
 				7800000001000000000000003 /* Trigger.c in Sources */,
-				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */,
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
-				78A442BD2F87FA8200AF52A4 /* property_animation.c in Sources */,
-				78A442BE2F87FA8200AF52A4 /* animation_clip.c in Sources */,
+				78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */,
+				78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */,
 				781CA7D22E15783F00FFCFD9 /* debug.c in Sources */,
-				781CA76A2E1557A900FFCFD9 /* alias.c in Sources */,
 				781CA76E2E1557A900FFCFD9 /* object_component.c in Sources */,
 				78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */,
 				7839770E2E60A5AB00DCFC0F /* core_export.c in Sources */,
@@ -2142,7 +2124,6 @@
 				7870417D2F6FDDD800A84406 /* object_lua_props.c in Sources */,
 				7870417E2F6FDDD800A84406 /* object_properties.c in Sources */,
 				7870417F2F6FDDD800A84406 /* object_core.c in Sources */,
-				781CA7792E1557A900FFCFD9 /* style.c in Sources */,
 				781CA77B2E1557A900FFCFD9 /* core_main.c in Sources */,
 				781CA77C2E1557A900FFCFD9 /* object_lua.c in Sources */,
 			);
