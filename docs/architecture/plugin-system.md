@@ -94,6 +94,144 @@ When `OBJ_AddComponent(obj, ID_Button)` is called, the engine also attaches `Nod
 
 ---
 
+## System-Level Message Handlers
+
+In addition to component-level `ObjProc` handlers (which process object messages), a plugin can register a **system-level message handler** that receives low-level platform events before they are dispatched to the object tree.  This is the correct place to handle platform events that are not tied to a specific object (e.g. window resize, keyboard shortcuts, HTTP server commands).
+
+### The API
+
+```c
+// source/sysutil/queue.c
+bool_t SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
+bool_t SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
+```
+
+Handlers are called in **reverse registration order** (last registered = first called).  Return `TRUE` to consume the event and stop further processing; return `FALSE` to let remaining handlers run.
+
+### Handler signature
+
+```c
+LRESULT my_handle_event(lua_State *L, struct AXmessage *msg) {
+    switch (msg->message) {
+        case kEventKeyDown:
+            /* handle key press, return TRUE to consume */
+            return TRUE;
+        default:
+            return FALSE;   /* pass through to the next handler */
+    }
+}
+```
+
+The `struct AXmessage` fields used most often:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `message` | `uint32_t` | Event type — one of the `kEvent*` constants in `libs/platform` |
+| `wParam` | `wParam_t` | Primary parameter (key code, mouse button, etc.) |
+| `lParam` | `lParam_t` | Secondary parameter (pointer to aux data) |
+| `target` | `lua_State*` | Lua coroutine associated with the event (may be `NULL`) |
+
+### Registration
+
+Register from the module's `on-luaopen` callback (the function invoked from `luaopen_orca_<Name>`):
+
+```c
+// In MyPlugin.c — called from luaopen_orca_MyPlugin (generated in MyPlugin_export.c)
+void on_myplugin_registered(lua_State *L) {
+    SV_RegisterMessageProc(my_handle_event);
+}
+```
+
+For a conditional registration (e.g. only when a feature flag is set):
+
+```c
+void on_myplugin_registered(lua_State *L) {
+    lua_getglobal(L, "MY_FEATURE");
+    if (lua_toboolean(L, -1)) {
+        SV_RegisterMessageProc(my_handle_event);
+        axPostMessageW(NULL, kEventReadCommands, 0, NULL);  /* seed the event pump if needed */
+    }
+    lua_pop(L, 1);
+}
+```
+
+### Examples in the codebase
+
+| Handler | Location | Purpose |
+|---|---|---|
+| `CORE_ProcessMessage` | `source/core/core_main.c` | Keyboard shortcuts, window paint/resize, coroutine lifecycle |
+| `ui_handle_event` | `plugins/UIKit/UIKit_message.c` | Mouse, keyboard, and coroutine events for the UI object tree |
+| `filesystem_handle_event` | `source/editor/server.c` | HTTP-style editor command server (`kEventReadCommands` loop) |
+
+#### Core — keyboard + window events
+
+```c
+// source/core/core_main.c
+LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage *e) {
+    switch (e->message) {
+        case kEventWindowPaint:
+        case kEventWindowResized:
+            core.realtime = axGetMilliseconds();
+            core.frame++;
+            return FALSE;   /* don't consume — other handlers (UIKit) still need it */
+        case kEventKeyDown:
+            /* look up shortcut and execute bound command */
+            return FALSE;
+        default:
+            return FALSE;
+    }
+}
+
+// Registered during module init:
+SV_RegisterMessageProc(CORE_ProcessMessage);
+```
+
+#### UIKit — routing platform input to UI nodes
+
+```c
+// plugins/UIKit/UIKit_message.c
+LRESULT ui_handle_event(lua_State *L, struct AXmessage *msg) {
+    switch (msg->message) {
+        case kEventLeftMouseDown:
+        case kEventLeftMouseUp:
+        case kEventMouseMoved:
+            return UI_HandleMouseEvent(L, msg->target, msg);  /* TRUE if consumed by a widget */
+        case kEventKeyDown:
+        case kEventChar:
+            return UI_HandleKeyEvent(L, msg);
+        default:
+            return FALSE;
+    }
+}
+
+// Registered in on_ui_module_registered() called from luaopen_orca_UIKit:
+SV_RegisterMessageProc(ui_handle_event);
+```
+
+#### Editor server — reading HTTP commands
+
+```c
+// source/editor/server.c
+LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
+    if (msg->message != kEventReadCommands) return FALSE;
+    LPSTR url = UI_ReadClientCommands();
+    if (!url) exit(0);
+    /* parse URL, dispatch to route handlers, write XML response to stdout */
+    axPostMessageW(msg->target, kEventReadCommands, 0, NULL);  /* re-arm for next request */
+    return TRUE;
+}
+
+// Registered conditionally from luaopen_orca_editor when SERVER global is set:
+lua_getglobal(L, "SERVER");
+if (lua_toboolean(L, -1)) {
+    SV_RegisterMessageProc(filesystem_handle_event);
+    axPostMessageW(NULL, kEventReadCommands, 0, NULL);   /* post the first event to start loop */
+}
+lua_pop(L, 1);
+```
+
+---
+
 ## Lua Script Plugins
 
 Lua script plugins are pure-Lua modules that extend the engine's behaviour without any native code. They are loaded using the standard Lua `require` mechanism:
