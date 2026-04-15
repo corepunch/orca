@@ -41,6 +41,7 @@ local trigger_to_pseudo = {
 }
 
 -- Strip "{StaticResource key}" WPF resource reference syntax → "key".
+-- Plain names (e.g. "button") are returned unchanged so both syntaxes work.
 local function strip_resource_ref(s)
 	return s and (s:match("^{StaticResource%s+(.-)%}$") or s)
 end
@@ -91,7 +92,7 @@ local function parse_style(style, result)
 						for p, v in pairs(tprops) do result[k][p] = v end
 					end
 				else
-					io.stderr:write(("[wpf] Unknown trigger property: %s\n"):format(tp))
+					io.stderr:write(("[wpf] Unsupported trigger property '%s' — no pseudo-state mapping\n"):format(tp))
 				end
 			end
 		end

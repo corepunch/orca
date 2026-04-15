@@ -28,6 +28,8 @@ local Property = {}
 function Property.parse(node, name, value)
 	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
+	-- node.class = value sends StyleController.AddClasses, which correctly parses
+	-- space-separated class tokens (e.g. "button:hover primary/80").
 	if name == "class" then node.class = value return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
