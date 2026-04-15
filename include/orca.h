@@ -198,6 +198,9 @@ ORCA_API void
 PROP_SetDirty(lpProperty_t property, enum PropertyState state);
 
 ORCA_API bool_t
+PROP_ActivateState(lpProperty_t property, enum PropertyState state);
+
+ORCA_API bool_t
 PROP_IsNull(lpcProperty_t);
 
 ORCA_API lpProperty_t

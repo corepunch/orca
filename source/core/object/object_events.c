@@ -48,11 +48,14 @@ void OBJ_SetFocus(lpObject_t pobj)
     return;
   if (core.focus) {
     SV_PostMessage(core.focus, "KillFocus", 0, pobj);
-    SV_PostMessage(core.focus, "ThemeChanged", 0, 0);
+    // Reactivate without focus — keep hover/select if still applicable.
+    OBJ_ApplyPropertyState(core.focus,
+                           OBJ_GetStyleFlags(core.focus) & ~STYLE_FOCUS);
   }
   if (pobj) {
     SV_PostMessage(pobj, "SetFocus", 0, core.focus);
-    SV_PostMessage(pobj, "ThemeChanged", 0, 0);
+    // Activate Focus state for the newly-focused object.
+    OBJ_ApplyPropertyState(pobj, OBJ_GetStyleFlags(pobj) | STYLE_FOCUS);
   }
   core.focus = pobj;
 }

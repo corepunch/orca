@@ -149,11 +149,15 @@ CORE_UpdateHover(void) {
   if (core.hover != core.hover2) {
     if (core.hover) {
       OBJ_SendMessage(core.hover, "KillHover", 0, core.hover2);
-      SV_PostMessage(core.hover, "ThemeChanged", 0, 0);
+      // Reactivate Normal (or Focus/Select if still applicable) without hover.
+      OBJ_ApplyPropertyState(core.hover,
+                             OBJ_GetStyleFlags(core.hover) & ~STYLE_HOVER);
     }
     if (core.hover2) {
       OBJ_SendMessage(core.hover2, "SetHover", 0, core.hover);
-      SV_PostMessage(core.hover2, "ThemeChanged", 0, 0);
+      // Activate Hover state for the newly-hovered object.
+      OBJ_ApplyPropertyState(core.hover2,
+                             OBJ_GetStyleFlags(core.hover2) | STYLE_HOVER);
     }
   }
   core.hover = core.hover2;

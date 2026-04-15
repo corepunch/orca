@@ -259,7 +259,9 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t name)
 // ============================================================================
 
 // Walk global and per-object stylesheets looking for rules that match classname,
-// and invoke Proc for each matching rule whose state flags satisfy the object's current state
+// and invoke Proc for every matching rule unconditionally.  The caller (_ApplyRule)
+// is responsible for routing each rule to the correct PropertyState slot via the
+// rule's own flags and the class-token flags passed as parm.
 void
 OBJ_EnumStyleClasses(lpObject_t pobj,
                      lpcString_t classname,
@@ -267,15 +269,12 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
                      void* param)
 {
   uint32_t dwClassID = fnv1a32(classname);
-  uint32_t objFlags = OBJ_GetStyleFlags(pobj);
 
   // Check global stylesheet first
   FOR_EACH_LIST(struct style_rule, ss, static_sheet) {
     if (ss->class_id != dwClassID) continue;
     if (ss->flags & STYLE_HOVER) OBJ_SetFlags(pobj, OF_HOVERABLE);
-    if ((objFlags & ss->flags) == ss->flags) {
-      Proc(pobj, ss, param);
-    }
+    Proc(pobj, ss, param);
   }
 
   // Walk up the object hierarchy, checking each ancestor's local stylesheet
@@ -285,9 +284,7 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
     FOR_EACH_LIST(struct style_rule, ss, sc->rules) {
       if (ss->class_id != dwClassID) continue;
       if (ss->flags & STYLE_HOVER) OBJ_SetFlags(pobj, OF_HOVERABLE);
-      if ((objFlags & ss->flags) == ss->flags) {
-        Proc(pobj, ss, param);
-      }
+      Proc(pobj, ss, param);
     }
   }
 }
@@ -295,29 +292,38 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
 ORCA_API int
 parse_property(lua_State* L, const char* str, struct PropertyType const* prop, void* valueptr);
 
-// Apply a single stylesheet rule to a property on the target object
+// Forward declaration — defined after _ApplyRule in the State Resolution section.
+static enum PropertyState _StyleFlagsToPropertyState(uint32_t flags);
+
+// Apply a single stylesheet rule to a property on the target object.
+// The target PropertyState slot is derived from the union of the rule's own
+// state flags and the class-token's state flags (e.g., the "btn:hover" token
+// contributes STYLE_HOVER even if the individual rule has no state flags).
 static void
 _ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
 {
   lpProperty_t hProperty;
   if (SUCCEEDED(OBJ_FindShortProperty(pobj, ss->name, &hProperty))) {
-    if (ss->flags) {
-      PROP_SetFlag(hProperty, PF_SPECIALIZED);
-    } else if (PROP_GetFlags(hProperty) & PF_SPECIALIZED) {
-      // A state-specific rule (e.g., :hover) was already applied — skip the default
-      return;
-    }
+    struct style_class_selector* cls = (struct style_class_selector*)parm;
+    // Combine rule-level and class-token-level state flags to pick the slot.
+    uint32_t effective_flags = ss->flags | (cls ? cls->flags : 0);
+    enum PropertyState state = _StyleFlagsToPropertyState(effective_flags);
 
     char buf[MAX_PROPERTY_STRING] = {0};
     parse_property(g_L, ss->value, PROP_GetDesc(hProperty), buf);
-    PROP_SetValue(hProperty, buf);
 
-    // Apply opacity to color properties when the class carries a /N opacity modifier
-    if (PROP_GetType(hProperty) == kDataTypeColor && parm) {
-      struct color clr;
-      PROP_CopyValue(hProperty, &clr);
-      clr.a = ((struct style_class_selector*)parm)->opacity / 100.f;
-      PROP_SetValue(hProperty, &clr);
+    // Apply opacity modifier to color properties before writing the slot.
+    if (PROP_GetType(hProperty) == kDataTypeColor && cls) {
+      ((struct color *)buf)->a = cls->opacity / 100.f;
+    }
+
+    if (state == kPropertyStateNormal) {
+      // Normal state: write to the slot AND propagate to ->value immediately.
+      PROP_SetValue(hProperty, buf);
+    } else {
+      // Non-normal state (hover/focus/select): write only to the named slot.
+      // ->value will be updated lazily by OBJ_ApplyPropertyState.
+      PROP_SetStateValue(hProperty, buf, state);
     }
   } else {
     Con_Error("Can't find property %s", ss->name);
@@ -334,6 +340,41 @@ OBJ_GetStyleFlags(lpObject_t pobj)
   if (OBJ_GetFlags(pobj) & OF_SELECTED) dwValue |= STYLE_SELECT;
   if (axIsDarkTheme()) dwValue |= STYLE_DARK;
   return dwValue;
+}
+
+// Map style flag bits to the corresponding PropertyState enum value.
+// Priority order (highest first): STYLE_FOCUS > STYLE_SELECT > STYLE_HOVER.
+// STYLE_DARK has no dedicated PropertyState slot and is handled by full
+// ThemeChanged re-application; it falls through to kPropertyStateNormal.
+static enum PropertyState
+_StyleFlagsToPropertyState(uint32_t flags)
+{
+  if (flags & STYLE_FOCUS)  return kPropertyStateFocus;
+  if (flags & STYLE_SELECT) return kPropertyStateSelect;
+  if (flags & STYLE_HOVER)  return kPropertyStateHover;
+  return kPropertyStateNormal;
+}
+
+// Activate the highest-priority populated state slot for every property on obj
+// by copying that slot's value into property->value (what PROP_GetValue returns).
+// Call this whenever hover, focus, or selection state changes on an object.
+// style_flags is the new effective bitmask (STYLE_HOVER, STYLE_FOCUS, etc.).
+void
+OBJ_ApplyPropertyState(lpObject_t obj, uint32_t style_flags)
+{
+  enum PropertyState active = _StyleFlagsToPropertyState(style_flags);
+  bool_t changed = FALSE;
+  FOR_EACH_PROPERTY(p, OBJ_GetProperties(obj)) {
+    bool_t activated = FALSE;
+    if (active != kPropertyStateNormal) {
+      activated = PROP_ActivateState(p, active);
+    }
+    if (!activated) {
+      activated = PROP_ActivateState(p, kPropertyStateNormal);
+    }
+    if (activated) changed = TRUE;
+  }
+  if (changed) OBJ_SetDirty(obj);
 }
 
 // Free all style classes and stylesheet rules owned by this object's StyleController.
@@ -366,17 +407,18 @@ HANDLER(StyleController, Object, Release) {
   return FALSE;
 }
 
-// Recalculate and apply all active style rules to this object.
-// pThemeChanged->recursive controls whether child objects are also updated.
-// Called automatically when hover state, focus, or the system theme changes.
-// Triggered via Object.ThemeChanged (from the engine) or StyleController.ThemeChanged
-// (from Lua via self:ThemeChanged()). Both share the same implementation.
-// Note: pThemeChanged may be NULL when the message is dispatched via
-// SV_PostMessage with lParam=0; treat NULL as recursive=FALSE.
+// Populate all property state slots from the current stylesheet rules, then
+// activate the slot that matches the object's current pseudo-state.
+//
+// This handler is called once during OBJ_Awake (initial setup) and whenever
+// stylesheet rules change (e.g. after addStyleRule / addStyleClass at runtime,
+// or after a system theme change).  Hover and focus transitions no longer
+// call this handler — they call OBJ_ApplyPropertyState directly, which is
+// cheaper because it only swaps ->value without re-parsing rules.
+//
+// pThemeChanged may be NULL when dispatched via SV_PostMessage with lParam=0.
 HANDLER(StyleController, StyleController, ThemeChanged) {
   bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
-
-  PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 
   // Root objects: apply "body" rules from the local stylesheet
   if (!OBJ_GetParent(hObject)) {
@@ -387,12 +429,14 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
     }
   }
 
-  // Apply each class whose state flags match the current object state
+  // Apply all rules for every attached class into their respective state slots.
+  // No state filtering here — _ApplyRule routes each rule to the correct slot.
   FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes) {
-    if ((OBJ_GetStyleFlags(hObject) & cls->flags) == cls->flags) {
-      OBJ_EnumStyleClasses(hObject, cls->value, _ApplyRule, cls);
-    }
+    OBJ_EnumStyleClasses(hObject, cls->value, _ApplyRule, cls);
   }
+
+  // Activate the slot that matches the current pseudo-state so ->value is correct.
+  OBJ_ApplyPropertyState(hObject, OBJ_GetStyleFlags(hObject));
 
   if (recursive) {
     FOR_EACH_OBJECT(child, hObject) {

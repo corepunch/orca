@@ -8,7 +8,9 @@
  *     StyleController
  *   - OBJ_ClearStyleClasses: frees all memory, idempotent on no-StyleController
  *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
- *   - StyleController.ThemeChanged (via _SendMessage): applies a float rule to a property
+ *   - StyleController.ThemeChanged (via _SendMessage): populates property state
+ *     slots for normal and hover values; OBJ_ApplyPropertyState activates the
+ *     correct slot so that PROP_GetValue reflects hover overrides.
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
  *
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
@@ -233,7 +235,7 @@ static void test_get_style_flags_none(void) {
 /*
  * ThemeChanged via _SendMessage (replaces OBJ_ApplyStyles):
  * Add a ".btn" → Width=42 rule, parse the "btn" class, then apply.
- * Verify that the Width property was updated to 42.
+ * Verify that the Width property was updated to 42 (Normal slot → ->value).
  */
 static void test_apply_styles_float_property(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
@@ -248,6 +250,55 @@ static void test_apply_styles_float_property(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(float *)PROP_GetValue(prop) == 42.f);
+    }
+}
+
+/*
+ * Hover state slot: add a hover rule, apply ThemeChanged, then simulate hover
+ * by calling OBJ_ApplyPropertyState(obj, STYLE_HOVER).  PROP_GetValue should
+ * reflect the hover value.  Deactivating hover reverts to Normal.
+ */
+static void test_hover_state_slot(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        /* Normal rule: ".btn { Width = 10 }" */
+        OBJ_AddStyleClass(obj, ".btn", "Width", "10", 0);
+        /* Hover rule: ".btn:hover { Width = 99 }" */
+        OBJ_AddStyleClass(obj, ".btn", "Width", "99", STYLE_HOVER);
+        _SendMessage(obj, StyleController, AddClasses, "btn");
+        /* Initial ThemeChanged: populates Normal slot (10) and Hover slot (99),
+         * then activates Normal (no hover active). */
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        /* Normal state: Width == 10 */
+        EXPECT(*(float *)PROP_GetValue(prop) == 10.f);
+        /* Simulate hover: activate hover state */
+        OBJ_ApplyPropertyState(obj, STYLE_HOVER);
+        EXPECT(*(float *)PROP_GetValue(prop) == 99.f);
+        /* Deactivate hover: revert to Normal */
+        OBJ_ApplyPropertyState(obj, 0);
+        EXPECT(*(float *)PROP_GetValue(prop) == 10.f);
+    }
+}
+
+/*
+ * Class token with :hover suffix: class "btn:hover" means ALL rules for "btn"
+ * are written to the Hover slot when ThemeChanged runs, even if the rule itself
+ * has no state flags.
+ */
+static void test_class_token_hover_routes_to_slot(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        OBJ_AddStyleClass(obj, ".btn", "Width", "55", 0);
+        /* Class token has :hover — all rules for "btn" go to Hover slot */
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover");
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        /* Without hover active, Width should not be 55 (slot not activated) */
+        EXPECT(*(float *)PROP_GetValue(prop) != 55.f);
+        /* Activate hover: Width becomes 55 */
+        OBJ_ApplyPropertyState(obj, STYLE_HOVER);
+        EXPECT(*(float *)PROP_GetValue(prop) == 55.f);
     }
 }
 
@@ -344,6 +395,8 @@ int main(void) {
         DECL_TEST(test_clear_style_classes),
         DECL_TEST(test_get_style_flags_none),
         DECL_TEST(test_apply_styles_float_property),
+        DECL_TEST(test_hover_state_slot),
+        DECL_TEST(test_class_token_hover_routes_to_slot),
         DECL_TEST(test_apply_styles_no_component),
         DECL_TEST(test_parse_class_multiple_pseudo_states),
         DECL_TEST(test_parse_class_base_name_only),

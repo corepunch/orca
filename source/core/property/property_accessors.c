@@ -124,7 +124,15 @@ PROP_SetStateValue(lpProperty_t property,
   } else {
     memcpy(ptr, source, PROP_GetSize(property));
   }
-  PROP_SetDirty(property, kPropertyStateNormal);
+  // Mark the actual state slot as set. For Normal, this also triggers layout
+  // dirty propagation. For non-Normal states (hover, focus, select), we only
+  // update stateflags — the layout dirty is deferred until OBJ_ApplyPropertyState
+  // copies the active slot to ->value.
+  if (state == kPropertyStateNormal) {
+    PROP_SetDirty(property, state);
+  } else {
+    property->stateflags |= 1 << state;
+  }
   return ptr;
 }
 
@@ -134,6 +142,16 @@ PROP_SetValue(lpProperty_t property, void const* source)
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
+}
+
+// Copy the value stored in the given state slot into property->value.
+// Returns TRUE if the slot had a value; FALSE if the slot was never written.
+bool_t
+PROP_ActivateState(lpProperty_t property, enum PropertyState state)
+{
+  if (!(property->stateflags & (1 << state))) return FALSE;
+  memcpy(property->value, PROP_GetState(property, state), PROP_GetSize(property));
+  return TRUE;
 }
 
 void

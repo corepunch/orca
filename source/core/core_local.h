@@ -129,6 +129,9 @@ void
 OBJ_ClearStyleClasses(lpObject_t);
 
 void
+OBJ_ApplyPropertyState(lpObject_t obj, uint32_t style_flags);
+
+void
 OBJ_SetLuaObject(lpObject_t , uint32_t);
   
 ORCA_API void
