@@ -313,8 +313,12 @@ _ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
     parse_property(g_L, ss->value, PROP_GetDesc(hProperty), buf);
 
     // Apply opacity modifier to color properties before writing the slot.
+    // Use an aligned struct color temporary to avoid strict-alignment UB.
     if (PROP_GetType(hProperty) == kDataTypeColor && cls) {
-      ((struct color *)buf)->a = cls->opacity / 100.f;
+      struct color clr;
+      memcpy(&clr, buf, sizeof(struct color));
+      clr.a = cls->opacity / 100.f;
+      memcpy(buf, &clr, sizeof(struct color));
     }
 
     if (state == kPropertyStateNormal) {
@@ -324,6 +328,13 @@ _ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
       // Non-normal state (hover/focus/select): write only to the named slot.
       // ->value will be updated lazily by OBJ_ApplyPropertyState.
       PROP_SetStateValue(hProperty, buf, state);
+    }
+
+    // parse_property() strdup's string values into buf.  After PROP_Set*() has
+    // made its own copy via PROP_SetStateValue, the temporary allocation is
+    // no longer needed — free it to avoid a leak.
+    if (PROP_GetType(hProperty) == kDataTypeString) {
+      free(*(char**)buf);
     }
   } else {
     Con_Error("Can't find property %s", ss->name);
@@ -359,19 +370,27 @@ _StyleFlagsToPropertyState(uint32_t flags)
 // by copying that slot's value into property->value (what PROP_GetValue returns).
 // Call this whenever hover, focus, or selection state changes on an object.
 // style_flags is the new effective bitmask (STYLE_HOVER, STYLE_FOCUS, etc.).
+//
+// Priority order: Focus > Select > Hover > Normal.  Each active state is tried
+// in turn for every property; the first populated slot wins.  This ensures that
+// when e.g. Focus+Hover are both active, properties without a Focus slot still
+// pick up the Hover slot rather than falling back directly to Normal.
 void
 OBJ_ApplyPropertyState(lpObject_t obj, uint32_t style_flags)
 {
-  enum PropertyState active = _StyleFlagsToPropertyState(style_flags);
   bool_t changed = FALSE;
   FOR_EACH_PROPERTY(p, OBJ_GetProperties(obj)) {
     bool_t activated = FALSE;
-    if (active != kPropertyStateNormal) {
-      activated = PROP_ActivateState(p, active);
-    }
-    if (!activated) {
+    // Try each active state in descending priority order.
+    if (!activated && (style_flags & STYLE_FOCUS))
+      activated = PROP_ActivateState(p, kPropertyStateFocus);
+    if (!activated && (style_flags & STYLE_SELECT))
+      activated = PROP_ActivateState(p, kPropertyStateSelect);
+    if (!activated && (style_flags & STYLE_HOVER))
+      activated = PROP_ActivateState(p, kPropertyStateHover);
+    // Always fall back to Normal.
+    if (!activated)
       activated = PROP_ActivateState(p, kPropertyStateNormal);
-    }
     if (activated) changed = TRUE;
   }
   if (changed) OBJ_SetDirty(obj);

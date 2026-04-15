@@ -101,7 +101,7 @@ PROP_SetStateValue(lpProperty_t property,
 {
   void* ptr = PROP_GetState(property, state);
   if (property->type == kDataTypeString) {
-    if (property->stateflags & (1 << state)) {
+    if (property->stateflags & (1u << state)) {
       free(*(LPSTR*)PROP_GetState(property, state));
     }
     *(LPSTR*)ptr = strdup(*(LPSTR*)source);
@@ -110,13 +110,13 @@ PROP_SetStateValue(lpProperty_t property,
     lpObject_t object = *(lpObject_t *)source;
     if (!object) {
       memset(ptr, 0, PROP_GetSize(property));
-      property->stateflags &= ~(1<<state);
+      property->stateflags &= ~(1u << state);
       return ptr;
     }
     void* udata = OBJ_GetComponent(object, ident);
     if (!udata) {
       memset(ptr, 0, PROP_GetSize(property));
-      property->stateflags &= ~(1<<state);
+      property->stateflags &= ~(1u << state);
       Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
       return ptr;
     }
@@ -131,7 +131,7 @@ PROP_SetStateValue(lpProperty_t property,
   if (state == kPropertyStateNormal) {
     PROP_SetDirty(property, state);
   } else {
-    property->stateflags |= 1 << state;
+    property->stateflags |= 1u << state;
   }
   return ptr;
 }
@@ -149,7 +149,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
 bool_t
 PROP_ActivateState(lpProperty_t property, enum PropertyState state)
 {
-  if (!(property->stateflags & (1 << state))) return FALSE;
+  if (!(property->stateflags & (1u << state))) return FALSE;
   memcpy(property->value, PROP_GetState(property, state), PROP_GetSize(property));
   return TRUE;
 }

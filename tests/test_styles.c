@@ -303,9 +303,34 @@ static void test_class_token_hover_routes_to_slot(void) {
 }
 
 /*
- * ThemeChanged is silent on objects without StyleController.
- * Sending the message to a bare object must not crash.
+ * Focus+Hover active simultaneously: properties with only a Hover slot (no
+ * Focus slot) should still pick up the Hover value, not fall back to Normal.
+ * This validates the priority cascade: Focus > Select > Hover > Normal.
  */
+static void test_focus_hover_cascade_fallback(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        /* Normal rule and Hover rule for Width; no Focus rule */
+        OBJ_AddStyleClass(obj, ".btn", "Width", "10", 0);
+        OBJ_AddStyleClass(obj, ".btn", "Width", "99", STYLE_HOVER);
+        _SendMessage(obj, StyleController, AddClasses, "btn");
+        _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
+        lpProperty_t prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        /* Normal: 10 */
+        EXPECT(*(float *)PROP_GetValue(prop) == 10.f);
+        /* Hover only: 99 */
+        OBJ_ApplyPropertyState(obj, STYLE_HOVER);
+        EXPECT(*(float *)PROP_GetValue(prop) == 99.f);
+        /* Focus+Hover: no Focus slot → falls through to Hover slot (99) */
+        OBJ_ApplyPropertyState(obj, STYLE_FOCUS | STYLE_HOVER);
+        EXPECT(*(float *)PROP_GetValue(prop) == 99.f);
+        /* Focus only: no Focus slot → falls through to Normal (10) */
+        OBJ_ApplyPropertyState(obj, STYLE_FOCUS);
+        EXPECT(*(float *)PROP_GetValue(prop) == 10.f);
+    }
+}
+
+
 static void test_apply_styles_no_component(void) {
     do {
     lpObject_t obj = calloc(1, sizeof(struct Object));
@@ -397,6 +422,7 @@ int main(void) {
         DECL_TEST(test_apply_styles_float_property),
         DECL_TEST(test_hover_state_slot),
         DECL_TEST(test_class_token_hover_routes_to_slot),
+        DECL_TEST(test_focus_hover_cascade_fallback),
         DECL_TEST(test_apply_styles_no_component),
         DECL_TEST(test_parse_class_multiple_pseudo_states),
         DECL_TEST(test_parse_class_base_name_only),
