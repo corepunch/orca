@@ -183,31 +183,35 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
 ORCA_API int
 parse_property(lua_State* L, const char* str, struct PropertyType const* prop, void* valueptr);
 
-// Create a StyleRule from a selector + single property/value pair (C API).
-void
-OBJ_AddStyleClass(lpObject_t obj,
-                  lpcString_t selector,
-                  lpcString_t property,
-                  lpcString_t value,
-                  uint32_t flags)
+// Copy pre-parsed C property overrides from srcRule to destRule.
+static void
+_CopyRuleProperties(lpObject_t srcRule, lpObject_t destRule)
 {
-  lpObject_t sheetObj = _GetOrCreateStyleSheet(obj);
-  if (!sheetObj) return;
+  for (lpProperty_t rp = OBJ_GetProperties(srcRule); rp; rp = PROP_GetNext(rp)) {
+    if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
+    if (PROP_IsNull(rp)) continue;
+    lpProperty_t cp = PROP_Create(NULL, destRule, PROP_GetDesc(rp));
+    PROP_SetValue(cp, PROP_GetValue(rp));
+  }
+}
 
-  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
+// Parse the selector string into the cached fields of a StyleRule struct.
+// Also sets the Selector string property via the property system.
+static void
+_ParseSelectorIntoRule(lpObject_t ruleObj, lpcString_t selector, uint32_t flags)
+{
   struct StyleRule* sr = GetStyleRule(ruleObj);
+  if (!sr) return;
 
-  // Set Selector via the property system so OBJ_ReleaseProperties frees the string.
   lpProperty_t selectorProp = NULL;
   if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_Selector, &selectorProp))) {
     PROP_SetStringValue(selectorProp, selector);
   }
 
-  // Cache class_id / flags / opacity from the selector
-  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
+  lpcString_t base  = (*selector == '.') ? selector + 1 : selector;
   lpcString_t colon = strchr(base, ':');
   lpcString_t slash = strchr(base, '/');
-  lpcString_t end = NULL;
+  lpcString_t end   = NULL;
   if (colon && slash) end = (colon < slash) ? colon : slash;
   else if (colon)     end = colon;
   else if (slash)     end = slash;
@@ -223,10 +227,22 @@ OBJ_AddStyleClass(lpObject_t obj,
   }
   sr->flags   = flags ? flags : _ParsePseudoStateFlags(selector);
   sr->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
+}
 
-  // Attach the pre-parsed property override
+// Create a StyleRule from a selector + single property/value pair (C API).
+void
+OBJ_AddStyleClass(lpObject_t obj,
+                  lpcString_t selector,
+                  lpcString_t property,
+                  lpcString_t value,
+                  uint32_t flags)
+{
+  lpObject_t sheetObj = _GetOrCreateStyleSheet(obj);
+  if (!sheetObj) return;
+
+  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
+  _ParseSelectorIntoRule(ruleObj, selector, flags);
   _AddStyleRulePropertyFromString(ruleObj, property, value);
-
   OBJ_AddChild(sheetObj, ruleObj, FALSE);
 }
 
@@ -243,33 +259,7 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t selector)
   if (!sheetObj) return;
 
   lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
-  struct StyleRule* sr = GetStyleRule(ruleObj);
-
-  // Set Selector
-  lpProperty_t selectorProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_Selector, &selectorProp))) {
-    PROP_SetStringValue(selectorProp, selector);
-  }
-
-  // Cache class_id / flags / opacity
-  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
-  lpcString_t colon = strchr(base, ':');
-  lpcString_t slash = strchr(base, '/');
-  lpcString_t end = NULL;
-  if (colon && slash) end = (colon < slash) ? colon : slash;
-  else if (colon)     end = colon;
-  else if (slash)     end = slash;
-  if (end) {
-    char buf[sizeof(shortStr_t)];
-    size_t len = MIN((size_t)(end - base), sizeof(buf) - 1);
-    memcpy(buf, base, len);
-    buf[len] = '\0';
-    sr->class_id = fnv1a32(buf);
-  } else {
-    sr->class_id = fnv1a32(base);
-  }
-  sr->flags   = _ParsePseudoStateFlags(selector);
-  sr->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
+  _ParseSelectorIntoRule(ruleObj, selector, 0);
 
   // Iterate the Lua table and attach one C property per override
   lua_pushvalue(L, 3);
@@ -284,34 +274,24 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t selector)
       LPSTR str = strdup(luaL_checkstring(L, -1));
       for (lpcString_t s = strtok(str, " "); s; s = strtok(NULL, " ")) {
         struct style_class_selector* cls = _ParseClass(s);
-        // Search global + per-object stylesheets for matching rules
         uint32_t applyID = fnv1a32(cls->value);
-        // helper lambda not available in C; inline the search
-        for (lpObject_t src = static_stylesheet; src; src = NULL) {
-          FOR_EACH_OBJECT(child, src) {
+        // Search global stylesheet
+        if (static_stylesheet) {
+          FOR_EACH_OBJECT(child, static_stylesheet) {
             struct StyleRule* csr = GetStyleRule(child);
-            if (!csr || csr->class_id != applyID) continue;
-            // Copy property overrides from child to ruleObj
-            for (lpProperty_t rp = OBJ_GetProperties(child); rp; rp = PROP_GetNext(rp)) {
-              if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
-              if (PROP_IsNull(rp)) continue;
-              lpProperty_t cp = PROP_Create(NULL, ruleObj, PROP_GetDesc(rp));
-              PROP_SetValue(cp, PROP_GetValue(rp));
+            if (csr && csr->class_id == applyID) {
+              _CopyRuleProperties(child, ruleObj);
             }
           }
         }
+        // Search per-object stylesheet
         if (self) {
           struct StyleController* sc = GetStyleController(self);
           if (sc && sc->StyleSheet) {
-            lpObject_t lsh = CMP_GetObject(sc->StyleSheet);
-            FOR_EACH_OBJECT(child, lsh) {
+            FOR_EACH_OBJECT(child, CMP_GetObject(sc->StyleSheet)) {
               struct StyleRule* csr = GetStyleRule(child);
-              if (!csr || csr->class_id != applyID) continue;
-              for (lpProperty_t rp = OBJ_GetProperties(child); rp; rp = PROP_GetNext(rp)) {
-                if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
-                if (PROP_IsNull(rp)) continue;
-                lpProperty_t cp = PROP_Create(NULL, ruleObj, PROP_GetDesc(rp));
-                PROP_SetValue(cp, PROP_GetValue(rp));
+              if (csr && csr->class_id == applyID) {
+                _CopyRuleProperties(child, ruleObj);
               }
             }
           }
