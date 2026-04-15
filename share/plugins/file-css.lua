@@ -1,5 +1,39 @@
+-- Mapping from CSS property names to ORCA component property names.
+-- Keys are lowercase CSS names; values are the short ORCA property name
+-- (or a dotted full name if disambiguation is needed).
+local css_property_map = {
+  ["background-color"]  = "BackgroundColor",
+  ["color"]             = "ForegroundColor",
+  ["opacity"]           = "Opacity",
+  ["width"]             = "Width",
+  ["height"]            = "Height",
+  ["min-width"]         = "MinWidth",
+  ["min-height"]        = "MinHeight",
+  ["max-width"]         = "MaxWidth",
+  ["max-height"]        = "MaxHeight",
+  ["margin"]            = "Margin",
+  ["margin-top"]        = "MarginTop",
+  ["margin-right"]      = "MarginRight",
+  ["margin-bottom"]     = "MarginBottom",
+  ["margin-left"]       = "MarginLeft",
+  ["padding"]           = "Padding",
+  ["padding-top"]       = "PaddingTop",
+  ["padding-right"]     = "PaddingRight",
+  ["padding-bottom"]    = "PaddingBottom",
+  ["padding-left"]      = "PaddingLeft",
+  ["font-size"]         = "FontSize",
+  ["font-family"]       = "Font",
+  ["border-radius"]     = "CornerRadius",
+  ["border-color"]      = "BorderColor",
+  ["border-width"]      = "BorderWidth",
+  ["visibility"]        = "Visibility",
+}
+
 local function kebab_to_pascal(s)
   if s == "color" then return "ForegroundColor" end
+  -- Check explicit mapping first
+  local mapped = css_property_map[s]
+  if mapped then return mapped end
   return (s:gsub("(%-?)([^%-]+)", function(dash, w)
     return (dash == "-" or s:sub(1,1) == w:sub(1,1))
       and w:sub(1,1):upper()..w:sub(2) or w

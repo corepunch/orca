@@ -92,6 +92,8 @@ static struct TestStyledComp TestStyledCompDefaults = { .Width = 0.f };
 
 /* _StyleController is exported from liborca (core_export.c).          */
 extern struct ClassDesc _StyleController;
+extern struct ClassDesc _StyleSheet;
+extern struct ClassDesc _StyleRule;
 
 static struct ClassDesc s_testStyledClass = {
     .ClassName       = "TestStyledComp",
@@ -106,6 +108,8 @@ static struct ClassDesc s_testStyledClass = {
 };
 
 static void register_styled_class(void) {
+    OBJ_RegisterClass(&_StyleSheet);
+    OBJ_RegisterClass(&_StyleRule);
     OBJ_RegisterClass(&_StyleController);
     OBJ_RegisterClass(&s_testStyledClass);
 }
@@ -219,7 +223,7 @@ static void test_clear_style_classes(void) {
         struct StyleController* sc = GetStyleController(obj);
         EXPECT(sc != NULL);
         EXPECT(sc->classes    == NULL);
-        EXPECT(sc->rules == NULL);
+        EXPECT(sc->StyleSheet == NULL);
     }
 }
 
