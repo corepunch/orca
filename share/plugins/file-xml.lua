@@ -28,7 +28,7 @@ local Property = {}
 function Property.parse(node, name, value)
 	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
-	if name == "class" then node:parseClassAttribute(value) return end
+	if name == "class" then node.class = value return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
 	node[name] = orca.core.parseProperty(orca.theme[value] or value, type)
@@ -101,16 +101,77 @@ local specials = {
 		print("Adding event listener for event: "..element:get "Event")
 	end,
 	StyleSheet = function(node, element)
+		if not element.text or element.text == "" then
+			io.stderr:write("[xml] <StyleSheet> element has no file path\n")
+			return
+		end
 		local xml = require "orca.parsers.xml"
-		local doc = xml.load(element.text)
-		assert(doc.root.tag == "Styles", "StyleSheet content must be a Styles element")
-		for style in doc.root:findall "Style" do
-			assert(style:get "Key", "Style element requires a Key attribute")
-			for key, value in style.attributes do
-				if key ~= "Key" and key ~= "StyleTargetType" and key ~= "StyleType" then
-					node:addStyleClass(style:get "Key", key, value)
+		local ok, doc = pcall(xml.load, element.text)
+		if not ok or not doc then
+			io.stderr:write("[xml] Failed to load StyleSheet: " .. element.text .. "\n")
+			return
+		end
+		local root = doc.root
+		if root.tag ~= "Styles" and root.tag ~= "ResourceDictionary" then
+			io.stderr:write(("[xml] StyleSheet root must be <Styles> or <ResourceDictionary>, got <%s>\n"):format(root.tag))
+			return
+		end
+
+		local trigger_pseudo = {
+			IsMouseOver="hover", IsMouseDirectlyOver="hover",
+			IsFocused="focus", IsKeyboardFocused="focus", IsKeyboardFocusWithin="focus",
+			IsSelected="active", IsChecked="active", IsPressed="active",
+		}
+
+		for style in root:findall "Style" do
+			local selector = style:get "Key" or style:get "TargetType"
+			if not selector then goto continue end
+
+			-- Detect WPF format: has <Setter> children
+			local has_setters = false
+			for _ in style:findall "Setter" do has_setters = true; break end
+
+			if has_setters then
+				-- WPF format: <Setter Property="..." Value="..."/>
+				local base = {}
+				local based_on = style:get "BasedOn"
+				if based_on then
+					base["@apply"] = based_on:match("{StaticResource%s+(.-)%}") or based_on
 				end
+				for setter in style:findall "Setter" do
+					local p, v = setter:get "Property", setter:get "Value"
+					if p and v then base[p] = v end
+				end
+				if next(base) then node:addStyleRule("." .. selector, base) end
+
+				-- <Style.Triggers> → pseudo-state rules
+				for tc in style:findall "Style.Triggers" do
+					for trigger in tc:findall "Trigger" do
+						local tp, tv = trigger:get "Property", trigger:get "Value"
+						if tp and tv == "True" and trigger_pseudo[tp] then
+							local tprops = {}
+							for setter in trigger:findall "Setter" do
+								local p, v = setter:get "Property", setter:get "Value"
+								if p and v then tprops[p] = v end
+							end
+							if next(tprops) then
+								node:addStyleRule("." .. selector .. ":" .. trigger_pseudo[tp], tprops)
+							end
+						end
+					end
+				end
+			else
+				-- Legacy format: properties as XML attributes on <Style>
+				local props = {}
+				for attr_key, attr_value in style.attributes do
+					if attr_key ~= "Key" and attr_key ~= "TargetType" and attr_key ~= "BasedOn"
+					   and attr_key ~= "StyleTargetType" and attr_key ~= "StyleType" then
+						props[attr_key] = attr_value
+					end
+				end
+				if next(props) then node:addStyleRule("." .. selector, props) end
 			end
+			::continue::
 		end
 	end,
 	ValueTicker = function () end,

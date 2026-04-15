@@ -284,6 +284,126 @@ struct style_rule {
 
 ---
 
+## WPF XAML stylesheet format
+
+In addition to the Lua `addStyleRule` API and CSS file loader, ORCA supports
+a subset of the **WPF (Windows Presentation Foundation) XAML** stylesheet
+format.  This is useful for teams migrating from or familiar with WPF/XAML
+tooling, and it maps cleanly onto the same `addStyleRule` infrastructure.
+
+### Supported elements
+
+| WPF element / attribute | ORCA equivalent |
+|---|---|
+| `<Style x:Key="name">` | Selector `.name` |
+| `<Style TargetType="Button">` | Selector `.Button` (see note below) |
+| `<Style BasedOn="base">` | `@apply = "base"` (inherits base rules) |
+| `<Setter Property="P" Value="V"/>` | Property `P` with value `V` |
+| `<Style.Triggers>/<Trigger Property="IsMouseOver" Value="True">` | `:hover` pseudo-state rule |
+| `<Style.Triggers>/<Trigger Property="IsFocused" Value="True">` | `:focus` pseudo-state rule |
+| `<Style.Triggers>/<Trigger Property="IsKeyboardFocused" Value="True">` | `:focus` pseudo-state rule |
+| `<Style.Triggers>/<Trigger Property="IsSelected" Value="True">` | `:active` pseudo-state rule |
+| `<Style.Triggers>/<Trigger Property="IsChecked" Value="True">` | `:active` pseudo-state rule |
+| `<Style.Triggers>/<Trigger Property="IsPressed" Value="True">` | `:active` pseudo-state rule |
+
+`BasedOn` accepts either a plain name (`"button"`) or a `{StaticResource key}`
+reference — both are resolved to the key name.
+
+!!! note "`TargetType` and class matching"
+    ORCA's style system matches rules by explicit class name, not by element
+    type.  A `TargetType="Button"` style registers its rules under the selector
+    `.Button`.  Objects receive these rules only if they have `class="Button"`
+    (set explicitly or via the `class=` XML attribute).
+
+### Standalone `.xaml` files
+
+The `file-wpf.lua` plugin (loaded automatically from `share/plugins/`) adds a
+`package.searcher` for `.xaml` files.  Requiring a `.xaml` path returns the
+parsed style table — same format as `file-css.lua`:
+
+```lua
+local styles = require "themes/dark"  -- loads themes/dark.xaml
+for k, v in pairs(styles) do
+    screen:addStyleRule(k, v)
+end
+-- Or register globally so all screens receive the rules:
+for k, v in pairs(require "themes/dark") do
+    orca.styles[k] = v
+end
+```
+
+### Inline `<StyleSheet>` in XML layouts
+
+A `<StyleSheet>path/to/styles.xml</StyleSheet>` element inside an XML layout
+file loads the referenced XML stylesheet and applies it directly to the
+enclosing node.  The referenced file must have a `<Styles>` or
+`<ResourceDictionary>` root element.
+
+### Example
+
+**`themes/dark.xaml`**
+
+```xml
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- Named class (equivalent to .btn { ... } in CSS) -->
+  <Style x:Key="btn">
+    <Setter Property="BackgroundColor" Value="#3b82f6"/>
+    <Setter Property="ForegroundColor" Value="white"/>
+    <Setter Property="CornerRadius"    Value="6"/>
+    <Setter Property="Padding"         Value="8"/>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="BackgroundColor" Value="#2563eb"/>
+      </Trigger>
+      <Trigger Property="IsSelected" Value="True">
+        <Setter Property="BackgroundColor" Value="#1d4ed8"/>
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- Style inheritance via BasedOn (equivalent to @apply) -->
+  <Style x:Key="btn-danger" BasedOn="btn">
+    <Setter Property="BackgroundColor" Value="#ef4444"/>
+  </Style>
+
+  <!-- Dark-mode override using :dark pseudo-state -->
+  <Style x:Key="card">
+    <Setter Property="BackgroundColor" Value="white"/>
+  </Style>
+
+</ResourceDictionary>
+```
+
+**Lua usage:**
+
+```lua
+local styles = require "themes/dark"
+for k, v in pairs(styles) do screen:addStyleRule(k, v) end
+
+local btn = screen + ui.Button {
+    class  = "btn",
+    Text   = "Save",
+    Width  = 120,
+    Height = 36,
+}
+btn:ThemeChanged()
+```
+
+### CSS to WPF conversion reference
+
+| CSS | WPF XAML equivalent |
+|-----|---------------------|
+| `.btn { background-color: #3b82f6; }` | `<Style x:Key="btn"><Setter Property="BackgroundColor" Value="#3b82f6"/></Style>` |
+| `.btn:hover { background-color: #2563eb; }` | `<Style.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="BackgroundColor" Value="#2563eb"/></Trigger></Style.Triggers>` |
+| `.btn:focus { border-color: yellow; }` | `<Trigger Property="IsFocused" Value="True"><Setter Property="BorderColor" Value="yellow"/></Trigger>` |
+| `.btn:active { background-color: #1d4ed8; }` | `<Trigger Property="IsSelected" Value="True"><Setter Property="BackgroundColor" Value="#1d4ed8"/></Trigger>` |
+| `@apply btn;` | `<Style x:Key="special" BasedOn="btn">` |
+
+---
+
 ## Object.Release and memory
 
 `StyleController` handles `Object.Release` and calls `OBJ_ClearStyleClasses()`, which frees both the `classes` and `stylesheet` linked lists.
