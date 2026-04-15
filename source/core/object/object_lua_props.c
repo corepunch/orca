@@ -55,11 +55,11 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 			if (lua_toboolean(L, 3)) {
 				if (!(flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags | OF_SELECTED);
-					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
+					OBJ_ApplyPropertyState(self, OBJ_GetStyleFlags(self));
 				}
 			} else if ((flags & OF_SELECTED)) {
 					OBJ_SetFlags(self, flags & ~OF_SELECTED);
-					_SendMessage(self, StyleController, ThemeChanged, .recursive = TRUE);
+					OBJ_ApplyPropertyState(self, OBJ_GetStyleFlags(self));
 			}
 			return TRUE;
 		}
