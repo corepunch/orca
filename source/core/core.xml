@@ -8,7 +8,6 @@
     <external struct="Property"/>
     <external struct="lua_State"/>
     <external struct="style_class_selector"/>
-    <external struct="style_rule"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -726,9 +725,28 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <field name="_property" type="Property" pointer="true">The property being animated</field>
       </fields>
     </class>
+    <class name="StyleSheet">
+      <summary>Container object for StyleRule definitions.</summary>
+      <details>StyleSheet is a standalone object (like StateManager) that holds StyleRule children. Each StyleRule maps a CSS selector to property overrides via attached Lua properties. Assign a StyleSheet object to StyleController.StyleSheet on the target node to apply its rules.</details>
+    </class>
+    <class name="StyleRule">
+      <summary>A single style rule that maps a CSS selector to property overrides.</summary>
+      <details>StyleRule is a child object of a StyleSheet. The Selector property holds the CSS selector string (e.g., ".button:hover"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires.</details>
+      <handles>
+        <handle message="Object.PropertyChanged"/>
+      </handles>
+      <properties>
+        <property name="Selector" type="string">CSS selector string (e.g., ".button" or ".button:hover"). The base name is matched against the object's class list; pseudo-state suffixes (:hover, :focus, :active, :dark) are matched against the object's current style flags.</property>
+      </properties>
+      <fields>
+        <field name="class_id" type="uint32">FNV1a hash of the base selector name (cached from Selector for fast matching)</field>
+        <field name="flags" type="uint32">Pseudo-state bitmask derived from Selector (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
+        <field name="opacity" type="byte">Opacity percentage from /N syntax in Selector (0–100, default 100)</field>
+      </fields>
+    </class>
     <class name="StyleController" attach-only="true">
       <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
-      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. Stylesheets can be loaded from external .css files or defined inline. This component is automatically attached to Node2D and any other visual elements that support styling.</details>
+      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. The StyleSheet property points to a StyleSheet object that contains StyleRule children — each rule maps a selector to pre-parsed property overrides stored as attached Lua properties on the StyleRule object. This avoids re-parsing property values on every ThemeChanged.</details>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
@@ -736,9 +754,11 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="StyleController.AddClass"/>
         <handle message="StyleController.AddClasses"/>
       </handles>
+      <properties>
+        <property name="StyleSheet" type="StyleSheet" pointer="true">The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.</property>
+      </properties>
       <fields>
         <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
-        <field name="rules" type="style_rule" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">

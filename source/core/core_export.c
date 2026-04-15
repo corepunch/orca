@@ -22,9 +22,6 @@ extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 // style_class_selector
 extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selector const* value);
 extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
-// style_rule
-extern void luaX_pushstyle_rule(lua_State *L, struct style_rule const* value);
-extern struct style_rule* luaX_checkstyle_rule(lua_State *L, int index);
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -1235,12 +1232,48 @@ struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 	return GetPropertyAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
+static struct PropertyType const StyleSheetProperties[kStyleSheetNumProperties] = {
+};
+static struct StyleSheet StyleSheetDefaults = {
+};
+LRESULT StyleSheetProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
+	return FALSE;
+}
+void luaX_pushStyleSheet(lua_State *L, struct StyleSheet const* StyleSheet) {
+	luaX_pushObject(L, CMP_GetObject(StyleSheet));
+}
+struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx) {
+	return GetStyleSheet(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(StyleSheet, 0);
+HANDLER(StyleRule, Object, PropertyChanged);
+static struct PropertyType const StyleRuleProperties[kStyleRuleNumProperties] = {
+	DECL(0xd515921c, StyleRule, Selector, Selector, kDataTypeString), // StyleRule.Selector
+};
+static struct StyleRule StyleRuleDefaults = {
+};
+LRESULT StyleRuleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_PropertyChanged: return StyleRule_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+	}
+	return FALSE;
+}
+void luaX_pushStyleRule(lua_State *L, struct StyleRule const* StyleRule) {
+	luaX_pushObject(L, CMP_GetObject(StyleRule));
+}
+struct StyleRule* luaX_checkStyleRule(lua_State *L, int idx) {
+	return GetStyleRule(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(StyleRule, 0);
 HANDLER(StyleController, Object, Create);
 HANDLER(StyleController, Object, Release);
 HANDLER(StyleController, StyleController, ThemeChanged);
 HANDLER(StyleController, StyleController, AddClass);
 HANDLER(StyleController, StyleController, AddClasses);
 static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
+	DECL(0x6546e1e1, StyleController, StyleSheet, StyleSheet, kDataTypeObject, .TypeString = "StyleSheet"), // StyleController.StyleSheet
 	DECL(0x064087a6, StyleController, ThemeChanged, ThemeChanged, kDataTypeEvent, .TypeString = "StyleController_ThemeChangedEventArgs"), // StyleController.ThemeChanged
 	DECL(0x543ca51c, StyleController, AddClass, AddClass, kDataTypeEvent, .TypeString = "StyleController_AddClassEventArgs"), // StyleController.AddClass
 	DECL(0x41acd398, StyleController, AddClasses, AddClasses, kDataTypeEvent, .TypeString = "StyleController_AddClassesEventArgs"), // StyleController.AddClasses
@@ -1726,6 +1759,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationPlayer), -2), "AnimationPlayer");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PropertyAnimation), -2), "PropertyAnimation");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StyleSheet), -2), "StyleSheet");
+	lua_setfield(L, ((void)lua_pushclass(L, &_StyleRule), -2), "StyleRule");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StyleController), -2), "StyleController");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateManager), -2), "StateManager");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StateGroup), -2), "StateGroup");
