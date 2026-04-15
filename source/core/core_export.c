@@ -1250,7 +1250,8 @@ struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx) {
 REGISTER_CLASS(StyleSheet, 0);
 HANDLER(StyleRule, Object, PropertyChanged);
 static struct PropertyType const StyleRuleProperties[kStyleRuleNumProperties] = {
-	DECL(0xd515921c, StyleRule, Selector, Selector, kDataTypeString), // StyleRule.Selector
+	DECL(0x2ecda0bc, StyleRule, ClassName, ClassName, kDataTypeString), // StyleRule.ClassName
+	DECL(0xc0e9c7e9, StyleRule, PseudoClass, PseudoClass, kDataTypeString), // StyleRule.PseudoClass
 };
 static struct StyleRule StyleRuleDefaults = {
 };

@@ -730,18 +730,18 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>StyleSheet is a standalone object (like StateManager) that holds StyleRule children. Each StyleRule maps a CSS selector to property overrides via attached Lua properties. Assign a StyleSheet object to StyleController.StyleSheet on the target node to apply its rules.</details>
     </class>
     <class name="StyleRule">
-      <summary>A single style rule that maps a CSS selector to property overrides.</summary>
-      <details>StyleRule is a child object of a StyleSheet. The Selector property holds the CSS selector string (e.g., ".button:hover"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires.</details>
+      <summary>A single style rule that maps a class name (with optional pseudo-class) to property overrides.</summary>
+      <details>StyleRule is a child object of a StyleSheet. ClassName holds the base selector (e.g., "button"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
       <handles>
         <handle message="Object.PropertyChanged"/>
       </handles>
       <properties>
-        <property name="Selector" type="string">CSS selector string (e.g., ".button" or ".button:hover"). The base name is matched against the object's class list; pseudo-state suffixes (:hover, :focus, :active, :dark) are matched against the object's current style flags.</property>
+        <property name="ClassName" type="string">Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").</property>
+        <property name="PseudoClass" type="string">Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.</property>
       </properties>
       <fields>
-        <field name="class_id" type="uint32">FNV1a hash of the base selector name (cached from Selector for fast matching)</field>
-        <field name="flags" type="uint32">Pseudo-state bitmask derived from Selector (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
-        <field name="opacity" type="byte">Opacity percentage from /N syntax in Selector (0–100, default 100)</field>
+        <field name="class_id" type="uint32">FNV1a hash of ClassName (cached for fast matching)</field>
+        <field name="flags" type="uint32">Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
       </fields>
     </class>
     <class name="StyleController" attach-only="true">

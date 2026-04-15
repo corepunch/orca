@@ -108,10 +108,12 @@ enum PropertyAnimationProperties {
 #define ID_StyleRule 0x96a4d210
 #define GetStyleRule(_P) ((struct StyleRule*)((_P)?OBJ_GetComponent(_P,ID_StyleRule):NULL))
 #define StyleRule_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleRule,sizeof(struct StyleRule),_N)
-#define ID_StyleRule_Selector 0xe74d6fbf // StyleRule.Selector
-#define kStyleRuleNumProperties 1
+#define ID_StyleRule_ClassName 0x3396a471 // StyleRule.ClassName
+#define ID_StyleRule_PseudoClass 0xc7313550 // StyleRule.PseudoClass
+#define kStyleRuleNumProperties 2
 enum StyleRuleProperties {
-	kStyleRuleSelector,
+	kStyleRuleClassName,
+	kStyleRulePseudoClass,
 };
 // StyleController
 #define ID_StyleController 0x70b793e6

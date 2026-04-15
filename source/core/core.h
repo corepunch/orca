@@ -971,15 +971,15 @@ struct StyleSheet {
 ORCA_API void luaX_pushStyleSheet(lua_State *L, struct StyleSheet const* StyleSheet);
 ORCA_API struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx);
 
-/// @brief A single style rule that maps a CSS selector to property overrides.
+/// @brief A single style rule that maps a class name (with optional pseudo-class) to property overrides.
 /** StyleRule component */
 typedef struct StyleRule StyleRule_t, *StyleRulePtr, *lpStyleRule_t;
 typedef struct StyleRule const *StyleRuleCPtr, *lpcStyleRule_t;
 struct StyleRule {
-	const char* Selector; ///< CSS selector string (e.g., ".button" or ".button:hover"). The base name is matched against the object's class list; pseudo-state suffixes (:hover, :focus, :active, :dark) are matched against the object's current style flags.
-	uint32_t class_id; ///< FNV1a hash of the base selector name (cached from Selector for fast matching)
-	uint32_t flags; ///< Pseudo-state bitmask derived from Selector (STYLE_HOVER, STYLE_FOCUS, etc.)
-	byte_t opacity; ///< Opacity percentage from /N syntax in Selector (0–100, default 100)
+	const char* ClassName; ///< Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").
+	const char* PseudoClass; ///< Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.
+	uint32_t class_id; ///< FNV1a hash of ClassName (cached for fast matching)
+	uint32_t flags; ///< Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)
 };
 ORCA_API void luaX_pushStyleRule(lua_State *L, struct StyleRule const* StyleRule);
 ORCA_API struct StyleRule* luaX_checkStyleRule(lua_State *L, int idx);

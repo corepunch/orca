@@ -12,13 +12,17 @@
 //   - Stored in StyleController.StyleSheet (per-object) or static_stylesheet (global).
 //
 // StyleRule: child object of a StyleSheet.
-//   - Selector: CSS selector string (e.g., ".button:hover")
-//   - class_id / flags / opacity: cached from Selector
+//   - ClassName:  the base class name (e.g., "button") — matched against the
+//                 object's class list.
+//   - PseudoClass: colon-separated pseudo-states (e.g., "hover:focus") —
+//                 empty means the rule applies to all states.
+//   - class_id / flags: cached from ClassName / PseudoClass
 //   - Attached C properties (ruleObj->properties with !PF_PROPERTY_TYPE):
 //     the pre-parsed CSS property overrides.  _ApplyStyleRule copies these
 //     directly to the target — no string parsing on every ThemeChanged.
 //
 // style_class_selector: per-object parsed class token list (StyleController.classes).
+//   - opacity: per-usage opacity from "/N" syntax (e.g., class="text-color/50").
 //
 
 // Global stylesheet (applies before per-object stylesheets)
@@ -195,20 +199,21 @@ _CopyRuleProperties(lpObject_t srcRule, lpObject_t destRule)
   }
 }
 
-// Parse the selector string into the cached fields of a StyleRule struct.
-// Also sets the Selector string property via the property system.
+// Populate the ClassName and PseudoClass properties on a new StyleRule object
+// from a CSS-style selector string (e.g., ".button:hover" or "button:hover:focus").
+// Also sets the cached class_id and flags fields directly for immediate use.
+// The selector may have a leading '.'; it is stripped.  The '/N' opacity suffix
+// is intentionally ignored — opacity is per-usage (style_class_selector.opacity).
 static void
 _ParseSelectorIntoRule(lpObject_t ruleObj, lpcString_t selector, uint32_t flags)
 {
   struct StyleRule* sr = GetStyleRule(ruleObj);
   if (!sr) return;
 
-  lpProperty_t selectorProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_Selector, &selectorProp))) {
-    PROP_SetStringValue(selectorProp, selector);
-  }
+  // Strip optional leading '.'
+  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
 
-  lpcString_t base  = (*selector == '.') ? selector + 1 : selector;
+  // Find end of base name: first ':' or '/' (opacity suffix is not part of the class name)
   lpcString_t colon = strchr(base, ':');
   lpcString_t slash = strchr(base, '/');
   lpcString_t end   = NULL;
@@ -216,17 +221,43 @@ _ParseSelectorIntoRule(lpObject_t ruleObj, lpcString_t selector, uint32_t flags)
   else if (colon)     end = colon;
   else if (slash)     end = slash;
 
-  if (end) {
-    char buf[sizeof(shortStr_t)];
-    size_t len = MIN((size_t)(end - base), sizeof(buf) - 1);
-    memcpy(buf, base, len);
-    buf[len] = '\0';
-    sr->class_id = fnv1a32(buf);
-  } else {
-    sr->class_id = fnv1a32(base);
+  // Set ClassName property
+  lpProperty_t classProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &classProp))) {
+    if (end) {
+      char buf[sizeof(shortStr_t)];
+      size_t len = MIN((size_t)(end - base), sizeof(buf) - 1);
+      memcpy(buf, base, len);
+      buf[len] = '\0';
+      PROP_SetStringValue(classProp, buf);
+    } else {
+      PROP_SetStringValue(classProp, base);
+    }
   }
-  sr->flags   = flags ? flags : _ParsePseudoStateFlags(selector);
-  sr->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
+
+  // Set PseudoClass property (everything after the first ':', stopping before '/')
+  lpcString_t pseudoStart = colon ? colon + 1 : NULL;
+  lpProperty_t pseudoProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_PseudoClass, &pseudoProp))) {
+    if (pseudoStart) {
+      if (slash && slash > colon) {
+        // Pseudo ends at slash: e.g. ".button:hover/50"
+        char buf[sizeof(shortStr_t)];
+        size_t len = MIN((size_t)(slash - pseudoStart), sizeof(buf) - 1);
+        memcpy(buf, pseudoStart, len);
+        buf[len] = '\0';
+        PROP_SetStringValue(pseudoProp, buf);
+      } else {
+        PROP_SetStringValue(pseudoProp, pseudoStart);
+      }
+    } else {
+      PROP_SetStringValue(pseudoProp, "");
+    }
+  }
+
+  // Cache class_id and flags directly (same values StyleRule.PropertyChanged would set)
+  sr->class_id = sr->ClassName ? fnv1a32(sr->ClassName) : 0;
+  sr->flags    = flags ? flags : _ParsePseudoStateFlags(selector);
 }
 
 // Create a StyleRule from a selector + single property/value pair (C API).
@@ -334,13 +365,13 @@ OBJ_GetStyleFlags(lpObject_t pobj)
 // Apply all C property overrides from ruleObj to the target object.
 // ruleObj->properties contains the pre-parsed overrides (PF_PROPERTY_TYPE not set).
 // ruleFlags: the rule's state flags (0 = default, non-zero = pseudo-state rule).
-// cls: the resolved class selector (may be NULL for "body" rules).
+// cls: the resolved class selector; carries per-usage opacity (cls->opacity).
 static void
 _ApplyStyleRule(lpObject_t target, lpObject_t ruleObj,
                 uint32_t ruleFlags, struct style_class_selector* cls)
 {
   for (lpProperty_t rp = OBJ_GetProperties(ruleObj); rp; rp = PROP_GetNext(rp)) {
-    // Skip StyleRule's own component properties (Selector, etc.)
+    // Skip StyleRule's own component properties (ClassName, PseudoClass, etc.)
     if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
     if (PROP_IsNull(rp)) continue;
 
@@ -359,7 +390,8 @@ _ApplyStyleRule(lpObject_t target, lpObject_t ruleObj,
 
     PROP_SetValue(hprop, PROP_GetValue(rp));
 
-    // Apply opacity to color properties
+    // Apply per-usage opacity (from "class/N" on the node) to color properties.
+    // This is node-side, not rule-side: the same rule can be used at different opacities.
     if (PROP_GetType(hprop) == kDataTypeColor && cls && cls->opacity != 100) {
       struct color clr;
       PROP_CopyValue(hprop, &clr);

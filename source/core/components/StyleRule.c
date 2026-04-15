@@ -7,57 +7,48 @@
 //
 // StyleRule is a standalone object that is a child of a StyleSheet object.
 // It holds:
-//   - Selector: CSS selector string (e.g., ".button:hover")
-//   - class_id, flags, opacity: cached fields derived from Selector
+//   - ClassName:  the base class name (e.g., "button") — matches nodes that
+//                 carry this class in their class attribute.
+//   - PseudoClass: colon-separated pseudo-state qualifiers (e.g., "hover" or
+//                 "hover:focus") — empty means the rule applies to all states.
+//   - class_id:  FNV1a32 of ClassName, cached for fast matching.
+//   - flags:     STYLE_* bitmask derived from PseudoClass, cached.
 //   - Attached C properties: the CSS property overrides (e.g., Width=42.0f).
 //     These are stored as Property objects in ruleObj->properties with
 //     PF_PROPERTY_TYPE NOT set (so they don't belong to StyleRule's component).
 //
-// When ThemeChanged fires, _ApplyStyleRule in StyleController.c iterates these
-// attached properties and copies their pre-parsed values to matching properties
-// on the target object — no string parsing on apply.
+// Opacity (the /N suffix) is a per-usage concern and lives in
+// style_class_selector.opacity — not in the rule definition.
 
-// Update cached fields from the Selector string
+static uint32_t
+_ParsePseudoClass(lpcString_t pseudo)
+{
+  if (!pseudo || !pseudo[0]) return 0;
+  uint32_t flags = 0;
+  // pseudo is like "hover" or "hover:focus" (no leading colon)
+  for (lpcString_t tok = pseudo; tok; ) {
+    lpcString_t end = strchr(tok, ':');
+    size_t len = end ? (size_t)(end - tok) : strlen(tok);
+    if      (len == 5 && !strncmp(tok, "hover",  5)) flags |= STYLE_HOVER;
+    else if (len == 5 && !strncmp(tok, "focus",  5)) flags |= STYLE_FOCUS;
+    else if (len == 6 && !strncmp(tok, "active", 6)) flags |= STYLE_SELECT;
+    else if (len == 4 && !strncmp(tok, "dark",   4)) flags |= STYLE_DARK;
+    tok = end ? end + 1 : NULL;
+  }
+  return flags;
+}
+
+// Update cached fields whenever ClassName or PseudoClass changes.
 HANDLER(StyleRule, Object, PropertyChanged) {
   if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
-  if (PROP_GetLongIdentifier(pPropertyChanged->Property) != ID_StyleRule_Selector) return FALSE;
+  uint32_t changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
 
-  const char* selector = pStyleRule->Selector ? pStyleRule->Selector : "";
-  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
-
-  // Truncate at first ':' or '/' to get the base name for hashing
-  lpcString_t colon  = strchr(base, ':');
-  lpcString_t slash  = strchr(base, '/');
-  lpcString_t end    = NULL;
-  if (colon && slash) end = (colon < slash) ? colon : slash;
-  else if (colon)     end = colon;
-  else if (slash)     end = slash;
-
-  if (end) {
-    char buf[sizeof(shortStr_t)];
-    size_t len = MIN((size_t)(end - base), sizeof(buf) - 1);
-    memcpy(buf, base, len);
-    buf[len] = '\0';
-    pStyleRule->class_id = fnv1a32(buf);
-  } else {
-    pStyleRule->class_id = fnv1a32(base);
+  if (changed == ID_StyleRule_ClassName) {
+    lpcString_t name = pStyleRule->ClassName ? pStyleRule->ClassName : "";
+    pStyleRule->class_id = fnv1a32(name);
+  } else if (changed == ID_StyleRule_PseudoClass) {
+    pStyleRule->flags = _ParsePseudoClass(pStyleRule->PseudoClass);
   }
-
-  // Parse pseudo-state flags from colon-separated tokens
-  pStyleRule->flags = 0;
-  for (lpcString_t tok = strchr(selector, ':'); tok; tok = strchr(tok + 1, ':')) {
-    lpcString_t s = tok + 1;
-    lpcString_t e = strchr(s, ':');
-    size_t len = e ? (size_t)(e - s) : strlen(s);
-    if      (len == 5 && !strncmp(s, "hover",  5)) pStyleRule->flags |= STYLE_HOVER;
-    else if (len == 5 && !strncmp(s, "focus",  5)) pStyleRule->flags |= STYLE_FOCUS;
-    else if (len == 6 && !strncmp(s, "active", 6)) pStyleRule->flags |= STYLE_SELECT;
-    else if (len == 4 && !strncmp(s, "dark",   4)) pStyleRule->flags |= STYLE_DARK;
-  }
-
-  // Parse opacity from /N syntax
-  lpcString_t op = strchr(selector, '/');
-  pStyleRule->opacity = op ? (byte_t)atoi(op + 1) : 100;
 
   return FALSE;
 }
