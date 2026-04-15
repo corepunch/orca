@@ -68,6 +68,47 @@ parse_property(lua_State* L,
   return TRUE;
 }
 
+// C-only property parser — no lua_State required.
+// Handles the primitive types used in CSS stylesheets (bool, int, enum, float,
+// string, color).  kDataTypeStruct and kDataTypeObject are not used in CSS rules
+// so they are logged as errors rather than triggering a Lua error.
+ORCA_API bool_t
+parse_property_nolua(const char* str,
+                     struct PropertyType const* prop,
+                     void* valueptr)
+{
+  switch (prop->DataType) {
+    case kDataTypeBool:
+      *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
+      return TRUE;
+    case kDataTypeInt:
+      *(int*)valueptr = atoi(str);
+      return TRUE;
+    case kDataTypeEnum:
+      for (int i = 0; prop->EnumValues[i] != NULL; i++) {
+        if (strcmp(str, prop->EnumValues[i]) == 0) {
+          *(int*)valueptr = i;
+          return TRUE;
+        }
+      }
+      Con_Error("parse_property_nolua(%s): Invalid enum value '%s'", prop->Name, str);
+      return FALSE;
+    case kDataTypeFloat:
+      *(float*)valueptr = atof(str);
+      return TRUE;
+    case kDataTypeString:
+      if (*(char**)valueptr) free(*(char**)valueptr);
+      *(char**)valueptr = strdup(str);
+      return TRUE;
+    case kDataTypeColor:
+      *(struct color*)valueptr = COLOR_Parse(str);
+      return TRUE;
+    default:
+      Con_Error("parse_property_nolua(%s): Unsupported property type %d (only primitives: bool, int, enum, float, string, color supported)", prop->Name, prop->DataType);
+      return FALSE;
+  }
+}
+
 ORCA_API void
 read_property(lua_State *L,
               int idx,

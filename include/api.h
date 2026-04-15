@@ -38,6 +38,8 @@ struct Object;
 
 int f_find_module(lua_State* L);
 
+ORCA_API bool_t parse_property_nolua(const char* str, struct PropertyType const* prop, void* valueptr);
+
 ORCA_API void luaX_pushProperty(lua_State*, lpcProperty_t);
 ORCA_API int luaX_readProperty(lua_State*, int, lpProperty_t);
 

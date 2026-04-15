@@ -174,10 +174,6 @@ _AddClass(lpObject_t obj, struct style_class_selector* cls)
 // STYLESHEET LOADING (Lua API)
 // ============================================================================
 
-// Lua state is stored while processing a stylesheet table so that
-// parse_property (called from _ApplyRule) can resolve Lua values
-static lua_State* g_L = NULL;
-
 // Parse a Lua table of CSS rules and register them on an object (or globally)
 // name: selector string (e.g., ".button:hover"); table at stack index 3
 void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t name)
@@ -187,7 +183,6 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t name)
     lua_error(L);
     return;
   }
-  g_L = L;
   lua_pushvalue(L, 3);
   lua_pushnil(L);
   while (lua_next(L, -2)) {
@@ -289,9 +284,6 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   }
 }
 
-ORCA_API int
-parse_property(lua_State* L, const char* str, struct PropertyType const* prop, void* valueptr);
-
 // Forward declaration — defined after _ApplyRule in the State Resolution section.
 static enum PropertyState _StyleFlagsToPropertyState(uint32_t flags);
 
@@ -310,7 +302,7 @@ _ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
     enum PropertyState state = _StyleFlagsToPropertyState(effective_flags);
 
     char buf[MAX_PROPERTY_STRING] = {0};
-    parse_property(g_L, ss->value, PROP_GetDesc(hProperty), buf);
+    parse_property_nolua(ss->value, PROP_GetDesc(hProperty), buf);
 
     // Apply opacity modifier to color properties before writing the slot.
     // Use an aligned struct color temporary to avoid strict-alignment UB.
@@ -330,9 +322,8 @@ _ApplyRule(lpObject_t pobj, struct style_rule* ss, void* parm)
       PROP_SetStateValue(hProperty, buf, state);
     }
 
-    // parse_property() strdup's string values into buf.  After PROP_Set*() has
-    // made its own copy via PROP_SetStateValue, the temporary allocation is
-    // no longer needed — free it to avoid a leak.
+    // parse_property_nolua() strdup's string values into buf.  After PROP_Set*()
+    // has made its own copy, the temporary allocation is no longer needed.
     if (PROP_GetType(hProperty) == kDataTypeString) {
       free(*(char**)buf);
     }
