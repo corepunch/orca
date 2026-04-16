@@ -1,36 +1,42 @@
 -- Mapping from CSS property names to ORCA component property names.
--- Keys are lowercase CSS names; values are the short ORCA property name
--- (or a dotted full name if disambiguation is needed).
+-- Keys are lowercase CSS names; values are fully-qualified ORCA names
+-- (Class.Property) to disambiguate across component namespaces.
 local css_property_map = {
-  ["background-color"]  = "BackgroundColor",
-  ["color"]             = "ForegroundColor",
-  ["opacity"]           = "Opacity",
-  ["width"]             = "Width",
-  ["height"]            = "Height",
-  ["min-width"]         = "MinWidth",
-  ["min-height"]        = "MinHeight",
-  ["max-width"]         = "MaxWidth",
-  ["max-height"]        = "MaxHeight",
-  ["margin"]            = "Margin",
-  ["margin-top"]        = "MarginTop",
-  ["margin-right"]      = "MarginRight",
-  ["margin-bottom"]     = "MarginBottom",
-  ["margin-left"]       = "MarginLeft",
-  ["padding"]           = "Padding",
-  ["padding-top"]       = "PaddingTop",
-  ["padding-right"]     = "PaddingRight",
-  ["padding-bottom"]    = "PaddingBottom",
-  ["padding-left"]      = "PaddingLeft",
-  ["font-size"]         = "FontSize",
-  ["font-family"]       = "Font",
-  ["border-radius"]     = "CornerRadius",
-  ["border-color"]      = "BorderColor",
-  ["border-width"]      = "BorderWidth",
-  ["visibility"]        = "Visibility",
+  -- Visual / background
+  ["background-color"]  = "Node2D.BackgroundColor",
+  ["color"]             = "Node2D.ForegroundColor",
+  ["opacity"]           = "Node.Opacity",
+  -- Box model
+  ["width"]             = "Node.Width",
+  ["height"]            = "Node.Height",
+  ["min-width"]         = "Node.MinWidth",
+  ["min-height"]        = "Node.MinHeight",
+  ["margin"]            = "Node.Margin",
+  ["margin-top"]        = "Node.MarginTop",
+  ["margin-right"]      = "Node.MarginRight",
+  ["margin-bottom"]     = "Node.MarginBottom",
+  ["margin-left"]       = "Node.MarginLeft",
+  ["padding"]           = "Node.Padding",
+  ["padding-top"]       = "Node.PaddingTop",
+  ["padding-right"]     = "Node.PaddingRight",
+  ["padding-bottom"]    = "Node.PaddingBottom",
+  ["padding-left"]      = "Node.PaddingLeft",
+  -- Border
+  ["border"]            = "Node.Border",
+  ["border-color"]      = "Node.BorderColor",
+  ["border-width"]      = "Node.BorderWidth",
+  -- Typography (TextRun / TextBlockConcept)
+  ["font-size"]         = "TextRun.FontSize",
+  ["font-family"]       = "TextRun.FontFamily",
+  ["line-height"]       = "TextRun.LineHeight",
+  ["letter-spacing"]    = "TextRun.LetterSpacing",
+  ["word-wrap"]         = "TextBlockConcept.WordWrap",
+  ["text-overflow"]     = "TextBlockConcept.TextOverflow",
+  -- Visibility
+  ["visibility"]        = "Node.Visible",
 }
 
 local function kebab_to_pascal(s)
-  if s == "color" then return "ForegroundColor" end
   -- Check explicit mapping first
   local mapped = css_property_map[s]
   if mapped then return mapped end
@@ -91,8 +97,21 @@ local function css_parse(css)
   return result
 end
 
+-- Build and return a core.StyleSheet from a parsed CSS table.
+-- Each top-level selector (e.g. ".button", ".card:hover") becomes a StyleRule
+-- child on the sheet, with property overrides attached so that ThemeChanged
+-- can apply them via a direct binary copy — no string re-parsing.
+local function css_to_stylesheet(parsed)
+  local core = require "orca.core"
+  local sheet = core.StyleSheet()
+  for selector, props in pairs(parsed) do
+    sheet:addStyleRule(selector, props)
+  end
+  return sheet
+end
+
 table.insert(package.searchers, function(path)
 	local filesystem = require "orca.filesystem"
 	local contents = filesystem.readTextFile(path..'.css')
-	return contents and function() return css_parse(contents) end or nil
+	return contents and function() return css_to_stylesheet(css_parse(contents)) end or nil
 end)

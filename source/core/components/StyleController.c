@@ -100,16 +100,21 @@ _GetOrCreateStyleSheet(lpObject_t obj)
       static_stylesheet = OBJ_MakeNativeObject(ID_StyleSheet);
     }
     return static_stylesheet;
-  } else {
-    struct StyleController* sc = GetStyleController(obj);
-    if (!sc) return NULL;
-    if (!sc->StyleSheet) {
-      lpObject_t sheetObj = OBJ_MakeNativeObject(ID_StyleSheet);
-      sc->StyleSheet = GetStyleSheet(sheetObj);
-      sc->owned_sheet = TRUE; // we created it — we own it
-    }
-    return CMP_GetObject(sc->StyleSheet);
   }
+  // If the caller itself IS a StyleSheet, use it directly as the rule container.
+  // This allows standalone StyleSheet objects to be populated with addStyleRule().
+  if (GetStyleSheet(obj)) {
+    return obj;
+  }
+  // Otherwise look up (or create) a sheet owned by the object's StyleController.
+  struct StyleController* sc = GetStyleController(obj);
+  if (!sc) return NULL;
+  if (!sc->StyleSheet) {
+    lpObject_t sheetObj = OBJ_MakeNativeObject(ID_StyleSheet);
+    sc->StyleSheet = GetStyleSheet(sheetObj);
+    sc->owned_sheet = TRUE; // we created it — we own it
+  }
+  return CMP_GetObject(sc->StyleSheet);
 }
 
 // Find a PropertyType descriptor by property name.
