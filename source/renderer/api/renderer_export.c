@@ -546,6 +546,8 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 		{ "drawImage", f_renderer_DrawImage },
 		{ NULL, NULL } 
 	}));
+	void on_renderer_module_registered(lua_State *L);
+	on_renderer_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_Window_PaintEventArgs(L), -2), "Window_PaintEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Window_ResizedEventArgs(L), -2), "Window_ResizedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Window_ClosedEventArgs(L), -2), "Window_ClosedEventArgs");
@@ -564,7 +566,5 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_FontFamily), -2), "FontFamily");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trajectory), -2), "Trajectory");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Timeline), -2), "Timeline");
-	void on_renderer_module_registered(lua_State *L);
-	on_renderer_module_registered(L);
 	return 1;
 }

@@ -162,8 +162,8 @@ ORCA_API int luaopen_orca_DarkReign(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	lua_setfield(L, ((void)lua_pushclass(L, &_FtgPackage), -2), "FtgPackage");
 	void on_darkreign_module_registered(lua_State *L);
 	on_darkreign_module_registered(L);
+	lua_setfield(L, ((void)lua_pushclass(L, &_FtgPackage), -2), "FtgPackage");
 	return 1;
 }

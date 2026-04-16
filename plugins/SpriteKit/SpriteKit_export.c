@@ -293,6 +293,8 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
+	void on_spritekit_module_registered(lua_State *L);
+	on_spritekit_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
 	lua_setfield(L, ((void)luaopen_orca_SKNode_RenderEventArgs(L), -2), "SKNode_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");
@@ -301,7 +303,5 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKSpriteNode), -2), "SKSpriteNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKLabelNode), -2), "SKLabelNode");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SKView), -2), "SKView");
-	void on_spritekit_module_registered(lua_State *L);
-	on_spritekit_module_registered(L);
 	return 1;
 }

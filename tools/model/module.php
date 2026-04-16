@@ -654,6 +654,7 @@ class Model {
 		array_map(fn($r) => new Method($r, $this), $rn)
 		);
 		$this->on_luaopen = $xml["on-luaopen"];
+		$this->after_luaopen = $xml["after-luaopen"];
 	}
 
 	private function _has_in($key, $attr_name) {

@@ -1687,6 +1687,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ NULL, NULL } 
 	}));
+	void before_core_module_registered(lua_State *L);
+	before_core_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_LocaleEntry(L), -2), "LocaleEntry");
@@ -1770,7 +1772,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Handler), -2), "Handler");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node), -2), "Node");
-	void on_core_module_registered(lua_State *L);
-	on_core_module_registered(L);
+	void after_core_module_registered(lua_State *L);
+	after_core_module_registered(L);
 	return 1;
 }

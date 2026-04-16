@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
-<module name="core" namespace="orca" on-luaopen="on_core_module_registered">
+<module name="core" namespace="orca" on-luaopen="before_core_module_registered" after-luaopen="after_core_module_registered">
   <require file="../geometry/geometry.xml"/>
   <externals>
     <external struct="localization"/>

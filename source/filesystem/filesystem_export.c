@@ -548,6 +548,8 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "readTextFile", f_FS_ReadTextFile },
 		{ NULL, NULL } 
 	}));
+	void on_filesystem_module_registered(lua_State *L);
+	on_filesystem_module_registered(L);
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
@@ -567,7 +569,5 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Theme), -2), "Theme");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Entry), -2), "Entry");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ThemeDefaultValuesDictionary), -2), "ThemeDefaultValuesDictionary");
-	void on_filesystem_module_registered(lua_State *L);
-	on_filesystem_module_registered(L);
 	return 1;
 }
