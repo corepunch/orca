@@ -35,7 +35,10 @@ function isNode($compName, $suffix) {
     $parentAttr = $comp->_elem["parent"];
     $parent = $parentAttr !== null ? strval($parentAttr) : "";
     if (!$parent) return false;
-    return isNode($parent, $suffix);
+    foreach (explode(",", $parent) as $p) {
+        if (isNode(trim($p), $suffix)) return true;
+    }
+    return false;
 }
 
 // --- Helper: convert a dotted property path to a DTD attribute name ---
@@ -116,11 +119,15 @@ foreach ($globalComponents as $name => $comp) {
     $parent = $parentAttr !== null ? strval($parentAttr) : "";
     $conceptAttr = $comp->_elem["concept"];
     $concept = $conceptAttr !== null ? strval($conceptAttr) : "";
+    $allowTextAttr = $comp->_elem["allow-text"];
+    $allowText = $allowTextAttr !== null ? strval($allowTextAttr) === "true" : false;
 
     // --- Attribs entity ---
     echo "<!ENTITY % " . $name . "Attribs \"\n";
     if ($parent) {
-        echo "\t%" . $parent . "Attribs;\n";
+        foreach (explode(",", $parent) as $p) {
+            echo "\t%" . trim($p) . "Attribs;\n";
+        }
         if ($concept) {
             echo "\t%" . $concept . "Attribs;\n";
         }
@@ -158,7 +165,9 @@ foreach ($globalComponents as $name => $comp) {
         $elemParts[] = $name . "." . $p[0];
     }
     if ($parent) {
-        $elemParts[] = "%" . $parent . "Elements;";
+        foreach (explode(",", $parent) as $p) {
+            $elemParts[] = "%" . trim($p) . "Elements;";
+        }
     }
     if ($concept) {
         $elemParts[] = "%" . $concept . "Elements;";
@@ -190,7 +199,11 @@ foreach ($globalComponents as $name => $comp) {
         $arr[] = "StyleSheet";
         $arr[] = "LayerPrefabPlaceholder";
         $arr[] = $elm;
-        echo "(" . implode("|", $arr) . ")*>\n";
+        if ($allowText) {
+            echo "(#PCDATA|" . implode("|", $arr) . ")*>\n";
+        } else {
+            echo "(" . implode("|", $arr) . ")*>\n";
+        }
     } elseif (isNode($name, "3D")) {
         $arr = [];
         foreach ($globalComponents as $k => $v) {
