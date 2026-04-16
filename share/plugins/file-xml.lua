@@ -28,7 +28,7 @@ local Property = {}
 function Property.parse(node, name, value)
 	if name == "ClassName" or name == "PlaceholderTemplate" then return end -- handled separately when constructing the node
 	if name == "Name" or name == "id" then node:setName(value) return end
-	if name == "class" then node:parseClassAttribute(value) return end
+	if name == "class" then node:AddClasses(value) return end
 	local type = node:findImplicitProperty(name) or node:findExplicitProperty(name)
 	assert(type, string.format("Unknown property: %s for node of type %s", name, node.className))
 	node[name] = orca.core.parseProperty(orca.theme[value] or value, type)

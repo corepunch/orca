@@ -42,7 +42,7 @@ end
 for k1, v1 in pairs {m="Margin",p="Padding"} do
 	for _, v3 in ipairs(spacing) do
 		for k2, v2 in pairs {x="Horizontal",y="Vertical",t="Top",b="Bottom",l="Left",r="Right",} do
-			local class = string.format(".%s%s-%d", k1, k2, v3)
+			local class = string.format("%s%s-%d", k1, k2, v3)
 			local name = v1..v2
 			local hack = {Horizontal=true, Vertical=true}
 			if hack[v2] then
@@ -50,7 +50,7 @@ for k1, v1 in pairs {m="Margin",p="Padding"} do
 			end
 			add_rule(class, { ["Node."..name] = string.format("%d", v3*rem) })
 		end
-		add_rule(string.format(".%s-%s", k1, v3), {
+		add_rule(string.format("%s-%s", k1, v3), {
 			["Node.Horizontal"..v1] = string.format("%d %d", v3*rem, v3*rem),
 			["Node.Vertical"..v1] = string.format("%d %d", v3*rem, v3*rem),
 		})
@@ -79,7 +79,7 @@ for k1, v1 in pairs {
 		border="Node.Border",
 	} do
 	for k2, v2 in pairs(theme.colors) do
-		local name = string.format(".%s-%s", k1, k2)
+		local name = string.format("%s-%s", k1, k2)
 		add_rule(name, { [v1.."Color"] = v2 })
 	end
 end
@@ -101,7 +101,7 @@ for _, v1 in ipairs(spacing) do
 			w="Node.Width",
 			h="Node.Height"
 		} do
-		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1*rem })
+		add_rule(string.format("%s-%s", k2, v1), { [v2] = v1*rem })
 	end
 	add_rule(string.format("rounded-%s", v1), { ["Node.BorderRadius"] = core.CornerRadius(v1*rem) })
 	add_rule(string.format("gap-%s", v1), { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem })
@@ -114,7 +114,7 @@ for _, v1 in ipairs(spacing) do
 			["ring"]="Node2D.RingWidth",
 			["ring-offset"]="Node2D.RingOffset"
 		} do
-		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1 })
+		add_rule(string.format("%s-%s", k2, v1), { [v2] = v1 })
 	end
 	add_rule(string.format("border-%s", v1), { ["Node.BorderWidth"] = core.Thickness(v1) })
 end
