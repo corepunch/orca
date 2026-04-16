@@ -1680,26 +1680,17 @@ int f_core_GetHover(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-extern lpObject_t OBJ_GetGlobalStyleSheet(void);
-extern lpObject_t OBJ_GetObjectStyleSheet(lpObject_t obj);
-int f_core_GetGlobalStyleSheet(lua_State *L) {
-	struct Object* result_ = OBJ_GetGlobalStyleSheet();
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_core_GetObjectStyleSheet(lua_State *L) {
-	struct Object* obj = luaX_checkObject(L, 1);
-	struct Object* result_ = OBJ_GetObjectStyleSheet(obj);
-	luaX_pushObject(L, result_);
-	return 1;
+int f_core_AddGlobalStyleRule(lua_State *L) {
+	struct Object* rule = luaX_checkObject(L, 1);
+	core_AddGlobalStyleRule(rule );
+	return 0;
 }
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "getFocus", f_core_GetFocus },
 		{ "getHover", f_core_GetHover },
-		{ "getGlobalStyleSheet", f_core_GetGlobalStyleSheet },
-		{ "getObjectStyleSheet", f_core_GetObjectStyleSheet },
+		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);

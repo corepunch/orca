@@ -754,7 +754,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
       <fields>
         <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
-        <field name="owned_sheet" type="bool">TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).</field>
+        <field name="owned_sheet" type="bool">TRUE when StyleSheet was created internally and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">
@@ -1070,6 +1070,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Gets the currently hovered object</summary>
       <details>Returns a pointer to the object that is currently being hovered over by the mouse cursor. Returns null if no object is being hovered.</details>
       <returns type="Object" pointer="true">Pointer to the object under the mouse cursor, or null if no object is being hovered</returns>
+    </function>
+    <function name="AddGlobalStyleRule">
+      <summary>Adds global style rules that gets applied even without any stylesheet present.</summary>
+      <arg name="rule" type="Object" pointer="true">The style rule to add globally.</arg>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->

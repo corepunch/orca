@@ -579,6 +579,14 @@ before_core_module_registered(lua_State* L)
   lua_call(L, 1, 0);
 }
 
+extern lpObject_t static_stylesheet;
+void core_AddGlobalStyleRule(struct Object* rule) {
+  if (static_stylesheet) {
+    static_stylesheet = OBJ_MakeNativeObject(ID_StyleSheet);
+  }
+  OBJ_AddChild(static_stylesheet, rule, FALSE);
+}
+
 void
 after_core_module_registered(lua_State* L)
 {

@@ -191,7 +191,6 @@ lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
 //      fprintf(mem, "else screen = screen.__userdata and screen or screen()\n");
       fprintf(mem, "else\n");
       fprintf(mem, "screen = screen()\n");
-      fprintf(mem, "for k, v in pairs(orca.styles) do screen:addStyleRule(k, v) end\n");
       fprintf(mem, "end\n");
   }
 #if defined(ORCA_FEATURE_DEBUG) && !defined(__EMSCRIPTEN__)
