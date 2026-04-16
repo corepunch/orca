@@ -531,7 +531,7 @@ static int f_CornerRadius_TextConvert(lua_State* L) {
 }
 
 void
-on_core_module_registered(lua_State* L)
+before_core_module_registered(lua_State* L)
 {
   // Preserve registered classes: lua_pushclass calls OBJ_RegisterClass before
   // this function runs, so we must not zero core.classes[] here.
@@ -577,17 +577,22 @@ on_core_module_registered(lua_State* L)
   lua_getglobal(L, "require");
   lua_pushstring(L, "orca.geometry");
   lua_call(L, 1, 0);
+}
 
+void
+after_core_module_registered(lua_State* L)
+{
 #define OVERRIDE_FROMSTRING(NAME, TextConvert, New) \
-  lua_getfield(L, -1, #NAME); \
-  lua_pushcfunction(L, TextConvert); \
-  lua_setfield(L, -2, "fromstring"); \
-  lua_pushcfunction(L, New); \
-  lua_setfield(L, -2, "new"); \
-  lua_pop(L, 1);
+lua_getfield(L, -1, #NAME); \
+lua_pushcfunction(L, TextConvert); \
+lua_setfield(L, -2, "fromstring"); \
+lua_pushcfunction(L, New); \
+lua_setfield(L, -2, "new"); \
+lua_pop(L, 1);
+
   OVERRIDE_FROMSTRING(Thickness, f_Thickness_TextConvert, f_Thickness_New)
   OVERRIDE_FROMSTRING(EdgeShorthand, f_EdgeShorthand_TextConvert, f_EdgeShorthand_New)
   OVERRIDE_FROMSTRING(CornerRadius, f_CornerRadius_TextConvert, f_CornerRadius_New)
+
 #undef OVERRIDE_FROMSTRING
 }
-

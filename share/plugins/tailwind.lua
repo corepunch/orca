@@ -1,4 +1,5 @@
 local orca = require "orca"
+local core = require "orca.core"
 local extends = { "colors" }
 local spacing = { 0, 1, 2, 3, 4, 5, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 56, 64 }
 local tone={50,         100,        200,        300,        400,        500,        600,        700,        800,        900,        950  }
@@ -27,8 +28,23 @@ local spreadsheet = {
 	pink=   {"#fdf2f8","#fce7f3","#fbcfe8","#f9a8d4","#f472b6","#ec4899","#db2777","#be185d","#9d174d","#831843","#500724"},
 	rose=   {"#fff1f2","#ffe4e6","#fecdd3","#fda4af","#fb7185","#f43f5e","#e11d48","#be123c","#9f1239","#881337","#4c0519"},
 }
-local style = orca.styles
+local styles = orca.styles
 local theme = { colors = {} }
+
+-- Helper: create a StyleRule from a selector string and a property table, then add to styles.
+local function add_rule(selector, props)
+	local rule = core.StyleRule()
+	local base = selector:sub(1, 1) == '.' and selector:sub(2) or selector
+	local colon = base:find(':')
+	if colon then
+		rule.ClassName = base:sub(1, colon - 1)
+		rule.PseudoClass = base:sub(colon + 1)
+	else
+		rule.ClassName = base
+	end
+	for k, v in pairs(props) do rule[k] = v end
+	styles:addChild(rule)
+end
 
 for k1, v1 in pairs {m="Margin",p="Padding"} do
 	for _, v3 in ipairs(spacing) do
@@ -39,12 +55,12 @@ for k1, v1 in pairs {m="Margin",p="Padding"} do
 			if hack[v2] then
 				name = v2..v1
 			end
-			style[class] = { ["Node."..name] = string.format("%d", v3*rem) }
+			add_rule(class, { ["Node."..name] = string.format("%d", v3*rem) })
 		end
-		style[string.format(".%s-%s", k1, v3)] = {
+		add_rule(string.format(".%s-%s", k1, v3), {
 			["Node.Horizontal"..v1] = string.format("%d %d", v3*rem, v3*rem),
 			["Node.Vertical"..v1] = string.format("%d %d", v3*rem, v3*rem),
-		}
+		})
 	end
 end
 
@@ -71,18 +87,18 @@ for k1, v1 in pairs {
 	} do
 	for k2, v2 in pairs(theme.colors) do
 		local name = string.format(".%s-%s", k1, k2)
-		style[name] = { [v1.."Color"] = v2 }
+		add_rule(name, { [v1.."Color"] = v2 })
 	end
 end
 
 for k1, v1 in pairs {middle="Center",top="Top",bottom="Bottom"} do
-	style[".align-"..k1] = { VerticalAlignment = v1 }
+	add_rule(".align-"..k1, { VerticalAlignment = v1 })
 	for k2, v2 in pairs {center="Center",left="Left",right="Right"} do
-		style[string.format(".align-%s-%s", k1, k2)] = {
+		add_rule(string.format(".align-%s-%s", k1, k2), {
 			["Node.HorizontalAlignment"] = v2,
 			["Node.VerticalAlignment"] = v1
-		}
-		style[".align-"..k2] = { ["Node.HorizontalAlignment"] = v2 }
+		})
+		add_rule(".align-"..k2, { ["Node.HorizontalAlignment"] = v2 })
 	end
 end
 
@@ -93,9 +109,9 @@ for _, v1 in ipairs(spacing) do
 			w="Node.Width",
 			h="Node.Height"
 		} do
-		style[string.format(".%s-%s", k2, v1)] = { [v2] = v1*rem }
+		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1*rem })
 	end
-	style[string.format(".gap-%s", v1)] = { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem }
+	add_rule(string.format(".gap-%s", v1), { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem })
 end
 
 for _, v1 in ipairs(spacing) do
@@ -106,20 +122,20 @@ for _, v1 in ipairs(spacing) do
 			["ring"]="Node2D.RingWidth",
 			["ring-offset"]="Node2D.RingOffset"
 		} do
-		style[string.format(".%s-%s", k2, v1)] = { [v2] = v1 }
+		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1 })
 	end
 end
 
 for k, v in pairs {start="Start",["end"]="End",center="Center",baseline="Baseline",stretch="Stretch"} do
-	style[".items-"..k] = { ["StackView.AlignItems"] = v }
+	add_rule(".items-"..k, { ["StackView.AlignItems"] = v })
 end
 
 for k, v in pairs {left="Left",center="Center",right="Right"} do
-	style[".text-"..k] = { ["TextBlockConcept.TextHorizontalAlignment"] = v }
+	add_rule(".text-"..k, { ["TextBlockConcept.TextHorizontalAlignment"] = v })
 end
 
 for k, v in pairs {top="Top",middle="Center",bottom="Bottom"} do
-	style[".text-"..k] = { ["TextBlockConcept.TextVerticalAlignment"] = v }
+	add_rule(".text-"..k, { ["TextBlockConcept.TextVerticalAlignment"] = v })
 end
 
 for k, v in pairs {
@@ -137,11 +153,11 @@ for k, v in pairs {
 	["8xl"] =  { 96,  96},
 	["9xl"] =  { 128, 128},
 } do
-	style[".text-"..k] = { ["TextRun.FontSize"] = v[1], ["TextRun.LineHeight"] = v[2] }
+	add_rule(".text-"..k, { ["TextRun.FontSize"] = v[1], ["TextRun.LineHeight"] = v[2] })
 end
 
 for k, v in pairs {col="Vertical",row="Horizontal"} do
-	style[".flex-"..k] = { ["StackView.Direction"] = v }
+	add_rule(".flex-"..k, { ["StackView.Direction"] = v })
 end
 
 for k1, v1 in pairs {
@@ -153,19 +169,19 @@ for k1, v1 in pairs {
 } do
 	for k2, v2 in pairs {x="X", y="Y"} do
 		local class = string.format(".overflow-%s-%s", k2, k1)
-		style[class] = { ["Node2D.Overflow"..v2] = v1 }
+		add_rule(class, { ["Node2D.Overflow"..v2] = v1 })
 	end	
 end
 
-style[".overflow-x-scroll"] = {
+add_rule(".overflow-x-scroll", {
 	["Node2D.OverflowX"] = "Scroll",
 	["Node2D.ClipChildren"] = true,
-}
+})
 
-style[".overflow-y-scroll"] = {
+add_rule(".overflow-y-scroll", {
 	["Node2D.OverflowY"] = "Scroll",
 	["Node2D.ClipChildren"] = true,
-}
+})
 
 for k, v in pairs {
 	["start"]   = "Start",
@@ -175,22 +191,22 @@ for k, v in pairs {
 	["around"]  = "SpaceAround",
 	["evenly"]  = "SpaceEvenly"
 } do
-	style[".justify-"..k] = { ["StackView.JustifyContent"] = v }
+	add_rule(".justify-"..k, { ["StackView.JustifyContent"] = v })
 end	
 
-style[".text-clip"] = { ["TextBlockConcept.TextOverflow"] = "Clip" }
-style[".text-ellipsis"] = { ["TextBlockConcept.TextOverflow"] = "Ellipsis" }
-style[".text-wrap"] = { ["TextBlockConcept.TextWrapping"] = "WrapWithOverflow" }
-style[".text-nowrap"] = { ["TextBlockConcept.TextWrapping"] = "NoWrap" }
-style[".font-normal"] = { ["TextRun.FontWeight"] = "Normal" }
-style[".font-bold"] = { ["TextRun.FontWeight"] = "Bold" }
-style[".non-italic"] = { ["TextRun.FontStyle"] = "Normal" }
-style[".italic"] = { ["TextRun.FontStyle"] = "Italic" }
-style[".w-full"] = { ["Node.HorizontalAlignment"] = "Stretch" }
-style[".h-full"] = { ["Node.VerticalAlignment"] = "Stretch" }
-style[".rounded"] = { ["Node.BorderRadius"] = "8" }
-style[".border"] = { ["Node.BorderWidth"] = "1" }
-style[".underline"] = { ["TextRun.UnderlineWidth"] = "1" }
-style[".no-underline"] = { ["TextRun.UnderlineWidth"] = "0" }
+add_rule(".text-clip", { ["TextBlockConcept.TextOverflow"] = "Clip" })
+add_rule(".text-ellipsis", { ["TextBlockConcept.TextOverflow"] = "Ellipsis" })
+add_rule(".text-wrap", { ["TextBlockConcept.TextWrapping"] = "WrapWithOverflow" })
+add_rule(".text-nowrap", { ["TextBlockConcept.TextWrapping"] = "NoWrap" })
+add_rule(".font-normal", { ["TextRun.FontWeight"] = "Normal" })
+add_rule(".font-bold", { ["TextRun.FontWeight"] = "Bold" })
+add_rule(".non-italic", { ["TextRun.FontStyle"] = "Normal" })
+add_rule(".italic", { ["TextRun.FontStyle"] = "Italic" })
+add_rule(".w-full", { ["Node.HorizontalAlignment"] = "Stretch" })
+add_rule(".h-full", { ["Node.VerticalAlignment"] = "Stretch" })
+add_rule(".rounded", { ["Node.BorderRadius"] = "8" })
+add_rule(".border", { ["Node.BorderWidth"] = "1" })
+add_rule(".underline", { ["TextRun.UnderlineWidth"] = "1" })
+add_rule(".no-underline", { ["TextRun.UnderlineWidth"] = "0" })
 
 -- return style

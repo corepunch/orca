@@ -13,7 +13,6 @@ struct game;
 struct Property;
 struct lua_State;
 struct style_class_selector;
-struct style_rule;
 
 
 #include "core_properties.h"
@@ -474,10 +473,6 @@ OBJ_ClearDirtyFlags(struct Object*);
 
 /// @name Style
 /// Manages style sheets and resolves computed style values.
-
-/// @brief Add a stylesheet to the object.
-ORCA_API void
-OBJ_AddStyleRule(struct lua_State*, struct Object*, const char*);
 
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
@@ -963,13 +958,36 @@ struct PropertyAnimation {
 ORCA_API void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation);
 ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx);
 
+/// @brief Container object for StyleRule definitions.
+/** StyleSheet component */
+typedef struct StyleSheet StyleSheet_t, *StyleSheetPtr, *lpStyleSheet_t;
+typedef struct StyleSheet const *StyleSheetCPtr, *lpcStyleSheet_t;
+struct StyleSheet {
+};
+ORCA_API void luaX_pushStyleSheet(lua_State *L, struct StyleSheet const* StyleSheet);
+ORCA_API struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx);
+
+/// @brief A single style rule that maps a class name (with optional pseudo-class) to property overrides.
+/** StyleRule component */
+typedef struct StyleRule StyleRule_t, *StyleRulePtr, *lpStyleRule_t;
+typedef struct StyleRule const *StyleRuleCPtr, *lpcStyleRule_t;
+struct StyleRule {
+	const char* ClassName; ///< Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").
+	const char* PseudoClass; ///< Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.
+	uint32_t class_id; ///< FNV1a hash of ClassName (cached for fast matching)
+	uint32_t flags; ///< Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)
+};
+ORCA_API void luaX_pushStyleRule(lua_State *L, struct StyleRule const* StyleRule);
+ORCA_API struct StyleRule* luaX_checkStyleRule(lua_State *L, int idx);
+
 /// @brief Manages CSS-style classes and stylesheet rules for an object.
 /** StyleController component */
 typedef struct StyleController StyleController_t, *StyleControllerPtr, *lpStyleController_t;
 typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t;
 struct StyleController {
+	struct StyleSheet* StyleSheet; ///< The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.
 	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
-	struct style_rule* rules; ///< Linked list of style rules (selector to property to value mappings)
+	bool_t owned_sheet; ///< TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).
 	event_t ThemeChanged;
 	event_t AddClass;
 	event_t AddClasses;

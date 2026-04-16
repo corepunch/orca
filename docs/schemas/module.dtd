@@ -18,6 +18,7 @@
   name CDATA #REQUIRED
   namespace CDATA #REQUIRED
   on-luaopen CDATA #IMPLIED
+  after-luaopen CDATA #IMPLIED
   prefix CDATA #IMPLIED
   test-prefix CDATA #IMPLIED
 >

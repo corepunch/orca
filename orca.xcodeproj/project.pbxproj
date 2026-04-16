@@ -242,6 +242,7 @@
 		78BCC2192E64472E00CA0A41 /* SceneKit_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 78BCC2182E64472E00CA0A41 /* SceneKit_properties.h */; };
 		78BCC21A2E64472E00CA0A41 /* SceneKit_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BCC2172E64472E00CA0A41 /* SceneKit_export.c */; };
 		78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */; };
+		78BFEF8CA2F8DD2AB00AF52A5 /* StyleRule.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BFEF8CB2F8DD2AB00AF52A5 /* StyleRule.c */; };
 		78D75A552E3E5286004EA6DA /* MainToolbar.c in Sources */ = {isa = PBXBuildFile; fileRef = 78D75A542E3E5286004EA6DA /* MainToolbar.c */; };
 		78DE4E922D994A4B00C0488C /* pz2.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B1376A2AF3CC4E00AAAE53 /* pz2.c */; };
 		78E4A99F2E93D71500E3A503 /* xml_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 78E4A99E2E93D71300E3A503 /* xml_local.h */; };
@@ -677,6 +678,7 @@
 		78BCC2172E64472E00CA0A41 /* SceneKit_export.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SceneKit_export.c; sourceTree = "<group>"; };
 		78BCC2182E64472E00CA0A41 /* SceneKit_properties.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneKit_properties.h; sourceTree = "<group>"; };
 		78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = StyleController.c; sourceTree = "<group>"; };
+		78BFEF8CB2F8DD2AB00AF52A5 /* StyleRule.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = StyleRule.c; sourceTree = "<group>"; };
 		78C454C12CB9771C004AB906 /* TextBlock3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = TextBlock3D.c; sourceTree = "<group>"; };
 		78C737532B8F60C600FD598E /* ImageView.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ImageView.c; sourceTree = "<group>"; };
 		78C737542B8F60C600FD598E /* NinePatchImage.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = NinePatchImage.c; sourceTree = "<group>"; };
@@ -1151,6 +1153,7 @@
 				78A441A42F87990900AF52A4 /* AnimationPlayer.c */,
 				78A442BC2F87FA8100AF52A4 /* PropertyAnimation.c */,
 				78BFEF8CB2F8DD2AB00AF52A4 /* StyleController.c */,
+				78BFEF8CB2F8DD2AB00AF52A5 /* StyleRule.c */,
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
 				7800000001000000000000002 /* Node.c */,
 				7800000001000000000000004 /* Trigger.c */,
@@ -2101,6 +2104,7 @@
 				78A443C72F881CFC00AF52A4 /* AnimationPlayer.c in Sources */,
 				78A443C92F881D1C00AF52A4 /* EasingCurve.c in Sources */,
 				78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */,
+				78BFEF8CA2F8DD2AB00AF52A5 /* StyleRule.c in Sources */,
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
 				7800000001000000000000001 /* Node.c in Sources */,
 				7800000001000000000000003 /* Trigger.c in Sources */,

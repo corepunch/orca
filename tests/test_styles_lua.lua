@@ -1,14 +1,18 @@
 -- Headless tests for the ORCA style system — exercised from Lua using
--- addStyleRule, node.class, and StyleController.ThemeChanged.
+-- the CSS string API, node.class, and StyleController.ThemeChanged.
 --
 -- Run with: $(TARGET) -test=tests/test_styles_lua.lua
 --
 -- Complements the C unit tests in test_styles.c by covering the Lua
--- property-setting path end-to-end: addStyleRule → class assignment →
--- ThemeChanged dispatch → property values applied.
+-- property-setting path end-to-end: CSS string → StyleSheet.Parse →
+-- screen.StyleSheet → class assignment → ThemeChanged → values applied.
 
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
+
+-- Load the CSS plugin so that core.StyleSheet.Parse is available
+-- (in a full runtime this is done by orca.init(); tests load it directly)
+dofile(SHAREDIR.."/plugins/file-css.lua")
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -35,15 +39,20 @@ local function applyStyles(node)
 end
 
 -- ---------------------------------------------------------------------------
--- Test 1: addStyleRule + class assignment → Opacity applied
+-- Test 1: CSS opacity rule + class assignment → Opacity applied
 -- ---------------------------------------------------------------------------
 local function test_style_applies_opacity()
-  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  local screen = ui.Screen { 
+    Width = 200,
+    Height = 200,
+    ResizeMode = "NoResize",
+    StyleSheet = core.StyleSheet.Parse ".highlight { opacity: 0.4; }",
+  }
+  local node = screen + ui.Node2D {
+    class = "highlight",
+    Opacity = 1.0
+  }
 
-  node.Opacity = 1.0
-  node:addStyleRule("highlight", { Opacity = "0.4" })
-  node.class = "highlight"
   applyStyles(node)
 
   expect_near(node.Opacity, 0.4, 0.001, "StyleController applied Opacity=0.4")
@@ -57,10 +66,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_not_applied_without_class()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".hidden { opacity: 0.0; }"
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 0.8
-  node:addStyleRule("hidden", { Opacity = "0.0" })
   -- Intentionally NOT setting node.class = "hidden"
   applyStyles(node)
 
@@ -75,9 +84,9 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D { Width = 100, Height = 50 }
+  screen.StyleSheet = core.StyleSheet.Parse ".box { width: 200; height: 80; }"
+  local node = screen + ui.Node2D { Width = 100, Height = 50 }
 
-  node:addStyleRule("box", { Width = "200", Height = "80" })
   node.class = "box"
   applyStyles(node)
 
@@ -93,18 +102,14 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_classes()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  node:addStyleRule("alpha50",   { Opacity = "0.5" })
-  node:addStyleRule("alpha25",   { Opacity = "0.25" })
-
   node.class = "alpha50"
   applyStyles(node)
   expect_near(node.Opacity, 0.5, 0.001, "alpha50 applied: Opacity=0.5")
 
-  -- Reassign to another class
-  -- Note: addStyleRule adds to the existing stylesheet; class= replaces.
   node.class = "alpha25"
   applyStyles(node)
   expect_near(node.Opacity, 0.25, 0.001, "alpha25 applied: Opacity=0.25")
@@ -118,10 +123,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_hover_not_applied_by_default()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".btn:hover { opacity: 0.6; }"
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  node:addStyleRule("btn:hover", { Opacity = "0.6" })
   node.class = "btn"
   applyStyles(node)
 
@@ -138,12 +143,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_non_hover_rule_applies()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  -- Add both a normal and a hover rule for the same selector
-  node:addStyleRule("card",       { Opacity = "0.7" })
-  node:addStyleRule("card:hover", { Opacity = "1.0" })
   node.class = "card"
   applyStyles(node)
 
@@ -158,11 +161,11 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_recursive_children()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = core.StyleSheet.Parse ".dim { opacity: 0.3; }"
   local parent = screen + ui.Node2D {}
   local child  = parent + ui.Node2D {}
 
   child.Opacity = 1.0
-  child:addStyleRule("dim", { Opacity = "0.3" })
   child.class = "dim"
 
   -- Fire ThemeChanged recursively on the parent
@@ -179,11 +182,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_dot_prefix_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".primary { opacity: 0.55; }"
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  -- Both "primary" and ".primary" should hash to the same class ID.
-  node:addStyleRule(".primary", { Opacity = "0.55" })
   node.class = "primary"
   applyStyles(node)
 
@@ -194,18 +196,17 @@ local function test_style_dot_prefix_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 9: Numeric value in style rule is applied correctly
+-- Test 9: Numeric CSS value is applied correctly
 -- ---------------------------------------------------------------------------
 local function test_style_numeric_value()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".sized { width: 150; }"
+  local node = screen + ui.Node2D {}
 
-  -- Pass numeric value directly (not as a string)
-  node:addStyleRule("sized", { Width = 150 })
   node.class = "sized"
   applyStyles(node)
 
-  expect_near(node.Width, 150, 0.5, "numeric Width=150 applied from style rule")
+  expect_near(node.Width, 150, 0.5, "CSS width: 150 applied from style rule")
 
   node:removeFromParent()
   print("PASS: test_style_numeric_value")
@@ -216,10 +217,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse ".ghost { opacity: 0.1; }"
+  local node = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
-  node:addStyleRule("ghost", { Opacity = "0.1" })
   node.class = "ghost"
   applyStyles(node)
 
@@ -229,9 +230,7 @@ local function test_style_applies_to_new_node()
   print("PASS: test_style_applies_to_new_node")
 end
 
--- ---------------------------------------------------------------------------
--- Run all tests
--- ---------------------------------------------------------------------------
+
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()

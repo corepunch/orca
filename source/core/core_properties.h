@@ -99,14 +99,37 @@ enum PropertyAnimationProperties {
 	kPropertyAnimationStart,
 	kPropertyAnimationDuration,
 };
+// StyleSheet
+#define ID_StyleSheet 0x6546e1e1
+#define GetStyleSheet(_P) ((struct StyleSheet*)((_P)?OBJ_GetComponent(_P,ID_StyleSheet):NULL))
+#define StyleSheet_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleSheet,sizeof(struct StyleSheet),_N)
+#define kStyleSheetNumProperties 0
+// StyleRule
+#define ID_StyleRule 0x96a4d210
+#define GetStyleRule(_P) ((struct StyleRule*)((_P)?OBJ_GetComponent(_P,ID_StyleRule):NULL))
+#define StyleRule_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleRule,sizeof(struct StyleRule),_N)
+#define ID_StyleRule_ClassName 0x3396a471 // StyleRule.ClassName
+#define ID_StyleRule_PseudoClass 0xc7313550 // StyleRule.PseudoClass
+#define kStyleRuleNumProperties 2
+enum StyleRuleProperties {
+	kStyleRuleClassName,
+	kStyleRulePseudoClass,
+};
 // StyleController
 #define ID_StyleController 0x70b793e6
 #define GetStyleController(_P) ((struct StyleController*)((_P)?OBJ_GetComponent(_P,ID_StyleController):NULL))
 #define StyleController_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_StyleController,sizeof(struct StyleController),_N)
+#define ID_StyleController_StyleSheet 0x6ae4d4d0 // StyleController.StyleSheet
 #define ID_StyleController_ThemeChanged 0xe51e8073 // StyleController.ThemeChanged
 #define ID_StyleController_AddClass 0x8534805d // StyleController.AddClass
 #define ID_StyleController_AddClasses 0x2b139741 // StyleController.AddClasses
-#define kStyleControllerNumProperties 3
+#define kStyleControllerNumProperties 4
+enum StyleControllerProperties {
+	kStyleControllerStyleSheet,
+	kStyleControllerThemeChanged,
+	kStyleControllerAddClass,
+	kStyleControllerAddClasses,
+};
 // StateManager
 #define ID_StateManager 0xe76f2815
 #define GetStateManager(_P) ((struct StateManager*)((_P)?OBJ_GetComponent(_P,ID_StateManager):NULL))

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered">
+<module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered" after-luaopen="after_ui_module_registered">
   <require file="../../source/core/core.xml"/>
   <require file="../../source/renderer/api/renderer.xml"/>
   <includes>

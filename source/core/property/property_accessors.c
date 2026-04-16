@@ -134,6 +134,7 @@ PROP_SetValue(lpProperty_t property, void const* source)
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
+  _SendMessage(property->object, Object, PropertyChanged, property);
 }
 
 void

@@ -30,7 +30,10 @@ void on_ui_module_registered(lua_State* L) {
   lua_pushvalue(L, -3); // UIKit table
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
+}
 
+void
+after_ui_module_registered(lua_State* L) {
   // Load TerminalView Lua extension and expose it as UIKit.TerminalView.
   // Guard against recursive require() returning package.loaded's in-progress
   // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()
@@ -43,4 +46,3 @@ void on_ui_module_registered(lua_State* L) {
     }
   }
 }
-

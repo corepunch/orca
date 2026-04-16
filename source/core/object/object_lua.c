@@ -38,16 +38,18 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
       WITH(char, dup, strdup(++arg), free)
       {
         OBJ_SetName(hobj, strtok(dup, "."));
-        while ((arg = strtok(NULL, ".")))
+        while ((arg = strtok(NULL, "."))) {
           _SendMessage(hobj, StyleController, AddClass, arg);
+        }
         lua_remove(L, 2);
       }
     } else if (*arg == '.') {
       WITH(char, dup, strdup(++arg), free)
       {
         _SendMessage(hobj, StyleController, AddClass, strtok(dup, "."));
-        while ((arg = strtok(NULL, ".")))
+        while ((arg = strtok(NULL, "."))) {
           _SendMessage(hobj, StyleController, AddClass, arg);
+        }
         lua_remove(L, 2);
       }
     }

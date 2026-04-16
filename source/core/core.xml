@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
-<module name="core" namespace="orca" on-luaopen="on_core_module_registered">
+<module name="core" namespace="orca" on-luaopen="before_core_module_registered" after-luaopen="after_core_module_registered">
   <require file="../geometry/geometry.xml"/>
   <externals>
     <external struct="localization"/>
@@ -8,7 +8,6 @@
     <external struct="Property"/>
     <external struct="lua_State"/>
     <external struct="style_class_selector"/>
-    <external struct="style_rule"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -432,11 +431,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
-        <method name="AddStyleRule" lua="true">
-          <summary>Add a stylesheet to the object.</summary>
-          <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
-          <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
-        </method>
         <method name="GetStyle" const="true">
           <summary>Retrieves object style flags</summary>
           <details>Returns a bitmask of style flags similar to WinAPI style constants. Each bit represents different visual or behavioral properties.</details>
@@ -726,9 +720,28 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <field name="_property" type="Property" pointer="true">The property being animated</field>
       </fields>
     </class>
+    <class name="StyleSheet">
+      <summary>Container object for StyleRule definitions.</summary>
+      <details>StyleSheet is a standalone object (like StateManager) that holds StyleRule children. Each StyleRule maps a CSS selector to property overrides via attached Lua properties. Assign a StyleSheet object to StyleController.StyleSheet on the target node to apply its rules.</details>
+    </class>
+    <class name="StyleRule">
+      <summary>A single style rule that maps a class name (with optional pseudo-class) to property overrides.</summary>
+      <details>StyleRule is a child object of a StyleSheet. ClassName holds the base selector (e.g., "button"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
+      <handles>
+        <handle message="Object.PropertyChanged"/>
+      </handles>
+      <properties>
+        <property name="ClassName" type="string">Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").</property>
+        <property name="PseudoClass" type="string">Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.</property>
+      </properties>
+      <fields>
+        <field name="class_id" type="uint32">FNV1a hash of ClassName (cached for fast matching)</field>
+        <field name="flags" type="uint32">Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
+      </fields>
+    </class>
     <class name="StyleController" attach-only="true">
       <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
-      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. Stylesheets can be loaded from external .css files or defined inline. This component is automatically attached to Node2D and any other visual elements that support styling.</details>
+      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. The StyleSheet property points to a StyleSheet object that contains StyleRule children — each rule maps a selector to pre-parsed property overrides stored as attached Lua properties on the StyleRule object. This avoids re-parsing property values on every ThemeChanged.</details>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>
@@ -736,9 +749,12 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="StyleController.AddClass"/>
         <handle message="StyleController.AddClasses"/>
       </handles>
+      <properties>
+        <property name="StyleSheet" type="StyleSheet" pointer="true">The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.</property>
+      </properties>
       <fields>
         <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
-        <field name="rules" type="style_rule" pointer="true">Linked list of style rules (selector to property to value mappings)</field>
+        <field name="owned_sheet" type="bool">TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">
