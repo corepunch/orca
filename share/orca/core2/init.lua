@@ -33,7 +33,7 @@ end
 
 function core.load_editor()
 	assert(core.screen, "Screen must be loaded before editor")
-	local ok, editor = pcall(require, "orca.editor")
+	local ok, editor = pcall(require, "orca.EditorKit")
 	if ok then
 		editor.setScreen(core.screen)
 	else
