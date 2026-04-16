@@ -178,63 +178,20 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
   free(sheetObj);
 }
 
-// Add a style rule to obj's stylesheet (or the global one when obj==NULL).
-// L is the Lua state; top of stack must be a table {propName=value,...}.
-// selector is a CSS-style selector string, e.g. ".button:hover" or "button".
-ORCA_API void
-OBJ_AddStyleRule(lua_State* L, lpObject_t obj, lpcString_t selector)
+// Return the global singleton StyleSheet (creates it on first call).
+// Exposed to Lua as core.getGlobalStyleSheet().
+ORCA_API lpObject_t
+OBJ_GetGlobalStyleSheet(void)
 {
-  if (!selector || !L) return;
-  lpObject_t sheetObj = _GetOrCreateStyleSheet(obj);
-  if (!sheetObj) return;
+  return _GetOrCreateStyleSheet(NULL);
+}
 
-  // Create StyleRule native object
-  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
-  struct StyleRule* sr = GetStyleRule(ruleObj);
-  if (!sr) { free(ruleObj); return; }
-
-  // Parse selector: strip leading '.', split at ':'
-  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
-  lpcString_t colon = strchr(base, ':');
-  size_t nameLen = colon ? (size_t)(colon - base) : strlen(base);
-  nameLen = MIN(nameLen, sizeof(shortStr_t) - 1);
-
-  // Set ClassName property
-  lpProperty_t nameProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &nameProp))) {
-    char buf[sizeof(shortStr_t)] = {0};
-    memcpy(buf, base, nameLen);
-    PROP_SetValue(nameProp, buf);
-  }
-  sr->class_id = fnv1a32_n(base, nameLen);
-
-  // Set PseudoClass and flags
-  if (colon) {
-    lpProperty_t pseudoProp = NULL;
-    if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_PseudoClass, &pseudoProp))) {
-      PROP_SetValue(pseudoProp, colon + 1);
-    }
-    sr->flags = _ParsePseudoStateFlags(base);
-  }
-
-  // Iterate the Lua table on top of the stack and set each property override
-  extern int luaX_readProperty(lua_State*, int, lpProperty_t);
-  lua_pushvalue(L, -1); // copy the table
-  lua_pushnil(L);
-  while (lua_next(L, -2)) {
-    lpcString_t propName = lua_tostring(L, -2);
-    if (propName) {
-      lpcPropertyType_t pt = _FindPropertyTypeByName(propName);
-      if (pt) {
-        lpProperty_t rp = PROP_Create(NULL, ruleObj, pt);
-        luaX_readProperty(L, -1, rp);
-      }
-    }
-    lua_pop(L, 1);
-  }
-  lua_pop(L, 1); // pop the table copy
-
-  OBJ_AddChild(sheetObj, ruleObj, FALSE);
+// Return (or lazily create) the per-object StyleSheet for obj.
+// Exposed to Lua as core.getObjectStyleSheet(node).
+ORCA_API lpObject_t
+OBJ_GetObjectStyleSheet(lpObject_t obj)
+{
+  return _GetOrCreateStyleSheet(obj);
 }
 
 // ============================================================================

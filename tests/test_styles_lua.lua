@@ -1,10 +1,10 @@
 -- Headless tests for the ORCA style system — exercised from Lua using
--- addStyleRule, node.class, and StyleController.ThemeChanged.
+-- the native StyleRule/StyleSheet API, node.class, and StyleController.ThemeChanged.
 --
 -- Run with: $(TARGET) -test=tests/test_styles_lua.lua
 --
 -- Complements the C unit tests in test_styles.c by covering the Lua
--- property-setting path end-to-end: addStyleRule → class assignment →
+-- property-setting path end-to-end: StyleRule → class assignment →
 -- ThemeChanged dispatch → property values applied.
 
 local core = require "orca.core"
@@ -34,6 +34,20 @@ local function applyStyles(node)
   node:send("StyleController.ThemeChanged")
 end
 
+-- Replacement for the removed addStyleRule Lua method.
+-- Creates a native StyleRule, parses the selector into ClassName/PseudoClass,
+-- sets property overrides, and adds the rule to the node's per-object StyleSheet.
+local function addStyleRule(node, selector, props)
+  local rule = core.StyleRule()
+  -- Strip optional leading '.' and split off pseudo-state at ':'
+  local base = selector:match('^%.?([^:]+)') or selector
+  local pseudo = selector:match(':(.+)$')
+  rule.ClassName = base
+  if pseudo then rule.PseudoClass = pseudo end
+  for k, v in pairs(props) do rule[k] = v end
+  core.getObjectStyleSheet(node):addChild(rule)
+end
+
 -- ---------------------------------------------------------------------------
 -- Test 1: addStyleRule + class assignment → Opacity applied
 -- ---------------------------------------------------------------------------
@@ -42,7 +56,7 @@ local function test_style_applies_opacity()
   local node   = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  node:addStyleRule("highlight", { Opacity = "0.4" })
+  addStyleRule(node, "highlight", { Opacity = "0.4" })
   node.class = "highlight"
   applyStyles(node)
 
@@ -60,7 +74,7 @@ local function test_style_not_applied_without_class()
   local node   = screen + ui.Node2D {}
 
   node.Opacity = 0.8
-  node:addStyleRule("hidden", { Opacity = "0.0" })
+  addStyleRule(node, "hidden", { Opacity = "0.0" })
   -- Intentionally NOT setting node.class = "hidden"
   applyStyles(node)
 
@@ -77,7 +91,7 @@ local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local node   = screen + ui.Node2D { Width = 100, Height = 50 }
 
-  node:addStyleRule("box", { Width = "200", Height = "80" })
+  addStyleRule(node, "box", { Width = "200", Height = "80" })
   node.class = "box"
   applyStyles(node)
 
@@ -96,8 +110,8 @@ local function test_style_multiple_classes()
   local node   = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  node:addStyleRule("alpha50",   { Opacity = "0.5" })
-  node:addStyleRule("alpha25",   { Opacity = "0.25" })
+  addStyleRule(node, "alpha50",   { Opacity = "0.5" })
+  addStyleRule(node, "alpha25",   { Opacity = "0.25" })
 
   node.class = "alpha50"
   applyStyles(node)
@@ -121,7 +135,7 @@ local function test_style_hover_not_applied_by_default()
   local node   = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  node:addStyleRule("btn:hover", { Opacity = "0.6" })
+  addStyleRule(node, "btn:hover", { Opacity = "0.6" })
   node.class = "btn"
   applyStyles(node)
 
@@ -142,8 +156,8 @@ local function test_style_non_hover_rule_applies()
 
   node.Opacity = 1.0
   -- Add both a normal and a hover rule for the same selector
-  node:addStyleRule("card",       { Opacity = "0.7" })
-  node:addStyleRule("card:hover", { Opacity = "1.0" })
+  addStyleRule(node, "card",       { Opacity = "0.7" })
+  addStyleRule(node, "card:hover", { Opacity = "1.0" })
   node.class = "card"
   applyStyles(node)
 
@@ -162,7 +176,7 @@ local function test_style_recursive_children()
   local child  = parent + ui.Node2D {}
 
   child.Opacity = 1.0
-  child:addStyleRule("dim", { Opacity = "0.3" })
+  addStyleRule(child, "dim", { Opacity = "0.3" })
   child.class = "dim"
 
   -- Fire ThemeChanged recursively on the parent
@@ -183,7 +197,7 @@ local function test_style_dot_prefix_selector()
 
   node.Opacity = 1.0
   -- Both "primary" and ".primary" should hash to the same class ID.
-  node:addStyleRule(".primary", { Opacity = "0.55" })
+  addStyleRule(node, ".primary", { Opacity = "0.55" })
   node.class = "primary"
   applyStyles(node)
 
@@ -201,7 +215,7 @@ local function test_style_numeric_value()
   local node   = screen + ui.Node2D {}
 
   -- Pass numeric value directly (not as a string)
-  node:addStyleRule("sized", { Width = 150 })
+  addStyleRule(node, "sized", { Width = 150 })
   node.class = "sized"
   applyStyles(node)
 
@@ -219,7 +233,7 @@ local function test_style_applies_to_new_node()
   local node   = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
-  node:addStyleRule("ghost", { Opacity = "0.1" })
+  addStyleRule(node, "ghost", { Opacity = "0.1" })
   node.class = "ghost"
   applyStyles(node)
 
@@ -237,12 +251,12 @@ local function test_style_apply_inherits_default_only()
   local node   = screen + ui.Node2D {}
 
   -- Define a base class "base" with a default rule and a :hover rule
-  node:addStyleRule("base",       { Opacity = "0.5", Width = "120" })
-  node:addStyleRule("base:hover", { Opacity = "0.9" })
+  addStyleRule(node, "base",       { Opacity = "0.5", Width = "120" })
+  addStyleRule(node, "base:hover", { Opacity = "0.9" })
 
   -- Define a derived class "derived" that @apply's "base" (no pseudo-state)
   -- → should inherit Opacity=0.5 and Width=120 but NOT the :hover Opacity=0.9
-  node:addStyleRule("derived", { ["@apply"] = "base", Height = "80" })
+  addStyleRule(node, "derived", { ["@apply"] = "base", Height = "80" })
 
   node.class = "derived"
   applyStyles(node)
@@ -263,11 +277,11 @@ local function test_style_apply_inherits_pseudo_state()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
   local node   = screen + ui.Node2D {}
 
-  node:addStyleRule("src",       { Width = "100" })  -- default rule for "src"
-  node:addStyleRule("src:hover", { Width = "200" })  -- :hover rule for "src"
+  addStyleRule(node, "src",       { Width = "100" })  -- default rule for "src"
+  addStyleRule(node, "src:hover", { Width = "200" })  -- :hover rule for "src"
 
   -- "@apply src:hover" should copy only the :hover Width=200, not the default Width=100
-  node:addStyleRule("dst", { ["@apply"] = "src:hover" })
+  addStyleRule(node, "dst", { ["@apply"] = "src:hover" })
 
   node.class = "dst"
   applyStyles(node)

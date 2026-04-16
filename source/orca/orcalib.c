@@ -112,6 +112,8 @@ static int
 load_core_module(lua_State *L)
 {
   static const char *code =
+    "local core = require 'orca.core'\n"
+    "orca.styles = core.getGlobalStyleSheet()\n"
     "local sys = require 'orca.system'\n"
     "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
     "  if not path:find('[/\\\\]') and not path:find('%.%.') and path:match('%.lua$') then\n"
@@ -125,20 +127,6 @@ load_core_module(lua_State *L)
   if (luaL_dostring(L, code) != LUA_OK) {
     fprintf(stderr, "orca.init error: %s\n", lua_tostring(L, -1));
     lua_pop(L, 1);
-  }
-  return 0;
-}
-
-static int f_styles_newindex(lua_State* L) {
-  // Stack: 1=styles table, 2=key (class name), 3=value (properties table)
-  const char* name = luaL_checkstring(L, 2);
-  // Store in the raw table so style[key] reads work (e.g. style[key][prop] = val)
-  lua_pushvalue(L, 2);
-  lua_pushvalue(L, 3);
-  lua_rawset(L, 1);
-  // Register in the global static stylesheet (stack: 1=table, 2=key, 3=value)
-  if (lua_type(L, 3) == LUA_TTABLE) {
-    OBJ_AddStyleRule(L, NULL, name);
   }
   return 0;
 }
@@ -177,13 +165,6 @@ ORCA_API int luaopen_orca(lua_State* L)
   lua_setfield(L, (lua_pushcfunction(L, load_core_module), -2), "init");
   lua_setfield(L, (lua_newtable(L), -2), "theme");
   lua_setfield(L, (lua_newtable(L), -2), "config");
-  // Create styles table with __newindex to register global stylesheets
-  lua_newtable(L);
-  lua_newtable(L);
-  lua_pushcfunction(L, f_styles_newindex);
-  lua_setfield(L, -2, "__newindex");
-  lua_setmetatable(L, -2);
-  lua_setfield(L, -2, "styles");
   
   // lua_newtable(L);
   // lua_setfield(L, -2, "config");
