@@ -28,6 +28,11 @@
 // Global stylesheet (applies before per-object stylesheets)
 static lpObject_t static_stylesheet = NULL;
 
+// Forward declarations for classes defined in core_export.c (needed for lazy
+// early registration before luaopen_orca_core runs, e.g. from tailwind.lua)
+extern struct ClassDesc _StyleSheet;
+extern struct ClassDesc _StyleRule;
+
 // ============================================================================
 // INTERNAL HELPERS
 // ============================================================================
@@ -95,6 +100,12 @@ _AddClass(lpObject_t obj, struct style_class_selector* cls)
 static lpObject_t
 _GetOrCreateStyleSheet(lpObject_t obj)
 {
+  // Ensure classes are registered (may be called before luaopen_orca_core, e.g.
+  // from tailwind.lua which runs during orca.init() before require 'orca.core')
+  if (!OBJ_FindClassW(ID_StyleSheet)) {
+    OBJ_RegisterClass(&_StyleSheet);
+    OBJ_RegisterClass(&_StyleRule);
+  }
   if (!obj) {
     if (!static_stylesheet) {
       static_stylesheet = OBJ_MakeNativeObject(ID_StyleSheet);
@@ -165,6 +176,65 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
   OBJ_ReleaseProperties(sheetObj);
   OBJ_ReleaseComponents(sheetObj);
   free(sheetObj);
+}
+
+// Add a style rule to obj's stylesheet (or the global one when obj==NULL).
+// L is the Lua state; top of stack must be a table {propName=value,...}.
+// selector is a CSS-style selector string, e.g. ".button:hover" or "button".
+ORCA_API void
+OBJ_AddStyleRule(lua_State* L, lpObject_t obj, lpcString_t selector)
+{
+  if (!selector || !L) return;
+  lpObject_t sheetObj = _GetOrCreateStyleSheet(obj);
+  if (!sheetObj) return;
+
+  // Create StyleRule native object
+  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
+  struct StyleRule* sr = GetStyleRule(ruleObj);
+  if (!sr) { free(ruleObj); return; }
+
+  // Parse selector: strip leading '.', split at ':'
+  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
+  lpcString_t colon = strchr(base, ':');
+  size_t nameLen = colon ? (size_t)(colon - base) : strlen(base);
+  nameLen = MIN(nameLen, sizeof(shortStr_t) - 1);
+
+  // Set ClassName property
+  lpProperty_t nameProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &nameProp))) {
+    char buf[sizeof(shortStr_t)] = {0};
+    memcpy(buf, base, nameLen);
+    PROP_SetValue(nameProp, buf);
+  }
+  sr->class_id = fnv1a32_n(base, nameLen);
+
+  // Set PseudoClass and flags
+  if (colon) {
+    lpProperty_t pseudoProp = NULL;
+    if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_PseudoClass, &pseudoProp))) {
+      PROP_SetValue(pseudoProp, colon + 1);
+    }
+    sr->flags = _ParsePseudoStateFlags(base);
+  }
+
+  // Iterate the Lua table on top of the stack and set each property override
+  extern int luaX_readProperty(lua_State*, int, lpProperty_t);
+  lua_pushvalue(L, -1); // copy the table
+  lua_pushnil(L);
+  while (lua_next(L, -2)) {
+    lpcString_t propName = lua_tostring(L, -2);
+    if (propName) {
+      lpcPropertyType_t pt = _FindPropertyTypeByName(propName);
+      if (pt) {
+        lpProperty_t rp = PROP_Create(NULL, ruleObj, pt);
+        luaX_readProperty(L, -1, rp);
+      }
+    }
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1); // pop the table copy
+
+  OBJ_AddChild(sheetObj, ruleObj, FALSE);
 }
 
 // ============================================================================
