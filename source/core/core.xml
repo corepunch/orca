@@ -431,11 +431,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Resets the dirty state of the object, indicating that it has been recalculated and no further updates are needed until it becomes dirty again.</details>
         </method>
         <topic title="Style">Manages style sheets and resolves computed style values.</topic>
-        <method name="AddStyleRule" lua="true">
-          <summary>Add a stylesheet to the object.</summary>
-          <details>Attaches a stylesheet resource to this object, enabling rule-based styling capabilities. The stylesheet contains rules that can modify the appearance and behavior of this object and potentially its children. Stylesheets support selectors, property assignments, and cascading rules. Multiple stylesheets can be applied to the same object, with later sheets taking precedence for conflicting rules.</details>
-          <arg name="source" type="string">Name or path of the stylesheet resource to load and apply to this object</arg>
-        </method>
         <method name="GetStyle" const="true">
           <summary>Retrieves object style flags</summary>
           <details>Returns a bitmask of style flags similar to WinAPI style constants. Each bit represents different visual or behavioral properties.</details>

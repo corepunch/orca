@@ -474,14 +474,6 @@ OBJ_ClearDirtyFlags(struct Object*);
 /// @name Style
 /// Manages style sheets and resolves computed style values.
 
-/// @brief Returns (or lazily creates) the global singleton StyleSheet object
-ORCA_API struct Object*
-OBJ_GetGlobalStyleSheet(void);
-
-/// @brief Returns (or lazily creates) the per-object StyleSheet for a node
-ORCA_API struct Object*
-OBJ_GetObjectStyleSheet(struct Object*);
-
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
 OBJ_GetStyle(struct Object const*);

@@ -1680,24 +1680,11 @@ int f_core_GetHover(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_core_GetGlobalStyleSheet(lua_State *L) {
-	struct Object* result_ = OBJ_GetGlobalStyleSheet();
-	luaX_pushObject(L, result_);
-	return 1;
-}
-int f_core_GetObjectStyleSheet(lua_State *L) {
-	struct Object* obj = luaX_checkObject(L, 1);
-	struct Object* result_ = OBJ_GetObjectStyleSheet(obj);
-	luaX_pushObject(L, result_);
-	return 1;
-}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
-	luaL_newlib(L, ((luaL_Reg[]) {
+	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "getFocus", f_core_GetFocus },
 		{ "getHover", f_core_GetHover },
-		{ "getGlobalStyleSheet", f_core_GetGlobalStyleSheet },
-		{ "getObjectStyleSheet", f_core_GetObjectStyleSheet },
 		{ NULL, NULL } 
 	}));
 	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
