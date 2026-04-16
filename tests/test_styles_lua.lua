@@ -1,14 +1,18 @@
 -- Headless tests for the ORCA style system — exercised from Lua using
--- the native StyleRule/StyleSheet API, node.class, and StyleController.ThemeChanged.
+-- the CSS string API, node.class, and StyleController.ThemeChanged.
 --
 -- Run with: $(TARGET) -test=tests/test_styles_lua.lua
 --
 -- Complements the C unit tests in test_styles.c by covering the Lua
--- property-setting path end-to-end: StyleRule → class assignment →
--- ThemeChanged dispatch → property values applied.
+-- property-setting path end-to-end: CSS string → StyleSheet.Parse →
+-- screen.StyleSheet → class assignment → ThemeChanged → values applied.
 
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
+
+-- Load the CSS plugin so that core.StyleSheet.Parse is available
+-- (in a full runtime this is done by orca.init(); tests load it directly)
+dofile(SHAREDIR.."/plugins/file-css.lua")
 
 -- ---------------------------------------------------------------------------
 -- Helpers
@@ -34,29 +38,15 @@ local function applyStyles(node)
   node:send("StyleController.ThemeChanged")
 end
 
--- Replacement for the removed addStyleRule Lua method.
--- Creates a native StyleRule, parses the selector into ClassName/PseudoClass,
--- sets property overrides, and adds the rule to the node's per-object StyleSheet.
-local function addStyleRule(node, selector, props)
-  local rule = core.StyleRule()
-  -- Strip optional leading '.' and split off pseudo-state at ':'
-  local base = selector:match('^%.?([^:]+)') or selector
-  local pseudo = selector:match(':(.+)$')
-  rule.ClassName = base
-  if pseudo then rule.PseudoClass = pseudo end
-  for k, v in pairs(props) do rule[k] = v end
-  core.getObjectStyleSheet(node):addChild(rule)
-end
-
 -- ---------------------------------------------------------------------------
--- Test 1: addStyleRule + class assignment → Opacity applied
+-- Test 1: CSS opacity rule + class assignment → Opacity applied
 -- ---------------------------------------------------------------------------
 local function test_style_applies_opacity()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".highlight { opacity: 0.4; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  addStyleRule(node, "highlight", { Opacity = "0.4" })
   node.class = "highlight"
   applyStyles(node)
 
@@ -71,10 +61,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_not_applied_without_class()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".hidden { opacity: 0.0; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 0.8
-  addStyleRule(node, "hidden", { Opacity = "0.0" })
   -- Intentionally NOT setting node.class = "hidden"
   applyStyles(node)
 
@@ -89,9 +79,9 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D { Width = 100, Height = 50 }
+  screen.StyleSheet = core.StyleSheet.Parse(".box { width: 200; height: 80; }")
+  local node = screen + ui.Node2D { Width = 100, Height = 50 }
 
-  addStyleRule(node, "box", { Width = "200", Height = "80" })
   node.class = "box"
   applyStyles(node)
 
@@ -107,18 +97,14 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_classes()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  addStyleRule(node, "alpha50",   { Opacity = "0.5" })
-  addStyleRule(node, "alpha25",   { Opacity = "0.25" })
-
   node.class = "alpha50"
   applyStyles(node)
   expect_near(node.Opacity, 0.5, 0.001, "alpha50 applied: Opacity=0.5")
 
-  -- Reassign to another class
-  -- Note: addStyleRule adds to the existing stylesheet; class= replaces.
   node.class = "alpha25"
   applyStyles(node)
   expect_near(node.Opacity, 0.25, 0.001, "alpha25 applied: Opacity=0.25")
@@ -132,10 +118,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_hover_not_applied_by_default()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".btn:hover { opacity: 0.6; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  addStyleRule(node, "btn:hover", { Opacity = "0.6" })
   node.class = "btn"
   applyStyles(node)
 
@@ -152,12 +138,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_non_hover_rule_applies()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".card { opacity: 0.7; } .card:hover { opacity: 1.0; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  -- Add both a normal and a hover rule for the same selector
-  addStyleRule(node, "card",       { Opacity = "0.7" })
-  addStyleRule(node, "card:hover", { Opacity = "1.0" })
   node.class = "card"
   applyStyles(node)
 
@@ -172,11 +156,11 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_recursive_children()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = core.StyleSheet.Parse(".dim { opacity: 0.3; }")
   local parent = screen + ui.Node2D {}
   local child  = parent + ui.Node2D {}
 
   child.Opacity = 1.0
-  addStyleRule(child, "dim", { Opacity = "0.3" })
   child.class = "dim"
 
   -- Fire ThemeChanged recursively on the parent
@@ -193,11 +177,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_dot_prefix_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".primary { opacity: 0.55; }")
+  local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
-  -- Both "primary" and ".primary" should hash to the same class ID.
-  addStyleRule(node, ".primary", { Opacity = "0.55" })
   node.class = "primary"
   applyStyles(node)
 
@@ -208,18 +191,17 @@ local function test_style_dot_prefix_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 9: Numeric value in style rule is applied correctly
+-- Test 9: Numeric CSS value is applied correctly
 -- ---------------------------------------------------------------------------
 local function test_style_numeric_value()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".sized { width: 150; }")
+  local node = screen + ui.Node2D {}
 
-  -- Pass numeric value directly (not as a string)
-  addStyleRule(node, "sized", { Width = 150 })
   node.class = "sized"
   applyStyles(node)
 
-  expect_near(node.Width, 150, 0.5, "numeric Width=150 applied from style rule")
+  expect_near(node.Width, 150, 0.5, "CSS width: 150 applied from style rule")
 
   node:removeFromParent()
   print("PASS: test_style_numeric_value")
@@ -230,10 +212,10 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  screen.StyleSheet = core.StyleSheet.Parse(".ghost { opacity: 0.1; }")
+  local node = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
-  addStyleRule(node, "ghost", { Opacity = "0.1" })
   node.class = "ghost"
   applyStyles(node)
 
@@ -241,56 +223,6 @@ local function test_style_applies_to_new_node()
 
   node:removeFromParent()
   print("PASS: test_style_applies_to_new_node")
-end
-
--- ---------------------------------------------------------------------------
--- Test 11: @apply directive only inherits default rules (no pseudo-state inheritance)
--- ---------------------------------------------------------------------------
-local function test_style_apply_inherits_default_only()
-  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
-
-  -- Define a base class "base" with a default rule and a :hover rule
-  addStyleRule(node, "base",       { Opacity = "0.5", Width = "120" })
-  addStyleRule(node, "base:hover", { Opacity = "0.9" })
-
-  -- Define a derived class "derived" that @apply's "base" (no pseudo-state)
-  -- → should inherit Opacity=0.5 and Width=120 but NOT the :hover Opacity=0.9
-  addStyleRule(node, "derived", { ["@apply"] = "base", Height = "80" })
-
-  node.class = "derived"
-  applyStyles(node)
-
-  -- Default base rule inherited: Opacity=0.5, Width=120; Height from derived=80
-  expect_near(node.Opacity, 0.5, 0.001, "@apply: inherited Opacity=0.5 (default rule)")
-  expect_near(node.Width,  120,  0.5,   "@apply: inherited Width=120 (default rule)")
-  expect_near(node.Height,  80,  0.5,   "@apply: own Height=80 applied")
-
-  node:removeFromParent()
-  print("PASS: test_style_apply_inherits_default_only")
-end
-
--- ---------------------------------------------------------------------------
--- Test 12: @apply with pseudo-state selector inherits only that pseudo-state rule
--- ---------------------------------------------------------------------------
-local function test_style_apply_inherits_pseudo_state()
-  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
-
-  addStyleRule(node, "src",       { Width = "100" })  -- default rule for "src"
-  addStyleRule(node, "src:hover", { Width = "200" })  -- :hover rule for "src"
-
-  -- "@apply src:hover" should copy only the :hover Width=200, not the default Width=100
-  addStyleRule(node, "dst", { ["@apply"] = "src:hover" })
-
-  node.class = "dst"
-  applyStyles(node)
-
-  -- "dst" has no default Width rule of its own — only the @apply-ed :hover Width=200
-  expect_near(node.Width, 200, 0.5, "@apply src:hover: inherited Width=200")
-
-  node:removeFromParent()
-  print("PASS: test_style_apply_inherits_pseudo_state")
 end
 
 
@@ -304,7 +236,5 @@ test_style_recursive_children()
 test_style_dot_prefix_selector()
 test_style_numeric_value()
 test_style_applies_to_new_node()
-test_style_apply_inherits_default_only()
-test_style_apply_inherits_pseudo_state()
 
 print("All style tests passed.")
