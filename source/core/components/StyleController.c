@@ -101,12 +101,6 @@ _GetOrCreateStyleSheet(lpObject_t obj)
     }
     return static_stylesheet;
   }
-  // If the caller itself IS a StyleSheet, use it directly as the rule container.
-  // This allows standalone StyleSheet objects to be populated with addStyleRule().
-  if (GetStyleSheet(obj)) {
-    return obj;
-  }
-  // Otherwise look up (or create) a sheet owned by the object's StyleController.
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) return NULL;
   if (!sc->StyleSheet) {

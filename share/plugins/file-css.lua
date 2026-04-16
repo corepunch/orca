@@ -1,6 +1,7 @@
 -- Mapping from CSS property names to ORCA component property names.
 -- Keys are lowercase CSS names; values are fully-qualified ORCA names
 -- (Class.Property) to disambiguate across component namespaces.
+-- Only properties in this map are accepted from CSS sources.
 local css_property_map = {
   -- Visual / background
   ["background-color"]  = "Node2D.BackgroundColor",
@@ -91,19 +92,37 @@ local function css_parse(css)
   return result
 end
 
+-- Split a CSS selector into (className, pseudoClass).
+-- ".button:hover:focus" → "button", "hover:focus"
+-- "card" → "card", ""
+local function parse_selector(selector)
+  local base = selector:match("^%.(.+)$") or selector
+  local className = base:match("^([^:/]+)") or base
+  local pseudo    = base:match(":(.+)$") or ""
+  return className, pseudo
+end
+
 -- Build and return a core.StyleSheet from a parsed CSS table.
--- Each top-level selector (e.g. ".button", ".card:hover") becomes a StyleRule
--- child on the sheet, with property overrides attached so that ThemeChanged
--- can apply them via a direct binary copy — no string re-parsing.
+-- Each top-level selector becomes a StyleRule child whose ClassName and
+-- PseudoClass are extracted from the selector string, and whose property
+-- overrides are attached as C properties for zero-cost binary copy on apply.
 local function css_to_stylesheet(parsed)
   local core = require "orca.core"
   local sheet = core.StyleSheet()
   for selector, props in pairs(parsed) do
-    local rule = sheet + core.StyleRule { selector = selector }
+    local class_name, pseudo = parse_selector(selector)
+    local rule = sheet + core.StyleRule { ClassName = class_name, PseudoClass = pseudo }
     for k, v in pairs(props) do
-      local prop_name = css_property_map[k:lower()]
-      assert(prop_name, "Unsupported CSS property: " .. k)
-      rule[prop_name] = v
+      if k:sub(1, 1) ~= "@" then  -- skip @-directives like @apply
+        local prop_name = css_property_map[k:lower()]
+        if prop_name then
+          rule[prop_name] = v
+        else
+          io.stderr:write("Warning: Unsupported CSS property '" .. k .. "' in selector '" .. selector .. "'\n")
+        end
+      else
+        io.stderr:write("Warning: Skipping unsupported CSS directive: " .. k .. "\n")
+      end
     end
   end
   return sheet
@@ -112,5 +131,7 @@ end
 table.insert(package.searchers, function(path)
 	local filesystem = require "orca.filesystem"
 	local contents = filesystem.readTextFile(path..'.css')
-	return contents and function() return css_to_stylesheet(css_parse(contents)) end or nil
+	return contents and function()
+    return css_to_stylesheet(css_parse(contents))
+  end or nil
 end)
