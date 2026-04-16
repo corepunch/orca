@@ -42,9 +42,6 @@ class Application extends ui.Screen
 			elseif type(k) == 'string'
 				if string.byte(k, 1) == 47 -- / symbol
 					@routes[k] = v
-		for style in *@__styles
-			for k, v in pairs style
-				@addStyleRule k, v
 		@navigate "/"
 		@ready!
 
@@ -91,12 +88,3 @@ class Application extends ui.Screen
 		into = get_target_route_group @
 		each_route source, (path, action) ->
 			into[path] = action
-
-	__styles: {}
-
-	stylesheet: (src) =>
-		import parse from require "orca.parsers.css"
-		import readTextFile from require "orca.filesystem"
-		into = get_target_route_group @
-		style = if (type src) ~= 'string' then src else parse readTextFile src
-		table.insert(into.__styles, style)

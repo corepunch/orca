@@ -16,8 +16,7 @@ class App extends Application
 	@include "applications.users"
 	@include "applications.chat"
 
-	@stylesheet require "tailwind"
-	@stylesheet "assets/globals.css"
+	StyleSheet: "assets/globals.css"
 
 	"/": => Layout page.HomePage
 	"/send-money": => Layout page.SendMoney

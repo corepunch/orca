@@ -23,17 +23,16 @@ void on_ui_module_registered(lua_State* L) {
   lua_setfield(L, -2, "consoleViewUnpack");
   lua_pushcfunction(L, f_ConsoleView_getIndexPosition);
   lua_setfield(L, -2, "consoleViewGetIndexPosition");
+}
 
+void
+after_ui_module_registered(lua_State* L) {
   // Register UIKit table in package.loaded so TerminalView.lua can require it
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   lua_pushvalue(L, -3); // UIKit table
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
-}
-
-void
-after_ui_module_registered(lua_State* L) {
   // Load TerminalView Lua extension and expose it as UIKit.TerminalView.
   // Guard against recursive require() returning package.loaded's in-progress
   // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()
