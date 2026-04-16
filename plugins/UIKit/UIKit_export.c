@@ -1072,5 +1072,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_PageHost), -2), "PageHost");
 	lua_setfield(L, ((void)lua_pushclass(L, &_PageViewport), -2), "PageViewport");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Style), -2), "Style");
+	void after_ui_module_registered(lua_State *L);
+	after_ui_module_registered(L);
 	return 1;
 }
