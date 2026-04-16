@@ -139,10 +139,15 @@ local function css_to_stylesheet(parsed)
   return sheet
 end
 
+local orca = require "orca"
+orca.core.StyleSheet.Parse = function(css)
+  return css_to_stylesheet(css_parse(css))
+end
+
 table.insert(package.searchers, function(path)
 	local filesystem = require "orca.filesystem"
 	local contents = filesystem.readTextFile(path..'.css')
 	return contents and function()
-    return css_to_stylesheet(css_parse(contents))
+    return orca.core.StyleSheet.Parse(contents)
   end or nil
 end)
