@@ -144,7 +144,8 @@
 <!ELEMENT TextBlockConcept EMPTY>
 <!ATTLIST TextBlockConcept %TextBlockConceptAttribs;>
 <!ENTITY % Node2DAttribs "
-	%Node,StyleControllerAttribs;
+	%NodeAttribs;
+	%StyleControllerAttribs;
 	LayoutTransform CDATA #IMPLIED
 	LayoutTransformTranslation CDATA #IMPLIED
 	LayoutTransformRotation CDATA #IMPLIED
@@ -278,7 +279,7 @@
 <!ATTLIST Node2D.IgnoreHitTest Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Node2D.ForegroundHint (#PCDATA | Binding)*>
 <!ATTLIST Node2D.ForegroundHint Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % Node2DElements "Node2D.LayoutTransform|Node2D.LayoutTransformTranslation|Node2D.LayoutTransformRotation|Node2D.LayoutTransformScale|Node2D.RenderTransform|Node2D.RenderTransformTranslation|Node2D.RenderTransformRotation|Node2D.RenderTransformScale|Node2D.RenderTransformOrigin|Node2D.ContentOffset|Node2D.Matrix|Node2D.RenderTarget|Node2D.Background|Node2D.BackgroundColor|Node2D.BackgroundImage|Node2D.BackgroundMaterial|Node2D.Foreground|Node2D.ForegroundColor|Node2D.ForegroundImage|Node2D.ForegroundMaterial|Node2D.BoxShadow|Node2D.BoxShadowOffset|Node2D.BoxShadowBlurRadius|Node2D.BoxShadowSpreadRadius|Node2D.BoxShadowColor|Node2D.Overflow|Node2D.OverflowX|Node2D.OverflowY|Node2D.Ring|Node2D.RingOffset|Node2D.RingWidth|Node2D.RingColor|Node2D.CompositionBrush|Node2D.CompositionDesignSize|Node2D.SizeToContent|Node2D.OffscreenRendering|Node2D.ForceComposition|Node2D.CacheResult|Node2D.SnapToPixel|Node2D.ClipChildren|Node2D.ContentStretch|Node2D.Hovered|Node2D.IgnoreHitTest|Node2D.ForegroundHint|%Node,StyleControllerElements;">
+<!ENTITY % Node2DElements "Node2D.LayoutTransform|Node2D.LayoutTransformTranslation|Node2D.LayoutTransformRotation|Node2D.LayoutTransformScale|Node2D.RenderTransform|Node2D.RenderTransformTranslation|Node2D.RenderTransformRotation|Node2D.RenderTransformScale|Node2D.RenderTransformOrigin|Node2D.ContentOffset|Node2D.Matrix|Node2D.RenderTarget|Node2D.Background|Node2D.BackgroundColor|Node2D.BackgroundImage|Node2D.BackgroundMaterial|Node2D.Foreground|Node2D.ForegroundColor|Node2D.ForegroundImage|Node2D.ForegroundMaterial|Node2D.BoxShadow|Node2D.BoxShadowOffset|Node2D.BoxShadowBlurRadius|Node2D.BoxShadowSpreadRadius|Node2D.BoxShadowColor|Node2D.Overflow|Node2D.OverflowX|Node2D.OverflowY|Node2D.Ring|Node2D.RingOffset|Node2D.RingWidth|Node2D.RingColor|Node2D.CompositionBrush|Node2D.CompositionDesignSize|Node2D.SizeToContent|Node2D.OffscreenRendering|Node2D.ForceComposition|Node2D.CacheResult|Node2D.SnapToPixel|Node2D.ClipChildren|Node2D.ContentStretch|Node2D.Hovered|Node2D.IgnoreHitTest|Node2D.ForegroundHint|%NodeElements;|%StyleControllerElements;">
 <!ELEMENT Node2D (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%Node2DElements;)*>
 <!ATTLIST Node2D %Node2DAttribs;>
 <!ENTITY % PrefabView2DAttribs "
