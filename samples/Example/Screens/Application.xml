@@ -13,14 +13,10 @@
 			<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
 			<Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="surface">
 				<StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="16">
-					<TextBlock Name="HeadlineLine1" Text="Build stunning" FontSize="48" ForegroundColor="text-primary"/>
-					<TextBlock Name="HeadlineLine2" Text="UI in real-time." FontSize="48" ForegroundColor="accent"/>
+					<TextBlock Name="HeadlineLine1" FontSize="48" ForegroundColor="text-primary">Build stunning</TextBlock>
+					<TextBlock Name="HeadlineLine2" FontSize="48" ForegroundColor="accent">UI in real-time.</TextBlock>
 					<Node2D Name="HeadlineSpacer" Height="20"/>
-					<TextBlock Name="SubHeadline"
-						Text="A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps."
-						FontSize="15"
-						ForegroundColor="text-muted"
-						WordWrap="true"/>
+					<TextBlock Name="SubHeadline" FontSize="15" ForegroundColor="text-muted" WordWrap="true">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
 					<Node2D Name="MetricSpacer" Height="40"/>
 					<Grid Name="Metrics" Columns="auto auto auto" Spacing="16">
 						<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="2.4 M" Card.Subtitle="Active users" Card.PrimaryColor="accent"/>

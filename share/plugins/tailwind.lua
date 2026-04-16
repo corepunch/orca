@@ -31,17 +31,11 @@ local spreadsheet = {
 local theme = { colors = {} }
 
 -- Helper: create a StyleRule from a selector string and a property table, then add to styles.
-local function add_rule(selector, props)
-	local rule = core.StyleRule()
-	local base = selector:sub(1, 1) == '.' and selector:sub(2) or selector
-	local colon = base:find(':')
-	if colon then
-		rule.ClassName = base:sub(1, colon - 1)
-		rule.PseudoClass = base:sub(colon + 1)
-	else
-		rule.ClassName = base
+local function add_rule(classname, props)
+	local rule = core.StyleRule { ClassName = classname }
+	for key, value in pairs(props) do
+		rule[key] = type(value) == "string" and orca.core.parseProperty(value, rule:findExplicitProperty(key)) or value
 	end
-	for k, v in pairs(props) do rule[k] = v end
 	core.addGlobalStyleRule(rule)
 end
 
@@ -91,31 +85,30 @@ for k1, v1 in pairs {
 end
 
 for k1, v1 in pairs {middle="Center",top="Top",bottom="Bottom"} do
-	add_rule(".align-"..k1, { VerticalAlignment = v1 })
+	add_rule("align-"..k1, { ["Node.VerticalAlignment"] = v1 })
 	for k2, v2 in pairs {center="Center",left="Left",right="Right"} do
-		add_rule(string.format(".align-%s-%s", k1, k2), {
+		add_rule(string.format("align-%s-%s", k1, k2), {
 			["Node.HorizontalAlignment"] = v2,
 			["Node.VerticalAlignment"] = v1
 		})
-		add_rule(".align-"..k2, { ["Node.HorizontalAlignment"] = v2 })
+		add_rule("align-"..k2, { ["Node.HorizontalAlignment"] = v2 })
 	end
 end
 
 for _, v1 in ipairs(spacing) do
 	for k2, v2 in pairs {
-			rounded="Node.BorderRadius",
 			text="TextRun.FontSize",
 			w="Node.Width",
 			h="Node.Height"
 		} do
 		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1*rem })
 	end
-	add_rule(string.format(".gap-%s", v1), { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem })
+	add_rule(string.format("rounded-%s", v1), { ["Node.BorderRadius"] = core.CornerRadius(v1*rem) })
+	add_rule(string.format("gap-%s", v1), { ["StackView.Spacing"] = v1*rem, ["Grid.Spacing"] = v1*rem })
 end
 
 for _, v1 in ipairs(spacing) do
 	for k2, v2 in pairs {
-			["border"]="Node.BorderWidth",
 			["underline"]="TextRun.UnderlineWidth",
 			["underline-offset"]="TextRun.UnderlineOffset",
 			["ring"]="Node2D.RingWidth",
@@ -123,18 +116,19 @@ for _, v1 in ipairs(spacing) do
 		} do
 		add_rule(string.format(".%s-%s", k2, v1), { [v2] = v1 })
 	end
+	add_rule(string.format("border-%s", v1), { ["Node.BorderWidth"] = core.Thickness(v1) })
 end
 
 for k, v in pairs {start="Start",["end"]="End",center="Center",baseline="Baseline",stretch="Stretch"} do
-	add_rule(".items-"..k, { ["StackView.AlignItems"] = v })
+	add_rule("items-"..k, { ["StackView.AlignItems"] = v })
 end
 
 for k, v in pairs {left="Left",center="Center",right="Right"} do
-	add_rule(".text-"..k, { ["TextBlockConcept.TextHorizontalAlignment"] = v })
+	add_rule("text-"..k, { ["TextBlockConcept.TextHorizontalAlignment"] = v })
 end
 
 for k, v in pairs {top="Top",middle="Center",bottom="Bottom"} do
-	add_rule(".text-"..k, { ["TextBlockConcept.TextVerticalAlignment"] = v })
+	add_rule("text-"..k, { ["TextBlockConcept.TextVerticalAlignment"] = v })
 end
 
 for k, v in pairs {
@@ -152,11 +146,11 @@ for k, v in pairs {
 	["8xl"] =  { 96,  96},
 	["9xl"] =  { 128, 128},
 } do
-	add_rule(".text-"..k, { ["TextRun.FontSize"] = v[1], ["TextRun.LineHeight"] = v[2] })
+	add_rule("text-"..k, { ["TextRun.FontSize"] = v[1], ["TextRun.LineHeight"] = v[2] })
 end
 
 for k, v in pairs {col="Vertical",row="Horizontal"} do
-	add_rule(".flex-"..k, { ["StackView.Direction"] = v })
+	add_rule("flex-"..k, { ["StackView.Direction"] = v })
 end
 
 for k1, v1 in pairs {
@@ -167,17 +161,17 @@ for k1, v1 in pairs {
 	-- scroll ="Scroll"
 } do
 	for k2, v2 in pairs {x="X", y="Y"} do
-		local class = string.format(".overflow-%s-%s", k2, k1)
+		local class = string.format("overflow-%s-%s", k2, k1)
 		add_rule(class, { ["Node2D.Overflow"..v2] = v1 })
 	end	
 end
 
-add_rule(".overflow-x-scroll", {
+add_rule("overflow-x-scroll", {
 	["Node2D.OverflowX"] = "Scroll",
 	["Node2D.ClipChildren"] = true,
 })
 
-add_rule(".overflow-y-scroll", {
+add_rule("overflow-y-scroll", {
 	["Node2D.OverflowY"] = "Scroll",
 	["Node2D.ClipChildren"] = true,
 })
@@ -190,22 +184,22 @@ for k, v in pairs {
 	["around"]  = "SpaceAround",
 	["evenly"]  = "SpaceEvenly"
 } do
-	add_rule(".justify-"..k, { ["StackView.JustifyContent"] = v })
+	add_rule("justify-"..k, { ["StackView.JustifyContent"] = v })
 end	
 
-add_rule(".text-clip", { ["TextBlockConcept.TextOverflow"] = "Clip" })
-add_rule(".text-ellipsis", { ["TextBlockConcept.TextOverflow"] = "Ellipsis" })
-add_rule(".text-wrap", { ["TextBlockConcept.TextWrapping"] = "WrapWithOverflow" })
-add_rule(".text-nowrap", { ["TextBlockConcept.TextWrapping"] = "NoWrap" })
-add_rule(".font-normal", { ["TextRun.FontWeight"] = "Normal" })
-add_rule(".font-bold", { ["TextRun.FontWeight"] = "Bold" })
-add_rule(".non-italic", { ["TextRun.FontStyle"] = "Normal" })
-add_rule(".italic", { ["TextRun.FontStyle"] = "Italic" })
-add_rule(".w-full", { ["Node.HorizontalAlignment"] = "Stretch" })
-add_rule(".h-full", { ["Node.VerticalAlignment"] = "Stretch" })
-add_rule(".rounded", { ["Node.BorderRadius"] = "8" })
-add_rule(".border", { ["Node.BorderWidth"] = "1" })
-add_rule(".underline", { ["TextRun.UnderlineWidth"] = "1" })
-add_rule(".no-underline", { ["TextRun.UnderlineWidth"] = "0" })
+add_rule("text-clip", { ["TextBlockConcept.TextOverflow"] = "Clip" })
+add_rule("text-ellipsis", { ["TextBlockConcept.TextOverflow"] = "Ellipsis" })
+add_rule("text-wrap", { ["TextBlockConcept.TextWrapping"] = "WrapWithOverflow" })
+add_rule("text-nowrap", { ["TextBlockConcept.TextWrapping"] = "NoWrap" })
+add_rule("font-normal", { ["TextRun.FontWeight"] = "Normal" })
+add_rule("font-bold", { ["TextRun.FontWeight"] = "Bold" })
+add_rule("non-italic", { ["TextRun.FontStyle"] = "Normal" })
+add_rule("italic", { ["TextRun.FontStyle"] = "Italic" })
+add_rule("w-full", { ["Node.HorizontalAlignment"] = "Stretch" })
+add_rule("h-full", { ["Node.VerticalAlignment"] = "Stretch" })
+add_rule("rounded", { ["Node.BorderRadius"] = "8" })
+add_rule("border", { ["Node.BorderWidth"] = "1" })
+add_rule("underline", { ["TextRun.UnderlineWidth"] = "1" })
+add_rule("no-underline", { ["TextRun.UnderlineWidth"] = "0" })
 
 -- return style
