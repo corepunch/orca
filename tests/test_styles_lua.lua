@@ -230,8 +230,56 @@ local function test_style_applies_to_new_node()
 end
 
 -- ---------------------------------------------------------------------------
--- Run all tests
+-- Test 11: @apply directive only inherits default rules (no pseudo-state inheritance)
 -- ---------------------------------------------------------------------------
+local function test_style_apply_inherits_default_only()
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  local node   = screen + ui.Node2D {}
+
+  -- Define a base class "base" with a default rule and a :hover rule
+  node:addStyleRule("base",       { Opacity = "0.5", Width = "120" })
+  node:addStyleRule("base:hover", { Opacity = "0.9" })
+
+  -- Define a derived class "derived" that @apply's "base" (no pseudo-state)
+  -- → should inherit Opacity=0.5 and Width=120 but NOT the :hover Opacity=0.9
+  node:addStyleRule("derived", { ["@apply"] = "base", Height = "80" })
+
+  node.class = "derived"
+  applyStyles(node)
+
+  -- Default base rule inherited: Opacity=0.5, Width=120; Height from derived=80
+  expect_near(node.Opacity, 0.5, 0.001, "@apply: inherited Opacity=0.5 (default rule)")
+  expect_near(node.Width,  120,  0.5,   "@apply: inherited Width=120 (default rule)")
+  expect_near(node.Height,  80,  0.5,   "@apply: own Height=80 applied")
+
+  node:removeFromParent()
+  print("PASS: test_style_apply_inherits_default_only")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 12: @apply with pseudo-state selector inherits only that pseudo-state rule
+-- ---------------------------------------------------------------------------
+local function test_style_apply_inherits_pseudo_state()
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  local node   = screen + ui.Node2D {}
+
+  node:addStyleRule("src",       { Width = "100" })  -- default rule for "src"
+  node:addStyleRule("src:hover", { Width = "200" })  -- :hover rule for "src"
+
+  -- "@apply src:hover" should copy only the :hover Width=200, not the default Width=100
+  node:addStyleRule("dst", { ["@apply"] = "src:hover" })
+
+  node.class = "dst"
+  applyStyles(node)
+
+  -- "dst" has no default Width rule of its own — only the @apply-ed :hover Width=200
+  expect_near(node.Width, 200, 0.5, "@apply src:hover: inherited Width=200")
+
+  node:removeFromParent()
+  print("PASS: test_style_apply_inherits_pseudo_state")
+end
+
+
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()
@@ -242,5 +290,7 @@ test_style_recursive_children()
 test_style_dot_prefix_selector()
 test_style_numeric_value()
 test_style_applies_to_new_node()
+test_style_apply_inherits_default_only()
+test_style_apply_inherits_pseudo_state()
 
 print("All style tests passed.")

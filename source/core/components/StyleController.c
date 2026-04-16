@@ -106,6 +106,7 @@ _GetOrCreateStyleSheet(lpObject_t obj)
     if (!sc->StyleSheet) {
       lpObject_t sheetObj = OBJ_MakeNativeObject(ID_StyleSheet);
       sc->StyleSheet = GetStyleSheet(sheetObj);
+      sc->owned_sheet = TRUE; // we created it — we own it
     }
     return CMP_GetObject(sc->StyleSheet);
   }
@@ -143,6 +144,8 @@ _AddStyleRulePropertyFromString(lpObject_t ruleObj, lpcString_t name, lpcString_
 {
   lpcPropertyType_t pt = _FindPropertyTypeByName(name);
   if (!pt) return;
+  // Types that require a Lua state (struct, object) cannot be parsed without core.L.
+  if (!core.L && (pt->DataType == kDataTypeStruct || pt->DataType == kDataTypeObject)) return;
   lpProperty_t prop = PROP_Create(NULL, ruleObj, pt);
   char buf[MAX_PROPERTY_STRING] = {0};
   parse_property(core.L, value, pt, buf);
@@ -301,16 +304,21 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t selector)
     uint32_t keyID  = fnv1a32(key);
 
     if (keyID == CSS_APPLY) {
-      // @apply: copy property overrides from another selector
+      // @apply: copy property overrides from another selector, matching flags exactly.
+      // This allows "@apply button" to inherit only the default (non-pseudo-state) rules,
+      // and "@apply button:hover" to inherit only the :hover rules.
       LPSTR str = strdup(luaL_checkstring(L, -1));
-      for (lpcString_t s = strtok(str, " "); s; s = strtok(NULL, " ")) {
+      if (!str) { lua_pop(L, 1); continue; }
+      char* saveptr = NULL;
+      for (lpcString_t s = strtok_r(str, " ", &saveptr); s; s = strtok_r(NULL, " ", &saveptr)) {
         struct style_class_selector* cls = _ParseClass(s);
-        uint32_t applyID = fnv1a32(cls->value);
+        uint32_t applyID    = fnv1a32(cls->value);
+        uint32_t applyFlags = cls->flags;
         // Search global stylesheet
         if (static_stylesheet) {
           FOR_EACH_OBJECT(child, static_stylesheet) {
             struct StyleRule* csr = GetStyleRule(child);
-            if (csr && csr->class_id == applyID) {
+            if (csr && csr->class_id == applyID && csr->flags == applyFlags) {
               _CopyRuleProperties(child, ruleObj);
             }
           }
@@ -321,7 +329,7 @@ void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t selector)
           if (sc && sc->StyleSheet) {
             FOR_EACH_OBJECT(child, CMP_GetObject(sc->StyleSheet)) {
               struct StyleRule* csr = GetStyleRule(child);
-              if (csr && csr->class_id == applyID) {
+              if (csr && csr->class_id == applyID && csr->flags == applyFlags) {
                 _CopyRuleProperties(child, ruleObj);
               }
             }
@@ -448,10 +456,14 @@ OBJ_ClearStyleClasses(lpObject_t pobj)
   FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) free(cls);
   sc->classes = NULL;
 
-  if (sc->StyleSheet) {
+  // Only release the sheet if we created it (owned_sheet).
+  // When StyleSheet was assigned externally (e.g. shared between controllers),
+  // we just clear our pointer without freeing the underlying object.
+  if (sc->StyleSheet && sc->owned_sheet) {
     _ReleaseNativeStyleSheet(CMP_GetObject(sc->StyleSheet));
-    sc->StyleSheet = NULL;
+    sc->owned_sheet = FALSE;
   }
+  sc->StyleSheet = NULL;
 }
 
 // ============================================================================

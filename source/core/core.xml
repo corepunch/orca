@@ -759,6 +759,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
       <fields>
         <field name="classes" type="style_class_selector" pointer="true">Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)</field>
+        <field name="owned_sheet" type="bool">TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).</field>
       </fields>
       <messages>
         <message name="ThemeChanged" routing="Direct">

@@ -991,6 +991,7 @@ typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t
 struct StyleController {
 	struct StyleSheet* StyleSheet; ///< The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.
 	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
+	bool_t owned_sheet; ///< TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).
 	event_t ThemeChanged;
 	event_t AddClass;
 	event_t AddClasses;
