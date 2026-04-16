@@ -416,7 +416,7 @@
         <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
       </fields>
     </class>
-    <class name="TextBlock" parent="Node2D" concept="TextBlockConcept">
+    <class name="TextBlock" parent="Node2D" concept="TextBlockConcept" allow-text="true">
       <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
       <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -455,7 +455,7 @@
         <field name="_checkmark" type="Texture" pointer="true">Internal checkmark image for checkbox rendering</field>
       </fields>
     </class>
-    <class name="Button" parent="TextBlock">
+    <class name="Button" parent="TextBlock" allow-text="true">
       <summary>Interactive button control for user actions</summary>
       <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>

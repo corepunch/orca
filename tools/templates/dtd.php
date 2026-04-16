@@ -116,6 +116,8 @@ foreach ($globalComponents as $name => $comp) {
     $parent = $parentAttr !== null ? strval($parentAttr) : "";
     $conceptAttr = $comp->_elem["concept"];
     $concept = $conceptAttr !== null ? strval($conceptAttr) : "";
+    $allowTextAttr = $comp->_elem["allow-text"];
+    $allowText = $allowTextAttr !== null ? strval($allowTextAttr) === "true" : false;
 
     // --- Attribs entity ---
     echo "<!ENTITY % " . $name . "Attribs \"\n";
@@ -190,7 +192,11 @@ foreach ($globalComponents as $name => $comp) {
         $arr[] = "StyleSheet";
         $arr[] = "LayerPrefabPlaceholder";
         $arr[] = $elm;
-        echo "(" . implode("|", $arr) . ")*>\n";
+        if ($allowText) {
+            echo "(#PCDATA|" . implode("|", $arr) . ")*>\n";
+        } else {
+            echo "(" . implode("|", $arr) . ")*>\n";
+        }
     } elseif (isNode($name, "3D")) {
         $arr = [];
         foreach ($globalComponents as $k => $v) {
