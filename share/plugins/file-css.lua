@@ -1,6 +1,7 @@
 -- Mapping from CSS property names to ORCA component property names.
 -- Keys are lowercase CSS names; values are fully-qualified ORCA names
 -- (Class.Property) to disambiguate across component namespaces.
+-- Only properties in this map are accepted from CSS sources.
 local css_property_map = {
   -- Visual / background
   ["background-color"]  = "Node2D.BackgroundColor",
@@ -36,16 +37,6 @@ local css_property_map = {
   ["visibility"]        = "Node.Visible",
 }
 
-local function kebab_to_pascal(s)
-  -- Check explicit mapping first
-  local mapped = css_property_map[s]
-  if mapped then return mapped end
-  return (s:gsub("(%-?)([^%-]+)", function(dash, w)
-    return (dash == "-" or s:sub(1,1) == w:sub(1,1))
-      and w:sub(1,1):upper()..w:sub(2) or w
-  end))
-end
-
 local function skip(s, i) return s:match("^%s*()", i) end
 
 local function parse_props(s, i, cls, out)
@@ -61,19 +52,19 @@ local function parse_props(s, i, cls, out)
       local sel, j = s:match("^&([^{]+)()", i)
       local props = {}
       i = parse_props(s, j-1, cls..sel:match("^%s*(.-)%s*$"), props)
-      for k,v in pairs(props) do out[k] = v end  -- merge or store under nested key as needed
+      for k,v in pairs(props) do out[k] = v end
     elseif c == "@" then
       local key, j = s:match("^(%S+)()", i)
       local val = s:match("^%s*([^;{}]*)", j):match("^%s*(.-)%s*$")
       out[key] = val
       i = s:match("[;{}]()", j) or (#s+1)
     else
-      local key, j = s:match("^([^:{};]*)()", i)
-      key = kebab_to_pascal(key:match("^%s*(.-)%s*$"))
+      local rawkey, j = s:match("^([^:{};]*)()", i)
+      local key = css_property_map[rawkey:match("^%s*(.-)%s*$")]
       i = s:match("^:?()", j)
       i = skip(s, i)
       local val = s:match("^([^;{}]*)", i):match("^(.-)%s*$")
-      out[key] = val
+      if key then out[key] = val end  -- skip CSS properties not in the map
       i = i + #s:match("^([^;{}]*)", i)
     end
     i = s:match("^%s*;?%s*()", i)
@@ -97,15 +88,34 @@ local function css_parse(css)
   return result
 end
 
+-- Split a CSS selector into (className, pseudoClass).
+-- ".button:hover:focus" → "button", "hover:focus"
+-- "card" → "card", ""
+local function parse_selector(selector)
+  local base = selector:match("^%.(.+)$") or selector
+  local className = base:match("^([^:/]+)") or base
+  local pseudo    = base:match(":(.+)$") or ""
+  return className, pseudo
+end
+
 -- Build and return a core.StyleSheet from a parsed CSS table.
--- Each top-level selector (e.g. ".button", ".card:hover") becomes a StyleRule
--- child on the sheet, with property overrides attached so that ThemeChanged
--- can apply them via a direct binary copy — no string re-parsing.
+-- Each top-level selector becomes a StyleRule child whose ClassName and
+-- PseudoClass are extracted from the selector string, and whose property
+-- overrides are attached as C properties for zero-cost binary copy on apply.
 local function css_to_stylesheet(parsed)
   local core = require "orca.core"
   local sheet = core.StyleSheet()
   for selector, props in pairs(parsed) do
-    sheet:addStyleRule(selector, props)
+    local className, pseudo = parse_selector(selector)
+    local rule = core.StyleRule()
+    rule.ClassName  = className
+    rule.PseudoClass = pseudo
+    for propName, propVal in pairs(props) do
+      if propName:sub(1, 1) ~= "@" then  -- skip @-directives like @apply
+        rule[propName] = propVal
+      end
+    end
+    sheet:addChild(rule)
   end
   return sheet
 end
