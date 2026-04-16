@@ -1682,7 +1682,7 @@ int f_core_GetHover(lua_State *L) {
 }
 int f_core_AddGlobalStyleRule(lua_State *L) {
 	struct Object* rule = luaX_checkObject(L, 1);
-	core_AddGlobalStyleRule(rule );
+	core_AddGlobalStyleRule(L, rule );
 	return 0;
 }
 

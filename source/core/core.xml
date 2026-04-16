@@ -1071,7 +1071,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Returns a pointer to the object that is currently being hovered over by the mouse cursor. Returns null if no object is being hovered.</details>
       <returns type="Object" pointer="true">Pointer to the object under the mouse cursor, or null if no object is being hovered</returns>
     </function>
-    <function name="AddGlobalStyleRule">
+    <function name="AddGlobalStyleRule" lua="true">
       <summary>Adds global style rules that gets applied even without any stylesheet present.</summary>
       <arg name="rule" type="Object" pointer="true">The style rule to add globally.</arg>
     </function>

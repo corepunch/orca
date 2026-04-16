@@ -64,7 +64,7 @@ ORCA_API int luaX_readProperty(lua_State*, int, lpProperty_t);
 
 INLINE
 int
-API_CallRequire(lua_State* L, lpcString_t szModuleName, uint32_t dwReturnValues)
+luaX_require(lua_State* L, lpcString_t szModuleName, uint32_t dwReturnValues)
 {
   lua_getglobal(L, "require");
   lua_pushstring(L, szModuleName);

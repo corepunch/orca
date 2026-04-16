@@ -325,7 +325,7 @@ core_GetHover(void);
 
 /// @brief Adds global style rules that gets applied even without any stylesheet present.
 ORCA_API void
-core_AddGlobalStyleRule(struct Object*);
+core_AddGlobalStyleRule(struct lua_State*, struct Object*);
 
 
 /// @name Lifecycle

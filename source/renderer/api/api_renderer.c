@@ -32,7 +32,7 @@ AX_##NAME(lua_State *L, renderer* self, ##__VA_ARGS__)
 
 lpShader_t
 renderer_CreateShader(lua_State* L, lpcString_t vert, lpcString_t frag) {
-  API_CallRequire(L, "orca.renderer", 1);
+  luaX_require(L, "orca.renderer", 1);
   lua_getfield(L, -1, "Shader");
   lua_remove(L, -2);
   if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
