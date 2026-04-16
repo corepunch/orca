@@ -85,9 +85,17 @@ local function css_parse(css)
     local props = {}
 
     for decl in block:gmatch("[^;]+") do
+      -- Match standard property declarations: key: value
       local key, val = decl:match("^%s*([%-%w]+)%s*:%s*(.-)%s*$")
       if key and key ~= "" then
         props[key] = val
+      else
+        -- Match @apply at-rules: @apply .class1 .class2
+        local apply_val = decl:match("^%s*@apply%s+(.-)%s*$")
+        if apply_val and apply_val ~= "" then
+          -- Accumulate multiple @apply lines with a space separator
+          props["@apply"] = props["@apply"] and (props["@apply"] .. " " .. apply_val) or apply_val
+        end
       end
     end
 
@@ -99,6 +107,38 @@ local function css_parse(css)
   end
 
   return result
+end
+
+-- Resolve @apply directives in `parsed` by merging properties from referenced
+-- selectors into the current selector's props.  Referenced selectors are looked
+-- up in `parsed` (same file).  Multiple passes handle transitive @apply chains.
+local function resolve_apply(parsed)
+  local max_passes = 10
+  local changed = true
+  while changed and max_passes > 0 do
+    changed = false
+    max_passes = max_passes - 1
+    for _, props in pairs(parsed) do
+      local apply_val = props["@apply"]
+      if apply_val then
+        for ref_sel in apply_val:gmatch("[^%s]+") do
+          -- Allow ".foo" or "foo" to reference either ".foo" or "foo" in parsed
+          local ref_props = parsed[ref_sel]
+            or (ref_sel:sub(1, 1) == "." and parsed[ref_sel:sub(2)] or nil)
+            or (ref_sel:sub(1, 1) ~= "." and parsed["." .. ref_sel] or nil)
+          if ref_props then
+            for k, v in pairs(ref_props) do
+              if k ~= "@apply" and props[k] == nil then
+                props[k] = v
+                changed = true
+              end
+            end
+          end
+        end
+        props["@apply"] = nil
+      end
+    end
+  end
 end
 
 -- Split a CSS selector into (className, pseudoClass).
@@ -118,21 +158,18 @@ end
 -- PseudoClass are extracted from the selector string, and whose property
 -- overrides are attached as C properties for zero-cost binary copy on apply.
 local function css_to_stylesheet(parsed)
+  resolve_apply(parsed)
   local core = require "orca.core"
   local sheet = core.StyleSheet()
   for selector, props in pairs(parsed) do
     local class_name, pseudo = parse_selector(selector)
     local rule = sheet + core.StyleRule { ClassName = class_name, PseudoClass = pseudo }
     for k, v in pairs(props) do
-      if k:sub(1, 1) ~= "@" then  -- skip @-directives like @apply
-        local prop_name = css_property_map[k:lower()]
-        if prop_name then
-          rule[prop_name] = v
-        else
-          io.stderr:write("Warning: Unsupported CSS property '" .. k .. "' in selector '" .. selector .. "'\n")
-        end
+      local prop_name = css_property_map[k:lower()]
+      if prop_name then
+        rule[prop_name] = v
       else
-        io.stderr:write("Warning: Skipping unsupported CSS directive: " .. k .. "\n")
+        io.stderr:write("Warning: Unsupported CSS property '" .. k .. "' in selector '" .. selector .. "'\n")
       end
     end
   end

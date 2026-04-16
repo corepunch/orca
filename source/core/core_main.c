@@ -574,9 +574,20 @@ before_core_module_registered(lua_State* L)
   lua_pushcfunction(L, f_parse_property);
   lua_setfield(L, -2, "parseProperty");
   
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.geometry");
-  lua_call(L, 1, 0);
+  luaX_require(L, "orca.geometry", 0);
+}
+
+extern lpObject_t static_stylesheet;
+void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
+  if (!static_stylesheet) {
+    luaX_require(L, "orca.core", 1);
+    lua_getfield(L, -1, "StyleSheet");
+    lua_call(L, 0, 1);
+    static_stylesheet = luaX_checkObject(L, -1);
+    lua_setglobal(L, "__STYLE");
+    lua_pop(L, 1);
+  }
+  OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
 void

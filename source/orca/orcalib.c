@@ -113,7 +113,6 @@ load_core_module(lua_State *L)
 {
   static const char *code =
     "local core = require 'orca.core'\n"
-    "orca.styles = core.getGlobalStyleSheet()\n"
     "local sys = require 'orca.system'\n"
     "for path in sys.list_dir(SHAREDIR..'/plugins') do\n"
     "  if not path:find('[/\\\\]') and not path:find('%.%.') and path:match('%.lua$') then\n"

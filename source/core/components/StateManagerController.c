@@ -24,31 +24,22 @@ _InitControllerProperties(struct StateManagerController* smc, lpObject_t host)
 }
 
 // Apply all attached properties of `stateObj` to `target`.
-// Attached properties are stored in the State's Lua table as raw key-value
-// pairs with a dotted full name (e.g. "Node.Opacity" = 0.5).
+// Attached properties are stored as native C properties on the State object
+// with PF_PROPERTY_TYPE NOT set (project properties, not component-owned).
+// This mirrors how StyleController._ApplyStyleRule works.
 static void
 _ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
 {
-  lua_State* L = core.L;
-  if (OBJ_GetLuaObject(stateObj)) {
-    luaX_pushObject(L, stateObj);
-    int tbl = lua_gettop(L);
-    lua_pushnil(L);
-    while (lua_next(L, tbl)) {
-      if (lua_type(L, -2) == LUA_TSTRING) {
-        const char* key = lua_tostring(L, -2);
-        // Only process dotted full-property-names like "Node.Opacity".
-        // Skip internal Lua fields that start with '_'.
-        if (key[0] != '_' && strchr(key, '.')) {
-          lpProperty_t hprop = NULL;
-          if (SUCCEEDED(OBJ_FindLongProperty(target, fnv1a32(key), &hprop))) {
-            luaX_readProperty(L, -1, hprop);
-          }
-        }
-      }
-      lua_pop(L, 1); // pop value, keep key for next lua_next
+  for (lpProperty_t rp = OBJ_GetProperties(stateObj); rp; rp = PROP_GetNext(rp)) {
+    // Skip State's own component properties (Value, Path, etc.)
+    if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
+    if (PROP_IsNull(rp)) continue;
+    lpcPropertyType_t pdesc = PROP_GetDesc(rp);
+    if (!pdesc || !pdesc->Name) continue;
+    lpProperty_t hprop = NULL;
+    if (SUCCEEDED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) {
+      PROP_SetValue(hprop, PROP_GetValue(rp));
     }
-    lua_pop(L, 1); // pop table
   }
   // Recurse into nested State children (sub-states targeting child objects).
   FOR_EACH_OBJECT(child, stateObj) {

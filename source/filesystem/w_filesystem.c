@@ -339,7 +339,7 @@ int luaopen_orca_pipe(lua_State *L);
 
 int f_init(lua_State* L)
 {
-  API_CallRequire(L, "orca.filesystem", 1);
+  luaX_require(L, "orca.filesystem", 1);
   lua_getfield(L, -1, "Workspace");
   if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
     return luaL_error(L, lua_tostring(L, -1));

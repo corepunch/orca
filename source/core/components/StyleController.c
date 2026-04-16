@@ -26,7 +26,7 @@
 //
 
 // Global stylesheet (applies before per-object stylesheets)
-static lpObject_t static_stylesheet = NULL;
+/*static*/ lpObject_t static_stylesheet = NULL;
 
 // Forward declarations for classes defined in core_export.c (needed for lazy
 // early registration before luaopen_orca_core runs, e.g. from tailwind.lua)
@@ -96,32 +96,6 @@ _AddClass(lpObject_t obj, struct style_class_selector* cls)
   }
 }
 
-// Get (or create) the StyleSheet for obj (or global when obj==NULL)
-static lpObject_t
-_GetOrCreateStyleSheet(lpObject_t obj)
-{
-  // Ensure classes are registered (may be called before luaopen_orca_core, e.g.
-  // from tailwind.lua which runs during orca.init() before require 'orca.core')
-  if (!OBJ_FindClassW(ID_StyleSheet)) {
-    OBJ_RegisterClass(&_StyleSheet);
-    OBJ_RegisterClass(&_StyleRule);
-  }
-  if (!obj) {
-    if (!static_stylesheet) {
-      static_stylesheet = OBJ_MakeNativeObject(ID_StyleSheet);
-    }
-    return static_stylesheet;
-  }
-  struct StyleController* sc = GetStyleController(obj);
-  if (!sc) return NULL;
-  if (!sc->StyleSheet) {
-    lpObject_t sheetObj = OBJ_MakeNativeObject(ID_StyleSheet);
-    sc->StyleSheet = GetStyleSheet(sheetObj);
-    sc->owned_sheet = TRUE; // we created it — we own it
-  }
-  return CMP_GetObject(sc->StyleSheet);
-}
-
 // Find a PropertyType descriptor by property name.
 // Tries full name first (e.g. "Node2D.BackgroundColor") then short name ("BackgroundColor").
 static lpcPropertyType_t
@@ -176,22 +150,6 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
   OBJ_ReleaseProperties(sheetObj);
   OBJ_ReleaseComponents(sheetObj);
   free(sheetObj);
-}
-
-// Return the global singleton StyleSheet (creates it on first call).
-// Exposed to Lua as core.getGlobalStyleSheet().
-ORCA_API lpObject_t
-OBJ_GetGlobalStyleSheet(void)
-{
-  return _GetOrCreateStyleSheet(NULL);
-}
-
-// Return (or lazily create) the per-object StyleSheet for obj.
-// Exposed to Lua as core.getObjectStyleSheet(node).
-ORCA_API lpObject_t
-OBJ_GetObjectStyleSheet(lpObject_t obj)
-{
-  return _GetOrCreateStyleSheet(obj);
 }
 
 // ============================================================================

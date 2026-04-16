@@ -323,6 +323,10 @@ core_GetFocus(void);
 ORCA_API struct Object*
 core_GetHover(void);
 
+/// @brief Adds global style rules that gets applied even without any stylesheet present.
+ORCA_API void
+core_AddGlobalStyleRule(struct lua_State*, struct Object*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
@@ -987,7 +991,7 @@ typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t
 struct StyleController {
 	struct StyleSheet* StyleSheet; ///< The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.
 	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
-	bool_t owned_sheet; ///< TRUE when StyleSheet was created internally by _GetOrCreateStyleSheet and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).
+	bool_t owned_sheet; ///< TRUE when StyleSheet was created internally and must be released on clear. FALSE when it was assigned externally (e.g. from Lua).
 	event_t ThemeChanged;
 	event_t AddClass;
 	event_t AddClasses;

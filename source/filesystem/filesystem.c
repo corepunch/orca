@@ -357,7 +357,7 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
 static void
 register_theme_value(lpcString_t name, lpcString_t value, void* L)
 {
-  API_CallRequire(L, "orca", 1);
+  luaX_require(L, "orca", 1);
   lua_getfield(L, -1, "theme");
   lua_pushstring(L, value);
   lua_setfield(L, -2, name);

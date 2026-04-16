@@ -10,7 +10,7 @@ extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 
 void on_ui_module_registered(lua_State* L) {
-  API_CallRequire(L, "orca.core", 0);
+  luaX_require(L, "orca.core", 0);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);
@@ -37,7 +37,7 @@ after_ui_module_registered(lua_State* L) {
   // Guard against recursive require() returning package.loaded's in-progress
   // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()
   // during this same luaopen call — only assign if a real table/function was returned.
-  if (API_CallRequire(L, "orca.UIKit.TerminalView", 1) == LUA_OK) {
+  if (luaX_require(L, "orca.UIKit.TerminalView", 1) == LUA_OK) {
     if (lua_istable(L, -1) || lua_isfunction(L, -1)) {
       lua_setfield(L, -2, "TerminalView");
     } else {
