@@ -37,6 +37,15 @@ local css_property_map = {
   ["visibility"]        = "Node.Visible",
 }
 
+-- Keep in sync with STYLE_HOVER, STYLE_FOCUS, an so on
+local css_pseudo_classes = {
+	hover = 1,
+	focus = 2,
+	select = 4,
+	dark = 8,
+	disable = 16,
+}
+
 -- example CSS input:
 -- .button, .link { color: red; font-size: 14px; }
 -- .card { background-color: white; padding: 8px;
@@ -99,6 +108,8 @@ local function parse_selector(selector)
   local base = selector:match("^%.(.+)$") or selector
   local className = base:match("^([^:/]+)") or base
   local pseudo    = base:match(":(.+)$") or ""
+  -- local pseudo_mask = 0
+  -- for p in pseudo:gmatch("([^:]+)") do pseudo_mask = pseudo_mask + (css_pseudo_classes[p] or 0) end
   return className, pseudo
 end
 

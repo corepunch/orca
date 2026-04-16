@@ -40,7 +40,6 @@ _ParsePseudoClass(lpcString_t pseudo)
 
 // Update cached fields whenever ClassName or PseudoClass changes.
 HANDLER(StyleRule, Object, PropertyChanged) {
-  if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
   uint32_t changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
 
   if (changed == ID_StyleRule_ClassName) {

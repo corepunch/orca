@@ -136,21 +136,6 @@ _FindPropertyTypeByName(lpcString_t name)
   return NULL;
 }
 
-// Create a pre-parsed property override on ruleObj for (name, value) from a C string.
-// Uses parse_property to convert the string to the native type once.
-static void
-_AddStyleRulePropertyFromString(lpObject_t ruleObj, lpcString_t name, lpcString_t value)
-{
-  lpcPropertyType_t pt = _FindPropertyTypeByName(name);
-  if (!pt) return;
-  // Types that require a Lua state (struct, object) cannot be parsed without core.L.
-  if (!core.L && (pt->DataType == kDataTypeStruct || pt->DataType == kDataTypeObject)) return;
-  lpProperty_t prop = PROP_Create(NULL, ruleObj, pt);
-  char buf[MAX_PROPERTY_STRING] = {0};
-  parse_property(core.L, value, pt, buf);
-  PROP_SetValue(prop, buf);
-}
-
 // Release a StyleRule native object (and its string Selector field).
 static void
 _ReleaseNativeStyleRule(lpObject_t ruleObj)
@@ -180,177 +165,6 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
   OBJ_ReleaseProperties(sheetObj);
   OBJ_ReleaseComponents(sheetObj);
   free(sheetObj);
-}
-
-// ============================================================================
-// PUBLIC STYLE API
-// ============================================================================
-
-ORCA_API int
-parse_property(lua_State* L, const char* str, struct PropertyType const* prop, void* valueptr);
-
-// Copy pre-parsed C property overrides from srcRule to destRule.
-static void
-_CopyRuleProperties(lpObject_t srcRule, lpObject_t destRule)
-{
-  for (lpProperty_t rp = OBJ_GetProperties(srcRule); rp; rp = PROP_GetNext(rp)) {
-    if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
-    if (PROP_IsNull(rp)) continue;
-    lpProperty_t cp = PROP_Create(NULL, destRule, PROP_GetDesc(rp));
-    PROP_SetValue(cp, PROP_GetValue(rp));
-  }
-}
-
-// Populate the ClassName and PseudoClass properties on a new StyleRule object
-// from a CSS-style selector string (e.g., ".button:hover" or "button:hover:focus").
-// Also sets the cached class_id and flags fields directly for immediate use.
-// The selector may have a leading '.'; it is stripped.  The '/N' opacity suffix
-// is intentionally ignored — opacity is per-usage (style_class_selector.opacity).
-static void
-_ParseSelectorIntoRule(lpObject_t ruleObj, lpcString_t selector, uint32_t flags)
-{
-  struct StyleRule* sr = GetStyleRule(ruleObj);
-  if (!sr) return;
-
-  // Strip optional leading '.'
-  lpcString_t base = (*selector == '.') ? selector + 1 : selector;
-
-  // Find end of base name: first ':' or '/' (opacity suffix is not part of the class name)
-  lpcString_t colon = strchr(base, ':');
-  lpcString_t slash = strchr(base, '/');
-  lpcString_t end   = NULL;
-  if (colon && slash) end = (colon < slash) ? colon : slash;
-  else if (colon)     end = colon;
-  else if (slash)     end = slash;
-
-  // Set ClassName property
-  lpProperty_t classProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &classProp))) {
-    if (end) {
-      char buf[sizeof(shortStr_t)];
-      size_t len = MIN((size_t)(end - base), sizeof(buf) - 1);
-      memcpy(buf, base, len);
-      buf[len] = '\0';
-      PROP_SetStringValue(classProp, buf);
-    } else {
-      PROP_SetStringValue(classProp, base);
-    }
-  }
-
-  // Set PseudoClass property (everything after the first ':', stopping before '/')
-  lpcString_t pseudoStart = colon ? colon + 1 : NULL;
-  lpProperty_t pseudoProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_PseudoClass, &pseudoProp))) {
-    if (pseudoStart) {
-      if (slash && slash > colon) {
-        // Pseudo ends at slash: e.g. ".button:hover/50"
-        char buf[sizeof(shortStr_t)];
-        size_t len = MIN((size_t)(slash - pseudoStart), sizeof(buf) - 1);
-        memcpy(buf, pseudoStart, len);
-        buf[len] = '\0';
-        PROP_SetStringValue(pseudoProp, buf);
-      } else {
-        PROP_SetStringValue(pseudoProp, pseudoStart);
-      }
-    } else {
-      PROP_SetStringValue(pseudoProp, "");
-    }
-  }
-
-  // Cache class_id and flags directly (same values StyleRule.PropertyChanged would set)
-  sr->class_id = sr->ClassName ? fnv1a32(sr->ClassName) : 0;
-  sr->flags    = flags ? flags : _ParsePseudoStateFlags(selector);
-}
-
-// Create a StyleRule from a selector + single property/value pair (C API).
-void
-OBJ_AddStyleClass(lpObject_t obj,
-                  lpcString_t selector,
-                  lpcString_t property,
-                  lpcString_t value,
-                  uint32_t flags)
-{
-  lpObject_t sheetObj = _GetOrCreateStyleSheet(obj);
-  if (!sheetObj) return;
-
-  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
-  _ParseSelectorIntoRule(ruleObj, selector, flags);
-  _AddStyleRulePropertyFromString(ruleObj, property, value);
-  OBJ_AddChild(sheetObj, ruleObj, FALSE);
-}
-
-// Create StyleRule objects from a Lua table of CSS rules.
-// selector: CSS selector string; table at Lua stack index 3.
-void OBJ_AddStyleRule(lua_State* L, lpObject_t self, lpcString_t selector)
-{
-  if (lua_type(L, 3) != LUA_TTABLE) {
-    lua_error(L);
-    return;
-  }
-
-  lpObject_t sheetObj = _GetOrCreateStyleSheet(self);
-  if (!sheetObj) return;
-
-  lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
-  _ParseSelectorIntoRule(ruleObj, selector, 0);
-
-  // Iterate the Lua table and attach one C property per override
-  lua_pushvalue(L, 3);
-  lua_pushnil(L);
-  while (lua_next(L, -2)) {
-    if (lua_type(L, -2) != LUA_TSTRING) { lua_pop(L, 1); continue; }
-    lpcString_t key = lua_tostring(L, -2);
-    uint32_t keyID  = fnv1a32(key);
-
-    if (keyID == CSS_APPLY) {
-      // @apply: copy property overrides from another selector, matching flags exactly.
-      // This allows "@apply button" to inherit only the default (non-pseudo-state) rules,
-      // and "@apply button:hover" to inherit only the :hover rules.
-      LPSTR str = strdup(luaL_checkstring(L, -1));
-      if (!str) { lua_pop(L, 1); continue; }
-      char* saveptr = NULL;
-      for (lpcString_t s = strtok_r(str, " ", &saveptr); s; s = strtok_r(NULL, " ", &saveptr)) {
-        struct style_class_selector* cls = _ParseClass(s);
-        uint32_t applyID    = fnv1a32(cls->value);
-        uint32_t applyFlags = cls->flags;
-        // Search global stylesheet
-        if (static_stylesheet) {
-          FOR_EACH_OBJECT(child, static_stylesheet) {
-            struct StyleRule* csr = GetStyleRule(child);
-            if (csr && csr->class_id == applyID && csr->flags == applyFlags) {
-              _CopyRuleProperties(child, ruleObj);
-            }
-          }
-        }
-        // Search per-object stylesheet
-        if (self) {
-          struct StyleController* sc = GetStyleController(self);
-          if (sc && sc->StyleSheet) {
-            FOR_EACH_OBJECT(child, CMP_GetObject(sc->StyleSheet)) {
-              struct StyleRule* csr = GetStyleRule(child);
-              if (csr && csr->class_id == applyID && csr->flags == applyFlags) {
-                _CopyRuleProperties(child, ruleObj);
-              }
-            }
-          }
-        }
-        free(cls);
-      }
-      free(str);
-      lua_pop(L, 1);
-      continue;
-    }
-
-    lpcPropertyType_t pt = _FindPropertyTypeByName(key);
-    if (pt) {
-      lpProperty_t prop = PROP_Create(NULL, ruleObj, pt);
-      luaX_readProperty(L, -1, prop);
-    }
-    lua_pop(L, 1);
-  }
-  lua_pop(L, 1); // pop the table copy
-
-  OBJ_AddChild(sheetObj, ruleObj, FALSE);
 }
 
 // ============================================================================
@@ -446,24 +260,6 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   }
 }
 
-// Free all style classes and stylesheet rules owned by this object's StyleController.
-void
-OBJ_ClearStyleClasses(lpObject_t pobj)
-{
-  struct StyleController* sc = GetStyleController(pobj);
-  if (!sc) return;
-  FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) free(cls);
-  sc->classes = NULL;
-
-  // Only release the sheet if we created it (owned_sheet).
-  // When StyleSheet was assigned externally (e.g. shared between controllers),
-  // we just clear our pointer without freeing the underlying object.
-  if (sc->StyleSheet && sc->owned_sheet) {
-    _ReleaseNativeStyleSheet(CMP_GetObject(sc->StyleSheet));
-    sc->owned_sheet = FALSE;
-  }
-  sc->StyleSheet = NULL;
-}
 
 // ============================================================================
 // STYLECONTROLLER COMPONENT HANDLERS
@@ -475,9 +271,21 @@ HANDLER(StyleController, Object, Create) {
 }
 
 HANDLER(StyleController, Object, Release) {
-  OBJ_ClearStyleClasses(hObject);
+  FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes) free(cls);
+  pStyleController->classes = NULL;
+  
+  // Only release the sheet if we created it (owned_sheet).
+  // When StyleSheet was assigned externally (e.g. shared between controllers),
+  // we just clear our pointer without freeing the underlying object.
+  if (pStyleController->StyleSheet && pStyleController->owned_sheet) {
+    _ReleaseNativeStyleSheet(CMP_GetObject(pStyleController->StyleSheet));
+    pStyleController->owned_sheet = FALSE;
+  }
+  pStyleController->StyleSheet = NULL;
   return FALSE;
 }
+
+#define ID_body 0xdbaa7975 // "body" class
 
 // Recalculate and apply all active style rules to this object.
 HANDLER(StyleController, StyleController, ThemeChanged) {
@@ -486,14 +294,13 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 
   // Root objects: apply "body" rules from the local stylesheet
+  // A workaround, ideally 'body' style should just propagate to all children
   if (!OBJ_GetParent(hObject) && pStyleController->StyleSheet) {
-    uint32_t body_id = fnv1a32("body");
     lpObject_t sheetObj = CMP_GetObject(pStyleController->StyleSheet);
     FOR_EACH_OBJECT(child, sheetObj) {
       struct StyleRule* sr = GetStyleRule(child);
-      if (sr && sr->class_id == body_id) {
-        _ApplyStyleRule(hObject, child, 0,
-                        &(struct style_class_selector){ .opacity = 100 });
+      if (sr && sr->class_id == ID_body) {
+        _ApplyStyleRule(hObject, child, 0, &(struct style_class_selector){ .opacity = 100 });
       }
     }
   }

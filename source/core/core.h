@@ -474,10 +474,6 @@ OBJ_ClearDirtyFlags(struct Object*);
 /// @name Style
 /// Manages style sheets and resolves computed style values.
 
-/// @brief Add a stylesheet to the object.
-ORCA_API void
-OBJ_AddStyleRule(struct lua_State*, struct Object*, const char*);
-
 /// @brief Retrieves object style flags
 ORCA_API uint32_t
 OBJ_GetStyle(struct Object const*);

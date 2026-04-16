@@ -391,13 +391,6 @@ CMP_GetObject(void const*);
 ORCA_API struct component*
 OBJ_AddComponent(lpObject_t, uint32_t class_id);
 
-ORCA_API void
-OBJ_AddStyleClass(lpObject_t,
-                  lpcString_t name,
-                  lpcString_t prop,
-                  lpcString_t val,
-                  uint32_t flags);
-
 typedef int
 (*propertyParser_t)(lua_State*,lpObject_t,lpcString_t,lpcString_t);
 

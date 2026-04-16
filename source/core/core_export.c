@@ -255,12 +255,6 @@ int f_OBJ_ClearDirtyFlags(lua_State *L) {
 	OBJ_ClearDirtyFlags(this_ );
 	return 0;
 }
-int f_OBJ_AddStyleRule(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	const char* source = luaL_checkstring(L, 2);
-	OBJ_AddStyleRule(L, this_, source );
-	return 0;
-}
 int f_OBJ_GetStyle(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	uint32_t result_ = OBJ_GetStyle(this_);
@@ -472,7 +466,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getInteger", f_OBJ_GetInteger },
 		{ "setDirty", f_OBJ_SetDirty },
 		{ "clearDirtyFlags", f_OBJ_ClearDirtyFlags },
-		{ "addStyleRule", f_OBJ_AddStyleRule },
 		{ "getStyle", f_OBJ_GetStyle },
 		{ "setStyle", f_OBJ_SetStyle },
 		{ "doTween", f_OBJ_DoTween },
