@@ -42,12 +42,17 @@ end
 -- Test 1: CSS opacity rule + class assignment → Opacity applied
 -- ---------------------------------------------------------------------------
 local function test_style_applies_opacity()
-  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".highlight { opacity: 0.4; }")
-  local node = screen + ui.Node2D {}
+  local screen = ui.Screen { 
+    Width = 200,
+    Height = 200,
+    ResizeMode = "NoResize",
+    StyleSheet = core.StyleSheet.Parse ".highlight { opacity: 0.4; }",
+  }
+  local node = screen + ui.Node2D {
+    class = "highlight",
+    Opacity = 1.0
+  }
 
-  node.Opacity = 1.0
-  node.class = "highlight"
   applyStyles(node)
 
   expect_near(node.Opacity, 0.4, 0.001, "StyleController applied Opacity=0.4")
@@ -61,7 +66,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_not_applied_without_class()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".hidden { opacity: 0.0; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".hidden { opacity: 0.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 0.8
@@ -79,7 +84,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".box { width: 200; height: 80; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".box { width: 200; height: 80; }"
   local node = screen + ui.Node2D { Width = 100, Height = 50 }
 
   node.class = "box"
@@ -97,7 +102,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_classes()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -118,7 +123,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_hover_not_applied_by_default()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".btn:hover { opacity: 0.6; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".btn:hover { opacity: 0.6; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -138,7 +143,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_non_hover_rule_applies()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".card { opacity: 0.7; } .card:hover { opacity: 1.0; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -156,7 +161,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_recursive_children()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".dim { opacity: 0.3; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".dim { opacity: 0.3; }"
   local parent = screen + ui.Node2D {}
   local child  = parent + ui.Node2D {}
 
@@ -177,7 +182,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_dot_prefix_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".primary { opacity: 0.55; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".primary { opacity: 0.55; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -195,7 +200,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_numeric_value()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".sized { width: 150; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".sized { width: 150; }"
   local node = screen + ui.Node2D {}
 
   node.class = "sized"
@@ -212,7 +217,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = core.StyleSheet.Parse(".ghost { opacity: 0.1; }")
+  screen.StyleSheet = core.StyleSheet.Parse ".ghost { opacity: 0.1; }"
   local node = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
