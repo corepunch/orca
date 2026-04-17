@@ -171,7 +171,7 @@ BOOL UI_RenameObject(HOBJ object, lpcString_t szName) {
 }
 
 HOBJ UI_NewObject(HOBJ parent, lpcString_t szName, DWORD dwType) {
-  struct lua_State *L = core.L;
+  struct lua_State *L = editor.L;
   switch (dwType) {
     case ID_OBJECT_LABEL: luaX_import(L, "orca.UIKit", "TextBlock"); break;
     case ID_OBJECT_IMAGE: luaX_import(L, "orca.UIKit", "ImageView"); break;
