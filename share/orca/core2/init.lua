@@ -37,7 +37,7 @@ function core.load_editor()
 	if ok then
 		editor.setScreen(core.screen)
 	else
-		io.stderr:write("Failed to load editor module\n")
+		io.stderr:write(string.format("Failed to load editor module %s\n", tostring(editor)))
 	end
 end
 

@@ -8,8 +8,6 @@ struct _CANVASVIEW {
   struct Texture *scene_texture;
 };
 
-ORCA_API void UI_StepTime(lpObject_t object);
-
 HOBJ current_scene = NULL;
 
 #include <plugins/UIKit/UIKit.h>
@@ -196,7 +194,7 @@ void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   RECT view = ED_GetClientRect(wnd);
   HOBJ scene = CanvasView_GetScene(wnd);
   
-  UI_StepTime(scene);
+  core_AdvanceFrame();
   
   _SendMessage(scene, Screen, UpdateLayout,
                .Width = view.width,

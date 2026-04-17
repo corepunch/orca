@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="WorkflowStep" Direction="Vertical" Spacing="12" BackgroundColor="card-background" Padding="24">
+<StackView Name="WorkflowStep" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="24">
 	<TextBlock Name="WorkflowStepNumber" FontSize="32">
 		<TextRun.Text>{../Card.Title}</TextRun.Text>
 		<Node2D.ForegroundColor>{../Card.PrimaryColor}</Node2D.ForegroundColor>
 	</TextBlock>
-	<TextBlock Name="WorkflowStepTitle" FontSize="15" ForegroundColor="text-primary">
+	<TextBlock Name="WorkflowStepTitle" FontSize="15" ForegroundColor="$text-primary">
 		<TextRun.Text>{../Card.Subtitle}</TextRun.Text>
 	</TextBlock>
-	<TextBlock Name="WorkflowStepBody" FontSize="12" ForegroundColor="text-dim" WordWrap="true">
+	<TextBlock Name="WorkflowStepBody" FontSize="12" ForegroundColor="$text-dim" WordWrap="true">
 		<TextRun.Text>{../Card.Body}</TextRun.Text>
 	</TextBlock>
 </StackView>

@@ -327,6 +327,10 @@ core_GetHover(void);
 ORCA_API void
 core_AddGlobalStyleRule(struct lua_State*, struct Object*);
 
+/// @brief Advances the engine by one frame, processing all pending updates and rendering.
+ORCA_API void
+core_AdvanceFrame(void);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.

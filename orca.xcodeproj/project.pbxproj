@@ -283,6 +283,13 @@
 			remoteGlobalIDString = 781CA6CD2E15024F00FFCFD9;
 			remoteInfo = orca.geometry;
 		};
+		786342F92F920051007D30C5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 781CA7912E155D0500FFCFD9;
+			remoteInfo = orca/EditorKit;
+		};
 		7868656F2F50B55100DC87FC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 78B136992AF3CA3A00AAAE53 /* Project object */;
@@ -1551,6 +1558,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				786342FA2F920051007D30C5 /* PBXTargetDependency */,
 				789AE3D72F687B560067DC75 /* PBXTargetDependency */,
 				789AE3D92F687B560067DC75 /* PBXTargetDependency */,
 				789AE3DB2F687B560067DC75 /* PBXTargetDependency */,
@@ -2271,6 +2279,11 @@
 			isa = PBXTargetDependency;
 			target = 781CA6CD2E15024F00FFCFD9 /* orca.geometry */;
 			targetProxy = 78623C9E2F55EEAC003BFDA3 /* PBXContainerItemProxy */;
+		};
+		786342FA2F920051007D30C5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 781CA7912E155D0500FFCFD9 /* orca/EditorKit */;
+			targetProxy = 786342F92F920051007D30C5 /* PBXContainerItemProxy */;
 		};
 		786865702F50B55100DC87FC /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

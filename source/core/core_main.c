@@ -386,6 +386,11 @@ static int f_parse_property(lua_State* L) {
   }
 }
 
+void core_AdvanceFrame(void) {
+  core.realtime = axGetMilliseconds();
+  core.frame++;
+}
+
 #define MAX_FPS_CACHE 64
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
@@ -401,8 +406,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
     case kEventWindowPaint:
     case kEventWindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);
-      core.realtime = axGetMilliseconds();
-      core.frame++;
+      core_AdvanceFrame();
       return FALSE;
     case kEventKeyDown:
       lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);

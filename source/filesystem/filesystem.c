@@ -359,8 +359,9 @@ register_theme_value(lpcString_t name, lpcString_t value, void* L)
 {
   luaX_require(L, "orca", 1);
   lua_getfield(L, -1, "theme");
+  lua_pushfstring(L, "$%s", name);
   lua_pushstring(L, value);
-  lua_setfield(L, -2, name);
+  lua_settable(L, -3);
   lua_pop(L, 2);
 }
 

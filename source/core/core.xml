@@ -1075,6 +1075,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Adds global style rules that gets applied even without any stylesheet present.</summary>
       <arg name="rule" type="Object" pointer="true">The style rule to add globally.</arg>
     </function>
+    <function name="AdvanceFrame">
+      <summary>Advances the engine by one frame, processing all pending updates and rendering.</summary>
+    </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->
 <!--    <arg name="command" type="string"/>-->

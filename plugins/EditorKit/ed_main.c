@@ -812,7 +812,7 @@ static luaL_Reg const lib_editor[] = {
   { NULL, NULL }
 };
 
-ORCA_API int luaopen_orca_editor(lua_State* L)
+ORCA_API int luaopen_orca_EditorKit(lua_State* L)
 {
   luaL_newlib(L, lib_editor);
 

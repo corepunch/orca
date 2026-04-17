@@ -1685,12 +1685,17 @@ int f_core_AddGlobalStyleRule(lua_State *L) {
 	core_AddGlobalStyleRule(L, rule );
 	return 0;
 }
+int f_core_AdvanceFrame(lua_State *L) {
+	core_AdvanceFrame( );
+	return 0;
+}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ "getFocus", f_core_GetFocus },
 		{ "getHover", f_core_GetHover },
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
+		{ "advanceFrame", f_core_AdvanceFrame },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);

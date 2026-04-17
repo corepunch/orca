@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="GalleryCard" Direction="Vertical" Spacing="0" BackgroundColor="card-background">
+<StackView Name="GalleryCard" Direction="Vertical" Spacing="0" BackgroundColor="$card-background">
 	<ImageView Name="GalleryCardImage" Height="180" Stretch="UniformToFill">
 		<ImageView.Source>{../Card.Image}</ImageView.Source>
 	</ImageView>
 	<StackView Name="GalleryCardCaption" Direction="Vertical" Spacing="4" Padding="16">
-		<TextBlock Name="GalleryCardTitle" FontSize="15" ForegroundColor="text-primary">
+		<TextBlock Name="GalleryCardTitle" FontSize="15" ForegroundColor="$text-primary">
 			<TextRun.Text>{../../Card.Title}</TextRun.Text>
 		</TextBlock>
-		<TextBlock Name="GalleryCardBody" FontSize="12" ForegroundColor="text-dim" WordWrap="true">
+		<TextBlock Name="GalleryCardBody" FontSize="12" ForegroundColor="$text-dim" WordWrap="true">
 			<TextRun.Text>{../../Card.Subtitle}</TextRun.Text>
 		</TextBlock>
 	</StackView>

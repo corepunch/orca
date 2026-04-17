@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="MetricUsers" Direction="Vertical" Spacing="4" BackgroundColor="panel-background" Padding="20" Width="120">
-	<TextBlock Name="MetricUsersValue" FontSize="28" ForegroundColor="accent" Text="Hello">
+<StackView Name="MetricUsers" Direction="Vertical" Spacing="4" BackgroundColor="$panel-background" Padding="20" Width="120">
+	<TextBlock Name="MetricUsersValue" FontSize="28" ForegroundColor="$accent" Text="Hello">
 		<TextRun.Text>{../Card.Title}</TextRun.Text>
 		<Node2D.ForegroundColor>{../Card.PrimaryColor}</Node2D.ForegroundColor>
 	</TextBlock>
-	<TextBlock Name="MetricUsersLabel" FontSize="11" ForegroundColor="text-dim">
+	<TextBlock Name="MetricUsersLabel" FontSize="11" ForegroundColor="$text-dim">
 		<TextRun.Text>{../Card.Subtitle}</TextRun.Text>
 	</TextBlock>
 </StackView>
