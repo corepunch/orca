@@ -319,11 +319,6 @@ HANDLER(Screen, Screen, RenderScreen) {
   Node2D_Draw2DContent(hObject, GetNode2D(hObject), 0, &params);
 
   if (pRenderScreen->target != rt) {
-    struct rect r = RECT_Fit(&(struct rect) {
-      0, 0, pRenderScreen->width, pRenderScreen->height
-    }, &(struct vec2) { width, height });
-    Con_Printf("Rect %f %f %f %f", r.x, r.y, r.width, r.height);
-    Con_Printf("R_DrawImage %f %f in %d %d", width, height, pRenderScreen->width, pRenderScreen->height);
     R_BindFramebuffer(pRenderScreen->target);
     R_DrawImage(&(DRAWIMAGESTRUCT) {
       .img = pScreen->_rt,
