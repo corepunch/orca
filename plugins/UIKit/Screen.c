@@ -266,9 +266,6 @@ HANDLER(Screen, Screen, RenderScreen) {
   float height = pRenderScreen->height;
   struct Texture *rt = pRenderScreen->target;
   if (!_FallThrough(pScreen, node, pRenderScreen)) {
-    // If the screen is resizable and the node's requested size doesn't match 
-    // the current render size, we need to update the render target and viewport 
-    // to match the new size.
     width = node->Size.Axis[0].Requested;
     height = node->Size.Axis[1].Requested;
     if (!pScreen->_rt) {
@@ -281,14 +278,10 @@ HANDLER(Screen, Screen, RenderScreen) {
   } else if (!isnan(node->Size.Axis[0].Requested) &&
              !isnan(node->Size.Axis[1].Requested))
   {
-    // If the node has an explicitly requested size, we should use that for rendering 
-    // instead of the screen's current size. This allows the screen to render at a different 
-    // resolution than its actual display size, which can be useful for performance 
-    // or stylistic reasons.
     node->Size.Axis[0].Requested = width;
     node->Size.Axis[1].Requested = height;
   }
-
+  
   // setup pipeline
   PIPELINESTATE ps = _Pipeline2D(width, height);
   DRAW2DCONTENTSTRUCT params = {
@@ -305,6 +298,7 @@ HANDLER(Screen, Screen, RenderScreen) {
   d = MAT4_MultiplyVector3D(&r, &d);
 
   //	__angle = pRenderScreen->angle;
+
   params.ViewMatrix = MAT4_LookAt(&p, &d, &(struct vec3){ 0, -1, 0 });
   params.BoundsMatrix = MAT4_Ortho(0, width, height, 0, -1000, 1000);
   //	MAT4_Perspective(&params.ProjectionMatrix, UI_FOV, width / height, dist
@@ -317,17 +311,13 @@ HANDLER(Screen, Screen, RenderScreen) {
   params.ViewMatrix = MAT4_Identity();
   //	}
 
-  // Render subviews to their render targets (if any)
   _RenderSubViews(hObject);
 
-  // Bind the appropriate framebuffer (off-screen render target or default) and set pipeline state
   R_BindFramebuffer(rt);
   R_SetPipelineState(&ps);
 
-  // Render the screen's content
   Node2D_Draw2DContent(hObject, GetNode2D(hObject), 0, &params);
 
-  // If we're rendering to an off-screen target, we need to blit it to the screen framebuffer
   if (pRenderScreen->target != rt) {
     R_BindFramebuffer(pRenderScreen->target);
     R_DrawImage(&(DRAWIMAGESTRUCT) {
@@ -338,13 +328,6 @@ HANDLER(Screen, Screen, RenderScreen) {
       .uv = { 0, 0, 1, 1 },
     });
   }
-  
-//  printf("RenderScreen %f %f\n", node->Size.Axis[0].Requested,node->Size.Axis[1].Requested);
-//  FOR_EACH_OBJECT(n, hObject) {
-//    printf("Render %f %f%s\n", node->Size.Axis[0].Requested,node->Size.Axis[1].Requested, OBJ_GetName(n));
-//  }
-  
-  // Restore default framebuffer for subsequent rendering
   R_BindFramebuffer(0);
   return FALSE;
 }

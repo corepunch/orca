@@ -9,7 +9,8 @@ int f_peek_iterator(lua_State* L)
   int has_event = axPollEvent(&msg);
   if (!has_event) {
 #if __EMSCRIPTEN__
-    /* Yield back to emscripten_set_main_loop when the queue is empty. */
+    /* Return nil when the queue is empty so the Lua for-loop terminates and
+       the main coroutine can yield back to emscripten_set_main_loop. */
     return 0;
 #else
     /* Block until an event arrives (GetMessage semantics), then break the
@@ -103,7 +104,7 @@ int f_peek_message(lua_State* L) {
 typedef LRESULT (*message_proc_t)(lua_State*, struct AXmessage*);
 static message_proc_t clients[MAX_CLIENTS];
 
-bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
+ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   if (!msg->target && msg->message != kMsgReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {

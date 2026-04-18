@@ -375,6 +375,9 @@ SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
 ORCA_API bool_t
 SV_UnregisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage*));
 
+ORCA_API bool_t
+SV_DispatchMessage(lua_State*, struct AXmessage*);
+
 ORCA_API void
 OBJ_Release(lua_State *L, lpObject_t);
 

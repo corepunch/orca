@@ -392,12 +392,18 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
           break;
       }
       lua_pop(L, 1);
-      return TRUE;
+      /* Return FALSE so kEventStopCoroutine (posted above) can still trigger
+         a repaint via axPostMessageW; returning TRUE would short-circuit
+         SV_DispatchMessage and the Lua event loop would issue a redundant
+         second Window.Paint via its `result` check. */
+      return FALSE;
     case kEventStopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
       axRemoveFromQueue(msg->target);
       axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), 0);
-      return TRUE;
+      /* Return FALSE: the coroutine is fully cleaned up; the Window.Paint
+         posted above will reach CORE_HandleObjectMessage on its own pass. */
+      return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);
   }
