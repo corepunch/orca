@@ -597,8 +597,6 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
 // Drain all pending events from the platform queue, dispatching each one.
 // This is used in headless tests to process kEventResumeCoroutine messages
 // that run body() rebuild coroutines posted by rebuild() calls.
-extern bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg);
-
 static int f_flush_queue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);

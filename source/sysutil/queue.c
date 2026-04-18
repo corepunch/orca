@@ -101,7 +101,7 @@ int f_peek_message(lua_State* L) {
 typedef LRESULT (*message_proc_t)(lua_State*, struct AXmessage*);
 static message_proc_t clients[MAX_CLIENTS];
 
-bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
+ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
   if (!msg->target && msg->message != kMsgReadCommands)
     return FALSE;
   for (int i = 0; i < MAX_CLIENTS; i++) {
