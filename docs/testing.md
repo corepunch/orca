@@ -10,7 +10,8 @@ This page documents the ORCA test harness, how to write and run tests, and commo
 
 ```bash
 make test-properties    # C unit tests for the property VM
-make test-headless      # Lua layout tests (orca -test=tests/test_layout.lua)
+make test-headless      # All headless Lua tests (layout, animations, styles, body, …)
+make test-body          # Lua scene-loading / body() tests only
 ```
 
 These run without a display or OpenGL context.
@@ -67,6 +68,36 @@ XML test files are loaded by `doxmlfile()`. Any `<script>` element inside the ro
         assert(box.ActualHeight == 50)
     </script>
 </Screen>
+```
+
+---
+
+## Testing `body()` and Scene Loading
+
+Tests that exercise `rebuild()` and `body()` require special handling.
+`rebuild()` is asynchronous — it queues a coroutine for the next event loop
+tick.  Call `core.flushQueue()` after all `rebuild()` calls and before any
+child-count assertions.
+
+See [Lua Scene Loading](lua-scene-loading.md) for the full explanation and
+all patterns.  `tests/test_body.lua` is the reference implementation.
+
+```lua
+local core = require "orca.core"
+local ui   = require "orca.UIKit"
+
+local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+local node   = screen + ui.Node2D {}
+
+node:rebuild(function(self)
+  self:addChild(ui.Node2D { Name = "Child" })
+end)
+
+core.flushQueue()   -- ← flush before asserting
+
+local n = 0
+for _ in node.children do n = n + 1 end
+assert(n == 1)
 ```
 
 ---

@@ -26,6 +26,7 @@ nav:
     - Way of Working: way-of-working.md
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
+    - Lua Scene Loading: lua-scene-loading.md
     - Style System: styling.md
     - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md
