@@ -392,12 +392,12 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
           break;
       }
       lua_pop(L, 1);
-      return FALSE;
+      return TRUE;
     case kEventStopCoroutine:
       luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
       axRemoveFromQueue(msg->target);
       axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), 0);
-      return FALSE;
+      return TRUE;
     default:
       return CORE_HandleObjectMessage(L, msg);
   }
