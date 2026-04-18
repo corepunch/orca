@@ -594,6 +594,25 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
+// Drain all pending events from the platform queue, dispatching each one.
+// This is used in headless tests to process kEventResumeCoroutine messages
+// that run body() rebuild coroutines posted by rebuild() calls.
+extern bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg);
+
+static int f_flush_queue(lua_State* L) {
+  struct AXmessage msg;
+  int top = lua_gettop(L);
+  while (axPollEvent(&msg)) {
+    // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
+    // (kEventResumeCoroutine path) has something to consume.  After each
+    // dispatch, restore the stack unconditionally to stay balanced.
+    lua_pushnil(L);
+    SV_DispatchMessage(L, &msg);
+    lua_settop(L, top);
+  }
+  return 0;
+}
+
 void
 after_core_module_registered(lua_State* L)
 {
@@ -610,4 +629,7 @@ lua_pop(L, 1);
   OVERRIDE_FROMSTRING(CornerRadius, f_CornerRadius_TextConvert, f_CornerRadius_New)
 
 #undef OVERRIDE_FROMSTRING
+
+  lua_pushcfunction(L, f_flush_queue);
+  lua_setfield(L, -2, "flushQueue");
 }
