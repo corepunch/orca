@@ -14,7 +14,7 @@ class MessagesView extends ui.StackView
 		for msg in *Messages\findAll @chat
 			@bubble msg
 
-	onScrollHeightChanged: () => @setScrollTop @ScrollHeight
+	ScrollHeightChanged: () => @setScrollTop @ScrollHeight
 
 	bubbleClass: (msg) =>
 		sender = msg.sender["$id"]
@@ -27,7 +27,7 @@ class MessagesView extends ui.StackView
 
 	bubble: (msg) => p (@bubbleClass msg), msg.body
 
-	onTimer: => 
+	Timer: => 
 		return unless @last
 		notimezone = (msg) -> msg["$createdAt"]\gsub "%+%d%d:%d%d$", "" if msg
 		for msg in *Messages\findAll @chat, notimezone @last

@@ -27,7 +27,7 @@ class App extends Application
 	"/transaction/:transaction": => Layout page.TransactionDetails, @params
 	"/search": => SearchPage!
 
-	onAwake2: => 
+	Awake2: => 
 		import parse from require "orca.parsers.css"
 		-- routing.navigate '/sign-out'
 		@navigate '/sign-in' unless pcall Account\auth, Account

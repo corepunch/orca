@@ -11,7 +11,7 @@ fields = {
 
 class SignIn extends ui.Form
 	apply: => "form"
-	onSubmit: => routing.navigate "/" if Account\signin @populateInputs!
+	Submit: => routing.navigate "/" if Account\signin @populateInputs!
 	body: =>
 		handleSignin = (params) -> routing.navigate "/" if Account\signin params
 		p ".card-title", "Log in with existing account"
@@ -22,7 +22,7 @@ class SignIn extends ui.Form
 				Name: item.attribute
 				PlaceholderText: item.label
 		ui.Button ".btn.btn-default.text-xl.w-full", Type: "Submit", "Sign in"
-		ui.Button ".btn-link.mt-4", onClick: (=> routing.navigate "/sign-up"), "No account? Create one now"
+		ui.Button ".btn-link.mt-4", Click: (=> routing.navigate "/sign-up"), "No account? Create one now"
 		stack ".gap-2", ->
 			links = {
 				{ label: "Default signin", func: -> handleSignin email: "igor.chernakov@gmail.com", password: "qwerty1234" },
@@ -30,6 +30,6 @@ class SignIn extends ui.Form
 				{ label: "Test2", func: -> handleSignin email: "test2@gmail.com", password: "qwer1234" },
 			}
 			for link in *links
-				ui.Button ".btn.btn-link.text-sm.mt-1", onClick: link.func, link.label
+				ui.Button ".btn.btn-link.text-sm.mt-1", Click: link.func, link.label
 		ErrorMessage error: @error if @error
 

@@ -59,4 +59,4 @@ class ChatLayout extends Page
 			ui.Input "#msg-input.m-8.h-full.input"
 				name: "message"
 				placeholderText: ". . ."
-				onChange: sendMessage
+				Change: sendMessage

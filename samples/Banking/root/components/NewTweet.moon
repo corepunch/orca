@@ -14,11 +14,11 @@ class NewTweet extends ui.Form
 			PlaceholderText: "What's on your mind?"
 		stack ".gap-2", ->
 			button ".btn.btn-default.w-full", Type: "Submit", "Submit"
-			button ".btn.btn-secondary.w-full", onClick: @onBack, "Cancel"
+			button ".btn.btn-secondary.w-full", Click: @onBack, "Cancel"
 
-	onBack: => routing.navigate "/tweets"
+	Back: => routing.navigate "/tweets"
 
-	onSubmit: => 
+	Submit: => 
 		tbl = @populateInputs!
 		Messages\create chat: nil, body: tbl.body
 		routing.navigate "/tweets"

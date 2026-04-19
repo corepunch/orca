@@ -24,4 +24,4 @@ class Search extends ui.Node2D
 
 		stack ".flex-col.gap-2.my-2.overflow-y-scroll.h-full", ->
 			for item in *contacts
-				ContactCard user: item, onClick: -> Chats\create item
+				ContactCard user: item, Click: -> Chats\create item

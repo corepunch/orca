@@ -25,7 +25,7 @@ class SignUp extends ui.Form
 		ui.Button ".btn.btn-default.text-xl.w-full", Type: "Submit", "Sign up"
 		ErrorMessage error: @error if @error
 
-	onSubmit: =>
+	Submit: =>
 		parms = @populateInputs!
 		Account\signup params
 		Account\signin params
