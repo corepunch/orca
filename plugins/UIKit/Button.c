@@ -52,9 +52,9 @@ HANDLER(Button, Node2D, DrawBrush) {
 #endif
 }
 
-HANDLER(Button, Node, LeftMouseUp)
+HANDLER(Button, Node, LeftButtonUp)
 {
-  SV_PostMessage(hObject, "Click", 0, hObject);
+  axPostMessageW(hObject, ID_Button_Click, 0, 0);
   if (pButton->Type == kButtonTypeSubmit) {
     axPostMessageW(hObject, ID_Form_Submit, 0, hObject);
   }

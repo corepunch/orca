@@ -1763,7 +1763,7 @@ LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushPtr);
 LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextPtr);
 LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownPtr);
 LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusPtr);
-LRESULT Input_LeftMouseUp(struct Object*, struct Input*, wParam_t, LeftMouseUpPtr);
+LRESULT Input_LeftButtonUp(struct Object*, struct Input*, wParam_t, LeftButtonUpPtr);
 LRESULT Input_MeasureOverride(struct Object*, struct Input*, wParam_t, MeasureOverridePtr);
 
 static struct PropertyType const InputProperties[kInputNumProperties] = {
@@ -1776,7 +1776,7 @@ static struct PropertyType const InputProperties[kInputNumProperties] = {
 static struct Input InputDefaults = {
 };
 LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreatePtr);
-LRESULT Button_LeftMouseUp(struct Object*, struct Button*, wParam_t, LeftMouseUpPtr);
+LRESULT Button_LeftButtonUp(struct Object*, struct Button*, wParam_t, LeftButtonUpPtr);
 LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownPtr);
 LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushPtr);
 
@@ -1785,7 +1785,7 @@ static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 };
 static struct Button ButtonDefaults = {
 };
-LRESULT Label_LeftMouseUp(struct Object*, struct Label*, wParam_t, LeftMouseUpPtr);
+LRESULT Label_LeftButtonUp(struct Object*, struct Label*, wParam_t, LeftButtonUpPtr);
 
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For

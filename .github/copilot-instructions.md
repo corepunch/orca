@@ -494,17 +494,17 @@ plugins/UIKit/
 
 ```c
 // In Button.c — implemented with HANDLER:
-HANDLER(Button, Node, LeftMouseUp) {
+HANDLER(Button, Node, LeftButtonUp) {
     // hObject  — owning Object
     // pButton  — component data (struct Button*)
-    // pLeftMouseUp — Node_LeftMouseUpMsgPtr
+    // pLeftButtonUp — Node_LeftButtonUpMsgPtr
     SV_PostMessage(hObject, "Click", 0, hObject);
     return TRUE; // handled — stop dispatch
 }
 
 // The generated ButtonProc in UIKit_export.c calls:
-//   case ID_Node_LeftMouseUp & MSG_DATA_MASK:
-//       return Button_LeftMouseUp(object, cmp, wparm, lparm);
+//   case ID_Node_LeftButtonUp & MSG_DATA_MASK:
+//       return Button_LeftButtonUp(object, cmp, wparm, lparm);
 ```
 
 The `objectProc_t` signature (for reference — use `HANDLER`, not a raw Proc):

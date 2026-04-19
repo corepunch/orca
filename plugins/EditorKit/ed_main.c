@@ -561,13 +561,13 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
   static DWORD dragged=0;
   if (dragging) {
     switch (msg) {
-      case kEventLeftMouseDragged:
+      case kEventLeftButtonDragged:
         dragging->Rect.x += (int16_t)LOWORD((intptr_t)lparam);
         dragging->Rect.y += (int16_t)HIWORD((intptr_t)lparam);
         dragged += abs((int16_t)LOWORD((intptr_t)lparam)) + abs((int16_t)HIWORD((intptr_t)lparam));
         ED_SendMessage(dragging, EVT_MOVE, MAKEDWORD((int16_t)dragging->Rect.x, (int16_t)dragging->Rect.y), NULL);
         return TRUE;
-      case kEventLeftMouseUp:
+      case kEventLeftButtonUp:
         dragging = NULL;
         if (dragged > DRAG_THRESHOLD) {
           dragged = 0;
@@ -580,12 +580,12 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
     if (ClickedTitlebar(wnd, wparam)) {
       TERMINALCHAR ch = ED_GetClickedTitleBarData(wnd, wparam);
       switch (msg) {
-        case kEventLeftMouseDown:
+        case kEventLeftButtonDown:
           dragging = wnd;
           dragged = 0;
           ED_SetFocusedPanel(wnd);
           return TRUE;
-        case kEventLeftMouseUp:
+        case kEventLeftButtonUp:
           if (ch.character == 0x10 || ch.character == 0x11) { // close button
             ED_DestroyWindow(wnd);
             ED_InvalidateWindow(editor.root);
@@ -612,22 +612,22 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
     if (ClickedToolbar(wnd, wparam)) {
       DWORD but = (LOWORD(wparam)-wnd->Rect.x)/TOOLBAR_BUTTON_SIZE;
       switch (but < wnd->toolbar.num_buttons ? msg : 0) {
-        case kEventLeftMouseUp:
+        case kEventLeftButtonUp:
           ED_SetFocusedPanel(wnd);
           ED_SendMessage(wnd, EVT_HOTKEY, MAKEDWORD(wnd->toolbar.buttons[but].idCommand, 0), NULL);
           return 1;
       }
     }
     switch (msg) {
-      case kEventLeftMouseDown:
-      case kEventRightMouseDown:
-      case kEventOtherMouseDown:
-      case kEventLeftMouseUp:
-      case kEventRightMouseUp:
-      case kEventOtherMouseUp:
-      case kEventLeftMouseDragged:
-      case kEventRightMouseDragged:
-      case kEventOtherMouseDragged:
+      case kEventLeftButtonDown:
+      case kEventRightButtonDown:
+      case kEventOtherButtonDown:
+      case kEventLeftButtonUp:
+      case kEventRightButtonUp:
+      case kEventOtherButtonUp:
+      case kEventLeftButtonDragged:
+      case kEventRightButtonDragged:
+      case kEventOtherButtonDragged:
       case kEventMouseMoved:
       case kEventScrollWheel:
         if (ClickedToolbar(wnd, wparam))
@@ -642,19 +642,19 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
     case kEventLeftDoubleClick:
       ED_SendMessage(wnd, EVT_CDCLICK, curindex, &data);
       return TRUE;
-    case kEventLeftMouseUp:
+    case kEventLeftButtonUp:
 //      ED_CancelInput();
       if (editor.dragItem.active) {
 //        ED_SendMessage(wnd, EVT_MOUSEDROP, 0, evt);
         ED_SendMessage(wnd, EVT_CDROP, data.item, &editor.dragItem);
       } else {
-        ED_SendMessage(wnd, kEventLeftMouseUp, _LocalCoord(wnd, wparam), lparam);
+        ED_SendMessage(wnd, kEventLeftButtonUp, _LocalCoord(wnd, wparam), lparam);
         ED_SendMessage(wnd, EVT_CCLICK, curindex, &data);
       }
       ED_CancelDragOperation();
       return TRUE;
-    case kEventRightMouseUp:
-      ED_SendMessage(wnd, kEventRightMouseUp, _LocalCoord(wnd, wparam), lparam);
+    case kEventRightButtonUp:
+      ED_SendMessage(wnd, kEventRightButtonUp, _LocalCoord(wnd, wparam), lparam);
       ED_SendMessage(wnd, EVT_CONTEXTMENU, _LocalCoord(wnd, wparam), &data);
       return TRUE;
     case kEventScrollWheel:
@@ -664,9 +664,9 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       } else {
         return FALSE;
       }
-    case kEventLeftMouseDown:
+    case kEventLeftButtonDown:
       if (ED_SendMessage(wnd, EVT_CGRAB, data.item, &data) ||
-          ED_SendMessage(wnd, kEventLeftMouseDown, _LocalCoord(wnd, wparam), lparam))
+          ED_SendMessage(wnd, kEventLeftButtonDown, _LocalCoord(wnd, wparam), lparam))
       {
         RECT rect = ED_GetClientRect(wnd);
         VECTOR2 mouse = { LOWORD(wparam), HIWORD(wparam) };
@@ -679,7 +679,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       } else {
         return FALSE;
       }
-    case kEventLeftMouseDragged:
+    case kEventLeftButtonDragged:
       editor.mouseLocation.x = LOWORD(wparam);
       editor.mouseLocation.y = HIWORD(wparam);
       // LPVECTOR2 location = (LPVECTOR2)&evt->location;
@@ -693,7 +693,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
         ED_SendMessage(wnd, EVT_CDRAG, data.item, &editor.dragItem);
         ED_SendMessage(wnd, EVT_MOUSEDRAG, wparam, &data);
       }
-      return ED_SendMessage(wnd, kEventLeftMouseDragged, _LocalCoord(wnd, wparam), lparam);
+      return ED_SendMessage(wnd, kEventLeftButtonDragged, _LocalCoord(wnd, wparam), lparam);
     case kEventKeyDown:
       if (editor.textEdit.active) {
         ED_HandleTextInput(wparam);

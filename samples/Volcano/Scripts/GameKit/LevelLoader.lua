@@ -74,7 +74,7 @@ local factory = {
       local gameobj = sk.SKSpriteNode {
         Animation = sprite(type),
         Position = cg.Vector2D(x, y),
-        onLeftMouseUp = function(self)
+        onLeftButtonUp = function(self)
           level:run_worker_to(self)
         end
       }

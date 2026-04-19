@@ -336,15 +336,15 @@ enum HandlerProperties {
 #define ID_Node_SetFocus 0x5f1c2071 // Node.SetFocus
 #define ID_Node_GetSize 0x2282f1da // Node.GetSize
 #define ID_Node_MouseMessage 0x8633bad7 // Node.MouseMessage
-#define ID_Node_LeftMouseDown 0x34ecec23 // Node.LeftMouseDown
-#define ID_Node_RightMouseDown 0x379ed064 // Node.RightMouseDown
-#define ID_Node_OtherMouseDown 0x5b61ba9c // Node.OtherMouseDown
-#define ID_Node_LeftMouseUp 0x87d20362 // Node.LeftMouseUp
-#define ID_Node_RightMouseUp 0xf135e605 // Node.RightMouseUp
-#define ID_Node_OtherMouseUp 0x51ca895d // Node.OtherMouseUp
-#define ID_Node_LeftMouseDragged 0x845ee787 // Node.LeftMouseDragged
-#define ID_Node_RightMouseDragged 0xc2e805f6 // Node.RightMouseDragged
-#define ID_Node_OtherMouseDragged 0xbab6f63e // Node.OtherMouseDragged
+#define ID_Node_LeftButtonDown 0xd4990efc // Node.LeftButtonDown
+#define ID_Node_RightButtonDown 0xfac5b9c5 // Node.RightButtonDown
+#define ID_Node_OtherButtonDown 0x18d5d88d // Node.OtherButtonDown
+#define ID_Node_LeftButtonUp 0xa94c62bd // Node.LeftButtonUp
+#define ID_Node_RightButtonUp 0xda69d730 // Node.RightButtonUp
+#define ID_Node_OtherButtonUp 0xdfe48738 // Node.OtherButtonUp
+#define ID_Node_LeftButtonDragged 0xbc03661e // Node.LeftButtonDragged
+#define ID_Node_RightButtonDragged 0x60b4eb2d // Node.RightButtonDragged
+#define ID_Node_OtherButtonDragged 0x7733e4c5 // Node.OtherButtonDragged
 #define ID_Node_LeftDoubleClick 0x4de79e13 // Node.LeftDoubleClick
 #define ID_Node_RightDoubleClick 0x9104b1b4 // Node.RightDoubleClick
 #define ID_Node_OtherDoubleClick 0x4a967bfc // Node.OtherDoubleClick
@@ -437,15 +437,15 @@ enum NodeProperties {
 	kNodeSetFocus,
 	kNodeGetSize,
 	kNodeMouseMessage,
-	kNodeLeftMouseDown,
-	kNodeRightMouseDown,
-	kNodeOtherMouseDown,
-	kNodeLeftMouseUp,
-	kNodeRightMouseUp,
-	kNodeOtherMouseUp,
-	kNodeLeftMouseDragged,
-	kNodeRightMouseDragged,
-	kNodeOtherMouseDragged,
+	kNodeLeftButtonDown,
+	kNodeRightButtonDown,
+	kNodeOtherButtonDown,
+	kNodeLeftButtonUp,
+	kNodeRightButtonUp,
+	kNodeOtherButtonUp,
+	kNodeLeftButtonDragged,
+	kNodeRightButtonDragged,
+	kNodeOtherButtonDragged,
 	kNodeLeftDoubleClick,
 	kNodeRightDoubleClick,
 	kNodeOtherDoubleClick,
@@ -636,78 +636,78 @@ enum NodeProperties {
 #define ID_Node_MouseMessageEventArgs_deltaY 0xa9801bd8 // Node_MouseMessageEventArgs.deltaY
 #define ID_Node_MouseMessageEventArgs_button 0x563796c1 // Node_MouseMessageEventArgs.button
 #define ID_Node_MouseMessageEventArgs_clickCount 0x457c8aa6 // Node_MouseMessageEventArgs.clickCount
-#define ID_Node_LeftMouseDownEventArgs 0xeaaeccfb
+#define ID_Node_LeftButtonDownEventArgs 0x6caa3f0c
 
-#define ID_Node_LeftMouseDownEventArgs_x 0xaef95f95 // Node_LeftMouseDownEventArgs.x
-#define ID_Node_LeftMouseDownEventArgs_y 0xadf95e02 // Node_LeftMouseDownEventArgs.y
-#define ID_Node_LeftMouseDownEventArgs_deltaX 0x3654571d // Node_LeftMouseDownEventArgs.deltaX
-#define ID_Node_LeftMouseDownEventArgs_deltaY 0x3554558a // Node_LeftMouseDownEventArgs.deltaY
-#define ID_Node_LeftMouseDownEventArgs_button 0x2c230f5f // Node_LeftMouseDownEventArgs.button
-#define ID_Node_LeftMouseDownEventArgs_clickCount 0xfbb27808 // Node_LeftMouseDownEventArgs.clickCount
-#define ID_Node_RightMouseDownEventArgs 0xa21e5cb8
+#define ID_Node_LeftButtonDownEventArgs_x 0xb62ed5da // Node_LeftButtonDownEventArgs.x
+#define ID_Node_LeftButtonDownEventArgs_y 0xb72ed76d // Node_LeftButtonDownEventArgs.y
+#define ID_Node_LeftButtonDownEventArgs_deltaX 0x2f27e0a8 // Node_LeftButtonDownEventArgs.deltaX
+#define ID_Node_LeftButtonDownEventArgs_deltaY 0x3027e23b // Node_LeftButtonDownEventArgs.deltaY
+#define ID_Node_LeftButtonDownEventArgs_button 0x1b554e46 // Node_LeftButtonDownEventArgs.button
+#define ID_Node_LeftButtonDownEventArgs_clickCount 0x1e50b5a5 // Node_LeftButtonDownEventArgs.clickCount
+#define ID_Node_RightButtonDownEventArgs 0x37f5e871
 
-#define ID_Node_RightMouseDownEventArgs_x 0x2bbfcdae // Node_RightMouseDownEventArgs.x
-#define ID_Node_RightMouseDownEventArgs_y 0x2cbfcf41 // Node_RightMouseDownEventArgs.y
-#define ID_Node_RightMouseDownEventArgs_deltaX 0xf69f68a4 // Node_RightMouseDownEventArgs.deltaX
-#define ID_Node_RightMouseDownEventArgs_deltaY 0xf79f6a37 // Node_RightMouseDownEventArgs.deltaY
-#define ID_Node_RightMouseDownEventArgs_button 0x41ea39ea // Node_RightMouseDownEventArgs.button
-#define ID_Node_RightMouseDownEventArgs_clickCount 0x52c29d69 // Node_RightMouseDownEventArgs.clickCount
-#define ID_Node_OtherMouseDownEventArgs 0x7ca437d0
+#define ID_Node_RightButtonDownEventArgs_x 0x775838af // Node_RightButtonDownEventArgs.x
+#define ID_Node_RightButtonDownEventArgs_y 0x7658371c // Node_RightButtonDownEventArgs.y
+#define ID_Node_RightButtonDownEventArgs_deltaX 0x3191ea23 // Node_RightButtonDownEventArgs.deltaX
+#define ID_Node_RightButtonDownEventArgs_deltaY 0x3091e890 // Node_RightButtonDownEventArgs.deltaY
+#define ID_Node_RightButtonDownEventArgs_button 0xb2b28fb9 // Node_RightButtonDownEventArgs.button
+#define ID_Node_RightButtonDownEventArgs_clickCount 0xf21b9fce // Node_RightButtonDownEventArgs.clickCount
+#define ID_Node_OtherButtonDownEventArgs 0x18279d79
 
-#define ID_Node_OtherMouseDownEventArgs_x 0x4e05ab06 // Node_OtherMouseDownEventArgs.x
-#define ID_Node_OtherMouseDownEventArgs_y 0x4f05ac99 // Node_OtherMouseDownEventArgs.y
-#define ID_Node_OtherMouseDownEventArgs_deltaX 0x6265dc3c // Node_OtherMouseDownEventArgs.deltaX
-#define ID_Node_OtherMouseDownEventArgs_deltaY 0x6365ddcf // Node_OtherMouseDownEventArgs.deltaY
-#define ID_Node_OtherMouseDownEventArgs_button 0x4efec082 // Node_OtherMouseDownEventArgs.button
-#define ID_Node_OtherMouseDownEventArgs_clickCount 0x777f1591 // Node_OtherMouseDownEventArgs.clickCount
-#define ID_Node_LeftMouseUpEventArgs 0x77942658
+#define ID_Node_OtherButtonDownEventArgs_x 0x85e85af7 // Node_OtherButtonDownEventArgs.x
+#define ID_Node_OtherButtonDownEventArgs_y 0x84e85964 // Node_OtherButtonDownEventArgs.y
+#define ID_Node_OtherButtonDownEventArgs_deltaX 0xc14d90eb // Node_OtherButtonDownEventArgs.deltaX
+#define ID_Node_OtherButtonDownEventArgs_deltaY 0xc04d8f58 // Node_OtherButtonDownEventArgs.deltaY
+#define ID_Node_OtherButtonDownEventArgs_button 0x6d050a41 // Node_OtherButtonDownEventArgs.button
+#define ID_Node_OtherButtonDownEventArgs_clickCount 0x328db626 // Node_OtherButtonDownEventArgs.clickCount
+#define ID_Node_LeftButtonUpEventArgs 0xf6a581db
 
-#define ID_Node_LeftMouseUpEventArgs_x 0x6f03f5ce // Node_LeftMouseUpEventArgs.x
-#define ID_Node_LeftMouseUpEventArgs_y 0x7003f761 // Node_LeftMouseUpEventArgs.y
-#define ID_Node_LeftMouseUpEventArgs_deltaX 0x47173104 // Node_LeftMouseUpEventArgs.deltaX
-#define ID_Node_LeftMouseUpEventArgs_deltaY 0x48173297 // Node_LeftMouseUpEventArgs.deltaY
-#define ID_Node_LeftMouseUpEventArgs_button 0x4fe7348a // Node_LeftMouseUpEventArgs.button
-#define ID_Node_LeftMouseUpEventArgs_clickCount 0xd07b9e49 // Node_LeftMouseUpEventArgs.clickCount
-#define ID_Node_RightMouseUpEventArgs 0xdd5538ef
+#define ID_Node_LeftButtonUpEventArgs_x 0x93bb4e75 // Node_LeftButtonUpEventArgs.x
+#define ID_Node_LeftButtonUpEventArgs_y 0x92bb4ce2 // Node_LeftButtonUpEventArgs.y
+#define ID_Node_LeftButtonUpEventArgs_deltaX 0xc29b573d // Node_LeftButtonUpEventArgs.deltaX
+#define ID_Node_LeftButtonUpEventArgs_deltaY 0xc19b55aa // Node_LeftButtonUpEventArgs.deltaY
+#define ID_Node_LeftButtonUpEventArgs_button 0x4c2a99bf // Node_LeftButtonUpEventArgs.button
+#define ID_Node_LeftButtonUpEventArgs_clickCount 0x4595c428 // Node_LeftButtonUpEventArgs.clickCount
+#define ID_Node_RightButtonUpEventArgs 0x4140a59a
 
-#define ID_Node_RightMouseUpEventArgs_x 0x54820231 // Node_RightMouseUpEventArgs.x
-#define ID_Node_RightMouseUpEventArgs_y 0x5382009e // Node_RightMouseUpEventArgs.y
-#define ID_Node_RightMouseUpEventArgs_deltaX 0x0e0af2f1 // Node_RightMouseUpEventArgs.deltaX
-#define ID_Node_RightMouseUpEventArgs_deltaY 0x0d0af15e // Node_RightMouseUpEventArgs.deltaY
-#define ID_Node_RightMouseUpEventArgs_button 0x3bd7d75b // Node_RightMouseUpEventArgs.button
-#define ID_Node_RightMouseUpEventArgs_clickCount 0xff0d7974 // Node_RightMouseUpEventArgs.clickCount
-#define ID_Node_OtherMouseUpEventArgs 0x2bc11d87
+#define ID_Node_RightButtonUpEventArgs_x 0x5de366ac // Node_RightButtonUpEventArgs.x
+#define ID_Node_RightButtonUpEventArgs_y 0x5ee3683f // Node_RightButtonUpEventArgs.y
+#define ID_Node_RightButtonUpEventArgs_deltaX 0xb9422e16 // Node_RightButtonUpEventArgs.deltaX
+#define ID_Node_RightButtonUpEventArgs_deltaY 0xba422fa9 // Node_RightButtonUpEventArgs.deltaY
+#define ID_Node_RightButtonUpEventArgs_button 0xc356b138 // Node_RightButtonUpEventArgs.button
+#define ID_Node_RightButtonUpEventArgs_clickCount 0x61ebff0b // Node_RightButtonUpEventArgs.clickCount
+#define ID_Node_OtherButtonUpEventArgs 0x650283a2
 
-#define ID_Node_OtherMouseUpEventArgs_x 0xb3aa5809 // Node_OtherMouseUpEventArgs.x
-#define ID_Node_OtherMouseUpEventArgs_y 0xb2aa5676 // Node_OtherMouseUpEventArgs.y
-#define ID_Node_OtherMouseUpEventArgs_deltaX 0x593eb3a9 // Node_OtherMouseUpEventArgs.deltaX
-#define ID_Node_OtherMouseUpEventArgs_deltaY 0x583eb216 // Node_OtherMouseUpEventArgs.deltaY
-#define ID_Node_OtherMouseUpEventArgs_button 0xf3978bb3 // Node_OtherMouseUpEventArgs.button
-#define ID_Node_OtherMouseUpEventArgs_clickCount 0x9fa5dfdc // Node_OtherMouseUpEventArgs.clickCount
-#define ID_Node_LeftMouseDraggedEventArgs 0xd1c109f9
+#define ID_Node_OtherButtonUpEventArgs_x 0x27d03b14 // Node_OtherButtonUpEventArgs.x
+#define ID_Node_OtherButtonUpEventArgs_y 0x28d03ca7 // Node_OtherButtonUpEventArgs.y
+#define ID_Node_OtherButtonUpEventArgs_deltaX 0xafc9125e // Node_OtherButtonUpEventArgs.deltaX
+#define ID_Node_OtherButtonUpEventArgs_deltaY 0xb0c913f1 // Node_OtherButtonUpEventArgs.deltaY
+#define ID_Node_OtherButtonUpEventArgs_button 0x95466cc0 // Node_OtherButtonUpEventArgs.button
+#define ID_Node_OtherButtonUpEventArgs_clickCount 0x1d0d30e3 // Node_OtherButtonUpEventArgs.clickCount
+#define ID_Node_LeftButtonDraggedEventArgs 0x5d72bb08
 
-#define ID_Node_LeftMouseDraggedEventArgs_x 0x9c8adb77 // Node_LeftMouseDraggedEventArgs.x
-#define ID_Node_LeftMouseDraggedEventArgs_y 0x9b8ad9e4 // Node_LeftMouseDraggedEventArgs.y
-#define ID_Node_LeftMouseDraggedEventArgs_deltaX 0xe438f26b // Node_LeftMouseDraggedEventArgs.deltaX
-#define ID_Node_LeftMouseDraggedEventArgs_deltaY 0xe338f0d8 // Node_LeftMouseDraggedEventArgs.deltaY
-#define ID_Node_LeftMouseDraggedEventArgs_button 0x8ff06bc1 // Node_LeftMouseDraggedEventArgs.button
-#define ID_Node_LeftMouseDraggedEventArgs_clickCount 0x332dafa6 // Node_LeftMouseDraggedEventArgs.clickCount
-#define ID_Node_RightMouseDraggedEventArgs 0x8fdfdde4
+#define ID_Node_LeftButtonDraggedEventArgs_x 0xf38a9f9e // Node_LeftButtonDraggedEventArgs.x
+#define ID_Node_LeftButtonDraggedEventArgs_y 0xf48aa131 // Node_LeftButtonDraggedEventArgs.y
+#define ID_Node_LeftButtonDraggedEventArgs_deltaX 0x885ef494 // Node_LeftButtonDraggedEventArgs.deltaX
+#define ID_Node_LeftButtonDraggedEventArgs_deltaY 0x895ef627 // Node_LeftButtonDraggedEventArgs.deltaY
+#define ID_Node_LeftButtonDraggedEventArgs_button 0xb8f3463a // Node_LeftButtonDraggedEventArgs.button
+#define ID_Node_LeftButtonDraggedEventArgs_clickCount 0x94331719 // Node_LeftButtonDraggedEventArgs.clickCount
+#define ID_Node_RightButtonDraggedEventArgs 0x8ec28ae3
 
-#define ID_Node_RightMouseDraggedEventArgs_x 0xf2177ef2 // Node_RightMouseDraggedEventArgs.x
-#define ID_Node_RightMouseDraggedEventArgs_y 0xf3178085 // Node_RightMouseDraggedEventArgs.y
-#define ID_Node_RightMouseDraggedEventArgs_deltaX 0xd4c9d1a0 // Node_RightMouseDraggedEventArgs.deltaX
-#define ID_Node_RightMouseDraggedEventArgs_deltaY 0xd5c9d333 // Node_RightMouseDraggedEventArgs.deltaY
-#define ID_Node_RightMouseDraggedEventArgs_button 0x6d81777e // Node_RightMouseDraggedEventArgs.button
-#define ID_Node_RightMouseDraggedEventArgs_clickCount 0xf395ed2d // Node_RightMouseDraggedEventArgs.clickCount
-#define ID_Node_OtherMouseDraggedEventArgs 0x891d3a4c
+#define ID_Node_RightButtonDraggedEventArgs_x 0xdf8ac5dd // Node_RightButtonDraggedEventArgs.x
+#define ID_Node_RightButtonDraggedEventArgs_y 0xde8ac44a // Node_RightButtonDraggedEventArgs.y
+#define ID_Node_RightButtonDraggedEventArgs_deltaX 0xe33c2ba5 // Node_RightButtonDraggedEventArgs.deltaX
+#define ID_Node_RightButtonDraggedEventArgs_deltaY 0xe23c2a12 // Node_RightButtonDraggedEventArgs.deltaY
+#define ID_Node_RightButtonDraggedEventArgs_button 0x311ff427 // Node_RightButtonDraggedEventArgs.button
+#define ID_Node_RightButtonDraggedEventArgs_clickCount 0xb9eabba0 // Node_RightButtonDraggedEventArgs.clickCount
+#define ID_Node_OtherButtonDraggedEventArgs 0x9e10189b
 
-#define ID_Node_OtherMouseDraggedEventArgs_x 0x2393999a // Node_OtherMouseDraggedEventArgs.x
-#define ID_Node_OtherMouseDraggedEventArgs_y 0x24939b2d // Node_OtherMouseDraggedEventArgs.y
-#define ID_Node_OtherMouseDraggedEventArgs_deltaX 0xf2dbed68 // Node_OtherMouseDraggedEventArgs.deltaX
-#define ID_Node_OtherMouseDraggedEventArgs_deltaY 0xf3dbeefb // Node_OtherMouseDraggedEventArgs.deltaY
-#define ID_Node_OtherMouseDraggedEventArgs_button 0xef7fbb06 // Node_OtherMouseDraggedEventArgs.button
-#define ID_Node_OtherMouseDraggedEventArgs_clickCount 0x35f6b465 // Node_OtherMouseDraggedEventArgs.clickCount
+#define ID_Node_OtherButtonDraggedEventArgs_x 0x37c9d9b5 // Node_OtherButtonDraggedEventArgs.x
+#define ID_Node_OtherButtonDraggedEventArgs_y 0x36c9d822 // Node_OtherButtonDraggedEventArgs.y
+#define ID_Node_OtherButtonDraggedEventArgs_deltaX 0xa166667d // Node_OtherButtonDraggedEventArgs.deltaX
+#define ID_Node_OtherButtonDraggedEventArgs_deltaY 0xa06664ea // Node_OtherButtonDraggedEventArgs.deltaY
+#define ID_Node_OtherButtonDraggedEventArgs_button 0x57364cff // Node_OtherButtonDraggedEventArgs.button
+#define ID_Node_OtherButtonDraggedEventArgs_clickCount 0x1583d268 // Node_OtherButtonDraggedEventArgs.clickCount
 #define ID_Node_LeftDoubleClickEventArgs 0x031dea9b
 
 #define ID_Node_LeftDoubleClickEventArgs_x 0xe488fbb5 // Node_LeftDoubleClickEventArgs.x

@@ -441,7 +441,7 @@
         <handle message="TextBlockConcept.MakeText"/>
         <handle message="Node.KeyDown"/>
         <handle message="Node.KillFocus"/>
-        <handle message="Node.LeftMouseUp"/>
+        <handle message="Node.LeftButtonUp"/>
         <handle message="Node2D.MeasureOverride"/>
       </handles>
       <properties>
@@ -461,20 +461,25 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
-        <handle message="Node.LeftMouseUp"/>
+        <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
         <handle message="Node2D.DrawBrush"/>
       </handles>
       <properties>
         <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
       </properties>
+      <messages>
+        <message name="Click">
+          <summary>Fired when the button is clicked by the user.</summary>
+        </message>
+      </messages>
     </class>
     <class name="Label" parent="TextBlock">
       <summary>Text label with optional association to form controls</summary>
       <details>Displays static text that can be associated with input controls for accessibility. Clicking the label can transfer focus to associated control.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Node.LeftMouseUp"/>
+        <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>
         <property name="For" type="string">Identifier of associated form control </property>

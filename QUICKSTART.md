@@ -102,7 +102,7 @@ local Inspector = ui.TerminalView:extend {
         self:println(nil, "Custom UI Component")
     end,
     
-    onLeftMouseUp = function (self, _, ...)
+    onLeftButtonUp = function (self, _, ...)
         -- Handle user interaction
     end
 }
@@ -147,7 +147,7 @@ class App extends Application
     "/settings": => Layout page.Settings
     "/user/:user": => Layout page.ContactDetails, @params
 
-    onAwake: => 
+    Awake: => 
         -- Initialize application
         @navigate '/sign-in' unless pcall Account\auth, Account
 ```
@@ -408,7 +408,7 @@ class MyApp extends Application
     "/about": => AboutPage!
     "/contact": => ContactPage!
     
-    onAwake: =>
+    Awake: =>
         @navigate '/'
 ```
 

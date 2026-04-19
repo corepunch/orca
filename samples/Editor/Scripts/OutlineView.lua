@@ -32,7 +32,7 @@ local OultineView = ui.TerminalView:extend {
 			self:printTreeNode(n, '')
 		end
 	end,
-	onLeftMouseDown = function (self, _, x, y)
+	onLeftButtonDown = function (self, _, x, y)
 		local item, index, _ = self:unpack(x, y)
 		if not item then return end
 		local dragItem = self.screen:findChild("DragItem")
@@ -46,7 +46,7 @@ local OultineView = ui.TerminalView:extend {
 		}
 		self.SelectedIndex = index
 	end,
-	onLeftMouseUp = function (self, _, ...)
+	onLeftButtonUp = function (self, _, ...)
 		local dragItem = self.screen:findChild("DragItem")
 		dragItem.Visible = false
 		local item, index, char = self:unpack(...)
@@ -60,7 +60,7 @@ local OultineView = ui.TerminalView:extend {
 			self:selectIndex(index)
 		end
 	end,
-	onRightMouseUp = function (self, _, ...)
+	onRightButtonUp = function (self, _, ...)
 		local item, index, _ = self:unpack(...)
 		if not item then return end
 		local path = item:getPath()

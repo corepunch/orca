@@ -32,6 +32,7 @@ typedef struct Node2D_ArrangeEventArgs Node2D_ArrangeOverrideMsg_t,* Node2D_Arra
 typedef struct Node2D_ForegroundContentEventArgs Node2D_ForegroundContentMsg_t,* Node2D_ForegroundContentMsgPtr;
 typedef struct Node2D_UpdateGeometryEventArgs Node2D_UpdateGeometryMsg_t,* Node2D_UpdateGeometryMsgPtr;
 typedef struct Node2D_SetScrollTopEventArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
+typedef struct Button_ClickEventArgs Button_ClickMsg_t,* Button_ClickMsgPtr;
 typedef struct Form_SubmitEventArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
@@ -388,6 +389,11 @@ struct Node2D_SetScrollTopEventArgs {
 };
 ORCA_API void luaX_pushNode2D_SetScrollTopEventArgs(lua_State *L, struct Node2D_SetScrollTopEventArgs const* data);
 ORCA_API struct Node2D_SetScrollTopEventArgs* luaX_checkNode2D_SetScrollTopEventArgs(lua_State *L, int idx);
+/** Button_ClickEventArgs struct */
+struct Button_ClickEventArgs {
+};
+ORCA_API void luaX_pushButton_ClickEventArgs(lua_State *L, struct Button_ClickEventArgs const* data);
+ORCA_API struct Button_ClickEventArgs* luaX_checkButton_ClickEventArgs(lua_State *L, int idx);
 /** Form_SubmitEventArgs struct */
 struct Form_SubmitEventArgs {
 };
@@ -623,6 +629,7 @@ typedef struct Button Button_t, *ButtonPtr, *lpButton_t;
 typedef struct Button const *ButtonCPtr, *lpcButton_t;
 struct Button {
 	enum ButtonType Type; ///< Button behavior type (normal or submit)
+	event_t Click;
 };
 ORCA_API void luaX_pushButton(lua_State *L, struct Button const* Button);
 ORCA_API struct Button* luaX_checkButton(lua_State *L, int idx);

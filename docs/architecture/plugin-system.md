@@ -192,8 +192,8 @@ SV_RegisterMessageProc(CORE_ProcessMessage);
 // plugins/UIKit/UIKit_message.c
 LRESULT ui_handle_event(lua_State *L, struct AXmessage *msg) {
     switch (msg->message) {
-        case kEventLeftMouseDown:
-        case kEventLeftMouseUp:
+        case kEventLeftButtonDown:
+        case kEventLeftButtonUp:
         case kEventMouseMoved:
             return UI_HandleMouseEvent(L, msg->target, msg);  /* TRUE if consumed by a widget */
         case kEventKeyDown:

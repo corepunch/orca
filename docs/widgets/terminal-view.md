@@ -210,7 +210,7 @@ local MyList = ui.TerminalView:extend {
   end,
 
   -- Click: select item and notify
-  onLeftMouseDown = function(self, _, x, y)
+  onLeftButtonDown = function(self, _, x, y)
     local item, index = self:unpack(x, y)
     if item then
       self.SelectedIndex = index

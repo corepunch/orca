@@ -9,7 +9,7 @@ function Barrier:new()
   self.will_be_fixed = false
 end
 
-function Barrier:onLeftMouseUp()
+function Barrier:onLeftButtonUp()
   if not self.will_be_fixed then
     self.scene:run_worker_to(self)
   end

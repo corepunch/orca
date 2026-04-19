@@ -240,9 +240,11 @@ enum InputProperties {
 #define GetButton(_P) ((struct Button*)((_P)?OBJ_GetComponent(_P,ID_Button):NULL))
 #define Button_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Button,sizeof(struct Button),_N)
 #define ID_Button_Type 0x843eb785 // Button.Type
-#define kButtonNumProperties 1
+#define ID_Button_Click 0xeb91f197 // Button.Click
+#define kButtonNumProperties 2
 enum ButtonProperties {
 	kButtonType,
+	kButtonClick,
 };
 // Label
 #define ID_Label 0x9eccf29d
@@ -536,6 +538,8 @@ enum StyleProperties {
 #define ID_Node2D_SetScrollTopEventArgs 0x64d56721
 
 #define ID_Node2D_SetScrollTopEventArgs_Value 0xce539fc2 // Node2D_SetScrollTopEventArgs.Value
+#define ID_Button_ClickEventArgs 0x620fb91f
+
 #define ID_Form_SubmitEventArgs 0x940ec545
 
 #define ID_Screen_UpdateLayoutEventArgs 0xe31efe36

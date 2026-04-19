@@ -238,6 +238,9 @@ static luaL_Reg _Node2D_SetScrollTopEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_SetScrollTopEventArgs[] = {
 	DECL(0xd147f96a, Node2D_SetScrollTopEventArgs, Value, Value, kDataTypeFloat), // Node2D_SetScrollTopEventArgs.Value
 };
+static luaL_Reg _Button_ClickEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Button_ClickEventArgs[] = {
+};
 static luaL_Reg _Form_SubmitEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Form_SubmitEventArgs[] = {
 };
@@ -284,6 +287,7 @@ STRUCT(Node2D_ArrangeOverrideEventArgs, Node2D_ArrangeOverrideEventArgs);
 STRUCT(Node2D_ForegroundContentEventArgs, Node2D_ForegroundContentEventArgs);
 STRUCT(Node2D_UpdateGeometryEventArgs, Node2D_UpdateGeometryEventArgs);
 STRUCT(Node2D_SetScrollTopEventArgs, Node2D_SetScrollTopEventArgs);
+STRUCT(Button_ClickEventArgs, Button_ClickEventArgs);
 STRUCT(Form_SubmitEventArgs, Form_SubmitEventArgs);
 STRUCT(Screen_UpdateLayoutEventArgs, Screen_UpdateLayoutEventArgs);
 STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
@@ -586,7 +590,7 @@ HANDLER(Input, Node2D, DrawBrush);
 HANDLER(Input, TextBlockConcept, MakeText);
 HANDLER(Input, Node, KeyDown);
 HANDLER(Input, Node, KillFocus);
-HANDLER(Input, Node, LeftMouseUp);
+HANDLER(Input, Node, LeftButtonUp);
 HANDLER(Input, Node2D, MeasureOverride);
 static struct PropertyType const InputProperties[kInputNumProperties] = {
 	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
@@ -604,7 +608,7 @@ LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t w
 		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
 		case ID_Node_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
 		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case ID_Node_LeftMouseUp: return Input_LeftMouseUp(object, cmp, wparm, lparm); // Node.LeftMouseUp
+		case ID_Node_LeftButtonUp: return Input_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 		case ID_Node2D_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 	}
 	return FALSE;
@@ -618,18 +622,19 @@ struct Input* luaX_checkInput(lua_State *L, int idx) {
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Input, ID_TextBlock, 0);
 HANDLER(Button, Object, Create);
-HANDLER(Button, Node, LeftMouseUp);
+HANDLER(Button, Node, LeftButtonUp);
 HANDLER(Button, Node, KeyDown);
 HANDLER(Button, Node2D, DrawBrush);
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .EnumValues = _ButtonType), // Button.Type
+	DECL(0x023a1a0f, Button, Click, Click, kDataTypeEvent, .TypeString = "Button_ClickEventArgs"), // Button.Click
 };
 static struct Button ButtonDefaults = {
 };
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case ID_Object_Create: return Button_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node_LeftMouseUp: return Button_LeftMouseUp(object, cmp, wparm, lparm); // Node.LeftMouseUp
+		case ID_Node_LeftButtonUp: return Button_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 		case ID_Node_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
 		case ID_Node2D_DrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
@@ -643,7 +648,7 @@ struct Button* luaX_checkButton(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Button, ID_TextBlock, 0);
-HANDLER(Label, Node, LeftMouseUp);
+HANDLER(Label, Node, LeftButtonUp);
 static struct PropertyType const LabelProperties[kLabelNumProperties] = {
 	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
 };
@@ -651,7 +656,7 @@ static struct Label LabelDefaults = {
 };
 LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Node_LeftMouseUp: return Label_LeftMouseUp(object, cmp, wparm, lparm); // Node.LeftMouseUp
+		case ID_Node_LeftButtonUp: return Label_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 	}
 	return FALSE;
 }
@@ -1041,6 +1046,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Node2D_ForegroundContentEventArgs(L), -2), "Node2D_ForegroundContentEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node2D_UpdateGeometryEventArgs(L), -2), "Node2D_UpdateGeometryEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node2D_SetScrollTopEventArgs(L), -2), "Node2D_SetScrollTopEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Button_ClickEventArgs(L), -2), "Button_ClickEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Form_SubmitEventArgs(L), -2), "Form_SubmitEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");

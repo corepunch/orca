@@ -12,12 +12,12 @@ class Header extends Node2D
 				if routing.has_history!
 					img ".align-middle-left.text-muted-foreground"
 						Image: "assets/icons/back.svg?width=#{header.iconSize}&type=mask"
-						LeftMouseUp: -> routing.go_back!
+						LeftButtonUp: -> routing.go_back!
 				else
 					h5 ".py-2.text-muted-foreground", name
 			stack ".align-middle-right.gap-2", ->
 				for item in *header.links
 					img ".align-middle-center.text-muted-foreground" 
 						Image: "#{item.imgURL}?width=#{header.iconSize}&type=mask"
-						LeftMouseUp: -> routing.navigate item.route
+						LeftButtonUp: -> routing.navigate item.route
 

@@ -8,7 +8,7 @@ function Loser:new()
   self.Animation2 = sprites.man_shadow
 end
 
-function Loser:onLeftMouseUp()
+function Loser:onLeftButtonUp()
   self.scene:run_worker_to(self)
   return true
 end

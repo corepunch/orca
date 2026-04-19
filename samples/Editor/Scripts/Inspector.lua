@@ -87,7 +87,7 @@ local Inspector = ui.TerminalView:extend {
 			self:invalidate()
 		end
 	end,
-	onLeftMouseUp = function (self, _, ...)
+	onLeftButtonUp = function (self, _, ...)
 		local item, index, char = self:unpack(...)
 		if not item then
 			-- no item
@@ -102,7 +102,7 @@ local Inspector = ui.TerminalView:extend {
 			self.SelectedIndex = index
 		end
 	end,
-	onRightMouseUp = function (self, _, ...)
+	onRightButtonUp = function (self, _, ...)
 		-- local item, index, _ = self:unpack(...)
 		if not self.doc then return end
 		local source = self.doc.root:get'source'

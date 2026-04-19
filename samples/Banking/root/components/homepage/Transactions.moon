@@ -10,7 +10,7 @@ class TransactionsView extends ui.StackView
 		me = Users\auth!
 		for item in *Transactions\findAll Users\auth!, @limit
 			handleClick = -> routing.navigate "/transaction/#{item["$id"]}", true
-			stack class: "flex-col bg-background hover:bg-muted w-full p-2 gap-1 rounded", LeftMouseUp: handleClick, ->
+			stack class: "flex-col bg-background hover:bg-muted w-full p-2 gap-1 rounded", LeftButtonUp: handleClick, ->
 				user = item.beneficiary
 				-- user = item.sender if me['$id'] == user['$id'] 
 				div ".h-5", ->

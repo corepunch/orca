@@ -190,7 +190,7 @@ HANDLER(Input, Node, KillFocus)
   return FALSE;
 }
 
-HANDLER(Input, Node, LeftMouseUp)
+HANDLER(Input, Node, LeftButtonUp)
 {
   OBJ_SetFocus(hObject);
   if (pInput->Type == kInputTypeCheckbox) {

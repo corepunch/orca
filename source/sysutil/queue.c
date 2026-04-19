@@ -23,15 +23,15 @@ int f_peek_iterator(lua_State* L)
   wnd.WindowWidth = LOWORD(msg.wParam);
   wnd.WindowHeight = HIWORD(msg.wParam);
   switch (msg.message) {
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
+    case kEventLeftButtonDown:
+    case kEventRightButtonDown:
+    case kEventOtherButtonDown:
+    case kEventLeftButtonUp:
+    case kEventRightButtonUp:
+    case kEventOtherButtonUp:
+    case kEventLeftButtonDragged:
+    case kEventRightButtonDragged:
+    case kEventOtherButtonDragged:
     case kEventLeftDoubleClick:
     case kEventRightDoubleClick:
     case kEventOtherDoubleClick:

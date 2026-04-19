@@ -996,31 +996,31 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
           </fields>
         </message>
-        <message name="LeftMouseDown" same-as="MouseMessage">
+        <message name="LeftButtonDown" same-as="MouseMessage">
           <summary>Fired when the left mouse button is pressed down over an object.</summary>
         </message>
-        <message name="RightMouseDown" same-as="MouseMessage">
+        <message name="RightButtonDown" same-as="MouseMessage">
           <summary>Fired when the right mouse button is pressed down over an object.</summary>
         </message>
-        <message name="OtherMouseDown" same-as="MouseMessage">
+        <message name="OtherButtonDown" same-as="MouseMessage">
           <summary>Fired when a non-primary, non-secondary mouse button is pressed down over an object.</summary>
         </message>
-        <message name="LeftMouseUp" same-as="MouseMessage">
+        <message name="LeftButtonUp" same-as="MouseMessage">
           <summary>Fired when the left mouse button is released over an object.</summary>
         </message>
-        <message name="RightMouseUp" same-as="MouseMessage">
+        <message name="RightButtonUp" same-as="MouseMessage">
           <summary>Fired when the right mouse button is released over an object.</summary>
         </message>
-        <message name="OtherMouseUp" same-as="MouseMessage">
+        <message name="OtherButtonUp" same-as="MouseMessage">
           <summary>Fired when a non-primary, non-secondary mouse button is released over an object.</summary>
         </message>
-        <message name="LeftMouseDragged" same-as="MouseMessage">
+        <message name="LeftButtonDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with the left button held down.</summary>
         </message>
-        <message name="RightMouseDragged" same-as="MouseMessage">
+        <message name="RightButtonDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with the right button held down.</summary>
         </message>
-        <message name="OtherMouseDragged" same-as="MouseMessage">
+        <message name="OtherButtonDragged" same-as="MouseMessage">
           <summary>Fired continuously while the mouse moves with a non-primary, non-secondary button held down.</summary>
         </message>
         <message name="LeftDoubleClick" same-as="MouseMessage">

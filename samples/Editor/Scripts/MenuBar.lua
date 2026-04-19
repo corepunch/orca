@@ -24,7 +24,7 @@ local MenuBar = ui.TerminalView:extend {
 		-- 	self:println(node, ' '..node.text)
 		-- end
 	end,
-	onLeftMouseUp = function (self, _, ...)
+	onLeftButtonUp = function (self, _, ...)
 		local _, index, _ = self:unpack(...)
 		self.SelectedIndex = index
 
@@ -40,7 +40,7 @@ local MenuBar = ui.TerminalView:extend {
 			print(enum.text)
 		end
 	end,
-	-- onLeftMouseUp = function (self, _, ...)
+	-- onLeftButtonUp = function (self, _, ...)
 	-- 	local item, _, _ = self:unpack(...)
 	-- 	if self.callback then
 	-- 		self.callback(item, self.doc)

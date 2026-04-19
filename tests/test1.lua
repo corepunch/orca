@@ -122,17 +122,17 @@ end
 
 local function test_button_interaction()
 	local clicked = false
-	local button = screen + ui.Button { Width = 100, Height = 100, LeftMouseDown = function () clicked = true end }
+	local button = screen + ui.Button { Width = 100, Height = 100, LeftButtonDown = function () clicked = true end }
 	screen:UpdateLayout(screen.Width, screen.Height)
 	-- Simulate a left mouse down event on the button
 	orca.system.dispatchMessage {
 		target = screen,
-		message = "LeftMouseDown",
+		message = "LeftButtonDown",
 		x = 50,
 		y = 25,
 	}
-	-- Verify that the button's LeftMouseDown handler was triggered and that the button is focused
-	assert(clicked, "Button LeftMouseDown handler should be triggered by the event")
+	-- Verify that the button's LeftButtonDown handler was triggered and that the button is focused
+	assert(clicked, "Button LeftButtonDown handler should be triggered by the event")
 	assert(button:isFocused(), "Button should be focused after receiving a mouse down event")
 	button:removeFromParent()
 end

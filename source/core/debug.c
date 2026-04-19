@@ -231,8 +231,8 @@ DEBUG_Draw(float fps, int bindings)
 //		scroll.y = MIN(0, scroll.y + e->dy);
 //		return TRUE;
 //	}
-//	bool_t button = e->message == kMsgLeftMouseDown
-//		|| e->message == kMsgRightMouseDown;
+//	bool_t button = e->message == kMsgLeftButtonDown
+//		|| e->message == kMsgRightButtonDown;
 //  if (button && FindClick(tr, e->x, e->y, &c)) {
 //    lpObject_t object = objects[(*(uint32_t*)&c) >> 16];
 //    if (!object) {
@@ -240,7 +240,7 @@ DEBUG_Draw(float fps, int bindings)
 //      OBJ_SetFlags(object, OBJ_GetFlags(object) & ~OF_EXPANDED_IN_DEBUG);
 //    } else if (strchr(EXPAND_BUTTON, c.r)) {
 //      OBJ_SetFlags(object, OBJ_GetFlags(object) | OF_EXPANDED_IN_DEBUG);
-//    } else if (e->message == kMsgRightMouseDown && GetNode(object)) {
+//    } else if (e->message == kMsgRightButtonDown && GetNode(object)) {
 //			GetNode(object)->QuickHide = !GetNode(object)->QuickHide;
 //		} else {
 //			selected = object;

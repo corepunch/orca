@@ -43,11 +43,11 @@ local DropDown = ui.TerminalView:extend {
 			self:println(node, config.colors.menu, ' ', label)
 		end
 	end,
-	onLeftMouseDown = function (self, _, ...)
+	onLeftButtonDown = function (self, _, ...)
 		local _, index, _ = self:unpack(...)
 		self.SelectedIndex = index
 	end,
-	onLeftMouseUp = function (self, _, ...)
+	onLeftButtonUp = function (self, _, ...)
 		local item, index, _ = self:unpack(...)
 		-- if self.SelectedIndex ~= index then return end
 		if #item > 0 then

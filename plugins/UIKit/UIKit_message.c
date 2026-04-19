@@ -59,15 +59,15 @@ convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageM
     .clickCount = 0,
   };
   switch (e->message) {
-    case kEventLeftMouseUp:        *out_msg = ID_Node_LeftMouseUp;        out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 1; break;
-    case kEventRightMouseUp:       *out_msg = ID_Node_RightMouseUp;       out_mouse->button = kMouseButtonRight; out_mouse->clickCount = 1; break;
-    case kEventOtherMouseUp:       *out_msg = ID_Node_OtherMouseUp;       out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 1; break;
-    case kEventLeftMouseDown:      *out_msg = ID_Node_LeftMouseDown;      out_mouse->button = kMouseButtonLeft; break;
-    case kEventRightMouseDown:     *out_msg = ID_Node_RightMouseDown;     out_mouse->button = kMouseButtonRight;  break;
-    case kEventOtherMouseDown:     *out_msg = ID_Node_OtherMouseDown;     out_mouse->button = kMouseButtonMiddle; break;
-    case kEventLeftMouseDragged:   *out_msg = ID_Node_LeftMouseDragged;   out_mouse->button = kMouseButtonLeft; break;
-    case kEventRightMouseDragged:  *out_msg = ID_Node_RightMouseDragged;  out_mouse->button = kMouseButtonRight;  break;
-    case kEventOtherMouseDragged:  *out_msg = ID_Node_OtherMouseDragged;  out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftButtonUp:        *out_msg = ID_Node_LeftButtonUp;        out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 1; break;
+    case kEventRightButtonUp:       *out_msg = ID_Node_RightButtonUp;       out_mouse->button = kMouseButtonRight; out_mouse->clickCount = 1; break;
+    case kEventOtherButtonUp:       *out_msg = ID_Node_OtherButtonUp;       out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 1; break;
+    case kEventLeftButtonDown:      *out_msg = ID_Node_LeftButtonDown;      out_mouse->button = kMouseButtonLeft; break;
+    case kEventRightButtonDown:     *out_msg = ID_Node_RightButtonDown;     out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherButtonDown:     *out_msg = ID_Node_OtherButtonDown;     out_mouse->button = kMouseButtonMiddle; break;
+    case kEventLeftButtonDragged:   *out_msg = ID_Node_LeftButtonDragged;   out_mouse->button = kMouseButtonLeft; break;
+    case kEventRightButtonDragged:  *out_msg = ID_Node_RightButtonDragged;  out_mouse->button = kMouseButtonRight;  break;
+    case kEventOtherButtonDragged:  *out_msg = ID_Node_OtherButtonDragged;  out_mouse->button = kMouseButtonMiddle; break;
     case kEventLeftDoubleClick:    *out_msg = ID_Node_LeftDoubleClick;    out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 2; break;
     case kEventRightDoubleClick:   *out_msg = ID_Node_RightDoubleClick;   out_mouse->button = kMouseButtonRight;  out_mouse->clickCount = 2; break;
     case kEventOtherDoubleClick:   *out_msg = ID_Node_OtherDoubleClick;   out_mouse->button = kMouseButtonMiddle; out_mouse->clickCount = 2; break;
@@ -96,16 +96,16 @@ convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageM
 //  }
 //  switch (e->message) {
 //    case kEventMouseMoved:
-//    case kEventLeftMouseDown:
-//    case kEventRightMouseDown:
-//    case kEventOtherMouseDown:
-//    case kEventLeftMouseUp:
-//    case kEventRightMouseUp:
-//    case kEventOtherMouseUp:
+//    case kEventLeftButtonDown:
+//    case kEventRightButtonDown:
+//    case kEventOtherButtonDown:
+//    case kEventLeftButtonUp:
+//    case kEventRightButtonUp:
+//    case kEventOtherButtonUp:
 //    case kEventScrollWheel:
-//    case kEventLeftMouseDragged:
-//    case kEventRightMouseDragged:
-//    case kEventOtherMouseDragged:
+//    case kEventLeftButtonDragged:
+//    case kEventRightButtonDragged:
+//    case kEventOtherButtonDragged:
 //      {
 //        lua_pushlightuserdata(L, (void*)(intptr_t)msg);
 //        lua_gettable(L, LUA_REGISTRYINDEX);
@@ -132,12 +132,12 @@ static void
 process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
 {
   switch (e->message) {
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
+    case kEventLeftButtonDown:
+    case kEventRightButtonDown:
+    case kEventOtherButtonDown:
       OBJ_SetFocus(sender);
       break;
-    case kEventLeftMouseUp:
+    case kEventLeftButtonUp:
       OBJ_SetFocus(sender);
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
@@ -151,7 +151,7 @@ process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
       }
       lua_pop(L, 1);
       break;
-    case kEventLeftMouseDragged:
+    case kEventLeftButtonDragged:
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
         luaX_parsefield(uint32_t, startloc, -1, (uint32_t)luaL_optinteger, -1);
@@ -226,7 +226,7 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
     if ((sender = (lpObject_t)_SendMessage(focused, Node, HitTest, x, y)))
       goto handle;
-    if (e->message == kEventLeftMouseDown) {
+    if (e->message == kEventLeftButtonDown) {
       for (lpObject_t mod = focused, p = OBJ_GetParent(focused);
            mod && (OBJ_GetFlags(mod)&OF_NOACTIVATE);
            mod = p, p = p?OBJ_GetParent(p):NULL)
@@ -304,7 +304,7 @@ handle:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
-    case kEventLeftMouseUp:
+    case kEventLeftButtonUp:
       lua_pushnil(L);
       lua_setfield(L, LUA_REGISTRYINDEX, DRAG_SESSION);
       break;
@@ -356,15 +356,15 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
 LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
   int tmp;
   switch (msg->message) {
-    case kEventLeftMouseDown:
-    case kEventRightMouseDown:
-    case kEventOtherMouseDown:
-    case kEventLeftMouseUp:
-    case kEventRightMouseUp:
-    case kEventOtherMouseUp:
-    case kEventLeftMouseDragged:
-    case kEventRightMouseDragged:
-    case kEventOtherMouseDragged:
+    case kEventLeftButtonDown:
+    case kEventRightButtonDown:
+    case kEventOtherButtonDown:
+    case kEventLeftButtonUp:
+    case kEventRightButtonUp:
+    case kEventOtherButtonUp:
+    case kEventLeftButtonDragged:
+    case kEventRightButtonDragged:
+    case kEventOtherButtonDragged:
     case kEventLeftDoubleClick:
     case kEventRightDoubleClick:
     case kEventOtherDoubleClick:
