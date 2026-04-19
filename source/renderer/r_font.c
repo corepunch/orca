@@ -234,7 +234,8 @@ T_GetSize(struct ViewText const* text,
         if (textwidth == 0) {
             textwidth += spaceWidth;
           // first word print anyway
-        } else if (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth + spaceWidth > text->availableWidth * text->scale) {
+        } else if (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth /*+ spaceWidth*/ > text->availableWidth * text->scale) {
+          // a risky removal of "+ spaceWidth" from the condition to prevent breaking existing layouts that rely on trailing spaces to wrap, but it may cause issues with wrapping when availableWidth is very tight and spaceWidth is significant
           textSize.height += /*text->lineSpacing **/ FT_SCALE(lineheight);
           textSize.width = MAX(textSize.width, textwidth);
           textwidth = 0;

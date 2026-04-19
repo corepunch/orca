@@ -38,16 +38,63 @@ SZ_GetSpace(struct AXbuffer* buf, int length)
   return (LPSTR)buf->data + (buf->cursize += length) - length;
 }
 
-int net_open_socket(int port);
-void
-net_close_socket(int net_socket);
-int net_accept(int net_socket);
-int net_connect(lpcString_t addr, int port);
-int net_packet(int net_socket, struct AXbuffer* net_message);
-int net_send_packet(int net_socket, struct AXbuffer* net_message);
-int net_set_nonblocking(int sockfd);
-bool_t
-net_has_no_error(void);
+static int net_open_socket(int port)
+{
+  int sock = axNetSocket(AX_NET_AF_IPV4, AX_NET_SOCK_TCP);
+  if (sock < 0)
+    return -1;
+  if (!axNetSetReuseAddr(sock, TRUE) || !axNetBind(sock, (uint16_t)port) || !axNetListen(sock, 16)) {
+    axNetClose(sock);
+    return -1;
+  }
+  return sock;
+}
+
+static void net_close_socket(int net_socket)
+{
+  axNetClose(net_socket);
+}
+
+static int net_accept(int net_socket)
+{
+  return axNetAccept(net_socket);
+}
+
+static int net_connect(lpcString_t addr, int port)
+{
+  int sock = axNetSocket(AX_NET_AF_IPV4, AX_NET_SOCK_TCP);
+  if (sock < 0)
+    return -1;
+  if (!axNetConnect(sock, addr, (uint16_t)port)) {
+    axNetClose(sock);
+    return -1;
+  }
+  return sock;
+}
+
+static int net_packet(int net_socket, struct AXbuffer* net_message)
+{
+  int n = axNetRecv(net_socket, net_message->data, net_message->maxsize);
+  if (n > 0) {
+    net_message->cursize = n;
+  }
+  return n;
+}
+
+static int net_send_packet(int net_socket, struct AXbuffer* net_message)
+{
+  return axNetSend(net_socket, net_message->data, net_message->cursize);
+}
+
+static int net_set_nonblocking(int sockfd)
+{
+  return axNetSetNonBlocking(sockfd, TRUE) ? 0 : -1;
+}
+
+static bool_t net_has_no_error(void)
+{
+  return axNetWouldBlock();
+}
 
 static void
 service_read_server_message(struct network_service* service,

@@ -492,6 +492,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
 
 HANDLER(Screen, Node2D, MeasureOverride) {
   NodeCPtr n = GetNode(hObject);
+  Node2DPtr n2d = GetNode2D(hObject);
   
 //#if defined(__EMSCRIPTEN__) || defined(__QNX__)
   if (pScreen->ResizeMode == kResizeModeCanResize) {
@@ -515,9 +516,13 @@ HANDLER(Screen, Node2D, MeasureOverride) {
 //    axSetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
     pScreen->_size = newsize;
   }
+  // Measure children against the Screen content box, not outer size.
+  // This keeps text wrapping consistent with final arranged bounds.
+  float childWidth = fmaxf(0, pMeasureOverride->Width - TOTAL_PADDING(n2d, 0));
+  float childHeight = fmaxf(0, pMeasureOverride->Height - TOTAL_PADDING(n2d, 1));
   FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Measure,
-    .Width = pMeasureOverride->Width,
-    .Height = pMeasureOverride->Height);
+    .Width = childWidth,
+    .Height = childHeight);
   return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
 }
 
