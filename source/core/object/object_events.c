@@ -47,12 +47,12 @@ void OBJ_SetFocus(lpObject_t pobj)
   if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))
     return;
   if (core.focus) {
-    SV_PostMessage(core.focus, "KillFocus", 0, pobj);
-    SV_PostMessage(core.focus, "ThemeChanged", 0, 0);
+    axPostMessageW(core.focus, ID_Node_KillFocus, 0, pobj);
+    _SendMessage(core.focus, StyleController, ThemeChanged, .recursive = FALSE);
   }
   if (pobj) {
-    SV_PostMessage(pobj, "SetFocus", 0, core.focus);
-    SV_PostMessage(pobj, "ThemeChanged", 0, 0);
+    axPostMessageW(pobj, ID_Node_SetFocus, 0, core.focus);
+    _SendMessage(pobj, StyleController, ThemeChanged, .recursive = FALSE);
   }
   core.focus = pobj;
 }

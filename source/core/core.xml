@@ -971,10 +971,16 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <summary>Notifies the component that its view has finished loading.</summary>
         </message>
         <message name="KillFocus">
-          <summary>Removes keyboard focus from this node.</summary>
+          <summary>Notifies that this node has lost keyboard focus.</summary>
+          <!--fields>
+            <field name="Successor" type="Object" pointer="true">The object that will receive focus next</field>
+          </fields-->
         </message>
         <message name="SetFocus">
-          <summary>Gives keyboard focus to this node.</summary>
+          <summary>Notifies that this node has gained keyboard focus.</summary>
+          <!--fields>
+            <field name="Previous" type="Object" pointer="true">The object that previously had focus</field>
+          </fields-->
         </message>
         <message name="GetSize">
           <summary>Queries the current layout size of this node.</summary>

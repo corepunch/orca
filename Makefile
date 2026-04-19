@@ -50,7 +50,7 @@ INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
 .PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body
 
-default: directories modules unite
+default: directories unite
 all: default
 build: default
 
@@ -124,7 +124,7 @@ clean:
 	-rm -f $(TARGET)
 	-rm -rf $(SHAREDIR)/*
 	-rm -rf $(PLUGINLIBDIR)
-	$(MAKE) -C $(PLATFORM_LIBDIR) clean
+	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) clean
 
 andrun: unite
 	$(TARGET) $(DATADIR)

@@ -149,11 +149,11 @@ CORE_UpdateHover(void) {
   if (core.hover != core.hover2) {
     if (core.hover) {
       OBJ_SendMessage(core.hover, "KillHover", 0, core.hover2);
-      SV_PostMessage(core.hover, "ThemeChanged", 0, 0);
+      axPostMessageW(core.hover, ID_StyleController_ThemeChanged, 0, 0);
     }
     if (core.hover2) {
       OBJ_SendMessage(core.hover2, "SetHover", 0, core.hover);
-      SV_PostMessage(core.hover2, "ThemeChanged", 0, 0);
+      axPostMessageW(core.hover2, ID_StyleController_ThemeChanged, 0, 0);
     }
   }
   core.hover = core.hover2;

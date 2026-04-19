@@ -39,19 +39,24 @@ extern struct ClassDesc _StyleRule;
 
 // Parse pseudo-state flags from a colon-separated class string.
 static uint32_t
+_PseudoFlagFromToken(lpcString_t token, size_t len)
+{
+  if      (len == 5 && !strncmp(token, "hover",  5)) return STYLE_HOVER;
+  else if (len == 5 && !strncmp(token, "focus",  5)) return STYLE_FOCUS;
+  else if (len == 6 && !strncmp(token, "active", 6)) return STYLE_SELECT;
+  else if (len == 4 && !strncmp(token, "dark",   4)) return STYLE_DARK;
+  return 0;
+}
+
+static uint32_t
 _ParsePseudoStateFlags(lpcString_t str)
 {
   uint32_t flags = 0;
-  lpcString_t token = strchr(str, ':');
-  while (token) {
-    lpcString_t start = token + 1;
-    lpcString_t end = strchr(start, ':');
-    size_t len = end ? (size_t)(end - start) : strlen(start);
-    if      (len == 5 && !strncmp(start, "hover",  5)) flags |= STYLE_HOVER;
-    else if (len == 5 && !strncmp(start, "focus",  5)) flags |= STYLE_FOCUS;
-    else if (len == 6 && !strncmp(start, "active", 6)) flags |= STYLE_SELECT;
-    else if (len == 4 && !strncmp(start, "dark",   4)) flags |= STYLE_DARK;
-    token = end;
+  for (lpcString_t tok = str; tok && *tok; ) {
+    lpcString_t end = strchr(tok, ':');
+    size_t len = end ? (size_t)(end - tok) : strlen(tok);
+    flags |= _PseudoFlagFromToken(tok, len);
+    tok = end ? end + 1 : NULL;
   }
   return flags;
 }
@@ -64,23 +69,36 @@ _ParseClass(lpcString_t str)
   struct style_class_selector* cls = ZeroAlloc(sizeof(struct style_class_selector));
   cls->flags = _ParsePseudoStateFlags(str);
 
-  lpcString_t szOpacity = strchr(str, '/');
-  lpcString_t szState   = strchr(str, ':');
-  lpcString_t szEnd;
-  if (szOpacity && szState) {
-    szEnd = (szOpacity < szState) ? szOpacity : szState;
-  } else if (szOpacity) {
-    szEnd = szOpacity;
-  } else {
-    szEnd = szState;
+  // Support both suffix pseudo syntax (bg-blue:hover) and Tailwind-like
+  // prefix syntax (hover:bg-blue). We pick the non-pseudo segment as class.
+  lpcString_t baseStart = str;
+  size_t baseLen = strlen(str);
+  bool_t foundBase = FALSE;
+  for (lpcString_t tok = str; tok && *tok; ) {
+    lpcString_t end = strchr(tok, ':');
+    size_t len = end ? (size_t)(end - tok) : strlen(tok);
+    if (_PseudoFlagFromToken(tok, len) == 0) {
+      baseStart = tok;
+      baseLen = len;
+      foundBase = TRUE;
+      break;
+    }
+    tok = end ? end + 1 : NULL;
   }
 
-  size_t len = szEnd ? (size_t)(szEnd - str) : strlen(str);
-  len = MIN(len, sizeof(shortStr_t) - 1);
-  memcpy(cls->value, str, len);
-  cls->value[len] = '\0';
+  if (!foundBase) {
+    // Degenerate case like "hover" only.
+    baseStart = str;
+    baseLen = strlen(str);
+  }
 
-  cls->opacity = szOpacity ? (byte_t)atoi(szOpacity + 1) : 100;
+  lpcString_t slash = memchr(baseStart, '/', baseLen);
+  size_t classLen = slash ? (size_t)(slash - baseStart) : baseLen;
+  classLen = MIN(classLen, sizeof(shortStr_t) - 1);
+  memcpy(cls->value, baseStart, classLen);
+  cls->value[classLen] = '\0';
+
+  cls->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
   return cls;
 }
 
@@ -94,31 +112,6 @@ _AddClass(lpObject_t obj, struct style_class_selector* cls)
   if (cls->flags & STYLE_HOVER) {
     OBJ_SetFlags(obj, OBJ_GetFlags(obj) | OF_HOVERABLE);
   }
-}
-
-// Find a PropertyType descriptor by property name.
-// Tries full name first (e.g. "Node2D.BackgroundColor") then short name ("BackgroundColor").
-static lpcPropertyType_t
-_FindPropertyTypeByName(lpcString_t name)
-{
-  // Try FullIdentifier (dotted long name)
-  lpcPropertyType_t pt = OBJ_FindPropertyType(fnv1a32(name));
-  if (pt) return pt;
-
-  // Try ShortIdentifier when there's no dot in the name
-  if (!strchr(name, '.')) {
-    uint32_t short_id = fnv1a32(name);
-    for (int i = 0; i < MAX_CLASSES; i++) {
-      lpcClassDesc_t cls = core.classes[i];
-      if (!cls) continue;
-      for (uint32_t j = 0; j < cls->NumProperties; j++) {
-        if (cls->Properties[j].ShortIdentifier == short_id) {
-          return &cls->Properties[j];
-        }
-      }
-    }
-  }
-  return NULL;
 }
 
 // Release a StyleRule native object (and its string Selector field).
