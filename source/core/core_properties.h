@@ -332,6 +332,7 @@ enum HandlerProperties {
 #define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
 #define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
 #define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
+#define ID_Node_Build 0x781df947 // Node.Build
 #define ID_Node_KillFocus 0x2bdb09fb // Node.KillFocus
 #define ID_Node_SetFocus 0x5f1c2071 // Node.SetFocus
 #define ID_Node_GetSize 0x2282f1da // Node.GetSize
@@ -621,6 +622,8 @@ enum NodeProperties {
 #define ID_Node_IsVisibleEventArgs 0x6a63fae9
 
 #define ID_Node_ViewDidLoadEventArgs 0x2d915aa5
+
+#define ID_Node_BuildEventArgs 0x51a224bb
 
 #define ID_Node_KillFocusEventArgs 0xb6f00bfb
 

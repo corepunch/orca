@@ -271,7 +271,7 @@
         </method>
         <method name="Rebuild" lua="true">
           <summary>Rebuilds the object's body content asynchronously</summary>
-          <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
+          <details>Posts a `Node.Build` message to this object. If an optional function or string is provided it is stored as the `Build` handler (or text body) before posting. The `Node.Build` handler clears existing children, runs the `Build` function as a coroutine with this object as the implicit parent context, and posts `Node.ViewDidLoad` when complete.</details>
         </method>
         <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
         <method name="AddChild">
@@ -969,6 +969,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
         <message name="ViewDidLoad">
           <summary>Notifies the component that its view has finished loading.</summary>
+        </message>
+        <message name="Build">
+          <summary>Invoked when the node is rebuilt. Existing children are cleared before this message is dispatched. Assign a function to this property to define the node's declarative content; `Node.ViewDidLoad` is posted when the handler completes.</summary>
         </message>
         <message name="KillFocus">
           <summary>Notifies that this node has lost keyboard focus.</summary>

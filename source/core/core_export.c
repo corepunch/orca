@@ -829,6 +829,9 @@ static struct PropertyType _Node_IsVisibleEventArgs[] = {
 static luaL_Reg _Node_ViewDidLoadEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_ViewDidLoadEventArgs[] = {
 };
+static luaL_Reg _Node_BuildEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Node_BuildEventArgs[] = {
+};
 static luaL_Reg _Node_KillFocusEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_KillFocusEventArgs[] = {
 };
@@ -1054,6 +1057,7 @@ STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
 STRUCT(Node_HitTestEventArgs, Node_HitTestEventArgs);
 STRUCT(Node_IsVisibleEventArgs, Node_IsVisibleEventArgs);
 STRUCT(Node_ViewDidLoadEventArgs, Node_ViewDidLoadEventArgs);
+STRUCT(Node_BuildEventArgs, Node_BuildEventArgs);
 STRUCT(Node_KillFocusEventArgs, Node_KillFocusEventArgs);
 STRUCT(Node_SetFocusEventArgs, Node_SetFocusEventArgs);
 STRUCT(Node_GetSizeEventArgs, Node_GetSizeEventArgs);
@@ -1622,6 +1626,7 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0x898160ea, Node, HitTest, HitTest, kDataTypeEvent, .TypeString = "Node_HitTestEventArgs"), // Node.HitTest
 	DECL(0x608d20d1, Node, IsVisible, IsVisible, kDataTypeEvent, .TypeString = "Node_IsVisibleEventArgs"), // Node.IsVisible
 	DECL(0x03e93095, Node, ViewDidLoad, ViewDidLoad, kDataTypeEvent, .TypeString = "Node_ViewDidLoadEventArgs"), // Node.ViewDidLoad
+	DECL(0x95967543, Node, Build, Build, kDataTypeEvent, .TypeString = "Node_BuildEventArgs"), // Node.Build
 	DECL(0xa7c0f8d7, Node, KillFocus, KillFocus, kDataTypeEvent, .TypeString = "Node_KillFocusEventArgs"), // Node.KillFocus
 	DECL(0xc399d265, Node, SetFocus, SetFocus, kDataTypeEvent, .TypeString = "Node_SetFocusEventArgs"), // Node.SetFocus
 	DECL(0x80d9e0ee, Node, GetSize, GetSize, kDataTypeEvent, .TypeString = "Node_GetSizeEventArgs"), // Node.GetSize
@@ -1737,6 +1742,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Node_HitTestEventArgs(L), -2), "Node_HitTestEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleEventArgs(L), -2), "Node_IsVisibleEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_ViewDidLoadEventArgs(L), -2), "Node_ViewDidLoadEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_Node_BuildEventArgs(L), -2), "Node_BuildEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_KillFocusEventArgs(L), -2), "Node_KillFocusEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_SetFocusEventArgs(L), -2), "Node_SetFocusEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_GetSizeEventArgs(L), -2), "Node_GetSizeEventArgs");

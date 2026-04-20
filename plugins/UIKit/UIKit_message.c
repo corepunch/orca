@@ -404,6 +404,9 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
       /* Return FALSE: the coroutine is fully cleaned up; the Window.Paint
          posted above will reach CORE_HandleObjectMessage on its own pass. */
       return FALSE;
+    case ID_Node_Build:
+      OBJ_Build(L, msg->target, (int)msg->wParam);
+      return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);
   }

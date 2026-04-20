@@ -44,6 +44,7 @@ typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
 typedef struct Node_IsVisibleEventArgs Node_IsVisibleMsg_t,* Node_IsVisibleMsgPtr;
 typedef struct Node_ViewDidLoadEventArgs Node_ViewDidLoadMsg_t,* Node_ViewDidLoadMsgPtr;
+typedef struct Node_BuildEventArgs Node_BuildMsg_t,* Node_BuildMsgPtr;
 typedef struct Node_KillFocusEventArgs Node_KillFocusMsg_t,* Node_KillFocusMsgPtr;
 typedef struct Node_SetFocusEventArgs Node_SetFocusMsg_t,* Node_SetFocusMsgPtr;
 typedef struct Node_GetSizeEventArgs Node_GetSizeMsg_t,* Node_GetSizeMsgPtr;
@@ -362,6 +363,10 @@ OBJ_Equals(struct Object const*, struct Object const*);
 /// @brief Rebuilds the object's body content asynchronously
 ORCA_API void
 OBJ_Rebuild(struct lua_State*, struct Object*);
+
+/// @brief Dispatches a Node.Build coroutine with the object as implicit parent context
+ORCA_API void
+OBJ_Build(struct lua_State*, struct Object*, int);
 
 /// @name Hierarchy
 /// Navigates and manipulates the parent-child relationship tree.
@@ -855,6 +860,11 @@ struct Node_ViewDidLoadEventArgs {
 };
 ORCA_API void luaX_pushNode_ViewDidLoadEventArgs(lua_State *L, struct Node_ViewDidLoadEventArgs const* data);
 ORCA_API struct Node_ViewDidLoadEventArgs* luaX_checkNode_ViewDidLoadEventArgs(lua_State *L, int idx);
+/** Node_BuildEventArgs struct */
+struct Node_BuildEventArgs {
+};
+ORCA_API void luaX_pushNode_BuildEventArgs(lua_State *L, struct Node_BuildEventArgs const* data);
+ORCA_API struct Node_BuildEventArgs* luaX_checkNode_BuildEventArgs(lua_State *L, int idx);
 /** Node_KillFocusEventArgs struct */
 struct Node_KillFocusEventArgs {
 };
@@ -1165,6 +1175,7 @@ struct Node {
 	event_t HitTest;
 	event_t IsVisible;
 	event_t ViewDidLoad;
+	event_t Build;
 	event_t KillFocus;
 	event_t SetFocus;
 	event_t GetSize;
