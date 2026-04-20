@@ -405,7 +405,6 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
          posted above will reach CORE_HandleObjectMessage on its own pass. */
       return FALSE;
     case ID_Node_Build:
-      fprintf(stderr, "ID_Node_Build: target=%p wParam=%d\n", (void*)msg->target, (int)msg->wParam);
       OBJ_Build(L, msg->target, (int)msg->wParam);
       return FALSE;
     default:
