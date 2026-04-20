@@ -83,6 +83,13 @@ int f_OBJ_Equals(lua_State *L) {
 }
 int f_OBJ_Rebuild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
+	lua_Debug ar;
+	if (lua_getstack(L, 1, &ar)) {
+		lua_getinfo(L, "Sl", &ar);
+		fprintf(stderr, "f_OBJ_Rebuild called from %s:%d\n", ar.short_src, ar.currentline);
+	} else {
+		fprintf(stderr, "f_OBJ_Rebuild: no Lua caller info\n");
+	}
 	OBJ_Rebuild(L, this_ );
 	return 0;
 }

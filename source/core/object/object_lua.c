@@ -214,6 +214,7 @@ static int f_rebuild(lua_State *L) {
 }
 
 void OBJ_Build(lua_State* L, lpObject_t self, int lua_ref) {
+  fprintf(stderr, "OBJ_Build: self=%p\n", (void*)self);
   lua_State* co = lua_newthread(L);
   *((lpObject_t *)lua_getextraspace(co)) = self;
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -225,6 +226,7 @@ void OBJ_Build(lua_State* L, lpObject_t self, int lua_ref) {
 }
 
 void OBJ_Rebuild(lua_State* L, lpObject_t self) {
+  fprintf(stderr, "OBJ_Rebuild: self=%p gettop=%d\n", (void*)self, lua_gettop(L));
   if (lua_gettop(L) >= 2 && !lua_isnoneornil(L, 2)) {
     if (lua_type(L, 2) == LUA_TFUNCTION) {
       lua_pushliteral(L, "Build");
