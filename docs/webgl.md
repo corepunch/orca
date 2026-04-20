@@ -140,7 +140,7 @@ The `libs/platform/webgl/` directory contains three source files:
 |---------------------------|---------|
 | `webgl_system.c`          | `axInit` / `axShutdown`, timing, platform strings |
 | `webgl_window.c`          | Canvas sizing, WebGL context, `axBeginPaint`/`axEndPaint` |
-| `webgl_event.c`           | Emscripten input callbacks → internal event queue; `axPollEvent` |
+| `webgl_event.c`           | Emscripten input callbacks → internal event queue; `axPeekMessage` |
 
 The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
 `emmake` and selects only the `webgl/` sources.
@@ -148,12 +148,12 @@ The platform Makefile detects `EMSCRIPTEN` automatically when invoked with
 ### Main Loop
 
 The engine's main loop is a Lua `while true do … end` that polls for events
-via `axPollEvent`.  Browsers cannot run a blocking loop on the main thread;
+via `axPeekMessage`.  Browsers cannot run a blocking loop on the main thread;
 the JavaScript event loop must be allowed to yield periodically.
 
 **Solution:** The WebGL platform backend registers the main loop iteration
 function with `emscripten_set_main_loop` so the browser schedules each frame
-via `requestAnimationFrame`.  When the event queue is empty, `axPollEvent`
+via `requestAnimationFrame`.  When the event queue is empty, `axPeekMessage`
 returns immediately, letting the browser handle input callbacks and repaints
 before the next iteration.
 

@@ -209,7 +209,7 @@ always use `self:addChild(...)` inside `body` functions.
 3. Returns immediately.
 
 The coroutine is resumed the next time the event loop processes the queue
-(during the next `axPollEvent` + `SV_DispatchMessage` cycle in the main
+(during the next `axPeekMessage` + `SV_DispatchMessage` cycle in the main
 loop).
 
 This is why, in a running application, `body()` always appears to run
@@ -258,7 +258,7 @@ do not put that value there.
 static int f_flush_queue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
-  while (axPollEvent(&msg)) {
+  while (axPeekMessage(&msg)) {
     lua_pushnil(L);                   // sentinel for lua_pop in handler
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);               // restore stack unconditionally

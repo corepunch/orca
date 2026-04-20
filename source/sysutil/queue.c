@@ -6,18 +6,9 @@ int f_peek_iterator(lua_State* L)
 {
   struct AXmessage msg = {0};
   lpObject_t __userdata = lua_touserdata(L, lua_upvalueindex(1));
-  int has_event = axPollEvent(&msg);
-  if (!has_event) {
-#if __EMSCRIPTEN__
-    /* Return nil when the queue is empty so the Lua for-loop terminates and
-       the main coroutine can yield back to emscripten_set_main_loop. */
+  if (!axGetMessage(&msg)) {
+    /* No event ready; end this iterator step. */
     return 0;
-#else
-    /* Block until an event arrives (GetMessage semantics), then break the
-       for-loop so the outer while loop restarts and picks up the real event. */
-    axWaitEvent(0);
-    return 0;
-#endif
   }
   static Window_PaintMsg_t wnd;
   wnd.WindowWidth = LOWORD(msg.wParam);

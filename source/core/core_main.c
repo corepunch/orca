@@ -600,7 +600,7 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
 static int f_flush_queue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
-  while (axPollEvent(&msg)) {
+  while (axPeekMessage(&msg)) {
     // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
     // (kEventResumeCoroutine path) has something to consume.  After each
     // dispatch, restore the stack unconditionally to stay balanced.
