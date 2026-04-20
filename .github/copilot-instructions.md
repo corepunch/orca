@@ -167,25 +167,12 @@ Every scene element is an `Object`. Objects form a parent→children tree. Key f
 
 - Identity: `Name`, `ClassName`, `identifier` (FNV1a hash), `SourceFile`
 - Hierarchy: `parent`, `children` (first child), `next` (next sibling)
-- A union of subsystem pointers (see refactoring section below)
 - A flat `data[]` byte buffer for property value storage
 - A `lua_State *domain` for scripting
 
-The subsystem union provides **indexed O(1) access** via `comps[kCompCount]` and named struct fields simultaneously:
-
 ```c
-union {
-    struct {
-        struct component*          components;   // attached component chain
-        struct Property*           properties;
-        struct state_manager*      stateManager;
-        struct style_class*        classes;
-        struct style_rule*        stylesheet;
-        struct timer*              timers;
-        struct alias*              aliases;
-    };
-    void* comps[kCompCount]; // indexed by enum component_type
-};
+struct component* components;   // attached component chain
+struct Property* properties; // property table (name, type, offset in data[], etc.)
 ```
 
 Fields marked as planned replacements are being progressively replaced by proper components (see "Object Struct Refactoring" below).
