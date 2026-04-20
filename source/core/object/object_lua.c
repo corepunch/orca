@@ -195,26 +195,32 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
   return 0;
 }
 
-static int f_rebuild(lua_State *L) {
-  lpObject_t self = luaX_checkObject(L, 1);
-  /* Check rawset "Build" first (set by OBJ_Rebuild(fn)).  Using rawget avoids
-     the __index path which returns an f_msgSend event-sender closure for every
-     kDataTypeEvent property — that closure is NOT a real build body. */
-  lua_pushliteral(L, "Build");
-  lua_rawget(L, 1);
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    lua_pushliteral(L, "body");
+/* Find the build body function for the given object.
+   Checks in order: instance raw table, class prototype (metatable), native
+   event property.  Using rawget avoids the f_msgSend event-sender closure
+   that __index fabricates for every kDataTypeEvent property. */
+static void _push_build_fn(lua_State *L, lpObject_t self) {
+  static const char *const keys[] = { "Build", "body" };
+  for (int i = 0; i < 2; i++) {
+    lua_pushstring(L, keys[i]);
     lua_rawget(L, 1);
-  }
-  if (lua_isnil(L, -1)) {
+    if (!lua_isnil(L, -1)) return;
     lua_pop(L, 1);
-    /* Fall back to the native event property (set via { Build = fn } in the
-       constructor table, or via obj.Build = fn through __newindex). */
-    if (!luaX_getobjectcallback(L, self, ID_Node_Build)) {
-      lua_pushnil(L);
+    if (lua_getmetatable(L, 1)) {
+      lua_pushstring(L, keys[i]);
+      lua_rawget(L, -2);
+      lua_remove(L, -2);
+      if (!lua_isnil(L, -1)) return;
+      lua_pop(L, 1);
     }
   }
+  if (!luaX_getobjectcallback(L, self, ID_Node_Build))
+    lua_pushnil(L);
+}
+
+static int f_rebuild(lua_State *L) {
+  lpObject_t self = luaX_checkObject(L, 1);
+  _push_build_fn(L, self);
   if (lua_type(L, -1) == LUA_TFUNCTION) {
     OBJ_Clear(L, self);
     lua_pushvalue(L, 1);
@@ -228,6 +234,7 @@ static int f_rebuild(lua_State *L) {
 }
 
 void OBJ_Build(lua_State* L, lpObject_t self, int lua_ref) {
+  OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_BUILD_PENDING);
   lua_State* co = lua_newthread(L);
   *((lpObject_t *)lua_getextraspace(co)) = self;
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -249,33 +256,13 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
       lua_pushvalue(L, 2);
       lua_rawset(L, 1);
     }
-  } else {
-    /* No fn arg — only post ID_Node_Build if a real Build/body fn exists.
-       Using rawget avoids the f_msgSend event-sender closure that __index
-       always returns for kDataTypeEvent properties. */
-    lua_pushliteral(L, "Build");
-    lua_rawget(L, 1);
-    bool_t has_fn = !lua_isnil(L, -1);
-    lua_pop(L, 1);
-    if (!has_fn) {
-      lua_pushliteral(L, "body");
-      lua_rawget(L, 1);
-      has_fn = !lua_isnil(L, -1);
-      lua_pop(L, 1);
-    }
-    if (!has_fn) {
-      /* Also check native event property (set via { Build = fn } constructor
-         table or obj.Build = fn through __newindex). */
-      if (luaX_getobjectcallback(L, self, ID_Node_Build)) {
-        has_fn = !lua_isnil(L, -1);
-        lua_pop(L, 1);
-      }
-    }
-    if (!has_fn) {
-      axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
-      return;
-    }
   }
+  /* Deduplicate: if a Build event is already in the queue, updating the fn
+     above is sufficient — don't post a second event. */
+  if (OBJ_GetFlags(self) & OF_BUILD_PENDING) {
+    return;
+  }
+  OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_BUILD_PENDING);
   lua_pushvalue(L, 1);
   int lua_ref = luaL_ref(L, LUA_REGISTRYINDEX);
   axPostMessageW(self, ID_Node_Build, lua_ref, NULL);
