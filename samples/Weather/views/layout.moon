@@ -8,9 +8,9 @@ class Default extends Widget
 
 		Screen ->
 			stack = StackView class: "p-6 gap-3", ->
-				TextBlock Text: title, class: "text-3xl"
-				TextBlock Text: "Layout chrome above route content", class: "text-sm"
+				TextBlock class: "text-3xl", title
+				TextBlock class: "text-sm", "Layout chrome above route content"
 			if inner
 				stack:addChild inner
 			else
-				stack:addChild TextBlock Text: "No inner content", class: "text-sm"
+				stack:addChild TextBlock class: "text-sm", "No inner content"

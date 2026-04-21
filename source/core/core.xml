@@ -545,7 +545,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
         <method name="SetTextContent">
           <summary>Sets the text content of the object</summary>
-          <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text.  The text content is copied internally and can be modified at any time to update the displayed text.</details>
+          <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text. The text content is copied internally and can be modified at any time to update the displayed text. In Lua/MoonScript DSL style, text-bearing widgets may provide this through a trailing value argument (for example `TextBlock class: "text-3xl", title`) rather than explicit `Text=` assignment.</details>
           <arg name="text" type="string">The text content to display</arg>
         </method>
         <method name="GetTimestamp" const="true">

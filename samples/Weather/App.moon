@@ -9,11 +9,11 @@ class App extends require "orca.core2.application"
 
 	"/": =>
 		ui.StackView ".p-6.gap-4", ->
-			ui.TextBlock Text: "Route Content", class: "text-2xl"
-			ui.TextBlock Text: "This content is injected with @content_for 'inner'.", class: "text-base"
+			ui.TextBlock class: "text-2xl", "Route Content"
+			ui.TextBlock class: "text-base", "This content is injected with @content_for 'inner'."
 
 	"/about": =>
-		ui.TextBlock Text: "About page from router", class: "text-xl"
+		ui.TextBlock class: "text-xl", "About page from router"
 
 	Awake: =>
 		@navigate "/"
