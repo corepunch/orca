@@ -8,6 +8,7 @@ class App extends require "orca.core2.application"
 	}
 
 	"/": =>
+		print('hello')
 		ui.StackView ".p-6.gap-4", ->
 			ui.TextBlock class: "text-2xl", "Route Content"
 			ui.TextBlock class: "text-base", "This content is injected with @content_for 'inner'."

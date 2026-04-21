@@ -22,9 +22,11 @@ Style system principles
 UIKit composition rules
 - Prefer closure style for idiomatic MoonScript.
 - Keep container references when inserting prebuilt child nodes later.
-- Use explicit addChild for existing node instances.
-- Do not run moonc to generate .lua files for routine UI iteration.
-- Keep style and layout changes in .moon sources; run them directly through Orca.
+- Use explicit addChild for existing node instances with MoonScript method syntax.
+- In .moon snippets use stack\addChild inner, never stack:addChild(inner).
+- Never generate .lua files from .moon files.
+- Keep style and layout changes in .moon sources only.
+- Do not create or sync parallel .lua versions for MoonScript UI modules.
 
 Text content idiom
 - Prefer positional value style for TextBlock and Button text content, matching Lapis-style readability.

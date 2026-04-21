@@ -10,4 +10,8 @@ Available skills
 Usage
 - Treat each .skill.md file as an operating playbook when planning or implementing changes.
 - Prefer these files as canonical team-shared guidance over user-local prompt files.
-- MoonScript policy: do not run moonc to generate .lua for standard Orca workflows; edit and run .moon files directly.
+- MoonScript policy: never generate .lua files from .moon files.
+- Author and modify MoonScript in .moon only.
+- Do not introduce, refresh, or sync parallel .lua companions from MoonScript sources.
+- MoonScript method-call syntax: use backslash calls in .moon (for example stack\addChild inner), not Lua colon style (stack:addChild(inner)).
+- Module resolution note: when both .lua and .moon exist for the same module path, runtime may resolve .lua first.

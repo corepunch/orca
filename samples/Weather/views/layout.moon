@@ -11,6 +11,6 @@ class Default extends Widget
 				TextBlock class: "text-3xl", title
 				TextBlock class: "text-sm", "Layout chrome above route content"
 			if inner
-				stack:addChild inner
+				stack\addChild inner
 			else
-				stack:addChild TextBlock class: "text-sm", "No inner content"
+				stack\addChild TextBlock class: "text-sm", "No inner content"

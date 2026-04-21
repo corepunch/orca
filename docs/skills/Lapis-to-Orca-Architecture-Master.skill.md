@@ -28,9 +28,13 @@ Core mapping model
 Translation rules
 - Prevent helper lookup from shadowing core widget methods.
 - Build UI trees with Orca container ownership rules.
+- In MoonScript examples, always use MoonScript call syntax for methods (obj\method arg), not Lua colon form.
+- Example: stack\addChild inner
 - Ensure module paths are runtime-resolvable from Orca project roots.
-- Do not run moonc to generate .lua files as part of normal Orca development flow.
-- Prefer editing and running .moon files directly; Orca can execute MoonScript on the fly.
+- Never generate .lua files from .moon files.
+- Author and edit only the .moon source for MoonScript modules.
+- Do not add or maintain generated/synced .lua companions for .moon modules.
+- Practical caveat: if both module.lua and module.moon exist for the same require path, current runtime resolution may pick module.lua first. Keep paired files aligned or use one canonical module file per path.
 - Prefer Lapis-like trailing value text style for text-bearing widgets:
 - TextBlock class: "text-3xl", title
 - Button class: "btn", "Submit"
