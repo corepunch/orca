@@ -221,6 +221,7 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels, kDataTypeBool), // Project.RenderToMipmapLevels
 	DECL(0x377aea3d, Project, ExternalTexture, ExternalTexture, kDataTypeBool), // Project.ExternalTexture
 	DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeString), // Project.StartupScreen
+	DECL(0x5fac3f0f, Project, StartupViewController, StartupViewController, kDataTypeString), // Project.StartupViewController
 	DECL(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor, kDataTypeColor), // Project.PreviewWindowBackgroundColor
 	DECL(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame, kDataTypeInt), // Project.MessageLimitPerFrame
 	DECL(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime, kDataTypeInt), // Project.GlobalTimelineStartTime

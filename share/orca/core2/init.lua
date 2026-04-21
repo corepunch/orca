@@ -12,25 +12,32 @@ function core.init()
 	require "orca.UIKit"
 
 	local project = filesystem.init(DATADIR)
+	renderer.init(project.WindowWidth, project.WindowHeight, false)
 
 	-- require "orca.core2.project"
 	-- core.projects = {}
 	-- core.load_project(DATADIR)
 	core.load_plugins()
-	core.load_screen(project.StartupScreen)
+	-- core.load_screen(project.StartupScreen)
 
-	-- Initialize the renderer and create the window AFTER the startup screen
-	-- object has been constructed and its rebuild coroutine queued.  On first
-	-- launch axCreateWindow posts kEventWindowResized + kEventWindowPaint via
-	-- axNotifySizeChanged.  By queuing the screen's rebuild coroutine first,
-	-- the screen's body() runs before those events are processed, so the very
-	-- first paint already has the top-level UI children present instead of
-	-- rendering a completely black window.
-	renderer.init(project.WindowWidth, project.WindowHeight, false)
+	if project.StartupViewController then
+		core.load_controller(project.StartupViewController, project.StartupRoute)
+	else
+		core.load_screen(project.StartupScreen)
+	end
 
 	core.load_editor()
 
 	io.stderr:write("Core module initialized\n")
+end
+
+function core.load_controller(path, route)
+	io.stderr:write("Loading startup view controller: "..path.."\n")
+	local ok, class = pcall(require, path)
+	assert(ok, "Failed to load view controller: "..path..", "..tostring(class))
+	core.app = class()
+	core.controller = core.app:dispatch(route or "/")
+	core.screen = core.controller.view
 end
 
 function core.load_screen(path)

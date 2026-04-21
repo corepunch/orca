@@ -28,6 +28,7 @@ enum LibraryProperties {
 #define ID_Project_RenderToMipmapLevels 0xa8a014d6 // Project.RenderToMipmapLevels
 #define ID_Project_ExternalTexture 0x3a64c056 // Project.ExternalTexture
 #define ID_Project_StartupScreen 0x7987d405 // Project.StartupScreen
+#define ID_Project_StartupViewController 0xa693ecdc // Project.StartupViewController
 #define ID_Project_PreviewWindowBackgroundColor 0xdd25ae63 // Project.PreviewWindowBackgroundColor
 #define ID_Project_MessageLimitPerFrame 0xfc6c2af2 // Project.MessageLimitPerFrame
 #define ID_Project_GlobalTimelineStartTime 0x5f34f579 // Project.GlobalTimelineStartTime
@@ -99,7 +100,7 @@ enum LibraryProperties {
 #define ID_Project_FileExists 0x1f1e5ece // Project.FileExists
 #define ID_Project_HasChangedFiles 0x8e1eef4b // Project.HasChangedFiles
 #define ID_Project_LoadProject 0x68eebf01 // Project.LoadProject
-#define kProjectNumProperties 77
+#define kProjectNumProperties 78
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
 	kProjectHalfFloatTextureFormatLinear,
@@ -107,6 +108,7 @@ enum ProjectProperties {
 	kProjectRenderToMipmapLevels,
 	kProjectExternalTexture,
 	kProjectStartupScreen,
+	kProjectStartupViewController,
 	kProjectPreviewWindowBackgroundColor,
 	kProjectMessageLimitPerFrame,
 	kProjectGlobalTimelineStartTime,
