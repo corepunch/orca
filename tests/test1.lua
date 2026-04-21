@@ -29,57 +29,57 @@ local function test_text_block_layout()
 	local text_width = text.ActualWidth
 
 	-- Verify initial properties and layout
-	assert(screen.Width == 1000, "Screen width should be 1000")
-	assert(type(screen.testNumber) == "number", "Screen.testNumber should be a number")
-	-- assert(type(screen.testString) == "string", "Screen.testString should be a string")
-	assert(type(screen.testFunction) == "function", "Screen.testFunction should be a function")
-	assert(screen:testFunction() == "Screen", "Screen.testFunction should return 'Screen'")
-	assert(screen:findChild "Text" == text, "Text block should be found as a child of the screen")
-	assert(screen:findChild "Non-Existent" == nil, "Non-Existent child should not be found")
+	expect_eq(screen.Width, 1000, "Screen width should be 1000")
+	expect_eq(type(screen.testNumber), "number", "Screen.testNumber should be a number")
+	-- expect_eq(type(screen.testString), "string", "Screen.testString should be a string")
+	expect_eq(type(screen.testFunction), "function", "Screen.testFunction should be a function")
+	expect_eq(screen:testFunction(), "Screen", "Screen.testFunction should return 'Screen'")
+	expect_eq(screen:findChild "Text", text, "Text block should be found as a child of the screen")
+	expect_eq(screen:findChild "Non-Existent", nil, "Non-Existent child should not be found")
 
 	-- Verify that the text block has a positive ActualWidth after layout update
-	assert(text.ActualWidth > 0, "Text block should have a positive ActualWidth after layout update")
-	assert(text:getRoot() == screen, "Text block's root should be the screen")
+	expect(text.ActualWidth > 0, "Text block should have a positive ActualWidth after layout update")
+	expect_eq(text:getRoot(), screen, "Text block's root should be the screen")
 
 	-- Verify that common classes and properties are available
-	assert(type(ui.TextBlock) == 'table', "ui.TextBlock should be a table")
-	assert(type(core.EdgeShorthand) == 'table', "core.EdgeShorthand should be a table")
+	expect_eq(type(ui.TextBlock), 'table', "ui.TextBlock should be a table")
+	expect_eq(type(core.EdgeShorthand), 'table', "core.EdgeShorthand should be a table")
 
 	text:setFocus()
 	text.Padding = core.Thickness(config.padding)
 
 	-- Verify that the text block is focused after calling setFocus()
-	assert(text:isFocused(), "Text block should be focused after setFocus()")
+	expect(text:isFocused(), "Text block should be focused after setFocus()")
 
 	-- Verify that the horizontal margin and padding properties are set correctly
-	assert(text.HorizontalMargin.Left == config.margin.left, "HorizontalMargin.Left should be set correctly")
-	assert(text.HorizontalMargin.Right == config.margin.right, "HorizontalMargin.Right should be set correctly")
+	expect_eq(text.HorizontalMargin.Left, config.margin.left, "HorizontalMargin.Left should be set correctly")
+	expect_eq(text.HorizontalMargin.Right, config.margin.right, "HorizontalMargin.Right should be set correctly")
 
 	-- Verify that the padding properties are set correctly
-	assert(text.PaddingLeft == config.padding, "LeftPadding should be set to the specified padding value")
-	assert(text.PaddingRight == config.padding, "RightPadding should be set to the specified padding value")
-	assert(text.PaddingTop == config.padding, "TopPadding should be set to the specified padding value")
-	assert(text.PaddingBottom == config.padding, "BottomPadding should be set to the specified padding value")
+	expect_eq(text.PaddingLeft, config.padding, "LeftPadding should be set to the specified padding value")
+	expect_eq(text.PaddingRight, config.padding, "RightPadding should be set to the specified padding value")
+	expect_eq(text.PaddingTop, config.padding, "TopPadding should be set to the specified padding value")
+	expect_eq(text.PaddingBottom, config.padding, "BottomPadding should be set to the specified padding value")
 
 	-- Verify that the horizontal padding properties are set correctly
-	assert(text.HorizontalPadding.Left == config.padding, "HorizontalPadding should be set to the specified padding value")
-	assert(text.VerticalPadding.Left == config.padding, "VerticalPadding should be set to the specified padding value")
+	expect_eq(text.HorizontalPadding.Left, config.padding, "HorizontalPadding should be set to the specified padding value")
+	expect_eq(text.VerticalPadding.Left, config.padding, "VerticalPadding should be set to the specified padding value")
 
-	assert(text.BorderTopLeftRadius == config.radius, "BorderTopLeftRadius should be set to the specified value")
-	assert(text.BorderTopRightRadius == config.radius, "BorderTopRightRadius should be set to the specified value")
-	assert(text.BorderBottomLeftRadius == config.radius, "BorderBottomLeftRadius should be set to the specified value")
-	assert(text.BorderBottomRightRadius == config.radius, "BorderBottomRightRadius should be set to the specified value")
+	expect_eq(text.BorderTopLeftRadius, config.radius, "BorderTopLeftRadius should be set to the specified value")
+	expect_eq(text.BorderTopRightRadius, config.radius, "BorderTopRightRadius should be set to the specified value")
+	expect_eq(text.BorderBottomLeftRadius, config.radius, "BorderBottomLeftRadius should be set to the specified value")
+	expect_eq(text.BorderBottomRightRadius, config.radius, "BorderBottomRightRadius should be set to the specified value")
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 	
 	-- Verify that the ActualWidth of the text block has increased after adding padding
-	assert(text.ActualWidth == text_width + config.padding * 2, "Text block ActualWidth should increase after adding padding")
+	expect_eq(text.ActualWidth, text_width + config.padding * 2, "Text block ActualWidth should increase after adding padding")
 
 	text:removeFromParent()
 
 	-- Verify that the text block is removed from the screen
-	assert(screen:findChild(text.Name) == nil, "Text block should be removed from the screen")
-	assert(screen.children() == nil, "Screen should have no children after removing the text block")
+	expect_eq(screen:findChild(text.Name), nil, "Text block should be removed from the screen")
+	expect_eq(screen.children(), nil, "Screen should have no children after removing the text block")
 end
 
 local function test_stack_view_layout()
@@ -109,13 +109,13 @@ local function test_stack_view_layout()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Verify stack view properties and layout
-	assert(stack.HorizontalAlignment == "Stretch", "StackView HorizontalAlignment should be 'Stretch'")
-	assert(stack.ActualWidth == screen.Width - 2 * config.stack_margin, "StackView ActualWidth should account for horizontal margins")
-	assert(stack.ActualHeight == 2 * config.node_height + 2 * config.node_margin + config.stack_spacing, "StackView ActualHeight should account for child heights and spacing")
+	expect_eq(stack.HorizontalAlignment, "Stretch", "StackView HorizontalAlignment should be 'Stretch'")
+	expect_eq(stack.ActualWidth, screen.Width - 2 * config.stack_margin, "StackView ActualWidth should account for horizontal margins")
+	expect_eq(stack.ActualHeight, 2 * config.node_height + 2 * config.node_margin + config.stack_spacing, "StackView ActualHeight should account for child heights and spacing")
 
 	-- Verify child node properties and layout
-	assert(node1.ActualWidth == stack.ActualWidth, "Child node ActualWidth should match stack ActualWidth when horizontal alignment is 'Stretch'")
-	assert(node2.ActualWidth == stack.ActualWidth - 2 * config.node_margin, "Child node ActualWidth should account for parent stack margins")
+	expect_eq(node1.ActualWidth, stack.ActualWidth, "Child node ActualWidth should match stack ActualWidth when horizontal alignment is 'Stretch'")
+	expect_eq(node2.ActualWidth, stack.ActualWidth - 2 * config.node_margin, "Child node ActualWidth should account for parent stack margins")
 
 	screen:clear()
 end
@@ -132,8 +132,8 @@ local function test_button_interaction()
 		y = 25,
 	}
 	-- Verify that the button's LeftButtonDown handler was triggered and that the button is focused
-	assert(clicked, "Button LeftButtonDown handler should be triggered by the event")
-	assert(button:isFocused(), "Button should be focused after receiving a mouse down event")
+	expect(clicked, "Button LeftButtonDown handler should be triggered by the event")
+	expect(button:isFocused(), "Button should be focused after receiving a mouse down event")
 	button:removeFromParent()
 end
 
@@ -152,7 +152,7 @@ local function test_input_interaction()
 		}
 	end
 	-- Verify that the input's Text property has been updated to match the simulated key presses and that the input is focused
-	assert(input.Text == config.text, "Input text should match the simulated key presses")
+	expect_eq(input.Text, config.text, "Input text should match the simulated key presses")
 	input:removeFromParent()
 end
 
@@ -168,12 +168,12 @@ local function test_grid_view_layout()
 	local content = grid + ui.Node2D { Margin = core.Thickness(config.margin) }
 	local footer = grid + ui.Node2D { Margin = core.Thickness(config.margin) }
 	screen:UpdateLayout(screen.Width, screen.Height)
-	assert(grid.ActualWidth == screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
-	assert(grid.ActualHeight == screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
-	assert(header.ActualWidth == screen.Width - config.margin * 2, "Header row should have the specified height minus vertical margins")
-	assert(header.ActualHeight == config.header - config.margin * 2, "Header row should have the specified height minus vertical margins")
-	assert(content.ActualHeight == screen.Height - config.footer - config.header - config.margin * 2, "Content row should take up remaining space between header and footer, accounting for margins")
-	assert(footer.ActualHeight == config.footer - config.margin * 2, "Footer row should have the specified height minus vertical margins")
+	expect_eq(grid.ActualWidth, screen.Width, "GridView ActualWidth should match screen width when horizontal alignment is 'Stretch'")
+	expect_eq(grid.ActualHeight, screen.Height, "GridView ActualHeight should match screen height when vertical alignment is 'Stretch'")
+	expect_eq(header.ActualWidth, screen.Width - config.margin * 2, "Header row should have the specified height minus vertical margins")
+	expect_eq(header.ActualHeight, config.header - config.margin * 2, "Header row should have the specified height minus vertical margins")
+	expect_eq(content.ActualHeight, screen.Height - config.footer - config.header - config.margin * 2, "Content row should take up remaining space between header and footer, accounting for margins")
+	expect_eq(footer.ActualHeight, config.footer - config.margin * 2, "Footer row should have the specified height minus vertical margins")
 end
 
 local function test_text_single_line_layout()
@@ -184,9 +184,9 @@ local function test_text_single_line_layout()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- "Hello World" should be wider than "Hello"
-	assert(two_words.ActualWidth > single_word.ActualWidth, "Two-word text should be wider than single-word text")
+	expect(two_words.ActualWidth > single_word.ActualWidth, "Two-word text should be wider than single-word text")
 	-- "Hello World" should have the same height as "Hello" (single line)
-	assert(two_words.ActualHeight == single_word.ActualHeight, "Two-word text should have same height as single-word (one line, not two)")
+	expect_eq(two_words.ActualHeight, single_word.ActualHeight, "Two-word text should have same height as single-word (one line, not two)")
 
 	single_word:removeFromParent()
 	two_words:removeFromParent()
@@ -207,16 +207,16 @@ local function test_grid_view_in_stack_layout()
 	local text21 = row2 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 18, VerticalAlignment= "Top" }
 	local text22 = row2 + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 32, VerticalAlignment= "Top" }
 	
-	assert(row1.ActualHeight == 0, "Row 1 should have zero height before layout update")
+	expect_eq(row1.ActualHeight, 0, "Row 1 should have zero height before layout update")
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Each row should have height equal to the tallest cell in that row (since columns are auto-sized)
 	
-	assert(text11.ActualHeight == text12.ActualHeight, "Text blocks in the same row should have the same height when vertical alignment is 'Stretch'")
-	assert(text21.ActualHeight ~= text22.ActualHeight, "Text blocks in the same row can have different heights if vertical alignment is not 'Stretch'")
-	assert(row1.ActualHeight == text11.ActualHeight + 2*config.grid_margin, "Row 1 height should match tallest cell plus margin")
-	assert(row2.ActualHeight == math.max(text21.ActualHeight,text22.ActualHeight) + 2*config.grid_margin, "Row 2 height should match tallest cell plus margin")
+	expect_eq(text11.ActualHeight, text12.ActualHeight, "Text blocks in the same row should have the same height when vertical alignment is 'Stretch'")
+	expect(text21.ActualHeight ~= text22.ActualHeight, "Text blocks in the same row can have different heights if vertical alignment is not 'Stretch'")
+	expect_eq(row1.ActualHeight, text11.ActualHeight + 2*config.grid_margin, "Row 1 height should match tallest cell plus margin")
+	expect_eq(row2.ActualHeight, math.max(text21.ActualHeight,text22.ActualHeight) + 2*config.grid_margin, "Row 2 height should match tallest cell plus margin")
 
 	stack:removeFromParent()
 end
@@ -245,22 +245,22 @@ local function test_horizontal_stack_view_layout()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Verify stack direction and default vertical alignment (cross-axis should stretch)
-	assert(stack.Direction == "Horizontal", "StackView direction should be 'Horizontal'")
-	assert(stack.VerticalAlignment == "Stretch", "Horizontal StackView VerticalAlignment should default to 'Stretch'")
+	expect_eq(stack.Direction, "Horizontal", "StackView direction should be 'Horizontal'")
+	expect_eq(stack.VerticalAlignment, "Stretch", "Horizontal StackView VerticalAlignment should default to 'Stretch'")
 
 	-- Vertical (cross-axis) should fill the screen height
-	assert(stack.ActualHeight == screen.Height, "Horizontal StackView should stretch to fill screen height")
+	expect_eq(stack.ActualHeight, screen.Height, "Horizontal StackView should stretch to fill screen height")
 
 	-- Width (main axis) = node1 width + spacing + node2 width + node2 left/right margins
 	-- (node1 has no margin; node2's Margin=5 applies to all sides, so left+right = 2 * node_margin)
-	assert(stack.ActualWidth == 2 * config.node_width + 2 * config.node_margin + config.stack_spacing,
+	expect_eq(stack.ActualWidth, 2 * config.node_width + 2 * config.node_margin + config.stack_spacing,
 		"Horizontal StackView ActualWidth should account for child widths, margins, and spacing")
 
 	-- In a horizontal stack's cross-axis (vertical), children stretch to fill the stack height
-	assert(node1.ActualHeight == stack.ActualHeight,
+	expect_eq(node1.ActualHeight, stack.ActualHeight,
 		"Child node ActualHeight should match stack height when vertical alignment is 'Stretch'")
 	-- node2's Margin=5 applies to all sides, so top+bottom = 2 * node_margin reduces its cross-axis size
-	assert(node2.ActualHeight == stack.ActualHeight - 2 * config.node_margin,
+	expect_eq(node2.ActualHeight, stack.ActualHeight - 2 * config.node_margin,
 		"Child node ActualHeight should be reduced by its top and bottom margins")
 
 	screen:clear()
@@ -280,15 +280,15 @@ local function test_node_alignment()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Stretch node should fill the screen width
-	assert(stretch_node.ActualWidth == screen.Width,
+	expect_eq(stretch_node.ActualWidth, screen.Width,
 		"Node with default HorizontalAlignment should stretch to fill screen width")
 
 	-- Left-aligned node with explicit width should use that width
-	assert(left_node.ActualWidth == fixed_width,
+	expect_eq(left_node.ActualWidth, fixed_width,
 		"Left-aligned node should have the explicitly set width")
 
 	-- The left-aligned node is narrower than the screen
-	assert(left_node.ActualWidth < screen.Width,
+	expect(left_node.ActualWidth < screen.Width,
 		"Left-aligned node should be narrower than the screen")
 
 	stretch_node:removeFromParent()
@@ -305,15 +305,15 @@ local function test_input_checkbox()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- The input type should be "Checkbox"
-	assert(checkbox.Type == "Checkbox", "Input type should be 'Checkbox'")
+	expect_eq(checkbox.Type, "Checkbox", "Input type should be 'Checkbox'")
 
 	-- Set and verify checked state
 	checkbox.Checked = true
-	assert(checkbox.Checked, "Checkbox should be checked after setting Checked = true")
+	expect(checkbox.Checked, "Checkbox should be checked after setting Checked = true")
 
 	-- Unset and verify checked state
 	checkbox.Checked = false
-	assert(not checkbox.Checked, "Checkbox should be unchecked after setting Checked = false")
+	expect(not checkbox.Checked, "Checkbox should be unchecked after setting Checked = false")
 
 	checkbox:removeFromParent()
 end
@@ -359,14 +359,14 @@ local function test_form_populate_inputs()
 	end
 
 	-- Verify individual input texts
-	assert(username_input.Text == config.username, "Username input text should match typed keys")
-	assert(password_input.Text == config.password, "Password input text should match typed keys")
+	expect_eq(username_input.Text, config.username, "Username input text should match typed keys")
+	expect_eq(password_input.Text, config.password, "Password input text should match typed keys")
 
 	-- Verify that populateInputs collects all named inputs as a table
 	local data = form:populateInputs()
-	assert(type(data) == "table", "populateInputs should return a table")
-	assert(data.username == config.username, "populateInputs should collect the username input value")
-	assert(data.password == config.password, "populateInputs should collect the password input value")
+	expect_eq(type(data), "table", "populateInputs should return a table")
+	expect_eq(data.username, config.username, "populateInputs should collect the username input value")
+	expect_eq(data.password, config.password, "populateInputs should collect the password input value")
 
 	form:removeFromParent()
 end
@@ -380,15 +380,15 @@ local function test_node_visibility()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Default visibility should be true
-	assert(node.Visible, "Node should be visible by default")
+	expect(node.Visible, "Node should be visible by default")
 
 	-- Hide the node
 	node.Visible = false
-	assert(not node.Visible, "Node should be hidden when Visible = false")
+	expect(not node.Visible, "Node should be hidden when Visible = false")
 
 	-- Show the node again
 	node.Visible = true
-	assert(node.Visible, "Node should be visible again when Visible = true")
+	expect(node.Visible, "Node should be visible again when Visible = true")
 
 	node:removeFromParent()
 end
@@ -414,7 +414,7 @@ local function test_property_change_notification()
 	-- Fire pending property change callbacks (equivalent to WPF's binding update cycle)
 	node:emitPropertyChangedEvents()
 
-	assert(last_text == "Updated", "onTextChanged should be called with the new Text value")
+	expect_eq(last_text, "Updated", "onTextChanged should be called with the new Text value")
 
 	node:removeFromParent()
 end
@@ -432,12 +432,12 @@ local function test_grid_fr_units()
 	-- Total width is screen.Width; 1fr + 2fr = 3 parts.
 	local expected1 = math.floor(screen.Width / 3)
 	local expected2 = screen.Width - expected1  -- remaining after 1fr
-	assert(math.abs(cell1.ActualWidth - expected1) <= 1,
+	expect(math.abs(cell1.ActualWidth - expected1) <= 1,
 		string.format("1fr column width should be ~%d, got %d", expected1, cell1.ActualWidth))
-	assert(math.abs(cell2.ActualWidth - expected2) <= 1,
+	expect(math.abs(cell2.ActualWidth - expected2) <= 1,
 		string.format("2fr column width should be ~%d, got %d", expected2, cell2.ActualWidth))
 	-- 2fr cell should be roughly twice as wide as 1fr cell
-	assert(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
+	expect(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
 		"2fr column should be approximately twice the width of 1fr column")
 
 	grid:removeFromParent()
@@ -461,9 +461,9 @@ local function test_node2d_container_height()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	assert(label.ActualHeight > 0,
+	expect(label.ActualHeight > 0,
 		"TextBlock inside Node2D should have positive height after layout")
-	assert(container.ActualHeight == label.ActualHeight + 2 * padding,
+	expect_eq(container.ActualHeight, label.ActualHeight + 2 * padding,
 		string.format("Node2D height (%d) should equal TextBlock height (%d) + 2*padding (%d)",
 			container.ActualHeight, label.ActualHeight, 2 * padding))
 
@@ -483,13 +483,13 @@ local function test_grid_in_vstack_height()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	local expected_inner_height = node_height * 2
-	assert(inner_stack.ActualHeight == expected_inner_height,
+	expect_eq(inner_stack.ActualHeight, expected_inner_height,
 		string.format("Inner StackView height should be %d, got %d",
 			expected_inner_height, inner_stack.ActualHeight))
-	assert(grid.ActualHeight == inner_stack.ActualHeight,
+	expect_eq(grid.ActualHeight, inner_stack.ActualHeight,
 		string.format("Grid height (%d) should match inner StackView height (%d)",
 			grid.ActualHeight, inner_stack.ActualHeight))
-	assert(grid.ActualHeight > 0,
+	expect(grid.ActualHeight > 0,
 		"Grid inside vertical StackView should have positive height derived from children")
 
 	outer_stack:removeFromParent()

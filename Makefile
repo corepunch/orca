@@ -48,7 +48,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body test-widget test-router test-application
 
 default: directories unite
 all: default
@@ -221,6 +221,15 @@ test-styles-lua: app copyshare
 test-body: app copyshare
 	$(TARGET) -test=tests/test_body.lua
 
+test-widget: app copyshare
+	$(TARGET) -test=tests/widget_spec.moon
+
+test-router: app copyshare
+	$(TARGET) -test=tests/router_spec.moon
+
+test-application: app copyshare
+	$(TARGET) -test=tests/application_spec.moon
+
 test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
@@ -232,5 +241,8 @@ test-headless: test-properties test-styles copyshare
 	$(TARGET) -test=tests/test_timers.lua
 	$(TARGET) -test=tests/test_styles_lua.lua
 	$(TARGET) -test=tests/test_body.lua
+	$(TARGET) -test=tests/widget_spec.moon
+	$(TARGET) -test=tests/router_spec.moon
+	$(TARGET) -test=tests/application_spec.moon
 
 include Makefile.webgl

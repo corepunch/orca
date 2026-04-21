@@ -15,19 +15,6 @@ local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect_near(actual, expected, eps, label)
-  if math.abs(actual - expected) > (eps or 0.01) then
-    fail(string.format("%s: expected ~%s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- ---------------------------------------------------------------------------
 -- Build a small StateManager tree using attached properties on State:
 --

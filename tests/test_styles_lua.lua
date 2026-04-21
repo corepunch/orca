@@ -15,23 +15,6 @@ local ui   = require "orca.UIKit"
 dofile(SHAREDIR.."/plugins/file-css.lua")
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect(cond, label)
-  if not cond then fail(label) end
-end
-
-local function expect_near(actual, expected, eps, label)
-  if math.abs(actual - expected) > (eps or 0.01) then
-    fail(string.format("%s: expected ~%s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- Node2D inherits StyleController, so every Node2D has one attached.
 -- applyStyles(node) triggers style resolution.
 local function applyStyles(node)

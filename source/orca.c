@@ -425,11 +425,41 @@ int main (int argc, LPSTR *argv)
       }
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
-    } else if (luaL_dofile(L, args.test) != LUA_OK) {
-      fprintf(stderr, "%s\n", lua_tostring(L, -1));
-      exit(1);
-      szProject = NULL;
     } else {
+      /* Inject test helpers available to all .lua and .moon test files */
+      const char *test_helpers =
+        "function fail(msg) io.stderr:write('FAIL: ' .. tostring(msg) .. '\\n') os.exit(1) end\n"
+        "function expect(cond, label) if not cond then fail(label) end end\n"
+        "function expect_eq(actual, expected, label)\n"
+        "  if actual ~= expected then\n"
+        "    fail(label .. ': expected ' .. tostring(expected) .. ', got ' .. tostring(actual))\n"
+        "  end\n"
+        "end\n"
+        "function expect_near(actual, expected, eps, label)\n"
+        "  if math.abs(actual - expected) > (eps or 0.01) then\n"
+        "    fail(string.format('%s: expected ~%s, got %s', label, tostring(expected), tostring(actual)))\n"
+        "  end\n"
+        "end\n";
+      if (luaL_dostring(L, test_helpers) != LUA_OK) {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+        exit(1);
+      }
+      if (strstr(args.test, ".moon")) {
+        const char *moon_bootstrap =
+          "local ms = require 'moonscript'\n"
+          "local chunk, err = ms.loadfile(...)\n"
+          "if not chunk then error(err) end\n"
+          "chunk()\n";
+        luaL_loadstring(L, moon_bootstrap);
+        lua_pushstring(L, args.test);
+        if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+          fprintf(stderr, "%s\n", lua_tostring(L, -1));
+          exit(1);
+        }
+      } else if (luaL_dofile(L, args.test) != LUA_OK) {
+        fprintf(stderr, "%s\n", lua_tostring(L, -1));
+        exit(1);
+      }
       szProject = NULL;
     }
 

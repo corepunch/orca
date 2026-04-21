@@ -11,23 +11,6 @@ local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect(cond, label)
-  if not cond then fail(label) end
-end
-
-local function expect_near(actual, expected, eps, label)
-  if math.abs(actual - expected) > (eps or 0.01) then
-    fail(string.format("%s: expected ~%s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- ---------------------------------------------------------------------------
 -- Test 1: AnimationPlayer starts as not-playing
 -- ---------------------------------------------------------------------------
@@ -40,7 +23,7 @@ local function test_animation_player_initial_state()
 
   expect(not node.Playing,  "initial Playing should be false")
   expect(not node.Looping,  "initial Looping should be false")
-  expect(node.Speed   == 1.0,    "initial Speed should be 1.0")
+  expect_eq(node.Speed, 1.0,    "initial Speed should be 1.0")
   expect(not node.AutoplayEnabled, "initial AutoplayEnabled should be false")
 
   node:removeFromParent()
@@ -129,10 +112,10 @@ local function test_animation_clip_curve_hierarchy()
   curve.Property = "Opacity"
 
   -- The clip is the curve's parent; GetAnimationCurve retrieves the curve.
-  expect(type(clip) == "table",  "clip is a Lua object")
-  expect(type(curve) == "table", "curve is a Lua object")
+  expect_eq(type(clip), "table",  "clip is a Lua object")
+  expect_eq(type(curve), "table", "curve is a Lua object")
   -- The curve's Property string was stored correctly.
-  expect(curve.Property == "Opacity", "AnimationCurve.Property is Opacity")
+  expect_eq(curve.Property, "Opacity", "AnimationCurve.Property is Opacity")
 
   -- StopTime round-trip
   expect_near(clip.StopTime, 1.0, 0.001, "AnimationClip.StopTime round-trip")
@@ -298,10 +281,10 @@ local function test_animation_player_playback_mode()
   node:addComponentByName("AnimationPlayer")
   -- Default is "Normal"; writing "PingPong" should be stored
   node.PlaybackMode = "PingPong"
-  expect(node.PlaybackMode == "PingPong", "PlaybackMode round-trip: PingPong")
+  expect_eq(node.PlaybackMode, "PingPong", "PlaybackMode round-trip: PingPong")
 
   node.PlaybackMode = "Reverse"
-  expect(node.PlaybackMode == "Reverse", "PlaybackMode round-trip: Reverse")
+  expect_eq(node.PlaybackMode, "Reverse", "PlaybackMode round-trip: Reverse")
 
   node:removeFromParent()
   print("PASS: test_animation_player_playback_mode")

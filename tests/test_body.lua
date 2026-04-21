@@ -15,23 +15,6 @@ local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect(cond, label)
-  if not cond then fail(label) end
-end
-
-local function expect_eq(actual, expected, label)
-  if actual ~= expected then
-    fail(string.format("%s: expected %s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- Flush all pending rebuild coroutines so body() calls complete
 -- synchronously before assertions.
 local function flush()
