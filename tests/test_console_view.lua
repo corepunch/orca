@@ -5,6 +5,9 @@ local test = require "orca.test"
 local core = require "orca.core"
 local ui = require "orca.UIKit"
 
+local CONSOLE_CHAR_WIDTH = 8
+local CONSOLE_CHAR_HEIGHT = 16
+
 -- Shared screen container (required for object creation)
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
@@ -124,6 +127,47 @@ local function test_terminal_view_selected_item()
 end
 
 -- ---------------------------------------------------------------------------
+-- TerminalView: unpack decodes the queried item index and glyph
+-- ---------------------------------------------------------------------------
+local function test_terminal_view_unpack_returns_item_and_char()
+	local tv = screen + ui.TerminalView { BufferWidth = 80, BufferHeight = 24 }
+
+	tv:println("alpha", "alpha")
+
+	local item, index, char = tv:unpack(0, 0)
+	test.expect_eq(item, "alpha", "unpack should resolve the first item")
+	test.expect_eq(index, 1, "unpack should decode item index 1")
+	test.expect_eq(char, "a", "unpack should decode the first glyph")
+
+	tv:removeFromParent()
+	print("PASS: test_terminal_view_unpack_returns_item_and_char")
+end
+
+-- ---------------------------------------------------------------------------
+-- TerminalView: getIndexPosition decodes packed query coordinates
+-- ---------------------------------------------------------------------------
+local function test_terminal_view_get_index_position_returns_coordinates()
+	local tv = screen + ui.TerminalView { BufferWidth = 80, BufferHeight = 24 }
+
+	tv:println("alpha", "alpha")
+
+	local x0, y0 = tv:getIndexPosition(1)
+	test.expect_eq(x0, 0, "getIndexPosition should return x=0 at line start")
+	test.expect_eq(y0, 0, "getIndexPosition should return y=0 for first line")
+
+	local x1, y1 = tv:getIndexPosition(1, 2, 1)
+	test.expect_eq(x1, 2 * CONSOLE_CHAR_WIDTH, "getIndexPosition should apply horizontal offset")
+	test.expect_eq(y1, 1 * CONSOLE_CHAR_HEIGHT, "getIndexPosition should apply vertical offset")
+
+	local missingX, missingY = tv:getIndexPosition(99)
+	test.expect_eq(missingX, nil, "missing index should return nil x")
+	test.expect_eq(missingY, nil, "missing index should return nil y")
+
+	tv:removeFromParent()
+	print("PASS: test_terminal_view_get_index_position_returns_coordinates")
+end
+
+-- ---------------------------------------------------------------------------
 -- TerminalView: erase clears items list
 -- ---------------------------------------------------------------------------
 local function test_terminal_view_erase_clears_items()
@@ -205,6 +249,8 @@ test_console_view_erase_resets_state()
 test_terminal_view_println_returns_index()
 test_terminal_view_items_accumulate()
 test_terminal_view_selected_item()
+test_terminal_view_unpack_returns_item_and_char()
+test_terminal_view_get_index_position_returns_coordinates()
 test_terminal_view_erase_clears_items()
 test_terminal_view_println_nil_clears_items()
 test_terminal_view_extend()

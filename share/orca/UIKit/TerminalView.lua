@@ -1,5 +1,29 @@
 local ui = require "orca.UIKit"
 
+local UINT32 = 0x100000000
+
+local function to_signed32(value)
+  if value >= 0x80000000 then
+    return value - UINT32
+  end
+  return value
+end
+
+local function unpack_index_glyph(packed)
+  if packed == nil then
+    return nil, nil
+  end
+  return (packed >> 32) & 0xffffffff, string.char(packed & 0xff)
+end
+
+local function unpack_position(packed)
+  if packed == nil then
+    return nil, nil
+  end
+  return to_signed32(((packed >> 32) & 0xffffffff) ~ 0x80000000),
+    to_signed32((packed & 0xffffffff) ~ 0x80000000)
+end
+
 local TerminalView = ui.ConsoleView:extend {
   onAwake = function(self)
     self.__items = {}
@@ -47,13 +71,18 @@ local TerminalView = ui.ConsoleView:extend {
   end,
 
   unpack = function(self, x, y)
-    local index, char = ui.consoleViewUnpack(self, x, y)
+    local index, char = unpack_index_glyph(self:send("ConsoleView.Unpack", x or 0, y or 0))
     local items = self.__items
-    return items and items[index], index, char
+    local item = (items and index ~= nil) and items[index] or nil
+    return item, index, char
   end,
 
-  getIndexPosition = function(self, ...)
-    return ui.consoleViewGetIndexPosition(self, ...)
+  getIndexPosition = function(self, index, offx, offy, global)
+    return unpack_position(self:send("ConsoleView.GetIndexPosition",
+      index or 0,
+      offx or 0,
+      offy or 0,
+      not not global))
   end,
 
   invalidate = function(self)

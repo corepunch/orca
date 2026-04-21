@@ -268,6 +268,18 @@ static struct PropertyType _ConsoleView_EraseEventArgs[] = {
 static luaL_Reg _ConsoleView_InvalidateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_InvalidateEventArgs[] = {
 };
+static luaL_Reg _ConsoleView_UnpackEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_UnpackEventArgs[] = {
+	DECL(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X, kDataTypeFloat), // ConsoleView_UnpackEventArgs.X
+	DECL(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y, kDataTypeFloat), // ConsoleView_UnpackEventArgs.Y
+};
+static luaL_Reg _ConsoleView_GetIndexPositionEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_GetIndexPositionEventArgs[] = {
+	DECL(0xaec7ae4b, ConsoleView_GetIndexPositionEventArgs, Index, Index, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.Index
+	DECL(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetX
+	DECL(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetY
+	DECL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global, kDataTypeBool), // ConsoleView_GetIndexPositionEventArgs.Global
+};
 static luaL_Reg _PageHost_NavigateToPageEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateToPageEventArgs[] = {
 	DECL(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageEventArgs.URL
@@ -294,6 +306,8 @@ STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
 STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
 STRUCT(ConsoleView_EraseEventArgs, ConsoleView_EraseEventArgs);
 STRUCT(ConsoleView_InvalidateEventArgs, ConsoleView_InvalidateEventArgs);
+STRUCT(ConsoleView_UnpackEventArgs, ConsoleView_UnpackEventArgs);
+STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
 #define REGISTER_CLASS(NAME, ...) \
@@ -907,6 +921,8 @@ HANDLER(ConsoleView, Node, ScrollWheel);
 HANDLER(ConsoleView, ConsoleView, Println);
 HANDLER(ConsoleView, ConsoleView, Erase);
 HANDLER(ConsoleView, ConsoleView, Invalidate);
+HANDLER(ConsoleView, ConsoleView, Unpack);
+HANDLER(ConsoleView, ConsoleView, GetIndexPosition);
 static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
 	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
 	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
@@ -917,6 +933,8 @@ static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties
 	DECL(0x9f626046, ConsoleView, Println, Println, kDataTypeEvent, .TypeString = "ConsoleView_PrintlnEventArgs"), // ConsoleView.Println
 	DECL(0x0e3c6075, ConsoleView, Erase, Erase, kDataTypeEvent, .TypeString = "ConsoleView_EraseEventArgs"), // ConsoleView.Erase
 	DECL(0xb4ac3630, ConsoleView, Invalidate, Invalidate, kDataTypeEvent, .TypeString = "ConsoleView_InvalidateEventArgs"), // ConsoleView.Invalidate
+	DECL(0x7a0c2153, ConsoleView, Unpack, Unpack, kDataTypeEvent, .TypeString = "ConsoleView_UnpackEventArgs"), // ConsoleView.Unpack
+	DECL(0x2ee2d732, ConsoleView, GetIndexPosition, GetIndexPosition, kDataTypeEvent, .TypeString = "ConsoleView_GetIndexPositionEventArgs"), // ConsoleView.GetIndexPosition
 };
 static struct ConsoleView ConsoleViewDefaults = {
 		
@@ -932,6 +950,8 @@ LRESULT ConsoleViewProc(struct Object* object, void* cmp, uint32_t message, wPar
 		case ID_ConsoleView_Println: return ConsoleView_Println(object, cmp, wparm, lparm); // ConsoleView.Println
 		case ID_ConsoleView_Erase: return ConsoleView_Erase(object, cmp, wparm, lparm); // ConsoleView.Erase
 		case ID_ConsoleView_Invalidate: return ConsoleView_Invalidate(object, cmp, wparm, lparm); // ConsoleView.Invalidate
+		case ID_ConsoleView_Unpack: return ConsoleView_Unpack(object, cmp, wparm, lparm); // ConsoleView.Unpack
+		case ID_ConsoleView_GetIndexPosition: return ConsoleView_GetIndexPosition(object, cmp, wparm, lparm); // ConsoleView.GetIndexPosition
 	}
 	return FALSE;
 }
@@ -1055,6 +1075,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_InvalidateEventArgs(L), -2), "ConsoleView_InvalidateEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_UnpackEventArgs(L), -2), "ConsoleView_UnpackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_GetIndexPositionEventArgs(L), -2), "ConsoleView_GetIndexPositionEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Brush), -2), "Brush");

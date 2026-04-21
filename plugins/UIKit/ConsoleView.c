@@ -96,50 +96,84 @@ _println(ConsoleViewPtr t, int32_t index, lpcString_t text, size_t slen)
   t->ContentHeight += MAX(1, (t->Cursor - c) / t->BufferWidth);
 }
 
-int f_ConsoleView_unpack(lua_State *L) {
-  float x = luaL_checknumber(L, 2);
-  float y = luaL_checknumber(L, 3);
-  lpObject_t obj = luaX_checkObject(L, 1);
+static uint64_t
+pack_index_glyph(uint32_t index, uint8_t glyph)
+{
+  return ((uint64_t)index << 32) | glyph;
+}
+
+static uint64_t
+pack_position(int32_t x, int32_t y)
+{
+  return ((uint64_t)(((uint32_t)x) ^ 0x80000000u) << 32) |
+         ((((uint32_t)y) ^ 0x80000000u));
+}
+
+static uint64_t
+query_unpack(lpObject_t obj, ConsoleViewCPtr t, float x, float y)
+{
 #ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
   struct vec3 out = (struct vec3){x,y,0};
 #else
   struct mat4 inv = MAT4_Inverse(&GetNode2D(obj)->Matrix);
   struct vec3 out = MAT4_MultiplyVector3D(&inv, &(struct vec3){x,y,0});
 #endif
-  ConsoleViewPtr t = GetConsoleView(obj);
   uint32_t data = PointToData(t, out.x, out.y, NULL);
 
-  lua_pushinteger(L, data>>16);
-  lua_pushlstring(L, (char*)&data, 1);
-  return 2;
+  return pack_index_glyph(data >> 16, data & 0xff);
 }
 
-int f_ConsoleView_getIndexPosition(lua_State *L) {
-  lpObject_t o = luaX_checkObject(L, 1);
-  ConsoleViewPtr t = GetConsoleView(o);
-  lua_Integer i = luaL_checkinteger(L, 2);
-  lua_Integer offx = luaL_optinteger(L, 3, 0);
-  lua_Integer offy = luaL_optinteger(L, 4, 0);
+static bool_t
+query_index_position(lpObject_t o,
+                     ConsoleViewCPtr t,
+                     int32_t i,
+                     int32_t offx,
+                     int32_t offy,
+                     bool_t global,
+                     int32_t *outx,
+                     int32_t *outy)
+{
   if (i == 0)
-    return 0;
+    return FALSE;
   FOR_LOOP(j, t->BufferWidth*t->BufferHeight) {
     if (t->_buffer[j]>>16 == i) {
-      if (lua_toboolean(L, 5)) {
+      if (global) {
         struct vec3 p = {
           .x = ((j%t->BufferWidth)+offx)*CONSOLE_CHAR_WIDTH,
           .y = ((j/t->BufferWidth)+offy)*CONSOLE_CHAR_HEIGHT,
         };
         struct vec3 out = MAT4_MultiplyVector3D(&GetNode2D(o)->Matrix, &p);
-        lua_pushnumber(L, out.x+t->_scroll.x);
-        lua_pushnumber(L, out.y+t->_scroll.y);
+        *outx = (int32_t)(out.x + t->_scroll.x);
+        *outy = (int32_t)(out.y + t->_scroll.y);
       } else {
-        lua_pushnumber(L, ((j%t->BufferWidth)+offx)*CONSOLE_CHAR_WIDTH+t->_scroll.x);
-        lua_pushnumber(L, ((j/t->BufferWidth)+offy)*CONSOLE_CHAR_HEIGHT+t->_scroll.y);
+        *outx = (int32_t)(((j%t->BufferWidth)+offx)*CONSOLE_CHAR_WIDTH + t->_scroll.x);
+        *outy = (int32_t)(((j/t->BufferWidth)+offy)*CONSOLE_CHAR_HEIGHT + t->_scroll.y);
       }
-      return 2;
+      return TRUE;
     }
   }
-  return 0;
+  return FALSE;
+}
+
+HANDLER(ConsoleView, ConsoleView, Unpack) {
+  if (!pConsoleView->_buffer) return FALSE;
+  return (LRESULT)(intptr_t)query_unpack(hObject, pConsoleView, pUnpack->X, pUnpack->Y);
+}
+
+HANDLER(ConsoleView, ConsoleView, GetIndexPosition) {
+  int32_t x, y;
+  if (!pConsoleView->_buffer) return FALSE;
+  if (!query_index_position(hObject,
+                            pConsoleView,
+                            pGetIndexPosition->Index,
+                            pGetIndexPosition->OffsetX,
+                            pGetIndexPosition->OffsetY,
+                            pGetIndexPosition->Global,
+                            &x,
+                            &y)) {
+    return FALSE;
+  }
+  return (LRESULT)(intptr_t)pack_position(x, y);
 }
 
 HANDLER(ConsoleView, ConsoleView, Println) {

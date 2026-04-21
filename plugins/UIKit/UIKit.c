@@ -3,9 +3,6 @@
 
 bool_t is_server = FALSE;
 
-extern int f_ConsoleView_getIndexPosition(lua_State *L);
-extern int f_ConsoleView_unpack(lua_State *L);
-
 extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 
@@ -17,12 +14,6 @@ void on_ui_module_registered(lua_State* L) {
   SV_RegisterMessageProc(ui_handle_event);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");
-  
-  // Expose ConsoleView query helpers as module-level functions
-  lua_pushcfunction(L, f_ConsoleView_unpack);
-  lua_setfield(L, -2, "consoleViewUnpack");
-  lua_pushcfunction(L, f_ConsoleView_getIndexPosition);
-  lua_setfield(L, -2, "consoleViewGetIndexPosition");
 }
 
 void

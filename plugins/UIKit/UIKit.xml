@@ -668,6 +668,8 @@
         <handle message="ConsoleView.Println"/>
         <handle message="ConsoleView.Erase"/>
         <handle message="ConsoleView.Invalidate"/>
+        <handle message="ConsoleView.Unpack"/>
+        <handle message="ConsoleView.GetIndexPosition"/>
       </handles>
       <properties>
         <property name="BufferWidth" type="int" default="256">Buffer width</property>
@@ -694,6 +696,22 @@
         </message>
         <message name="Invalidate">
           <summary>Request a repaint of this view</summary>
+        </message>
+        <message name="Unpack">
+          <summary>Query the item index and glyph located at a pixel coordinate, returned as a packed integer result.</summary>
+          <fields>
+            <field name="X" type="float"/>
+            <field name="Y" type="float"/>
+          </fields>
+        </message>
+        <message name="GetIndexPosition">
+          <summary>Query the pixel position of an item index with optional character offsets, returned as a packed integer result.</summary>
+          <fields>
+            <field name="Index" type="int"/>
+            <field name="OffsetX" type="int"/>
+            <field name="OffsetY" type="int"/>
+            <field name="Global" type="bool"/>
+          </fields>
         </message>
       </messages>
     </class>
