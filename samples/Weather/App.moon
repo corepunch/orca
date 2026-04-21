@@ -1,4 +1,4 @@
-ui = require "orca.UIKit"
+import StackView, TextBlock from require "orca.UIKit"
 
 class App extends require "orca.core2.application"
 	layout: require "Weather/views/layout"
@@ -8,9 +8,9 @@ class App extends require "orca.core2.application"
 	}
 
 	"/": =>
-		ui.StackView class: "p-6 gap-4", ->
-			ui.TextBlock class: "text-2xl", "Route Content"
-			ui.TextBlock class: "text-base", "This content is injected with @content_for 'inner'."
+		StackView class: "p-6 gap-4", ->
+			TextBlock class: "text-2xl", "Route Content"
+			TextBlock class: "text-base", "This content is injected with @content_for 'inner'."
 
 	"/about": =>
-		ui.TextBlock class: "text-xl", "About page from router"
+		TextBlock class: "text-xl", "About page from router"
