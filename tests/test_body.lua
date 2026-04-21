@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless tests for loading scenes via body() in Lua.
 -- Mirrors the pattern used in the Banking sample and other MoonScript components.
 --
@@ -42,7 +43,7 @@ local function test_body_creates_children()
 
   flush()
 
-  expect_eq(child_count(container), 2, "body() should create 2 children")
+  test.expect_eq(child_count(container), 2, "body() should create 2 children")
 
   container:removeFromParent()
   print("PASS: test_body_creates_children")
@@ -60,7 +61,7 @@ local function test_body_at_construction()
 
   flush()
 
-  expect_eq(child_count(container), 1, "body() at construction creates 1 child")
+  test.expect_eq(child_count(container), 1, "body() at construction creates 1 child")
 
   container:removeFromParent()
   print("PASS: test_body_at_construction")
@@ -81,14 +82,14 @@ local function test_rebuild_replaces_children()
     end
   end)
   flush()
-  expect_eq(child_count(container), 3, "first rebuild: 3 children")
+  test.expect_eq(child_count(container), 3, "first rebuild: 3 children")
 
   -- Second build: 1 child — rebuild() clears before re-running body()
   container:rebuild(function(self)
     self:addChild(ui.Node2D { Name = "Only" })
   end)
   flush()
-  expect_eq(child_count(container), 1, "second rebuild: 1 child (old children removed)")
+  test.expect_eq(child_count(container), 1, "second rebuild: 1 child (old children removed)")
 
   container:removeFromParent()
   print("PASS: test_rebuild_replaces_children")
@@ -108,11 +109,11 @@ local function test_nested_body()
 
   flush()
 
-  expect_eq(child_count(outer), 1, "outer has 1 child after body()")
+  test.expect_eq(child_count(outer), 1, "outer has 1 child after body()")
   local inner
   for child in outer.children do inner = child end
-  expect(inner ~= nil, "inner child exists")
-  expect_eq(child_count(inner), 1, "inner child has 1 child")
+  test.expect(inner ~= nil, "inner child exists")
+  test.expect_eq(child_count(inner), 1, "inner child has 1 child")
 
   outer:removeFromParent()
   print("PASS: test_nested_body")
@@ -134,7 +135,7 @@ local function test_body_accesses_self_properties()
 
   flush()
 
-  expect_eq(captured_width, 200, "body() should see Width=200 set before rebuild()")
+  test.expect_eq(captured_width, 200, "body() should see Width=200 set before rebuild()")
 
   container:removeFromParent()
   print("PASS: test_body_accesses_self_properties")
@@ -160,7 +161,7 @@ local function test_behaviour_extend_body()
   local comp = screen + MyComponent {}
   flush()
 
-  expect_eq(child_count(comp), 3, "UIKit:extend body() creates 3 children")
+  test.expect_eq(child_count(comp), 3, "UIKit:extend body() creates 3 children")
 
   comp:removeFromParent()
   print("PASS: test_behaviour_extend_body")
@@ -177,7 +178,7 @@ local function test_body_string_sets_text()
 
   flush()
 
-  expect_eq(label:getTextContent(), "Hello from body", "rebuild() with string sets text content")
+  test.expect_eq(label:getTextContent(), "Hello from body", "rebuild() with string sets text content")
 
   label:removeFromParent()
   print("PASS: test_body_string_sets_text")
@@ -208,9 +209,9 @@ local function test_multiple_containers_with_body()
 
   flush()
 
-  expect_eq(child_count(a), 1, "container a: 1 child")
-  expect_eq(child_count(b), 2, "container b: 2 children")
-  expect_eq(child_count(c), 3, "container c: 3 children")
+  test.expect_eq(child_count(a), 1, "container a: 1 child")
+  test.expect_eq(child_count(b), 2, "container b: 2 children")
+  test.expect_eq(child_count(c), 3, "container c: 3 children")
 
   a:removeFromParent()
   b:removeFromParent()

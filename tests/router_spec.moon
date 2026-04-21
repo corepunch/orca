@@ -1,3 +1,4 @@
+test = require "orca.test"
 -- Headless tests for orca.core2.router
 -- Covers: route registration, dispatch to correct handler,
 -- nil dispatch for unknown routes, and auto-discovery of "/" routes.
@@ -19,8 +20,8 @@ test_dispatch_calls_correct_handler = ->
   router\add "/", "/", handler
 
   result = router\dispatch "/"
-  expect_eq called_with, "/", "handler should receive the request"
-  expect_eq result, "result", "dispatch should return handler return value"
+  test.expect_eq called_with, "/", "handler should receive the request"
+  test.expect_eq result, "result", "dispatch should return handler return value"
   print "PASS: test_dispatch_calls_correct_handler"
 
 -- ---------------------------------------------------------------------------
@@ -32,7 +33,7 @@ test_dispatch_nil_for_unknown_route = ->
   router\add "/home", "/home", -> "home"
 
   result = router\dispatch "/unknown"
-  expect_eq result, nil, "dispatch should return nil for unknown route"
+  test.expect_eq result, nil, "dispatch should return nil for unknown route"
   print "PASS: test_dispatch_nil_for_unknown_route"
 
 -- ---------------------------------------------------------------------------
@@ -45,9 +46,9 @@ test_resolve_returns_route = ->
   router\add "home", "/home", handler
 
   route = router\resolve "/home"
-  expect route ~= nil, "resolve should find registered route"
-  expect_eq route.handler, handler, "resolve should return correct handler"
-  expect_eq route.name, "home", "resolve should return correct name"
+  test.expect route ~= nil, "resolve should find registered route"
+  test.expect_eq route.handler, handler, "resolve should return correct handler"
+  test.expect_eq route.name, "home", "resolve should return correct name"
   print "PASS: test_resolve_returns_route"
 
 -- ---------------------------------------------------------------------------
@@ -58,7 +59,7 @@ test_resolve_nil_for_unknown = ->
   router = Router owner
   router\add "/a", "/a", ->
 
-  expect_eq (router\resolve "/b"), nil, "resolve should return nil for unknown path"
+  test.expect_eq (router\resolve "/b"), nil, "resolve should return nil for unknown path"
   print "PASS: test_resolve_nil_for_unknown"
 
 -- ---------------------------------------------------------------------------
@@ -77,9 +78,9 @@ test_register_routes_auto_discovery = ->
   instance = setmetatable {}, base
 
   router = Router instance
-  expect_eq (router\dispatch "/"),      "root",  "/ route should dispatch"
-  expect_eq (router\dispatch "/about"), "about", "/about route should dispatch"
-  expect_eq (router\dispatch "/other"), nil,     "non-/ key should not be a route"
+  test.expect_eq (router\dispatch "/"),      "root",  "/ route should dispatch"
+  test.expect_eq (router\dispatch "/about"), "about", "/about route should dispatch"
+  test.expect_eq (router\dispatch "/other"), nil,     "non-/ key should not be a route"
   print "PASS: test_register_routes_auto_discovery"
 
 -- ---------------------------------------------------------------------------
@@ -91,8 +92,8 @@ test_multiple_routes = ->
   router\add "/a", "/a", (self) -> "a"
   router\add "/b", "/b", (self) -> "b"
 
-  expect_eq (router\dispatch "/a"), "a", "/a route"
-  expect_eq (router\dispatch "/b"), "b", "/b route"
+  test.expect_eq (router\dispatch "/a"), "a", "/a route"
+  test.expect_eq (router\dispatch "/b"), "b", "/b route"
   print "PASS: test_multiple_routes"
 
 -- Run all

@@ -1,3 +1,4 @@
+test = require "orca.test"
 -- Headless tests for orca.core2.application
 -- Covers: route return value stored in ctx.content.inner,
 -- class-based layout receives render context, class-level helpers
@@ -30,9 +31,9 @@ test_route_result_stored_in_inner = ->
   app = App!
   result = app\dispatch "/"
 
-  expect result ~= nil, "dispatch should return a result table"
-  expect result.context ~= nil, "result should have a context"
-  expect_eq result.context.content.inner, "my_body", "route return should be ctx.content.inner"
+  test.expect result ~= nil, "dispatch should return a result table"
+  test.expect result.context ~= nil, "result should have a context"
+  test.expect_eq result.context.content.inner, "my_body", "route return should be ctx.content.inner"
   print "PASS: test_route_result_stored_in_inner"
 
 -- ---------------------------------------------------------------------------
@@ -46,7 +47,7 @@ test_layout_content_called = ->
   app = App!
   result = app\dispatch "/"
 
-  expect_eq result.view, "layout_result", "layout:content() return should be result.view"
+  test.expect_eq result.view, "layout_result", "layout:content() return should be result.view"
   print "PASS: test_layout_content_called"
 
 -- ---------------------------------------------------------------------------
@@ -67,9 +68,9 @@ test_layout_receives_render_context = ->
   app = App!
   result = app\dispatch "/"
 
-  expect captured_layout ~= nil, "layout content() should have been called"
-  expect (captured_layout\get_render_context!) ~= nil, "layout should have render context"
-  expect_eq (captured_layout\content_for "inner"), "x", "inner should be accessible in layout"
+  test.expect captured_layout ~= nil, "layout content() should have been called"
+  test.expect (captured_layout\get_render_context!) ~= nil, "layout should have render context"
+  test.expect_eq (captured_layout\content_for "inner"), "x", "inner should be accessible in layout"
   print "PASS: test_layout_receives_render_context"
 
 -- ---------------------------------------------------------------------------
@@ -95,7 +96,7 @@ test_class_helpers_accessible_in_layout = ->
   app = App!
   app\dispatch "/"
 
-  expect_eq captured_title, "MyApp", "app_title helper should be visible in layout"
+  test.expect_eq captured_title, "MyApp", "app_title helper should be visible in layout"
   print "PASS: test_class_helpers_accessible_in_layout"
 
 -- ---------------------------------------------------------------------------
@@ -109,8 +110,8 @@ test_unknown_route_returns_nil_body = ->
   app = App!
   result = app\dispatch "/missing"
 
-  expect result ~= nil, "dispatch should always return a result table"
-  expect_eq result.context.content.inner, nil, "unknown route should yield nil inner"
+  test.expect result ~= nil, "dispatch should always return a result table"
+  test.expect_eq result.context.content.inner, nil, "unknown route should yield nil inner"
   print "PASS: test_unknown_route_returns_nil_body"
 
 -- ---------------------------------------------------------------------------
@@ -124,8 +125,8 @@ test_dispatch_result_shape = ->
   app = App!
   result = app\dispatch "/"
 
-  expect (result.view ~= nil),    "result.view should be present"
-  expect (result.context ~= nil), "result.context should be present"
+  test.expect (result.view ~= nil),    "result.view should be present"
+  test.expect (result.context ~= nil), "result.context should be present"
   print "PASS: test_dispatch_result_shape"
 
 -- Run all

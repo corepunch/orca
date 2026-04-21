@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless tests for the ORCA style system — exercised from Lua using
 -- the CSS string API, node.class, and StyleController.ThemeChanged.
 --
@@ -38,7 +39,7 @@ local function test_style_applies_opacity()
 
   applyStyles(node)
 
-  expect_near(node.Opacity, 0.4, 0.001, "StyleController applied Opacity=0.4")
+  test.expect_near(node.Opacity, 0.4, 0.001, "StyleController applied Opacity=0.4")
 
   node:removeFromParent()
   print("PASS: test_style_applies_opacity")
@@ -56,7 +57,7 @@ local function test_style_not_applied_without_class()
   -- Intentionally NOT setting node.class = "hidden"
   applyStyles(node)
 
-  expect_near(node.Opacity, 0.8, 0.001, "Opacity unchanged when class not set")
+  test.expect_near(node.Opacity, 0.8, 0.001, "Opacity unchanged when class not set")
 
   node:removeFromParent()
   print("PASS: test_style_not_applied_without_class")
@@ -73,8 +74,8 @@ local function test_style_multiple_properties()
   node.class = "box"
   applyStyles(node)
 
-  expect_near(node.Width,  200, 0.5, "StyleController applied Width=200")
-  expect_near(node.Height,  80, 0.5, "StyleController applied Height=80")
+  test.expect_near(node.Width,  200, 0.5, "StyleController applied Width=200")
+  test.expect_near(node.Height,  80, 0.5, "StyleController applied Height=80")
 
   node:removeFromParent()
   print("PASS: test_style_multiple_properties")
@@ -91,11 +92,11 @@ local function test_style_multiple_classes()
   node.Opacity = 1.0
   node.class = "alpha50"
   applyStyles(node)
-  expect_near(node.Opacity, 0.5, 0.001, "alpha50 applied: Opacity=0.5")
+  test.expect_near(node.Opacity, 0.5, 0.001, "alpha50 applied: Opacity=0.5")
 
   node.class = "alpha25"
   applyStyles(node)
-  expect_near(node.Opacity, 0.25, 0.001, "alpha25 applied: Opacity=0.25")
+  test.expect_near(node.Opacity, 0.25, 0.001, "alpha25 applied: Opacity=0.25")
 
   node:removeFromParent()
   print("PASS: test_style_multiple_classes")
@@ -115,7 +116,7 @@ local function test_style_hover_not_applied_by_default()
 
   -- The :hover rule only fires when the hover state flag is set on the object.
   -- Without programmatic hover, Opacity stays at 1.0.
-  expect_near(node.Opacity, 1.0, 0.001, "hover rule ignored when not hovered")
+  test.expect_near(node.Opacity, 1.0, 0.001, "hover rule ignored when not hovered")
 
   node:removeFromParent()
   print("PASS: test_style_hover_not_applied_by_default")
@@ -133,7 +134,7 @@ local function test_style_non_hover_rule_applies()
   node.class = "card"
   applyStyles(node)
 
-  expect_near(node.Opacity, 0.7, 0.001, "non-hover card rule applied: Opacity=0.7")
+  test.expect_near(node.Opacity, 0.7, 0.001, "non-hover card rule applied: Opacity=0.7")
 
   node:removeFromParent()
   print("PASS: test_style_non_hover_rule_applies")
@@ -154,7 +155,7 @@ local function test_style_recursive_children()
   -- Fire ThemeChanged recursively on the parent
   parent:send("StyleController.ThemeChanged", { recursive = true })
 
-  expect_near(child.Opacity, 0.3, 0.001, "recursive ThemeChanged applied to child: Opacity=0.3")
+  test.expect_near(child.Opacity, 0.3, 0.001, "recursive ThemeChanged applied to child: Opacity=0.3")
 
   parent:removeFromParent()
   print("PASS: test_style_recursive_children")
@@ -172,7 +173,7 @@ local function test_style_dot_prefix_selector()
   node.class = "primary"
   applyStyles(node)
 
-  expect_near(node.Opacity, 0.55, 0.001, ".primary selector applied: Opacity=0.55")
+  test.expect_near(node.Opacity, 0.55, 0.001, ".primary selector applied: Opacity=0.55")
 
   node:removeFromParent()
   print("PASS: test_style_dot_prefix_selector")
@@ -189,7 +190,7 @@ local function test_style_numeric_value()
   node.class = "sized"
   applyStyles(node)
 
-  expect_near(node.Width, 150, 0.5, "CSS width: 150 applied from style rule")
+  test.expect_near(node.Width, 150, 0.5, "CSS width: 150 applied from style rule")
 
   node:removeFromParent()
   print("PASS: test_style_numeric_value")
@@ -207,7 +208,7 @@ local function test_style_applies_to_new_node()
   node.class = "ghost"
   applyStyles(node)
 
-  expect_near(node.Opacity, 0.1, 0.001, "ghost class: Opacity=0.1 on fresh node")
+  test.expect_near(node.Opacity, 0.1, 0.001, "ghost class: Opacity=0.1 on fresh node")
 
   node:removeFromParent()
   print("PASS: test_style_applies_to_new_node")

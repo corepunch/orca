@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless layout tests — no renderer or display required.
 -- Tests the UIKit layout system (Grid, StackView, Node2D) using only
 -- fixed-size nodes so that font measurement is never needed.
@@ -18,11 +19,11 @@ local function test_grid_fr_units()
 
 	local expected1 = math.floor(screen.Width / 3)         -- 1/(1+2)
 	local expected2 = screen.Width - expected1             -- 2/(1+2)
-	expect_near(cell1.ActualWidth, expected1, 1,
+	test.expect_near(cell1.ActualWidth, expected1, 1,
 		"1fr width")
-	expect_near(cell2.ActualWidth, expected2, 1,
+	test.expect_near(cell2.ActualWidth, expected2, 1,
 		"2fr width")
-	expect(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
+	test.expect(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
 		"2fr column should be approximately twice the width of 1fr column")
 
 	grid:removeFromParent()
@@ -39,7 +40,7 @@ local function test_grid_auto_columns()
 
 	local expected = math.floor(screen.Width / 3)
 	for i = 1, 3 do
-		expect_near(cells[i].ActualWidth, expected, 1,
+		test.expect_near(cells[i].ActualWidth, expected, 1,
 			string.format("auto column %d width", i))
 	end
 
@@ -60,11 +61,11 @@ local function test_grid_in_vstack_height()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	expect_eq(inner.ActualHeight, node_h * 2,
+	test.expect_eq(inner.ActualHeight, node_h * 2,
 		"inner stack height")
-	expect_eq(grid.ActualHeight, inner.ActualHeight,
+	test.expect_eq(grid.ActualHeight, inner.ActualHeight,
 		"grid height must match inner stack")
-	expect(grid.ActualHeight > 0, "grid height must be > 0")
+	test.expect(grid.ActualHeight > 0, "grid height must be > 0")
 
 	outer:removeFromParent()
 	print("PASS: test_grid_in_vstack_height")
@@ -84,9 +85,9 @@ local function test_node2d_container_height()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	expect_eq(inner.ActualHeight, child_h,
+	test.expect_eq(inner.ActualHeight, child_h,
 		"inner height")
-	expect_eq(container.ActualHeight, child_h + 2 * padding,
+	test.expect_eq(container.ActualHeight, child_h + 2 * padding,
 		"container height")
 
 	outer:removeFromParent()
@@ -104,9 +105,9 @@ local function test_grid_mixed_px_fr()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	expect_eq(cell1.ActualWidth, fixed,
+	test.expect_eq(cell1.ActualWidth, fixed,
 		"px column width")
-	expect_eq(cell2.ActualWidth, screen.Width - fixed,
+	test.expect_eq(cell2.ActualWidth, screen.Width - fixed,
 		"fr column width")
 
 	grid:removeFromParent()
@@ -130,19 +131,19 @@ local function test_grid_implicit_row_wrapping()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Row 0: cells 1 & 2 must start at y = 0
-	expect_eq(cells[1].ActualY, 0,
+	test.expect_eq(cells[1].ActualY, 0,
 		"cell1 Y")
-	expect_eq(cells[2].ActualY, 0,
+	test.expect_eq(cells[2].ActualY, 0,
 		"cell2 Y")
 
 	-- Row 1: cells 3 & 4 must start at y = cell_h (below the first row)
-	expect_eq(cells[3].ActualY, cell_h,
+	test.expect_eq(cells[3].ActualY, cell_h,
 		"cell3 Y")
-	expect_eq(cells[4].ActualY, cell_h,
+	test.expect_eq(cells[4].ActualY, cell_h,
 		"cell4 Y")
 
 	-- Grid total height must be 2 * cell_h
-	expect_eq(grid.ActualHeight, cell_h * 2,
+	test.expect_eq(grid.ActualHeight, cell_h * 2,
 		"grid total height")
 
 	outer:removeFromParent()

@@ -426,24 +426,6 @@ int main (int argc, LPSTR *argv)
     } else if (strstr(args.test, ".xml")) {
       RunTest(L, args.test);
     } else {
-      /* Inject test helpers available to all .lua and .moon test files */
-      const char *test_helpers =
-        "function fail(msg) io.stderr:write('FAIL: ' .. tostring(msg) .. '\\n') os.exit(1) end\n"
-        "function expect(cond, label) if not cond then fail(label) end end\n"
-        "function expect_eq(actual, expected, label)\n"
-        "  if actual ~= expected then\n"
-        "    fail(label .. ': expected ' .. tostring(expected) .. ', got ' .. tostring(actual))\n"
-        "  end\n"
-        "end\n"
-        "function expect_near(actual, expected, eps, label)\n"
-        "  if math.abs(actual - expected) > (eps or 0.01) then\n"
-        "    fail(string.format('%s: expected ~%s, got %s', label, tostring(expected), tostring(actual)))\n"
-        "  end\n"
-        "end\n";
-      if (luaL_dostring(L, test_helpers) != LUA_OK) {
-        fprintf(stderr, "%s\n", lua_tostring(L, -1));
-        exit(1);
-      }
       if (strstr(args.test, ".moon")) {
         const char *moon_bootstrap =
           "local ms = require 'moonscript'\n"
