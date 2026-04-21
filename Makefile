@@ -48,7 +48,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body
 
 default: directories unite
 all: default
@@ -134,6 +134,13 @@ run:
 
 example:
 	$(TARGET) samples/Example
+
+weather: copyshare
+	@if [ ! -x $(TARGET) ]; then \
+		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
+		exit 1; \
+	fi
+	$(TARGET) samples/Weather
 
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)
