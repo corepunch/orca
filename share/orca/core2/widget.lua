@@ -122,7 +122,7 @@ function Widget:_find_helper_value(key)
   local value = scan_helpers(rawget(self, '__helpers'))
   if value ~= nil then return value end
 
-  local cls = rawget(self, '__class')
+  local cls = rawget(self, '__class') or rawget(getmetatable(self) or {}, '__class')
   while cls do
     value = scan_helpers(rawget(cls, '__helpers'))
     if value ~= nil then return value end
