@@ -678,6 +678,8 @@ static struct PropertyType const StackViewProperties[kStackViewNumProperties] = 
 	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
 };
 static struct StackView StackViewDefaults = {
+		
+  .Direction = kDirectionVertical,
 };
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {

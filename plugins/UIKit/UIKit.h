@@ -472,7 +472,7 @@ ORCA_API struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx);
 typedef struct TextRun TextRun_t, *TextRunPtr, *lpTextRun_t;
 typedef struct TextRun const *TextRunCPtr, *lpcTextRun_t;
 struct TextRun {
-	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
+	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.
 	struct FontShorthand Font; ///< Font definition used for text rendering. Contains typeface, size, and style information.
 	struct UnderlineShorthand Underline; ///< Underline style applied to the text.
 	float LetterSpacing; ///< Additional spacing applied between letters.

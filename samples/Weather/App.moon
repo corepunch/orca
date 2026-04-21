@@ -14,6 +14,3 @@ class App extends require "orca.core2.application"
 
 	"/about": =>
 		ui.TextBlock class: "text-xl", "About page from router"
-
-	Awake: =>
-		@navigate "/"

@@ -495,7 +495,7 @@
       </handles>
       <properties>
         <property name="Reversed" type="bool">Reverse the order of child elements </property>
-        <property name="Direction" type="Direction">Layout direction (horizontal or vertical) </property>
+        <property name="Direction" type="Direction" default="Vertical">Layout direction (horizontal or vertical) </property>
         <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
         <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
         <property name="Spacing" type="float">Space between adjacent children </property>
