@@ -89,6 +89,7 @@ int f_OBJ_Rebuild(lua_State *L) {
 int f_OBJ_AddChild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* child = luaX_checkObject(L, 2);
+	printf("Adding child %s %p to parent %s %p\n", OBJ_GetName(child), (void*)child, OBJ_GetName(this_), (void*)this_);
 	bool_t is_template = lua_toboolean(L, 3);
 	struct Object* result_ = OBJ_AddChild(this_, child, is_template);
 	luaX_pushObject(L, result_);

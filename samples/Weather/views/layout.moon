@@ -7,10 +7,11 @@ class Default extends Widget
 		title = if @app_title then @app_title! else "App"
 
 		Screen ->
-			stack = StackView class: "p-6 gap-3", ->
+			StackView class: "p-6 gap-3", =>
 				TextBlock class: "text-3xl", title
 				TextBlock class: "text-sm", "Layout chrome above route content"
-			if inner
-				stack\addChild inner
-			else
-				stack\addChild TextBlock class: "text-sm", "No inner content"
+				if inner
+					@addChild inner
+				else
+					TextBlock class: "text-sm", "No inner content"
+		

@@ -21,9 +21,12 @@ Style system principles
 
 UIKit composition rules
 - Prefer closure style for idiomatic MoonScript.
-- Keep container references when inserting prebuilt child nodes later.
+- The body function passed to a widget (StackView class: "...", =>) is run AFTER OBJ_Clear wipes the node. Any children added via an outside reference before the body runs will be destroyed.
+- To inject pre-built nodes (e.g. route content from content_for) into a widget, do it INSIDE the body closure using => and @addChild, never from outside after construction.
+- Correct: StackView class: "p-6 gap-3", => ... if inner then @addChild inner
+- Wrong: stack = StackView ...; stack\addChild inner  (child gets cleared when body runs)
 - Use explicit addChild for existing node instances with MoonScript method syntax.
-- In .moon snippets use stack\addChild inner, never stack:addChild(inner).
+- In .moon snippets use @addChild inner inside => closures; never add pre-built children from outside the body.
 - Never generate .lua files from .moon files.
 - Keep style and layout changes in .moon sources only.
 - Do not create or sync parallel .lua versions for MoonScript UI modules.
