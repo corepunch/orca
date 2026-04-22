@@ -86,10 +86,17 @@ jobs:
             curl \
             pkg-config
 
-      - name: Install MoonScript
+      - name: Configure Lua 5.4 toolchain
         run: |
           LUA_DIR="$(brew --prefix lua@5.4)"
-          export PATH="$LUA_DIR/bin:$PATH"
+          echo "$LUA_DIR/bin" >> "$GITHUB_PATH"
+          echo "PKG_CONFIG_PATH=$LUA_DIR/lib/pkgconfig:${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
+          echo "LUA_DIR=$LUA_DIR" >> "$GITHUB_ENV"
+          echo "LUA_PATH=$LUA_DIR/share/lua/5.4/?.lua;$LUA_DIR/share/lua/5.4/?/init.lua;;" >> "$GITHUB_ENV"
+          echo "LUA_CPATH=$LUA_DIR/lib/lua/5.4/?.so;;" >> "$GITHUB_ENV"
+
+      - name: Install MoonScript
+        run: |
           luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" install moonscript
 
       - name: Build
