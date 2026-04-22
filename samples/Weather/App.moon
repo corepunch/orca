@@ -1,4 +1,4 @@
-import renderer from require "orca.renderer"
+renderer = require "orca.renderer"
 
 class App extends require "orca.core.application"
 	layout: require "Weather/views/layout"
