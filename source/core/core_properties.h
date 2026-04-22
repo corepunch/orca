@@ -355,7 +355,7 @@ enum HandlerProperties {
 #define ID_Node_KeyDown 0xfc8dc15c // Node.KeyDown
 #define ID_Node_KeyUp 0x9282bc1d // Node.KeyUp
 #define ID_Node_TextInput 0xaf29a9ae // Node.TextInput
-#define kNodeNumProperties 99
+#define kNodeNumProperties 98
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -426,7 +426,6 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeResources,
 	kNodeNumResources,
-	kNodeAwake,
 	kNodeUpdateMatrix,
 	kNodeLoadView,
 	kNodeHitTest,

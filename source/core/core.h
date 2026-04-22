@@ -330,6 +330,10 @@ core_AddGlobalStyleRule(struct lua_State*, struct Object*);
 ORCA_API void
 core_AdvanceFrame(void);
 
+/// @brief Drains the pending platform message queue and dispatches each event immediately.
+ORCA_API void
+core_FlushQueue(struct lua_State*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
@@ -337,10 +341,6 @@ core_AdvanceFrame(void);
 /// @brief Create new object.
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
-
-/// @brief Runs object animations.
-ORCA_API void
-OBJ_Animate(struct lua_State*, struct Object*);
 
 /// @brief Clear all children of the object.
 ORCA_API void

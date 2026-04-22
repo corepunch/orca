@@ -77,7 +77,9 @@ XML test files are loaded by `doxmlfile()`. Any `<script>` element inside the ro
 Tests that exercise `rebuild()` and `body()` require special handling.
 `rebuild()` is asynchronous — it queues a coroutine for the next event loop
 tick.  Call `core.flushQueue()` after all `rebuild()` calls and before any
-child-count assertions.
+child-count assertions. `core.flushQueue()` drains the pending platform event
+queue and dispatches each queued message immediately, which is what allows the
+posted `kEventResumeCoroutine` rebuild work to complete during headless tests.
 
 See [Lua Scene Loading](lua-scene-loading.md) for the full explanation and
 all patterns.  `tests/test_body.lua` is the reference implementation.

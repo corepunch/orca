@@ -648,7 +648,7 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
 // Drain all pending events from the platform queue, dispatching each one.
 // This is used in headless tests to process kEventResumeCoroutine messages
 // that run body() rebuild coroutines posted by rebuild() calls.
-static int f_flush_queue(lua_State* L) {
+ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
@@ -659,7 +659,6 @@ static int f_flush_queue(lua_State* L) {
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);
   }
-  return 0;
 }
 
 void
@@ -678,7 +677,4 @@ lua_pop(L, 1);
   OVERRIDE_FROMSTRING(CornerRadius, f_CornerRadius_TextConvert, f_CornerRadius_New)
 
 #undef OVERRIDE_FROMSTRING
-
-  lua_pushcfunction(L, f_flush_queue);
-  lua_setfield(L, -2, "flushQueue");
 }
