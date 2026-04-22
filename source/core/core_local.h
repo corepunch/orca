@@ -116,9 +116,6 @@ OBJ_MoveToFront(lpObject_t);
 
 void
 OBJ_ClearStyleClasses(lpObject_t);
-
-void
-OBJ_SetLuaObject(lpObject_t , uint32_t);
   
 ORCA_API void
 OBJ_SetAlias(lpObject_t, uint32_t);

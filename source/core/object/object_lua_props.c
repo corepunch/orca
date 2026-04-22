@@ -40,6 +40,37 @@ static int f_object_lineage(lua_State* L)
   return 1;
 }
 
+static void collect_form_inputs(lua_State* L, lpObject_t node, int table_idx)
+{
+  if (!node) return;
+
+  lpcString_t cls = OBJ_GetClassName(node);
+  if (cls && !strcmp(cls, "Input")) {
+    lpcString_t name = OBJ_GetName(node);
+    if (name && *name) {
+      OBJ_GetProperty(L, node, "Text");
+      if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        lua_pushstring(L, "");
+      }
+      lua_setfield(L, table_idx, name);
+    }
+  }
+
+  FOR_EACH_OBJECT(child, node) {
+    collect_form_inputs(L, child, table_idx);
+  }
+}
+
+static int f_obj_populate_inputs(lua_State* L)
+{
+  lpObject_t self = luaX_checkObject(L, 1);
+  lua_newtable(L);
+  int table_idx = lua_absindex(L, -1);
+  collect_form_inputs(L, self, table_idx);
+  return 1;
+}
+
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
@@ -87,14 +118,6 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return TRUE;
   }
   lpProperty_t property = NULL;
-  if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
-    luaX_parsefield(lpObject_t, __userdata, 3, luaL_testudata, API_TYPE_OBJECT);
-    if (__userdata) {
-      lua_pushfstring(L, "__hook_%s", name);
-      lua_pushvalue(L, 3);
-      lua_rawset(L, 1);
-    }
-  }
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
@@ -114,6 +137,77 @@ int f_msgSend(lua_State *L) {
   lua_pushstring(L, message);
   lua_insert(L, 2);
   return OBJ_send(L, this_, message); // sync+direct, returns value or nil
+}
+
+int f_OBJ_newindex(lua_State* L) {
+  struct Object* this_ = luaX_checkObject(L, 1);
+  const char* Property = luaL_checkstring(L, 2);
+  if (!OBJ_SetProperty(L, this_, Property)) {
+    /* Store arbitrary Lua values (including functions) in per-object extras */
+    void get_object_extras_pub(lua_State*, struct Object*);
+    get_object_extras_pub(L, this_);
+    lua_pushvalue(L, 3);
+    lua_setfield(L, -2, Property);
+    lua_pop(L, 1);
+  }
+  return 0;
+}
+
+int f_object_index(lua_State* L) {
+  lpObject_t self = luaX_checkObject(L, 1);
+  const char* key = luaL_checkstring(L, 2);
+
+  if (!strcmp(key, "populateInputs")) {
+    lua_pushcfunction(L, f_obj_populate_inputs);
+    return 1;
+  }
+
+  /* 1. Check the Object metatable for C methods (addChild, post, send, …) */
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  lua_getfield(L, -1, key);
+  lua_remove(L, -2); /* remove metatable */
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+  lua_pop(L, 1);
+  /* 2. Walk the Lua class method chain and check per-object extras.
+   *    Derived class metatables use __index = base, so lua_getfield()
+   *    follows the entire inheritance chain automatically. */
+  lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+  if (!lua_isnil(L, -1)) {
+    lua_pushlightuserdata(L, self);
+    lua_gettable(L, -2);
+    lua_remove(L, -2); /* remove __object_extras */
+    if (!lua_isnil(L, -1)) {
+      int extras_idx = lua_absindex(L, -1);
+      /* Class method chain (Lua __index on class metatable handles inheritance) */
+      lua_getfield(L, extras_idx, "__class");
+      if (!lua_isnil(L, -1)) {
+        lua_getfield(L, -1, key); /* follows __index chain automatically */
+        lua_remove(L, -2);        /* remove class */
+        if (!lua_isnil(L, -1)) {
+          lua_remove(L, extras_idx);
+          return 1;
+        }
+        lua_pop(L, 1); /* pop nil */
+      } else {
+        lua_pop(L, 1); /* pop nil class */
+      }
+      /* Check extras directly for arbitrary stored instance variables */
+      lua_getfield(L, extras_idx, key);
+      lua_remove(L, extras_idx);
+      if (!lua_isnil(L, -1)) {
+        return 1;
+      }
+      lua_pop(L, 1);
+    } else {
+      lua_pop(L, 1); /* pop nil entry */
+    }
+  } else {
+    lua_pop(L, 1); /* pop nil __object_extras */
+  }
+  /* 3. Fall through to ORCA property lookup */
+  return OBJ_GetProperty(L, self, key);
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)

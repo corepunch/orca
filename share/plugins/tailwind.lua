@@ -34,7 +34,12 @@ local theme = { colors = {} }
 local function add_rule(classname, props)
 	local rule = core.StyleRule { ClassName = classname }
 	for key, value in pairs(props) do
-		rule[key] = type(value) == "string" and orca.core.parseProperty(value, rule:findExplicitProperty(key)) or value
+		local ptype = rule:findExplicitProperty(key)
+		if type(value) == "string" and ptype then
+			rule[key] = orca.core.parseProperty(value, ptype)
+		else
+			rule[key] = value
+		end
 	end
 	core.addGlobalStyleRule(rule)
 end
