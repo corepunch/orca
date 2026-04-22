@@ -210,6 +210,8 @@ struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
+HANDLER(PrefabView3D, Object, Start);
+HANDLER(PrefabView3D, Object, PropertyChanged);
 HANDLER(PrefabView3D, Node, LoadView);
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
@@ -219,6 +221,8 @@ static struct PrefabView3D PrefabView3DDefaults = {
 };
 LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Start: return PrefabView3D_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return PrefabView3D_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;

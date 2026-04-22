@@ -567,7 +567,6 @@ draw_screen(lua_State* L,
   uint32_t const _size = get_size(hObject);
   
   OBJ_Animate(L, hObject);
-  OBJ_LoadPrefabs(L, hObject);
   OBJ_EmitPropertyChangedEvents(L, hObject);
   OBJ_UpdateProperties(hObject);
   

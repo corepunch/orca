@@ -593,10 +593,6 @@ OBJ_SetContext(struct lua_State*, struct Object*);
 ORCA_API struct Object*
 OBJ_Instantiate(struct lua_State*, struct Object*);
 
-/// @brief Loads and instantiates prefabs.
-ORCA_API void
-OBJ_LoadPrefabs(struct lua_State*, struct Object*);
-
 /// @brief Checks if this object is a prefab view container
 ORCA_API bool_t
 OBJ_IsPrefabView(struct Object const*);

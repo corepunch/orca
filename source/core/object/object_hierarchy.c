@@ -17,17 +17,6 @@ lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
   return child;
 }
 
-void
-OBJ_LoadPrefabs(lua_State* L, lpObject_t object)
-{
-  if (!OBJ_IsHidden(object)) {
-    OBJ_SendMessage(object, "LoadView", 0, &L);
-  }
-  FOR_EACH_OBJECT(child, object) {
-    OBJ_LoadPrefabs(L, child);
-  }
-}
-
 lpObject_t
 OBJ_FindImmediateChild(lpObject_t object, uint32_t identifier)
 {

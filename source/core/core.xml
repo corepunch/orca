@@ -569,10 +569,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Will load from the source, not adding it to the static workspace hierarchy</details>
           <returns type="Object" pointer="true">Returns the instantiated object</returns>
         </method>
-        <method name="LoadPrefabs" lua="true">
-          <summary>Loads and instantiates prefabs.</summary>
-          <details>Resolves and loads prefab resources for this object tree.</details>
-        </method>
         <method name="IsPrefabView" const="true">
           <summary>Checks if this object is a prefab view container</summary>
           <details>Returns true if this object is a PrefabView, which is a special container that can dynamically load and instantiate different prefab templates based on its source property. Similar to Kanzi's PrefabView, this allows for runtime loading of reusable UI component templates by changing the source string, making it useful for dynamic UI composition and template-based layouts.</details>

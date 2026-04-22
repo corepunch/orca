@@ -394,11 +394,6 @@ int f_OBJ_Instantiate(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_OBJ_LoadPrefabs(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_LoadPrefabs(L, this_ );
-	return 0;
-}
 int f_OBJ_IsPrefabView(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	bool_t result_ = OBJ_IsPrefabView(this_);
@@ -469,7 +464,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getTimestamp", f_OBJ_GetTimestamp },
 		{ "getDomain", f_OBJ_GetDomain },
 		{ "instantiate", f_OBJ_Instantiate },
-		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);
