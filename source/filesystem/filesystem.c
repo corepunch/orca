@@ -369,7 +369,7 @@ static void
 _InitTheme(lua_State *L, lpProject_t project)
 {
   if (project->ThemeLibrary) {
-    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(CMP_GetObject(project->ThemeLibrary)));
+    luaX_pushObject(L, CMP_GetObject(project->ThemeLibrary));
     lua_pushnil(L);
     while (lua_next(L, -2)) {
       if (lua_type(L, -1) == LUA_TTABLE) {

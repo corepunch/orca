@@ -15,7 +15,7 @@ PROP_ExecuteChangedCallback(lua_State* L,
   lpcString_t szCallback = PROP_GetCallbackMsg(hProperty);
   lpObject_t hRoot = OBJ_GetRoot(pobj);
   if (hRoot) {
-    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pobj));
+    luaX_pushObject(L, pobj);
     luaX_pushProperty(L, hProperty);
     luaX_executecallback(L, hRoot, szCallback, 2);
   }

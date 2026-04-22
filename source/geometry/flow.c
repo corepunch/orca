@@ -110,7 +110,11 @@ read_property(lua_State *L,
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
     case kDataTypeObject:
-      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TTABLE) {
+      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TUSERDATA) {
+        extern lpObject_t luaX_checkObject(lua_State*, int);
+        *(void**)valueptr = luaX_checkObject(L, idx);
+        break;
+      } else if (lua_type(L, idx) == LUA_TTABLE) {
         if (lua_getfield(L, idx, "__userdata") == LUA_TNIL) {
           lua_pop(L, 1);
           luaL_getmetatable(L, prop->TypeString);
@@ -198,7 +202,8 @@ write_property(lua_State *L,
         break;
       case kDataTypeObject:
         if (*(char**)valueptr) {
-          lua_geti(L, LUA_REGISTRYINDEX, *(int*)(*(char**)valueptr+LUASTATE_IN_OBJECT));
+          extern void luaX_pushObject(lua_State*, struct Object const*);
+          luaX_pushObject(L, *(struct Object**)valueptr);
         } else {
           lua_pushnil(L);
         }

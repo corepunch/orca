@@ -26,20 +26,15 @@ lpcClassDesc_t cls = OBJ_FindClassW(class_id);
 lpObject_t
 OBJ_Create(lua_State* L, lpcClassDesc_t cls)
 {
-  assert(offsetof(struct Object, luaObject) == LUASTATE_IN_OBJECT);
-
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
-  lpObject_t object = lua_newuserdata(L, sizeof(struct Object));
-  luaL_setmetatable(L, API_TYPE_OBJECT);
-  memset(object, 0, sizeof(struct Object));
+  lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->unique = ++unique_counter;
   object->domain = L;
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
   OBJ_SetName(object, cls->DefaultName);
-  
   return object;
 }
 
@@ -82,10 +77,6 @@ OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
   if (core.hover2 == self) core.hover2 = NULL;
   OBJ_Clear(L, self);
   axRemoveFromQueue(self);
-  if (self->luaObject) {
-    luaL_unref(L, LUA_REGISTRYINDEX, self->luaObject);
-    self->luaObject = 0;
-  }
 }
 
 void
@@ -115,6 +106,7 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
+  free(pobj);
 }
 
 HRESULT

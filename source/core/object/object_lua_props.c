@@ -87,14 +87,6 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return TRUE;
   }
   lpProperty_t property = NULL;
-  if (lua_type(L, 3) == LUA_TTABLE) { // store table for safekeeping
-    luaX_parsefield(lpObject_t, __userdata, 3, luaL_testudata, API_TYPE_OBJECT);
-    if (__userdata) {
-      lua_pushfstring(L, "__hook_%s", name);
-      lua_pushvalue(L, 3);
-      lua_rawset(L, 1);
-    }
-  }
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
@@ -114,6 +106,21 @@ int f_msgSend(lua_State *L) {
   lua_pushstring(L, message);
   lua_insert(L, 2);
   return OBJ_send(L, this_, message); // sync+direct, returns value or nil
+}
+
+int f_object_index(lua_State* L) {
+  lpObject_t self = luaX_checkObject(L, 1);
+  const char* key = luaL_checkstring(L, 2);
+  /* First check the Object metatable for methods (addChild, post, send, …) */
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  lua_getfield(L, -1, key);
+  lua_remove(L, -2); /* remove metatable */
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+  lua_pop(L, 1);
+  /* Fall through to ORCA property lookup */
+  return OBJ_GetProperty(L, self, key);
 }
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
