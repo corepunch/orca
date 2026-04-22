@@ -266,7 +266,7 @@
           <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
         </method>
         <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-        <method name="AddChild">
+        <method name="AddChild" alias="__add">
           <summary>Add a child object.</summary>
           <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.
 
@@ -555,7 +555,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
         </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
-        <method name="LoadPrefabs" lua="true">
+        <method name="LoadPrefabs">
           <summary>Loads prefab views in this object's subtree.</summary>
           <details>Compatibility wrapper that traverses the current object subtree and dispatches <code>Node.LoadView</code> to prefab view containers.</details>
         </method>

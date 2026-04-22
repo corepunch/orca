@@ -7,6 +7,9 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 	<?php foreach ($interface->getMethods() as $method_name => $method):?>
 		{ "<?= $method->export ?>", f_<?= $interface->prefix.$method_name ?> },
+		<?php if (isset($method->alias) && strval($method->alias) !== ""): ?>
+		{ "<?= $method->alias ?>", f_<?= $interface->prefix.$method_name ?> },
+		<?php endif ?>
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);

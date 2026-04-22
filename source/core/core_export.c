@@ -378,16 +378,16 @@ int f_OBJ_SetContext(lua_State *L) {
 	OBJ_SetContext(L, this_ );
 	return 0;
 }
+int f_OBJ_LoadPrefabs(lua_State *L) {
+	struct Object* this_ = luaX_checkObject(L, 1);
+	OBJ_LoadPrefabs(this_ );
+	return 0;
+}
 int f_OBJ_Instantiate(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct Object* result_ = OBJ_Instantiate(L, this_);
 	luaX_pushObject(L, result_);
 	return 1;
-}
-int f_OBJ_LoadPrefabs(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_LoadPrefabs(this_);
-	return 0;
 }
 int f_OBJ_IsPrefabView(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
@@ -404,6 +404,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "__eq", f_OBJ_Equals },
 		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },
+		{ "__add", f_OBJ_AddChild },
 		{ "removeFromParent", f_OBJ_RemoveFromParent },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
@@ -454,8 +455,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getTimestamp", f_OBJ_GetTimestamp },
 		{ "getDomain", f_OBJ_GetDomain },
 		{ "__setcontext", f_OBJ_SetContext },
-		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
+		{ "instantiate", f_OBJ_Instantiate },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);

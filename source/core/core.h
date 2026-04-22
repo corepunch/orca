@@ -585,13 +585,13 @@ OBJ_SetContext(struct lua_State*, struct Object*);
 /// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
 
+/// @brief Loads prefab views in this object's subtree.
+ORCA_API void
+OBJ_LoadPrefabs(struct Object*);
+
 /// @brief Instantiates a new object from this prefab.
 ORCA_API struct Object*
 OBJ_Instantiate(struct lua_State*, struct Object*);
-
-/// @brief Loads prefabs in this object subtree (compatibility wrapper).
-ORCA_API void
-OBJ_LoadPrefabs(struct Object*);
 
 /// @brief Checks if this object is a prefab view container
 ORCA_API bool_t

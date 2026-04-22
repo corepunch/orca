@@ -25,6 +25,7 @@ UIKit composition rules
 - Prefer closure style for idiomatic MoonScript.
 - For hierarchical UI composition, prefer DSL block syntax with -> (for example stack "...", -> ...), instead of long node + chains.
 - Use node + only when attaching a pre-built node instance; for normal UI trees prefer constructor + block syntax.
+- Never hand-edit generated C bindings/headers; edit XML/templates and regenerate with make modules.
 - The body function passed to a widget (StackView class: "...", =>) is run AFTER OBJ_Clear wipes the node. Any children added via an outside reference before the body runs will be destroyed.
 - To inject pre-built nodes (e.g. route content from content_for) into a widget, do it INSIDE the body closure.
 - Correct (concise): Grid Rows: "64px 1fr 72px", => make_header title; (inner or make_placeholder!); make_footer active_route, navigate

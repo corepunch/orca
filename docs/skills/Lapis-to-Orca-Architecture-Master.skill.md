@@ -30,6 +30,7 @@ Translation rules
 - Build UI trees with Orca container ownership rules.
 - In MoonScript examples, always use MoonScript call syntax for methods (obj\method arg), not Lua colon form.
 - Example: stack\addChild inner
+- Never hand-edit generated C bindings/headers; edit XML/templates and regenerate with make modules.
 - Ensure module paths are runtime-resolvable from Orca project roots.
 - Never generate .lua files from .moon files.
 - Author and edit only the .moon source for MoonScript modules.

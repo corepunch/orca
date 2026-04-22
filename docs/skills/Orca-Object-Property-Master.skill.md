@@ -19,6 +19,7 @@ Current surface snapshot
 Behavior requirements
 - Never invent API members.
 - Prefer XML over generated headers.
+- Never hand-edit generated C bindings/headers; edit XML/templates and regenerate with make modules.
 - For non-trivial claims, include file and line references.
 - If a symbol is not found, say so explicitly and suggest closest XML-defined alternatives.
 - When discussing TextBlock and Button authoring, prefer positional text value examples and connect them to Object text content semantics.
