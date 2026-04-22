@@ -27,7 +27,7 @@ HANDLER(PrefabView3D, Object, PropertyChanged)
 HANDLER(PrefabView3D, Node, LoadView)
 {
   lua_State* L = OBJ_GetDomain(hObject);
-  if (!L) return TRUE;
+  if (!L) return FALSE;
   if (pPrefabView3D->SCA && *pPrefabView3D->SCA &&
       pPrefabView3D->_loadedSCA != fnv1a32(pPrefabView3D->SCA)) {
     lua_pushstring(L, pPrefabView3D->SCA);

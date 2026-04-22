@@ -174,7 +174,7 @@ HANDLER(ImageView, Object, PropertyChanged)
 HANDLER(ImageView, Node, LoadView)
 {
   lua_State* L = OBJ_GetDomain(hObject);
-  if (!L) return TRUE;
+  if (!L) return FALSE;
   if (pImageView->Src && *pImageView->Src &&
       pImageView->_loadedImage != fnv1a32(pImageView->Src)) {
     lua_pushstring(L, pImageView->Src);
