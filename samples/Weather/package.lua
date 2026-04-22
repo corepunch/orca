@@ -1,8 +1,8 @@
 Name="Weather"
 StartupViewController="Weather/App"
 StartupRoute="/"
-WindowWidth=900
-WindowHeight=600
+WindowWidth=400
+WindowHeight=800
 ProjectReferences = {
   { Name="views", Path="views" }
 }
