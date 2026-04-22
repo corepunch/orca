@@ -27,16 +27,16 @@ class App extends require "orca.core.application"
 		@screen\post "Window.Paint", renderer.getSize!
 
 	"/": =>
-		require("Weather/views/screens/Home")!
+		require("Weather/views/screens/Home")!\content!
 
 	"/forecast": =>
-		require("Weather/views/screens/Forecast")!
+		require("Weather/views/screens/Forecast")!\content!
 
 	"/alerts": =>
-		require("Weather/views/screens/Alerts")!
+		require("Weather/views/screens/Alerts")!\content!
 
 	"/saved": =>
-		require("Weather/views/screens/Saved")!
+		require("Weather/views/screens/Saved")!\content!
 
 	"/about": =>
-		require("Weather/views/screens/About")!
+		require("Weather/views/screens/About")!\content!

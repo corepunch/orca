@@ -9,7 +9,7 @@ NAV_ITEMS = {
 }
 
 make_header = (title) ->
-	StackView class: "bg-violet-900 h-16 px-5 py-3 justify-center", =>
+	StackView class: "bg-violet-900 px-5 py-3 justify-center", =>
 		TextBlock class: "text-2xl align-center", title
 
 make_footer = (active_route, navigate) ->
@@ -19,16 +19,15 @@ make_footer = (active_route, navigate) ->
 			icon_color = selected and "text-foreground" or "text-muted-foreground"
 			label_color = selected and "text-foreground" or "text-muted-foreground"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
-				ImageView
-					class: "align-middle-center #{icon_color}"
-					Source: "#{item.icon}?width=48&mask=true"
-					LeftButtonUp: -> navigate item.route
+				-- ImageView
+				-- 	class: "align-middle-center text-blue-900"--#{icon_color}"
+				-- 	Source: "#{item.icon}?width=48&mask=true"
+				-- 	LeftButtonUp: -> navigate item.route
 				TextBlock class: "text-xs #{label_color}", item.label
 
 make_placeholder = ->
-	placeholder = StackView class: "p-6 gap-2"
-	placeholder + TextBlock class: "text-base text-muted-foreground", "No content for this route"
-	return placeholder
+	StackView class: "p-6 gap-2", =>
+		TextBlock class: "text-base text-muted-foreground", "No content for this route"
 
 class Default extends Widget
 	content: =>
@@ -42,7 +41,8 @@ class Default extends Widget
 			Grid Rows: "32px 48px 1fr 72px 24px", =>
 				Node2D class: "bg-violet-900/70"
 				make_header title
+				-- Node2D class: "bg-violet-900/70"
 				@addChild (inner or make_placeholder!)
 				make_footer active_route, navigate
-				Node2D class: "bg-violet-900/70"
+				Node2D class: "bg-violet-900/30"
 		
