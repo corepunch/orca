@@ -66,9 +66,18 @@ function Application:match(name, url, func)
   return self.router:add(name, url, func)
 end
 
+function Application:resolve_body(body, route_info)
+  if type(body) == "table" and body.render == true and route_info and self.views_prefix then
+    local view_cls = require(self.views_prefix .. "/" .. route_info.name)
+    return view_cls():content()
+  end
+  return body
+end
+
 function Application:dispatch(req)
   local ctx = self:new_render_context(req)
-  local body = self.router:dispatch(req)
+  local route_info = self.router:resolve(req)
+  local body = self:resolve_body(self.router:dispatch(req), route_info)
   ctx.content.inner = body
 
   local layout_def = self.layout
