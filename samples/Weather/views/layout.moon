@@ -1,5 +1,5 @@
 import Screen, StackView, TextBlock from require "orca.UIKit"
-Widget = require "orca.core2.widget"
+Widget = require "orca.core.widget"
 
 class Default extends Widget
 	content: =>

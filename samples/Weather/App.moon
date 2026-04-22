@@ -1,6 +1,6 @@
 import StackView, TextBlock from require "orca.UIKit"
 
-class App extends require "orca.core2.application"
+class App extends require "orca.core.application"
 	layout: require "Weather/views/layout"
 
 	@include_helpers {

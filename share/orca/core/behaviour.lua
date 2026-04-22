@@ -37,10 +37,7 @@ function Behaviour:get(key)
 end
 
 function Behaviour:async(...)
-  orca.async(...) -- .error = function(error)
-  --  self.error = error
-  --  self:rebuild()
-  -- end
+  orca.async(...)
 end
 
 function Behaviour:is(class)
@@ -53,8 +50,6 @@ function Behaviour:is(class)
   end
   return false
 end
-
--- extended functionality
 
 function Behaviour:populateInputs()
   local tbl = {}
@@ -71,8 +66,6 @@ function Behaviour:findParentOfType(class)
     if n:is(class) then return n end
   end
 end
-
--- class definition in line with how MoonScript generates classes
 
 function Behaviour:extend(_base_0)
   local _parent_0 = self
@@ -113,16 +106,16 @@ local _class_0 = setmetatable({
     _base_1.__index = function(_self_0, key)
       local ud = rawget(_self_0, '__userdata')
       local mt = getmetatable(_base_1) or {}
-      local vl = 
-				(ud and (orca.core.Object[key] or orca.core.Object.__getproperty(_self_0, key))) or
-				rawget(_base_1, key) or mt[key] or (mt.__class and mt.__class[key]) -- this is needed to access inherited classes (i.e. ui.Node2D)
+      local vl =
+        (ud and (orca.core.Object[key] or orca.core.Object.__getproperty(_self_0, key))) or
+        rawget(_base_1, key) or mt[key] or (mt.__class and mt.__class[key])
       if type(vl) == 'function' then
         return function (_, ...) return vl(_self_0, ...) end
       else
         return vl
       end
     end
-    
+
     _base_1.__newindex = function(_self_0, key, value)
       local ud = rawget(_self_0, '__userdata')
       local set = orca.core.Object.__setproperty
@@ -152,4 +145,3 @@ local _class_0 = setmetatable({
 })
 _base_0.__class = _class_0
 return _class_0
-

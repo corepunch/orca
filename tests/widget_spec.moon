@@ -1,11 +1,11 @@
 test = require "orca.test"
--- Headless tests for orca.core2.widget
+-- Headless tests for orca.core.widget
 -- Covers: content_for, set_render_context, instance-level include_helpers,
 -- class-level include_helpers, and helper/core-method non-shadowing.
 --
--- Run via: $(TARGET) -test=tests/run_core2_specs.lua
+-- Run via: $(TARGET) -test=tests/widget_spec.moon
 
-Widget = require "orca.core2.widget"
+Widget = require "orca.core.widget"
 
 -- ---------------------------------------------------------------------------
 -- Test 1: content_for errors without a render context

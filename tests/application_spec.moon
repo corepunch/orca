@@ -1,15 +1,15 @@
 test = require "orca.test"
--- Headless tests for orca.core2.application
+-- Headless tests for orca.core.application
 -- Covers: route return value stored in ctx.content.inner,
 -- class-based layout receives render context, class-level helpers
 -- accessible in layout, and dispatch result structure.
 --
 -- Uses a mock layout Widget that avoids UIKit so tests run fully headless.
 --
--- Run via: $(TARGET) -test=tests/run_core2_specs.lua
+-- Run via: $(TARGET) -test=tests/application_spec.moon
 
-Widget      = require "orca.core2.widget"
-Application = require "orca.core2.application"
+Widget      = require "orca.core.widget"
+Application = require "orca.core.application"
 
 -- ---------------------------------------------------------------------------
 -- A minimal mock layout: captures inner and render context for inspection

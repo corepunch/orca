@@ -165,7 +165,7 @@ int f_poll(lua_State* L);
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
   lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.core2.behaviour");
+  lua_pushstring(L, "orca.core.behaviour");
   lua_call(L, 1, 1);
   lua_getfield(L, -1, "extend");
   lua_pushvalue(L, -2);

@@ -1,11 +1,11 @@
 test = require "orca.test"
--- Headless tests for orca.core2.router
+-- Headless tests for orca.core.router
 -- Covers: route registration, dispatch to correct handler,
 -- nil dispatch for unknown routes, and auto-discovery of "/" routes.
 --
--- Run via: $(TARGET) -test=tests/run_core2_specs.lua
+-- Run via: $(TARGET) -test=tests/router_spec.moon
 
-Router = require "orca.core2.router"
+Router = require "orca.core.router"
 
 -- ---------------------------------------------------------------------------
 -- Test 1: dispatch calls the correct handler for a registered route

@@ -405,11 +405,11 @@ int main (int argc, LPSTR *argv)
     
     if (!args.test) {
       const char* bootstrap =
-      "local core = require 'orca.core2'\n"
-      "core.init()\n"
-      "return core.run()\n";
+      "local Application = require 'orca.core.application'\n"
+      "local app = Application()\n"
+      "return app:run()\n";
 //      lua_getglobal(L, "require");
-//      lua_pushstring(L, "orca.core2");
+//      lua_pushstring(L, "orca.core.application");
 //      lua_pcall(L, 1, 1, 0);
       if (luaL_dostring(L, bootstrap) != LUA_OK) {
         fprintf(stderr, "%s\n", luaL_checkstring(L, -1));

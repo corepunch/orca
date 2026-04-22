@@ -146,23 +146,13 @@ local _class_0 = setmetatable({
         or (cls and cls[key])
         or mt[key]
         or (mt.__class and mt.__class[key])
-		or _base_1._find_helper_value(_self_0, key)
+        or _base_1._find_helper_value(_self_0, key)
       if type(vl) == 'function' then
         return function (_, ...) return vl(_self_0, ...) end
       else
         return vl
       end
     end
-    
-    -- _base_1.__newindex = function(_self_0, key, value)
-    --   return rawset(_self_0, key, value)
-    -- end
-
-    -- self.print = print
-    -- self.assert = assert
-    -- self.string = string
-    -- self.ipairs = ipairs
-    -- self.pairs = pairs
   end,
   __base = _base_0,
   __name = 'Widget'
@@ -176,4 +166,3 @@ local _class_0 = setmetatable({
 })
 _base_0.__class = _class_0
 return _class_0
-
