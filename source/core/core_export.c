@@ -168,14 +168,6 @@ int f_OBJ_SetProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* Property = luaL_checkstring(L, 2);
 	bool_t result_ = OBJ_SetProperty(L, this_, Property);
-	if (!result_ && lua_type(L, 3) != LUA_TFUNCTION) {
-		/* Store arbitrary Lua values in per-object extras (instance variables) */
-		extern void get_object_extras_pub(lua_State*, struct Object*);
-		get_object_extras_pub(L, this_);
-		lua_pushvalue(L, 3);
-		lua_setfield(L, -2, Property);
-		lua_pop(L, 1);
-	}
 	lua_pushboolean(L, result_);
 	return 1;
 }
@@ -432,6 +424,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },
 		{ "__add", f_OBJ_AddChild },
+		{ "release", f_OBJ_Release },
 		{ "removeFromParent", f_OBJ_RemoveFromParent },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
@@ -446,8 +439,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "post", f_OBJ_post },
 		{ "send", f_OBJ_send },
 		{ "__newindex", f_OBJ_SetProperty },
-		{ "__index", f_OBJ_GetProperty },
-		{ "updateProperties", f_OBJ_UpdateProperties },
+		{ "__index", f_OBJ_GetProperty },		{ "updateProperties", f_OBJ_UpdateProperties },
 		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
 		{ "findImplicitProperty", f_OBJ_FindImplicitProperty },
 		{ "findExplicitProperty", f_OBJ_FindExplicitProperty },
@@ -486,6 +478,9 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);
+	int f_OBJ_newindex(lua_State* L);
+	lua_pushcfunction(L, f_OBJ_newindex);
+	lua_setfield(L, -2, "__newindex");
 	lua_pushcfunction(L, f_object_index);
 	lua_setfield(L, -2, "__index");
 	return 1;

@@ -50,15 +50,11 @@ parse_property(lua_State* L,
       lua_getglobal(L, "require");
       lua_pushstring(L, str);
       lua_call(L, 1, 1);
-      if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
+      if (lua_type(L, -1) != LUA_TUSERDATA) {
         return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
       }
-      *(void**)valueptr = lua_touserdata(L, -1);
-//      if (prop->TypeString) {
-//        *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
-//      } else {
-        // *(void**)valueptr = object;
-//      }
+      *(void**)valueptr = luaX_checkObject(L, -1);
+      lua_pop(L, 1);
       return TRUE;
 //    case kDataTypeEvent:
 //      return TRUE;
@@ -111,21 +107,7 @@ read_property(lua_State *L,
       break;
     case kDataTypeObject:
       if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TUSERDATA) {
-        extern lpObject_t luaX_checkObject(lua_State*, int);
         *(void**)valueptr = luaX_checkObject(L, idx);
-        break;
-      } else if (lua_type(L, idx) == LUA_TTABLE) {
-        if (lua_getfield(L, idx, "__userdata") == LUA_TNIL) {
-          lua_pop(L, 1);
-          luaL_getmetatable(L, prop->TypeString);
-          lua_pushvalue(L, idx);
-          lua_call(L, 1, 1);
-          if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
-            luaL_error(L, "Expected an object of type '%s' for property '%s'", prop->TypeString, prop->Name);
-          }
-        }
-        *(void**)valueptr = lua_touserdata(L, -1);
-        lua_pop(L, 1); // Remove the __userdata field from the stack
         break;
       } else if (lua_type(L, idx) == LUA_TSTRING) {
         parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
@@ -201,9 +183,8 @@ write_property(lua_State *L,
 //        lua_pushcclosure(L, f_msgSend, 1);
         break;
       case kDataTypeObject:
-        if (*(char**)valueptr) {
-          extern void luaX_pushObject(lua_State*, struct Object const*);
-          luaX_pushObject(L, *(struct Object**)valueptr);
+        if (*(lpObject_t const*)valueptr) {
+          luaX_pushObject(L, *(lpObject_t const*)valueptr);
         } else {
           lua_pushnil(L);
         }

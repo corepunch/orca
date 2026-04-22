@@ -12,15 +12,7 @@ static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id) {
-lpcClassDesc_t cls = OBJ_FindClassW(class_id);
-  lpObject_t object = ZeroAlloc(sizeof(struct Object));
-  object->components = OBJ_AddComponent(object, cls->ClassID);
-//  object->window = axGet(L);
-//  object->game = GetGame(L);
-//  object->localization = GetLocalization(L);
-  object->unique = ++unique_counter;
-//  OBJ_SetDirty(object);
-  return object;
+  return OBJ_Create(NULL, OBJ_FindClassW(class_id));
 }
 
 lpObject_t
@@ -34,7 +26,9 @@ OBJ_Create(lua_State* L, lpcClassDesc_t cls)
   object->domain = L;
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
-  OBJ_SetName(object, cls->DefaultName);
+  if (L && cls->DefaultName) {
+    OBJ_SetName(object, cls->DefaultName);
+  }
   return object;
 }
 

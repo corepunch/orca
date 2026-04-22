@@ -143,7 +143,7 @@ void OBJ_SetContext(lua_State* L, lpObject_t self)
 }
 
 /* Per-object Lua extras table, stored in registry under "__object_extras".
- * The table uses weak values so entries are collected when unused.
+ * Strong-value table; entries are removed explicitly in OBJ_Release.
  * Returns the extras table for `obj` on top of the stack. */
 static void
 get_object_extras(lua_State* L, lpObject_t obj)

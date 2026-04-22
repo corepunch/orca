@@ -108,6 +108,20 @@ int f_msgSend(lua_State *L) {
   return OBJ_send(L, this_, message); // sync+direct, returns value or nil
 }
 
+int f_OBJ_newindex(lua_State* L) {
+  struct Object* this_ = luaX_checkObject(L, 1);
+  const char* Property = luaL_checkstring(L, 2);
+  if (!OBJ_SetProperty(L, this_, Property)) {
+    /* Store arbitrary Lua values (including functions) in per-object extras */
+    void get_object_extras_pub(lua_State*, struct Object*);
+    get_object_extras_pub(L, this_);
+    lua_pushvalue(L, 3);
+    lua_setfield(L, -2, Property);
+    lua_pop(L, 1);
+  }
+  return 0;
+}
+
 int f_object_index(lua_State* L) {
   lpObject_t self = luaX_checkObject(L, 1);
   const char* key = luaL_checkstring(L, 2);
