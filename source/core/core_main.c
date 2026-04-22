@@ -169,36 +169,37 @@ static int class_call(lua_State* L) {
 }
 
 /* class:extend{...} — Lua-side subclass of a C class.
- * Creates a NEW class table that inherits __nativeclass and the base's
- * metatable.  All methods from arg 2 are copied onto the new class;
- * a "body" key is stored as "__body".  __parent points to the base so
- * f_object_index can walk the method chain. */
+ * Creates a NEW derived class table.  Extension methods are copied onto it;
+ * a "body" key is also stored as "__body".
+ * The derived class metatable uses __index = base so that all base-class
+ * methods are found transparently via Lua's own metamethod chain — no
+ * manual __parent walking required. */
 static int class_extend(lua_State* L) {
-  lua_newtable(L);                          /* new class table */
-  int new_cls = lua_absindex(L, -1);
+  luaL_checktype(L, 1, LUA_TTABLE);
+  int base = lua_absindex(L, 1);
+
+  lua_newtable(L); /* derived class table */
+  int derived = lua_absindex(L, -1);
 
   /* Copy __nativeclass from base */
-  lua_getfield(L, 1, "__nativeclass");
-  lua_setfield(L, new_cls, "__nativeclass");
+  lua_getfield(L, base, "__nativeclass");
+  lua_setfield(L, derived, "__nativeclass");
 
-  /* Set __parent = base for method-chain lookup */
-  lua_pushvalue(L, 1);
-  lua_setfield(L, new_cls, "__parent");
-
-  /* Add extend on the new class */
+  /* extend() on the derived class creates further subclasses */
   lua_pushcfunction(L, class_extend);
-  lua_setfield(L, new_cls, "extend");
+  lua_setfield(L, derived, "extend");
 
-  /* Copy extension methods from arg 2 */
+  /* Copy extension fields; "body" key becomes "__body" */
   if (lua_type(L, 2) == LUA_TTABLE) {
+    int ext = lua_absindex(L, 2);
     lua_pushnil(L);
-    while (lua_next(L, 2) != 0) {
+    while (lua_next(L, ext) != 0) {
       if (lua_type(L, -2) == LUA_TSTRING) {
         const char* k = lua_tostring(L, -2);
         if (k && strcmp(k, "body") == 0 && lua_type(L, -1) == LUA_TFUNCTION) {
-          lua_setfield(L, new_cls, "__body"); /* pops value */
+          lua_setfield(L, derived, "__body"); /* pops value */
         } else if (k) {
-          lua_setfield(L, new_cls, k);        /* pops value */
+          lua_setfield(L, derived, k);        /* pops value */
         } else {
           lua_pop(L, 1);
         }
@@ -208,10 +209,16 @@ static int class_extend(lua_State* L) {
     }
   }
 
-  /* Apply same metatable as base (__call, __add, __index) */
-  lua_getmetatable(L, 1);
-  lua_setmetatable(L, new_cls);
-  return 1;  /* new_cls is on top */
+  /* Derived class metatable: __call → class_call, __index → base class table
+   * so that base-class methods are found automatically. */
+  lua_newtable(L);
+  lua_pushcfunction(L, class_call);
+  lua_setfield(L, -2, "__call");
+  lua_pushvalue(L, base);       /* __index = base class table */
+  lua_setfield(L, -2, "__index");
+  lua_setmetatable(L, derived);
+
+  return 1; /* derived is on top */
 }
 
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)

@@ -119,7 +119,9 @@ int f_object_index(lua_State* L) {
     return 1;
   }
   lua_pop(L, 1);
-  /* 2. Walk the class method chain and check per-object extras */
+  /* 2. Walk the Lua class method chain and check per-object extras.
+   *    Derived class metatables use __index = base, so lua_getfield()
+   *    follows the entire inheritance chain automatically. */
   lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
   if (!lua_isnil(L, -1)) {
     lua_pushlightuserdata(L, self);
@@ -127,23 +129,22 @@ int f_object_index(lua_State* L) {
     lua_remove(L, -2); /* remove __object_extras */
     if (!lua_isnil(L, -1)) {
       int extras_idx = lua_absindex(L, -1);
-      /* Walk class chain */
+      /* Class method chain (Lua __index on class metatable handles inheritance) */
       lua_getfield(L, extras_idx, "__class");
-      while (!lua_isnil(L, -1)) {
-        lua_getfield(L, -1, key);
+      if (!lua_isnil(L, -1)) {
+        lua_getfield(L, -1, key); /* follows __index chain automatically */
+        lua_remove(L, -2);        /* remove class */
         if (!lua_isnil(L, -1)) {
-          lua_insert(L, extras_idx); /* move result below extras */
-          lua_pop(L, 2);             /* pop extras + class */
+          lua_remove(L, extras_idx);
           return 1;
         }
-        lua_pop(L, 1);               /* pop nil result */
-        lua_getfield(L, -1, "__parent");
-        lua_remove(L, -2);           /* replace class with parent */
+        lua_pop(L, 1); /* pop nil */
+      } else {
+        lua_pop(L, 1); /* pop nil class */
       }
-      lua_pop(L, 1); /* pop nil class */
-      /* Check extras directly for arbitrary stored instance values */
+      /* Check extras directly for arbitrary stored instance variables */
       lua_getfield(L, extras_idx, key);
-      lua_remove(L, extras_idx);     /* remove extras */
+      lua_remove(L, extras_idx);
       if (!lua_isnil(L, -1)) {
         return 1;
       }
