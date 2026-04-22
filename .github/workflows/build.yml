@@ -78,7 +78,7 @@ jobs:
             libpng \
             freetype \
             jpeg-turbo \
-            lua \
+            lua@5.4 \
             luarocks \
             libxml2 \
             lz4 \
@@ -88,7 +88,9 @@ jobs:
 
       - name: Install MoonScript
         run: |
-          luarocks install moonscript
+          LUA_DIR="$(brew --prefix lua@5.4)"
+          export PATH="$LUA_DIR/bin:$PATH"
+          luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" install moonscript
 
       - name: Build
         run: make
