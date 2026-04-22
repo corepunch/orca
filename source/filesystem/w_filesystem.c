@@ -395,7 +395,8 @@ void on_filesystem_module_registered(lua_State* L)
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
 
-  // Register the XML package searcher: require("foo") tries foo.xml via FS_LoadObjectFromXML
+  // Register the XML package searcher: require("foo") tries foo.xml, checking
+  // the virtual filesystem first and falling back to disk.
   lua_register(L, "fs_findxmlmodule", f_find_xml_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findxmlmodule)");
 

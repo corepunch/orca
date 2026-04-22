@@ -86,8 +86,8 @@ _SetPropertyFromString(lua_State* L, lpObject_t obj, lpcString_t name, lpcString
   PROP_SetValue(prop, tmpbuf);
 
   // parse_property allocates a new string with strdup() for kDataTypeString.
-  // PROP_SetValue/PROP_SetStateValue strdup's it again internally, so free
-  // the temporary copy here to avoid a memory leak.
+  // PROP_SetValue → PROP_SetStateValue then strdup's it again internally, so
+  // free the temporary copy here to avoid a memory leak.
   if (pdesc->DataType == kDataTypeString) {
     free(*(char**)tmpbuf);
   }
@@ -296,7 +296,7 @@ FS_ConstructNode(lua_State* L, xmlNodePtr element)
   }
 
   // If the element has a direct text child (e.g. <Label>Hello</Label>), store it
-  // and return early without processing child elements.  The xmlParser has
+  // and return early without processing child elements.  The XML parser has
   // XML_PARSE_NOBLANKS active, so only non-blank text nodes survive.
   xmlChar* direct_text = NULL;
   FOR_EACH_LIST(xmlNode, tnode, element->children) {
