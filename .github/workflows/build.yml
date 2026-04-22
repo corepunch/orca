@@ -88,7 +88,8 @@ jobs:
 
       - name: Install MoonScript
         run: |
-          luarocks --lua-version=5.4 install moonscript
+          LUA_DIR="$(brew --prefix lua@5.4)"
+          luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" install moonscript
 
       - name: Build
         run: make
