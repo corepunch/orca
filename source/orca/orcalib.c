@@ -36,6 +36,38 @@ int luaopen_orca_parsers_xml(lua_State*);
 int luaopen_orca_renderer(lua_State*);
 int luaopen_orca_system(lua_State*);
 
+ORCA_API int luaopen_orca_test(lua_State* L) {
+  static const char *code =
+    "local function fail(msg)\n"
+    "  io.stderr:write('FAIL: ' .. tostring(msg) .. '\\n')\n"
+    "  os.exit(1)\n"
+    "end\n"
+    "local function expect(cond, label)\n"
+    "  if not cond then fail(label) end\n"
+    "end\n"
+    "local function expect_eq(actual, expected, label)\n"
+    "  if actual ~= expected then\n"
+    "    fail(label .. ': expected ' .. tostring(expected) .. ', got ' .. tostring(actual))\n"
+    "  end\n"
+    "end\n"
+    "local function expect_near(actual, expected, eps, label)\n"
+    "  if math.abs(actual - expected) > (eps or 0.01) then\n"
+    "    fail(string.format('%s: expected ~%s, got %s', label, tostring(expected), tostring(actual)))\n"
+    "  end\n"
+    "end\n"
+    "return {\n"
+    "  fail = fail,\n"
+    "  expect = expect,\n"
+    "  expect_eq = expect_eq,\n"
+    "  expect_near = expect_near,\n"
+    "}\n";
+
+  if (luaL_dostring(L, code) != LUA_OK) {
+    return lua_error(L);
+  }
+  return 1;
+}
+
 static luaL_Reg const orca_modules[] = {
   { "orca.core", luaopen_orca_core },
   { "orca.filesystem", luaopen_orca_filesystem },
@@ -46,6 +78,7 @@ static luaL_Reg const orca_modules[] = {
   { "orca.parsers.xml", luaopen_orca_parsers_xml },
   { "orca.renderer", luaopen_orca_renderer },
   { "orca.system", luaopen_orca_system },
+  { "orca.test", luaopen_orca_test },
   { NULL, NULL }
 };
 

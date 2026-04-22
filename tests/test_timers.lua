@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless tests for the ORCA timer API (setTimer).
 --
 -- Run with: $(TARGET) -test=tests/test_timers.lua
@@ -11,17 +12,6 @@ local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect(cond, label)
-  if not cond then fail(label) end
-end
-
 -- ---------------------------------------------------------------------------
 -- Test 1: setTimer returns a positive integer ID
 -- ---------------------------------------------------------------------------
@@ -30,8 +20,8 @@ local function test_set_timer_returns_id()
   local node   = screen + ui.Node2D {}
 
   local id = node:setTimer(100)
-  expect(type(id) == "number", "setTimer should return a number")
-  expect(id > 0,               "setTimer should return a positive ID")
+  test.expect_eq(type(id), "number", "setTimer should return a number")
+  test.expect(id > 0,               "setTimer should return a positive ID")
 
   node:removeFromParent()
   print("PASS: test_set_timer_returns_id")
@@ -48,9 +38,9 @@ local function test_set_timer_unique_ids()
   local id2 = node:setTimer(200)
   local id3 = node:setTimer(50)
 
-  expect(id1 ~= id2, "timer IDs 1 and 2 should be distinct")
-  expect(id2 ~= id3, "timer IDs 2 and 3 should be distinct")
-  expect(id1 ~= id3, "timer IDs 1 and 3 should be distinct")
+  test.expect(id1 ~= id2, "timer IDs 1 and 2 should be distinct")
+  test.expect(id2 ~= id3, "timer IDs 2 and 3 should be distinct")
+  test.expect(id1 ~= id3, "timer IDs 1 and 3 should be distinct")
 
   node:removeFromParent()
   print("PASS: test_set_timer_unique_ids")
@@ -64,7 +54,8 @@ local function test_set_timer_short_duration()
   local node   = screen + ui.Node2D {}
 
   local id = node:setTimer(1)
-  expect(type(id) == "number" and id > 0, "setTimer(1) returns valid ID")
+  test.expect_eq(type(id), "number", "setTimer(1) returns valid ID type")
+  test.expect(id > 0, "setTimer(1) returns valid ID")
 
   node:removeFromParent()
   print("PASS: test_set_timer_short_duration")
@@ -79,7 +70,8 @@ local function test_set_timer_zero_duration()
 
   -- Should not crash; engine clamps to 1
   local id = node:setTimer(0)
-  expect(type(id) == "number" and id > 0, "setTimer(0) clamped to 1 ms returns valid ID")
+  test.expect_eq(type(id), "number", "setTimer(0) returns valid ID type")
+  test.expect(id > 0, "setTimer(0) clamped to 1 ms returns valid ID")
 
   node:removeFromParent()
   print("PASS: test_set_timer_zero_duration")
@@ -93,7 +85,8 @@ local function test_set_timer_large_duration()
   local node   = screen + ui.Node2D {}
 
   local id = node:setTimer(60000)   -- 60 seconds
-  expect(type(id) == "number" and id > 0, "setTimer(60000) returns valid ID")
+  test.expect_eq(type(id), "number", "setTimer(60000) returns valid ID type")
+  test.expect(id > 0, "setTimer(60000) returns valid ID")
 
   node:removeFromParent()
   print("PASS: test_set_timer_large_duration")
@@ -110,9 +103,11 @@ local function test_set_timer_different_objects()
   local idA = nodeA:setTimer(100)
   local idB = nodeB:setTimer(100)
 
-  expect(type(idA) == "number" and idA > 0, "timer on nodeA is valid")
-  expect(type(idB) == "number" and idB > 0, "timer on nodeB is valid")
-  expect(idA ~= idB, "timers on different objects have distinct IDs")
+  test.expect_eq(type(idA), "number", "timer on nodeA type is valid")
+  test.expect_eq(type(idB), "number", "timer on nodeB type is valid")
+  test.expect(idA > 0, "timer on nodeA is valid")
+  test.expect(idB > 0, "timer on nodeB is valid")
+  test.expect(idA ~= idB, "timers on different objects have distinct IDs")
 
   nodeA:removeFromParent()
   nodeB:removeFromParent()
@@ -130,8 +125,9 @@ local function test_set_timer_many()
   local seen = {}
   for i = 1, 10 do
     local id = node:setTimer(i * 10)   -- 10, 20, … 100 ms
-    expect(type(id) == "number" and id > 0, "timer " .. i .. " has valid ID")
-    expect(not seen[id], "timer ID " .. id .. " is unique (no duplicates)")
+    test.expect_eq(type(id), "number", "timer " .. i .. " has valid ID type")
+    test.expect(id > 0, "timer " .. i .. " has valid ID")
+    test.expect(not seen[id], "timer ID " .. id .. " is unique (no duplicates)")
     seen[id] = true
     ids[i] = id
   end

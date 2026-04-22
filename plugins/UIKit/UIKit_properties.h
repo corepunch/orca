@@ -415,7 +415,9 @@ enum NinePatchImageProperties {
 #define ID_ConsoleView_Println 0xb19dac78 // ConsoleView.Println
 #define ID_ConsoleView_Erase 0xab38bbeb // ConsoleView.Erase
 #define ID_ConsoleView_Invalidate 0xdc68fe5a // ConsoleView.Invalidate
-#define kConsoleViewNumProperties 9
+#define ID_ConsoleView_Unpack 0xb7f62399 // ConsoleView.Unpack
+#define ID_ConsoleView_GetIndexPosition 0x0848e624 // ConsoleView.GetIndexPosition
+#define kConsoleViewNumProperties 11
 enum ConsoleViewProperties {
 	kConsoleViewBufferWidth,
 	kConsoleViewBufferHeight,
@@ -426,6 +428,8 @@ enum ConsoleViewProperties {
 	kConsoleViewPrintln,
 	kConsoleViewErase,
 	kConsoleViewInvalidate,
+	kConsoleViewUnpack,
+	kConsoleViewGetIndexPosition,
 };
 // Page
 #define ID_Page 0xe83d9196
@@ -561,6 +565,16 @@ enum StyleProperties {
 
 #define ID_ConsoleView_InvalidateEventArgs 0xd692d03a
 
+#define ID_ConsoleView_UnpackEventArgs 0x23743f27
+
+#define ID_ConsoleView_UnpackEventArgs_X 0x0cca9609 // ConsoleView_UnpackEventArgs.X
+#define ID_ConsoleView_UnpackEventArgs_Y 0x0bca9476 // ConsoleView_UnpackEventArgs.Y
+#define ID_ConsoleView_GetIndexPositionEventArgs 0x69be81e4
+
+#define ID_ConsoleView_GetIndexPositionEventArgs_Index 0xb627bac2 // ConsoleView_GetIndexPositionEventArgs.Index
+#define ID_ConsoleView_GetIndexPositionEventArgs_OffsetX 0x1cc262c3 // ConsoleView_GetIndexPositionEventArgs.OffsetX
+#define ID_ConsoleView_GetIndexPositionEventArgs_OffsetY 0x1bc26130 // ConsoleView_GetIndexPositionEventArgs.OffsetY
+#define ID_ConsoleView_GetIndexPositionEventArgs_Global 0x20a91c49 // ConsoleView_GetIndexPositionEventArgs.Global
 #define ID_PageHost_NavigateToPageEventArgs 0x0b5e4b0d
 
 #define ID_PageHost_NavigateToPageEventArgs_URL 0x5085360a // PageHost_NavigateToPageEventArgs.URL

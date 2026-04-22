@@ -207,7 +207,7 @@
       <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <properties>
-        <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.</property>
+        <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.</property>
         <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
         <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
         <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
@@ -405,6 +405,8 @@
       <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
@@ -418,7 +420,7 @@
     </class>
     <class name="TextBlock" parent="Node2D" concept="TextBlockConcept" allow-text="true">
       <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
-      <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options.</details>
+      <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options. For script readability, prefer value-style text authoring such as `TextBlock class: "text-3xl", title`.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Node2D.MeasureOverride"/>
@@ -457,7 +459,7 @@
     </class>
     <class name="Button" parent="TextBlock" allow-text="true">
       <summary>Interactive button control for user actions</summary>
-      <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types.</details>
+      <details>Extends TextBlock to provide clickable button functionality. Handles mouse and keyboard activation with customizable button types. Prefer value-style text authoring in scripts, for example `Button class: "btn", "Save"`, instead of always writing `Text=`.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
@@ -495,7 +497,7 @@
       </handles>
       <properties>
         <property name="Reversed" type="bool">Reverse the order of child elements </property>
-        <property name="Direction" type="Direction">Layout direction (horizontal or vertical) </property>
+        <property name="Direction" type="Direction" default="Vertical">Layout direction (horizontal or vertical) </property>
         <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
         <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
         <property name="Spacing" type="float">Space between adjacent children </property>
@@ -617,6 +619,8 @@
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
@@ -668,6 +672,8 @@
         <handle message="ConsoleView.Println"/>
         <handle message="ConsoleView.Erase"/>
         <handle message="ConsoleView.Invalidate"/>
+        <handle message="ConsoleView.Unpack"/>
+        <handle message="ConsoleView.GetIndexPosition"/>
       </handles>
       <properties>
         <property name="BufferWidth" type="int" default="256">Buffer width</property>
@@ -694,6 +700,22 @@
         </message>
         <message name="Invalidate">
           <summary>Request a repaint of this view</summary>
+        </message>
+        <message name="Unpack">
+          <summary>Query the item index and glyph located at a pixel coordinate, returned as a packed integer result.</summary>
+          <fields>
+            <field name="X" type="float"/>
+            <field name="Y" type="float"/>
+          </fields>
+        </message>
+        <message name="GetIndexPosition">
+          <summary>Query the pixel position of an item index with optional character offsets, returned as a packed integer result.</summary>
+          <fields>
+            <field name="Index" type="int"/>
+            <field name="OffsetX" type="int"/>
+            <field name="OffsetY" type="int"/>
+            <field name="Global" type="bool"/>
+          </fields>
         </message>
       </messages>
     </class>

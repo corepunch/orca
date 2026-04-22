@@ -155,6 +155,7 @@ struct Project {
 	bool_t RenderToMipmapLevels;
 	bool_t ExternalTexture;
 	const char* StartupScreen;
+	const char* StartupViewController;
 	struct color PreviewWindowBackgroundColor;
 	int32_t MessageLimitPerFrame;
 	int32_t GlobalTimelineStartTime;

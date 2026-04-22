@@ -10,23 +10,33 @@
 
 // #define DEBUG_COUNT_OBJECTS
 
+static void get_object_extras(lua_State* L, lpObject_t obj);
+
 lpObject_t luaX_checkObject(lua_State* L, int arg) {
-  if (lua_type(L, arg) == LUA_TTABLE) {
-    luaX_parsefield(lpObject_t, __userdata, arg, luaL_checkudata, API_TYPE_OBJECT);
-    return __userdata;
-  } else {
-    return luaL_checkudata(L, arg, API_TYPE_OBJECT);
-  }
+  return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
+}
+
+int f_object_gc(lua_State* L) {
+  (void)L;
+  return 0;
 }
 
 void luaX_pushObject(lua_State* L, lpcObject_t self)
 {
-  if (self && OBJ_GetLuaObject(self)) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(self));
-    assert(lua_type(L, -1)==LUA_TTABLE);
-  } else {
+  if (!self) {
     lua_pushnil(L);
+    return;
   }
+  lpObject_t* ud = lua_newuserdata(L, sizeof(lpObject_t));
+  *ud = (lpObject_t)self;
+  luaL_setmetatable(L, API_TYPE_OBJECT);
+}
+
+static int
+set_prop(lua_State* L)
+{
+  OBJ_SetProperty(L, luaX_checkObject(L, 1), luaL_checkstring(L, 2));
+  return 0;
 }
 
 static void
@@ -58,23 +68,21 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
     lua_pushnil(L);
     while (lua_next(L, 2)) {
       luaL_checktype(L, -2, LUA_TSTRING);
-      shortStr_t _key;
-      strncpy(_key, luaL_checkstring(L, -2), sizeof(_key));
-      lua_settable(L, 1);
-      lua_pushstring(L, _key);
+      int key_idx = lua_absindex(L, -2);
+      int val_idx = lua_absindex(L, -1);
+      lua_pushcfunction(L, set_prop);
+      luaX_pushObject(L, hobj);
+      lua_pushvalue(L, key_idx);
+      lua_pushvalue(L, val_idx);
+      lua_call(L, 3, 0);
+      lua_pop(L, 1); // pop value, keep key for next lua_next
     }
     lua_remove(L, 2);
-    
     _SendMessage(hobj, Object, Start);
   }
   if (lua_type(L, 2) == LUA_TFUNCTION) {
-    lua_pushstring(L, "body");
-    lua_pushvalue(L, 2);
-    lua_settable(L, 1);
+    OBJ_Rebuild(L, hobj);
     lua_remove(L, 2);
-
-    // TODO: a cleaner way? this clears "body" after populating once
-    OBJ_SetFlags(hobj, OBJ_GetFlags(hobj) | OF_CLEARBODY);
   }
   if (lua_type(L, 2) == LUA_TSTRING) {
     OBJ_SetTextContent(hobj, luaL_checkstring(L, 2));
@@ -91,52 +99,9 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
   }
 }
 
-static int
-set_prop(lua_State* L)
-{
-  OBJ_SetProperty(L, luaX_checkObject(L, 1), luaL_checkstring(L, 2));
-  return 0;
-}
-
-static void
-_AssignProperties(lua_State* L, lpObject_t pobj, int idx)
-{
-  lua_pushvalue(L, idx);
-  while (lua_type(L, -1) != LUA_TNIL) {
-    lua_pushnil(L);
-    while (lua_next(L, -2)) {
-      lua_pushcfunction(L, set_prop);
-      luaX_pushObject(L, pobj);
-      lua_pushvalue(L, -4);
-      lua_pushvalue(L, -4);
-      lua_call(L, 3, 0);
-      lua_pop(L, 1);
-    }
-    if (!lua_getmetatable(L, -1)) {
-      break;
-    }
-    lua_remove(L, -2);
-  }
-  lua_pop(L, 1);
-}
-
 int OBJ_CreateFromLuaState(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
   lpObject_t pobj = OBJ_Create(L, __nativeclass);
-  if (lua_getfield(L, 1, "__class") == LUA_TTABLE) {
-    luaX_parsefield(lpcString_t, __name, -1, luaL_optstring, NULL);
-    if (__name && strcmp(__name, "LuaBehaviour")) {
-      OBJ_SetName(pobj, __name);
-      OBJ_SetClassName(pobj, __name);
-    }
-  }
-  lua_pop(L, 1);
-  
-  lua_setfield(L, 1, "__userdata");
-  
-  // register object in registry
-  lua_pushvalue(L, 1);
-  OBJ_SetLuaObject(pobj, luaL_ref(L, LUA_REGISTRYINDEX));
 
   lpObject_t* ctx = lua_getextraspace(L);
   if (*ctx) {
@@ -145,14 +110,19 @@ int OBJ_CreateFromLuaState(lua_State *L) {
 
   // send "create" message
   OBJ_SendMessageW(pobj, ID_Object_Create, 0, L);
-  
-  _AssignProperties(L, pobj, 1);
+
   _ParseArguments(L, pobj);
 
-  // TODO: is there a better way to add class-default style?
+  /* Store the class table in per-object extras for Lua method lookup */
+  get_object_extras(L, pobj);
+  lua_pushvalue(L, 1); /* arg 1 = class table */
+  lua_setfield(L, -2, "__class");
+  lua_pop(L, 1);
+
+  // apply class-default style
   lua_getfield(L, 1, "apply");
   if (lua_type(L, -1) == LUA_TFUNCTION) {
-    lua_pushvalue(L, 1);
+    luaX_pushObject(L, pobj);
     if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
       Con_Error("Can't execute apply()");
     } else {
@@ -160,7 +130,9 @@ int OBJ_CreateFromLuaState(lua_State *L) {
     }
   }
   lua_pop(L, 1);
+
   luaX_pushObject(L, pobj);
+
   return 1;
 }
 
@@ -175,47 +147,69 @@ void OBJ_SetContext(lua_State* L, lpObject_t self)
   *ctx = self;
 }
 
+/* Per-object Lua extras table, stored in registry under "__object_extras".
+ * Strong-value table; entries are removed explicitly in OBJ_Release.
+ * Returns the extras table for `obj` on top of the stack. */
+static void
+get_object_extras(lua_State* L, lpObject_t obj)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);  /* strong-value table — cleaned up in OBJ_Release */
+    lua_pushvalue(L, -1);
+    lua_setfield(L, LUA_REGISTRYINDEX, "__object_extras");
+  }
+  lua_pushlightuserdata(L, obj);
+  lua_gettable(L, -2);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushlightuserdata(L, obj);
+    lua_pushvalue(L, -2);
+    lua_settable(L, -4);
+  }
+  lua_remove(L, -2); /* remove __object_extras, leave extras table on top */
+}
+
+/* Public alias used by core_export.c */
+void get_object_extras_pub(lua_State* L, lpObject_t obj) { get_object_extras(L, obj); }
+
 #define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
-  lpObject_t self = (lpObject_t)ctx;
   if (status != LUA_OK) {
     return luaL_error(L, luaL_tolstring(L, -1, NULL));
   }
-  if (OBJ_GetFlags(self) & OF_CLEARBODY) {
-    lua_pushnil(L);
-    lua_setfield(L, 1, "body");
-    OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_CLEARBODY);
-  }
-  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
+  axPostMessageW((lpObject_t)ctx, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
 
 static int f_rebuild(lua_State *L) {
   lpObject_t self = luaX_checkObject(L, 1);
-  if (!lua_isnoneornil(L, 2)) { // set body
-    lua_pushvalue(L, 2);
-    lua_setfield(L, 1, "body");
-  }
-  lua_getfield(L, 1, "body");
-  if (lua_type(L, -1) == LUA_TFUNCTION) {
+  if (lua_type(L, 2) == LUA_TFUNCTION) {
     OBJ_Clear(L, self);
-    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 2);  /* fn */
+    lua_pushvalue(L, 1);  /* self */
     return lua_pcallk(L, 1, 0, 0, (lua_KContext)self, f_rebuild_finalize);
-  } else if (lua_type(L, -1) == LUA_TSTRING) {
-    OBJ_SetTextContent(self, luaL_checkstring(L, -1));
+  } else if (lua_type(L, 2) == LUA_TSTRING) {
+    OBJ_SetTextContent(self, luaL_checkstring(L, 2));
   }
-  lua_pop(L, 1);
-  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL); // TODO: replace with direct call to avoid unnecessary message dispatch
+  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
 
 void OBJ_Rebuild(lua_State* L, lpObject_t self) {
-  const int nargs = lua_gettop(L);
   lua_State* co = lua_newthread(L);
-  *((lpObject_t *)lua_getextraspace(co)) = luaX_checkObject(L, 1);
+  *((lpObject_t *)lua_getextraspace(co)) = self;
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
-  lua_xmove(L, co, nargs);
+  luaX_pushObject(co, self);
+  int nargs = 1;
+  if (!lua_isnoneornil(L, 2)) {
+    lua_pushvalue(L, 2);   /* copy fn/string to top of L */
+    lua_xmove(L, co, 1);   /* move to co's stack as arg 2 */
+    nargs = 2;
+  }
   axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 

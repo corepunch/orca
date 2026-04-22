@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless layout tests — no renderer or display required.
 -- Tests the UIKit layout system (Grid, StackView, Node2D) using only
 -- fixed-size nodes so that font measurement is never needed.
@@ -18,11 +19,11 @@ local function test_grid_fr_units()
 
 	local expected1 = math.floor(screen.Width / 3)         -- 1/(1+2)
 	local expected2 = screen.Width - expected1             -- 2/(1+2)
-	assert(math.abs(cell1.ActualWidth - expected1) <= 1,
-		string.format("1fr width: expected ~%d, got %d", expected1, cell1.ActualWidth))
-	assert(math.abs(cell2.ActualWidth - expected2) <= 1,
-		string.format("2fr width: expected ~%d, got %d", expected2, cell2.ActualWidth))
-	assert(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
+	test.expect_near(cell1.ActualWidth, expected1, 1,
+		"1fr width")
+	test.expect_near(cell2.ActualWidth, expected2, 1,
+		"2fr width")
+	test.expect(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
 		"2fr column should be approximately twice the width of 1fr column")
 
 	grid:removeFromParent()
@@ -39,8 +40,8 @@ local function test_grid_auto_columns()
 
 	local expected = math.floor(screen.Width / 3)
 	for i = 1, 3 do
-		assert(math.abs(cells[i].ActualWidth - expected) <= 1,
-			string.format("auto column %d: expected ~%d, got %d", i, expected, cells[i].ActualWidth))
+		test.expect_near(cells[i].ActualWidth, expected, 1,
+			string.format("auto column %d width", i))
 	end
 
 	grid:removeFromParent()
@@ -60,11 +61,11 @@ local function test_grid_in_vstack_height()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	assert(inner.ActualHeight == node_h * 2,
-		string.format("inner stack height: expected %d, got %d", node_h * 2, inner.ActualHeight))
-	assert(grid.ActualHeight == inner.ActualHeight,
-		string.format("grid height (%d) != inner stack (%d)", grid.ActualHeight, inner.ActualHeight))
-	assert(grid.ActualHeight > 0, "grid height must be > 0")
+	test.expect_eq(inner.ActualHeight, node_h * 2,
+		"inner stack height")
+	test.expect_eq(grid.ActualHeight, inner.ActualHeight,
+		"grid height must match inner stack")
+	test.expect(grid.ActualHeight > 0, "grid height must be > 0")
 
 	outer:removeFromParent()
 	print("PASS: test_grid_in_vstack_height")
@@ -84,11 +85,10 @@ local function test_node2d_container_height()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	assert(inner.ActualHeight == child_h,
-		string.format("inner height: expected %d, got %d", child_h, inner.ActualHeight))
-	assert(container.ActualHeight == child_h + 2 * padding,
-		string.format("container height: expected %d (child %d + 2*padding %d), got %d",
-			child_h + 2 * padding, child_h, 2 * padding, container.ActualHeight))
+	test.expect_eq(inner.ActualHeight, child_h,
+		"inner height")
+	test.expect_eq(container.ActualHeight, child_h + 2 * padding,
+		"container height")
 
 	outer:removeFromParent()
 	print("PASS: test_node2d_container_height")
@@ -105,10 +105,10 @@ local function test_grid_mixed_px_fr()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	assert(cell1.ActualWidth == fixed,
-		string.format("px column: expected %d, got %d", fixed, cell1.ActualWidth))
-	assert(cell2.ActualWidth == screen.Width - fixed,
-		string.format("fr column: expected %d, got %d", screen.Width - fixed, cell2.ActualWidth))
+	test.expect_eq(cell1.ActualWidth, fixed,
+		"px column width")
+	test.expect_eq(cell2.ActualWidth, screen.Width - fixed,
+		"fr column width")
 
 	grid:removeFromParent()
 	print("PASS: test_grid_mixed_px_fr")
@@ -131,20 +131,20 @@ local function test_grid_implicit_row_wrapping()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Row 0: cells 1 & 2 must start at y = 0
-	assert(cells[1].ActualY == 0,
-		string.format("cell1 Y: expected 0, got %d", cells[1].ActualY))
-	assert(cells[2].ActualY == 0,
-		string.format("cell2 Y: expected 0, got %d", cells[2].ActualY))
+	test.expect_eq(cells[1].ActualY, 0,
+		"cell1 Y")
+	test.expect_eq(cells[2].ActualY, 0,
+		"cell2 Y")
 
 	-- Row 1: cells 3 & 4 must start at y = cell_h (below the first row)
-	assert(cells[3].ActualY == cell_h,
-		string.format("cell3 Y: expected %d, got %d", cell_h, cells[3].ActualY))
-	assert(cells[4].ActualY == cell_h,
-		string.format("cell4 Y: expected %d, got %d", cell_h, cells[4].ActualY))
+	test.expect_eq(cells[3].ActualY, cell_h,
+		"cell3 Y")
+	test.expect_eq(cells[4].ActualY, cell_h,
+		"cell4 Y")
 
 	-- Grid total height must be 2 * cell_h
-	assert(grid.ActualHeight == cell_h * 2,
-		string.format("grid height: expected %d, got %d", cell_h * 2, grid.ActualHeight))
+	test.expect_eq(grid.ActualHeight, cell_h * 2,
+		"grid total height")
 
 	outer:removeFromParent()
 	print("PASS: test_grid_implicit_row_wrapping")

@@ -152,12 +152,31 @@ HANDLER(ImageView, Node2D, ForegroundContent)
   return (intptr_t)pImageView->Source;
 }
 
+HANDLER(ImageView, Object, Start)
+{
+  lpProperty_t p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
+  if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
+  if (pImageView->Src && *pImageView->Src) {
+    axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
+  }
+  return FALSE;
+}
+
+HANDLER(ImageView, Object, PropertyChanged)
+{
+  if (!pPropertyChanged->Property) return FALSE;
+  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_ImageView_Src) {
+    axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
+  }
+  return FALSE;
+}
+
 HANDLER(ImageView, Node, LoadView)
 {
-  lua_State* L = pLoadView->lua_state;
-  if (!(OBJ_GetFlags(hObject) & OF_ACTIVATED)) {
-    return TRUE;
-  }
+  lua_State* L = (pLoadView && pLoadView->lua_state)
+    ? pLoadView->lua_state
+    : OBJ_GetDomain(hObject);
+  if (!L) return FALSE;
   if (pImageView->Src && *pImageView->Src &&
       pImageView->_loadedImage != fnv1a32(pImageView->Src)) {
     lua_pushstring(L, pImageView->Src);

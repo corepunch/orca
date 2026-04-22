@@ -26,6 +26,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y \
+            luarocks \
             libpng-dev \
             libfreetype6-dev \
             libjpeg-dev \
@@ -38,6 +39,10 @@ jobs:
             libegl1-mesa-dev \
             libgles2-mesa-dev \
             xvfb
+
+      - name: Install MoonScript
+        run: |
+          sudo luarocks --lua-version=5.4 install moonscript
 
       - name: Build
         run: make
@@ -74,11 +79,17 @@ jobs:
             freetype \
             jpeg-turbo \
             lua@5.4 \
+            luarocks \
             libxml2 \
             lz4 \
             zlib \
             curl \
             pkg-config
+
+      - name: Install MoonScript
+        run: |
+          LUA_DIR="$(brew --prefix lua@5.4)"
+          luarocks --lua-version=5.4 --lua-dir="$LUA_DIR" install moonscript
 
       - name: Build
         run: make

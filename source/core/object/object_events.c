@@ -15,31 +15,10 @@ PROP_ExecuteChangedCallback(lua_State* L,
   lpcString_t szCallback = PROP_GetCallbackMsg(hProperty);
   lpObject_t hRoot = OBJ_GetRoot(pobj);
   if (hRoot) {
-    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(pobj));
+    luaX_pushObject(L, pobj);
     luaX_pushProperty(L, hProperty);
     luaX_executecallback(L, hRoot, szCallback, 2);
   }
-}
-
-#define ID_Node_Awake 0x2facb9c8 // Node.Awake
-
-void
-OBJ_Awake(lua_State* L, lpObject_t object)
-{
-  if (!(object->flags & OF_UPDATED_ONCE)) {
-    lpProperty_t event = PROP_FindByLongID(OBJ_GetProperties(object), ID_Node_Awake);
-    if (event) {
-      lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
-      luaX_pushObject(L, object);
-      if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-        Con_Error("%s", luaL_checkstring(L, -1));
-        lua_pop(L, 1);
-      }
-    }
-    _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
-    object->flags |= OF_UPDATED_ONCE;
-  }
-  FOR_EACH_OBJECT(child, object) OBJ_Awake(L, child);
 }
 
 void OBJ_SetFocus(lpObject_t pobj)

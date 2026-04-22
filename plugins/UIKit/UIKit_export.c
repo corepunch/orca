@@ -1,11 +1,9 @@
 // Auto-generated from UIKit.xml by tools/templates/export.php
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
+#include <include/codegen.h>
 
 #include "UIKit.h"
-
-#define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 // Object
 extern void luaX_pushObject(lua_State *L, struct Object const* value);
@@ -26,17 +24,6 @@ extern struct text_info* luaX_checktext_info(lua_State *L, int index);
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 
-#define ENUM(NAME, ...) \
-ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
-const char *NAME##ToString(enum NAME value) { \
-	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
-} \
-enum NAME luaX_check##NAME(lua_State *L, int idx) { \
-	return luaL_checkoption(L, idx, NULL, _##NAME); \
-} \
-void luaX_push##NAME(lua_State *L, enum NAME value) { \
-	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
-}
 ENUM(Direction, "Horizontal", "Vertical", "Depth")
 ENUM(Box3Field, "X", "Y", "Z", "Width", "Height", "Depth")
 ENUM(TextOverflow, "Clip", "Ellipsis")
@@ -58,78 +45,6 @@ ENUM(StyleType, "Generic", "Named")
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
-
-#define STRUCT(NAME, EXPORT) \
-void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
-	if (data == NULL) { lua_pushnil(L); return; } \
-	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
-} \
-struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
-static int f_new_##NAME(lua_State *L) { \
-	struct NAME self; \
-	memset(&self, 0, sizeof(struct NAME)); \
-	if (lua_islightuserdata(L, 1)) { \
-		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
-	} else if (lua_istable(L, 1)) \
-		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
-			if (lua_getfield(L, 1, _##NAME[i].Name)) \
-				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
-	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
-	luaX_push##NAME(L, &self); \
-	return 1; \
-} \
-static int f_##NAME##___index(lua_State *L) { \
-	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		if (_##NAME[i].ShortIdentifier == j) \
-			return (write_property(L, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 1); \
-	for (uint32_t i = 0; i < sizeof(_##NAME##_Methods) / sizeof(*_##NAME##_Methods); i++) { \
-		if (_##NAME##_Methods[i].name && strcmp(_##NAME##_Methods[i].name, luaL_checkstring(L, 2)) == 0) { \
-			lua_pushcfunction(L, _##NAME##_Methods[i].func); \
-			return 1; \
-		} \
-	} \
-	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
-} \
-static int f_##NAME##___newindex(lua_State *L) { \
-	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		if (_##NAME[i].ShortIdentifier == j) \
-			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
-	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
-} \
-static int f_##NAME##___call(lua_State *L) { \
-  lua_insert(L, (lua_getfield(L, 1, "new"), 2)); \
-  lua_call(L, lua_gettop(L) - 2, 1); \
-	return 1; \
-} \
-static int f_##NAME##___fromstring(lua_State *L) { \
-	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
-	struct NAME self; \
-	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
-	free(tmp); \
-	return (luaX_push##NAME(L, &self), 1); \
-} \
-int luaopen_orca_##NAME(lua_State *L) { \
-	luaL_newmetatable(L, #EXPORT); \
-	luaL_setfuncs(L, ((luaL_Reg[]) { \
-		{ "new", f_new_##NAME }, \
-		{ "fromstring", f_##NAME##___fromstring }, \
-		{ "__newindex", f_##NAME##___newindex }, \
-		{ "__index", f_##NAME##___index }, \
-		{ NULL, NULL }, \
-	}), 0); \
-	luaL_setfuncs(L, _##NAME##_Methods, 0); \
-	/* Make struct creatable via constructor-like syntax */ \
-	lua_newtable(L); \
-	lua_pushcfunction(L, f_##NAME##___call); \
-	lua_setfield(L, -2, "__call"); \
-	lua_setmetatable(L, -2); \
-	return 1; \
-}
 static struct PropertyType _FontShorthand[] = {
 	DECL(0x993014d9, FontShorthand, Weight, Weight, kDataTypeEnum, .EnumValues = _FontWeight), // FontShorthand.Weight
 	DECL(0x5467ec76, FontShorthand, Style, Style, kDataTypeEnum, .EnumValues = _FontStyle), // FontShorthand.Style
@@ -268,6 +183,18 @@ static struct PropertyType _ConsoleView_EraseEventArgs[] = {
 static luaL_Reg _ConsoleView_InvalidateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_InvalidateEventArgs[] = {
 };
+static luaL_Reg _ConsoleView_UnpackEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_UnpackEventArgs[] = {
+	DECL(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X, kDataTypeFloat), // ConsoleView_UnpackEventArgs.X
+	DECL(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y, kDataTypeFloat), // ConsoleView_UnpackEventArgs.Y
+};
+static luaL_Reg _ConsoleView_GetIndexPositionEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _ConsoleView_GetIndexPositionEventArgs[] = {
+	DECL(0xaec7ae4b, ConsoleView_GetIndexPositionEventArgs, Index, Index, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.Index
+	DECL(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetX
+	DECL(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetY
+	DECL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global, kDataTypeBool), // ConsoleView_GetIndexPositionEventArgs.Global
+};
 static luaL_Reg _PageHost_NavigateToPageEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateToPageEventArgs[] = {
 	DECL(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageEventArgs.URL
@@ -294,37 +221,10 @@ STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
 STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
 STRUCT(ConsoleView_EraseEventArgs, ConsoleView_EraseEventArgs);
 STRUCT(ConsoleView_InvalidateEventArgs, ConsoleView_InvalidateEventArgs);
+STRUCT(ConsoleView_UnpackEventArgs, ConsoleView_UnpackEventArgs);
+STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
-#define REGISTER_CLASS(NAME, ...) \
-ORCA_API struct ClassDesc _##NAME = { \
-	.ClassName = #NAME, \
-	.DefaultName = #NAME, \
-	.ContentType = #NAME, \
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
-	.ParentClasses = { __VA_ARGS__ }, \
-	.ClassID = ID_##NAME, \
-	.ClassSize = sizeof(struct NAME), \
-	.Properties = NAME##Properties, \
-	.ObjProc = NAME##Proc, \
-	.Defaults = &NAME##Defaults, \
-	.NumProperties = k##NAME##NumProperties, \
-};
-#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
-ORCA_API struct ClassDesc _##NAME = { \
-	.ClassName = #NAME, \
-	.DefaultName = #NAME, \
-	.ContentType = #NAME, \
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
-	.ParentClasses = { __VA_ARGS__ }, \
-	.ClassID = ID_##NAME, \
-	.ClassSize = sizeof(struct NAME), \
-	.Properties = NAME##Properties, \
-	.ObjProc = NAME##Proc, \
-	.Defaults = &NAME##Defaults, \
-	.NumProperties = k##NAME##NumProperties, \
-	.IsAttachOnly = TRUE, \
-};
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
@@ -536,6 +436,8 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 #define ID_Node 0x3468032d
 #define ID_StyleController 0x70b793e6
 REGISTER_CLASS(Node2D, ID_Node, ID_StyleController, 0);
+HANDLER(PrefabView2D, Object, Start);
+HANDLER(PrefabView2D, Object, PropertyChanged);
 HANDLER(PrefabView2D, Node, LoadView);
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
@@ -545,6 +447,8 @@ static struct PrefabView2D PrefabView2DDefaults = {
 };
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Start: return PrefabView2D_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return PrefabView2D_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
@@ -678,6 +582,8 @@ static struct PropertyType const StackViewProperties[kStackViewNumProperties] = 
 	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
 };
 static struct StackView StackViewDefaults = {
+		
+  .Direction = kDirectionVertical,
 };
 LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -831,6 +737,8 @@ HANDLER(ImageView, Node2D, MeasureOverride);
 HANDLER(ImageView, Node2D, ArrangeOverride);
 HANDLER(ImageView, Node2D, ForegroundContent);
 HANDLER(ImageView, Node2D, DrawBrush);
+HANDLER(ImageView, Object, Start);
+HANDLER(ImageView, Object, PropertyChanged);
 HANDLER(ImageView, Node, LoadView);
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
 	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
@@ -850,6 +758,8 @@ LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam
 		case ID_Node2D_ArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
 		case ID_Node2D_ForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 		case ID_Node2D_DrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Object_Start: return ImageView_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return ImageView_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
@@ -905,6 +815,8 @@ HANDLER(ConsoleView, Node, ScrollWheel);
 HANDLER(ConsoleView, ConsoleView, Println);
 HANDLER(ConsoleView, ConsoleView, Erase);
 HANDLER(ConsoleView, ConsoleView, Invalidate);
+HANDLER(ConsoleView, ConsoleView, Unpack);
+HANDLER(ConsoleView, ConsoleView, GetIndexPosition);
 static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
 	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
 	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
@@ -915,6 +827,8 @@ static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties
 	DECL(0x9f626046, ConsoleView, Println, Println, kDataTypeEvent, .TypeString = "ConsoleView_PrintlnEventArgs"), // ConsoleView.Println
 	DECL(0x0e3c6075, ConsoleView, Erase, Erase, kDataTypeEvent, .TypeString = "ConsoleView_EraseEventArgs"), // ConsoleView.Erase
 	DECL(0xb4ac3630, ConsoleView, Invalidate, Invalidate, kDataTypeEvent, .TypeString = "ConsoleView_InvalidateEventArgs"), // ConsoleView.Invalidate
+	DECL(0x7a0c2153, ConsoleView, Unpack, Unpack, kDataTypeEvent, .TypeString = "ConsoleView_UnpackEventArgs"), // ConsoleView.Unpack
+	DECL(0x2ee2d732, ConsoleView, GetIndexPosition, GetIndexPosition, kDataTypeEvent, .TypeString = "ConsoleView_GetIndexPositionEventArgs"), // ConsoleView.GetIndexPosition
 };
 static struct ConsoleView ConsoleViewDefaults = {
 		
@@ -930,6 +844,8 @@ LRESULT ConsoleViewProc(struct Object* object, void* cmp, uint32_t message, wPar
 		case ID_ConsoleView_Println: return ConsoleView_Println(object, cmp, wparm, lparm); // ConsoleView.Println
 		case ID_ConsoleView_Erase: return ConsoleView_Erase(object, cmp, wparm, lparm); // ConsoleView.Erase
 		case ID_ConsoleView_Invalidate: return ConsoleView_Invalidate(object, cmp, wparm, lparm); // ConsoleView.Invalidate
+		case ID_ConsoleView_Unpack: return ConsoleView_Unpack(object, cmp, wparm, lparm); // ConsoleView.Unpack
+		case ID_ConsoleView_GetIndexPosition: return ConsoleView_GetIndexPosition(object, cmp, wparm, lparm); // ConsoleView.GetIndexPosition
 	}
 	return FALSE;
 }
@@ -1053,6 +969,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_InvalidateEventArgs(L), -2), "ConsoleView_InvalidateEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_UnpackEventArgs(L), -2), "ConsoleView_UnpackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_ConsoleView_GetIndexPositionEventArgs(L), -2), "ConsoleView_GetIndexPositionEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Brush), -2), "Brush");

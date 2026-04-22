@@ -118,7 +118,7 @@ void
 OBJ_ClearStyleClasses(lpObject_t);
 
 void
-OBJ_SetLuaObject(lpObject_t , uint32_t);
+OBJ_RequestAnimate(lpObject_t);
   
 ORCA_API void
 OBJ_SetAlias(lpObject_t, uint32_t);

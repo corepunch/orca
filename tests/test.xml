@@ -18,13 +18,13 @@
 		<TextBlock Name="metric-text" Text="2.4 M" FontSize="28" />
 	</Node2D>
 	<script>
-		updateLayout(_ENV, Width, Height)
-		assert(Name == "test-screen", "Expected screen name to be test-screen")
-		assert(Width == 1000, "Expected width to be 1000")
-		assert(Height == 1000, "Expected height to be 1000")
+		self:updateLayout(self.Width, self.Height)
+		assert(self.Name == "test-screen", "Expected screen name to be test-screen")
+		assert(self.Width == 1000, "Expected width to be 1000")
+		assert(self.Height == 1000, "Expected height to be 1000")
 
-		local grid  = _ENV:findChild("test-grid",  true)
-		local inner = _ENV:findChild("inner-stack", true)
+		local grid  = self:findChild("test-grid",  true)
+		local inner = self:findChild("inner-stack", true)
 		assert(grid  ~= nil, "test-grid should exist")
 		assert(inner ~= nil, "inner-stack should exist")
 		assert(inner.ActualHeight == 100,
@@ -35,8 +35,8 @@
 		assert(grid.ActualHeight > 0,
 			string.format("grid height should be > 0, got %d", grid.ActualHeight))
 
-		local metric = _ENV:findChild("metric-users", true)
-		local mtext  = _ENV:findChild("metric-text",  true)
+		local metric = self:findChild("metric-users", true)
+		local mtext  = self:findChild("metric-text",  true)
 		assert(metric ~= nil, "metric-users should exist")
 		assert(mtext  ~= nil, "metric-text should exist")
 		assert(mtext.ActualHeight > 0,

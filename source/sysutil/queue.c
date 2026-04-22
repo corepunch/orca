@@ -5,7 +5,7 @@
 int f_peek_iterator(lua_State* L)
 {
   struct AXmessage msg = {0};
-  lpObject_t __userdata = lua_touserdata(L, lua_upvalueindex(1));
+  lpObject_t object = *(lpObject_t*)luaL_checkudata(L, lua_upvalueindex(1), API_TYPE_OBJECT);
   if (!axGetMessage(&msg)) {
     /* No event ready; end this iterator step. */
     return 0;
@@ -31,25 +31,25 @@ int f_peek_iterator(lua_State* L)
     case kEventKeyDown:
     case kEventKeyUp:
     case kEventReadCommands:
-      msg.target = __userdata;
+      msg.target = object;
       break;
     case kEventWindowPaint:
       msg.message = ID_Window_Paint;
-      msg.target = __userdata;
+      msg.target = object;
       msg.lParam = &wnd;
       break;
     case kEventWindowResized:
       msg.message = ID_Window_Resized;
-      msg.target = __userdata;
+      msg.target = object;
       msg.lParam = &wnd;
       break;
     case kEventWindowChangedScreen:
       msg.message = ID_Window_ChangedScreen;
-      msg.target = __userdata;
+      msg.target = object;
       break;
     case kEventWindowClosed:
       msg.message = ID_Window_Closed;
-      msg.target = __userdata;
+      msg.target = object;
       break;
   }
   struct AXmessage* out = lua_newuserdata(L, sizeof(struct AXmessage));
@@ -59,8 +59,7 @@ int f_peek_iterator(lua_State* L)
 }
 
 int f_peek_message(lua_State* L) {
-  luaX_parsefield(lpObject_t, __userdata, 1, luaL_checkudata, API_TYPE_OBJECT);
-  lua_pushlightuserdata(L, __userdata);
+  lua_pushvalue(L, 1);
   lua_pushcclosure(L, f_peek_iterator, 1);
   return 1;
 }

@@ -55,6 +55,7 @@
         <property name="RenderToMipmapLevels" type="bool"/>
         <property name="ExternalTexture" type="bool"/>
         <property name="StartupScreen" type="string"/>
+        <property name="StartupViewController" type="string"/>
         <property name="PreviewWindowBackgroundColor" type="color"/>
         <property name="MessageLimitPerFrame" type="int"/>
         <property name="GlobalTimelineStartTime" type="int"/>

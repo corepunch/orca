@@ -113,6 +113,14 @@ add_subproperty(xmlNodePtr xml,
                 lpcPropertyType_t pdesc,
                 void const* dest)
 {
+  /* DataType enum values are generated as: None..Object (0..9).
+   * Dynamic/custom properties may carry invalid type IDs; skip them to keep
+   * the editor server endpoint robust instead of asserting in DataTypeToString.
+   */
+  if (!pdesc || pdesc->DataType < 0 || pdesc->DataType > kDataTypeObject) {
+    return pdesc ? (pdesc->Offset + pdesc->DataSize) : 0;
+  }
+
   path_t buf;
   PDESC_Print(pdesc, buf, sizeof(buf), dest);
   xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
@@ -235,7 +243,7 @@ SV_CMD(PUT, node)
   
 SV_CMD(GET, startup_screen) {
   lpObject_t project = OBJ_GetFirstChild(FS_GetWorkspace());
-  if (project && GetProject(project) && *GetProject(project)->StartupScreen) {
+  if (project && GetProject(project) && GetProject(project)->StartupScreen && *GetProject(project)->StartupScreen) {
     GET_scene_hierarchy(L, response, GetProject(project)->StartupScreen, rargs, nargs);
     return NULL;
   } else {

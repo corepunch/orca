@@ -84,3 +84,4 @@ build/webgl/plugins_luaopen.h
 site/
 docs/quickstart.md
 gdb.txt
+samples/Weather/**/*.lua

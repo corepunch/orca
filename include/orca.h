@@ -327,7 +327,7 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 #define OF_SELECTED (1 << 10)
 #define OF_EXPANDED_IN_DEBUG (1 << 11)
 #define OF_NOACTIVATE (1 << 12)
-#define OF_CLEARBODY (1 << 13)
+#define OF_ANIMATE_QUEUED (1 << 13)
 
 struct ClassDesc
 {

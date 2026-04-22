@@ -12,34 +12,23 @@ static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id) {
-lpcClassDesc_t cls = OBJ_FindClassW(class_id);
-  lpObject_t object = ZeroAlloc(sizeof(struct Object));
-  object->components = OBJ_AddComponent(object, cls->ClassID);
-//  object->window = axGet(L);
-//  object->game = GetGame(L);
-//  object->localization = GetLocalization(L);
-  object->unique = ++unique_counter;
-//  OBJ_SetDirty(object);
-  return object;
+  return OBJ_Create(NULL, OBJ_FindClassW(class_id));
 }
 
 lpObject_t
 OBJ_Create(lua_State* L, lpcClassDesc_t cls)
 {
-  assert(offsetof(struct Object, luaObject) == LUASTATE_IN_OBJECT);
-
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
-  lpObject_t object = lua_newuserdata(L, sizeof(struct Object));
-  luaL_setmetatable(L, API_TYPE_OBJECT);
-  memset(object, 0, sizeof(struct Object));
+  lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->unique = ++unique_counter;
   object->domain = L;
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
-  OBJ_SetName(object, cls->DefaultName);
-  
+  if (L && cls->DefaultName) {
+    OBJ_SetName(object, cls->DefaultName);
+  }
   return object;
 }
 
@@ -82,10 +71,6 @@ OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
   if (core.hover2 == self) core.hover2 = NULL;
   OBJ_Clear(L, self);
   axRemoveFromQueue(self);
-  if (self->luaObject) {
-    luaL_unref(L, LUA_REGISTRYINDEX, self->luaObject);
-    self->luaObject = 0;
-  }
 }
 
 void
@@ -94,12 +79,16 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
+  if (!L) {
+    L = pobj->domain;
+  }
+
   OBJ_Clear(L, pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(L, pobj);
 
   for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
-    if (PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
+    if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
     PROP_Clear(p);
@@ -115,6 +104,19 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
+
+  /* Clean up per-object extras table to prevent stale pointer reuse */
+  if (L) {
+    lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+    if (!lua_isnil(L, -1)) {
+      lua_pushlightuserdata(L, pobj);
+      lua_pushnil(L);
+      lua_settable(L, -3);
+    }
+    lua_pop(L, 1);
+  }
+
+  free(pobj);
 }
 
 HRESULT

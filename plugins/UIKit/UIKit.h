@@ -39,6 +39,8 @@ typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_Re
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
 typedef struct ConsoleView_EraseEventArgs ConsoleView_EraseMsg_t,* ConsoleView_EraseMsgPtr;
 typedef struct ConsoleView_InvalidateEventArgs ConsoleView_InvalidateMsg_t,* ConsoleView_InvalidateMsgPtr;
+typedef struct ConsoleView_UnpackEventArgs ConsoleView_UnpackMsg_t,* ConsoleView_UnpackMsgPtr;
+typedef struct ConsoleView_GetIndexPositionEventArgs ConsoleView_GetIndexPositionMsg_t,* ConsoleView_GetIndexPositionMsgPtr;
 typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
 typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
 
@@ -433,6 +435,22 @@ struct ConsoleView_InvalidateEventArgs {
 };
 ORCA_API void luaX_pushConsoleView_InvalidateEventArgs(lua_State *L, struct ConsoleView_InvalidateEventArgs const* data);
 ORCA_API struct ConsoleView_InvalidateEventArgs* luaX_checkConsoleView_InvalidateEventArgs(lua_State *L, int idx);
+/** ConsoleView_UnpackEventArgs struct */
+struct ConsoleView_UnpackEventArgs {
+	float X;
+	float Y;
+};
+ORCA_API void luaX_pushConsoleView_UnpackEventArgs(lua_State *L, struct ConsoleView_UnpackEventArgs const* data);
+ORCA_API struct ConsoleView_UnpackEventArgs* luaX_checkConsoleView_UnpackEventArgs(lua_State *L, int idx);
+/** ConsoleView_GetIndexPositionEventArgs struct */
+struct ConsoleView_GetIndexPositionEventArgs {
+	int32_t Index;
+	int32_t OffsetX;
+	int32_t OffsetY;
+	bool_t Global;
+};
+ORCA_API void luaX_pushConsoleView_GetIndexPositionEventArgs(lua_State *L, struct ConsoleView_GetIndexPositionEventArgs const* data);
+ORCA_API struct ConsoleView_GetIndexPositionEventArgs* luaX_checkConsoleView_GetIndexPositionEventArgs(lua_State *L, int idx);
 /** PageHost_NavigateToPageEventArgs struct */
 struct PageHost_NavigateToPageEventArgs {
 	const char* URL; ///< The URL of the page to navigate to.
@@ -472,7 +490,7 @@ ORCA_API struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx);
 typedef struct TextRun TextRun_t, *TextRunPtr, *lpTextRun_t;
 typedef struct TextRun const *TextRunCPtr, *lpcTextRun_t;
 struct TextRun {
-	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`.
+	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.
 	struct FontShorthand Font; ///< Font definition used for text rendering. Contains typeface, size, and style information.
 	struct UnderlineShorthand Underline; ///< Underline style applied to the text.
 	float LetterSpacing; ///< Additional spacing applied between letters.
@@ -785,6 +803,8 @@ struct ConsoleView {
 	event_t Println;
 	event_t Erase;
 	event_t Invalidate;
+	event_t Unpack;
+	event_t GetIndexPosition;
 };
 ORCA_API void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView);
 ORCA_API struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx);

@@ -38,7 +38,6 @@ typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,*
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
-typedef struct Node_AwakeEventArgs Node_AwakeMsg_t,* Node_AwakeMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
@@ -331,6 +330,10 @@ core_AddGlobalStyleRule(struct lua_State*, struct Object*);
 ORCA_API void
 core_AdvanceFrame(void);
 
+/// @brief Drains the pending platform message queue and dispatches each event immediately.
+ORCA_API void
+core_FlushQueue(struct lua_State*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
@@ -339,21 +342,9 @@ core_AdvanceFrame(void);
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
 
-/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
-ORCA_API void
-OBJ_Awake(struct lua_State*, struct Object*);
-
-/// @brief Runs object animations.
-ORCA_API void
-OBJ_Animate(struct lua_State*, struct Object*);
-
 /// @brief Clear all children of the object.
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);
-
-/// @brief Garbage-collect an object (clear and release).
-ORCA_API void
-OBJ_Release(struct lua_State*, struct Object*);
 
 /// @brief Compare two objects for equality.
 ORCA_API bool_t
@@ -583,10 +574,6 @@ OBJ_SetTextContent(struct Object*, const char*);
 ORCA_API long
 OBJ_GetTimestamp(struct Object const*);
 
-/// @brief Gets the Lua object reference
-ORCA_API uint32_t
-OBJ_GetLuaObject(struct Object const*);
-
 /// @brief Gets the domain of the object
 ORCA_API struct lua_State*
 OBJ_GetDomain(struct Object*);
@@ -598,13 +585,13 @@ OBJ_SetContext(struct lua_State*, struct Object*);
 /// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
 
+/// @brief Loads prefab views in this object's subtree.
+ORCA_API void
+OBJ_LoadPrefabs(struct Object*);
+
 /// @brief Instantiates a new object from this prefab.
 ORCA_API struct Object*
 OBJ_Instantiate(struct lua_State*, struct Object*);
-
-/// @brief Loads and instantiates prefabs.
-ORCA_API void
-OBJ_LoadPrefabs(struct lua_State*, struct Object*);
 
 /// @brief Checks if this object is a prefab view container
 ORCA_API bool_t
@@ -819,11 +806,6 @@ struct Trigger_TriggeredEventArgs {
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
 ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
-/** Node_AwakeEventArgs struct */
-struct Node_AwakeEventArgs {
-};
-ORCA_API void luaX_pushNode_AwakeEventArgs(lua_State *L, struct Node_AwakeEventArgs const* data);
-ORCA_API struct Node_AwakeEventArgs* luaX_checkNode_AwakeEventArgs(lua_State *L, int idx);
 /** Node_UpdateMatrixEventArgs struct */
 struct Node_UpdateMatrixEventArgs {
 	struct mat4 parent; ///< The parent matrix
@@ -1159,7 +1141,6 @@ struct Node {
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
 	long _tags; ///< Calculated tags value
-	event_t Awake;
 	event_t UpdateMatrix;
 	event_t LoadView;
 	event_t HitTest;

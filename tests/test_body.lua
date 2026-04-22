@@ -1,37 +1,19 @@
--- Headless tests for loading scenes via body() in Lua.
--- Mirrors the pattern used in the Banking sample and other MoonScript components.
+local test = require "orca.test"
+-- Headless tests for loading scenes via rebuild() in Lua.
+-- Mirrors the pattern used in the Banking sample and other components.
 --
 -- Run with: $(TARGET) -test=tests/test_body.lua
 --
--- body() is a function set on a Behaviour-style object.  When rebuild() is
--- called (automatically during construction), the engine creates a Lua
--- coroutine, pushes it onto the platform event queue as
--- kEventResumeCoroutine, and resumes it.  In a running application the
--- event loop processes these coroutines; in headless tests there is no
--- event loop, so core.flushQueue() must be called to drain and execute all
--- pending coroutines before assertions are made.
+-- rebuild(fn) creates a coroutine, clears the object's children, calls fn(self),
+-- then posts a 'ViewDidLoad' message.  In a running application the event loop
+-- processes these coroutines; in headless tests there is no event loop, so
+-- core.flushQueue() must be called to drain and execute all pending coroutines
+-- before assertions are made.
 
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect(cond, label)
-  if not cond then fail(label) end
-end
-
-local function expect_eq(actual, expected, label)
-  if actual ~= expected then
-    fail(string.format("%s: expected %s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- Flush all pending rebuild coroutines so body() calls complete
 -- synchronously before assertions.
 local function flush()
@@ -59,7 +41,7 @@ local function test_body_creates_children()
 
   flush()
 
-  expect_eq(child_count(container), 2, "body() should create 2 children")
+  test.expect_eq(child_count(container), 2, "body() should create 2 children")
 
   container:removeFromParent()
   print("PASS: test_body_creates_children")
@@ -77,7 +59,7 @@ local function test_body_at_construction()
 
   flush()
 
-  expect_eq(child_count(container), 1, "body() at construction creates 1 child")
+  test.expect_eq(child_count(container), 1, "body() at construction creates 1 child")
 
   container:removeFromParent()
   print("PASS: test_body_at_construction")
@@ -98,14 +80,14 @@ local function test_rebuild_replaces_children()
     end
   end)
   flush()
-  expect_eq(child_count(container), 3, "first rebuild: 3 children")
+  test.expect_eq(child_count(container), 3, "first rebuild: 3 children")
 
   -- Second build: 1 child — rebuild() clears before re-running body()
   container:rebuild(function(self)
     self:addChild(ui.Node2D { Name = "Only" })
   end)
   flush()
-  expect_eq(child_count(container), 1, "second rebuild: 1 child (old children removed)")
+  test.expect_eq(child_count(container), 1, "second rebuild: 1 child (old children removed)")
 
   container:removeFromParent()
   print("PASS: test_rebuild_replaces_children")
@@ -125,11 +107,11 @@ local function test_nested_body()
 
   flush()
 
-  expect_eq(child_count(outer), 1, "outer has 1 child after body()")
+  test.expect_eq(child_count(outer), 1, "outer has 1 child after body()")
   local inner
   for child in outer.children do inner = child end
-  expect(inner ~= nil, "inner child exists")
-  expect_eq(child_count(inner), 1, "inner child has 1 child")
+  test.expect(inner ~= nil, "inner child exists")
+  test.expect_eq(child_count(inner), 1, "inner child has 1 child")
 
   outer:removeFromParent()
   print("PASS: test_nested_body")
@@ -151,36 +133,34 @@ local function test_body_accesses_self_properties()
 
   flush()
 
-  expect_eq(captured_width, 200, "body() should see Width=200 set before rebuild()")
+  test.expect_eq(captured_width, 200, "body() should see Width=200 set before rebuild()")
 
   container:removeFromParent()
   print("PASS: test_body_accesses_self_properties")
 end
 
 -- ---------------------------------------------------------------------------
--- Test 6: Extending a UIKit class with body() — mirrors the Banking sample
--- pattern where components extend ui.StackView, ui.Node2D, etc.
+-- Test 6: Extending a UIKit class adds callable methods on instances
 -- ---------------------------------------------------------------------------
-local function test_behaviour_extend_body()
+local function test_extend_methods()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
 
-  -- In the Banking sample, components extend UIKit classes (e.g. ui.StackView).
-  -- Extending ui.Node2D here exercises the same mechanism.
   local MyComponent = ui.Node2D:extend {
-    body = function(self)
-      self:addChild(ui.Node2D { Name = "BehaviourChild1" })
-      self:addChild(ui.Node2D { Name = "BehaviourChild2" })
-      self:addChild(ui.Node2D { Name = "BehaviourChild3" })
+    addContent = function(self)
+      self:addChild(ui.Node2D { Name = "Child1" })
+      self:addChild(ui.Node2D { Name = "Child2" })
+      self:addChild(ui.Node2D { Name = "Child3" })
     end
   }
 
   local comp = screen + MyComponent {}
+  comp:rebuild(function(self) self:addContent() end)
   flush()
 
-  expect_eq(child_count(comp), 3, "UIKit:extend body() creates 3 children")
+  test.expect_eq(child_count(comp), 3, "extend method callable on instance via rebuild()")
 
   comp:removeFromParent()
-  print("PASS: test_behaviour_extend_body")
+  print("PASS: test_extend_methods")
 end
 
 -- ---------------------------------------------------------------------------
@@ -194,7 +174,7 @@ local function test_body_string_sets_text()
 
   flush()
 
-  expect_eq(label:getTextContent(), "Hello from body", "rebuild() with string sets text content")
+  test.expect_eq(label:getTextContent(), "Hello from body", "rebuild() with string sets text content")
 
   label:removeFromParent()
   print("PASS: test_body_string_sets_text")
@@ -225,9 +205,9 @@ local function test_multiple_containers_with_body()
 
   flush()
 
-  expect_eq(child_count(a), 1, "container a: 1 child")
-  expect_eq(child_count(b), 2, "container b: 2 children")
-  expect_eq(child_count(c), 3, "container c: 3 children")
+  test.expect_eq(child_count(a), 1, "container a: 1 child")
+  test.expect_eq(child_count(b), 2, "container b: 2 children")
+  test.expect_eq(child_count(c), 3, "container c: 3 children")
 
   a:removeFromParent()
   b:removeFromParent()
@@ -243,7 +223,7 @@ test_body_at_construction()
 test_rebuild_replaces_children()
 test_nested_body()
 test_body_accesses_self_properties()
-test_behaviour_extend_body()
+test_extend_methods()
 test_body_string_sets_text()
 test_multiple_containers_with_body()
 

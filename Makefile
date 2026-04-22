@@ -16,11 +16,35 @@ PLATFORM_LIBDIR = libs/platform
 #LIBS = -lm -ldl -lpthread -llua5.4 -lfreetype -lpng -ljpeg -lz -llz4 -lcurl -lxml2 -lplatform
 LIBS = -ldl -lpthread -lcurl -lplatform
 CC = gcc
+UNAME_S := $(shell uname -s)
+HOST_ARCH := $(shell uname -m)
+ifeq ($(UNAME_S),Darwin)
+DARWIN_ARM_CAPABLE := $(shell sysctl -in hw.optional.arm64 2>/dev/null)
+ifeq ($(DARWIN_ARM_CAPABLE),1)
+ARCH ?= arm64
+else
+ARCH ?= $(HOST_ARCH)
+endif
+else
+ARCH ?= $(HOST_ARCH)
+endif
+ARCH_FLAGS :=
+
+ifeq ($(UNAME_S),Darwin)
+ifeq ($(ARCH),arm64)
+ARCH_FLAGS += -arch arm64
+else ifeq ($(ARCH),x86_64)
+ARCH_FLAGS += -arch x86_64
+endif
+endif
+
 # Allow CFLAGS to be passed from luarocks, but ensure we have base flags
 CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
+CFLAGS += $(ARCH_FLAGS)
+LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core vsomeip
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
@@ -32,7 +56,7 @@ UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.
 CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 libxml-2.0 2>/dev/null)
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
-ifeq ($(shell uname -s),Darwin)
+ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
 	LIBS += -framework OpenGL -framework IOSurface
 	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
@@ -48,7 +72,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application
 
 default: directories unite
 all: default
@@ -58,7 +82,7 @@ build: default
 	find ${SOURCEDIR}$@ -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
 platform:
-	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR)
+	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
 
 buildunite: clean $(SOURCEMODULES2)
 
@@ -134,6 +158,13 @@ run:
 
 example:
 	$(TARGET) samples/Example
+
+weather: copyshare
+	@if [ ! -x $(TARGET) ]; then \
+		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
+		exit 1; \
+	fi
+	$(TARGET) samples/Weather
 
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)
@@ -214,16 +245,36 @@ test-styles-lua: app copyshare
 test-body: app copyshare
 	$(TARGET) -test=tests/test_body.lua
 
+test-console-view: unite
+	$(TARGET) -test=tests/test_console_view.lua
+
+test-widget: app copyshare
+	$(TARGET) -test=tests/widget_spec.moon
+
+test-router: app copyshare
+	$(TARGET) -test=tests/router_spec.moon
+
+test-application: app copyshare
+	$(TARGET) -test=tests/application_spec.moon
+
+test-loadview: app copyshare
+	$(TARGET) -test=tests/loadview_spec.moon
+
 test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
 
-test-headless: test-properties test-styles copyshare
+test-headless: unite test-properties test-styles
 	$(TARGET) -test=tests/test_layout.lua
 	$(TARGET) -test=tests/test_state_manager.lua
 	$(TARGET) -test=tests/test_animations.lua
 	$(TARGET) -test=tests/test_timers.lua
 	$(TARGET) -test=tests/test_styles_lua.lua
 	$(TARGET) -test=tests/test_body.lua
+	$(TARGET) -test=tests/test_console_view.lua
+	$(TARGET) -test=tests/widget_spec.moon
+	$(TARGET) -test=tests/router_spec.moon
+	$(TARGET) -test=tests/application_spec.moon
+	$(TARGET) -test=tests/loadview_spec.moon
 
 include Makefile.webgl

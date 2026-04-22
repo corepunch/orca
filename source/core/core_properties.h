@@ -326,7 +326,6 @@ enum HandlerProperties {
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
 #define ID_Node_Resources 0xa9ef04ee // Node.Resources
 #define ID_Node_NumResources 0xce1c8f30 // Node.NumResources
-#define ID_Node_Awake 0x2facb9c8 // Node.Awake
 #define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
 #define ID_Node_LoadView 0xe3c6ed08 // Node.LoadView
 #define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
@@ -356,7 +355,7 @@ enum HandlerProperties {
 #define ID_Node_KeyDown 0xfc8dc15c // Node.KeyDown
 #define ID_Node_KeyUp 0x9282bc1d // Node.KeyUp
 #define ID_Node_TextInput 0xaf29a9ae // Node.TextInput
-#define kNodeNumProperties 99
+#define kNodeNumProperties 98
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -427,7 +426,6 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeResources,
 	kNodeNumResources,
-	kNodeAwake,
 	kNodeUpdateMatrix,
 	kNodeLoadView,
 	kNodeHitTest,
@@ -604,8 +602,6 @@ enum NodeProperties {
 #define ID_Trigger_TriggeredEventArgs 0x86976046
 
 #define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger
-#define ID_Node_AwakeEventArgs 0x53009d32
-
 #define ID_Node_UpdateMatrixEventArgs 0xb9c33fb7
 
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent

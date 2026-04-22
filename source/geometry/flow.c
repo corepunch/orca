@@ -2,6 +2,21 @@
 #include <source/geometry/geometry.h>
 #include <source/core/core.h>
 
+lpObject_t _lua_checkobject(lua_State* L, int arg) {
+  return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
+}
+
+void _lua_pushobject(lua_State* L, lpcObject_t self)
+{
+  if (!self) {
+    lua_pushnil(L);
+    return;
+  }
+  lpObject_t* ud = lua_newuserdata(L, sizeof(lpObject_t));
+  *ud = (lpObject_t)self;
+  luaL_setmetatable(L, API_TYPE_OBJECT);
+}
+
 ORCA_API int
 parse_property(lua_State* L,
                const char* str,
@@ -50,15 +65,11 @@ parse_property(lua_State* L,
       lua_getglobal(L, "require");
       lua_pushstring(L, str);
       lua_call(L, 1, 1);
-      if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
+      if (lua_type(L, -1) != LUA_TUSERDATA) {
         return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
       }
-      *(void**)valueptr = lua_touserdata(L, -1);
-//      if (prop->TypeString) {
-//        *(void**)valueptr = OBJ_GetComponent(object, fnv1a32(prop->TypeString));
-//      } else {
-        // *(void**)valueptr = object;
-//      }
+      *(void**)valueptr = _lua_checkobject(L, -1);
+      lua_pop(L, 1);
       return TRUE;
 //    case kDataTypeEvent:
 //      return TRUE;
@@ -110,18 +121,8 @@ read_property(lua_State *L,
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
     case kDataTypeObject:
-      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TTABLE) {
-        if (lua_getfield(L, idx, "__userdata") == LUA_TNIL) {
-          lua_pop(L, 1);
-          luaL_getmetatable(L, prop->TypeString);
-          lua_pushvalue(L, idx);
-          lua_call(L, 1, 1);
-          if (lua_getfield(L, -1, "__userdata") == LUA_TNIL) {
-            luaL_error(L, "Expected an object of type '%s' for property '%s'", prop->TypeString, prop->Name);
-          }
-        }
-        *(void**)valueptr = lua_touserdata(L, -1);
-        lua_pop(L, 1); // Remove the __userdata field from the stack
+      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TUSERDATA) {
+        *(void**)valueptr = _lua_checkobject(L, idx);
         break;
       } else if (lua_type(L, idx) == LUA_TSTRING) {
         parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
@@ -197,8 +198,8 @@ write_property(lua_State *L,
 //        lua_pushcclosure(L, f_msgSend, 1);
         break;
       case kDataTypeObject:
-        if (*(char**)valueptr) {
-          lua_geti(L, LUA_REGISTRYINDEX, *(int*)(*(char**)valueptr+LUASTATE_IN_OBJECT));
+        if (*(lpObject_t const*)valueptr) {
+          _lua_pushobject(L, *(lpObject_t const*)valueptr);
         } else {
           lua_pushnil(L);
         }

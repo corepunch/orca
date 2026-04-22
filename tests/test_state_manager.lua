@@ -1,3 +1,4 @@
+local test = require "orca.test"
 -- Headless tests for the StateManagerController component and the
 -- StateManager / StateGroup / State object hierarchy.
 -- States now use attached properties (dotted full names like 'Node.Opacity')
@@ -15,19 +16,6 @@ local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-local function fail(msg)
-  io.stderr:write("FAIL: " .. msg .. "\n")
-  os.exit(1)
-end
-
-local function expect_near(actual, expected, eps, label)
-  if math.abs(actual - expected) > (eps or 0.01) then
-    fail(string.format("%s: expected ~%s, got %s", label, tostring(expected), tostring(actual)))
-  end
-end
-
 -- ---------------------------------------------------------------------------
 -- Build a small StateManager tree using attached properties on State:
 --
@@ -63,12 +51,12 @@ local function test_controller_changed_applies_state()
   -- Drive Opacity to 0; State "0" should apply Opacity=0.0.
   node.Opacity = 0
   node:emitPropertyChangedEvents()
-  expect_near(node.Opacity, 0.0, 0.01, "test_controller_changed_applies_state: Opacity → 0")
+  test.expect_near(node.Opacity, 0.0, 0.01, "test_controller_changed_applies_state: Opacity → 0")
 
   -- Drive back to 1; State "1" → Opacity=1.0.
   node.Opacity = 1
   node:emitPropertyChangedEvents()
-  expect_near(node.Opacity, 1.0, 0.01, "test_controller_changed_applies_state: Opacity → 1")
+  test.expect_near(node.Opacity, 1.0, 0.01, "test_controller_changed_applies_state: Opacity → 1")
 
   node:removeFromParent()
   print("PASS: test_controller_changed_applies_state")
@@ -93,11 +81,11 @@ local function test_state_group_width()
 
   node.Width = 50
   node:emitPropertyChangedEvents()
-  expect_near(node.Width, 50, 0.01, "test_state_group_width: Width → 50")
+  test.expect_near(node.Width, 50, 0.01, "test_state_group_width: Width → 50")
 
   node.Width = 200
   node:emitPropertyChangedEvents()
-  expect_near(node.Width, 200, 0.01, "test_state_group_width: Width → 200")
+  test.expect_near(node.Width, 200, 0.01, "test_state_group_width: Width → 200")
 
   node:removeFromParent()
   print("PASS: test_state_group_width")
@@ -126,7 +114,7 @@ local function test_state_manager_reassignment()
 
   node.Opacity = 0
   node:emitPropertyChangedEvents()
-  expect_near(node.Opacity, 0.5, 0.01, "test_state_manager_reassignment: Opacity after reassign → 0")
+  test.expect_near(node.Opacity, 0.5, 0.01, "test_state_manager_reassignment: Opacity after reassign → 0")
 
   node:removeFromParent()
   print("PASS: test_state_manager_reassignment")
@@ -152,7 +140,7 @@ local function test_state_path_to_child()
   parent.Width = 200
   parent:emitPropertyChangedEvents()
   -- Parent's own Width is still 200; only the child's Width should change to 77.
-  expect_near(child.Width, 77, 0.01, "test_state_path_to_child: child.Width → 77")
+  test.expect_near(child.Width, 77, 0.01, "test_state_path_to_child: child.Width → 77")
 
   parent:removeFromParent()
   print("PASS: test_state_path_to_child")
@@ -178,16 +166,16 @@ local function test_multiple_attached_properties()
   -- Activate State "0" — all three overrides must be applied.
   node.Opacity = 0
   node:emitPropertyChangedEvents()
-  expect_near(node.Opacity, 0.3,  0.01, "test_multiple_attached_properties: Opacity → 0.3")
-  expect_near(node.Width,   42,   0.01, "test_multiple_attached_properties: Width → 42")
-  expect_near(node.Height,  77,   0.01, "test_multiple_attached_properties: Height → 77")
+  test.expect_near(node.Opacity, 0.3,  0.01, "test_multiple_attached_properties: Opacity → 0.3")
+  test.expect_near(node.Width,   42,   0.01, "test_multiple_attached_properties: Width → 42")
+  test.expect_near(node.Height,  77,   0.01, "test_multiple_attached_properties: Height → 77")
 
   -- Activate State "1" — all three must be restored.
   node.Opacity = 1
   node:emitPropertyChangedEvents()
-  expect_near(node.Opacity, 1.0,  0.01, "test_multiple_attached_properties: Opacity → 1.0")
-  expect_near(node.Width,   100,  0.01, "test_multiple_attached_properties: Width → 100")
-  expect_near(node.Height,  100,  0.01, "test_multiple_attached_properties: Height → 100")
+  test.expect_near(node.Opacity, 1.0,  0.01, "test_multiple_attached_properties: Opacity → 1.0")
+  test.expect_near(node.Width,   100,  0.01, "test_multiple_attached_properties: Width → 100")
+  test.expect_near(node.Height,  100,  0.01, "test_multiple_attached_properties: Height → 100")
 
   node:removeFromParent()
   print("PASS: test_multiple_attached_properties")

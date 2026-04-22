@@ -25,7 +25,6 @@
 
 #include <include/orca.h>
 
-#define LUASTATE_IN_OBJECT 92
 #define INLINE static inline
 
 #define luaX_parsefield(type, name, unit, func, ...)                            \
@@ -106,11 +105,20 @@ luaX_executecallback(lua_State* L,
                      lpcString_t name,
                      int num_args)
 {
-  lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
-  assert(lua_type(L, -1) == LUA_TTABLE);
+  luaX_pushObject(L, object);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1 + num_args);
+    return FALSE;
+  }
   lua_getfield(L, -1, name);
-  lua_insert(L, -(num_args + 2)); // Move the function below the arguments
-  lua_insert(L, -(num_args + 1)); // Move the object below the arguments
+  if (!lua_isfunction(L, -1)) {
+    lua_pop(L, 2 + num_args);
+    return FALSE;
+  }
+  /* Stack now: ... [args x num_args] object func
+   * Rearrange to: ... func object [args x num_args] */
+  lua_insert(L, -(num_args + 2)); /* Move func below args+object */
+  lua_insert(L, -(num_args + 1)); /* Move object below args */
   if (lua_pcall(L, num_args + 1, 1, 0) != LUA_OK) {
     Con_Error("%s(): %s", name, lua_tostring(L, -1));
     lua_pop(L, 1);

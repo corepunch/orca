@@ -369,29 +369,12 @@ static void
 _InitTheme(lua_State *L, lpProject_t project)
 {
   if (project->ThemeLibrary) {
-    lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(CMP_GetObject(project->ThemeLibrary)));
-    lua_pushnil(L);
-    while (lua_next(L, -2)) {
-      if (lua_type(L, -1) == LUA_TTABLE) {
-        lua_getfield(L, -1, "SelectedTheme");
-        lua_rawget(L, -2);
-        if (lua_type(L, -1) == LUA_TTABLE) {
-          lua_pushnil(L);
-          while (lua_next(L, -2)) {
-            register_theme_value(luaL_checkstring(L, -2), luaL_checkstring(L, -1), L);
-            lua_pop(L, 1);
-          }
-        }
-        lua_pop(L, 1);
+    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+    FOR_EACH_OBJECT(themeGroup, themes) {
+      if (GetThemeGroup(themeGroup) && GetThemeGroup(themeGroup)->_selectedTheme) {
+        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
       }
-      lua_pop(L, 1);
     }
-    lua_pop(L, 1);
-//    FOR_EACH_OBJECT(themeGroup, themes) if (GetThemeGroup(themeGroup)) {
-//      if (GetThemeGroup(themeGroup)->_selectedTheme) {
-//        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
-//      }
-//    }
   }
 }
 

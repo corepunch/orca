@@ -247,22 +247,14 @@
           <details>This is a fall through constructor, that you can pass a table of properties to</details>
           <returns type="nresults"/>
         </method>
-        <method name="Awake" lua="true">
-          <summary>Initializes the core component when it is loaded, an essential lifecycle method.</summary>
-          <details>Perform setup and dependency wiring here before other logic runs.</details>
-        </method>
-        <method name="Animate" lua="true">
-          <summary>Runs object animations.</summary>
-          <details>Invokes the animation pipeline for this object and its hierarchy.</details>
-        </method>
         <method name="Clear" export="clear" lua="true">
           <summary>Clear all children of the object.</summary>
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
-        <method name="Release" export="__gc" lua="true">
+        <!-- <method name="Release" export="__gc" lua="true">
           <summary>Garbage-collect an object (clear and release).</summary>
           <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
-        </method>
+        </method> -->
         <method name="Equals" const="true" export="__eq">
           <summary>Compare two objects for equality.</summary>
           <details>Compares this object with another object to determine if they represent the same instance. Typically implemented as pointer comparison or unique identifier matching to determine object identity rather than content equality.</details>
@@ -274,7 +266,7 @@
           <details>This method triggers a rebuild of the behavior by either executing a function body, adding a child from a string, and then posting a 'ViewDidLoad' message.</details>
         </method>
         <topic title="Hierarchy">Navigates and manipulates the parent-child relationship tree.</topic>
-        <method name="AddChild">
+        <method name="AddChild" alias="__add">
           <summary>Add a child object.</summary>
           <details>Adds the specified object as a child of this object in the hierarchy. If the child already has a parent, it is first removed from that parent's children list using REMOVE_FROM_LIST. The child is then added to the end of this object's children list and its parent pointer is set to this object. An "Attached" message is sent to the newly added child. If is_template is true, the OF_TEMPLATE flag is set on this object to indicate it contains template children.
 
@@ -361,13 +353,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <returns type="nresults">The LRESULT as integer, or nil if unhandled</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
-        <method name="SetProperty" export="__setproperty" lua="true">
+        <method name="SetProperty" export="__newindex" lua="true">
           <summary>Set a property on the object.</summary>
           <details>Sets or updates a named property on this object. If the property doesn't exist, it may be created. If it exists, its value is updated. This method integrates with the Lua property system and may trigger property change callbacks and validation. The property system supports various data types including primitives, vectors, colors, and custom types.</details>
           <arg name="Property" type="string">The name of the property to set or update</arg>
           <returns type="bool">True if the property was successfully set, false if the operation failed due to invalid property name, type mismatch, or other constraints</returns>
         </method>
-        <method name="GetProperty" export="__getproperty" lua="true">
+        <method name="GetProperty" export="__index" lua="true">
           <summary>Get a property value from an object.</summary>
           <details>Retrieves the current value of the specified property from this object. The method searches through the object's property collection and returns the value if found. If the property doesn't exist, returns nil. This integrates with Lua's property access system and supports all property data types including handles, floats, vectors, colors, integers, booleans, and enumerations.</details>
           <arg name="Property" type="string">The name of the property whose value to retrieve</arg>
@@ -545,18 +537,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
         <method name="SetTextContent">
           <summary>Sets the text content of the object</summary>
-          <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text.  The text content is copied internally and can be modified at any time to update the displayed text.</details>
+          <details>Updates the text content displayed by this object. This is typically used for text labels, buttons, or other UI elements that display text. The text content is copied internally and can be modified at any time to update the displayed text. In Lua/MoonScript DSL style, text-bearing widgets may provide this through a trailing value argument (for example `TextBlock class: "text-3xl", title`) rather than explicit `Text=` assignment.</details>
           <arg name="text" type="string">The text content to display</arg>
         </method>
         <method name="GetTimestamp" const="true">
           <summary>Gets the last modified timestamp</summary>
           <details>Returns the timestamp of when this object was last marked dirty, indicating the last time it required recalculation.</details>
           <returns type="long">Timestamp of last dirty marking</returns>
-        </method>
-        <method name="GetLuaObject" const="true" private="true">
-          <summary>Gets the Lua object reference</summary>
-          <details>Returns the Lua registry index associated with this object.</details>
-          <returns type="uint">Lua registry index for the object</returns>
         </method>
         <method name="GetDomain">
           <summary>Gets the domain of the object</summary>
@@ -568,14 +555,14 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
         </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
+        <method name="LoadPrefabs">
+          <summary>Loads prefab views in this object's subtree.</summary>
+          <details>Compatibility wrapper that traverses the current object subtree and dispatches <code>Node.LoadView</code> to prefab view containers.</details>
+        </method>
         <method name="Instantiate" lua="true">
           <summary>Instantiates a new object from this prefab.</summary>
           <details>Will load from the source, not adding it to the static workspace hierarchy</details>
           <returns type="Object" pointer="true">Returns the instantiated object</returns>
-        </method>
-        <method name="LoadPrefabs" lua="true">
-          <summary>Loads and instantiates prefabs.</summary>
-          <details>Resolves and loads prefab resources for this object tree.</details>
         </method>
         <method name="IsPrefabView" const="true">
           <summary>Checks if this object is a prefab view container</summary>
@@ -940,9 +927,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
-        <message name="Awake">
-          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
-        </message>
         <message name="UpdateMatrix">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
@@ -1083,6 +1067,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </function>
     <function name="AdvanceFrame">
       <summary>Advances the engine by one frame, processing all pending updates and rendering.</summary>
+    </function>
+    <function name="FlushQueue" lua="true" export="flushQueue">
+      <summary>Drains the pending platform message queue and dispatches each event immediately.</summary>
+      <details>Processes queued events until the queue is empty, dispatching each message through the normal ORCA message pipeline. This is primarily useful in tests and other headless flows where asynchronous work such as rebuild() coroutines posts follow-up messages that need to run before assertions.</details>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->
