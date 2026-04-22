@@ -16,6 +16,11 @@ lpObject_t luaX_checkObject(lua_State* L, int arg) {
   return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
 }
 
+int f_object_gc(lua_State* L) {
+  (void)L;
+  return 0;
+}
+
 void luaX_pushObject(lua_State* L, lpcObject_t self)
 {
   if (!self) {

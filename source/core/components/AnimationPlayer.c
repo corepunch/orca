@@ -80,6 +80,7 @@ HANDLER(AnimationPlayer, Object, Start) {
     if (pAnimationPlayer->AutoplayEnabled) {
         pAnimationPlayer->Playing = TRUE;
         pAnimationPlayer->_prevRealtime = 0;
+        OBJ_RequestAnimate(hObject);
         _SendMessage(hObject, AnimationPlayer, Started);
     }
     return FALSE;
@@ -185,6 +186,10 @@ HANDLER(AnimationPlayer, Object, Animate) {
             }
         }
     }
+
+    if (pAnimationPlayer->Playing) {
+        OBJ_RequestAnimate(hObject);
+    }
     return FALSE;
 }
 
@@ -203,6 +208,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Play) {
     }
     pAnimationPlayer->Playing = TRUE;
     pAnimationPlayer->_prevRealtime = 0;
+    OBJ_RequestAnimate(hObject);
     _SendMessage(hObject, AnimationPlayer, Started);
     return FALSE;
 }
@@ -211,6 +217,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
     // Resume differs from Play: it continues from the current position without resetting CurrentTime.
     pAnimationPlayer->Playing = TRUE;
     pAnimationPlayer->_prevRealtime = 0;
+    OBJ_RequestAnimate(hObject);
     _SendMessage(hObject, AnimationPlayer, Started);
     return FALSE;
 }

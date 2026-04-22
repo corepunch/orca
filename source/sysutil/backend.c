@@ -111,7 +111,7 @@ int f_event_new(lua_State* L) {
     while (lua_next(L, 1) != 0) {
       if (lua_type(L, -2) == LUA_TSTRING) {
         const char* key = lua_tostring(L, -2);
-        if (strcmp(key, "target") == 0) { msg->target = luaX_checkObject(L, -1);
+        if (strcmp(key, "target") == 0) { msg->target = *(lpObject_t*)luaL_checkudata(L, -1, API_TYPE_OBJECT);
         } else if (strcmp(key, "message") == 0) { msg->message = parse_event_name(luaL_checkstring(L, -1));
         } else if (strcmp(key, "x") == 0) { msg->x = luaL_checknumber(L, -1);
         } else if (strcmp(key, "y") == 0) { msg->y = luaL_checknumber(L, -1);

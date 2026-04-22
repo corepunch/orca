@@ -247,18 +247,14 @@
           <details>This is a fall through constructor, that you can pass a table of properties to</details>
           <returns type="nresults"/>
         </method>
-        <method name="Animate" lua="true">
-          <summary>Runs object animations.</summary>
-          <details>Invokes the animation pipeline for this object and its hierarchy.</details>
-        </method>
         <method name="Clear" export="clear" lua="true">
           <summary>Clear all children of the object.</summary>
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
-        <method name="Release" export="__gc" lua="true">
+        <!-- <method name="Release" export="__gc" lua="true">
           <summary>Garbage-collect an object (clear and release).</summary>
           <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
-        </method>
+        </method> -->
         <method name="Equals" const="true" export="__eq">
           <summary>Compare two objects for equality.</summary>
           <details>Compares this object with another object to determine if they represent the same instance. Typically implemented as pointer comparison or unique identifier matching to determine object identity rather than content equality.</details>
@@ -548,11 +544,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <summary>Gets the last modified timestamp</summary>
           <details>Returns the timestamp of when this object was last marked dirty, indicating the last time it required recalculation.</details>
           <returns type="long">Timestamp of last dirty marking</returns>
-        </method>
-        <method name="GetLuaObject" const="true" private="true">
-          <summary>Gets the Lua object reference</summary>
-          <details>Returns the Lua registry index associated with this object.</details>
-          <returns type="uint">Lua registry index for the object</returns>
         </method>
         <method name="GetDomain">
           <summary>Gets the domain of the object</summary>
@@ -1076,6 +1067,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </function>
     <function name="AdvanceFrame">
       <summary>Advances the engine by one frame, processing all pending updates and rendering.</summary>
+    </function>
+    <function name="FlushQueue" lua="true" export="flushQueue">
+      <summary>Drains the pending platform message queue and dispatches each event immediately.</summary>
+      <details>Processes queued events until the queue is empty, dispatching each message through the normal ORCA message pipeline. This is primarily useful in tests and other headless flows where asynchronous work such as rebuild() coroutines posts follow-up messages that need to run before assertions.</details>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->
