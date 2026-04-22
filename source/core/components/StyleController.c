@@ -302,6 +302,7 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
 HANDLER(StyleController, StyleController, AddClass)
 {
   _AddClass(hObject, _ParseClass(pAddClass->ClassName));
+  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = FALSE);
   return TRUE;
 }
 
@@ -313,5 +314,6 @@ HANDLER(StyleController, StyleController, AddClasses)
       _AddClass(hObject, _ParseClass(s));
     }
   }
+  _SendMessage(hObject, StyleController, ThemeChanged, .recursive = FALSE);
   return TRUE;
 }
