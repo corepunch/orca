@@ -10,6 +10,9 @@ Available skills
 Usage
 - Treat each .skill.md file as an operating playbook when planning or implementing changes.
 - Prefer these files as canonical team-shared guidance over user-local prompt files.
+- For UIKit/MoonScript UI work, default to Tailwind utilities from share/plugins/tailwind.lua whenever possible.
+- Use raw UIKit properties only when no matching Tailwind utility exists.
+- For UIKit/MoonScript UI work, prefer concise constructor + block syntax (-> / =>), keep class: explicit for clarity, and avoid unnecessary braces/table verbosity.
 - MoonScript policy: never generate .lua files from .moon files.
 - Author and modify MoonScript in .moon only.
 - Do not introduce, refresh, or sync parallel .lua companions from MoonScript sources.
