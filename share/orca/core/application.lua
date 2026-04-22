@@ -23,29 +23,35 @@ Application.projects = {}
 function Application:__init()
   Object.__init(self)
   self.router = Router(self)
+end
 
+function Application.open(path)
   io.stderr:write("Initializing application module\n")
 
   require "orca.UIKit"
 
-  local project = filesystem.init(DATADIR)
+  local project = filesystem.init(path or DATADIR)
   renderer.init(project.WindowWidth, project.WindowHeight, false)
 
   Application.load_plugins()
 
+  local app
   if project.StartupViewController then
-    Application.load_controller(project.StartupViewController, project.StartupRoute)
-    self.screen = Application.screen
-    self.controller = Application.controller
+    app = Application.load_controller(project.StartupViewController, project.StartupRoute)
   else
-    self.screen = Application.load_screen(project.StartupScreen)
-    self.controller = { view = self.screen }
-    Application.screen = self.screen
+    app = Application()
+    app.screen = Application.load_screen(project.StartupScreen)
+    app.controller = { view = app.screen }
   end
 
-  Application.load_editor()
+  Application.app = app
+  Application.screen = app.screen
+  Application.controller = app.controller
+
+  Application.load_editor(app.screen)
 
   io.stderr:write("Application module initialized\n")
+  return app
 end
 
 function Application:new_render_context(req)
@@ -94,25 +100,24 @@ function Application.load_controller(path, route)
   io.stderr:write("Loading startup view controller: " .. path .. "\n")
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
-  Application.app = class()
-  Application.controller = Application.app:dispatch(route or "/")
-  Application.screen = Application.controller.view
+  local app = class()
+  app.controller = app:dispatch(route or "/")
+  app.screen = app.controller.view
+  return app
 end
 
 function Application.load_screen(path)
   io.stderr:write("Loading startup screen: " .. path .. "\n")
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load screen: " .. path .. ", " .. tostring(class))
-  local screen = class()
-  Application.screen = screen
-  return screen
+  return class()
 end
 
-function Application.load_editor()
-  assert(Application.screen, "Screen must be loaded before editor")
+function Application.load_editor(screen)
+  assert(screen, "Screen must be loaded before editor")
   local ok, editor = pcall(require, "orca.EditorKit")
   if ok then
-    editor.setScreen(Application.screen)
+    editor.setScreen(screen)
   else
     io.stderr:write(string.format("Failed to load editor module %s\n", tostring(editor)))
   end

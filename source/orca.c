@@ -406,7 +406,7 @@ int main (int argc, LPSTR *argv)
     if (!args.test) {
       const char* bootstrap =
       "local Application = require 'orca.core.application'\n"
-      "local app = Application()\n"
+      "local app = assert(Application.open(DATADIR))\n"
       "return app:run()\n";
 //      lua_getglobal(L, "require");
 //      lua_pushstring(L, "orca.core.application");
