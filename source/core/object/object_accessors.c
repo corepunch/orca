@@ -111,16 +111,8 @@ uint32_t OBJ_GetUniqueID(lpcObject_t pobj) {
   return pobj->unique;
 }
 
-uint32_t OBJ_GetLuaObject(lpcObject_t pobj) {
-  return pobj->luaObject;
-}
-
 uint32_t OBJ_GetAlias(lpcObject_t pobj) {
   return pobj->alias;
-}
-
-void OBJ_SetLuaObject(lpObject_t pobj, uint32_t lua_id) {
-  pobj->luaObject = lua_id;
 }
 
 void OBJ_SetAlias(lpObject_t pobj, uint32_t alias) {

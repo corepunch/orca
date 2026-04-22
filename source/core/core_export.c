@@ -65,7 +65,7 @@ int f_OBJ_Equals(lua_State *L) {
 }
 int f_OBJ_Rebuild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Rebuild(L, this_ );
+	OBJ_Rebuild(L, this_);
 	return 0;
 }
 int f_OBJ_AddChild(lua_State *L) {
@@ -377,12 +377,6 @@ int f_OBJ_GetTimestamp(lua_State *L) {
 	lua_pushinteger(L, result_);
 	return 1;
 }
-int f_OBJ_GetLuaObject(lua_State *L) {
-	struct Object const* this_ = luaX_checkObject(L, 1);
-	uint32_t result_ = OBJ_GetLuaObject(this_);
-	lua_pushinteger(L, result_);
-	return 1;
-}
 int f_OBJ_GetDomain(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	struct lua_State* result_ = OBJ_GetDomain(this_);
@@ -412,16 +406,19 @@ int f_OBJ_IsPrefabView(lua_State *L) {
 	return 1;
 }
 
+int f_object_index(lua_State* L);
+
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_OBJ_CreateFromLuaState },
 		{ "animate", f_OBJ_Animate },
 		{ "clear", f_OBJ_Clear },
-		{ "__gc", f_OBJ_Release },
 		{ "__eq", f_OBJ_Equals },
 		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },
+		{ "__add", f_OBJ_AddChild },
+		{ "release", f_OBJ_Release },
 		{ "removeFromParent", f_OBJ_RemoveFromParent },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
@@ -435,8 +432,8 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "findParentOfClass", f_OBJ_FindParentOfClass },
 		{ "post", f_OBJ_post },
 		{ "send", f_OBJ_send },
-		{ "__setproperty", f_OBJ_SetProperty },
-		{ "__getproperty", f_OBJ_GetProperty },
+		{ "__newindex", f_OBJ_SetProperty },
+		{ "__index", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },
 		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
 		{ "findImplicitProperty", f_OBJ_FindImplicitProperty },
@@ -470,15 +467,16 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getTextContent", f_OBJ_GetTextContent },
 		{ "setTextContent", f_OBJ_SetTextContent },
 		{ "getTimestamp", f_OBJ_GetTimestamp },
-		{ "getLuaObject", f_OBJ_GetLuaObject },
 		{ "getDomain", f_OBJ_GetDomain },
-		{ "__setcontext", f_OBJ_SetContext },
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);
-	lua_pushvalue(L, -1);
+	int f_OBJ_newindex(lua_State* L);
+	lua_pushcfunction(L, f_OBJ_newindex);
+	lua_setfield(L, -2, "__newindex");
+	lua_pushcfunction(L, f_object_index);
 	lua_setfield(L, -2, "__index");
 	return 1;
 }

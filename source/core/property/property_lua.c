@@ -8,7 +8,7 @@ _AssignCallback(lua_State* L, lpProperty_t property)
   lpObject_t object = property->object;
   static path_t str;
   sprintf(str, ON_CHANGED_CALLBACK, property->pdesc->Name);
-  lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
+  luaX_pushObject(L, object);
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
     return FALSE;
@@ -235,11 +235,7 @@ void _pushproperty(lua_State* L,
       if (strcmp(type->TypeString, "Object") && *(void**)value) {
         object = CMP_GetObject(*(void**)value);
       }
-      if (object) {
-        lua_geti(L, LUA_REGISTRYINDEX, OBJ_GetLuaObject(object));
-      } else {
-        lua_pushnil(L);
-      }
+      luaX_pushObject(L, object);
       break;
     }
     default:
