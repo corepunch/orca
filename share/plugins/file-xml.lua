@@ -91,7 +91,11 @@ end
 
 local specials = {
 	script = function(node, element)
-		local script, err = load(element.text, string.format("@%s.script", node.Name), "t", node)
+		local env = setmetatable({ self = node }, { __index = _G })
+		function env.self:updateLayout(width, height)
+			self:UpdateLayout(width, height)
+		end
+		local script, err = load(element.text, string.format("@%s.script", node.Name), "t", env)
 		if not script then error(err) return end
 		local ok, result = pcall(script)
 		if not ok then error(result) end

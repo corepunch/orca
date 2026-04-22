@@ -79,12 +79,16 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
+  if (!L) {
+    L = pobj->domain;
+  }
+
   OBJ_Clear(L, pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(L, pobj);
 
   for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
-    if (PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
+    if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
     PROP_Clear(p);

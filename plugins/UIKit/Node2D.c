@@ -261,6 +261,11 @@ static float _MeasureAxis(Node2DPtr n, float space, int axis) {
     Image_GetInfo(n->RenderTarget, &image);
     int const size[] = { image.bmWidth, image.bmHeight, 0 };
     return size[axis] + TOTAL_PADDING(n, axis);
+  } else if (NODE2D_FRAME(n, Alignment, axis)) {
+    /* Non-stretch alignment (Top/Left/Center/Right/Bottom): no explicit size
+     * requested, so measure with infinite space so children can report their
+     * true desired size and the node auto-sizes to content. */
+    return INFINITY;
   } else {
     return space;
   }

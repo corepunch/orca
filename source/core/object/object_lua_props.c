@@ -40,6 +40,37 @@ static int f_object_lineage(lua_State* L)
   return 1;
 }
 
+static void collect_form_inputs(lua_State* L, lpObject_t node, int table_idx)
+{
+  if (!node) return;
+
+  lpcString_t cls = OBJ_GetClassName(node);
+  if (cls && !strcmp(cls, "Input")) {
+    lpcString_t name = OBJ_GetName(node);
+    if (name && *name) {
+      OBJ_GetProperty(L, node, "Text");
+      if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        lua_pushstring(L, "");
+      }
+      lua_setfield(L, table_idx, name);
+    }
+  }
+
+  FOR_EACH_OBJECT(child, node) {
+    collect_form_inputs(L, child, table_idx);
+  }
+}
+
+static int f_obj_populate_inputs(lua_State* L)
+{
+  lpObject_t self = luaX_checkObject(L, 1);
+  lua_newtable(L);
+  int table_idx = lua_absindex(L, -1);
+  collect_form_inputs(L, self, table_idx);
+  return 1;
+}
+
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
@@ -125,6 +156,12 @@ int f_OBJ_newindex(lua_State* L) {
 int f_object_index(lua_State* L) {
   lpObject_t self = luaX_checkObject(L, 1);
   const char* key = luaL_checkstring(L, 2);
+
+  if (!strcmp(key, "populateInputs")) {
+    lua_pushcfunction(L, f_obj_populate_inputs);
+    return 1;
+  }
+
   /* 1. Check the Object metatable for C methods (addChild, post, send, …) */
   luaL_getmetatable(L, API_TYPE_OBJECT);
   lua_getfield(L, -1, key);
