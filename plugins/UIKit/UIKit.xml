@@ -405,6 +405,8 @@
       <details>Allows loading of pre-designed UI layouts from external resources. Useful for reusable UI components and modular design patterns.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
@@ -617,6 +619,8 @@
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>

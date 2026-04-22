@@ -386,7 +386,7 @@ int f_OBJ_Instantiate(lua_State *L) {
 }
 int f_OBJ_LoadPrefabs(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_LoadPrefabs(L, this_ );
+	OBJ_LoadPrefabs(this_);
 	return 0;
 }
 int f_OBJ_IsPrefabView(lua_State *L) {

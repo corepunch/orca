@@ -436,6 +436,8 @@ struct Node2D* luaX_checkNode2D(lua_State *L, int idx) {
 #define ID_Node 0x3468032d
 #define ID_StyleController 0x70b793e6
 REGISTER_CLASS(Node2D, ID_Node, ID_StyleController, 0);
+HANDLER(PrefabView2D, Object, Start);
+HANDLER(PrefabView2D, Object, PropertyChanged);
 HANDLER(PrefabView2D, Node, LoadView);
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
 	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
@@ -445,6 +447,8 @@ static struct PrefabView2D PrefabView2DDefaults = {
 };
 LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Start: return PrefabView2D_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return PrefabView2D_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;
@@ -733,6 +737,8 @@ HANDLER(ImageView, Node2D, MeasureOverride);
 HANDLER(ImageView, Node2D, ArrangeOverride);
 HANDLER(ImageView, Node2D, ForegroundContent);
 HANDLER(ImageView, Node2D, DrawBrush);
+HANDLER(ImageView, Object, Start);
+HANDLER(ImageView, Object, PropertyChanged);
 HANDLER(ImageView, Node, LoadView);
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
 	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
@@ -752,6 +758,8 @@ LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam
 		case ID_Node2D_ArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
 		case ID_Node2D_ForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
 		case ID_Node2D_DrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+		case ID_Object_Start: return ImageView_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return ImageView_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
 	}
 	return FALSE;

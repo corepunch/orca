@@ -174,6 +174,8 @@
       <summary>Dynamic loader for 3D prefab assets and scene files</summary>
       <details>Loads and instantiates 3D content from external files. Supports both SCA (Scene Archive) and prefab formats for modular scene composition and asset reuse.</details>
       <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
