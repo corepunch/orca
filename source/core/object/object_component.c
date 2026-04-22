@@ -252,3 +252,23 @@ OBJ_IsPrefabView(lpcObject_t object)
   }
   return FALSE;
 }
+
+static void
+_OBJ_LoadPrefabsRecursive(lpObject_t object)
+{
+  if (!object) return;
+
+  if (OBJ_IsPrefabView(object)) {
+    _SendMessage(object, Node, LoadView, .lua_state = OBJ_GetDomain(object));
+  }
+
+  FOR_EACH_OBJECT(child, object) {
+    _OBJ_LoadPrefabsRecursive(child);
+  }
+}
+
+void
+OBJ_LoadPrefabs(lpObject_t object)
+{
+  _OBJ_LoadPrefabsRecursive(object);
+}

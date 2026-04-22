@@ -564,6 +564,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
         </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
+        <method name="LoadPrefabs" lua="true">
+          <summary>Loads prefab views in this object's subtree.</summary>
+          <details>Compatibility wrapper that traverses the current object subtree and dispatches <code>Node.LoadView</code> to prefab view containers.</details>
+        </method>
         <method name="Instantiate" lua="true">
           <summary>Instantiates a new object from this prefab.</summary>
           <details>Will load from the source, not adding it to the static workspace hierarchy</details>
