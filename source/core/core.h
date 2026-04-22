@@ -346,10 +346,6 @@ OBJ_CreateFromLuaState(struct lua_State*);
 ORCA_API void
 OBJ_Clear(struct lua_State*, struct Object*);
 
-/// @brief Garbage-collect an object (clear and release).
-ORCA_API void
-OBJ_Release(struct lua_State*, struct Object*);
-
 /// @brief Compare two objects for equality.
 ORCA_API bool_t
 OBJ_Equals(struct Object const*, struct Object const*);

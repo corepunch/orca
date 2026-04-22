@@ -46,11 +46,6 @@ int f_OBJ_Clear(lua_State *L) {
 	OBJ_Clear(L, this_ );
 	return 0;
 }
-int f_OBJ_Release(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Release(L, this_ );
-	return 0;
-}
 int f_OBJ_Equals(lua_State *L) {
 	struct Object const* this_ = luaX_checkObject(L, 1);
 	struct Object const* other = luaX_checkObject(L, 2);
@@ -406,7 +401,6 @@ int luaopen_orca_Object(lua_State *L) {
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_OBJ_CreateFromLuaState },
 		{ "clear", f_OBJ_Clear },
-		{ "__gc", f_OBJ_Release },
 		{ "__eq", f_OBJ_Equals },
 		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },

@@ -251,10 +251,10 @@
           <summary>Clear all children of the object.</summary>
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
-        <method name="Release" export="__gc" lua="true">
+        <!-- <method name="Release" export="__gc" lua="true">
           <summary>Garbage-collect an object (clear and release).</summary>
           <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
-        </method>
+        </method> -->
         <method name="Equals" const="true" export="__eq">
           <summary>Compare two objects for equality.</summary>
           <details>Compares this object with another object to determine if they represent the same instance. Typically implemented as pointer comparison or unique identifier matching to determine object identity rather than content equality.</details>
