@@ -113,8 +113,8 @@ local function test_animation_clip_curve_hierarchy()
   curve.Property = "Opacity"
 
   -- The clip is the curve's parent; GetAnimationCurve retrieves the curve.
-  test.expect_eq(type(clip), "table",  "clip is a Lua object")
-  test.expect_eq(type(curve), "table", "curve is a Lua object")
+  test.expect_eq(type(clip), "userdata",  "clip is a Lua object")
+  test.expect_eq(type(curve), "userdata", "curve is a Lua object")
   -- The curve's Property string was stored correctly.
   test.expect_eq(curve.Property, "Opacity", "AnimationCurve.Property is Opacity")
 

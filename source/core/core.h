@@ -583,10 +583,6 @@ OBJ_SetTextContent(struct Object*, const char*);
 ORCA_API long
 OBJ_GetTimestamp(struct Object const*);
 
-/// @brief Gets the Lua object reference
-ORCA_API uint32_t
-OBJ_GetLuaObject(struct Object const*);
-
 /// @brief Gets the domain of the object
 ORCA_API struct lua_State*
 OBJ_GetDomain(struct Object*);

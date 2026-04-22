@@ -32,7 +32,6 @@ struct Object
   uint32_t alias;
   uint32_t unique;
   uint32_t userdata;
-  uint32_t luaObject;
   uint32_t flags;
   uint32_t rdflags;
   uint32_t datasize;

@@ -361,13 +361,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <returns type="nresults">The LRESULT as integer, or nil if unhandled</returns>
         </method>
         <topic title="Properties">Reads and writes typed properties, applying and observing changes.</topic>
-        <method name="SetProperty" export="__setproperty" lua="true">
+        <method name="SetProperty" export="__newindex" lua="true">
           <summary>Set a property on the object.</summary>
           <details>Sets or updates a named property on this object. If the property doesn't exist, it may be created. If it exists, its value is updated. This method integrates with the Lua property system and may trigger property change callbacks and validation. The property system supports various data types including primitives, vectors, colors, and custom types.</details>
           <arg name="Property" type="string">The name of the property to set or update</arg>
           <returns type="bool">True if the property was successfully set, false if the operation failed due to invalid property name, type mismatch, or other constraints</returns>
         </method>
-        <method name="GetProperty" export="__getproperty" lua="true">
+        <method name="GetProperty" export="__index" lua="true">
           <summary>Get a property value from an object.</summary>
           <details>Retrieves the current value of the specified property from this object. The method searches through the object's property collection and returns the value if found. If the property doesn't exist, returns nil. This integrates with Lua's property access system and supports all property data types including handles, floats, vectors, colors, integers, booleans, and enumerations.</details>
           <arg name="Property" type="string">The name of the property whose value to retrieve</arg>

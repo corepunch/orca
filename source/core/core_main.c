@@ -162,21 +162,72 @@ CORE_UpdateHover(void) {
 
 int f_poll(lua_State* L);
 
+int OBJ_CreateFromLuaState(lua_State *L);
+
+static int class_call(lua_State* L) {
+  return OBJ_CreateFromLuaState(L);
+}
+
+/* class:extend{...} — Lua-side subclass of a C class.
+ * Creates a NEW derived class table.  Extension methods are copied onto it.
+ * The derived class metatable uses __index = base so that all base-class
+ * methods are found transparently via Lua's own metamethod chain. */
+static int class_extend(lua_State* L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  int base = lua_absindex(L, 1);
+
+  lua_newtable(L); /* derived class table */
+  int derived = lua_absindex(L, -1);
+
+  /* Copy __nativeclass from base */
+  lua_getfield(L, base, "__nativeclass");
+  lua_setfield(L, derived, "__nativeclass");
+
+  /* extend() on the derived class creates further subclasses */
+  lua_pushcfunction(L, class_extend);
+  lua_setfield(L, derived, "extend");
+
+  /* Copy all extension fields verbatim */
+  if (lua_type(L, 2) == LUA_TTABLE) {
+    int ext = lua_absindex(L, 2);
+    lua_pushnil(L);
+    while (lua_next(L, ext) != 0) {
+      if (lua_type(L, -2) == LUA_TSTRING) {
+        lua_setfield(L, derived, lua_tostring(L, -2)); /* pops value */
+      } else {
+        lua_pop(L, 1);
+      }
+    }
+  }
+
+  /* Derived class metatable: __call → class_call, __index → base class table */
+  lua_newtable(L);
+  lua_pushcfunction(L, class_call);
+  lua_setfield(L, -2, "__call");
+  lua_pushvalue(L, base);
+  lua_setfield(L, -2, "__index");
+  lua_setmetatable(L, derived);
+
+  return 1; /* derived is on top */
+}
+
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.core.behaviour");
-  lua_call(L, 1, 1);
-  lua_getfield(L, -1, "extend");
-  lua_pushvalue(L, -2);
-  // Create the args table
-  lua_newtable(L);
+  /* Create a plain callable table: { __nativeclass = <lightuserdata> }
+   * Its metatable provides __call → class_call and __index → Object metatable. */
+  lua_newtable(L); /* class table */
   lua_pushlightuserdata(L, cl);
   lua_setfield(L, -2, "__nativeclass");
-  lua_pcall(L, 2, 1, 0);
-  lua_remove(L, -2); // pop Behaviour
-  // Register class globally
-  // lua_pushlightuserdata(L, cl);
+  lua_pushcfunction(L, class_extend);
+  lua_setfield(L, -2, "extend");
+
+  lua_newtable(L); /* class metatable */
+  lua_pushcfunction(L, class_call);
+  lua_setfield(L, -2, "__call");
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  lua_setfield(L, -2, "__index");
+  lua_setmetatable(L, -2); /* apply metatable to class table */
+
   OBJ_RegisterClass(cl);
   lua_pushvalue(L, -1);
   lua_setfield(L, LUA_REGISTRYINDEX, cl->ClassName);

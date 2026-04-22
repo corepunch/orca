@@ -1,16 +1,14 @@
 local test = require "orca.test"
--- Headless tests for loading scenes via body() in Lua.
--- Mirrors the pattern used in the Banking sample and other MoonScript components.
+-- Headless tests for loading scenes via rebuild() in Lua.
+-- Mirrors the pattern used in the Banking sample and other components.
 --
 -- Run with: $(TARGET) -test=tests/test_body.lua
 --
--- body() is a function set on a Behaviour-style object.  When rebuild() is
--- called (automatically during construction), the engine creates a Lua
--- coroutine, pushes it onto the platform event queue as
--- kEventResumeCoroutine, and resumes it.  In a running application the
--- event loop processes these coroutines; in headless tests there is no
--- event loop, so core.flushQueue() must be called to drain and execute all
--- pending coroutines before assertions are made.
+-- rebuild(fn) creates a coroutine, clears the object's children, calls fn(self),
+-- then posts a 'ViewDidLoad' message.  In a running application the event loop
+-- processes these coroutines; in headless tests there is no event loop, so
+-- core.flushQueue() must be called to drain and execute all pending coroutines
+-- before assertions are made.
 
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
@@ -142,29 +140,27 @@ local function test_body_accesses_self_properties()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 6: Extending a UIKit class with body() — mirrors the Banking sample
--- pattern where components extend ui.StackView, ui.Node2D, etc.
+-- Test 6: Extending a UIKit class adds callable methods on instances
 -- ---------------------------------------------------------------------------
-local function test_behaviour_extend_body()
+local function test_extend_methods()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
 
-  -- In the Banking sample, components extend UIKit classes (e.g. ui.StackView).
-  -- Extending ui.Node2D here exercises the same mechanism.
   local MyComponent = ui.Node2D:extend {
-    body = function(self)
-      self:addChild(ui.Node2D { Name = "BehaviourChild1" })
-      self:addChild(ui.Node2D { Name = "BehaviourChild2" })
-      self:addChild(ui.Node2D { Name = "BehaviourChild3" })
+    addContent = function(self)
+      self:addChild(ui.Node2D { Name = "Child1" })
+      self:addChild(ui.Node2D { Name = "Child2" })
+      self:addChild(ui.Node2D { Name = "Child3" })
     end
   }
 
   local comp = screen + MyComponent {}
+  comp:rebuild(function(self) self:addContent() end)
   flush()
 
-  test.expect_eq(child_count(comp), 3, "UIKit:extend body() creates 3 children")
+  test.expect_eq(child_count(comp), 3, "extend method callable on instance via rebuild()")
 
   comp:removeFromParent()
-  print("PASS: test_behaviour_extend_body")
+  print("PASS: test_extend_methods")
 end
 
 -- ---------------------------------------------------------------------------
@@ -227,7 +223,7 @@ test_body_at_construction()
 test_rebuild_replaces_children()
 test_nested_body()
 test_body_accesses_self_properties()
-test_behaviour_extend_body()
+test_extend_methods()
 test_body_string_sets_text()
 test_multiple_containers_with_body()
 
