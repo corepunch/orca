@@ -36,8 +36,9 @@ function Application.open(path)
   Application.load_plugins()
 
   local app
-  if project.StartupViewController then
-    app = Application.load_controller(project.StartupViewController, project.StartupRoute)
+  local startup_view_controller = project.StartupViewController
+  if startup_view_controller then
+    app = Application.load_controller(startup_view_controller, project.StartupRoute)
   else
     app = Application()
     app.screen = Application.load_screen(project.StartupScreen)

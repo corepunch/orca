@@ -5,7 +5,7 @@
 int f_peek_iterator(lua_State* L)
 {
   struct AXmessage msg = {0};
-  lpObject_t object = luaX_checkObject(L, lua_upvalueindex(1));
+  lpObject_t object = *(lpObject_t*)luaL_checkudata(L, lua_upvalueindex(1), API_TYPE_OBJECT);
   if (!axGetMessage(&msg)) {
     /* No event ready; end this iterator step. */
     return 0;
