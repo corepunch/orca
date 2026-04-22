@@ -113,6 +113,12 @@ int OBJ_CreateFromLuaState(lua_State *L) {
 
   _ParseArguments(L, pobj);
 
+  /* Store the class table in per-object extras for Lua method lookup */
+  get_object_extras(L, pobj);
+  lua_pushvalue(L, 1); /* arg 1 = class table */
+  lua_setfield(L, -2, "__class");
+  lua_pop(L, 1);
+
   /* If no body was provided explicitly, check if the class defines a __body */
   if (!(OBJ_GetFlags(pobj) & OF_CLEARBODY)) {
     lua_getfield(L, 1, "__body");
@@ -170,11 +176,7 @@ get_object_extras(lua_State* L, lpObject_t obj)
   lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);
-    lua_newtable(L);
-    lua_newtable(L);
-    lua_pushstring(L, "v");
-    lua_setfield(L, -2, "__mode");
-    lua_setmetatable(L, -2);
+    lua_newtable(L);  /* strong-value table — cleaned up in OBJ_Release */
     lua_pushvalue(L, -1);
     lua_setfield(L, LUA_REGISTRYINDEX, "__object_extras");
   }

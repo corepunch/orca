@@ -111,7 +111,7 @@ int f_msgSend(lua_State *L) {
 int f_object_index(lua_State* L) {
   lpObject_t self = luaX_checkObject(L, 1);
   const char* key = luaL_checkstring(L, 2);
-  /* First check the Object metatable for methods (addChild, post, send, …) */
+  /* 1. Check the Object metatable for C methods (addChild, post, send, …) */
   luaL_getmetatable(L, API_TYPE_OBJECT);
   lua_getfield(L, -1, key);
   lua_remove(L, -2); /* remove metatable */
@@ -119,7 +119,42 @@ int f_object_index(lua_State* L) {
     return 1;
   }
   lua_pop(L, 1);
-  /* Fall through to ORCA property lookup */
+  /* 2. Walk the class method chain and check per-object extras */
+  lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+  if (!lua_isnil(L, -1)) {
+    lua_pushlightuserdata(L, self);
+    lua_gettable(L, -2);
+    lua_remove(L, -2); /* remove __object_extras */
+    if (!lua_isnil(L, -1)) {
+      int extras_idx = lua_absindex(L, -1);
+      /* Walk class chain */
+      lua_getfield(L, extras_idx, "__class");
+      while (!lua_isnil(L, -1)) {
+        lua_getfield(L, -1, key);
+        if (!lua_isnil(L, -1)) {
+          lua_insert(L, extras_idx); /* move result below extras */
+          lua_pop(L, 2);             /* pop extras + class */
+          return 1;
+        }
+        lua_pop(L, 1);               /* pop nil result */
+        lua_getfield(L, -1, "__parent");
+        lua_remove(L, -2);           /* replace class with parent */
+      }
+      lua_pop(L, 1); /* pop nil class */
+      /* Check extras directly for arbitrary stored instance values */
+      lua_getfield(L, extras_idx, key);
+      lua_remove(L, extras_idx);     /* remove extras */
+      if (!lua_isnil(L, -1)) {
+        return 1;
+      }
+      lua_pop(L, 1);
+    } else {
+      lua_pop(L, 1); /* pop nil entry */
+    }
+  } else {
+    lua_pop(L, 1); /* pop nil __object_extras */
+  }
+  /* 3. Fall through to ORCA property lookup */
   return OBJ_GetProperty(L, self, key);
 }
 

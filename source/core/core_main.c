@@ -168,20 +168,50 @@ static int class_call(lua_State* L) {
   return OBJ_CreateFromLuaState(L);
 }
 
-/* class:extend{...} — Lua-side extension of a C class.
- * Returns the same class table so that obj creation still works.
- * If the extension has a "body" key, stores it on the class as "__body". */
+/* class:extend{...} — Lua-side subclass of a C class.
+ * Creates a NEW class table that inherits __nativeclass and the base's
+ * metatable.  All methods from arg 2 are copied onto the new class;
+ * a "body" key is stored as "__body".  __parent points to the base so
+ * f_object_index can walk the method chain. */
 static int class_extend(lua_State* L) {
-  lua_pushvalue(L, 1); /* return the class itself */
+  lua_newtable(L);                          /* new class table */
+  int new_cls = lua_absindex(L, -1);
+
+  /* Copy __nativeclass from base */
+  lua_getfield(L, 1, "__nativeclass");
+  lua_setfield(L, new_cls, "__nativeclass");
+
+  /* Set __parent = base for method-chain lookup */
+  lua_pushvalue(L, 1);
+  lua_setfield(L, new_cls, "__parent");
+
+  /* Add extend on the new class */
+  lua_pushcfunction(L, class_extend);
+  lua_setfield(L, new_cls, "extend");
+
+  /* Copy extension methods from arg 2 */
   if (lua_type(L, 2) == LUA_TTABLE) {
-    lua_getfield(L, 2, "body");
-    if (lua_type(L, -1) == LUA_TFUNCTION) {
-      lua_setfield(L, -2, "__body");
-    } else {
-      lua_pop(L, 1);
+    lua_pushnil(L);
+    while (lua_next(L, 2) != 0) {
+      if (lua_type(L, -2) == LUA_TSTRING) {
+        const char* k = lua_tostring(L, -2);
+        if (k && strcmp(k, "body") == 0 && lua_type(L, -1) == LUA_TFUNCTION) {
+          lua_setfield(L, new_cls, "__body"); /* pops value */
+        } else if (k) {
+          lua_setfield(L, new_cls, k);        /* pops value */
+        } else {
+          lua_pop(L, 1);
+        }
+      } else {
+        lua_pop(L, 1);
+      }
     }
   }
-  return 1;
+
+  /* Apply same metatable as base (__call, __add, __index) */
+  lua_getmetatable(L, 1);
+  lua_setmetatable(L, new_cls);
+  return 1;  /* new_cls is on top */
 }
 
 int lua_pushclass(lua_State* L, struct ClassDesc* cl)

@@ -106,6 +106,18 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
+
+  /* Clean up per-object extras table to prevent stale pointer reuse */
+  if (L) {
+    lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+    if (!lua_isnil(L, -1)) {
+      lua_pushlightuserdata(L, pobj);
+      lua_pushnil(L);
+      lua_settable(L, -3);
+    }
+    lua_pop(L, 1);
+  }
+
   free(pobj);
 }
 
