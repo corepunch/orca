@@ -41,11 +41,6 @@ ENUM(ResourceEntryType, "Undefined", "Text", "Resource")
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
 }
-int f_OBJ_Awake(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Awake(L, this_ );
-	return 0;
-}
 int f_OBJ_Animate(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_Animate(L, this_ );
@@ -421,7 +416,6 @@ int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_OBJ_CreateFromLuaState },
-		{ "awake", f_OBJ_Awake },
 		{ "animate", f_OBJ_Animate },
 		{ "clear", f_OBJ_Clear },
 		{ "__gc", f_OBJ_Release },
@@ -720,9 +714,6 @@ static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Trigger_TriggeredEventArgs[] = {
 	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
 };
-static luaL_Reg _Node_AwakeEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_AwakeEventArgs[] = {
-};
 static luaL_Reg _Node_UpdateMatrixEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_UpdateMatrixEventArgs[] = {
 	DECL(0xeacdfcfd, Node_UpdateMatrixEventArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // Node_UpdateMatrixEventArgs.parent
@@ -963,7 +954,6 @@ STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
-STRUCT(Node_AwakeEventArgs, Node_AwakeEventArgs);
 STRUCT(Node_UpdateMatrixEventArgs, Node_UpdateMatrixEventArgs);
 STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
 STRUCT(Node_HitTestEventArgs, Node_HitTestEventArgs);
@@ -1502,7 +1492,6 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 	ARRAY_DECL(0x9564a892, Node, Resources, Resources, kDataTypeStruct, .TypeString = "ResourceEntry"), // Node.Resources
 	DECL(0x25139ae4, Node, NumResources, NumResources, kDataTypeInt), // Node.NumResources
-	DECL(0x7f460f7c, Node, Awake, Awake, kDataTypeEvent, .TypeString = "Node_AwakeEventArgs"), // Node.Awake
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
 	DECL(0x898160ea, Node, HitTest, HitTest, kDataTypeEvent, .TypeString = "Node_HitTestEventArgs"), // Node.HitTest
@@ -1617,7 +1606,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_AwakeEventArgs(L), -2), "Node_AwakeEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Node_HitTestEventArgs(L), -2), "Node_HitTestEventArgs");

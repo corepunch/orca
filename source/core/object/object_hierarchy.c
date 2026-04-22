@@ -10,6 +10,7 @@ lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
   OBJ_SendMessageW(child, ID_Object_Attached, 0, self);
+  _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
   if (is_template) {
     OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
   }

@@ -18,3 +18,4 @@ Usage
 - Do not introduce, refresh, or sync parallel .lua companions from MoonScript sources.
 - MoonScript method-call syntax: use backslash calls in .moon (for example stack\addChild inner), not Lua colon style (stack:addChild(inner)).
 - Module resolution note: when both .lua and .moon exist for the same module path, runtime may resolve .lua first.
+- Pre-release API policy: prefer clean architecture over temporary compatibility shims; if an API is not in active use yet, remove/rename it directly rather than keeping backward-compat layers.

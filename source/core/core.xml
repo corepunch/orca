@@ -247,10 +247,6 @@
           <details>This is a fall through constructor, that you can pass a table of properties to</details>
           <returns type="nresults"/>
         </method>
-        <method name="Awake" lua="true">
-          <summary>Initializes the core component when it is loaded, an essential lifecycle method.</summary>
-          <details>Perform setup and dependency wiring here before other logic runs.</details>
-        </method>
         <method name="Animate" lua="true">
           <summary>Runs object animations.</summary>
           <details>Invokes the animation pipeline for this object and its hierarchy.</details>
@@ -940,9 +936,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
-        <message name="Awake">
-          <summary>Sent when the object is activated in the scene, before the first update cycle.</summary>
-        </message>
         <message name="UpdateMatrix">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>

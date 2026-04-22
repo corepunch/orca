@@ -38,7 +38,6 @@ typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,*
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
-typedef struct Node_AwakeEventArgs Node_AwakeMsg_t,* Node_AwakeMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
 typedef struct Node_HitTestEventArgs Node_HitTestMsg_t,* Node_HitTestMsgPtr;
@@ -338,10 +337,6 @@ core_AdvanceFrame(void);
 /// @brief Create new object.
 ORCA_API int
 OBJ_CreateFromLuaState(struct lua_State*);
-
-/// @brief Initializes the core component when it is loaded, an essential lifecycle method.
-ORCA_API void
-OBJ_Awake(struct lua_State*, struct Object*);
 
 /// @brief Runs object animations.
 ORCA_API void
@@ -819,11 +814,6 @@ struct Trigger_TriggeredEventArgs {
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
 ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
-/** Node_AwakeEventArgs struct */
-struct Node_AwakeEventArgs {
-};
-ORCA_API void luaX_pushNode_AwakeEventArgs(lua_State *L, struct Node_AwakeEventArgs const* data);
-ORCA_API struct Node_AwakeEventArgs* luaX_checkNode_AwakeEventArgs(lua_State *L, int idx);
 /** Node_UpdateMatrixEventArgs struct */
 struct Node_UpdateMatrixEventArgs {
 	struct mat4 parent; ///< The parent matrix
@@ -1159,7 +1149,6 @@ struct Node {
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
 	long _tags; ///< Calculated tags value
-	event_t Awake;
 	event_t UpdateMatrix;
 	event_t LoadView;
 	event_t HitTest;
