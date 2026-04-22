@@ -18,7 +18,7 @@
 		<TextBlock Name="metric-text" Text="2.4 M" FontSize="28" />
 	</Node2D>
 	<script>
-		self:updateLayout(self.Width, self.Height)
+		self:UpdateLayout(self.Width, self.Height)
 		assert(self.Name == "test-screen", "Expected screen name to be test-screen")
 		assert(self.Width == 1000, "Expected width to be 1000")
 		assert(self.Height == 1000, "Expected height to be 1000")

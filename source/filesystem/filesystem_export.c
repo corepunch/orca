@@ -419,6 +419,18 @@ int f_FS_ReadTextFile(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	return FS_ReadTextFile(L, path);
 }
+int f_FS_LoadObjectFromXML(lua_State *L) {
+	const char* path = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_LoadObjectFromXML(L, path);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_ParseObjectFromXMLString(lua_State *L) {
+	const char* xmlString = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_ParseObjectFromXMLString(L, xmlString);
+	luaX_pushObject(L, result_);
+	return 1;
+}
 
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -433,6 +445,8 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "readTextFile", f_FS_ReadTextFile },
+		{ "loadObjectFromXML", f_FS_LoadObjectFromXML },
+		{ "parseObjectFromXMLString", f_FS_ParseObjectFromXMLString },
 		{ NULL, NULL } 
 	}));
 	void on_filesystem_module_registered(lua_State *L);

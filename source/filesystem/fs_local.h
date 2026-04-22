@@ -31,4 +31,8 @@ xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 
 struct file *_ReadOnDisk(FILE *fp);
 
+// Defined in fs_xml.c — package.searchers integration
+int f_find_xml_module(lua_State* L);
+int f_xml_module_loader(lua_State* L);
+
 #endif

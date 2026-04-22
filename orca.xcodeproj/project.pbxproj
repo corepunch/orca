@@ -20,6 +20,7 @@
 		781CA6DC2E1502A900FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136F42AF3CC4E00AAAE53 /* filesystem.c */; };
 		781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFC852AF7E97900216782 /* w_filesystem.c */; };
+		7810D3102D58F7FA00DB632F /* fs_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 7810D3112D58F7FA00DB632F /* fs_xml.c */; };
 		781CA6E72E15246B00FFCFD9 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		781CA7092E15370700FFCFD9 /* r_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 78B136DA2AF3CC4E00AAAE53 /* r_local.h */; };
 		781CA70A2E15370700FFCFD9 /* api_image.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCEA2AFABC7700216782 /* api_image.c */; };
@@ -568,6 +569,7 @@
 		78688D262D81E9E2008DE67B /* Label.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Label.c; sourceTree = "<group>"; };
 		7868DA162F88E30A00519F18 /* ConsoleView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ConsoleView.c; sourceTree = "<group>"; };
 		786BFC852AF7E97900216782 /* w_filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_filesystem.c; sourceTree = "<group>"; };
+		7810D3112D58F7FA00DB632F /* fs_xml.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fs_xml.c; sourceTree = "<group>"; };
 		786BFCA82AF9013A00216782 /* plugapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = plugapi.h; sourceTree = "<group>"; };
 		786BFCD72AFA403F00216782 /* orcalib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = orcalib.c; sourceTree = "<group>"; };
 		786BFCE72AFA53DA00216782 /* version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
@@ -937,6 +939,7 @@
 				78A5AFA32F66B9FA00E6A765 /* Package.c */,
 				781FC4A52E894AC400571445 /* popen2.c */,
 				786BFC852AF7E97900216782 /* w_filesystem.c */,
+				7810D3112D58F7FA00DB632F /* fs_xml.c */,
 				782E9EE82E97EF6F009C3946 /* filesystem_properties.h */,
 				782E9EE62E97EF6F009C3946 /* filesystem.h */,
 				7810D30F2D58F7FA00DB632F /* fs_local.h */,
@@ -2021,6 +2024,7 @@
 				78A5AFAC2F673B6000E6A765 /* io_open.c in Sources */,
 				78A5AFA42F66BA0200E6A765 /* Package.c in Sources */,
 				781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */,
+				7810D3102D58F7FA00DB632F /* fs_xml.c in Sources */,
 				781FC4A62E894AC800571445 /* popen2.c in Sources */,
 				782E9EE92E97EF6F009C3946 /* filesystem_export.c in Sources */,
 			);
