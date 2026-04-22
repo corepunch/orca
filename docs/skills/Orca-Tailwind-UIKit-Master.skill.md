@@ -21,6 +21,8 @@ Style system principles
 
 UIKit composition rules
 - Prefer closure style for idiomatic MoonScript.
+- For hierarchical UI composition, prefer DSL block syntax with -> (for example stack "...", -> ...), instead of long node + chains.
+- Use node + when attaching a pre-built node instance, but build nested structure with -> so parent-child intent stays visible.
 - The body function passed to a widget (StackView class: "...", =>) is run AFTER OBJ_Clear wipes the node. Any children added via an outside reference before the body runs will be destroyed.
 - To inject pre-built nodes (e.g. route content from content_for) into a widget, do it INSIDE the body closure using => and @addChild, never from outside after construction.
 - Correct: StackView class: "p-6 gap-3", => ... if inner then @addChild inner
@@ -30,6 +32,14 @@ UIKit composition rules
 - Never generate .lua files from .moon files.
 - Keep style and layout changes in .moon sources only.
 - Do not create or sync parallel .lua versions for MoonScript UI modules.
+
+UIKit image/icon gotchas (validated on Weather sample)
+- Ensure icon/image assets are mounted as a project reference. Add an assets subproject in package.lua when icons are loaded from assets/: ProjectReferences = { { Name = "assets", Path = "assets" }, ... }.
+- For ImageView, use Source (not Image) when binding SVG icon paths in MoonScript object tables.
+- For SVG masking in query params, use mask=true (not type=mask), e.g. Source: "assets/icons/home.svg?width=26&mask=true".
+
+Reference pattern
+- Banking footer demonstrates the preferred hierarchy-first style: stack ".bg-muted.w-full.h-full.justify-evenly", -> ... with children declared inside the -> block.
 
 Text content idiom
 - Prefer positional value style for TextBlock and Button text content, matching Lapis-style readability.
