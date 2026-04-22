@@ -76,13 +76,8 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
     _SendMessage(hobj, Object, Start);
   }
   if (lua_type(L, 2) == LUA_TFUNCTION) {
-    // Store body in per-object extras table for rebuild()
-    get_object_extras(L, hobj);
-    lua_pushvalue(L, 2);
-    lua_setfield(L, -2, "body");
-    lua_pop(L, 1);
+    OBJ_Rebuild(L, hobj);
     lua_remove(L, 2);
-    OBJ_SetFlags(hobj, OBJ_GetFlags(hobj) | OF_CLEARBODY);
   }
   if (lua_type(L, 2) == LUA_TSTRING) {
     OBJ_SetTextContent(hobj, luaL_checkstring(L, 2));
@@ -119,20 +114,6 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   lua_setfield(L, -2, "__class");
   lua_pop(L, 1);
 
-  /* If no body was provided explicitly, check if the class defines a __body */
-  if (!(OBJ_GetFlags(pobj) & OF_CLEARBODY)) {
-    lua_getfield(L, 1, "__body");
-    if (lua_type(L, -1) == LUA_TFUNCTION) {
-      get_object_extras(L, pobj);
-      lua_pushvalue(L, -2);
-      lua_setfield(L, -2, "body");
-      lua_pop(L, 2);
-      OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) | OF_CLEARBODY);
-    } else {
-      lua_pop(L, 1);
-    }
-  }
-
   // apply class-default style
   lua_getfield(L, 1, "apply");
   if (lua_type(L, -1) == LUA_TFUNCTION) {
@@ -146,12 +127,6 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   lua_pop(L, 1);
 
   luaX_pushObject(L, pobj);
-
-  /* If a body function was set during _ParseArguments, schedule rebuild. */
-  if (OBJ_GetFlags(pobj) & OF_CLEARBODY) {
-    void OBJ_Rebuild(lua_State*, lpObject_t);
-    OBJ_Rebuild(L, pobj);
-  }
 
   return 1;
 }
@@ -197,40 +172,23 @@ void get_object_extras_pub(lua_State* L, lpObject_t obj) { get_object_extras(L, 
 
 #define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
-  lpObject_t self = (lpObject_t)ctx;
   if (status != LUA_OK) {
     return luaL_error(L, luaL_tolstring(L, -1, NULL));
   }
-  if (OBJ_GetFlags(self) & OF_CLEARBODY) {
-    get_object_extras(L, self);
-    lua_pushnil(L);
-    lua_setfield(L, -2, "body");
-    lua_pop(L, 1);
-    OBJ_SetFlags(self, OBJ_GetFlags(self) & ~OF_CLEARBODY);
-  }
-  axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
+  axPostMessageW((lpObject_t)ctx, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
 
 static int f_rebuild(lua_State *L) {
   lpObject_t self = luaX_checkObject(L, 1);
-  if (!lua_isnoneornil(L, 2)) {
-    get_object_extras(L, self);
-    lua_pushvalue(L, 2);
-    lua_setfield(L, -2, "body");
-    lua_pop(L, 1);
-  }
-  get_object_extras(L, self);
-  lua_getfield(L, -1, "body");
-  lua_remove(L, -2);
-  if (lua_type(L, -1) == LUA_TFUNCTION) {
+  if (lua_type(L, 2) == LUA_TFUNCTION) {
     OBJ_Clear(L, self);
-    lua_pushvalue(L, 1);
+    lua_pushvalue(L, 2);  /* fn */
+    lua_pushvalue(L, 1);  /* self */
     return lua_pcallk(L, 1, 0, 0, (lua_KContext)self, f_rebuild_finalize);
-  } else if (lua_type(L, -1) == LUA_TSTRING) {
-    OBJ_SetTextContent(self, luaL_checkstring(L, -1));
+  } else if (lua_type(L, 2) == LUA_TSTRING) {
+    OBJ_SetTextContent(self, luaL_checkstring(L, 2));
   }
-  lua_pop(L, 1);
   axPostMessageW(self, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
@@ -241,7 +199,13 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
   luaX_pushObject(co, self);
-  axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(1, ref), NULL);
+  int nargs = 1;
+  if (!lua_isnoneornil(L, 2)) {
+    lua_pushvalue(L, 2);   /* copy fn/string to top of L */
+    lua_xmove(L, co, 1);   /* move to co's stack as arg 2 */
+    nargs = 2;
+  }
+  axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 
 lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {

@@ -70,14 +70,6 @@ int f_OBJ_Equals(lua_State *L) {
 }
 int f_OBJ_Rebuild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	/* If a body argument was passed, store it in the per-object extras table */
-	if (!lua_isnoneornil(L, 2)) {
-		extern void get_object_extras_pub(lua_State*, struct Object*);
-		get_object_extras_pub(L, this_);
-		lua_pushvalue(L, 2);
-		lua_setfield(L, -2, "body");
-		lua_pop(L, 1);
-	}
 	OBJ_Rebuild(L, this_);
 	return 0;
 }

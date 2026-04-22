@@ -169,11 +169,9 @@ static int class_call(lua_State* L) {
 }
 
 /* class:extend{...} — Lua-side subclass of a C class.
- * Creates a NEW derived class table.  Extension methods are copied onto it;
- * a "body" key is also stored as "__body".
+ * Creates a NEW derived class table.  Extension methods are copied onto it.
  * The derived class metatable uses __index = base so that all base-class
- * methods are found transparently via Lua's own metamethod chain — no
- * manual __parent walking required. */
+ * methods are found transparently via Lua's own metamethod chain. */
 static int class_extend(lua_State* L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   int base = lua_absindex(L, 1);
@@ -189,32 +187,24 @@ static int class_extend(lua_State* L) {
   lua_pushcfunction(L, class_extend);
   lua_setfield(L, derived, "extend");
 
-  /* Copy extension fields; "body" key becomes "__body" */
+  /* Copy all extension fields verbatim */
   if (lua_type(L, 2) == LUA_TTABLE) {
     int ext = lua_absindex(L, 2);
     lua_pushnil(L);
     while (lua_next(L, ext) != 0) {
       if (lua_type(L, -2) == LUA_TSTRING) {
-        const char* k = lua_tostring(L, -2);
-        if (k && strcmp(k, "body") == 0 && lua_type(L, -1) == LUA_TFUNCTION) {
-          lua_setfield(L, derived, "__body"); /* pops value */
-        } else if (k) {
-          lua_setfield(L, derived, k);        /* pops value */
-        } else {
-          lua_pop(L, 1);
-        }
+        lua_setfield(L, derived, lua_tostring(L, -2)); /* pops value */
       } else {
         lua_pop(L, 1);
       }
     }
   }
 
-  /* Derived class metatable: __call → class_call, __index → base class table
-   * so that base-class methods are found automatically. */
+  /* Derived class metatable: __call → class_call, __index → base class table */
   lua_newtable(L);
   lua_pushcfunction(L, class_call);
   lua_setfield(L, -2, "__call");
-  lua_pushvalue(L, base);       /* __index = base class table */
+  lua_pushvalue(L, base);
   lua_setfield(L, -2, "__index");
   lua_setmetatable(L, derived);
 
