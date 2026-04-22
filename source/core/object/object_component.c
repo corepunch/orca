@@ -127,6 +127,9 @@ CMP_GetClassName(struct component* hcmp)
 LRESULT
 OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
+  if (MsgID == ID_Object_Animate) {
+    OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
+  }
 //#ifndef KANZI_SUPPORT
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
@@ -147,6 +150,16 @@ LRESULT
 OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
 {
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
+}
+
+void
+OBJ_RequestAnimate(lpObject_t pobj)
+{
+  if (!pobj) return;
+  uint32_t flags = OBJ_GetFlags(pobj);
+  if (flags & OF_ANIMATE_QUEUED) return;
+  OBJ_SetFlags(pobj, flags | OF_ANIMATE_QUEUED);
+  axPostMessageW(pobj, ID_Object_Animate, 0, NULL);
 }
 
 void*

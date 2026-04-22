@@ -340,6 +340,8 @@ HANDLER(PropertyAnimation, Object, Animate) {
     if (t >= 1.0f) {
         _PropertyAnimation_FreeBuffers(pPropertyAnimation);
         CMP_Detach(pPropertyAnimation);
+    } else {
+      OBJ_RequestAnimate(hObject);
     }
     return FALSE;
 }
@@ -394,14 +396,6 @@ OBJ_DoTween(lua_State* L,
     luaL_error(L, "Unknown property type for tween");
     return;
   }
-}
-
-void
-OBJ_Animate(lua_State* L, lpObject_t object)
-{
-  if (OBJ_IsHidden(object))
-    return;
-  OBJ_SendMessageW(object, ID_Object_Animate, 0, NULL);
-  FOR_EACH_OBJECT(it, object) OBJ_Animate(L, it);
+  OBJ_RequestAnimate(self);
 }
 

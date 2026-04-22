@@ -648,7 +648,7 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
 // Drain all pending events from the platform queue, dispatching each one.
 // This is used in headless tests to process kEventResumeCoroutine messages
 // that run body() rebuild coroutines posted by rebuild() calls.
-static int f_flush_queue(lua_State* L) {
+ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
@@ -659,12 +659,15 @@ static int f_flush_queue(lua_State* L) {
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);
   }
-  return 0;
 }
 
 void
 after_core_module_registered(lua_State* L)
 {
+  int f_OBJ_newindex(lua_State* L);
+  int f_object_gc(lua_State* L);
+  int f_object_index(lua_State* L);
+
 #define OVERRIDE_FROMSTRING(NAME, TextConvert, New) \
 lua_getfield(L, -1, #NAME); \
 lua_pushcfunction(L, TextConvert); \
@@ -679,6 +682,12 @@ lua_pop(L, 1);
 
 #undef OVERRIDE_FROMSTRING
 
-  lua_pushcfunction(L, f_flush_queue);
-  lua_setfield(L, -2, "flushQueue");
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  lua_pushcfunction(L, f_object_gc);
+  lua_setfield(L, -2, "__gc");
+  lua_pushcfunction(L, f_OBJ_newindex);
+  lua_setfield(L, -2, "__newindex");
+  lua_pushcfunction(L, f_object_index);
+  lua_setfield(L, -2, "__index");
+  lua_pop(L, 1);
 }

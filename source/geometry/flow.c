@@ -2,6 +2,21 @@
 #include <source/geometry/geometry.h>
 #include <source/core/core.h>
 
+lpObject_t _lua_checkobject(lua_State* L, int arg) {
+  return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
+}
+
+void _lua_pushobject(lua_State* L, lpcObject_t self)
+{
+  if (!self) {
+    lua_pushnil(L);
+    return;
+  }
+  lpObject_t* ud = lua_newuserdata(L, sizeof(lpObject_t));
+  *ud = (lpObject_t)self;
+  luaL_setmetatable(L, API_TYPE_OBJECT);
+}
+
 ORCA_API int
 parse_property(lua_State* L,
                const char* str,
@@ -53,7 +68,7 @@ parse_property(lua_State* L,
       if (lua_type(L, -1) != LUA_TUSERDATA) {
         return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
       }
-      *(void**)valueptr = luaX_checkObject(L, -1);
+      *(void**)valueptr = _lua_checkobject(L, -1);
       lua_pop(L, 1);
       return TRUE;
 //    case kDataTypeEvent:
@@ -107,7 +122,7 @@ read_property(lua_State *L,
       break;
     case kDataTypeObject:
       if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TUSERDATA) {
-        *(void**)valueptr = luaX_checkObject(L, idx);
+        *(void**)valueptr = _lua_checkobject(L, idx);
         break;
       } else if (lua_type(L, idx) == LUA_TSTRING) {
         parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
@@ -184,7 +199,7 @@ write_property(lua_State *L,
         break;
       case kDataTypeObject:
         if (*(lpObject_t const*)valueptr) {
-          luaX_pushObject(L, *(lpObject_t const*)valueptr);
+          _lua_pushobject(L, *(lpObject_t const*)valueptr);
         } else {
           lua_pushnil(L);
         }

@@ -2,6 +2,7 @@ renderer = require "orca.renderer"
 
 class App extends require "orca.core.application"
 	layout: require "Weather/views/layout"
+	views_prefix: "Weather/views/screens"
 
 	@include_helpers {
 		app_title: => "WeatherTabs"
@@ -26,17 +27,8 @@ class App extends require "orca.core.application"
 
 		@screen\post "Window.Paint", renderer.getSize!
 
-	"/": =>
-		require("Weather/views/screens/Home")!
-
-	"/forecast": =>
-		require("Weather/views/screens/Forecast")!
-
-	"/alerts": =>
-		require("Weather/views/screens/Alerts")!
-
-	"/saved": =>
-		require("Weather/views/screens/Saved")!
-
-	"/about": =>
-		require("Weather/views/screens/About")!
+	[Home: "/"]: => render: true
+	[Forecast: "/forecast"]: => render: true
+	[Alerts: "/alerts"]: => render: true
+	[Saved: "/saved"]: => render: true
+	[About: "/about"]: => render: true

@@ -41,19 +41,9 @@ ENUM(ResourceEntryType, "Undefined", "Text", "Resource")
 int f_OBJ_CreateFromLuaState(lua_State *L) {
 	return OBJ_CreateFromLuaState(L);
 }
-int f_OBJ_Animate(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Animate(L, this_ );
-	return 0;
-}
 int f_OBJ_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_Clear(L, this_ );
-	return 0;
-}
-int f_OBJ_Release(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Release(L, this_ );
 	return 0;
 }
 int f_OBJ_Equals(lua_State *L) {
@@ -65,7 +55,7 @@ int f_OBJ_Equals(lua_State *L) {
 }
 int f_OBJ_Rebuild(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Rebuild(L, this_);
+	OBJ_Rebuild(L, this_ );
 	return 0;
 }
 int f_OBJ_AddChild(lua_State *L) {
@@ -406,19 +396,14 @@ int f_OBJ_IsPrefabView(lua_State *L) {
 	return 1;
 }
 
-int f_object_index(lua_State* L);
-
 int luaopen_orca_Object(lua_State *L) {
 	luaL_newmetatable(L, "Object");
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ "new", f_OBJ_CreateFromLuaState },
-		{ "animate", f_OBJ_Animate },
 		{ "clear", f_OBJ_Clear },
 		{ "__eq", f_OBJ_Equals },
 		{ "rebuild", f_OBJ_Rebuild },
 		{ "addChild", f_OBJ_AddChild },
-		{ "__add", f_OBJ_AddChild },
-		{ "release", f_OBJ_Release },
 		{ "removeFromParent", f_OBJ_RemoveFromParent },
 		{ "getParent", f_OBJ_GetParent },
 		{ "getFirstChild", f_OBJ_GetFirstChild },
@@ -468,15 +453,13 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "setTextContent", f_OBJ_SetTextContent },
 		{ "getTimestamp", f_OBJ_GetTimestamp },
 		{ "getDomain", f_OBJ_GetDomain },
+		{ "__setcontext", f_OBJ_SetContext },
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);
-	int f_OBJ_newindex(lua_State* L);
-	lua_pushcfunction(L, f_OBJ_newindex);
-	lua_setfield(L, -2, "__newindex");
-	lua_pushcfunction(L, f_object_index);
+	lua_pushvalue(L, -1);
 	lua_setfield(L, -2, "__index");
 	return 1;
 }
@@ -1562,6 +1545,10 @@ int f_core_AdvanceFrame(lua_State *L) {
 	core_AdvanceFrame( );
 	return 0;
 }
+int f_core_FlushQueue(lua_State *L) {
+	core_FlushQueue(L );
+	return 0;
+}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -1569,6 +1556,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "getHover", f_core_GetHover },
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
+		{ "flushQueue", f_core_FlushQueue },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);
