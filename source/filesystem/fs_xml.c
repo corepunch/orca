@@ -398,7 +398,7 @@ FS_LoadObjectFromXML(lpcString_t path)
     xmlFreeDoc(doc);
     if (result) {
       OBJ_SetSourceFile(result, path);
-      OBJ_RegisterPrefab(result, path);
+//      OBJ_RegisterPrefab(result, path);
     }
     return result;
   }
@@ -414,7 +414,7 @@ FS_LoadObjectFromXML(lpcString_t path)
   xmlFreeDoc(doc);
   if (result) {
     OBJ_SetSourceFile(result, path);
-    OBJ_RegisterPrefab(result, path);
+//    OBJ_RegisterPrefab(result, path);
   }
   return result;
 }
