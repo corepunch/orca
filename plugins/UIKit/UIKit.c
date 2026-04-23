@@ -58,6 +58,8 @@ static int css_loader(lua_State* L)
 
 static int css_searcher(lua_State* L)
 {
+  // Try the module path as-is first (handles "theme.css"), then append ".css"
+  // (handles "theme") — prevents require("theme.css") becoming "theme.css.css".
   static const char* const exts[] = { "", ".css", NULL };
   const char* module = luaL_checkstring(L, 1);
   for (int i = 0; exts[i]; i++) {
