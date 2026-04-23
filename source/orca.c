@@ -106,11 +106,12 @@ lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   char *buf = NULL;
   FILE *mem = open_memstream(&buf, &size);
   fprintf(mem, "local orca = require 'orca'\n");
+  fprintf(mem, "local filesystem = require 'orca.filesystem'\n");
   fprintf(mem, "orca.init()\n");
   FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
     fprintf(mem, "require '%s'\n", requires[i]);
   }
-  fprintf(mem, "doxmlfile('%s')\n", szFileName);
+  fprintf(mem, "filesystem.loadObject('%s')\n", szFileName);
   fclose(mem);
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
     fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));

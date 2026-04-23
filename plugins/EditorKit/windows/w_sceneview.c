@@ -11,7 +11,7 @@ EDWINPROC(CanvasView);
 EDWINPROC(SplitView);
 EDWINPROC(SceneView);
 
-lpObject_t OBJ_LoadDocument(lua_State*, xmlDocPtr);
+lpObject_t OBJ_LoadDocument(xmlDocPtr);
 
 lpcString_t ED_GetWindowDocument(HEDWND wnd) {
   struct _SCENEVIEW *data = ED_GetUserData(wnd);
@@ -39,7 +39,7 @@ EDWINPROC(SceneView) {
         if (strrchr(path, '.')) *strrchr(path, '.') = 0;
         xmlNodeSetName((xmlNodePtr)doc, BAD_CAST path);
         
-        HOBJ root = OBJ_LoadDocument(editor.L, doc);
+        HOBJ root = OBJ_LoadDocument(doc);
         ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {
           .left = { ED_HierarchyNavigator, 0, root },
           .right = { ED_CanvasView, 0, root },

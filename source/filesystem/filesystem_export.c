@@ -14,7 +14,7 @@ extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* valueptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _ProjectReference[] = {
 	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
 	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
@@ -397,9 +397,27 @@ int f_FS_LoadObject(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-int f_FS_ParseObjectFromXMLString(lua_State *L) {
+int f_FS_LoadObjectFromXml(lua_State *L) {
+	const char* path = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_LoadObjectFromXml(path);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_LoadObjectFromXmlString(lua_State *L) {
 	const char* xmlString = luaL_checkstring(L, 1);
-	struct Object* result_ = FS_ParseObjectFromXMLString(xmlString);
+	struct Object* result_ = FS_LoadObjectFromXmlString(xmlString);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_LoadObjectFromCss(lua_State *L) {
+	const char* path = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_LoadObjectFromCss(path);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_LoadObjectFromCssString(lua_State *L) {
+	const char* cssString = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_LoadObjectFromCssString(cssString);
 	luaX_pushObject(L, result_);
 	return 1;
 }
@@ -424,7 +442,10 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "readTextFile", f_FS_ReadTextFile },
 		{ "loadObject", f_FS_LoadObject },
-		{ "parseObjectFromXMLString", f_FS_ParseObjectFromXMLString },
+		{ "loadObjectFromXml", f_FS_LoadObjectFromXml },
+		{ "loadObjectFromXmlString", f_FS_LoadObjectFromXmlString },
+		{ "loadObjectFromCss", f_FS_LoadObjectFromCss },
+		{ "loadObjectFromCssString", f_FS_LoadObjectFromCssString },
 		{ "getThemeValue", f_FS_GetThemeValue },
 		{ NULL, NULL } 
 	}));

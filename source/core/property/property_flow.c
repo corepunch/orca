@@ -3,7 +3,7 @@
 #include <source/core/core.h>
 
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
-extern struct Object* FS_LoadObjectFromXML(const char* path);
+extern struct Object* FS_LoadObjectFromXml(const char* path);
 
 lpObject_t _lua_checkobject(lua_State* L, int arg) {
   return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
@@ -57,7 +57,7 @@ parse_property(const char* str,
       Con_Printf("parse_property: no C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
       return FALSE;
     case kDataTypeObject: {
-      lpObject_t loaded = FS_LoadObjectFromXML(str);
+      lpObject_t loaded = FS_LoadObjectFromXml(str);
       if (!loaded) {
         Con_Printf("parse_property: failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;

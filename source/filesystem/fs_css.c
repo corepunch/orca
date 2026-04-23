@@ -377,11 +377,26 @@ css_apply_decl_to_rule(lpObject_t rule_obj,
         PROP_SetValue(prop, buf);
 }
 
+static char*
+fs_load_text_file(const char* path)
+{
+    struct file* fp = FS_LoadFile(path);
+    if (!fp) return NULL;
+
+    char* buf = (char*)malloc(fp->size + 1);
+    if (buf) {
+        memcpy(buf, fp->data, fp->size);
+        buf[fp->size] = '\0';
+    }
+    FS_FreeFile(fp);
+    return buf;
+}
+
 // ---------------------------------------------------------------------------
 // Public: parse a CSS string and return a new StyleSheet object
 // ---------------------------------------------------------------------------
 
-lpObject_t CSS_ParseStyleSheet(const char* css_text)
+lpObject_t FS_LoadObjectFromCssString(const char* css_text)
 {
     if (!css_text) return NULL;
 
@@ -436,16 +451,16 @@ lpObject_t CSS_ParseStyleSheet(const char* css_text)
     return sheet;
 }
 
-// ---------------------------------------------------------------------------
-// Lua binding: core.parseStyleSheet(css_string) → StyleSheet object
-// ---------------------------------------------------------------------------
-
-int f_CSS_ParseStyleSheet(lua_State* L)
+lpObject_t FS_LoadObjectFromCss(const char* path)
 {
-  const char* css_text = luaL_checkstring(L, 1);
-  lpObject_t sheet = CSS_ParseStyleSheet(css_text);
-  if (!sheet)
-    return luaL_error(L, "CSS_ParseStyleSheet: failed to create StyleSheet");
-  luaX_pushObject(L, sheet);
-  return 1;
+    char* css_text = fs_load_text_file(path);
+    if (!css_text) {
+        Con_Error("FS_LoadObjectFromCss: can't load '%s'", path);
+        return NULL;
+    }
+
+    lpObject_t sheet = FS_LoadObjectFromCssString(css_text);
+    free(css_text);
+    return sheet;
 }
+
