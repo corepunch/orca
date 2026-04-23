@@ -403,6 +403,17 @@ OBJ_RegisterClass(lpcClassDesc_t);
 ORCA_API lpcClassDesc_t
 OBJ_FindClass(lpcString_t);
 
+// Register a pure-C string parser for a named struct type.
+// The parser should write the parsed value to dst (of size `sz`) and return TRUE on success.
+ORCA_API void
+OBJ_RegisterStructParser(const char* type_name,
+                         int (*fn)(const char* str, void* dst, size_t sz));
+
+// Parse a struct of the given type name from a string using a registered C parser.
+// Returns TRUE on success, FALSE if no parser is registered or parsing fails.
+ORCA_API int
+OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz);
+
 ORCA_API lpcClassDesc_t
 OBJ_FindClassW(uint32_t);
 

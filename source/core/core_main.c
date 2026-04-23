@@ -489,6 +489,10 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   return FALSE;
 }
 
+// --- Lua constructors for geometry structs ----------------------------------
+// These provide ergonomic construction: EdgeShorthand(left, right),
+// Thickness(v), Thickness(h, v), Thickness(l, r, t, b), etc.
+
 static int f_Thickness_New(lua_State* L) {
   struct Thickness self={0};
   switch (lua_gettop(L))
@@ -514,31 +518,6 @@ static int f_Thickness_New(lua_State* L) {
   }
 }
 
-static int f_Thickness_TextConvert(lua_State* L) {
-  float a, b, c, d;
-  struct Thickness self={0};
-  switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
-    case 4:
-      self.Axis[0] = (struct EdgeShorthand){a, c};
-      self.Axis[1] = (struct EdgeShorthand){b, d};
-      return (luaX_pushThickness(L, &self), 1);
-    case 3:
-      self.Axis[0] = (struct EdgeShorthand){a, c};
-      self.Axis[1] = (struct EdgeShorthand){b, b};
-      return (luaX_pushThickness(L, &self), 1);
-    case 2:
-      self.Axis[0] = (struct EdgeShorthand){a, a};
-      self.Axis[1] = (struct EdgeShorthand){b, b};
-      return (luaX_pushThickness(L, &self), 1);
-    case 1:
-      self.Axis[0] = (struct EdgeShorthand){a, a};
-      self.Axis[1] = (struct EdgeShorthand){a, a};
-      return (luaX_pushThickness(L, &self), 1);
-    default:
-      return luaL_error(L, "Thickness.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
-  }
-}
-
 static int f_EdgeShorthand_New(lua_State* L) {
   switch (lua_gettop(L)) {
     case 2:
@@ -547,18 +526,6 @@ static int f_EdgeShorthand_New(lua_State* L) {
       return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){luaL_checknumber(L, 1), luaL_checknumber(L, 1)}), 1);
     default:
       return 0;
-  }
-}
-
-static int f_EdgeShorthand_TextConvert(lua_State* L) {
-  float a = 0, b = 0;
-  switch (sscanf(luaL_checkstring(L, 1), "%f %f", &a, &b)) {
-    case 2:
-      return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, b}), 1);
-    case 1:
-      return (luaX_pushEdgeShorthand(L, &(struct EdgeShorthand){a, a}), 1);
-    default:
-      return luaL_error(L, "EdgeShorthand.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
   }
 }
 
@@ -573,16 +540,76 @@ static int f_CornerRadius_New(lua_State* L) {
   }
 }
 
-static int f_CornerRadius_TextConvert(lua_State* L) {
-  float a, b, c, d;
-  switch (sscanf(luaL_checkstring(L, 1), "%f %f %f %f", &a, &b, &c, &d)) {
-    case 4:
-      return (luaX_pushCornerRadius(L, &(struct CornerRadius){a, b, c, d}), 1);
-    case 1:
-      return (luaX_pushCornerRadius(L, &(struct CornerRadius){a, a, a, a}), 1);
-    default:
-      return luaL_error(L, "CornerRadius.fromstring: cannot parse '%s'", luaL_checkstring(L, 1));
+// --- Pure-C struct string parsers (no Lua state required) -------------------
+
+static int c_parse_EdgeShorthand(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct EdgeShorthand)) return FALSE;
+  float a = 0, b = 0;
+  switch (sscanf(str, "%f %f", &a, &b)) {
+    case 2: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, b}; return TRUE;
+    case 1: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, a}; return TRUE;
+    default: Con_Printf("EdgeShorthand: cannot parse '%s'", str); return FALSE;
   }
+}
+
+static int c_parse_Thickness(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct Thickness)) return FALSE;
+  float a = 0, b = 0, c = 0, d = 0;
+  struct Thickness self = {0};
+  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, d}; break;
+    case 3: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
+    case 2: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
+    case 1: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){a, a}; break;
+    default: Con_Printf("Thickness: cannot parse '%s'", str); return FALSE;
+  }
+  *(struct Thickness*)dst = self;
+  return TRUE;
+}
+
+static int c_parse_CornerRadius(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct CornerRadius)) return FALSE;
+  float a = 0, b = 0, c = 0, d = 0;
+  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4: *(struct CornerRadius*)dst = (struct CornerRadius){a, b, c, d}; return TRUE;
+    case 1: *(struct CornerRadius*)dst = (struct CornerRadius){a, a, a, a}; return TRUE;
+    default: Con_Printf("CornerRadius: cannot parse '%s'", str); return FALSE;
+  }
+}
+
+// --- Struct parser registry -------------------------------------------------
+
+void
+OBJ_RegisterStructParser(const char* type_name,
+                          int (*fn)(const char* str, void* dst, size_t sz))
+{
+  FOR_LOOP(i, MAX_STRUCT_PARSERS) {
+    if (core.struct_parsers[i].type_name &&
+        !strcmp(core.struct_parsers[i].type_name, type_name)) {
+      core.struct_parsers[i].fn = fn;   // update existing entry
+      return;
+    }
+  }
+  FOR_LOOP(i, MAX_STRUCT_PARSERS) {
+    if (!core.struct_parsers[i].type_name) {
+      core.struct_parsers[i].type_name = type_name;
+      core.struct_parsers[i].fn = fn;
+      return;
+    }
+  }
+  Con_Error("No space to register struct parser for '%s'", type_name);
+}
+
+int
+OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz)
+{
+  FOR_LOOP(i, MAX_STRUCT_PARSERS) {
+    struct struct_parser_entry const* e = &core.struct_parsers[i];
+    if (e->type_name && !strcmp(e->type_name, type_name)) {
+      return e->fn(str, dst, sz);
+    }
+  }
+  return FALSE;
 }
 
 void
@@ -597,6 +624,11 @@ before_core_module_registered(lua_State* L)
   core.realtime = axGetMilliseconds();
   core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
+
+  // Register pure-C struct parsers so parse_property works without a Lua state
+  OBJ_RegisterStructParser("EdgeShorthand", c_parse_EdgeShorthand);
+  OBJ_RegisterStructParser("Thickness",     c_parse_Thickness);
+  OBJ_RegisterStructParser("CornerRadius",  c_parse_CornerRadius);
   
   void Init_KnownPrefabs(void);
   Init_KnownPrefabs();
@@ -668,19 +700,20 @@ after_core_module_registered(lua_State* L)
   int f_object_gc(lua_State* L);
   int f_object_index(lua_State* L);
 
-#define OVERRIDE_FROMSTRING(NAME, TextConvert, New) \
-lua_getfield(L, -1, #NAME); \
-lua_pushcfunction(L, TextConvert); \
-lua_setfield(L, -2, "fromstring"); \
-lua_pushcfunction(L, New); \
-lua_setfield(L, -2, "new"); \
-lua_pop(L, 1);
+  // Override the default positional-args 'new' for struct types that have
+  // special numeric-shorthand construction (e.g. Thickness(10) means all
+  // sides, not just the first positional field).
+#define OVERRIDE_NEW(NAME, New) \
+  lua_getfield(L, -1, #NAME); \
+  lua_pushcfunction(L, New); \
+  lua_setfield(L, -2, "new"); \
+  lua_pop(L, 1);
 
-  OVERRIDE_FROMSTRING(Thickness, f_Thickness_TextConvert, f_Thickness_New)
-  OVERRIDE_FROMSTRING(EdgeShorthand, f_EdgeShorthand_TextConvert, f_EdgeShorthand_New)
-  OVERRIDE_FROMSTRING(CornerRadius, f_CornerRadius_TextConvert, f_CornerRadius_New)
+  OVERRIDE_NEW(Thickness,     f_Thickness_New)
+  OVERRIDE_NEW(EdgeShorthand, f_EdgeShorthand_New)
+  OVERRIDE_NEW(CornerRadius,  f_CornerRadius_New)
 
-#undef OVERRIDE_FROMSTRING
+#undef OVERRIDE_NEW
 
   luaL_getmetatable(L, API_TYPE_OBJECT);
   lua_pushcfunction(L, f_object_gc);
