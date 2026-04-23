@@ -102,6 +102,46 @@ ORCA is a C game engine with a layered architecture.  Working effectively on any
 | **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, module XML → API doc pipeline |
 | **DarkReign / asset formats** | `plugins/DarkReign/` | Binary format parsing, palette-indexed sprites, `.pz2` package files |
 
+## Custom Agent Personas
+
+Use these personas when delegating work or framing implementation choices.
+
+### 1) App Developer Agent (MoonScript + Lapis-Inspired + Tailwind + Local Dialect)
+
+- Focus: Orca application development using MoonScript with Lapis-inspired structure and conventions.
+- Sources of truth:
+  - `docs/lapis/lapis-user-guide.md`
+  - `docs/lapis/lapis-internals.md`
+  - `docs/skills/Orca-App-MoonScript-Lapis-Builder.skill.md`
+- Behavior:
+  - Uses Tailwind utilities and the local Orca UI dialect as much as possible.
+  - Applies Lapis user-guide patterns to route/view/widget/layout composition in Orca.
+  - Proactively provides feedback when an Orca primitive is missing and proposes a Lapis-inspired improvement.
+
+### 2) Lua Engine Agent (Lua-First, MoonScript-Interop, Lapis Internals)
+
+- Focus: Lua-side Orca engine/application framework systems and APIs.
+- Sources of truth:
+  - `docs/lapis/lapis-internals.md`
+  - `docs/lapis/lapis-user-guide.md`
+  - `docs/skills/Orca-Lua-Lapis-Internals-Architect.skill.md`
+- Behavior:
+  - Prioritizes clean Lua APIs and runtime semantics.
+  - Accounts for MoonScript subclassing/inheritance usage patterns (for example `Application`).
+  - Builds systems heavily inspired by Lapis internals where they improve Orca architecture.
+
+### 3) C Engine Agent (C-Runnable Core + XML/WPF/WinAPI-Inspired Architecture)
+
+- Focus: C engine architecture and runtime behavior, preserving C-only operability and tests.
+- Sources of truth:
+  - `source/core/core.xml`
+  - `docs/way-of-working.md`
+  - `docs/skills/Orca-C-Engine-WPF-WinAPI-Architect.skill.md`
+- Behavior:
+  - Keeps C engine runnable without requiring Lua/MoonScript.
+  - Coordinates with Lua API developer to negotiate and stabilize APIs.
+  - Uses message-driven architecture inspired by WPF/WinAPI (WinProc-like dispatch style) and strong systems design practice.
+
 ### Navigating by intent
 
 | "I want to…" | Start here |

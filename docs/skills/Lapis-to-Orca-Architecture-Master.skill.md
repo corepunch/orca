@@ -10,6 +10,8 @@ Lapis references
 - /Users/igor/Developer/lapis-master/lapis/etlua.moon
 - /Users/igor/Developer/lapis-master/spec/request_spec.moon
 - /Users/igor/Developer/lapis-master/spec/html_spec.moon
+- /Users/igor/Developer/orca/docs/lapis/lapis-user-guide.md
+- /Users/igor/Developer/orca/docs/lapis/lapis-internals.md
 
 Orca references
 - share/orca/core2/application.lua
