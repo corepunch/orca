@@ -7,8 +7,9 @@ static lpObject_t FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in geometry/flow.c
 // parse_property handles NULL lua_State for the common property types (bool, int,
-// float, string, color, enum).  kDataTypeStruct and kDataTypeObject are skipped
-// with a Con_Printf diagnostic when L is NULL.
+// float, string, color, enum) and kDataTypeStruct types that have a registered
+// C parser (see OBJ_RegisterStructParser).  kDataTypeObject is skipped with a
+// Con_Printf diagnostic when L is NULL.
 extern int parse_property(lua_State* L, const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
@@ -215,13 +216,47 @@ _HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
   }
 }
 
+// Handle <LayerPrefabPlaceholder> and <ObjectPrefabPlaceholder>: load the
+// linked XML file (PlaceholderTemplate attribute) in-place and apply the
+// remaining attributes to the loaded object.  No Lua state is required.
+static lpObject_t
+_HandlePrefabPlaceholder(xmlNodePtr element)
+{
+  xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
+  if (!tmpl) {
+    Con_Printf("fs_xml: PrefabPlaceholder missing PlaceholderTemplate attribute");
+    return NULL;
+  }
+  lpObject_t obj = FS_LoadObjectFromXML((lpcString_t)tmpl);
+  xmlFree(tmpl);
+  if (!obj) return NULL;
+
+  // Apply attributes from the placeholder onto the loaded object
+  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
+    if (!xmlStrcmp(attr->name, XMLSTR("PlaceholderTemplate"))) continue;
+    xmlChar* val = xmlGetProp(element, attr->name);
+    if (val) {
+      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
+      xmlFree(val);
+    }
+  }
+  return obj;
+}
+
 // Build an Object tree from an XML element node.
 static lpObject_t
 FS_ConstructNode(xmlNodePtr element)
 {
-  lpcClassDesc_t cls = OBJ_FindClass((lpcString_t)element->name);
+  lpcString_t tag = (lpcString_t)element->name;
+
+  // PrefabPlaceholder: load the linked XML file in-place
+  if (!strcmp(tag, "LayerPrefabPlaceholder") || !strcmp(tag, "ObjectPrefabPlaceholder")) {
+    return _HandlePrefabPlaceholder(element);
+  }
+
+  lpcClassDesc_t cls = OBJ_FindClass(tag);
   if (!cls) {
-    Con_Printf("fs_xml: Unknown element type '%s'", (lpcString_t)element->name);
+    Con_Printf("fs_xml: Unknown element type '%s'", tag);
     return NULL;
   }
 

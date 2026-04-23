@@ -585,6 +585,68 @@ static int f_CornerRadius_TextConvert(lua_State* L) {
   }
 }
 
+// --- Pure-C struct string parsers (no Lua state required) -------------------
+
+static int c_parse_EdgeShorthand(const char* str, void* dst, size_t sz) {
+  float a = 0, b = 0;
+  switch (sscanf(str, "%f %f", &a, &b)) {
+    case 2: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, b}; return TRUE;
+    case 1: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, a}; return TRUE;
+    default: Con_Printf("EdgeShorthand.fromstring: cannot parse '%s'", str); return FALSE;
+  }
+}
+
+static int c_parse_Thickness(const char* str, void* dst, size_t sz) {
+  float a = 0, b = 0, c = 0, d = 0;
+  struct Thickness self = {0};
+  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, d}; break;
+    case 3: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
+    case 2: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
+    case 1: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){a, a}; break;
+    default: Con_Printf("Thickness.fromstring: cannot parse '%s'", str); return FALSE;
+  }
+  *(struct Thickness*)dst = self;
+  return TRUE;
+}
+
+static int c_parse_CornerRadius(const char* str, void* dst, size_t sz) {
+  float a = 0, b = 0, c = 0, d = 0;
+  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
+    case 4: *(struct CornerRadius*)dst = (struct CornerRadius){a, b, c, d}; return TRUE;
+    case 1: *(struct CornerRadius*)dst = (struct CornerRadius){a, a, a, a}; return TRUE;
+    default: Con_Printf("CornerRadius.fromstring: cannot parse '%s'", str); return FALSE;
+  }
+}
+
+// --- Struct parser registry -------------------------------------------------
+
+void
+OBJ_RegisterStructParser(const char* type_name,
+                          int (*fn)(const char* str, void* dst, size_t sz))
+{
+  FOR_LOOP(i, MAX_STRUCT_PARSERS) {
+    if (!core.struct_parsers[i].type_name) {
+      core.struct_parsers[i].type_name = type_name;
+      core.struct_parsers[i].fn = fn;
+      return;
+    }
+  }
+  Con_Error("No space to register struct parser for '%s'", type_name);
+}
+
+int
+OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz)
+{
+  FOR_LOOP(i, MAX_STRUCT_PARSERS) {
+    struct struct_parser_entry const* e = &core.struct_parsers[i];
+    if (e->type_name && !strcmp(e->type_name, type_name)) {
+      return e->fn(str, dst, sz);
+    }
+  }
+  return FALSE;
+}
+
 void
 before_core_module_registered(lua_State* L)
 {
@@ -597,6 +659,11 @@ before_core_module_registered(lua_State* L)
   core.realtime = axGetMilliseconds();
   core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
+
+  // Register pure-C struct parsers so parse_property works without a Lua state
+  OBJ_RegisterStructParser("EdgeShorthand", c_parse_EdgeShorthand);
+  OBJ_RegisterStructParser("Thickness",     c_parse_Thickness);
+  OBJ_RegisterStructParser("CornerRadius",  c_parse_CornerRadius);
   
   void Init_KnownPrefabs(void);
   Init_KnownPrefabs();

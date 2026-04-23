@@ -56,6 +56,8 @@ parse_property(lua_State* L,
       return TRUE;
     case kDataTypeStruct:
       if (!L) {
+        if (OBJ_ParseStruct(prop->TypeString, str, valueptr, (size_t)prop->DataSize))
+          return TRUE;
         Con_Printf("parse_property: struct property '%s' requires Lua state - skipped", prop->Name);
         return FALSE;
       }
