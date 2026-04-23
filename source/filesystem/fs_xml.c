@@ -79,10 +79,16 @@ _TryPlaceholder(lua_State* L, xmlNodePtr element)
   if (!tmpl)  tmpl = xmlGetProp(element, XMLSTR("ClassName"));
   if (!tmpl) return NULL;
 
+  // Copy the template name to a local buffer and free the xmlChar* immediately
+  // before any Lua operations that could raise a Lua error (which would longjmp
+  // past the xmlFree, leaking the allocation).
+  char tmpl_copy[MAX_OSPATH] = {0};
+  strncpy(tmpl_copy, (lpcString_t)tmpl, sizeof(tmpl_copy) - 1);
+  xmlFree(tmpl);
+
   // require(template) goes through our XML searcher (or the Lua module searcher).
   lua_getglobal(L, "require");
-  lua_pushstring(L, (lpcString_t)tmpl);
-  xmlFree(tmpl);
+  lua_pushstring(L, tmpl_copy);
 
   if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
     Con_Printf("fs_xml: placeholder load error: %s", lua_tostring(L, -1));
