@@ -15,6 +15,12 @@ static lpObject_t workspace = NULL;
 // C-level theme registry: stores "$name" → "value" pairs populated by _InitTheme.
 // Used by the XML parser (fs_xml.c) so it can resolve theme variables without
 // a lua_State.
+//
+// Design notes:
+// - Linear search is acceptable: typical theme has <100 variables, and
+//   FS_GetThemeValue is called once per XML attribute during load, not per frame.
+// - Single-threaded only: Lua (and therefore theme initialisation and XML
+//   loading) runs on a single thread; no synchronisation is needed.
 typedef struct { char key[MAX_PROPERTY_STRING]; char value[MAX_PROPERTY_STRING]; } ThemeEntry;
 #define MAX_THEME_ENTRIES 512
 static ThemeEntry s_theme_entries[MAX_THEME_ENTRIES];
