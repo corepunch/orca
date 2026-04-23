@@ -21,7 +21,7 @@
 
 #include <plugins/UIKit/UIKit.h>
 #include <include/api.h>
-#include <source/core/core_local.h>
+#include <source/core/property/property_internal.h>
 #include <source/core/core_properties.h>
 #include <source/filesystem/filesystem.h>
 
