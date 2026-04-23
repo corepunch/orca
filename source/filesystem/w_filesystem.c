@@ -379,6 +379,8 @@ int luaopen_io_open_override(lua_State* L);
 static int f_doxmlfile(lua_State* L) {
   lpcString_t path = luaL_checkstring(L, 1);
   struct Object* obj = FS_LoadObjectFromXML(L, path);
+  if (!obj)
+    return luaL_error(L, "doxmlfile: failed to load XML file '%s'", path);
   luaX_pushObject(L, obj);
   return 1;
 }
@@ -386,6 +388,8 @@ static int f_doxmlfile(lua_State* L) {
 static int f_doxmlstring(lua_State* L) {
   lpcString_t str = luaL_checkstring(L, 1);
   struct Object* obj = FS_ParseObjectFromXMLString(L, str);
+  if (!obj)
+    return luaL_error(L, "doxmlstring: failed to parse XML near '%.80s'", str);
   luaX_pushObject(L, obj);
   return 1;
 }

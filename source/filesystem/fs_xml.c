@@ -13,6 +13,88 @@ extern int parse_property(lua_State* L, const char* str,
 // External declaration of luaX_readProperty (reads a Lua value at idx into property)
 extern int luaX_readProperty(lua_State* L, int idx, lpProperty_t p);
 
+// --- Helpers ----------------------------------------------------------------
+
+// Resolve a theme variable: if value starts with '$', look it up in orca.theme
+// and return the resolved string; otherwise return value unchanged.
+// resolved_buf must be at least MAX_PROPERTY_STRING bytes.
+static lpcString_t
+_ResolveThemeValue(lua_State* L, lpcString_t value, char* resolved_buf, size_t bufsize)
+{
+  if (!L || !value || value[0] != '$') return value;
+
+  lua_getglobal(L, "orca");
+  if (!lua_istable(L, -1)) { lua_pop(L, 1); return value; }
+  lua_getfield(L, -1, "theme");
+  lua_remove(L, -2);
+  if (!lua_istable(L, -1)) { lua_pop(L, 1); return value; }
+  lua_getfield(L, -1, value);
+  lua_remove(L, -2);
+
+  lpcString_t resolved = lua_tostring(L, -1);
+  if (resolved) {
+    strncpy(resolved_buf, resolved, bufsize - 1);
+    resolved_buf[bufsize - 1] = '\0';
+  }
+  lua_pop(L, 1);
+  return resolved ? resolved_buf : value;
+}
+
+// State struct used to call parse_property() inside a lua_pcall to contain any
+// Lua errors (luaL_error longjmps) raised by the parser.
+typedef struct {
+  lpcString_t        str;
+  lpcPropertyType_t  pdesc;
+  void*              valueptr;
+  int                result;
+} ParsePropertyState;
+
+static int _pcall_parse_property(lua_State* L)
+{
+  ParsePropertyState* s = lua_touserdata(L, 1);
+  s->result = parse_property(L, s->str, s->pdesc, s->valueptr);
+  return 0;
+}
+
+// Detect placeholder element tags (CustomNode, LibraryPlaceholder, etc.) and
+// resolve them to an object by calling require(PlaceholderTemplate | ClassName).
+// Returns a new object on success, NULL otherwise.
+static lpObject_t
+_TryPlaceholder(lua_State* L, xmlNodePtr element)
+{
+  static lpcString_t placeholder_tags[] = {
+    "CustomNode", "LibraryPlaceholder",
+    "LayerPrefabPlaceholder", "ObjectPrefabPlaceholder", NULL
+  };
+
+  lpcString_t tag = (lpcString_t)element->name;
+  bool_t is_placeholder = FALSE;
+  for (int i = 0; placeholder_tags[i]; i++) {
+    if (!strcmp(tag, placeholder_tags[i])) { is_placeholder = TRUE; break; }
+  }
+  if (!is_placeholder || !L) return NULL;
+
+  // Resolve the template module: prefer PlaceholderTemplate, fall back to ClassName
+  xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
+  if (!tmpl)  tmpl = xmlGetProp(element, XMLSTR("ClassName"));
+  if (!tmpl) return NULL;
+
+  // require(template) goes through our XML searcher (or the Lua module searcher).
+  lua_getglobal(L, "require");
+  lua_pushstring(L, (lpcString_t)tmpl);
+  xmlFree(tmpl);
+
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+    Con_Printf("fs_xml: placeholder load error: %s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return NULL;
+  }
+
+  lpObject_t obj = luaX_checkObject(L, -1);
+  lua_pop(L, 1);
+  return obj;
+}
+
 // Map a PropertyAttribute name string to its enum value.
 static enum PropertyAttribute
 _ParseAttributeStr(lpcString_t s)
@@ -77,11 +159,23 @@ _SetPropertyFromString(lua_State* L, lpObject_t obj, lpcString_t name, lpcString
     return;
   }
 
-  // Parse the string value into a stack-allocated buffer.
-  // MAX_PROPERTY_STRING (256) is large enough for any scalar type.
+  // Resolve theme variables: "$accent" → orca.theme["$accent"]
+  char theme_buf[MAX_PROPERTY_STRING] = {0};
+  lpcString_t resolved = _ResolveThemeValue(L, value, theme_buf, sizeof(theme_buf));
+
+  // Parse the string value into a stack-allocated buffer, wrapped in lua_pcall
+  // to contain any luaL_error raised by parse_property (e.g. invalid enum/struct).
   char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  if (!parse_property(L, value, pdesc, tmpbuf))
+  ParsePropertyState state = { resolved, pdesc, tmpbuf, FALSE };
+  lua_pushcfunction(L, _pcall_parse_property);
+  lua_pushlightuserdata(L, &state);
+  if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+    Con_Printf("fs_xml: property '%s'='%s' parse error: %s",
+               name, resolved, lua_tostring(L, -1));
+    lua_pop(L, 1);
     return;
+  }
+  if (!state.result) return;
 
   PROP_SetValue(prop, tmpbuf);
 
@@ -264,7 +358,12 @@ _RunScript(lua_State* L, lpObject_t obj, xmlNodePtr element)
   lua_setmetatable(L, -2);          // setmetatable(env, env_mt)
 
   // Set the loaded chunk's _ENV upvalue to our custom environment
-  lua_setupvalue(L, -2, 1);         // chunk._ENV = env; pops env
+  if (lua_setupvalue(L, -2, 1) == NULL) {
+    Con_Printf("fs_xml: script setup error: loaded chunk has no _ENV upvalue");
+    lua_pop(L, 1); // pop chunk
+    xmlFree(text);
+    return;
+  }
 
   if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
     Con_Printf("fs_xml: script error: %s", lua_tostring(L, -1));
@@ -278,6 +377,12 @@ _RunScript(lua_State* L, lpObject_t obj, xmlNodePtr element)
 static lpObject_t
 FS_ConstructNode(lua_State* L, xmlNodePtr element)
 {
+  // Check for placeholder tags (CustomNode, LibraryPlaceholder, etc.) first —
+  // these are resolved via require(PlaceholderTemplate | ClassName) rather
+  // than OBJ_FindClass, mirroring the old file-xml.lua try_prefab_placeholder().
+  lpObject_t placeholder = _TryPlaceholder(L, element);
+  if (placeholder) return placeholder;
+
   lpcClassDesc_t cls = OBJ_FindClass((lpcString_t)element->name);
   if (!cls) {
     Con_Printf("fs_xml: Unknown element type '%s'", (lpcString_t)element->name);

@@ -299,10 +299,10 @@ ORCA_API struct ThemeDefaultValuesDictionary* luaX_checkThemeDefaultValuesDictio
 
 /// @brief Loads an object tree from an XML file
 ORCA_API struct Object*
-FS_LoadObjectFromXML(struct lua_State*, const char*);
+FS_LoadObjectFromXML(lua_State*, const char*);
 
 /// @brief Parses an object tree from an XML string
 ORCA_API struct Object*
-FS_ParseObjectFromXMLString(struct lua_State*, const char*);
+FS_ParseObjectFromXMLString(lua_State*, const char*);
 
 #endif
