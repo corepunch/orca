@@ -415,8 +415,7 @@ int f_registerPropertyType(lua_State *L) {
 }
 
 extern int
-parse_property(lua_State* L,
-               const char* str,
+parse_property(const char* str,
                struct PropertyType const* prop,
                void* valueptr);
 
@@ -429,7 +428,7 @@ static int f_parse_property(lua_State* L) {
   const char* str = luaL_checkstring(L, 1);
   struct PropertyType const* pt = luaX_checkPropertyType(L, 2);
   char buf[MAX_PROPERTY_STRING] = {0};
-  if (parse_property(L, str, pt, buf)) {
+  if (parse_property(str, pt, buf)) {
     write_property(L, pt, buf);
     return 1;
   } else {

@@ -6,12 +6,10 @@
 static lpObject_t _FS_ConstructNode(xmlNodePtr element, bool_t send_start);
 static lpObject_t FS_ConstructNode(xmlNodePtr element);
 
-// External declaration of the property string parser defined in geometry/flow.c
-// parse_property handles NULL lua_State for the common property types (bool, int,
-// float, string, color, enum) and kDataTypeStruct types that have a registered
-// C parser (see OBJ_RegisterStructParser).  kDataTypeObject is skipped with a
-// Con_Printf diagnostic when L is NULL.
-extern int parse_property(lua_State* L, const char* str,
+// External declaration of the property string parser defined in core/property/property_flow.c
+// parse_property handles all common property types (bool, int, float, string, color, enum,
+// struct) in pure C without a Lua state.  For kDataTypeObject it calls FS_LoadObjectFromXML.
+extern int parse_property(const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
 // --- Helpers ----------------------------------------------------------------
@@ -85,11 +83,10 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
   if (!resolved) resolved = value;
 
   // Parse the string value into a stack-allocated buffer using pure-C parse_property.
-  // Pass NULL lua_State — this works for bool, int, float, string, color, enum.
-  // For kDataTypeStruct and kDataTypeObject parse_property logs a diagnostic and
-  // returns FALSE, which is handled gracefully below.
+  // Handles bool, int, float, string, color, enum, struct (via OBJ_ParseStruct),
+  // and kDataTypeObject (via FS_LoadObjectFromXML).
   char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  if (!parse_property(NULL, resolved, pdesc, tmpbuf)) return;
+  if (!parse_property(resolved, pdesc, tmpbuf)) return;
 
   PROP_SetValue(prop, tmpbuf);
 

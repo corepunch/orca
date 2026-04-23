@@ -2,6 +2,9 @@
 #include <source/geometry/geometry.h>
 #include <source/core/core.h>
 
+// Forward declaration — avoids a circular include (filesystem.h → core.h → here)
+extern struct Object* FS_LoadObjectFromXML(const char* path);
+
 lpObject_t _lua_checkobject(lua_State* L, int arg) {
   return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
 }
@@ -18,13 +21,10 @@ void _lua_pushobject(lua_State* L, lpcObject_t self)
 }
 
 ORCA_API int
-parse_property(lua_State* L,
-               const char* str,
+parse_property(const char* str,
                struct PropertyType const* prop,
-//               void* struct_ptr)
                void* valueptr)
 {
-//  void* valueptr = ((char*)struct_ptr + prop->Offset);
   switch (prop->DataType) {
     case kDataTypeBool:
       *(bool*)valueptr = strcasecmp(str, "true") == 0 || strcmp(str, "1") == 0;
@@ -39,11 +39,8 @@ parse_property(lua_State* L,
           return TRUE;
         }
       }
-      if (!L) {
-        Con_Printf("parse_property(%s): Invalid enum value for property '%s'", str, prop->Name);
-        return FALSE;
-      }
-      return luaL_error(L, "parse_property(%s): Invalid enum value for property '%s'\n", str, prop->Name);
+      Con_Printf("parse_property(%s): Invalid enum value for property '%s'", str, prop->Name);
+      return FALSE;
     case kDataTypeFloat:
       *(float*)valueptr = atof(str);
       return TRUE;
@@ -57,33 +54,22 @@ parse_property(lua_State* L,
     case kDataTypeStruct:
       if (OBJ_ParseStruct(prop->TypeString, str, valueptr, (size_t)prop->DataSize))
         return TRUE;
-      if (!L) {
-        Con_Printf("parse_property: struct property '%s' requires a registered C parser - skipped", prop->Name);
+      Con_Printf("parse_property: no C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
+      return FALSE;
+    case kDataTypeObject: {
+      lpObject_t loaded = FS_LoadObjectFromXML(str);
+      if (!loaded) {
+        Con_Printf("parse_property: failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;
       }
-      return luaL_error(L, "parse_property(%s): No C parser registered for struct '%s'\n", prop->Name, prop->TypeString);
-    case kDataTypeObject:
-      if (!L) {
-        Con_Printf("parse_property: object property '%s' requires Lua state - skipped", prop->Name);
-        return FALSE;
-      }
-      lua_getglobal(L, "require");
-      lua_pushstring(L, str);
-      lua_call(L, 1, 1);
-      if (lua_type(L, -1) != LUA_TUSERDATA) {
-        return luaL_error(L, "parse_property(%s): The module '%s' does not return a valid object for property '%s'\n", str, str, prop->Name);
-      }
-      *(void**)valueptr = _lua_checkobject(L, -1);
-      lua_pop(L, 1);
+      *(lpObject_t*)valueptr = loaded;
       return TRUE;
+    }
 //    case kDataTypeEvent:
 //      return TRUE;
     default:
-      if (!L) {
-        Con_Printf("parse_property(%s): Unsupported property type %d for parsing", prop->Name, prop->DataType);
-        return FALSE;
-      }
-      return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
+      Con_Printf("parse_property(%s): Unsupported property type %d for parsing", prop->Name, prop->DataType);
+      return FALSE;
   }
   return TRUE;
 }
@@ -134,7 +120,7 @@ read_property(lua_State *L,
         *(void**)valueptr = _lua_checkobject(L, idx);
         break;
       } else if (lua_type(L, idx) == LUA_TSTRING) {
-        parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
+        parse_property(luaL_checkstring(L, idx), prop, valueptr);
         break;
       } else {
         luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
@@ -148,7 +134,7 @@ read_property(lua_State *L,
       if (lua_type(L, idx) == LUA_TFUNCTION) {
         *(event_t *)valueptr = luaL_ref(L, LUA_REGISTRYINDEX);
       } else if (lua_type(L, idx) == LUA_TSTRING) {
-        parse_property(L, luaL_checkstring(L, idx), prop, valueptr);
+        parse_property(luaL_checkstring(L, idx), prop, valueptr);
         break;
       } else {
         luaL_error(L, "Unsupported input type %d for property %s of type event", lua_type(L, idx), prop->Name);
