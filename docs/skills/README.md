@@ -6,6 +6,13 @@ Available skills
 - Orca Object and Property Master: Orca XML API discovery and authoritative symbol lookup.
 - Lapis to Orca Architecture Master: pattern translation from Lapis lifecycle/layout/content_for to Orca.
 - Orca Tailwind and UIKit Master: idiomatic UIKit composition and Tailwind-first styling.
+- Orca App MoonScript Lapis Builder: app-development guidance using MoonScript, Lapis patterns, Tailwind, and Orca dialect conventions.
+- Orca Lua Lapis Internals Architect: engine-side Lua API design using Lapis internals patterns and MoonScript interoperability awareness.
+- Orca C Engine WPF WinAPI Architect: C engine architecture, XML-first API design, WPF/WinAPI-inspired messaging, and Lua API negotiation.
+
+Lapis references
+- docs/lapis/lapis-user-guide.md: application-authoring reference for Orca app developers using Lapis-inspired patterns.
+- docs/lapis/lapis-internals.md: framework/runtime reference for engine-side Lua architecture inspired by Lapis internals.
 
 Usage
 - Treat each .skill.md file as an operating playbook when planning or implementing changes.

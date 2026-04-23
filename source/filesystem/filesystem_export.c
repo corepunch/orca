@@ -14,7 +14,7 @@ extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _ProjectReference[] = {
 	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
 	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
@@ -419,6 +419,24 @@ int f_FS_ReadTextFile(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	return FS_ReadTextFile(L, path);
 }
+int f_FS_LoadObjectFromXML(lua_State *L) {
+	const char* path = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_LoadObjectFromXML(path);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_ParseObjectFromXMLString(lua_State *L) {
+	const char* xmlString = luaL_checkstring(L, 1);
+	struct Object* result_ = FS_ParseObjectFromXMLString(xmlString);
+	luaX_pushObject(L, result_);
+	return 1;
+}
+int f_FS_GetThemeValue(lua_State *L) {
+	const char* key = luaL_checkstring(L, 1);
+	const char* result_ = FS_GetThemeValue(key);
+	lua_pushstring(L, result_);
+	return 1;
+}
 
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -433,6 +451,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "readTextFile", f_FS_ReadTextFile },
+		{ "loadXml", f_FS_LoadObjectFromXML },
+		{ "parseObjectFromXMLString", f_FS_ParseObjectFromXMLString },
+		{ "getThemeValue", f_FS_GetThemeValue },
 		{ NULL, NULL } 
 	}));
 	void on_filesystem_module_registered(lua_State *L);

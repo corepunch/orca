@@ -60,21 +60,10 @@ static int f_##NAME##___call(lua_State *L) { \
   lua_call(L, lua_gettop(L) - 2, 1); \
 	return 1; \
 } \
-static int f_##NAME##___fromstring(lua_State *L) { \
-	char* tmp = strdup(luaL_checkstring(L, 1)),* tok = strtok(tmp, " "); \
-	struct NAME self; \
-	memset(&self, 0, sizeof(struct NAME)); \
-	for (uint32_t i = 0; tok && i < sizeof(_##NAME) / sizeof(*_##NAME); i++, tok = strtok(NULL, " ")) \
-		if (_##NAME[i].DataType != kDataTypeStruct) \
-			parse_property(L, tok, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
-	free(tmp); \
-	return (luaX_push##NAME(L, &self), 1); \
-} \
 int luaopen_orca_##NAME(lua_State *L) { \
 	luaL_newmetatable(L, #EXPORT); \
 	luaL_setfuncs(L, ((luaL_Reg[]) { \
 		{ "new", f_new_##NAME }, \
-		{ "fromstring", f_##NAME##___fromstring }, \
 		{ "__newindex", f_##NAME##___newindex }, \
 		{ "__index", f_##NAME##___index }, \
 		{ NULL, NULL }, \

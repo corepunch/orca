@@ -9,7 +9,7 @@
 extern const char *_BlendMode[];
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _SpriteFrame[] = {
 	DECL(0x6b109927, SpriteFrame, Rect, Rect, kDataTypeStruct, .TypeString = "Rectangle"), // SpriteFrame.Rect
 	DECL(0x0a21a2ed, SpriteFrame, RectX, Rect.x, kDataTypeFloat), // SpriteFrame.RectX

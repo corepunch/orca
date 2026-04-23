@@ -5,6 +5,7 @@ local test = require "orca.test"
 
 local core = require "orca.core"
 local ui = require "orca.UIKit"
+require "orca.filesystem"   -- registers doxmlstring / doxmlfile globals
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
@@ -151,6 +152,29 @@ local function test_grid_implicit_row_wrapping()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading via doxmlstring: verify properties are parsed and children built
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_properties()
+	local xml = [[
+<Screen Name="xml-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <Node2D Name="child-node" Width="100" Height="50" />
+</Screen>]]
+
+	local root = doxmlstring(xml)
+	test.expect(root ~= nil, "doxmlstring should return a non-nil object")
+	test.expect_eq(root.Name, "xml-screen", "Name property from XML")
+	test.expect_eq(root.Width, 800, "Width property from XML")
+	test.expect_eq(root.Height, 600, "Height property from XML")
+
+	local child = root:findChild("child-node", true)
+	test.expect(child ~= nil, "child-node should exist")
+	test.expect_eq(child.Width, 100, "child Width from XML")
+	test.expect_eq(child.Height, 50, "child Height from XML")
+
+	print("PASS: test_xml_loading_properties")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
@@ -159,5 +183,6 @@ test_grid_in_vstack_height()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
+test_xml_loading_properties()
 
 print("All layout tests passed.")

@@ -12,6 +12,33 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static lpObject_t workspace = NULL;
 
+// Walk workspace → projects → ThemeLibrary → ThemeGroups → _selectedTheme
+// to resolve a theme variable.  Key must start with '$' (e.g. "$accent").
+// Returns the value string owned by the ResourceEntry, or NULL if not found.
+// Single-threaded only: Lua and XML loading run on one thread.
+ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
+  if (!key || key[0] != '$') return NULL;
+  lpcString_t name = key + 1;  // strip the leading '$'
+  lpObject_t ws = FS_GetWorkspace();
+  if (!ws) return NULL;
+  FOR_EACH_OBJECT(project_obj, ws) {
+    lpProject_t project = GetProject(project_obj);
+    if (!project || !project->ThemeLibrary) continue;
+    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+    FOR_EACH_OBJECT(themeGroup_obj, themes) {
+      struct ThemeGroup* tg = GetThemeGroup(themeGroup_obj);
+      if (!tg || !tg->_selectedTheme) continue;
+      struct Node* node = GetNode(tg->_selectedTheme);
+      if (!node) continue;
+      FOR_LOOP(i, node->NumResources) {
+        if (node->Resources[i].Key && strcmp(node->Resources[i].Key, name) == 0)
+          return node->Resources[i].Value;
+      }
+    }
+  }
+  return NULL;
+}
+
 void FS_SetWorkspace(lpObject_t object) {
   workspace = object;
 }
@@ -357,6 +384,7 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
 static void
 register_theme_value(lpcString_t name, lpcString_t value, void* L)
 {
+  // Update the Lua orca.theme table for backward compatibility
   luaX_require(L, "orca", 1);
   lua_getfield(L, -1, "theme");
   lua_pushfstring(L, "$%s", name);

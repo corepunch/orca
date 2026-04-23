@@ -272,5 +272,24 @@
       <arg name="path" type="string">The path of the text file to read</arg>
       <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
     </function>
+    <function name="LoadObjectFromXML" export="loadXml">
+      <summary>Loads an object tree from an XML file</summary>
+      <details>Parses the specified XML file and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
+      <arg name="path" type="string">The path to the XML file to load</arg>
+      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
+    <function name="ParseObjectFromXMLString">
+      <summary>Parses an object tree from an XML string</summary>
+      <details>Parses the provided XML string and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
+      <arg name="xmlString" type="string">The XML string to parse</arg>
+      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
+    <function name="GetThemeValue">
+      <summary>Retrieves a theme value based on the provided key and theme group</summary>
+      <details>Fetches the value associated with the specified key from the currently selected theme. This allows for dynamic theming of UI elements based on the active theme settings. The function returns the theme value as a string when found. If the key is not found, the function returns nil.</details>
+      <!-- <arg name="themeGroup" type="Object" pointer="true">Pointer to the ThemeGroup object to query</arg> -->
+      <arg name="key" type="string">The key identifying the specific theme value to retrieve</arg>
+      <returns type="string">The value associated with the specified key in the current theme, or nil if not found</returns>
+    </function>
   </functions>
 </module>

@@ -74,6 +74,18 @@ FS_GetWorkspace(void);
 ORCA_API int
 FS_ReadTextFile(struct lua_State*, const char*);
 
+/// @brief Loads an object tree from an XML file
+ORCA_API struct Object*
+FS_LoadObjectFromXML(const char*);
+
+/// @brief Parses an object tree from an XML string
+ORCA_API struct Object*
+FS_ParseObjectFromXMLString(const char*);
+
+/// @brief Retrieves a theme value based on the provided key and theme group
+ORCA_API const char*
+FS_GetThemeValue(const char*);
+
 
 /// @brief External project reference
 /** ProjectReference struct */

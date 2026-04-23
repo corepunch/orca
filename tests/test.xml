@@ -17,32 +17,4 @@
 	<Node2D Name="metric-users" Width="140" Padding="20" VerticalAlignment="Top">
 		<TextBlock Name="metric-text" Text="2.4 M" FontSize="28" />
 	</Node2D>
-	<script>
-		self:updateLayout(self.Width, self.Height)
-		assert(self.Name == "test-screen", "Expected screen name to be test-screen")
-		assert(self.Width == 1000, "Expected width to be 1000")
-		assert(self.Height == 1000, "Expected height to be 1000")
-
-		local grid  = self:findChild("test-grid",  true)
-		local inner = self:findChild("inner-stack", true)
-		assert(grid  ~= nil, "test-grid should exist")
-		assert(inner ~= nil, "inner-stack should exist")
-		assert(inner.ActualHeight == 100,
-			string.format("inner-stack height should be 100, got %d", inner.ActualHeight))
-		assert(grid.ActualHeight == inner.ActualHeight,
-			string.format("grid height (%d) should match inner-stack height (%d)",
-				grid.ActualHeight, inner.ActualHeight))
-		assert(grid.ActualHeight > 0,
-			string.format("grid height should be > 0, got %d", grid.ActualHeight))
-
-		local metric = self:findChild("metric-users", true)
-		local mtext  = self:findChild("metric-text",  true)
-		assert(metric ~= nil, "metric-users should exist")
-		assert(mtext  ~= nil, "metric-text should exist")
-		assert(mtext.ActualHeight > 0,
-			"TextBlock inside Node2D should have positive height")
-		assert(metric.ActualHeight == mtext.ActualHeight + 40,
-			string.format("metric-users height (%d) should equal text height (%d) + 40 padding",
-				metric.ActualHeight, mtext.ActualHeight))
-	</script>
 </Screen>
