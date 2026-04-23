@@ -413,8 +413,6 @@ NET_FetchBegin(const char *url)
   curl_easy_setopt(req->easy_handle, CURLOPT_WRITEFUNCTION, write_callback);
   curl_easy_setopt(req->easy_handle, CURLOPT_WRITEDATA, &req->response);
   curl_easy_setopt(req->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(req->easy_handle, CURLOPT_COOKIEFILE, "/tmp/cookies.txt");
-  curl_easy_setopt(req->easy_handle, CURLOPT_COOKIEJAR,  "/tmp/cookies.txt");
 
   if (strncmp(url, "https://", 8) == 0) {
     curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
@@ -442,9 +440,16 @@ NET_FetchPoll(fetch_handle_t handle)
 ORCA_API long
 NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
 {
-  if (!handle) {
+  if (!handle || !data_out || !size_out) {
     if (data_out)  *data_out  = NULL;
     if (size_out)  *size_out  = 0;
+    if (handle) {
+      request_t *req = (request_t *)handle;
+      curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+      curl_easy_cleanup(req->easy_handle);
+      curl_multi_cleanup(req->multi_handle);
+      free_request(req);
+    }
     return -1;
   }
 
@@ -466,6 +471,7 @@ NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
     ((char *)*data_out)[req->response.size] = '\0';
   } else {
     *size_out = 0;
+    code = -1;
   }
 
   curl_multi_remove_handle(req->multi_handle, req->easy_handle);
@@ -731,9 +737,14 @@ NET_FetchPoll(fetch_handle_t handle)
 ORCA_API long
 NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
 {
-  if (!handle) {
+  if (!handle || !data_out || !size_out) {
     if (data_out) *data_out = NULL;
     if (size_out) *size_out = 0;
+    if (handle) {
+      webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+      if (state->fetch) emscripten_fetch_close(state->fetch);
+      free(state);
+    }
     return -1;
   }
 
@@ -749,6 +760,7 @@ NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
       ((char *)*data_out)[*size_out] = '\0';
     } else {
       *size_out = 0;
+      code = -1;
     }
     emscripten_fetch_close(fetch);
   } else {

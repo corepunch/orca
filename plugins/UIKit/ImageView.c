@@ -222,8 +222,8 @@ HANDLER(ImageView, Node, LoadView)
   const char *src = pImageView->Src;
   if (!src || !*src) return TRUE;
 
-  bool_t is_http = (strncmp(src, "http://",  7) == 0 ||
-                    strncmp(src, "https://", 8) == 0);
+  bool_t is_http = (strncasecmp(src, "http://",  7) == 0 ||
+                    strncasecmp(src, "https://", 8) == 0);
 
   if (is_http) {
     if (!pImageView->_fetch) {
@@ -255,6 +255,12 @@ HANDLER(ImageView, Node, LoadView)
 
     if (code != 200 || !data || !size) {
       Con_Printf("ImageView: HTTP fetch for '%s' failed (code %ld)", src, code);
+      free(data);
+      return TRUE;
+    }
+
+    if (size > UINT32_MAX) {
+      Con_Printf("ImageView: HTTP response too large for '%s' (%zu bytes)", src, size);
       free(data);
       return TRUE;
     }

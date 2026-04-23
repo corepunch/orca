@@ -465,10 +465,15 @@ R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
 lpObject_t
 R_LoadImageFromMemoryNative(void* pBuffer, uint32_t dwSize)
 {
+  if (!pBuffer || dwSize == 0) return NULL;
   lpObject_t object = OBJ_MakeNativeObject(ID_Texture);
   if (!object) return NULL;
-  struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };
   lpTexture_t texture = GetTexture(object);
+  if (!texture) {
+    OBJ_Release(NULL, object);
+    return NULL;
+  }
+  struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };
   R_Call(glGenTextures, 1, &texture->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, texture->texnum);
   struct AXsize size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
