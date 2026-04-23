@@ -17,7 +17,7 @@ static struct Object*
 UIKit_LoadCSSFile(const char* path)
 {
   if (!s_css_lua) {
-    Con_Error("UIKit_LoadCSSFile: CSS loader not initialised (UIKit not loaded?)");
+    Con_Error("UIKit_LoadCSSFile: Lua state not initialized");
     return NULL;
   }
   lua_State* L = s_css_lua;

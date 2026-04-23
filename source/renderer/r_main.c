@@ -1091,8 +1091,7 @@ R_LoadImageObject(const char* path)
   lpObject_t obj = OBJ_MakeNativeObject(ID_Image);
   if (!obj) return NULL;
   OBJ_SetName(obj, r_basename(path));
-  const char* src = strdup(path);
-  OBJ_SetPropertyValue(obj, "Source", &src);
+  OBJ_SetPropertyValue(obj, "Source", &path);
   OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
 }
