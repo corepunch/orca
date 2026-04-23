@@ -231,11 +231,20 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
   // root until after placeholder attribute overrides have been applied.
   // If the template path has no file extension, try appending ".xml" first
   // (common in repo XML: PlaceholderTemplate="Example/Prefabs/Mertic").
-  char tmpl_with_ext[512] = {0};
+  path_t tmpl_with_ext = {0};
   lpcString_t tmpl_path = (lpcString_t)tmpl;
-  if (!strrchr((lpcString_t)tmpl, '.') || strrchr((lpcString_t)tmpl, '.') < strrchr((lpcString_t)tmpl, '/')) {
-    snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
-    tmpl_path = tmpl_with_ext;
+  const char* dot = strrchr((lpcString_t)tmpl, '.');
+  const char* slash = strrchr((lpcString_t)tmpl, '/');
+  if (!dot || dot < slash) {
+    // No extension (or dot is in a directory component): try adding ".xml"
+    int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
+    if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
+      tmpl_path = tmpl_with_ext;
+    } else {
+      Con_Printf("fs_xml: placeholder path too long: '%s'", (lpcString_t)tmpl);
+      xmlFree(tmpl);
+      return NULL;
+    }
   }
   struct file* fp = FS_LoadFile(tmpl_path);
   if (!fp && tmpl_path == tmpl_with_ext) {

@@ -591,7 +591,7 @@ static int c_parse_vec3(const char* str, void* dst, size_t sz) {
   float x = 0, y = 0, z = 0;
   switch (sscanf(str, "%f %f %f", &x, &y, &z)) {
     case 3: *(struct vec3*)dst = (struct vec3){x, y, z}; return TRUE;
-    case 1: *(struct vec3*)dst = (struct vec3){x, x, x}; return TRUE;
+    case 1: *(struct vec3*)dst = (struct vec3){x, x, x}; return TRUE;  // broadcast scalar to all components
     default: Con_Printf("vec3: cannot parse '%s'", str); return FALSE;
   }
 }
