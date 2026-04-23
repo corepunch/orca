@@ -1,5 +1,38 @@
 #include "object_internal.h"
 
+static bool_t
+invoke_event_property_from_object_events(lua_State* L, lpObject_t object, lpProperty_t callback, int num_args)
+{
+  if (!callback || PROP_GetType(callback) != kDataTypeEvent) {
+    lua_pop(L, num_args);
+    return FALSE;
+  }
+  event_t ref = *(event_t*)PROP_GetValue(callback);
+  if (!ref) {
+    lua_pop(L, num_args);
+    return FALSE;
+  }
+
+  lua_geti(L, LUA_REGISTRYINDEX, ref);
+  if (!lua_isfunction(L, -1)) {
+    lua_pop(L, 1 + num_args);
+    return FALSE;
+  }
+
+  lua_insert(L, -(num_args + 1));
+  luaX_pushObject(L, object);
+  lua_insert(L, -(num_args + 1));
+
+  if (lua_pcall(L, num_args + 1, 1, 0) != LUA_OK) {
+    Con_Error("property callback: %s", lua_tostring(L, -1));
+    lua_pop(L, 1);
+    return FALSE;
+  }
+  bool_t ret = lua_toboolean(L, -1);
+  lua_pop(L, 1);
+  return ret;
+}
+
 void
 OBJ_EmitPropertyChangedEvents(lua_State* L, lpObject_t object)
 {
@@ -14,10 +47,14 @@ PROP_ExecuteChangedCallback(lua_State* L,
 {
   lpcString_t szCallback = PROP_GetCallbackMsg(hProperty);
   lpObject_t hRoot = OBJ_GetRoot(pobj);
-  if (hRoot) {
+  if (hRoot && szCallback && *szCallback) {
+    lpProperty_t callback = NULL;
+    if (FAILED(OBJ_FindShortProperty(hRoot, szCallback, &callback))) {
+      return;
+    }
     luaX_pushObject(L, pobj);
     luaX_pushProperty(L, hProperty);
-    luaX_executecallback(L, hRoot, szCallback, 2);
+    invoke_event_property_from_object_events(L, hRoot, callback, 2);
   }
 }
 

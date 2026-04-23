@@ -616,7 +616,6 @@
         <handle message="Node2D.DrawBrush"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
-        <handle message="Node.LoadView"/>
       </handles>
       <properties>
         <property name="Src" type="string">Image source path or resource identifier </property>

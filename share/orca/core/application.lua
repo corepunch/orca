@@ -4,26 +4,97 @@ local system = require "orca.system"
 local filesystem = require "orca.filesystem"
 local renderer = require "orca.renderer"
 
-local Object = require "orca.core.object"
+local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
 local UIKit = require "orca.UIKit"
 
-local Application = Object:extend {
+local Application = Widget:extend {
   layout = {
     content = function(element)
       local screen = UIKit.Screen()
       screen:addChild(element)
       return screen
     end
-  }
+  },
+
+  __init = function(self)
+    Widget.__init(self)
+    self.router = Router(self)
+  end,
+
+  new_render_context = function(self, req)
+    return {
+      req = req,
+      content = {}
+    }
+  end,
+
+  match = function(self, name, url, func)
+    return self.router:add(name, url, func)
+  end,
+
+  resolve_body = function(self, body, route_info)
+    if type(body) == "table" and body.render == true and route_info and self.views_prefix then
+      local view_cls = require(self.views_prefix .. "/" .. route_info.name)
+      return view_cls():content()
+    end
+    return body
+  end,
+
+  dispatch = function(self, req)
+    local ctx = self:new_render_context(req)
+    local route_info = self.router:resolve(req)
+    local body = self:resolve_body(self.router:dispatch(req), route_info)
+    ctx.content.inner = body
+
+    local layout_def = self.layout
+    local view = body
+
+    if type(layout_def) == "table" and layout_def.__class then
+      local layout = layout_def()
+      layout:set_render_context(ctx)
+      layout:include_helper(self)
+      if type(layout.content) == "function" then
+        view = layout:content()
+      end
+    elseif type(layout_def) == "table" and type(layout_def.content) == "function" then
+      view = layout_def.content(ctx.content.inner, ctx, self)
+    elseif type(layout_def) == "function" then
+      view = layout_def(ctx.content.inner, ctx, self)
+    elseif layout_def == nil and body ~= nil then
+      local screen = UIKit.Screen()
+      screen:addChild(body)
+      view = screen
+    end
+
+    return {
+      view = view,
+      context = ctx
+    }
+  end,
+
+  run = function(self)
+    while true do
+      for msg in system.getMessage(self.screen) do
+        if filesystem.hasChangedFiles() then return DATADIR end
+        if msg:is "Window.Closed" then return
+        elseif msg:is "Node.KeyDown" and msg.key == "q" then return
+        elseif msg:is "RequestReload" then return DATADIR
+        else
+          system.translateMessage(msg)
+          local ok, result = pcall(system.dispatchMessage, msg)
+          if not ok then
+            io.stderr:write(tostring(result) .. "\n")
+          elseif result and not msg:is "Window.Paint" then
+            self.screen:post("Window.Paint", renderer.getSize())
+          end
+        end
+      end
+    end
+  end,
 }
 
 Application.projects = {}
-
-function Application:__init()
-  Object.__init(self)
-  self.router = Router(self)
-end
 
 function Application.open(path)
   io.stderr:write("Initializing application module\n")
@@ -53,57 +124,6 @@ function Application.open(path)
 
   io.stderr:write("Application module initialized\n")
   return app
-end
-
-function Application:new_render_context(req)
-  return {
-    req = req,
-    content = {}
-  }
-end
-
-function Application:match(name, url, func)
-  return self.router:add(name, url, func)
-end
-
-function Application:resolve_body(body, route_info)
-  if type(body) == "table" and body.render == true and route_info and self.views_prefix then
-    local view_cls = require(self.views_prefix .. "/" .. route_info.name)
-    return view_cls():content()
-  end
-  return body
-end
-
-function Application:dispatch(req)
-  local ctx = self:new_render_context(req)
-  local route_info = self.router:resolve(req)
-  local body = self:resolve_body(self.router:dispatch(req), route_info)
-  ctx.content.inner = body
-
-  local layout_def = self.layout
-  local view = body
-
-  if type(layout_def) == "table" and layout_def.__class then
-    local layout = layout_def()
-    layout:set_render_context(ctx)
-    layout:include_helper(self)
-    if type(layout.content) == "function" then
-      view = layout:content()
-    end
-  elseif type(layout_def) == "table" and type(layout_def.content) == "function" then
-    view = layout_def.content(ctx.content.inner, ctx, self)
-  elseif type(layout_def) == "function" then
-    view = layout_def(ctx.content.inner, ctx, self)
-  elseif layout_def == nil and body ~= nil then
-    local screen = UIKit.Screen()
-    screen:addChild(body)
-    view = screen
-  end
-
-  return {
-    view = view,
-    context = ctx
-  }
 end
 
 function Application.load_controller(path, route)
@@ -156,26 +176,6 @@ function Application.load_plugins()
         io.stderr:write(string.format("Loaded plugin %s\n", path))
       else
         io.stderr:write(string.format("Failed to load plugin %s\n", path))
-      end
-    end
-  end
-end
-
-function Application:run()
-  while true do
-    for msg in system.getMessage(self.screen) do
-      if filesystem.hasChangedFiles() then return DATADIR end
-      if msg:is "Window.Closed" then return
-      elseif msg:is "Node.KeyDown" and msg.key == "q" then return
-      elseif msg:is "RequestReload" then return DATADIR
-      else
-        system.translateMessage(msg)
-        local ok, result = pcall(system.dispatchMessage, msg)
-        if not ok then
-          io.stderr:write(tostring(result) .. "\n")
-        elseif result and not msg:is "Window.Paint" then
-          self.screen:post("Window.Paint", renderer.getSize())
-        end
       end
     end
   end

@@ -71,31 +71,52 @@ static int f_obj_populate_inputs(lua_State* L)
   return 1;
 }
 
-static void
-get_object_callbacks(lua_State* L, lpObject_t obj, bool_t create)
+static bool_t
+capitalize_first_char(char* out, size_t out_size, lpcString_t name)
 {
-  lua_getfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    if (!create) {
-      lua_pushnil(L);
-      return;
-    }
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
+  if (!name || !*name || out_size < 2) {
+    return FALSE;
   }
-  lua_pushlightuserdata(L, obj);
-  lua_gettable(L, -2);
-  if (lua_isnil(L, -1) && create) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushlightuserdata(L, obj);
-    lua_pushvalue(L, -2);
-    lua_settable(L, -4);
+  snprintf(out, out_size, "%s", name);
+  if (out[0] >= 'a' && out[0] <= 'z') {
+    out[0] = (char)(out[0] - ('a' - 'A'));
+    return TRUE;
   }
-  lua_remove(L, -2); /* remove __object_callbacks registry table */
+  return FALSE;
 }
+
+static bool_t
+is_on_changed_callback_name(lpcString_t name)
+{
+  if (!name || strncmp(name, "on", 2) != 0 || !name[2]) {
+    return FALSE;
+  }
+  size_t len = strlen(name);
+  return len > 7 && strcmp(name + len - 7, "Changed") == 0;
+}
+
+static bool_t
+ensure_event_property(lua_State* L, lpObject_t self, lpcString_t name, lpProperty_t* out)
+{
+  if (SUCCEEDED(OBJ_FindShortProperty(self, name, out)) && PROP_GetType(*out) == kDataTypeEvent) {
+    return TRUE;
+  }
+
+  struct PropertyType pt = {
+    .ShortIdentifier = fnv1a32(name),
+    .FullIdentifier = fnv1a32(name),
+    .DataType = kDataTypeEvent,
+    .DataSize = sizeof(void*),
+    .Name = strdup(name),
+    .Category = "",
+  };
+  if (!pt.Name) {
+    return FALSE;
+  }
+  OBJ_RegisterPropertyType(&pt);
+  return SUCCEEDED(OBJ_FindShortProperty(self, name, out)) && PROP_GetType(*out) == kDataTypeEvent;
+}
+
 
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
@@ -148,15 +169,26 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
+    /* Allow lowercase method-style callback binding to event properties.
+     * Example: obj.loadView = fn -> binds Node.LoadView event property. */
+    shortStr_t alias = {0};
+    if (capitalize_first_char(alias, sizeof(alias), name) &&
+        SUCCEEDED(OBJ_FindShortProperty(self, alias, &property)) &&
+        PROP_GetType(property) == kDataTypeEvent) {
+      luaX_readProperty(L, 3, property);
+      return TRUE;
+    }
+
     void OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name);
-    OBJ_RegisterPropertyChangedCallback(self, name); // TODO: move to implocit callbacks registration?
-    get_object_callbacks(L, self, TRUE);
-    lua_pushvalue(L, 3);
-    lua_setfield(L, -2, name);
-    lua_pop(L, 1);
+    if (is_on_changed_callback_name(name)) {
+      OBJ_RegisterPropertyChangedCallback(self, name);
+      if (ensure_event_property(L, self, name, &property)) {
+        luaX_readProperty(L, 3, property);
+        return TRUE;
+      }
+    }
     return FALSE;
   } else {
-//    fprintf(stderr, "Can't find property %s\n", name);
     return FALSE;
   }
 }
@@ -171,6 +203,17 @@ int f_msgSend(lua_State *L) {
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
+  /* For method-style lowercase names (e.g. loadView), allow binding to
+   * same-named event properties (LoadView) before checking metatable methods. */
+  shortStr_t callback_alias = {0};
+  lpProperty_t callback_prop = NULL;
+  if (capitalize_first_char(callback_alias, sizeof(callback_alias), name) &&
+      SUCCEEDED(OBJ_FindShortProperty(self, callback_alias, &callback_prop)) &&
+      PROP_GetType(callback_prop) == kDataTypeEvent) {
+    luaX_pushProperty(L, callback_prop);
+    return 1;
+  }
+
   if (!strcmp(name, "populateInputs")) {
     lua_pushcfunction(L, f_obj_populate_inputs);
     return 1;
@@ -184,18 +227,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
   lua_pop(L, 1);
-
-  get_object_callbacks(L, self, FALSE);
-  if (!lua_isnil(L, -1)) {
-    lua_getfield(L, -1, name);
-    lua_remove(L, -2);
-    if (!lua_isnil(L, -1)) {
-      return 1;
-    }
-    lua_pop(L, 1);
-  } else {
-    lua_pop(L, 1);
-  }
 
   uint32_t ident = fnv1a32(name);
   switch (ident) {
@@ -268,6 +299,16 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     luaX_pushProperty(L, property);
     return 1;
   } else {
+    shortStr_t alias = {0};
+    if (capitalize_first_char(alias, sizeof(alias), name)) {
+      uint32_t alias_ident = fnv1a32(alias);
+      if (OBJ_PushClassProperty(L, self, alias_ident)) {
+        return 1;
+      } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), alias_ident))) {
+        luaX_pushProperty(L, property);
+        return 1;
+      }
+    }
     lua_pushnil(L);
     return 1;
   }

@@ -173,14 +173,8 @@ HANDLER(ImageView, Object, PropertyChanged)
 
 HANDLER(ImageView, Node, LoadView)
 {
-  lua_State* L = (pLoadView && pLoadView->lua_state)
-    ? pLoadView->lua_state
-    : OBJ_GetDomain(hObject);
-  if (!L) return FALSE;
   if (pImageView->Src && *pImageView->Src &&
       pImageView->_loadedImage != fnv1a32(pImageView->Src)) {
-    lua_pushstring(L, pImageView->Src);
-    luaX_executecallback(L, hObject, "loadImageAsync", 1);
     pImageView->_loadedImage = fnv1a32(pImageView->Src);
   }
   return TRUE;

@@ -13,8 +13,14 @@ int luaopen_orca_<?= $name ?>(lua_State *L) {
 	<?php endforeach ?>
 		{ NULL, NULL },
 	}), 0);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
+	lua_getfield(L, -1, "__index");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+	} else {
+		lua_pop(L, 1);
+	}
 	return 1;
 }
 <?php endforeach ?>
