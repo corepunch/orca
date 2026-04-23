@@ -1,5 +1,6 @@
 #include <plugins/UIKit/UIKit.h>
 #include <include/api.h>
+#include <source/filesystem/filesystem.h>
 
 bool_t is_server = FALSE;
 
@@ -33,7 +34,7 @@ UIKit_LoadCSSFile(const char* path)
 {
   char* buf = load_text_file(path);
   if (!buf) {
-    Con_Error("UIKit_LoadCSSFile: can't load '%s'", path);
+    Con_Printf("UIKit_LoadCSSFile: can't load '%s'", path);
     return NULL;
   }
   lpObject_t sheet = CSS_ParseStyleSheet(buf);
@@ -55,17 +56,18 @@ static int css_loader(lua_State* L)
   return 1;
 }
 
-extern bool_t FS_FileExists(const char* path);
-
 static int css_searcher(lua_State* L)
 {
+  static const char* const exts[] = { "", ".css", NULL };
   const char* module = luaL_checkstring(L, 1);
-  path_t fullpath = {0};
-  snprintf(fullpath, sizeof(fullpath), "%s.css", module);
-  if (FS_FileExists(fullpath)) {
-    lua_pushstring(L, fullpath);
-    lua_pushcclosure(L, css_loader, 1);
-    return 1;
+  for (int i = 0; exts[i]; i++) {
+    path_t fullpath = {0};
+    snprintf(fullpath, sizeof(fullpath), "%s%s", module, exts[i]);
+    if (FS_FileExists(fullpath)) {
+      lua_pushstring(L, fullpath);
+      lua_pushcclosure(L, css_loader, 1);
+      return 1;
+    }
   }
   return 0;
 }

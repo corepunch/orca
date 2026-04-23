@@ -14,9 +14,16 @@
 //   - @apply directives (merges another selector's declarations)
 //   - Standard property declarations: key: value;
 
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <ctype.h>
+
 #include <plugins/UIKit/UIKit.h>
 #include <include/api.h>
+#include <source/core/core_local.h>
 #include <source/core/core_properties.h>
+#include <source/filesystem/filesystem.h>
 
 // parse_property is ORCA_API but not declared in orca.h; forward-declare it.
 extern int parse_property(const char* str, struct PropertyType const* prop,
@@ -98,14 +105,6 @@ typedef struct {
 // Text helpers
 // ---------------------------------------------------------------------------
 
-// Return pointer past leading whitespace.
-static const char*
-trim_left(const char* s)
-{
-    while (*s && isspace((unsigned char)*s)) s++;
-    return s;
-}
-
 // Copy at most (n-1) chars of [s, e) into dst; NUL-terminate; trim trailing ws.
 static void
 copy_trim(char* dst, const char* s, const char* e, int n)
@@ -178,7 +177,11 @@ css_rule_set(css_rule_t* rule, const char* key, const char* val)
             return;
         }
     }
-    if (rule->ndecls >= CSS_MAX_PROPS) return;
+    if (rule->ndecls >= CSS_MAX_PROPS) {
+        Con_Printf("css_parser: rule '%s' has too many declarations (max %d), '%s' dropped",
+                   rule->sel, CSS_MAX_PROPS, key);
+        return;
+    }
     snprintf(rule->decls[rule->ndecls].key, sizeof(rule->decls[rule->ndecls].key), "%s", key);
     snprintf(rule->decls[rule->ndecls].val, sizeof(rule->decls[rule->ndecls].val), "%s", val);
     rule->ndecls++;
@@ -212,11 +215,16 @@ css_parse_block(css_rule_t* rule, const char* block_start, const char* block_end
                 while (*t && isspace((unsigned char)*t)) t++;
                 const char* te = t;
                 while (*te && !isspace((unsigned char)*te)) te++;
-                if (te > t && rule->napply < CSS_MAX_APPLY) {
-                    char sel[CSS_MAX_SELLEN] = {0};
-                    copy_trim(sel, t, te, (int)sizeof(sel));
-                    snprintf(rule->apply[rule->napply++],
-                             sizeof(rule->apply[0]), "%s", sel);
+                if (te > t) {
+                    if (rule->napply < CSS_MAX_APPLY) {
+                        char sel[CSS_MAX_SELLEN] = {0};
+                        copy_trim(sel, t, te, (int)sizeof(sel));
+                        snprintf(rule->apply[rule->napply++],
+                                 sizeof(rule->apply[0]), "%s", sel);
+                    } else {
+                        Con_Printf("css_parser: rule '%s' has too many @apply entries (max %d), entry dropped",
+                                   rule->sel, CSS_MAX_APPLY);
+                    }
                 }
                 t = te;
             }
@@ -279,7 +287,7 @@ css_resolve_apply(css_doc_t* doc)
             if (!rule->napply) continue;
             for (int ai = 0; ai < rule->napply; ai++) {
                 const char* ref = rule->apply[ai];
-                // try ".foo" and "foo" and ".foo" interchangeably
+                // try ".foo" and "foo" interchangeably
                 css_rule_t* src = NULL;
                 for (int j = 0; j < doc->nrules; j++) {
                     if (!strcmp(doc->rules[j].sel, ref)) { src = &doc->rules[j]; break; }
@@ -310,10 +318,13 @@ css_resolve_apply(css_doc_t* doc)
                     }
                 }
             }
-            // clear apply list after one round of merging
-            rule->napply = 0;
-            memset(rule->apply, 0, sizeof(rule->apply));
         }
+    }
+    // Clear @apply lists only after resolution has converged so that
+    // transitive chains (A→B→C) can be followed on subsequent passes.
+    for (int i = 0; i < doc->nrules; i++) {
+        doc->rules[i].napply = 0;
+        memset(doc->rules[i].apply, 0, sizeof(doc->rules[i].apply));
     }
 }
 

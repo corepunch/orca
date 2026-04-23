@@ -214,6 +214,51 @@ local function test_style_applies_to_new_node()
 end
 
 
+-- ---------------------------------------------------------------------------
+-- Test 11: @apply directive merges another rule's declarations
+-- ---------------------------------------------------------------------------
+local function test_style_apply_directive()
+  local css = [[
+    .base  { opacity: 0.4; }
+    .child { @apply: .base; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = core.StyleSheet.Parse(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "child"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.4, 0.001, "@apply: child inherited opacity from base")
+
+  node:removeFromParent()
+  print("PASS: test_style_apply_directive")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 12: Transitive @apply chain  A → B → C propagates C's properties to A
+-- ---------------------------------------------------------------------------
+local function test_style_apply_transitive()
+  -- .c defines the property; .b applies .c; .a applies .b
+  local css = [[
+    .c { opacity: 0.2; }
+    .b { @apply: .c; }
+    .a { @apply: .b; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = core.StyleSheet.Parse(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "a"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.2, 0.001, "transitive @apply: A inherited opacity from C via B")
+
+  node:removeFromParent()
+  print("PASS: test_style_apply_transitive")
+end
+
+
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()
@@ -224,5 +269,7 @@ test_style_recursive_children()
 test_style_dot_prefix_selector()
 test_style_numeric_value()
 test_style_applies_to_new_node()
+test_style_apply_directive()
+test_style_apply_transitive()
 
 print("All style tests passed.")

@@ -6,6 +6,8 @@
 #endif
 
 #include "r_local.h"
+#include <source/core/core_local.h>
+#include <source/filesystem/filesystem.h>
 
 static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
@@ -1069,10 +1071,6 @@ static int renderer_gc(lua_State* L)
   axShutdown();
   return 0;
 }
-
-// Forward declarations for filesystem helpers used by the image loader.
-extern bool_t FS_FileExists(const char* path);
-extern lpObject_t OBJ_MakeNativeObject(uint32_t class_id);
 
 // Return the last path component (after the final '/'), or the whole string.
 static const char*
