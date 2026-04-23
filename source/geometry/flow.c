@@ -39,6 +39,10 @@ parse_property(lua_State* L,
           return TRUE;
         }
       }
+      if (!L) {
+        Con_Printf("parse_property(%s): Invalid enum value for property '%s'", str, prop->Name);
+        return FALSE;
+      }
       return luaL_error(L, "parse_property(%s): Invalid enum value for property '%s'\n", str, prop->Name);
     case kDataTypeFloat:
       *(float*)valueptr = atof(str);
@@ -51,6 +55,10 @@ parse_property(lua_State* L,
       *(struct color*)valueptr = COLOR_Parse(str);
       return TRUE;
     case kDataTypeStruct:
+      if (!L) {
+        Con_Printf("parse_property: struct property '%s' requires Lua state - skipped", prop->Name);
+        return FALSE;
+      }
       if (luaL_getmetatable(L, prop->TypeString) && lua_getfield(L, -1, "fromstring")) {
         lua_pushstring(L, str);
         lua_call(L, 1, 1);
@@ -62,6 +70,10 @@ parse_property(lua_State* L,
       }
       return TRUE;
     case kDataTypeObject:
+      if (!L) {
+        Con_Printf("parse_property: object property '%s' requires Lua state - skipped", prop->Name);
+        return FALSE;
+      }
       lua_getglobal(L, "require");
       lua_pushstring(L, str);
       lua_call(L, 1, 1);
@@ -74,6 +86,10 @@ parse_property(lua_State* L,
 //    case kDataTypeEvent:
 //      return TRUE;
     default:
+      if (!L) {
+        Con_Printf("parse_property(%s): Unsupported property type %d for parsing", prop->Name, prop->DataType);
+        return FALSE;
+      }
       return luaL_error(L, "parse_property(%s): Unsupported property type %d for parsing\n", prop->Name, prop->DataType);
   }
   return TRUE;

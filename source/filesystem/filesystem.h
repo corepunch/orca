@@ -297,12 +297,20 @@ struct ThemeDefaultValuesDictionary {
 ORCA_API void luaX_pushThemeDefaultValuesDictionary(lua_State *L, struct ThemeDefaultValuesDictionary const* ThemeDefaultValuesDictionary);
 ORCA_API struct ThemeDefaultValuesDictionary* luaX_checkThemeDefaultValuesDictionary(lua_State *L, int idx);
 
+/// @brief Stores a theme variable in the C-level theme registry
+/// key must include the leading '$' (e.g. "$accent")
+ORCA_API void FS_SetThemeValue(const char* key, const char* value);
+
+/// @brief Looks up a theme variable in the C-level theme registry
+/// key must include the leading '$'. Returns NULL if not found.
+ORCA_API const char* FS_GetThemeValue(const char* key);
+
 /// @brief Loads an object tree from an XML file
 ORCA_API struct Object*
-FS_LoadObjectFromXML(lua_State*, const char*);
+FS_LoadObjectFromXML(const char*);
 
 /// @brief Parses an object tree from an XML string
 ORCA_API struct Object*
-FS_ParseObjectFromXMLString(lua_State*, const char*);
+FS_ParseObjectFromXMLString(const char*);
 
 #endif

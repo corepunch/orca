@@ -421,13 +421,13 @@ int f_FS_ReadTextFile(lua_State *L) {
 }
 int f_FS_LoadObjectFromXML(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
-	struct Object* result_ = FS_LoadObjectFromXML(L, path);
+	struct Object* result_ = FS_LoadObjectFromXML(path);
 	luaX_pushObject(L, result_);
 	return 1;
 }
 int f_FS_ParseObjectFromXMLString(lua_State *L) {
 	const char* xmlString = luaL_checkstring(L, 1);
-	struct Object* result_ = FS_ParseObjectFromXMLString(L, xmlString);
+	struct Object* result_ = FS_ParseObjectFromXMLString(xmlString);
 	luaX_pushObject(L, result_);
 	return 1;
 }

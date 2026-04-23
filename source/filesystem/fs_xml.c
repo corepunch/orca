@@ -2,104 +2,21 @@
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 
-// Forward declarations
-static lpObject_t FS_ConstructNode(lua_State* L, xmlNodePtr element);
-int f_xml_module_loader(lua_State* L);
+// Forward declaration
+static lpObject_t FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in geometry/flow.c
+// parse_property handles NULL lua_State for the common property types (bool, int,
+// float, string, color, enum).  kDataTypeStruct and kDataTypeObject are skipped
+// with a Con_Printf diagnostic when L is NULL.
 extern int parse_property(lua_State* L, const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
-// External declaration of luaX_readProperty (reads a Lua value at idx into property)
-extern int luaX_readProperty(lua_State* L, int idx, lpProperty_t p);
+// Lua C functions (still need lua_State since they are called from Lua)
+int f_find_xml_module(lua_State* L);
+int f_xml_module_loader(lua_State* L);
 
 // --- Helpers ----------------------------------------------------------------
-
-// Resolve a theme variable: if value starts with '$', look it up in orca.theme
-// and return the resolved string; otherwise return value unchanged.
-// resolved_buf must be at least MAX_PROPERTY_STRING bytes.
-static lpcString_t
-_ResolveThemeValue(lua_State* L, lpcString_t value, char* resolved_buf, size_t bufsize)
-{
-  if (!L || !value || value[0] != '$') return value;
-
-  lua_getglobal(L, "orca");
-  if (!lua_istable(L, -1)) { lua_pop(L, 1); return value; }
-  lua_getfield(L, -1, "theme");
-  lua_remove(L, -2);
-  if (!lua_istable(L, -1)) { lua_pop(L, 1); return value; }
-  lua_getfield(L, -1, value);
-  lua_remove(L, -2);
-
-  lpcString_t resolved = lua_tostring(L, -1);
-  if (resolved) {
-    strncpy(resolved_buf, resolved, bufsize - 1);
-    resolved_buf[bufsize - 1] = '\0';
-  }
-  lua_pop(L, 1);
-  return resolved ? resolved_buf : value;
-}
-
-// State struct used to call parse_property() inside a lua_pcall to contain any
-// Lua errors (luaL_error longjmps) raised by the parser.
-typedef struct {
-  lpcString_t        str;
-  lpcPropertyType_t  pdesc;
-  void*              valueptr;
-  int                result;
-} ParsePropertyState;
-
-static int _pcall_parse_property(lua_State* L)
-{
-  ParsePropertyState* s = lua_touserdata(L, 1);
-  s->result = parse_property(L, s->str, s->pdesc, s->valueptr);
-  return 0;
-}
-
-// Detect placeholder element tags (CustomNode, LibraryPlaceholder, etc.) and
-// resolve them to an object by calling require(PlaceholderTemplate | ClassName).
-// Returns a new object on success, NULL otherwise.
-static lpObject_t
-_TryPlaceholder(lua_State* L, xmlNodePtr element)
-{
-  static lpcString_t placeholder_tags[] = {
-    "CustomNode", "LibraryPlaceholder",
-    "LayerPrefabPlaceholder", "ObjectPrefabPlaceholder", NULL
-  };
-
-  lpcString_t tag = (lpcString_t)element->name;
-  bool_t is_placeholder = FALSE;
-  for (int i = 0; placeholder_tags[i]; i++) {
-    if (!strcmp(tag, placeholder_tags[i])) { is_placeholder = TRUE; break; }
-  }
-  if (!is_placeholder || !L) return NULL;
-
-  // Resolve the template module: prefer PlaceholderTemplate, fall back to ClassName
-  xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
-  if (!tmpl)  tmpl = xmlGetProp(element, XMLSTR("ClassName"));
-  if (!tmpl) return NULL;
-
-  // Copy the template name to a local buffer and free the xmlChar* immediately
-  // before any Lua operations that could raise a Lua error (which would longjmp
-  // past the xmlFree, leaking the allocation).
-  char tmpl_copy[MAX_OSPATH] = {0};
-  strncpy(tmpl_copy, (lpcString_t)tmpl, sizeof(tmpl_copy) - 1);
-  xmlFree(tmpl);
-
-  // require(template) goes through our XML searcher (or the Lua module searcher).
-  lua_getglobal(L, "require");
-  lua_pushstring(L, tmpl_copy);
-
-  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-    Con_Printf("fs_xml: placeholder load error: %s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    return NULL;
-  }
-
-  lpObject_t obj = luaX_checkObject(L, -1);
-  lua_pop(L, 1);
-  return obj;
-}
 
 // Map a PropertyAttribute name string to its enum value.
 static enum PropertyAttribute
@@ -131,7 +48,7 @@ _ParseBindingModeStr(lpcString_t s)
 // Parse a single XML attribute value and set it on obj.
 // Handles Name/id, class, and all registered properties.
 static void
-_SetPropertyFromString(lua_State* L, lpObject_t obj, lpcString_t name, lpcString_t value)
+_SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
 {
   // Skip editor-only / template attributes
   if (!strcmp(name, "ClassName") || !strcmp(name, "PlaceholderTemplate"))
@@ -165,23 +82,16 @@ _SetPropertyFromString(lua_State* L, lpObject_t obj, lpcString_t name, lpcString
     return;
   }
 
-  // Resolve theme variables: "$accent" → orca.theme["$accent"]
-  char theme_buf[MAX_PROPERTY_STRING] = {0};
-  lpcString_t resolved = _ResolveThemeValue(L, value, theme_buf, sizeof(theme_buf));
+  // Resolve theme variables: "$accent" → FS_GetThemeValue("$accent")
+  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
+  if (!resolved) resolved = value;
 
-  // Parse the string value into a stack-allocated buffer, wrapped in lua_pcall
-  // to contain any luaL_error raised by parse_property (e.g. invalid enum/struct).
+  // Parse the string value into a stack-allocated buffer using pure-C parse_property.
+  // Pass NULL lua_State — this works for bool, int, float, string, color, enum.
+  // For kDataTypeStruct and kDataTypeObject parse_property logs a diagnostic and
+  // returns FALSE, which is handled gracefully below.
   char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  ParsePropertyState state = { resolved, pdesc, tmpbuf, FALSE };
-  lua_pushcfunction(L, _pcall_parse_property);
-  lua_pushlightuserdata(L, &state);
-  if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-    Con_Printf("fs_xml: property '%s'='%s' parse error: %s",
-               name, resolved, lua_tostring(L, -1));
-    lua_pop(L, 1);
-    return;
-  }
-  if (!state.result) return;
+  if (!parse_property(NULL, resolved, pdesc, tmpbuf)) return;
 
   PROP_SetValue(prop, tmpbuf);
 
@@ -195,45 +105,21 @@ _SetPropertyFromString(lua_State* L, lpObject_t obj, lpcString_t name, lpcString
 
 // Build an object-property child element (e.g. <Grid.Columns> or binding).
 static void
-_ConstructProperty(lua_State* L, lpObject_t obj,
+_ConstructProperty(lpObject_t obj,
                    lpcPropertyType_t pdesc, xmlNodePtr element)
 {
-  if (pdesc->IsArray && L) {
-    // Array properties: build a Lua table where each entry is a table of
-    // string-valued attributes, then use luaX_readProperty which handles
-    // array construction via the registered struct metatable.
-    lpProperty_t prop = NULL;
-    if (FAILED(OBJ_FindShortProperty(obj, pdesc->Name, &prop))) {
-      Con_Printf("fs_xml: Could not get array property slot '%s'", pdesc->Name);
-      return;
-    }
-
-    lua_newtable(L);
-    int table_idx = lua_gettop(L);
-    int count = 0;
-
-    xmlFindAll(child, element, XMLSTR(pdesc->TypeString)) {
-      lua_newtable(L);
-      FOR_EACH_LIST(xmlAttr, attr, child->properties) {
-        xmlChar* val = xmlGetProp(child, attr->name);
-        if (val) {
-          lua_pushstring(L, (lpcString_t)val);
-          lua_setfield(L, -2, (lpcString_t)attr->name);
-          xmlFree(val);
-        }
-      }
-      lua_rawseti(L, table_idx, ++count);
-    }
-
-    luaX_readProperty(L, table_idx, prop);
-    lua_pop(L, 1); // pop the table
+  // Array properties require Lua metatables for struct construction.
+  // Skip with a diagnostic; callers can use the Lua API if needed.
+  if (pdesc->IsArray) {
+    Con_Printf("fs_xml: array property '%s' not supported in C-only XML parser - skipped",
+               pdesc->Name);
     return;
   }
 
   // Non-array case: check for a Value attribute first
   xmlChar* val = xmlGetProp(element, XMLSTR("Value"));
   if (val) {
-    _SetPropertyFromString(L, obj, pdesc->Name, (lpcString_t)val);
+    _SetPropertyFromString(obj, pdesc->Name, (lpcString_t)val);
     xmlFree(val);
     return;
   }
@@ -262,13 +148,13 @@ _ConstructProperty(lua_State* L, lpObject_t obj,
 // Handle <AnimationPlayer ...> child: attach-only component whose attributes
 // are parsed as properties of the owning object.
 static void
-_HandleAnimationPlayer(lua_State* L, lpObject_t obj, xmlNodePtr element)
+_HandleAnimationPlayer(lpObject_t obj, xmlNodePtr element)
 {
   OBJ_AddComponent(obj, ID_AnimationPlayer);
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
     if (val) {
-      _SetPropertyFromString(L, obj, (lpcString_t)attr->name, (lpcString_t)val);
+      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
       xmlFree(val);
     }
   }
@@ -276,19 +162,19 @@ _HandleAnimationPlayer(lua_State* L, lpObject_t obj, xmlNodePtr element)
 
 // Handle <AnimationCurve ...> child: regular child object of an AnimationClip.
 static void
-_HandleAnimationCurve(lua_State* L, lpObject_t obj, xmlNodePtr element)
+_HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
 {
   lpcClassDesc_t cls = OBJ_FindClass("AnimationCurve");
   if (!cls) {
     Con_Printf("fs_xml: AnimationCurve class not found");
     return;
   }
-  lpObject_t curve = OBJ_Create(L, cls);
+  lpObject_t curve = OBJ_Create(NULL, cls);
 
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
     if (val) {
-      _SetPropertyFromString(L, curve, (lpcString_t)attr->name, (lpcString_t)val);
+      _SetPropertyFromString(curve, (lpcString_t)attr->name, (lpcString_t)val);
       xmlFree(val);
     }
   }
@@ -297,7 +183,7 @@ _HandleAnimationCurve(lua_State* L, lpObject_t obj, xmlNodePtr element)
   xmlForEach(sub, element) {
     lpcPropertyType_t pdesc = OBJ_FindExplicitProperty(curve, (lpcString_t)sub->name);
     if (pdesc) {
-      _ConstructProperty(L, curve, pdesc, sub);
+      _ConstructProperty(curve, pdesc, sub);
     }
   }
 
@@ -308,21 +194,21 @@ _HandleAnimationCurve(lua_State* L, lpObject_t obj, xmlNodePtr element)
 // Handle <StateManagerController ...> child: attach-only component with an
 // optional inline <StateManager> child element.
 static void
-_HandleStateManagerController(lua_State* L, lpObject_t obj, xmlNodePtr element)
+_HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
 {
   OBJ_AddComponent(obj, ID_StateManagerController);
 
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
     if (val) {
-      _SetPropertyFromString(L, obj, (lpcString_t)attr->name, (lpcString_t)val);
+      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
       xmlFree(val);
     }
   }
 
   // Look for an inline <StateManager> child element
   xmlFindAll(sub, element, XMLSTR("StateManager")) {
-    lpObject_t sm = FS_ConstructNode(L, sub);
+    lpObject_t sm = FS_ConstructNode(sub);
     if (sm) {
       lpProperty_t prop = NULL;
       if (SUCCEEDED(OBJ_FindShortProperty(obj, "StateManager", &prop))) {
@@ -333,75 +219,23 @@ _HandleStateManagerController(lua_State* L, lpObject_t obj, xmlNodePtr element)
   }
 }
 
-// Execute an inline <script> element in a Lua environment where `self` is obj.
-static void
-_RunScript(lua_State* L, lpObject_t obj, xmlNodePtr element)
-{
-  if (!L) return;
-  xmlChar* text = xmlNodeGetContent(element);
-  if (!text || !*text) {
-    if (text) xmlFree(text);
-    return;
-  }
-
-  lpcString_t src = (lpcString_t)text;
-
-  if (luaL_loadstring(L, src) != LUA_OK) {
-    Con_Printf("fs_xml: script load error: %s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    xmlFree(text);
-    return;
-  }
-
-  // Build environment table: { self = obj } with _G as fallback via __index
-  lua_newtable(L);                  // env
-  luaX_pushObject(L, obj);
-  lua_setfield(L, -2, "self");      // env.self = obj
-
-  lua_newtable(L);                  // env_mt
-  lua_pushglobaltable(L);
-  lua_setfield(L, -2, "__index");   // env_mt.__index = _G
-  lua_setmetatable(L, -2);          // setmetatable(env, env_mt)
-
-  // Set the loaded chunk's _ENV upvalue to our custom environment
-  if (lua_setupvalue(L, -2, 1) == NULL) {
-    Con_Printf("fs_xml: script setup error: loaded chunk has no _ENV upvalue");
-    lua_pop(L, 1); // pop chunk
-    xmlFree(text);
-    return;
-  }
-
-  if (lua_pcall(L, 0, 0, 0) != LUA_OK) {
-    Con_Printf("fs_xml: script error: %s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-  }
-
-  xmlFree(text);
-}
-
 // Build an Object tree from an XML element node.
 static lpObject_t
-FS_ConstructNode(lua_State* L, xmlNodePtr element)
+FS_ConstructNode(xmlNodePtr element)
 {
-  // Check for placeholder tags (CustomNode, LibraryPlaceholder, etc.) first —
-  // these are resolved via require(PlaceholderTemplate | ClassName) rather
-  // than OBJ_FindClass, mirroring the old file-xml.lua try_prefab_placeholder().
-  lpObject_t placeholder = _TryPlaceholder(L, element);
-  if (placeholder) return placeholder;
-
   lpcClassDesc_t cls = OBJ_FindClass((lpcString_t)element->name);
   if (!cls) {
     Con_Printf("fs_xml: Unknown element type '%s'", (lpcString_t)element->name);
     return NULL;
   }
 
-  lpObject_t obj = OBJ_Create(L, cls);
+  lpObject_t obj = OBJ_Create(NULL, cls);
 
   // Parse all XML attributes as object properties
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
     if (val) {
-      _SetPropertyFromString(L, obj, (lpcString_t)attr->name, (lpcString_t)val);
+      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
       xmlFree(val);
     }
   }
@@ -435,26 +269,25 @@ FS_ConstructNode(lua_State* L, xmlNodePtr element)
     // Explicit property child (e.g. <Grid.Columns> or <AnimationClip.Keyframes>)
     lpcPropertyType_t pdesc = OBJ_FindExplicitProperty(obj, tag);
     if (pdesc) {
-      _ConstructProperty(L, obj, pdesc, sub);
+      _ConstructProperty(obj, pdesc, sub);
       continue;
     }
 
-    // Special attach-only components and Lua-only elements
+    // Special attach-only components and legacy elements
     if (!strcmp(tag, "AnimationPlayer")) {
-      _HandleAnimationPlayer(L, obj, sub);
+      _HandleAnimationPlayer(obj, sub);
     } else if (!strcmp(tag, "AnimationCurve")) {
-      _HandleAnimationCurve(L, obj, sub);
+      _HandleAnimationCurve(obj, sub);
     } else if (!strcmp(tag, "StateManagerController")) {
-      _HandleStateManagerController(L, obj, sub);
-    } else if (!strcmp(tag, "script")) {
-      _RunScript(L, obj, sub);
-    } else if (!strcmp(tag, "EventListener") ||
+      _HandleStateManagerController(obj, sub);
+    } else if (!strcmp(tag, "script")     ||
+               !strcmp(tag, "EventListener") ||
                !strcmp(tag, "StyleSheet")    ||
                !strcmp(tag, "ValueTicker")) {
-      // No-ops for legacy Lua-only elements
+      // Lua-only elements: no-op in the C XML parser
     } else {
       // Regular child object: recurse and attach
-      lpObject_t child = FS_ConstructNode(L, sub);
+      lpObject_t child = FS_ConstructNode(sub);
       if (child) {
         OBJ_AddChild(obj, child, FALSE);
       }
@@ -465,7 +298,7 @@ FS_ConstructNode(lua_State* L, xmlNodePtr element)
   return obj;
 }
 
-// Lua-callable function: fs_loadxmlmodule(module_name) → loader | nil
+// Lua-callable function: fs_findxmlmodule(module_name) → loader | nil
 // Used as a package.searchers entry to allow require("foo") to load foo.xml.
 int f_find_xml_module(lua_State* L)
 {
@@ -498,7 +331,7 @@ int f_xml_module_loader(lua_State* L)
   lpcString_t path        = luaL_checkstring(L, lua_upvalueindex(1));
   lpcString_t module_name = luaL_checkstring(L, lua_upvalueindex(2));
 
-  lpObject_t obj = FS_LoadObjectFromXML(L, path);
+  lpObject_t obj = FS_LoadObjectFromXML(path);
   if (!obj) {
     return luaL_error(L, "fs_xml: Failed to load XML file: %s", path);
   }
@@ -510,7 +343,7 @@ int f_xml_module_loader(lua_State* L)
 // --- Public API -----------------------------------------------------------
 
 ORCA_API lpObject_t
-FS_LoadObjectFromXML(lua_State* L, lpcString_t path)
+FS_LoadObjectFromXML(lpcString_t path)
 {
   struct file* fp = FS_LoadFile(path);
   if (fp) {
@@ -522,7 +355,7 @@ FS_LoadObjectFromXML(lua_State* L, lpcString_t path)
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
-    lpObject_t result = root ? FS_ConstructNode(L, root) : NULL;
+    lpObject_t result = root ? FS_ConstructNode(root) : NULL;
     xmlFreeDoc(doc);
     return result;
   }
@@ -534,13 +367,13 @@ FS_LoadObjectFromXML(lua_State* L, lpcString_t path)
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);
-  lpObject_t result = root ? FS_ConstructNode(L, root) : NULL;
+  lpObject_t result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
   return result;
 }
 
 ORCA_API lpObject_t
-FS_ParseObjectFromXMLString(lua_State* L, lpcString_t xml_string)
+FS_ParseObjectFromXMLString(lpcString_t xml_string)
 {
   xmlDoc* doc = xmlReadMemory(xml_string, (int)strlen(xml_string),
                               NULL, NULL, XML_FLAGS);
@@ -549,7 +382,7 @@ FS_ParseObjectFromXMLString(lua_State* L, lpcString_t xml_string)
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);
-  lpObject_t result = root ? FS_ConstructNode(L, root) : NULL;
+  lpObject_t result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
   return result;
 }
