@@ -462,6 +462,27 @@ R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
   return object;
 }
 
+lpObject_t
+R_LoadImageFromMemoryNative(void* pBuffer, uint32_t dwSize)
+{
+  lpObject_t object = OBJ_MakeNativeObject(ID_Texture);
+  if (!object) return NULL;
+  struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };
+  lpTexture_t texture = GetTexture(object);
+  R_Call(glGenTextures, 1, &texture->texnum);
+  R_Call(glBindTexture, GL_TEXTURE_2D, texture->texnum);
+  struct AXsize size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
+                                  &(struct Image) {.Source = "[Memory]"});
+  if (size.width == 0 || size.height == 0) {
+    size = texture_make_error(GL_TEXTURE_2D);
+  }
+  texture->Width = size.width;
+  texture->Height = size.height;
+  texture->Scale = 1;
+  R_ApplyImageParms(texture, GL_TEXTURE_2D, FALSE);
+  return object;
+}
+
 #if __APPLE__
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/OpenGL.h>

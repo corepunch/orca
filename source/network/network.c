@@ -383,6 +383,110 @@ Net_Shutdown(void)
   curl_global_cleanup();
 }
 
+/* ----------------------------------------------------------------------- *
+ * C-callable non-Lua fetch API (libcurl backend)
+ * ----------------------------------------------------------------------- */
+
+#include <source/network/network.h>
+
+ORCA_API fetch_handle_t
+NET_FetchBegin(const char *url)
+{
+  if (!url || !*url) return NULL;
+
+  request_t *req = malloc(sizeof(request_t));
+  if (!req) return NULL;
+  alloc_buffer(&req->response);
+  alloc_buffer(&req->header);
+
+  req->easy_handle = curl_easy_init();
+  if (!req->easy_handle) { free_request(req); return NULL; }
+
+  req->multi_handle = curl_multi_init();
+  if (!req->multi_handle) {
+    curl_easy_cleanup(req->easy_handle);
+    free_request(req);
+    return NULL;
+  }
+
+  curl_easy_setopt(req->easy_handle, CURLOPT_URL, url);
+  curl_easy_setopt(req->easy_handle, CURLOPT_WRITEFUNCTION, write_callback);
+  curl_easy_setopt(req->easy_handle, CURLOPT_WRITEDATA, &req->response);
+  curl_easy_setopt(req->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
+  curl_easy_setopt(req->easy_handle, CURLOPT_COOKIEFILE, "/tmp/cookies.txt");
+  curl_easy_setopt(req->easy_handle, CURLOPT_COOKIEJAR,  "/tmp/cookies.txt");
+
+  if (strncmp(url, "https://", 8) == 0) {
+    curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+    curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYHOST, 2L);
+  }
+
+  curl_multi_add_handle(req->multi_handle, req->easy_handle);
+
+  int running = 0;
+  curl_multi_perform(req->multi_handle, &running);
+
+  return (fetch_handle_t)req;
+}
+
+ORCA_API bool_t
+NET_FetchPoll(fetch_handle_t handle)
+{
+  if (!handle) return FALSE;
+  request_t *req = (request_t *)handle;
+  int running = 0;
+  curl_multi_perform(req->multi_handle, &running);
+  return running > 0;
+}
+
+ORCA_API long
+NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
+{
+  if (!handle) {
+    if (data_out)  *data_out  = NULL;
+    if (size_out)  *size_out  = 0;
+    return -1;
+  }
+
+  request_t *req = (request_t *)handle;
+  long code = -1;
+
+  int msgs_left = 0;
+  CURLMsg *msg;
+  while ((msg = curl_multi_info_read(req->multi_handle, &msgs_left))) {
+    if (msg->msg == CURLMSG_DONE) {
+      curl_easy_getinfo(req->easy_handle, CURLINFO_RESPONSE_CODE, &code);
+    }
+  }
+
+  *size_out = req->response.size;
+  *data_out = malloc(req->response.size + 1);
+  if (*data_out) {
+    memcpy(*data_out, req->response.data, req->response.size);
+    ((char *)*data_out)[req->response.size] = '\0';
+  } else {
+    *size_out = 0;
+  }
+
+  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+  curl_easy_cleanup(req->easy_handle);
+  curl_multi_cleanup(req->multi_handle);
+  free_request(req);
+
+  return code;
+}
+
+ORCA_API void
+NET_FetchCancel(fetch_handle_t handle)
+{
+  if (!handle) return;
+  request_t *req = (request_t *)handle;
+  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+  curl_easy_cleanup(req->easy_handle);
+  curl_multi_cleanup(req->multi_handle);
+  free_request(req);
+}
+
 #else // __EMSCRIPTEN__
 
 #include <emscripten.h>
@@ -587,6 +691,83 @@ static void
 Net_Shutdown(void)
 {
   Con_Printf("Shutting down network");
+}
+
+/* ----------------------------------------------------------------------- *
+ * C-callable non-Lua fetch API (Emscripten / WebGL backend)
+ * ----------------------------------------------------------------------- */
+
+#include <source/network/network.h>
+
+ORCA_API fetch_handle_t
+NET_FetchBegin(const char *url)
+{
+  if (!url || !*url) return NULL;
+
+  webgl_fetch_state_t *state = malloc(sizeof(webgl_fetch_state_t));
+  if (!state) return NULL;
+  memset(state, 0, sizeof(*state));
+
+  emscripten_fetch_attr_t attr;
+  emscripten_fetch_attr_init(&attr);
+  strcpy(attr.requestMethod, "GET");
+  attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+  attr.onsuccess  = on_fetch_success;
+  attr.onerror    = on_fetch_error;
+  attr.userData   = state;
+
+  emscripten_fetch(&attr, url);
+
+  return (fetch_handle_t)state;
+}
+
+ORCA_API bool_t
+NET_FetchPoll(fetch_handle_t handle)
+{
+  if (!handle) return FALSE;
+  return !((webgl_fetch_state_t *)handle)->done;
+}
+
+ORCA_API long
+NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
+{
+  if (!handle) {
+    if (data_out) *data_out = NULL;
+    if (size_out) *size_out = 0;
+    return -1;
+  }
+
+  webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+  emscripten_fetch_t  *fetch = state->fetch;
+  long code = fetch ? (long)fetch->status : -1;
+
+  if (fetch && fetch->numBytes > 0) {
+    *size_out = (size_t)fetch->numBytes;
+    *data_out = malloc(*size_out + 1);
+    if (*data_out) {
+      memcpy(*data_out, fetch->data, *size_out);
+      ((char *)*data_out)[*size_out] = '\0';
+    } else {
+      *size_out = 0;
+    }
+    emscripten_fetch_close(fetch);
+  } else {
+    *data_out = NULL;
+    *size_out = 0;
+    if (fetch) emscripten_fetch_close(fetch);
+  }
+
+  free(state);
+  return code;
+}
+
+ORCA_API void
+NET_FetchCancel(fetch_handle_t handle)
+{
+  if (!handle) return;
+  webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+  if (state->fetch) emscripten_fetch_close(state->fetch);
+  free(state);
 }
 
 #endif // __EMSCRIPTEN__
