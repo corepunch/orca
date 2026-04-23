@@ -46,8 +46,7 @@ FS_SetThemeValue(lpcString_t key, lpcString_t value) {
   s_theme_count++;
 }
 
-ORCA_API lpcString_t
-FS_GetThemeValue(lpcString_t key) {
+lpcString_t FS_GetThemeValue(lpcString_t key) {
   for (int i = 0; i < s_theme_count; i++) {
     if (strcmp(s_theme_entries[i].key, key) == 0)
       return s_theme_entries[i].value;

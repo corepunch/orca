@@ -399,11 +399,6 @@ void on_filesystem_module_registered(lua_State* L)
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
 
-  // Register the XML package searcher: require("foo") tries foo.xml, checking
-  // the virtual filesystem first and falling back to disk.
-  lua_register(L, "fs_findxmlmodule", f_find_xml_module);
-  luaL_dostring(L, "table.insert(package.searchers, fs_findxmlmodule)");
-
   // Register doxmlfile / doxmlstring as C globals, replacing the Lua implementations
   // that used to live in share/plugins/file-xml.lua.
   lua_pushcfunction(L, f_doxmlfile);

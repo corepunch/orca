@@ -12,10 +12,6 @@ static lpObject_t FS_ConstructNode(xmlNodePtr element);
 extern int parse_property(lua_State* L, const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
-// Lua C functions (still need lua_State since they are called from Lua)
-int f_find_xml_module(lua_State* L);
-int f_xml_module_loader(lua_State* L);
-
 // --- Helpers ----------------------------------------------------------------
 
 // Map a PropertyAttribute name string to its enum value.
@@ -296,48 +292,6 @@ FS_ConstructNode(xmlNodePtr element)
 
   OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
-}
-
-// Lua-callable function: fs_findxmlmodule(module_name) → loader | nil
-// Used as a package.searchers entry to allow require("foo") to load foo.xml.
-int f_find_xml_module(lua_State* L)
-{
-  lpcString_t module = luaL_checkstring(L, 1);
-  path_t path = {0};
-  snprintf(path, sizeof(path), "%s.xml", FS_PathFromModule(module));
-
-  // Check virtual filesystem first, then disk
-  struct file* fp = FS_LoadFile(path);
-  if (fp) {
-    FS_FreeFile(fp);
-  } else {
-    // Check directly on disk (for absolute/CWD-relative paths)
-    FILE* f = fopen(path, "rb");
-    if (!f) return 0; // not found
-    fclose(f);
-  }
-
-  // Return a loader closure that captures the resolved path
-  lua_pushstring(L, path);
-  lua_pushstring(L, module);
-  lua_pushcclosure(L, f_xml_module_loader, 2);
-  return 1;
-}
-
-// Loader closure: called by Lua require() machinery after the searcher returned it.
-// upvalue 1 = file path (string), upvalue 2 = module name (string)
-int f_xml_module_loader(lua_State* L)
-{
-  lpcString_t path        = luaL_checkstring(L, lua_upvalueindex(1));
-  lpcString_t module_name = luaL_checkstring(L, lua_upvalueindex(2));
-
-  lpObject_t obj = FS_LoadObjectFromXML(path);
-  if (!obj) {
-    return luaL_error(L, "fs_xml: Failed to load XML file: %s", path);
-  }
-  OBJ_SetSourceFile(obj, module_name);
-  luaX_pushObject(L, obj);
-  return 1;
 }
 
 // --- Public API -----------------------------------------------------------

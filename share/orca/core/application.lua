@@ -118,9 +118,7 @@ end
 
 function Application.load_screen(path)
   io.stderr:write("Loading startup screen: " .. path .. "\n")
-  local ok, class = pcall(require, path)
-  assert(ok, "Failed to load screen: " .. path .. ", " .. tostring(class))
-  return class()
+  return filesystem.loadXml(path .. ".xml")
 end
 
 function Application.load_editor(screen)

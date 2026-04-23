@@ -74,6 +74,18 @@ FS_GetWorkspace(void);
 ORCA_API int
 FS_ReadTextFile(struct lua_State*, const char*);
 
+/// @brief Loads an object tree from an XML file
+ORCA_API struct Object*
+FS_LoadObjectFromXML(const char*);
+
+/// @brief Parses an object tree from an XML string
+ORCA_API struct Object*
+FS_ParseObjectFromXMLString(const char*);
+
+/// @brief Retrieves a theme value based on the provided key and theme group
+ORCA_API const char*
+FS_GetThemeValue(const char*);
+
 
 /// @brief External project reference
 /** ProjectReference struct */
@@ -296,21 +308,5 @@ struct ThemeDefaultValuesDictionary {
 };
 ORCA_API void luaX_pushThemeDefaultValuesDictionary(lua_State *L, struct ThemeDefaultValuesDictionary const* ThemeDefaultValuesDictionary);
 ORCA_API struct ThemeDefaultValuesDictionary* luaX_checkThemeDefaultValuesDictionary(lua_State *L, int idx);
-
-/// @brief Stores a theme variable in the C-level theme registry
-/// key must include the leading '$' (e.g. "$accent")
-ORCA_API void FS_SetThemeValue(const char* key, const char* value);
-
-/// @brief Looks up a theme variable in the C-level theme registry
-/// key must include the leading '$'. Returns NULL if not found.
-ORCA_API const char* FS_GetThemeValue(const char* key);
-
-/// @brief Loads an object tree from an XML file
-ORCA_API struct Object*
-FS_LoadObjectFromXML(const char*);
-
-/// @brief Parses an object tree from an XML string
-ORCA_API struct Object*
-FS_ParseObjectFromXMLString(const char*);
 
 #endif

@@ -42,7 +42,7 @@ extern const char *_<?= $ename ?>[];
 ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 <?php foreach ($model->getFunctions() as $name => $func):?>
-		{ "<?= lcfirst($name) ?>", f_<?= $model->prefix.$name ?> },
+		{ "<?= $func->export ?>", f_<?= $model->prefix.$name ?> },
 <?php endforeach ?>
 		{ NULL, NULL } 
 	}));

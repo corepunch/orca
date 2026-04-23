@@ -431,6 +431,12 @@ int f_FS_ParseObjectFromXMLString(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
+int f_FS_GetThemeValue(lua_State *L) {
+	const char* key = luaL_checkstring(L, 1);
+	const char* result_ = FS_GetThemeValue(key);
+	lua_pushstring(L, result_);
+	return 1;
+}
 
 ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -445,8 +451,9 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "readTextFile", f_FS_ReadTextFile },
-		{ "loadObjectFromXML", f_FS_LoadObjectFromXML },
+		{ "loadXml", f_FS_LoadObjectFromXML },
 		{ "parseObjectFromXMLString", f_FS_ParseObjectFromXMLString },
+		{ "getThemeValue", f_FS_GetThemeValue },
 		{ NULL, NULL } 
 	}));
 	void on_filesystem_module_registered(lua_State *L);
