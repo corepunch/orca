@@ -126,10 +126,10 @@ OBJ_FindLongProperty(lpObject_t object,
 
 HRESULT
 OBJ_FindShortProperty(lpObject_t object,
-                      lpcString_t short_name,
+                      lpcString_t name,
                       lpProperty_t* ppProp)
 {
-  uint32_t identifier = fnv1a32(short_name);
+  uint32_t identifier = fnv1a32(name);
   if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
     return NOERROR;
   } else {

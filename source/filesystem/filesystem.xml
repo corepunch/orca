@@ -30,6 +30,14 @@
         <field name="Command" type="string">Command to execute when the message is received</field>
       </fields>
     </struct>
+    <struct name="ThemeValue" sealed="true">
+      <summary>Key-value pair for theme values</summary>
+      <details>Represents a single key-value pair for theme settings. The Key identifies the specific theme attribute (e.g., "panel-background"), and the Value defines the corresponding value (e.g., a color code). These theme values can be used to dynamically style UI elements based on the active theme configuration.</details>
+      <fields>
+        <field name="Key" type="string">The key identifying the theme value, such as "panel-background"</field>
+        <field name="Value" type="string">The value associated with the key, such as a color code like "#1A1A28"</field>
+      </fields>
+    </struct>
   </structs>
   <classes>
     <class name="Workspace">
@@ -105,7 +113,8 @@
         <property name="LayerLibrary" type="Library" pointer="true"/>
         <property name="AnimationLibrary" type="Library" pointer="true"/>
         <property name="TagLibrary" type="Library" pointer="true"/>
-        <property name="ThemeLibrary" type="Library" pointer="true"/>
+<!--        <property name="ThemeLibrary" type="Library" pointer="true"/>-->
+        <property name="ThemeLibrary" type="ThemeValue" array="true"/>
         <property name="ResourceExportTagLibrary" type="Library" pointer="true"/>
         <property name="LocaleLibrary" type="Library" pointer="true"/>
         <property name="DataSourceLibrary" type="Library" pointer="true"/>
@@ -183,7 +192,7 @@
         <property name="TagIsInherited" type="bool"/>
       </properties>
     </class>
-    <class name="ThemeGroup">
+    <!-- <class name="ThemeGroup">
       <handles>
         <handle message="Object.Attached"/>
       </handles>
@@ -199,7 +208,7 @@
       <properties>
         <property name="IsThemeVisible" type="bool"/>
       </properties>
-    </class>
+    </class> -->
     <class name="Entry"/>
     <class name="ThemeDefaultValuesDictionary"/>
   </classes>

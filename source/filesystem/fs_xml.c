@@ -66,15 +66,15 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
   lpcPropertyType_t pdesc = OBJ_FindImplicitProperty(obj, name);
   if (!pdesc) pdesc = OBJ_FindExplicitProperty(obj, name);
   if (!pdesc) {
-    Con_Printf("fs_xml: Unknown property '%s' for class '%s'",
+    Con_Error("Unknown property '%s' for class '%s'",
                name, OBJ_GetClassName(obj));
     return;
   }
 
   // Find or create the property slot
   lpProperty_t prop = NULL;
-  if (FAILED(OBJ_FindShortProperty(obj, pdesc->Name, &prop))) {
-    Con_Printf("fs_xml: Could not get property slot for '%s'", pdesc->Name);
+  if (FAILED(OBJ_FindLongProperty(obj, pdesc->FullIdentifier, &prop))) {
+    Con_Error("Could not get property slot for '%s'", pdesc->Name);
     return;
   }
 
@@ -106,7 +106,7 @@ _ConstructProperty(lpObject_t obj,
   // Array properties require Lua metatables for struct construction.
   // Skip with a diagnostic; callers can use the Lua API if needed.
   if (pdesc->IsArray) {
-    Con_Printf("fs_xml: array property '%s' not supported in C-only XML parser - skipped",
+    Con_Error("array property '%s' not supported in C-only XML parser - skipped",
                pdesc->Name);
     return;
   }
@@ -161,7 +161,7 @@ _HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
 {
   lpcClassDesc_t cls = OBJ_FindClass("AnimationCurve");
   if (!cls) {
-    Con_Printf("fs_xml: AnimationCurve class not found");
+    Con_Error("AnimationCurve class not found");
     return;
   }
   lpObject_t curve = OBJ_Create(NULL, cls);
@@ -223,61 +223,12 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
 {
   xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
   if (!tmpl) {
-    Con_Printf("fs_xml: PrefabPlaceholder missing PlaceholderTemplate attribute");
+    Con_Error("PrefabPlaceholder missing PlaceholderTemplate attribute");
     return NULL;
   }
-
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  // If the template path has no file extension, try appending ".xml" first
-  // (common in repo XML: PlaceholderTemplate="Example/Prefabs/Mertic").
-  path_t tmpl_with_ext = {0};
-  lpcString_t tmpl_path = (lpcString_t)tmpl;
-  const char* dot = strrchr((lpcString_t)tmpl, '.');
-  const char* slash = strrchr((lpcString_t)tmpl, '/');
-  if (!dot || dot < slash) {
-    // No extension (or dot is in a directory component): try adding ".xml"
-    int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
-    if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
-      tmpl_path = tmpl_with_ext;
-    } else {
-      Con_Printf("fs_xml: placeholder path too long: '%s'", (lpcString_t)tmpl);
-      xmlFree(tmpl);
-      return NULL;
-    }
-  }
-  struct file* fp = FS_LoadFile(tmpl_path);
-  if (!fp && tmpl_path == tmpl_with_ext) {
-    // Fall back to the original path if the .xml variant wasn't found
-    tmpl_path = (lpcString_t)tmpl;
-    fp = FS_LoadFile(tmpl_path);
-  }
-  xmlDoc* doc = fp ?
-    xmlReadMemory((lpcString_t)fp->data, (int)fp->size, tmpl_path, NULL, XML_FLAGS) :
-    xmlReadFile(tmpl_path, NULL, XML_FLAGS);
-  if (fp) FS_FreeFile(fp);
-  xmlFree(tmpl);
-  if (!doc) return NULL;
-
-  xmlNodePtr root = xmlDocGetRootElement(doc);
-  // Construct with send_start=FALSE so Object.Start is NOT sent yet
-  lpObject_t obj = root ? _FS_ConstructNode(root, FALSE) : NULL;
-  xmlFreeDoc(doc);
-  if (!obj) return NULL;
-
-  // Apply attributes from the placeholder onto the loaded object
-  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
-    if (!xmlStrcmp(attr->name, XMLSTR("PlaceholderTemplate"))) continue;
-    xmlChar* val = xmlGetProp(element, attr->name);
-    if (val) {
-      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
-      xmlFree(val);
-    }
-  }
-
-  // Send Object.Start now that overrides are in place
-  OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
-  return obj;
+  return FS_LoadObjectFromXML((char*)tmpl);
 }
 
 // Build an Object tree from an XML element node.
@@ -299,7 +250,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 
   lpcClassDesc_t cls = OBJ_FindClass(tag);
   if (!cls) {
-    Con_Printf("fs_xml: Unknown element type '%s'", tag);
+    Con_Error("Unknown element type '%s'", tag);
     return NULL;
   }
 
@@ -382,15 +333,31 @@ FS_ConstructNode(xmlNodePtr element)
 // --- Public API -----------------------------------------------------------
 
 ORCA_API lpObject_t
-FS_LoadObjectFromXML(lpcString_t path)
+FS_LoadObjectFromXML(lpcString_t tmpl)
 {
+  // If the template path has no file extension, try appending ".xml" first
+  path_t tmpl_with_ext = {0};
+  lpcString_t path = (lpcString_t)tmpl;
+  const char* dot = strrchr((lpcString_t)tmpl, '.');
+  const char* slash = strrchr((lpcString_t)tmpl, '/');
+  if (!dot || dot < slash) {
+    // No extension (or dot is in a directory component): try adding ".xml"
+    int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
+    if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
+      path = tmpl_with_ext;
+    } else {
+      Con_Error("placeholder path too long: '%s'", (lpcString_t)tmpl);
+      return NULL;
+    }
+  }
+  
   struct file* fp = FS_LoadFile(path);
   if (fp) {
     xmlDoc* doc = xmlReadMemory((lpcString_t)fp->data, (int)fp->size,
                                 path, NULL, XML_FLAGS);
     FS_FreeFile(fp);
     if (!doc) {
-      Con_Printf("FS_LoadObjectFromXML: failed to parse '%s'", path);
+      Con_Error("FS_LoadObjectFromXML: failed to parse '%s'", path);
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
@@ -402,21 +369,7 @@ FS_LoadObjectFromXML(lpcString_t path)
     }
     return result;
   }
-
-  // Fall back to reading directly from disk (for test/tool use)
-  xmlDoc* doc = xmlReadFile(path, NULL, XML_FLAGS);
-  if (!doc) {
-    Con_Printf("FS_LoadObjectFromXML: failed to read '%s'", path);
-    return NULL;
-  }
-  xmlNodePtr root = xmlDocGetRootElement(doc);
-  lpObject_t result = root ? FS_ConstructNode(root) : NULL;
-  xmlFreeDoc(doc);
-  if (result) {
-    OBJ_SetSourceFile(result, path);
-//    OBJ_RegisterPrefab(result, path);
-  }
-  return result;
+  return NULL;
 }
 
 ORCA_API lpObject_t
@@ -425,7 +378,7 @@ FS_ParseObjectFromXMLString(lpcString_t xml_string)
   xmlDoc* doc = xmlReadMemory(xml_string, (int)strlen(xml_string),
                               NULL, NULL, XML_FLAGS);
   if (!doc) {
-    Con_Printf("FS_ParseObjectFromXMLString: failed to parse XML string");
+    Con_Error("FS_ParseObjectFromXMLString: failed to parse XML string");
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);

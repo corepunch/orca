@@ -83,6 +83,7 @@ enum LibraryProperties {
 #define ID_Project_AnimationLibrary 0xd329f231 // Project.AnimationLibrary
 #define ID_Project_TagLibrary 0xab31a12b // Project.TagLibrary
 #define ID_Project_ThemeLibrary 0xa48d59a0 // Project.ThemeLibrary
+#define ID_Project_NumThemeLibrary 0x67d044e0 // Project.NumThemeLibrary
 #define ID_Project_ResourceExportTagLibrary 0x604432ed // Project.ResourceExportTagLibrary
 #define ID_Project_LocaleLibrary 0x6c5cabed // Project.LocaleLibrary
 #define ID_Project_DataSourceLibrary 0x925844f8 // Project.DataSourceLibrary
@@ -100,7 +101,7 @@ enum LibraryProperties {
 #define ID_Project_FileExists 0x1f1e5ece // Project.FileExists
 #define ID_Project_HasChangedFiles 0x8e1eef4b // Project.HasChangedFiles
 #define ID_Project_LoadProject 0x68eebf01 // Project.LoadProject
-#define kProjectNumProperties 78
+#define kProjectNumProperties 79
 enum ProjectProperties {
 	kProjectHalfFloatTextureFormat,
 	kProjectHalfFloatTextureFormatLinear,
@@ -163,6 +164,7 @@ enum ProjectProperties {
 	kProjectAnimationLibrary,
 	kProjectTagLibrary,
 	kProjectThemeLibrary,
+	kProjectNumThemeLibrary,
 	kProjectResourceExportTagLibrary,
 	kProjectLocaleLibrary,
 	kProjectDataSourceLibrary,
@@ -213,26 +215,6 @@ enum PackageProperties {
 enum TagProperties {
 	kTagTagIsInherited,
 };
-// ThemeGroup
-#define ID_ThemeGroup 0xa8bfcd45
-#define GetThemeGroup(_P) ((struct ThemeGroup*)((_P)?OBJ_GetComponent(_P,ID_ThemeGroup):NULL))
-#define ThemeGroup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ThemeGroup,sizeof(struct ThemeGroup),_N)
-#define ID_ThemeGroup_SelectedTheme 0xfdc31565 // ThemeGroup.SelectedTheme
-#define ID_ThemeGroup_SelectedDictionary 0x6de33964 // ThemeGroup.SelectedDictionary
-#define kThemeGroupNumProperties 2
-enum ThemeGroupProperties {
-	kThemeGroupSelectedTheme,
-	kThemeGroupSelectedDictionary,
-};
-// Theme
-#define ID_Theme 0x4eaf7c92
-#define GetTheme(_P) ((struct Theme*)((_P)?OBJ_GetComponent(_P,ID_Theme):NULL))
-#define Theme_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Theme,sizeof(struct Theme),_N)
-#define ID_Theme_IsThemeVisible 0x17736be5 // Theme.IsThemeVisible
-#define kThemeNumProperties 1
-enum ThemeProperties {
-	kThemeIsThemeVisible,
-};
 // Entry
 #define ID_Entry 0x9cbfed33
 #define GetEntry(_P) ((struct Entry*)((_P)?OBJ_GetComponent(_P,ID_Entry):NULL))
@@ -254,6 +236,9 @@ enum ThemeProperties {
 #define ID_SystemMessage_Message 0x6e02048e // SystemMessage.Message
 #define ID_SystemMessage_Key 0xc8982036 // SystemMessage.Key
 #define ID_SystemMessage_Command 0x40e61c0c // SystemMessage.Command
+#define ID_ThemeValue 0x3982e49b
+#define ID_ThemeValue_Key 0x6ec685d6 // ThemeValue.Key
+#define ID_ThemeValue_Value 0x5f5e5664 // ThemeValue.Value
 	
 
 #define ID_Workspace_ReadCommandsEventArgs 0x57c885b2

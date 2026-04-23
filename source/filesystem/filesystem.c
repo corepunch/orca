@@ -24,17 +24,22 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
   FOR_EACH_OBJECT(project_obj, ws) {
     lpProject_t project = GetProject(project_obj);
     if (!project || !project->ThemeLibrary) continue;
-    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
-    FOR_EACH_OBJECT(themeGroup_obj, themes) {
-      struct ThemeGroup* tg = GetThemeGroup(themeGroup_obj);
-      if (!tg || !tg->_selectedTheme) continue;
-      struct Node* node = GetNode(tg->_selectedTheme);
-      if (!node) continue;
-      FOR_LOOP(i, node->NumResources) {
-        if (node->Resources[i].Key && strcmp(node->Resources[i].Key, name) == 0)
-          return node->Resources[i].Value;
+//    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+    FOR_LOOP(i, project->NumThemeLibrary) {
+      if (project->ThemeLibrary[i].Key && strcmp(project->ThemeLibrary[i].Key, name) == 0) {
+        return project->ThemeLibrary[i].Value;
       }
     }
+//    FOR_EACH_OBJECT(themeGroup_obj, themes) {
+//      struct ThemeGroup* tg = GetThemeGroup(themeGroup_obj);
+//      if (!tg || !tg->_selectedTheme) continue;
+//      struct Node* node = GetNode(tg->_selectedTheme);
+//      if (!node) continue;
+//      FOR_LOOP(i, node->NumResources) {
+//        if (node->Resources[i].Key && strcmp(node->Resources[i].Key, name) == 0)
+//          return node->Resources[i].Value;
+//      }
+//    }
   }
   return NULL;
 }
@@ -381,30 +386,30 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
   }
 }
 
-static void
-register_theme_value(lpcString_t name, lpcString_t value, void* L)
-{
-  // Update the Lua orca.theme table for backward compatibility
-  luaX_require(L, "orca", 1);
-  lua_getfield(L, -1, "theme");
-  lua_pushfstring(L, "$%s", name);
-  lua_pushstring(L, value);
-  lua_settable(L, -3);
-  lua_pop(L, 2);
-}
+//static void
+//register_theme_value(lpcString_t name, lpcString_t value, void* L)
+//{
+//  // Update the Lua orca.theme table for backward compatibility
+//  luaX_require(L, "orca", 1);
+//  lua_getfield(L, -1, "theme");
+//  lua_pushfstring(L, "$%s", name);
+//  lua_pushstring(L, value);
+//  lua_settable(L, -3);
+//  lua_pop(L, 2);
+//}
 
-static void
-_InitTheme(lua_State *L, lpProject_t project)
-{
-  if (project->ThemeLibrary) {
-    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
-    FOR_EACH_OBJECT(themeGroup, themes) {
-      if (GetThemeGroup(themeGroup) && GetThemeGroup(themeGroup)->_selectedTheme) {
-        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
-      }
-    }
-  }
-}
+//static void
+//_InitTheme(lua_State *L, lpProject_t project)
+//{
+//  if (project->ThemeLibrary) {
+//    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+//    FOR_EACH_OBJECT(themeGroup, themes) {
+//      if (GetThemeGroup(themeGroup) && GetThemeGroup(themeGroup)->_selectedTheme) {
+//        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
+//      }
+//    }
+//  }
+//}
 
 struct Object*
 FS_LoadBundle(lua_State* L, lpcString_t szDirname)
@@ -428,12 +433,10 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _InitEnginePlugins(L, project);
   _InitPropertyTypes(project);
   _InitProjectRefences(L, project, szDirname);
-  _InitTheme(L, project);
+//  _InitTheme(L, project);
 
   lua_pop(L, 1);
 
   return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 }
-
-
 

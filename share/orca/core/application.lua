@@ -118,7 +118,7 @@ end
 
 function Application.load_screen(path)
   io.stderr:write("Loading startup screen: " .. path .. "\n")
-  return filesystem.loadXml(path .. ".xml")
+  return filesystem.loadXml(path)
 end
 
 function Application.load_editor(screen)

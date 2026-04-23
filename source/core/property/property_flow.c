@@ -116,16 +116,50 @@ read_property(lua_State *L,
       memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
       break;
     case kDataTypeObject:
-      if (lua_type(L, (idx = lua_absindex(L, idx))) == LUA_TUSERDATA) {
-        *(void**)valueptr = _lua_checkobject(L, idx);
-        break;
-      } else if (lua_type(L, idx) == LUA_TSTRING) {
-        parse_property(luaL_checkstring(L, idx), prop, valueptr);
-        break;
-      } else {
-        luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
-        break;
+      switch (lua_type(L, (idx = lua_absindex(L, idx)))) {
+        case LUA_TUSERDATA:
+          *(void**)valueptr = _lua_checkobject(L, idx);
+          break;
+        case LUA_TSTRING:
+          parse_property(luaL_checkstring(L, idx), prop, valueptr);
+          break;
+        case LUA_TTABLE:
+          {
+            lpObject_t OBJ_Create(lua_State* L, lpcClassDesc_t cls);
+            lpObject_t obj = OBJ_Create(L, OBJ_FindClass(prop->TypeString));
+            if (!obj) {
+              luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
+              return;
+            }
+
+            int table_idx = lua_absindex(L, idx);
+            lua_pushnil(L);
+            while (lua_next(L, table_idx) != 0) {
+              if (lua_type(L, -2) == LUA_TSTRING) {
+                lpcString_t short_name = lua_tostring(L, -2);
+                lpProperty_t property = NULL;
+                if (SUCCEEDED(OBJ_FindShortProperty(obj, short_name, &property))) {
+                  char buf[MAX_PROPERTY_STRING] = {0};
+                  int luaX_readProperty(lua_State*, int, lpProperty_t);
+                  luaX_readProperty(L, -1, property);
+                  PROP_SetValue(property, buf);
+                  if (PROP_GetType(property) == kDataTypeString) {
+                    Con_Error("Double-check if it chrashes afterwards");
+                    free(*(char**)buf);
+                  }
+                }
+              }
+              lua_pop(L, 1); // pop value, keep key for lua_next
+            }
+
+            *(lpObject_t*)valueptr = obj;
+          }
+          break;
+        default:
+          luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
+          break;
       }
+      break;
     case kDataTypeEvent:
       if (*(event_t *)valueptr) {
         luaL_unref(L, LUA_REGISTRYINDEX, *(event_t *)valueptr);
@@ -143,8 +177,8 @@ read_property(lua_State *L,
     default:
       luaL_error(L, "Unsupported property type");
       break;
-    }
   }
+}
   
 ORCA_API int
 write_property(lua_State *L,

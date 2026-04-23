@@ -466,7 +466,7 @@ int luaopen_orca_Object(lua_State *L) {
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _AnimationClipReference[] = {
 	DECL(0x0fe07306, AnimationClipReference, Name, Name, kDataTypeString), // AnimationClipReference.Name
 	DECL(0xd33ddb1b, AnimationClipReference, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationClipReference.Clip

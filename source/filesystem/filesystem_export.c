@@ -14,7 +14,7 @@ extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _ProjectReference[] = {
 	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
 	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
@@ -36,10 +36,18 @@ static struct PropertyType _SystemMessage[] = {
 static luaL_Reg _SystemMessage_Methods[] = {
 	{ NULL, NULL }
 };
+static struct PropertyType _ThemeValue[] = {
+	DECL(0xcd1ac90c, ThemeValue, Key, Key, kDataTypeString), // ThemeValue.Key
+	DECL(0xd147f96a, ThemeValue, Value, Value, kDataTypeString), // ThemeValue.Value
+};
+static luaL_Reg _ThemeValue_Methods[] = {
+	{ NULL, NULL }
+};
 
 STRUCT(ProjectReference, ProjectReference);
 STRUCT(EnginePlugin, EnginePlugin);
 STRUCT(SystemMessage, SystemMessage);
+STRUCT(ThemeValue, ThemeValue);
 
 static luaL_Reg _Workspace_ReadCommandsEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Workspace_ReadCommandsEventArgs[] = {
@@ -161,7 +169,8 @@ static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
 	DECL(0x309f6b49, Project, LayerLibrary, LayerLibrary, kDataTypeObject, .TypeString = "Library"), // Project.LayerLibrary
 	DECL(0x1818e708, Project, AnimationLibrary, AnimationLibrary, kDataTypeObject, .TypeString = "Library"), // Project.AnimationLibrary
 	DECL(0x7e634fa6, Project, TagLibrary, TagLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TagLibrary
-	DECL(0x508975b5, Project, ThemeLibrary, ThemeLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ThemeLibrary
+	ARRAY_DECL(0x508975b5, Project, ThemeLibrary, ThemeLibrary, kDataTypeStruct, .TypeString = "ThemeValue"), // Project.ThemeLibrary
+	DECL(0xa8550cf7, Project, NumThemeLibrary, NumThemeLibrary, kDataTypeInt), // Project.NumThemeLibrary
 	DECL(0x7ca6ddcc, Project, ResourceExportTagLibrary, ResourceExportTagLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ResourceExportTagLibrary
 	DECL(0xc56f541a, Project, LocaleLibrary, LocaleLibrary, kDataTypeObject, .TypeString = "Library"), // Project.LocaleLibrary
 	DECL(0xe1462dd3, Project, DataSourceLibrary, DataSourceLibrary, kDataTypeObject, .TypeString = "Library"), // Project.DataSourceLibrary
@@ -284,43 +293,6 @@ struct Tag* luaX_checkTag(lua_State *L, int idx) {
 	return GetTag(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Tag, 0);
-HANDLER(ThemeGroup, Object, Attached);
-static struct PropertyType const ThemeGroupProperties[kThemeGroupNumProperties] = {
-	DECL(0x75516381, ThemeGroup, SelectedTheme, SelectedTheme, kDataTypeString), // ThemeGroup.SelectedTheme
-	DECL(0x1cf2c938, ThemeGroup, SelectedDictionary, SelectedDictionary, kDataTypeString), // ThemeGroup.SelectedDictionary
-};
-static struct ThemeGroup ThemeGroupDefaults = {
-};
-LRESULT ThemeGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return ThemeGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
-	}
-	return FALSE;
-}
-void luaX_pushThemeGroup(lua_State *L, struct ThemeGroup const* ThemeGroup) {
-	luaX_pushObject(L, CMP_GetObject(ThemeGroup));
-}
-struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx) {
-	return GetThemeGroup(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(ThemeGroup, 0);
-static struct PropertyType const ThemeProperties[kThemeNumProperties] = {
-	DECL(0x1ed11084, Theme, IsThemeVisible, IsThemeVisible, kDataTypeBool), // Theme.IsThemeVisible
-};
-static struct Theme ThemeDefaults = {
-};
-LRESULT ThemeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
-void luaX_pushTheme(lua_State *L, struct Theme const* Theme) {
-	luaX_pushObject(L, CMP_GetObject(Theme));
-}
-struct Theme* luaX_checkTheme(lua_State *L, int idx) {
-	return GetTheme(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(Theme, 0);
 static struct PropertyType const EntryProperties[kEntryNumProperties] = {
 };
 static struct Entry EntryDefaults = {
@@ -461,6 +433,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");
+	lua_setfield(L, ((void)luaopen_orca_ThemeValue(L), -2), "ThemeValue");
 	lua_setfield(L, ((void)luaopen_orca_Workspace_ReadCommandsEventArgs(L), -2), "Workspace_ReadCommandsEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Project_OpenFileEventArgs(L), -2), "Project_OpenFileEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Project_FileExistsEventArgs(L), -2), "Project_FileExistsEventArgs");
@@ -473,8 +446,6 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Package), -2), "Package");
 	lua_setfield(L, ((void)lua_pushclass(L, &_LocaleReferenceItem), -2), "LocaleReferenceItem");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Tag), -2), "Tag");
-	lua_setfield(L, ((void)lua_pushclass(L, &_ThemeGroup), -2), "ThemeGroup");
-	lua_setfield(L, ((void)lua_pushclass(L, &_Theme), -2), "Theme");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Entry), -2), "Entry");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ThemeDefaultValuesDictionary), -2), "ThemeDefaultValuesDictionary");
 	return 1;

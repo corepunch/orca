@@ -28,6 +28,8 @@ typedef struct EnginePlugin EnginePlugin_t, *lpEnginePlugin_t;
 typedef struct EnginePlugin const cEnginePlugin_t, *lpcEnginePlugin_t;
 typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
 typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
+typedef struct ThemeValue ThemeValue_t, *lpThemeValue_t;
+typedef struct ThemeValue const cThemeValue_t, *lpcThemeValue_t;
 
 
 /// @brief Gets the base filename from a path
@@ -111,6 +113,14 @@ struct SystemMessage {
 };
 ORCA_API void luaX_pushSystemMessage(lua_State *L, struct SystemMessage const* SystemMessage);
 ORCA_API struct SystemMessage* luaX_checkSystemMessage(lua_State *L, int idx);
+/// @brief Key-value pair for theme values
+/** ThemeValue struct */
+struct ThemeValue {
+	const char* Key; ///< The key identifying the theme value, such as "panel-background"
+	const char* Value; ///< The value associated with the key, such as a color code like "#1A1A28"
+};
+ORCA_API void luaX_pushThemeValue(lua_State *L, struct ThemeValue const* ThemeValue);
+ORCA_API struct ThemeValue* luaX_checkThemeValue(lua_State *L, int idx);
 
 /** Workspace_ReadCommandsEventArgs struct */
 struct Workspace_ReadCommandsEventArgs {
@@ -221,7 +231,8 @@ struct Project {
 	struct Library* LayerLibrary;
 	struct Library* AnimationLibrary;
 	struct Library* TagLibrary;
-	struct Library* ThemeLibrary;
+	struct ThemeValue* ThemeLibrary;
+	int32_t NumThemeLibrary;
 	struct Library* ResourceExportTagLibrary;
 	struct Library* LocaleLibrary;
 	struct Library* DataSourceLibrary;
@@ -276,24 +287,6 @@ struct Tag {
 };
 ORCA_API void luaX_pushTag(lua_State *L, struct Tag const* Tag);
 ORCA_API struct Tag* luaX_checkTag(lua_State *L, int idx);
-/** ThemeGroup component */
-typedef struct ThemeGroup ThemeGroup_t, *ThemeGroupPtr, *lpThemeGroup_t;
-typedef struct ThemeGroup const *ThemeGroupCPtr, *lpcThemeGroup_t;
-struct ThemeGroup {
-	const char* SelectedTheme;
-	const char* SelectedDictionary;
-	struct Object* _selectedTheme;
-};
-ORCA_API void luaX_pushThemeGroup(lua_State *L, struct ThemeGroup const* ThemeGroup);
-ORCA_API struct ThemeGroup* luaX_checkThemeGroup(lua_State *L, int idx);
-/** Theme component */
-typedef struct Theme Theme_t, *ThemePtr, *lpTheme_t;
-typedef struct Theme const *ThemeCPtr, *lpcTheme_t;
-struct Theme {
-	bool_t IsThemeVisible;
-};
-ORCA_API void luaX_pushTheme(lua_State *L, struct Theme const* Theme);
-ORCA_API struct Theme* luaX_checkTheme(lua_State *L, int idx);
 /** Entry component */
 typedef struct Entry Entry_t, *EntryPtr, *lpEntry_t;
 typedef struct Entry const *EntryCPtr, *lpcEntry_t;

@@ -6,26 +6,27 @@ ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
 PrefabLibrary = { IsExternal = true }
 ThemeLibrary = {
-	Main = {
-		SelectedTheme = "Default",
-		Default = {
-			["panel-background"] = "#1A1A28",
-			["surface"] = "#0B0B12",
-			["surface-deep"] = "#09090F",
-			["card-background"] = "#141420",
-			["text-primary"] = "#F1F5F9",
-			["text-secondary"] = "#94A3B8",
-			["text-muted"] = "#64748B",
-			["text-dim"] = "#4B5563",
-			["accent"] = "#8B5CF6",
-			["accent-green"] = "#10B981",
-			["accent-blue"] = "#3B82F6",
-			["accent-amber"] = "#F59E0B",
-			["white"] = "#FFFFFF",
-			["icon-bg-purple"] = "#1E1833",
-			["icon-bg-green"] = "#0D2020",
-		},
-	},
+	-- ThemeGroup {
+	-- 	Name = "Main",
+	-- 	SelectedTheme = "Default",
+	-- 	Default = {
+	{ Key = "panel-background", Value = "#1A1A28" },
+	{ Key = "surface", Value = "#0B0B12" },
+	{ Key = "surface-deep", Value = "#09090F" },
+	{ Key = "card-background", Value = "#141420" },
+	{ Key = "text-primary", Value = "#F1F5F9" },
+	{ Key = "text-secondary", Value = "#94A3B8" },
+	{ Key = "text-muted", Value = "#64748B" },
+	{ Key = "text-dim", Value = "#4B5563" },
+	{ Key = "accent", Value = "#8B5CF6" },
+	{ Key = "accent-green", Value = "#10B981" },
+	{ Key = "accent-blue", Value = "#3B82F6" },
+	{ Key = "accent-amber", Value = "#F59E0B" },
+	{ Key = "white", Value = "#FFFFFF" },
+	{ Key = "icon-bg-purple", Value = "#1E1833" },
+	{ Key = "icon-bg-green", Value = "#0D2020" },
+	-- 	},
+	-- },
 }
 -- PropertyTypeLibrary = {
 -- 	Title = { DataType="String", Category="Card" },

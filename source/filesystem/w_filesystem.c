@@ -366,12 +366,6 @@ HANDLER(Project, Object, Start) {
   return TRUE;
 }
 
-HANDLER(ThemeGroup, Object, Attached) {
-  pThemeGroup->_selectedTheme = pThemeGroup->SelectedTheme ?
-    OBJ_FindChild(hObject, pThemeGroup->SelectedTheme, FALSE) : NULL;
-  return TRUE;
-}
-
 int luaopen_io_open_override(lua_State* L);
 
 // Global C wrappers for doxmlfile / doxmlstring, replacing the Lua implementations

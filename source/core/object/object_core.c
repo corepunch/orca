@@ -15,7 +15,7 @@ OBJ_MakeNativeObject(uint32_t class_id) {
   return OBJ_Create(NULL, OBJ_FindClassW(class_id));
 }
 
-lpObject_t
+ORCA_API lpObject_t
 OBJ_Create(lua_State* L, lpcClassDesc_t cls)
 {
 #ifdef DEBUG_COUNT_OBJECTS
