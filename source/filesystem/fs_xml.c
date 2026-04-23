@@ -271,7 +271,10 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
   lpcString_t tag = (lpcString_t)element->name;
 
   // PrefabPlaceholder: handled separately; it manages Start dispatch itself
-  if (!strcmp(tag, "LayerPrefabPlaceholder") || !strcmp(tag, "ObjectPrefabPlaceholder")) {
+  if (!strcmp(tag, "LayerPrefabPlaceholder") ||
+      !strcmp(tag, "ObjectPrefabPlaceholder") ||
+      !strcmp(tag, "LibraryPlaceholder"))
+  {
     return _HandlePrefabPlaceholder(element);
   }
 
