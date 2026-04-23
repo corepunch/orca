@@ -2,7 +2,8 @@
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 
-// Forward declaration
+// Forward declarations for the node-construction functions
+static lpObject_t _FS_ConstructNode(xmlNodePtr element, bool_t send_start);
 static lpObject_t FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in geometry/flow.c
@@ -218,7 +219,8 @@ _HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
 
 // Handle <LayerPrefabPlaceholder> and <ObjectPrefabPlaceholder>: load the
 // linked XML file (PlaceholderTemplate attribute) in-place and apply the
-// remaining attributes to the loaded object.  No Lua state is required.
+// remaining attributes to the loaded object before dispatching Object.Start.
+// No Lua state is required.
 static lpObject_t
 _HandlePrefabPlaceholder(xmlNodePtr element)
 {
@@ -227,8 +229,21 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
     Con_Printf("fs_xml: PrefabPlaceholder missing PlaceholderTemplate attribute");
     return NULL;
   }
-  lpObject_t obj = FS_LoadObjectFromXML((lpcString_t)tmpl);
+
+  // Load the template XML doc manually so we can defer Object.Start on the
+  // root until after placeholder attribute overrides have been applied.
+  struct file* fp = FS_LoadFile((lpcString_t)tmpl);
+  xmlDoc* doc = fp ?
+    xmlReadMemory((lpcString_t)fp->data, (int)fp->size, (lpcString_t)tmpl, NULL, XML_FLAGS) :
+    xmlReadFile((lpcString_t)tmpl, NULL, XML_FLAGS);
+  if (fp) FS_FreeFile(fp);
   xmlFree(tmpl);
+  if (!doc) return NULL;
+
+  xmlNodePtr root = xmlDocGetRootElement(doc);
+  // Construct with send_start=FALSE so Object.Start is NOT sent yet
+  lpObject_t obj = root ? _FS_ConstructNode(root, FALSE) : NULL;
+  xmlFreeDoc(doc);
   if (!obj) return NULL;
 
   // Apply attributes from the placeholder onto the loaded object
@@ -240,16 +255,22 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
       xmlFree(val);
     }
   }
+
+  // Send Object.Start now that overrides are in place
+  OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
 }
 
 // Build an Object tree from an XML element node.
+// send_start: when TRUE, dispatches Object.Start on the root after construction.
+//             Set FALSE in _HandlePrefabPlaceholder to defer Start until after
+//             placeholder attribute overrides have been applied.
 static lpObject_t
-FS_ConstructNode(xmlNodePtr element)
+_FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 {
   lpcString_t tag = (lpcString_t)element->name;
 
-  // PrefabPlaceholder: load the linked XML file in-place
+  // PrefabPlaceholder: handled separately; it manages Start dispatch itself
   if (!strcmp(tag, "LayerPrefabPlaceholder") || !strcmp(tag, "ObjectPrefabPlaceholder")) {
     return _HandlePrefabPlaceholder(element);
   }
@@ -283,7 +304,7 @@ FS_ConstructNode(xmlNodePtr element)
   }
   if (direct_text) {
     OBJ_SetTextContent(obj, (lpcString_t)direct_text);
-    OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
+    if (send_start) OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
     return obj;
   }
 
@@ -317,16 +338,23 @@ FS_ConstructNode(xmlNodePtr element)
                !strcmp(tag, "ValueTicker")) {
       // Lua-only elements: no-op in the C XML parser
     } else {
-      // Regular child object: recurse and attach
-      lpObject_t child = FS_ConstructNode(sub);
+      // Regular child object: recurse and attach (children always get Start)
+      lpObject_t child = _FS_ConstructNode(sub, TRUE);
       if (child) {
         OBJ_AddChild(obj, child, FALSE);
       }
     }
   }
 
-  OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
+  if (send_start) OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
+}
+
+// Public wrapper: always sends Object.Start for the root.
+static lpObject_t
+FS_ConstructNode(xmlNodePtr element)
+{
+  return _FS_ConstructNode(element, TRUE);
 }
 
 // --- Public API -----------------------------------------------------------
