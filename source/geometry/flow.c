@@ -55,22 +55,13 @@ parse_property(lua_State* L,
       *(struct color*)valueptr = COLOR_Parse(str);
       return TRUE;
     case kDataTypeStruct:
+      if (OBJ_ParseStruct(prop->TypeString, str, valueptr, (size_t)prop->DataSize))
+        return TRUE;
       if (!L) {
-        if (OBJ_ParseStruct(prop->TypeString, str, valueptr, (size_t)prop->DataSize))
-          return TRUE;
-        Con_Printf("parse_property: struct property '%s' requires Lua state - skipped", prop->Name);
+        Con_Printf("parse_property: struct property '%s' requires a registered C parser - skipped", prop->Name);
         return FALSE;
       }
-      if (luaL_getmetatable(L, prop->TypeString) && lua_getfield(L, -1, "fromstring")) {
-        lua_pushstring(L, str);
-        lua_call(L, 1, 1);
-        memcpy(valueptr, lua_touserdata(L, -1), prop->DataSize);
-        lua_pop(L, 2); // Pop the result and the metatable
-        return TRUE;
-      } else {
-        return luaL_error(L, "parse_property(%s): Can't find struct '%s'\n", prop->Name, prop->TypeString);
-      }
-      return TRUE;
+      return luaL_error(L, "parse_property(%s): No C parser registered for struct '%s'\n", prop->Name, prop->TypeString);
     case kDataTypeObject:
       if (!L) {
         Con_Printf("parse_property: object property '%s' requires Lua state - skipped", prop->Name);
