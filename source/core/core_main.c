@@ -455,7 +455,8 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
     case kMsgPropertyChanged:
-      PROP_FireNotification(L, (lpProperty_t)e->lParam, (lpObject_t)e->target);
+      if (e->lParam && e->target)
+        PROP_FireNotification(L, (lpProperty_t)e->lParam, (lpObject_t)e->target);
       return FALSE;
     case kEventWindowPaint:
     case kEventWindowResized:
