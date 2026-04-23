@@ -94,17 +94,6 @@ after_ui_module_registered(lua_State* L) {
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
 
-  // Attach core.StyleSheet.Parse as a C function so Lua code can do:
-  //   local sheet = core.StyleSheet.Parse(css_string)
-  if (luaX_require(L, "orca.core", 1) == LUA_OK) {
-    lua_getfield(L, -1, "StyleSheet");
-    if (lua_istable(L, -1)) {
-      lua_pushcfunction(L, f_CSS_ParseStyleSheet);
-      lua_setfield(L, -2, "Parse");
-    }
-    lua_pop(L, 2); // pop StyleSheet, core
-  }
-
   // Add package.searchers entry for .css files.
   lua_getglobal(L, "table");
   if (lua_istable(L, -1)) {
