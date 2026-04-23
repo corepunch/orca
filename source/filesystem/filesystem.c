@@ -12,44 +12,29 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static lpObject_t workspace = NULL;
 
-// C-level theme registry: stores "$name" → "value" pairs populated by _InitTheme.
-// Used by the XML parser (fs_xml.c) so it can resolve theme variables without
-// a lua_State.
-//
-// Design notes:
-// - Linear search is acceptable: typical theme has <100 variables, and
-//   FS_GetThemeValue is called once per XML attribute during load, not per frame.
-// - Single-threaded only: Lua (and therefore theme initialisation and XML
-//   loading) runs on a single thread; no synchronisation is needed.
-typedef struct { char key[MAX_PROPERTY_STRING]; char value[MAX_PROPERTY_STRING]; } ThemeEntry;
-#define MAX_THEME_ENTRIES 512
-static ThemeEntry s_theme_entries[MAX_THEME_ENTRIES];
-static int s_theme_count = 0;
-
-ORCA_API void
-FS_SetThemeValue(lpcString_t key, lpcString_t value) {
-  for (int i = 0; i < s_theme_count; i++) {
-    if (strcmp(s_theme_entries[i].key, key) == 0) {
-      strncpy(s_theme_entries[i].value, value, MAX_PROPERTY_STRING - 1);
-      s_theme_entries[i].value[MAX_PROPERTY_STRING - 1] = '\0';
-      return;
-    }
-  }
-  if (s_theme_count >= MAX_THEME_ENTRIES) {
-    Con_Printf("FS_SetThemeValue: theme registry full, dropping '%s'", key);
-    return;
-  }
-  strncpy(s_theme_entries[s_theme_count].key, key, MAX_PROPERTY_STRING - 1);
-  s_theme_entries[s_theme_count].key[MAX_PROPERTY_STRING - 1] = '\0';
-  strncpy(s_theme_entries[s_theme_count].value, value, MAX_PROPERTY_STRING - 1);
-  s_theme_entries[s_theme_count].value[MAX_PROPERTY_STRING - 1] = '\0';
-  s_theme_count++;
-}
-
+// Walk workspace → projects → ThemeLibrary → ThemeGroups → _selectedTheme
+// to resolve a theme variable.  Key must start with '$' (e.g. "$accent").
+// Returns the value string owned by the ResourceEntry, or NULL if not found.
+// Single-threaded only: Lua and XML loading run on one thread.
 ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
-  for (int i = 0; i < s_theme_count; i++) {
-    if (strcmp(s_theme_entries[i].key, key) == 0)
-      return s_theme_entries[i].value;
+  if (!key || key[0] != '$') return NULL;
+  lpcString_t name = key + 1;  // strip the leading '$'
+  lpObject_t ws = FS_GetWorkspace();
+  if (!ws) return NULL;
+  FOR_EACH_OBJECT(project_obj, ws) {
+    lpProject_t project = GetProject(project_obj);
+    if (!project || !project->ThemeLibrary) continue;
+    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+    FOR_EACH_OBJECT(themeGroup_obj, themes) {
+      struct ThemeGroup* tg = GetThemeGroup(themeGroup_obj);
+      if (!tg || !tg->_selectedTheme) continue;
+      struct Node* node = GetNode(tg->_selectedTheme);
+      if (!node) continue;
+      FOR_LOOP(i, node->NumResources) {
+        if (node->Resources[i].Key && strcmp(node->Resources[i].Key, name) == 0)
+          return node->Resources[i].Value;
+      }
+    }
   }
   return NULL;
 }
@@ -399,12 +384,7 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
 static void
 register_theme_value(lpcString_t name, lpcString_t value, void* L)
 {
-  // Update the C registry (used by the XML parser without a lua_State)
-  char key[MAX_PROPERTY_STRING];
-  snprintf(key, sizeof(key), "$%s", name);
-  FS_SetThemeValue(key, value);
-
-  // Also update the Lua orca.theme table for backward compatibility
+  // Update the Lua orca.theme table for backward compatibility
   luaX_require(L, "orca", 1);
   lua_getfield(L, -1, "theme");
   lua_pushfstring(L, "$%s", name);
@@ -416,7 +396,6 @@ register_theme_value(lpcString_t name, lpcString_t value, void* L)
 static void
 _InitTheme(lua_State *L, lpProject_t project)
 {
-  s_theme_count = 0; // Reset C registry before rebuilding
   if (project->ThemeLibrary) {
     lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
     FOR_EACH_OBJECT(themeGroup, themes) {
