@@ -1,3 +1,13 @@
+-- CSS file loader for UIKit.
+-- Loaded by UIKit's after_ui_module_registered so that:
+--   1. core.StyleSheet.Parse(css_string) is available for building style sheets
+--      from CSS text in application code.
+--   2. require("path/to/style") checks for a matching .css file and returns a
+--      StyleSheet object (package.searchers integration).
+--
+-- This module was previously share/plugins/file-css.lua and is now part of
+-- UIKit so that the CSS/StyleSheet pairing is kept in one plugin.
+
 -- Mapping from CSS property names to ORCA component property names.
 -- Keys are lowercase CSS names; values are fully-qualified ORCA names
 -- (Class.Property) to disambiguate across component namespaces.
@@ -148,8 +158,6 @@ local function parse_selector(selector)
   local base = selector:match("^%.(.+)$") or selector
   local className = base:match("^([^:/]+)") or base
   local pseudo    = base:match(":(.+)$") or ""
-  -- local pseudo_mask = 0
-  -- for p in pseudo:gmatch("([^:]+)") do pseudo_mask = pseudo_mask + (css_pseudo_classes[p] or 0) end
   return className, pseudo
 end
 

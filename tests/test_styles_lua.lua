@@ -11,9 +11,8 @@ local test = require "orca.test"
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
--- Load the CSS plugin so that core.StyleSheet.Parse is available
--- (in a full runtime this is done by orca.init(); tests load it directly)
-dofile(SHAREDIR.."/plugins/file-css.lua")
+-- core.StyleSheet.Parse is registered by orca.UIKit (via orca.UIKit.file-css)
+-- so no manual dofile is required here.
 
 -- ---------------------------------------------------------------------------
 -- Node2D inherits StyleController, so every Node2D has one attached.
