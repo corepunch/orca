@@ -14,7 +14,7 @@ extern struct _PACK* luaX_check_PACK(lua_State *L, int index);
 
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* valueptr);
 static struct PropertyType _ProjectReference[] = {
 	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
 	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
