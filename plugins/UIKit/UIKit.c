@@ -10,23 +10,32 @@ extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 extern lpObject_t CSS_ParseStyleSheet(const char* css_text);
 extern int f_CSS_ParseStyleSheet(lua_State* L);
 
+// Load a file and return a NUL-terminated heap buffer (caller must free).
+// Returns NULL and logs an error on failure.
+static char*
+load_text_file(const char* path)
+{
+  struct file* fp = FS_LoadFile(path);
+  if (!fp) return NULL;
+  char* buf = (char*)malloc(fp->size + 1);
+  if (buf) {
+    memcpy(buf, fp->data, fp->size);
+    buf[fp->size] = '\0';
+  }
+  FS_FreeFile(fp);
+  return buf;
+}
+
 // C file loader for .css files, registered with OBJ_RegisterFileLoader.
 // Reads the file and delegates to the pure-C CSS_ParseStyleSheet.
 static struct Object*
 UIKit_LoadCSSFile(const char* path)
 {
-  struct file* fp = FS_LoadFile(path);
-  if (!fp) {
+  char* buf = load_text_file(path);
+  if (!buf) {
     Con_Error("UIKit_LoadCSSFile: can't load '%s'", path);
     return NULL;
   }
-  // NUL-terminate the file data before parsing.
-  char* buf = (char*)malloc(fp->size + 1);
-  if (!buf) { FS_FreeFile(fp); return NULL; }
-  memcpy(buf, fp->data, fp->size);
-  buf[fp->size] = '\0';
-  FS_FreeFile(fp);
-
   lpObject_t sheet = CSS_ParseStyleSheet(buf);
   free(buf);
   return sheet;
@@ -37,13 +46,8 @@ UIKit_LoadCSSFile(const char* path)
 static int css_loader(lua_State* L)
 {
   const char* path = luaL_checkstring(L, lua_upvalueindex(1));
-  struct file* fp = FS_LoadFile(path);
-  if (!fp) return luaL_error(L, "UIKit: can't open '%s'", path);
-  char* buf = (char*)malloc(fp->size + 1);
-  if (!buf) { FS_FreeFile(fp); return luaL_error(L, "UIKit: out of memory"); }
-  memcpy(buf, fp->data, fp->size);
-  buf[fp->size] = '\0';
-  FS_FreeFile(fp);
+  char* buf = load_text_file(path);
+  if (!buf) return luaL_error(L, "UIKit: can't open '%s'", path);
   lpObject_t sheet = CSS_ParseStyleSheet(buf);
   free(buf);
   if (!sheet) return luaL_error(L, "UIKit: CSS parse failed for '%s'", path);
