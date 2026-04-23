@@ -1,6 +1,6 @@
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 <?php foreach ($structs as $name => $struct):?>
 <?php include_template("export/functions", ['functions' => $struct->getMethods(), 'prefix' => $struct->prefix]) ?>
 static struct PropertyType _<?= $name ?>[] = {
