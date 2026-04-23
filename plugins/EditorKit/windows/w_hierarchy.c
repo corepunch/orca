@@ -202,8 +202,8 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
         HOBJ root = editor.screen;
         WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
           xmlDocSetRootElement(doc, xml);
-          lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
-          HOBJ obj = OBJ_LoadDocument(editor.L, doc);
+          lpObject_t OBJ_LoadDocument(xmlDocPtr doc);
+          HOBJ obj = OBJ_LoadDocument(doc);
           if (SceneView_GetSelection(wnd) && OBJ_GetParent(SceneView_GetSelection(wnd))) {
             OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj, FALSE);
           } else {

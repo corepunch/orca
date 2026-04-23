@@ -106,11 +106,12 @@ lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   char *buf = NULL;
   FILE *mem = open_memstream(&buf, &size);
   fprintf(mem, "local orca = require 'orca'\n");
+  fprintf(mem, "local filesystem = require 'orca.filesystem'\n");
   fprintf(mem, "orca.init()\n");
   FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
     fprintf(mem, "require '%s'\n", requires[i]);
   }
-  fprintf(mem, "doxmlfile('%s')\n", szFileName);
+  fprintf(mem, "filesystem.loadObject('%s')\n", szFileName);
   fclose(mem);
   if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
     fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
@@ -121,168 +122,6 @@ lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   }
   free(buf);
   return NULL;
-}
-
-lpcString_t RunProject(lua_State *L, lpcString_t szDirName) {
-  size_t size = 0;
-  char *buf = NULL;
-  path_t path={0};
-  int windowsize[] = { DEFAULT_WINDOW_SIZE };
-  snprintf(path, sizeof(path), "%s/%s", szDirName, ORCA_PACKAGE_NAME);
-  WITH(xmlDoc, doc, xmlReadFile(path, NULL, 0), xmlFreeDoc) {
-    FILE *mem = open_memstream(&buf, &size);
-
-    fprintf(mem, "local orca = require 'orca'\n");
-    
-    // load plugins
-    fprintf(mem, "orca.init()\n");
-
-    FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
-      fprintf(mem, "require '%s'\n", requires[i]);
-    }
-    fprintf(mem, "local core = require 'orca.core'\n");
-    fprintf(mem, "local fs = require 'orca.filesystem'\n");
-    fprintf(mem, "local loc = require 'orca.localization'\n");
-    fprintf(mem, "local ref = require 'orca.renderer'\n");
-    fprintf(mem, "local s = require 'orca.system'\n");
-    fprintf(mem, "local ui = require 'orca.UIKit'\n");
-
-    xmlNodePtr root = xmlDocGetRootElement(doc);
-
-//    lua_getglobal(L, "DATADIR");
-//    lpcString_t DATADIR = luaL_checkstring(L, -1);
-
-    WITH(xmlChar, Name, xmlGetProp(root, XMLSTR("Name")), xmlFree) {
-      lua_pushstring(L, (lpcString_t)Name);
-      lua_setglobal(L, "PROJECTNAME");
-    }
-
-    WITH(xmlChar, WindowWidth, xmlGetProp(root, XMLSTR("WindowWidth")), xmlFree) {
-      windowsize[0] = atoi((char*)WindowWidth);
-    }
-
-    WITH(xmlChar, WindowHeight, xmlGetProp(root, XMLSTR("WindowHeight")), xmlFree) {
-      windowsize[1] = atoi((char*)WindowHeight);
-    }
-
-    // initialize
-    fprintf(mem, "ref.init(%d, %d, %s)\n", windowsize[0], windowsize[1], args.server ? args.server : "false");
-    fprintf(mem, "fs.init('%s')\n", szDirName);
-    
-    xmlFindAll(loc, root, XMLSTR("LocaleLibrary"))
-    xmlFindAllText(path, content, loc, XMLSTR("LocaleReferenceItem")) {
-      fprintf(mem, "loc.load '%s'\n", content);
-    }
-
-    WITH(xmlChar, StartupScreen, xmlGetProp(root, XMLSTR("StartupScreen")), xmlFree) {
-//      fprintf(mem, "local Screen = require '%s'\n", StartupScreen);
-//      fprintf(mem, "local screen = Screen()\n");
-      fprintf(mem, "local ok, screen = pcall(require, '%s')\n", StartupScreen);
-      fprintf(mem, "if not ok then\n");
-      fprintf(mem, "\tlocal err = screen\n");
-      fprintf(mem, "\tscreen = ui.Screen { Width = %d, Height = %d }\n", windowsize[0], windowsize[1]);
-      fprintf(mem, "\tlocal term = ui.TerminalView {\n");
-      fprintf(mem, "\tBufferWidth=screen.Width/8,\n");
-      fprintf(mem, "\tBufferHeight=screen.Height/16}\n");
-      fprintf(mem, "\tterm:println(nil, err)\n");
-      fprintf(mem, "\tscreen:addChild(term)\n");
-      fprintf(mem, "\tprint(err)\n");
-//      fprintf(mem, "screen:addChild(ui.TextBlock(err))\n");
-//      fprintf(mem, "else screen = screen.__userdata and screen or screen()\n");
-      fprintf(mem, "else\n");
-      fprintf(mem, "screen = screen()\n");
-      fprintf(mem, "end\n");
-  }
-#if defined(ORCA_FEATURE_DEBUG) && !defined(__EMSCRIPTEN__)
-    fprintf(mem, "local editor = require 'orca.editor'\n");
-    fprintf(mem, "editor.setScreen(screen)\n");
-#endif
-//    fprintf(mem, "print 'Project %s was initialized'\n", szProjectPath);
-    fprintf(mem, "while true do for msg in s.getMessage(screen) do\n");
-    //    fprintf(mem, "if m:is'KeyDown' and m.key=='q' then\nreturn 'closed'\nelse");
-    //    fprintf(mem, "if m:is'WindowClosed' then\nreturn 'closed'\nelse");
-    //    fprintf(mem, "if m:is'RequestReload' then\nwindow:refresh()\nelse");
-    bool_t has_written = FALSE;
-    fprintf(mem, "fs.trackChangedFiles()\n");
-    fprintf(mem, "if RELOAD then return RELOAD end\n");
-    xmlFindAll(messages, root, XMLSTR("Project.SystemMessages")) {
-      xmlFindAll(message, messages, XMLSTR("SystemMessage")) {
-        fprintf(mem, "if");
-        bool written = FALSE;
-        FOR_EACH_LIST(xmlAttr, attr, message->properties) {
-          if (!xmlStrcmp(attr->name, XMLSTR("Name"))) continue;
-          if (!xmlStrcmp(attr->name, XMLSTR("Command"))) continue;
-          WITH(xmlChar, value, xmlNodeGetContent((xmlNode*)attr), xmlFree) {
-            if (written) {
-              fprintf(mem, " and");
-            }
-            char tmp[64];
-            strncpy(tmp, (char*)attr->name, sizeof(tmp));
-            *tmp=tolower(*tmp);
-            if (!xmlStrcmp(attr->name, XMLSTR("Message"))) {
-              fprintf(mem, " msg:is '%s'", value);
-            } else if (isdigit(*value)) {
-              fprintf(mem, " msg.%s == %s", tmp, value);
-            } else {
-              fprintf(mem, " msg.%s == '%s'", tmp, value);
-            }
-            written = TRUE;
-          }
-        }
-        WITH(xmlChar, content, xmlGetProp(message, XMLSTR("Command")), xmlFree) {
-          fprintf(mem, " then\n%s\nelse", content);
-        }
-        has_written = TRUE;
-      }
-    }
-    fprintf(mem, "\nlocal ok, res = pcall(s.dispatchMessage, msg)\n");
-    fprintf(mem, "if not ok then print(res) screen:clear() screen:addChild(ui.TextBlock(res))\n");
-//    fprintf(mem, "\nif s.dispatchMessage(msg) then screen:paint(ref.getSize()) end \n");
-    fprintf(mem, "\nelseif res and not msg:is 'WindowPaint' then\n");
-    fprintf(mem, "\t\tscreen:postMessage 'WindowPaint' end \n");
-    if (has_written) {
-      fprintf(mem, "end\n");
-    }
-#if __EMSCRIPTEN__
-    /* On Emscripten the main loop is driven by orca_main_loop_iter() via
-       emscripten_set_main_loop.  After draining all queued events the
-       coroutine yields back to the browser so input callbacks can fire. */
-    fprintf(mem, "end\ncoroutine.yield()\nend\n");
-#else
-    fprintf(mem, "end end\n");
-#endif
-    fprintf(mem, "ref.shutdown()\n");
-    fclose(mem);
-  }
-#if __EMSCRIPTEN__
-  if (luaL_loadbuffer(L, buf, size, "@main")) {
-    fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    free(buf);
-    return NULL;
-  }
-  free(buf);
-  g_L     = L;
-  g_co    = lua_newthread(L);
-  g_co_ref = luaL_ref(L, LUA_REGISTRYINDEX); /* pin coroutine against GC */
-  lua_xmove(L, g_co, 1);                     /* move compiled chunk to co */
-  emscripten_set_main_loop(orca_main_loop_iter, 0, 1); /* never returns */
-  return NULL;
-#else
-  if (luaL_loadbuffer(L, buf, size, "@main") || lua_pcall(L, 0, 1, 0)) {
-    fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    free(buf);
-    return NULL;
-  }
-  if (lua_type(L, -1) == LUA_TSTRING) {
-    static path_t result;
-    strncpy(result, luaL_checkstring(L, -1), sizeof(result));
-    return result;
-  }
-  free(buf);
-  return NULL;
-#endif
 }
 
 int main (int argc, LPSTR *argv)

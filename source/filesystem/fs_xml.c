@@ -8,7 +8,7 @@ static lpObject_t FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in core/property/property_flow.c
 // parse_property handles all common property types (bool, int, float, string, color, enum,
-// struct) in pure C without a Lua state.  For kDataTypeObject it calls FS_LoadObjectFromXML.
+// struct) in pure C without a Lua state.  For kDataTypeObject it calls FS_LoadObjectFromXml.
 extern int parse_property(const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
@@ -84,7 +84,7 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
 
   // Parse the string value into a stack-allocated buffer using pure-C parse_property.
   // Handles bool, int, float, string, color, enum, struct (via OBJ_ParseStruct),
-  // and kDataTypeObject (via FS_LoadObjectFromXML).
+  // and kDataTypeObject (via FS_LoadObjectFromXml).
   char tmpbuf[MAX_PROPERTY_STRING] = {0};
   if (!parse_property(resolved, pdesc, tmpbuf)) return;
 
@@ -228,7 +228,7 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
   }
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  return FS_LoadObjectFromXML((char*)tmpl);
+  return FS_LoadObjectFromXml((char*)tmpl);
 }
 
 // Build an Object tree from an XML element node.
@@ -331,7 +331,7 @@ FS_ConstructNode(xmlNodePtr element)
 }
 
 lpObject_t
-FS_LoadObjectFromXML(lpcString_t path)
+FS_LoadObjectFromXml(lpcString_t path)
 {
   struct file* fp = FS_LoadFile(path);
   if (fp) {
@@ -339,7 +339,7 @@ FS_LoadObjectFromXML(lpcString_t path)
                                 path, NULL, XML_FLAGS);
     FS_FreeFile(fp);
     if (!doc) {
-      Con_Error("FS_LoadObjectFromXML: failed to parse '%s'", path);
+      Con_Error("FS_LoadObjectFromXml: failed to parse '%s'", path);
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
@@ -355,16 +355,28 @@ FS_LoadObjectFromXML(lpcString_t path)
 }
 
 ORCA_API lpObject_t
-FS_ParseObjectFromXMLString(lpcString_t xml_string)
+FS_LoadObjectFromXML(lpcString_t path)
+{
+  return FS_LoadObjectFromXml(path);
+}
+
+ORCA_API lpObject_t
+FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
   xmlDoc* doc = xmlReadMemory(xml_string, (int)strlen(xml_string),
                               NULL, NULL, XML_FLAGS);
   if (!doc) {
-    Con_Error("FS_ParseObjectFromXMLString: failed to parse XML string");
+    Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);
   lpObject_t result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
   return result;
+}
+
+ORCA_API lpObject_t
+FS_LoadObjectFromXMLString(lpcString_t xml_string)
+{
+  return FS_LoadObjectFromXmlString(xml_string);
 }

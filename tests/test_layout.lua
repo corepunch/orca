@@ -5,7 +5,7 @@ local test = require "orca.test"
 
 local core = require "orca.core"
 local ui = require "orca.UIKit"
-require "orca.filesystem"   -- registers doxmlstring / doxmlfile globals
+local filesystem = require "orca.filesystem"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
@@ -152,7 +152,7 @@ local function test_grid_implicit_row_wrapping()
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading via doxmlstring: verify properties are parsed and children built
+-- XML loading via filesystem.loadObjectFromXmlString: verify properties are parsed and children built
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_properties()
 	local xml = [[
@@ -160,8 +160,8 @@ local function test_xml_loading_properties()
   <Node2D Name="child-node" Width="100" Height="50" />
 </Screen>]]
 
-	local root = doxmlstring(xml)
-	test.expect(root ~= nil, "doxmlstring should return a non-nil object")
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "loadObjectFromXmlString should return a non-nil object")
 	test.expect_eq(root.Name, "xml-screen", "Name property from XML")
 	test.expect_eq(root.Width, 800, "Width property from XML")
 	test.expect_eq(root.Height, 600, "Height property from XML")

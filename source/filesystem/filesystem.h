@@ -80,9 +80,21 @@ FS_ReadTextFile(struct lua_State*, const char*);
 ORCA_API struct Object*
 FS_LoadObject(const char*);
 
+/// @brief Loads an object tree from an XML file
+ORCA_API struct Object*
+FS_LoadObjectFromXml(const char*);
+
 /// @brief Parses an object tree from an XML string
 ORCA_API struct Object*
-FS_ParseObjectFromXMLString(const char*);
+FS_LoadObjectFromXmlString(const char*);
+
+/// @brief Loads a stylesheet object from a CSS file
+ORCA_API struct Object*
+FS_LoadObjectFromCss(const char*);
+
+/// @brief Parses a stylesheet object from a CSS string
+ORCA_API struct Object*
+FS_LoadObjectFromCssString(const char*);
 
 /// @brief Retrieves a theme value based on the provided key and theme group
 ORCA_API const char*

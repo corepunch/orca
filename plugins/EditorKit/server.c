@@ -297,21 +297,15 @@ SV_CMD(GET, whoami) {
   }
 }
 
-ORCA_API lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc) {
-  Con_Error("Deprecacted, move code to a Lua plugin");
+ORCA_API lpObject_t OBJ_LoadDocument(xmlDocPtr doc) {
   xmlChar *xmlbuff;
   int buffersize;
   xmlDocDumpMemory(doc, &xmlbuff, &buffersize);
-  lua_getglobal(L, "doxmlfile");
-  lua_pushlstring(L, (char*)xmlbuff, buffersize);
+  lpObject_t obj = FS_LoadObjectFromXmlString((lpcString_t)xmlbuff);
   xmlFree(xmlbuff);
-  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-    Con_Error("%s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    return NULL;
+  if (!obj) {
+    Con_Error("Failed to parse XML document");
   }
-  lpObject_t obj = luaX_checkObject(L, -1);
-  lua_pop(L, 1);
   return obj;
 }
 
@@ -324,7 +318,7 @@ SV_CMD(POST, node) {
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
-      OBJ_AddChild(root, OBJ_LoadDocument(L, doc), FALSE);
+      OBJ_AddChild(root, OBJ_LoadDocument(doc), FALSE);
     }
     path_t sourcepath = {0};
     OBJ_SetSourceFile(source, FS_JoinPaths(sourcepath, sizeof(sourcepath), endpoint, OBJ_GetName(source)));

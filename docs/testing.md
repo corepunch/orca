@@ -30,7 +30,7 @@ These require either a real display or a virtual framebuffer (`xvfb-run` on Linu
 ./build/bin/orca -test=tests/test.xml
 ```
 
-The `-test=<file>` flag wraps the file in a short bootstrap script that `require`s all modules and then calls `doxmlfile(file)` (for `.xml`) or `luaL_dofile` (for `.lua`).
+The `-test=<file>` flag wraps the file in a short bootstrap script that `require`s all modules and then calls `require("orca.filesystem").loadObject(file)` (for `.xml`) or `luaL_dofile` (for `.lua`).
 
 ---
 
@@ -55,7 +55,7 @@ assert(screen.Width == 1000, "Width should be 1000")
 
 ### XML test files
 
-XML test files are loaded by `doxmlfile()`. Any `<script>` element inside the root element is executed after the node tree is constructed.
+XML test files are loaded by `filesystem.loadObject()` from `orca.filesystem`. Any `<script>` element inside the root element is executed after the node tree is constructed.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

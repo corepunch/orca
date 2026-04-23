@@ -368,39 +368,13 @@ HANDLER(Project, Object, Start) {
 
 int luaopen_io_open_override(lua_State* L);
 
-// Global C wrappers for doxmlfile / doxmlstring, replacing the Lua implementations
-// that used to live in share/plugins/file-xml.lua.
-static int f_doxmlfile(lua_State* L) {
-  lpcString_t path = luaL_checkstring(L, 1);
-  struct Object* obj = FS_LoadObjectFromXML(path);
-  if (!obj)
-    return luaL_error(L, "doxmlfile: failed to load XML file '%s'", path);
-  luaX_pushObject(L, obj);
-  return 1;
-}
-
-static int f_doxmlstring(lua_State* L) {
-  lpcString_t str = luaL_checkstring(L, 1);
-  struct Object* obj = FS_ParseObjectFromXMLString(str);
-  if (!obj)
-    return luaL_error(L, "doxmlstring: failed to parse XML near '%.80s'", str);
-  luaX_pushObject(L, obj);
-  return 1;
-}
-
 void on_filesystem_module_registered(lua_State* L)
 {
-  OBJ_RegisterFileLoader(".xml", FS_LoadObjectFromXML);
+  OBJ_RegisterFileLoader(".xml", FS_LoadObjectFromXml);
+  OBJ_RegisterFileLoader(".css", FS_LoadObjectFromCss);
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
-
-  // Register doxmlfile / doxmlstring as C globals, replacing the Lua implementations
-  // that used to live in share/plugins/file-xml.lua.
-  lua_pushcfunction(L, f_doxmlfile);
-  lua_setglobal(L, "doxmlfile");
-  lua_pushcfunction(L, f_doxmlstring);
-  lua_setglobal(L, "doxmlstring");
   
   luaL_newmetatable(L, "DirectoryIterator");
   lua_pushcfunction(L, l_directory_gc);

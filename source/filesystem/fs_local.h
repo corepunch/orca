@@ -32,6 +32,9 @@ xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 struct file *_ReadOnDisk(FILE *fp);
 
 lpObject_t
+FS_LoadObjectFromXml(lpcString_t path);
+
+lpObject_t
 FS_LoadObjectFromXML(lpcString_t path);
 
 #endif

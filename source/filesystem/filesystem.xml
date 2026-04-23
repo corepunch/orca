@@ -287,11 +287,29 @@
       <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
       <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
     </function>
-    <function name="ParseObjectFromXMLString">
+    <function name="LoadObjectFromXml" export="loadObjectFromXml">
+      <summary>Loads an object tree from an XML file</summary>
+      <details>Parses the specified XML file and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
+      <arg name="path" type="string">The path to the XML file to load</arg>
+      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromXmlString" export="loadObjectFromXmlString">
       <summary>Parses an object tree from an XML string</summary>
       <details>Parses the provided XML string and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
       <arg name="xmlString" type="string">The XML string to parse</arg>
       <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromCss" export="loadObjectFromCss">
+      <summary>Loads a stylesheet object from a CSS file</summary>
+      <details>Reads the specified CSS file and parses it into a StyleSheet object containing StyleRule children. Returns the root stylesheet object on success, or nil on failure.</details>
+      <arg name="path" type="string">The path to the CSS file to load</arg>
+      <returns type="Object" pointer="true">The stylesheet object constructed from the CSS file, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromCssString" export="loadObjectFromCssString">
+      <summary>Parses a stylesheet object from a CSS string</summary>
+      <details>Parses the provided CSS string into a StyleSheet object containing StyleRule children. Returns the stylesheet object on success, or nil on failure.</details>
+      <arg name="cssString" type="string">The CSS string to parse</arg>
+      <returns type="Object" pointer="true">The stylesheet object constructed from the CSS string, or nil on failure</returns>
     </function>
     <function name="GetThemeValue">
       <summary>Retrieves a theme value based on the provided key and theme group</summary>

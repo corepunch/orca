@@ -381,8 +381,8 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
 //            HOBJ root = CanvasView_GetScene(wnd);
             WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
               xmlDocSetRootElement(doc, xml);
-              lpObject_t OBJ_LoadDocument(lua_State* L, xmlDocPtr doc);
-              OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(editor.L, doc), FALSE);
+              lpObject_t OBJ_LoadDocument(xmlDocPtr doc);
+              OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(doc), FALSE);
             }
           }
           return TRUE;

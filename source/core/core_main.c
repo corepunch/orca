@@ -738,55 +738,6 @@ ORCA_API void core_FlushQueue(lua_State* L) {
 
 
 
-// Defined in css_parser.c (compiled into the same plugin).
-extern lpObject_t CSS_ParseStyleSheet(const char* css_text);
-extern int f_CSS_ParseStyleSheet(lua_State* L);
-
-// Load a file and return a NUL-terminated heap buffer (caller must free).
-// Returns NULL and logs an error on failure.
-static char*
-load_text_file(const char* path)
-{
-  struct file* fp = FS_LoadFile(path);
-  if (!fp) return NULL;
-  char* buf = (char*)malloc(fp->size + 1);
-  if (buf) {
-    memcpy(buf, fp->data, fp->size);
-    buf[fp->size] = '\0';
-  }
-  FS_FreeFile(fp);
-  return buf;
-}
-
-// Lua searcher for .css files.  Returns a loader closure that calls
-// CSS_ParseStyleSheet on the file contents.
-static int css_loader(lua_State* L)
-{
-  const char* path = luaL_checkstring(L, lua_upvalueindex(1));
-  char* buf = load_text_file(path);
-  if (!buf) return luaL_error(L, "UIKit: can't open '%s'", path);
-  lpObject_t sheet = CSS_ParseStyleSheet(buf);
-  free(buf);
-  if (!sheet) return luaL_error(L, "UIKit: CSS parse failed for '%s'", path);
-  luaX_pushObject(L, sheet);
-  return 1;
-}
-
-// C file loader for .css files, registered with OBJ_RegisterFileLoader.
-// Reads the file and delegates to the pure-C CSS_ParseStyleSheet.
-static struct Object*
-UIKit_LoadCSSFile(const char* path)
-{
-  char* buf = load_text_file(path);
-  if (!buf) {
-    Con_Printf("UIKit_LoadCSSFile: can't load '%s'", path);
-    return NULL;
-  }
-  lpObject_t sheet = CSS_ParseStyleSheet(buf);
-  free(buf);
-  return sheet;
-}
-
 void
 after_core_module_registered(lua_State* L)
 {
@@ -817,9 +768,4 @@ after_core_module_registered(lua_State* L)
   lua_pushcfunction(L, f_object_index);
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
-  
-  OBJ_RegisterFileLoader(".css", UIKit_LoadCSSFile);
-  
-  lua_pushcfunction(L, f_CSS_ParseStyleSheet);
-  lua_setfield(L, -2, "parseStyleSheet");
 }
