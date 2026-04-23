@@ -233,7 +233,7 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
       {
         if ((sender = (lpObject_t)_SendMessage(mod, Node, HitTest, x, y)))
           goto handle;
-        OBJ_RemoveFromParent(L, mod);
+        OBJ_RemoveFromParent(mod);
       }
       return TRUE;
     }

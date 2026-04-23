@@ -154,11 +154,9 @@ enum Viewport3DProperties {
 #define ID_PrefabView3D 0x8d451711
 #define GetPrefabView3D(_P) ((struct PrefabView3D*)((_P)?OBJ_GetComponent(_P,ID_PrefabView3D):NULL))
 #define PrefabView3D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PrefabView3D,sizeof(struct PrefabView3D),_N)
-#define ID_PrefabView3D_SCA 0x10804bee // PrefabView3D.SCA
 #define ID_PrefabView3D_Prefab 0xc507610b // PrefabView3D.Prefab
-#define kPrefabView3DNumProperties 2
+#define kPrefabView3DNumProperties 1
 enum PrefabView3DProperties {
-	kPrefabView3DSCA,
 	kPrefabView3DPrefab,
 };
 // RenderPass

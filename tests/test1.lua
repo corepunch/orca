@@ -21,20 +21,11 @@ local function test_text_block_layout()
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
-	
-	screen.testFunction = function (self) return self.Name end
-	screen.testNumber = 150
-	-- TODO: Need to make a decision whether passing a string triggers parsting or not
-	-- screen.testString = "This is a test string"
 
 	local text_width = text.ActualWidth
 
 	-- Verify initial properties and layout
 	test.expect_eq(screen.Width, 1000, "Screen width should be 1000")
-	test.expect_eq(type(screen.testNumber), "number", "Screen.testNumber should be a number")
-	-- test.expect_eq(type(screen.testString), "string", "Screen.testString should be a string")
-	test.expect_eq(type(screen.testFunction), "function", "Screen.testFunction should be a function")
-	test.expect_eq(screen:testFunction(), "Screen", "Screen.testFunction should return 'Screen'")
 	test.expect_eq(screen:findChild "Text", text, "Text block should be found as a child of the screen")
 	test.expect_eq(screen:findChild "Non-Existent", nil, "Non-Existent child should not be found")
 

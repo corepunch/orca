@@ -741,9 +741,8 @@ ORCA_API void core_FlushQueue(lua_State* L) {
 void
 after_core_module_registered(lua_State* L)
 {
-  int f_OBJ_newindex(lua_State* L);
-  int f_object_gc(lua_State* L);
-  int f_object_index(lua_State* L);
+  int f_OBJ_SetProperty(lua_State* L);
+  int f_OBJ_GetProperty(lua_State* L);
 
   // Override the default positional-args 'new' for struct types that have
   // special numeric-shorthand construction (e.g. Thickness(10) means all
@@ -761,11 +760,9 @@ after_core_module_registered(lua_State* L)
 #undef OVERRIDE_NEW
 
   luaL_getmetatable(L, API_TYPE_OBJECT);
-  lua_pushcfunction(L, f_object_gc);
-  lua_setfield(L, -2, "__gc");
-  lua_pushcfunction(L, f_OBJ_newindex);
+  lua_pushcfunction(L, f_OBJ_SetProperty);
   lua_setfield(L, -2, "__newindex");
-  lua_pushcfunction(L, f_object_index);
+  lua_pushcfunction(L, f_OBJ_GetProperty);
   lua_setfield(L, -2, "__index");
   lua_pop(L, 1);
 }

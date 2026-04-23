@@ -247,7 +247,7 @@
           <details>This is a fall through constructor, that you can pass a table of properties to</details>
           <returns type="nresults"/>
         </method>
-        <method name="Clear" export="clear" lua="true">
+        <method name="Clear" export="clear">
           <summary>Clear all children of the object.</summary>
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
@@ -279,7 +279,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <arg name="is_template" type="bool">If true, marks this object with the OF_TEMPLATE flag to indicate it contains template children</arg>
           <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
         </method>
-        <method name="RemoveFromParent" lua="true">
+        <method name="RemoveFromParent">
           <summary>Destroys an object.</summary>
           <details>Detaches object form it's parent that causes the object to be garbage collected.</details>
         </method>

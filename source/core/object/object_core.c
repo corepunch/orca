@@ -49,17 +49,17 @@ OBJ_ClearDirtyFlags(lpObject_t pobj)
 }
 
 void
-OBJ_Clear(lua_State* L, lpObject_t pobj)
+OBJ_Clear(lpObject_t pobj)
 {
   FOR_EACH_OBJECT(other, pobj) {
-    OBJ_Clear(L, other);
-    OBJ_RemoveFromParent(L, other);
+    OBJ_Clear(other);
+    OBJ_RemoveFromParent(other);
   }
   pobj->children = NULL;
 }
 
 void
-OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
+OBJ_RemoveFromParent(lpObject_t self)
 {
   if (self->parent) {
     REMOVE_FROM_LIST(struct Object, self, self->parent->children); // remove from parent's children
@@ -69,7 +69,7 @@ OBJ_RemoveFromParent(lua_State* L, lpObject_t self)
   if (core.focus == self) core.focus = NULL;
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
-  OBJ_Clear(L, self);
+  OBJ_Clear(self);
   axRemoveFromQueue(self);
 }
 
@@ -83,9 +83,9 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
     L = pobj->domain;
   }
 
-  OBJ_Clear(L, pobj);
+  OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
-  OBJ_RemoveFromParent(L, pobj);
+  OBJ_RemoveFromParent(pobj);
 
   for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
     if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
@@ -105,9 +105,8 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
 
-  /* Clean up per-object extras table to prevent stale pointer reuse */
   if (L) {
-    lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
+    lua_getfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
     if (!lua_isnil(L, -1)) {
       lua_pushlightuserdata(L, pobj);
       lua_pushnil(L);

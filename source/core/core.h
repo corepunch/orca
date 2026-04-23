@@ -344,7 +344,7 @@ OBJ_CreateFromLuaState(struct lua_State*);
 
 /// @brief Clear all children of the object.
 ORCA_API void
-OBJ_Clear(struct lua_State*, struct Object*);
+OBJ_Clear(struct Object*);
 
 /// @brief Compare two objects for equality.
 ORCA_API bool_t
@@ -363,7 +363,7 @@ OBJ_AddChild(struct Object*, struct Object*, bool_t);
 
 /// @brief Destroys an object.
 ORCA_API void
-OBJ_RemoveFromParent(struct lua_State*, struct Object*);
+OBJ_RemoveFromParent(struct Object*);
 
 /// @brief Gets the parent object in the hierarchy
 ORCA_API struct Object*

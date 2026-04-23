@@ -43,7 +43,7 @@ int f_OBJ_CreateFromLuaState(lua_State *L) {
 }
 int f_OBJ_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Clear(L, this_ );
+	OBJ_Clear(this_ );
 	return 0;
 }
 int f_OBJ_Equals(lua_State *L) {
@@ -68,7 +68,7 @@ int f_OBJ_AddChild(lua_State *L) {
 }
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_RemoveFromParent(L, this_ );
+	OBJ_RemoveFromParent(this_ );
 	return 0;
 }
 int f_OBJ_GetParent(lua_State *L) {

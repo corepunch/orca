@@ -103,7 +103,7 @@ lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id);
 
 void
-OBJ_Clear(lua_State*, lpObject_t);
+OBJ_Clear(lpObject_t);
 
 lpObject_t
 OBJ_FindImmediateChild(lpObject_t object, uint32_t ident);

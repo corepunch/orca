@@ -608,10 +608,7 @@ Node2D_GetViewEntity(struct Node2D*, struct ViewEntity*, struct Texture const*, 
 typedef struct PrefabView2D PrefabView2D_t, *PrefabView2DPtr, *lpPrefabView2D_t;
 typedef struct PrefabView2D const *PrefabView2DCPtr, *lpcPrefabView2D_t;
 struct PrefabView2D {
-	const char* SCA; ///< Scene archive identifier or path
 	const char* Prefab; ///< Prefab resource name within the archive
-	int32_t _loadedSCA; ///< Hashed value of currently loaded SCA
-	int32_t _loadedPrefab; ///< Hashed value of loaded prefab instance
 };
 ORCA_API void luaX_pushPrefabView2D(lua_State *L, struct PrefabView2D const* PrefabView2D);
 ORCA_API struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx);

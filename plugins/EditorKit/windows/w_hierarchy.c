@@ -107,19 +107,20 @@ static LPOBJDEF _GetObjDef(LPXMLNODE node, EnumChildProc proc, LPVOID parm) {
 void XML_EnumChildObjects(HANDLE handle, EnumChildProc proc, LPVOID parm) {
   LPXMLNODE root = handle ? NULL : editor.project.scene;
   if (!handle || XML_FindNode(handle, &root)) {
-    if (!xmlStrcmp(root->name, XMLSTR("kanzi.SCAManager2D"))) {
-      LPXMLSTR SCA = xmlGetProp(root, XMLSTR("SCA"));
-      if (!SCA)
-        return;
-      PATHSTR str={0};
-      sprintf(str, "../../../icui/hmi_plugins/SCAManager/projects/ic/high/common/%s/Prefabs/%s.xml", SCA, SCA);
-      path_t xmlpath = {0};
-      LPXMLDOC doc = ED_FindXMLCache(FS_JoinPaths(xmlpath, sizeof(xmlpath), editor.currentProject, str));
-      if (doc) {
-        _GetObjDef(xmlDocGetRootElement(doc), proc, parm);
-      }
-      xmlFree(SCA);
-    } else xmlForEach(node, root) {
+//    if (!xmlStrcmp(root->name, XMLSTR("kanzi.SCAManager2D"))) {
+//      LPXMLSTR SCA = xmlGetProp(root, XMLSTR("SCA"));
+//      if (!SCA)
+//        return;
+//      PATHSTR str={0};
+//      sprintf(str, "../../../icui/hmi_plugins/SCAManager/projects/ic/high/common/%s/Prefabs/%s.xml", SCA, SCA);
+//      path_t xmlpath = {0};
+//      LPXMLDOC doc = ED_FindXMLCache(FS_JoinPaths(xmlpath, sizeof(xmlpath), editor.currentProject, str));
+//      if (doc) {
+//        _GetObjDef(xmlDocGetRootElement(doc), proc, parm);
+//      }
+//      xmlFree(SCA);
+//    } else
+    xmlForEach(node, root) {
       if (!xmlStrcmp(node->name, XMLSTR("Bindings")) ||
           !xmlStrcmp(node->name, XMLSTR("Aliases")))
         continue;;

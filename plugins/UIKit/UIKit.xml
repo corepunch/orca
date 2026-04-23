@@ -410,13 +410,8 @@
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
-        <property name="SCA" type="string">Scene archive identifier or path </property>
         <property name="Prefab" type="string">Prefab resource name within the archive </property>
       </properties>
-      <fields>
-        <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
-        <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
-      </fields>
     </class>
     <class name="TextBlock" parent="Node2D" concept="TextBlockConcept" allow-text="true">
       <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>

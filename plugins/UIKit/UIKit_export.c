@@ -440,7 +440,6 @@ HANDLER(PrefabView2D, Object, Start);
 HANDLER(PrefabView2D, Object, PropertyChanged);
 HANDLER(PrefabView2D, Node, LoadView);
 static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
-	DECL(0x57f28ff6, PrefabView2D, SCA, SCA, kDataTypeString), // PrefabView2D.SCA
 	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeString), // PrefabView2D.Prefab
 };
 static struct PrefabView2D PrefabView2DDefaults = {

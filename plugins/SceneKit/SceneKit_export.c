@@ -214,7 +214,6 @@ HANDLER(PrefabView3D, Object, Start);
 HANDLER(PrefabView3D, Object, PropertyChanged);
 HANDLER(PrefabView3D, Node, LoadView);
 static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
-	DECL(0x57f28ff6, PrefabView3D, SCA, SCA, kDataTypeString), // PrefabView3D.SCA
 	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
 };
 static struct PrefabView3D PrefabView3DDefaults = {

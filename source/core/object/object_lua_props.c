@@ -71,6 +71,32 @@ static int f_obj_populate_inputs(lua_State* L)
   return 1;
 }
 
+static void
+get_object_callbacks(lua_State* L, lpObject_t obj, bool_t create)
+{
+  lua_getfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1);
+    if (!create) {
+      lua_pushnil(L);
+      return;
+    }
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
+  }
+  lua_pushlightuserdata(L, obj);
+  lua_gettable(L, -2);
+  if (lua_isnil(L, -1) && create) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushlightuserdata(L, obj);
+    lua_pushvalue(L, -2);
+    lua_settable(L, -4);
+  }
+  lua_remove(L, -2); /* remove __object_callbacks registry table */
+}
+
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
@@ -124,6 +150,10 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   } else if (lua_type(L, 3) == LUA_TFUNCTION) {
     void OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name);
     OBJ_RegisterPropertyChangedCallback(self, name); // TODO: move to implocit callbacks registration?
+    get_object_callbacks(L, self, TRUE);
+    lua_pushvalue(L, 3);
+    lua_setfield(L, -2, name);
+    lua_pop(L, 1);
     return FALSE;
   } else {
 //    fprintf(stderr, "Can't find property %s\n", name);
@@ -139,79 +169,34 @@ int f_msgSend(lua_State *L) {
   return OBJ_send(L, this_, message); // sync+direct, returns value or nil
 }
 
-int f_OBJ_newindex(lua_State* L) {
-  struct Object* this_ = luaX_checkObject(L, 1);
-  const char* Property = luaL_checkstring(L, 2);
-  if (!OBJ_SetProperty(L, this_, Property)) {
-    /* Store arbitrary Lua values (including functions) in per-object extras */
-    void get_object_extras_pub(lua_State*, struct Object*);
-    get_object_extras_pub(L, this_);
-    lua_pushvalue(L, 3);
-    lua_setfield(L, -2, Property);
-    lua_pop(L, 1);
-  }
-  return 0;
-}
-
-int f_object_index(lua_State* L) {
-  lpObject_t self = luaX_checkObject(L, 1);
-  const char* key = luaL_checkstring(L, 2);
-
-  if (!strcmp(key, "populateInputs")) {
+int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
+{
+  if (!strcmp(name, "populateInputs")) {
     lua_pushcfunction(L, f_obj_populate_inputs);
     return 1;
   }
 
-  /* 1. Check the Object metatable for C methods (addChild, post, send, …) */
+  /* Resolve methods first so obj.method style access remains intact. */
   luaL_getmetatable(L, API_TYPE_OBJECT);
-  lua_getfield(L, -1, key);
-  lua_remove(L, -2); /* remove metatable */
+  lua_getfield(L, -1, name);
+  lua_remove(L, -2);
   if (!lua_isnil(L, -1)) {
     return 1;
   }
   lua_pop(L, 1);
-  /* 2. Walk the Lua class method chain and check per-object extras.
-   *    Derived class metatables use __index = base, so lua_getfield()
-   *    follows the entire inheritance chain automatically. */
-  lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
-  if (!lua_isnil(L, -1)) {
-    lua_pushlightuserdata(L, self);
-    lua_gettable(L, -2);
-    lua_remove(L, -2); /* remove __object_extras */
-    if (!lua_isnil(L, -1)) {
-      int extras_idx = lua_absindex(L, -1);
-      /* Class method chain (Lua __index on class metatable handles inheritance) */
-      lua_getfield(L, extras_idx, "__class");
-      if (!lua_isnil(L, -1)) {
-        lua_getfield(L, -1, key); /* follows __index chain automatically */
-        lua_remove(L, -2);        /* remove class */
-        if (!lua_isnil(L, -1)) {
-          lua_remove(L, extras_idx);
-          return 1;
-        }
-        lua_pop(L, 1); /* pop nil */
-      } else {
-        lua_pop(L, 1); /* pop nil class */
-      }
-      /* Check extras directly for arbitrary stored instance variables */
-      lua_getfield(L, extras_idx, key);
-      lua_remove(L, extras_idx);
-      if (!lua_isnil(L, -1)) {
-        return 1;
-      }
-      lua_pop(L, 1);
-    } else {
-      lua_pop(L, 1); /* pop nil entry */
-    }
-  } else {
-    lua_pop(L, 1); /* pop nil __object_extras */
-  }
-  /* 3. Fall through to ORCA property lookup */
-  return OBJ_GetProperty(L, self, key);
-}
 
-int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
-{
+  get_object_callbacks(L, self, FALSE);
+  if (!lua_isnil(L, -1)) {
+    lua_getfield(L, -1, name);
+    lua_remove(L, -2);
+    if (!lua_isnil(L, -1)) {
+      return 1;
+    }
+    lua_pop(L, 1);
+  } else {
+    lua_pop(L, 1);
+  }
+
   uint32_t ident = fnv1a32(name);
   switch (ident) {
     case p_id:

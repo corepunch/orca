@@ -179,13 +179,8 @@
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
-        <property name="SCA" type="string">Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"</property>
         <property name="Prefab" type="string">Path to prefab asset file to instantiate</property>
       </properties>
-      <fields>
-        <field name="_loadedSCA" type="int"/>
-        <field name="_loadedPrefab" type="int"/>
-      </fields>
     </class>
     <class name="RenderPass" parent="Node">
       <summary>Base class for render pass components in the rendering pipeline</summary>
