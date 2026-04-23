@@ -189,7 +189,7 @@
 		787224D42F9A253C00CE0F9A /* w_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFC852AF7E97900216782 /* w_filesystem.c */; };
 		787224D52F9A253C00CE0F9A /* fs_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 7810D3112D58F7FA00DB632F /* fs_xml.c */; };
 		787224D62F9A25CA00CE0F9A /* geometry_ops.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D12F65490800FD32A9 /* geometry_ops.c */; };
-		787224D82F9A6C7000CE0F9A /* css_parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 787224D72F9A6C7000CE0F9A /* css_parser.c */; };
+		787224D92F9A71B700CE0F9A /* fs_css.c in Sources */ = {isa = PBXBuildFile; fileRef = 787224D72F9A6C7000CE0F9A /* fs_css.c */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -557,7 +557,7 @@
 		787041772F6FDDD800A84406 /* object_properties.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_properties.c; sourceTree = "<group>"; };
 		7870448E2F7BCA5400A84406 /* property_flow.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_flow.c; sourceTree = "<group>"; };
 		787045162F7EF53100A84406 /* UIKit_message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit_message.c; sourceTree = "<group>"; };
-		787224D72F9A6C7000CE0F9A /* css_parser.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = css_parser.c; sourceTree = "<group>"; };
+		787224D72F9A6C7000CE0F9A /* fs_css.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fs_css.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
 		787C7BA42BB33679006FD937 /* r_builtin_charset2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_builtin_charset2.c; sourceTree = "<group>"; };
 		788483212E867C9C00DB9C1F /* w_plugins.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_plugins.c; sourceTree = "<group>"; };
@@ -848,6 +848,7 @@
 				78A5AFA32F66B9FA00E6A765 /* Package.c */,
 				781FC4A52E894AC400571445 /* popen2.c */,
 				786BFC852AF7E97900216782 /* w_filesystem.c */,
+				787224D72F9A6C7000CE0F9A /* fs_css.c */,
 				7810D3112D58F7FA00DB632F /* fs_xml.c */,
 				782E9EE82E97EF6F009C3946 /* filesystem_properties.h */,
 				782E9EE62E97EF6F009C3946 /* filesystem.h */,
@@ -1198,9 +1199,6 @@
 		78C7374E2B8F60C600FD598E /* core */ = {
 			isa = PBXGroup;
 			children = (
-				78A441A62F879A1700AF52A4 /* components */,
-				787040532F6F1A3200A84406 /* object */,
-				787040522F6F199900A84406 /* property */,
 				7839770D2E60A5AB00DCFC0F /* core_export.c */,
 				78C737C42B8F620100FD598E /* core_main.c */,
 				78FD532F2D929AFE00122823 /* debug.c */,
@@ -1209,6 +1207,9 @@
 				787040442F6F197000A84406 /* core_properties.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
 				7839770A2E60758500DCFC0F /* core.xml */,
+				78A441A62F879A1700AF52A4 /* components */,
+				787040532F6F1A3200A84406 /* object */,
+				787040522F6F199900A84406 /* property */,
 			);
 			path = core;
 			sourceTree = "<group>";
@@ -1216,7 +1217,6 @@
 		78C7374F2B8F60C600FD598E /* UIKit */ = {
 			isa = PBXGroup;
 			children = (
-				787224D72F9A6C7000CE0F9A /* css_parser.c */,
 				78688D222D7E1F2D008DE67B /* Button.c */,
 				78423AA72BE526EF0052D403 /* Cinematic.c */,
 				7868DA162F88E30A00519F18 /* ConsoleView.c */,
@@ -1917,7 +1917,6 @@
 				781CA75B2E15571400FFCFD9 /* Screen.c in Sources */,
 				781CA75D2E15571400FFCFD9 /* Node2D.c in Sources */,
 				781CA75E2E15571400FFCFD9 /* PrefabView2D.c in Sources */,
-				787224D82F9A6C7000CE0F9A /* css_parser.c in Sources */,
 				7868DA172F88E30A00519F18 /* ConsoleView.c in Sources */,
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
@@ -1929,6 +1928,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				787224D92F9A71B700CE0F9A /* fs_css.c in Sources */,
 				787224D62F9A25CA00CE0F9A /* geometry_ops.c in Sources */,
 				787224CE2F9A253C00CE0F9A /* io_open.c in Sources */,
 				787224CF2F9A253C00CE0F9A /* Directory.c in Sources */,
