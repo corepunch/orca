@@ -3,6 +3,8 @@
 
 #include <source/core/core_local.h>
 
+#define kMsgPropertyChanged 0x6d47e0cc
+
 #define ID_ContentOffset 0x35a57c45
 
 enum uniform_precision { None, Low, Mid, High };
@@ -53,6 +55,18 @@ PROP_HasChanged(lpProperty_t property)
   return FALSE;
 }
 
+static inline bool_t
+PROP_HasHandler(lpcProperty_t property)
+{
+  if (property->flags &
+      (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER))
+    return TRUE;
+  if (property->callbackMsg)
+    return TRUE;
+  return FALSE;
+}
+
 bool_t _AssignCallback(lua_State* L, lpProperty_t property);
+void PROP_FireNotification(lua_State* L, lpProperty_t property, lpObject_t object);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

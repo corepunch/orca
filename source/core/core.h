@@ -431,10 +431,6 @@ OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
 ORCA_API void
 OBJ_UpdateProperties(struct Object*);
 
-/// @brief Emits onPropertyChanged events by comparing to previous values.
-ORCA_API void
-OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
-
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*
 OBJ_FindImplicitProperty(struct Object*, const char*);

@@ -566,7 +566,7 @@ draw_screen(lua_State* L,
 {
   uint32_t const _size = get_size(hObject);
   
-  OBJ_EmitPropertyChangedEvents(L, hObject);
+  core_FlushQueue(L);
   OBJ_UpdateProperties(hObject);
   
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);

@@ -169,8 +169,6 @@ CMP_SetProperty(struct component*, lpProperty_t);
 uint32_t
 PROP_GetShortID(lpcProperty_t);
 void
-PROP_ProcessEvents(lua_State*, lpProperty_t, lpObject_t);
-void
 PROP_ExecuteChangedCallback(lua_State*, lpObject_t, lpProperty_t);
 lpcString_t
 PROP_GetCallbackMsg(lpcProperty_t);

@@ -1,18 +1,5 @@
 #include "property_internal.h"
 
-#define kMsgPropertyChanged 0x6d47e0cc
-
-INLINE bool_t
-PROP_HasHandler(lpProperty_t property)
-{
-  if (property->flags &
-      (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER))
-    return TRUE;
-  if (property->callbackMsg)
-    return TRUE;
-  return FALSE;
-}
-
 static lpcString_t
 PROP_GetShortName(lpcProperty_t property)
 {
@@ -20,29 +7,23 @@ PROP_GetShortName(lpcProperty_t property)
 }
 
 void
-PROP_ProcessEvents(lua_State* L,
-                   lpProperty_t property,
-                   lpObject_t object)
+PROP_FireNotification(lua_State* L,
+                      lpProperty_t property,
+                      lpObject_t object)
 {
-  for (; property; property = property->next) {
-    if (!PROP_HasHandler(property) || !PROP_HasChanged(property))
-      continue;
-    PROP_Update(property);
-    if (property->flags & PF_USED_IN_STATE_MANAGER) {
-      _SendMessage(object, StateManagerController, ControllerChanged, .Property = property);
-    }
-    if (property->flags & PF_HASCHANGECALLBACK) {
-      static path_t str;
-      sprintf(str, ON_CHANGED_CALLBACK, PROP_GetShortName(property));
-      luaX_pushProperty(L, property);
-      luaX_executecallback(L, object, str, 1);
-    }
-    if (property->flags & PF_USED_IN_TRIGGER) {
-      _SendMessage(object, Object, PropertyChanged, .Property = property);
-    }
-    if (property->callbackMsg) {
-      PROP_ExecuteChangedCallback(L, object, property);
-    }
+  if (!property || !PROP_HasHandler(property)) return;
+  PROP_Update(property);
+  if (property->flags & PF_USED_IN_STATE_MANAGER) {
+    _SendMessage(object, StateManagerController, ControllerChanged, .Property = property);
+  }
+  if (property->flags & PF_HASCHANGECALLBACK) {
+    static path_t str;
+    sprintf(str, ON_CHANGED_CALLBACK, PROP_GetShortName(property));
+    luaX_pushProperty(L, property);
+    luaX_executecallback(L, object, str, 1);
+  }
+  if (property->callbackMsg) {
+    PROP_ExecuteChangedCallback(L, object, property);
   }
 }
 

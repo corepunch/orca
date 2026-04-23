@@ -369,10 +369,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <summary>Updates object properties.</summary>
           <details>Applies property changes and recalculates dependent state.</details>
         </method>
-        <method name="EmitPropertyChangedEvents" lua="true">
-          <summary>Emits onPropertyChanged events by comparing to previous values.</summary>
-          <details>Ensures attached state manager (if any) is initialized and goes through properties seeking for changes to fire on-changed events. Recursively goes through children.</details>
-        </method>
         <method name="FindImplicitProperty">
           <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
           <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>

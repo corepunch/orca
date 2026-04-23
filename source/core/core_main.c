@@ -1,6 +1,7 @@
 #include <include/api.h>
 
 #include "core_local.h"
+#include "property/property_internal.h"
 
 struct game core={0};
 
@@ -453,6 +454,9 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
   strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
+    case kMsgPropertyChanged:
+      PROP_FireNotification(L, (lpProperty_t)e->lParam, (lpObject_t)e->target);
+      return FALSE;
     case kEventWindowPaint:
     case kEventWindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);

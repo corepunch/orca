@@ -1,13 +1,6 @@
 #include "object_internal.h"
 
 void
-OBJ_EmitPropertyChangedEvents(lua_State* L, lpObject_t object)
-{
-  PROP_ProcessEvents(L, OBJ_GetProperties(object), object);
-  FOR_EACH_OBJECT(it, object) OBJ_EmitPropertyChangedEvents(L, it);
-}
-
-void
 PROP_ExecuteChangedCallback(lua_State* L,
                             lpObject_t pobj,
                             lpProperty_t hProperty)

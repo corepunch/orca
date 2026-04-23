@@ -131,10 +131,22 @@ PROP_SetStateValue(lpProperty_t property,
 void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
+  if (property->value && source && (property->stateflags & (1 << kPropertyStateNormal))) {
+    if (property->type == kDataTypeString) {
+      lpcString_t old = *(lpcString_t*)property->value;
+      lpcString_t newv = *(lpcString_t const*)source;
+      if (old == newv || (old && newv && strcmp(old, newv) == 0)) return;
+    } else if (memcmp(property->value, source, PROP_GetSize(property)) == 0) {
+      return;
+    }
+  }
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
   _SendMessage(property->object, Object, PropertyChanged, property);
+  if (PROP_HasHandler(property)) {
+    axPostMessageW(property->object, kMsgPropertyChanged, 0, property);
+  }
 }
 
 void

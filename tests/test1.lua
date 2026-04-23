@@ -397,7 +397,8 @@ end
 local function test_property_change_notification()
 	-- WPF's INotifyPropertyChanged equivalent: assigning an onXxxChanged function
 	-- on an object enables automatic change tracking for that property.
-	-- emitPropertyChangedEvents() fires all pending callbacks (runs each frame).
+	-- core.flushQueue() drains pending property change notifications posted to
+	-- the event queue when a property value changes.
 	local last_text = nil
 	local node = screen + ui.TextBlock {
 		HorizontalAlignment = "Left",
@@ -412,8 +413,8 @@ local function test_property_change_notification()
 	-- Change the property value
 	node.Text = "Updated"
 
-	-- Fire pending property change callbacks (equivalent to WPF's binding update cycle)
-	node:emitPropertyChangedEvents()
+	-- Drain pending property change notifications
+	core.flushQueue()
 
 	test.expect_eq(last_text, "Updated", "onTextChanged should be called with the new Text value")
 
