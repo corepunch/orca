@@ -435,3 +435,17 @@ lpObject_t CSS_ParseStyleSheet(const char* css_text)
     free(doc);
     return sheet;
 }
+
+// ---------------------------------------------------------------------------
+// Lua binding: core.parseStyleSheet(css_string) → StyleSheet object
+// ---------------------------------------------------------------------------
+
+int f_CSS_ParseStyleSheet(lua_State* L)
+{
+  const char* css_text = luaL_checkstring(L, 1);
+  lpObject_t sheet = CSS_ParseStyleSheet(css_text);
+  if (!sheet)
+    return luaL_error(L, "CSS_ParseStyleSheet: failed to create StyleSheet");
+  luaX_pushObject(L, sheet);
+  return 1;
+}
