@@ -11,7 +11,7 @@ local test = require "orca.test"
 local core = require "orca.core"
 local ui   = require "orca.UIKit"
 
--- core.StyleSheet.Parse is registered by orca.UIKit (via orca.UIKit.file-css)
+-- core.StyleSheet.Parse is registered by orca.UIKit (pure-C CSS parser)
 -- so no manual dofile is required here.
 
 -- ---------------------------------------------------------------------------

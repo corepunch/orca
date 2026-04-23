@@ -1162,13 +1162,28 @@ void on_renderer_module_registered(lua_State* L) {
 
   // Add a package.searchers entry so require("img.png") works from Lua.
   lua_getglobal(L, "table");
-  lua_getfield(L, -1, "insert");
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "searchers");
-  lua_remove(L, -2);        // pop "package", leave "searchers"
-  lua_pushcfunction(L, r_image_searcher);
-  lua_call(L, 2, 0);        // table.insert(package.searchers, r_image_searcher)
-  lua_pop(L, 1);            // pop "table"
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "insert");
+    if (lua_isfunction(L, -1)) {
+      lua_getglobal(L, "package");
+      if (lua_istable(L, -1)) {
+        lua_getfield(L, -1, "searchers");
+        lua_remove(L, -2);  // pop "package", leave "searchers"
+        if (lua_istable(L, -1)) {
+          lua_pushcfunction(L, r_image_searcher);
+          if (lua_pcall(L, 2, 0, 0) != LUA_OK)
+            lua_pop(L, 1); // discard error
+        } else {
+          lua_pop(L, 2); // pop "searchers", "insert"
+        }
+      } else {
+        lua_pop(L, 2); // pop "package", "insert"
+      }
+    } else {
+      lua_pop(L, 1); // pop "insert"
+    }
+  }
+  lua_pop(L, 1); // pop "table"
 }
 
 

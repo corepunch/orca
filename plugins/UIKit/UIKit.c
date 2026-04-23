@@ -3,61 +3,70 @@
 
 bool_t is_server = FALSE;
 
-// Lua state stored during module init so that UIKit_LoadCSSFile can call back
-// into Lua to parse CSS text via core.StyleSheet.Parse.
-static lua_State* s_css_lua = NULL;
-
 extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 
+// Defined in css_parser.c (compiled into the same plugin).
+extern lpObject_t CSS_ParseStyleSheet(const char* css_text);
+extern int f_CSS_ParseStyleSheet(lua_State* L);
+
 // C file loader for .css files, registered with OBJ_RegisterFileLoader.
-// Reads the file and delegates parsing to core.StyleSheet.Parse (set up by
-// orca.UIKit.file-css loaded in after_ui_module_registered).
+// Reads the file and delegates to the pure-C CSS_ParseStyleSheet.
 static struct Object*
 UIKit_LoadCSSFile(const char* path)
 {
-  if (!s_css_lua) {
-    Con_Error("UIKit_LoadCSSFile: Lua state not initialized");
-    return NULL;
-  }
-  lua_State* L = s_css_lua;
-
   struct file* fp = FS_LoadFile(path);
   if (!fp) {
     Con_Error("UIKit_LoadCSSFile: can't load '%s'", path);
     return NULL;
   }
-
-  // Resolve core.StyleSheet.Parse and call it with the CSS text.
-  lua_getglobal(L, "require");
-  lua_pushstring(L, "orca.core");
-  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-    Con_Error("UIKit_LoadCSSFile: require orca.core failed: %s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-    FS_FreeFile(fp);
-    return NULL;
-  }
-  // stack: [core_table]
-  lua_getfield(L, -1, "StyleSheet");
-  lua_getfield(L, -1, "Parse");
-  // stack: [core_table, StyleSheet_table, Parse_fn]
-  lua_pushlstring(L, (const char*)fp->data, fp->size);
+  // NUL-terminate the file data before parsing.
+  char* buf = (char*)malloc(fp->size + 1);
+  if (!buf) { FS_FreeFile(fp); return NULL; }
+  memcpy(buf, fp->data, fp->size);
+  buf[fp->size] = '\0';
   FS_FreeFile(fp);
 
-  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-    Con_Error("UIKit_LoadCSSFile: CSS parse error in '%s': %s",
-              path, lua_tostring(L, -1));
-    lua_pop(L, 3);  // error, StyleSheet_table, core_table
-    return NULL;
-  }
-  // stack: [core_table, StyleSheet_table, sheet_userdata]
-  struct Object* sheet = luaX_checkObject(L, -1);
-  lua_pop(L, 3);  // sheet, StyleSheet_table, core_table
+  lpObject_t sheet = CSS_ParseStyleSheet(buf);
+  free(buf);
   return sheet;
 }
 
+// Lua searcher for .css files.  Returns a loader closure that calls
+// CSS_ParseStyleSheet on the file contents.
+static int css_loader(lua_State* L)
+{
+  const char* path = luaL_checkstring(L, lua_upvalueindex(1));
+  struct file* fp = FS_LoadFile(path);
+  if (!fp) return luaL_error(L, "UIKit: can't open '%s'", path);
+  char* buf = (char*)malloc(fp->size + 1);
+  if (!buf) { FS_FreeFile(fp); return luaL_error(L, "UIKit: out of memory"); }
+  memcpy(buf, fp->data, fp->size);
+  buf[fp->size] = '\0';
+  FS_FreeFile(fp);
+  lpObject_t sheet = CSS_ParseStyleSheet(buf);
+  free(buf);
+  if (!sheet) return luaL_error(L, "UIKit: CSS parse failed for '%s'", path);
+  luaX_pushObject(L, sheet);
+  return 1;
+}
+
+extern bool_t FS_FileExists(const char* path);
+
+static int css_searcher(lua_State* L)
+{
+  const char* module = luaL_checkstring(L, 1);
+  path_t fullpath = {0};
+  snprintf(fullpath, sizeof(fullpath), "%s.css", module);
+  if (FS_FileExists(fullpath)) {
+    lua_pushstring(L, fullpath);
+    lua_pushcclosure(L, css_loader, 1);
+    return 1;
+  }
+  return 0;
+}
+
 void on_ui_module_registered(lua_State* L) {
-  s_css_lua = L;
   luaX_require(L, "orca.core", 0);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
@@ -70,16 +79,49 @@ void on_ui_module_registered(lua_State* L) {
 
 void
 after_ui_module_registered(lua_State* L) {
-  // Register UIKit table in package.loaded so TerminalView.lua can require it
+  // Register UIKit table in package.loaded so TerminalView.lua can require it.
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   lua_pushvalue(L, -3); // UIKit table
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
-  // Load the CSS parser and register core.StyleSheet.Parse + package.searchers
-  // entry for .css files.  Must run before TerminalView so that StyleSheet.Parse
-  // is available to any Lua code loaded transitively from here.
-  luaX_require(L, "orca.UIKit.file-css", 0);
+
+  // Attach core.StyleSheet.Parse as a C function so Lua code can do:
+  //   local sheet = core.StyleSheet.Parse(css_string)
+  if (luaX_require(L, "orca.core", 1) == LUA_OK) {
+    lua_getfield(L, -1, "StyleSheet");
+    if (lua_istable(L, -1)) {
+      lua_pushcfunction(L, f_CSS_ParseStyleSheet);
+      lua_setfield(L, -2, "Parse");
+    }
+    lua_pop(L, 2); // pop StyleSheet, core
+  }
+
+  // Add package.searchers entry for .css files.
+  lua_getglobal(L, "table");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "insert");
+    if (lua_isfunction(L, -1)) {
+      lua_getglobal(L, "package");
+      if (lua_istable(L, -1)) {
+        lua_getfield(L, -1, "searchers");
+        lua_remove(L, -2); // pop "package", leave "searchers"
+        if (lua_istable(L, -1)) {
+          lua_pushcfunction(L, css_searcher);
+          if (lua_pcall(L, 2, 0, 0) != LUA_OK)
+            lua_pop(L, 1); // discard error
+        } else {
+          lua_pop(L, 2); // pop "searchers", "insert"
+        }
+      } else {
+        lua_pop(L, 2); // pop "package", "insert"
+      }
+    } else {
+      lua_pop(L, 1); // pop "insert"
+    }
+  }
+  lua_pop(L, 1); // pop "table"
+
   // Load TerminalView Lua extension and expose it as UIKit.TerminalView.
   // Guard against recursive require() returning package.loaded's in-progress
   // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()
