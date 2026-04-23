@@ -370,10 +370,10 @@ css_apply_decl_to_rule(lpObject_t rule_obj,
 
     lpProperty_t prop = NULL;
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) return;
-    if (!prop || !prop->pdesc) return;
+    if (!prop || !PROP_GetDesc(prop)) return;
 
     char buf[MAX_PROPERTY_STRING] = {0};
-    if (parse_property(css_value, prop->pdesc, buf))
+    if (parse_property(css_value, PROP_GetDesc(prop), buf))
         PROP_SetValue(prop, buf);
 }
 
