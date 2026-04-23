@@ -1,5 +1,6 @@
 #include <plugins/UIKit/UIKit.h>
 #include <include/api.h>
+#include <source/filesystem/filesystem.h>
 
 bool_t is_server = FALSE;
 
@@ -18,12 +19,13 @@ void on_ui_module_registered(lua_State* L) {
 
 void
 after_ui_module_registered(lua_State* L) {
-  // Register UIKit table in package.loaded so TerminalView.lua can require it
+  // Register UIKit table in package.loaded so TerminalView.lua can require it.
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   lua_pushvalue(L, -3); // UIKit table
   lua_setfield(L, -2, "orca.UIKit");
   lua_pop(L, 2); // pop loaded, package
+
   // Load TerminalView Lua extension and expose it as UIKit.TerminalView.
   // Guard against recursive require() returning package.loaded's in-progress
   // sentinel (boolean true) when LayerPrefabPlaceholder triggers require()

@@ -6,6 +6,8 @@
 #endif
 
 #include "r_local.h"
+#include <source/core/core_local.h>
+#include <source/filesystem/filesystem.h>
 
 static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
@@ -1070,6 +1072,72 @@ static int renderer_gc(lua_State* L)
   return 0;
 }
 
+// Return the last path component (after the final '/'), or the whole string.
+static const char*
+r_basename(const char* path)
+{
+  const char* slash = strrchr(path, '/');
+  return slash ? slash + 1 : path;
+}
+
+// Create an Image object from a file path and return it as an ORCA Object.
+// Registered with OBJ_RegisterFileLoader for .png/.jpg/.jpeg/.svg so that
+// FS_LoadObject("img.png") returns a fully initialised Image.
+static struct Object*
+R_LoadImageObject(const char* path)
+{
+  lpObject_t obj = OBJ_MakeNativeObject(ID_Image);
+  if (!obj) return NULL;
+  OBJ_SetName(obj, r_basename(path));
+  OBJ_SetPropertyValue(obj, "Source", &path);
+  OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
+  return obj;
+}
+
+// Lua loader thunk: upvalue 1 = resolved file path string.
+static int
+r_image_loader(lua_State* L)
+{
+  const char* path = luaL_checkstring(L, lua_upvalueindex(1));
+  lpObject_t obj = R_LoadImageObject(path);
+  if (!obj) return luaL_error(L, "failed to create Image for '%s'", path);
+  luaX_pushObject(L, obj);
+  return 1;
+}
+
+// package.searchers entry: intercepts require("path/to/img[.png|.jpg|...]")
+// and returns a loader function that produces a renderer.Image object.
+// Query strings (e.g. "img.png?Name=foo") are stripped before the file
+// existence check; the resolved path is captured as an upvalue.
+static int
+r_image_searcher(lua_State* L)
+{
+  static const char* const exts[] = { "", ".png", ".jpg", ".jpeg", ".svg", NULL };
+  const char* module = luaL_checkstring(L, 1);
+
+  // Strip query string.
+  const char* q = strchr(module, '?');
+  path_t clean = {0};
+  if (q) {
+    size_t len = (size_t)(q - module);
+    if (len >= sizeof(clean)) len = sizeof(clean) - 1;
+    strncpy(clean, module, len);
+  } else {
+    strncpy(clean, module, sizeof(clean) - 1);
+  }
+
+  for (int i = 0; exts[i]; i++) {
+    path_t fullpath = {0};
+    snprintf(fullpath, sizeof(fullpath), "%s%s", clean, exts[i]);
+    if (FS_FileExists(fullpath)) {
+      lua_pushstring(L, fullpath);
+      lua_pushcclosure(L, r_image_loader, 1);
+      return 1;
+    }
+  }
+  return 0;
+}
+
 void on_renderer_module_registered(lua_State* L) {
   API_MODULE_SHUTDOWN(L, renderer_gc);
   axInit();
@@ -1083,6 +1151,37 @@ void on_renderer_module_registered(lua_State* L) {
   EM_ASM({ if (window.snapCanvas) window.snapCanvas(); });
 #endif
   FT_Init();
+
+  // Register C file loaders for common image formats.
+  OBJ_RegisterFileLoader(".png",  R_LoadImageObject);
+  OBJ_RegisterFileLoader(".jpg",  R_LoadImageObject);
+  OBJ_RegisterFileLoader(".jpeg", R_LoadImageObject);
+  OBJ_RegisterFileLoader(".svg",  R_LoadImageObject);
+
+  // Add a package.searchers entry so require("img.png") works from Lua.
+  lua_getglobal(L, "table");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "insert");
+    if (lua_isfunction(L, -1)) {
+      lua_getglobal(L, "package");
+      if (lua_istable(L, -1)) {
+        lua_getfield(L, -1, "searchers");
+        lua_remove(L, -2);  // pop "package", leave "searchers"
+        if (lua_istable(L, -1)) {
+          lua_pushcfunction(L, r_image_searcher);
+          if (lua_pcall(L, 2, 0, 0) != LUA_OK)
+            lua_pop(L, 1); // discard error
+        } else {
+          lua_pop(L, 2); // pop "searchers", "insert"
+        }
+      } else {
+        lua_pop(L, 2); // pop "package", "insert"
+      }
+    } else {
+      lua_pop(L, 1); // pop "insert"
+    }
+  }
+  lua_pop(L, 1); // pop "table"
 }
 
 

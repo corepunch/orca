@@ -17,7 +17,7 @@ ENUM(ProjectionType, "Perspective", "Orthographic")
 ENUM(LightType, "Point", "Spot")
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
-extern int parse_property(lua_State *L, const char* str, struct PropertyType const* prop, void* struct_ptr);
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 
 
 static luaL_Reg _Node3D_RenderEventArgs_Methods[] = { { NULL, NULL } };
