@@ -599,6 +599,26 @@ static int c_parse_vec3(const char* str, void* dst, size_t sz) {
 // --- Struct parser registry -------------------------------------------------
 
 void
+OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(const char* path))
+{
+  FOR_LOOP(i, MAX_FILE_LOADERS) {
+    if (core.file_loaders[i].extension &&
+        !strcmp(core.file_loaders[i].extension, extension)) {
+      core.file_loaders[i].fn = fn;   // update existing entry
+      return;
+    }
+  }
+  FOR_LOOP(i, MAX_FILE_LOADERS) {
+    if (!core.file_loaders[i].extension) {
+      core.file_loaders[i].extension = extension;
+      core.file_loaders[i].fn = fn;
+      return;
+    }
+  }
+  Con_Error("No space to register file loader for '%s'", extension);
+}
+
+void
 OBJ_RegisterStructParser(const char* type_name,
                           int (*fn)(const char* str, void* dst, size_t sz))
 {

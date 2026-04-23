@@ -330,27 +330,9 @@ FS_ConstructNode(xmlNodePtr element)
   return _FS_ConstructNode(element, TRUE);
 }
 
-// --- Public API -----------------------------------------------------------
-
-ORCA_API lpObject_t
-FS_LoadObjectFromXML(lpcString_t tmpl)
+lpObject_t
+FS_LoadObjectFromXML(lpcString_t path)
 {
-  // If the template path has no file extension, try appending ".xml" first
-  path_t tmpl_with_ext = {0};
-  lpcString_t path = (lpcString_t)tmpl;
-  const char* dot = strrchr((lpcString_t)tmpl, '.');
-  const char* slash = strrchr((lpcString_t)tmpl, '/');
-  if (!dot || dot < slash) {
-    // No extension (or dot is in a directory component): try adding ".xml"
-    int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
-    if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
-      path = tmpl_with_ext;
-    } else {
-      Con_Error("placeholder path too long: '%s'", (lpcString_t)tmpl);
-      return NULL;
-    }
-  }
-  
   struct file* fp = FS_LoadFile(path);
   if (fp) {
     xmlDoc* doc = xmlReadMemory((lpcString_t)fp->data, (int)fp->size,

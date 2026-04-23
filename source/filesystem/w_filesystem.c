@@ -390,6 +390,8 @@ static int f_doxmlstring(lua_State* L) {
 
 void on_filesystem_module_registered(lua_State* L)
 {
+  OBJ_RegisterFileLoader(".xml", FS_LoadObjectFromXML);
+
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
 

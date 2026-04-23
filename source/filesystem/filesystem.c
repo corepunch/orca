@@ -440,3 +440,38 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
 }
 
+#include "../core/core_local.h" // for file_loader
+
+ORCA_API lpObject_t
+FS_LoadObject(lpcString_t tmpl)
+{
+  path_t tmpl_with_ext = {0};
+  lpcString_t dot = strrchr(tmpl, '.');
+  lpcString_t slash = strrchr(tmpl, '/');
+  for (struct file_loader* loader = core.file_loaders;
+       loader->extension && loader < core.file_loaders + MAX_FILE_LOADERS;
+       loader++)
+  {
+    if (!dot || dot < slash) {
+      // No extension (or dot is in a directory component): try adding ".xml"
+      int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s", tmpl, loader->extension);
+      if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
+        if (FS_FileExists(tmpl_with_ext)) {
+          lpObject_t obj = loader->fn(tmpl_with_ext);
+          if (obj) return obj;
+        }
+      } else {
+        Con_Error("placeholder path too long: '%s'", tmpl);
+        return NULL;
+      }
+    } else if (dot > slash) {
+       size_t ext_len = strlen(loader->extension), tmpl_len = strlen(tmpl);
+       if (tmpl_len > ext_len && strcmp(tmpl + tmpl_len - ext_len, loader->extension) == 0) {
+         lpObject_t obj = loader->fn(tmpl);
+         if (obj) return obj;
+       }
+    }
+  }
+  Con_Error("No file loader found for '%s'", tmpl);
+  return NULL;
+}

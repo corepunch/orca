@@ -62,12 +62,18 @@ struct vm_register
 
 #define MAX_CLASSES 256
 #define MAX_PROPERTY_TYPES 1024
-#define MAX_STRUCT_PARSERS 32
+#define MAX_STRUCT_PARSERS 256
+#define MAX_FILE_LOADERS 256
 
 // C-level string-to-struct parsers registered without a Lua state.
 struct struct_parser_entry {
   const char* type_name;
   int (*fn)(const char* str, void* dst, size_t size);
+};
+
+struct file_loader {
+  const char* extension;
+  struct Object* (*fn)(const char* path);
 };
 
 struct game
@@ -82,6 +88,7 @@ struct game
   lpcClassDesc_t classes[MAX_CLASSES];
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
+  struct file_loader file_loaders[MAX_FILE_LOADERS];
 };
 
 // stateman.c

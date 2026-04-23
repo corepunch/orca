@@ -391,9 +391,9 @@ int f_FS_ReadTextFile(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
 	return FS_ReadTextFile(L, path);
 }
-int f_FS_LoadObjectFromXML(lua_State *L) {
+int f_FS_LoadObject(lua_State *L) {
 	const char* path = luaL_checkstring(L, 1);
-	struct Object* result_ = FS_LoadObjectFromXML(path);
+	struct Object* result_ = FS_LoadObject(path);
 	luaX_pushObject(L, result_);
 	return 1;
 }
@@ -423,7 +423,7 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 		{ "setWorkspace", f_FS_SetWorkspace },
 		{ "getWorkspace", f_FS_GetWorkspace },
 		{ "readTextFile", f_FS_ReadTextFile },
-		{ "loadXml", f_FS_LoadObjectFromXML },
+		{ "loadObject", f_FS_LoadObject },
 		{ "parseObjectFromXMLString", f_FS_ParseObjectFromXMLString },
 		{ "getThemeValue", f_FS_GetThemeValue },
 		{ NULL, NULL } 

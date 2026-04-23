@@ -76,9 +76,9 @@ FS_GetWorkspace(void);
 ORCA_API int
 FS_ReadTextFile(struct lua_State*, const char*);
 
-/// @brief Loads an object tree from an XML file
+/// @brief Loads an object tree from an XML or other supported file
 ORCA_API struct Object*
-FS_LoadObjectFromXML(const char*);
+FS_LoadObject(const char*);
 
 /// @brief Parses an object tree from an XML string
 ORCA_API struct Object*

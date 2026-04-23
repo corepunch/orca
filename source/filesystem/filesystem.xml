@@ -281,11 +281,11 @@
       <arg name="path" type="string">The path of the text file to read</arg>
       <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
     </function>
-    <function name="LoadObjectFromXML" export="loadXml">
-      <summary>Loads an object tree from an XML file</summary>
+    <function name="LoadObject" export="loadObject">
+      <summary>Loads an object tree from an XML or other supported file</summary>
       <details>Parses the specified XML file and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
-      <arg name="path" type="string">The path to the XML file to load</arg>
-      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+      <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
+      <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
     </function>
     <function name="ParseObjectFromXMLString">
       <summary>Parses an object tree from an XML string</summary>
