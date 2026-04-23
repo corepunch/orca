@@ -81,7 +81,7 @@ struct game
 void
 API_PrintStackTrace(lua_State* L);
 
-lpObject_t
+ORCA_API lpObject_t
 OBJ_Create(lua_State*, lpcClassDesc_t cdesc);
 
 lpObject_t

@@ -10,6 +10,7 @@
 		7800000001000000000000001 /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000002 /* Node.c */; };
 		7800000001000000000000003 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000004 /* Trigger.c */; };
 		7810D29C2D58C98700DB632F /* orcalib.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCD72AFA403F00216782 /* orcalib.c */; };
+		7810D3102D58F7FA00DB632F /* fs_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 7810D3112D58F7FA00DB632F /* fs_xml.c */; };
 		7810D3102D58F7FE00DB632F /* fs_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 7810D30F2D58F7FA00DB632F /* fs_local.h */; };
 		7810D3132D5902C200DB632F /* liborca.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7810D25E2D58A81100DB632F /* liborca.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		7814FD502DF861B900625D2F /* fbx-import.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 78B137692AF3CC4E00AAAE53 /* fbx-import.cpp */; };
@@ -20,7 +21,6 @@
 		781CA6DC2E1502A900FFCFD9 /* liborca.geometry.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6CE2E15024F00FFCFD9 /* liborca.geometry.so */; };
 		781CA6E52E15245800FFCFD9 /* filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136F42AF3CC4E00AAAE53 /* filesystem.c */; };
 		781CA6E62E15245800FFCFD9 /* w_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFC852AF7E97900216782 /* w_filesystem.c */; };
-		7810D3102D58F7FA00DB632F /* fs_xml.c in Sources */ = {isa = PBXBuildFile; fileRef = 7810D3112D58F7FA00DB632F /* fs_xml.c */; };
 		781CA6E72E15246B00FFCFD9 /* liborca.filesystem.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA6E12E15241200FFCFD9 /* liborca.filesystem.so */; };
 		781CA7092E15370700FFCFD9 /* r_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 78B136DA2AF3CC4E00AAAE53 /* r_local.h */; };
 		781CA70A2E15370700FFCFD9 /* api_image.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCEA2AFABC7700216782 /* api_image.c */; };
@@ -202,6 +202,7 @@
 		7870448F2F7BCA5800A84406 /* flow.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870448E2F7BCA5400A84406 /* flow.c */; };
 		787045172F7EF53800A84406 /* UIKit_message.c in Headers */ = {isa = PBXBuildFile; fileRef = 787045162F7EF53100A84406 /* UIKit_message.c */; };
 		787045182F7EFAFA00A84406 /* UIKit_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 787045162F7EF53100A84406 /* UIKit_message.c */; };
+		7872246D2F99F78600CE0F9A /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		788483222E867CA000DB9C1F /* w_plugins.c in Sources */ = {isa = PBXBuildFile; fileRef = 788483212E867C9C00DB9C1F /* w_plugins.c */; };
 		78932BF62F38D6D5007C59CC /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
 		78932BF72F38D6D5007C59CC /* liborca.platform.so in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -499,6 +500,7 @@
 		780C82682E01EE7100228DEC /* Light3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Light3D.c; sourceTree = "<group>"; };
 		7810D25E2D58A81100DB632F /* liborca.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		7810D30F2D58F7FA00DB632F /* fs_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = fs_local.h; sourceTree = "<group>"; };
+		7810D3112D58F7FA00DB632F /* fs_xml.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fs_xml.c; sourceTree = "<group>"; };
 		7814FD4F2DF861A500625D2F /* orca-fbx */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "orca-fbx"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7814FD512DF86E9F00625D2F /* libfbxsdk.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libfbxsdk.a; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.a"; sourceTree = "<group>"; };
 		7814FD532DF86EE600625D2F /* libfbxsdk.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libfbxsdk.dylib; path = "../../../../Applications/Autodesk/FBX SDK/2020.2/lib/clang/release/libfbxsdk.dylib"; sourceTree = "<group>"; };
@@ -569,7 +571,6 @@
 		78688D262D81E9E2008DE67B /* Label.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Label.c; sourceTree = "<group>"; };
 		7868DA162F88E30A00519F18 /* ConsoleView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ConsoleView.c; sourceTree = "<group>"; };
 		786BFC852AF7E97900216782 /* w_filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_filesystem.c; sourceTree = "<group>"; };
-		7810D3112D58F7FA00DB632F /* fs_xml.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fs_xml.c; sourceTree = "<group>"; };
 		786BFCA82AF9013A00216782 /* plugapi.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = plugapi.h; sourceTree = "<group>"; };
 		786BFCD72AFA403F00216782 /* orcalib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = orcalib.c; sourceTree = "<group>"; };
 		786BFCE72AFA53DA00216782 /* version.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };
@@ -804,6 +805,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7872246D2F99F78600CE0F9A /* liborca.platform.so in Frameworks */,
 				781CA7C52E15657A00FFCFD9 /* liborca.renderer.so in Frameworks */,
 				781CA77D2E1557EC00FFCFD9 /* liborca.core.so in Frameworks */,
 				781CA7482E154EE400FFCFD9 /* liborca.geometry.so in Frameworks */,
