@@ -576,6 +576,26 @@ static int c_parse_CornerRadius(const char* str, void* dst, size_t sz) {
   }
 }
 
+static int c_parse_vec2(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct vec2)) return FALSE;
+  float x = 0, y = 0;
+  switch (sscanf(str, "%f %f", &x, &y)) {
+    case 2: *(struct vec2*)dst = (struct vec2){x, y}; return TRUE;
+    case 1: *(struct vec2*)dst = (struct vec2){x, x}; return TRUE;
+    default: Con_Printf("vec2: cannot parse '%s'", str); return FALSE;
+  }
+}
+
+static int c_parse_vec3(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct vec3)) return FALSE;
+  float x = 0, y = 0, z = 0;
+  switch (sscanf(str, "%f %f %f", &x, &y, &z)) {
+    case 3: *(struct vec3*)dst = (struct vec3){x, y, z}; return TRUE;
+    case 1: *(struct vec3*)dst = (struct vec3){x, x, x}; return TRUE;
+    default: Con_Printf("vec3: cannot parse '%s'", str); return FALSE;
+  }
+}
+
 // --- Struct parser registry -------------------------------------------------
 
 void
@@ -628,6 +648,8 @@ before_core_module_registered(lua_State* L)
   OBJ_RegisterStructParser("EdgeShorthand", c_parse_EdgeShorthand);
   OBJ_RegisterStructParser("Thickness",     c_parse_Thickness);
   OBJ_RegisterStructParser("CornerRadius",  c_parse_CornerRadius);
+  OBJ_RegisterStructParser("vec2",          c_parse_vec2);
+  OBJ_RegisterStructParser("vec3",          c_parse_vec3);
   
   void Init_KnownPrefabs(void);
   Init_KnownPrefabs();

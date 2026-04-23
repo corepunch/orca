@@ -229,10 +229,23 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
 
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  struct file* fp = FS_LoadFile((lpcString_t)tmpl);
+  // If the template path has no file extension, try appending ".xml" first
+  // (common in repo XML: PlaceholderTemplate="Example/Prefabs/Mertic").
+  char tmpl_with_ext[512] = {0};
+  lpcString_t tmpl_path = (lpcString_t)tmpl;
+  if (!strrchr((lpcString_t)tmpl, '.') || strrchr((lpcString_t)tmpl, '.') < strrchr((lpcString_t)tmpl, '/')) {
+    snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s.xml", (lpcString_t)tmpl);
+    tmpl_path = tmpl_with_ext;
+  }
+  struct file* fp = FS_LoadFile(tmpl_path);
+  if (!fp && tmpl_path == tmpl_with_ext) {
+    // Fall back to the original path if the .xml variant wasn't found
+    tmpl_path = (lpcString_t)tmpl;
+    fp = FS_LoadFile(tmpl_path);
+  }
   xmlDoc* doc = fp ?
-    xmlReadMemory((lpcString_t)fp->data, (int)fp->size, (lpcString_t)tmpl, NULL, XML_FLAGS) :
-    xmlReadFile((lpcString_t)tmpl, NULL, XML_FLAGS);
+    xmlReadMemory((lpcString_t)fp->data, (int)fp->size, tmpl_path, NULL, XML_FLAGS) :
+    xmlReadFile(tmpl_path, NULL, XML_FLAGS);
   if (fp) FS_FreeFile(fp);
   xmlFree(tmpl);
   if (!doc) return NULL;
@@ -374,6 +387,10 @@ FS_LoadObjectFromXML(lpcString_t path)
     xmlNodePtr root = xmlDocGetRootElement(doc);
     lpObject_t result = root ? FS_ConstructNode(root) : NULL;
     xmlFreeDoc(doc);
+    if (result) {
+      OBJ_SetSourceFile(result, path);
+      OBJ_RegisterPrefab(result, path);
+    }
     return result;
   }
 
@@ -386,6 +403,10 @@ FS_LoadObjectFromXML(lpcString_t path)
   xmlNodePtr root = xmlDocGetRootElement(doc);
   lpObject_t result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
+  if (result) {
+    OBJ_SetSourceFile(result, path);
+    OBJ_RegisterPrefab(result, path);
+  }
   return result;
 }
 
