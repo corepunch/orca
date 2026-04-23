@@ -173,9 +173,8 @@ HANDLER(ImageView, Object, PropertyChanged)
 
 HANDLER(ImageView, Node, LoadView)
 {
-  if (pImageView->Src && *pImageView->Src &&
-      pImageView->_loadedImage != fnv1a32(pImageView->Src)) {
-    pImageView->_loadedImage = fnv1a32(pImageView->Src);
+  if (pImageView->Src) {
+    
   }
   return TRUE;
 }

@@ -625,9 +625,6 @@
         <property name="Viewbox" type="vec4" default="0,0,1,1">Viewport rectangle for image cropping/scaling </property>
         <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
       </properties>
-      <fields>
-        <field name="_loadedImage" type="int">Hashed value of loaded image resource </field>
-      </fields>
     </class>
     <class name="NinePatchImage" parent="Node2D">
       <summary>Specialized image view for nine-patch (stretchable) images</summary>
