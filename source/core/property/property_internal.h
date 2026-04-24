@@ -34,27 +34,9 @@ struct Property
   struct PropertyType const *pdesc;
   void*                      value;
   uint32_t                   flags;
-  uint32_t                   stateflags;
   uint32_t                   changeCallback; // Lua registry reference for the change callback function
   uint32_t                   updateFrame;
-  char                       states[];
 };
-
-static inline void*
-PROP_GetState(lpProperty_t p, enum PropertyState state)
-{
-  return p->states + state * PROP_GetSize(p);
-}
-
-static inline bool_t
-PROP_HasChanged(lpProperty_t property)
-{
-  if (memcmp(PROP_GetState(property, kPropertyStateOldValue), property->value, PROP_GetSize(property))) {
-    memcpy((void*)PROP_GetState(property, kPropertyStateOldValue), property->value, PROP_GetSize(property));
-    return TRUE;
-  }
-  return FALSE;
-}
 
 static inline bool_t
 PROP_HasHandler(lpcProperty_t property)

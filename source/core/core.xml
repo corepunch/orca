@@ -24,7 +24,6 @@
       <value name="Focus">Property state when it has focus</value>
       <value name="Select">Property state when it is selected</value>
       <value name="Disable">Property state when it is disabled</value>
-      <value name="OldValue">Property state representing the previous value</value>
     </enum>
     <enum name="BindingMode">
       <summary>Various modes to bind properties</summary>

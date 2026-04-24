@@ -90,9 +90,8 @@ typedef enum PropertyState {
 	kPropertyStateFocus, ///< Property state when it has focus
 	kPropertyStateSelect, ///< Property state when it is selected
 	kPropertyStateDisable, ///< Property state when it is disabled
-	kPropertyStateOldValue, ///< Property state representing the previous value
 } ePropertyState_t;
-#define PropertyState_Count 6
+#define PropertyState_Count 5
 ORCA_API const char *PropertyStateToString(enum PropertyState value);
 ORCA_API enum PropertyState luaX_checkPropertyState(lua_State *L, int idx);
 ORCA_API void luaX_pushPropertyState(lua_State *L, enum PropertyState value);
@@ -426,7 +425,6 @@ OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
 /// @brief Get a property value from an object.
 ORCA_API int
 OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
-
 
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*

@@ -4,6 +4,7 @@
 
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
 extern struct Object* FS_LoadObjectFromXML(const char* path);
+extern int f_msgSend(lua_State *L);
 
 lpObject_t _lua_checkobject(lua_State* L, int arg) {
   return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
@@ -225,15 +226,20 @@ write_property(lua_State *L,
         luaL_setmetatable(L, prop->TypeString);
         break;
       case kDataTypeEvent:
-        assert(!"Not implemented due to OBJ_send dependency");
-//        lua_pushfstring(L, "%s.%s", prop->Category, prop->Name);
-//        lua_pushcclosure(L, f_msgSend, 1);
+        lua_pushfstring(L, "%s.%s", prop->Category, prop->Name);
+        lua_pushcclosure(L, f_msgSend, 1);
         break;
       case kDataTypeObject:
-        if (*(lpObject_t const*)valueptr) {
-          _lua_pushobject(L, *(lpObject_t const*)valueptr);
-        } else {
-          lua_pushnil(L);
+        {
+          lpObject_t object = *(lpObject_t const*)valueptr;
+          if (strcmp(prop->TypeString, "Object") && *(void**)valueptr) {
+            object = CMP_GetObject(*(void**)valueptr);
+          }
+          if (object) {
+            _lua_pushobject(L, object);
+          } else {
+            lua_pushnil(L);
+          }
         }
         break;
       default:

@@ -52,17 +52,15 @@ static int read_array(lua_State *L, int idx, lpProperty_t p) {
 }
 
 extern void read_property(lua_State *, int, struct PropertyType const*, void*);
+extern int write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr);
 
 int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 {
-//  int luatype = lua_type(L, idx);
-//  float number;
-//  void* udata = NULL;
-
   if (lua_isnil(L, idx)) {
     PROP_Clear(p);
     return 0;
   }
+
   // handle array properties
   if (p->pdesc && p->pdesc->IsArray) {
     return read_array(L, idx, p);
@@ -75,62 +73,13 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   return 0;
 }
 
-int f_msgSend(lua_State *L);
-void _pushproperty(lua_State* L,
-                   void *value,
-                   lpcPropertyType_t type)
-{
-  switch (type->DataType) {
-    case kDataTypeBool:
-      lua_pushboolean(L, *((bool_t*)value) != FALSE);
-      break;
-    case kDataTypeInt:
-      lua_pushinteger(L, *((int*)value));
-      break;
-    case kDataTypeEnum:
-      lua_pushstring(L, type->EnumValues[*((int*)value)]);
-      break;
-    case kDataTypeFloat:
-      lua_pushnumber(L, *((float*)value));
-      break;
-    case kDataTypeStruct:
-      memcpy(lua_newuserdata(L, type->DataSize), value, type->DataSize);
-      luaL_setmetatable(L, type->TypeString);
-      break;
-    case kDataTypeColor:
-      luaX_pushcolor(L, value);
-      break;
-    case kDataTypeString:
-      lua_pushstring(L, *(lpcString_t*)value);
-      break;
-    case kDataTypeEvent:
-      lua_pushfstring(L, "%s.%s", type->Category, type->Name);
-      lua_pushcclosure(L, f_msgSend, 1);
-      break;
-    case kDataTypeNone:
-      lua_pushnil(L);
-      break;
-    case kDataTypeObject: {
-      lpObject_t object = *(lpObject_t*)value;
-      if (strcmp(type->TypeString, "Object") && *(void**)value) {
-        object = CMP_GetObject(*(void**)value);
-      }
-      luaX_pushObject(L, object);
-      break;
-    }
-    default:
-      fprintf(stderr, "push(): Unsupported property type %d\n", type->DataType);
-      break;
-  }
-}
-
 void luaX_pushProperty(lua_State* L, lpcProperty_t property)
 {
   if (PROP_IsNull(property)) {
     lua_pushnil(L);
     return;
   }
-  _pushproperty(L, property->value, property->pdesc);
+  write_property(L, property->pdesc, property->value);
 }
 
 bool_t
