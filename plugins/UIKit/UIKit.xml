@@ -607,7 +607,7 @@
     </class>
     <class name="ImageView" parent="Node2D">
       <summary>Displays image content with advanced rendering and scaling options</summary>
-      <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
+      <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths or HTTP/HTTPS URLs.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Node2D.MeasureOverride"/>
@@ -616,6 +616,8 @@
         <handle message="Node2D.DrawBrush"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Destroy"/>
+        <handle message="Node.LoadView"/>
       </handles>
       <properties>
         <property name="Src" type="string">Image source path or resource identifier </property>
@@ -625,6 +627,10 @@
         <property name="Viewbox" type="vec4" default="0,0,1,1">Viewport rectangle for image cropping/scaling </property>
         <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
       </properties>
+      <fields>
+        <field name="_fetch" type="void" pointer="true">In-flight HTTP fetch handle (private)</field>
+        <field name="_src_object" type="void" pointer="true">Texture object loaded from HTTP data (private)</field>
+      </fields>
     </class>
     <class name="NinePatchImage" parent="Node2D">
       <summary>Specialized image view for nine-patch (stretchable) images</summary>

@@ -1,9 +1,26 @@
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
+#include <source/filesystem/filesystem.h>
+#include <source/network/network.h>
 
 #include <plugins/UIKit/UIKit.h>
 
+/* Cancel and release an in-flight fetch stored in the ImageView.
+   Sets both _fetch and _src_object to NULL. */
+static void
+_ImageView_CancelFetch(lpImageView_t pImageView)
+{
+  if (pImageView->_fetch) {
+    NET_FetchCancel((fetch_handle_t)pImageView->_fetch);
+    pImageView->_fetch = NULL;
+  }
+  if (pImageView->_src_object) {
+    OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+    pImageView->_src_object = NULL;
+    pImageView->Source = NULL;
+  }
+}
 
 static struct vec2
 _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
@@ -166,15 +183,124 @@ HANDLER(ImageView, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_ImageView_Src) {
+    _ImageView_CancelFetch(pImageView);
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
   }
   return FALSE;
 }
 
+HANDLER(ImageView, Object, Destroy)
+{
+  _ImageView_CancelFetch(pImageView);
+  return FALSE;
+}
+
+/* Node.LoadView handler — resolves pImageView->Src:
+ *
+ *  HTTP/HTTPS URLs
+ *  ---------------
+ *  First invocation (_fetch == NULL):
+ *    Start an async fetch, store the handle in _fetch, then re-post
+ *    Node.LoadView so the next pump iteration can poll the result.
+ *
+ *  Subsequent invocations (_fetch != NULL):
+ *    Poll the in-flight request.
+ *    - Still running  → re-post Node.LoadView and return.
+ *    - Completed      → build a Texture object from the downloaded bytes,
+ *                        store it in _src_object (so it stays alive), expose
+ *                        the Texture component via pImageView->Source, then
+ *                        invalidate layout.
+ *
+ *  Local file paths
+ *  ----------------
+ *  Load synchronously via FS_LoadObject. The returned Object already holds
+ *  a fully initialised Texture component; we point Source at it and keep
+ *  the Object alive in _src_object.
+ */
 HANDLER(ImageView, Node, LoadView)
 {
-  if (pImageView->Src) {
-    
+  const char *src = pImageView->Src;
+  if (!src || !*src) return TRUE;
+
+  bool_t is_http = (strncasecmp(src, "http://",  7) == 0 ||
+                    strncasecmp(src, "https://", 8) == 0);
+
+  if (is_http) {
+    if (!pImageView->_fetch) {
+      /* First call: start the async download. */
+      fetch_handle_t h = NET_FetchBegin(src);
+      if (!h) {
+        Con_Printf("ImageView: failed to start fetch for '%s'", src);
+        return TRUE;
+      }
+      pImageView->_fetch = h;
+      /* Re-post so we poll next frame. */
+      axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
+      return TRUE;
+    }
+
+    /* Subsequent calls: poll. */
+    if (NET_FetchPoll((fetch_handle_t)pImageView->_fetch)) {
+      /* Still downloading — check again next frame. */
+      axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
+      return TRUE;
+    }
+
+    /* Download finished — retrieve the data. */
+    void   *data = NULL;
+    size_t  size = 0;
+    long    code = NET_FetchFinish((fetch_handle_t)pImageView->_fetch,
+                                   &data, &size);
+    pImageView->_fetch = NULL;
+
+    if (code != 200 || !data || !size) {
+      Con_Printf("ImageView: HTTP fetch for '%s' failed (code %ld)", src, code);
+      free(data);
+      return TRUE;
+    }
+
+    if (size > UINT32_MAX) {
+      Con_Printf("ImageView: HTTP response too large for '%s' (%zu bytes)", src, size);
+      free(data);
+      return TRUE;
+    }
+
+    lpObject_t tex_obj = R_LoadImageFromMemory(data, (uint32_t)size);
+    free(data);
+
+    if (!tex_obj) {
+      Con_Printf("ImageView: failed to decode image from '%s'", src);
+      return TRUE;
+    }
+
+    /* Release any previous downloaded texture before storing the new one. */
+    if (pImageView->_src_object) {
+      OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+    }
+    pImageView->_src_object = tex_obj;
+    pImageView->Source = GetTexture(tex_obj);
+
+    /* Trigger layout/render invalidation. */
+    OBJ_SetDirty(hObject);
+
+    return TRUE;
   }
+
+  /* Local file path: load synchronously. */
+  lpObject_t file_obj = FS_LoadObject(src);
+  if (!file_obj) {
+    Con_Printf("ImageView: failed to load '%s'", src);
+    return TRUE;
+  }
+
+  if (pImageView->_src_object) {
+    OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+  }
+  pImageView->_src_object = file_obj;
+  pImageView->Source = GetTexture(file_obj);
+
+  OBJ_SetDirty(hObject);
+
   return TRUE;
 }
+
