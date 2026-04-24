@@ -112,7 +112,11 @@ function Application.open(path)
     app = Application.load_controller(startup_view_controller, project.StartupRoute)
   else
     app = Application()
-    app.screen = Application.load_screen(project.StartupScreen)
+    if project.StartupScreen then
+      app.screen = Application.load_screen(project.StartupScreen)
+    else
+      app.screen = UIKit.Screen()
+    end
     app.controller = { view = app.screen }
   end
 
@@ -127,7 +131,8 @@ function Application.open(path)
 end
 
 function Application.load_controller(path, route)
-  io.stderr:write("Loading startup view controller: " .. path .. "\n")
+  assert(path, "StartupViewController is not set")
+  io.stderr:write("Loading startup view controller: " .. tostring(path) .. "\n")
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
   local app = class()
@@ -137,7 +142,10 @@ function Application.load_controller(path, route)
 end
 
 function Application.load_screen(path)
-  io.stderr:write("Loading startup screen: " .. path .. "\n")
+  if not path then
+    return UIKit.Screen()
+  end
+  io.stderr:write("Loading startup screen: " .. tostring(path) .. "\n")
   return filesystem.loadObject(path)
 end
 

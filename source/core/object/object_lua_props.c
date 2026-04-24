@@ -72,20 +72,6 @@ static int f_obj_populate_inputs(lua_State* L)
 }
 
 static bool_t
-capitalize_first_char(char* out, size_t out_size, lpcString_t name)
-{
-  if (!name || !*name || out_size < 2) {
-    return FALSE;
-  }
-  snprintf(out, out_size, "%s", name);
-  if (out[0] >= 'a' && out[0] <= 'z') {
-    out[0] = (char)(out[0] - ('a' - 'A'));
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static bool_t
 is_on_changed_callback_name(lpcString_t name)
 {
   if (!name || strncmp(name, "on", 2) != 0 || !name[2]) {
@@ -93,28 +79,6 @@ is_on_changed_callback_name(lpcString_t name)
   }
   size_t len = strlen(name);
   return len > 7 && strcmp(name + len - 7, "Changed") == 0;
-}
-
-static bool_t
-ensure_event_property(lua_State* L, lpObject_t self, lpcString_t name, lpProperty_t* out)
-{
-  if (SUCCEEDED(OBJ_FindShortProperty(self, name, out)) && PROP_GetType(*out) == kDataTypeEvent) {
-    return TRUE;
-  }
-
-  struct PropertyType pt = {
-    .ShortIdentifier = fnv1a32(name),
-    .FullIdentifier = fnv1a32(name),
-    .DataType = kDataTypeEvent,
-    .DataSize = sizeof(void*),
-    .Name = strdup(name),
-    .Category = "",
-  };
-  if (!pt.Name) {
-    return FALSE;
-  }
-  OBJ_RegisterPropertyType(&pt);
-  return SUCCEEDED(OBJ_FindShortProperty(self, name, out)) && PROP_GetType(*out) == kDataTypeEvent;
 }
 
 
@@ -168,24 +132,20 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     luaX_readProperty(L, 3, property);
     return TRUE;
-  } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    /* Allow lowercase method-style callback binding to event properties.
-     * Example: obj.loadView = fn -> binds Node.LoadView event property. */
-    shortStr_t alias = {0};
-    if (capitalize_first_char(alias, sizeof(alias), name) &&
-        SUCCEEDED(OBJ_FindShortProperty(self, alias, &property)) &&
-        PROP_GetType(property) == kDataTypeEvent) {
-      luaX_readProperty(L, 3, property);
-      return TRUE;
-    }
-
-    void OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name);
-    if (is_on_changed_callback_name(name)) {
-      OBJ_RegisterPropertyChangedCallback(self, name);
-      if (ensure_event_property(L, self, name, &property)) {
-        luaX_readProperty(L, 3, property);
-        return TRUE;
-      }
+  } else if (lua_type(L, 3) == LUA_TFUNCTION && is_on_changed_callback_name(name)) {
+    // handle "onXChanged" event callback assignment
+    if (strncmp(name, "on", 2) || !isupper(name[2]))
+      return FALSE;
+    size_t lsuffix = 7; // length of "Changed"
+    size_t lname = strlen(name);
+    // Check if the property name ends with "Changed" and extract the base property name
+    if (lname >= lsuffix && strcmp(name + lname - lsuffix, "Changed") == 0) {
+      shortStr_t pname = { 0 };
+      assert(lname - lsuffix - 2 < MAX_NAMELEN); // ensure extracted name fits in shortStr_t
+      strncpy(pname, name + 2, lname - lsuffix - 2); // 2 for "on", lsuffix for "Changed"
+      // Find the property by the extracted name and register the callback
+      return SUCCEEDED(OBJ_FindShortProperty(self, name, &property)) &&
+        PROP_RegisterChangedCallback(L, property, 3);
     }
     return FALSE;
   } else {
@@ -203,17 +163,6 @@ int f_msgSend(lua_State *L) {
 
 int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
 {
-  /* For method-style lowercase names (e.g. loadView), allow binding to
-   * same-named event properties (LoadView) before checking metatable methods. */
-  shortStr_t callback_alias = {0};
-  lpProperty_t callback_prop = NULL;
-  if (capitalize_first_char(callback_alias, sizeof(callback_alias), name) &&
-      SUCCEEDED(OBJ_FindShortProperty(self, callback_alias, &callback_prop)) &&
-      PROP_GetType(callback_prop) == kDataTypeEvent) {
-    luaX_pushProperty(L, callback_prop);
-    return 1;
-  }
-
   if (!strcmp(name, "populateInputs")) {
     lua_pushcfunction(L, f_obj_populate_inputs);
     return 1;
@@ -299,16 +248,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     luaX_pushProperty(L, property);
     return 1;
   } else {
-    shortStr_t alias = {0};
-    if (capitalize_first_char(alias, sizeof(alias), name)) {
-      uint32_t alias_ident = fnv1a32(alias);
-      if (OBJ_PushClassProperty(L, self, alias_ident)) {
-        return 1;
-      } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), alias_ident))) {
-        luaX_pushProperty(L, property);
-        return 1;
-      }
-    }
     lua_pushnil(L);
     return 1;
   }

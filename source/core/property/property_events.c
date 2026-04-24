@@ -8,8 +8,6 @@ PROP_HasHandler(lpProperty_t property)
   if (property->flags &
       (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER))
     return TRUE;
-  if (property->callbackMsg)
-    return TRUE;
   return FALSE;
 }
 
@@ -75,9 +73,6 @@ PROP_ProcessEvents(lua_State* L,
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
       _SendMessage(object, Object, PropertyChanged, .Property = property);
-    }
-    if (property->callbackMsg) {
-      PROP_ExecuteChangedCallback(L, object, property);
     }
   }
 }

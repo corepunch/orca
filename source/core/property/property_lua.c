@@ -1,26 +1,5 @@
 #include "property_internal.h"
 
-bool_t
-_AssignCallback(lua_State* L, lpProperty_t property)
-{
-  if (!L)
-    return FALSE;
-  lpObject_t object = property->object;
-  static path_t str;
-  sprintf(str, ON_CHANGED_CALLBACK, property->pdesc->Name);
-  luaX_pushObject(L, object);
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    return FALSE;
-  }
-  lua_getfield(L, -1, str);
-  if (lua_type(L, -1) == LUA_TFUNCTION) {
-    property->flags |= PF_HASCHANGECALLBACK;
-  }
-  lua_pop(L, 2);
-  return TRUE;
-}
-
 static int read_array(lua_State *L, int idx, lpProperty_t p) {
   if (lua_type(L, (idx = lua_absindex(L, idx))) != LUA_TTABLE) {
     return luaL_error(L, "Expected a table for array property %s", p->pdesc->Name);
@@ -153,3 +132,22 @@ void luaX_pushProperty(lua_State* L, lpcProperty_t property)
   }
   _pushproperty(L, property->value, property->pdesc);
 }
+
+bool_t
+PROP_RegisterChangedCallback(lua_State* L, lpProperty_t property, int callback_idx)
+{
+  PROP_SetFlag(property, PF_HASCHANGECALLBACK);
+  if (property->changeCallback) {
+    luaL_unref(L, LUA_REGISTRYINDEX, property->changeCallback);
+  }
+  if (lua_isfunction(L, 3)) {
+    lua_pushvalue(L, callback_idx);
+    property->changeCallback = (event_t)luaL_ref(L, LUA_REGISTRYINDEX);
+  } else if (lua_isnil(L, 3)) {
+     property->changeCallback = 0;
+  } else {
+    return FALSE;
+  }
+  return TRUE;
+}
+

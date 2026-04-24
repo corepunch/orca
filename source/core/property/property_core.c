@@ -85,12 +85,12 @@ PROP_Clear(lpProperty_t property)
 /*static */lpProperty_t
 _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
+  (void)L;
   lpProperty_t property = ZeroAlloc(sizeof(struct Property) + pt->DataSize * PropertyState_Count);
   property->type    = pt->DataType;
   property->object  = object;
   property->pdesc   = pt;
   memset(property->states, 0xff, pt->DataSize * PropertyState_Count);
-  _AssignCallback(L, property);
   return property;
 }
 
