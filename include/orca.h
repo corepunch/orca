@@ -186,6 +186,8 @@ enum
 
 #include <source/core/core.h>
 
+ORCA_API struct property_program const *
+core_GetPrograms(void);
 
 ORCA_API lpObject_t
 OBJ_Create(uint32_t class_id);

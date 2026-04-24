@@ -23,7 +23,7 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpEnumArray    = p->pdesc->EnumValues;
   lpPropDef->dwFlags        = PROP_GetFlags(p);
   memset(lpPropDef->pPrograms, 0, sizeof(lpPropDef->pPrograms));
-  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+  FOR_EACH_LIST(struct property_program const, pp, core_GetPrograms()) {
     if (pp->property == p) {
       lpPropDef->pPrograms[pp->attr] = pp->code;
     }
@@ -47,7 +47,7 @@ static lpcString_t _attrs[PropertyAttribute_Count] = {
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url);
 
 void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
-  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+  FOR_EACH_LIST(struct property_program const, pp, core_GetPrograms()) {
     if (pp->property != prop) continue;
     xmlChar const *name = BAD_CAST pp->code;
     xmlChar const *enabled = pp->token ? BAD_CAST "true" : BAD_CAST "false";
