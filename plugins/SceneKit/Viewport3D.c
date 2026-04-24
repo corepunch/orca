@@ -55,7 +55,7 @@ Viewport3D_renderpass(struct Object *viewport)
 static void collect_lights(struct Object *object,
                            struct ViewDef *viewdef)
 {
-  Light3DPtr light = GetLight3D(object);
+  struct Light3D *light = GetLight3D(object);
   if (light && viewdef->num_lights < MAX_VIEW_LIGHTS) {
     struct view_light *vl = &viewdef->lights[viewdef->num_lights++];
     memcpy(&vl->xyz, &GetNode3D(object)->Matrix.v[12], sizeof(vl->xyz));
@@ -71,7 +71,7 @@ static void collect_lights(struct Object *object,
 void R_RenderViewport(struct Object *, struct ViewDef*);
 
 static struct rect
-_Node2D_GetRect(Node2DPtr pNode2D)
+_Node2D_GetRect(struct Node2D *pNode2D)
 {
   return (struct rect){
     .x = pNode2D->_actual_pos[0],

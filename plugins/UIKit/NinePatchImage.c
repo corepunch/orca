@@ -89,7 +89,7 @@ HANDLER(NinePatchImage, Node2D, DrawBrush)
 							sizeof(struct BrushShorthand)))
     return FALSE;
 
-  Node2DPtr pNode2D = GetNode2D(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
   int const node_width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   int const node_height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
 

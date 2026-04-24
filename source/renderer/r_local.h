@@ -264,7 +264,7 @@ extern struct shader_desc shader_roundedbox;
 
 // font
 struct fontface*
-Font_Load(lpcString_t, lpFontFamily_t);
+Font_Load(lpcString_t, struct FontFamily *);
 
 // text
 struct Texture*

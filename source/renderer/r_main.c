@@ -274,7 +274,7 @@ HRESULT
 R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 {
 #ifdef GL_SAMPLER_2D_RECT
-  lpcTexture_t texture = ent->material.texture;
+  struct Texture const *texture = ent->material.texture;
   enum shader_type fallback = SHADER_UI;
   if (texture && texture->IOSurface) {
     fallback = SHADER_2D_RECT;
@@ -288,7 +288,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 #endif
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
-  lpcShader_t shader = NULL;
+  struct Shader const *shader = NULL;
   if (ent->palette && !ent->shader) {
     // Palette-indexed entity: automatically use the cinematic (palette lookup) shader
     shader = &tr.shaders[SHADER_CINEMATIC];
@@ -297,7 +297,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     shader = &tr.shaders[fallback];
   } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
     // Real shader pointer
-    shader = (lpcShader_t)BOX_GET_PTR((uintptr_t)ent->shader);
+    shader = (struct Shader const *)BOX_GET_PTR((uintptr_t)ent->shader);
   } else {
     // Boxed shader type - use directly as index into tr.shaders
     enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);

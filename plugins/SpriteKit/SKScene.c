@@ -2,7 +2,7 @@
 
 HANDLER(SKScene, Node, UpdateMatrix)
 {
-  SKNodePtr node = GetSKNode(hObject);
+  struct SKNode *node = GetSKNode(hObject);
 
   node->_opacity = GetNode(hObject)->Opacity;
   node->Matrix = MAT4_Identity();

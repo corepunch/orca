@@ -7,7 +7,7 @@
 
 HANDLER(Form, Object, Create)
 {
-  StackViewPtr stackview = GetStackView(hObject);
+  struct StackView *stackview = GetStackView(hObject);
   stackview->Direction = kDirectionVertical;
   return FALSE;
 }

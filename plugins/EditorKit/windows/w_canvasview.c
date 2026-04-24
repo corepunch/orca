@@ -120,7 +120,7 @@ static void R_DrawWireRect(LPMATRIX4 matrix, LPCRECT rect) {
 static void
 R_DrawNodeSelection(LPMATRIX4 proj,
                     struct _CANVASVIEW* sv,
-                    Node2DPtr node2D)
+                    struct Node2D *node2D)
 {
   MATRIX4 local;
   local = MAT4_Multiply(proj, &node2D->Matrix);
@@ -303,7 +303,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       return 0;
     case ID_Node_LeftButtonDragged:
       if (data->selected && OBJ_GetParent(data->selected)) {
-        Node2DPtr node = GetNode2D(data->selected);
+        struct Node2D *node = GetNode2D(data->selected);
         float x = (int16_t)LOWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).x;
         float y = (int16_t)HIWORD((intptr_t)lparm) * LocalScaling(wnd, CanvasView_GetScene(wnd)).y;
         EDWINPROC(Inspector);

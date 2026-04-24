@@ -17,7 +17,7 @@ static bool_t
 is_updated(struct Object *hObject,
            enum label_step label_step)
 {
-  TextBlockConceptPtr output = GetTextBlockConcept(hObject);
+  struct TextBlockConcept *output = GetTextBlockConcept(hObject);
   longTime_t dirty = OBJ_GetTimestamp(hObject);
   if (output->_steps[label_step] != dirty) {
     output->_steps[label_step] = dirty;
@@ -42,8 +42,8 @@ text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 }
 
 static struct rect
-mesh_rect(Node2DPtr pNode2D,
-          TextBlockConceptPtr frame,
+mesh_rect(struct Node2D *pNode2D,
+          struct TextBlockConcept *frame,
           struct text_info* pTextInfo)
 {
   return (struct rect){
@@ -62,8 +62,8 @@ mesh_rect(Node2DPtr pNode2D,
 
 static lpcString_t
 _GetTextBlockText(struct Object *hObject,
-                  TextBlockConceptPtr pTextBlockConcept,
-                  TextRunPtr pTextRun)
+                  struct TextBlockConcept *pTextBlockConcept,
+                  struct TextRun *pTextRun)
 {
   struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
   if (pTextRun->Text && *pTextRun->Text)
@@ -85,7 +85,9 @@ _GetTextBlockText(struct Object *hObject,
 }
 
 static struct ViewTextRun
-_MakeViewTextRun(struct Object *hObject, TextRun_t text, lpcString_t szText)
+_MakeViewTextRun(struct Object *hObject,
+                 struct TextRun text,
+                 lpcString_t szText)
 {
   for (struct Object *node = hObject; node; node = OBJ_GetParent(node)) {
     struct Property *plist = OBJ_GetProperties(node);
@@ -120,16 +122,16 @@ _MakeViewTextRun(struct Object *hObject, TextRun_t text, lpcString_t szText)
 
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 {
-  TextRunPtr pTextRun = GetTextRun(hObject);
+  struct TextRun *pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
 //  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
   pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
-    TextRunPtr tr = GetTextRun(run);
+    struct TextRun *tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
-      TextRun_t base = *pTextRun;
+      struct TextRun base = *pTextRun;
       if (TextRun_GetProperty(run, kTextRunFont)) base.Font = tr->Font;
       if (TextRun_GetProperty(run, kTextRunFontWeight)) base.Font.Weight = tr->Font.Weight;
       if (TextRun_GetProperty(run, kTextRunFontStyle)) base.Font.Style = tr->Font.Style;
@@ -158,8 +160,8 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
-  TextRunPtr output = GetTextRun(hObject);
-  TextBlockConceptPtr textblock = GetTextBlockConcept(hObject);
+  struct TextRun *output = GetTextRun(hObject);
+  struct TextBlockConcept *textblock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, TextBlockConcept, MakeText,
                    .text = textblock->_text,
                    .availableSpace = pMeasureOverride->Width);
@@ -175,7 +177,7 @@ HANDLER(TextBlock, Node2D, ForegroundContent)
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
   if (is_updated(hObject, STEP_GEOMETRY)) {
-    TextRunPtr run = GetTextRun(hObject);
+    struct TextRun *run = GetTextRun(hObject);
     struct rect const rect = mesh_rect(pTextBlock->_node2D, GetTextBlockConcept(hObject), &run->_textinfo);
     struct edges insets = run->_textinfo.txInsets;
     struct rect const geom = {
@@ -198,7 +200,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     return FALSE;
 
   struct ViewEntity entity;
-  TextBlockConceptPtr text = GetTextBlockConcept(hObject);
+  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   float modopacity = 1.f;
   if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
@@ -216,7 +218,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
     entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
-//    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
+//    struct TextBlockConcept *label = GetTextBlockConcept(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
     struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);

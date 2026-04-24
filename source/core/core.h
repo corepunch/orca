@@ -839,8 +839,6 @@ ORCA_API struct Node_KeyMessageEventArgs* luaX_checkNode_KeyMessageEventArgs(lua
 
 /// @brief A single animated property curve, consisting of keyframes for one property on one target object.
 /** AnimationCurve component */
-typedef struct AnimationCurve AnimationCurve_t, *AnimationCurvePtr, *lpAnimationCurve_t;
-typedef struct AnimationCurve const *AnimationCurveCPtr, *lpcAnimationCurve_t;
 struct AnimationCurve {
 	const char* Path; ///< Relative path from the AnimationClip's host object to the target object (empty string means the host object itself)
 	const char* Property; ///< Short name of the property to animate (e.g. "Opacity", "Position")
@@ -852,8 +850,6 @@ ORCA_API struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx);
 
 /// @brief A reusable, self-loading animation asset containing one or more AnimationCurve components.
 /** AnimationClip component */
-typedef struct AnimationClip AnimationClip_t, *AnimationClipPtr, *lpAnimationClip_t;
-typedef struct AnimationClip const *AnimationClipCPtr, *lpcAnimationClip_t;
 struct AnimationClip {
 	enum AnimationMode Mode; ///< Playback mode: PlayOnce stops at end, Loop restarts, PingPong alternates direction
 	float StartTime; ///< Start time of the active region in seconds (default 0)
@@ -864,8 +860,6 @@ ORCA_API struct AnimationClip* luaX_checkAnimationClip(lua_State *L, int idx);
 
 /// @brief Component for managing and playing animations on UI elements.
 /** AnimationPlayer component */
-typedef struct AnimationPlayer AnimationPlayer_t, *AnimationPlayerPtr, *lpAnimationPlayer_t;
-typedef struct AnimationPlayer const *AnimationPlayerCPtr, *lpcAnimationPlayer_t;
 struct AnimationPlayer {
 	struct AnimationClip* Clip; ///< The AnimationClip object that supplies the curves to animate
 	struct AnimationClipReference* Clips; ///< Array of named animation clips available to this player; use the Play message with a Name to select one by name
@@ -894,8 +888,6 @@ ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx
 
 /// @brief Attach-only component that tweens one property value to a target, then self-destructs.
 /** PropertyAnimation component */
-typedef struct PropertyAnimation PropertyAnimation_t, *PropertyAnimationPtr, *lpPropertyAnimation_t;
-typedef struct PropertyAnimation const *PropertyAnimationCPtr, *lpcPropertyAnimation_t;
 struct PropertyAnimation {
 	const char* Property; ///< Property to animate
 	const char* From; ///< Start value (raw bytes)
@@ -911,8 +903,6 @@ ORCA_API struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int
 
 /// @brief Container object for StyleRule definitions.
 /** StyleSheet component */
-typedef struct StyleSheet StyleSheet_t, *StyleSheetPtr, *lpStyleSheet_t;
-typedef struct StyleSheet const *StyleSheetCPtr, *lpcStyleSheet_t;
 struct StyleSheet {
 };
 ORCA_API void luaX_pushStyleSheet(lua_State *L, struct StyleSheet const* StyleSheet);
@@ -920,8 +910,6 @@ ORCA_API struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx);
 
 /// @brief A single style rule that maps a class name (with optional pseudo-class) to property overrides.
 /** StyleRule component */
-typedef struct StyleRule StyleRule_t, *StyleRulePtr, *lpStyleRule_t;
-typedef struct StyleRule const *StyleRuleCPtr, *lpcStyleRule_t;
 struct StyleRule {
 	const char* ClassName; ///< Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").
 	const char* PseudoClass; ///< Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.
@@ -933,8 +921,6 @@ ORCA_API struct StyleRule* luaX_checkStyleRule(lua_State *L, int idx);
 
 /// @brief Manages CSS-style classes and stylesheet rules for an object.
 /** StyleController component */
-typedef struct StyleController StyleController_t, *StyleControllerPtr, *lpStyleController_t;
-typedef struct StyleController const *StyleControllerCPtr, *lpcStyleController_t;
 struct StyleController {
 	struct StyleSheet* StyleSheet; ///< The StyleSheet object that supplies style rules for this object. Rules are matched by selector against the object's class list. If NULL, only the global static stylesheet is used.
 	struct style_class_selector* classes; ///< Linked list of parsed style classes with flags (hover, focus, dark mode, etc.)
@@ -948,8 +934,6 @@ ORCA_API struct StyleController* luaX_checkStyleController(lua_State *L, int idx
 
 /// @brief Container object for StateGroup definitions.
 /** StateManager component */
-typedef struct StateManager StateManager_t, *StateManagerPtr, *lpStateManager_t;
-typedef struct StateManager const *StateManagerCPtr, *lpcStateManager_t;
 struct StateManager {
 };
 ORCA_API void luaX_pushStateManager(lua_State *L, struct StateManager const* StateManager);
@@ -957,8 +941,6 @@ ORCA_API struct StateManager* luaX_checkStateManager(lua_State *L, int idx);
 
 /// @brief Tracks one controller property and maps its values to State objects.
 /** StateGroup component */
-typedef struct StateGroup StateGroup_t, *StateGroupPtr, *lpStateGroup_t;
-typedef struct StateGroup const *StateGroupCPtr, *lpcStateGroup_t;
 struct StateGroup {
 	const char* ControllerProperty; ///< Short name of the property on the host object to watch (e.g. "IsActive")
 };
@@ -967,8 +949,6 @@ ORCA_API struct StateGroup* luaX_checkStateGroup(lua_State *L, int idx);
 
 /// @brief Defines property overrides to apply when the parent StateGroup's controller property matches Value.
 /** State component */
-typedef struct State State_t, *StatePtr, *lpState_t;
-typedef struct State const *StateCPtr, *lpcState_t;
 struct State {
 	const char* Value; ///< The value of the controller property that activates this state (compared as a number; for booleans "true"/"false" are also accepted)
 	const char* Path; ///< Optional path from the host object to the target object. Empty string means the host object itself.
@@ -978,8 +958,6 @@ ORCA_API struct State* luaX_checkState(lua_State *L, int idx);
 
 /// @brief Attach-only component that applies state-driven property overrides from a StateManager object.
 /** StateManagerController component */
-typedef struct StateManagerController StateManagerController_t, *StateManagerControllerPtr, *lpStateManagerController_t;
-typedef struct StateManagerController const *StateManagerControllerCPtr, *lpcStateManagerController_t;
 struct StateManagerController {
 	struct StateManager* StateManager; ///< The StateManager object that supplies the StateGroup definitions. Setting this property automatically marks all tracked controller properties.
 	event_t ControllerChanged;
@@ -989,8 +967,6 @@ ORCA_API struct StateManagerController* luaX_checkStateManagerController(lua_Sta
 
 /// @brief Base class for resource containers such as aliases and locale entries.
 /** ResourceDictionary component */
-typedef struct ResourceDictionary ResourceDictionary_t, *ResourceDictionaryPtr, *lpResourceDictionary_t;
-typedef struct ResourceDictionary const *ResourceDictionaryCPtr, *lpcResourceDictionary_t;
 struct ResourceDictionary {
 };
 ORCA_API void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary);
@@ -998,8 +974,6 @@ ORCA_API struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, i
 
 /// @brief Localization resource component that provides text and resource strings for a given language.
 /** Locale component */
-typedef struct Locale Locale_t, *LocalePtr, *lpLocale_t;
-typedef struct Locale const *LocaleCPtr, *lpcLocale_t;
 struct Locale {
 	const char* Language; ///< BCP-47 language code for this locale (e.g. "en", "fr-CA")
 	struct LocaleEntry* Entries; ///< Array of locale entries contained in this locale
@@ -1010,8 +984,6 @@ ORCA_API struct Locale* luaX_checkLocale(lua_State *L, int idx);
 
 /// @brief Base class for data-holding objects within the framework
 /** DataObject component */
-typedef struct DataObject DataObject_t, *DataObjectPtr, *lpDataObject_t;
-typedef struct DataObject const *DataObjectCPtr, *lpcDataObject_t;
 struct DataObject {
 };
 ORCA_API void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject);
@@ -1019,8 +991,6 @@ ORCA_API struct DataObject* luaX_checkDataObject(lua_State *L, int idx);
 
 /// @brief Base class for event-driven actions within the UI system
 /** Trigger component */
-typedef struct Trigger Trigger_t, *TriggerPtr, *lpTrigger_t;
-typedef struct Trigger const *TriggerCPtr, *lpcTrigger_t;
 struct Trigger {
 	const char* Property; ///< Target property name to monitor or modify
 	int32_t Value; ///< Associated value for the trigger condition
@@ -1031,8 +1001,6 @@ ORCA_API struct Trigger* luaX_checkTrigger(lua_State *L, int idx);
 
 /// @brief Responds to property value changes on specified nodes
 /** OnPropertyChangedTrigger component */
-typedef struct OnPropertyChangedTrigger OnPropertyChangedTrigger_t, *OnPropertyChangedTriggerPtr, *lpOnPropertyChangedTrigger_t;
-typedef struct OnPropertyChangedTrigger const *OnPropertyChangedTriggerCPtr, *lpcOnPropertyChangedTrigger_t;
 struct OnPropertyChangedTrigger {
 	const char* SourceNode; ///< Name or identifier of the node to monitor
 	const char* Property; ///< Property name to watch for changes
@@ -1042,8 +1010,6 @@ ORCA_API struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua
 
 /// @brief Triggers when an element is attached to the visual tree
 /** OnAttachedTrigger component */
-typedef struct OnAttachedTrigger OnAttachedTrigger_t, *OnAttachedTriggerPtr, *lpOnAttachedTrigger_t;
-typedef struct OnAttachedTrigger const *OnAttachedTriggerCPtr, *lpcOnAttachedTrigger_t;
 struct OnAttachedTrigger {
 };
 ORCA_API void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* OnAttachedTrigger);
@@ -1051,8 +1017,6 @@ ORCA_API struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int
 
 /// @brief Responds to routed UI events (mouse, keyboard, etc.)
 /** EventTrigger component */
-typedef struct EventTrigger EventTrigger_t, *EventTriggerPtr, *lpEventTrigger_t;
-typedef struct EventTrigger const *EventTriggerCPtr, *lpcEventTrigger_t;
 struct EventTrigger {
 	const char* RoutedEvent; ///< Name of the routed event to handle (e.g., "MouseDown", "KeyPress")
 };
@@ -1061,8 +1025,6 @@ ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
 
 /// @brief Applies property values when triggered by specified conditions
 /** Setter component */
-typedef struct Setter Setter_t, *SetterPtr, *lpSetter_t;
-typedef struct Setter const *SetterCPtr, *lpcSetter_t;
 struct Setter {
 	struct Trigger* Trigger; ///< Triggering condition or state image
 	const char* Property; ///< Target property name to set
@@ -1073,8 +1035,6 @@ ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 
 /// @brief Executes custom functions when triggered by specified conditions
 /** Handler component */
-typedef struct Handler Handler_t, *HandlerPtr, *lpHandler_t;
-typedef struct Handler const *HandlerCPtr, *lpcHandler_t;
 struct Handler {
 	struct Trigger* Trigger; ///< Triggering condition or state image
 	struct Node* Target; ///< Target object to call function on
@@ -1085,8 +1045,6 @@ ORCA_API struct Handler* luaX_checkHandler(lua_State *L, int idx);
 
 /// @brief Base class for all UI engine nodes.
 /** Node component */
-typedef struct Node Node_t, *NodePtr, *lpNode_t;
-typedef struct Node const *NodeCPtr, *lpcNode_t;
 struct Node {
 	struct SizeShorthand Size; ///< Sizing configuration of this element
 	struct Thickness Margin; ///< External spacing around the element

@@ -13,7 +13,7 @@ HANDLER(Node2D, Node2D, UpdateGeometry) {
   return TRUE;
 }
 
-static bool_t _ContainsPoint(Node2DPtr pNode2D, float x, float y) {
+static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
   struct mat4 inv = MAT4_Inverse(&pNode2D->Matrix);
 	struct vec3 point = {x,y,0};
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
@@ -57,7 +57,7 @@ HANDLER(Node2D, Object, Create) {
 // int stereoSeparation = 0;
 
 ORCA_API struct rect
-Node2D_GetRect(Node2DPtr node)
+Node2D_GetRect(struct Node2D *node)
 {
   return (struct rect){
     .x = Node2D_GetFrame(node, kBox3FieldX),
@@ -68,7 +68,7 @@ Node2D_GetRect(Node2DPtr node)
 }
 
 float
-Node2D_GetFrame(Node2DPtr pNode2D, enum Box3Field parm)
+Node2D_GetFrame(struct Node2D *pNode2D, enum Box3Field parm)
 {
   switch (parm) {
     case kBox3FieldWidth:
@@ -81,7 +81,7 @@ Node2D_GetFrame(Node2DPtr pNode2D, enum Box3Field parm)
 }
 
 void
-Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
+Node2D_SetFrame(struct Node2D *pNode2D, enum Box3Field parm, float value)
 {
   switch (parm) {
     case kBox3FieldWidth:
@@ -170,7 +170,7 @@ HANDLER(Node2D, Node, UpdateMatrix)
 }
 
 // struct vec3 UI_GetActualSize(struct Object * hObject) {
-//     Node2DPtr view = GetNode2D(hObject);
+//     struct Node2D *view = GetNode2D(hObject);
 //     if (view) {
 //         struct vec3 v = {
 //             NODE2D_FRAME(hObject, ActualSize, 0),
@@ -193,7 +193,7 @@ HANDLER(Node2D, Object, Destroy)
 
 HANDLER(Node2D, Node, ScrollWheel)
 {
-  NodePtr node = pNode2D->_node;
+  struct Node *node = pNode2D->_node;
   if (pNode2D->Overflow.y == kOverflowScroll) {
     struct vec2 Offset = pNode2D->ContentOffset;
     float Scroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
@@ -214,7 +214,7 @@ HANDLER(Node2D, Node, MouseMoved)
   return FALSE;
 }
 
-float Node2D_GetSize(Node2DPtr pNode2D, enum Direction axis, enum Sizing sizing) {
+float Node2D_GetSize(struct Node2D *pNode2D, enum Direction axis, enum Sizing sizing) {
   float const size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis);
   switch (sizing) {
     case kSizingPlusMargin:
@@ -238,7 +238,7 @@ enum ui_align
 };
 
 float
-Node2D_Align(Node2DPtr pNode2D, struct rect const *rect, enum Direction axis, int align, float length)
+Node2D_Align(struct Node2D *pNode2D, struct rect const *rect, enum Direction axis, int align, float length)
 {
   struct transform2 const* transform = &(pNode2D->LayoutTransform);
   float const value = ((float const*)&transform->translation)[axis];
@@ -253,7 +253,7 @@ Node2D_Align(Node2DPtr pNode2D, struct rect const *rect, enum Direction axis, in
   }
 }
 
-static float _MeasureAxis(Node2DPtr n, float space, int axis) {
+static float _MeasureAxis(struct Node2D *n, float space, int axis) {
   if (!isnan(NODE2D_FRAME(n, Size, axis).Requested)) {
     return NODE2D_FRAME(n, Size, axis).Requested;
   } else if (n->RenderTarget) {

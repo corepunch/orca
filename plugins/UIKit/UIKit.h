@@ -456,8 +456,6 @@ ORCA_API struct PageHost_NavigateBackEventArgs* luaX_checkPageHost_NavigateBackE
 
 /// @brief Base class for all brush types used in rendering.
 /** Brush component */
-typedef struct Brush Brush_t, *BrushPtr, *lpBrush_t;
-typedef struct Brush const *BrushCPtr, *lpcBrush_t;
 struct Brush {
 };
 ORCA_API void luaX_pushBrush(lua_State *L, struct Brush const* Brush);
@@ -465,8 +463,6 @@ ORCA_API struct Brush* luaX_checkBrush(lua_State *L, int idx);
 
 /// @brief Brush that fills an area with a solid color.
 /** ColorBrush component */
-typedef struct ColorBrush ColorBrush_t, *ColorBrushPtr, *lpColorBrush_t;
-typedef struct ColorBrush const *ColorBrushCPtr, *lpcColorBrush_t;
 struct ColorBrush {
 	struct color Color; ///< The color value used to fill the target area.
 };
@@ -475,8 +471,6 @@ ORCA_API struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx);
 
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
 /** TextRun component */
-typedef struct TextRun TextRun_t, *TextRunPtr, *lpTextRun_t;
-typedef struct TextRun const *TextRunCPtr, *lpcTextRun_t;
 struct TextRun {
 	const char* Text; ///< The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.
 	struct FontShorthand Font; ///< Font definition used for text rendering. Contains typeface, size, and style information.
@@ -494,8 +488,6 @@ ORCA_API struct TextRun* luaX_checkTextRun(lua_State *L, int idx);
 
 /// @brief Shared concept for text rendering in 2D and 3D nodes.
 /** TextBlockConcept component */
-typedef struct TextBlockConcept TextBlockConcept_t, *TextBlockConceptPtr, *lpTextBlockConcept_t;
-typedef struct TextBlockConcept const *TextBlockConceptCPtr, *lpcTextBlockConcept_t;
 struct TextBlockConcept {
 	const char* TextResourceID; ///< Resource identifier for localized text lookup.
 	const char* TextResourceConfiguration; ///< Configuration key used when resolving text resources.
@@ -518,8 +510,6 @@ ORCA_API struct TextBlockConcept* luaX_checkTextBlockConcept(lua_State *L, int i
 
 /// @brief Primary class for 2D UI elements with comprehensive rendering capabilities
 /** Node2D component */
-typedef struct Node2D Node2D_t, *Node2DPtr, *lpNode2D_t;
-typedef struct Node2D const *Node2DCPtr, *lpcNode2D_t;
 struct Node2D {
 	struct transform2 LayoutTransform; ///< Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.
 	struct transform2 RenderTransform; ///< Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.
@@ -593,8 +583,6 @@ Node2D_GetViewEntity(struct Node2D*, struct ViewEntity*, struct Texture const*, 
 
 /// @brief Container for loading and displaying prefabricated UI components
 /** PrefabView2D component */
-typedef struct PrefabView2D PrefabView2D_t, *PrefabView2DPtr, *lpPrefabView2D_t;
-typedef struct PrefabView2D const *PrefabView2DCPtr, *lpcPrefabView2D_t;
 struct PrefabView2D {
 	const char* Prefab; ///< Prefab resource name within the archive
 };
@@ -603,8 +591,6 @@ ORCA_API struct PrefabView2D* luaX_checkPrefabView2D(lua_State *L, int idx);
 
 /// @brief Concrete implementation of text display combining Node2D and TextBlockConcept
 /** TextBlock component */
-typedef struct TextBlock TextBlock_t, *TextBlockPtr, *lpTextBlock_t;
-typedef struct TextBlock const *TextBlockCPtr, *lpcTextBlock_t;
 struct TextBlock {
 	struct Node2D* _node2D; ///< Internal reference to the underlying Node2D instance
 };
@@ -613,8 +599,6 @@ ORCA_API struct TextBlock* luaX_checkTextBlock(lua_State *L, int idx);
 
 /// @brief Interactive text input control with multiple input modes
 /** Input component */
-typedef struct Input Input_t, *InputPtr, *lpInput_t;
-typedef struct Input const *InputCPtr, *lpcInput_t;
 struct Input {
 	const char* Name; ///< Input identifier for forms and data binding
 	enum InputType Type; ///< Input behavior type (text, password, etc.)
@@ -628,8 +612,6 @@ ORCA_API struct Input* luaX_checkInput(lua_State *L, int idx);
 
 /// @brief Interactive button control for user actions
 /** Button component */
-typedef struct Button Button_t, *ButtonPtr, *lpButton_t;
-typedef struct Button const *ButtonCPtr, *lpcButton_t;
 struct Button {
 	enum ButtonType Type; ///< Button behavior type (normal or submit)
 	event_t Click;
@@ -639,8 +621,6 @@ ORCA_API struct Button* luaX_checkButton(lua_State *L, int idx);
 
 /// @brief Text label with optional association to form controls
 /** Label component */
-typedef struct Label Label_t, *LabelPtr, *lpLabel_t;
-typedef struct Label const *LabelCPtr, *lpcLabel_t;
 struct Label {
 	const char* For; ///< Identifier of associated form control
 };
@@ -649,8 +629,6 @@ ORCA_API struct Label* luaX_checkLabel(lua_State *L, int idx);
 
 /// @brief Linear layout container arranging children in a single direction
 /** StackView component */
-typedef struct StackView StackView_t, *StackViewPtr, *lpStackView_t;
-typedef struct StackView const *StackViewCPtr, *lpcStackView_t;
 struct StackView {
 	bool_t Reversed; ///< Reverse the order of child elements
 	enum Direction Direction; ///< Layout direction (horizontal or vertical)
@@ -663,8 +641,6 @@ ORCA_API struct StackView* luaX_checkStackView(lua_State *L, int idx);
 
 /// @brief Specialized stack view for form input collection and submission
 /** Form component */
-typedef struct Form Form_t, *FormPtr, *lpForm_t;
-typedef struct Form const *FormCPtr, *lpcForm_t;
 struct Form {
 	event_t Submit;
 };
@@ -673,8 +649,6 @@ ORCA_API struct Form* luaX_checkForm(lua_State *L, int idx);
 
 /// @brief Base class for interactive UI controls with state management
 /** Control component */
-typedef struct Control Control_t, *ControlPtr, *lpControl_t;
-typedef struct Control const *ControlCPtr, *lpcControl_t;
 struct Control {
 	bool_t Pressed; ///< Currently being pressed by user input
 	bool_t Disabled; ///< Interaction disabled, typically grayed out
@@ -688,8 +662,6 @@ ORCA_API struct Control* luaX_checkControl(lua_State *L, int idx);
 
 /// @brief Top-level container representing a display surface or window
 /** Screen component */
-typedef struct Screen Screen_t, *ScreenPtr, *lpScreen_t;
-typedef struct Screen const *ScreenCPtr, *lpcScreen_t;
 struct Screen {
 	struct color ClearColor; ///< Background clear color for the screen
 	enum ResizeMode ResizeMode; ///< Specifies how the window can be resized or displayed
@@ -704,8 +676,6 @@ ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);
 
 /// @brief Video or animation playback view for media content
 /** Cinematic component */
-typedef struct Cinematic Cinematic_t, *CinematicPtr, *lpCinematic_t;
-typedef struct Cinematic const *CinematicCPtr, *lpcCinematic_t;
 struct Cinematic {
 	const char* FileName; ///< Path to media file for playback
 	float FrameRate; ///< Playback frame rate (frames per second)
@@ -719,8 +689,6 @@ ORCA_API struct Cinematic* luaX_checkCinematic(lua_State *L, int idx);
 
 /// @brief Grid-based layout container with configurable rows and columns
 /** Grid component */
-typedef struct Grid Grid_t, *GridPtr, *lpGrid_t;
-typedef struct Grid const *GridCPtr, *lpcGrid_t;
 struct Grid {
 	const char* Columns; ///< Column definition string (e.g., "1fr 2fr 100px")
 	const char* Rows; ///< Row definition string (e.g., "auto 1fr auto")
@@ -735,8 +703,6 @@ ORCA_API struct Grid* luaX_checkGrid(lua_State *L, int idx);
 
 /// @brief Displays image content with advanced rendering and scaling options
 /** ImageView component */
-typedef struct ImageView ImageView_t, *ImageViewPtr, *lpImageView_t;
-typedef struct ImageView const *ImageViewCPtr, *lpcImageView_t;
 struct ImageView {
 	const char* Src; ///< Image source path or resource identifier
 	struct Texture* Source; ///< Direct reference to loaded image
@@ -752,8 +718,6 @@ ORCA_API struct ImageView* luaX_checkImageView(lua_State *L, int idx);
 
 /// @brief Specialized image view for nine-patch (stretchable) images
 /** NinePatchImage component */
-typedef struct NinePatchImage NinePatchImage_t, *NinePatchImagePtr, *lpNinePatchImage_t;
-typedef struct NinePatchImage const *NinePatchImageCPtr, *lpcNinePatchImage_t;
 struct NinePatchImage {
 	float StretchTypeTop; ///< Top edge stretch behavior factor
 	float StretchTypeBottom; ///< Bottom edge stretch behavior factor
@@ -775,8 +739,6 @@ ORCA_API struct NinePatchImage* luaX_checkNinePatchImage(lua_State *L, int idx);
 
 /// @brief Displays a fixed-size text grid using a monospace layout
 /** ConsoleView component */
-typedef struct ConsoleView ConsoleView_t, *ConsoleViewPtr, *lpConsoleView_t;
-typedef struct ConsoleView const *ConsoleViewCPtr, *lpcConsoleView_t;
 struct ConsoleView {
 	int32_t BufferWidth; ///< Buffer width
 	int32_t BufferHeight; ///< Buffer height
@@ -797,8 +759,6 @@ ORCA_API struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx);
 
 /// @brief Represents a single page within a document or UI container.
 /** Page component */
-typedef struct Page Page_t, *PagePtr, *lpPage_t;
-typedef struct Page const *PageCPtr, *lpcPage_t;
 struct Page {
 	const char* Title; ///< The title of the page.
 	const char* Path; ///< The URL path of the page, like "/about".
@@ -810,8 +770,6 @@ ORCA_API struct Page* luaX_checkPage(lua_State *L, int idx);
 
 /// @brief Container that manages multiple pages and navigation between them.
 /** PageHost component */
-typedef struct PageHost PageHost_t, *PageHostPtr, *lpPageHost_t;
-typedef struct PageHost const *PageHostCPtr, *lpcPageHost_t;
 struct PageHost {
 	struct Page* ActivePage; ///< The currently active page.
 	struct Page* _historyStack[32]; ///< Navigation history stack.
@@ -824,8 +782,6 @@ ORCA_API struct PageHost* luaX_checkPageHost(lua_State *L, int idx);
 
 /// @brief Viewport for rendering the active page within a PageHost.
 /** PageViewport component */
-typedef struct PageViewport PageViewport_t, *PageViewportPtr, *lpPageViewport_t;
-typedef struct PageViewport const *PageViewportCPtr, *lpcPageViewport_t;
 struct PageViewport {
 };
 ORCA_API void luaX_pushPageViewport(lua_State *L, struct PageViewport const* PageViewport);
@@ -833,8 +789,6 @@ ORCA_API struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx);
 
 /// @brief Defines a reusable set of property values and visual configurations for a target component type.
 /** Style component */
-typedef struct Style Style_t, *StylePtr, *lpStyle_t;
-typedef struct Style const *StyleCPtr, *lpcStyle_t;
 struct Style {
 	const char* TargetType; ///< Specifies the component type this style targets. Only components of the given type or its derived types will use the style.
 	enum StyleType Type; ///< Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.

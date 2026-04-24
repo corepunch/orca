@@ -100,7 +100,7 @@ PrintLine(struct color32* buffer,
 //  if ((*line)++ >= size->height)
 //    return;
 //  objects[unique] = hobj;
-//  NodePtr node = GetNode(hobj);
+//  struct Node *node = GetNode(hobj);
 //  byte_t normal = node && node->QuickHide ? COLOR_HIDDEN : COLOR_LABEL;
 //  byte_t color = (hobj == selected) ? COLOR_SELECTED : normal;
 //  char buf[DEBUG_WIDTH] = { 0 };
@@ -126,7 +126,7 @@ PrintLine(struct color32* buffer,
 //  if (!hobj)
 //    return;
 //  uint32_t line = 0;
-//  NodePtr node = GetNode(hobj);
+//  struct Node *node = GetNode(hobj);
 //  if (node) {
 //    uint32_t w = node->Size.Axis[0].Actual;
 //    uint32_t h = node->Size.Axis[1].Actual;

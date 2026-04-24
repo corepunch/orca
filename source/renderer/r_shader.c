@@ -842,12 +842,12 @@ HANDLER(Shader, Object, Start) {
   }
   FOR_EACH_OBJECT(hChild, hObject) {
     if (GetVertexShader(hChild)) {
-      lpVertexShader_t vs = GetVertexShader(hChild);
+      struct VertexShader const *vs = GetVertexShader(hChild);
       desc.VertexShader = OBJ_GetTextContent(hChild);
       desc.Shading = vs->Shading;
       desc.Version = MAX(desc.Version, vs->Version);
     } else if (GetFragmentShader(hChild)) {
-      lpFragmentShader_t fs = GetFragmentShader(hChild);
+      struct FragmentShader const *fs = GetFragmentShader(hChild);
       desc.FragmentShader = OBJ_GetTextContent(hChild);
       desc.FragmentOut = fs->Out;
       desc.Version = MAX(desc.Version, fs->Version);

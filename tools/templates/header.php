@@ -117,8 +117,6 @@ ORCA_API struct <?= $event->msgns ?>_<?= $name ?>EventArgs* luaX_check<?= $event
 /// @brief <?= $component->doc ?>
 <?php endif ?>
 /** <?= $name ?> component */
-typedef struct <?= $name ?> <?= $name ?>_t, *<?= $name ?>Ptr, *lp<?= $name ?>_t;
-typedef struct <?= $name ?> const *<?= $name ?>CPtr, *lpc<?= $name ?>_t;
 struct <?= $name ?> {
 <?php include_template("struct_contents", ['list' => $component->getProperties(false)]) ?>
 <?php include_template("struct_contents", ['list' => $component->getFields()]) ?>

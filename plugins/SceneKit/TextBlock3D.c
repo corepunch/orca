@@ -55,8 +55,8 @@ HANDLER(TextBlock3D, Node3D, Render)
 	R_DrawEntity(parm, &entity);
 #endif
   
-  TextRunPtr pTextRun = GetTextRun(hObject);
-  TextBlockConceptPtr pTextBlock = GetTextBlockConcept(hObject);
+  struct TextRun *pTextRun = GetTextRun(hObject);
+  struct TextBlockConcept *pTextBlock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, TextBlockConcept, MakeText,
                    .text = pTextBlock->_text,
                    .availableSpace = 512);

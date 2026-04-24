@@ -7,9 +7,9 @@ text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
 
 HANDLER(Input, Node2D, DrawBrush)
 {
-  TextRunPtr pTextRun = GetTextRun(hObject);
-  Node2DPtr pNode2D = GetNode2D(hObject);
-  TextBlockConceptPtr pTextBlockConcept = GetTextBlockConcept(hObject);
+  struct TextRun *pTextRun = GetTextRun(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
+  struct TextBlockConcept *pTextBlockConcept = GetTextBlockConcept(hObject);
 
   struct ViewEntity entity;
 
@@ -42,7 +42,7 @@ HANDLER(Input, Node2D, DrawBrush)
   
   if (pInput->Type == kInputTypeCheckbox) {
     memset(&entity, 0, sizeof(entity));
-    Node2DPtr pNode2D = GetNode2D(hObject);
+    struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
     float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
     float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);

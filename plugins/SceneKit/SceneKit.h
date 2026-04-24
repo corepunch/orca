@@ -123,8 +123,6 @@ ORCA_API struct Node3D_RenderEventArgs* luaX_checkNode3D_RenderEventArgs(lua_Sta
 
 /// @brief Base class for all 3D scene graph nodes with transform and positioning capabilities
 /** Node3D component */
-typedef struct Node3D Node3D_t, *Node3DPtr, *lpNode3D_t;
-typedef struct Node3D const *Node3DCPtr, *lpcNode3D_t;
 struct Node3D {
 	struct transform3 LayoutTransform; ///< Transform applied during layout phase for positioning within parent containers
 	struct transform3 RenderTransform; ///< Additional transform applied during rendering for animations and effects
@@ -140,8 +138,6 @@ ORCA_API struct Node3D* luaX_checkNode3D(lua_State *L, int idx);
 
 /// @brief Root container for 3D scene content with camera and rendering configuration
 /** Scene component */
-typedef struct Scene Scene_t, *ScenePtr, *lpScene_t;
-typedef struct Scene const *SceneCPtr, *lpcScene_t;
 struct Scene {
 	const char* Camera; ///< Name of the primary camera used for scene rendering
 	const char* PreviewCamera; ///< Name of camera used for preview rendering in design tools
@@ -156,8 +152,6 @@ ORCA_API struct Scene* luaX_checkScene(lua_State *L, int idx);
 
 /// @brief 3D model renderer that displays mesh geometry with materials
 /** Model3D component */
-typedef struct Model3D Model3D_t, *Model3DPtr, *lpModel3D_t;
-typedef struct Model3D const *Model3DCPtr, *lpcModel3D_t;
 struct Model3D {
 	struct Mesh* Mesh; ///< 3D mesh geometry defining the shape of the model
 	struct Material* Material; ///< Material defining surface appearance, textures, and shading properties
@@ -167,8 +161,6 @@ ORCA_API struct Model3D* luaX_checkModel3D(lua_State *L, int idx);
 
 /// @brief Procedural plane mesh generator for creating rectangular surfaces
 /** PlaneMeshNode component */
-typedef struct PlaneMeshNode PlaneMeshNode_t, *PlaneMeshNodePtr, *lpPlaneMeshNode_t;
-typedef struct PlaneMeshNode const *PlaneMeshNodeCPtr, *lpcPlaneMeshNode_t;
 struct PlaneMeshNode {
 	float PlaneWidth; ///< Width of the generated plane in world units
 	float PlaneHeight; ///< Height of the generated plane in world units
@@ -183,8 +175,6 @@ ORCA_API struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx);
 
 /// @brief 3D camera for scene viewing and projection configuration
 /** Camera component */
-typedef struct Camera Camera_t, *CameraPtr, *lpCamera_t;
-typedef struct Camera const *CameraCPtr, *lpcCamera_t;
 struct Camera {
 	float Fov; ///< Field of view angle in degrees (60-90 typical for perspective cameras)
 	enum FovType FovType; ///< Whether field of view is measured horizontally or vertically
@@ -201,8 +191,6 @@ ORCA_API struct Camera* luaX_checkCamera(lua_State *L, int idx);
 
 /// @brief Layout container that arranges child nodes along a 3D trajectory path
 /** TrajectoryList3D component */
-typedef struct TrajectoryList3D TrajectoryList3D_t, *TrajectoryList3DPtr, *lpTrajectoryList3D_t;
-typedef struct TrajectoryList3D const *TrajectoryList3DCPtr, *lpcTrajectoryList3D_t;
 struct TrajectoryList3D {
 	struct Trajectory* Trajectory; ///< 3D path shape defining the trajectory curve for child positioning
 	struct vec2 ScrollAxis; ///< Primary and secondary scroll directions for trajectory navigation
@@ -216,8 +204,6 @@ ORCA_API struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int i
 
 /// @brief 2D viewport component that renders 3D scene content
 /** Viewport3D component */
-typedef struct Viewport3D Viewport3D_t, *Viewport3DPtr, *lpViewport3D_t;
-typedef struct Viewport3D const *Viewport3DCPtr, *lpcViewport3D_t;
 struct Viewport3D {
 	const char* Camera; ///< Name of camera to use for 3D scene rendering within this viewport
 	const char* PreviewCamera; ///< Name of camera used for design-time preview rendering
@@ -230,8 +216,6 @@ ORCA_API struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx);
 
 /// @brief Dynamic loader for 3D prefab assets and scene files
 /** PrefabView3D component */
-typedef struct PrefabView3D PrefabView3D_t, *PrefabView3DPtr, *lpPrefabView3D_t;
-typedef struct PrefabView3D const *PrefabView3DCPtr, *lpcPrefabView3D_t;
 struct PrefabView3D {
 	const char* Prefab; ///< Path to prefab asset file to instantiate
 };
@@ -240,8 +224,6 @@ ORCA_API struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx);
 
 /// @brief Base class for render pass components in the rendering pipeline
 /** RenderPass component */
-typedef struct RenderPass RenderPass_t, *RenderPassPtr, *lpRenderPass_t;
-typedef struct RenderPass const *RenderPassCPtr, *lpcRenderPass_t;
 struct RenderPass {
 };
 ORCA_API void luaX_pushRenderPass(lua_State *L, struct RenderPass const* RenderPass);
@@ -249,8 +231,6 @@ ORCA_API struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx);
 
 /// @brief Render pass that outputs to the final composition target
 /** CompositionTargetRenderPass component */
-typedef struct CompositionTargetRenderPass CompositionTargetRenderPass_t, *CompositionTargetRenderPassPtr, *lpCompositionTargetRenderPass_t;
-typedef struct CompositionTargetRenderPass const *CompositionTargetRenderPassCPtr, *lpcCompositionTargetRenderPass_t;
 struct CompositionTargetRenderPass {
 };
 ORCA_API void luaX_pushCompositionTargetRenderPass(lua_State *L, struct CompositionTargetRenderPass const* CompositionTargetRenderPass);
@@ -258,8 +238,6 @@ ORCA_API struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPa
 
 /// @brief Render pass for copying (blitting) between render targets
 /** BlitRenderPass component */
-typedef struct BlitRenderPass BlitRenderPass_t, *BlitRenderPassPtr, *lpBlitRenderPass_t;
-typedef struct BlitRenderPass const *BlitRenderPassCPtr, *lpcBlitRenderPass_t;
 struct BlitRenderPass {
 };
 ORCA_API void luaX_pushBlitRenderPass(lua_State *L, struct BlitRenderPass const* BlitRenderPass);
@@ -267,8 +245,6 @@ ORCA_API struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx);
 
 /// @brief Render pass for clearing framebuffer contents
 /** ClearRenderPass component */
-typedef struct ClearRenderPass ClearRenderPass_t, *ClearRenderPassPtr, *lpClearRenderPass_t;
-typedef struct ClearRenderPass const *ClearRenderPassCPtr, *lpcClearRenderPass_t;
 struct ClearRenderPass {
 	struct color ClearColor; ///< Color value to clear the color buffer (RGBA format)
 	float ClearDepth; ///< Depth value to clear the depth buffer (typically 1.0 for far plane)
@@ -279,8 +255,6 @@ ORCA_API struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx
 
 /// @brief Render pass for drawing scene objects with tag-based filtering
 /** DrawObjectsRenderPass component */
-typedef struct DrawObjectsRenderPass DrawObjectsRenderPass_t, *DrawObjectsRenderPassPtr, *lpDrawObjectsRenderPass_t;
-typedef struct DrawObjectsRenderPass const *DrawObjectsRenderPassCPtr, *lpcDrawObjectsRenderPass_t;
 struct DrawObjectsRenderPass {
 	const char* Camera; ///< Name of camera to use for object rendering and view/projection matrices
 	const char* IncludeTags; ///< Object tags that must be present for objects to be rendered
@@ -293,8 +267,6 @@ ORCA_API struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State
 
 /// @brief Render pass for configuring graphics pipeline state
 /** PipelineStateRenderPass component */
-typedef struct PipelineStateRenderPass PipelineStateRenderPass_t, *PipelineStateRenderPassPtr, *lpPipelineStateRenderPass_t;
-typedef struct PipelineStateRenderPass const *PipelineStateRenderPassCPtr, *lpcPipelineStateRenderPass_t;
 struct PipelineStateRenderPass {
 	enum BlendMode BlendMode; ///< Color blending mode for transparency and compositing effects
 	enum ColorWriteMode ColorWriteMode; ///< Which color channels are written to the framebuffer
@@ -318,8 +290,6 @@ ORCA_API struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_S
 
 /// @brief 3D text renderer for displaying typography in 3D space
 /** TextBlock3D component */
-typedef struct TextBlock3D TextBlock3D_t, *TextBlock3DPtr, *lpTextBlock3D_t;
-typedef struct TextBlock3D const *TextBlock3DCPtr, *lpcTextBlock3D_t;
 struct TextBlock3D {
 	struct Node3D* _node3D;
 };
@@ -328,8 +298,6 @@ ORCA_API struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx);
 
 /// @brief 3D light source for scene illumination and shadow casting
 /** Light3D component */
-typedef struct Light3D Light3D_t, *Light3DPtr, *lpLight3D_t;
-typedef struct Light3D const *Light3DCPtr, *lpcLight3D_t;
 struct Light3D {
 	struct color Color; ///< RGB color and intensity of the light emission
 	struct vec2 SpotAngle; ///< Inner and outer cone angles for spot lights (X=inner, Y=outer in degrees)
@@ -342,8 +310,6 @@ ORCA_API struct Light3D* luaX_checkLight3D(lua_State *L, int idx);
 
 /// @brief Billboard sprite renderer for 2D images in 3D space
 /** SpriteView component */
-typedef struct SpriteView SpriteView_t, *SpriteViewPtr, *lpSpriteView_t;
-typedef struct SpriteView const *SpriteViewCPtr, *lpcSpriteView_t;
 struct SpriteView {
 	struct Texture* Image; ///< 2D image texture to display on the billboard sprite
 	struct vec4 Bounds; ///< Texture coordinates and sizing (X=U, Y=V, Z=width, W=height)

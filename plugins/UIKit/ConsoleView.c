@@ -13,7 +13,7 @@
 #define kMsgPaint 0x36b37bd3
 
 static uint32_t
-PointToData(ConsoleViewCPtr t, int mx, int my, uint32_t *cursor)
+PointToData(struct ConsoleView const* t, int mx, int my, uint32_t *cursor)
 {
   struct vec2 scrolled = VEC2_Sub(&(struct vec2){mx, my}, &t->_scroll);
   uint32_t x = scrolled.x / CONSOLE_CHAR_WIDTH;
@@ -33,7 +33,7 @@ struct tstate {
 };
 
 static lpcString_t
-_cmd(ConsoleViewPtr t, lpcString_t str, struct tstate *state)
+_cmd(struct ConsoleView *t, lpcString_t str, struct tstate *state)
 {
   uint32_t v[3];
   uint8_t cmd;
@@ -72,7 +72,7 @@ _cmd(ConsoleViewPtr t, lpcString_t str, struct tstate *state)
 }
 
 static void
-_println(ConsoleViewPtr t, int32_t index, lpcString_t text, size_t slen)
+_println(struct ConsoleView *t, int32_t index, lpcString_t text, size_t slen)
 {
   struct tstate state = { .foreground = 7, .item = (uint16_t)index };
   int c = t->Cursor;
@@ -110,7 +110,7 @@ pack_position(int32_t x, int32_t y)
 }
 
 static uint64_t
-query_unpack(struct Object *obj, ConsoleViewCPtr t, float x, float y)
+query_unpack(struct Object *obj, struct ConsoleView const* t, float x, float y)
 {
 #ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
   struct vec3 out = (struct vec3){x,y,0};
@@ -125,7 +125,7 @@ query_unpack(struct Object *obj, ConsoleViewCPtr t, float x, float y)
 
 static bool_t
 query_index_position(struct Object *o,
-                     ConsoleViewCPtr t,
+                     struct ConsoleView const* t,
                      int32_t i,
                      int32_t offx,
                      int32_t offy,

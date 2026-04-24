@@ -30,7 +30,7 @@ AX_##NAME(lua_State *L, renderer* self, ##__VA_ARGS__)
 //  return texture;
 //}
 
-lpShader_t
+struct Shader *
 renderer_CreateShader(lua_State* L, lpcString_t vert, lpcString_t frag) {
   luaX_require(L, "orca.renderer", 1);
   lua_getfield(L, -1, "Shader");

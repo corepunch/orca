@@ -6,7 +6,7 @@
 
 static float
 _GetContentSize(struct Object *hObject,
-                StackViewPtr pStackView,
+                struct StackView *pStackView,
                 enum Direction axis)
 {
   float value = 0;
@@ -19,7 +19,7 @@ _GetContentSize(struct Object *hObject,
 
 static uint32_t
 _Arrange(struct Object *hObject,
-         StackViewPtr pStackView,
+         struct StackView *pStackView,
          struct bounds primaryBounds,
          struct bounds oppositeBounds)
 {
@@ -65,7 +65,7 @@ _Arrange(struct Object *hObject,
   
   FOR_EACH_LAYOUTABLE(child, hObject)
   {
-    Node2DPtr subview = GetNode2D(child);
+    struct Node2D *subview = GetNode2D(child);
     struct Property *p = StackView_GetProperty(hObject, kStackViewAlignItems);
     int *alignment = &subview->_node->Alignment.Axis[!pStackView->Direction];
     LRESULT s;
@@ -117,7 +117,7 @@ _Arrange(struct Object *hObject,
 
 HANDLER(StackView, Node2D, MeasureOverride)
 {
-  Node2DPtr pNode2D = GetNode2D(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
   struct Size size = {
     pStackView->Direction == kDirectionHorizontal ? -pStackView->Spacing : 0,
     pStackView->Direction == kDirectionVertical ? -pStackView->Spacing : 0,
@@ -145,7 +145,7 @@ HANDLER(StackView, Node2D, MeasureOverride)
 
 HANDLER(StackView, Node2D, ArrangeOverride)
 {
-  Node2DPtr pNode2D = GetNode2D(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
   Node2D_ArrangeOverrideMsg_t r = *pArrangeOverride;
 
   switch (pStackView->Direction) {
@@ -170,7 +170,7 @@ HANDLER(StackView, Node2D, ArrangeOverride)
   {
     FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
     {
-      Node2DPtr subview = GetNode2D(hChild);
+      struct Node2D *subview = GetNode2D(hChild);
       float pos = Node2D_GetFrame(subview, kBox3FieldX + i);
       float size = Node2D_GetFrame(subview, kBox3FieldWidth + i);
       scrollSize[i] = MAX(scrollSize[i], pos + size);

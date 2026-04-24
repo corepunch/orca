@@ -22,7 +22,7 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
   struct Object *ws = FS_GetWorkspace();
   if (!ws) return NULL;
   FOR_EACH_OBJECT(project_obj, ws) {
-    lpProject_t project = GetProject(project_obj);
+    struct Project *project = GetProject(project_obj);
     if (!project || !project->ThemeLibrary) continue;
 //    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
     FOR_LOOP(i, project->NumThemeLibrary) {
@@ -294,7 +294,7 @@ FS_FreeFile(struct file* pFile)
 //}
 
 static void
-_InitPropertyTypes(lpProject_t project)
+_InitPropertyTypes(struct Project *project)
 {
   FOR_LOOP(i, project->NumPropertyTypes) {
     struct PropertyType *type = &project->PropertyTypes[i];
@@ -321,7 +321,7 @@ _InitPropertyTypes(lpProject_t project)
 }
 
 static void
-_InitProjectRefences(lua_State *L, lpProject_t project, lpcString_t szDirname)
+_InitProjectRefences(lua_State *L, struct Project *project, lpcString_t szDirname)
 {
   FOR_LOOP(i, project->NumProjectReferences) {
     path_t path = {0};
@@ -365,7 +365,7 @@ _TryLoadBundle(struct ClassDesc const *c, void* args)
   }
 }
 
-static lpProject_t
+static struct Project *
 _InitProject(lua_State *L, lpcString_t szDirname)
 {
   struct package_iterator it={.directory=szDirname,.L=L};
@@ -374,7 +374,7 @@ _InitProject(lua_State *L, lpcString_t szDirname)
 }
 
 static void
-_InitEnginePlugins(lua_State *L, lpcProject_t project)
+_InitEnginePlugins(lua_State *L, struct Project const *project)
 {
   FOR_LOOP(i, project->NumEnginePlugins) {
     lua_getglobal(L, "require");
@@ -399,7 +399,7 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
 //}
 
 //static void
-//_InitTheme(lua_State *L, lpProject_t project)
+//_InitTheme(lua_State *L, struct Project *project)
 //{
 //  if (project->ThemeLibrary) {
 //    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
@@ -420,7 +420,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
     return NULL;
   }
     
-  lpProject_t project = _InitProject(L, szDirname);
+  struct Project *project = _InitProject(L, szDirname);
   // Safe exit if project loading failed
   if (!project) {
     Con_Error("Failed to initialize project %s", szDirname);

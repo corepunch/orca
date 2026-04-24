@@ -13,7 +13,7 @@ ORCA_API int luaopen_orca_network(lua_State* L);
 
 ORCA_API struct property_program const*
 core_GetPrograms(void) {
-  return &core.programs;
+  return core.programs;
 }
 
 bool_t

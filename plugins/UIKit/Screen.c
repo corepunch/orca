@@ -53,7 +53,7 @@ _Pipeline2D(int width, int height)
 }
 
 static void
-_GetContentsMatrix(Node2DPtr pNode2D,
+_GetContentsMatrix(struct Node2D *pNode2D,
                     struct mat4* projection,
                     struct mat4* view)
 {
@@ -69,7 +69,7 @@ _GetContentsMatrix(Node2DPtr pNode2D,
 }
 
 static bool_t
-_IsOutOfBounds(Node2DPtr node, Node2D_Draw2DContentMsgPtr param)
+_IsOutOfBounds(struct Node2D *node, Node2D_Draw2DContentMsgPtr param)
 {
   if (param->ForceRender)
     return FALSE;
@@ -85,7 +85,7 @@ _IsOutOfBounds(Node2DPtr node, Node2D_Draw2DContentMsgPtr param)
 }
 
 static void
-_EnterStencilClip(Node2DPtr pNode2D, struct ViewDef* viewdef, uint8_t clipRef)
+_EnterStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef, uint8_t clipRef)
 {
   PIPELINESTATE ps;
   R_GetPipelineState(&ps);
@@ -148,7 +148,7 @@ draw_children(struct Object *hObject,
               Node2D_Draw2DContentMsgPtr pDraw2DContent,
               struct color fg)
 {
-  Node2DPtr node2D = GetNode2D(hObject);
+  struct Node2D *node2D = GetNode2D(hObject);
   DRAW2DCONTENTSTRUCT tmp = *pDraw2DContent;
   tmp.ForegroundColor = fg;
 
@@ -213,7 +213,7 @@ static void _RenderSubViews(struct Object *hObject) {
   FOR_EACH_CHILD(hObject, _RenderSubViews);
 
   struct image_info img;
-  Node2DPtr node2D = GetNode2D(hObject);
+  struct Node2D *node2D = GetNode2D(hObject);
   uint32_t dwFlags = OBJ_GetFlags(hObject);
 
   if (!node2D || !node2D->RenderTarget)
@@ -249,7 +249,7 @@ static void _RenderSubViews(struct Object *hObject) {
 // float __angle = 0;
 //
 static bool_t
-_FallThrough(ScreenCPtr s, NodeCPtr n, Screen_RenderScreenMsgPtr r)
+_FallThrough(struct Screen const* s, struct Node const* n, Screen_RenderScreenMsgPtr r)
 {
   if (s->ResizeMode==kResizeModeCanResize)
     return TRUE;
@@ -261,7 +261,7 @@ _FallThrough(ScreenCPtr s, NodeCPtr n, Screen_RenderScreenMsgPtr r)
 }
 
 HANDLER(Screen, Screen, RenderScreen) {
-  NodePtr node = GetNode(hObject);
+  struct Node *node = GetNode(hObject);
   float width = pRenderScreen->width;
   float height = pRenderScreen->height;
   struct Texture *rt = pRenderScreen->target;
@@ -368,7 +368,7 @@ Node2D_GetViewEntity(struct Node2D* node2d,
 }
 
 struct rect
-Node2D_GetBackgroundRect(Node2DPtr pNode2D)
+Node2D_GetBackgroundRect(struct Node2D *pNode2D)
 {
   return (struct rect){
     .width = Node2D_GetFrame(pNode2D, kBox3FieldWidth),
@@ -491,14 +491,14 @@ HANDLER(Node2D, Node2D, Draw2DContent)
 }
 
 HANDLER(Screen, Node2D, MeasureOverride) {
-  NodeCPtr n = GetNode(hObject);
-  Node2DPtr n2d = GetNode2D(hObject);
+  struct Node const* n = GetNode(hObject);
+  struct Node2D *n2d = GetNode2D(hObject);
   
 //#if defined(__EMSCRIPTEN__) || defined(__QNX__)
   if (pScreen->ResizeMode == kResizeModeCanResize) {
     struct AXsize size;
     if (axGetSize(&size)) {
-      NodePtr node = GetNode(hObject);
+      struct Node *node = GetNode(hObject);
       node->Size.Axis[0].Requested = (float)size.width;
       node->Size.Axis[1].Requested = (float)size.height;
     }
@@ -539,7 +539,7 @@ HANDLER(Screen, Object, Create) {
 //  struct AXsize size;
 //  if (pScreen->ResizeMode == kResizeModeCanResize) {
 //    if (axGetSize(&size)) {
-//      NodePtr node = GetNode(hObject);
+//      struct Node *node = GetNode(hObject);
 //      node->Size.Axis[0].Requested = (float)size.width;
 //      node->Size.Axis[1].Requested = (float)size.height;
 //    }
@@ -618,7 +618,7 @@ static void OBJ_SetTreeDirty(struct Object *obj) {
 }
 
 HANDLER(Screen, Window, Resized) {
-  NodePtr node = GetNode(hObject);
+  struct Node *node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(node->Size.Axis[0].Requested) ||
       isnan(node->Size.Axis[1].Requested)) {

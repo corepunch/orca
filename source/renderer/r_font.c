@@ -107,7 +107,7 @@ Font_Release(struct fontface* font)
 }
 
 static struct fontface*
-Font_LoadFromMemory(void* buffer, int fileSize, FontFamily_t* family)
+Font_LoadFromMemory(void* buffer, int fileSize, struct FontFamily* family)
 {
   FT_Face face;
   if (!fg.ft)
@@ -586,7 +586,7 @@ Text_Print(struct ViewText const* pViewText,
 }
 
 struct fontface*
-Font_Load(lpcString_t szFileName, lpFontFamily_t pFontFamily)
+Font_Load(lpcString_t szFileName, struct FontFamily *pFontFamily)
 {
   struct file* pFile = FS_LoadFile(szFileName);
   if (pFile) {

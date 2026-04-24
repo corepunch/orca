@@ -334,8 +334,6 @@ ORCA_API struct Window_ChangedScreenEventArgs* luaX_checkWindow_ChangedScreenEve
 
 /// @brief Base class for managing texture resources and their sampling parameters for rendering.
 /** Texture component */
-typedef struct Texture Texture_t, *TexturePtr, *lpTexture_t;
-typedef struct Texture const *TextureCPtr, *lpcTexture_t;
 struct Texture {
 	enum TextureFilter MinificationFilter; ///< Filtering method used when texture is rendered smaller than its original size.
 	enum TextureFilter MagnificationFilter; ///< Filtering method used when texture is rendered larger than its original size.
@@ -357,8 +355,6 @@ ORCA_API struct Texture* luaX_checkTexture(lua_State *L, int idx);
 
 /// @brief Represents a single, pre-loaded texture image for use in rendering operations.
 /** Image component */
-typedef struct Image Image_t, *ImagePtr, *lpImage_t;
-typedef struct Image const *ImageCPtr, *lpcImage_t;
 struct Image {
 	const char* Source; ///< Path to the texture image file to be loaded.
 	bool_t PremultiplyAlpha; ///< When `true`, multiplies RGB channels by alpha during loading for correct alpha blending.
@@ -390,8 +386,6 @@ ORCA_API struct Image* luaX_checkImage(lua_State *L, int idx);
 
 /// @brief Texture configured as a render target for off-screen rendering and post-processing effects.
 /** RenderTargetTexture component */
-typedef struct RenderTargetTexture RenderTargetTexture_t, *RenderTargetTexturePtr, *lpRenderTargetTexture_t;
-typedef struct RenderTargetTexture const *RenderTargetTextureCPtr, *lpcRenderTargetTexture_t;
 struct RenderTargetTexture {
 	int32_t Width; ///< The desired width in pixels for the render target texture, determining the horizontal resolution of rendered content.
 	int32_t Height; ///< The desired height in pixels for the render target texture, determining the vertical resolution of rendered content.
@@ -406,8 +400,6 @@ ORCA_API struct RenderTargetTexture* luaX_checkRenderTargetTexture(lua_State *L,
 
 /// @brief Cubemap texture assembled from six individual images, one for each face of a cube, used for environment mapping, reflections, and sky rendering.
 /** CubeMapTexture component */
-typedef struct CubeMapTexture CubeMapTexture_t, *CubeMapTexturePtr, *lpCubeMapTexture_t;
-typedef struct CubeMapTexture const *CubeMapTextureCPtr, *lpcCubeMapTexture_t;
 struct CubeMapTexture {
 	const char* BackImage; ///< Path to the image file for the back face (negative Z-axis) of the cubemap.
 	const char* FrontImage; ///< Path to the image file for the front face (positive Z-axis) of the cubemap.
@@ -421,8 +413,6 @@ ORCA_API struct CubeMapTexture* luaX_checkCubeMapTexture(lua_State *L, int idx);
 
 /// @brief Texture created from a shared macOS IOSurface for zero-copy GPU data sharing.
 /** IOSurfaceTexture component */
-typedef struct IOSurfaceTexture IOSurfaceTexture_t, *IOSurfaceTexturePtr, *lpIOSurfaceTexture_t;
-typedef struct IOSurfaceTexture const *IOSurfaceTextureCPtr, *lpcIOSurfaceTexture_t;
 struct IOSurfaceTexture {
 	int32_t IOSurface; ///< The IOSurface identifier used to look up and bind the shared surface as a texture.
 };
@@ -431,8 +421,6 @@ ORCA_API struct IOSurfaceTexture* luaX_checkIOSurfaceTexture(lua_State *L, int i
 
 /// @brief Vertex processing stage of the shader pipeline
 /** VertexShader component */
-typedef struct VertexShader VertexShader_t, *VertexShaderPtr, *lpVertexShader_t;
-typedef struct VertexShader const *VertexShaderCPtr, *lpcVertexShader_t;
 struct VertexShader {
 	int32_t Version; ///< GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)
 	enum FloatPrecision FloatPrecision; ///< Default floating-point precision for vertex shader calculations
@@ -443,8 +431,6 @@ ORCA_API struct VertexShader* luaX_checkVertexShader(lua_State *L, int idx);
 
 /// @brief Fragment (pixel) processing stage of the shader pipeline
 /** FragmentShader component */
-typedef struct FragmentShader FragmentShader_t, *FragmentShaderPtr, *lpFragmentShader_t;
-typedef struct FragmentShader const *FragmentShaderCPtr, *lpcFragmentShader_t;
 struct FragmentShader {
 	int32_t Version; ///< GLSL shader language version number (e.g., 150 for GLSL 1.50, 330 for GLSL 3.30)
 	enum FloatPrecision FloatPrecision; ///< Default floating-point precision for fragment shader calculations
@@ -455,8 +441,6 @@ ORCA_API struct FragmentShader* luaX_checkFragmentShader(lua_State *L, int idx);
 
 /// @brief Complete shader program definition combining vertex and fragment stages
 /** Shader component */
-typedef struct Shader Shader_t, *ShaderPtr, *lpShader_t;
-typedef struct Shader const *ShaderCPtr, *lpcShader_t;
 struct Shader {
 	enum BlendMode BlendMode; ///< The default blending mode for the shader, controlling how rendered output combines with the existing framebuffer content.
 	enum CompareFunc DepthTestFunction; ///< The default depth comparison function used for depth testing, determining which fragments are visible based on their depth values.
@@ -468,8 +452,6 @@ ORCA_API struct Shader* luaX_checkShader(lua_State *L, int idx);
 
 /// @brief Shader-based rendering material for advanced visual effects
 /** Material component */
-typedef struct Material Material_t, *MaterialPtr, *lpMaterial_t;
-typedef struct Material const *MaterialCPtr, *lpcMaterial_t;
 struct Material {
 	struct Shader* Shader; ///< Shader program for custom rendering
 	struct color GlobalAmbient; ///< Defines the global illumination color affecting all surfaces equally. Used to simulate indirect light in a scene.
@@ -490,8 +472,6 @@ ORCA_API struct Material* luaX_checkMaterial(lua_State *L, int idx);
 
 /// @brief Renderable 3D geometry component with material and model data
 /** Mesh component */
-typedef struct Mesh Mesh_t, *MeshPtr, *lpMesh_t;
-typedef struct Mesh const *MeshCPtr, *lpcMesh_t;
 struct Mesh {
 	const char* Source; ///< Path or identifier to the mesh geometry file or resource. Specifies where to load the 3D model data from.
 	struct Material* Material; ///< Reference to the material that defines the mesh's visual appearance. Controls shaders, textures, colors, and rendering properties applied to the geometry.
@@ -503,8 +483,6 @@ ORCA_API struct Mesh* luaX_checkMesh(lua_State *L, int idx);
 
 /// @brief TrueType font resource for text rendering
 /** FontFamily component */
-typedef struct FontFamily FontFamily_t, *FontFamilyPtr, *lpFontFamily_t;
-typedef struct FontFamily const *FontFamilyCPtr, *lpcFontFamily_t;
 struct FontFamily {
 	const char* Regular; ///< Path of the TrueType font file to be used as the regular font variant.
 	const char* Bold; ///< Path of the TrueType font file to be used as the bold font variant.
@@ -518,15 +496,11 @@ struct FontFamily {
 ORCA_API void luaX_pushFontFamily(lua_State *L, struct FontFamily const* FontFamily);
 ORCA_API struct FontFamily* luaX_checkFontFamily(lua_State *L, int idx);
 /** Trajectory component */
-typedef struct Trajectory Trajectory_t, *TrajectoryPtr, *lpTrajectory_t;
-typedef struct Trajectory const *TrajectoryCPtr, *lpcTrajectory_t;
 struct Trajectory {
 };
 ORCA_API void luaX_pushTrajectory(lua_State *L, struct Trajectory const* Trajectory);
 ORCA_API struct Trajectory* luaX_checkTrajectory(lua_State *L, int idx);
 /** Timeline component */
-typedef struct Timeline Timeline_t, *TimelinePtr, *lpTimeline_t;
-typedef struct Timeline const *TimelineCPtr, *lpcTimeline_t;
 struct Timeline {
 };
 ORCA_API void luaX_pushTimeline(lua_State *L, struct Timeline const* Timeline);

@@ -37,12 +37,12 @@ get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
 
 HANDLER(SKSpriteNode, SKNode, Render)
 {
-  SKNodePtr node = GetSKNode(hObject);
+  struct SKNode *node = GetSKNode(hObject);
   if (!node) return FALSE;
 
   float const refW = NODE2D_FRAME(GetNode2D(pRender->ViewDef->viewport), Size, 0).Actual;
   float const refH = NODE2D_FRAME(GetNode2D(pRender->ViewDef->viewport), Size, 1).Actual;
-  lpTexture_t image = pSKSpriteNode->Image;
+  struct Texture *image = pSKSpriteNode->Image;
   struct SpriteAnimation const *anim = pSKSpriteNode->Animation;
   struct mat3 texmat = MAT3_Identity();
   struct rect bbox = {0};

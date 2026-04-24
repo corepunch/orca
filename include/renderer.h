@@ -521,10 +521,11 @@ typedef enum
   FS_COUNT,
 } FontStyle;
 
+struct FontFamily;
 struct ViewTextRun
 {
   lpcString_t string;
-  lpcFontFamily_t fontFamily; // NOTE: must be second field for R_GetTextHash()
+  struct FontFamily const *fontFamily; // NOTE: must be second field for R_GetTextHash()
   FontStyle fontStyle;
   uint32_t fontSize;
   uint32_t fixedCharacterWidth;

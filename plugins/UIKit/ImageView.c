@@ -9,7 +9,7 @@
 /* Cancel and release an in-flight fetch stored in the ImageView.
    Sets both _fetch and _src_object to NULL. */
 static void
-_ImageView_CancelFetch(lpImageView_t pImageView)
+_ImageView_CancelFetch(struct ImageView *pImageView)
 {
   if (pImageView->_fetch) {
     NET_FetchCancel((fetch_handle_t)pImageView->_fetch);
@@ -23,7 +23,8 @@ _ImageView_CancelFetch(lpImageView_t pImageView)
 }
 
 static struct vec2
-_GetImageSize(struct Object *hObject, ImageViewPtr imageView)
+_GetImageSize(struct Object *hObject,
+              struct ImageView const *imageView)
 {
   struct vec2 size = { 0 };
   if (imageView->Source) {
@@ -89,7 +90,7 @@ check_images(struct _SHADERCONST *u, void* pVoid)
 
 HANDLER(ImageView, Node2D, DrawBrush)
 {
-  Node2DPtr pNode2D = GetNode2D(hObject);
+  struct Node2D *pNode2D = GetNode2D(hObject);
   uint32_t width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   uint32_t height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   struct vec2 imgsize = _GetImageSize(hObject, pImageView);
@@ -120,7 +121,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
   }
 #endif
 
-  lpTexture_t img = pDrawBrush->foreground ? pImageView->Source : NULL;
+  struct Texture *img = pDrawBrush->foreground ? pImageView->Source : NULL;
   Node2D_GetViewEntity(pNode2D, &entity, img, &pDrawBrush->brush);
   
   calculate_ninepatch(&(struct vec2){ width, height },

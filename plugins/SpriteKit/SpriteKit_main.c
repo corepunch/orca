@@ -4,7 +4,7 @@
 static int
 f_createAnimation(lua_State *L)
 {
-  lpTexture_t image = luaX_checkTexture(L, 1);
+  struct Texture *image = luaX_checkTexture(L, 1);
   luaL_checktype(L, 2, LUA_TTABLE);
   float framerate = (float)luaL_checknumber(L, 3);
 

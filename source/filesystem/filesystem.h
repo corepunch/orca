@@ -156,24 +156,18 @@ ORCA_API void luaX_pushProject_LoadProjectEventArgs(lua_State *L, struct Project
 ORCA_API struct Project_LoadProjectEventArgs* luaX_checkProject_LoadProjectEventArgs(lua_State *L, int idx);
 
 /** Workspace component */
-typedef struct Workspace Workspace_t, *WorkspacePtr, *lpWorkspace_t;
-typedef struct Workspace const *WorkspaceCPtr, *lpcWorkspace_t;
 struct Workspace {
 	event_t ReadCommands;
 };
 ORCA_API void luaX_pushWorkspace(lua_State *L, struct Workspace const* Workspace);
 ORCA_API struct Workspace* luaX_checkWorkspace(lua_State *L, int idx);
 /** Library component */
-typedef struct Library Library_t, *LibraryPtr, *lpLibrary_t;
-typedef struct Library const *LibraryCPtr, *lpcLibrary_t;
 struct Library {
 	bool_t IsExternal;
 };
 ORCA_API void luaX_pushLibrary(lua_State *L, struct Library const* Library);
 ORCA_API struct Library* luaX_checkLibrary(lua_State *L, int idx);
 /** Project component */
-typedef struct Project Project_t, *ProjectPtr, *lpProject_t;
-typedef struct Project const *ProjectCPtr, *lpcProject_t;
 struct Project {
 	bool_t HalfFloatTextureFormat;
 	bool_t HalfFloatTextureFormatLinear;
@@ -259,8 +253,6 @@ struct Project {
 ORCA_API void luaX_pushProject(lua_State *L, struct Project const* Project);
 ORCA_API struct Project* luaX_checkProject(lua_State *L, int idx);
 /** Directory component */
-typedef struct Directory Directory_t, *DirectoryPtr, *lpDirectory_t;
-typedef struct Directory const *DirectoryCPtr, *lpcDirectory_t;
 struct Directory {
 	const char* Path;
 	void* _monitoredfiles;
@@ -268,8 +260,6 @@ struct Directory {
 ORCA_API void luaX_pushDirectory(lua_State *L, struct Directory const* Directory);
 ORCA_API struct Directory* luaX_checkDirectory(lua_State *L, int idx);
 /** Package component */
-typedef struct Package Package_t, *PackagePtr, *lpPackage_t;
-typedef struct Package const *PackageCPtr, *lpcPackage_t;
 struct Package {
 	const char* FileName;
 	struct _PACK* _package;
@@ -277,30 +267,22 @@ struct Package {
 ORCA_API void luaX_pushPackage(lua_State *L, struct Package const* Package);
 ORCA_API struct Package* luaX_checkPackage(lua_State *L, int idx);
 /** LocaleReferenceItem component */
-typedef struct LocaleReferenceItem LocaleReferenceItem_t, *LocaleReferenceItemPtr, *lpLocaleReferenceItem_t;
-typedef struct LocaleReferenceItem const *LocaleReferenceItemCPtr, *lpcLocaleReferenceItem_t;
 struct LocaleReferenceItem {
 };
 ORCA_API void luaX_pushLocaleReferenceItem(lua_State *L, struct LocaleReferenceItem const* LocaleReferenceItem);
 ORCA_API struct LocaleReferenceItem* luaX_checkLocaleReferenceItem(lua_State *L, int idx);
 /** Tag component */
-typedef struct Tag Tag_t, *TagPtr, *lpTag_t;
-typedef struct Tag const *TagCPtr, *lpcTag_t;
 struct Tag {
 	bool_t TagIsInherited;
 };
 ORCA_API void luaX_pushTag(lua_State *L, struct Tag const* Tag);
 ORCA_API struct Tag* luaX_checkTag(lua_State *L, int idx);
 /** Entry component */
-typedef struct Entry Entry_t, *EntryPtr, *lpEntry_t;
-typedef struct Entry const *EntryCPtr, *lpcEntry_t;
 struct Entry {
 };
 ORCA_API void luaX_pushEntry(lua_State *L, struct Entry const* Entry);
 ORCA_API struct Entry* luaX_checkEntry(lua_State *L, int idx);
 /** ThemeDefaultValuesDictionary component */
-typedef struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionary_t, *ThemeDefaultValuesDictionaryPtr, *lpThemeDefaultValuesDictionary_t;
-typedef struct ThemeDefaultValuesDictionary const *ThemeDefaultValuesDictionaryCPtr, *lpcThemeDefaultValuesDictionary_t;
 struct ThemeDefaultValuesDictionary {
 };
 ORCA_API void luaX_pushThemeDefaultValuesDictionary(lua_State *L, struct ThemeDefaultValuesDictionary const* ThemeDefaultValuesDictionary);

@@ -443,7 +443,7 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
   if (!pBuffer || dwSize == 0) return NULL;
   struct Object *object = OBJ_Create(ID_Texture);
   if (!object) return NULL;
-  lpTexture_t texture = GetTexture(object);
+  struct Texture *texture = GetTexture(object);
   if (!texture) {
     OBJ_Release(NULL, object);
     return NULL;
@@ -508,7 +508,7 @@ IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
 }
 
 HANDLER(IOSurfaceTexture, Object, Start) {
-  lpTexture_t img = GetTexture(hObject);
+  struct Texture *img = GetTexture(hObject);
   if (!IOSurface_CreateTextureFrom(pIOSurfaceTexture->IOSurface, img)) {
     const GLsizei w = 2, h = 2;
     const uint32_t pixels[] = {
