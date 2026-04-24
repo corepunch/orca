@@ -367,20 +367,28 @@ int fetch_http(lua_State* L)
   return 0;
 }
 
+static int curl_initialized = 0;
+
 static void
 Net_Init(void)
 {
   Con_Printf("Initializing network");
-  
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  if (!curl_initialized) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl_initialized = 1;
+  }
 }
 
 static void
 Net_Shutdown(void)
 {
   Con_Printf("Shutting down network");
-  
-  curl_global_cleanup();
+
+  if (curl_initialized) {
+    curl_global_cleanup();
+    curl_initialized = 0;
+  }
 }
 
 /* ----------------------------------------------------------------------- *
@@ -393,6 +401,11 @@ ORCA_API fetch_handle_t
 NET_FetchBegin(const char *url)
 {
   if (!url || !*url) return NULL;
+
+  if (!curl_initialized) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl_initialized = 1;
+  }
 
   request_t *req = malloc(sizeof(request_t));
   if (!req) return NULL;
@@ -456,22 +469,35 @@ NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
   request_t *req = (request_t *)handle;
   long code = -1;
 
+  CURLcode result = CURLE_OK;
+  int done = 0;
   int msgs_left = 0;
   CURLMsg *msg;
   while ((msg = curl_multi_info_read(req->multi_handle, &msgs_left))) {
     if (msg->msg == CURLMSG_DONE) {
-      curl_easy_getinfo(req->easy_handle, CURLINFO_RESPONSE_CODE, &code);
+      done = 1;
+      result = msg->data.result;
+      if (result == CURLE_OK) {
+        curl_easy_getinfo(req->easy_handle, CURLINFO_RESPONSE_CODE, &code);
+      } else {
+        code = -1;
+      }
+      break;
     }
   }
 
-  *size_out = req->response.size;
-  *data_out = malloc(req->response.size + 1);
-  if (*data_out) {
-    memcpy(*data_out, req->response.data, req->response.size);
-    ((char *)*data_out)[req->response.size] = '\0';
-  } else {
-    *size_out = 0;
-    code = -1;
+  *data_out = NULL;
+  *size_out = 0;
+  if (done && result == CURLE_OK) {
+    *size_out = req->response.size;
+    *data_out = malloc(req->response.size + 1);
+    if (*data_out) {
+      memcpy(*data_out, req->response.data, req->response.size);
+      ((char *)*data_out)[req->response.size] = '\0';
+    } else {
+      *size_out = 0;
+      code = -1;
+    }
   }
 
   curl_multi_remove_handle(req->multi_handle, req->easy_handle);
@@ -504,6 +530,7 @@ typedef struct
 {
   int done;
   int success;
+  int cancelled;
   emscripten_fetch_t* fetch;
 } webgl_fetch_state_t;
 
@@ -514,6 +541,10 @@ on_fetch_success(emscripten_fetch_t* fetch)
   state->fetch = fetch;
   state->success = 1;
   state->done = 1;
+  if (state->cancelled) {
+    emscripten_fetch_close(fetch);
+    free(state);
+  }
 }
 
 static void
@@ -523,6 +554,10 @@ on_fetch_error(emscripten_fetch_t* fetch)
   state->fetch = fetch;
   state->success = 0;
   state->done = 1;
+  if (state->cancelled) {
+    emscripten_fetch_close(fetch);
+    free(state);
+  }
 }
 
 #define HTTP_OK 200
@@ -778,8 +813,15 @@ NET_FetchCancel(fetch_handle_t handle)
 {
   if (!handle) return;
   webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
-  if (state->fetch) emscripten_fetch_close(state->fetch);
-  free(state);
+  if (state->done) {
+    /* Callback already fired — safe to close and free immediately. */
+    if (state->fetch) emscripten_fetch_close(state->fetch);
+    free(state);
+  } else {
+    /* Fetch is still in-flight; mark cancelled and let the callback
+       close the fetch handle and free state once it completes. */
+    state->cancelled = 1;
+  }
 }
 
 #endif // __EMSCRIPTEN__
