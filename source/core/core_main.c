@@ -692,29 +692,9 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
-// Drain all pending property-change notifications.
-// Processes the per-property pending list built up by PROP_SetValue, firing
-// Lua on*Changed callbacks and state-manager transitions for each entry.
-// The count is reset before the loop so that any error in PROP_FireNotification
-// leaves the queue in a clean state; cascaded changes appended during the loop
-// are enqueued from index 0 onwards and will be processed on the next call.
-ORCA_API void core_DrainPropertyNotifications(lua_State* L) {
-  uint32_t i;
-  uint32_t count = core.pending_notification_count;
-  core.pending_notification_count = 0;
-  for (i = 0; i < count; i++) {
-    PROP_FireNotification(L, core.pending_notifications[i],
-                          core.pending_notifications[i]->object);
-  }
-}
-
-// Drain all pending events from the platform queue, dispatching each one.
-// Also drains property-change notifications first so tests that call
-// core.flushQueue() pick up both kinds of deferred work.
 ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
-  core_DrainPropertyNotifications(L);
   while (axPeekMessage(&msg)) {
     // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
     // (kEventResumeCoroutine path) has something to consume.  After each
