@@ -706,8 +706,7 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
-// Drain all pending events from the platform queue, dispatching each one.
-void core_FlushQueue(lua_State* L) {
+ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
@@ -719,6 +718,10 @@ void core_FlushQueue(lua_State* L) {
     lua_settop(L, top);
   }
 }
+
+
+
+
 
 void
 after_core_module_registered(lua_State* L)

@@ -22,7 +22,7 @@ extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selec
 extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
 
 ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
-ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable", "OldValue")
+ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
 ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")

@@ -63,21 +63,19 @@ PROP_Update(lpProperty_t property)
 bool_t
 PROP_IsNull(lpcProperty_t property)
 {
-  return property == NULL || !property->stateflags;
+  return property == NULL || !(property->flags & PF_MODIFIED);
 }
 
 void
 PROP_Clear(lpProperty_t property)
 {
-  FOR_LOOP(i, PropertyState_Count) {
-    if (property->stateflags & (1<<i)) {
-      if (property->pdesc->DataType == kDataTypeString) {
-        free(*(LPSTR*)PROP_GetState(property, i));
-      }
-    }
+  if (property->pdesc->DataType == kDataTypeString && property->value && *(LPSTR*)property->value) {
+    free(*(LPSTR*)property->value);
   }
-  memset(property->states, 0, PROP_GetSize(property) * PropertyState_Count);
-  property->stateflags = 0;
+  if (property->value) {
+    memset(property->value, 0, PROP_GetSize(property));
+  }
+  property->flags &= ~PF_MODIFIED;
   if (property->pdesc->DataType == kDataTypeString && property->value) {
     *(char**)property->value = NULL;
   }
@@ -87,10 +85,9 @@ PROP_Clear(lpProperty_t property)
 _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
   (void)L;
-  lpProperty_t property = ZeroAlloc(sizeof(struct Property) + pt->DataSize * PropertyState_Count);
+  lpProperty_t property = ZeroAlloc(sizeof(struct Property));
   property->object  = object;
   property->pdesc   = pt;
-  memset(property->states, 0xff, pt->DataSize * PropertyState_Count);
   return property;
 }
 
@@ -107,12 +104,9 @@ OBJ_ReleaseProperties(lpObject_t hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
-    if (p->pdesc->DataType == kDataTypeString) {
-      FOR_LOOP(i, PropertyState_Count) {
-        if (p->stateflags & (1 << i)) {
-          free(*(LPSTR*)PROP_GetState(p, i));
-        }
-      }
+    if (p->pdesc->DataType == kDataTypeString && p->value && *(LPSTR*)p->value) {
+      free(*(LPSTR*)p->value);
+      *(LPSTR*)p->value = NULL;
     }
     FOR_EACH_LIST(struct property_program, pp, core.programs) {
       if (pp->property == p) {

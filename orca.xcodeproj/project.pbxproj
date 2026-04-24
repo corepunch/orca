@@ -157,7 +157,6 @@
 		786F2B332E12EE7F00B519AB /* ed_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 786F2B152E12EE7F00B519AB /* ed_local.h */; };
 		7870404B2F6F197000A84406 /* property_core.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040472F6F197000A84406 /* property_core.c */; };
 		7870404C2F6F197000A84406 /* property_accessors.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040462F6F197000A84406 /* property_accessors.c */; };
-		7870404D2F6F197000A84406 /* property_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870404A2F6F197000A84406 /* property_lua.c */; };
 		7870404E2F6F197000A84406 /* property_events.c in Sources */ = {isa = PBXBuildFile; fileRef = 787040482F6F197000A84406 /* property_events.c */; };
 		787040502F6F197000A84406 /* core_properties.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040442F6F197000A84406 /* core_properties.h */; };
 		787040512F6F197000A84406 /* property_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 787040492F6F197000A84406 /* property_internal.h */; };
@@ -178,7 +177,7 @@
 		787045172F7EF53800A84406 /* UIKit_message.c in Headers */ = {isa = PBXBuildFile; fileRef = 787045162F7EF53100A84406 /* UIKit_message.c */; };
 		787045182F7EFAFA00A84406 /* UIKit_message.c in Sources */ = {isa = PBXBuildFile; fileRef = 787045162F7EF53100A84406 /* UIKit_message.c */; };
 		7872246D2F99F78600CE0F9A /* liborca.platform.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 783C97032F263E7600612323 /* liborca.platform.so */; };
-		7872246F2F9A106800CE0F9A /* property_flow.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870448E2F7BCA5400A84406 /* property_flow.c */; };
+		7872246F2F9A106800CE0F9A /* property_lua.c in Sources */ = {isa = PBXBuildFile; fileRef = 7870448E2F7BCA5400A84406 /* property_lua.c */; };
 		787224712F9A10F000CE0F9A /* geometry_export.c in Sources */ = {isa = PBXBuildFile; fileRef = 789A97D02F65490800FD32A9 /* geometry_export.c */; };
 		787224CE2F9A253C00CE0F9A /* io_open.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFAB2F673B5A00E6A765 /* io_open.c */; };
 		787224CF2F9A253C00CE0F9A /* Directory.c in Sources */ = {isa = PBXBuildFile; fileRef = 78A5AFA92F67395B00E6A765 /* Directory.c */; };
@@ -547,7 +546,6 @@
 		787040472F6F197000A84406 /* property_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_core.c; sourceTree = "<group>"; };
 		787040482F6F197000A84406 /* property_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_events.c; sourceTree = "<group>"; };
 		787040492F6F197000A84406 /* property_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = property_internal.h; sourceTree = "<group>"; };
-		7870404A2F6F197000A84406 /* property_lua.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_lua.c; sourceTree = "<group>"; };
 		787041702F6FDDD800A84406 /* object_accessors.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_accessors.c; sourceTree = "<group>"; };
 		787041712F6FDDD800A84406 /* object_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_core.c; sourceTree = "<group>"; };
 		787041722F6FDDD800A84406 /* object_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_events.c; sourceTree = "<group>"; };
@@ -556,7 +554,7 @@
 		787041752F6FDDD800A84406 /* object_lua_msg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_msg.c; sourceTree = "<group>"; };
 		787041762F6FDDD800A84406 /* object_lua_props.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_lua_props.c; sourceTree = "<group>"; };
 		787041772F6FDDD800A84406 /* object_properties.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = object_properties.c; sourceTree = "<group>"; };
-		7870448E2F7BCA5400A84406 /* property_flow.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_flow.c; sourceTree = "<group>"; };
+		7870448E2F7BCA5400A84406 /* property_lua.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = property_lua.c; sourceTree = "<group>"; };
 		787045162F7EF53100A84406 /* UIKit_message.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = UIKit_message.c; sourceTree = "<group>"; };
 		787224D72F9A6C7000CE0F9A /* fs_css.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = fs_css.c; sourceTree = "<group>"; };
 		78766BBE2C93208400A2DF11 /* Node3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node3D.c; sourceTree = "<group>"; };
@@ -1001,11 +999,10 @@
 		787040522F6F199900A84406 /* property */ = {
 			isa = PBXGroup;
 			children = (
-				7870448E2F7BCA5400A84406 /* property_flow.c */,
 				787040462F6F197000A84406 /* property_accessors.c */,
 				787040472F6F197000A84406 /* property_core.c */,
 				787040482F6F197000A84406 /* property_events.c */,
-				7870404A2F6F197000A84406 /* property_lua.c */,
+				7870448E2F7BCA5400A84406 /* property_lua.c */,
 				78FD53222D8F2A8800122823 /* property_program.c */,
 				78A8213E2C873EF400ACD0A9 /* property_runtime.c */,
 				787040492F6F197000A84406 /* property_internal.h */,
@@ -1941,7 +1938,7 @@
 				787224D42F9A253C00CE0F9A /* w_filesystem.c in Sources */,
 				787224D52F9A253C00CE0F9A /* fs_xml.c in Sources */,
 				787224712F9A10F000CE0F9A /* geometry_export.c in Sources */,
-				7872246F2F9A106800CE0F9A /* property_flow.c in Sources */,
+				7872246F2F9A106800CE0F9A /* property_lua.c in Sources */,
 				78A443C72F881CFC00AF52A4 /* AnimationPlayer.c in Sources */,
 				78A443C92F881D1C00AF52A4 /* EasingCurve.c in Sources */,
 				78BFEF8CA2F8DD2AB00AF52A4 /* StyleController.c in Sources */,
@@ -1959,7 +1956,6 @@
 				7839770E2E60A5AB00DCFC0F /* core_export.c in Sources */,
 				7870404B2F6F197000A84406 /* property_core.c in Sources */,
 				7870404C2F6F197000A84406 /* property_accessors.c in Sources */,
-				7870404D2F6F197000A84406 /* property_lua.c in Sources */,
 				7870404E2F6F197000A84406 /* property_events.c in Sources */,
 				781CA7752E1557A900FFCFD9 /* property_runtime.c in Sources */,
 				787041792F6FDDD800A84406 /* object_hierarchy.c in Sources */,

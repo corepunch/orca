@@ -73,7 +73,7 @@ PROP_GetValue(lpcProperty_t property)
 void
 PROP_SetDirty(lpProperty_t property, enum PropertyState state)
 {
-  property->stateflags |= 1 << state;
+  (void)state;
   property->flags |= PF_MODIFIED;
   if (property->pdesc->FullIdentifier != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
@@ -82,38 +82,35 @@ PROP_SetDirty(lpProperty_t property, enum PropertyState state)
   }
 }
 
-void*
-PROP_SetStateValue(lpProperty_t property,
-                   void const* source,
-                   enum PropertyState state)
+static void
+PROP_SetStoredValue(lpProperty_t property,
+                    void const* source)
 {
-  void* ptr = PROP_GetState(property, state);
   if (PROP_GetType(property) == kDataTypeString) {
-    if (property->stateflags & (1 << state)) {
-      free(*(LPSTR*)PROP_GetState(property, state));
+    if (*(LPSTR*)property->value) {
+      free(*(LPSTR*)property->value);
     }
-    *(LPSTR*)ptr = strdup(*(LPSTR*)source);
+    *(LPSTR*)property->value = strdup(*(LPSTR*)source);
   } else if (PROP_GetType(property) == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
     if (!object) {
-      memset(ptr, 0, PROP_GetSize(property));
-      property->stateflags &= ~(1<<state);
-      return ptr;
+      memset(property->value, 0, PROP_GetSize(property));
+      property->flags &= ~PF_MODIFIED;
+      return;
     }
     void* udata = OBJ_GetComponent(object, ident);
     if (!udata) {
-      memset(ptr, 0, PROP_GetSize(property));
-      property->stateflags &= ~(1<<state);
+      memset(property->value, 0, PROP_GetSize(property));
+      property->flags &= ~PF_MODIFIED;
       Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
-      return ptr;
+      return;
     }
-    memcpy(ptr, &udata, PROP_GetSize(property));
+    memcpy(property->value, &udata, PROP_GetSize(property));
   } else {
-    memcpy(ptr, source, PROP_GetSize(property));
+    memcpy(property->value, source, PROP_GetSize(property));
   }
   PROP_SetDirty(property, kPropertyStateNormal);
-  return ptr;
 }
 
 static void*
@@ -131,7 +128,7 @@ PROP_NormalizeObjectValue(lpcProperty_t property, void const* source)
 static bool_t
 PROP_IsSameValue(lpcProperty_t property, void const* source)
 {
-  if (!(property->value && source && (property->stateflags & (1 << kPropertyStateNormal))))
+  if (!(property->value && source && (property->flags & PF_MODIFIED)))
     return FALSE;
   if (PROP_GetType(property) == kDataTypeString) {
     lpcString_t old = *(lpcString_t*)property->value;
@@ -153,9 +150,7 @@ void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
   if (PROP_IsSameValue(property, source)) return;
-  memcpy(property->value,
-         PROP_SetStateValue(property, source, kPropertyStateNormal),
-         PROP_GetSize(property));
+  PROP_SetStoredValue(property, source);
   _SendMessage(property->object, Object, PropertyChanged, property);
   if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
     property->flags |= PF_NOTIFICATION_QUEUED;
