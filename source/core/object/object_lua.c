@@ -101,9 +101,6 @@ int OBJ_CreateFromLuaState(lua_State *L) {
     OBJ_AddChild(*ctx, pobj, FALSE);
   }
 
-  // send "create" message
-  OBJ_SendMessageW(pobj, ID_Object_Create, 0, L);
-
   _ParseArguments(L, pobj);
 
   // apply class-default style

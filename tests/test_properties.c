@@ -533,7 +533,7 @@ static void test_find_property_unknown(void) {
 
 static void test_multiple_properties_independent(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        struct Property *pCount, pLabel;
+        struct Property *pCount, *pLabel;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &pCount));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &pLabel));
         EXPECT(pCount != pLabel);
@@ -718,7 +718,7 @@ static void test_runtime_attach_and_update_string(void) {
  */
 static void test_runtime_property_reference(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        struct Property *propCount, propValue;
+        struct Property *propCount, *propValue;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
 
@@ -841,7 +841,7 @@ static void test_string_binding_unset_source_gives_empty(void) {
  */
 static void test_string_binding_value_propagates(void) {
     WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
-        struct Property *source, target;
+        struct Property *source, *target;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Source", &source));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
 
