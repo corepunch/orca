@@ -80,6 +80,82 @@ Before the animation refactor, `struct Object` had `animation`, `animlib`, and `
 
 ---
 
+## Compatibility Shim Audit
+
+This section records compatibility-oriented APIs and runtime shims that behave similarly to the removed `loadView` Lua callback path: they add hidden aliases, synthetic names, or wrapper behavior on top of the canonical engine model.
+
+### `onXChanged` magic callback assignment
+
+File: `source/core/object/object_lua_props.c`
+
+`OBJ_SetProperty` accepts names like `onTextChanged` even though no such property exists in the generated class metadata. The bridge parses the `on...Changed` naming convention at runtime, extracts the base property name, and registers a changed callback with `PROP_RegisterChangedCallback`.
+
+Why it is shim-like:
+
+- It creates a synthetic Lua API that is not represented as a real ORCA property or method.
+- It bypasses normal property lookup and injects behavior through a naming convention.
+- Tests currently depend on it as a WPF-style convenience layer rather than a canonical engine concept.
+
+### Short-name to full-name message aliases
+
+File: `source/core/core_main.c`
+
+`lua_pushclass` populates each class table with entries like `LeftButtonDown = "Node.LeftButtonDown"`, allowing Lua code to write `self:send(Node.LeftButtonDown)` instead of the fully qualified string.
+
+Why it is shim-like:
+
+- It duplicates canonical message names with convenience aliases.
+- The short names do not exist as first-class engine identifiers outside this Lua exposure layer.
+- The comment explicitly describes the feature as transparent aliasing.
+
+### Hidden object pseudo-properties and helper names
+
+File: `source/core/object/object_lua_props.c`
+
+The Lua object bridge intercepts names like `x`, `y`, `ActualX`, `ActualY`, and `populateInputs` before normal property resolution.
+
+Why it is shim-like:
+
+- These names are convenience affordances, not generated properties from XML.
+- They create a second lookup path alongside the canonical property system.
+- Getter and setter behavior is partly hardcoded in the Lua bridge instead of living in component metadata.
+
+### `LoadPrefabs` compatibility wrapper
+
+Files: `source/core/core.xml`, `source/core/object/object_component.c`
+
+`LoadPrefabs` is explicitly documented as a compatibility wrapper. It recursively traverses a subtree and dispatches `Node.LoadView` to prefab view objects.
+
+Why it is shim-like:
+
+- It preserves a wrapper API on top of the underlying message dispatch model.
+- The wrapper exists to provide legacy-style behavior over canonical direct message routing.
+- The XML docs already describe it as compatibility behavior, not the core abstraction.
+
+### `core.flushQueue()` drains more than the platform queue
+
+File: `source/core/core_main.c`
+
+`core_FlushQueue` drains deferred property notifications first and then drains the platform event queue. It also pushes a sentinel `nil` before dispatch to keep the Lua stack balanced through coroutine resume paths.
+
+Why it is shim-like:
+
+- The public name suggests "flush the event queue", but the function bundles additional deferred-work semantics.
+- Test code calling `core.flushQueue()` implicitly receives both queue draining and notification draining.
+- The sentinel stack balancing is a hidden runtime accommodation, not obvious from the API name.
+
+### Priority candidates for removal or redesign
+
+If the goal is to keep shrinking compatibility layers, the closest matches to the removed `loadView` shim are:
+
+1. `onXChanged` magic callback assignment.
+2. Short-name to full-name message aliases.
+3. `LoadPrefabs` wrapper.
+
+The object pseudo-properties and the broadened `core.flushQueue()` semantics are also notable, but they read more like convenience shortcuts than message-compatibility layers.
+
+---
+
 ## Property Animation (Tweens)
 
 ### `byte_t[]` from/to buffers need `memcpy` for alignment
