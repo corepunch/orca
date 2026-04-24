@@ -64,18 +64,26 @@ PROP_AttachProgram(lpProperty_t p,
                    struct token* program,
                    lpcString_t code)
 {
-  SafeSet(p->programSources[a], strdup(code), free);
-  SafeSet(p->programs[a], program, Token_Release);
+  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+    if (pp->property == p && pp->attr == a) {
+      SafeSet(pp->code, strdup(code), free);
+      SafeSet(pp->token, program, Token_Release);
+      return;
+    }
+  }
+  struct property_program* pp = ZeroAlloc(sizeof(struct property_program));
+  pp->property = p;
+  pp->attr = a;
+  pp->code = strdup(code);
+  pp->token = program;
+  ADD_TO_LIST(pp, core.programs);
 }
 
 bool_t
 PROP_HasProgram(lpProperty_t p)
 {
-  FOR_LOOP(i, PropertyAttribute_Count)
-  {
-    if (p->programs[i]) {
-      return TRUE;
-    }
+  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+    if (pp->property == p && pp->token != NULL) return TRUE;
   }
   return FALSE;
 }

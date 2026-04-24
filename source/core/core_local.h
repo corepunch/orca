@@ -78,6 +78,8 @@ struct file_loader {
   struct Object* (*fn)(const char* path);
 };
 
+struct property_program;
+
 struct game
 {
   lua_State *L;
@@ -91,6 +93,7 @@ struct game
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
+  struct property_program* programs;
 };
 
 // stateman.c
@@ -110,8 +113,6 @@ OBJ_GetUniqueID(lpcObject_t);
 lpObject_t
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);
 
-void
-OBJ_UpdateProperties(lpObject_t);
 
 void
 OBJ_EnumStyleClasses(lpObject_t, lpcString_t, struct style_class_selector*);

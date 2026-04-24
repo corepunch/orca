@@ -128,12 +128,10 @@ read_property(lua_State *L,
             lpcClassDesc_t cls = OBJ_FindClass(prop->TypeString);
             if (!cls) {
               luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name);
-              return;
             }
             lpObject_t obj = OBJ_Create(cls->ClassID);
             if (!obj) {
               luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
-              return;
             }
 
             int table_idx = lua_absindex(L, idx);

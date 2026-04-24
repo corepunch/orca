@@ -81,14 +81,6 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
   return numunf;
 }
 
-void
-OBJ_UpdateProperties(lpObject_t object)
-{
-  for (lpProperty_t p = object->properties; p; p = PROP_GetNext(p)) {
-    PROP_Update(p);
-  }
-  FOR_EACH_CHILD(object, OBJ_UpdateProperties);
-}
 
 int
 OBJ_GetInteger(lpcObject_t object, uint32_t ident, int fallback)

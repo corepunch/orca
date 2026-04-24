@@ -134,6 +134,7 @@ static void destroy_object(lpObject_t obj) {
     OBJ_SendMessageW(obj, ID_Object_Release, 0, NULL);
     OBJ_ReleaseComponents(obj);
     OBJ_ReleaseProperties(obj);
+    free(obj->Name);
     free(obj);
 }
 

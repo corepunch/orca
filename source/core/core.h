@@ -427,9 +427,6 @@ OBJ_SetProperty(struct lua_State*, struct Object*, const char*);
 ORCA_API int
 OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
 
-/// @brief Updates object properties.
-ORCA_API void
-OBJ_UpdateProperties(struct Object*);
 
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*

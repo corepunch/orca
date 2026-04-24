@@ -18,11 +18,18 @@ static size_t psize[] = {
   [kDataTypeObject] = sizeof(lpObject_t),
 };
 
+struct property_program {
+  struct Property*        property;
+  struct token*           token;
+  char*                   code;       // source code (for editor / XML serialization)
+  enum PropertyAttribute  attr;
+  uint32_t                updateFrame;
+  struct property_program* next;
+};
+
 struct Property
 {
   eDataType_t            type;
-  struct token*          programs[PropertyAttribute_Count];
-  LPSTR                  programSources[PropertyAttribute_Count];
   uint32_t               flags;
   void*                  value;
   lpObject_t             object;
@@ -30,7 +37,7 @@ struct Property
   uint32_t               updateFrame;
   uint32_t               stateflags;
   uint32_t               changeCallback; // Lua registry reference for the change callback function
-  lpProperty_t           next;
+  struct Property*       next;
   char                   states[];
 };
 
