@@ -83,7 +83,7 @@ bool_t
 PROP_HasProgram(lpProperty_t p)
 {
   FOR_EACH_LIST(struct property_program, pp, core.programs) {
-    if (pp->property == p) return TRUE;
+    if (pp->property == p && pp->token != NULL) return TRUE;
   }
   return FALSE;
 }

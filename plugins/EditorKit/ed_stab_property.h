@@ -50,10 +50,11 @@ void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
   FOR_EACH_LIST(struct property_program, pp, core.programs) {
     if (pp->property != prop) continue;
     xmlChar const *name = BAD_CAST pp->code;
+    xmlChar const *enabled = pp->token ? BAD_CAST "true" : BAD_CAST "false";
     xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
     xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
     xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->pdesc->Name);
-    xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST "true");
+    xmlSetProp(bnd, XMLSTR("Enabled"), enabled);
     if (pp->attr != kPropertyAttributeWholeProperty) {
       xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[pp->attr]);
     }

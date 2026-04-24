@@ -41,6 +41,7 @@ PROP_Update(lpProperty_t property)
   FOR_EACH_LIST(struct property_program, pp, core.programs)
   {
     if (pp->property != property) continue;
+    if (!pp->token) continue; // disabled / failed to compile
     if (pp->updateFrame == core.frame) continue;
     pp->updateFrame = core.frame;
     struct vm_register r = { 0 };
@@ -51,7 +52,7 @@ PROP_Update(lpProperty_t property)
 #endif
       Con_Error("Error in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      Token_Release(pp->token);
+      SafeDelete(pp->token, Token_Release);
       free(pp->code);
       free(pp);
     }
@@ -117,7 +118,7 @@ OBJ_ReleaseProperties(lpObject_t hobj)
     FOR_EACH_LIST(struct property_program, pp, core.programs) {
       if (pp->property == p) {
         REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-        Token_Release(pp->token);
+        SafeDelete(pp->token, Token_Release);
         free(pp->code);
         free(pp);
       }
@@ -131,6 +132,7 @@ PROP_RunAllPrograms(void)
 {
   FOR_EACH_LIST(struct property_program, pp, core.programs)
   {
+    if (!pp->token) continue; // disabled / failed to compile
     if (pp->updateFrame == core.frame) continue;
     pp->updateFrame = core.frame;
     pp->property->updateFrame = core.frame;
@@ -139,7 +141,7 @@ PROP_RunAllPrograms(void)
         !PROP_Import(pp->property, pp->attr, &r)) {
       Con_Error("Error in program %s/%s", OBJ_GetName(pp->property->object), pp->property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      Token_Release(pp->token);
+      SafeDelete(pp->token, Token_Release);
       free(pp->code);
       free(pp);
     }
