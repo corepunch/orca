@@ -161,11 +161,6 @@ int f_OBJ_GetProperty(lua_State *L) {
 	const char* Property = luaL_checkstring(L, 2);
 	return OBJ_GetProperty(L, this_, Property);
 }
-int f_OBJ_UpdateProperties(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_UpdateProperties(this_ );
-	return 0;
-}
 int f_OBJ_FindImplicitProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* name = luaL_checkstring(L, 2);
@@ -404,7 +399,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "send", f_OBJ_send },
 		{ "__newindex", f_OBJ_SetProperty },
 		{ "__index", f_OBJ_GetProperty },
-		{ "updateProperties", f_OBJ_UpdateProperties },
 		{ "findImplicitProperty", f_OBJ_FindImplicitProperty },
 		{ "findExplicitProperty", f_OBJ_FindExplicitProperty },
 		{ "attachPropertyProgram", f_OBJ_AttachPropertyProgram },

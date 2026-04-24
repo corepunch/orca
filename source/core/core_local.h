@@ -113,8 +113,6 @@ OBJ_GetUniqueID(lpcObject_t);
 lpObject_t
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);
 
-void
-OBJ_UpdateProperties(lpObject_t);
 
 void
 OBJ_EnumStyleClasses(lpObject_t, lpcString_t, struct style_class_selector*);

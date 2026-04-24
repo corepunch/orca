@@ -564,8 +564,8 @@ draw_screen(struct Object* hObject,
             uint32_t WindowHeight)
 {
   uint32_t const _size = get_size(hObject);
-
-  OBJ_UpdateProperties(hObject);
+  
+  PROP_RunAllPrograms();
   
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   
@@ -574,7 +574,7 @@ draw_screen(struct Object* hObject,
   if (get_size(hObject) != _size) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
-    OBJ_UpdateProperties(hObject);
+    PROP_RunAllPrograms();
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
   

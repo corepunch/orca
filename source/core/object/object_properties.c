@@ -81,12 +81,6 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
   return numunf;
 }
 
-void
-OBJ_UpdateProperties(lpObject_t object)
-{
-  (void)object;
-  PROP_RunAllPrograms();
-}
 
 int
 OBJ_GetInteger(lpcObject_t object, uint32_t ident, int fallback)
