@@ -158,13 +158,9 @@ PROP_SetValue(lpProperty_t property, void const* source)
          PROP_GetSize(property));
   _SendMessage(property->object, Object, PropertyChanged, property);
   if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
-    if (core.pending_notification_count < MAX_PENDING_NOTIFICATIONS) {
-      property->flags |= PF_NOTIFICATION_QUEUED;
-      core.pending_notifications[core.pending_notification_count++] = property;
-    } else {
-      Con_Printf("WARNING: property notification queue full, dropping %s\n",
-                 PROP_GetName(property));
-    }
+    property->flags |= PF_NOTIFICATION_QUEUED;
+    axPostMessageW(property->object, ID_PropertyChangedMessage,
+                   PROP_GetShortID(property), property);
   }
 }
 

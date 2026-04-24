@@ -170,7 +170,7 @@ enum
   PF_HASCHANGECALLBACK = (1 << 5),
   PF_SPECIALIZED = (1 << 6),
   PF_PROPERTY_TYPE = (1 << 7),
-  PF_NOTIFICATION_QUEUED = (1 << 8), // notification is pending in the drain list
+  PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"

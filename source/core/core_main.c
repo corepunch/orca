@@ -420,19 +420,32 @@ static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
 LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
-  shortStr_t comp={0};
-  if (e->wParam & AX_MOD_CTRL) strcat(comp, "ctrl+");
-  if (e->wParam & AX_MOD_ALT) strcat(comp, "alt+");
-  if (e->wParam & AX_MOD_SHIFT) strcat(comp, "shift+");
-  if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
-  strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
     case kEventWindowPaint:
     case kEventWindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);
       core_AdvanceFrame();
       return FALSE;
+    case ID_PropertyChangedMessage: {
+      lpObject_t object = e->target;
+      lpProperty_t property = e->lParam;
+      if (!property && object && e->wParam) {
+        property = PROP_FindByShortID(OBJ_GetProperties(object), e->wParam);
+      }
+      if (!property) {
+        return FALSE;
+      }
+      PROP_FireNotification(L, property, property->object ? property->object : object);
+      return TRUE;
+    }
     case kEventKeyDown:
+    {
+      shortStr_t comp={0};
+      if (e->wParam & AX_MOD_CTRL) strcat(comp, "ctrl+");
+      if (e->wParam & AX_MOD_ALT) strcat(comp, "alt+");
+      if (e->wParam & AX_MOD_SHIFT) strcat(comp, "shift+");
+      if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
+      strcat(comp, axKeynumToString(e->wParam));
       lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);
       lua_getfield(L, -1, comp);
       if (lua_isstring(L, -1)) {
@@ -458,6 +471,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       }
       lua_pop(L, 2);
       return FALSE;
+    }
   }
   return FALSE;
 }
@@ -692,29 +706,10 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
-// Drain all pending property-change notifications.
-// Processes the per-property pending list built up by PROP_SetValue, firing
-// Lua on*Changed callbacks and state-manager transitions for each entry.
-// The count is reset before the loop so that any error in PROP_FireNotification
-// leaves the queue in a clean state; cascaded changes appended during the loop
-// are enqueued from index 0 onwards and will be processed on the next call.
-ORCA_API void core_DrainPropertyNotifications(lua_State* L) {
-  uint32_t i;
-  uint32_t count = core.pending_notification_count;
-  core.pending_notification_count = 0;
-  for (i = 0; i < count; i++) {
-    PROP_FireNotification(L, core.pending_notifications[i],
-                          core.pending_notifications[i]->object);
-  }
-}
-
 // Drain all pending events from the platform queue, dispatching each one.
-// Also drains property-change notifications first so tests that call
-// core.flushQueue() pick up both kinds of deferred work.
-ORCA_API void core_FlushQueue(lua_State* L) {
+void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
-  core_DrainPropertyNotifications(L);
   while (axPeekMessage(&msg)) {
     // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
     // (kEventResumeCoroutine path) has something to consume.  After each
@@ -724,10 +719,6 @@ ORCA_API void core_FlushQueue(lua_State* L) {
     lua_settop(L, top);
   }
 }
-
-
-
-
 
 void
 after_core_module_registered(lua_State* L)

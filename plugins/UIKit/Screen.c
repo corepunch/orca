@@ -565,8 +565,7 @@ draw_screen(lua_State* L,
             uint32_t WindowHeight)
 {
   uint32_t const _size = get_size(hObject);
-  
-  core_DrainPropertyNotifications(L);
+
   OBJ_UpdateProperties(hObject);
   
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
