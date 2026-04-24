@@ -5,7 +5,7 @@
 #include "property_internal.h"
 
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
-extern struct Object* FS_LoadObjectFromXML(const char* path);
+extern struct Object* FS_LoadObject(const char* path);
 extern int f_msgSend(lua_State *L);
 
 ORCA_API int
@@ -25,7 +25,7 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
           return TRUE;
         }
       }
-      Con_Printf("parse_property(%s): Invalid enum value for property '%s'", str, prop->Name);
+      Con_Error("Invalid enum value %s for property '%s'", str, prop->Name);
       return FALSE;
     case kDataTypeFloat:
       *(float*)valueptr = atof(str);
@@ -40,12 +40,12 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
     case kDataTypeStruct:
       if (OBJ_ParseStruct(prop->TypeString, str, valueptr, (size_t)prop->DataSize))
         return TRUE;
-      Con_Printf("parse_property: no C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
+      Con_Error("No C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
       return FALSE;
     case kDataTypeObject: {
-      struct Object *loaded = FS_LoadObjectFromXML(str);
+      struct Object *loaded = FS_LoadObject(str);
       if (!loaded) {
-        Con_Printf("parse_property: failed to load object '%s' for property '%s'", str, prop->Name);
+        Con_Error("Failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;
       }
       *(struct Object **)valueptr = loaded;
@@ -54,7 +54,7 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
 //    case kDataTypeEvent:
 //      return TRUE;
     default:
-      Con_Printf("parse_property(%s): Unsupported property type %d for parsing", prop->Name, prop->DataType);
+      Con_Error("Unsupported property type %d for parsing of property %s", prop->DataType, prop->Name);
       return FALSE;
   }
   return TRUE;

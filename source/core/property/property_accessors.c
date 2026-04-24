@@ -71,9 +71,8 @@ PROP_GetValue(struct Property const *property)
 }
 
 void
-PROP_SetDirty(struct Property *property, enum PropertyState state)
+PROP_SetDirty(struct Property *property)
 {
-  (void)state;
   property->flags |= PF_MODIFIED;
   if (property->pdesc->FullIdentifier != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
@@ -86,6 +85,11 @@ static void
 PROP_SetStoredValue(struct Property *property,
                     void const* source)
 {
+  if (property->pdesc->IsArray) {
+    memcpy(property->value, source, sizeof(void*) + sizeof(int));
+    PROP_SetDirty(property);
+    return;
+  }
   if (PROP_GetType(property) == kDataTypeString) {
     if (*(LPSTR*)property->value) {
       free(*(LPSTR*)property->value);
@@ -110,7 +114,7 @@ PROP_SetStoredValue(struct Property *property,
   } else {
     memcpy(property->value, source, PROP_GetSize(property));
   }
-  PROP_SetDirty(property, kPropertyStateNormal);
+  PROP_SetDirty(property);
 }
 
 static void*

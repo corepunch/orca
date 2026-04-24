@@ -200,7 +200,7 @@ ORCA_API void
 PROP_SetStringValue(struct Property *, char const* source);
 
 ORCA_API void
-PROP_SetDirty(struct Property *property, enum PropertyState state);
+PROP_SetDirty(struct Property *property);
 
 ORCA_API bool_t
 PROP_IsNull(struct Property const *);

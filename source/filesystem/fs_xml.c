@@ -228,7 +228,7 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
   }
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  return FS_LoadObjectFromXml((char*)tmpl);
+  return FS_LoadObject((char*)tmpl);
 }
 
 // Build an Object tree from an XML element node.
@@ -239,22 +239,31 @@ static struct Object *
 _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 {
   lpcString_t tag = (lpcString_t)element->name;
-
+  struct Object *obj = NULL;
+  bool_t prefab = FALSE;
+  
   // PrefabPlaceholder: handled separately; it manages Start dispatch itself
   if (!strcmp(tag, "LayerPrefabPlaceholder") ||
       !strcmp(tag, "ObjectPrefabPlaceholder") ||
       !strcmp(tag, "LibraryPlaceholder"))
   {
-    return _HandlePrefabPlaceholder(element);
+    obj = _HandlePrefabPlaceholder(element);
+    prefab = TRUE;
   }
-
-  struct ClassDesc const *cls = OBJ_FindClass(tag);
-  if (!cls) {
-    Con_Error("Unknown element type '%s'", tag);
+  else
+  {
+    struct ClassDesc const *cls = OBJ_FindClass(tag);
+    if (!cls) {
+      Con_Error("Unknown element type '%s'", tag);
+      return NULL;
+    }
+    obj = OBJ_Create(cls->ClassID);
+  }
+  
+  if (!obj) {
+    Con_Error("Can not allocate object");
     return NULL;
   }
-
-  struct Object *obj = OBJ_Create(cls->ClassID);
 
   // Parse all XML attributes as object properties
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
@@ -310,12 +319,14 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
                !strcmp(tag, "StyleSheet")    ||
                !strcmp(tag, "ValueTicker")) {
       // Lua-only elements: no-op in the C XML parser
-    } else {
+    } else if (!prefab) {
       // Regular child object: recurse and attach (children always get Start)
       struct Object *child = _FS_ConstructNode(sub, TRUE);
       if (child) {
         OBJ_AddChild(obj, child, FALSE);
       }
+    } else {
+      Con_Error("Can't parse node %s", tag);
     }
   }
 
@@ -339,7 +350,7 @@ FS_LoadObjectFromXml(lpcString_t path)
                                 path, NULL, XML_FLAGS);
     FS_FreeFile(fp);
     if (!doc) {
-      Con_Error("FS_LoadObjectFromXml: failed to parse '%s'", path);
+      Con_Error("Failed to parse '%s'", path);
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
@@ -350,6 +361,9 @@ FS_LoadObjectFromXml(lpcString_t path)
 //      OBJ_RegisterPrefab(result, path);
     }
     return result;
+  } else {
+    Con_Error("Failed to load '%s'", path);
+    return NULL;
   }
   return NULL;
 }

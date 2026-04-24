@@ -27,6 +27,8 @@ OBJ_Create(uint32_t class_id) {
   if (cls->DefaultName) {
     OBJ_SetName(object, cls->DefaultName);
   }
+  // send "create" message
+  OBJ_SendMessageW(object, ID_Object_Create, 0, NULL);
   return object;
 }
 
