@@ -12,21 +12,20 @@ static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id) {
-  return OBJ_Create(NULL, OBJ_FindClassW(class_id));
+  return OBJ_Create(OBJ_FindClassW(class_id));
 }
 
 ORCA_API lpObject_t
-OBJ_Create(lua_State* L, lpcClassDesc_t cls)
+OBJ_Create(lpcClassDesc_t cls)
 {
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->unique = ++unique_counter;
-  object->domain = L;
   OBJ_AddComponent(object, cls->ClassID);
   OBJ_SetDirty(object);
-  if (L && cls->DefaultName) {
+  if (cls->DefaultName) {
     OBJ_SetName(object, cls->DefaultName);
   }
   return object;
@@ -81,10 +80,6 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
-  if (!L) {
-    L = pobj->domain;
-  }
-
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(pobj);

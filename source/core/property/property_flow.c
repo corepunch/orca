@@ -125,8 +125,7 @@ read_property(lua_State *L,
           break;
         case LUA_TTABLE:
           {
-            lpObject_t OBJ_Create(lua_State* L, lpcClassDesc_t cls);
-            lpObject_t obj = OBJ_Create(L, OBJ_FindClass(prop->TypeString));
+            lpObject_t obj = OBJ_Create(OBJ_FindClass(prop->TypeString));
             if (!obj) {
               luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
               return;

@@ -164,7 +164,7 @@ _HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
     Con_Error("AnimationCurve class not found");
     return;
   }
-  lpObject_t curve = OBJ_Create(NULL, cls);
+  lpObject_t curve = OBJ_Create(cls);
 
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
@@ -254,7 +254,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
     return NULL;
   }
 
-  lpObject_t obj = OBJ_Create(NULL, cls);
+  lpObject_t obj = OBJ_Create(cls);
 
   // Parse all XML attributes as object properties
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
