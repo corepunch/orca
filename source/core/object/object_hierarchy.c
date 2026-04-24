@@ -2,7 +2,7 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
+struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is_template)
 {
   if (child->parent) {
     REMOVE_FROM_LIST(struct Object, child, child->parent->children);
@@ -17,8 +17,8 @@ lpObject_t OBJ_AddChild(lpObject_t self, lpObject_t child, bool_t is_template)
   return child;
 }
 
-lpObject_t
-OBJ_FindImmediateChild(lpObject_t object, uint32_t identifier)
+struct Object *
+OBJ_FindImmediateChild(struct Object *object, uint32_t identifier)
 {
   FOR_EACH_LIST(struct Object, child, object->children)
   {
@@ -29,8 +29,8 @@ OBJ_FindImmediateChild(lpObject_t object, uint32_t identifier)
   return NULL;
 }
 
-lpObject_t
-OBJ_FindByPath(lpObject_t object, lpcString_t szObjectPath)
+struct Object *
+OBJ_FindByPath(struct Object *object, lpcString_t szObjectPath)
 {
   if (*szObjectPath == '\0')
     return object;
@@ -48,7 +48,7 @@ OBJ_FindByPath(lpObject_t object, lpcString_t szObjectPath)
     }
   }
   int const dwID = fnv1a32_range(szObjectPath, szSplit);
-  lpObject_t pChild = OBJ_FindChildByID(object, dwID);
+  struct Object *pChild = OBJ_FindChildByID(object, dwID);
   if (pChild) {
     return *szSplit ? OBJ_FindByPath(pChild, ++szSplit) : pChild;
   } else {
@@ -56,8 +56,8 @@ OBJ_FindByPath(lpObject_t object, lpcString_t szObjectPath)
   }
 }
 
-lpProperty_t
-OBJ_FindPropertyByPath(lpObject_t object, lpcString_t path)
+struct Property *
+OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
 {
   lpcString_t split = path;
   for (; *split && *split != '/'; split++)
@@ -77,13 +77,13 @@ OBJ_FindPropertyByPath(lpObject_t object, lpcString_t path)
     if (object->identifier == identifier) {
       return OBJ_FindPropertyByPath(object, ++split);
     } else {
-      lpObject_t child = OBJ_FindImmediateChild(object, identifier);
+      struct Object *child = OBJ_FindImmediateChild(object, identifier);
       return child ? OBJ_FindPropertyByPath(child, ++split) : NULL;
     }
   } else {
-    lpProperty_t plist = OBJ_GetProperties(object);
-//    lpProperty_t p = PROP_FindByFullName(plist, path);
-    lpProperty_t p;
+    struct Property *plist = OBJ_GetProperties(object);
+//    struct Property *p = PROP_FindByFullName(plist, path);
+    struct Property *p;
     if (SUCCEEDED(OBJ_FindLongProperty(object, fnv1a32(path), &p))) {
       return p;
     } else if (!strcmp(path, "Material.BlendIntensity")||
@@ -96,8 +96,8 @@ OBJ_FindPropertyByPath(lpObject_t object, lpcString_t path)
   }
 }
 
-lpObject_t
-OBJ_FindChild(lpObject_t object,
+struct Object *
+OBJ_FindChild(struct Object *object,
               lpcString_t name,
               bool_t recursive)
 {
@@ -105,7 +105,7 @@ OBJ_FindChild(lpObject_t object,
     if (child->Name && !strcmp(child->Name, name)) {
       return child;
     }
-    lpObject_t found;
+    struct Object *found;
     if (recursive && (found = OBJ_FindChild(child, name, recursive))) {
       return found;
     }
@@ -113,7 +113,7 @@ OBJ_FindChild(lpObject_t object,
   return NULL;
 }
 
-lpObject_t OBJ_FindChildByID(lpObject_t object, uint32_t id) {
+struct Object *OBJ_FindChildByID(struct Object *object, uint32_t id) {
   FOR_EACH_LIST(struct Object, pChild, object->children)
   {
     if (pChild->identifier == id)
@@ -122,8 +122,8 @@ lpObject_t OBJ_FindChildByID(lpObject_t object, uint32_t id) {
   return NULL;
 }
 
-lpObject_t
-OBJ_FindChildOfClass(lpObject_t self, uint32_t comp_id)
+struct Object *
+OBJ_FindChildOfClass(struct Object *self, uint32_t comp_id)
 {
   FOR_EACH_OBJECT(it, self) {
     if (OBJ_GetComponent(it, comp_id)) {
@@ -133,8 +133,8 @@ OBJ_FindChildOfClass(lpObject_t self, uint32_t comp_id)
   return NULL;
 }
 
-lpObject_t
-OBJ_FindParentOfClass(lpObject_t self, uint32_t comp_id)
+struct Object *
+OBJ_FindParentOfClass(struct Object *self, uint32_t comp_id)
 {
   if (OBJ_GetComponent(self, comp_id)) {
     return self;
@@ -146,24 +146,24 @@ OBJ_FindParentOfClass(lpObject_t self, uint32_t comp_id)
 }
 
 void
-OBJ_MoveToFront(lpObject_t object)
+OBJ_MoveToFront(struct Object *object)
 {
   if (object->parent) {
     REMOVE_FROM_LIST(struct Object, object, object->parent->children);
     if (!object->parent->children) {
       ADD_TO_LIST(object, object->parent->children);
     } else {
-      lpObject_t it = object->parent->children;
+      struct Object *it = object->parent->children;
       while (it->next) it = it->next;
       it->next = object;
     }
   }
 }
 
-lpObject_t
-OBJ_GetModal(lpcObject_t self)
+struct Object *
+OBJ_GetModal(struct Object const *self)
 {
-  if (OBJ_GetComponent((lpObject_t)self, ID_Screen)) {
+  if (OBJ_GetComponent((struct Object *)self, ID_Screen)) {
     return self->next;
   } else {
     return NULL;
@@ -172,7 +172,7 @@ OBJ_GetModal(lpcObject_t self)
 
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
-  struct Screen* modal = GetScreen((lpObject_t)ctx);
+  struct Screen* modal = GetScreen((struct Object *)ctx);
   if (!isnan(modal->DialogResult)) {
     if (modal->DialogResult) {
       lua_pushboolean(L, TRUE);
@@ -181,7 +181,7 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
       lua_pushboolean(L, FALSE);
       lua_pushstring(L, "Cancelled");
     }
-    OBJ_RemoveFromParent((lpObject_t)ctx);
+    OBJ_RemoveFromParent((struct Object *)ctx);
     return 2; // resume Lua script after ShowModal()
   } else {
     return lua_yieldk(L, 0, ctx, modal_continue);
@@ -189,7 +189,7 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 }
 
 int
-OBJ_ShowModal(lua_State* L, lpObject_t self, lpObject_t modal)
+OBJ_ShowModal(lua_State* L, struct Object *self, struct Object *modal)
 {
   while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
     self = OBJ_GetParent(self);
@@ -201,7 +201,7 @@ OBJ_ShowModal(lua_State* L, lpObject_t self, lpObject_t modal)
   if (modal->parent) {
     REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
   }
-  lpObject_t *next = &self->next;
+  struct Object **next = &self->next;
   while (*next) next = &(*next)->next;
   *next = modal;
   modal->parent = self;

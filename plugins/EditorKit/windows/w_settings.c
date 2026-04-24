@@ -65,11 +65,11 @@ lpcString_t cats[] = {
   NULL
 };
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 OBJ_Create(uint32_t class_id);
 
 EDWINPROC(ProjectSettings) {
-  static lpObject_t obj = NULL;
+  static struct Object *obj = NULL;
   if (!obj) obj = OBJ_Create(ID_Project);
   switch (msg) {
     case EVT_CREATE:

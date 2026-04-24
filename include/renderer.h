@@ -398,8 +398,8 @@ struct ViewDef
   struct mat4 viewMatrix;
   struct vec2 viewSize;
   struct vec2 screenSize;
-  lpObject_t renderPass;
-  lpObject_t viewport;
+  struct Object *renderPass;
+  struct Object *viewport;
   struct view_light lights[MAX_VIEW_LIGHTS];
   float stereoSeparation;
   uint32_t flags;
@@ -561,7 +561,7 @@ enum ServerWindowProperties
 
 //CLASS_TYPE(ServerWindow, 0x195326fe, Object)
 //{
-//  lpObject_t RootView;
+//  struct Object *RootView;
 //  uint32_t Width;
 //  uint32_t Height;
 //};
@@ -612,7 +612,7 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 // Resource operations
 ORCA_API HRESULT Texture_Create(PCREATEIMGSTRUCT, struct Texture**);
 ORCA_API HRESULT Texture_Release(struct Texture*);
-ORCA_API lpObject_t R_LoadImageFromMemory(void*, uint32_t);
+ORCA_API struct Object *R_LoadImageFromMemory(void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);
 ORCA_API HRESULT R_EndFrame(void);
 ORCA_API void R_SetViewportRect(struct rect const *rect);

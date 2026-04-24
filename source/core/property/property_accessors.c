@@ -1,7 +1,7 @@
 #include "property_internal.h"
 
-lpProperty_t
-PROP_FindByLongID(lpProperty_t list, uint32_t identifier) {
+struct Property *
+PROP_FindByLongID(struct Property *list, uint32_t identifier) {
   FOR_EACH_LIST(struct Property, property, list) {
     if (property->pdesc->FullIdentifier == identifier) {
       return property;
@@ -10,8 +10,8 @@ PROP_FindByLongID(lpProperty_t list, uint32_t identifier) {
   return NULL;
 }
 
-lpProperty_t
-PROP_FindByShortID(lpProperty_t list, uint32_t identifier) {
+struct Property *
+PROP_FindByShortID(struct Property *list, uint32_t identifier) {
   FOR_EACH_LIST(struct Property, property, list) {
     if (property->pdesc->ShortIdentifier == identifier) {
       return property;
@@ -20,48 +20,48 @@ PROP_FindByShortID(lpProperty_t list, uint32_t identifier) {
   return NULL;
 }
 
-lpProperty_t
-PROP_GetNext(lpcProperty_t property)
+struct Property *
+PROP_GetNext(struct Property const *property)
 {
   return property->next;
 }
 
 uint32_t
-PROP_GetFlags(lpcProperty_t property)
+PROP_GetFlags(struct Property const *property)
 {
   return property->flags;
 }
 
 void
-PROP_SetFlag(lpProperty_t property, uint32_t value)
+PROP_SetFlag(struct Property *property, uint32_t value)
 {
   property->flags |= value;
 }
 
 eDataType_t
-PROP_GetType(lpcProperty_t property)
+PROP_GetType(struct Property const *property)
 {
   return property->pdesc->DataType;
 }
 
 uint32_t
-PROP_GetShortID(lpcProperty_t property)
+PROP_GetShortID(struct Property const *property)
 {
   return property->pdesc->ShortIdentifier;
 }
 
 lpcString_t
-PROP_GetUserData(lpcProperty_t property)
+PROP_GetUserData(struct Property const *property)
 {
   return property->pdesc->TypeString;
 }
 
 void const*
-PROP_GetValue(lpcProperty_t property)
+PROP_GetValue(struct Property const *property)
 {
   // If this is a component, not a direct object reference
   if (PROP_GetType(property) == kDataTypeObject && property->pdesc->TypeString) {
-    static lpObject_t obj[256];
+    static struct Object *obj[256];
     static uint8_t i = 0;
     obj[i] = CMP_GetObject(*(void **)property->value);
     return &obj[i++];
@@ -71,7 +71,7 @@ PROP_GetValue(lpcProperty_t property)
 }
 
 void
-PROP_SetDirty(lpProperty_t property, enum PropertyState state)
+PROP_SetDirty(struct Property *property, enum PropertyState state)
 {
   (void)state;
   property->flags |= PF_MODIFIED;
@@ -83,7 +83,7 @@ PROP_SetDirty(lpProperty_t property, enum PropertyState state)
 }
 
 static void
-PROP_SetStoredValue(lpProperty_t property,
+PROP_SetStoredValue(struct Property *property,
                     void const* source)
 {
   if (PROP_GetType(property) == kDataTypeString) {
@@ -93,7 +93,7 @@ PROP_SetStoredValue(lpProperty_t property,
     *(LPSTR*)property->value = strdup(*(LPSTR*)source);
   } else if (PROP_GetType(property) == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
-    lpObject_t object = *(lpObject_t *)source;
+    struct Object *object = *(struct Object **)source;
     if (!object) {
       memset(property->value, 0, PROP_GetSize(property));
       property->flags &= ~PF_MODIFIED;
@@ -114,11 +114,11 @@ PROP_SetStoredValue(lpProperty_t property,
 }
 
 static void*
-PROP_NormalizeObjectValue(lpcProperty_t property, void const* source)
+PROP_NormalizeObjectValue(struct Property const *property, void const* source)
 {
-  lpObject_t object;
+  struct Object *object;
   if (!source) return NULL;
-  object = *(lpObject_t const*)source;
+  object = *(struct Object *const*)source;
   if (!object) return NULL;
   if (property->pdesc->TypeString && strcmp(property->pdesc->TypeString, "Object") == 0)
     return object;
@@ -126,7 +126,7 @@ PROP_NormalizeObjectValue(lpcProperty_t property, void const* source)
 }
 
 static bool_t
-PROP_IsSameValue(lpcProperty_t property, void const* source)
+PROP_IsSameValue(struct Property const *property, void const* source)
 {
   if (!(property->value && source && (property->flags & PF_MODIFIED)))
     return FALSE;
@@ -138,7 +138,7 @@ PROP_IsSameValue(lpcProperty_t property, void const* source)
   if (PROP_GetType(property) == kDataTypeObject) {
     void* oldv = *(void**)property->value;
     void* newv = PROP_NormalizeObjectValue(property, source);
-    lpObject_t object = *(lpObject_t const*)source;
+    struct Object *object = *(struct Object *const*)source;
     if (!object) return oldv == NULL;
     if (!newv) return oldv == NULL;
     return oldv == newv;
@@ -147,7 +147,7 @@ PROP_IsSameValue(lpcProperty_t property, void const* source)
 }
 
 void
-PROP_SetValue(lpProperty_t property, void const* source)
+PROP_SetValue(struct Property *property, void const* source)
 {
   if (PROP_IsSameValue(property, source)) return;
   PROP_SetStoredValue(property, source);
@@ -160,25 +160,25 @@ PROP_SetValue(lpProperty_t property, void const* source)
 }
 
 void
-PROP_SetStringValue(lpProperty_t property, char const* source) {
+PROP_SetStringValue(struct Property *property, char const* source) {
   assert(property->pdesc->DataType == kDataTypeString);
   PROP_SetValue(property, &source);
 }
 
 lpcString_t
-PROP_GetName(lpcProperty_t property)
+PROP_GetName(struct Property const *property)
 {
   return property->pdesc->Name;
 }
 
 lpcString_t
-PROP_GetComponentName(lpcProperty_t property)
+PROP_GetComponentName(struct Property const *property)
 {
   return property->pdesc->Category;
 }
 
 uint32_t
-PROP_GetSize(lpcProperty_t property)
+PROP_GetSize(struct Property const *property)
 {
   if (property->pdesc) {
     return property->pdesc->IsArray ? sizeof(void*) : (uint32_t)property->pdesc->DataSize;
@@ -188,18 +188,18 @@ PROP_GetSize(lpcProperty_t property)
 }
 
 uint32_t
-PROP_GetLongIdentifier(lpcProperty_t prop)
+PROP_GetLongIdentifier(struct Property const *prop)
 {
   return prop->pdesc->FullIdentifier;
 }
 
-lpObject_t
-PROP_GetObject(lpcProperty_t pprop)
+struct Object *
+PROP_GetObject(struct Property const *pprop)
 {
   return pprop->object;
 }
 
-lpcPropertyType_t
-PROP_GetDesc(lpcProperty_t prop) {
+struct PropertyType const *
+PROP_GetDesc(struct Property const *prop) {
   return prop->pdesc;
 }

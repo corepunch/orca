@@ -43,12 +43,12 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
       Con_Printf("parse_property: no C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
       return FALSE;
     case kDataTypeObject: {
-      lpObject_t loaded = FS_LoadObjectFromXML(str);
+      struct Object *loaded = FS_LoadObjectFromXML(str);
       if (!loaded) {
         Con_Printf("parse_property: failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;
       }
-      *(lpObject_t*)valueptr = loaded;
+      *(struct Object **)valueptr = loaded;
       return TRUE;
     }
 //    case kDataTypeEvent:
@@ -161,11 +161,11 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
           break;
         case LUA_TTABLE:
           {
-            lpcClassDesc_t cls = OBJ_FindClass(prop->TypeString);
+            struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
             if (!cls) {
               luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name);
             }
-            lpObject_t obj = OBJ_Create(cls->ClassID);
+            struct Object *obj = OBJ_Create(cls->ClassID);
             if (!obj) {
               luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
             }
@@ -175,10 +175,10 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
             while (lua_next(L, table_idx) != 0) {
               if (lua_type(L, -2) == LUA_TSTRING) {
                 lpcString_t short_name = lua_tostring(L, -2);
-                lpProperty_t property = NULL;
+                struct Property *property = NULL;
                 if (SUCCEEDED(OBJ_FindShortProperty(obj, short_name, &property))) {
                   char buf[MAX_PROPERTY_STRING] = {0};
-                  int luaX_readProperty(lua_State*, int, lpProperty_t);
+                  int luaX_readProperty(lua_State*, int, struct Property *);
                   luaX_readProperty(L, -1, property);
                   PROP_SetValue(property, buf);
                   if (PROP_GetType(property) == kDataTypeString) {
@@ -190,7 +190,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
               lua_pop(L, 1); // pop value, keep key for lua_next
             }
 
-            *(lpObject_t*)valueptr = obj;
+            *(struct Object **)valueptr = obj;
           }
           break;
         default:
@@ -263,7 +263,7 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
         break;
       case kDataTypeObject:
         {
-          lpObject_t object = *(lpObject_t const*)valueptr;
+          struct Object *object = *(struct Object *const*)valueptr;
           if (strcmp(prop->TypeString, "Object") && *(void**)valueptr) {
             object = CMP_GetObject(*(void**)valueptr);
           }
@@ -281,7 +281,7 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
   }
 
 int 
-luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
+luaX_readProperty(lua_State* L, int idx, struct Property *p)
 {
   if (lua_isnil(L, idx)) {
     PROP_Clear(p);
@@ -296,7 +296,7 @@ luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 }
 
 void 
-luaX_pushProperty(lua_State* L, lpcProperty_t property)
+luaX_pushProperty(lua_State* L, struct Property const *property)
 {
   if (PROP_IsNull(property)) {
     lua_pushnil(L);
@@ -306,7 +306,7 @@ luaX_pushProperty(lua_State* L, lpcProperty_t property)
 }
 
 bool_t
-PROP_RegisterChangedCallback(lua_State* L, lpProperty_t property, int callback_idx)
+PROP_RegisterChangedCallback(lua_State* L, struct Property *property, int callback_idx)
 {
   PROP_SetFlag(property, PF_HASCHANGECALLBACK);
   if (property->changeCallback) {

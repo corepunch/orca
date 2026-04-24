@@ -17,7 +17,7 @@ HANDLER(Node, Object, Start)
     struct ResourceEntry* alias = &pNode->Resources[i];
     if (!alias->Value || !*alias->Value || !alias->Key || !*alias->Key)
       continue;
-    lpObject_t aliasedobj = OBJ_FindByPath(hObject, alias->Value);
+    struct Object *aliasedobj = OBJ_FindByPath(hObject, alias->Value);
     if (!aliasedobj)
       continue;
     if (OBJ_GetAlias(aliasedobj)) {

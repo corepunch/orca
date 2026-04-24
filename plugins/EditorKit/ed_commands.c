@@ -5,7 +5,7 @@ EDWINPROC(Inspector);
 EDWINPROC(SplitView);
 
 LRESULT ED_EditorCommand(DWORD cmd) {
-  extern HOBJ current_scene;
+  extern struct Object *current_scene;
   switch (cmd) {
     case ID_FILE_QUIT:
 //      editor.bHasFinished = TRUE;

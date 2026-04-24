@@ -8,8 +8,8 @@
 // extern int stereoSeparation;
 int stereoSeparation = 0;
 
-static lpObject_t
-Viewport3D_scene(lpObject_t object)
+static struct Object *
+Viewport3D_scene(struct Object *object)
 {
   FOR_EACH_OBJECT(child, object)
   {
@@ -21,7 +21,7 @@ Viewport3D_scene(lpObject_t object)
 }
 
 static lpcString_t
-Viewport3D_camera(lpObject_t object)
+Viewport3D_camera(struct Object *object)
 {
   struct Viewport3D* vp = GetViewport3D(object);
   if (vp->Camera && *vp->Camera) {
@@ -30,7 +30,7 @@ Viewport3D_camera(lpObject_t object)
   if (vp->PreviewCamera && *vp->PreviewCamera) {
     return vp->PreviewCamera;
   }
-  lpObject_t scene = Viewport3D_scene(object);
+  struct Object *scene = Viewport3D_scene(object);
   if (scene) {
     struct Scene* data2 = GetScene(scene);
     return data2->Camera;
@@ -38,21 +38,21 @@ Viewport3D_camera(lpObject_t object)
   return NULL;
 }
 
-static lpObject_t
-Viewport3D_renderpass(lpObject_t viewport)
+static struct Object *
+Viewport3D_renderpass(struct Object *viewport)
 {
   struct Viewport3D* data1 = GetViewport3D(viewport);
   if (data1->RenderPass) {
     return CMP_GetObject(data1->RenderPass);
   }
-  lpObject_t scene = Viewport3D_scene(viewport);
+  struct Object *scene = Viewport3D_scene(viewport);
   if (scene) {
     return CMP_GetObject(GetScene(scene)->RenderPass);
   }
   return 0;
 }
 
-static void collect_lights(lpObject_t object,
+static void collect_lights(struct Object *object,
                            struct ViewDef *viewdef)
 {
   Light3DPtr light = GetLight3D(object);
@@ -68,7 +68,7 @@ static void collect_lights(lpObject_t object,
   FOR_EACH_CHILD(object, collect_lights, viewdef);
 }
 
-void R_RenderViewport(lpObject_t, struct ViewDef*);
+void R_RenderViewport(struct Object *, struct ViewDef*);
 
 static struct rect
 _Node2D_GetRect(Node2DPtr pNode2D)
@@ -83,7 +83,7 @@ _Node2D_GetRect(Node2DPtr pNode2D)
 
 HANDLER(Viewport3D, Node2D, ForegroundContent)
 {
-  lpObject_t screen = OBJ_FindParentOfClass(hObject, ID_Screen);
+  struct Object *screen = OBJ_FindParentOfClass(hObject, ID_Screen);
   lpcString_t camera = Viewport3D_camera(hObject);
   bool_t camalias = camera && *camera == '#';
   struct rect viewrect = _Node2D_GetRect(GetNode2D(hObject));

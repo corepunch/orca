@@ -1,7 +1,7 @@
 #include "SpriteKit.h"
 
 extern unsigned long axGetMilliseconds(void);
-struct vec2 SKNode_GetReferenceSize(lpObject_t node);
+struct vec2 SKNode_GetReferenceSize(struct Object *node);
 
 enum {
   kSKNodeAnchorRight = 2,
@@ -9,14 +9,14 @@ enum {
 };
 
 void
-SKNode_anchor(lpObject_t obj, lprect_t rect)
+SKNode_anchor(struct Object *obj, struct rect *rect)
 {
   rect->x += GetSKNode(obj)->Anchor.x * SKNode_GetReferenceSize(obj).x;
   rect->y += GetSKNode(obj)->Anchor.y * SKNode_GetReferenceSize(obj).y;
 }
 
 //static struct rect
-//sprite_rect(lpObject_t node, lpcSpriteFrame_t sprite)
+//sprite_rect(struct Object *node, lpcSpriteFrame_t sprite)
 //{
 //  struct rect rect = sprite->Rect;
 //  rect.x = -rect.x;

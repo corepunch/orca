@@ -3,7 +3,7 @@
 #define MAX_REGISTERS 64
 #define MAX_ARGS 16
 
-ORCA_API lpObject_t root_node = NULL;
+ORCA_API struct Object *root_node = NULL;
 
 typedef struct
 {

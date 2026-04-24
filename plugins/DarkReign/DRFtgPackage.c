@@ -192,11 +192,11 @@ HANDLER(FtgPackage, Object, Destroy) {
  */
 
 #if 0
-lpObject_t
+struct Object *
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 static void
-_LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
+_LoadSprAnimations(lua_State* L, PFTG ftg, struct Object *project)
 {
   for (int i = 0; i < ftg->numfiles; i++) {
     char const *fname = ftg->files[i].name;
@@ -224,7 +224,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, lpObject_t project)
         *dot = '\0';
     }
 
-    lpObject_t anim_obj = _SprFile_Load(L, f->data, f->size, anim_name);
+    struct Object *anim_obj = _SprFile_Load(L, f->data, f->size, anim_name);
     free(f);
 
     if (!anim_obj) {
@@ -277,7 +277,7 @@ HANDLER(FtgPackage, Project, LoadProject) {
    * back to creating a bare Project object – which is exactly what we want.
    */
   lua_pcall(L, (luaX_import(L, "orca.DarkReign", "FtgPackage"), 0), 1, 0);
-  lpObject_t project = luaX_checkObject(L, -1);
+  struct Object *project = luaX_checkObject(L, -1);
   GetFtgPackage(project)->_ftg = ftg;
 
   // Debug: list all files in the archive

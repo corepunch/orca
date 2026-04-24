@@ -22,15 +22,6 @@ typedef struct Project_HasChangedFilesEventArgs Project_HasChangedFilesMsg_t,* P
 typedef struct Project_LoadProjectEventArgs Project_LoadProjectMsg_t,* Project_LoadProjectMsgPtr;
 
 
-typedef struct ProjectReference ProjectReference_t, *lpProjectReference_t;
-typedef struct ProjectReference const cProjectReference_t, *lpcProjectReference_t;
-typedef struct EnginePlugin EnginePlugin_t, *lpEnginePlugin_t;
-typedef struct EnginePlugin const cEnginePlugin_t, *lpcEnginePlugin_t;
-typedef struct SystemMessage SystemMessage_t, *lpSystemMessage_t;
-typedef struct SystemMessage const cSystemMessage_t, *lpcSystemMessage_t;
-typedef struct ThemeValue ThemeValue_t, *lpThemeValue_t;
-typedef struct ThemeValue const cThemeValue_t, *lpcThemeValue_t;
-
 
 /// @brief Gets the base filename from a path
 ORCA_API const char*
@@ -133,6 +124,7 @@ struct ThemeValue {
 };
 ORCA_API void luaX_pushThemeValue(lua_State *L, struct ThemeValue const* ThemeValue);
 ORCA_API struct ThemeValue* luaX_checkThemeValue(lua_State *L, int idx);
+
 
 /** Workspace_ReadCommandsEventArgs struct */
 struct Workspace_ReadCommandsEventArgs {

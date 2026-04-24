@@ -10,17 +10,17 @@ static int counter = 0;
 
 static uint32_t unique_counter = 0;
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
-  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
+  struct ClassDesc const *cls = OBJ_FindClassW(class_id);
    if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
     return NULL;
   }
-  lpObject_t object = ZeroAlloc(sizeof(struct Object));
+  struct Object *object = ZeroAlloc(sizeof(struct Object));
   object->unique = ++unique_counter;
   OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);
@@ -31,23 +31,23 @@ OBJ_Create(uint32_t class_id) {
 }
 
 void
-OBJ_SetDirty(lpObject_t pobj)
+OBJ_SetDirty(struct Object *pobj)
 {
   pobj->dirty = core.realtime;
-  for (lpObject_t hParent = pobj; hParent; hParent = hParent->parent) {
+  for (struct Object *hParent = pobj; hParent; hParent = hParent->parent) {
     hParent->flags |= OF_DIRTY;
   }
 }
 
 void
-OBJ_ClearDirtyFlags(lpObject_t pobj)
+OBJ_ClearDirtyFlags(struct Object *pobj)
 {
   pobj->flags &= ~OF_DIRTY;
   FOR_EACH_CHILD(pobj, OBJ_ClearDirtyFlags);
 }
 
 void
-OBJ_Clear(lpObject_t pobj)
+OBJ_Clear(struct Object *pobj)
 {
   FOR_EACH_OBJECT(other, pobj) {
     OBJ_Clear(other);
@@ -57,7 +57,7 @@ OBJ_Clear(lpObject_t pobj)
 }
 
 void
-OBJ_RemoveFromParent(lpObject_t self)
+OBJ_RemoveFromParent(struct Object *self)
 {
   if (self->parent) {
     REMOVE_FROM_LIST(struct Object, self, self->parent->children); // remove from parent's children
@@ -74,7 +74,7 @@ OBJ_RemoveFromParent(lpObject_t self)
 #include "../property/property_internal.h"
 
 void
-OBJ_Release(lua_State* L, lpObject_t pobj)
+OBJ_Release(lua_State* L, struct Object *pobj)
 {
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
@@ -83,7 +83,7 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(pobj);
 
-  for (lpProperty_t p = pobj->properties; p; p = PROP_GetNext(p)) {
+  for (struct Property *p = pobj->properties; p; p = PROP_GetNext(p)) {
     if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
@@ -109,7 +109,7 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
 }
 
 HRESULT
-_RegisterProperty(lpObject_t object, lpProperty_t property)
+_RegisterProperty(struct Object *object, struct Property *property)
 {
   uint32_t psize = PROP_GetSize(property);
   assert(object->datasize + psize < MAX_OBJECT_DATA);
@@ -122,9 +122,9 @@ _RegisterProperty(lpObject_t object, lpProperty_t property)
 }
 
 void
-OBJ_AddComponentByName(lua_State* L, lpObject_t pobj, lpcString_t className)
+OBJ_AddComponentByName(lua_State* L, struct Object *pobj, lpcString_t className)
 {
-  lpcClassDesc_t cls = OBJ_FindClass(className);
+  struct ClassDesc const *cls = OBJ_FindClass(className);
   if (!cls) {
     luaL_error(L, "addComponent: class '%s' not found", className);
     return;
@@ -163,13 +163,13 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
   return tags;
 }
 
-int OBJ_SetTimer(lpObject_t self, int duration)
+int OBJ_SetTimer(struct Object *self, int duration)
 {
   return axSetTimer(self, MAX(duration, 1), NULL, TRUE);;
 }
 
-lpObject_t
-OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
+struct Object *
+OBJ_FindChildByAlias(struct Object *object, uint32_t lParam)
 {
   struct Node* node = GetNode(object);
   FOR_LOOP(i, node ? node->NumResources : 0) {
@@ -190,7 +190,7 @@ OBJ_FindChildByAlias(lpObject_t object, uint32_t lParam)
 }
 
 ORCA_API bool_t
-UI_EnumObjectAliases(lpObject_t object, EnumAliasProc proc, void* args)
+UI_EnumObjectAliases(struct Object *object, EnumAliasProc proc, void* args)
 {
   FOR_LOOP(i, GetNode(object) ? GetNode(object)->NumResources : 0) {
     proc(GetNode(object)->Resources[i].Key, GetNode(object)->Resources[i].Value, args);

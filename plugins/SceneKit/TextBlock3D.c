@@ -6,7 +6,7 @@
 
 #if 0
 static void
-text_from_label(lpObject_t  hObject, struct TextBlock3D *label, struct ViewText* text)
+text_from_label(struct Object * hObject, struct TextBlock3D *label, struct ViewText* text)
 {
 	text->font          = label->Font;
 	text->fontSize      = label->FontSize;
@@ -19,7 +19,7 @@ text_from_label(lpObject_t  hObject, struct TextBlock3D *label, struct ViewText*
 }
 
 static struct rect
-mesh_rect(lpObject_t  hObject, struct TextBlock3D *frame)
+mesh_rect(struct Object * hObject, struct TextBlock3D *frame)
 {
 	struct ViewText     text = {0};
 	struct text_info info;
@@ -86,7 +86,7 @@ HANDLER(TextBlock3D, Node3D, Render)
   entity.material.textureMatrix.v[4] = -1;
   entity.material.textureMatrix.v[7] =  1;
   
-//  lpProperty_t hProp =
+//  struct Property *hProp =
 //  TextBlockConcept_GetProperty(hObject, kTextBlockConceptText);
 //  if (*output->TextResourceID && !PROP_HasProgram(hProp)) {
 //    Loc_GetString(

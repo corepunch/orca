@@ -1,6 +1,6 @@
 #include "ed_local.h"
 
-void ED_ObjectField(LPTERMINAL p, lpObject_t *value, DWORD type, DWORD width) {
+void ED_ObjectField(LPTERMINAL p, struct Object **value, DWORD type, DWORD width) {
   lpcString_t szPath = NULL;
   if (!*value) {
     szPath = "<None>";

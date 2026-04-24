@@ -52,7 +52,7 @@ btn.OnClick = function() print("clicked!") end
 Each component's `ObjProc` function receives messages dispatched by the engine:
 
 ```c
-LRESULT Button_Proc(lpObject_t obj, uint32_t msg,
+LRESULT Button_Proc(struct Object *obj, uint32_t msg,
                     wParam_t wParam, lParam_t lParam) {
     struct Button *self = GetButton(obj);
     switch (msg) {

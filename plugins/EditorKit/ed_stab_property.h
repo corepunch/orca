@@ -1,6 +1,6 @@
 #include "ed_local.h"
 
-void UI_FillOutPropDef(HOBJ, HPROP, LPPROPDEF);
+void UI_FillOutPropDef(struct Object *, HPROP, LPPROPDEF);
 
 BOOL UI_GetProperty(DWORD dwIndex, LPPROPDEF lpOut) {
     return FALSE;
@@ -9,7 +9,7 @@ BOOL UI_GetProperty(DWORD dwIndex, LPPROPDEF lpOut) {
 void UI_RefreshProperty(DWORD dwIndex) {
 }
 
-void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
+void UI_FillOutPropDef(struct Object *object, HPROP p, LPPROPDEF lpPropDef) {
 #ifdef EDITOR_LIB
   lpPropDef->szName = PROP_GetName(p);
 #endif

@@ -437,11 +437,11 @@ Image_GetInfo(struct Texture const* img, struct image_info* dst)
   }
 }
 
-lpObject_t
+struct Object *
 R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
 {
   if (!pBuffer || dwSize == 0) return NULL;
-  lpObject_t object = OBJ_Create(ID_Texture);
+  struct Object *object = OBJ_Create(ID_Texture);
   if (!object) return NULL;
   lpTexture_t texture = GetTexture(object);
   if (!texture) {

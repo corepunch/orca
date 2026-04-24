@@ -20,7 +20,7 @@ typedef struct _INSPECTORSTRUCT {
   INSPITEM items[MAX_INSPECTOR_ITEMS];
   HEDWND   newprop;
   struct {
-    HOBJ     object;
+    struct Object *    object;
     DWORD    file;
   } selected;
 } INSPECTORSTRUCT, *LPINSPSTRUCT;
@@ -262,7 +262,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
         ED_Echo(wnd, "Can't open file\n");
       }
     } else if (strstr(szFilePath, ".xml")) {
-      lpObject_t OBJ_LoadDocument(xmlDocPtr doc);
+      struct Object *OBJ_LoadDocument(xmlDocPtr doc);
       WITH(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
         inspector->selected.object = OBJ_LoadDocument(doc);
       }

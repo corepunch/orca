@@ -4,7 +4,7 @@
 
 HANDLER(Trigger, Object, Attached)
 {
-  lpProperty_t prop;
+  struct Property *prop;
   if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
@@ -45,7 +45,7 @@ HANDLER(Setter, Trigger, Triggered)
 {
   if (pTriggered->Trigger ==
       CMP_GetUserData((struct component*)pSetter->Trigger)) {
-    lpProperty_t p;
+    struct Property *p;
     if (pSetter->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
       // TODO: implement property parsing via PROP_Parse when available
       (void)p;
@@ -81,7 +81,7 @@ HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 
 HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
-  lpProperty_t pProp;
+  struct Property *pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;
   if (szName && SUCCEEDED(OBJ_FindShortProperty(hObject, szName, &pProp))) {
     PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);

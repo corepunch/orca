@@ -40,7 +40,7 @@ renderer_CreateShader(lua_State* L, lpcString_t vert, lpcString_t frag) {
     lua_pop(L, 1);
     return NULL;
   }
-  lpObject_t object = luaX_checkObject(L, -1);
+  struct Object *object = luaX_checkObject(L, -1);
   struct Shader* shader = GetShader(object);
   lua_pop(L, 1);
   Shader_LoadFromDef(

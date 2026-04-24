@@ -289,29 +289,6 @@ ORCA_API const char *ResourceEntryTypeToString(enum ResourceEntryType value);
 ORCA_API enum ResourceEntryType luaX_checkResourceEntryType(lua_State *L, int idx);
 ORCA_API void luaX_pushResourceEntryType(lua_State *L, enum ResourceEntryType value);
 
-typedef struct AnimationClipReference AnimationClipReference_t, *lpAnimationClipReference_t;
-typedef struct AnimationClipReference const cAnimationClipReference_t, *lpcAnimationClipReference_t;
-typedef struct Keyframe Keyframe_t, *lpKeyframe_t;
-typedef struct Keyframe const cKeyframe_t, *lpcKeyframe_t;
-typedef struct LocaleEntry LocaleEntry_t, *lpLocaleEntry_t;
-typedef struct LocaleEntry const cLocaleEntry_t, *lpcLocaleEntry_t;
-typedef struct ResourceEntry ResourceEntry_t, *lpResourceEntry_t;
-typedef struct ResourceEntry const cResourceEntry_t, *lpcResourceEntry_t;
-typedef struct CornerRadius CornerRadius_t, *lpCornerRadius_t;
-typedef struct CornerRadius const cCornerRadius_t, *lpcCornerRadius_t;
-typedef struct EdgeShorthand EdgeShorthand_t, *lpEdgeShorthand_t;
-typedef struct EdgeShorthand const cEdgeShorthand_t, *lpcEdgeShorthand_t;
-typedef struct AlignmentShorthand AlignmentShorthand_t, *lpAlignmentShorthand_t;
-typedef struct AlignmentShorthand const cAlignmentShorthand_t, *lpcAlignmentShorthand_t;
-typedef struct Thickness Thickness_t, *lpThickness_t;
-typedef struct Thickness const cThickness_t, *lpcThickness_t;
-typedef struct BorderShorthand BorderShorthand_t, *lpBorderShorthand_t;
-typedef struct BorderShorthand const cBorderShorthand_t, *lpcBorderShorthand_t;
-typedef struct SizeAxisShorthand SizeAxisShorthand_t, *lpSizeAxisShorthand_t;
-typedef struct SizeAxisShorthand const cSizeAxisShorthand_t, *lpcSizeAxisShorthand_t;
-typedef struct SizeShorthand SizeShorthand_t, *lpSizeShorthand_t;
-typedef struct SizeShorthand const cSizeShorthand_t, *lpcSizeShorthand_t;
-
 
 /// @brief Retrieves currently active object.
 ORCA_API struct Object*
@@ -680,6 +657,7 @@ struct SizeShorthand {
 };
 ORCA_API void luaX_pushSizeShorthand(lua_State *L, struct SizeShorthand const* SizeShorthand);
 ORCA_API struct SizeShorthand* luaX_checkSizeShorthand(lua_State *L, int idx);
+
 
 /** Object_CreateEventArgs struct */
 struct Object_CreateEventArgs {

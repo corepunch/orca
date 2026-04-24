@@ -6,10 +6,10 @@
 //#define SUPPORT_DYNAMIC_PROPERTIES
 
 ORCA_API void
-OBJ_SetSourceFile(lpObject_t, lpcString_t);
+OBJ_SetSourceFile(struct Object *, lpcString_t);
 
 ORCA_API void
-OBJ_SetClassName(lpObject_t, lpcString_t);
+OBJ_SetClassName(struct Object *, lpcString_t);
 
 extern void
-PROP_AttachProgram(lpProperty_t p, enum PropertyAttribute a, struct token* program, lpcString_t code);
+PROP_AttachProgram(struct Property *p, enum PropertyAttribute a, struct token* program, lpcString_t code);

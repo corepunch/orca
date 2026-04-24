@@ -27,11 +27,6 @@ typedef uint32_t messageID_t;
 typedef uint32_t classID_t;
 typedef uint32_t event_t;
 
-FWD_STRUCT(Property);
-FWD_STRUCT(Object);
-FWD_STRUCT(ClassDesc);
-FWD_STRUCT(PropertyType);
-
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
@@ -88,14 +83,14 @@ struct token
 {
   struct token* next;
   struct token* args[TOKEN_MAX_ARGS];
-  lpObject_t rootnode;
+  struct Object *rootnode;
   struct {
     int component;
-    lpProperty_t property;
+    struct Property *property;
     handle_t animation;
     bool_t (*func)(struct token* token,
                    struct vm_register* regs,
-                   lpObject_t object,
+                   struct Object *object,
                    struct vm_register* output);
   } cache;
   uint32_t reg;
@@ -177,7 +172,7 @@ enum
 #define PROPERTY_TYPE_MASK ((1 << 8) - 1)
 
 #define FOR_EACH_PROPERTY(VARIABLE, LIST) \
-  for (lpProperty_t VARIABLE = LIST; VARIABLE; \
+  for (struct Property *VARIABLE = LIST; VARIABLE; \
        VARIABLE = PROP_GetNext(VARIABLE))
 
 /*
@@ -189,87 +184,87 @@ enum
 ORCA_API struct property_program const *
 core_GetPrograms(void);
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 OBJ_Create(uint32_t class_id);
 
 ORCA_API void
 PROP_RunAllPrograms(void);
 
 ORCA_API bool_t
-PROP_Update(lpProperty_t);
+PROP_Update(struct Property *);
 
 ORCA_API void
-PROP_SetValue(lpProperty_t, void const* source);
+PROP_SetValue(struct Property *, void const* source);
 
 ORCA_API void
-PROP_SetStringValue(lpProperty_t, char const* source);
+PROP_SetStringValue(struct Property *, char const* source);
 
 ORCA_API void
-PROP_SetDirty(lpProperty_t property, enum PropertyState state);
+PROP_SetDirty(struct Property *property, enum PropertyState state);
 
 ORCA_API bool_t
-PROP_IsNull(lpcProperty_t);
+PROP_IsNull(struct Property const *);
 
-ORCA_API lpProperty_t
-PROP_FindByLongID(lpProperty_t, uint32_t identifier);
+ORCA_API struct Property *
+PROP_FindByLongID(struct Property *, uint32_t identifier);
 
-ORCA_API lpProperty_t
-PROP_FindByShortID(lpProperty_t, uint32_t identifier);
-
-ORCA_API uint32_t
-PROP_GetFlags(lpcProperty_t);
-
-ORCA_API void
-PROP_SetFlag(lpProperty_t, uint32_t value);
-
-ORCA_API void
-PROP_Clear(lpProperty_t);
+ORCA_API struct Property *
+PROP_FindByShortID(struct Property *, uint32_t identifier);
 
 ORCA_API uint32_t
-PROP_GetLongIdentifier(lpcProperty_t);
+PROP_GetFlags(struct Property const *);
 
-ORCA_API lpProperty_t
-PROP_GetNext(lpcProperty_t);
+ORCA_API void
+PROP_SetFlag(struct Property *, uint32_t value);
+
+ORCA_API void
+PROP_Clear(struct Property *);
+
+ORCA_API uint32_t
+PROP_GetLongIdentifier(struct Property const *);
+
+ORCA_API struct Property *
+PROP_GetNext(struct Property const *);
 
 ORCA_API void const*
-PROP_GetValue(lpcProperty_t);
+PROP_GetValue(struct Property const *);
 
 ORCA_API enum DataType
-PROP_GetType(lpcProperty_t);
+PROP_GetType(struct Property const *);
 
 ORCA_API uint32_t
-PROP_GetSize(lpcProperty_t);
+PROP_GetSize(struct Property const *);
 
 ORCA_API bool_t
-PROP_HasProgram(lpProperty_t);
+PROP_HasProgram(struct Property *);
 
 ORCA_API lpcString_t
-PROP_GetUserData(lpcProperty_t);
+PROP_GetUserData(struct Property const *);
 
 ORCA_API lpcString_t
-PROP_GetName(lpcProperty_t);
+PROP_GetName(struct Property const *);
 
 ORCA_API lpcString_t
-PROP_GetComponentName(lpcProperty_t property);
+PROP_GetComponentName(struct Property const *property);
 
 ORCA_API void
-PROP_ClearSpecialized(lpProperty_t list);
+PROP_ClearSpecialized(struct Property *list);
 
-ORCA_API lpcPropertyType_t 
-PROP_GetDesc(lpcProperty_t prop);
+ORCA_API struct PropertyType const *
+PROP_GetDesc(struct Property const *prop);
 
 ORCA_API void
-PROP_Print(lpProperty_t p, LPSTR buffer, uint32_t len);
+PROP_Print(struct Property *p, LPSTR buffer, uint32_t len);
 
-ORCA_API lpProperty_t
-PROP_Create(lua_State*,lpObject_t,lpcPropertyType_t);
+ORCA_API struct Property *
+PROP_Create(lua_State*,struct Object *,struct PropertyType const *);
 
 ORCA_API uint32_t
 GetPropertyHandleType(lpcString_t szType);
 
 typedef void (*EnumPropertyTypeProc)(lpcString_t, void*);
 typedef void (*EnumAliasProc)(lpcString_t, lpcString_t, void*);
-ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* args);
+ORCA_API bool_t UI_EnumObjectAliases(struct Object *object, EnumAliasProc, void* args);
 
 #define PROP_CopyValue(property, dest) memcpy(dest, PROP_GetValue(property), PROP_GetSize(property))
 #define PROP_FindByFullName(LIST, NAME) PROP_FindByLongID(LIST, fnv1a32(NAME));
@@ -288,13 +283,9 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 
 //#define KANZI_SUPPORT
 
-#define MESSAGE_HANDLER(PARM, TYPE)                                            \
-  LRESULT NAME##_##PARM(                                                       \
-    lpObject_t hObject, TYPE##Ptr NAME, P##PARM##STRUCT param)
-
 #define FOR_EACH_OBJECT(var, parent)                                           \
-  for (lpObject_t var = OBJ_GetFirstChild(parent), \
-    next = var ? OBJ_GetNext(var) : NULL; \
+  for (struct Object *var = OBJ_GetFirstChild(parent), \
+    *next = var ? OBJ_GetNext(var) : NULL; \
     var; var = next, next = next ? OBJ_GetNext(next) : NULL)
 
 #ifdef KANZI_SUPPORT
@@ -310,7 +301,7 @@ ORCA_API bool_t UI_EnumObjectAliases(lpObject_t object, EnumAliasProc, void* arg
 #define FOR_EACH_CHILD(object, func, ...)                                      \
   FOR_EACH_OBJECT(child, object) func(child, ##__VA_ARGS__)
 
-typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t);
+typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lParam_t);
 
 #ifndef ID_Node_IsVisible
 #define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible
@@ -323,7 +314,7 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 
 #define EVENT_PTR(NAME) NAME##MsgPtr
 
-//typedef lpObject_t* EVENT_PTR(HitTest);
+//typedef struct Object ** EVENT_PTR(HitTest);
 
 #define OF_UPDATED_ONCE (1 << 0)
 #define OF_LOADED_FROM_PREFAB (1 << 2)
@@ -342,7 +333,7 @@ typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t)
 struct ClassDesc
 {
   objectProc_t ObjProc; // pointer to the main message handling function for this class, used for dispatching messages to objects of this class
-  lpcPropertyType_t Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
+  struct PropertyType const *Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
   lpcString_t ClassName; // human-readable name of the class, used for debugging and editor display, should be unique across all classes
   lpcString_t DefaultName; // string used for naming objects of this class when no name is provided, should be unique across all classes
   lpcString_t ContentType; // optional string describing the type of content this class represents, used for auto-detecting packages and for editor filtering
@@ -362,22 +353,22 @@ ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(const char* path));
 
 ORCA_API HRESULT
-OBJ_FindShortProperty(lpObject_t object, lpcString_t short_name, lpProperty_t* output);
+OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Property ** output);
 
 ORCA_API HRESULT
-OBJ_FindLongProperty(lpObject_t object, uint32_t long_id, lpProperty_t* output);
+OBJ_FindLongProperty(struct Object *object, uint32_t long_id, struct Property ** output);
 
 ORCA_API HRESULT
-OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value);
+OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value);
 
 ORCA_API LRESULT
-OBJ_SendMessage(lpObject_t, lpcString_t, wParam_t, lParam_t);
+OBJ_SendMessage(struct Object *, lpcString_t, wParam_t, lParam_t);
 
 ORCA_API LRESULT
-OBJ_SendMessageW(lpObject_t, uint32_t, wParam_t, lParam_t);
+OBJ_SendMessageW(struct Object *, uint32_t, wParam_t, lParam_t);
 
 ORCA_API uint32_t
-OBJ_GetUniforms(lpObject_t, struct uniform*);
+OBJ_GetUniforms(struct Object *, struct uniform*);
 
 ORCA_API void*
 CMP_GetUserData(struct component*);
@@ -392,28 +383,28 @@ ORCA_API bool_t
 SV_DispatchMessage(lua_State*, struct AXmessage*);
 
 ORCA_API void
-OBJ_Release(lua_State *L, lpObject_t);
+OBJ_Release(lua_State *L, struct Object *);
 
 ORCA_API void*
-OBJ_GetComponent(lpObject_t pobj, uint32_t class_id);
+OBJ_GetComponent(struct Object *pobj, uint32_t class_id);
 
-ORCA_API lpProperty_t
-OBJ_GetPropertyAtIndex(lpObject_t object, uint32_t classid,
+ORCA_API struct Property *
+OBJ_GetPropertyAtIndex(struct Object *object, uint32_t classid,
                        size_t classsize, uint32_t index);
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 CMP_GetObject(void const*);
 
 ORCA_API struct component*
-OBJ_AddComponent(lpObject_t, uint32_t class_id);
+OBJ_AddComponent(struct Object *, uint32_t class_id);
 
 typedef int
-(*propertyParser_t)(lua_State*,lpObject_t,lpcString_t,lpcString_t);
+(*propertyParser_t)(lua_State*,struct Object *,lpcString_t,lpcString_t);
 
 ORCA_API bool_t
-OBJ_RegisterClass(lpcClassDesc_t);
+OBJ_RegisterClass(struct ClassDesc const *);
 
-ORCA_API lpcClassDesc_t
+ORCA_API struct ClassDesc const *
 OBJ_FindClass(lpcString_t);
 
 // Register a pure-C string parser for a named struct type.
@@ -427,28 +418,28 @@ OBJ_RegisterStructParser(const char* type_name,
 ORCA_API int
 OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz);
 
-ORCA_API lpcClassDesc_t
+ORCA_API struct ClassDesc const *
 OBJ_FindClassW(uint32_t);
 
-ORCA_API lpcPropertyType_t
+ORCA_API struct PropertyType const *
 OBJ_FindPropertyType(uint32_t);
 
 ORCA_API bool_t
-OBJ_RegisterPropertyType(lpcPropertyType_t pt);
+OBJ_RegisterPropertyType(struct PropertyType const *pt);
 
 ORCA_API void
-OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void*);
+OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(struct ClassDesc const *, void*), void*);
 
 ORCA_API void
-OBJ_EnumObjectClasses(lpObject_t pobj,
-                      void (*fnProc)(lpcClassDesc_t, void*),
+OBJ_EnumObjectClasses(struct Object *pobj,
+                      void (*fnProc)(struct ClassDesc const *, void*),
                       void* param);
 
 ORCA_API void
-OBJ_EnumClassProperties(lpObject_t object,
-                        void (*fnProc)(lpcObject_t,
-                                       lpcPropertyType_t,
-                                       lpcClassDesc_t,
+OBJ_EnumClassProperties(struct Object *object,
+                        void (*fnProc)(struct Object const *,
+                                       struct PropertyType const *,
+                                       struct ClassDesc const *,
                                        void const*,
                                        void*),
                         void* parm);

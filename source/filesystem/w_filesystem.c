@@ -357,7 +357,7 @@ int f_init(lua_State* L)
 
 static lua_State *global_L;
 
-//lpObject_t FS_FindProject(lpcString_t szName) {
+//struct Object *FS_FindProject(lpcString_t szName) {
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
 

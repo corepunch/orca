@@ -22,7 +22,7 @@ enum
 
 static int f_object_iterator(lua_State* L)
 {
-  lpObject_t* object = lua_touserdata(L, lua_upvalueindex(1));
+  struct Object ** object = lua_touserdata(L, lua_upvalueindex(1));
   if ((*object) == NULL)
     return 0;
   luaX_pushObject(L, *object);
@@ -32,7 +32,7 @@ static int f_object_iterator(lua_State* L)
 
 static int f_object_lineage(lua_State* L)
 {
-  lpObject_t* object = lua_touserdata(L, lua_upvalueindex(1));
+  struct Object ** object = lua_touserdata(L, lua_upvalueindex(1));
   if ((*object) == NULL)
     return 0;
   luaX_pushObject(L, *object);
@@ -40,7 +40,7 @@ static int f_object_lineage(lua_State* L)
   return 1;
 }
 
-static void collect_form_inputs(lua_State* L, lpObject_t node, int table_idx)
+static void collect_form_inputs(lua_State* L, struct Object *node, int table_idx)
 {
   if (!node) return;
 
@@ -64,7 +64,7 @@ static void collect_form_inputs(lua_State* L, lpObject_t node, int table_idx)
 
 static int f_obj_populate_inputs(lua_State* L)
 {
-  lpObject_t self = luaX_checkObject(L, 1);
+  struct Object *self = luaX_checkObject(L, 1);
   lua_newtable(L);
   int table_idx = lua_absindex(L, -1);
   collect_form_inputs(L, self, table_idx);
@@ -85,7 +85,7 @@ is_on_changed_callback_name(lpcString_t name)
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
-OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
+OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
 {
   switch (fnv1a32(name)) {
     case p_id:
@@ -128,7 +128,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     GetNode2D(self)->LayoutTransform.translation.y = luaL_checknumber(L, 3);
     return TRUE;
   }
-  lpProperty_t property = NULL;
+  struct Property *property = NULL;
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
     if (PROP_GetType(property) == kDataTypeEvent &&
         (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
@@ -165,7 +165,7 @@ int f_msgSend(lua_State *L) {
   return OBJ_send(L, this_, message); // sync+direct, returns value or nil
 }
 
-int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
+int OBJ_GetProperty(lua_State* L, struct Object *self, lpcString_t name)
 {
   if (!strcmp(name, "populateInputs")) {
     lua_pushcfunction(L, f_obj_populate_inputs);
@@ -208,12 +208,12 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
       lua_pushinteger(L, OBJ_GetUniqueID(self));
       return 1;
     case p_children:
-      *(lpObject_t*)lua_newuserdata(L, sizeof(lpObject_t*)) =
+      *(struct Object **)lua_newuserdata(L, sizeof(struct Object **)) =
         OBJ_GetFirstChild(self);
       lua_pushcclosure(L, f_object_iterator, 1);
       return 1;
     case p_lineage:
-      *(lpObject_t*)lua_newuserdata(L, sizeof(lpObject_t*)) = self;
+      *(struct Object **)lua_newuserdata(L, sizeof(struct Object **)) = self;
       lua_pushcclosure(L, f_object_lineage, 1);
       return 1;
     case p_focus:
@@ -244,8 +244,8 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
   
-  lpcProperty_t property = NULL;
-  bool_t OBJ_PushClassProperty(lua_State *, lpObject_t, uint32_t);
+  struct Property const *property = NULL;
+  bool_t OBJ_PushClassProperty(lua_State *, struct Object *, uint32_t);
   if (OBJ_PushClassProperty(L, self, ident)) {
     return 1;
   } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {

@@ -197,7 +197,7 @@ xmlNodePtr FS_FindLibrary(lpcString_t libname) {
 int FS_HasChildren(lpcString_t parent, lpcString_t filename) {
   char dir_path[1024]={0};
   snprintf(dir_path, sizeof(dir_path), "%s/%s", parent, filename);
-  lpObject_t mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Object *mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
   struct Directory* mainDir = mainProject ? GetDirectory(mainProject) : NULL;
   if (!mainDir) {
     return FALSE;
@@ -401,7 +401,7 @@ FS_FilterFiles(lpcString_t szFilter,
 ORCA_API BOOL FS_GetFileName(HANDLE ident, LPSTR path, BOOL fullpath)
 {
   if (!ident) {
-    lpObject_t mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
+    struct Object *mainProject = OBJ_GetFirstChild(FS_GetWorkspace());
     struct Directory* mainDir = mainProject ? GetDirectory(mainProject) : NULL;
     if (mainDir) {
       LPFILEHASH lpfh = &_fh.filehashes[(_fh.writehash++)%MAX_FILE_HASHES];

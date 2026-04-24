@@ -16,14 +16,14 @@ _ImageView_CancelFetch(lpImageView_t pImageView)
     pImageView->_fetch = NULL;
   }
   if (pImageView->_src_object) {
-    OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+    OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
     pImageView->_src_object = NULL;
     pImageView->Source = NULL;
   }
 }
 
 static struct vec2
-_GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
+_GetImageSize(struct Object *hObject, ImageViewPtr imageView)
 {
   struct vec2 size = { 0 };
   if (imageView->Source) {
@@ -39,17 +39,17 @@ _GetImageSize(lpObject_t hObject, ImageViewPtr imageView)
 HANDLER(ImageView, Node2D, MeasureOverride)
 {
   if (pImageView->Source) {
-    vec2_t size = _GetImageSize(hObject, pImageView);
-    lpcedges_t e = (struct edges const*)&pImageView->Insets;
-//    vec2_t calcsize = {
+    struct vec2 size = _GetImageSize(hObject, pImageView);
+    struct edges const* e = (struct edges const*)&pImageView->Insets;
+//    struct vec2 calcsize = {
 //      fmin(size.x - e->left - e->right, pMeasureOverride->Width),
 //      fmin(size.y - e->top - e->bottom, pMeasureOverride->Height),
 //    };
     if (pImageView->Stretch == kStretchNone) {
       return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
     } else if (pImageView->Stretch == kStretchUniform) {
-      rect_t avail = {0, 0, pMeasureOverride->Width, pMeasureOverride->Height};
-      rect_t final = RECT_Fit(&avail, &size);
+      struct rect avail = {0, 0, pMeasureOverride->Width, pMeasureOverride->Height};
+      struct rect final = RECT_Fit(&avail, &size);
       return MAKEDWORD(final.width, final.height);
     } else {
       return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
@@ -70,7 +70,7 @@ typedef struct
 {
   bool_t value;
   bool_t anyImagesNeeded;
-  lpProperty_t prop;
+  struct Property *prop;
 } checkimg;
 
 static void
@@ -80,7 +80,7 @@ check_images(struct _SHADERCONST *u, void* pVoid)
   if (u->type != UT_SAMPLER_2D)
     return;
   pParm->anyImagesNeeded = TRUE;
-  lpProperty_t p = PROP_FindByLongID(pParm->prop, u->identifier);
+  struct Property *p = PROP_FindByLongID(pParm->prop, u->identifier);
   if (!p)
     return;
   pParm->value = TRUE;
@@ -123,11 +123,11 @@ HANDLER(ImageView, Node2D, DrawBrush)
   lpTexture_t img = pDrawBrush->foreground ? pImageView->Source : NULL;
   Node2D_GetViewEntity(pNode2D, &entity, img, &pDrawBrush->brush);
   
-  calculate_ninepatch(&(vec2_t){ width, height },
+  calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
-                      (lpcedges_t)&pImageView->Insets,
-                      (lpcedges_t)&pImageView->Edges,
-                      (lpcrect_t)&pImageView->Viewbox,
+                      (struct edges const*)&pImageView->Insets,
+                      (struct edges const*)&pImageView->Edges,
+                      (struct rect const *)&pImageView->Viewbox,
                       &entity.ninepatch);
 
   entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
@@ -171,7 +171,7 @@ HANDLER(ImageView, Node2D, ForegroundContent)
 
 HANDLER(ImageView, Object, Start)
 {
-  lpProperty_t p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
+  struct Property *p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
   if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
   if (pImageView->Src && *pImageView->Src) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
@@ -265,7 +265,7 @@ HANDLER(ImageView, Node, LoadView)
       return TRUE;
     }
 
-    lpObject_t tex_obj = R_LoadImageFromMemory(data, (uint32_t)size);
+    struct Object *tex_obj = R_LoadImageFromMemory(data, (uint32_t)size);
     free(data);
 
     if (!tex_obj) {
@@ -275,7 +275,7 @@ HANDLER(ImageView, Node, LoadView)
 
     /* Release any previous downloaded texture before storing the new one. */
     if (pImageView->_src_object) {
-      OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+      OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
     }
     pImageView->_src_object = tex_obj;
     pImageView->Source = GetTexture(tex_obj);
@@ -287,14 +287,14 @@ HANDLER(ImageView, Node, LoadView)
   }
 
   /* Local file path: load synchronously. */
-  lpObject_t file_obj = FS_LoadObject(src);
+  struct Object *file_obj = FS_LoadObject(src);
   if (!file_obj) {
     Con_Printf("ImageView: failed to load '%s'", src);
     return TRUE;
   }
 
   if (pImageView->_src_object) {
-    OBJ_Release(NULL, (lpObject_t)pImageView->_src_object);
+    OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
   }
   pImageView->_src_object = file_obj;
   pImageView->Source = GetTexture(file_obj);

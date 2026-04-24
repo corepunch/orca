@@ -28,7 +28,7 @@
   }
 
 #define _GetProperties(obj)                                                    \
-  (*(lpProperty_t*)OBJ_GetObjectComponent(obj, kCompProperties))
+  (*(struct Property **)OBJ_GetObjectComponent(obj, kCompProperties))
 
 // StyleController component accessor — returns NULL if component not attached
 #define _GetStyleController(obj)                                               \
@@ -85,11 +85,11 @@ struct game
   lua_State *L;
   longTime_t realtime;
   uint32_t frame;
-  lpObject_t focus;
-  lpObject_t hover;
-  lpObject_t hover2;
+  struct Object *focus;
+  struct Object *hover;
+  struct Object *hover2;
   fixedString_t tags[MAX_TAGS];
-  lpcClassDesc_t classes[MAX_CLASSES];
+  struct ClassDesc const *classes[MAX_CLASSES];
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
@@ -102,93 +102,93 @@ void
 API_PrintStackTrace(lua_State* L);
 
 void
-OBJ_Clear(lpObject_t);
+OBJ_Clear(struct Object *);
 
-lpObject_t
-OBJ_FindImmediateChild(lpObject_t object, uint32_t ident);
+struct Object *
+OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 
 uint32_t
-OBJ_GetUniqueID(lpcObject_t);
+OBJ_GetUniqueID(struct Object const *);
 
-lpObject_t
+struct Object *
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);
 
 
 void
-OBJ_EnumStyleClasses(lpObject_t, lpcString_t, struct style_class_selector*);
+OBJ_EnumStyleClasses(struct Object *, lpcString_t, struct style_class_selector*);
 
 uint32_t
-OBJ_GetStyleFlags(lpObject_t);
+OBJ_GetStyleFlags(struct Object *);
 
 bool_t
-OBJ_RunProgram(lpObject_t, struct token*, struct vm_register*);
+OBJ_RunProgram(struct Object *, struct token*, struct vm_register*);
 
 void
-OBJ_MoveToFront(lpObject_t);
+OBJ_MoveToFront(struct Object *);
 
 void
-OBJ_ClearStyleClasses(lpObject_t);
+OBJ_ClearStyleClasses(struct Object *);
 
 void
-OBJ_RequestAnimate(lpObject_t);
+OBJ_RequestAnimate(struct Object *);
   
 ORCA_API void
-OBJ_SetAlias(lpObject_t, uint32_t);
+OBJ_SetAlias(struct Object *, uint32_t);
 
 
 struct timer;
 void
-OBJ_AddTimer(lpObject_t, struct timer*);
+OBJ_AddTimer(struct Object *, struct timer*);
 
-lpProperty_t
-_CreateClassProperty(lpObject_t, uint32_t);
+struct Property *
+_CreateClassProperty(struct Object *, uint32_t);
 
 HRESULT
-_RegisterProperty(lpObject_t, lpProperty_t);
+_RegisterProperty(struct Object *, struct Property *);
 
 INLINE
 bool_t
-OBJ_NameEquals(lpObject_t object, lpcString_t name)
+OBJ_NameEquals(struct Object *object, lpcString_t name)
 {
   return !strcmp(OBJ_GetName(object), name);
 }
 
-lpProperty_t
-OBJ_AddComponentProperty(lua_State*, struct component*, lpcPropertyType_t);
-//lpProperty_t
+struct Property *
+OBJ_AddComponentProperty(lua_State*, struct component*, struct PropertyType const *);
+//struct Property *
 //OBJ_AddComponentProperty2(lua_State*, struct component*, lpcString_t);
 lpcString_t
 CMP_GetClassName(struct component*);
-lpObject_t
+struct Object *
 CMP_GetOwner(struct component*);
 bool_t
-CMP_SetProperty(struct component*, lpProperty_t);
+CMP_SetProperty(struct component*, struct Property *);
 uint32_t
-PROP_GetShortID(lpcProperty_t);
+PROP_GetShortID(struct Property const *);
 bool_t
-PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
+PROP_Import(struct Property *, enum PropertyAttribute, struct vm_register*);
 void
-PROP_SetTypeSize(lpProperty_t, eDataType_t, uint32_t);
-lpProperty_t
-PROP_AddToList(lpProperty_t, lpProperty_t*);
+PROP_SetTypeSize(struct Property *, eDataType_t, uint32_t);
+struct Property *
+PROP_AddToList(struct Property *, struct Property **);
 void
-PROP_SetValuePtr(lpProperty_t, void*);
-lpObject_t
-PROP_GetObject(lpcProperty_t);
+PROP_SetValuePtr(struct Property *, void*);
+struct Object *
+PROP_GetObject(struct Property const *);
 bool_t 
-PROP_RegisterChangedCallback(lua_State*, lpProperty_t, int);
+PROP_RegisterChangedCallback(lua_State*, struct Property *, int);
 void
-OBJ_ReleaseComponents(lpObject_t);
+OBJ_ReleaseComponents(struct Object *);
 void
-OBJ_ReleaseProperties(lpObject_t);
+OBJ_ReleaseProperties(struct Object *);
 void
 CMP_Detach(void* userdata);
 
 void
-UI_ProcessCommands(struct lua_State* L, lpObject_t root);
+UI_ProcessCommands(struct lua_State* L, struct Object *root);
 
 ORCA_API void
-PROP_AttachProgram(lpProperty_t,
+PROP_AttachProgram(struct Property *,
                    enum PropertyAttribute,
                    struct token* program,
                    lpcString_t source);

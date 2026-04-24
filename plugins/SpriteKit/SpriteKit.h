@@ -19,9 +19,6 @@ typedef struct lua_State lua_State;
 typedef struct SKNode_RenderEventArgs SKNode_RenderMsg_t,* SKNode_RenderMsgPtr;
 
 
-typedef struct SpriteFrame SpriteFrame_t, *lpSpriteFrame_t;
-typedef struct SpriteFrame const cSpriteFrame_t, *lpcSpriteFrame_t;
-
 
 
 /** SpriteFrame struct */
@@ -31,6 +28,7 @@ struct SpriteFrame {
 };
 ORCA_API void luaX_pushSpriteFrame(lua_State *L, struct SpriteFrame const* SpriteFrame);
 ORCA_API struct SpriteFrame* luaX_checkSpriteFrame(lua_State *L, int idx);
+
 
 /** SKNode_RenderEventArgs struct */
 struct SKNode_RenderEventArgs {

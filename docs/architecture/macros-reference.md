@@ -179,7 +179,7 @@ Safely iterates the immediate children of `parent`. Caches `next` before the bod
 
 ```c
 #define FOR_EACH_OBJECT(var, parent)                       \
-  for (lpObject_t var = OBJ_GetFirstChild(parent),         \
+  for (struct Object *var = OBJ_GetFirstChild(parent),         \
          next = var ? OBJ_GetNext(var) : NULL;             \
        var;                                                \
        var = next, next = next ? OBJ_GetNext(next) : NULL)
@@ -308,7 +308,7 @@ struct AnimationPlayer *ap = GetAnimationPlayer(object);
 if (ap && ap->Playing) { … }
 
 // Find a property by index:
-lpProperty_t p = AnimationPlayer_GetProperty(object, kAnimationPlayerSpeed);
+struct Property *p = AnimationPlayer_GetProperty(object, kAnimationPlayerSpeed);
 ```
 
 ---
@@ -341,14 +341,14 @@ The `routing=` attribute on `<message>` elements in XML sets the lower bits at c
 The component message handler function pointer type is:
 
 ```c
-typedef LRESULT (*objectProc_t)(lpObject_t, void*, uint32_t, wParam_t, lParam_t);
+typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lParam_t);
 ```
 
 Parameters:
 
 | Position | Type | Description |
 |---|---|---|
-| 1 | `lpObject_t` | The owning Object |
+| 1 | `struct Object *` | The owning Object |
 | 2 | `void*` | Component user data (`cmp->pUserData`) — cast to `struct ClassName*` |
 | 3 | `uint32_t` | Message ID as forwarded from `OBJ_SendMessageW` (routing bits may be present; generated Procs mask with `MSG_DATA_MASK` in their switch) |
 | 4 | `wParam_t` | Integer parameter |

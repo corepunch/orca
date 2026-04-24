@@ -10,7 +10,7 @@
 FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
 if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename[strlen(OBJ_GetName(ITER))] == '/')
 
-static lpObject_t workspace = NULL;
+static struct Object *workspace = NULL;
 
 // Walk workspace → projects → ThemeLibrary → ThemeGroups → _selectedTheme
 // to resolve a theme variable.  Key must start with '$' (e.g. "$accent").
@@ -19,12 +19,12 @@ static lpObject_t workspace = NULL;
 ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
   if (!key || key[0] != '$') return NULL;
   lpcString_t name = key + 1;  // strip the leading '$'
-  lpObject_t ws = FS_GetWorkspace();
+  struct Object *ws = FS_GetWorkspace();
   if (!ws) return NULL;
   FOR_EACH_OBJECT(project_obj, ws) {
     lpProject_t project = GetProject(project_obj);
     if (!project || !project->ThemeLibrary) continue;
-//    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+//    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
     FOR_LOOP(i, project->NumThemeLibrary) {
       if (project->ThemeLibrary[i].Key && strcmp(project->ThemeLibrary[i].Key, name) == 0) {
         return project->ThemeLibrary[i].Value;
@@ -44,11 +44,11 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
   return NULL;
 }
 
-void FS_SetWorkspace(lpObject_t object) {
+void FS_SetWorkspace(struct Object *object) {
   workspace = object;
 }
 
-lpObject_t FS_GetWorkspace(void) {
+struct Object *FS_GetWorkspace(void) {
   return workspace;
 }
 
@@ -281,7 +281,7 @@ FS_FreeFile(struct file* pFile)
   return NOERROR;
 }
 
-//static void _AddLibrary(lpcClassDesc_t cd, void* param) {
+//static void _AddLibrary(struct ClassDesc const *cd, void* param) {
 //  lua_State *L = ((void**)param)[0];
 //  FOR_EACH_OBJECT(lib, ((void**)param)[1]) {
 //    if (OBJ_GetComponent(lib, cd->ClassID))
@@ -297,7 +297,7 @@ static void
 _InitPropertyTypes(lpProject_t project)
 {
   FOR_LOOP(i, project->NumPropertyTypes) {
-    lpPropertyType_t type = &project->PropertyTypes[i];
+    struct PropertyType *type = &project->PropertyTypes[i];
     fixedString_t tmp={0};
     if (*type->Category) {
       snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
@@ -353,7 +353,7 @@ struct package_iterator {
 };
 
 static void
-_TryLoadBundle(lpcClassDesc_t c, void* args)
+_TryLoadBundle(struct ClassDesc const *c, void* args)
 {
   struct package_iterator* it = args;
   if (!it->project) {
@@ -402,7 +402,7 @@ _InitEnginePlugins(lua_State *L, lpcProject_t project)
 //_InitTheme(lua_State *L, lpProject_t project)
 //{
 //  if (project->ThemeLibrary) {
-//    lpObject_t themes = CMP_GetObject(project->ThemeLibrary);
+//    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
 //    FOR_EACH_OBJECT(themeGroup, themes) {
 //      if (GetThemeGroup(themeGroup) && GetThemeGroup(themeGroup)->_selectedTheme) {
 //        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
@@ -444,7 +444,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
 // Load object from a file, trying registered file loaders based on extension.
 // Returns NULL on failure.
-lpObject_t FS_LoadObject(lpcString_t tmpl) {
+struct Object *FS_LoadObject(lpcString_t tmpl) {
   path_t tmpl_with_ext = {0};
   lpcString_t dot = strrchr(tmpl, '.');
   lpcString_t slash = strrchr(tmpl, '/');

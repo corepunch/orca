@@ -110,7 +110,7 @@ _column_is_flexible(struct column const *col)
  * instead of all landing at position 0 on the secondary axis.
  */
 static void
-_EnsureImplicitSecondaryAxis(PGRIDVIEW pGrid, lpObject_t hObject)
+_EnsureImplicitSecondaryAxis(PGRIDVIEW pGrid, struct Object *hObject)
 {
   enum Direction secondary = (pGrid->Direction == kDirectionHorizontal)
     ? kDirectionVertical : kDirectionHorizontal;
@@ -168,7 +168,7 @@ HANDLER(Grid, Node2D, MeasureOverride)
 {
   uint32_t cellindex = 0;
   Node2D_MeasureOverrideMsg_t size = *pMeasureOverride;
-  Size_t desired = {0};
+  struct Size desired = {0};
 
   PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
   PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);

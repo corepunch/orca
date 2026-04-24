@@ -144,7 +144,7 @@ _ExitStencilClip(uint8_t parentRef)
 }
 
 static void
-draw_children(lpObject_t hObject,
+draw_children(struct Object *hObject,
               Node2D_Draw2DContentMsgPtr pDraw2DContent,
               struct color fg)
 {
@@ -209,7 +209,7 @@ HANDLER(Node2D, Node2D, DrawBrush)
   return TRUE;
 }
 
-static void _RenderSubViews(lpObject_t hObject) {
+static void _RenderSubViews(struct Object *hObject) {
   FOR_EACH_CHILD(hObject, _RenderSubViews);
 
   struct image_info img;
@@ -552,7 +552,7 @@ HANDLER(Screen, Object, Destroy) {
   return FALSE;
 }
 
-static uint32_t get_size(lpObject_t obj) {
+static uint32_t get_size(struct Object *obj) {
   return MAKEDWORD(NODE2D_FRAME(GetNode2D(obj), Size, 0).Actual,
                    NODE2D_FRAME(GetNode2D(obj), Size, 1).Actual);
 }
@@ -612,7 +612,7 @@ HANDLER(Screen, Window, Paint) {
   return TRUE;
 }
 
-static void OBJ_SetTreeDirty(lpObject_t obj) {
+static void OBJ_SetTreeDirty(struct Object *obj) {
   OBJ_SetDirty(obj);
   FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
 }

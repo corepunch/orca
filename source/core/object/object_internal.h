@@ -8,8 +8,8 @@
 struct component
 {
   struct component* next;
-  lpcClassDesc_t pcls;
-  lpObject_t pobj;
+  struct ClassDesc const *pcls;
+  struct Object *pobj;
   char pUserData[];
 };
 
@@ -18,9 +18,9 @@ struct Object
   LPSTR Name;
   uint32_t identifier;
 
-  lpObject_t parent;
-  lpObject_t children;
-  lpObject_t next;
+  struct Object *parent;
+  struct Object *children;
+  struct Object *next;
 
   LPSTR SourceFile;
   LPSTR TextContent;

@@ -5,7 +5,7 @@
 int f_peek_iterator(lua_State* L)
 {
   struct AXmessage msg = {0};
-  lpObject_t object = *(lpObject_t*)luaL_checkudata(L, lua_upvalueindex(1), API_TYPE_OBJECT);
+  struct Object *object = *(struct Object **)luaL_checkudata(L, lua_upvalueindex(1), API_TYPE_OBJECT);
   if (!axGetMessage(&msg)) {
     /* No event ready; end this iterator step. */
     return 0;
@@ -65,7 +65,7 @@ int f_peek_message(lua_State* L) {
 }
 
 //void
-//axPostMessageW(lpObject_t hobj, uint32_t Msg, wParam_t wParam, lParam_t lParam)
+//axPostMessageW(struct Object *hobj, uint32_t Msg, wParam_t wParam, lParam_t lParam)
 //{
 //  static uint32_t message_id = 0;
 //  struct AXmessage data = { hobj, Msg, wParam, lParam, message_id++ };
@@ -84,7 +84,7 @@ int f_peek_message(lua_State* L) {
 //}
 
 //void
-//SV_PostMessage(lpObject_t hobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
+//SV_PostMessage(struct Object *hobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
 //{
 //  axPostMessageW(hobj, fnv1a32(Msg), wParam, lParam);
 //}

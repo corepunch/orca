@@ -84,7 +84,7 @@ lua_setfield(L, LUA_REGISTRYINDEX, IID);
   }
 
 #define OPTION_VALUE(NAME, ...)                                                \
-  void NAME(lua_State* L, uint32_t index, lpProperty_t property)           \
+  void NAME(lua_State* L, uint32_t index, struct Property *property)           \
   {                                                                            \
     static lpcString_t values[] = { __VA_ARGS__, NULL };                       \
     uint32_t number;                                                           \
@@ -164,10 +164,6 @@ lua_setfield(L, LUA_REGISTRYINDEX, IID);
 #define LUA_INTERFACE(NAME) struct NAME
 #define LUA_INIT()
 #define XMLSTR(s) ((xmlChar *)(s))
-
-#define FWD_STRUCT(NAME)\
-typedef struct NAME NAME##_t, *lp##NAME##_t;\
-typedef struct NAME const c##NAME##_t, *lpc##NAME##_t;
 
 enum
 {

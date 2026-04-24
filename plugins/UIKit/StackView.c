@@ -5,7 +5,7 @@
 #include <plugins/UIKit/UIKit.h>
 
 static float
-_GetContentSize(lpObject_t hObject,
+_GetContentSize(struct Object *hObject,
                 StackViewPtr pStackView,
                 enum Direction axis)
 {
@@ -18,7 +18,7 @@ _GetContentSize(lpObject_t hObject,
 }
 
 static uint32_t
-_Arrange(lpObject_t hObject,
+_Arrange(struct Object *hObject,
          StackViewPtr pStackView,
          struct bounds primaryBounds,
          struct bounds oppositeBounds)
@@ -66,7 +66,7 @@ _Arrange(lpObject_t hObject,
   FOR_EACH_LAYOUTABLE(child, hObject)
   {
     Node2DPtr subview = GetNode2D(child);
-    lpProperty_t p = StackView_GetProperty(hObject, kStackViewAlignItems);
+    struct Property *p = StackView_GetProperty(hObject, kStackViewAlignItems);
     int *alignment = &subview->_node->Alignment.Axis[!pStackView->Direction];
     LRESULT s;
     switch (p ? pStackView->AlignItems : -1) {
@@ -118,7 +118,7 @@ _Arrange(lpObject_t hObject,
 HANDLER(StackView, Node2D, MeasureOverride)
 {
   Node2DPtr pNode2D = GetNode2D(hObject);
-  Size_t size = {
+  struct Size size = {
     pStackView->Direction == kDirectionHorizontal ? -pStackView->Spacing : 0,
     pStackView->Direction == kDirectionVertical ? -pStackView->Spacing : 0,
   };

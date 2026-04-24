@@ -4,20 +4,20 @@
 
 #include <plugins/SceneKit/SceneKit.h>
 
-lpcClassDesc_t
-get_node_class_desc(lpObject_t object)
+struct ClassDesc const *
+get_node_class_desc(struct Object *object)
 {
   return object->components ? object->components->pcls : NULL;
 }
 
 void
-UI_EnumObjectPropertyTypes(HOBJ object,
+UI_EnumObjectPropertyTypes(struct Object *object,
                            EnumPropertyTypeProc fnProc,
                            LPVOID lpParam)
 {
   if (!object)
     return;
-  lpObject_t HACK_GetRootView(void);
+  struct Object *HACK_GetRootView(void);
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       LPCPDESC pdesc = cmp->pcls->Properties+i;

@@ -1,13 +1,13 @@
 #include "property_internal.h"
 
 static lpcString_t
-PROP_GetShortName(lpcProperty_t property)
+PROP_GetShortName(struct Property const *property)
 {
   return property->pdesc->Name;
 }
 
 static bool_t
-invoke_changed_callback_from_property_events(lua_State* L, lpObject_t object, lpProperty_t property, int num_args)
+invoke_changed_callback_from_property_events(lua_State* L, struct Object *object, struct Property *property, int num_args)
 {
   if (!property || !property->changeCallback) {
     lua_pop(L, num_args);
@@ -36,8 +36,8 @@ invoke_changed_callback_from_property_events(lua_State* L, lpObject_t object, lp
 
 void
 PROP_FireNotification(lua_State* L,
-                      lpProperty_t property,
-                      lpObject_t object)
+                      struct Property *property,
+                      struct Object *object)
 {
   if (!property || !PROP_HasHandler(property)) return;
   // Clear the queued flag before firing so that cascaded PROP_SetValue calls
@@ -59,7 +59,7 @@ PROP_FireNotification(lua_State* L,
 }
 
 void
-PROP_AttachProgram(lpProperty_t p,
+PROP_AttachProgram(struct Property *p,
                    enum PropertyAttribute a,
                    struct token* program,
                    lpcString_t code)
@@ -80,7 +80,7 @@ PROP_AttachProgram(lpProperty_t p,
 }
 
 bool_t
-PROP_HasProgram(lpProperty_t p)
+PROP_HasProgram(struct Property *p)
 {
   FOR_EACH_LIST(struct property_program, pp, core.programs) {
     if (pp->property == p && pp->token != NULL) return TRUE;

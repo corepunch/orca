@@ -3,12 +3,12 @@
 struct _CANVASVIEW {
   DWORD mode;
   RECT selection;
-  lpObject_t object;
-  lpObject_t selected;
+  struct Object *object;
+  struct Object *selected;
   struct Texture *scene_texture;
 };
 
-HOBJ current_scene = NULL;
+struct Object *current_scene = NULL;
 
 #include <plugins/UIKit/UIKit.h>
 
@@ -151,18 +151,18 @@ R_DrawNodeSelection(LPMATRIX4 proj,
   }
 }
 
-HOBJ CanvasView_GetScene(HEDWND wnd) {
+struct Object *CanvasView_GetScene(HEDWND wnd) {
   struct _CANVASVIEW* sv = ED_GetUserData(wnd);
   return sv->object ? sv->object : editor.screen;
 }
 
-static BOOL FixedScaling(HOBJ screen) {
+static BOOL FixedScaling(struct Object *screen) {
   return GetScreen(screen) &&
     GetNode(screen)->Size.Axis[0].Requested &&
     GetNode(screen)->Size.Axis[1].Requested;
 }
 
-static DWORD LocalCoords(HEDWND wnd, HOBJ obj, wParam_t wparam) {
+static DWORD LocalCoords(HEDWND wnd, struct Object *obj, wParam_t wparam) {
   if (FixedScaling(obj)) {
     float w = GetNode(obj)->Size.Axis[0].Requested;
     float h = GetNode(obj)->Size.Axis[1].Requested;
@@ -177,7 +177,7 @@ static DWORD LocalCoords(HEDWND wnd, HOBJ obj, wParam_t wparam) {
   }
 }
 
-static struct vec2 LocalScaling(HEDWND wnd, HOBJ obj) {
+static struct vec2 LocalScaling(HEDWND wnd, struct Object *obj) {
   if (FixedScaling(obj)) {
     float w = GetNode(obj)->Size.Axis[0].Requested;
     float h = GetNode(obj)->Size.Axis[1].Requested;
@@ -192,7 +192,7 @@ static struct vec2 LocalScaling(HEDWND wnd, HOBJ obj) {
 
 void ED_DrawCanvasView(HEDWND wnd, struct _CANVASVIEW* sv) {
   RECT view = ED_GetClientRect(wnd);
-  HOBJ scene = CanvasView_GetScene(wnd);
+  struct Object *scene = CanvasView_GetScene(wnd);
   
   core_AdvanceFrame();
   
@@ -266,7 +266,7 @@ static EDTBBTN toolbar[] = {
 
 LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
 //  SIZE2 window = R_GetWindowSize();
-  HOBJ tmp = NULL;
+  struct Object *tmp = NULL;
   struct _CANVASVIEW *data = ED_GetUserData(wnd);
   switch (msg) {
     case EVT_CREATE:
@@ -331,7 +331,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       return 1;
     case ID_Node_LeftButtonUp:
       if (data->mode == ID_OBJECT_IMAGE && data->selection.width && data->selection.height) {
-        HOBJ newobj = UI_NewObject(CanvasView_GetScene(wnd), "Node", ID_OBJECT_IMAGE);
+        struct Object *newobj = UI_NewObject(CanvasView_GetScene(wnd), "Node", ID_OBJECT_IMAGE);
         OBJ_SetPropertyValue(newobj, "LayoutTransformTranslation", &data->selection);
         OBJ_SetPropertyValue(newobj, "Width", &data->selection.width);
         OBJ_SetPropertyValue(newobj, "Height", &data->selection.height);
@@ -346,7 +346,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_SetFocusedPanel(wnd);
       {
         wParam_t coords = LocalCoords(wnd, CanvasView_GetScene(wnd), wparm);
-        if ((tmp = (lpObject_t)_SendMessage(CanvasView_GetScene(wnd), Node, HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
+        if ((tmp = (struct Object *)_SendMessage(CanvasView_GetScene(wnd), Node, HitTest, .x = LOWORD(coords), .y = HIWORD(coords)))) {
           ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, tmp);
           ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, tmp);
@@ -378,10 +378,10 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
         case ID_EDIT_DUPLICATE:
           if (data->selected && OBJ_GetParent(data->selected)) {
             xmlNodePtr xml = ED_ConvertNode(data->selected, NULL);
-//            HOBJ root = CanvasView_GetScene(wnd);
+//            struct Object *root = CanvasView_GetScene(wnd);
             WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
               xmlDocSetRootElement(doc, xml);
-              lpObject_t OBJ_LoadDocument(xmlDocPtr doc);
+              struct Object *OBJ_LoadDocument(xmlDocPtr doc);
               OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(doc), FALSE);
             }
           }

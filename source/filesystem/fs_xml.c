@@ -3,8 +3,8 @@
 #include <source/core/core_properties.h>
 
 // Forward declarations for the node-construction functions
-static lpObject_t _FS_ConstructNode(xmlNodePtr element, bool_t send_start);
-static lpObject_t FS_ConstructNode(xmlNodePtr element);
+static struct Object *_FS_ConstructNode(xmlNodePtr element, bool_t send_start);
+static struct Object *FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in core/property/property_flow.c
 // parse_property handles all common property types (bool, int, float, string, color, enum,
@@ -44,7 +44,7 @@ _ParseBindingModeStr(lpcString_t s)
 // Parse a single XML attribute value and set it on obj.
 // Handles Name/id, class, and all registered properties.
 static void
-_SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
+_SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
 {
   // Skip editor-only / template attributes
   if (!strcmp(name, "ClassName") || !strcmp(name, "PlaceholderTemplate"))
@@ -63,7 +63,7 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
   }
 
   // Look up the property type descriptor (implicit first, then full-qualified)
-  lpcPropertyType_t pdesc = OBJ_FindImplicitProperty(obj, name);
+  struct PropertyType const *pdesc = OBJ_FindImplicitProperty(obj, name);
   if (!pdesc) pdesc = OBJ_FindExplicitProperty(obj, name);
   if (!pdesc) {
     Con_Error("Unknown property '%s' for class '%s'",
@@ -72,7 +72,7 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
   }
 
   // Find or create the property slot
-  lpProperty_t prop = NULL;
+  struct Property *prop = NULL;
   if (FAILED(OBJ_FindLongProperty(obj, pdesc->FullIdentifier, &prop))) {
     Con_Error("Could not get property slot for '%s'", pdesc->Name);
     return;
@@ -100,8 +100,8 @@ _SetPropertyFromString(lpObject_t obj, lpcString_t name, lpcString_t value)
 
 // Build an object-property child element (e.g. <Grid.Columns> or binding).
 static void
-_ConstructProperty(lpObject_t obj,
-                   lpcPropertyType_t pdesc, xmlNodePtr element)
+_ConstructProperty(struct Object *obj,
+                   struct PropertyType const *pdesc, xmlNodePtr element)
 {
   // Array properties require Lua metatables for struct construction.
   // Skip with a diagnostic; callers can use the Lua API if needed.
@@ -143,7 +143,7 @@ _ConstructProperty(lpObject_t obj,
 // Handle <AnimationPlayer ...> child: attach-only component whose attributes
 // are parsed as properties of the owning object.
 static void
-_HandleAnimationPlayer(lpObject_t obj, xmlNodePtr element)
+_HandleAnimationPlayer(struct Object *obj, xmlNodePtr element)
 {
   OBJ_AddComponent(obj, ID_AnimationPlayer);
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
@@ -157,14 +157,14 @@ _HandleAnimationPlayer(lpObject_t obj, xmlNodePtr element)
 
 // Handle <AnimationCurve ...> child: regular child object of an AnimationClip.
 static void
-_HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
+_HandleAnimationCurve(struct Object *obj, xmlNodePtr element)
 {
-  lpcClassDesc_t cls = OBJ_FindClass("AnimationCurve");
+  struct ClassDesc const *cls = OBJ_FindClass("AnimationCurve");
   if (!cls) {
     Con_Error("AnimationCurve class not found");
     return;
   }
-  lpObject_t curve = OBJ_Create(cls->ClassID);
+  struct Object *curve = OBJ_Create(cls->ClassID);
 
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
@@ -176,7 +176,7 @@ _HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
 
   // Process explicit-property child elements (e.g. <AnimationCurve.Keyframes>)
   xmlForEach(sub, element) {
-    lpcPropertyType_t pdesc = OBJ_FindExplicitProperty(curve, (lpcString_t)sub->name);
+    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(curve, (lpcString_t)sub->name);
     if (pdesc) {
       _ConstructProperty(curve, pdesc, sub);
     }
@@ -189,7 +189,7 @@ _HandleAnimationCurve(lpObject_t obj, xmlNodePtr element)
 // Handle <StateManagerController ...> child: attach-only component with an
 // optional inline <StateManager> child element.
 static void
-_HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
+_HandleStateManagerController(struct Object *obj, xmlNodePtr element)
 {
   OBJ_AddComponent(obj, ID_StateManagerController);
 
@@ -203,9 +203,9 @@ _HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
 
   // Look for an inline <StateManager> child element
   xmlFindAll(sub, element, XMLSTR("StateManager")) {
-    lpObject_t sm = FS_ConstructNode(sub);
+    struct Object *sm = FS_ConstructNode(sub);
     if (sm) {
-      lpProperty_t prop = NULL;
+      struct Property *prop = NULL;
       if (SUCCEEDED(OBJ_FindShortProperty(obj, "StateManager", &prop))) {
         PROP_SetValue(prop, &sm);
       }
@@ -218,7 +218,7 @@ _HandleStateManagerController(lpObject_t obj, xmlNodePtr element)
 // linked XML file (PlaceholderTemplate attribute) in-place and apply the
 // remaining attributes to the loaded object before dispatching Object.Start.
 // No Lua state is required.
-static lpObject_t
+static struct Object *
 _HandlePrefabPlaceholder(xmlNodePtr element)
 {
   xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
@@ -235,7 +235,7 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
 // send_start: when TRUE, dispatches Object.Start on the root after construction.
 //             Set FALSE in _HandlePrefabPlaceholder to defer Start until after
 //             placeholder attribute overrides have been applied.
-static lpObject_t
+static struct Object *
 _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 {
   lpcString_t tag = (lpcString_t)element->name;
@@ -248,13 +248,13 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
     return _HandlePrefabPlaceholder(element);
   }
 
-  lpcClassDesc_t cls = OBJ_FindClass(tag);
+  struct ClassDesc const *cls = OBJ_FindClass(tag);
   if (!cls) {
     Con_Error("Unknown element type '%s'", tag);
     return NULL;
   }
 
-  lpObject_t obj = OBJ_Create(cls->ClassID);
+  struct Object *obj = OBJ_Create(cls->ClassID);
 
   // Parse all XML attributes as object properties
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
@@ -292,7 +292,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
     lpcString_t tag = (lpcString_t)sub->name;
 
     // Explicit property child (e.g. <Grid.Columns> or <AnimationClip.Keyframes>)
-    lpcPropertyType_t pdesc = OBJ_FindExplicitProperty(obj, tag);
+    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(obj, tag);
     if (pdesc) {
       _ConstructProperty(obj, pdesc, sub);
       continue;
@@ -312,7 +312,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
       // Lua-only elements: no-op in the C XML parser
     } else {
       // Regular child object: recurse and attach (children always get Start)
-      lpObject_t child = _FS_ConstructNode(sub, TRUE);
+      struct Object *child = _FS_ConstructNode(sub, TRUE);
       if (child) {
         OBJ_AddChild(obj, child, FALSE);
       }
@@ -324,13 +324,13 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 }
 
 // Public wrapper: always sends Object.Start for the root.
-static lpObject_t
+static struct Object *
 FS_ConstructNode(xmlNodePtr element)
 {
   return _FS_ConstructNode(element, TRUE);
 }
 
-lpObject_t
+struct Object *
 FS_LoadObjectFromXml(lpcString_t path)
 {
   struct file* fp = FS_LoadFile(path);
@@ -343,7 +343,7 @@ FS_LoadObjectFromXml(lpcString_t path)
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
-    lpObject_t result = root ? FS_ConstructNode(root) : NULL;
+    struct Object *result = root ? FS_ConstructNode(root) : NULL;
     xmlFreeDoc(doc);
     if (result) {
       OBJ_SetSourceFile(result, path);
@@ -354,13 +354,13 @@ FS_LoadObjectFromXml(lpcString_t path)
   return NULL;
 }
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 FS_LoadObjectFromXML(lpcString_t path)
 {
   return FS_LoadObjectFromXml(path);
 }
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
   xmlDoc* doc = xmlReadMemory(xml_string, (int)strlen(xml_string),
@@ -370,12 +370,12 @@ FS_LoadObjectFromXmlString(lpcString_t xml_string)
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);
-  lpObject_t result = root ? FS_ConstructNode(root) : NULL;
+  struct Object *result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
   return result;
 }
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 FS_LoadObjectFromXMLString(lpcString_t xml_string)
 {
   return FS_LoadObjectFromXmlString(xml_string);

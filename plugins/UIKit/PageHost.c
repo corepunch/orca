@@ -2,8 +2,8 @@
 
 #define PAGE_HISTORY_MAX 32
 
-//static lpObject_t
-//_GetActivePage(lpObject_t hObject, PageHostPtr pPageHost)
+//static struct Object *
+//_GetActivePage(struct Object *hObject, PageHostPtr pPageHost)
 //{
 //  if (pPageHost->ActivePage) {
 //    return CMP_GetObject(pPageHost->ActivePage);
@@ -28,7 +28,7 @@ _SetActivePage(PageHostPtr pPageHost, PagePtr pPage)
 }
 
 static PagePtr
-PageHost_FindPageByPath(lpObject_t hObject, const char* path)
+PageHost_FindPageByPath(struct Object *hObject, const char* path)
 {
   FOR_EACH_OBJECT(hChild, hObject) {
     PagePtr pPage = GetPage(hChild);

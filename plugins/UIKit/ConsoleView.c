@@ -15,7 +15,7 @@
 static uint32_t
 PointToData(ConsoleViewCPtr t, int mx, int my, uint32_t *cursor)
 {
-  vec2_t scrolled = VEC2_Sub(&(vec2_t){mx, my}, &t->_scroll);
+  struct vec2 scrolled = VEC2_Sub(&(struct vec2){mx, my}, &t->_scroll);
   uint32_t x = scrolled.x / CONSOLE_CHAR_WIDTH;
   uint32_t y = scrolled.y / CONSOLE_CHAR_HEIGHT;
   if (x < t->BufferWidth && y < t->BufferHeight) {
@@ -110,7 +110,7 @@ pack_position(int32_t x, int32_t y)
 }
 
 static uint64_t
-query_unpack(lpObject_t obj, ConsoleViewCPtr t, float x, float y)
+query_unpack(struct Object *obj, ConsoleViewCPtr t, float x, float y)
 {
 #ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
   struct vec3 out = (struct vec3){x,y,0};
@@ -124,7 +124,7 @@ query_unpack(lpObject_t obj, ConsoleViewCPtr t, float x, float y)
 }
 
 static bool_t
-query_index_position(lpObject_t o,
+query_index_position(struct Object *o,
                      ConsoleViewCPtr t,
                      int32_t i,
                      int32_t offx,

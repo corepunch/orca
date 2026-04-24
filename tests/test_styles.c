@@ -27,9 +27,9 @@
  * Engine-internal functions not declared in the public header but exported
  * from the shared library (no -fvisibility=hidden in the build).
  */
-extern lpObject_t OBJ_Create(uint32_t class_id);
-extern void OBJ_ReleaseProperties(lpObject_t);
-extern void OBJ_ReleaseComponents(lpObject_t);
+extern struct Object *OBJ_Create(uint32_t class_id);
+extern void OBJ_ReleaseProperties(struct Object *);
+extern void OBJ_ReleaseComponents(struct Object *);
 
 /* ------------------------------------------------------------------ */
 /* Minimal test harness                                                */
@@ -118,7 +118,7 @@ static void register_styled_class(void) {
 /* Object lifecycle helper                                             */
 /* ------------------------------------------------------------------ */
 
-static lpObject_t make_styled_object(void) {
+static struct Object *make_styled_object(void) {
     return OBJ_Create(ID_TestStyledComp);
 }
 
@@ -128,7 +128,7 @@ static lpObject_t make_styled_object(void) {
  * We dispatch Object.Release manually so attach-only components
  * (StyleController) can clean up before the component memory is freed.
  */
-static void destroy_object(lpObject_t obj) {
+static void destroy_object(struct Object *obj) {
     if (!obj) return;
     /* Dispatch Object.Release → StyleController.Release frees classes + sheet */
     OBJ_SendMessageW(obj, ID_Object_Release, 0, NULL);
@@ -144,32 +144,32 @@ static void destroy_object(lpObject_t obj) {
  * propFullID: FullIdentifier hash of the target property (e.g. fnv1a32("TestStyledComp.Width")).
  * value: float value to set for the override.
  */
-static void _test_add_float_rule(lpObject_t obj, lpcString_t className,
+static void _test_add_float_rule(struct Object *obj, lpcString_t className,
                                   uint32_t propFullID, float value)
 {
     struct StyleController* sc = GetStyleController(obj);
     if (!sc) return;
     if (!sc->StyleSheet) {
-        lpObject_t s = OBJ_Create(ID_StyleSheet);
+        struct Object *s = OBJ_Create(ID_StyleSheet);
         sc->StyleSheet = GetStyleSheet(s);
         sc->owned_sheet = TRUE;
     }
-    lpObject_t sheetObj = CMP_GetObject(sc->StyleSheet);
+    struct Object *sheetObj = CMP_GetObject(sc->StyleSheet);
 
-    lpObject_t ruleObj = OBJ_Create(ID_StyleRule);
+    struct Object *ruleObj = OBJ_Create(ID_StyleRule);
     struct StyleRule* sr = GetStyleRule(ruleObj);
     sr->class_id = fnv1a32(className);
 
     /* Set ClassName property on the rule */
-    lpProperty_t clsProp = NULL;
+    struct Property *clsProp = NULL;
     if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &clsProp))) {
         PROP_SetStringValue(clsProp, className);
     }
 
     /* Find the property type by FullIdentifier and create an override */
-    lpcPropertyType_t pt = OBJ_FindPropertyType(propFullID);
+    struct PropertyType const *pt = OBJ_FindPropertyType(propFullID);
     if (pt) {
-        lpProperty_t rp = PROP_Create(NULL, ruleObj, pt);
+        struct Property *rp = PROP_Create(NULL, ruleObj, pt);
         PROP_SetValue(rp, &value);
     }
 
@@ -231,7 +231,7 @@ static void test_add_style_rule_no_component(void) {
      * Build a bare object with no StyleController. _test_add_float_rule
      * checks GetStyleController(obj) and must not crash when it's NULL.
      */
-    lpObject_t obj = calloc(1, sizeof(struct Object));
+    struct Object *obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
     /* Must not crash — GetStyleController returns NULL for bare objects */
     _test_add_float_rule(obj, "btn", 0xbfbb7a5bu /* TestStyledComp.Width */, 100.f);
@@ -281,7 +281,7 @@ static void test_apply_styles_float_property(void) {
         /* Apply styles — sends StyleController.ThemeChanged message */
         _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         /* Verify the Width property was set to 42 */
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(float *)PROP_GetValue(prop) == 42.f);
@@ -294,7 +294,7 @@ static void test_apply_styles_float_property(void) {
  */
 static void test_apply_styles_no_component(void) {
     do {
-    lpObject_t obj = calloc(1, sizeof(struct Object));
+    struct Object *obj = calloc(1, sizeof(struct Object));
     EXPECT(obj != NULL);
     _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);  /* must not crash */
     free(obj);
@@ -350,7 +350,7 @@ static void test_add_style_rule_dot_selector_matches(void) {
         /* Class parsed without dot */
         _SendMessage(obj, StyleController, AddClasses, "btn");
         _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(float *)PROP_GetValue(prop) == 77.f);

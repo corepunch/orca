@@ -43,8 +43,8 @@
  * not declared in the public header.  They ARE exported from the shared
  * library (no -fvisibility=hidden in the build), so we declare them here.
  */
-extern lpObject_t OBJ_Create(uint32_t class_id);
-extern void OBJ_ReleaseProperties(lpObject_t);
+extern struct Object *OBJ_Create(uint32_t class_id);
+extern void OBJ_ReleaseProperties(struct Object *);
 extern struct color COLOR_Parse(lpcString_t);
 
 /* ------------------------------------------------------------------ */
@@ -79,14 +79,14 @@ static const char* s_current_test = NULL;
 /*
  * PROP_TEST — shorthand for the common find→type→null→set→not-null→value
  * pattern shared by simple scalar/string property tests.  _p names the
- * lpProperty_t used inside cmpval so callers can write e.g.
+ * struct Property *used inside cmpval so callers can write e.g.
  *   PROP_TEST(obj, "Value", kDataTypeFloat, &(float){3.14f},
  *             *(float*)PROP_GetValue(_p) == 3.14f);
  * The block (not do…while) lets EXPECT's break reach the enclosing WITH loop.
  */
 #define PROP_TEST(obj, name, dtype, setval, cmpval)                          \
     {                                                                        \
-        lpProperty_t _p;                                                     \
+        struct Property *_p;                                                     \
         EXPECT_OK(OBJ_FindShortProperty(obj, name, &_p));                    \
         EXPECT(PROP_GetType(_p) == dtype);                                   \
         EXPECT(PROP_IsNull(_p));                                             \
@@ -136,8 +136,8 @@ static struct PropertyType s_testProps[5] = {
 
 /* Null ObjProc — components in these tests never receive messages.
  * Signature must match objectProc_t exactly:
- *   LRESULT (lpObject_t, void*, uint32_t msg, wParam_t, lParam_t) */
-static LRESULT TestComp_Proc(lpObject_t o, void* cmp, uint32_t msg, wParam_t w, lParam_t l) {
+ *   LRESULT (struct Object *, void*, uint32_t msg, wParam_t, lParam_t) */
+static LRESULT TestComp_Proc(struct Object *o, void* cmp, uint32_t msg, wParam_t w, lParam_t l) {
     (void)o; (void)cmp; (void)msg; (void)w; (void)l;
     return 0;
 }
@@ -178,7 +178,7 @@ static struct PropertyType s_rtProps[3] = {
     { .Name = "Label", .Key = "Label", .DataType = kDataTypeString, .DataSize = sizeof(const char*), .ShortIdentifier = 0x9eccf29d, .FullIdentifier = 0x9eccf29d, .Offset = offsetof(struct RTComp, Label) },
 };
 
-static LRESULT RTComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+static LRESULT RTComp_Proc(struct Object *o, void* cmp, uint32_t msg,
                             wParam_t w, lParam_t l) {
     (void)o; (void)cmp; (void)msg; (void)w; (void)l;
     return 0;
@@ -199,7 +199,7 @@ static void register_runtime_class(void)
     OBJ_RegisterClass(&s_rtClass);
 }
 
-static lpObject_t make_rt_object(void) {
+static struct Object *make_rt_object(void) {
     return OBJ_Create(fnv1a32("RTComp"));
 }
 
@@ -224,7 +224,7 @@ static struct PropertyType s_rtString2Props[2] = {
       .Offset = offsetof(struct RTString2Comp, Target) },
 };
 
-static LRESULT RTString2Comp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+static LRESULT RTString2Comp_Proc(struct Object *o, void* cmp, uint32_t msg,
                                    wParam_t w, lParam_t l) {
     (void)o; (void)cmp; (void)msg; (void)w; (void)l;
     return 0;
@@ -246,7 +246,7 @@ static void register_rtstring2_class(void) {
     OBJ_RegisterClass(&s_rtString2Class);
 }
 
-static lpObject_t make_rtstring2_object(void) {
+static struct Object *make_rtstring2_object(void) {
     return OBJ_Create(fnv1a32("RTString2Comp"));
 }
 
@@ -269,7 +269,7 @@ static struct PropertyType s_colorProps[1] = {
       .Offset = offsetof(struct ColorComp, Tint) },
 };
 
-static LRESULT ColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+static LRESULT ColorComp_Proc(struct Object *o, void* cmp, uint32_t msg,
                               wParam_t w, lParam_t l) {
     (void)o; (void)cmp; (void)msg; (void)w; (void)l;
     return 0;
@@ -289,7 +289,7 @@ static void register_color_class(void) {
     OBJ_RegisterClass(&s_colorClass);
 }
 
-static lpObject_t make_color_object(void) {
+static struct Object *make_color_object(void) {
     return OBJ_Create(fnv1a32("ColorComp"));
 }
 
@@ -320,7 +320,7 @@ static struct PropertyType s_rtColorProps[2] = {
       .Offset = offsetof(struct RTColorComp, Alpha) },
 };
 
-static LRESULT RTColorComp_Proc(lpObject_t o, void* cmp, uint32_t msg,
+static LRESULT RTColorComp_Proc(struct Object *o, void* cmp, uint32_t msg,
                                 wParam_t w, lParam_t l) {
     (void)o; (void)cmp; (void)msg; (void)w; (void)l;
     return 0;
@@ -340,7 +340,7 @@ static void register_rt_color_class(void) {
     OBJ_RegisterClass(&s_rtColorClass);
 }
 
-static lpObject_t make_rt_color_object(void) {
+static struct Object *make_rt_color_object(void) {
     return OBJ_Create(fnv1a32("RTColorComp"));
 }
 
@@ -349,7 +349,7 @@ static lpObject_t make_rt_color_object(void) {
 /* ------------------------------------------------------------------ */
 
 /* Allocate a bare TestComp object without a Lua state */
-static lpObject_t make_object(void) {
+static struct Object *make_object(void) {
     return OBJ_Create(fnv1a32("TestComp"));
 }
 
@@ -360,7 +360,7 @@ static lpObject_t make_object(void) {
  * frees the object itself.
  * Does NOT call OBJ_Release (which needs a Lua state and message dispatch).
  */
-static void destroy_object(lpObject_t obj) {
+static void destroy_object(struct Object *obj) {
     if (!obj) return;
     OBJ_ReleaseProperties(obj);
     OBJ_ReleaseComponents(obj);
@@ -374,7 +374,7 @@ static void destroy_object(lpObject_t obj) {
 
 static void test_int_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeInt);
         EXPECT(PROP_IsNull(prop));
@@ -399,7 +399,7 @@ static void test_float_property(void) {
 
 static void test_bool_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Active", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeBool);
 
@@ -422,7 +422,7 @@ static void test_string_property_basic(void) {
 
 static void test_string_property_reassign(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR("first"));
@@ -442,7 +442,7 @@ static void test_string_property_reassign(void) {
 
 static void test_string_property_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR("some string"));
@@ -459,7 +459,7 @@ static void test_string_property_clear(void) {
 
 static void test_string_property_clear_without_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         /* Clearing a never-set string property must not crash */
@@ -469,7 +469,7 @@ static void test_string_property_clear_without_set(void) {
 
 static void test_release_properties_frees_strings(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         PROP_SetValue(prop, PROP_STR("will be freed"));
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
@@ -482,7 +482,7 @@ static void test_set_property_value_api(void) {
         /* OBJ_SetPropertyValue creates the property on demand */
         EXPECT_OK(OBJ_SetPropertyValue(obj, "Count", &(int){99}));
 
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
 
@@ -494,7 +494,7 @@ static void test_set_property_value_api(void) {
 
 static void test_property_state_string(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         /* Set the hover state value */
@@ -512,7 +512,7 @@ static void test_property_state_string(void) {
 
 static void test_struct_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Position", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeStruct);
 
@@ -526,14 +526,14 @@ static void test_struct_property(void) {
 
 static void test_find_property_unknown(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop = NULL;
+        struct Property *prop = NULL;
         EXPECT(FAILED(OBJ_FindShortProperty(obj, "NonExistentProp", &prop)));
     }
 }
 
 static void test_multiple_properties_independent(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t pCount, pLabel;
+        struct Property *pCount, pLabel;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &pCount));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &pLabel));
         EXPECT(pCount != pLabel);
@@ -554,7 +554,7 @@ static void test_multiple_properties_independent(void) {
 
 static void test_string_empty(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR(""));
@@ -566,7 +566,7 @@ static void test_string_empty(void) {
 static void test_release_without_string_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* Only set a non-string property */
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         int val = 1;
         PROP_SetValue(prop, &val);
@@ -640,7 +640,7 @@ static void test_runtime_run_arithmetic(void) {
 
 static void test_runtime_import_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeInt;
@@ -653,7 +653,7 @@ static void test_runtime_import_int(void) {
 
 static void test_runtime_import_float(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeFloat;
@@ -666,7 +666,7 @@ static void test_runtime_import_float(void) {
 
 static void test_runtime_import_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct vm_register r = {0};
         r.type = kDataTypeString;
@@ -680,7 +680,7 @@ static void test_runtime_import_string(void) {
 
 static void test_runtime_attach_and_update_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         struct token *prog = Token_Create("21");
         EXPECT(prog != NULL);
@@ -695,7 +695,7 @@ static void test_runtime_attach_and_update_int(void) {
 
 static void test_runtime_attach_and_update_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("\"bound\"");
         EXPECT(prog != NULL);
@@ -718,7 +718,7 @@ static void test_runtime_attach_and_update_string(void) {
  */
 static void test_runtime_property_reference(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t propCount, propValue;
+        struct Property *propCount, propValue;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
 
@@ -743,7 +743,7 @@ static void test_runtime_property_reference(void) {
  */
 static void test_runtime_string_concat_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
         EXPECT(prog != NULL);
@@ -820,7 +820,7 @@ static void test_string_export_unset_produces_empty(void) {
  */
 static void test_string_binding_unset_source_gives_empty(void) {
     WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
-        lpProperty_t target;
+        struct Property *target;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
         /* Source is never set — its char* is NULL. */
         struct token *prog = Token_Create("{./Source}");
@@ -841,7 +841,7 @@ static void test_string_binding_unset_source_gives_empty(void) {
  */
 static void test_string_binding_value_propagates(void) {
     WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
-        lpProperty_t source, target;
+        struct Property *source, target;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Source", &source));
         EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
 
@@ -868,7 +868,7 @@ static void test_string_binding_parent_label(void) {
         WITH(struct Object, child, make_rt_object(), destroy_object) {
             child->parent = parent;
 
-            lpProperty_t parentLabel;
+            struct Property *parentLabel;
             EXPECT_OK(OBJ_FindShortProperty(parent, "Label", &parentLabel));
             PROP_SetValue(parentLabel, PROP_STR("world"));
 
@@ -911,7 +911,7 @@ static void test_string_binding_parent_label_unset(void) {
 /* Basic: DataType is kDataTypeColor, IsNull before set, set/get. */
 static void test_color_property_basic(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeColor);
         EXPECT(PROP_GetSize(prop) == sizeof(struct color));
@@ -932,7 +932,7 @@ static void test_color_property_basic(void) {
 /* Reassignment: setting a color property twice should update in place. */
 static void test_color_property_reassign(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
 
         struct color c1 = { .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
@@ -951,7 +951,7 @@ static void test_color_property_reassign(void) {
 /* Clear: PROP_Clear resets a color property back to null. */
 static void test_color_property_clear(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
 
         struct color c = { .r = 0.2f, .g = 0.4f, .b = 0.6f, .a = 0.8f };
@@ -992,7 +992,7 @@ static void test_color_parse_hex_rgba(void) {
 /* Parsing: set a color property from a parsed string. */
 static void test_color_property_from_parse(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
 
         struct color c = COLOR_Parse("#00ff00"); /* green */
@@ -1014,7 +1014,7 @@ static void test_color_property_from_parse(void) {
 /* Import whole color from a float-typed vm_register (4 floats). */
 static void test_color_import_whole(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
 
         struct vm_register r = {0};
@@ -1038,7 +1038,7 @@ static void test_color_import_whole(void) {
 /* Import individual RGBA channels via PROP_Import with attribute. */
 static void test_color_import_channels(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
 
         /* Initialize the color to known values first. */
@@ -1077,7 +1077,7 @@ static void test_color_import_channels(void) {
 /* Export a color channel via OBJ_RunProgram with {./Color}.COLORR. */
 static void test_color_export_channel_program(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
 
         struct color c = { .r = 0.75f, .g = 0.25f, .b = 0.5f, .a = 1.0f };
@@ -1112,7 +1112,7 @@ static void test_color_color4_function(void) {
 /* Bind COLOR4 to a color property via PROP_AttachProgram + PROP_Update. */
 static void test_color_bind_color4_to_property(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
 
         struct token *prog = Token_Create("COLOR4(0.1, 0.2, 0.3, 1.0)");
@@ -1136,13 +1136,13 @@ static void test_color_bind_color4_to_property(void) {
 static void test_color_bind_channel_to_float(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         /* Set source color. */
-        lpProperty_t colorProp;
+        struct Property *colorProp;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &colorProp));
         struct color src = { .r = 0.9f, .g = 0.3f, .b = 0.0f, .a = 1.0f };
         PROP_SetValue(colorProp, &src);
 
         /* Bind {./Color}.COLORA to Alpha float property. */
-        lpProperty_t alphaProp;
+        struct Property *alphaProp;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Alpha", &alphaProp));
         struct token *prog = Token_Create("{./Color}.COLORA");
         EXPECT(prog != NULL);
@@ -1159,7 +1159,7 @@ static void test_color_bind_channel_to_float(void) {
 /* Bind a color channel write: import from {./Color}.COLORR into colorProp.COLORR. */
 static void test_color_bind_channel_to_channel(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
 
         /* Initialize to a known color. */
@@ -1210,7 +1210,7 @@ static void register_project_types(void) {
 
 static void test_project_string_property_set_get(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
-        lpProperty_t prop;
+        struct Property *prop;
         /*
          * Project properties are looked up by full name ("Category.Name"),
          * which is used as the FullIdentifier.  OBJ_FindShortProperty first

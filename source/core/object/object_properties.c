@@ -2,10 +2,10 @@
 
 #define ID_TextureTiling 0x861dbc5b
 
-static lpProperty_t
-_CreateProjectProperty(lpObject_t object, uint32_t ident)
+static struct Property *
+_CreateProjectProperty(struct Object *object, uint32_t ident)
 {
-  lpcPropertyType_t pt = OBJ_FindPropertyType(ident);
+  struct PropertyType const *pt = OBJ_FindPropertyType(ident);
   if (pt) {
     return PROP_Create(NULL, object, pt);
   }
@@ -13,11 +13,11 @@ _CreateProjectProperty(lpObject_t object, uint32_t ident)
 }
 
 uint32_t
-OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
+OBJ_GetUniforms(struct Object *object, struct uniform* pUniforms)
 {
   uint32_t numunf = 0;
   bool_t hasTextureTiling = FALSE;
-  for (lpProperty_t property = object->properties; property;
+  for (struct Property *property = object->properties; property;
        property = PROP_GetNext(property)) {
     if (PROP_IsNull(property))
       continue;
@@ -43,16 +43,16 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
         break;
       case kDataTypeStruct:
         switch (PROP_GetSize(property)) {
-          case sizeof(vec2_t):
+          case sizeof(struct vec2):
             hasTextureTiling |= pUniforms->Identifier == ID_TextureTiling;
             pUniforms->Type = UT_FLOAT_VEC2;
             PROP_CopyValue(property, pUniforms->Value);
             break;
-          case sizeof(vec3_t):
+          case sizeof(struct vec3):
             pUniforms->Type = UT_FLOAT_VEC3;
             PROP_CopyValue(property, pUniforms->Value);
             break;
-          case sizeof(vec4_t):
+          case sizeof(struct vec4):
             pUniforms->Type = UT_FLOAT_VEC4;
             PROP_CopyValue(property, pUniforms->Value);
             break;
@@ -83,9 +83,9 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
 
 
 int
-OBJ_GetInteger(lpcObject_t object, uint32_t ident, int fallback)
+OBJ_GetInteger(struct Object const *object, uint32_t ident, int fallback)
 {
-  for (lpcProperty_t p = object->properties; p; p = PROP_GetNext(p)) {
+  for (struct Property const *p = object->properties; p; p = PROP_GetNext(p)) {
     if (PROP_GetLongIdentifier(p) == ident) {
       switch (PROP_GetType(p)) {
         case kDataTypeInt:
@@ -101,9 +101,9 @@ OBJ_GetInteger(lpcObject_t object, uint32_t ident, int fallback)
 }
 
 HRESULT
-OBJ_FindLongProperty(lpObject_t object,
+OBJ_FindLongProperty(struct Object *object,
                      uint32_t identifier,
-                     lpProperty_t* ppProp)
+                     struct Property ** ppProp)
 {
   if ((*ppProp = PROP_FindByLongID(object->properties, identifier))) {
     return NOERROR;
@@ -117,9 +117,9 @@ OBJ_FindLongProperty(lpObject_t object,
 }
 
 HRESULT
-OBJ_FindShortProperty(lpObject_t object,
+OBJ_FindShortProperty(struct Object *object,
                       lpcString_t name,
-                      lpProperty_t* ppProp)
+                      struct Property ** ppProp)
 {
   uint32_t identifier = fnv1a32(name);
   if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
@@ -130,9 +130,9 @@ OBJ_FindShortProperty(lpObject_t object,
 }
 
 HRESULT
-OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value)
+OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value)
 {
-  lpProperty_t prop;
+  struct Property *prop;
   HRESULT hr = OBJ_FindShortProperty(object, name, &prop);
   if (SUCCEEDED(hr)) {
     PROP_SetValue(prop, value);
@@ -140,14 +140,14 @@ OBJ_SetPropertyValue(lpObject_t object, lpcString_t name, void const* value)
   return hr;
 }
 
-lpProperty_t
-OBJ_AddComponentProperty(lua_State* L, struct component* comp, lpcPropertyType_t desc)
+struct Property *
+OBJ_AddComponentProperty(lua_State* L, struct component* comp, struct PropertyType const *desc)
 {
-  /*static */lpProperty_t
-  _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt);
+  /*static */struct Property *
+  _PropertyAlloc(lua_State* L, struct Object *object, struct PropertyType const *pt);
 
-  lpObject_t object = CMP_GetOwner(comp);
-  lpProperty_t property = _PropertyAlloc(L, object, desc);
+  struct Object *object = CMP_GetOwner(comp);
+  struct Property *property = _PropertyAlloc(L, object, desc);
   PROP_AddToList(property, &object->properties);
   CMP_SetProperty(comp, property);
   return property;

@@ -8,15 +8,15 @@
 // Walk StateManager's StateGroup children and set PF_USED_IN_STATE_MANAGER on
 // each property referenced by a ControllerProperty attribute.
 static void
-_InitControllerProperties(struct StateManagerController* smc, lpObject_t host)
+_InitControllerProperties(struct StateManagerController* smc, struct Object *host)
 {
   if (!smc->StateManager) return;
-  lpObject_t smObj = CMP_GetObject(smc->StateManager);
+  struct Object *smObj = CMP_GetObject(smc->StateManager);
   if (!smObj) return;
   FOR_EACH_OBJECT(sgObj, smObj) {
     struct StateGroup* sg = GetStateGroup(sgObj);
     if (!sg || !sg->ControllerProperty || !sg->ControllerProperty[0]) continue;
-    lpProperty_t prop = NULL;
+    struct Property *prop = NULL;
     if (SUCCEEDED(OBJ_FindShortProperty(host, sg->ControllerProperty, &prop))) {
       PROP_SetFlag(prop, PF_USED_IN_STATE_MANAGER);
     }
@@ -28,15 +28,15 @@ _InitControllerProperties(struct StateManagerController* smc, lpObject_t host)
 // with PF_PROPERTY_TYPE NOT set (project properties, not component-owned).
 // This mirrors how StyleController._ApplyStyleRule works.
 static void
-_ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
+_ApplyState(struct Object *host, struct Object *target, struct Object *stateObj)
 {
-  for (lpProperty_t rp = OBJ_GetProperties(stateObj); rp; rp = PROP_GetNext(rp)) {
+  for (struct Property *rp = OBJ_GetProperties(stateObj); rp; rp = PROP_GetNext(rp)) {
     // Skip State's own component properties (Value, Path, etc.)
     if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
     if (PROP_IsNull(rp)) continue;
-    lpcPropertyType_t pdesc = PROP_GetDesc(rp);
+    struct PropertyType const *pdesc = PROP_GetDesc(rp);
     if (!pdesc || !pdesc->Name) continue;
-    lpProperty_t hprop = NULL;
+    struct Property *hprop = NULL;
     if (SUCCEEDED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) {
       PROP_SetValue(hprop, PROP_GetValue(rp));
     }
@@ -45,7 +45,7 @@ _ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
   FOR_EACH_OBJECT(child, stateObj) {
     struct State* sub = GetState(child);
     if (!sub) continue;
-    lpObject_t subtarget = (sub->Path && sub->Path[0])
+    struct Object *subtarget = (sub->Path && sub->Path[0])
       ? OBJ_FindByPath(host, sub->Path) : host;
     if (subtarget) _ApplyState(host, subtarget, child);
   }
@@ -53,7 +53,7 @@ _ApplyState(lpObject_t host, lpObject_t target, lpObject_t stateObj)
 
 // Returns true if the controller property `prop` matches the State's Value string.
 static bool_t
-_StateMatches(lpProperty_t prop, lpcString_t value)
+_StateMatches(struct Property *prop, lpcString_t value)
 {
   if (!value || !value[0]) return FALSE;
   eDataType_t type = PROP_GetType(prop);
@@ -83,7 +83,7 @@ _StateMatches(lpProperty_t prop, lpcString_t value)
 // when the StateManager is replaced at runtime.
 HANDLER(StateManagerController, Object, Start) {
   _InitControllerProperties(pStateManagerController, hObject);
-  lpProperty_t smProp = PROP_FindByLongID(OBJ_GetProperties(hObject),
+  struct Property *smProp = PROP_FindByLongID(OBJ_GetProperties(hObject),
                                           ID_StateManagerController_StateManager);
   if (smProp) PROP_SetFlag(smProp, PF_USED_IN_TRIGGER);
   return FALSE;
@@ -107,10 +107,10 @@ HANDLER(StateManagerController, Object, PropertyChanged) {
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
   _InitControllerProperties(pStateManagerController, hObject);
   if (!pStateManagerController->StateManager) return FALSE;
-  lpObject_t smObj = CMP_GetObject(pStateManagerController->StateManager);
+  struct Object *smObj = CMP_GetObject(pStateManagerController->StateManager);
   if (!smObj) return FALSE;
 
-  lpProperty_t prop = pControllerChanged->Property;
+  struct Property *prop = pControllerChanged->Property;
   if (!prop) return FALSE;
   lpcString_t propName = PROP_GetName(prop);
 
@@ -125,7 +125,7 @@ HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
       if (!st) continue;
       if (!_StateMatches(prop, st->Value)) continue;
       // Resolve optional target path.
-      lpObject_t target = (st->Path && st->Path[0])
+      struct Object *target = (st->Path && st->Path[0])
         ? OBJ_FindByPath(hObject, st->Path) : hObject;
       if (target) _ApplyState(hObject, target, stateObj);
       break; // only apply the first matching state per StateGroup

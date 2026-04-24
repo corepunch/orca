@@ -303,11 +303,11 @@ Model_CreateRoundedRectangle(struct model** ppModel)
   DRAWINDEX tris[4 * (ROUNDED_VERTICES + 4) * 3];
   DRAWVERT v;
   uint32_t vidx = 0, iidx = 0;
-  vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
+  struct vec2 crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
   
   // Generate all 4 corners in a single loop
   for (uint32_t c = 0; c < 4; c++) {
-    vec2_t d = { 1 - crn[c].x * 2, 1 - crn[c].y * 2 };
+    struct vec2 d = { 1 - crn[c].x * 2, 1 - crn[c].y * 2 };
     // Add center vertex for this corner (for the rounded corner fan)
     memset(&v, 0, sizeof(DRAWVERT));
     VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
@@ -318,7 +318,7 @@ Model_CreateRoundedRectangle(struct model** ppModel)
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
       float a = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
       float x = cos(a), y = sin(a);
-      vec2_t b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
+      struct vec2 b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
       memset(&v, 0, sizeof(DRAWVERT));
       *(int*)&v.color = -1;
       VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
@@ -368,16 +368,16 @@ Model_CreateRoundedBorder(struct model** ppModel)
   DRAWINDEX tris[24 * ROUNDED_VERTICES];
   DRAWVERT v;
   uint32_t vidx = 0, iidx = 0;
-  vec2_t crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
+  struct vec2 crn[] = {{1,1}, {0,1}, {0,0}, {1,0}};
   
   // Generate all 4 corners in a single loop
   for (uint32_t c = 0; c < 4; c++) {
-    vec2_t d = { 1 - crn[c].x * 2, 1 - crn[c].y * 2 };
+    struct vec2 d = { 1 - crn[c].x * 2, 1 - crn[c].y * 2 };
     // Generate rounded corner vertices
     for (uint32_t i = 0; i < ROUNDED_VERTICES; i++) {
       float a = (float)i / (float)(ROUNDED_VERTICES - 1) * M_PI_2; // 0 to PI/2
       float x = cos(a), y = sin(a);
-      vec2_t b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
+      struct vec2 b[] = {{x,y}, {-y,x}, {-x,-y}, {y,-x}};
       memset(&v, 0, sizeof(DRAWVERT));
       *(int*)&v.color = -1;
       VEC3_Set(&v.xyz, crn[c].x, crn[c].y, 0);
@@ -627,8 +627,8 @@ Model_CreateCapsule(float width, float height, float depth, struct model** ppMod
   dsurf.numIndices = iidx;
   dsurf.numSubmeshes = 0;
   
-//  vec2_t sizex={0};
-//  vec2_t sizey={0};
+//  struct vec2 sizex={0};
+//  struct vec2 sizey={0};
 //  FOR_LOOP(i, vidx) {
 //    sizex.x = fmin(sizex.x, verts[i].xyz.x);
 //    sizex.y = fmax(sizex.y, verts[i].xyz.x);

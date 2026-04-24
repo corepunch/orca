@@ -37,8 +37,8 @@ struct Object;
 
 int f_find_module(lua_State* L);
 
-ORCA_API void luaX_pushProperty(lua_State*, lpcProperty_t);
-ORCA_API int luaX_readProperty(lua_State*, int, lpProperty_t);
+ORCA_API void luaX_pushProperty(lua_State*, struct Property const *);
+ORCA_API int luaX_readProperty(lua_State*, int, struct Property *);
 
 
 #define API_MODULE_SHUTDOWN(L, func)                                           \
@@ -92,8 +92,8 @@ luaX_import(lua_State* L, lpcString_t szModuleName, lpcString_t szFieldName)
 
 #define API_TYPE_OBJECT "Object"
 
-ORCA_API lpObject_t luaX_checkObject(lua_State* L, int arg);
-ORCA_API void luaX_pushObject(lua_State*, lpcObject_t);
+ORCA_API struct Object *luaX_checkObject(lua_State* L, int arg);
+ORCA_API void luaX_pushObject(lua_State*, struct Object const *);
 ORCA_API int lua_pushclass(lua_State* L, struct ClassDesc* cl);
 
 void

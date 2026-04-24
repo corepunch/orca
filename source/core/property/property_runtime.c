@@ -3,7 +3,7 @@
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
                    struct vm_register* regs,                                   \
-                   lpObject_t object,                                      \
+                   struct Object *object,                                      \
                    struct vm_register* output)
 
 #define MAX_PROG_REGS 16
@@ -18,7 +18,7 @@ show_error(void)
 bool_t
 op_evaluate(struct token*,
             struct vm_register*,
-            lpObject_t,
+            struct Object *,
             struct vm_register*);
 
 /* --------------------------------------------------------------------------
@@ -129,7 +129,7 @@ navigatenode(xmlNodePtr data, xmlChar const* sep)
 }
 
 static xmlNodePtr
-getservice(lpObject_t hobj, lpcString_t name)
+getservice(struct Object *hobj, lpcString_t name)
 {
   lua_State* L = core.L;
   lua_getfield(L, LUA_REGISTRYINDEX, name);
@@ -410,7 +410,7 @@ ftostr(LPSTR buffer, size_t buffer_size, float value)
   return NULL;
 }
 
-static void set_string(lpProperty_t prop, char const* str) {
+static void set_string(struct Property *prop, char const* str) {
   char** value = (char**)PROP_GetValue(prop);
   if (!*value || strcmp(*value, str)) {
     PROP_SetValue(prop, &str);
@@ -418,7 +418,7 @@ static void set_string(lpProperty_t prop, char const* str) {
 }
 
 static bool_t
-PrintToProperty(lpProperty_t prop, struct vm_register* r)
+PrintToProperty(struct Property *prop, struct vm_register* r)
 {
   char dest[MAX_PROPERTY_STRING];
   if (r->type == kDataTypeNone) {
@@ -447,7 +447,7 @@ static inline bool_t DATA_IsVector(eDataType_t type) {
 }
 
 bool_t
-PROP_Import(lpProperty_t prop,
+PROP_Import(struct Property *prop,
             enum PropertyAttribute attr,
             struct vm_register* r)
 {
@@ -613,7 +613,7 @@ PROP_Import(lpProperty_t prop,
 }
 
 static bool_t
-PROP_Export(lpProperty_t prop,
+PROP_Export(struct Property *prop,
                  enum PropertyAttribute attr,
                  struct vm_register* r)
 {
@@ -679,7 +679,7 @@ PROP_Export(lpProperty_t prop,
 
 tok_op(argument)
 {
-  lpProperty_t p = NULL;
+  struct Property *p = NULL;
   if (token->cache.property) {
     p = token->cache.property;
     goto return_value;
@@ -698,7 +698,7 @@ tok_op(argument)
       p = OBJ_FindPropertyByPath(token->rootnode, ++eon);
     } else /*for (; object; object = OBJ_GetParent(object))*/ if (object) {
       uint32_t ident = fnv1a32_range(token->text + 1, eon);
-      lpObject_t child = OBJ_FindChildByAlias(object, ident);
+      struct Object *child = OBJ_FindChildByAlias(object, ident);
       if (child) {
         p = OBJ_FindPropertyByPath(child, ++eon);
       }
@@ -707,7 +707,7 @@ tok_op(argument)
   } else if (*token->text == '.') {
     p = OBJ_FindPropertyByPath(object, token->text);
   } else if (!strncmp(token->text, "DataContext/", 12)) {
-    for (lpObject_t it = object; it; it = OBJ_GetParent(it)) {
+    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
       struct Node* node = GetNode(it);
       if (node && node->DataContext) {
         if ((p = OBJ_FindPropertyByPath(CMP_GetObject(node->DataContext), token->text + 12))) {
@@ -719,7 +719,7 @@ tok_op(argument)
     InitOutput(output, kDataTypeFloat, sizeof(float));
     return TRUE;
   } else if (!strcmp(token->text, "DataContext")) {
-    for (lpObject_t it = object; it; it = OBJ_GetParent(it)) {
+    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
       struct Node* node = GetNode(it);
       if (node && node->DataContext) {
         memcpy(output->value, &node->DataContext, sizeof(void*));
@@ -762,7 +762,7 @@ tok_op(argument)
     }
   } else {
     lpcString_t innerpath = NULL;
-    lpObject_t prefab = OBJ_FindKnownPrefab(token->text, &innerpath);
+    struct Object *prefab = OBJ_FindKnownPrefab(token->text, &innerpath);
     if (prefab && strchr(innerpath, '/')) {
       path_t path = { 0 };
       sprintf(path, ".%s", strchr(innerpath, '/'));
@@ -798,7 +798,7 @@ tok_op(string)
 
 typedef bool_t (*op_t)(struct token*,
                        struct vm_register*,
-                       lpObject_t,
+                       struct Object *,
                        struct vm_register*);
 
 static op_t ops[] = {
@@ -808,7 +808,7 @@ static op_t ops[] = {
 bool_t
 op_evaluate(struct token* token,
             struct vm_register* regs,
-            lpObject_t object,
+            struct Object *object,
             struct vm_register* output)
 {
   if (!token)
@@ -819,7 +819,7 @@ op_evaluate(struct token* token,
 }
 
 bool_t
-OBJ_RunProgram(lpObject_t object,
+OBJ_RunProgram(struct Object *object,
                struct token* token,
                struct vm_register* output)
 {

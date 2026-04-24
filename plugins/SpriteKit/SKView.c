@@ -1,16 +1,16 @@
 #include "SpriteKit.h"
 
-static lpObject_t
-find_viewport(lpObject_t node) {
+static struct Object *
+find_viewport(struct Object *node) {
   if (!node || OBJ_GetComponent(node, ID_SKView))
     return node;
   return find_viewport(OBJ_GetParent(node));
 }
 
 struct vec2
-SKNode_GetReferenceSize(lpObject_t node)
+SKNode_GetReferenceSize(struct Object *node)
 {
-  lpObject_t viewport = find_viewport(node);
+  struct Object *viewport = find_viewport(node);
   struct vec2 value = { 0, 0 };
   if (viewport) {
     struct SKView const *view = GetSKView(viewport);
@@ -25,7 +25,7 @@ SKNode_GetReferenceSize(lpObject_t node)
 }
 
 static void
-SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
+SKNode_RenderTree(struct Object *hObject, struct ViewDef *viewdef)
 {
   if (OBJ_IsHidden(hObject)) return;
   _SendMessage(hObject, SKNode, Render, .ViewDef = viewdef);
@@ -36,7 +36,7 @@ SKNode_RenderTree(lpObject_t hObject, struct ViewDef *viewdef)
 
 HANDLER(SKView, Node2D, ForegroundContent)
 {
-  lpObject_t scene = NULL;
+  struct Object *scene = NULL;
 
   FOR_EACH_OBJECT(child, hObject) {
     if (GetSKScene(child)) {

@@ -4,11 +4,11 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
-extern lpProperty_t
-luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id);
+extern struct Property *
+luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 
 static void
-push_object_message_arg(lua_State* L, lpObject_t sender, struct AXmessage* msg, lpProperty_t handler)
+push_object_message_arg(lua_State* L, struct Object *sender, struct AXmessage* msg, struct Property *handler)
 {
   if (!msg->lParam) {
     lua_pushnil(L);
@@ -23,9 +23,9 @@ push_object_message_arg(lua_State* L, lpObject_t sender, struct AXmessage* msg, 
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
-  for (lpObject_t hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
+  for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
-    lpProperty_t handler = luaX_getobjectcallback(L, hobj, msg->message);
+    struct Property *handler = luaX_getobjectcallback(L, hobj, msg->message);
     if (handler) {
       luaX_import(L, "orca", "async");
       lua_insert(L, -2);
@@ -88,7 +88,7 @@ convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageM
 }
 //
 //static int
-//lua_pushmousevent(lua_State* L, lpObject_t obj, struct AXmessage* e)
+//lua_pushmousevent(lua_State* L, struct Object *obj, struct AXmessage* e)
 //{
 //  struct vec3 point = {LOWORD(e->wParam),HIWORD(e->wParam)};
 //#ifdef MOUSE_EVENTS_USE_LOCAL_SPACE
@@ -137,7 +137,7 @@ convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageM
 //}
 
 static void
-process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
+process_dragndrop(lua_State *L, struct AXmessage *e, struct Object *sender)
 {
   switch (e->message) {
     case kEventLeftButtonDown:
@@ -149,7 +149,7 @@ process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
       OBJ_SetFocus(sender);
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
-        luaX_parsefield(lpObject_t , view, -1, luaX_checkObject);
+        luaX_parsefield(struct Object *, view, -1, luaX_checkObject);
         if (active) {
           if (GetNode(view)) {
             GetNode(view)->Visible = FALSE;
@@ -163,7 +163,7 @@ process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
       if (lua_getfield(L, LUA_REGISTRYINDEX, DRAG_SESSION) == LUA_TTABLE) {
         luaX_parsefield(bool_t, active, -1, lua_toboolean);
         luaX_parsefield(uint32_t, startloc, -1, (uint32_t)luaL_optinteger, -1);
-        luaX_parsefield(lpObject_t , view, -1, luaX_checkObject);
+        luaX_parsefield(struct Object *, view, -1, luaX_checkObject);
         uint16_t sx = LOWORD(startloc), sy = HIWORD(startloc);
         if (startloc == -1) {
           lua_pushinteger(L, e->wParam);
@@ -179,7 +179,7 @@ process_dragndrop(lua_State *L, struct AXmessage *e, lpObject_t sender)
             GetNode(view)->Visible = TRUE;
           }
           if (view && GetNode2D(view)) {
-            GetNode2D(view)->LayoutTransform.translation = (vec2_t){e->x,e->y};
+            GetNode2D(view)->LayoutTransform.translation = (struct vec2){e->x,e->y};
           }
         }
       }
@@ -217,10 +217,10 @@ build_key_msg(struct AXmessage const* e, Node_KeyMessageMsg_t* key, uint32_t *ms
 }
 
 LRESULT
-UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
+UI_HandleMouseEvent(lua_State* L, struct Object *root, struct AXmessage* e)
 {
   uint16_t x = LOWORD(e->wParam), y = HIWORD(e->wParam);
-  lpObject_t sender = NULL;
+  struct Object *sender = NULL;
   bool_t success = FALSE;
   while (OBJ_GetNext(root)) {
     root = OBJ_GetNext(root);
@@ -230,16 +230,16 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
   // to hit testing from the root. This allows for interactive elements that
   // don't take focus (e.g. scrollbars) to still receive mouse events without
   // disrupting keyboard focus.
-  lpObject_t focused = core_GetFocus();
+  struct Object *focused = core_GetFocus();
   if (focused && OBJ_GetFlags(focused)&OF_NOACTIVATE) {
-    if ((sender = (lpObject_t)_SendMessage(focused, Node, HitTest, x, y)))
+    if ((sender = (struct Object *)_SendMessage(focused, Node, HitTest, x, y)))
       goto handle;
     if (e->message == kEventLeftButtonDown) {
-      for (lpObject_t mod = focused, p = OBJ_GetParent(focused);
+      for (struct Object *mod = focused, *p = OBJ_GetParent(focused);
            mod && (OBJ_GetFlags(mod)&OF_NOACTIVATE);
            mod = p, p = p?OBJ_GetParent(p):NULL)
       {
-        if ((sender = (lpObject_t)_SendMessage(mod, Node, HitTest, x, y)))
+        if ((sender = (struct Object *)_SendMessage(mod, Node, HitTest, x, y)))
           goto handle;
         OBJ_RemoveFromParent(mod);
       }
@@ -249,7 +249,7 @@ UI_HandleMouseEvent(lua_State* L, lpObject_t root, struct AXmessage* e)
   
   // Perform hit testing from the root if we didn't find a target through
   // the focused object path
-  if (!(sender = (lpObject_t)_SendMessage(root, Node, HitTest, x, y)))
+  if (!(sender = (struct Object *)_SendMessage(root, Node, HitTest, x, y)))
     return FALSE;
   
 handle:
@@ -275,7 +275,7 @@ handle:
   // This allows for event delegation, where a parent object can choose to
   // handle events for its children. For example, a list item could delegate
   // mouse events to its parent list for handling selection.
-  // for (lpObject_t obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
+  // for (struct Object *obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
   //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
   //   if (szCallback) {
   //     luaX_import(L, "orca", "async");
@@ -332,7 +332,7 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
     .wParam = 0,
     .lParam = &key,
   });  
-  // for (lpObject_t obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
+  // for (struct Object *obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
   //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
   //   if (szCallback) {
   //     luaX_import(L, "orca", "async");

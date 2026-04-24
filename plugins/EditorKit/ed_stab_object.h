@@ -1,22 +1,22 @@
 #include "ed_local.h"
 
-void UI_EnumObjectPropertyTypes(HOBJ, EnumPropertyTypeProc, LPVOID);
-void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef);
+void UI_EnumObjectPropertyTypes(struct Object *, EnumPropertyTypeProc, LPVOID);
+void UI_FillOutPropDef(struct Object *object, HPROP p, LPPROPDEF lpPropDef);
 BOOL UI_GetProperty(DWORD dwIndex, LPPROPDEF lpOut);
 void UI_RefreshProperty(DWORD dwIndex);
-//BOOL UI_EnumObjectAliases(HOBJ, EnumAliasProc, LPVOID);
-BOOL UI_EnumObjectProperties(HOBJ, EnumPropertyProc, LPVOID);
+//BOOL UI_EnumObjectAliases(struct Object *, EnumAliasProc, LPVOID);
+BOOL UI_EnumObjectProperties(struct Object *, EnumPropertyProc, LPVOID);
 
-HANDLE jwObjectGetUniqueID(HOBJ object) {
+HANDLE jwObjectGetUniqueID(struct Object *object) {
   return object->unique;
 }
 
-ORCA_API HOBJ UI_FindObjectByUniqueID(HANDLE hHandle, HOBJ object) {
+ORCA_API struct Object *UI_FindObjectByUniqueID(HANDLE hHandle, struct Object *object) {
   if (!object || !hHandle || object->unique == hHandle) {
     return object;
   }
   FOR_EACH_OBJECT(hChildObject, object) {
-    HOBJ hOther = UI_FindObjectByUniqueID(hHandle, hChildObject);
+    struct Object *hOther = UI_FindObjectByUniqueID(hHandle, hChildObject);
     if (hOther) {
       return hOther;
     }
@@ -32,7 +32,7 @@ int cmp_prop(const void *a, const void *b) {
 
 #include <plugins/UIKit/UIKit.h>
 
-void UI_FillOutObjectView(HOBJ object, LPOBJDEF lpOut) {
+void UI_FillOutObjectView(struct Object *object, LPOBJDEF lpOut) {
   memset(lpOut, 0, sizeof(struct _OBJDEF));
   lpOut->szName       = object->Name;
   lpOut->szFullPath   = object->Name;
@@ -77,7 +77,7 @@ void UI_FillOutObjectView(HOBJ object, LPOBJDEF lpOut) {
   }
 }
 
-ORCA_API BOOL UI_GetObjectItem(HOBJ object, LPOBJDEF lpOut) {
+ORCA_API BOOL UI_GetObjectItem(struct Object *object, LPOBJDEF lpOut) {
   if (object) {
     UI_FillOutObjectView(object, lpOut);
     return TRUE;
@@ -86,7 +86,7 @@ ORCA_API BOOL UI_GetObjectItem(HOBJ object, LPOBJDEF lpOut) {
   }
 }
 
-void UI_EnumChildObjects(HOBJ object, EnumChildProc fnProc, LPVOID lpParam) {
+void UI_EnumChildObjects(struct Object *object, EnumChildProc fnProc, LPVOID lpParam) {
   FOR_EACH_OBJECT(hChildObject, object) {
     struct _OBJDEF ov;
     UI_FillOutObjectView(hChildObject, &ov);
@@ -94,7 +94,7 @@ void UI_EnumChildObjects(HOBJ object, EnumChildProc fnProc, LPVOID lpParam) {
   }
 }
 
-BOOL UI_EnumObjectProperties(HOBJ             object,
+BOOL UI_EnumObjectProperties(struct Object *            object,
                              EnumPropertyProc fnProc,
                              LPVOID           lpParam) {
   HPROP properties[MAX_OBJECT_PROPERTIES];
@@ -141,7 +141,7 @@ lpcString_t stristr(lpcString_t haystack, lpcString_t needle) {
   return NULL; // No match
 }
 
-static void _FilterObjectsImpl(HOBJ obj, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
+static void _FilterObjectsImpl(struct Object *obj, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
   if (stristr(obj->Name, filter)) {
     struct _OBJDEF ov;
     UI_FillOutObjectView(obj, &ov);
@@ -152,25 +152,25 @@ static void _FilterObjectsImpl(HOBJ obj, lpcString_t filter, EnumChildProc proc,
   }
 }
 
-void UI_FilterObjects(HOBJ root, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
+void UI_FilterObjects(struct Object *root, lpcString_t filter, EnumChildProc proc, LPVOID parm) {
   if (strlen(filter) == 0)
     return;
   _FilterObjectsImpl(root, filter, proc, parm);
 }
 
-BOOL UI_GetObject(HOBJ object, LPOBJDEF lpObjDef) {
+BOOL UI_GetObject(struct Object *object, LPOBJDEF lpObjDef) {
   if (!object) return FALSE;
   UI_FillOutObjectView(object, lpObjDef);
   return TRUE;
 }
 
-BOOL UI_RenameObject(HOBJ object, lpcString_t szName) {
+BOOL UI_RenameObject(struct Object *object, lpcString_t szName) {
   if (!object) return FALSE;
   OBJ_SetName(object, szName);
   return TRUE;
 }
 
-HOBJ UI_NewObject(HOBJ parent, lpcString_t szName, DWORD dwType) {
+struct Object *UI_NewObject(struct Object *parent, lpcString_t szName, DWORD dwType) {
   struct lua_State *L = editor.L;
   switch (dwType) {
     case ID_OBJECT_LABEL: luaX_import(L, "orca.UIKit", "TextBlock"); break;
@@ -188,7 +188,7 @@ HOBJ UI_NewObject(HOBJ parent, lpcString_t szName, DWORD dwType) {
     lua_pop(L, 1);
     return NULL;
   }
-  lpObject_t obj = luaX_checkObject(L, -1);
+  struct Object *obj = luaX_checkObject(L, -1);
   ADD_TO_LIST_END(struct Object, obj, parent->children);
   obj->parent = parent;
   OBJ_AddChild(parent, obj, FALSE);
@@ -197,7 +197,7 @@ HOBJ UI_NewObject(HOBJ parent, lpcString_t szName, DWORD dwType) {
   return obj;
 }
 
-BOOL UI_GetObjectProperty(HOBJ      object,
+BOOL UI_GetObjectProperty(struct Object *     object,
                           lpcString_t    szPropertyName,
                           LPPROPDEF lpPropDef) {
   HPROP property;
@@ -210,7 +210,7 @@ BOOL UI_GetObjectProperty(HOBJ      object,
 
 #include <include/module.h>
 
-lpcClassDesc_t get_node_class_desc(lpObject_t object);
+struct ClassDesc const *get_node_class_desc(struct Object *object);
 void ED_WriteBindings(HPROP, xmlNodePtr);
 //void ED_WriteAliases(struct alias *, xmlNodePtr);
 
@@ -266,8 +266,8 @@ xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url) {
 
 #include <source/filesystem/filesystem.h>
 
-ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent) {
-  lpcClassDesc_t cls = get_node_class_desc((lpObject_t )object);
+ORCA_API xmlNodePtr ED_ConvertNode(struct Object *object, xmlNodePtr parent) {
+  struct ClassDesc const *cls = get_node_class_desc((struct Object *)object);
   xmlNodePtr node;
   xmlChar const *name = XMLSTR(object->ClassName ? object->ClassName : cls->ClassName);
   if (parent && object->SourceFile) {
@@ -317,7 +317,7 @@ ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent) {
   return node;
 }
 
-void build_path(lpObject_t obj, char *buf) {
+void build_path(struct Object *obj, char *buf) {
   if (GetProject(obj)) {
     strcat(buf, obj->SourceFile);
     return;
@@ -328,7 +328,7 @@ void build_path(lpObject_t obj, char *buf) {
   strcat(buf, OBJ_GetName(obj));
 }
 
-ORCA_API bool_t OBJ_SaveDocument(lpObject_t object) {
+ORCA_API bool_t OBJ_SaveDocument(struct Object *object) {
   xmlDocPtr doc = xmlNewDoc(XMLSTR("1.0"));
   xmlDocSetRootElement(doc, ED_ConvertNode(object, NULL));
   PATHSTR path = {0};

@@ -269,19 +269,6 @@ ORCA_API const char *StyleTypeToString(enum StyleType value);
 ORCA_API enum StyleType luaX_checkStyleType(lua_State *L, int idx);
 ORCA_API void luaX_pushStyleType(lua_State *L, enum StyleType value);
 
-typedef struct FontShorthand FontShorthand_t, *lpFontShorthand_t;
-typedef struct FontShorthand const cFontShorthand_t, *lpcFontShorthand_t;
-typedef struct BrushShorthand BrushShorthand_t, *lpBrushShorthand_t;
-typedef struct BrushShorthand const cBrushShorthand_t, *lpcBrushShorthand_t;
-typedef struct ShadowShorthand ShadowShorthand_t, *lpShadowShorthand_t;
-typedef struct ShadowShorthand const cShadowShorthand_t, *lpcShadowShorthand_t;
-typedef struct RingShorthand RingShorthand_t, *lpRingShorthand_t;
-typedef struct RingShorthand const cRingShorthand_t, *lpcRingShorthand_t;
-typedef struct OverflowShorthand OverflowShorthand_t, *lpOverflowShorthand_t;
-typedef struct OverflowShorthand const cOverflowShorthand_t, *lpcOverflowShorthand_t;
-typedef struct UnderlineShorthand UnderlineShorthand_t, *lpUnderlineShorthand_t;
-typedef struct UnderlineShorthand const cUnderlineShorthand_t, *lpcUnderlineShorthand_t;
-
 
 
 /// @brief Complete font specification including weight, style, size, and family
@@ -339,6 +326,7 @@ struct UnderlineShorthand {
 };
 ORCA_API void luaX_pushUnderlineShorthand(lua_State *L, struct UnderlineShorthand const* UnderlineShorthand);
 ORCA_API struct UnderlineShorthand* luaX_checkUnderlineShorthand(lua_State *L, int idx);
+
 
 /** TextBlockConcept_MakeTextEventArgs struct */
 struct TextBlockConcept_MakeTextEventArgs {

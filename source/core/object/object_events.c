@@ -1,6 +1,6 @@
 #include "object_internal.h"
 
-void OBJ_SetFocus(lpObject_t pobj)
+void OBJ_SetFocus(struct Object *pobj)
 {
   if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))
     return;
@@ -15,7 +15,7 @@ void OBJ_SetFocus(lpObject_t pobj)
   core.focus = pobj;
 }
 
-lpObject_t
+struct Object *
 core_GetFocus(void)
 {
   if (core.focus && !OBJ_IsHidden(core.focus)) {
@@ -25,20 +25,20 @@ core_GetFocus(void)
   }
 }
 
-bool_t OBJ_IsFocused(lpcObject_t pobj) {
+bool_t OBJ_IsFocused(struct Object const *pobj) {
   return core.focus == pobj;
 }
 
-void OBJ_SetHover(lpObject_t pobj) {
+void OBJ_SetHover(struct Object *pobj) {
   core.hover2 = pobj;
 }
 
-lpObject_t core_GetHover(void) {
+struct Object *core_GetHover(void) {
   return core.hover;
 }
 
 bool_t
-OBJ_AttachPropertyProgram(lpObject_t self,
+OBJ_AttachPropertyProgram(struct Object *self,
                           lpcString_t name,
                           lpcString_t program,
                           ePropertyAttribute_t attribute,

@@ -5,7 +5,7 @@
 #include "SceneKit.h"
 
 void
-_CollectUniforms(lpObject_t,
+_CollectUniforms(struct Object *,
                  struct Material*,
                  struct ViewEntity*,
                  struct uniform*,

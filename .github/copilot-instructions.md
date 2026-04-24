@@ -224,7 +224,7 @@ A component is a block of typed data + a message-handler function attached to an
 ```c
 struct ClassDesc {
   objectProc_t      ObjProc;          // message handler function
-  lpcPropertyType_t Properties;       // property descriptor table
+  struct PropertyType const *Properties;       // property descriptor table
   lpcString_t       ClassName;        // human-readable name (e.g. "Button")
   lpcString_t       DefaultName;      // name used when none supplied
   lpcString_t       ContentType;      // for package auto-detection
@@ -242,7 +242,7 @@ struct ClassDesc {
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 
 ```c
-typedef LRESULT (*objectProc_t)(lpObject_t obj,   // owning Object
+typedef LRESULT (*objectProc_t)(struct Object *obj,   // owning Object
                                 void*       cmp,   // component data block
                                 uint32_t    msg,   // message ID (passed through; generated Procs mask with MSG_DATA_MASK)
                                 wParam_t    wParam,
@@ -536,7 +536,7 @@ HANDLER(Button, Node, LeftButtonUp) {
 
 The `objectProc_t` signature (for reference — use `HANDLER`, not a raw Proc):
 ```c
-LRESULT MyProc(lpObject_t obj, void* cmp, uint32_t msg, wParam_t wParam, lParam_t lParam);
+LRESULT MyProc(struct Object *obj, void* cmp, uint32_t msg, wParam_t wParam, lParam_t lParam);
 //                              ^^^^^^^^ component data block — cast to struct ClassName*
 ```
 

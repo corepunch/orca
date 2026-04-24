@@ -15,7 +15,7 @@ static size_t psize[] = {
   [kDataTypeEvent] = sizeof(void*),
   [kDataTypeStruct] = 0,
   [kDataTypeColor] = sizeof(struct color),
-  [kDataTypeObject] = sizeof(lpObject_t),
+  [kDataTypeObject] = sizeof(struct Object *),
 };
 
 struct property_program {
@@ -39,13 +39,13 @@ struct Property
 };
 
 static inline bool_t
-PROP_HasHandler(lpcProperty_t property)
+PROP_HasHandler(struct Property const *property)
 {
   return (property->flags &
       (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER)) != 0;
 }
 
-bool_t _AssignCallback(lua_State* L, lpProperty_t property);
-void PROP_FireNotification(lua_State* L, lpProperty_t property, lpObject_t object);
+bool_t _AssignCallback(lua_State* L, struct Property *property);
+void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

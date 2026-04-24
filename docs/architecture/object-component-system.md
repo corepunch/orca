@@ -22,9 +22,9 @@ struct Object {
     LPSTR Name;
     uint32_t identifier;        // FNV1a hash of Name
 
-    lpObject_t parent;
-    lpObject_t children;        // first child (singly-linked)
-    lpObject_t next;            // next sibling
+    struct Object *parent;
+    struct Object *children;        // first child (singly-linked)
+    struct Object *next;            // next sibling
 
     LPSTR SourceFile;
     LPSTR TextContent;
@@ -53,7 +53,7 @@ Each component type is described by a `ClassDesc` struct (`include/orca.h`):
 ```c
 struct ClassDesc {
     objectProc_t      ObjProc;          // message handler function
-    lpcPropertyType_t Properties;       // property descriptor table
+    struct PropertyType const *Properties;       // property descriptor table
     lpcString_t       ClassName;        // human-readable name, e.g. "Button"
     lpcString_t       DefaultName;      // used when no name is supplied
     lpcString_t       ContentType;      // for package auto-detection
@@ -71,7 +71,7 @@ struct ClassDesc {
 ### The `objectProc_t` signature
 
 ```c
-typedef LRESULT (*objectProc_t)(lpObject_t obj,
+typedef LRESULT (*objectProc_t)(struct Object *obj,
                                 void*       cmp,
                                 uint32_t    message,
                                 wParam_t    wParam,

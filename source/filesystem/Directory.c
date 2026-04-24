@@ -139,7 +139,7 @@ HANDLER(Directory, Project, LoadProject) {
   lua_State* L = (lua_State*)pDirectory;
   lua_pcall(L, (luaX_import(L, "orca.filesystem", "Directory"), 0), 1, 0);
   path_t packpath = {0};
-  lpObject_t directory = luaX_checkObject(L, -1);
+  struct Object *directory = luaX_checkObject(L, -1);
   OBJ_SetName(directory, FS_GetBaseName(pLoadProject->Path));
   OBJ_SetPropertyValue(directory, "Path", &pLoadProject->Path);
   snprintf(packpath, sizeof(packpath), "%s/package.lua", pLoadProject->Path);

@@ -368,7 +368,7 @@ int lua_loadfile_with_env(lua_State *L, const char *filename, int env_index);
 
 HANDLER(Package, Project, LoadProject) {
   path_t tmp={0};
-  lpObject_t package = NULL;
+  struct Object *package = NULL;
   lua_State* L = (lua_State*)pPackage;
   snprintf(tmp, sizeof(tmp), "%s.pz2", pLoadProject->Path);
   WITH(FILE, fp, fopen(tmp, "rb"), fclose) {

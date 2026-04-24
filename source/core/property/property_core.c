@@ -11,8 +11,8 @@ Token_Release(struct token* token)
   free(token);
 }
 
-lpProperty_t
-PROP_AddToList(lpProperty_t property, lpProperty_t* list)
+struct Property *
+PROP_AddToList(struct Property *property, struct Property ** list)
 {
   ADD_TO_LIST(property, *list);
   return property;
@@ -22,7 +22,7 @@ PROP_AddToList(lpProperty_t property, lpProperty_t* list)
 
 #ifdef DEBUG_PROGRAM
 static void
-print_name(lpObject_t object)
+print_name(struct Object *object)
 {
   if (OBJ_GetParent(object)) {
     print_name(OBJ_GetParent(object));
@@ -32,7 +32,7 @@ print_name(lpObject_t object)
 #endif
 
 bool_t
-PROP_Update(lpProperty_t property)
+PROP_Update(struct Property *property)
 {
   if (property == NULL ||
       property->updateFrame == core.frame)
@@ -61,13 +61,13 @@ PROP_Update(lpProperty_t property)
 }
 
 bool_t
-PROP_IsNull(lpcProperty_t property)
+PROP_IsNull(struct Property const *property)
 {
   return property == NULL || !(property->flags & PF_MODIFIED);
 }
 
 void
-PROP_Clear(lpProperty_t property)
+PROP_Clear(struct Property *property)
 {
   if (property->pdesc->DataType == kDataTypeString && property->value && *(LPSTR*)property->value) {
     free(*(LPSTR*)property->value);
@@ -81,26 +81,26 @@ PROP_Clear(lpProperty_t property)
   }
 }
 
-/*static */lpProperty_t
-_PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
+/*static */struct Property *
+_PropertyAlloc(lua_State* L, struct Object *object, struct PropertyType const *pt)
 {
   (void)L;
-  lpProperty_t property = ZeroAlloc(sizeof(struct Property));
+  struct Property *property = ZeroAlloc(sizeof(struct Property));
   property->object  = object;
   property->pdesc   = pt;
   return property;
 }
 
-lpProperty_t
-PROP_Create(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
+struct Property *
+PROP_Create(lua_State* L, struct Object *object, struct PropertyType const *pt)
 {
-  lpProperty_t property = _PropertyAlloc(L, object, pt);
+  struct Property *property = _PropertyAlloc(L, object, pt);
   _RegisterProperty(object, property);
   return property;
 }
 
 void
-OBJ_ReleaseProperties(lpObject_t hobj)
+OBJ_ReleaseProperties(struct Object *hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
@@ -142,7 +142,7 @@ PROP_RunAllPrograms(void)
 }
 
 void
-PROP_ClearSpecialized(lpProperty_t pprop) {
+PROP_ClearSpecialized(struct Property *pprop) {
   FOR_EACH_LIST(struct Property, p, pprop) {
     if (p->flags & PF_SPECIALIZED) {
       PROP_Clear(p);
@@ -153,7 +153,7 @@ PROP_ClearSpecialized(lpProperty_t pprop) {
 }
 
 void
-PROP_SetTypeSize(lpProperty_t p, eDataType_t t, uint32_t s)
+PROP_SetTypeSize(struct Property *p, eDataType_t t, uint32_t s)
 {
   (void)p;
   (void)t;
@@ -161,13 +161,13 @@ PROP_SetTypeSize(lpProperty_t p, eDataType_t t, uint32_t s)
 }
 
 void
-PROP_SetValuePtr(lpProperty_t prop, void* data)
+PROP_SetValuePtr(struct Property *prop, void* data)
 {
   prop->value = data;
 }
 
 ORCA_API void
-PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf)
+PDESC_Print(struct PropertyType const *pdesc, LPSTR buffer, uint32_t len, float const* pf)
 {
   switch (pdesc->DataType) {
     case kDataTypeBool:
@@ -220,7 +220,7 @@ PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf
 }
 
 ORCA_API void
-PROP_Print(lpProperty_t p, LPSTR buffer, uint32_t len)
+PROP_Print(struct Property *p, LPSTR buffer, uint32_t len)
 {
   PDESC_Print(p->pdesc, buffer, len, PROP_GetValue(p));
 }

@@ -26,7 +26,7 @@
 //
 
 // Global stylesheet (applies before per-object stylesheets)
-/*static*/ lpObject_t static_stylesheet = NULL;
+/*static*/ struct Object *static_stylesheet = NULL;
 
 // Forward declarations for classes defined in core_export.c (needed for lazy
 // early registration before luaopen_orca_core runs, e.g. from tailwind.lua)
@@ -104,7 +104,7 @@ _ParseClass(lpcString_t str)
 
 // Append a parsed style_class_selector to the object's class list
 void
-_AddClass(lpObject_t obj, struct style_class_selector* cls)
+_AddClass(struct Object *obj, struct style_class_selector* cls)
 {
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) { free(cls); return; }
@@ -116,7 +116,7 @@ _AddClass(lpObject_t obj, struct style_class_selector* cls)
 
 // Release a StyleRule native object (and its string Selector field).
 static void
-_ReleaseNativeStyleRule(lpObject_t ruleObj)
+_ReleaseNativeStyleRule(struct Object *ruleObj)
 {
   if (!ruleObj) return;
   struct StyleRule* sr = GetStyleRule(ruleObj);
@@ -132,12 +132,12 @@ _ReleaseNativeStyleRule(lpObject_t ruleObj)
 
 // Release a StyleSheet native object and all its StyleRule children.
 static void
-_ReleaseNativeStyleSheet(lpObject_t sheetObj)
+_ReleaseNativeStyleSheet(struct Object *sheetObj)
 {
   if (!sheetObj) return;
-  lpObject_t child = OBJ_GetFirstChild(sheetObj);
+  struct Object *child = OBJ_GetFirstChild(sheetObj);
   while (child) {
-    lpObject_t next = OBJ_GetNext(child);
+    struct Object *next = OBJ_GetNext(child);
     _ReleaseNativeStyleRule(child);
     child = next;
   }
@@ -153,7 +153,7 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
 
 // Return the current pseudo-state flags for an object (hover, focus, dark, selected)
 uint32_t
-OBJ_GetStyleFlags(lpObject_t pobj)
+OBJ_GetStyleFlags(struct Object *pobj)
 {
   uint32_t dwValue = 0;
   if (core_GetHover() == pobj) dwValue |= STYLE_HOVER;
@@ -168,18 +168,18 @@ OBJ_GetStyleFlags(lpObject_t pobj)
 // ruleFlags: the rule's state flags (0 = default, non-zero = pseudo-state rule).
 // cls: the resolved class selector; carries per-usage opacity (cls->opacity).
 static void
-_ApplyStyleRule(lpObject_t target, lpObject_t ruleObj,
+_ApplyStyleRule(struct Object *target, struct Object *ruleObj,
                 uint32_t ruleFlags, struct style_class_selector* cls)
 {
-  for (lpProperty_t rp = OBJ_GetProperties(ruleObj); rp; rp = PROP_GetNext(rp)) {
+  for (struct Property *rp = OBJ_GetProperties(ruleObj); rp; rp = PROP_GetNext(rp)) {
     // Skip StyleRule's own component properties (ClassName, PseudoClass, etc.)
     if (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) continue;
     if (PROP_IsNull(rp)) continue;
 
-    lpcPropertyType_t pdesc = PROP_GetDesc(rp);
+    struct PropertyType const *pdesc = PROP_GetDesc(rp);
     if (!pdesc || !pdesc->Name) continue;
 
-    lpProperty_t hprop = NULL;
+    struct Property *hprop = NULL;
     if (FAILED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) continue;
 
     if (ruleFlags) {
@@ -204,7 +204,7 @@ _ApplyStyleRule(lpObject_t target, lpObject_t ruleObj,
 
 // Walk one stylesheet's rules for a matching selector and invoke _ApplyStyleRule.
 static void
-_EnumSheetRules(lpObject_t sheetObj, lpObject_t target,
+_EnumSheetRules(struct Object *sheetObj, struct Object *target,
                 uint32_t dwClassID, uint32_t objFlags,
                 struct style_class_selector* cls)
 {
@@ -222,7 +222,7 @@ _EnumSheetRules(lpObject_t sheetObj, lpObject_t target,
 // Walk global and per-object stylesheets for rules that match classname,
 // and invoke _ApplyStyleRule for each matching rule.
 void
-OBJ_EnumStyleClasses(lpObject_t pobj,
+OBJ_EnumStyleClasses(struct Object *pobj,
                      lpcString_t classname,
                      struct style_class_selector* cls)
 {
@@ -233,7 +233,7 @@ OBJ_EnumStyleClasses(lpObject_t pobj,
   _EnumSheetRules(static_stylesheet, pobj, dwClassID, objFlags, cls);
 
   // Walk up the object hierarchy
-  for (lpObject_t p = pobj; p; p = OBJ_GetParent(p)) {
+  for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc || !sc->StyleSheet) continue;
     _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, dwClassID, objFlags, cls);
@@ -276,7 +276,7 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
   // Root objects: apply "body" rules from the local stylesheet
   // A workaround, ideally 'body' style should just propagate to all children
   if (!OBJ_GetParent(hObject) && pStyleController->StyleSheet) {
-    lpObject_t sheetObj = CMP_GetObject(pStyleController->StyleSheet);
+    struct Object *sheetObj = CMP_GetObject(pStyleController->StyleSheet);
     FOR_EACH_OBJECT(child, sheetObj) {
       struct StyleRule* sr = GetStyleRule(child);
       if (sr && sr->class_id == ID_body) {

@@ -15,7 +15,7 @@ typedef struct _BINDITEM {
 typedef struct _BINDINGSSTRUCT {
   BYTE     numitems;
   BINDITEM items[MAX_BINDINGS_ITEMS];
-  HOBJ     selectedObject;
+  struct Object *    selectedObject;
 } BINDINGSSTRUCT, *LPBINDSTRUCT;
 
 static void

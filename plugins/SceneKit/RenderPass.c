@@ -11,7 +11,7 @@ extern objectTags_t GetTagsFromString(lpcString_t value);
   0)
 
 static void
-Camera_WriteViewCamera(lpObject_t object, struct view_camera* out)
+Camera_WriteViewCamera(struct Object *object, struct view_camera* out)
 {
   struct Camera* data = GetCamera(object);
   out->identifier = OBJ_GetIdentifier(object);
@@ -56,7 +56,7 @@ ScreenRect_Create(enum ViewportMode mode,
 if (IS_DEFINED(RP_NAME)) curr.PIPE_NAME = (int)rp->RP_NAME;
 
 static void
-_ModifyPipelineState(lpObject_t obj, PPIPELINESTATE ps, struct ViewDef* viewdef)
+_ModifyPipelineState(struct Object *obj, PPIPELINESTATE ps, struct ViewDef* viewdef)
 {
   struct PipelineStateRenderPass* rp = GetPipelineStateRenderPass(obj);
   PIPELINESTATE curr;
@@ -109,8 +109,8 @@ MAT4_Stereoperspective(float eyeOffset,
   return out;
 }
 
-lpObject_t
-_FindCamera(lpObject_t scene, lpcString_t name)
+struct Object *
+_FindCamera(struct Object *scene, lpcString_t name)
 {
   if (*name == '#') {
     return OBJ_FindChildByAlias(scene, fnv1a32(++name));
@@ -151,7 +151,7 @@ _GetViewMatrix(struct view_camera* c)
 }
 
 void
-R_DrawEntities(lpObject_t object,
+R_DrawEntities(struct Object *object,
                objectTags_t incl,
                objectTags_t excl,
                struct ViewDef* viewdef)
@@ -174,9 +174,9 @@ R_DrawEntities(lpObject_t object,
 }
 
 void
-_OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
+_OBJ_Draws(struct Object *obj, struct Object *scene, struct ViewDef* original)
 {
-  lpObject_t cam = NULL;
+  struct Object *cam = NULL;
   struct view_camera viewcam;
   struct ViewDef vd = *original;
   struct DrawObjectsRenderPass* rp = GetDrawObjectsRenderPass(obj);
@@ -204,7 +204,7 @@ _OBJ_Draws(lpObject_t obj, lpObject_t scene, struct ViewDef* original)
 }
 
 void
-R_RenderPassDraw(lpObject_t hObj, lpObject_t scene, struct ViewDef* viewdef)
+R_RenderPassDraw(struct Object *hObj, struct Object *scene, struct ViewDef* viewdef)
 {
   PIPELINESTATE prev;
   if (GetDrawObjectsRenderPass(hObj)) {
@@ -244,7 +244,7 @@ R_DefaultPipelineState(void)
 }
 
 static void
-DrawEntities(struct ViewDef* vd, lpObject_t object)
+DrawEntities(struct ViewDef* vd, struct Object *object)
 {
   if (OBJ_IsHidden(object))
     return;
@@ -256,9 +256,9 @@ DrawEntities(struct ViewDef* vd, lpObject_t object)
 }
 
 void
-R_RenderViewport(lpObject_t scene, struct ViewDef* vd)
+R_RenderViewport(struct Object *scene, struct ViewDef* vd)
 {
-  lpObject_t obj = vd->renderPass;
+  struct Object *obj = vd->renderPass;
   PIPELINESTATE prev;
   PIPELINESTATE state = R_DefaultPipelineState();
 
@@ -272,7 +272,7 @@ R_RenderViewport(lpObject_t scene, struct ViewDef* vd)
   if (obj) {
     R_RenderPassDraw(obj, scene, vd);
   } else {
-    lpObject_t cam = NULL;
+    struct Object *cam = NULL;
     if (vd->flags & RF_CAMERA_ALIAS) {
       cam = OBJ_FindChildByAlias(scene, vd->camera);
     } else {

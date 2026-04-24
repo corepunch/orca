@@ -3,7 +3,7 @@
 #include "DarkReign.h"
 
 /* forward declaration – defined in SprFormat.c, compiled as one unit */
-lpObject_t _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
+struct Object *_SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
 
 /*
  * Level 2 – LOADER closure.
@@ -23,7 +23,7 @@ f_do_load_spr(lua_State *L)
   if (!f)
     return luaL_error(L, "SPR file not found: %s", path);
 
-  lpObject_t obj = _SprFile_Load(L, f->data, f->size, module);
+  struct Object *obj = _SprFile_Load(L, f->data, f->size, module);
   FS_FreeFile(f);
 
   if (!obj)

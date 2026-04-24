@@ -2,8 +2,8 @@
 
 typedef struct _GAMEVIEW {
   PATHSTR filename;
-  lpObject_t scene;
-  lpObject_t selected;
+  struct Object *scene;
+  struct Object *selected;
 } GAMEVIEW, *LPGAMEVIEW;
 
 EDWINPROC(HierarchyNavigator);
@@ -11,7 +11,7 @@ EDWINPROC(CanvasView);
 EDWINPROC(SplitView);
 EDWINPROC(GameView);
 
-HOBJ GameView_GetSelection(HEDWND wnd) {
+struct Object *GameView_GetSelection(HEDWND wnd) {
   if (!wnd) {
     return NULL;
   }
@@ -31,7 +31,7 @@ EDWINPROC(GameView) {
 //        strncpy(path, lparm, sizeof(path));
 //        if (strrchr(path, '.')) *strrchr(path, '.') = 0;
 //        xmlNodeSetName((xmlNodePtr)doc, BAD_CAST path);
-//        HOBJ root = OBJ_LoadDocument(editor.L, doc);
+//        struct Object *root = OBJ_LoadDocument(editor.L, doc);
       ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {
         .left = { ED_HierarchyNavigator, 0, editor.screen },
         .right = { ED_CanvasView, 0, editor.screen },

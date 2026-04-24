@@ -1,9 +1,9 @@
 #include "object_internal.h"
 
 struct component*
-OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
+OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
 {
-  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
+  struct ClassDesc const *cls = OBJ_FindClassW(class_id);
   if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
     return NULL;
@@ -28,20 +28,20 @@ OBJ_AddComponent(lpObject_t pobj, uint32_t class_id)
   return comp;
 }
 
-lpObject_t
+struct Object *
 CMP_GetOwner(struct component* hcmp)
 {
   return hcmp->pobj;
 }
 
-lpProperty_t
-_CreateClassProperty(lpObject_t object, uint32_t ident)
+struct Property *
+_CreateClassProperty(struct Object *object, uint32_t ident)
 {
   FOR_EACH_LIST(struct component, cmp, object->components)
   {
     FOR_LOOP(i, cmp->pcls->NumProperties)
     {
-      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == ident ||
           pdesc->FullIdentifier == ident)
       {
@@ -52,32 +52,32 @@ _CreateClassProperty(lpObject_t object, uint32_t ident)
   return NULL;
 }
 
-lpcPropertyType_t
-OBJ_FindImplicitProperty(lpObject_t object, lpcString_t name)
+struct PropertyType const *
+OBJ_FindImplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
 //  return PROP_FindByShortID(object->properties, identifier);
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == identifier) {
-        return (lpPropertyType_t)pdesc;
+        return (struct PropertyType const *)pdesc;
       }
     }
   }
   return NULL;
 }
 
-lpcPropertyType_t
-OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
+struct PropertyType const *
+OBJ_FindExplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
   //  return PROP_FindByShortID(object->properties, identifier);
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       if (pdesc->FullIdentifier == identifier) {
-        return (lpPropertyType_t)pdesc;
+        return (struct PropertyType const *)pdesc;
       }
     }
   }
@@ -85,30 +85,30 @@ OBJ_FindExplicitProperty(lpObject_t object, lpcString_t name)
 }
 
 void
-OBJ_EnumClassProperties(lpObject_t object,
-                        void (*fnProc)(lpcObject_t,
-                                       lpcPropertyType_t,
-                                       lpcClassDesc_t cdesc,
+OBJ_EnumClassProperties(struct Object *object,
+                        void (*fnProc)(struct Object const *,
+                                       struct PropertyType const *,
+                                       struct ClassDesc const *cdesc,
                                        void const*,
                                        void*),
                         void* parm)
 {
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       fnProc(object, pdesc, cmp->pcls, cmp->pUserData+pdesc->Offset, parm);
     }
   }
 }
 
 bool_t
-CMP_SetProperty(struct component* comp, lpProperty_t property)
+CMP_SetProperty(struct component* comp, struct Property *property)
 {
   FOR_LOOP(index, comp->pcls->NumProperties)
   {
-    lpcPropertyType_t pdesc = comp->pcls->Properties + index;
+    struct PropertyType const *pdesc = comp->pcls->Properties + index;
     if (PROP_GetLongIdentifier(property) == pdesc->FullIdentifier) {
-      lpProperty_t* properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
+      struct Property ** properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
       properties[index] = property;
       PROP_SetFlag(property, PF_PROPERTY_TYPE);
       PROP_SetValuePtr(property, comp->pUserData + pdesc->Offset);
@@ -125,7 +125,7 @@ CMP_GetClassName(struct component* hcmp)
 }
 
 LRESULT
-OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
   if (MsgID == ID_Object_Animate) {
     OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
@@ -147,13 +147,13 @@ OBJ_SendMessageW(lpObject_t pobj, uint32_t MsgID, wParam_t wParam, lParam_t lPar
 }
 
 LRESULT
-OBJ_SendMessage(lpObject_t pobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
+OBJ_SendMessage(struct Object *pobj, lpcString_t Msg, wParam_t wParam, lParam_t lParam)
 {
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
 void
-OBJ_RequestAnimate(lpObject_t pobj)
+OBJ_RequestAnimate(struct Object *pobj)
 {
   if (!pobj) return;
   uint32_t flags = OBJ_GetFlags(pobj);
@@ -169,7 +169,7 @@ CMP_GetUserData(struct component* component)
 }
 
 void*
-OBJ_GetComponent(lpObject_t pobj, uint32_t id)
+OBJ_GetComponent(struct Object *pobj, uint32_t id)
 {
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
@@ -181,7 +181,7 @@ OBJ_GetComponent(lpObject_t pobj, uint32_t id)
 }
 
 void
-OBJ_ReleaseComponents(lpObject_t pobj)
+OBJ_ReleaseComponents(struct Object *pobj)
 {
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
@@ -196,12 +196,12 @@ CMP_Detach(void* userdata)
   // pUserData is a flexible array member at the end of struct component.
   // Subtract its offset to recover the containing struct component pointer.
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
-  lpObject_t pobj = self->pobj;
+  struct Object *pobj = self->pobj;
   REMOVE_FROM_LIST(struct component, self, pobj->components);
   free(self);
 }
 
-lpObject_t
+struct Object *
 CMP_GetObject(void const* udata)
 {
   if (udata == NULL) {
@@ -212,8 +212,8 @@ CMP_GetObject(void const* udata)
 }
 
 void
-OBJ_EnumObjectClasses(lpObject_t pobj,
-                      void (*fnProc)(lpcClassDesc_t, void*),
+OBJ_EnumObjectClasses(struct Object *pobj,
+                      void (*fnProc)(struct ClassDesc const *, void*),
                       void* param)
 {
   FOR_EACH_LIST(struct component, cmp, pobj->components) {
@@ -224,11 +224,11 @@ OBJ_EnumObjectClasses(lpObject_t pobj,
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr);
 
 bool_t
-OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
+OBJ_PushClassProperty(lua_State *L, struct Object *object, uint32_t id)
 {
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyType_t pdesc = &cmp->pcls->Properties[i];
+      struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == id) {
         write_property(L, pdesc, cmp->pUserData + pdesc->Offset);
         return TRUE;
@@ -239,12 +239,12 @@ OBJ_PushClassProperty(lua_State *L, lpObject_t object, uint32_t id)
 }
 
 
-lpcPropertyType_t
-MSG_FindByShortID(lpObject_t obj, uint32_t ident)
+struct PropertyType const *
+MSG_FindByShortID(struct Object *obj, uint32_t ident)
 {
   FOR_EACH_LIST(struct component, cmp, obj->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
-      lpcPropertyType_t msg = &cmp->pcls->Properties[i];
+      struct PropertyType const *msg = &cmp->pcls->Properties[i];
       if (msg->DataType == kDataTypeEvent && msg->ShortIdentifier == ident) {
         return msg;
       }
@@ -254,7 +254,7 @@ MSG_FindByShortID(lpObject_t obj, uint32_t ident)
 }
 
 bool_t
-OBJ_IsPrefabView(lpcObject_t object)
+OBJ_IsPrefabView(struct Object const *object)
 {
   FOR_EACH_LIST(struct component, cmp, object ? object->components : NULL) {
     switch (cmp->pcls->ClassID) {

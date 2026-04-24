@@ -290,7 +290,6 @@ ORCA_API enum Shading luaX_checkShading(lua_State *L, int idx);
 ORCA_API void luaX_pushShading(lua_State *L, enum Shading value);
 
 
-
 /// @brief Initializes the rendering system and prepares it for drawing operations.
 ORCA_API int32_t
 renderer_Init(uint32_t, uint32_t, bool_t);
@@ -310,6 +309,7 @@ renderer_GetSize(struct lua_State*);
 /// @brief Draws the current image to the active render target.
 ORCA_API void
 renderer_DrawImage(struct lua_State*);
+
 
 
 

@@ -198,21 +198,21 @@ typedef void (*EnumSpreadheetProc)(LPSPREADSHEETDEF, LPVOID);
 typedef void (*EnumPropertyProc)(LPPROPDEF, LPVOID);
 
 ORCA_API void    UI_Render(FLOAT stereo, HANDLE rt);
-ORCA_API void    UI_EnumChildObjects(HOBJ, EnumChildProc, LPVOID);
-ORCA_API BOOL    UI_EnumObjectProperties(HOBJ, EnumPropertyProc, LPVOID);
-ORCA_API void    UI_EnumObjectPropertyTypes(HOBJ, EnumPropertyTypeProc, LPVOID);
+ORCA_API void    UI_EnumChildObjects(struct Object *, EnumChildProc, LPVOID);
+ORCA_API BOOL    UI_EnumObjectProperties(struct Object *, EnumPropertyProc, LPVOID);
+ORCA_API void    UI_EnumObjectPropertyTypes(struct Object *, EnumPropertyTypeProc, LPVOID);
 ORCA_API void    UI_EnumStateGroups(HSTATEMAN, EnumSpreadheetProc, LPVOID);
 ORCA_API BOOL    UI_GetStateCell(HSTATEMAN, HANDLE, DWORD, DWORD, LPSHEETCELLDEF);
-ORCA_API void    UI_FilterObjects(HOBJ, lpcString_t, EnumChildProc, LPVOID);
-ORCA_API BOOL    UI_GetObjectItem(HOBJ, LPOBJDEF);
-ORCA_API BOOL    UI_RenameObject(HOBJ, lpcString_t);
-ORCA_API HOBJ    UI_NewObject(HOBJ parent, lpcString_t name, DWORD type);
-ORCA_API BOOL    UI_GetObjectProperty(HOBJ, lpcString_t, LPPROPDEF);
+ORCA_API void    UI_FilterObjects(struct Object *, lpcString_t, EnumChildProc, LPVOID);
+ORCA_API BOOL    UI_GetObjectItem(struct Object *, LPOBJDEF);
+ORCA_API BOOL    UI_RenameObject(struct Object *, lpcString_t);
+ORCA_API struct Object *   UI_NewObject(struct Object *parent, lpcString_t name, DWORD type);
+ORCA_API BOOL    UI_GetObjectProperty(struct Object *, lpcString_t, LPPROPDEF);
 ORCA_API BOOL    UI_GetProperty(DWORD, LPPROPDEF);
 ORCA_API void    UI_RefreshProperty(DWORD);
 ORCA_API TIME    UI_GetTime(void);
 ORCA_API lpcString_t UI_LocalizeString(lpcString_t, LOCALE_TYPE);
 ORCA_API HRESULT UI_Save(lpcString_t);
-ORCA_API BOOL    UI_GetObjectItem(HOBJ, LPOBJDEF);
+ORCA_API BOOL    UI_GetObjectItem(struct Object *, LPOBJDEF);
 
 #endif

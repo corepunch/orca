@@ -362,13 +362,13 @@ css_split_selector(const char* selector,
 
 // Apply one CSS declaration (key/value) to an ORCA StyleRule object.
 static void
-css_apply_decl_to_rule(lpObject_t rule_obj,
+css_apply_decl_to_rule(struct Object *rule_obj,
                        const char* css_key, const char* css_value)
 {
     const char* orca_name = css_lookup_orca_property(css_key);
     if (!orca_name) return; // unsupported property
 
-    lpProperty_t prop = NULL;
+    struct Property *prop = NULL;
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) return;
     if (!prop || !PROP_GetDesc(prop)) return;
 
@@ -396,7 +396,7 @@ fs_load_text_file(const char* path)
 // Public: parse a CSS string and return a new StyleSheet object
 // ---------------------------------------------------------------------------
 
-lpObject_t FS_LoadObjectFromCssString(const char* css_text)
+struct Object *FS_LoadObjectFromCssString(const char* css_text)
 {
     if (!css_text) return NULL;
 
@@ -414,7 +414,7 @@ lpObject_t FS_LoadObjectFromCssString(const char* css_text)
     css_resolve_apply(doc);
 
     // 4. Build StyleSheet object
-    lpObject_t sheet = OBJ_Create(ID_StyleSheet);
+    struct Object *sheet = OBJ_Create(ID_StyleSheet);
     if (!sheet) { free(doc); return NULL; }
 
     for (int i = 0; i < doc->nrules; i++) {
@@ -427,7 +427,7 @@ lpObject_t FS_LoadObjectFromCssString(const char* css_text)
                            pseudo, sizeof(pseudo));
         if (!class_name[0]) continue;
 
-        lpObject_t rule_obj = OBJ_Create(ID_StyleRule);
+        struct Object *rule_obj = OBJ_Create(ID_StyleRule);
         if (!rule_obj) continue;
 
         // Set ClassName and PseudoClass
@@ -451,7 +451,7 @@ lpObject_t FS_LoadObjectFromCssString(const char* css_text)
     return sheet;
 }
 
-lpObject_t FS_LoadObjectFromCss(const char* path)
+struct Object *FS_LoadObjectFromCss(const char* path)
 {
     char* css_text = fs_load_text_file(path);
     if (!css_text) {
@@ -459,7 +459,7 @@ lpObject_t FS_LoadObjectFromCss(const char* path)
         return NULL;
     }
 
-    lpObject_t sheet = FS_LoadObjectFromCssString(css_text);
+    struct Object *sheet = FS_LoadObjectFromCssString(css_text);
     free(css_text);
     return sheet;
 }

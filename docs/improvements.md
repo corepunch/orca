@@ -170,8 +170,8 @@ The object pseudo-properties and the broadened `core.flushQueue()` semantics are
 
 ### `OBJ_AddComponentByName` vs `OBJ_AddComponent`
 Two distinct APIs exist:
-- `OBJ_AddComponent(lpObject_t, uint32_t)` — C-only 2-arg API, unrestricted
-- `OBJ_AddComponentByName(lua_State*, lpObject_t, const char*)` — 3-arg Lua bridge, checks `IsAttachOnly`, raises `luaL_error` on failure
+- `OBJ_AddComponent(struct Object *, uint32_t)` — C-only 2-arg API, unrestricted
+- `OBJ_AddComponentByName(lua_State*, struct Object *, const char*)` — 3-arg Lua bridge, checks `IsAttachOnly`, raises `luaL_error` on failure
 
 The names are similar enough to cause confusion. The rename from the original 3-arg `OBJ_AddComponent` was necessary to avoid a conflicting C declaration with the 2-arg public API in `orca.h`. When calling from C, always use the 2-arg form.
 

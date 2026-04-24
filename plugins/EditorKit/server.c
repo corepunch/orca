@@ -36,9 +36,9 @@ void xmlSetIntProp(xmlNodePtr node, xmlChar const* name, int value) {
   xmlSetProp(node, name, XMLSTR(_id));
 }
 
-bool_t OBJ_IsPrefabView(lpcObject_t object);
+bool_t OBJ_IsPrefabView(struct Object const *object);
 
-static int print_classes(lpcClassDesc_t cd, LPSTR s, int n) {
+static int print_classes(struct ClassDesc const *cd, LPSTR s, int n) {
   if (!cd || n <= 0) return 0;
   int w = snprintf(s, n, "%s,", cd->ClassName);
   n -= w;
@@ -47,8 +47,8 @@ static int print_classes(lpcClassDesc_t cd, LPSTR s, int n) {
   return w;
 }
 
-static void object_hierarchy(lpObject_t object, xmlNodePtr parent) {
-  lpcClassDesc_t pClass = OBJ_FindClass(OBJ_GetClassName(object));
+static void object_hierarchy(struct Object *object, xmlNodePtr parent) {
+  struct ClassDesc const *pClass = OBJ_FindClass(OBJ_GetClassName(object));
   lpcString_t szClassName = OBJ_GetClassName(object);
   xmlNodePtr xml = xmlNewChild(parent, NULL, XMLSTR(szClassName), NULL);
   _xmlSetProp(xml, "name", OBJ_GetName(object));
@@ -81,7 +81,7 @@ static void object_hierarchy(lpObject_t object, xmlNodePtr parent) {
 }
 
 static SV_CMD(GET, scene_hierarchy) {
-  lpObject_t object = OBJ_FindByPath(FS_GetWorkspace(), endpoint);
+  struct Object *object = OBJ_FindByPath(FS_GetWorkspace(), endpoint);
   _xmlSetProp(response, "source", endpoint);
   if (object) {
     object_hierarchy(object, response);
@@ -93,24 +93,24 @@ static SV_CMD(GET, scene_hierarchy) {
 
 SV_CMD(GET, project_overview);
 
-lpObject_t 
-UI_FindObjectByUniqueID(uint32_t uid, lpObject_t object);
+struct Object *
+UI_FindObjectByUniqueID(uint32_t uid, struct Object *object);
 
-static void add_group(lpcClassDesc_t dec, void* parm) {
+static void add_group(struct ClassDesc const *dec, void* parm) {
   xmlNodePtr p = _xmlNewChild(parm, "group", "name", dec->ClassName);
   _xmlSetProp(p, "data-compound", "true");
 }
 
 ORCA_API lpcString_t
-PDESC_Print(lpcPropertyType_t pdesc, LPSTR buffer, uint32_t len, float const* pf);
+PDESC_Print(struct PropertyType const *pdesc, LPSTR buffer, uint32_t len, float const* pf);
 
 #define _xmlAddProp(parent, name, value, type)\
 _xmlNewChild(parent, DataTypeToString(type), "name", name, "value", value, "data-type", DataTypeToString(type))
 
 static int
 add_subproperty(xmlNodePtr xml,
-                lpcObject_t obj,
-                lpcPropertyType_t pdesc,
+                struct Object const *obj,
+                struct PropertyType const *pdesc,
                 void const* dest)
 {
   /* DataType enum values are generated as: None..Object (0..9).
@@ -168,9 +168,9 @@ xmlFindNode(xmlNodePtr node, xmlChar const *name) {
 #define CUSTOM_GROUP "Custom"
 
 static void
-add_property(lpcObject_t obj,
-             lpcPropertyType_t pdesc,
-             lpcClassDesc_t cdesc,
+add_property(struct Object const *obj,
+             struct PropertyType const *pdesc,
+             struct ClassDesc const *cdesc,
              void const* dest,
              void* parm)
 {
@@ -183,7 +183,7 @@ add_property(lpcObject_t obj,
 
 SV_CMD(GET, node)
 {
-  REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(struct Object *, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   xmlNodePtr _g = _xmlNewChild(response, "group", "name", DEFAULT_GROUP, "data-compound", "true");
 //  xmlNodePtr _c = _xmlAddProp(_g, "Class", OBJ_GetClassName(object), kDataTypeString);
 //  _xmlSetProp(_c, "data-readonly", "true");
@@ -200,7 +200,7 @@ SV_CMD(GET, node)
   OBJ_EnumObjectClasses(object, add_group, response);
   OBJ_EnumClassProperties(object, add_property, response);
   
-  for (lpcProperty_t p = OBJ_GetProperties(object); p; p = PROP_GetNext(p)) {
+  for (struct Property const *p = OBJ_GetProperties(object); p; p = PROP_GetNext(p)) {
     if (PROP_GetFlags(p)&PF_PROPERTY_TYPE)
       continue;
     xmlNodePtr group = xmlFindNode(response, XMLSTR(CUSTOM_GROUP));
@@ -221,7 +221,7 @@ SV_CMD(GET, node)
 
 SV_CMD(PUT, node)
 {
-  REQUIRE(lpObject_t, obj, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(struct Object *, obj, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   _xmlSetProp(response, "command", "edit");
   _xmlSetProp(response, "source", endpoint);
   for(reqArg_t const* arg = rargs; *arg->name; arg++) {
@@ -230,7 +230,7 @@ SV_CMD(PUT, node)
       OBJ_SetName(obj, arg->value);
     } else{
       path_t buf={0};
-      lpProperty_t property = NULL;
+      struct Property *property = NULL;
       if (FAILED(OBJ_FindShortProperty(obj, arg->name, &property))) continue;
       PROP_Print(property, buf, sizeof(buf));
       _xmlAddProp(response, arg->name, buf, PROP_GetType(property));
@@ -242,7 +242,7 @@ SV_CMD(PUT, node)
 }
   
 SV_CMD(GET, startup_screen) {
-  lpObject_t project = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Object *project = OBJ_GetFirstChild(FS_GetWorkspace());
   if (project && GetProject(project) && GetProject(project)->StartupScreen && *GetProject(project)->StartupScreen) {
     GET_scene_hierarchy(L, response, GetProject(project)->StartupScreen, rargs, nargs);
     return NULL;
@@ -269,7 +269,7 @@ static void load_library(lpcString_t def, void* param) {
 }
 
 SV_CMD(GET, project_overview) {
-  lpObject_t proj = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Object *proj = OBJ_GetFirstChild(FS_GetWorkspace());
   if (proj) {
     lpcString_t szRoot = OBJ_GetSourceFile(proj);
     FOR_EACH_OBJECT(lib, proj) {
@@ -288,7 +288,7 @@ SV_CMD(GET, project_overview) {
 }
 
 SV_CMD(GET, whoami) {
-  lpObject_t project = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Object *project = OBJ_GetFirstChild(FS_GetWorkspace());
   if (project) {
     GET_node(L, response, OBJ_GetName(project), rargs, nargs);
     return NULL;
@@ -297,11 +297,11 @@ SV_CMD(GET, whoami) {
   }
 }
 
-ORCA_API lpObject_t OBJ_LoadDocument(xmlDocPtr doc) {
+ORCA_API struct Object *OBJ_LoadDocument(xmlDocPtr doc) {
   xmlChar *xmlbuff;
   int buffersize;
   xmlDocDumpMemory(doc, &xmlbuff, &buffersize);
-  lpObject_t obj = FS_LoadObjectFromXmlString((lpcString_t)xmlbuff);
+  struct Object *obj = FS_LoadObjectFromXmlString((lpcString_t)xmlbuff);
   xmlFree(xmlbuff);
   if (!obj) {
     Con_Error("Failed to parse XML document");
@@ -309,12 +309,12 @@ ORCA_API lpObject_t OBJ_LoadDocument(xmlDocPtr doc) {
   return obj;
 }
 
-ORCA_API bool_t OBJ_SaveDocument(lpObject_t object);
-ORCA_API xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent);
+ORCA_API bool_t OBJ_SaveDocument(struct Object *object);
+ORCA_API xmlNodePtr ED_ConvertNode(struct Object *object, xmlNodePtr parent);
 SV_CMD(POST, node) {
-  REQUIRE(lpObject_t, root, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(struct Object *, root, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   if (SV_ARG("source")) {
-    REQUIRE(lpObject_t, source, OBJ_FindByPath(FS_GetWorkspace(), SV_ARG("source")), "Can't find specified source object");
+    REQUIRE(struct Object *, source, OBJ_FindByPath(FS_GetWorkspace(), SV_ARG("source")), "Can't find specified source object");
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
@@ -331,7 +331,7 @@ SV_CMD(POST, node) {
   } else if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
     return luaL_checkstring(L, -1);
   } else {
-    lpObject_t object = luaX_checkObject(L, -1);
+    struct Object *object = luaX_checkObject(L, -1);
     if (SV_ARG("name")) OBJ_SetName(object, SV_ARG("name"));
     OBJ_AddChild(root, object, FALSE);
     lua_pop(L, 1);
@@ -340,7 +340,7 @@ SV_CMD(POST, node) {
 }
 
 SV_CMD(DELETE, node) {
-  REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(struct Object *, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   uint32_t index = 0;
   FOR_EACH_OBJECT(child, object) {
     if (child != object) index++;
@@ -364,7 +364,7 @@ SV_CMD(GET, preview) {
   return NULL;
 }
 
-static void output_class(lpcClassDesc_t desc, void *param) {
+static void output_class(struct ClassDesc const *desc, void *param) {
   _xmlNewChild(param, "menu-item", "header", desc->ClassName, "name", desc->ClassName);
 }
 
@@ -373,7 +373,7 @@ SV_CMD(GET, class) {
   return NULL;
 }
 
-static void output_property(lpcClassDesc_t desc, void *param) {
+static void output_property(struct ClassDesc const *desc, void *param) {
   xmlNodePtr n = _xmlNewChild(param, "menu-item", "header", desc->ClassName);
   FOR_LOOP(i, desc->NumProperties) {
     char buf[256];
@@ -383,15 +383,15 @@ static void output_property(lpcClassDesc_t desc, void *param) {
 }
 
 SV_CMD(GET, property_types) {
-  REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  REQUIRE(struct Object *, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
   OBJ_EnumObjectClasses(object, output_property, response);
   return NULL;
 }
 
 SV_CMD(POST, property_types) {
   REQUIRE(lpcString_t, classname, SV_ARG("name"), "Missing `name` argument");
-  REQUIRE(lpObject_t, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
-  lpProperty_t property;
+  REQUIRE(struct Object *, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
+  struct Property *property;
   if (FAILED(OBJ_FindLongProperty(object, fnv1a32(classname), &property))) {
     return "Can't create property";
   }
@@ -399,7 +399,7 @@ SV_CMD(POST, property_types) {
 }
 
 SV_CMD(POST, save_project) {
-  lpObject_t project = OBJ_GetFirstChild(FS_GetWorkspace());
+  struct Object *project = OBJ_GetFirstChild(FS_GetWorkspace());
   OBJ_SaveDocument(project);
   return NULL;
 }

@@ -5,7 +5,7 @@
 typedef struct
 {
   char path[256];
-  lpObject_t object;
+  struct Object *object;
 } knownPrefab_t;
 
 knownPrefab_t known_prefabs[MAX_PREFABS] = { 0 };
@@ -14,10 +14,10 @@ void Init_KnownPrefabs(void) {
   memset(known_prefabs, 0, sizeof(known_prefabs));
 }
 
-ORCA_API lpObject_t
+ORCA_API struct Object *
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining)
 {
-  lpObject_t best_match = NULL;
+  struct Object *best_match = NULL;
   size_t match_len = 0;
   for (uint32_t i = 1; i < MAX_PREFABS && *known_prefabs[i].path; i++) {
     size_t size = strlen(known_prefabs[i].path);
@@ -34,7 +34,7 @@ OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining)
 }
 
 ORCA_API void
-OBJ_RegisterPrefab(lpObject_t hobj, lpcString_t szFileName)
+OBJ_RegisterPrefab(struct Object *hobj, lpcString_t szFileName)
 {
   uint32_t i = 1;
   path_t filename={0};

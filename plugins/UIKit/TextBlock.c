@@ -14,7 +14,7 @@ enum label_step
 };
 
 static bool_t
-is_updated(lpObject_t hObject,
+is_updated(struct Object *hObject,
            enum label_step label_step)
 {
   TextBlockConceptPtr output = GetTextBlockConcept(hObject);
@@ -28,7 +28,7 @@ is_updated(lpObject_t hObject,
 }
 
 float
-text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space)
+text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
   switch (align) {
     case kTextHorizontalAlignmentRight:
@@ -61,11 +61,11 @@ mesh_rect(Node2DPtr pNode2D,
 }
 
 static lpcString_t
-_GetTextBlockText(lpObject_t hObject,
+_GetTextBlockText(struct Object *hObject,
                   TextBlockConceptPtr pTextBlockConcept,
                   TextRunPtr pTextRun)
 {
-  lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
+  struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
   if (pTextRun->Text && *pTextRun->Text)
   {
     return pTextRun->Text;
@@ -85,11 +85,11 @@ _GetTextBlockText(lpObject_t hObject,
 }
 
 static struct ViewTextRun
-_MakeViewTextRun(lpObject_t hObject, TextRun_t text, lpcString_t szText)
+_MakeViewTextRun(struct Object *hObject, TextRun_t text, lpcString_t szText)
 {
-  for (lpObject_t node = hObject; node; node = OBJ_GetParent(node)) {
-    lpProperty_t plist = OBJ_GetProperties(node);
-    lpProperty_t p = PROP_FindByLongID(plist, ID_TextRun_FontSize);
+  for (struct Object *node = hObject; node; node = OBJ_GetParent(node)) {
+    struct Property *plist = OBJ_GetProperties(node);
+    struct Property *p = PROP_FindByLongID(plist, ID_TextRun_FontSize);
     if (p) {
       text.Font.Size = *(float const *)PROP_GetValue(p);
       break;
@@ -219,7 +219,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
 //    TextBlockConceptPtr label = GetTextBlockConcept(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
-    lpProperty_t hProp = TextRun_GetProperty(hObject, kTextRunText);
+    struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
     }
@@ -243,7 +243,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
 
 HANDLER(TextBlock, Object, Create)
 {
-  lpProperty_t p;
+  struct Property *p;
   OBJ_FindShortProperty(hObject, "Text", &p);
   pTextBlock->_node2D = GetNode2D(hObject);
   return FALSE;

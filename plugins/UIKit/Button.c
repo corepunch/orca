@@ -2,8 +2,8 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-lpObject_t
-_NextTabStop(lpObject_t hObject);
+struct Object *
+_NextTabStop(struct Object *hObject);
 
 //#define USE_STANDARD_BUTTON
 

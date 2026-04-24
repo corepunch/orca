@@ -26,8 +26,8 @@
 static struct color32 stats[STATS_SIZE * STATS_SIZE];
 //static struct color32 hierarchy[DEBUG_WIDTH * DEBUG_HEIGHT];
 //static struct color32 inspector[INSPECTOR_WIDTH * DEBUG_HEIGHT];
-//static lpObject_t objects[0xffff + 1];
-//static lpObject_t selected;
+//static struct Object *objects[0xffff + 1];
+//static struct Object *selected;
 //static struct vec2 scroll={0};
 //
 //static struct rect
@@ -87,7 +87,7 @@ PrintLine(struct color32* buffer,
 //#include <plugins/UIKit/UIKit.h>
 //
 //static void
-//PrintNode(lpObject_t hobj,
+//PrintNode(struct Object *hobj,
 //          struct color32* buffer,
 //          struct AXsize const* size,
 //          uint32_t indent,
@@ -121,7 +121,7 @@ PrintLine(struct color32* buffer,
 //  PrintLine(&buffer[line++ * size->width], size->width, 0, __VA_ARGS__);
 //
 //static void
-//PrintInspector(lpObject_t hobj, struct color32* buffer, struct AXsize const* size)
+//PrintInspector(struct Object *hobj, struct color32* buffer, struct AXsize const* size)
 //{
 //  if (!hobj)
 //    return;
@@ -139,7 +139,7 @@ PrintLine(struct color32* buffer,
 //      WRITELN(COLOR_LABEL, "%-*s%d %d", COLUMN_WIDTH, "ActualSize", w, h);
 //    }
 //  }
-//  for (lpProperty_t p = OBJ_GetProperties(hobj); p && line < size->height;
+//  for (struct Property *p = OBJ_GetProperties(hobj); p && line < size->height;
 //       p = PROP_GetNext(p)) {
 //    char buf[256] = { 0 };
 //    PROP_Print(p, buf, sizeof(buf));
@@ -172,7 +172,7 @@ DEBUG_Draw(float fps, int bindings)
 //#if 0
 //  memset(stats, 0, sizeof(stats));
 //  
-//	lpObject_t root = R_GetRootView();
+//	struct Object *root = R_GetRootView();
 //	
 //	memset(hierarchy, 0, sizeof(hierarchy));
 //	memset(inspector, 0, sizeof(inspector));
@@ -202,7 +202,7 @@ DEBUG_Draw(float fps, int bindings)
 //#if 0
 //int //f_drawEntities(lua_State* L)
 //{
-////  luaX_parsefield(lpObject_t, root, 1, luaX_checkObject);
+////  luaX_parsefield(struct Object *, root, 1, luaX_checkObject);
 //
 //	DEBUG_Draw(axGet(L), 0);
 //	
@@ -234,7 +234,7 @@ DEBUG_Draw(float fps, int bindings)
 //	bool_t button = e->message == kMsgLeftButtonDown
 //		|| e->message == kMsgRightButtonDown;
 //  if (button && FindClick(tr, e->x, e->y, &c)) {
-//    lpObject_t object = objects[(*(uint32_t*)&c) >> 16];
+//    struct Object *object = objects[(*(uint32_t*)&c) >> 16];
 //    if (!object) {
 //    } else if (strchr(COLLAPSE_BUTTON, c.r)) {
 //      OBJ_SetFlags(object, OBJ_GetFlags(object) & ~OF_EXPANDED_IN_DEBUG);

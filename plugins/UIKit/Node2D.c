@@ -30,9 +30,9 @@ HANDLER(Node2D, Node, HitTest) {
   int16_t y = (int16_t)pHitTest->y;
   int16_t lx = x - pNode2D->ContentOffset.x;
   int16_t ly = y - pNode2D->ContentOffset.y;
-  lpObject_t result = NULL;
+  struct Object *result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
-    lpObject_t childHit = (lpObject_t)_SendMessage(hChild, Node, HitTest, .x = lx, .y = ly);
+    struct Object *childHit = (struct Object *)_SendMessage(hChild, Node, HitTest, .x = lx, .y = ly);
     if (childHit) result = childHit;
   }
   if (result) {
@@ -97,12 +97,12 @@ Node2D_SetFrame(Node2DPtr pNode2D, enum Box3Field parm, float value)
   pNode2D->_bbox_flags |= 1 << parm;
 }
 
-// static uint32_t _IndexInParent(lpObject_t  hObject) {
+// static uint32_t _IndexInParent(struct Object * hObject) {
 //	if (!OBJ_GetParent(hObject)) {
 //		return 0;
 //	}
 //	uint32_t dwCounter = 0;
-//	lpObject_t  p = OBJ_GetParent(hObject);
+//	struct Object * p = OBJ_GetParent(hObject);
 //	FOR_EACH_OBJECT(hChild, p) {
 //		if (hChild == hObject) {
 //			return dwCounter;
@@ -169,7 +169,7 @@ HANDLER(Node2D, Node, UpdateMatrix)
   return TRUE;
 }
 
-// struct vec3 UI_GetActualSize(lpObject_t  hObject) {
+// struct vec3 UI_GetActualSize(struct Object * hObject) {
 //     Node2DPtr view = GetNode2D(hObject);
 //     if (view) {
 //         struct vec3 v = {
@@ -238,7 +238,7 @@ enum ui_align
 };
 
 float
-Node2D_Align(Node2DPtr pNode2D, rect_t const *rect, enum Direction axis, int align, float length)
+Node2D_Align(Node2DPtr pNode2D, struct rect const *rect, enum Direction axis, int align, float length)
 {
   struct transform2 const* transform = &(pNode2D->LayoutTransform);
   float const value = ((float const*)&transform->translation)[axis];
@@ -369,7 +369,7 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
 
 HANDLER(Node2D, Node2D, SetScrollTop)
 {
-  vec2_t offset = pNode2D->ContentOffset;
+  struct vec2 offset = pNode2D->ContentOffset;
   offset.y = fmin(0, Node2D_GetFrame(pNode2D, kBox3FieldHeight) - pSetScrollTop->Value);
   pNode2D->ContentOffset = offset;
   return TRUE;

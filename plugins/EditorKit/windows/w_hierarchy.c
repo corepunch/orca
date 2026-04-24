@@ -1,6 +1,6 @@
 #include "../ed_local.h"
 
-HOBJ SceneView_GetSelection(HEDWND);
+struct Object *SceneView_GetSelection(HEDWND);
 
 #if 0
 
@@ -200,11 +200,11 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
       }
     case ID_EDIT_PASTE:
       if (xml) {
-        HOBJ root = editor.screen;
+        struct Object *root = editor.screen;
         WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
           xmlDocSetRootElement(doc, xml);
-          lpObject_t OBJ_LoadDocument(xmlDocPtr doc);
-          HOBJ obj = OBJ_LoadDocument(doc);
+          struct Object *OBJ_LoadDocument(xmlDocPtr doc);
+          struct Object *obj = OBJ_LoadDocument(doc);
           if (SceneView_GetSelection(wnd) && OBJ_GetParent(SceneView_GetSelection(wnd))) {
             OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj, FALSE);
           } else {
@@ -243,11 +243,11 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
 
 static LRESULT Hierarchy_OnDrop(HEDWND wnd, WORD item, LPEDDRAGITEM drag) {
   LPVOID parent = TreeView_GetItem(wnd, item);
-  HOBJ child = drag->object;
+  struct Object *child = drag->object;
   ED_SetHoveredItem(wnd, 0);
   if (!parent || !child)
     return FALSE;
-  for (HOBJ p = parent; p; p = OBJ_GetParent(p)) {
+  for (struct Object *p = parent; p; p = OBJ_GetParent(p)) {
     if (p == child)
       return FALSE;
   }
@@ -293,7 +293,7 @@ LRESULT ED_HierarchyNavigator(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lp
         struct _OBJDEF def={0};
         ED_ClearConsole(wnd);
         ED_SendMessage(wnd, EVT_PRINT, 0, NULL);
-        for (HOBJ obj = OBJ_GetParent(lparm); obj; obj = OBJ_GetParent(obj)) {
+        for (struct Object *obj = OBJ_GetParent(lparm); obj; obj = OBJ_GetParent(obj)) {
           UI_GetObjectItem(obj, &def);
           ED_SendMessage(wnd, EVT_COMMAND, TREE_EXPAND, &def.hIdentifier);
         }

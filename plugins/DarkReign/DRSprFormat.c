@@ -135,7 +135,7 @@ _read_i32(uint8_t const *buf, uint32_t off)
 static uint32_t _palette[256];
 static int palette_initialized = 0;
 
-lpObject_t
+struct Object *
 _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name)
 {
     /* ---- 1. validate header ---- */
@@ -423,7 +423,7 @@ _SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name
 			Texture_Release(tex);
 			return NULL;
 		}
-    lpObject_t obj = luaX_checkObject(L, -1);
+    struct Object *obj = luaX_checkObject(L, -1);
     if (!obj) {
         fprintf(stderr, "SPR '%s': failed to create SpriteAnimation object\n", name);
         free(frames);

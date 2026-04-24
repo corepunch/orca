@@ -22,7 +22,7 @@ static handle_t write_event_data(lua_State* L, size_t size, const void *udata) {
   return data;
 }
 
-void OBJ_post(lua_State* L, lpObject_t self, lpcString_t message)
+void OBJ_post(lua_State* L, struct Object *self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};
@@ -45,7 +45,7 @@ void OBJ_post(lua_State* L, lpObject_t self, lpcString_t message)
   }
 }
 
-int OBJ_send(lua_State* L, lpObject_t self, lpcString_t message)
+int OBJ_send(lua_State* L, struct Object *self, lpcString_t message)
 {
   const int nargs = MAX(lua_gettop(L) - 2, 0);
   fixedString_t argtype={0};

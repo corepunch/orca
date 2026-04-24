@@ -3,7 +3,7 @@
 #include <plugins/UIKit/UIKit.h>
 
 float
-text_pos(EdgeShorthand_t padding, uint32_t align, float size, float space);
+text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
 
 HANDLER(Input, Node2D, DrawBrush)
 {
@@ -74,10 +74,10 @@ HANDLER(Input, TextBlockConcept, MakeText)
   return FALSE;
 }
 
-static lpObject_t
-_FindNextTabStop(lpObject_t hObject)
+static struct Object *
+_FindNextTabStop(struct Object *hObject)
 {
-  lpObject_t hOther;
+  struct Object *hOther;
   FOR_EACH_OBJECT(hChild, hObject)
   {
     if (OBJ_GetFlags(hChild) & OF_TABSTOP)
@@ -88,11 +88,11 @@ _FindNextTabStop(lpObject_t hObject)
   return NULL;
 }
 
-lpObject_t
-_NextTabStop(lpObject_t hObject)
+struct Object *
+_NextTabStop(struct Object *hObject)
 {
-  for (lpObject_t p = hObject, r; p; p = OBJ_GetParent(p)) {
-    for (lpObject_t n = p; n; n = OBJ_GetNext(n)) {
+  for (struct Object *p = hObject, *r; p; p = OBJ_GetParent(p)) {
+    for (struct Object *n = p; n; n = OBJ_GetNext(n)) {
       if (n != p && (OBJ_GetFlags(n) & OF_TABSTOP))
         return n;
       if ((r = _FindNextTabStop(n)))
@@ -122,7 +122,7 @@ HANDLER(Input, Node, KeyDown)
       OBJ_SetFocus(NULL);
       break;
     case AX_KEY_TAB: {
-      lpObject_t a = _FindNextTabStop(hObject);
+      struct Object *a = _FindNextTabStop(hObject);
       OBJ_SetFocus(a ? a : _NextTabStop(hObject));
       break;
     }
@@ -167,7 +167,7 @@ HANDLER(Input, Node, KeyDown)
       SV_PostMessage(hObject, "Char", 0, 0);
       break;
   }
-  lpProperty_t prop = TextRun_GetProperty(hObject, kTextRunText);
+  struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
     PROP_SetStringValue(prop, szText);
   }

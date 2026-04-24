@@ -326,7 +326,7 @@ typedef struct _EDITOR {
   PATHSTR    currentProject;
   BOOL       bHasFinished;
   EDPROJECT  project;
-  lpObject_t screen;
+  struct Object *screen;
 } EDITOR;
 
 typedef struct _EDCREATE {
@@ -412,7 +412,7 @@ INLINE DWORD ED_GetRow(LPTERMINAL lpTerminal, DWORD cursor) {
 
 HEDWND ED_GetParent(HEDWND);
 void ED_SetTextInput(LPEDTEXTEDIT lpTextEdit);
-void ED_ObjectField(LPTERMINAL p, lpObject_t* value, DWORD type, DWORD width);
+void ED_ObjectField(LPTERMINAL p, struct Object ** value, DWORD type, DWORD width);
 void ED_ColorField(LPTERMINAL p, LPCOLOR v, DWORD width);
 void ED_FloatField(LPTERMINAL p, FLOAT *value, DWORD width);
 void ED_IntField(LPTERMINAL p, int *value, DWORD width);
@@ -476,8 +476,8 @@ BOOL FS_RenameFile(HANDLE, lpcString_t);
 DWORD FS_NewFile(HANDLE, lpcString_t, DWORD);
 BOOL FS_GetProjectReference(lpcString_t szName, LPSTR pOut, DWORD nMaxLen);
 
-bool_t OBJ_SaveDocument(lpObject_t object);
-xmlNodePtr ED_ConvertNode(lpObject_t object, xmlNodePtr parent);
-HOBJ UI_FindObjectByUniqueID(HANDLE hHandle, HOBJ root);
+bool_t OBJ_SaveDocument(struct Object *object);
+xmlNodePtr ED_ConvertNode(struct Object *object, xmlNodePtr parent);
+struct Object *UI_FindObjectByUniqueID(HANDLE hHandle, struct Object *root);
 
 #endif

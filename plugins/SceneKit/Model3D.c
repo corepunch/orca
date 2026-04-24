@@ -4,7 +4,7 @@
 #include "SceneKit.h"
 
 void
-_CollectUniforms(lpObject_t hObject,
+_CollectUniforms(struct Object *hObject,
                  struct Material* mat,
                  struct ViewEntity* ent,
                  struct uniform* u,
@@ -35,7 +35,7 @@ HANDLER(Model3D, Node3D, Render)
   static struct uniform u[MAX_UNIFORMS];
 
 //  int a = 0;
-//  for (lpObject_t obj = OBJ_GetParent(hObject); obj; obj = OBJ_GetParent(obj)) {
+//  for (struct Object *obj = OBJ_GetParent(hObject); obj; obj = OBJ_GetParent(obj)) {
 //    if (GetModel3D(obj)) {
 //      a = 1;
 //    }
@@ -57,7 +57,7 @@ HANDLER(Model3D, Node3D, Render)
   _CollectUniforms(hObject, pModel3D->Material, &ent, u, blend);
 
   //	if (OBJ_CheckName(hObject, "new_Hills_right")) {
-  //		lpProperty_t p= OBJ_FindProperty2(hObject, "ActiveContext");
+  //		struct Property *p= OBJ_FindProperty2(hObject, "ActiveContext");
   //		uint32_t b= fnv1a32("ActiveContext");
   //		FOR_LOOP(i, ent.numUniforms) {
   //			Con_Error("%u %f", ent.u[i].Identifier,

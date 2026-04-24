@@ -796,7 +796,7 @@ static lpcString_t _PBRPointLight =
 HANDLER(Shader, Object, Start) {
   uint32_t NumUniforms = 0;
   struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
-  for (lpProperty_t p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
+  for (struct Property *p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
     struct uniform_def ud = {0};
     lpcString_t local = PROP_GetName(p);
     if (strrchr(local, '.')) {
@@ -821,13 +821,13 @@ HANDLER(Shader, Object, Start) {
         break;
       case kDataTypeStruct:
         switch (PROP_GetSize(p)) {
-          case sizeof(vec2_t): ud.Type = UT_FLOAT_VEC2; break;
-          case sizeof(vec3_t): ud.Type = UT_FLOAT_VEC3; break;
-          case sizeof(vec4_t):
+          case sizeof(struct vec2): ud.Type = UT_FLOAT_VEC2; break;
+          case sizeof(struct vec3): ud.Type = UT_FLOAT_VEC3; break;
+          case sizeof(struct vec4):
             ud.Type = UT_FLOAT_VEC4;
             break;
-          case sizeof(mat3_t): ud.Type = UT_FLOAT_MAT3; break;
-          case sizeof(mat4_t): ud.Type = UT_FLOAT_MAT4; break;
+          case sizeof(struct mat3): ud.Type = UT_FLOAT_MAT3; break;
+          case sizeof(struct mat4): ud.Type = UT_FLOAT_MAT4; break;
           default:
             break;
         }

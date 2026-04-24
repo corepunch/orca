@@ -106,7 +106,7 @@ HANDLER(AnimationPlayer, Object, Animate) {
     pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed * scale;
 
     // Evaluate all AnimationCurve child objects of the clip
-    lpObject_t clipObj = CMP_GetObject(clip);
+    struct Object *clipObj = CMP_GetObject(clip);
     if (clipObj) {
         FOR_EACH_OBJECT(child, clipObj) {
             struct AnimationCurve *curve = GetAnimationCurve(child);
@@ -114,12 +114,12 @@ HANDLER(AnimationPlayer, Object, Animate) {
             if (!curve->Keyframes || curve->NumKeyframes == 0) continue;
             if (!curve->Property || !curve->Property[0]) continue;
 
-            lpObject_t target = (curve->Path && curve->Path[0])
+            struct Object *target = (curve->Path && curve->Path[0])
                 ? OBJ_FindByPath(hObject, curve->Path)
                 : hObject;
             if (!target) continue;
 
-            lpProperty_t property;
+            struct Property *property;
             if (FAILED(OBJ_FindShortProperty(target, curve->Property, &property))) continue;
 
             float value[4];

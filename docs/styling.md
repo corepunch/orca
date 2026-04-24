@@ -82,7 +82,7 @@ btn.class = "selected"
 
 ```c
 // Parse a full space-separated class attribute string (called during XML load)
-OBJ_ParseClassAttribute(lpObject_t obj, const char* classAttr);
+OBJ_ParseClassAttribute(struct Object *obj, const char* classAttr);
 ```
 
 ---
@@ -140,7 +140,7 @@ btn:addStyleRule(".special-button", {
 ```c
 // Register a single rule on an object (selector may include a leading '.')
 OBJ_AddStyleClass(
-    lpObject_t  obj,
+    struct Object * obj,
     const char* name,      // e.g., "button" or ".button"
     const char* property,  // e.g., "Background"
     const char* value,     // e.g., "#3c6"

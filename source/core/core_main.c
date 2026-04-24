@@ -17,7 +17,7 @@ core_GetPrograms(void) {
 }
 
 bool_t
-OBJ_RegisterPropertyType(lpcPropertyType_t pt)
+OBJ_RegisterPropertyType(struct PropertyType const *pt)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
     if (!core.ptypes[i].Name) {
@@ -31,11 +31,11 @@ OBJ_RegisterPropertyType(lpcPropertyType_t pt)
   return FALSE;
 }
 
-lpcPropertyType_t
+struct PropertyType const *
 OBJ_FindPropertyType(uint32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
-    lpcPropertyType_t pt = &core.ptypes[i];
+    struct PropertyType const *pt = &core.ptypes[i];
     if (pt && pt->FullIdentifier == ident) {
       return pt;
     }
@@ -44,7 +44,7 @@ OBJ_FindPropertyType(uint32_t ident)
 }
 
 bool_t
-OBJ_RegisterClass(lpcClassDesc_t class)
+OBJ_RegisterClass(struct ClassDesc const *class)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
@@ -63,11 +63,11 @@ OBJ_RegisterClass(lpcClassDesc_t class)
   return FALSE;
 }
 
-lpcClassDesc_t
+struct ClassDesc const *
 OBJ_FindClassW(uint32_t class_id)
 {
   FOR_LOOP(i, MAX_CLASSES) {
-    lpcClassDesc_t cl = core.classes[i];
+    struct ClassDesc const *cl = core.classes[i];
     if (cl && cl->ClassID == class_id) {
       return cl;
     }
@@ -75,14 +75,14 @@ OBJ_FindClassW(uint32_t class_id)
   return NULL;
 }
 
-lpcClassDesc_t
+struct ClassDesc const *
 OBJ_FindClass(lpcString_t classname)
 {
   return OBJ_FindClassW(fnv1a32(classname));
 }
 
 static bool_t
-is_class_inherited(lpcClassDesc_t self, uint32_t parent)
+is_class_inherited(struct ClassDesc const *self, uint32_t parent)
 {
   if (!self) return FALSE;
   if (!parent || self->ClassID == parent) return TRUE;
@@ -95,7 +95,7 @@ is_class_inherited(lpcClassDesc_t self, uint32_t parent)
 }
 
 void
-OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(lpcClassDesc_t, void*), void* param)
+OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(struct ClassDesc const *, void*), void* param)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     if (!superclass || is_class_inherited(core.classes[i], superclass)) {
@@ -127,7 +127,7 @@ API_PrintStackTrace(lua_State* L)
 void
 CL_Frame(void)
 {
-  //    lpObject_t  hRoot   = server->rootobj;
+  //    struct Object * hRoot   = server->rootobj;
   //    float   fWidth  = Node2D_GetWidth(hRoot);
   //    float   fHeight = Node2D_GetHeight(hRoot);
   //
@@ -189,7 +189,7 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
   /* Add short-name -> full-name aliases (e.g. LeftButtonDown -> Node.LeftButtonDown)
    * so Lua can use self:send(Node.LeftButtonDown) transparently. */
   FOR_LOOP(i, cl->NumProperties) {
-    lpcPropertyType_t pt = &cl->Properties[i];
+    struct PropertyType const *pt = &cl->Properties[i];
     if (!pt->Name || !*pt->Name) {
       continue;
     }
@@ -432,8 +432,8 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       core_AdvanceFrame();
       return FALSE;
     case ID_PropertyChangedMessage: {
-      lpObject_t object = e->target;
-      lpProperty_t property = e->lParam;
+      struct Object *object = e->target;
+      struct Property *property = e->lParam;
       if (!property && object && e->wParam) {
         property = PROP_FindByShortID(OBJ_GetProperties(object), e->wParam);
       }
@@ -649,7 +649,7 @@ before_core_module_registered(lua_State* L)
 {
   // Preserve registered classes: lua_pushclass calls OBJ_RegisterClass before
   // this function runs, so we must not zero core.classes[] here.
-  lpcClassDesc_t saved_classes[MAX_CLASSES];
+  struct ClassDesc const *saved_classes[MAX_CLASSES];
   memcpy(saved_classes, core.classes, sizeof(core.classes));
   memset(&core, 0, sizeof(struct game));
   memcpy(core.classes, saved_classes, sizeof(core.classes));
@@ -698,7 +698,7 @@ before_core_module_registered(lua_State* L)
   luaX_require(L, "orca.geometry", 0);
 }
 
-extern lpObject_t static_stylesheet;
+extern struct Object *static_stylesheet;
 void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   if (!static_stylesheet) {
     luaX_require(L, "orca.core", 1);

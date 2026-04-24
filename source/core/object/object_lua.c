@@ -10,18 +10,18 @@
 
 // #define DEBUG_COUNT_OBJECTS
 
-lpObject_t luaX_checkObject(lua_State* L, int arg) {
-  return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
+struct Object *luaX_checkObject(lua_State* L, int arg) {
+  return *(struct Object **)luaL_checkudata(L, arg, API_TYPE_OBJECT);
 }
 
-void luaX_pushObject(lua_State* L, lpcObject_t self)
+void luaX_pushObject(lua_State* L, struct Object const *self)
 {
   if (!self) {
     lua_pushnil(L);
     return;
   }
-  lpObject_t* ud = lua_newuserdata(L, sizeof(lpObject_t));
-  *ud = (lpObject_t)self;
+  struct Object ** ud = lua_newuserdata(L, sizeof(struct Object *));
+  *ud = (struct Object *)self;
   luaL_setmetatable(L, API_TYPE_OBJECT);
 }
 
@@ -33,7 +33,7 @@ set_prop(lua_State* L)
 }
 
 static void
-_ParseArguments(lua_State* L, lpObject_t hobj)
+_ParseArguments(lua_State* L, struct Object *hobj)
 {
   if (lua_type(L, 2) == LUA_TSTRING) {
     lpcString_t arg = luaL_checkstring(L, 2);
@@ -93,10 +93,10 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
 }
 
 int OBJ_CreateFromLuaState(lua_State *L) {
-  luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
-  lpObject_t pobj = OBJ_Create(__nativeclass->ClassID);
+  luaX_parsefield(struct ClassDesc const *, __nativeclass, 1, lua_touserdata);
+  struct Object *pobj = OBJ_Create(__nativeclass->ClassID);
 
-  lpObject_t* ctx = lua_getextraspace(L);
+  struct Object ** ctx = lua_getextraspace(L);
   if (*ctx) {
     OBJ_AddChild(*ctx, pobj, FALSE);
   }
@@ -123,14 +123,14 @@ int OBJ_CreateFromLuaState(lua_State *L) {
   return 1;
 }
 
-bool_t OBJ_Equals(lpcObject_t self, lpcObject_t other)
+bool_t OBJ_Equals(struct Object const *self, struct Object const *other)
 {
   return self == other;
 }
 
-void OBJ_SetContext(lua_State* L, lpObject_t self)
+void OBJ_SetContext(lua_State* L, struct Object *self)
 {
-  lpObject_t* ctx = lua_getextraspace(L);
+  struct Object ** ctx = lua_getextraspace(L);
   *ctx = self;
 }
 
@@ -139,12 +139,12 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
   if (status != LUA_OK) {
     return luaL_error(L, luaL_tolstring(L, -1, NULL));
   }
-  axPostMessageW((lpObject_t)ctx, ID_Node_ViewDidLoad, 0, NULL);
+  axPostMessageW((struct Object *)ctx, ID_Node_ViewDidLoad, 0, NULL);
   return 0;
 }
 
 static int f_rebuild(lua_State *L) {
-  lpObject_t self = luaX_checkObject(L, 1);
+  struct Object *self = luaX_checkObject(L, 1);
   if (lua_type(L, 2) == LUA_TFUNCTION) {
     OBJ_Clear(self);
     lua_pushvalue(L, 2);  /* fn */
@@ -157,9 +157,9 @@ static int f_rebuild(lua_State *L) {
   return 0;
 }
 
-void OBJ_Rebuild(lua_State* L, lpObject_t self) {
+void OBJ_Rebuild(lua_State* L, struct Object *self) {
   lua_State* co = lua_newthread(L);
-  *((lpObject_t *)lua_getextraspace(co)) = self;
+  *((struct Object **)lua_getextraspace(co)) = self;
   int ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_pushcfunction(co, f_rebuild);
   luaX_pushObject(co, self);
@@ -172,15 +172,15 @@ void OBJ_Rebuild(lua_State* L, lpObject_t self) {
   axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 
-lpObject_t OBJ_Instantiate(lua_State* L, lpObject_t prefab) {
+struct Object *OBJ_Instantiate(lua_State* L, struct Object *prefab) {
   assert(!"Not implemented");
   return NULL;
 }
 
-ORCA_API lpProperty_t
-luaX_getobjectcallback(lua_State* L, lpObject_t object, uint32_t id)
+ORCA_API struct Property *
+luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id)
 {
-  lpProperty_t event = PROP_FindByLongID(OBJ_GetProperties(object), id);
+  struct Property *event = PROP_FindByLongID(OBJ_GetProperties(object), id);
   if (event && PROP_GetType(event) == kDataTypeEvent) {
     lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
     return event;
