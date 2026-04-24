@@ -164,18 +164,10 @@ int f_poll(lua_State* L);
 
 int OBJ_CreateFromLuaState(lua_State *L);
 
-static int class_factory(lua_State* L) {
-  lpcClassDesc_t cl = lua_touserdata(L, lua_upvalueindex(1));
-  if (!cl) {
-    return luaL_error(L, "invalid class factory");
+static int class_table_call(lua_State* L) {
+  if (lua_type(L, 1) != LUA_TTABLE) {
+    return luaL_error(L, "invalid class table");
   }
-
-  /* Keep OBJ_CreateFromLuaState argument parsing intact by prepending
-   * a minimal synthetic class descriptor table with __nativeclass. */
-  lua_newtable(L);
-  lua_pushlightuserdata(L, (void*)cl);
-  lua_setfield(L, -2, "__nativeclass");
-  lua_insert(L, 1);
   return OBJ_CreateFromLuaState(L);
 }
 
@@ -183,9 +175,32 @@ int lua_pushclass(lua_State* L, struct ClassDesc* cl)
 {
   OBJ_RegisterClass(cl);
 
-  /* Expose each C class as a plain factory function (no Lua-side inheritance). */
+  /* Expose each C class as a callable table. */
+  lua_newtable(L);
   lua_pushlightuserdata(L, cl);
-  lua_pushcclosure(L, class_factory, 1);
+  lua_setfield(L, -2, "__nativeclass");
+
+  /* Add short-name -> full-name aliases (e.g. LeftButtonDown -> Node.LeftButtonDown)
+   * so Lua can use self:send(Node.LeftButtonDown) transparently. */
+  FOR_LOOP(i, cl->NumProperties) {
+    lpcPropertyType_t pt = &cl->Properties[i];
+    if (!pt->Name || !*pt->Name) {
+      continue;
+    }
+    fixedString_t full = {0};
+    if (pt->Category && *pt->Category) {
+      snprintf(full, sizeof(full), "%s.%s", pt->Category, pt->Name);
+    } else {
+      strncpy(full, pt->Name, sizeof(full) - 1);
+    }
+    lua_pushstring(L, full);
+    lua_setfield(L, -2, pt->Name);
+  }
+
+  lua_newtable(L);
+  lua_pushcfunction(L, class_table_call);
+  lua_setfield(L, -2, "__call");
+  lua_setmetatable(L, -2);
 
   lua_pushvalue(L, -1);
   lua_setfield(L, LUA_REGISTRYINDEX, cl->ClassName);
