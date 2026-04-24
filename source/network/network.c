@@ -367,20 +367,153 @@ int fetch_http(lua_State* L)
   return 0;
 }
 
-static void
-Net_Init(void)
+static int curl_initialized = 0;
+
+ORCA_API void
+NET_Init(void)
 {
   Con_Printf("Initializing network");
-  
-  curl_global_init(CURL_GLOBAL_DEFAULT);
+
+  if (!curl_initialized) {
+    curl_global_init(CURL_GLOBAL_DEFAULT);
+    curl_initialized = 1;
+  }
 }
 
-static void
-Net_Shutdown(void)
+ORCA_API void
+NET_Shutdown(void)
 {
   Con_Printf("Shutting down network");
-  
-  curl_global_cleanup();
+
+  if (curl_initialized) {
+    curl_global_cleanup();
+    curl_initialized = 0;
+  }
+}
+
+/* ----------------------------------------------------------------------- *
+ * C-callable non-Lua fetch API (libcurl backend)
+ * ----------------------------------------------------------------------- */
+
+#include <source/network/network.h>
+
+ORCA_API fetch_handle_t
+NET_FetchBegin(const char *url)
+{
+  if (!url || !*url) return NULL;
+
+  NET_Init();
+
+  request_t *req = malloc(sizeof(request_t));
+  if (!req) return NULL;
+  alloc_buffer(&req->response);
+  alloc_buffer(&req->header);
+
+  req->easy_handle = curl_easy_init();
+  if (!req->easy_handle) { free_request(req); return NULL; }
+
+  req->multi_handle = curl_multi_init();
+  if (!req->multi_handle) {
+    curl_easy_cleanup(req->easy_handle);
+    free_request(req);
+    return NULL;
+  }
+
+  curl_easy_setopt(req->easy_handle, CURLOPT_URL, url);
+  curl_easy_setopt(req->easy_handle, CURLOPT_WRITEFUNCTION, write_callback);
+  curl_easy_setopt(req->easy_handle, CURLOPT_WRITEDATA, &req->response);
+  curl_easy_setopt(req->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
+
+  if (strncmp(url, "https://", 8) == 0) {
+    curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYPEER, 1L);
+    curl_easy_setopt(req->easy_handle, CURLOPT_SSL_VERIFYHOST, 2L);
+  }
+
+  curl_multi_add_handle(req->multi_handle, req->easy_handle);
+
+  int running = 0;
+  curl_multi_perform(req->multi_handle, &running);
+
+  return (fetch_handle_t)req;
+}
+
+ORCA_API bool_t
+NET_FetchPoll(fetch_handle_t handle)
+{
+  if (!handle) return FALSE;
+  request_t *req = (request_t *)handle;
+  int running = 0;
+  curl_multi_perform(req->multi_handle, &running);
+  return running > 0;
+}
+
+ORCA_API long
+NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
+{
+  if (!handle || !data_out || !size_out) {
+    if (data_out)  *data_out  = NULL;
+    if (size_out)  *size_out  = 0;
+    if (handle) {
+      request_t *req = (request_t *)handle;
+      curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+      curl_easy_cleanup(req->easy_handle);
+      curl_multi_cleanup(req->multi_handle);
+      free_request(req);
+    }
+    return -1;
+  }
+
+  request_t *req = (request_t *)handle;
+  long code = -1;
+
+  CURLcode result = CURLE_OK;
+  int done = 0;
+  int msgs_left = 0;
+  CURLMsg *msg;
+  while ((msg = curl_multi_info_read(req->multi_handle, &msgs_left))) {
+    if (msg->msg == CURLMSG_DONE) {
+      done = 1;
+      result = msg->data.result;
+      if (result == CURLE_OK) {
+        curl_easy_getinfo(req->easy_handle, CURLINFO_RESPONSE_CODE, &code);
+      } else {
+        code = -1;
+      }
+      break;
+    }
+  }
+
+  *data_out = NULL;
+  *size_out = 0;
+  if (done && result == CURLE_OK) {
+    *size_out = req->response.size;
+    *data_out = malloc(req->response.size + 1);
+    if (*data_out) {
+      memcpy(*data_out, req->response.data, req->response.size);
+      ((char *)*data_out)[req->response.size] = '\0';
+    } else {
+      *size_out = 0;
+      code = -1;
+    }
+  }
+
+  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+  curl_easy_cleanup(req->easy_handle);
+  curl_multi_cleanup(req->multi_handle);
+  free_request(req);
+
+  return code;
+}
+
+ORCA_API void
+NET_FetchCancel(fetch_handle_t handle)
+{
+  if (!handle) return;
+  request_t *req = (request_t *)handle;
+  curl_multi_remove_handle(req->multi_handle, req->easy_handle);
+  curl_easy_cleanup(req->easy_handle);
+  curl_multi_cleanup(req->multi_handle);
+  free_request(req);
 }
 
 #else // __EMSCRIPTEN__
@@ -394,6 +527,7 @@ typedef struct
 {
   int done;
   int success;
+  int cancelled;
   emscripten_fetch_t* fetch;
 } webgl_fetch_state_t;
 
@@ -404,6 +538,10 @@ on_fetch_success(emscripten_fetch_t* fetch)
   state->fetch = fetch;
   state->success = 1;
   state->done = 1;
+  if (state->cancelled) {
+    emscripten_fetch_close(fetch);
+    free(state);
+  }
 }
 
 static void
@@ -413,6 +551,10 @@ on_fetch_error(emscripten_fetch_t* fetch)
   state->fetch = fetch;
   state->success = 0;
   state->done = 1;
+  if (state->cancelled) {
+    emscripten_fetch_close(fetch);
+    free(state);
+  }
 }
 
 #define HTTP_OK 200
@@ -577,16 +719,106 @@ int fetch_http(lua_State* L)
   return fetch_http_finish(L, state);
 }
 
-static void
-Net_Init(void)
+ORCA_API void
+NET_Init(void)
 {
   Con_Printf("Initializing network");
 }
 
-static void
-Net_Shutdown(void)
+ORCA_API void
+NET_Shutdown(void)
 {
   Con_Printf("Shutting down network");
+}
+
+/* ----------------------------------------------------------------------- *
+ * C-callable non-Lua fetch API (Emscripten / WebGL backend)
+ * ----------------------------------------------------------------------- */
+
+#include <source/network/network.h>
+
+ORCA_API fetch_handle_t
+NET_FetchBegin(const char *url)
+{
+  if (!url || !*url) return NULL;
+
+  webgl_fetch_state_t *state = malloc(sizeof(webgl_fetch_state_t));
+  if (!state) return NULL;
+  memset(state, 0, sizeof(*state));
+
+  emscripten_fetch_attr_t attr;
+  emscripten_fetch_attr_init(&attr);
+  strcpy(attr.requestMethod, "GET");
+  attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY;
+  attr.onsuccess  = on_fetch_success;
+  attr.onerror    = on_fetch_error;
+  attr.userData   = state;
+
+  emscripten_fetch(&attr, url);
+
+  return (fetch_handle_t)state;
+}
+
+ORCA_API bool_t
+NET_FetchPoll(fetch_handle_t handle)
+{
+  if (!handle) return FALSE;
+  return !((webgl_fetch_state_t *)handle)->done;
+}
+
+ORCA_API long
+NET_FetchFinish(fetch_handle_t handle, void **data_out, size_t *size_out)
+{
+  if (!handle || !data_out || !size_out) {
+    if (data_out) *data_out = NULL;
+    if (size_out) *size_out = 0;
+    if (handle) {
+      webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+      if (state->fetch) emscripten_fetch_close(state->fetch);
+      free(state);
+    }
+    return -1;
+  }
+
+  webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+  emscripten_fetch_t  *fetch = state->fetch;
+  long code = fetch ? (long)fetch->status : -1;
+
+  if (fetch && fetch->numBytes > 0) {
+    *size_out = (size_t)fetch->numBytes;
+    *data_out = malloc(*size_out + 1);
+    if (*data_out) {
+      memcpy(*data_out, fetch->data, *size_out);
+      ((char *)*data_out)[*size_out] = '\0';
+    } else {
+      *size_out = 0;
+      code = -1;
+    }
+    emscripten_fetch_close(fetch);
+  } else {
+    *data_out = NULL;
+    *size_out = 0;
+    if (fetch) emscripten_fetch_close(fetch);
+  }
+
+  free(state);
+  return code;
+}
+
+ORCA_API void
+NET_FetchCancel(fetch_handle_t handle)
+{
+  if (!handle) return;
+  webgl_fetch_state_t *state = (webgl_fetch_state_t *)handle;
+  if (state->done) {
+    /* Callback already fired — safe to close and free immediately. */
+    if (state->fetch) emscripten_fetch_close(state->fetch);
+    free(state);
+  } else {
+    /* Fetch is still in-flight; mark cancelled and let the callback
+       close the fetch handle and free state once it completes. */
+    state->cancelled = 1;
+  }
 }
 
 #endif // __EMSCRIPTEN__
@@ -626,7 +858,7 @@ int f_response_code(lua_State* L)
 int f_response_image(lua_State* L)
 {
   response_t* res = luaL_checkudata(L, 1, API_TYPE_RESPONSE);
-  /*handle_t h = */R_LoadImageFromMemory(L, res->data, (uint32_t)res->size);
+  /*handle_t h = */R_LoadImageFromMemory(res->data, (uint32_t)res->size);
   //  lua_pushlightuserdata(L, h);
   //  luaX_pushObject(L, R_LoadImageFromMemory(L, res->data, (uint32_t)res->size));
   return 1;
@@ -648,7 +880,7 @@ static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
 
 int f_network_shutdown(lua_State* L)
 {
-  Net_Shutdown();
+  NET_Shutdown();
   return 0;
 }
 
@@ -658,7 +890,7 @@ ORCA_API int luaopen_orca_network(lua_State* L)
   static luaL_Reg const functions[] = { { "fetch", fetch_http },
     { NULL, NULL } };
   
-  Net_Init();
+  NET_Init();
   
   luaL_newlib(L, functions);
   

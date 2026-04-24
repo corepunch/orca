@@ -756,6 +756,8 @@ struct ImageView {
 	struct vec4 Insets; ///< Content inset values for image positioning
 	struct vec4 Viewbox; ///< Viewport rectangle for image cropping/scaling
 	enum Stretch Stretch; ///< Determines how the image is scaled to fill its allocated layout space
+	void* _fetch; ///< In-flight HTTP fetch handle (private)
+	void* _src_object; ///< Texture object loaded from HTTP data (private)
 };
 ORCA_API void luaX_pushImageView(lua_State *L, struct ImageView const* ImageView);
 ORCA_API struct ImageView* luaX_checkImageView(lua_State *L, int idx);
