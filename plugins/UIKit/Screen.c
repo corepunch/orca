@@ -565,8 +565,6 @@ draw_screen(struct Object* hObject,
 {
   uint32_t const _size = get_size(hObject);
 
-  PROP_RunAllPrograms();
-
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   
   // If screen size has changed, we need to make sure all properties
@@ -603,6 +601,8 @@ draw_screen(struct Object* hObject,
 }
 
 HANDLER(Screen, Window, Paint) {
+  PROP_RunAllPrograms();
+
   R_BeginFrame(pScreen->ClearColor);
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);

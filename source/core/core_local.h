@@ -193,9 +193,6 @@ PROP_AttachProgram(lpProperty_t,
                    struct token* program,
                    lpcString_t source);
 
-void
-PROP_RunAllPrograms(void);
-
 extern struct game core;
 
 #endif /* n_utils_h */

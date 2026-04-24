@@ -19,9 +19,9 @@ static size_t psize[] = {
 };
 
 struct property_program {
-  lpProperty_t            property;
+  struct Property*        property;
   struct token*           token;
-  LPSTR                   code;       // source code (for editor / XML serialization)
+  char*                   code;       // source code (for editor / XML serialization)
   enum PropertyAttribute  attr;
   uint32_t                updateFrame;
   struct property_program* next;
@@ -37,7 +37,7 @@ struct Property
   uint32_t               updateFrame;
   uint32_t               stateflags;
   uint32_t               changeCallback; // Lua registry reference for the change callback function
-  lpProperty_t           next;
+  struct Property*       next;
   char                   states[];
 };
 

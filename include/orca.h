@@ -190,6 +190,9 @@ enum
 ORCA_API lpObject_t
 OBJ_Create(uint32_t class_id);
 
+ORCA_API void
+PROP_RunAllPrograms(void);
+
 ORCA_API bool_t
 PROP_Update(lpProperty_t);
 
