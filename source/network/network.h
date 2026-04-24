@@ -19,6 +19,14 @@
  *   // to cancel:  NET_FetchCancel(h);
  */
 
+/* Initialise the network subsystem (idempotent).
+   Called automatically by luaopen_orca_network; also safe to call from
+   C-only paths (e.g. UIKit) before using NET_FetchBegin. */
+ORCA_API void NET_Init(void);
+
+/* Shut down the network subsystem (idempotent). */
+ORCA_API void NET_Shutdown(void);
+
 /* Opaque handle for an in-flight HTTP GET request. */
 typedef void *fetch_handle_t;
 

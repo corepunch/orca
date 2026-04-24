@@ -369,8 +369,8 @@ int fetch_http(lua_State* L)
 
 static int curl_initialized = 0;
 
-static void
-Net_Init(void)
+ORCA_API void
+NET_Init(void)
 {
   Con_Printf("Initializing network");
 
@@ -380,8 +380,8 @@ Net_Init(void)
   }
 }
 
-static void
-Net_Shutdown(void)
+ORCA_API void
+NET_Shutdown(void)
 {
   Con_Printf("Shutting down network");
 
@@ -402,10 +402,7 @@ NET_FetchBegin(const char *url)
 {
   if (!url || !*url) return NULL;
 
-  if (!curl_initialized) {
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl_initialized = 1;
-  }
+  NET_Init();
 
   request_t *req = malloc(sizeof(request_t));
   if (!req) return NULL;
@@ -722,14 +719,14 @@ int fetch_http(lua_State* L)
   return fetch_http_finish(L, state);
 }
 
-static void
-Net_Init(void)
+ORCA_API void
+NET_Init(void)
 {
   Con_Printf("Initializing network");
 }
 
-static void
-Net_Shutdown(void)
+ORCA_API void
+NET_Shutdown(void)
 {
   Con_Printf("Shutting down network");
 }
@@ -883,7 +880,7 @@ static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
 
 int f_network_shutdown(lua_State* L)
 {
-  Net_Shutdown();
+  NET_Shutdown();
   return 0;
 }
 
@@ -893,7 +890,7 @@ ORCA_API int luaopen_orca_network(lua_State* L)
   static luaL_Reg const functions[] = { { "fetch", fetch_http },
     { NULL, NULL } };
   
-  Net_Init();
+  NET_Init();
   
   luaL_newlib(L, functions);
   
