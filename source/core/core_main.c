@@ -454,10 +454,6 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
   strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
-    case kMsgPropertyChanged:
-      if (e->lParam && e->target)
-        PROP_FireNotification(L, (lpProperty_t)e->lParam, (lpObject_t)e->target);
-      return FALSE;
     case kEventWindowPaint:
     case kEventWindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);
@@ -723,12 +719,27 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
   OBJ_AddChild(static_stylesheet, rule, FALSE);
 }
 
+// Drain all pending property-change notifications.
+// Processes the per-property pending list built up by PROP_SetValue, firing
+// Lua on*Changed callbacks and state-manager transitions for each entry.
+// New notifications that arise during firing (cascaded changes) are appended
+// to the list and processed in the same pass.
+ORCA_API void core_DrainPropertyNotifications(lua_State* L) {
+  uint32_t i = 0;
+  while (i < core.pending_notification_count) {
+    lpProperty_t p = core.pending_notifications[i++];
+    PROP_FireNotification(L, p, p->object);
+  }
+  core.pending_notification_count = 0;
+}
+
 // Drain all pending events from the platform queue, dispatching each one.
-// This is used in headless tests to process kEventResumeCoroutine messages
-// that run body() rebuild coroutines posted by rebuild() calls.
+// Also drains property-change notifications first so tests that call
+// core.flushQueue() pick up both kinds of deferred work.
 ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
+  core_DrainPropertyNotifications(L);
   while (axPeekMessage(&msg)) {
     // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
     // (kEventResumeCoroutine path) has something to consume.  After each

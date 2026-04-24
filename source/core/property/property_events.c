@@ -12,6 +12,9 @@ PROP_FireNotification(lua_State* L,
                       lpObject_t object)
 {
   if (!property || !PROP_HasHandler(property)) return;
+  // Clear the queued flag before firing so that cascaded PROP_SetValue calls
+  // (e.g. from state-manager applying a state) can re-enqueue the property.
+  property->flags &= ~PF_NOTIFICATION_QUEUED;
   PROP_Update(property);
   if (property->flags & PF_USED_IN_STATE_MANAGER) {
     _SendMessage(object, StateManagerController, ControllerChanged, .Property = property);

@@ -128,24 +128,52 @@ PROP_SetStateValue(lpProperty_t property,
   return ptr;
 }
 
+static void*
+PROP_NormalizeObjectValue(lpcProperty_t property, void const* source)
+{
+  lpObject_t object;
+  if (!source) return NULL;
+  object = *(lpObject_t const*)source;
+  if (!object) return NULL;
+  if (property->pdesc->TypeString && strcmp(property->pdesc->TypeString, "Object") == 0)
+    return object;
+  return OBJ_GetComponent(object, fnv1a32(property->pdesc->TypeString));
+}
+
+static bool_t
+PROP_IsSameValue(lpcProperty_t property, void const* source)
+{
+  if (!(property->value && source && (property->stateflags & (1 << kPropertyStateNormal))))
+    return FALSE;
+  if (property->type == kDataTypeString) {
+    lpcString_t old = *(lpcString_t*)property->value;
+    lpcString_t newv = *(lpcString_t const*)source;
+    return old == newv || (old && newv && strcmp(old, newv) == 0);
+  }
+  if (property->type == kDataTypeObject) {
+    void* oldv = *(void**)property->value;
+    void* newv = PROP_NormalizeObjectValue(property, source);
+    lpObject_t object = *(lpObject_t const*)source;
+    if (!object) return oldv == NULL;
+    if (!newv) return FALSE;
+    return oldv == newv;
+  }
+  return memcmp(property->value, source, PROP_GetSize(property)) == 0;
+}
+
 void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
-  if (property->value && source && (property->stateflags & (1 << kPropertyStateNormal))) {
-    if (property->type == kDataTypeString) {
-      lpcString_t old = *(lpcString_t*)property->value;
-      lpcString_t newv = *(lpcString_t const*)source;
-      if (old == newv || (old && newv && strcmp(old, newv) == 0)) return;
-    } else if (memcmp(property->value, source, PROP_GetSize(property)) == 0) {
-      return;
-    }
-  }
+  if (PROP_IsSameValue(property, source)) return;
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
   _SendMessage(property->object, Object, PropertyChanged, property);
-  if (PROP_HasHandler(property)) {
-    axPostMessageW(property->object, kMsgPropertyChanged, 0, property);
+  if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
+    if (core.pending_notification_count < MAX_PENDING_NOTIFICATIONS) {
+      property->flags |= PF_NOTIFICATION_QUEUED;
+      core.pending_notifications[core.pending_notification_count++] = property;
+    }
   }
 }
 

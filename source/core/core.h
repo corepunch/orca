@@ -334,6 +334,10 @@ core_AdvanceFrame(void);
 ORCA_API void
 core_FlushQueue(struct lua_State*);
 
+/// @brief Fires all pending property-change notifications (Lua callbacks + state manager).
+ORCA_API void
+core_DrainPropertyNotifications(struct lua_State*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.

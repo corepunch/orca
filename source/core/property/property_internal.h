@@ -3,8 +3,6 @@
 
 #include <source/core/core_local.h>
 
-#define kMsgPropertyChanged 0x6d47e0cc
-
 #define ID_ContentOffset 0x35a57c45
 
 enum uniform_precision { None, Low, Mid, High };
