@@ -22,7 +22,12 @@ void UI_FillOutPropDef(HOBJ object, HPROP p, LPPROPDEF lpPropDef) {
   lpPropDef->lpEnumValues   = PROP_GetUserData(p);
   lpPropDef->lpEnumArray    = p->pdesc->EnumValues;
   lpPropDef->dwFlags        = PROP_GetFlags(p);
-  memcpy(lpPropDef->pPrograms, p->programSources, sizeof(p->programSources));
+  memset(lpPropDef->pPrograms, 0, sizeof(lpPropDef->pPrograms));
+  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+    if (pp->property == p) {
+      lpPropDef->pPrograms[pp->attr] = pp->code;
+    }
+  }
   lpPropDef->bIsUsedInBinding = FALSE;
 }
 
@@ -42,16 +47,15 @@ static lpcString_t _attrs[PropertyAttribute_Count] = {
 xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url);
 
 void ED_WriteBindings(HPROP prop, xmlNodePtr node) {
-  FOR_LOOP(i, PropertyAttribute_Count) {
-    if (prop->programs[i]) {
-      xmlChar const *name =  BAD_CAST prop->programSources[i];
-      xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
-      xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
-      xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->pdesc->Name);
-      xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST (prop->programs[i]?"true":"false"));
-      if (i != kPropertyAttributeWholeProperty) {
-        xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[i]);
-      }
+  FOR_EACH_LIST(struct property_program, pp, core.programs) {
+    if (pp->property != prop) continue;
+    xmlChar const *name = BAD_CAST pp->code;
+    xmlNsPtr ns = xmlFindNs(node, BAD_CAST default_url);
+    xmlNodePtr bnd = xmlNewChild(node, ns, XMLSTR("Binding"), name);
+    xmlSetProp(bnd, XMLSTR("Property"), BAD_CAST prop->pdesc->Name);
+    xmlSetProp(bnd, XMLSTR("Enabled"), BAD_CAST "true");
+    if (pp->attr != kPropertyAttributeWholeProperty) {
+      xmlSetProp(bnd, XMLSTR("Attribute"), BAD_CAST _attrs[pp->attr]);
     }
   }
 }

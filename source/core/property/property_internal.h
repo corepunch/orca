@@ -18,11 +18,18 @@ static size_t psize[] = {
   [kDataTypeObject] = sizeof(lpObject_t),
 };
 
+struct property_program {
+  lpProperty_t            property;
+  struct token*           token;
+  LPSTR                   code;       // source code (for editor / XML serialization)
+  enum PropertyAttribute  attr;
+  uint32_t                updateFrame;
+  struct property_program* next;
+};
+
 struct Property
 {
   eDataType_t            type;
-  struct token*          programs[PropertyAttribute_Count];
-  LPSTR                  programSources[PropertyAttribute_Count];
   uint32_t               flags;
   void*                  value;
   lpObject_t             object;

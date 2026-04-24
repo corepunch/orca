@@ -78,6 +78,8 @@ struct file_loader {
   struct Object* (*fn)(const char* path);
 };
 
+struct property_program;
+
 struct game
 {
   lua_State *L;
@@ -91,6 +93,7 @@ struct game
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
+  struct property_program* programs;
 };
 
 // stateman.c
@@ -191,6 +194,9 @@ PROP_AttachProgram(lpProperty_t,
                    enum PropertyAttribute,
                    struct token* program,
                    lpcString_t source);
+
+void
+PROP_RunAllPrograms(void);
 
 extern struct game core;
 

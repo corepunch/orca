@@ -84,10 +84,8 @@ OBJ_GetUniforms(lpObject_t object, struct uniform* pUniforms)
 void
 OBJ_UpdateProperties(lpObject_t object)
 {
-  for (lpProperty_t p = object->properties; p; p = PROP_GetNext(p)) {
-    PROP_Update(p);
-  }
-  FOR_EACH_CHILD(object, OBJ_UpdateProperties);
+  (void)object;
+  PROP_RunAllPrograms();
 }
 
 int

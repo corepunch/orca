@@ -38,22 +38,22 @@ PROP_Update(lpProperty_t property)
       property->updateFrame == core.frame)
     return FALSE;
   property->updateFrame = core.frame;
-  FOR_LOOP(i, PropertyAttribute_Count)
+  FOR_EACH_LIST(struct property_program, pp, core.programs)
   {
-    if (property->programs[i]) {
-      struct vm_register r = { 0 };
-      if (!OBJ_RunProgram(property->object, property->programs[i], &r) ||
-          !PROP_Import(property, i, &r)) {
+    if (pp->property != property) continue;
+    if (pp->updateFrame == core.frame) continue;
+    pp->updateFrame = core.frame;
+    struct vm_register r = { 0 };
+    if (!OBJ_RunProgram(property->object, pp->token, &r) ||
+        !PROP_Import(property, pp->attr, &r)) {
 #ifdef DEBUG_PROGRAM
-        print_name(property->object);
+      print_name(property->object);
 #endif
-        Con_Error("Eror in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
-        Token_Release(property->programs[i]);
-        property->programs[i] = NULL;
-      } else {
-//        TODO: what to do here?
-//        property->state &= ~PF_NIL;
-      }
+      Con_Error("Eror in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
+      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
+      Token_Release(pp->token);
+      free(pp->code);
+      free(pp);
     }
   }
   return TRUE;
@@ -114,16 +114,35 @@ OBJ_ReleaseProperties(lpObject_t hobj)
         }
       }
     }
-    FOR_LOOP(i, PropertyAttribute_Count)
-    {
-      if (p->programs[i]) {
-        Token_Release(p->programs[i]);
-      }
-      if (p->programSources[i]) {
-        free(p->programSources[i]);
+    FOR_EACH_LIST(struct property_program, pp, core.programs) {
+      if (pp->property == p) {
+        REMOVE_FROM_LIST(struct property_program, pp, core.programs);
+        Token_Release(pp->token);
+        free(pp->code);
+        free(pp);
       }
     }
     free(p);
+  }
+}
+
+void
+PROP_RunAllPrograms(void)
+{
+  FOR_EACH_LIST(struct property_program, pp, core.programs)
+  {
+    if (pp->updateFrame == core.frame) continue;
+    pp->updateFrame = core.frame;
+    pp->property->updateFrame = core.frame;
+    struct vm_register r = { 0 };
+    if (!OBJ_RunProgram(pp->property->object, pp->token, &r) ||
+        !PROP_Import(pp->property, pp->attr, &r)) {
+      Con_Error("Eror in program %s/%s", OBJ_GetName(pp->property->object), pp->property->pdesc->Name);
+      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
+      Token_Release(pp->token);
+      free(pp->code);
+      free(pp);
+    }
   }
 }
 
