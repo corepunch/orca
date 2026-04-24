@@ -420,19 +420,32 @@ static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
 LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
-  shortStr_t comp={0};
-  if (e->wParam & AX_MOD_CTRL) strcat(comp, "ctrl+");
-  if (e->wParam & AX_MOD_ALT) strcat(comp, "alt+");
-  if (e->wParam & AX_MOD_SHIFT) strcat(comp, "shift+");
-  if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
-  strcat(comp, axKeynumToString(e->wParam));
   switch (e->message) {
     case kEventWindowPaint:
     case kEventWindowResized:
       _fps[_counter++%MAX_FPS_CACHE] = (int)(axGetMilliseconds() - core.realtime);
       core_AdvanceFrame();
       return FALSE;
+    case ID_PropertyChangedMessage: {
+      lpObject_t object = e->target;
+      lpProperty_t property = e->lParam;
+      if (!property && object && e->wParam) {
+        property = PROP_FindByShortID(OBJ_GetProperties(object), e->wParam);
+      }
+      if (!property) {
+        return FALSE;
+      }
+      PROP_FireNotification(L, property, property->object ? property->object : object);
+      return TRUE;
+    }
     case kEventKeyDown:
+    {
+      shortStr_t comp={0};
+      if (e->wParam & AX_MOD_CTRL) strcat(comp, "ctrl+");
+      if (e->wParam & AX_MOD_ALT) strcat(comp, "alt+");
+      if (e->wParam & AX_MOD_SHIFT) strcat(comp, "shift+");
+      if (e->wParam & AX_MOD_CMD) strcat(comp, "cmd+");
+      strcat(comp, axKeynumToString(e->wParam));
       lua_getfield(L, LUA_REGISTRYINDEX, CORE_KEMAP);
       lua_getfield(L, -1, comp);
       if (lua_isstring(L, -1)) {
@@ -458,6 +471,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       }
       lua_pop(L, 2);
       return FALSE;
+    }
   }
   return FALSE;
 }
