@@ -32,7 +32,7 @@ struct Property
   lpcPropertyType_t      pdesc;
   uint32_t               updateFrame;
   uint32_t               stateflags;
-  lpProperty_t           callbackMsg;
+  uint32_t               changeCallback;
   lpProperty_t           next;
   char                   states[];
 };
@@ -52,7 +52,5 @@ PROP_HasChanged(lpProperty_t property)
   }
   return FALSE;
 }
-
-bool_t _AssignCallback(lua_State* L, lpProperty_t property);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

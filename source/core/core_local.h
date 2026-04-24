@@ -170,10 +170,6 @@ uint32_t
 PROP_GetShortID(lpcProperty_t);
 void
 PROP_ProcessEvents(lua_State*, lpProperty_t, lpObject_t);
-void
-PROP_ExecuteChangedCallback(lua_State*, lpObject_t, lpProperty_t);
-lpcString_t
-PROP_GetCallbackMsg(lpcProperty_t);
 bool_t
 PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void
@@ -184,6 +180,8 @@ void
 PROP_SetValuePtr(lpProperty_t, void*);
 lpObject_t
 PROP_GetObject(lpcProperty_t);
+bool_t 
+PROP_RegisterChangedCallback(lua_State*, lpProperty_t, int);
 void
 OBJ_ReleaseComponents(lpObject_t);
 void

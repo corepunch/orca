@@ -53,8 +53,14 @@ int luaopen_orca_Window(lua_State *L) {
 	luaL_setfuncs(L, ((luaL_Reg[]) {
 		{ NULL, NULL },
 	}), 0);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
+	lua_getfield(L, -1, "__index");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+	} else {
+		lua_pop(L, 1);
+	}
 	return 1;
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);

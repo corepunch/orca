@@ -71,31 +71,16 @@ static int f_obj_populate_inputs(lua_State* L)
   return 1;
 }
 
-static void
-get_object_callbacks(lua_State* L, lpObject_t obj, bool_t create)
+static bool_t
+is_on_changed_callback_name(lpcString_t name)
 {
-  lua_getfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    if (!create) {
-      lua_pushnil(L);
-      return;
-    }
-    lua_newtable(L);
-    lua_pushvalue(L, -1);
-    lua_setfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
+  if (!name || strncmp(name, "on", 2) != 0 || !name[2]) {
+    return FALSE;
   }
-  lua_pushlightuserdata(L, obj);
-  lua_gettable(L, -2);
-  if (lua_isnil(L, -1) && create) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushlightuserdata(L, obj);
-    lua_pushvalue(L, -2);
-    lua_settable(L, -4);
-  }
-  lua_remove(L, -2); /* remove __object_callbacks registry table */
+  size_t len = strlen(name);
+  return len > 7 && strcmp(name + len - 7, "Changed") == 0;
 }
+
 
 #include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
@@ -145,18 +130,29 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   lpProperty_t property = NULL;
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
+    if (PROP_GetType(property) == kDataTypeEvent &&
+        (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
+      axRemoveFromQueue(self);
+    }
     luaX_readProperty(L, 3, property);
     return TRUE;
-  } else if (lua_type(L, 3) == LUA_TFUNCTION) {
-    void OBJ_RegisterPropertyChangedCallback(lpObject_t object, lpcString_t name);
-    OBJ_RegisterPropertyChangedCallback(self, name); // TODO: move to implocit callbacks registration?
-    get_object_callbacks(L, self, TRUE);
-    lua_pushvalue(L, 3);
-    lua_setfield(L, -2, name);
-    lua_pop(L, 1);
+  } else if (lua_type(L, 3) == LUA_TFUNCTION && is_on_changed_callback_name(name)) {
+    // handle "onXChanged" event callback assignment
+    if (strncmp(name, "on", 2) || !isupper(name[2]))
+      return FALSE;
+    size_t lsuffix = 7; // length of "Changed"
+    size_t lname = strlen(name);
+    // Check if the property name ends with "Changed" and extract the base property name
+    if (lname >= lsuffix && strcmp(name + lname - lsuffix, "Changed") == 0) {
+      shortStr_t pname = { 0 };
+      assert(lname - lsuffix - 2 < MAX_NAMELEN); // ensure extracted name fits in shortStr_t
+      strncpy(pname, name + 2, lname - lsuffix - 2); // 2 for "on", lsuffix for "Changed"
+      // Find the property by the extracted name and register the callback
+      return SUCCEEDED(OBJ_FindShortProperty(self, pname, &property)) &&
+        PROP_RegisterChangedCallback(L, property, 3);
+    }
     return FALSE;
   } else {
-//    fprintf(stderr, "Can't find property %s\n", name);
     return FALSE;
   }
 }
@@ -184,18 +180,6 @@ int OBJ_GetProperty(lua_State* L, lpObject_t self, lpcString_t name)
     return 1;
   }
   lua_pop(L, 1);
-
-  get_object_callbacks(L, self, FALSE);
-  if (!lua_isnil(L, -1)) {
-    lua_getfield(L, -1, name);
-    lua_remove(L, -2);
-    if (!lua_isnil(L, -1)) {
-      return 1;
-    }
-    lua_pop(L, 1);
-  } else {
-    lua_pop(L, 1);
-  }
 
   uint32_t ident = fnv1a32(name);
   switch (ident) {

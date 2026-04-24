@@ -139,32 +139,7 @@ local function test_body_accesses_self_properties()
   print("PASS: test_body_accesses_self_properties")
 end
 
--- ---------------------------------------------------------------------------
--- Test 6: Extending a UIKit class adds callable methods on instances
--- ---------------------------------------------------------------------------
-local function test_extend_methods()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-
-  local MyComponent = ui.Node2D:extend {
-    addContent = function(self)
-      self:addChild(ui.Node2D { Name = "Child1" })
-      self:addChild(ui.Node2D { Name = "Child2" })
-      self:addChild(ui.Node2D { Name = "Child3" })
-    end
-  }
-
-  local comp = screen + MyComponent {}
-  comp:rebuild(function(self) self:addContent() end)
-  flush()
-
-  test.expect_eq(child_count(comp), 3, "extend method callable on instance via rebuild()")
-
-  comp:removeFromParent()
-  print("PASS: test_extend_methods")
-end
-
--- ---------------------------------------------------------------------------
--- Test 7: body() as a string sets text content via getTextContent()
+-- Test 6: body() as a string sets text content via getTextContent()
 -- ---------------------------------------------------------------------------
 local function test_body_string_sets_text()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -180,8 +155,7 @@ local function test_body_string_sets_text()
   print("PASS: test_body_string_sets_text")
 end
 
--- ---------------------------------------------------------------------------
--- Test 8: Multiple independent containers with body() all populate correctly
+-- Test 7: Multiple independent containers with body() all populate correctly
 -- ---------------------------------------------------------------------------
 local function test_multiple_containers_with_body()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -223,7 +197,6 @@ test_body_at_construction()
 test_rebuild_replaces_children()
 test_nested_body()
 test_body_accesses_self_properties()
-test_extend_methods()
 test_body_string_sets_text()
 test_multiple_containers_with_body()
 

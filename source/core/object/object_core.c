@@ -91,6 +91,10 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
     if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
+    if (L && p->changeCallback) {
+      luaL_unref(L, LUA_REGISTRYINDEX, p->changeCallback);
+      p->changeCallback = 0;
+    }
     PROP_Clear(p);
   }
 
@@ -104,16 +108,6 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
-
-  if (L) {
-    lua_getfield(L, LUA_REGISTRYINDEX, "__object_callbacks");
-    if (!lua_isnil(L, -1)) {
-      lua_pushlightuserdata(L, pobj);
-      lua_pushnil(L);
-      lua_settable(L, -3);
-    }
-    lua_pop(L, 1);
-  }
 
   free(pobj);
 }
