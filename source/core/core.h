@@ -334,6 +334,10 @@ core_AdvanceFrame(void);
 ORCA_API void
 core_FlushQueue(struct lua_State*);
 
+/// @brief Fires all pending property-change notifications (Lua callbacks + state manager).
+ORCA_API void
+core_DrainPropertyNotifications(struct lua_State*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
@@ -430,10 +434,6 @@ OBJ_GetProperty(struct lua_State*, struct Object*, const char*);
 /// @brief Updates object properties.
 ORCA_API void
 OBJ_UpdateProperties(struct Object*);
-
-/// @brief Emits onPropertyChanged events by comparing to previous values.
-ORCA_API void
-OBJ_EmitPropertyChangedEvents(struct lua_State*, struct Object*);
 
 /// @brief Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"
 ORCA_API struct PropertyType const*

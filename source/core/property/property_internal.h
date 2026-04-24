@@ -50,4 +50,14 @@ PROP_HasChanged(lpProperty_t property)
   return FALSE;
 }
 
+static inline bool_t
+PROP_HasHandler(lpcProperty_t property)
+{
+  return (property->flags &
+      (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER)) != 0;
+}
+
+bool_t _AssignCallback(lua_State* L, lpProperty_t property);
+void PROP_FireNotification(lua_State* L, lpProperty_t property, lpObject_t object);
+
 #endif /* __PROPERTY_INTERNAL_H__ */

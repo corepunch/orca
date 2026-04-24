@@ -166,11 +166,6 @@ int f_OBJ_UpdateProperties(lua_State *L) {
 	OBJ_UpdateProperties(this_ );
 	return 0;
 }
-int f_OBJ_EmitPropertyChangedEvents(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_EmitPropertyChangedEvents(L, this_ );
-	return 0;
-}
 int f_OBJ_FindImplicitProperty(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* name = luaL_checkstring(L, 2);
@@ -421,7 +416,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "__newindex", f_OBJ_SetProperty },
 		{ "__index", f_OBJ_GetProperty },
 		{ "updateProperties", f_OBJ_UpdateProperties },
-		{ "emitPropertyChangedEvents", f_OBJ_EmitPropertyChangedEvents },
 		{ "findImplicitProperty", f_OBJ_FindImplicitProperty },
 		{ "findExplicitProperty", f_OBJ_FindExplicitProperty },
 		{ "attachPropertyProgram", f_OBJ_AttachPropertyProgram },

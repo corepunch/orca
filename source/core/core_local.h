@@ -64,6 +64,7 @@ struct vm_register
 #define MAX_PROPERTY_TYPES 1024
 #define MAX_STRUCT_PARSERS 256
 #define MAX_FILE_LOADERS 256
+#define MAX_PENDING_NOTIFICATIONS 512
 
 // C-level string-to-struct parsers registered without a Lua state.
 struct struct_parser_entry {
@@ -89,6 +90,11 @@ struct game
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
+  // Pending property notifications, drained by core_DrainPropertyNotifications.
+  // PF_NOTIFICATION_QUEUED is set on the property while it is in this list to
+  // prevent duplicate entries.
+  lpProperty_t pending_notifications[MAX_PENDING_NOTIFICATIONS];
+  uint32_t pending_notification_count;
 };
 
 // stateman.c
@@ -162,8 +168,6 @@ bool_t
 CMP_SetProperty(struct component*, lpProperty_t);
 uint32_t
 PROP_GetShortID(lpcProperty_t);
-void
-PROP_ProcessEvents(lua_State*, lpProperty_t, lpObject_t);
 bool_t
 PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void
