@@ -155,7 +155,7 @@ PROP_IsSameValue(lpcProperty_t property, void const* source)
     void* newv = PROP_NormalizeObjectValue(property, source);
     lpObject_t object = *(lpObject_t const*)source;
     if (!object) return oldv == NULL;
-    if (!newv) return FALSE;
+    if (!newv) return oldv == NULL;
     return oldv == newv;
   }
   return memcmp(property->value, source, PROP_GetSize(property)) == 0;
@@ -173,6 +173,9 @@ PROP_SetValue(lpProperty_t property, void const* source)
     if (core.pending_notification_count < MAX_PENDING_NOTIFICATIONS) {
       property->flags |= PF_NOTIFICATION_QUEUED;
       core.pending_notifications[core.pending_notification_count++] = property;
+    } else {
+      Con_Printf("WARNING: property notification queue full, dropping %s\n",
+                 PROP_GetName(property));
     }
   }
 }
