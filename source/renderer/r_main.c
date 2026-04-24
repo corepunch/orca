@@ -1086,7 +1086,7 @@ r_basename(const char* path)
 static struct Object*
 R_LoadImageObject(const char* path)
 {
-  lpObject_t obj = OBJ_MakeNativeObject(ID_Image);
+  lpObject_t obj = OBJ_Create(ID_Image);
   if (!obj) return NULL;
   OBJ_SetName(obj, r_basename(path));
   OBJ_SetPropertyValue(obj, "Source", &path);

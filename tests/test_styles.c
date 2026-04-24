@@ -27,7 +27,7 @@
  * Engine-internal functions not declared in the public header but exported
  * from the shared library (no -fvisibility=hidden in the build).
  */
-extern lpObject_t OBJ_MakeNativeObject(uint32_t class_id);
+extern lpObject_t OBJ_Create(uint32_t class_id);
 extern void OBJ_ReleaseProperties(lpObject_t);
 extern void OBJ_ReleaseComponents(lpObject_t);
 
@@ -119,7 +119,7 @@ static void register_styled_class(void) {
 /* ------------------------------------------------------------------ */
 
 static lpObject_t make_styled_object(void) {
-    return OBJ_MakeNativeObject(ID_TestStyledComp);
+    return OBJ_Create(ID_TestStyledComp);
 }
 
 /*
@@ -149,13 +149,13 @@ static void _test_add_float_rule(lpObject_t obj, lpcString_t className,
     struct StyleController* sc = GetStyleController(obj);
     if (!sc) return;
     if (!sc->StyleSheet) {
-        lpObject_t s = OBJ_MakeNativeObject(ID_StyleSheet);
+        lpObject_t s = OBJ_Create(ID_StyleSheet);
         sc->StyleSheet = GetStyleSheet(s);
         sc->owned_sheet = TRUE;
     }
     lpObject_t sheetObj = CMP_GetObject(sc->StyleSheet);
 
-    lpObject_t ruleObj = OBJ_MakeNativeObject(ID_StyleRule);
+    lpObject_t ruleObj = OBJ_Create(ID_StyleRule);
     struct StyleRule* sr = GetStyleRule(ruleObj);
     sr->class_id = fnv1a32(className);
 

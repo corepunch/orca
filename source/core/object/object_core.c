@@ -11,19 +11,18 @@ static int counter = 0;
 static uint32_t unique_counter = 0;
 
 ORCA_API lpObject_t
-OBJ_MakeNativeObject(uint32_t class_id) {
-  return OBJ_Create(OBJ_FindClassW(class_id));
-}
-
-ORCA_API lpObject_t
-OBJ_Create(lpcClassDesc_t cls)
-{
+OBJ_Create(uint32_t class_id) {
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
+  lpcClassDesc_t cls = OBJ_FindClassW(class_id);
+   if (!cls) {
+    Con_Error("Class ID 0x%08x not found\n", class_id);
+    return NULL;
+  }
   lpObject_t object = ZeroAlloc(sizeof(struct Object));
   object->unique = ++unique_counter;
-  OBJ_AddComponent(object, cls->ClassID);
+  OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);
   if (cls->DefaultName) {
     OBJ_SetName(object, cls->DefaultName);

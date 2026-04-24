@@ -414,7 +414,7 @@ lpObject_t FS_LoadObjectFromCssString(const char* css_text)
     css_resolve_apply(doc);
 
     // 4. Build StyleSheet object
-    lpObject_t sheet = OBJ_MakeNativeObject(ID_StyleSheet);
+    lpObject_t sheet = OBJ_Create(ID_StyleSheet);
     if (!sheet) { free(doc); return NULL; }
 
     for (int i = 0; i < doc->nrules; i++) {
@@ -427,7 +427,7 @@ lpObject_t FS_LoadObjectFromCssString(const char* css_text)
                            pseudo, sizeof(pseudo));
         if (!class_name[0]) continue;
 
-        lpObject_t rule_obj = OBJ_MakeNativeObject(ID_StyleRule);
+        lpObject_t rule_obj = OBJ_Create(ID_StyleRule);
         if (!rule_obj) continue;
 
         // Set ClassName and PseudoClass

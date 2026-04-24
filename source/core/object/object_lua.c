@@ -94,7 +94,7 @@ _ParseArguments(lua_State* L, lpObject_t hobj)
 
 int OBJ_CreateFromLuaState(lua_State *L) {
   luaX_parsefield(lpcClassDesc_t, __nativeclass, 1, lua_touserdata);
-  lpObject_t pobj = OBJ_Create(__nativeclass);
+  lpObject_t pobj = OBJ_Create(__nativeclass->ClassID);
 
   lpObject_t* ctx = lua_getextraspace(L);
   if (*ctx) {

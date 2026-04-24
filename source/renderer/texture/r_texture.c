@@ -441,7 +441,7 @@ lpObject_t
 R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
 {
   if (!pBuffer || dwSize == 0) return NULL;
-  lpObject_t object = OBJ_MakeNativeObject(ID_Texture);
+  lpObject_t object = OBJ_Create(ID_Texture);
   if (!object) return NULL;
   lpTexture_t texture = GetTexture(object);
   if (!texture) {

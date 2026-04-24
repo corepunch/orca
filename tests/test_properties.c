@@ -39,11 +39,11 @@
 #include <assert.h>
 
 /*
- * OBJ_MakeNativeObject and OBJ_ReleaseProperties are engine-internal functions
+ * OBJ_Create and OBJ_ReleaseProperties are engine-internal functions
  * not declared in the public header.  They ARE exported from the shared
  * library (no -fvisibility=hidden in the build), so we declare them here.
  */
-extern lpObject_t OBJ_MakeNativeObject(uint32_t class_id);
+extern lpObject_t OBJ_Create(uint32_t class_id);
 extern void OBJ_ReleaseProperties(lpObject_t);
 extern struct color COLOR_Parse(lpcString_t);
 
@@ -200,7 +200,7 @@ static void register_runtime_class(void)
 }
 
 static lpObject_t make_rt_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("RTComp"));
+    return OBJ_Create(fnv1a32("RTComp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -247,7 +247,7 @@ static void register_rtstring2_class(void) {
 }
 
 static lpObject_t make_rtstring2_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("RTString2Comp"));
+    return OBJ_Create(fnv1a32("RTString2Comp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -290,7 +290,7 @@ static void register_color_class(void) {
 }
 
 static lpObject_t make_color_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("ColorComp"));
+    return OBJ_Create(fnv1a32("ColorComp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -341,7 +341,7 @@ static void register_rt_color_class(void) {
 }
 
 static lpObject_t make_rt_color_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("RTColorComp"));
+    return OBJ_Create(fnv1a32("RTColorComp"));
 }
 
 /* ------------------------------------------------------------------ */
@@ -350,7 +350,7 @@ static lpObject_t make_rt_color_object(void) {
 
 /* Allocate a bare TestComp object without a Lua state */
 static lpObject_t make_object(void) {
-    return OBJ_MakeNativeObject(fnv1a32("TestComp"));
+    return OBJ_Create(fnv1a32("TestComp"));
 }
 
 /*

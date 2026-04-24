@@ -188,10 +188,7 @@ enum
 
 
 ORCA_API lpObject_t
-OBJ_Create(lpcClassDesc_t cdesc);
-
-ORCA_API lpObject_t
-OBJ_MakeNativeObject(uint32_t class_id);
+OBJ_Create(uint32_t class_id);
 
 ORCA_API bool_t
 PROP_Update(lpProperty_t);

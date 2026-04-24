@@ -66,11 +66,11 @@ lpcString_t cats[] = {
 };
 
 ORCA_API lpObject_t
-OBJ_MakeNativeObject(uint32_t class_id);
+OBJ_Create(uint32_t class_id);
 
 EDWINPROC(ProjectSettings) {
   static lpObject_t obj = NULL;
-  if (!obj) obj = OBJ_MakeNativeObject(ID_Project);
+  if (!obj) obj = OBJ_Create(ID_Project);
   switch (msg) {
     case EVT_CREATE:
       ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {

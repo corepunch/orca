@@ -29,7 +29,7 @@ struct Property
   lpcPropertyType_t      pdesc;
   uint32_t               updateFrame;
   uint32_t               stateflags;
-  uint32_t               changeCallback;
+  uint32_t               changeCallback; // Lua registry reference for the change callback function
   lpProperty_t           next;
   char                   states[];
 };
