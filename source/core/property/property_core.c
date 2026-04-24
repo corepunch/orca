@@ -49,7 +49,7 @@ PROP_Update(lpProperty_t property)
 #ifdef DEBUG_PROGRAM
       print_name(property->object);
 #endif
-      Con_Error("Eror in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
+      Con_Error("Error in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
       Token_Release(pp->token);
       free(pp->code);
@@ -137,7 +137,7 @@ PROP_RunAllPrograms(void)
     struct vm_register r = { 0 };
     if (!OBJ_RunProgram(pp->property->object, pp->token, &r) ||
         !PROP_Import(pp->property, pp->attr, &r)) {
-      Con_Error("Eror in program %s/%s", OBJ_GetName(pp->property->object), pp->property->pdesc->Name);
+      Con_Error("Error in program %s/%s", OBJ_GetName(pp->property->object), pp->property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
       Token_Release(pp->token);
       free(pp->code);
