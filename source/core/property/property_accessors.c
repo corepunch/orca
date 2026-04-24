@@ -41,7 +41,7 @@ PROP_SetFlag(lpProperty_t property, uint32_t value)
 eDataType_t
 PROP_GetType(lpcProperty_t property)
 {
-  return property->type;
+  return property->pdesc->DataType;
 }
 
 uint32_t
@@ -60,7 +60,7 @@ void const*
 PROP_GetValue(lpcProperty_t property)
 {
   // If this is a component, not a direct object reference
-  if (property->type == kDataTypeObject && property->pdesc->TypeString) {
+  if (PROP_GetType(property) == kDataTypeObject && property->pdesc->TypeString) {
     static lpObject_t obj[256];
     static uint8_t i = 0;
     obj[i] = CMP_GetObject(*(void **)property->value);
@@ -88,12 +88,12 @@ PROP_SetStateValue(lpProperty_t property,
                    enum PropertyState state)
 {
   void* ptr = PROP_GetState(property, state);
-  if (property->type == kDataTypeString) {
+  if (PROP_GetType(property) == kDataTypeString) {
     if (property->stateflags & (1 << state)) {
       free(*(LPSTR*)PROP_GetState(property, state));
     }
     *(LPSTR*)ptr = strdup(*(LPSTR*)source);
-  } else if (property->type == kDataTypeObject) {
+  } else if (PROP_GetType(property) == kDataTypeObject) {
     int ident = fnv1a32(property->pdesc->TypeString);
     lpObject_t object = *(lpObject_t *)source;
     if (!object) {
@@ -133,12 +133,12 @@ PROP_IsSameValue(lpcProperty_t property, void const* source)
 {
   if (!(property->value && source && (property->stateflags & (1 << kPropertyStateNormal))))
     return FALSE;
-  if (property->type == kDataTypeString) {
+  if (PROP_GetType(property) == kDataTypeString) {
     lpcString_t old = *(lpcString_t*)property->value;
     lpcString_t newv = *(lpcString_t const*)source;
     return old == newv || (old && newv && strcmp(old, newv) == 0);
   }
-  if (property->type == kDataTypeObject) {
+  if (PROP_GetType(property) == kDataTypeObject) {
     void* oldv = *(void**)property->value;
     void* newv = PROP_NormalizeObjectValue(property, source);
     lpObject_t object = *(lpObject_t const*)source;
@@ -188,7 +188,7 @@ PROP_GetSize(lpcProperty_t property)
   if (property->pdesc) {
     return property->pdesc->IsArray ? sizeof(void*) : (uint32_t)property->pdesc->DataSize;
   } else {
-    return (uint32_t)psize[property->type];
+    return (uint32_t)psize[kDataTypeNone];
   }
 }
 

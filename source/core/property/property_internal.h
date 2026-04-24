@@ -29,16 +29,15 @@ struct property_program {
 
 struct Property
 {
-  eDataType_t            type;
-  uint32_t               flags;
-  void*                  value;
-  lpObject_t             object;
-  lpcPropertyType_t      pdesc;
-  uint32_t               updateFrame;
-  uint32_t               stateflags;
-  uint32_t               changeCallback; // Lua registry reference for the change callback function
-  struct Property*       next;
-  char                   states[];
+  struct Property*           next;
+  struct Object*             object;
+  struct PropertyType const *pdesc;
+  void*                      value;
+  uint32_t                   flags;
+  uint32_t                   stateflags;
+  uint32_t                   changeCallback; // Lua registry reference for the change callback function
+  uint32_t                   updateFrame;
+  char                       states[];
 };
 
 static inline void*

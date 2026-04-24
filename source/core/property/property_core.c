@@ -78,7 +78,7 @@ PROP_Clear(lpProperty_t property)
   }
   memset(property->states, 0, PROP_GetSize(property) * PropertyState_Count);
   property->stateflags = 0;
-  if (property->type == kDataTypeString && property->value) {
+  if (property->pdesc->DataType == kDataTypeString && property->value) {
     *(char**)property->value = NULL;
   }
 }
@@ -88,7 +88,6 @@ _PropertyAlloc(lua_State* L, lpObject_t object, lpcPropertyType_t pt)
 {
   (void)L;
   lpProperty_t property = ZeroAlloc(sizeof(struct Property) + pt->DataSize * PropertyState_Count);
-  property->type    = pt->DataType;
   property->object  = object;
   property->pdesc   = pt;
   memset(property->states, 0xff, pt->DataSize * PropertyState_Count);
@@ -108,7 +107,7 @@ OBJ_ReleaseProperties(lpObject_t hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
-    if (p->type == kDataTypeString) {
+    if (p->pdesc->DataType == kDataTypeString) {
       FOR_LOOP(i, PropertyState_Count) {
         if (p->stateflags & (1 << i)) {
           free(*(LPSTR*)PROP_GetState(p, i));
@@ -162,7 +161,9 @@ PROP_ClearSpecialized(lpProperty_t pprop) {
 void
 PROP_SetTypeSize(lpProperty_t p, eDataType_t t, uint32_t s)
 {
-  p->type = t;
+  (void)p;
+  (void)t;
+  (void)s;
 }
 
 void
