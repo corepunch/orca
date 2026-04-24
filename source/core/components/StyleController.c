@@ -126,6 +126,7 @@ _ReleaseNativeStyleRule(lpObject_t ruleObj)
   }
   OBJ_ReleaseProperties(ruleObj);
   OBJ_ReleaseComponents(ruleObj);
+  free((void*)OBJ_GetName(ruleObj));
   free(ruleObj);
 }
 
@@ -142,6 +143,7 @@ _ReleaseNativeStyleSheet(lpObject_t sheetObj)
   }
   OBJ_ReleaseProperties(sheetObj);
   OBJ_ReleaseComponents(sheetObj);
+  free((void*)OBJ_GetName(sheetObj));
   free(sheetObj);
 }
 

@@ -364,6 +364,7 @@ static void destroy_object(lpObject_t obj) {
     if (!obj) return;
     OBJ_ReleaseProperties(obj);
     OBJ_ReleaseComponents(obj);
+    free(obj->Name);
     free(obj);
 }
 
