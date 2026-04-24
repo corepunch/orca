@@ -86,6 +86,10 @@ PROP_SetStoredValue(struct Property *property,
                     void const* source)
 {
   if (property->pdesc->IsArray) {
+    void *old_ptr = *(void**)property->value;
+    if (old_ptr) {
+      free(old_ptr);
+    }
     memcpy(property->value, source, sizeof(void*) + sizeof(int));
     PROP_SetDirty(property);
     return;

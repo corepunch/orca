@@ -228,7 +228,9 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
   }
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  return FS_LoadObject((char*)tmpl);
+  struct Object *obj = FS_LoadObject((char*)tmpl);
+  xmlFree(tmpl);
+  return obj;
 }
 
 // Build an Object tree from an XML element node.
