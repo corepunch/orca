@@ -239,22 +239,31 @@ static struct Object *
 _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 {
   lpcString_t tag = (lpcString_t)element->name;
-
+  struct Object *obj = NULL;
+  bool_t prefab = FALSE;
+  
   // PrefabPlaceholder: handled separately; it manages Start dispatch itself
   if (!strcmp(tag, "LayerPrefabPlaceholder") ||
       !strcmp(tag, "ObjectPrefabPlaceholder") ||
       !strcmp(tag, "LibraryPlaceholder"))
   {
-    return _HandlePrefabPlaceholder(element);
+    obj = _HandlePrefabPlaceholder(element);
+    prefab = TRUE;
   }
-
-  struct ClassDesc const *cls = OBJ_FindClass(tag);
-  if (!cls) {
-    Con_Error("Unknown element type '%s'", tag);
+  else
+  {
+    struct ClassDesc const *cls = OBJ_FindClass(tag);
+    if (!cls) {
+      Con_Error("Unknown element type '%s'", tag);
+      return NULL;
+    }
+    obj = OBJ_Create(cls->ClassID);
+  }
+  
+  if (!obj) {
+    Con_Error("Can not allocate object");
     return NULL;
   }
-
-  struct Object *obj = OBJ_Create(cls->ClassID);
 
   // Parse all XML attributes as object properties
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
@@ -310,12 +319,14 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
                !strcmp(tag, "StyleSheet")    ||
                !strcmp(tag, "ValueTicker")) {
       // Lua-only elements: no-op in the C XML parser
-    } else {
+    } else if (!prefab) {
       // Regular child object: recurse and attach (children always get Start)
       struct Object *child = _FS_ConstructNode(sub, TRUE);
       if (child) {
         OBJ_AddChild(obj, child, FALSE);
       }
+    } else {
+      Con_Error("Can't parse node %s", tag);
     }
   }
 
