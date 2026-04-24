@@ -50,12 +50,6 @@ PROP_GetType(lpcProperty_t property)
   return property->type;
 }
 
-enum uniform_precision
-PROP_GetPrecision(lpcProperty_t property)
-{
-  return property->precision;
-}
-
 uint32_t
 PROP_GetShortID(lpcProperty_t property)
 {

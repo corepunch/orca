@@ -442,34 +442,36 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
 #include "../core/core_local.h" // for file_loader
 
-ORCA_API lpObject_t
-FS_LoadObject(lpcString_t tmpl)
-{
+// Load object from a file, trying registered file loaders based on extension.
+// Returns NULL on failure.
+lpObject_t FS_LoadObject(lpcString_t tmpl) {
   path_t tmpl_with_ext = {0};
   lpcString_t dot = strrchr(tmpl, '.');
   lpcString_t slash = strrchr(tmpl, '/');
+  // Go over registered file loaders and find the first one that matches the extension (if any) 
+  // or can load the file with an added extension (if no extension in path)
   for (struct file_loader* loader = core.file_loaders;
        loader->extension && loader < core.file_loaders + MAX_FILE_LOADERS;
        loader++)
   {
+    // If there's no dot or the dot is before the last slash, try adding the loader's extension and see if that file exists.
     if (!dot || dot < slash) {
-      // No extension (or dot is in a directory component): try adding ".xml"
       int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s", tmpl, loader->extension);
       if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
         if (FS_FileExists(tmpl_with_ext)) {
-          lpObject_t obj = loader->fn(tmpl_with_ext);
-          if (obj) return obj;
+          // File with the extension exists, load it and return the result
+          return loader->fn(tmpl_with_ext);
         }
       } else {
         Con_Error("placeholder path too long: '%s'", tmpl);
         return NULL;
       }
     } else if (dot > slash) {
-       size_t ext_len = strlen(loader->extension), tmpl_len = strlen(tmpl);
-       if (tmpl_len > ext_len && strcmp(tmpl + tmpl_len - ext_len, loader->extension) == 0) {
-         lpObject_t obj = loader->fn(tmpl);
-         if (obj) return obj;
-       }
+      // There's an extension: try loading directly if it matches the loader's extension
+      size_t ext_len = strlen(loader->extension), tmpl_len = strlen(tmpl);
+      if (tmpl_len > ext_len && strcmp(tmpl + tmpl_len - ext_len, loader->extension) == 0) {
+        return loader->fn(tmpl);
+      }
     }
   }
   Con_Error("No file loader found for '%s'", tmpl);

@@ -73,6 +73,8 @@ OBJ_RemoveFromParent(lpObject_t self)
   axRemoveFromQueue(self);
 }
 
+#include "../property/property_internal.h"
+
 void
 OBJ_Release(lua_State* L, lpObject_t pobj)
 {

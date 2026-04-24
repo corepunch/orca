@@ -96,12 +96,6 @@ struct game
 void
 API_PrintStackTrace(lua_State* L);
 
-ORCA_API lpObject_t
-OBJ_Create(lua_State*, lpcClassDesc_t cdesc);
-
-lpObject_t
-OBJ_MakeNativeObject(uint32_t class_id);
-
 void
 OBJ_Clear(lpObject_t);
 
