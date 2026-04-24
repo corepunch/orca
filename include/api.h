@@ -99,36 +99,6 @@ ORCA_API int lua_pushclass(lua_State* L, struct ClassDesc* cl);
 void
 API_PrintStackTrace(lua_State*);
 
-INLINE bool_t
-luaX_executecallback(lua_State* L,
-                     lpObject_t object,
-                     lpcString_t name,
-                     int num_args)
-{
-  luaX_pushObject(L, object);
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1 + num_args);
-    return FALSE;
-  }
-  lua_getfield(L, -1, name);
-  if (!lua_isfunction(L, -1)) {
-    lua_pop(L, 2 + num_args);
-    return FALSE;
-  }
-  /* Stack now: ... [args x num_args] object func
-   * Rearrange to: ... func object [args x num_args] */
-  lua_insert(L, -(num_args + 2)); /* Move func below args+object */
-  lua_insert(L, -(num_args + 1)); /* Move object below args */
-  if (lua_pcall(L, num_args + 1, 1, 0) != LUA_OK) {
-    Con_Error("%s(): %s", name, lua_tostring(L, -1));
-    lua_pop(L, 1);
-    return FALSE;
-  }
-  bool_t ret = lua_toboolean(L, -1);
-  lua_pop(L, 1);
-  return ret;
-}
-
 // INLINE int luaX_callfunction(lua_State *L, lpcString_t  mod, lpcString_t 
 // func, uint32_t num_args, uint32_t num_returns) {
 //     // Load the module using require

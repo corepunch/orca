@@ -109,7 +109,7 @@ lpObject_t
 OBJ_MakeNativeObject(uint32_t class_id);
 
 void
-OBJ_Clear(lua_State*, lpObject_t);
+OBJ_Clear(lpObject_t);
 
 lpObject_t
 OBJ_FindImmediateChild(lpObject_t object, uint32_t ident);
@@ -174,10 +174,6 @@ bool_t
 CMP_SetProperty(struct component*, lpProperty_t);
 uint32_t
 PROP_GetShortID(lpcProperty_t);
-void
-PROP_ExecuteChangedCallback(lua_State*, lpObject_t, lpProperty_t);
-lpcString_t
-PROP_GetCallbackMsg(lpcProperty_t);
 bool_t
 PROP_Import(lpProperty_t, enum PropertyAttribute, struct vm_register*);
 void
@@ -188,6 +184,8 @@ void
 PROP_SetValuePtr(lpProperty_t, void*);
 lpObject_t
 PROP_GetObject(lpcProperty_t);
+bool_t 
+PROP_RegisterChangedCallback(lua_State*, lpProperty_t, int);
 void
 OBJ_ReleaseComponents(lpObject_t);
 void

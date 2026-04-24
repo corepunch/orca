@@ -233,10 +233,7 @@ ORCA_API struct Viewport3D* luaX_checkViewport3D(lua_State *L, int idx);
 typedef struct PrefabView3D PrefabView3D_t, *PrefabView3DPtr, *lpPrefabView3D_t;
 typedef struct PrefabView3D const *PrefabView3DCPtr, *lpcPrefabView3D_t;
 struct PrefabView3D {
-	const char* SCA; ///< Adds "hmi_plugins/{{SCA}}" to search paths and loads from "prefabs/{{SCA}}"
 	const char* Prefab; ///< Path to prefab asset file to instantiate
-	int32_t _loadedSCA;
-	int32_t _loadedPrefab;
 };
 ORCA_API void luaX_pushPrefabView3D(lua_State *L, struct PrefabView3D const* PrefabView3D);
 ORCA_API struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx);

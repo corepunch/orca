@@ -206,11 +206,9 @@ enum Node2DProperties {
 #define ID_PrefabView2D 0xe741d328
 #define GetPrefabView2D(_P) ((struct PrefabView2D*)((_P)?OBJ_GetComponent(_P,ID_PrefabView2D):NULL))
 #define PrefabView2D_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_PrefabView2D,sizeof(struct PrefabView2D),_N)
-#define ID_PrefabView2D_SCA 0x1ab11f83 // PrefabView2D.SCA
 #define ID_PrefabView2D_Prefab 0xef0b7c70 // PrefabView2D.Prefab
-#define kPrefabView2DNumProperties 2
+#define kPrefabView2DNumProperties 1
 enum PrefabView2DProperties {
-	kPrefabView2DSCA,
 	kPrefabView2DPrefab,
 };
 // TextBlock

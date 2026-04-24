@@ -181,7 +181,7 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
       lua_pushboolean(L, FALSE);
       lua_pushstring(L, "Cancelled");
     }
-    OBJ_RemoveFromParent(L, (lpObject_t)ctx);
+    OBJ_RemoveFromParent((lpObject_t)ctx);
     return 2; // resume Lua script after ShowModal()
   } else {
     return lua_yieldk(L, 0, ctx, modal_continue);

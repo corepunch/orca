@@ -10,15 +10,8 @@
 
 // #define DEBUG_COUNT_OBJECTS
 
-static void get_object_extras(lua_State* L, lpObject_t obj);
-
 lpObject_t luaX_checkObject(lua_State* L, int arg) {
   return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
-}
-
-int f_object_gc(lua_State* L) {
-  (void)L;
-  return 0;
 }
 
 void luaX_pushObject(lua_State* L, lpcObject_t self)
@@ -113,12 +106,6 @@ int OBJ_CreateFromLuaState(lua_State *L) {
 
   _ParseArguments(L, pobj);
 
-  /* Store the class table in per-object extras for Lua method lookup */
-  get_object_extras(L, pobj);
-  lua_pushvalue(L, 1); /* arg 1 = class table */
-  lua_setfield(L, -2, "__class");
-  lua_pop(L, 1);
-
   // apply class-default style
   lua_getfield(L, 1, "apply");
   if (lua_type(L, -1) == LUA_TFUNCTION) {
@@ -147,34 +134,6 @@ void OBJ_SetContext(lua_State* L, lpObject_t self)
   *ctx = self;
 }
 
-/* Per-object Lua extras table, stored in registry under "__object_extras".
- * Strong-value table; entries are removed explicitly in OBJ_Release.
- * Returns the extras table for `obj` on top of the stack. */
-static void
-get_object_extras(lua_State* L, lpObject_t obj)
-{
-  lua_getfield(L, LUA_REGISTRYINDEX, "__object_extras");
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);  /* strong-value table — cleaned up in OBJ_Release */
-    lua_pushvalue(L, -1);
-    lua_setfield(L, LUA_REGISTRYINDEX, "__object_extras");
-  }
-  lua_pushlightuserdata(L, obj);
-  lua_gettable(L, -2);
-  if (lua_isnil(L, -1)) {
-    lua_pop(L, 1);
-    lua_newtable(L);
-    lua_pushlightuserdata(L, obj);
-    lua_pushvalue(L, -2);
-    lua_settable(L, -4);
-  }
-  lua_remove(L, -2); /* remove __object_extras, leave extras table on top */
-}
-
-/* Public alias used by core_export.c */
-void get_object_extras_pub(lua_State* L, lpObject_t obj) { get_object_extras(L, obj); }
-
 #define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
   if (status != LUA_OK) {
@@ -187,7 +146,7 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
 static int f_rebuild(lua_State *L) {
   lpObject_t self = luaX_checkObject(L, 1);
   if (lua_type(L, 2) == LUA_TFUNCTION) {
-    OBJ_Clear(L, self);
+    OBJ_Clear(self);
     lua_pushvalue(L, 2);  /* fn */
     lua_pushvalue(L, 1);  /* self */
     return lua_pcallk(L, 1, 0, 0, (lua_KContext)self, f_rebuild_finalize);

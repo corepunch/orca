@@ -1,19 +1,5 @@
 #include "object_internal.h"
 
-void
-PROP_ExecuteChangedCallback(lua_State* L,
-                            lpObject_t pobj,
-                            lpProperty_t hProperty)
-{
-  lpcString_t szCallback = PROP_GetCallbackMsg(hProperty);
-  lpObject_t hRoot = OBJ_GetRoot(pobj);
-  if (hRoot) {
-    luaX_pushObject(L, pobj);
-    luaX_pushProperty(L, hProperty);
-    luaX_executecallback(L, hRoot, szCallback, 2);
-  }
-}
-
 void OBJ_SetFocus(lpObject_t pobj)
 {
   if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))

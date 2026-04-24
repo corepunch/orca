@@ -4,12 +4,9 @@
 
 HANDLER(PrefabView2D, Object, Start)
 {
-  lpProperty_t p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_PrefabView2D_SCA);
+  lpProperty_t p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_PrefabView2D_Prefab);
   if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
-  p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_PrefabView2D_Prefab);
-  if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
-  if ((pPrefabView2D->SCA && *pPrefabView2D->SCA) ||
-      (pPrefabView2D->Prefab && *pPrefabView2D->Prefab)) {
+  if ((pPrefabView2D->Prefab && *pPrefabView2D->Prefab)) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
   }
   return FALSE;
@@ -19,7 +16,7 @@ HANDLER(PrefabView2D, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
   uint32_t changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
-  if (changed == ID_PrefabView2D_SCA || changed == ID_PrefabView2D_Prefab) {
+  if (changed == ID_PrefabView2D_Prefab) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
   }
   return FALSE;
@@ -27,22 +24,15 @@ HANDLER(PrefabView2D, Object, PropertyChanged)
 
 HANDLER(PrefabView2D, Node, LoadView)
 {
-  lua_State* L = (pLoadView && pLoadView->lua_state)
-    ? pLoadView->lua_state
-    : OBJ_GetDomain(hObject);
-  if (!L) return FALSE;
-  if (pPrefabView2D->SCA && *pPrefabView2D->SCA &&
-      pPrefabView2D->_loadedSCA != fnv1a32(pPrefabView2D->SCA))
-  {
-    lua_pushstring(L, pPrefabView2D->SCA);
-    luaX_executecallback(L, hObject, "loadSCA", 1);
-    pPrefabView2D->_loadedSCA = fnv1a32(pPrefabView2D->SCA);
-  } else if (pPrefabView2D->Prefab && *pPrefabView2D->Prefab &&
-             pPrefabView2D->_loadedPrefab != fnv1a32(pPrefabView2D->Prefab))
-  {
-    lua_pushstring(L, pPrefabView2D->Prefab);
-    luaX_executecallback(L, hObject, "loadView", 1);
-    pPrefabView2D->_loadedPrefab = fnv1a32(pPrefabView2D->Prefab);
+  if (pPrefabView2D->Prefab && *pPrefabView2D->Prefab) {
+    OBJ_Clear(hObject);
+    lpObject_t loaded = FS_LoadObject(pPrefabView2D->Prefab);
+    if (loaded) {
+      OBJ_AddChild(hObject, loaded, FALSE);
+      OBJ_SendMessageW(loaded, ID_Object_Start, 0, NULL);
+    } else {
+      Con_Error("Failed to load prefab '%s'", pPrefabView2D->Prefab);
+    }
   }
   return TRUE;
 }

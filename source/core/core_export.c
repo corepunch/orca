@@ -43,7 +43,7 @@ int f_OBJ_CreateFromLuaState(lua_State *L) {
 }
 int f_OBJ_Clear(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_Clear(L, this_ );
+	OBJ_Clear(this_ );
 	return 0;
 }
 int f_OBJ_Equals(lua_State *L) {
@@ -68,7 +68,7 @@ int f_OBJ_AddChild(lua_State *L) {
 }
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_RemoveFromParent(L, this_ );
+	OBJ_RemoveFromParent(this_ );
 	return 0;
 }
 int f_OBJ_GetParent(lua_State *L) {
@@ -454,8 +454,14 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },
 	}), 0);
-	lua_pushvalue(L, -1);
-	lua_setfield(L, -2, "__index");
+	lua_getfield(L, -1, "__index");
+	if (lua_isnil(L, -1)) {
+		lua_pop(L, 1);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -2, "__index");
+	} else {
+		lua_pop(L, 1);
+	}
 	return 1;
 }
 extern void read_property(lua_State *L, int idx, struct PropertyType const* prop, void* struct_ptr);

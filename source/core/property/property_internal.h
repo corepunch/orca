@@ -32,7 +32,7 @@ struct Property
   lpcPropertyType_t      pdesc;
   uint32_t               updateFrame;
   uint32_t               stateflags;
-  lpProperty_t           callbackMsg;
+  uint32_t               changeCallback;
   lpProperty_t           next;
   char                   states[];
 };
@@ -56,12 +56,8 @@ PROP_HasChanged(lpProperty_t property)
 static inline bool_t
 PROP_HasHandler(lpcProperty_t property)
 {
-  if (property->flags &
-      (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER))
-    return TRUE;
-  if (property->callbackMsg)
-    return TRUE;
-  return FALSE;
+  return (property->flags &
+      (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER)) != 0;
 }
 
 bool_t _AssignCallback(lua_State* L, lpProperty_t property);

@@ -166,6 +166,7 @@ read_property(lua_State *L,
         *(event_t *)valueptr = 0;
       }
       if (lua_type(L, idx) == LUA_TFUNCTION) {
+        lua_pushvalue(L, idx);
         *(event_t *)valueptr = luaL_ref(L, LUA_REGISTRYINDEX);
       } else if (lua_type(L, idx) == LUA_TSTRING) {
         parse_property(luaL_checkstring(L, idx), prop, valueptr);

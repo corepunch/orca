@@ -410,13 +410,8 @@
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
-        <property name="SCA" type="string">Scene archive identifier or path </property>
         <property name="Prefab" type="string">Prefab resource name within the archive </property>
       </properties>
-      <fields>
-        <field name="_loadedSCA" type="int">Hashed value of currently loaded SCA</field>
-        <field name="_loadedPrefab" type="int">Hashed value of loaded prefab instance </field>
-      </fields>
     </class>
     <class name="TextBlock" parent="Node2D" concept="TextBlockConcept" allow-text="true">
       <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
@@ -612,7 +607,7 @@
     </class>
     <class name="ImageView" parent="Node2D">
       <summary>Displays image content with advanced rendering and scaling options</summary>
-      <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths.</details>
+      <details>Renders static images with support for nine-patch scaling, blend modes, and viewport control. Handles both loaded images and images loaded from file paths or HTTP/HTTPS URLs.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Node2D.MeasureOverride"/>
@@ -621,6 +616,7 @@
         <handle message="Node2D.DrawBrush"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Destroy"/>
         <handle message="Node.LoadView"/>
       </handles>
       <properties>
@@ -632,7 +628,8 @@
         <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
       </properties>
       <fields>
-        <field name="_loadedImage" type="int">Hashed value of loaded image resource </field>
+        <field name="_fetch" type="void" pointer="true">In-flight HTTP fetch handle (private)</field>
+        <field name="_src_object" type="void" pointer="true">Texture object loaded from HTTP data (private)</field>
       </fields>
     </class>
     <class name="NinePatchImage" parent="Node2D">
