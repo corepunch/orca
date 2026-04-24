@@ -119,11 +119,6 @@ void OBJ_SetAlias(lpObject_t pobj, uint32_t alias) {
   pobj->alias = alias;
 }
 
-lua_State*
-OBJ_GetDomain(lpObject_t self) {
-  return self->domain;
-}
-
 lpProperty_t
 OBJ_GetPropertyAtIndex(lpObject_t object,
                        uint32_t classid,

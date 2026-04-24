@@ -570,20 +570,12 @@ OBJ_SetTextContent(struct Object*, const char*);
 ORCA_API long
 OBJ_GetTimestamp(struct Object const*);
 
-/// @brief Gets the domain of the object
-ORCA_API struct lua_State*
-OBJ_GetDomain(struct Object*);
-
 /// @brief Set the current context object where newly created objects will be parented.
 ORCA_API void
 OBJ_SetContext(struct lua_State*, struct Object*);
 
 /// @name Prefabs and Aliases
 /// Loads prefab templates and manages named child aliases.
-
-/// @brief Loads prefab views in this object's subtree.
-ORCA_API void
-OBJ_LoadPrefabs(struct Object*);
 
 /// @brief Instantiates a new object from this prefab.
 ORCA_API struct Object*

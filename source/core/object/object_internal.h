@@ -39,8 +39,6 @@ struct Object
 
   longTime_t dirty;
   
-  lua_State *domain;
-  
   byte_t   data[MAX_OBJECT_DATA];
 };
 

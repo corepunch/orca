@@ -70,11 +70,13 @@ HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
       strcmp(PROP_GetName(pPropertyChanged->Property),
              pOnPropertyChangedTrigger->Property))
     return FALSE;
-  lua_State* L = OBJ_GetDomain(hObject);
-  luaX_pushProperty(L, pPropertyChanged->Property);
-  return _SendMessage(hObject, Trigger, Triggered,
-    .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
-    /*.message = { .NumArgs = 1 }*/);
+  // lua_State* L = OBJ_GetDomain(hObject);
+  // luaX_pushProperty(L, pPropertyChanged->Property);
+  // return _SendMessage(hObject, Trigger, Triggered,
+  //   .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
+    /*.message = { .NumArgs = 1 }*/
+    // );
+    return FALSE;
 }
 
 HANDLER(OnPropertyChangedTrigger, Object, Attached)

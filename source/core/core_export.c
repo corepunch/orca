@@ -362,20 +362,9 @@ int f_OBJ_GetTimestamp(lua_State *L) {
 	lua_pushinteger(L, result_);
 	return 1;
 }
-int f_OBJ_GetDomain(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct lua_State* result_ = OBJ_GetDomain(this_);
-	luaX_pushlua_State(L, result_);
-	return 1;
-}
 int f_OBJ_SetContext(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_SetContext(L, this_ );
-	return 0;
-}
-int f_OBJ_LoadPrefabs(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_LoadPrefabs(this_ );
 	return 0;
 }
 int f_OBJ_Instantiate(lua_State *L) {
@@ -447,9 +436,7 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "getTextContent", f_OBJ_GetTextContent },
 		{ "setTextContent", f_OBJ_SetTextContent },
 		{ "getTimestamp", f_OBJ_GetTimestamp },
-		{ "getDomain", f_OBJ_GetDomain },
 		{ "__setcontext", f_OBJ_SetContext },
-		{ "loadPrefabs", f_OBJ_LoadPrefabs },
 		{ "instantiate", f_OBJ_Instantiate },
 		{ "isPrefabView", f_OBJ_IsPrefabView },
 		{ NULL, NULL },

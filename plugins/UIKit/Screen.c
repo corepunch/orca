@@ -558,8 +558,7 @@ static uint32_t get_size(lpObject_t obj) {
 }
 
 static void
-draw_screen(lua_State* L,
-            struct Object* hObject,
+draw_screen(struct Object* hObject,
             struct Screen* pScreen,
             uint32_t WindowWidth,
             uint32_t WindowHeight)
@@ -598,7 +597,7 @@ draw_screen(lua_State* L,
   OBJ_ClearDirtyFlags(hObject);
   
   if (OBJ_GetNext(hObject)) { // Render modal screens
-    draw_screen(L, OBJ_GetNext(hObject), GetScreen(OBJ_GetNext(hObject)), WindowWidth, WindowHeight);
+    draw_screen(OBJ_GetNext(hObject), GetScreen(OBJ_GetNext(hObject)), WindowWidth, WindowHeight);
   }
 
 }
@@ -606,7 +605,7 @@ draw_screen(lua_State* L,
 HANDLER(Screen, Window, Paint) {
   R_BeginFrame(pScreen->ClearColor);
 
-  draw_screen(OBJ_GetDomain(hObject), hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
+  draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
   
   R_EndFrame();
 
