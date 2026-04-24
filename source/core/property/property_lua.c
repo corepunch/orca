@@ -140,10 +140,10 @@ PROP_RegisterChangedCallback(lua_State* L, lpProperty_t property, int callback_i
   if (property->changeCallback) {
     luaL_unref(L, LUA_REGISTRYINDEX, property->changeCallback);
   }
-  if (lua_isfunction(L, 3)) {
+  if (lua_isfunction(L, callback_idx)) {
     lua_pushvalue(L, callback_idx);
     property->changeCallback = (event_t)luaL_ref(L, LUA_REGISTRYINDEX);
-  } else if (lua_isnil(L, 3)) {
+  } else if (lua_isnil(L, callback_idx)) {
      property->changeCallback = 0;
   } else {
     return FALSE;

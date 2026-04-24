@@ -144,7 +144,7 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
       assert(lname - lsuffix - 2 < MAX_NAMELEN); // ensure extracted name fits in shortStr_t
       strncpy(pname, name + 2, lname - lsuffix - 2); // 2 for "on", lsuffix for "Changed"
       // Find the property by the extracted name and register the callback
-      return SUCCEEDED(OBJ_FindShortProperty(self, name, &property)) &&
+      return SUCCEEDED(OBJ_FindShortProperty(self, pname, &property)) &&
         PROP_RegisterChangedCallback(L, property, 3);
     }
     return FALSE;

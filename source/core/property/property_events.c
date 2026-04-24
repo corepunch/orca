@@ -18,19 +18,14 @@ PROP_GetShortName(lpcProperty_t property)
 }
 
 static bool_t
-invoke_event_property_from_property_events(lua_State* L, lpObject_t object, lpProperty_t callback, int num_args)
+invoke_changed_callback_from_property_events(lua_State* L, lpObject_t object, lpProperty_t property, int num_args)
 {
-  if (!callback || PROP_GetType(callback) != kDataTypeEvent) {
-    lua_pop(L, num_args);
-    return FALSE;
-  }
-  event_t ref = *(event_t*)PROP_GetValue(callback);
-  if (!ref) {
+  if (!property || !property->changeCallback) {
     lua_pop(L, num_args);
     return FALSE;
   }
 
-  lua_geti(L, LUA_REGISTRYINDEX, ref);
+  lua_geti(L, LUA_REGISTRYINDEX, property->changeCallback);
   if (!lua_isfunction(L, -1)) {
     lua_pop(L, 1 + num_args);
     return FALSE;
@@ -63,13 +58,8 @@ PROP_ProcessEvents(lua_State* L,
       _SendMessage(object, StateManagerController, ControllerChanged, .Property = property);
     }
     if (property->flags & PF_HASCHANGECALLBACK) {
-      static path_t str;
-      sprintf(str, ON_CHANGED_CALLBACK, PROP_GetShortName(property));
-      lpProperty_t callback = NULL;
-      if (SUCCEEDED(OBJ_FindShortProperty(object, str, &callback))) {
-        luaX_pushProperty(L, property);
-        invoke_event_property_from_property_events(L, object, callback, 1);
-      }
+      luaX_pushProperty(L, property);
+      invoke_changed_callback_from_property_events(L, object, property, 1);
     }
     if (property->flags & PF_USED_IN_TRIGGER) {
       _SendMessage(object, Object, PropertyChanged, .Property = property);

@@ -91,6 +91,10 @@ OBJ_Release(lua_State* L, lpObject_t pobj)
     if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
+    if (L && p->changeCallback) {
+      luaL_unref(L, LUA_REGISTRYINDEX, p->changeCallback);
+      p->changeCallback = 0;
+    }
     PROP_Clear(p);
   }
 
