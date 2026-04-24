@@ -228,7 +228,7 @@ _HandlePrefabPlaceholder(xmlNodePtr element)
   }
   // Load the template XML doc manually so we can defer Object.Start on the
   // root until after placeholder attribute overrides have been applied.
-  return FS_LoadObjectFromXml((char*)tmpl);
+  return FS_LoadObject((char*)tmpl);
 }
 
 // Build an Object tree from an XML element node.
@@ -339,7 +339,7 @@ FS_LoadObjectFromXml(lpcString_t path)
                                 path, NULL, XML_FLAGS);
     FS_FreeFile(fp);
     if (!doc) {
-      Con_Error("FS_LoadObjectFromXml: failed to parse '%s'", path);
+      Con_Error("Failed to parse '%s'", path);
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
@@ -350,6 +350,9 @@ FS_LoadObjectFromXml(lpcString_t path)
 //      OBJ_RegisterPrefab(result, path);
     }
     return result;
+  } else {
+    Con_Error("Failed to load '%s'", path);
+    return NULL;
   }
   return NULL;
 }
