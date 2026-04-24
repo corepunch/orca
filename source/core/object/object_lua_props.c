@@ -130,6 +130,10 @@ OBJ_SetProperty(lua_State* L, lpObject_t self, lpcString_t name)
   }
   lpProperty_t property = NULL;
   if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
+    if (PROP_GetType(property) == kDataTypeEvent &&
+        (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
+      axRemoveFromQueue(self);
+    }
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION && is_on_changed_callback_name(name)) {

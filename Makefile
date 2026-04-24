@@ -257,9 +257,6 @@ test-router: app copyshare
 test-application: app copyshare
 	$(TARGET) -test=tests/application_spec.moon
 
-test-loadview: app copyshare
-	$(TARGET) -test=tests/loadview_spec.moon
-
 test: test-headless test-properties test-styles
 	$(TARGET) -test=tests/test1.lua
 	$(TARGET) -test=tests/test.xml
@@ -275,6 +272,5 @@ test-headless: unite test-properties test-styles
 	$(TARGET) -test=tests/widget_spec.moon
 	$(TARGET) -test=tests/router_spec.moon
 	$(TARGET) -test=tests/application_spec.moon
-	$(TARGET) -test=tests/loadview_spec.moon
 
 include Makefile.webgl

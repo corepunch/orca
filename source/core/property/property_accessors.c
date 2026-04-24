@@ -122,9 +122,34 @@ PROP_SetStateValue(lpProperty_t property,
   return ptr;
 }
 
+static bool_t
+PROP_IsSameValue(lpcProperty_t property, void const* source)
+{
+  if (!property || !source) {
+    return FALSE;
+  }
+  if (!(property->stateflags & (1 << kPropertyStateNormal))) {
+    return FALSE;
+  }
+
+  switch (property->type) {
+    case kDataTypeString: {
+      lpcString_t current = *(lpcString_t const*)property->value;
+      lpcString_t incoming = *(lpcString_t const*)source;
+      return current == incoming ||
+        (current && incoming && strcmp(current, incoming) == 0);
+    }
+    default:
+      return memcmp(property->value, source, PROP_GetSize(property)) == 0;
+  }
+}
+
 void
 PROP_SetValue(lpProperty_t property, void const* source)
 {
+  if (PROP_IsSameValue(property, source)) {
+    return;
+  }
   memcpy(property->value,
          PROP_SetStateValue(property, source, kPropertyStateNormal),
          PROP_GetSize(property));
