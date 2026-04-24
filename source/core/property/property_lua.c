@@ -8,21 +8,6 @@
 extern struct Object* FS_LoadObjectFromXML(const char* path);
 extern int f_msgSend(lua_State *L);
 
-lpObject_t _lua_checkobject(lua_State* L, int arg) {
-  return *(lpObject_t*)luaL_checkudata(L, arg, API_TYPE_OBJECT);
-}
-
-void _lua_pushobject(lua_State* L, lpcObject_t self)
-{
-  if (!self) {
-    lua_pushnil(L);
-    return;
-  }
-  lpObject_t* ud = lua_newuserdata(L, sizeof(lpObject_t));
-  *ud = (lpObject_t)self;
-  luaL_setmetatable(L, API_TYPE_OBJECT);
-}
-
 ORCA_API int
 parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
 {
@@ -169,7 +154,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
     case kDataTypeObject:
       switch (lua_type(L, (idx = lua_absindex(L, idx)))) {
         case LUA_TUSERDATA:
-          *(void**)valueptr = _lua_checkobject(L, idx);
+          *(void**)valueptr = luaX_checkObject(L, idx);
           break;
         case LUA_TSTRING:
           parse_property(luaL_checkstring(L, idx), prop, valueptr);
@@ -235,9 +220,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
 }
   
 ORCA_API int
-write_property(lua_State *L,
-               struct PropertyType const* prop,
-               void const* valueptr)
+write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr)
 {
     // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
     switch (prop->DataType) {
@@ -285,7 +268,7 @@ write_property(lua_State *L,
             object = CMP_GetObject(*(void**)valueptr);
           }
           if (object) {
-            _lua_pushobject(L, object);
+            luaX_pushObject(L, object);
           } else {
             lua_pushnil(L);
           }
@@ -296,9 +279,9 @@ write_property(lua_State *L,
     }
     return 1;
   }
-  
 
-int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
+int 
+luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
 {
   if (lua_isnil(L, idx)) {
     PROP_Clear(p);
@@ -312,7 +295,8 @@ int luaX_readProperty(lua_State* L, int idx, lpProperty_t p)
   return 0;
 }
 
-void luaX_pushProperty(lua_State* L, lpcProperty_t property)
+void 
+luaX_pushProperty(lua_State* L, lpcProperty_t property)
 {
   if (PROP_IsNull(property)) {
     lua_pushnil(L);
