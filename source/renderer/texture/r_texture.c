@@ -438,32 +438,7 @@ Image_GetInfo(struct Texture const* img, struct image_info* dst)
 }
 
 lpObject_t
-R_LoadImageFromMemory(lua_State* L, void* pBuffer, uint32_t dwSize)
-{
-  struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };
-  if (luaL_dostring(L, "return require('orca.renderer').Texture()") != LUA_OK) {
-    Con_Error("%s", lua_tostring(L, -1));
-    lua_pop(L, 1);
-  }
-  lpObject_t object = luaX_checkObject(L, -1);
-  lpTexture_t texture = GetTexture(object);
-//  lua_pop(L, 1);
-  R_Call(glGenTextures, 1, &texture->texnum);
-  R_Call(glBindTexture, GL_TEXTURE_2D, texture->texnum);
-  struct AXsize size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
-                                  &(struct Image) {.Source = "[Memory]"});
-  if (size.width == 0 || size.height == 0) {
-    size = texture_make_error(GL_TEXTURE_2D);
-  }
-  texture->Width = size.width;
-  texture->Height = size.height;
-  texture->Scale = 1;
-  R_ApplyImageParms(texture, GL_TEXTURE_2D, FALSE);
-  return object;
-}
-
-lpObject_t
-R_LoadImageFromMemoryNative(void* pBuffer, uint32_t dwSize)
+R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
 {
   if (!pBuffer || dwSize == 0) return NULL;
   lpObject_t object = OBJ_MakeNativeObject(ID_Texture);

@@ -819,7 +819,7 @@ int f_response_code(lua_State* L)
 int f_response_image(lua_State* L)
 {
   response_t* res = luaL_checkudata(L, 1, API_TYPE_RESPONSE);
-  /*handle_t h = */R_LoadImageFromMemory(L, res->data, (uint32_t)res->size);
+  /*handle_t h = */R_LoadImageFromMemory(res->data, (uint32_t)res->size);
   //  lua_pushlightuserdata(L, h);
   //  luaX_pushObject(L, R_LoadImageFromMemory(L, res->data, (uint32_t)res->size));
   return 1;

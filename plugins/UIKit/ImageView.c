@@ -265,7 +265,7 @@ HANDLER(ImageView, Node, LoadView)
       return TRUE;
     }
 
-    lpObject_t tex_obj = R_LoadImageFromMemoryNative(data, (uint32_t)size);
+    lpObject_t tex_obj = R_LoadImageFromMemory(data, (uint32_t)size);
     free(data);
 
     if (!tex_obj) {

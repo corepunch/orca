@@ -612,8 +612,7 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 // Resource operations
 ORCA_API HRESULT Texture_Create(PCREATEIMGSTRUCT, struct Texture**);
 ORCA_API HRESULT Texture_Release(struct Texture*);
-ORCA_API lpObject_t R_LoadImageFromMemory(lua_State *L, void*, uint32_t);
-ORCA_API lpObject_t R_LoadImageFromMemoryNative(void*, uint32_t);
+ORCA_API lpObject_t R_LoadImageFromMemory(void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);
 ORCA_API HRESULT R_EndFrame(void);
 ORCA_API void R_SetViewportRect(struct rect const *rect);
