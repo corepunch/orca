@@ -2,6 +2,8 @@
 
 #include <include/api.h>
 
+#include <source/filesystem/filesystem.h>
+
 HANDLER(PrefabView2D, Object, Start)
 {
   lpProperty_t p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_PrefabView2D_Prefab);

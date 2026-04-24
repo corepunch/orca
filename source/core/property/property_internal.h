@@ -5,25 +5,22 @@
 
 #define ID_ContentOffset 0x35a57c45
 
-enum uniform_precision { None, Low, Mid, High };
-
 static size_t psize[] = {
-  0,                  // kDataTypeNone
-  sizeof(bool_t),     // kDataTypeBool
-  sizeof(int),        // kDataTypeInt
-  sizeof(int),        // kDataTypeEnum
-  sizeof(float),      // kDataTypeFloat
-  sizeof(char*),      // kDataTypeString
-  sizeof(void*),      // kDataTypeEvent
-  0,                  // kDataTypeStruct
-  sizeof(struct color), // kDataTypeColor
-  sizeof(lpObject_t), // kDataTypeObject
+  [kDataTypeNone] = 0,
+  [kDataTypeBool] = sizeof(bool_t),
+  [kDataTypeInt] = sizeof(int),
+  [kDataTypeEnum] = sizeof(int),
+  [kDataTypeFloat] = sizeof(float),
+  [kDataTypeString] = sizeof(char*),
+  [kDataTypeEvent] = sizeof(void*),
+  [kDataTypeStruct] = 0,
+  [kDataTypeColor] = sizeof(struct color),
+  [kDataTypeObject] = sizeof(lpObject_t),
 };
 
 struct Property
 {
   eDataType_t            type;
-  enum uniform_precision precision;
   struct token*          programs[PropertyAttribute_Count];
   LPSTR                  programSources[PropertyAttribute_Count];
   uint32_t               flags;

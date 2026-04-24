@@ -185,6 +185,13 @@ enum
 
 #include <source/core/core.h>
 
+
+ORCA_API lpObject_t
+OBJ_Create(lua_State*, lpcClassDesc_t cdesc);
+
+ORCA_API lpObject_t
+OBJ_MakeNativeObject(uint32_t class_id);
+
 ORCA_API bool_t
 PROP_Update(lpProperty_t);
 
