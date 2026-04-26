@@ -45,7 +45,7 @@ Concise MoonScript style (team convention)
 UIKit image/icon gotchas (validated on Weather sample)
 - Ensure icon/image assets are mounted as a project reference. Add an assets subproject in package.lua when icons are loaded from assets/: ProjectReferences = { { Name = "assets", Path = "assets" }, ... }.
 - For ImageView, use Source (not Image) when binding SVG icon paths in MoonScript object tables.
-- For SVG masking in query params, use mask=true (not type=mask), e.g. Source: "assets/icons/home.svg?width=26&mask=true".
+- For SVG masking in query params, use type=mask, e.g. Source: "assets/icons/home.svg?width=26&type=mask".
 
 Reference pattern
 - Banking footer demonstrates the preferred hierarchy-first style: stack ".bg-muted.w-full.h-full.justify-evenly", -> ... with children declared inside the -> block.

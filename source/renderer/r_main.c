@@ -1091,39 +1091,38 @@ static void
 R_ApplyLoaderArgs(struct Object *obj, int argc, const char* argv[])
 {
   for (int i = 1; i < argc; i++) {
-    char key[MAX_PROPERTY_STRING];
-    const char *value;
+    char key[MAX_PROPERTY_STRING]={0};
+    char value[MAX_PROPERTY_STRING]={0};
     const char *eq = strchr(argv[i], '=');
     if (eq) {
-      size_t klen = (size_t)(eq - argv[i]);
-      if (klen == 0 || klen >= sizeof(key)) continue;
-      memcpy(key, argv[i], klen);
-      key[klen] = '\0';
-      value = eq + 1;
+      strncpy(key, argv[i], MIN((size_t)(eq - argv[i]), sizeof(key) - 1));
+      strncpy(value, eq + 1, sizeof(value) - 1);
     } else {
       strncpy(key, argv[i], sizeof(key) - 1);
-      key[sizeof(key) - 1] = '\0';
-      value = "true";
+      strncpy(value, "true", sizeof(value) - 1);
     }
     // Capitalise first letter: "width" → "Width", "mask" → "Mask"
     if (key[0] >= 'a' && key[0] <= 'z') key[0] = (char)(key[0] - 'a' + 'A');
+    if (value[0] >= 'a' && value[0] <= 'z') value[0] = (char)(value[0] - 'a' + 'A');
     // Don't allow query args to override identity/path properties set by the loader itself.
     // Source must always reflect the actual file path resolved by FS_LoadObject, not a
     // user-supplied redirect (which would make the object's name and path inconsistent).
     if (strcmp(key, "Source") == 0) continue;
     struct Property *prop = NULL;
-    if (FAILED(OBJ_FindShortProperty(obj, key, &prop))) continue;
-    struct PropertyType const *pdesc = PROP_GetDesc(prop);
-    if (!pdesc) continue;
+    if (FAILED(OBJ_FindShortProperty(obj, key, &prop))) {
+      Con_Error("FS_LoadObject: object type '%s' does not have a property named '%s'\n",
+                OBJ_GetClassName(obj), key);
+      continue;
+    }
     char tmpbuf[MAX_PROPERTY_STRING] = {0};
-    if (!parse_property(value, pdesc, tmpbuf)) {
+    if (!parse_property(value, PROP_GetDesc(prop), tmpbuf)) {
       Con_Printf("FS_LoadObject: could not parse query arg '%s' = '%s'\n", key, value);
       continue;
     }
     PROP_SetValue(prop, tmpbuf);
     // parse_property strdup's for kDataTypeString; PROP_SetValue strdup's again internally,
     // so free the temporary copy to avoid a memory leak.
-    if (pdesc->DataType == kDataTypeString) {
+    if (PROP_GetType(prop) == kDataTypeString) {
       free(*(char **)tmpbuf);
     }
   }
@@ -1133,7 +1132,7 @@ R_ApplyLoaderArgs(struct Object *obj, int argc, const char* argv[])
 // Registered with OBJ_RegisterFileLoader for .png/.jpg/.jpeg/.svg so that
 // FS_LoadObject("img.png") returns a fully initialised Image.
 // Query args (argv[1..]) are applied as properties before Object_Start fires,
-// e.g. FS_LoadObject("icon.png?width=48&mask=true") sets Width=48 and Mask=true.
+// e.g. FS_LoadObject("icon.png?width=48&type=mask") sets Width=48 and type=mask.
 static struct Object*
 R_LoadImageObject(int argc, const char* argv[])
 {

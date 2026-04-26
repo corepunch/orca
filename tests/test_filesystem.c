@@ -142,11 +142,11 @@ static void test_multiple_args(void)
     RUN("multiple_args_split_on_ampersand", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
-        int argc = call_parse("img.png", "?width=48&mask=true&scale=2", argv, arg_buf);
+        int argc = call_parse("img.png", "?width=48&type=mask&scale=2", argv, arg_buf);
         EXPECT(argc == 4);
         EXPECT_STR_EQ(argv[0], "img.png");
         EXPECT_STR_EQ(argv[1], "width=48");
-        EXPECT_STR_EQ(argv[2], "mask=true");
+        EXPECT_STR_EQ(argv[2], "type=mask");
         EXPECT_STR_EQ(argv[3], "scale=2");
         EXPECT(argv[4] == NULL);
     });
