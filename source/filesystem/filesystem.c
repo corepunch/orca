@@ -464,8 +464,7 @@ _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, i
     size_t len = amp ? (size_t)(amp - p) : strlen(p);
     if (len >= MAX_LOADER_ARG_LEN)
       len = MAX_LOADER_ARG_LEN - 1;
-    strncpy(arg_buf[argc], p, len);
-    arg_buf[argc][len] = '\0';
+    snprintf(arg_buf[argc], MAX_LOADER_ARG_LEN, "%.*s", (int)len, p);
     argv[argc] = arg_buf[argc];
     argc++;
     p = amp ? amp + 1 : p + strlen(p);
