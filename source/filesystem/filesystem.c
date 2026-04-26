@@ -443,32 +443,42 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 #include "../core/core_local.h" // for file_loader
 
 #define MAX_LOADER_ARGS     16
-#define MAX_LOADER_ARG_LEN  64
+#define MAX_LOADER_ARG_LEN  65  // 64 visible chars + NUL
 
 // Parse a query string like "arg1&arg2=value" into argv/argc.
 // argv[0] is already set to the file path (with extension) by the caller.
+// argv[argc] is always set to NULL (mirrors main() convention).
 // Returns the total argc (including argv[0]).
 static int
 _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, int argc_max,
                  char arg_buf[][MAX_LOADER_ARG_LEN])
 {
   int argc = argc_start;
-  if (!query_string || *query_string == '\0')
+  if (!query_string || *query_string == '\0') {
+    argv[argc] = NULL;
     return argc;
+  }
 
   // query_string starts with '?' — skip it
   const char* p = (*query_string == '?') ? query_string + 1 : query_string;
 
-  while (*p && argc < argc_max) {
+  while (*p) {
     const char* amp = strchr(p, '&');
     size_t len = amp ? (size_t)(amp - p) : strlen(p);
-    if (len >= MAX_LOADER_ARG_LEN)
+    if (argc >= argc_max) {
+      Con_Printf("FS_LoadObject: too many query args (max %d), ignoring remainder\n", argc_max - argc_start);
+      break;
+    }
+    if (len >= MAX_LOADER_ARG_LEN) {
+      Con_Printf("FS_LoadObject: query arg truncated to %d chars\n", MAX_LOADER_ARG_LEN - 1);
       len = MAX_LOADER_ARG_LEN - 1;
+    }
     snprintf(arg_buf[argc], MAX_LOADER_ARG_LEN, "%.*s", (int)len, p);
     argv[argc] = arg_buf[argc];
     argc++;
     p = amp ? amp + 1 : p + strlen(p);
   }
+  argv[argc] = NULL;  // NULL-terminate like main()'s argv
   return argc;
 }
 
@@ -506,8 +516,9 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
   {
     // Build argv: argv[0] = filename with extension, then parsed query args.
     // Backing storage for arg strings (argv[0] uses tmpl_with_ext directly).
+    // argv[argc] is always NULL (mirrors main() convention); +1 for the sentinel.
     char arg_buf[MAX_LOADER_ARGS][MAX_LOADER_ARG_LEN];
-    const char* argv[MAX_LOADER_ARGS];
+    const char* argv[MAX_LOADER_ARGS + 1];
     int argc = 0;
 
     // If there's no dot or the dot is before the last slash, try adding the loader's extension and see if that file exists.
