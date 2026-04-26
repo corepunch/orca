@@ -446,9 +446,29 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 // Returns NULL on failure.
 struct Object *FS_LoadObject(lpcString_t tmpl) {
   path_t tmpl_with_ext = {0};
-  lpcString_t dot = strrchr(tmpl, '.');
-  lpcString_t slash = strrchr(tmpl, '/');
-  // Go over registered file loaders and find the first one that matches the extension (if any) 
+  path_t filename_only = {0};
+  lpcString_t query_string = NULL;
+  
+  // Extract query string if present
+  lpcString_t question = strchr(tmpl, '?');
+  if (question) {
+    query_string = question;
+    size_t filename_len = question - tmpl;
+    if (filename_len < sizeof(filename_only)) {
+      strncpy(filename_only, tmpl, filename_len);
+      filename_only[filename_len] = '\0';
+    } else {
+      Con_Error("filename too long: '%s'", tmpl);
+      return NULL;
+    }
+  } else {
+    strncpy(filename_only, tmpl, sizeof(filename_only) - 1);
+    filename_only[sizeof(filename_only) - 1] = '\0';
+  }
+  
+  lpcString_t dot = strrchr(filename_only, '.');
+  lpcString_t slash = strrchr(filename_only, '/');
+  // Go over registered file loaders and find the first one that matches the extension (if any)
   // or can load the file with an added extension (if no extension in path)
   for (struct file_loader* loader = core.file_loaders;
        loader->extension && loader < core.file_loaders + MAX_FILE_LOADERS;
@@ -456,9 +476,12 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
   {
     // If there's no dot or the dot is before the last slash, try adding the loader's extension and see if that file exists.
     if (!dot || dot < slash) {
-      int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s", tmpl, loader->extension);
+      int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s%s", filename_only, loader->extension, query_string ? query_string : "");
       if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
-        if (FS_FileExists(tmpl_with_ext)) {
+        // Check if file exists without query string
+        path_t file_to_check = {0};
+        snprintf(file_to_check, sizeof(file_to_check), "%s%s", filename_only, loader->extension);
+        if (FS_FileExists(file_to_check)) {
           // File with the extension exists, load it and return the result
           return loader->fn(tmpl_with_ext);
         }
@@ -468,9 +491,12 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
       }
     } else if (dot > slash) {
       // There's an extension: try loading directly if it matches the loader's extension
-      size_t ext_len = strlen(loader->extension), tmpl_len = strlen(tmpl);
-      if (tmpl_len > ext_len && strcmp(tmpl + tmpl_len - ext_len, loader->extension) == 0) {
-        return loader->fn(tmpl);
+      size_t ext_len = strlen(loader->extension), filename_len = strlen(filename_only);
+      if (filename_len > ext_len && strcmp(filename_only + filename_len - ext_len, loader->extension) == 0) {
+        int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s", filename_only, query_string ? query_string : "");
+        if (n > 0 && n < (int)sizeof(tmpl_with_ext)) {
+          return loader->fn(tmpl_with_ext);
+        }
       }
     }
   }
