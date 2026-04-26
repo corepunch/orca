@@ -350,7 +350,7 @@ struct ClassDesc
 struct component;
 
 ORCA_API void
-OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(const char* path));
+OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
 
 ORCA_API HRESULT
 OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Property ** output);

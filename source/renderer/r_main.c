@@ -1084,8 +1084,10 @@ r_basename(const char* path)
 // Registered with OBJ_RegisterFileLoader for .png/.jpg/.jpeg/.svg so that
 // FS_LoadObject("img.png") returns a fully initialised Image.
 static struct Object*
-R_LoadImageObject(const char* path)
+R_LoadImageObject(int argc, const char* argv[])
 {
+  const char* path = (argc > 0) ? argv[0] : NULL;
+  if (!path) return NULL;
   struct Object *obj = OBJ_Create(ID_Image);
   if (!obj) return NULL;
   OBJ_SetName(obj, r_basename(path));

@@ -592,7 +592,7 @@ static int c_parse_vec3(const char* str, void* dst, size_t sz) {
 // --- Struct parser registry -------------------------------------------------
 
 void
-OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(const char* path))
+OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]))
 {
   FOR_LOOP(i, MAX_FILE_LOADERS) {
     if (core.file_loaders[i].extension &&

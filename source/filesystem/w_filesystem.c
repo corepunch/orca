@@ -368,10 +368,18 @@ HANDLER(Project, Object, Start) {
 
 int luaopen_io_open_override(lua_State* L);
 
+static struct Object* _xml_file_loader(int argc, const char* argv[]) {
+  return (argc > 0) ? FS_LoadObjectFromXml(argv[0]) : NULL;
+}
+
+static struct Object* _css_file_loader(int argc, const char* argv[]) {
+  return (argc > 0) ? FS_LoadObjectFromCss(argv[0]) : NULL;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
-  OBJ_RegisterFileLoader(".xml", FS_LoadObjectFromXml);
-  OBJ_RegisterFileLoader(".css", FS_LoadObjectFromCss);
+  OBJ_RegisterFileLoader(".xml", _xml_file_loader);
+  OBJ_RegisterFileLoader(".css", _css_file_loader);
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
