@@ -1107,6 +1107,10 @@ R_ApplyLoaderArgs(struct Object *obj, int argc, const char* argv[])
     }
     // Capitalise first letter: "width" → "Width", "mask" → "Mask"
     if (key[0] >= 'a' && key[0] <= 'z') key[0] = (char)(key[0] - 'a' + 'A');
+    // Don't allow query args to override identity/path properties set by the loader itself.
+    // Source must always reflect the actual file path resolved by FS_LoadObject, not a
+    // user-supplied redirect (which would make the object's name and path inconsistent).
+    if (strcmp(key, "Source") == 0) continue;
     struct Property *prop = NULL;
     if (FAILED(OBJ_FindShortProperty(obj, key, &prop))) continue;
     struct PropertyType const *pdesc = PROP_GetDesc(prop);

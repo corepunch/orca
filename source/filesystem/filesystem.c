@@ -449,7 +449,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 // argv[0] is already set to the file path (with extension) by the caller.
 // argv[argc] is always set to NULL (mirrors main() convention).
 // Returns the total argc (including argv[0]).
-static int
+int
 _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, int argc_max,
                  char arg_buf[][MAX_LOADER_ARG_LEN])
 {
@@ -511,7 +511,7 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
   // Go over registered file loaders and find the first one that matches the extension (if any)
   // or can load the file with an added extension (if no extension in path)
   for (struct file_loader* loader = core.file_loaders;
-       loader->extension && loader < core.file_loaders + MAX_FILE_LOADERS;
+       loader < core.file_loaders + MAX_FILE_LOADERS && loader->extension;
        loader++)
   {
     // Build argv: argv[0] = filename with extension, then parsed query args.
