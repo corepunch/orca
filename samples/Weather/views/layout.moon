@@ -20,8 +20,8 @@ make_footer = (active_route, navigate) ->
 			label_color = selected and "text-foreground" or "text-muted-foreground"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
 				ImageView
-					class: "align-middle-center text-blue-900"--#{icon_color}"
-					Source: "#{item.icon}?width=48&mask=true"
+					class: "align-middle-center #{icon_color}"
+					Source: "#{item.icon}?width=48&type=mask"
 					LeftButtonUp: -> navigate item.route
 				TextBlock class: "text-xs #{label_color}", item.label
 

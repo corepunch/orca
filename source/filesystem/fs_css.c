@@ -453,6 +453,7 @@ struct Object *FS_LoadObjectFromCssString(const char* css_text)
 
 struct Object *FS_LoadObjectFromCss(const char* path)
 {
+    if (!path) return NULL;
     char* css_text = fs_load_text_file(path);
     if (!css_text) {
         Con_Error("FS_LoadObjectFromCss: can't load '%s'", path);

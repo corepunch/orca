@@ -75,7 +75,7 @@ struct struct_parser_entry {
 
 struct file_loader {
   const char* extension;
-  struct Object* (*fn)(const char* path);
+  struct Object* (*fn)(int argc, const char* argv[]);
 };
 
 struct property_program;

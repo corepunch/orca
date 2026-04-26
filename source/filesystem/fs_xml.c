@@ -346,6 +346,7 @@ FS_ConstructNode(xmlNodePtr element)
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path)
 {
+  if (!path) return NULL;
   struct file* fp = FS_LoadFile(path);
   if (fp) {
     xmlDoc* doc = xmlReadMemory((lpcString_t)fp->data, (int)fp->size,

@@ -26,7 +26,7 @@ Two approaches were considered:
 
 ```moonscript
 Link Destination: "/forecast", ->
-    ImageView Source: "assets/icons/search.svg?width=48&mask=true"
+    ImageView Source: "assets/icons/search.svg?width=48&type=mask"
 ```
 
 - `Link` is a transparent `Node2D` subclass that wraps its children.
@@ -110,7 +110,7 @@ make_footer = (active_route) ->
             Link Destination: item.route, ->
                 StackView class: "w-12 flex-col items-center justify-center gap-1", ->
                     ImageView class: "align-middle-center #{icon_color}",
-                        Source: "#{item.icon}?width=48&mask=true"
+                        Source: "#{item.icon}?width=48&type=mask"
                     TextBlock class: "text-xs #{label_color}", item.label
 ```
 
