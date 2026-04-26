@@ -9,6 +9,10 @@
 #include <source/core/core_local.h>
 #include <source/filesystem/filesystem.h>
 
+// parse_property is defined in source/core/property/property_lua.c (ORCA_API).
+// Forward-declare here because in the unity build r_main.c compiles before renderer_export.c.
+extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
+
 static HRESULT R_SetPalette(struct color32 const palette[256]);
 struct renderer tr={0};
 
@@ -1080,9 +1084,52 @@ r_basename(const char* path)
   return slash ? slash + 1 : path;
 }
 
+// Apply query args (argv[1..argc-1]) as properties on obj.
+// Each arg has the form "key=value" or just "key" (treated as key=true).
+// The key's first letter is capitalised to match ORCA property naming (e.g. "width" → "Width").
+static void
+R_ApplyLoaderArgs(struct Object *obj, int argc, const char* argv[])
+{
+  for (int i = 1; i < argc; i++) {
+    char key[MAX_PROPERTY_STRING];
+    const char *value;
+    const char *eq = strchr(argv[i], '=');
+    if (eq) {
+      size_t klen = (size_t)(eq - argv[i]);
+      if (klen == 0 || klen >= sizeof(key)) continue;
+      memcpy(key, argv[i], klen);
+      key[klen] = '\0';
+      value = eq + 1;
+    } else {
+      strncpy(key, argv[i], sizeof(key) - 1);
+      key[sizeof(key) - 1] = '\0';
+      value = "true";
+    }
+    // Capitalise first letter: "width" → "Width", "mask" → "Mask"
+    if (key[0] >= 'a' && key[0] <= 'z') key[0] = (char)(key[0] - 'a' + 'A');
+    struct Property *prop = NULL;
+    if (FAILED(OBJ_FindShortProperty(obj, key, &prop))) continue;
+    struct PropertyType const *pdesc = PROP_GetDesc(prop);
+    if (!pdesc) continue;
+    char tmpbuf[MAX_PROPERTY_STRING] = {0};
+    if (!parse_property(value, pdesc, tmpbuf)) {
+      Con_Printf("FS_LoadObject: could not parse query arg '%s' = '%s'\n", key, value);
+      continue;
+    }
+    PROP_SetValue(prop, tmpbuf);
+    // parse_property strdup's for kDataTypeString; PROP_SetValue strdup's again internally,
+    // so free the temporary copy to avoid a memory leak.
+    if (pdesc->DataType == kDataTypeString) {
+      free(*(char **)tmpbuf);
+    }
+  }
+}
+
 // Create an Image object from a file path and return it as an ORCA Object.
 // Registered with OBJ_RegisterFileLoader for .png/.jpg/.jpeg/.svg so that
 // FS_LoadObject("img.png") returns a fully initialised Image.
+// Query args (argv[1..]) are applied as properties before Object_Start fires,
+// e.g. FS_LoadObject("icon.png?width=48&mask=true") sets Width=48 and Mask=true.
 static struct Object*
 R_LoadImageObject(int argc, const char* argv[])
 {
@@ -1092,6 +1139,7 @@ R_LoadImageObject(int argc, const char* argv[])
   if (!obj) return NULL;
   OBJ_SetName(obj, r_basename(path));
   OBJ_SetPropertyValue(obj, "Source", &path);
+  R_ApplyLoaderArgs(obj, argc, argv);
   OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
 }
