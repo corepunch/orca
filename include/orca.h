@@ -311,6 +311,7 @@ typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lPar
 #define kEventResumeCoroutine 0x3cc3febc
 #define kEventStopCoroutine 0xf13ac065
 #define kEventReadCommands 0x23d83fd3
+#define kEventClearReference 0xe2c8d5d7
 
 #define EVENT_PTR(NAME) NAME##MsgPtr
 
