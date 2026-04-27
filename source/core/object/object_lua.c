@@ -14,15 +14,53 @@ struct Object *luaX_checkObject(lua_State* L, int arg) {
   return *(struct Object **)luaL_checkudata(L, arg, API_TYPE_OBJECT);
 }
 
+/* Registry key for the weak-value object cache table.
+ * Maps lightuserdata(Object*) -> userdata(Object**).
+ * Weak values ensure the cache never prevents GC.                            */
+#define ORCA_OBJ_CACHE "_orca_obj"
+
 void luaX_pushObject(lua_State* L, struct Object const *self)
 {
   if (!self) {
     lua_pushnil(L);
     return;
   }
-  struct Object ** ud = lua_newuserdata(L, sizeof(struct Object *));
+
+  /* Get (or lazily create) the weak-value cache table. */
+  lua_getfield(L, LUA_REGISTRYINDEX, ORCA_OBJ_CACHE);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);              /* t = {}                            */
+    lua_newtable(L);              /* mt = {}                           */
+    lua_pushliteral(L, "v");
+    lua_setfield(L, -2, "__mode"); /* mt.__mode = "v" (weak values)   */
+    lua_setmetatable(L, -2);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, LUA_REGISTRYINDEX, ORCA_OBJ_CACHE);
+  }
+
+  /* Look up self in the cache. */
+  lua_pushlightuserdata(L, (void *)self);
+  lua_gettable(L, -2);
+  if (!lua_isnil(L, -1)) {
+    /* Cache hit: return the existing userdata (remove cache table). */
+    lua_remove(L, -2);
+    return;
+  }
+  lua_pop(L, 1); /* pop nil */
+
+  /* Cache miss: create a new userdata, register it, and cache it. */
+  struct Object **ud = lua_newuserdata(L, sizeof(struct Object *));
   *ud = (struct Object *)self;
   luaL_setmetatable(L, API_TYPE_OBJECT);
+
+  /* cache[self] = ud  (weak value, so GC can still collect it) */
+  lua_pushlightuserdata(L, (void *)self);
+  lua_pushvalue(L, -2);
+  lua_settable(L, -4);
+
+  /* Remove cache from stack, leave userdata on top. */
+  lua_remove(L, -2);
 }
 
 static int

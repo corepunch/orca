@@ -47,7 +47,10 @@ int f_OBJ_Clear(lua_State *L) {
 	return 0;
 }
 int f_OBJ_ReleaseOrphan(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
+	struct Object** ud = (struct Object**)luaL_checkudata(L, 1, API_TYPE_OBJECT);
+	struct Object* this_ = *ud;
+	if (!this_) return 0; /* already released */
+	*ud = NULL; /* prevent reentrant double-free */
 	OBJ_ReleaseOrphan(L, this_ );
 	return 0;
 }
