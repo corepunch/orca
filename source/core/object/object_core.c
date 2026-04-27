@@ -9,12 +9,16 @@ static int counter = 0;
 #endif
 
 static uint32_t unique_counter = 0;
+static int64_t g_object_count = 0;
+
+int64_t OBJ_GetObjectCount(void) { return g_object_count; }
 
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
 #ifdef DEBUG_COUNT_OBJECTS
   Con_Error("number objects: %d", counter++);
 #endif
+  g_object_count++;
   struct ClassDesc const *cls = OBJ_FindClassW(class_id);
    if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
@@ -81,6 +85,18 @@ OBJ_Release(lua_State* L, struct Object *pobj)
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
+  g_object_count--;
+  // Release non-node children (resource objects e.g. Texture, Model assigned to
+  // a property via PROP_SetStoredValue). These have no Lua userdata retaining
+  // them after the property is set, so the parent must own their lifetime.
+  // Node-type children are part of the scene graph and are released via their
+  // own Lua __gc when they become parentless.
+  FOR_EACH_OBJECT(child, pobj) {
+    if (!GetNode(child)) {
+      luaX_invalidateObject(L, child);
+      OBJ_Release(L, child);
+    }
+  }
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(pobj);

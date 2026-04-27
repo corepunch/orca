@@ -76,6 +76,15 @@ int f_OBJ_AddChild(lua_State *L) {
 }
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
+	/* Release non-node resource children (e.g. Texture, Model assigned to a
+	 * property) before OBJ_RemoveFromParent clears them via OBJ_Clear.
+	 * FOR_EACH_OBJECT pre-captures 'next', so removing a child mid-loop is safe. */
+	FOR_EACH_OBJECT(child, this_) {
+		if (!GetNode(child)) {
+			luaX_invalidateObject(L, child);
+			OBJ_Release(L, child);
+		}
+	}
 	OBJ_RemoveFromParent(this_ );
 	return 0;
 }
@@ -1540,6 +1549,10 @@ int f_core_FlushQueue(lua_State *L) {
 	core_FlushQueue(L );
 	return 0;
 }
+int f_core_ObjectCount(lua_State *L) {
+	lua_pushinteger(L, OBJ_GetObjectCount());
+	return 1;
+}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -1548,6 +1561,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
 		{ "flushQueue", f_core_FlushQueue },
+		{ "objectCount", f_core_ObjectCount },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);
