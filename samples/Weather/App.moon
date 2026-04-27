@@ -15,18 +15,9 @@ class App extends require "orca.core.application"
 		App.__parent.dispatch self, req
 
 	navigate: (route) =>
-		print "Navigating to #{route}"
 		ctrl = @dispatch route
 		return unless ctrl and ctrl.view
-
-		@controller = ctrl
-		@screen = ctrl.view
-
-		Application = require "orca.core.application"
-		Application.screen = @screen
-		Application.controller = @controller
-
-		@screen\post "Window.Paint", renderer.getSize!
+		@activate_controller ctrl
 
 	[Home: "/"]: => render: true
 	[Forecast: "/forecast"]: => render: true

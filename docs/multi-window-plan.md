@@ -88,7 +88,7 @@ The current Lua startup sequence behaves like a single-application, single-windo
 - startup metadata is read from the project object
 - one startup controller or one startup screen is created
 - `Application.app`, `Application.screen`, and `Application.controller` are stored globally
-- `Application:run()` loops over `system.getMessage(self.screen)`
+- `Application:run()` loops over `system.getMessage` and binds target screen in `system.dispatchMessage(self.screen, msg)`
 
 This is app-wide startup coupled directly to one screen.
 
@@ -360,7 +360,7 @@ Possible structure:
 ```lua
 function Application:run()
   while true do
-    for msg in system.getMessage() do
+    for msg in system.getMessage do
       local window = self:window_for_message(msg)
       if window then
         window:dispatch_message(msg)
@@ -560,7 +560,7 @@ It duplicates app-wide state and makes plugins, shared services, and global comm
 
 ### Trap 2: Keeping one global `screen`
 
-Do not keep `Application.screen` as the only true screen once multi-window support begins.
+Do not keep a single global screen reference as the only true screen once multi-window support begins.
 
 That design blocks per-window event routing and makes repaint logic incorrect.
 

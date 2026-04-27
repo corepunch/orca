@@ -8,7 +8,8 @@ local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
 local UIKit = require "orca.UIKit"
 
-local Application = Widget:extend {
+local Application
+Application = Widget:extend {
   layout = {
     content = function(element)
       local screen = UIKit.Screen()
@@ -73,28 +74,52 @@ local Application = Widget:extend {
     }
   end,
 
+  activate_controller = function(self, controller)
+    if not controller or not controller.view then
+      return nil
+    end
+
+    Application.app = self
+    self.controller = controller
+    self.screen = controller.view
+
+    Application.load_editor(self.screen)
+    self.screen:post("Window.Paint", renderer.getSize())
+
+    return controller
+  end,
+
   run = function(self)
-    while true do
-      for msg in system.getMessage(self.screen) do
-        if filesystem.hasChangedFiles() then return DATADIR end
-        if msg:is "Window.Closed" then return
-        elseif msg:is "Node.KeyDown" and msg.key == "q" then return
-        elseif msg:is "RequestReload" then return DATADIR
-        else
-          system.translateMessage(msg)
-          local ok, result = pcall(system.dispatchMessage, msg)
-          if not ok then
-            io.stderr:write(tostring(result) .. "\n")
-          elseif result and not msg:is "Window.Paint" then
-            self.screen:post("Window.Paint", renderer.getSize())
-          end
+    for msg in system.getMessage do
+      if filesystem.hasChangedFiles() then return DATADIR end
+      if msg:is "Window.Closed" then return
+      elseif msg:is "Node.KeyDown" and msg.key == "q" then return
+      elseif msg:is "RequestReload" then return DATADIR
+      else
+        local ok, result = pcall(system.dispatchMessage, self.screen, msg)
+        if not ok then
+          io.stderr:write(tostring(result) .. "\n")
+        elseif result and not msg:is "Window.Paint" then
+          self.screen:post("Window.Paint", renderer.getSize())
         end
+        system.translateMessage(msg)
       end
     end
   end,
 }
 
 Application.projects = {}
+
+function Application.current(required)
+  if required == nil then
+    required = true
+  end
+  local app = Application.app
+  if required then
+    assert(app, "Application has not been opened yet")
+  end
+  return app
+end
 
 function Application.open(path)
   io.stderr:write("Initializing application module\n")
@@ -136,8 +161,7 @@ function Application.load_controller(path, route)
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
   local app = class()
-  app.controller = app:dispatch(route or "/")
-  app.screen = app.controller.view
+  app:activate_controller(app:dispatch(route or "/"))
   return app
 end
 
