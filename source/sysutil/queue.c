@@ -59,8 +59,8 @@ int f_dispatch_message(lua_State* L)
     lua_pushcfunction(L, f_event_new);
     lua_insert(L, -2);
     lua_call(L, 1, 1);
-    struct AXmessage *ev = luaL_testudata(L, -1, "Event");
-    lua_pushboolean(L, ev ? SV_DispatchMessage(L, ev) : FALSE);
+    struct AXmessage *ev = luaL_checkudata(L, -1, "Event");
+    lua_pushboolean(L, SV_DispatchMessage(L, ev));
   } else {
     struct AXmessage *event = luaL_checkudata(L, 2, "Event");
     switch (event->message) {
