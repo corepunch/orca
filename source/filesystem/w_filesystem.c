@@ -323,6 +323,8 @@ static int filesystem_gc(lua_State* L)
 {
   void FS_Shutdown(void);
   FS_Shutdown();
+  lua_pushnil(L);
+  lua_setfield(L, LUA_REGISTRYINDEX, "_orca_workspace_pin");
   return 0;
 }
 
@@ -339,14 +341,14 @@ int luaopen_orca_pipe(lua_State *L);
 
 int f_init(lua_State* L)
 {
-  luaX_require(L, "orca.filesystem", 1);
-  lua_getfield(L, -1, "Workspace");
-  if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-    return luaL_error(L, lua_tostring(L, -1));
-  }
-  FS_SetWorkspace(luaX_checkObject(L, -1));
-  struct Object* object = FS_LoadBundle(L, luaL_checkstring(L, 1));
-  luaX_pushObject(L, object);
+  struct Object* workspace = OBJ_Create(ID_Workspace);
+  FS_SetWorkspace(workspace);
+  /* Pin the workspace userdata in the registry so the __gc metamethod
+   * (OBJ_ReleaseOrphan) never fires on it. The workspace is owned by the
+   * C filesystem layer, not by Lua GC. */
+  luaX_pushObject(L, workspace);
+  lua_setfield(L, LUA_REGISTRYINDEX, "_orca_workspace_pin");
+  luaX_pushObject(L, FS_LoadBundle(L, luaL_checkstring(L, 1)));
   return 1;
 }
 //
