@@ -8,7 +8,8 @@ local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
 local UIKit = require "orca.UIKit"
 
-local Application = Widget:extend {
+local Application
+Application = Widget:extend {
   layout = {
     content = function(element)
       local screen = UIKit.Screen()
