@@ -78,33 +78,31 @@ local Application = Widget:extend {
       return nil
     end
 
-    local cls = self.__class or rawget(getmetatable(self) or {}, "__class")
-    if cls then
-      cls.app = self
-    end
+    Application.app = self
     self.controller = controller
     self.screen = controller.view
 
-    assert(cls and cls.load_editor, "Application class is not initialized")
-    cls.load_editor(self.screen)
+    Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
   end,
 
   run = function(self)
-    for msg in system.getMessage do
-      if filesystem.hasChangedFiles() then return DATADIR end
-      if msg:is "Window.Closed" then return
-      elseif msg:is "Node.KeyDown" and msg.key == "q" then return
-      elseif msg:is "RequestReload" then return DATADIR
-      else
-        system.translateMessage(msg)
-        local ok, result = pcall(system.dispatchMessage, self.screen, msg)
-        if not ok then
-          io.stderr:write(tostring(result) .. "\n")
-        elseif result and not msg:is "Window.Paint" then
-          self.screen:post("Window.Paint", renderer.getSize())
+    while true do
+      for msg in system.getMessage do
+        if filesystem.hasChangedFiles() then return DATADIR end
+        if msg:is "Window.Closed" then return
+        elseif msg:is "Node.KeyDown" and msg.key == "q" then return
+        elseif msg:is "RequestReload" then return DATADIR
+        else
+          local ok, result = pcall(system.dispatchMessage, self.screen, msg)
+          if not ok then
+            io.stderr:write(tostring(result) .. "\n")
+          elseif result and not msg:is "Window.Paint" then
+            self.screen:post("Window.Paint", renderer.getSize())
+          end
+          system.translateMessage(msg)
         end
       end
     end
@@ -149,6 +147,8 @@ function Application.open(path)
   end
 
   Application.app = app
+  Application.screen = app.screen
+  Application.controller = app.controller
 
   Application.load_editor(app.screen)
 

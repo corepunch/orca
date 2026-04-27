@@ -311,13 +311,12 @@ test_run_dispatches_with_screen = ->
   event = {
     is: (name) -> name == "Node.MouseMoved"
   }
-  emitted = false
+  call_count = 0
+  event_list = { event, { is: (name) -> name == "Window.Closed" } }
 
   system.getMessage = ->
-    if emitted
-      return -> nil
-    emitted = true
-    return -> event
+    call_count += 1
+    return event_list[call_count]
 
   system.translateMessage = (msg) -> nil
   system.dispatchMessage = (screen, msg) ->

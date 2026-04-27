@@ -87,7 +87,7 @@ The current Lua startup sequence behaves like a single-application, single-windo
 - `Application.open(path)` initializes filesystem and renderer
 - startup metadata is read from the project object
 - one startup controller or one startup screen is created
-- `Application.app` is stored globally as the singleton app instance
+- `Application.app`, `Application.screen`, and `Application.controller` are stored globally
 - `Application:run()` loops over `system.getMessage` and binds target screen in `system.dispatchMessage(self.screen, msg)`
 
 This is app-wide startup coupled directly to one screen.
