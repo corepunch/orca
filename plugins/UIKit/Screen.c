@@ -349,6 +349,8 @@ Node2D_GetViewEntity(struct Node2D* node2d,
     .opacity = node2d->_opacity,
     .texture = image,
     .textureMatrix = MAT3_Identity(),
+    // Use explicit alpha blending for UI brushes to avoid inherited blend state.
+    .blendMode = BLEND_MODE_ALPHA,
     .uniforms = uniforms,
     .numUniforms = OBJ_GetUniforms(node2d->_object, uniforms),
   };

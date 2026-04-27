@@ -122,7 +122,7 @@ struct shader_desc shader_ui = {
   "}\n",
     .FragmentShader =
   "void main() {\n"
-  "  fragColor = texture(u_texture, v_texcoord0) * u_color * u_color.a * u_opacity;\n"
+  "  fragColor = texture(u_texture, v_texcoord0) * u_color * u_opacity;\n"
 //  "  fragColor += vec4(0.1);"
   "}\n"
 };

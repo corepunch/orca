@@ -42,6 +42,6 @@ class Default extends Widget
 				Node2D class: "bg-violet-900/70"
 				make_header title
 				@addChild (inner or make_placeholder!)
-				make_footer active_route, navigate
-				Node2D class: "bg-violet-900/30"
+				make_footer active_route, navigate -- this causes following node to be darker
+				Node2D class: "bg-violet-900/70"
 		
