@@ -150,7 +150,7 @@ local _class_0 = setmetatable({
         or (cls and cls[key])
         or mt[key]
         or (mt.__class and mt.__class[key])
-        or _base_1._find_helper_value(_self_0, key)
+        or Widget._find_helper_value(_self_0, key)
       if type(vl) == 'function' then
         return function (...)
           local argc = select('#', ...)
