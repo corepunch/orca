@@ -52,6 +52,53 @@ int f_get_message(lua_State* L)
   return 1;
 }
 
+int f_event_new(lua_State* L);
+int f_dispatch_message(lua_State* L)
+{
+  if (lua_istable(L, 1)) {
+    lua_pushcfunction(L, f_event_new);
+    lua_insert(L, -2);
+    lua_call(L, 1, 1);
+    lua_pushcfunction(L, f_dispatch_message);
+    lua_pushnil(L);
+    lua_insert(L, -3);
+    lua_call(L, 2, 1);
+  } else {
+    struct AXmessage *event = luaL_checkudata(L, 2, "Event");
+    switch (event->message) {
+      case kEventLeftButtonDown:
+      case kEventRightButtonDown:
+      case kEventOtherButtonDown:
+      case kEventLeftButtonUp:
+      case kEventRightButtonUp:
+      case kEventOtherButtonUp:
+      case kEventLeftButtonDragged:
+      case kEventRightButtonDragged:
+      case kEventOtherButtonDragged:
+      case kEventLeftDoubleClick:
+      case kEventRightDoubleClick:
+      case kEventOtherDoubleClick:
+      case kEventMouseMoved:
+      case kEventScrollWheel:
+      case kEventKeyDown:
+      case kEventKeyUp:
+      case kEventReadCommands:
+//      case kEventWindowPaint:
+//      case kEventWindowResized:
+//      case kEventWindowChangedScreen:
+//      case kEventWindowClosed:
+      case ID_Window_Paint:
+      case ID_Window_Resized:
+      case ID_Window_ChangedScreen:
+      case ID_Window_Closed:
+        event->target = *(struct Object **)luaL_checkudata(L, 1, "Object");
+        break;
+    }
+    lua_pushboolean(L, SV_DispatchMessage(L, event));
+  }
+  return 1;
+}
+
 //void
 //axPostMessageW(struct Object *hobj, uint32_t Msg, wParam_t wParam, lParam_t lParam)
 //{
@@ -156,48 +203,6 @@ axKeyEventToText(struct AXmessage const* e, char* buf, size_t size)
     snprintf(buf, size, "%s", axKeynumToString(e->wParam));
 #endif
   }
-}
-
-int f_event_new(lua_State* L);
-int f_dispatch_message(lua_State* L) {
-  if (lua_istable(L, 1)) {
-    lua_pushcfunction(L, f_event_new);
-    lua_insert(L, -2);
-    lua_call(L, 1, 1);
-    lua_pushcfunction(L, f_dispatch_message);
-    lua_pushnil(L);
-    lua_insert(L, -3);
-    lua_call(L, 2, 1);
-  } else {
-    struct AXmessage *event = luaL_checkudata(L, 2, "Event");
-    switch (event->message) {
-    case kEventLeftButtonDown:
-    case kEventRightButtonDown:
-    case kEventOtherButtonDown:
-    case kEventLeftButtonUp:
-    case kEventRightButtonUp:
-    case kEventOtherButtonUp:
-    case kEventLeftButtonDragged:
-    case kEventRightButtonDragged:
-    case kEventOtherButtonDragged:
-    case kEventLeftDoubleClick:
-    case kEventRightDoubleClick:
-    case kEventOtherDoubleClick:
-    case kEventMouseMoved:
-    case kEventScrollWheel:
-    case kEventKeyDown:
-    case kEventKeyUp:
-    case kEventReadCommands:
-    case kEventWindowPaint:
-    case kEventWindowResized:
-    case kEventWindowChangedScreen:
-    case kEventWindowClosed:
-      event->target = *(struct Object **)luaL_checkudata(L, 1, "Object");
-      break;
-    }
-    lua_pushboolean(L, SV_DispatchMessage(L, event));
-  }
-  return 1;
 }
 
 bool_t SV_RegisterMessageProc(LRESULT (*proc)(lua_State*, struct AXmessage *)) {
