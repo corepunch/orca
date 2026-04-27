@@ -89,8 +89,13 @@ OBJ_Release(lua_State* L, struct Object *pobj)
     if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
       luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
     }
-    if (L && p->changeCallback) {
-      luaL_unref(L, LUA_REGISTRYINDEX, p->changeCallback);
+    if (p->changeCallback) {
+      if (L) {
+        luaL_unref(L, LUA_REGISTRYINDEX, p->changeCallback);
+      } else {
+        // this would be processed when L is available
+        axPostMessageW(NULL, kEventClearReference, p->changeCallback, NULL);
+      }
       p->changeCallback = 0;
     }
     PROP_Clear(p);
@@ -108,6 +113,14 @@ OBJ_Release(lua_State* L, struct Object *pobj)
   SafeFree(pobj->ClassName);
 
   free(pobj);
+}
+
+void
+OBJ_ReleaseOrphan(lua_State* L, struct Object *pobj)
+{
+  if (!OBJ_GetParent(pobj)) { // only release from Lua if parentless
+    OBJ_Release(L, pobj);
+  }
 }
 
 HRESULT
