@@ -135,6 +135,12 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
       axRemoveFromQueue(self);
     }
     luaX_readProperty(L, 3, property);
+    if (PROP_GetType(property) == kDataTypeObject) {
+      struct Object *resource = *(struct Object *const*)PROP_GetValue(property);
+      if (resource && !OBJ_GetParent(resource)) {
+        OBJ_AddChild(self, resource, FALSE);
+      }
+    }
     return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION && is_on_changed_callback_name(name)) {
     // handle "onXChanged" event callback assignment
