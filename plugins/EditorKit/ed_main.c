@@ -2,6 +2,9 @@
 
 BOOL running = TRUE;
 
+/* Draw hook — NULL means use the real renderer. Set in tests to avoid GL. */
+static void (*s_draw_hook)(void) = NULL;
+
 struct _EDWND {
   EDPANELPROC fnProc;
   RECT        Rect;
@@ -360,6 +363,10 @@ static void ED_DrawWindow(HEDWND wnd) {
 }
 
 ORCA_API void ED_Draw(void) {
+  if (s_draw_hook) {
+    s_draw_hook();
+    return;
+  }
   R_BeginFrame((struct color){ 0.05, 0.05, 0.05 });
 
   ED_DrawWindow(editor.root->children);
@@ -524,6 +531,14 @@ static LRESULT HandleCommand(DWORD msg, wParam_t wparam, lParam_t lparam) {
 }
 
 static BOOL bEditorVisible = FALSE;
+
+ORCA_API BOOL ED_IsVisible(void) {
+  return bEditorVisible;
+}
+
+ORCA_API void ED_SetDrawHook(void (*hook)(void)) {
+  s_draw_hook = hook;
+}
 
 #include <source/renderer/r_local.h>
 
