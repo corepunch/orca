@@ -72,7 +72,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-editor test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application
 
 default: directories unite
 all: default
@@ -267,8 +267,22 @@ test-router: app copyshare
 test-application: app copyshare
 	$(TARGET) -test=tests/application_spec.moon
 
-test: test-headless test-properties test-styles test-filesystem test-editor
-	$(TARGET) -test=tests/test1.lua
+test-text-layout: app copyshare
+	$(TARGET) -test=tests/test_text_layout.lua
+
+test-stack-layout: app copyshare
+	$(TARGET) -test=tests/test_stack_layout.lua
+
+test-grid-layout: app copyshare
+	$(TARGET) -test=tests/test_grid_layout.lua
+
+test-interaction: app copyshare
+	$(TARGET) -test=tests/test_interaction.lua
+
+test-node: app copyshare
+	$(TARGET) -test=tests/test_node.lua
+
+test: test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node
 	$(TARGET) -test=tests/test.xml
 
 test-headless: unite test-properties test-styles test-filesystem test-editor
