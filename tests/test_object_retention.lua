@@ -1,11 +1,8 @@
 local test = require "orca.test"
--- Headless tests for object-property retention and lifetime.
+-- Headless tests for object lifetime with resource children.
 --
--- Verifies that non-node resource objects (e.g. Texture) assigned to an
--- object-typed property are:
---   1. kept alive as long as the owning object is alive, even when the
---      Lua variable for the resource is set to nil first, and
---   2. released exactly once after the owning object is freed.
+-- Verifies that resource objects (e.g. Texture) assigned to an object-typed
+-- property are freed correctly via the normal Lua GC mechanism.
 --
 -- Uses core.objectCount() to track live C objects.
 --
@@ -22,55 +19,11 @@ local function fullGC()
 end
 
 -- ---------------------------------------------------------------------------
--- Test: resource is retained while owner is alive, freed when owner freed
---
--- Scenario: set Lua var for resource to nil BEFORE freeing the owner.
--- The resource must stay alive because the owner holds it as a child.
--- When the owner is freed, the resource must also be freed.
--- ---------------------------------------------------------------------------
-local function test_resource_retained_while_owner_alive()
-  local baseline = core.objectCount()
-
-  local screen = ui.Screen { Width = 400, Height = 400, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
-  local tex    = renderer.Texture {}
-
-  test.expect_eq(core.objectCount(), baseline + 3,
-    "objectCount should be baseline+3 (screen+node+tex)")
-
-  -- Assign tex to node's BackgroundImage (kDataTypeObject property).
-  -- a0bfaa7 adds tex as a child of node to tie its lifetime to node's.
-  node.BackgroundImage = tex
-  test.expect(tex:getParent() ~= nil,
-    "tex should be parented to node after property assignment")
-
-  -- Nil the Lua variable for tex and run GC.
-  -- tex must NOT be freed yet because node still holds it as a child.
-  tex = nil
-  fullGC()
-  test.expect_eq(core.objectCount(), baseline + 3,
-    "tex must be retained while node is alive (count should still be baseline+3)")
-
-  -- Free node.  This must also free tex (the owned resource child).
-  node:removeFromParent()
-  node = nil
-  fullGC()
-  test.expect_eq(core.objectCount(), baseline + 1,
-    "after node freed: tex should also be freed, leaving only screen")
-
-  screen = nil
-  fullGC()
-  test.expect_eq(core.objectCount(), baseline,
-    "after screen freed: back to baseline")
-
-  print("PASS: test_resource_retained_while_owner_alive")
-end
-
--- ---------------------------------------------------------------------------
 -- Test: both owner and resource freed when owner is freed
 --
 -- Scenario: both the owner (node) and the resource (tex) Lua variables are
--- live when removeFromParent() is called.  Both must be freed correctly.
+-- live when removeFromParent() is called.  Both must be freed correctly
+-- via their respective Lua __gc handlers after the Lua vars are nil'd.
 -- ---------------------------------------------------------------------------
 local function test_both_objects_freed_after_owner_release()
   local baseline = core.objectCount()
@@ -121,7 +74,6 @@ end
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
-test_resource_retained_while_owner_alive()
 test_both_objects_freed_after_owner_release()
 test_standalone_resource_freed_immediately()
 

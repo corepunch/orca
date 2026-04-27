@@ -113,9 +113,6 @@ OBJ_GetUniqueID(struct Object const *);
 int64_t
 OBJ_GetObjectCount(void);
 
-void luaX_invalidateObject(lua_State *, struct Object *);
-
-void OBJ_ReleaseResourceChildren(lua_State *, struct Object *);
 
 struct Object *
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);

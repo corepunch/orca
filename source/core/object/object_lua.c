@@ -19,28 +19,6 @@ struct Object *luaX_checkObject(lua_State* L, int arg) {
  * Weak values ensure the cache never prevents GC.                            */
 #define ORCA_OBJ_CACHE "_orca_obj"
 
-/* Null out the Lua userdata's C pointer (if a userdata exists in the cache)
- * and remove the cache entry for obj.  Call this before calling OBJ_Release
- * on a resource object from C so that a later Lua __gc on the same address
- * does not double-free or access freed/reused memory.                        */
-void luaX_invalidateObject(lua_State *L, struct Object *obj)
-{
-  if (!L || !obj) return;
-  lua_getfield(L, LUA_REGISTRYINDEX, ORCA_OBJ_CACHE);
-  if (lua_isnil(L, -1)) { lua_pop(L, 1); return; }
-  lua_pushlightuserdata(L, (void *)obj);
-  lua_gettable(L, -2);                    /* stack: cache | ud-or-nil */
-  if (!lua_isnil(L, -1)) {
-    struct Object **ud = (struct Object **)lua_touserdata(L, -1);
-    if (ud && *ud == obj) *ud = NULL;     /* null the C pointer */
-    /* Remove the entry so the freed address is not matched to a new object */
-    lua_pushlightuserdata(L, (void *)obj);
-    lua_pushnil(L);
-    lua_settable(L, -4);                  /* cache[obj] = nil */
-  }
-  lua_pop(L, 2);                          /* pop lookup result + cache */
-}
-
 void luaX_pushObject(lua_State* L, struct Object const *self){
   if (!self) {
     lua_pushnil(L);

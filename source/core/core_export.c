@@ -74,16 +74,11 @@ int f_OBJ_AddChild(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-/* Forward declarations for functions defined in core_local.h / object_core.c
- * that are called from hand-written functions below but are not visible from
- * core.h (the only header core_export.c includes).                           */
-extern void OBJ_ReleaseResourceChildren(lua_State *, struct Object *);
+/* Forward declaration for OBJ_GetObjectCount which is defined in object_core.c
+ * but is not visible from core.h (the only header core_export.c includes). */
 extern int64_t OBJ_GetObjectCount(void);
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	/* Release non-node resource children (e.g. Texture, Model assigned to a
-	 * property) before OBJ_RemoveFromParent calls OBJ_Clear and detaches them. */
-	OBJ_ReleaseResourceChildren(L, this_);
 	OBJ_RemoveFromParent(this_ );
 	return 0;
 }
