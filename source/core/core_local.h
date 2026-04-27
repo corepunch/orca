@@ -110,6 +110,10 @@ OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 uint32_t
 OBJ_GetUniqueID(struct Object const *);
 
+int64_t
+OBJ_GetObjectCount(void);
+
+
 struct Object *
 OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);
 

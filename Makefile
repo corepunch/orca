@@ -274,6 +274,7 @@ test-headless: unite test-properties test-styles test-filesystem
 	$(TARGET) -test=tests/test_styles_lua.lua
 	$(TARGET) -test=tests/test_body.lua
 	$(TARGET) -test=tests/test_console_view.lua
+	$(TARGET) -test=tests/test_object_retention.lua
 	$(TARGET) -test=tests/widget_spec.moon
 	$(TARGET) -test=tests/router_spec.moon
 	$(TARGET) -test=tests/application_spec.moon

@@ -115,6 +115,14 @@ PROP_SetStoredValue(struct Property *property,
       return;
     }
     memcpy(property->value, &udata, PROP_GetSize(property));
+    // if not a node, i.e. an Image, Model, Sound, etc., add the object as a child to ensure it gets released properly
+    if (!GetNode(object)) {
+      if (OBJ_GetParent(object)) {
+        Con_Error("Object %s being assigned to a property %s is already parented", OBJ_GetName(object), PROP_GetName(property));
+      } else {
+        OBJ_AddChild(property->object, object, FALSE);
+      }
+    }
   } else {
     memcpy(property->value, source, PROP_GetSize(property));
   }
@@ -168,7 +176,8 @@ PROP_SetValue(struct Property *property, void const* source)
 }
 
 void
-PROP_SetStringValue(struct Property *property, char const* source) {
+PROP_SetStringValue(struct Property *property, char const* source)
+{
   assert(property->pdesc->DataType == kDataTypeString);
   PROP_SetValue(property, &source);
 }

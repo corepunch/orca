@@ -309,11 +309,11 @@ test_run_dispatches_with_screen = ->
   dispatched_screen = nil
   dispatched_msg = nil
   event = {
-    is: (name) -> name == "Node.MouseMoved"
+    is: (name) => name == "Node.MouseMoved"
   }
   call_count = 0
   -- event_list[call_count] returns nil after the last entry, signalling iterator exhaustion
-  event_list = { event, { is: (name) -> name == "Window.Closed" } }
+  event_list = { event, { is: (name) => name == "Window.Closed" } }
 
   system.getMessage = ->
     call_count += 1
