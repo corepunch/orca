@@ -15,9 +15,8 @@ local core     = require "orca.core"
 local renderer = require "orca.renderer"
 local ui       = require "orca.UIKit"
 
--- Two collectgarbage passes are used to ensure the GC finaliser queue is
--- fully drained before counting.
-local function gc()
+-- Two collectgarbage passes ensure the GC finaliser queue is fully drained.
+local function fullGC()
   collectgarbage()
   collectgarbage()
 end
@@ -48,19 +47,19 @@ local function test_resource_retained_while_owner_alive()
   -- Nil the Lua variable for tex and run GC.
   -- tex must NOT be freed yet because node still holds it as a child.
   tex = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline + 3,
     "tex must be retained while node is alive (count should still be baseline+3)")
 
   -- Free node.  This must also free tex (the owned resource child).
   node:removeFromParent()
   node = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline + 1,
     "after node freed: tex should also be freed, leaving only screen")
 
   screen = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline,
     "after screen freed: back to baseline")
 
@@ -86,12 +85,12 @@ local function test_both_objects_freed_after_owner_release()
   node:removeFromParent()
   node = nil
   tex  = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline + 1,
     "after freeing node+tex: only screen should remain")
 
   screen = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline,
     "after screen freed: back to baseline")
 
@@ -112,7 +111,7 @@ local function test_standalone_resource_freed_immediately()
     "objectCount should increase by 1 after creating Texture")
 
   tex = nil
-  gc()
+  fullGC()
   test.expect_eq(core.objectCount(), baseline,
     "standalone Texture should be freed immediately after Lua var is nil'd")
 

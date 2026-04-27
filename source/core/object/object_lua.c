@@ -23,7 +23,7 @@ struct Object *luaX_checkObject(lua_State* L, int arg) {
  * and remove the cache entry for obj.  Call this before calling OBJ_Release
  * on a resource object from C so that a later Lua __gc on the same address
  * does not double-free or access freed/reused memory.                        */
-void luaX_invalidateObject(lua_State *L, struct Object const *obj)
+void luaX_invalidateObject(lua_State *L, struct Object *obj)
 {
   if (!L || !obj) return;
   lua_getfield(L, LUA_REGISTRYINDEX, ORCA_OBJ_CACHE);

@@ -77,14 +77,8 @@ int f_OBJ_AddChild(lua_State *L) {
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	/* Release non-node resource children (e.g. Texture, Model assigned to a
-	 * property) before OBJ_RemoveFromParent clears them via OBJ_Clear.
-	 * FOR_EACH_OBJECT pre-captures 'next', so removing a child mid-loop is safe. */
-	FOR_EACH_OBJECT(child, this_) {
-		if (!GetNode(child)) {
-			luaX_invalidateObject(L, child);
-			OBJ_Release(L, child);
-		}
-	}
+	 * property) before OBJ_RemoveFromParent calls OBJ_Clear and detaches them. */
+	OBJ_ReleaseResourceChildren(L, this_);
 	OBJ_RemoveFromParent(this_ );
 	return 0;
 }

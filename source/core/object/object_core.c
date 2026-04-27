@@ -80,23 +80,30 @@ OBJ_RemoveFromParent(struct Object *self)
 #include "../property/property_internal.h"
 
 void
-OBJ_Release(lua_State* L, struct Object *pobj)
+OBJ_ReleaseResourceChildren(lua_State* L, struct Object *pobj)
 {
-#ifdef DEBUG_COUNT_OBJECTS
-  counter--;
-#endif
-  g_object_count--;
   // Release non-node children (resource objects e.g. Texture, Model assigned to
   // a property via PROP_SetStoredValue). These have no Lua userdata retaining
   // them after the property is set, so the parent must own their lifetime.
-  // Node-type children are part of the scene graph and are released via their
-  // own Lua __gc when they become parentless.
+  // Node-type children are part of the scene graph and released via their own
+  // Lua __gc when they become parentless.
+  // FOR_EACH_OBJECT pre-captures 'next', so removing a child mid-loop is safe.
   FOR_EACH_OBJECT(child, pobj) {
     if (!GetNode(child)) {
       luaX_invalidateObject(L, child);
       OBJ_Release(L, child);
     }
   }
+}
+
+void
+OBJ_Release(lua_State* L, struct Object *pobj)
+{
+#ifdef DEBUG_COUNT_OBJECTS
+  counter--;
+#endif
+  g_object_count--;
+  OBJ_ReleaseResourceChildren(L, pobj);
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_RemoveFromParent(pobj);
