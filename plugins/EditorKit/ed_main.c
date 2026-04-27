@@ -569,7 +569,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
   if (!bEditorVisible) {
     return FALSE;
   }
-  HEDWND wnd = ED_FindWindowAtLocation(wparam, editor.root);
+  HEDWND wnd = editor.root ? ED_FindWindowAtLocation(wparam, editor.root) : NULL;
   TERMINALCHAR data = {0};
   DWORD curindex=0;
   static HEDWND dragging=NULL;
@@ -654,7 +654,8 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       Window_PaintMsg_t *paint = (Window_PaintMsg_t*)lparam;
       uint32_t w = paint ? paint->WindowWidth  : LOWORD(axGetSize(NULL));
       uint32_t h = paint ? paint->WindowHeight : HIWORD(axGetSize(NULL));
-      ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
+      if (editor.root)
+        ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
     }
@@ -730,7 +731,8 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       Window_PaintMsg_t *resize = (Window_PaintMsg_t*)lparam;
       uint32_t w = resize ? resize->WindowWidth  : LOWORD(axGetSize(NULL));
       uint32_t h = resize ? resize->WindowHeight : HIWORD(axGetSize(NULL));
-      ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
+      if (editor.root)
+        ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
     }

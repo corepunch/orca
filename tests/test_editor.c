@@ -158,10 +158,12 @@ static void test_paint_not_consumed_when_hidden(void)
 
 int main(void)
 {
-    /* EDIMPORT holds optional host-provided file-dialog callbacks. Passing
-     * all-zeros is safe: the editor only calls them when the user requests
-     * file open/save dialogs, which are not exercised by these tests. */
-    ED_Init((EDIMPORT){0});
+    /* Initialise only the filesystem hash tables — the lightweight portion of
+     * the editor startup that does NOT touch OpenGL.  Calling the full
+     * ED_Init() would reach ED_InitLayout() → CanvasView EVT_CREATE →
+     * RenderTexture_Create() → glGetIntegerv(), which crashes on macOS when
+     * there is no OpenGL context (Mesa silently tolerates it on Linux). */
+    FS_InitHash();
 
     test_initial_state();
     test_backtick_enables_editor();
@@ -169,7 +171,7 @@ int main(void)
     test_paint_invokes_draw_when_visible();
     test_paint_not_consumed_when_hidden();
 
-    ED_Shutdown();
+    FS_ShutdownHash();
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;
