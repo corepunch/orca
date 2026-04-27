@@ -140,12 +140,17 @@ _ConstructProperty(struct Object *obj,
   if (text) xmlFree(text);
 }
 
-// Handle <AnimationPlayer ...> child: attach-only component whose attributes
-// are parsed as properties of the owning object.
+// Handle an attach-only component element generically: attach the component to
+// obj, apply all XML attributes as properties on the parent object, and process
+// any child elements that correspond to explicit properties on the parent or to
+// inline child objects whose tag name matches a property of the parent.
 static void
-_HandleAnimationPlayer(struct Object *obj, xmlNodePtr element)
+_HandleAttachOnlyComponent(struct Object *obj, xmlNodePtr element,
+                           struct ClassDesc const *cls)
 {
-  OBJ_AddComponent(obj, ID_AnimationPlayer);
+  OBJ_AddComponent(obj, cls->ClassID);
+
+  // Apply XML attributes as properties on the parent object.
   FOR_EACH_LIST(xmlAttr, attr, element->properties) {
     xmlChar* val = xmlGetProp(element, attr->name);
     if (val) {
@@ -153,64 +158,26 @@ _HandleAnimationPlayer(struct Object *obj, xmlNodePtr element)
       xmlFree(val);
     }
   }
-}
 
-// Handle <AnimationCurve ...> child: regular child object of an AnimationClip.
-static void
-_HandleAnimationCurve(struct Object *obj, xmlNodePtr element)
-{
-  struct ClassDesc const *cls = OBJ_FindClass("AnimationCurve");
-  if (!cls) {
-    Con_Error("AnimationCurve class not found");
-    return;
-  }
-  struct Object *curve = OBJ_Create(cls->ClassID);
-
-  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
-    xmlChar* val = xmlGetProp(element, attr->name);
-    if (val) {
-      _SetPropertyFromString(curve, (lpcString_t)attr->name, (lpcString_t)val);
-      xmlFree(val);
-    }
-  }
-
-  // Process explicit-property child elements (e.g. <AnimationCurve.Keyframes>)
+  // Process child elements: explicit properties of the parent, or inline child
+  // objects assigned to a parent property whose name matches the element tag.
   xmlForEach(sub, element) {
-    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(curve, (lpcString_t)sub->name);
+    lpcString_t subtag = (lpcString_t)sub->name;
+
+    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(obj, subtag);
     if (pdesc) {
-      _ConstructProperty(curve, pdesc, sub);
+      _ConstructProperty(obj, pdesc, sub);
+      continue;
     }
-  }
 
-  OBJ_AddChild(obj, curve, FALSE);
-  OBJ_SendMessageW(curve, ID_Object_Start, 0, NULL);
-}
-
-// Handle <StateManagerController ...> child: attach-only component with an
-// optional inline <StateManager> child element.
-static void
-_HandleStateManagerController(struct Object *obj, xmlNodePtr element)
-{
-  OBJ_AddComponent(obj, ID_StateManagerController);
-
-  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
-    xmlChar* val = xmlGetProp(element, attr->name);
-    if (val) {
-      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
-      xmlFree(val);
-    }
-  }
-
-  // Look for an inline <StateManager> child element
-  xmlFindAll(sub, element, XMLSTR("StateManager")) {
-    struct Object *sm = FS_ConstructNode(sub);
-    if (sm) {
+    // Try to construct as a child object and assign to the matching property.
+    struct Object *child = FS_ConstructNode(sub);
+    if (child) {
       struct Property *prop = NULL;
-      if (SUCCEEDED(OBJ_FindShortProperty(obj, "StateManager", &prop))) {
-        PROP_SetValue(prop, &sm);
+      if (SUCCEEDED(OBJ_FindShortProperty(obj, subtag, &prop))) {
+        PROP_SetValue(prop, &child);
       }
     }
-    break; // only the first <StateManager> is used
   }
 }
 
@@ -309,18 +276,18 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
       continue;
     }
 
-    // Special attach-only components and legacy elements
-    if (!strcmp(tag, "AnimationPlayer")) {
-      _HandleAnimationPlayer(obj, sub);
-    } else if (!strcmp(tag, "AnimationCurve")) {
-      _HandleAnimationCurve(obj, sub);
-    } else if (!strcmp(tag, "StateManagerController")) {
-      _HandleStateManagerController(obj, sub);
-    } else if (!strcmp(tag, "script")     ||
-               !strcmp(tag, "EventListener") ||
-               !strcmp(tag, "StyleSheet")    ||
-               !strcmp(tag, "ValueTicker")) {
-      // Lua-only elements: no-op in the C XML parser
+    // Lua-only elements: no-op in the C XML parser
+    if (!strcmp(tag, "script")        ||
+        !strcmp(tag, "EventListener") ||
+        !strcmp(tag, "StyleSheet")    ||
+        !strcmp(tag, "ValueTicker")) {
+      continue;
+    }
+
+    // Attach-only component: look up the class and attach it generically.
+    struct ClassDesc const *subcls = OBJ_FindClass(tag);
+    if (subcls && subcls->IsAttachOnly) {
+      _HandleAttachOnlyComponent(obj, sub, subcls);
     } else if (!prefab) {
       // Regular child object: recurse and attach (children always get Start)
       struct Object *child = _FS_ConstructNode(sub, TRUE);
