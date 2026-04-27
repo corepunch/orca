@@ -15,6 +15,7 @@ class App extends require "orca.core.application"
 		App.__parent.dispatch self, req
 
 	navigate: (route) =>
+		print "Navigating to #{route}"
 		ctrl = @dispatch route
 		return unless ctrl and ctrl.view
 

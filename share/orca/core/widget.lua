@@ -109,8 +109,12 @@ function Widget:_find_helper_value(key)
       local value = helper and helper[key]
       if value ~= nil then
         if type(value) == 'function' then
-          return function(_, ...)
-            return value(helper, ...)
+            local needs_helper_self = rawget(helper, key) == value
+            return function(_, ...)
+              if needs_helper_self then
+                return value(helper, ...)
+              end
+              return value(...)
           end
         end
         return value
@@ -148,7 +152,14 @@ local _class_0 = setmetatable({
         or (mt.__class and mt.__class[key])
         or _base_1._find_helper_value(_self_0, key)
       if type(vl) == 'function' then
-        return function (_, ...) return vl(_self_0, ...) end
+        return function (...)
+          local argc = select('#', ...)
+          local first = argc > 0 and select(1, ...) or nil
+          if first == _self_0 then
+            return vl(...)
+          end
+          return vl(_self_0, ...)
+        end
       else
         return vl
       end

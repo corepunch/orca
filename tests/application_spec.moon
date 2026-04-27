@@ -224,6 +224,30 @@ test_resolve_body_ignores_non_render_true = ->
   test.expect_eq result, "literal_string", "non-render:true body should pass through unchanged"
   print "PASS: test_resolve_body_ignores_non_render_true"
 
+-- ---------------------------------------------------------------------------
+-- Test 12: detached helper method reference keeps first payload argument
+-- ---------------------------------------------------------------------------
+test_detached_helper_method_keeps_argument = ->
+  captured_route = nil
+
+  class NavLayout extends Widget
+    content: =>
+      navigate = @navigate
+      navigate "/alerts"
+      "ok"
+
+  class App extends Application
+    layout: NavLayout
+    "/": => "home"
+    navigate: (route, ...) =>
+      captured_route = route
+
+  app = App!
+  app\dispatch "/"
+
+  test.expect_eq captured_route, "/alerts", "navigate = @navigate should preserve route argument"
+  print "PASS: test_detached_helper_method_keeps_argument"
+
 -- Run all
 test_route_result_stored_in_inner!
 test_layout_content_called!
@@ -236,3 +260,4 @@ test_resolve_body_render_true_loads_view!
 test_render_true_dispatch_end_to_end!
 test_render_true_without_prefix_passthrough!
 test_resolve_body_ignores_non_render_true!
+test_detached_helper_method_keeps_argument!

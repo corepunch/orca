@@ -20,7 +20,7 @@ make_footer = (active_route, navigate) ->
 			label_color = selected and "text-foreground" or "text-muted-foreground"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
 				ImageView
-					class: "align-middle-center #{icon_color}"
+					class: "align-middle-center text-blue-200"--#{icon_color}"
 					Source: "#{item.icon}?width=48&type=mask"
 					LeftButtonUp: -> navigate item.route
 				TextBlock class: "text-xs #{label_color}", item.label
@@ -41,7 +41,6 @@ class Default extends Widget
 			Grid Rows: "32px 48px 1fr 72px 24px", =>
 				Node2D class: "bg-violet-900/70"
 				make_header title
-				-- Node2D class: "bg-violet-900/70"
 				@addChild (inner or make_placeholder!)
 				make_footer active_route, navigate
 				Node2D class: "bg-violet-900/30"
