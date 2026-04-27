@@ -81,12 +81,14 @@ build: default
 /%:
 	find ${SOURCEDIR}$@ -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
-platform:
+platform: | directories
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
 
-buildunite: clean $(SOURCEMODULES2)
+$(SOURCEMODULES2): | directories
 
-buildlib: platform
+buildunite: $(SOURCEMODULES2)
+
+buildlib: platform buildunite
 ifeq ($(shell uname -s),Darwin)
 	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
 else
