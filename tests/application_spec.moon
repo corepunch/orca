@@ -248,6 +248,53 @@ test_detached_helper_method_keeps_argument = ->
   test.expect_eq captured_route, "/alerts", "navigate = @navigate should preserve route argument"
   print "PASS: test_detached_helper_method_keeps_argument"
 
+-- ---------------------------------------------------------------------------
+-- Test 13: activate_controller updates active screen and editor host
+-- ---------------------------------------------------------------------------
+test_activate_controller_updates_screen = ->
+  called_editor_screen = nil
+  called_post = nil
+  original_load_editor = Application.load_editor
+
+  Application.load_editor = (screen) ->
+    called_editor_screen = screen
+
+  class FakeScreen
+    post: (message, size) =>
+      called_post = { message, size }
+
+  screen = FakeScreen!
+  ctrl = { view: screen }
+  app = Application!
+
+  result = app\activate_controller ctrl
+
+  Application.load_editor = original_load_editor
+
+  test.expect_eq result, ctrl, "activate_controller should return the controller"
+  test.expect_eq app.controller, ctrl, "activate_controller should store controller on app"
+  test.expect_eq app.screen, screen, "activate_controller should store screen on app"
+  test.expect_eq Application.app, app, "activate_controller should update Application.app"
+  test.expect_eq called_editor_screen, screen, "activate_controller should update editor host screen"
+  test.expect called_post ~= nil, "activate_controller should request a paint"
+  test.expect_eq called_post[1], "Window.Paint", "activate_controller should post Window.Paint"
+  print "PASS: test_activate_controller_updates_screen"
+
+-- ---------------------------------------------------------------------------
+-- Test 14: Application.current returns singleton app instance
+-- ---------------------------------------------------------------------------
+test_application_current_returns_app = ->
+  previous = Application.app
+  app = Application!
+  Application.app = app
+
+  current = Application.current!
+
+  Application.app = previous
+
+  test.expect_eq current, app, "Application.current should return Application.app"
+  print "PASS: test_application_current_returns_app"
+
 -- Run all
 test_route_result_stored_in_inner!
 test_layout_content_called!
@@ -261,3 +308,5 @@ test_render_true_dispatch_end_to_end!
 test_render_true_without_prefix_passthrough!
 test_resolve_body_ignores_non_render_true!
 test_detached_helper_method_keeps_argument!
+test_activate_controller_updates_screen!
+test_application_current_returns_app!
