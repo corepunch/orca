@@ -89,21 +89,19 @@ local Application = Widget:extend {
   end,
 
   run = function(self)
-    while true do
-      for msg in system.getMessage do
-        if filesystem.hasChangedFiles() then return DATADIR end
-        if msg:is "Window.Closed" then return
-        elseif msg:is "Node.KeyDown" and msg.key == "q" then return
-        elseif msg:is "RequestReload" then return DATADIR
-        else
-          local ok, result = pcall(system.dispatchMessage, self.screen, msg)
-          if not ok then
-            io.stderr:write(tostring(result) .. "\n")
-          elseif result and not msg:is "Window.Paint" then
-            self.screen:post("Window.Paint", renderer.getSize())
-          end
-          system.translateMessage(msg)
+    for msg in system.getMessage do
+      if filesystem.hasChangedFiles() then return DATADIR end
+      if msg:is "Window.Closed" then return
+      elseif msg:is "Node.KeyDown" and msg.key == "q" then return
+      elseif msg:is "RequestReload" then return DATADIR
+      else
+        local ok, result = pcall(system.dispatchMessage, self.screen, msg)
+        if not ok then
+          io.stderr:write(tostring(result) .. "\n")
+        elseif result and not msg:is "Window.Paint" then
+          self.screen:post("Window.Paint", renderer.getSize())
         end
+        system.translateMessage(msg)
       end
     end
   end,
