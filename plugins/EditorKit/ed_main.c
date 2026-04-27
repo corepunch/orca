@@ -635,10 +635,14 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
     }
   }
   switch (msg) {
-    case kEventWindowPaint:
-      ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
+    case ID_Window_Paint: {
+      Window_PaintMsg_t *paint = (Window_PaintMsg_t*)lparam;
+      uint32_t w = paint ? paint->WindowWidth  : LOWORD(axGetSize(NULL));
+      uint32_t h = paint ? paint->WindowHeight : HIWORD(axGetSize(NULL));
+      ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
+    }
     case kEventLeftDoubleClick:
       ED_SendMessage(wnd, EVT_CDCLICK, curindex, &data);
       return TRUE;
@@ -707,10 +711,14 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       } else {
         return FALSE;
       }
-    case kEventWindowResized:
-      ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
+    case ID_Window_Resized: {
+      Window_PaintMsg_t *resize = (Window_PaintMsg_t*)lparam;
+      uint32_t w = resize ? resize->WindowWidth  : LOWORD(axGetSize(NULL));
+      uint32_t h = resize ? resize->WindowHeight : HIWORD(axGetSize(NULL));
+      ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
+    }
     default:
       //            lpSystem->HACK_HandleEvent(L, evt);
       return TRUE;
