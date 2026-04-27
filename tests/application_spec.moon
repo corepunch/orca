@@ -10,6 +10,8 @@ test = require "orca.test"
 
 Widget      = require "orca.core.widget"
 Application = require "orca.core.application"
+system      = require "orca.system"
+filesystem  = require "orca.filesystem"
 
 -- ---------------------------------------------------------------------------
 -- A minimal mock layout: captures inner and render context for inspection
@@ -295,6 +297,53 @@ test_application_current_returns_app = ->
   test.expect_eq current, app, "Application.current should return Application.app"
   print "PASS: test_application_current_returns_app"
 
+-- ---------------------------------------------------------------------------
+-- Test 15: run dispatches using dispatchMessage(screen, msg)
+-- ---------------------------------------------------------------------------
+test_run_dispatches_with_screen = ->
+  original_get_message = system.getMessage
+  original_dispatch = system.dispatchMessage
+  original_translate = system.translateMessage
+  original_has_changed = filesystem.hasChangedFiles
+
+  dispatched_screen = nil
+  dispatched_msg = nil
+  event = {
+    is: (name) -> name == "Node.MouseMoved"
+  }
+  emitted = false
+
+  system.getMessage = ->
+    if emitted
+      return -> nil
+    emitted = true
+    return -> event
+
+  system.translateMessage = (msg) -> nil
+  system.dispatchMessage = (screen, msg) ->
+    dispatched_screen = screen
+    dispatched_msg = msg
+    false
+
+  filesystem.hasChangedFiles = -> false
+
+  class FakeScreen
+    post: (message, size) =>
+      nil
+
+  app = Application!
+  app.screen = FakeScreen!
+  app\run!
+
+  system.getMessage = original_get_message
+  system.dispatchMessage = original_dispatch
+  system.translateMessage = original_translate
+  filesystem.hasChangedFiles = original_has_changed
+
+  test.expect_eq dispatched_screen, app.screen, "run should pass current screen as dispatchMessage first arg"
+  test.expect_eq dispatched_msg, event, "run should pass message as dispatchMessage second arg"
+  print "PASS: test_run_dispatches_with_screen"
+
 -- Run all
 test_route_result_stored_in_inner!
 test_layout_content_called!
@@ -310,3 +359,4 @@ test_resolve_body_ignores_non_render_true!
 test_detached_helper_method_keeps_argument!
 test_activate_controller_updates_screen!
 test_application_current_returns_app!
+test_run_dispatches_with_screen!
