@@ -2,6 +2,9 @@
 
 BOOL running = TRUE;
 
+/* Draw hook — NULL means use the real renderer. Set in tests to avoid GL. */
+static void (*s_draw_hook)(void) = NULL;
+
 struct _EDWND {
   EDPANELPROC fnProc;
   RECT        Rect;
@@ -360,6 +363,10 @@ static void ED_DrawWindow(HEDWND wnd) {
 }
 
 ORCA_API void ED_Draw(void) {
+  if (s_draw_hook) {
+    s_draw_hook();
+    return;
+  }
   R_BeginFrame((struct color){ 0.05, 0.05, 0.05 });
 
   ED_DrawWindow(editor.root->children);
@@ -525,6 +532,14 @@ static LRESULT HandleCommand(DWORD msg, wParam_t wparam, lParam_t lparam) {
 
 static BOOL bEditorVisible = FALSE;
 
+ORCA_API BOOL ED_IsVisible(void) {
+  return bEditorVisible;
+}
+
+ORCA_API void ED_SetDrawHook(void (*hook)(void)) {
+  s_draw_hook = hook;
+}
+
 #include <source/renderer/r_local.h>
 
 static DWORD _LocalCoord(HEDWND wnd, DWORD wparam) {
@@ -554,7 +569,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
   if (!bEditorVisible) {
     return FALSE;
   }
-  HEDWND wnd = ED_FindWindowAtLocation(wparam, editor.root);
+  HEDWND wnd = editor.root ? ED_FindWindowAtLocation(wparam, editor.root) : NULL;
   TERMINALCHAR data = {0};
   DWORD curindex=0;
   static HEDWND dragging=NULL;
@@ -635,10 +650,15 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
     }
   }
   switch (msg) {
-    case kEventWindowPaint:
-      ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
+    case ID_Window_Paint: {
+      Window_PaintMsg_t *paint = (Window_PaintMsg_t*)lparam;
+      uint32_t w = paint ? paint->WindowWidth  : LOWORD(axGetSize(NULL));
+      uint32_t h = paint ? paint->WindowHeight : HIWORD(axGetSize(NULL));
+      if (editor.root)
+        ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
+    }
     case kEventLeftDoubleClick:
       ED_SendMessage(wnd, EVT_CDCLICK, curindex, &data);
       return TRUE;
@@ -707,10 +727,15 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       } else {
         return FALSE;
       }
-    case kEventWindowResized:
-      ED_SetWindowRect(editor.root, &(RECT){0,0,LOWORD(wparam),HIWORD(wparam)});
+    case ID_Window_Resized: {
+      Window_PaintMsg_t *resize = (Window_PaintMsg_t*)lparam;
+      uint32_t w = resize ? resize->WindowWidth  : LOWORD(axGetSize(NULL));
+      uint32_t h = resize ? resize->WindowHeight : HIWORD(axGetSize(NULL));
+      if (editor.root)
+        ED_SetWindowRect(editor.root, &(RECT){0,0,w,h});
       ED_Draw();
       return TRUE;
+    }
     default:
       //            lpSystem->HACK_HandleEvent(L, evt);
       return TRUE;

@@ -58,6 +58,16 @@ void ED_Draw(void);
 void ED_OpenProject(lpcString_t, EDSTATE);
 BOOL ED_IsRunning(void);
 
+/** Returns TRUE when the editor overlay is currently visible. */
+BOOL ED_IsVisible(void);
+
+/**
+ * Set an optional draw hook invoked by ED_Draw() instead of the real
+ * renderer. Pass NULL to restore normal rendering.  Primarily for tests
+ * that run headless without an OpenGL context.
+ */
+void ED_SetDrawHook(void (*hook)(void));
+
 typedef struct _OBJDEF {
   lpcString_t     szName;
   lpcString_t     szFullPath;
