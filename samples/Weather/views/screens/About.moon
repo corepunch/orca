@@ -5,7 +5,6 @@ class AboutScreen extends Widget
 	title: "About"
 
 	content: =>
-		StackView class: "p-6 gap-3", =>
-			TextBlock class: "text-xl", "About"
-			TextBlock class: "text-base", "Weather demo with bottom navigation and route-driven content."
-
+		StackView class: "bg-background p-6 gap-3", =>
+			TextBlock class: "text-xl text-foreground", "About"
+			TextBlock class: "text-base text-muted-foreground", "Weather demo with bottom navigation and route-driven content."
