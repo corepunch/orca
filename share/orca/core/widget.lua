@@ -78,7 +78,8 @@ end
 function Widget:set_render_context(ctx)
   if type(ctx) == 'table' then
     if type(ctx.content) ~= 'table' then
-      ctx.content = {}
+      -- Migrate legacy ctx.slots so existing callers are not broken
+      ctx.content = type(ctx.slots) == 'table' and ctx.slots or {}
     end
   end
   rawset(self, '__render_ctx', ctx)
@@ -111,7 +112,7 @@ end
 
 function Widget:content_for(name, value)
   local ctx = self:get_render_context()
-  assert(ctx, 'content_for called without render context')
+  assert(type(ctx) == 'table', 'content_for called without render context')
   if value ~= nil then
     ctx.content = ctx.content or {}
     ctx.content[name] = value

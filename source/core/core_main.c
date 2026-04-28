@@ -447,9 +447,11 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       int tmp;
       switch (lua_resume(e->target, L, LOWORD(e->wParam), &tmp)) {
         case LUA_OK:
+          if (tmp > 0) lua_pop(e->target, tmp);
           axPostMessageW(e->target, kEventStopCoroutine, e->wParam, NULL);
           break;
         case LUA_YIELD:
+          if (tmp > 0) lua_pop(e->target, tmp);
           axPostMessageW(e->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(e->wParam)), NULL);
           break;
         default:
@@ -458,9 +460,9 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
             lpcString_t err = lua_tostring(e->target, -1);
             if (err) fprintf(stderr, "co.resume(): %s\n", err);
           }
+          lua_pop(e->target, 1);
           break;
       }
-      lua_pop(L, 1);
       /* Return FALSE so kEventStopCoroutine (posted above) can still trigger
          a repaint via axPostMessageW; returning TRUE would short-circuit
          SV_DispatchMessage and the Lua event loop would issue a redundant
@@ -746,10 +748,6 @@ ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
-    // Push a sentinel nil so that lua_pop(L,1) inside CORE_ProcessMessage
-    // (kEventResumeCoroutine path) has something to consume.  After each
-    // dispatch, restore the stack unconditionally to stay balanced.
-    lua_pushnil(L);
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);
   }

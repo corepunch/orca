@@ -55,9 +55,10 @@ end
 -- dying with a bare stderr message.
 function M.run(fn, ...)
   assert(type(fn) == "function", "async.run: expected a function")
+  local nargs = select("#", ...)
   local args = { ... }
   _raw_async(function()
-    local ok, err = pcall(fn, table.unpack(args))
+    local ok, err = pcall(fn, table.unpack(args, 1, nargs))
     if not ok then
       _error_handler(err)
     end
