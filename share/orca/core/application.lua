@@ -79,7 +79,6 @@ Application = Widget:extend {
       return nil
     end
 
-    Application.app = self
     self.controller = controller
     self.screen = controller.view
 
@@ -87,6 +86,30 @@ Application = Widget:extend {
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
+  end,
+
+  activate_route = function(self, req)
+    return self:activate_controller(self:dispatch(req))
+  end,
+
+  activate_route_async = function(self, req, on_done)
+    return orca.async(function()
+      local ok, controller = xpcall(function()
+        return self:activate_route(req)
+      end, debug.traceback)
+
+      if not ok then
+        io.stderr:write(tostring(controller) .. "\n")
+        if on_done then on_done(nil, controller) end
+        return
+      end
+
+      if not controller then
+        io.stderr:write("Failed to activate controller for route: " .. tostring(req) .. "\n")
+      end
+
+      if on_done then on_done(controller, nil) end
+    end)
   end,
 
   run = function(self)
@@ -146,8 +169,6 @@ function Application.open(path)
   end
 
   Application.app = app
-  Application.screen = app.screen
-  Application.controller = app.controller
 
   -- Application.load_editor(app.screen)
 
@@ -161,13 +182,7 @@ function Application.load_controller(path, route)
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
   local app = class()
-  orca.async(function()
-    local controller = app:activate_controller(app:dispatch(route or "/"))
-    if not controller then
-      io.stderr:write("Failed to activate controller for route: " .. tostring(route) .. "\n")
-    end
-  end)
-  -- app:activate_controller(app:dispatch(route or "/"))
+  app:activate_route_async(route or "/")
   return app
 end
 
