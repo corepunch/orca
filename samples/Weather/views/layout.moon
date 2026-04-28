@@ -16,14 +16,13 @@ make_footer = (active_route, navigate) ->
 	StackView class: "bg-violet-900 flex-row justify-evenly items-center p-2", =>
 		for item in *NAV_ITEMS
 			selected = active_route == item.route
-			icon_color = selected and "text-foreground" or "text-muted-foreground"
-			label_color = selected and "text-foreground" or "text-muted-foreground"
+			color = selected and "text-violet-200" or "text-violet-500"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
 				ImageView
-					class: "align-middle-center text-blue-200"--#{icon_color}"
+					class: "align-middle-center #{color}"
 					Source: "#{item.icon}?width=48&type=mask"
 					LeftButtonUp: -> navigate item.route
-				TextBlock class: "text-xs #{label_color}", item.label
+				TextBlock class: "text-xs #{color}", item.label
 
 make_placeholder = ->
 	StackView class: "p-6 gap-2", =>
