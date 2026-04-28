@@ -84,49 +84,23 @@ function Widget:get_render_context()
   return rawget(self, '__render_ctx')
 end
 
-function Widget:provide(name, value_or_fn)
-  local ctx = self:get_render_context()
-  assert(type(name) == 'string', 'slot name must be a string')
-  assert(type(ctx) == 'table', 'provide called without render context')
-  if ctx.slots == nil then ctx.slots = {} end
-  if value_or_fn == nil then
-    return ctx.slots[name]
-  end
-  ctx.slots[name] = value_or_fn
-  return value_or_fn
-end
-
-function Widget:slot_source(name)
-  local ctx = self:get_render_context()
-  if type(ctx) ~= 'table' or type(ctx.slots) ~= 'table' then return nil end
-  return ctx.slots[name]
-end
-
-function Widget:content_for(name, fallback)
+-- content_for(name, value) -- push: pre-populate a named content block
+-- content_for(name)        -- pull: read a pre-populated content block
+function Widget:content_for(name, value)
   local ctx = self:get_render_context()
   assert(type(ctx) == 'table', 'content_for called without render context')
   if ctx.slots == nil then ctx.slots = {} end
-  local slot = ctx.slots[name]
-  if slot == nil then
-    slot = fallback
+  if value ~= nil then
+    ctx.slots[name] = value
+    return value
   end
-  if type(slot) == 'function' then
-    slot = slot()
-  end
-  if slot ~= nil then
-    ctx.slots[name] = slot
-  end
-  return slot
+  return ctx.slots[name]
 end
 
 function Widget:has_content_for(name)
   local ctx = self:get_render_context()
   if type(ctx) ~= 'table' then return false end
   return type(ctx.slots) == 'table' and ctx.slots[name] ~= nil
-end
-
-function Widget:render_slot(name, fallback)
-  return self:content_for(name, fallback)
 end
 
 function Widget:_find_helper_value(key)

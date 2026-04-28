@@ -42,57 +42,39 @@ Application = Widget:extend {
     return body
   end,
 
-  register_slots = function(self, ctx, body)
-    if type(ctx) ~= "table" then return end
-    if ctx.slots == nil then ctx.slots = {} end
-
-    local function resolve_value(value)
-      if type(value) == "function" then
-        return value()
-      end
-      return value
-    end
-
-    local function set_slot(name, value)
-      value = resolve_value(value)
-      if value == nil then return end
-      ctx.slots[name] = value
-    end
-
-    if type(body) == "table" then
-      if type(body.set_render_context) == "function" then
-        body:set_render_context(ctx)
-      end
-      if type(body.slots) == "function" then
-        local declared = body:slots()
-        if type(declared) == "table" then
-          for name, value in pairs(declared) do
-            set_slot(name, value)
-          end
-        end
-      end
-      if type(body.content) == "function" then
-        set_slot("inner", body:content())
-      end
-      set_slot("inner_widget", body)
-      set_slot("title", body.title)
-      if type(body.footer) == "function" then
-        set_slot("footer", body:footer())
-      end
-      if type(body.header) == "function" then
-        set_slot("header", body:header())
-      end
-      return
-    end
-
-    set_slot("inner", body)
-  end,
-
   dispatch = function(self, req)
     local ctx = self:new_render_context(req)
     local route_info = self.router:resolve(req)
     local body = self:resolve_body(self.router:dispatch(req), route_info)
-    self:register_slots(ctx, body)
+
+    -- Push model: call body.content() eagerly so the body drives slot population.
+    -- body may also call self:content_for(name, value) inside content() to push
+    -- additional named blocks (title, header, footer, etc.) into the context.
+    if type(body) == "table" then
+      if type(body.set_render_context) == "function" then
+        body:set_render_context(ctx)
+      end
+      if type(body.content) == "function" then
+        local inner = body:content()
+        if inner ~= nil and ctx.slots["inner"] == nil then
+          ctx.slots["inner"] = inner
+        end
+      end
+      ctx.slots["inner_widget"] = body
+      -- Convenience: pre-populate title/footer/header from body properties if not
+      -- already pushed by body:content() via content_for.
+      if ctx.slots["title"] == nil and body.title ~= nil then
+        ctx.slots["title"] = body.title
+      end
+      if ctx.slots["footer"] == nil and type(body.footer) == "function" then
+        ctx.slots["footer"] = body:footer()
+      end
+      if ctx.slots["header"] == nil and type(body.header) == "function" then
+        ctx.slots["header"] = body:header()
+      end
+    elseif body ~= nil then
+      ctx.slots["inner"] = body
+    end
 
     local layout_def = self.layout
     local view = body
@@ -110,8 +92,7 @@ Application = Widget:extend {
       view = layout_def(ctx, self)
     elseif layout_def == nil and body ~= nil then
       local screen = UIKit.Screen()
-      local inner_slot = type(ctx.slots) == 'table' and ctx.slots.inner or nil
-      local inner = (type(inner_slot) == 'function' and inner_slot() or inner_slot) or body
+      local inner = (ctx.slots and ctx.slots.inner) or body
       screen:addChild(inner)
       view = screen
     end
