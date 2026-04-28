@@ -26,7 +26,7 @@ Application = Widget:extend {
   new_render_context = function(self, req)
     return {
       req = req,
-      content = {}
+      slots = {}
     }
   end,
 
@@ -44,11 +44,11 @@ Application = Widget:extend {
 
   register_slots = function(self, ctx, body)
     if type(ctx) ~= "table" then return end
-    ctx.content = ctx.content or {}
+    if ctx.slots == nil then ctx.slots = {} end
 
-    local function set_content(name, value)
+    local function set_slot(name, value)
       if value == nil then return end
-      ctx.content[name] = value
+      ctx.slots[name] = value
     end
 
     if type(body) == "table" then
@@ -59,25 +59,25 @@ Application = Widget:extend {
         local declared = body:slots()
         if type(declared) == "table" then
           for name, value in pairs(declared) do
-            set_content(name, value)
+            set_slot(name, value)
           end
         end
       end
       if type(body.content) == "function" then
-        set_content("inner", body:content())
+        set_slot("inner", function() return body:content() end)
       end
-      set_content("inner_widget", body)
-      set_content("title", body.title)
+      set_slot("inner_widget", body)
+      set_slot("title", body.title)
       if type(body.footer) == "function" then
-        set_content("footer", body:footer())
+        set_slot("footer", function() return body:footer() end)
       end
       if type(body.header) == "function" then
-        set_content("header", body:header())
+        set_slot("header", function() return body:header() end)
       end
       return
     end
 
-    set_content("inner", body)
+    set_slot("inner", body)
   end,
 
   dispatch = function(self, req)
@@ -102,7 +102,8 @@ Application = Widget:extend {
       view = layout_def(ctx, self)
     elseif layout_def == nil and body ~= nil then
       local screen = UIKit.Screen()
-      local inner = ctx.content and ctx.content.inner or body
+      local inner_slot = type(ctx.slots) == 'table' and ctx.slots.inner or nil
+      local inner = (type(inner_slot) == 'function' and inner_slot() or inner_slot) or body
       screen:addChild(inner)
       view = screen
     end

@@ -76,11 +76,6 @@ function Widget:include_helpers(...)
 end
 
 function Widget:set_render_context(ctx)
-  if type(ctx) == 'table' then
-    if type(ctx.content) ~= 'table' then
-      ctx.content = {}
-    end
-  end
   rawset(self, '__render_ctx', ctx)
   return ctx
 end
@@ -92,41 +87,36 @@ end
 function Widget:provide(name, value_or_fn)
   local ctx = self:get_render_context()
   assert(type(name) == 'string', 'slot name must be a string')
-  assert(ctx and type(ctx) == 'table', 'provide called without render context')
-  ctx.content = ctx.content or {}
+  assert(type(ctx) == 'table', 'provide called without render context')
+  if ctx.slots == nil then ctx.slots = {} end
   if value_or_fn == nil then
-    return ctx.content[name]
+    return ctx.slots[name]
   end
-  ctx.content[name] = value_or_fn
+  ctx.slots[name] = value_or_fn
   return value_or_fn
 end
 
-function Widget:slot_source(name)
-  local ctx = self:get_render_context()
-  if type(ctx) ~= 'table' then return nil end
-  local content = ctx.content or ctx.slots
-  if type(content) ~= 'table' then return nil end
-  return content[name]
+local function resolve_slot(slot)
+  if type(slot) == 'function' then return slot() end
+  return slot
 end
 
 function Widget:content_for(name, value)
   local ctx = self:get_render_context()
   assert(type(ctx) == 'table', 'content_for called without render context')
   if value ~= nil then
-    ctx.content = ctx.content or {}
-    ctx.content[name] = value
+    if ctx.slots == nil then ctx.slots = {} end
+    ctx.slots[name] = value
     return value
   end
-  local content = ctx.content
-  if type(content) ~= 'table' then return nil end
-  return content[name]
+  if type(ctx.slots) ~= 'table' then return nil end
+  return resolve_slot(ctx.slots[name])
 end
 
 function Widget:has_content_for(name)
   local ctx = self:get_render_context()
   if type(ctx) ~= 'table' then return false end
-  local content = ctx.content
-  return type(content) == 'table' and content[name] ~= nil
+  return type(ctx.slots) == 'table' and ctx.slots[name] ~= nil
 end
 
 function Widget:render_slot(name, fallback)
@@ -135,9 +125,8 @@ function Widget:render_slot(name, fallback)
     if type(fallback) == 'function' then return fallback() end
     return fallback
   end
-  local content = ctx.content
-  local value = type(content) == 'table' and content[name] or nil
-  if value ~= nil then return value end
+  local slot = type(ctx.slots) == 'table' and ctx.slots[name] or nil
+  if slot ~= nil then return resolve_slot(slot) end
   if type(fallback) == 'function' then return fallback(ctx, self) end
   return fallback
 end
