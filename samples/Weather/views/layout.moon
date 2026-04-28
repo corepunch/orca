@@ -31,7 +31,7 @@ make_placeholder = ->
 class Default extends Widget
 	content: =>
 		layout = @
-		inner = layout\content_for("inner") or make_placeholder!
+		inner = if layout\has_content_for("inner") then layout\content_for("inner") else make_placeholder!
 		title = if @app_title then @app_title! else "Weather"
 		route_value = @current_route
 		active_route = if type(route_value) == "function" then route_value! else route_value or "/"
