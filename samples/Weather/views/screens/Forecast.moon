@@ -9,16 +9,12 @@ class ForecastScreen extends Widget
 	title: "Forecast"
 
 	content: =>
-		ok, forecast = pcall -> Weather\forecast!
-
+		forecast = Weather\forecast!
 		StackView class: "bg-background p-6 gap-2", =>
 			TextBlock class: "text-xl text-foreground", "#{FORECAST_DAYS}-Day Forecast"
-			if ok and forecast
-				for i = 1, math.min(FORECAST_DAYS, #forecast.time)
-					desc = Weather\description forecast.weather_code[i]
-					hi   = Weather\format_temp forecast.temperature_2m_max[i]
-					lo   = Weather\format_temp forecast.temperature_2m_min[i]
-					TextBlock class: "text-base text-foreground",
-						"#{forecast.time[i]}: #{hi} / #{lo}  #{desc}"
-			else
-				TextBlock class: "text-base text-muted-foreground", "Loading forecast..."
+			for i = 1, math.min(FORECAST_DAYS, #forecast.time)
+				desc = Weather\description forecast.weather_code[i]
+				hi   = Weather\format_temp forecast.temperature_2m_max[i]
+				lo   = Weather\format_temp forecast.temperature_2m_min[i]
+				TextBlock class: "text-base text-foreground",
+					"#{forecast.time[i]}: #{hi} / #{lo}  #{desc}"
