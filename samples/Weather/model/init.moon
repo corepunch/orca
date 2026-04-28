@@ -1,4 +1,4 @@
-weather_api = require "weather"
+weather_api = require "model.weather"
 
 -- Default location shown on the Home and Forecast screens.
 DEFAULT_LAT = 37.7749
