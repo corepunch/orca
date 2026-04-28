@@ -42,8 +42,8 @@ class Weather
   -- Cardinal direction string ("N", "NE", …) from a bearing in degrees.
   wind_dir: (degrees) => weather_api.wind_dir degrees
 
-  -- Format a temperature value as "N °C".
-  format_temp: (t) => "#{math.floor t} °C"
+  -- Format a temperature value as "N °C" (rounded to nearest integer).
+  format_temp: (t) => "#{math.floor(t + 0.5)} °C"
 
 return {
   :Weather

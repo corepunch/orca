@@ -7,7 +7,10 @@ class HomeScreen extends Widget
 
 	content: =>
 		-- network.fetch yields a coroutine; guard against the initial
-		-- synchronous render that happens before the event loop starts.
+		-- synchronous render at startup (before the event loop starts).
+		-- Subsequent navigations triggered by user events run inside a
+		-- coroutine (orca.async), so the fetch succeeds there.
+		-- See Banking/model/init.moon for the same pattern.
 		ok, current = pcall -> Weather\current!
 
 		StackView class: "bg-background p-6 gap-3", =>
