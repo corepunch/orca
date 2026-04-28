@@ -443,6 +443,37 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       PROP_FireNotification(L, property, property->object ? property->object : object);
       return TRUE;
     }
+    case kEventResumeCoroutine: {
+      int tmp;
+      switch (lua_resume(e->target, L, LOWORD(e->wParam), &tmp)) {
+        case LUA_OK:
+          axPostMessageW(e->target, kEventStopCoroutine, e->wParam, NULL);
+          break;
+        case LUA_YIELD:
+          axPostMessageW(e->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(e->wParam)), NULL);
+          break;
+        default:
+          axPostMessageW(e->target, kEventStopCoroutine, e->wParam, NULL);
+          if (!lua_isnil(e->target, -1)) {
+            lpcString_t err = lua_tostring(e->target, -1);
+            if (err) fprintf(stderr, "co.resume(): %s\n", err);
+          }
+          break;
+      }
+      lua_pop(L, 1);
+      /* Return FALSE so kEventStopCoroutine (posted above) can still trigger
+         a repaint via axPostMessageW; returning TRUE would short-circuit
+         SV_DispatchMessage and the Lua event loop would issue a redundant
+         second Window.Paint via its `result` check. */
+      return FALSE;
+    }
+    case kEventStopCoroutine:
+      luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(e->wParam));
+      axRemoveFromQueue(e->target);
+      axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), 0);
+      /* Return FALSE: the coroutine is fully cleaned up; the Window.Paint
+         posted above will reach CORE_HandleObjectMessage on its own pass. */
+      return FALSE;
     case kEventKeyDown:
     {
       shortStr_t comp={0};
@@ -715,7 +746,7 @@ ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
-    // Push a sentinel nil so that lua_pop(L,1) inside ui_handle_event
+    // Push a sentinel nil so that lua_pop(L,1) inside CORE_ProcessMessage
     // (kEventResumeCoroutine path) has something to consume.  After each
     // dispatch, restore the stack unconditionally to stay balanced.
     lua_pushnil(L);
