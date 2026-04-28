@@ -1,5 +1,6 @@
 import StackView, TextBlock from require "orca.UIKit"
 Widget = require "orca.core.widget"
+import LOCATIONS from require "model"
 
 class SavedScreen extends Widget
 	title: "Saved"
@@ -7,6 +8,5 @@ class SavedScreen extends Widget
 	content: =>
 		StackView class: "bg-background p-6 gap-2", =>
 			TextBlock class: "text-xl text-foreground", "Saved Locations"
-			TextBlock class: "text-base text-foreground", "San Francisco"
-			TextBlock class: "text-base text-foreground", "New York"
-			TextBlock class: "text-base text-foreground", "Berlin"
+			for loc in *LOCATIONS
+				TextBlock class: "text-base text-foreground", loc.name
