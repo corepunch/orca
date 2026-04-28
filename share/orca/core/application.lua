@@ -90,6 +90,12 @@ Application = Widget:extend {
     self.content_node = controller.context and
                         controller.context.content and
                         controller.context.content.outlet
+    self.footer_node = controller.context and
+                       controller.context.content and
+                       controller.context.content.footer_outlet
+    self.rebuild_footer = controller.context and
+                          controller.context.content and
+                          controller.context.content.rebuild_footer
 
     Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
@@ -108,6 +114,19 @@ Application = Widget:extend {
       child = next_child
     end
     self.content_node:addChild(body)
+    if self.footer_node and self.rebuild_footer then
+      local req_path = type(req) == "table" and (req.path or req.url or req.route) or req
+      local child = self.footer_node:getFirstChild()
+      while child do
+        local next_child = child:getNext()
+        child:removeFromParent()
+        child = next_child
+      end
+      local new_footer = self.rebuild_footer(req_path)
+      if new_footer then
+        self.footer_node:addChild(new_footer)
+      end
+    end
     if self.screen then
       self.screen:post("Window.Paint", renderer.getSize())
     end

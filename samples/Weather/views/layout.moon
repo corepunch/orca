@@ -43,12 +43,20 @@ class Default extends Widget
 		outlet_node = Node2D {}
 		@content_for "outlet", outlet_node
 
+		-- footer_outlet is the persistent container for the navigation bar.
+		-- Exposed via content_for so navigate() can swap its children to
+		-- update the active-item highlight without rebuilding the full chrome.
+		footer_outlet = Node2D {}
+		@content_for "footer_outlet", footer_outlet
+		@content_for "rebuild_footer", (route) -> make_footer route, navigate
+
 		Screen ->
 			Grid Rows: "32px 48px 1fr 72px 24px", =>
 				Node2D class: "bg-violet-900/70"
 				make_header title
 				@addChild outlet_node
 				outlet_node\addChild (inner or make_placeholder!)
-				make_footer active_route, navigate -- this causes following node to be darker
+				@addChild footer_outlet
+				footer_outlet\addChild make_footer(active_route, navigate)
 				Node2D class: "bg-violet-900/70"
 		
