@@ -44,18 +44,19 @@ Application = Widget:extend {
 
   register_slots = function(self, ctx, body)
     if type(ctx) ~= "table" then return end
-    ctx.slots = ctx.slots or {}
+    if ctx.slots == nil then ctx.slots = {} end
 
-    local function set_slot(name, provider_or_value)
-      if provider_or_value == nil then return end
-      if type(provider_or_value) == "function" then
-        ctx.slots[name] = provider_or_value
-      else
-        local value = provider_or_value
-        ctx.slots[name] = function()
-          return value
-        end
+    local function resolve_value(value)
+      if type(value) == "function" then
+        return value()
       end
+      return value
+    end
+
+    local function set_slot(name, value)
+      value = resolve_value(value)
+      if value == nil then return end
+      ctx.slots[name] = value
     end
 
     if type(body) == "table" then
@@ -65,27 +66,21 @@ Application = Widget:extend {
       if type(body.slots) == "function" then
         local declared = body:slots()
         if type(declared) == "table" then
-          for name, provider in pairs(declared) do
-            set_slot(name, provider)
+          for name, value in pairs(declared) do
+            set_slot(name, value)
           end
         end
       end
       if type(body.content) == "function" then
-        set_slot("inner", function()
-          return body:content()
-        end)
+        set_slot("inner", body:content())
       end
       set_slot("inner_widget", body)
       set_slot("title", body.title)
       if type(body.footer) == "function" then
-        set_slot("footer", function()
-          return body:footer()
-        end)
+        set_slot("footer", body:footer())
       end
       if type(body.header) == "function" then
-        set_slot("header", function()
-          return body:header()
-        end)
+        set_slot("header", body:header())
       end
       return
     end
@@ -115,7 +110,8 @@ Application = Widget:extend {
       view = layout_def(ctx, self)
     elseif layout_def == nil and body ~= nil then
       local screen = UIKit.Screen()
-      local inner = type(ctx.slots.inner) == "function" and ctx.slots.inner(ctx, self) or body
+      local inner_slot = type(ctx.slots) == 'table' and ctx.slots.inner or nil
+      local inner = (type(inner_slot) == 'function' and inner_slot() or inner_slot) or body
       screen:addChild(inner)
       view = screen
     end
@@ -133,8 +129,9 @@ Application = Widget:extend {
 
     self.controller = controller
     self.screen = controller.view
+    Application.app = self
 
-    -- Application.load_editor(self.screen)
+    Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
@@ -178,6 +175,10 @@ end
 
 function Application.open(path)
   return Startup.open(Application, path)
+end
+
+function Application.load_editor(screen)
+  -- stub: override in editor environments to attach the editor host
 end
 
 return Application

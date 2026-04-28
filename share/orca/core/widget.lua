@@ -76,9 +76,6 @@ function Widget:include_helpers(...)
 end
 
 function Widget:set_render_context(ctx)
-  if type(ctx) == 'table' and type(ctx.slots) ~= 'table' then
-    ctx.slots = {}
-  end
   rawset(self, '__render_ctx', ctx)
   return ctx
 end
@@ -90,48 +87,42 @@ end
 function Widget:provide(name, value_or_fn)
   local ctx = self:get_render_context()
   assert(type(name) == 'string', 'slot name must be a string')
-  assert(ctx and type(ctx) == 'table', 'provide called without render context')
-  ctx.slots = ctx.slots or {}
+  assert(type(ctx) == 'table', 'provide called without render context')
+  if ctx.slots == nil then ctx.slots = {} end
   if value_or_fn == nil then
     return ctx.slots[name]
   end
-
-  if type(value_or_fn) == 'function' then
-    ctx.slots[name] = value_or_fn
-    return value_or_fn
-  end
-
-  local value = value_or_fn
-  local provider = function()
-    return value
-  end
-  ctx.slots[name] = provider
-  return provider
+  ctx.slots[name] = value_or_fn
+  return value_or_fn
 end
 
 function Widget:slot_source(name)
   local ctx = self:get_render_context()
-  if type(ctx) ~= 'table' or type(ctx.slots) ~= 'table' then
-    return nil
-  end
+  if type(ctx) ~= 'table' or type(ctx.slots) ~= 'table' then return nil end
   return ctx.slots[name]
 end
 
 function Widget:content_for(name, fallback)
-  local provider = self:slot_source(name)
-  if type(provider) == 'function' then
-    local ok, value = pcall(provider, self:get_render_context(), self)
-    if ok and value ~= nil then
-      return value
-    elseif not ok then
-      io.stderr:write(string.format("content_for('%s') failed: %s\n", tostring(name), tostring(value)))
-    end
+  local ctx = self:get_render_context()
+  assert(type(ctx) == 'table', 'content_for called without render context')
+  if ctx.slots == nil then ctx.slots = {} end
+  local slot = ctx.slots[name]
+  if slot == nil then
+    slot = fallback
   end
+  if type(slot) == 'function' then
+    slot = slot()
+  end
+  if slot ~= nil then
+    ctx.slots[name] = slot
+  end
+  return slot
+end
 
-  if type(fallback) == 'function' then
-    return fallback(self:get_render_context(), self)
-  end
-  return fallback
+function Widget:has_content_for(name)
+  local ctx = self:get_render_context()
+  if type(ctx) ~= 'table' then return false end
+  return type(ctx.slots) == 'table' and ctx.slots[name] ~= nil
 end
 
 function Widget:render_slot(name, fallback)

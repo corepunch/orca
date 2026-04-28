@@ -362,7 +362,6 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
 
 
 LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
-  int tmp;
   switch (msg->message) {
     case kEventLeftButtonDown:
     case kEventRightButtonDown:
@@ -384,33 +383,9 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
     case kEventChar:
       return UI_HandleKeyEvent(L, msg);
     case kEventResumeCoroutine:
-      switch (lua_resume(msg->target, L, LOWORD(msg->wParam), &tmp)) {
-        case LUA_OK:
-          axPostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
-          break;
-        case LUA_YIELD:
-          axPostMessageW(msg->target, kEventResumeCoroutine, MAKEDWORD(0, HIWORD(msg->wParam)), NULL);
-          break;
-        default:
-          axPostMessageW(msg->target, kEventStopCoroutine, msg->wParam, NULL);
-          if (!lua_isnil(msg->target, -1)) {
-            lpcString_t err = lua_tostring(msg->target, -1);
-            if (err) fprintf(stderr, "co.resume(): %s\n", err);
-          }
-          break;
-      }
-      lua_pop(L, 1);
-      /* Return FALSE so kEventStopCoroutine (posted above) can still trigger
-         a repaint via axPostMessageW; returning TRUE would short-circuit
-         SV_DispatchMessage and the Lua event loop would issue a redundant
-         second Window.Paint via its `result` check. */
-      return FALSE;
     case kEventStopCoroutine:
-      luaL_unref(L, LUA_REGISTRYINDEX, HIWORD(msg->wParam));
-      axRemoveFromQueue(msg->target);
-      axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), 0);
-      /* Return FALSE: the coroutine is fully cleaned up; the Window.Paint
-         posted above will reach CORE_HandleObjectMessage on its own pass. */
+      /* Coroutine events carry a lua_State* as target, not an Object.
+         Let CORE_ProcessMessage handle them; do not pass to CORE_HandleObjectMessage. */
       return FALSE;
     default:
       return CORE_HandleObjectMessage(L, msg);
