@@ -1,6 +1,6 @@
 local test = require "orca.test"
 -- Headless tests for orca.core.application
--- Covers: route return value stored in ctx.content.inner,
+-- Covers: route return value stored in ctx.slots.inner,
 -- class-based layout receives render context, class-level helpers
 -- accessible in layout, and dispatch result structure.
 --
@@ -23,7 +23,7 @@ local MockLayout = Widget:extend {
 }
 
 -- ---------------------------------------------------------------------------
--- Test 1: route return value is stored in ctx.content.inner
+-- Test 1: route return value is stored in ctx.slots.inner
 -- ---------------------------------------------------------------------------
 local function test_route_result_stored_in_inner()
   local App = Application:extend {
@@ -35,7 +35,7 @@ local function test_route_result_stored_in_inner()
 
   test.expect(result ~= nil, "dispatch should return a result table")
   test.expect(result.context ~= nil, "result should have a context")
-  test.expect_eq(result.context.content.inner, "my_body", "route return should be ctx.content.inner")
+  test.expect_eq(result.context.slots.inner, "my_body", "route return should be ctx.slots.inner")
   print("PASS: test_route_result_stored_in_inner")
 end
 
@@ -120,7 +120,7 @@ local function test_unknown_route_returns_nil_body()
   local result = app:dispatch("/missing")
 
   test.expect(result ~= nil, "dispatch should always return a result table")
-  test.expect_eq(result.context.content.inner, nil, "unknown route should yield nil inner")
+  test.expect_eq(result.context.slots.inner, nil, "unknown route should yield nil inner")
   print("PASS: test_unknown_route_returns_nil_body")
 end
 
@@ -182,7 +182,7 @@ local function test_resolve_body_render_true_loads_view()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 9: render:true propagates through dispatch into ctx.content.inner
+-- Test 9: render:true propagates through dispatch into ctx.slots.inner
 -- ---------------------------------------------------------------------------
 local function test_render_true_dispatch_end_to_end()
   local stub_content = "e2e_view_content"
@@ -199,8 +199,8 @@ local function test_render_true_dispatch_end_to_end()
   local app = App()
   local result = app:dispatch("/")
 
-  test.expect_eq(result.context.content.inner, stub_content,
-    "render:true should resolve view and store content in ctx.content.inner")
+  test.expect_eq(result.context.slots.inner, stub_content,
+    "render:true should resolve view and store content in ctx.slots.inner")
   package.loaded["app2views/Home"] = nil
   print("PASS: test_render_true_dispatch_end_to_end")
 end
