@@ -199,9 +199,7 @@ local function test_render_true_dispatch_end_to_end()
   local app = App()
   local result = app:dispatch("/")
 
-  local inner_slot = result.context.slots.inner
-  local inner = type(inner_slot) == 'function' and inner_slot() or inner_slot
-  test.expect_eq(inner, stub_content,
+  test.expect_eq(result.context.slots.inner, stub_content,
     "render:true should resolve view and store content in ctx.slots.inner")
   package.loaded["app2views/Home"] = nil
   print("PASS: test_render_true_dispatch_end_to_end")

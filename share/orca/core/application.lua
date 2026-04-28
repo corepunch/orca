@@ -64,15 +64,15 @@ Application = Widget:extend {
         end
       end
       if type(body.content) == "function" then
-        set_slot("inner", function() return body:content() end)
+        set_slot("inner", body:content())
       end
       set_slot("inner_widget", body)
       set_slot("title", body.title)
       if type(body.footer) == "function" then
-        set_slot("footer", function() return body:footer() end)
+        set_slot("footer", body:footer())
       end
       if type(body.header) == "function" then
-        set_slot("header", function() return body:header() end)
+        set_slot("header", body:header())
       end
       return
     end
