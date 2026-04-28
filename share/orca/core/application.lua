@@ -83,7 +83,7 @@ Application = Widget:extend {
     self.controller = controller
     self.screen = controller.view
 
-    Application.load_editor(self.screen)
+    -- Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
@@ -149,7 +149,7 @@ function Application.open(path)
   Application.screen = app.screen
   Application.controller = app.controller
 
-  Application.load_editor(app.screen)
+  -- Application.load_editor(app.screen)
 
   io.stderr:write("Application module initialized\n")
   return app
@@ -174,13 +174,13 @@ function Application.load_screen(path)
 end
 
 function Application.load_editor(screen)
-  assert(screen, "Screen must be loaded before editor")
-  local ok, editor = pcall(require, "orca.EditorKit")
-  if ok then
-    editor.setScreen(screen)
-  else
-    io.stderr:write(string.format("Failed to load editor module %s\n", tostring(editor)))
-  end
+  -- assert(screen, "Screen must be loaded before editor")
+  -- local ok, editor = pcall(require, "orca.EditorKit")
+  -- if ok then
+  --   editor.setScreen(screen)
+  -- else
+  --   io.stderr:write(string.format("Failed to load editor module %s\n", tostring(editor)))
+  -- end
 end
 
 function Application.load_plugin_config(name)
