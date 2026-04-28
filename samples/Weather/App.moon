@@ -15,7 +15,7 @@ class App extends require "orca.core.application"
 		App.__parent.dispatch self, req
 
 	navigate: (route) =>
-		@activate_route_async route
+		@activate_route route
 
 	[Home: "/"]: => render: true
 	[Forecast: "/forecast"]: => render: true
