@@ -76,6 +76,9 @@ function Widget:include_helpers(...)
 end
 
 function Widget:set_render_context(ctx)
+  if type(ctx) == 'table' and type(ctx.slots) ~= 'table' then
+    ctx.slots = {}
+  end
   rawset(self, '__render_ctx', ctx)
   return ctx
 end
@@ -84,21 +87,55 @@ function Widget:get_render_context()
   return rawget(self, '__render_ctx')
 end
 
-function Widget:content_for(name, value)
+function Widget:provide(name, value_or_fn)
   local ctx = self:get_render_context()
-  assert(type(name) == 'string', 'content_for name must be a string')
-  assert(ctx and type(ctx) == 'table', 'content_for called without render context')
-  ctx.content = ctx.content or {}
-  if value == nil then
-    return ctx.content[name]
+  assert(type(name) == 'string', 'slot name must be a string')
+  assert(ctx and type(ctx) == 'table', 'provide called without render context')
+  ctx.slots = ctx.slots or {}
+  if value_or_fn == nil then
+    return ctx.slots[name]
   end
-  ctx.content[name] = value
-  return value
+
+  if type(value_or_fn) == 'function' then
+    ctx.slots[name] = value_or_fn
+    return value_or_fn
+  end
+
+  local value = value_or_fn
+  local provider = function()
+    return value
+  end
+  ctx.slots[name] = provider
+  return provider
 end
 
-function Widget:has_content_for(name)
+function Widget:slot_source(name)
   local ctx = self:get_render_context()
-  return type(ctx) == 'table' and type(ctx.content) == 'table' and ctx.content[name] ~= nil
+  if type(ctx) ~= 'table' or type(ctx.slots) ~= 'table' then
+    return nil
+  end
+  return ctx.slots[name]
+end
+
+function Widget:content_for(name, fallback)
+  local provider = self:slot_source(name)
+  if type(provider) == 'function' then
+    local ok, value = pcall(provider, self:get_render_context(), self)
+    if ok and value ~= nil then
+      return value
+    elseif not ok then
+      io.stderr:write(string.format("content_for('%s') failed: %s\n", tostring(name), tostring(value)))
+    end
+  end
+
+  if type(fallback) == 'function' then
+    return fallback(self:get_render_context(), self)
+  end
+  return fallback
+end
+
+function Widget:render_slot(name, fallback)
+  return self:content_for(name, fallback)
 end
 
 function Widget:_find_helper_value(key)

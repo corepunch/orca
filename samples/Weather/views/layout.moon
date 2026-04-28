@@ -30,8 +30,10 @@ make_placeholder = ->
 
 class Default extends Widget
 	content: =>
-		inner = @content_for "inner"
-		title = if inner and inner.title then inner.title else if @app_title then @app_title! else "Weather"
+		layout = @
+		inner = layout\content_for "inner", make_placeholder
+		title_slot = layout\content_for "title"
+		title = if title_slot then title_slot else if @app_title then @app_title! else "Weather"
 		route_value = @current_route
 		active_route = if type(route_value) == "function" then route_value! else route_value or "/"
 		navigate = @navigate
@@ -41,6 +43,6 @@ class Default extends Widget
 				Node2D class: "bg-card"
 				make_header title
 				@addChild (inner or make_placeholder!)
-				make_footer active_route, navigate
+				@addChild (layout\content_for "footer", -> make_footer active_route, navigate)
 				Node2D class: "bg-card"
 		

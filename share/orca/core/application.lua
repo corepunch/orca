@@ -1,4 +1,3 @@
-local orca = require "orca"
 local core = require "orca.core"
 local system = require "orca.system"
 local filesystem = require "orca.filesystem"
@@ -7,6 +6,7 @@ local renderer = require "orca.renderer"
 local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
 local UIKit = require "orca.UIKit"
+local Startup = require "orca.core.startup"
 
 local Application
 Application = Widget:extend {
@@ -26,7 +26,7 @@ Application = Widget:extend {
   new_render_context = function(self, req)
     return {
       req = req,
-      content = {}
+      slots = {}
     }
   end,
 
@@ -37,16 +37,67 @@ Application = Widget:extend {
   resolve_body = function(self, body, route_info)
     if type(body) == "table" and body.render == true and route_info and self.views_prefix then
       local view_cls = require(self.views_prefix .. "/" .. route_info.name)
-      return view_cls():content()
+      return view_cls()
     end
     return body
+  end,
+
+  register_slots = function(self, ctx, body)
+    if type(ctx) ~= "table" then return end
+    ctx.slots = ctx.slots or {}
+
+    local function set_slot(name, provider_or_value)
+      if provider_or_value == nil then return end
+      if type(provider_or_value) == "function" then
+        ctx.slots[name] = provider_or_value
+      else
+        local value = provider_or_value
+        ctx.slots[name] = function()
+          return value
+        end
+      end
+    end
+
+    if type(body) == "table" then
+      if type(body.set_render_context) == "function" then
+        body:set_render_context(ctx)
+      end
+      if type(body.slots) == "function" then
+        local declared = body:slots()
+        if type(declared) == "table" then
+          for name, provider in pairs(declared) do
+            set_slot(name, provider)
+          end
+        end
+      end
+      if type(body.content) == "function" then
+        set_slot("inner", function()
+          return body:content()
+        end)
+      end
+      set_slot("inner_widget", body)
+      set_slot("title", body.title)
+      if type(body.footer) == "function" then
+        set_slot("footer", function()
+          return body:footer()
+        end)
+      end
+      if type(body.header) == "function" then
+        set_slot("header", function()
+          return body:header()
+        end)
+      end
+      return
+    end
+
+    set_slot("inner", body)
   end,
 
   dispatch = function(self, req)
     local ctx = self:new_render_context(req)
     local route_info = self.router:resolve(req)
     local body = self:resolve_body(self.router:dispatch(req), route_info)
-    ctx.content.inner = body
+    self:register_slots(ctx, body)
 
     local layout_def = self.layout
     local view = body
@@ -59,12 +110,13 @@ Application = Widget:extend {
         view = layout:content()
       end
     elseif type(layout_def) == "table" and type(layout_def.content) == "function" then
-      view = layout_def.content(ctx.content.inner, ctx, self)
+      view = layout_def.content(ctx, self)
     elseif type(layout_def) == "function" then
-      view = layout_def(ctx.content.inner, ctx, self)
+      view = layout_def(ctx, self)
     elseif layout_def == nil and body ~= nil then
       local screen = UIKit.Screen()
-      screen:addChild(body)
+      local inner = type(ctx.slots.inner) == "function" and ctx.slots.inner(ctx, self) or body
+      screen:addChild(inner)
       view = screen
     end
 
@@ -79,14 +131,17 @@ Application = Widget:extend {
       return nil
     end
 
-    Application.app = self
     self.controller = controller
     self.screen = controller.view
 
-    Application.load_editor(self.screen)
+    -- Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
+  end,
+
+  activate_route = function(self, req)
+    return self:activate_controller(self:dispatch(req))
   end,
 
   run = function(self)
@@ -122,95 +177,7 @@ function Application.current(required)
 end
 
 function Application.open(path)
-  io.stderr:write("Initializing application module\n")
-
-  require "orca.UIKit"
-
-  local project = filesystem.init(path or DATADIR)
-  renderer.init(project.WindowWidth, project.WindowHeight, false)
-
-  Application.load_plugins()
-
-  local app
-  local startup_view_controller = project.StartupViewController
-  if startup_view_controller then
-    app = Application.load_controller(startup_view_controller, project.StartupRoute)
-  else
-    app = Application()
-    if project.StartupScreen then
-      app.screen = Application.load_screen(project.StartupScreen)
-    else
-      app.screen = UIKit.Screen()
-    end
-    app.controller = { view = app.screen }
-  end
-
-  Application.app = app
-  Application.screen = app.screen
-  Application.controller = app.controller
-
-  Application.load_editor(app.screen)
-
-  io.stderr:write("Application module initialized\n")
-  return app
-end
-
-function Application.load_controller(path, route)
-  assert(path, "StartupViewController is not set")
-  io.stderr:write("Loading startup view controller: " .. tostring(path) .. "\n")
-  local ok, class = pcall(require, path)
-  assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
-  local app = class()
-  app:activate_controller(app:dispatch(route or "/"))
-  return app
-end
-
-function Application.load_screen(path)
-  if not path then
-    return UIKit.Screen()
-  end
-  io.stderr:write("Loading startup screen: " .. tostring(path) .. "\n")
-  return filesystem.loadObject(path)
-end
-
-function Application.load_editor(screen)
-  assert(screen, "Screen must be loaded before editor")
-  local ok, editor = pcall(require, "orca.EditorKit")
-  if ok then
-    editor.setScreen(screen)
-  else
-    io.stderr:write(string.format("Failed to load editor module %s\n", tostring(editor)))
-  end
-end
-
-function Application.load_plugin_config(name)
-  orca.config[name] = {}
-  if not filesystem.getWorkspace() then return end
-  for node in filesystem.getWorkspace().children do
-    local filename = filesystem.joinPaths(node.Name, "config/" .. name .. ".lua")
-    local file = filesystem.readTextFile(filename)
-    local chunk = file and load(file, "@" .. filename, "t", orca.config[name])
-    if chunk then
-      print("Loading plugin config", filename)
-      local ok, err = pcall(chunk)
-      if not ok then
-        io.stderr:write(string.format("Error loading config '%s': %s\n", filename, err))
-      end
-    end
-  end
-end
-
-function Application.load_plugins()
-  for path in system.list_dir(SHAREDIR .. "/plugins") do
-    if path:match("%.lua$") then
-      Application.load_plugin_config(path:match("^(.+)%.lua$"))
-      if xpcall(dofile, print, SHAREDIR .. "/plugins/" .. path) then
-        io.stderr:write(string.format("Loaded plugin %s\n", path))
-      else
-        io.stderr:write(string.format("Failed to load plugin %s\n", path))
-      end
-    end
-  end
+  return Startup.open(Application, path)
 end
 
 return Application

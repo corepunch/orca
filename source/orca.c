@@ -245,19 +245,33 @@ int main (int argc, LPSTR *argv)
     if (!args.test) {
       const char* bootstrap =
       "local Application = require 'orca.core.application'\n"
-      "local app = assert(Application.open(DATADIR))\n"
+      "local Startup = require 'orca.core.startup'\n"
+      "local app = assert(Startup.open(Application, DATADIR))\n"
       "return app:run()\n";
-//      lua_getglobal(L, "require");
-//      lua_pushstring(L, "orca.core.application");
-//      lua_pcall(L, 1, 1, 0);
-      if (luaL_dostring(L, bootstrap) != LUA_OK) {
+
+      // Load the bootstrap chunk and turn it into a coroutine, resuming it
+      // until it finishes (Love2D-style). This allows app:run() to yield on
+      // each event-loop iteration and route handlers to yield for async ops.
+      if (luaL_loadstring(L, bootstrap) != LUA_OK) {
         fprintf(stderr, "%s\n", luaL_checkstring(L, -1));
         lua_close(L);
         break;
       }
-      if (lua_type(L, -1) == LUA_TSTRING) {
+      lua_State *co = lua_newthread(L);
+      lua_rotate(L, -2, 1);        /* move chunk below the thread */
+      lua_xmove(L, co, 1);         /* move chunk onto coroutine stack */
+      int nres = 0;
+      int status;
+      while ((status = lua_resume(co, L, 0, &nres)) == LUA_YIELD)
+        lua_pop(co, nres);
+      if (status != LUA_OK) {
+        fprintf(stderr, "%s\n", lua_tostring(co, -1));
+        lua_close(L);
+        break;
+      }
+      if (lua_type(co, -1) == LUA_TSTRING) {
         static path_t result;
-        strncpy(result, luaL_checkstring(L, -1), sizeof(result));
+        strncpy(result, lua_tostring(co, -1), sizeof(result));
         szProject = result;
       } else {
         szProject = NULL;
