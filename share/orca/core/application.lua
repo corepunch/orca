@@ -161,7 +161,13 @@ function Application.load_controller(path, route)
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
   local app = class()
-  app:activate_controller(app:dispatch(route or "/"))
+  orca.async(function()
+    local controller = app:activate_controller(app:dispatch(route or "/"))
+    if not controller then
+      io.stderr:write("Failed to activate controller for route: " .. tostring(route) .. "\n")
+    end
+  end)
+  -- app:activate_controller(app:dispatch(route or "/"))
   return app
 end
 
