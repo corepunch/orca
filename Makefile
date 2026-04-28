@@ -72,7 +72,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy
 
 default: directories unite
 all: default
@@ -287,6 +287,15 @@ test-node: app copyshare
 test: test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node
 	$(TARGET) -test=tests/test.xml
 
+test-geometry: unite
+	$(TARGET) -test=tests/test_geometry.lua
+
+test-parsers: unite
+	$(TARGET) -test=tests/test_parsers.lua
+
+test-object-hierarchy: app copyshare
+	$(TARGET) -test=tests/test_object_hierarchy.lua
+
 test-headless: unite test-properties test-styles test-filesystem test-editor
 	$(TARGET) -test=tests/test_layout.lua
 	$(TARGET) -test=tests/test_state_manager.lua
@@ -299,5 +308,8 @@ test-headless: unite test-properties test-styles test-filesystem test-editor
 	$(TARGET) -test=tests/widget_spec.moon
 	$(TARGET) -test=tests/router_spec.moon
 	$(TARGET) -test=tests/application_spec.moon
+	$(TARGET) -test=tests/test_geometry.lua
+	$(TARGET) -test=tests/test_parsers.lua
+	$(TARGET) -test=tests/test_object_hierarchy.lua
 
 include Makefile.webgl
