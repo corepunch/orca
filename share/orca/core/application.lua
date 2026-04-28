@@ -26,7 +26,7 @@ Application = Widget:extend {
   new_render_context = function(self, req)
     return {
       req = req,
-      slots = {}
+      content = {}
     }
   end,
 
@@ -37,67 +37,16 @@ Application = Widget:extend {
   resolve_body = function(self, body, route_info)
     if type(body) == "table" and body.render == true and route_info and self.views_prefix then
       local view_cls = require(self.views_prefix .. "/" .. route_info.name)
-      return view_cls()
+      return view_cls():content()
     end
     return body
-  end,
-
-  register_slots = function(self, ctx, body)
-    if type(ctx) ~= "table" then return end
-    ctx.slots = ctx.slots or {}
-
-    local function set_slot(name, provider_or_value)
-      if provider_or_value == nil then return end
-      if type(provider_or_value) == "function" then
-        ctx.slots[name] = provider_or_value
-      else
-        local value = provider_or_value
-        ctx.slots[name] = function()
-          return value
-        end
-      end
-    end
-
-    if type(body) == "table" then
-      if type(body.set_render_context) == "function" then
-        body:set_render_context(ctx)
-      end
-      if type(body.slots) == "function" then
-        local declared = body:slots()
-        if type(declared) == "table" then
-          for name, provider in pairs(declared) do
-            set_slot(name, provider)
-          end
-        end
-      end
-      if type(body.content) == "function" then
-        set_slot("inner", function()
-          return body:content()
-        end)
-      end
-      set_slot("inner_widget", body)
-      set_slot("title", body.title)
-      if type(body.footer) == "function" then
-        set_slot("footer", function()
-          return body:footer()
-        end)
-      end
-      if type(body.header) == "function" then
-        set_slot("header", function()
-          return body:header()
-        end)
-      end
-      return
-    end
-
-    set_slot("inner", body)
   end,
 
   dispatch = function(self, req)
     local ctx = self:new_render_context(req)
     local route_info = self.router:resolve(req)
     local body = self:resolve_body(self.router:dispatch(req), route_info)
-    self:register_slots(ctx, body)
+    ctx.content.inner = body
 
     local layout_def = self.layout
     local view = body
@@ -110,13 +59,12 @@ Application = Widget:extend {
         view = layout:content()
       end
     elseif type(layout_def) == "table" and type(layout_def.content) == "function" then
-      view = layout_def.content(ctx, self)
+      view = layout_def.content(ctx.content.inner, ctx, self)
     elseif type(layout_def) == "function" then
-      view = layout_def(ctx, self)
+      view = layout_def(ctx.content.inner, ctx, self)
     elseif layout_def == nil and body ~= nil then
       local screen = UIKit.Screen()
-      local inner = type(ctx.slots.inner) == "function" and ctx.slots.inner(ctx, self) or body
-      screen:addChild(inner)
+      screen:addChild(body)
       view = screen
     end
 
@@ -131,10 +79,11 @@ Application = Widget:extend {
       return nil
     end
 
+    Application.app = self
     self.controller = controller
     self.screen = controller.view
 
-    -- Application.load_editor(self.screen)
+    Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller

@@ -76,9 +76,6 @@ function Widget:include_helpers(...)
 end
 
 function Widget:set_render_context(ctx)
-  if type(ctx) == 'table' and type(ctx.slots) ~= 'table' then
-    ctx.slots = {}
-  end
   rawset(self, '__render_ctx', ctx)
   return ctx
 end
@@ -117,21 +114,21 @@ function Widget:slot_source(name)
   return ctx.slots[name]
 end
 
-function Widget:content_for(name, fallback)
-  local provider = self:slot_source(name)
-  if type(provider) == 'function' then
-    local ok, value = pcall(provider, self:get_render_context(), self)
-    if ok and value ~= nil then
-      return value
-    elseif not ok then
-      io.stderr:write(string.format("content_for('%s') failed: %s\n", tostring(name), tostring(value)))
-    end
+function Widget:content_for(name, value)
+  local ctx = self:get_render_context()
+  assert(type(name) == 'string', 'content_for name must be a string')
+  assert(ctx and type(ctx) == 'table', 'content_for called without render context')
+  ctx.content = ctx.content or {}
+  if value == nil then
+    return ctx.content[name]
   end
+  ctx.content[name] = value
+  return value
+end
 
-  if type(fallback) == 'function' then
-    return fallback(self:get_render_context(), self)
-  end
-  return fallback
+function Widget:has_content_for(name)
+  local ctx = self:get_render_context()
+  return type(ctx) == 'table' and type(ctx.content) == 'table' and ctx.content[name] ~= nil
 end
 
 function Widget:render_slot(name, fallback)
