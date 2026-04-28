@@ -78,8 +78,7 @@ end
 function Widget:set_render_context(ctx)
   if type(ctx) == 'table' then
     if type(ctx.content) ~= 'table' then
-      -- Migrate legacy ctx.slots so existing callers are not broken
-      ctx.content = type(ctx.slots) == 'table' and ctx.slots or {}
+      ctx.content = {}
     end
   end
   rawset(self, '__render_ctx', ctx)
