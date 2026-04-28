@@ -261,13 +261,13 @@ test-console-view: unite
 	$(TARGET) -test=tests/test_console_view.lua
 
 test-widget: app copyshare
-	$(TARGET) -test=tests/widget_spec.moon
+	$(TARGET) -test=tests/widget_spec.lua
 
 test-router: app copyshare
-	$(TARGET) -test=tests/router_spec.moon
+	$(TARGET) -test=tests/router_spec.lua
 
 test-application: app copyshare
-	$(TARGET) -test=tests/application_spec.moon
+	$(TARGET) -test=tests/application_spec.lua
 
 test-text-layout: app copyshare
 	$(TARGET) -test=tests/test_text_layout.lua
@@ -305,9 +305,9 @@ test-headless: unite test-properties test-styles test-filesystem test-editor
 	$(TARGET) -test=tests/test_body.lua
 	$(TARGET) -test=tests/test_console_view.lua
 	$(TARGET) -test=tests/test_object_retention.lua
-	$(TARGET) -test=tests/widget_spec.moon
-	$(TARGET) -test=tests/router_spec.moon
-	$(TARGET) -test=tests/application_spec.moon
+	$(TARGET) -test=tests/widget_spec.lua
+	$(TARGET) -test=tests/router_spec.lua
+	$(TARGET) -test=tests/application_spec.lua
 	$(TARGET) -test=tests/test_geometry.lua
 	$(TARGET) -test=tests/test_parsers.lua
 	$(TARGET) -test=tests/test_object_hierarchy.lua
