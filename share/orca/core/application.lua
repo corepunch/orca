@@ -46,7 +46,15 @@ Application = Widget:extend {
     if type(ctx) ~= "table" then return end
     ctx.content = ctx.content or {}
 
+    local function resolve_value(value)
+      if type(value) == "function" then
+        return value()
+      end
+      return value
+    end
+
     local function set_content(name, value)
+      value = resolve_value(value)
       if value == nil then return end
       ctx.content[name] = value
     end

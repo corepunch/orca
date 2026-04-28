@@ -104,22 +104,30 @@ end
 function Widget:slot_source(name)
   local ctx = self:get_render_context()
   if type(ctx) ~= 'table' then return nil end
-  local content = ctx.content or ctx.slots
+  local content = ctx.content
   if type(content) ~= 'table' then return nil end
   return content[name]
 end
 
-function Widget:content_for(name, value)
+function Widget:content_for(name, fallback)
   local ctx = self:get_render_context()
   assert(type(ctx) == 'table', 'content_for called without render context')
-  if value ~= nil then
-    ctx.content = ctx.content or {}
-    ctx.content[name] = value
-    return value
+  local content = ctx.content or {}
+  ctx.content = content
+  local value = content[name]
+  if value == nil then
+    if fallback == nil then
+      return nil
+    end
+    value = fallback
   end
-  local content = ctx.content
-  if type(content) ~= 'table' then return nil end
-  return content[name]
+  if type(value) == 'function' then
+    value = value()
+  end
+  if value ~= nil then
+    content[name] = value
+  end
+  return value
 end
 
 function Widget:has_content_for(name)
@@ -130,16 +138,7 @@ function Widget:has_content_for(name)
 end
 
 function Widget:render_slot(name, fallback)
-  local ctx = self:get_render_context()
-  if type(ctx) ~= 'table' then
-    if type(fallback) == 'function' then return fallback() end
-    return fallback
-  end
-  local content = ctx.content
-  local value = type(content) == 'table' and content[name] or nil
-  if value ~= nil then return value end
-  if type(fallback) == 'function' then return fallback(ctx, self) end
-  return fallback
+  return self:content_for(name, fallback)
 end
 
 function Widget:_find_helper_value(key)
