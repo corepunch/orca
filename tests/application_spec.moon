@@ -344,6 +344,93 @@ test_run_dispatches_with_screen = ->
   test.expect_eq dispatched_msg, event, "run should pass message as dispatchMessage second arg"
   print "PASS: test_run_dispatches_with_screen"
 
+-- ---------------------------------------------------------------------------
+-- Test 16: dispatch_content returns the route body without layout wrapper
+-- ---------------------------------------------------------------------------
+test_dispatch_content_returns_body_only = ->
+  class App extends Application
+    layout: MockLayout
+    "/": => "raw_content"
+
+  app = App!
+  body = app\dispatch_content "/"
+
+  test.expect_eq body, "raw_content", "dispatch_content should return body only, not the layout view"
+  print "PASS: test_dispatch_content_returns_body_only"
+
+-- ---------------------------------------------------------------------------
+-- Test 17: navigate returns nil gracefully when content_node is absent
+-- ---------------------------------------------------------------------------
+test_navigate_without_content_node_returns_nil = ->
+  class App extends Application
+    "/": => "body"
+
+  app = App!
+  result = app\navigate "/"
+
+  test.expect_eq result, nil, "navigate without content_node should return nil gracefully"
+  print "PASS: test_navigate_without_content_node_returns_nil"
+
+-- ---------------------------------------------------------------------------
+-- Test 18: navigate swaps content_node children and triggers repaint
+-- ---------------------------------------------------------------------------
+test_navigate_swaps_content = ->
+  removed_children = {}
+  added_children   = {}
+  painted = false
+
+  old_child =
+    removeFromParent: => table.insert removed_children, @
+    getNext: => nil
+
+  mock_content_node =
+    getFirstChild: => old_child
+    addChild: (child) => table.insert added_children, child
+
+  mock_screen =
+    post: (msg, ...) => painted = true
+
+  class App extends Application
+    "/home": => "new_content"
+
+  app = App!
+  app.content_node = mock_content_node
+  app.screen       = mock_screen
+
+  result = app\navigate "/home"
+
+  test.expect_eq #removed_children, 1, "navigate should remove old child"
+  test.expect_eq removed_children[1], old_child, "navigate should remove the existing content node child"
+  test.expect_eq #added_children, 1, "navigate should add exactly one new body"
+  test.expect_eq added_children[1], "new_content", "navigate should add the new body to content_node"
+  test.expect painted, "navigate should trigger a Window.Paint"
+  test.expect_eq result, "new_content", "navigate should return the new body"
+  print "PASS: test_navigate_swaps_content"
+
+-- ---------------------------------------------------------------------------
+-- Test 19: activate_controller captures content_node from context.content.outlet
+-- (load_editor invocation and paint are already verified in test 13)
+-- ---------------------------------------------------------------------------
+test_activate_controller_captures_content_node = ->
+  original_load_editor = Application.load_editor
+  Application.load_editor = (screen) -> nil
+
+  class FakeScreen2
+    post: (message, size) => nil
+
+  screen  = FakeScreen2!
+  outlet  = {}
+  ctrl    = { view: screen, context: { content: { outlet: outlet } } }
+  app     = Application!
+
+  app\activate_controller ctrl
+
+  Application.load_editor = original_load_editor
+
+  test.expect_eq app.content_node, outlet,
+    "activate_controller should capture content_node from context.content.outlet"
+  print "PASS: test_activate_controller_captures_content_node"
+
 -- Run all
 test_route_result_stored_in_inner!
 test_layout_content_called!
@@ -360,3 +447,7 @@ test_detached_helper_method_keeps_argument!
 test_activate_controller_updates_screen!
 test_application_current_returns_app!
 test_run_dispatches_with_screen!
+test_dispatch_content_returns_body_only!
+test_navigate_without_content_node_returns_nil!
+test_navigate_swaps_content!
+test_activate_controller_captures_content_node!

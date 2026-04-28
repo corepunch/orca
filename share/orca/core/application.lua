@@ -42,6 +42,11 @@ Application = Widget:extend {
     return body
   end,
 
+  dispatch_content = function(self, req)
+    local route_info = self.router:resolve(req)
+    return self:resolve_body(self.router:dispatch(req), route_info)
+  end,
+
   dispatch = function(self, req)
     local ctx = self:new_render_context(req)
     local route_info = self.router:resolve(req)
@@ -82,11 +87,31 @@ Application = Widget:extend {
     Application.app = self
     self.controller = controller
     self.screen = controller.view
+    self.content_node = controller.context and
+                        controller.context.content and
+                        controller.context.content.outlet
 
     Application.load_editor(self.screen)
     self.screen:post("Window.Paint", renderer.getSize())
 
     return controller
+  end,
+
+  navigate = function(self, req)
+    if not self.content_node then return nil end
+    local body = self:dispatch_content(req)
+    if not body then return nil end
+    local child = self.content_node:getFirstChild()
+    while child do
+      local next_child = child:getNext()
+      child:removeFromParent()
+      child = next_child
+    end
+    self.content_node:addChild(body)
+    if self.screen then
+      self.screen:post("Window.Paint", renderer.getSize())
+    end
+    return body
   end,
 
   run = function(self)

@@ -37,11 +37,19 @@ class Default extends Widget
 		active_route = if type(route_value) == "function" then route_value! else route_value or "/"
 		navigate = @navigate
 
+		-- outlet_node is the persistent container for content reloading.
+		-- It is created before the Screen builder so activate_controller can
+		-- capture it synchronously via ctx.content.outlet, then navigate()
+		-- can swap its children without rebuilding the surrounding chrome.
+		outlet_node = Node2D {}
+		@content_for "outlet", outlet_node
+
 		Screen ->
 			Grid Rows: "32px 48px 1fr 72px 24px", =>
 				Node2D class: "bg-violet-900/70"
 				make_header title
-				@addChild (inner or make_placeholder!)
+				@addChild outlet_node
+				outlet_node\addChild (inner or make_placeholder!)
 				make_footer active_route, navigate -- this causes following node to be darker
 				Node2D class: "bg-violet-900/70"
 		

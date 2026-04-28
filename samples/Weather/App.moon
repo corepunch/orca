@@ -14,11 +14,6 @@ class App extends require "orca.core.application"
 		@current_route = route or @current_route or "/"
 		App.__parent.dispatch self, req
 
-	navigate: (route) =>
-		ctrl = @dispatch route
-		return unless ctrl and ctrl.view
-		@activate_controller ctrl
-
 	[Home: "/"]: => render: true
 	[Forecast: "/forecast"]: => render: true
 	[Alerts: "/alerts"]: => render: true
