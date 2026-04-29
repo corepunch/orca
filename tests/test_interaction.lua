@@ -190,7 +190,7 @@ end
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
-orca.async = function (callback) callback() end
+orca.async = function (fn, ...) fn(...) end
 
 test_button_interaction()
 test_input_interaction()

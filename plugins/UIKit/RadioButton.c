@@ -1,19 +1,16 @@
 #include <include/orca.h>
+#include <source/core/core_local.h>
 
 #include <plugins/UIKit/UIKit.h>
+
+/* Forward declaration — defined in UIKit_message.c */
+extern bool_t CORE_HandleObjectMessage(lua_State *L, struct AXmessage *msg);
 
 HANDLER(RadioButton, Object, Create)
 {
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }
-
-/* Ring buffer for SelectionChanged event args.  Using a small ring ensures
-   the pointer is stable across the async dispatch while still being safe if
-   several clicks are queued before any SelectionChanged is processed. */
-#define SELCHG_RING_SIZE 8
-static struct RadioGroup_SelectionChangedEventArgs _selchg_ring[SELCHG_RING_SIZE];
-static uint8_t _selchg_head = 0;
 
 HANDLER(RadioButton, Node, LeftButtonUp)
 {
@@ -47,13 +44,18 @@ HANDLER(RadioButton, Node, LeftButtonUp)
     }
   }
 
-  /* Fire RadioGroup.SelectionChanged.  Args are copied into a ring slot so
-     the pointer remains valid until the async message is dispatched, even
-     if another click is queued before dispatch. */
-  struct RadioGroup_SelectionChangedEventArgs *args =
-    &_selchg_ring[_selchg_head++ % SELCHG_RING_SIZE];
-  args->SelectedValue = rg->SelectedValue;
-  args->OldValue      = oldValue;
-  axPostMessageW(group, ID_RadioGroup_SelectionChanged, 0, args);
+  /* Fire RadioGroup.SelectionChanged synchronously so that Lua handlers
+     registered on the group see the correct SelectedValue/OldValue within
+     the same dispatch pass.  The args live on the stack; push_object_message_arg
+     copies them into a Lua full-userdata before this call returns. */
+  struct RadioGroup_SelectionChangedEventArgs args = {
+    .SelectedValue = rg->SelectedValue,
+    .OldValue      = oldValue,
+  };
+  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
+    .target  = group,
+    .message = ID_RadioGroup_SelectionChanged,
+    .lParam  = &args,
+  });
   return TRUE;
 }
