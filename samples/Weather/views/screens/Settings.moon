@@ -1,13 +1,7 @@
-import StackView, TextBlock from require "orca.UIKit"
-RadioGroup  = require "orca.UIKit.RadioGroup"
+import StackView, TextBlock, RadioGroup, RadioButton from require "orca.UIKit"
 Widget      = require "orca.core.widget"
 Application = require "orca.core.application"
 import Settings from require "model"
-
-UNIT_OPTIONS = {
-  { value: "celsius",    label: "°C  Celsius"    }
-  { value: "fahrenheit", label: "°F  Fahrenheit" }
-}
 
 class SettingsScreen extends Widget
 	title: "Settings"
@@ -22,9 +16,22 @@ class SettingsScreen extends Widget
 			-- Temperature unit card
 			StackView class: "bg-slate-800 rounded-3 px-4 py-4 gap-3", =>
 				TextBlock class: "text-xs font-bold text-slate-400", "TEMPERATURE UNIT"
-				RadioGroup
-					value: unit
-					options: UNIT_OPTIONS
-					on_change: (v) ->
-						Settings\set_unit v
+				RadioGroup {
+					SelectedValue: unit
+					Direction:     "Horizontal"
+					Spacing:       8
+					SelectionChanged: (self, e) ->
+						Settings\set_unit e.SelectedValue
 						app\navigate "/settings"
+				}, =>
+					RadioButton {
+						Value:     "celsius"
+						IsChecked: unit == "celsius"
+						class:     "px-4 py-2 rounded-full " .. (unit == "celsius" and "bg-sky-500 text-white" or "bg-slate-700 text-slate-200")
+					}, "°C  Celsius"
+					RadioButton {
+						Value:     "fahrenheit"
+						IsChecked: unit == "fahrenheit"
+						class:     "px-4 py-2 rounded-full " .. (unit == "fahrenheit" and "bg-sky-500 text-white" or "bg-slate-700 text-slate-200")
+					}, "°F  Fahrenheit"
+

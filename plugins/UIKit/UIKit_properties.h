@@ -276,6 +276,28 @@ enum StackViewProperties {
 #define Form_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Form,sizeof(struct Form),_N)
 #define ID_Form_Submit 0xef0f357b // Form.Submit
 #define kFormNumProperties 1
+// RadioButton
+#define ID_RadioButton 0x4904a0b0
+#define GetRadioButton(_P) ((struct RadioButton*)((_P)?OBJ_GetComponent(_P,ID_RadioButton):NULL))
+#define RadioButton_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_RadioButton,sizeof(struct RadioButton),_N)
+#define ID_RadioButton_IsChecked 0xd54f839f // RadioButton.IsChecked
+#define ID_RadioButton_Value 0xeb4cb263 // RadioButton.Value
+#define kRadioButtonNumProperties 2
+enum RadioButtonProperties {
+	kRadioButtonIsChecked,
+	kRadioButtonValue,
+};
+// RadioGroup
+#define ID_RadioGroup 0xea992647
+#define GetRadioGroup(_P) ((struct RadioGroup*)((_P)?OBJ_GetComponent(_P,ID_RadioGroup):NULL))
+#define RadioGroup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_RadioGroup,sizeof(struct RadioGroup),_N)
+#define ID_RadioGroup_SelectedValue 0x2954f1f3 // RadioGroup.SelectedValue
+#define ID_RadioGroup_SelectionChanged 0x7a4112ed // RadioGroup.SelectionChanged
+#define kRadioGroupNumProperties 2
+enum RadioGroupProperties {
+	kRadioGroupSelectedValue,
+	kRadioGroupSelectionChanged,
+};
 // Control
 #define ID_Control 0x8347bf3e
 #define GetControl(_P) ((struct Control*)((_P)?OBJ_GetComponent(_P,ID_Control):NULL))
@@ -580,6 +602,10 @@ enum StyleProperties {
 #define ID_PageHost_NavigateBackEventArgs 0xa3f6a342
 
 #define ID_PageHost_NavigateBackEventArgs_TransitionType 0x0531cd67 // PageHost_NavigateBackEventArgs.TransitionType
+#define ID_RadioGroup_SelectionChangedEventArgs 0x43080eb7
+
+#define ID_RadioGroup_SelectionChangedEventArgs_SelectedValue 0x2a19d223 // RadioGroup_SelectionChangedEventArgs.SelectedValue
+#define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
 	
 
 #endif

@@ -204,6 +204,11 @@ static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
 	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
 };
+static luaL_Reg _RadioGroup_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _RadioGroup_SelectionChangedEventArgs[] = {
+	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
+	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
+};
 
 STRUCT(TextBlockConcept_MakeTextEventArgs, TextBlockConcept_MakeTextEventArgs);
 STRUCT(Node2D_DrawBrushEventArgs, Node2D_DrawBrushEventArgs);
@@ -225,6 +230,7 @@ STRUCT(ConsoleView_UnpackEventArgs, ConsoleView_UnpackEventArgs);
 STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
+STRUCT(RadioGroup_SelectionChangedEventArgs, RadioGroup_SelectionChangedEventArgs);
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
@@ -621,6 +627,50 @@ struct Form* luaX_checkForm(lua_State *L, int idx) {
 }
 #define ID_StackView 0x56aa550a
 REGISTER_CLASS(Form, ID_StackView, 0);
+HANDLER(RadioButton, Object, Create);
+HANDLER(RadioButton, Node, LeftButtonUp);
+static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
+	DECL(0xea50a536, RadioButton, IsChecked, IsChecked, kDataTypeBool), // RadioButton.IsChecked
+	DECL(0xd147f96a, RadioButton, Value, Value, kDataTypeString), // RadioButton.Value
+};
+static struct RadioButton RadioButtonDefaults = {
+};
+LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Create: return RadioButton_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+	}
+	return FALSE;
+}
+void luaX_pushRadioButton(lua_State *L, struct RadioButton const* RadioButton) {
+	luaX_pushObject(L, CMP_GetObject(RadioButton));
+}
+struct RadioButton* luaX_checkRadioButton(lua_State *L, int idx) {
+	return GetRadioButton(luaX_checkObject(L, idx));
+}
+#define ID_TextBlock 0x40f4d77b
+REGISTER_CLASS(RadioButton, ID_TextBlock, 0);
+HANDLER(RadioGroup, RadioGroup, SelectionChanged);
+static struct PropertyType const RadioGroupProperties[kRadioGroupNumProperties] = {
+	DECL(0x5c04816d, RadioGroup, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup.SelectedValue
+	DECL(0x48cf578b, RadioGroup, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "RadioGroup_SelectionChangedEventArgs"), // RadioGroup.SelectionChanged
+};
+static struct RadioGroup RadioGroupDefaults = {
+};
+LRESULT RadioGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_RadioGroup_SelectionChanged: return RadioGroup_SelectionChanged(object, cmp, wparm, lparm); // RadioGroup.SelectionChanged
+	}
+	return FALSE;
+}
+void luaX_pushRadioGroup(lua_State *L, struct RadioGroup const* RadioGroup) {
+	luaX_pushObject(L, CMP_GetObject(RadioGroup));
+}
+struct RadioGroup* luaX_checkRadioGroup(lua_State *L, int idx) {
+	return GetRadioGroup(luaX_checkObject(L, idx));
+}
+#define ID_StackView 0x56aa550a
+REGISTER_CLASS(RadioGroup, ID_StackView, 0);
 static struct PropertyType const ControlProperties[kControlNumProperties] = {
 	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
 	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
@@ -974,6 +1024,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_GetIndexPositionEventArgs(L), -2), "ConsoleView_GetIndexPositionEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_RadioGroup_SelectionChangedEventArgs(L), -2), "RadioGroup_SelectionChangedEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Brush), -2), "Brush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ColorBrush), -2), "ColorBrush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_TextRun), -2), "TextRun");
@@ -986,6 +1037,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Label), -2), "Label");
 	lua_setfield(L, ((void)lua_pushclass(L, &_StackView), -2), "StackView");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Form), -2), "Form");
+	lua_setfield(L, ((void)lua_pushclass(L, &_RadioButton), -2), "RadioButton");
+	lua_setfield(L, ((void)lua_pushclass(L, &_RadioGroup), -2), "RadioGroup");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Control), -2), "Control");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Screen), -2), "Screen");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Cinematic), -2), "Cinematic");

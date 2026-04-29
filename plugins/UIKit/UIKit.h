@@ -43,6 +43,7 @@ typedef struct ConsoleView_UnpackEventArgs ConsoleView_UnpackMsg_t,* ConsoleView
 typedef struct ConsoleView_GetIndexPositionEventArgs ConsoleView_GetIndexPositionMsg_t,* ConsoleView_GetIndexPositionMsgPtr;
 typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
 typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
+typedef struct RadioGroup_SelectionChangedEventArgs RadioGroup_SelectionChangedMsg_t,* RadioGroup_SelectionChangedMsgPtr;
 
 
 /// @brief Defines the primary axis for layout operations
@@ -452,6 +453,13 @@ struct PageHost_NavigateBackEventArgs {
 };
 ORCA_API void luaX_pushPageHost_NavigateBackEventArgs(lua_State *L, struct PageHost_NavigateBackEventArgs const* data);
 ORCA_API struct PageHost_NavigateBackEventArgs* luaX_checkPageHost_NavigateBackEventArgs(lua_State *L, int idx);
+/** RadioGroup_SelectionChangedEventArgs struct */
+struct RadioGroup_SelectionChangedEventArgs {
+	const char* SelectedValue; ///< The value of the newly selected RadioButton
+	const char* OldValue; ///< The value that was selected before this change
+};
+ORCA_API void luaX_pushRadioGroup_SelectionChangedEventArgs(lua_State *L, struct RadioGroup_SelectionChangedEventArgs const* data);
+ORCA_API struct RadioGroup_SelectionChangedEventArgs* luaX_checkRadioGroup_SelectionChangedEventArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for all brush types used in rendering.
@@ -646,6 +654,24 @@ struct Form {
 };
 ORCA_API void luaX_pushForm(lua_State *L, struct Form const* Form);
 ORCA_API struct Form* luaX_checkForm(lua_State *L, int idx);
+
+/// @brief Single radio button option for use inside a RadioGroup
+/** RadioButton component */
+struct RadioButton {
+	bool_t IsChecked; ///< Whether this option is currently selected
+	const char* Value; ///< String value reported to the parent RadioGroup when selected
+};
+ORCA_API void luaX_pushRadioButton(lua_State *L, struct RadioButton const* RadioButton);
+ORCA_API struct RadioButton* luaX_checkRadioButton(lua_State *L, int idx);
+
+/// @brief Exclusive-selection group container for RadioButton children
+/** RadioGroup component */
+struct RadioGroup {
+	const char* SelectedValue; ///< Value string of the currently selected RadioButton child
+	event_t SelectionChanged;
+};
+ORCA_API void luaX_pushRadioGroup(lua_State *L, struct RadioGroup const* RadioGroup);
+ORCA_API struct RadioGroup* luaX_checkRadioGroup(lua_State *L, int idx);
 
 /// @brief Base class for interactive UI controls with state management
 /** Control component */

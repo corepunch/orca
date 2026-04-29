@@ -37,13 +37,4 @@ after_ui_module_registered(lua_State* L) {
       lua_pop(L, 1);
     }
   }
-
-  // Load RadioGroup Lua component and expose it as UIKit.RadioGroup.
-  if (luaX_require(L, "orca.UIKit.RadioGroup", 1) == LUA_OK) {
-    if (lua_istable(L, -1) || lua_isfunction(L, -1)) {
-      lua_setfield(L, -2, "RadioGroup");
-    } else {
-      lua_pop(L, 1);
-    }
-  }
 }
