@@ -179,9 +179,12 @@ Application.projects = {}
 --   App:before_filter(function(self, req) self.current_user = ... end)
 function Application.before_filter(cls, fn)
   assert(type(fn) == "function", "before_filter: expected a function")
-  local filters = rawget(cls, '__before_filters') or {}
+  local filters = rawget(cls, '__before_filters')
+  if not filters then
+    filters = {}
+    rawset(cls, '__before_filters', filters)
+  end
   filters[#filters + 1] = fn
-  rawset(cls, '__before_filters', filters)
 end
 
 function Application.current(required)

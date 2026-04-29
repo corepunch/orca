@@ -133,7 +133,20 @@ local function test_url_for_passthrough()
   print("PASS: test_url_for_passthrough")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 9: url_for returns nil for an undefined route name
+-- ---------------------------------------------------------------------------
+local function test_url_for_unknown_returns_nil()
+  local owner = {}
+  local router = Router(owner)
+  router:add("home", "/", function() end)
+
+  test.expect_eq(router:url_for("missing"), nil, "url_for should return nil for undefined route names")
+  print("PASS: test_url_for_unknown_returns_nil")
+end
+
 test_url_for_named()
 test_url_for_passthrough()
+test_url_for_unknown_returns_nil()
 
 print("All router tests passed.")

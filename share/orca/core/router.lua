@@ -25,7 +25,7 @@ local Router = Widget:extend {
     if type(name) == "string" and string.byte(name, 1) == 47 then
       return name
     end
-    return self.named_routes[name] or ("/" .. name)
+    return self.named_routes[name]
   end,
 
   match = function(self, name, url, handler)
