@@ -7,16 +7,32 @@ local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
 local UIKit = require "orca.UIKit"
 local Startup = require "orca.core.startup"
+local async = require "orca.core.async"
+
+-- Collect before_filters from the class hierarchy (parent filters run first).
+local function collect_before_filters(cls)
+  if not cls then return {} end
+  local result = collect_before_filters(rawget(cls, '__parent'))
+  local own = rawget(cls, '__before_filters')
+  if own then
+    for _, f in ipairs(own) do result[#result + 1] = f end
+  end
+  return result
+end
+
+-- Default layout: wraps the inner content in a Screen.
+local DefaultLayout = Widget:extend {
+  content = function(self)
+    local inner = self:content_for("inner")
+    local screen = UIKit.Screen()
+    if inner then screen:addChild(inner) end
+    return screen
+  end
+}
 
 local Application
 Application = Widget:extend {
-  layout = {
-    content = function(element)
-      local screen = UIKit.Screen()
-      screen:addChild(element)
-      return screen
-    end
-  },
+  layout = DefaultLayout,
 
   __init = function(self)
     Widget.__init(self)
@@ -34,6 +50,12 @@ Application = Widget:extend {
     return self.router:add(name, url, func)
   end,
 
+  -- Generate a URL from a named route or return the path unchanged.
+  -- Usage: self:url_for("home")  →  "/"
+  url_for = function(self, name)
+    return self.router:url_for(name)
+  end,
+
   resolve_body = function(self, body, route_info)
     if type(body) == "table" and body.render == true and route_info and self.views_prefix then
       local view_cls = require(self.views_prefix .. "/" .. route_info.name)
@@ -44,12 +66,21 @@ Application = Widget:extend {
 
   dispatch = function(self, req)
     local ctx = self:new_render_context(req)
-    local route_info = self.router:resolve(req)
-    local body = self:resolve_body(self.router:dispatch(req), route_info)
 
-    -- Push model: call body.content() eagerly so the body drives slot population.
-    -- body may also call self:content_for(name, value) inside content() to push
-    -- additional named blocks (title, header, footer, etc.) into the context.
+    -- Run before filters; first filter returning non-nil short-circuits the action.
+    local body = nil
+    local route_info = nil
+    local cls = rawget(getmetatable(self) or {}, '__class')
+    for _, filter in ipairs(collect_before_filters(cls)) do
+      body = filter(self, req)
+      if body ~= nil then break end
+    end
+
+    if body == nil then
+      route_info = self.router:resolve(req)
+      body = self:resolve_body(self.router:dispatch(req), route_info)
+    end
+
     if type(body) == "table" then
       if type(body.set_render_context) == "function" then
         body:set_render_context(ctx)
@@ -60,9 +91,6 @@ Application = Widget:extend {
           ctx.slots["inner"] = inner
         end
       end
-      ctx.slots["inner_widget"] = body
-      -- Convenience: pre-populate title/footer/header from body properties if not
-      -- already pushed by body:content() via content_for.
       if ctx.slots["title"] == nil and body.title ~= nil then
         ctx.slots["title"] = body.title
       end
@@ -86,8 +114,6 @@ Application = Widget:extend {
       if type(layout.content) == "function" then
         view = layout:content()
       end
-    elseif type(layout_def) == "table" and type(layout_def.content) == "function" then
-      view = layout_def.content(ctx, self)
     elseif type(layout_def) == "function" then
       view = layout_def(ctx, self)
     elseif layout_def == nil and body ~= nil then
@@ -143,6 +169,21 @@ Application = Widget:extend {
 
 Application.projects = {}
 
+-- Class method: register a before filter.
+-- Filters run in order before the route action on every dispatch.
+-- If a filter returns a non-nil value it short-circuits the action.
+--
+-- MoonScript usage inside a class body:
+--   @before_filter => @current_user = Users\find @session.user_id
+-- Lua usage:
+--   App:before_filter(function(self, req) self.current_user = ... end)
+function Application.before_filter(cls, fn)
+  assert(type(fn) == "function", "before_filter: expected a function")
+  local filters = rawget(cls, '__before_filters') or {}
+  filters[#filters + 1] = fn
+  rawset(cls, '__before_filters', filters)
+end
+
 function Application.current(required)
   if required == nil then
     required = true
@@ -161,5 +202,11 @@ end
 function Application.load_editor(screen)
   -- stub: override in editor environments to attach the editor host
 end
+
+-- Lapis-compatible helpers importable directly from orca.core.application:
+--   import respond_to, capture_errors, yield_error from require "orca.core.application"
+Application.respond_to    = async.respond_to
+Application.capture_errors = async.capture_errors
+Application.yield_error   = async.yield_error
 
 return Application

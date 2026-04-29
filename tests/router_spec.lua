@@ -108,4 +108,32 @@ test_resolve_nil_for_unknown()
 test_register_routes_auto_discovery()
 test_multiple_routes()
 
+-- ---------------------------------------------------------------------------
+-- Test 7: url_for returns the URL for a named route
+-- ---------------------------------------------------------------------------
+local function test_url_for_named()
+  local owner = {}
+  local router = Router(owner)
+  router:add("home", "/", function() end)
+  router:add("about", "/about", function() end)
+
+  test.expect_eq(router:url_for("home"), "/", "url_for('home') should return '/'")
+  test.expect_eq(router:url_for("about"), "/about", "url_for('about') should return '/about'")
+  print("PASS: test_url_for_named")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 8: url_for passes through a path string unchanged
+-- ---------------------------------------------------------------------------
+local function test_url_for_passthrough()
+  local owner = {}
+  local router = Router(owner)
+
+  test.expect_eq(router:url_for("/dashboard"), "/dashboard", "url_for('/dashboard') should return path unchanged")
+  print("PASS: test_url_for_passthrough")
+end
+
+test_url_for_named()
+test_url_for_passthrough()
+
 print("All router tests passed.")

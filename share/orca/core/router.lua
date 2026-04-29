@@ -4,6 +4,7 @@ local Router = Widget:extend {
   __init = function(self, owner)
     self.owner = owner
     self.routes = {}
+    self.named_routes = {}
     self:registerRoutes(owner)
   end,
 
@@ -14,7 +15,17 @@ local Router = Widget:extend {
       name = name or url,
       handler = handler
     }
+    if name and name ~= url then
+      self.named_routes[name] = url
+    end
     return handler
+  end,
+
+  url_for = function(self, name)
+    if type(name) == "string" and string.byte(name, 1) == 47 then
+      return name
+    end
+    return self.named_routes[name] or ("/" .. name)
   end,
 
   match = function(self, name, url, handler)

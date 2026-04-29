@@ -2,7 +2,8 @@ local test = require "orca.test"
 -- Headless tests for orca.core.application
 -- Covers: route return value stored in ctx.slots.inner,
 -- class-based layout receives render context, class-level helpers
--- accessible in layout, and dispatch result structure.
+-- accessible in layout, dispatch result structure, before_filter,
+-- and url_for.
 --
 -- Uses a mock layout Widget that avoids UIKit so tests run fully headless.
 
@@ -382,5 +383,159 @@ test_detached_helper_method_keeps_argument()
 test_activate_controller_updates_screen()
 test_application_current_returns_app()
 test_run_dispatches_with_screen()
+
+-- ---------------------------------------------------------------------------
+-- Test 16: before_filter runs before the route action
+-- ---------------------------------------------------------------------------
+local function test_before_filter_runs()
+  local filter_ran = false
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) return "body" end,
+  }
+  App:before_filter(function(self, req)
+    filter_ran = true
+  end)
+
+  local app = App()
+  app:dispatch("/")
+
+  test.expect(filter_ran, "before_filter should run before the action")
+  print("PASS: test_before_filter_runs")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 17: before_filter returning non-nil short-circuits the action
+-- ---------------------------------------------------------------------------
+local function test_before_filter_short_circuits()
+  local action_ran = false
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) action_ran = true; return "body" end,
+  }
+  App:before_filter(function(self, req)
+    return "early"
+  end)
+
+  local app = App()
+  local result = app:dispatch("/")
+
+  test.expect(not action_ran, "action should not run when before_filter returns a value")
+  test.expect_eq(result.context.slots.inner, "early", "before_filter return value becomes inner slot")
+  print("PASS: test_before_filter_short_circuits")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 18: before_filter receives app as self
+-- ---------------------------------------------------------------------------
+local function test_before_filter_receives_self()
+  local captured_self = nil
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) return "body" end,
+  }
+  App:before_filter(function(self, req)
+    captured_self = self
+  end)
+
+  local app = App()
+  app:dispatch("/")
+
+  test.expect_eq(captured_self, app, "before_filter should receive the app instance as self")
+  print("PASS: test_before_filter_receives_self")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 19: multiple before_filters run in declaration order
+-- ---------------------------------------------------------------------------
+local function test_before_filter_order()
+  local order = {}
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) return "body" end,
+  }
+  App:before_filter(function(self, req) order[#order + 1] = 1 end)
+  App:before_filter(function(self, req) order[#order + 1] = 2 end)
+
+  local app = App()
+  app:dispatch("/")
+
+  test.expect_eq(order[1], 1, "first filter should run first")
+  test.expect_eq(order[2], 2, "second filter should run second")
+  print("PASS: test_before_filter_order")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 20: before_filter on parent class runs before child class filter
+-- ---------------------------------------------------------------------------
+local function test_before_filter_inheritance()
+  local order = {}
+  local Base = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) return "body" end,
+  }
+  Base:before_filter(function(self, req) order[#order + 1] = "parent" end)
+
+  local Child = Base:extend {
+    ["/"] = function(self) return "body" end,
+  }
+  Child:before_filter(function(self, req) order[#order + 1] = "child" end)
+
+  local app = Child()
+  app:dispatch("/")
+
+  test.expect_eq(order[1], "parent", "parent before_filter should run first")
+  test.expect_eq(order[2], "child", "child before_filter should run second")
+  print("PASS: test_before_filter_inheritance")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 21: url_for with named route returns route URL
+-- ---------------------------------------------------------------------------
+local function test_url_for_named_route()
+  local App = Application:extend {
+    layout = MockLayout,
+    [{ Home = "/" }] = function(self) return "home" end,
+    [{ About = "/about" }] = function(self) return "about" end,
+  }
+  local app = App()
+
+  test.expect_eq(app:url_for("Home"), "/", "url_for('Home') should return '/'")
+  test.expect_eq(app:url_for("About"), "/about", "url_for('About') should return '/about'")
+  print("PASS: test_url_for_named_route")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 22: url_for passes through URL paths unchanged
+-- ---------------------------------------------------------------------------
+local function test_url_for_passthrough()
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self) return "home" end,
+  }
+  local app = App()
+
+  test.expect_eq(app:url_for("/dashboard"), "/dashboard", "url_for('/dashboard') should return path unchanged")
+  print("PASS: test_url_for_passthrough")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 23: respond_to/capture_errors/yield_error importable from Application
+-- ---------------------------------------------------------------------------
+local function test_lapis_helpers_on_application()
+  test.expect(type(Application.respond_to) == "function", "Application.respond_to should be a function")
+  test.expect(type(Application.capture_errors) == "function", "Application.capture_errors should be a function")
+  test.expect(type(Application.yield_error) == "function", "Application.yield_error should be a function")
+  print("PASS: test_lapis_helpers_on_application")
+end
+
+test_before_filter_runs()
+test_before_filter_short_circuits()
+test_before_filter_receives_self()
+test_before_filter_order()
+test_before_filter_inheritance()
+test_url_for_named_route()
+test_url_for_passthrough()
+test_lapis_helpers_on_application()
 
 print("All application tests passed.")
