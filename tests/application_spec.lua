@@ -538,4 +538,55 @@ test_url_for_named_route()
 test_url_for_passthrough()
 test_lapis_helpers_on_application()
 
+-- ---------------------------------------------------------------------------
+-- Test 24: title method is called when body.title is a function
+-- ---------------------------------------------------------------------------
+local function test_title_method_resolved()
+  local TitleLayout = Widget:extend {
+    content = function(self)
+      self._title = self:content_for("title")
+      return "layout"
+    end
+  }
+  local App = Application:extend {
+    layout = TitleLayout,
+    ["/"] = function(self)
+      local Body = Widget:extend {
+        title = function(self) return "Dynamic Title" end,
+        content = function(self) return "body_inner" end,
+      }
+      return Body()
+    end,
+  }
+  local app = App()
+  local result = app:dispatch("/")
+
+  test.expect_eq(result.context.slots.title, "Dynamic Title", "title method should be called and resolved")
+  print("PASS: test_title_method_resolved")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 25: title string value used as-is
+-- ---------------------------------------------------------------------------
+local function test_title_string_used_as_is()
+  local App = Application:extend {
+    layout = MockLayout,
+    ["/"] = function(self)
+      local Body = Widget:extend {
+        title = "Static Title",
+        content = function(self) return "body_inner" end,
+      }
+      return Body()
+    end,
+  }
+  local app = App()
+  local result = app:dispatch("/")
+
+  test.expect_eq(result.context.slots.title, "Static Title", "string title should be stored as-is")
+  print("PASS: test_title_string_used_as_is")
+end
+
+test_title_method_resolved()
+test_title_string_used_as_is()
+
 print("All application tests passed.")

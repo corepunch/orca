@@ -87,6 +87,7 @@ end
 -- content_for(name, value) -- push: pre-populate a named content block
 -- content_for(name)        -- pull: read a pre-populated content block
 function Widget:content_for(name, value)
+  assert(type(name) == 'string', 'content_for: name must be a string, got ' .. type(name))
   local ctx = self:get_render_context()
   assert(type(ctx) == 'table', 'content_for called without render context')
   if ctx.slots == nil then ctx.slots = {} end

@@ -92,7 +92,7 @@ Application = Widget:extend {
         end
       end
       if ctx.slots["title"] == nil and body.title ~= nil then
-        ctx.slots["title"] = body.title
+        ctx.slots["title"] = type(body.title) == "function" and body:title() or body.title
       end
       if ctx.slots["footer"] == nil and type(body.footer) == "function" then
         ctx.slots["footer"] = body:footer()
