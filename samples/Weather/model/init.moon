@@ -1,4 +1,5 @@
 weather_api = require "model.weather"
+Settings    = require "model.settings"
 
 -- Default location shown on the Home and Forecast screens.
 DEFAULT_LAT = 37.7749
@@ -45,12 +46,18 @@ class Weather
   -- Cardinal direction string ("N", "NE", …) from a bearing in degrees.
   wind_dir: (degrees) => weather_api.wind_dir degrees
 
-  -- Format a temperature value as "N °C" (rounded to nearest integer).
-  format_temp: (t) => "#{math.floor(t + 0.5)} °C"
+  -- Format a temperature value using the currently selected unit.
+  -- Returns "N °C" (Celsius) or "N °F" (Fahrenheit), rounded to the nearest integer.
+  format_temp: (t) =>
+    if Settings\get_unit! == "fahrenheit"
+      "#{math.floor(t * 9/5 + 32 + 0.5)} °F"
+    else
+      "#{math.floor(t + 0.5)} °C"
 
 return {
   :Weather
   :LOCATIONS
+  :Settings
   default_lat: DEFAULT_LAT
   default_lon: DEFAULT_LON
 }

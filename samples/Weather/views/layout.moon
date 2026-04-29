@@ -6,6 +6,7 @@ NAV_ITEMS = {
 	{ route: "/forecast", label: "Forecast", icon: "assets/icons/search.svg" }
 	{ route: "/alerts", label: "Alerts", icon: "assets/icons/chat.svg" }
 	{ route: "/saved", label: "Saved", icon: "assets/icons/bookmark.svg" }
+	{ route: "/settings", label: "Settings", icon: "assets/icons/settings.svg" }
 }
 
 make_header = (title) ->
