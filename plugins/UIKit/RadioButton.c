@@ -8,17 +8,30 @@ HANDLER(RadioButton, Object, Create)
   return FALSE;
 }
 
+/* Ring buffer for SelectionChanged event args.  Using a small ring ensures
+   the pointer is stable across the async dispatch while still being safe if
+   several clicks are queued before any SelectionChanged is processed. */
+#define SELCHG_RING_SIZE 8
+static struct RadioGroup_SelectionChangedEventArgs _selchg_ring[SELCHG_RING_SIZE];
+static uint8_t _selchg_head = 0;
+
 HANDLER(RadioButton, Node, LeftButtonUp)
 {
-  pRadioButton->IsChecked = TRUE;
-  OBJ_SetDirty(hObject);
-
   struct Object *group = OBJ_GetParent(hObject);
   if (!group || !GetRadioGroup(group))
     return TRUE;
 
   struct RadioGroup *rg = GetRadioGroup(group);
+
+  /* No-op if this button is already selected */
+  if (pRadioButton->IsChecked)
+    return TRUE;
+
   const char *oldValue = rg->SelectedValue;
+
+  /* Mark this button as selected */
+  pRadioButton->IsChecked = TRUE;
+  OBJ_SetDirty(hObject);
 
   /* Update SelectedValue on the group */
   rg->SelectedValue = pRadioButton->Value;
@@ -34,9 +47,13 @@ HANDLER(RadioButton, Node, LeftButtonUp)
     }
   }
 
-  /* Fire RadioGroup.SelectionChanged for Lua handlers.
-     SelectedValue on the group is already updated above.
-     Lua handlers read self.SelectedValue directly (like Button.Click). */
-  axPostMessageW(group, ID_RadioGroup_SelectionChanged, 0, NULL);
+  /* Fire RadioGroup.SelectionChanged.  Args are copied into a ring slot so
+     the pointer remains valid until the async message is dispatched, even
+     if another click is queued before dispatch. */
+  struct RadioGroup_SelectionChangedEventArgs *args =
+    &_selchg_ring[_selchg_head++ % SELCHG_RING_SIZE];
+  args->SelectedValue = rg->SelectedValue;
+  args->OldValue      = oldValue;
+  axPostMessageW(group, ID_RadioGroup_SelectionChanged, 0, args);
   return TRUE;
 }
