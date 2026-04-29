@@ -637,5 +637,6 @@ HANDLER(Screen, Window, Resized) {
 HANDLER(Screen, Screen, UpdateLayout) {
   _SendMessage(hObject, Node2D, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
   _SendMessage(hObject, Node2D, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
+  _SendMessage(hObject, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
   return TRUE;
 }

@@ -512,6 +512,39 @@
         </message>
       </messages>
     </class>
+    <class name="RadioButton" parent="TextBlock" allow-text="true">
+      <summary>Single radio button option for use inside a RadioGroup</summary>
+      <details>Extends TextBlock to display a labeled option. When clicked, sets IsChecked on itself, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and fires RadioGroup.SelectionChanged. Mirrors WPF RadioButton semantics.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Node.LeftButtonUp"/>
+      </handles>
+      <properties>
+        <property name="IsChecked" type="bool">Whether this option is currently selected</property>
+        <property name="Value" type="string">String value reported to the parent RadioGroup when this button is selected</property>
+      </properties>
+    </class>
+    <class name="RadioGroup" parent="StackView">
+      <summary>Exclusive-selection group container for RadioButton children</summary>
+      <details>Extends StackView so children are laid out linearly. Mutual exclusion is enforced by child RadioButtons: when one is selected, it sets its own IsChecked state, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and then fires RadioGroup.SelectionChanged. The group exposes SelectionChanged so consumers can react after the selection has already changed. Mirrors WPF RadioButton/ListBox SelectionChanged semantics.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="RadioGroup.SelectionChanged"/>
+      </handles>
+      <properties>
+        <property name="SelectedValue" type="string">Value string of the currently selected RadioButton child</property>
+      </properties>
+      <messages>
+        <message name="SelectionChanged">
+          <summary>Fired when the selected RadioButton changes. SelectedValue on the group is already updated when this fires.</summary>
+          <fields>
+            <field name="SelectedValue" type="string">The value of the newly selected RadioButton</field>
+            <field name="OldValue" type="string">The value that was selected before this change</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
     <class name="Control" parent="Node2D">
       <summary>Base class for interactive UI controls with state management</summary>
       <details>Provides common state properties for interactive elements including press, hover, focus, and disabled states.</details>

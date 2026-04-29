@@ -134,13 +134,68 @@ local function test_form_populate_inputs()
 end
 
 -- ---------------------------------------------------------------------------
+-- RadioGroup: click selects the correct option, fires SelectionChanged
+-- ---------------------------------------------------------------------------
+local function test_radio_group_interaction()
+	local selected_value = nil
+	local old_value_seen = nil
+
+	local group = screen + ui.RadioGroup {
+		Width = 300,
+		Height = 50,
+		Direction = "Horizontal",
+		SelectionChanged = function (self, e)
+			selected_value = self.SelectedValue
+			if e then old_value_seen = e.OldValue end
+		end,
+	}
+	local btn_c = group + ui.RadioButton { Value = "celsius",    Width = 100, Height = 30 }
+	local btn_f = group + ui.RadioButton { Value = "fahrenheit", Width = 100, Height = 30 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	-- Click "fahrenheit" button using its computed screen position
+	local fx = btn_f.ActualX + 5
+	local fy = btn_f.ActualY + 5
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = fx, y = fy }
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = fx, y = fy }
+
+	test.expect_eq(group.SelectedValue, "fahrenheit", "RadioGroup.SelectedValue should be 'fahrenheit' after click")
+	test.expect(btn_f.IsChecked,     "RadioButton fahrenheit should be IsChecked after click")
+	test.expect(not btn_c.IsChecked, "RadioButton celsius should NOT be IsChecked after sibling click")
+	test.expect_eq(selected_value, "fahrenheit", "SelectionChanged handler should receive the new SelectedValue")
+	test.expect(old_value_seen == nil, "OldValue should be nil when nothing was previously selected")
+
+	-- Click "celsius" — verify mutual exclusion and that OldValue is passed correctly
+	local cx = btn_c.ActualX + 5
+	local cy = btn_c.ActualY + 5
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+
+	test.expect_eq(group.SelectedValue, "celsius",    "RadioGroup.SelectedValue should switch to 'celsius'")
+	test.expect(btn_c.IsChecked,     "RadioButton celsius should be IsChecked after click")
+	test.expect(not btn_f.IsChecked, "RadioButton fahrenheit should NOT be IsChecked after sibling click")
+	test.expect_eq(selected_value, "celsius",     "SelectionChanged should report new SelectedValue")
+	test.expect_eq(old_value_seen, "fahrenheit",  "SelectionChanged should report OldValue = 'fahrenheit'")
+
+	-- Clicking the already-selected button should NOT fire SelectionChanged again
+	selected_value = nil
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+	test.expect(selected_value == nil, "SelectionChanged should NOT fire when clicking already-selected button")
+
+	group:removeFromParent()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
-orca.async = function (callback) callback() end
+orca.async = function (fn, ...) fn(...) end
 
 test_button_interaction()
 test_input_interaction()
 test_input_checkbox()
 test_form_populate_inputs()
+test_radio_group_interaction()
 
 print("All interaction tests passed.")
