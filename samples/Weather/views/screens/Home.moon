@@ -1,6 +1,6 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
 Widget = require "orca.core.widget"
-import Weather from require "model"
+import Weather, LOCATIONS from require "model"
 
 class HomeScreen extends Widget
 	title: "Today"
@@ -9,6 +9,7 @@ class HomeScreen extends Widget
 		current = Weather\current!
 		icon_src = Weather\icon current.weather_code
 		desc = Weather\description current.weather_code
+		location_name = LOCATIONS[1].name
 
 		StackView class: "bg-slate-900 p-5 gap-4", =>
 			-- Location row
@@ -16,7 +17,7 @@ class HomeScreen extends Widget
 				ImageView
 					class: "align-middle-center text-sky-400"
 					Source: "assets/icons/location.svg?width=16&type=mask"
-				TextBlock class: "text-sm text-slate-400", "San Francisco, CA"
+				TextBlock class: "text-sm text-slate-400", location_name
 
 			-- Main weather card
 			StackView class: "bg-slate-800 rounded-3 p-5 gap-3", =>
@@ -49,4 +50,4 @@ class HomeScreen extends Widget
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-slate-400", "Wind"
 						TextBlock class: "text-base font-bold text-slate-100",
-							"#{math.floor current.wind_speed_10m} m/s  #{Weather\wind_dir current.wind_direction_10m}"
+							"#{math.floor current.wind_speed_10m} m/s #{Weather\wind_dir current.wind_direction_10m}"
