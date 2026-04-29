@@ -822,4 +822,7 @@ struct Style {
 ORCA_API void luaX_pushStyle(lua_State *L, struct Style const* Style);
 ORCA_API struct Style* luaX_checkStyle(lua_State *L, int idx);
 
+/* Internal UIKit dispatch helper — defined in UIKit_message.c */
+bool_t CORE_HandleObjectMessage(lua_State *L, struct AXmessage *msg);
+
 #endif

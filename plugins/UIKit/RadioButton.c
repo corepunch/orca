@@ -3,9 +3,6 @@
 
 #include <plugins/UIKit/UIKit.h>
 
-/* Forward declaration — defined in UIKit_message.c */
-extern bool_t CORE_HandleObjectMessage(lua_State *L, struct AXmessage *msg);
-
 HANDLER(RadioButton, Object, Create)
 {
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
@@ -47,7 +44,9 @@ HANDLER(RadioButton, Node, LeftButtonUp)
   /* Fire RadioGroup.SelectionChanged synchronously so that Lua handlers
      registered on the group see the correct SelectedValue/OldValue within
      the same dispatch pass.  The args live on the stack; push_object_message_arg
-     copies them into a Lua full-userdata before this call returns. */
+     copies them into a Lua full-userdata before this call returns.
+     Return value not checked: a FALSE result means no handler was registered,
+     which is a valid no-op (SelectionChanged is optional). */
   struct RadioGroup_SelectionChangedEventArgs args = {
     .SelectedValue = rg->SelectedValue,
     .OldValue      = oldValue,
