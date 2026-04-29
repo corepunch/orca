@@ -34,10 +34,9 @@ HANDLER(RadioButton, Node, LeftButtonUp)
     }
   }
 
-  /* Fire RadioGroup.SelectionChanged for external Lua handlers */
-  static struct RadioGroup_SelectionChangedEventArgs args;
-  args.SelectedValue = pRadioButton->Value;
-  args.OldValue      = oldValue;
-  axPostMessageW(group, ID_RadioGroup_SelectionChanged, 0, &args);
+  /* Fire RadioGroup.SelectionChanged for Lua handlers.
+     SelectedValue on the group is already updated above.
+     Lua handlers read self.SelectedValue directly (like Button.Click). */
+  axPostMessageW(group, ID_RadioGroup_SelectionChanged, 0, NULL);
   return TRUE;
 }
