@@ -16,10 +16,26 @@ DESCRIPTIONS =
   [85]: "Snow showers",    [86]: "Heavy snow showers"
   [95]: "Thunderstorm",    [96]: "Thunderstorm w/ hail", [99]: "Thunderstorm w/ heavy hail"
 
+-- SVG icon filenames for WMO weather codes
+ICONS =
+  [0]:  "sun",           [1]:  "sun",           [2]:  "partly-cloudy"
+  [3]:  "cloud"
+  [45]: "fog",           [48]: "fog"
+  [51]: "drizzle",       [53]: "drizzle",       [55]: "drizzle"
+  [61]: "rain",          [63]: "rain",          [65]: "rain"
+  [71]: "snow",          [73]: "snow",          [75]: "snow"
+  [80]: "rain",          [81]: "rain",          [82]: "rain"
+  [85]: "snow",          [86]: "snow"
+  [95]: "thunderstorm",  [96]: "thunderstorm",  [99]: "thunderstorm"
+
 DIRECTIONS = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" }
 
 description = (code) ->
   DESCRIPTIONS[code] or "Code #{code}"
+
+icon = (code) ->
+  name = ICONS[code] or "cloud"
+  "assets/icons/weather/#{name}.svg"
 
 wind_dir = (degrees) ->
   idx = math.floor((degrees + 22.5) / 45) % 8
@@ -45,4 +61,4 @@ forecast = (lat, lon) ->
   response = network.fetch url
   response\json!
 
-return { :description, :wind_dir, :current, :forecast }
+return { :description, :icon, :wind_dir, :current, :forecast }

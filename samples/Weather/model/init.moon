@@ -39,6 +39,9 @@ class Weather
   -- Human-readable label for a WMO weather code.
   description: (code) => weather_api.description code
 
+  -- SVG icon path for a WMO weather code.
+  icon: (code) => weather_api.icon code
+
   -- Cardinal direction string ("N", "NE", …) from a bearing in degrees.
   wind_dir: (degrees) => weather_api.wind_dir degrees
 
