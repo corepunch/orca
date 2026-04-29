@@ -10,17 +10,21 @@ class ForecastScreen extends Widget
 
 	content: =>
 		forecast = Weather\forecast!
-		StackView class: "bg-background p-6 gap-2", =>
-			TextBlock class: "text-xl text-foreground", "#{FORECAST_DAYS}-Day Forecast"
+		StackView class: "bg-slate-900 p-5 gap-3", =>
+			TextBlock class: "text-2xl font-bold text-slate-100", "#{FORECAST_DAYS}-Day Forecast"
 			for i = 1, math.min(FORECAST_DAYS, #forecast.time)
 				code = forecast.weather_code[i]
 				desc = Weather\description code
 				icon_src = Weather\icon code
 				hi   = Weather\format_temp forecast.temperature_2m_max[i]
 				lo   = Weather\format_temp forecast.temperature_2m_min[i]
-				StackView class: "flex-row items-center gap-3 py-1", =>
+				StackView class: "bg-slate-800 rounded-3 px-4 py-3 flex-row items-center gap-3", =>
 					ImageView
-						class: "align-middle-center text-foreground"
-						Source: "#{icon_src}?width=32&type=mask"
-					TextBlock class: "text-base text-foreground",
-						"#{forecast.time[i]}: #{hi} / #{lo}  #{desc}"
+						class: "align-middle-center text-sky-400"
+						Source: "#{icon_src}?width=28&type=mask"
+					StackView class: "gap-1", =>
+						TextBlock class: "text-xs text-slate-400", forecast.time[i]
+						TextBlock class: "text-sm text-slate-300", desc
+					StackView class: "flex-row gap-2 items-center", =>
+						TextBlock class: "text-base font-bold text-orange-400", hi
+						TextBlock class: "text-sm text-blue-300", lo
