@@ -9,24 +9,25 @@ NAV_ITEMS = {
 }
 
 make_header = (title) ->
-	StackView class: "bg-card px-5 py-3 justify-center", =>
-		TextBlock class: "text-2xl align-center text-card-foreground", title
+	StackView class: "bg-slate-800 px-5 py-3 justify-center", =>
+		TextBlock class: "text-2xl font-bold align-center text-slate-100", title
 
 make_footer = (active_route, navigate) ->
-	StackView class: "bg-card flex-row justify-evenly items-center p-2", =>
+	StackView class: "bg-slate-800 flex-row justify-evenly items-center p-2", =>
 		for item in *NAV_ITEMS
 			selected = active_route == item.route
-			color = selected and "text-primary" or "text-muted-foreground"
+			color = selected and "text-sky-400" or "text-slate-500"
+			weight = selected and "font-bold" or "font-normal"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
 				ImageView
 					class: "align-middle-center #{color}"
-					Source: "#{item.icon}?width=48&type=mask"
+					Source: "#{item.icon}?width=28&type=mask"
 					LeftButtonUp: -> navigate item.route
-				TextBlock class: "text-xs #{color}", item.label
+				TextBlock class: "text-xs #{color} #{weight}", item.label
 
 make_placeholder = ->
-	StackView class: "p-6 gap-2", =>
-		TextBlock class: "text-base text-muted-foreground", "No content for this route"
+	StackView class: "bg-slate-900 p-6 gap-2", =>
+		TextBlock class: "text-base text-slate-400", "No content for this route"
 
 class Default extends Widget
 	content: =>
@@ -39,10 +40,10 @@ class Default extends Widget
 		footer = @content_for("footer") or make_footer active_route, navigate
 
 		Screen ->
-			Grid Rows: "32px 48px 1fr 72px 24px", =>
-				Node2D class: "bg-card"
+			Grid Rows: "32px 52px 1fr 72px 24px", =>
+				Node2D class: "bg-slate-800"
 				make_header title
 				@addChild (inner or make_placeholder!)
 				@addChild (footer or make_footer active_route, navigate)
-				Node2D class: "bg-card"
+				Node2D class: "bg-slate-800"
 		
