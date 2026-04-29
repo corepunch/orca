@@ -101,4 +101,22 @@ test_class_helper_found_on_instance()
 test_class_helper_does_not_shadow_core()
 test_has_content_for()
 
+-- ---------------------------------------------------------------------------
+-- Test 8: content_for rejects a non-string name
+-- ---------------------------------------------------------------------------
+local function test_content_for_rejects_non_string_name()
+  local w = Widget()
+  w:set_render_context({ slots = {} })
+  local ok, err = pcall(function() w:content_for(nil, "value") end)
+  test.expect(not ok, "content_for with nil name should error")
+  test.expect(err:find("name must be a string") ~= nil, "error should mention 'name must be a string'")
+
+  local ok2, err2 = pcall(function() w:content_for(42, "value") end)
+  test.expect(not ok2, "content_for with number name should error")
+  test.expect(err2:find("name must be a string") ~= nil, "error should mention 'name must be a string'")
+  print("PASS: test_content_for_rejects_non_string_name")
+end
+
+test_content_for_rejects_non_string_name()
+
 print("All widget tests passed.")
