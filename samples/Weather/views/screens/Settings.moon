@@ -21,7 +21,7 @@ class SettingsScreen extends Widget
 					Direction:     "Horizontal"
 					Spacing:       8
 					SelectionChanged: (self) ->
-						Settings\set_unit self.SelectedValue
+						Settings.set_unit self.SelectedValue
 						app\navigate "/settings"
 				}, =>
 					RadioButton {
