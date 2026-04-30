@@ -18,10 +18,13 @@ class SavedScreen extends require "orca.core.widget"
 		StackView class: "bg-slate-900 p-5 gap-3", =>
 			StackView class: "flex-row items-center gap-3", =>
 				TextBlock class: "text-2xl font-bold text-slate-100", "Saved Locations"
-				TextBlock {
-					class: "align-middle-right bg-sky-500 text-white rounded-full px-3 py-1 font-bold"
+				StackView {
+					class: "align-middle-right bg-sky-500 rounded-full p-2"
 					LeftButtonUp: -> navigate "/location-search"
-				}, "+"
+				}, =>
+					ImageView
+						class: "align-middle-center text-white"
+						Source: "assets/icons/plus.svg?width=22&type=mask"
 			for loc in *LOCATIONS
 				selected = loc == current
 				row_class = selected and

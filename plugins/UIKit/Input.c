@@ -109,6 +109,7 @@ HANDLER(Input, Node, KeyDown)
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
+  bool_t textChanged = FALSE;
 
   switch (pKeyDown->keyCode) {
     case AX_KEY_BACKSPACE:
@@ -116,6 +117,7 @@ HANDLER(Input, Node, KeyDown)
         pInput->Cursor--;
         for (char *a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
           ;
+        textChanged = TRUE;
       }
       break;
     case AX_KEY_ESCAPE:
@@ -137,8 +139,8 @@ HANDLER(Input, Node, KeyDown)
             szText[s] = szText[s - 1];
           }
           szText[pInput->Cursor++] = '\n';
+          textChanged = TRUE;
         }
-        SV_PostMessage(hObject, "Char", 0, 0);
       }
       break;
     case AX_KEY_LEFTARROW:
@@ -154,7 +156,7 @@ HANDLER(Input, Node, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      if (pInput->Cursor < (int)sizeof(szText) - 1) {
+      if (pKeyDown->character && pInput->Cursor < (int)sizeof(szText) - 1) {
         if (dwLength + 1 < sizeof(szText) - 1) {
           szText[dwLength + 1] = 0;
           for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
@@ -163,13 +165,17 @@ HANDLER(Input, Node, KeyDown)
         }
 //        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
         szText[pInput->Cursor++] = pKeyDown->character;
+        textChanged = TRUE;
       }
-      SV_PostMessage(hObject, "Char", 0, 0);
       break;
   }
   struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
     PROP_SetStringValue(prop, szText);
+  }
+  if (textChanged) {
+    SV_PostMessage(hObject, "TextInput", 0, 0);
+    SV_PostMessage(hObject, "Char", 0, 0);
   }
   OBJ_SetDirty(hObject);
   return TRUE;
