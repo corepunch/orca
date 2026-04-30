@@ -557,6 +557,7 @@ Shader_BindMaterial(struct shader const* shader,
 
   float w = MAX(1, (ent->bbox.max.x - ent->bbox.min.x) + ent->borderOffset);
   float h = MAX(1, (ent->bbox.max.y - ent->bbox.min.y) + ent->borderOffset);
+  float radiusLimit = MIN(w, h) * 0.5f;
 
 	if (!memcmp(&color, &(struct color){0}, sizeof(struct color))) {
 		color = (struct color){1, 1, 1, 1};
@@ -654,10 +655,10 @@ Shader_BindMaterial(struct shader const* shader,
         break;
       case kShaderUniform_Radius:
         R_Call(glUniform4f, location,
-               MAX(EPSILON, MIN(MIN(w, h), ent->radius.x + ent->borderOffset)),
-               MAX(EPSILON, MIN(MIN(w, h), ent->radius.y + ent->borderOffset)),
-               MAX(EPSILON, MIN(MIN(w, h), ent->radius.z + ent->borderOffset)),
-               MAX(EPSILON, MIN(MIN(w, h), ent->radius.w + ent->borderOffset)));
+               MAX(EPSILON, MIN(radiusLimit, ent->radius.x + ent->borderOffset)),
+               MAX(EPSILON, MIN(radiusLimit, ent->radius.y + ent->borderOffset)),
+               MAX(EPSILON, MIN(radiusLimit, ent->radius.z + ent->borderOffset)),
+               MAX(EPSILON, MIN(radiusLimit, ent->radius.w + ent->borderOffset)));
         break;
       case kShaderUniform_BorderWidth:
         R_Call(glUniform4f, location,

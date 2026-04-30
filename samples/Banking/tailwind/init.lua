@@ -166,6 +166,7 @@ style[".italic"] = { FontStyle = "Italic" }
 style[".w-full"] = { HorizontalAlignment = "Stretch" }
 style[".h-full"] = { VerticalAlignment = "Stretch" }
 style[".rounded"] = { BorderRadius = "8" }
+style[".rounded-full"] = { BorderRadius = "9999" }
 style[".border"] = { BorderWidth = "1" }
 style[".underline"] = { UnderlineWidth = "1" }
 style[".no-underline"] = { UnderlineWidth = "0" }

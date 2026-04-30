@@ -115,7 +115,17 @@ struct shader_desc shader_ui = {
   "  float rad = mix(mix(r.x, r.y, s.x), mix(r.w, r.z, s.x), s.y);\n"
   "  vec2 brd = vec2(mix(b.x, b.y, s.x), mix(b.z, b.w, s.y));\n"
   "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "#ifdef USE_SQUIRCLE\n"
+  "  vec2 corner = vec2(1.0) - a_position.xy * 2.0;\n"
+  "  vec2 arc = a_texcoord0 - corner;\n"
+  "  vec2 squircleArc = sign(arc) * pow(abs(arc), vec2(0.5));\n"
+  "  vec2 squircleBorder = sign(a_texcoord1) * pow(abs(a_texcoord1), vec2(0.5));\n"
+  "  vec2 softArc = mix(arc, squircleArc, 0.35);\n"
+  "  vec2 softBorder = mix(a_texcoord1, squircleBorder, 0.35);\n"
+  "  vec2 pos = a_position.xy * rectSize + (corner + softArc) * rad + softBorder * brd;\n"
+  "#else\n"
   "  vec2 pos = a_position.xy * rectSize + a_texcoord0 * rad + a_texcoord1 * brd;\n"
+  "#endif\n"
   "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
   "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
   "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
@@ -452,5 +462,3 @@ struct shader_desc shader_roundedbox = {
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
   "}\n"
 };
-
-
