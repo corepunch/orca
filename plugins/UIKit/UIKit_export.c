@@ -628,6 +628,7 @@ struct Form* luaX_checkForm(lua_State *L, int idx) {
 #define ID_StackView 0x56aa550a
 REGISTER_CLASS(Form, ID_StackView, 0);
 HANDLER(RadioButton, Object, Create);
+HANDLER(RadioButton, Object, PropertyChanged);
 HANDLER(RadioButton, Node, LeftButtonUp);
 static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
 	DECL(0xea50a536, RadioButton, IsChecked, IsChecked, kDataTypeBool), // RadioButton.IsChecked
@@ -638,6 +639,7 @@ static struct RadioButton RadioButtonDefaults = {
 LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case ID_Object_Create: return RadioButton_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_PropertyChanged: return RadioButton_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 	}
 	return FALSE;

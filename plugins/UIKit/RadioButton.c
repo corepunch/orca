@@ -3,9 +3,43 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+static void
+RadioButton_SetChecked(struct Object *object,
+                       struct RadioButton *button,
+                       bool_t checked)
+{
+  if (!object || !button)
+    return;
+
+  button->IsChecked = checked;
+
+  uint32_t flags = OBJ_GetFlags(object);
+  flags = checked ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
+  OBJ_SetFlags(object, flags);
+
+  OBJ_SetDirty(object);
+  _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
+}
+
 HANDLER(RadioButton, Object, Create)
 {
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
+  struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
+  if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
+
+  RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);
+  return FALSE;
+}
+
+HANDLER(RadioButton, Object, PropertyChanged)
+{
+  if (!pPropertyChanged->Property)
+    return FALSE;
+
+  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_IsChecked) {
+    RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);
+  }
+
   return FALSE;
 }
 
@@ -24,8 +58,7 @@ HANDLER(RadioButton, Node, LeftButtonUp)
   const char *oldValue = rg->SelectedValue;
 
   /* Mark this button as selected */
-  pRadioButton->IsChecked = TRUE;
-  OBJ_SetDirty(hObject);
+  RadioButton_SetChecked(hObject, pRadioButton, TRUE);
 
   /* Update SelectedValue on the group */
   rg->SelectedValue = pRadioButton->Value;
@@ -36,8 +69,7 @@ HANDLER(RadioButton, Node, LeftButtonUp)
     if (child == hObject) continue;
     struct RadioButton *rb = GetRadioButton(child);
     if (rb && rb->IsChecked) {
-      rb->IsChecked = FALSE;
-      OBJ_SetDirty(child);
+      RadioButton_SetChecked(child, rb, FALSE);
     }
   }
 

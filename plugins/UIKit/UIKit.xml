@@ -518,6 +518,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>

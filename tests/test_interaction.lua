@@ -162,7 +162,9 @@ local function test_radio_group_interaction()
 
 	test.expect_eq(group.SelectedValue, "fahrenheit", "RadioGroup.SelectedValue should be 'fahrenheit' after click")
 	test.expect(btn_f.IsChecked,     "RadioButton fahrenheit should be IsChecked after click")
+	test.expect(btn_f.selected,      "RadioButton fahrenheit should expose selected state for active styles")
 	test.expect(not btn_c.IsChecked, "RadioButton celsius should NOT be IsChecked after sibling click")
+	test.expect(not btn_c.selected,  "RadioButton celsius selected state should be cleared after sibling click")
 	test.expect_eq(selected_value, "fahrenheit", "SelectionChanged handler should receive the new SelectedValue")
 	test.expect(old_value_seen == nil, "OldValue should be nil when nothing was previously selected")
 
@@ -174,7 +176,9 @@ local function test_radio_group_interaction()
 
 	test.expect_eq(group.SelectedValue, "celsius",    "RadioGroup.SelectedValue should switch to 'celsius'")
 	test.expect(btn_c.IsChecked,     "RadioButton celsius should be IsChecked after click")
+	test.expect(btn_c.selected,      "RadioButton celsius should expose selected state for active styles")
 	test.expect(not btn_f.IsChecked, "RadioButton fahrenheit should NOT be IsChecked after sibling click")
+	test.expect(not btn_f.selected,  "RadioButton fahrenheit selected state should be cleared after sibling click")
 	test.expect_eq(selected_value, "celsius",     "SelectionChanged should report new SelectedValue")
 	test.expect_eq(old_value_seen, "fahrenheit",  "SelectionChanged should report OldValue = 'fahrenheit'")
 
