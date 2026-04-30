@@ -1,8 +1,7 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Widget = require "orca.core.widget"
 import LOCATIONS from require "model"
 
-class SavedScreen extends Widget
+class SavedScreen extends require "orca.core.widget"
 	title: "Saved"
 
 	content: =>

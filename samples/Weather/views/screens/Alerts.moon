@@ -1,7 +1,6 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Widget = require "orca.core.widget"
 
-class AlertsScreen extends Widget
+class AlertsScreen extends require "orca.core.widget"
 	title: "Alerts"
 
 	content: =>

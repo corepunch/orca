@@ -1,7 +1,6 @@
 import StackView, TextBlock from require "orca.UIKit"
-Widget = require "orca.core.widget"
 
-class AboutScreen extends Widget
+class AboutScreen extends require "orca.core.widget"
 	title: "About"
 
 	content: =>

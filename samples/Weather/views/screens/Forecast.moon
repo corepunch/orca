@@ -1,11 +1,10 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Widget = require "orca.core.widget"
 import Weather from require "model"
 
 -- Number of forecast days to display.
 FORECAST_DAYS = 7
 
-class ForecastScreen extends Widget
+class ForecastScreen extends require "orca.core.widget"
 	title: "Forecast"
 
 	content: =>

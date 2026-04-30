@@ -1,8 +1,12 @@
 import StackView, TextBlock, RadioGroup, RadioButton from require "orca.UIKit"
-Widget      = require "orca.core.widget"
 import Settings from require "model"
 
-class SettingsScreen extends Widget
+temperature_units = {
+	{ value: "celsius", label: "°C  Celsius" }
+	{ value: "fahrenheit", label: "°F  Fahrenheit" }
+}
+
+class SettingsScreen extends require "orca.core.widget"
 	title: "Settings"
 
 	content: =>
@@ -20,13 +24,9 @@ class SettingsScreen extends Widget
 					Spacing:       8
 					SelectionChanged: (self) -> Settings.set_unit self.SelectedValue
 				}, =>
-					RadioButton {
-						Value:     "celsius"
-						IsChecked: unit == "celsius"
-						class:     "px-4 py-2 rounded-full bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
-					}, "°C  Celsius"
-					RadioButton {
-						Value:     "fahrenheit"
-						IsChecked: unit == "fahrenheit"
-						class:     "px-4 py-2 rounded-full bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
-					}, "°F  Fahrenheit"
+					for option in *temperature_units
+						RadioButton {
+							Value:     option.value
+							IsChecked: unit == option.value
+							class:     "px-4 py-2 rounded-full bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
+						}, option.label

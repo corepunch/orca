@@ -1,8 +1,7 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Widget = require "orca.core.widget"
 import Weather, LOCATIONS from require "model"
 
-class HomeScreen extends Widget
+class HomeScreen extends require "orca.core.widget"
 	title: "Today"
 
 	content: =>
