@@ -520,6 +520,7 @@
         <handle message="Object.Create"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
+        <handle message="Node.KeyDown"/>
       </handles>
       <properties>
         <property name="IsChecked" type="bool">Whether this option is currently selected</property>

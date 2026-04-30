@@ -3,6 +3,9 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+struct Object *
+_NextTabStop(struct Object *hObject);
+
 static void
 RadioButton_SetChecked(struct Object *object,
                        struct RadioButton *button,
@@ -19,6 +22,76 @@ RadioButton_SetChecked(struct Object *object,
 
   OBJ_SetDirty(object);
   _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
+}
+
+static bool_t
+RadioButton_Select(struct Object *object, struct RadioButton *button)
+{
+  struct Object *group = OBJ_GetParent(object);
+  if (!group || !GetRadioGroup(group))
+    return TRUE;
+
+  struct RadioGroup *rg = GetRadioGroup(group);
+
+  if (button->IsChecked)
+    return TRUE;
+
+  const char *oldValue = rg->SelectedValue;
+
+  RadioButton_SetChecked(object, button, TRUE);
+
+  rg->SelectedValue = button->Value;
+  OBJ_SetDirty(group);
+
+  FOR_EACH_OBJECT(child, group) {
+    if (child == object) continue;
+    struct RadioButton *rb = GetRadioButton(child);
+    if (rb && rb->IsChecked) {
+      RadioButton_SetChecked(child, rb, FALSE);
+    }
+  }
+
+  struct RadioGroup_SelectionChangedEventArgs args = {
+    .SelectedValue = rg->SelectedValue,
+    .OldValue      = oldValue,
+  };
+  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
+    .target  = group,
+    .message = ID_RadioGroup_SelectionChanged,
+    .lParam  = &args,
+  });
+  return TRUE;
+}
+
+static struct Object *
+RadioButton_FindSibling(struct Object *object, bool_t forward)
+{
+  struct Object *group = OBJ_GetParent(object);
+  if (!group || !GetRadioGroup(group))
+    return NULL;
+
+  struct Object *first = NULL;
+  struct Object *last = NULL;
+  struct Object *previous = NULL;
+  bool_t seenCurrent = FALSE;
+
+  FOR_EACH_OBJECT(child, group) {
+    if (!GetRadioButton(child)) continue;
+    if (!first) first = child;
+
+    if (forward && seenCurrent)
+      return child;
+    if (child == object) {
+      if (!forward)
+        return previous;
+      seenCurrent = TRUE;
+    }
+
+    previous = child;
+    last = child;
+  }
+
+  return forward ? first : last;
 }
 
 HANDLER(RadioButton, Object, Create)
@@ -45,48 +118,38 @@ HANDLER(RadioButton, Object, PropertyChanged)
 
 HANDLER(RadioButton, Node, LeftButtonUp)
 {
-  struct Object *group = OBJ_GetParent(hObject);
-  if (!group || !GetRadioGroup(group))
-    return TRUE;
+  return RadioButton_Select(hObject, pRadioButton);
+}
 
-  struct RadioGroup *rg = GetRadioGroup(group);
-
-  /* No-op if this button is already selected */
-  if (pRadioButton->IsChecked)
-    return TRUE;
-
-  const char *oldValue = rg->SelectedValue;
-
-  /* Mark this button as selected */
-  RadioButton_SetChecked(hObject, pRadioButton, TRUE);
-
-  /* Update SelectedValue on the group */
-  rg->SelectedValue = pRadioButton->Value;
-  OBJ_SetDirty(group);
-
-  /* Clear IsChecked on every sibling RadioButton */
-  FOR_EACH_OBJECT(child, group) {
-    if (child == hObject) continue;
-    struct RadioButton *rb = GetRadioButton(child);
-    if (rb && rb->IsChecked) {
-      RadioButton_SetChecked(child, rb, FALSE);
+HANDLER(RadioButton, Node, KeyDown)
+{
+  switch (pKeyDown->keyCode) {
+    case AX_KEY_SPACE:
+    case AX_KEY_ENTER:
+    case AX_KEY_KP_ENTER:
+      return RadioButton_Select(hObject, pRadioButton);
+    case AX_KEY_RIGHTARROW:
+    case AX_KEY_DOWNARROW: {
+      struct Object *next = RadioButton_FindSibling(hObject, TRUE);
+      if (next) {
+        OBJ_SetFocus(next);
+        return RadioButton_Select(next, GetRadioButton(next));
+      }
+      return TRUE;
     }
+    case AX_KEY_LEFTARROW:
+    case AX_KEY_UPARROW: {
+      struct Object *previous = RadioButton_FindSibling(hObject, FALSE);
+      if (previous) {
+        OBJ_SetFocus(previous);
+        return RadioButton_Select(previous, GetRadioButton(previous));
+      }
+      return TRUE;
+    }
+    case AX_KEY_TAB:
+      OBJ_SetFocus(_NextTabStop(hObject));
+      return TRUE;
+    default:
+      return FALSE;
   }
-
-  /* Fire RadioGroup.SelectionChanged synchronously so that Lua handlers
-     registered on the group see the correct SelectedValue/OldValue within
-     the same dispatch pass.  The args live on the stack; push_object_message_arg
-     copies them into a Lua full-userdata before this call returns.
-     Return value not checked: a FALSE result means no handler was registered,
-     which is a valid no-op (SelectionChanged is optional). */
-  struct RadioGroup_SelectionChangedEventArgs args = {
-    .SelectedValue = rg->SelectedValue,
-    .OldValue      = oldValue,
-  };
-  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
-    .target  = group,
-    .message = ID_RadioGroup_SelectionChanged,
-    .lParam  = &args,
-  });
-  return TRUE;
 }

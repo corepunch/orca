@@ -137,6 +137,8 @@ end
 -- RadioGroup: click selects the correct option, fires SelectionChanged
 -- ---------------------------------------------------------------------------
 local function test_radio_group_interaction()
+	local AX_KEY_SPACE = 32
+	local AX_KEY_LEFTARROW = 130
 	local selected_value = nil
 	local old_value_seen = nil
 
@@ -187,6 +189,26 @@ local function test_radio_group_interaction()
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
 	test.expect(selected_value == nil, "SelectionChanged should NOT fire when clicking already-selected button")
+
+	-- Space selects the focused radio button.
+	selected_value = nil
+	old_value_seen = nil
+	btn_f:setFocus()
+	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = AX_KEY_SPACE }
+	test.expect_eq(group.SelectedValue, "fahrenheit", "Space should select the focused radio button")
+	test.expect(btn_f.IsChecked, "Focused RadioButton should be IsChecked after Space")
+	test.expect_eq(selected_value, "fahrenheit", "Space selection should fire SelectionChanged")
+	test.expect_eq(old_value_seen, "celsius", "Space selection should report OldValue")
+
+	-- Arrow keys move selection and focus within the group.
+	selected_value = nil
+	old_value_seen = nil
+	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = AX_KEY_LEFTARROW }
+	test.expect_eq(group.SelectedValue, "celsius", "Left arrow should select the previous radio button")
+	test.expect(btn_c.IsChecked, "Previous RadioButton should be IsChecked after Left arrow")
+	test.expect(btn_c:isFocused(), "Previous RadioButton should receive focus after Left arrow")
+	test.expect_eq(selected_value, "celsius", "Arrow selection should fire SelectionChanged")
+	test.expect_eq(old_value_seen, "fahrenheit", "Arrow selection should report OldValue")
 
 	group:removeFromParent()
 end

@@ -630,6 +630,7 @@ REGISTER_CLASS(Form, ID_StackView, 0);
 HANDLER(RadioButton, Object, Create);
 HANDLER(RadioButton, Object, PropertyChanged);
 HANDLER(RadioButton, Node, LeftButtonUp);
+HANDLER(RadioButton, Node, KeyDown);
 static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
 	DECL(0xea50a536, RadioButton, IsChecked, IsChecked, kDataTypeBool), // RadioButton.IsChecked
 	DECL(0xd147f96a, RadioButton, Value, Value, kDataTypeString), // RadioButton.Value
@@ -641,6 +642,7 @@ LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wPar
 		case ID_Object_Create: return RadioButton_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_PropertyChanged: return RadioButton_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+		case ID_Node_KeyDown: return RadioButton_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
 	}
 	return FALSE;
 }
