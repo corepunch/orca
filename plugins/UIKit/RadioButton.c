@@ -162,7 +162,6 @@ HANDLER(RadioButton, Node2D, DrawBrush)
   if (!pNode2D) return FALSE;
 
   float indicatorSize = pRadioButton->IndicatorSize;
-  float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   float bx = pNode2D->_rect.x;
   float by = pNode2D->_rect.y + (h - indicatorSize) * 0.5f;

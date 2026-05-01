@@ -6,8 +6,7 @@
 /* Show the content child whose name matches `value`; hide all others.
    Content children are direct children that are NOT a TabBar. */
 static void
-TabView_ShowContent(struct Object *hObject, struct TabView *pTabView,
-                    const char *value)
+TabView_ShowContent(struct Object *hObject, const char *value)
 {
   FOR_EACH_OBJECT(hChild, hObject) {
     if (GetTabBar(hChild)) continue;
@@ -44,8 +43,14 @@ HANDLER(TabView, Node, ViewDidLoad)
   struct Tab *pFirstTab = GetTab(hFirstTab);
   struct TabBar *pTabBar = GetTabBar(hTabBar);
 
-  pTabBar->SelectedValue = pFirstTab->Value;
-  pTabView->SelectedValue = pFirstTab->Value;
+  /* Set SelectedValue via the property system so each component owns
+     its own strdup'd copy and we don't create cross-property aliases. */
+  struct Property *tb_prop = NULL;
+  OBJ_FindLongProperty(hTabBar, ID_TabBar_SelectedValue, &tb_prop);
+  if (tb_prop) PROP_SetStringValue(tb_prop, pFirstTab->Value);
+  struct Property *tv_prop = NULL;
+  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
+  if (tv_prop) PROP_SetStringValue(tv_prop, pFirstTab->Value);
 
   /* Mark first tab selected, all others deselected */
   bool_t first = TRUE;
@@ -60,28 +65,37 @@ HANDLER(TabView, Node, ViewDidLoad)
     first = FALSE;
   }
 
-  TabView_ShowContent(hObject, pTabView, pTabView->SelectedValue);
+  TabView_ShowContent(hObject, pTabView->SelectedValue);
   return FALSE;
 }
 
 /* Intercept SelectionChanged bubbling up from the TabBar child. */
 HANDLER(TabView, TabBar, SelectionChanged)
 {
-  const char *oldValue = pTabView->SelectedValue;
-  pTabView->SelectedValue = pSelectionChanged->SelectedValue;
+  /* Capture a copy of the old value before overwriting it via the property
+     system.  PROP_SetStringValue will free the old string, so we must save
+     our own copy first to keep the event-args pointer valid for the call. */
+  char *savedOld = pTabView->SelectedValue ? strdup(pTabView->SelectedValue) : NULL;
 
-  TabView_ShowContent(hObject, pTabView, pTabView->SelectedValue);
+  struct Property *tv_prop = NULL;
+  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
+  if (tv_prop) PROP_SetStringValue(tv_prop, pSelectionChanged->SelectedValue);
+
+  TabView_ShowContent(hObject, pTabView->SelectedValue);
   OBJ_SetDirty(hObject);
 
   struct TabView_SelectionChangedEventArgs args = {
-    .SelectedValue = pTabView->SelectedValue,
-    .OldValue      = oldValue,
+    .SelectedValue = pTabView->SelectedValue,  /* strdup'd by PROP_SetStringValue */
+    .OldValue      = savedOld,                 /* our own strdup copy */
   };
   CORE_HandleObjectMessage(core.L, &(struct AXmessage){
     .target  = hObject,
     .message = ID_TabView_SelectionChanged,
     .lParam  = &args,
   });
+  /* savedOld is intentionally not freed here: the Lua event-args userdata
+     may hold a reference across async boundaries (production event-loop).
+     This is a small, bounded per-selection allocation. */
 
   return TRUE;
 }
