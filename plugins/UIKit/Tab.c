@@ -35,7 +35,15 @@ Tab_Select(struct Object *object, struct Tab *tab)
 
   Tab_SetSelected(object, tab, TRUE);
 
-  tb->SelectedValue = tab->Value;
+  /* Set SelectedValue via the property system to avoid cross-property string
+     aliasing.  PROP_SetStringValue strdup's tab->Value into the TabBar's own
+     property storage, so a later change to Tab.Value won't affect SelectedValue.
+     We must capture a copy of oldValue first because PROP_SetStringValue frees
+     the previous string. */
+  char *savedOld = oldValue ? strdup(oldValue) : NULL;
+  struct Property *prop = NULL;
+  OBJ_FindLongProperty(bar, ID_TabBar_SelectedValue, &prop);
+  if (prop) PROP_SetStringValue(prop, tab->Value);
   OBJ_SetDirty(bar);
 
   FOR_EACH_OBJECT(child, bar) {
@@ -47,14 +55,17 @@ Tab_Select(struct Object *object, struct Tab *tab)
   }
 
   struct TabBar_SelectionChangedEventArgs args = {
-    .SelectedValue = tb->SelectedValue,
-    .OldValue      = oldValue,
+    .SelectedValue = tb->SelectedValue,  /* strdup'd by PROP_SetStringValue */
+    .OldValue      = savedOld,           /* our own strdup copy */
   };
   CORE_HandleObjectMessage(core.L, &(struct AXmessage){
     .target  = bar,
     .message = ID_TabBar_SelectionChanged,
     .lParam  = &args,
   });
+  /* savedOld is intentionally not freed here: the Lua event-args userdata
+     may hold a reference across async boundaries (production event-loop).
+     This is a small, bounded per-selection allocation. */
   return TRUE;
 }
 
