@@ -93,7 +93,7 @@ HANDLER(Tab, Node2D, DrawBrush)
   if (!pNode2D) return FALSE;
 
   struct ViewEntity entity;
-  Node2D_GetViewEntity(pNode2D, &entity, NULL, pDrawBrush->brush);
+  Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
 
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);

@@ -209,6 +209,16 @@ static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
 	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
 };
+static luaL_Reg _RadioGroup_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _RadioGroup_SelectionChangedEventArgs[] = {
+	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
+	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
+};
+static luaL_Reg _TabBar_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TabBar_SelectionChangedEventArgs[] = {
+	DECL(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.SelectedValue
+	DECL(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.OldValue
+};
 
 STRUCT(TextBlockConcept_MakeTextEventArgs, TextBlockConcept_MakeTextEventArgs);
 STRUCT(Node2D_DrawBrushEventArgs, Node2D_DrawBrushEventArgs);
@@ -231,6 +241,8 @@ STRUCT(ConsoleView_UnpackEventArgs, ConsoleView_UnpackEventArgs);
 STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
+STRUCT(RadioGroup_SelectionChangedEventArgs, RadioGroup_SelectionChangedEventArgs);
+STRUCT(TabBar_SelectionChangedEventArgs, TabBar_SelectionChangedEventArgs);
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
@@ -1126,6 +1138,8 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_GetIndexPositionEventArgs(L), -2), "ConsoleView_GetIndexPositionEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_RadioGroup_SelectionChangedEventArgs(L), -2), "RadioGroup_SelectionChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_TabBar_SelectionChangedEventArgs(L), -2), "TabBar_SelectionChangedEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Brush), -2), "Brush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ColorBrush), -2), "ColorBrush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_TextRun), -2), "TextRun");

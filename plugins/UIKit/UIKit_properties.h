@@ -655,6 +655,14 @@ enum StyleProperties {
 #define ID_PageHost_NavigateBackEventArgs 0xa3f6a342
 
 #define ID_PageHost_NavigateBackEventArgs_TransitionType 0x0531cd67 // PageHost_NavigateBackEventArgs.TransitionType
+#define ID_RadioGroup_SelectionChangedEventArgs 0x43080eb7
+
+#define ID_RadioGroup_SelectionChangedEventArgs_SelectedValue 0x2a19d223 // RadioGroup_SelectionChangedEventArgs.SelectedValue
+#define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
+#define ID_TabBar_SelectionChangedEventArgs 0xb3a9c421
+
+#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0x5c04816d // TabBar_SelectionChangedEventArgs.SelectedValue
+#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x2ee43757 // TabBar_SelectionChangedEventArgs.OldValue
 	
 
 #endif

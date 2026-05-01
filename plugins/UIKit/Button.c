@@ -12,13 +12,13 @@ HANDLER(Button, Node2D, DrawBrush) {
   if (!pNode2D) return FALSE;
 
   struct ViewEntity entity;
-  Node2D_GetViewEntity(pNode2D, &entity, pDrawBrush->image, pDrawBrush->brush);
+  Node2D_GetViewEntity(pNode2D, &entity, pDrawBrush->image, &pDrawBrush->brush);
 
   /* Use the brush color if one is explicitly set (non-zero alpha),
      otherwise fall back to the component's DiffuseColor default. */
   struct color faceColor =
-      (pDrawBrush->brush && pDrawBrush->brush->Color.a > 0.0f)
-          ? pDrawBrush->brush->Color
+      (pDrawBrush->brush.Color.a > 0.0f)
+          ? pDrawBrush->brush.Color
           : pButton->DiffuseColor;
 
   float opacity = entity.material.opacity;
