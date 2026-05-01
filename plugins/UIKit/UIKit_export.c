@@ -654,6 +654,8 @@ struct RadioButton* luaX_checkRadioButton(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(RadioButton, ID_TextBlock, 0);
+HANDLER(RadioGroup, Object, Start);
+HANDLER(RadioGroup, Object, PropertyChanged);
 HANDLER(RadioGroup, RadioGroup, SelectionChanged);
 static struct PropertyType const RadioGroupProperties[kRadioGroupNumProperties] = {
 	DECL(0x5c04816d, RadioGroup, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup.SelectedValue
@@ -663,6 +665,8 @@ static struct RadioGroup RadioGroupDefaults = {
 };
 LRESULT RadioGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Start: return RadioGroup_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return RadioGroup_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_RadioGroup_SelectionChanged: return RadioGroup_SelectionChanged(object, cmp, wparm, lparm); // RadioGroup.SelectionChanged
 	}
 	return FALSE;

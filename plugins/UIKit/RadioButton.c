@@ -24,21 +24,19 @@ RadioButton_SetChecked(struct Object *object,
   _SendMessage(object, StyleController, ThemeChanged, .recursive = FALSE);
 }
 
-static bool_t
-RadioButton_Select(struct Object *object, struct RadioButton *button)
+/* Sync the parent RadioGroup after this button has been checked: clears
+   sibling buttons, updates SelectedValue, and fires SelectionChanged.
+   Assumes the caller has already set button->IsChecked = TRUE via
+   RadioButton_SetChecked. */
+static void
+RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
 {
   struct Object *group = OBJ_GetParent(object);
   if (!group || !GetRadioGroup(group))
-    return TRUE;
+    return;
 
   struct RadioGroup *rg = GetRadioGroup(group);
-
-  if (button->IsChecked)
-    return TRUE;
-
   const char *oldValue = rg->SelectedValue;
-
-  RadioButton_SetChecked(object, button, TRUE);
 
   rg->SelectedValue = button->Value;
   OBJ_SetDirty(group);
@@ -60,6 +58,16 @@ RadioButton_Select(struct Object *object, struct RadioButton *button)
     .message = ID_RadioGroup_SelectionChanged,
     .lParam  = &args,
   });
+}
+
+static bool_t
+RadioButton_Select(struct Object *object, struct RadioButton *button)
+{
+  if (button->IsChecked)
+    return TRUE;
+
+  RadioButton_SetChecked(object, button, TRUE);
+  RadioButton_SyncGroup(object, button);
   return TRUE;
 }
 
@@ -111,6 +119,8 @@ HANDLER(RadioButton, Object, PropertyChanged)
 
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_IsChecked) {
     RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);
+    if (pRadioButton->IsChecked)
+      RadioButton_SyncGroup(hObject, pRadioButton);
   }
 
   return FALSE;

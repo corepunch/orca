@@ -12,6 +12,12 @@ LOCATIONS = {
   { name: "Berlin",        lat: 52.5200, lon: 13.4050   }
 }
 
+-- Currently selected location (defaults to the first saved location).
+_current_location = LOCATIONS[1]
+
+get_location = -> _current_location
+set_location = (loc) -> _current_location = loc
+
 -- Module-level cache – reset when the app restarts.
 context = {}
 
@@ -22,7 +28,7 @@ context = {}
 -- synchronous render during startup).
 class Weather
   -- Returns the current-conditions table for (lat, lon).
-  current: (lat=DEFAULT_LAT, lon=DEFAULT_LON) =>
+  current: (lat=_current_location.lat, lon=_current_location.lon) =>
     key = "current:#{lat},#{lon}"
     return context[key] if context[key]
     data = weather_api.current lat, lon
@@ -30,7 +36,7 @@ class Weather
     context[key]
 
   -- Returns the daily forecast table for (lat, lon).
-  forecast: (lat=DEFAULT_LAT, lon=DEFAULT_LON) =>
+  forecast: (lat=_current_location.lat, lon=_current_location.lon) =>
     key = "forecast:#{lat},#{lon}"
     return context[key] if context[key]
     data = weather_api.forecast lat, lon
@@ -58,6 +64,8 @@ return {
   :Weather
   :LOCATIONS
   :Settings
+  :get_location
+  :set_location
   default_lat: DEFAULT_LAT
   default_lon: DEFAULT_LON
 }
