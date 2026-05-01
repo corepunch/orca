@@ -2,6 +2,15 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+HANDLER(TabBar, Object, Create)
+{
+  struct StackView *stack = GetStackView(hObject);
+  if (stack) {
+    stack->Direction = kDirectionHorizontal;
+  }
+  return FALSE;
+}
+
 HANDLER(TabBar, TabBar, SelectionChanged)
 {
   /* All state mutation is done in Tab_Select before the message is

@@ -576,6 +576,7 @@
       <details>Extends StackView (defaults to horizontal direction) to hold Tab children with mutual exclusion semantics. When a Tab is clicked the bar updates SelectedValue and fires SelectionChanged. Mirrors WPF TabControl header panel semantics.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Object.Create"/>
         <handle message="TabBar.SelectionChanged"/>
       </handles>
       <properties>
@@ -596,6 +597,8 @@
       <details>Manages a TabBar and a set of content children. Each content child whose name matches the selected Tab.Value is shown; all others are hidden. Fires SelectionChanged when the active tab changes.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node.ViewDidLoad"/>
         <handle message="TabBar.SelectionChanged"/>
       </handles>

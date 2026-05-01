@@ -3,6 +3,61 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+HANDLER(TabView, Node2D, MeasureOverride)
+{
+  uint16_t width = 0;
+  uint16_t headerHeight = 0;
+  uint16_t contentHeight = 0;
+
+  FOR_EACH_OBJECT(hChild, hObject) {
+    LRESULT size = _SendMessage(hChild, Node2D, Measure,
+      .Width = pMeasureOverride->Width,
+      .Height = pMeasureOverride->Height);
+
+    width = MAX(width, LOWORD(size));
+    if (GetTabBar(hChild)) {
+      headerHeight = MAX(headerHeight, HIWORD(size));
+    } else {
+      contentHeight = MAX(contentHeight, HIWORD(size));
+    }
+  }
+
+  return MAKEDWORD(width, headerHeight + contentHeight);
+}
+
+HANDLER(TabView, Node2D, ArrangeOverride)
+{
+  float headerHeight = 0;
+
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (!GetTabBar(hChild)) continue;
+
+    struct Node2D *node = GetNode2D(hChild);
+    float height = node ? NODE2D_FRAME(node, Size, 1).Desired : 0;
+    _SendMessage(hChild, Node2D, Arrange,
+      .X = pArrangeOverride->X,
+      .Y = pArrangeOverride->Y,
+      .Width = pArrangeOverride->Width,
+      .Height = height);
+    headerHeight = MAX(headerHeight, height);
+  }
+
+  float contentY = pArrangeOverride->Y + headerHeight;
+  float contentHeight = MAX(pArrangeOverride->Height - headerHeight, 0);
+
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (GetTabBar(hChild)) continue;
+
+    _SendMessage(hChild, Node2D, Arrange,
+      .X = pArrangeOverride->X,
+      .Y = contentY,
+      .Width = pArrangeOverride->Width,
+      .Height = contentHeight);
+  }
+
+  return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
+}
+
 /* Show the content child whose name matches `value`; hide all others.
    Content children are direct children that are NOT a TabBar. */
 static void

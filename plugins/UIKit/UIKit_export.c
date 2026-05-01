@@ -740,6 +740,7 @@ struct Tab* luaX_checkTab(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Tab, ID_TextBlock, 0);
+HANDLER(TabBar, Object, Create);
 HANDLER(TabBar, TabBar, SelectionChanged);
 static struct PropertyType const TabBarProperties[kTabBarNumProperties] = {
 	DECL(0x5c04816d, TabBar, SelectedValue, SelectedValue, kDataTypeString), // TabBar.SelectedValue
@@ -749,6 +750,7 @@ static struct TabBar TabBarDefaults = {
 };
 LRESULT TabBarProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Create: return TabBar_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_TabBar_SelectionChanged: return TabBar_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
 	}
 	return FALSE;
@@ -761,6 +763,8 @@ struct TabBar* luaX_checkTabBar(lua_State *L, int idx) {
 }
 #define ID_StackView 0x56aa550a
 REGISTER_CLASS(TabBar, ID_StackView, 0);
+HANDLER(TabView, Node2D, MeasureOverride);
+HANDLER(TabView, Node2D, ArrangeOverride);
 HANDLER(TabView, Node, ViewDidLoad);
 HANDLER(TabView, TabBar, SelectionChanged);
 static struct PropertyType const TabViewProperties[kTabViewNumProperties] = {
@@ -771,6 +775,8 @@ static struct TabView TabViewDefaults = {
 };
 LRESULT TabViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
 		case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
 		case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
 	}
