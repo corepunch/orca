@@ -47,10 +47,7 @@ int f_OBJ_Clear(lua_State *L) {
 	return 0;
 }
 int f_OBJ_ReleaseOrphan(lua_State *L) {
-	struct Object** ud = (struct Object**)luaL_checkudata(L, 1, API_TYPE_OBJECT);
-	struct Object* this_ = *ud;
-	if (!this_) return 0; /* already released */
-	*ud = NULL; /* prevent reentrant double-free */
+	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_ReleaseOrphan(L, this_ );
 	return 0;
 }
@@ -74,9 +71,6 @@ int f_OBJ_AddChild(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-/* Forward declaration for OBJ_GetObjectCount which is defined in object_core.c
- * but is not visible from core.h (the only header core_export.c includes). */
-extern int64_t OBJ_GetObjectCount(void);
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_RemoveFromParent(this_ );
@@ -1543,10 +1537,6 @@ int f_core_FlushQueue(lua_State *L) {
 	core_FlushQueue(L );
 	return 0;
 }
-int f_core_ObjectCount(lua_State *L) {
-	lua_pushinteger(L, OBJ_GetObjectCount());
-	return 1;
-}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -1555,7 +1545,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
 		{ "flushQueue", f_core_FlushQueue },
-		{ "objectCount", f_core_ObjectCount },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);

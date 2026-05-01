@@ -464,6 +464,10 @@
       </handles>
       <properties>
         <property name="Type" type="ButtonType">Button behavior type (normal or submit) </property>
+        <property name="DiffuseColor" type="color" default="0.3,0.55,0.85,1">Base fill color for the button face used by the built-in 3D shader</property>
+        <property name="CornerRadius" type="float" default="6">Corner rounding radius in pixels for the built-in rounded-box shader</property>
+        <property name="SpecularPower" type="float" default="1.5">Specular highlight intensity (shininess) for the built-in 3D shader</property>
+        <property name="LightDirection" type="vec3" default="0,-1,-0.5">Direction of virtual light for built-in 3D shading</property>
       </properties>
       <messages>
         <message name="Click">
@@ -521,10 +525,13 @@
         <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
+        <handle message="Node2D.DrawBrush"/>
       </handles>
       <properties>
         <property name="IsChecked" type="bool">Whether this option is currently selected</property>
         <property name="Value" type="string">String value reported to the parent RadioGroup when this button is selected</property>
+        <property name="AccentColor" type="color" default="0.3,0.55,0.85,1">Color of the indicator dot when the radio button is checked</property>
+        <property name="IndicatorSize" type="float" default="16">Diameter in pixels of the circular indicator</property>
       </properties>
     </class>
     <class name="RadioGroup" parent="StackView">
@@ -542,6 +549,64 @@
           <summary>Fired when the selected RadioButton changes. SelectedValue on the group is already updated when this fires.</summary>
           <fields>
             <field name="SelectedValue" type="string">The value of the newly selected RadioButton</field>
+            <field name="OldValue" type="string">The value that was selected before this change</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
+    <class name="Tab" parent="TextBlock" allow-text="true">
+      <summary>Single tab button for use inside a TabBar</summary>
+      <details>Extends TextBlock to display a tab label. When clicked, selects itself within the parent TabBar, clears sibling Tab selections, updates the parent TabBar.SelectedValue, and fires TabBar.SelectionChanged. Mirrors WPF TabItem semantics.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonUp"/>
+        <handle message="Node2D.DrawBrush"/>
+      </handles>
+      <properties>
+        <property name="IsSelected" type="bool">Whether this tab is currently selected</property>
+        <property name="Value" type="string">String value reported to the parent TabBar when this tab is selected</property>
+        <property name="SelectedColor" type="color" default="0.95,0.95,0.97,1">Background color when the tab is selected</property>
+        <property name="UnselectedColor" type="color" default="0.75,0.75,0.8,0.6">Background color when the tab is not selected</property>
+      </properties>
+    </class>
+    <class name="TabBar" parent="StackView">
+      <summary>Horizontal tab-button strip that manages mutual tab selection</summary>
+      <details>Extends StackView (defaults to horizontal direction) to hold Tab children with mutual exclusion semantics. When a Tab is clicked the bar updates SelectedValue and fires SelectionChanged. Mirrors WPF TabControl header panel semantics.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="TabBar.SelectionChanged"/>
+      </handles>
+      <properties>
+        <property name="SelectedValue" type="string">Value string of the currently selected Tab child</property>
+      </properties>
+      <messages>
+        <message name="SelectionChanged">
+          <summary>Fired when the selected Tab changes. SelectedValue on the bar is already updated when this fires.</summary>
+          <fields>
+            <field name="SelectedValue" type="string">The value of the newly selected Tab</field>
+            <field name="OldValue" type="string">The value that was selected before this change</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
+    <class name="TabView" parent="Node2D">
+      <summary>Tabbed container that pairs a TabBar header with named content panels</summary>
+      <details>Manages a TabBar and a set of content children. Each content child whose name matches the selected Tab.Value is shown; all others are hidden. Fires SelectionChanged when the active tab changes.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node.ViewDidLoad"/>
+        <handle message="TabBar.SelectionChanged"/>
+      </handles>
+      <properties>
+        <property name="SelectedValue" type="string">Value string of the currently active tab</property>
+      </properties>
+      <messages>
+        <message name="SelectionChanged">
+          <summary>Fired when the active tab changes.</summary>
+          <fields>
+            <field name="SelectedValue" type="string">The value of the newly selected tab</field>
             <field name="OldValue" type="string">The value that was selected before this change</field>
           </fields>
         </message>

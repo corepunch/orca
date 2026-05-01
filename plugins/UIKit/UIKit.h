@@ -34,6 +34,7 @@ typedef struct Node2D_UpdateGeometryEventArgs Node2D_UpdateGeometryMsg_t,* Node2
 typedef struct Node2D_SetScrollTopEventArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
 typedef struct Button_ClickEventArgs Button_ClickMsg_t,* Button_ClickMsgPtr;
 typedef struct Form_SubmitEventArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
+typedef struct TabView_SelectionChangedEventArgs TabView_SelectionChangedMsg_t,* TabView_SelectionChangedMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
@@ -43,7 +44,6 @@ typedef struct ConsoleView_UnpackEventArgs ConsoleView_UnpackMsg_t,* ConsoleView
 typedef struct ConsoleView_GetIndexPositionEventArgs ConsoleView_GetIndexPositionMsg_t,* ConsoleView_GetIndexPositionMsgPtr;
 typedef struct PageHost_NavigateToPageEventArgs PageHost_NavigateToPageMsg_t,* PageHost_NavigateToPageMsgPtr;
 typedef struct PageHost_NavigateBackEventArgs PageHost_NavigateBackMsg_t,* PageHost_NavigateBackMsgPtr;
-typedef struct RadioGroup_SelectionChangedEventArgs RadioGroup_SelectionChangedMsg_t,* RadioGroup_SelectionChangedMsgPtr;
 
 
 /// @brief Defines the primary axis for layout operations
@@ -390,6 +390,13 @@ struct Form_SubmitEventArgs {
 };
 ORCA_API void luaX_pushForm_SubmitEventArgs(lua_State *L, struct Form_SubmitEventArgs const* data);
 ORCA_API struct Form_SubmitEventArgs* luaX_checkForm_SubmitEventArgs(lua_State *L, int idx);
+/** TabView_SelectionChangedEventArgs struct */
+struct TabView_SelectionChangedEventArgs {
+	const char* SelectedValue; ///< The value of the newly selected tab
+	const char* OldValue; ///< The value that was selected before this change
+};
+ORCA_API void luaX_pushTabView_SelectionChangedEventArgs(lua_State *L, struct TabView_SelectionChangedEventArgs const* data);
+ORCA_API struct TabView_SelectionChangedEventArgs* luaX_checkTabView_SelectionChangedEventArgs(lua_State *L, int idx);
 /** Screen_UpdateLayoutEventArgs struct */
 struct Screen_UpdateLayoutEventArgs {
 	float Width;
@@ -453,13 +460,6 @@ struct PageHost_NavigateBackEventArgs {
 };
 ORCA_API void luaX_pushPageHost_NavigateBackEventArgs(lua_State *L, struct PageHost_NavigateBackEventArgs const* data);
 ORCA_API struct PageHost_NavigateBackEventArgs* luaX_checkPageHost_NavigateBackEventArgs(lua_State *L, int idx);
-/** RadioGroup_SelectionChangedEventArgs struct */
-struct RadioGroup_SelectionChangedEventArgs {
-	const char* SelectedValue; ///< The value of the newly selected RadioButton
-	const char* OldValue; ///< The value that was selected before this change
-};
-ORCA_API void luaX_pushRadioGroup_SelectionChangedEventArgs(lua_State *L, struct RadioGroup_SelectionChangedEventArgs const* data);
-ORCA_API struct RadioGroup_SelectionChangedEventArgs* luaX_checkRadioGroup_SelectionChangedEventArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for all brush types used in rendering.
@@ -622,6 +622,10 @@ ORCA_API struct Input* luaX_checkInput(lua_State *L, int idx);
 /** Button component */
 struct Button {
 	enum ButtonType Type; ///< Button behavior type (normal or submit)
+	struct color DiffuseColor; ///< Base fill color for the button face used by the built-in 3D shader
+	float CornerRadius; ///< Corner rounding radius in pixels for the built-in rounded-box shader
+	float SpecularPower; ///< Specular highlight intensity (shininess) for the built-in 3D shader
+	struct vec3 LightDirection; ///< Direction of virtual light for built-in 3D shading
 	event_t Click;
 };
 ORCA_API void luaX_pushButton(lua_State *L, struct Button const* Button);
@@ -659,7 +663,9 @@ ORCA_API struct Form* luaX_checkForm(lua_State *L, int idx);
 /** RadioButton component */
 struct RadioButton {
 	bool_t IsChecked; ///< Whether this option is currently selected
-	const char* Value; ///< String value reported to the parent RadioGroup when selected
+	const char* Value; ///< String value reported to the parent RadioGroup when this button is selected
+	struct color AccentColor; ///< Color of the indicator dot when the radio button is checked
+	float IndicatorSize; ///< Diameter in pixels of the circular indicator
 };
 ORCA_API void luaX_pushRadioButton(lua_State *L, struct RadioButton const* RadioButton);
 ORCA_API struct RadioButton* luaX_checkRadioButton(lua_State *L, int idx);
@@ -672,6 +678,35 @@ struct RadioGroup {
 };
 ORCA_API void luaX_pushRadioGroup(lua_State *L, struct RadioGroup const* RadioGroup);
 ORCA_API struct RadioGroup* luaX_checkRadioGroup(lua_State *L, int idx);
+
+/// @brief Single tab button for use inside a TabBar
+/** Tab component */
+struct Tab {
+	bool_t IsSelected; ///< Whether this tab is currently selected
+	const char* Value; ///< String value reported to the parent TabBar when this tab is selected
+	struct color SelectedColor; ///< Background color when the tab is selected
+	struct color UnselectedColor; ///< Background color when the tab is not selected
+};
+ORCA_API void luaX_pushTab(lua_State *L, struct Tab const* Tab);
+ORCA_API struct Tab* luaX_checkTab(lua_State *L, int idx);
+
+/// @brief Horizontal tab-button strip that manages mutual tab selection
+/** TabBar component */
+struct TabBar {
+	const char* SelectedValue; ///< Value string of the currently selected Tab child
+	event_t SelectionChanged;
+};
+ORCA_API void luaX_pushTabBar(lua_State *L, struct TabBar const* TabBar);
+ORCA_API struct TabBar* luaX_checkTabBar(lua_State *L, int idx);
+
+/// @brief Tabbed container that pairs a TabBar header with named content panels
+/** TabView component */
+struct TabView {
+	const char* SelectedValue; ///< Value string of the currently active tab
+	event_t SelectionChanged;
+};
+ORCA_API void luaX_pushTabView(lua_State *L, struct TabView const* TabView);
+ORCA_API struct TabView* luaX_checkTabView(lua_State *L, int idx);
 
 /// @brief Base class for interactive UI controls with state management
 /** Control component */
@@ -821,8 +856,5 @@ struct Style {
 };
 ORCA_API void luaX_pushStyle(lua_State *L, struct Style const* Style);
 ORCA_API struct Style* luaX_checkStyle(lua_State *L, int idx);
-
-/* Internal UIKit dispatch helper — defined in UIKit_message.c */
-bool_t CORE_HandleObjectMessage(lua_State *L, struct AXmessage *msg);
 
 #endif
