@@ -661,8 +661,8 @@ enum StyleProperties {
 #define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
 #define ID_TabBar_SelectionChangedEventArgs 0xb3a9c421
 
-#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0x5c04816d // TabBar_SelectionChangedEventArgs.SelectedValue
-#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x2ee43757 // TabBar_SelectionChangedEventArgs.OldValue
+#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0xab330de1 // TabBar_SelectionChangedEventArgs.SelectedValue
+#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x0ab0426b // TabBar_SelectionChangedEventArgs.OldValue
 	
 
 #endif
