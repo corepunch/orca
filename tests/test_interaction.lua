@@ -213,9 +213,66 @@ local function test_radio_group_interaction()
 	group:removeFromParent()
 end
 
+-- RadioGroup: SelectedValue set at construction auto-checks the matching child
 -- ---------------------------------------------------------------------------
--- Run all tests
+local function test_radio_group_selected_value_sync()
+	local group = screen + ui.RadioGroup {
+		Width = 300, Height = 50,
+		SelectedValue = "fahrenheit",
+	}
+	local btn_c = group + ui.RadioButton { Value = "celsius",    Width = 100, Height = 30 }
+	local btn_f = group + ui.RadioButton { Value = "fahrenheit", Width = 100, Height = 30 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(btn_f.IsChecked,     "RadioButton matching SelectedValue should be checked after Start")
+	test.expect(not btn_c.IsChecked, "RadioButton not matching SelectedValue should be unchecked")
+
+	group:removeFromParent()
+end
+
+-- RadioGroup: changing SelectedValue at runtime syncs child buttons
 -- ---------------------------------------------------------------------------
+local function test_radio_group_selected_value_runtime_change()
+	local group = screen + ui.RadioGroup { Width = 300, Height = 50 }
+	local btn_c = group + ui.RadioButton { Value = "celsius",    Width = 100, Height = 30 }
+	local btn_f = group + ui.RadioButton { Value = "fahrenheit", Width = 100, Height = 30 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	group.SelectedValue = "celsius"
+	test.expect(btn_c.IsChecked,     "Setting SelectedValue = 'celsius' should check celsius button")
+	test.expect(not btn_f.IsChecked, "Setting SelectedValue = 'celsius' should uncheck fahrenheit button")
+
+	group.SelectedValue = "fahrenheit"
+	test.expect(btn_f.IsChecked,     "Setting SelectedValue = 'fahrenheit' should check fahrenheit button")
+	test.expect(not btn_c.IsChecked, "Setting SelectedValue = 'fahrenheit' should uncheck celsius button")
+
+	group:removeFromParent()
+end
+
+-- RadioButton: setting IsChecked = true programmatically syncs the group
+-- ---------------------------------------------------------------------------
+local function test_radio_button_programmatic_check()
+	local selected_value = nil
+	local group = screen + ui.RadioGroup {
+		Width = 300, Height = 50,
+		SelectionChanged = function(self) selected_value = self.SelectedValue end,
+	}
+	local btn_c = group + ui.RadioButton { Value = "celsius",    Width = 100, Height = 30 }
+	local btn_f = group + ui.RadioButton { Value = "fahrenheit", Width = 100, Height = 30 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	btn_f.IsChecked = true
+	test.expect(btn_f.IsChecked,                  "Programmatic IsChecked = true should check button")
+	test.expect(not btn_c.IsChecked,              "Programmatic check should uncheck sibling")
+	test.expect_eq(group.SelectedValue, "fahrenheit", "Programmatic check should update group SelectedValue")
+	test.expect_eq(selected_value, "fahrenheit",  "Programmatic check should fire SelectionChanged")
+
+	group:removeFromParent()
+end
+
 orca.async = function (fn, ...) fn(...) end
 
 test_button_interaction()
@@ -223,5 +280,8 @@ test_input_interaction()
 test_input_checkbox()
 test_form_populate_inputs()
 test_radio_group_interaction()
+test_radio_group_selected_value_sync()
+test_radio_group_selected_value_runtime_change()
+test_radio_button_programmatic_check()
 
 print("All interaction tests passed.")

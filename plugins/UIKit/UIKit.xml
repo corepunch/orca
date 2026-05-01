@@ -519,6 +519,7 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Attached"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
       </handles>
@@ -532,6 +533,8 @@
       <details>Extends StackView so children are laid out linearly. Mutual exclusion is enforced by child RadioButtons: when one is selected, it sets its own IsChecked state, clears sibling RadioButtons, updates the parent RadioGroup.SelectedValue, and then fires RadioGroup.SelectionChanged. The group exposes SelectionChanged so consumers can react after the selection has already changed. Mirrors WPF RadioButton/ListBox SelectionChanged semantics.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="RadioGroup.SelectionChanged"/>
       </handles>
       <properties>

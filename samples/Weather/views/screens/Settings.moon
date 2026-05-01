@@ -26,7 +26,6 @@ class SettingsScreen extends require "orca.core.widget"
 				}, =>
 					for option in *temperature_units
 						RadioButton {
-							Value:     option.value
-							IsChecked: unit == option.value
-							class:     "w-full px-4 py-3 rounded-3 bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
+							Value:  option.value
+							class:  "w-full px-4 py-3 rounded-3 bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
 						}, option.label

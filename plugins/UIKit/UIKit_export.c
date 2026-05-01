@@ -629,6 +629,7 @@ struct Form* luaX_checkForm(lua_State *L, int idx) {
 REGISTER_CLASS(Form, ID_StackView, 0);
 HANDLER(RadioButton, Object, Create);
 HANDLER(RadioButton, Object, PropertyChanged);
+HANDLER(RadioButton, Object, Attached);
 HANDLER(RadioButton, Node, LeftButtonUp);
 HANDLER(RadioButton, Node, KeyDown);
 static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
@@ -641,6 +642,7 @@ LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wPar
 	switch (message) {
 		case ID_Object_Create: return RadioButton_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_PropertyChanged: return RadioButton_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_Object_Attached: return RadioButton_Attached(object, cmp, wparm, lparm); // Object.Attached
 		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 		case ID_Node_KeyDown: return RadioButton_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
 	}
@@ -654,6 +656,8 @@ struct RadioButton* luaX_checkRadioButton(lua_State *L, int idx) {
 }
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(RadioButton, ID_TextBlock, 0);
+HANDLER(RadioGroup, Object, Start);
+HANDLER(RadioGroup, Object, PropertyChanged);
 HANDLER(RadioGroup, RadioGroup, SelectionChanged);
 static struct PropertyType const RadioGroupProperties[kRadioGroupNumProperties] = {
 	DECL(0x5c04816d, RadioGroup, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup.SelectedValue
@@ -663,6 +667,8 @@ static struct RadioGroup RadioGroupDefaults = {
 };
 LRESULT RadioGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Object_Start: return RadioGroup_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_PropertyChanged: return RadioGroup_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_RadioGroup_SelectionChanged: return RadioGroup_SelectionChanged(object, cmp, wparm, lparm); // RadioGroup.SelectionChanged
 	}
 	return FALSE;
