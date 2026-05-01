@@ -35,7 +35,8 @@ RadioGroup_SyncToSelectedValue(struct Object *object,
 
     bool_t should_be_checked = group->SelectedValue && rb->Value &&
                                strcmp(rb->Value, group->SelectedValue) == 0;
-    RadioGroup_SetButtonChecked(child, rb, should_be_checked);
+    if (rb->IsChecked != should_be_checked)
+      RadioGroup_SetButtonChecked(child, rb, should_be_checked);
   }
 }
 
