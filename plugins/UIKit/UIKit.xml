@@ -519,6 +519,7 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Attached"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.KeyDown"/>
       </handles>

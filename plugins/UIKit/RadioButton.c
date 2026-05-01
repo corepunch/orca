@@ -115,6 +115,18 @@ HANDLER(RadioButton, Object, Create)
   return FALSE;
 }
 
+HANDLER(RadioButton, Object, Attached)
+{
+  struct Object *group = OBJ_GetParent(hObject);
+  if (!group) return FALSE;
+  struct RadioGroup *rg = GetRadioGroup(group);
+  if (!rg || !rg->SelectedValue || !pRadioButton->Value) return FALSE;
+  bool_t should_be_checked = strcmp(pRadioButton->Value, rg->SelectedValue) == 0;
+  if (pRadioButton->IsChecked != should_be_checked)
+    RadioButton_SetChecked(hObject, pRadioButton, should_be_checked);
+  return FALSE;
+}
+
 HANDLER(RadioButton, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property)
