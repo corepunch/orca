@@ -20,23 +20,6 @@ local ui   = require "orca.UIKit"
 orca.async = function (fn, ...) fn(...) end
 
 -- ---------------------------------------------------------------------------
--- Helpers
--- ---------------------------------------------------------------------------
-
--- Two GC passes to ensure finalizer queue is drained.
-local function flush()
-  core.flushQueue()
-end
-
--- Return the first child of `parent` whose Name equals `name`.
-local function find_child(parent, name)
-  for child in parent.children do
-    if child:getName() == name then return child end
-  end
-  return nil
-end
-
--- ---------------------------------------------------------------------------
 -- TabBar: selecting a Tab updates SelectedValue and mutual exclusion
 -- ---------------------------------------------------------------------------
 local function test_tabbar_selection()
