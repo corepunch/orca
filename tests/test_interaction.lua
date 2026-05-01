@@ -273,7 +273,6 @@ local function test_radio_button_programmatic_check()
 	group:removeFromParent()
 end
 
-
 orca.async = function (fn, ...) fn(...) end
 
 test_button_interaction()

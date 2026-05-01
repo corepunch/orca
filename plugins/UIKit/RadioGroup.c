@@ -10,7 +10,7 @@ RadioGroup_SetButtonChecked(struct Object *object,
                              struct RadioButton *button,
                              bool_t checked)
 {
-  if (!object || !button)
+  if (!button)
     return;
 
   button->IsChecked = checked;

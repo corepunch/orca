@@ -32,10 +32,12 @@ static void
 RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
 {
   struct Object *group = OBJ_GetParent(object);
-  if (!group || !GetRadioGroup(group))
+  if (!group)
     return;
 
   struct RadioGroup *rg = GetRadioGroup(group);
+  if (!rg)
+    return;
   const char *oldValue = rg->SelectedValue;
 
   rg->SelectedValue = button->Value;
