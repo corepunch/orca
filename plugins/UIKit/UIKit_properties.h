@@ -238,10 +238,18 @@ enum InputProperties {
 #define GetButton(_P) ((struct Button*)((_P)?OBJ_GetComponent(_P,ID_Button):NULL))
 #define Button_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Button,sizeof(struct Button),_N)
 #define ID_Button_Type 0x843eb785 // Button.Type
+#define ID_Button_DiffuseColor 0x4b19fc18 // Button.DiffuseColor
+#define ID_Button_CornerRadius 0xed23ac0e // Button.CornerRadius
+#define ID_Button_SpecularPower 0x9ad05fd1 // Button.SpecularPower
+#define ID_Button_LightDirection 0x63750960 // Button.LightDirection
 #define ID_Button_Click 0xeb91f197 // Button.Click
-#define kButtonNumProperties 2
+#define kButtonNumProperties 6
 enum ButtonProperties {
 	kButtonType,
+	kButtonDiffuseColor,
+	kButtonCornerRadius,
+	kButtonSpecularPower,
+	kButtonLightDirection,
 	kButtonClick,
 };
 // Label
@@ -282,10 +290,14 @@ enum StackViewProperties {
 #define RadioButton_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_RadioButton,sizeof(struct RadioButton),_N)
 #define ID_RadioButton_IsChecked 0xd54f839f // RadioButton.IsChecked
 #define ID_RadioButton_Value 0xeb4cb263 // RadioButton.Value
-#define kRadioButtonNumProperties 2
+#define ID_RadioButton_AccentColor 0x03890263 // RadioButton.AccentColor
+#define ID_RadioButton_IndicatorSize 0xb9eba776 // RadioButton.IndicatorSize
+#define kRadioButtonNumProperties 4
 enum RadioButtonProperties {
 	kRadioButtonIsChecked,
 	kRadioButtonValue,
+	kRadioButtonAccentColor,
+	kRadioButtonIndicatorSize,
 };
 // RadioGroup
 #define ID_RadioGroup 0xea992647
@@ -297,6 +309,43 @@ enum RadioButtonProperties {
 enum RadioGroupProperties {
 	kRadioGroupSelectedValue,
 	kRadioGroupSelectionChanged,
+};
+// Tab
+#define ID_Tab 0xfb8358ec
+#define GetTab(_P) ((struct Tab*)((_P)?OBJ_GetComponent(_P,ID_Tab):NULL))
+#define Tab_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Tab,sizeof(struct Tab),_N)
+#define ID_Tab_IsSelected 0x51024ac3 // Tab.IsSelected
+#define ID_Tab_Value 0xeb508767 // Tab.Value
+#define ID_Tab_SelectedColor 0xe028b1ce // Tab.SelectedColor
+#define ID_Tab_UnselectedColor 0xfd9168db // Tab.UnselectedColor
+#define kTabNumProperties 4
+enum TabProperties {
+	kTabIsSelected,
+	kTabValue,
+	kTabSelectedColor,
+	kTabUnselectedColor,
+};
+// TabBar
+#define ID_TabBar 0x0de4ef99
+#define GetTabBar(_P) ((struct TabBar*)((_P)?OBJ_GetComponent(_P,ID_TabBar):NULL))
+#define TabBar_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TabBar,sizeof(struct TabBar),_N)
+#define ID_TabBar_SelectedValue 0x76ea791d // TabBar.SelectedValue
+#define ID_TabBar_SelectionChanged 0x0bd7b6db // TabBar.SelectionChanged
+#define kTabBarNumProperties 2
+enum TabBarProperties {
+	kTabBarSelectedValue,
+	kTabBarSelectionChanged,
+};
+// TabView
+#define ID_TabView 0x4967c9d5
+#define GetTabView(_P) ((struct TabView*)((_P)?OBJ_GetComponent(_P,ID_TabView):NULL))
+#define TabView_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_TabView,sizeof(struct TabView),_N)
+#define ID_TabView_SelectedValue 0x59bc3901 // TabView.SelectedValue
+#define ID_TabView_SelectionChanged 0x4619eea7 // TabView.SelectionChanged
+#define kTabViewNumProperties 2
+enum TabViewProperties {
+	kTabViewSelectedValue,
+	kTabViewSelectionChanged,
 };
 // Control
 #define ID_Control 0x8347bf3e
@@ -566,6 +615,10 @@ enum StyleProperties {
 
 #define ID_Form_SubmitEventArgs 0x940ec545
 
+#define ID_TabView_SelectionChangedEventArgs 0x7fe063f9
+
+#define ID_TabView_SelectionChangedEventArgs_SelectedValue 0x47d0dffd // TabView_SelectionChangedEventArgs.SelectedValue
+#define ID_TabView_SelectionChangedEventArgs_OldValue 0x21f9f487 // TabView_SelectionChangedEventArgs.OldValue
 #define ID_Screen_UpdateLayoutEventArgs 0xe31efe36
 
 #define ID_Screen_UpdateLayoutEventArgs_Width 0xe73421c4 // Screen_UpdateLayoutEventArgs.Width
@@ -606,6 +659,10 @@ enum StyleProperties {
 
 #define ID_RadioGroup_SelectionChangedEventArgs_SelectedValue 0x2a19d223 // RadioGroup_SelectionChangedEventArgs.SelectedValue
 #define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
+#define ID_TabBar_SelectionChangedEventArgs 0xb3a9c421
+
+#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0xab330de1 // TabBar_SelectionChangedEventArgs.SelectedValue
+#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x0ab0426b // TabBar_SelectionChangedEventArgs.OldValue
 	
 
 #endif

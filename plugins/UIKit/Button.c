@@ -5,51 +5,51 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
-//#define USE_STANDARD_BUTTON
-
 HANDLER(Button, Node2D, DrawBrush) {
-#ifdef USE_STANDARD_BUTTON
   if (pDrawBrush->foreground) return FALSE;
-  
+
+  struct Node2D *pNode2D = GetNode2D(hObject);
+  if (!pNode2D) return FALSE;
+
   struct ViewEntity entity;
-  Node2D_GetViewEntity(hObject,&entity,pDrawBrush->image,pDrawBrush->brush);
-  entity.mesh = BOX_PTR(Mesh, MD_ROUNDED_BOX);
-  entity.shader = BOX_PTR(Shader, SHADER_ROUNDEDBOX);
-  entity.material.color = pDrawBrush->brush->Color;// (color_t){0.4,0.6,0.8,1};
-  
+  Node2D_GetViewEntity(pNode2D, &entity, pDrawBrush->image, &pDrawBrush->brush);
+
+  /* Use the brush color if one is explicitly set (non-zero alpha),
+     otherwise fall back to the component's DiffuseColor default. */
+  struct color faceColor =
+      (pDrawBrush->brush.Color.a > 0.0f)
+          ? pDrawBrush->brush.Color
+          : pButton->DiffuseColor;
+
   float opacity = entity.material.opacity;
   float r_x = entity.bbox.min.x;
   float r_y = entity.bbox.min.y;
-  float r_width = entity.bbox.max.x - entity.bbox.min.x;
+  float r_width  = entity.bbox.max.x - entity.bbox.min.x;
   float r_height = entity.bbox.max.y - entity.bbox.min.y;
-  
-  r_x -= PADDING_TOP(GetNode2D(hObject), 0);
-  r_y -= PADDING_TOP(GetNode2D(hObject), 1);
-  r_width += TOTAL_PADDING(GetNode2D(hObject), 0);
-  r_height += TOTAL_PADDING(GetNode2D(hObject), 1);
-  
-//  entity.rect = RECT_Expand(&r, 1);
-//  entity.material.opacity *= 0.5;
-//  entity.material.color = (color_t){0,0,0,1};
-//
-//  R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+  r_x     -= PADDING_TOP(pNode2D, 0);
+  r_y     -= PADDING_TOP(pNode2D, 1);
+  r_width  += TOTAL_PADDING(pNode2D, 0);
+  r_height += TOTAL_PADDING(pNode2D, 1);
 
   entity.bbox = BOX3_FromRect(((struct rect){r_x, r_y, r_width, r_height}));
-  entity.material = (struct ViewMaterial) {
-    .opacity = opacity,
-    .color = pDrawBrush->brush->Color,// (color_t){0.4,0.6,0.8,1};
+  entity.mesh = BOX_PTR(Mesh, MD_ROUNDED_BOX);
+  entity.shader = BOX_PTR(Shader, SHADER_ROUNDEDBOX);
+  entity.radius = (struct vec4){
+    pButton->CornerRadius,
+    pButton->CornerRadius,
+    pButton->CornerRadius,
+    pButton->CornerRadius,
   };
-  
-  entity.radius.x = 8;
-  entity.radius.y = 8;
-  entity.radius.z = 8;
+  entity.material = (struct ViewMaterial){
+    .opacity   = opacity,
+    .color     = faceColor,
+    .blendMode = BLEND_MODE_ALPHA,
+  };
 
   R_DrawEntity(pDrawBrush->viewdef, &entity);
 
   return TRUE;
-#else
-  return FALSE;
-#endif
 }
 
 HANDLER(Button, Node, LeftButtonUp)

@@ -159,6 +159,11 @@ static struct PropertyType _Button_ClickEventArgs[] = {
 static luaL_Reg _Form_SubmitEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Form_SubmitEventArgs[] = {
 };
+static luaL_Reg _TabView_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TabView_SelectionChangedEventArgs[] = {
+	DECL(0x5c04816d, TabView_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabView_SelectionChangedEventArgs.SelectedValue
+	DECL(0x2ee43757, TabView_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabView_SelectionChangedEventArgs.OldValue
+};
 static luaL_Reg _Screen_UpdateLayoutEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Screen_UpdateLayoutEventArgs[] = {
 	DECL(0x3b42dfbf, Screen_UpdateLayoutEventArgs, Width, Width, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Width
@@ -209,6 +214,11 @@ static struct PropertyType _RadioGroup_SelectionChangedEventArgs[] = {
 	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
 };
+static luaL_Reg _TabBar_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _TabBar_SelectionChangedEventArgs[] = {
+	DECL(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.SelectedValue
+	DECL(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.OldValue
+};
 
 STRUCT(TextBlockConcept_MakeTextEventArgs, TextBlockConcept_MakeTextEventArgs);
 STRUCT(Node2D_DrawBrushEventArgs, Node2D_DrawBrushEventArgs);
@@ -221,6 +231,7 @@ STRUCT(Node2D_UpdateGeometryEventArgs, Node2D_UpdateGeometryEventArgs);
 STRUCT(Node2D_SetScrollTopEventArgs, Node2D_SetScrollTopEventArgs);
 STRUCT(Button_ClickEventArgs, Button_ClickEventArgs);
 STRUCT(Form_SubmitEventArgs, Form_SubmitEventArgs);
+STRUCT(TabView_SelectionChangedEventArgs, TabView_SelectionChangedEventArgs);
 STRUCT(Screen_UpdateLayoutEventArgs, Screen_UpdateLayoutEventArgs);
 STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
 STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
@@ -231,6 +242,7 @@ STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventA
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
 STRUCT(RadioGroup_SelectionChangedEventArgs, RadioGroup_SelectionChangedEventArgs);
+STRUCT(TabBar_SelectionChangedEventArgs, TabBar_SelectionChangedEventArgs);
 static struct PropertyType const BrushProperties[kBrushNumProperties] = {
 };
 static struct Brush BrushDefaults = {
@@ -536,9 +548,21 @@ HANDLER(Button, Node, KeyDown);
 HANDLER(Button, Node2D, DrawBrush);
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .EnumValues = _ButtonType), // Button.Type
+	DECL(0x91217a10, Button, DiffuseColor, DiffuseColor, kDataTypeColor), // Button.DiffuseColor
+	DECL(0x0485b456, Button, CornerRadius, CornerRadius, kDataTypeFloat), // Button.CornerRadius
+	DECL(0xe4c05af9, Button, SpecularPower, SpecularPower, kDataTypeFloat), // Button.SpecularPower
+	DECL(0xc6871c08, Button, LightDirection, LightDirection, kDataTypeStruct, .TypeString = "Vector3D"), // Button.LightDirection
 	DECL(0x023a1a0f, Button, Click, Click, kDataTypeEvent, .TypeString = "Button_ClickEventArgs"), // Button.Click
 };
 static struct Button ButtonDefaults = {
+		
+  .DiffuseColor = {0.3,0.55,0.85,1},
+		
+  .CornerRadius = 6,
+		
+  .SpecularPower = 1.5,
+		
+  .LightDirection = {0,-1,-0.5},
 };
 LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -632,11 +656,18 @@ HANDLER(RadioButton, Object, PropertyChanged);
 HANDLER(RadioButton, Object, Attached);
 HANDLER(RadioButton, Node, LeftButtonUp);
 HANDLER(RadioButton, Node, KeyDown);
+HANDLER(RadioButton, Node2D, DrawBrush);
 static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
 	DECL(0xea50a536, RadioButton, IsChecked, IsChecked, kDataTypeBool), // RadioButton.IsChecked
 	DECL(0xd147f96a, RadioButton, Value, Value, kDataTypeString), // RadioButton.Value
+	DECL(0xca400146, RadioButton, AccentColor, AccentColor, kDataTypeColor), // RadioButton.AccentColor
+	DECL(0xe896fe1f, RadioButton, IndicatorSize, IndicatorSize, kDataTypeFloat), // RadioButton.IndicatorSize
 };
 static struct RadioButton RadioButtonDefaults = {
+		
+  .AccentColor = {0.3,0.55,0.85,1},
+		
+  .IndicatorSize = 16,
 };
 LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -645,6 +676,7 @@ LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wPar
 		case ID_Object_Attached: return RadioButton_Attached(object, cmp, wparm, lparm); // Object.Attached
 		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 		case ID_Node_KeyDown: return RadioButton_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
+		case ID_Node2D_DrawBrush: return RadioButton_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
 	}
 	return FALSE;
 }
@@ -681,6 +713,89 @@ struct RadioGroup* luaX_checkRadioGroup(lua_State *L, int idx) {
 }
 #define ID_StackView 0x56aa550a
 REGISTER_CLASS(RadioGroup, ID_StackView, 0);
+HANDLER(Tab, Object, Create);
+HANDLER(Tab, Object, PropertyChanged);
+HANDLER(Tab, Node, LeftButtonUp);
+HANDLER(Tab, Node2D, DrawBrush);
+static struct PropertyType const TabProperties[kTabNumProperties] = {
+	DECL(0xd09395c4, Tab, IsSelected, IsSelected, kDataTypeBool), // Tab.IsSelected
+	DECL(0xd147f96a, Tab, Value, Value, kDataTypeString), // Tab.Value
+	DECL(0xb672875b, Tab, SelectedColor, SelectedColor, kDataTypeColor), // Tab.SelectedColor
+	DECL(0x91f2c852, Tab, UnselectedColor, UnselectedColor, kDataTypeColor), // Tab.UnselectedColor
+};
+static struct Tab TabDefaults = {
+		
+  .SelectedColor = {0.95,0.95,0.97,1},
+		
+  .UnselectedColor = {0.75,0.75,0.8,0.6},
+};
+LRESULT TabProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Create: return Tab_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_PropertyChanged: return Tab_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
+		case ID_Node_LeftButtonUp: return Tab_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+		case ID_Node2D_DrawBrush: return Tab_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
+	}
+	return FALSE;
+}
+void luaX_pushTab(lua_State *L, struct Tab const* Tab) {
+	luaX_pushObject(L, CMP_GetObject(Tab));
+}
+struct Tab* luaX_checkTab(lua_State *L, int idx) {
+	return GetTab(luaX_checkObject(L, idx));
+}
+#define ID_TextBlock 0x40f4d77b
+REGISTER_CLASS(Tab, ID_TextBlock, 0);
+HANDLER(TabBar, Object, Create);
+HANDLER(TabBar, TabBar, SelectionChanged);
+static struct PropertyType const TabBarProperties[kTabBarNumProperties] = {
+	DECL(0x5c04816d, TabBar, SelectedValue, SelectedValue, kDataTypeString), // TabBar.SelectedValue
+	DECL(0x48cf578b, TabBar, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "TabBar_SelectionChangedEventArgs"), // TabBar.SelectionChanged
+};
+static struct TabBar TabBarDefaults = {
+};
+LRESULT TabBarProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Create: return TabBar_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_TabBar_SelectionChanged: return TabBar_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
+	}
+	return FALSE;
+}
+void luaX_pushTabBar(lua_State *L, struct TabBar const* TabBar) {
+	luaX_pushObject(L, CMP_GetObject(TabBar));
+}
+struct TabBar* luaX_checkTabBar(lua_State *L, int idx) {
+	return GetTabBar(luaX_checkObject(L, idx));
+}
+#define ID_StackView 0x56aa550a
+REGISTER_CLASS(TabBar, ID_StackView, 0);
+HANDLER(TabView, Node2D, MeasureOverride);
+HANDLER(TabView, Node2D, ArrangeOverride);
+HANDLER(TabView, Node, ViewDidLoad);
+HANDLER(TabView, TabBar, SelectionChanged);
+static struct PropertyType const TabViewProperties[kTabViewNumProperties] = {
+	DECL(0x5c04816d, TabView, SelectedValue, SelectedValue, kDataTypeString), // TabView.SelectedValue
+	DECL(0x48cf578b, TabView, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "TabView_SelectionChangedEventArgs"), // TabView.SelectionChanged
+};
+static struct TabView TabViewDefaults = {
+};
+LRESULT TabViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
+		case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
+	}
+	return FALSE;
+}
+void luaX_pushTabView(lua_State *L, struct TabView const* TabView) {
+	luaX_pushObject(L, CMP_GetObject(TabView));
+}
+struct TabView* luaX_checkTabView(lua_State *L, int idx) {
+	return GetTabView(luaX_checkObject(L, idx));
+}
+#define ID_Node2D 0x6c63a2ab
+REGISTER_CLASS(TabView, ID_Node2D, 0);
 static struct PropertyType const ControlProperties[kControlNumProperties] = {
 	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
 	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
@@ -1025,6 +1140,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_Node2D_SetScrollTopEventArgs(L), -2), "Node2D_SetScrollTopEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Button_ClickEventArgs(L), -2), "Button_ClickEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Form_SubmitEventArgs(L), -2), "Form_SubmitEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_TabView_SelectionChangedEventArgs(L), -2), "TabView_SelectionChangedEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
@@ -1035,6 +1151,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateToPageEventArgs(L), -2), "PageHost_NavigateToPageEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_PageHost_NavigateBackEventArgs(L), -2), "PageHost_NavigateBackEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_RadioGroup_SelectionChangedEventArgs(L), -2), "RadioGroup_SelectionChangedEventArgs");
+	lua_setfield(L, ((void)luaopen_orca_TabBar_SelectionChangedEventArgs(L), -2), "TabBar_SelectionChangedEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Brush), -2), "Brush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ColorBrush), -2), "ColorBrush");
 	lua_setfield(L, ((void)lua_pushclass(L, &_TextRun), -2), "TextRun");
@@ -1049,6 +1166,9 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Form), -2), "Form");
 	lua_setfield(L, ((void)lua_pushclass(L, &_RadioButton), -2), "RadioButton");
 	lua_setfield(L, ((void)lua_pushclass(L, &_RadioGroup), -2), "RadioGroup");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Tab), -2), "Tab");
+	lua_setfield(L, ((void)lua_pushclass(L, &_TabBar), -2), "TabBar");
+	lua_setfield(L, ((void)lua_pushclass(L, &_TabView), -2), "TabView");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Control), -2), "Control");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Screen), -2), "Screen");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Cinematic), -2), "Cinematic");

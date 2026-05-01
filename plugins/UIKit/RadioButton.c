@@ -178,3 +178,60 @@ HANDLER(RadioButton, Node, KeyDown)
       return FALSE;
   }
 }
+
+HANDLER(RadioButton, Node2D, DrawBrush)
+{
+  if (pDrawBrush->foreground) return FALSE;
+
+  struct Node2D *pNode2D = GetNode2D(hObject);
+  if (!pNode2D) return FALSE;
+
+  float indicatorSize = pRadioButton->IndicatorSize;
+  float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+  float bx = pNode2D->_rect.x;
+  float by = pNode2D->_rect.y + (h - indicatorSize) * 0.5f;
+
+  /* Draw circular indicator using a fully-rounded box. */
+  struct ViewEntity entity;
+  memset(&entity, 0, sizeof(entity));
+  entity.matrix  = pNode2D->Matrix;
+  entity.bbox    = BOX3_FromRect(((struct rect){bx, by, indicatorSize, indicatorSize}));
+  entity.radius  = (struct vec4){indicatorSize * 0.5f, indicatorSize * 0.5f,
+                                  indicatorSize * 0.5f, indicatorSize * 0.5f};
+
+  if (pRadioButton->IsChecked) {
+    /* Filled accent-color circle */
+    entity.material = (struct ViewMaterial){
+      .color     = pRadioButton->AccentColor,
+      .opacity   = pNode2D->_opacity,
+      .blendMode = BLEND_MODE_ALPHA,
+    };
+    R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+    /* Inner white dot */
+    float dotSize = indicatorSize * 0.4f;
+    float dotOffset = (indicatorSize - dotSize) * 0.5f;
+    entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
+    entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
+    entity.material.color = (struct color){1.0f, 1.0f, 1.0f, 1.0f};
+    R_DrawEntity(pDrawBrush->viewdef, &entity);
+  } else {
+    /* Empty circle: light fill with a subtle border drawn as a slightly
+       larger background circle behind a smaller inner white circle. */
+    entity.material = (struct ViewMaterial){
+      .color     = (struct color){0.7f, 0.7f, 0.75f, 1.0f},
+      .opacity   = pNode2D->_opacity,
+      .blendMode = BLEND_MODE_ALPHA,
+    };
+    R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+    float innerSize = indicatorSize - 3.0f;
+    float innerOffset = 1.5f;
+    entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
+    entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
+    entity.material.color = (struct color){0.95f, 0.95f, 0.97f, 1.0f};
+    R_DrawEntity(pDrawBrush->viewdef, &entity);
+  }
+
+  return FALSE;
+}
