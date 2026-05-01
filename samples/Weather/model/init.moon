@@ -7,19 +7,78 @@ DEFAULT_LON = -122.4194
 
 -- Saved locations shown on the Saved screen.
 LOCATIONS = {
-  { name: "San Francisco", lat: 37.7749, lon: -122.4194 }
-  { name: "New York",      lat: 40.7128, lon: -74.0060  }
-  { name: "Berlin",        lat: 52.5200, lon: 13.4050   }
+  { name: "San Francisco", admin1: "California", country: "United States", lat: 37.7749, lon: -122.4194, timezone: "America/Los_Angeles" }
+  { name: "New York",      admin1: "New York",   country: "United States", lat: 40.7128, lon: -74.0060,  timezone: "America/New_York" }
+  { name: "Berlin",        admin1: "Berlin",     country: "Germany",       lat: 52.5200, lon: 13.4050,   timezone: "Europe/Berlin" }
 }
 
--- Currently selected location (defaults to the first saved location).
-_current_location = LOCATIONS[1]
-
-get_location = -> _current_location
-set_location = (loc) -> _current_location = loc
+LOCATION_CATALOG = {
+  { name: "London",        admin1: "England",          country: "United Kingdom", lat: 51.5072, lon: -0.1276,  timezone: "Europe/London" }
+  { name: "London",        admin1: "Ontario",          country: "Canada",         lat: 42.9849, lon: -81.2453, timezone: "America/Toronto" }
+  { name: "London",        admin1: "Kentucky",         country: "United States",  lat: 37.1290, lon: -84.0833, timezone: "America/New_York" }
+  { name: "Paris",         admin1: "Ile-de-France",    country: "France",         lat: 48.8566, lon: 2.3522,   timezone: "Europe/Paris" }
+  { name: "Tokyo",         admin1: "Tokyo",            country: "Japan",          lat: 35.6762, lon: 139.6503, timezone: "Asia/Tokyo" }
+  { name: "Sydney",        admin1: "New South Wales",  country: "Australia",      lat: -33.8688, lon: 151.2093, timezone: "Australia/Sydney" }
+  { name: "Madrid",        admin1: "Community of Madrid", country: "Spain",       lat: 40.4168, lon: -3.7038,  timezone: "Europe/Madrid" }
+  { name: "Los Angeles",   admin1: "California",       country: "United States",  lat: 34.0522, lon: -118.2437, timezone: "America/Los_Angeles" }
+  { name: "Chicago",       admin1: "Illinois",         country: "United States",  lat: 41.8781, lon: -87.6298, timezone: "America/Chicago" }
+  { name: "Rome",          admin1: "Lazio",            country: "Italy",          lat: 41.9028, lon: 12.4964,  timezone: "Europe/Rome" }
+  { name: "Amsterdam",     admin1: "North Holland",    country: "Netherlands",    lat: 52.3676, lon: 4.9041,   timezone: "Europe/Amsterdam" }
+  { name: "Singapore",     admin1: "",                 country: "Singapore",      lat: 1.3521,  lon: 103.8198, timezone: "Asia/Singapore" }
+}
 
 -- Module-level cache – reset when the app restarts.
 context = {}
+current_location = LOCATIONS[1]
+
+location_subtitle = (loc) ->
+  parts = {}
+  parts[#parts + 1] = loc.admin1 if loc.admin1 and #loc.admin1 > 0
+  parts[#parts + 1] = loc.country if loc.country and #loc.country > 0
+  table.concat parts, ", "
+
+location_key = (loc) -> "#{loc.name}:#{loc.lat},#{loc.lon}"
+
+copy_location = (loc) ->
+  {
+    name: loc.name
+    admin1: loc.admin1
+    country: loc.country
+    lat: loc.lat
+    lon: loc.lon
+    timezone: loc.timezone
+  }
+
+find_saved_location = (loc) ->
+  key = location_key loc
+  for saved in *LOCATIONS
+    return saved if location_key(saved) == key
+  nil
+
+add_location = (loc) ->
+  saved = find_saved_location loc
+  unless saved
+    saved = copy_location loc
+    LOCATIONS[#LOCATIONS + 1] = saved
+  current_location = saved
+  saved
+
+set_current_location = (loc) ->
+  current_location = find_saved_location(loc) or add_location loc
+
+get_current_location = -> current_location or LOCATIONS[1]
+
+search_locations = (query) ->
+  q = string.lower(query or "")
+  return {} if #q == 0
+
+  results = {}
+  for loc in *LOCATION_CATALOG
+    haystack = string.lower "#{loc.name} #{loc.admin1 or ""} #{loc.country or ""}"
+    if string.find haystack, q, 1, true
+      results[#results + 1] = loc
+      break if #results >= 12
+  results
 
 -- Weather model.  All methods are called as class methods: Weather\current!
 -- They yield the running coroutine while the HTTP request is in flight, so
@@ -28,7 +87,10 @@ context = {}
 -- synchronous render during startup).
 class Weather
   -- Returns the current-conditions table for (lat, lon).
-  current: (lat=_current_location.lat, lon=_current_location.lon) =>
+  current: (lat=nil, lon=nil) =>
+    unless lat and lon
+      loc = get_current_location!
+      lat, lon = loc.lat, loc.lon
     key = "current:#{lat},#{lon}"
     return context[key] if context[key]
     data = weather_api.current lat, lon
@@ -36,7 +98,10 @@ class Weather
     context[key]
 
   -- Returns the daily forecast table for (lat, lon).
-  forecast: (lat=_current_location.lat, lon=_current_location.lon) =>
+  forecast: (lat=nil, lon=nil) =>
+    unless lat and lon
+      loc = get_current_location!
+      lat, lon = loc.lat, loc.lon
     key = "forecast:#{lat},#{lon}"
     return context[key] if context[key]
     data = weather_api.forecast lat, lon
@@ -64,8 +129,11 @@ return {
   :Weather
   :LOCATIONS
   :Settings
-  :get_location
-  :set_location
+  :add_location
+  :set_current_location
+  :get_current_location
+  :search_locations
+  :location_subtitle
   default_lat: DEFAULT_LAT
   default_lon: DEFAULT_LON
 }

@@ -1,5 +1,5 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-import Weather, get_location from require "model"
+import Weather, get_current_location from require "model"
 
 -- Number of forecast days to display.
 FORECAST_DAYS = 7
@@ -8,10 +8,11 @@ class ForecastScreen extends require "orca.core.widget"
 	title: "Forecast"
 
 	content: =>
-		loc = get_location!
-		forecast = Weather\forecast loc.lat, loc.lon
+		forecast = Weather\forecast!
+		location = get_current_location!
 		StackView class: "bg-slate-900 p-5 gap-3", =>
 			TextBlock class: "text-2xl font-bold text-slate-100", "#{FORECAST_DAYS}-Day Forecast"
+			TextBlock class: "text-sm text-slate-400", location.name
 			for i = 1, math.min(FORECAST_DAYS, #forecast.time)
 				code = forecast.weather_code[i]
 				desc = Weather\description code
