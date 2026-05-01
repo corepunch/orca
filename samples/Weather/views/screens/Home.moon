@@ -1,5 +1,5 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-import Weather, LOCATIONS from require "model"
+import Weather, get_current_location from require "model"
 
 class HomeScreen extends require "orca.core.widget"
 	title: "Today"
@@ -8,7 +8,7 @@ class HomeScreen extends require "orca.core.widget"
 		current = Weather\current!
 		icon_src = Weather\icon current.weather_code
 		desc = Weather\description current.weather_code
-		location_name = LOCATIONS[1].name
+		location_name = get_current_location!.name
 
 		StackView class: "bg-slate-900 p-5 gap-4", =>
 			-- Location row

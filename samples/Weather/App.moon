@@ -21,5 +21,6 @@ class App extends require "orca.core.application"
 	[Forecast: "/forecast"]: => render: true
 	[Alerts: "/alerts"]: => render: true
 	[Saved: "/saved"]: => render: true
+	[LocationSearch: "/location-search"]: => render: true
 	[Settings: "/settings"]: => render: true
 	[About: "/about"]: => render: true
