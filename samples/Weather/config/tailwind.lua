@@ -20,7 +20,7 @@ local DarkTheme = {
 	["foreground-muted"]  = "#94a3b8",  -- slate-400: secondary / label text
 	["accent"]            = "#38bdf8",  -- sky-400:   interactive accent
 	["accent-foreground"] = "#ffffff",  -- white:     text on accent backgrounds
-	["accent-subtle"]     = "#e0f7ff",  -- sky-100 approx: subtle text on selected rows
+	["accent-subtle"]     = "#e0f2fe",  -- sky-100:   subtle text on selected rows
 	["header-bg"]         = "#1e293b",  -- slate-800: header / bottom-nav background
 }
 

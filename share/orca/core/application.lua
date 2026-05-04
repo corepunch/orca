@@ -155,7 +155,6 @@ Application = Widget:extend {
       if msg:is "Window.Closed" then return
       elseif msg:is "Node.KeyDown" and msg.key == "q" then return
       elseif msg:is "RequestReload" then return DATADIR
-      elseif msg:is "AppearanceChanged" then return DATADIR
       else
         -- Detect OS appearance changes by polling is_dark_theme() on each
         -- paint event.  When the theme flips we trigger a full reload so the
