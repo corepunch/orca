@@ -85,4 +85,5 @@ site/
 docs/quickstart.md
 gdb.txt
 samples/Weather/**/*.lua
+!samples/Weather/config/*.lua
 Error

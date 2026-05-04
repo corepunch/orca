@@ -149,12 +149,19 @@ Application = Widget:extend {
   end,
 
   run = function(self)
+    local startup_dark_theme = system.get_theme()
     for msg in system.getMessage do
       if filesystem.hasChangedFiles() then return DATADIR end
       if msg:is "Window.Closed" then return
       elseif msg:is "Node.KeyDown" and msg.key == "q" then return
       elseif msg:is "RequestReload" then return DATADIR
       else
+        -- Detect OS appearance changes by polling is_dark_theme() on each
+        -- paint event.  When the theme flips we trigger a full reload so the
+        -- tailwind config (re-evaluated at startup) picks up the new colours.
+        if msg:is "Window.Paint" and system.is_dark_theme() ~= startup_dark_theme then
+          return DATADIR
+        end
         local ok, result = pcall(system.dispatchMessage, self.screen, msg)
         if not ok then
           io.stderr:write(tostring(result) .. "\n")

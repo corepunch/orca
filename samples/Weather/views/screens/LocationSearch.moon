@@ -17,28 +17,28 @@ render_results = (query) ->
 	results = search_locations query
 
 	if #query == 0
-		StackView class: "bg-slate-800 rounded-3 px-4 py-4 gap-2", =>
-			TextBlock class: "text-base font-bold text-slate-100", "Search for a city"
-			TextBlock class: "text-sm text-slate-400",
+		StackView class: "bg-surface rounded-3 px-4 py-4 gap-2", =>
+			TextBlock class: "text-base font-bold text-foreground", "Search for a city"
+			TextBlock class: "text-sm text-foreground-muted",
 				"Type a city name, then choose the matching region."
 	elseif #results == 0
-		StackView class: "bg-slate-800 rounded-3 px-4 py-4 gap-2", =>
-			TextBlock class: "text-base font-bold text-slate-100", "No matches"
-			TextBlock class: "text-sm text-slate-400",
+		StackView class: "bg-surface rounded-3 px-4 py-4 gap-2", =>
+			TextBlock class: "text-base font-bold text-foreground", "No matches"
+			TextBlock class: "text-sm text-foreground-muted",
 				"Try a larger nearby city or check the spelling."
 	else
 		StackView class: "gap-2 overflow-y-scroll h-full", =>
 			for loc in *results
 				StackView {
-					class: "bg-slate-800 rounded-3 px-4 py-3 flex-row items-center gap-3"
+					class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3"
 					LeftButtonUp: -> choose_location loc
 				}, =>
 					ImageView
-						class: "align-middle-center text-sky-400"
+						class: "align-middle-center text-accent"
 						Source: "assets/icons/location.svg?width=22&type=mask"
 					StackView class: "gap-1", =>
-						TextBlock class: "text-base font-bold text-slate-100", loc.name
-						TextBlock class: "text-xs text-slate-400", location_subtitle loc
+						TextBlock class: "text-base font-bold text-foreground", loc.name
+						TextBlock class: "text-xs text-foreground-muted", location_subtitle loc
 
 class LocationSearchScreen extends require "orca.core.widget"
 	title: "Add Location"
@@ -47,7 +47,7 @@ class LocationSearchScreen extends require "orca.core.widget"
 		StackView class: "bg-slate-900"
 
 	content: =>
-		StackView class: "bg-slate-900 p-5 gap-4", =>
+		StackView class: "bg-background p-5 gap-4", =>
 			results_view = nil
 			update_query = (sender) ->
 				search_query = sender.Text or ""
@@ -55,13 +55,13 @@ class LocationSearchScreen extends require "orca.core.widget"
 
 			StackView class: "flex-row items-center gap-3", =>
 				TextBlock {
-					class: "text-sm font-bold text-sky-400 px-2 py-2"
+					class: "text-sm font-bold text-accent px-2 py-2"
 					LeftButtonUp: -> navigate "/saved"
 				}, "Back"
 				search_input = Input {
 					Text: search_query
 					PlaceholderText: "Search city"
-					class: "w-full bg-slate-800 text-slate-100 placeholder-slate-500 rounded-3 px-4 py-3"
+					class: "w-full bg-surface-alt text-foreground placeholder-foreground-muted rounded-3 px-4 py-3"
 					TextInput: update_query
 				}
 				search_input\setFocus!

@@ -10,14 +10,14 @@ NAV_ITEMS = {
 }
 
 make_header = (title) ->
-	StackView class: "bg-slate-800 px-5 py-3 justify-center", =>
-		TextBlock class: "text-2xl font-bold align-center text-slate-100", title
+	StackView class: "bg-header-bg px-5 py-3 justify-center", =>
+		TextBlock class: "text-2xl font-bold align-center text-accent-foreground", title
 
 make_footer = (active_route, navigate) ->
-	StackView class: "bg-slate-800 flex-row justify-evenly items-center p-2", =>
+	StackView class: "bg-header-bg flex-row justify-evenly items-center p-2", =>
 		for item in *NAV_ITEMS
 			selected = active_route == item.route
-			color = selected and "text-sky-400" or "text-slate-500"
+			color = selected and "text-accent" or "text-foreground-muted"
 			weight = selected and "font-bold" or "font-normal"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
 				ImageView
@@ -27,8 +27,8 @@ make_footer = (active_route, navigate) ->
 				TextBlock class: "text-xs #{color} #{weight}", item.label
 
 make_placeholder = ->
-	StackView class: "bg-slate-900 p-6 gap-2", =>
-		TextBlock class: "text-base text-slate-400", "No content for this route"
+	StackView class: "bg-background p-6 gap-2", =>
+		TextBlock class: "text-base text-foreground-muted", "No content for this route"
 
 class Default extends Widget
 	content: =>
@@ -42,9 +42,9 @@ class Default extends Widget
 
 		Screen ->
 			Grid Rows: "32px 52px 1fr 72px 24px", =>
-				Node2D class: "bg-slate-800"
+				Node2D class: "bg-header-bg"
 				make_header title
 				@addChild (inner or make_placeholder!)
 				@addChild (footer or make_footer active_route, navigate)
-				Node2D class: "bg-slate-800"
+				Node2D class: "bg-header-bg"
 		

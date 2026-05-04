@@ -12,12 +12,12 @@ class SettingsScreen extends require "orca.core.widget"
 	content: =>
 		unit = Settings\get_unit!
 
-		StackView class: "bg-slate-900 p-5 gap-4", =>
-			TextBlock class: "text-2xl font-bold text-slate-100", "Settings"
+		StackView class: "bg-background p-5 gap-4", =>
+			TextBlock class: "text-2xl font-bold text-foreground", "Settings"
 
 			-- Temperature unit card
-			StackView class: "bg-slate-800 rounded-3 px-4 py-4 gap-3", =>
-				TextBlock class: "text-xs font-bold text-slate-400", "TEMPERATURE UNIT"
+			StackView class: "bg-surface rounded-3 px-4 py-4 gap-3", =>
+				TextBlock class: "text-xs font-bold text-foreground-muted", "TEMPERATURE UNIT"
 				RadioGroup {
 					SelectedValue: unit
 					Direction:     "Vertical"
@@ -27,5 +27,5 @@ class SettingsScreen extends require "orca.core.widget"
 					for option in *temperature_units
 						RadioButton {
 							Value:  option.value
-							class:  "w-full px-4 py-3 rounded-3 bg-slate-700 text-slate-200 active:bg-sky-500 active:text-white"
+							class:  "w-full px-4 py-3 rounded-3 bg-surface-alt text-foreground active:bg-accent active:text-accent-foreground"
 						}, option.label

@@ -26,7 +26,7 @@ function Startup.load_controller(Application, path, route)
 end
 
 function Startup.load_plugin_config(name)
-  orca.config[name] = {}
+  orca.config[name] = setmetatable({}, { __index = _G })
   if not filesystem.getWorkspace() then return end
   for node in filesystem.getWorkspace().children do
     local filename = filesystem.joinPaths(node.Name, "config/" .. name .. ".lua")

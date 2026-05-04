@@ -15,24 +15,24 @@ class SavedScreen extends require "orca.core.widget"
 
 	content: =>
 		current = get_current_location!
-		StackView class: "bg-slate-900 p-5 gap-3", =>
+		StackView class: "bg-background p-5 gap-3", =>
 			StackView class: "flex-row items-center gap-3", =>
-				TextBlock class: "text-2xl font-bold text-slate-100", "Saved Locations"
+				TextBlock class: "text-2xl font-bold text-foreground", "Saved Locations"
 				StackView {
-					class: "align-middle-right bg-sky-500 rounded-full p-2"
+					class: "align-middle-right bg-accent rounded-full p-2"
 					LeftButtonUp: -> navigate "/location-search"
 				}, =>
 					ImageView
-						class: "align-middle-center text-white"
+						class: "align-middle-center text-accent-foreground"
 						Source: "assets/icons/plus.svg?width=22&type=mask"
 			for loc in *LOCATIONS
 				selected = loc == current
 				row_class = selected and
-					"bg-sky-500 rounded-3 px-4 py-3 flex-row items-center gap-3" or
-					"bg-slate-800 rounded-3 px-4 py-3 flex-row items-center gap-3"
-				icon_color = selected and "text-white" or "text-sky-400"
-				title_color = selected and "text-white" or "text-slate-100"
-				subtitle_color = selected and "text-sky-100" or "text-slate-400"
+					"bg-accent rounded-3 px-4 py-3 flex-row items-center gap-3" or
+					"bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3"
+				icon_color = selected and "text-accent-foreground" or "text-accent"
+				title_color = selected and "text-accent-foreground" or "text-foreground"
+				subtitle_color = selected and "text-accent-subtle" or "text-foreground-muted"
 				StackView {
 					class: row_class
 					LeftButtonUp: -> select_location loc
