@@ -154,6 +154,7 @@ Application = Widget:extend {
       if msg:is "Window.Closed" then return
       elseif msg:is "Node.KeyDown" and msg.key == "q" then return
       elseif msg:is "RequestReload" then return DATADIR
+      elseif msg:is "AppearanceChanged" then return DATADIR
       else
         local ok, result = pcall(system.dispatchMessage, self.screen, msg)
         if not ok then

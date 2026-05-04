@@ -212,6 +212,11 @@ static luaL_Reg const lib_system[] = {
 
 ORCA_API int luaopen_orca_system(lua_State* L)
 {
+  /* Initialise dark_theme from the platform's current OS setting so that
+     system.get_theme() reflects the real appearance without requiring an
+     explicit system.set_theme() call in the application config. */
+  dark_theme = axIsDarkTheme();
+
   //	lua_pushlightuserdata(L, &api_system);
   //	lua_setfield(L, LUA_REGISTRYINDEX, IID_SYSTEM);
   luaL_newlib(L, lib_system);
