@@ -167,17 +167,18 @@ static int f_get_time_span(lua_State* L)
 
 static bool_t dark_theme = FALSE;
 
-#ifndef __EMSCRIPTEN__
-bool_t
-axIsDarkTheme(void)
-{
-  return dark_theme;
-}
-#endif
-
 static int f_get_theme(lua_State* L)
 {
   lua_pushboolean(L, dark_theme);
+  return 1;
+}
+
+/* Queries the platform's current OS appearance directly, bypassing the
+   cached dark_theme variable.  Useful for polling whether the OS theme
+   has changed since the Lua state was last initialised. */
+static int f_is_dark_theme(lua_State* L)
+{
+  lua_pushboolean(L, axIsDarkTheme());
   return 1;
 }
 
@@ -204,6 +205,7 @@ static luaL_Reg const lib_system[] = {
   { "sleep", f_sleep },
   { "set_theme", f_set_theme },
   { "get_theme", f_get_theme },
+  { "is_dark_theme", f_is_dark_theme },
   { "get_glipboard", f_get_clipboard },
   { "set_clipboard", f_set_clipboard },
   { "list_dir", f_list_dir },
