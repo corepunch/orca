@@ -1,33 +1,50 @@
-require "html"
-
-routing = require "routing"
-ui = require "orca.ui"
-loc = require "orca.localization"
-Layout = require "root.RootLayout"
-page = require "root.components"
-
-loc.load "assets/localization/en"
+renderer = require "orca.renderer"
+Application = require "orca.core.application"
 
 import Account from require "model"
-import Application from require "routing"
-import SearchPage from require "root.pages"
+
+-- Routes that bypass the authentication guard.
+AUTH_ROUTES = { ["/sign-in"]: true, ["/sign-up"]: true }
 
 class App extends Application
-	@include "applications.users"
-	@include "applications.chat"
+	layout: require "Banking/views/layout"
+	views_prefix: "Banking/views/screens"
 
-	StyleSheet: "assets/globals.css"
+	@include_helpers {
+		app_title: => "Banking"
+		current_route: => @current_route or "/"
+	}
 
-	"/": => Layout page.HomePage
-	"/send-money": => Layout page.SendMoney
-	"/settings": => Layout page.Settings
-	"/tweets": => Layout page.Tweets
-	"/new-tweet": => Layout page.NewTweet
-	"/user/:user": => Layout page.ContactDetails, @params
-	"/transaction/:transaction": => Layout page.TransactionDetails, @params
-	"/search": => SearchPage!
+	dispatch: (req) =>
+		route = if type(req) == "table" then req.path or req.url or req.route else req
 
-	Awake2: => 
-		import parse from require "orca.parsers.css"
-		-- routing.navigate '/sign-out'
-		@navigate '/sign-in' unless pcall Account\auth, Account
+		-- Sign-out: clear session then redirect to sign-in.
+		if route == "/sign-out"
+			pcall Account.signout, Account
+			route = "/sign-in"
+			req   = "/sign-in"
+
+		-- Protect every route that is not in AUTH_ROUTES.
+		unless AUTH_ROUTES[route]
+			ok = pcall Account.auth, Account
+			unless ok
+				route = "/sign-in"
+				req   = "/sign-in"
+
+		@current_route = route or "/"
+		App.__parent.dispatch self, req
+
+	navigate: (route) =>
+		@activate_route route
+
+	[Home:        "/"              ]: => render: true
+	[SendMoney:   "/send-money"    ]: => render: true
+	[Settings:    "/settings"      ]: => render: true
+	[Tweets:      "/tweets"        ]: => render: true
+	[NewTweet:    "/new-tweet"     ]: => render: true
+	[Search:      "/search"        ]: => render: true
+	[UserProfile: "/user"          ]: => render: true
+	[Transaction: "/transaction"   ]: => render: true
+	[Chat:        "/chat"          ]: => render: true
+	[SignIn:      "/sign-in"       ]: => render: true
+	[SignUp:      "/sign-up"       ]: => render: true
