@@ -34,12 +34,16 @@ class Default extends Widget
 	content: =>
 		inner      = @content_for "inner"
 		title_slot = @content_for "title"
-		title      = if title_slot then title_slot else if @app_title then @app_title! else "Banking"
 		no_chrome  = @content_for "no_chrome"
 		navigate   = @navigate
 		route_val  = @current_route
 		active_route = if type(route_val) == "function" then route_val! else route_val or "/"
 		footer     = @content_for("footer") or make_footer active_route, navigate
+
+		-- Compute title: prefer the slot set by the screen, then the app helper, then the default.
+		title = title_slot
+		unless title
+			title = if @app_title then @app_title! else "Banking"
 
 		-- Auth screens opt out of the navigation chrome.
 		if no_chrome

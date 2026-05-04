@@ -1,11 +1,7 @@
 import StackView, TextBlock, Input, Button from require "orca.UIKit"
-Application = require "orca.core.application"
 
 import Account, Users from require "model"
-
-navigate = (route) ->
-	app = Application.current false
-	app\navigate route if app
+import navigate from require "Banking/views/helpers"
 
 class SignUp extends require "orca.core.widget"
 	title: "Sign Up"

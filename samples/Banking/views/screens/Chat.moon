@@ -2,10 +2,7 @@ import Screen, Grid, StackView, TextBlock, ImageView, Input from require "orca.U
 Application = require "orca.core.application"
 
 import Users, Chats, Messages from require "model"
-
-navigate = (route) ->
-	app = Application.current false
-	app\navigate route if app
+import navigate from require "Banking/views/helpers"
 
 render_bubble = (msg, me) ->
 	sender_id = msg.sender["$id"]

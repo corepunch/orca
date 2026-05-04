@@ -1,5 +1,5 @@
 local system = require "orca.system"
-system.set_theme(true)
+system.set_theme(true)  -- force dark theme
 
 local DarkTheme = {
 	["background"]             = "#050813",

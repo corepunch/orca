@@ -1,11 +1,7 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Application = require "orca.core.application"
 
 import Users, Transactions from require "model"
-
-navigate = (route) ->
-	app = Application.current false
-	app\navigate route if app
+import navigate from require "Banking/views/helpers"
 
 class Transaction extends require "orca.core.widget"
 	title: "Transaction"

@@ -1,13 +1,7 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
-Application = require "orca.core.application"
 
 import Users, Chats from require "model"
-
-navigate = (route, data) ->
-	app = Application.current false
-	if app
-		if data then app.nav_data = data
-		app\navigate route
+import navigate from require "Banking/views/helpers"
 
 class SendMoney extends require "orca.core.widget"
 	title: "Send Money"

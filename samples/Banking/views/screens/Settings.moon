@@ -1,9 +1,6 @@
 import StackView, TextBlock from require "orca.UIKit"
-Application = require "orca.core.application"
 
-navigate = (route) ->
-	app = Application.current false
-	app\navigate route if app
+import navigate from require "Banking/views/helpers"
 
 class Settings extends require "orca.core.widget"
 	title: "Settings"
