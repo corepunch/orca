@@ -1,11 +1,11 @@
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Small sun (top-left) -->
-  <circle cx="8" cy="8" r="2.5" fill="currentColor"/>
-  <line x1="8" y1="3" x2="8" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="3" y1="8" x2="5" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="11.07" y1="4.93" x2="9.66" y2="6.34" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="11.07" y1="11.07" x2="9.66" y2="9.66" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="8" cy="8" r="2.5" fill="#FBBF24"/>
+  <line x1="8" y1="3" x2="8" y2="5" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="3" y1="8" x2="5" y2="8" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="4.93" y1="4.93" x2="6.34" y2="6.34" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="11.07" y1="4.93" x2="9.66" y2="6.34" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="11.07" y1="11.07" x2="9.66" y2="9.66" stroke="#FBBF24" stroke-width="1.5" stroke-linecap="round"/>
   <!-- Cloud (overlapping bottom-right) -->
-  <path d="M10 19H18.5C20.43 19 22 17.43 22 15.5C22 13.74 20.68 12.29 18.97 12.06C18.72 10.33 17.24 9 15.5 9C13.86 9 12.45 10.17 12.07 11.75C11.4 11.28 10.56 11 9.66 11C7.54 11 5.82 12.58 5.82 14.5C5.82 16.43 7.39 18 9.27 18.93L9.5 19H10Z" fill="currentColor"/>
+  <path d="M10 19H18.5C20.43 19 22 17.43 22 15.5C22 13.74 20.68 12.29 18.97 12.06C18.72 10.33 17.24 9 15.5 9C13.86 9 12.45 10.17 12.07 11.75C11.4 11.28 10.56 11 9.66 11C7.54 11 5.82 12.58 5.82 14.5C5.82 16.43 7.39 18 9.27 18.93L9.5 19H10Z" fill="#94A3B8"/>
 </svg>

@@ -27,8 +27,8 @@ class ForecastScreen extends require "orca.core.widget"
 				prec  = (forecast.precipitation_probability_max or {})[i] or 0
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
 					ImageView
-						class: "align-middle-center text-accent"
-						Source: "#{icon_src}?width=28&type=mask"
+						class: "align-middle-center"
+						Source: "#{icon_src}?width=28"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", forecast.time[i]
 						TextBlock class: "text-sm text-foreground", desc

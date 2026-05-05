@@ -38,8 +38,8 @@ class HomeScreen extends require "orca.core.widget"
 			StackView class: "bg-surface rounded-3 p-5 gap-3", =>
 				StackView class: "flex-row items-center gap-4", =>
 					ImageView
-						class: "align-middle-center text-accent"
-						Source: "#{icon_src}?width=80&type=mask"
+						class: "align-middle-center"
+						Source: "#{icon_src}?width=80"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-5xl font-bold text-foreground",
 							Weather\format_temp current.temperature_2m
@@ -54,8 +54,8 @@ class HomeScreen extends require "orca.core.widget"
 					StackView class: "bg-surface rounded-3 px-3 py-2 flex-col items-center gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", h_time
 						ImageView
-							class: "align-middle-center text-accent"
-							Source: "#{h_icon}?width=24&type=mask"
+							class: "align-middle-center"
+							Source: "#{h_icon}?width=24"
 						TextBlock class: "text-sm font-bold text-foreground", h_temp
 
 			-- Stat cards
