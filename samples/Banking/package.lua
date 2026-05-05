@@ -9,7 +9,6 @@ ProjectReferences = {
 	{ Name = "model",    Path = "model"       },
 	{ Name = "appwrite", Path = "lib/appwrite" },
 	{ Name = "config",   Path = "config"      },
-	{ Name = "tailwind", Path = "tailwind"    },
 }
 SystemMessages = {
 	{ Message = "KeyDown",      Key = "q", Command = "return"             },
