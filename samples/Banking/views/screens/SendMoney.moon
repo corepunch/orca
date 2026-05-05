@@ -20,6 +20,9 @@ class SendMoney extends require "orca.core.widget"
 					class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3"
 					LeftButtonUp: -> navigate "/chat", { chat: c["$id"] }
 				}, =>
+					ImageView
+						class: "align-middle-center text-accent"
+						Source: "assets/icons/people.svg?width=22&type=mask"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-base font-bold text-foreground",
 							Users\getFullName partner
