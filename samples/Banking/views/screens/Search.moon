@@ -41,7 +41,7 @@ class Search extends require "orca.core.widget"
 				class: "bg-surface mx-4 my-3 px-4 py-3 rounded text-foreground"
 				PlaceholderText: "Search people..."
 				Name: "query"
-				Change: do_search
+				TextInput: do_search
 
 			results_view = StackView
 				class: "flex-col px-4 gap-2 overflow-y-scroll"

@@ -1,4 +1,5 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
+Application = require "orca.core.application"
 
 import Users, Transactions from require "model"
 import navigate from require "Banking/views/helpers"

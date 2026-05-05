@@ -39,8 +39,8 @@ local DarkTheme = {
 	["light-4"]                = "#9494BB",
 }
 
-return {
-	extend = {
-		colors = DarkTheme,
-	},
+-- Top-level assignment so the Tailwind plugin sees orca.config.tailwind.extend.colors
+-- when this chunk is executed in the orca.config.tailwind environment.
+extend = {
+	colors = DarkTheme,
 }

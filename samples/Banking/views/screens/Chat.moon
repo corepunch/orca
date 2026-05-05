@@ -47,7 +47,7 @@ class Chat extends require "orca.core.widget"
 				class: "bg-surface flex-1 px-4 py-2 rounded text-foreground"
 				PlaceholderText: ". . ."
 				Name: "message"
-				Change: send_message
+				Submit: send_message
 
 		-- Messages list returned as the main content.
 		messages_view = StackView class: "bg-background flex-col overflow-y-scroll h-full px-2", =>
