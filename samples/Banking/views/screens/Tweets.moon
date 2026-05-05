@@ -26,6 +26,6 @@ class Tweets extends require "orca.core.widget"
 						for action in *ACTIONS
 							StackView class: "flex-row gap-1 items-center", =>
 								ImageView
-									class: "align-middle-center text-foreground-muted"
-									Source: "assets/icons/#{action}.svg?width=16&type=mask"
+									class: "align-middle-center"
+									Source: "assets/icons/#{action}.svg?width=16"
 								TextBlock class: "text-xs text-foreground-muted", "28"

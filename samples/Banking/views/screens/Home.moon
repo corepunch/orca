@@ -15,8 +15,8 @@ class Home extends require "orca.core.widget"
 			StackView class: "bg-surface rounded-3 p-5 gap-1", =>
 				StackView class: "flex-row items-center gap-2", =>
 					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/Wallet.svg?width=20&type=mask"
+						class: "align-middle-center"
+						Source: "assets/icons/Wallet.svg?width=20"
 					TextBlock class: "text-xs text-foreground-muted", "Total Balance"
 				TextBlock class: "text-4xl font-bold text-foreground",
 					Transactions\formatAmount { amount: sum }
@@ -32,8 +32,8 @@ class Home extends require "orca.core.widget"
 						LeftButtonUp: -> navigate "/transaction", { transaction: txn["$id"] }
 					}, =>
 						ImageView
-							class: "align-middle-center text-accent"
-							Source: "assets/icons/share.svg?width=22&type=mask"
+							class: "align-middle-center"
+							Source: "assets/icons/transfer.svg?width=22"
 						StackView class: "flex-col gap-1", =>
 							TextBlock class: "text-base font-bold text-foreground",
 								Users\getFullName item.beneficiary
