@@ -26,6 +26,9 @@ class Transaction extends require "orca.core.widget"
 			if txn
 				StackView class: "flex-col items-center gap-2 py-6", =>
 					TextBlock class: "text-sm text-foreground-muted", "You sent"
+					ImageView
+						class: "align-middle-center text-primary"
+						Source: "assets/icons/share.svg?width=48&type=mask"
 					TextBlock class: "text-4xl font-bold text-primary",
 						Transactions\formatAmount txn
 					TextBlock class: "text-base text-foreground", "to " .. Users\getFullName txn.beneficiary
