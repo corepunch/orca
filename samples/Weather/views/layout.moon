@@ -3,8 +3,8 @@ Widget = require "orca.core.widget"
 
 NAV_ITEMS = {
 	{ route: "/", label: "Home", icon: "assets/icons/home.svg" }
-	{ route: "/forecast", label: "Forecast", icon: "assets/icons/search.svg" }
-	{ route: "/alerts", label: "Alerts", icon: "assets/icons/chat.svg" }
+	{ route: "/forecast", label: "Forecast", icon: "assets/icons/calendar.svg" }
+	{ route: "/alerts", label: "Alerts", icon: "assets/icons/alert.svg" }
 	{ route: "/saved", label: "Saved", icon: "assets/icons/bookmark.svg" }
 	{ route: "/settings", label: "Settings", icon: "assets/icons/settings.svg" }
 }

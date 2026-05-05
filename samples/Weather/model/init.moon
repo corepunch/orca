@@ -108,6 +108,17 @@ class Weather
     context[key] = data.daily
     context[key]
 
+  -- Returns the hourly forecast table for (lat, lon) — 48 hours (2 days).
+  hourly: (lat=nil, lon=nil) =>
+    unless lat and lon
+      loc = get_current_location!
+      lat, lon = loc.lat, loc.lon
+    key = "hourly:#{lat},#{lon}"
+    return context[key] if context[key]
+    data = weather_api.hourly lat, lon
+    context[key] = data.hourly
+    context[key]
+
   -- Human-readable label for a WMO weather code.
   description: (code) => weather_api.description code
 
@@ -134,6 +145,7 @@ return {
   :get_current_location
   :search_locations
   :location_subtitle
+  format_time: weather_api.format_time
   default_lat: DEFAULT_LAT
   default_lon: DEFAULT_LON
 }

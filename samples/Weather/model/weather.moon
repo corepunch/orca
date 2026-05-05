@@ -47,11 +47,16 @@ wind_dir = (degrees) ->
   idx = math.floor((degrees + 22.5) / 45) % 8
   DIRECTIONS[idx + 1]
 
+-- Extract HH:MM from an ISO datetime string like "2024-01-15T07:23".
+-- Chars 12-16 (1-based) give the "HH:MM" portion after the T separator.
+format_time = (s) ->
+  if s and #s >= 16 then s\sub(12, 16) else "—"
+
 current = (lat, lon) ->
   url = BASE_URL ..
     "?latitude=#{lat}" ..
     "&longitude=#{lon}" ..
-    "&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,weather_code" ..
+    "&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m,weather_code,relative_humidity_2m,uv_index,surface_pressure,visibility" ..
     "&wind_speed_unit=ms" ..
     "&timezone=auto"
   response = network.fetch url
@@ -61,10 +66,21 @@ forecast = (lat, lon) ->
   url = BASE_URL ..
     "?latitude=#{lat}" ..
     "&longitude=#{lon}" ..
-    "&daily=temperature_2m_max,temperature_2m_min,weather_code" ..
+    "&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max,sunrise,sunset" ..
     "&wind_speed_unit=ms" ..
     "&timezone=auto"
   response = network.fetch url
   response\json!
 
-return { :description, :icon, :wind_dir, :current, :forecast }
+hourly = (lat, lon) ->
+  url = BASE_URL ..
+    "?latitude=#{lat}" ..
+    "&longitude=#{lon}" ..
+    "&hourly=temperature_2m,weather_code" ..
+    "&wind_speed_unit=ms" ..
+    "&timezone=auto" ..
+    "&forecast_days=2"
+  response = network.fetch url
+  response\json!
+
+return { :description, :icon, :wind_dir, :format_time, :current, :forecast, :hourly }
