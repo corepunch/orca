@@ -445,7 +445,7 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
   if (!object) return NULL;
   struct Texture *texture = GetTexture(object);
   if (!texture) {
-    OBJ_Release(NULL, object);
+    OBJ_ReleaseRef(object);
     return NULL;
   }
   struct AXbuffer sb = { pBuffer, dwSize, dwSize, 0 };

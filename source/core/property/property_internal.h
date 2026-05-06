@@ -45,6 +45,7 @@ PROP_HasHandler(struct Property const *property)
       (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER)) != 0;
 }
 
+struct Object *PROP_GetObjectValue(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 

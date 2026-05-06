@@ -273,6 +273,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       data = ED_AllocUserData(wnd, sizeof(struct _CANVASVIEW));
       data->mode = ID_SELECT;
       data->object = lparm;
+      if (data->object) OBJ_AddRef(data->object);
       ED_SetWindowFlags(wnd, EDWF_TOOLBAR);
       ED_SendMessage(wnd, TB_ADDBUTTONS, sizeof(toolbar)/sizeof(*toolbar), toolbar);
       RenderTexture_Create(&(CREATERTSTRUCT) {
@@ -297,7 +298,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
       ED_InvalidateWindow(wnd);
       return 0;
     case EVT_DESTROY:
-      if (data->object) OBJ_Release(editor.L, data->object);
+      if (data->object) OBJ_ReleaseRef(data->object);
       if (data->scene_texture) Texture_Release(data->scene_texture);
       free(ED_GetUserData(wnd));
       return 0;
@@ -392,4 +393,3 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
   }
   return 0;
 }
-

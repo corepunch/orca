@@ -20,6 +20,7 @@ extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 // style_class_selector
 extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selector const* value);
 extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
+extern int64_t OBJ_GetObjectCount(void);
 
 ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
 ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable")
@@ -48,7 +49,7 @@ int f_OBJ_Clear(lua_State *L) {
 }
 int f_OBJ_ReleaseOrphan(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_ReleaseOrphan(L, this_ );
+	OBJ_ReleaseRef(this_ );
 	return 0;
 }
 int f_OBJ_Equals(lua_State *L) {
@@ -1542,6 +1543,10 @@ int f_core_FlushQueue(lua_State *L) {
 	core_FlushQueue(L );
 	return 0;
 }
+int f_core_ObjectCount(lua_State *L) {
+	lua_pushinteger(L, OBJ_GetObjectCount());
+	return 1;
+}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -1550,6 +1555,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
 		{ "flushQueue", f_core_FlushQueue },
+		{ "objectCount", f_core_ObjectCount },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);

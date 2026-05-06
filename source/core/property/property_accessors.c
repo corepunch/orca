@@ -20,6 +20,21 @@ PROP_FindByShortID(struct Property *list, uint32_t identifier) {
   return NULL;
 }
 
+struct Object *
+PROP_GetObjectValue(struct Property const *property)
+{
+  if (!property || PROP_GetType(property) != kDataTypeObject || !property->value) {
+    return NULL;
+  }
+  /* Object-typed properties store a reference-counted object pointer.
+   * If the property targets a component, the stored pointer is the component
+   * userdata and CMP_GetObject recovers the owning object. */
+  if (property->pdesc->TypeString) {
+    return CMP_GetObject(*(void **)property->value);
+  }
+  return *(struct Object **)property->value;
+}
+
 struct Property *
 PROP_GetNext(struct Property const *property)
 {
@@ -59,11 +74,10 @@ PROP_GetUserData(struct Property const *property)
 void const*
 PROP_GetValue(struct Property const *property)
 {
-  // If this is a component, not a direct object reference
-  if (PROP_GetType(property) == kDataTypeObject && property->pdesc->TypeString) {
+  if (PROP_GetType(property) == kDataTypeObject) {
     static struct Object *obj[256];
     static uint8_t i = 0;
-    obj[i] = CMP_GetObject(*(void **)property->value);
+    obj[i] = PROP_GetObjectValue(property);
     return &obj[i++];
   } else {
     return property->value;
@@ -100,28 +114,34 @@ PROP_SetStoredValue(struct Property *property,
     }
     *(LPSTR*)property->value = strdup(*(LPSTR*)source);
   } else if (PROP_GetType(property) == kDataTypeObject) {
-    int ident = fnv1a32(property->pdesc->TypeString);
     struct Object *object = *(struct Object **)source;
+    struct Object *old_object = PROP_GetObjectValue(property);
+    /* Object properties own a ref, but they do not parent the object. */
     if (!object) {
       memset(property->value, 0, PROP_GetSize(property));
       property->flags &= ~PF_MODIFIED;
-      return;
-    }
-    void* udata = OBJ_GetComponent(object, ident);
-    if (!udata) {
-      memset(property->value, 0, PROP_GetSize(property));
-      property->flags &= ~PF_MODIFIED;
-      Con_Error("No %s component in object %s(%s)", property->pdesc->TypeString, OBJ_GetName(object), OBJ_GetClassName(object));
-      return;
-    }
-    memcpy(property->value, &udata, PROP_GetSize(property));
-    // if not a node, i.e. an Image, Model, Sound, etc., add the object as a child to ensure it gets released properly
-    if (!GetNode(object)) {
-      if (OBJ_GetParent(object)) {
-        Con_Error("Object %s being assigned to a property %s is already parented", OBJ_GetName(object), PROP_GetName(property));
-      } else {
-        OBJ_AddChild(property->object, object, FALSE);
+      if (old_object) {
+        OBJ_ReleaseRef(old_object);
       }
+      return;
+    }
+    if (property->pdesc->TypeString) {
+      int ident = fnv1a32(property->pdesc->TypeString);
+      void* udata = OBJ_GetComponent(object, ident);
+      if (!udata) {
+        Con_Error("No %s component in object %s(%s)",
+                  property->pdesc->TypeString,
+                  OBJ_GetName(object),
+                  OBJ_GetClassName(object));
+        return;
+      }
+      memcpy(property->value, &udata, PROP_GetSize(property));
+    } else {
+      memcpy(property->value, &object, PROP_GetSize(property));
+    }
+    OBJ_AddRef(object);
+    if (old_object) {
+      OBJ_ReleaseRef(old_object);
     }
   } else {
     memcpy(property->value, source, PROP_GetSize(property));
@@ -136,7 +156,7 @@ PROP_NormalizeObjectValue(struct Property const *property, void const* source)
   if (!source) return NULL;
   object = *(struct Object *const*)source;
   if (!object) return NULL;
-  if (property->pdesc->TypeString && strcmp(property->pdesc->TypeString, "Object") == 0)
+  if (!property->pdesc->TypeString || strcmp(property->pdesc->TypeString, "Object") == 0)
     return object;
   return OBJ_GetComponent(object, fnv1a32(property->pdesc->TypeString));
 }

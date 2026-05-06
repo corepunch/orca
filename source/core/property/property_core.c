@@ -72,6 +72,12 @@ PROP_Clear(struct Property *property)
   if (property->pdesc->DataType == kDataTypeString && property->value && *(LPSTR*)property->value) {
     free(*(LPSTR*)property->value);
   }
+  if (property->pdesc->DataType == kDataTypeObject && property->value) {
+    struct Object *object = PROP_GetObjectValue(property);
+    if (object) {
+      OBJ_ReleaseRef(object);
+    }
+  }
   if (property->value) {
     memset(property->value, 0, PROP_GetSize(property));
   }
@@ -104,10 +110,7 @@ OBJ_ReleaseProperties(struct Object *hobj)
 {
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
-    if (p->pdesc->DataType == kDataTypeString && p->value && *(LPSTR*)p->value) {
-      free(*(LPSTR*)p->value);
-      *(LPSTR*)p->value = NULL;
-    }
+    PROP_Clear(p);
     FOR_EACH_LIST(struct property_program, pp, core.programs) {
       if (pp->property == p) {
         REMOVE_FROM_LIST(struct property_program, pp, core.programs);

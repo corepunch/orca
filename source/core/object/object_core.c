@@ -10,8 +10,34 @@ static int counter = 0;
 
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
+static void OBJ_Release(struct Object *pobj);
 
 int64_t OBJ_GetObjectCount(void) { return g_object_count; }
+
+uint32_t
+OBJ_AddRef(struct Object *pobj)
+{
+  if (!pobj) {
+    return 0;
+  }
+  return ++pobj->refcount;
+}
+
+uint32_t
+OBJ_ReleaseRef(struct Object *pobj)
+{
+  if (!pobj) {
+    return 0;
+  }
+  if (pobj->refcount > 0) {
+    --pobj->refcount;
+  }
+  if (pobj->refcount == 0) {
+    OBJ_Release(pobj);
+    return 0;
+  }
+  return pobj->refcount;
+}
 
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
@@ -34,6 +60,16 @@ OBJ_Create(uint32_t class_id) {
   // send "create" message
   OBJ_SendMessageW(object, ID_Object_Create, 0, NULL);
   return object;
+}
+
+void
+OBJ_DetachFromParent(struct Object *self)
+{
+  if (self->parent) {
+    REMOVE_FROM_LIST(struct Object, self, self->parent->children);
+    REMOVE_FROM_LIST(struct Object, self, self->parent);
+    self->parent = NULL;
+  }
 }
 
 void
@@ -65,22 +101,18 @@ OBJ_Clear(struct Object *pobj)
 void
 OBJ_RemoveFromParent(struct Object *self)
 {
-  if (self->parent) {
-    REMOVE_FROM_LIST(struct Object, self, self->parent->children); // remove from parent's children
-    REMOVE_FROM_LIST(struct Object, self, self->parent); // modal windows are at the same level
-    self->parent = NULL;
-  }
+  OBJ_DetachFromParent(self);
   if (core.focus == self) core.focus = NULL;
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
-  OBJ_Clear(self);
   axRemoveFromQueue(self);
+  OBJ_ReleaseRef(self);
 }
 
 #include "../property/property_internal.h"
 
-void
-OBJ_Release(lua_State* L, struct Object *pobj)
+static void
+OBJ_Release(struct Object *pobj)
 {
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
@@ -88,27 +120,26 @@ OBJ_Release(lua_State* L, struct Object *pobj)
   g_object_count--;
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
-  OBJ_RemoveFromParent(pobj);
+  OBJ_DetachFromParent(pobj);
+  if (core.focus == pobj) core.focus = NULL;
+  if (core.hover == pobj) core.hover = NULL;
+  if (core.hover2 == pobj) core.hover2 = NULL;
+  axRemoveFromQueue(pobj);
 
   for (struct Property *p = pobj->properties; p; p = PROP_GetNext(p)) {
-    if (L && PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
-      luaL_unref(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(p));
+    if (PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {
+      axPostMessageW(NULL, kEventClearReference, *(event_t*)PROP_GetValue(p), NULL);
     }
     if (p->changeCallback) {
-      if (L) {
-        luaL_unref(L, LUA_REGISTRYINDEX, p->changeCallback);
-      } else {
-        // this would be processed when L is available
-        axPostMessageW(NULL, kEventClearReference, p->changeCallback, NULL);
-      }
+      axPostMessageW(NULL, kEventClearReference, p->changeCallback, NULL);
       p->changeCallback = 0;
     }
     PROP_Clear(p);
   }
 
   // Dispatch Object.Release so attach-only components (e.g., StyleController) can clean up.
-  // Pass L so components can safely unref Lua resources during teardown.
-  OBJ_SendMessageW(pobj, ID_Object_Release, 0, L);
+  // Script-side cleanup is deferred through kEventClearReference.
+  OBJ_SendMessageW(pobj, ID_Object_Release, 0, NULL);
   OBJ_ReleaseComponents(pobj);
   OBJ_ReleaseProperties(pobj);
 
@@ -117,15 +148,15 @@ OBJ_Release(lua_State* L, struct Object *pobj)
   SafeFree(pobj->Name);
   SafeFree(pobj->ClassName);
 
+  pobj->refcount = 0;
   free(pobj);
 }
 
 void
 OBJ_ReleaseOrphan(lua_State* L, struct Object *pobj)
 {
-  if (!OBJ_GetParent(pobj)) { // only release from Lua if parentless
-    OBJ_Release(L, pobj);
-  }
+  (void)L;
+  OBJ_ReleaseRef(pobj);
 }
 
 HRESULT

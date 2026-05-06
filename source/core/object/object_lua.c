@@ -51,6 +51,7 @@ void luaX_pushObject(lua_State* L, struct Object const *self){
   /* Cache miss: create a new userdata, register it, and cache it. */
   struct Object **ud = lua_newuserdata(L, sizeof(struct Object *));
   *ud = (struct Object *)self;
+  OBJ_AddRef((struct Object *)self);
   luaL_setmetatable(L, API_TYPE_OBJECT);
 
   /* cache[self] = ud  (weak value, so GC can still collect it) */

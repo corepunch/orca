@@ -17,6 +17,7 @@ struct Object
 {
   LPSTR Name;
   uint32_t identifier;
+  uint32_t refcount;
 
   struct Object *parent;
   struct Object *children;

@@ -104,6 +104,15 @@ API_PrintStackTrace(lua_State* L);
 void
 OBJ_Clear(struct Object *);
 
+uint32_t
+OBJ_AddRef(struct Object *);
+
+uint32_t
+OBJ_ReleaseRef(struct Object *);
+
+void
+OBJ_DetachFromParent(struct Object *);
+
 struct Object *
 OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 

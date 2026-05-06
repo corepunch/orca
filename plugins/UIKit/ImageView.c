@@ -16,7 +16,7 @@ _ImageView_CancelFetch(struct ImageView *pImageView)
     pImageView->_fetch = NULL;
   }
   if (pImageView->_src_object) {
-    OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
+    OBJ_ReleaseRef((struct Object *)pImageView->_src_object);
     pImageView->_src_object = NULL;
     pImageView->Source = NULL;
   }
@@ -283,8 +283,9 @@ HANDLER(ImageView, Node, LoadView)
 
     /* Release any previous downloaded texture before storing the new one. */
     if (pImageView->_src_object) {
-      OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
+      OBJ_ReleaseRef((struct Object *)pImageView->_src_object);
     }
+    OBJ_AddRef(tex_obj);
     pImageView->_src_object = tex_obj;
     pImageView->Source = GetTexture(tex_obj);
 
@@ -302,8 +303,9 @@ HANDLER(ImageView, Node, LoadView)
   }
 
   if (pImageView->_src_object) {
-    OBJ_Release(NULL, (struct Object *)pImageView->_src_object);
+    OBJ_ReleaseRef((struct Object *)pImageView->_src_object);
   }
+  OBJ_AddRef(file_obj);
   pImageView->_src_object = file_obj;
   pImageView->Source = GetTexture(file_obj);
 

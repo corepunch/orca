@@ -251,8 +251,8 @@
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
         <method name="ReleaseOrphan" export="__gc" lua="true">
-          <summary>Garbage-collect an object (clear and release).</summary>
-          <details>Performs complete cleanup and destruction of the object. This includes: clearing all children recursively, removing the object from its parent's children list, clearing game focus/hover references if this object holds them, sending a "Destroy" message, releasing animation libraries, timers, animations, style classes, components, properties, and aliases. Finally frees all allocated memory including SourceFile, TextContent, Name, ClassName, and Xmlns strings. This is the final cleanup method called during garbage collection.</details>
+          <summary>Release one Lua-owned reference during garbage collection.</summary>
+          <details>Decrements the object's reference count. If that count reaches zero, the object is destroyed: children are cleared recursively, focus/hover references are dropped, a "Destroy" message is sent, components and properties are released, and all allocated strings and memory are freed. This keeps Lua __gc aligned with the same reference-counted ownership model used by the rest of the engine.</details>
         </method>
         <method name="Equals" const="true" export="__eq">
           <summary>Compare two objects for equality.</summary>
@@ -279,8 +279,8 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <returns type="Object" pointer="true">Returns added child object, for chaining calls</returns>
         </method>
         <method name="RemoveFromParent">
-          <summary>Destroys an object.</summary>
-          <details>Detaches object form it's parent that causes the object to be garbage collected.</details>
+          <summary>Detaches an object from its parent.</summary>
+          <details>Removes the object from the parent's child list, clears the back-reference, and releases the parent-owned reference. If no other references remain, the object is destroyed by the refcount drop.</details>
         </method>
         <method name="GetParent" const="true">
           <summary>Gets the parent object in the hierarchy</summary>
@@ -1053,6 +1053,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     <function name="FlushQueue" lua="true" export="flushQueue">
       <summary>Drains the pending platform message queue and dispatches each event immediately.</summary>
       <details>Processes queued events until the queue is empty, dispatching each message through the normal ORCA message pipeline. This is primarily useful in tests and other headless flows where asynchronous work such as rebuild() coroutines posts follow-up messages that need to run before assertions.</details>
+    </function>
+    <function name="GetObjectCount" lua="true" export="objectCount">
+      <summary>Returns the number of live engine objects.</summary>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->

@@ -323,6 +323,14 @@ OBJ_CreateFromLuaState(struct lua_State*);
 ORCA_API void
 OBJ_Clear(struct Object*);
 
+/// @brief Increment an object's reference count.
+ORCA_API uint32_t
+OBJ_AddRef(struct Object*);
+
+/// @brief Decrement an object's reference count and destroy it at zero.
+ORCA_API uint32_t
+OBJ_ReleaseRef(struct Object*);
+
 /// @brief Garbage-collect an object (clear and release).
 ORCA_API void
 OBJ_ReleaseOrphan(struct lua_State*, struct Object*);
@@ -342,7 +350,7 @@ OBJ_Rebuild(struct lua_State*, struct Object*);
 ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
 
-/// @brief Destroys an object.
+/// @brief Detaches an object from its parent and releases one reference.
 ORCA_API void
 OBJ_RemoveFromParent(struct Object*);
 

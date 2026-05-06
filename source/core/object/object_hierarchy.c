@@ -4,9 +4,15 @@
 
 struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is_template)
 {
-  if (child->parent) {
+  if (child->parent == self) {
+    REMOVE_FROM_LIST(struct Object, child, self->children);
+    REMOVE_FROM_LIST(struct Object, child, self);
+  } else if (child->parent) {
     REMOVE_FROM_LIST(struct Object, child, child->parent->children);
+    REMOVE_FROM_LIST(struct Object, child, child->parent);
+    OBJ_ReleaseRef(child);
   }
+  OBJ_AddRef(child);
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
   OBJ_SendMessageW(child, ID_Object_Attached, 0, self);

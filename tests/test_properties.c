@@ -45,6 +45,7 @@
  */
 extern struct Object *OBJ_Create(uint32_t class_id);
 extern void OBJ_ReleaseProperties(struct Object *);
+extern int64_t OBJ_GetObjectCount(void);
 extern struct color COLOR_Parse(lpcString_t);
 
 /* ------------------------------------------------------------------ */
@@ -338,6 +339,88 @@ static struct ClassDesc s_rtColorClass = {
 
 static void register_rt_color_class(void) {
     OBJ_RegisterClass(&s_rtColorClass);
+}
+
+/* ------------------------------------------------------------------ */
+/* Object ownership test component                                     */
+/* Exercises kDataTypeObject refcounting without relying on parenting. */
+/* ------------------------------------------------------------------ */
+
+struct RTObjectHolderComp {
+    struct Object *Child;
+};
+
+static struct PropertyType s_rtObjectHolderProps[1] = {
+    { .Name = "Child", .Key = "Child", .DataType = kDataTypeObject,
+      .DataSize = sizeof(struct Object *),
+      .TypeString = "RTComp",
+      .Offset = offsetof(struct RTObjectHolderComp, Child) },
+};
+
+static LRESULT RTObjectHolderComp_Proc(struct Object *o, void* cmp, uint32_t msg,
+                                       wParam_t w, lParam_t l) {
+    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    return 0;
+}
+
+static struct ClassDesc s_rtObjectHolderClass = {
+    .ObjProc       = RTObjectHolderComp_Proc,
+    .Properties    = s_rtObjectHolderProps,
+    .ClassName     = "RTObjectHolderComp",
+    .ClassID       = 0x5b8f8dd2, /* fnv1a32("RTObjectHolderComp") */
+    .ClassSize     = sizeof(struct RTObjectHolderComp),
+    .NumProperties = 1,
+    .DefaultName   = "rtobjectholdercomp",
+};
+
+static void register_rt_object_holder_class(void) {
+    s_rtObjectHolderProps[0].ShortIdentifier = s_rtObjectHolderProps[0].FullIdentifier = fnv1a32("Child");
+    s_rtObjectHolderClass.ClassID = fnv1a32("RTObjectHolderComp");
+    OBJ_RegisterClass(&s_rtObjectHolderClass);
+}
+
+static struct Object *make_rt_object_holder(void) {
+    return OBJ_Create(fnv1a32("RTObjectHolderComp"));
+}
+
+static void test_object_refcount_direct(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        int64_t baseline = OBJ_GetObjectCount();
+        struct Object *obj = make_rt_object();
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+
+        OBJ_AddRef(obj);
+        OBJ_AddRef(obj);
+        EXPECT(OBJ_ReleaseRef(obj) == 1);
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+        EXPECT(OBJ_ReleaseRef(obj) == 0);
+        EXPECT(OBJ_GetObjectCount() == baseline);
+    }
+}
+
+static void test_object_property_holds_reference(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        int64_t baseline = OBJ_GetObjectCount();
+        struct Object *holder = make_rt_object_holder();
+        struct Object *child = make_rt_object();
+        struct Property *prop;
+
+        EXPECT(OBJ_GetObjectCount() == baseline + 2);
+        EXPECT_OK(OBJ_FindShortProperty(holder, "Child", &prop));
+
+        OBJ_AddRef(child);
+        PROP_SetValue(prop, &child);
+        EXPECT(*(struct Object **)PROP_GetValue(prop) == child);
+
+        EXPECT(OBJ_ReleaseRef(child) == 1);
+        EXPECT(OBJ_GetObjectCount() == baseline + 2);
+
+        PROP_Clear(prop);
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+
+        OBJ_ReleaseRef(holder);
+        EXPECT(OBJ_GetObjectCount() == baseline);
+    }
 }
 
 static struct Object *make_rt_color_object(void) {
@@ -1246,6 +1329,7 @@ int main(void) {
     register_rtstring2_class();
     register_color_class();
     register_rt_color_class();
+    register_rt_object_holder_class();
     register_project_types();
 
     /*
@@ -1290,6 +1374,8 @@ int main(void) {
         DECL_TEST(test_runtime_if_true_branch),
         DECL_TEST(test_runtime_if_false_branch),
         DECL_TEST(test_runtime_if_string_branch),
+        DECL_TEST(test_object_refcount_direct),
+        DECL_TEST(test_object_property_holds_reference),
         DECL_TEST(test_string_export_unset_produces_empty),
         DECL_TEST(test_string_binding_unset_source_gives_empty),
         DECL_TEST(test_string_binding_value_propagates),
