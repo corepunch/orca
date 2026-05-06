@@ -1,13 +1,5 @@
 #include "object_internal.h"
 
-// #define DEBUG_COUNT_OBJECTS
-
-
-
-#ifdef DEBUG_COUNT_OBJECTS
-static int counter = 0;
-#endif
-
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
 static void OBJ_Release(struct Object *pobj);
@@ -41,9 +33,6 @@ OBJ_ReleaseRef(struct Object *pobj)
 
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
-#ifdef DEBUG_COUNT_OBJECTS
-  Con_Error("number objects: %d", counter++);
-#endif
   g_object_count++;
   struct ClassDesc const *cls = OBJ_FindClassW(class_id);
    if (!cls) {

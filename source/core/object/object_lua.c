@@ -8,8 +8,6 @@
     lua_pushcfunction(L, API_Object##FUNCTION);                                \
     return 1;
 
-// #define DEBUG_COUNT_OBJECTS
-
 struct Object *luaX_checkObject(lua_State* L, int arg) {
   return *(struct Object **)luaL_checkudata(L, arg, API_TYPE_OBJECT);
 }
