@@ -154,6 +154,8 @@ local function test_tabview_initial_selection()
   test.expect_eq(view.SelectedValue, "alpha", "TabView.SelectedValue should default to first tab 'alpha'")
   test.expect(tab_a.IsSelected,      "First Tab should be selected after ViewDidLoad")
   test.expect(not tab_b.IsSelected,  "Second Tab should NOT be selected after ViewDidLoad")
+  test.expect(tab_a:isFocused(),     "First Tab should receive keyboard focus after ViewDidLoad")
+  test.expect(not tab_b:isFocused(), "Second Tab should not be focused after ViewDidLoad")
   test.expect(panel_a.Visible,       "Panel 'alpha' should be visible after ViewDidLoad")
   test.expect(not panel_b.Visible,   "Panel 'beta' should be hidden after ViewDidLoad")
 
@@ -290,6 +292,34 @@ local function test_radiobutton_visual_defaults()
 end
 
 -- ---------------------------------------------------------------------------
+-- Tab: default selected and unselected colors should be distinct and readable
+-- ---------------------------------------------------------------------------
+local function test_tab_visual_defaults()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local tab = screen + ui.Tab { Value = "alpha", Width = 100, Height = 40 }
+
+  test.expect_near(tab.SelectedColor.R, 0.24, 0.001, "Tab.SelectedColor.R default")
+  test.expect_near(tab.SelectedColor.G, 0.36, 0.001, "Tab.SelectedColor.G default")
+  test.expect_near(tab.SelectedColor.B, 0.58, 0.001, "Tab.SelectedColor.B default")
+  test.expect_near(tab.SelectedColor.A, 1.00, 0.001, "Tab.SelectedColor.A default")
+
+  test.expect_near(tab.UnselectedColor.R, 0.18, 0.001, "Tab.UnselectedColor.R default")
+  test.expect_near(tab.UnselectedColor.G, 0.19, 0.001, "Tab.UnselectedColor.G default")
+  test.expect_near(tab.UnselectedColor.B, 0.22, 0.001, "Tab.UnselectedColor.B default")
+  test.expect_near(tab.UnselectedColor.A, 0.95, 0.001, "Tab.UnselectedColor.A default")
+
+  test.expect(tab.SelectedColor.R ~= tab.UnselectedColor.R,
+    "Tab default selected/unselected colors should differ")
+  test.expect_eq(tab.TextHorizontalAlignment, "Center",
+    "Tab text should be horizontally centered by default")
+  test.expect_eq(tab.TextVerticalAlignment, "Center",
+    "Tab text should be vertically centered by default")
+
+  screen:clear()
+  print("PASS: test_tab_visual_defaults")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_tabbar_selection()
@@ -301,5 +331,6 @@ test_tabview_panel_switch()
 test_tabview_selection_changed_event()
 test_button_visual_defaults()
 test_radiobutton_visual_defaults()
+test_tab_visual_defaults()
 
 print("All TabBar/TabView tests passed.")

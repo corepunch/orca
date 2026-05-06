@@ -138,9 +138,71 @@ local function test_tabview_click_interaction()
 end
 
 -- ---------------------------------------------------------------------------
+-- TabView: scrolling a parent container must not break later tab clicks,
+-- and the active panel should still switch after the scroll offset changes.
+-- ---------------------------------------------------------------------------
+local function test_tabview_scroll_then_click()
+  local view = nil
+  local tab_a = nil
+  local tab_b = nil
+  local clicked = nil
+
+  local scroll = screen + ui.StackView {
+    Width = 1000,
+    Height = 320,
+    Direction = "Vertical",
+    OverflowY = "Scroll",
+    ClipChildren = true,
+  }
+
+  local spacer = scroll + ui.Node2D { Height = 520 }
+
+  view = scroll + ui.TabView {
+    Width = 1000,
+    Height = 280,
+    SelectionChanged = function (self)
+      clicked = self.SelectedValue
+    end,
+  }
+
+  local bar   = view + ui.TabBar { Width = 1000, Height = 40 }
+  tab_a = bar + ui.Tab { Value = "alpha", Width = 200, Height = 40 }
+  tab_b = bar + ui.Tab { Value = "beta",  Width = 200, Height = 40 }
+
+  local panel_a = view + ui.Node2D { Name = "alpha", Width = 1000, Height = 240 }
+  local panel_b = view + ui.Node2D { Name = "beta",  Width = 1000, Height = 240 }
+
+  view:send("Node.ViewDidLoad")
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  test.expect(panel_a.Visible,      "Panel 'alpha' should be visible before scrolling")
+  test.expect(not panel_b.Visible, "Panel 'beta' should be hidden before scrolling")
+
+  -- Scroll the parent using the same wheel path the app uses.
+  scroll:send("Node.ScrollWheel", { x = 0, y = 0, deltaX = 0, deltaY = -spacer.Height })
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  test.expect(scroll.ContentOffset.Y < 0, "Scroll container should have a negative ContentOffset after scrolling")
+
+  local click_x = view.ActualX + tab_b.ActualX + 5
+  local click_y = scroll.ContentOffset.Y + view.ActualY + tab_b.ActualY + 5
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = click_x, y = click_y }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = click_x, y = click_y }
+
+  test.expect_eq(view.SelectedValue, "beta", "TabView should still react to clicks after scrolling")
+  test.expect(not panel_a.Visible, "Panel 'alpha' should be hidden after clicking beta")
+  test.expect(panel_b.Visible,     "Panel 'beta' should be visible after clicking beta")
+
+  spacer:removeFromParent()
+  scroll:removeFromParent()
+  print("PASS: test_tabview_scroll_then_click")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_tabbar_click_interaction()
 test_tabview_click_interaction()
+test_tabview_scroll_then_click()
 
 print("All Tab interaction tests passed.")

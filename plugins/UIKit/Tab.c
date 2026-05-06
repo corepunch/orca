@@ -72,9 +72,15 @@ Tab_Select(struct Object *object, struct Tab *tab)
 
 HANDLER(Tab, Object, Create)
 {
+  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_Tab_IsSelected);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
+
+  if (text) {
+    text->TextHorizontalAlignment = kTextHorizontalAlignmentCenter;
+    text->TextVerticalAlignment = kTextVerticalAlignmentCenter;
+  }
 
   Tab_SetSelected(hObject, pTab, pTab->IsSelected);
   return FALSE;
@@ -106,6 +112,9 @@ HANDLER(Tab, Node2D, DrawBrush)
 
   struct ViewEntity entity;
   Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
+  /* Keep the tab background anchored to the control bounds. Text alignment
+     only affects the text layout rect, not the tab surface itself. */
+  entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
 
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);

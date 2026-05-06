@@ -571,8 +571,8 @@
       <properties>
         <property name="IsSelected" type="bool">Whether this tab is currently selected</property>
         <property name="Value" type="string">String value reported to the parent TabBar when this tab is selected</property>
-        <property name="SelectedColor" type="color" default="0.95,0.95,0.97,1">Background color when the tab is selected</property>
-        <property name="UnselectedColor" type="color" default="0.75,0.75,0.8,0.6">Background color when the tab is not selected</property>
+        <property name="SelectedColor" type="color" default="0.24,0.36,0.58,1">Background color when the tab is selected</property>
+        <property name="UnselectedColor" type="color" default="0.18,0.19,0.22,0.95">Background color when the tab is not selected</property>
       </properties>
     </class>
     <class name="TabBar" parent="StackView">
@@ -603,6 +603,8 @@
       <handles>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
+        <handle message="Object.Start"/>
+        <handle message="Object.Attached"/>
         <handle message="Node.ViewDidLoad"/>
         <handle message="TabBar.SelectionChanged"/>
       </handles>

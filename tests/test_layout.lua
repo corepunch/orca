@@ -231,6 +231,58 @@ local function test_xml_loading_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: TabView trees should wire TabBar selection to matching panels
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_tabview()
+	local xml = [[
+<Screen Name="tab-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <TabView Name="main-tabs" Width="800" Height="600">
+    <TabBar Name="tab-header" Width="800" Height="40">
+      <Tab Name="overview-tab" Value="overview" Width="120" Height="40">Overview</Tab>
+      <Tab Name="details-tab" Value="details" Width="120" Height="40">Details</Tab>
+    </TabBar>
+    <Node2D Name="overview" Width="800" Height="560">
+      <Node2D Name="overview-child" Width="100" Height="50" />
+    </Node2D>
+    <Node2D Name="details" Width="800" Height="560">
+      <Node2D Name="details-child" Width="100" Height="50" />
+    </Node2D>
+  </TabView>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "loadObjectFromXmlString should return a non-nil object")
+
+	local view = root:findChild("main-tabs", true)
+	local bar = root:findChild("tab-header", true)
+	local overview_tab = root:findChild("overview-tab", true)
+	local details_tab = root:findChild("details-tab", true)
+	local overview_panel = root:findChild("overview", true)
+	local details_panel = root:findChild("details", true)
+
+	test.expect(view ~= nil, "TabView should be created from XML")
+	test.expect(bar ~= nil, "TabBar should be created from XML")
+	test.expect(overview_tab ~= nil, "overview tab should be created from XML")
+	test.expect(details_tab ~= nil, "details tab should be created from XML")
+	test.expect(overview_panel ~= nil, "overview panel should be created from XML")
+	test.expect(details_panel ~= nil, "details panel should be created from XML")
+
+	test.expect_eq(view.SelectedValue, "overview", "TabView should auto-select the first tab from XML")
+	test.expect(overview_tab.IsSelected, "First XML tab should be selected after Start")
+	test.expect(not details_tab.IsSelected, "Second XML tab should remain unselected after Start")
+	test.expect(overview_panel.Visible, "overview panel should be visible after Start")
+	test.expect(not details_panel.Visible, "details panel should be hidden after Start")
+
+	details_tab:send("Node.LeftButtonUp")
+
+	test.expect_eq(view.SelectedValue, "details", "TabView should update SelectedValue after clicking the second XML tab")
+	test.expect(not overview_panel.Visible, "overview panel should be hidden after switching tabs")
+	test.expect(details_panel.Visible, "details panel should be visible after switching tabs")
+
+	print("PASS: test_xml_loading_tabview")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
@@ -242,5 +294,6 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_xml_loading_tabview()
 
 print("All layout tests passed.")

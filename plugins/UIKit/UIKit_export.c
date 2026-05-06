@@ -727,9 +727,9 @@ static struct PropertyType const TabProperties[kTabNumProperties] = {
 };
 static struct Tab TabDefaults = {
 		
-  .SelectedColor = {0.95,0.95,0.97,1},
+  .SelectedColor = {0.24,0.36,0.58,1},
 		
-  .UnselectedColor = {0.75,0.75,0.8,0.6},
+  .UnselectedColor = {0.18,0.19,0.22,0.95},
 };
 LRESULT TabProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
@@ -773,6 +773,8 @@ struct TabBar* luaX_checkTabBar(lua_State *L, int idx) {
 REGISTER_CLASS(TabBar, ID_StackView, 0);
 HANDLER(TabView, Node2D, MeasureOverride);
 HANDLER(TabView, Node2D, ArrangeOverride);
+HANDLER(TabView, Object, Start);
+HANDLER(TabView, Object, Attached);
 HANDLER(TabView, Node, ViewDidLoad);
 HANDLER(TabView, TabBar, SelectionChanged);
 static struct PropertyType const TabViewProperties[kTabViewNumProperties] = {
@@ -783,11 +785,13 @@ static struct TabView TabViewDefaults = {
 };
 LRESULT TabViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
-		case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
-	}
+			case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+			case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+			case ID_Object_Start: return TabView_Start(object, cmp, wparm, lparm); // Object.Start
+			case ID_Object_Attached: return TabView_Attached(object, cmp, wparm, lparm); // Object.Attached
+			case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
+			case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
+		}
 	return FALSE;
 }
 void luaX_pushTabView(lua_State *L, struct TabView const* TabView) {

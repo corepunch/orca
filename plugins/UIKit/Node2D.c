@@ -28,11 +28,9 @@ HANDLER(Node2D, Node, HitTest) {
   }
   int16_t x = (int16_t)pHitTest->x;
   int16_t y = (int16_t)pHitTest->y;
-  int16_t lx = x - pNode2D->ContentOffset.x;
-  int16_t ly = y - pNode2D->ContentOffset.y;
   struct Object *result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
-    struct Object *childHit = (struct Object *)_SendMessage(hChild, Node, HitTest, .x = lx, .y = ly);
+    struct Object *childHit = (struct Object *)_SendMessage(hChild, Node, HitTest, .x = x, .y = y);
     if (childHit) result = childHit;
   }
   if (result) {

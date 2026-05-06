@@ -59,6 +59,83 @@ HANDLER(TabView, Node2D, ArrangeOverride)
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
+static void
+TabView_ShowContent(struct Object *hObject, const char *value);
+
+static void
+TabView_SyncInitialSelection(struct Object *hObject, struct TabView *pTabView)
+{
+  struct Object *hTabBar = NULL;
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (GetTabBar(hChild)) { hTabBar = hChild; break; }
+  }
+
+  if (!hTabBar) return;
+
+  struct Object *hFirstTab = NULL;
+  struct Object *hSelectedTab = NULL;
+
+  FOR_EACH_OBJECT(hChild, hTabBar) {
+    struct Tab *t = GetTab(hChild);
+    if (!t) continue;
+
+    if (!hFirstTab) {
+      hFirstTab = hChild;
+    }
+    if (!hSelectedTab && t->IsSelected) {
+      hSelectedTab = hChild;
+    }
+  }
+
+  if (!hFirstTab) return;
+
+  const char *value = pTabView->SelectedValue;
+  if ((!value || !*value) && hSelectedTab) {
+    struct Tab *selected = GetTab(hSelectedTab);
+    if (selected && selected->Value) {
+      value = selected->Value;
+    }
+  }
+  if (!value || !*value) {
+    struct Tab *first = GetTab(hFirstTab);
+    if (first && first->Value) {
+      value = first->Value;
+    }
+  }
+  if (!value || !*value) return;
+
+  struct Property *tb_prop = NULL;
+  OBJ_FindLongProperty(hTabBar, ID_TabBar_SelectedValue, &tb_prop);
+  if (tb_prop) PROP_SetStringValue(tb_prop, value);
+
+  struct Property *tv_prop = NULL;
+  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
+  if (tv_prop) PROP_SetStringValue(tv_prop, value);
+
+  struct Object *hActiveTab = NULL;
+  FOR_EACH_OBJECT(hChild, hTabBar) {
+    struct Tab *t = GetTab(hChild);
+    if (!t) continue;
+
+    bool_t selected = t->Value && strcmp(t->Value, value) == 0;
+    if (selected) {
+      hActiveTab = hChild;
+    }
+    t->IsSelected = selected;
+    uint32_t flags = OBJ_GetFlags(hChild);
+    flags = selected ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
+    OBJ_SetFlags(hChild, flags);
+    OBJ_SetDirty(hChild);
+    _SendMessage(hChild, StyleController, ThemeChanged, .recursive = FALSE);
+  }
+
+  if (hActiveTab) {
+    OBJ_SetFocus(hActiveTab);
+  }
+
+  TabView_ShowContent(hObject, value);
+}
+
 /* Show the content child whose name matches `value`; hide all others.
    Content children are direct children that are NOT a TabBar. */
 static void
@@ -79,49 +156,21 @@ TabView_ShowContent(struct Object *hObject, const char *value)
 
 /* On initial load: select first tab in the first TabBar child and
    show its matching content panel. */
+HANDLER(TabView, Object, Start)
+{
+  TabView_SyncInitialSelection(hObject, pTabView);
+  return FALSE;
+}
+
+HANDLER(TabView, Object, Attached)
+{
+  TabView_SyncInitialSelection(hObject, pTabView);
+  return FALSE;
+}
+
 HANDLER(TabView, Node, ViewDidLoad)
 {
-  struct Object *hTabBar = NULL;
-  FOR_EACH_OBJECT(hChild, hObject) {
-    if (GetTabBar(hChild)) { hTabBar = hChild; break; }
-  }
-
-  if (!hTabBar) return FALSE;
-
-  /* Find the first Tab child of the TabBar */
-  struct Object *hFirstTab = NULL;
-  FOR_EACH_OBJECT(hChild, hTabBar) {
-    if (GetTab(hChild)) { hFirstTab = hChild; break; }
-  }
-
-  if (!hFirstTab) return FALSE;
-
-  struct Tab *pFirstTab = GetTab(hFirstTab);
-  struct TabBar *pTabBar = GetTabBar(hTabBar);
-
-  /* Set SelectedValue via the property system so each component owns
-     its own strdup'd copy and we don't create cross-property aliases. */
-  struct Property *tb_prop = NULL;
-  OBJ_FindLongProperty(hTabBar, ID_TabBar_SelectedValue, &tb_prop);
-  if (tb_prop) PROP_SetStringValue(tb_prop, pFirstTab->Value);
-  struct Property *tv_prop = NULL;
-  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
-  if (tv_prop) PROP_SetStringValue(tv_prop, pFirstTab->Value);
-
-  /* Mark first tab selected, all others deselected */
-  bool_t first = TRUE;
-  FOR_EACH_OBJECT(hChild, hTabBar) {
-    struct Tab *t = GetTab(hChild);
-    if (!t) continue;
-    t->IsSelected = first;
-    uint32_t flags = OBJ_GetFlags(hChild);
-    flags = first ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
-    OBJ_SetFlags(hChild, flags);
-    OBJ_SetDirty(hChild);
-    first = FALSE;
-  }
-
-  TabView_ShowContent(hObject, pTabView->SelectedValue);
+  TabView_SyncInitialSelection(hObject, pTabView);
   return FALSE;
 }
 
