@@ -283,6 +283,29 @@ local function test_xml_loading_tabview()
 end
 
 -- ---------------------------------------------------------------------------
+-- Example application XML should still load and initialize the tabbed section
+-- ---------------------------------------------------------------------------
+local function test_example_application_xml()
+	local xml = filesystem.readTextFile("samples/Example/Screens/Application.xml")
+	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
+
+	local tab_section = xml:find('<StackView Name="TabbedTechSection"')
+	local capability_section = xml:find('<Grid Name="CapabilitySection"')
+	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
+	local city_image = xml:find("orca-tab-city", 1, true)
+	local lights_image = xml:find("orca-tab-lights", 1, true)
+
+	test.expect(tab_section ~= nil, "TabbedTechSection should exist in Example Application.xml")
+	test.expect(capability_section ~= nil, "CapabilitySection should exist in Example Application.xml")
+	test.expect(tab_section < capability_section, "TabView section should appear before the later content sections")
+	test.expect(tabs ~= nil, "OrcaTabs should default to the XML tab in Example Application.xml")
+	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
+	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
+
+	print("PASS: test_example_application_xml")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
@@ -295,5 +318,6 @@ test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_xml_loading_tabview()
+test_example_application_xml()
 
 print("All layout tests passed.")
