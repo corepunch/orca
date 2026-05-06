@@ -296,13 +296,15 @@ local function test_tabview_measures_active_panel_only()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	test.expect_eq(view.ActualHeight, 100,
+	test.expect_eq(view.ActualHeight, 101,
 		"TabView should measure only the selected short panel plus the tab bar")
+	test.expect_eq(short_panel.ActualY, bar.ActualY + bar.ActualHeight + bar.BorderWidthBottom,
+		"TabView content should start below the TabBar height plus its bottom border")
 
 	tall_tab:send("Node.LeftButtonUp")
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	test.expect_eq(view.ActualHeight, 300,
+	test.expect_eq(view.ActualHeight, 301,
 		"TabView should grow to the selected tall panel after switching tabs")
 
 	outer:removeFromParent()

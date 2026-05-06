@@ -77,14 +77,12 @@ HANDLER(TabView, Node2D, ArrangeOverride)
   FOR_EACH_OBJECT(hChild, hObject) {
     if (!GetTabBar(hChild)) continue;
 
-    struct Node2D *node = GetNode2D(hChild);
-    float height = node ? NODE2D_FRAME(node, Size, 1).Desired : 0;
-    _SendMessage(hChild, Node2D, Arrange,
+    LRESULT size = _SendMessage(hChild, Node2D, Arrange,
       .X = pArrangeOverride->X,
       .Y = pArrangeOverride->Y,
       .Width = pArrangeOverride->Width,
-      .Height = height);
-    headerHeight = MAX(headerHeight, height);
+      .Height = pArrangeOverride->Height);
+    headerHeight = MAX(headerHeight, HIWORD(size));
   }
 
   float contentY = pArrangeOverride->Y + headerHeight;
