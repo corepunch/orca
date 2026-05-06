@@ -283,6 +283,33 @@ local function test_xml_loading_tabview()
 end
 
 -- ---------------------------------------------------------------------------
+-- TabView should measure only the active panel, not the tallest hidden panel
+-- ---------------------------------------------------------------------------
+local function test_tabview_measures_active_panel_only()
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local view = outer + ui.TabView { SelectedValue = "short" }
+	local bar = view + ui.TabBar { Height = 40 }
+	local short_tab = bar + ui.Tab { Value = "short", Width = 120, Height = 40 }
+	local tall_tab = bar + ui.Tab { Value = "tall", Width = 120, Height = 40 }
+	local short_panel = view + ui.Node2D { Name = "short", Height = 60 }
+	local tall_panel = view + ui.Node2D { Name = "tall", Height = 260 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(view.ActualHeight, 100,
+		"TabView should measure only the selected short panel plus the tab bar")
+
+	tall_tab:send("Node.LeftButtonUp")
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(view.ActualHeight, 300,
+		"TabView should grow to the selected tall panel after switching tabs")
+
+	outer:removeFromParent()
+	print("PASS: test_tabview_measures_active_panel_only")
+end
+
+-- ---------------------------------------------------------------------------
 -- Example application XML should still load and initialize the tabbed section
 -- ---------------------------------------------------------------------------
 local function test_example_application_xml()
@@ -290,14 +317,16 @@ local function test_example_application_xml()
 	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
 
 	local tab_section = xml:find('<StackView Name="TabbedTechSection"')
-	local capability_section = xml:find('<Grid Name="CapabilitySection"')
+	local feature_section = xml:find('<Grid Name="FeatureSection"')
+	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 
 	test.expect(tab_section ~= nil, "TabbedTechSection should exist in Example Application.xml")
-	test.expect(capability_section ~= nil, "CapabilitySection should exist in Example Application.xml")
-	test.expect(tab_section < capability_section, "TabView section should appear before the later content sections")
+	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
+	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
+	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
 	test.expect(tabs ~= nil, "OrcaTabs should default to the XML tab in Example Application.xml")
 	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
 	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
@@ -318,6 +347,7 @@ test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_xml_loading_tabview()
+test_tabview_measures_active_panel_only()
 test_example_application_xml()
 
 print("All layout tests passed.")

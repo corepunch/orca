@@ -4,22 +4,65 @@
 #include <plugins/UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
 
+static struct Object *
+TabView_GetActiveContent(struct Object *hObject, struct TabView *pTabView)
+{
+  struct Object *hFallback = NULL;
+  struct Object *hVisible = NULL;
+  struct Object *hSelected = NULL;
+
+  FOR_EACH_OBJECT(hChild, hObject) {
+    if (GetTabBar(hChild)) continue;
+
+    if (!hFallback) {
+      hFallback = hChild;
+    }
+
+    if (!hSelected && pTabView->SelectedValue) {
+      const char *name = OBJ_GetName(hChild);
+      if (name && strcmp(name, pTabView->SelectedValue) == 0) {
+        hSelected = hChild;
+      }
+    }
+
+    if (!hVisible) {
+      struct Node *node = GetNode(hChild);
+      if (node && node->Visible) {
+        hVisible = hChild;
+      }
+    }
+  }
+
+  return hSelected ? hSelected : (hVisible ? hVisible : hFallback);
+}
+
 HANDLER(TabView, Node2D, MeasureOverride)
 {
   uint16_t width = 0;
   uint16_t headerHeight = 0;
+  uint16_t contentWidth = 0;
   uint16_t contentHeight = 0;
+  struct Object *hContent = TabView_GetActiveContent(hObject, pTabView);
 
   FOR_EACH_OBJECT(hChild, hObject) {
-    LRESULT size = _SendMessage(hChild, Node2D, Measure,
-      .Width = pMeasureOverride->Width,
-      .Height = pMeasureOverride->Height);
-
-    width = MAX(width, LOWORD(size));
     if (GetTabBar(hChild)) {
+      LRESULT size = _SendMessage(hChild, Node2D, Measure,
+        .Width = pMeasureOverride->Width,
+        .Height = pMeasureOverride->Height);
+
+      width = MAX(width, LOWORD(size));
       headerHeight = MAX(headerHeight, HIWORD(size));
-    } else {
-      contentHeight = MAX(contentHeight, HIWORD(size));
+      continue;
+    }
+
+    if (hContent && hChild == hContent) {
+      LRESULT size = _SendMessage(hChild, Node2D, Measure,
+        .Width = pMeasureOverride->Width,
+        .Height = pMeasureOverride->Height);
+
+      contentWidth = LOWORD(size);
+      contentHeight = HIWORD(size);
+      width = MAX(width, contentWidth);
     }
   }
 
@@ -29,6 +72,7 @@ HANDLER(TabView, Node2D, MeasureOverride)
 HANDLER(TabView, Node2D, ArrangeOverride)
 {
   float headerHeight = 0;
+  struct Object *hContent = TabView_GetActiveContent(hObject, pTabView);
 
   FOR_EACH_OBJECT(hChild, hObject) {
     if (!GetTabBar(hChild)) continue;
@@ -46,10 +90,8 @@ HANDLER(TabView, Node2D, ArrangeOverride)
   float contentY = pArrangeOverride->Y + headerHeight;
   float contentHeight = MAX(pArrangeOverride->Height - headerHeight, 0);
 
-  FOR_EACH_OBJECT(hChild, hObject) {
-    if (GetTabBar(hChild)) continue;
-
-    _SendMessage(hChild, Node2D, Arrange,
+  if (hContent) {
+    _SendMessage(hContent, Node2D, Arrange,
       .X = pArrangeOverride->X,
       .Y = contentY,
       .Width = pArrangeOverride->Width,
