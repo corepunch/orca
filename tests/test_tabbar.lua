@@ -300,10 +300,17 @@ local function test_tab_visual_defaults()
   filesystem.init("samples/Example")
 
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local bar = screen + ui.TabBar { Width = 300, Height = 40 }
   local tab = screen + ui.Tab { Value = "alpha", Width = 100, Height = 40 }
 
   local selected = geometry.Color.parse(filesystem.getThemeValue("$accent"))
   local unselected = geometry.Color.parse(filesystem.getThemeValue("$card-background"))
+
+  test.expect_near(bar.BorderWidthBottom, 1.0, 0.001, "TabBar bottom border should default to 1px")
+  test.expect_near(bar.BorderColor.R, selected.R, 0.001, "TabBar.BorderColor.R theme default")
+  test.expect_near(bar.BorderColor.G, selected.G, 0.001, "TabBar.BorderColor.G theme default")
+  test.expect_near(bar.BorderColor.B, selected.B, 0.001, "TabBar.BorderColor.B theme default")
+  test.expect_near(bar.BorderColor.A, selected.A, 0.001, "TabBar.BorderColor.A theme default")
 
   test.expect_near(tab.SelectedColor.R, selected.R, 0.001, "Tab.SelectedColor.R theme default")
   test.expect_near(tab.SelectedColor.G, selected.G, 0.001, "Tab.SelectedColor.G theme default")
