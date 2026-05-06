@@ -13,6 +13,8 @@ local test = require "orca.test"
 
 local orca = require "orca"
 local core = require "orca.core"
+local filesystem = require "orca.filesystem"
+local geometry = require "orca.geometry"
 local ui   = require "orca.UIKit"
 
 -- Override orca.async so that Lua event callbacks (fired via CORE_HandleObjectMessage)
@@ -295,18 +297,23 @@ end
 -- Tab: default selected and unselected colors should be distinct and readable
 -- ---------------------------------------------------------------------------
 local function test_tab_visual_defaults()
+  filesystem.init("samples/Example")
+
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local tab = screen + ui.Tab { Value = "alpha", Width = 100, Height = 40 }
 
-  test.expect_near(tab.SelectedColor.R, 0.24, 0.001, "Tab.SelectedColor.R default")
-  test.expect_near(tab.SelectedColor.G, 0.36, 0.001, "Tab.SelectedColor.G default")
-  test.expect_near(tab.SelectedColor.B, 0.58, 0.001, "Tab.SelectedColor.B default")
-  test.expect_near(tab.SelectedColor.A, 1.00, 0.001, "Tab.SelectedColor.A default")
+  local selected = geometry.Color.parse(filesystem.getThemeValue("$accent"))
+  local unselected = geometry.Color.parse(filesystem.getThemeValue("$card-background"))
 
-  test.expect_near(tab.UnselectedColor.R, 0.18, 0.001, "Tab.UnselectedColor.R default")
-  test.expect_near(tab.UnselectedColor.G, 0.19, 0.001, "Tab.UnselectedColor.G default")
-  test.expect_near(tab.UnselectedColor.B, 0.22, 0.001, "Tab.UnselectedColor.B default")
-  test.expect_near(tab.UnselectedColor.A, 0.95, 0.001, "Tab.UnselectedColor.A default")
+  test.expect_near(tab.SelectedColor.R, selected.R, 0.001, "Tab.SelectedColor.R theme default")
+  test.expect_near(tab.SelectedColor.G, selected.G, 0.001, "Tab.SelectedColor.G theme default")
+  test.expect_near(tab.SelectedColor.B, selected.B, 0.001, "Tab.SelectedColor.B theme default")
+  test.expect_near(tab.SelectedColor.A, selected.A, 0.001, "Tab.SelectedColor.A theme default")
+
+  test.expect_near(tab.UnselectedColor.R, unselected.R, 0.001, "Tab.UnselectedColor.R theme default")
+  test.expect_near(tab.UnselectedColor.G, unselected.G, 0.001, "Tab.UnselectedColor.G theme default")
+  test.expect_near(tab.UnselectedColor.B, unselected.B, 0.001, "Tab.UnselectedColor.B theme default")
+  test.expect_near(tab.UnselectedColor.A, unselected.A, 0.001, "Tab.UnselectedColor.A theme default")
 
   test.expect(tab.SelectedColor.R ~= tab.UnselectedColor.R,
     "Tab default selected/unselected colors should differ")

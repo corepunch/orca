@@ -1,5 +1,7 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
+#include <source/filesystem/filesystem.h>
+#include <math.h>
 
 #include <plugins/UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
@@ -70,6 +72,32 @@ Tab_Select(struct Object *object, struct Tab *tab)
   return TRUE;
 }
 
+static bool_t
+Tab_ColorMatches(struct color const *c, float r, float g, float b, float a)
+{
+  return fabsf(c->r - r) < 0.001f &&
+         fabsf(c->g - g) < 0.001f &&
+         fabsf(c->b - b) < 0.001f &&
+         fabsf(c->a - a) < 0.001f;
+}
+
+static void
+Tab_ApplyThemeDefaults(struct Tab *tab)
+{
+  const char *selectedTheme = FS_GetThemeValue("$accent");
+  const char *unselectedTheme = FS_GetThemeValue("$card-background");
+
+  if (selectedTheme &&
+      Tab_ColorMatches(&tab->SelectedColor, 0.24f, 0.36f, 0.58f, 1.0f)) {
+    tab->SelectedColor = COLOR_Parse(selectedTheme);
+  }
+
+  if (unselectedTheme &&
+      Tab_ColorMatches(&tab->UnselectedColor, 0.18f, 0.19f, 0.22f, 0.95f)) {
+    tab->UnselectedColor = COLOR_Parse(unselectedTheme);
+  }
+}
+
 HANDLER(Tab, Object, Create)
 {
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
@@ -82,6 +110,7 @@ HANDLER(Tab, Object, Create)
     text->TextVerticalAlignment = kTextVerticalAlignmentCenter;
   }
 
+  Tab_ApplyThemeDefaults(pTab);
   Tab_SetSelected(hObject, pTab, pTab->IsSelected);
   return FALSE;
 }
@@ -137,7 +166,7 @@ HANDLER(Tab, Node2D, DrawBrush)
     bar.bbox.min.y = entity.bbox.max.y - barH;
     bar.bbox.max.y = entity.bbox.max.y;
     bar.radius = (struct vec4){0, 0, 0, 0};
-    bar.material.color = (struct color){0.3f, 0.55f, 0.85f, 1.0f};
+    bar.material.color = pTab->SelectedColor;
     R_DrawEntity(pDrawBrush->viewdef, &bar);
   }
 
