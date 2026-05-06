@@ -49,6 +49,26 @@ local function test_grid_auto_columns()
 	print("PASS: test_grid_auto_columns")
 end
 
+-- UniformGrid should generate equal-width columns from child count.
+local function test_uniform_grid_columns()
+	local grid = screen + ui.UniformGrid { Spacing = 0 }
+	local cells = {}
+	for i = 1, 3 do
+		cells[i] = grid + ui.Node2D { Height = 40 }
+	end
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	local expected = math.floor(screen.Width / 3)
+	for i = 1, 3 do
+		test.expect_near(cells[i].ActualX, expected * (i - 1), 1,
+			string.format("uniform column %d x position", i))
+	end
+
+	grid:removeFromParent()
+	print("PASS: test_uniform_grid_columns")
+end
+
 -- ---------------------------------------------------------------------------
 -- Grid inside StackView must derive its height from children, not default to 0
 -- ---------------------------------------------------------------------------
@@ -179,6 +199,7 @@ end
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
 test_grid_auto_columns()
+test_uniform_grid_columns()
 test_grid_in_vstack_height()
 test_node2d_container_height()
 test_grid_mixed_px_fr()

@@ -34,9 +34,9 @@ typedef struct Node2D_UpdateGeometryEventArgs Node2D_UpdateGeometryMsg_t,* Node2
 typedef struct Node2D_SetScrollTopEventArgs Node2D_SetScrollTopMsg_t,* Node2D_SetScrollTopMsgPtr;
 typedef struct Button_ClickEventArgs Button_ClickMsg_t,* Button_ClickMsgPtr;
 typedef struct Form_SubmitEventArgs Form_SubmitMsg_t,* Form_SubmitMsgPtr;
+typedef struct RadioGroup_SelectionChangedEventArgs RadioGroup_SelectionChangedMsg_t,* RadioGroup_SelectionChangedMsgPtr;
 typedef struct TabBar_SelectionChangedEventArgs TabBar_SelectionChangedMsg_t,* TabBar_SelectionChangedMsgPtr;
 typedef struct TabView_SelectionChangedEventArgs TabView_SelectionChangedMsg_t,* TabView_SelectionChangedMsgPtr;
-typedef struct RadioGroup_SelectionChangedEventArgs RadioGroup_SelectionChangedMsg_t,* RadioGroup_SelectionChangedMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
@@ -392,6 +392,20 @@ struct Form_SubmitEventArgs {
 };
 ORCA_API void luaX_pushForm_SubmitEventArgs(lua_State *L, struct Form_SubmitEventArgs const* data);
 ORCA_API struct Form_SubmitEventArgs* luaX_checkForm_SubmitEventArgs(lua_State *L, int idx);
+/** RadioGroup_SelectionChangedEventArgs struct */
+struct RadioGroup_SelectionChangedEventArgs {
+	const char* SelectedValue; ///< The value of the newly selected RadioButton
+	const char* OldValue; ///< The value that was selected before this change
+};
+ORCA_API void luaX_pushRadioGroup_SelectionChangedEventArgs(lua_State *L, struct RadioGroup_SelectionChangedEventArgs const* data);
+ORCA_API struct RadioGroup_SelectionChangedEventArgs* luaX_checkRadioGroup_SelectionChangedEventArgs(lua_State *L, int idx);
+/** TabBar_SelectionChangedEventArgs struct */
+struct TabBar_SelectionChangedEventArgs {
+	const char* SelectedValue; ///< The value of the newly selected Tab
+	const char* OldValue; ///< The value that was selected before this change
+};
+ORCA_API void luaX_pushTabBar_SelectionChangedEventArgs(lua_State *L, struct TabBar_SelectionChangedEventArgs const* data);
+ORCA_API struct TabBar_SelectionChangedEventArgs* luaX_checkTabBar_SelectionChangedEventArgs(lua_State *L, int idx);
 /** TabView_SelectionChangedEventArgs struct */
 struct TabView_SelectionChangedEventArgs {
 	const char* SelectedValue; ///< The value of the newly selected tab
@@ -462,20 +476,6 @@ struct PageHost_NavigateBackEventArgs {
 };
 ORCA_API void luaX_pushPageHost_NavigateBackEventArgs(lua_State *L, struct PageHost_NavigateBackEventArgs const* data);
 ORCA_API struct PageHost_NavigateBackEventArgs* luaX_checkPageHost_NavigateBackEventArgs(lua_State *L, int idx);
-/** RadioGroup_SelectionChangedEventArgs struct */
-struct RadioGroup_SelectionChangedEventArgs {
-	const char* SelectedValue; ///< The value of the newly selected RadioButton
-	const char* OldValue; ///< The value that was selected before this change
-};
-ORCA_API void luaX_pushRadioGroup_SelectionChangedEventArgs(lua_State *L, struct RadioGroup_SelectionChangedEventArgs const* data);
-ORCA_API struct RadioGroup_SelectionChangedEventArgs* luaX_checkRadioGroup_SelectionChangedEventArgs(lua_State *L, int idx);
-/** TabBar_SelectionChangedEventArgs struct */
-struct TabBar_SelectionChangedEventArgs {
-	const char* SelectedValue; ///< The value of the newly selected Tab
-	const char* OldValue; ///< The value that was selected before this change
-};
-ORCA_API void luaX_pushTabBar_SelectionChangedEventArgs(lua_State *L, struct TabBar_SelectionChangedEventArgs const* data);
-ORCA_API struct TabBar_SelectionChangedEventArgs* luaX_checkTabBar_SelectionChangedEventArgs(lua_State *L, int idx);
 
 
 /// @brief Base class for all brush types used in rendering.
@@ -778,6 +778,15 @@ struct Grid {
 ORCA_API void luaX_pushGrid(lua_State *L, struct Grid const* Grid);
 ORCA_API struct Grid* luaX_checkGrid(lua_State *L, int idx);
 
+/// @brief Grid-based layout container that auto-generates equal-width columns.
+/** UniformGrid component */
+struct UniformGrid {
+	bool_t _autoColumns; ///< Whether columns should be generated from the current child count.
+	bool_t _syncingColumns; ///< Suppresses auto-disable when the component updates Columns internally.
+};
+ORCA_API void luaX_pushUniformGrid(lua_State *L, struct UniformGrid const* UniformGrid);
+ORCA_API struct UniformGrid* luaX_checkUniformGrid(lua_State *L, int idx);
+
 /// @brief Displays image content with advanced rendering and scaling options
 /** ImageView component */
 struct ImageView {
@@ -872,8 +881,5 @@ struct Style {
 };
 ORCA_API void luaX_pushStyle(lua_State *L, struct Style const* Style);
 ORCA_API struct Style* luaX_checkStyle(lua_State *L, int idx);
-
-/* Internal UIKit dispatch helper — defined in UIKit_message.c */
-bool_t CORE_HandleObjectMessage(lua_State *L, struct AXmessage *msg);
 
 #endif

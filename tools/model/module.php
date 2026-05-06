@@ -537,9 +537,14 @@ class Event extends Type {
 	// Returns the EventArgs struct name to alias when a child has no own fields
 	// but the parent chain does have fields
 	function getEffectiveStructName() {
-		if ($this->hasFields()) return $this->msgns . "_" . $this->name . "EventArgs";
+		if ($this->hasFields()) {
+			return $this->msgns . "_" . $this->name . "EventArgs";
+		}
 		$parent = $this->getParentEvent();
-		return $parent ? $parent->getEffectiveStructName() : null;
+		if ($parent) {
+			return $parent->getEffectiveStructName();
+		}
+		return null;
 	}
 }
 
@@ -636,7 +641,8 @@ class Model {
 				$evname = strval($msg["name"]);
 				$ev = new Event($msg, $this);
 				$ev->msgns = $ns;
-				$this->events[$evname] = $ev;
+				$key = $ns . "." . $evname;
+				$this->events[$key] = $ev;
 			}
 		}
 		foreach ($xml->xpath(".//class[@name]") as $cls) {
@@ -645,7 +651,8 @@ class Model {
 				$evname = strval($msg["name"]);
 				$ev = new Event($msg, $this);
 				$ev->msgns = $ns;
-				$this->events[$evname] = $ev;
+				$key = $ns . "." . $evname;
+				$this->events[$key] = $ev;
 			}
 		}
 		$rn = $xml->xpath("./functions/function[@name]");
@@ -676,7 +683,17 @@ class Model {
 	function getInterface($name) { return $this->interfaces[$name] ?? null; }
 	function getEnum($name) { return $this->enums[$name] ?? null; }
 	function getComponent($name) { return $this->components[$name] ?? null; }
-	function resolveEvent($name) { return $this->_has_in($name, "events"); }
+	function resolveEvent($name) {
+		$event = $this->_has_in($name, "events");
+		if ($event) return $event;
+		foreach ($this->events as $key => $candidate) {
+			$suffix = "." . $name;
+			if ($candidate->name === $name || substr($key, -strlen($suffix)) === $suffix) {
+				return $candidate;
+			}
+		}
+		return null;
+	}
 
 	function getStructs() { return $this->structs; }
 	function getInterfaces() { return $this->interfaces; }

@@ -48,6 +48,15 @@ HANDLER(RadioGroup, Object, Start)
   return FALSE;
 }
 
+HANDLER(RadioGroup, Object, Attached)
+{
+  /* Re-apply the current selection when the group is attached so rebuilt
+     screens restore the checked radio button even if Start ran too early. */
+  if (pRadioGroup->SelectedValue)
+    RadioGroup_SyncToSelectedValue(hObject, pRadioGroup);
+  return FALSE;
+}
+
 HANDLER(RadioGroup, Object, PropertyChanged)
 {
   /* When SelectedValue changes at runtime, keep child buttons in sync. */

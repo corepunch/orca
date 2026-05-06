@@ -47,10 +47,7 @@ int f_OBJ_Clear(lua_State *L) {
 	return 0;
 }
 int f_OBJ_ReleaseOrphan(lua_State *L) {
-	struct Object** ud = (struct Object**)luaL_checkudata(L, 1, API_TYPE_OBJECT);
-	struct Object* this_ = *ud;
-	if (!this_) return 0; /* already released */
-	*ud = NULL; /* prevent reentrant double-free */
+	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_ReleaseOrphan(L, this_ );
 	return 0;
 }
@@ -74,9 +71,6 @@ int f_OBJ_AddChild(lua_State *L) {
 	luaX_pushObject(L, result_);
 	return 1;
 }
-/* Forward declaration for OBJ_GetObjectCount which is defined in object_core.c
- * but is not visible from core.h (the only header core_export.c includes). */
-extern int64_t OBJ_GetObjectCount(void);
 int f_OBJ_RemoveFromParent(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	OBJ_RemoveFromParent(this_ );
@@ -630,9 +624,9 @@ static struct PropertyType _Object_StartEventArgs[] = {
 static luaL_Reg _Object_AnimateEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_AnimateEventArgs[] = {
 };
-static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
-	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
+static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Object_ThemeChangedEventArgs[] = {
+	DECL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // Object_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_PropertyChangedEventArgs[] = {
@@ -672,6 +666,10 @@ static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
 };
 static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
+};
+static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
+	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _StyleController_AddClassEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StyleController_AddClassEventArgs[] = {
@@ -912,7 +910,7 @@ static struct PropertyType _Node_TextInputEventArgs[] = {
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
 STRUCT(Object_AnimateEventArgs, Object_AnimateEventArgs);
-STRUCT(StyleController_ThemeChangedEventArgs, StyleController_ThemeChangedEventArgs);
+STRUCT(Object_ThemeChangedEventArgs, Object_ThemeChangedEventArgs);
 STRUCT(Object_PropertyChangedEventArgs, Object_PropertyChangedEventArgs);
 STRUCT(Object_AttachedEventArgs, Object_AttachedEventArgs);
 STRUCT(Object_ReleaseEventArgs, Object_ReleaseEventArgs);
@@ -925,6 +923,7 @@ STRUCT(AnimationPlayer_PauseEventArgs, AnimationPlayer_PauseEventArgs);
 STRUCT(AnimationPlayer_StartedEventArgs, AnimationPlayer_StartedEventArgs);
 STRUCT(AnimationPlayer_StoppedEventArgs, AnimationPlayer_StoppedEventArgs);
 STRUCT(AnimationPlayer_CompletedEventArgs, AnimationPlayer_CompletedEventArgs);
+STRUCT(StyleController_ThemeChangedEventArgs, StyleController_ThemeChangedEventArgs);
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
@@ -1543,10 +1542,6 @@ int f_core_FlushQueue(lua_State *L) {
 	core_FlushQueue(L );
 	return 0;
 }
-int f_core_ObjectCount(lua_State *L) {
-	lua_pushinteger(L, OBJ_GetObjectCount());
-	return 1;
-}
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
@@ -1555,7 +1550,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
 		{ "flushQueue", f_core_FlushQueue },
-		{ "objectCount", f_core_ObjectCount },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);
@@ -1571,55 +1565,56 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)luaopen_orca_BorderShorthand(L), -2), "BorderShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeAxisShorthand(L), -2), "SizeAxisShorthand");
 	lua_setfield(L, ((void)luaopen_orca_SizeShorthand(L), -2), "SizeShorthand");
-	lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_AnimateEventArgs(L), -2), "Object_AnimateEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StyleController_ThemeChangedEventArgs(L), -2), "StyleController_ThemeChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_ReleaseEventArgs(L), -2), "Object_ReleaseEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_DestroyEventArgs(L), -2), "Object_DestroyEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Object_TimerEventArgs(L), -2), "Object_TimerEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PlayEventArgs(L), -2), "AnimationPlayer_PlayEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_ResumeEventArgs(L), -2), "AnimationPlayer_ResumeEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StopEventArgs(L), -2), "AnimationPlayer_StopEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PauseEventArgs(L), -2), "AnimationPlayer_PauseEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_HitTestEventArgs(L), -2), "Node_HitTestEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleEventArgs(L), -2), "Node_IsVisibleEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_ViewDidLoadEventArgs(L), -2), "Node_ViewDidLoadEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_KillFocusEventArgs(L), -2), "Node_KillFocusEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_SetFocusEventArgs(L), -2), "Node_SetFocusEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_GetSizeEventArgs(L), -2), "Node_GetSizeEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_MouseMessageEventArgs(L), -2), "Node_MouseMessageEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonDownEventArgs(L), -2), "Node_LeftButtonDownEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_RightButtonDownEventArgs(L), -2), "Node_RightButtonDownEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonDownEventArgs(L), -2), "Node_OtherButtonDownEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonUpEventArgs(L), -2), "Node_LeftButtonUpEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_RightButtonUpEventArgs(L), -2), "Node_RightButtonUpEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonUpEventArgs(L), -2), "Node_OtherButtonUpEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonDraggedEventArgs(L), -2), "Node_LeftButtonDraggedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_RightButtonDraggedEventArgs(L), -2), "Node_RightButtonDraggedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonDraggedEventArgs(L), -2), "Node_OtherButtonDraggedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_LeftDoubleClickEventArgs(L), -2), "Node_LeftDoubleClickEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_RightDoubleClickEventArgs(L), -2), "Node_RightDoubleClickEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_OtherDoubleClickEventArgs(L), -2), "Node_OtherDoubleClickEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_MouseMovedEventArgs(L), -2), "Node_MouseMovedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_ScrollWheelEventArgs(L), -2), "Node_ScrollWheelEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_DragDropEventArgs(L), -2), "Node_DragDropEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_DragEnterEventArgs(L), -2), "Node_DragEnterEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_KeyMessageEventArgs(L), -2), "Node_KeyMessageEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_KeyDownEventArgs(L), -2), "Node_KeyDownEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_KeyUpEventArgs(L), -2), "Node_KeyUpEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Node_TextInputEventArgs(L), -2), "Node_TextInputEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_CreateEventArgs(L), -2), "Object_CreateEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_StartEventArgs(L), -2), "Object_StartEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_AnimateEventArgs(L), -2), "Object_AnimateEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_ThemeChangedEventArgs(L), -2), "Object_ThemeChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_PropertyChangedEventArgs(L), -2), "Object_PropertyChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_AttachedEventArgs(L), -2), "Object_AttachedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_ReleaseEventArgs(L), -2), "Object_ReleaseEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_DestroyEventArgs(L), -2), "Object_DestroyEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Object_TimerEventArgs(L), -2), "Object_TimerEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PlayEventArgs(L), -2), "AnimationPlayer_PlayEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_ResumeEventArgs(L), -2), "AnimationPlayer_ResumeEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StopEventArgs(L), -2), "AnimationPlayer_StopEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_PauseEventArgs(L), -2), "AnimationPlayer_PauseEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StartedEventArgs(L), -2), "AnimationPlayer_StartedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_StoppedEventArgs(L), -2), "AnimationPlayer_StoppedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_AnimationPlayer_CompletedEventArgs(L), -2), "AnimationPlayer_CompletedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_StyleController_ThemeChangedEventArgs(L), -2), "StyleController_ThemeChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_HitTestEventArgs(L), -2), "Node_HitTestEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_IsVisibleEventArgs(L), -2), "Node_IsVisibleEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_ViewDidLoadEventArgs(L), -2), "Node_ViewDidLoadEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_KillFocusEventArgs(L), -2), "Node_KillFocusEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_SetFocusEventArgs(L), -2), "Node_SetFocusEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_GetSizeEventArgs(L), -2), "Node_GetSizeEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_MouseMessageEventArgs(L), -2), "Node_MouseMessageEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonDownEventArgs(L), -2), "Node_LeftButtonDownEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_RightButtonDownEventArgs(L), -2), "Node_RightButtonDownEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonDownEventArgs(L), -2), "Node_OtherButtonDownEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonUpEventArgs(L), -2), "Node_LeftButtonUpEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_RightButtonUpEventArgs(L), -2), "Node_RightButtonUpEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonUpEventArgs(L), -2), "Node_OtherButtonUpEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_LeftButtonDraggedEventArgs(L), -2), "Node_LeftButtonDraggedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_RightButtonDraggedEventArgs(L), -2), "Node_RightButtonDraggedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_OtherButtonDraggedEventArgs(L), -2), "Node_OtherButtonDraggedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_LeftDoubleClickEventArgs(L), -2), "Node_LeftDoubleClickEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_RightDoubleClickEventArgs(L), -2), "Node_RightDoubleClickEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_OtherDoubleClickEventArgs(L), -2), "Node_OtherDoubleClickEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_MouseMovedEventArgs(L), -2), "Node_MouseMovedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_ScrollWheelEventArgs(L), -2), "Node_ScrollWheelEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_DragDropEventArgs(L), -2), "Node_DragDropEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_DragEnterEventArgs(L), -2), "Node_DragEnterEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_KeyMessageEventArgs(L), -2), "Node_KeyMessageEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_KeyDownEventArgs(L), -2), "Node_KeyDownEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_KeyUpEventArgs(L), -2), "Node_KeyUpEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Node_TextInputEventArgs(L), -2), "Node_TextInputEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Object(L), -2), "Object");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationCurve), -2), "AnimationCurve");
 	lua_setfield(L, ((void)lua_pushclass(L, &_AnimationClip), -2), "AnimationClip");

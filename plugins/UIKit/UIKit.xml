@@ -541,6 +541,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Start"/>
+        <handle message="Object.Attached"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="RadioGroup.SelectionChanged"/>
       </handles>
@@ -709,6 +710,21 @@
       </properties>
       <fields>
         <field name="_buffer" type="uiGridViewBuffer">Internal buffer for grid calculations </field>
+      </fields>
+    </class>
+    <class name="UniformGrid" parent="Grid">
+      <summary>Grid-based layout container that auto-generates equal-width columns.</summary>
+      <details>Arranges children into uniform cells without requiring explicit column definitions. Designed for tab bars and similar evenly distributed layouts.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ArrangeOverride"/>
+        <handle message="Object.Create"/>
+        <handle message="Object.PropertyChanged"/>
+      </handles>
+      <fields>
+        <field name="_autoColumns" type="bool">Whether columns should be generated from the current child count.</field>
+        <field name="_syncingColumns" type="bool">Suppresses auto-disable when the component updates Columns internally.</field>
       </fields>
     </class>
     <class name="ImageView" parent="Node2D">

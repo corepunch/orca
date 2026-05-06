@@ -1,4 +1,4 @@
-import Screen, Grid, StackView, TextBlock, ImageView, Node2D from require "orca.UIKit"
+import Screen, Grid, UniformGrid, StackView, TextBlock, ImageView, Node2D from require "orca.UIKit"
 Widget = require "orca.core.widget"
 
 NAV_ITEMS = {
@@ -14,17 +14,16 @@ make_header = (title) ->
 		TextBlock class: "text-2xl font-bold align-center text-accent-foreground", title
 
 make_footer = (active_route, navigate) ->
-	StackView class: "bg-header-bg flex-row justify-evenly items-center p-2", =>
-		for item in *NAV_ITEMS
-			selected = active_route == item.route
-			color = selected and "text-accent" or "text-foreground-muted"
-			weight = selected and "font-bold" or "font-normal"
-			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
-				ImageView
+	UniformGrid class: "bg-header-bg p-2", =>
+			for item in *NAV_ITEMS
+				selected = active_route == item.route
+				color = selected and "text-amber-300" or "text-sky-100"
+				weight = selected and "font-bold" or "font-normal"
+				cell = StackView class: "w-full h-full flex-col items-center justify-center gap-1", LeftButtonUp: -> navigate item.route
+				cell\addChild ImageView
 					class: "align-middle-center #{color}"
-					Source: "#{item.icon}?width=28&type=mask"
-					LeftButtonUp: -> navigate item.route
-				TextBlock class: "text-xs #{color} #{weight}", item.label
+					Source: "#{item.icon}?width=36&type=mask"
+				cell\addChild TextBlock class: "text-xs #{color} #{weight}", item.label
 
 make_placeholder = ->
 	StackView class: "bg-background p-6 gap-2", =>

@@ -2,6 +2,7 @@
 #include <source/core/core_local.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit_message.h>
 
 static void
 Tab_SetSelected(struct Object *object, struct Tab *tab, bool_t selected)

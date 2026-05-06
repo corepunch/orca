@@ -44,7 +44,7 @@ enum <?= $classname ?>Properties {
 <?php endforeach ?>	
 
 <?php foreach ($model->getEvents() as $name => $event):?>
-<?php $struct_id_name = $event->msgns . "_" . $name . "EventArgs"; ?>
+<?php $struct_id_name = $event->msgns . "_" . $event->name . "EventArgs"; ?>
 #define ID_<?= $struct_id_name ?> 0x<?= hash('fnv1a32', $struct_id_name) ?>
 
 <?php foreach ($event->getAllFields() as $field) {

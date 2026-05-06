@@ -2,6 +2,7 @@
 #include <source/core/core_local.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit_message.h>
 
 struct Object *
 _NextTabStop(struct Object *hObject);
@@ -105,6 +106,19 @@ RadioButton_FindSibling(struct Object *object, bool_t forward)
   return forward ? first : last;
 }
 
+static void
+RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRadioButton)
+{
+  struct Object *group = OBJ_GetParent(hObject);
+  if (!group) return;
+  struct RadioGroup *rg = GetRadioGroup(group);
+  if (!rg || !rg->SelectedValue || !pRadioButton->Value) return;
+
+  bool_t should_be_checked = strcmp(pRadioButton->Value, rg->SelectedValue) == 0;
+  if (pRadioButton->IsChecked != should_be_checked)
+    RadioButton_SetChecked(hObject, pRadioButton, should_be_checked);
+}
+
 HANDLER(RadioButton, Object, Create)
 {
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
@@ -117,13 +131,7 @@ HANDLER(RadioButton, Object, Create)
 
 HANDLER(RadioButton, Object, Attached)
 {
-  struct Object *group = OBJ_GetParent(hObject);
-  if (!group) return FALSE;
-  struct RadioGroup *rg = GetRadioGroup(group);
-  if (!rg || !rg->SelectedValue || !pRadioButton->Value) return FALSE;
-  bool_t should_be_checked = strcmp(pRadioButton->Value, rg->SelectedValue) == 0;
-  if (pRadioButton->IsChecked != should_be_checked)
-    RadioButton_SetChecked(hObject, pRadioButton, should_be_checked);
+  RadioButton_SyncToGroupSelection(hObject, pRadioButton);
   return FALSE;
 }
 
@@ -131,6 +139,11 @@ HANDLER(RadioButton, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property)
     return FALSE;
+
+  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_Value) {
+    RadioButton_SyncToGroupSelection(hObject, pRadioButton);
+    return FALSE;
+  }
 
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_RadioButton_IsChecked) {
     RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);

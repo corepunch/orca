@@ -417,6 +417,11 @@ enum GridProperties {
 	kGridCellWidth,
 	kGridCellHeight,
 };
+// UniformGrid
+#define ID_UniformGrid 0x85f498e7
+#define GetUniformGrid(_P) ((struct UniformGrid*)((_P)?OBJ_GetComponent(_P,ID_UniformGrid):NULL))
+#define UniformGrid_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_UniformGrid,sizeof(struct UniformGrid),_N)
+#define kUniformGridNumProperties 0
 // ImageView
 #define ID_ImageView 0xfe686eb3
 #define GetImageView(_P) ((struct ImageView*)((_P)?OBJ_GetComponent(_P,ID_ImageView):NULL))
@@ -615,6 +620,14 @@ enum StyleProperties {
 
 #define ID_Form_SubmitEventArgs 0x940ec545
 
+#define ID_RadioGroup_SelectionChangedEventArgs 0x43080eb7
+
+#define ID_RadioGroup_SelectionChangedEventArgs_SelectedValue 0x2a19d223 // RadioGroup_SelectionChangedEventArgs.SelectedValue
+#define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
+#define ID_TabBar_SelectionChangedEventArgs 0xf08fdfb5
+
+#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0xab330de1 // TabBar_SelectionChangedEventArgs.SelectedValue
+#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x0ab0426b // TabBar_SelectionChangedEventArgs.OldValue
 #define ID_TabView_SelectionChangedEventArgs 0x7fe063f9
 
 #define ID_TabView_SelectionChangedEventArgs_SelectedValue 0x47d0dffd // TabView_SelectionChangedEventArgs.SelectedValue
@@ -655,14 +668,6 @@ enum StyleProperties {
 #define ID_PageHost_NavigateBackEventArgs 0xa3f6a342
 
 #define ID_PageHost_NavigateBackEventArgs_TransitionType 0x0531cd67 // PageHost_NavigateBackEventArgs.TransitionType
-#define ID_RadioGroup_SelectionChangedEventArgs 0x43080eb7
-
-#define ID_RadioGroup_SelectionChangedEventArgs_SelectedValue 0x2a19d223 // RadioGroup_SelectionChangedEventArgs.SelectedValue
-#define ID_RadioGroup_SelectionChangedEventArgs_OldValue 0x1efc7315 // RadioGroup_SelectionChangedEventArgs.OldValue
-#define ID_TabBar_SelectionChangedEventArgs 0xb3a9c421
-
-#define ID_TabBar_SelectionChangedEventArgs_SelectedValue 0xab330de1 // TabBar_SelectionChangedEventArgs.SelectedValue
-#define ID_TabBar_SelectionChangedEventArgs_OldValue 0x0ab0426b // TabBar_SelectionChangedEventArgs.OldValue
 	
 
 #endif

@@ -2,6 +2,7 @@
 #include <source/core/core_local.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <plugins/UIKit/UIKit_message.h>
 
 HANDLER(TabView, Node2D, MeasureOverride)
 {

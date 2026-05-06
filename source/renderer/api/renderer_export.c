@@ -440,10 +440,10 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	}));
 	void on_renderer_module_registered(lua_State *L);
 	on_renderer_module_registered(L);
-	lua_setfield(L, ((void)luaopen_orca_Window_PaintEventArgs(L), -2), "Window_PaintEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ResizedEventArgs(L), -2), "Window_ResizedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ClosedEventArgs(L), -2), "Window_ClosedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Window_ChangedScreenEventArgs(L), -2), "Window_ChangedScreenEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Window_PaintEventArgs(L), -2), "Window_PaintEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Window_ResizedEventArgs(L), -2), "Window_ResizedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Window_ClosedEventArgs(L), -2), "Window_ClosedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Window_ChangedScreenEventArgs(L), -2), "Window_ChangedScreenEventArgs");
 	lua_setfield(L, ((void)luaopen_orca_Window(L), -2), "Window");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Texture), -2), "Texture");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Image), -2), "Image");

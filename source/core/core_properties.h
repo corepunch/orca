@@ -560,9 +560,9 @@ enum NodeProperties {
 
 #define ID_Object_AnimateEventArgs 0xc80c1167
 
-#define ID_StyleController_ThemeChangedEventArgs 0x0ee8d735
+#define ID_Object_ThemeChangedEventArgs 0x22275cf1
 
-#define ID_StyleController_ThemeChangedEventArgs_recursive 0xa1d9af6b // StyleController_ThemeChangedEventArgs.recursive
+#define ID_Object_ThemeChangedEventArgs_recursive 0x09fa891f // Object_ThemeChangedEventArgs.recursive
 #define ID_Object_PropertyChangedEventArgs 0x530ec22f
 
 #define ID_Object_PropertyChangedEventArgs_Property 0xc7308dfa // Object_PropertyChangedEventArgs.Property
@@ -590,6 +590,9 @@ enum NodeProperties {
 
 #define ID_AnimationPlayer_CompletedEventArgs 0xacaaf6c7
 
+#define ID_StyleController_ThemeChangedEventArgs 0x0ee8d735
+
+#define ID_StyleController_ThemeChangedEventArgs_recursive 0xa1d9af6b // StyleController_ThemeChangedEventArgs.recursive
 #define ID_StyleController_AddClassEventArgs 0x6838e65b
 
 #define ID_StyleController_AddClassEventArgs_ClassName 0xb3e910ea // StyleController_AddClassEventArgs.ClassName
