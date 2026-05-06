@@ -4,6 +4,7 @@ local test = require "orca.test"
 -- fixed-size nodes so that font measurement is never needed.
 
 local core = require "orca.core"
+local renderer = require "orca.renderer"
 local ui = require "orca.UIKit"
 local filesystem = require "orca.filesystem"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
@@ -90,6 +91,41 @@ local function test_grid_in_vstack_height()
 
 	outer:removeFromParent()
 	print("PASS: test_grid_in_vstack_height")
+end
+
+-- ---------------------------------------------------------------------------
+-- Grid with a sibling ImageView must keep the image's height aligned to the
+-- neighboring content stack, rather than letting the image's intrinsic height
+-- dominate the row.
+-- ---------------------------------------------------------------------------
+local function test_grid_image_matches_sibling_stack_height()
+	local top_h = 30
+	local bottom_h = 20
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local grid  = outer  + ui.Grid { Columns = "auto auto", Spacing = 0 }
+	local stack  = grid   + ui.StackView { Direction = "Vertical", Spacing = 0 }
+	local stack_top = stack + ui.Node2D { Height = top_h }
+	local stack_bottom = stack + ui.Node2D { Height = bottom_h }
+	local people = renderer.Texture {
+		Width = 400,
+		Height = 1200,
+	}
+	local image = grid + ui.ImageView {
+		Source = people,
+		Stretch = "UniformToFill",
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(stack.ActualHeight, top_h + bottom_h,
+		"neighboring stack height")
+	test.expect_eq(image.ActualHeight, stack.ActualHeight,
+		"image height should match sibling stack height")
+	test.expect_eq(grid.ActualHeight, stack.ActualHeight,
+		"grid height should match the tallest cell in the row")
+
+	outer:removeFromParent()
+	print("PASS: test_grid_image_matches_sibling_stack_height")
 end
 
 -- ---------------------------------------------------------------------------
@@ -201,6 +237,7 @@ test_grid_fr_units()
 test_grid_auto_columns()
 test_uniform_grid_columns()
 test_grid_in_vstack_height()
+test_grid_image_matches_sibling_stack_height()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()

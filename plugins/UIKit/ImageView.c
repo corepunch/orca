@@ -42,19 +42,20 @@ HANDLER(ImageView, Node2D, MeasureOverride)
   if (pImageView->Source) {
     struct vec2 size = _GetImageSize(hObject, pImageView);
     struct edges const* e = (struct edges const*)&pImageView->Insets;
-    /* When available space is infinite (node has non-stretch alignment and no
-     * explicit size), report the image's natural size — the same behaviour as
-     * WPF's Image control.  Passing INFINITY into MAKEDWORD is UB (saturates
-     * to 65535 on ARM) and produces wrong layout. */
-    float avail_w = isinf(pMeasureOverride->Width)  ? size.x : pMeasureOverride->Width;
-    float avail_h = isinf(pMeasureOverride->Height) ? size.y : pMeasureOverride->Height;
     if (pImageView->Stretch == kStretchNone) {
       return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
     } else if (pImageView->Stretch == kStretchUniform) {
+      float avail_w = isinf(pMeasureOverride->Width)  ? size.x : pMeasureOverride->Width;
+      float avail_h = isinf(pMeasureOverride->Height) ? size.y : pMeasureOverride->Height;
       struct rect avail = {0, 0, avail_w, avail_h};
       struct rect final = RECT_Fit(&avail, &size);
       return MAKEDWORD(final.width, final.height);
     } else {
+      /* Fill/crop modes must honor the space offered by the parent. If that
+       * space is unconstrained, collapse on that axis instead of expanding to
+       * the intrinsic image size and forcing the layout taller. */
+      float avail_w = isinf(pMeasureOverride->Width)  ? 0 : pMeasureOverride->Width;
+      float avail_h = isinf(pMeasureOverride->Height) ? 0 : pMeasureOverride->Height;
       return MAKEDWORD(avail_w, avail_h);
     }
   } else {
@@ -310,4 +311,3 @@ HANDLER(ImageView, Node, LoadView)
 
   return TRUE;
 }
-
