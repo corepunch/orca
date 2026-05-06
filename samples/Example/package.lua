@@ -25,6 +25,12 @@ ThemeLibrary = {
 	{ Key = "white", Value = "#FFFFFF" },
 	{ Key = "icon-bg-purple", Value = "#1E1833" },
 	{ Key = "icon-bg-green", Value = "#0D2020" },
+	{ Key = "icon-violet", Value = "#C4B5FD" },
+	{ Key = "icon-blue", Value = "#93C5FD" },
+	{ Key = "icon-green", Value = "#6EE7B7" },
+	{ Key = "icon-amber", Value = "#FCD34D" },
+	{ Key = "icon-sky", Value = "#67E8F9" },
+	{ Key = "icon-rose", Value = "#FDA4AF" },
 	-- 	},
 	-- },
 }

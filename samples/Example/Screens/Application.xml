@@ -37,42 +37,54 @@
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="OrcaSignals" Columns="auto auto auto" Spacing="14">
 						<StackView Name="SignalXml" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalXmlIcon" Source="Example/Icons/code.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalXmlIcon" Source="Example/Icons/code.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-violet</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalXmlCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalXmlTitle" Text="XML-first screens" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalXmlBody" Text="Layouts stay readable." FontSize="12" ForegroundColor="$text-muted"/>
 							</StackView>
 						</StackView>
 						<StackView Name="SignalLua" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalLuaIcon" Source="Example/Icons/file.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalLuaIcon" Source="Example/Icons/file.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-blue</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalLuaCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalLuaTitle" Text="Lua beside the view" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalLuaBody" Text="Behavior stays close." FontSize="12" ForegroundColor="$text-muted"/>
 							</StackView>
 						</StackView>
 						<StackView Name="SignalMoon" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalMoonIcon" Source="Example/Icons/moon.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalMoonIcon" Source="Example/Icons/moon.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-sky</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalMoonCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalMoonTitle" Text="MoonScript when it grows" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalMoonBody" Text="Less noise, same runtime." FontSize="12" ForegroundColor="$text-muted"/>
 							</StackView>
 						</StackView>
 						<StackView Name="SignalShip" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalShipIcon" Source="Example/Icons/globe.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalShipIcon" Source="Example/Icons/globe.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-green</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalShipCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalShipTitle" Text="Desktop, mobile, web" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalShipBody" Text="One screen, many targets." FontSize="12" ForegroundColor="$text-muted"/>
 							</StackView>
 						</StackView>
 						<StackView Name="SignalSpeed" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalSpeedIcon" Source="Example/Icons/zap.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalSpeedIcon" Source="Example/Icons/zap.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-amber</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalSpeedCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalSpeedTitle" Text="Fast edit-run-refine" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalSpeedBody" Text="See changes immediately." FontSize="12" ForegroundColor="$text-muted"/>
 							</StackView>
 						</StackView>
 						<StackView Name="SignalScale" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-							<ImageView Name="SignalScaleIcon" Source="Example/Icons/cpu.svg?width=28&amp;type=mask" Width="28" Height="28"/>
+							<ImageView Name="SignalScaleIcon" Source="Example/Icons/cpu.svg?width=28&amp;type=mask" Width="28" Height="28">
+								<Node2D.ForegroundColor>$icon-rose</Node2D.ForegroundColor>
+							</ImageView>
 							<StackView Name="SignalScaleCopy" Direction="Vertical" Spacing="2">
 								<TextBlock Name="SignalScaleTitle" Text="Built to scale" FontSize="14" ForegroundColor="$text-primary"/>
 								<TextBlock Name="SignalScaleBody" Text="Same UI, larger ambitions." FontSize="12" ForegroundColor="$text-muted"/>
@@ -87,9 +99,14 @@
 							<Tab Name="DeployTab" Value="deploy" Width="140">Deploy</Tab>
 						</TabBar>
 						<StackView Name="xml" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
+							<StackView Name="XmlPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
+								<ImageView Name="XmlPanelIcon" Source="Example/Icons/layout-grid.svg?width=26&amp;type=mask" Width="26" Height="26">
+									<Node2D.ForegroundColor>$icon-violet</Node2D.ForegroundColor>
+								</ImageView>
+								<TextBlock Name="XmlTitle" Text="XML reads like a blueprint" FontSize="24" ForegroundColor="$text-primary"/>
+							</StackView>
 							<Grid Name="XmlGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="XmlCopy" Direction="Vertical" Spacing="14">
-									<TextBlock Name="XmlTitle" Text="XML reads like a blueprint" FontSize="24" ForegroundColor="$text-primary"/>
 									<TextBlock Name="XmlBody"
 										Text="The screen stays legible at a glance, which makes it easy to scan, compare, and reshape as the design evolves."
 										FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -111,7 +128,12 @@
 							</Grid>
 						</StackView>
 						<StackView Name="lua" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<TextBlock Name="LuaTitle" Text="Lua stays close to the surface" FontSize="24" ForegroundColor="$text-primary"/>
+							<StackView Name="LuaPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
+								<ImageView Name="LuaPanelIcon" Source="Example/Icons/file-code.svg?width=26&amp;type=mask" Width="26" Height="26">
+									<Node2D.ForegroundColor>$icon-blue</Node2D.ForegroundColor>
+								</ImageView>
+								<TextBlock Name="LuaTitle" Text="Lua stays close to the surface" FontSize="24" ForegroundColor="$text-primary"/>
+							</StackView>
 							<TextBlock Name="LuaBody"
 								Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -131,9 +153,14 @@
 							</Grid>
 						</StackView>
 						<StackView Name="moon" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
+							<StackView Name="MoonPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
+								<ImageView Name="MoonPanelIcon" Source="Example/Icons/moon.svg?width=26&amp;type=mask" Width="26" Height="26">
+									<Node2D.ForegroundColor>$icon-sky</Node2D.ForegroundColor>
+								</ImageView>
+								<TextBlock Name="MoonTitle" Text="MoonScript trims the noise" FontSize="24" ForegroundColor="$text-primary"/>
+							</StackView>
 							<Grid Name="MoonGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="MoonCopy" Direction="Vertical" Spacing="14">
-									<TextBlock Name="MoonTitle" Text="MoonScript trims the noise" FontSize="24" ForegroundColor="$text-primary"/>
 									<TextBlock Name="MoonBody"
 										Text="MoonScript keeps larger app code compact and expressive, while still compiling to the same Lua runtime."
 										FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -153,7 +180,12 @@
 							</Grid>
 						</StackView>
 						<StackView Name="deploy" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<TextBlock Name="DeployTitle" Text="One UI, many targets" FontSize="24" ForegroundColor="$text-primary"/>
+							<StackView Name="DeployPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
+								<ImageView Name="DeployPanelIcon" Source="Example/Icons/globe.svg?width=26&amp;type=mask" Width="26" Height="26">
+									<Node2D.ForegroundColor>$icon-green</Node2D.ForegroundColor>
+								</ImageView>
+								<TextBlock Name="DeployTitle" Text="One UI, many targets" FontSize="24" ForegroundColor="$text-primary"/>
+							</StackView>
 							<TextBlock Name="DeployBody"
 								Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -186,28 +218,36 @@
 				</StackView>
 				<Grid Name="FeatureSection" Columns="auto auto auto auto" Spacing="20">
 					<StackView Name="FeatureXmlCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureXmlIcon" Source="Example/Icons/layers.svg?width=40&amp;type=mask" Width="40" Height="40"/>
+						<ImageView Name="FeatureXmlIcon" Source="Example/Icons/layers.svg?width=40&amp;type=mask" Width="40" Height="40">
+							<Node2D.ForegroundColor>$icon-violet</Node2D.ForegroundColor>
+						</ImageView>
 						<TextBlock Name="FeatureXmlTitle" Text="XML stays readable" FontSize="16" ForegroundColor="$text-primary"/>
 						<TextBlock Name="FeatureXmlBody"
 							Text="The layout tree is right there in the page, so structure and spacing stay easy to tune."
 							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
 					</StackView>
 					<StackView Name="FeatureLuaCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureLuaIcon" Source="Example/Icons/file.svg?width=40&amp;type=mask" Width="40" Height="40"/>
+						<ImageView Name="FeatureLuaIcon" Source="Example/Icons/file-code.svg?width=40&amp;type=mask" Width="40" Height="40">
+							<Node2D.ForegroundColor>$icon-blue</Node2D.ForegroundColor>
+						</ImageView>
 						<TextBlock Name="FeatureLuaTitle" Text="Lua stays close" FontSize="16" ForegroundColor="$text-primary"/>
 						<TextBlock Name="FeatureLuaBody"
 							Text="Interactions, bindings, and state can live next to the screen that owns them."
 							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
 					</StackView>
 					<StackView Name="FeatureShipCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureShipIcon" Source="Example/Icons/globe.svg?width=40&amp;type=mask" Width="40" Height="40"/>
+						<ImageView Name="FeatureShipIcon" Source="Example/Icons/globe.svg?width=40&amp;type=mask" Width="40" Height="40">
+							<Node2D.ForegroundColor>$icon-green</Node2D.ForegroundColor>
+						</ImageView>
 						<TextBlock Name="FeatureShipTitle" Text="Ships everywhere" FontSize="16" ForegroundColor="$text-primary"/>
 						<TextBlock Name="FeatureShipBody"
 							Text="The same UI can move across desktop, mobile, and web-friendly targets."
 							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
 					</StackView>
 					<StackView Name="FeatureSpeedCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureSpeedIcon" Source="Example/Icons/zap.svg?width=40&amp;type=mask" Width="40" Height="40"/>
+						<ImageView Name="FeatureSpeedIcon" Source="Example/Icons/rocket.svg?width=40&amp;type=mask" Width="40" Height="40">
+							<Node2D.ForegroundColor>$icon-amber</Node2D.ForegroundColor>
+						</ImageView>
 						<TextBlock Name="FeatureSpeedTitle" Text="Fast iteration" FontSize="16" ForegroundColor="$text-primary"/>
 						<TextBlock Name="FeatureSpeedBody"
 							Text="Edit, reload, and refine quickly without losing the overall shape of the interface."
