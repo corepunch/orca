@@ -325,7 +325,7 @@ local function test_example_application_xml()
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
-	local icon_count = select(2, xml:gsub("Example/Images/icons/orca/", ""))
+	local icon_count = select(2, xml:gsub("Example/Icons/", ""))
 
 	test.expect(tab_section ~= nil, "TabbedTechSection should exist in Example Application.xml")
 	test.expect(icon_shelf ~= nil, "OrcaIconShelf should exist in Example Application.xml")

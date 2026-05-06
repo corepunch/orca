@@ -37,17 +37,17 @@
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<StackView Name="OrcaIconShelf" Direction="Vertical" Spacing="16" BackgroundColor="$panel-background" Padding="24">
 						<Grid Name="OrcaIconGrid" Columns="auto auto auto auto auto auto" Spacing="14">
-							<ImageView Name="IconCode" Source="Example/Images/icons/orca/code.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconFile" Source="Example/Images/icons/orca/file.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconGrid" Source="Example/Images/icons/orca/grid.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconGlobe" Source="Example/Images/icons/orca/globe.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconMonitor" Source="Example/Images/icons/orca/monitor.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconSmartphone" Source="Example/Images/icons/orca/smartphone.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconMoon" Source="Example/Images/icons/orca/moon.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconSun" Source="Example/Images/icons/orca/sun.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconZap" Source="Example/Images/icons/orca/zap.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconLayers" Source="Example/Images/icons/orca/layers.svg?width=40&type=mask" Width="40" Height="40"/>
-							<ImageView Name="IconCpu" Source="Example/Images/icons/orca/cpu.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconCode" Source="Example/Icons/code.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconFile" Source="Example/Icons/file.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconGrid" Source="Example/Icons/grid.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconGlobe" Source="Example/Icons/globe.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconMonitor" Source="Example/Icons/monitor.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconSmartphone" Source="Example/Icons/smartphone.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconMoon" Source="Example/Icons/moon.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconSun" Source="Example/Icons/sun.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconZap" Source="Example/Icons/zap.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconLayers" Source="Example/Icons/layers.svg?width=40&type=mask" Width="40" Height="40"/>
+							<ImageView Name="IconCpu" Source="Example/Icons/cpu.svg?width=40&type=mask" Width="40" Height="40"/>
 						</Grid>
 					</StackView>
 					<TabView Name="OrcaTabs" SelectedValue="xml">
