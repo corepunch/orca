@@ -31,9 +31,9 @@
 				</Grid>
 				<StackView Name="TabbedTechSection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
 					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
-					<TextBlock Name="TabbedTechHeading" Text="Orca's stack, in one place" FontSize="28" ForegroundColor="$text-primary"/>
+					<TextBlock Name="TabbedTechHeading" Text="Build the UI, not the ceremony" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="TabbedTechSubheading"
-						Text="XML lays out the screen, Lua drives behavior, and MoonScript keeps larger app code concise while the same UI ships across platforms."
+						Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<TabView Name="OrcaTabs" SelectedValue="xml">
 						<TabBar Name="OrcaTabBar" Height="44" BackgroundColor="$panel-background" Padding="8" Spacing="12">
@@ -45,18 +45,18 @@
 						<StackView Name="xml" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
 							<Grid Name="XmlGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="XmlCopy" Direction="Vertical" Spacing="14">
-									<TextBlock Name="XmlTitle" Text="XML keeps layout visible" FontSize="24" ForegroundColor="$text-primary"/>
+									<TextBlock Name="XmlTitle" Text="XML reads like a blueprint" FontSize="24" ForegroundColor="$text-primary"/>
 									<TextBlock Name="XmlBody"
-										Text="The page reads top to bottom like a UI blueprint, so structure stays easy to inspect, diff, and evolve."
+										Text="The screen stays legible at a glance, which makes it easy to scan, compare, and reshape as the design evolves."
 										FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
 									<StackView Name="XmlNotes" Direction="Vertical" Spacing="8" BackgroundColor="$panel-background" Padding="20">
-										<TextBlock Name="XmlNote1" Text="• Grids and stacks map directly to visual structure." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
-										<TextBlock Name="XmlNote2" Text="• Text, spacing, and padding stay explicit instead of buried in helper code." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
-										<TextBlock Name="XmlNote3" Text="• You can open a screen and understand the layout without chasing another language." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="XmlNote1" Text="• Grids and stacks stay visible in the source." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="XmlNote2" Text="• Spacing, padding, and hierarchy remain explicit." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="XmlNote3" Text="• The shape of the screen is easy to read before it ever runs." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 									</StackView>
 								</StackView>
 								<StackView Name="XmlModel" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
-									<TextBlock Name="XmlModelHeading" Text="A simple mental model" FontSize="16" ForegroundColor="$text-primary"/>
+									<TextBlock Name="XmlModelHeading" Text="The structure stays honest" FontSize="16" ForegroundColor="$text-primary"/>
 									<TextBlock Name="XmlModelLine1" Text="Screen" FontSize="14" ForegroundColor="$accent"/>
 									<TextBlock Name="XmlModelLine2" Text="  Grid" FontSize="14" ForegroundColor="$text-secondary"/>
 									<TextBlock Name="XmlModelLine3" Text="    StackView" FontSize="14" ForegroundColor="$text-secondary"/>
@@ -67,64 +67,64 @@
 							</Grid>
 						</StackView>
 						<StackView Name="lua" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<TextBlock Name="LuaTitle" Text="Lua stays close to the UI" FontSize="24" ForegroundColor="$text-primary"/>
+							<TextBlock Name="LuaTitle" Text="Lua stays close to the surface" FontSize="24" ForegroundColor="$text-primary"/>
 							<TextBlock Name="LuaBody"
-								Text="Behavior, input, and data binding can sit right next to the screen that uses them, which makes iteration feel lightweight."
+								Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
 							<Grid Name="LuaGrid" Columns="auto auto auto" Spacing="16">
 								<LayerPrefabPlaceholder Name="LuaCard1" PlaceholderTemplate="Example/Prefabs/FeatureCard"
-									Card.Icon="()" Card.Title="Events"
-									Card.Body="Wire up taps, clicks, and state changes without building a separate framework around the screen."
+									Card.Icon="()" Card.Title="Input"
+									Card.Body="Tap, click, and selection handling can sit right beside the view that needs it."
 									Card.PrimaryColor="$accent" Card.IconBackground="$icon-bg-purple"/>
 								<LayerPrefabPlaceholder Name="LuaCard2" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 									Card.Icon="{}" Card.Title="State"
-									Card.Body="Keep small UI state objects near the view and update them with plain Lua."
+									Card.Body="Small state objects stay local, so the screen remains easy to reason about."
 									Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
 								<LayerPrefabPlaceholder Name="LuaCard3" PlaceholderTemplate="Example/Prefabs/FeatureCard"
-									Card.Icon="->" Card.Title="Glue"
-									Card.Body="Use Lua for the parts that need logic, while XML continues to own the structure."
+									Card.Icon="->" Card.Title="Binding"
+									Card.Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."
 									Card.PrimaryColor="$accent-green" Card.IconBackground="$icon-bg-green"/>
 							</Grid>
 						</StackView>
 						<StackView Name="moon" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
 							<Grid Name="MoonGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="MoonCopy" Direction="Vertical" Spacing="14">
-									<TextBlock Name="MoonTitle" Text="MoonScript cuts down ceremony" FontSize="24" ForegroundColor="$text-primary"/>
+									<TextBlock Name="MoonTitle" Text="MoonScript trims the noise" FontSize="24" ForegroundColor="$text-primary"/>
 									<TextBlock Name="MoonBody"
-										Text="MoonScript compiles to Lua, so app code can stay compact and expressive without changing the runtime story."
+										Text="MoonScript keeps larger app code compact and expressive, while still compiling to the same Lua runtime."
 										FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
 									<StackView Name="MoonNotes" Direction="Vertical" Spacing="8" BackgroundColor="$panel-background" Padding="20">
-										<TextBlock Name="MoonNote1" Text="• Good for larger app modules and controller code." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
-										<TextBlock Name="MoonNote2" Text="• The syntax is terse, but the output remains plain Lua." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
-										<TextBlock Name="MoonNote3" Text="• It fits Orca's split between declarative XML and runtime logic." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="MoonNote1" Text="• Helpful when app modules get a little larger." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="MoonNote2" Text="• The syntax stays concise, but the runtime stays Lua." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+										<TextBlock Name="MoonNote3" Text="• It pairs naturally with XML screens and Lua helpers." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 									</StackView>
 								</StackView>
 								<StackView Name="MoonModel" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
-									<TextBlock Name="MoonModelHeading" Text="Why it feels nice" FontSize="16" ForegroundColor="$text-primary"/>
-									<TextBlock Name="MoonModelLine1" Text="Less boilerplate around classes" FontSize="14" ForegroundColor="$text-secondary"/>
-									<TextBlock Name="MoonModelLine2" Text="Readable app-level controllers" FontSize="14" ForegroundColor="$text-secondary"/>
-									<TextBlock Name="MoonModelLine3" Text="Still ships as Lua under the hood" FontSize="14" ForegroundColor="$text-secondary"/>
-									<TextBlock Name="MoonModelLine4" Text="Pairs well with XML screens and Lua helpers" FontSize="14" ForegroundColor="$text-secondary"/>
+									<TextBlock Name="MoonModelHeading" Text="Same runtime, less ceremony" FontSize="16" ForegroundColor="$text-primary"/>
+									<TextBlock Name="MoonModelLine1" Text="Cleaner class bodies" FontSize="14" ForegroundColor="$text-secondary"/>
+									<TextBlock Name="MoonModelLine2" Text="Readable app controllers" FontSize="14" ForegroundColor="$text-secondary"/>
+									<TextBlock Name="MoonModelLine3" Text="Plain Lua at runtime" FontSize="14" ForegroundColor="$text-secondary"/>
+									<TextBlock Name="MoonModelLine4" Text="Comfortable beside XML layouts" FontSize="14" ForegroundColor="$text-secondary"/>
 								</StackView>
 							</Grid>
 						</StackView>
 						<StackView Name="deploy" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
 							<TextBlock Name="DeployTitle" Text="One UI, many targets" FontSize="24" ForegroundColor="$text-primary"/>
 							<TextBlock Name="DeployBody"
-								Text="Build the screen once and keep the experience aligned across desktop, mobile, and web-style targets."
+								Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
 							<Grid Name="DeployGrid" Columns="auto auto auto" Spacing="16">
 								<LayerPrefabPlaceholder Name="DeployCard1" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 									Card.Icon="D" Card.Title="Desktop"
-									Card.Body="Keyboard and mouse friendly, with room for dense layouts and detailed information."
+									Card.Body="Best when you want denser information, more breathing room, and precision input."
 									Card.PrimaryColor="$accent" Card.IconBackground="$icon-bg-purple"/>
 								<LayerPrefabPlaceholder Name="DeployCard2" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 									Card.Icon="M" Card.Title="Mobile"
-									Card.Body="Touch-friendly spacing and responsive containers keep the UI comfortable on smaller screens."
+									Card.Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."
 									Card.PrimaryColor="$accent-green" Card.IconBackground="$icon-bg-green"/>
 								<LayerPrefabPlaceholder Name="DeployCard3" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 									Card.Icon="W" Card.Title="Web"
-									Card.Body="The same app source can target browser workflows without changing the underlying screen model."
+									Card.Body="The same screen model can carry into browser workflows without being rewritten."
 									Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
 							</Grid>
 							<Grid Name="DeployImages" Columns="auto auto" Spacing="12">
@@ -144,42 +144,42 @@
 					<LayerPrefabPlaceholder Name="CapabilityXml" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 						Card.Icon="XML"
 						Card.Title="XML first"
-						Card.Body="Screens stay legible because layout lives in XML, not hidden inside a tangle of widget setup."
+						Card.Body="Layout stays visible because the screen is described where you can read it."
 						Card.PrimaryColor="$accent" Card.IconBackground="$icon-bg-purple"/>
 					<LayerPrefabPlaceholder Name="CapabilityLua" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 						Card.Icon="{}"
 						Card.Title="Lua behavior"
-						Card.Body="Use plain Lua for interactions, state, and the small bits of logic that make a UI feel alive."
+						Card.Body="Lua handles the moving parts: interactions, state, and small moments of logic."
 						Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
 					<LayerPrefabPlaceholder Name="CapabilityMoon" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 						Card.Icon="m"
 						Card.Title="MoonScript-friendly"
-						Card.Body="MoonScript keeps larger app code concise while still compiling to the same Lua runtime."
+						Card.Body="MoonScript keeps app code compact without changing the runtime underneath."
 						Card.PrimaryColor="$accent-green" Card.IconBackground="$icon-bg-green"/>
 					<LayerPrefabPlaceholder Name="CapabilityShip" PlaceholderTemplate="Example/Prefabs/FeatureCard"
 						Card.Icon="*"
 						Card.Title="Multiplatform"
-						Card.Body="The same UI model can stretch across desktop, mobile, and web-oriented targets."
+						Card.Body="The same UI model stretches naturally across desktop, mobile, and web-oriented targets."
 						Card.PrimaryColor="$accent-amber" Card.IconBackground="$icon-bg-amber"/>
 				</Grid>
 				<StackView Name="IterationSection" Direction="Vertical" Spacing="24" BackgroundColor="$surface" Padding="40">
 					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
 					<TextBlock Name="IterationHeading" Text="A short build loop" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="IterationSubheading"
-						Text="Edit the XML, adjust the logic in Lua or MoonScript, and see the result without switching tools."
+						Text="Edit the XML, tune the logic in Lua or MoonScript, and see the result without changing tools."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="IterationGrid" Columns="auto auto auto" Spacing="16">
 						<StackView Name="IterationWrite" Direction="Vertical" Spacing="10" BackgroundColor="$panel-background" Padding="24">
 							<TextBlock Name="IterationWriteTitle" Text="Write" FontSize="18" ForegroundColor="$accent"/>
-							<TextBlock Name="IterationWriteBody" Text="Change layout, spacing, and structure where the screen lives." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="IterationWriteBody" Text="Keep layout, spacing, and structure where the screen already lives." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 						<StackView Name="IterationRun" Direction="Vertical" Spacing="10" BackgroundColor="$panel-background" Padding="24">
 							<TextBlock Name="IterationRunTitle" Text="Run" FontSize="18" ForegroundColor="$accent-blue"/>
-							<TextBlock Name="IterationRunBody" Text="Load the app and inspect the UI in context instead of guessing from mockups." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="IterationRunBody" Text="Load the app and judge the UI in context instead of from mockups alone." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 						<StackView Name="IterationRefine" Direction="Vertical" Spacing="10" BackgroundColor="$panel-background" Padding="24">
 							<TextBlock Name="IterationRefineTitle" Text="Refine" FontSize="18" ForegroundColor="$accent-green"/>
-							<TextBlock Name="IterationRefineBody" Text="Tweak assets, replace text, and polish the composition until it feels right." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="IterationRefineBody" Text="Tweak assets, trim text, and polish the composition until it feels right." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 					</Grid>
 				</StackView>
@@ -192,15 +192,15 @@
 					<Grid Name="TargetsGrid" Columns="auto auto auto" Spacing="20">
 						<StackView Name="TargetDesktop" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
 							<TextBlock Name="TargetDesktopTitle" Text="Desktop" FontSize="18" ForegroundColor="$text-primary"/>
-							<TextBlock Name="TargetDesktopBody" Text="Great for dense tools, editors, and dashboards with lots of information." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="TargetDesktopBody" Text="Best for dense tools, editors, and dashboards with plenty of room to breathe." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 						<StackView Name="TargetMobile" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
 							<TextBlock Name="TargetMobileTitle" Text="Mobile" FontSize="18" ForegroundColor="$text-primary"/>
-							<TextBlock Name="TargetMobileBody" Text="Responsive grids and padding keep touch layouts readable and calm." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="TargetMobileBody" Text="Responsive grids and padding keep touch layouts calm and readable." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 						<StackView Name="TargetWeb" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
 							<TextBlock Name="TargetWebTitle" Text="Web" FontSize="18" ForegroundColor="$text-primary"/>
-							<TextBlock Name="TargetWebBody" Text="Ship the same experience into browser-oriented workflows without rewriting the whole screen." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
+							<TextBlock Name="TargetWebBody" Text="Ship the same experience into browser-oriented workflows without rewriting the screen." FontSize="13" ForegroundColor="$text-secondary" WordWrap="true"/>
 						</StackView>
 					</Grid>
 				</StackView>
