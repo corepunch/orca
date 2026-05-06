@@ -319,19 +319,23 @@ local function test_example_application_xml()
 	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
 
 	local tab_section = xml:find('<StackView Name="TabbedTechSection"')
+	local icon_shelf = xml:find('<StackView Name="OrcaIconShelf"')
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
+	local icon_count = select(2, xml:gsub("Example/Images/icons/orca/", ""))
 
 	test.expect(tab_section ~= nil, "TabbedTechSection should exist in Example Application.xml")
+	test.expect(icon_shelf ~= nil, "OrcaIconShelf should exist in Example Application.xml")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
 	test.expect(tabs ~= nil, "OrcaTabs should default to the XML tab in Example Application.xml")
 	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
 	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
+	test.expect(icon_count >= 10, "Example Application.xml should reference at least 10 SVG icons")
 
 	print("PASS: test_example_application_xml")
 end
