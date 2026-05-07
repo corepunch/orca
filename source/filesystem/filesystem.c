@@ -41,6 +41,7 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
 //      }
 //    }
   }
+  fprintf(stderr, "FS_GetThemeValue: missing theme key '%s'\n", key);
   return NULL;
 }
 
