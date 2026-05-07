@@ -1,11 +1,39 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
+#include <source/filesystem/theme_palette.h>
 
 #include <plugins/UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
 
 struct Object *
 _NextTabStop(struct Object *hObject);
+
+static void
+RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadioButton)
+{
+  struct Node *node = GetNode(hObject);
+  struct Node2D *node2d = GetNode2D(hObject);
+  if (!node || !node2d) return;
+
+  pRadioButton->AccentColor = FS_GetThemeColor(
+    THEME_COLOR_ACCENT_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_ACCENT,
+      COLOR_ACCENT));
+  node->Border.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BORDER,
+    FS_GetThemeColor(
+      THEME_COLOR_CONTROL_MUTED,
+      COLOR_CONTROL_BORDER));
+  node2d->Background.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_CARD_BACKGROUND,
+      COLOR_CARD_BACKGROUND));
+  node2d->Foreground.Color = FS_GetThemeColor(
+    THEME_COLOR_ACCENT_FOREGROUND,
+    COLOR_ACCENT_FOREGROUND);
+}
 
 static void
 RadioButton_SetChecked(struct Object *object,
@@ -121,6 +149,8 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 
 HANDLER(RadioButton, Object, Create)
 {
+  RadioButton_ApplyThemeDefaults(hObject, pRadioButton);
+
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
@@ -198,6 +228,8 @@ HANDLER(RadioButton, Node2D, DrawBrush)
 
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
+  struct Node *pNode = GetNode(hObject);
+  if (!pNode) return FALSE;
 
   float indicatorSize = pRadioButton->IndicatorSize;
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
@@ -226,13 +258,13 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float dotOffset = (indicatorSize - dotSize) * 0.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    entity.material.color = (struct color){1.0f, 1.0f, 1.0f, 1.0f};
+    entity.material.color = pNode2D->Foreground.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly
        larger background circle behind a smaller inner white circle. */
     entity.material = (struct ViewMaterial){
-      .color     = (struct color){0.7f, 0.7f, 0.75f, 1.0f},
+      .color     = pNode->Border.Color,
       .opacity   = pNode2D->_opacity,
       .blendMode = BLEND_MODE_ALPHA,
     };
@@ -242,7 +274,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float innerOffset = 1.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
     entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
-    entity.material.color = (struct color){0.95f, 0.95f, 0.97f, 1.0f};
+    entity.material.color = pNode2D->Background.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
 

@@ -1,9 +1,40 @@
 #include <include/orca.h>
 
+#include <source/filesystem/theme_palette.h>
 #include <plugins/UIKit/UIKit.h>
 
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
+
+static void
+Input_ApplyTextDefaults(struct Object *hObject)
+{
+  struct Node *node = GetNode(hObject);
+  struct Node2D *node2d = GetNode2D(hObject);
+  if (!node || !node2d) return;
+
+  node2d->Background.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_CARD_BACKGROUND,
+      COLOR_CONTROL_BACKGROUND));
+  node2d->Foreground.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_FOREGROUND,
+    COLOR_CONTROL_FOREGROUND);
+  node->Border.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BORDER,
+    FS_GetThemeColor(
+      THEME_COLOR_CONTROL_MUTED,
+      COLOR_CONTROL_BORDER));
+  node->Border.Width.Axis[0].Left = 1.0f;
+  node->Border.Width.Axis[0].Right = 1.0f;
+  node->Border.Width.Axis[1].Left = 1.0f;
+  node->Border.Width.Axis[1].Right = 1.0f;
+  node->Padding.Axis[0].Left = 8.0f;
+  node->Padding.Axis[0].Right = 8.0f;
+  node->Padding.Axis[1].Left = 6.0f;
+  node->Padding.Axis[1].Right = 6.0f;
+}
 
 HANDLER(Input, Node2D, DrawBrush)
 {
@@ -41,6 +72,19 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
+    struct color unchecked = FS_GetThemeColor(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      FS_GetThemeColor(
+        THEME_COLOR_CARD_BACKGROUND,
+        COLOR_CONTROL_BACKGROUND_SOLID));
+    struct color checked = FS_GetThemeColor(
+      THEME_COLOR_ACCENT_BACKGROUND,
+      FS_GetThemeColor(
+        THEME_COLOR_ACCENT,
+        COLOR_ACCENT_CHECKED));
+    struct color checkmark = FS_GetThemeColor(
+      THEME_COLOR_ACCENT_FOREGROUND,
+      COLOR_ACCENT_FOREGROUND);
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
@@ -49,16 +93,22 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.max.x = entity.bbox.min.x + w;
     entity.bbox.max.y = entity.bbox.min.y + h;
     entity.radius = (struct vec4) {4,4,4,4};
-    entity.material = (struct ViewMaterial) {
-      .color = (struct color) {0.898,0.561,0.133,1},
-      .opacity = 0.5,
-    };
+    entity.material.color = unchecked;
+    entity.material.opacity = pNode2D->_opacity;
+    entity.material.blendMode = BLEND_MODE_ALPHA;
+    entity.material.texture = NULL;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
-      entity.material.color = (struct color) {0,0,0,1};
-      entity.material.opacity = 1;
+      entity.material.color = checked;
+      entity.material.opacity = pNode2D->_opacity;
+      entity.material.texture = NULL;
+      entity.borderWidth = (struct vec4){0, 0, 0, 0};
+      R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+      entity.material.color = checkmark;
+      entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
     }
@@ -209,6 +259,7 @@ HANDLER(Input, Node, LeftButtonUp)
 HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
+  Input_ApplyTextDefaults(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }

@@ -100,6 +100,9 @@ Or simply use:
 make example
 ```
 
+The Example sample uses SVG icons sourced from [Lucide](https://lucide.dev/) and the Lucide GitHub repository.
+See `samples/Example/Icons/README.md` for the icon asset notes.
+
 ## Why MoonScript?
 
 ORCA supports multiple approaches for building applications, each with their own strengths:
@@ -364,4 +367,3 @@ For better XML editing experience in VSCode with autocomplete and validation:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-

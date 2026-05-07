@@ -1,4 +1,5 @@
 #include <include/orca.h>
+#include <source/filesystem/theme_palette.h>
 
 #include <plugins/UIKit/UIKit.h>
 
@@ -63,6 +64,21 @@ HANDLER(Button, Node, LeftButtonUp)
 
 HANDLER(Button, Object, Create)
 {
+  pButton->DiffuseColor = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_ACCENT_BACKGROUND,
+      FS_GetThemeColor(
+        THEME_COLOR_ACCENT,
+        pButton->DiffuseColor)));
+
+  struct Node2D *node2d = GetNode2D(hObject);
+  if (node2d) {
+    node2d->Foreground.Color = FS_GetThemeColor(
+      THEME_COLOR_CONTROL_FOREGROUND,
+      COLOR_ACCENT_FOREGROUND);
+  }
+
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }

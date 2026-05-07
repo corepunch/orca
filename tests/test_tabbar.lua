@@ -17,6 +17,28 @@ local filesystem = require "orca.filesystem"
 local geometry = require "orca.geometry"
 local ui   = require "orca.UIKit"
 
+local FALLBACK_WHITE = { R = 1.0, G = 1.0, B = 1.0, A = 1.0 }
+local FALLBACK_CONTROL_FOREGROUND = { R = 0.95, G = 0.95, B = 0.97, A = 1.0 }
+local FALLBACK_CONTROL_BORDER = { R = 0.7, G = 0.7, B = 0.75, A = 1.0 }
+local filesystem_initialized = false
+
+local function ensure_filesystem_init()
+  if filesystem_initialized then return end
+  filesystem.init("samples/Example")
+  filesystem_initialized = true
+end
+
+local function get_theme_color(...)
+  local keys = { ... }
+  for _, key in ipairs(keys) do
+    local value = filesystem.getThemeValue(key)
+    if value then
+      return geometry.Color.parse(value)
+    end
+  end
+  return nil
+end
+
 -- Override orca.async so that Lua event callbacks (fired via CORE_HandleObjectMessage)
 -- execute synchronously in tests instead of being deferred to the event loop.
 orca.async = function (fn, ...) fn(...) end
@@ -256,11 +278,21 @@ end
 -- Button: new visual properties have correct defaults
 -- ---------------------------------------------------------------------------
 local function test_button_visual_defaults()
+  ensure_filesystem_init()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local btn = screen + ui.Button { Width = 100, Height = 40 }
+  local accent = get_theme_color("$control-background", "$accent-background", "$accent")
+  local fg = get_theme_color("$control-foreground") or FALLBACK_WHITE
 
-  -- Default DiffuseColor should be a non-zero color (0.3, 0.55, 0.85, 1.0)
-  -- We can only test that CornerRadius is a number and SpecularPower > 0.
+  test.expect_near(btn.DiffuseColor.R, accent.R, 0.001, "Button.DiffuseColor.R theme default")
+  test.expect_near(btn.DiffuseColor.G, accent.G, 0.001, "Button.DiffuseColor.G theme default")
+  test.expect_near(btn.DiffuseColor.B, accent.B, 0.001, "Button.DiffuseColor.B theme default")
+  test.expect_near(btn.DiffuseColor.A, accent.A, 0.001, "Button.DiffuseColor.A theme default")
+  test.expect_near(btn.ForegroundColor.R, fg.R, 0.001, "Button.ForegroundColor.R theme default")
+  test.expect_near(btn.ForegroundColor.G, fg.G, 0.001, "Button.ForegroundColor.G theme default")
+  test.expect_near(btn.ForegroundColor.B, fg.B, 0.001, "Button.ForegroundColor.B theme default")
+  test.expect_near(btn.ForegroundColor.A, fg.A, 0.001, "Button.ForegroundColor.A theme default")
+
   test.expect(type(btn.CornerRadius) == "number",  "Button.CornerRadius should be a number")
   test.expect(btn.CornerRadius > 0,                "Button.CornerRadius should have a positive default")
   test.expect(type(btn.SpecularPower) == "number", "Button.SpecularPower should be a number")
@@ -278,9 +310,16 @@ end
 -- RadioButton: AccentColor and IndicatorSize defaults
 -- ---------------------------------------------------------------------------
 local function test_radiobutton_visual_defaults()
+  ensure_filesystem_init()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local group = screen + ui.RadioGroup { Width = 200, Height = 50, Direction = "Horizontal" }
   local rb    = group  + ui.RadioButton { Value = "x", Width = 50, Height = 30 }
+  local accent = get_theme_color("$accent-background", "$accent")
+
+  test.expect_near(rb.AccentColor.R, accent.R, 0.001, "RadioButton.AccentColor.R theme default")
+  test.expect_near(rb.AccentColor.G, accent.G, 0.001, "RadioButton.AccentColor.G theme default")
+  test.expect_near(rb.AccentColor.B, accent.B, 0.001, "RadioButton.AccentColor.B theme default")
+  test.expect_near(rb.AccentColor.A, accent.A, 0.001, "RadioButton.AccentColor.A theme default")
 
   test.expect(type(rb.IndicatorSize) == "number",  "RadioButton.IndicatorSize should be a number")
   test.expect(rb.IndicatorSize > 0,                "RadioButton.IndicatorSize should have a positive default")
@@ -294,10 +333,47 @@ local function test_radiobutton_visual_defaults()
 end
 
 -- ---------------------------------------------------------------------------
+-- Input: text-input defaults should use theme control colors and spacing
+-- ---------------------------------------------------------------------------
+local function test_input_visual_defaults()
+  ensure_filesystem_init()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local input = screen + ui.Input { Width = 160, Height = 40 }
+
+  local bg = get_theme_color("$control-background", "$card-background")
+  local fg = get_theme_color("$control-foreground") or FALLBACK_CONTROL_FOREGROUND
+  local border = get_theme_color("$control-border", "$control-muted") or FALLBACK_CONTROL_BORDER
+
+  test.expect_near(input.BackgroundColor.R, bg.R, 0.001, "Input.BackgroundColor.R theme default")
+  test.expect_near(input.BackgroundColor.G, bg.G, 0.001, "Input.BackgroundColor.G theme default")
+  test.expect_near(input.BackgroundColor.B, bg.B, 0.001, "Input.BackgroundColor.B theme default")
+  test.expect_near(input.BackgroundColor.A, bg.A, 0.001, "Input.BackgroundColor.A theme default")
+  test.expect_near(input.ForegroundColor.R, fg.R, 0.001, "Input.ForegroundColor.R theme default")
+  test.expect_near(input.ForegroundColor.G, fg.G, 0.001, "Input.ForegroundColor.G theme default")
+  test.expect_near(input.ForegroundColor.B, fg.B, 0.001, "Input.ForegroundColor.B theme default")
+  test.expect_near(input.ForegroundColor.A, fg.A, 0.001, "Input.ForegroundColor.A theme default")
+  test.expect_near(input.BorderColor.R, border.R, 0.001, "Input.BorderColor.R theme default")
+  test.expect_near(input.BorderColor.G, border.G, 0.001, "Input.BorderColor.G theme default")
+  test.expect_near(input.BorderColor.B, border.B, 0.001, "Input.BorderColor.B theme default")
+  test.expect_near(input.BorderColor.A, border.A, 0.001, "Input.BorderColor.A theme default")
+  test.expect_near(input.BorderWidthLeft, 1.0, 0.001, "Input left border should default to 1px")
+  test.expect_near(input.BorderWidthRight, 1.0, 0.001, "Input right border should default to 1px")
+  test.expect_near(input.BorderWidthTop, 1.0, 0.001, "Input top border should default to 1px")
+  test.expect_near(input.BorderWidthBottom, 1.0, 0.001, "Input bottom border should default to 1px")
+  test.expect_near(input.PaddingLeft, 8.0, 0.001, "Input left padding should default to 8px")
+  test.expect_near(input.PaddingRight, 8.0, 0.001, "Input right padding should default to 8px")
+  test.expect_near(input.PaddingTop, 6.0, 0.001, "Input top padding should default to 6px")
+  test.expect_near(input.PaddingBottom, 6.0, 0.001, "Input bottom padding should default to 6px")
+
+  screen:clear()
+  print("PASS: test_input_visual_defaults")
+end
+
+-- ---------------------------------------------------------------------------
 -- Tab: default selected and unselected colors should be distinct and readable
 -- ---------------------------------------------------------------------------
 local function test_tab_visual_defaults()
-  filesystem.init("samples/Example")
+  ensure_filesystem_init()
 
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local bar = screen + ui.TabBar { Width = 300, Height = 40 }
@@ -347,6 +423,7 @@ test_tabview_panel_switch()
 test_tabview_selection_changed_event()
 test_button_visual_defaults()
 test_radiobutton_visual_defaults()
+test_input_visual_defaults()
 test_tab_visual_defaults()
 
 print("All TabBar/TabView tests passed.")
