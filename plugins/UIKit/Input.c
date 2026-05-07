@@ -259,9 +259,7 @@ HANDLER(Input, Node, LeftButtonUp)
 HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
-  if (pInput->Type != kInputTypeCheckbox) {
-    Input_ApplyTextDefaults(hObject);
-  }
+  Input_ApplyTextDefaults(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }
