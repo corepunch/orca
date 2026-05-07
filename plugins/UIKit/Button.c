@@ -75,11 +75,13 @@ HANDLER(Button, Node, LeftButtonUp)
 HANDLER(Button, Object, Create)
 {
   if (Button_ColorMatches(&pButton->DiffuseColor, 0.3f, 0.55f, 0.85f, 1.0f)) {
-    pButton->DiffuseColor = FS_GetThemeColorOr3(
+    pButton->DiffuseColor = FS_GetThemeColorOr(
       THEME_COLOR_CONTROL_BACKGROUND,
-      THEME_COLOR_ACCENT_BACKGROUND,
-      THEME_COLOR_ACCENT,
-      pButton->DiffuseColor);
+      FS_GetThemeColorOr(
+        THEME_COLOR_ACCENT_BACKGROUND,
+        FS_GetThemeColorOr(
+          THEME_COLOR_ACCENT,
+          pButton->DiffuseColor)));
   }
 
   struct Node2D *node2d = GetNode2D(hObject);
