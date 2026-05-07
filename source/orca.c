@@ -106,6 +106,7 @@ lpcString_t RunTest(lua_State *L, lpcString_t szFileName) {
   char *buf = NULL;
   FILE *mem = open_memstream(&buf, &size);
   fprintf(mem, "local orca = require 'orca'\n");
+  fprintf(mem, "require 'orca.core'\n");
   fprintf(mem, "local filesystem = require 'orca.filesystem'\n");
   fprintf(mem, "orca.init()\n");
   FOR_LOOP(i, sizeof(requires)/sizeof(*requires)) {
