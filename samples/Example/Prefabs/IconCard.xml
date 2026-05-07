@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="IconCard" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="28">
-	<StackView Name="IconCardBadge" Width="48" Height="48" AlignItems="Center" JustifyContent="Center">
-		<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>
-		<ImageView Name="IconCardImage" Width="24" Height="24" Stretch="Uniform">
-			<ImageView.Source>{../../Card.Icon}</ImageView.Source>
+<StackView Name="IconCard" Direction="Horizontal" Spacing="12" AlignItems="Center"
+	BackgroundColor="$card-background" Padding="16">
+	<Node2D Name="IconCardBadge" Width="48" Height="48" BackgroundColor="{../Card.IconBackground}"
+		CornerRadius="12" AlignItems="Center" JustifyContent="Center">
+		<ImageView Name="IconCardImage" Width="20" Height="20" Source="{../../Card.Icon}" Stretch="Uniform">
 			<Node2D.ForegroundColor>{../../Card.PrimaryColor}</Node2D.ForegroundColor>
 		</ImageView>
+	</Node2D>
+	<StackView Name="IconCardContent" Direction="Vertical" Spacing="4" JustifyContent="Center">
+		<TextBlock Name="IconCardTitle" FontSize="14" ForegroundColor="$text-primary">
+			<TextRun.Text>{../Card.Title}</TextRun.Text>
+		</TextBlock>
+		<TextBlock Name="IconCardBody" FontSize="12" ForegroundColor="$text-dim" WordWrap="true">
+			<TextRun.Text>{../Card.Body}</TextRun.Text>
+		</TextBlock>
 	</StackView>
-	<Node2D Name="IconCardSpacer" Height="8"/>
-	<TextBlock Name="IconCardTitle" FontSize="16" ForegroundColor="$text-primary">
-		<TextRun.Text>{../Card.Title}</TextRun.Text>
-	</TextBlock>
-	<TextBlock Name="IconCardBody" FontSize="13" ForegroundColor="$text-dim" WordWrap="true">
-		<TextRun.Text>{../Card.Body}</TextRun.Text>
-	</TextBlock>
 </StackView>
