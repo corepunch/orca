@@ -28,6 +28,7 @@ nav:
     - Lua Scripting: lua-scripting.md
     - Lua Scene Loading: lua-scene-loading.md
     - Style System: styling.md
+    - Theme Values: theme-values.md
     - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md
 

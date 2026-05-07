@@ -218,6 +218,16 @@ When `StyleController` receives `Object.ThemeChanged` for an object:
 | `hover` | `STYLE_HOVER`  | `core_GetHover() == object` |
 | `focus` | `STYLE_FOCUS`  | `core_GetFocus() == object` |
 | `active`| `STYLE_SELECT` | `OBJ_GetFlags(object) & OF_SELECTED` |
+
+---
+
+## Theme Values
+
+Theme values are the named color tokens that UIKit components read during creation.
+They are defined in a project package theme library and referenced as `$token-name` in XML.
+
+For a focused guide with examples and the default UIKit keys used by tabs and buttons, see
+[Theme Values](theme-values.md).
 | `dark`  | `STYLE_DARK`   | `axIsDarkTheme()` (system-wide) |
 
 ### Example: dark-mode background
