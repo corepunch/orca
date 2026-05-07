@@ -531,12 +531,22 @@ PROP_Import(struct Property *prop,
           PROP_SetValue(prop, r->value);
           return TRUE;
         }
-        assert(!"Not implemented yet!");
-        PROP_SetValue(prop, r->value);
+        Con_Error("Binding import failed: cannot assign register type %d (size %u) to property %s of type %d (size %u)",
+                  r->type,
+                  r->size,
+                  PROP_GetName(prop),
+                  PROP_GetType(prop),
+                  PROP_GetSize(prop));
         return FALSE;
         
       default:
-        assert(r->type == PROP_GetType(prop));
+        if (r->type != PROP_GetType(prop)) {
+          Con_Error("Binding import failed: cannot assign register type %d to property %s of type %d",
+                    r->type,
+                    PROP_GetName(prop),
+                    PROP_GetType(prop));
+          return FALSE;
+        }
         PROP_SetValue(prop, r->value);
         return TRUE;
     }

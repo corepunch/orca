@@ -45,12 +45,24 @@ PROP_Update(struct Property *property)
     if (pp->updateFrame == core.frame) continue;
     pp->updateFrame = core.frame;
     struct vm_register r = { 0 };
-    if (!OBJ_RunProgram(property->object, pp->token, &r) ||
-        !PROP_Import(property, pp->attr, &r)) {
+    if (!OBJ_RunProgram(property->object, pp->token, &r)) {
 #ifdef DEBUG_PROGRAM
       print_name(property->object);
 #endif
-      Con_Error("Error in program %s/%s", OBJ_GetName(property->object), property->pdesc->Name);
+      Con_Error("Binding update failed while running program for %s/%s",
+                OBJ_GetName(property->object),
+                property->pdesc->Name);
+      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
+      SafeDelete(pp->token, Token_Release);
+      free(pp->code);
+      free(pp);
+    } else if (!PROP_Import(property, pp->attr, &r)) {
+#ifdef DEBUG_PROGRAM
+      print_name(property->object);
+#endif
+      Con_Error("Binding update failed while importing into %s/%s",
+                OBJ_GetName(property->object),
+                property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
       SafeDelete(pp->token, Token_Release);
       free(pp->code);
@@ -133,9 +145,18 @@ PROP_RunAllPrograms(void)
     pp->updateFrame = core.frame;
     pp->property->updateFrame = core.frame;
     struct vm_register r = { 0 };
-    if (!OBJ_RunProgram(pp->property->object, pp->token, &r) ||
-        !PROP_Import(pp->property, pp->attr, &r)) {
-      Con_Error("Error in program %s/%s", OBJ_GetName(pp->property->object), pp->property->pdesc->Name);
+    if (!OBJ_RunProgram(pp->property->object, pp->token, &r)) {
+      Con_Error("Binding update failed while running program for %s/%s",
+                OBJ_GetName(pp->property->object),
+                pp->property->pdesc->Name);
+      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
+      SafeDelete(pp->token, Token_Release);
+      free(pp->code);
+      free(pp);
+    } else if (!PROP_Import(pp->property, pp->attr, &r)) {
+      Con_Error("Binding update failed while importing into %s/%s",
+                OBJ_GetName(pp->property->object),
+                pp->property->pdesc->Name);
       REMOVE_FROM_LIST(struct property_program, pp, core.programs);
       SafeDelete(pp->token, Token_Release);
       free(pp->code);

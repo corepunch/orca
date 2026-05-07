@@ -1215,6 +1215,22 @@ static void test_color_bind_color4_to_property(void) {
     }
 }
 
+/* A mismatched binding import should fail loudly instead of asserting. */
+static void test_color_import_mismatched_type_reports_error(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        struct Property *prop;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+
+        struct vm_register r = {0};
+        r.type = kDataTypeString;
+        r.size = sizeof(const char *);
+        const char *bad = "not-a-color";
+        memcpy(r.value, &bad, sizeof(bad));
+
+        EXPECT(!PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+    }
+}
+
 /* Bind a color channel to a float property: {./Color}.COLORR → Alpha. */
 static void test_color_bind_channel_to_float(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
@@ -1393,6 +1409,7 @@ int main(void) {
         DECL_TEST(test_color_export_channel_program),
         DECL_TEST(test_color_color4_function),
         DECL_TEST(test_color_bind_color4_to_property),
+        DECL_TEST(test_color_import_mismatched_type_reports_error),
         DECL_TEST(test_color_bind_channel_to_float),
         DECL_TEST(test_color_bind_channel_to_channel),
     };
