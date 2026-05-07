@@ -54,6 +54,22 @@ struct AXsize R_TexImageASTC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageJPEG(GLenum target, struct AXbuffer* rgb);
 struct AXsize R_TexImageJPEGwithAlpha(GLenum target,struct AXbuffer* rgb,struct AXbuffer* alpha,bool_t premultiply_alpha);
 
+static bool_t
+_SVG_IsPlaceholder(struct AXbuffer const* sb)
+{
+  if (!sb || !sb->data || sb->cursize == 0) {
+    return FALSE;
+  }
+
+  const char *s = (const char *)sb->data;
+  while (*s == '\r' || *s == '\n' || *s == '\t' || *s == ' ') {
+    s++;
+  }
+
+  return (strncmp(s, "404: Not Found", 14) == 0 ||
+          strncmp(s, "Not Found", 9) == 0);
+}
+
 void
 Texture_Cleanup(struct Texture* image)
 {
@@ -352,6 +368,9 @@ HANDLER(Image, Object, Start) {
   R_Call(glBindTexture, GL_TEXTURE_2D, pTexture->texnum);
   if ((pFile = FS_LoadFile(pImage->Source))) {
     struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
+    if (*(uint32_t const*)sb.data == SVG_HEADER && _SVG_IsPlaceholder(&sb)) {
+      Con_Error("SVG placeholder encountered for '%s'", pImage->Source);
+    }
     tex = R_TexImage(GL_TEXTURE_2D, &sb, pTexture, pImage);
     R_ApplyImageParms(pTexture, GL_TEXTURE_2D, pImage->HasMipmaps);
     // Con_Error("%d %d %s", texture_size.width, texture_size.height, filename);

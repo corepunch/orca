@@ -211,6 +211,13 @@
 									<TextBlock Name="DeployImage2Title" Text="Night light" FontSize="13" ForegroundColor="$text-secondary"/>
 								</StackView>
 							</Grid>
+							<StackView Name="DeployCommandLink" Direction="Horizontal" Spacing="12" AlignItems="Center" BackgroundColor="$panel-background" Padding="16">
+								<ImageView Name="DeployCommandIcon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$accent-green"/>
+								<StackView Name="DeployCommandCopy" Direction="Vertical" Spacing="2">
+									<TextBlock Name="DeployCommandLabel" Text="Desktop build" FontSize="13" ForegroundColor="$text-secondary"/>
+									<TextBlock Name="DeployCommandValue" Text="make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca samples/Example" FontSize="14" ForegroundColor="$text-primary" WordWrap="true"/>
+								</StackView>
+							</StackView>
 						</StackView>
 					</TabView>
 				</StackView>

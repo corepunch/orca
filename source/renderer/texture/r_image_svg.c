@@ -19,6 +19,10 @@ R_TexImageSVG(GLenum target,
   memcpy(svg_data, sb->data, sb->cursize);
   svg_data[sb->cursize] = '\0';
 
+  if (_SVG_IsPlaceholder(sb)) {
+    SVG_ERROR("placeholder SVG data encountered");
+  }
+
   // Parse the SVG data using NanoSVG.
   struct NSVGimage* image = nsvgParse(svg_data, "px", 96.0f);
   free(svg_data);

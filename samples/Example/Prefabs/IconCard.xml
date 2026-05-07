@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="IconCard" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="28">
+	<StackView Name="IconCardBadge" Width="48" Height="48" AlignItems="Center" JustifyContent="Center">
+		<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>
+		<ImageView Name="IconCardImage" Width="24" Height="24" Stretch="Uniform">
+			<ImageView.Source>{../../Card.Icon}</ImageView.Source>
+			<Node2D.ForegroundColor>{../../Card.PrimaryColor}</Node2D.ForegroundColor>
+		</ImageView>
+	</StackView>
+	<Node2D Name="IconCardSpacer" Height="8"/>
+	<TextBlock Name="IconCardTitle" FontSize="16" ForegroundColor="$text-primary">
+		<TextRun.Text>{../Card.Title}</TextRun.Text>
+	</TextBlock>
+	<TextBlock Name="IconCardBody" FontSize="13" ForegroundColor="$text-dim" WordWrap="true">
+		<TextRun.Text>{../Card.Body}</TextRun.Text>
+	</TextBlock>
+</StackView>
