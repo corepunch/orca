@@ -2,7 +2,6 @@
 #include <source/core/core_local.h>
 #include <source/filesystem/filesystem.h>
 #include <source/filesystem/theme_palette.h>
-#include <math.h>
 
 #include <plugins/UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
@@ -73,34 +72,19 @@ Tab_Select(struct Object *object, struct Tab *tab)
   return TRUE;
 }
 
-static bool_t
-Tab_ColorMatches(struct color const *c, float r, float g, float b, float a)
-{
-  return fabsf(c->r - r) < 0.001f &&
-         fabsf(c->g - g) < 0.001f &&
-         fabsf(c->b - b) < 0.001f &&
-         fabsf(c->a - a) < 0.001f;
-}
-
 static void
 Tab_ApplyThemeDefaults(struct Tab *tab)
 {
-  const char *selectedTheme = FS_GetThemeValue2(
+  tab->SelectedColor = FS_GetThemeColor(
     THEME_COLOR_ACCENT_BACKGROUND,
-    THEME_COLOR_ACCENT);
-  const char *unselectedTheme = FS_GetThemeValue2(
+    FS_GetThemeColor(
+      THEME_COLOR_ACCENT,
+      (struct color){0.24f, 0.36f, 0.58f, 1.0f}));
+  tab->UnselectedColor = FS_GetThemeColor(
     THEME_COLOR_CONTROL_BACKGROUND,
-    THEME_COLOR_CARD_BACKGROUND);
-
-  if (selectedTheme &&
-      Tab_ColorMatches(&tab->SelectedColor, 0.24f, 0.36f, 0.58f, 1.0f)) {
-    tab->SelectedColor = COLOR_Parse(selectedTheme);
-  }
-
-  if (unselectedTheme &&
-      Tab_ColorMatches(&tab->UnselectedColor, 0.18f, 0.19f, 0.22f, 0.95f)) {
-    tab->UnselectedColor = COLOR_Parse(unselectedTheme);
-  }
+    FS_GetThemeColor(
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){0.18f, 0.19f, 0.22f, 0.95f}));
 }
 
 HANDLER(Tab, Object, Create)

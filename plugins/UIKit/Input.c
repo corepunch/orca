@@ -6,43 +6,6 @@
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
 
-static bool_t
-Input_IsZeroColor(struct color const *c)
-{
-  return FS_IsZeroColor(c);
-}
-
-struct InputCheckboxTheme {
-  bool_t resolved;
-  struct color unchecked;
-  struct color checked;
-  struct color checkmark;
-};
-
-static struct InputCheckboxTheme g_input_checkbox_theme;
-
-static struct InputCheckboxTheme const *
-Input_GetCheckboxTheme(void)
-{
-  if (!g_input_checkbox_theme.resolved) {
-    g_input_checkbox_theme.unchecked = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_CARD_BACKGROUND,
-        (struct color){0.18f, 0.19f, 0.22f, 1.0f}));
-    g_input_checkbox_theme.checked = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_ACCENT,
-        (struct color){0.898f, 0.561f, 0.133f, 1.0f}));
-    g_input_checkbox_theme.checkmark = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_FOREGROUND,
-      (struct color){1.0f, 1.0f, 1.0f, 1.0f});
-    g_input_checkbox_theme.resolved = TRUE;
-  }
-  return &g_input_checkbox_theme;
-}
-
 static void
 Input_ApplyTextDefaults(struct Object *hObject)
 {
@@ -50,45 +13,27 @@ Input_ApplyTextDefaults(struct Object *hObject)
   struct Node2D *node2d = GetNode2D(hObject);
   if (!node || !node2d) return;
 
-  if (Input_IsZeroColor(&node2d->Background.Color)) {
-    node2d->Background.Color = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_CARD_BACKGROUND,
-        (struct color){ 0.18f, 0.19f, 0.22f, 0.95f }));
-  }
-  if (Input_IsZeroColor(&node2d->Foreground.Color)) {
-    node2d->Foreground.Color = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_FOREGROUND,
-      (struct color){ 0.95f, 0.95f, 0.97f, 1.0f });
-  }
-  if (Input_IsZeroColor(&node->Border.Color)) {
-    node->Border.Color = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BORDER,
-      FS_GetThemeColor(
-        THEME_COLOR_CONTROL_MUTED,
-        (struct color){ 0.7f, 0.7f, 0.75f, 1.0f }));
-  }
-
-  bool_t noBorder =
-      node->Border.Width.Axis[0].Left == 0 && node->Border.Width.Axis[0].Right == 0 &&
-      node->Border.Width.Axis[1].Left == 0 && node->Border.Width.Axis[1].Right == 0;
-  if (noBorder) {
-    node->Border.Width.Axis[0].Left = 1.0f;
-    node->Border.Width.Axis[0].Right = 1.0f;
-    node->Border.Width.Axis[1].Left = 1.0f;
-    node->Border.Width.Axis[1].Right = 1.0f;
-  }
-
-  bool_t noPadding =
-      node->Padding.Axis[0].Left == 0 && node->Padding.Axis[0].Right == 0 &&
-      node->Padding.Axis[1].Left == 0 && node->Padding.Axis[1].Right == 0;
-  if (noPadding) {
-    node->Padding.Axis[0].Left = 8.0f;
-    node->Padding.Axis[0].Right = 8.0f;
-    node->Padding.Axis[1].Left = 6.0f;
-    node->Padding.Axis[1].Right = 6.0f;
-  }
+  node2d->Background.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){ 0.18f, 0.19f, 0.22f, 0.95f }));
+  node2d->Foreground.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_FOREGROUND,
+    (struct color){ 0.95f, 0.95f, 0.97f, 1.0f });
+  node->Border.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BORDER,
+    FS_GetThemeColor(
+      THEME_COLOR_CONTROL_MUTED,
+      (struct color){ 0.7f, 0.7f, 0.75f, 1.0f }));
+  node->Border.Width.Axis[0].Left = 1.0f;
+  node->Border.Width.Axis[0].Right = 1.0f;
+  node->Border.Width.Axis[1].Left = 1.0f;
+  node->Border.Width.Axis[1].Right = 1.0f;
+  node->Padding.Axis[0].Left = 8.0f;
+  node->Padding.Axis[0].Right = 8.0f;
+  node->Padding.Axis[1].Left = 6.0f;
+  node->Padding.Axis[1].Right = 6.0f;
 }
 
 HANDLER(Input, Node2D, DrawBrush)
@@ -127,7 +72,19 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
-    struct InputCheckboxTheme const *theme = Input_GetCheckboxTheme();
+    struct color unchecked = FS_GetThemeColor(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      FS_GetThemeColor(
+        THEME_COLOR_CARD_BACKGROUND,
+        (struct color){0.18f, 0.19f, 0.22f, 1.0f}));
+    struct color checked = FS_GetThemeColor(
+      THEME_COLOR_ACCENT_BACKGROUND,
+      FS_GetThemeColor(
+        THEME_COLOR_ACCENT,
+        (struct color){0.898f, 0.561f, 0.133f, 1.0f}));
+    struct color checkmark = FS_GetThemeColor(
+      THEME_COLOR_ACCENT_FOREGROUND,
+      (struct color){1.0f, 1.0f, 1.0f, 1.0f});
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
@@ -136,7 +93,7 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.max.x = entity.bbox.min.x + w;
     entity.bbox.max.y = entity.bbox.min.y + h;
     entity.radius = (struct vec4) {4,4,4,4};
-    entity.material.color = theme->unchecked;
+    entity.material.color = unchecked;
     entity.material.opacity = pNode2D->_opacity;
     entity.material.blendMode = BLEND_MODE_ALPHA;
     entity.material.texture = NULL;
@@ -144,13 +101,13 @@ HANDLER(Input, Node2D, DrawBrush)
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
-      entity.material.color = theme->checked;
+      entity.material.color = checked;
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = NULL;
       entity.borderWidth = (struct vec4){0, 0, 0, 0};
       R_DrawEntity(pDrawBrush->viewdef, &entity);
 
-      entity.material.color = theme->checkmark;
+      entity.material.color = checkmark;
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
@@ -302,11 +259,7 @@ HANDLER(Input, Node, LeftButtonUp)
 HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
-  if (pInput->Type != kInputTypeCheckbox) {
-    Input_ApplyTextDefaults(hObject);
-  } else {
-    (void)Input_GetCheckboxTheme();
-  }
+  Input_ApplyTextDefaults(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }

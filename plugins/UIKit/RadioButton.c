@@ -1,6 +1,5 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
-#include <math.h>
 #include <source/filesystem/theme_palette.h>
 
 #include <plugins/UIKit/UIKit.h>
@@ -9,44 +8,31 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
-struct RadioButtonTheme {
-  bool_t resolved;
-  struct color uncheckedBorder;
-  struct color uncheckedFill;
-  struct color accentForeground;
-};
-
-static struct RadioButtonTheme g_radio_button_theme;
-
-static struct RadioButtonTheme const *
-RadioButton_GetTheme(void)
+static void
+RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadioButton)
 {
-  if (!g_radio_button_theme.resolved) {
-    g_radio_button_theme.uncheckedBorder = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BORDER,
-      FS_GetThemeColor(
-        THEME_COLOR_CONTROL_MUTED,
-        (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
-    g_radio_button_theme.uncheckedFill = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_CARD_BACKGROUND,
-        (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
-    g_radio_button_theme.accentForeground = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_FOREGROUND,
-      (struct color){1.0f, 1.0f, 1.0f, 1.0f});
-    g_radio_button_theme.resolved = TRUE;
-  }
-  return &g_radio_button_theme;
-}
+  struct Node *node = GetNode(hObject);
+  struct Node2D *node2d = GetNode2D(hObject);
+  if (!node || !node2d) return;
 
-static bool_t
-RadioButton_ColorMatches(struct color const *c, float r, float g, float b, float a)
-{
-  return fabsf(c->r - r) < 0.001f &&
-         fabsf(c->g - g) < 0.001f &&
-         fabsf(c->b - b) < 0.001f &&
-         fabsf(c->a - a) < 0.001f;
+  pRadioButton->AccentColor = FS_GetThemeColor(
+    THEME_COLOR_ACCENT_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_ACCENT,
+      (struct color){0.3f, 0.55f, 0.85f, 1.0f}));
+  node->Border.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BORDER,
+    FS_GetThemeColor(
+      THEME_COLOR_CONTROL_MUTED,
+      (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
+  node2d->Background.Color = FS_GetThemeColor(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColor(
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
+  node2d->Foreground.Color = FS_GetThemeColor(
+    THEME_COLOR_ACCENT_FOREGROUND,
+    (struct color){1.0f, 1.0f, 1.0f, 1.0f});
 }
 
 static void
@@ -163,14 +149,7 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 
 HANDLER(RadioButton, Object, Create)
 {
-  if (RadioButton_ColorMatches(&pRadioButton->AccentColor, 0.3f, 0.55f, 0.85f, 1.0f)) {
-    pRadioButton->AccentColor = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_ACCENT,
-        pRadioButton->AccentColor));
-  }
-  (void)RadioButton_GetTheme();
+  RadioButton_ApplyThemeDefaults(hObject, pRadioButton);
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
@@ -249,8 +228,8 @@ HANDLER(RadioButton, Node2D, DrawBrush)
 
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
-
-  struct RadioButtonTheme const *theme = RadioButton_GetTheme();
+  struct Node *pNode = GetNode(hObject);
+  if (!pNode) return FALSE;
 
   float indicatorSize = pRadioButton->IndicatorSize;
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
@@ -279,13 +258,13 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float dotOffset = (indicatorSize - dotSize) * 0.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    entity.material.color = theme->accentForeground;
+    entity.material.color = pNode2D->Foreground.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly
        larger background circle behind a smaller inner white circle. */
     entity.material = (struct ViewMaterial){
-      .color     = theme->uncheckedBorder,
+      .color     = pNode->Border.Color,
       .opacity   = pNode2D->_opacity,
       .blendMode = BLEND_MODE_ALPHA,
     };
@@ -295,7 +274,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float innerOffset = 1.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
     entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
-    entity.material.color = theme->uncheckedFill;
+    entity.material.color = pNode2D->Background.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
 
