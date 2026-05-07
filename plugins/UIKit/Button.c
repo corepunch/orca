@@ -1,20 +1,10 @@
 #include <include/orca.h>
-#include <math.h>
 #include <source/filesystem/theme_palette.h>
 
 #include <plugins/UIKit/UIKit.h>
 
 struct Object *
 _NextTabStop(struct Object *hObject);
-
-static bool_t
-Button_ColorMatches(struct color const *c, float r, float g, float b, float a)
-{
-  return fabsf(c->r - r) < 0.001f &&
-         fabsf(c->g - g) < 0.001f &&
-         fabsf(c->b - b) < 0.001f &&
-         fabsf(c->a - a) < 0.001f;
-}
 
 HANDLER(Button, Node2D, DrawBrush) {
   if (pDrawBrush->foreground) return FALSE;
@@ -74,18 +64,16 @@ HANDLER(Button, Node, LeftButtonUp)
 
 HANDLER(Button, Object, Create)
 {
-  if (Button_ColorMatches(&pButton->DiffuseColor, 0.3f, 0.55f, 0.85f, 1.0f)) {
-    pButton->DiffuseColor = FS_GetThemeColorOr(
-      THEME_COLOR_CONTROL_BACKGROUND,
+  pButton->DiffuseColor = FS_GetThemeColorOr(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    FS_GetThemeColorOr(
+      THEME_COLOR_ACCENT_BACKGROUND,
       FS_GetThemeColorOr(
-        THEME_COLOR_ACCENT_BACKGROUND,
-        FS_GetThemeColorOr(
-          THEME_COLOR_ACCENT,
-          pButton->DiffuseColor)));
-  }
+        THEME_COLOR_ACCENT,
+        pButton->DiffuseColor)));
 
   struct Node2D *node2d = GetNode2D(hObject);
-  if (node2d && FS_IsZeroColor(&node2d->Foreground.Color)) {
+  if (node2d) {
     node2d->Foreground.Color = FS_GetThemeColorOr(
       THEME_COLOR_CONTROL_FOREGROUND,
       (struct color){ 1.0f, 1.0f, 1.0f, 1.0f });

@@ -293,6 +293,10 @@ LRESULT CLASS##_##EVENT(struct Object* hObject,
                         NS##_##EVENT##MsgPtr p##EVENT)
 ```
 
+### Create-time defaults
+
+`HANDLER(ClassName, Object, Create)` runs immediately after component allocation, before property values are applied. For initialization defaults in `Create`, assign the values directly; do not gate defaults with "already set" checks.
+
 ### Add a new component type — the mandatory workflow
 
 **Rule: XML → codegen → handlers → Xcode → tests. Do not skip or reorder any step.**
