@@ -22,17 +22,17 @@ static struct RadioButtonTheme const *
 RadioButton_GetTheme(void)
 {
   if (!g_radio_button_theme.resolved) {
-    g_radio_button_theme.uncheckedBorder = FS_GetThemeColorOr(
+    g_radio_button_theme.uncheckedBorder = FS_GetThemeColor(
       THEME_COLOR_CONTROL_BORDER,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_CONTROL_MUTED,
         (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
-    g_radio_button_theme.uncheckedFill = FS_GetThemeColorOr(
+    g_radio_button_theme.uncheckedFill = FS_GetThemeColor(
       THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_CARD_BACKGROUND,
         (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
-    g_radio_button_theme.accentForeground = FS_GetThemeColorOr(
+    g_radio_button_theme.accentForeground = FS_GetThemeColor(
       THEME_COLOR_ACCENT_FOREGROUND,
       (struct color){1.0f, 1.0f, 1.0f, 1.0f});
     g_radio_button_theme.resolved = TRUE;
@@ -164,9 +164,9 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 HANDLER(RadioButton, Object, Create)
 {
   if (RadioButton_ColorMatches(&pRadioButton->AccentColor, 0.3f, 0.55f, 0.85f, 1.0f)) {
-    pRadioButton->AccentColor = FS_GetThemeColorOr(
+    pRadioButton->AccentColor = FS_GetThemeColor(
       THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_ACCENT,
         pRadioButton->AccentColor));
   }

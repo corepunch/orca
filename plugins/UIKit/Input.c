@@ -25,17 +25,17 @@ static struct InputCheckboxTheme const *
 Input_GetCheckboxTheme(void)
 {
   if (!g_input_checkbox_theme.resolved) {
-    g_input_checkbox_theme.unchecked = FS_GetThemeColorOr(
+    g_input_checkbox_theme.unchecked = FS_GetThemeColor(
       THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_CARD_BACKGROUND,
         (struct color){0.18f, 0.19f, 0.22f, 1.0f}));
-    g_input_checkbox_theme.checked = FS_GetThemeColorOr(
+    g_input_checkbox_theme.checked = FS_GetThemeColor(
       THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_ACCENT,
         (struct color){0.898f, 0.561f, 0.133f, 1.0f}));
-    g_input_checkbox_theme.checkmark = FS_GetThemeColorOr(
+    g_input_checkbox_theme.checkmark = FS_GetThemeColor(
       THEME_COLOR_ACCENT_FOREGROUND,
       (struct color){1.0f, 1.0f, 1.0f, 1.0f});
     g_input_checkbox_theme.resolved = TRUE;
@@ -51,21 +51,21 @@ Input_ApplyTextDefaults(struct Object *hObject)
   if (!node || !node2d) return;
 
   if (Input_IsZeroColor(&node2d->Background.Color)) {
-    node2d->Background.Color = FS_GetThemeColorOr(
+    node2d->Background.Color = FS_GetThemeColor(
       THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_CARD_BACKGROUND,
         (struct color){ 0.18f, 0.19f, 0.22f, 0.95f }));
   }
   if (Input_IsZeroColor(&node2d->Foreground.Color)) {
-    node2d->Foreground.Color = FS_GetThemeColorOr(
+    node2d->Foreground.Color = FS_GetThemeColor(
       THEME_COLOR_CONTROL_FOREGROUND,
       (struct color){ 0.95f, 0.95f, 0.97f, 1.0f });
   }
   if (Input_IsZeroColor(&node->Border.Color)) {
-    node->Border.Color = FS_GetThemeColorOr(
+    node->Border.Color = FS_GetThemeColor(
       THEME_COLOR_CONTROL_BORDER,
-      FS_GetThemeColorOr(
+      FS_GetThemeColor(
         THEME_COLOR_CONTROL_MUTED,
         (struct color){ 0.7f, 0.7f, 0.75f, 1.0f }));
   }
