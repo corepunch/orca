@@ -3,7 +3,10 @@
 <Screen Name="Application" Width="1280" Height="800" ClearColor="$surface">
 	<Grid Name="Root" Rows="64px auto" Spacing="0">
 		<StackView Name="NavBar" BackgroundColor="$panel-background" Direction="Horizontal" Spacing="32" AlignItems="Center" HorizontalPadding="40">
-			<TextBlock Name="Brand" FontSize="20" ForegroundColor="$accent" Width="72">ORCA</TextBlock>
+			<StackView Name="BrandMark" Direction="Horizontal" Spacing="10" AlignItems="Center">
+				<ImageView Name="BrandIcon" Source="Example/Icons/blocks.svg?width=22&amp;type=mask" Width="22" Height="22" ForegroundColor="$accent"/>
+				<TextBlock Name="Brand" FontSize="20" ForegroundColor="$accent">ORCA</TextBlock>
+			</StackView>
 			<TextBlock Name="NavOverview" FontSize="14" ForegroundColor="$text-secondary">Overview</TextBlock>
 			<TextBlock Name="NavFeatures" FontSize="14" ForegroundColor="$text-secondary">Features</TextBlock>
 			<TextBlock Name="NavGallery" FontSize="14" ForegroundColor="$text-secondary">Gallery</TextBlock>

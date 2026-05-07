@@ -380,7 +380,8 @@ local function test_tab_visual_defaults()
   local tab = screen + ui.Tab { Value = "alpha", Width = 100, Height = 40 }
 
   local selected = geometry.Color.parse(filesystem.getThemeValue("$accent"))
-  local unselected = geometry.Color.parse(filesystem.getThemeValue("$card-background"))
+  local unselected = geometry.Color.parse(filesystem.getThemeValue(
+    "$panel-background", "$control-background", "$card-background"))
 
   test.expect_near(bar.BorderWidthTop, 0.0, 0.001, "TabBar top border should stay at 0px")
   test.expect_near(bar.BorderWidthBottom, 1.0, 0.001, "TabBar bottom border should default to 1px")

@@ -12,8 +12,8 @@ HANDLER(TabBar, Object, Create)
   }
 
   const char *accent = FS_GetThemeValue2(
-    THEME_COLOR_ACCENT_BACKGROUND,
-    THEME_COLOR_ACCENT);
+    THEME_COLOR_ACCENT,
+    THEME_COLOR_ACCENT_BACKGROUND);
   if (accent) {
     node->Border.Color = COLOR_Parse(accent);
   } else {

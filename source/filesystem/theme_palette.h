@@ -7,6 +7,7 @@
 #define THEME_COLOR_ACCENT              "$accent"
 #define THEME_COLOR_ACCENT_BACKGROUND   "$accent-background"
 #define THEME_COLOR_ACCENT_FOREGROUND   "$accent-foreground"
+#define THEME_COLOR_PANEL_BACKGROUND    "$panel-background"
 #define THEME_COLOR_CONTROL_BACKGROUND  "$control-background"
 #define THEME_COLOR_CONTROL_FOREGROUND  "$control-foreground"
 #define THEME_COLOR_CONTROL_BORDER      "$control-border"
@@ -17,6 +18,7 @@
 #define COLOR_ACCENT_BACKGROUND         ((struct color){0.24f, 0.36f, 0.58f, 1.0f})
 #define COLOR_ACCENT_CHECKED            ((struct color){0.898f, 0.561f, 0.133f, 1.0f})
 #define COLOR_ACCENT_FOREGROUND         ((struct color){1.0f, 1.0f, 1.0f, 1.0f})
+#define COLOR_PANEL_BACKGROUND          ((struct color){0.10f, 0.10f, 0.16f, 0.95f})
 #define COLOR_CONTROL_BACKGROUND        ((struct color){0.18f, 0.19f, 0.22f, 0.95f})
 #define COLOR_CONTROL_BACKGROUND_SOLID  ((struct color){0.18f, 0.19f, 0.22f, 1.0f})
 #define COLOR_CONTROL_FOREGROUND        ((struct color){0.95f, 0.95f, 0.97f, 1.0f})
