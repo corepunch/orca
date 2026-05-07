@@ -34,4 +34,21 @@ FS_GetThemeColorOr2(lpcString_t key1, lpcString_t key2, struct color fallback)
   return value ? COLOR_Parse(value) : fallback;
 }
 
+static inline struct color
+FS_GetThemeColorOr3(lpcString_t key1, lpcString_t key2, lpcString_t key3, struct color fallback)
+{
+  lpcString_t value = FS_GetThemeValue2(key1, key2);
+  if (!value && key3) value = FS_GetThemeValue(key3);
+  return value ? COLOR_Parse(value) : fallback;
+}
+
+static inline bool_t
+FS_IsZeroColor(struct color const *color)
+{
+  return color->a == 0.0f &&
+         color->r == 0.0f &&
+         color->g == 0.0f &&
+         color->b == 0.0f;
+}
+
 #endif

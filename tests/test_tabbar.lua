@@ -17,6 +17,10 @@ local filesystem = require "orca.filesystem"
 local geometry = require "orca.geometry"
 local ui   = require "orca.UIKit"
 
+local FALLBACK_WHITE = { R = 1.0, G = 1.0, B = 1.0, A = 1.0 }
+local FALLBACK_CONTROL_FOREGROUND = { R = 0.95, G = 0.95, B = 0.97, A = 1.0 }
+local FALLBACK_CONTROL_BORDER = { R = 0.7, G = 0.7, B = 0.75, A = 1.0 }
+
 local function get_theme_color(...)
   local keys = { ... }
   for _, key in ipairs(keys) do
@@ -271,7 +275,7 @@ local function test_button_visual_defaults()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local btn = screen + ui.Button { Width = 100, Height = 40 }
   local accent = get_theme_color("$control-background", "$accent-background", "$accent")
-  local fg = get_theme_color("$control-foreground") or geometry.Color.parse("#FFFFFF")
+  local fg = get_theme_color("$control-foreground") or FALLBACK_WHITE
 
   test.expect_near(btn.DiffuseColor.R, accent.R, 0.001, "Button.DiffuseColor.R theme default")
   test.expect_near(btn.DiffuseColor.G, accent.G, 0.001, "Button.DiffuseColor.G theme default")
@@ -330,8 +334,8 @@ local function test_input_visual_defaults()
   local input = screen + ui.Input { Width = 160, Height = 40 }
 
   local bg = get_theme_color("$control-background", "$card-background")
-  local fg = get_theme_color("$control-foreground") or { R = 0.95, G = 0.95, B = 0.97, A = 1.0 }
-  local border = get_theme_color("$control-border", "$control-muted") or { R = 0.7, G = 0.7, B = 0.75, A = 1.0 }
+  local fg = get_theme_color("$control-foreground") or FALLBACK_CONTROL_FOREGROUND
+  local border = get_theme_color("$control-border", "$control-muted") or FALLBACK_CONTROL_BORDER
 
   test.expect_near(input.BackgroundColor.R, bg.R, 0.001, "Input.BackgroundColor.R theme default")
   test.expect_near(input.BackgroundColor.G, bg.G, 0.001, "Input.BackgroundColor.G theme default")

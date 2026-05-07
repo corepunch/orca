@@ -9,7 +9,7 @@ text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
 static bool_t
 Input_IsZeroColor(struct color const *c)
 {
-  return c->a == 0.0f && c->r == 0.0f && c->g == 0.0f && c->b == 0.0f;
+  return FS_IsZeroColor(c);
 }
 
 static void
