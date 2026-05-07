@@ -20,10 +20,11 @@ Input_ApplyTextDefaults(struct Object *hObject)
   if (!node || !node2d) return;
 
   if (Input_IsZeroColor(&node2d->Background.Color)) {
-    node2d->Background.Color = FS_GetThemeColorOr2(
+    node2d->Background.Color = FS_GetThemeColorOr(
       THEME_COLOR_CONTROL_BACKGROUND,
-      THEME_COLOR_CARD_BACKGROUND,
-      (struct color){ 0.18f, 0.19f, 0.22f, 0.95f });
+      FS_GetThemeColorOr(
+        THEME_COLOR_CARD_BACKGROUND,
+        (struct color){ 0.18f, 0.19f, 0.22f, 0.95f }));
   }
   if (Input_IsZeroColor(&node2d->Foreground.Color)) {
     node2d->Foreground.Color = FS_GetThemeColorOr(
@@ -31,10 +32,11 @@ Input_ApplyTextDefaults(struct Object *hObject)
       (struct color){ 0.95f, 0.95f, 0.97f, 1.0f });
   }
   if (Input_IsZeroColor(&node->Border.Color)) {
-    node->Border.Color = FS_GetThemeColorOr2(
+    node->Border.Color = FS_GetThemeColorOr(
       THEME_COLOR_CONTROL_BORDER,
-      THEME_COLOR_CONTROL_MUTED,
-      (struct color){ 0.7f, 0.7f, 0.75f, 1.0f });
+      FS_GetThemeColorOr(
+        THEME_COLOR_CONTROL_MUTED,
+        (struct color){ 0.7f, 0.7f, 0.75f, 1.0f }));
   }
 
   bool_t noBorder =
@@ -94,17 +96,19 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
-    struct color unchecked = FS_GetThemeColorOr2(
+    struct color unchecked = FS_GetThemeColorOr(
       THEME_COLOR_CONTROL_BACKGROUND,
-      THEME_COLOR_CARD_BACKGROUND,
-      (struct color){0.18f,0.19f,0.22f,1.0f});
+      FS_GetThemeColorOr(
+        THEME_COLOR_CARD_BACKGROUND,
+        (struct color){0.18f,0.19f,0.22f,1.0f}));
     struct color checkmark = FS_GetThemeColorOr(
       THEME_COLOR_ACCENT_FOREGROUND,
       (struct color){1.0f,1.0f,1.0f,1.0f});
-    struct color checked = FS_GetThemeColorOr2(
+    struct color checked = FS_GetThemeColorOr(
       THEME_COLOR_ACCENT_BACKGROUND,
-      THEME_COLOR_ACCENT,
-      (struct color){0.898f,0.561f,0.133f,1.0f});
+      FS_GetThemeColorOr(
+        THEME_COLOR_ACCENT,
+        (struct color){0.898f,0.561f,0.133f,1.0f}));
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);

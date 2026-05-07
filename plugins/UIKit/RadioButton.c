@@ -133,10 +133,11 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 HANDLER(RadioButton, Object, Create)
 {
   if (RadioButton_ColorMatches(&pRadioButton->AccentColor, 0.3f, 0.55f, 0.85f, 1.0f)) {
-    pRadioButton->AccentColor = FS_GetThemeColorOr2(
+    pRadioButton->AccentColor = FS_GetThemeColorOr(
       THEME_COLOR_ACCENT_BACKGROUND,
-      THEME_COLOR_ACCENT,
-      pRadioButton->AccentColor);
+      FS_GetThemeColorOr(
+        THEME_COLOR_ACCENT,
+        pRadioButton->AccentColor));
   }
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
@@ -217,14 +218,16 @@ HANDLER(RadioButton, Node2D, DrawBrush)
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
 
-  struct color uncheckedBorder = FS_GetThemeColorOr2(
+  struct color uncheckedBorder = FS_GetThemeColorOr(
     THEME_COLOR_CONTROL_BORDER,
-    THEME_COLOR_CONTROL_MUTED,
-    (struct color){0.7f, 0.7f, 0.75f, 1.0f});
-  struct color uncheckedFill = FS_GetThemeColorOr2(
+    FS_GetThemeColorOr(
+      THEME_COLOR_CONTROL_MUTED,
+      (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
+  struct color uncheckedFill = FS_GetThemeColorOr(
     THEME_COLOR_CONTROL_BACKGROUND,
-    THEME_COLOR_CARD_BACKGROUND,
-    (struct color){0.95f, 0.95f, 0.97f, 1.0f});
+    FS_GetThemeColorOr(
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
   struct color accentForeground = FS_GetThemeColorOr(
     THEME_COLOR_ACCENT_FOREGROUND,
     (struct color){1.0f, 1.0f, 1.0f, 1.0f});
