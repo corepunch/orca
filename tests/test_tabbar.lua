@@ -20,6 +20,13 @@ local ui   = require "orca.UIKit"
 local FALLBACK_WHITE = { R = 1.0, G = 1.0, B = 1.0, A = 1.0 }
 local FALLBACK_CONTROL_FOREGROUND = { R = 0.95, G = 0.95, B = 0.97, A = 1.0 }
 local FALLBACK_CONTROL_BORDER = { R = 0.7, G = 0.7, B = 0.75, A = 1.0 }
+local filesystem_initialized = false
+
+local function ensure_filesystem_init()
+  if filesystem_initialized then return end
+  filesystem.init("samples/Example")
+  filesystem_initialized = true
+end
 
 local function get_theme_color(...)
   local keys = { ... }
@@ -271,7 +278,7 @@ end
 -- Button: new visual properties have correct defaults
 -- ---------------------------------------------------------------------------
 local function test_button_visual_defaults()
-  filesystem.init("samples/Example")
+  ensure_filesystem_init()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local btn = screen + ui.Button { Width = 100, Height = 40 }
   local accent = get_theme_color("$control-background", "$accent-background", "$accent")
@@ -303,7 +310,7 @@ end
 -- RadioButton: AccentColor and IndicatorSize defaults
 -- ---------------------------------------------------------------------------
 local function test_radiobutton_visual_defaults()
-  filesystem.init("samples/Example")
+  ensure_filesystem_init()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local group = screen + ui.RadioGroup { Width = 200, Height = 50, Direction = "Horizontal" }
   local rb    = group  + ui.RadioButton { Value = "x", Width = 50, Height = 30 }
@@ -329,7 +336,7 @@ end
 -- Input: text-input defaults should use theme control colors and spacing
 -- ---------------------------------------------------------------------------
 local function test_input_visual_defaults()
-  filesystem.init("samples/Example")
+  ensure_filesystem_init()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local input = screen + ui.Input { Width = 160, Height = 40 }
 
@@ -366,7 +373,7 @@ end
 -- Tab: default selected and unselected colors should be distinct and readable
 -- ---------------------------------------------------------------------------
 local function test_tab_visual_defaults()
-  filesystem.init("samples/Example")
+  ensure_filesystem_init()
 
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local bar = screen + ui.TabBar { Width = 300, Height = 40 }

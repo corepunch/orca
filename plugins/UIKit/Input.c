@@ -12,6 +12,37 @@ Input_IsZeroColor(struct color const *c)
   return FS_IsZeroColor(c);
 }
 
+struct InputCheckboxTheme {
+  bool_t resolved;
+  struct color unchecked;
+  struct color checked;
+  struct color checkmark;
+};
+
+static struct InputCheckboxTheme g_input_checkbox_theme;
+
+static struct InputCheckboxTheme const *
+Input_GetCheckboxTheme(void)
+{
+  if (!g_input_checkbox_theme.resolved) {
+    g_input_checkbox_theme.unchecked = FS_GetThemeColorOr(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      FS_GetThemeColorOr(
+        THEME_COLOR_CARD_BACKGROUND,
+        (struct color){0.18f, 0.19f, 0.22f, 1.0f}));
+    g_input_checkbox_theme.checked = FS_GetThemeColorOr(
+      THEME_COLOR_ACCENT_BACKGROUND,
+      FS_GetThemeColorOr(
+        THEME_COLOR_ACCENT,
+        (struct color){0.898f, 0.561f, 0.133f, 1.0f}));
+    g_input_checkbox_theme.checkmark = FS_GetThemeColorOr(
+      THEME_COLOR_ACCENT_FOREGROUND,
+      (struct color){1.0f, 1.0f, 1.0f, 1.0f});
+    g_input_checkbox_theme.resolved = TRUE;
+  }
+  return &g_input_checkbox_theme;
+}
+
 static void
 Input_ApplyTextDefaults(struct Object *hObject)
 {
@@ -96,19 +127,7 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
-    struct color unchecked = FS_GetThemeColorOr(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColorOr(
-        THEME_COLOR_CARD_BACKGROUND,
-        (struct color){0.18f,0.19f,0.22f,1.0f}));
-    struct color checkmark = FS_GetThemeColorOr(
-      THEME_COLOR_ACCENT_FOREGROUND,
-      (struct color){1.0f,1.0f,1.0f,1.0f});
-    struct color checked = FS_GetThemeColorOr(
-      THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColorOr(
-        THEME_COLOR_ACCENT,
-        (struct color){0.898f,0.561f,0.133f,1.0f}));
+    struct InputCheckboxTheme const *theme = Input_GetCheckboxTheme();
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
@@ -117,22 +136,21 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.max.x = entity.bbox.min.x + w;
     entity.bbox.max.y = entity.bbox.min.y + h;
     entity.radius = (struct vec4) {4,4,4,4};
-    entity.material = (struct ViewMaterial) {
-      .color = unchecked,
-      .opacity = pNode2D->_opacity,
-      .blendMode = BLEND_MODE_ALPHA,
-    };
+    entity.material.color = theme->unchecked;
+    entity.material.opacity = pNode2D->_opacity;
+    entity.material.blendMode = BLEND_MODE_ALPHA;
+    entity.material.texture = NULL;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
-      entity.material.color = checked;
+      entity.material.color = theme->checked;
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = NULL;
       entity.borderWidth = (struct vec4){0, 0, 0, 0};
       R_DrawEntity(pDrawBrush->viewdef, &entity);
 
-      entity.material.color = checkmark;
+      entity.material.color = theme->checkmark;
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
@@ -286,6 +304,8 @@ HANDLER(Input, Object, Create)
 //  pInput->_checkmark = Texture_Load("#checkmark");
   if (pInput->Type != kInputTypeCheckbox) {
     Input_ApplyTextDefaults(hObject);
+  } else {
+    (void)Input_GetCheckboxTheme();
   }
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;

@@ -9,6 +9,37 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
+struct RadioButtonTheme {
+  bool_t resolved;
+  struct color uncheckedBorder;
+  struct color uncheckedFill;
+  struct color accentForeground;
+};
+
+static struct RadioButtonTheme g_radio_button_theme;
+
+static struct RadioButtonTheme const *
+RadioButton_GetTheme(void)
+{
+  if (!g_radio_button_theme.resolved) {
+    g_radio_button_theme.uncheckedBorder = FS_GetThemeColorOr(
+      THEME_COLOR_CONTROL_BORDER,
+      FS_GetThemeColorOr(
+        THEME_COLOR_CONTROL_MUTED,
+        (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
+    g_radio_button_theme.uncheckedFill = FS_GetThemeColorOr(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      FS_GetThemeColorOr(
+        THEME_COLOR_CARD_BACKGROUND,
+        (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
+    g_radio_button_theme.accentForeground = FS_GetThemeColorOr(
+      THEME_COLOR_ACCENT_FOREGROUND,
+      (struct color){1.0f, 1.0f, 1.0f, 1.0f});
+    g_radio_button_theme.resolved = TRUE;
+  }
+  return &g_radio_button_theme;
+}
+
 static bool_t
 RadioButton_ColorMatches(struct color const *c, float r, float g, float b, float a)
 {
@@ -139,6 +170,7 @@ HANDLER(RadioButton, Object, Create)
         THEME_COLOR_ACCENT,
         pRadioButton->AccentColor));
   }
+  (void)RadioButton_GetTheme();
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
@@ -218,19 +250,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
 
-  struct color uncheckedBorder = FS_GetThemeColorOr(
-    THEME_COLOR_CONTROL_BORDER,
-    FS_GetThemeColorOr(
-      THEME_COLOR_CONTROL_MUTED,
-      (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
-  struct color uncheckedFill = FS_GetThemeColorOr(
-    THEME_COLOR_CONTROL_BACKGROUND,
-    FS_GetThemeColorOr(
-      THEME_COLOR_CARD_BACKGROUND,
-      (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
-  struct color accentForeground = FS_GetThemeColorOr(
-    THEME_COLOR_ACCENT_FOREGROUND,
-    (struct color){1.0f, 1.0f, 1.0f, 1.0f});
+  struct RadioButtonTheme const *theme = RadioButton_GetTheme();
 
   float indicatorSize = pRadioButton->IndicatorSize;
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
@@ -259,13 +279,13 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float dotOffset = (indicatorSize - dotSize) * 0.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    entity.material.color = accentForeground;
+    entity.material.color = theme->accentForeground;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly
        larger background circle behind a smaller inner white circle. */
     entity.material = (struct ViewMaterial){
-      .color     = uncheckedBorder,
+      .color     = theme->uncheckedBorder,
       .opacity   = pNode2D->_opacity,
       .blendMode = BLEND_MODE_ALPHA,
     };
@@ -275,7 +295,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float innerOffset = 1.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
     entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
-    entity.material.color = uncheckedFill;
+    entity.material.color = theme->uncheckedFill;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
 
