@@ -1,6 +1,7 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
 #include <source/filesystem/filesystem.h>
+#include <source/filesystem/theme_palette.h>
 #include <math.h>
 
 #include <plugins/UIKit/UIKit.h>
@@ -84,8 +85,12 @@ Tab_ColorMatches(struct color const *c, float r, float g, float b, float a)
 static void
 Tab_ApplyThemeDefaults(struct Tab *tab)
 {
-  const char *selectedTheme = FS_GetThemeValue("$accent");
-  const char *unselectedTheme = FS_GetThemeValue("$card-background");
+  const char *selectedTheme = FS_GetThemeValue2(
+    THEME_COLOR_ACCENT_BACKGROUND,
+    THEME_COLOR_ACCENT);
+  const char *unselectedTheme = FS_GetThemeValue2(
+    THEME_COLOR_CONTROL_BACKGROUND,
+    THEME_COLOR_CARD_BACKGROUND);
 
   if (selectedTheme &&
       Tab_ColorMatches(&tab->SelectedColor, 0.24f, 0.36f, 0.58f, 1.0f)) {

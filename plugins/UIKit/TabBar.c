@@ -1,5 +1,5 @@
 #include <include/orca.h>
-#include <source/filesystem/filesystem.h>
+#include <source/filesystem/theme_palette.h>
 
 #include <plugins/UIKit/UIKit.h>
 
@@ -11,7 +11,9 @@ HANDLER(TabBar, Object, Create)
     stack->Direction = kDirectionHorizontal;
   }
 
-  const char *accent = FS_GetThemeValue("$accent");
+  const char *accent = FS_GetThemeValue2(
+    THEME_COLOR_ACCENT_BACKGROUND,
+    THEME_COLOR_ACCENT);
   if (accent) {
     node->Border.Color = COLOR_Parse(accent);
   } else {

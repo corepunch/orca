@@ -1,9 +1,62 @@
 #include <include/orca.h>
 
+#include <source/filesystem/theme_palette.h>
 #include <plugins/UIKit/UIKit.h>
 
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
+
+static bool_t
+Input_IsZeroColor(struct color const *c)
+{
+  return c->a == 0.0f && c->r == 0.0f && c->g == 0.0f && c->b == 0.0f;
+}
+
+static void
+Input_ApplyTextDefaults(struct Object *hObject)
+{
+  struct Node *node = GetNode(hObject);
+  struct Node2D *node2d = GetNode2D(hObject);
+  if (!node || !node2d) return;
+
+  if (Input_IsZeroColor(&node2d->Background.Color)) {
+    node2d->Background.Color = FS_GetThemeColorOr2(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){ 0.18f, 0.19f, 0.22f, 0.95f });
+  }
+  if (Input_IsZeroColor(&node2d->Foreground.Color)) {
+    node2d->Foreground.Color = FS_GetThemeColorOr(
+      THEME_COLOR_CONTROL_FOREGROUND,
+      (struct color){ 0.95f, 0.95f, 0.97f, 1.0f });
+  }
+  if (Input_IsZeroColor(&node->Border.Color)) {
+    node->Border.Color = FS_GetThemeColorOr2(
+      THEME_COLOR_CONTROL_BORDER,
+      THEME_COLOR_CONTROL_MUTED,
+      (struct color){ 0.7f, 0.7f, 0.75f, 1.0f });
+  }
+
+  bool_t noBorder =
+      node->Border.Width.Axis[0].Left == 0 && node->Border.Width.Axis[0].Right == 0 &&
+      node->Border.Width.Axis[1].Left == 0 && node->Border.Width.Axis[1].Right == 0;
+  if (noBorder) {
+    node->Border.Width.Axis[0].Left = 1.0f;
+    node->Border.Width.Axis[0].Right = 1.0f;
+    node->Border.Width.Axis[1].Left = 1.0f;
+    node->Border.Width.Axis[1].Right = 1.0f;
+  }
+
+  bool_t noPadding =
+      node->Padding.Axis[0].Left == 0 && node->Padding.Axis[0].Right == 0 &&
+      node->Padding.Axis[1].Left == 0 && node->Padding.Axis[1].Right == 0;
+  if (noPadding) {
+    node->Padding.Axis[0].Left = 8.0f;
+    node->Padding.Axis[0].Right = 8.0f;
+    node->Padding.Axis[1].Left = 6.0f;
+    node->Padding.Axis[1].Right = 6.0f;
+  }
+}
 
 HANDLER(Input, Node2D, DrawBrush)
 {
@@ -41,6 +94,17 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
+    struct color unchecked = FS_GetThemeColorOr2(
+      THEME_COLOR_CONTROL_BACKGROUND,
+      THEME_COLOR_CARD_BACKGROUND,
+      (struct color){0.18f,0.19f,0.22f,1.0f});
+    struct color checkmark = FS_GetThemeColorOr(
+      THEME_COLOR_ACCENT_FOREGROUND,
+      (struct color){1.0f,1.0f,1.0f,1.0f});
+    struct color checked = FS_GetThemeColorOr2(
+      THEME_COLOR_ACCENT_BACKGROUND,
+      THEME_COLOR_ACCENT,
+      (struct color){0.898f,0.561f,0.133f,1.0f});
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
@@ -50,15 +114,22 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.max.y = entity.bbox.min.y + h;
     entity.radius = (struct vec4) {4,4,4,4};
     entity.material = (struct ViewMaterial) {
-      .color = (struct color) {0.898,0.561,0.133,1},
-      .opacity = 0.5,
+      .color = unchecked,
+      .opacity = pNode2D->_opacity,
+      .blendMode = BLEND_MODE_ALPHA,
     };
     R_DrawEntity(pDrawBrush->viewdef, &entity);
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
-      entity.material.color = (struct color) {0,0,0,1};
-      entity.material.opacity = 1;
+      entity.material.color = checked;
+      entity.material.opacity = pNode2D->_opacity;
+      entity.material.texture = NULL;
+      entity.borderWidth = (struct vec4){0, 0, 0, 0};
+      R_DrawEntity(pDrawBrush->viewdef, &entity);
+
+      entity.material.color = checkmark;
+      entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = pInput->_checkmark;
       R_DrawEntity(pDrawBrush->viewdef, &entity);
     }
@@ -209,6 +280,9 @@ HANDLER(Input, Node, LeftButtonUp)
 HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
+  if (pInput->Type != kInputTypeCheckbox) {
+    Input_ApplyTextDefaults(hObject);
+  }
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }
