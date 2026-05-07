@@ -76,7 +76,7 @@ HANDLER(Button, Object, Create)
   if (node2d) {
     node2d->Foreground.Color = FS_GetThemeColor(
       THEME_COLOR_CONTROL_FOREGROUND,
-      (struct color){ 1.0f, 1.0f, 1.0f, 1.0f });
+      COLOR_ACCENT_FOREGROUND);
   }
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);

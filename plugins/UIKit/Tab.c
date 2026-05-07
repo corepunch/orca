@@ -79,12 +79,12 @@ Tab_ApplyThemeDefaults(struct Tab *tab)
     THEME_COLOR_ACCENT_BACKGROUND,
     FS_GetThemeColor(
       THEME_COLOR_ACCENT,
-      (struct color){0.24f, 0.36f, 0.58f, 1.0f}));
+      COLOR_ACCENT_BACKGROUND));
   tab->UnselectedColor = FS_GetThemeColor(
     THEME_COLOR_CONTROL_BACKGROUND,
     FS_GetThemeColor(
       THEME_COLOR_CARD_BACKGROUND,
-      (struct color){0.18f, 0.19f, 0.22f, 0.95f}));
+      COLOR_CONTROL_BACKGROUND));
 }
 
 HANDLER(Tab, Object, Create)

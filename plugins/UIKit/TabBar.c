@@ -17,7 +17,7 @@ HANDLER(TabBar, Object, Create)
   if (accent) {
     node->Border.Color = COLOR_Parse(accent);
   } else {
-    node->Border.Color = (struct color){0.24f, 0.36f, 0.58f, 1.0f};
+    node->Border.Color = COLOR_ACCENT_BACKGROUND;
   }
 
   node->Border.Width.Axis[1].Right = 1.0f;

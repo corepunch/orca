@@ -19,20 +19,20 @@ RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadi
     THEME_COLOR_ACCENT_BACKGROUND,
     FS_GetThemeColor(
       THEME_COLOR_ACCENT,
-      (struct color){0.3f, 0.55f, 0.85f, 1.0f}));
+      COLOR_ACCENT));
   node->Border.Color = FS_GetThemeColor(
     THEME_COLOR_CONTROL_BORDER,
     FS_GetThemeColor(
       THEME_COLOR_CONTROL_MUTED,
-      (struct color){0.7f, 0.7f, 0.75f, 1.0f}));
+      COLOR_CONTROL_BORDER));
   node2d->Background.Color = FS_GetThemeColor(
     THEME_COLOR_CONTROL_BACKGROUND,
     FS_GetThemeColor(
       THEME_COLOR_CARD_BACKGROUND,
-      (struct color){0.95f, 0.95f, 0.97f, 1.0f}));
+      COLOR_CARD_BACKGROUND));
   node2d->Foreground.Color = FS_GetThemeColor(
     THEME_COLOR_ACCENT_FOREGROUND,
-    (struct color){1.0f, 1.0f, 1.0f, 1.0f});
+    COLOR_ACCENT_FOREGROUND);
 }
 
 static void
