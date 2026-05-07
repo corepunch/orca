@@ -4,7 +4,8 @@
 	BackgroundColor="$card-background" Padding="16">
 	<Node2D Name="IconCardBadge" Width="48" Height="48" BackgroundColor="{../Card.IconBackground}"
 		CornerRadius="12" AlignItems="Center" JustifyContent="Center">
-		<ImageView Name="IconCardImage" Width="20" Height="20" Source="{../../Card.Icon}" Stretch="Uniform">
+		<ImageView Name="IconCardImage" Width="20" Height="20" Stretch="Uniform">
+			<ImageView.Source>{../../Card.Icon}</ImageView.Source>
 			<Node2D.ForegroundColor>{../../Card.PrimaryColor}</Node2D.ForegroundColor>
 		</ImageView>
 	</Node2D>
