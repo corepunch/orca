@@ -155,9 +155,16 @@ _IsNodeTriggerMessage(uint32_t MsgID)
   }
 }
 
-static bool_t
-_IsNodeMouseTriggerMessage(uint32_t MsgID)
+static LRESULT
+_DispatchNodeTriggers(struct Object *sender, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
+  struct Node *node = GetNode(sender);
+  if (!node || !node->Triggers || node->NumTriggers <= 0) {
+    return FALSE;
+  }
+
+  struct Node_MouseMessageEventArgs local_args = {0};
+  lParam_t trigger_param = lParam;
   switch (MsgID) {
     case ID_Node_LeftButtonDown:
     case ID_Node_RightButtonDown:
@@ -175,7 +182,12 @@ _IsNodeMouseTriggerMessage(uint32_t MsgID)
     case ID_Node_ScrollWheel:
     case ID_Node_DragDrop:
     case ID_Node_DragEnter:
-      return TRUE;
+      if (lParam) {
+        local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
+      }
+      local_args.Sender = sender;
+      trigger_param = &local_args;
+      break;
     default:
       return FALSE;
   }
