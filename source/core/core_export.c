@@ -456,130 +456,130 @@ extern void read_property(lua_State *L, int idx, struct PropertyType const* prop
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _AnimationClipReference[] = {
-	DECL(0x0fe07306, AnimationClipReference, Name, Name, kDataTypeString), // AnimationClipReference.Name
-	DECL(0xd33ddb1b, AnimationClipReference, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationClipReference.Clip
+	DECL_STRING(0x0fe07306, AnimationClipReference, Name, Name), // AnimationClipReference.Name
+	DECL_OBJECT(0xd33ddb1b, AnimationClipReference, Clip, Clip, AnimationClip), // AnimationClipReference.Clip
 };
 static luaL_Reg _AnimationClipReference_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _Keyframe[] = {
-	DECL(0xdfe4e404, Keyframe, Time, time, kDataTypeFloat), // Keyframe.Time
-	DECL(0xd147f96a, Keyframe, Value, value, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.Value
-	DECL(0xbe5410b1, Keyframe, InSlope, inSlope, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.InSlope
-	DECL(0xc3a6b78e, Keyframe, OutSlope, outSlope, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.OutSlope
-	DECL(0xfd369606, Keyframe, InWeight, inWeight, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.InWeight
-	DECL(0xdac7b09b, Keyframe, OutWeight, outWeight, kDataTypeStruct, .TypeString = "Vector4D"), // Keyframe.OutWeight
-	DECL(0x153369e9, Keyframe, TangentMode, tangentMode, kDataTypeInt), // Keyframe.TangentMode
-	DECL(0xf0555d63, Keyframe, WeightedMode, weightedMode, kDataTypeInt), // Keyframe.WeightedMode
+	DECL_FLOAT(0xdfe4e404, Keyframe, Time, time), // Keyframe.Time
+	DECL_STRUCT_TYPE(0xd147f96a, Keyframe, Value, value, Vector4D), // Keyframe.Value
+	DECL_STRUCT_TYPE(0xbe5410b1, Keyframe, InSlope, inSlope, Vector4D), // Keyframe.InSlope
+	DECL_STRUCT_TYPE(0xc3a6b78e, Keyframe, OutSlope, outSlope, Vector4D), // Keyframe.OutSlope
+	DECL_STRUCT_TYPE(0xfd369606, Keyframe, InWeight, inWeight, Vector4D), // Keyframe.InWeight
+	DECL_STRUCT_TYPE(0xdac7b09b, Keyframe, OutWeight, outWeight, Vector4D), // Keyframe.OutWeight
+	DECL_INT(0x153369e9, Keyframe, TangentMode, tangentMode), // Keyframe.TangentMode
+	DECL_INT(0xf0555d63, Keyframe, WeightedMode, weightedMode), // Keyframe.WeightedMode
 };
 static luaL_Reg _Keyframe_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _LocaleEntry[] = {
-	DECL(0xcd1ac90c, LocaleEntry, Key, Key, kDataTypeString), // LocaleEntry.Key
-	DECL(0xd147f96a, LocaleEntry, Value, Value, kDataTypeString), // LocaleEntry.Value
-	DECL(0xd155d06d, LocaleEntry, Type, Type, kDataTypeEnum, .EnumValues = _LocaleEntryType), // LocaleEntry.Type
+	DECL_STRING(0xcd1ac90c, LocaleEntry, Key, Key), // LocaleEntry.Key
+	DECL_STRING(0xd147f96a, LocaleEntry, Value, Value), // LocaleEntry.Value
+	DECL_ENUM(0xd155d06d, LocaleEntry, Type, Type, LocaleEntryType), // LocaleEntry.Type
 };
 static luaL_Reg _LocaleEntry_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _ResourceEntry[] = {
-	DECL(0xcd1ac90c, ResourceEntry, Key, Key, kDataTypeString), // ResourceEntry.Key
-	DECL(0xd147f96a, ResourceEntry, Value, Value, kDataTypeString), // ResourceEntry.Value
-	DECL(0xd155d06d, ResourceEntry, Type, Type, kDataTypeEnum, .EnumValues = _ResourceEntryType), // ResourceEntry.Type
+	DECL_STRING(0xcd1ac90c, ResourceEntry, Key, Key), // ResourceEntry.Key
+	DECL_STRING(0xd147f96a, ResourceEntry, Value, Value), // ResourceEntry.Value
+	DECL_ENUM(0xd155d06d, ResourceEntry, Type, Type, ResourceEntryType), // ResourceEntry.Type
 };
 static luaL_Reg _ResourceEntry_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _CornerRadius[] = {
-	DECL(0xd5ac3a0b, CornerRadius, TopLeftRadius, TopLeftRadius, kDataTypeFloat), // CornerRadius.TopLeftRadius
-	DECL(0xdbe5a724, CornerRadius, TopRightRadius, TopRightRadius, kDataTypeFloat), // CornerRadius.TopRightRadius
-	DECL(0xf6ae40ce, CornerRadius, BottomRightRadius, BottomRightRadius, kDataTypeFloat), // CornerRadius.BottomRightRadius
-	DECL(0x7f5fe235, CornerRadius, BottomLeftRadius, BottomLeftRadius, kDataTypeFloat), // CornerRadius.BottomLeftRadius
+	DECL_FLOAT(0xd5ac3a0b, CornerRadius, TopLeftRadius, TopLeftRadius), // CornerRadius.TopLeftRadius
+	DECL_FLOAT(0xdbe5a724, CornerRadius, TopRightRadius, TopRightRadius), // CornerRadius.TopRightRadius
+	DECL_FLOAT(0xf6ae40ce, CornerRadius, BottomRightRadius, BottomRightRadius), // CornerRadius.BottomRightRadius
+	DECL_FLOAT(0x7f5fe235, CornerRadius, BottomLeftRadius, BottomLeftRadius), // CornerRadius.BottomLeftRadius
 };
 static luaL_Reg _CornerRadius_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _EdgeShorthand[] = {
-	DECL(0x92773890, EdgeShorthand, Left, Left, kDataTypeFloat), // EdgeShorthand.Left
-	DECL(0x1e9e9f85, EdgeShorthand, Right, Right, kDataTypeFloat), // EdgeShorthand.Right
+	DECL_FLOAT(0x92773890, EdgeShorthand, Left, Left), // EdgeShorthand.Left
+	DECL_FLOAT(0x1e9e9f85, EdgeShorthand, Right, Right), // EdgeShorthand.Right
 };
 static luaL_Reg _EdgeShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _AlignmentShorthand[] = {
-	DECL(0x6bf39489, AlignmentShorthand, Horizontal, Axis[0], kDataTypeInt), // AlignmentShorthand.Horizontal
-	DECL(0x80fb2d5b, AlignmentShorthand, Vertical, Axis[1], kDataTypeInt), // AlignmentShorthand.Vertical
-	DECL(0xd070218a, AlignmentShorthand, Depth, Axis[2], kDataTypeInt), // AlignmentShorthand.Depth
+	DECL_INT(0x6bf39489, AlignmentShorthand, Horizontal, Axis[0]), // AlignmentShorthand.Horizontal
+	DECL_INT(0x80fb2d5b, AlignmentShorthand, Vertical, Axis[1]), // AlignmentShorthand.Vertical
+	DECL_INT(0xd070218a, AlignmentShorthand, Depth, Axis[2]), // AlignmentShorthand.Depth
 };
 static luaL_Reg _AlignmentShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _Thickness[] = {
-	DECL(0x6bf39489, Thickness, Horizontal, Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Horizontal
-	DECL(0x92773890, Thickness, Left, Axis[0].Left, kDataTypeFloat), // Thickness.Left
-	DECL(0x1e9e9f85, Thickness, Right, Axis[0].Right, kDataTypeFloat), // Thickness.Right
-	DECL(0x80fb2d5b, Thickness, Vertical, Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Vertical
-	DECL(0x099b73dc, Thickness, Top, Axis[1].Left, kDataTypeFloat), // Thickness.Top
-	DECL(0x22b5f34a, Thickness, Bottom, Axis[1].Right, kDataTypeFloat), // Thickness.Bottom
-	DECL(0xd070218a, Thickness, Depth, Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Thickness.Depth
-	DECL(0x6de89878, Thickness, Front, Axis[2].Left, kDataTypeFloat), // Thickness.Front
-	DECL(0xc2954bc2, Thickness, Back, Axis[2].Right, kDataTypeFloat), // Thickness.Back
+	DECL_STRUCT_TYPE(0x6bf39489, Thickness, Horizontal, Axis[0], EdgeShorthand), // Thickness.Horizontal
+	DECL_FLOAT(0x92773890, Thickness, Left, Axis[0].Left), // Thickness.Left
+	DECL_FLOAT(0x1e9e9f85, Thickness, Right, Axis[0].Right), // Thickness.Right
+	DECL_STRUCT_TYPE(0x80fb2d5b, Thickness, Vertical, Axis[1], EdgeShorthand), // Thickness.Vertical
+	DECL_FLOAT(0x099b73dc, Thickness, Top, Axis[1].Left), // Thickness.Top
+	DECL_FLOAT(0x22b5f34a, Thickness, Bottom, Axis[1].Right), // Thickness.Bottom
+	DECL_STRUCT_TYPE(0xd070218a, Thickness, Depth, Axis[2], EdgeShorthand), // Thickness.Depth
+	DECL_FLOAT(0x6de89878, Thickness, Front, Axis[2].Left), // Thickness.Front
+	DECL_FLOAT(0xc2954bc2, Thickness, Back, Axis[2].Right), // Thickness.Back
 };
 static luaL_Reg _Thickness_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _BorderShorthand[] = {
-	DECL(0x3b42dfbf, BorderShorthand, Width, Width, kDataTypeStruct, .TypeString = "Thickness"), // BorderShorthand.Width
-	DECL(0x9bd0d683, BorderShorthand, HorizontalWidth, Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // BorderShorthand.HorizontalWidth
-	DECL(0x0671d536, BorderShorthand, WidthLeft, Width.Axis[0].Left, kDataTypeFloat), // BorderShorthand.WidthLeft
-	DECL(0x30532a6b, BorderShorthand, WidthRight, Width.Axis[0].Right, kDataTypeFloat), // BorderShorthand.WidthRight
-	DECL(0xa1c213dd, BorderShorthand, VerticalWidth, Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // BorderShorthand.VerticalWidth
-	DECL(0xf37d53fe, BorderShorthand, WidthTop, Width.Axis[1].Left, kDataTypeFloat), // BorderShorthand.WidthTop
-	DECL(0xddffd3a0, BorderShorthand, WidthBottom, Width.Axis[1].Right, kDataTypeFloat), // BorderShorthand.WidthBottom
-	DECL(0x67356c56, BorderShorthand, DepthWidth, Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // BorderShorthand.DepthWidth
-	DECL(0x03261636, BorderShorthand, WidthFront, Width.Axis[2].Left, kDataTypeFloat), // BorderShorthand.WidthFront
-	DECL(0x16fd78d8, BorderShorthand, WidthBack, Width.Axis[2].Right, kDataTypeFloat), // BorderShorthand.WidthBack
-	DECL(0xe5b43cf8, BorderShorthand, Color, Color, kDataTypeColor), // BorderShorthand.Color
-	DECL(0x5467ec76, BorderShorthand, Style, Style, kDataTypeEnum, .EnumValues = _BorderStyle), // BorderShorthand.Style
-	DECL(0x3a8111d3, BorderShorthand, Radius, Radius, kDataTypeStruct, .TypeString = "CornerRadius"), // BorderShorthand.Radius
-	DECL(0x1c0b6355, BorderShorthand, RadiusTopLeftRadius, Radius.TopLeftRadius, kDataTypeFloat), // BorderShorthand.RadiusTopLeftRadius
-	DECL(0xe0a577ee, BorderShorthand, RadiusTopRightRadius, Radius.TopRightRadius, kDataTypeFloat), // BorderShorthand.RadiusTopRightRadius
-	DECL(0x494aff04, BorderShorthand, RadiusBottomRightRadius, Radius.BottomRightRadius, kDataTypeFloat), // BorderShorthand.RadiusBottomRightRadius
-	DECL(0xfe16d36b, BorderShorthand, RadiusBottomLeftRadius, Radius.BottomLeftRadius, kDataTypeFloat), // BorderShorthand.RadiusBottomLeftRadius
+	DECL_STRUCT_TYPE(0x3b42dfbf, BorderShorthand, Width, Width, Thickness), // BorderShorthand.Width
+	DECL_STRUCT_TYPE(0x9bd0d683, BorderShorthand, HorizontalWidth, Width.Axis[0], EdgeShorthand), // BorderShorthand.HorizontalWidth
+	DECL_FLOAT(0x0671d536, BorderShorthand, WidthLeft, Width.Axis[0].Left), // BorderShorthand.WidthLeft
+	DECL_FLOAT(0x30532a6b, BorderShorthand, WidthRight, Width.Axis[0].Right), // BorderShorthand.WidthRight
+	DECL_STRUCT_TYPE(0xa1c213dd, BorderShorthand, VerticalWidth, Width.Axis[1], EdgeShorthand), // BorderShorthand.VerticalWidth
+	DECL_FLOAT(0xf37d53fe, BorderShorthand, WidthTop, Width.Axis[1].Left), // BorderShorthand.WidthTop
+	DECL_FLOAT(0xddffd3a0, BorderShorthand, WidthBottom, Width.Axis[1].Right), // BorderShorthand.WidthBottom
+	DECL_STRUCT_TYPE(0x67356c56, BorderShorthand, DepthWidth, Width.Axis[2], EdgeShorthand), // BorderShorthand.DepthWidth
+	DECL_FLOAT(0x03261636, BorderShorthand, WidthFront, Width.Axis[2].Left), // BorderShorthand.WidthFront
+	DECL_FLOAT(0x16fd78d8, BorderShorthand, WidthBack, Width.Axis[2].Right), // BorderShorthand.WidthBack
+	DECL_COLOR(0xe5b43cf8, BorderShorthand, Color, Color), // BorderShorthand.Color
+	DECL_ENUM(0x5467ec76, BorderShorthand, Style, Style, BorderStyle), // BorderShorthand.Style
+	DECL_STRUCT_TYPE(0x3a8111d3, BorderShorthand, Radius, Radius, CornerRadius), // BorderShorthand.Radius
+	DECL_FLOAT(0x1c0b6355, BorderShorthand, RadiusTopLeftRadius, Radius.TopLeftRadius), // BorderShorthand.RadiusTopLeftRadius
+	DECL_FLOAT(0xe0a577ee, BorderShorthand, RadiusTopRightRadius, Radius.TopRightRadius), // BorderShorthand.RadiusTopRightRadius
+	DECL_FLOAT(0x494aff04, BorderShorthand, RadiusBottomRightRadius, Radius.BottomRightRadius), // BorderShorthand.RadiusBottomRightRadius
+	DECL_FLOAT(0xfe16d36b, BorderShorthand, RadiusBottomLeftRadius, Radius.BottomLeftRadius), // BorderShorthand.RadiusBottomLeftRadius
 };
 static luaL_Reg _BorderShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _SizeAxisShorthand[] = {
-	DECL(0x77ea8663, SizeAxisShorthand, Requested, Requested, kDataTypeFloat), // SizeAxisShorthand.Requested
-	DECL(0x28adf5d5, SizeAxisShorthand, Desired, Desired, kDataTypeFloat), // SizeAxisShorthand.Desired
-	DECL(0x2e9445f7, SizeAxisShorthand, Min, Min, kDataTypeFloat), // SizeAxisShorthand.Min
-	DECL(0xf1aed197, SizeAxisShorthand, Actual, Actual, kDataTypeFloat), // SizeAxisShorthand.Actual
-	DECL(0x25dca54c, SizeAxisShorthand, Scroll, Scroll, kDataTypeFloat), // SizeAxisShorthand.Scroll
+	DECL_FLOAT(0x77ea8663, SizeAxisShorthand, Requested, Requested), // SizeAxisShorthand.Requested
+	DECL_FLOAT(0x28adf5d5, SizeAxisShorthand, Desired, Desired), // SizeAxisShorthand.Desired
+	DECL_FLOAT(0x2e9445f7, SizeAxisShorthand, Min, Min), // SizeAxisShorthand.Min
+	DECL_FLOAT(0xf1aed197, SizeAxisShorthand, Actual, Actual), // SizeAxisShorthand.Actual
+	DECL_FLOAT(0x25dca54c, SizeAxisShorthand, Scroll, Scroll), // SizeAxisShorthand.Scroll
 };
 static luaL_Reg _SizeAxisShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _SizeShorthand[] = {
-	DECL(0x6bf39489, SizeShorthand, Horizontal, Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // SizeShorthand.Horizontal
-	DECL(0x9463344f, SizeShorthand, HorizontalRequested, Axis[0].Requested, kDataTypeFloat), // SizeShorthand.HorizontalRequested
-	DECL(0x1c7b4471, SizeShorthand, HorizontalDesired, Axis[0].Desired, kDataTypeFloat), // SizeShorthand.HorizontalDesired
-	DECL(0xda5582c3, SizeShorthand, HorizontalMin, Axis[0].Min, kDataTypeFloat), // SizeShorthand.HorizontalMin
-	DECL(0x42284603, SizeShorthand, HorizontalActual, Axis[0].Actual, kDataTypeFloat), // SizeShorthand.HorizontalActual
-	DECL(0x8c65db48, SizeShorthand, HorizontalScroll, Axis[0].Scroll, kDataTypeFloat), // SizeShorthand.HorizontalScroll
-	DECL(0x80fb2d5b, SizeShorthand, Vertical, Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // SizeShorthand.Vertical
-	DECL(0x4d64cad5, SizeShorthand, VerticalRequested, Axis[1].Requested, kDataTypeFloat), // SizeShorthand.VerticalRequested
-	DECL(0x9b2653af, SizeShorthand, VerticalDesired, Axis[1].Desired, kDataTypeFloat), // SizeShorthand.VerticalDesired
-	DECL(0xc446df6d, SizeShorthand, VerticalMin, Axis[1].Min, kDataTypeFloat), // SizeShorthand.VerticalMin
-	DECL(0x2a77ca09, SizeShorthand, VerticalActual, Axis[1].Actual, kDataTypeFloat), // SizeShorthand.VerticalActual
-	DECL(0xe04d52a2, SizeShorthand, VerticalScroll, Axis[1].Scroll, kDataTypeFloat), // SizeShorthand.VerticalScroll
-	DECL(0xd070218a, SizeShorthand, Depth, Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // SizeShorthand.Depth
-	DECL(0xe455f006, SizeShorthand, DepthRequested, Axis[2].Requested, kDataTypeFloat), // SizeShorthand.DepthRequested
-	DECL(0x5c288608, SizeShorthand, DepthDesired, Axis[2].Desired, kDataTypeFloat), // SizeShorthand.DepthDesired
-	DECL(0x3303ed1e, SizeShorthand, DepthMin, Axis[2].Min, kDataTypeFloat), // SizeShorthand.DepthMin
-	DECL(0xf04276dc, SizeShorthand, DepthActual, Axis[2].Actual, kDataTypeFloat), // SizeShorthand.DepthActual
-	DECL(0xd8e0c913, SizeShorthand, DepthScroll, Axis[2].Scroll, kDataTypeFloat), // SizeShorthand.DepthScroll
+	DECL_STRUCT_TYPE(0x6bf39489, SizeShorthand, Horizontal, Axis[0], SizeAxisShorthand), // SizeShorthand.Horizontal
+	DECL_FLOAT(0x9463344f, SizeShorthand, HorizontalRequested, Axis[0].Requested), // SizeShorthand.HorizontalRequested
+	DECL_FLOAT(0x1c7b4471, SizeShorthand, HorizontalDesired, Axis[0].Desired), // SizeShorthand.HorizontalDesired
+	DECL_FLOAT(0xda5582c3, SizeShorthand, HorizontalMin, Axis[0].Min), // SizeShorthand.HorizontalMin
+	DECL_FLOAT(0x42284603, SizeShorthand, HorizontalActual, Axis[0].Actual), // SizeShorthand.HorizontalActual
+	DECL_FLOAT(0x8c65db48, SizeShorthand, HorizontalScroll, Axis[0].Scroll), // SizeShorthand.HorizontalScroll
+	DECL_STRUCT_TYPE(0x80fb2d5b, SizeShorthand, Vertical, Axis[1], SizeAxisShorthand), // SizeShorthand.Vertical
+	DECL_FLOAT(0x4d64cad5, SizeShorthand, VerticalRequested, Axis[1].Requested), // SizeShorthand.VerticalRequested
+	DECL_FLOAT(0x9b2653af, SizeShorthand, VerticalDesired, Axis[1].Desired), // SizeShorthand.VerticalDesired
+	DECL_FLOAT(0xc446df6d, SizeShorthand, VerticalMin, Axis[1].Min), // SizeShorthand.VerticalMin
+	DECL_FLOAT(0x2a77ca09, SizeShorthand, VerticalActual, Axis[1].Actual), // SizeShorthand.VerticalActual
+	DECL_FLOAT(0xe04d52a2, SizeShorthand, VerticalScroll, Axis[1].Scroll), // SizeShorthand.VerticalScroll
+	DECL_STRUCT_TYPE(0xd070218a, SizeShorthand, Depth, Axis[2], SizeAxisShorthand), // SizeShorthand.Depth
+	DECL_FLOAT(0xe455f006, SizeShorthand, DepthRequested, Axis[2].Requested), // SizeShorthand.DepthRequested
+	DECL_FLOAT(0x5c288608, SizeShorthand, DepthDesired, Axis[2].Desired), // SizeShorthand.DepthDesired
+	DECL_FLOAT(0x3303ed1e, SizeShorthand, DepthMin, Axis[2].Min), // SizeShorthand.DepthMin
+	DECL_FLOAT(0xf04276dc, SizeShorthand, DepthActual, Axis[2].Actual), // SizeShorthand.DepthActual
+	DECL_FLOAT(0xd8e0c913, SizeShorthand, DepthScroll, Axis[2].Scroll), // SizeShorthand.DepthScroll
 };
 static luaL_Reg _SizeShorthand_Methods[] = {
 	{ NULL, NULL }
@@ -627,11 +627,11 @@ static struct PropertyType _Object_AnimateEventArgs[] = {
 };
 static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_ThemeChangedEventArgs[] = {
-	DECL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // Object_ThemeChangedEventArgs.recursive
+	DECL_BOOL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive), // Object_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_PropertyChangedEventArgs[] = {
-	DECL(0x5221f9e8, Object_PropertyChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Object_PropertyChangedEventArgs.Property
+	DECL_STRUCT_TYPE(0x5221f9e8, Object_PropertyChangedEventArgs, Property, Property, Property), // Object_PropertyChangedEventArgs.Property
 };
 static luaL_Reg _Object_AttachedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_AttachedEventArgs[] = {
@@ -644,11 +644,11 @@ static struct PropertyType _Object_DestroyEventArgs[] = {
 };
 static luaL_Reg _Object_TimerEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Object_TimerEventArgs[] = {
-	DECL(0x4903ce0f, Object_TimerEventArgs, timerId, timerId, kDataTypeInt), // Object_TimerEventArgs.timerId
+	DECL_INT(0x4903ce0f, Object_TimerEventArgs, timerId, timerId), // Object_TimerEventArgs.timerId
 };
 static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
-	DECL(0x0fe07306, AnimationPlayer_PlayEventArgs, Name, Name, kDataTypeString), // AnimationPlayer_PlayEventArgs.Name
+	DECL_STRING(0x0fe07306, AnimationPlayer_PlayEventArgs, Name, Name), // AnimationPlayer_PlayEventArgs.Name
 };
 static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
@@ -670,38 +670,38 @@ static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
 };
 static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
-	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
+	DECL_BOOL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive), // StyleController_ThemeChangedEventArgs.recursive
 };
 static luaL_Reg _StyleController_AddClassEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StyleController_AddClassEventArgs[] = {
-	DECL(0x2ecda0bc, StyleController_AddClassEventArgs, ClassName, ClassName, kDataTypeString), // StyleController_AddClassEventArgs.ClassName
+	DECL_STRING(0x2ecda0bc, StyleController_AddClassEventArgs, ClassName, ClassName), // StyleController_AddClassEventArgs.ClassName
 };
 static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StyleController_AddClassesEventArgs[] = {
-	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
+	DECL_STRING(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames), // StyleController_AddClassesEventArgs.ClassNames
 };
 static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
-	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
+	DECL_STRUCT_TYPE(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, Property), // StateManagerController_ControllerChangedEventArgs.Property
 };
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Trigger_TriggeredEventArgs[] = {
-	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
+	DECL_OBJECT(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, Trigger), // Trigger_TriggeredEventArgs.Trigger
 };
 static luaL_Reg _Node_UpdateMatrixEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_UpdateMatrixEventArgs[] = {
-	DECL(0xeacdfcfd, Node_UpdateMatrixEventArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // Node_UpdateMatrixEventArgs.parent
-	DECL(0xc6c2dd66, Node_UpdateMatrixEventArgs, opacity, opacity, kDataTypeFloat), // Node_UpdateMatrixEventArgs.opacity
-	DECL(0x79a98884, Node_UpdateMatrixEventArgs, force, force, kDataTypeBool), // Node_UpdateMatrixEventArgs.force
+	DECL_STRUCT_TYPE(0xeacdfcfd, Node_UpdateMatrixEventArgs, parent, parent, Matrix3D), // Node_UpdateMatrixEventArgs.parent
+	DECL_FLOAT(0xc6c2dd66, Node_UpdateMatrixEventArgs, opacity, opacity), // Node_UpdateMatrixEventArgs.opacity
+	DECL_BOOL(0x79a98884, Node_UpdateMatrixEventArgs, force, force), // Node_UpdateMatrixEventArgs.force
 };
 static luaL_Reg _Node_LoadViewEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LoadViewEventArgs[] = {
-	DECL(0x187f5b0f, Node_LoadViewEventArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // Node_LoadViewEventArgs.lua_state
+	DECL_STRUCT_TYPE(0x187f5b0f, Node_LoadViewEventArgs, lua_state, lua_state, lua_State), // Node_LoadViewEventArgs.lua_state
 };
 static luaL_Reg _Node_HitTestEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_HitTestEventArgs[] = {
-	DECL(0xfd0c5087, Node_HitTestEventArgs, x, x, kDataTypeInt), // Node_HitTestEventArgs.x
-	DECL(0xfc0c4ef4, Node_HitTestEventArgs, y, y, kDataTypeInt), // Node_HitTestEventArgs.y
+	DECL_INT(0xfd0c5087, Node_HitTestEventArgs, x, x), // Node_HitTestEventArgs.x
+	DECL_INT(0xfc0c4ef4, Node_HitTestEventArgs, y, y), // Node_HitTestEventArgs.y
 };
 static luaL_Reg _Node_IsVisibleEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_IsVisibleEventArgs[] = {
@@ -720,192 +720,192 @@ static struct PropertyType _Node_GetSizeEventArgs[] = {
 };
 static luaL_Reg _Node_MouseMessageEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_MouseMessageEventArgs[] = {
-	DECL(0xfd0c5087, Node_MouseMessageEventArgs, x, x, kDataTypeFloat), // Node_MouseMessageEventArgs.x
-	DECL(0xfc0c4ef4, Node_MouseMessageEventArgs, y, y, kDataTypeFloat), // Node_MouseMessageEventArgs.y
-	DECL(0xec56f27b, Node_MouseMessageEventArgs, deltaX, deltaX, kDataTypeInt), // Node_MouseMessageEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_MouseMessageEventArgs, deltaY, deltaY, kDataTypeInt), // Node_MouseMessageEventArgs.deltaY
-	DECL(0x43b27471, Node_MouseMessageEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_MouseMessageEventArgs.button
-	DECL(0xd9747336, Node_MouseMessageEventArgs, clickCount, clickCount, kDataTypeInt), // Node_MouseMessageEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_MouseMessageEventArgs, x, x), // Node_MouseMessageEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_MouseMessageEventArgs, y, y), // Node_MouseMessageEventArgs.y
+	DECL_INT(0xec56f27b, Node_MouseMessageEventArgs, deltaX, deltaX), // Node_MouseMessageEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_MouseMessageEventArgs, deltaY, deltaY), // Node_MouseMessageEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_MouseMessageEventArgs, button, button, MouseButton), // Node_MouseMessageEventArgs.button
+	DECL_INT(0xd9747336, Node_MouseMessageEventArgs, clickCount, clickCount), // Node_MouseMessageEventArgs.clickCount
 };
 static luaL_Reg _Node_LeftButtonDownEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LeftButtonDownEventArgs[] = {
-	DECL(0xfd0c5087, Node_LeftButtonDownEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonDownEventArgs.x
-	DECL(0xfc0c4ef4, Node_LeftButtonDownEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonDownEventArgs.y
-	DECL(0xec56f27b, Node_LeftButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonDownEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_LeftButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonDownEventArgs.deltaY
-	DECL(0x43b27471, Node_LeftButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonDownEventArgs.button
-	DECL(0xd9747336, Node_LeftButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonDownEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_LeftButtonDownEventArgs, x, x), // Node_LeftButtonDownEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_LeftButtonDownEventArgs, y, y), // Node_LeftButtonDownEventArgs.y
+	DECL_INT(0xec56f27b, Node_LeftButtonDownEventArgs, deltaX, deltaX), // Node_LeftButtonDownEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_LeftButtonDownEventArgs, deltaY, deltaY), // Node_LeftButtonDownEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_LeftButtonDownEventArgs, button, button, MouseButton), // Node_LeftButtonDownEventArgs.button
+	DECL_INT(0xd9747336, Node_LeftButtonDownEventArgs, clickCount, clickCount), // Node_LeftButtonDownEventArgs.clickCount
 };
 static luaL_Reg _Node_RightButtonDownEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_RightButtonDownEventArgs[] = {
-	DECL(0xfd0c5087, Node_RightButtonDownEventArgs, x, x, kDataTypeFloat), // Node_RightButtonDownEventArgs.x
-	DECL(0xfc0c4ef4, Node_RightButtonDownEventArgs, y, y, kDataTypeFloat), // Node_RightButtonDownEventArgs.y
-	DECL(0xec56f27b, Node_RightButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonDownEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_RightButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonDownEventArgs.deltaY
-	DECL(0x43b27471, Node_RightButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonDownEventArgs.button
-	DECL(0xd9747336, Node_RightButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonDownEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_RightButtonDownEventArgs, x, x), // Node_RightButtonDownEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_RightButtonDownEventArgs, y, y), // Node_RightButtonDownEventArgs.y
+	DECL_INT(0xec56f27b, Node_RightButtonDownEventArgs, deltaX, deltaX), // Node_RightButtonDownEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_RightButtonDownEventArgs, deltaY, deltaY), // Node_RightButtonDownEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_RightButtonDownEventArgs, button, button, MouseButton), // Node_RightButtonDownEventArgs.button
+	DECL_INT(0xd9747336, Node_RightButtonDownEventArgs, clickCount, clickCount), // Node_RightButtonDownEventArgs.clickCount
 };
 static luaL_Reg _Node_OtherButtonDownEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_OtherButtonDownEventArgs[] = {
-	DECL(0xfd0c5087, Node_OtherButtonDownEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonDownEventArgs.x
-	DECL(0xfc0c4ef4, Node_OtherButtonDownEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonDownEventArgs.y
-	DECL(0xec56f27b, Node_OtherButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonDownEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_OtherButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonDownEventArgs.deltaY
-	DECL(0x43b27471, Node_OtherButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonDownEventArgs.button
-	DECL(0xd9747336, Node_OtherButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonDownEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_OtherButtonDownEventArgs, x, x), // Node_OtherButtonDownEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_OtherButtonDownEventArgs, y, y), // Node_OtherButtonDownEventArgs.y
+	DECL_INT(0xec56f27b, Node_OtherButtonDownEventArgs, deltaX, deltaX), // Node_OtherButtonDownEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_OtherButtonDownEventArgs, deltaY, deltaY), // Node_OtherButtonDownEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_OtherButtonDownEventArgs, button, button, MouseButton), // Node_OtherButtonDownEventArgs.button
+	DECL_INT(0xd9747336, Node_OtherButtonDownEventArgs, clickCount, clickCount), // Node_OtherButtonDownEventArgs.clickCount
 };
 static luaL_Reg _Node_LeftButtonUpEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LeftButtonUpEventArgs[] = {
-	DECL(0xfd0c5087, Node_LeftButtonUpEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonUpEventArgs.x
-	DECL(0xfc0c4ef4, Node_LeftButtonUpEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonUpEventArgs.y
-	DECL(0xec56f27b, Node_LeftButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonUpEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_LeftButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonUpEventArgs.deltaY
-	DECL(0x43b27471, Node_LeftButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonUpEventArgs.button
-	DECL(0xd9747336, Node_LeftButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonUpEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_LeftButtonUpEventArgs, x, x), // Node_LeftButtonUpEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_LeftButtonUpEventArgs, y, y), // Node_LeftButtonUpEventArgs.y
+	DECL_INT(0xec56f27b, Node_LeftButtonUpEventArgs, deltaX, deltaX), // Node_LeftButtonUpEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_LeftButtonUpEventArgs, deltaY, deltaY), // Node_LeftButtonUpEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_LeftButtonUpEventArgs, button, button, MouseButton), // Node_LeftButtonUpEventArgs.button
+	DECL_INT(0xd9747336, Node_LeftButtonUpEventArgs, clickCount, clickCount), // Node_LeftButtonUpEventArgs.clickCount
 };
 static luaL_Reg _Node_RightButtonUpEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_RightButtonUpEventArgs[] = {
-	DECL(0xfd0c5087, Node_RightButtonUpEventArgs, x, x, kDataTypeFloat), // Node_RightButtonUpEventArgs.x
-	DECL(0xfc0c4ef4, Node_RightButtonUpEventArgs, y, y, kDataTypeFloat), // Node_RightButtonUpEventArgs.y
-	DECL(0xec56f27b, Node_RightButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonUpEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_RightButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonUpEventArgs.deltaY
-	DECL(0x43b27471, Node_RightButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonUpEventArgs.button
-	DECL(0xd9747336, Node_RightButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonUpEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_RightButtonUpEventArgs, x, x), // Node_RightButtonUpEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_RightButtonUpEventArgs, y, y), // Node_RightButtonUpEventArgs.y
+	DECL_INT(0xec56f27b, Node_RightButtonUpEventArgs, deltaX, deltaX), // Node_RightButtonUpEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_RightButtonUpEventArgs, deltaY, deltaY), // Node_RightButtonUpEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_RightButtonUpEventArgs, button, button, MouseButton), // Node_RightButtonUpEventArgs.button
+	DECL_INT(0xd9747336, Node_RightButtonUpEventArgs, clickCount, clickCount), // Node_RightButtonUpEventArgs.clickCount
 };
 static luaL_Reg _Node_OtherButtonUpEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_OtherButtonUpEventArgs[] = {
-	DECL(0xfd0c5087, Node_OtherButtonUpEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonUpEventArgs.x
-	DECL(0xfc0c4ef4, Node_OtherButtonUpEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonUpEventArgs.y
-	DECL(0xec56f27b, Node_OtherButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonUpEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_OtherButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonUpEventArgs.deltaY
-	DECL(0x43b27471, Node_OtherButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonUpEventArgs.button
-	DECL(0xd9747336, Node_OtherButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonUpEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_OtherButtonUpEventArgs, x, x), // Node_OtherButtonUpEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_OtherButtonUpEventArgs, y, y), // Node_OtherButtonUpEventArgs.y
+	DECL_INT(0xec56f27b, Node_OtherButtonUpEventArgs, deltaX, deltaX), // Node_OtherButtonUpEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_OtherButtonUpEventArgs, deltaY, deltaY), // Node_OtherButtonUpEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_OtherButtonUpEventArgs, button, button, MouseButton), // Node_OtherButtonUpEventArgs.button
+	DECL_INT(0xd9747336, Node_OtherButtonUpEventArgs, clickCount, clickCount), // Node_OtherButtonUpEventArgs.clickCount
 };
 static luaL_Reg _Node_LeftButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LeftButtonDraggedEventArgs[] = {
-	DECL(0xfd0c5087, Node_LeftButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonDraggedEventArgs.x
-	DECL(0xfc0c4ef4, Node_LeftButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonDraggedEventArgs.y
-	DECL(0xec56f27b, Node_LeftButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_LeftButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.deltaY
-	DECL(0x43b27471, Node_LeftButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonDraggedEventArgs.button
-	DECL(0xd9747336, Node_LeftButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_LeftButtonDraggedEventArgs, x, x), // Node_LeftButtonDraggedEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_LeftButtonDraggedEventArgs, y, y), // Node_LeftButtonDraggedEventArgs.y
+	DECL_INT(0xec56f27b, Node_LeftButtonDraggedEventArgs, deltaX, deltaX), // Node_LeftButtonDraggedEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_LeftButtonDraggedEventArgs, deltaY, deltaY), // Node_LeftButtonDraggedEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_LeftButtonDraggedEventArgs, button, button, MouseButton), // Node_LeftButtonDraggedEventArgs.button
+	DECL_INT(0xd9747336, Node_LeftButtonDraggedEventArgs, clickCount, clickCount), // Node_LeftButtonDraggedEventArgs.clickCount
 };
 static luaL_Reg _Node_RightButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_RightButtonDraggedEventArgs[] = {
-	DECL(0xfd0c5087, Node_RightButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_RightButtonDraggedEventArgs.x
-	DECL(0xfc0c4ef4, Node_RightButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_RightButtonDraggedEventArgs.y
-	DECL(0xec56f27b, Node_RightButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonDraggedEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_RightButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonDraggedEventArgs.deltaY
-	DECL(0x43b27471, Node_RightButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonDraggedEventArgs.button
-	DECL(0xd9747336, Node_RightButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonDraggedEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_RightButtonDraggedEventArgs, x, x), // Node_RightButtonDraggedEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_RightButtonDraggedEventArgs, y, y), // Node_RightButtonDraggedEventArgs.y
+	DECL_INT(0xec56f27b, Node_RightButtonDraggedEventArgs, deltaX, deltaX), // Node_RightButtonDraggedEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_RightButtonDraggedEventArgs, deltaY, deltaY), // Node_RightButtonDraggedEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_RightButtonDraggedEventArgs, button, button, MouseButton), // Node_RightButtonDraggedEventArgs.button
+	DECL_INT(0xd9747336, Node_RightButtonDraggedEventArgs, clickCount, clickCount), // Node_RightButtonDraggedEventArgs.clickCount
 };
 static luaL_Reg _Node_OtherButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_OtherButtonDraggedEventArgs[] = {
-	DECL(0xfd0c5087, Node_OtherButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonDraggedEventArgs.x
-	DECL(0xfc0c4ef4, Node_OtherButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonDraggedEventArgs.y
-	DECL(0xec56f27b, Node_OtherButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_OtherButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.deltaY
-	DECL(0x43b27471, Node_OtherButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonDraggedEventArgs.button
-	DECL(0xd9747336, Node_OtherButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_OtherButtonDraggedEventArgs, x, x), // Node_OtherButtonDraggedEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_OtherButtonDraggedEventArgs, y, y), // Node_OtherButtonDraggedEventArgs.y
+	DECL_INT(0xec56f27b, Node_OtherButtonDraggedEventArgs, deltaX, deltaX), // Node_OtherButtonDraggedEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_OtherButtonDraggedEventArgs, deltaY, deltaY), // Node_OtherButtonDraggedEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_OtherButtonDraggedEventArgs, button, button, MouseButton), // Node_OtherButtonDraggedEventArgs.button
+	DECL_INT(0xd9747336, Node_OtherButtonDraggedEventArgs, clickCount, clickCount), // Node_OtherButtonDraggedEventArgs.clickCount
 };
 static luaL_Reg _Node_LeftDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_LeftDoubleClickEventArgs[] = {
-	DECL(0xfd0c5087, Node_LeftDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_LeftDoubleClickEventArgs.x
-	DECL(0xfc0c4ef4, Node_LeftDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_LeftDoubleClickEventArgs.y
-	DECL(0xec56f27b, Node_LeftDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftDoubleClickEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_LeftDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftDoubleClickEventArgs.deltaY
-	DECL(0x43b27471, Node_LeftDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftDoubleClickEventArgs.button
-	DECL(0xd9747336, Node_LeftDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftDoubleClickEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_LeftDoubleClickEventArgs, x, x), // Node_LeftDoubleClickEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_LeftDoubleClickEventArgs, y, y), // Node_LeftDoubleClickEventArgs.y
+	DECL_INT(0xec56f27b, Node_LeftDoubleClickEventArgs, deltaX, deltaX), // Node_LeftDoubleClickEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_LeftDoubleClickEventArgs, deltaY, deltaY), // Node_LeftDoubleClickEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_LeftDoubleClickEventArgs, button, button, MouseButton), // Node_LeftDoubleClickEventArgs.button
+	DECL_INT(0xd9747336, Node_LeftDoubleClickEventArgs, clickCount, clickCount), // Node_LeftDoubleClickEventArgs.clickCount
 };
 static luaL_Reg _Node_RightDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_RightDoubleClickEventArgs[] = {
-	DECL(0xfd0c5087, Node_RightDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_RightDoubleClickEventArgs.x
-	DECL(0xfc0c4ef4, Node_RightDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_RightDoubleClickEventArgs.y
-	DECL(0xec56f27b, Node_RightDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightDoubleClickEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_RightDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightDoubleClickEventArgs.deltaY
-	DECL(0x43b27471, Node_RightDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightDoubleClickEventArgs.button
-	DECL(0xd9747336, Node_RightDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightDoubleClickEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_RightDoubleClickEventArgs, x, x), // Node_RightDoubleClickEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_RightDoubleClickEventArgs, y, y), // Node_RightDoubleClickEventArgs.y
+	DECL_INT(0xec56f27b, Node_RightDoubleClickEventArgs, deltaX, deltaX), // Node_RightDoubleClickEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_RightDoubleClickEventArgs, deltaY, deltaY), // Node_RightDoubleClickEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_RightDoubleClickEventArgs, button, button, MouseButton), // Node_RightDoubleClickEventArgs.button
+	DECL_INT(0xd9747336, Node_RightDoubleClickEventArgs, clickCount, clickCount), // Node_RightDoubleClickEventArgs.clickCount
 };
 static luaL_Reg _Node_OtherDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_OtherDoubleClickEventArgs[] = {
-	DECL(0xfd0c5087, Node_OtherDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_OtherDoubleClickEventArgs.x
-	DECL(0xfc0c4ef4, Node_OtherDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_OtherDoubleClickEventArgs.y
-	DECL(0xec56f27b, Node_OtherDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherDoubleClickEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_OtherDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherDoubleClickEventArgs.deltaY
-	DECL(0x43b27471, Node_OtherDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherDoubleClickEventArgs.button
-	DECL(0xd9747336, Node_OtherDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherDoubleClickEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_OtherDoubleClickEventArgs, x, x), // Node_OtherDoubleClickEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_OtherDoubleClickEventArgs, y, y), // Node_OtherDoubleClickEventArgs.y
+	DECL_INT(0xec56f27b, Node_OtherDoubleClickEventArgs, deltaX, deltaX), // Node_OtherDoubleClickEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_OtherDoubleClickEventArgs, deltaY, deltaY), // Node_OtherDoubleClickEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_OtherDoubleClickEventArgs, button, button, MouseButton), // Node_OtherDoubleClickEventArgs.button
+	DECL_INT(0xd9747336, Node_OtherDoubleClickEventArgs, clickCount, clickCount), // Node_OtherDoubleClickEventArgs.clickCount
 };
 static luaL_Reg _Node_MouseMovedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_MouseMovedEventArgs[] = {
-	DECL(0xfd0c5087, Node_MouseMovedEventArgs, x, x, kDataTypeFloat), // Node_MouseMovedEventArgs.x
-	DECL(0xfc0c4ef4, Node_MouseMovedEventArgs, y, y, kDataTypeFloat), // Node_MouseMovedEventArgs.y
-	DECL(0xec56f27b, Node_MouseMovedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_MouseMovedEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_MouseMovedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_MouseMovedEventArgs.deltaY
-	DECL(0x43b27471, Node_MouseMovedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_MouseMovedEventArgs.button
-	DECL(0xd9747336, Node_MouseMovedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_MouseMovedEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_MouseMovedEventArgs, x, x), // Node_MouseMovedEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_MouseMovedEventArgs, y, y), // Node_MouseMovedEventArgs.y
+	DECL_INT(0xec56f27b, Node_MouseMovedEventArgs, deltaX, deltaX), // Node_MouseMovedEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_MouseMovedEventArgs, deltaY, deltaY), // Node_MouseMovedEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_MouseMovedEventArgs, button, button, MouseButton), // Node_MouseMovedEventArgs.button
+	DECL_INT(0xd9747336, Node_MouseMovedEventArgs, clickCount, clickCount), // Node_MouseMovedEventArgs.clickCount
 };
 static luaL_Reg _Node_ScrollWheelEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_ScrollWheelEventArgs[] = {
-	DECL(0xfd0c5087, Node_ScrollWheelEventArgs, x, x, kDataTypeFloat), // Node_ScrollWheelEventArgs.x
-	DECL(0xfc0c4ef4, Node_ScrollWheelEventArgs, y, y, kDataTypeFloat), // Node_ScrollWheelEventArgs.y
-	DECL(0xec56f27b, Node_ScrollWheelEventArgs, deltaX, deltaX, kDataTypeInt), // Node_ScrollWheelEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_ScrollWheelEventArgs, deltaY, deltaY, kDataTypeInt), // Node_ScrollWheelEventArgs.deltaY
-	DECL(0x43b27471, Node_ScrollWheelEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_ScrollWheelEventArgs.button
-	DECL(0xd9747336, Node_ScrollWheelEventArgs, clickCount, clickCount, kDataTypeInt), // Node_ScrollWheelEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_ScrollWheelEventArgs, x, x), // Node_ScrollWheelEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_ScrollWheelEventArgs, y, y), // Node_ScrollWheelEventArgs.y
+	DECL_INT(0xec56f27b, Node_ScrollWheelEventArgs, deltaX, deltaX), // Node_ScrollWheelEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_ScrollWheelEventArgs, deltaY, deltaY), // Node_ScrollWheelEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_ScrollWheelEventArgs, button, button, MouseButton), // Node_ScrollWheelEventArgs.button
+	DECL_INT(0xd9747336, Node_ScrollWheelEventArgs, clickCount, clickCount), // Node_ScrollWheelEventArgs.clickCount
 };
 static luaL_Reg _Node_DragDropEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_DragDropEventArgs[] = {
-	DECL(0xfd0c5087, Node_DragDropEventArgs, x, x, kDataTypeFloat), // Node_DragDropEventArgs.x
-	DECL(0xfc0c4ef4, Node_DragDropEventArgs, y, y, kDataTypeFloat), // Node_DragDropEventArgs.y
-	DECL(0xec56f27b, Node_DragDropEventArgs, deltaX, deltaX, kDataTypeInt), // Node_DragDropEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_DragDropEventArgs, deltaY, deltaY, kDataTypeInt), // Node_DragDropEventArgs.deltaY
-	DECL(0x43b27471, Node_DragDropEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_DragDropEventArgs.button
-	DECL(0xd9747336, Node_DragDropEventArgs, clickCount, clickCount, kDataTypeInt), // Node_DragDropEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_DragDropEventArgs, x, x), // Node_DragDropEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_DragDropEventArgs, y, y), // Node_DragDropEventArgs.y
+	DECL_INT(0xec56f27b, Node_DragDropEventArgs, deltaX, deltaX), // Node_DragDropEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_DragDropEventArgs, deltaY, deltaY), // Node_DragDropEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_DragDropEventArgs, button, button, MouseButton), // Node_DragDropEventArgs.button
+	DECL_INT(0xd9747336, Node_DragDropEventArgs, clickCount, clickCount), // Node_DragDropEventArgs.clickCount
 };
 static luaL_Reg _Node_DragEnterEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_DragEnterEventArgs[] = {
-	DECL(0xfd0c5087, Node_DragEnterEventArgs, x, x, kDataTypeFloat), // Node_DragEnterEventArgs.x
-	DECL(0xfc0c4ef4, Node_DragEnterEventArgs, y, y, kDataTypeFloat), // Node_DragEnterEventArgs.y
-	DECL(0xec56f27b, Node_DragEnterEventArgs, deltaX, deltaX, kDataTypeInt), // Node_DragEnterEventArgs.deltaX
-	DECL(0xeb56f0e8, Node_DragEnterEventArgs, deltaY, deltaY, kDataTypeInt), // Node_DragEnterEventArgs.deltaY
-	DECL(0x43b27471, Node_DragEnterEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_DragEnterEventArgs.button
-	DECL(0xd9747336, Node_DragEnterEventArgs, clickCount, clickCount, kDataTypeInt), // Node_DragEnterEventArgs.clickCount
+	DECL_FLOAT(0xfd0c5087, Node_DragEnterEventArgs, x, x), // Node_DragEnterEventArgs.x
+	DECL_FLOAT(0xfc0c4ef4, Node_DragEnterEventArgs, y, y), // Node_DragEnterEventArgs.y
+	DECL_INT(0xec56f27b, Node_DragEnterEventArgs, deltaX, deltaX), // Node_DragEnterEventArgs.deltaX
+	DECL_INT(0xeb56f0e8, Node_DragEnterEventArgs, deltaY, deltaY), // Node_DragEnterEventArgs.deltaY
+	DECL_ENUM(0x43b27471, Node_DragEnterEventArgs, button, button, MouseButton), // Node_DragEnterEventArgs.button
+	DECL_INT(0xd9747336, Node_DragEnterEventArgs, clickCount, clickCount), // Node_DragEnterEventArgs.clickCount
 };
 static luaL_Reg _Node_KeyMessageEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_KeyMessageEventArgs[] = {
-	DECL(0xd803e2a9, Node_KeyMessageEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyMessageEventArgs.keyCode
-	DECL(0x8b3aa710, Node_KeyMessageEventArgs, character, character, kDataTypeInt), // Node_KeyMessageEventArgs.character
-	DECL(0x411b1019, Node_KeyMessageEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyMessageEventArgs.modifiers
-	DECL(0xbde64e3e, Node_KeyMessageEventArgs, text, text, kDataTypeString), // Node_KeyMessageEventArgs.text
-	DECL(0x8f82be34, Node_KeyMessageEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyMessageEventArgs.modifiersString
-	DECL(0x9703dc13, Node_KeyMessageEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyMessageEventArgs.hotKey
+	DECL_INT(0xd803e2a9, Node_KeyMessageEventArgs, keyCode, keyCode), // Node_KeyMessageEventArgs.keyCode
+	DECL_INT(0x8b3aa710, Node_KeyMessageEventArgs, character, character), // Node_KeyMessageEventArgs.character
+	DECL_INT(0x411b1019, Node_KeyMessageEventArgs, modifiers, modifiers), // Node_KeyMessageEventArgs.modifiers
+	DECL_STRING(0xbde64e3e, Node_KeyMessageEventArgs, text, text), // Node_KeyMessageEventArgs.text
+	DECL_STRING(0x8f82be34, Node_KeyMessageEventArgs, modifiersString, modifiersString), // Node_KeyMessageEventArgs.modifiersString
+	DECL_STRING(0x9703dc13, Node_KeyMessageEventArgs, hotKey, hotKey), // Node_KeyMessageEventArgs.hotKey
 };
 static luaL_Reg _Node_KeyDownEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_KeyDownEventArgs[] = {
-	DECL(0xd803e2a9, Node_KeyDownEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyDownEventArgs.keyCode
-	DECL(0x8b3aa710, Node_KeyDownEventArgs, character, character, kDataTypeInt), // Node_KeyDownEventArgs.character
-	DECL(0x411b1019, Node_KeyDownEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyDownEventArgs.modifiers
-	DECL(0xbde64e3e, Node_KeyDownEventArgs, text, text, kDataTypeString), // Node_KeyDownEventArgs.text
-	DECL(0x8f82be34, Node_KeyDownEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyDownEventArgs.modifiersString
-	DECL(0x9703dc13, Node_KeyDownEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyDownEventArgs.hotKey
+	DECL_INT(0xd803e2a9, Node_KeyDownEventArgs, keyCode, keyCode), // Node_KeyDownEventArgs.keyCode
+	DECL_INT(0x8b3aa710, Node_KeyDownEventArgs, character, character), // Node_KeyDownEventArgs.character
+	DECL_INT(0x411b1019, Node_KeyDownEventArgs, modifiers, modifiers), // Node_KeyDownEventArgs.modifiers
+	DECL_STRING(0xbde64e3e, Node_KeyDownEventArgs, text, text), // Node_KeyDownEventArgs.text
+	DECL_STRING(0x8f82be34, Node_KeyDownEventArgs, modifiersString, modifiersString), // Node_KeyDownEventArgs.modifiersString
+	DECL_STRING(0x9703dc13, Node_KeyDownEventArgs, hotKey, hotKey), // Node_KeyDownEventArgs.hotKey
 };
 static luaL_Reg _Node_KeyUpEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_KeyUpEventArgs[] = {
-	DECL(0xd803e2a9, Node_KeyUpEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyUpEventArgs.keyCode
-	DECL(0x8b3aa710, Node_KeyUpEventArgs, character, character, kDataTypeInt), // Node_KeyUpEventArgs.character
-	DECL(0x411b1019, Node_KeyUpEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyUpEventArgs.modifiers
-	DECL(0xbde64e3e, Node_KeyUpEventArgs, text, text, kDataTypeString), // Node_KeyUpEventArgs.text
-	DECL(0x8f82be34, Node_KeyUpEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyUpEventArgs.modifiersString
-	DECL(0x9703dc13, Node_KeyUpEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyUpEventArgs.hotKey
+	DECL_INT(0xd803e2a9, Node_KeyUpEventArgs, keyCode, keyCode), // Node_KeyUpEventArgs.keyCode
+	DECL_INT(0x8b3aa710, Node_KeyUpEventArgs, character, character), // Node_KeyUpEventArgs.character
+	DECL_INT(0x411b1019, Node_KeyUpEventArgs, modifiers, modifiers), // Node_KeyUpEventArgs.modifiers
+	DECL_STRING(0xbde64e3e, Node_KeyUpEventArgs, text, text), // Node_KeyUpEventArgs.text
+	DECL_STRING(0x8f82be34, Node_KeyUpEventArgs, modifiersString, modifiersString), // Node_KeyUpEventArgs.modifiersString
+	DECL_STRING(0x9703dc13, Node_KeyUpEventArgs, hotKey, hotKey), // Node_KeyUpEventArgs.hotKey
 };
 static luaL_Reg _Node_TextInputEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node_TextInputEventArgs[] = {
-	DECL(0xd803e2a9, Node_TextInputEventArgs, keyCode, keyCode, kDataTypeInt), // Node_TextInputEventArgs.keyCode
-	DECL(0x8b3aa710, Node_TextInputEventArgs, character, character, kDataTypeInt), // Node_TextInputEventArgs.character
-	DECL(0x411b1019, Node_TextInputEventArgs, modifiers, modifiers, kDataTypeInt), // Node_TextInputEventArgs.modifiers
-	DECL(0xbde64e3e, Node_TextInputEventArgs, text, text, kDataTypeString), // Node_TextInputEventArgs.text
-	DECL(0x8f82be34, Node_TextInputEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_TextInputEventArgs.modifiersString
-	DECL(0x9703dc13, Node_TextInputEventArgs, hotKey, hotKey, kDataTypeString), // Node_TextInputEventArgs.hotKey
+	DECL_INT(0xd803e2a9, Node_TextInputEventArgs, keyCode, keyCode), // Node_TextInputEventArgs.keyCode
+	DECL_INT(0x8b3aa710, Node_TextInputEventArgs, character, character), // Node_TextInputEventArgs.character
+	DECL_INT(0x411b1019, Node_TextInputEventArgs, modifiers, modifiers), // Node_TextInputEventArgs.modifiers
+	DECL_STRING(0xbde64e3e, Node_TextInputEventArgs, text, text), // Node_TextInputEventArgs.text
+	DECL_STRING(0x8f82be34, Node_TextInputEventArgs, modifiersString, modifiersString), // Node_TextInputEventArgs.modifiersString
+	DECL_STRING(0x9703dc13, Node_TextInputEventArgs, hotKey, hotKey), // Node_TextInputEventArgs.hotKey
 };
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
@@ -958,19 +958,16 @@ STRUCT(Node_KeyMessageEventArgs, Node_KeyMessageEventArgs);
 STRUCT(Node_KeyDownEventArgs, Node_KeyDownEventArgs);
 STRUCT(Node_KeyUpEventArgs, Node_KeyUpEventArgs);
 STRUCT(Node_TextInputEventArgs, Node_TextInputEventArgs);
-static struct PropertyType const AnimationCurveProperties[kAnimationCurveNumProperties] = {
-	DECL(0xeb66e456, AnimationCurve, Path, Path, kDataTypeString), // AnimationCurve.Path
-	DECL(0x5221f9e8, AnimationCurve, Property, Property, kDataTypeString), // AnimationCurve.Property
-	ARRAY_DECL(0xf893ff8e, AnimationCurve, Keyframes, Keyframes, kDataTypeStruct, .TypeString = "Keyframe"), // AnimationCurve.Keyframes
-	DECL(0x33ee8bf8, AnimationCurve, NumKeyframes, NumKeyframes, kDataTypeInt), // AnimationCurve.NumKeyframes
+COMPONENT_PROPERTIES(AnimationCurve) = {
+	DECL_STRING(0xeb66e456, AnimationCurve, Path, Path), // AnimationCurve.Path
+	DECL_STRING(0x5221f9e8, AnimationCurve, Property, Property), // AnimationCurve.Property
+	ARRAY_DECL_STRUCT_TYPE(0xf893ff8e, AnimationCurve, Keyframes, Keyframes, Keyframe), // AnimationCurve.Keyframes
+	DECL_INT(0x33ee8bf8, AnimationCurve, NumKeyframes, NumKeyframes), // AnimationCurve.NumKeyframes
 };
-static struct AnimationCurve AnimationCurveDefaults = {
+COMPONENT_DEFAULTS(AnimationCurve) = {
 };
-LRESULT AnimationCurveProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(AnimationCurve)
+COMPONENT_PROC_END()
 void luaX_pushAnimationCurve(lua_State *L, struct AnimationCurve const* AnimationCurve) {
 	luaX_pushObject(L, CMP_GetObject(AnimationCurve));
 }
@@ -979,19 +976,16 @@ struct AnimationCurve* luaX_checkAnimationCurve(lua_State *L, int idx) {
 }
 REGISTER_CLASS(AnimationCurve, 0);
 HANDLER(AnimationClip, Object, Start);
-static struct PropertyType const AnimationClipProperties[kAnimationClipNumProperties] = {
-	DECL(0x534e7732, AnimationClip, Mode, Mode, kDataTypeEnum, .EnumValues = _AnimationMode), // AnimationClip.Mode
-	DECL(0xd6195a6e, AnimationClip, StartTime, StartTime, kDataTypeFloat), // AnimationClip.StartTime
-	DECL(0x03274144, AnimationClip, StopTime, StopTime, kDataTypeFloat), // AnimationClip.StopTime
+COMPONENT_PROPERTIES(AnimationClip) = {
+	DECL_ENUM(0x534e7732, AnimationClip, Mode, Mode, AnimationMode), // AnimationClip.Mode
+	DECL_FLOAT(0xd6195a6e, AnimationClip, StartTime, StartTime), // AnimationClip.StartTime
+	DECL_FLOAT(0x03274144, AnimationClip, StopTime, StopTime), // AnimationClip.StopTime
 };
-static struct AnimationClip AnimationClipDefaults = {
+COMPONENT_DEFAULTS(AnimationClip) = {
 };
-LRESULT AnimationClipProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return AnimationClip_Start(object, cmp, wparm, lparm); // Object.Start
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(AnimationClip)
+		DISPATCH(AnimationClip, Object, Start) // Object.Start
+COMPONENT_PROC_END()
 void luaX_pushAnimationClip(lua_State *L, struct AnimationClip const* AnimationClip) {
 	luaX_pushObject(L, CMP_GetObject(AnimationClip));
 }
@@ -1005,43 +999,40 @@ HANDLER(AnimationPlayer, AnimationPlayer, Play);
 HANDLER(AnimationPlayer, AnimationPlayer, Resume);
 HANDLER(AnimationPlayer, AnimationPlayer, Stop);
 HANDLER(AnimationPlayer, AnimationPlayer, Pause);
-static struct PropertyType const AnimationPlayerProperties[kAnimationPlayerNumProperties] = {
-	DECL(0xd33ddb1b, AnimationPlayer, Clip, Clip, kDataTypeObject, .TypeString = "AnimationClip"), // AnimationPlayer.Clip
-	ARRAY_DECL(0xf26064b8, AnimationPlayer, Clips, Clips, kDataTypeStruct, .TypeString = "AnimationClipReference"), // AnimationPlayer.Clips
-	DECL(0x090c1a52, AnimationPlayer, NumClips, NumClips, kDataTypeInt), // AnimationPlayer.NumClips
-	DECL(0xdf450ad5, AnimationPlayer, Playing, Playing, kDataTypeBool), // AnimationPlayer.Playing
-	DECL(0x343782cd, AnimationPlayer, Looping, Looping, kDataTypeBool), // AnimationPlayer.Looping
-	DECL(0x0a6b8020, AnimationPlayer, Speed, Speed, kDataTypeFloat), // AnimationPlayer.Speed
-	DECL(0x0d3e3b9b, AnimationPlayer, CurrentTime, CurrentTime, kDataTypeFloat), // AnimationPlayer.CurrentTime
-	DECL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled, kDataTypeBool), // AnimationPlayer.AutoplayEnabled
-	DECL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback, kDataTypeBool), // AnimationPlayer.RelativePlayback
-	DECL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback, kDataTypeBool), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
-	DECL(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, kDataTypeEnum, .EnumValues = _PlaybackMode), // AnimationPlayer.PlaybackMode
-	DECL(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale, kDataTypeFloat), // AnimationPlayer.DurationScale
-	DECL(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount, kDataTypeInt), // AnimationPlayer.RepeatCount
-	DECL(0x29ab6f83, AnimationPlayer, Play, Play, kDataTypeEvent, .TypeString = "AnimationPlayer_PlayEventArgs"), // AnimationPlayer.Play
-	DECL(0x454d1d8a, AnimationPlayer, Resume, Resume, kDataTypeEvent, .TypeString = "AnimationPlayer_ResumeEventArgs"), // AnimationPlayer.Resume
-	DECL(0x4b7f7705, AnimationPlayer, Stop, Stop, kDataTypeEvent, .TypeString = "AnimationPlayer_StopEventArgs"), // AnimationPlayer.Stop
-	DECL(0x44f9bf2d, AnimationPlayer, Pause, Pause, kDataTypeEvent, .TypeString = "AnimationPlayer_PauseEventArgs"), // AnimationPlayer.Pause
-	DECL(0x97b5823e, AnimationPlayer, Started, Started, kDataTypeEvent, .TypeString = "AnimationPlayer_StartedEventArgs"), // AnimationPlayer.Started
-	DECL(0x863f19ee, AnimationPlayer, Stopped, Stopped, kDataTypeEvent, .TypeString = "AnimationPlayer_StoppedEventArgs"), // AnimationPlayer.Stopped
-	DECL(0xec88aab2, AnimationPlayer, Completed, Completed, kDataTypeEvent, .TypeString = "AnimationPlayer_CompletedEventArgs"), // AnimationPlayer.Completed
+COMPONENT_PROPERTIES(AnimationPlayer) = {
+	DECL_OBJECT(0xd33ddb1b, AnimationPlayer, Clip, Clip, AnimationClip), // AnimationPlayer.Clip
+	ARRAY_DECL_STRUCT_TYPE(0xf26064b8, AnimationPlayer, Clips, Clips, AnimationClipReference), // AnimationPlayer.Clips
+	DECL_INT(0x090c1a52, AnimationPlayer, NumClips, NumClips), // AnimationPlayer.NumClips
+	DECL_BOOL(0xdf450ad5, AnimationPlayer, Playing, Playing), // AnimationPlayer.Playing
+	DECL_BOOL(0x343782cd, AnimationPlayer, Looping, Looping), // AnimationPlayer.Looping
+	DECL_FLOAT(0x0a6b8020, AnimationPlayer, Speed, Speed), // AnimationPlayer.Speed
+	DECL_FLOAT(0x0d3e3b9b, AnimationPlayer, CurrentTime, CurrentTime), // AnimationPlayer.CurrentTime
+	DECL_BOOL(0x706b62d9, AnimationPlayer, AutoplayEnabled, AutoplayEnabled), // AnimationPlayer.AutoplayEnabled
+	DECL_BOOL(0x9b01fbb4, AnimationPlayer, RelativePlayback, RelativePlayback), // AnimationPlayer.RelativePlayback
+	DECL_BOOL(0x280cbcbb, AnimationPlayer, RestoreOriginalValuesAfterPlayback, RestoreOriginalValuesAfterPlayback), // AnimationPlayer.RestoreOriginalValuesAfterPlayback
+	DECL_ENUM(0x234c71cf, AnimationPlayer, PlaybackMode, PlaybackMode, PlaybackMode), // AnimationPlayer.PlaybackMode
+	DECL_FLOAT(0x9bcd7639, AnimationPlayer, DurationScale, DurationScale), // AnimationPlayer.DurationScale
+	DECL_INT(0xa3a5f0a1, AnimationPlayer, RepeatCount, RepeatCount), // AnimationPlayer.RepeatCount
+	DECL_EVENT(0x29ab6f83, AnimationPlayer, Play), // AnimationPlayer.Play
+	DECL_EVENT(0x454d1d8a, AnimationPlayer, Resume), // AnimationPlayer.Resume
+	DECL_EVENT(0x4b7f7705, AnimationPlayer, Stop), // AnimationPlayer.Stop
+	DECL_EVENT(0x44f9bf2d, AnimationPlayer, Pause), // AnimationPlayer.Pause
+	DECL_EVENT(0x97b5823e, AnimationPlayer, Started), // AnimationPlayer.Started
+	DECL_EVENT(0x863f19ee, AnimationPlayer, Stopped), // AnimationPlayer.Stopped
+	DECL_EVENT(0xec88aab2, AnimationPlayer, Completed), // AnimationPlayer.Completed
 };
-static struct AnimationPlayer AnimationPlayerDefaults = {
+COMPONENT_DEFAULTS(AnimationPlayer) = {
 		
   .Speed = 1.0,
 };
-LRESULT AnimationPlayerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return AnimationPlayer_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Animate: return AnimationPlayer_Animate(object, cmp, wparm, lparm); // Object.Animate
-		case ID_AnimationPlayer_Play: return AnimationPlayer_Play(object, cmp, wparm, lparm); // AnimationPlayer.Play
-		case ID_AnimationPlayer_Resume: return AnimationPlayer_Resume(object, cmp, wparm, lparm); // AnimationPlayer.Resume
-		case ID_AnimationPlayer_Stop: return AnimationPlayer_Stop(object, cmp, wparm, lparm); // AnimationPlayer.Stop
-		case ID_AnimationPlayer_Pause: return AnimationPlayer_Pause(object, cmp, wparm, lparm); // AnimationPlayer.Pause
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(AnimationPlayer)
+		DISPATCH(AnimationPlayer, Object, Start) // Object.Start
+		DISPATCH(AnimationPlayer, Object, Animate) // Object.Animate
+		DISPATCH(AnimationPlayer, AnimationPlayer, Play) // AnimationPlayer.Play
+		DISPATCH(AnimationPlayer, AnimationPlayer, Resume) // AnimationPlayer.Resume
+		DISPATCH(AnimationPlayer, AnimationPlayer, Stop) // AnimationPlayer.Stop
+		DISPATCH(AnimationPlayer, AnimationPlayer, Pause) // AnimationPlayer.Pause
+COMPONENT_PROC_END()
 void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer) {
 	luaX_pushObject(L, CMP_GetObject(AnimationPlayer));
 }
@@ -1051,24 +1042,21 @@ struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0);
 HANDLER(PropertyAnimation, Object, Animate);
 HANDLER(PropertyAnimation, Object, Release);
-static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationNumProperties] = {
-	DECL(0x5221f9e8, PropertyAnimation, Property, Property, kDataTypeString), // PropertyAnimation.Property
-	DECL(0x18743595, PropertyAnimation, From, From, kDataTypeString), // PropertyAnimation.From
-	DECL(0x41f59644, PropertyAnimation, To, To, kDataTypeString), // PropertyAnimation.To
-	DECL(0x77818ebd, PropertyAnimation, Interpolation, Interpolation, kDataTypeEnum, .EnumValues = _InterpolationMode), // PropertyAnimation.Interpolation
-	DECL(0xa3116148, PropertyAnimation, Easing, Easing, kDataTypeEnum, .EnumValues = _Easing), // PropertyAnimation.Easing
-	DECL(0x0ae8097f, PropertyAnimation, Start, Start, kDataTypeInt), // PropertyAnimation.Start
-	DECL(0xd4c7492d, PropertyAnimation, Duration, Duration, kDataTypeInt), // PropertyAnimation.Duration
+COMPONENT_PROPERTIES(PropertyAnimation) = {
+	DECL_STRING(0x5221f9e8, PropertyAnimation, Property, Property), // PropertyAnimation.Property
+	DECL_STRING(0x18743595, PropertyAnimation, From, From), // PropertyAnimation.From
+	DECL_STRING(0x41f59644, PropertyAnimation, To, To), // PropertyAnimation.To
+	DECL_ENUM(0x77818ebd, PropertyAnimation, Interpolation, Interpolation, InterpolationMode), // PropertyAnimation.Interpolation
+	DECL_ENUM(0xa3116148, PropertyAnimation, Easing, Easing, Easing), // PropertyAnimation.Easing
+	DECL_INT(0x0ae8097f, PropertyAnimation, Start, Start), // PropertyAnimation.Start
+	DECL_INT(0xd4c7492d, PropertyAnimation, Duration, Duration), // PropertyAnimation.Duration
 };
-static struct PropertyAnimation PropertyAnimationDefaults = {
+COMPONENT_DEFAULTS(PropertyAnimation) = {
 };
-LRESULT PropertyAnimationProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Animate: return PropertyAnimation_Animate(object, cmp, wparm, lparm); // Object.Animate
-		case ID_Object_Release: return PropertyAnimation_Release(object, cmp, wparm, lparm); // Object.Release
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PropertyAnimation)
+		DISPATCH(PropertyAnimation, Object, Animate) // Object.Animate
+		DISPATCH(PropertyAnimation, Object, Release) // Object.Release
+COMPONENT_PROC_END()
 void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* PropertyAnimation) {
 	luaX_pushObject(L, CMP_GetObject(PropertyAnimation));
 }
@@ -1076,15 +1064,12 @@ struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 	return GetPropertyAnimation(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
-static struct PropertyType const StyleSheetProperties[kStyleSheetNumProperties] = {
+COMPONENT_PROPERTIES(StyleSheet) = {
 };
-static struct StyleSheet StyleSheetDefaults = {
+COMPONENT_DEFAULTS(StyleSheet) = {
 };
-LRESULT StyleSheetProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StyleSheet)
+COMPONENT_PROC_END()
 void luaX_pushStyleSheet(lua_State *L, struct StyleSheet const* StyleSheet) {
 	luaX_pushObject(L, CMP_GetObject(StyleSheet));
 }
@@ -1093,18 +1078,15 @@ struct StyleSheet* luaX_checkStyleSheet(lua_State *L, int idx) {
 }
 REGISTER_CLASS(StyleSheet, 0);
 HANDLER(StyleRule, Object, PropertyChanged);
-static struct PropertyType const StyleRuleProperties[kStyleRuleNumProperties] = {
-	DECL(0x2ecda0bc, StyleRule, ClassName, ClassName, kDataTypeString), // StyleRule.ClassName
-	DECL(0xc0e9c7e9, StyleRule, PseudoClass, PseudoClass, kDataTypeString), // StyleRule.PseudoClass
+COMPONENT_PROPERTIES(StyleRule) = {
+	DECL_STRING(0x2ecda0bc, StyleRule, ClassName, ClassName), // StyleRule.ClassName
+	DECL_STRING(0xc0e9c7e9, StyleRule, PseudoClass, PseudoClass), // StyleRule.PseudoClass
 };
-static struct StyleRule StyleRuleDefaults = {
+COMPONENT_DEFAULTS(StyleRule) = {
 };
-LRESULT StyleRuleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_PropertyChanged: return StyleRule_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StyleRule)
+		DISPATCH(StyleRule, Object, PropertyChanged) // Object.PropertyChanged
+COMPONENT_PROC_END()
 void luaX_pushStyleRule(lua_State *L, struct StyleRule const* StyleRule) {
 	luaX_pushObject(L, CMP_GetObject(StyleRule));
 }
@@ -1117,24 +1099,21 @@ HANDLER(StyleController, Object, Release);
 HANDLER(StyleController, StyleController, ThemeChanged);
 HANDLER(StyleController, StyleController, AddClass);
 HANDLER(StyleController, StyleController, AddClasses);
-static struct PropertyType const StyleControllerProperties[kStyleControllerNumProperties] = {
-	DECL(0x6546e1e1, StyleController, StyleSheet, StyleSheet, kDataTypeObject, .TypeString = "StyleSheet"), // StyleController.StyleSheet
-	DECL(0x064087a6, StyleController, ThemeChanged, ThemeChanged, kDataTypeEvent, .TypeString = "StyleController_ThemeChangedEventArgs"), // StyleController.ThemeChanged
-	DECL(0x543ca51c, StyleController, AddClass, AddClass, kDataTypeEvent, .TypeString = "StyleController_AddClassEventArgs"), // StyleController.AddClass
-	DECL(0x41acd398, StyleController, AddClasses, AddClasses, kDataTypeEvent, .TypeString = "StyleController_AddClassesEventArgs"), // StyleController.AddClasses
+COMPONENT_PROPERTIES(StyleController) = {
+	DECL_OBJECT(0x6546e1e1, StyleController, StyleSheet, StyleSheet, StyleSheet), // StyleController.StyleSheet
+	DECL_EVENT(0x064087a6, StyleController, ThemeChanged), // StyleController.ThemeChanged
+	DECL_EVENT(0x543ca51c, StyleController, AddClass), // StyleController.AddClass
+	DECL_EVENT(0x41acd398, StyleController, AddClasses), // StyleController.AddClasses
 };
-static struct StyleController StyleControllerDefaults = {
+COMPONENT_DEFAULTS(StyleController) = {
 };
-LRESULT StyleControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return StyleController_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_Release: return StyleController_Release(object, cmp, wparm, lparm); // Object.Release
-		case ID_StyleController_ThemeChanged: return StyleController_ThemeChanged(object, cmp, wparm, lparm); // StyleController.ThemeChanged
-		case ID_StyleController_AddClass: return StyleController_AddClass(object, cmp, wparm, lparm); // StyleController.AddClass
-		case ID_StyleController_AddClasses: return StyleController_AddClasses(object, cmp, wparm, lparm); // StyleController.AddClasses
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StyleController)
+		DISPATCH(StyleController, Object, Create) // Object.Create
+		DISPATCH(StyleController, Object, Release) // Object.Release
+		DISPATCH(StyleController, StyleController, ThemeChanged) // StyleController.ThemeChanged
+		DISPATCH(StyleController, StyleController, AddClass) // StyleController.AddClass
+		DISPATCH(StyleController, StyleController, AddClasses) // StyleController.AddClasses
+COMPONENT_PROC_END()
 void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleController) {
 	luaX_pushObject(L, CMP_GetObject(StyleController));
 }
@@ -1142,15 +1121,12 @@ struct StyleController* luaX_checkStyleController(lua_State *L, int idx) {
 	return GetStyleController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
-static struct PropertyType const StateManagerProperties[kStateManagerNumProperties] = {
+COMPONENT_PROPERTIES(StateManager) = {
 };
-static struct StateManager StateManagerDefaults = {
+COMPONENT_DEFAULTS(StateManager) = {
 };
-LRESULT StateManagerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StateManager)
+COMPONENT_PROC_END()
 void luaX_pushStateManager(lua_State *L, struct StateManager const* StateManager) {
 	luaX_pushObject(L, CMP_GetObject(StateManager));
 }
@@ -1158,16 +1134,13 @@ struct StateManager* luaX_checkStateManager(lua_State *L, int idx) {
 	return GetStateManager(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(StateManager, 0);
-static struct PropertyType const StateGroupProperties[kStateGroupNumProperties] = {
-	DECL(0xd9dc005c, StateGroup, ControllerProperty, ControllerProperty, kDataTypeString), // StateGroup.ControllerProperty
+COMPONENT_PROPERTIES(StateGroup) = {
+	DECL_STRING(0xd9dc005c, StateGroup, ControllerProperty, ControllerProperty), // StateGroup.ControllerProperty
 };
-static struct StateGroup StateGroupDefaults = {
+COMPONENT_DEFAULTS(StateGroup) = {
 };
-LRESULT StateGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StateGroup)
+COMPONENT_PROC_END()
 void luaX_pushStateGroup(lua_State *L, struct StateGroup const* StateGroup) {
 	luaX_pushObject(L, CMP_GetObject(StateGroup));
 }
@@ -1175,17 +1148,14 @@ struct StateGroup* luaX_checkStateGroup(lua_State *L, int idx) {
 	return GetStateGroup(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(StateGroup, 0);
-static struct PropertyType const StateProperties[kStateNumProperties] = {
-	DECL(0xd147f96a, State, Value, Value, kDataTypeString), // State.Value
-	DECL(0xeb66e456, State, Path, Path, kDataTypeString), // State.Path
+COMPONENT_PROPERTIES(State) = {
+	DECL_STRING(0xd147f96a, State, Value, Value), // State.Value
+	DECL_STRING(0xeb66e456, State, Path, Path), // State.Path
 };
-static struct State StateDefaults = {
+COMPONENT_DEFAULTS(State) = {
 };
-LRESULT StateProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(State)
+COMPONENT_PROC_END()
 void luaX_pushState(lua_State *L, struct State const* State) {
 	luaX_pushObject(L, CMP_GetObject(State));
 }
@@ -1196,20 +1166,17 @@ REGISTER_CLASS(State, 0);
 HANDLER(StateManagerController, Object, Start);
 HANDLER(StateManagerController, Object, PropertyChanged);
 HANDLER(StateManagerController, StateManagerController, ControllerChanged);
-static struct PropertyType const StateManagerControllerProperties[kStateManagerControllerNumProperties] = {
-	DECL(0xe76f2815, StateManagerController, StateManager, StateManager, kDataTypeObject, .TypeString = "StateManager"), // StateManagerController.StateManager
-	DECL(0xda0795ff, StateManagerController, ControllerChanged, ControllerChanged, kDataTypeEvent, .TypeString = "StateManagerController_ControllerChangedEventArgs"), // StateManagerController.ControllerChanged
+COMPONENT_PROPERTIES(StateManagerController) = {
+	DECL_OBJECT(0xe76f2815, StateManagerController, StateManager, StateManager, StateManager), // StateManagerController.StateManager
+	DECL_EVENT(0xda0795ff, StateManagerController, ControllerChanged), // StateManagerController.ControllerChanged
 };
-static struct StateManagerController StateManagerControllerDefaults = {
+COMPONENT_DEFAULTS(StateManagerController) = {
 };
-LRESULT StateManagerControllerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return StateManagerController_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return StateManagerController_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_StateManagerController_ControllerChanged: return StateManagerController_ControllerChanged(object, cmp, wparm, lparm); // StateManagerController.ControllerChanged
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StateManagerController)
+		DISPATCH(StateManagerController, Object, Start) // Object.Start
+		DISPATCH(StateManagerController, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(StateManagerController, StateManagerController, ControllerChanged) // StateManagerController.ControllerChanged
+COMPONENT_PROC_END()
 void luaX_pushStateManagerController(lua_State *L, struct StateManagerController const* StateManagerController) {
 	luaX_pushObject(L, CMP_GetObject(StateManagerController));
 }
@@ -1217,15 +1184,12 @@ struct StateManagerController* luaX_checkStateManagerController(lua_State *L, in
 	return GetStateManagerController(luaX_checkObject(L, idx));
 }
 REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
-static struct PropertyType const ResourceDictionaryProperties[kResourceDictionaryNumProperties] = {
+COMPONENT_PROPERTIES(ResourceDictionary) = {
 };
-static struct ResourceDictionary ResourceDictionaryDefaults = {
+COMPONENT_DEFAULTS(ResourceDictionary) = {
 };
-LRESULT ResourceDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ResourceDictionary)
+COMPONENT_PROC_END()
 void luaX_pushResourceDictionary(lua_State *L, struct ResourceDictionary const* ResourceDictionary) {
 	luaX_pushObject(L, CMP_GetObject(ResourceDictionary));
 }
@@ -1233,18 +1197,15 @@ struct ResourceDictionary* luaX_checkResourceDictionary(lua_State *L, int idx) {
 	return GetResourceDictionary(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(ResourceDictionary, 0);
-static struct PropertyType const LocaleProperties[kLocaleNumProperties] = {
-	DECL(0x9a73db9b, Locale, Language, Language, kDataTypeString), // Locale.Language
-	ARRAY_DECL(0xdcaca293, Locale, Entries, Entries, kDataTypeStruct, .TypeString = "LocaleEntry"), // Locale.Entries
-	DECL(0x67d575c1, Locale, NumEntries, NumEntries, kDataTypeInt), // Locale.NumEntries
+COMPONENT_PROPERTIES(Locale) = {
+	DECL_STRING(0x9a73db9b, Locale, Language, Language), // Locale.Language
+	ARRAY_DECL_STRUCT_TYPE(0xdcaca293, Locale, Entries, Entries, LocaleEntry), // Locale.Entries
+	DECL_INT(0x67d575c1, Locale, NumEntries, NumEntries), // Locale.NumEntries
 };
-static struct Locale LocaleDefaults = {
+COMPONENT_DEFAULTS(Locale) = {
 };
-LRESULT LocaleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Locale)
+COMPONENT_PROC_END()
 void luaX_pushLocale(lua_State *L, struct Locale const* Locale) {
 	luaX_pushObject(L, CMP_GetObject(Locale));
 }
@@ -1253,15 +1214,12 @@ struct Locale* luaX_checkLocale(lua_State *L, int idx) {
 }
 #define ID_ResourceDictionary 0xde7febc5
 REGISTER_CLASS(Locale, ID_ResourceDictionary, 0);
-static struct PropertyType const DataObjectProperties[kDataObjectNumProperties] = {
+COMPONENT_PROPERTIES(DataObject) = {
 };
-static struct DataObject DataObjectDefaults = {
+COMPONENT_DEFAULTS(DataObject) = {
 };
-LRESULT DataObjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(DataObject)
+COMPONENT_PROC_END()
 void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject) {
 	luaX_pushObject(L, CMP_GetObject(DataObject));
 }
@@ -1272,21 +1230,18 @@ REGISTER_CLASS(DataObject, 0);
 HANDLER(Trigger, Object, PropertyChanged);
 HANDLER(Trigger, Object, Attached);
 HANDLER(Trigger, Trigger, Triggered);
-static struct PropertyType const TriggerProperties[kTriggerNumProperties] = {
-	DECL(0x5221f9e8, Trigger, Property, Property, kDataTypeString), // Trigger.Property
-	DECL(0xd147f96a, Trigger, Value, Value, kDataTypeInt), // Trigger.Value
-	DECL(0x3b1c3ae2, Trigger, Triggered, Triggered, kDataTypeEvent, .TypeString = "Trigger_TriggeredEventArgs"), // Trigger.Triggered
+COMPONENT_PROPERTIES(Trigger) = {
+	DECL_STRING(0x5221f9e8, Trigger, Property, Property), // Trigger.Property
+	DECL_INT(0xd147f96a, Trigger, Value, Value), // Trigger.Value
+	DECL_EVENT(0x3b1c3ae2, Trigger, Triggered), // Trigger.Triggered
 };
-static struct Trigger TriggerDefaults = {
+COMPONENT_DEFAULTS(Trigger) = {
 };
-LRESULT TriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_PropertyChanged: return Trigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Attached: return Trigger_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Trigger_Triggered: return Trigger_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Trigger)
+		DISPATCH(Trigger, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(Trigger, Object, Attached) // Object.Attached
+		DISPATCH(Trigger, Trigger, Triggered) // Trigger.Triggered
+COMPONENT_PROC_END()
 void luaX_pushTrigger(lua_State *L, struct Trigger const* Trigger) {
 	luaX_pushObject(L, CMP_GetObject(Trigger));
 }
@@ -1296,19 +1251,16 @@ struct Trigger* luaX_checkTrigger(lua_State *L, int idx) {
 REGISTER_CLASS(Trigger, 0);
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged);
 HANDLER(OnPropertyChangedTrigger, Object, Attached);
-static struct PropertyType const OnPropertyChangedTriggerProperties[kOnPropertyChangedTriggerNumProperties] = {
-	DECL(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode, kDataTypeString), // OnPropertyChangedTrigger.SourceNode
-	DECL(0x5221f9e8, OnPropertyChangedTrigger, Property, Property, kDataTypeString), // OnPropertyChangedTrigger.Property
+COMPONENT_PROPERTIES(OnPropertyChangedTrigger) = {
+	DECL_STRING(0x9ff03304, OnPropertyChangedTrigger, SourceNode, SourceNode), // OnPropertyChangedTrigger.SourceNode
+	DECL_STRING(0x5221f9e8, OnPropertyChangedTrigger, Property, Property), // OnPropertyChangedTrigger.Property
 };
-static struct OnPropertyChangedTrigger OnPropertyChangedTriggerDefaults = {
+COMPONENT_DEFAULTS(OnPropertyChangedTrigger) = {
 };
-LRESULT OnPropertyChangedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_PropertyChanged: return OnPropertyChangedTrigger_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Attached: return OnPropertyChangedTrigger_Attached(object, cmp, wparm, lparm); // Object.Attached
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(OnPropertyChangedTrigger)
+		DISPATCH(OnPropertyChangedTrigger, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(OnPropertyChangedTrigger, Object, Attached) // Object.Attached
+COMPONENT_PROC_END()
 void luaX_pushOnPropertyChangedTrigger(lua_State *L, struct OnPropertyChangedTrigger const* OnPropertyChangedTrigger) {
 	luaX_pushObject(L, CMP_GetObject(OnPropertyChangedTrigger));
 }
@@ -1318,16 +1270,13 @@ struct OnPropertyChangedTrigger* luaX_checkOnPropertyChangedTrigger(lua_State *L
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnPropertyChangedTrigger, ID_Trigger, 0);
 HANDLER(OnAttachedTrigger, Object, Attached);
-static struct PropertyType const OnAttachedTriggerProperties[kOnAttachedTriggerNumProperties] = {
+COMPONENT_PROPERTIES(OnAttachedTrigger) = {
 };
-static struct OnAttachedTrigger OnAttachedTriggerDefaults = {
+COMPONENT_DEFAULTS(OnAttachedTrigger) = {
 };
-LRESULT OnAttachedTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return OnAttachedTrigger_Attached(object, cmp, wparm, lparm); // Object.Attached
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(OnAttachedTrigger)
+		DISPATCH(OnAttachedTrigger, Object, Attached) // Object.Attached
+COMPONENT_PROC_END()
 void luaX_pushOnAttachedTrigger(lua_State *L, struct OnAttachedTrigger const* OnAttachedTrigger) {
 	luaX_pushObject(L, CMP_GetObject(OnAttachedTrigger));
 }
@@ -1336,10 +1285,10 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
-static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
-	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
+COMPONENT_PROPERTIES(EventTrigger) = {
+	DECL_STRING(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent), // EventTrigger.RoutedEvent
 };
-static struct EventTrigger EventTriggerDefaults = {
+COMPONENT_DEFAULTS(EventTrigger) = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	return FALSE;
@@ -1352,10 +1301,10 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
-static struct PropertyType const OnEventTriggerProperties[kOnEventTriggerNumProperties] = {
-	DECL(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnEventTrigger.RoutedEvent
+COMPONENT_PROPERTIES(OnEventTrigger) = {
+	DECL_STRING(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent), // OnEventTrigger.RoutedEvent
 };
-static struct OnEventTrigger OnEventTriggerDefaults = {
+COMPONENT_DEFAULTS(OnEventTrigger) = {
 };
 LRESULT OnEventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	return FALSE;
@@ -1367,10 +1316,10 @@ struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx) {
 	return GetOnEventTrigger(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(OnEventTrigger, ID_Trigger, 0);
-static struct PropertyType const OnClickTriggerProperties[kOnClickTriggerNumProperties] = {
-	DECL(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnClickTrigger.RoutedEvent
+COMPONENT_PROPERTIES(OnClickTrigger) = {
+	DECL_STRING(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent), // OnClickTrigger.RoutedEvent
 };
-static struct OnClickTrigger OnClickTriggerDefaults = {
+COMPONENT_DEFAULTS(OnClickTrigger) = {
 	.RoutedEvent = "Node.LeftButtonUp",
 };
 LRESULT OnClickTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1384,19 +1333,16 @@ struct OnClickTrigger* luaX_checkOnClickTrigger(lua_State *L, int idx) {
 }
 REGISTER_CLASS(OnClickTrigger, ID_Trigger, 0);
 HANDLER(Setter, Trigger, Triggered);
-static struct PropertyType const SetterProperties[kSetterNumProperties] = {
-	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
-	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeString), // Setter.Property
-	DECL(0xd147f96a, Setter, Value, Value, kDataTypeString), // Setter.Value
+COMPONENT_PROPERTIES(Setter) = {
+	DECL_OBJECT(0xa5ea0da3, Setter, Trigger, Trigger, Trigger), // Setter.Trigger
+	DECL_STRING(0x5221f9e8, Setter, Property, Property), // Setter.Property
+	DECL_STRING(0xd147f96a, Setter, Value, Value), // Setter.Value
 };
-static struct Setter SetterDefaults = {
+COMPONENT_DEFAULTS(Setter) = {
 };
-LRESULT SetterProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Trigger_Triggered: return Setter_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Setter)
+		DISPATCH(Setter, Trigger, Triggered) // Trigger.Triggered
+COMPONENT_PROC_END()
 void luaX_pushSetter(lua_State *L, struct Setter const* Setter) {
 	luaX_pushObject(L, CMP_GetObject(Setter));
 }
@@ -1406,19 +1352,16 @@ struct Setter* luaX_checkSetter(lua_State *L, int idx) {
 REGISTER_CLASS(Setter, 0);
 HANDLER(ShowModalAction, Object, Attached);
 HANDLER(ShowModalAction, Trigger, Triggered);
-static struct PropertyType const ShowModalActionProperties[kShowModalActionNumProperties] = {
-	DECL(0xa5ea0da3, ShowModalAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // ShowModalAction.Trigger
-	DECL(0xeb66e456, ShowModalAction, Path, Path, kDataTypeString), // ShowModalAction.Path
+COMPONENT_PROPERTIES(ShowModalAction) = {
+	DECL_OBJECT(0xa5ea0da3, ShowModalAction, Trigger, Trigger, Trigger), // ShowModalAction.Trigger
+	DECL_STRING(0xeb66e456, ShowModalAction, Path, Path), // ShowModalAction.Path
 };
-static struct ShowModalAction ShowModalActionDefaults = {
+COMPONENT_DEFAULTS(ShowModalAction) = {
 };
-LRESULT ShowModalActionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return ShowModalAction_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Trigger_Triggered: return ShowModalAction_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ShowModalAction)
+		DISPATCH(ShowModalAction, Object, Attached) // Object.Attached
+		DISPATCH(ShowModalAction, Trigger, Triggered) // Trigger.Triggered
+COMPONENT_PROC_END()
 void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction) {
 	luaX_pushObject(L, CMP_GetObject(ShowModalAction));
 }
@@ -1428,19 +1371,16 @@ struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx) {
 REGISTER_CLASS(ShowModalAction, 0);
 HANDLER(HideAction, Object, Attached);
 HANDLER(HideAction, Trigger, Triggered);
-static struct PropertyType const HideActionProperties[kHideActionNumProperties] = {
-	DECL(0xa5ea0da3, HideAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // HideAction.Trigger
-	DECL(0xeb66e456, HideAction, Path, Path, kDataTypeString), // HideAction.Path
+COMPONENT_PROPERTIES(HideAction) = {
+	DECL_OBJECT(0xa5ea0da3, HideAction, Trigger, Trigger, Trigger), // HideAction.Trigger
+	DECL_STRING(0xeb66e456, HideAction, Path, Path), // HideAction.Path
 };
-static struct HideAction HideActionDefaults = {
+COMPONENT_DEFAULTS(HideAction) = {
 };
-LRESULT HideActionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return HideAction_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Trigger_Triggered: return HideAction_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(HideAction)
+		DISPATCH(HideAction, Object, Attached) // Object.Attached
+		DISPATCH(HideAction, Trigger, Triggered) // Trigger.Triggered
+COMPONENT_PROC_END()
 void luaX_pushHideAction(lua_State *L, struct HideAction const* HideAction) {
 	luaX_pushObject(L, CMP_GetObject(HideAction));
 }
@@ -1453,109 +1393,109 @@ HANDLER(Node, Node, IsVisible);
 HANDLER(Node, Object, Start);
 HANDLER(Node, Object, PropertyChanged);
 HANDLER(Node, Object, Attached);
-static struct PropertyType const NodeProperties[kNodeNumProperties] = {
-	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
-	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
-	DECL(0x3b42dfbf, Node, Width, Size.Axis[0].Requested, kDataTypeFloat), // Node.Width
-	DECL(0xbe3d446f, Node, DesiredWidth, Size.Axis[0].Desired, kDataTypeFloat), // Node.DesiredWidth
-	DECL(0xfe87ddd9, Node, MinWidth, Size.Axis[0].Min, kDataTypeFloat), // Node.MinWidth
-	DECL(0xa6d77d39, Node, ActualWidth, Size.Axis[0].Actual, kDataTypeFloat), // Node.ActualWidth
-	DECL(0x29366f18, Node, ScrollWidth, Size.Axis[0].Scroll, kDataTypeFloat), // Node.ScrollWidth
-	DECL(0x629fba9a, Node, VerticalSize, Size.Axis[1], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.VerticalSize
-	DECL(0x1bd13562, Node, Height, Size.Axis[1].Requested, kDataTypeFloat), // Node.Height
-	DECL(0xf5943e12, Node, DesiredHeight, Size.Axis[1].Desired, kDataTypeFloat), // Node.DesiredHeight
-	DECL(0x9f6bc248, Node, MinHeight, Size.Axis[1].Min, kDataTypeFloat), // Node.MinHeight
-	DECL(0x34c40b28, Node, ActualHeight, Size.Axis[1].Actual, kDataTypeFloat), // Node.ActualHeight
-	DECL(0x5320b4af, Node, ScrollHeight, Size.Axis[1].Scroll, kDataTypeFloat), // Node.ScrollHeight
-	DECL(0x51724993, Node, DepthSize, Size.Axis[2], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.DepthSize
-	DECL(0xd070218a, Node, Depth, Size.Axis[2].Requested, kDataTypeFloat), // Node.Depth
-	DECL(0xe3fa9b3a, Node, DesiredDepth, Size.Axis[2].Desired, kDataTypeFloat), // Node.DesiredDepth
-	DECL(0xe01ae1b0, Node, MinDepth, Size.Axis[2].Min, kDataTypeFloat), // Node.MinDepth
-	DECL(0x886c1410, Node, ActualDepth, Size.Axis[2].Actual, kDataTypeFloat), // Node.ActualDepth
-	DECL(0x04d53041, Node, ScrollDepth, Size.Axis[2].Scroll, kDataTypeFloat), // Node.ScrollDepth
-	DECL(0xc4cc799b, Node, Margin, Margin, kDataTypeStruct, .TypeString = "Thickness"), // Node.Margin
-	DECL(0x1d32e627, Node, HorizontalMargin, Margin.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalMargin
-	DECL(0x0bdcf7a2, Node, MarginLeft, Margin.Axis[0].Left, kDataTypeFloat), // Node.MarginLeft
-	DECL(0xe9999c8f, Node, MarginRight, Margin.Axis[0].Right, kDataTypeFloat), // Node.MarginRight
-	DECL(0xb859064d, Node, VerticalMargin, Margin.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalMargin
-	DECL(0xe0a2f632, Node, MarginTop, Margin.Axis[1].Left, kDataTypeFloat), // Node.MarginTop
-	DECL(0x4231df34, Node, MarginBottom, Margin.Axis[1].Right, kDataTypeFloat), // Node.MarginBottom
-	DECL(0x606034ac, Node, DepthMargin, Margin.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthMargin
-	DECL(0x8bfc919a, Node, MarginFront, Margin.Axis[2].Left, kDataTypeFloat), // Node.MarginFront
-	DECL(0xfc651334, Node, MarginBack, Margin.Axis[2].Right, kDataTypeFloat), // Node.MarginBack
-	DECL(0x0736dd56, Node, Padding, Padding, kDataTypeStruct, .TypeString = "Thickness"), // Node.Padding
-	DECL(0x96255a02, Node, HorizontalPadding, Padding.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalPadding
-	DECL(0x380ec7b3, Node, PaddingLeft, Padding.Axis[0].Left, kDataTypeFloat), // Node.PaddingLeft
-	DECL(0x2e56c2bc, Node, PaddingRight, Padding.Axis[0].Right, kDataTypeFloat), // Node.PaddingRight
-	DECL(0x147a27e0, Node, VerticalPadding, Padding.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalPadding
-	DECL(0x67bd6401, Node, PaddingTop, Padding.Axis[1].Left, kDataTypeFloat), // Node.PaddingTop
-	DECL(0x8e7f220d, Node, PaddingBottom, Padding.Axis[1].Right, kDataTypeFloat), // Node.PaddingBottom
-	DECL(0xcba5b053, Node, DepthPadding, Padding.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthPadding
-	DECL(0x3d180671, Node, PaddingFront, Padding.Axis[2].Left, kDataTypeFloat), // Node.PaddingFront
-	DECL(0x8c287ea5, Node, PaddingBack, Padding.Axis[2].Right, kDataTypeFloat), // Node.PaddingBack
-	DECL(0x0cad6f57, Node, Border, Border, kDataTypeStruct, .TypeString = "BorderShorthand"), // Node.Border
-	DECL(0x0aaf7cf9, Node, BorderWidth, Border.Width, kDataTypeStruct, .TypeString = "Thickness"), // Node.BorderWidth
-	DECL(0x19c21815, Node, HorizontalBorderWidth, Border.Width.Axis[0], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.HorizontalBorderWidth
-	DECL(0x63b03bb4, Node, BorderWidthLeft, Border.Width.Axis[0].Left, kDataTypeFloat), // Node.BorderWidthLeft
-	DECL(0xe6977c61, Node, BorderWidthRight, Border.Width.Axis[0].Right, kDataTypeFloat), // Node.BorderWidthRight
-	DECL(0x6b40a6c7, Node, VerticalBorderWidth, Border.Width.Axis[1], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.VerticalBorderWidth
-	DECL(0x54b7f688, Node, BorderWidthTop, Border.Width.Axis[1].Left, kDataTypeFloat), // Node.BorderWidthTop
-	DECL(0xa44eab36, Node, BorderWidthBottom, Border.Width.Axis[1].Right, kDataTypeFloat), // Node.BorderWidthBottom
-	DECL(0x3170de3c, Node, DepthBorderWidth, Border.Width.Axis[2], kDataTypeStruct, .TypeString = "EdgeShorthand"), // Node.DepthBorderWidth
-	DECL(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left, kDataTypeFloat), // Node.BorderWidthFront
-	DECL(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right, kDataTypeFloat), // Node.BorderWidthBack
-	DECL(0x933e48c6, Node, BorderColor, Border.Color, kDataTypeColor), // Node.BorderColor
-	DECL(0x390b4488, Node, BorderStyle, Border.Style, kDataTypeEnum, .EnumValues = _BorderStyle), // Node.BorderStyle
-	DECL(0xb8e9fe05, Node, BorderRadius, Border.Radius, kDataTypeStruct, .TypeString = "CornerRadius"), // Node.BorderRadius
-	DECL(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius, kDataTypeFloat), // Node.BorderTopLeftRadius
-	DECL(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius, kDataTypeFloat), // Node.BorderTopRightRadius
-	DECL(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius, kDataTypeFloat), // Node.BorderBottomRightRadius
-	DECL(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius, kDataTypeFloat), // Node.BorderBottomLeftRadius
-	DECL(0xd66abafe, Node, Alignment, Alignment, kDataTypeStruct, .TypeString = "AlignmentShorthand"), // Node.Alignment
-	DECL(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], kDataTypeEnum, .EnumValues = _HorizontalAlignment), // Node.HorizontalAlignment
-	DECL(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], kDataTypeEnum, .EnumValues = _VerticalAlignment), // Node.VerticalAlignment
-	DECL(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], kDataTypeEnum, .EnumValues = _DepthAlignment), // Node.DepthAlignment
-	DECL(0x592a4941, Node, Visible, Visible, kDataTypeBool), // Node.Visible
-	DECL(0x20d9ba7c, Node, QuickHide, QuickHide, kDataTypeBool), // Node.QuickHide
-	DECL(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent, kDataTypeFloat), // Node.VisibleAmountInParent
-	DECL(0xde1f0406, Node, Opacity, Opacity, kDataTypeFloat), // Node.Opacity
-	DECL(0x76bda0c0, Node, Tags, Tags, kDataTypeString), // Node.Tags
-	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
-	ARRAY_DECL(0x9564a892, Node, Resources, Resources, kDataTypeStruct, .TypeString = "ResourceEntry"), // Node.Resources
-	DECL(0x25139ae4, Node, NumResources, NumResources, kDataTypeInt), // Node.NumResources
-	ARRAY_DECL(0x73803bc4, Node, Triggers, Triggers, kDataTypeObject, .TypeString = "Trigger"), // Node.Triggers
-	DECL(0x0f6d8ade, Node, NumTriggers, NumTriggers, kDataTypeInt), // Node.NumTriggers
-	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
-	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
-	DECL(0x898160ea, Node, HitTest, HitTest, kDataTypeEvent, .TypeString = "Node_HitTestEventArgs"), // Node.HitTest
-	DECL(0x608d20d1, Node, IsVisible, IsVisible, kDataTypeEvent, .TypeString = "Node_IsVisibleEventArgs"), // Node.IsVisible
-	DECL(0x03e93095, Node, ViewDidLoad, ViewDidLoad, kDataTypeEvent, .TypeString = "Node_ViewDidLoadEventArgs"), // Node.ViewDidLoad
-	DECL(0xa7c0f8d7, Node, KillFocus, KillFocus, kDataTypeEvent, .TypeString = "Node_KillFocusEventArgs"), // Node.KillFocus
-	DECL(0xc399d265, Node, SetFocus, SetFocus, kDataTypeEvent, .TypeString = "Node_SetFocusEventArgs"), // Node.SetFocus
-	DECL(0x80d9e0ee, Node, GetSize, GetSize, kDataTypeEvent, .TypeString = "Node_GetSizeEventArgs"), // Node.GetSize
-	DECL(0x0d589383, Node, MouseMessage, MouseMessage, kDataTypeEvent, .TypeString = "Node_MouseMessageEventArgs"), // Node.MouseMessage
-	DECL(0x6cc782b0, Node, LeftButtonDown, LeftButtonDown, kDataTypeEvent, .TypeString = "Node_LeftButtonDownEventArgs"), // Node.LeftButtonDown
-	DECL(0x13a69401, Node, RightButtonDown, RightButtonDown, kDataTypeEvent, .TypeString = "Node_RightButtonDownEventArgs"), // Node.RightButtonDown
-	DECL(0x39ed21d1, Node, OtherButtonDown, OtherButtonDown, kDataTypeEvent, .TypeString = "Node_OtherButtonDownEventArgs"), // Node.OtherButtonDown
-	DECL(0x0bb30ac9, Node, LeftButtonUp, LeftButtonUp, kDataTypeEvent, .TypeString = "Node_LeftButtonUpEventArgs"), // Node.LeftButtonUp
-	DECL(0x05e78e74, Node, RightButtonUp, RightButtonUp, kDataTypeEvent, .TypeString = "Node_RightButtonUpEventArgs"), // Node.RightButtonUp
-	DECL(0xc86953a4, Node, OtherButtonUp, OtherButtonUp, kDataTypeEvent, .TypeString = "Node_OtherButtonUpEventArgs"), // Node.OtherButtonUp
-	DECL(0x4884ec22, Node, LeftButtonDragged, LeftButtonDragged, kDataTypeEvent, .TypeString = "Node_LeftButtonDraggedEventArgs"), // Node.LeftButtonDragged
-	DECL(0x651f7219, Node, RightButtonDragged, RightButtonDragged, kDataTypeEvent, .TypeString = "Node_RightButtonDraggedEventArgs"), // Node.RightButtonDragged
-	DECL(0xf4cda889, Node, OtherButtonDragged, OtherButtonDragged, kDataTypeEvent, .TypeString = "Node_OtherButtonDraggedEventArgs"), // Node.OtherButtonDragged
-	DECL(0x5a92bc67, Node, LeftDoubleClick, LeftDoubleClick, kDataTypeEvent, .TypeString = "Node_LeftDoubleClickEventArgs"), // Node.LeftDoubleClick
-	DECL(0xeeebbe60, Node, RightDoubleClick, RightDoubleClick, kDataTypeEvent, .TypeString = "Node_RightDoubleClickEventArgs"), // Node.RightDoubleClick
-	DECL(0xf6c60630, Node, OtherDoubleClick, OtherDoubleClick, kDataTypeEvent, .TypeString = "Node_OtherDoubleClickEventArgs"), // Node.OtherDoubleClick
-	DECL(0x65db8b6f, Node, MouseMoved, MouseMoved, kDataTypeEvent, .TypeString = "Node_MouseMovedEventArgs"), // Node.MouseMoved
-	DECL(0x626f90e3, Node, ScrollWheel, ScrollWheel, kDataTypeEvent, .TypeString = "Node_ScrollWheelEventArgs"), // Node.ScrollWheel
-	DECL(0x25989e7a, Node, DragDrop, DragDrop, kDataTypeEvent, .TypeString = "Node_DragDropEventArgs"), // Node.DragDrop
-	DECL(0xc0e97a77, Node, DragEnter, DragEnter, kDataTypeEvent, .TypeString = "Node_DragEnterEventArgs"), // Node.DragEnter
-	DECL(0xee4b252b, Node, KeyMessage, KeyMessage, kDataTypeEvent, .TypeString = "Node_KeyMessageEventArgs"), // Node.KeyMessage
-	DECL(0x83b19b78, Node, KeyDown, KeyDown, kDataTypeEvent, .TypeString = "Node_KeyDownEventArgs"), // Node.KeyDown
-	DECL(0xfca37d71, Node, KeyUp, KeyUp, kDataTypeEvent, .TypeString = "Node_KeyUpEventArgs"), // Node.KeyUp
-	DECL(0xd484cca2, Node, TextInput, TextInput, kDataTypeEvent, .TypeString = "Node_TextInputEventArgs"), // Node.TextInput
+COMPONENT_PROPERTIES(Node) = {
+	DECL_STRUCT_TYPE(0xa6478e7c, Node, Size, Size, SizeShorthand), // Node.Size
+	DECL_STRUCT_TYPE(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], SizeAxisShorthand), // Node.HorizontalSize
+	DECL_FLOAT(0x3b42dfbf, Node, Width, Size.Axis[0].Requested), // Node.Width
+	DECL_FLOAT(0xbe3d446f, Node, DesiredWidth, Size.Axis[0].Desired), // Node.DesiredWidth
+	DECL_FLOAT(0xfe87ddd9, Node, MinWidth, Size.Axis[0].Min), // Node.MinWidth
+	DECL_FLOAT(0xa6d77d39, Node, ActualWidth, Size.Axis[0].Actual), // Node.ActualWidth
+	DECL_FLOAT(0x29366f18, Node, ScrollWidth, Size.Axis[0].Scroll), // Node.ScrollWidth
+	DECL_STRUCT_TYPE(0x629fba9a, Node, VerticalSize, Size.Axis[1], SizeAxisShorthand), // Node.VerticalSize
+	DECL_FLOAT(0x1bd13562, Node, Height, Size.Axis[1].Requested), // Node.Height
+	DECL_FLOAT(0xf5943e12, Node, DesiredHeight, Size.Axis[1].Desired), // Node.DesiredHeight
+	DECL_FLOAT(0x9f6bc248, Node, MinHeight, Size.Axis[1].Min), // Node.MinHeight
+	DECL_FLOAT(0x34c40b28, Node, ActualHeight, Size.Axis[1].Actual), // Node.ActualHeight
+	DECL_FLOAT(0x5320b4af, Node, ScrollHeight, Size.Axis[1].Scroll), // Node.ScrollHeight
+	DECL_STRUCT_TYPE(0x51724993, Node, DepthSize, Size.Axis[2], SizeAxisShorthand), // Node.DepthSize
+	DECL_FLOAT(0xd070218a, Node, Depth, Size.Axis[2].Requested), // Node.Depth
+	DECL_FLOAT(0xe3fa9b3a, Node, DesiredDepth, Size.Axis[2].Desired), // Node.DesiredDepth
+	DECL_FLOAT(0xe01ae1b0, Node, MinDepth, Size.Axis[2].Min), // Node.MinDepth
+	DECL_FLOAT(0x886c1410, Node, ActualDepth, Size.Axis[2].Actual), // Node.ActualDepth
+	DECL_FLOAT(0x04d53041, Node, ScrollDepth, Size.Axis[2].Scroll), // Node.ScrollDepth
+	DECL_STRUCT_TYPE(0xc4cc799b, Node, Margin, Margin, Thickness), // Node.Margin
+	DECL_STRUCT_TYPE(0x1d32e627, Node, HorizontalMargin, Margin.Axis[0], EdgeShorthand), // Node.HorizontalMargin
+	DECL_FLOAT(0x0bdcf7a2, Node, MarginLeft, Margin.Axis[0].Left), // Node.MarginLeft
+	DECL_FLOAT(0xe9999c8f, Node, MarginRight, Margin.Axis[0].Right), // Node.MarginRight
+	DECL_STRUCT_TYPE(0xb859064d, Node, VerticalMargin, Margin.Axis[1], EdgeShorthand), // Node.VerticalMargin
+	DECL_FLOAT(0xe0a2f632, Node, MarginTop, Margin.Axis[1].Left), // Node.MarginTop
+	DECL_FLOAT(0x4231df34, Node, MarginBottom, Margin.Axis[1].Right), // Node.MarginBottom
+	DECL_STRUCT_TYPE(0x606034ac, Node, DepthMargin, Margin.Axis[2], EdgeShorthand), // Node.DepthMargin
+	DECL_FLOAT(0x8bfc919a, Node, MarginFront, Margin.Axis[2].Left), // Node.MarginFront
+	DECL_FLOAT(0xfc651334, Node, MarginBack, Margin.Axis[2].Right), // Node.MarginBack
+	DECL_STRUCT_TYPE(0x0736dd56, Node, Padding, Padding, Thickness), // Node.Padding
+	DECL_STRUCT_TYPE(0x96255a02, Node, HorizontalPadding, Padding.Axis[0], EdgeShorthand), // Node.HorizontalPadding
+	DECL_FLOAT(0x380ec7b3, Node, PaddingLeft, Padding.Axis[0].Left), // Node.PaddingLeft
+	DECL_FLOAT(0x2e56c2bc, Node, PaddingRight, Padding.Axis[0].Right), // Node.PaddingRight
+	DECL_STRUCT_TYPE(0x147a27e0, Node, VerticalPadding, Padding.Axis[1], EdgeShorthand), // Node.VerticalPadding
+	DECL_FLOAT(0x67bd6401, Node, PaddingTop, Padding.Axis[1].Left), // Node.PaddingTop
+	DECL_FLOAT(0x8e7f220d, Node, PaddingBottom, Padding.Axis[1].Right), // Node.PaddingBottom
+	DECL_STRUCT_TYPE(0xcba5b053, Node, DepthPadding, Padding.Axis[2], EdgeShorthand), // Node.DepthPadding
+	DECL_FLOAT(0x3d180671, Node, PaddingFront, Padding.Axis[2].Left), // Node.PaddingFront
+	DECL_FLOAT(0x8c287ea5, Node, PaddingBack, Padding.Axis[2].Right), // Node.PaddingBack
+	DECL_STRUCT_TYPE(0x0cad6f57, Node, Border, Border, BorderShorthand), // Node.Border
+	DECL_STRUCT_TYPE(0x0aaf7cf9, Node, BorderWidth, Border.Width, Thickness), // Node.BorderWidth
+	DECL_STRUCT_TYPE(0x19c21815, Node, HorizontalBorderWidth, Border.Width.Axis[0], EdgeShorthand), // Node.HorizontalBorderWidth
+	DECL_FLOAT(0x63b03bb4, Node, BorderWidthLeft, Border.Width.Axis[0].Left), // Node.BorderWidthLeft
+	DECL_FLOAT(0xe6977c61, Node, BorderWidthRight, Border.Width.Axis[0].Right), // Node.BorderWidthRight
+	DECL_STRUCT_TYPE(0x6b40a6c7, Node, VerticalBorderWidth, Border.Width.Axis[1], EdgeShorthand), // Node.VerticalBorderWidth
+	DECL_FLOAT(0x54b7f688, Node, BorderWidthTop, Border.Width.Axis[1].Left), // Node.BorderWidthTop
+	DECL_FLOAT(0xa44eab36, Node, BorderWidthBottom, Border.Width.Axis[1].Right), // Node.BorderWidthBottom
+	DECL_STRUCT_TYPE(0x3170de3c, Node, DepthBorderWidth, Border.Width.Axis[2], EdgeShorthand), // Node.DepthBorderWidth
+	DECL_FLOAT(0x14d0d564, Node, BorderWidthFront, Border.Width.Axis[2].Left), // Node.BorderWidthFront
+	DECL_FLOAT(0x7c087736, Node, BorderWidthBack, Border.Width.Axis[2].Right), // Node.BorderWidthBack
+	DECL_COLOR(0x933e48c6, Node, BorderColor, Border.Color), // Node.BorderColor
+	DECL_ENUM(0x390b4488, Node, BorderStyle, Border.Style, BorderStyle), // Node.BorderStyle
+	DECL_STRUCT_TYPE(0xb8e9fe05, Node, BorderRadius, Border.Radius, CornerRadius), // Node.BorderRadius
+	DECL_FLOAT(0x22252041, Node, BorderTopLeftRadius, Border.Radius.TopLeftRadius), // Node.BorderTopLeftRadius
+	DECL_FLOAT(0x789f0d82, Node, BorderTopRightRadius, Border.Radius.TopRightRadius), // Node.BorderTopRightRadius
+	DECL_FLOAT(0xc321a1f8, Node, BorderBottomRightRadius, Border.Radius.BottomRightRadius), // Node.BorderBottomRightRadius
+	DECL_FLOAT(0x700e8e07, Node, BorderBottomLeftRadius, Border.Radius.BottomLeftRadius), // Node.BorderBottomLeftRadius
+	DECL_STRUCT_TYPE(0xd66abafe, Node, Alignment, Alignment, AlignmentShorthand), // Node.Alignment
+	DECL_ENUM(0x1b8d5152, Node, HorizontalAlignment, Alignment.Axis[0], HorizontalAlignment), // Node.HorizontalAlignment
+	DECL_ENUM(0x94b01054, Node, VerticalAlignment, Alignment.Axis[1], VerticalAlignment), // Node.VerticalAlignment
+	DECL_ENUM(0x7ef540ff, Node, DepthAlignment, Alignment.Axis[2], DepthAlignment), // Node.DepthAlignment
+	DECL_BOOL(0x592a4941, Node, Visible, Visible), // Node.Visible
+	DECL_BOOL(0x20d9ba7c, Node, QuickHide, QuickHide), // Node.QuickHide
+	DECL_FLOAT(0xa0b06d26, Node, VisibleAmountInParent, VisibleAmountInParent), // Node.VisibleAmountInParent
+	DECL_FLOAT(0xde1f0406, Node, Opacity, Opacity), // Node.Opacity
+	DECL_STRING(0x76bda0c0, Node, Tags, Tags), // Node.Tags
+	DECL_OBJECT(0xa310331c, Node, DataContext, DataContext, DataObject), // Node.DataContext
+	ARRAY_DECL_STRUCT_TYPE(0x9564a892, Node, Resources, Resources, ResourceEntry), // Node.Resources
+	DECL_INT(0x25139ae4, Node, NumResources, NumResources), // Node.NumResources
+	ARRAY_DECL_OBJECT(0x73803bc4, Node, Triggers, Triggers, Trigger), // Node.Triggers
+	DECL_INT(0x0f6d8ade, Node, NumTriggers, NumTriggers), // Node.NumTriggers
+	DECL_EVENT(0x5dbe404d, Node, UpdateMatrix), // Node.UpdateMatrix
+	DECL_EVENT(0xa3650e54, Node, LoadView), // Node.LoadView
+	DECL_EVENT(0x898160ea, Node, HitTest), // Node.HitTest
+	DECL_EVENT(0x608d20d1, Node, IsVisible), // Node.IsVisible
+	DECL_EVENT(0x03e93095, Node, ViewDidLoad), // Node.ViewDidLoad
+	DECL_EVENT(0xa7c0f8d7, Node, KillFocus), // Node.KillFocus
+	DECL_EVENT(0xc399d265, Node, SetFocus), // Node.SetFocus
+	DECL_EVENT(0x80d9e0ee, Node, GetSize), // Node.GetSize
+	DECL_EVENT(0x0d589383, Node, MouseMessage), // Node.MouseMessage
+	DECL_EVENT(0x6cc782b0, Node, LeftButtonDown), // Node.LeftButtonDown
+	DECL_EVENT(0x13a69401, Node, RightButtonDown), // Node.RightButtonDown
+	DECL_EVENT(0x39ed21d1, Node, OtherButtonDown), // Node.OtherButtonDown
+	DECL_EVENT(0x0bb30ac9, Node, LeftButtonUp), // Node.LeftButtonUp
+	DECL_EVENT(0x05e78e74, Node, RightButtonUp), // Node.RightButtonUp
+	DECL_EVENT(0xc86953a4, Node, OtherButtonUp), // Node.OtherButtonUp
+	DECL_EVENT(0x4884ec22, Node, LeftButtonDragged), // Node.LeftButtonDragged
+	DECL_EVENT(0x651f7219, Node, RightButtonDragged), // Node.RightButtonDragged
+	DECL_EVENT(0xf4cda889, Node, OtherButtonDragged), // Node.OtherButtonDragged
+	DECL_EVENT(0x5a92bc67, Node, LeftDoubleClick), // Node.LeftDoubleClick
+	DECL_EVENT(0xeeebbe60, Node, RightDoubleClick), // Node.RightDoubleClick
+	DECL_EVENT(0xf6c60630, Node, OtherDoubleClick), // Node.OtherDoubleClick
+	DECL_EVENT(0x65db8b6f, Node, MouseMoved), // Node.MouseMoved
+	DECL_EVENT(0x626f90e3, Node, ScrollWheel), // Node.ScrollWheel
+	DECL_EVENT(0x25989e7a, Node, DragDrop), // Node.DragDrop
+	DECL_EVENT(0xc0e97a77, Node, DragEnter), // Node.DragEnter
+	DECL_EVENT(0xee4b252b, Node, KeyMessage), // Node.KeyMessage
+	DECL_EVENT(0x83b19b78, Node, KeyDown), // Node.KeyDown
+	DECL_EVENT(0xfca37d71, Node, KeyUp), // Node.KeyUp
+	DECL_EVENT(0xd484cca2, Node, TextInput), // Node.TextInput
 };
-static struct Node NodeDefaults = {
+COMPONENT_DEFAULTS(Node) = {
 		
   .Visible = TRUE,
 		
@@ -1563,16 +1503,13 @@ static struct Node NodeDefaults = {
 		
   .Opacity = 1,
 };
-LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_GetSize: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
-		case ID_Node_IsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
-		case ID_Object_Start: return Node_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return Node_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Attached: return Node_Attached(object, cmp, wparm, lparm); // Object.Attached
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Node)
+		DISPATCH(Node, Node, GetSize) // Node.GetSize
+		DISPATCH(Node, Node, IsVisible) // Node.IsVisible
+		DISPATCH(Node, Object, Start) // Object.Start
+		DISPATCH(Node, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(Node, Object, Attached) // Object.Attached
+COMPONENT_PROC_END()
 void luaX_pushNode(lua_State *L, struct Node const* Node) {
 	luaX_pushObject(L, CMP_GetObject(Node));
 }

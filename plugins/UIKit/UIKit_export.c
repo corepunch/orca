@@ -46,50 +46,50 @@ extern void read_property(lua_State *L, int idx, struct PropertyType const* prop
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _FontShorthand[] = {
-	DECL(0x993014d9, FontShorthand, Weight, Weight, kDataTypeEnum, .EnumValues = _FontWeight), // FontShorthand.Weight
-	DECL(0x5467ec76, FontShorthand, Style, Style, kDataTypeEnum, .EnumValues = _FontStyle), // FontShorthand.Style
-	DECL(0xa6478e7c, FontShorthand, Size, Size, kDataTypeFloat), // FontShorthand.Size
-	DECL(0xc46f8f49, FontShorthand, Family, Family, kDataTypeObject, .TypeString = "FontFamily"), // FontShorthand.Family
+	DECL_ENUM(0x993014d9, FontShorthand, Weight, Weight, FontWeight), // FontShorthand.Weight
+	DECL_ENUM(0x5467ec76, FontShorthand, Style, Style, FontStyle), // FontShorthand.Style
+	DECL_FLOAT(0xa6478e7c, FontShorthand, Size, Size), // FontShorthand.Size
+	DECL_OBJECT(0xc46f8f49, FontShorthand, Family, Family, FontFamily), // FontShorthand.Family
 };
 static luaL_Reg _FontShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _BrushShorthand[] = {
-	DECL(0xe5b43cf8, BrushShorthand, Color, Color, kDataTypeColor), // BrushShorthand.Color
-	DECL(0x590ca79a, BrushShorthand, Image, Image, kDataTypeObject, .TypeString = "Texture"), // BrushShorthand.Image
-	DECL(0xcbd54f80, BrushShorthand, Material, Material, kDataTypeObject, .TypeString = "Material"), // BrushShorthand.Material
+	DECL_COLOR(0xe5b43cf8, BrushShorthand, Color, Color), // BrushShorthand.Color
+	DECL_OBJECT(0x590ca79a, BrushShorthand, Image, Image, Texture), // BrushShorthand.Image
+	DECL_OBJECT(0xcbd54f80, BrushShorthand, Material, Material, Material), // BrushShorthand.Material
 };
 static luaL_Reg _BrushShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _ShadowShorthand[] = {
-	DECL(0x8995c7ea, ShadowShorthand, Offset, Offset, kDataTypeStruct, .TypeString = "Vector2D"), // ShadowShorthand.Offset
-	DECL(0x961749ae, ShadowShorthand, BlurRadius, BlurRadius, kDataTypeFloat), // ShadowShorthand.BlurRadius
-	DECL(0x80066a9c, ShadowShorthand, SpreadRadius, SpreadRadius, kDataTypeFloat), // ShadowShorthand.SpreadRadius
-	DECL(0xe5b43cf8, ShadowShorthand, Color, Color, kDataTypeColor), // ShadowShorthand.Color
+	DECL_STRUCT_TYPE(0x8995c7ea, ShadowShorthand, Offset, Offset, Vector2D), // ShadowShorthand.Offset
+	DECL_FLOAT(0x961749ae, ShadowShorthand, BlurRadius, BlurRadius), // ShadowShorthand.BlurRadius
+	DECL_FLOAT(0x80066a9c, ShadowShorthand, SpreadRadius, SpreadRadius), // ShadowShorthand.SpreadRadius
+	DECL_COLOR(0xe5b43cf8, ShadowShorthand, Color, Color), // ShadowShorthand.Color
 };
 static luaL_Reg _ShadowShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _RingShorthand[] = {
-	DECL(0x8995c7ea, RingShorthand, Offset, Offset, kDataTypeFloat), // RingShorthand.Offset
-	DECL(0x3b42dfbf, RingShorthand, Width, Width, kDataTypeFloat), // RingShorthand.Width
-	DECL(0xe5b43cf8, RingShorthand, Color, Color, kDataTypeColor), // RingShorthand.Color
+	DECL_FLOAT(0x8995c7ea, RingShorthand, Offset, Offset), // RingShorthand.Offset
+	DECL_FLOAT(0x3b42dfbf, RingShorthand, Width, Width), // RingShorthand.Width
+	DECL_COLOR(0xe5b43cf8, RingShorthand, Color, Color), // RingShorthand.Color
 };
 static luaL_Reg _RingShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _OverflowShorthand[] = {
-	DECL(0xdd0c1e27, OverflowShorthand, X, x, kDataTypeEnum, .EnumValues = _Overflow), // OverflowShorthand.X
-	DECL(0xdc0c1c94, OverflowShorthand, Y, y, kDataTypeEnum, .EnumValues = _Overflow), // OverflowShorthand.Y
+	DECL_ENUM(0xdd0c1e27, OverflowShorthand, X, x, Overflow), // OverflowShorthand.X
+	DECL_ENUM(0xdc0c1c94, OverflowShorthand, Y, y, Overflow), // OverflowShorthand.Y
 };
 static luaL_Reg _OverflowShorthand_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _UnderlineShorthand[] = {
-	DECL(0x8995c7ea, UnderlineShorthand, Offset, Offset, kDataTypeFloat), // UnderlineShorthand.Offset
-	DECL(0x3b42dfbf, UnderlineShorthand, Width, Width, kDataTypeFloat), // UnderlineShorthand.Width
-	DECL(0xe5b43cf8, UnderlineShorthand, Color, Color, kDataTypeColor), // UnderlineShorthand.Color
+	DECL_FLOAT(0x8995c7ea, UnderlineShorthand, Offset, Offset), // UnderlineShorthand.Offset
+	DECL_FLOAT(0x3b42dfbf, UnderlineShorthand, Width, Width), // UnderlineShorthand.Width
+	DECL_COLOR(0xe5b43cf8, UnderlineShorthand, Color, Color), // UnderlineShorthand.Color
 };
 static luaL_Reg _UnderlineShorthand_Methods[] = {
 	{ NULL, NULL }
@@ -106,42 +106,42 @@ STRUCT(UnderlineShorthand, UnderlineShorthand);
 
 static luaL_Reg _TextBlockConcept_MakeTextEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TextBlockConcept_MakeTextEventArgs[] = {
-	DECL(0xbde64e3e, TextBlockConcept_MakeTextEventArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // TextBlockConcept_MakeTextEventArgs.text
-	DECL(0xa7e2407e, TextBlockConcept_MakeTextEventArgs, availableSpace, availableSpace, kDataTypeInt), // TextBlockConcept_MakeTextEventArgs.availableSpace
+	DECL_STRUCT_TYPE(0xbde64e3e, TextBlockConcept_MakeTextEventArgs, text, text, ViewText), // TextBlockConcept_MakeTextEventArgs.text
+	DECL_INT(0xa7e2407e, TextBlockConcept_MakeTextEventArgs, availableSpace, availableSpace), // TextBlockConcept_MakeTextEventArgs.availableSpace
 };
 static luaL_Reg _Node2D_DrawBrushEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_DrawBrushEventArgs[] = {
-	DECL(0xe4497980, Node2D_DrawBrushEventArgs, projection, projection, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D_DrawBrushEventArgs.projection
-	DECL(0xb35135fa, Node2D_DrawBrushEventArgs, image, image, kDataTypeObject, .TypeString = "Texture"), // Node2D_DrawBrushEventArgs.image
-	DECL(0xfac46df3, Node2D_DrawBrushEventArgs, brush, brush, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D_DrawBrushEventArgs.brush
-	DECL(0x98e5266c, Node2D_DrawBrushEventArgs, borderOffset, borderOffset, kDataTypeFloat), // Node2D_DrawBrushEventArgs.borderOffset
-	DECL(0x211ec219, Node2D_DrawBrushEventArgs, borderWidth, borderWidth, kDataTypeStruct, .TypeString = "Vector4D"), // Node2D_DrawBrushEventArgs.borderWidth
-	DECL(0x083a85c0, Node2D_DrawBrushEventArgs, foreground, foreground, kDataTypeBool), // Node2D_DrawBrushEventArgs.foreground
-	DECL(0xad6aa1df, Node2D_DrawBrushEventArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // Node2D_DrawBrushEventArgs.viewdef
+	DECL_STRUCT_TYPE(0xe4497980, Node2D_DrawBrushEventArgs, projection, projection, Matrix3D), // Node2D_DrawBrushEventArgs.projection
+	DECL_OBJECT(0xb35135fa, Node2D_DrawBrushEventArgs, image, image, Texture), // Node2D_DrawBrushEventArgs.image
+	DECL_STRUCT_TYPE(0xfac46df3, Node2D_DrawBrushEventArgs, brush, brush, BrushShorthand), // Node2D_DrawBrushEventArgs.brush
+	DECL_FLOAT(0x98e5266c, Node2D_DrawBrushEventArgs, borderOffset, borderOffset), // Node2D_DrawBrushEventArgs.borderOffset
+	DECL_STRUCT_TYPE(0x211ec219, Node2D_DrawBrushEventArgs, borderWidth, borderWidth, Vector4D), // Node2D_DrawBrushEventArgs.borderWidth
+	DECL_BOOL(0x083a85c0, Node2D_DrawBrushEventArgs, foreground, foreground), // Node2D_DrawBrushEventArgs.foreground
+	DECL_STRUCT_TYPE(0xad6aa1df, Node2D_DrawBrushEventArgs, viewdef, viewdef, ViewDef), // Node2D_DrawBrushEventArgs.viewdef
 };
 static luaL_Reg _Node2D_MeasureEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_MeasureEventArgs[] = {
-	DECL(0x3b42dfbf, Node2D_MeasureEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureEventArgs.Width
-	DECL(0x1bd13562, Node2D_MeasureEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureEventArgs.Height
+	DECL_FLOAT(0x3b42dfbf, Node2D_MeasureEventArgs, Width, Width), // Node2D_MeasureEventArgs.Width
+	DECL_FLOAT(0x1bd13562, Node2D_MeasureEventArgs, Height, Height), // Node2D_MeasureEventArgs.Height
 };
 static luaL_Reg _Node2D_ArrangeEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_ArrangeEventArgs[] = {
-	DECL(0xdd0c1e27, Node2D_ArrangeEventArgs, X, X, kDataTypeFloat), // Node2D_ArrangeEventArgs.X
-	DECL(0xdc0c1c94, Node2D_ArrangeEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeEventArgs.Y
-	DECL(0x3b42dfbf, Node2D_ArrangeEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeEventArgs.Width
-	DECL(0x1bd13562, Node2D_ArrangeEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeEventArgs.Height
+	DECL_FLOAT(0xdd0c1e27, Node2D_ArrangeEventArgs, X, X), // Node2D_ArrangeEventArgs.X
+	DECL_FLOAT(0xdc0c1c94, Node2D_ArrangeEventArgs, Y, Y), // Node2D_ArrangeEventArgs.Y
+	DECL_FLOAT(0x3b42dfbf, Node2D_ArrangeEventArgs, Width, Width), // Node2D_ArrangeEventArgs.Width
+	DECL_FLOAT(0x1bd13562, Node2D_ArrangeEventArgs, Height, Height), // Node2D_ArrangeEventArgs.Height
 };
 static luaL_Reg _Node2D_MeasureOverrideEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_MeasureOverrideEventArgs[] = {
-	DECL(0x3b42dfbf, Node2D_MeasureOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Width
-	DECL(0x1bd13562, Node2D_MeasureOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Height
+	DECL_FLOAT(0x3b42dfbf, Node2D_MeasureOverrideEventArgs, Width, Width), // Node2D_MeasureOverrideEventArgs.Width
+	DECL_FLOAT(0x1bd13562, Node2D_MeasureOverrideEventArgs, Height, Height), // Node2D_MeasureOverrideEventArgs.Height
 };
 static luaL_Reg _Node2D_ArrangeOverrideEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_ArrangeOverrideEventArgs[] = {
-	DECL(0xdd0c1e27, Node2D_ArrangeOverrideEventArgs, X, X, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.X
-	DECL(0xdc0c1c94, Node2D_ArrangeOverrideEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Y
-	DECL(0x3b42dfbf, Node2D_ArrangeOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Width
-	DECL(0x1bd13562, Node2D_ArrangeOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Height
+	DECL_FLOAT(0xdd0c1e27, Node2D_ArrangeOverrideEventArgs, X, X), // Node2D_ArrangeOverrideEventArgs.X
+	DECL_FLOAT(0xdc0c1c94, Node2D_ArrangeOverrideEventArgs, Y, Y), // Node2D_ArrangeOverrideEventArgs.Y
+	DECL_FLOAT(0x3b42dfbf, Node2D_ArrangeOverrideEventArgs, Width, Width), // Node2D_ArrangeOverrideEventArgs.Width
+	DECL_FLOAT(0x1bd13562, Node2D_ArrangeOverrideEventArgs, Height, Height), // Node2D_ArrangeOverrideEventArgs.Height
 };
 static luaL_Reg _Node2D_ForegroundContentEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_ForegroundContentEventArgs[] = {
@@ -151,7 +151,7 @@ static struct PropertyType _Node2D_UpdateGeometryEventArgs[] = {
 };
 static luaL_Reg _Node2D_SetScrollTopEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node2D_SetScrollTopEventArgs[] = {
-	DECL(0xd147f96a, Node2D_SetScrollTopEventArgs, Value, Value, kDataTypeFloat), // Node2D_SetScrollTopEventArgs.Value
+	DECL_FLOAT(0xd147f96a, Node2D_SetScrollTopEventArgs, Value, Value), // Node2D_SetScrollTopEventArgs.Value
 };
 static luaL_Reg _Button_ClickEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Button_ClickEventArgs[] = {
@@ -161,40 +161,40 @@ static struct PropertyType _Form_SubmitEventArgs[] = {
 };
 static luaL_Reg _RadioGroup_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _RadioGroup_SelectionChangedEventArgs[] = {
-	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
-	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
+	DECL_STRING(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue), // RadioGroup_SelectionChangedEventArgs.SelectedValue
+	DECL_STRING(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue), // RadioGroup_SelectionChangedEventArgs.OldValue
 };
 static luaL_Reg _TabBar_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TabBar_SelectionChangedEventArgs[] = {
-	DECL(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.SelectedValue
-	DECL(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.OldValue
+	DECL_STRING(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue), // TabBar_SelectionChangedEventArgs.SelectedValue
+	DECL_STRING(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue), // TabBar_SelectionChangedEventArgs.OldValue
 };
 static luaL_Reg _TabView_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _TabView_SelectionChangedEventArgs[] = {
-	DECL(0x5c04816d, TabView_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabView_SelectionChangedEventArgs.SelectedValue
-	DECL(0x2ee43757, TabView_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabView_SelectionChangedEventArgs.OldValue
+	DECL_STRING(0x5c04816d, TabView_SelectionChangedEventArgs, SelectedValue, SelectedValue), // TabView_SelectionChangedEventArgs.SelectedValue
+	DECL_STRING(0x2ee43757, TabView_SelectionChangedEventArgs, OldValue, OldValue), // TabView_SelectionChangedEventArgs.OldValue
 };
 static luaL_Reg _Screen_UpdateLayoutEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Screen_UpdateLayoutEventArgs[] = {
-	DECL(0x3b42dfbf, Screen_UpdateLayoutEventArgs, Width, Width, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Width
-	DECL(0x1bd13562, Screen_UpdateLayoutEventArgs, Height, Height, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Height
+	DECL_FLOAT(0x3b42dfbf, Screen_UpdateLayoutEventArgs, Width, Width), // Screen_UpdateLayoutEventArgs.Width
+	DECL_FLOAT(0x1bd13562, Screen_UpdateLayoutEventArgs, Height, Height), // Screen_UpdateLayoutEventArgs.Height
 };
 static luaL_Reg _Screen_RenderScreenEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Screen_RenderScreenEventArgs[] = {
-	DECL(0x95876e1f, Screen_RenderScreenEventArgs, width, width, kDataTypeInt), // Screen_RenderScreenEventArgs.width
-	DECL(0xd5bdbb42, Screen_RenderScreenEventArgs, height, height, kDataTypeInt), // Screen_RenderScreenEventArgs.height
-	DECL(0xcc87a64d, Screen_RenderScreenEventArgs, stereo, stereo, kDataTypeFloat), // Screen_RenderScreenEventArgs.stereo
-	DECL(0xad544418, Screen_RenderScreenEventArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenEventArgs.angle
-	DECL(0x32608848, Screen_RenderScreenEventArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenEventArgs.target
+	DECL_INT(0x95876e1f, Screen_RenderScreenEventArgs, width, width), // Screen_RenderScreenEventArgs.width
+	DECL_INT(0xd5bdbb42, Screen_RenderScreenEventArgs, height, height), // Screen_RenderScreenEventArgs.height
+	DECL_FLOAT(0xcc87a64d, Screen_RenderScreenEventArgs, stereo, stereo), // Screen_RenderScreenEventArgs.stereo
+	DECL_FLOAT(0xad544418, Screen_RenderScreenEventArgs, angle, angle), // Screen_RenderScreenEventArgs.angle
+	DECL_OBJECT(0x32608848, Screen_RenderScreenEventArgs, target, target, Texture), // Screen_RenderScreenEventArgs.target
 };
 static luaL_Reg _Screen_CloseDialogEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Screen_CloseDialogEventArgs[] = {
-	DECL(0xee5a808a, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Screen_CloseDialogEventArgs.ReturnValue
+	DECL_FLOAT(0xee5a808a, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue), // Screen_CloseDialogEventArgs.ReturnValue
 };
 static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_PrintlnEventArgs[] = {
-	DECL(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index, kDataTypeInt), // ConsoleView_PrintlnEventArgs.Index
-	DECL(0x3e142d5e, ConsoleView_PrintlnEventArgs, Text, Text, kDataTypeString), // ConsoleView_PrintlnEventArgs.Text
+	DECL_INT(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index), // ConsoleView_PrintlnEventArgs.Index
+	DECL_STRING(0x3e142d5e, ConsoleView_PrintlnEventArgs, Text, Text), // ConsoleView_PrintlnEventArgs.Text
 };
 static luaL_Reg _ConsoleView_EraseEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_EraseEventArgs[] = {
@@ -204,24 +204,24 @@ static struct PropertyType _ConsoleView_InvalidateEventArgs[] = {
 };
 static luaL_Reg _ConsoleView_UnpackEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_UnpackEventArgs[] = {
-	DECL(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X, kDataTypeFloat), // ConsoleView_UnpackEventArgs.X
-	DECL(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y, kDataTypeFloat), // ConsoleView_UnpackEventArgs.Y
+	DECL_FLOAT(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X), // ConsoleView_UnpackEventArgs.X
+	DECL_FLOAT(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y), // ConsoleView_UnpackEventArgs.Y
 };
 static luaL_Reg _ConsoleView_GetIndexPositionEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_GetIndexPositionEventArgs[] = {
-	DECL(0xaec7ae4b, ConsoleView_GetIndexPositionEventArgs, Index, Index, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.Index
-	DECL(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetX
-	DECL(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetY
-	DECL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global, kDataTypeBool), // ConsoleView_GetIndexPositionEventArgs.Global
+	DECL_INT(0xaec7ae4b, ConsoleView_GetIndexPositionEventArgs, Index, Index), // ConsoleView_GetIndexPositionEventArgs.Index
+	DECL_INT(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX), // ConsoleView_GetIndexPositionEventArgs.OffsetX
+	DECL_INT(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY), // ConsoleView_GetIndexPositionEventArgs.OffsetY
+	DECL_BOOL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global), // ConsoleView_GetIndexPositionEventArgs.Global
 };
 static luaL_Reg _PageHost_NavigateToPageEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateToPageEventArgs[] = {
-	DECL(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageEventArgs.URL
-	DECL(0x84ff7372, PageHost_NavigateToPageEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateToPageEventArgs.TransitionType
+	DECL_STRING(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL), // PageHost_NavigateToPageEventArgs.URL
+	DECL_ENUM(0x84ff7372, PageHost_NavigateToPageEventArgs, TransitionType, TransitionType, TransitionType), // PageHost_NavigateToPageEventArgs.TransitionType
 };
 static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
-	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
+	DECL_ENUM(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
 };
 
 STRUCT(TextBlockConcept_MakeTextEventArgs, TextBlockConcept_MakeTextEventArgs);
@@ -248,15 +248,12 @@ STRUCT(ConsoleView_UnpackEventArgs, ConsoleView_UnpackEventArgs);
 STRUCT(ConsoleView_GetIndexPositionEventArgs, ConsoleView_GetIndexPositionEventArgs);
 STRUCT(PageHost_NavigateToPageEventArgs, PageHost_NavigateToPageEventArgs);
 STRUCT(PageHost_NavigateBackEventArgs, PageHost_NavigateBackEventArgs);
-static struct PropertyType const BrushProperties[kBrushNumProperties] = {
+COMPONENT_PROPERTIES(Brush) = {
 };
-static struct Brush BrushDefaults = {
+COMPONENT_DEFAULTS(Brush) = {
 };
-LRESULT BrushProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Brush)
+COMPONENT_PROC_END()
 void luaX_pushBrush(lua_State *L, struct Brush const* Brush) {
 	luaX_pushObject(L, CMP_GetObject(Brush));
 }
@@ -264,16 +261,13 @@ struct Brush* luaX_checkBrush(lua_State *L, int idx) {
 	return GetBrush(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Brush, 0);
-static struct PropertyType const ColorBrushProperties[kColorBrushNumProperties] = {
-	DECL(0xe5b43cf8, ColorBrush, Color, Color, kDataTypeColor), // ColorBrush.Color
+COMPONENT_PROPERTIES(ColorBrush) = {
+	DECL_COLOR(0xe5b43cf8, ColorBrush, Color, Color), // ColorBrush.Color
 };
-static struct ColorBrush ColorBrushDefaults = {
+COMPONENT_DEFAULTS(ColorBrush) = {
 };
-LRESULT ColorBrushProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ColorBrush)
+COMPONENT_PROC_END()
 void luaX_pushColorBrush(lua_State *L, struct ColorBrush const* ColorBrush) {
 	luaX_pushObject(L, CMP_GetObject(ColorBrush));
 }
@@ -282,34 +276,31 @@ struct ColorBrush* luaX_checkColorBrush(lua_State *L, int idx) {
 }
 #define ID_Brush 0xccbef093
 REGISTER_CLASS(ColorBrush, ID_Brush, 0);
-static struct PropertyType const TextRunProperties[kTextRunNumProperties] = {
-	DECL(0x3e142d5e, TextRun, Text, Text, kDataTypeString), // TextRun.Text
-	DECL(0xa77a5eb0, TextRun, Font, Font, kDataTypeStruct, .TypeString = "FontShorthand"), // TextRun.Font
-	DECL(0xd0616ad0, TextRun, FontWeight, Font.Weight, kDataTypeEnum, .EnumValues = _FontWeight), // TextRun.FontWeight
-	DECL(0x6c164db5, TextRun, FontStyle, Font.Style, kDataTypeEnum, .EnumValues = _FontStyle), // TextRun.FontStyle
-	DECL(0xa26a44e1, TextRun, FontSize, Font.Size, kDataTypeFloat), // TextRun.FontSize
-	DECL(0xf6319880, TextRun, FontFamily, Font.Family, kDataTypeObject, .TypeString = "FontFamily"), // TextRun.FontFamily
-	DECL(0x9a85011f, TextRun, Underline, Underline, kDataTypeStruct, .TypeString = "UnderlineShorthand"), // TextRun.Underline
-	DECL(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset, kDataTypeFloat), // TextRun.UnderlineOffset
-	DECL(0xee253b91, TextRun, UnderlineWidth, Underline.Width, kDataTypeFloat), // TextRun.UnderlineWidth
-	DECL(0x00c40cce, TextRun, UnderlineColor, Underline.Color, kDataTypeColor), // TextRun.UnderlineColor
-	DECL(0x44b2c826, TextRun, LetterSpacing, LetterSpacing, kDataTypeFloat), // TextRun.LetterSpacing
-	DECL(0xb5107238, TextRun, LineHeight, LineHeight, kDataTypeFloat), // TextRun.LineHeight
-	DECL(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing, kDataTypeFloat), // TextRun.CharacterSpacing
-	DECL(0xfe97e678, TextRun, FixedCharacterWidth, FixedCharacterWidth, kDataTypeFloat), // TextRun.FixedCharacterWidth
-	DECL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty, kDataTypeBool), // TextRun.RemoveSideBearingsProperty
+COMPONENT_PROPERTIES(TextRun) = {
+	DECL_STRING(0x3e142d5e, TextRun, Text, Text), // TextRun.Text
+	DECL_STRUCT_TYPE(0xa77a5eb0, TextRun, Font, Font, FontShorthand), // TextRun.Font
+	DECL_ENUM(0xd0616ad0, TextRun, FontWeight, Font.Weight, FontWeight), // TextRun.FontWeight
+	DECL_ENUM(0x6c164db5, TextRun, FontStyle, Font.Style, FontStyle), // TextRun.FontStyle
+	DECL_FLOAT(0xa26a44e1, TextRun, FontSize, Font.Size), // TextRun.FontSize
+	DECL_OBJECT(0xf6319880, TextRun, FontFamily, Font.Family, FontFamily), // TextRun.FontFamily
+	DECL_STRUCT_TYPE(0x9a85011f, TextRun, Underline, Underline, UnderlineShorthand), // TextRun.Underline
+	DECL_FLOAT(0x34ec6004, TextRun, UnderlineOffset, Underline.Offset), // TextRun.UnderlineOffset
+	DECL_FLOAT(0xee253b91, TextRun, UnderlineWidth, Underline.Width), // TextRun.UnderlineWidth
+	DECL_COLOR(0x00c40cce, TextRun, UnderlineColor, Underline.Color), // TextRun.UnderlineColor
+	DECL_FLOAT(0x44b2c826, TextRun, LetterSpacing, LetterSpacing), // TextRun.LetterSpacing
+	DECL_FLOAT(0xb5107238, TextRun, LineHeight, LineHeight), // TextRun.LineHeight
+	DECL_FLOAT(0x04055b71, TextRun, CharacterSpacing, CharacterSpacing), // TextRun.CharacterSpacing
+	DECL_FLOAT(0xfe97e678, TextRun, FixedCharacterWidth, FixedCharacterWidth), // TextRun.FixedCharacterWidth
+	DECL_BOOL(0xbd23c708, TextRun, RemoveSideBearingsProperty, RemoveSideBearingsProperty), // TextRun.RemoveSideBearingsProperty
 };
-static struct TextRun TextRunDefaults = {
+COMPONENT_DEFAULTS(TextRun) = {
 		
   .Font = {.Size=DEFAULT_FONT_SIZE},
 		
   .LineHeight = 1,
 };
-LRESULT TextRunProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TextRun)
+COMPONENT_PROC_END()
 void luaX_pushTextRun(lua_State *L, struct TextRun const* TextRun) {
 	luaX_pushObject(L, CMP_GetObject(TextRun));
 }
@@ -320,37 +311,34 @@ REGISTER_CLASS(TextRun, 0);
 HANDLER(TextBlockConcept, Object, Create);
 HANDLER(TextBlockConcept, Object, Destroy);
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
-static struct PropertyType const TextBlockConceptProperties[kTextBlockConceptNumProperties] = {
-	DECL(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID, kDataTypeString), // TextBlockConcept.TextResourceID
-	DECL(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration, kDataTypeString), // TextBlockConcept.TextResourceConfiguration
-	DECL(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText, kDataTypeString), // TextBlockConcept.PlaceholderText
-	DECL(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, kDataTypeEnum, .EnumValues = _TextOverflow), // TextBlockConcept.TextOverflow
-	DECL(0x8987413a, TextBlockConcept, Placeholder, Placeholder, kDataTypeStruct, .TypeString = "BrushShorthand"), // TextBlockConcept.Placeholder
-	DECL(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color, kDataTypeColor), // TextBlockConcept.PlaceholderColor
-	DECL(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, kDataTypeObject, .TypeString = "Texture"), // TextBlockConcept.PlaceholderImage
-	DECL(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, kDataTypeObject, .TypeString = "Material"), // TextBlockConcept.PlaceholderMaterial
-	DECL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight, kDataTypeBool), // TextBlockConcept.UseFullFontHeight
-	DECL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight, kDataTypeBool), // TextBlockConcept.ConstrainContentHeight
-	DECL(0x468540fd, TextBlockConcept, WordWrap, WordWrap, kDataTypeBool), // TextBlockConcept.WordWrap
-	DECL(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, kDataTypeEnum, .EnumValues = _TextWrapping), // TextBlockConcept.TextWrapping
-	DECL(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, kDataTypeEnum, .EnumValues = _TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
-	DECL(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, kDataTypeEnum, .EnumValues = _TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
-	DECL(0x73a47798, TextBlockConcept, MakeText, MakeText, kDataTypeEvent, .TypeString = "TextBlockConcept_MakeTextEventArgs"), // TextBlockConcept.MakeText
+COMPONENT_PROPERTIES(TextBlockConcept) = {
+	DECL_STRING(0x43c114fb, TextBlockConcept, TextResourceID, TextResourceID), // TextBlockConcept.TextResourceID
+	DECL_STRING(0x73dd50ec, TextBlockConcept, TextResourceConfiguration, TextResourceConfiguration), // TextBlockConcept.TextResourceConfiguration
+	DECL_STRING(0xdccaa011, TextBlockConcept, PlaceholderText, PlaceholderText), // TextBlockConcept.PlaceholderText
+	DECL_ENUM(0x3dcadc9c, TextBlockConcept, TextOverflow, TextOverflow, TextOverflow), // TextBlockConcept.TextOverflow
+	DECL_STRUCT_TYPE(0x8987413a, TextBlockConcept, Placeholder, Placeholder, BrushShorthand), // TextBlockConcept.Placeholder
+	DECL_COLOR(0xb272976d, TextBlockConcept, PlaceholderColor, Placeholder.Color), // TextBlockConcept.PlaceholderColor
+	DECL_OBJECT(0x6b519bcf, TextBlockConcept, PlaceholderImage, Placeholder.Image, Texture), // TextBlockConcept.PlaceholderImage
+	DECL_OBJECT(0x6d974ebf, TextBlockConcept, PlaceholderMaterial, Placeholder.Material, Material), // TextBlockConcept.PlaceholderMaterial
+	DECL_BOOL(0x27e35097, TextBlockConcept, UseFullFontHeight, UseFullFontHeight), // TextBlockConcept.UseFullFontHeight
+	DECL_BOOL(0xda466bac, TextBlockConcept, ConstrainContentHeight, ConstrainContentHeight), // TextBlockConcept.ConstrainContentHeight
+	DECL_BOOL(0x468540fd, TextBlockConcept, WordWrap, WordWrap), // TextBlockConcept.WordWrap
+	DECL_ENUM(0x65cdc8f2, TextBlockConcept, TextWrapping, TextWrapping, TextWrapping), // TextBlockConcept.TextWrapping
+	DECL_ENUM(0xf46faf37, TextBlockConcept, TextHorizontalAlignment, TextHorizontalAlignment, TextHorizontalAlignment), // TextBlockConcept.TextHorizontalAlignment
+	DECL_ENUM(0xbc8a8a99, TextBlockConcept, TextVerticalAlignment, TextVerticalAlignment, TextVerticalAlignment), // TextBlockConcept.TextVerticalAlignment
+	DECL_EVENT(0x73a47798, TextBlockConcept, MakeText), // TextBlockConcept.MakeText
 };
-static struct TextBlockConcept TextBlockConceptDefaults = {
+COMPONENT_DEFAULTS(TextBlockConcept) = {
 		
   .UseFullFontHeight = TRUE,
 		
   .ConstrainContentHeight = TRUE,
 };
-LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return TextBlockConcept_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_Destroy: return TextBlockConcept_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case ID_TextBlockConcept_MakeText: return TextBlockConcept_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TextBlockConcept)
+		DISPATCH(TextBlockConcept, Object, Create) // Object.Create
+		DISPATCH(TextBlockConcept, Object, Destroy) // Object.Destroy
+		DISPATCH(TextBlockConcept, TextBlockConcept, MakeText) // TextBlockConcept.MakeText
+COMPONENT_PROC_END()
 void luaX_pushTextBlockConcept(lua_State *L, struct TextBlockConcept const* TextBlockConcept) {
 	luaX_pushObject(L, CMP_GetObject(TextBlockConcept));
 }
@@ -372,84 +360,81 @@ HANDLER(Node2D, Node2D, Arrange);
 HANDLER(Node2D, Node2D, MeasureOverride);
 HANDLER(Node2D, Node2D, ArrangeOverride);
 HANDLER(Node2D, Node2D, SetScrollTop);
-static struct PropertyType const Node2DProperties[kNode2DNumProperties] = {
-	DECL(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.LayoutTransform
-	DECL(0xfc7e27e0, Node2D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformTranslation
-	DECL(0x9560ef43, Node2D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeFloat), // Node2D.LayoutTransformRotation
-	DECL(0x5a2c3595, Node2D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.LayoutTransformScale
-	DECL(0xe9e55063, Node2D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform2D"), // Node2D.RenderTransform
-	DECL(0xb8e70ec2, Node2D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformTranslation
-	DECL(0x3c611efd, Node2D, RenderTransformRotation, RenderTransform.rotation, kDataTypeFloat), // Node2D.RenderTransformRotation
-	DECL(0xd037e21b, Node2D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformScale
-	DECL(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.RenderTransformOrigin
-	DECL(0x35a57c45, Node2D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.ContentOffset
-	DECL(0xe9d1810c, Node2D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D.Matrix
-	DECL(0x64abadd0, Node2D, RenderTarget, RenderTarget, kDataTypeObject, .TypeString = "Texture"), // Node2D.RenderTarget
-	DECL(0xbafc0abd, Node2D, Background, Background, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Background
-	DECL(0xd1496d30, Node2D, BackgroundColor, Background.Color, kDataTypeColor), // Node2D.BackgroundColor
-	DECL(0xe0bbc082, Node2D, BackgroundImage, Background.Image, kDataTypeObject, .TypeString = "Texture"), // Node2D.BackgroundImage
-	DECL(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, kDataTypeObject, .TypeString = "Material"), // Node2D.BackgroundMaterial
-	DECL(0xd96b36e0, Node2D, Foreground, Foreground, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D.Foreground
-	DECL(0x94392057, Node2D, ForegroundColor, Foreground.Color, kDataTypeColor), // Node2D.ForegroundColor
-	DECL(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, kDataTypeObject, .TypeString = "Texture"), // Node2D.ForegroundImage
-	DECL(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, kDataTypeObject, .TypeString = "Material"), // Node2D.ForegroundMaterial
-	DECL(0xce1f078a, Node2D, BoxShadow, BoxShadow, kDataTypeStruct, .TypeString = "ShadowShorthand"), // Node2D.BoxShadow
-	DECL(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.BoxShadowOffset
-	DECL(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius, kDataTypeFloat), // Node2D.BoxShadowBlurRadius
-	DECL(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius, kDataTypeFloat), // Node2D.BoxShadowSpreadRadius
-	DECL(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color, kDataTypeColor), // Node2D.BoxShadowColor
-	DECL(0x3cf02b8b, Node2D, Overflow, Overflow, kDataTypeStruct, .TypeString = "OverflowShorthand"), // Node2D.Overflow
-	DECL(0xc114fd29, Node2D, OverflowX, Overflow.x, kDataTypeEnum, .EnumValues = _Overflow), // Node2D.OverflowX
-	DECL(0xc014fb96, Node2D, OverflowY, Overflow.y, kDataTypeEnum, .EnumValues = _Overflow), // Node2D.OverflowY
-	DECL(0x7787478b, Node2D, Ring, Ring, kDataTypeStruct, .TypeString = "RingShorthand"), // Node2D.Ring
-	DECL(0xfd700608, Node2D, RingOffset, Ring.Offset, kDataTypeFloat), // Node2D.RingOffset
-	DECL(0x5fff552d, Node2D, RingWidth, Ring.Width, kDataTypeFloat), // Node2D.RingWidth
-	DECL(0x97d6200a, Node2D, RingColor, Ring.Color, kDataTypeColor), // Node2D.RingColor
-	DECL(0x74622217, Node2D, CompositionBrush, CompositionBrush, kDataTypeObject, .TypeString = "Material"), // Node2D.CompositionBrush
-	DECL(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, kDataTypeStruct, .TypeString = "Vector2D"), // Node2D.CompositionDesignSize
-	DECL(0x45513b32, Node2D, SizeToContent, SizeToContent, kDataTypeBool), // Node2D.SizeToContent
-	DECL(0x6a1cb2a6, Node2D, OffscreenRendering, OffscreenRendering, kDataTypeBool), // Node2D.OffscreenRendering
-	DECL(0x635bcdbe, Node2D, ForceComposition, ForceComposition, kDataTypeBool), // Node2D.ForceComposition
-	DECL(0x9aa6e904, Node2D, CacheResult, CacheResult, kDataTypeBool), // Node2D.CacheResult
-	DECL(0x2e5c547c, Node2D, SnapToPixel, SnapToPixel, kDataTypeBool), // Node2D.SnapToPixel
-	DECL(0x6db8d484, Node2D, ClipChildren, ClipChildren, kDataTypeBool), // Node2D.ClipChildren
-	DECL(0x639756ff, Node2D, ContentStretch, ContentStretch, kDataTypeBool), // Node2D.ContentStretch
-	DECL(0x09dc5114, Node2D, Hovered, Hovered, kDataTypeBool), // Node2D.Hovered
-	DECL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest, kDataTypeBool), // Node2D.IgnoreHitTest
-	DECL(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, kDataTypeEnum, .EnumValues = _ForegroundHint), // Node2D.ForegroundHint
-	DECL(0x0875c1d1, Node2D, DrawBrush, DrawBrush, kDataTypeEvent, .TypeString = "Node2D_DrawBrushEventArgs"), // Node2D.DrawBrush
-	DECL(0x97619c7f, Node2D, Measure, Measure, kDataTypeEvent, .TypeString = "Node2D_MeasureEventArgs"), // Node2D.Measure
-	DECL(0xc4cf2187, Node2D, Arrange, Arrange, kDataTypeEvent, .TypeString = "Node2D_ArrangeEventArgs"), // Node2D.Arrange
-	DECL(0xff95a02f, Node2D, MeasureOverride, MeasureOverride, kDataTypeEvent, .TypeString = "Node2D_MeasureOverrideEventArgs"), // Node2D.MeasureOverride
-	DECL(0x66d9e437, Node2D, ArrangeOverride, ArrangeOverride, kDataTypeEvent, .TypeString = "Node2D_ArrangeOverrideEventArgs"), // Node2D.ArrangeOverride
-	DECL(0x9a7735e5, Node2D, ForegroundContent, ForegroundContent, kDataTypeEvent, .TypeString = "Node2D_ForegroundContentEventArgs"), // Node2D.ForegroundContent
-	DECL(0x12c1a314, Node2D, UpdateGeometry, UpdateGeometry, kDataTypeEvent, .TypeString = "Node2D_UpdateGeometryEventArgs"), // Node2D.UpdateGeometry
-	DECL(0xd7e7999d, Node2D, SetScrollTop, SetScrollTop, kDataTypeEvent, .TypeString = "Node2D_SetScrollTopEventArgs"), // Node2D.SetScrollTop
+COMPONENT_PROPERTIES(Node2D) = {
+	DECL_STRUCT_TYPE(0x3f19bf01, Node2D, LayoutTransform, LayoutTransform, Transform2D), // Node2D.LayoutTransform
+	DECL_STRUCT_TYPE(0xfc7e27e0, Node2D, LayoutTransformTranslation, LayoutTransform.translation, Vector2D), // Node2D.LayoutTransformTranslation
+	DECL_FLOAT(0x9560ef43, Node2D, LayoutTransformRotation, LayoutTransform.rotation), // Node2D.LayoutTransformRotation
+	DECL_STRUCT_TYPE(0x5a2c3595, Node2D, LayoutTransformScale, LayoutTransform.scale, Vector2D), // Node2D.LayoutTransformScale
+	DECL_STRUCT_TYPE(0xe9e55063, Node2D, RenderTransform, RenderTransform, Transform2D), // Node2D.RenderTransform
+	DECL_STRUCT_TYPE(0xb8e70ec2, Node2D, RenderTransformTranslation, RenderTransform.translation, Vector2D), // Node2D.RenderTransformTranslation
+	DECL_FLOAT(0x3c611efd, Node2D, RenderTransformRotation, RenderTransform.rotation), // Node2D.RenderTransformRotation
+	DECL_STRUCT_TYPE(0xd037e21b, Node2D, RenderTransformScale, RenderTransform.scale, Vector2D), // Node2D.RenderTransformScale
+	DECL_STRUCT_TYPE(0xdc65ec6d, Node2D, RenderTransformOrigin, RenderTransformOrigin, Vector2D), // Node2D.RenderTransformOrigin
+	DECL_STRUCT_TYPE(0x35a57c45, Node2D, ContentOffset, ContentOffset, Vector2D), // Node2D.ContentOffset
+	DECL_STRUCT_TYPE(0xe9d1810c, Node2D, Matrix, Matrix, Matrix3D), // Node2D.Matrix
+	DECL_OBJECT(0x64abadd0, Node2D, RenderTarget, RenderTarget, Texture), // Node2D.RenderTarget
+	DECL_STRUCT_TYPE(0xbafc0abd, Node2D, Background, Background, BrushShorthand), // Node2D.Background
+	DECL_COLOR(0xd1496d30, Node2D, BackgroundColor, Background.Color), // Node2D.BackgroundColor
+	DECL_OBJECT(0xe0bbc082, Node2D, BackgroundImage, Background.Image, Texture), // Node2D.BackgroundImage
+	DECL_OBJECT(0x843e6b88, Node2D, BackgroundMaterial, Background.Material, Material), // Node2D.BackgroundMaterial
+	DECL_STRUCT_TYPE(0xd96b36e0, Node2D, Foreground, Foreground, BrushShorthand), // Node2D.Foreground
+	DECL_COLOR(0x94392057, Node2D, ForegroundColor, Foreground.Color), // Node2D.ForegroundColor
+	DECL_OBJECT(0xb03161dd, Node2D, ForegroundImage, Foreground.Image, Texture), // Node2D.ForegroundImage
+	DECL_OBJECT(0xa654aab9, Node2D, ForegroundMaterial, Foreground.Material, Material), // Node2D.ForegroundMaterial
+	DECL_STRUCT_TYPE(0xce1f078a, Node2D, BoxShadow, BoxShadow, ShadowShorthand), // Node2D.BoxShadow
+	DECL_STRUCT_TYPE(0x047c9a3d, Node2D, BoxShadowOffset, BoxShadow.Offset, Vector2D), // Node2D.BoxShadowOffset
+	DECL_FLOAT(0x623ff5f9, Node2D, BoxShadowBlurRadius, BoxShadow.BlurRadius), // Node2D.BoxShadowBlurRadius
+	DECL_FLOAT(0xe284b26f, Node2D, BoxShadowSpreadRadius, BoxShadow.SpreadRadius), // Node2D.BoxShadowSpreadRadius
+	DECL_COLOR(0xe0ae423d, Node2D, BoxShadowColor, BoxShadow.Color), // Node2D.BoxShadowColor
+	DECL_STRUCT_TYPE(0x3cf02b8b, Node2D, Overflow, Overflow, OverflowShorthand), // Node2D.Overflow
+	DECL_ENUM(0xc114fd29, Node2D, OverflowX, Overflow.x, Overflow), // Node2D.OverflowX
+	DECL_ENUM(0xc014fb96, Node2D, OverflowY, Overflow.y, Overflow), // Node2D.OverflowY
+	DECL_STRUCT_TYPE(0x7787478b, Node2D, Ring, Ring, RingShorthand), // Node2D.Ring
+	DECL_FLOAT(0xfd700608, Node2D, RingOffset, Ring.Offset), // Node2D.RingOffset
+	DECL_FLOAT(0x5fff552d, Node2D, RingWidth, Ring.Width), // Node2D.RingWidth
+	DECL_COLOR(0x97d6200a, Node2D, RingColor, Ring.Color), // Node2D.RingColor
+	DECL_OBJECT(0x74622217, Node2D, CompositionBrush, CompositionBrush, Material), // Node2D.CompositionBrush
+	DECL_STRUCT_TYPE(0x5488c4f2, Node2D, CompositionDesignSize, CompositionDesignSize, Vector2D), // Node2D.CompositionDesignSize
+	DECL_BOOL(0x45513b32, Node2D, SizeToContent, SizeToContent), // Node2D.SizeToContent
+	DECL_BOOL(0x6a1cb2a6, Node2D, OffscreenRendering, OffscreenRendering), // Node2D.OffscreenRendering
+	DECL_BOOL(0x635bcdbe, Node2D, ForceComposition, ForceComposition), // Node2D.ForceComposition
+	DECL_BOOL(0x9aa6e904, Node2D, CacheResult, CacheResult), // Node2D.CacheResult
+	DECL_BOOL(0x2e5c547c, Node2D, SnapToPixel, SnapToPixel), // Node2D.SnapToPixel
+	DECL_BOOL(0x6db8d484, Node2D, ClipChildren, ClipChildren), // Node2D.ClipChildren
+	DECL_BOOL(0x639756ff, Node2D, ContentStretch, ContentStretch), // Node2D.ContentStretch
+	DECL_BOOL(0x09dc5114, Node2D, Hovered, Hovered), // Node2D.Hovered
+	DECL_BOOL(0xfdba6cd0, Node2D, IgnoreHitTest, IgnoreHitTest), // Node2D.IgnoreHitTest
+	DECL_ENUM(0xf068ff19, Node2D, ForegroundHint, ForegroundHint, ForegroundHint), // Node2D.ForegroundHint
+	DECL_EVENT(0x0875c1d1, Node2D, DrawBrush), // Node2D.DrawBrush
+	DECL_EVENT(0x97619c7f, Node2D, Measure), // Node2D.Measure
+	DECL_EVENT(0xc4cf2187, Node2D, Arrange), // Node2D.Arrange
+	DECL_EVENT(0xff95a02f, Node2D, MeasureOverride), // Node2D.MeasureOverride
+	DECL_EVENT(0x66d9e437, Node2D, ArrangeOverride), // Node2D.ArrangeOverride
+	DECL_EVENT(0x9a7735e5, Node2D, ForegroundContent), // Node2D.ForegroundContent
+	DECL_EVENT(0x12c1a314, Node2D, UpdateGeometry), // Node2D.UpdateGeometry
+	DECL_EVENT(0xd7e7999d, Node2D, SetScrollTop), // Node2D.SetScrollTop
 };
-static struct Node2D Node2DDefaults = {
+COMPONENT_DEFAULTS(Node2D) = {
 		
   .LayoutTransform = {.scale={1,1}},
 		
   .RenderTransform = {.scale={1,1}},
 };
-LRESULT Node2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return Node2D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
-		case ID_Object_Create: return Node2D_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_Destroy: return Node2D_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case ID_Node2D_UpdateGeometry: return Node2D_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
-		case ID_Node2D_DrawBrush: return Node2D_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_Node_ScrollWheel: return Node2D_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
-		case ID_Node_MouseMoved: return Node2D_MouseMoved(object, cmp, wparm, lparm); // Node.MouseMoved
-		case ID_Node_HitTest: return Node2D_HitTest(object, cmp, wparm, lparm); // Node.HitTest
-		case ID_Node2D_Measure: return Node2D_Measure(object, cmp, wparm, lparm); // Node2D.Measure
-		case ID_Node2D_Arrange: return Node2D_Arrange(object, cmp, wparm, lparm); // Node2D.Arrange
-		case ID_Node2D_MeasureOverride: return Node2D_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return Node2D_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case ID_Node2D_SetScrollTop: return Node2D_SetScrollTop(object, cmp, wparm, lparm); // Node2D.SetScrollTop
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Node2D)
+		DISPATCH(Node2D, Node, UpdateMatrix) // Node.UpdateMatrix
+		DISPATCH(Node2D, Object, Create) // Object.Create
+		DISPATCH(Node2D, Object, Destroy) // Object.Destroy
+		DISPATCH(Node2D, Node2D, UpdateGeometry) // Node2D.UpdateGeometry
+		DISPATCH(Node2D, Node2D, DrawBrush) // Node2D.DrawBrush
+		DISPATCH(Node2D, Node, ScrollWheel) // Node.ScrollWheel
+		DISPATCH(Node2D, Node, MouseMoved) // Node.MouseMoved
+		DISPATCH(Node2D, Node, HitTest) // Node.HitTest
+		DISPATCH(Node2D, Node2D, Measure) // Node2D.Measure
+		DISPATCH(Node2D, Node2D, Arrange) // Node2D.Arrange
+		DISPATCH(Node2D, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(Node2D, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+		DISPATCH(Node2D, Node2D, SetScrollTop) // Node2D.SetScrollTop
+COMPONENT_PROC_END()
 void luaX_pushNode2D(lua_State *L, struct Node2D const* Node2D) {
 	luaX_pushObject(L, CMP_GetObject(Node2D));
 }
@@ -462,19 +447,16 @@ REGISTER_CLASS(Node2D, ID_Node, ID_StyleController, 0);
 HANDLER(PrefabView2D, Object, Start);
 HANDLER(PrefabView2D, Object, PropertyChanged);
 HANDLER(PrefabView2D, Node, LoadView);
-static struct PropertyType const PrefabView2DProperties[kPrefabView2DNumProperties] = {
-	DECL(0xd6415ba3, PrefabView2D, Prefab, Prefab, kDataTypeString), // PrefabView2D.Prefab
+COMPONENT_PROPERTIES(PrefabView2D) = {
+	DECL_STRING(0xd6415ba3, PrefabView2D, Prefab, Prefab), // PrefabView2D.Prefab
 };
-static struct PrefabView2D PrefabView2DDefaults = {
+COMPONENT_DEFAULTS(PrefabView2D) = {
 };
-LRESULT PrefabView2DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return PrefabView2D_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return PrefabView2D_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Node_LoadView: return PrefabView2D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PrefabView2D)
+		DISPATCH(PrefabView2D, Object, Start) // Object.Start
+		DISPATCH(PrefabView2D, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(PrefabView2D, Node, LoadView) // Node.LoadView
+COMPONENT_PROC_END()
 void luaX_pushPrefabView2D(lua_State *L, struct PrefabView2D const* PrefabView2D) {
 	luaX_pushObject(L, CMP_GetObject(PrefabView2D));
 }
@@ -488,20 +470,17 @@ HANDLER(TextBlock, Node2D, ForegroundContent);
 HANDLER(TextBlock, Node2D, UpdateGeometry);
 HANDLER(TextBlock, Object, Create);
 HANDLER(TextBlock, Node2D, DrawBrush);
-static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
+COMPONENT_PROPERTIES(TextBlock) = {
 };
-static struct TextBlock TextBlockDefaults = {
+COMPONENT_DEFAULTS(TextBlock) = {
 };
-LRESULT TextBlockProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return TextBlock_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ForegroundContent: return TextBlock_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case ID_Node2D_UpdateGeometry: return TextBlock_UpdateGeometry(object, cmp, wparm, lparm); // Node2D.UpdateGeometry
-		case ID_Object_Create: return TextBlock_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node2D_DrawBrush: return TextBlock_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TextBlock)
+		DISPATCH(TextBlock, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(TextBlock, Node2D, ForegroundContent) // Node2D.ForegroundContent
+		DISPATCH(TextBlock, Node2D, UpdateGeometry) // Node2D.UpdateGeometry
+		DISPATCH(TextBlock, Object, Create) // Object.Create
+		DISPATCH(TextBlock, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushTextBlock(lua_State *L, struct TextBlock const* TextBlock) {
 	luaX_pushObject(L, CMP_GetObject(TextBlock));
 }
@@ -518,27 +497,24 @@ HANDLER(Input, Node, KeyDown);
 HANDLER(Input, Node, KillFocus);
 HANDLER(Input, Node, LeftButtonUp);
 HANDLER(Input, Node2D, MeasureOverride);
-static struct PropertyType const InputProperties[kInputNumProperties] = {
-	DECL(0x0fe07306, Input, Name, Name, kDataTypeString), // Input.Name
-	DECL(0xd155d06d, Input, Type, Type, kDataTypeEnum, .EnumValues = _InputType), // Input.Type
-	DECL(0x558a502f, Input, Cursor, Cursor, kDataTypeInt), // Input.Cursor
-	DECL(0xe890d540, Input, Multiline, Multiline, kDataTypeBool), // Input.Multiline
-	DECL(0x51ba2a66, Input, Checked, Checked, kDataTypeBool), // Input.Checked
+COMPONENT_PROPERTIES(Input) = {
+	DECL_STRING(0x0fe07306, Input, Name, Name), // Input.Name
+	DECL_ENUM(0xd155d06d, Input, Type, Type, InputType), // Input.Type
+	DECL_INT(0x558a502f, Input, Cursor, Cursor), // Input.Cursor
+	DECL_BOOL(0xe890d540, Input, Multiline, Multiline), // Input.Multiline
+	DECL_BOOL(0x51ba2a66, Input, Checked, Checked), // Input.Checked
 };
-static struct Input InputDefaults = {
+COMPONENT_DEFAULTS(Input) = {
 };
-LRESULT InputProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return Input_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node2D_DrawBrush: return Input_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_TextBlockConcept_MakeText: return Input_MakeText(object, cmp, wparm, lparm); // TextBlockConcept.MakeText
-		case ID_Node_KeyDown: return Input_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
-		case ID_Node_KillFocus: return Input_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case ID_Node_LeftButtonUp: return Input_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node2D_MeasureOverride: return Input_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Input)
+		DISPATCH(Input, Object, Create) // Object.Create
+		DISPATCH(Input, Node2D, DrawBrush) // Node2D.DrawBrush
+		DISPATCH(Input, TextBlockConcept, MakeText) // TextBlockConcept.MakeText
+		DISPATCH(Input, Node, KeyDown) // Node.KeyDown
+		DISPATCH(Input, Node, KillFocus) // Node.KillFocus
+		DISPATCH(Input, Node, LeftButtonUp) // Node.LeftButtonUp
+		DISPATCH(Input, Node2D, MeasureOverride) // Node2D.MeasureOverride
+COMPONENT_PROC_END()
 void luaX_pushInput(lua_State *L, struct Input const* Input) {
 	luaX_pushObject(L, CMP_GetObject(Input));
 }
@@ -551,15 +527,15 @@ HANDLER(Button, Object, Create);
 HANDLER(Button, Node, LeftButtonUp);
 HANDLER(Button, Node, KeyDown);
 HANDLER(Button, Node2D, DrawBrush);
-static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
-	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .EnumValues = _ButtonType), // Button.Type
-	DECL(0x91217a10, Button, DiffuseColor, DiffuseColor, kDataTypeColor), // Button.DiffuseColor
-	DECL(0x0485b456, Button, CornerRadius, CornerRadius, kDataTypeFloat), // Button.CornerRadius
-	DECL(0xe4c05af9, Button, SpecularPower, SpecularPower, kDataTypeFloat), // Button.SpecularPower
-	DECL(0xc6871c08, Button, LightDirection, LightDirection, kDataTypeStruct, .TypeString = "Vector3D"), // Button.LightDirection
-	DECL(0x023a1a0f, Button, Click, Click, kDataTypeEvent, .TypeString = "Button_ClickEventArgs"), // Button.Click
+COMPONENT_PROPERTIES(Button) = {
+	DECL_ENUM(0xd155d06d, Button, Type, Type, ButtonType), // Button.Type
+	DECL_COLOR(0x91217a10, Button, DiffuseColor, DiffuseColor), // Button.DiffuseColor
+	DECL_FLOAT(0x0485b456, Button, CornerRadius, CornerRadius), // Button.CornerRadius
+	DECL_FLOAT(0xe4c05af9, Button, SpecularPower, SpecularPower), // Button.SpecularPower
+	DECL_STRUCT_TYPE(0xc6871c08, Button, LightDirection, LightDirection, Vector3D), // Button.LightDirection
+	DECL_EVENT(0x023a1a0f, Button, Click), // Button.Click
 };
-static struct Button ButtonDefaults = {
+COMPONENT_DEFAULTS(Button) = {
 		
   .DiffuseColor = {0.3,0.55,0.85,1},
 		
@@ -569,15 +545,12 @@ static struct Button ButtonDefaults = {
 		
   .LightDirection = {0,-1,-0.5},
 };
-LRESULT ButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return Button_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node_LeftButtonUp: return Button_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node_KeyDown: return Button_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
-		case ID_Node2D_DrawBrush: return Button_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Button)
+		DISPATCH(Button, Object, Create) // Object.Create
+		DISPATCH(Button, Node, LeftButtonUp) // Node.LeftButtonUp
+		DISPATCH(Button, Node, KeyDown) // Node.KeyDown
+		DISPATCH(Button, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushButton(lua_State *L, struct Button const* Button) {
 	luaX_pushObject(L, CMP_GetObject(Button));
 }
@@ -587,17 +560,14 @@ struct Button* luaX_checkButton(lua_State *L, int idx) {
 #define ID_TextBlock 0x40f4d77b
 REGISTER_CLASS(Button, ID_TextBlock, 0);
 HANDLER(Label, Node, LeftButtonUp);
-static struct PropertyType const LabelProperties[kLabelNumProperties] = {
-	DECL(0x0f7e1b30, Label, For, For, kDataTypeString), // Label.For
+COMPONENT_PROPERTIES(Label) = {
+	DECL_STRING(0x0f7e1b30, Label, For, For), // Label.For
 };
-static struct Label LabelDefaults = {
+COMPONENT_DEFAULTS(Label) = {
 };
-LRESULT LabelProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonUp: return Label_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Label)
+		DISPATCH(Label, Node, LeftButtonUp) // Node.LeftButtonUp
+COMPONENT_PROC_END()
 void luaX_pushLabel(lua_State *L, struct Label const* Label) {
 	luaX_pushObject(L, CMP_GetObject(Label));
 }
@@ -608,24 +578,21 @@ struct Label* luaX_checkLabel(lua_State *L, int idx) {
 REGISTER_CLASS(Label, ID_TextBlock, 0);
 HANDLER(StackView, Node2D, MeasureOverride);
 HANDLER(StackView, Node2D, ArrangeOverride);
-static struct PropertyType const StackViewProperties[kStackViewNumProperties] = {
-	DECL(0xcee65dd3, StackView, Reversed, Reversed, kDataTypeBool), // StackView.Reversed
-	DECL(0x61fefc0a, StackView, Direction, Direction, kDataTypeEnum, .EnumValues = _Direction), // StackView.Direction
-	DECL(0x517ab5aa, StackView, AlignItems, AlignItems, kDataTypeEnum, .EnumValues = _AlignItems), // StackView.AlignItems
-	DECL(0x98c61698, StackView, JustifyContent, JustifyContent, kDataTypeEnum, .EnumValues = _JustifyContent), // StackView.JustifyContent
-	DECL(0x8777939e, StackView, Spacing, Spacing, kDataTypeFloat), // StackView.Spacing
+COMPONENT_PROPERTIES(StackView) = {
+	DECL_BOOL(0xcee65dd3, StackView, Reversed, Reversed), // StackView.Reversed
+	DECL_ENUM(0x61fefc0a, StackView, Direction, Direction, Direction), // StackView.Direction
+	DECL_ENUM(0x517ab5aa, StackView, AlignItems, AlignItems, AlignItems), // StackView.AlignItems
+	DECL_ENUM(0x98c61698, StackView, JustifyContent, JustifyContent, JustifyContent), // StackView.JustifyContent
+	DECL_FLOAT(0x8777939e, StackView, Spacing, Spacing), // StackView.Spacing
 };
-static struct StackView StackViewDefaults = {
+COMPONENT_DEFAULTS(StackView) = {
 		
   .Direction = kDirectionVertical,
 };
-LRESULT StackViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return StackView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return StackView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(StackView)
+		DISPATCH(StackView, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(StackView, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+COMPONENT_PROC_END()
 void luaX_pushStackView(lua_State *L, struct StackView const* StackView) {
 	luaX_pushObject(L, CMP_GetObject(StackView));
 }
@@ -636,18 +603,15 @@ struct StackView* luaX_checkStackView(lua_State *L, int idx) {
 REGISTER_CLASS(StackView, ID_Node2D, 0);
 HANDLER(Form, Object, Create);
 HANDLER(Form, Form, Submit);
-static struct PropertyType const FormProperties[kFormNumProperties] = {
-	DECL(0x4078e545, Form, Submit, Submit, kDataTypeEvent, .TypeString = "Form_SubmitEventArgs"), // Form.Submit
+COMPONENT_PROPERTIES(Form) = {
+	DECL_EVENT(0x4078e545, Form, Submit), // Form.Submit
 };
-static struct Form FormDefaults = {
+COMPONENT_DEFAULTS(Form) = {
 };
-LRESULT FormProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return Form_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Form_Submit: return Form_Submit(object, cmp, wparm, lparm); // Form.Submit
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Form)
+		DISPATCH(Form, Object, Create) // Object.Create
+		DISPATCH(Form, Form, Submit) // Form.Submit
+COMPONENT_PROC_END()
 void luaX_pushForm(lua_State *L, struct Form const* Form) {
 	luaX_pushObject(L, CMP_GetObject(Form));
 }
@@ -662,29 +626,26 @@ HANDLER(RadioButton, Object, Attached);
 HANDLER(RadioButton, Node, LeftButtonUp);
 HANDLER(RadioButton, Node, KeyDown);
 HANDLER(RadioButton, Node2D, DrawBrush);
-static struct PropertyType const RadioButtonProperties[kRadioButtonNumProperties] = {
-	DECL(0xea50a536, RadioButton, IsChecked, IsChecked, kDataTypeBool), // RadioButton.IsChecked
-	DECL(0xd147f96a, RadioButton, Value, Value, kDataTypeString), // RadioButton.Value
-	DECL(0xca400146, RadioButton, AccentColor, AccentColor, kDataTypeColor), // RadioButton.AccentColor
-	DECL(0xe896fe1f, RadioButton, IndicatorSize, IndicatorSize, kDataTypeFloat), // RadioButton.IndicatorSize
+COMPONENT_PROPERTIES(RadioButton) = {
+	DECL_BOOL(0xea50a536, RadioButton, IsChecked, IsChecked), // RadioButton.IsChecked
+	DECL_STRING(0xd147f96a, RadioButton, Value, Value), // RadioButton.Value
+	DECL_COLOR(0xca400146, RadioButton, AccentColor, AccentColor), // RadioButton.AccentColor
+	DECL_FLOAT(0xe896fe1f, RadioButton, IndicatorSize, IndicatorSize), // RadioButton.IndicatorSize
 };
-static struct RadioButton RadioButtonDefaults = {
+COMPONENT_DEFAULTS(RadioButton) = {
 		
   .AccentColor = {0.3,0.55,0.85,1},
 		
   .IndicatorSize = 16,
 };
-LRESULT RadioButtonProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return RadioButton_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_PropertyChanged: return RadioButton_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Attached: return RadioButton_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Node_LeftButtonUp: return RadioButton_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node_KeyDown: return RadioButton_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
-		case ID_Node2D_DrawBrush: return RadioButton_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(RadioButton)
+		DISPATCH(RadioButton, Object, Create) // Object.Create
+		DISPATCH(RadioButton, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(RadioButton, Object, Attached) // Object.Attached
+		DISPATCH(RadioButton, Node, LeftButtonUp) // Node.LeftButtonUp
+		DISPATCH(RadioButton, Node, KeyDown) // Node.KeyDown
+		DISPATCH(RadioButton, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushRadioButton(lua_State *L, struct RadioButton const* RadioButton) {
 	luaX_pushObject(L, CMP_GetObject(RadioButton));
 }
@@ -697,21 +658,18 @@ HANDLER(RadioGroup, Object, Start);
 HANDLER(RadioGroup, Object, Attached);
 HANDLER(RadioGroup, Object, PropertyChanged);
 HANDLER(RadioGroup, RadioGroup, SelectionChanged);
-static struct PropertyType const RadioGroupProperties[kRadioGroupNumProperties] = {
-	DECL(0x5c04816d, RadioGroup, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup.SelectedValue
-	DECL(0x48cf578b, RadioGroup, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "RadioGroup_SelectionChangedEventArgs"), // RadioGroup.SelectionChanged
+COMPONENT_PROPERTIES(RadioGroup) = {
+	DECL_STRING(0x5c04816d, RadioGroup, SelectedValue, SelectedValue), // RadioGroup.SelectedValue
+	DECL_EVENT(0x48cf578b, RadioGroup, SelectionChanged), // RadioGroup.SelectionChanged
 };
-static struct RadioGroup RadioGroupDefaults = {
+COMPONENT_DEFAULTS(RadioGroup) = {
 };
-LRESULT RadioGroupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return RadioGroup_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_Attached: return RadioGroup_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Object_PropertyChanged: return RadioGroup_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_RadioGroup_SelectionChanged: return RadioGroup_SelectionChanged(object, cmp, wparm, lparm); // RadioGroup.SelectionChanged
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(RadioGroup)
+		DISPATCH(RadioGroup, Object, Start) // Object.Start
+		DISPATCH(RadioGroup, Object, Attached) // Object.Attached
+		DISPATCH(RadioGroup, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(RadioGroup, RadioGroup, SelectionChanged) // RadioGroup.SelectionChanged
+COMPONENT_PROC_END()
 void luaX_pushRadioGroup(lua_State *L, struct RadioGroup const* RadioGroup) {
 	luaX_pushObject(L, CMP_GetObject(RadioGroup));
 }
@@ -724,27 +682,24 @@ HANDLER(Tab, Object, Create);
 HANDLER(Tab, Object, PropertyChanged);
 HANDLER(Tab, Node, LeftButtonUp);
 HANDLER(Tab, Node2D, DrawBrush);
-static struct PropertyType const TabProperties[kTabNumProperties] = {
-	DECL(0xd09395c4, Tab, IsSelected, IsSelected, kDataTypeBool), // Tab.IsSelected
-	DECL(0xd147f96a, Tab, Value, Value, kDataTypeString), // Tab.Value
-	DECL(0xb672875b, Tab, SelectedColor, SelectedColor, kDataTypeColor), // Tab.SelectedColor
-	DECL(0x91f2c852, Tab, UnselectedColor, UnselectedColor, kDataTypeColor), // Tab.UnselectedColor
+COMPONENT_PROPERTIES(Tab) = {
+	DECL_BOOL(0xd09395c4, Tab, IsSelected, IsSelected), // Tab.IsSelected
+	DECL_STRING(0xd147f96a, Tab, Value, Value), // Tab.Value
+	DECL_COLOR(0xb672875b, Tab, SelectedColor, SelectedColor), // Tab.SelectedColor
+	DECL_COLOR(0x91f2c852, Tab, UnselectedColor, UnselectedColor), // Tab.UnselectedColor
 };
-static struct Tab TabDefaults = {
+COMPONENT_DEFAULTS(Tab) = {
 		
   .SelectedColor = {0.24,0.36,0.58,1},
 		
   .UnselectedColor = {0.18,0.19,0.22,0.95},
 };
-LRESULT TabProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return Tab_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_PropertyChanged: return Tab_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Node_LeftButtonUp: return Tab_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node2D_DrawBrush: return Tab_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Tab)
+		DISPATCH(Tab, Object, Create) // Object.Create
+		DISPATCH(Tab, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(Tab, Node, LeftButtonUp) // Node.LeftButtonUp
+		DISPATCH(Tab, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushTab(lua_State *L, struct Tab const* Tab) {
 	luaX_pushObject(L, CMP_GetObject(Tab));
 }
@@ -755,19 +710,16 @@ struct Tab* luaX_checkTab(lua_State *L, int idx) {
 REGISTER_CLASS(Tab, ID_TextBlock, 0);
 HANDLER(TabBar, Object, Create);
 HANDLER(TabBar, TabBar, SelectionChanged);
-static struct PropertyType const TabBarProperties[kTabBarNumProperties] = {
-	DECL(0x5c04816d, TabBar, SelectedValue, SelectedValue, kDataTypeString), // TabBar.SelectedValue
-	DECL(0x48cf578b, TabBar, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "TabBar_SelectionChangedEventArgs"), // TabBar.SelectionChanged
+COMPONENT_PROPERTIES(TabBar) = {
+	DECL_STRING(0x5c04816d, TabBar, SelectedValue, SelectedValue), // TabBar.SelectedValue
+	DECL_EVENT(0x48cf578b, TabBar, SelectionChanged), // TabBar.SelectionChanged
 };
-static struct TabBar TabBarDefaults = {
+COMPONENT_DEFAULTS(TabBar) = {
 };
-LRESULT TabBarProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return TabBar_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_TabBar_SelectionChanged: return TabBar_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TabBar)
+		DISPATCH(TabBar, Object, Create) // Object.Create
+		DISPATCH(TabBar, TabBar, SelectionChanged) // TabBar.SelectionChanged
+COMPONENT_PROC_END()
 void luaX_pushTabBar(lua_State *L, struct TabBar const* TabBar) {
 	luaX_pushObject(L, CMP_GetObject(TabBar));
 }
@@ -782,23 +734,20 @@ HANDLER(TabView, Object, Start);
 HANDLER(TabView, Object, Attached);
 HANDLER(TabView, Node, ViewDidLoad);
 HANDLER(TabView, TabBar, SelectionChanged);
-static struct PropertyType const TabViewProperties[kTabViewNumProperties] = {
-	DECL(0x5c04816d, TabView, SelectedValue, SelectedValue, kDataTypeString), // TabView.SelectedValue
-	DECL(0x48cf578b, TabView, SelectionChanged, SelectionChanged, kDataTypeEvent, .TypeString = "TabView_SelectionChangedEventArgs"), // TabView.SelectionChanged
+COMPONENT_PROPERTIES(TabView) = {
+	DECL_STRING(0x5c04816d, TabView, SelectedValue, SelectedValue), // TabView.SelectedValue
+	DECL_EVENT(0x48cf578b, TabView, SelectionChanged), // TabView.SelectionChanged
 };
-static struct TabView TabViewDefaults = {
+COMPONENT_DEFAULTS(TabView) = {
 };
-LRESULT TabViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-			case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-			case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-			case ID_Object_Start: return TabView_Start(object, cmp, wparm, lparm); // Object.Start
-			case ID_Object_Attached: return TabView_Attached(object, cmp, wparm, lparm); // Object.Attached
-			case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
-			case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
-		}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TabView)
+		DISPATCH(TabView, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(TabView, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+		DISPATCH(TabView, Object, Start) // Object.Start
+		DISPATCH(TabView, Object, Attached) // Object.Attached
+		DISPATCH(TabView, Node, ViewDidLoad) // Node.ViewDidLoad
+		DISPATCH(TabView, TabBar, SelectionChanged) // TabBar.SelectionChanged
+COMPONENT_PROC_END()
 void luaX_pushTabView(lua_State *L, struct TabView const* TabView) {
 	luaX_pushObject(L, CMP_GetObject(TabView));
 }
@@ -807,21 +756,18 @@ struct TabView* luaX_checkTabView(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(TabView, ID_Node2D, 0);
-static struct PropertyType const ControlProperties[kControlNumProperties] = {
-	DECL(0x705293c5, Control, Pressed, Pressed, kDataTypeBool), // Control.Pressed
-	DECL(0xbfce9925, Control, Disabled, Disabled, kDataTypeBool), // Control.Disabled
-	DECL(0x09dc5114, Control, Hovered, Hovered, kDataTypeBool), // Control.Hovered
-	DECL(0xd6635bf2, Control, Focused, Focused, kDataTypeBool), // Control.Focused
-	DECL(0xd147f96a, Control, Value, Value, kDataTypeBool), // Control.Value
-	DECL(0x28528e11, Control, Scale, Scale, kDataTypeFloat), // Control.Scale
+COMPONENT_PROPERTIES(Control) = {
+	DECL_BOOL(0x705293c5, Control, Pressed, Pressed), // Control.Pressed
+	DECL_BOOL(0xbfce9925, Control, Disabled, Disabled), // Control.Disabled
+	DECL_BOOL(0x09dc5114, Control, Hovered, Hovered), // Control.Hovered
+	DECL_BOOL(0xd6635bf2, Control, Focused, Focused), // Control.Focused
+	DECL_BOOL(0xd147f96a, Control, Value, Value), // Control.Value
+	DECL_FLOAT(0x28528e11, Control, Scale, Scale), // Control.Scale
 };
-static struct Control ControlDefaults = {
+COMPONENT_DEFAULTS(Control) = {
 };
-LRESULT ControlProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Control)
+COMPONENT_PROC_END()
 void luaX_pushControl(lua_State *L, struct Control const* Control) {
 	luaX_pushObject(L, CMP_GetObject(Control));
 }
@@ -838,31 +784,28 @@ HANDLER(Screen, Object, Create);
 HANDLER(Screen, Object, Destroy);
 HANDLER(Screen, Window, Resized);
 HANDLER(Screen, Window, Paint);
-static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
-	DECL(0xeb16b675, Screen, ClearColor, ClearColor, kDataTypeColor), // Screen.ClearColor
-	DECL(0x3dd888be, Screen, ResizeMode, ResizeMode, kDataTypeEnum, .EnumValues = _ResizeMode), // Screen.ResizeMode
-	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
-	DECL(0x928c657a, Screen, UpdateLayout, UpdateLayout, kDataTypeEvent, .TypeString = "Screen_UpdateLayoutEventArgs"), // Screen.UpdateLayout
-	DECL(0xd15bdf29, Screen, RenderScreen, RenderScreen, kDataTypeEvent, .TypeString = "Screen_RenderScreenEventArgs"), // Screen.RenderScreen
-	DECL(0xf5b47797, Screen, CloseDialog, CloseDialog, kDataTypeEvent, .TypeString = "Screen_CloseDialogEventArgs"), // Screen.CloseDialog
+COMPONENT_PROPERTIES(Screen) = {
+	DECL_COLOR(0xeb16b675, Screen, ClearColor, ClearColor), // Screen.ClearColor
+	DECL_ENUM(0x3dd888be, Screen, ResizeMode, ResizeMode, ResizeMode), // Screen.ResizeMode
+	DECL_FLOAT(0x9a645b38, Screen, DialogResult, DialogResult), // Screen.DialogResult
+	DECL_EVENT(0x928c657a, Screen, UpdateLayout), // Screen.UpdateLayout
+	DECL_EVENT(0xd15bdf29, Screen, RenderScreen), // Screen.RenderScreen
+	DECL_EVENT(0xf5b47797, Screen, CloseDialog), // Screen.CloseDialog
 };
-static struct Screen ScreenDefaults = {
+COMPONENT_DEFAULTS(Screen) = {
 		
   .DialogResult = NAN,
 };
-LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
-	case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
-	case ID_Screen_CloseDialog: return Screen_CloseDialog(object, cmp, wparm, lparm); // Screen.CloseDialog
-	case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-	case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
-	case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case ID_Window_Resized: return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
-		case ID_Window_Paint: return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Screen)
+		DISPATCH(Screen, Screen, UpdateLayout) // Screen.UpdateLayout
+		DISPATCH(Screen, Screen, RenderScreen) // Screen.RenderScreen
+		DISPATCH(Screen, Screen, CloseDialog) // Screen.CloseDialog
+		DISPATCH(Screen, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(Screen, Object, Create) // Object.Create
+		DISPATCH(Screen, Object, Destroy) // Object.Destroy
+		DISPATCH(Screen, Window, Resized) // Window.Resized
+		DISPATCH(Screen, Window, Paint) // Window.Paint
+COMPONENT_PROC_END()
 void luaX_pushScreen(lua_State *L, struct Screen const* Screen) {
 	luaX_pushObject(L, CMP_GetObject(Screen));
 }
@@ -872,20 +815,17 @@ struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Screen, ID_Node2D, 0);
 HANDLER(Cinematic, Node2D, DrawBrush);
-static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
-	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
-	DECL(0x3eeb76a4, Cinematic, FrameRate, FrameRate, kDataTypeFloat), // Cinematic.FrameRate
-	DECL(0x32caacb1, Cinematic, NumFrames, NumFrames, kDataTypeFloat), // Cinematic.NumFrames
-	DECL(0xc1e58e65, Cinematic, FadeOut, FadeOut, kDataTypeFloat), // Cinematic.FadeOut
+COMPONENT_PROPERTIES(Cinematic) = {
+	DECL_STRING(0x5ffdd888, Cinematic, FileName, FileName), // Cinematic.FileName
+	DECL_FLOAT(0x3eeb76a4, Cinematic, FrameRate, FrameRate), // Cinematic.FrameRate
+	DECL_FLOAT(0x32caacb1, Cinematic, NumFrames, NumFrames), // Cinematic.NumFrames
+	DECL_FLOAT(0xc1e58e65, Cinematic, FadeOut, FadeOut), // Cinematic.FadeOut
 };
-static struct Cinematic CinematicDefaults = {
+COMPONENT_DEFAULTS(Cinematic) = {
 };
-LRESULT CinematicProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_DrawBrush: return Cinematic_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Cinematic)
+		DISPATCH(Cinematic, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushCinematic(lua_State *L, struct Cinematic const* Cinematic) {
 	luaX_pushObject(L, CMP_GetObject(Cinematic));
 }
@@ -896,23 +836,20 @@ struct Cinematic* luaX_checkCinematic(lua_State *L, int idx) {
 REGISTER_CLASS(Cinematic, ID_Node2D, 0);
 HANDLER(Grid, Node2D, MeasureOverride);
 HANDLER(Grid, Node2D, ArrangeOverride);
-static struct PropertyType const GridProperties[kGridNumProperties] = {
-	DECL(0xea156fdc, Grid, Columns, Columns, kDataTypeString), // Grid.Columns
-	DECL(0xaa6592b8, Grid, Rows, Rows, kDataTypeString), // Grid.Rows
-	DECL(0x61fefc0a, Grid, Direction, Direction, kDataTypeEnum, .EnumValues = _Direction), // Grid.Direction
-	DECL(0x8777939e, Grid, Spacing, Spacing, kDataTypeFloat), // Grid.Spacing
-	DECL(0x57e1566f, Grid, CellWidth, CellWidth, kDataTypeFloat), // Grid.CellWidth
-	DECL(0xd2dc9412, Grid, CellHeight, CellHeight, kDataTypeFloat), // Grid.CellHeight
+COMPONENT_PROPERTIES(Grid) = {
+	DECL_STRING(0xea156fdc, Grid, Columns, Columns), // Grid.Columns
+	DECL_STRING(0xaa6592b8, Grid, Rows, Rows), // Grid.Rows
+	DECL_ENUM(0x61fefc0a, Grid, Direction, Direction, Direction), // Grid.Direction
+	DECL_FLOAT(0x8777939e, Grid, Spacing, Spacing), // Grid.Spacing
+	DECL_FLOAT(0x57e1566f, Grid, CellWidth, CellWidth), // Grid.CellWidth
+	DECL_FLOAT(0xd2dc9412, Grid, CellHeight, CellHeight), // Grid.CellHeight
 };
-static struct Grid GridDefaults = {
+COMPONENT_DEFAULTS(Grid) = {
 };
-LRESULT GridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return Grid_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return Grid_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Grid)
+		DISPATCH(Grid, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(Grid, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+COMPONENT_PROC_END()
 void luaX_pushGrid(lua_State *L, struct Grid const* Grid) {
 	luaX_pushObject(L, CMP_GetObject(Grid));
 }
@@ -925,19 +862,16 @@ HANDLER(UniformGrid, Node2D, MeasureOverride);
 HANDLER(UniformGrid, Node2D, ArrangeOverride);
 HANDLER(UniformGrid, Object, Create);
 HANDLER(UniformGrid, Object, PropertyChanged);
-static struct PropertyType const UniformGridProperties[kUniformGridNumProperties] = {
+COMPONENT_PROPERTIES(UniformGrid) = {
 };
-static struct UniformGrid UniformGridDefaults = {
+COMPONENT_DEFAULTS(UniformGrid) = {
 };
-LRESULT UniformGridProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return UniformGrid_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return UniformGrid_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case ID_Object_Create: return UniformGrid_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_PropertyChanged: return UniformGrid_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(UniformGrid)
+		DISPATCH(UniformGrid, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(UniformGrid, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+		DISPATCH(UniformGrid, Object, Create) // Object.Create
+		DISPATCH(UniformGrid, Object, PropertyChanged) // Object.PropertyChanged
+COMPONENT_PROC_END()
 void luaX_pushUniformGrid(lua_State *L, struct UniformGrid const* UniformGrid) {
 	luaX_pushObject(L, CMP_GetObject(UniformGrid));
 }
@@ -954,31 +888,28 @@ HANDLER(ImageView, Object, Start);
 HANDLER(ImageView, Object, PropertyChanged);
 HANDLER(ImageView, Object, Destroy);
 HANDLER(ImageView, Node, LoadView);
-static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
-	DECL(0x35c77969, ImageView, Src, Src, kDataTypeString), // ImageView.Src
-	DECL(0x61e2a3f8, ImageView, Source, Source, kDataTypeObject, .TypeString = "Texture"), // ImageView.Source
-	DECL(0x079106fd, ImageView, Edges, Edges, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Edges
-	DECL(0x062cedef, ImageView, Insets, Insets, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Insets
-	DECL(0xa8c81591, ImageView, Viewbox, Viewbox, kDataTypeStruct, .TypeString = "Vector4D"), // ImageView.Viewbox
-	DECL(0x03d3b9ca, ImageView, Stretch, Stretch, kDataTypeEnum, .EnumValues = _Stretch), // ImageView.Stretch
+COMPONENT_PROPERTIES(ImageView) = {
+	DECL_STRING(0x35c77969, ImageView, Src, Src), // ImageView.Src
+	DECL_OBJECT(0x61e2a3f8, ImageView, Source, Source, Texture), // ImageView.Source
+	DECL_STRUCT_TYPE(0x079106fd, ImageView, Edges, Edges, Vector4D), // ImageView.Edges
+	DECL_STRUCT_TYPE(0x062cedef, ImageView, Insets, Insets, Vector4D), // ImageView.Insets
+	DECL_STRUCT_TYPE(0xa8c81591, ImageView, Viewbox, Viewbox, Vector4D), // ImageView.Viewbox
+	DECL_ENUM(0x03d3b9ca, ImageView, Stretch, Stretch, Stretch), // ImageView.Stretch
 };
-static struct ImageView ImageViewDefaults = {
+COMPONENT_DEFAULTS(ImageView) = {
 		
   .Viewbox = {0,0,1,1},
 };
-LRESULT ImageViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return ImageView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ArrangeOverride: return ImageView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-		case ID_Node2D_ForegroundContent: return ImageView_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case ID_Node2D_DrawBrush: return ImageView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_Object_Start: return ImageView_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return ImageView_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Destroy: return ImageView_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-		case ID_Node_LoadView: return ImageView_LoadView(object, cmp, wparm, lparm); // Node.LoadView
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ImageView)
+		DISPATCH(ImageView, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(ImageView, Node2D, ArrangeOverride) // Node2D.ArrangeOverride
+		DISPATCH(ImageView, Node2D, ForegroundContent) // Node2D.ForegroundContent
+		DISPATCH(ImageView, Node2D, DrawBrush) // Node2D.DrawBrush
+		DISPATCH(ImageView, Object, Start) // Object.Start
+		DISPATCH(ImageView, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(ImageView, Object, Destroy) // Object.Destroy
+		DISPATCH(ImageView, Node, LoadView) // Node.LoadView
+COMPONENT_PROC_END()
 void luaX_pushImageView(lua_State *L, struct ImageView const* ImageView) {
 	luaX_pushObject(L, CMP_GetObject(ImageView));
 }
@@ -990,32 +921,29 @@ REGISTER_CLASS(ImageView, ID_Node2D, 0);
 HANDLER(NinePatchImage, Node2D, MeasureOverride);
 HANDLER(NinePatchImage, Node2D, ForegroundContent);
 HANDLER(NinePatchImage, Node2D, DrawBrush);
-static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
-	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
-	DECL(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom, kDataTypeFloat), // NinePatchImage.StretchTypeBottom
-	DECL(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft, kDataTypeFloat), // NinePatchImage.StretchTypeLeft
-	DECL(0xa26ba898, NinePatchImage, StretchTypeRight, StretchTypeRight, kDataTypeFloat), // NinePatchImage.StretchTypeRight
-	DECL(0xa81f8dff, NinePatchImage, StretchTypeCenter, StretchTypeCenter, kDataTypeFloat), // NinePatchImage.StretchTypeCenter
-	DECL(0xc7948178, NinePatchImage, ImageTopLeft, ImageTopLeft, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageTopLeft
-	DECL(0x28c29b5d, NinePatchImage, ImageTop, ImageTop, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageTop
-	DECL(0x810ee5cd, NinePatchImage, ImageTopRight, ImageTopRight, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageTopRight
-	DECL(0x2cd3c0d7, NinePatchImage, ImageLeft, ImageLeft, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageLeft
-	DECL(0x7ab05ecf, NinePatchImage, ImageCenter, ImageCenter, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageCenter
-	DECL(0x1c7d5648, NinePatchImage, ImageRight, ImageRight, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageRight
-	DECL(0x35657294, NinePatchImage, ImageBottomLeft, ImageBottomLeft, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageBottomLeft
-	DECL(0x80ed3299, NinePatchImage, ImageBottom, ImageBottom, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageBottom
-	DECL(0x42a461c1, NinePatchImage, ImageBottomRight, ImageBottomRight, kDataTypeObject, .TypeString = "Texture"), // NinePatchImage.ImageBottomRight
+COMPONENT_PROPERTIES(NinePatchImage) = {
+	DECL_FLOAT(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop), // NinePatchImage.StretchTypeTop
+	DECL_FLOAT(0x0697c1c9, NinePatchImage, StretchTypeBottom, StretchTypeBottom), // NinePatchImage.StretchTypeBottom
+	DECL_FLOAT(0xe5d554e7, NinePatchImage, StretchTypeLeft, StretchTypeLeft), // NinePatchImage.StretchTypeLeft
+	DECL_FLOAT(0xa26ba898, NinePatchImage, StretchTypeRight, StretchTypeRight), // NinePatchImage.StretchTypeRight
+	DECL_FLOAT(0xa81f8dff, NinePatchImage, StretchTypeCenter, StretchTypeCenter), // NinePatchImage.StretchTypeCenter
+	DECL_OBJECT(0xc7948178, NinePatchImage, ImageTopLeft, ImageTopLeft, Texture), // NinePatchImage.ImageTopLeft
+	DECL_OBJECT(0x28c29b5d, NinePatchImage, ImageTop, ImageTop, Texture), // NinePatchImage.ImageTop
+	DECL_OBJECT(0x810ee5cd, NinePatchImage, ImageTopRight, ImageTopRight, Texture), // NinePatchImage.ImageTopRight
+	DECL_OBJECT(0x2cd3c0d7, NinePatchImage, ImageLeft, ImageLeft, Texture), // NinePatchImage.ImageLeft
+	DECL_OBJECT(0x7ab05ecf, NinePatchImage, ImageCenter, ImageCenter, Texture), // NinePatchImage.ImageCenter
+	DECL_OBJECT(0x1c7d5648, NinePatchImage, ImageRight, ImageRight, Texture), // NinePatchImage.ImageRight
+	DECL_OBJECT(0x35657294, NinePatchImage, ImageBottomLeft, ImageBottomLeft, Texture), // NinePatchImage.ImageBottomLeft
+	DECL_OBJECT(0x80ed3299, NinePatchImage, ImageBottom, ImageBottom, Texture), // NinePatchImage.ImageBottom
+	DECL_OBJECT(0x42a461c1, NinePatchImage, ImageBottomRight, ImageBottomRight, Texture), // NinePatchImage.ImageBottomRight
 };
-static struct NinePatchImage NinePatchImageDefaults = {
+COMPONENT_DEFAULTS(NinePatchImage) = {
 };
-LRESULT NinePatchImageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_MeasureOverride: return NinePatchImage_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Node2D_ForegroundContent: return NinePatchImage_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-		case ID_Node2D_DrawBrush: return NinePatchImage_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(NinePatchImage)
+		DISPATCH(NinePatchImage, Node2D, MeasureOverride) // Node2D.MeasureOverride
+		DISPATCH(NinePatchImage, Node2D, ForegroundContent) // Node2D.ForegroundContent
+		DISPATCH(NinePatchImage, Node2D, DrawBrush) // Node2D.DrawBrush
+COMPONENT_PROC_END()
 void luaX_pushNinePatchImage(lua_State *L, struct NinePatchImage const* NinePatchImage) {
 	luaX_pushObject(L, CMP_GetObject(NinePatchImage));
 }
@@ -1032,38 +960,35 @@ HANDLER(ConsoleView, ConsoleView, Erase);
 HANDLER(ConsoleView, ConsoleView, Invalidate);
 HANDLER(ConsoleView, ConsoleView, Unpack);
 HANDLER(ConsoleView, ConsoleView, GetIndexPosition);
-static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {
-	DECL(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth, kDataTypeInt), // ConsoleView.BufferWidth
-	DECL(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight, kDataTypeInt), // ConsoleView.BufferHeight
-	DECL(0x558a502f, ConsoleView, Cursor, Cursor, kDataTypeInt), // ConsoleView.Cursor
-	DECL(0x98eca570, ConsoleView, SelectedIndex, SelectedIndex, kDataTypeInt), // ConsoleView.SelectedIndex
-	DECL(0x87f68bc8, ConsoleView, DropShadow, DropShadow, kDataTypeBool), // ConsoleView.DropShadow
-	DECL(0xe2847271, ConsoleView, ContentHeight, ContentHeight, kDataTypeInt), // ConsoleView.ContentHeight
-	DECL(0x9f626046, ConsoleView, Println, Println, kDataTypeEvent, .TypeString = "ConsoleView_PrintlnEventArgs"), // ConsoleView.Println
-	DECL(0x0e3c6075, ConsoleView, Erase, Erase, kDataTypeEvent, .TypeString = "ConsoleView_EraseEventArgs"), // ConsoleView.Erase
-	DECL(0xb4ac3630, ConsoleView, Invalidate, Invalidate, kDataTypeEvent, .TypeString = "ConsoleView_InvalidateEventArgs"), // ConsoleView.Invalidate
-	DECL(0x7a0c2153, ConsoleView, Unpack, Unpack, kDataTypeEvent, .TypeString = "ConsoleView_UnpackEventArgs"), // ConsoleView.Unpack
-	DECL(0x2ee2d732, ConsoleView, GetIndexPosition, GetIndexPosition, kDataTypeEvent, .TypeString = "ConsoleView_GetIndexPositionEventArgs"), // ConsoleView.GetIndexPosition
+COMPONENT_PROPERTIES(ConsoleView) = {
+	DECL_INT(0xdd1f241d, ConsoleView, BufferWidth, BufferWidth), // ConsoleView.BufferWidth
+	DECL_INT(0xd75e2af4, ConsoleView, BufferHeight, BufferHeight), // ConsoleView.BufferHeight
+	DECL_INT(0x558a502f, ConsoleView, Cursor, Cursor), // ConsoleView.Cursor
+	DECL_INT(0x98eca570, ConsoleView, SelectedIndex, SelectedIndex), // ConsoleView.SelectedIndex
+	DECL_BOOL(0x87f68bc8, ConsoleView, DropShadow, DropShadow), // ConsoleView.DropShadow
+	DECL_INT(0xe2847271, ConsoleView, ContentHeight, ContentHeight), // ConsoleView.ContentHeight
+	DECL_EVENT(0x9f626046, ConsoleView, Println), // ConsoleView.Println
+	DECL_EVENT(0x0e3c6075, ConsoleView, Erase), // ConsoleView.Erase
+	DECL_EVENT(0xb4ac3630, ConsoleView, Invalidate), // ConsoleView.Invalidate
+	DECL_EVENT(0x7a0c2153, ConsoleView, Unpack), // ConsoleView.Unpack
+	DECL_EVENT(0x2ee2d732, ConsoleView, GetIndexPosition), // ConsoleView.GetIndexPosition
 };
-static struct ConsoleView ConsoleViewDefaults = {
+COMPONENT_DEFAULTS(ConsoleView) = {
 		
   .BufferWidth = 256,
 		
   .BufferHeight = 256,
 };
-LRESULT ConsoleViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return ConsoleView_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Node2D_DrawBrush: return ConsoleView_DrawBrush(object, cmp, wparm, lparm); // Node2D.DrawBrush
-		case ID_Node_ScrollWheel: return ConsoleView_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
-		case ID_ConsoleView_Println: return ConsoleView_Println(object, cmp, wparm, lparm); // ConsoleView.Println
-		case ID_ConsoleView_Erase: return ConsoleView_Erase(object, cmp, wparm, lparm); // ConsoleView.Erase
-		case ID_ConsoleView_Invalidate: return ConsoleView_Invalidate(object, cmp, wparm, lparm); // ConsoleView.Invalidate
-		case ID_ConsoleView_Unpack: return ConsoleView_Unpack(object, cmp, wparm, lparm); // ConsoleView.Unpack
-		case ID_ConsoleView_GetIndexPosition: return ConsoleView_GetIndexPosition(object, cmp, wparm, lparm); // ConsoleView.GetIndexPosition
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ConsoleView)
+		DISPATCH(ConsoleView, Object, Create) // Object.Create
+		DISPATCH(ConsoleView, Node2D, DrawBrush) // Node2D.DrawBrush
+		DISPATCH(ConsoleView, Node, ScrollWheel) // Node.ScrollWheel
+		DISPATCH(ConsoleView, ConsoleView, Println) // ConsoleView.Println
+		DISPATCH(ConsoleView, ConsoleView, Erase) // ConsoleView.Erase
+		DISPATCH(ConsoleView, ConsoleView, Invalidate) // ConsoleView.Invalidate
+		DISPATCH(ConsoleView, ConsoleView, Unpack) // ConsoleView.Unpack
+		DISPATCH(ConsoleView, ConsoleView, GetIndexPosition) // ConsoleView.GetIndexPosition
+COMPONENT_PROC_END()
 void luaX_pushConsoleView(lua_State *L, struct ConsoleView const* ConsoleView) {
 	luaX_pushObject(L, CMP_GetObject(ConsoleView));
 }
@@ -1073,19 +998,16 @@ struct ConsoleView* luaX_checkConsoleView(lua_State *L, int idx) {
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(ConsoleView, ID_Node2D, 0);
 HANDLER(Page, Object, Create);
-static struct PropertyType const PageProperties[kPageNumProperties] = {
-	DECL(0x24d471a9, Page, Title, Title, kDataTypeString), // Page.Title
-	DECL(0xeb66e456, Page, Path, Path, kDataTypeString), // Page.Path
-	DECL(0xe69ce202, Page, Transition, Transition, kDataTypeFloat), // Page.Transition
+COMPONENT_PROPERTIES(Page) = {
+	DECL_STRING(0x24d471a9, Page, Title, Title), // Page.Title
+	DECL_STRING(0xeb66e456, Page, Path, Path), // Page.Path
+	DECL_FLOAT(0xe69ce202, Page, Transition, Transition), // Page.Transition
 };
-static struct Page PageDefaults = {
+COMPONENT_DEFAULTS(Page) = {
 };
-LRESULT PageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Create: return Page_Create(object, cmp, wparm, lparm); // Object.Create
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Page)
+		DISPATCH(Page, Object, Create) // Object.Create
+COMPONENT_PROC_END()
 void luaX_pushPage(lua_State *L, struct Page const* Page) {
 	luaX_pushObject(L, CMP_GetObject(Page));
 }
@@ -1097,21 +1019,18 @@ REGISTER_CLASS(Page, ID_Node2D, 0);
 HANDLER(PageHost, Node, ViewDidLoad);
 HANDLER(PageHost, PageHost, NavigateToPage);
 HANDLER(PageHost, PageHost, NavigateBack);
-static struct PropertyType const PageHostProperties[kPageHostNumProperties] = {
-	DECL(0x2e149db4, PageHost, ActivePage, ActivePage, kDataTypeObject, .TypeString = "Page"), // PageHost.ActivePage
-	DECL(0x6475c790, PageHost, NavigateToPage, NavigateToPage, kDataTypeEvent, .TypeString = "PageHost_NavigateToPageEventArgs"), // PageHost.NavigateToPage
-	DECL(0x36bc88b5, PageHost, NavigateBack, NavigateBack, kDataTypeEvent, .TypeString = "PageHost_NavigateBackEventArgs"), // PageHost.NavigateBack
+COMPONENT_PROPERTIES(PageHost) = {
+	DECL_OBJECT(0x2e149db4, PageHost, ActivePage, ActivePage, Page), // PageHost.ActivePage
+	DECL_EVENT(0x6475c790, PageHost, NavigateToPage), // PageHost.NavigateToPage
+	DECL_EVENT(0x36bc88b5, PageHost, NavigateBack), // PageHost.NavigateBack
 };
-static struct PageHost PageHostDefaults = {
+COMPONENT_DEFAULTS(PageHost) = {
 };
-LRESULT PageHostProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_ViewDidLoad: return PageHost_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
-		case ID_PageHost_NavigateToPage: return PageHost_NavigateToPage(object, cmp, wparm, lparm); // PageHost.NavigateToPage
-		case ID_PageHost_NavigateBack: return PageHost_NavigateBack(object, cmp, wparm, lparm); // PageHost.NavigateBack
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PageHost)
+		DISPATCH(PageHost, Node, ViewDidLoad) // Node.ViewDidLoad
+		DISPATCH(PageHost, PageHost, NavigateToPage) // PageHost.NavigateToPage
+		DISPATCH(PageHost, PageHost, NavigateBack) // PageHost.NavigateBack
+COMPONENT_PROC_END()
 void luaX_pushPageHost(lua_State *L, struct PageHost const* PageHost) {
 	luaX_pushObject(L, CMP_GetObject(PageHost));
 }
@@ -1120,15 +1039,12 @@ struct PageHost* luaX_checkPageHost(lua_State *L, int idx) {
 }
 #define ID_Page 0xe83d9196
 REGISTER_CLASS(PageHost, ID_Page, 0);
-static struct PropertyType const PageViewportProperties[kPageViewportNumProperties] = {
+COMPONENT_PROPERTIES(PageViewport) = {
 };
-static struct PageViewport PageViewportDefaults = {
+COMPONENT_DEFAULTS(PageViewport) = {
 };
-LRESULT PageViewportProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PageViewport)
+COMPONENT_PROC_END()
 void luaX_pushPageViewport(lua_State *L, struct PageViewport const* PageViewport) {
 	luaX_pushObject(L, CMP_GetObject(PageViewport));
 }
@@ -1137,17 +1053,14 @@ struct PageViewport* luaX_checkPageViewport(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(PageViewport, ID_Node2D, 0);
-static struct PropertyType const StyleProperties[kStyleNumProperties] = {
-	DECL(0x77ada720, Style, TargetType, TargetType, kDataTypeString), // Style.TargetType
-	DECL(0xd155d06d, Style, Type, Type, kDataTypeEnum, .EnumValues = _StyleType), // Style.Type
+COMPONENT_PROPERTIES(Style) = {
+	DECL_STRING(0x77ada720, Style, TargetType, TargetType), // Style.TargetType
+	DECL_ENUM(0xd155d06d, Style, Type, Type, StyleType), // Style.Type
 };
-static struct Style StyleDefaults = {
+COMPONENT_DEFAULTS(Style) = {
 };
-LRESULT StyleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Style)
+COMPONENT_PROC_END()
 void luaX_pushStyle(lua_State *L, struct Style const* Style) {
 	luaX_pushObject(L, CMP_GetObject(Style));
 }

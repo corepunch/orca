@@ -16,29 +16,29 @@ extern void read_property(lua_State *L, int idx, struct PropertyType const* prop
 extern int write_property(lua_State *L, struct PropertyType const* prop, void const* struct_ptr);
 extern int parse_property(const char* str, struct PropertyType const* prop, void* struct_ptr);
 static struct PropertyType _ProjectReference[] = {
-	DECL(0x0fe07306, ProjectReference, Name, Name, kDataTypeString), // ProjectReference.Name
-	DECL(0xeb66e456, ProjectReference, Path, Path, kDataTypeString), // ProjectReference.Path
+	DECL_STRING(0x0fe07306, ProjectReference, Name, Name), // ProjectReference.Name
+	DECL_STRING(0xeb66e456, ProjectReference, Path, Path), // ProjectReference.Path
 };
 static luaL_Reg _ProjectReference_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _EnginePlugin[] = {
-	DECL(0x0fe07306, EnginePlugin, Name, Name, kDataTypeString), // EnginePlugin.Name
+	DECL_STRING(0x0fe07306, EnginePlugin, Name, Name), // EnginePlugin.Name
 };
 static luaL_Reg _EnginePlugin_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _SystemMessage[] = {
-	DECL(0xae0ed984, SystemMessage, Message, Message, kDataTypeString), // SystemMessage.Message
-	DECL(0xcd1ac90c, SystemMessage, Key, Key, kDataTypeString), // SystemMessage.Key
-	DECL(0xc67c8f52, SystemMessage, Command, Command, kDataTypeString), // SystemMessage.Command
+	DECL_STRING(0xae0ed984, SystemMessage, Message, Message), // SystemMessage.Message
+	DECL_STRING(0xcd1ac90c, SystemMessage, Key, Key), // SystemMessage.Key
+	DECL_STRING(0xc67c8f52, SystemMessage, Command, Command), // SystemMessage.Command
 };
 static luaL_Reg _SystemMessage_Methods[] = {
 	{ NULL, NULL }
 };
 static struct PropertyType _ThemeValue[] = {
-	DECL(0xcd1ac90c, ThemeValue, Key, Key, kDataTypeString), // ThemeValue.Key
-	DECL(0xd147f96a, ThemeValue, Value, Value, kDataTypeString), // ThemeValue.Value
+	DECL_STRING(0xcd1ac90c, ThemeValue, Key, Key), // ThemeValue.Key
+	DECL_STRING(0xd147f96a, ThemeValue, Value, Value), // ThemeValue.Value
 };
 static luaL_Reg _ThemeValue_Methods[] = {
 	{ NULL, NULL }
@@ -54,18 +54,18 @@ static struct PropertyType _Workspace_ReadCommandsEventArgs[] = {
 };
 static luaL_Reg _Project_OpenFileEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Project_OpenFileEventArgs[] = {
-	DECL(0x5ffdd888, Project_OpenFileEventArgs, FileName, FileName, kDataTypeString), // Project_OpenFileEventArgs.FileName
+	DECL_STRING(0x5ffdd888, Project_OpenFileEventArgs, FileName, FileName), // Project_OpenFileEventArgs.FileName
 };
 static luaL_Reg _Project_FileExistsEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Project_FileExistsEventArgs[] = {
-	DECL(0x5ffdd888, Project_FileExistsEventArgs, FileName, FileName, kDataTypeString), // Project_FileExistsEventArgs.FileName
+	DECL_STRING(0x5ffdd888, Project_FileExistsEventArgs, FileName, FileName), // Project_FileExistsEventArgs.FileName
 };
 static luaL_Reg _Project_HasChangedFilesEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Project_HasChangedFilesEventArgs[] = {
 };
 static luaL_Reg _Project_LoadProjectEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Project_LoadProjectEventArgs[] = {
-	DECL(0xeb66e456, Project_LoadProjectEventArgs, Path, Path, kDataTypeString), // Project_LoadProjectEventArgs.Path
+	DECL_STRING(0xeb66e456, Project_LoadProjectEventArgs, Path, Path), // Project_LoadProjectEventArgs.Path
 };
 
 STRUCT(Workspace_ReadCommandsEventArgs, Workspace_ReadCommandsEventArgs);
@@ -73,16 +73,13 @@ STRUCT(Project_OpenFileEventArgs, Project_OpenFileEventArgs);
 STRUCT(Project_FileExistsEventArgs, Project_FileExistsEventArgs);
 STRUCT(Project_HasChangedFilesEventArgs, Project_HasChangedFilesEventArgs);
 STRUCT(Project_LoadProjectEventArgs, Project_LoadProjectEventArgs);
-static struct PropertyType const WorkspaceProperties[kWorkspaceNumProperties] = {
-	DECL(0x23d83fd3, Workspace, ReadCommands, ReadCommands, kDataTypeEvent, .TypeString = "Workspace_ReadCommandsEventArgs"), // Workspace.ReadCommands
+COMPONENT_PROPERTIES(Workspace) = {
+	DECL_EVENT(0x23d83fd3, Workspace, ReadCommands), // Workspace.ReadCommands
 };
-static struct Workspace WorkspaceDefaults = {
+COMPONENT_DEFAULTS(Workspace) = {
 };
-LRESULT WorkspaceProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Workspace)
+COMPONENT_PROC_END()
 void luaX_pushWorkspace(lua_State *L, struct Workspace const* Workspace) {
 	luaX_pushObject(L, CMP_GetObject(Workspace));
 }
@@ -90,16 +87,13 @@ struct Workspace* luaX_checkWorkspace(lua_State *L, int idx) {
 	return GetWorkspace(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Workspace, 0);
-static struct PropertyType const LibraryProperties[kLibraryNumProperties] = {
-	DECL(0x1cb8f23a, Library, IsExternal, IsExternal, kDataTypeBool), // Library.IsExternal
+COMPONENT_PROPERTIES(Library) = {
+	DECL_BOOL(0x1cb8f23a, Library, IsExternal, IsExternal), // Library.IsExternal
 };
-static struct Library LibraryDefaults = {
+COMPONENT_DEFAULTS(Library) = {
 };
-LRESULT LibraryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Library)
+COMPONENT_PROC_END()
 void luaX_pushLibrary(lua_State *L, struct Library const* Library) {
 	luaX_pushObject(L, CMP_GetObject(Library));
 }
@@ -108,95 +102,92 @@ struct Library* luaX_checkLibrary(lua_State *L, int idx) {
 }
 REGISTER_CLASS(Library, 0);
 HANDLER(Project, Object, Start);
-static struct PropertyType const ProjectProperties[kProjectNumProperties] = {
-	DECL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat, kDataTypeBool), // Project.HalfFloatTextureFormat
-	DECL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear, kDataTypeBool), // Project.HalfFloatTextureFormatLinear
-	DECL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment, kDataTypeBool), // Project.HalfFloatColorAttachment
-	DECL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels, kDataTypeBool), // Project.RenderToMipmapLevels
-	DECL(0x377aea3d, Project, ExternalTexture, ExternalTexture, kDataTypeBool), // Project.ExternalTexture
-	DECL(0xb3cce876, Project, StartupScreen, StartupScreen, kDataTypeString), // Project.StartupScreen
-	DECL(0x5fac3f0f, Project, StartupViewController, StartupViewController, kDataTypeString), // Project.StartupViewController
-	DECL(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor, kDataTypeColor), // Project.PreviewWindowBackgroundColor
-	DECL(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame, kDataTypeInt), // Project.MessageLimitPerFrame
-	DECL(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime, kDataTypeInt), // Project.GlobalTimelineStartTime
-	DECL(0x5d90d07b, Project, GlobalTimelineEndTime, GlobalTimelineEndTime, kDataTypeInt), // Project.GlobalTimelineEndTime
-	DECL(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory, kDataTypeString), // Project.BinaryExportDirectory
-	DECL(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory, kDataTypeString), // Project.ApplicationExportDirectory
-	DECL(0xf6c72bc0, Project, IsMasterProject, IsMasterProject, kDataTypeBool), // Project.IsMasterProject
-	DECL(0x3762ffdf, Project, OptimizeMeshes, OptimizeMeshes, kDataTypeBool), // Project.OptimizeMeshes
-	DECL(0xda2eb7cc, Project, TargetPlatformVertexCacheSize, TargetPlatformVertexCacheSize, kDataTypeInt), // Project.TargetPlatformVertexCacheSize
-	DECL(0xdc968859, Project, PlotAnimations, PlotAnimations, kDataTypeBool), // Project.PlotAnimations
-	DECL(0x66a084f4, Project, RoundImagesToNearestPowerOf2, RoundImagesToNearestPowerOf2, kDataTypeBool), // Project.RoundImagesToNearestPowerOf2
-	DECL(0xeb929bed, Project, ProjectExportShaderSourceCode, ProjectExportShaderSourceCode, kDataTypeBool), // Project.ProjectExportShaderSourceCode
-	DECL(0xc3c2d763, Project, ProjectExportMainKzbWithBakedThemes, ProjectExportMainKzbWithBakedThemes, kDataTypeBool), // Project.ProjectExportMainKzbWithBakedThemes
-	DECL(0xad8222eb, Project, ProjectGroupByThemeNameInBakedThemeExport, ProjectGroupByThemeNameInBakedThemeExport, kDataTypeBool), // Project.ProjectGroupByThemeNameInBakedThemeExport
-	DECL(0x18da08d1, Project, IsLocalizationEnabled, IsLocalizationEnabled, kDataTypeBool), // Project.IsLocalizationEnabled
-	DECL(0xdf498299, Project, FullScreenPreviewLayer, FullScreenPreviewLayer, kDataTypeBool), // Project.FullScreenPreviewLayer
-	DECL(0x76bfa6c4, Project, ShowChildrenInLayerThumbnails, ShowChildrenInLayerThumbnails, kDataTypeBool), // Project.ShowChildrenInLayerThumbnails
-	DECL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha, kDataTypeBool), // Project.ProjectUsePremultipliedAlpha
-	DECL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs, kDataTypeBool), // Project.ProjectRemoveICCProfilesOfPngs
-	DECL(0x0f9ae251, Project, BinaryFileName, BinaryFileName, kDataTypeString), // Project.BinaryFileName
-	DECL(0x76ac7909, Project, IsAssetPackage, IsAssetPackage, kDataTypeBool), // Project.IsAssetPackage
-	DECL(0x982e8227, Project, KanziConnectEnabled, KanziConnectEnabled, kDataTypeBool), // Project.KanziConnectEnabled
-	DECL(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial, kDataTypeString), // Project.DefaultMaterial
-	DECL(0xdc5503a7, Project, WindowWidth, WindowWidth, kDataTypeInt), // Project.WindowWidth
-	DECL(0xbd75892a, Project, WindowHeight, WindowHeight, kDataTypeInt), // Project.WindowHeight
-	ARRAY_DECL(0x3cee6129, Project, PropertyTypes, PropertyTypes, kDataTypeStruct, .TypeString = "PropertyType"), // Project.PropertyTypes
-	DECL(0x5d64948b, Project, NumPropertyTypes, NumPropertyTypes, kDataTypeInt), // Project.NumPropertyTypes
-	ARRAY_DECL(0x0a978b48, Project, ProjectReferences, ProjectReferences, kDataTypeStruct, .TypeString = "ProjectReference"), // Project.ProjectReferences
-	DECL(0xc405deba, Project, NumProjectReferences, NumProjectReferences, kDataTypeInt), // Project.NumProjectReferences
-	ARRAY_DECL(0x2fd1aed8, Project, SystemMessages, SystemMessages, kDataTypeStruct, .TypeString = "SystemMessage"), // Project.SystemMessages
-	DECL(0xbf690676, Project, NumSystemMessages, NumSystemMessages, kDataTypeInt), // Project.NumSystemMessages
-	ARRAY_DECL(0x3f68bf99, Project, EnginePlugins, EnginePlugins, kDataTypeStruct, .TypeString = "EnginePlugin"), // Project.EnginePlugins
-	DECL(0x252d1cd3, Project, NumEnginePlugins, NumEnginePlugins, kDataTypeInt), // Project.NumEnginePlugins
-	DECL(0xb18f0186, Project, AnimationClipLibrary, AnimationClipLibrary, kDataTypeObject, .TypeString = "Library"), // Project.AnimationClipLibrary
-	DECL(0x33aae09c, Project, ScreenLibrary, ScreenLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ScreenLibrary
-	DECL(0xa8705423, Project, MaterialTypeLibrary, MaterialTypeLibrary, kDataTypeObject, .TypeString = "Library"), // Project.MaterialTypeLibrary
-	DECL(0xa52f6c1b, Project, MaterialLibrary, MaterialLibrary, kDataTypeObject, .TypeString = "Library"), // Project.MaterialLibrary
-	DECL(0xaa7539c6, Project, BrushLibrary, BrushLibrary, kDataTypeObject, .TypeString = "Library"), // Project.BrushLibrary
-	DECL(0x11d562a7, Project, MeshLibrary, MeshLibrary, kDataTypeObject, .TypeString = "Library"), // Project.MeshLibrary
-	DECL(0x6a7a199a, Project, TimelineSequenceLibrary, TimelineSequenceLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TimelineSequenceLibrary
-	DECL(0x9cebd1a3, Project, SceneObjectLibrary, SceneObjectLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SceneObjectLibrary
-	DECL(0x739c88a6, Project, ComposerLibrary, ComposerLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ComposerLibrary
-	DECL(0x9da5b82f, Project, PipelineItemLibrary, PipelineItemLibrary, kDataTypeObject, .TypeString = "Library"), // Project.PipelineItemLibrary
-	DECL(0xfa6e5926, Project, SceneLibrary, SceneLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SceneLibrary
-	DECL(0x081b51d3, Project, TrajectoryLibrary, TrajectoryLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TrajectoryLibrary
-	DECL(0xcf1f17a5, Project, TransitionLibrary, TransitionLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TransitionLibrary
-	DECL(0xb16c4967, Project, SplineLibrary, SplineLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SplineLibrary
-	DECL(0x0b066b16, Project, PrefabLibrary, PrefabLibrary, kDataTypeObject, .TypeString = "Library"), // Project.PrefabLibrary
-	DECL(0xd4de6821, Project, ProfileLibrary, ProfileLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ProfileLibrary
-	DECL(0x425801c6, Project, ShortcutLibrary, ShortcutLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ShortcutLibrary
-	DECL(0x309f6b49, Project, LayerLibrary, LayerLibrary, kDataTypeObject, .TypeString = "Library"), // Project.LayerLibrary
-	DECL(0x1818e708, Project, AnimationLibrary, AnimationLibrary, kDataTypeObject, .TypeString = "Library"), // Project.AnimationLibrary
-	DECL(0x7e634fa6, Project, TagLibrary, TagLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TagLibrary
-	ARRAY_DECL(0x508975b5, Project, ThemeLibrary, ThemeLibrary, kDataTypeStruct, .TypeString = "ThemeValue"), // Project.ThemeLibrary
-	DECL(0xa8550cf7, Project, NumThemeLibrary, NumThemeLibrary, kDataTypeInt), // Project.NumThemeLibrary
-	DECL(0x7ca6ddcc, Project, ResourceExportTagLibrary, ResourceExportTagLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ResourceExportTagLibrary
-	DECL(0xc56f541a, Project, LocaleLibrary, LocaleLibrary, kDataTypeObject, .TypeString = "Library"), // Project.LocaleLibrary
-	DECL(0xe1462dd3, Project, DataSourceLibrary, DataSourceLibrary, kDataTypeObject, .TypeString = "Library"), // Project.DataSourceLibrary
-	DECL(0x29c80844, Project, PageTransitionCollectionLibrary, PageTransitionCollectionLibrary, kDataTypeObject, .TypeString = "Library"), // Project.PageTransitionCollectionLibrary
-	DECL(0x99f2a01f, Project, TextureLibrary, TextureLibrary, kDataTypeObject, .TypeString = "Library"), // Project.TextureLibrary
-	DECL(0x5c0ac569, Project, StyleLibrary, StyleLibrary, kDataTypeObject, .TypeString = "Library"), // Project.StyleLibrary
-	DECL(0x1f8da040, Project, StateManagerLibrary, StateManagerLibrary, kDataTypeObject, .TypeString = "Library"), // Project.StateManagerLibrary
-	DECL(0x66ac9ce3, Project, ConnectServiceLibrary, ConnectServiceLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ConnectServiceLibrary
-	DECL(0x445ea848, Project, ConnectUserServiceLibrary, ConnectUserServiceLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ConnectUserServiceLibrary
-	DECL(0xb1288547, Project, SpriteLibrary, SpriteLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SpriteLibrary
-	DECL(0x9ef864fd, Project, SpriteAnimationLibrary, SpriteAnimationLibrary, kDataTypeObject, .TypeString = "Library"), // Project.SpriteAnimationLibrary
-	DECL(0x533a469d, Project, ImageLibrary, ImageLibrary, kDataTypeObject, .TypeString = "Library"), // Project.ImageLibrary
-	DECL(0xb033dd0b, Project, FontLibrary, FontLibrary, kDataTypeObject, .TypeString = "Library"), // Project.FontLibrary
-	DECL(0xa2c038cf, Project, OpenFile, OpenFile, kDataTypeEvent, .TypeString = "Project_OpenFileEventArgs"), // Project.OpenFile
-	DECL(0x38dfc973, Project, FileExists, FileExists, kDataTypeEvent, .TypeString = "Project_FileExistsEventArgs"), // Project.FileExists
-	DECL(0x5390a564, Project, HasChangedFiles, HasChangedFiles, kDataTypeEvent, .TypeString = "Project_HasChangedFilesEventArgs"), // Project.HasChangedFiles
-	DECL(0x31b9fee2, Project, LoadProject, LoadProject, kDataTypeEvent, .TypeString = "Project_LoadProjectEventArgs"), // Project.LoadProject
+COMPONENT_PROPERTIES(Project) = {
+	DECL_BOOL(0xbcd19216, Project, HalfFloatTextureFormat, HalfFloatTextureFormat), // Project.HalfFloatTextureFormat
+	DECL_BOOL(0xfba1938f, Project, HalfFloatTextureFormatLinear, HalfFloatTextureFormatLinear), // Project.HalfFloatTextureFormatLinear
+	DECL_BOOL(0x1275837c, Project, HalfFloatColorAttachment, HalfFloatColorAttachment), // Project.HalfFloatColorAttachment
+	DECL_BOOL(0x6b1586db, Project, RenderToMipmapLevels, RenderToMipmapLevels), // Project.RenderToMipmapLevels
+	DECL_BOOL(0x377aea3d, Project, ExternalTexture, ExternalTexture), // Project.ExternalTexture
+	DECL_STRING(0xb3cce876, Project, StartupScreen, StartupScreen), // Project.StartupScreen
+	DECL_STRING(0x5fac3f0f, Project, StartupViewController, StartupViewController), // Project.StartupViewController
+	DECL_COLOR(0xe1bb158a, Project, PreviewWindowBackgroundColor, PreviewWindowBackgroundColor), // Project.PreviewWindowBackgroundColor
+	DECL_INT(0xb92de767, Project, MessageLimitPerFrame, MessageLimitPerFrame), // Project.MessageLimitPerFrame
+	DECL_INT(0xe310dade, Project, GlobalTimelineStartTime, GlobalTimelineStartTime), // Project.GlobalTimelineStartTime
+	DECL_INT(0x5d90d07b, Project, GlobalTimelineEndTime, GlobalTimelineEndTime), // Project.GlobalTimelineEndTime
+	DECL_STRING(0x527cf409, Project, BinaryExportDirectory, BinaryExportDirectory), // Project.BinaryExportDirectory
+	DECL_STRING(0x5d547d12, Project, ApplicationExportDirectory, ApplicationExportDirectory), // Project.ApplicationExportDirectory
+	DECL_BOOL(0xf6c72bc0, Project, IsMasterProject, IsMasterProject), // Project.IsMasterProject
+	DECL_BOOL(0x3762ffdf, Project, OptimizeMeshes, OptimizeMeshes), // Project.OptimizeMeshes
+	DECL_INT(0xda2eb7cc, Project, TargetPlatformVertexCacheSize, TargetPlatformVertexCacheSize), // Project.TargetPlatformVertexCacheSize
+	DECL_BOOL(0xdc968859, Project, PlotAnimations, PlotAnimations), // Project.PlotAnimations
+	DECL_BOOL(0x66a084f4, Project, RoundImagesToNearestPowerOf2, RoundImagesToNearestPowerOf2), // Project.RoundImagesToNearestPowerOf2
+	DECL_BOOL(0xeb929bed, Project, ProjectExportShaderSourceCode, ProjectExportShaderSourceCode), // Project.ProjectExportShaderSourceCode
+	DECL_BOOL(0xc3c2d763, Project, ProjectExportMainKzbWithBakedThemes, ProjectExportMainKzbWithBakedThemes), // Project.ProjectExportMainKzbWithBakedThemes
+	DECL_BOOL(0xad8222eb, Project, ProjectGroupByThemeNameInBakedThemeExport, ProjectGroupByThemeNameInBakedThemeExport), // Project.ProjectGroupByThemeNameInBakedThemeExport
+	DECL_BOOL(0x18da08d1, Project, IsLocalizationEnabled, IsLocalizationEnabled), // Project.IsLocalizationEnabled
+	DECL_BOOL(0xdf498299, Project, FullScreenPreviewLayer, FullScreenPreviewLayer), // Project.FullScreenPreviewLayer
+	DECL_BOOL(0x76bfa6c4, Project, ShowChildrenInLayerThumbnails, ShowChildrenInLayerThumbnails), // Project.ShowChildrenInLayerThumbnails
+	DECL_BOOL(0x5734b5cd, Project, ProjectUsePremultipliedAlpha, ProjectUsePremultipliedAlpha), // Project.ProjectUsePremultipliedAlpha
+	DECL_BOOL(0xb617d580, Project, ProjectRemoveICCProfilesOfPngs, ProjectRemoveICCProfilesOfPngs), // Project.ProjectRemoveICCProfilesOfPngs
+	DECL_STRING(0x0f9ae251, Project, BinaryFileName, BinaryFileName), // Project.BinaryFileName
+	DECL_BOOL(0x76ac7909, Project, IsAssetPackage, IsAssetPackage), // Project.IsAssetPackage
+	DECL_BOOL(0x982e8227, Project, KanziConnectEnabled, KanziConnectEnabled), // Project.KanziConnectEnabled
+	DECL_STRING(0x0c93d3a3, Project, DefaultMaterial, DefaultMaterial), // Project.DefaultMaterial
+	DECL_INT(0xdc5503a7, Project, WindowWidth, WindowWidth), // Project.WindowWidth
+	DECL_INT(0xbd75892a, Project, WindowHeight, WindowHeight), // Project.WindowHeight
+	ARRAY_DECL_STRUCT_TYPE(0x3cee6129, Project, PropertyTypes, PropertyTypes, PropertyType), // Project.PropertyTypes
+	DECL_INT(0x5d64948b, Project, NumPropertyTypes, NumPropertyTypes), // Project.NumPropertyTypes
+	ARRAY_DECL_STRUCT_TYPE(0x0a978b48, Project, ProjectReferences, ProjectReferences, ProjectReference), // Project.ProjectReferences
+	DECL_INT(0xc405deba, Project, NumProjectReferences, NumProjectReferences), // Project.NumProjectReferences
+	ARRAY_DECL_STRUCT_TYPE(0x2fd1aed8, Project, SystemMessages, SystemMessages, SystemMessage), // Project.SystemMessages
+	DECL_INT(0xbf690676, Project, NumSystemMessages, NumSystemMessages), // Project.NumSystemMessages
+	ARRAY_DECL_STRUCT_TYPE(0x3f68bf99, Project, EnginePlugins, EnginePlugins, EnginePlugin), // Project.EnginePlugins
+	DECL_INT(0x252d1cd3, Project, NumEnginePlugins, NumEnginePlugins), // Project.NumEnginePlugins
+	DECL_OBJECT(0xb18f0186, Project, AnimationClipLibrary, AnimationClipLibrary, Library), // Project.AnimationClipLibrary
+	DECL_OBJECT(0x33aae09c, Project, ScreenLibrary, ScreenLibrary, Library), // Project.ScreenLibrary
+	DECL_OBJECT(0xa8705423, Project, MaterialTypeLibrary, MaterialTypeLibrary, Library), // Project.MaterialTypeLibrary
+	DECL_OBJECT(0xa52f6c1b, Project, MaterialLibrary, MaterialLibrary, Library), // Project.MaterialLibrary
+	DECL_OBJECT(0xaa7539c6, Project, BrushLibrary, BrushLibrary, Library), // Project.BrushLibrary
+	DECL_OBJECT(0x11d562a7, Project, MeshLibrary, MeshLibrary, Library), // Project.MeshLibrary
+	DECL_OBJECT(0x6a7a199a, Project, TimelineSequenceLibrary, TimelineSequenceLibrary, Library), // Project.TimelineSequenceLibrary
+	DECL_OBJECT(0x9cebd1a3, Project, SceneObjectLibrary, SceneObjectLibrary, Library), // Project.SceneObjectLibrary
+	DECL_OBJECT(0x739c88a6, Project, ComposerLibrary, ComposerLibrary, Library), // Project.ComposerLibrary
+	DECL_OBJECT(0x9da5b82f, Project, PipelineItemLibrary, PipelineItemLibrary, Library), // Project.PipelineItemLibrary
+	DECL_OBJECT(0xfa6e5926, Project, SceneLibrary, SceneLibrary, Library), // Project.SceneLibrary
+	DECL_OBJECT(0x081b51d3, Project, TrajectoryLibrary, TrajectoryLibrary, Library), // Project.TrajectoryLibrary
+	DECL_OBJECT(0xcf1f17a5, Project, TransitionLibrary, TransitionLibrary, Library), // Project.TransitionLibrary
+	DECL_OBJECT(0xb16c4967, Project, SplineLibrary, SplineLibrary, Library), // Project.SplineLibrary
+	DECL_OBJECT(0x0b066b16, Project, PrefabLibrary, PrefabLibrary, Library), // Project.PrefabLibrary
+	DECL_OBJECT(0xd4de6821, Project, ProfileLibrary, ProfileLibrary, Library), // Project.ProfileLibrary
+	DECL_OBJECT(0x425801c6, Project, ShortcutLibrary, ShortcutLibrary, Library), // Project.ShortcutLibrary
+	DECL_OBJECT(0x309f6b49, Project, LayerLibrary, LayerLibrary, Library), // Project.LayerLibrary
+	DECL_OBJECT(0x1818e708, Project, AnimationLibrary, AnimationLibrary, Library), // Project.AnimationLibrary
+	DECL_OBJECT(0x7e634fa6, Project, TagLibrary, TagLibrary, Library), // Project.TagLibrary
+	ARRAY_DECL_STRUCT_TYPE(0x508975b5, Project, ThemeLibrary, ThemeLibrary, ThemeValue), // Project.ThemeLibrary
+	DECL_INT(0xa8550cf7, Project, NumThemeLibrary, NumThemeLibrary), // Project.NumThemeLibrary
+	DECL_OBJECT(0x7ca6ddcc, Project, ResourceExportTagLibrary, ResourceExportTagLibrary, Library), // Project.ResourceExportTagLibrary
+	DECL_OBJECT(0xc56f541a, Project, LocaleLibrary, LocaleLibrary, Library), // Project.LocaleLibrary
+	DECL_OBJECT(0xe1462dd3, Project, DataSourceLibrary, DataSourceLibrary, Library), // Project.DataSourceLibrary
+	DECL_OBJECT(0x29c80844, Project, PageTransitionCollectionLibrary, PageTransitionCollectionLibrary, Library), // Project.PageTransitionCollectionLibrary
+	DECL_OBJECT(0x99f2a01f, Project, TextureLibrary, TextureLibrary, Library), // Project.TextureLibrary
+	DECL_OBJECT(0x5c0ac569, Project, StyleLibrary, StyleLibrary, Library), // Project.StyleLibrary
+	DECL_OBJECT(0x1f8da040, Project, StateManagerLibrary, StateManagerLibrary, Library), // Project.StateManagerLibrary
+	DECL_OBJECT(0x66ac9ce3, Project, ConnectServiceLibrary, ConnectServiceLibrary, Library), // Project.ConnectServiceLibrary
+	DECL_OBJECT(0x445ea848, Project, ConnectUserServiceLibrary, ConnectUserServiceLibrary, Library), // Project.ConnectUserServiceLibrary
+	DECL_OBJECT(0xb1288547, Project, SpriteLibrary, SpriteLibrary, Library), // Project.SpriteLibrary
+	DECL_OBJECT(0x9ef864fd, Project, SpriteAnimationLibrary, SpriteAnimationLibrary, Library), // Project.SpriteAnimationLibrary
+	DECL_OBJECT(0x533a469d, Project, ImageLibrary, ImageLibrary, Library), // Project.ImageLibrary
+	DECL_OBJECT(0xb033dd0b, Project, FontLibrary, FontLibrary, Library), // Project.FontLibrary
+	DECL_EVENT(0xa2c038cf, Project, OpenFile), // Project.OpenFile
+	DECL_EVENT(0x38dfc973, Project, FileExists), // Project.FileExists
+	DECL_EVENT(0x5390a564, Project, HasChangedFiles), // Project.HasChangedFiles
+	DECL_EVENT(0x31b9fee2, Project, LoadProject), // Project.LoadProject
 };
-static struct Project ProjectDefaults = {
+COMPONENT_DEFAULTS(Project) = {
 };
-LRESULT ProjectProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return Project_Start(object, cmp, wparm, lparm); // Object.Start
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Project)
+		DISPATCH(Project, Object, Start) // Object.Start
+COMPONENT_PROC_END()
 void luaX_pushProject(lua_State *L, struct Project const* Project) {
 	luaX_pushObject(L, CMP_GetObject(Project));
 }
@@ -209,21 +200,18 @@ HANDLER(Directory, Project, OpenFile);
 HANDLER(Directory, Project, FileExists);
 HANDLER(Directory, Project, HasChangedFiles);
 HANDLER(Directory, Object, Destroy);
-static struct PropertyType const DirectoryProperties[kDirectoryNumProperties] = {
-	DECL(0xeb66e456, Directory, Path, Path, kDataTypeString), // Directory.Path
+COMPONENT_PROPERTIES(Directory) = {
+	DECL_STRING(0xeb66e456, Directory, Path, Path), // Directory.Path
 };
-static struct Directory DirectoryDefaults = {
+COMPONENT_DEFAULTS(Directory) = {
 };
-LRESULT DirectoryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return Directory_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return Directory_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return Directory_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return Directory_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return Directory_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Directory)
+		DISPATCH(Directory, Project, LoadProject) // Project.LoadProject
+		DISPATCH(Directory, Project, OpenFile) // Project.OpenFile
+		DISPATCH(Directory, Project, FileExists) // Project.FileExists
+		DISPATCH(Directory, Project, HasChangedFiles) // Project.HasChangedFiles
+		DISPATCH(Directory, Object, Destroy) // Object.Destroy
+COMPONENT_PROC_END()
 void luaX_pushDirectory(lua_State *L, struct Directory const* Directory) {
 	luaX_pushObject(L, CMP_GetObject(Directory));
 }
@@ -237,21 +225,18 @@ HANDLER(Package, Project, OpenFile);
 HANDLER(Package, Project, FileExists);
 HANDLER(Package, Project, HasChangedFiles);
 HANDLER(Package, Object, Destroy);
-static struct PropertyType const PackageProperties[kPackageNumProperties] = {
-	DECL(0x5ffdd888, Package, FileName, FileName, kDataTypeString), // Package.FileName
+COMPONENT_PROPERTIES(Package) = {
+	DECL_STRING(0x5ffdd888, Package, FileName, FileName), // Package.FileName
 };
-static struct Package PackageDefaults = {
+COMPONENT_DEFAULTS(Package) = {
 };
-LRESULT PackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return Package_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return Package_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return Package_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return Package_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return Package_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Package)
+		DISPATCH(Package, Project, LoadProject) // Project.LoadProject
+		DISPATCH(Package, Project, OpenFile) // Project.OpenFile
+		DISPATCH(Package, Project, FileExists) // Project.FileExists
+		DISPATCH(Package, Project, HasChangedFiles) // Project.HasChangedFiles
+		DISPATCH(Package, Object, Destroy) // Object.Destroy
+COMPONENT_PROC_END()
 void luaX_pushPackage(lua_State *L, struct Package const* Package) {
 	luaX_pushObject(L, CMP_GetObject(Package));
 }
@@ -260,15 +245,12 @@ struct Package* luaX_checkPackage(lua_State *L, int idx) {
 }
 #define ID_Project 0x7b5fea5e
 REGISTER_CLASS(Package, ID_Project, 0);
-static struct PropertyType const LocaleReferenceItemProperties[kLocaleReferenceItemNumProperties] = {
+COMPONENT_PROPERTIES(LocaleReferenceItem) = {
 };
-static struct LocaleReferenceItem LocaleReferenceItemDefaults = {
+COMPONENT_DEFAULTS(LocaleReferenceItem) = {
 };
-LRESULT LocaleReferenceItemProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(LocaleReferenceItem)
+COMPONENT_PROC_END()
 void luaX_pushLocaleReferenceItem(lua_State *L, struct LocaleReferenceItem const* LocaleReferenceItem) {
 	luaX_pushObject(L, CMP_GetObject(LocaleReferenceItem));
 }
@@ -276,16 +258,13 @@ struct LocaleReferenceItem* luaX_checkLocaleReferenceItem(lua_State *L, int idx)
 	return GetLocaleReferenceItem(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(LocaleReferenceItem, 0);
-static struct PropertyType const TagProperties[kTagNumProperties] = {
-	DECL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited, kDataTypeBool), // Tag.TagIsInherited
+COMPONENT_PROPERTIES(Tag) = {
+	DECL_BOOL(0xc35a8c07, Tag, TagIsInherited, TagIsInherited), // Tag.TagIsInherited
 };
-static struct Tag TagDefaults = {
+COMPONENT_DEFAULTS(Tag) = {
 };
-LRESULT TagProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Tag)
+COMPONENT_PROC_END()
 void luaX_pushTag(lua_State *L, struct Tag const* Tag) {
 	luaX_pushObject(L, CMP_GetObject(Tag));
 }
@@ -293,15 +272,12 @@ struct Tag* luaX_checkTag(lua_State *L, int idx) {
 	return GetTag(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Tag, 0);
-static struct PropertyType const EntryProperties[kEntryNumProperties] = {
+COMPONENT_PROPERTIES(Entry) = {
 };
-static struct Entry EntryDefaults = {
+COMPONENT_DEFAULTS(Entry) = {
 };
-LRESULT EntryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Entry)
+COMPONENT_PROC_END()
 void luaX_pushEntry(lua_State *L, struct Entry const* Entry) {
 	luaX_pushObject(L, CMP_GetObject(Entry));
 }
@@ -309,15 +285,12 @@ struct Entry* luaX_checkEntry(lua_State *L, int idx) {
 	return GetEntry(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Entry, 0);
-static struct PropertyType const ThemeDefaultValuesDictionaryProperties[kThemeDefaultValuesDictionaryNumProperties] = {
+COMPONENT_PROPERTIES(ThemeDefaultValuesDictionary) = {
 };
-static struct ThemeDefaultValuesDictionary ThemeDefaultValuesDictionaryDefaults = {
+COMPONENT_DEFAULTS(ThemeDefaultValuesDictionary) = {
 };
-LRESULT ThemeDefaultValuesDictionaryProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ThemeDefaultValuesDictionary)
+COMPONENT_PROC_END()
 void luaX_pushThemeDefaultValuesDictionary(lua_State *L, struct ThemeDefaultValuesDictionary const* ThemeDefaultValuesDictionary) {
 	luaX_pushObject(L, CMP_GetObject(ThemeDefaultValuesDictionary));
 }

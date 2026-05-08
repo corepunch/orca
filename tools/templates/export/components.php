@@ -5,28 +5,26 @@
 					$ident = str_replace('.', ', ', $event); ?>
 HANDLER(<?= $name ?>, <?= $ident ?>);
 	<?php endforeach ?>
-static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
+COMPONENT_PROPERTIES(<?= $name ?>) = {
 	<?php include_template("export/properties", ['properties' => $component->getProperties(), 'name' => $name]) ?>
-	<?php foreach ($component->getMessages() as $e) 
-		$id = hash('fnv1a32',$e->name);
-		echo "\tDECL(0x{$id}, {$name}, {$e->name}, {$e->name}, kDataTypeEvent, .TypeString = \"{$name}_{$e->name}EventArgs\"), // {$name}.{$e->name}\n"; ?>
+	<?php foreach ($component->getMessages() as $e) {
+		$id = hash('fnv1a32', $e->name);
+		echo "\tDECL_EVENT(0x{$id}, {$name}, {$e->name}), // {$name}.{$e->name}\n";
+	} ?>
 };
-static struct <?= $name ?> <?= $name ?>Defaults = {
+COMPONENT_DEFAULTS(<?= $name ?>) = {
 	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		
   .<?= $property->name ?> = <?= sprintf($property->type->get('default'), $property->type->default) ?>,
 	<?php endforeach ?>
 };
-LRESULT <?= $name ?>Proc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
+COMPONENT_PROC_BEGIN(<?= $name ?>)
 	<?php foreach ($component->getEventHandlers() as $event): ?>
 		<?php $pos = strrpos($event, '.');
-					$after = ($pos !== false) ? substr($event, $pos + 1) : ''; 
-					$ident = str_replace('.', '_', $event); ?>
-		case ID_<?= $ident ?>: return <?= $name ?>_<?= $after ?>(object, cmp, wparm, lparm); // <?= $event ?>
+					$ns    = ($pos !== false) ? substr($event, 0, $pos) : $event;
+					$after = ($pos !== false) ? substr($event, $pos + 1) : $event; ?>
+		<?php echo("\t\tDISPATCH($name, $ns, $after) // $event\n") ?>
 	<?php endforeach ?>
-	}
-	return FALSE;
-}
+COMPONENT_PROC_END()
 void luaX_push<?= $name ?>(lua_State *L, struct <?= $name ?> const* <?= $name ?>) {
 	luaX_pushObject(L, CMP_GetObject(<?= $name ?>));
 }

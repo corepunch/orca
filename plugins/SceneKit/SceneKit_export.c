@@ -22,38 +22,35 @@ extern int parse_property(const char* str, struct PropertyType const* prop, void
 
 static luaL_Reg _Node3D_RenderEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _Node3D_RenderEventArgs[] = {
-	DECL(0xce9ab61f, Node3D_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderEventArgs.ViewDef
+	DECL_STRUCT_TYPE(0xce9ab61f, Node3D_RenderEventArgs, ViewDef, ViewDef, ViewDef), // Node3D_RenderEventArgs.ViewDef
 };
 
 STRUCT(Node3D_RenderEventArgs, Node3D_RenderEventArgs);
 HANDLER(Node3D, Node, UpdateMatrix);
-static struct PropertyType const Node3DProperties[kNode3DNumProperties] = {
-	DECL(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.LayoutTransform
-	DECL(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformTranslation
-	DECL(0x9560ef43, Node3D, LayoutTransformRotation, LayoutTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformRotation
-	DECL(0x5a2c3595, Node3D, LayoutTransformScale, LayoutTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.LayoutTransformScale
-	DECL(0xe9e55063, Node3D, RenderTransform, RenderTransform, kDataTypeStruct, .TypeString = "Transform3D"), // Node3D.RenderTransform
-	DECL(0xb8e70ec2, Node3D, RenderTransformTranslation, RenderTransform.translation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformTranslation
-	DECL(0x3c611efd, Node3D, RenderTransformRotation, RenderTransform.rotation, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformRotation
-	DECL(0xd037e21b, Node3D, RenderTransformScale, RenderTransform.scale, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformScale
-	DECL(0xdc65ec6d, Node3D, RenderTransformOrigin, RenderTransformOrigin, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.RenderTransformOrigin
-	DECL(0x35a57c45, Node3D, ContentOffset, ContentOffset, kDataTypeStruct, .TypeString = "Vector3D"), // Node3D.ContentOffset
-	DECL(0xe9d1810c, Node3D, Matrix, Matrix, kDataTypeStruct, .TypeString = "Matrix3D"), // Node3D.Matrix
-	DECL(0xd5710b2e, Node3D, CalculatedOffset, CalculatedOffset, kDataTypeFloat), // Node3D.CalculatedOffset
-	DECL(0x350cf42d, Node3D, Render, Render, kDataTypeEvent, .TypeString = "Node3D_RenderEventArgs"), // Node3D.Render
+COMPONENT_PROPERTIES(Node3D) = {
+	DECL_STRUCT_TYPE(0x3f19bf01, Node3D, LayoutTransform, LayoutTransform, Transform3D), // Node3D.LayoutTransform
+	DECL_STRUCT_TYPE(0xfc7e27e0, Node3D, LayoutTransformTranslation, LayoutTransform.translation, Vector3D), // Node3D.LayoutTransformTranslation
+	DECL_STRUCT_TYPE(0x9560ef43, Node3D, LayoutTransformRotation, LayoutTransform.rotation, Vector3D), // Node3D.LayoutTransformRotation
+	DECL_STRUCT_TYPE(0x5a2c3595, Node3D, LayoutTransformScale, LayoutTransform.scale, Vector3D), // Node3D.LayoutTransformScale
+	DECL_STRUCT_TYPE(0xe9e55063, Node3D, RenderTransform, RenderTransform, Transform3D), // Node3D.RenderTransform
+	DECL_STRUCT_TYPE(0xb8e70ec2, Node3D, RenderTransformTranslation, RenderTransform.translation, Vector3D), // Node3D.RenderTransformTranslation
+	DECL_STRUCT_TYPE(0x3c611efd, Node3D, RenderTransformRotation, RenderTransform.rotation, Vector3D), // Node3D.RenderTransformRotation
+	DECL_STRUCT_TYPE(0xd037e21b, Node3D, RenderTransformScale, RenderTransform.scale, Vector3D), // Node3D.RenderTransformScale
+	DECL_STRUCT_TYPE(0xdc65ec6d, Node3D, RenderTransformOrigin, RenderTransformOrigin, Vector3D), // Node3D.RenderTransformOrigin
+	DECL_STRUCT_TYPE(0x35a57c45, Node3D, ContentOffset, ContentOffset, Vector3D), // Node3D.ContentOffset
+	DECL_STRUCT_TYPE(0xe9d1810c, Node3D, Matrix, Matrix, Matrix3D), // Node3D.Matrix
+	DECL_FLOAT(0xd5710b2e, Node3D, CalculatedOffset, CalculatedOffset), // Node3D.CalculatedOffset
+	DECL_EVENT(0x350cf42d, Node3D, Render), // Node3D.Render
 };
-static struct Node3D Node3DDefaults = {
+COMPONENT_DEFAULTS(Node3D) = {
 		
   .LayoutTransform = {.scale={1,1,1}},
 		
   .RenderTransform = {.scale={1,1,1}},
 };
-LRESULT Node3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return Node3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Node3D)
+		DISPATCH(Node3D, Node, UpdateMatrix) // Node.UpdateMatrix
+COMPONENT_PROC_END()
 void luaX_pushNode3D(lua_State *L, struct Node3D const* Node3D) {
 	luaX_pushObject(L, CMP_GetObject(Node3D));
 }
@@ -63,23 +60,20 @@ struct Node3D* luaX_checkNode3D(lua_State *L, int idx) {
 #define ID_Node 0x3468032d
 REGISTER_CLASS(Node3D, ID_Node, 0);
 HANDLER(Scene, Node, UpdateMatrix);
-static struct PropertyType const SceneProperties[kSceneNumProperties] = {
-	DECL(0xe74c7b6e, Scene, Camera, Camera, kDataTypeString), // Scene.Camera
-	DECL(0x14a89218, Scene, PreviewCamera, PreviewCamera, kDataTypeString), // Scene.PreviewCamera
-	DECL(0xf497b459, Scene, HitTestCamera, HitTestCamera, kDataTypeString), // Scene.HitTestCamera
-	DECL(0xf64bbf80, Scene, RenderPass, RenderPass, kDataTypeObject, .TypeString = "RenderPass"), // Scene.RenderPass
-	DECL(0x1fe3e9af, Scene, BackgroundTimelineSequence, BackgroundTimelineSequence, kDataTypeString), // Scene.BackgroundTimelineSequence
-	DECL(0xedb9befb, Scene, ComposerOverride, ComposerOverride, kDataTypeObject, .TypeString = "RenderPass"), // Scene.ComposerOverride
-	DECL(0x886f1cad, Scene, EnvironmentTexture, EnvironmentTexture, kDataTypeObject, .TypeString = "Texture"), // Scene.EnvironmentTexture
+COMPONENT_PROPERTIES(Scene) = {
+	DECL_STRING(0xe74c7b6e, Scene, Camera, Camera), // Scene.Camera
+	DECL_STRING(0x14a89218, Scene, PreviewCamera, PreviewCamera), // Scene.PreviewCamera
+	DECL_STRING(0xf497b459, Scene, HitTestCamera, HitTestCamera), // Scene.HitTestCamera
+	DECL_OBJECT(0xf64bbf80, Scene, RenderPass, RenderPass, RenderPass), // Scene.RenderPass
+	DECL_STRING(0x1fe3e9af, Scene, BackgroundTimelineSequence, BackgroundTimelineSequence), // Scene.BackgroundTimelineSequence
+	DECL_OBJECT(0xedb9befb, Scene, ComposerOverride, ComposerOverride, RenderPass), // Scene.ComposerOverride
+	DECL_OBJECT(0x886f1cad, Scene, EnvironmentTexture, EnvironmentTexture, Texture), // Scene.EnvironmentTexture
 };
-static struct Scene SceneDefaults = {
+COMPONENT_DEFAULTS(Scene) = {
 };
-LRESULT SceneProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return Scene_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Scene)
+		DISPATCH(Scene, Node, UpdateMatrix) // Node.UpdateMatrix
+COMPONENT_PROC_END()
 void luaX_pushScene(lua_State *L, struct Scene const* Scene) {
 	luaX_pushObject(L, CMP_GetObject(Scene));
 }
@@ -89,18 +83,15 @@ struct Scene* luaX_checkScene(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Scene, ID_Node3D, 0);
 HANDLER(Model3D, Node3D, Render);
-static struct PropertyType const Model3DProperties[kModel3DNumProperties] = {
-	DECL(0x07e055dc, Model3D, Mesh, Mesh, kDataTypeObject, .TypeString = "Mesh"), // Model3D.Mesh
-	DECL(0xcbd54f80, Model3D, Material, Material, kDataTypeObject, .TypeString = "Material"), // Model3D.Material
+COMPONENT_PROPERTIES(Model3D) = {
+	DECL_OBJECT(0x07e055dc, Model3D, Mesh, Mesh, Mesh), // Model3D.Mesh
+	DECL_OBJECT(0xcbd54f80, Model3D, Material, Material, Material), // Model3D.Material
 };
-static struct Model3D Model3DDefaults = {
+COMPONENT_DEFAULTS(Model3D) = {
 };
-LRESULT Model3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node3D_Render: return Model3D_Render(object, cmp, wparm, lparm); // Node3D.Render
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Model3D)
+		DISPATCH(Model3D, Node3D, Render) // Node3D.Render
+COMPONENT_PROC_END()
 void luaX_pushModel3D(lua_State *L, struct Model3D const* Model3D) {
 	luaX_pushObject(L, CMP_GetObject(Model3D));
 }
@@ -110,23 +101,20 @@ struct Model3D* luaX_checkModel3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Model3D, ID_Node3D, 0);
 HANDLER(PlaneMeshNode, Node3D, Render);
-static struct PropertyType const PlaneMeshNodeProperties[kPlaneMeshNodeNumProperties] = {
-	DECL(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth, kDataTypeFloat), // PlaneMeshNode.PlaneWidth
-	DECL(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight, kDataTypeFloat), // PlaneMeshNode.PlaneHeight
-	DECL(0x0a07d70c, PlaneMeshNode, PlaneInvertU, PlaneInvertU, kDataTypeBool), // PlaneMeshNode.PlaneInvertU
-	DECL(0x0d07dbc5, PlaneMeshNode, PlaneInvertV, PlaneInvertV, kDataTypeBool), // PlaneMeshNode.PlaneInvertV
-	DECL(0x57852420, PlaneMeshNode, GenerateTangents, GenerateTangents, kDataTypeBool), // PlaneMeshNode.GenerateTangents
-	DECL(0x909a95b6, PlaneMeshNode, GenerateNormals, GenerateNormals, kDataTypeBool), // PlaneMeshNode.GenerateNormals
-	DECL(0xe2d8fb55, PlaneMeshNode, MeshMaterial, MeshMaterial, kDataTypeObject, .TypeString = "Material"), // PlaneMeshNode.MeshMaterial
+COMPONENT_PROPERTIES(PlaneMeshNode) = {
+	DECL_FLOAT(0x8f8d39cf, PlaneMeshNode, PlaneWidth, PlaneWidth), // PlaneMeshNode.PlaneWidth
+	DECL_FLOAT(0x2d44a1f2, PlaneMeshNode, PlaneHeight, PlaneHeight), // PlaneMeshNode.PlaneHeight
+	DECL_BOOL(0x0a07d70c, PlaneMeshNode, PlaneInvertU, PlaneInvertU), // PlaneMeshNode.PlaneInvertU
+	DECL_BOOL(0x0d07dbc5, PlaneMeshNode, PlaneInvertV, PlaneInvertV), // PlaneMeshNode.PlaneInvertV
+	DECL_BOOL(0x57852420, PlaneMeshNode, GenerateTangents, GenerateTangents), // PlaneMeshNode.GenerateTangents
+	DECL_BOOL(0x909a95b6, PlaneMeshNode, GenerateNormals, GenerateNormals), // PlaneMeshNode.GenerateNormals
+	DECL_OBJECT(0xe2d8fb55, PlaneMeshNode, MeshMaterial, MeshMaterial, Material), // PlaneMeshNode.MeshMaterial
 };
-static struct PlaneMeshNode PlaneMeshNodeDefaults = {
+COMPONENT_DEFAULTS(PlaneMeshNode) = {
 };
-LRESULT PlaneMeshNodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node3D_Render: return PlaneMeshNode_Render(object, cmp, wparm, lparm); // Node3D.Render
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PlaneMeshNode)
+		DISPATCH(PlaneMeshNode, Node3D, Render) // Node3D.Render
+COMPONENT_PROC_END()
 void luaX_pushPlaneMeshNode(lua_State *L, struct PlaneMeshNode const* PlaneMeshNode) {
 	luaX_pushObject(L, CMP_GetObject(PlaneMeshNode));
 }
@@ -135,24 +123,21 @@ struct PlaneMeshNode* luaX_checkPlaneMeshNode(lua_State *L, int idx) {
 }
 #define ID_Model3D 0xc56de5fd
 REGISTER_CLASS(PlaneMeshNode, ID_Model3D, 0);
-static struct PropertyType const CameraProperties[kCameraNumProperties] = {
-	DECL(0x137e217c, Camera, Fov, Fov, kDataTypeFloat), // Camera.Fov
-	DECL(0x0ef1c6f4, Camera, FovType, FovType, kDataTypeEnum, .EnumValues = _FovType), // Camera.FovType
-	DECL(0x87320ce8, Camera, ProjectionType, ProjectionType, kDataTypeEnum, .EnumValues = _ProjectionType), // Camera.ProjectionType
-	DECL(0x15af1da7, Camera, ZNear, ZNear, kDataTypeFloat), // Camera.ZNear
-	DECL(0x993918c6, Camera, ZFar, ZFar, kDataTypeFloat), // Camera.ZFar
-	DECL(0xd6d304c6, Camera, EyeSeparation, EyeSeparation, kDataTypeFloat), // Camera.EyeSeparation
-	DECL(0x7e322435, Camera, FocalDistance, FocalDistance, kDataTypeFloat), // Camera.FocalDistance
-	DECL(0xfa573077, Camera, OrthogonalPlaneHeight, OrthogonalPlaneHeight, kDataTypeFloat), // Camera.OrthogonalPlaneHeight
-	DECL(0x026159d2, Camera, ZPositive, ZPositive, kDataTypeBool), // Camera.ZPositive
+COMPONENT_PROPERTIES(Camera) = {
+	DECL_FLOAT(0x137e217c, Camera, Fov, Fov), // Camera.Fov
+	DECL_ENUM(0x0ef1c6f4, Camera, FovType, FovType, FovType), // Camera.FovType
+	DECL_ENUM(0x87320ce8, Camera, ProjectionType, ProjectionType, ProjectionType), // Camera.ProjectionType
+	DECL_FLOAT(0x15af1da7, Camera, ZNear, ZNear), // Camera.ZNear
+	DECL_FLOAT(0x993918c6, Camera, ZFar, ZFar), // Camera.ZFar
+	DECL_FLOAT(0xd6d304c6, Camera, EyeSeparation, EyeSeparation), // Camera.EyeSeparation
+	DECL_FLOAT(0x7e322435, Camera, FocalDistance, FocalDistance), // Camera.FocalDistance
+	DECL_FLOAT(0xfa573077, Camera, OrthogonalPlaneHeight, OrthogonalPlaneHeight), // Camera.OrthogonalPlaneHeight
+	DECL_BOOL(0x026159d2, Camera, ZPositive, ZPositive), // Camera.ZPositive
 };
-static struct Camera CameraDefaults = {
+COMPONENT_DEFAULTS(Camera) = {
 };
-LRESULT CameraProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Camera)
+COMPONENT_PROC_END()
 void luaX_pushCamera(lua_State *L, struct Camera const* Camera) {
 	luaX_pushObject(L, CMP_GetObject(Camera));
 }
@@ -162,22 +147,19 @@ struct Camera* luaX_checkCamera(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Camera, ID_Node3D, 0);
 HANDLER(TrajectoryList3D, Node, UpdateMatrix);
-static struct PropertyType const TrajectoryList3DProperties[kTrajectoryList3DNumProperties] = {
-	DECL(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, kDataTypeObject, .TypeString = "Trajectory"), // TrajectoryList3D.Trajectory
-	DECL(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, kDataTypeStruct, .TypeString = "Vector2D"), // TrajectoryList3D.ScrollAxis
-	DECL(0x343782cd, TrajectoryList3D, Looping, Looping, kDataTypeBool), // TrajectoryList3D.Looping
-	DECL(0x8777939e, TrajectoryList3D, Spacing, Spacing, kDataTypeFloat), // TrajectoryList3D.Spacing
-	DECL(0xc742f477, TrajectoryList3D, SelectionBehavior, SelectionBehavior, kDataTypeFloat), // TrajectoryList3D.SelectionBehavior
-	DECL(0x8af08301, TrajectoryList3D, SelectedItemIndex, SelectedItemIndex, kDataTypeFloat), // TrajectoryList3D.SelectedItemIndex
+COMPONENT_PROPERTIES(TrajectoryList3D) = {
+	DECL_OBJECT(0x4cf7cbf8, TrajectoryList3D, Trajectory, Trajectory, Trajectory), // TrajectoryList3D.Trajectory
+	DECL_STRUCT_TYPE(0xeea06ebd, TrajectoryList3D, ScrollAxis, ScrollAxis, Vector2D), // TrajectoryList3D.ScrollAxis
+	DECL_BOOL(0x343782cd, TrajectoryList3D, Looping, Looping), // TrajectoryList3D.Looping
+	DECL_FLOAT(0x8777939e, TrajectoryList3D, Spacing, Spacing), // TrajectoryList3D.Spacing
+	DECL_FLOAT(0xc742f477, TrajectoryList3D, SelectionBehavior, SelectionBehavior), // TrajectoryList3D.SelectionBehavior
+	DECL_FLOAT(0x8af08301, TrajectoryList3D, SelectedItemIndex, SelectedItemIndex), // TrajectoryList3D.SelectedItemIndex
 };
-static struct TrajectoryList3D TrajectoryList3DDefaults = {
+COMPONENT_DEFAULTS(TrajectoryList3D) = {
 };
-LRESULT TrajectoryList3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_UpdateMatrix: return TrajectoryList3D_UpdateMatrix(object, cmp, wparm, lparm); // Node.UpdateMatrix
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TrajectoryList3D)
+		DISPATCH(TrajectoryList3D, Node, UpdateMatrix) // Node.UpdateMatrix
+COMPONENT_PROC_END()
 void luaX_pushTrajectoryList3D(lua_State *L, struct TrajectoryList3D const* TrajectoryList3D) {
 	luaX_pushObject(L, CMP_GetObject(TrajectoryList3D));
 }
@@ -187,21 +169,18 @@ struct TrajectoryList3D* luaX_checkTrajectoryList3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(TrajectoryList3D, ID_Node3D, 0);
 HANDLER(Viewport3D, Node2D, ForegroundContent);
-static struct PropertyType const Viewport3DProperties[kViewport3DNumProperties] = {
-	DECL(0xe74c7b6e, Viewport3D, Camera, Camera, kDataTypeString), // Viewport3D.Camera
-	DECL(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera, kDataTypeString), // Viewport3D.PreviewCamera
-	DECL(0xf497b459, Viewport3D, HitTestCamera, HitTestCamera, kDataTypeString), // Viewport3D.HitTestCamera
-	DECL(0xf64bbf80, Viewport3D, RenderPass, RenderPass, kDataTypeObject, .TypeString = "RenderPass"), // Viewport3D.RenderPass
-	DECL(0xc89b38b3, Viewport3D, Scene, Scene, kDataTypeString), // Viewport3D.Scene
+COMPONENT_PROPERTIES(Viewport3D) = {
+	DECL_STRING(0xe74c7b6e, Viewport3D, Camera, Camera), // Viewport3D.Camera
+	DECL_STRING(0x14a89218, Viewport3D, PreviewCamera, PreviewCamera), // Viewport3D.PreviewCamera
+	DECL_STRING(0xf497b459, Viewport3D, HitTestCamera, HitTestCamera), // Viewport3D.HitTestCamera
+	DECL_OBJECT(0xf64bbf80, Viewport3D, RenderPass, RenderPass, RenderPass), // Viewport3D.RenderPass
+	DECL_STRING(0xc89b38b3, Viewport3D, Scene, Scene), // Viewport3D.Scene
 };
-static struct Viewport3D Viewport3DDefaults = {
+COMPONENT_DEFAULTS(Viewport3D) = {
 };
-LRESULT Viewport3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node2D_ForegroundContent: return Viewport3D_ForegroundContent(object, cmp, wparm, lparm); // Node2D.ForegroundContent
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Viewport3D)
+		DISPATCH(Viewport3D, Node2D, ForegroundContent) // Node2D.ForegroundContent
+COMPONENT_PROC_END()
 void luaX_pushViewport3D(lua_State *L, struct Viewport3D const* Viewport3D) {
 	luaX_pushObject(L, CMP_GetObject(Viewport3D));
 }
@@ -213,19 +192,16 @@ REGISTER_CLASS(Viewport3D, ID_Node2D, 0);
 HANDLER(PrefabView3D, Object, Start);
 HANDLER(PrefabView3D, Object, PropertyChanged);
 HANDLER(PrefabView3D, Node, LoadView);
-static struct PropertyType const PrefabView3DProperties[kPrefabView3DNumProperties] = {
-	DECL(0xd6415ba3, PrefabView3D, Prefab, Prefab, kDataTypeString), // PrefabView3D.Prefab
+COMPONENT_PROPERTIES(PrefabView3D) = {
+	DECL_STRING(0xd6415ba3, PrefabView3D, Prefab, Prefab), // PrefabView3D.Prefab
 };
-static struct PrefabView3D PrefabView3DDefaults = {
+COMPONENT_DEFAULTS(PrefabView3D) = {
 };
-LRESULT PrefabView3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Start: return PrefabView3D_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return PrefabView3D_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Node_LoadView: return PrefabView3D_LoadView(object, cmp, wparm, lparm); // Node.LoadView
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PrefabView3D)
+		DISPATCH(PrefabView3D, Object, Start) // Object.Start
+		DISPATCH(PrefabView3D, Object, PropertyChanged) // Object.PropertyChanged
+		DISPATCH(PrefabView3D, Node, LoadView) // Node.LoadView
+COMPONENT_PROC_END()
 void luaX_pushPrefabView3D(lua_State *L, struct PrefabView3D const* PrefabView3D) {
 	luaX_pushObject(L, CMP_GetObject(PrefabView3D));
 }
@@ -234,15 +210,12 @@ struct PrefabView3D* luaX_checkPrefabView3D(lua_State *L, int idx) {
 }
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(PrefabView3D, ID_Node3D, 0);
-static struct PropertyType const RenderPassProperties[kRenderPassNumProperties] = {
+COMPONENT_PROPERTIES(RenderPass) = {
 };
-static struct RenderPass RenderPassDefaults = {
+COMPONENT_DEFAULTS(RenderPass) = {
 };
-LRESULT RenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(RenderPass)
+COMPONENT_PROC_END()
 void luaX_pushRenderPass(lua_State *L, struct RenderPass const* RenderPass) {
 	luaX_pushObject(L, CMP_GetObject(RenderPass));
 }
@@ -251,15 +224,12 @@ struct RenderPass* luaX_checkRenderPass(lua_State *L, int idx) {
 }
 #define ID_Node 0x3468032d
 REGISTER_CLASS(RenderPass, ID_Node, 0);
-static struct PropertyType const CompositionTargetRenderPassProperties[kCompositionTargetRenderPassNumProperties] = {
+COMPONENT_PROPERTIES(CompositionTargetRenderPass) = {
 };
-static struct CompositionTargetRenderPass CompositionTargetRenderPassDefaults = {
+COMPONENT_DEFAULTS(CompositionTargetRenderPass) = {
 };
-LRESULT CompositionTargetRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(CompositionTargetRenderPass)
+COMPONENT_PROC_END()
 void luaX_pushCompositionTargetRenderPass(lua_State *L, struct CompositionTargetRenderPass const* CompositionTargetRenderPass) {
 	luaX_pushObject(L, CMP_GetObject(CompositionTargetRenderPass));
 }
@@ -268,15 +238,12 @@ struct CompositionTargetRenderPass* luaX_checkCompositionTargetRenderPass(lua_St
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(CompositionTargetRenderPass, ID_RenderPass, 0);
-static struct PropertyType const BlitRenderPassProperties[kBlitRenderPassNumProperties] = {
+COMPONENT_PROPERTIES(BlitRenderPass) = {
 };
-static struct BlitRenderPass BlitRenderPassDefaults = {
+COMPONENT_DEFAULTS(BlitRenderPass) = {
 };
-LRESULT BlitRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(BlitRenderPass)
+COMPONENT_PROC_END()
 void luaX_pushBlitRenderPass(lua_State *L, struct BlitRenderPass const* BlitRenderPass) {
 	luaX_pushObject(L, CMP_GetObject(BlitRenderPass));
 }
@@ -285,18 +252,15 @@ struct BlitRenderPass* luaX_checkBlitRenderPass(lua_State *L, int idx) {
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(BlitRenderPass, ID_RenderPass, 0);
-static struct PropertyType const ClearRenderPassProperties[kClearRenderPassNumProperties] = {
-	DECL(0xeb16b675, ClearRenderPass, ClearColor, ClearColor, kDataTypeColor), // ClearRenderPass.ClearColor
-	DECL(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth, kDataTypeFloat), // ClearRenderPass.ClearDepth
-	DECL(0x222bca4e, ClearRenderPass, ClearStencil, ClearStencil, kDataTypeInt), // ClearRenderPass.ClearStencil
+COMPONENT_PROPERTIES(ClearRenderPass) = {
+	DECL_COLOR(0xeb16b675, ClearRenderPass, ClearColor, ClearColor), // ClearRenderPass.ClearColor
+	DECL_FLOAT(0xa444e35b, ClearRenderPass, ClearDepth, ClearDepth), // ClearRenderPass.ClearDepth
+	DECL_INT(0x222bca4e, ClearRenderPass, ClearStencil, ClearStencil), // ClearRenderPass.ClearStencil
 };
-static struct ClearRenderPass ClearRenderPassDefaults = {
+COMPONENT_DEFAULTS(ClearRenderPass) = {
 };
-LRESULT ClearRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(ClearRenderPass)
+COMPONENT_PROC_END()
 void luaX_pushClearRenderPass(lua_State *L, struct ClearRenderPass const* ClearRenderPass) {
 	luaX_pushObject(L, CMP_GetObject(ClearRenderPass));
 }
@@ -305,18 +269,15 @@ struct ClearRenderPass* luaX_checkClearRenderPass(lua_State *L, int idx) {
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(ClearRenderPass, ID_RenderPass, 0);
-static struct PropertyType const DrawObjectsRenderPassProperties[kDrawObjectsRenderPassNumProperties] = {
-	DECL(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera, kDataTypeString), // DrawObjectsRenderPass.Camera
-	DECL(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags, kDataTypeString), // DrawObjectsRenderPass.IncludeTags
-	DECL(0x2de02b74, DrawObjectsRenderPass, ExcludeTags, ExcludeTags, kDataTypeString), // DrawObjectsRenderPass.ExcludeTags
+COMPONENT_PROPERTIES(DrawObjectsRenderPass) = {
+	DECL_STRING(0xe74c7b6e, DrawObjectsRenderPass, Camera, Camera), // DrawObjectsRenderPass.Camera
+	DECL_STRING(0x785c377a, DrawObjectsRenderPass, IncludeTags, IncludeTags), // DrawObjectsRenderPass.IncludeTags
+	DECL_STRING(0x2de02b74, DrawObjectsRenderPass, ExcludeTags, ExcludeTags), // DrawObjectsRenderPass.ExcludeTags
 };
-static struct DrawObjectsRenderPass DrawObjectsRenderPassDefaults = {
+COMPONENT_DEFAULTS(DrawObjectsRenderPass) = {
 };
-LRESULT DrawObjectsRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(DrawObjectsRenderPass)
+COMPONENT_PROC_END()
 void luaX_pushDrawObjectsRenderPass(lua_State *L, struct DrawObjectsRenderPass const* DrawObjectsRenderPass) {
 	luaX_pushObject(L, CMP_GetObject(DrawObjectsRenderPass));
 }
@@ -325,35 +286,32 @@ struct DrawObjectsRenderPass* luaX_checkDrawObjectsRenderPass(lua_State *L, int 
 }
 #define ID_RenderPass 0xf64bbf80
 REGISTER_CLASS(DrawObjectsRenderPass, ID_RenderPass, 0);
-static struct PropertyType const PipelineStateRenderPassProperties[kPipelineStateRenderPassNumProperties] = {
-	DECL(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, kDataTypeEnum, .EnumValues = _BlendMode), // PipelineStateRenderPass.BlendMode
-	DECL(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, kDataTypeEnum, .EnumValues = _ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
-	DECL(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, kDataTypeEnum, .EnumValues = _CullMode), // PipelineStateRenderPass.CullMode
-	DECL(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.DepthTestFunction
-	DECL(0x8ec3072e, PipelineStateRenderPass, DepthWriteEnabled, DepthWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.DepthWriteEnabled
-	DECL(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ViewportMode
-	DECL(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, kDataTypeEnum, .EnumValues = _ViewportMode), // PipelineStateRenderPass.ScissorMode
-	DECL(0x60b5afe3, PipelineStateRenderPass, Viewport, Viewport, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Viewport
-	DECL(0x24b3e321, PipelineStateRenderPass, Scissor, Scissor, kDataTypeStruct, .TypeString = "Vector4D"), // PipelineStateRenderPass.Scissor
-	DECL(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, kDataTypeEnum, .EnumValues = _CompareFunc), // PipelineStateRenderPass.StencilTestFunction
-	DECL(0x2ddc4e49, PipelineStateRenderPass, StencilReferenceValue, StencilReferenceValue, kDataTypeInt), // PipelineStateRenderPass.StencilReferenceValue
-	DECL(0x82336fe7, PipelineStateRenderPass, StencilMask, StencilMask, kDataTypeInt), // PipelineStateRenderPass.StencilMask
-	DECL(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilFailOperation
-	DECL(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
-	DECL(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, kDataTypeEnum, .EnumValues = _StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
-	DECL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled, kDataTypeBool), // PipelineStateRenderPass.StencilWriteEnabled
+COMPONENT_PROPERTIES(PipelineStateRenderPass) = {
+	DECL_ENUM(0x0038792b, PipelineStateRenderPass, BlendMode, BlendMode, BlendMode), // PipelineStateRenderPass.BlendMode
+	DECL_ENUM(0x9d0d3c20, PipelineStateRenderPass, ColorWriteMode, ColorWriteMode, ColorWriteMode), // PipelineStateRenderPass.ColorWriteMode
+	DECL_ENUM(0xfe9cfa12, PipelineStateRenderPass, CullMode, CullMode, CullMode), // PipelineStateRenderPass.CullMode
+	DECL_ENUM(0xb7e582be, PipelineStateRenderPass, DepthTestFunction, DepthTestFunction, CompareFunc), // PipelineStateRenderPass.DepthTestFunction
+	DECL_BOOL(0x8ec3072e, PipelineStateRenderPass, DepthWriteEnabled, DepthWriteEnabled), // PipelineStateRenderPass.DepthWriteEnabled
+	DECL_ENUM(0x2dd5f6cc, PipelineStateRenderPass, ViewportMode, ViewportMode, ViewportMode), // PipelineStateRenderPass.ViewportMode
+	DECL_ENUM(0x8c6862de, PipelineStateRenderPass, ScissorMode, ScissorMode, ViewportMode), // PipelineStateRenderPass.ScissorMode
+	DECL_STRUCT_TYPE(0x60b5afe3, PipelineStateRenderPass, Viewport, Viewport, Vector4D), // PipelineStateRenderPass.Viewport
+	DECL_STRUCT_TYPE(0x24b3e321, PipelineStateRenderPass, Scissor, Scissor, Vector4D), // PipelineStateRenderPass.Scissor
+	DECL_ENUM(0xc770fa47, PipelineStateRenderPass, StencilTestFunction, StencilTestFunction, CompareFunc), // PipelineStateRenderPass.StencilTestFunction
+	DECL_INT(0x2ddc4e49, PipelineStateRenderPass, StencilReferenceValue, StencilReferenceValue), // PipelineStateRenderPass.StencilReferenceValue
+	DECL_INT(0x82336fe7, PipelineStateRenderPass, StencilMask, StencilMask), // PipelineStateRenderPass.StencilMask
+	DECL_ENUM(0x8785338c, PipelineStateRenderPass, StencilFailOperation, StencilFailOperation, StencilOp), // PipelineStateRenderPass.StencilFailOperation
+	DECL_ENUM(0xfc4e75c8, PipelineStateRenderPass, StencilPassDepthFailOperation, StencilPassDepthFailOperation, StencilOp), // PipelineStateRenderPass.StencilPassDepthFailOperation
+	DECL_ENUM(0x6452d1b7, PipelineStateRenderPass, StencilPassDepthPassOperation, StencilPassDepthPassOperation, StencilOp), // PipelineStateRenderPass.StencilPassDepthPassOperation
+	DECL_BOOL(0xb0b1cdf3, PipelineStateRenderPass, StencilWriteEnabled, StencilWriteEnabled), // PipelineStateRenderPass.StencilWriteEnabled
 };
-static struct PipelineStateRenderPass PipelineStateRenderPassDefaults = {
+COMPONENT_DEFAULTS(PipelineStateRenderPass) = {
 		
   .ViewportMode = kViewportModeRelative,
 		
   .ScissorMode = kViewportModeRelative,
 };
-LRESULT PipelineStateRenderPassProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(PipelineStateRenderPass)
+COMPONENT_PROC_END()
 void luaX_pushPipelineStateRenderPass(lua_State *L, struct PipelineStateRenderPass const* PipelineStateRenderPass) {
 	luaX_pushObject(L, CMP_GetObject(PipelineStateRenderPass));
 }
@@ -364,17 +322,14 @@ struct PipelineStateRenderPass* luaX_checkPipelineStateRenderPass(lua_State *L, 
 REGISTER_CLASS(PipelineStateRenderPass, ID_RenderPass, 0);
 HANDLER(TextBlock3D, Node3D, Render);
 HANDLER(TextBlock3D, Object, Create);
-static struct PropertyType const TextBlock3DProperties[kTextBlock3DNumProperties] = {
+COMPONENT_PROPERTIES(TextBlock3D) = {
 };
-static struct TextBlock3D TextBlock3DDefaults = {
+COMPONENT_DEFAULTS(TextBlock3D) = {
 };
-LRESULT TextBlock3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node3D_Render: return TextBlock3D_Render(object, cmp, wparm, lparm); // Node3D.Render
-		case ID_Object_Create: return TextBlock3D_Create(object, cmp, wparm, lparm); // Object.Create
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(TextBlock3D)
+		DISPATCH(TextBlock3D, Node3D, Render) // Node3D.Render
+		DISPATCH(TextBlock3D, Object, Create) // Object.Create
+COMPONENT_PROC_END()
 void luaX_pushTextBlock3D(lua_State *L, struct TextBlock3D const* TextBlock3D) {
 	luaX_pushObject(L, CMP_GetObject(TextBlock3D));
 }
@@ -385,25 +340,22 @@ struct TextBlock3D* luaX_checkTextBlock3D(lua_State *L, int idx) {
 #define ID_TextBlockConcept 0x4903089d
 REGISTER_CLASS(TextBlock3D, ID_Node3D, ID_TextBlockConcept, 0);
 HANDLER(Light3D, Node3D, Render);
-static struct PropertyType const Light3DProperties[kLight3DNumProperties] = {
-	DECL(0xe5b43cf8, Light3D, Color, Color, kDataTypeColor), // Light3D.Color
-	DECL(0xe2c2c340, Light3D, SpotAngle, SpotAngle, kDataTypeStruct, .TypeString = "Vector2D"), // Light3D.SpotAngle
-	DECL(0x53b4f9aa, Light3D, Intensity, Intensity, kDataTypeFloat), // Light3D.Intensity
-	DECL(0xa311e772, Light3D, Range, Range, kDataTypeFloat), // Light3D.Range
-	DECL(0xd155d06d, Light3D, Type, Type, kDataTypeEnum, .EnumValues = _LightType), // Light3D.Type
+COMPONENT_PROPERTIES(Light3D) = {
+	DECL_COLOR(0xe5b43cf8, Light3D, Color, Color), // Light3D.Color
+	DECL_STRUCT_TYPE(0xe2c2c340, Light3D, SpotAngle, SpotAngle, Vector2D), // Light3D.SpotAngle
+	DECL_FLOAT(0x53b4f9aa, Light3D, Intensity, Intensity), // Light3D.Intensity
+	DECL_FLOAT(0xa311e772, Light3D, Range, Range), // Light3D.Range
+	DECL_ENUM(0xd155d06d, Light3D, Type, Type, LightType), // Light3D.Type
 };
-static struct Light3D Light3DDefaults = {
+COMPONENT_DEFAULTS(Light3D) = {
 		
   .Intensity = 1,
 		
   .Range = 10,
 };
-LRESULT Light3DProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node3D_Render: return Light3D_Render(object, cmp, wparm, lparm); // Node3D.Render
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(Light3D)
+		DISPATCH(Light3D, Node3D, Render) // Node3D.Render
+COMPONENT_PROC_END()
 void luaX_pushLight3D(lua_State *L, struct Light3D const* Light3D) {
 	luaX_pushObject(L, CMP_GetObject(Light3D));
 }
@@ -413,18 +365,15 @@ struct Light3D* luaX_checkLight3D(lua_State *L, int idx) {
 #define ID_Node3D 0xce61fe5a
 REGISTER_CLASS(Light3D, ID_Node3D, 0);
 HANDLER(SpriteView, Node3D, Render);
-static struct PropertyType const SpriteViewProperties[kSpriteViewNumProperties] = {
-	DECL(0x590ca79a, SpriteView, Image, Image, kDataTypeObject, .TypeString = "Texture"), // SpriteView.Image
-	DECL(0x2d2c5028, SpriteView, Bounds, Bounds, kDataTypeStruct, .TypeString = "Vector4D"), // SpriteView.Bounds
+COMPONENT_PROPERTIES(SpriteView) = {
+	DECL_OBJECT(0x590ca79a, SpriteView, Image, Image, Texture), // SpriteView.Image
+	DECL_STRUCT_TYPE(0x2d2c5028, SpriteView, Bounds, Bounds, Vector4D), // SpriteView.Bounds
 };
-static struct SpriteView SpriteViewDefaults = {
+COMPONENT_DEFAULTS(SpriteView) = {
 };
-LRESULT SpriteViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node3D_Render: return SpriteView_Render(object, cmp, wparm, lparm); // Node3D.Render
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(SpriteView)
+		DISPATCH(SpriteView, Node3D, Render) // Node3D.Render
+COMPONENT_PROC_END()
 void luaX_pushSpriteView(lua_State *L, struct SpriteView const* SpriteView) {
 	luaX_pushObject(L, CMP_GetObject(SpriteView));
 }

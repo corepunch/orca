@@ -20,21 +20,18 @@ HANDLER(FtgPackage, Project, OpenFile);
 HANDLER(FtgPackage, Project, FileExists);
 HANDLER(FtgPackage, Project, HasChangedFiles);
 HANDLER(FtgPackage, Object, Destroy);
-static struct PropertyType const FtgPackageProperties[kFtgPackageNumProperties] = {
-	DECL(0x5ffdd888, FtgPackage, FileName, FileName, kDataTypeString), // FtgPackage.FileName
+COMPONENT_PROPERTIES(FtgPackage) = {
+	DECL_STRING(0x5ffdd888, FtgPackage, FileName, FileName), // FtgPackage.FileName
 };
-static struct FtgPackage FtgPackageDefaults = {
+COMPONENT_DEFAULTS(FtgPackage) = {
 };
-LRESULT FtgPackageProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Project_LoadProject: return FtgPackage_LoadProject(object, cmp, wparm, lparm); // Project.LoadProject
-		case ID_Project_OpenFile: return FtgPackage_OpenFile(object, cmp, wparm, lparm); // Project.OpenFile
-		case ID_Project_FileExists: return FtgPackage_FileExists(object, cmp, wparm, lparm); // Project.FileExists
-		case ID_Project_HasChangedFiles: return FtgPackage_HasChangedFiles(object, cmp, wparm, lparm); // Project.HasChangedFiles
-		case ID_Object_Destroy: return FtgPackage_Destroy(object, cmp, wparm, lparm); // Object.Destroy
-	}
-	return FALSE;
-}
+COMPONENT_PROC_BEGIN(FtgPackage)
+		DISPATCH(FtgPackage, Project, LoadProject) // Project.LoadProject
+		DISPATCH(FtgPackage, Project, OpenFile) // Project.OpenFile
+		DISPATCH(FtgPackage, Project, FileExists) // Project.FileExists
+		DISPATCH(FtgPackage, Project, HasChangedFiles) // Project.HasChangedFiles
+		DISPATCH(FtgPackage, Object, Destroy) // Object.Destroy
+COMPONENT_PROC_END()
 void luaX_pushFtgPackage(lua_State *L, struct FtgPackage const* FtgPackage) {
 	luaX_pushObject(L, CMP_GetObject(FtgPackage));
 }
