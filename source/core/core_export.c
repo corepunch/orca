@@ -1336,56 +1336,12 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
-HANDLER(EventTrigger, Node, LeftButtonDown);
-HANDLER(EventTrigger, Node, RightButtonDown);
-HANDLER(EventTrigger, Node, OtherButtonDown);
-HANDLER(EventTrigger, Node, LeftButtonUp);
-HANDLER(EventTrigger, Node, RightButtonUp);
-HANDLER(EventTrigger, Node, OtherButtonUp);
-HANDLER(EventTrigger, Node, LeftButtonDragged);
-HANDLER(EventTrigger, Node, RightButtonDragged);
-HANDLER(EventTrigger, Node, OtherButtonDragged);
-HANDLER(EventTrigger, Node, LeftDoubleClick);
-HANDLER(EventTrigger, Node, RightDoubleClick);
-HANDLER(EventTrigger, Node, OtherDoubleClick);
-HANDLER(EventTrigger, Node, MouseMoved);
-HANDLER(EventTrigger, Node, ScrollWheel);
-HANDLER(EventTrigger, Node, DragDrop);
-HANDLER(EventTrigger, Node, DragEnter);
-HANDLER(EventTrigger, Node, SetFocus);
-HANDLER(EventTrigger, Node, KillFocus);
-HANDLER(EventTrigger, Node, KeyDown);
-HANDLER(EventTrigger, Node, KeyUp);
-HANDLER(EventTrigger, Node, TextInput);
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonDown: return EventTrigger_LeftButtonDown(object, cmp, wparm, lparm); // Node.LeftButtonDown
-		case ID_Node_RightButtonDown: return EventTrigger_RightButtonDown(object, cmp, wparm, lparm); // Node.RightButtonDown
-		case ID_Node_OtherButtonDown: return EventTrigger_OtherButtonDown(object, cmp, wparm, lparm); // Node.OtherButtonDown
-		case ID_Node_LeftButtonUp: return EventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node_RightButtonUp: return EventTrigger_RightButtonUp(object, cmp, wparm, lparm); // Node.RightButtonUp
-		case ID_Node_OtherButtonUp: return EventTrigger_OtherButtonUp(object, cmp, wparm, lparm); // Node.OtherButtonUp
-		case ID_Node_LeftButtonDragged: return EventTrigger_LeftButtonDragged(object, cmp, wparm, lparm); // Node.LeftButtonDragged
-		case ID_Node_RightButtonDragged: return EventTrigger_RightButtonDragged(object, cmp, wparm, lparm); // Node.RightButtonDragged
-		case ID_Node_OtherButtonDragged: return EventTrigger_OtherButtonDragged(object, cmp, wparm, lparm); // Node.OtherButtonDragged
-		case ID_Node_LeftDoubleClick: return EventTrigger_LeftDoubleClick(object, cmp, wparm, lparm); // Node.LeftDoubleClick
-		case ID_Node_RightDoubleClick: return EventTrigger_RightDoubleClick(object, cmp, wparm, lparm); // Node.RightDoubleClick
-		case ID_Node_OtherDoubleClick: return EventTrigger_OtherDoubleClick(object, cmp, wparm, lparm); // Node.OtherDoubleClick
-		case ID_Node_MouseMoved: return EventTrigger_MouseMoved(object, cmp, wparm, lparm); // Node.MouseMoved
-		case ID_Node_ScrollWheel: return EventTrigger_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
-		case ID_Node_DragDrop: return EventTrigger_DragDrop(object, cmp, wparm, lparm); // Node.DragDrop
-		case ID_Node_DragEnter: return EventTrigger_DragEnter(object, cmp, wparm, lparm); // Node.DragEnter
-		case ID_Node_SetFocus: return EventTrigger_SetFocus(object, cmp, wparm, lparm); // Node.SetFocus
-		case ID_Node_KillFocus: return EventTrigger_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case ID_Node_KeyDown: return EventTrigger_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
-		case ID_Node_KeyUp: return EventTrigger_KeyUp(object, cmp, wparm, lparm); // Node.KeyUp
-		case ID_Node_TextInput: return EventTrigger_TextInput(object, cmp, wparm, lparm); // Node.TextInput
-	}
 	return FALSE;
 }
 void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger) {
@@ -1396,56 +1352,12 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
-HANDLER(OnEventTrigger, Node, LeftButtonDown);
-HANDLER(OnEventTrigger, Node, RightButtonDown);
-HANDLER(OnEventTrigger, Node, OtherButtonDown);
-HANDLER(OnEventTrigger, Node, LeftButtonUp);
-HANDLER(OnEventTrigger, Node, RightButtonUp);
-HANDLER(OnEventTrigger, Node, OtherButtonUp);
-HANDLER(OnEventTrigger, Node, LeftButtonDragged);
-HANDLER(OnEventTrigger, Node, RightButtonDragged);
-HANDLER(OnEventTrigger, Node, OtherButtonDragged);
-HANDLER(OnEventTrigger, Node, LeftDoubleClick);
-HANDLER(OnEventTrigger, Node, RightDoubleClick);
-HANDLER(OnEventTrigger, Node, OtherDoubleClick);
-HANDLER(OnEventTrigger, Node, MouseMoved);
-HANDLER(OnEventTrigger, Node, ScrollWheel);
-HANDLER(OnEventTrigger, Node, DragDrop);
-HANDLER(OnEventTrigger, Node, DragEnter);
-HANDLER(OnEventTrigger, Node, SetFocus);
-HANDLER(OnEventTrigger, Node, KillFocus);
-HANDLER(OnEventTrigger, Node, KeyDown);
-HANDLER(OnEventTrigger, Node, KeyUp);
-HANDLER(OnEventTrigger, Node, TextInput);
 static struct PropertyType const OnEventTriggerProperties[kOnEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnEventTrigger.RoutedEvent
 };
 static struct OnEventTrigger OnEventTriggerDefaults = {
 };
 LRESULT OnEventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonDown: return OnEventTrigger_LeftButtonDown(object, cmp, wparm, lparm); // Node.LeftButtonDown
-		case ID_Node_RightButtonDown: return OnEventTrigger_RightButtonDown(object, cmp, wparm, lparm); // Node.RightButtonDown
-		case ID_Node_OtherButtonDown: return OnEventTrigger_OtherButtonDown(object, cmp, wparm, lparm); // Node.OtherButtonDown
-		case ID_Node_LeftButtonUp: return OnEventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-		case ID_Node_RightButtonUp: return OnEventTrigger_RightButtonUp(object, cmp, wparm, lparm); // Node.RightButtonUp
-		case ID_Node_OtherButtonUp: return OnEventTrigger_OtherButtonUp(object, cmp, wparm, lparm); // Node.OtherButtonUp
-		case ID_Node_LeftButtonDragged: return OnEventTrigger_LeftButtonDragged(object, cmp, wparm, lparm); // Node.LeftButtonDragged
-		case ID_Node_RightButtonDragged: return OnEventTrigger_RightButtonDragged(object, cmp, wparm, lparm); // Node.RightButtonDragged
-		case ID_Node_OtherButtonDragged: return OnEventTrigger_OtherButtonDragged(object, cmp, wparm, lparm); // Node.OtherButtonDragged
-		case ID_Node_LeftDoubleClick: return OnEventTrigger_LeftDoubleClick(object, cmp, wparm, lparm); // Node.LeftDoubleClick
-		case ID_Node_RightDoubleClick: return OnEventTrigger_RightDoubleClick(object, cmp, wparm, lparm); // Node.RightDoubleClick
-		case ID_Node_OtherDoubleClick: return OnEventTrigger_OtherDoubleClick(object, cmp, wparm, lparm); // Node.OtherDoubleClick
-		case ID_Node_MouseMoved: return OnEventTrigger_MouseMoved(object, cmp, wparm, lparm); // Node.MouseMoved
-		case ID_Node_ScrollWheel: return OnEventTrigger_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
-		case ID_Node_DragDrop: return OnEventTrigger_DragDrop(object, cmp, wparm, lparm); // Node.DragDrop
-		case ID_Node_DragEnter: return OnEventTrigger_DragEnter(object, cmp, wparm, lparm); // Node.DragEnter
-		case ID_Node_SetFocus: return OnEventTrigger_SetFocus(object, cmp, wparm, lparm); // Node.SetFocus
-		case ID_Node_KillFocus: return OnEventTrigger_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
-		case ID_Node_KeyDown: return OnEventTrigger_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
-		case ID_Node_KeyUp: return OnEventTrigger_KeyUp(object, cmp, wparm, lparm); // Node.KeyUp
-		case ID_Node_TextInput: return OnEventTrigger_TextInput(object, cmp, wparm, lparm); // Node.TextInput
-	}
 	return FALSE;
 }
 void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger) {
@@ -1455,7 +1367,6 @@ struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx) {
 	return GetOnEventTrigger(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(OnEventTrigger, ID_Trigger, 0);
-HANDLER(OnClickTrigger, Node, LeftButtonUp);
 static struct PropertyType const OnClickTriggerProperties[kOnClickTriggerNumProperties] = {
 	DECL(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnClickTrigger.RoutedEvent
 };
@@ -1463,9 +1374,6 @@ static struct OnClickTrigger OnClickTriggerDefaults = {
 	.RoutedEvent = "Node.LeftButtonUp",
 };
 LRESULT OnClickTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonUp: return OnClickTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-	}
 	return FALSE;
 }
 void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger) {
