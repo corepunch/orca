@@ -144,6 +144,80 @@ HANDLER(Setter, Trigger, Triggered)
   return FALSE;
 }
 
+static LRESULT
+_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
+{
+  if (pEventTrigger->RoutedEvent &&
+      strcmp(pEventTrigger->RoutedEvent, routed_event))
+    return FALSE;
+  return _SendMessage(hObject, Trigger, Triggered,
+                .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
+                .Sender = sender ? sender : hObject);
+}
+
+#define EVENT_TRIGGER_MOUSE_HANDLER(CLASS, EVENT, ROUTED_EVENT_NAME) \
+HANDLER(CLASS, Node, EVENT) \
+{ \
+  struct Object *sender = p##EVENT ? p##EVENT->Sender : hObject; \
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)p##CLASS, sender, ROUTED_EVENT_NAME); \
+}
+
+#define EVENT_TRIGGER_HANDLER(CLASS, EVENT, ROUTED_EVENT_NAME) \
+HANDLER(CLASS, Node, EVENT) \
+{ \
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)p##CLASS, hObject, ROUTED_EVENT_NAME); \
+}
+
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, LeftButtonDown, "Node.LeftButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, RightButtonDown, "Node.RightButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, OtherButtonDown, "Node.OtherButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, LeftButtonUp, "Node.LeftButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, RightButtonUp, "Node.RightButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, OtherButtonUp, "Node.OtherButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, LeftButtonDragged, "Node.LeftButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, RightButtonDragged, "Node.RightButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, OtherButtonDragged, "Node.OtherButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, LeftDoubleClick, "Node.LeftDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, RightDoubleClick, "Node.RightDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, OtherDoubleClick, "Node.OtherDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, MouseMoved, "Node.MouseMoved")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, ScrollWheel, "Node.ScrollWheel")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, DragDrop, "Node.DragDrop")
+EVENT_TRIGGER_MOUSE_HANDLER(EventTrigger, DragEnter, "Node.DragEnter")
+EVENT_TRIGGER_HANDLER(EventTrigger, SetFocus, "Node.SetFocus")
+EVENT_TRIGGER_HANDLER(EventTrigger, KillFocus, "Node.KillFocus")
+EVENT_TRIGGER_HANDLER(EventTrigger, KeyDown, "Node.KeyDown")
+EVENT_TRIGGER_HANDLER(EventTrigger, KeyUp, "Node.KeyUp")
+EVENT_TRIGGER_HANDLER(EventTrigger, TextInput, "Node.TextInput")
+
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, LeftButtonDown, "Node.LeftButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, RightButtonDown, "Node.RightButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, OtherButtonDown, "Node.OtherButtonDown")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, LeftButtonUp, "Node.LeftButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, RightButtonUp, "Node.RightButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, OtherButtonUp, "Node.OtherButtonUp")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, LeftButtonDragged, "Node.LeftButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, RightButtonDragged, "Node.RightButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, OtherButtonDragged, "Node.OtherButtonDragged")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, LeftDoubleClick, "Node.LeftDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, RightDoubleClick, "Node.RightDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, OtherDoubleClick, "Node.OtherDoubleClick")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, MouseMoved, "Node.MouseMoved")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, ScrollWheel, "Node.ScrollWheel")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, DragDrop, "Node.DragDrop")
+EVENT_TRIGGER_MOUSE_HANDLER(OnEventTrigger, DragEnter, "Node.DragEnter")
+EVENT_TRIGGER_HANDLER(OnEventTrigger, SetFocus, "Node.SetFocus")
+EVENT_TRIGGER_HANDLER(OnEventTrigger, KillFocus, "Node.KillFocus")
+EVENT_TRIGGER_HANDLER(OnEventTrigger, KeyDown, "Node.KeyDown")
+EVENT_TRIGGER_HANDLER(OnEventTrigger, KeyUp, "Node.KeyUp")
+EVENT_TRIGGER_HANDLER(OnEventTrigger, TextInput, "Node.TextInput")
+
+HANDLER(OnClickTrigger, Node, LeftButtonUp)
+{
+  struct Object *sender = pLeftButtonUp ? pLeftButtonUp->Sender : hObject;
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)pOnClickTrigger, sender, "Node.LeftButtonUp");
+}
+
 HANDLER(ShowModalAction, Trigger, Triggered)
 {
   if (!pShowModalAction->Path || !*pShowModalAction->Path) {

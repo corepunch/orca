@@ -878,7 +878,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Node.TextInput"/>
       </handles>
       <properties>
-        <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
+        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
       </properties>
     </class>
     <class name="OnEventTrigger" parent="Trigger">
@@ -909,7 +909,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Node.TextInput"/>
       </handles>
       <properties>
-        <property name="RoutedEvent" type="string">Node message name that should fire this trigger</property>
+        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Node message name that should fire this trigger</property>
       </properties>
     </class>
     <class name="OnClickTrigger" parent="Trigger">
