@@ -11,6 +11,7 @@ local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 test.expect(core.OnClickTrigger ~= nil, "OnClickTrigger should be exported from orca.core")
+test.expect(core.OnEventTrigger ~= nil, "OnEventTrigger should be exported from orca.core")
 test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
@@ -409,6 +410,39 @@ local function test_xml_loading_trigger_action_components()
 	print("PASS: test_xml_loading_trigger_action_components")
 end
 
+local function test_xml_loading_on_event_trigger_components()
+	local xml = [[
+	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+	    <Node.Triggers>
+	      <OnEventTrigger RoutedEvent="Node.KeyDown">
+	        <ShowModalAction Path="../Popup"/>
+	      </OnEventTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088"/>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "on-event trigger XML should load")
+
+	local target = root:findChild("HotkeyTarget", true)
+	local popup = root:findChild("Popup", true)
+
+	test.expect(target ~= nil, "HotkeyTarget should exist")
+	test.expect(popup ~= nil, "Popup should exist")
+	test.expect(not popup.Visible, "Popup should start hidden")
+	target:send("Node.LeftButtonUp")
+	test.expect(not popup.Visible, "Popup should stay hidden for non-matching events")
+	target:send("Node.KeyDown")
+	test.expect(popup.Visible, "Popup should become visible when RoutedEvent matches")
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_on_event_trigger_components")
+end
+
 -- ---------------------------------------------------------------------------
 -- TabView should measure only the active panel, not the tallest hidden panel
 -- ---------------------------------------------------------------------------
@@ -635,6 +669,7 @@ test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
+test_xml_loading_on_event_trigger_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 
