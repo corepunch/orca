@@ -84,12 +84,9 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
     .SelectedValue = rg->SelectedValue,
     .OldValue      = oldValue,
   };
-  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
-    .target  = group,
-    .message = ID_RadioGroup_SelectionChanged,
-    .lParam  = &args,
-  });
-  free(oldValue);
+  axPostMessageDataW(group, ID_RadioGroup_SelectionChanged, 0, &args, sizeof(args));
+  /* oldValue is intentionally not freed here: the queued event-args payload
+     retains the pointer until the event pump delivers the message. */
 }
 
 static bool_t

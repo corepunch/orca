@@ -43,6 +43,14 @@ end
 -- execute synchronously in tests instead of being deferred to the event loop.
 orca.async = function (fn, ...) fn(...) end
 
+local function pump_messages(root)
+  while true do
+    local msg = orca.system.peekMessage()
+    if not msg then return end
+    orca.system.dispatchMessage(root, msg)
+  end
+end
+
 -- ---------------------------------------------------------------------------
 -- TabBar: selecting a Tab updates SelectedValue and mutual exclusion
 -- ---------------------------------------------------------------------------
@@ -97,6 +105,7 @@ local function test_tabbar_selection_changed_event()
 
   -- Select alpha first; OldValue should be nil
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
   test.expect_eq(selected_value, "alpha", "SelectionChanged should report SelectedValue = 'alpha'")
   test.expect(old_value == nil, "OldValue should be nil for the first selection")
 
@@ -104,6 +113,7 @@ local function test_tabbar_selection_changed_event()
   selected_value = nil
   old_value      = nil
   tab_b:send("Node.LeftButtonUp")
+  pump_messages(screen)
   test.expect_eq(selected_value, "beta",  "SelectionChanged should report SelectedValue = 'beta'")
   test.expect_eq(old_value,      "alpha", "SelectionChanged should report OldValue = 'alpha'")
 
@@ -126,10 +136,12 @@ local function test_tabbar_no_reselect()
   local tab_a = bar + ui.Tab { Value = "alpha", Width = 100, Height = 40 }
 
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
   test.expect_eq(fire_count, 1, "SelectionChanged should fire once on first selection")
 
   -- Click the same tab again
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
   test.expect_eq(fire_count, 1, "SelectionChanged should NOT fire again when clicking already-selected tab")
 
   screen:clear()
@@ -147,6 +159,7 @@ local function test_tab_selected_flag()
   local tab_b = bar + ui.Tab { Value = "beta",  Width = 100, Height = 40 }
 
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
 
   test.expect(tab_a.IsSelected,     "Tab alpha: IsSelected should be true")
   test.expect(tab_a.selected,       "Tab alpha: .selected flag (OF_SELECTED) should be set")
@@ -174,6 +187,7 @@ local function test_tabview_initial_selection()
 
   -- Trigger ViewDidLoad which sets up initial selection
   view:send("Node.ViewDidLoad")
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "alpha", "TabView.SelectedValue should default to first tab 'alpha'")
   test.expect(tab_a.IsSelected,      "First Tab should be selected after ViewDidLoad")
@@ -210,6 +224,7 @@ local function test_tabview_panel_switch()
 
   -- Click second tab
   tab_b:send("Node.LeftButtonUp")
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "beta",  "TabView.SelectedValue should update to 'beta'")
   test.expect(not panel_a.Visible,   "Panel 'alpha' should be hidden after switching to beta")
@@ -217,6 +232,7 @@ local function test_tabview_panel_switch()
 
   -- Switch back to alpha
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "alpha", "TabView.SelectedValue should update back to 'alpha'")
   test.expect(panel_a.Visible,       "Panel 'alpha' should be visible after switching back")
@@ -258,6 +274,7 @@ local function test_tabview_selection_changed_event()
 
   -- Switch to beta; should fire SelectionChanged
   tab_b:send("Node.LeftButtonUp")
+  pump_messages(screen)
 
   test.expect_eq(selected_value, "beta",  "TabView SelectionChanged should report SelectedValue = 'beta'")
   test.expect_eq(old_value,      "alpha", "TabView SelectionChanged should report OldValue = 'alpha'")
@@ -266,6 +283,7 @@ local function test_tabview_selection_changed_event()
   selected_value = nil
   old_value      = nil
   tab_a:send("Node.LeftButtonUp")
+  pump_messages(screen)
 
   test.expect_eq(selected_value, "alpha", "TabView SelectionChanged should report SelectedValue = 'alpha'")
   test.expect_eq(old_value,      "beta",  "TabView SelectionChanged should report OldValue = 'beta'")

@@ -101,10 +101,27 @@ PROP_SetStoredValue(struct Property *property,
 {
   if (property->pdesc->IsArray) {
     void *old_ptr = *(void**)property->value;
+    int old_count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
     if (old_ptr) {
+      if (property->pdesc->DataType == kDataTypeObject) {
+        FOR_LOOP(i, old_count) {
+          if (((void**)old_ptr)[i]) {
+            OBJ_ReleaseRef((struct Object*)((void**)old_ptr)[i]);
+          }
+        }
+      }
       free(old_ptr);
     }
     memcpy(property->value, source, sizeof(void*) + sizeof(int));
+    if (property->pdesc->DataType == kDataTypeObject) {
+      void **items = *(void**)property->value;
+      int count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+      FOR_LOOP(i, count) {
+        if (items && items[i]) {
+          OBJ_AddRef((struct Object*)items[i]);
+        }
+      }
+    }
     PROP_SetDirty(property);
     return;
   }
@@ -166,6 +183,24 @@ PROP_IsSameValue(struct Property const *property, void const* source)
 {
   if (!(property->value && source && (property->flags & PF_MODIFIED)))
     return FALSE;
+  if (property->pdesc->IsArray) {
+    if (property->pdesc->DataType != kDataTypeObject) {
+      return memcmp(property->value, source, sizeof(void*) + sizeof(int)) == 0;
+    }
+    void **old_items = *(void**)property->value;
+    int old_count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+    void **new_items = *(void* const*)source;
+    int new_count = ((int const*)source)[sizeof(void*)/sizeof(int)];
+    if (old_count != new_count) return FALSE;
+    FOR_LOOP(i, old_count) {
+      if (old_items == NULL || new_items == NULL) {
+        if (old_items != new_items) return FALSE;
+        break;
+      }
+      if (old_items[i] != new_items[i]) return FALSE;
+    }
+    return TRUE;
+  }
   if (PROP_GetType(property) == kDataTypeString) {
     lpcString_t old = *(lpcString_t*)property->value;
     lpcString_t newv = *(lpcString_t const*)source;
@@ -187,6 +222,9 @@ PROP_SetValue(struct Property *property, void const* source)
 {
   if (PROP_IsSameValue(property, source)) return;
   PROP_SetStoredValue(property, source);
+  if (property->pdesc->IsArray) {
+    return;
+  }
   _SendMessage(property->object, Object, PropertyChanged, property);
   if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
     property->flags |= PF_NOTIFICATION_QUEUED;

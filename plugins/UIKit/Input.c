@@ -181,7 +181,7 @@ HANDLER(Input, Node, KeyDown)
     case AX_KEY_ENTER:
       if (!pInput->Multiline) {
         OBJ_SetFocus(NULL);
-        SV_PostMessage(hObject, "Submit", 0, szText);
+        SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);
       } else {
         if (dwLength + 1 < sizeof(szText) - 1) {
           szText[dwLength + 1] = 0;

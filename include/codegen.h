@@ -17,6 +17,12 @@ void luaX_push##NAME(lua_State *L, enum NAME value) { \
 }
 
 #define STRUCT(NAME, EXPORT) \
+static struct StructDesc const _##NAME##_StructDesc = { \
+	.StructName = #EXPORT, \
+	.Properties = _##NAME, \
+	.NumProperties = sizeof(_##NAME) / sizeof(*_##NAME), \
+	.StructSize = sizeof(struct NAME), \
+}; \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
 	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
@@ -61,6 +67,7 @@ static int f_##NAME##___call(lua_State *L) { \
 	return 1; \
 } \
 int luaopen_orca_##NAME(lua_State *L) { \
+	OBJ_RegisterStructDesc(&_##NAME##_StructDesc); \
 	luaL_newmetatable(L, #EXPORT); \
 	luaL_setfuncs(L, ((luaL_Reg[]) { \
 		{ "new", f_new_##NAME }, \

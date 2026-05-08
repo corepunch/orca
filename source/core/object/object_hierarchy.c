@@ -15,7 +15,8 @@ struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is
   OBJ_AddRef(child);
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
-  OBJ_SendMessageW(child, ID_Object_Attached, 0, self);
+  struct Object_AttachedEventArgs attached_args = { .Sender = child };
+  OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
   if (is_template) {
     OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
@@ -176,6 +177,35 @@ OBJ_GetModal(struct Object const *self)
   }
 }
 
+bool_t
+OBJ_ShowModalObject(struct Object *self, struct Object *modal)
+{
+  if (!self || !modal) {
+    Con_Error("Invalid arguments to OBJ_ShowModalObject");
+    return FALSE;
+  }
+
+  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
+    self = OBJ_GetParent(self);
+  }
+  if (!self) {
+    Con_Error("Could not find Screen for modal target");
+    return FALSE;
+  }
+
+  if (modal->parent) {
+    REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
+    REMOVE_FROM_LIST(struct Object, modal, modal->parent);
+  }
+
+  struct Object **next = &self->next;
+  while (*next) next = &(*next)->next;
+  *next = modal;
+  modal->parent = self;
+  modal->flags |= OF_NOACTIVATE;
+  return TRUE;
+}
+
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
   struct Screen* modal = GetScreen((struct Object *)ctx);
@@ -197,20 +227,8 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 int
 OBJ_ShowModal(lua_State* L, struct Object *self, struct Object *modal)
 {
-  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
-    self = OBJ_GetParent(self);
-  }
-  if (!self) {
-    Con_Error("Could not find Screen for object %s", OBJ_GetName(self));
+  if (!OBJ_ShowModalObject(self, modal)) {
     return 0;
   }
-  if (modal->parent) {
-    REMOVE_FROM_LIST(struct Object, modal, modal->parent->children);
-  }
-  struct Object **next = &self->next;
-  while (*next) next = &(*next)->next;
-  *next = modal;
-  modal->parent = self;
-  modal->flags |= OF_NOACTIVATE;
   return lua_yieldk(L, 0, (lua_KContext)modal, modal_continue);
 }

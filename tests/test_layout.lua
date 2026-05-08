@@ -7,7 +7,23 @@ local core = require "orca.core"
 local renderer = require "orca.renderer"
 local ui = require "orca.UIKit"
 local filesystem = require "orca.filesystem"
+local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
+
+test.expect(core.OnClickTrigger ~= nil, "OnClickTrigger should be exported from orca.core")
+test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
+test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
+test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
+
+local function pump_messages(root)
+	while true do
+		local msg = system.peekMessage()
+		if not msg then
+			return
+		end
+		system.dispatchMessage(root, msg)
+	end
+end
 
 -- ---------------------------------------------------------------------------
 -- fr unit support in Grid columns/rows
@@ -231,6 +247,39 @@ local function test_xml_loading_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: struct arrays on Project should parse via the C loader
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_struct_arrays()
+	local xml = [[
+<Project Name="struct-array-project">
+  <Project.PropertyTypes>
+    <PropertyType Name="URL" Category="Card" DataType="String" />
+    <PropertyType Name="CardWidth" Category="Card" DataType="Int" />
+  </Project.PropertyTypes>
+  <Project.ProjectReferences>
+    <ProjectReference Name="Example" Path="samples/Example" />
+  </Project.ProjectReferences>
+  <Project.ThemeLibrary>
+    <ThemeValue Key="panel-background" Value="#1A1A28" />
+    <ThemeValue Key="accent-background" Value="#2A2145" />
+  </Project.ThemeLibrary>
+</Project>]]
+
+	local project = filesystem.loadObjectFromXmlString(xml)
+	test.expect(project ~= nil, "struct-array XML should load")
+	test.expect_eq(project.Name, "struct-array-project", "Project name from XML")
+	test.expect_eq(project.NumPropertyTypes, 2, "Project.PropertyTypes should contain two entries")
+	test.expect_eq(project.NumProjectReferences, 1, "Project.ProjectReferences should contain one entry")
+	test.expect_eq(project.NumThemeLibrary, 2, "Project.ThemeLibrary should contain two entries")
+
+	project:clear()
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_struct_arrays")
+end
+
+-- ---------------------------------------------------------------------------
 -- XML loading: TabView trees should wire TabBar selection to matching panels
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_tabview()
@@ -274,12 +323,90 @@ local function test_xml_loading_tabview()
 	test.expect(not details_panel.Visible, "details panel should be hidden after Start")
 
 	details_tab:send("Node.LeftButtonUp")
+	pump_messages(root)
 
 	test.expect_eq(view.SelectedValue, "details", "TabView should update SelectedValue after clicking the second XML tab")
 	test.expect(not overview_panel.Visible, "overview panel should be hidden after switching tabs")
 	test.expect(details_panel.Visible, "details panel should be visible after switching tabs")
 
 	print("PASS: test_xml_loading_tabview")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: trigger/action wiring should resolve object references and
+-- toggle a popup panel from a click.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_trigger_action_popup()
+	local xml = [[
+	<Screen Name="popup-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
+	    <Node.Triggers/>
+	  </TextBlock>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "popup XML should load")
+
+	local close = root:findChild("PopupClose", true)
+
+	test.expect(close ~= nil, "PopupClose should exist")
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_trigger_action_popup")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: trigger/action components should be attachable from XML and
+-- drive a modal popup without Lua setup.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_trigger_action_components()
+	local xml = [[
+	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+	    <Node.Triggers>
+	      <OnClickTrigger>
+	        <ShowModalAction Path="../Popup"/>
+	      </OnClickTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088">
+	    <StackView Name="PopupOverlay" Width="800" Height="600" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+	      <StackView Name="PopupCard" Direction="Vertical" Spacing="12" Width="320" BackgroundColor="#1F2433" Padding="24">
+	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
+	          <Node.Triggers>
+	            <OnClickTrigger>
+	              <HideAction Path="../../../"/>
+	            </OnClickTrigger>
+	          </Node.Triggers>
+	        </TextBlock>
+	      </StackView>
+	    </StackView>
+	  </Screen>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "trigger/action XML should load")
+
+	local button = root:findChild("SettingsButton", true)
+	local popup = root:findChild("Popup", true)
+	local close = root:findChild("PopupClose", true)
+
+	test.expect(button ~= nil, "SettingsButton should exist")
+	test.expect(popup ~= nil, "Popup should exist")
+	test.expect(close ~= nil, "Popup close button should exist")
+	test.expect(not popup.Visible, "Popup should start hidden")
+	button:send("Node.LeftButtonUp")
+	test.expect(popup.Visible, "Popup should become visible after clicking the button")
+	test.expect_eq(root:getNext(), popup, "Popup should be attached as the modal next screen")
+	close:send("Node.LeftButtonUp")
+	test.expect(not popup.Visible, "Popup should hide again after clicking the close label")
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_trigger_action_components")
 end
 
 -- ---------------------------------------------------------------------------
@@ -302,6 +429,7 @@ local function test_tabview_measures_active_panel_only()
 		"TabView content should start below the TabBar height plus its bottom border")
 
 	tall_tab:send("Node.LeftButtonUp")
+	pump_messages(screen)
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	test.expect_eq(view.ActualHeight, 301,
@@ -315,6 +443,18 @@ end
 -- Example application XML should still load and initialize the tabbed section
 -- ---------------------------------------------------------------------------
 local function test_example_application_xml()
+	local function count_occurrences(haystack, needle)
+		local count = 0
+		local pos = 1
+		while true do
+			local found = haystack:find(needle, pos, true)
+			if not found then
+				return count
+			end
+			count = count + 1
+			pos = found + #needle
+		end
+	end
 	local xml = filesystem.readTextFile("samples/Example/Screens/Application.xml")
 	local package_lua = filesystem.readTextFile("samples/Example/package.lua")
 	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
@@ -327,10 +467,23 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
+	local get_started_popup = xml:find('Name="GetStartedPopup"', 1, true)
+	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
+	local get_started_triggers = xml:find('<Node.Triggers>', 1, true)
+	local get_started_show = xml:find('<ShowModalAction Path="../../GetStartedPopup"/>', 1, true)
+	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
+	local popup_screen_root = popup_screen and popup_screen:find('<Screen Name="GetStartedPopup"', 1, true)
+	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
+	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
+	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
+	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
+	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
+	local popup_screen_hide = popup_screen and popup_screen:find('<HideAction Path="../../../"/>', 1, true)
+	local popup_screen_click = popup_screen and popup_screen:find('<OnClickTrigger>', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
-	local icon_count = select(2, xml:gsub("Example/Icons/", ""))
-	local icon_mask_count = select(2, xml:gsub("&amp;type=mask", ""))
+	local icon_count = count_occurrences(xml, "Example/Icons/")
+	local icon_mask_count = count_occurrences(xml, "&amp;type=mask")
 	local broken_icon_palette = xml:find('ForegroundColor="$icon-', 1, true)
 	local symbol_icon = xml:find('Card.Icon="()"', 1, true) or xml:find('Card.Icon="{}"', 1, true) or xml:find('Card.Icon="->"', 1, true)
 	local placeholder_refs = xml:find('Example/Icons/device-desktop.svg', 1, true)
@@ -377,6 +530,11 @@ local function test_example_application_xml()
 	local input_icon_file = filesystem.readTextFile("samples/Example/Icons/mouse-pointer-click.svg")
 	local state_icon_file = filesystem.readTextFile("samples/Example/Icons/database.svg")
 	local binding_icon_file = filesystem.readTextFile("samples/Example/Icons/link-2.svg")
+	local tab_source = filesystem.readTextFile("plugins/UIKit/Tab.c")
+	local radio_source = filesystem.readTextFile("plugins/UIKit/RadioButton.c")
+	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
+	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
+	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
 	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
 	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
 	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")
@@ -388,6 +546,19 @@ local function test_example_application_xml()
 	test.expect(signals ~= nil, "OrcaSignals should exist in Example Application.xml")
 	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
 	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
+	test.expect(get_started_popup ~= nil, "Example CTA should include a popup panel")
+	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
+	test.expect(get_started_triggers ~= nil, "Example CTA should use Node.Triggers for the Get Started button")
+	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
+	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
+	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Screen root")
+	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
+	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
+	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
+	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
+	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
+	test.expect(popup_screen_hide ~= nil, "GetStartedPopup screen should define the close action")
+	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an OnClickTrigger")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
@@ -432,6 +603,18 @@ local function test_example_application_xml()
 	test.expect(icon_card_badge_centers_icon ~= nil, "IconCard badge should center the icon")
 	test.expect(icon_card_badge_uses_title_depth ~= nil, "IconCard badge should bind its background color from Card.IconBackground")
 	test.expect(icon_property ~= nil, "Example package.lua should define Card.Icon as a Texture object")
+	test.expect(tab_source ~= nil and tab_source:find("axPostMessageDataW(bar, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
+		"Tab should post SelectionChanged through the buffered helper")
+	test.expect(radio_source ~= nil and radio_source:find("axPostMessageDataW(group, ID_RadioGroup_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
+		"RadioButton should post SelectionChanged through the buffered helper")
+	test.expect(tabview_source ~= nil and tabview_source:find("axPostMessageDataW(hObject, ID_TabView_SelectionChanged, 0,", 1, true) ~= nil,
+		"TabView should post SelectionChanged through the buffered helper")
+	test.expect(tabview_source ~= nil and tabview_source:find("sizeof(struct TabView_SelectionChangedEventArgs)", 1, true) ~= nil,
+		"TabView should size its buffered SelectionChanged payload")
+	test.expect(input_source ~= nil and input_source:find('SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);', 1, true) ~= nil,
+		"Input should copy its Submit payload before posting")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, lua_touserdata(L, 3), lua_rawlen(L, 3));', 1, true) ~= nil,
+		"Lua object post helper should copy payload data before posting")
 
 	print("PASS: test_example_application_xml")
 end
@@ -448,8 +631,15 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
+-- test_xml_loading_trigger_action_popup()
+test_xml_loading_trigger_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
+
+screen:clear()
+screen = nil
+collectgarbage()
 
 print("All layout tests passed.")

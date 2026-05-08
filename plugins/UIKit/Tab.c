@@ -61,11 +61,7 @@ Tab_Select(struct Object *object, struct Tab *tab)
     .SelectedValue = tb->SelectedValue,  /* strdup'd by PROP_SetStringValue */
     .OldValue      = savedOld,           /* our own strdup copy */
   };
-  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
-    .target  = bar,
-    .message = ID_TabBar_SelectionChanged,
-    .lParam  = &args,
-  });
+  axPostMessageDataW(bar, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));
   /* savedOld is intentionally not freed here: the Lua event-args userdata
      may hold a reference across async boundaries (production event-loop).
      This is a small, bounded per-selection allocation. */

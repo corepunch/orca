@@ -576,6 +576,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
         <message name="Attached">
           <summary>Sent when the object is attached to a parent object in the hierarchy.</summary>
+          <fields>
+            <field name="Sender" type="Object" pointer="true">The child object that was attached to the tree</field>
+          </fields>
         </message>
         <message name="Release">
           <summary>Sent when the object is being released and its resources should be freed.</summary>
@@ -803,13 +806,14 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Base class for data-holding objects within the framework</summary>
       <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
     </class>
-    <class name="Trigger" attach-only="true">
+    <class name="Trigger">
       <summary>Base class for event-driven actions within the UI system</summary>
       <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Attached"/>
+        <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
         <property name="Property" type="string">Target property name to monitor or modify </property>
@@ -824,7 +828,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
       </messages>
     </class>
-    <class name="OnPropertyChangedTrigger" parent="Trigger" attach-only="true">
+    <class name="OnPropertyChangedTrigger" parent="Trigger">
       <summary>Responds to property value changes on specified nodes</summary>
       <details>Monitors a named property on a source node and triggers actions when the property value changes. Useful for reactive UI updates.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -837,7 +841,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Property" type="string">Property name to watch for changes </property>
       </properties>
     </class>
-    <class name="OnAttachedTrigger" parent="Trigger" attach-only="true">
+    <class name="OnAttachedTrigger" parent="Trigger">
       <summary>Triggers when an element is attached to the visual tree</summary>
       <details>Useful for initialization actions that should occur when an element becomes part of the active UI hierarchy.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -845,18 +849,29 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Object.Attached"/>
       </handles>
     </class>
-    <class name="EventTrigger" parent="Trigger" attach-only="true">
+    <class name="EventTrigger" parent="Trigger">
       <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
       <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <!-- <handle message="Node.HandleMessage"/> -->
+        <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
       </properties>
     </class>
-    <class name="Setter" attach-only="true">
+    <class name="OnClickTrigger" parent="Trigger">
+      <summary>Convenience trigger for primary click actions</summary>
+      <details>Equivalent to an EventTrigger wired to Node.LeftButtonUp, intended for editor-friendly drag-and-drop authoring of click actions.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Node.LeftButtonUp"/>
+      </handles>
+      <properties>
+        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Routed event handled by this click trigger</property>
+      </properties>
+    </class>
+    <class name="Setter">
       <summary>Applies property values when triggered by specified conditions</summary>
       <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
@@ -869,17 +884,30 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Value" type="string">Value to apply to the property </property>
       </properties>
     </class>
-    <class name="Handler" attach-only="true">
-      <summary>Executes custom functions when triggered by specified conditions</summary>
-      <details>More flexible than Setter - can call arbitrary functions on target objects rather than just setting properties.</details>
+    <class name="ShowModalAction">
+      <summary>Opens a named popup as a modal child of the current screen</summary>
+      <details>Resolves a relative path to the popup object, reattaches it to the screen, and marks it modal so it captures input.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
+        <handle message="Object.Attached"/>
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
         <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-        <property name="Target" type="Node" pointer="true">Target object to call function on </property>
-        <property name="Function" type="string">Function name to execute on target </property>
+        <property name="Path" type="string">Relative path to the popup object that should be shown modally</property>
+      </properties>
+    </class>
+    <class name="HideAction">
+      <summary>Hides the object at the provided path when triggered</summary>
+      <details>Useful for dismiss buttons and popup close affordances.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Attached"/>
+        <handle message="Trigger.Triggered"/>
+      </handles>
+      <properties>
+        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
+        <property name="Path" type="string">Relative path to the object that should be hidden</property>
       </properties>
     </class>
     <class name="Node">
@@ -904,6 +932,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
         <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
         <property name="Resources" type="ResourceEntry" array="true">Array of resources associated with this node. Can be aliases to objects or other resources.</property>
+        <property name="Triggers" type="Trigger" array="true">Array of trigger objects attached to this node. Each trigger can own nested action components.</property>
       </properties>
       <fields>
         <field name="_tags" type="long">Calculated tags value</field>

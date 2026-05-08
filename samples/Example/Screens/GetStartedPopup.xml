@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Screen Name="GetStartedPopup" Width="1280" Height="800" ResizeMode="NoResize" BackgroundColor="#00000088" Visible="FALSE">
+  <StackView Name="GetStartedPopupOverlay" Width="1280" Height="800" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="40">
+    <StackView Name="GetStartedPopupCard" Direction="Vertical" Spacing="14" Width="420" BackgroundColor="$surface-deep" Padding="24">
+      <TextBlock Name="GetStartedPopupTitle" Text="What ORCA gives you" FontSize="20" ForegroundColor="$text-primary"/>
+      <TextBlock Name="GetStartedPopupBody"
+        Text="XML keeps layout honest, Lua keeps behavior close, and MoonScript gives you a tighter way to grow the surface. The same codebase can ship to desktop, mobile, and the web."
+        FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
+      <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" ForegroundColor="$accent" TextHorizontalAlignment="Right">
+        <Node.Triggers>
+          <OnClickTrigger>
+            <HideAction Path="../../../"/>
+          </OnClickTrigger>
+        </Node.Triggers>
+      </TextBlock>
+    </StackView>
+  </StackView>
+</Screen>
