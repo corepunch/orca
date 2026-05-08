@@ -190,7 +190,6 @@ EVENT_TRIGGER_HANDLER(EventTrigger, KillFocus, "Node.KillFocus")
 EVENT_TRIGGER_HANDLER(EventTrigger, KeyDown, "Node.KeyDown")
 EVENT_TRIGGER_HANDLER(EventTrigger, KeyUp, "Node.KeyUp")
 EVENT_TRIGGER_HANDLER(EventTrigger, TextInput, "Node.TextInput")
-
 HANDLER(ShowModalAction, Trigger, Triggered)
 {
   if (!pShowModalAction->Path || !*pShowModalAction->Path) {

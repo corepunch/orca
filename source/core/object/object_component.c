@@ -247,8 +247,6 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
                                                        wParam,
                                                        trigger_param,
                                                        node_object);
-    // Node trigger dispatch is consumption-aware: once a trigger handles
-    // the event, later triggers do not receive this message.
     if (handled) {
       return handled;
     }
