@@ -964,7 +964,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="SendMessageAction">
       <summary>Sends a typed message to a target object when triggered</summary>
-      <details>Generic action that can dispatch any registered message to a target object. Message arguments are specified as XML attributes matching the message field names, and are automatically parsed based on the message's field type descriptors. This provides a declarative way to invoke any message-based behavior without needing specialized action classes.</details>
+      <details>Generic action that dispatches a registered message to a target object. It supports no-argument messages directly and can populate payload fields from matching properties present on the action object.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Attached"/>

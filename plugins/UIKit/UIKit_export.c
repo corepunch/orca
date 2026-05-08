@@ -108,7 +108,6 @@ static luaL_Reg _TextBlockConcept_MakeTextEventArgs_Methods[] = { { NULL, NULL }
 struct PropertyType _TextBlockConcept_MakeTextEventArgs_Properties[] = {
 	DECL(0xbde64e3e, TextBlockConcept_MakeTextEventArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // TextBlockConcept_MakeTextEventArgs.text
 	DECL(0xa7e2407e, TextBlockConcept_MakeTextEventArgs, availableSpace, availableSpace, kDataTypeInt), // TextBlockConcept_MakeTextEventArgs.availableSpace
-	{NULL} // sentinel
 };
 #define _TextBlockConcept_MakeTextEventArgs _TextBlockConcept_MakeTextEventArgs_Properties
 static luaL_Reg _Node2D_DrawBrushEventArgs_Methods[] = { { NULL, NULL } };
@@ -120,14 +119,12 @@ struct PropertyType _Node2D_DrawBrushEventArgs_Properties[] = {
 	DECL(0x211ec219, Node2D_DrawBrushEventArgs, borderWidth, borderWidth, kDataTypeStruct, .TypeString = "Vector4D"), // Node2D_DrawBrushEventArgs.borderWidth
 	DECL(0x083a85c0, Node2D_DrawBrushEventArgs, foreground, foreground, kDataTypeBool), // Node2D_DrawBrushEventArgs.foreground
 	DECL(0xad6aa1df, Node2D_DrawBrushEventArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // Node2D_DrawBrushEventArgs.viewdef
-	{NULL} // sentinel
 };
 #define _Node2D_DrawBrushEventArgs _Node2D_DrawBrushEventArgs_Properties
 static luaL_Reg _Node2D_MeasureEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node2D_MeasureEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Node2D_MeasureEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureEventArgs.Width
 	DECL(0x1bd13562, Node2D_MeasureEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureEventArgs.Height
-	{NULL} // sentinel
 };
 #define _Node2D_MeasureEventArgs _Node2D_MeasureEventArgs_Properties
 static luaL_Reg _Node2D_ArrangeEventArgs_Methods[] = { { NULL, NULL } };
@@ -136,14 +133,12 @@ struct PropertyType _Node2D_ArrangeEventArgs_Properties[] = {
 	DECL(0xdc0c1c94, Node2D_ArrangeEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeEventArgs.Y
 	DECL(0x3b42dfbf, Node2D_ArrangeEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeEventArgs.Width
 	DECL(0x1bd13562, Node2D_ArrangeEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeEventArgs.Height
-	{NULL} // sentinel
 };
 #define _Node2D_ArrangeEventArgs _Node2D_ArrangeEventArgs_Properties
 static luaL_Reg _Node2D_MeasureOverrideEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node2D_MeasureOverrideEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Node2D_MeasureOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Width
 	DECL(0x1bd13562, Node2D_MeasureOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Height
-	{NULL} // sentinel
 };
 #define _Node2D_MeasureOverrideEventArgs _Node2D_MeasureOverrideEventArgs_Properties
 static luaL_Reg _Node2D_ArrangeOverrideEventArgs_Methods[] = { { NULL, NULL } };
@@ -152,61 +147,51 @@ struct PropertyType _Node2D_ArrangeOverrideEventArgs_Properties[] = {
 	DECL(0xdc0c1c94, Node2D_ArrangeOverrideEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Y
 	DECL(0x3b42dfbf, Node2D_ArrangeOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Width
 	DECL(0x1bd13562, Node2D_ArrangeOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Height
-	{NULL} // sentinel
 };
 #define _Node2D_ArrangeOverrideEventArgs _Node2D_ArrangeOverrideEventArgs_Properties
 static luaL_Reg _Node2D_ForegroundContentEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node2D_ForegroundContentEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Node2D_ForegroundContentEventArgs _Node2D_ForegroundContentEventArgs_Properties
 static luaL_Reg _Node2D_UpdateGeometryEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node2D_UpdateGeometryEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Node2D_UpdateGeometryEventArgs _Node2D_UpdateGeometryEventArgs_Properties
 static luaL_Reg _Node2D_SetScrollTopEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node2D_SetScrollTopEventArgs_Properties[] = {
 	DECL(0xd147f96a, Node2D_SetScrollTopEventArgs, Value, Value, kDataTypeFloat), // Node2D_SetScrollTopEventArgs.Value
-	{NULL} // sentinel
 };
 #define _Node2D_SetScrollTopEventArgs _Node2D_SetScrollTopEventArgs_Properties
 static luaL_Reg _Button_ClickEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Button_ClickEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Button_ClickEventArgs _Button_ClickEventArgs_Properties
 static luaL_Reg _Form_SubmitEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Form_SubmitEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Form_SubmitEventArgs _Form_SubmitEventArgs_Properties
 static luaL_Reg _RadioGroup_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _RadioGroup_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
-	{NULL} // sentinel
 };
 #define _RadioGroup_SelectionChangedEventArgs _RadioGroup_SelectionChangedEventArgs_Properties
 static luaL_Reg _TabBar_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _TabBar_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.OldValue
-	{NULL} // sentinel
 };
 #define _TabBar_SelectionChangedEventArgs _TabBar_SelectionChangedEventArgs_Properties
 static luaL_Reg _TabView_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _TabView_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, TabView_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabView_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, TabView_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabView_SelectionChangedEventArgs.OldValue
-	{NULL} // sentinel
 };
 #define _TabView_SelectionChangedEventArgs _TabView_SelectionChangedEventArgs_Properties
 static luaL_Reg _Screen_UpdateLayoutEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Screen_UpdateLayoutEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Screen_UpdateLayoutEventArgs, Width, Width, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Width
 	DECL(0x1bd13562, Screen_UpdateLayoutEventArgs, Height, Height, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Height
-	{NULL} // sentinel
 };
 #define _Screen_UpdateLayoutEventArgs _Screen_UpdateLayoutEventArgs_Properties
 static luaL_Reg _Screen_RenderScreenEventArgs_Methods[] = { { NULL, NULL } };
@@ -216,37 +201,31 @@ struct PropertyType _Screen_RenderScreenEventArgs_Properties[] = {
 	DECL(0xcc87a64d, Screen_RenderScreenEventArgs, stereo, stereo, kDataTypeFloat), // Screen_RenderScreenEventArgs.stereo
 	DECL(0xad544418, Screen_RenderScreenEventArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenEventArgs.angle
 	DECL(0x32608848, Screen_RenderScreenEventArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenEventArgs.target
-	{NULL} // sentinel
 };
 #define _Screen_RenderScreenEventArgs _Screen_RenderScreenEventArgs_Properties
 static luaL_Reg _Screen_CloseDialogEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Screen_CloseDialogEventArgs_Properties[] = {
 	DECL(0x207072b4, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Screen_CloseDialogEventArgs.ReturnValue
-	{NULL} // sentinel
 };
 #define _Screen_CloseDialogEventArgs _Screen_CloseDialogEventArgs_Properties
 static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _ConsoleView_PrintlnEventArgs_Properties[] = {
 	DECL(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index, kDataTypeInt), // ConsoleView_PrintlnEventArgs.Index
 	DECL(0x3e142d5e, ConsoleView_PrintlnEventArgs, Text, Text, kDataTypeString), // ConsoleView_PrintlnEventArgs.Text
-	{NULL} // sentinel
 };
 #define _ConsoleView_PrintlnEventArgs _ConsoleView_PrintlnEventArgs_Properties
 static luaL_Reg _ConsoleView_EraseEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _ConsoleView_EraseEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _ConsoleView_EraseEventArgs _ConsoleView_EraseEventArgs_Properties
 static luaL_Reg _ConsoleView_InvalidateEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _ConsoleView_InvalidateEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _ConsoleView_InvalidateEventArgs _ConsoleView_InvalidateEventArgs_Properties
 static luaL_Reg _ConsoleView_UnpackEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _ConsoleView_UnpackEventArgs_Properties[] = {
 	DECL(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X, kDataTypeFloat), // ConsoleView_UnpackEventArgs.X
 	DECL(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y, kDataTypeFloat), // ConsoleView_UnpackEventArgs.Y
-	{NULL} // sentinel
 };
 #define _ConsoleView_UnpackEventArgs _ConsoleView_UnpackEventArgs_Properties
 static luaL_Reg _ConsoleView_GetIndexPositionEventArgs_Methods[] = { { NULL, NULL } };
@@ -255,20 +234,17 @@ struct PropertyType _ConsoleView_GetIndexPositionEventArgs_Properties[] = {
 	DECL(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetX
 	DECL(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetY
 	DECL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global, kDataTypeBool), // ConsoleView_GetIndexPositionEventArgs.Global
-	{NULL} // sentinel
 };
 #define _ConsoleView_GetIndexPositionEventArgs _ConsoleView_GetIndexPositionEventArgs_Properties
 static luaL_Reg _PageHost_NavigateToPageEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _PageHost_NavigateToPageEventArgs_Properties[] = {
 	DECL(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageEventArgs.URL
 	DECL(0x84ff7372, PageHost_NavigateToPageEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateToPageEventArgs.TransitionType
-	{NULL} // sentinel
 };
 #define _PageHost_NavigateToPageEventArgs _PageHost_NavigateToPageEventArgs_Properties
 static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _PageHost_NavigateBackEventArgs_Properties[] = {
 	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
-	{NULL} // sentinel
 };
 #define _PageHost_NavigateBackEventArgs _PageHost_NavigateBackEventArgs_Properties
 

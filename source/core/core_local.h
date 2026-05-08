@@ -124,6 +124,9 @@ OBJ_ReleaseRef(struct Object *);
 void
 OBJ_DetachFromParent(struct Object *);
 
+bool_t
+OBJ_ShowModalObject(struct Object *, struct Object *);
+
 struct Object *
 OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 

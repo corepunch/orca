@@ -819,6 +819,10 @@ ORCA_API void core_FlushQueue(lua_State* L) {
   }
 }
 
+ORCA_API void core_GetObjectCount(lua_State* L) {
+  lua_pushinteger(L, OBJ_GetObjectCount());
+}
+
 
 
 

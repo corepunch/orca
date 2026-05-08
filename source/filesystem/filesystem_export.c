@@ -51,30 +51,25 @@ STRUCT(ThemeValue, ThemeValue);
 
 static luaL_Reg _Workspace_ReadCommandsEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Workspace_ReadCommandsEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Workspace_ReadCommandsEventArgs _Workspace_ReadCommandsEventArgs_Properties
 static luaL_Reg _Project_OpenFileEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Project_OpenFileEventArgs_Properties[] = {
 	DECL(0x5ffdd888, Project_OpenFileEventArgs, FileName, FileName, kDataTypeString), // Project_OpenFileEventArgs.FileName
-	{NULL} // sentinel
 };
 #define _Project_OpenFileEventArgs _Project_OpenFileEventArgs_Properties
 static luaL_Reg _Project_FileExistsEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Project_FileExistsEventArgs_Properties[] = {
 	DECL(0x5ffdd888, Project_FileExistsEventArgs, FileName, FileName, kDataTypeString), // Project_FileExistsEventArgs.FileName
-	{NULL} // sentinel
 };
 #define _Project_FileExistsEventArgs _Project_FileExistsEventArgs_Properties
 static luaL_Reg _Project_HasChangedFilesEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Project_HasChangedFilesEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Project_HasChangedFilesEventArgs _Project_HasChangedFilesEventArgs_Properties
 static luaL_Reg _Project_LoadProjectEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Project_LoadProjectEventArgs_Properties[] = {
 	DECL(0xeb66e456, Project_LoadProjectEventArgs, Path, Path, kDataTypeString), // Project_LoadProjectEventArgs.Path
-	{NULL} // sentinel
 };
 #define _Project_LoadProjectEventArgs _Project_LoadProjectEventArgs_Properties
 

@@ -1,15 +1,48 @@
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 
+static bool_t
+_SendMessageAction_Matches(struct Trigger const* expected, struct Trigger_TriggeredEventArgs const* triggered)
+{
+  return !expected || (triggered && triggered->Trigger == expected);
+}
+
+static struct Object *
+_SendMessageAction_Sender(struct Object *hObject, struct Trigger_TriggeredEventArgs const* triggered)
+{
+  return (triggered && triggered->Sender) ? triggered->Sender : hObject;
+}
+
+static void
+_SendMessageAction_BindTrigger(struct Object *hObject)
+{
+  struct Property *prop = NULL;
+  struct Trigger *trigger = GetTrigger(hObject);
+  if (!trigger) {
+    struct Object *owner = OBJ_GetParent(hObject);
+    if (owner) {
+      trigger = GetTrigger(owner);
+      if (!trigger) {
+        struct Object *trigger_object = OBJ_FindChildOfClass(owner, ID_Trigger);
+        trigger = GetTrigger(trigger_object);
+      }
+    }
+  }
+  if (!trigger || FAILED(OBJ_FindShortProperty(hObject, "Trigger", &prop))) {
+    return;
+  }
+  PROP_SetValue(prop, &trigger);
+}
+
 HANDLER(SendMessageAction, Object, Attached)
 {
-  _BindActionTrigger(hObject, NULL);
+  _SendMessageAction_BindTrigger(hObject);
   return FALSE;
 }
 
 HANDLER(SendMessageAction, Trigger, Triggered)
 {
-  if (!_TriggerMatches(pSendMessageAction->Trigger, pTriggered)) {
+  if (!_SendMessageAction_Matches(pSendMessageAction->Trigger, pTriggered)) {
     return FALSE;
   }
 
@@ -19,7 +52,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   // Resolve target object
-  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *sender = _SendMessageAction_Sender(hObject, pTriggered);
   struct Object *target = sender;
   
   if (pSendMessageAction->Target && *pSendMessageAction->Target) {
@@ -32,20 +65,15 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   // Parse message name to get ID
-  uint32_t msg_id = FNV1a(pSendMessageAction->Message);
-  if (!msg_id) {
-    Con_Error("SendMessageAction invalid message name '%s'", 
-              pSendMessageAction->Message);
-    return FALSE;
-  }
+  uint32_t msg_id = fnv1a32(pSendMessageAction->Message);
 
   // Get message field property types
   uint32_t field_count = 0;
-  struct PropertyType* fields = OBJ_FindMessagePropertyTypes(pSendMessageAction->Message, &field_count);
+  struct PropertyType const* fields = OBJ_FindMessagePropertyTypes(pSendMessageAction->Message, &field_count);
   
   if (!fields || field_count == 0) {
     // Message has no arguments, send it directly
-    OBJ_SendMessage(target, msg_id, 0, 0);
+    OBJ_SendMessageW(target, msg_id, 0, 0);
     return FALSE;
   }
 
@@ -57,12 +85,12 @@ HANDLER(SendMessageAction, Trigger, Triggered)
     struct PropertyType const* field = &fields[i];
     
     // Look for attached property with the field name
-    struct Property* prop = OBJ_FindShortProperty(hObject, field->Name);
-    if (prop) {
+    struct Property *prop = NULL;
+    if (SUCCEEDED(OBJ_FindShortProperty(hObject, field->Name, &prop)) && prop) {
       void const* value = PROP_GetValue(prop);
       if (value) {
         // Copy value to payload at the correct offset
-        size_t copy_size = field->Size;
+        size_t copy_size = field->DataSize;
         if (copy_size > 0 && field->Offset + copy_size <= MAX_MESSAGE_SIZE) {
           memcpy(payload + field->Offset, value, copy_size);
         }
@@ -71,7 +99,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   // Send the message with the constructed payload
-  OBJ_SendMessage(target, msg_id, 0, (lParam_t)payload);
+  OBJ_SendMessageW(target, msg_id, 0, (lParam_t)payload);
   
   return FALSE;
 }

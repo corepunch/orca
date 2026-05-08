@@ -65,13 +65,15 @@ HANDLER(Trigger, Object, Attached)
 
 HANDLER(Trigger, Object, PropertyChanged)
 {
-  if (!pTrigger->Property || strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
+  if (!pPropertyChanged || !pPropertyChanged->Property ||
+      !pTrigger->Property ||
+      strcmp(PROP_GetName(pPropertyChanged->Property), pTrigger->Property))
     return FALSE;
   switch (PROP_GetType(pPropertyChanged->Property)) {
     case kDataTypeFloat:
       if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
+        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = hObject);
       }
       return FALSE;
     case kDataTypeInt:
@@ -79,7 +81,7 @@ HANDLER(Trigger, Object, PropertyChanged)
     case kDataTypeEnum:
       if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
+        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = hObject);
       }
       return FALSE;
     default:
@@ -193,13 +195,14 @@ HANDLER(HideAction, Object, Attached)
 
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {
-  if (!pOnPropertyChangedTrigger->Property ||
+  if (!pPropertyChanged || !pPropertyChanged->Property ||
+      !pOnPropertyChangedTrigger->Property ||
       strcmp(PROP_GetName(pPropertyChanged->Property),
              pOnPropertyChangedTrigger->Property))
     return FALSE;
   _SendMessage(hObject, Trigger, Triggered,
                .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
-               .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
+               .Sender = hObject);
   return FALSE;
 }
 

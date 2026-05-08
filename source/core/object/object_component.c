@@ -214,12 +214,8 @@ _NodeTriggerMessageName(uint32_t MsgID)
 static struct Object *
 _NodeTriggerSender(struct Object *receiver, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
-  if (_IsNodeMouseTriggerMessage(MsgID)) {
-    struct Node_MouseMessageEventArgs const *args = (void const*)lParam;
-    if (args && args->Sender) {
-      return args->Sender;
-    }
-  }
+  (void)MsgID;
+  (void)lParam;
   if (wParam) {
     return (struct Object *)wParam;
   }
@@ -271,15 +267,7 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
     return FALSE;
   }
 
-  struct Node_MouseMessageEventArgs local_args = {0};
   lParam_t trigger_param = lParam;
-  if (_IsNodeMouseTriggerMessage(MsgID)) {
-    if (lParam) {
-      local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
-    }
-    local_args.Sender = node_object;
-    trigger_param = &local_args;
-  }
 
   // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
   FOR_LOOP(i, node->NumTriggers) {
