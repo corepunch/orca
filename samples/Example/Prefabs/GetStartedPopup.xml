@@ -5,7 +5,10 @@
     Text="XML keeps layout honest, Lua keeps behavior close, and MoonScript gives you a tighter way to grow the surface. The same codebase can ship to desktop, mobile, and the web."
     FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
   <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" ForegroundColor="$accent" TextHorizontalAlignment="Right">
-    <EventTrigger RoutedEvent="Node.LeftButtonUp"/>
-    <Handler Function="Hide" TargetPath="../"/>
+    <Node.Triggers>
+      <OnClickTrigger>
+        <HideAction Path="../"/>
+      </OnClickTrigger>
+    </Node.Triggers>
   </TextBlock>
 </StackView>

@@ -489,10 +489,6 @@ ORCA_API void
 OBJ_SetHover(struct Object*);
 
 /// @brief Sets or clears the modal child object
-ORCA_API bool_t
-OBJ_ShowModalObject(struct Object*, struct Object*);
-
-/// @brief Sets or clears the modal child object
 ORCA_API int
 OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
 
@@ -700,11 +696,13 @@ ORCA_API struct Object_ThemeChangedEventArgs* luaX_checkObject_ThemeChangedEvent
 /** Object_PropertyChangedEventArgs struct */
 struct Object_PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
+	struct Object* Sender; ///< The object that originally emitted the change
 };
 ORCA_API void luaX_pushObject_PropertyChangedEventArgs(lua_State *L, struct Object_PropertyChangedEventArgs const* data);
 ORCA_API struct Object_PropertyChangedEventArgs* luaX_checkObject_PropertyChangedEventArgs(lua_State *L, int idx);
 /** Object_AttachedEventArgs struct */
 struct Object_AttachedEventArgs {
+	struct Object* Sender; ///< The object that was attached to the tree
 };
 ORCA_API void luaX_pushObject_AttachedEventArgs(lua_State *L, struct Object_AttachedEventArgs const* data);
 ORCA_API struct Object_AttachedEventArgs* luaX_checkObject_AttachedEventArgs(lua_State *L, int idx);
@@ -787,6 +785,7 @@ ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkSta
 /** Trigger_TriggeredEventArgs struct */
 struct Trigger_TriggeredEventArgs {
 	struct Trigger* Trigger;
+	struct Object* Sender; ///< The object that should be used as the action source
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
 ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
@@ -844,6 +843,7 @@ struct Node_MouseMessageEventArgs {
 	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
 	enum MouseButton button; ///< The mouse button involved in this event
 	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
+	struct Object* Sender; ///< The object that originally received the routed mouse event
 };
 ORCA_API void luaX_pushNode_MouseMessageEventArgs(lua_State *L, struct Node_MouseMessageEventArgs const* data);
 ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs(lua_State *L, int idx);
@@ -1046,6 +1046,13 @@ struct EventTrigger {
 ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
 ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
 
+/** OnClickTrigger component */
+struct OnClickTrigger {
+	const char* RoutedEvent; ///< Routed event handled by this click trigger
+};
+ORCA_API void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger);
+ORCA_API struct OnClickTrigger* luaX_checkOnClickTrigger(lua_State *L, int idx);
+
 /// @brief Applies property values when triggered by specified conditions
 /** Setter component */
 struct Setter {
@@ -1055,6 +1062,22 @@ struct Setter {
 };
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
+
+/** ShowModalAction component */
+struct ShowModalAction {
+	struct Trigger* Trigger; ///< Triggering condition or state image
+	const char* Path; ///< Relative path to resolve the popup to show modally
+};
+ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
+ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx);
+
+/** HideAction component */
+struct HideAction {
+	struct Trigger* Trigger; ///< Triggering condition or state image
+	const char* Path; ///< Relative path to resolve the object to hide
+};
+ORCA_API void luaX_pushHideAction(lua_State *L, struct HideAction const* HideAction);
+ORCA_API struct HideAction* luaX_checkHideAction(lua_State *L, int idx);
 
 /// @brief Executes custom functions when triggered by specified conditions
 /** Handler component */
@@ -1083,6 +1106,8 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
+	struct Object** Triggers; ///< Array of trigger objects attached to this node
+	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;
 	event_t LoadView;

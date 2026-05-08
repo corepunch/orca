@@ -227,6 +227,15 @@ enum OnPropertyChangedTriggerProperties {
 enum EventTriggerProperties {
 	kEventTriggerRoutedEvent,
 };
+// OnClickTrigger
+#define ID_OnClickTrigger 0x9e406f64
+#define GetOnClickTrigger(_P) ((struct OnClickTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnClickTrigger):NULL))
+#define OnClickTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnClickTrigger,sizeof(struct OnClickTrigger),_N)
+#define ID_OnClickTrigger_RoutedEvent 0x30d77e1a // OnClickTrigger.RoutedEvent
+#define kOnClickTriggerNumProperties 1
+enum OnClickTriggerProperties {
+	kOnClickTriggerRoutedEvent,
+};
 // Setter
 #define ID_Setter 0xf849aee6
 #define GetSetter(_P) ((struct Setter*)((_P)?OBJ_GetComponent(_P,ID_Setter):NULL))
@@ -239,6 +248,28 @@ enum SetterProperties {
 	kSetterTrigger,
 	kSetterProperty,
 	kSetterValue,
+};
+// ShowModalAction
+#define ID_ShowModalAction 0x43164ff7
+#define GetShowModalAction(_P) ((struct ShowModalAction*)((_P)?OBJ_GetComponent(_P,ID_ShowModalAction):NULL))
+#define ShowModalAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ShowModalAction,sizeof(struct ShowModalAction),_N)
+#define ID_ShowModalAction_Trigger 0x23b4c72c // ShowModalAction.Trigger
+#define ID_ShowModalAction_Path 0xeb66e456 // ShowModalAction.Path
+#define kShowModalActionNumProperties 2
+enum ShowModalActionProperties {
+	kShowModalActionTrigger,
+	kShowModalActionPath,
+};
+// HideAction
+#define ID_HideAction 0x4bb53017
+#define GetHideAction(_P) ((struct HideAction*)((_P)?OBJ_GetComponent(_P,ID_HideAction):NULL))
+#define HideAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_HideAction,sizeof(struct HideAction),_N)
+#define ID_HideAction_Trigger 0x1f2b8a5e // HideAction.Trigger
+#define ID_HideAction_Path 0xeb66e456 // HideAction.Path
+#define kHideActionNumProperties 2
+enum HideActionProperties {
+	kHideActionTrigger,
+	kHideActionPath,
 };
 // Handler
 #define ID_Handler 0x04d66a13
@@ -328,6 +359,8 @@ enum HandlerProperties {
 #define ID_Node_DataContext 0x80b43db0 // Node.DataContext
 #define ID_Node_Resources 0xa9ef04ee // Node.Resources
 #define ID_Node_NumResources 0xce1c8f30 // Node.NumResources
+#define ID_Node_Triggers 0x73803bc4 // Node.Triggers
+#define ID_Node_NumTriggers 0x0f6d8ade // Node.NumTriggers
 #define ID_Node_UpdateMatrix 0x35cdb821 // Node.UpdateMatrix
 #define ID_Node_LoadView 0xe3c6ed08 // Node.LoadView
 #define ID_Node_HitTest 0xbc0e5546 // Node.HitTest
@@ -357,7 +390,7 @@ enum HandlerProperties {
 #define ID_Node_KeyDown 0xfc8dc15c // Node.KeyDown
 #define ID_Node_KeyUp 0x9282bc1d // Node.KeyUp
 #define ID_Node_TextInput 0xaf29a9ae // Node.TextInput
-#define kNodeNumProperties 98
+#define kNodeNumProperties 100
 enum NodeProperties {
 	kNodeSize,
 	kNodeHorizontalSize,
@@ -428,6 +461,8 @@ enum NodeProperties {
 	kNodeDataContext,
 	kNodeResources,
 	kNodeNumResources,
+	kNodeTriggers,
+	kNodeNumTriggers,
 	kNodeUpdateMatrix,
 	kNodeLoadView,
 	kNodeHitTest,

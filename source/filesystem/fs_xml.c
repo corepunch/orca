@@ -117,10 +117,76 @@ _ConstructProperty(struct Object *obj,
                    struct PropertyType const *pdesc, xmlNodePtr element)
 {
   // Array properties require Lua metatables for struct construction.
-  // Skip with a diagnostic; callers can use the Lua API if needed.
   if (pdesc->IsArray) {
-    Con_Error("array property '%s' not supported in C-only XML parser - skipped",
-               pdesc->Name);
+    if (pdesc->DataType != kDataTypeObject) {
+      Con_Error("array property '%s' not supported in C-only XML parser - skipped",
+                 pdesc->Name);
+      return;
+    }
+
+    struct Property *prop = NULL;
+    if (FAILED(OBJ_FindLongProperty(obj, pdesc->FullIdentifier, &prop))) {
+      Con_Error("Could not get array property slot for '%s'", pdesc->Name);
+      return;
+    }
+    int numitems = 0;
+    xmlForEach(sub, element) {
+      xmlChar* dis = xmlGetProp(sub, XMLSTR("IsDisabled"));
+      bool_t is_disabled = dis && !xmlStrcmp(dis, XMLSTR("true"));
+      if (dis) xmlFree(dis);
+      if (!is_disabled && sub->type == XML_ELEMENT_NODE) {
+        numitems++;
+      }
+    }
+
+    struct Object **items = numitems ? calloc((size_t)numitems, sizeof(*items)) : NULL;
+    int index = 0;
+    xmlForEach(sub, element) {
+      if (sub->type != XML_ELEMENT_NODE) {
+        continue;
+      }
+      xmlChar* dis = xmlGetProp(sub, XMLSTR("IsDisabled"));
+      bool_t is_disabled = dis && !xmlStrcmp(dis, XMLSTR("true"));
+      if (dis) xmlFree(dis);
+      if (is_disabled) {
+        continue;
+      }
+
+      struct Object *child = FS_ConstructNode(sub);
+      if (!child) {
+        continue;
+      }
+      if (items) {
+        items[index++] = child;
+      }
+    }
+
+    struct {
+      void *items;
+      int count;
+    } array_value = { .items = items, .count = index };
+
+    void *old_ptr = *(void**)prop->value;
+    if (old_ptr) {
+      int old_count = ((int*)prop->value)[sizeof(void*)/sizeof(int)];
+      if (pdesc->DataType == kDataTypeObject) {
+        FOR_LOOP(i, old_count) {
+          if (((void**)old_ptr)[i]) {
+            OBJ_ReleaseRef((struct Object*)((void**)old_ptr)[i]);
+          }
+        }
+      }
+      free(old_ptr);
+    }
+    memcpy(prop->value, &array_value, sizeof(void*) + sizeof(int));
+    if (pdesc->DataType == kDataTypeObject) {
+      FOR_LOOP(i, index) {
+        if (items && items[i]) {
+          OBJ_AddRef(items[i]);
+        }
+      }
+    }
+    PROP_SetDirty(prop);
     return;
   }
 
@@ -177,6 +243,12 @@ _HandleAttachOnlyComponent(struct Object *obj, xmlNodePtr element,
   xmlForEach(sub, element) {
     lpcString_t subtag = (lpcString_t)sub->name;
 
+    struct ClassDesc const *subcls = OBJ_FindClass(subtag);
+    if (subcls && subcls->IsAttachOnly) {
+      _HandleAttachOnlyComponent(obj, sub, subcls);
+      continue;
+    }
+
     struct PropertyType const *pdesc = OBJ_FindExplicitProperty(obj, subtag);
     if (pdesc) {
       _ConstructProperty(obj, pdesc, sub);
@@ -189,6 +261,8 @@ _HandleAttachOnlyComponent(struct Object *obj, xmlNodePtr element,
       struct Property *prop = NULL;
       if (SUCCEEDED(OBJ_FindShortProperty(obj, subtag, &prop))) {
         PROP_SetValue(prop, &child);
+      } else {
+        OBJ_AddChild(obj, child, FALSE);
       }
     }
   }
@@ -289,6 +363,12 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
       continue;
     }
 
+    struct ClassDesc const *subcls = OBJ_FindClass(tag);
+    if (subcls && subcls->IsAttachOnly) {
+      _HandleAttachOnlyComponent(obj, sub, subcls);
+      continue;
+    }
+
     // Lua-only elements: no-op in the C XML parser
     if (!strcmp(tag, "script")        ||
         !strcmp(tag, "EventListener") ||
@@ -297,11 +377,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
       continue;
     }
 
-    // Attach-only component: look up the class and attach it generically.
-    struct ClassDesc const *subcls = OBJ_FindClass(tag);
-    if (subcls && subcls->IsAttachOnly) {
-      _HandleAttachOnlyComponent(obj, sub, subcls);
-    } else if (!prefab) {
+    if (!prefab) {
       // Regular child object: recurse and attach (children always get Start)
       struct Object *child = _FS_ConstructNode(sub, TRUE);
       if (child) {

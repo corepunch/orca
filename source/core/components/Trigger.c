@@ -14,6 +14,12 @@ _TriggerMatches(struct Trigger const* expected, struct Trigger_TriggeredEventArg
             CMP_GetUserData((struct component*)expected));
 }
 
+static struct Object *
+_TriggerSender(struct Object *hObject, struct Trigger_TriggeredEventArgs const* triggered)
+{
+  return (triggered && triggered->Sender) ? triggered->Sender : hObject;
+}
+
 static bool_t
 _SetTargetVisible(struct Object *target, bool_t visible)
 {
@@ -21,10 +27,62 @@ _SetTargetVisible(struct Object *target, bool_t visible)
   return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
 }
 
+static struct Object *
+_FindScreenAncestor(struct Object *object)
+{
+  while (object && !OBJ_GetComponent(object, ID_Screen)) {
+    object = OBJ_GetParent(object);
+  }
+  return object;
+}
+
+static bool_t
+_ShowModalObject(struct Object *source, struct Object *modal)
+{
+  struct Object *screen = _FindScreenAncestor(source);
+  if (!screen || !modal) {
+    Con_Error("Could not find Screen for modal target");
+    return FALSE;
+  }
+
+  OBJ_AddChild(screen, modal, FALSE);
+  OBJ_SetFlags(modal, OBJ_GetFlags(modal) | OF_NOACTIVATE);
+  return TRUE;
+}
+
+static bool_t
+_BindActionTrigger(struct Object *hObject, struct Property **outProp)
+{
+  struct Property *prop = NULL;
+  struct Trigger *trigger = GetTrigger(hObject);
+  if (!trigger) {
+    struct Object *owner = OBJ_GetParent(hObject);
+    if (owner) {
+      trigger = GetTrigger(owner);
+      if (!trigger) {
+        struct Object *trigger_object = OBJ_FindChildOfClass(owner, ID_Trigger);
+        trigger = GetTrigger(trigger_object);
+      }
+    }
+  }
+  if (FAILED(OBJ_FindShortProperty(hObject, "Trigger", &prop))) {
+    return FALSE;
+  }
+  if (!trigger) {
+    return FALSE;
+  }
+  PROP_SetValue(prop, &trigger);
+  if (outProp) {
+    *outProp = prop;
+  }
+  return TRUE;
+}
+
 HANDLER(Trigger, Object, Attached)
 {
   struct Property *prop;
-  if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop))) {
+  struct Object *sender = pAttached->Sender ? pAttached->Sender : hObject;
+  if (pTrigger->Property && sender && SUCCEEDED(OBJ_FindShortProperty(sender, pTrigger->Property, &prop))) {
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
   return FALSE;
@@ -38,7 +96,7 @@ HANDLER(Trigger, Object, PropertyChanged)
     case kDataTypeFloat:
       if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        _SendMessage(hObject, Trigger, Triggered, pTrigger);
+        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
       }
       return FALSE;
     case kDataTypeInt:
@@ -46,7 +104,7 @@ HANDLER(Trigger, Object, PropertyChanged)
     case kDataTypeEnum:
       if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        _SendMessage(hObject, Trigger, Triggered, pTrigger);
+        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
       }
       return FALSE;
     default:
@@ -56,7 +114,20 @@ HANDLER(Trigger, Object, PropertyChanged)
 
 HANDLER(OnAttachedTrigger, Object, Attached)
 {
-  _SendMessage(hObject, Trigger, Triggered, GetTrigger(CMP_GetObject(pOnAttachedTrigger)));
+  _SendMessage(hObject, Trigger, Triggered,
+               .Trigger = GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
+               .Sender = pAttached->Sender ? pAttached->Sender : hObject);
+  return FALSE;
+}
+
+HANDLER(Trigger, Trigger, Triggered)
+{
+  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
+    _SendMessage(child, Trigger, Triggered,
+                 .Trigger = pTriggered->Trigger,
+                 .Sender = sender);
+  }
   return FALSE;
 }
 
@@ -71,10 +142,11 @@ HANDLER(Setter, Trigger, Triggered)
     return FALSE;
   }
 
+  struct Object *sender = _TriggerSender(hObject, pTriggered);
   struct Property *p = NULL;
-  if (FAILED(OBJ_FindShortProperty(hObject, pSetter->Property, &p))) {
+  if (FAILED(OBJ_FindShortProperty(sender, pSetter->Property, &p))) {
     Con_Error("Setter could not find property %s on %s",
-              pSetter->Property, OBJ_GetClassName(hObject));
+              pSetter->Property, OBJ_GetClassName(sender));
     return FALSE;
   }
 
@@ -103,9 +175,10 @@ HANDLER(Handler, Trigger, Triggered)
     return FALSE;
   }
 
-  struct Object *target = hObject;
+  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *target = sender;
   if (pHandler->TargetPath && *pHandler->TargetPath) {
-    target = OBJ_FindByPath(hObject, pHandler->TargetPath);
+    target = OBJ_FindByPath(sender, pHandler->TargetPath);
   } else if (pHandler->Target) {
     target = CMP_GetObject((struct component*)pHandler->Target);
   }
@@ -128,7 +201,7 @@ HANDLER(Handler, Trigger, Triggered)
                 OBJ_GetClassName(target));
     }
   } else if (!strcmp(pHandler->Function, "ShowModal")) {
-    if (OBJ_ShowModalObject(hObject, target)) {
+    if (_ShowModalObject(sender, target)) {
       _SetTargetVisible(target, TRUE);
     }
   } else {
@@ -139,18 +212,87 @@ HANDLER(Handler, Trigger, Triggered)
 }
 
 static bool_t
-_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, lpcString_t routed_event)
+_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
 {
   if (pEventTrigger->RoutedEvent &&
       strcmp(pEventTrigger->RoutedEvent, routed_event))
     return FALSE;
-  _SendMessage(hObject, Trigger, Triggered, GetTrigger(CMP_GetObject(pEventTrigger)));
+  _SendMessage(hObject, Trigger, Triggered,
+               .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
+               .Sender = sender ? sender : hObject);
   return FALSE;
 }
 
 HANDLER(EventTrigger, Node, LeftButtonUp)
 {
-  return _EventTrigger_Fire(hObject, pEventTrigger, "Node.LeftButtonUp");
+  return _EventTrigger_Fire(hObject, pEventTrigger, pLeftButtonUp->Sender, "Node.LeftButtonUp");
+}
+
+HANDLER(OnClickTrigger, Object, Create)
+{
+  if (!pOnClickTrigger->RoutedEvent) {
+    pOnClickTrigger->RoutedEvent = "Node.LeftButtonUp";
+  }
+  return FALSE;
+}
+
+HANDLER(OnClickTrigger, Object, Attached)
+{
+  return FALSE;
+}
+
+HANDLER(OnClickTrigger, Node, LeftButtonUp)
+{
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)pOnClickTrigger, pLeftButtonUp->Sender, "Node.LeftButtonUp");
+}
+
+HANDLER(ShowModalAction, Trigger, Triggered)
+{
+  if (!pShowModalAction->Path || !*pShowModalAction->Path) {
+    Con_Error("ShowModalAction missing Path");
+    return FALSE;
+  }
+
+  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *target = OBJ_FindByPath(sender, pShowModalAction->Path);
+  if (!target) {
+    Con_Error("ShowModalAction could not resolve path '%s'", pShowModalAction->Path);
+    return FALSE;
+  }
+
+  if (_ShowModalObject(sender, target)) {
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(target, "Visible", &visible);
+  }
+  return FALSE;
+}
+
+HANDLER(ShowModalAction, Object, Attached)
+{
+  return FALSE;
+}
+
+HANDLER(HideAction, Trigger, Triggered)
+{
+  if (!pHideAction->Path || !*pHideAction->Path) {
+    Con_Error("HideAction missing Path");
+    return FALSE;
+  }
+
+  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *target = OBJ_FindByPath(sender, pHideAction->Path);
+  if (!target) {
+    Con_Error("HideAction could not resolve path '%s'", pHideAction->Path);
+    return FALSE;
+  }
+
+  _SetTargetVisible(target, FALSE);
+  return FALSE;
+}
+
+HANDLER(HideAction, Object, Attached)
+{
+  return FALSE;
 }
 
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
@@ -159,20 +301,22 @@ HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
       strcmp(PROP_GetName(pPropertyChanged->Property),
              pOnPropertyChangedTrigger->Property))
     return FALSE;
-  // lua_State* L = OBJ_GetDomain(hObject);
-  // luaX_pushProperty(L, pPropertyChanged->Property);
-  // return _SendMessage(hObject, Trigger, Triggered,
-  //   .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
-    /*.message = { .NumArgs = 1 }*/
-    // );
-    return FALSE;
+  _SendMessage(hObject, Trigger, Triggered,
+               .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
+               .Sender = pPropertyChanged->Sender ? pPropertyChanged->Sender : hObject);
+  return FALSE;
 }
 
 HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
   struct Property *pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;
-  if (szName && SUCCEEDED(OBJ_FindShortProperty(hObject, szName, &pProp))) {
+  struct Object *sender = pAttached->Sender ? pAttached->Sender : hObject;
+  struct Object *source = sender;
+  if (pOnPropertyChangedTrigger->SourceNode && *pOnPropertyChangedTrigger->SourceNode) {
+    source = OBJ_FindByPath(sender, pOnPropertyChangedTrigger->SourceNode);
+  }
+  if (szName && source && SUCCEEDED(OBJ_FindShortProperty(source, szName, &pProp))) {
     PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);
   }
   return FALSE;

@@ -72,6 +72,24 @@ PROP_Update(struct Property *property)
   return TRUE;
 }
 
+static void
+_ReleaseArrayItems(struct Property *property)
+{
+  if (!property->pdesc->IsArray || !property->value) {
+    return;
+  }
+  if (property->pdesc->DataType != kDataTypeObject) {
+    return;
+  }
+  void **items = *(void**)property->value;
+  int count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+  FOR_LOOP(i, count) {
+    if (items && items[i]) {
+      OBJ_ReleaseRef((struct Object*)items[i]);
+    }
+  }
+}
+
 bool_t
 PROP_IsNull(struct Property const *property)
 {
@@ -81,10 +99,18 @@ PROP_IsNull(struct Property const *property)
 void
 PROP_Clear(struct Property *property)
 {
+  void *old_array = NULL;
   if (property->pdesc->DataType == kDataTypeString && property->value && *(LPSTR*)property->value) {
     free(*(LPSTR*)property->value);
   }
-  if (property->pdesc->DataType == kDataTypeObject && property->value) {
+  if (property->pdesc->IsArray && property->value) {
+    old_array = *(void**)property->value;
+  }
+  _ReleaseArrayItems(property);
+  if (old_array) {
+    free(old_array);
+  }
+  if (property->pdesc->DataType == kDataTypeObject && property->value && !property->pdesc->IsArray) {
     struct Object *object = PROP_GetObjectValue(property);
     if (object) {
       OBJ_ReleaseRef(object);

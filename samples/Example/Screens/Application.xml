@@ -317,8 +317,11 @@
 							<TextBlock Name="CtaButtonPrimary" Text="Get Started" FontSize="14" ForegroundColor="$white"
 								BackgroundColor="$accent" Padding="16" Width="140" Height="44"
 								TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
-								<EventTrigger RoutedEvent="Node.LeftButtonUp"/>
-								<Handler Function="ShowModal" TargetPath="../../GetStartedPopup"/>
+								<Node.Triggers>
+									<OnClickTrigger>
+										<ShowModalAction Path="../../GetStartedPopup"/>
+									</OnClickTrigger>
+								</Node.Triggers>
 							</TextBlock>
 						<TextBlock Name="CtaButtonSecondary" Text="Learn more" FontSize="14" ForegroundColor="$text-secondary"
 							BackgroundColor="$card-background" Padding="16" Width="140" Height="44"
