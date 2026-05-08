@@ -375,13 +375,15 @@ enum ControlProperties {
 #define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
 #define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
 #define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
-#define kScreenNumProperties 5
+#define ID_Screen_CloseDialog 0xf5b47797 // Screen.CloseDialog
+#define kScreenNumProperties 6
 enum ScreenProperties {
 	kScreenClearColor,
 	kScreenResizeMode,
 	kScreenDialogResult,
 	kScreenUpdateLayout,
 	kScreenRenderScreen,
+	kScreenCloseDialog,
 };
 // Cinematic
 #define ID_Cinematic 0xc04cee0e
@@ -643,6 +645,9 @@ enum StyleProperties {
 #define ID_Screen_RenderScreenEventArgs_stereo 0x14234527 // Screen_RenderScreenEventArgs.stereo
 #define ID_Screen_RenderScreenEventArgs_angle 0xd956701a // Screen_RenderScreenEventArgs.angle
 #define ID_Screen_RenderScreenEventArgs_target 0xf85bed2e // Screen_RenderScreenEventArgs.target
+#define ID_Screen_CloseDialogEventArgs 0x7f56a5e3
+
+#define ID_Screen_CloseDialogEventArgs_ReturnValue 0xee5a808a // Screen_CloseDialogEventArgs.ReturnValue
 #define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
 
 #define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index

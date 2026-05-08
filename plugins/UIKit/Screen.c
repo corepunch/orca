@@ -619,6 +619,11 @@ static void OBJ_SetTreeDirty(struct Object *obj) {
   FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
 }
 
+HANDLER(Screen, Screen, CloseDialog) {
+  pScreen->DialogResult = pCloseDialog->ReturnValue;
+  return TRUE;
+}
+
 HANDLER(Screen, Window, Resized) {
   struct Node *node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||

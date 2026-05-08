@@ -1336,16 +1336,12 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
-HANDLER(EventTrigger, Node, LeftButtonUp);
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonUp: return EventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-	}
 	return FALSE;
 }
 void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger) {
@@ -1356,7 +1352,21 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
-HANDLER(OnClickTrigger, Node, LeftButtonUp);
+static struct PropertyType const OnEventTriggerProperties[kOnEventTriggerNumProperties] = {
+	DECL(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnEventTrigger.RoutedEvent
+};
+static struct OnEventTrigger OnEventTriggerDefaults = {
+};
+LRESULT OnEventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	return FALSE;
+}
+void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger) {
+	luaX_pushObject(L, CMP_GetObject(OnEventTrigger));
+}
+struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx) {
+	return GetOnEventTrigger(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(OnEventTrigger, ID_Trigger, 0);
 static struct PropertyType const OnClickTriggerProperties[kOnClickTriggerNumProperties] = {
 	DECL(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnClickTrigger.RoutedEvent
 };
@@ -1364,9 +1374,6 @@ static struct OnClickTrigger OnClickTriggerDefaults = {
 	.RoutedEvent = "Node.LeftButtonUp",
 };
 LRESULT OnClickTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Node_LeftButtonUp: return OnClickTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
-	}
 	return FALSE;
 }
 void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger) {
@@ -1446,7 +1453,6 @@ HANDLER(Node, Node, IsVisible);
 HANDLER(Node, Object, Start);
 HANDLER(Node, Object, PropertyChanged);
 HANDLER(Node, Object, Attached);
-HANDLER(Node, Node, LeftButtonUp);
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
 	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
@@ -1564,7 +1570,6 @@ LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wp
 		case ID_Object_Start: return Node_Start(object, cmp, wparm, lparm); // Object.Start
 		case ID_Object_PropertyChanged: return Node_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
 		case ID_Object_Attached: return Node_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Node_LeftButtonUp: return Node_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 	}
 	return FALSE;
 }
@@ -1695,6 +1700,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_EventTrigger), -2), "EventTrigger");
+	lua_setfield(L, ((void)lua_pushclass(L, &_OnEventTrigger), -2), "OnEventTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnClickTrigger), -2), "OnClickTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ShowModalAction), -2), "ShowModalAction");

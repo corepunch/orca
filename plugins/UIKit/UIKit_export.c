@@ -187,6 +187,10 @@ static struct PropertyType _Screen_RenderScreenEventArgs[] = {
 	DECL(0xad544418, Screen_RenderScreenEventArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenEventArgs.angle
 	DECL(0x32608848, Screen_RenderScreenEventArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenEventArgs.target
 };
+static luaL_Reg _Screen_CloseDialogEventArgs_Methods[] = { { NULL, NULL } };
+static struct PropertyType _Screen_CloseDialogEventArgs[] = {
+	DECL(0xee5a808a, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Screen_CloseDialogEventArgs.ReturnValue
+};
 static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
 static struct PropertyType _ConsoleView_PrintlnEventArgs[] = {
 	DECL(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index, kDataTypeInt), // ConsoleView_PrintlnEventArgs.Index
@@ -236,6 +240,7 @@ STRUCT(TabBar_SelectionChangedEventArgs, TabBar_SelectionChangedEventArgs);
 STRUCT(TabView_SelectionChangedEventArgs, TabView_SelectionChangedEventArgs);
 STRUCT(Screen_UpdateLayoutEventArgs, Screen_UpdateLayoutEventArgs);
 STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
+STRUCT(Screen_CloseDialogEventArgs, Screen_CloseDialogEventArgs);
 STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
 STRUCT(ConsoleView_EraseEventArgs, ConsoleView_EraseEventArgs);
 STRUCT(ConsoleView_InvalidateEventArgs, ConsoleView_InvalidateEventArgs);
@@ -827,6 +832,7 @@ struct Control* luaX_checkControl(lua_State *L, int idx) {
 REGISTER_CLASS(Control, ID_Node2D, 0);
 HANDLER(Screen, Screen, UpdateLayout);
 HANDLER(Screen, Screen, RenderScreen);
+HANDLER(Screen, Screen, CloseDialog);
 HANDLER(Screen, Node2D, MeasureOverride);
 HANDLER(Screen, Object, Create);
 HANDLER(Screen, Object, Destroy);
@@ -838,6 +844,7 @@ static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 	DECL(0x928c657a, Screen, UpdateLayout, UpdateLayout, kDataTypeEvent, .TypeString = "Screen_UpdateLayoutEventArgs"), // Screen.UpdateLayout
 	DECL(0xd15bdf29, Screen, RenderScreen, RenderScreen, kDataTypeEvent, .TypeString = "Screen_RenderScreenEventArgs"), // Screen.RenderScreen
+	DECL(0xf5b47797, Screen, CloseDialog, CloseDialog, kDataTypeEvent, .TypeString = "Screen_CloseDialogEventArgs"), // Screen.CloseDialog
 };
 static struct Screen ScreenDefaults = {
 		
@@ -845,11 +852,12 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
-		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
-		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
-		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+	case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
+	case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
+	case ID_Screen_CloseDialog: return Screen_CloseDialog(object, cmp, wparm, lparm); // Screen.CloseDialog
+	case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+	case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
+	case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 		case ID_Window_Resized: return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
 		case ID_Window_Paint: return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
 	}
@@ -1176,6 +1184,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 		lua_setfield(L, ((void)luaopen_orca_TabView_SelectionChangedEventArgs(L), -2), "TabView_SelectionChangedEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Screen_CloseDialogEventArgs(L), -2), "Screen_CloseDialogEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_InvalidateEventArgs(L), -2), "ConsoleView_InvalidateEventArgs");

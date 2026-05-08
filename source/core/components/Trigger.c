@@ -141,29 +141,6 @@ HANDLER(Setter, Trigger, Triggered)
   return FALSE;
 }
 
-static LRESULT
-_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
-{
-  if (pEventTrigger->RoutedEvent &&
-      strcmp(pEventTrigger->RoutedEvent, routed_event))
-    return FALSE;
-  return _SendMessage(hObject, Trigger, Triggered,
-               .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
-               .Sender = sender ? sender : hObject);
-}
-
-HANDLER(EventTrigger, Node, LeftButtonUp)
-{
-  struct Object *sender = pLeftButtonUp ? pLeftButtonUp->Sender : hObject;
-  return _EventTrigger_Fire(hObject, pEventTrigger, sender, "Node.LeftButtonUp");
-}
-
-HANDLER(OnClickTrigger, Node, LeftButtonUp)
-{
-  struct Object *sender = pLeftButtonUp ? pLeftButtonUp->Sender : hObject;
-  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)pOnClickTrigger, sender, "Node.LeftButtonUp");
-}
-
 HANDLER(ShowModalAction, Trigger, Triggered)
 {
   if (!pShowModalAction->Path || !*pShowModalAction->Path) {
