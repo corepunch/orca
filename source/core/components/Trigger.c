@@ -25,16 +25,6 @@ _SetTargetVisible(struct Object *target, bool_t visible)
   if (!target) return FALSE;
   return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
 }
-static struct Object *
-_FindScreenAncestor(struct Object *object)
-{
-  return OBJ_FindParentOfClass(object, fnv1a32("Screen"));
-}
-static bool_t
-_ShowModalObject(struct Object *source, struct Object *modal)
-{
-  return OBJ_ShowModalObject(source, modal);
-}
 
 static bool_t
 _BindActionTrigger(struct Object *hObject, struct Property **outProp)
@@ -108,10 +98,12 @@ HANDLER(OnAttachedTrigger, Object, Attached)
 HANDLER(Trigger, Trigger, Triggered)
 {
   struct Object *sender = _TriggerSender(hObject, pTriggered);
+  
   for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
-    _SendMessage(child, Trigger, Triggered,
+    LRESULT result = _SendMessage(child, Trigger, Triggered,
                  .Trigger = pTriggered->Trigger,
                  .Sender = sender);
+    if (result) return result;
   }
   return FALSE;
 }
@@ -149,63 +141,15 @@ HANDLER(Setter, Trigger, Triggered)
   return FALSE;
 }
 
-HANDLER(Handler, Trigger, Triggered)
-{
-  if (!_TriggerMatches(pHandler->Trigger, pTriggered)) {
-    return FALSE;
-  }
-
-  if (!pHandler->Function || !*pHandler->Function) {
-    Con_Error("Handler missing Function");
-    return FALSE;
-  }
-
-  struct Object *sender = _TriggerSender(hObject, pTriggered);
-  struct Object *target = sender;
-  if (pHandler->TargetPath && *pHandler->TargetPath) {
-    target = OBJ_FindByPath(sender, pHandler->TargetPath);
-  } else if (pHandler->Target) {
-    target = CMP_GetObject((struct component*)pHandler->Target);
-  }
-  if (!target) {
-    Con_Error("Handler target not found for function %s", pHandler->Function);
-    return FALSE;
-  }
-
-  if (!strcmp(pHandler->Function, "Show")) {
-    _SetTargetVisible(target, TRUE);
-  } else if (!strcmp(pHandler->Function, "Hide")) {
-    _SetTargetVisible(target, FALSE);
-  } else if (!strcmp(pHandler->Function, "Toggle")) {
-    struct Property *p = NULL;
-    if (SUCCEEDED(OBJ_FindShortProperty(target, "Visible", &p))) {
-      bool_t visible = !*(bool_t*)PROP_GetValue(p);
-      PROP_SetValue(p, &visible);
-    } else {
-      Con_Error("Handler could not find Visible property on %s",
-                OBJ_GetClassName(target));
-    }
-  } else if (!strcmp(pHandler->Function, "ShowModal")) {
-    if (_ShowModalObject(sender, target)) {
-      _SetTargetVisible(target, TRUE);
-    }
-  } else {
-    Con_Error("Unknown handler function '%s'", pHandler->Function);
-  }
-
-  return FALSE;
-}
-
-static bool_t
+static LRESULT
 _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
 {
   if (pEventTrigger->RoutedEvent &&
       strcmp(pEventTrigger->RoutedEvent, routed_event))
     return FALSE;
-  _SendMessage(hObject, Trigger, Triggered,
+  return _SendMessage(hObject, Trigger, Triggered,
                .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
                .Sender = sender ? sender : hObject);
-  return FALSE;
 }
 
 HANDLER(EventTrigger, Node, LeftButtonUp)
@@ -233,10 +177,11 @@ HANDLER(ShowModalAction, Trigger, Triggered)
     Con_Error("ShowModalAction could not resolve path '%s'", pShowModalAction->Path);
     return FALSE;
   }
-
-  if (_ShowModalObject(sender, target)) {
+  
+  if (OBJ_ShowModalObject(sender, target)) {
     bool_t visible = TRUE;
     OBJ_SetPropertyValue(target, "Visible", &visible);
+    return TRUE; // This will tell the system to refresh the screen
   }
   return FALSE;
 }

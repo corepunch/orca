@@ -180,7 +180,10 @@ OBJ_GetModal(struct Object const *self)
 bool_t
 OBJ_ShowModalObject(struct Object *self, struct Object *modal)
 {
-  if (!self || !modal) return FALSE;
+  if (!self || !modal) {
+    Con_Error("Invalid arguments to OBJ_ShowModalObject");
+    return FALSE;
+  }
 
   while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
     self = OBJ_GetParent(self);

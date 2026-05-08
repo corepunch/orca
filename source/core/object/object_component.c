@@ -134,14 +134,15 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
-  FOR_EACH_LIST(struct component, cmp, pobj->components)
-  {
+  for (struct component *cmp = pobj->components; cmp; ) {
+    struct component *next = cmp->next;
     if (cmp->pcls->ObjProc) {
       LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData, MsgID, wParam, lParam);
       if (res) {
         return res;
       }
     }
+    cmp = next;
   }
   return FALSE;
 }

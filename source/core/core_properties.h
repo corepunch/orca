@@ -271,21 +271,6 @@ enum HideActionProperties {
 	kHideActionTrigger,
 	kHideActionPath,
 };
-// Handler
-#define ID_Handler 0x04d66a13
-#define GetHandler(_P) ((struct Handler*)((_P)?OBJ_GetComponent(_P,ID_Handler):NULL))
-#define Handler_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Handler,sizeof(struct Handler),_N)
-#define ID_Handler_Trigger 0x0ef3b2a9 // Handler.Trigger
-#define ID_Handler_Target 0x2798724a // Handler.Target
-#define ID_Handler_TargetPath 0xaacb8919 // Handler.TargetPath
-#define ID_Handler_Function 0x595dd2a7 // Handler.Function
-#define kHandlerNumProperties 4
-enum HandlerProperties {
-	kHandlerTrigger,
-	kHandlerTarget,
-	kHandlerTargetPath,
-	kHandlerFunction,
-};
 // Node
 #define ID_Node 0x3468032d
 #define GetNode(_P) ((struct Node*)((_P)?OBJ_GetComponent(_P,ID_Node):NULL))

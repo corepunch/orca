@@ -1441,28 +1441,6 @@ struct HideAction* luaX_checkHideAction(lua_State *L, int idx) {
 	return GetHideAction(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(HideAction, 0);
-HANDLER(Handler, Trigger, Triggered);
-static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
-	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
-	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject, .TypeString = "Node"), // Handler.Target
-	DECL(0x76e4533f, Handler, TargetPath, TargetPath, kDataTypeString), // Handler.TargetPath
-	DECL(0x98a79a69, Handler, Function, Function, kDataTypeString), // Handler.Function
-};
-static struct Handler HandlerDefaults = {
-};
-LRESULT HandlerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Trigger_Triggered: return Handler_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
-void luaX_pushHandler(lua_State *L, struct Handler const* Handler) {
-	luaX_pushObject(L, CMP_GetObject(Handler));
-}
-struct Handler* luaX_checkHandler(lua_State *L, int idx) {
-	return GetHandler(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(Handler, 0);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 HANDLER(Node, Object, Start);
@@ -1721,7 +1699,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ShowModalAction), -2), "ShowModalAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_HideAction), -2), "HideAction");
-	lua_setfield(L, ((void)lua_pushclass(L, &_Handler), -2), "Handler");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node), -2), "Node");
 	void after_core_module_registered(lua_State *L);
 	after_core_module_registered(L);

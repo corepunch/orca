@@ -1083,17 +1083,6 @@ struct HideAction {
 ORCA_API void luaX_pushHideAction(lua_State *L, struct HideAction const* HideAction);
 ORCA_API struct HideAction* luaX_checkHideAction(lua_State *L, int idx);
 
-/// @brief Executes custom functions when triggered by specified conditions
-/** Handler component */
-struct Handler {
-	struct Trigger* Trigger; ///< Triggering condition or state image
-	struct Node* Target; ///< Target object to call function on
-	const char* TargetPath; ///< Relative path to resolve the target at trigger time
-	const char* Function; ///< Function name to execute on target
-};
-ORCA_API void luaX_pushHandler(lua_State *L, struct Handler const* Handler);
-ORCA_API struct Handler* luaX_checkHandler(lua_State *L, int idx);
-
 /// @brief Base class for all UI engine nodes.
 /** Node component */
 struct Node {

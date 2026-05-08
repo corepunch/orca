@@ -364,24 +364,26 @@ end
 local function test_xml_loading_trigger_action_components()
 	local xml = [[
 	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <StackView Name="PopupHost" Direction="Vertical">
-	    <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
-	      <Node.Triggers>
-	        <OnClickTrigger>
-	          <ShowModalAction Path="../Popup"/>
-	        </OnClickTrigger>
-	      </Node.Triggers>
-	    </TextBlock>
-	    <StackView Name="Popup" Visible="FALSE" Width="320" BackgroundColor="#1F2433" Padding="24">
-	      <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
-	        <Node.Triggers>
-	          <OnClickTrigger>
-	            <HideAction Path="../"/>
-	          </OnClickTrigger>
-	        </Node.Triggers>
-	      </TextBlock>
+	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+	    <Node.Triggers>
+	      <OnClickTrigger>
+	        <ShowModalAction Path="../Popup"/>
+	      </OnClickTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088">
+	    <StackView Name="PopupOverlay" Width="800" Height="600" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+	      <StackView Name="PopupCard" Direction="Vertical" Spacing="12" Width="320" BackgroundColor="#1F2433" Padding="24">
+	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
+	          <Node.Triggers>
+	            <OnClickTrigger>
+	              <HideAction Path="../../../"/>
+	            </OnClickTrigger>
+	          </Node.Triggers>
+	        </TextBlock>
+	      </StackView>
 	    </StackView>
-	  </StackView>
+	  </Screen>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -397,6 +399,7 @@ local function test_xml_loading_trigger_action_components()
 	test.expect(not popup.Visible, "Popup should start hidden")
 	button:send("Node.LeftButtonUp")
 	test.expect(popup.Visible, "Popup should become visible after clicking the button")
+	test.expect_eq(root:getNext(), popup, "Popup should be attached as the modal next screen")
 	close:send("Node.LeftButtonUp")
 	test.expect(not popup.Visible, "Popup should hide again after clicking the close label")
 	root:clear()
@@ -468,14 +471,15 @@ local function test_example_application_xml()
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
 	local get_started_triggers = xml:find('<Node.Triggers>', 1, true)
 	local get_started_show = xml:find('<ShowModalAction Path="../../GetStartedPopup"/>', 1, true)
-	local get_started_old_handler = xml:find('Handler Function="ShowModal"', 1, true)
-	local popup_prefab = filesystem.readTextFile("samples/Example/Prefabs/GetStartedPopup.xml")
-	local popup_prefab_name = popup_prefab and popup_prefab:find('Name="GetStartedPopup"', 1, true)
-	local popup_prefab_close = popup_prefab and popup_prefab:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_prefab_triggers = popup_prefab and popup_prefab:find('<Node.Triggers>', 1, true)
-	local popup_prefab_hide = popup_prefab and popup_prefab:find('<HideAction Path="../"/>', 1, true)
-	local popup_prefab_click = popup_prefab and popup_prefab:find('<OnClickTrigger>', 1, true)
-	local popup_prefab_old_handler = popup_prefab and popup_prefab:find('Handler Function="Hide"', 1, true)
+	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
+	local popup_screen_root = popup_screen and popup_screen:find('<Screen Name="GetStartedPopup"', 1, true)
+	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
+	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
+	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
+	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
+	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
+	local popup_screen_hide = popup_screen and popup_screen:find('<HideAction Path="../../../"/>', 1, true)
+	local popup_screen_click = popup_screen and popup_screen:find('<OnClickTrigger>', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -546,14 +550,15 @@ local function test_example_application_xml()
 	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
 	test.expect(get_started_triggers ~= nil, "Example CTA should use Node.Triggers for the Get Started button")
 	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
-	test.expect(get_started_old_handler == nil, "Example CTA should no longer use the old Handler Function wiring")
-	test.expect(popup_prefab ~= nil and popup_prefab ~= "", "GetStartedPopup prefab should be readable")
-	test.expect(popup_prefab_name ~= nil, "GetStartedPopup prefab should define the popup root")
-	test.expect(popup_prefab_close ~= nil, "GetStartedPopup prefab should define the close label")
-	test.expect(popup_prefab_triggers ~= nil, "GetStartedPopup prefab should use Node.Triggers for the close action")
-	test.expect(popup_prefab_hide ~= nil, "GetStartedPopup prefab should define the close action")
-	test.expect(popup_prefab_click ~= nil, "GetStartedPopup prefab should define an OnClickTrigger")
-	test.expect(popup_prefab_old_handler == nil, "GetStartedPopup prefab should no longer use the old Handler Function wiring")
+	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
+	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Screen root")
+	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
+	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
+	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
+	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
+	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
+	test.expect(popup_screen_hide ~= nil, "GetStartedPopup screen should define the close action")
+	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an OnClickTrigger")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")

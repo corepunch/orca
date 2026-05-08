@@ -1,18 +1,20 @@
 #include <source/core/core_local.h>
 
-static void
+static LRESULT
 _DispatchTriggers(struct Object *sender, uint32_t message, wParam_t wParam, lParam_t lParam)
 {
   struct Node *node = GetNode(sender);
   if (!node || !node->Triggers || node->NumTriggers <= 0) {
-    return;
+    return FALSE;
   }
+  LRESULT r = FALSE;
   FOR_LOOP(i, node->NumTriggers) {
     struct Object *trigger = node->Triggers[i];
     if (trigger) {
-      OBJ_SendMessageW(trigger, message, wParam, lParam);
+      r |= OBJ_SendMessageW(trigger, message, wParam, lParam);
     }
   }
+  return r;
 }
 
 HANDLER(Node, Node, GetSize)
@@ -59,6 +61,5 @@ HANDLER(Node, Node, LeftButtonUp)
   struct Node_MouseMessageEventArgs local_args = {0};
   if (pLeftButtonUp) local_args = *pLeftButtonUp;
   local_args.Sender = hObject;
-  _DispatchTriggers(hObject, ID_Node_LeftButtonUp, 0, &local_args);
-  return FALSE;
+  return _DispatchTriggers(hObject, ID_Node_LeftButtonUp, 0, &local_args);
 }

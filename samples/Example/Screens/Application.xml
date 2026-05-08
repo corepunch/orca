@@ -312,7 +312,7 @@
 					<TextBlock Name="CtaBody"
 						Text="Download ORCA, open a sample project, and have your first screen running in minutes."
 						FontSize="15" ForegroundColor="$text-muted" WordWrap="true" TextHorizontalAlignment="Center"/>
-						<LayerPrefabPlaceholder Name="GetStartedPopup" PlaceholderTemplate="Example/Prefabs/GetStartedPopup"/>
+						<LayerPrefabPlaceholder Name="GetStartedPopup" PlaceholderTemplate="Example/Screens/GetStartedPopup"/>
 						<StackView Name="CtaButtons" Direction="Horizontal" Spacing="16">
 							<TextBlock Name="CtaButtonPrimary" Text="Get Started" FontSize="14" ForegroundColor="$white"
 								BackgroundColor="$accent" Padding="16" Width="140" Height="44"
