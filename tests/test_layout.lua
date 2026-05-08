@@ -7,11 +7,23 @@ local core = require "orca.core"
 local renderer = require "orca.renderer"
 local ui = require "orca.UIKit"
 local filesystem = require "orca.filesystem"
+local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 test.expect(core.OnClickTrigger ~= nil, "OnClickTrigger should be exported from orca.core")
 test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
+test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
+
+local function pump_messages(root)
+	while true do
+		local msg = system.peekMessage()
+		if not msg then
+			return
+		end
+		system.dispatchMessage(root, msg)
+	end
+end
 
 -- ---------------------------------------------------------------------------
 -- fr unit support in Grid columns/rows
@@ -235,6 +247,39 @@ local function test_xml_loading_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: struct arrays on Project should parse via the C loader
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_struct_arrays()
+	local xml = [[
+<Project Name="struct-array-project">
+  <Project.PropertyTypes>
+    <PropertyType Name="URL" Category="Card" DataType="String" />
+    <PropertyType Name="CardWidth" Category="Card" DataType="Int" />
+  </Project.PropertyTypes>
+  <Project.ProjectReferences>
+    <ProjectReference Name="Example" Path="samples/Example" />
+  </Project.ProjectReferences>
+  <Project.ThemeLibrary>
+    <ThemeValue Key="panel-background" Value="#1A1A28" />
+    <ThemeValue Key="accent-background" Value="#2A2145" />
+  </Project.ThemeLibrary>
+</Project>]]
+
+	local project = filesystem.loadObjectFromXmlString(xml)
+	test.expect(project ~= nil, "struct-array XML should load")
+	test.expect_eq(project.Name, "struct-array-project", "Project name from XML")
+	test.expect_eq(project.NumPropertyTypes, 2, "Project.PropertyTypes should contain two entries")
+	test.expect_eq(project.NumProjectReferences, 1, "Project.ProjectReferences should contain one entry")
+	test.expect_eq(project.NumThemeLibrary, 2, "Project.ThemeLibrary should contain two entries")
+
+	project:clear()
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_struct_arrays")
+end
+
+-- ---------------------------------------------------------------------------
 -- XML loading: TabView trees should wire TabBar selection to matching panels
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_tabview()
@@ -278,6 +323,7 @@ local function test_xml_loading_tabview()
 	test.expect(not details_panel.Visible, "details panel should be hidden after Start")
 
 	details_tab:send("Node.LeftButtonUp")
+	pump_messages(root)
 
 	test.expect_eq(view.SelectedValue, "details", "TabView should update SelectedValue after clicking the second XML tab")
 	test.expect(not overview_panel.Visible, "overview panel should be hidden after switching tabs")
@@ -380,6 +426,7 @@ local function test_tabview_measures_active_panel_only()
 		"TabView content should start below the TabBar height plus its bottom border")
 
 	tall_tab:send("Node.LeftButtonUp")
+	pump_messages(screen)
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	test.expect_eq(view.ActualHeight, 301,
@@ -479,6 +526,11 @@ local function test_example_application_xml()
 	local input_icon_file = filesystem.readTextFile("samples/Example/Icons/mouse-pointer-click.svg")
 	local state_icon_file = filesystem.readTextFile("samples/Example/Icons/database.svg")
 	local binding_icon_file = filesystem.readTextFile("samples/Example/Icons/link-2.svg")
+	local tab_source = filesystem.readTextFile("plugins/UIKit/Tab.c")
+	local radio_source = filesystem.readTextFile("plugins/UIKit/RadioButton.c")
+	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
+	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
+	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
 	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
 	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
 	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")
@@ -546,6 +598,18 @@ local function test_example_application_xml()
 	test.expect(icon_card_badge_centers_icon ~= nil, "IconCard badge should center the icon")
 	test.expect(icon_card_badge_uses_title_depth ~= nil, "IconCard badge should bind its background color from Card.IconBackground")
 	test.expect(icon_property ~= nil, "Example package.lua should define Card.Icon as a Texture object")
+	test.expect(tab_source ~= nil and tab_source:find("axPostMessageDataW(bar, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
+		"Tab should post SelectionChanged through the buffered helper")
+	test.expect(radio_source ~= nil and radio_source:find("axPostMessageDataW(group, ID_RadioGroup_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
+		"RadioButton should post SelectionChanged through the buffered helper")
+	test.expect(tabview_source ~= nil and tabview_source:find("axPostMessageDataW(hObject, ID_TabView_SelectionChanged, 0,", 1, true) ~= nil,
+		"TabView should post SelectionChanged through the buffered helper")
+	test.expect(tabview_source ~= nil and tabview_source:find("sizeof(struct TabView_SelectionChangedEventArgs)", 1, true) ~= nil,
+		"TabView should size its buffered SelectionChanged payload")
+	test.expect(input_source ~= nil and input_source:find('SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);', 1, true) ~= nil,
+		"Input should copy its Submit payload before posting")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, lua_touserdata(L, 3), lua_rawlen(L, 3));', 1, true) ~= nil,
+		"Lua object post helper should copy payload data before posting")
 
 	print("PASS: test_example_application_xml")
 end
@@ -562,6 +626,7 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()

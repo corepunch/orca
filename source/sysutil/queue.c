@@ -2,6 +2,68 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
+static struct {
+  unsigned char data[0x10000];
+  size_t writer;
+} g_message_data;
+
+static void *
+queue_message_data(void const *udata, size_t size)
+{
+  if (!udata || size == 0) {
+    return NULL;
+  }
+  if (size > sizeof(g_message_data.data)) {
+    Con_Error("Message data too large: %zu bytes", size);
+    return NULL;
+  }
+  if ((size_t)g_message_data.writer + size > sizeof(g_message_data.data)) {
+    g_message_data.writer = 0;
+  }
+  void *data = g_message_data.data + g_message_data.writer;
+  memcpy(data, udata, size);
+  g_message_data.writer += size;
+  if (g_message_data.writer >= sizeof(g_message_data.data)) {
+    g_message_data.writer = 0;
+  }
+  return data;
+}
+
+ORCA_API void
+axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,
+                   void const *lparam, size_t size)
+{
+  axPostMessageW(hobj, event, wparam, queue_message_data(lparam, size));
+}
+
+static int
+push_event_message(lua_State *L, struct AXmessage *msg)
+{
+  static Window_PaintMsg_t wnd;
+  wnd.WindowWidth = LOWORD(msg->wParam);
+  wnd.WindowHeight = HIWORD(msg->wParam);
+  switch (msg->message) {
+    case kEventWindowPaint:
+      msg->message = ID_Window_Paint;
+      msg->lParam = &wnd;
+      break;
+    case kEventWindowResized:
+      msg->message = ID_Window_Resized;
+      msg->lParam = &wnd;
+      break;
+    case kEventWindowChangedScreen:
+      msg->message = ID_Window_ChangedScreen;
+      break;
+    case kEventWindowClosed:
+      msg->message = ID_Window_Closed;
+      break;
+  }
+  struct AXmessage* out = lua_newuserdata(L, sizeof(struct AXmessage));
+  luaL_setmetatable(L, "Event");
+  memcpy(out, msg, sizeof(struct AXmessage));
+  return 1;
+}
+
 int f_get_message(lua_State* L)
 {
   struct AXmessage msg = {0};
@@ -9,47 +71,16 @@ int f_get_message(lua_State* L)
     /* No event ready; end this iterator step. */
     return 0;
   }
-  static Window_PaintMsg_t wnd;
-  wnd.WindowWidth = LOWORD(msg.wParam);
-  wnd.WindowHeight = HIWORD(msg.wParam);
-  switch (msg.message) {
-    // case kEventLeftButtonDown:
-    // case kEventRightButtonDown:
-    // case kEventOtherButtonDown:
-    // case kEventLeftButtonUp:
-    // case kEventRightButtonUp:
-    // case kEventOtherButtonUp:
-    // case kEventLeftButtonDragged:
-    // case kEventRightButtonDragged:
-    // case kEventOtherButtonDragged:
-    // case kEventLeftDoubleClick:
-    // case kEventRightDoubleClick:
-    // case kEventOtherDoubleClick:
-    // case kEventMouseMoved:
-    // case kEventScrollWheel:
-    // case kEventKeyDown:
-    // case kEventKeyUp:
-    // case kEventReadCommands:
-    //   break;
-    case kEventWindowPaint:
-      msg.message = ID_Window_Paint;
-      msg.lParam = &wnd;
-      break;
-    case kEventWindowResized:
-      msg.message = ID_Window_Resized;
-      msg.lParam = &wnd;
-      break;
-    case kEventWindowChangedScreen:
-      msg.message = ID_Window_ChangedScreen;
-      break;
-    case kEventWindowClosed:
-      msg.message = ID_Window_Closed;
-      break;
+  return push_event_message(L, &msg);
+}
+
+int f_peek_message(lua_State* L)
+{
+  struct AXmessage msg = {0};
+  if (!axPeekMessage(&msg)) {
+    return 0;
   }
-  struct AXmessage* out = lua_newuserdata(L, sizeof(struct AXmessage));
-  luaL_setmetatable(L, "Event");
-  memcpy(out, &msg, sizeof(struct AXmessage));
-  return 1;
+  return push_event_message(L, &msg);
 }
 
 int f_event_new(lua_State* L);

@@ -41,6 +41,52 @@ _ParseBindingModeStr(lpcString_t s)
   return kBindingModeExpression;
 }
 
+static struct PropertyType const *
+_FindStructField(struct StructDesc const *sdesc, lpcString_t name)
+{
+  FOR_LOOP(i, sdesc->NumProperties) {
+    struct PropertyType const *field = &sdesc->Properties[i];
+    if (!strcmp(field->Name, name)) {
+      return field;
+    }
+  }
+  return NULL;
+}
+
+static bool_t
+_SetStructFieldFromString(struct PropertyType const *pdesc, void *valueptr,
+                          lpcString_t value)
+{
+  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
+  if (!resolved) resolved = value;
+
+  char tmpbuf[MAX_PROPERTY_STRING] = {0};
+  if (!parse_property(resolved, pdesc, tmpbuf)) {
+    return FALSE;
+  }
+
+  if (pdesc->DataType == kDataTypeString) {
+    *(char**)valueptr = *(char**)tmpbuf;
+  } else {
+    memcpy(valueptr, tmpbuf, pdesc->DataSize);
+  }
+  return TRUE;
+}
+
+static void
+_ClearStructValue(struct StructDesc const *sdesc, void *value)
+{
+  FOR_LOOP(i, sdesc->NumProperties) {
+    struct PropertyType const *field = &sdesc->Properties[i];
+    if (field->DataType == kDataTypeString && field->DataSize == sizeof(char*)) {
+      if (*(char **)((char*)value + field->Offset)) {
+        free(*(char **)((char*)value + field->Offset));
+        *(char **)((char*)value + field->Offset) = NULL;
+      }
+    }
+  }
+}
+
 // Parse a single XML attribute value and set it on obj.
 // Handles Name/id, class, and all registered properties.
 static void
@@ -116,11 +162,12 @@ static void
 _ConstructProperty(struct Object *obj,
                    struct PropertyType const *pdesc, xmlNodePtr element)
 {
-  // Array properties require Lua metatables for struct construction.
+  // Array properties are built from child elements. Object arrays instantiate
+  // child objects; struct arrays populate struct blobs from attributes.
   if (pdesc->IsArray) {
-    if (pdesc->DataType != kDataTypeObject) {
+    if (pdesc->DataType != kDataTypeObject && pdesc->DataType != kDataTypeStruct) {
       Con_Error("array property '%s' not supported in C-only XML parser - skipped",
-                 pdesc->Name);
+                pdesc->Name);
       return;
     }
 
@@ -139,7 +186,22 @@ _ConstructProperty(struct Object *obj,
       }
     }
 
-    struct Object **items = numitems ? calloc((size_t)numitems, sizeof(*items)) : NULL;
+    void *items = numitems ? calloc((size_t)numitems, (size_t)pdesc->DataSize) : NULL;
+    struct StructDesc const *sdesc = NULL;
+    if (pdesc->DataType == kDataTypeStruct) {
+      sdesc = OBJ_FindStructDesc(pdesc->TypeString);
+      if (!sdesc) {
+        Con_Error("Could not resolve struct descriptor '%s' for array property '%s'",
+                  pdesc->TypeString, pdesc->Name);
+        free(items);
+        return;
+      }
+    }
+    if (numitems > 0 && !items) {
+      Con_Error("Could not allocate array storage for property '%s'", pdesc->Name);
+      return;
+    }
+
     int index = 0;
     xmlForEach(sub, element) {
       if (sub->type != XML_ELEMENT_NODE) {
@@ -152,12 +214,48 @@ _ConstructProperty(struct Object *obj,
         continue;
       }
 
-      struct Object *child = FS_ConstructNode(sub);
-      if (!child) {
-        continue;
-      }
-      if (items) {
-        items[index++] = child;
+      if (pdesc->DataType == kDataTypeObject) {
+        struct Object *child = FS_ConstructNode(sub);
+        if (!child) {
+          continue;
+        }
+        if (items) {
+          ((struct Object **)items)[index++] = child;
+        }
+      } else {
+        void *dst = items ? (char*)items + (size_t)index * pdesc->DataSize : NULL;
+        void *tmp = sdesc ? calloc(1, (size_t)sdesc->StructSize) : NULL;
+        if (!tmp) {
+          Con_Error("Could not allocate struct storage for '%s' while parsing array property '%s'",
+                    sdesc->StructName, pdesc->Name);
+          continue;
+        }
+        bool_t ok = TRUE;
+        FOR_EACH_LIST(xmlAttr, attr, sub->properties) {
+          xmlChar* val = xmlGetProp(sub, attr->name);
+          if (!val) {
+            continue;
+          }
+          struct PropertyType const *field = _FindStructField(sdesc, (lpcString_t)attr->name);
+          if (!field) {
+            Con_Error("Unknown field '%s' for struct '%s' in array property '%s'",
+                      attr->name, sdesc->StructName, pdesc->Name);
+            xmlFree(val);
+            continue;
+          }
+          if (!_SetStructFieldFromString(field, (char*)tmp + field->Offset, (lpcString_t)val)) {
+            ok = FALSE;
+          }
+          xmlFree(val);
+        }
+        if (ok && tmp && dst) {
+          memcpy(dst, tmp, (size_t)sdesc->StructSize);
+          index++;
+        }
+        if (!ok && tmp) {
+          _ClearStructValue(sdesc, tmp);
+        }
+        free(tmp);
       }
     }
 
@@ -165,7 +263,6 @@ _ConstructProperty(struct Object *obj,
       void *items;
       int count;
     } array_value = { .items = items, .count = index };
-
     PROP_SetValue(prop, &array_value);
     return;
   }

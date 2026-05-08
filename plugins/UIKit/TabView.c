@@ -229,15 +229,11 @@ HANDLER(TabView, TabBar, SelectionChanged)
   TabView_ShowContent(hObject, pTabView->SelectedValue);
   OBJ_SetDirty(hObject);
 
-  struct TabView_SelectionChangedEventArgs args = {
+  axPostMessageDataW(hObject, ID_TabView_SelectionChanged, 0,
+                     &(struct TabView_SelectionChangedEventArgs) {
     .SelectedValue = pTabView->SelectedValue,  /* strdup'd by PROP_SetStringValue */
     .OldValue      = savedOld,                 /* our own strdup copy */
-  };
-  CORE_HandleObjectMessage(core.L, &(struct AXmessage){
-    .target  = hObject,
-    .message = ID_TabView_SelectionChanged,
-    .lParam  = &args,
-  });
+  }, sizeof(struct TabView_SelectionChangedEventArgs));
   /* savedOld is intentionally not freed here: the Lua event-args userdata
      may hold a reference across async boundaries (production event-loop).
      This is a small, bounded per-selection allocation. */

@@ -63,6 +63,33 @@ OBJ_RegisterClass(struct ClassDesc const *class)
   return FALSE;
 }
 
+bool_t
+OBJ_RegisterStructDesc(struct StructDesc const *desc)
+{
+  FOR_LOOP(i, MAX_STRUCTS) {
+    if (!core.structs[i]) {
+      core.structs[i] = desc;
+      return TRUE;
+    } else if (!strcmp(core.structs[i]->StructName, desc->StructName)) {
+      return TRUE;
+    }
+  }
+  Con_Error("No space left to register struct %s", desc->StructName);
+  return FALSE;
+}
+
+struct StructDesc const *
+OBJ_FindStructDesc(lpcString_t name)
+{
+  FOR_LOOP(i, MAX_STRUCTS) {
+    struct StructDesc const *desc = core.structs[i];
+    if (desc && !strcmp(desc->StructName, name)) {
+      return desc;
+    }
+  }
+  return NULL;
+}
+
 struct ClassDesc const *
 OBJ_FindClassW(uint32_t class_id)
 {

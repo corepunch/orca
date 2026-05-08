@@ -104,6 +104,12 @@ struct token
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);
+#define SV_PostMessageData(OBJ, MSG, _W, _L, _S) \
+axPostMessageDataW(OBJ, fnv1a32(MSG), _W, _L, _S);
+
+ORCA_API void
+axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,
+                   void const *lparam, size_t size);
 
 /*
  Fowler–Noll–Vo hash function
@@ -348,6 +354,14 @@ struct ClassDesc
   bool_t IsAttachOnly; // if true, this class can only be added as a component to an existing object, not instantiated standalone
 };
 
+struct StructDesc
+{
+  lpcString_t StructName; // human-readable name of the struct, used for XML and Lua construction
+  struct PropertyType const *Properties; // pointer to an array of field descriptors
+  uint32_t NumProperties; // number of fields in the struct
+  uint32_t StructSize; // size of the struct in bytes
+};
+
 struct component;
 
 ORCA_API void
@@ -410,6 +424,12 @@ OBJ_RegisterClass(struct ClassDesc const *);
 
 ORCA_API struct ClassDesc const *
 OBJ_FindClass(lpcString_t);
+
+ORCA_API bool_t
+OBJ_RegisterStructDesc(struct StructDesc const *);
+
+ORCA_API struct StructDesc const *
+OBJ_FindStructDesc(lpcString_t);
 
 // Register a pure-C string parser for a named struct type.
 // The parser should write the parsed value to dst (of size `sz`) and return TRUE on success.

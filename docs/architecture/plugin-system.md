@@ -163,6 +163,30 @@ void on_myplugin_registered(lua_State *L) {
 | `ui_handle_event` | `plugins/UIKit/UIKit_message.c` | Mouse, keyboard, and coroutine events for the UI object tree |
 | `filesystem_handle_event` | `source/editor/server.c` | HTTP-style editor command server (`kEventReadCommands` loop) |
 
+### Sending messages to Lua from native code
+
+If a native component needs a message to flow through the Lua event bridge, post it with `axPostMessageW()` instead of calling `CORE_HandleObjectMessage()` directly.
+
+```c
+axPostMessageW(target, ID_Button_Click, 0, NULL);
+```
+
+That message will enter the normal event pump, and `plugins/UIKit/UIKit_message.c` will forward it through `CORE_HandleObjectMessage()` so any Lua callback or event handler attached to the object can see it.
+
+Use direct `OBJ_SendMessageW()` only for native-only, immediate dispatch. Use `axPostMessageW()` when the message should participate in the queued event loop and be visible to Lua.
+
+If the message carries a stack-allocated struct or other temporary payload, use `axPostMessageDataW()` (or the matching `SV_PostMessageData()` macro) so the payload is copied into a temporary ring buffer before the message is queued.
+
+```c
+struct TabBar_SelectionChangedEventArgs args = {
+  .SelectedValue = tb->SelectedValue,
+  .OldValue = savedOld,
+};
+axPostMessageDataW(target, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));
+```
+
+This is the safe pattern for messages like `TabBar.SelectionChanged`, `TabView.SelectionChanged`, `RadioGroup.SelectionChanged`, and `Form.Submit` that need to survive past the current stack frame.
+
 #### Core — keyboard + window events
 
 ```c

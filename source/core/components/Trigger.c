@@ -25,7 +25,11 @@ _SetTargetVisible(struct Object *target, bool_t visible)
   if (!target) return FALSE;
   return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
 }
-
+static struct Object *
+_FindScreenAncestor(struct Object *object)
+{
+  return OBJ_FindParentOfClass(object, fnv1a32("Screen"));
+}
 static bool_t
 _ShowModalObject(struct Object *source, struct Object *modal)
 {
