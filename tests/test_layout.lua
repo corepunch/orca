@@ -415,7 +415,7 @@ local function test_xml_loading_on_event_trigger_components()
 	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
-	      <OnEventTrigger RoutedEvent="Node.KeyDown">
+	      <OnEventTrigger RoutedEvent="Node.RightButtonUp">
 	        <ShowModalAction Path="../Popup"/>
 	      </OnEventTrigger>
 	    </Node.Triggers>
@@ -434,7 +434,7 @@ local function test_xml_loading_on_event_trigger_components()
 	test.expect(not popup.Visible, "Popup should start hidden")
 	target:send("Node.LeftButtonUp")
 	test.expect(not popup.Visible, "Popup should stay hidden for non-matching events")
-	target:send("Node.KeyDown")
+	target:send("Node.RightButtonUp")
 	test.expect(popup.Visible, "Popup should become visible when RoutedEvent matches")
 	root:clear()
 	root = nil
