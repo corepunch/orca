@@ -53,9 +53,14 @@ def main():
         sys.exit(result.returncode)
 
     if output == "-":
-        sys.stdout.write(result.stdout)
+        try:
+            sys.stdout.write(result.stdout)
+        except BrokenPipeError:
+            pass
     else:
-        os.makedirs(os.path.dirname(os.path.abspath(output)), exist_ok=True)
+        output_dir = os.path.dirname(os.path.abspath(output))
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
         with open(output, "w", encoding="utf-8") as fh:
             fh.write(result.stdout)
 
