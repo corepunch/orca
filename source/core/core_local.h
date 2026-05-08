@@ -44,6 +44,14 @@
 struct lua_State;
 struct alias;
 
+// Message property type registry entry
+struct message_property_entry
+{
+  char const* message_name;           // Full message name (e.g. "AnimationPlayer.Play")
+  struct PropertyType* properties;    // Property array for message fields
+  uint32_t count;                     // Number of properties
+};
+
 // Parsed style class selector (e.g., "button:hover/50")
 struct style_class_selector
 {
@@ -96,6 +104,7 @@ struct game
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct property_program* programs;
+  struct message_property_entry message_properties[MAX_MESSAGE_TYPES];
 };
 
 // stateman.c

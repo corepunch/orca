@@ -50,6 +50,14 @@ ORCA_API int luaopen_orca_<?= $model->getModuleName() ?>(lua_State *L) {
 	void <?= $model->on_luaopen ?>(lua_State *L);
 	<?= $model->on_luaopen ?>(L);
 <?php endif ?>
+<?php foreach ($model->getEvents() as $name => $event): ?>
+<?php $struct_name = $event->msgns . "_" . $event->name . "EventArgs"; ?>
+<?php $full_name = $event->msgns . "." . $event->name; ?>
+<?php $field_count = count($event->getAllFields()); ?>
+<?php if ($field_count > 0): ?>
+	OBJ_RegisterMessagePropertyTypes("<?= $full_name ?>", _<?= $struct_name ?>_Properties, <?= $field_count ?>);
+<?php endif ?>
+<?php endforeach ?>
 <?php foreach ($model->getStructs() as $name => $struct):?>
 	lua_setfield(L, ((void)luaopen_orca_<?= $name ?>(L), -2), "<?= $struct->export ?>");
 <?php endforeach ?>

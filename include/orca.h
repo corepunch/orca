@@ -431,6 +431,16 @@ OBJ_RegisterStructDesc(struct StructDesc const *);
 ORCA_API struct StructDesc const *
 OBJ_FindStructDesc(lpcString_t);
 
+// Register property type descriptors for a message's fields
+ORCA_API bool_t
+OBJ_RegisterMessagePropertyTypes(char const* message_name,
+                                  struct PropertyType* properties,
+                                  uint32_t count);
+
+// Find property type descriptors for a message's fields
+ORCA_API struct PropertyType*
+OBJ_FindMessagePropertyTypes(char const* message_name, uint32_t* out_count);
+
 // Register a pure-C string parser for a named struct type.
 // The parser should write the parsed value to dst (of size `sz`) and return TRUE on success.
 ORCA_API void

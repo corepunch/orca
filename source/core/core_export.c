@@ -20,7 +20,6 @@ extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
 // style_class_selector
 extern void luaX_pushstyle_class_selector(lua_State *L, struct style_class_selector const* value);
 extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L, int index);
-extern int64_t OBJ_GetObjectCount(void);
 
 ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
 ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable")
@@ -49,7 +48,7 @@ int f_OBJ_Clear(lua_State *L) {
 }
 int f_OBJ_ReleaseOrphan(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
-	OBJ_ReleaseRef(this_ );
+	OBJ_ReleaseOrphan(L, this_ );
 	return 0;
 }
 int f_OBJ_Equals(lua_State *L) {
@@ -617,296 +616,398 @@ STRUCT(SizeShorthand, SizeShorthand);
 #define Node_TextInputEventArgs Node_KeyMessageEventArgs
 
 static luaL_Reg _Object_CreateEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_CreateEventArgs[] = {
+struct PropertyType _Object_CreateEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Object_CreateEventArgs _Object_CreateEventArgs_Properties
 static luaL_Reg _Object_StartEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_StartEventArgs[] = {
+struct PropertyType _Object_StartEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Object_StartEventArgs _Object_StartEventArgs_Properties
 static luaL_Reg _Object_AnimateEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_AnimateEventArgs[] = {
+struct PropertyType _Object_AnimateEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Object_AnimateEventArgs _Object_AnimateEventArgs_Properties
 static luaL_Reg _Object_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_ThemeChangedEventArgs[] = {
+struct PropertyType _Object_ThemeChangedEventArgs_Properties[] = {
 	DECL(0x5bee3c77, Object_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // Object_ThemeChangedEventArgs.recursive
+	{NULL} // sentinel
 };
+#define _Object_ThemeChangedEventArgs _Object_ThemeChangedEventArgs_Properties
 static luaL_Reg _Object_PropertyChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_PropertyChangedEventArgs[] = {
+struct PropertyType _Object_PropertyChangedEventArgs_Properties[] = {
 	DECL(0x5221f9e8, Object_PropertyChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Object_PropertyChangedEventArgs.Property
+	{NULL} // sentinel
 };
+#define _Object_PropertyChangedEventArgs _Object_PropertyChangedEventArgs_Properties
 static luaL_Reg _Object_AttachedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_AttachedEventArgs[] = {
+struct PropertyType _Object_AttachedEventArgs_Properties[] = {
+	DECL(0xe573f884, Object_AttachedEventArgs, Sender, Sender, kDataTypeObject, .TypeString = "Object"), // Object_AttachedEventArgs.Sender
+	{NULL} // sentinel
 };
+#define _Object_AttachedEventArgs _Object_AttachedEventArgs_Properties
 static luaL_Reg _Object_ReleaseEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_ReleaseEventArgs[] = {
+struct PropertyType _Object_ReleaseEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Object_ReleaseEventArgs _Object_ReleaseEventArgs_Properties
 static luaL_Reg _Object_DestroyEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_DestroyEventArgs[] = {
+struct PropertyType _Object_DestroyEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Object_DestroyEventArgs _Object_DestroyEventArgs_Properties
 static luaL_Reg _Object_TimerEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Object_TimerEventArgs[] = {
+struct PropertyType _Object_TimerEventArgs_Properties[] = {
 	DECL(0x4903ce0f, Object_TimerEventArgs, timerId, timerId, kDataTypeInt), // Object_TimerEventArgs.timerId
+	{NULL} // sentinel
 };
+#define _Object_TimerEventArgs _Object_TimerEventArgs_Properties
 static luaL_Reg _AnimationPlayer_PlayEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_PlayEventArgs[] = {
+struct PropertyType _AnimationPlayer_PlayEventArgs_Properties[] = {
 	DECL(0x0fe07306, AnimationPlayer_PlayEventArgs, Name, Name, kDataTypeString), // AnimationPlayer_PlayEventArgs.Name
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_PlayEventArgs _AnimationPlayer_PlayEventArgs_Properties
 static luaL_Reg _AnimationPlayer_ResumeEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_ResumeEventArgs[] = {
+struct PropertyType _AnimationPlayer_ResumeEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_ResumeEventArgs _AnimationPlayer_ResumeEventArgs_Properties
 static luaL_Reg _AnimationPlayer_StopEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_StopEventArgs[] = {
+struct PropertyType _AnimationPlayer_StopEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_StopEventArgs _AnimationPlayer_StopEventArgs_Properties
 static luaL_Reg _AnimationPlayer_PauseEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_PauseEventArgs[] = {
+struct PropertyType _AnimationPlayer_PauseEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_PauseEventArgs _AnimationPlayer_PauseEventArgs_Properties
 static luaL_Reg _AnimationPlayer_StartedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_StartedEventArgs[] = {
+struct PropertyType _AnimationPlayer_StartedEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_StartedEventArgs _AnimationPlayer_StartedEventArgs_Properties
 static luaL_Reg _AnimationPlayer_StoppedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_StoppedEventArgs[] = {
+struct PropertyType _AnimationPlayer_StoppedEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_StoppedEventArgs _AnimationPlayer_StoppedEventArgs_Properties
 static luaL_Reg _AnimationPlayer_CompletedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _AnimationPlayer_CompletedEventArgs[] = {
+struct PropertyType _AnimationPlayer_CompletedEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _AnimationPlayer_CompletedEventArgs _AnimationPlayer_CompletedEventArgs_Properties
 static luaL_Reg _StyleController_ThemeChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_ThemeChangedEventArgs[] = {
+struct PropertyType _StyleController_ThemeChangedEventArgs_Properties[] = {
 	DECL(0x5bee3c77, StyleController_ThemeChangedEventArgs, recursive, recursive, kDataTypeBool), // StyleController_ThemeChangedEventArgs.recursive
+	{NULL} // sentinel
 };
+#define _StyleController_ThemeChangedEventArgs _StyleController_ThemeChangedEventArgs_Properties
 static luaL_Reg _StyleController_AddClassEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_AddClassEventArgs[] = {
+struct PropertyType _StyleController_AddClassEventArgs_Properties[] = {
 	DECL(0x2ecda0bc, StyleController_AddClassEventArgs, ClassName, ClassName, kDataTypeString), // StyleController_AddClassEventArgs.ClassName
+	{NULL} // sentinel
 };
+#define _StyleController_AddClassEventArgs _StyleController_AddClassEventArgs_Properties
 static luaL_Reg _StyleController_AddClassesEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StyleController_AddClassesEventArgs[] = {
+struct PropertyType _StyleController_AddClassesEventArgs_Properties[] = {
 	DECL(0x7cb425dd, StyleController_AddClassesEventArgs, ClassNames, ClassNames, kDataTypeString), // StyleController_AddClassesEventArgs.ClassNames
+	{NULL} // sentinel
 };
+#define _StyleController_AddClassesEventArgs _StyleController_AddClassesEventArgs_Properties
 static luaL_Reg _StateManagerController_ControllerChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _StateManagerController_ControllerChangedEventArgs[] = {
+struct PropertyType _StateManagerController_ControllerChangedEventArgs_Properties[] = {
 	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
+	{NULL} // sentinel
 };
+#define _StateManagerController_ControllerChangedEventArgs _StateManagerController_ControllerChangedEventArgs_Properties
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Trigger_TriggeredEventArgs[] = {
+struct PropertyType _Trigger_TriggeredEventArgs_Properties[] = {
 	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
+	DECL(0xe573f884, Trigger_TriggeredEventArgs, Sender, Sender, kDataTypeObject, .TypeString = "Object"), // Trigger_TriggeredEventArgs.Sender
+	{NULL} // sentinel
 };
+#define _Trigger_TriggeredEventArgs _Trigger_TriggeredEventArgs_Properties
 static luaL_Reg _Node_UpdateMatrixEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_UpdateMatrixEventArgs[] = {
+struct PropertyType _Node_UpdateMatrixEventArgs_Properties[] = {
 	DECL(0xeacdfcfd, Node_UpdateMatrixEventArgs, parent, parent, kDataTypeStruct, .TypeString = "Matrix3D"), // Node_UpdateMatrixEventArgs.parent
 	DECL(0xc6c2dd66, Node_UpdateMatrixEventArgs, opacity, opacity, kDataTypeFloat), // Node_UpdateMatrixEventArgs.opacity
 	DECL(0x79a98884, Node_UpdateMatrixEventArgs, force, force, kDataTypeBool), // Node_UpdateMatrixEventArgs.force
+	{NULL} // sentinel
 };
+#define _Node_UpdateMatrixEventArgs _Node_UpdateMatrixEventArgs_Properties
 static luaL_Reg _Node_LoadViewEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_LoadViewEventArgs[] = {
+struct PropertyType _Node_LoadViewEventArgs_Properties[] = {
 	DECL(0x187f5b0f, Node_LoadViewEventArgs, lua_state, lua_state, kDataTypeStruct, .TypeString = "lua_State"), // Node_LoadViewEventArgs.lua_state
+	{NULL} // sentinel
 };
+#define _Node_LoadViewEventArgs _Node_LoadViewEventArgs_Properties
 static luaL_Reg _Node_HitTestEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_HitTestEventArgs[] = {
+struct PropertyType _Node_HitTestEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_HitTestEventArgs, x, x, kDataTypeInt), // Node_HitTestEventArgs.x
 	DECL(0xfc0c4ef4, Node_HitTestEventArgs, y, y, kDataTypeInt), // Node_HitTestEventArgs.y
+	{NULL} // sentinel
 };
+#define _Node_HitTestEventArgs _Node_HitTestEventArgs_Properties
 static luaL_Reg _Node_IsVisibleEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_IsVisibleEventArgs[] = {
+struct PropertyType _Node_IsVisibleEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Node_IsVisibleEventArgs _Node_IsVisibleEventArgs_Properties
 static luaL_Reg _Node_ViewDidLoadEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_ViewDidLoadEventArgs[] = {
+struct PropertyType _Node_ViewDidLoadEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Node_ViewDidLoadEventArgs _Node_ViewDidLoadEventArgs_Properties
 static luaL_Reg _Node_KillFocusEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_KillFocusEventArgs[] = {
+struct PropertyType _Node_KillFocusEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Node_KillFocusEventArgs _Node_KillFocusEventArgs_Properties
 static luaL_Reg _Node_SetFocusEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_SetFocusEventArgs[] = {
+struct PropertyType _Node_SetFocusEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Node_SetFocusEventArgs _Node_SetFocusEventArgs_Properties
 static luaL_Reg _Node_GetSizeEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_GetSizeEventArgs[] = {
+struct PropertyType _Node_GetSizeEventArgs_Properties[] = {
+	{NULL} // sentinel
 };
+#define _Node_GetSizeEventArgs _Node_GetSizeEventArgs_Properties
 static luaL_Reg _Node_MouseMessageEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_MouseMessageEventArgs[] = {
+struct PropertyType _Node_MouseMessageEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_MouseMessageEventArgs, x, x, kDataTypeFloat), // Node_MouseMessageEventArgs.x
 	DECL(0xfc0c4ef4, Node_MouseMessageEventArgs, y, y, kDataTypeFloat), // Node_MouseMessageEventArgs.y
 	DECL(0xec56f27b, Node_MouseMessageEventArgs, deltaX, deltaX, kDataTypeInt), // Node_MouseMessageEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_MouseMessageEventArgs, deltaY, deltaY, kDataTypeInt), // Node_MouseMessageEventArgs.deltaY
 	DECL(0x43b27471, Node_MouseMessageEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_MouseMessageEventArgs.button
 	DECL(0xd9747336, Node_MouseMessageEventArgs, clickCount, clickCount, kDataTypeInt), // Node_MouseMessageEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_MouseMessageEventArgs _Node_MouseMessageEventArgs_Properties
 static luaL_Reg _Node_LeftButtonDownEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_LeftButtonDownEventArgs[] = {
+struct PropertyType _Node_LeftButtonDownEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_LeftButtonDownEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonDownEventArgs.x
 	DECL(0xfc0c4ef4, Node_LeftButtonDownEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonDownEventArgs.y
 	DECL(0xec56f27b, Node_LeftButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonDownEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_LeftButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonDownEventArgs.deltaY
 	DECL(0x43b27471, Node_LeftButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonDownEventArgs.button
 	DECL(0xd9747336, Node_LeftButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonDownEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_LeftButtonDownEventArgs _Node_LeftButtonDownEventArgs_Properties
 static luaL_Reg _Node_RightButtonDownEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_RightButtonDownEventArgs[] = {
+struct PropertyType _Node_RightButtonDownEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_RightButtonDownEventArgs, x, x, kDataTypeFloat), // Node_RightButtonDownEventArgs.x
 	DECL(0xfc0c4ef4, Node_RightButtonDownEventArgs, y, y, kDataTypeFloat), // Node_RightButtonDownEventArgs.y
 	DECL(0xec56f27b, Node_RightButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonDownEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_RightButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonDownEventArgs.deltaY
 	DECL(0x43b27471, Node_RightButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonDownEventArgs.button
 	DECL(0xd9747336, Node_RightButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonDownEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_RightButtonDownEventArgs _Node_RightButtonDownEventArgs_Properties
 static luaL_Reg _Node_OtherButtonDownEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_OtherButtonDownEventArgs[] = {
+struct PropertyType _Node_OtherButtonDownEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_OtherButtonDownEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonDownEventArgs.x
 	DECL(0xfc0c4ef4, Node_OtherButtonDownEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonDownEventArgs.y
 	DECL(0xec56f27b, Node_OtherButtonDownEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonDownEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_OtherButtonDownEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonDownEventArgs.deltaY
 	DECL(0x43b27471, Node_OtherButtonDownEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonDownEventArgs.button
 	DECL(0xd9747336, Node_OtherButtonDownEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonDownEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_OtherButtonDownEventArgs _Node_OtherButtonDownEventArgs_Properties
 static luaL_Reg _Node_LeftButtonUpEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_LeftButtonUpEventArgs[] = {
+struct PropertyType _Node_LeftButtonUpEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_LeftButtonUpEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonUpEventArgs.x
 	DECL(0xfc0c4ef4, Node_LeftButtonUpEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonUpEventArgs.y
 	DECL(0xec56f27b, Node_LeftButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonUpEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_LeftButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonUpEventArgs.deltaY
 	DECL(0x43b27471, Node_LeftButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonUpEventArgs.button
 	DECL(0xd9747336, Node_LeftButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonUpEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_LeftButtonUpEventArgs _Node_LeftButtonUpEventArgs_Properties
 static luaL_Reg _Node_RightButtonUpEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_RightButtonUpEventArgs[] = {
+struct PropertyType _Node_RightButtonUpEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_RightButtonUpEventArgs, x, x, kDataTypeFloat), // Node_RightButtonUpEventArgs.x
 	DECL(0xfc0c4ef4, Node_RightButtonUpEventArgs, y, y, kDataTypeFloat), // Node_RightButtonUpEventArgs.y
 	DECL(0xec56f27b, Node_RightButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonUpEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_RightButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonUpEventArgs.deltaY
 	DECL(0x43b27471, Node_RightButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonUpEventArgs.button
 	DECL(0xd9747336, Node_RightButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonUpEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_RightButtonUpEventArgs _Node_RightButtonUpEventArgs_Properties
 static luaL_Reg _Node_OtherButtonUpEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_OtherButtonUpEventArgs[] = {
+struct PropertyType _Node_OtherButtonUpEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_OtherButtonUpEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonUpEventArgs.x
 	DECL(0xfc0c4ef4, Node_OtherButtonUpEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonUpEventArgs.y
 	DECL(0xec56f27b, Node_OtherButtonUpEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonUpEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_OtherButtonUpEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonUpEventArgs.deltaY
 	DECL(0x43b27471, Node_OtherButtonUpEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonUpEventArgs.button
 	DECL(0xd9747336, Node_OtherButtonUpEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonUpEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_OtherButtonUpEventArgs _Node_OtherButtonUpEventArgs_Properties
 static luaL_Reg _Node_LeftButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_LeftButtonDraggedEventArgs[] = {
+struct PropertyType _Node_LeftButtonDraggedEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_LeftButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_LeftButtonDraggedEventArgs.x
 	DECL(0xfc0c4ef4, Node_LeftButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_LeftButtonDraggedEventArgs.y
 	DECL(0xec56f27b, Node_LeftButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_LeftButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.deltaY
 	DECL(0x43b27471, Node_LeftButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftButtonDraggedEventArgs.button
 	DECL(0xd9747336, Node_LeftButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftButtonDraggedEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_LeftButtonDraggedEventArgs _Node_LeftButtonDraggedEventArgs_Properties
 static luaL_Reg _Node_RightButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_RightButtonDraggedEventArgs[] = {
+struct PropertyType _Node_RightButtonDraggedEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_RightButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_RightButtonDraggedEventArgs.x
 	DECL(0xfc0c4ef4, Node_RightButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_RightButtonDraggedEventArgs.y
 	DECL(0xec56f27b, Node_RightButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightButtonDraggedEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_RightButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightButtonDraggedEventArgs.deltaY
 	DECL(0x43b27471, Node_RightButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightButtonDraggedEventArgs.button
 	DECL(0xd9747336, Node_RightButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightButtonDraggedEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_RightButtonDraggedEventArgs _Node_RightButtonDraggedEventArgs_Properties
 static luaL_Reg _Node_OtherButtonDraggedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_OtherButtonDraggedEventArgs[] = {
+struct PropertyType _Node_OtherButtonDraggedEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_OtherButtonDraggedEventArgs, x, x, kDataTypeFloat), // Node_OtherButtonDraggedEventArgs.x
 	DECL(0xfc0c4ef4, Node_OtherButtonDraggedEventArgs, y, y, kDataTypeFloat), // Node_OtherButtonDraggedEventArgs.y
 	DECL(0xec56f27b, Node_OtherButtonDraggedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_OtherButtonDraggedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.deltaY
 	DECL(0x43b27471, Node_OtherButtonDraggedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherButtonDraggedEventArgs.button
 	DECL(0xd9747336, Node_OtherButtonDraggedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherButtonDraggedEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_OtherButtonDraggedEventArgs _Node_OtherButtonDraggedEventArgs_Properties
 static luaL_Reg _Node_LeftDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_LeftDoubleClickEventArgs[] = {
+struct PropertyType _Node_LeftDoubleClickEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_LeftDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_LeftDoubleClickEventArgs.x
 	DECL(0xfc0c4ef4, Node_LeftDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_LeftDoubleClickEventArgs.y
 	DECL(0xec56f27b, Node_LeftDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_LeftDoubleClickEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_LeftDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_LeftDoubleClickEventArgs.deltaY
 	DECL(0x43b27471, Node_LeftDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_LeftDoubleClickEventArgs.button
 	DECL(0xd9747336, Node_LeftDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_LeftDoubleClickEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_LeftDoubleClickEventArgs _Node_LeftDoubleClickEventArgs_Properties
 static luaL_Reg _Node_RightDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_RightDoubleClickEventArgs[] = {
+struct PropertyType _Node_RightDoubleClickEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_RightDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_RightDoubleClickEventArgs.x
 	DECL(0xfc0c4ef4, Node_RightDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_RightDoubleClickEventArgs.y
 	DECL(0xec56f27b, Node_RightDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_RightDoubleClickEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_RightDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_RightDoubleClickEventArgs.deltaY
 	DECL(0x43b27471, Node_RightDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_RightDoubleClickEventArgs.button
 	DECL(0xd9747336, Node_RightDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_RightDoubleClickEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_RightDoubleClickEventArgs _Node_RightDoubleClickEventArgs_Properties
 static luaL_Reg _Node_OtherDoubleClickEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_OtherDoubleClickEventArgs[] = {
+struct PropertyType _Node_OtherDoubleClickEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_OtherDoubleClickEventArgs, x, x, kDataTypeFloat), // Node_OtherDoubleClickEventArgs.x
 	DECL(0xfc0c4ef4, Node_OtherDoubleClickEventArgs, y, y, kDataTypeFloat), // Node_OtherDoubleClickEventArgs.y
 	DECL(0xec56f27b, Node_OtherDoubleClickEventArgs, deltaX, deltaX, kDataTypeInt), // Node_OtherDoubleClickEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_OtherDoubleClickEventArgs, deltaY, deltaY, kDataTypeInt), // Node_OtherDoubleClickEventArgs.deltaY
 	DECL(0x43b27471, Node_OtherDoubleClickEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_OtherDoubleClickEventArgs.button
 	DECL(0xd9747336, Node_OtherDoubleClickEventArgs, clickCount, clickCount, kDataTypeInt), // Node_OtherDoubleClickEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_OtherDoubleClickEventArgs _Node_OtherDoubleClickEventArgs_Properties
 static luaL_Reg _Node_MouseMovedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_MouseMovedEventArgs[] = {
+struct PropertyType _Node_MouseMovedEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_MouseMovedEventArgs, x, x, kDataTypeFloat), // Node_MouseMovedEventArgs.x
 	DECL(0xfc0c4ef4, Node_MouseMovedEventArgs, y, y, kDataTypeFloat), // Node_MouseMovedEventArgs.y
 	DECL(0xec56f27b, Node_MouseMovedEventArgs, deltaX, deltaX, kDataTypeInt), // Node_MouseMovedEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_MouseMovedEventArgs, deltaY, deltaY, kDataTypeInt), // Node_MouseMovedEventArgs.deltaY
 	DECL(0x43b27471, Node_MouseMovedEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_MouseMovedEventArgs.button
 	DECL(0xd9747336, Node_MouseMovedEventArgs, clickCount, clickCount, kDataTypeInt), // Node_MouseMovedEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_MouseMovedEventArgs _Node_MouseMovedEventArgs_Properties
 static luaL_Reg _Node_ScrollWheelEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_ScrollWheelEventArgs[] = {
+struct PropertyType _Node_ScrollWheelEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_ScrollWheelEventArgs, x, x, kDataTypeFloat), // Node_ScrollWheelEventArgs.x
 	DECL(0xfc0c4ef4, Node_ScrollWheelEventArgs, y, y, kDataTypeFloat), // Node_ScrollWheelEventArgs.y
 	DECL(0xec56f27b, Node_ScrollWheelEventArgs, deltaX, deltaX, kDataTypeInt), // Node_ScrollWheelEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_ScrollWheelEventArgs, deltaY, deltaY, kDataTypeInt), // Node_ScrollWheelEventArgs.deltaY
 	DECL(0x43b27471, Node_ScrollWheelEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_ScrollWheelEventArgs.button
 	DECL(0xd9747336, Node_ScrollWheelEventArgs, clickCount, clickCount, kDataTypeInt), // Node_ScrollWheelEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_ScrollWheelEventArgs _Node_ScrollWheelEventArgs_Properties
 static luaL_Reg _Node_DragDropEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_DragDropEventArgs[] = {
+struct PropertyType _Node_DragDropEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_DragDropEventArgs, x, x, kDataTypeFloat), // Node_DragDropEventArgs.x
 	DECL(0xfc0c4ef4, Node_DragDropEventArgs, y, y, kDataTypeFloat), // Node_DragDropEventArgs.y
 	DECL(0xec56f27b, Node_DragDropEventArgs, deltaX, deltaX, kDataTypeInt), // Node_DragDropEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_DragDropEventArgs, deltaY, deltaY, kDataTypeInt), // Node_DragDropEventArgs.deltaY
 	DECL(0x43b27471, Node_DragDropEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_DragDropEventArgs.button
 	DECL(0xd9747336, Node_DragDropEventArgs, clickCount, clickCount, kDataTypeInt), // Node_DragDropEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_DragDropEventArgs _Node_DragDropEventArgs_Properties
 static luaL_Reg _Node_DragEnterEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_DragEnterEventArgs[] = {
+struct PropertyType _Node_DragEnterEventArgs_Properties[] = {
 	DECL(0xfd0c5087, Node_DragEnterEventArgs, x, x, kDataTypeFloat), // Node_DragEnterEventArgs.x
 	DECL(0xfc0c4ef4, Node_DragEnterEventArgs, y, y, kDataTypeFloat), // Node_DragEnterEventArgs.y
 	DECL(0xec56f27b, Node_DragEnterEventArgs, deltaX, deltaX, kDataTypeInt), // Node_DragEnterEventArgs.deltaX
 	DECL(0xeb56f0e8, Node_DragEnterEventArgs, deltaY, deltaY, kDataTypeInt), // Node_DragEnterEventArgs.deltaY
 	DECL(0x43b27471, Node_DragEnterEventArgs, button, button, kDataTypeEnum, .EnumValues = _MouseButton), // Node_DragEnterEventArgs.button
 	DECL(0xd9747336, Node_DragEnterEventArgs, clickCount, clickCount, kDataTypeInt), // Node_DragEnterEventArgs.clickCount
+	{NULL} // sentinel
 };
+#define _Node_DragEnterEventArgs _Node_DragEnterEventArgs_Properties
 static luaL_Reg _Node_KeyMessageEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_KeyMessageEventArgs[] = {
+struct PropertyType _Node_KeyMessageEventArgs_Properties[] = {
 	DECL(0xd803e2a9, Node_KeyMessageEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyMessageEventArgs.keyCode
 	DECL(0x8b3aa710, Node_KeyMessageEventArgs, character, character, kDataTypeInt), // Node_KeyMessageEventArgs.character
 	DECL(0x411b1019, Node_KeyMessageEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyMessageEventArgs.modifiers
 	DECL(0xbde64e3e, Node_KeyMessageEventArgs, text, text, kDataTypeString), // Node_KeyMessageEventArgs.text
 	DECL(0x8f82be34, Node_KeyMessageEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyMessageEventArgs.modifiersString
 	DECL(0x9703dc13, Node_KeyMessageEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyMessageEventArgs.hotKey
+	{NULL} // sentinel
 };
+#define _Node_KeyMessageEventArgs _Node_KeyMessageEventArgs_Properties
 static luaL_Reg _Node_KeyDownEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_KeyDownEventArgs[] = {
+struct PropertyType _Node_KeyDownEventArgs_Properties[] = {
 	DECL(0xd803e2a9, Node_KeyDownEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyDownEventArgs.keyCode
 	DECL(0x8b3aa710, Node_KeyDownEventArgs, character, character, kDataTypeInt), // Node_KeyDownEventArgs.character
 	DECL(0x411b1019, Node_KeyDownEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyDownEventArgs.modifiers
 	DECL(0xbde64e3e, Node_KeyDownEventArgs, text, text, kDataTypeString), // Node_KeyDownEventArgs.text
 	DECL(0x8f82be34, Node_KeyDownEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyDownEventArgs.modifiersString
 	DECL(0x9703dc13, Node_KeyDownEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyDownEventArgs.hotKey
+	{NULL} // sentinel
 };
+#define _Node_KeyDownEventArgs _Node_KeyDownEventArgs_Properties
 static luaL_Reg _Node_KeyUpEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_KeyUpEventArgs[] = {
+struct PropertyType _Node_KeyUpEventArgs_Properties[] = {
 	DECL(0xd803e2a9, Node_KeyUpEventArgs, keyCode, keyCode, kDataTypeInt), // Node_KeyUpEventArgs.keyCode
 	DECL(0x8b3aa710, Node_KeyUpEventArgs, character, character, kDataTypeInt), // Node_KeyUpEventArgs.character
 	DECL(0x411b1019, Node_KeyUpEventArgs, modifiers, modifiers, kDataTypeInt), // Node_KeyUpEventArgs.modifiers
 	DECL(0xbde64e3e, Node_KeyUpEventArgs, text, text, kDataTypeString), // Node_KeyUpEventArgs.text
 	DECL(0x8f82be34, Node_KeyUpEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_KeyUpEventArgs.modifiersString
 	DECL(0x9703dc13, Node_KeyUpEventArgs, hotKey, hotKey, kDataTypeString), // Node_KeyUpEventArgs.hotKey
+	{NULL} // sentinel
 };
+#define _Node_KeyUpEventArgs _Node_KeyUpEventArgs_Properties
 static luaL_Reg _Node_TextInputEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node_TextInputEventArgs[] = {
+struct PropertyType _Node_TextInputEventArgs_Properties[] = {
 	DECL(0xd803e2a9, Node_TextInputEventArgs, keyCode, keyCode, kDataTypeInt), // Node_TextInputEventArgs.keyCode
 	DECL(0x8b3aa710, Node_TextInputEventArgs, character, character, kDataTypeInt), // Node_TextInputEventArgs.character
 	DECL(0x411b1019, Node_TextInputEventArgs, modifiers, modifiers, kDataTypeInt), // Node_TextInputEventArgs.modifiers
 	DECL(0xbde64e3e, Node_TextInputEventArgs, text, text, kDataTypeString), // Node_TextInputEventArgs.text
 	DECL(0x8f82be34, Node_TextInputEventArgs, modifiersString, modifiersString, kDataTypeString), // Node_TextInputEventArgs.modifiersString
 	DECL(0x9703dc13, Node_TextInputEventArgs, hotKey, hotKey, kDataTypeString), // Node_TextInputEventArgs.hotKey
+	{NULL} // sentinel
 };
+#define _Node_TextInputEventArgs _Node_TextInputEventArgs_Properties
 
 STRUCT(Object_CreateEventArgs, Object_CreateEventArgs);
 STRUCT(Object_StartEventArgs, Object_StartEventArgs);
@@ -1336,12 +1437,56 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnAttachedTrigger, ID_Trigger, 0);
+HANDLER(EventTrigger, Node, LeftButtonDown);
+HANDLER(EventTrigger, Node, RightButtonDown);
+HANDLER(EventTrigger, Node, OtherButtonDown);
+HANDLER(EventTrigger, Node, LeftButtonUp);
+HANDLER(EventTrigger, Node, RightButtonUp);
+HANDLER(EventTrigger, Node, OtherButtonUp);
+HANDLER(EventTrigger, Node, LeftButtonDragged);
+HANDLER(EventTrigger, Node, RightButtonDragged);
+HANDLER(EventTrigger, Node, OtherButtonDragged);
+HANDLER(EventTrigger, Node, LeftDoubleClick);
+HANDLER(EventTrigger, Node, RightDoubleClick);
+HANDLER(EventTrigger, Node, OtherDoubleClick);
+HANDLER(EventTrigger, Node, MouseMoved);
+HANDLER(EventTrigger, Node, ScrollWheel);
+HANDLER(EventTrigger, Node, DragDrop);
+HANDLER(EventTrigger, Node, DragEnter);
+HANDLER(EventTrigger, Node, SetFocus);
+HANDLER(EventTrigger, Node, KillFocus);
+HANDLER(EventTrigger, Node, KeyDown);
+HANDLER(EventTrigger, Node, KeyUp);
+HANDLER(EventTrigger, Node, TextInput);
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
 static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Node_LeftButtonDown: return EventTrigger_LeftButtonDown(object, cmp, wparm, lparm); // Node.LeftButtonDown
+		case ID_Node_RightButtonDown: return EventTrigger_RightButtonDown(object, cmp, wparm, lparm); // Node.RightButtonDown
+		case ID_Node_OtherButtonDown: return EventTrigger_OtherButtonDown(object, cmp, wparm, lparm); // Node.OtherButtonDown
+		case ID_Node_LeftButtonUp: return EventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+		case ID_Node_RightButtonUp: return EventTrigger_RightButtonUp(object, cmp, wparm, lparm); // Node.RightButtonUp
+		case ID_Node_OtherButtonUp: return EventTrigger_OtherButtonUp(object, cmp, wparm, lparm); // Node.OtherButtonUp
+		case ID_Node_LeftButtonDragged: return EventTrigger_LeftButtonDragged(object, cmp, wparm, lparm); // Node.LeftButtonDragged
+		case ID_Node_RightButtonDragged: return EventTrigger_RightButtonDragged(object, cmp, wparm, lparm); // Node.RightButtonDragged
+		case ID_Node_OtherButtonDragged: return EventTrigger_OtherButtonDragged(object, cmp, wparm, lparm); // Node.OtherButtonDragged
+		case ID_Node_LeftDoubleClick: return EventTrigger_LeftDoubleClick(object, cmp, wparm, lparm); // Node.LeftDoubleClick
+		case ID_Node_RightDoubleClick: return EventTrigger_RightDoubleClick(object, cmp, wparm, lparm); // Node.RightDoubleClick
+		case ID_Node_OtherDoubleClick: return EventTrigger_OtherDoubleClick(object, cmp, wparm, lparm); // Node.OtherDoubleClick
+		case ID_Node_MouseMoved: return EventTrigger_MouseMoved(object, cmp, wparm, lparm); // Node.MouseMoved
+		case ID_Node_ScrollWheel: return EventTrigger_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
+		case ID_Node_DragDrop: return EventTrigger_DragDrop(object, cmp, wparm, lparm); // Node.DragDrop
+		case ID_Node_DragEnter: return EventTrigger_DragEnter(object, cmp, wparm, lparm); // Node.DragEnter
+		case ID_Node_SetFocus: return EventTrigger_SetFocus(object, cmp, wparm, lparm); // Node.SetFocus
+		case ID_Node_KillFocus: return EventTrigger_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
+		case ID_Node_KeyDown: return EventTrigger_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
+		case ID_Node_KeyUp: return EventTrigger_KeyUp(object, cmp, wparm, lparm); // Node.KeyUp
+		case ID_Node_TextInput: return EventTrigger_TextInput(object, cmp, wparm, lparm); // Node.TextInput
+	}
 	return FALSE;
 }
 void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger) {
@@ -1352,12 +1497,56 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
+HANDLER(OnEventTrigger, Node, LeftButtonDown);
+HANDLER(OnEventTrigger, Node, RightButtonDown);
+HANDLER(OnEventTrigger, Node, OtherButtonDown);
+HANDLER(OnEventTrigger, Node, LeftButtonUp);
+HANDLER(OnEventTrigger, Node, RightButtonUp);
+HANDLER(OnEventTrigger, Node, OtherButtonUp);
+HANDLER(OnEventTrigger, Node, LeftButtonDragged);
+HANDLER(OnEventTrigger, Node, RightButtonDragged);
+HANDLER(OnEventTrigger, Node, OtherButtonDragged);
+HANDLER(OnEventTrigger, Node, LeftDoubleClick);
+HANDLER(OnEventTrigger, Node, RightDoubleClick);
+HANDLER(OnEventTrigger, Node, OtherDoubleClick);
+HANDLER(OnEventTrigger, Node, MouseMoved);
+HANDLER(OnEventTrigger, Node, ScrollWheel);
+HANDLER(OnEventTrigger, Node, DragDrop);
+HANDLER(OnEventTrigger, Node, DragEnter);
+HANDLER(OnEventTrigger, Node, SetFocus);
+HANDLER(OnEventTrigger, Node, KillFocus);
+HANDLER(OnEventTrigger, Node, KeyDown);
+HANDLER(OnEventTrigger, Node, KeyUp);
+HANDLER(OnEventTrigger, Node, TextInput);
 static struct PropertyType const OnEventTriggerProperties[kOnEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnEventTrigger.RoutedEvent
 };
 static struct OnEventTrigger OnEventTriggerDefaults = {
 };
 LRESULT OnEventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Node_LeftButtonDown: return OnEventTrigger_LeftButtonDown(object, cmp, wparm, lparm); // Node.LeftButtonDown
+		case ID_Node_RightButtonDown: return OnEventTrigger_RightButtonDown(object, cmp, wparm, lparm); // Node.RightButtonDown
+		case ID_Node_OtherButtonDown: return OnEventTrigger_OtherButtonDown(object, cmp, wparm, lparm); // Node.OtherButtonDown
+		case ID_Node_LeftButtonUp: return OnEventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+		case ID_Node_RightButtonUp: return OnEventTrigger_RightButtonUp(object, cmp, wparm, lparm); // Node.RightButtonUp
+		case ID_Node_OtherButtonUp: return OnEventTrigger_OtherButtonUp(object, cmp, wparm, lparm); // Node.OtherButtonUp
+		case ID_Node_LeftButtonDragged: return OnEventTrigger_LeftButtonDragged(object, cmp, wparm, lparm); // Node.LeftButtonDragged
+		case ID_Node_RightButtonDragged: return OnEventTrigger_RightButtonDragged(object, cmp, wparm, lparm); // Node.RightButtonDragged
+		case ID_Node_OtherButtonDragged: return OnEventTrigger_OtherButtonDragged(object, cmp, wparm, lparm); // Node.OtherButtonDragged
+		case ID_Node_LeftDoubleClick: return OnEventTrigger_LeftDoubleClick(object, cmp, wparm, lparm); // Node.LeftDoubleClick
+		case ID_Node_RightDoubleClick: return OnEventTrigger_RightDoubleClick(object, cmp, wparm, lparm); // Node.RightDoubleClick
+		case ID_Node_OtherDoubleClick: return OnEventTrigger_OtherDoubleClick(object, cmp, wparm, lparm); // Node.OtherDoubleClick
+		case ID_Node_MouseMoved: return OnEventTrigger_MouseMoved(object, cmp, wparm, lparm); // Node.MouseMoved
+		case ID_Node_ScrollWheel: return OnEventTrigger_ScrollWheel(object, cmp, wparm, lparm); // Node.ScrollWheel
+		case ID_Node_DragDrop: return OnEventTrigger_DragDrop(object, cmp, wparm, lparm); // Node.DragDrop
+		case ID_Node_DragEnter: return OnEventTrigger_DragEnter(object, cmp, wparm, lparm); // Node.DragEnter
+		case ID_Node_SetFocus: return OnEventTrigger_SetFocus(object, cmp, wparm, lparm); // Node.SetFocus
+		case ID_Node_KillFocus: return OnEventTrigger_KillFocus(object, cmp, wparm, lparm); // Node.KillFocus
+		case ID_Node_KeyDown: return OnEventTrigger_KeyDown(object, cmp, wparm, lparm); // Node.KeyDown
+		case ID_Node_KeyUp: return OnEventTrigger_KeyUp(object, cmp, wparm, lparm); // Node.KeyUp
+		case ID_Node_TextInput: return OnEventTrigger_TextInput(object, cmp, wparm, lparm); // Node.TextInput
+	}
 	return FALSE;
 }
 void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger) {
@@ -1366,14 +1555,20 @@ void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventT
 struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx) {
 	return GetOnEventTrigger(luaX_checkObject(L, idx));
 }
+#define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnEventTrigger, ID_Trigger, 0);
+HANDLER(OnClickTrigger, Node, LeftButtonUp);
 static struct PropertyType const OnClickTriggerProperties[kOnClickTriggerNumProperties] = {
 	DECL(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnClickTrigger.RoutedEvent
 };
 static struct OnClickTrigger OnClickTriggerDefaults = {
-	.RoutedEvent = "Node.LeftButtonUp",
+		
+  .RoutedEvent = "Node.LeftButtonUp",
 };
 LRESULT OnClickTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Node_LeftButtonUp: return OnClickTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
+	}
 	return FALSE;
 }
 void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger) {
@@ -1382,6 +1577,7 @@ void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickT
 struct OnClickTrigger* luaX_checkOnClickTrigger(lua_State *L, int idx) {
 	return GetOnClickTrigger(luaX_checkObject(L, idx));
 }
+#define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(OnClickTrigger, ID_Trigger, 0);
 HANDLER(Setter, Trigger, Triggered);
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
@@ -1448,11 +1644,32 @@ struct HideAction* luaX_checkHideAction(lua_State *L, int idx) {
 	return GetHideAction(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(HideAction, 0);
+HANDLER(SendMessageAction, Object, Attached);
+HANDLER(SendMessageAction, Trigger, Triggered);
+static struct PropertyType const SendMessageActionProperties[kSendMessageActionNumProperties] = {
+	DECL(0xa5ea0da3, SendMessageAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // SendMessageAction.Trigger
+	DECL(0xae0ed984, SendMessageAction, Message, Message, kDataTypeString), // SendMessageAction.Message
+	DECL(0x8b67f168, SendMessageAction, Target, Target, kDataTypeString), // SendMessageAction.Target
+};
+static struct SendMessageAction SendMessageActionDefaults = {
+};
+LRESULT SendMessageActionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Object_Attached: return SendMessageAction_Attached(object, cmp, wparm, lparm); // Object.Attached
+		case ID_Trigger_Triggered: return SendMessageAction_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
+	}
+	return FALSE;
+}
+void luaX_pushSendMessageAction(lua_State *L, struct SendMessageAction const* SendMessageAction) {
+	luaX_pushObject(L, CMP_GetObject(SendMessageAction));
+}
+struct SendMessageAction* luaX_checkSendMessageAction(lua_State *L, int idx) {
+	return GetSendMessageAction(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(SendMessageAction, 0);
 HANDLER(Node, Node, GetSize);
 HANDLER(Node, Node, IsVisible);
 HANDLER(Node, Object, Start);
-HANDLER(Node, Object, PropertyChanged);
-HANDLER(Node, Object, Attached);
 static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa6478e7c, Node, Size, Size, kDataTypeStruct, .TypeString = "SizeShorthand"), // Node.Size
 	DECL(0x2dbf56d8, Node, HorizontalSize, Size.Axis[0], kDataTypeStruct, .TypeString = "SizeAxisShorthand"), // Node.HorizontalSize
@@ -1523,8 +1740,8 @@ static struct PropertyType const NodeProperties[kNodeNumProperties] = {
 	DECL(0xa310331c, Node, DataContext, DataContext, kDataTypeObject, .TypeString = "DataObject"), // Node.DataContext
 	ARRAY_DECL(0x9564a892, Node, Resources, Resources, kDataTypeStruct, .TypeString = "ResourceEntry"), // Node.Resources
 	DECL(0x25139ae4, Node, NumResources, NumResources, kDataTypeInt), // Node.NumResources
-	ARRAY_DECL(0x73803bc4, Node, Triggers, Triggers, kDataTypeObject, .TypeString = "Trigger"), // Node.Triggers
-	DECL(0x0f6d8ade, Node, NumTriggers, NumTriggers, kDataTypeInt), // Node.NumTriggers
+	ARRAY_DECL(0xff73be70, Node, Triggers, Triggers, kDataTypeObject, .TypeString = "Trigger"), // Node.Triggers
+	DECL(0x84e2d16a, Node, NumTriggers, NumTriggers, kDataTypeInt), // Node.NumTriggers
 	DECL(0x5dbe404d, Node, UpdateMatrix, UpdateMatrix, kDataTypeEvent, .TypeString = "Node_UpdateMatrixEventArgs"), // Node.UpdateMatrix
 	DECL(0xa3650e54, Node, LoadView, LoadView, kDataTypeEvent, .TypeString = "Node_LoadViewEventArgs"), // Node.LoadView
 	DECL(0x898160ea, Node, HitTest, HitTest, kDataTypeEvent, .TypeString = "Node_HitTestEventArgs"), // Node.HitTest
@@ -1568,8 +1785,6 @@ LRESULT NodeProc(struct Object* object, void* cmp, uint32_t message, wParam_t wp
 		case ID_Node_GetSize: return Node_GetSize(object, cmp, wparm, lparm); // Node.GetSize
 		case ID_Node_IsVisible: return Node_IsVisible(object, cmp, wparm, lparm); // Node.IsVisible
 		case ID_Object_Start: return Node_Start(object, cmp, wparm, lparm); // Object.Start
-		case ID_Object_PropertyChanged: return Node_PropertyChanged(object, cmp, wparm, lparm); // Object.PropertyChanged
-		case ID_Object_Attached: return Node_Attached(object, cmp, wparm, lparm); // Object.Attached
 	}
 	return FALSE;
 }
@@ -1603,9 +1818,9 @@ int f_core_FlushQueue(lua_State *L) {
 	core_FlushQueue(L );
 	return 0;
 }
-int f_core_ObjectCount(lua_State *L) {
-	lua_pushinteger(L, OBJ_GetObjectCount());
-	return 1;
+int f_core_GetObjectCount(lua_State *L) {
+	core_GetObjectCount(L );
+	return 0;
 }
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
@@ -1615,11 +1830,45 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		{ "addGlobalStyleRule", f_core_AddGlobalStyleRule },
 		{ "advanceFrame", f_core_AdvanceFrame },
 		{ "flushQueue", f_core_FlushQueue },
-		{ "objectCount", f_core_ObjectCount },
+		{ "objectCount", f_core_GetObjectCount },
 		{ NULL, NULL } 
 	}));
 	void before_core_module_registered(lua_State *L);
 	before_core_module_registered(L);
+	OBJ_RegisterMessagePropertyTypes("Object.ThemeChanged", _Object_ThemeChangedEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("Object.PropertyChanged", _Object_PropertyChangedEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("Object.Attached", _Object_AttachedEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("Object.Timer", _Object_TimerEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("AnimationPlayer.Play", _AnimationPlayer_PlayEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("StyleController.ThemeChanged", _StyleController_ThemeChangedEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("StyleController.AddClass", _StyleController_AddClassEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("StyleController.AddClasses", _StyleController_AddClassesEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("StateManagerController.ControllerChanged", _StateManagerController_ControllerChangedEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("Trigger.Triggered", _Trigger_TriggeredEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Node.UpdateMatrix", _Node_UpdateMatrixEventArgs_Properties, 3);
+	OBJ_RegisterMessagePropertyTypes("Node.LoadView", _Node_LoadViewEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("Node.HitTest", _Node_HitTestEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Node.MouseMessage", _Node_MouseMessageEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonDown", _Node_LeftButtonDownEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.RightButtonDown", _Node_RightButtonDownEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonDown", _Node_OtherButtonDownEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonUp", _Node_LeftButtonUpEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.RightButtonUp", _Node_RightButtonUpEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonUp", _Node_OtherButtonUpEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonDragged", _Node_LeftButtonDraggedEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.RightButtonDragged", _Node_RightButtonDraggedEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonDragged", _Node_OtherButtonDraggedEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.LeftDoubleClick", _Node_LeftDoubleClickEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.RightDoubleClick", _Node_RightDoubleClickEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.OtherDoubleClick", _Node_OtherDoubleClickEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.MouseMoved", _Node_MouseMovedEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.ScrollWheel", _Node_ScrollWheelEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.DragDrop", _Node_DragDropEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.DragEnter", _Node_DragEnterEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.KeyMessage", _Node_KeyMessageEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.KeyDown", _Node_KeyDownEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.KeyUp", _Node_KeyUpEventArgs_Properties, 6);
+	OBJ_RegisterMessagePropertyTypes("Node.TextInput", _Node_TextInputEventArgs_Properties, 6);
 	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_LocaleEntry(L), -2), "LocaleEntry");
@@ -1705,6 +1954,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ShowModalAction), -2), "ShowModalAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_HideAction), -2), "HideAction");
+	lua_setfield(L, ((void)lua_pushclass(L, &_SendMessageAction), -2), "SendMessageAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node), -2), "Node");
 	void after_core_module_registered(lua_State *L);
 	after_core_module_registered(L);
