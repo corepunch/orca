@@ -31,7 +31,6 @@ STRUCT(SpriteFrame, SpriteFrame);
 static luaL_Reg _SKNode_RenderEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _SKNode_RenderEventArgs_Properties[] = {
 	DECL(0xce9ab61f, SKNode_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderEventArgs.ViewDef
-	{NULL} // sentinel
 };
 #define _SKNode_RenderEventArgs _SKNode_RenderEventArgs_Properties
 

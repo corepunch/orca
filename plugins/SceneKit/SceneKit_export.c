@@ -23,7 +23,6 @@ extern int parse_property(const char* str, struct PropertyType const* prop, void
 static luaL_Reg _Node3D_RenderEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Node3D_RenderEventArgs_Properties[] = {
 	DECL(0xce9ab61f, Node3D_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderEventArgs.ViewDef
-	{NULL} // sentinel
 };
 #define _Node3D_RenderEventArgs _Node3D_RenderEventArgs_Properties
 
