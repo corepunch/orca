@@ -124,6 +124,87 @@ CMP_GetClassName(struct component* hcmp)
   return hcmp->pcls->ClassName;
 }
 
+static bool_t
+_IsNodeTriggerMessage(uint32_t MsgID)
+{
+  switch (MsgID) {
+    case ID_Node_LeftButtonDown:
+    case ID_Node_RightButtonDown:
+    case ID_Node_OtherButtonDown:
+    case ID_Node_LeftButtonUp:
+    case ID_Node_RightButtonUp:
+    case ID_Node_OtherButtonUp:
+    case ID_Node_LeftButtonDragged:
+    case ID_Node_RightButtonDragged:
+    case ID_Node_OtherButtonDragged:
+    case ID_Node_LeftDoubleClick:
+    case ID_Node_RightDoubleClick:
+    case ID_Node_OtherDoubleClick:
+    case ID_Node_MouseMoved:
+    case ID_Node_ScrollWheel:
+    case ID_Node_DragDrop:
+    case ID_Node_DragEnter:
+    case ID_Node_SetFocus:
+    case ID_Node_KillFocus:
+    case ID_Node_KeyDown:
+    case ID_Node_KeyUp:
+    case ID_Node_TextInput:
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+static LRESULT
+_DispatchNodeTriggers(struct Object *sender, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+{
+  struct Node *node = GetNode(sender);
+  if (!node || !node->Triggers || node->NumTriggers <= 0) {
+    return FALSE;
+  }
+
+  struct Node_MouseMessageEventArgs local_args = {0};
+  lParam_t trigger_param = lParam;
+  switch (MsgID) {
+    case ID_Node_LeftButtonDown:
+    case ID_Node_RightButtonDown:
+    case ID_Node_OtherButtonDown:
+    case ID_Node_LeftButtonUp:
+    case ID_Node_RightButtonUp:
+    case ID_Node_OtherButtonUp:
+    case ID_Node_LeftButtonDragged:
+    case ID_Node_RightButtonDragged:
+    case ID_Node_OtherButtonDragged:
+    case ID_Node_LeftDoubleClick:
+    case ID_Node_RightDoubleClick:
+    case ID_Node_OtherDoubleClick:
+    case ID_Node_MouseMoved:
+    case ID_Node_ScrollWheel:
+    case ID_Node_DragDrop:
+    case ID_Node_DragEnter:
+      if (lParam) {
+        local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
+      }
+      local_args.Sender = sender;
+      trigger_param = &local_args;
+      break;
+    default:
+      break;
+  }
+
+  FOR_LOOP(i, node->NumTriggers) {
+    struct Object *trigger = node->Triggers[i];
+    if (!trigger) {
+      continue;
+    }
+    LRESULT handled = OBJ_SendMessageW(trigger, MsgID, wParam, trigger_param);
+    if (handled) {
+      return handled;
+    }
+  }
+  return FALSE;
+}
+
 LRESULT
 OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
@@ -143,6 +224,9 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
       }
     }
     cmp = next;
+  }
+  if (_IsNodeTriggerMessage(MsgID)) {
+    return _DispatchNodeTriggers(pobj, MsgID, wParam, lParam);
   }
   return FALSE;
 }
