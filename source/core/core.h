@@ -311,6 +311,10 @@ core_AdvanceFrame(void);
 ORCA_API void
 core_FlushQueue(struct lua_State*);
 
+/// @brief Returns the number of live engine objects.
+ORCA_API void
+core_GetObjectCount(struct lua_State*);
+
 
 /// @name Lifecycle
 /// Manages object creation, initialization, update cycles, and destruction.
@@ -323,15 +327,7 @@ OBJ_CreateFromLuaState(struct lua_State*);
 ORCA_API void
 OBJ_Clear(struct Object*);
 
-/// @brief Increment an object's reference count.
-ORCA_API uint32_t
-OBJ_AddRef(struct Object*);
-
-/// @brief Decrement an object's reference count and destroy it at zero.
-ORCA_API uint32_t
-OBJ_ReleaseRef(struct Object*);
-
-/// @brief Garbage-collect an object (clear and release).
+/// @brief Release one Lua-owned reference during garbage collection.
 ORCA_API void
 OBJ_ReleaseOrphan(struct lua_State*, struct Object*);
 
@@ -350,7 +346,7 @@ OBJ_Rebuild(struct lua_State*, struct Object*);
 ORCA_API struct Object*
 OBJ_AddChild(struct Object*, struct Object*, bool_t);
 
-/// @brief Detaches an object from its parent and releases one reference.
+/// @brief Detaches an object from its parent.
 ORCA_API void
 OBJ_RemoveFromParent(struct Object*);
 
@@ -487,10 +483,6 @@ OBJ_IsFocused(struct Object const*);
 /// @brief Sets the hover state for an object
 ORCA_API void
 OBJ_SetHover(struct Object*);
-
-/// @brief Attaches modal to the screen's modal chain (does not yield).
-ORCA_API bool_t
-OBJ_ShowModalObject(struct Object*, struct Object*);
 
 /// @brief Sets or clears the modal child object
 ORCA_API int
@@ -700,13 +692,12 @@ ORCA_API struct Object_ThemeChangedEventArgs* luaX_checkObject_ThemeChangedEvent
 /** Object_PropertyChangedEventArgs struct */
 struct Object_PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
-	struct Object* Sender; ///< The object that originally emitted the change
 };
 ORCA_API void luaX_pushObject_PropertyChangedEventArgs(lua_State *L, struct Object_PropertyChangedEventArgs const* data);
 ORCA_API struct Object_PropertyChangedEventArgs* luaX_checkObject_PropertyChangedEventArgs(lua_State *L, int idx);
 /** Object_AttachedEventArgs struct */
 struct Object_AttachedEventArgs {
-	struct Object* Sender; ///< The object that was attached to the tree
+	struct Object* Sender; ///< The child object that was attached to the tree
 };
 ORCA_API void luaX_pushObject_AttachedEventArgs(lua_State *L, struct Object_AttachedEventArgs const* data);
 ORCA_API struct Object_AttachedEventArgs* luaX_checkObject_AttachedEventArgs(lua_State *L, int idx);
@@ -789,7 +780,7 @@ ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkSta
 /** Trigger_TriggeredEventArgs struct */
 struct Trigger_TriggeredEventArgs {
 	struct Trigger* Trigger;
-	struct Object* Sender; ///< The object that should be used as the action source
+	struct Object* Sender; ///< The object that caused the trigger to fire
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
 ORCA_API struct Trigger_TriggeredEventArgs* luaX_checkTrigger_TriggeredEventArgs(lua_State *L, int idx);
@@ -847,7 +838,6 @@ struct Node_MouseMessageEventArgs {
 	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
 	enum MouseButton button; ///< The mouse button involved in this event
 	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
-	struct Object* Sender; ///< The object that originally received the routed mouse event
 };
 ORCA_API void luaX_pushNode_MouseMessageEventArgs(lua_State *L, struct Node_MouseMessageEventArgs const* data);
 ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs(lua_State *L, int idx);
@@ -1045,11 +1035,12 @@ ORCA_API struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int
 /// @brief Responds to routed UI events (mouse, keyboard, etc.)
 /** EventTrigger component */
 struct EventTrigger {
-	const char* RoutedEvent; ///< Name of the routed event to handle (e.g., "MouseDown", "KeyPress")
+	const char* RoutedEvent; ///< Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel")
 };
 ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
 ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
 
+/// @brief Generic trigger that reacts to a configured routed event
 /** OnEventTrigger component */
 struct OnEventTrigger {
 	const char* RoutedEvent; ///< Node message name that should fire this trigger
@@ -1057,6 +1048,7 @@ struct OnEventTrigger {
 ORCA_API void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger);
 ORCA_API struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx);
 
+/// @brief Convenience trigger for primary click actions
 /** OnClickTrigger component */
 struct OnClickTrigger {
 	const char* RoutedEvent; ///< Routed event handled by this click trigger
@@ -1074,21 +1066,33 @@ struct Setter {
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 
+/// @brief Opens a named popup as a modal child of the current screen
 /** ShowModalAction component */
 struct ShowModalAction {
 	struct Trigger* Trigger; ///< Triggering condition or state image
-	const char* Path; ///< Relative path to resolve the popup to show modally
+	const char* Path; ///< Relative path to the popup object that should be shown modally
 };
 ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
 ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx);
 
+/// @brief Hides the object at the provided path when triggered
 /** HideAction component */
 struct HideAction {
 	struct Trigger* Trigger; ///< Triggering condition or state image
-	const char* Path; ///< Relative path to resolve the object to hide
+	const char* Path; ///< Relative path to the object that should be hidden
 };
 ORCA_API void luaX_pushHideAction(lua_State *L, struct HideAction const* HideAction);
 ORCA_API struct HideAction* luaX_checkHideAction(lua_State *L, int idx);
+
+/// @brief Sends a typed message to a target object when triggered
+/** SendMessageAction component */
+struct SendMessageAction {
+	struct Trigger* Trigger; ///< Triggering condition or state image
+	const char* Message; ///< Fully qualified message name to send (e.g. "AnimationPlayer.Play", "StateManager.GoToState")
+	const char* Target; ///< Relative path to the target object that will receive the message
+};
+ORCA_API void luaX_pushSendMessageAction(lua_State *L, struct SendMessageAction const* SendMessageAction);
+ORCA_API struct SendMessageAction* luaX_checkSendMessageAction(lua_State *L, int idx);
 
 /// @brief Base class for all UI engine nodes.
 /** Node component */
@@ -1106,7 +1110,7 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
-	struct Object** Triggers; ///< Array of trigger objects attached to this node
+	struct Trigger* Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
 	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;

@@ -240,7 +240,7 @@ enum OnEventTriggerProperties {
 #define ID_OnClickTrigger 0x9e406f64
 #define GetOnClickTrigger(_P) ((struct OnClickTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnClickTrigger):NULL))
 #define OnClickTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnClickTrigger,sizeof(struct OnClickTrigger),_N)
-#define ID_OnClickTrigger_RoutedEvent 0x30d77e1a // OnClickTrigger.RoutedEvent
+#define ID_OnClickTrigger_RoutedEvent 0x84903223 // OnClickTrigger.RoutedEvent
 #define kOnClickTriggerNumProperties 1
 enum OnClickTriggerProperties {
 	kOnClickTriggerRoutedEvent,
@@ -262,8 +262,8 @@ enum SetterProperties {
 #define ID_ShowModalAction 0x43164ff7
 #define GetShowModalAction(_P) ((struct ShowModalAction*)((_P)?OBJ_GetComponent(_P,ID_ShowModalAction):NULL))
 #define ShowModalAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ShowModalAction,sizeof(struct ShowModalAction),_N)
-#define ID_ShowModalAction_Trigger 0x23b4c72c // ShowModalAction.Trigger
-#define ID_ShowModalAction_Path 0xeb66e456 // ShowModalAction.Path
+#define ID_ShowModalAction_Trigger 0x943d9165 // ShowModalAction.Trigger
+#define ID_ShowModalAction_Path 0xa62e790c // ShowModalAction.Path
 #define kShowModalActionNumProperties 2
 enum ShowModalActionProperties {
 	kShowModalActionTrigger,
@@ -273,12 +273,25 @@ enum ShowModalActionProperties {
 #define ID_HideAction 0x4bb53017
 #define GetHideAction(_P) ((struct HideAction*)((_P)?OBJ_GetComponent(_P,ID_HideAction):NULL))
 #define HideAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_HideAction,sizeof(struct HideAction),_N)
-#define ID_HideAction_Trigger 0x1f2b8a5e // HideAction.Trigger
-#define ID_HideAction_Path 0xeb66e456 // HideAction.Path
+#define ID_HideAction_Trigger 0xe5d9eec5 // HideAction.Trigger
+#define ID_HideAction_Path 0x79a688ec // HideAction.Path
 #define kHideActionNumProperties 2
 enum HideActionProperties {
 	kHideActionTrigger,
 	kHideActionPath,
+};
+// SendMessageAction
+#define ID_SendMessageAction 0x0d7a8364
+#define GetSendMessageAction(_P) ((struct SendMessageAction*)((_P)?OBJ_GetComponent(_P,ID_SendMessageAction):NULL))
+#define SendMessageAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SendMessageAction,sizeof(struct SendMessageAction),_N)
+#define ID_SendMessageAction_Trigger 0x95148286 // SendMessageAction.Trigger
+#define ID_SendMessageAction_Message 0xaab3d25d // SendMessageAction.Message
+#define ID_SendMessageAction_Target 0xd2ed344f // SendMessageAction.Target
+#define kSendMessageActionNumProperties 3
+enum SendMessageActionProperties {
+	kSendMessageActionTrigger,
+	kSendMessageActionMessage,
+	kSendMessageActionTarget,
 };
 // Node
 #define ID_Node 0x3468032d
@@ -599,6 +612,7 @@ enum NodeProperties {
 #define ID_Object_PropertyChangedEventArgs_Property 0xc7308dfa // Object_PropertyChangedEventArgs.Property
 #define ID_Object_AttachedEventArgs 0x421be758
 
+#define ID_Object_AttachedEventArgs_Sender 0x53c0e107 // Object_AttachedEventArgs.Sender
 #define ID_Object_ReleaseEventArgs 0x7710fc41
 
 #define ID_Object_DestroyEventArgs 0x3eec8a44
@@ -636,6 +650,7 @@ enum NodeProperties {
 #define ID_Trigger_TriggeredEventArgs 0x86976046
 
 #define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger
+#define ID_Trigger_TriggeredEventArgs_Sender 0x8f7913c1 // Trigger_TriggeredEventArgs.Sender
 #define ID_Node_UpdateMatrixEventArgs 0xb9c33fb7
 
 #define ID_Node_UpdateMatrixEventArgs_parent 0xe966f5d3 // Node_UpdateMatrixEventArgs.parent
