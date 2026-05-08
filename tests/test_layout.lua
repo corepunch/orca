@@ -283,6 +283,52 @@ local function test_xml_loading_tabview()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: trigger/action wiring should resolve object references and
+-- toggle a popup panel from a click.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_trigger_action_popup()
+	local xml = [[
+<Screen Name="popup-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <StackView Name="popup-layout" Direction="Vertical">
+	    <StackView Name="PopupHost">
+	      <StackView Name="GetStartedPopup" Visible="FALSE" Width="320" BackgroundColor="#1F2433" Padding="24">
+	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
+	          <EventTrigger RoutedEvent="Node.LeftButtonUp"/>
+	          <Handler Function="Hide" TargetPath="../"/>
+	        </TextBlock>
+	        <TextBlock Name="PopupBody" Text="ORCA keeps XML, Lua, and MoonScript close together." FontSize="14" ForegroundColor="#FFFFFF" WordWrap="true"/>
+	      </StackView>
+	    </StackView>
+    <TextBlock Name="GetStartedButton" Text="Get Started" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+      <EventTrigger RoutedEvent="Node.LeftButtonUp"/>
+	      <Handler Function="ShowModal" TargetPath="../PopupHost/GetStartedPopup"/>
+    </TextBlock>
+  </StackView>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "popup XML should load")
+
+	local button = root:findChild("GetStartedButton", true)
+	local popup = root:findChild("GetStartedPopup", true)
+	local close = root:findChild("PopupClose", true)
+
+	test.expect(button ~= nil, "GetStartedButton should exist")
+	test.expect(popup ~= nil, "GetStartedPopup should exist")
+	test.expect(close ~= nil, "PopupClose should exist")
+	test.expect(not popup.Visible, "Popup should start hidden")
+
+	button:send("Node.LeftButtonUp")
+	test.expect(popup.Visible, "Popup should become visible after the trigger fires")
+	test.expect(popup:getParent() == root, "Popup should be reparented to the screen when shown modally")
+
+	close:send("Node.LeftButtonUp")
+	test.expect(not popup.Visible, "Popup should hide again when the close action fires")
+
+	print("PASS: test_xml_loading_trigger_action_popup")
+end
+
+-- ---------------------------------------------------------------------------
 -- TabView should measure only the active panel, not the tallest hidden panel
 -- ---------------------------------------------------------------------------
 local function test_tabview_measures_active_panel_only()
@@ -327,6 +373,13 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
+	local get_started_popup = xml:find('Name="GetStartedPopup"', 1, true)
+	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
+	local get_started_show = xml:find('Handler Function="ShowModal" TargetPath="../../GetStartedPopup"', 1, true)
+	local popup_prefab = filesystem.readTextFile("samples/Example/Prefabs/GetStartedPopup.xml")
+	local popup_prefab_name = popup_prefab and popup_prefab:find('Name="GetStartedPopup"', 1, true)
+	local popup_prefab_close = popup_prefab and popup_prefab:find('Name="GetStartedPopupClose"', 1, true)
+	local popup_prefab_hide = popup_prefab and popup_prefab:find('Handler Function="Hide" TargetPath="../"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = select(2, xml:gsub("Example/Icons/", ""))
@@ -388,6 +441,13 @@ local function test_example_application_xml()
 	test.expect(signals ~= nil, "OrcaSignals should exist in Example Application.xml")
 	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
 	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
+	test.expect(get_started_popup ~= nil, "Example CTA should include a popup panel")
+	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
+	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
+	test.expect(popup_prefab ~= nil and popup_prefab ~= "", "GetStartedPopup prefab should be readable")
+	test.expect(popup_prefab_name ~= nil, "GetStartedPopup prefab should define the popup root")
+	test.expect(popup_prefab_close ~= nil, "GetStartedPopup prefab should define the close label")
+	test.expect(popup_prefab_hide ~= nil, "GetStartedPopup prefab should define the close action")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
@@ -449,6 +509,7 @@ test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_xml_loading_tabview()
+test_xml_loading_trigger_action_popup()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 

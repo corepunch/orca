@@ -1334,6 +1334,7 @@ struct OnAttachedTrigger* luaX_checkOnAttachedTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_ATTACH_ONLY_CLASS(OnAttachedTrigger, ID_Trigger, 0);
+HANDLER(EventTrigger, Node, LeftButtonUp);
 static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperties] = {
 	DECL(0x30d77e1a, EventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // EventTrigger.RoutedEvent
 };
@@ -1341,6 +1342,7 @@ static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
+		case ID_Node_LeftButtonUp: return EventTrigger_LeftButtonUp(object, cmp, wparm, lparm); // Node.LeftButtonUp
 	}
 	return FALSE;
 }
@@ -1377,6 +1379,7 @@ HANDLER(Handler, Trigger, Triggered);
 static struct PropertyType const HandlerProperties[kHandlerNumProperties] = {
 	DECL(0xa5ea0da3, Handler, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Handler.Trigger
 	DECL(0x8b67f168, Handler, Target, Target, kDataTypeObject, .TypeString = "Node"), // Handler.Target
+	DECL(0x76e4533f, Handler, TargetPath, TargetPath, kDataTypeString), // Handler.TargetPath
 	DECL(0x98a79a69, Handler, Function, Function, kDataTypeString), // Handler.Function
 };
 static struct Handler HandlerDefaults = {

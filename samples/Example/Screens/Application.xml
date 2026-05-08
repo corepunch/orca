@@ -312,11 +312,15 @@
 					<TextBlock Name="CtaBody"
 						Text="Download ORCA, open a sample project, and have your first screen running in minutes."
 						FontSize="15" ForegroundColor="$text-muted" WordWrap="true" TextHorizontalAlignment="Center"/>
-					<StackView Name="CtaButtons" Direction="Horizontal" Spacing="16">
-						<TextBlock Name="CtaButtonPrimary" Text="Get Started" FontSize="14" ForegroundColor="$white"
-							BackgroundColor="$accent" Padding="16" Width="140" Height="44"
-							TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
-						<TextBlock Name="CtaButtonSecondary" Text="View on GitHub" FontSize="14" ForegroundColor="$text-secondary"
+						<LayerPrefabPlaceholder Name="GetStartedPopup" PlaceholderTemplate="Example/Prefabs/GetStartedPopup"/>
+						<StackView Name="CtaButtons" Direction="Horizontal" Spacing="16">
+							<TextBlock Name="CtaButtonPrimary" Text="Get Started" FontSize="14" ForegroundColor="$white"
+								BackgroundColor="$accent" Padding="16" Width="140" Height="44"
+								TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
+								<EventTrigger RoutedEvent="Node.LeftButtonUp"/>
+								<Handler Function="ShowModal" TargetPath="../../GetStartedPopup"/>
+							</TextBlock>
+						<TextBlock Name="CtaButtonSecondary" Text="Learn more" FontSize="14" ForegroundColor="$text-secondary"
 							BackgroundColor="$card-background" Padding="16" Width="140" Height="44"
 							TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>
 					</StackView>

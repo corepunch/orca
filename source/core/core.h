@@ -489,6 +489,10 @@ ORCA_API void
 OBJ_SetHover(struct Object*);
 
 /// @brief Sets or clears the modal child object
+ORCA_API bool_t
+OBJ_ShowModalObject(struct Object*, struct Object*);
+
+/// @brief Sets or clears the modal child object
 ORCA_API int
 OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
 
@@ -1057,6 +1061,7 @@ ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 struct Handler {
 	struct Trigger* Trigger; ///< Triggering condition or state image
 	struct Node* Target; ///< Target object to call function on
+	const char* TargetPath; ///< Relative path to resolve the target at trigger time
 	const char* Function; ///< Function name to execute on target
 };
 ORCA_API void luaX_pushHandler(lua_State *L, struct Handler const* Handler);

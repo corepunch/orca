@@ -82,6 +82,19 @@ _SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
   lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
   if (!resolved) resolved = value;
 
+  // XML object references: "@../Popup" resolves against the current object.
+  // This keeps trigger/action wiring declarative without requiring file loads.
+  if (pdesc->DataType == kDataTypeObject && resolved[0] == '@') {
+    struct Object *ref = OBJ_FindByPath(obj, resolved + 1);
+    if (!ref) {
+      Con_Error("Could not resolve object reference '%s' for property '%s'",
+                 resolved + 1, pdesc->Name);
+      return;
+    }
+    PROP_SetValue(prop, &ref);
+    return;
+  }
+
   // Parse the string value into a stack-allocated buffer using pure-C parse_property.
   // Handles bool, int, float, string, color, enum, struct (via OBJ_ParseStruct),
   // and kDataTypeObject (via FS_LoadObjectFromXml).
