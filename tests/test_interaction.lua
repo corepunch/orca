@@ -161,6 +161,7 @@ local function test_radio_group_interaction()
 	local fy = btn_f.ActualY + 5
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = fx, y = fy }
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = fx, y = fy }
+	pump_messages(screen)
 
 	test.expect_eq(group.SelectedValue, "fahrenheit", "RadioGroup.SelectedValue should be 'fahrenheit' after click")
 	test.expect(btn_f.IsChecked,     "RadioButton fahrenheit should be IsChecked after click")
@@ -175,6 +176,7 @@ local function test_radio_group_interaction()
 	local cy = btn_c.ActualY + 5
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+	pump_messages(screen)
 
 	test.expect_eq(group.SelectedValue, "celsius",    "RadioGroup.SelectedValue should switch to 'celsius'")
 	test.expect(btn_c.IsChecked,     "RadioButton celsius should be IsChecked after click")
@@ -188,6 +190,7 @@ local function test_radio_group_interaction()
 	selected_value = nil
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+	pump_messages(screen)
 	test.expect(selected_value == nil, "SelectionChanged should NOT fire when clicking already-selected button")
 
 	-- Space selects the focused radio button.
@@ -195,6 +198,7 @@ local function test_radio_group_interaction()
 	old_value_seen = nil
 	btn_f:setFocus()
 	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = AX_KEY_SPACE }
+	pump_messages(screen)
 	test.expect_eq(group.SelectedValue, "fahrenheit", "Space should select the focused radio button")
 	test.expect(btn_f.IsChecked, "Focused RadioButton should be IsChecked after Space")
 	test.expect_eq(selected_value, "fahrenheit", "Space selection should fire SelectionChanged")
@@ -204,6 +208,7 @@ local function test_radio_group_interaction()
 	selected_value = nil
 	old_value_seen = nil
 	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = AX_KEY_LEFTARROW }
+	pump_messages(screen)
 	test.expect_eq(group.SelectedValue, "celsius", "Left arrow should select the previous radio button")
 	test.expect(btn_c.IsChecked, "Previous RadioButton should be IsChecked after Left arrow")
 	test.expect(btn_c:isFocused(), "Previous RadioButton should receive focus after Left arrow")
@@ -265,6 +270,7 @@ local function test_radio_button_programmatic_check()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	btn_f.IsChecked = true
+	pump_messages(screen)
 	test.expect(btn_f.IsChecked,                  "Programmatic IsChecked = true should check button")
 	test.expect(not btn_c.IsChecked,              "Programmatic check should uncheck sibling")
 	test.expect_eq(group.SelectedValue, "fahrenheit", "Programmatic check should update group SelectedValue")
@@ -274,6 +280,16 @@ local function test_radio_button_programmatic_check()
 end
 
 orca.async = function (fn, ...) fn(...) end
+
+-- Drain the platform message queue (needed after operations that post events
+-- via axPostMessageDataW, e.g. SelectionChanged fired by RadioButton clicks).
+function pump_messages(root)
+	while true do
+		local msg = orca.system.peekMessage()
+		if not msg then return end
+		orca.system.dispatchMessage(root, msg)
+	end
+end
 
 test_button_interaction()
 test_input_interaction()
