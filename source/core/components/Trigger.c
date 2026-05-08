@@ -144,8 +144,9 @@ HANDLER(Setter, Trigger, Triggered)
 static LRESULT
 _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
 {
-  if (pEventTrigger->RoutedEvent &&
-      strcmp(pEventTrigger->RoutedEvent, routed_event))
+  if (!pEventTrigger->RoutedEvent || !*pEventTrigger->RoutedEvent)
+    return FALSE;
+  if (strcmp(pEventTrigger->RoutedEvent, routed_event))
     return FALSE;
   return _SendMessage(hObject, Trigger, Triggered,
                 .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),

@@ -56,10 +56,47 @@ HANDLER(Node, Object, Attached)
   return FALSE;
 }
 
-HANDLER(Node, Node, LeftButtonUp)
-{
-  struct Node_MouseMessageEventArgs local_args = {0};
-  if (pLeftButtonUp) local_args = *pLeftButtonUp;
-  local_args.Sender = hObject;
-  return _DispatchTriggers(hObject, ID_Node_LeftButtonUp, 0, &local_args);
+#define NODE_TRIGGER_MOUSE_HANDLER(EVENT) \
+HANDLER(Node, Node, EVENT) \
+{ \
+  struct Node_MouseMessageEventArgs local_args = {0}; \
+  if (p##EVENT) local_args = *p##EVENT; \
+  local_args.Sender = hObject; \
+  return _DispatchTriggers(hObject, ID_Node_##EVENT, 0, &local_args); \
 }
+
+#define NODE_TRIGGER_KEY_HANDLER(EVENT) \
+HANDLER(Node, Node, EVENT) \
+{ \
+  struct Node_KeyMessageEventArgs local_args = {0}; \
+  if (p##EVENT) local_args = *p##EVENT; \
+  return _DispatchTriggers(hObject, ID_Node_##EVENT, 0, &local_args); \
+}
+
+#define NODE_TRIGGER_HANDLER(EVENT) \
+HANDLER(Node, Node, EVENT) \
+{ \
+  return _DispatchTriggers(hObject, ID_Node_##EVENT, 0, p##EVENT); \
+}
+
+NODE_TRIGGER_MOUSE_HANDLER(LeftButtonDown)
+NODE_TRIGGER_MOUSE_HANDLER(RightButtonDown)
+NODE_TRIGGER_MOUSE_HANDLER(OtherButtonDown)
+NODE_TRIGGER_MOUSE_HANDLER(LeftButtonUp)
+NODE_TRIGGER_MOUSE_HANDLER(RightButtonUp)
+NODE_TRIGGER_MOUSE_HANDLER(OtherButtonUp)
+NODE_TRIGGER_MOUSE_HANDLER(LeftButtonDragged)
+NODE_TRIGGER_MOUSE_HANDLER(RightButtonDragged)
+NODE_TRIGGER_MOUSE_HANDLER(OtherButtonDragged)
+NODE_TRIGGER_MOUSE_HANDLER(LeftDoubleClick)
+NODE_TRIGGER_MOUSE_HANDLER(RightDoubleClick)
+NODE_TRIGGER_MOUSE_HANDLER(OtherDoubleClick)
+NODE_TRIGGER_MOUSE_HANDLER(MouseMoved)
+NODE_TRIGGER_MOUSE_HANDLER(ScrollWheel)
+NODE_TRIGGER_MOUSE_HANDLER(DragDrop)
+NODE_TRIGGER_MOUSE_HANDLER(DragEnter)
+NODE_TRIGGER_HANDLER(SetFocus)
+NODE_TRIGGER_HANDLER(KillFocus)
+NODE_TRIGGER_KEY_HANDLER(KeyDown)
+NODE_TRIGGER_KEY_HANDLER(KeyUp)
+NODE_TRIGGER_KEY_HANDLER(TextInput)
