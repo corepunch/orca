@@ -39,6 +39,7 @@ typedef struct TabBar_SelectionChangedEventArgs TabBar_SelectionChangedMsg_t,* T
 typedef struct TabView_SelectionChangedEventArgs TabView_SelectionChangedMsg_t,* TabView_SelectionChangedMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
+typedef struct Screen_CloseDialogEventArgs Screen_CloseDialogMsg_t,* Screen_CloseDialogMsgPtr;
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
 typedef struct ConsoleView_EraseEventArgs ConsoleView_EraseMsg_t,* ConsoleView_EraseMsgPtr;
 typedef struct ConsoleView_InvalidateEventArgs ConsoleView_InvalidateMsg_t,* ConsoleView_InvalidateMsgPtr;
@@ -430,6 +431,12 @@ struct Screen_RenderScreenEventArgs {
 };
 ORCA_API void luaX_pushScreen_RenderScreenEventArgs(lua_State *L, struct Screen_RenderScreenEventArgs const* data);
 ORCA_API struct Screen_RenderScreenEventArgs* luaX_checkScreen_RenderScreenEventArgs(lua_State *L, int idx);
+/** Screen_CloseDialogEventArgs struct */
+struct Screen_CloseDialogEventArgs {
+	float ReturnValue; ///< Numeric result to return from ShowModal()
+};
+ORCA_API void luaX_pushScreen_CloseDialogEventArgs(lua_State *L, struct Screen_CloseDialogEventArgs const* data);
+ORCA_API struct Screen_CloseDialogEventArgs* luaX_checkScreen_CloseDialogEventArgs(lua_State *L, int idx);
 /** ConsoleView_PrintlnEventArgs struct */
 struct ConsoleView_PrintlnEventArgs {
 	int32_t Index;
@@ -747,6 +754,7 @@ struct Screen {
 	uint32_t _size; ///< Currently set size (to resize window when changed).
 	event_t UpdateLayout;
 	event_t RenderScreen;
+	event_t CloseDialog;
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);

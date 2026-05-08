@@ -167,6 +167,23 @@ local function test_get_class_name()
 end
 
 -- ---------------------------------------------------------------------------
+-- CloseDialog message: updates DialogResult and returns success
+-- ---------------------------------------------------------------------------
+local function test_close_dialog_message()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+
+  test.expect(screen.DialogResult ~= screen.DialogResult, "DialogResult should default to NaN")
+
+  local result = screen:send("Screen.CloseDialog", { ReturnValue = 3.5 })
+
+  test.expect_eq(result, 1, "CloseDialog should return a truthy message result")
+  test.expect_eq(screen.DialogResult, 3.5, "CloseDialog should store the return value on the screen")
+
+  screen:clear()
+  print("PASS: test_close_dialog_message")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_find_direct_child()
@@ -177,5 +194,6 @@ test_set_name()
 test_get_root()
 test_add_remove_child()
 test_get_class_name()
+test_close_dialog_message()
 
 print("All object hierarchy tests passed.")

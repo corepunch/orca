@@ -641,6 +641,7 @@
       <handles>
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
+        <handle message="Screen.CloseDialog"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
@@ -672,6 +673,12 @@
             <field name="stereo" type="float">The stereo value of the render screen</field>
             <field name="angle" type="float">The angle of the render screen</field>
             <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
+          </fields>
+        </message>
+        <message name="CloseDialog">
+          <summary>Closes a modal screen with the provided return value.</summary>
+          <fields>
+            <field name="ReturnValue" type="float">Numeric result to return from ShowModal()</field>
           </fields>
         </message>
       </messages>
