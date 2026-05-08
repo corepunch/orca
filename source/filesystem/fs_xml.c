@@ -166,27 +166,7 @@ _ConstructProperty(struct Object *obj,
       int count;
     } array_value = { .items = items, .count = index };
 
-    void *old_ptr = *(void**)prop->value;
-    if (old_ptr) {
-      int old_count = ((int*)prop->value)[sizeof(void*)/sizeof(int)];
-      if (pdesc->DataType == kDataTypeObject) {
-        FOR_LOOP(i, old_count) {
-          if (((void**)old_ptr)[i]) {
-            OBJ_ReleaseRef((struct Object*)((void**)old_ptr)[i]);
-          }
-        }
-      }
-      free(old_ptr);
-    }
-    memcpy(prop->value, &array_value, sizeof(void*) + sizeof(int));
-    if (pdesc->DataType == kDataTypeObject) {
-      FOR_LOOP(i, index) {
-        if (items && items[i]) {
-          OBJ_AddRef(items[i]);
-        }
-      }
-    }
-    PROP_SetDirty(prop);
+    PROP_SetValue(prop, &array_value);
     return;
   }
 
