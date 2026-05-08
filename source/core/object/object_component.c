@@ -156,10 +156,12 @@ _IsNodeTriggerMessage(uint32_t MsgID)
 }
 
 static LRESULT
-_DispatchNodeTriggers(struct Object *sender, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+_DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
-  struct Node *node = GetNode(sender);
-  if (!node || !node->Triggers || node->NumTriggers <= 0) {
+  // This may be called for any object receiving a Node.* message.
+  // Only objects with an attached Node component can host Node.Triggers.
+  struct Node *node = GetNode(node_object);
+  if (!node || node->NumTriggers <= 0 || !node->Triggers) {
     return FALSE;
   }
 
@@ -185,19 +187,22 @@ _DispatchNodeTriggers(struct Object *sender, uint32_t MsgID, wParam_t wParam, lP
       if (lParam) {
         local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
       }
-      local_args.Sender = sender;
+      local_args.Sender = node_object;
       trigger_param = &local_args;
       break;
     default:
       break;
   }
 
+  // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
   FOR_LOOP(i, node->NumTriggers) {
     struct Object *trigger = node->Triggers[i];
     if (!trigger) {
       continue;
     }
     LRESULT handled = OBJ_SendMessageW(trigger, MsgID, wParam, trigger_param);
+    // Node trigger dispatch is consumption-aware: once a trigger handles
+    // the event, later triggers do not receive this message.
     if (handled) {
       return handled;
     }
