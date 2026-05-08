@@ -56,8 +56,9 @@ HANDLER(Node, Object, Attached)
 
 HANDLER(Node, Node, LeftButtonUp)
 {
-  struct Node_MouseMessageEventArgs args = *pLeftButtonUp;
-  args.Sender = hObject;
-  _DispatchTriggers(hObject, ID_Node_LeftButtonUp, 0, &args);
+  struct Node_MouseMessageEventArgs local_args = {0};
+  if (pLeftButtonUp) local_args = *pLeftButtonUp;
+  local_args.Sender = hObject;
+  _DispatchTriggers(hObject, ID_Node_LeftButtonUp, 0, &local_args);
   return FALSE;
 }

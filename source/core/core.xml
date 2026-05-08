@@ -576,6 +576,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
         <message name="Attached">
           <summary>Sent when the object is attached to a parent object in the hierarchy.</summary>
+          <fields>
+            <field name="Sender" type="Object" pointer="true">The child object that was attached to the tree</field>
+          </fields>
         </message>
         <message name="Release">
           <summary>Sent when the object is being released and its resources should be freed.</summary>
@@ -850,7 +853,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <!-- <handle message="Node.HandleMessage"/> -->
+        <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "MouseDown", "KeyPress") </property>
@@ -861,7 +864,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Equivalent to an EventTrigger wired to Node.LeftButtonUp, intended for editor-friendly drag-and-drop authoring of click actions.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <!-- <handle message="Node.HandleMessage"/> -->
+        <handle message="Node.LeftButtonUp"/>
       </handles>
       <properties>
         <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Routed event handled by this click trigger</property>

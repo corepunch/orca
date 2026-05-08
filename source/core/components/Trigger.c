@@ -10,8 +10,7 @@ static bool_t
 _TriggerMatches(struct Trigger const* expected, struct Trigger_TriggeredEventArgs const* triggered)
 {
   return !expected ||
-         (triggered && triggered->Trigger ==
-            CMP_GetUserData((struct component*)expected));
+         (triggered && triggered->Trigger == expected);
 }
 
 static struct Object *
@@ -27,27 +26,10 @@ _SetTargetVisible(struct Object *target, bool_t visible)
   return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
 }
 
-static struct Object *
-_FindScreenAncestor(struct Object *object)
-{
-  while (object && !OBJ_GetComponent(object, ID_Screen)) {
-    object = OBJ_GetParent(object);
-  }
-  return object;
-}
-
 static bool_t
 _ShowModalObject(struct Object *source, struct Object *modal)
 {
-  struct Object *screen = _FindScreenAncestor(source);
-  if (!screen || !modal) {
-    Con_Error("Could not find Screen for modal target");
-    return FALSE;
-  }
-
-  OBJ_AddChild(screen, modal, FALSE);
-  OBJ_SetFlags(modal, OBJ_GetFlags(modal) | OF_NOACTIVATE);
-  return TRUE;
+  return OBJ_ShowModalObject(source, modal);
 }
 
 static bool_t
@@ -80,9 +62,8 @@ _BindActionTrigger(struct Object *hObject, struct Property **outProp)
 
 HANDLER(Trigger, Object, Attached)
 {
-  struct Property *prop;
-  struct Object *sender = pAttached->Sender ? pAttached->Sender : hObject;
-  if (pTrigger->Property && sender && SUCCEEDED(OBJ_FindShortProperty(sender, pTrigger->Property, &prop))) {
+  struct Property *prop = NULL;
+  if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop)) && prop) {
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
   return FALSE;
@@ -116,7 +97,7 @@ HANDLER(OnAttachedTrigger, Object, Attached)
 {
   _SendMessage(hObject, Trigger, Triggered,
                .Trigger = GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
-               .Sender = pAttached->Sender ? pAttached->Sender : hObject);
+               .Sender = hObject);
   return FALSE;
 }
 
@@ -225,25 +206,14 @@ _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrig
 
 HANDLER(EventTrigger, Node, LeftButtonUp)
 {
-  return _EventTrigger_Fire(hObject, pEventTrigger, pLeftButtonUp->Sender, "Node.LeftButtonUp");
-}
-
-HANDLER(OnClickTrigger, Object, Create)
-{
-  if (!pOnClickTrigger->RoutedEvent) {
-    pOnClickTrigger->RoutedEvent = "Node.LeftButtonUp";
-  }
-  return FALSE;
-}
-
-HANDLER(OnClickTrigger, Object, Attached)
-{
-  return FALSE;
+  struct Object *sender = pLeftButtonUp ? pLeftButtonUp->Sender : hObject;
+  return _EventTrigger_Fire(hObject, pEventTrigger, sender, "Node.LeftButtonUp");
 }
 
 HANDLER(OnClickTrigger, Node, LeftButtonUp)
 {
-  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)pOnClickTrigger, pLeftButtonUp->Sender, "Node.LeftButtonUp");
+  struct Object *sender = pLeftButtonUp ? pLeftButtonUp->Sender : hObject;
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)pOnClickTrigger, sender, "Node.LeftButtonUp");
 }
 
 HANDLER(ShowModalAction, Trigger, Triggered)
@@ -311,10 +281,9 @@ HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
   struct Property *pProp;
   lpcString_t szName = pOnPropertyChangedTrigger->Property;
-  struct Object *sender = pAttached->Sender ? pAttached->Sender : hObject;
-  struct Object *source = sender;
+  struct Object *source = hObject;
   if (pOnPropertyChangedTrigger->SourceNode && *pOnPropertyChangedTrigger->SourceNode) {
-    source = OBJ_FindByPath(sender, pOnPropertyChangedTrigger->SourceNode);
+    source = OBJ_FindByPath(hObject, pOnPropertyChangedTrigger->SourceNode);
   }
   if (szName && source && SUCCEEDED(OBJ_FindShortProperty(source, szName, &pProp))) {
     PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);

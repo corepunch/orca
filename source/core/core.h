@@ -488,6 +488,10 @@ OBJ_IsFocused(struct Object const*);
 ORCA_API void
 OBJ_SetHover(struct Object*);
 
+/// @brief Attaches modal to the screen's modal chain (does not yield).
+ORCA_API bool_t
+OBJ_ShowModalObject(struct Object*, struct Object*);
+
 /// @brief Sets or clears the modal child object
 ORCA_API int
 OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);

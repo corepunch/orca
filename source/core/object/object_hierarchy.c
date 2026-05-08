@@ -15,7 +15,8 @@ struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is
   OBJ_AddRef(child);
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
-  OBJ_SendMessageW(child, ID_Object_Attached, 0, self);
+  struct Object_AttachedEventArgs attached_args = { .Sender = child };
+  OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
   if (is_template) {
     OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
