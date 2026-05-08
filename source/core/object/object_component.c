@@ -155,44 +155,6 @@ _IsNodeTriggerMessage(uint32_t MsgID)
   }
 }
 
-static LRESULT
-_DispatchNodeTriggers(struct Object *sender, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
-{
-  struct Node *node = GetNode(sender);
-  if (!node || !node->Triggers || node->NumTriggers <= 0) {
-    return FALSE;
-  }
-
-  struct Node_MouseMessageEventArgs local_args = {0};
-  lParam_t trigger_param = lParam;
-  switch (MsgID) {
-    case ID_Node_LeftButtonDown:
-    case ID_Node_RightButtonDown:
-    case ID_Node_OtherButtonDown:
-    case ID_Node_LeftButtonUp:
-    case ID_Node_RightButtonUp:
-    case ID_Node_OtherButtonUp:
-    case ID_Node_LeftButtonDragged:
-    case ID_Node_RightButtonDragged:
-    case ID_Node_OtherButtonDragged:
-    case ID_Node_LeftDoubleClick:
-    case ID_Node_RightDoubleClick:
-    case ID_Node_OtherDoubleClick:
-    case ID_Node_MouseMoved:
-    case ID_Node_ScrollWheel:
-    case ID_Node_DragDrop:
-    case ID_Node_DragEnter:
-      if (lParam) {
-        local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
-      }
-      local_args.Sender = sender;
-      trigger_param = &local_args;
-      break;
-    default:
-      return FALSE;
-  }
-}
-
 static lpcString_t
 _NodeTriggerMessageName(uint32_t MsgID)
 {
@@ -274,7 +236,6 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
   }
 
   lParam_t trigger_param = lParam;
-
   // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
   FOR_LOOP(i, node->NumTriggers) {
     struct Object *trigger = node->Triggers[i];
