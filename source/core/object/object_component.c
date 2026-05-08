@@ -155,18 +155,9 @@ _IsNodeTriggerMessage(uint32_t MsgID)
   }
 }
 
-static LRESULT
-_DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+static bool_t
+_IsNodeMouseTriggerMessage(uint32_t MsgID)
 {
-  // This may be called for any object receiving a Node.* message.
-  // Only objects with an attached Node component can host Node.Triggers.
-  struct Node *node = GetNode(node_object);
-  if (!node || node->NumTriggers <= 0 || !node->Triggers) {
-    return FALSE;
-  }
-
-  struct Node_MouseMessageEventArgs local_args = {0};
-  lParam_t trigger_param = lParam;
   switch (MsgID) {
     case ID_Node_LeftButtonDown:
     case ID_Node_RightButtonDown:
@@ -184,14 +175,110 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
     case ID_Node_ScrollWheel:
     case ID_Node_DragDrop:
     case ID_Node_DragEnter:
-      if (lParam) {
-        local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
-      }
-      local_args.Sender = node_object;
-      trigger_param = &local_args;
-      break;
+      return TRUE;
     default:
-      break;
+      return FALSE;
+  }
+}
+
+static lpcString_t
+_NodeTriggerMessageName(uint32_t MsgID)
+{
+  switch (MsgID) {
+    case ID_Node_LeftButtonDown: return "Node.LeftButtonDown";
+    case ID_Node_RightButtonDown: return "Node.RightButtonDown";
+    case ID_Node_OtherButtonDown: return "Node.OtherButtonDown";
+    case ID_Node_LeftButtonUp: return "Node.LeftButtonUp";
+    case ID_Node_RightButtonUp: return "Node.RightButtonUp";
+    case ID_Node_OtherButtonUp: return "Node.OtherButtonUp";
+    case ID_Node_LeftButtonDragged: return "Node.LeftButtonDragged";
+    case ID_Node_RightButtonDragged: return "Node.RightButtonDragged";
+    case ID_Node_OtherButtonDragged: return "Node.OtherButtonDragged";
+    case ID_Node_LeftDoubleClick: return "Node.LeftDoubleClick";
+    case ID_Node_RightDoubleClick: return "Node.RightDoubleClick";
+    case ID_Node_OtherDoubleClick: return "Node.OtherDoubleClick";
+    case ID_Node_MouseMoved: return "Node.MouseMoved";
+    case ID_Node_ScrollWheel: return "Node.ScrollWheel";
+    case ID_Node_DragDrop: return "Node.DragDrop";
+    case ID_Node_DragEnter: return "Node.DragEnter";
+    case ID_Node_SetFocus: return "Node.SetFocus";
+    case ID_Node_KillFocus: return "Node.KillFocus";
+    case ID_Node_KeyDown: return "Node.KeyDown";
+    case ID_Node_KeyUp: return "Node.KeyUp";
+    case ID_Node_TextInput: return "Node.TextInput";
+    default:
+      return NULL;
+  }
+}
+
+static struct Object *
+_NodeTriggerSender(struct Object *receiver, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+{
+  if (_IsNodeMouseTriggerMessage(MsgID)) {
+    struct Node_MouseMessageEventArgs const *args = (void const*)lParam;
+    if (args && args->Sender) {
+      return args->Sender;
+    }
+  }
+  if (wParam) {
+    return (struct Object *)wParam;
+  }
+  return receiver;
+}
+
+static LRESULT
+_FireRoutedTrigger(struct Object *hObject, lpcString_t configured_event, lpcString_t routed_event, struct Object *sender)
+{
+  if (!configured_event || !*configured_event || strcmp(configured_event, routed_event)) {
+    return FALSE;
+  }
+  return _SendMessage(hObject, Trigger, Triggered,
+                .Trigger = GetTrigger(hObject),
+                .Sender = sender ? sender : hObject);
+}
+
+static LRESULT
+_DispatchEventTriggerSpecialCase(struct Object *receiver, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+{
+  lpcString_t routed_event = _NodeTriggerMessageName(MsgID);
+  if (!routed_event) {
+    return FALSE;
+  }
+  struct Object *sender = _NodeTriggerSender(receiver, MsgID, wParam, lParam);
+
+  struct EventTrigger const *event_trigger = GetEventTrigger(receiver);
+  if (event_trigger && _FireRoutedTrigger(receiver, event_trigger->RoutedEvent, routed_event, sender)) {
+    return TRUE;
+  }
+  struct OnEventTrigger const *on_event_trigger = GetOnEventTrigger(receiver);
+  if (on_event_trigger && _FireRoutedTrigger(receiver, on_event_trigger->RoutedEvent, routed_event, sender)) {
+    return TRUE;
+  }
+  struct OnClickTrigger const *on_click_trigger = GetOnClickTrigger(receiver);
+  if (on_click_trigger && _FireRoutedTrigger(receiver, on_click_trigger->RoutedEvent, routed_event, sender)) {
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static LRESULT
+_DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+{
+  // This may be called for any object receiving a Node.* message.
+  // Only objects with an attached Node component can host Node.Triggers.
+  struct Node *node = GetNode(node_object);
+  if (!node || node->NumTriggers <= 0 || !node->Triggers) {
+    return FALSE;
+  }
+
+  struct Node_MouseMessageEventArgs local_args = {0};
+  lParam_t trigger_param = lParam;
+  if (_IsNodeMouseTriggerMessage(MsgID)) {
+    if (lParam) {
+      local_args = *(struct Node_MouseMessageEventArgs const*)lParam;
+    }
+    local_args.Sender = node_object;
+    trigger_param = &local_args;
   }
 
   // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
@@ -200,7 +287,8 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
     if (!trigger) {
       continue;
     }
-    LRESULT handled = OBJ_SendMessageW(trigger, MsgID, wParam, trigger_param);
+    wParam_t trigger_wparam = wParam ? wParam : (wParam_t)node_object;
+    LRESULT handled = OBJ_SendMessageW(trigger, MsgID, trigger_wparam, trigger_param);
     // Node trigger dispatch is consumption-aware: once a trigger handles
     // the event, later triggers do not receive this message.
     if (handled) {
@@ -231,6 +319,10 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
     cmp = next;
   }
   if (_IsNodeTriggerMessage(MsgID)) {
+    LRESULT handled = _DispatchEventTriggerSpecialCase(pobj, MsgID, wParam, lParam);
+    if (handled) {
+      return handled;
+    }
     return _DispatchNodeTriggers(pobj, MsgID, wParam, lParam);
   }
   return FALSE;
