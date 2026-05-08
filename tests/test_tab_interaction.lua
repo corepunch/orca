@@ -11,6 +11,14 @@ local ui   = require "orca.UIKit"
 -- Override orca.async so that Lua event callbacks execute synchronously in tests.
 orca.async = function (fn, ...) fn(...) end
 
+local function pump_messages(root)
+  while true do
+    local msg = orca.system.peekMessage()
+    if not msg then return end
+    orca.system.dispatchMessage(root, msg)
+  end
+end
+
 local screen = ui.Screen { Width = 1000, Height = 800, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
@@ -38,6 +46,7 @@ local function test_tabbar_click_interaction()
   local ay = tab_a.ActualY + 5
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = ax, y = ay }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = ax, y = ay }
+  pump_messages(screen)
 
   test.expect_eq(bar.SelectedValue, "alpha", "TabBar.SelectedValue should be 'alpha' after click")
   test.expect(tab_a.IsSelected,              "Tab alpha should be IsSelected after click")
@@ -52,6 +61,7 @@ local function test_tabbar_click_interaction()
   old_value      = nil
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = bx, y = by }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = bx, y = by }
+  pump_messages(screen)
 
   test.expect_eq(bar.SelectedValue, "beta",  "TabBar.SelectedValue should update to 'beta'")
   test.expect(not tab_a.IsSelected,          "Tab alpha should be deselected")
@@ -104,6 +114,7 @@ local function test_tabview_click_interaction()
   local by = tab_b.ActualY + 5
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = bx, y = by }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = bx, y = by }
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "beta",  "SelectedValue should be 'beta' after click")
   test.expect(not panel_a.Visible,   "Panel 'alpha' should be hidden after switching to beta")
@@ -119,6 +130,7 @@ local function test_tabview_click_interaction()
   tab_old = nil
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "gamma",  "SelectedValue should be 'gamma' after click")
   test.expect(not panel_a.Visible,   "Panel 'alpha' should still be hidden")
@@ -131,6 +143,7 @@ local function test_tabview_click_interaction()
   tab_sel = nil
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = cx, y = cy }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = cx, y = cy }
+  pump_messages(screen)
   test.expect(tab_sel == nil, "TabView SelectionChanged should NOT fire when re-clicking the selected tab")
 
   view:removeFromParent()
@@ -188,6 +201,7 @@ local function test_tabview_scroll_then_click()
   local click_y = scroll.ContentOffset.Y + view.ActualY + tab_b.ActualY + 5
   orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = click_x, y = click_y }
   orca.system.dispatchMessage { target = screen, message = "LeftButtonUp",   x = click_x, y = click_y }
+  pump_messages(screen)
 
   test.expect_eq(view.SelectedValue, "beta", "TabView should still react to clicks after scrolling")
   test.expect(not panel_a.Visible, "Panel 'alpha' should be hidden after clicking beta")
