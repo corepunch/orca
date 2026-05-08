@@ -7,6 +7,7 @@
 static luaL_Reg _<?= $struct_name ?>_Methods[] = { { NULL, NULL } };
 struct PropertyType _<?= $struct_name ?>_Properties[] = {
 	<?php include_template("export/properties", ['properties' => $event->getAllFields(), 'name' => $struct_name]) ?>
+	{NULL} // sentinel
 };
 #define _<?= $struct_name ?> _<?= $struct_name ?>_Properties
 <?php endforeach ?>
