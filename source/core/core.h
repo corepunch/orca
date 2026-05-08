@@ -1040,22 +1040,6 @@ struct EventTrigger {
 ORCA_API void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger);
 ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
 
-/// @brief Generic trigger that reacts to a configured routed event
-/** OnEventTrigger component */
-struct OnEventTrigger {
-	const char* RoutedEvent; ///< Node message name that should fire this trigger
-};
-ORCA_API void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger);
-ORCA_API struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx);
-
-/// @brief Convenience trigger for primary click actions
-/** OnClickTrigger component */
-struct OnClickTrigger {
-	const char* RoutedEvent; ///< Routed event handled by this click trigger
-};
-ORCA_API void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger);
-ORCA_API struct OnClickTrigger* luaX_checkOnClickTrigger(lua_State *L, int idx);
-
 /// @brief Applies property values when triggered by specified conditions
 /** Setter component */
 struct Setter {

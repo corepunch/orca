@@ -248,14 +248,6 @@ _DispatchEventTriggerSpecialCase(struct Object *receiver,
   if (event_trigger && _FireRoutedTrigger(receiver, event_trigger->RoutedEvent, routed_event, sender)) {
     return TRUE;
   }
-  struct OnEventTrigger const *on_event_trigger = GetOnEventTrigger(receiver);
-  if (on_event_trigger && _FireRoutedTrigger(receiver, on_event_trigger->RoutedEvent, routed_event, sender)) {
-    return TRUE;
-  }
-  struct OnClickTrigger const *on_click_trigger = GetOnClickTrigger(receiver);
-  if (on_click_trigger && _FireRoutedTrigger(receiver, on_click_trigger->RoutedEvent, routed_event, sender)) {
-    return TRUE;
-  }
   return FALSE;
 }
 

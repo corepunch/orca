@@ -878,49 +878,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Node.TextInput"/>
       </handles>
       <properties>
-        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
-      </properties>
-    </class>
-    <class name="OnEventTrigger" parent="Trigger">
-      <summary>Generic trigger that reacts to a configured routed event</summary>
-      <details>Use RoutedEvent to bind this trigger to any supported Node event name and execute trigger actions without creating dedicated trigger classes per event.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.LeftButtonDown"/>
-        <handle message="Node.RightButtonDown"/>
-        <handle message="Node.OtherButtonDown"/>
-        <handle message="Node.LeftButtonUp"/>
-        <handle message="Node.RightButtonUp"/>
-        <handle message="Node.OtherButtonUp"/>
-        <handle message="Node.LeftButtonDragged"/>
-        <handle message="Node.RightButtonDragged"/>
-        <handle message="Node.OtherButtonDragged"/>
-        <handle message="Node.LeftDoubleClick"/>
-        <handle message="Node.RightDoubleClick"/>
-        <handle message="Node.OtherDoubleClick"/>
-        <handle message="Node.MouseMoved"/>
-        <handle message="Node.ScrollWheel"/>
-        <handle message="Node.DragDrop"/>
-        <handle message="Node.DragEnter"/>
-        <handle message="Node.SetFocus"/>
-        <handle message="Node.KillFocus"/>
-        <handle message="Node.KeyDown"/>
-        <handle message="Node.KeyUp"/>
-        <handle message="Node.TextInput"/>
-      </handles>
-      <properties>
-        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Node message name that should fire this trigger</property>
-      </properties>
-    </class>
-    <class name="OnClickTrigger" parent="Trigger">
-      <summary>Convenience trigger for primary click actions</summary>
-      <details>Equivalent to an EventTrigger wired to Node.LeftButtonUp, intended for editor-friendly drag-and-drop authoring of click actions.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.LeftButtonUp"/>
-      </handles>
-      <properties>
-        <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Routed event handled by this click trigger</property>
+        <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
       </properties>
     </class>
     <class name="Setter">

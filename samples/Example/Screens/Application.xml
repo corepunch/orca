@@ -318,9 +318,9 @@
 								BackgroundColor="$accent" Padding="16" Width="140" Height="44"
 								TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
 								<Node.Triggers>
-									<OnClickTrigger>
+									<EventTrigger RoutedEvent="Node.LeftButtonUp">
 										<ShowModalAction Path="../../GetStartedPopup"/>
-									</OnClickTrigger>
+									</EventTrigger>
 								</Node.Triggers>
 							</TextBlock>
 						<TextBlock Name="CtaButtonSecondary" Text="Learn more" FontSize="14" ForegroundColor="$text-secondary"

@@ -8,9 +8,9 @@
         FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
       <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" ForegroundColor="$accent" TextHorizontalAlignment="Right">
         <Node.Triggers>
-          <OnClickTrigger>
+          <EventTrigger RoutedEvent="Node.LeftButtonUp">
             <HideAction Path="../../../"/>
-          </OnClickTrigger>
+          </EventTrigger>
         </Node.Triggers>
       </TextBlock>
     </StackView>

@@ -10,8 +10,7 @@ local filesystem = require "orca.filesystem"
 local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
-test.expect(core.OnClickTrigger ~= nil, "OnClickTrigger should be exported from orca.core")
-test.expect(core.OnEventTrigger ~= nil, "OnEventTrigger should be exported from orca.core")
+test.expect(core.EventTrigger ~= nil, "EventTrigger should be exported from orca.core")
 test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
 test.expect(core.SendMessageAction ~= nil, "SendMessageAction should be exported from orca.core")
@@ -368,9 +367,9 @@ local function test_xml_loading_trigger_action_components()
 	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
-	      <OnClickTrigger>
+	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
 	        <ShowModalAction Path="../Popup"/>
-	      </OnClickTrigger>
+	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
 	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088">
@@ -378,9 +377,9 @@ local function test_xml_loading_trigger_action_components()
 	      <StackView Name="PopupCard" Direction="Vertical" Spacing="12" Width="320" BackgroundColor="#1F2433" Padding="24">
 	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
 	          <Node.Triggers>
-	            <OnClickTrigger>
+	            <EventTrigger RoutedEvent="Node.LeftButtonUp">
 	              <HideAction Path="../../../"/>
-	            </OnClickTrigger>
+	            </EventTrigger>
 	          </Node.Triggers>
 	        </TextBlock>
 	      </StackView>
@@ -416,9 +415,9 @@ local function test_xml_loading_on_event_trigger_components()
 	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
-	      <OnEventTrigger RoutedEvent="Node.KeyDown">
+	      <EventTrigger RoutedEvent="Node.RightButtonUp">
 	        <ShowModalAction Path="../Popup"/>
-	      </OnEventTrigger>
+	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
 	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088"/>
@@ -435,7 +434,7 @@ local function test_xml_loading_on_event_trigger_components()
 	test.expect(not popup.Visible, "Popup should start hidden")
 	target:send("Node.LeftButtonUp")
 	test.expect(not popup.Visible, "Popup should stay hidden for non-matching events")
-	target:send("Node.KeyDown")
+	target:send("Node.RightButtonUp")
 	test.expect(popup.Visible, "Popup should become visible when RoutedEvent matches")
 	root:clear()
 	root = nil
@@ -449,17 +448,17 @@ local function test_xml_loading_send_message_action_components()
 	<Screen Name="send-message-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF">
 	    <Node.Triggers>
-	      <OnEventTrigger RoutedEvent="Node.LeftButtonUp">
+	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
 	        <SendMessageAction Message="Node.RightButtonUp" Target="../Receiver"/>
-	      </OnEventTrigger>
+	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
 	  <TextBlock Name="Victim" Text="Should hide" Visible="TRUE" FontSize="16" ForegroundColor="#FFFFFF"/>
 	  <TextBlock Name="Receiver" Text="Receiver" FontSize="16" ForegroundColor="#FFFFFF">
 	    <Node.Triggers>
-	      <OnEventTrigger RoutedEvent="Node.RightButtonUp">
+	      <EventTrigger RoutedEvent="Node.RightButtonUp">
 	        <HideAction Path="../Victim"/>
-	      </OnEventTrigger>
+	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
 	</Screen>]]
@@ -553,7 +552,7 @@ local function test_example_application_xml()
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
 	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
 	local popup_screen_hide = popup_screen and popup_screen:find('<HideAction Path="../../../"/>', 1, true)
-	local popup_screen_click = popup_screen and popup_screen:find('<OnClickTrigger>', 1, true)
+	local popup_screen_click = popup_screen and popup_screen:find('<EventTrigger RoutedEvent="Node.LeftButtonUp">', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -632,7 +631,7 @@ local function test_example_application_xml()
 	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
 	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
 	test.expect(popup_screen_hide ~= nil, "GetStartedPopup screen should define the close action")
-	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an OnClickTrigger")
+	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an EventTrigger")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")

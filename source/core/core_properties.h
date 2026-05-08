@@ -227,24 +227,6 @@ enum OnPropertyChangedTriggerProperties {
 enum EventTriggerProperties {
 	kEventTriggerRoutedEvent,
 };
-// OnEventTrigger
-#define ID_OnEventTrigger 0x293398f4
-#define GetOnEventTrigger(_P) ((struct OnEventTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnEventTrigger):NULL))
-#define OnEventTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnEventTrigger,sizeof(struct OnEventTrigger),_N)
-#define ID_OnEventTrigger_RoutedEvent 0xedc494d3 // OnEventTrigger.RoutedEvent
-#define kOnEventTriggerNumProperties 1
-enum OnEventTriggerProperties {
-	kOnEventTriggerRoutedEvent,
-};
-// OnClickTrigger
-#define ID_OnClickTrigger 0x9e406f64
-#define GetOnClickTrigger(_P) ((struct OnClickTrigger*)((_P)?OBJ_GetComponent(_P,ID_OnClickTrigger):NULL))
-#define OnClickTrigger_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_OnClickTrigger,sizeof(struct OnClickTrigger),_N)
-#define ID_OnClickTrigger_RoutedEvent 0x84903223 // OnClickTrigger.RoutedEvent
-#define kOnClickTriggerNumProperties 1
-enum OnClickTriggerProperties {
-	kOnClickTriggerRoutedEvent,
-};
 // Setter
 #define ID_Setter 0xf849aee6
 #define GetSetter(_P) ((struct Setter*)((_P)?OBJ_GetComponent(_P,ID_Setter):NULL))
