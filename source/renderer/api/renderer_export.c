@@ -73,24 +73,20 @@ static luaL_Reg _Window_PaintEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Window_PaintEventArgs_Properties[] = {
 	DECL(0xdc5503a7, Window_PaintEventArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_PaintEventArgs.WindowWidth
 	DECL(0xbd75892a, Window_PaintEventArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_PaintEventArgs.WindowHeight
-	{NULL} // sentinel
 };
 #define _Window_PaintEventArgs _Window_PaintEventArgs_Properties
 static luaL_Reg _Window_ResizedEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Window_ResizedEventArgs_Properties[] = {
 	DECL(0xdc5503a7, Window_ResizedEventArgs, WindowWidth, WindowWidth, kDataTypeInt), // Window_ResizedEventArgs.WindowWidth
 	DECL(0xbd75892a, Window_ResizedEventArgs, WindowHeight, WindowHeight, kDataTypeInt), // Window_ResizedEventArgs.WindowHeight
-	{NULL} // sentinel
 };
 #define _Window_ResizedEventArgs _Window_ResizedEventArgs_Properties
 static luaL_Reg _Window_ClosedEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Window_ClosedEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Window_ClosedEventArgs _Window_ClosedEventArgs_Properties
 static luaL_Reg _Window_ChangedScreenEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Window_ChangedScreenEventArgs_Properties[] = {
-	{NULL} // sentinel
 };
 #define _Window_ChangedScreenEventArgs _Window_ChangedScreenEventArgs_Properties
 

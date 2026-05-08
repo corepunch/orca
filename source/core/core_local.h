@@ -115,6 +115,9 @@ API_PrintStackTrace(lua_State* L);
 void
 OBJ_Clear(struct Object *);
 
+bool_t
+OBJ_ShowModalObject(struct Object *, struct Object *);
+
 uint32_t
 OBJ_AddRef(struct Object *);
 

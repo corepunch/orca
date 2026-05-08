@@ -572,6 +572,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <summary>Sent when a property value on the object changes.</summary>
           <fields>
             <field name="Property" type="Property" pointer="true">The property that changed</field>
+            <field name="Sender" type="Object" pointer="true">The object that originally emitted the change</field>
           </fields>
         </message>
         <message name="Attached">
@@ -854,29 +855,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Responds to routed UI events (mouse, keyboard, etc.)</summary>
       <details>Listens for specific routed events and can execute actions in response. Supports the standard UI event bubbling system.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.LeftButtonDown"/>
-        <handle message="Node.RightButtonDown"/>
-        <handle message="Node.OtherButtonDown"/>
-        <handle message="Node.LeftButtonUp"/>
-        <handle message="Node.RightButtonUp"/>
-        <handle message="Node.OtherButtonUp"/>
-        <handle message="Node.LeftButtonDragged"/>
-        <handle message="Node.RightButtonDragged"/>
-        <handle message="Node.OtherButtonDragged"/>
-        <handle message="Node.LeftDoubleClick"/>
-        <handle message="Node.RightDoubleClick"/>
-        <handle message="Node.OtherDoubleClick"/>
-        <handle message="Node.MouseMoved"/>
-        <handle message="Node.ScrollWheel"/>
-        <handle message="Node.DragDrop"/>
-        <handle message="Node.DragEnter"/>
-        <handle message="Node.SetFocus"/>
-        <handle message="Node.KillFocus"/>
-        <handle message="Node.KeyDown"/>
-        <handle message="Node.KeyUp"/>
-        <handle message="Node.TextInput"/>
-      </handles>
       <properties>
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
       </properties>
@@ -885,29 +863,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Generic trigger that reacts to a configured routed event</summary>
       <details>Use RoutedEvent to bind this trigger to any supported Node event name and execute trigger actions without creating dedicated trigger classes per event.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.LeftButtonDown"/>
-        <handle message="Node.RightButtonDown"/>
-        <handle message="Node.OtherButtonDown"/>
-        <handle message="Node.LeftButtonUp"/>
-        <handle message="Node.RightButtonUp"/>
-        <handle message="Node.OtherButtonUp"/>
-        <handle message="Node.LeftButtonDragged"/>
-        <handle message="Node.RightButtonDragged"/>
-        <handle message="Node.OtherButtonDragged"/>
-        <handle message="Node.LeftDoubleClick"/>
-        <handle message="Node.RightDoubleClick"/>
-        <handle message="Node.OtherDoubleClick"/>
-        <handle message="Node.MouseMoved"/>
-        <handle message="Node.ScrollWheel"/>
-        <handle message="Node.DragDrop"/>
-        <handle message="Node.DragEnter"/>
-        <handle message="Node.SetFocus"/>
-        <handle message="Node.KillFocus"/>
-        <handle message="Node.KeyDown"/>
-        <handle message="Node.KeyUp"/>
-        <handle message="Node.TextInput"/>
-      </handles>
       <properties>
         <property name="RoutedEvent" type="string">Node message name that should fire this trigger</property>
       </properties>
@@ -916,9 +871,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Convenience trigger for primary click actions</summary>
       <details>Equivalent to an EventTrigger wired to Node.LeftButtonUp, intended for editor-friendly drag-and-drop authoring of click actions.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Node.LeftButtonUp"/>
-      </handles>
       <properties>
         <property name="RoutedEvent" type="string" default="Node.LeftButtonUp">Routed event handled by this click trigger</property>
       </properties>
@@ -1055,6 +1007,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
             <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
             <field name="button" type="MouseButton">The mouse button involved in this event</field>
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
+            <field name="Sender" type="Object" pointer="true">The object that originally received the routed mouse event</field>
           </fields>
         </message>
         <message name="LeftButtonDown" same-as="MouseMessage">
@@ -1151,6 +1104,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </function>
     <function name="GetObjectCount" lua="true" export="objectCount">
       <summary>Returns the number of live engine objects.</summary>
+      <returns type="int">The number of currently live engine objects</returns>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->

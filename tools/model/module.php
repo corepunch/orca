@@ -163,6 +163,11 @@ class Type extends Base {
 		if ($this->const) {
 			$base .= " const";
 		}
+		// Component-typed array properties store Object pointers at runtime (kDataTypeObject),
+		// so generate struct Object** rather than struct ComponentType*.
+		if ($this->array && $this->kind === "component") {
+			return "struct Object**";
+		}
 		if ($this->pointer || $this->array) {
 			$base .= "*";
 		}

@@ -610,6 +610,7 @@ enum NodeProperties {
 #define ID_Object_PropertyChangedEventArgs 0x530ec22f
 
 #define ID_Object_PropertyChangedEventArgs_Property 0xc7308dfa // Object_PropertyChangedEventArgs.Property
+#define ID_Object_PropertyChangedEventArgs_Sender 0x6c7ae3b6 // Object_PropertyChangedEventArgs.Sender
 #define ID_Object_AttachedEventArgs 0x421be758
 
 #define ID_Object_AttachedEventArgs_Sender 0x53c0e107 // Object_AttachedEventArgs.Sender
@@ -681,6 +682,7 @@ enum NodeProperties {
 #define ID_Node_MouseMessageEventArgs_deltaY 0xa9801bd8 // Node_MouseMessageEventArgs.deltaY
 #define ID_Node_MouseMessageEventArgs_button 0x563796c1 // Node_MouseMessageEventArgs.button
 #define ID_Node_MouseMessageEventArgs_clickCount 0x457c8aa6 // Node_MouseMessageEventArgs.clickCount
+#define ID_Node_MouseMessageEventArgs_Sender 0x27408534 // Node_MouseMessageEventArgs.Sender
 #define ID_Node_LeftButtonDownEventArgs 0x6caa3f0c
 
 #define ID_Node_LeftButtonDownEventArgs_x 0xb62ed5da // Node_LeftButtonDownEventArgs.x
@@ -689,6 +691,7 @@ enum NodeProperties {
 #define ID_Node_LeftButtonDownEventArgs_deltaY 0x3027e23b // Node_LeftButtonDownEventArgs.deltaY
 #define ID_Node_LeftButtonDownEventArgs_button 0x1b554e46 // Node_LeftButtonDownEventArgs.button
 #define ID_Node_LeftButtonDownEventArgs_clickCount 0x1e50b5a5 // Node_LeftButtonDownEventArgs.clickCount
+#define ID_Node_LeftButtonDownEventArgs_Sender 0xe8da35eb // Node_LeftButtonDownEventArgs.Sender
 #define ID_Node_RightButtonDownEventArgs 0x37f5e871
 
 #define ID_Node_RightButtonDownEventArgs_x 0x775838af // Node_RightButtonDownEventArgs.x
@@ -697,6 +700,7 @@ enum NodeProperties {
 #define ID_Node_RightButtonDownEventArgs_deltaY 0x3091e890 // Node_RightButtonDownEventArgs.deltaY
 #define ID_Node_RightButtonDownEventArgs_button 0xb2b28fb9 // Node_RightButtonDownEventArgs.button
 #define ID_Node_RightButtonDownEventArgs_clickCount 0xf21b9fce // Node_RightButtonDownEventArgs.clickCount
+#define ID_Node_RightButtonDownEventArgs_Sender 0xc565991c // Node_RightButtonDownEventArgs.Sender
 #define ID_Node_OtherButtonDownEventArgs 0x18279d79
 
 #define ID_Node_OtherButtonDownEventArgs_x 0x85e85af7 // Node_OtherButtonDownEventArgs.x
@@ -705,6 +709,7 @@ enum NodeProperties {
 #define ID_Node_OtherButtonDownEventArgs_deltaY 0xc04d8f58 // Node_OtherButtonDownEventArgs.deltaY
 #define ID_Node_OtherButtonDownEventArgs_button 0x6d050a41 // Node_OtherButtonDownEventArgs.button
 #define ID_Node_OtherButtonDownEventArgs_clickCount 0x328db626 // Node_OtherButtonDownEventArgs.clickCount
+#define ID_Node_OtherButtonDownEventArgs_Sender 0x3e0df8b4 // Node_OtherButtonDownEventArgs.Sender
 #define ID_Node_LeftButtonUpEventArgs 0xf6a581db
 
 #define ID_Node_LeftButtonUpEventArgs_x 0x93bb4e75 // Node_LeftButtonUpEventArgs.x
@@ -713,6 +718,7 @@ enum NodeProperties {
 #define ID_Node_LeftButtonUpEventArgs_deltaY 0xc19b55aa // Node_LeftButtonUpEventArgs.deltaY
 #define ID_Node_LeftButtonUpEventArgs_button 0x4c2a99bf // Node_LeftButtonUpEventArgs.button
 #define ID_Node_LeftButtonUpEventArgs_clickCount 0x4595c428 // Node_LeftButtonUpEventArgs.clickCount
+#define ID_Node_LeftButtonUpEventArgs_Sender 0x1252c442 // Node_LeftButtonUpEventArgs.Sender
 #define ID_Node_RightButtonUpEventArgs 0x4140a59a
 
 #define ID_Node_RightButtonUpEventArgs_x 0x5de366ac // Node_RightButtonUpEventArgs.x
@@ -721,6 +727,7 @@ enum NodeProperties {
 #define ID_Node_RightButtonUpEventArgs_deltaY 0xba422fa9 // Node_RightButtonUpEventArgs.deltaY
 #define ID_Node_RightButtonUpEventArgs_button 0xc356b138 // Node_RightButtonUpEventArgs.button
 #define ID_Node_RightButtonUpEventArgs_clickCount 0x61ebff0b // Node_RightButtonUpEventArgs.clickCount
+#define ID_Node_RightButtonUpEventArgs_Sender 0x26d11b95 // Node_RightButtonUpEventArgs.Sender
 #define ID_Node_OtherButtonUpEventArgs 0x650283a2
 
 #define ID_Node_OtherButtonUpEventArgs_x 0x27d03b14 // Node_OtherButtonUpEventArgs.x
@@ -729,6 +736,7 @@ enum NodeProperties {
 #define ID_Node_OtherButtonUpEventArgs_deltaY 0xb0c913f1 // Node_OtherButtonUpEventArgs.deltaY
 #define ID_Node_OtherButtonUpEventArgs_button 0x95466cc0 // Node_OtherButtonUpEventArgs.button
 #define ID_Node_OtherButtonUpEventArgs_clickCount 0x1d0d30e3 // Node_OtherButtonUpEventArgs.clickCount
+#define ID_Node_OtherButtonUpEventArgs_Sender 0xef52358d // Node_OtherButtonUpEventArgs.Sender
 #define ID_Node_LeftButtonDraggedEventArgs 0x5d72bb08
 
 #define ID_Node_LeftButtonDraggedEventArgs_x 0xf38a9f9e // Node_LeftButtonDraggedEventArgs.x
@@ -737,6 +745,7 @@ enum NodeProperties {
 #define ID_Node_LeftButtonDraggedEventArgs_deltaY 0x895ef627 // Node_LeftButtonDraggedEventArgs.deltaY
 #define ID_Node_LeftButtonDraggedEventArgs_button 0xb8f3463a // Node_LeftButtonDraggedEventArgs.button
 #define ID_Node_LeftButtonDraggedEventArgs_clickCount 0x94331719 // Node_LeftButtonDraggedEventArgs.clickCount
+#define ID_Node_LeftButtonDraggedEventArgs_Sender 0xc0b9fcd7 // Node_LeftButtonDraggedEventArgs.Sender
 #define ID_Node_RightButtonDraggedEventArgs 0x8ec28ae3
 
 #define ID_Node_RightButtonDraggedEventArgs_x 0xdf8ac5dd // Node_RightButtonDraggedEventArgs.x
@@ -745,6 +754,7 @@ enum NodeProperties {
 #define ID_Node_RightButtonDraggedEventArgs_deltaY 0xe23c2a12 // Node_RightButtonDraggedEventArgs.deltaY
 #define ID_Node_RightButtonDraggedEventArgs_button 0x311ff427 // Node_RightButtonDraggedEventArgs.button
 #define ID_Node_RightButtonDraggedEventArgs_clickCount 0xb9eabba0 // Node_RightButtonDraggedEventArgs.clickCount
+#define ID_Node_RightButtonDraggedEventArgs_Sender 0x08dadfda // Node_RightButtonDraggedEventArgs.Sender
 #define ID_Node_OtherButtonDraggedEventArgs 0x9e10189b
 
 #define ID_Node_OtherButtonDraggedEventArgs_x 0x37c9d9b5 // Node_OtherButtonDraggedEventArgs.x
@@ -753,6 +763,7 @@ enum NodeProperties {
 #define ID_Node_OtherButtonDraggedEventArgs_deltaY 0xa06664ea // Node_OtherButtonDraggedEventArgs.deltaY
 #define ID_Node_OtherButtonDraggedEventArgs_button 0x57364cff // Node_OtherButtonDraggedEventArgs.button
 #define ID_Node_OtherButtonDraggedEventArgs_clickCount 0x1583d268 // Node_OtherButtonDraggedEventArgs.clickCount
+#define ID_Node_OtherButtonDraggedEventArgs_Sender 0x0a6a8882 // Node_OtherButtonDraggedEventArgs.Sender
 #define ID_Node_LeftDoubleClickEventArgs 0x031dea9b
 
 #define ID_Node_LeftDoubleClickEventArgs_x 0xe488fbb5 // Node_LeftDoubleClickEventArgs.x
@@ -761,6 +772,7 @@ enum NodeProperties {
 #define ID_Node_LeftDoubleClickEventArgs_deltaY 0x666b4aea // Node_LeftDoubleClickEventArgs.deltaY
 #define ID_Node_LeftDoubleClickEventArgs_button 0x1d3b32ff // Node_LeftDoubleClickEventArgs.button
 #define ID_Node_LeftDoubleClickEventArgs_clickCount 0xf8711868 // Node_LeftDoubleClickEventArgs.clickCount
+#define ID_Node_LeftDoubleClickEventArgs_Sender 0xd06f6e82 // Node_LeftDoubleClickEventArgs.Sender
 #define ID_Node_RightDoubleClickEventArgs 0x3b464ab8
 
 #define ID_Node_RightDoubleClickEventArgs_x 0xe08c6bae // Node_RightDoubleClickEventArgs.x
@@ -769,6 +781,7 @@ enum NodeProperties {
 #define ID_Node_RightDoubleClickEventArgs_deltaY 0x814dc437 // Node_RightDoubleClickEventArgs.deltaY
 #define ID_Node_RightDoubleClickEventArgs_button 0xcb9893ea // Node_RightDoubleClickEventArgs.button
 #define ID_Node_RightDoubleClickEventArgs_clickCount 0xd77c9769 // Node_RightDoubleClickEventArgs.clickCount
+#define ID_Node_RightDoubleClickEventArgs_Sender 0x28115227 // Node_RightDoubleClickEventArgs.Sender
 #define ID_Node_OtherDoubleClickEventArgs 0x2eeca4a0
 
 #define ID_Node_OtherDoubleClickEventArgs_x 0xca97cdf6 // Node_OtherDoubleClickEventArgs.x
@@ -777,6 +790,7 @@ enum NodeProperties {
 #define ID_Node_OtherDoubleClickEventArgs_deltaY 0x9161453f // Node_OtherDoubleClickEventArgs.deltaY
 #define ID_Node_OtherDoubleClickEventArgs_button 0xf76bfe52 // Node_OtherDoubleClickEventArgs.button
 #define ID_Node_OtherDoubleClickEventArgs_clickCount 0xc9ffe6c1 // Node_OtherDoubleClickEventArgs.clickCount
+#define ID_Node_OtherDoubleClickEventArgs_Sender 0x86dfd99f // Node_OtherDoubleClickEventArgs.Sender
 #define ID_Node_MouseMovedEventArgs 0xdeaf328d
 
 #define ID_Node_MouseMovedEventArgs_x 0xb343e433 // Node_MouseMovedEventArgs.x
@@ -785,6 +799,7 @@ enum NodeProperties {
 #define ID_Node_MouseMovedEventArgs_deltaY 0x4bdbf75c // Node_MouseMovedEventArgs.deltaY
 #define ID_Node_MouseMovedEventArgs_button 0x4e82eb0d // Node_MouseMovedEventArgs.button
 #define ID_Node_MouseMovedEventArgs_clickCount 0xefc1d982 // Node_MouseMovedEventArgs.clickCount
+#define ID_Node_MouseMovedEventArgs_Sender 0x070fad78 // Node_MouseMovedEventArgs.Sender
 #define ID_Node_ScrollWheelEventArgs 0x00b0123b
 
 #define ID_Node_ScrollWheelEventArgs_x 0xdb001055 // Node_ScrollWheelEventArgs.x
@@ -793,6 +808,7 @@ enum NodeProperties {
 #define ID_Node_ScrollWheelEventArgs_deltaY 0xf186714a // Node_ScrollWheelEventArgs.deltaY
 #define ID_Node_ScrollWheelEventArgs_button 0x8d22851f // Node_ScrollWheelEventArgs.button
 #define ID_Node_ScrollWheelEventArgs_clickCount 0x62fcf1c8 // Node_ScrollWheelEventArgs.clickCount
+#define ID_Node_ScrollWheelEventArgs_Sender 0xe1ec0ce2 // Node_ScrollWheelEventArgs.Sender
 #define ID_Node_DragDropEventArgs 0x34528692
 
 #define ID_Node_DragDropEventArgs_x 0x57863764 // Node_DragDropEventArgs.x
@@ -801,6 +817,7 @@ enum NodeProperties {
 #define ID_Node_DragDropEventArgs_deltaY 0x565d5981 // Node_DragDropEventArgs.deltaY
 #define ID_Node_DragDropEventArgs_button 0x3ad3bd30 // Node_DragDropEventArgs.button
 #define ID_Node_DragDropEventArgs_clickCount 0x4304c7f3 // Node_DragDropEventArgs.clickCount
+#define ID_Node_DragDropEventArgs_Sender 0xf7177e1d // Node_DragDropEventArgs.Sender
 #define ID_Node_DragEnterEventArgs 0x469d4d03
 
 #define ID_Node_DragEnterEventArgs_x 0x0da5da7d // Node_DragEnterEventArgs.x
@@ -809,6 +826,7 @@ enum NodeProperties {
 #define ID_Node_DragEnterEventArgs_deltaY 0x48c75472 // Node_DragEnterEventArgs.deltaY
 #define ID_Node_DragEnterEventArgs_button 0xd7ad1647 // Node_DragEnterEventArgs.button
 #define ID_Node_DragEnterEventArgs_clickCount 0x9f171300 // Node_DragEnterEventArgs.clickCount
+#define ID_Node_DragEnterEventArgs_Sender 0x118ea03a // Node_DragEnterEventArgs.Sender
 #define ID_Node_KeyMessageEventArgs 0x31a320d9
 
 #define ID_Node_KeyMessageEventArgs_keyCode 0xc45b7b79 // Node_KeyMessageEventArgs.keyCode

@@ -312,7 +312,7 @@ ORCA_API void
 core_FlushQueue(struct lua_State*);
 
 /// @brief Returns the number of live engine objects.
-ORCA_API void
+ORCA_API int32_t
 core_GetObjectCount(struct lua_State*);
 
 
@@ -692,6 +692,7 @@ ORCA_API struct Object_ThemeChangedEventArgs* luaX_checkObject_ThemeChangedEvent
 /** Object_PropertyChangedEventArgs struct */
 struct Object_PropertyChangedEventArgs {
 	struct Property* Property; ///< The property that changed
+	struct Object* Sender; ///< The object that originally emitted the change
 };
 ORCA_API void luaX_pushObject_PropertyChangedEventArgs(lua_State *L, struct Object_PropertyChangedEventArgs const* data);
 ORCA_API struct Object_PropertyChangedEventArgs* luaX_checkObject_PropertyChangedEventArgs(lua_State *L, int idx);
@@ -838,6 +839,7 @@ struct Node_MouseMessageEventArgs {
 	int32_t deltaY; ///< Scroll wheel rotation amount along the Y axis; positive values scroll up/forward
 	enum MouseButton button; ///< The mouse button involved in this event
 	int32_t clickCount; ///< Number of consecutive clicks (1 for single click, 2 for double click)
+	struct Object* Sender; ///< The object that originally received the routed mouse event
 };
 ORCA_API void luaX_pushNode_MouseMessageEventArgs(lua_State *L, struct Node_MouseMessageEventArgs const* data);
 ORCA_API struct Node_MouseMessageEventArgs* luaX_checkNode_MouseMessageEventArgs(lua_State *L, int idx);
@@ -1110,7 +1112,7 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
-	struct Trigger* Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
+	struct Object** Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
 	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;

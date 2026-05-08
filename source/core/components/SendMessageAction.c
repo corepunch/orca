@@ -32,7 +32,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   // Parse message name to get ID
-  uint32_t msg_id = FNV1a(pSendMessageAction->Message);
+  uint32_t msg_id = fnv1a32(pSendMessageAction->Message);
   if (!msg_id) {
     Con_Error("SendMessageAction invalid message name '%s'", 
               pSendMessageAction->Message);
@@ -45,7 +45,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   
   if (!fields || field_count == 0) {
     // Message has no arguments, send it directly
-    OBJ_SendMessage(target, msg_id, 0, 0);
+    OBJ_SendMessageW(target, msg_id, 0, 0);
     return FALSE;
   }
 
@@ -57,12 +57,12 @@ HANDLER(SendMessageAction, Trigger, Triggered)
     struct PropertyType const* field = &fields[i];
     
     // Look for attached property with the field name
-    struct Property* prop = OBJ_FindShortProperty(hObject, field->Name);
-    if (prop) {
+    struct Property* prop = NULL;
+    if (SUCCEEDED(OBJ_FindShortProperty(hObject, field->Name, &prop)) && prop) {
       void const* value = PROP_GetValue(prop);
       if (value) {
         // Copy value to payload at the correct offset
-        size_t copy_size = field->Size;
+        size_t copy_size = field->DataSize;
         if (copy_size > 0 && field->Offset + copy_size <= MAX_MESSAGE_SIZE) {
           memcpy(payload + field->Offset, value, copy_size);
         }
@@ -71,7 +71,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   // Send the message with the constructed payload
-  OBJ_SendMessage(target, msg_id, 0, (lParam_t)payload);
+  OBJ_SendMessageW(target, msg_id, 0, (lParam_t)payload);
   
   return FALSE;
 }
