@@ -569,12 +569,9 @@ _LoadEventTriggerFromXmlFragment(struct Object *obj,
 
   OBJ_AddChild(trigger, action, FALSE);
   if (!_AppendObjectToArrayProperty(triggers_prop, trigger)) {
-    OBJ_ReleaseRef(action);
     OBJ_ReleaseRef(trigger);
     return FALSE;
   }
 
-  OBJ_ReleaseRef(action);
-  OBJ_ReleaseRef(trigger);
   return TRUE;
 }
