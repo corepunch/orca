@@ -159,8 +159,7 @@ _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrig
 #define EVENT_TRIGGER_MOUSE_HANDLER(CLASS, EVENT, ROUTED_EVENT_NAME) \
 HANDLER(CLASS, Node, EVENT) \
 { \
-  struct Object *sender = p##EVENT ? p##EVENT->Sender : hObject; \
-  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)p##CLASS, sender, ROUTED_EVENT_NAME); \
+  return _EventTrigger_Fire(hObject, (struct EventTrigger const*)p##CLASS, hObject, ROUTED_EVENT_NAME); \
 }
 
 #define EVENT_TRIGGER_HANDLER(CLASS, EVENT, ROUTED_EVENT_NAME) \
