@@ -265,4 +265,10 @@ void emit_header(Module *m, FILE *out);
 void emit_props(Module *m, FILE *out);
 void emit_export(Module *m, FILE *out);
 
+/* Event helpers (implemented in model.c) */
+int    event_has_fields(Event *ev);
+int    event_has_any_fields(Event *ev, Module *m);
+char  *event_get_effective_struct_name(Event *ev, Module *m);
+Event *module_find_event(Module *m, const char *name);
+
 #endif /* CODEGEN_MODEL_H */

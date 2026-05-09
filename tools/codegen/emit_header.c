@@ -4,11 +4,7 @@
 #include "model.h"
 #include <ctype.h>
 
-/* Forward declaration for struct_contents helper */
-static void emit_struct_contents_fields(Field *fields, int n, FILE *out);
-static void emit_struct_contents_props(Property *props, int n, FILE *out);
-
-/* --- helper: get return type string --- */
+/* --- helper: get return type string (malloc'd) --- */
 static char *method_return_type(Method *meth) {
     if (!meth->returns) return strdup("void");
     return type_decl(meth->returns);
@@ -17,7 +13,7 @@ static char *method_return_type(Method *meth) {
 /* --- helper: get arg types as comma-separated string (malloc'd) --- */
 static char *method_args_types(Method *meth) {
     if (meth->num_args == 0) return strdup("void");
-    char buf[2048] = "";
+    char buf[4096] = "";
     for (int i = 0; i < meth->num_args; i++) {
         if (i > 0) strncat(buf, ", ", sizeof(buf)-strlen(buf)-1);
         char *td = type_decl(&meth->args[i].param_type);
@@ -27,10 +23,35 @@ static char *method_args_types(Method *meth) {
     return strdup(buf);
 }
 
+static void emit_struct_contents_fields(Field *fields, int n, FILE *out) {
+    for (int i = 0; i < n; i++) {
+        Field *f = &fields[i];
+        char *td = type_decl(&f->type);
+        fprintf(out, "\t%s %s", td, f->name.name);
+        free(td);
+        if (f->type.fixed_array) fprintf(out, "[%d]", f->type.fixed_array);
+        fprintf(out, ";");
+        if (f->doc) fprintf(out, " ///< %s", f->doc);
+        fprintf(out, "\n");
+    }
+}
+
+static void emit_struct_contents_props(Property *props, int n, FILE *out) {
+    for (int i = 0; i < n; i++) {
+        Property *p = &props[i];
+        char *td = type_decl(&p->type);
+        fprintf(out, "\t%s %s", td, p->name.display);
+        free(td);
+        if (p->type.fixed_array) fprintf(out, "[%d]", p->type.fixed_array);
+        fprintf(out, ";");
+        if (p->doc) fprintf(out, " ///< %s", p->doc);
+        fprintf(out, "\n");
+    }
+}
+
 void emit_header(Module *m, FILE *out) {
     char *upper = str_toupper(m->name);
 
-    /* header comment + include guard */
     fprintf(out, "// Auto-generated from %s.xml by tools/templates/header.php\n", m->name);
     fprintf(out, "// DO NOT EDIT \xe2\x80\x94 run 'cd tools && make' to regenerate.\n");
     fprintf(out, "#ifndef __%s_H__\n", upper);
@@ -54,14 +75,11 @@ void emit_header(Module *m, FILE *out) {
         fprintf(out, "#include <%s>\n", m->includes[i].file);
 
     fprintf(out, "\n");
-
-    /* module properties header */
     fprintf(out, "#include \"%s_properties.h\"\n", m->name);
 
     /* required module headers */
     for (int i = 0; i < m->num_requires; i++) {
         Module *req = m->requires[i];
-        /* strip .xml from source, append .h */
         const char *src = req->source;
         size_t slen = strlen(src);
         if (slen > 4 && strcmp(src+slen-4,".xml")==0) {
@@ -73,37 +91,31 @@ void emit_header(Module *m, FILE *out) {
 
     fprintf(out, "\n");
 
-    /* events: typedef lines (no blank lines between them) */
+    /* events: typedef lines */
     for (int i = 0; i < m->num_events; i++) {
         Event *ev = m->events[i];
         if (event_has_any_fields(ev, m)) {
             char *sname = event_get_effective_struct_name(ev, m);
-            fprintf(out, "typedef struct %s %s_%sMsgPtr;\n",
-                    sname, ev->ns, ev->name); /* wait, wrong — need Msg_t too */
-            /* Actually: typedef struct Name Ns_NameMsg_t,* Ns_NameMsgPtr; */
+            fprintf(out, "typedef struct %s %s_%sMsg_t,* %s_%sMsgPtr;\n",
+                    sname, ev->ns, ev->name, ev->ns, ev->name);
             free(sname);
         } else {
-            /* getEffectiveTypeDecl: own struct name always */
             fprintf(out, "typedef struct %s_%sEventArgs %s_%sMsg_t,* %s_%sMsgPtr;\n",
                     ev->ns, ev->name, ev->ns, ev->name, ev->ns, ev->name);
         }
     }
-    /* Fix: re-emit correctly */
-    /* Actually let me redo this properly */
-    /* I made a mistake above - let me not use the wrong fprintf. 
-       The events loop above has a bug — I'll fix it below */
 
-    /* enums section */
+    /* enums */
     fprintf(out, "\n");
     for (int i = 0; i < m->num_enums; i++) {
         Enum *e = &m->enums[i];
-        if (e->doc) {
-            fprintf(out, "\n/// @brief %s\n", e->doc);
-        }
+        if (e->doc) fprintf(out, "\n/// @brief %s\n", e->doc);
         fprintf(out, "/** %s enum */\n", e->name);
         fprintf(out, "typedef enum %s {\n", e->name);
         for (int j = 0; j < e->num_values; j++) {
-            fprintf(out, "\tk%s%s, ///< %s\n", e->name, e->values[j].name, e->values[j].doc ? e->values[j].doc : "");
+            fprintf(out, "\tk%s%s,", e->name, e->values[j].name);
+            if (e->values[j].doc) fprintf(out, " ///< %s", e->values[j].doc);
+            fprintf(out, "\n");
         }
         fprintf(out, "} e%s_t;\n", e->name);
         fprintf(out, "#define %s_Count %d\n", e->name, e->num_values);
@@ -127,11 +139,13 @@ void emit_header(Module *m, FILE *out) {
     fprintf(out, "\n");
     for (int i = 0; i < m->num_interfaces; i++) {
         Interface *iface = &m->interfaces[i];
-        /* check if interface has topic elements in methods */
-        /* We'll emit all methods linearly for now with topic checking */
-        /* For simplicity, emit all methods in one pass */
         for (int j = 0; j < iface->num_methods; j++) {
             Method *meth = &iface->methods[j];
+            /* Check if this method has a topic (stored in topic_title field) */
+            if (meth->topic_title) {
+                fprintf(out, "\n/// @name %s\n", meth->topic_title);
+                if (meth->topic_desc) fprintf(out, "/// %s\n", meth->topic_desc);
+            }
             if (meth->doc) fprintf(out, "\n/// @brief %s\n", meth->doc);
             char *rt = method_return_type(meth);
             char *at = method_args_types(meth);
@@ -140,7 +154,7 @@ void emit_header(Module *m, FILE *out) {
         }
     }
 
-    /* structs: definition + push/check + methods */
+    /* structs: definition + push/check */
     fprintf(out, "\n");
     for (int i = 0; i < m->num_structs; i++) {
         Struct *s = &m->structs[i];
@@ -152,6 +166,8 @@ void emit_header(Module *m, FILE *out) {
         fprintf(out, "ORCA_API void luaX_push%s(lua_State *L, struct %s const* %s);\n", s->name, s->name, s->name);
         fprintf(out, "ORCA_API struct %s* luaX_check%s(lua_State *L, int idx);\n", s->name, s->name);
     }
+
+    /* struct methods */
     fprintf(out, "\n");
     for (int i = 0; i < m->num_structs; i++) {
         Struct *s = &m->structs[i];
@@ -165,11 +181,11 @@ void emit_header(Module *m, FILE *out) {
         }
     }
 
-    /* event structs (root events only — no parent) */
+    /* event EventArgs structs (root events only) */
     fprintf(out, "\n");
     for (int i = 0; i < m->num_events; i++) {
         Event *ev = m->events[i];
-        if (ev->parent_name) continue; /* skip same-as events */
+        if (ev->parent_name) continue;
         fprintf(out, "/** %s_%sEventArgs struct */\n", ev->ns, ev->name);
         fprintf(out, "struct %s_%sEventArgs {\n", ev->ns, ev->name);
         emit_struct_contents_fields(ev->fields, ev->num_fields, out);
@@ -205,30 +221,4 @@ void emit_header(Module *m, FILE *out) {
     }
 
     fprintf(out, "\n#endif\n");
-}
-
-static void emit_struct_contents_fields(Field *fields, int n, FILE *out) {
-    for (int i = 0; i < n; i++) {
-        Field *f = &fields[i];
-        char *td = type_decl(&f->type);
-        fprintf(out, "\t%s %s", td, f->name.name);
-        free(td);
-        if (f->type.fixed_array) fprintf(out, "[%d]", f->type.fixed_array);
-        fprintf(out, ";");
-        if (f->doc) fprintf(out, " ///< %s", f->doc);
-        fprintf(out, "\n");
-    }
-}
-
-static void emit_struct_contents_props(Property *props, int n, FILE *out) {
-    for (int i = 0; i < n; i++) {
-        Property *p = &props[i];
-        char *td = type_decl(&p->type);
-        fprintf(out, "\t%s %s", td, p->name.display);
-        free(td);
-        if (p->type.fixed_array) fprintf(out, "[%d]", p->type.fixed_array);
-        fprintf(out, ";");
-        if (p->doc) fprintf(out, " ///< %s", p->doc);
-        fprintf(out, "\n");
-    }
 }
