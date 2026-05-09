@@ -80,15 +80,19 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   for (uint32_t i = 0; i < field_count; i++) {
     struct PropertyType const *field = &fields[i];
     if (field->Offset >= MAX_MESSAGE_SIZE) {
-      Con_Error("SendMessageAction field '%s' exceeds payload size limit",
-                field->Name ? field->Name : "<unnamed>");
+      Con_Error("SendMessageAction field '%s' offset %zu exceeds payload limit %u",
+                field->Name ? field->Name : "<unnamed>",
+                (size_t)field->Offset,
+                (unsigned)MAX_MESSAGE_SIZE);
       continue;
     }
     size_t max_copy_size = MAX_MESSAGE_SIZE - field->Offset;
     size_t copy_size = MIN((size_t)field->DataSize, max_copy_size);
     if (copy_size < field->DataSize) {
-      Con_Error("SendMessageAction field '%s' exceeds payload size limit",
-                field->Name ? field->Name : "<unnamed>");
+      Con_Error("SendMessageAction field '%s' truncated from %zu to %zu bytes",
+                field->Name ? field->Name : "<unnamed>",
+                (size_t)field->DataSize,
+                copy_size);
     }
 
     size_t field_end = field->Offset + copy_size;
