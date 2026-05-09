@@ -102,19 +102,102 @@ OBJ_FindClassW(uint32_t class_id)
   return NULL;
 }
 
+static uint32_t
+message_payload_size(struct PropertyType const *properties, uint32_t count)
+{
+  uint32_t size = 0;
+  if (!properties || !count) {
+    return 0;
+  }
+  FOR_LOOP(i, count) {
+    struct PropertyType const *field = &properties[i];
+    uint32_t end = (uint32_t)field->Offset + (uint32_t)field->DataSize;
+    if (end > size) {
+      size = end;
+    }
+  }
+  return size;
+}
+
+bool_t
+OBJ_RegisterMessageDesc(struct MessageDesc const *desc)
+{
+  if (!desc || !desc->MessageName) {
+    return FALSE;
+  }
+
+  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
+    if (core.message_types[i].used &&
+        !strcmp(core.message_types[i].desc.MessageName, desc->MessageName)) {
+      return TRUE;
+    }
+    if (!core.message_types[i].used) {
+      core.message_types[i].desc = *desc;
+      core.message_types[i].used = TRUE;
+      return TRUE;
+    }
+  }
+
+  Con_Error("No space left to register message type %s", desc->MessageName);
+  return FALSE;
+}
+
+struct MessageDesc const *
+OBJ_FindMessageDesc(char const* message_name)
+{
+  if (!message_name) {
+    return NULL;
+  }
+  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
+    if (core.message_types[i].used &&
+        !strcmp(core.message_types[i].desc.MessageName, message_name)) {
+      return &core.message_types[i].desc;
+    }
+  }
+  return NULL;
+}
+
+struct MessageDesc const *
+OBJ_FindMessageDescW(uint32_t message_id)
+{
+  if (!message_id) {
+    return NULL;
+  }
+  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
+    if (core.message_types[i].used &&
+        core.message_types[i].desc.MessageID == message_id) {
+      return &core.message_types[i].desc;
+    }
+  }
+  return NULL;
+}
+
 bool_t
 OBJ_RegisterMessagePropertyTypes(char const* message_name, 
                                   struct PropertyType* properties, 
                                   uint32_t count)
 {
+  if (!message_name) {
+    return FALSE;
+  }
+
   FOR_LOOP(i, MAX_MESSAGE_TYPES) {
-    if (!core.message_properties[i].message_name) {
-      core.message_properties[i].message_name = message_name;
-      core.message_properties[i].properties = properties;
-      core.message_properties[i].count = count;
+    if (core.message_types[i].used &&
+        !strcmp(core.message_types[i].desc.MessageName, message_name)) {
       return TRUE;
-    } else if (!strcmp(core.message_properties[i].message_name, message_name)) {
-      // Already registered
+    }
+    if (!core.message_types[i].used) {
+      struct message_desc_entry *entry = &core.message_types[i];
+      uint32_t payload_size = message_payload_size((struct PropertyType const *)properties, count);
+      entry->payload_storage.StructName = message_name;
+      entry->payload_storage.Properties = (struct PropertyType const *)properties;
+      entry->payload_storage.NumProperties = count;
+      entry->payload_storage.StructSize = payload_size;
+      entry->desc.MessageName = message_name;
+      entry->desc.MessageID = fnv1a32(message_name);
+      entry->desc.Payload = &entry->payload_storage;
+      entry->desc.ExtraData = NULL;
+      entry->used = TRUE;
       return TRUE;
     }
   }
@@ -128,15 +211,13 @@ OBJ_FindMessagePropertyTypes(char const* message_name, uint32_t* out_count)
   if (!message_name || !out_count) {
     return NULL;
   }
-  
-  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
-    if (core.message_properties[i].message_name &&
-        !strcmp(core.message_properties[i].message_name, message_name)) {
-      *out_count = core.message_properties[i].count;
-      return core.message_properties[i].properties;
-    }
+
+  struct MessageDesc const *desc = OBJ_FindMessageDesc(message_name);
+  if (desc && desc->Payload) {
+    *out_count = desc->Payload->NumProperties;
+    return (struct PropertyType *)desc->Payload->Properties;
   }
-  
+
   *out_count = 0;
   return NULL;
 }
@@ -753,7 +834,6 @@ before_core_module_registered(lua_State* L)
   memset(&core, 0, sizeof(struct game));
   memcpy(core.classes, saved_classes, sizeof(core.classes));
   core.realtime = axGetMilliseconds();
-  core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
 
   // Register pure-C struct parsers so parse_property works without a Lua state

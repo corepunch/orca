@@ -444,8 +444,10 @@ ORCA_API int luaopen_orca_renderer(lua_State *L) {
 	}));
 	void on_renderer_module_registered(lua_State *L);
 	on_renderer_module_registered(L);
-	OBJ_RegisterMessagePropertyTypes("Window.Paint", _Window_PaintEventArgs_Properties, 2);
-	OBJ_RegisterMessagePropertyTypes("Window.Resized", _Window_ResizedEventArgs_Properties, 2);
+	REGISTER_MESSAGE_TYPE(ID_Window_Paint, "Window.Paint", Window_PaintEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Window_Resized, "Window.Resized", Window_ResizedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Window_Closed, "Window.Closed", Window_ClosedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Window_ChangedScreen, "Window.ChangedScreen", Window_ChangedScreenEventArgs);
 		lua_setfield(L, ((void)luaopen_orca_Window_PaintEventArgs(L), -2), "Window_PaintEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Window_ResizedEventArgs(L), -2), "Window_ResizedEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Window_ClosedEventArgs(L), -2), "Window_ClosedEventArgs");

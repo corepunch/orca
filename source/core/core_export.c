@@ -4,7 +4,6 @@
 #include <include/codegen.h>
 
 #include "core.h"
-#include "core_local.h"
 
 // localization
 extern void luaX_pushlocalization(lua_State *L, struct localization const* value);
@@ -1394,6 +1393,8 @@ static struct PropertyType const EventTriggerProperties[kEventTriggerNumProperti
 static struct EventTrigger EventTriggerDefaults = {
 };
 LRESULT EventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+	}
 	return FALSE;
 }
 void luaX_pushEventTrigger(lua_State *L, struct EventTrigger const* EventTrigger) {
@@ -1404,40 +1405,6 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 }
 #define ID_Trigger 0xa5ea0da3
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
-static struct PropertyType const OnEventTriggerProperties[kOnEventTriggerNumProperties] = {
-	DECL(0x30d77e1a, OnEventTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnEventTrigger.RoutedEvent
-};
-static struct OnEventTrigger OnEventTriggerDefaults = {
-};
-LRESULT OnEventTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	return FALSE;
-}
-void luaX_pushOnEventTrigger(lua_State *L, struct OnEventTrigger const* OnEventTrigger) {
-	luaX_pushObject(L, CMP_GetObject(OnEventTrigger));
-}
-struct OnEventTrigger* luaX_checkOnEventTrigger(lua_State *L, int idx) {
-	return GetOnEventTrigger(luaX_checkObject(L, idx));
-}
-#define ID_Trigger 0xa5ea0da3
-REGISTER_CLASS(OnEventTrigger, ID_Trigger, 0);
-static struct PropertyType const OnClickTriggerProperties[kOnClickTriggerNumProperties] = {
-	DECL(0x30d77e1a, OnClickTrigger, RoutedEvent, RoutedEvent, kDataTypeString), // OnClickTrigger.RoutedEvent
-};
-static struct OnClickTrigger OnClickTriggerDefaults = {
-		
-  .RoutedEvent = "Node.LeftButtonUp",
-};
-LRESULT OnClickTriggerProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	return FALSE;
-}
-void luaX_pushOnClickTrigger(lua_State *L, struct OnClickTrigger const* OnClickTrigger) {
-	luaX_pushObject(L, CMP_GetObject(OnClickTrigger));
-}
-struct OnClickTrigger* luaX_checkOnClickTrigger(lua_State *L, int idx) {
-	return GetOnClickTrigger(luaX_checkObject(L, idx));
-}
-#define ID_Trigger 0xa5ea0da3
-REGISTER_CLASS(OnClickTrigger, ID_Trigger, 0);
 HANDLER(Setter, Trigger, Triggered);
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
 	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
@@ -1678,7 +1645,7 @@ int f_core_FlushQueue(lua_State *L) {
 	return 0;
 }
 int f_core_GetObjectCount(lua_State *L) {
-	lua_pushinteger(L, OBJ_GetObjectCount());
+	core_GetObjectCount(L );
 	return 1;
 }
 
@@ -1694,40 +1661,56 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	}));
 	void before_core_module_registered(lua_State *L);
 	before_core_module_registered(L);
-	OBJ_RegisterMessagePropertyTypes("Object.ThemeChanged", _Object_ThemeChangedEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Object.PropertyChanged", _Object_PropertyChangedEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Object.Attached", _Object_AttachedEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Object.Timer", _Object_TimerEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("AnimationPlayer.Play", _AnimationPlayer_PlayEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("StyleController.ThemeChanged", _StyleController_ThemeChangedEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("StyleController.AddClass", _StyleController_AddClassEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("StyleController.AddClasses", _StyleController_AddClassesEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("StateManagerController.ControllerChanged", _StateManagerController_ControllerChangedEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Trigger.Triggered", _Trigger_TriggeredEventArgs_Properties, 2);
-	OBJ_RegisterMessagePropertyTypes("Node.UpdateMatrix", _Node_UpdateMatrixEventArgs_Properties, 3);
-	OBJ_RegisterMessagePropertyTypes("Node.LoadView", _Node_LoadViewEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Node.HitTest", _Node_HitTestEventArgs_Properties, 2);
-	OBJ_RegisterMessagePropertyTypes("Node.MouseMessage", _Node_MouseMessageEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonDown", _Node_LeftButtonDownEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.RightButtonDown", _Node_RightButtonDownEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonDown", _Node_OtherButtonDownEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonUp", _Node_LeftButtonUpEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.RightButtonUp", _Node_RightButtonUpEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonUp", _Node_OtherButtonUpEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.LeftButtonDragged", _Node_LeftButtonDraggedEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.RightButtonDragged", _Node_RightButtonDraggedEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.OtherButtonDragged", _Node_OtherButtonDraggedEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.LeftDoubleClick", _Node_LeftDoubleClickEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.RightDoubleClick", _Node_RightDoubleClickEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.OtherDoubleClick", _Node_OtherDoubleClickEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.MouseMoved", _Node_MouseMovedEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.ScrollWheel", _Node_ScrollWheelEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.DragDrop", _Node_DragDropEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.DragEnter", _Node_DragEnterEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.KeyMessage", _Node_KeyMessageEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.KeyDown", _Node_KeyDownEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.KeyUp", _Node_KeyUpEventArgs_Properties, 6);
-	OBJ_RegisterMessagePropertyTypes("Node.TextInput", _Node_TextInputEventArgs_Properties, 6);
+	REGISTER_MESSAGE_TYPE(ID_Object_Create, "Object.Create", Object_CreateEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Start, "Object.Start", Object_StartEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Animate, "Object.Animate", Object_AnimateEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_ThemeChanged, "Object.ThemeChanged", Object_ThemeChangedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_PropertyChanged, "Object.PropertyChanged", Object_PropertyChangedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Attached, "Object.Attached", Object_AttachedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Release, "Object.Release", Object_ReleaseEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Destroy, "Object.Destroy", Object_DestroyEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Object_Timer, "Object.Timer", Object_TimerEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Play, "AnimationPlayer.Play", AnimationPlayer_PlayEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Resume, "AnimationPlayer.Resume", AnimationPlayer_ResumeEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Stop, "AnimationPlayer.Stop", AnimationPlayer_StopEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Pause, "AnimationPlayer.Pause", AnimationPlayer_PauseEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Started, "AnimationPlayer.Started", AnimationPlayer_StartedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Stopped, "AnimationPlayer.Stopped", AnimationPlayer_StoppedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_AnimationPlayer_Completed, "AnimationPlayer.Completed", AnimationPlayer_CompletedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_StyleController_ThemeChanged, "StyleController.ThemeChanged", StyleController_ThemeChangedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_StyleController_AddClass, "StyleController.AddClass", StyleController_AddClassEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_StyleController_AddClasses, "StyleController.AddClasses", StyleController_AddClassesEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_StateManagerController_ControllerChanged, "StateManagerController.ControllerChanged", StateManagerController_ControllerChangedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Trigger_Triggered, "Trigger.Triggered", Trigger_TriggeredEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_UpdateMatrix, "Node.UpdateMatrix", Node_UpdateMatrixEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_LoadView, "Node.LoadView", Node_LoadViewEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_HitTest, "Node.HitTest", Node_HitTestEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_IsVisible, "Node.IsVisible", Node_IsVisibleEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_ViewDidLoad, "Node.ViewDidLoad", Node_ViewDidLoadEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_KillFocus, "Node.KillFocus", Node_KillFocusEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_SetFocus, "Node.SetFocus", Node_SetFocusEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_GetSize, "Node.GetSize", Node_GetSizeEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_MouseMessage, "Node.MouseMessage", Node_MouseMessageEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_LeftButtonDown, "Node.LeftButtonDown", Node_LeftButtonDownEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_RightButtonDown, "Node.RightButtonDown", Node_RightButtonDownEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_OtherButtonDown, "Node.OtherButtonDown", Node_OtherButtonDownEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_LeftButtonUp, "Node.LeftButtonUp", Node_LeftButtonUpEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_RightButtonUp, "Node.RightButtonUp", Node_RightButtonUpEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_OtherButtonUp, "Node.OtherButtonUp", Node_OtherButtonUpEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_LeftButtonDragged, "Node.LeftButtonDragged", Node_LeftButtonDraggedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_RightButtonDragged, "Node.RightButtonDragged", Node_RightButtonDraggedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_OtherButtonDragged, "Node.OtherButtonDragged", Node_OtherButtonDraggedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_LeftDoubleClick, "Node.LeftDoubleClick", Node_LeftDoubleClickEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_RightDoubleClick, "Node.RightDoubleClick", Node_RightDoubleClickEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_OtherDoubleClick, "Node.OtherDoubleClick", Node_OtherDoubleClickEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_MouseMoved, "Node.MouseMoved", Node_MouseMovedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_ScrollWheel, "Node.ScrollWheel", Node_ScrollWheelEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_DragDrop, "Node.DragDrop", Node_DragDropEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_DragEnter, "Node.DragEnter", Node_DragEnterEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_KeyMessage, "Node.KeyMessage", Node_KeyMessageEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_KeyDown, "Node.KeyDown", Node_KeyDownEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_KeyUp, "Node.KeyUp", Node_KeyUpEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Node_TextInput, "Node.TextInput", Node_TextInputEventArgs);
 	lua_setfield(L, ((void)luaopen_orca_AnimationClipReference(L), -2), "AnimationClipReference");
 	lua_setfield(L, ((void)luaopen_orca_Keyframe(L), -2), "Keyframe");
 	lua_setfield(L, ((void)luaopen_orca_LocaleEntry(L), -2), "LocaleEntry");
@@ -1808,8 +1791,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_EventTrigger), -2), "EventTrigger");
-	lua_setfield(L, ((void)lua_pushclass(L, &_OnEventTrigger), -2), "OnEventTrigger");
-	lua_setfield(L, ((void)lua_pushclass(L, &_OnClickTrigger), -2), "OnClickTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
 	lua_setfield(L, ((void)lua_pushclass(L, &_ShowModalAction), -2), "ShowModalAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_HideAction), -2), "HideAction");

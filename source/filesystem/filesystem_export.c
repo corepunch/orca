@@ -456,9 +456,11 @@ ORCA_API int luaopen_orca_filesystem(lua_State *L) {
 	}));
 	void on_filesystem_module_registered(lua_State *L);
 	on_filesystem_module_registered(L);
-	OBJ_RegisterMessagePropertyTypes("Project.OpenFile", _Project_OpenFileEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Project.FileExists", _Project_FileExistsEventArgs_Properties, 1);
-	OBJ_RegisterMessagePropertyTypes("Project.LoadProject", _Project_LoadProjectEventArgs_Properties, 1);
+	REGISTER_MESSAGE_TYPE(ID_Workspace_ReadCommands, "Workspace.ReadCommands", Workspace_ReadCommandsEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Project_OpenFile, "Project.OpenFile", Project_OpenFileEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Project_FileExists, "Project.FileExists", Project_FileExistsEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Project_HasChangedFiles, "Project.HasChangedFiles", Project_HasChangedFilesEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Project_LoadProject, "Project.LoadProject", Project_LoadProjectEventArgs);
 	lua_setfield(L, ((void)luaopen_orca_ProjectReference(L), -2), "ProjectReference");
 	lua_setfield(L, ((void)luaopen_orca_EnginePlugin(L), -2), "EnginePlugin");
 	lua_setfield(L, ((void)luaopen_orca_SystemMessage(L), -2), "SystemMessage");

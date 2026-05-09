@@ -155,32 +155,6 @@ _IsNodeTriggerMessage(uint32_t MsgID)
   }
 }
 
-static bool_t
-_IsNodeMouseTriggerMessage(uint32_t MsgID)
-{
-  switch (MsgID) {
-    case ID_Node_LeftButtonDown:
-    case ID_Node_RightButtonDown:
-    case ID_Node_OtherButtonDown:
-    case ID_Node_LeftButtonUp:
-    case ID_Node_RightButtonUp:
-    case ID_Node_OtherButtonUp:
-    case ID_Node_LeftButtonDragged:
-    case ID_Node_RightButtonDragged:
-    case ID_Node_OtherButtonDragged:
-    case ID_Node_LeftDoubleClick:
-    case ID_Node_RightDoubleClick:
-    case ID_Node_OtherDoubleClick:
-    case ID_Node_MouseMoved:
-    case ID_Node_ScrollWheel:
-    case ID_Node_DragDrop:
-    case ID_Node_DragEnter:
-      return TRUE;
-    default:
-      return FALSE;
-  }
-}
-
 static lpcString_t
 _NodeTriggerMessageName(uint32_t MsgID)
 {
@@ -248,14 +222,6 @@ _DispatchEventTriggerSpecialCase(struct Object *receiver,
   if (event_trigger && _FireRoutedTrigger(receiver, event_trigger->RoutedEvent, routed_event, sender)) {
     return TRUE;
   }
-  struct OnEventTrigger const *on_event_trigger = GetOnEventTrigger(receiver);
-  if (on_event_trigger && _FireRoutedTrigger(receiver, on_event_trigger->RoutedEvent, routed_event, sender)) {
-    return TRUE;
-  }
-  struct OnClickTrigger const *on_click_trigger = GetOnClickTrigger(receiver);
-  if (on_click_trigger && _FireRoutedTrigger(receiver, on_click_trigger->RoutedEvent, routed_event, sender)) {
-    return TRUE;
-  }
   return FALSE;
 }
 
@@ -270,7 +236,6 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
   }
 
   lParam_t trigger_param = lParam;
-
   // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
   FOR_LOOP(i, node->NumTriggers) {
     struct Object *trigger = node->Triggers[i];
@@ -282,8 +247,6 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
                                                        wParam,
                                                        trigger_param,
                                                        node_object);
-    // Node trigger dispatch is consumption-aware: once a trigger handles
-    // the event, later triggers do not receive this message.
     if (handled) {
       return handled;
     }

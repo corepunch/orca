@@ -439,7 +439,7 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
-	OBJ_RegisterMessagePropertyTypes("Node3D.Render", _Node3D_RenderEventArgs_Properties, 1);
+	REGISTER_MESSAGE_TYPE(ID_Node3D_Render, "Node3D.Render", Node3D_RenderEventArgs);
 		lua_setfield(L, ((void)luaopen_orca_Node3D_RenderEventArgs(L), -2), "Node3D_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");

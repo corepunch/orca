@@ -44,12 +44,12 @@
 struct lua_State;
 struct alias;
 
-// Message property type registry entry
-struct message_property_entry
+// Message descriptor registry entry
+struct message_desc_entry
 {
-  char const* message_name;           // Full message name (e.g. "AnimationPlayer.Play")
-  struct PropertyType* properties;    // Property array for message fields
-  uint32_t count;                     // Number of properties
+  struct MessageDesc desc; // resolved descriptor used at runtime
+  struct StructDesc payload_storage; // backing storage for legacy registration path
+  bool_t used;
 };
 
 // Parsed style class selector (e.g., "button:hover/50")
@@ -91,7 +91,6 @@ struct property_program;
 
 struct game
 {
-  lua_State *L;
   longTime_t realtime;
   uint32_t frame;
   struct Object *focus;
@@ -104,7 +103,7 @@ struct game
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct property_program* programs;
-  struct message_property_entry message_properties[MAX_MESSAGE_TYPES];
+  struct message_desc_entry message_types[MAX_MESSAGE_TYPES];
 };
 
 // stateman.c
