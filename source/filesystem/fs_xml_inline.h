@@ -21,5 +21,6 @@ bool_t _LoadEventTriggerFromXmlFragment(struct Object *obj,
 struct Object *_LoadObjectFromXmlFragment(lpcString_t text,
                                           lpcString_t prop_name,
                                           int positional_start);
+char *_NormalizeXmlShorthand(lpcString_t xml);
 
 #endif

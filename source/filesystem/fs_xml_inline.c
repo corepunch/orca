@@ -132,6 +132,58 @@ _InlineBufferAppendChar(char **buf, size_t *len, size_t *cap, char ch)
   (*buf)[*len] = '\0';
 }
 
+static const char *
+_XmlFindTagEnd(const char *p)
+{
+  char quote = 0;
+  while (*p) {
+    if (quote) {
+      if (*p == quote) {
+        quote = 0;
+      }
+    } else if (*p == '"' || *p == '\'') {
+      quote = *p;
+    } else if (*p == '>') {
+      return p;
+    }
+    p++;
+  }
+  return NULL;
+}
+
+static bool_t
+_XmlIsPositionalProperty(struct ClassDesc const *cls,
+                         struct PropertyType const *field)
+{
+  if (!cls || !field) {
+    return FALSE;
+  }
+  if (cls->NumProperties > 1 &&
+      !strcmp(field->Name, "Trigger") &&
+      field->DataType == kDataTypeObject) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+static struct PropertyType const *
+_XmlFindNextPositionalField(struct ClassDesc const *cls,
+                           bool_t *used,
+                           int *cursor)
+{
+  if (!cls) {
+    return NULL;
+  }
+  while (*cursor < (int)cls->NumProperties) {
+    int idx = (*cursor)++;
+    struct PropertyType const *field = &cls->Properties[idx];
+    if ((!used || !used[idx]) && _XmlIsPositionalProperty(cls, field)) {
+      return field;
+    }
+  }
+  return NULL;
+}
+
 static void
 _InlineBufferAppendEscaped(char **buf, size_t *len, size_t *cap, const char *text)
 {
@@ -576,4 +628,155 @@ _LoadEventTriggerFromXmlFragment(struct Object *obj,
   }
 
   return TRUE;
+}
+
+char *
+_NormalizeXmlShorthand(lpcString_t xml)
+{
+  if (!xml) return NULL;
+
+  size_t cap = strlen(xml) + 1;
+  char *out = (char *)calloc(cap, 1);
+  size_t len = 0;
+  const char *p = xml;
+  if (!out) return NULL;
+
+  while (*p) {
+    const char *lt = strchr(p, '<');
+    if (!lt) {
+      _InlineBufferAppend(&out, &len, &cap, p);
+      break;
+    }
+
+    _InlineBufferAppendN(&out, &len, &cap, p, (size_t)(lt - p));
+
+    if (!strncmp(lt, "<!--", 4)) {
+      const char *end = strstr(lt + 4, "-->");
+      if (!end) {
+        _InlineBufferAppend(&out, &len, &cap, lt);
+        break;
+      }
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 3 - lt));
+      p = end + 3;
+      continue;
+    }
+
+    if (!strncmp(lt, "<?", 2)) {
+      const char *end = strstr(lt + 2, "?>");
+      if (!end) {
+        _InlineBufferAppend(&out, &len, &cap, lt);
+        break;
+      }
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 2 - lt));
+      p = end + 2;
+      continue;
+    }
+
+    if (lt[1] == '!' || lt[1] == '/') {
+      const char *end = strchr(lt, '>');
+      if (!end) {
+        _InlineBufferAppend(&out, &len, &cap, lt);
+        break;
+      }
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
+
+    const char *name_start = lt + 1;
+    const char *name_end = name_start;
+    while (*name_end &&
+           (isalnum((unsigned char)*name_end) ||
+            *name_end == '_' ||
+            *name_end == '-' ||
+            *name_end == ':' ||
+            *name_end == '.')) {
+      name_end++;
+    }
+    if (name_end == name_start) {
+      _InlineBufferAppendChar(&out, &len, &cap, *lt);
+      p = lt + 1;
+      continue;
+    }
+
+    const char *end = _XmlFindTagEnd(name_end);
+    if (!end) {
+      _InlineBufferAppend(&out, &len, &cap, lt);
+      break;
+    }
+
+    char *class_name = _InlineStrNDup(name_start, (size_t)(name_end - name_start));
+    struct ClassDesc const *cls = class_name ? OBJ_FindClass(class_name) : NULL;
+    free(class_name);
+    if (!cls) {
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
+
+    const char *body_start = name_end;
+    const char *body_end = end;
+    while (body_end > body_start && isspace((unsigned char)body_end[-1])) {
+      body_end--;
+    }
+    bool_t self_closing = FALSE;
+    if (body_end > body_start && body_end[-1] == '/') {
+      self_closing = TRUE;
+      body_end--;
+      while (body_end > body_start && isspace((unsigned char)body_end[-1])) {
+        body_end--;
+      }
+    }
+
+    const char *q = body_start;
+    while (q < body_end && isspace((unsigned char)*q)) {
+      q++;
+    }
+    if (q >= body_end) {
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
+
+    const char *token_start = q;
+    while (q < body_end && !isspace((unsigned char)*q) && *q != '=') {
+      q++;
+    }
+    const char *token_end = q;
+    const char *after_token = q;
+    while (after_token < body_end && isspace((unsigned char)*after_token)) {
+      after_token++;
+    }
+
+    if (after_token < body_end && *after_token == '=') {
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
+
+    int cursor = 0;
+    struct PropertyType const *field = _XmlFindNextPositionalField(cls, NULL, &cursor);
+    if (!field) {
+      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
+
+    _InlineBufferAppendChar(&out, &len, &cap, '<');
+    _InlineBufferAppendN(&out, &len, &cap, name_start, (size_t)(name_end - name_start));
+    _InlineBufferAppendChar(&out, &len, &cap, ' ');
+    _InlineBufferAppend(&out, &len, &cap, field->Name);
+    _InlineBufferAppend(&out, &len, &cap, "=\"");
+    _InlineBufferAppendN(&out, &len, &cap, token_start, (size_t)(token_end - token_start));
+    _InlineBufferAppendChar(&out, &len, &cap, '"');
+    if (after_token < body_end) {
+      _InlineBufferAppendChar(&out, &len, &cap, ' ');
+    }
+    _InlineBufferAppendN(&out, &len, &cap, after_token, (size_t)(body_end - after_token));
+    _InlineBufferAppend(&out, &len, &cap, self_closing ? "/>" : ">");
+
+    p = end + 1;
+  }
+
+  return out;
 }

@@ -414,16 +414,21 @@ FS_LoadObjectFromXml(lpcString_t path)
   if (!path) return NULL;
   struct file* fp = FS_LoadFile(path);
   if (fp) {
-    xmlDoc* doc = xmlReadMemory((lpcString_t)fp->data, (int)fp->size,
+    char *normalized = _NormalizeXmlShorthand((lpcString_t)fp->data);
+    const char *xml_text = normalized ? normalized : (lpcString_t)fp->data;
+    int xml_len = normalized ? (int)strlen(xml_text) : (int)fp->size;
+    xmlDoc* doc = xmlReadMemory(xml_text, xml_len,
                                 path, NULL, XML_FLAGS);
     FS_FreeFile(fp);
     if (!doc) {
+      free(normalized);
       Con_Error("Failed to parse '%s'", path);
       return NULL;
     }
     xmlNodePtr root = xmlDocGetRootElement(doc);
     struct Object *result = root ? FS_ConstructNode(root) : NULL;
     xmlFreeDoc(doc);
+    free(normalized);
     if (result) {
       OBJ_SetSourceFile(result, path);
 //      OBJ_RegisterPrefab(result, path);
@@ -445,15 +450,19 @@ FS_LoadObjectFromXML(lpcString_t path)
 ORCA_API struct Object *
 FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
-  xmlDoc* doc = xmlReadMemory(xml_string, (int)strlen(xml_string),
+  char *normalized = _NormalizeXmlShorthand(xml_string);
+  const char *xml_text = normalized ? normalized : xml_string;
+  xmlDoc* doc = xmlReadMemory(xml_text, normalized ? (int)strlen(xml_text) : (int)strlen(xml_string),
                               NULL, NULL, XML_FLAGS);
   if (!doc) {
+    free(normalized);
     Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
     return NULL;
   }
   xmlNodePtr root = xmlDocGetRootElement(doc);
   struct Object *result = root ? FS_ConstructNode(root) : NULL;
   xmlFreeDoc(doc);
+  free(normalized);
   return result;
 }
 
