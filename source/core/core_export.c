@@ -4,6 +4,7 @@
 #include <include/codegen.h>
 
 #include "core.h"
+#include "core_local.h"
 
 // localization
 extern void luaX_pushlocalization(lua_State *L, struct localization const* value);
