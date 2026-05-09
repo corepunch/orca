@@ -21,9 +21,10 @@ extern int parse_property(const char* str, struct PropertyType const* prop, void
 
 
 static luaL_Reg _Node3D_RenderEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node3D_RenderEventArgs[] = {
+struct PropertyType _Node3D_RenderEventArgs_Properties[] = {
 	DECL(0xce9ab61f, Node3D_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // Node3D_RenderEventArgs.ViewDef
 };
+#define _Node3D_RenderEventArgs _Node3D_RenderEventArgs_Properties
 
 STRUCT(Node3D_RenderEventArgs, Node3D_RenderEventArgs);
 HANDLER(Node3D, Node, UpdateMatrix);
@@ -438,6 +439,7 @@ ORCA_API int luaopen_orca_SceneKit(lua_State *L) {
 	luaL_newlib(L, ((luaL_Reg[]) { 
 		{ NULL, NULL } 
 	}));
+	OBJ_RegisterMessagePropertyTypes("Node3D.Render", _Node3D_RenderEventArgs_Properties, 1);
 		lua_setfield(L, ((void)luaopen_orca_Node3D_RenderEventArgs(L), -2), "Node3D_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node3D), -2), "Node3D");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Scene), -2), "Scene");

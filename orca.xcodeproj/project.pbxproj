@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7800000001000000000000001 /* Node.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000002 /* Node.c */; };
 		7800000001000000000000003 /* Trigger.c in Sources */ = {isa = PBXBuildFile; fileRef = 7800000001000000000000004 /* Trigger.c */; };
+		78E9D0A12F9A100100ABCDEF /* SendMessageAction.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */; };
 		7810D29C2D58C98700DB632F /* orcalib.c in Sources */ = {isa = PBXBuildFile; fileRef = 786BFCD72AFA403F00216782 /* orcalib.c */; };
 		7810D3102D58F7FE00DB632F /* fs_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 7810D30F2D58F7FA00DB632F /* fs_local.h */; };
 		7810D3132D5902C200DB632F /* liborca.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7810D25E2D58A81100DB632F /* liborca.so */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -442,6 +443,7 @@
 /* Begin PBXFileReference section */
 		7800000001000000000000002 /* Node.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Node.c; sourceTree = "<group>"; };
 		7800000001000000000000004 /* Trigger.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Trigger.c; sourceTree = "<group>"; };
+		78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SendMessageAction.c; sourceTree = "<group>"; };
 		7808CD8D2D9EC93A00D484F9 /* backend.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = backend.c; sourceTree = "<group>"; };
 		7808CD8F2D9ECB2400D484F9 /* queue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = queue.c; sourceTree = "<group>"; };
 		780C82682E01EE7100228DEC /* Light3D.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = Light3D.c; sourceTree = "<group>"; };
@@ -1088,6 +1090,7 @@
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
 				7800000001000000000000002 /* Node.c */,
 				7800000001000000000000004 /* Trigger.c */,
+				78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */,
 				781CA77A2E1557B900FFCFD9 /* Locale.c */,
 			);
 			path = components;
@@ -1970,6 +1973,7 @@
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
 				7800000001000000000000001 /* Node.c in Sources */,
 				7800000001000000000000003 /* Trigger.c in Sources */,
+				78E9D0A12F9A100100ABCDEF /* SendMessageAction.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */,
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
 				78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */,

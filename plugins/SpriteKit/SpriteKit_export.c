@@ -29,9 +29,10 @@ static luaL_Reg _SpriteFrame_Methods[] = {
 STRUCT(SpriteFrame, SpriteFrame);
 
 static luaL_Reg _SKNode_RenderEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _SKNode_RenderEventArgs[] = {
+struct PropertyType _SKNode_RenderEventArgs_Properties[] = {
 	DECL(0xce9ab61f, SKNode_RenderEventArgs, ViewDef, ViewDef, kDataTypeStruct, .TypeString = "ViewDef"), // SKNode_RenderEventArgs.ViewDef
 };
+#define _SKNode_RenderEventArgs _SKNode_RenderEventArgs_Properties
 
 STRUCT(SKNode_RenderEventArgs, SKNode_RenderEventArgs);
 static struct PropertyType const SpriteAnimationProperties[kSpriteAnimationNumProperties] = {
@@ -181,6 +182,7 @@ ORCA_API int luaopen_orca_SpriteKit(lua_State *L) {
 	}));
 	void on_spritekit_module_registered(lua_State *L);
 	on_spritekit_module_registered(L);
+	OBJ_RegisterMessagePropertyTypes("SKNode.Render", _SKNode_RenderEventArgs_Properties, 1);
 	lua_setfield(L, ((void)luaopen_orca_SpriteFrame(L), -2), "SpriteFrame");
 		lua_setfield(L, ((void)luaopen_orca_SKNode_RenderEventArgs(L), -2), "SKNode_RenderEventArgs");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SpriteAnimation), -2), "SpriteAnimation");

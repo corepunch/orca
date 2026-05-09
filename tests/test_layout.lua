@@ -14,6 +14,7 @@ test.expect(core.OnClickTrigger ~= nil, "OnClickTrigger should be exported from 
 test.expect(core.OnEventTrigger ~= nil, "OnEventTrigger should be exported from orca.core")
 test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
+test.expect(core.SendMessageAction ~= nil, "SendMessageAction should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
 
 local function pump_messages(root)
@@ -443,6 +444,45 @@ local function test_xml_loading_on_event_trigger_components()
 	print("PASS: test_xml_loading_on_event_trigger_components")
 end
 
+local function test_xml_loading_send_message_action_components()
+	local xml = [[
+	<Screen Name="send-message-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF">
+	    <Node.Triggers>
+	      <OnEventTrigger RoutedEvent="Node.LeftButtonUp">
+	        <SendMessageAction Message="Node.RightButtonUp" Target="../Receiver"/>
+	      </OnEventTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	  <TextBlock Name="Victim" Text="Should hide" Visible="TRUE" FontSize="16" ForegroundColor="#FFFFFF"/>
+	  <TextBlock Name="Receiver" Text="Receiver" FontSize="16" ForegroundColor="#FFFFFF">
+	    <Node.Triggers>
+	      <OnEventTrigger RoutedEvent="Node.RightButtonUp">
+	        <HideAction Path="../Victim"/>
+	      </OnEventTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "send-message-action XML should load")
+
+	local source = root:findChild("Source", true)
+	local receiver = root:findChild("Receiver", true)
+	local victim = root:findChild("Victim", true)
+
+	test.expect(source ~= nil, "Source should exist")
+	test.expect(receiver ~= nil, "Receiver should exist")
+	test.expect(victim ~= nil, "Victim should exist")
+	source:send("Node.LeftButtonUp")
+	test.expect(not victim.Visible, "Victim should be hidden by SendMessageAction dispatching Node.RightButtonUp")
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_send_message_action_components")
+end
+
 -- ---------------------------------------------------------------------------
 -- TabView should measure only the active panel, not the tallest hidden panel
 -- ---------------------------------------------------------------------------
@@ -670,6 +710,7 @@ test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
 test_xml_loading_on_event_trigger_components()
+test_xml_loading_send_message_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 

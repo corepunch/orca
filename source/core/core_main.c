@@ -102,6 +102,45 @@ OBJ_FindClassW(uint32_t class_id)
   return NULL;
 }
 
+bool_t
+OBJ_RegisterMessagePropertyTypes(char const* message_name, 
+                                  struct PropertyType* properties, 
+                                  uint32_t count)
+{
+  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
+    if (!core.message_properties[i].message_name) {
+      core.message_properties[i].message_name = message_name;
+      core.message_properties[i].properties = properties;
+      core.message_properties[i].count = count;
+      return TRUE;
+    } else if (!strcmp(core.message_properties[i].message_name, message_name)) {
+      // Already registered
+      return TRUE;
+    }
+  }
+  Con_Error("No space left to register message property types for %s", message_name);
+  return FALSE;
+}
+
+struct PropertyType*
+OBJ_FindMessagePropertyTypes(char const* message_name, uint32_t* out_count)
+{
+  if (!message_name || !out_count) {
+    return NULL;
+  }
+  
+  FOR_LOOP(i, MAX_MESSAGE_TYPES) {
+    if (core.message_properties[i].message_name &&
+        !strcmp(core.message_properties[i].message_name, message_name)) {
+      *out_count = core.message_properties[i].count;
+      return core.message_properties[i].properties;
+    }
+  }
+  
+  *out_count = 0;
+  return NULL;
+}
+
 struct ClassDesc const *
 OBJ_FindClass(lpcString_t classname)
 {
@@ -778,6 +817,10 @@ ORCA_API void core_FlushQueue(lua_State* L) {
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);
   }
+}
+
+ORCA_API void core_GetObjectCount(lua_State* L) {
+  lua_pushinteger(L, OBJ_GetObjectCount());
 }
 
 

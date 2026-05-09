@@ -105,12 +105,13 @@ STRUCT(UnderlineShorthand, UnderlineShorthand);
 #define Node2D_ArrangeOverrideEventArgs Node2D_ArrangeEventArgs
 
 static luaL_Reg _TextBlockConcept_MakeTextEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TextBlockConcept_MakeTextEventArgs[] = {
+struct PropertyType _TextBlockConcept_MakeTextEventArgs_Properties[] = {
 	DECL(0xbde64e3e, TextBlockConcept_MakeTextEventArgs, text, text, kDataTypeStruct, .TypeString = "ViewText"), // TextBlockConcept_MakeTextEventArgs.text
 	DECL(0xa7e2407e, TextBlockConcept_MakeTextEventArgs, availableSpace, availableSpace, kDataTypeInt), // TextBlockConcept_MakeTextEventArgs.availableSpace
 };
+#define _TextBlockConcept_MakeTextEventArgs _TextBlockConcept_MakeTextEventArgs_Properties
 static luaL_Reg _Node2D_DrawBrushEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_DrawBrushEventArgs[] = {
+struct PropertyType _Node2D_DrawBrushEventArgs_Properties[] = {
 	DECL(0xe4497980, Node2D_DrawBrushEventArgs, projection, projection, kDataTypeStruct, .TypeString = "Matrix3D"), // Node2D_DrawBrushEventArgs.projection
 	DECL(0xb35135fa, Node2D_DrawBrushEventArgs, image, image, kDataTypeObject, .TypeString = "Texture"), // Node2D_DrawBrushEventArgs.image
 	DECL(0xfac46df3, Node2D_DrawBrushEventArgs, brush, brush, kDataTypeStruct, .TypeString = "BrushShorthand"), // Node2D_DrawBrushEventArgs.brush
@@ -119,110 +120,133 @@ static struct PropertyType _Node2D_DrawBrushEventArgs[] = {
 	DECL(0x083a85c0, Node2D_DrawBrushEventArgs, foreground, foreground, kDataTypeBool), // Node2D_DrawBrushEventArgs.foreground
 	DECL(0xad6aa1df, Node2D_DrawBrushEventArgs, viewdef, viewdef, kDataTypeStruct, .TypeString = "ViewDef"), // Node2D_DrawBrushEventArgs.viewdef
 };
+#define _Node2D_DrawBrushEventArgs _Node2D_DrawBrushEventArgs_Properties
 static luaL_Reg _Node2D_MeasureEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_MeasureEventArgs[] = {
+struct PropertyType _Node2D_MeasureEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Node2D_MeasureEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureEventArgs.Width
 	DECL(0x1bd13562, Node2D_MeasureEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureEventArgs.Height
 };
+#define _Node2D_MeasureEventArgs _Node2D_MeasureEventArgs_Properties
 static luaL_Reg _Node2D_ArrangeEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_ArrangeEventArgs[] = {
+struct PropertyType _Node2D_ArrangeEventArgs_Properties[] = {
 	DECL(0xdd0c1e27, Node2D_ArrangeEventArgs, X, X, kDataTypeFloat), // Node2D_ArrangeEventArgs.X
 	DECL(0xdc0c1c94, Node2D_ArrangeEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeEventArgs.Y
 	DECL(0x3b42dfbf, Node2D_ArrangeEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeEventArgs.Width
 	DECL(0x1bd13562, Node2D_ArrangeEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeEventArgs.Height
 };
+#define _Node2D_ArrangeEventArgs _Node2D_ArrangeEventArgs_Properties
 static luaL_Reg _Node2D_MeasureOverrideEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_MeasureOverrideEventArgs[] = {
+struct PropertyType _Node2D_MeasureOverrideEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Node2D_MeasureOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Width
 	DECL(0x1bd13562, Node2D_MeasureOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_MeasureOverrideEventArgs.Height
 };
+#define _Node2D_MeasureOverrideEventArgs _Node2D_MeasureOverrideEventArgs_Properties
 static luaL_Reg _Node2D_ArrangeOverrideEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_ArrangeOverrideEventArgs[] = {
+struct PropertyType _Node2D_ArrangeOverrideEventArgs_Properties[] = {
 	DECL(0xdd0c1e27, Node2D_ArrangeOverrideEventArgs, X, X, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.X
 	DECL(0xdc0c1c94, Node2D_ArrangeOverrideEventArgs, Y, Y, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Y
 	DECL(0x3b42dfbf, Node2D_ArrangeOverrideEventArgs, Width, Width, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Width
 	DECL(0x1bd13562, Node2D_ArrangeOverrideEventArgs, Height, Height, kDataTypeFloat), // Node2D_ArrangeOverrideEventArgs.Height
 };
+#define _Node2D_ArrangeOverrideEventArgs _Node2D_ArrangeOverrideEventArgs_Properties
 static luaL_Reg _Node2D_ForegroundContentEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_ForegroundContentEventArgs[] = {
+struct PropertyType _Node2D_ForegroundContentEventArgs_Properties[] = {
 };
+#define _Node2D_ForegroundContentEventArgs _Node2D_ForegroundContentEventArgs_Properties
 static luaL_Reg _Node2D_UpdateGeometryEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_UpdateGeometryEventArgs[] = {
+struct PropertyType _Node2D_UpdateGeometryEventArgs_Properties[] = {
 };
+#define _Node2D_UpdateGeometryEventArgs _Node2D_UpdateGeometryEventArgs_Properties
 static luaL_Reg _Node2D_SetScrollTopEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Node2D_SetScrollTopEventArgs[] = {
+struct PropertyType _Node2D_SetScrollTopEventArgs_Properties[] = {
 	DECL(0xd147f96a, Node2D_SetScrollTopEventArgs, Value, Value, kDataTypeFloat), // Node2D_SetScrollTopEventArgs.Value
 };
+#define _Node2D_SetScrollTopEventArgs _Node2D_SetScrollTopEventArgs_Properties
 static luaL_Reg _Button_ClickEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Button_ClickEventArgs[] = {
+struct PropertyType _Button_ClickEventArgs_Properties[] = {
 };
+#define _Button_ClickEventArgs _Button_ClickEventArgs_Properties
 static luaL_Reg _Form_SubmitEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Form_SubmitEventArgs[] = {
+struct PropertyType _Form_SubmitEventArgs_Properties[] = {
 };
+#define _Form_SubmitEventArgs _Form_SubmitEventArgs_Properties
 static luaL_Reg _RadioGroup_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _RadioGroup_SelectionChangedEventArgs[] = {
+struct PropertyType _RadioGroup_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, RadioGroup_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, RadioGroup_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // RadioGroup_SelectionChangedEventArgs.OldValue
 };
+#define _RadioGroup_SelectionChangedEventArgs _RadioGroup_SelectionChangedEventArgs_Properties
 static luaL_Reg _TabBar_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TabBar_SelectionChangedEventArgs[] = {
+struct PropertyType _TabBar_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, TabBar_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, TabBar_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabBar_SelectionChangedEventArgs.OldValue
 };
+#define _TabBar_SelectionChangedEventArgs _TabBar_SelectionChangedEventArgs_Properties
 static luaL_Reg _TabView_SelectionChangedEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _TabView_SelectionChangedEventArgs[] = {
+struct PropertyType _TabView_SelectionChangedEventArgs_Properties[] = {
 	DECL(0x5c04816d, TabView_SelectionChangedEventArgs, SelectedValue, SelectedValue, kDataTypeString), // TabView_SelectionChangedEventArgs.SelectedValue
 	DECL(0x2ee43757, TabView_SelectionChangedEventArgs, OldValue, OldValue, kDataTypeString), // TabView_SelectionChangedEventArgs.OldValue
 };
+#define _TabView_SelectionChangedEventArgs _TabView_SelectionChangedEventArgs_Properties
 static luaL_Reg _Screen_UpdateLayoutEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Screen_UpdateLayoutEventArgs[] = {
+struct PropertyType _Screen_UpdateLayoutEventArgs_Properties[] = {
 	DECL(0x3b42dfbf, Screen_UpdateLayoutEventArgs, Width, Width, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Width
 	DECL(0x1bd13562, Screen_UpdateLayoutEventArgs, Height, Height, kDataTypeFloat), // Screen_UpdateLayoutEventArgs.Height
 };
+#define _Screen_UpdateLayoutEventArgs _Screen_UpdateLayoutEventArgs_Properties
 static luaL_Reg _Screen_RenderScreenEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Screen_RenderScreenEventArgs[] = {
+struct PropertyType _Screen_RenderScreenEventArgs_Properties[] = {
 	DECL(0x95876e1f, Screen_RenderScreenEventArgs, width, width, kDataTypeInt), // Screen_RenderScreenEventArgs.width
 	DECL(0xd5bdbb42, Screen_RenderScreenEventArgs, height, height, kDataTypeInt), // Screen_RenderScreenEventArgs.height
 	DECL(0xcc87a64d, Screen_RenderScreenEventArgs, stereo, stereo, kDataTypeFloat), // Screen_RenderScreenEventArgs.stereo
 	DECL(0xad544418, Screen_RenderScreenEventArgs, angle, angle, kDataTypeFloat), // Screen_RenderScreenEventArgs.angle
 	DECL(0x32608848, Screen_RenderScreenEventArgs, target, target, kDataTypeObject, .TypeString = "Texture"), // Screen_RenderScreenEventArgs.target
 };
+#define _Screen_RenderScreenEventArgs _Screen_RenderScreenEventArgs_Properties
 static luaL_Reg _Screen_CloseDialogEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _Screen_CloseDialogEventArgs[] = {
-	DECL(0xee5a808a, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Screen_CloseDialogEventArgs.ReturnValue
+struct PropertyType _Screen_CloseDialogEventArgs_Properties[] = {
+	DECL(0x207072b4, Screen_CloseDialogEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Screen_CloseDialogEventArgs.ReturnValue
 };
+#define _Screen_CloseDialogEventArgs _Screen_CloseDialogEventArgs_Properties
 static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ConsoleView_PrintlnEventArgs[] = {
+struct PropertyType _ConsoleView_PrintlnEventArgs_Properties[] = {
 	DECL(0xaec7ae4b, ConsoleView_PrintlnEventArgs, Index, Index, kDataTypeInt), // ConsoleView_PrintlnEventArgs.Index
 	DECL(0x3e142d5e, ConsoleView_PrintlnEventArgs, Text, Text, kDataTypeString), // ConsoleView_PrintlnEventArgs.Text
 };
+#define _ConsoleView_PrintlnEventArgs _ConsoleView_PrintlnEventArgs_Properties
 static luaL_Reg _ConsoleView_EraseEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ConsoleView_EraseEventArgs[] = {
+struct PropertyType _ConsoleView_EraseEventArgs_Properties[] = {
 };
+#define _ConsoleView_EraseEventArgs _ConsoleView_EraseEventArgs_Properties
 static luaL_Reg _ConsoleView_InvalidateEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ConsoleView_InvalidateEventArgs[] = {
+struct PropertyType _ConsoleView_InvalidateEventArgs_Properties[] = {
 };
+#define _ConsoleView_InvalidateEventArgs _ConsoleView_InvalidateEventArgs_Properties
 static luaL_Reg _ConsoleView_UnpackEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ConsoleView_UnpackEventArgs[] = {
+struct PropertyType _ConsoleView_UnpackEventArgs_Properties[] = {
 	DECL(0xdd0c1e27, ConsoleView_UnpackEventArgs, X, X, kDataTypeFloat), // ConsoleView_UnpackEventArgs.X
 	DECL(0xdc0c1c94, ConsoleView_UnpackEventArgs, Y, Y, kDataTypeFloat), // ConsoleView_UnpackEventArgs.Y
 };
+#define _ConsoleView_UnpackEventArgs _ConsoleView_UnpackEventArgs_Properties
 static luaL_Reg _ConsoleView_GetIndexPositionEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _ConsoleView_GetIndexPositionEventArgs[] = {
+struct PropertyType _ConsoleView_GetIndexPositionEventArgs_Properties[] = {
 	DECL(0xaec7ae4b, ConsoleView_GetIndexPositionEventArgs, Index, Index, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.Index
 	DECL(0x48c95d36, ConsoleView_GetIndexPositionEventArgs, OffsetX, OffsetX, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetX
 	DECL(0x49c95ec9, ConsoleView_GetIndexPositionEventArgs, OffsetY, OffsetY, kDataTypeInt), // ConsoleView_GetIndexPositionEventArgs.OffsetY
 	DECL(0x641280ce, ConsoleView_GetIndexPositionEventArgs, Global, Global, kDataTypeBool), // ConsoleView_GetIndexPositionEventArgs.Global
 };
+#define _ConsoleView_GetIndexPositionEventArgs _ConsoleView_GetIndexPositionEventArgs_Properties
 static luaL_Reg _PageHost_NavigateToPageEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _PageHost_NavigateToPageEventArgs[] = {
+struct PropertyType _PageHost_NavigateToPageEventArgs_Properties[] = {
 	DECL(0x7569633e, PageHost_NavigateToPageEventArgs, URL, URL, kDataTypeString), // PageHost_NavigateToPageEventArgs.URL
 	DECL(0x84ff7372, PageHost_NavigateToPageEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateToPageEventArgs.TransitionType
 };
+#define _PageHost_NavigateToPageEventArgs _PageHost_NavigateToPageEventArgs_Properties
 static luaL_Reg _PageHost_NavigateBackEventArgs_Methods[] = { { NULL, NULL } };
-static struct PropertyType _PageHost_NavigateBackEventArgs[] = {
+struct PropertyType _PageHost_NavigateBackEventArgs_Properties[] = {
 	DECL(0x84ff7372, PageHost_NavigateBackEventArgs, TransitionType, TransitionType, kDataTypeEnum, .EnumValues = _TransitionType), // PageHost_NavigateBackEventArgs.TransitionType
 };
+#define _PageHost_NavigateBackEventArgs _PageHost_NavigateBackEventArgs_Properties
 
 STRUCT(TextBlockConcept_MakeTextEventArgs, TextBlockConcept_MakeTextEventArgs);
 STRUCT(Node2D_DrawBrushEventArgs, Node2D_DrawBrushEventArgs);
@@ -790,13 +814,13 @@ static struct TabView TabViewDefaults = {
 };
 LRESULT TabViewProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-			case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-			case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
-			case ID_Object_Start: return TabView_Start(object, cmp, wparm, lparm); // Object.Start
-			case ID_Object_Attached: return TabView_Attached(object, cmp, wparm, lparm); // Object.Attached
-			case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
-			case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
-		}
+		case ID_Node2D_MeasureOverride: return TabView_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Node2D_ArrangeOverride: return TabView_ArrangeOverride(object, cmp, wparm, lparm); // Node2D.ArrangeOverride
+		case ID_Object_Start: return TabView_Start(object, cmp, wparm, lparm); // Object.Start
+		case ID_Object_Attached: return TabView_Attached(object, cmp, wparm, lparm); // Object.Attached
+		case ID_Node_ViewDidLoad: return TabView_ViewDidLoad(object, cmp, wparm, lparm); // Node.ViewDidLoad
+		case ID_TabBar_SelectionChanged: return TabView_SelectionChanged(object, cmp, wparm, lparm); // TabBar.SelectionChanged
+	}
 	return FALSE;
 }
 void luaX_pushTabView(lua_State *L, struct TabView const* TabView) {
@@ -844,7 +868,7 @@ static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0x9a645b38, Screen, DialogResult, DialogResult, kDataTypeFloat), // Screen.DialogResult
 	DECL(0x928c657a, Screen, UpdateLayout, UpdateLayout, kDataTypeEvent, .TypeString = "Screen_UpdateLayoutEventArgs"), // Screen.UpdateLayout
 	DECL(0xd15bdf29, Screen, RenderScreen, RenderScreen, kDataTypeEvent, .TypeString = "Screen_RenderScreenEventArgs"), // Screen.RenderScreen
-	DECL(0xf5b47797, Screen, CloseDialog, CloseDialog, kDataTypeEvent, .TypeString = "Screen_CloseDialogEventArgs"), // Screen.CloseDialog
+	DECL(0x3a0f488f, Screen, CloseDialog, CloseDialog, kDataTypeEvent, .TypeString = "Screen_CloseDialogEventArgs"), // Screen.CloseDialog
 };
 static struct Screen ScreenDefaults = {
 		
@@ -852,12 +876,12 @@ static struct Screen ScreenDefaults = {
 };
 LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-	case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
-	case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
-	case ID_Screen_CloseDialog: return Screen_CloseDialog(object, cmp, wparm, lparm); // Screen.CloseDialog
-	case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
-	case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
-	case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
+		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
+		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
+		case ID_Screen_CloseDialog: return Screen_CloseDialog(object, cmp, wparm, lparm); // Screen.CloseDialog
+		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
+		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
+		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
 		case ID_Window_Resized: return Screen_Resized(object, cmp, wparm, lparm); // Window.Resized
 		case ID_Window_Paint: return Screen_Paint(object, cmp, wparm, lparm); // Window.Paint
 	}
@@ -1162,6 +1186,24 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	}));
 	void on_ui_module_registered(lua_State *L);
 	on_ui_module_registered(L);
+	OBJ_RegisterMessagePropertyTypes("TextBlockConcept.MakeText", _TextBlockConcept_MakeTextEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Node2D.DrawBrush", _Node2D_DrawBrushEventArgs_Properties, 7);
+	OBJ_RegisterMessagePropertyTypes("Node2D.Measure", _Node2D_MeasureEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Node2D.Arrange", _Node2D_ArrangeEventArgs_Properties, 4);
+	OBJ_RegisterMessagePropertyTypes("Node2D.MeasureOverride", _Node2D_MeasureOverrideEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Node2D.ArrangeOverride", _Node2D_ArrangeOverrideEventArgs_Properties, 4);
+	OBJ_RegisterMessagePropertyTypes("Node2D.SetScrollTop", _Node2D_SetScrollTopEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("RadioGroup.SelectionChanged", _RadioGroup_SelectionChangedEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("TabBar.SelectionChanged", _TabBar_SelectionChangedEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("TabView.SelectionChanged", _TabView_SelectionChangedEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Screen.UpdateLayout", _Screen_UpdateLayoutEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("Screen.RenderScreen", _Screen_RenderScreenEventArgs_Properties, 5);
+	OBJ_RegisterMessagePropertyTypes("Screen.CloseDialog", _Screen_CloseDialogEventArgs_Properties, 1);
+	OBJ_RegisterMessagePropertyTypes("ConsoleView.Println", _ConsoleView_PrintlnEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("ConsoleView.Unpack", _ConsoleView_UnpackEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("ConsoleView.GetIndexPosition", _ConsoleView_GetIndexPositionEventArgs_Properties, 4);
+	OBJ_RegisterMessagePropertyTypes("PageHost.NavigateToPage", _PageHost_NavigateToPageEventArgs_Properties, 2);
+	OBJ_RegisterMessagePropertyTypes("PageHost.NavigateBack", _PageHost_NavigateBackEventArgs_Properties, 1);
 	lua_setfield(L, ((void)luaopen_orca_FontShorthand(L), -2), "FontShorthand");
 	lua_setfield(L, ((void)luaopen_orca_BrushShorthand(L), -2), "BrushShorthand");
 	lua_setfield(L, ((void)luaopen_orca_ShadowShorthand(L), -2), "ShadowShorthand");
