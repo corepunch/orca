@@ -215,10 +215,8 @@ static struct Object *
 _NodeTriggerSender(struct Object *receiver, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
   (void)MsgID;
+  (void)wParam;
   (void)lParam;
-  if (wParam) {
-    return (struct Object *)wParam;
-  }
   return receiver;
 }
 
@@ -234,13 +232,17 @@ _FireRoutedTrigger(struct Object *hObject, lpcString_t configured_event, lpcStri
 }
 
 static LRESULT
-_DispatchEventTriggerSpecialCase(struct Object *receiver, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
+_DispatchEventTriggerSpecialCase(struct Object *receiver,
+                                 uint32_t MsgID,
+                                 wParam_t wParam,
+                                 lParam_t lParam,
+                                 struct Object *sender_override)
 {
   lpcString_t routed_event = _NodeTriggerMessageName(MsgID);
   if (!routed_event) {
     return FALSE;
   }
-  struct Object *sender = _NodeTriggerSender(receiver, MsgID, wParam, lParam);
+  struct Object *sender = sender_override ? sender_override : _NodeTriggerSender(receiver, MsgID, wParam, lParam);
 
   struct EventTrigger const *event_trigger = GetEventTrigger(receiver);
   if (event_trigger && _FireRoutedTrigger(receiver, event_trigger->RoutedEvent, routed_event, sender)) {
@@ -275,8 +277,11 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
     if (!trigger) {
       continue;
     }
-    wParam_t trigger_wparam = wParam ? wParam : (wParam_t)node_object;
-    LRESULT handled = OBJ_SendMessageW(trigger, MsgID, trigger_wparam, trigger_param);
+    LRESULT handled = _DispatchEventTriggerSpecialCase(trigger,
+                                                       MsgID,
+                                                       wParam,
+                                                       trigger_param,
+                                                       node_object);
     // Node trigger dispatch is consumption-aware: once a trigger handles
     // the event, later triggers do not receive this message.
     if (handled) {
@@ -307,7 +312,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
     cmp = next;
   }
   if (_IsNodeTriggerMessage(MsgID)) {
-    LRESULT handled = _DispatchEventTriggerSpecialCase(pobj, MsgID, wParam, lParam);
+    LRESULT handled = _DispatchEventTriggerSpecialCase(pobj, MsgID, wParam, lParam, NULL);
     if (handled) {
       return handled;
     }

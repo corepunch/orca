@@ -31,7 +31,8 @@ _SendMessageAction_BindTrigger(struct Object *hObject)
   if (!trigger || FAILED(OBJ_FindShortProperty(hObject, "Trigger", &prop))) {
     return;
   }
-  PROP_SetValue(prop, &trigger);
+  struct Object *trigger_object = CMP_GetObject(trigger);
+  PROP_SetValue(prop, &trigger_object);
 }
 
 HANDLER(SendMessageAction, Object, Attached)

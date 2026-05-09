@@ -1110,7 +1110,7 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
-	struct Trigger* Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
+	struct Object** Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
 	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;

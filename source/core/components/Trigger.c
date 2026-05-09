@@ -91,9 +91,10 @@ HANDLER(Trigger, Object, PropertyChanged)
 
 HANDLER(OnAttachedTrigger, Object, Attached)
 {
+  struct Object *sender = OBJ_GetParent(hObject);
   _SendMessage(hObject, Trigger, Triggered,
                .Trigger = GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
-               .Sender = hObject);
+               .Sender = sender ? sender : hObject);
   return FALSE;
 }
 

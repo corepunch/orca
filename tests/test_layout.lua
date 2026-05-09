@@ -449,9 +449,9 @@ local function test_xml_loading_send_message_action_components()
 	<Screen Name="send-message-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF">
 	    <Node.Triggers>
-	      <OnAttachedTrigger>
+	      <OnEventTrigger RoutedEvent="Node.LeftButtonUp">
 	        <SendMessageAction Message="Node.RightButtonUp" Target="../Receiver"/>
-	      </OnAttachedTrigger>
+	      </OnEventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
 	  <TextBlock Name="Victim" Text="Should hide" Visible="TRUE" FontSize="16" ForegroundColor="#FFFFFF"/>
@@ -474,6 +474,7 @@ local function test_xml_loading_send_message_action_components()
 	test.expect(source ~= nil, "Source should exist")
 	test.expect(receiver ~= nil, "Receiver should exist")
 	test.expect(victim ~= nil, "Victim should exist")
+	source:send("Node.LeftButtonUp")
 	test.expect(not victim.Visible, "Victim should be hidden by SendMessageAction dispatching Node.RightButtonUp")
 	root:clear()
 	root = nil
