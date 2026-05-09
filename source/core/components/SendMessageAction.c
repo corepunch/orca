@@ -79,12 +79,16 @@ HANDLER(SendMessageAction, Trigger, Triggered)
 
   for (uint32_t i = 0; i < field_count; i++) {
     struct PropertyType const *field = &fields[i];
-    size_t copy_size = field->DataSize;
-    if (field->Offset >= MAX_MESSAGE_SIZE ||
-        copy_size > MAX_MESSAGE_SIZE - field->Offset) {
+    if (field->Offset >= MAX_MESSAGE_SIZE) {
       Con_Error("SendMessageAction field '%s' exceeds payload size limit",
                 field->Name ? field->Name : "<unnamed>");
       continue;
+    }
+    size_t max_copy_size = MAX_MESSAGE_SIZE - field->Offset;
+    size_t copy_size = MIN((size_t)field->DataSize, max_copy_size);
+    if (copy_size < field->DataSize) {
+      Con_Error("SendMessageAction field '%s' exceeds payload size limit",
+                field->Name ? field->Name : "<unnamed>");
     }
 
     size_t field_end = field->Offset + copy_size;
@@ -95,14 +99,10 @@ HANDLER(SendMessageAction, Trigger, Triggered)
     struct Property *prop = NULL;
     if (SUCCEEDED(OBJ_FindShortProperty(hObject, field->Name, &prop)) && prop) {
       void const *value = PROP_GetValue(prop);
-      if (value && copy_size > 0 && field->Offset + copy_size <= MAX_MESSAGE_SIZE) {
+      if (value && copy_size > 0) {
         memcpy(payload + field->Offset, value, copy_size);
       }
     }
-  }
-
-  if (payload_size > MAX_MESSAGE_SIZE) {
-    payload_size = MAX_MESSAGE_SIZE;
   }
 
   axPostMessageDataW(target, msg_id, 0, payload, payload_size);
