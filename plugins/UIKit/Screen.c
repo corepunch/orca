@@ -1,6 +1,7 @@
 #include <include/renderer.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <source/core/object/object_internal.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
@@ -619,8 +620,49 @@ static void OBJ_SetTreeDirty(struct Object *obj) {
   FOR_EACH_CHILD(obj, OBJ_SetTreeDirty);
 }
 
-HANDLER(Screen, Screen, CloseDialog) {
-  pScreen->DialogResult = pCloseDialog->ReturnValue;
+static bool_t
+_RemoveFromModalChain(struct Object *hObject)
+{
+  struct Object *parent = OBJ_GetParent(hObject);
+  if (!parent) {
+    return FALSE;
+  }
+
+  for (struct Object **link = &parent->next; *link; link = &(*link)->next) {
+    if (*link != hObject) {
+      continue;
+    }
+
+    *link = hObject->next;
+    hObject->next = NULL;
+    hObject->parent = NULL;
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static void
+_CloseModalPopup(struct Object *hObject, float result)
+{
+  struct Popup *popup = GetPopup(hObject);
+  if (!popup) {
+    return;
+  }
+
+  popup->DialogResult = result;
+  {
+    bool_t visible = FALSE;
+    OBJ_SetPropertyValue(hObject, "Visible", &visible);
+  }
+
+  if (_RemoveFromModalChain(hObject)) {
+    OBJ_RemoveFromParent(hObject);
+  }
+}
+
+HANDLER(Popup, Popup, ClosePopup) {
+  _CloseModalPopup(hObject, pClosePopup->ReturnValue);
   return TRUE;
 }
 

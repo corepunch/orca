@@ -368,48 +368,80 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="../Popup"/>
+	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
-	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088">
-	    <StackView Name="PopupOverlay" Width="800" Height="600" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
-	      <StackView Name="PopupCard" Direction="Vertical" Spacing="12" Width="320" BackgroundColor="#1F2433" Padding="24">
-	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
-	          <Node.Triggers>
-	            <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	              <HideAction Path="../../../"/>
-	            </EventTrigger>
-	          </Node.Triggers>
-	        </TextBlock>
-	      </StackView>
-	    </StackView>
-	  </Screen>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "trigger/action XML should load")
 
 	local button = root:findChild("SettingsButton", true)
-	local popup = root:findChild("Popup", true)
-	local close = root:findChild("PopupClose", true)
 
 	test.expect(button ~= nil, "SettingsButton should exist")
-	test.expect(popup ~= nil, "Popup should exist")
-	test.expect(close ~= nil, "Popup close button should exist")
-	test.expect(not popup.Visible, "Popup should start hidden")
 	button:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(popup.Visible, "Popup should become visible after clicking the button")
-	test.expect_eq(root:getNext(), popup, "Popup should be attached as the modal next screen")
+	local popup = root:getNext()
+	test.expect(popup ~= nil, "Popup should be loaded as the modal next screen")
+	test.expect_eq(popup:getClassName(), "Popup", "Loaded modal object should be a Popup")
+	local close = popup:findChild("GetStartedPopupClose", true)
+	test.expect(close ~= nil, "Popup close button should exist")
 	close:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(not popup.Visible, "Popup should hide again after clicking the close label")
-	root:clear()
-	root = nil
-	collectgarbage()
+	test.expect_eq(root:getNext(), nil, "Popup should detach after Popup.ClosePopup")
+	close = nil
+	popup = nil
+	button = nil
 
 	print("PASS: test_xml_loading_trigger_action_components")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
+-- from the screen chain.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_close_popup_action_components()
+	local xml = [[
+	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+	    <Node.Triggers>
+	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
+	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
+	      </EventTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "close-popup XML should load")
+
+	local button = root:findChild("SettingsButton", true)
+
+	test.expect(button ~= nil, "SettingsButton should exist")
+	button:send("Node.LeftButtonUp")
+	pump_messages(root)
+	local popup1 = root:getNext()
+	test.expect(popup1 ~= nil, "Popup should be loaded as the modal next screen")
+	test.expect_eq(popup1:getClassName(), "Popup", "Loaded modal object should be a Popup")
+	local first_repr = tostring(popup1)
+	local close1 = popup1:findChild("GetStartedPopupClose", true)
+	test.expect(close1 ~= nil, "Popup close button should exist")
+	popup1 = nil
+	close1:send("Node.LeftButtonUp")
+	pump_messages(root)
+	test.expect_eq(root:getNext(), nil, "Popup should detach after Popup.ClosePopup")
+	close1 = nil
+	button:send("Node.LeftButtonUp")
+	pump_messages(root)
+	local popup2 = root:getNext()
+	test.expect(popup2 ~= nil, "Popup should be loadable again after close")
+	test.expect_eq(popup2:getClassName(), "Popup", "Reloaded modal object should be a Popup")
+	test.expect(tostring(popup2) ~= first_repr, "Popup reopen should create a fresh instance")
+	popup2 = nil
+	button = nil
+
+	print("PASS: test_xml_loading_close_popup_action_components")
 end
 
 local function test_xml_loading_event_trigger_components()
@@ -418,31 +450,25 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <ShowModalAction Path="../Popup"/>
+	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
-	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088"/>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "event trigger XML should load")
 
 	local target = root:findChild("HotkeyTarget", true)
-	local popup = root:findChild("Popup", true)
 
 	test.expect(target ~= nil, "HotkeyTarget should exist")
-	test.expect(popup ~= nil, "Popup should exist")
-	test.expect(not popup.Visible, "Popup should start hidden")
 	target:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(not popup.Visible, "Popup should stay hidden for non-matching events")
+	test.expect(root:getNext() == nil, "Popup should stay hidden for non-matching events")
 	target:send("Node.RightButtonUp")
 	pump_messages(root)
-	test.expect(popup.Visible, "Popup should become visible when RoutedEvent matches")
-	root:clear()
-	root = nil
-	collectgarbage()
+	test.expect(root:getNext() ~= nil, "Popup should become visible when RoutedEvent matches")
+	target = nil
 
 	print("PASS: test_xml_loading_event_trigger_components")
 end
@@ -480,9 +506,9 @@ local function test_xml_loading_send_message_action_components()
 	source:send("Node.LeftButtonUp")
 	pump_messages(root)
 	test.expect(not victim.Visible, "Victim should be hidden by SendMessageAction dispatching Node.RightButtonUp")
-	root:clear()
-	root = nil
-	collectgarbage()
+	source = nil
+	receiver = nil
+	victim = nil
 
 	print("PASS: test_xml_loading_send_message_action_components")
 end
@@ -545,18 +571,17 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local get_started_popup = xml:find('Name="GetStartedPopup"', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
 	local get_started_triggers = xml:find('<Node.Triggers>', 1, true)
-	local get_started_show = xml:find('<ShowModalAction Path="../../GetStartedPopup"/>', 1, true)
+	local get_started_show = xml:find('<ShowModalAction Path="Example/Screens/GetStartedPopup"/>', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
-	local popup_screen_root = popup_screen and popup_screen:find('<Screen Name="GetStartedPopup"', 1, true)
+	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
 	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('<SendMessageAction Message="Screen.CloseDialog" Target="../../../"/>', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('<SendMessageAction Message="Popup.ClosePopup" Target="../../../"/>', 1, true)
 	local popup_screen_click = popup_screen and popup_screen:find('<EventTrigger RoutedEvent="Node.LeftButtonUp">', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
@@ -624,18 +649,17 @@ local function test_example_application_xml()
 	test.expect(signals ~= nil, "OrcaSignals should exist in Example Application.xml")
 	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
 	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
-	test.expect(get_started_popup ~= nil, "Example CTA should include a popup panel")
 	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
 	test.expect(get_started_triggers ~= nil, "Example CTA should use Node.Triggers for the Get Started button")
 	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
 	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
-	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Screen root")
+	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Popup root")
 	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
 	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
 	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
 	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
 	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
-	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should send Screen.CloseDialog on close")
+	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should send Popup.ClosePopup on close")
 	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an EventTrigger")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
@@ -713,13 +737,10 @@ test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
+test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
-
-screen:clear()
-screen = nil
-collectgarbage()
 
 print("All layout tests passed.")

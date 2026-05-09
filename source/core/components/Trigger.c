@@ -1,4 +1,5 @@
 #include <source/core/core_local.h>
+#include <source/filesystem/filesystem.h>
 
 #define kMsgTriggered 0x3b1c3ae2
 
@@ -189,6 +190,7 @@ EVENT_TRIGGER_HANDLER(EventTrigger, KillFocus, "Node.KillFocus")
 EVENT_TRIGGER_HANDLER(EventTrigger, KeyDown, "Node.KeyDown")
 EVENT_TRIGGER_HANDLER(EventTrigger, KeyUp, "Node.KeyUp")
 EVENT_TRIGGER_HANDLER(EventTrigger, TextInput, "Node.TextInput")
+
 HANDLER(ShowModalAction, Trigger, Triggered)
 {
   if (!pShowModalAction->Path || !*pShowModalAction->Path) {
@@ -197,12 +199,17 @@ HANDLER(ShowModalAction, Trigger, Triggered)
   }
 
   struct Object *sender = _TriggerSender(hObject, pTriggered);
-  struct Object *target = OBJ_FindByPath(sender, pShowModalAction->Path);
+  struct Object *target = FS_LoadObject(pShowModalAction->Path);
   if (!target) {
-    Con_Error("ShowModalAction could not resolve path '%s'", pShowModalAction->Path);
+    Con_Error("ShowModalAction could not load template '%s'", pShowModalAction->Path);
     return FALSE;
   }
-  
+
+  if (!GetPopup(target)) {
+    Con_Error("ShowModalAction template '%s' is not a Popup", pShowModalAction->Path);
+    OBJ_RemoveFromParent(target);
+    return FALSE;
+  }
   if (OBJ_ShowModalObject(sender, target)) {
     bool_t visible = TRUE;
     OBJ_SetPropertyValue(target, "Visible", &visible);

@@ -389,23 +389,33 @@
 <!ELEMENT Control.Scale (#PCDATA | Binding)*>
 <!ATTLIST Control.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ControlElements "Control.Pressed|Control.Disabled|Control.Hovered|Control.Focused|Control.Value|Control.Scale|%Node2DElements;">
-<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
+<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
 <!ATTLIST Control %ControlAttribs;>
 <!ENTITY % ScreenAttribs "
 	%Node2DAttribs;
 	ClearColor CDATA #IMPLIED
 	ResizeMode (%ResizeMode;) #IMPLIED
-	DialogResult CDATA #IMPLIED
 ">
 <!ELEMENT Screen.ClearColor (#PCDATA | Binding)*>
 <!ATTLIST Screen.ClearColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Screen.ResizeMode (#PCDATA | Binding)*>
 <!ATTLIST Screen.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Screen.DialogResult (#PCDATA | Binding)*>
-<!ATTLIST Screen.DialogResult Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|Screen.DialogResult|%Node2DElements;">
-<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
+<!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|%Node2DElements;">
+<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
 <!ATTLIST Screen %ScreenAttribs;>
+<!ENTITY % PopupAttribs "
+	%ScreenAttribs;
+	DialogResult CDATA #IMPLIED
+">
+<!ELEMENT Popup.ClearColor (#PCDATA | Binding)*>
+<!ATTLIST Popup.ClearColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Popup.ResizeMode (#PCDATA | Binding)*>
+<!ATTLIST Popup.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Popup.DialogResult (#PCDATA | Binding)*>
+<!ATTLIST Popup.DialogResult Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PopupElements "Popup.ClearColor|Popup.ResizeMode|Popup.DialogResult|%Node2DElements;">
+<!ELEMENT Popup (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PopupElements;)*>
+<!ATTLIST Popup %PopupAttribs;>
 <!ENTITY % CinematicAttribs "
 	%Node2DAttribs;
 	FileName CDATA #IMPLIED

@@ -872,8 +872,8 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
     </class>
     <class name="ShowModalAction">
-      <summary>Opens a named popup as a modal child of the current screen</summary>
-      <details>Resolves a relative path to the popup object, reattaches it to the screen, and marks it modal so it captures input.</details>
+      <summary>Loads a popup template and shows it modally</summary>
+      <details>Resolves the path as a popup template asset, loads a fresh object instance, and marks it modal so it captures input.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Attached"/>
@@ -881,7 +881,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </handles>
       <properties>
         <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-        <property name="Path" type="string">Relative path to the popup object that should be shown modally</property>
+        <property name="Path" type="string">Asset path to the popup template that should be shown modally</property>
       </properties>
     </class>
     <class name="HideAction">

@@ -372,18 +372,25 @@ enum ControlProperties {
 #define Screen_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Screen,sizeof(struct Screen),_N)
 #define ID_Screen_ClearColor 0x1bfc36dd // Screen.ClearColor
 #define ID_Screen_ResizeMode 0xc3203446 // Screen.ResizeMode
-#define ID_Screen_DialogResult 0x2f02ab20 // Screen.DialogResult
 #define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
 #define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
-#define ID_Screen_CloseDialog 0xf5b47797 // Screen.CloseDialog
-#define kScreenNumProperties 6
+#define kScreenNumProperties 4
 enum ScreenProperties {
 	kScreenClearColor,
 	kScreenResizeMode,
-	kScreenDialogResult,
 	kScreenUpdateLayout,
 	kScreenRenderScreen,
-	kScreenCloseDialog,
+};
+// Popup
+#define ID_Popup 0xe8eb787d
+#define GetPopup(_P) ((struct Popup*)((_P)?OBJ_GetComponent(_P,ID_Popup):NULL))
+#define Popup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Popup,sizeof(struct Popup),_N)
+#define ID_Popup_DialogResult 0x2f02ab20 // Popup.DialogResult
+#define ID_Popup_ClosePopup 0x5d9a2777 // Popup.ClosePopup
+#define kPopupNumProperties 2
+enum PopupProperties {
+	kPopupDialogResult,
+	kPopupClosePopup,
 };
 // Cinematic
 #define ID_Cinematic 0xc04cee0e
@@ -645,9 +652,9 @@ enum StyleProperties {
 #define ID_Screen_RenderScreenEventArgs_stereo 0x14234527 // Screen_RenderScreenEventArgs.stereo
 #define ID_Screen_RenderScreenEventArgs_angle 0xd956701a // Screen_RenderScreenEventArgs.angle
 #define ID_Screen_RenderScreenEventArgs_target 0xf85bed2e // Screen_RenderScreenEventArgs.target
-#define ID_Screen_CloseDialogEventArgs 0x7f56a5e3
+#define ID_Popup_ClosePopupEventArgs 0x7eb462e1
 
-#define ID_Screen_CloseDialogEventArgs_ReturnValue 0xee5a808a // Screen_CloseDialogEventArgs.ReturnValue
+#define ID_Popup_ClosePopupEventArgs_ReturnValue 0xbf8d75fc // Popup_ClosePopupEventArgs.ReturnValue
 #define ID_ConsoleView_PrintlnEventArgs 0xeefac1f6
 
 #define ID_ConsoleView_PrintlnEventArgs_Index 0x1bb76f64 // ConsoleView_PrintlnEventArgs.Index

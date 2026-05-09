@@ -203,12 +203,24 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
   *next = modal;
   modal->parent = self;
   modal->flags |= OF_NOACTIVATE;
+  {
+    struct Popup *popup = GetPopup(modal);
+    if (popup) {
+      popup->DialogResult = NAN;
+    }
+  }
   return TRUE;
 }
 
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
-  struct Screen* modal = GetScreen((struct Object *)ctx);
+  struct Popup* modal = GetPopup((struct Object *)ctx);
+  if (!modal) {
+    Con_Error("Modal popup missing Popup component");
+    lua_pushboolean(L, FALSE);
+    lua_pushstring(L, "Cancelled");
+    return 2;
+  }
   if (!isnan(modal->DialogResult)) {
     if (modal->DialogResult) {
       lua_pushboolean(L, TRUE);
@@ -217,7 +229,6 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
       lua_pushboolean(L, FALSE);
       lua_pushstring(L, "Cancelled");
     }
-    OBJ_RemoveFromParent((struct Object *)ctx);
     return 2; // resume Lua script after ShowModal()
   } else {
     return lua_yieldk(L, 0, ctx, modal_continue);
