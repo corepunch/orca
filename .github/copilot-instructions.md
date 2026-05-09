@@ -117,6 +117,7 @@ Use these personas when delegating work or framing implementation choices.
   - Uses Tailwind utilities and the local Orca UI dialect as much as possible.
   - Applies Lapis user-guide patterns to route/view/widget/layout composition in Orca.
   - Proactively provides feedback when an Orca primitive is missing and proposes a Lapis-inspired improvement.
+  - For modal dialogs, prefer `<Popup>` templates that fill the screen via their background/overlay and are launched with `ShowModalAction`; avoid setting root `Width`/`Height` on popups unless the popup truly needs custom bounds.
 
 ### 2) Lua Engine Agent (Lua-First, MoonScript-Interop, Lapis Internals)
 
@@ -148,6 +149,7 @@ Use these personas when delegating work or framing implementation choices.
 |---|---|
 | Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
 | Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
+| Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `ShowModalAction` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
 | Add a UI widget to UIKit | `plugins/UIKit/UIKit.xml` + `plugins/UIKit/Button.c` as a reference |
 | Add a property binding or formula | `source/core/property/` + Module XML Guide |
 | Change what Lua exposes | Edit the module XML, run `cd tools && make` |
@@ -238,6 +240,13 @@ struct ClassDesc {
   bool_t            IsAttachOnly;     // cannot be instantiated standalone
 };
 ```
+
+## Popup Convention
+
+- Modal popups should be modeled as `Popup` objects, not `Screen` placeholders.
+- `ShowModalAction.Path` points to the popup template asset to instantiate, not a scene-tree path.
+- Popups generally rely on a full-screen background/overlay and should not set root `Width`/`Height` unless there is a specific layout need.
+- Use `Popup.ClosePopup` to dismiss the popup and return its result.
 
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 
