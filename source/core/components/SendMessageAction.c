@@ -111,8 +111,9 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   if (payload_size > MAX_MESSAGE_SIZE) {
-    Con_Error("SendMessageAction payload for '%s' exceeded %u bytes and was clamped",
+    Con_Error("SendMessageAction payload for '%s' exceeded limit (%zu > %u) and was clamped",
               pSendMessageAction->Message,
+              payload_size,
               (unsigned)MAX_MESSAGE_SIZE);
     payload_size = MAX_MESSAGE_SIZE;
   }
