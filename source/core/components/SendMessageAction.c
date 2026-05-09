@@ -80,6 +80,13 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   for (uint32_t i = 0; i < field_count; i++) {
     struct PropertyType const *field = &fields[i];
     size_t copy_size = field->DataSize;
+    if (field->Offset >= MAX_MESSAGE_SIZE ||
+        copy_size > MAX_MESSAGE_SIZE - field->Offset) {
+      Con_Error("SendMessageAction field '%s' exceeds payload size limit",
+                field->Name ? field->Name : "<unnamed>");
+      continue;
+    }
+
     size_t field_end = field->Offset + copy_size;
     if (field_end > payload_size) {
       payload_size = field_end;
@@ -92,6 +99,10 @@ HANDLER(SendMessageAction, Trigger, Triggered)
         memcpy(payload + field->Offset, value, copy_size);
       }
     }
+  }
+
+  if (payload_size > MAX_MESSAGE_SIZE) {
+    payload_size = MAX_MESSAGE_SIZE;
   }
 
   axPostMessageDataW(target, msg_id, 0, payload, payload_size);
