@@ -11,6 +11,7 @@
 #include <string.h>
 
 extern int luaopen_orca_core(lua_State *L);
+extern int luaopen_orca_system(lua_State *L);
 
 static int s_tests_run = 0;
 static int s_tests_failed = 0;
@@ -87,10 +88,13 @@ make_lua_state(void)
   luaL_openlibs(L);
   luaopen_orca_core(L);
   lua_pop(L, 1);
+  luaL_requiref(L, "orca.system", luaopen_orca_system, 1);
+  lua_pop(L, 1);
   return L;
 }
 
 static void register_trigger_action_test_types(void);
+static LRESULT TestDispatchObjectMessage(lua_State *L, struct AXmessage *msg);
 
 static void
 initialize_test_environment(void)
@@ -99,6 +103,7 @@ initialize_test_environment(void)
     return;
   }
   s_lua_state = make_lua_state();
+  SV_RegisterMessageProc(TestDispatchObjectMessage);
   register_trigger_action_test_types();
 }
 
@@ -106,6 +111,35 @@ static void
 reset_observed(void)
 {
   memset(&s_observed, 0, sizeof(s_observed));
+}
+
+static void
+pump_messages(struct Object *root)
+{
+  (void)root;
+  core_FlushQueue(s_lua_state);
+}
+
+static LRESULT
+TestDispatchObjectMessage(lua_State *L, struct AXmessage *msg)
+{
+  (void)L;
+
+  if (!msg || !msg->target) {
+    return FALSE;
+  }
+
+  if (msg->message == kEventResumeCoroutine ||
+      msg->message == kEventStopCoroutine) {
+    return FALSE;
+  }
+
+  for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj)) {
+    if (OBJ_SendMessageW(hobj, msg->message, msg->wParam, msg->lParam)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 static LRESULT
@@ -233,6 +267,38 @@ static struct PropertyType const s_source_properties[] = {
   },
 };
 
+static struct StructDesc const s_value_message_desc = {
+  .StructName = "TestMessage.Value",
+  .Properties = s_value_message_fields,
+  .NumProperties = sizeof(s_value_message_fields) / sizeof(s_value_message_fields[0]),
+  .StructSize = sizeof(struct TestValueMessage),
+};
+
+static struct StructDesc const s_mixed_message_desc = {
+  .StructName = "TestMessage.Mixed",
+  .Properties = s_mixed_message_fields,
+  .NumProperties = sizeof(s_mixed_message_fields) / sizeof(s_mixed_message_fields[0]),
+  .StructSize = sizeof(struct TestMixedMessage),
+};
+
+static struct MessageDesc s_no_args_message_desc = {
+  .MessageName = "TestMessage.NoArgs",
+  .Payload = NULL,
+  .ExtraData = NULL,
+};
+
+static struct MessageDesc s_value_message_desc_info = {
+  .MessageName = "TestMessage.Value",
+  .Payload = &s_value_message_desc,
+  .ExtraData = NULL,
+};
+
+static struct MessageDesc s_mixed_message_desc_info = {
+  .MessageName = "TestMessage.Mixed",
+  .Payload = &s_mixed_message_desc,
+  .ExtraData = NULL,
+};
+
 static LRESULT
 TestSourceProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
 {
@@ -287,6 +353,13 @@ register_trigger_action_test_types(void)
   OBJ_RegisterClass(&s_host_class);
   OBJ_RegisterClass(&s_sink_class);
   OBJ_RegisterClass(&s_event_source_class);
+
+  s_no_args_message_desc.MessageID = fnv1a32(s_no_args_message_desc.MessageName);
+  s_value_message_desc_info.MessageID = fnv1a32(s_value_message_desc_info.MessageName);
+  s_mixed_message_desc_info.MessageID = fnv1a32(s_mixed_message_desc_info.MessageName);
+  OBJ_RegisterMessageDesc(&s_no_args_message_desc);
+  OBJ_RegisterMessageDesc(&s_value_message_desc_info);
+  OBJ_RegisterMessageDesc(&s_mixed_message_desc_info);
 
   OBJ_RegisterMessagePropertyTypes("TestMessage.Value",
                                    (struct PropertyType *)s_value_message_fields,
@@ -352,6 +425,7 @@ test_event_trigger_no_args(void)
     EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
+    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
     EXPECT(s_observed.NoArgsCount == 1);
@@ -382,6 +456,7 @@ test_event_trigger_single_value(void)
     EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_KeyDown, 0, NULL);
+    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
     EXPECT(s_observed.ValueCount == 1);
@@ -413,6 +488,7 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
     EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
+    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
     EXPECT(s_observed.MixedCount == 1);

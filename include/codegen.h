@@ -115,4 +115,13 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.IsAttachOnly = TRUE, \
 };
 
+#define REGISTER_MESSAGE_TYPE(MESSAGE_ID, MESSAGE_NAME, STRUCT_NAME) \
+static struct MessageDesc const _##STRUCT_NAME##_MessageDesc = { \
+	.MessageName = MESSAGE_NAME, \
+	.MessageID = MESSAGE_ID, \
+	.Payload = &_##STRUCT_NAME##_StructDesc, \
+	.ExtraData = NULL, \
+}; \
+	OBJ_RegisterMessageDesc(&_##STRUCT_NAME##_MessageDesc)
+
 #endif

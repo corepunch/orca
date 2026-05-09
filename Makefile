@@ -19,12 +19,7 @@ CC = gcc
 UNAME_S := $(shell uname -s)
 HOST_ARCH := $(shell uname -m)
 ifeq ($(UNAME_S),Darwin)
-DARWIN_ARM_CAPABLE := $(shell sysctl -in hw.optional.arm64 2>/dev/null)
-ifeq ($(DARWIN_ARM_CAPABLE),1)
 ARCH ?= arm64
-else
-ARCH ?= $(HOST_ARCH)
-endif
 else
 ARCH ?= $(HOST_ARCH)
 endif

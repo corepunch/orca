@@ -362,6 +362,14 @@ struct StructDesc
   uint32_t StructSize; // size of the struct in bytes
 };
 
+struct MessageDesc
+{
+  lpcString_t MessageName; // full message name (e.g. "Node.LeftButtonUp")
+  uint32_t MessageID; // hash identifier for quick lookups
+  struct StructDesc const *Payload; // message payload descriptor, NULL for messages without args
+  void const *ExtraData; // reserved for future metadata
+};
+
 struct component;
 
 ORCA_API void
@@ -430,6 +438,18 @@ OBJ_RegisterStructDesc(struct StructDesc const *);
 
 ORCA_API struct StructDesc const *
 OBJ_FindStructDesc(lpcString_t);
+
+// Register a message descriptor.
+ORCA_API bool_t
+OBJ_RegisterMessageDesc(struct MessageDesc const *desc);
+
+// Find a message descriptor by name.
+ORCA_API struct MessageDesc const *
+OBJ_FindMessageDesc(char const* message_name);
+
+// Find a message descriptor by hashed message ID.
+ORCA_API struct MessageDesc const *
+OBJ_FindMessageDescW(uint32_t message_id);
 
 // Register property type descriptors for a message's fields
 ORCA_API bool_t
