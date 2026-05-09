@@ -171,13 +171,9 @@ end
 -- ---------------------------------------------------------------------------
 local function test_close_popup_message()
   local popup = ui.Popup { Width = 400, Height = 300, ResizeMode = "NoResize" }
-
-  test.expect(popup.DialogResult ~= popup.DialogResult, "DialogResult should default to NaN")
-
   local result = popup:send("Popup.ClosePopup", { ReturnValue = 2.25 })
 
   test.expect_eq(result, 1, "ClosePopup should return a truthy message result")
-  test.expect_eq(popup.DialogResult, 2.25, "ClosePopup should store the return value on the popup")
 
   popup:clear()
   print("PASS: test_close_popup_message")

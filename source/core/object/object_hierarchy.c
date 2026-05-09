@@ -201,6 +201,7 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
   struct Object **next = &self->next;
   while (*next) next = &(*next)->next;
   *next = modal;
+  OBJ_AddRef(modal);
   modal->parent = self;
   modal->flags |= OF_NOACTIVATE;
   {
