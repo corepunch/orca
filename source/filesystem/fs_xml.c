@@ -73,6 +73,11 @@ _SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
   // the same way as a file-backed object.
   lpcString_t inline_expr = resolved;
   while (*inline_expr && isspace((unsigned char)*inline_expr)) inline_expr++;
+  if (pdesc->DataType == kDataTypeEvent && *inline_expr == '{') {
+    if (_LoadEventTriggerFromXmlFragment(obj, pdesc, inline_expr)) {
+      return;
+    }
+  }
   if (pdesc->DataType == kDataTypeStruct && *inline_expr == '{') {
     if (_LoadStructFromXmlFragment(prop, pdesc, inline_expr, pdesc->Name)) {
       return;

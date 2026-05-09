@@ -6,13 +6,8 @@
       <TextBlock Name="GetStartedPopupBody"
         Text="XML keeps layout honest, Lua keeps behavior close, and MoonScript gives you a tighter way to grow the surface. The same codebase can ship to desktop, mobile, and the web."
         FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
-      <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" Height="34" BackgroundColor="$accent" Padding="8" TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
-        <Node.Triggers>
-          <EventTrigger RoutedEvent="Node.LeftButtonUp">
-            <SendMessageAction Message="Popup.ClosePopup" Target="../../../"/>
-          </EventTrigger>
-        </Node.Triggers>
-      </TextBlock>
+      <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" Height="34" BackgroundColor="$accent" Padding="8" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+        LeftButtonUp="{SendMessageAction Message=Popup.ClosePopup Target=../../../}"/>
     </StackView>
   </StackView>
 </Popup>

@@ -303,6 +303,41 @@ local function test_xml_loading_inline_imageview_source()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: event-typed properties should synthesize EventTrigger wrappers
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_event_trigger()
+	local xml = [[
+<Screen Name="inline-trigger-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <TextBlock Name="inline-trigger-target"
+             Text="Target"
+             Visible="true" />
+  <TextBlock Name="inline-trigger-button"
+             Text="Hide target"
+             LeftButtonUp="{HideAction Path=../inline-trigger-target}" />
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline event trigger screen should load")
+	local target = root:findChild("inline-trigger-target", true)
+	local textblock = root:findChild("inline-trigger-button", true)
+	test.expect(textblock ~= nil, "inline event trigger TextBlock should exist")
+	test.expect(target ~= nil, "inline trigger target should exist")
+	test.expect(target.Visible, "inline trigger target should start visible")
+	textblock:send("Node.LeftButtonUp")
+	pump_messages(root)
+	test.expect(not target.Visible, "inline event trigger should execute the synthesized HideAction")
+
+	target = nil
+	textblock = nil
+	collectgarbage()
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_event_trigger")
+end
+
+-- ---------------------------------------------------------------------------
 -- XML loading: struct arrays on Project should parse via the C loader
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_struct_arrays()
@@ -423,7 +458,7 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
+	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -462,7 +497,7 @@ local function test_xml_loading_close_popup_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
+	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -505,7 +540,7 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <ShowModalAction Path="samples/Example/Screens/GetStartedPopup.xml"/>
+	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -627,17 +662,14 @@ local function test_example_application_xml()
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_triggers = xml:find('<Node.Triggers>', 1, true)
-	local get_started_show = xml:find('<ShowModalAction Path="Example/Screens/GetStartedPopup"/>', 1, true)
+	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Path=Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('<SendMessageAction Message="Popup.ClosePopup" Target="../../../"/>', 1, true)
-	local popup_screen_click = popup_screen and popup_screen:find('<EventTrigger RoutedEvent="Node.LeftButtonUp">', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Message=Popup.ClosePopup Target=../../../}"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -705,17 +737,14 @@ local function test_example_application_xml()
 	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
 	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
 	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
-	test.expect(get_started_triggers ~= nil, "Example CTA should use Node.Triggers for the Get Started button")
-	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
+	test.expect(get_started_show ~= nil, "Example CTA should use the inline LeftButtonUp trigger shorthand")
 	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
 	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Popup root")
 	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
 	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
 	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
 	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
-	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
-	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should send Popup.ClosePopup on close")
-	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an EventTrigger")
+	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should use the inline LeftButtonUp trigger shorthand")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
@@ -790,6 +819,7 @@ test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_xml_loading_inline_xml_attribute()
 test_xml_loading_inline_imageview_source()
+test_xml_loading_inline_event_trigger()
 test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()

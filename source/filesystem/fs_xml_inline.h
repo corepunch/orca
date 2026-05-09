@@ -15,6 +15,9 @@ bool_t _LoadStructFromXmlFragment(struct Property *prop,
                                   struct PropertyType const *pdesc,
                                   lpcString_t text,
                                   lpcString_t prop_name);
+bool_t _LoadEventTriggerFromXmlFragment(struct Object *obj,
+                                        struct PropertyType const *pdesc,
+                                        lpcString_t text);
 struct Object *_LoadObjectFromXmlFragment(lpcString_t text,
                                           lpcString_t prop_name);
 

@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "fs_xml_inline.h"
+#include <source/core/core_properties.h>
+#include <source/core/property/property_internal.h>
 
 extern int parse_property(const char* str,
                            struct PropertyType const* prop, void* valueptr);
@@ -458,6 +460,40 @@ _BuildInlineObjectXml(struct ClassDesc const *cls,
   return TRUE;
 }
 
+static bool_t
+_AppendObjectToArrayProperty(struct Property *prop, struct Object *item)
+{
+  struct PropertyType const *pdesc = PROP_GetDesc(prop);
+  if (!pdesc || !pdesc->IsArray || pdesc->DataType != kDataTypeObject) {
+    return FALSE;
+  }
+
+  void *current_items = NULL;
+  int current_count = 0;
+  if (prop->value) {
+    memcpy(&current_items, prop->value, sizeof(current_items));
+    memcpy(&current_count,
+           (char *)prop->value + sizeof(current_items),
+           sizeof(current_count));
+  }
+
+  int new_count = current_count + 1;
+  struct Object **items = (struct Object **)calloc((size_t)new_count, sizeof(struct Object *));
+  if (!items) {
+    return FALSE;
+  }
+
+  if (current_items && current_count > 0) {
+    memcpy(items, current_items, (size_t)current_count * sizeof(struct Object *));
+  }
+  items[current_count] = item;
+
+  void *next[2] = { items, NULL };
+  memcpy((char *)next + sizeof(void *), &new_count, sizeof(new_count));
+  PROP_SetValue(prop, next);
+  return TRUE;
+}
+
 struct Object *
 _LoadObjectFromXmlFragment(lpcString_t text,
                            lpcString_t prop_name)
@@ -483,4 +519,62 @@ _LoadObjectFromXmlFragment(lpcString_t text,
   struct Object *result = FS_LoadObjectFromXmlString(xml);
   free(xml);
   return result;
+}
+
+bool_t
+_LoadEventTriggerFromXmlFragment(struct Object *obj,
+                                 struct PropertyType const *pdesc,
+                                 lpcString_t text)
+{
+  if (!obj || !pdesc) {
+    return FALSE;
+  }
+
+  struct PropertyType const *triggers_desc = OBJ_FindImplicitProperty(obj, "Triggers");
+  if (!triggers_desc) {
+    Con_Error("Property '%s' does not support inline trigger shorthand", pdesc->Name);
+    return FALSE;
+  }
+
+  struct Property *triggers_prop = NULL;
+  if (FAILED(OBJ_FindLongProperty(obj, triggers_desc->FullIdentifier, &triggers_prop))) {
+    Con_Error("Could not get trigger array slot for '%s'", pdesc->Name);
+    return FALSE;
+  }
+
+  struct Object *action = _LoadObjectFromXmlFragment(text, pdesc->Name);
+  if (!action) {
+    return FALSE;
+  }
+
+  struct Object *trigger = OBJ_Create(ID_EventTrigger);
+  if (!trigger) {
+    OBJ_ReleaseRef(action);
+    return FALSE;
+  }
+
+  char routed_event[MAX_PROPERTY_STRING] = {0};
+  if (pdesc->Category && *pdesc->Category) {
+    snprintf(routed_event, sizeof(routed_event), "%s.%s", pdesc->Category, pdesc->Name);
+  } else {
+    snprintf(routed_event, sizeof(routed_event), "%s", pdesc->Name);
+  }
+
+  lpcString_t routed_event_value = routed_event;
+  if (FAILED(OBJ_SetPropertyValue(trigger, "RoutedEvent", &routed_event_value))) {
+    OBJ_ReleaseRef(trigger);
+    OBJ_ReleaseRef(action);
+    return FALSE;
+  }
+
+  OBJ_AddChild(trigger, action, FALSE);
+  if (!_AppendObjectToArrayProperty(triggers_prop, trigger)) {
+    OBJ_ReleaseRef(action);
+    OBJ_ReleaseRef(trigger);
+    return FALSE;
+  }
+
+  OBJ_ReleaseRef(action);
+  OBJ_ReleaseRef(trigger);
+  return TRUE;
 }
