@@ -248,6 +248,61 @@ local function test_xml_loading_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: object-typed attributes should accept inline object expressions.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_xml_attribute()
+	local xml = [[
+<Screen Name="inline-xml-screen"
+        Width="800"
+        Height="600"
+        ResizeMode="NoResize"
+        DataContext="{DataObject Name='inline-context'}">
+  <Node2D Name="child-node" Width="100" Height="50" BorderRadius="{12}" />
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline XML attribute loadObjectFromXmlString should return a non-nil object")
+	test.expect(root.DataContext ~= nil, "DataContext should be created from inline XML")
+	test.expect_eq(root.DataContext:getClassName(), "DataObject", "DataContext should be a DataObject")
+	test.expect_eq(root.DataContext.Name, "inline-context", "inline XML attribute should preserve nested attributes")
+	local child = root:findChild("child-node", true)
+	test.expect(child ~= nil, "regular child objects should still load")
+	test.expect_eq(child.BorderRadius.TopLeftRadius, 12, "positional inline struct syntax should map to the first field")
+	test.expect_eq(child.BorderRadius.TopRightRadius, 0, "positional inline struct syntax should leave later fields at default values")
+
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_xml_attribute")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: inline object syntax should work for ImageView.Source.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_imageview_source()
+	local xml = [[
+<ImageView Name="inline-image-view"
+           Width="32"
+           Height="32"
+           Source="{Texture Width=48 Height=24}" />]]
+
+	local image_view = filesystem.loadObjectFromXmlString(xml)
+	test.expect(image_view ~= nil, "inline ImageView should load")
+	test.expect_eq(image_view:getClassName(), "ImageView", "inline ImageView should be an ImageView")
+	test.expect(image_view.Source ~= nil, "ImageView.Source should be created from inline XML")
+	test.expect_eq(image_view.Source:getClassName(), "Texture", "ImageView.Source should be a Texture object")
+	test.expect_eq(image_view.Source.Width, 48, "inline Texture should preserve Width")
+	test.expect_eq(image_view.Source.Height, 24, "inline Texture should preserve Height")
+
+	image_view:clear()
+	image_view = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_imageview_source")
+end
+
+-- ---------------------------------------------------------------------------
 -- XML loading: struct arrays on Project should parse via the C loader
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_struct_arrays()
@@ -733,6 +788,8 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_xml_loading_inline_xml_attribute()
+test_xml_loading_inline_imageview_source()
 test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()

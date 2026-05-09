@@ -1,0 +1,486 @@
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "fs_xml_inline.h"
+
+extern int parse_property(const char* str,
+                           struct PropertyType const* prop, void* valueptr);
+
+static void
+_InlineSkipDelims(const char **p)
+{
+  while (**p && (isspace((unsigned char)**p) || **p == ',')) {
+    (*p)++;
+  }
+}
+
+static char *
+_InlineStrNDup(const char *s, size_t n)
+{
+  char *out = (char *)malloc(n + 1);
+  if (!out) {
+    return NULL;
+  }
+  memcpy(out, s, n);
+  out[n] = '\0';
+  return out;
+}
+
+static bool_t
+_InlineReadToken(const char **p, char **out)
+{
+  _InlineSkipDelims(p);
+  if (!**p || **p == '}') {
+    return FALSE;
+  }
+
+  const char *start = *p;
+  if (**p == '"' || **p == '\'') {
+    char quote = *(*p)++;
+    start = *p;
+    while (**p && **p != quote) {
+      (*p)++;
+    }
+    *out = _InlineStrNDup(start, (size_t)(*p - start));
+    if (**p == quote) {
+      (*p)++;
+    }
+    return *out != NULL;
+  }
+
+  while (**p &&
+         !isspace((unsigned char)**p) &&
+         **p != ',' &&
+         **p != '}' &&
+         **p != '=') {
+    (*p)++;
+  }
+  *out = _InlineStrNDup(start, (size_t)(*p - start));
+  return *out != NULL;
+}
+
+static bool_t
+_InlineReadValue(const char **p, char **out)
+{
+  _InlineSkipDelims(p);
+  if (!**p || **p == '}') {
+    return FALSE;
+  }
+
+  const char *start = *p;
+  if (**p == '"' || **p == '\'') {
+    char quote = *(*p)++;
+    start = *p;
+    while (**p && **p != quote) {
+      (*p)++;
+    }
+    *out = _InlineStrNDup(start, (size_t)(*p - start));
+    if (**p == quote) {
+      (*p)++;
+    }
+    return *out != NULL;
+  }
+
+  while (**p &&
+         !isspace((unsigned char)**p) &&
+         **p != ',' &&
+         **p != '}') {
+    (*p)++;
+  }
+  *out = _InlineStrNDup(start, (size_t)(*p - start));
+  return *out != NULL;
+}
+
+static void
+_InlineBufferEnsure(char **buf, size_t *cap, size_t need)
+{
+  if (*cap > need) {
+    return;
+  }
+  size_t newcap = *cap ? *cap : 128;
+  while (newcap <= need) {
+    newcap *= 2;
+  }
+  *buf = (char *)realloc(*buf, newcap);
+  *cap = newcap;
+}
+
+static void
+_InlineBufferAppendN(char **buf, size_t *len, size_t *cap,
+                     const char *text, size_t text_len)
+{
+  _InlineBufferEnsure(buf, cap, *len + text_len + 1);
+  memcpy(*buf + *len, text, text_len);
+  *len += text_len;
+  (*buf)[*len] = '\0';
+}
+
+static void
+_InlineBufferAppend(char **buf, size_t *len, size_t *cap, const char *text)
+{
+  _InlineBufferAppendN(buf, len, cap, text, strlen(text));
+}
+
+static void
+_InlineBufferAppendChar(char **buf, size_t *len, size_t *cap, char ch)
+{
+  _InlineBufferEnsure(buf, cap, *len + 2);
+  (*buf)[(*len)++] = ch;
+  (*buf)[*len] = '\0';
+}
+
+static void
+_InlineBufferAppendEscaped(char **buf, size_t *len, size_t *cap, const char *text)
+{
+  for (const unsigned char *p = (const unsigned char *)text; *p; ++p) {
+    switch (*p) {
+      case '&': _InlineBufferAppend(buf, len, cap, "&amp;"); break;
+      case '<': _InlineBufferAppend(buf, len, cap, "&lt;"); break;
+      case '>': _InlineBufferAppend(buf, len, cap, "&gt;"); break;
+      case '"': _InlineBufferAppend(buf, len, cap, "&quot;"); break;
+      case '\'': _InlineBufferAppend(buf, len, cap, "&apos;"); break;
+      default: _InlineBufferAppendChar(buf, len, cap, (char)*p); break;
+    }
+  }
+}
+
+static struct PropertyType const *
+_FindNextPositionalField(struct PropertyType const *fields, int count,
+                         bool_t *used, int *cursor)
+{
+  while (*cursor < count) {
+    int idx = (*cursor)++;
+    if (!used || !used[idx]) {
+      return &fields[idx];
+    }
+  }
+  return NULL;
+}
+
+struct PropertyType const *
+_FindStructField(struct StructDesc const *sdesc, lpcString_t name)
+{
+  FOR_LOOP(i, sdesc->NumProperties) {
+    struct PropertyType const *field = &sdesc->Properties[i];
+    if (!strcmp(field->Name, name)) {
+      return field;
+    }
+  }
+  return NULL;
+}
+
+bool_t
+_SetStructFieldFromString(struct PropertyType const *pdesc, void *valueptr,
+                          lpcString_t value)
+{
+  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
+  if (!resolved) {
+    resolved = value;
+  }
+
+  char tmpbuf[MAX_PROPERTY_STRING] = {0};
+  if (!parse_property(resolved, pdesc, tmpbuf)) {
+    return FALSE;
+  }
+
+  if (pdesc->DataType == kDataTypeString) {
+    *(char**)valueptr = *(char**)tmpbuf;
+  } else {
+    memcpy(valueptr, tmpbuf, pdesc->DataSize);
+  }
+  return TRUE;
+}
+
+void
+_ClearStructValue(struct StructDesc const *sdesc, void *value)
+{
+  FOR_LOOP(i, sdesc->NumProperties) {
+    struct PropertyType const *field = &sdesc->Properties[i];
+    if (field->DataType == kDataTypeString && field->DataSize == sizeof(char*)) {
+      char **slot = (char **)((char*)value + field->Offset);
+      if (*slot) {
+        free(*slot);
+        *slot = NULL;
+      }
+    }
+  }
+}
+
+static bool_t
+_LoadStructTokens(struct PropertyType const *pdesc,
+                  struct StructDesc const *sdesc,
+                  lpcString_t text,
+                  void *dst)
+{
+  const char *p = text;
+  char *token = NULL;
+  bool_t ok = TRUE;
+  int positional = 0;
+  bool_t *assigned = (bool_t *)calloc((size_t)sdesc->NumProperties, sizeof(bool_t));
+
+  if (!assigned) {
+    Con_Error("Could not allocate struct parse state for '%s'", pdesc->Name);
+    return FALSE;
+  }
+
+  while (ok) {
+    if (!_InlineReadToken(&p, &token)) {
+      break;
+    }
+
+    _InlineSkipDelims(&p);
+    if (*p == '=') {
+      p++;
+      char *value = NULL;
+      if (!_InlineReadValue(&p, &value)) {
+        Con_Error("Missing value for inline struct field '%s' on property '%s'",
+                  token, pdesc->Name);
+        free(token);
+        ok = FALSE;
+        break;
+      }
+      struct PropertyType const *field = _FindStructField(sdesc, token);
+      if (!field) {
+        Con_Error("Unknown field '%s' for struct '%s' in property '%s'",
+                  token, sdesc->StructName, pdesc->Name);
+        free(token);
+        free(value);
+        ok = FALSE;
+        break;
+      }
+      if (!_SetStructFieldFromString(field, (char*)dst + field->Offset, value)) {
+        ok = FALSE;
+      }
+      assigned[field - sdesc->Properties] = TRUE;
+      free(token);
+      free(value);
+      continue;
+    }
+
+    struct PropertyType const *field = _FindNextPositionalField(sdesc->Properties,
+                                                                (int)sdesc->NumProperties,
+                                                                assigned,
+                                                                &positional);
+    if (!field) {
+      Con_Error("Too many positional values for struct '%s' in property '%s'",
+                sdesc->StructName, pdesc->Name);
+      free(token);
+      ok = FALSE;
+      break;
+    }
+    if (assigned[field - sdesc->Properties]) {
+      int next = positional;
+      while (next < (int)sdesc->NumProperties && assigned[next]) {
+        next++;
+      }
+      positional = next;
+      field = (positional < (int)sdesc->NumProperties) ? &sdesc->Properties[positional++] : NULL;
+    }
+    if (!field) {
+      Con_Error("Too many positional values for struct '%s' in property '%s'",
+                sdesc->StructName, pdesc->Name);
+      free(token);
+      ok = FALSE;
+      break;
+    }
+
+    if (!_SetStructFieldFromString(field, (char*)dst + field->Offset, token)) {
+      ok = FALSE;
+    }
+    assigned[field - sdesc->Properties] = TRUE;
+    free(token);
+    token = NULL;
+  }
+
+  free(assigned);
+  return ok;
+}
+
+bool_t
+_LoadStructFromXmlFragment(struct Property *prop,
+                           struct PropertyType const *pdesc,
+                           lpcString_t text,
+                           lpcString_t prop_name)
+{
+  (void)prop_name;
+
+  struct StructDesc const *sdesc = OBJ_FindStructDesc(pdesc->TypeString);
+  if (!sdesc) {
+    Con_Error("Could not resolve struct descriptor '%s' for property '%s'",
+              pdesc->TypeString, pdesc->Name);
+    return FALSE;
+  }
+
+  void *tmp = calloc(1, (size_t)sdesc->StructSize);
+  if (!tmp) {
+    Con_Error("Could not allocate struct storage for property '%s'", pdesc->Name);
+    return FALSE;
+  }
+
+  const char *body = text;
+  while (*body && isspace((unsigned char)*body)) {
+    body++;
+  }
+  if (*body == '{') {
+    body++;
+  }
+  size_t len = strlen(body);
+  while (len > 0 && isspace((unsigned char)body[len - 1])) {
+    len--;
+  }
+  if (len > 0 && body[len - 1] == '}') {
+    len--;
+  }
+
+  char *copy = _InlineStrNDup(body, len);
+  if (!copy) {
+    free(tmp);
+    return FALSE;
+  }
+
+  bool_t ok = _LoadStructTokens(pdesc, sdesc, copy, tmp);
+  if (ok) {
+    PROP_SetValue(prop, tmp);
+  } else {
+    _ClearStructValue(sdesc, tmp);
+  }
+
+  free(copy);
+  free(tmp);
+  return ok;
+}
+
+static struct ClassDesc const *
+_FindInlineClass(lpcString_t name)
+{
+  return OBJ_FindClass(name);
+}
+
+static bool_t
+_BuildInlineObjectXml(struct ClassDesc const *cls,
+                      lpcString_t text,
+                      char **out_xml)
+{
+  const char *p = text;
+  while (*p && isspace((unsigned char)*p)) {
+    p++;
+  }
+  if (*p == '{') {
+    p++;
+  }
+  char *type = NULL;
+  if (!_InlineReadToken(&p, &type) || !type || !*type) {
+    free(type);
+    return FALSE;
+  }
+
+  struct ClassDesc const *target = cls ? cls : _FindInlineClass(type);
+  if (!target) {
+    Con_Error("Unknown inline object type '%s'", type);
+    free(type);
+    return FALSE;
+  }
+
+  size_t cap = 0;
+  size_t len = 0;
+  char *buf = NULL;
+  _InlineBufferAppendChar(&buf, &len, &cap, '<');
+  _InlineBufferAppend(&buf, &len, &cap, type);
+
+  int positional = 0;
+  bool_t *assigned = (bool_t *)calloc((size_t)target->NumProperties, sizeof(bool_t));
+  if (!assigned) {
+    free(type);
+    free(buf);
+    return FALSE;
+  }
+
+  while (TRUE) {
+    char *name = NULL;
+    if (!_InlineReadToken(&p, &name)) {
+      break;
+    }
+    _InlineSkipDelims(&p);
+    if (*p == '=') {
+      p++;
+      char *value = NULL;
+      if (!_InlineReadValue(&p, &value)) {
+        Con_Error("Missing inline object value for '%s'", name);
+        free(name);
+        free(assigned);
+        free(type);
+        free(buf);
+        return FALSE;
+      }
+      for (int i = 0; i < (int)target->NumProperties; i++) {
+        if (!assigned[i] && !strcmp(target->Properties[i].Name, name)) {
+          assigned[i] = TRUE;
+          break;
+        }
+      }
+      _InlineBufferAppendChar(&buf, &len, &cap, ' ');
+      _InlineBufferAppend(&buf, &len, &cap, name);
+      _InlineBufferAppend(&buf, &len, &cap, "=\"");
+      _InlineBufferAppendEscaped(&buf, &len, &cap, value);
+      _InlineBufferAppendChar(&buf, &len, &cap, '"');
+      free(value);
+      free(name);
+      continue;
+    }
+
+    struct PropertyType const *field = _FindNextPositionalField(target->Properties,
+                                                                (int)target->NumProperties,
+                                                                assigned,
+                                                                &positional);
+    if (!field) {
+      Con_Error("Too many positional values for inline object '%s'", type);
+      free(name);
+      free(assigned);
+      free(type);
+      free(buf);
+      return FALSE;
+    }
+    assigned[field - target->Properties] = TRUE;
+
+    _InlineBufferAppendChar(&buf, &len, &cap, ' ');
+    _InlineBufferAppend(&buf, &len, &cap, field->Name);
+    _InlineBufferAppend(&buf, &len, &cap, "=\"");
+    _InlineBufferAppendEscaped(&buf, &len, &cap, name);
+    _InlineBufferAppendChar(&buf, &len, &cap, '"');
+    free(name);
+  }
+
+  _InlineBufferAppend(&buf, &len, &cap, "/>");
+  free(assigned);
+  free(type);
+  *out_xml = buf;
+  return TRUE;
+}
+
+struct Object *
+_LoadObjectFromXmlFragment(lpcString_t text,
+                           lpcString_t prop_name)
+{
+  (void)prop_name;
+
+  while (*text && isspace((unsigned char)*text)) {
+    text++;
+  }
+
+  if (*text == '<') {
+    return FS_LoadObjectFromXmlString(text);
+  }
+  if (*text != '{') {
+    return FS_LoadObjectFromXmlString(text);
+  }
+
+  char *xml = NULL;
+  if (!_BuildInlineObjectXml(NULL, text, &xml)) {
+    return NULL;
+  }
+
+  struct Object *result = FS_LoadObjectFromXmlString(xml);
+  free(xml);
+  return result;
+}

@@ -1,91 +1,18 @@
+#include <ctype.h>
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
+#include "fs_xml_inline.h"
 
 // Forward declarations for the node-construction functions
 static struct Object *_FS_ConstructNode(xmlNodePtr element, bool_t send_start);
-static struct Object *FS_ConstructNode(xmlNodePtr element);
+struct Object *FS_ConstructNode(xmlNodePtr element);
 
 // External declaration of the property string parser defined in core/property/property_flow.c
 // parse_property handles all common property types (bool, int, float, string, color, enum,
 // struct) in pure C without a Lua state.  For kDataTypeObject it calls FS_LoadObjectFromXml.
 extern int parse_property(const char* str,
                            struct PropertyType const* prop, void* valueptr);
-
-// --- Helpers ----------------------------------------------------------------
-
-// Map a PropertyAttribute name string to its enum value.
-static enum PropertyAttribute
-_ParseAttributeStr(lpcString_t s)
-{
-  static lpcString_t names[] = {
-    "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA",
-    "VectorX", "VectorY", "VectorZ", "VectorW", NULL
-  };
-  for (int i = 0; names[i]; i++) {
-    if (!strcmp(s, names[i])) return (enum PropertyAttribute)i;
-  }
-  return kPropertyAttributeWholeProperty;
-}
-
-// Map a BindingMode name string to its enum value.
-static enum BindingMode
-_ParseBindingModeStr(lpcString_t s)
-{
-  static lpcString_t names[] = {
-    "OneWay", "TwoWay", "OneWayToSource", "Expression", NULL
-  };
-  for (int i = 0; names[i]; i++) {
-    if (!strcmp(s, names[i])) return (enum BindingMode)i;
-  }
-  return kBindingModeExpression;
-}
-
-static struct PropertyType const *
-_FindStructField(struct StructDesc const *sdesc, lpcString_t name)
-{
-  FOR_LOOP(i, sdesc->NumProperties) {
-    struct PropertyType const *field = &sdesc->Properties[i];
-    if (!strcmp(field->Name, name)) {
-      return field;
-    }
-  }
-  return NULL;
-}
-
-static bool_t
-_SetStructFieldFromString(struct PropertyType const *pdesc, void *valueptr,
-                          lpcString_t value)
-{
-  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
-  if (!resolved) resolved = value;
-
-  char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  if (!parse_property(resolved, pdesc, tmpbuf)) {
-    return FALSE;
-  }
-
-  if (pdesc->DataType == kDataTypeString) {
-    *(char**)valueptr = *(char**)tmpbuf;
-  } else {
-    memcpy(valueptr, tmpbuf, pdesc->DataSize);
-  }
-  return TRUE;
-}
-
-static void
-_ClearStructValue(struct StructDesc const *sdesc, void *value)
-{
-  FOR_LOOP(i, sdesc->NumProperties) {
-    struct PropertyType const *field = &sdesc->Properties[i];
-    if (field->DataType == kDataTypeString && field->DataSize == sizeof(char*)) {
-      if (*(char **)((char*)value + field->Offset)) {
-        free(*(char **)((char*)value + field->Offset));
-        *(char **)((char*)value + field->Offset) = NULL;
-      }
-    }
-  }
-}
 
 // Parse a single XML attribute value and set it on obj.
 // Handles Name/id, class, and all registered properties.
@@ -141,6 +68,26 @@ _SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
     return;
   }
 
+  // Inline object expressions can be assigned directly to object properties.
+  // The fragment is parsed as a self-contained XML document and constructed
+  // the same way as a file-backed object.
+  lpcString_t inline_expr = resolved;
+  while (*inline_expr && isspace((unsigned char)*inline_expr)) inline_expr++;
+  if (pdesc->DataType == kDataTypeStruct && *inline_expr == '{') {
+    if (_LoadStructFromXmlFragment(prop, pdesc, inline_expr, pdesc->Name)) {
+      return;
+    }
+  }
+  if (pdesc->DataType == kDataTypeObject &&
+      (*inline_expr == '<' || *inline_expr == '{')) {
+    struct Object *inline_obj = _LoadObjectFromXmlFragment(inline_expr, pdesc->Name);
+    if (!inline_obj) {
+      return;
+    }
+    PROP_SetValue(prop, &inline_obj);
+    return;
+  }
+
   // Parse the string value into a stack-allocated buffer using pure-C parse_property.
   // Handles bool, int, float, string, color, enum, struct (via OBJ_ParseStruct),
   // and kDataTypeObject (via FS_LoadObjectFromXml).
@@ -157,7 +104,7 @@ _SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
   }
 }
 
-// Build an object-property child element (e.g. <Grid.Columns> or binding).
+// Build an object-property child element (e.g. <Grid.Columns>).
 static void
 _ConstructProperty(struct Object *obj,
                    struct PropertyType const *pdesc, xmlNodePtr element)
@@ -274,26 +221,6 @@ _ConstructProperty(struct Object *obj,
     xmlFree(val);
     return;
   }
-
-  // No Value attribute: treat text content as a binding expression
-  xmlChar* text = xmlNodeGetContent(element);
-  if (text && *text) {
-    enum PropertyAttribute attribute = kPropertyAttributeWholeProperty;
-    enum BindingMode mode = kBindingModeExpression;
-    bool_t enabled = TRUE;
-
-    xmlChar* attr_xml = xmlGetProp(element, XMLSTR("Attribute"));
-    xmlChar* mode_xml = xmlGetProp(element, XMLSTR("Mode"));
-    xmlChar* en_xml   = xmlGetProp(element, XMLSTR("Enabled"));
-
-    if (attr_xml) { attribute = _ParseAttributeStr((lpcString_t)attr_xml); xmlFree(attr_xml); }
-    if (mode_xml) { mode      = _ParseBindingModeStr((lpcString_t)mode_xml); xmlFree(mode_xml); }
-    if (en_xml)   { enabled   = strcmp((lpcString_t)en_xml, "false") != 0;   xmlFree(en_xml); }
-
-    OBJ_AttachPropertyProgram(obj, pdesc->Name, (lpcString_t)text,
-                               attribute, mode, enabled);
-  }
-  if (text) xmlFree(text);
 }
 
 // Handle an attach-only component element generically: attach the component to
@@ -470,7 +397,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
 }
 
 // Public wrapper: always sends Object.Start for the root.
-static struct Object *
+struct Object *
 FS_ConstructNode(xmlNodePtr element)
 {
   return _FS_ConstructNode(element, TRUE);
