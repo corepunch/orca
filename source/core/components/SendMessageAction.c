@@ -110,6 +110,9 @@ HANDLER(SendMessageAction, Trigger, Triggered)
     }
   }
 
+  if (payload_size > MAX_MESSAGE_SIZE) {
+    payload_size = MAX_MESSAGE_SIZE;
+  }
   axPostMessageDataW(target, msg_id, 0, payload, payload_size);
   return FALSE;
 }

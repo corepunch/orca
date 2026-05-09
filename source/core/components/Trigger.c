@@ -171,7 +171,7 @@ HANDLER(ShowModalAction, Trigger, Triggered)
     return FALSE;
   }
 
-  if (!GetPopup(target)) {
+  if (!OBJ_GetComponent(target, fnv1a32("Popup"))) {
     Con_Error("ShowModalAction template '%s' is not a Popup", pShowModalAction->Path);
     OBJ_RemoveFromParent(target);
     return FALSE;

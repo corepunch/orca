@@ -214,17 +214,21 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
 
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
-  struct Popup* modal = GetPopup((struct Object *)ctx);
+  struct Object *modal_obj = (struct Object *)ctx;
+  struct Popup* modal = GetPopup(modal_obj);
   if (!modal) {
+    OBJ_ReleaseRef(modal_obj);
     Con_Error("Modal popup missing Popup component");
     lua_pushboolean(L, FALSE);
     lua_pushstring(L, "Cancelled");
     return 2;
   }
   if (!isnan(modal->DialogResult)) {
-    if (modal->DialogResult) {
+    float result = modal->DialogResult;
+    OBJ_ReleaseRef(modal_obj);
+    if (result) {
       lua_pushboolean(L, TRUE);
-      lua_pushboolean(L, modal->DialogResult != 2);
+      lua_pushboolean(L, result != 2);
     } else {
       lua_pushboolean(L, FALSE);
       lua_pushstring(L, "Cancelled");
@@ -241,5 +245,6 @@ OBJ_ShowModal(lua_State* L, struct Object *self, struct Object *modal)
   if (!OBJ_ShowModalObject(self, modal)) {
     return 0;
   }
+  OBJ_AddRef(modal);
   return lua_yieldk(L, 0, (lua_KContext)modal, modal_continue);
 }
