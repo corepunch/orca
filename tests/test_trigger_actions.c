@@ -498,6 +498,26 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
   });
 }
 
+static void
+test_show_modal_action_property_order(void)
+{
+  RUN("show_modal_action_property_order", {
+    struct Object *action = make_object(ID_ShowModalAction, "Action");
+    struct Property *trigger_prop = NULL;
+    struct Property *path_prop = NULL;
+
+    EXPECT(action != NULL);
+    EXPECT_OK(OBJ_FindShortProperty(action, "Trigger", &trigger_prop));
+    EXPECT_OK(OBJ_FindShortProperty(action, "Path", &path_prop));
+    EXPECT(trigger_prop != NULL);
+    EXPECT(path_prop != NULL);
+    EXPECT(strcmp(PROP_GetName(trigger_prop), "Trigger") == 0);
+    EXPECT(strcmp(PROP_GetName(path_prop), "Path") == 0);
+    EXPECT(ShowModalAction_GetProperty(action, kShowModalActionTrigger) == trigger_prop);
+    EXPECT(ShowModalAction_GetProperty(action, kShowModalActionPath) == path_prop);
+  });
+}
+
 int
 main(void)
 {
@@ -505,6 +525,7 @@ main(void)
   test_event_trigger_no_args();
   test_event_trigger_single_value();
   test_event_trigger_partial_payload_defaults_to_zero();
+  test_show_modal_action_property_order();
 
   if (s_lua_state) {
     lua_close(s_lua_state);
