@@ -19,6 +19,7 @@ bool_t _LoadEventTriggerFromXmlFragment(struct Object *obj,
                                         struct PropertyType const *pdesc,
                                         lpcString_t text);
 struct Object *_LoadObjectFromXmlFragment(lpcString_t text,
-                                          lpcString_t prop_name);
+                                          lpcString_t prop_name,
+                                          int positional_start);
 
 #endif

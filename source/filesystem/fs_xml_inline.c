@@ -362,6 +362,7 @@ _FindInlineClass(lpcString_t name)
 static bool_t
 _BuildInlineObjectXml(struct ClassDesc const *cls,
                       lpcString_t text,
+                      int positional_start,
                       char **out_xml)
 {
   const char *p = text;
@@ -390,7 +391,7 @@ _BuildInlineObjectXml(struct ClassDesc const *cls,
   _InlineBufferAppendChar(&buf, &len, &cap, '<');
   _InlineBufferAppend(&buf, &len, &cap, type);
 
-  int positional = 0;
+  int positional = positional_start;
   bool_t *assigned = (bool_t *)calloc((size_t)target->NumProperties, sizeof(bool_t));
   if (!assigned) {
     free(type);
@@ -496,7 +497,8 @@ _AppendObjectToArrayProperty(struct Property *prop, struct Object *item)
 
 struct Object *
 _LoadObjectFromXmlFragment(lpcString_t text,
-                           lpcString_t prop_name)
+                           lpcString_t prop_name,
+                           int positional_start)
 {
   (void)prop_name;
 
@@ -512,7 +514,7 @@ _LoadObjectFromXmlFragment(lpcString_t text,
   }
 
   char *xml = NULL;
-  if (!_BuildInlineObjectXml(NULL, text, &xml)) {
+  if (!_BuildInlineObjectXml(NULL, text, positional_start, &xml)) {
     return NULL;
   }
 
@@ -542,7 +544,7 @@ _LoadEventTriggerFromXmlFragment(struct Object *obj,
     return FALSE;
   }
 
-  struct Object *action = _LoadObjectFromXmlFragment(text, pdesc->Name);
+  struct Object *action = _LoadObjectFromXmlFragment(text, pdesc->Name, 1);
   if (!action) {
     return FALSE;
   }

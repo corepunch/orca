@@ -458,7 +458,7 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
+	        <ShowModalAction Example/Screens/GetStartedPopup/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -497,7 +497,7 @@ local function test_xml_loading_close_popup_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
+	        <ShowModalAction Example/Screens/GetStartedPopup/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -662,14 +662,14 @@ local function test_example_application_xml()
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Path=Example/Screens/GetStartedPopup}"', 1, true)
+	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Message=Popup.ClosePopup Target=../../../}"', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Popup.ClosePopup}"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")

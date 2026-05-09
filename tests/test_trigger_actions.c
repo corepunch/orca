@@ -6,8 +6,11 @@
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 #include <source/core/object/object_internal.h>
+#include <source/filesystem/fs_local.h>
+#include <plugins/UIKit/UIKit_properties.h>
 
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 
 extern int luaopen_orca_core(lua_State *L);
@@ -299,6 +302,13 @@ static struct MessageDesc s_mixed_message_desc_info = {
   .ExtraData = NULL,
 };
 
+static struct MessageDesc s_popup_close_message_desc = {
+  .MessageName = "Popup.ClosePopup",
+  .MessageID = ID_Popup_ClosePopup,
+  .Payload = NULL,
+  .ExtraData = NULL,
+};
+
 static LRESULT
 TestSourceProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
 {
@@ -341,6 +351,50 @@ static struct ClassDesc s_event_source_class = {
   .NumProperties = sizeof(s_source_properties) / sizeof(s_source_properties[0]),
 };
 
+static LRESULT
+TestScreenProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
+{
+  (void)object;
+  (void)cmp;
+  (void)msg;
+  (void)wparam;
+  (void)lparam;
+  return FALSE;
+}
+
+static LRESULT
+TestPopupProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
+{
+  (void)cmp;
+  (void)wparam;
+  (void)lparam;
+  if (msg == ID_Popup_ClosePopup) {
+    OBJ_RemoveFromParent(object);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static struct ClassDesc s_screen_class = {
+  .ObjProc = TestScreenProc,
+  .ClassName = "Screen",
+  .DefaultName = "Screen",
+  .ParentClasses = { ID_Node, 0 },
+  .ClassID = ID_Screen,
+  .ClassSize = 0,
+  .NumProperties = 0,
+};
+
+static struct ClassDesc s_popup_class = {
+  .ObjProc = TestPopupProc,
+  .ClassName = "Popup",
+  .DefaultName = "Popup",
+  .ParentClasses = { ID_Screen, 0 },
+  .ClassID = ID_Popup,
+  .ClassSize = 0,
+  .NumProperties = 0,
+};
+
 static void
 register_trigger_action_test_types(void)
 {
@@ -353,6 +407,8 @@ register_trigger_action_test_types(void)
   OBJ_RegisterClass(&s_host_class);
   OBJ_RegisterClass(&s_sink_class);
   OBJ_RegisterClass(&s_event_source_class);
+  OBJ_RegisterClass(&s_screen_class);
+  OBJ_RegisterClass(&s_popup_class);
 
   s_no_args_message_desc.MessageID = fnv1a32(s_no_args_message_desc.MessageName);
   s_value_message_desc_info.MessageID = fnv1a32(s_value_message_desc_info.MessageName);
@@ -360,6 +416,7 @@ register_trigger_action_test_types(void)
   OBJ_RegisterMessageDesc(&s_no_args_message_desc);
   OBJ_RegisterMessageDesc(&s_value_message_desc_info);
   OBJ_RegisterMessageDesc(&s_mixed_message_desc_info);
+  OBJ_RegisterMessageDesc(&s_popup_close_message_desc);
 
   OBJ_RegisterMessagePropertyTypes("TestMessage.Value",
                                    (struct PropertyType *)s_value_message_fields,
@@ -381,6 +438,24 @@ make_object(uint32_t class_id, const char *name)
     OBJ_SetName(obj, name);
   }
   return obj;
+}
+
+static struct Object *
+load_xml_file_loader(int argc, const char *argv[])
+{
+  return (argc > 0) ? FS_LoadObjectFromXml(argv[0]) : NULL;
+}
+
+static bool_t
+write_text_file(const char *path, const char *contents)
+{
+  FILE *f = fopen(path, "w");
+  if (!f) {
+    return FALSE;
+  }
+  fputs(contents, f);
+  fclose(f);
+  return TRUE;
 }
 
 static void
@@ -518,6 +593,61 @@ test_show_modal_action_property_order(void)
   });
 }
 
+static void
+test_show_modal_action_short_form(void)
+{
+  RUN("show_modal_action_short_form", {
+    const char *popup_base = "/private/tmp/orca_show_modal_short";
+    char popup_path[512];
+    snprintf(popup_path, sizeof(popup_path), "%s.xml", popup_base);
+
+    unlink(popup_path);
+    EXPECT(write_text_file(popup_path,
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+      "<Popup Name=\"TmpPopup\">\n"
+      "  <Node Name=\"Close\" LeftButtonUp=\"{SendMessageAction Popup.ClosePopup}\"/>\n"
+      "</Popup>\n"));
+
+    OBJ_RegisterFileLoader(".xml", load_xml_file_loader);
+
+    char root_xml[1024];
+    snprintf(root_xml, sizeof(root_xml),
+      "<Screen Name=\"TmpScreen\">\n"
+      "  <Node Name=\"OpenButton\" LeftButtonUp=\"{ShowModalAction %s}\"/>\n"
+      "</Screen>",
+      popup_base);
+
+    struct Object *root = FS_LoadObjectFromXmlString(root_xml);
+    EXPECT(root != NULL);
+
+    struct Object *button = root ? OBJ_FindChild(root, "OpenButton", TRUE) : NULL;
+    EXPECT(button != NULL);
+    if (button) {
+      OBJ_SendMessageW(button, ID_Node_LeftButtonUp, 0, NULL);
+      pump_messages(root);
+    }
+
+    struct Object *popup = root ? OBJ_GetNext(root) : NULL;
+    EXPECT(popup != NULL);
+    EXPECT(popup && !strcmp(OBJ_GetClassName(popup), "Popup"));
+
+    struct Object *close = popup ? OBJ_FindChild(popup, "Close", TRUE) : NULL;
+    EXPECT(close != NULL);
+    if (close) {
+      OBJ_SendMessageW(close, ID_Node_LeftButtonUp, 0, NULL);
+      pump_messages(root);
+    }
+
+    EXPECT(OBJ_GetNext(root) == NULL);
+
+    if (root) {
+      OBJ_Clear(root);
+      OBJ_ReleaseRef(root);
+    }
+    unlink(popup_path);
+  });
+}
+
 int
 main(void)
 {
@@ -526,6 +656,7 @@ main(void)
   test_event_trigger_single_value();
   test_event_trigger_partial_payload_defaults_to_zero();
   test_show_modal_action_property_order();
+  test_show_modal_action_short_form();
 
   if (s_lua_state) {
     lua_close(s_lua_state);

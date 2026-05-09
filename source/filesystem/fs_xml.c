@@ -85,7 +85,7 @@ _SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
   }
   if (pdesc->DataType == kDataTypeObject &&
       (*inline_expr == '<' || *inline_expr == '{')) {
-    struct Object *inline_obj = _LoadObjectFromXmlFragment(inline_expr, pdesc->Name);
+    struct Object *inline_obj = _LoadObjectFromXmlFragment(inline_expr, pdesc->Name, 0);
     if (!inline_obj) {
       return;
     }
