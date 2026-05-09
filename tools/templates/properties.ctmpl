@@ -1,0 +1,34 @@
+// Auto-generated from {{module.name}}.xml by tools/templates/properties.ctmpl
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
+#ifndef __{{module.name|upper}}_PROPERTIES_H__
+#define __{{module.name|upper}}_PROPERTIES_H__
+
+{{for components as comp}}
+// {{comp.name}}
+#define ID_{{comp.name}} {{fnv1a comp.name}}
+#define Get{{comp.name}}(_P) ((struct {{comp.name}}*)((_P)?OBJ_GetComponent(_P,ID_{{comp.name}}):NULL))
+#define {{comp.name}}_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_{{comp.name}},sizeof(struct {{comp.name}}),_N)
+{{for comp.properties as p}}
+#define ID_{{comp.name}}_{{p.name}} {{p.id}} // {{comp.name}}.{{p.name}}
+{{end}}
+#define k{{comp.name}}NumProperties {{comp.name}}__prop_count__
+{{end}}
+
+{{for interfaces as ifc}}
+{{end}}
+
+{{for structs as s}}
+#define ID_{{s.name}} {{fnv1a s.name}}
+{{for s.fields as f}}
+#define ID_{{s.name}}_{{f.name}} {{f.id}} // {{s.name}}.{{f.name}}
+{{end}}
+{{end}}
+
+{{for events as ev}}
+#define ID_{{ev.ns}}_{{ev.name}}EventArgs {{fnv1a ev.ns}}_{{ev.name}}EventArgs
+{{for ev.fields as f}}
+#define ID_{{ev.ns}}_{{ev.name}}EventArgs_{{f.name}} {{f.id}} // {{ev.ns}}_{{ev.name}}EventArgs.{{f.name}}
+{{end}}
+{{end}}
+
+#endif

@@ -1,0 +1,133 @@
+// Auto-generated from {{module.name}}.xml by tools/templates/header.ctmpl
+// DO NOT EDIT — run 'cd tools && make' to regenerate.
+#ifndef __{{module.name|upper}}_H__
+#define __{{module.name|upper}}_H__
+
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef struct lua_State lua_State;
+
+{{for externals as ext}}
+struct {{ext.name}};
+{{end}}
+
+{{for includes as inc}}
+#include <{{inc.file}}>
+{{end}}
+
+#include "{{module.name}}_properties.h"
+{{for requires as req}}
+#include "{{req.source}}.h"
+{{end}}
+
+{{for events as ev}}
+{{if ev.parent_name}}
+typedef struct {{ev.parent_name}}EventArgs {{ev.ns}}_{{ev.name}}Msg_t,* {{ev.ns}}_{{ev.name}}MsgPtr;
+{{else}}
+typedef struct {{ev.ns}}_{{ev.name}}EventArgs {{ev.ns}}_{{ev.name}}Msg_t,* {{ev.ns}}_{{ev.name}}MsgPtr;
+{{end}}
+{{end}}
+
+{{for enums as e}}
+{{if e.doc}}
+
+/// @brief {{e.doc}}
+{{end}}
+/** {{e.name}} enum */
+typedef enum {{e.name}} {
+{{for e.values as v}}
+	k{{e.name}}{{v.name}}, ///< {{v.doc}}
+{{end}}
+} e{{e.name}}_t;
+#define {{e.name}}_Count {{e.count}}
+ORCA_API const char *{{e.name}}ToString(enum {{e.name}} value);
+ORCA_API enum {{e.name}} luaX_check{{e.name}}(lua_State *L, int idx);
+ORCA_API void luaX_push{{e.name}}(lua_State *L, enum {{e.name}} value);
+{{end}}
+
+{{for functions as f}}
+{{if f.doc}}
+
+/// @brief {{f.doc}}
+{{end}}
+ORCA_API {{include _method_return.ctmpl}}
+{{f.full_name}}({{include _method_args.ctmpl}});
+{{end}}
+
+{{for interfaces as ifc}}
+{{for ifc.methods as meth}}
+{{if meth.doc}}
+
+/// @brief {{meth.doc}}
+{{end}}
+ORCA_API {{include _method_return.ctmpl}}
+{{meth.full_name}}({{include _method_args.ctmpl}});
+{{end}}
+{{end}}
+
+{{for structs as s}}
+{{if s.doc}}
+/// @brief {{s.doc}}
+{{end}}
+/** {{s.name}} struct */
+struct {{s.name}} {
+{{for s.fields as f}}
+{{include _field_decl.ctmpl}}
+{{end}}
+};
+ORCA_API void luaX_push{{s.name}}(lua_State *L, struct {{s.name}} const* {{s.name}});
+ORCA_API struct {{s.name}}* luaX_check{{s.name}}(lua_State *L, int idx);
+{{end}}
+
+{{for structs as s}}
+{{for s.methods as meth}}
+{{if meth.doc}}
+/// @brief {{meth.doc}}
+{{end}}
+ORCA_API {{include _method_return.ctmpl}}
+{{meth.full_name}}({{include _method_args.ctmpl}});
+{{end}}
+{{end}}
+
+{{for events as ev}}
+{{if ev.parent_name}}
+{{else}}
+/** {{ev.ns}}_{{ev.name}}EventArgs struct */
+struct {{ev.ns}}_{{ev.name}}EventArgs {
+{{for ev.fields as f}}
+{{include _field_decl.ctmpl}}
+{{end}}
+};
+ORCA_API void luaX_push{{ev.ns}}_{{ev.name}}EventArgs(lua_State *L, struct {{ev.ns}}_{{ev.name}}EventArgs const* data);
+ORCA_API struct {{ev.ns}}_{{ev.name}}EventArgs* luaX_check{{ev.ns}}_{{ev.name}}EventArgs(lua_State *L, int idx);
+{{end}}
+{{end}}
+
+{{for components as comp}}
+{{if comp.doc}}
+
+/// @brief {{comp.doc}}
+{{end}}
+/** {{comp.name}} component */
+struct {{comp.name}} {
+{{for comp.properties as p}}
+	{{p.type}} {{p.name}};
+{{end}}
+{{for comp.fields as f}}
+{{include _field_decl.ctmpl}}
+{{end}}
+};
+ORCA_API void luaX_push{{comp.name}}(lua_State *L, struct {{comp.name}} const* {{comp.name}});
+ORCA_API struct {{comp.name}}* luaX_check{{comp.name}}(lua_State *L, int idx);
+{{for comp.methods as meth}}
+{{if meth.doc}}
+
+/// @brief {{meth.doc}}
+{{end}}
+ORCA_API {{include _method_return.ctmpl}}
+{{comp.name}}_{{meth.name}}({{include _method_args.ctmpl}});
+{{end}}
+{{end}}
+
+#endif

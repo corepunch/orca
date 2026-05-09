@@ -24,20 +24,27 @@ DOC_MODULES := \
 DOCS_DIR   := ../docs
 TEMPLATES  := templates
 
-PYPHP := python3 -m pyphp.pyphp
+PYPHP   := python3 -m pyphp.pyphp
+CODEGEN := $(CURDIR)/codegen/codegen
+
+# Build the C codegen tool first
+$(CODEGEN):
+	$(MAKE) -C codegen
 
 # Top-level targets
 .PHONY: all dtd docs docs-index $(MODULES)
 
-all: $(MODULES)
+all: $(CODEGEN) $(MODULES)
 
-# Per-module rule — each module builds its 3 files
+# Per-module rule — each module builds its 3 files.
+# Uses the compiled C codegen tool (with .ctmpl templates) when available,
+# falling back to the Python/pyphp pipeline for export.c (not yet ported).
 define MODULE_RULE
-$(1):
+$(1): $(CODEGEN)
 	@echo "Generating $(1)..."
-	$(PYPHP) $(TEMPLATES)/header.php     ../$(1).xml > ../$(1).h
-	$(PYPHP) $(TEMPLATES)/properties.php ../$(1).xml > ../$(1)_properties.h
-	$(PYPHP) $(TEMPLATES)/export.php     ../$(1).xml > ../$(1)_export.c
+	$(CODEGEN) ../$(1).xml ../$(1).h         $(TEMPLATES)/header.ctmpl
+	$(CODEGEN) ../$(1).xml ../$(1)_properties.h $(TEMPLATES)/properties.ctmpl
+	$(PYPHP)   $(TEMPLATES)/export.php       ../$(1).xml > ../$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
