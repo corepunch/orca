@@ -131,6 +131,7 @@ navigatenode(xmlNodePtr data, xmlChar const* sep)
 static xmlNodePtr
 getservice(struct Object *hobj, lpcString_t name)
 {
+#if SERVICE_ENABLED
   lua_State* L = core.L;
   lua_getfield(L, LUA_REGISTRYINDEX, name);
   if (!lua_isnil(L, -1)) {
@@ -141,6 +142,7 @@ getservice(struct Object *hobj, lpcString_t name)
     lua_pop(L, -1);
     return NULL;
   }
+#endif
 }
 
 #define CALL(NAME) \

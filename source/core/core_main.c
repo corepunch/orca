@@ -753,7 +753,6 @@ before_core_module_registered(lua_State* L)
   memset(&core, 0, sizeof(struct game));
   memcpy(core.classes, saved_classes, sizeof(core.classes));
   core.realtime = axGetMilliseconds();
-  core.L = L;
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
 
   // Register pure-C struct parsers so parse_property works without a Lua state

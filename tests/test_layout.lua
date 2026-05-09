@@ -410,7 +410,7 @@ local function test_xml_loading_trigger_action_components()
 	print("PASS: test_xml_loading_trigger_action_components")
 end
 
-local function test_xml_loading_on_event_trigger_components()
+local function test_xml_loading_event_trigger_components()
 	local xml = [[
 	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
@@ -424,7 +424,7 @@ local function test_xml_loading_on_event_trigger_components()
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "on-event trigger XML should load")
+	test.expect(root ~= nil, "event trigger XML should load")
 
 	local target = root:findChild("HotkeyTarget", true)
 	local popup = root:findChild("Popup", true)
@@ -440,7 +440,7 @@ local function test_xml_loading_on_event_trigger_components()
 	root = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_on_event_trigger_components")
+	print("PASS: test_xml_loading_event_trigger_components")
 end
 
 local function test_xml_loading_send_message_action_components()
@@ -551,7 +551,7 @@ local function test_example_application_xml()
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
 	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
-	local popup_screen_hide = popup_screen and popup_screen:find('<HideAction Path="../../../"/>', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('<SendMessageAction Message="Screen.CloseDialog" Target="../../../"/>', 1, true)
 	local popup_screen_click = popup_screen and popup_screen:find('<EventTrigger RoutedEvent="Node.LeftButtonUp">', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
@@ -630,7 +630,7 @@ local function test_example_application_xml()
 	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
 	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
 	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
-	test.expect(popup_screen_hide ~= nil, "GetStartedPopup screen should define the close action")
+	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should send Screen.CloseDialog on close")
 	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an EventTrigger")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
@@ -708,7 +708,7 @@ test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
-test_xml_loading_on_event_trigger_components()
+test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()

@@ -91,7 +91,6 @@ struct property_program;
 
 struct game
 {
-  lua_State *L;
   longTime_t realtime;
   uint32_t frame;
   struct Object *focus;

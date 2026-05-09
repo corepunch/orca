@@ -9,7 +9,7 @@
       <TextBlock Name="GetStartedPopupClose" Text="Close" FontSize="14" ForegroundColor="$accent" TextHorizontalAlignment="Right">
         <Node.Triggers>
           <EventTrigger RoutedEvent="Node.LeftButtonUp">
-            <HideAction Path="../../../"/>
+            <SendMessageAction Message="Screen.CloseDialog" Target="../../../"/>
           </EventTrigger>
         </Node.Triggers>
       </TextBlock>

@@ -72,7 +72,7 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-message-registry test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
 
 default: directories unite
 all: default
@@ -224,6 +224,7 @@ TEST_PROPERTIES_BIN = $(BINDIR)/test_properties
 TEST_STYLES_BIN = $(BINDIR)/test_styles
 TEST_FILESYSTEM_BIN = $(BINDIR)/test_filesystem
 TEST_MESSAGE_REGISTRY_BIN = $(BINDIR)/test_message_registry
+TEST_TRIGGER_ACTIONS_BIN = $(BINDIR)/test_trigger_actions
 TEST_EDITOR_BIN = $(BINDIR)/test_editor
 TEST_LDFLAGS = $(LDFLAGS) -lorca -ldl -lpthread
 
@@ -242,6 +243,10 @@ test-filesystem: platform $(SOURCEMODULES2) buildlib
 test-message-registry: platform $(SOURCEMODULES2) buildlib
 	$(CC) $(CFLAGS) -Wall tests/test_message_registry.c -o $(TEST_MESSAGE_REGISTRY_BIN) $(TEST_LDFLAGS)
 	$(TEST_MESSAGE_REGISTRY_BIN)
+
+test-trigger-actions: platform $(SOURCEMODULES2) buildlib
+	$(CC) $(CFLAGS) -Wall tests/test_trigger_actions.c -o $(TEST_TRIGGER_ACTIONS_BIN) $(TEST_LDFLAGS)
+	$(TEST_TRIGGER_ACTIONS_BIN)
 
 test-editor: buildplugins
 	$(CC) $(CFLAGS) -Wall tests/test_editor.c $(OBJECTDIR)/plugin_EditorKit.o -o $(TEST_EDITOR_BIN) $(TEST_LDFLAGS) -lplatform -lm
@@ -310,7 +315,7 @@ test-parsers: unite
 test-object-hierarchy: app copyshare
 	$(TARGET) -test=tests/test_object_hierarchy.lua
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-editor
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor
 	$(TARGET) -test=tests/test_layout.lua
 	$(TARGET) -test=tests/test_state_manager.lua
 	$(TARGET) -test=tests/test_animations.lua
