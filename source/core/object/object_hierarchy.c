@@ -217,8 +217,8 @@ static int modal_continue(lua_State *L, int status, lua_KContext ctx)
   struct Object *modal_obj = (struct Object *)ctx;
   struct Popup* modal = GetPopup(modal_obj);
   if (!modal) {
-    OBJ_ReleaseRef(modal_obj);
     Con_Error("Modal popup missing Popup component");
+    OBJ_ReleaseRef(modal_obj);
     lua_pushboolean(L, FALSE);
     lua_pushstring(L, "Cancelled");
     return 2;
