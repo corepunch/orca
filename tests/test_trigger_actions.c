@@ -597,7 +597,7 @@ static void
 test_show_modal_action_short_form(void)
 {
   RUN("show_modal_action_short_form", {
-    const char *popup_base = "/private/tmp/orca_show_modal_short";
+    const char *popup_base = "/tmp/orca_show_modal_short";
     char popup_path[512];
     snprintf(popup_path, sizeof(popup_path), "%s.xml", popup_base);
 
