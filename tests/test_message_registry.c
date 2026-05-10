@@ -7,6 +7,7 @@
 
 #include <include/orca.h>
 
+extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 
 static int s_tests_run = 0;
@@ -28,13 +29,19 @@ static const char *s_current_test = NULL;
     do { block } while (0); \
   } while (0)
 
+static lua_State *s_lua_state = NULL;
+
 static lua_State *make_lua_state(void)
 {
-  lua_State *L = luaL_newstate();
-  luaL_openlibs(L);
-  luaopen_orca_core(L);
-  lua_pop(L, 1);
-  return L;
+  if (!s_lua_state) {
+    s_lua_state = luaL_newstate();
+    luaL_openlibs(s_lua_state);
+    luaL_requiref(s_lua_state, "orca", luaopen_orca, 1);
+    lua_pop(s_lua_state, 1);
+    luaopen_orca_core(s_lua_state);
+    lua_pop(s_lua_state, 1);
+  }
+  return s_lua_state;
 }
 
 static void test_trigger_triggered_registry(void)
@@ -48,7 +55,6 @@ static void test_trigger_triggered_registry(void)
     EXPECT(count == 2);
     EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Trigger"));
     EXPECT(props[1].Name != NULL && !strcmp(props[1].Name, "Sender"));
-    lua_close(L);
   });
 }
 
@@ -62,7 +68,6 @@ static void test_object_attached_registry(void)
     EXPECT(props != NULL);
     EXPECT(count == 1);
     EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Sender"));
-    lua_close(L);
   });
 }
 
@@ -75,7 +80,6 @@ static void test_unknown_message_registry_lookup(void)
     EXPECT(L != NULL);
     EXPECT(props == NULL);
     EXPECT(count == 0);
-    lua_close(L);
   });
 }
 
@@ -84,6 +88,10 @@ int main(void)
   test_trigger_triggered_registry();
   test_object_attached_registry();
   test_unknown_message_registry_lookup();
+
+  if (s_lua_state) {
+    lua_close(s_lua_state);
+  }
 
   printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
   return s_tests_failed ? 1 : 0;

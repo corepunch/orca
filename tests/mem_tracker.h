@@ -202,7 +202,7 @@ void free(void *ptr) {
 
 #else /* !TEST_MEMORY */
 
-static void mem_init(void) {}
+static inline void __attribute__((unused)) mem_init(void) {}
 #define MEM_SNAPSHOT()             (0L)
 #define MEM_CHECK_LEAK(snap, label) ((void)(snap))
 

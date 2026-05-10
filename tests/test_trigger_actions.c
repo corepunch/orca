@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 
+extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_system(lua_State *L);
 
@@ -89,6 +90,8 @@ make_lua_state(void)
 {
   lua_State *L = luaL_newstate();
   luaL_openlibs(L);
+  luaL_requiref(L, "orca", luaopen_orca, 1);
+  lua_pop(L, 1);
   luaopen_orca_core(L);
   lua_pop(L, 1);
   luaL_requiref(L, "orca.system", luaopen_orca_system, 1);

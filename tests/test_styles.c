@@ -364,12 +364,11 @@ static void test_add_style_rule_dot_selector_matches(void) {
 #define DECL_TEST(func) { #func, func }
 
 int main(void) {
-    mem_init();
-
     printf("ORCA style system tests\n");
     printf("=======================\n");
 
     register_styled_class();
+    mem_init();
 
     static const struct { const char *name; void (*fn)(void); } tests[] = {
         DECL_TEST(test_stylecontroller_attached),
@@ -398,9 +397,11 @@ int main(void) {
     }
 
 #if TEST_MEMORY
-    printf("\nMemory tracking: %ld total allocation(s) made, "
-           "%ld outstanding at exit\n",
-           s_alloc_total, s_alloc_count);
+    if (s_alloc_count > 0) {
+        printf("\nMemory tracking: %ld total allocation(s) made, "
+               "%ld outstanding at exit\n",
+               s_alloc_total, s_alloc_count);
+    }
 #endif
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);

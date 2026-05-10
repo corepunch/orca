@@ -48,11 +48,11 @@ LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core vsomeip
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
-OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c")))
+OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
-UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c")))
+UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 libxml-2.0 2>/dev/null)
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
 
@@ -79,7 +79,7 @@ all: default
 build: default
 
 /%:
-	find ${SOURCEDIR}$@ -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
+	find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
 platform: | directories
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
