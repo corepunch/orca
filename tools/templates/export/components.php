@@ -7,9 +7,10 @@ HANDLER(<?= $name ?>, <?= $ident ?>);
 	<?php endforeach ?>
 static struct PropertyType const <?= $name ?>Properties[k<?= $name ?>NumProperties] = {
 	<?php include_template("export/properties", ['properties' => $component->getProperties(), 'name' => $name]) ?>
-	<?php foreach ($component->getMessages() as $e) 
+	<?php foreach ($component->getMessages() as $e) {
 		$id = hash('fnv1a32',$e->name);
-		echo "\tDECL(0x{$id}, {$name}, {$e->name}, {$e->name}, kDataTypeEvent, .TypeString = \"{$name}_{$e->name}EventArgs\"), // {$name}.{$e->name}\n"; ?>
+		echo "\tDECL(0x{$id}, {$name}, {$e->name}, {$e->name}, kDataTypeEvent, .TypeString = \"{$name}_{$e->name}EventArgs\"), // {$name}.{$e->name}\n";
+	} ?>
 };
 static struct <?= $name ?> <?= $name ?>Defaults = {
 	<?php foreach (array_filter($component->getProperties(), fn($prop) => $prop->type->default) as $property): ?>		
