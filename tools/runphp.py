@@ -66,7 +66,12 @@ def run(template: str, xml_file: str) -> None:
         result = subprocess.run(
             ['php', tpl_in_tmp, os.path.abspath(xml_file)],
             cwd=tmpdir,
+            stderr=subprocess.PIPE,
         )
+        if result.returncode != 0:
+            print(f'runphp: PHP failed for {template}:', file=sys.stderr)
+            if result.stderr:
+                sys.stderr.buffer.write(result.stderr)
         sys.exit(result.returncode)
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
