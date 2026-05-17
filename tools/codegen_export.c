@@ -24,6 +24,7 @@ static const export_target_t k_targets[] = {
 static const export_target_t *select_target(void) {
     const char *target_name = getenv("ORCA_CODEGEN_EXPORT_TARGET");
     if (!target_name || !target_name[0]) {
+        /* TODO: remove ORCA_CODEGEN_EXPORT_EXPERIMENTAL fallback after migration */
         const char *experimental = getenv("ORCA_CODEGEN_EXPORT_EXPERIMENTAL");
         target_name = (experimental && strcmp(experimental, "1") == 0) ? "c" : "pyphp";
     }

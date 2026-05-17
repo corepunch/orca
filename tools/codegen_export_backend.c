@@ -87,6 +87,7 @@ xmlNodePtr find_child(xmlNodePtr parent, const char *name) {
 
 static xmlNodePtr find_element_by_attr(xmlNodePtr parent, const char *container, const char *tag, const char *attr, const char *value) {
     xmlNodePtr c = find_child(parent, container);
+    if (!c) return NULL;
     EACH_ELEMENT(n, c, tag) {
         char *v = xml_prop_dup(n, attr);
         int ok = v && strcmp(v, value) == 0;
@@ -178,6 +179,7 @@ kind_t resolve_kind(module_t *m, const char *type) {
     if (lookup(m, "structs", "struct", "name", type)) return KIND_STRUCT;
     if (lookup(m, "interfaces", "interface", "name", type)) return KIND_INTERFACE;
     if (lookup(m, "classes", "class", "name", type)) return KIND_COMPONENT;
+    /* externals are keyed by 'struct', not 'name' */
     if (lookup(m, "externals", "external", "struct", type)) return KIND_EXTERNAL_STRUCT;
     return KIND_UNKNOWN;
 }

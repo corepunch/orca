@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FIELD_PATH_MAX 512
+
 static void emit_method_wrapper(FILE *out, module_t *m, const char *prefix, xmlNodePtr method, const char *owner_name) {
     char *name = xml_prop_dup(method, "name");
     if (!name) return;
@@ -13,7 +15,8 @@ static void emit_method_wrapper(FILE *out, module_t *m, const char *prefix, xmlN
     int idx = 1;
 
     if (owner_name && !xml_prop_true(method, "static")) {
-        LINE("\tstruct %s%s* this_ = luaX_check%s(L, %d);", owner_name, xml_prop_true(method, "const") ? " const" : "", owner_name, idx++);
+        const char *const_str = xml_prop_true(method, "const") ? " const" : "";
+        LINE("\tstruct %s%s* this_ = luaX_check%s(L, %d);", owner_name, const_str, owner_name, idx++);
         if (argc >= (int)(sizeof(args) / sizeof(args[0]))) die("too many args");
         args[argc++] = dupstr("this_");
     }
@@ -109,7 +112,7 @@ static void emit_struct(FILE *out, module_t *m, xmlNodePtr st) {
         }
         if (fixed > 0) {
             for (int i = 0; i < fixed; ++i) {
-                char tok_raw[512], addr[512];
+                char tok_raw[FIELD_PATH_MAX], addr[FIELD_PATH_MAX];
                 if (snprintf(tok_raw, sizeof(tok_raw), "%s[%d]", fname, i) >= (int)sizeof(tok_raw) ||
                     snprintf(addr, sizeof(addr), "%s[%d]", fname, i) >= (int)sizeof(addr)) {
                     die("field path too long");
