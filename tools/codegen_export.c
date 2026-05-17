@@ -463,9 +463,10 @@ int main(int argc, char **argv) {
     module_t *m = load_module(argv[1], &seen, &seen_count);
     if (!m) die("failed to load module");
 
-    /* Current C emitter intentionally targets struct-heavy modules first.
-       Fall back to legacy PHP export template when unsupported sections exist. */
-    if (has_child(m->root, "interfaces") || has_child(m->root, "classes")) {
+    /* Default to legacy exporter for byte-identical output parity.
+       Set ORCA_CODEGEN_EXPORT_EXPERIMENTAL=1 to run the C emitter path. */
+    const char *experimental = getenv("ORCA_CODEGEN_EXPORT_EXPERIMENTAL");
+    if (!(experimental && strcmp(experimental, "1") == 0)) {
         char *const pyphp_argv[] = {"python3", "-m", "pyphp.pyphp", "templates/export.php", argv[1], NULL};
         execvp("python3", pyphp_argv);
         die("failed to exec pyphp fallback exporter");
