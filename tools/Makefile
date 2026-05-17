@@ -25,19 +25,25 @@ DOCS_DIR   := ../docs
 TEMPLATES  := templates
 
 PYPHP := python3 -m pyphp.pyphp
+CODEGEN_EXPORT := ./codegen_export
+CODEGEN_EXPORT_CFLAGS := $(shell pkg-config --cflags libxml-2.0)
+CODEGEN_EXPORT_LIBS := $(shell pkg-config --libs libxml-2.0)
 
 # Top-level targets
 .PHONY: all dtd docs docs-index $(MODULES)
 
 all: $(MODULES)
 
+codegen_export: codegen_export.c
+	$(CC) $(CFLAGS) $(CODEGEN_EXPORT_CFLAGS) -o $@ $< $(CODEGEN_EXPORT_LIBS)
+
 # Per-module rule — each module builds its 3 files
 define MODULE_RULE
-$(1):
+$(1): codegen_export
 	@echo "Generating $(1)..."
 	$(PYPHP) $(TEMPLATES)/header.php     ../$(1).xml > ../$(1).h
 	$(PYPHP) $(TEMPLATES)/properties.php ../$(1).xml > ../$(1)_properties.h
-	$(PYPHP) $(TEMPLATES)/export.php     ../$(1).xml > ../$(1)_export.c
+	$(CODEGEN_EXPORT) ../$(1).xml > ../$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))

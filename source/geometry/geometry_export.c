@@ -1,10 +1,9 @@
-// Auto-generated from geometry.xml by tools/templates/export.php
+// Auto-generated from geometry.xml by tools/codegen_export.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
 #include <include/codegen.h>
 
 #include "geometry.h"
-
 
 ENUM(RotationOrder, "XYZ", "XZY", "YZX", "YXZ", "ZXY", "ZYX")
 ENUM(DataType, "None", "Bool", "Int", "Enum", "Float", "String", "Event", "Struct", "Color", "Object")
@@ -15,7 +14,7 @@ int f_VEC2_Set(lua_State *L) {
 	struct vec2* this_ = luaX_checkvec2(L, 1);
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
-	VEC2_Set(this_, x, y );
+	VEC2_Set(this_, x, y);
 	return 0;
 }
 int f_VEC2_Scale(lua_State *L) {
@@ -87,7 +86,7 @@ int f_VEC2_Distance(lua_State *L) {
 }
 int f_VEC2_Normalize(lua_State *L) {
 	struct vec2* this_ = luaX_checkvec2(L, 1);
-	VEC2_Normalize(this_ );
+	VEC2_Normalize(this_);
 	return 0;
 }
 int f_VEC2_Lerp(lua_State *L) {
@@ -127,6 +126,7 @@ static luaL_Reg _vec2_Methods[] = {
 	{ "mad", f_VEC2_Mad },
 	{ NULL, NULL }
 };
+STRUCT(vec2, Vector2D);
 int f_VEC3_Dot(lua_State *L) {
 	struct vec3 const* this_ = luaX_checkvec3(L, 1);
 	struct vec3 const* other = luaX_checkvec3(L, 2);
@@ -219,7 +219,7 @@ int f_VEC3_Scale(lua_State *L) {
 }
 int f_VEC3_Normalize(lua_State *L) {
 	struct vec3* this_ = luaX_checkvec3(L, 1);
-	VEC3_Normalize(this_ );
+	VEC3_Normalize(this_);
 	return 0;
 }
 int f_VEC3_Set(lua_State *L) {
@@ -227,12 +227,12 @@ int f_VEC3_Set(lua_State *L) {
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float z = luaL_checknumber(L, 4);
-	VEC3_Set(this_, x, y, z );
+	VEC3_Set(this_, x, y, z);
 	return 0;
 }
 int f_VEC3_Clear(lua_State *L) {
 	struct vec3* this_ = luaX_checkvec3(L, 1);
-	VEC3_Clear(this_ );
+	VEC3_Clear(this_);
 	return 0;
 }
 int f_VEC3_Unm(lua_State *L) {
@@ -273,13 +273,14 @@ static luaL_Reg _vec3_Methods[] = {
 	{ "distance", f_VEC3_Distance },
 	{ NULL, NULL }
 };
+STRUCT(vec3, Vector3D);
 int f_VEC4_Set(lua_State *L) {
 	struct vec4* this_ = luaX_checkvec4(L, 1);
 	float x = luaL_checknumber(L, 2);
 	float y = luaL_checknumber(L, 3);
 	float z = luaL_checknumber(L, 4);
 	float w = luaL_checknumber(L, 5);
-	VEC4_Set(this_, x, y, z, w );
+	VEC4_Set(this_, x, y, z, w);
 	return 0;
 }
 int f_VEC4_Scale(lua_State *L) {
@@ -324,6 +325,7 @@ static luaL_Reg _vec4_Methods[] = {
 	{ "lerp", f_VEC4_Lerp },
 	{ NULL, NULL }
 };
+STRUCT(vec4, Vector4D);
 int f_BOX2_Center(lua_State *L) {
 	struct box2 const* this_ = luaX_checkbox2(L, 1);
 	struct vec2 result_ = BOX2_Center(this_);
@@ -333,7 +335,7 @@ int f_BOX2_Center(lua_State *L) {
 int f_BOX2_MoveTo(lua_State *L) {
 	struct box2* this_ = luaX_checkbox2(L, 1);
 	struct vec2 const* location = luaX_checkvec2(L, 2);
-	BOX2_MoveTo(this_, location );
+	BOX2_MoveTo(this_, location);
 	return 0;
 }
 int f_BOX2_ContainsPoint(lua_State *L) {
@@ -353,6 +355,7 @@ static luaL_Reg _box2_Methods[] = {
 	{ "containsPoint", f_BOX2_ContainsPoint },
 	{ NULL, NULL }
 };
+STRUCT(box2, Box2D);
 int f_BOX3_Center(lua_State *L) {
 	struct box3 const* this_ = luaX_checkbox3(L, 1);
 	struct vec3 result_ = BOX3_Center(this_);
@@ -367,6 +370,7 @@ static luaL_Reg _box3_Methods[] = {
 	{ "center", f_BOX3_Center },
 	{ NULL, NULL }
 };
+STRUCT(box3, Box3D);
 static struct PropertyType _Size[] = {
 	DECL(0x3b42dfbf, Size, Width, width, kDataTypeFloat), // Size.Width
 	DECL(0x1bd13562, Size, Height, height, kDataTypeFloat), // Size.Height
@@ -374,6 +378,7 @@ static struct PropertyType _Size[] = {
 static luaL_Reg _Size_Methods[] = {
 	{ NULL, NULL }
 };
+STRUCT(Size, Size);
 int f_RECT_Contains(lua_State *L) {
 	struct rect const* this_ = luaX_checkrect(L, 1);
 	struct vec2 const* point = luaX_checkvec2(L, 2);
@@ -422,6 +427,7 @@ static luaL_Reg _rect_Methods[] = {
 	{ "fit", f_RECT_Fit },
 	{ NULL, NULL }
 };
+STRUCT(rect, Rectangle);
 int f_QUAT_FromEuler(lua_State *L) {
 	struct vec3 const* euler = luaX_checkvec3(L, 1);
 	enum RotationOrder order = luaX_checkRotationOrder(L, 2);
@@ -495,6 +501,7 @@ static luaL_Reg _quat_Methods[] = {
 	{ "sqlerp", f_QUAT_Sqlerp },
 	{ NULL, NULL }
 };
+STRUCT(quat, Quaternion);
 int f_MAT3_Identity(lua_State *L) {
 	struct mat3 result_ = MAT3_Identity();
 	luaX_pushmat3(L, &result_);
@@ -509,13 +516,13 @@ int f_MAT3_Normal(lua_State *L) {
 int f_MAT3_Translate(lua_State *L) {
 	struct mat3* this_ = luaX_checkmat3(L, 1);
 	struct vec2 const* offset = luaX_checkvec2(L, 2);
-	MAT3_Translate(this_, offset );
+	MAT3_Translate(this_, offset);
 	return 0;
 }
 int f_MAT3_Scale(lua_State *L) {
 	struct mat3* this_ = luaX_checkmat3(L, 1);
 	struct vec2 const* scale = luaX_checkvec2(L, 2);
-	MAT3_Scale(this_, scale );
+	MAT3_Scale(this_, scale);
 	return 0;
 }
 static struct PropertyType _mat3[] = {
@@ -536,6 +543,7 @@ static luaL_Reg _mat3_Methods[] = {
 	{ "scale", f_MAT3_Scale },
 	{ NULL, NULL }
 };
+STRUCT(mat3, Matrix2D);
 int f_MAT4_Identity(lua_State *L) {
 	struct mat4 result_ = MAT4_Identity();
 	luaX_pushmat4(L, &result_);
@@ -544,20 +552,20 @@ int f_MAT4_Identity(lua_State *L) {
 int f_MAT4_Translate(lua_State *L) {
 	struct mat4* this_ = luaX_checkmat4(L, 1);
 	struct vec3 const* offset = luaX_checkvec3(L, 2);
-	MAT4_Translate(this_, offset );
+	MAT4_Translate(this_, offset);
 	return 0;
 }
 int f_MAT4_Rotate(lua_State *L) {
 	struct mat4* this_ = luaX_checkmat4(L, 1);
 	struct vec3 const* euler = luaX_checkvec3(L, 2);
 	enum RotationOrder order = luaX_checkRotationOrder(L, 3);
-	MAT4_Rotate(this_, euler, order );
+	MAT4_Rotate(this_, euler, order);
 	return 0;
 }
 int f_MAT4_Scale(lua_State *L) {
 	struct mat4* this_ = luaX_checkmat4(L, 1);
 	struct vec3 const* scale = luaX_checkvec3(L, 2);
-	MAT4_Scale(this_, scale );
+	MAT4_Scale(this_, scale);
 	return 0;
 }
 int f_MAT4_Multiply(lua_State *L) {
@@ -610,7 +618,7 @@ int f_MAT4_Transpose(lua_State *L) {
 int f_MAT4_Rotate4(lua_State *L) {
 	struct mat4* this_ = luaX_checkmat4(L, 1);
 	struct vec4 const* quat = luaX_checkvec4(L, 2);
-	MAT4_Rotate4(this_, quat );
+	MAT4_Rotate4(this_, quat);
 	return 0;
 }
 int f_MAT4_MultiplyVector3D(lua_State *L) {
@@ -645,7 +653,7 @@ int f_MAT4_FromTranslation(lua_State *L) {
 int f_MAT4_RotateQuat(lua_State *L) {
 	struct mat4* this_ = luaX_checkmat4(L, 1);
 	struct quat const* rotation = luaX_checkquat(L, 2);
-	MAT4_RotateQuat(this_, rotation );
+	MAT4_RotateQuat(this_, rotation);
 	return 0;
 }
 static struct PropertyType _mat4[] = {
@@ -685,6 +693,7 @@ static luaL_Reg _mat4_Methods[] = {
 	{ "rotateQuat", f_MAT4_RotateQuat },
 	{ NULL, NULL }
 };
+STRUCT(mat4, Matrix3D);
 static struct PropertyType _bounds[] = {
 	DECL(0x2e9445f7, bounds, Min, min, kDataTypeFloat), // bounds.Min
 	DECL(0x3ca7e3b9, bounds, Max, max, kDataTypeFloat), // bounds.Max
@@ -692,9 +701,10 @@ static struct PropertyType _bounds[] = {
 static luaL_Reg _bounds_Methods[] = {
 	{ NULL, NULL }
 };
+STRUCT(bounds, Bounds);
 int f_plane3_Normalize(lua_State *L) {
 	struct plane3* this_ = luaX_checkplane3(L, 1);
-	plane3_Normalize(this_ );
+	plane3_Normalize(this_);
 	return 0;
 }
 int f_plane3_MultiplyVector3D(lua_State *L) {
@@ -715,6 +725,7 @@ static luaL_Reg _plane3_Methods[] = {
 	{ "multiplyVector3D", f_plane3_MultiplyVector3D },
 	{ NULL, NULL }
 };
+STRUCT(plane3, Plane);
 static struct PropertyType _sphere3[] = {
 	DECL(0x4b9fbea4, sphere3, Center, center, kDataTypeStruct, .TypeString = "Vector3D"), // sphere3.Center
 	DECL(0x3a8111d3, sphere3, Radius, radius, kDataTypeFloat), // sphere3.Radius
@@ -722,6 +733,7 @@ static struct PropertyType _sphere3[] = {
 static luaL_Reg _sphere3_Methods[] = {
 	{ NULL, NULL }
 };
+STRUCT(sphere3, Sphere);
 int f_frustum_Calculate(lua_State *L) {
 	struct mat4 const* matrix = luaX_checkmat4(L, 1);
 	struct frustum3 result_ = frustum_Calculate(matrix);
@@ -759,35 +771,11 @@ int f_frustum_ContainsAABox(lua_State *L) {
 }
 static struct PropertyType _frustum3[] = {
 	DECL(0x92773890, frustum3, Left, left, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Left
-	DECL(0x62ae7103, frustum3, LeftA, left.a, kDataTypeFloat), // frustum3.LeftA
-	DECL(0x63ae7296, frustum3, LeftB, left.b, kDataTypeFloat), // frustum3.LeftB
-	DECL(0x64ae7429, frustum3, LeftC, left.c, kDataTypeFloat), // frustum3.LeftC
-	DECL(0x65ae75bc, frustum3, LeftD, left.d, kDataTypeFloat), // frustum3.LeftD
 	DECL(0x1e9e9f85, frustum3, Right, right, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Right
-	DECL(0xf7b5818c, frustum3, RightA, right.a, kDataTypeFloat), // frustum3.RightA
-	DECL(0xfab58645, frustum3, RightB, right.b, kDataTypeFloat), // frustum3.RightB
-	DECL(0xf9b584b2, frustum3, RightC, right.c, kDataTypeFloat), // frustum3.RightC
-	DECL(0xf4b57cd3, frustum3, RightD, right.d, kDataTypeFloat), // frustum3.RightD
 	DECL(0x22b5f34a, frustum3, Bottom, bottom, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Bottom
-	DECL(0xaf6d9a51, frustum3, BottomA, bottom.a, kDataTypeFloat), // frustum3.BottomA
-	DECL(0xac6d9598, frustum3, BottomB, bottom.b, kDataTypeFloat), // frustum3.BottomB
-	DECL(0xad6d972b, frustum3, BottomC, bottom.c, kDataTypeFloat), // frustum3.BottomC
-	DECL(0xb26d9f0a, frustum3, BottomD, bottom.d, kDataTypeFloat), // frustum3.BottomD
 	DECL(0x099b73dc, frustum3, Top, top, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Top
-	DECL(0xbcb70027, frustum3, TopA, top.a, kDataTypeFloat), // frustum3.TopA
-	DECL(0xbdb701ba, frustum3, TopB, top.b, kDataTypeFloat), // frustum3.TopB
-	DECL(0xbeb7034d, frustum3, TopC, top.c, kDataTypeFloat), // frustum3.TopC
-	DECL(0xb7b6f848, frustum3, TopD, top.d, kDataTypeFloat), // frustum3.TopD
 	DECL(0x6de89878, frustum3, Front, front, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Front
-	DECL(0x3e27a1bb, frustum3, FrontA, front.a, kDataTypeFloat), // frustum3.FrontA
-	DECL(0x3f27a34e, frustum3, FrontB, front.b, kDataTypeFloat), // frustum3.FrontB
-	DECL(0x4027a4e1, frustum3, FrontC, front.c, kDataTypeFloat), // frustum3.FrontC
-	DECL(0x4127a674, frustum3, FrontD, front.d, kDataTypeFloat), // frustum3.FrontD
 	DECL(0xc2954bc2, frustum3, Back, back, kDataTypeStruct, .TypeString = "Plane"), // frustum3.Back
-	DECL(0xd405df39, frustum3, BackA, back.a, kDataTypeFloat), // frustum3.BackA
-	DECL(0xd105da80, frustum3, BackB, back.b, kDataTypeFloat), // frustum3.BackB
-	DECL(0xd205dc13, frustum3, BackC, back.c, kDataTypeFloat), // frustum3.BackC
-	DECL(0xd705e3f2, frustum3, BackD, back.d, kDataTypeFloat), // frustum3.BackD
 };
 static luaL_Reg _frustum3_Methods[] = {
 	{ "calculate", f_frustum_Calculate },
@@ -797,6 +785,7 @@ static luaL_Reg _frustum3_Methods[] = {
 	{ "containsAABox", f_frustum_ContainsAABox },
 	{ NULL, NULL }
 };
+STRUCT(frustum3, Frustum);
 int f_transform2_Identity(lua_State *L) {
 	struct transform2 result_ = transform2_Identity();
 	luaX_pushtransform2(L, &result_);
@@ -819,6 +808,7 @@ static luaL_Reg _transform2_Methods[] = {
 	{ "toMatrix3D", f_transform2_ToMatrix3D },
 	{ NULL, NULL }
 };
+STRUCT(transform2, Transform2D);
 int f_transform3_Identity(lua_State *L) {
 	struct transform3 result_ = transform3_Identity();
 	luaX_pushtransform3(L, &result_);
@@ -841,6 +831,7 @@ static luaL_Reg _transform3_Methods[] = {
 	{ "toMatrix3D", f_transform3_ToMatrix3D },
 	{ NULL, NULL }
 };
+STRUCT(transform3, Transform3D);
 int f_triangle3_normal(lua_State *L) {
 	struct triangle3 const* this_ = luaX_checktriangle3(L, 1);
 	struct vec3 result_ = triangle3_normal(this_);
@@ -856,6 +847,7 @@ static luaL_Reg _triangle3_Methods[] = {
 	{ "normal", f_triangle3_normal },
 	{ NULL, NULL }
 };
+STRUCT(triangle3, Triangle3D);
 int f_line3_intersect_sphere3(lua_State *L) {
 	struct line3 const* this_ = luaX_checkline3(L, 1);
 	struct sphere3 const* sphere = luaX_checksphere3(L, 2);
@@ -899,6 +891,7 @@ static luaL_Reg _line3_Methods[] = {
 	{ "intersect_box3", f_line3_intersect_box3 },
 	{ NULL, NULL }
 };
+STRUCT(line3, Line3D);
 static struct PropertyType _edges[] = {
 	DECL(0x92773890, edges, Left, left, kDataTypeFloat), // edges.Left
 	DECL(0x099b73dc, edges, Top, top, kDataTypeFloat), // edges.Top
@@ -908,6 +901,7 @@ static struct PropertyType _edges[] = {
 static luaL_Reg _edges_Methods[] = {
 	{ NULL, NULL }
 };
+STRUCT(edges, Edges);
 int f_COLOR_Lerp(lua_State *L) {
 	struct color const* this_ = luaX_checkcolor(L, 1);
 	struct color const* other = luaX_checkcolor(L, 2);
@@ -933,6 +927,7 @@ static luaL_Reg _color_Methods[] = {
 	{ "parse", f_COLOR_Parse },
 	{ NULL, NULL }
 };
+STRUCT(color, Color);
 static struct PropertyType _PropertyEnumValue[] = {
 	DECL(0x0fe07306, PropertyEnumValue, Name, Name, kDataTypeString), // PropertyEnumValue.Name
 	DECL(0xd147f96a, PropertyEnumValue, Value, Value, kDataTypeInt), // PropertyEnumValue.Value
@@ -940,6 +935,7 @@ static struct PropertyType _PropertyEnumValue[] = {
 static luaL_Reg _PropertyEnumValue_Methods[] = {
 	{ NULL, NULL }
 };
+STRUCT(PropertyEnumValue, PropertyEnumValue);
 static struct PropertyType _PropertyType[] = {
 	DECL(0x0fe07306, PropertyType, Name, Name, kDataTypeString), // PropertyType.Name
 	DECL(0xafb3e591, PropertyType, Category, Category, kDataTypeString), // PropertyType.Category
@@ -966,35 +962,10 @@ static struct PropertyType _PropertyType[] = {
 static luaL_Reg _PropertyType_Methods[] = {
 	{ NULL, NULL }
 };
-
-STRUCT(vec2, Vector2D);
-STRUCT(vec3, Vector3D);
-STRUCT(vec4, Vector4D);
-STRUCT(box2, Box2D);
-STRUCT(box3, Box3D);
-STRUCT(Size, Size);
-STRUCT(rect, Rectangle);
-STRUCT(quat, Quaternion);
-STRUCT(mat3, Matrix2D);
-STRUCT(mat4, Matrix3D);
-STRUCT(bounds, Bounds);
-STRUCT(plane3, Plane);
-STRUCT(sphere3, Sphere);
-STRUCT(frustum3, Frustum);
-STRUCT(transform2, Transform2D);
-STRUCT(transform3, Transform3D);
-STRUCT(triangle3, Triangle3D);
-STRUCT(line3, Line3D);
-STRUCT(edges, Edges);
-STRUCT(color, Color);
-STRUCT(PropertyEnumValue, PropertyEnumValue);
 STRUCT(PropertyType, PropertyType);
-
-
-
 ORCA_API int luaopen_orca_geometry(lua_State *L) {
-	luaL_newlib(L, ((luaL_Reg[]) { 
-		{ NULL, NULL } 
+	luaL_newlib(L, ((luaL_Reg[]) {
+		{ NULL, NULL }
 	}));
 	lua_setfield(L, ((void)luaopen_orca_vec2(L), -2), "Vector2D");
 	lua_setfield(L, ((void)luaopen_orca_vec3(L), -2), "Vector3D");
