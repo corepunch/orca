@@ -28,14 +28,19 @@ PYPHP := python3 -m pyphp.pyphp
 CODEGEN_EXPORT := ./codegen_export
 CODEGEN_EXPORT_CFLAGS := $(shell pkg-config --cflags libxml-2.0)
 CODEGEN_EXPORT_LIBS := $(shell pkg-config --libs libxml-2.0)
+CODEGEN_EXPORT_SRCS := \
+	codegen_export.c \
+	codegen_export_backend.c \
+	codegen_export_target_pyphp.c \
+	codegen_export_target_c.c
 
 # Top-level targets
 .PHONY: all dtd docs docs-index $(MODULES)
 
 all: $(MODULES)
 
-codegen_export: codegen_export.c
-	$(CC) $(CFLAGS) $(CODEGEN_EXPORT_CFLAGS) -o $@ $< $(CODEGEN_EXPORT_LIBS)
+codegen_export: $(CODEGEN_EXPORT_SRCS)
+	$(CC) $(CFLAGS) $(CODEGEN_EXPORT_CFLAGS) -o $@ $(CODEGEN_EXPORT_SRCS) $(CODEGEN_EXPORT_LIBS)
 
 # Per-module rule — each module builds its 3 files
 define MODULE_RULE
