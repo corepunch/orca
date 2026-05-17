@@ -33,7 +33,6 @@ static const export_target_t *select_target(void) {
             return &k_targets[i];
 
     die("unknown ORCA_CODEGEN_EXPORT_TARGET (expected: pyphp or c)");
-    return NULL;
 }
 
 int main(int argc, char **argv) {

@@ -85,7 +85,7 @@ xmlNodePtr find_child(xmlNodePtr parent, const char *name) {
     return NULL;
 }
 
-static xmlNodePtr find_named_by_attr(xmlNodePtr parent, const char *container, const char *tag, const char *attr, const char *value) {
+static xmlNodePtr find_element_by_attr(xmlNodePtr parent, const char *container, const char *tag, const char *attr, const char *value) {
     xmlNodePtr c = find_child(parent, container);
     EACH_ELEMENT(n, c, tag) {
         char *v = xml_prop_dup(n, attr);
@@ -97,7 +97,7 @@ static xmlNodePtr find_named_by_attr(xmlNodePtr parent, const char *container, c
 }
 
 xmlNodePtr find_named(xmlNodePtr parent, const char *container, const char *tag, const char *name) {
-    return find_named_by_attr(parent, container, tag, "name", name);
+    return find_element_by_attr(parent, container, tag, "name", name);
 }
 
 int has_child(xmlNodePtr parent, const char *name) {
@@ -155,7 +155,7 @@ module_t *load_module(const char *path, char ***seen, size_t *seen_count) {
 }
 
 static xmlNodePtr lookup(module_t *m, const char *container, const char *tag, const char *attr, const char *name) {
-    xmlNodePtr n = find_named_by_attr(m->root, container, tag, attr, name);
+    xmlNodePtr n = find_element_by_attr(m->root, container, tag, attr, name);
     if (n) return n;
     for (size_t i = 0; i < m->require_count; ++i) {
         n = lookup(m->requires[i], container, tag, attr, name);
