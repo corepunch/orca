@@ -1,12 +1,13 @@
 #include "object_internal.h"
 
-#include <plugins/UIKit/UIKit.h>
-
 static bool_t
 _PopupSetDialogResult(struct Object *modal, float value)
 {
   struct Property *dialog_result = NULL;
   if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
     return FALSE;
   }
   PROP_SetValue(dialog_result, &value);
@@ -23,7 +24,14 @@ _PopupGetDialogResult(struct Object *modal, float *out_value)
   if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
     return FALSE;
   }
-  *out_value = *(float *)PROP_GetValue(dialog_result);
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
+    return FALSE;
+  }
+  float const *value = (float const *)PROP_GetValue(dialog_result);
+  if (!value) {
+    return FALSE;
+  }
+  *out_value = *value;
   return TRUE;
 }
 
@@ -210,7 +218,8 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
     return FALSE;
   }
 
-  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
+  uint32_t const screen_id = fnv1a32("Screen");
+  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, screen_id)) {
     self = OBJ_GetParent(self);
   }
   if (!self) {
