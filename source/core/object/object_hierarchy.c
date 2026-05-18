@@ -2,6 +2,31 @@
 
 #include <plugins/UIKit/UIKit.h>
 
+static bool_t
+_PopupSetDialogResult(struct Object *modal, float value)
+{
+  struct Property *dialog_result = NULL;
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  PROP_SetValue(dialog_result, &value);
+  return TRUE;
+}
+
+static bool_t
+_PopupGetDialogResult(struct Object *modal, float *out_value)
+{
+  struct Property *dialog_result = NULL;
+  if (!out_value) {
+    return FALSE;
+  }
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  *out_value = *(float *)PROP_GetValue(dialog_result);
+  return TRUE;
+}
+
 struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is_template)
 {
   if (child->parent == self) {
@@ -204,11 +229,8 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
   OBJ_AddRef(modal);
   modal->parent = self;
   modal->flags |= OF_NOACTIVATE;
-  {
-    struct Popup *popup = GetPopup(modal);
-    if (popup) {
-      popup->DialogResult = NAN;
-    }
+  if (!_PopupSetDialogResult(modal, NAN)) {
+    Con_Error("Modal popup missing DialogResult property");
   }
   return TRUE;
 }
@@ -216,16 +238,15 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
   struct Object *modal_obj = (struct Object *)ctx;
-  struct Popup* modal = GetPopup(modal_obj);
-  if (!modal) {
-    Con_Error("Modal popup missing Popup component");
+  float result = NAN;
+  if (!_PopupGetDialogResult(modal_obj, &result)) {
+    Con_Error("Modal popup missing DialogResult property");
     OBJ_ReleaseRef(modal_obj);
     lua_pushboolean(L, FALSE);
     lua_pushstring(L, "Cancelled");
     return 2;
   }
-  if (!isnan(modal->DialogResult)) {
-    float result = modal->DialogResult;
+  if (!isnan(result)) {
     OBJ_ReleaseRef(modal_obj);
     if (result) {
       lua_pushboolean(L, TRUE);
