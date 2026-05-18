@@ -37,6 +37,7 @@ static const export_target_t *select_target(void) {
     die("unknown ORCA_CODEGEN_EXPORT_TARGET (expected: pyphp or c)");
 }
 
+/* Export plugin entry point for `codegen -plugin=export <module.xml>`. */
 int codegen_plugin_export_run(const char *xml_path) {
     xmlInitParser();
 
