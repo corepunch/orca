@@ -57,7 +57,6 @@ const char *dtype_for(kind_t kind, const char *type);
 char *export_type_name(module_t *m, const char *type, kind_t kind);
 void free_seen(char **seen, size_t seen_count);
 
-int emit_target_pyphp(const char *xml_path);
 int emit_target_c(FILE *out, module_t *m, const char *xml_path);
 
 #endif

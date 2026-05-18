@@ -35,7 +35,6 @@ CODEGEN_SRCS := \
 	codegen_plugin_properties.c \
 	codegen_export.c \
 	codegen_export_backend.c \
-	codegen_export_target_pyphp.c \
 	codegen_export_target_c.c
 
 # Top-level targets
