@@ -2,6 +2,7 @@
 #include "codegen_plugin.h"
 #include "codegen_plugin_common.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -19,7 +20,13 @@ static int select_c_target(void) {
 }
 
 /* Export plugin entry point for `codegen -plugin=export <module.xml>`. */
-int codegen_plugin_export_run(const char *xml_path) {
+int codegen_plugin_export_run(int argc, char **argv) {
+    if (argc != 1) {
+        fprintf(stderr, "codegen: export plugin expects exactly 1 argument (<module.xml>)\n");
+        return 1;
+    }
+    const char *xml_path = argv[0];
+
     if (!select_c_target()) {
         return codegen_exec_pyphp_template("templates/export.php", xml_path);
     }

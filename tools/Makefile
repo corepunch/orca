@@ -33,6 +33,9 @@ CODEGEN_SRCS := \
 	codegen_plugin_common.c \
 	codegen_plugin_header.c \
 	codegen_plugin_properties.c \
+	codegen_plugin_docs.c \
+	codegen_plugin_docs_index.c \
+	codegen_plugin_dtd.c \
 	codegen_export.c \
 	codegen_export_backend.c \
 	codegen_export_target_c.c
@@ -58,9 +61,9 @@ endef
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
 
 # Generate orca.dtd from UI modules
-dtd:
+dtd: $(CODEGEN)
 	@echo "Generating DTD..."
-	$(PYPHP) $(TEMPLATES)/dtd.php \
+	$(CODEGEN) -plugin=dtd \
 		../plugins/UIKit/UIKit.xml \
 		../plugins/SceneKit/SceneKit.xml \
 		../plugins/SpriteKit/SpriteKit.xml \
@@ -71,14 +74,14 @@ dtd:
 define DOCS_RULE
 docs-$(1):
 	@echo "Generating docs for $(1)..."
-	$(PYPHP) $(TEMPLATES)/docs.php ../$(1).xml
+	$(CODEGEN) -plugin=docs ../$(1).xml
 endef
 
 $(foreach mod,$(DOC_MODULES),$(eval $(call DOCS_RULE,$(mod))))
 
 docs-index:
 	@echo "Generating docs index..."
-	$(PYPHP) $(TEMPLATES)/docs_index.php \
+	$(CODEGEN) -plugin=docs-index \
 		$(foreach mod,$(DOC_MODULES),../$(mod).xml)
 
-docs: $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index
+docs: $(CODEGEN) $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index

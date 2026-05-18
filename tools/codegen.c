@@ -7,6 +7,9 @@ static const codegen_plugin_t k_plugins[] = {
     {"header", codegen_plugin_header_run},
     {"properties", codegen_plugin_properties_run},
     {"export", codegen_plugin_export_run},
+    {"docs", codegen_plugin_docs_run},
+    {"docs-index", codegen_plugin_docs_index_run},
+    {"dtd", codegen_plugin_dtd_run},
 };
 
 static const codegen_plugin_t *find_plugin(const char *name) {
@@ -17,8 +20,8 @@ static const codegen_plugin_t *find_plugin(const char *name) {
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3 || strncmp(argv[1], "-plugin=", 8) != 0) {
-        fprintf(stderr, "usage: codegen -plugin=<header|properties|export> <module.xml>\n");
+    if (argc < 3 || strncmp(argv[1], "-plugin=", 8) != 0) {
+        fprintf(stderr, "usage: codegen -plugin=<header|properties|export|docs|docs-index|dtd> <args...>\n");
         return 1;
     }
 
@@ -29,5 +32,5 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    return plugin->run(argv[2]);
+    return plugin->run(argc - 2, &argv[2]);
 }
