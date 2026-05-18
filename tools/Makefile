@@ -25,10 +25,14 @@ DOCS_DIR   := ../docs
 TEMPLATES  := templates
 
 PYPHP := python3 -m pyphp.pyphp
-CODEGEN_EXPORT := ./codegen_export
+CODEGEN := ../build/bin/codegen
 CODEGEN_EXPORT_CFLAGS := $(shell pkg-config --cflags libxml-2.0)
 CODEGEN_EXPORT_LIBS := $(shell pkg-config --libs libxml-2.0)
-CODEGEN_EXPORT_SRCS := \
+CODEGEN_SRCS := \
+	codegen.c \
+	codegen_plugin_common.c \
+	codegen_plugin_header.c \
+	codegen_plugin_properties.c \
 	codegen_export.c \
 	codegen_export_backend.c \
 	codegen_export_target_pyphp.c \
@@ -39,16 +43,17 @@ CODEGEN_EXPORT_SRCS := \
 
 all: $(MODULES)
 
-codegen_export: $(CODEGEN_EXPORT_SRCS)
-	$(CC) $(CFLAGS) $(CODEGEN_EXPORT_CFLAGS) -o $@ $(CODEGEN_EXPORT_SRCS) $(CODEGEN_EXPORT_LIBS)
+$(CODEGEN): $(CODEGEN_SRCS)
+	mkdir -p ../build/bin
+	$(CC) $(CFLAGS) $(CODEGEN_EXPORT_CFLAGS) -o $@ $(CODEGEN_SRCS) $(CODEGEN_EXPORT_LIBS)
 
 # Per-module rule — each module builds its 3 files
 define MODULE_RULE
-$(1): codegen_export
+$(1): $(CODEGEN)
 	@echo "Generating $(1)..."
-	$(PYPHP) $(TEMPLATES)/header.php     ../$(1).xml > ../$(1).h
-	$(PYPHP) $(TEMPLATES)/properties.php ../$(1).xml > ../$(1)_properties.h
-	$(CODEGEN_EXPORT) ../$(1).xml > ../$(1)_export.c
+	$(CODEGEN) -plugin=header     ../$(1).xml > ../$(1).h
+	$(CODEGEN) -plugin=properties ../$(1).xml > ../$(1)_properties.h
+	$(CODEGEN) -plugin=export     ../$(1).xml > ../$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
