@@ -6,13 +6,13 @@
 #include <string.h>
 #include <unistd.h>
 
-int codegen_exec_pyphp_template_args(const char *template_path, int argc, char **args) {
+int codegen_exec_pyphp_template_args(const char *template_path, int argc, const char *const *args) {
     if (argc < 1) {
         fprintf(stderr, "codegen: missing required arguments for %s\n", template_path ? template_path : "(null)");
         return 1;
     }
 
-    size_t pyphp_argc = (size_t)argc + 5; /* python3 -m pyphp.pyphp template args... NULL */
+    size_t pyphp_argc = (size_t)argc + 5; /* python3, -m, pyphp.pyphp, template, args..., NULL */
     char **pyphp_argv = calloc(pyphp_argc, sizeof(char *));
     if (!pyphp_argv) {
         fprintf(stderr, "codegen: out of memory\n");
@@ -35,6 +35,6 @@ int codegen_exec_pyphp_template_args(const char *template_path, int argc, char *
 }
 
 int codegen_exec_pyphp_template(const char *template_path, const char *xml_path) {
-    char *args[] = {(char *)(xml_path ? xml_path : "")};
+    const char *args[] = {xml_path ? xml_path : ""};
     return codegen_exec_pyphp_template_args(template_path, 1, args);
 }
