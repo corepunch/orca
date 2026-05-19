@@ -14,7 +14,7 @@ INCLUDES := -Iinclude -Isrc $(XML_CFLAGS)
 CORE_SRC := src/main.c src/model.c src/util.c
 CORE_OBJ := $(CORE_SRC:%.c=$(BUILD)/%.o)
 
-PLUGINS := header_stub header properties
+PLUGINS := header_stub header properties export
 PLUGIN_SO := $(PLUGINS:%=$(PLUGDIR)/%.so)
 
 .PHONY: all clean run-sample run-sample-properties

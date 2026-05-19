@@ -29,6 +29,7 @@ CGDIR := codegen
 CGEN := $(CGDIR)/build/cgen
 CG_PLUGIN_HEADER := $(CGDIR)/build/plugins/header.so
 CG_PLUGIN_PROPERTIES := $(CGDIR)/build/plugins/properties.so
+CG_PLUGIN_EXPORT := $(CGDIR)/build/plugins/export.so
 CG_PREVIEW_DIR := $(CGDIR)/out
 
 # Top-level targets
@@ -53,6 +54,7 @@ cgen-preview-$(1): codegen-host
 	@mkdir -p $(CG_PREVIEW_DIR)/$(dir $(1))
 	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_HEADER) --out $(CG_PREVIEW_DIR)/$(1).h
 	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_PROPERTIES) --out $(CG_PREVIEW_DIR)/$(1)_properties.h
+	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_EXPORT) --out $(CG_PREVIEW_DIR)/$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_PREVIEW_RULE,$(mod))))
