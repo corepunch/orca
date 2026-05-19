@@ -236,9 +236,10 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
   }
 
   lParam_t trigger_param = lParam;
+  struct Object **triggers = (struct Object **)node->Triggers;
   // Trigger arrays may contain NULL holes (e.g. sparse/partially initialized slots).
   FOR_LOOP(i, node->NumTriggers) {
-    struct Object *trigger = node->Triggers[i];
+    struct Object *trigger = triggers[i];
     if (!trigger) {
       continue;
     }
