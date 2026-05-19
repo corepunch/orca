@@ -33,7 +33,7 @@ CG_PLUGIN_EXPORT := $(CGDIR)/build/plugins/export.so
 CG_PREVIEW_DIR := $(CGDIR)/out
 
 # Top-level targets
-.PHONY: all dtd docs docs-index codegen-host codegen-sample modules-c-preview $(MODULES)
+.PHONY: all dtd docs docs-index codegen-host codegen-sample modules-c-preview modules-c-diff $(MODULES)
 
 all: $(MODULES)
 
@@ -60,6 +60,18 @@ endef
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_PREVIEW_RULE,$(mod))))
 
 modules-c-preview: $(foreach mod,$(MODULES),cgen-preview-$(mod))
+
+define MODULE_C_DIFF_RULE
+cgen-diff-$(1):
+	@echo "Diff C preview $(1)..."
+	@cmp -s ../$(1).h $(CG_PREVIEW_DIR)/$(1).h || echo "  != $(1).h"
+	@cmp -s ../$(1)_properties.h $(CG_PREVIEW_DIR)/$(1)_properties.h || echo "  != $(1)_properties.h"
+	@cmp -s ../$(1)_export.c $(CG_PREVIEW_DIR)/$(1)_export.c || echo "  != $(1)_export.c"
+endef
+
+$(foreach mod,$(MODULES),$(eval $(call MODULE_C_DIFF_RULE,$(mod))))
+
+modules-c-diff: modules-c-preview $(foreach mod,$(MODULES),cgen-diff-$(mod))
 
 # Generate orca.dtd from UI modules
 dtd:

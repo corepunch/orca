@@ -205,6 +205,9 @@ codegen-sample:
 modules-c-preview:
 	$(MAKE) -C tools modules-c-preview
 
+modules-c-diff:
+	$(MAKE) -C tools modules-c-diff
+
 fonts:
 	python3 cd tools && \
 	../images/vga8x12_extra_chars.png \
