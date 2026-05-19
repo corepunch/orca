@@ -205,7 +205,7 @@ struct PropertyType _Screen_RenderScreenEventArgs_Properties[] = {
 #define _Screen_RenderScreenEventArgs _Screen_RenderScreenEventArgs_Properties
 static luaL_Reg _Popup_ClosePopupEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Popup_ClosePopupEventArgs_Properties[] = {
-	DECL(0xbf8d75fc, Popup_ClosePopupEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Popup_ClosePopupEventArgs.ReturnValue
+	DECL(0x207072b4, Popup_ClosePopupEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Popup_ClosePopupEventArgs.ReturnValue
 };
 #define _Popup_ClosePopupEventArgs _Popup_ClosePopupEventArgs_Properties
 static luaL_Reg _ConsoleView_PrintlnEventArgs_Methods[] = { { NULL, NULL } };
@@ -856,7 +856,6 @@ struct Control* luaX_checkControl(lua_State *L, int idx) {
 REGISTER_CLASS(Control, ID_Node2D, 0);
 HANDLER(Screen, Screen, UpdateLayout);
 HANDLER(Screen, Screen, RenderScreen);
-HANDLER(Popup, Popup, ClosePopup);
 HANDLER(Screen, Node2D, MeasureOverride);
 HANDLER(Screen, Object, Create);
 HANDLER(Screen, Object, Destroy);
@@ -890,11 +889,13 @@ struct Screen* luaX_checkScreen(lua_State *L, int idx) {
 }
 #define ID_Node2D 0x6c63a2ab
 REGISTER_CLASS(Screen, ID_Node2D, 0);
+HANDLER(Popup, Popup, ClosePopup);
 static struct PropertyType const PopupProperties[kPopupNumProperties] = {
-	DECL(0x2f02ab20, Popup, DialogResult, DialogResult, kDataTypeFloat), // Popup.DialogResult
-	DECL(0x5d9a2777, Popup, ClosePopup, ClosePopup, kDataTypeEvent, .TypeString = "Popup_ClosePopupEventArgs"), // Popup.ClosePopup
+	DECL(0x9a645b38, Popup, DialogResult, DialogResult, kDataTypeFloat), // Popup.DialogResult
+	DECL(0x05bc349b, Popup, ClosePopup, ClosePopup, kDataTypeEvent, .TypeString = "Popup_ClosePopupEventArgs"), // Popup.ClosePopup
 };
 static struct Popup PopupDefaults = {
+		
   .DialogResult = NAN,
 };
 LRESULT PopupProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
@@ -1245,10 +1246,10 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 		lua_setfield(L, ((void)luaopen_orca_Form_SubmitEventArgs(L), -2), "Form_SubmitEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_RadioGroup_SelectionChangedEventArgs(L), -2), "RadioGroup_SelectionChangedEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_TabBar_SelectionChangedEventArgs(L), -2), "TabBar_SelectionChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_TabView_SelectionChangedEventArgs(L), -2), "TabView_SelectionChangedEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
-	lua_setfield(L, ((void)luaopen_orca_Popup_ClosePopupEventArgs(L), -2), "Popup_ClosePopupEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_TabView_SelectionChangedEventArgs(L), -2), "TabView_SelectionChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Popup_ClosePopupEventArgs(L), -2), "Popup_ClosePopupEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_InvalidateEventArgs(L), -2), "ConsoleView_InvalidateEventArgs");

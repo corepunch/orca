@@ -385,7 +385,7 @@ enum ScreenProperties {
 #define ID_Popup 0xe8eb787d
 #define GetPopup(_P) ((struct Popup*)((_P)?OBJ_GetComponent(_P,ID_Popup):NULL))
 #define Popup_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Popup,sizeof(struct Popup),_N)
-#define ID_Popup_DialogResult 0x2f02ab20 // Popup.DialogResult
+#define ID_Popup_DialogResult 0x62501b0c // Popup.DialogResult
 #define ID_Popup_ClosePopup 0x5d9a2777 // Popup.ClosePopup
 #define kPopupNumProperties 2
 enum PopupProperties {
