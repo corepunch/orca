@@ -14,10 +14,10 @@ INCLUDES := -Iinclude -Isrc $(XML_CFLAGS)
 CORE_SRC := src/main.c src/model.c src/util.c
 CORE_OBJ := $(CORE_SRC:%.c=$(BUILD)/%.o)
 
-PLUGINS := header_stub header properties export
+PLUGINS := header_stub header properties export docs dtd
 PLUGIN_SO := $(PLUGINS:%=$(PLUGDIR)/%.so)
 
-.PHONY: all clean run-sample run-sample-properties
+.PHONY: all clean run-sample run-sample-properties run-sample-docs run-sample-dtd
 
 all: $(BIN) $(PLUGIN_SO)
 
@@ -38,6 +38,12 @@ run-sample: all
 
 run-sample-properties: all
 	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/properties.so --out $(BUILD)/core_stub_properties.h
+
+run-sample-docs: all
+	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/docs.so --out $(BUILD)/core_stub.md
+
+run-sample-dtd: all
+	$(BIN) --xml $(ROOT)/plugins/UIKit/UIKit.xml --plugin $(PLUGDIR)/dtd.so --out $(BUILD)/ui_stub.dtd
 
 clean:
 	rm -rf $(BUILD)
