@@ -8,9 +8,11 @@
 
 typedef enum cg_kind {
     CG_KIND_MODULE = 1,
+    CG_KIND_REQUIRE,
     CG_KIND_INCLUDE,
     CG_KIND_EXTERNAL,
     CG_KIND_ENUM,
+    CG_KIND_VALUE,
     CG_KIND_INTERFACE,
     CG_KIND_STRUCT,
     CG_KIND_CLASS,

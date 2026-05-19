@@ -14,7 +14,7 @@ INCLUDES := -Iinclude -Isrc $(XML_CFLAGS)
 CORE_SRC := src/main.c src/model.c src/util.c
 CORE_OBJ := $(CORE_SRC:%.c=$(BUILD)/%.o)
 
-PLUGINS := header_stub
+PLUGINS := header_stub header
 PLUGIN_SO := $(PLUGINS:%=$(PLUGDIR)/%.so)
 
 .PHONY: all clean run-sample
@@ -34,7 +34,7 @@ $(PLUGDIR)/%.so: plugins/%.c include/cg_api.h
 	$(CC) $(CFLAGS) $(INCLUDES) -shared $< -o $@
 
 run-sample: all
-	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/header_stub.so --out $(BUILD)/core_stub.h
+	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/header.so --out $(BUILD)/core_stub.h
 
 clean:
 	rm -rf $(BUILD)

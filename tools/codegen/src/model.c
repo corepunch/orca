@@ -12,6 +12,31 @@ typedef struct rowbuf {
     size_t cap;
 } rowbuf;
 
+typedef struct attrspec {
+    cg_kind kind;
+    char const *name_keys[4];
+    char const *type_keys[4];
+    char const *value_keys[4];
+} attrspec;
+
+static attrspec const k_specs[] = {
+    { CG_KIND_MODULE,    { "name", "", "", "" },      { "namespace", "", "", "" }, { "prefix", "", "", "" } },
+    { CG_KIND_REQUIRE,   { "file", "name", "", "" },  { "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_INCLUDE,   { "file", "name", "", "" },  { "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_EXTERNAL,  { "struct", "name", "", "" },{ "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_ENUM,      { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_VALUE,     { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_INTERFACE, { "name", "", "", "" },      { "prefix", "", "", "" },    { "", "", "", "" } },
+    { CG_KIND_STRUCT,    { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
+    { CG_KIND_CLASS,     { "name", "", "", "" },      { "parent", "", "", "" },    { "attach-only", "", "", "" } },
+    { CG_KIND_METHOD,    { "name", "", "", "" },      { "type", "", "", "" },      { "export", "", "", "" } },
+    { CG_KIND_MESSAGE,   { "name", "", "", "" },      { "routing", "", "", "" },   { "", "", "", "" } },
+    { CG_KIND_FIELD,     { "name", "", "", "" },      { "type", "", "", "" },      { "", "", "", "" } },
+    { CG_KIND_PROPERTY,  { "name", "", "", "" },      { "type", "", "", "" },      { "default", "", "", "" } },
+    { CG_KIND_HANDLE,    { "message", "name", "", "" },{ "", "", "", "" },         { "", "", "", "" } },
+    { CG_KIND_TOPIC,     { "title", "name", "", "" }, { "", "", "", "" },          { "", "", "", "" } }
+};
+
 static char *dupstr(char const *s) {
     size_t n = s ? strlen(s) : 0u;
     char *d = (char *)malloc(n + 1u);
@@ -26,6 +51,33 @@ static char *node_attr(xmlNode const *node, char const *k) {
     char *d = dupstr((char const *)(v ? v : (xmlChar const *)""));
     if (v) xmlFree(v);
     return d;
+}
+
+static char *node_text(xmlNode const *node) {
+    xmlChar *v = xmlNodeGetContent((xmlNode *)node);
+    char *d = dupstr((char const *)(v ? v : (xmlChar const *)""));
+    if (v) xmlFree(v);
+    return d;
+}
+
+static char *pick_attr(xmlNode const *node, char const *const keys[4]) {
+    int i;
+    for (i = 0; i < 4; ++i) {
+        char const *k = keys[i];
+        char *v;
+        if (!k || !k[0]) continue;
+        v = node_attr(node, k);
+        if (v && v[0]) return v;
+        free(v);
+    }
+    return dupstr("");
+}
+
+static attrspec const *find_spec(cg_kind kind) {
+    size_t i;
+    for (i = 0; i < sizeof(k_specs) / sizeof(k_specs[0]); ++i)
+        if (k_specs[i].kind == kind) return &k_specs[i];
+    return NULL;
 }
 
 static int push_row(rowbuf *b, cg_row row) {
@@ -45,9 +97,11 @@ static cg_kind parse_kind(xmlNode const *node, xmlNode const *parent) {
     char const *n = (char const *)node->name;
     char const *pn = parent ? (char const *)parent->name : "";
     if (!strcmp(n, "module")) return CG_KIND_MODULE;
+    if (!strcmp(n, "require")) return CG_KIND_REQUIRE;
     if (!strcmp(n, "include")) return CG_KIND_INCLUDE;
     if (!strcmp(n, "external")) return CG_KIND_EXTERNAL;
     if (!strcmp(n, "enum")) return CG_KIND_ENUM;
+    if (!strcmp(n, "value") && parent && !strcmp((char const *)parent->name, "enum")) return CG_KIND_VALUE;
     if (!strcmp(n, "interface")) return CG_KIND_INTERFACE;
     if (!strcmp(n, "struct")) return CG_KIND_STRUCT;
     if (!strcmp(n, "class")) return CG_KIND_CLASS;
@@ -67,17 +121,18 @@ static int walk(xmlNode const *node, uint32_t owner, rowbuf *out) {
         uint32_t row_owner = owner;
         uint32_t row_id = 0;
         if (k) {
+            attrspec const *spec = find_spec(k);
             cg_row row = {
                 .id = 0,
                 .owner = owner,
                 .kind = k,
-                .name = node_attr(node, "name"),
-                .type = node_attr(node, "type"),
-                .value = node_attr(node, "message")
+                .name = spec ? pick_attr(node, spec->name_keys) : dupstr(""),
+                .type = spec ? pick_attr(node, spec->type_keys) : dupstr(""),
+                .value = spec ? pick_attr(node, spec->value_keys) : dupstr("")
             };
-            if (!row.value || !row.value[0]) {
+            if (k == CG_KIND_VALUE) {
                 free((void *)row.value);
-                row.value = node_attr(node, "title");
+                row.value = node_text(node);
             }
             if (!row.name || !row.type || !row.value) {
                 free((void *)row.name);
