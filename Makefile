@@ -202,6 +202,9 @@ codegen-host:
 codegen-sample:
 	$(MAKE) -C tools codegen-sample
 
+modules-c-preview:
+	$(MAKE) -C tools modules-c-preview
+
 fonts:
 	python3 cd tools && \
 	../images/vga8x12_extra_chars.png \

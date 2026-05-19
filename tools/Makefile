@@ -26,9 +26,13 @@ TEMPLATES  := templates
 
 PYPHP := python3 -m pyphp.pyphp
 CGDIR := codegen
+CGEN := $(CGDIR)/build/cgen
+CG_PLUGIN_HEADER := $(CGDIR)/build/plugins/header.so
+CG_PLUGIN_PROPERTIES := $(CGDIR)/build/plugins/properties.so
+CG_PREVIEW_DIR := $(CGDIR)/out
 
 # Top-level targets
-.PHONY: all dtd docs docs-index codegen-host codegen-sample $(MODULES)
+.PHONY: all dtd docs docs-index codegen-host codegen-sample modules-c-preview $(MODULES)
 
 all: $(MODULES)
 
@@ -42,6 +46,18 @@ $(1):
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
+
+define MODULE_C_PREVIEW_RULE
+cgen-preview-$(1): codegen-host
+	@echo "Preview C codegen $(1)..."
+	@mkdir -p $(CG_PREVIEW_DIR)/$(dir $(1))
+	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_HEADER) --out $(CG_PREVIEW_DIR)/$(1).h
+	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_PROPERTIES) --out $(CG_PREVIEW_DIR)/$(1)_properties.h
+endef
+
+$(foreach mod,$(MODULES),$(eval $(call MODULE_C_PREVIEW_RULE,$(mod))))
+
+modules-c-preview: $(foreach mod,$(MODULES),cgen-preview-$(mod))
 
 # Generate orca.dtd from UI modules
 dtd:
