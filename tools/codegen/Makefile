@@ -14,10 +14,10 @@ INCLUDES := -Iinclude -Isrc $(XML_CFLAGS)
 CORE_SRC := src/main.c src/model.c src/util.c
 CORE_OBJ := $(CORE_SRC:%.c=$(BUILD)/%.o)
 
-PLUGINS := header_stub header
+PLUGINS := header_stub header properties
 PLUGIN_SO := $(PLUGINS:%=$(PLUGDIR)/%.so)
 
-.PHONY: all clean run-sample
+.PHONY: all clean run-sample run-sample-properties
 
 all: $(BIN) $(PLUGIN_SO)
 
@@ -35,6 +35,9 @@ $(PLUGDIR)/%.so: plugins/%.c include/cg_api.h
 
 run-sample: all
 	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/header.so --out $(BUILD)/core_stub.h
+
+run-sample-properties: all
+	$(BIN) --xml $(ROOT)/source/core/core.xml --plugin $(PLUGDIR)/properties.so --out $(BUILD)/core_stub_properties.h
 
 clean:
 	rm -rf $(BUILD)
