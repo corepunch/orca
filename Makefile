@@ -196,6 +196,12 @@ move_pz2:
 modules:
 	$(MAKE) -j8 -C tools
 
+codegen-host:
+	$(MAKE) -C tools codegen-host
+
+codegen-sample:
+	$(MAKE) -C tools codegen-sample
+
 fonts:
 	python3 cd tools && \
 	../images/vga8x12_extra_chars.png \

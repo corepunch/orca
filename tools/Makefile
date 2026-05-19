@@ -25,9 +25,10 @@ DOCS_DIR   := ../docs
 TEMPLATES  := templates
 
 PYPHP := python3 -m pyphp.pyphp
+CGDIR := codegen
 
 # Top-level targets
-.PHONY: all dtd docs docs-index $(MODULES)
+.PHONY: all dtd docs docs-index codegen-host codegen-sample $(MODULES)
 
 all: $(MODULES)
 
@@ -67,3 +68,9 @@ docs-index:
 		$(foreach mod,$(DOC_MODULES),../$(mod).xml)
 
 docs: $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index
+
+codegen-host:
+	$(MAKE) -C $(CGDIR)
+
+codegen-sample: codegen-host
+	$(MAKE) -C $(CGDIR) run-sample
