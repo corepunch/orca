@@ -48,8 +48,10 @@ cache_set = (key, value) ->
   value
 
 clear_cache = ->
-  context = {}
-  context_meta = {}
+  for k in pairs context
+    context[k] = nil
+  for k in pairs context_meta
+    context_meta[k] = nil
 
 location_subtitle = (loc) ->
   parts = {}
