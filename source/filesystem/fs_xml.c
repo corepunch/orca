@@ -14,6 +14,33 @@ struct Object *FS_ConstructNode(xmlNodePtr element);
 extern int parse_property(const char* str,
                            struct PropertyType const* prop, void* valueptr);
 
+// Map a PropertyAttribute name string to its enum value.
+static enum PropertyAttribute
+_ParseAttributeStr(lpcString_t s)
+{
+  static lpcString_t names[] = {
+    "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA",
+    "VectorX", "VectorY", "VectorZ", "VectorW", NULL
+  };
+  for (int i = 0; names[i]; i++) {
+    if (!strcmp(s, names[i])) return (enum PropertyAttribute)i;
+  }
+  return kPropertyAttributeWholeProperty;
+}
+
+// Map a BindingMode name string to its enum value.
+static enum BindingMode
+_ParseBindingModeStr(lpcString_t s)
+{
+  static lpcString_t names[] = {
+    "OneWay", "TwoWay", "OneWayToSource", "Expression", NULL
+  };
+  for (int i = 0; names[i]; i++) {
+    if (!strcmp(s, names[i])) return (enum BindingMode)i;
+  }
+  return kBindingModeExpression;
+}
+
 // Parse a single XML attribute value and set it on obj.
 // Handles Name/id, class, and all registered properties.
 static void
@@ -225,6 +252,40 @@ _ConstructProperty(struct Object *obj,
     _SetPropertyFromString(obj, pdesc->Name, (lpcString_t)val);
     xmlFree(val);
     return;
+  }
+
+  // No Value attribute: treat text content as a binding/program expression.
+  // This is required for forms like:
+  //   <TextRun.Text>{../Card.Title}</TextRun.Text>
+  //   <Grid.Columns>IF(STEP(...), "auto auto", "auto")</Grid.Columns>
+  xmlChar* text = xmlNodeGetContent(element);
+  if (text && *text) {
+    enum PropertyAttribute attribute = kPropertyAttributeWholeProperty;
+    enum BindingMode mode = kBindingModeExpression;
+    bool_t enabled = TRUE;
+
+    xmlChar* attr_xml = xmlGetProp(element, XMLSTR("Attribute"));
+    xmlChar* mode_xml = xmlGetProp(element, XMLSTR("Mode"));
+    xmlChar* en_xml   = xmlGetProp(element, XMLSTR("Enabled"));
+
+    if (attr_xml) {
+      attribute = _ParseAttributeStr((lpcString_t)attr_xml);
+      xmlFree(attr_xml);
+    }
+    if (mode_xml) {
+      mode = _ParseBindingModeStr((lpcString_t)mode_xml);
+      xmlFree(mode_xml);
+    }
+    if (en_xml) {
+      enabled = strcmp((lpcString_t)en_xml, "false") != 0;
+      xmlFree(en_xml);
+    }
+
+    OBJ_AttachPropertyProgram(obj, pdesc->Name, (lpcString_t)text,
+                              attribute, mode, enabled);
+  }
+  if (text) {
+    xmlFree(text);
   }
 }
 
