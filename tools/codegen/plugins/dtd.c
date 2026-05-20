@@ -44,12 +44,12 @@ static int emit_dtd(cg_host_v1 const *host, cg_model const *model, char const *o
         return -1;
     }
 
-    for (i = 0; i < model->row_count; ++i)
-        if (model->rows[i].kind == CG_KIND_CLASS)
+    for (i = 0; i < model->node_count; ++i)
+        if (model->nodes[i].kind == CG_KIND_CLASS)
             if (ob_printf(&b,
                     "<!ELEMENT %s ANY>\n"
                     "<!ATTLIST %s Name CDATA #IMPLIED>\n",
-                    model->rows[i].name, model->rows[i].name) < 0) {
+                    model->nodes[i].name, model->nodes[i].name) < 0) {
                 free(b.s);
                 return -1;
             }

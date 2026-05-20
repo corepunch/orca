@@ -1,177 +1,307 @@
 #include "model.h"
-
 #include <libxml/parser.h>
 #include <libxml/tree.h>
-
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct rowbuf {
-    cg_row *v;
-    size_t n;
-    size_t cap;
-} rowbuf;
+typedef struct { cg_node *v; size_t n, cap; } nodebuf;
 
-typedef struct attrspec {
-    cg_kind kind;
-    char const *name_keys[4];
-    char const *type_keys[4];
-    char const *value_keys[4];
-} attrspec;
-
-static attrspec const k_specs[] = {
-    { CG_KIND_MODULE,    { "name", "", "", "" },      { "namespace", "", "", "" }, { "prefix", "", "", "" } },
-    { CG_KIND_REQUIRE,   { "file", "name", "", "" },  { "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_INCLUDE,   { "file", "name", "", "" },  { "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_EXTERNAL,  { "struct", "name", "", "" },{ "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_ENUM,      { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_VALUE,     { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_INTERFACE, { "name", "", "", "" },      { "prefix", "", "", "" },    { "", "", "", "" } },
-    { CG_KIND_STRUCT,    { "name", "", "", "" },      { "", "", "", "" },          { "", "", "", "" } },
-    { CG_KIND_CLASS,     { "name", "", "", "" },      { "parent", "", "", "" },    { "attach-only", "", "", "" } },
-    { CG_KIND_METHOD,    { "name", "", "", "" },      { "type", "", "", "" },      { "export", "", "", "" } },
-    { CG_KIND_MESSAGE,   { "name", "", "", "" },      { "routing", "", "", "" },   { "", "", "", "" } },
-    { CG_KIND_FIELD,     { "name", "", "", "" },      { "type", "", "", "" },      { "", "", "", "" } },
-    { CG_KIND_PROPERTY,  { "name", "", "", "" },      { "type", "", "", "" },      { "default", "", "", "" } },
-    { CG_KIND_HANDLE,    { "message", "name", "", "" },{ "", "", "", "" },         { "", "", "", "" } },
-    { CG_KIND_TOPIC,     { "title", "name", "", "" }, { "", "", "", "" },          { "", "", "", "" } }
-};
-
-static char *dupstr(char const *s) {
+static char *xdup(char const *s) {
     size_t n = s ? strlen(s) : 0u;
     char *d = (char *)malloc(n + 1u);
-    if (!d) return NULL;
-    if (n) memcpy(d, s, n);
-    d[n] = '\0';
+    if (d) { if (n) memcpy(d, s, n); d[n] = '\0'; }
     return d;
 }
 
-static char *node_attr(xmlNode const *node, char const *k) {
-    xmlChar *v = xmlGetProp((xmlNode *)node, (xmlChar const *)k);
-    char *d = dupstr((char const *)(v ? v : (xmlChar const *)""));
+static char *xattr(xmlNode const *e, char const *k) {
+    xmlChar *v = xmlGetProp((xmlNode *)e, (xmlChar const *)k);
+    char *d = xdup(v ? (char const *)v : "");
     if (v) xmlFree(v);
     return d;
 }
 
-static char *node_text(xmlNode const *node) {
-    xmlChar *v = xmlNodeGetContent((xmlNode *)node);
-    char *d = dupstr((char const *)(v ? v : (xmlChar const *)""));
-    if (v) xmlFree(v);
-    return d;
-}
-
-static char *pick_attr(xmlNode const *node, char const *const keys[4]) {
-    int i;
-    for (i = 0; i < 4; ++i) {
-        char const *k = keys[i];
-        char *v;
-        if (!k || !k[0]) continue;
-        v = node_attr(node, k);
-        if (v && v[0]) return v;
-        free(v);
+static char *xtrimdup(char const *src) {
+    char const *s = src ? src : "";
+    char const *e;
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') ++s;
+    e = s + strlen(s);
+    while (e > s && (e[-1] == ' ' || e[-1] == '\t' || e[-1] == '\n' || e[-1] == '\r')) --e;
+    {
+        size_t n = (size_t)(e - s);
+        char *d = (char *)malloc(n + 1u);
+        if (!d) return NULL;
+        if (n) memcpy(d, s, n);
+        d[n] = '\0';
+        return d;
     }
-    return dupstr("");
 }
 
-static attrspec const *find_spec(cg_kind kind) {
-    size_t i;
-    for (i = 0; i < sizeof(k_specs) / sizeof(k_specs[0]); ++i)
-        if (k_specs[i].kind == kind) return &k_specs[i];
+/* Returns <summary> child text or direct inline text; NULL if absent/empty. */
+static char *xdoc(xmlNode const *e) {
+    xmlNode *c;
+    for (c = e->children; c; c = c->next) {
+        if (c->type == XML_ELEMENT_NODE && !strcmp((char *)c->name, "summary")) {
+            xmlChar *v = xmlNodeGetContent(c);
+            char *d = xtrimdup(v ? (char const *)v : "");
+            if (v) xmlFree(v);
+            if (d && d[0]) return d;
+            free(d); return NULL;
+        }
+        if (c->type == XML_TEXT_NODE) {
+            char const *s = (char const *)c->content;
+            while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') ++s;
+            if (*s) return xtrimdup(s);
+        }
+    }
     return NULL;
 }
 
-static int push_row(rowbuf *b, cg_row row) {
+static int bflag(xmlNode const *e, char const *attr) {
+    xmlChar *v = xmlGetProp((xmlNode *)e, (xmlChar const *)attr);
+    int r = v && !strcmp((char const *)v, "true");
+    if (v) xmlFree(v);
+    return r;
+}
+
+static int push_node(nodebuf *b, cg_node n) {
     if (b->n == b->cap) {
-        size_t nc = b->cap ? b->cap * 2u : 128u;
-        cg_row *nv = (cg_row *)realloc(b->v, nc * sizeof(*b->v));
+        size_t nc = b->cap ? b->cap * 2u : 256u;
+        cg_node *nv = (cg_node *)realloc(b->v, nc * sizeof(*b->v));
         if (!nv) return -1;
-        b->v = nv;
-        b->cap = nc;
+        b->v = nv; b->cap = nc;
     }
-    row.id = (uint32_t)b->n + 1u;
-    b->v[b->n++] = row;
+    n.id = (uint32_t)b->n + 1u;
+    b->v[b->n++] = n;
     return 0;
 }
 
-static cg_kind parse_kind(xmlNode const *node, xmlNode const *parent) {
-    char const *n = (char const *)node->name;
-    char const *pn = parent ? (char const *)parent->name : "";
-    if (!strcmp(n, "module")) return CG_KIND_MODULE;
-    if (!strcmp(n, "require")) return CG_KIND_REQUIRE;
-    if (!strcmp(n, "include")) return CG_KIND_INCLUDE;
-    if (!strcmp(n, "external")) return CG_KIND_EXTERNAL;
-    if (!strcmp(n, "enum")) return CG_KIND_ENUM;
-    if (!strcmp(n, "value") && parent && !strcmp((char const *)parent->name, "enum")) return CG_KIND_VALUE;
-    if (!strcmp(n, "interface")) return CG_KIND_INTERFACE;
-    if (!strcmp(n, "struct")) return CG_KIND_STRUCT;
-    if (!strcmp(n, "class")) return CG_KIND_CLASS;
-    if (!strcmp(n, "method")) return CG_KIND_METHOD;
-    if (!strcmp(n, "message")) return CG_KIND_MESSAGE;
-    if (!strcmp(n, "field")) return CG_KIND_FIELD;
-    if (!strcmp(n, "property")) return CG_KIND_PROPERTY;
-    if (!strcmp(n, "handle")) return CG_KIND_HANDLE;
-    if (!strcmp(n, "topic") && !strcmp(pn, "methods")) return CG_KIND_TOPIC;
+static cg_kind elem_kind(xmlNode const *e) {
+    char const *t = (char const *)e->name;
+    if (!strcmp(t, "module"))    return CG_KIND_MODULE;
+    if (!strcmp(t, "require"))   return CG_KIND_REQUIRE;
+    if (!strcmp(t, "include"))   return CG_KIND_INCLUDE;
+    if (!strcmp(t, "external"))  return CG_KIND_EXTERNAL;
+    if (!strcmp(t, "enum"))      return CG_KIND_ENUM;
+    if (!strcmp(t, "value"))     return CG_KIND_VALUE;
+    if (!strcmp(t, "interface")) return CG_KIND_INTERFACE;
+    if (!strcmp(t, "struct"))    return CG_KIND_STRUCT;
+    if (!strcmp(t, "class"))     return CG_KIND_CLASS;
+    if (!strcmp(t, "method"))    return CG_KIND_METHOD;
+    if (!strcmp(t, "function"))  return CG_KIND_METHOD;
+    if (!strcmp(t, "message"))   return CG_KIND_MESSAGE;
+    if (!strcmp(t, "field"))     return CG_KIND_FIELD;
+    if (!strcmp(t, "property"))  return CG_KIND_PROPERTY;
+    if (!strcmp(t, "handle"))    return CG_KIND_HANDLE;
+    if (!strcmp(t, "arg"))       return CG_KIND_ARG;
+    if (!strcmp(t, "returns"))   return CG_KIND_RETURNS;
+    /* topic only inside methods container */
+    if (!strcmp(t, "topic") && e->parent &&
+        !strcmp((char const *)e->parent->name, "methods")) return CG_KIND_TOPIC;
     return 0;
 }
 
-static int walk(xmlNode const *node, uint32_t owner, rowbuf *out) {
-    for (; node; node = node->next) {
-        if (node->type != XML_ELEMENT_NODE) continue;
-        cg_kind k = parse_kind(node, node->parent);
-        uint32_t row_owner = owner;
-        uint32_t row_id = 0;
-        if (k) {
-            attrspec const *spec = find_spec(k);
-            cg_row row = {
-                .id = 0,
-                .owner = owner,
-                .kind = k,
-                .name = spec ? pick_attr(node, spec->name_keys) : dupstr(""),
-                .type = spec ? pick_attr(node, spec->type_keys) : dupstr(""),
-                .value = spec ? pick_attr(node, spec->value_keys) : dupstr("")
-            };
-            if (k == CG_KIND_VALUE) {
-                free((void *)row.value);
-                row.value = node_text(node);
-            }
-            if (!row.name || !row.type || !row.value) {
-                free((void *)row.name);
-                free((void *)row.type);
-                free((void *)row.value);
-                return -1;
-            }
-            if (push_row(out, row) < 0) return -1;
-            row_id = (uint32_t)out->n;
-            row_owner = row_id;
+static char *join_relative(char const *base_file, char const *rel) {
+    char const *slash;
+    size_t dir_len, rel_len;
+    char *out;
+    if (!rel || !rel[0]) return NULL;
+    if (rel[0] == '/') return xdup(rel);
+    slash = strrchr(base_file ? base_file : "", '/');
+    dir_len = slash ? (size_t)(slash - base_file + 1) : 0u;
+    rel_len = strlen(rel);
+    out = (char *)malloc(dir_len + rel_len + 1u);
+    if (!out) return NULL;
+    if (dir_len) memcpy(out, base_file, dir_len);
+    memcpy(out + dir_len, rel, rel_len);
+    out[dir_len + rel_len] = '\0';
+    return out;
+}
+
+static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_file) {
+    for (; e; e = e->next) {
+        cg_node n;
+        cg_kind k;
+        uint32_t child_parent;
+        char *tmp;
+        if (e->type != XML_ELEMENT_NODE) continue;
+        k = elem_kind(e);
+        child_parent = parent;
+        if (!k) { if (walk(e->children, parent, b, base_file) < 0) return -1; continue; }
+        memset(&n, 0, sizeof(n));
+        n.parent = parent;
+        n.kind   = k;
+        n.doc    = xdoc(e);
+        switch (k) {
+        case CG_KIND_MODULE:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "namespace");
+            n.extra = xattr(e, "prefix");
+            break;
+        case CG_KIND_REQUIRE:
+        case CG_KIND_INCLUDE:
+            tmp = xattr(e, "file");
+            n.name  = tmp[0] ? tmp : (free(tmp), xattr(e, "name"));
+            n.type  = xdup(""); n.extra = xdup(""); break;
+        case CG_KIND_EXTERNAL:
+            tmp = xattr(e, "struct");
+            n.name  = tmp[0] ? tmp : (free(tmp), xattr(e, "name"));
+            n.type  = xdup(""); n.extra = xdup(""); break;
+        case CG_KIND_ENUM:
+            n.name  = xattr(e, "name");
+            n.type  = xdup(""); n.extra = xdup(""); break;
+        case CG_KIND_VALUE:
+            n.name  = xattr(e, "name");
+            { xmlChar *v = xmlNodeGetContent((xmlNode *)e);
+              n.type = xdup(v ? (char const *)v : ""); if (v) xmlFree(v); }
+            n.extra = xdup(""); break;
+        case CG_KIND_INTERFACE:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "prefix");
+            n.extra = xattr(e, "export");
+            if (bflag(e, "no-check")) n.flags |= CG_FLAG_NO_CHECK;
+            break;
+        case CG_KIND_STRUCT:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "prefix");
+            n.extra = xattr(e, "export");
+            if (bflag(e, "sealed")) n.flags |= CG_FLAG_SEALED;
+            break;
+        case CG_KIND_CLASS:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "parent");
+            n.extra = xattr(e, "concept");
+            if (bflag(e, "attach-only")) n.flags |= CG_FLAG_ATTACH_ONLY;
+            break;
+        case CG_KIND_METHOD:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "export");
+            n.aux   = xattr(e, "alias");
+            n.aux2  = xdup("");
+            if (bflag(e, "lua"))    n.flags |= CG_FLAG_LUA;
+            if (bflag(e, "static")) n.flags |= CG_FLAG_STATIC;
+            if (bflag(e, "const"))  n.flags |= CG_FLAG_CONST;
+            if (bflag(e, "private")) n.flags |= CG_FLAG_PRIVATE;
+            break;
+        case CG_KIND_MESSAGE:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "same-as");
+            n.aux   = xattr(e, "routing");
+            n.aux2  = xdup("");
+            break;
+        case CG_KIND_FIELD:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "fixed-array");
+            if (bflag(e, "pointer"))  n.flags |= CG_FLAG_POINTER;
+            if (bflag(e, "const"))    n.flags |= CG_FLAG_CONST;
+            if (bflag(e, "noexport")) n.flags |= CG_FLAG_NOEXPORT;
+            tmp = xattr(e, "array"); if (tmp[0]) n.flags |= CG_FLAG_ARRAY; free(tmp);
+            break;
+        case CG_KIND_PROPERTY:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "default");
+            if (bflag(e, "pointer")) n.flags |= CG_FLAG_POINTER;
+            if (bflag(e, "const"))   n.flags |= CG_FLAG_CONST;
+            if (bflag(e, "private")) n.flags |= CG_FLAG_PRIVATE;
+            { tmp = xattr(e, "array"); if (tmp[0]) n.flags |= CG_FLAG_ARRAY; free(tmp); }
+            break;
+        case CG_KIND_HANDLE:
+            n.name  = xattr(e, "message");
+            n.type  = xdup(""); n.extra = xdup(""); break;
+        case CG_KIND_TOPIC:
+            n.name  = xattr(e, "title");
+            n.type  = xdup(""); n.extra = xdup(""); break;
+        case CG_KIND_ARG:
+            n.name  = xattr(e, "name");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "default");
+            n.aux   = xattr(e, "output");
+            n.aux2  = xattr(e, "bufsize");
+            if (bflag(e, "pointer")) n.flags |= CG_FLAG_POINTER;
+            if (bflag(e, "const"))   n.flags |= CG_FLAG_CONST;
+            if (bflag(e, "array"))   n.flags |= CG_FLAG_ARRAY;
+            break;
+        case CG_KIND_RETURNS:
+            n.name  = xdup("");
+            n.type  = xattr(e, "type");
+            n.extra = xattr(e, "default");
+            n.aux   = xdup("");
+            n.aux2  = xdup("");
+            if (bflag(e, "pointer")) n.flags |= CG_FLAG_POINTER;
+            if (bflag(e, "const"))   n.flags |= CG_FLAG_CONST;
+            if (bflag(e, "array"))   n.flags |= CG_FLAG_ARRAY;
+            break;
+        default:
+            n.name = xdup(""); n.type = xdup(""); n.extra = xdup(""); break;
         }
-        if (walk(node->children, row_owner, out) < 0) return -1;
+        if (!n.aux) n.aux = xdup("");
+        if (!n.aux2) n.aux2 = xdup("");
+        if (push_node(b, n) < 0) return -1;
+        child_parent = (uint32_t)b->n;
+        if (k == CG_KIND_REQUIRE && n.name && n.name[0]) {
+            char *dep_path = join_relative(base_file, n.name);
+            if (dep_path) {
+                xmlDocPtr dep = xmlReadFile(dep_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
+                if (dep) {
+                    xmlNode *dep_root = xmlDocGetRootElement(dep);
+                    if (dep_root && walk(dep_root->children, child_parent, b, dep_path) < 0) {
+                        xmlFreeDoc(dep);
+                        free(dep_path);
+                        return -1;
+                    }
+                    xmlFreeDoc(dep);
+                }
+                free(dep_path);
+            }
+        }
+        if (walk(e->children, child_parent, b, base_file) < 0) return -1;
     }
     return 0;
 }
 
 int cg_model_load(char const *xml_path, cg_model *out) {
-    xmlDocPtr doc = xmlReadFile(xml_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
+    nodebuf nodes = {0};
+    xmlDocPtr doc;
     xmlNode *root;
-    rowbuf rows = {0};
     memset(out, 0, sizeof(*out));
+    doc = xmlReadFile(xml_path, NULL, XML_PARSE_NOBLANKS | XML_PARSE_COMPACT);
     if (!doc) return -1;
     root = xmlDocGetRootElement(doc);
-    if (!root) {
-        xmlFreeDoc(doc);
-        return -2;
+    if (!root) { xmlFreeDoc(doc); return -2; }
+    /* Walk root's CHILDREN with parent=0 so top-level entities are directly
+     * accessible via cg_foreach(model, 0, kind, var). Container wrappers
+     * (externals, enums, classes, …) have no kind so their children inherit
+     * parent=0 as well. */
+    if (walk(root->children, 0u, &nodes, xml_path) < 0) {
+        xmlFreeDoc(doc); free(nodes.v); return -3;
     }
-    if (walk(root, 0u, &rows) < 0 || !rows.n) {
-        xmlFreeDoc(doc);
-        free(rows.v);
-        return -3;
+    out->xml_path      = xdup(xml_path);
+    out->module_name   = xattr(root, "name");
+    out->module_ns     = xattr(root, "namespace");
+    out->prefix        = xattr(root, "prefix");
+    if (out->prefix && !out->prefix[0]) {
+        char *p;
+        size_t n = strlen(out->module_name ? out->module_name : "");
+        free((void *)out->prefix);
+        p = (char *)malloc(n + 2u);
+        if (!p) {
+            xmlFreeDoc(doc);
+            return -4;
+        }
+        if (n) memcpy(p, out->module_name, n);
+        p[n] = '_';
+        p[n + 1u] = '\0';
+        out->prefix = p;
     }
-    out->xml_path = dupstr(xml_path);
-    out->module_name = node_attr(root, "name");
-    out->prefix = node_attr(root, "prefix");
-    out->rows = rows.v;
-    out->row_count = rows.n;
+    out->on_luaopen    = xattr(root, "on-luaopen");
+    out->after_luaopen = xattr(root, "after-luaopen");
+    out->nodes         = nodes.v;
+    out->node_count    = nodes.n;
     xmlFreeDoc(doc);
-    return (!out->xml_path || !out->module_name || !out->prefix) ? -4 : 0;
+    return 0;
 }
 
 void cg_model_free(cg_model *model) {
@@ -179,12 +309,18 @@ void cg_model_free(cg_model *model) {
     if (!model) return;
     free((void *)model->xml_path);
     free((void *)model->module_name);
+    free((void *)model->module_ns);
     free((void *)model->prefix);
-    for (i = 0; i < model->row_count; ++i) {
-        free((void *)model->rows[i].name);
-        free((void *)model->rows[i].type);
-        free((void *)model->rows[i].value);
+    free((void *)model->on_luaopen);
+    free((void *)model->after_luaopen);
+    for (i = 0; i < model->node_count; ++i) {
+        free((void *)model->nodes[i].name);
+        free((void *)model->nodes[i].type);
+        free((void *)model->nodes[i].extra);
+        free((void *)model->nodes[i].aux);
+        free((void *)model->nodes[i].aux2);
+        free((void *)model->nodes[i].doc);
     }
-    free((void *)model->rows);
+    free((void *)model->nodes);
     memset(model, 0, sizeof(*model));
 }

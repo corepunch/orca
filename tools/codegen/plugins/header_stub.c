@@ -11,8 +11,8 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
     size_t n = 0u;
     uint32_t kinds[16] = {0};
 
-    for (i = 0; i < model->row_count; ++i) {
-        cg_kind k = model->rows[i].kind;
+    for (i = 0; i < model->node_count; ++i) {
+        cg_kind k = model->nodes[i].kind;
         if (k < 16u) kinds[k]++;
     }
 
@@ -28,7 +28,7 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
         "#endif\n",
         mod, mod,
         model->xml_path,
-        model->row_count,
+        model->node_count,
         kinds[CG_KIND_CLASS],
         kinds[CG_KIND_STRUCT],
         kinds[CG_KIND_INTERFACE],

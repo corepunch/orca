@@ -39,11 +39,11 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
     uint32_t n_enum = 0, n_if = 0, n_struct = 0, n_class = 0;
     outbuf b = {0};
 
-    for (i = 0; i < model->row_count; ++i) {
-        n_enum += model->rows[i].kind == CG_KIND_ENUM;
-        n_if += model->rows[i].kind == CG_KIND_INTERFACE;
-        n_struct += model->rows[i].kind == CG_KIND_STRUCT;
-        n_class += model->rows[i].kind == CG_KIND_CLASS;
+    for (i = 0; i < model->node_count; ++i) {
+        n_enum += model->nodes[i].kind == CG_KIND_ENUM;
+        n_if += model->nodes[i].kind == CG_KIND_INTERFACE;
+        n_struct += model->nodes[i].kind == CG_KIND_STRUCT;
+        n_class += model->nodes[i].kind == CG_KIND_CLASS;
     }
 
     if (ob_printf(&b,
@@ -59,9 +59,9 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         return -1;
     }
 
-    for (i = 0; i < model->row_count; ++i)
-        if (model->rows[i].kind == CG_KIND_CLASS)
-            if (ob_printf(&b, "- %s\n", model->rows[i].name) < 0) {
+    for (i = 0; i < model->node_count; ++i)
+        if (model->nodes[i].kind == CG_KIND_CLASS)
+            if (ob_printf(&b, "- %s\n", model->nodes[i].name) < 0) {
                 free(b.s);
                 return -1;
             }
