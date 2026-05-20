@@ -29,7 +29,27 @@ LOCATION_CATALOG = {
 
 -- Module-level cache – reset when the app restarts.
 context = {}
+context_meta = {}
 current_location = LOCATIONS[1]
+CACHE_TTL_SECONDS = 10 * 60
+
+cache_get = (key) ->
+  data = context[key]
+  return nil unless data
+  ts = context_meta[key] or 0
+  return data if os.time! - ts <= CACHE_TTL_SECONDS
+  context[key] = nil
+  context_meta[key] = nil
+  nil
+
+cache_set = (key, value) ->
+  context[key] = value
+  context_meta[key] = os.time!
+  value
+
+clear_cache = ->
+  context = {}
+  context_meta = {}
 
 location_subtitle = (loc) ->
   parts = {}
@@ -92,10 +112,10 @@ class Weather
       loc = get_current_location!
       lat, lon = loc.lat, loc.lon
     key = "current:#{lat},#{lon}"
-    return context[key] if context[key]
+    cached = cache_get key
+    return cached if cached
     data = weather_api.current lat, lon
-    context[key] = data.current
-    context[key]
+    cache_set key, data.current
 
   -- Returns the daily forecast table for (lat, lon).
   forecast: (lat=nil, lon=nil) =>
@@ -103,10 +123,10 @@ class Weather
       loc = get_current_location!
       lat, lon = loc.lat, loc.lon
     key = "forecast:#{lat},#{lon}"
-    return context[key] if context[key]
+    cached = cache_get key
+    return cached if cached
     data = weather_api.forecast lat, lon
-    context[key] = data.daily
-    context[key]
+    cache_set key, data.daily
 
   -- Returns the hourly forecast table for (lat, lon) — 48 hours (2 days).
   hourly: (lat=nil, lon=nil) =>
@@ -114,10 +134,66 @@ class Weather
       loc = get_current_location!
       lat, lon = loc.lat, loc.lon
     key = "hourly:#{lat},#{lon}"
-    return context[key] if context[key]
+    cached = cache_get key
+    return cached if cached
     data = weather_api.hourly lat, lon
-    context[key] = data.hourly
-    context[key]
+    cache_set key, data.hourly
+
+  refresh: =>
+    clear_cache!
+
+  alerts: (lat=nil, lon=nil) =>
+    current = @current lat, lon
+    forecast = @forecast lat, lon
+    alerts = {}
+
+    uv = current.uv_index or 0
+    if uv >= 8
+      alerts[#alerts + 1] = {
+        level: "warning"
+        title: "High UV Index"
+        detail: "UV index is #{math.floor(uv + 0.5)}. Limit midday sun exposure."
+      }
+
+    wind = current.wind_speed_10m or 0
+    if wind >= 14
+      alerts[#alerts + 1] = {
+        level: "warning"
+        title: "Strong Wind"
+        detail: "Sustained wind is #{math.floor(wind + 0.5)} m/s. Secure loose outdoor items."
+      }
+
+    today_precip = ((forecast.precipitation_probability_max or {})[1] or 0)
+    if today_precip >= 70
+      alerts[#alerts + 1] = {
+        level: "advisory"
+        title: "Rain Likely Today"
+        detail: "Precipitation chance is #{math.floor(today_precip + 0.5)}%."
+      }
+
+    max_temp = ((forecast.temperature_2m_max or {})[1] or 0)
+    min_temp = ((forecast.temperature_2m_min or {})[1] or 0)
+    if max_temp >= 35
+      alerts[#alerts + 1] = {
+        level: "advisory"
+        title: "Heat Advisory"
+        detail: "High temperature may reach #{@format_temp max_temp}."
+      }
+    if min_temp <= 0
+      alerts[#alerts + 1] = {
+        level: "advisory"
+        title: "Cold Advisory"
+        detail: "Low temperature may drop to #{@format_temp min_temp}."
+      }
+
+    if #alerts == 0
+      alerts[#alerts + 1] = {
+        level: "ok"
+        title: "All Clear"
+        detail: "No severe weather conditions detected right now."
+      }
+
+    alerts
 
   -- Human-readable label for a WMO weather code.
   description: (code) => weather_api.description code
@@ -145,6 +221,7 @@ return {
   :get_current_location
   :search_locations
   :location_subtitle
+  :clear_cache
   format_time: weather_api.format_time
   default_lat: DEFAULT_LAT
   default_lon: DEFAULT_LON

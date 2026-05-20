@@ -1,5 +1,6 @@
 import StackView, TextBlock, ImageView from require "orca.UIKit"
 import Weather, get_current_location from require "model"
+Application = require "orca.core.application"
 
 -- Number of forecast days to display.
 FORECAST_DAYS = 7
@@ -8,8 +9,25 @@ class ForecastScreen extends require "orca.core.widget"
 	title: "Forecast"
 
 	content: =>
-		forecast = Weather\forecast!
+		refresh_weather = ->
+			Weather\refresh!
+			app = Application.current false
+			app\navigate "/forecast" if app
+
+		ok, forecast = pcall -> Weather\forecast!
 		location = get_current_location!
+		unless ok and forecast and forecast.time
+			return StackView class: "bg-background p-5 gap-3", =>
+				TextBlock class: "text-2xl font-bold text-foreground", "#{FORECAST_DAYS}-Day Forecast"
+				StackView class: "bg-surface rounded-3 px-4 py-4 gap-2", =>
+					TextBlock class: "text-base font-bold text-foreground", "Unable to load forecast"
+					TextBlock class: "text-sm text-foreground-muted",
+						"Check your connection and tap refresh to retry."
+					TextBlock {
+						class: "text-sm font-bold text-accent"
+						LeftButtonUp: refresh_weather
+					}, "Refresh"
+
 		StackView class: "bg-background overflow-y-scroll h-full p-5 gap-3", =>
 			TextBlock class: "text-2xl font-bold text-foreground", "#{FORECAST_DAYS}-Day Forecast"
 			-- Location row (consistent with Home screen)
@@ -18,6 +36,10 @@ class ForecastScreen extends require "orca.core.widget"
 					class: "align-middle-center text-accent"
 					Source: "assets/icons/location.svg?width=16&type=mask"
 				TextBlock class: "text-sm text-foreground-muted", location.name
+				TextBlock {
+					class: "text-xs font-bold text-accent align-middle-right"
+					LeftButtonUp: refresh_weather
+				}, "Refresh"
 			for i = 1, math.min(FORECAST_DAYS, #forecast.time)
 				code  = forecast.weather_code[i]
 				desc  = Weather\description code
