@@ -5,7 +5,7 @@ Purpose
 
 Canonical references
 - share/plugins/tailwind.lua
-- plugins/UIKit/UIKit.xml
+- plugins/UIKit/UIKit.cgen
 - docs/lua-scene-loading.md
 - samples/Example/Screens/ApplicationTW.xml
 - samples/Banking/

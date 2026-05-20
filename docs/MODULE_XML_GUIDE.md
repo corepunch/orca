@@ -1,12 +1,12 @@
-# Module XML File Guide
+# Module Codegen File Guide
 
 ## Overview
 
-This guide explains how to create and maintain module XML files in the ORCA framework. Module XML files are used to define the API interface between C code and Lua, automatically generating C headers, bindings, and HTML documentation.
+This guide explains how to create and maintain module `.cgen` files in the ORCA framework. Module Codegen files are used to define the API interface between C code and Lua, automatically generating C headers, bindings, and HTML documentation.
 
-## What Are Module XML Files?
+## What Are Module Codegen Files?
 
-Module XML files describe the public API of C modules in a declarative format. The toolchain in `tools/` processes these XML files to generate:
+Module Codegen files describe the public API of C modules in a declarative format. The toolchain in `tools/` processes these `.cgen` files to generate:
 
 1. **C Header Files** (`.h`) - Type definitions and function declarations
 2. **C Export Files** (`_export.c`) - Lua bindings and registration code
@@ -16,25 +16,25 @@ Module XML files describe the public API of C modules in a declarative format. T
 
 ## Location and Usage
 
-Module XML files are located alongside their corresponding C source code:
+Module Codegen files are located alongside their corresponding C source code:
 
-- `source/geometry/geometry.xml` - Geometry types (vectors, matrices, etc.)
-- `source/core/core.xml` - Core engine objects and components
-- `source/renderer/api/renderer.xml` - Rendering interfaces
-- `plugins/UIKit/UIKit.xml` - UI components
-- `plugins/SceneKit/SceneKit.xml` - 3D scene graph components
-- `plugins/SpriteKit/SpriteKit.xml` - 2D sprite components
-- `source/filesystem/filesystem.xml` - File system access
+- `source/geometry/geometry.cgen` - Geometry types (vectors, matrices, etc.)
+- `source/core/core.cgen` - Core engine objects and components
+- `source/renderer/api/renderer.cgen` - Rendering interfaces
+- `plugins/UIKit/UIKit.cgen` - UI components
+- `plugins/SceneKit/SceneKit.cgen` - 3D scene graph components
+- `plugins/SpriteKit/SpriteKit.cgen` - 2D sprite components
+- `source/filesystem/filesystem.cgen` - File system access
 
-To generate code from these XML files, run:
+To generate code from these `.cgen` files, run:
 
 ```bash
-cd tools && make
+make modules
 ```
 
 ## XML File Structure
 
-Every module XML file must have this basic structure:
+Every module `.cgen` file must have this basic structure:
 
 ```xml
 <?xml version="1.0"?>
@@ -216,11 +216,11 @@ A `<topic>` is a separator placed **inside** the `<methods>` container between m
 **Rules:**
 - A `<topic>` may only appear directly inside a `<methods>` element within an `<interface>`.
 - Methods following a `<topic>` belong to that section until the next `<topic>` or the end of `<methods>`.
-- `<topic>` is invisible to code generation; only `docs.php` renders topics as section headings.
+- `<topic>` is invisible to C header/export generation; documentation generators may render topics as section headings.
 
 **When to use topics:**
 - Use topics when an interface has more than ~10 methods with clear functional groups.
-- See `source/core/core.xml` for a real-world example with 10 topic separators.
+- See `source/core/core.cgen` for a real-world example with 10 topic separators.
 
 ### 4. `<class>` — Component Definitions
 
@@ -412,7 +412,7 @@ Defines a property on a component. Properties are always inside a `<properties>`
 
 #### Array properties (`array="true"`)
 
-Setting `array="true"` on a `<property>` declares a dynamically-sized array of the given type. The code generator automatically produces **two** C struct fields and **two** property table entries from a single XML declaration:
+Setting `array="true"` on a `<property>` declares a dynamically-sized array of the given type. The code generator automatically produces **two** C struct fields and **two** property table entries from a single `.cgen` declaration:
 
 | Generated name | C type | Description |
 |---|---|---|
@@ -560,7 +560,7 @@ Declares which messages a component handles. The `<handles>` container holds one
 
 ## Schema Validation
 
-Module XML files should reference the DTD schema for validation:
+Module Codegen files should reference the DTD schema for validation:
 
 ```xml
 <?xml version="1.0"?>
@@ -573,7 +573,7 @@ Module XML files should reference the DTD schema for validation:
 2. **Use container elements** — Group `<property>`, `<field>`, `<method>`, `<message>` and `<handle>` elements inside their respective container elements (`<properties>`, `<fields>`, `<methods>`, `<messages>`, `<handles>`)
 3. **Use `<topic>` for large interfaces** — If a `<methods>` block has more than ~10 methods, add `<topic title="...">` separators between method groups (Lifecycle, Hierarchy, etc.)
 4. **Follow element order** — For `<class>`: summary, details, xmlns, handles, properties, fields, methods, messages. For `<struct>`: summary, details, fields, methods
-5. **Test generation** — Run `cd tools && make` after changes to verify XML is valid
+5. **Test generation** — Run `make modules` after changes to verify XML is valid
 6. **Check generated code** — Review generated `.h` and `_export.c` files to ensure correctness
 
 ## Troubleshooting
@@ -595,7 +595,7 @@ Module XML files should reference the DTD schema for validation:
 
 ## Further Reading
 
-- See existing module XML files in `source/` and `plugins/` for real-world examples
+- See existing module `.cgen` files in `source/` and `plugins/` for real-world examples
 - Check `docs/schemas/module.dtd` for the complete schema definition
-- See `tools/model/module.php` for the PHP data model that parses XML files
-- See `tools/templates/` for the code generation templates
+- See `tools/codegen/src/model.c` for the C model loader that parses `.cgen` files
+- See `tools/codegen/plugins/` for the generator plugins

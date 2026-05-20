@@ -355,7 +355,7 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
     if (!guard) return -1;
 
     if (ob_printf(&b,
-            "// Auto-generated from %s by tools/templates/header.php\n"
+            "// Auto-generated from %s by tools/codegen/plugins/header.c\n"
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#ifndef __%s_H__\n"
             "#define __%s_H__\n\n"
@@ -375,7 +375,12 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
     cg_foreach(model, 0, CG_KIND_REQUIRE, req) {
         char dep[512];
         size_t len = strlen(req->name);
-        if (len >= 4u && !strcmp(req->name + len - 4u, ".xml")) {
+        if (len >= 5u && !strcmp(req->name + len - 5u, ".cgen")) {
+            size_t n = len - 5u;
+            if (n >= sizeof(dep) - 3u) n = sizeof(dep) - 4u;
+            memcpy(dep, req->name, n);
+            memcpy(dep + n, ".h", 3u);
+        } else if (len >= 4u && !strcmp(req->name + len - 4u, ".xml")) {
             size_t n = len - 4u;
             if (n >= sizeof(dep) - 3u) n = sizeof(dep) - 4u;
             memcpy(dep, req->name, n);

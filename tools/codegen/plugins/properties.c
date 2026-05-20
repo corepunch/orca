@@ -73,7 +73,7 @@ static char const *k_size_names[3][5] = {
 };
 
 /* Transform dot-joined ucfirsted path (WITHOUT class prefix) to final name.
- * The rules mirror config::$Axis from tools/model/config.php (ordered). */
+ * The rules mirror the legacy Axis property-name transform order. */
 static void axis_transform(char const *path, char *out, size_t out_sz) {
     char result[512];
     int n;
@@ -420,7 +420,7 @@ static int emit_properties(cg_host_v1 const *host, cg_model const *model, char c
     if (!smap) return -1;
 
     if (ob_printf(&b,
-            "// Auto-generated from %s by tools/templates/properties.php\n"
+            "// Auto-generated from %s by tools/codegen/plugins/properties.c\n"
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#ifndef __%s_PROPERTIES_H__\n"
             "#define __%s_PROPERTIES_H__\n\n",

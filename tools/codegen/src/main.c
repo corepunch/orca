@@ -16,15 +16,19 @@ typedef struct args {
 static int parse_args(int argc, char **argv, args *out) {
     int i;
     memset(out, 0, sizeof(*out));
+    out->out = "-";
     for (i = 1; i < argc; ++i) {
         char const *a = argv[i];
         char const *v = (i + 1 < argc) ? argv[i + 1] : NULL;
         if (!strcmp(a, "--xml") && v) out->xml = argv[++i];
         else if (!strcmp(a, "--plugin") && v) out->plugin = argv[++i];
-        else if (!strcmp(a, "--out") && v) out->out = argv[++i];
+        else if ((!strcmp(a, "--out") || !strcmp(a, "-o")) && v) out->out = argv[++i];
+        else if (a[0] == '-') return -1;
+        else if (!out->xml) out->xml = a;
+        else if (!out->plugin) out->plugin = a;
         else return -1;
     }
-    return (out->xml && out->plugin && out->out) ? 0 : -2;
+    return (out->xml && out->plugin) ? 0 : -2;
 }
 
 int main(int argc, char **argv) {
@@ -42,7 +46,9 @@ int main(int argc, char **argv) {
     int rc;
 
     if (parse_args(argc, argv, &a) < 0) {
-        fprintf(stderr, "usage: %s --xml <module.xml> --plugin <plugin.so> --out <file>\n", argv[0]);
+        fprintf(stderr, "usage: %s <module.cgen> <plugin.so> [-o <file>]\n"
+                        "       %s --xml <module.cgen> --plugin <plugin.so> [--out <file>]\n",
+                argv[0], argv[0]);
         return 2;
     }
     rc = cg_model_load(a.xml, &model);

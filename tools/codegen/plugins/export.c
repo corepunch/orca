@@ -890,7 +890,7 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
     sentry *smap = build_struct_map(model, &scount);
     if (!smap) return -1;
     if (ob_printf(&b,
-            "// Auto-generated from %s by tools/templates/export.php\n"
+            "// Auto-generated from %s by tools/codegen/plugins/export.c\n"
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#include <include/api.h>\n"
             "#include <include/codegen.h>\n\n"

@@ -1,4 +1,4 @@
-// Auto-generated from filesystem.xml by tools/templates/properties.php
+// Auto-generated from filesystem.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __FILESYSTEM_PROPERTIES_H__
 #define __FILESYSTEM_PROPERTIES_H__

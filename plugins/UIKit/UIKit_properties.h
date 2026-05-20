@@ -1,4 +1,4 @@
-// Auto-generated from UIKit.xml by tools/templates/properties.php
+// Auto-generated from UIKit.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_PROPERTIES_H__
 #define __UIKIT_PROPERTIES_H__

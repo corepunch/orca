@@ -6,12 +6,12 @@ This document records design issues, gotchas, misleading patterns, and known imp
 
 ## Component Development Workflow
 
-### The mandatory order: XML → codegen → C handlers → Xcode → tests
+### The mandatory order: `.cgen` → codegen → C handlers → Xcode → tests
 
 Every successful component addition in this repo (StyleController, StateManagerController, AnimationPlayer, PropertyAnimation) followed the same order:
 
-1. Declare the `<class>` with all `<handle>`, `<property>`, and `<message>` entries in the module XML
-2. Run `cd tools && make` to regenerate the struct, property IDs, and the Proc switch
+1. Declare the `<class>` with all `<handle>`, `<property>`, and `<message>` entries in the module `.cgen`
+2. Run `make modules` to regenerate the struct, property IDs, and the Proc switch
 3. Implement the `HANDLER(...)` functions in a new `.c` file
 4. Call `OBJ_RegisterClass(&_ClassName)` in the `on-luaopen` callback
 5. Add the `.c` file to `orca.xcodeproj/project.pbxproj` (four places)
@@ -21,7 +21,7 @@ Every successful component addition in this repo (StyleController, StateManagerC
 
 ### Case study: Aliases component — XML class never declared
 
-`source/core/components/Aliases.c` was written with `HANDLER(Aliases, ...)` macros and `pAliases->aliases` field accesses, but no `<class name="Aliases">` was ever added to `core.xml`.  Consequences:
+`source/core/components/Aliases.c` was written with `HANDLER(Aliases, ...)` macros and `pAliases->aliases` field accesses, but no `<class name="Aliases">` was ever added to `core.cgen`.  Consequences:
 
 - `struct Aliases` was never generated → the file cannot compile
 - `AliasesProc` was never generated → the `HANDLER` functions have no dispatch table
@@ -32,7 +32,7 @@ The component is entirely inert, yet it looks complete at first glance because t
 
 ### Case study: Locale component — XML declared, implementation disconnected
 
-`source/core/core.xml` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
+`source/core/core.cgen` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
 
 Consequences:
 - Attaching a `Locale` component and setting `Language` + `Entries` does nothing
@@ -122,7 +122,7 @@ Why it is shim-like:
 
 ### `LoadPrefabs` compatibility wrapper
 
-Files: `source/core/core.xml`, `source/core/object/object_component.c`
+Files: `source/core/core.cgen`, `source/core/object/object_component.c`
 
 `LoadPrefabs` is explicitly documented as a compatibility wrapper. It recursively traverses a subtree and dispatches `Node.LoadView` to prefab view objects.
 
@@ -192,11 +192,11 @@ The module DTD does not permit `<message>` as a direct child of `<module>`. Mess
 
 ## Code Generation
 
-### `pyphp` silently empties generated files if pyphp is not installed
-Running `make` or `make -C tools` when `pyphp` is not installed will **truncate all generated files to zero bytes** because the shell redirect `> file` runs even when the command before it fails. Always verify `python3 -c "import pyphp"` before running code generation. Corrupted generated files look like successful builds until you hit a missing symbol.
+### Codegen output should fail before truncating committed files
+`make modules` writes generated files through shell redirects. Keep `cgen` and its generator plugins buildable from the root Makefile before any module recipes run, so missing generator binaries fail early instead of producing empty committed outputs.
 
-### Block comments in PHP templates cause `SyntaxError`
-The `pyphp` preprocessor does **not** strip `/* ... */` C-style block comments from PHP code blocks. They pass through to generated Python verbatim, causing `SyntaxError`. Use `//` line comments in PHP templates; pyphp converts `//` to `#`.
+### Generator plugins should use direct-child iteration
+The C model keeps parent IDs for parsed nodes. Prefer `cg_foreach(model, parent_id, kind, node)` in generator plugins so nested elements are not accidentally treated as top-level API entries.
 
 ### `FOR_EACH_LIST` — only the exact macro signature is safe
 The `FOR_EACH_LIST` macro in `include/orcadef.h` uses a specific pattern for the `next` pointer initialisation:

@@ -14,6 +14,10 @@ uint32_t cg_fnv1a32(char const *s) {
 }
 
 int cg_write_file(char const *path, char const *data, size_t len) {
+    if (!path || !path[0] || !strcmp(path, "-")) {
+        if (len && fwrite(data, 1u, len, stdout) != len) return -2;
+        return 0;
+    }
     FILE *f = fopen(path, "wb");
     if (!f) return -1;
     if (len && fwrite(data, 1u, len, f) != len) {

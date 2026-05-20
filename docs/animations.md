@@ -228,7 +228,7 @@ end)
 2. If the name is not found, the existing `Clip` is kept unchanged.
 3. If `Play` is sent without a name (or with an empty name), `Clip` is used as-is.
 
-> **`NumClips`** is an `int` property automatically generated alongside `Clips` because `Clips` is declared with `array="true"` in the module XML. It reflects the number of entries in the array and can be read as `obj.NumClips` from Lua.
+> **`NumClips`** is an `int` property automatically generated alongside `Clips` because `Clips` is declared with `array="true"` in the module `.cgen`. It reflects the number of entries in the array and can be read as `obj.NumClips` from Lua.
 
 ---
 

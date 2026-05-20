@@ -1,4 +1,4 @@
-// Auto-generated from renderer.xml by tools/templates/properties.php
+// Auto-generated from renderer.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __RENDERER_PROPERTIES_H__
 #define __RENDERER_PROPERTIES_H__

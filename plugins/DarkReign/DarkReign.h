@@ -1,4 +1,4 @@
-// Auto-generated from DarkReign.xml by tools/templates/header.php
+// Auto-generated from DarkReign.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __DARKREIGN_H__
 #define __DARKREIGN_H__

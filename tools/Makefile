@@ -1,49 +1,23 @@
-MODULES := \
-    source/core/core \
-    source/renderer/api/renderer \
-    source/geometry/geometry \
-		source/filesystem/filesystem \
-    plugins/UIKit/UIKit \
-    plugins/SceneKit/SceneKit \
-    plugins/SpriteKit/SpriteKit \
-    plugins/DarkReign/DarkReign
-
-UI_MODULES := \
-    plugins/UIKit/UIKit \
-    plugins/SceneKit/SceneKit \
-    plugins/SpriteKit/SpriteKit
-
-DOC_MODULES := \
-    source/geometry/geometry \
-    source/core/core \
-		source/filesystem/filesystem \
-    plugins/UIKit/UIKit \
-    plugins/SceneKit/SceneKit \
-    plugins/SpriteKit/SpriteKit
-
-DOCS_DIR   := ../docs
-TEMPLATES  := templates
-
-PYPHP := python3 -m pyphp.pyphp
-CGDIR := codegen
-CGEN := $(CGDIR)/build/cgen
-CG_PLUGIN_HEADER := $(CGDIR)/build/plugins/header.so
-CG_PLUGIN_PROPERTIES := $(CGDIR)/build/plugins/properties.so
-CG_PLUGIN_EXPORT := $(CGDIR)/build/plugins/export.so
-CG_PREVIEW_DIR := $(CGDIR)/out
+MODULE_ROOT ?= ../
+MODULES := $(patsubst $(MODULE_ROOT)%.cgen,%,$(shell find $(MODULE_ROOT)source $(MODULE_ROOT)plugins -name '*.cgen' -type f | sort))
+CGEN := $(MODULE_ROOT)build/bin/cgen
+CG_PLUGIN_HEADER := $(MODULE_ROOT)build/plugins/codegen/libheader.so
+CG_PLUGIN_PROPERTIES := $(MODULE_ROOT)build/plugins/codegen/libproperties.so
+CG_PLUGIN_EXPORT := $(MODULE_ROOT)build/plugins/codegen/libexport.so
+CG_PREVIEW_DIR := $(MODULE_ROOT)build/codegen/out
 
 # Top-level targets
-.PHONY: all dtd docs docs-index codegen-host codegen-sample modules-c-preview modules-c-diff $(MODULES)
+.PHONY: all codegen-host codegen-sample modules-c-preview modules-c-diff $(MODULES)
 
 all: $(MODULES)
 
 # Per-module rule — each module builds its 3 files
 define MODULE_RULE
-$(1):
+$(1): codegen-host
 	@echo "Generating $(1)..."
-	$(PYPHP) $(TEMPLATES)/header.php     ../$(1).xml > ../$(1).h
-	$(PYPHP) $(TEMPLATES)/properties.php ../$(1).xml > ../$(1)_properties.h
-	$(PYPHP) $(TEMPLATES)/export.php     ../$(1).xml > ../$(1)_export.c
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(MODULE_ROOT)$(1).h
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(MODULE_ROOT)$(1)_properties.h
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(MODULE_ROOT)$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
@@ -52,9 +26,9 @@ define MODULE_C_PREVIEW_RULE
 cgen-preview-$(1): codegen-host
 	@echo "Preview C codegen $(1)..."
 	@mkdir -p $(CG_PREVIEW_DIR)/$(dir $(1))
-	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_HEADER) --out $(CG_PREVIEW_DIR)/$(1).h
-	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_PROPERTIES) --out $(CG_PREVIEW_DIR)/$(1)_properties.h
-	$(CGEN) --xml ../$(1).xml --plugin $(CG_PLUGIN_EXPORT) --out $(CG_PREVIEW_DIR)/$(1)_export.c
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(CG_PREVIEW_DIR)/$(1).h
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(CG_PREVIEW_DIR)/$(1)_properties.h
+	$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(CG_PREVIEW_DIR)/$(1)_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_PREVIEW_RULE,$(mod))))
@@ -64,43 +38,17 @@ modules-c-preview: $(foreach mod,$(MODULES),cgen-preview-$(mod))
 define MODULE_C_DIFF_RULE
 cgen-diff-$(1):
 	@echo "Diff C preview $(1)..."
-	@cmp -s ../$(1).h $(CG_PREVIEW_DIR)/$(1).h || echo "  != $(1).h"
-	@cmp -s ../$(1)_properties.h $(CG_PREVIEW_DIR)/$(1)_properties.h || echo "  != $(1)_properties.h"
-	@cmp -s ../$(1)_export.c $(CG_PREVIEW_DIR)/$(1)_export.c || echo "  != $(1)_export.c"
+	@cmp -s $(MODULE_ROOT)$(1).h $(CG_PREVIEW_DIR)/$(1).h || echo "  != $(1).h"
+	@cmp -s $(MODULE_ROOT)$(1)_properties.h $(CG_PREVIEW_DIR)/$(1)_properties.h || echo "  != $(1)_properties.h"
+	@cmp -s $(MODULE_ROOT)$(1)_export.c $(CG_PREVIEW_DIR)/$(1)_export.c || echo "  != $(1)_export.c"
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_DIFF_RULE,$(mod))))
 
 modules-c-diff: modules-c-preview $(foreach mod,$(MODULES),cgen-diff-$(mod))
 
-# Generate orca.dtd from UI modules
-dtd:
-	@echo "Generating DTD..."
-	$(PYPHP) $(TEMPLATES)/dtd.php \
-		../plugins/UIKit/UIKit.xml \
-		../plugins/SceneKit/SceneKit.xml \
-		../plugins/SpriteKit/SpriteKit.xml \
-		../source/filesystem/filesystem.xml \
-		> $(DOCS_DIR)/schemas/orca.dtd
-
-# Generate Markdown API docs for each documented module
-define DOCS_RULE
-docs-$(1):
-	@echo "Generating docs for $(1)..."
-	$(PYPHP) $(TEMPLATES)/docs.php ../$(1).xml
-endef
-
-$(foreach mod,$(DOC_MODULES),$(eval $(call DOCS_RULE,$(mod))))
-
-docs-index:
-	@echo "Generating docs index..."
-	$(PYPHP) $(TEMPLATES)/docs_index.php \
-		$(foreach mod,$(DOC_MODULES),../$(mod).xml)
-
-docs: $(foreach mod,$(DOC_MODULES),docs-$(mod)) docs-index
-
 codegen-host:
-	$(MAKE) -C $(CGDIR)
+	$(MAKE) -C $(MODULE_ROOT). codegen-host
 
 codegen-sample: codegen-host
-	$(MAKE) -C $(CGDIR) run-sample
+	$(MAKE) -C $(MODULE_ROOT). codegen-sample

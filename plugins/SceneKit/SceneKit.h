@@ -1,4 +1,4 @@
-// Auto-generated from SceneKit.xml by tools/templates/header.php
+// Auto-generated from SceneKit.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SCENEKIT_H__
 #define __SCENEKIT_H__

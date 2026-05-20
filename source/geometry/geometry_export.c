@@ -1,4 +1,4 @@
-// Auto-generated from geometry.xml by tools/templates/export.php
+// Auto-generated from geometry.cgen by tools/codegen/plugins/export.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
 #include <include/codegen.h>

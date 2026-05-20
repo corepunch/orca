@@ -10,7 +10,7 @@ Purpose
 Primary references
 - /Users/igor/Developer/orca/docs/lapis/lapis-internals.md
 - /Users/igor/Developer/orca/docs/lapis/lapis-user-guide.md
-- /Users/igor/Developer/orca/source/core/core.xml
+- /Users/igor/Developer/orca/source/core/core.cgen
 - /Users/igor/Developer/orca/share/orca/core/application.lua
 
 Behavior profile

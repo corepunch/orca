@@ -16,10 +16,10 @@ ORCA is structured like a team of specialists, each owning a distinct layer.  Th
 | **UIKit plugin** | `plugins/UIKit/` | Layout (`MeasureOverride`/`ArrangeOverride`), Node2D/Node3D, button/label/grid components |
 | **SceneKit / SpriteKit** | `plugins/SceneKit/`, `plugins/SpriteKit/` | 3D scene graph, cameras, lights, 2D sprite animation |
 | **Lua scripting bridge** | `source/core/object/object_lua_*.c`, `share/orca/` | Lua C API, property bindings, `send`/`fetch`, `behaviour.lua` |
-| **Code generation** | `tools/`, `*.xml` module files | PHP (pyphp), XML parsing, codegen templates, `make -C tools` |
+| **Code generation** | `tools/codegen/`, `*.cgen` module files | C, libxml2, generator plugins, `make modules` |
 | **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode `project.pbxproj` |
 | **Test harness** | `tests/`, `source/orca.c` | Lua test patterns, `assert`, `xvfb-run`, `make test-headless` |
-| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, module XML → API doc pipeline |
+| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, `.cgen` API documentation |
 
 ### Quick navigation by intent
 
@@ -27,12 +27,12 @@ ORCA is structured like a team of specialists, each owning a distinct layer.  Th
 |---|---|
 | Add a new component | [Component workflow](#the-component-workflow) below |
 | Understand message routing | [Object + Component System](architecture/object-component-system.md) → Message Dispatch |
-| Add a UIKit widget | `plugins/UIKit/UIKit.xml` + `plugins/UIKit/Button.c` as a reference |
-| Add a property formula/binding | `source/core/property/` + [Module XML Guide](../MODULE_XML_GUIDE.md) |
-| Change what Lua exposes | Edit the module XML, run `cd tools && make` |
+| Add a UIKit widget | `plugins/UIKit/UIKit.cgen` + `plugins/UIKit/Button.c` as a reference |
+| Add a property formula/binding | `source/core/property/` + [Module Codegen Guide](../MODULE_XML_GUIDE.md) |
+| Change what Lua exposes | Edit the module `.cgen`, run `make modules` |
 | Debug a rendering issue | `source/renderer/r_main.c`, `r_draw.c`; check `BOX_IS_PTR` before dereferencing |
 | Add or fix a test | `tests/` — `test_styles_lua.lua` and `test_state_manager.lua` are good templates |
-| Build the project locally | `git submodule update --init --recursive && pip install -e tools/pyphp && make` |
+| Build the project locally | `git submodule update --init --recursive && make` |
 
 ---
 
@@ -41,7 +41,7 @@ ORCA is structured like a team of specialists, each owning a distinct layer.  Th
 When you add any component to ORCA — whether refactoring an existing system or building something new — follow this order without exception:
 
 ```
-1. XML declaration   →   2. Code generation   →   3. C handlers
+1. `.cgen` declaration   →   2. Code generation   →   3. C handlers
      →   4. Registration   →   5. Xcode project   →   6. Tests
 ```
 
@@ -60,20 +60,20 @@ The `.xml` file drives everything else.  It declares:
 - The Lua bindings
 - The `REGISTER_CLASS` macro that registers the class with the engine
 
-**If you skip or delay the XML step**, you are writing C code that references symbols that don't exist yet (`struct MyComponent`, `ID_MyComponent_Foo`, `pMyComponent->field`).  The code will not compile, and there is no partial-working state to test against.
+**If you skip or delay the `.cgen` step**, you are writing C code that references symbols that don't exist yet (`struct MyComponent`, `ID_MyComponent_Foo`, `pMyComponent->field`).  The code will not compile, and there is no partial-working state to test against.
 
 ### Step 2: Verify codegen output
 
-After running `cd tools && make`, open `<module>_export.c` and check that:
+After running `make modules`, open `<module>_export.c` and check that:
 1. `struct MyComponent { ... }` has the expected fields
 2. `MyComponentProc` has a `case` entry for every `<handle message="..."/>` you declared
 3. `REGISTER_CLASS(MyComponent, ...)` appears at the bottom
 
-An **empty `switch {}`** in the Proc is the single most common sign that you forgot a `<handle>` element in XML.  The component will attach and appear to work, but will silently ignore every message.
+An **empty `switch {}`** in the Proc is the single most common sign that you forgot a `<handle>` element in `.cgen`.  The component will attach and appear to work, but will silently ignore every message.
 
 ### Step 3: C handlers must match the XML exactly
 
-A `HANDLER(MyComponent, NS, Event)` function in C corresponds to a `<handle message="NS.Event"/>` in XML.  The code generator forward-declares the function and adds it to the switch.  If the XML declaration is missing, the handler is an unreachable function with no caller.
+A `HANDLER(MyComponent, NS, Event)` function in C corresponds to a `<handle message="NS.Event"/>` in `.cgen`.  The code generator forward-declares the function and adds it to the switch.  If the `.cgen` declaration is missing, the handler is an unreachable function with no caller.
 
 ### Step 4: Registration at module init
 
@@ -99,9 +99,9 @@ Look at `tests/test_state_manager.lua` and `tests/test_styles_lua.lua` as templa
 
 ### "I want to add a new component to core"
 
-1. Open `source/core/core.xml`
+1. Open `source/core/core.cgen`
 2. Add a `<class name="MyComponent">` with `<handles>`, `<properties>`, and optionally `<messages>`
-3. Run `cd tools && make` — inspect `source/core/core_export.c` to confirm the struct and Proc switch look correct
+3. Run `make modules` — inspect `source/core/core_export.c` to confirm the struct and Proc switch look correct
 4. Create `source/core/components/MyComponent.c` with `HANDLER(...)` implementations
 5. Confirm `on_core_registered` in `core_export.c` calls `OBJ_RegisterClass(&_MyComponent)` (or add the call manually if the callback is hand-written)
 6. Add `source/core/components/MyComponent.c` to `orca.xcodeproj/project.pbxproj` in all four required sections
@@ -110,7 +110,7 @@ Look at `tests/test_state_manager.lua` and `tests/test_styles_lua.lua` as templa
 
 ### "I want to add a component to a plugin (e.g. UIKit)"
 
-Same as above, but replace `source/core/` with `plugins/UIKit/` (or the relevant plugin directory) and `core.xml` with `UIKit.xml`.
+Same as above, but replace `source/core/` with `plugins/UIKit/` (or the relevant plugin directory) and `core.cgen` with `UIKit.cgen`.
 
 ### "I want to migrate a legacy embedded Object field into a component"
 
@@ -148,8 +148,8 @@ If core code needs behaviour from a plugin (e.g. looking up a `struct Node` fiel
 Use this as a pull request self-review checklist:
 
 ```
-[ ] <class> declared in module XML with <handles>, <properties>, <messages>
-[ ] cd tools && make run — no errors
+[ ] <class> declared in module `.cgen` with <handles>, <properties>, <messages>
+[ ] make modules runs — no errors
 [ ] Generated *_export.c has non-empty MyComponentProc switch
 [ ] HANDLER(...) implementations in source/*/components/MyComponent.c
 [ ] OBJ_RegisterClass(&_MyComponent) called at module init

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
-  <require file="../../source/renderer/api/renderer.xml"/>
+  <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
     <include file="source/core/core.h"/>

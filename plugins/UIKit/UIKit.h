@@ -1,4 +1,4 @@
-// Auto-generated from UIKit.xml by tools/templates/header.php
+// Auto-generated from UIKit.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __UIKIT_H__
 #define __UIKIT_H__

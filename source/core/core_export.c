@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/export.php
+// Auto-generated from core.cgen by tools/codegen/plugins/export.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
 #include <include/codegen.h>

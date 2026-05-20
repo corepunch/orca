@@ -127,8 +127,8 @@ make_footer = (active_route) ->
 
 Follow the mandatory component workflow:
 
-1. Add `<class name="Link">` to `plugins/UIKit/UIKit.xml`
-2. Run `cd tools && make` to regenerate `UIKit.h`, `UIKit_properties.h`, `UIKit_export.c`
+1. Add `<class name="Link">` to `plugins/UIKit/UIKit.cgen`
+2. Run `make modules` to regenerate `UIKit.h`, `UIKit_properties.h`, `UIKit_export.c`
 3. Create `plugins/UIKit/Link.c` with `HANDLER(Link, Node, LeftButtonUp)`
 4. Register `OBJ_RegisterClass(&_Link)` in `on_ui_module_registered`
 5. Add `Link.c` to `orca.xcodeproj/project.pbxproj` (four places)

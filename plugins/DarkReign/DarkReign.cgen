@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="DarkReign" namespace="orca" on-luaopen="on_darkreign_module_registered">
-  <require file="../../source/filesystem/filesystem.xml"/>
+  <require file="../../source/filesystem/filesystem.cgen"/>
   <externals>
     <external struct="_FTG"/>
   </externals>
