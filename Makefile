@@ -84,7 +84,7 @@ INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
 .PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
 
-default: directories unite
+default: directories modules unite
 all: default
 build: default
 
