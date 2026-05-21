@@ -179,9 +179,11 @@ static char const *type_kind(cg_model const *m, char const *type) {
     return type;
 }
 
+#define TYPE_DECL_BASE_BUFFER 248 /* leaves room for optional " const*" suffix in 256-byte dst */
+
 static int type_decl(char *dst, size_t dsz, cg_model const *m, char const *type, uint32_t flags) {
     char const *kind = type_kind(m, type);
-    char base[248];
+    char base[TYPE_DECL_BASE_BUFFER];
     if (!type || !type[0]) type = "void";
     if (!strcmp(kind, "float")) snprintf(base, sizeof(base), "float");
     else if (!strcmp(kind, "int")) snprintf(base, sizeof(base), "int32_t");
