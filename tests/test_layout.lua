@@ -487,6 +487,36 @@ local function test_xml_loading_trigger_action_components()
 	print("PASS: test_xml_loading_trigger_action_components")
 end
 
+local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
+	local xml = [[
+	<Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA"
+	    LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline trigger mouse XML should load")
+	root:UpdateLayout(root.Width, root.Height)
+
+	local handled = system.dispatchMessage {
+		target = root,
+		message = "LeftButtonUp",
+		x = 10,
+		y = 10,
+	}
+	pump_messages(root)
+
+	local popup = root:getNext()
+	test.expect(handled, "mouse dispatch should be handled by the inline trigger action")
+	test.expect(popup ~= nil, "Inline trigger should open popup through mouse dispatch")
+	test.expect_eq(popup:getClassName(), "Popup", "Mouse-dispatched inline trigger should load a Popup")
+
+	popup = nil
+	root = nil
+
+	print("PASS: test_inline_trigger_mouse_dispatch_does_not_shadow_actions")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -835,6 +865,7 @@ test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
+test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
