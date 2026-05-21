@@ -1645,7 +1645,7 @@ int f_core_FlushQueue(lua_State *L) {
 	return 0;
 }
 int f_core_GetObjectCount(lua_State *L) {
-	return core_GetObjectCount(L );
+	return core_GetObjectCount(L);
 }
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
