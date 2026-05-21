@@ -312,7 +312,7 @@ ORCA_API void
 core_FlushQueue(struct lua_State*);
 
 /// @brief Returns the number of live engine objects.
-ORCA_API void
+ORCA_API int
 core_GetObjectCount(struct lua_State*);
 
 

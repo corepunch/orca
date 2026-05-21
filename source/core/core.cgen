@@ -1086,6 +1086,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </function>
     <function name="GetObjectCount" lua="true" export="objectCount">
       <summary>Returns the number of live engine objects.</summary>
+      <returns type="nresults">Number of Lua results pushed by the binding function.</returns>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->
