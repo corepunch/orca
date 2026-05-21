@@ -32,6 +32,13 @@ _TrimView(lpcString_t in, lpcString_t *begin, lpcString_t *end)
   *end = e;
 }
 
+static void
+_TrimRange(lpcString_t *begin, lpcString_t *end)
+{
+  while (*begin < *end && isspace((unsigned char)**begin)) (*begin)++;
+  while (*end > *begin && isspace((unsigned char)*((*end) - 1))) (*end)--;
+}
+
 // Map a PropertyAttribute name string to its enum value.
 static enum PropertyAttribute
 _ParseAttributeStr(lpcString_t s)
@@ -72,7 +79,7 @@ _MakeBindingExpr(lpcString_t input, fixedString_t out)
   if ((size_t)(end - begin) > 8 && !strncmp(begin, "{Binding", 8) && *(end - 1) == '}') {
     lpcString_t path_begin = begin + 8;
     lpcString_t path_end = end - 1;
-    _TrimView(path_begin, &path_begin, &path_end);
+    _TrimRange(&path_begin, &path_end);
     if (path_begin >= path_end) return FALSE;
 
     fixedString_t path = {0};
