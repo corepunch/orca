@@ -129,8 +129,8 @@ OBJ_Release(struct Object *pobj)
   // Dispatch Object.Release so attach-only components (e.g., StyleController) can clean up.
   // Script-side cleanup is deferred through kEventClearReference.
   OBJ_SendMessageW(pobj, ID_Object_Release, 0, NULL);
-  OBJ_ReleaseComponents(pobj);
   OBJ_ReleaseProperties(pobj);
+  OBJ_ReleaseComponents(pobj);
 
   SafeFree(pobj->SourceFile);
   SafeFree(pobj->TextContent);

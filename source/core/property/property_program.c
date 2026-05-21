@@ -148,6 +148,10 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
       if (**str == '@')
         (*str)++;
       *str = strchr(*str, '}');
+      if (!*str) {
+        Con_Error("Expected }");
+        return NULL;
+      }
       tok = _TokenMake(beg + 1, (*str)++, tok_argument);
     }
     if (eat_token(str, '.')) {
@@ -216,8 +220,12 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
     return _TokenMake(beg, *str, tok_constant);
   }
 
-  assert(0);
-  Con_Warning("%s", *str);
+  if (**str) {
+    Con_Error("Unexpected token '%c' (0x%02X) in binding expression near: %s",
+              **str, (unsigned char)**str, *str);
+  } else {
+    Con_Error("Unexpected end of binding expression");
+  }
   return NULL;
 }
 

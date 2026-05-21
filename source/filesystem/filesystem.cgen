@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
-  <require file="../core/core.xml"/>
+  <require file="../core/core.cgen"/>
   <externals>
     <external struct="Object"/>
     <external struct="_PACK"/>

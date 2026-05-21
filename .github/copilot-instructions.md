@@ -12,36 +12,28 @@ After cloning, initialize submodules before building or running code generation:
 git submodule update --init --recursive
 ```
 
-This pulls two required submodules:
+This pulls the required platform submodule:
 
 | Submodule | Path | Purpose |
 |---|---|---|
 | `platform` | `libs/platform` | Cross-platform abstraction layer (window, input, audio) |
-| `pyphp` | `tools/pyphp` | Python-to-PHP bridge for running the code generation templates |
-
-The `pyphp` module must also be installed as a Python package before running `make` in `tools/`:
-
-```bash
-pip install -e tools/pyphp
-```
 
 ---
 
 ## Building the Project
 
-**Full build** (requires submodules + pyphp + system libraries):
+**Full build** (requires submodules + system libraries):
 ```bash
 make
 ```
-This runs code generation (`make -C tools`) **then** C compilation. Both pyphp and all system libraries (lua5.4-dev, libxml2-dev, etc.) must be present.
+This runs code generation and then C compilation. System libraries such as lua5.4-dev, libxml2-dev, liblz4-dev, and friends must be present.
 
-**C-only build** (skips code generation — use when pyphp is unavailable):
+**C-only build** (skips code generation):
 
-The generated files (`*_export.c`, `*.h`, `*_properties.h`) are committed to the repository. If you are only modifying `.c` or `.h` implementation files (not `.xml` API definitions), you do **not** need to regenerate them. The full build will work if you have the system libraries:
+The generated files (`*_export.c`, `*.h`, `*_properties.h`) are committed to the repository. If you are only modifying `.c` or `.h` implementation files (not `.cgen` API definitions), you do **not** need to regenerate them. The full build will work if you have the system libraries:
 ```bash
-make unite   # compile + link; skips 'make -C tools'
+make unite
 ```
-> **Warning:** running `make` or `make -C tools` when pyphp is **not** installed will silently **empty** all generated files (the shell redirect `> file` truncates the file even when the command fails). Always verify pyphp is available before running code generation.
 
 **Sandboxed / CI environments without system libraries:**
 You cannot compile the project. Review code changes manually or push to CI (GitHub Actions) which installs all required packages. Do not attempt `make` if Lua dev headers or `libs/platform` are absent — it will corrupt generated files.
@@ -71,13 +63,10 @@ orca/
 ├── libs/            # External libraries (platform submodule, lua5.4, libxml2, …)
 ├── include/         # Public C headers (orca.h, renderer.h, …)
 ├── docs/            # MkDocs website source (Markdown + schemas)
-│   ├── MODULE_XML_GUIDE.md   # How to write module XML files
+│   ├── MODULE_XML_GUIDE.md   # How to write module .cgen files
 │   └── schemas/    # DTD schema files for XML validation
 ├── tools/           # Code-generation toolchain
-│   ├── model/       # PHP data model (module.php — XML parser)
-│   ├── templates/   # PHP code-gen templates (header, export, docs, …)
-│   ├── Makefile     # `make all` → headers+exports; `make docs` → Markdown docs
-│   └── pyphp/       # pyphp submodule (install with `pip install -e tools/pyphp`)
+│   └── codegen/     # C codegen host and generator plugins
 ├── mkdocs.yml       # MkDocs site configuration
 └── samples/         # Example projects
 ```
@@ -96,11 +85,21 @@ ORCA is a C game engine with a layered architecture.  Working effectively on any
 | **UIKit plugin** | `plugins/UIKit/` | Component architecture, layout engine (`MeasureOverride`/`ArrangeOverride`), Node2D message routing |
 | **SceneKit / SpriteKit plugins** | `plugins/SceneKit/`, `plugins/SpriteKit/` | 3D scene graph, camera/light components, 2D sprite animation |
 | **Lua scripting bridge** | `source/core/object/object_lua_*.c`, `share/orca/` | Lua C API, property binding, `send`/`fetch` dispatch, `behaviour.lua` |
-| **Code generation toolchain** | `tools/`, `*.xml` module files | PHP (via pyphp), XML parsing, C codegen templates, Makefile |
+| **Code generation toolchain** | `tools/codegen/`, `*.cgen` module files | C, libxml2, generator plugins, Makefile |
 | **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode project structure |
 | **Test harness** | `tests/`, `source/orca.c` (`RunTest`) | Lua test patterns, `assert`, `xvfb-run`, headless layout testing |
-| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, module XML → API doc pipeline |
+| **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, `.cgen` API documentation |
 | **DarkReign / asset formats** | `plugins/DarkReign/` | Binary format parsing, palette-indexed sprites, `.pz2` package files |
+
+## Makefile Style
+
+Keep Makefiles concise and shaped like the repository. Prefer `find`/pattern rules over hand-maintained file lists, build from the repository root when paths describe repository files, and keep command lines readable enough to copy directly. For code generation, the preferred form is:
+
+```bash
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
+```
+
+Avoid verbose flag syntax or directory hopping when a short root-relative command is clear.
 
 ## Custom Agent Personas
 
@@ -117,6 +116,7 @@ Use these personas when delegating work or framing implementation choices.
   - Uses Tailwind utilities and the local Orca UI dialect as much as possible.
   - Applies Lapis user-guide patterns to route/view/widget/layout composition in Orca.
   - Proactively provides feedback when an Orca primitive is missing and proposes a Lapis-inspired improvement.
+  - For modal dialogs, prefer `<Popup>` templates that fill the screen via their background/overlay and are launched with `ShowModalAction`; avoid setting root `Width`/`Height` on popups unless the popup truly needs custom bounds.
 
 ### 2) Lua Engine Agent (Lua-First, MoonScript-Interop, Lapis Internals)
 
@@ -134,7 +134,7 @@ Use these personas when delegating work or framing implementation choices.
 
 - Focus: C engine architecture and runtime behavior, preserving C-only operability and tests.
 - Sources of truth:
-  - `source/core/core.xml`
+  - `source/core/core.cgen`
   - `docs/way-of-working.md`
   - `docs/skills/Orca-C-Engine-WPF-WinAPI-Architect.skill.md`
 - Behavior:
@@ -148,12 +148,13 @@ Use these personas when delegating work or framing implementation choices.
 |---|---|
 | Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
 | Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
-| Add a UI widget to UIKit | `plugins/UIKit/UIKit.xml` + `plugins/UIKit/Button.c` as a reference |
-| Add a property binding or formula | `source/core/property/` + Module XML Guide |
-| Change what Lua exposes | Edit the module XML, run `cd tools && make` |
+| Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `ShowModalAction` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
+| Add a UI widget to UIKit | `plugins/UIKit/UIKit.cgen` + `plugins/UIKit/Button.c` as a reference |
+| Add a property binding or formula | `source/core/property/` + Module Codegen Guide |
+| Change what Lua exposes | Edit the module `.cgen`, run `make modules` |
 | Debug a rendering issue | `source/renderer/r_main.c`, `r_draw.c`; check `BOX_IS_PTR` before dereferencing mesh/shader fields |
 | Add or fix a test | `tests/` — look at `test_styles_lua.lua` or `test_state_manager.lua` for patterns |
-| Build the project locally | See [Building the Project](#building-the-project) above; install submodules + pyphp first |
+| Build the project locally | See [Building the Project](#building-the-project) above; install required system dependencies first |
 
 ---
 
@@ -239,6 +240,13 @@ struct ClassDesc {
 };
 ```
 
+## Popup Convention
+
+- Modal popups should be modeled as `Popup` objects, not `Screen` placeholders.
+- `ShowModalAction.Path` points to the popup template asset to instantiate, not a scene-tree path.
+- Popups generally rely on a full-screen background/overlay and should not set root `Width`/`Height` unless there is a specific layout need.
+- Use `Popup.ClosePopup` to dismiss the popup and return its result.
+
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 
 ```c
@@ -299,13 +307,13 @@ LRESULT CLASS##_##EVENT(struct Object* hObject,
 
 ### Add a new component type — the mandatory workflow
 
-**Rule: XML → codegen → handlers → Xcode → tests. Do not skip or reorder any step.**
+**Rule: `.cgen` → codegen → handlers → Xcode → tests. Do not skip or reorder any step.**
 
-Skipping the XML step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — your C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
+Skipping the `.cgen` step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — your C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
 
-#### Step 1 — Declare in the module XML
+#### Step 1 — Declare in the module `.cgen`
 
-Add a `<class>` to the relevant `.xml` file (e.g. `source/core/core.xml`). Every handler must have a matching `<handle>` entry, and every message the component dispatches must have a `<message>` declaration. **Handlers without `<handle>` entries are orphaned — they will never be called.**
+Add a `<class>` to the relevant `.cgen` file (e.g. `source/core/core.cgen`). Every handler must have a matching `<handle>` entry, and every message the component dispatches must have a `<message>` declaration. **Handlers without `<handle>` entries are orphaned — they will never be called.**
 
 ```xml
 <class name="MyComponent" attach-only="true">
@@ -332,10 +340,10 @@ Use `attach-only="true"` for components meant to augment existing objects.  Omit
 #### Step 2 — Run code generation
 
 ```bash
-cd tools && make
+make modules
 ```
 
-This regenerates `<module>.h` (struct + accessor), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings).  **Verify the generated `MyComponentProc` switch now contains `case` entries for every declared message.**  An empty `switch {}` means the XML step was incomplete.
+This regenerates `<module>.h` (struct + accessor), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings).  **Verify the generated `MyComponentProc` switch now contains `case` entries for every declared message.**  An empty `switch {}` means the `.cgen` step was incomplete.
 
 #### Step 3 — Implement the C handlers
 
@@ -505,7 +513,7 @@ These are shared libraries (`.so` / `.dll`) that register new `ClassDesc` compon
 
 ```
 plugins/UIKit/
-├── UIKit.xml          # API definition → generates bindings
+├── UIKit.cgen          # API definition → generates bindings
 ├── UIKit.h            # Generated header
 ├── UIKit_export.c     # Generated Lua bindings + luaopen_orca_UIKit()
 ├── UIKit_properties.h # Generated property hashes
@@ -566,18 +574,17 @@ Script plugins live in the project directory and are loaded by the project's ent
 
 ---
 
-## Module XML System
+## Module Codegen System
 
-Every C module exposes its API via a `<module>.xml` file co-located with its C sources. The toolchain (`tools/Makefile`) generates:
+Every C module exposes its API via a `<module>.cgen` file co-located with its C sources. The C codegen host and plugins generate:
 
-| Generated file | Template |
+| Generated file | Generator plugin |
 |---|---|
-| `<module>.h` | `templates/header.php` |
-| `<module>_properties.h` | `templates/properties.php` |
-| `<module>_export.c` | `templates/export.php` |
-| `docs/api/<module>/*.md` | `templates/docs.php` |
+| `<module>.h` | `build/plugins/codegen/libheader.so` |
+| `<module>_properties.h` | `build/plugins/codegen/libproperties.so` |
+| `<module>_export.c` | `build/plugins/codegen/libexport.so` |
 
-Run `make` inside `tools/` to regenerate all files. Run `make docs` for documentation only.
+Run `make modules` from the repository root to regenerate all files. `tools/Makefile` discovers module files with `find source plugins -name '*.cgen'`.
 
 ### Key XML elements
 
@@ -632,7 +639,7 @@ See `docs/MODULE_XML_GUIDE.md` for full reference. Quick summary:
 - Methods **after** a `<topic>` belong to that section until the next `<topic>` or end of `<methods>`
 - `<topic>` is invisible to code generation: `getMethods()` (XPath `./methods/method[@name]`) traverses all methods in the container regardless of intervening topic separators
 
-Use topics when an interface has more than ~10 methods. See `source/core/core.xml` for a full example with 10 topic separators covering 73 methods.
+Use topics when an interface has more than ~10 methods. See `source/core/core.cgen` for a full example with 10 topic separators covering 73 methods.
 
 The DTD allows `(method | topic)*` as the `<methods>` content model. `struct` and `class` elements do **not** support topics.
 
@@ -669,77 +676,38 @@ A `<class>` element uses grouped container children:
 
 ---
 
-## PHP Code-Generation Templates
+## C Code-Generation Tool
 
-The code generation toolchain converts `.xml` module definitions into `.h`, `_properties.h`, and `_export.c` files. Templates are PHP files executed via the `pyphp` Python bridge.
+The code generation toolchain converts `.cgen` module definitions into `.h`, `_properties.h`, and `_export.c` files. The root `Makefile` builds `build/bin/cgen` and all `tools/codegen/plugins/*.c` files into `build/plugins/codegen/lib*.so`.
 
 ### Running code generation
 
 ```bash
-# First-time setup (after git submodule update --init --recursive)
-pip install -e tools/pyphp
-
 # Regenerate all modules (headers + exports + properties)
-cd tools && make
-
-# Regenerate only docs
-cd tools && make docs
-
-# Regenerate the orca.dtd UI schema
-cd tools && make dtd
+make modules
 ```
 
-### Running a single template manually
+### Running a single generator manually
 
 ```bash
-cd tools
-python3 -m pyphp.pyphp templates/header.php ../source/core/core.xml
-python3 -m pyphp.pyphp templates/export.php  ../plugins/UIKit/UIKit.xml
-python3 -m pyphp.pyphp templates/docs.php    ../source/core/core.xml
+make codegen-host
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > source/core/core.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > source/core/core_properties.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
 ```
-
-### PHP data model (`tools/model/module.php`)
-
-The main class is `Model` (sometimes referred to as `Controller` in older memories — the canonical name is `Model`). Key methods:
-
-```php
-$model = new Model($xmlFile);
-$model->getInterfaces();  // array of Interface objects
-$model->getStructs();     // array of Struct objects
-$model->getEnums();       // array of Enum objects
-$model->getComponents();  // array of Component (class) objects
-$model->getFunctions();   // array of Method objects (global functions)
-$model->getEvents();      // array of Event objects
-```
-
-`Interface` class key methods:
-- `getMethods()` — yields all methods (uses `./methods/method[@name]`); topic separators are transparent
-- `getTopics()` — yields `[topicTitle => ["desc" => $desc, "methods" => $methods]]`; iterates `methods/*` children; falls back to single unnamed group if no topics
-- `hasTopics()` — returns true if the interface has `<topic>` children inside `<methods>`
-
-### pyphp limitations
-
-The `pyphp` Python-PHP bridge has several quirks:
-
-- **No `(string)$expr`** — use `strval($expr)` instead
-- **No `if (!isset($arr[$key]))`** — negated isset in conditions is broken; use: `$val = isset($arr[$key]) ? $arr[$key] : ""; if ($val === "") { … }`
-- **No ternary as dict value** — hoist to a variable first: `$ns = $x ? $a : $b; $vars = ["ns" => $ns, …];`
-- **No `new $varName()`** — only `new ConcreteClass()` works; same for `$obj->$method()`
-- **`?>` eats newlines** — use `echo "…\n"` inside PHP blocks for C code output
-- **`config::$Axis`** (static property with `$`) works fine
 
 ---
 
-## Key Files for Module XML Work
+## Key Files for Module Codegen Work
 
 | File | Role |
 |---|---|
 | `docs/schemas/module.dtd` | XML schema for module files — update when adding new elements |
-| `tools/model/module.php` | PHP data model — add methods to parse new elements |
-| `tools/templates/docs.php` | Docs generator — add rendering for new elements |
-| `tools/templates/header.php` | C header generator |
-| `tools/templates/export.php` | Lua export generator |
-| `source/core/core.xml` | Reference example for complex interfaces with topics |
+| `tools/codegen/src/model.c` | C parser/model loader — add support for new elements |
+| `tools/codegen/plugins/header.c` | C header generator |
+| `tools/codegen/plugins/properties.c` | Property/hash header generator |
+| `tools/codegen/plugins/export.c` | Lua export generator |
+| `source/core/core.cgen` | Reference example for complex interfaces with topics |
 
 ---
 
@@ -747,8 +715,8 @@ The `pyphp` Python-PHP bridge has several quirks:
 
 When implementing a new component, property, message, or any other API addition, always follow this order:
 
-1. **XML first** — Define the public API in the module's `.xml` file (class, properties, messages, handles, methods).
-2. **Code generation** — Run `cd tools && make` to regenerate `*.h`, `*_properties.h`, and `*_export.c` from the updated XML.
+1. **Codegen first** — Define the public API in the module's `.cgen` file (class, properties, messages, handles, methods).
+2. **Code generation** — Run `make modules` to regenerate `*.h`, `*_properties.h`, and `*_export.c` from the updated `.cgen` files.
 3. **HANDLER implementations** — Write the hand-coded `.c` handler bodies using the `HANDLER` macro; never edit generated files.
 4. **Tests** — Add or update tests (Lua layout tests, C unit tests) and verify with `make test-headless` / `xvfb-run make test`.
 
@@ -758,14 +726,14 @@ When implementing a new component, property, message, or any other API addition,
 
 ## Common Tasks
 
-### Add a new element type to the XML schema
+### Add a new element type to the codegen schema
 
 1. Add the element to `docs/schemas/module.dtd`
-2. Add a parser class or method to `tools/model/module.php`
-3. Update `tools/templates/docs.php` to render it
+2. Add parser/model support to `tools/codegen/src/model.c`
+3. Update the relevant generator plugin under `tools/codegen/plugins/`
 4. Update `docs/MODULE_XML_GUIDE.md` with documentation
 
-### Add a new method to an interface in XML
+### Add a new method to an interface in `.cgen`
 
 ```xml
 <methods>
@@ -848,7 +816,7 @@ Use `OBJ_EnumClasses(superclassID, callback, param)` to iterate all registered c
 - On WebGL, `package.cpath` is not extended (no `.so` loading). Plugin modules are compiled into the WASM binary and pre-registered via an auto-generated `plugins_luaopen.h`.
 - **Gotcha — init order:** `luaopen_*` runs on the first `require`, not at registration. If your module init has side effects depending on another module, call `require` explicitly — don't assume registration order.
 
-### Module XML — Grouped Container Structure
+### Module Codegen — Grouped Container Structure
 
 All child elements in `<class>`, `<struct>`, `<interface>`, and `<message>` are grouped into container elements:
 - `<class>`: `<handles>` (with `<handle message="..."/>` children), `<properties>`, `<fields>`, `<methods>`, `<messages>`
@@ -857,22 +825,7 @@ All child elements in `<class>`, `<struct>`, `<interface>`, and `<message>` are 
 - `<message>`: `<fields>`
 - `<module>` top-level: `<includes>`, `<externals>`
 
-The PHP parser (`tools/model/module.php`) uses direct-child XPath queries:
-- `./properties/property[@name]` (not `.//property[@name]`)
-- `./fields/field[@name]` (not `.//field[@name]`)
-- `./methods/method[@name]` (not `.//method[@name]`)
-- `./messages/message[@name]` (not `.//message[@name]`)
-- `handles/handle` (not `handles` with `message` attribute)
-
-### pyphp Template Limitations
-
-When editing PHP templates in `tools/templates/`:
-
-- **No `(string)$expr` casts** — use `strval($expr)` instead.
-- **No negated `isset` in `if`** — `if (!isset($arr[$k]))` silently runs the body unconditionally; workaround: `$v = isset($arr[$k]) ? $arr[$k] : ""; if ($v === "") { … }`
-- **No ternary as a dict value** — hoist to a variable: `$ns = $x ? $a : $b; $vars = ["ns" => $ns];`
-- **No `new $varName()`** — only `new ConcreteClass()` and `$obj->concreteMethod()` work.
-- **`?>` eats the following newline** — use `echo "…\n"` inside PHP blocks when emitting C code that must end with a newline.
+The C parser (`tools/codegen/src/model.c`) preserves direct parent/child relationships in a flat node array. Generator plugins should use `cg_foreach(model, parent_id, kind, node)` for direct children rather than scanning descendants unless the behavior explicitly needs dependency lookup.
 
 ### Dark Reign SPR Format — Key Gotchas
 
@@ -936,15 +889,15 @@ The property VM supports an `IF(cond, true-val, false-val)` operator following E
 
 These anti-patterns have caused real integration failures.  Avoid them.
 
-**Anti-pattern 1: Writing C handlers without declaring the class in XML**
+**Anti-pattern 1: Writing C handlers without declaring the class in `.cgen`**
 
-If you create `source/core/components/Foo.c` with `HANDLER(Foo, ...)` macros but never add `<class name="Foo">` to the module XML, then:
+If you create `source/core/components/Foo.c` with `HANDLER(Foo, ...)` macros but never add `<class name="Foo">` to the module `.cgen`, then:
 - `struct Foo` is never generated → the file does not compile
 - `FooProc` is never generated → the handlers have no dispatch table
 - `REGISTER_CLASS(Foo)` is never generated → the class is never registered
 - Message IDs like `ID_Foo_Bar` are never generated → any switch case silently resolves to 0
 
-The fix is always: **write the XML first, run codegen, then write the C**.
+The fix is always: **write the `.cgen` first, run codegen, then write the C**.
 
 **Anti-pattern 2: Declaring the class in XML but not wiring any `<handle>` entries**
 

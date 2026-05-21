@@ -1,6 +1,6 @@
-<!-- DTD Schema for ORCA Module XML Files
-     
-     This schema defines the structure for module XML files that describe
+<!-- DTD Schema for ORCA Module .cgen Files
+
+     This schema defines the structure for module .cgen files that describe
      C API interfaces for the ORCA framework. These files are processed by
      tools/conv-module.py to generate C headers, Lua bindings, and HTML documentation.
      

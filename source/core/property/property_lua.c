@@ -284,6 +284,10 @@ int
 luaX_readProperty(lua_State* L, int idx, struct Property *p)
 {
   if (lua_isnil(L, idx)) {
+    if (PROP_GetType(p) == kDataTypeEvent && p->value && *(event_t *)p->value) {
+      luaL_unref(L, LUA_REGISTRYINDEX, *(event_t *)p->value);
+      *(event_t *)p->value = 0;
+    }
     PROP_Clear(p);
     return 0;
   }
@@ -322,4 +326,3 @@ PROP_RegisterChangedCallback(lua_State* L, struct Property *property, int callba
   }
   return TRUE;
 }
-

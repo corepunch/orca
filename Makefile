@@ -48,13 +48,23 @@ LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core vsomeip
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
-OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
+OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
-UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(wildcard $(dir)/*.c)))
+UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 libxml-2.0 2>/dev/null)
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
+
+CODEGEN := $(BINDIR)/cgen
+CODEGEN_SRC := $(shell find tools/codegen/src -name "*.c" 2>/dev/null | sort)
+CODEGEN_PLUGIN_SRC := $(shell find tools/codegen/plugins -name "*.c" 2>/dev/null | sort)
+CODEGEN_PLUGINS := $(patsubst tools/codegen/plugins/%.c,$(BUILDDIR)/plugins/codegen/lib%.so,$(CODEGEN_PLUGIN_SRC))
+CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -Itools/codegen/include -Itools/codegen/src $(shell pkg-config --cflags libxml-2.0)
+CODEGEN_LDFLAGS := $(shell pkg-config --libs libxml-2.0) -ldl $(ARCH_FLAGS)
+CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
+CODEGEN_PROPERTIES_PLUGIN := $(BUILDDIR)/plugins/codegen/libproperties.so
+CODEGEN_EXPORT_PLUGIN := $(BUILDDIR)/plugins/codegen/libexport.so
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
@@ -72,14 +82,14 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
 
-default: directories unite
+default: directories modules unite
 all: default
 build: default
 
 /%:
-	find ${SOURCEDIR}$@ -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
+	find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
 platform: | directories
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
@@ -124,6 +134,24 @@ directories:
 	mkdir -p ${PLUGINLIBDIR}
 	mkdir -p ${SHAREDIR}
 
+codegen-host: $(CODEGEN) $(CODEGEN_PLUGINS)
+
+$(CODEGEN): $(CODEGEN_SRC) | directories
+	$(CC) $(CODEGEN_CFLAGS) $^ -o $@ $(CODEGEN_LDFLAGS)
+
+$(BUILDDIR)/plugins/codegen/lib%.so: tools/codegen/plugins/%.c tools/codegen/include/cg_api.h | directories
+	@mkdir -p $(dir $@)
+	$(CC) $(CODEGEN_CFLAGS) -shared $< -o $@
+
+codegen-sample: codegen-host
+	@mkdir -p $(BUILDDIR)/codegen
+	$(CODEGEN) source/core/core.cgen $(CODEGEN_HEADER_PLUGIN) > $(BUILDDIR)/codegen/core_stub.h
+
+codegen-clean:
+	-rm -f $(CODEGEN)
+	-rm -rf $(BUILDDIR)/plugins/codegen
+	-rm -rf $(BUILDDIR)/codegen
+
 copyshare:
 	mkdir -p ${SHAREDIR}
 	cp -r ${RESOURCEDIR}/* ${SHAREDIR}/
@@ -150,6 +178,7 @@ clean:
 	-rm -f $(TARGET)
 	-rm -rf $(SHAREDIR)/*
 	-rm -rf $(PLUGINLIBDIR)
+	$(MAKE) codegen-clean
 	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) clean
 
 andrun: unite
@@ -194,7 +223,13 @@ move_pz2:
 	done
 
 modules:
-	$(MAKE) -j8 -C tools
+	$(MAKE) -j8 -f tools/Makefile MODULE_ROOT=
+
+modules-c-preview:
+	$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-preview
+
+modules-c-diff:
+	$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-diff
 
 fonts:
 	python3 cd tools && \

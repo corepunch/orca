@@ -1,4 +1,5 @@
 #include <source/core/core_local.h>
+#include <source/filesystem/filesystem.h>
 
 #define kMsgTriggered 0x3b1c3ae2
 
@@ -144,6 +145,18 @@ HANDLER(Setter, Trigger, Triggered)
   return FALSE;
 }
 
+static LRESULT
+_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
+{
+  if (!pEventTrigger->RoutedEvent || !*pEventTrigger->RoutedEvent)
+    return FALSE;
+  if (strcmp(pEventTrigger->RoutedEvent, routed_event))
+    return FALSE;
+  return _SendMessage(hObject, Trigger, Triggered,
+                .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
+                .Sender = sender ? sender : hObject);
+}
+
 HANDLER(ShowModalAction, Trigger, Triggered)
 {
   if (!pShowModalAction->Path || !*pShowModalAction->Path) {
@@ -152,12 +165,17 @@ HANDLER(ShowModalAction, Trigger, Triggered)
   }
 
   struct Object *sender = _TriggerSender(hObject, pTriggered);
-  struct Object *target = OBJ_FindByPath(sender, pShowModalAction->Path);
+  struct Object *target = FS_LoadObject(pShowModalAction->Path);
   if (!target) {
-    Con_Error("ShowModalAction could not resolve path '%s'", pShowModalAction->Path);
+    Con_Error("ShowModalAction could not load template '%s'", pShowModalAction->Path);
     return FALSE;
   }
-  
+
+  if (!OBJ_GetComponent(target, fnv1a32("Popup"))) {
+    Con_Error("ShowModalAction template '%s' is not a Popup", pShowModalAction->Path);
+    OBJ_RemoveFromParent(target);
+    return FALSE;
+  }
   if (OBJ_ShowModalObject(sender, target)) {
     bool_t visible = TRUE;
     OBJ_SetPropertyValue(target, "Visible", &visible);

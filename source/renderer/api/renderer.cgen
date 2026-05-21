@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="renderer" namespace="orca" on-luaopen="on_renderer_module_registered" test-prefix="R_">
-  <require file="../../geometry/geometry.xml"/>
+  <require file="../../geometry/geometry.cgen"/>
   <externals>
     <external struct="fontface"/>
     <external struct="timeline"/>

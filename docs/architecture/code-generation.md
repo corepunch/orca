@@ -1,83 +1,67 @@
 # Code Generation
 
-ORCA uses a **PHP-based code generation** toolchain to convert XML module definitions into C headers, property hash tables, and Lua binding code. This means that the `.xml` file is the single source of truth for every module's public API — you never edit the generated `.h`, `_properties.h`, or `_export.c` files by hand.
+ORCA uses a small C code generation host to convert `.cgen` module definitions into C headers, property hash tables, and Lua binding code. The `.cgen` file is the single source of truth for each module's public API, so generated `.h`, `_properties.h`, and `_export.c` files should not be edited by hand.
 
 ---
 
 ## Prerequisites
 
-The toolchain depends on two git submodules:
+After cloning, initialize submodules before building:
 
 ```bash
-# Pull both submodules (one-time after cloning)
 git submodule update --init --recursive
-
-# Install the pyphp Python package (one-time)
-pip install -e tools/pyphp
 ```
 
-| Submodule | Path | Purpose |
-|---|---|---|
-| `platform` | `libs/platform` | Cross-platform abstraction layer |
-| `pyphp` | `tools/pyphp` | Python-to-PHP bridge for running the templates |
+The code generator is built from the main `Makefile` and requires libxml2 development headers through `pkg-config`.
 
 ---
 
 ## Running Code Generation
 
-From the `tools/` directory:
+From the repository root:
 
 ```bash
-cd tools
-
-make          # Regenerate all modules: headers + export files + property tables
-make docs     # Regenerate API documentation Markdown pages
-make dtd      # Regenerate docs/schemas/orca.dtd (UI element schema)
+make modules
 ```
 
-To regenerate a single template manually:
+The `modules` target builds `build/bin/cgen`, builds every `tools/codegen/plugins/*.c` file into `build/plugins/codegen/lib*.so`, discovers module files with `find source plugins -name '*.cgen'`, and regenerates the three committed generated files for each module.
+
+To run one generator manually, use the root-relative stdout form:
 
 ```bash
-cd tools
-python3 -m pyphp.pyphp templates/header.php     ../source/core/core.xml
-python3 -m pyphp.pyphp templates/properties.php ../source/core/core.xml
-python3 -m pyphp.pyphp templates/export.php     ../source/core/core.xml
-python3 -m pyphp.pyphp templates/docs.php       ../source/core/core.xml
+make codegen-host
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > source/core/core.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > source/core/core_properties.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
 ```
+
+`cgen` also accepts `-o <file>` for scripts that prefer explicit output paths.
 
 ---
 
 ## What Gets Generated
 
-For each module listed in `tools/Makefile`, three files are produced:
+For each `.cgen` module under `source/` or `plugins/`, three files are produced:
 
-| Generated file | Template | Contents |
+| Generated file | Generator plugin | Contents |
 |---|---|---|
-| `<module>.h` | `templates/header.php` | Enum typedefs, struct declarations, function prototypes, Lua push/check helpers |
-| `<module>_properties.h` | `templates/properties.php` | FNV1a hash constants for every property and event; `GetXxx(obj)` accessor macros |
-| `<module>_export.c` | `templates/export.php` | Enum↔string converters, Lua wrapper functions, `luaopen_orca_<module>()` |
-
-When `make docs` is run, one additional file per module is written under `docs/api/`:
-
-| Generated file | Template | Contents |
-|---|---|---|
-| `docs/api/<module>/README.md` | `templates/docs.php` | Markdown API reference for the module |
+| `<module>.h` | `libheader.so` | Enum typedefs, struct declarations, function prototypes, Lua push/check helpers |
+| `<module>_properties.h` | `libproperties.so` | FNV1a hash constants for every property and event; `GetXxx(obj)` accessor macros |
+| `<module>_export.c` | `libexport.so` | Enum/string converters, Lua wrapper functions, `luaopen_orca_<module>()` |
 
 ---
 
-## Module XML Format
+## Module Codegen Format
 
-Every module XML file follows this skeleton:
+Every module `.cgen` file is XML and follows this skeleton:
 
 ```xml
 <?xml version="1.0"?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="mymodule" namespace="orca" on-luaopen="on_mymodule_registered">
 
-  <!-- Pull in types from another module -->
-  <require file="../geometry/geometry.xml"/>
+  <require file="../geometry/geometry.cgen"/>
 
-  <!-- Enumerate a C enum — note: <enums> wraps <enum name="..."> types -->
   <enums>
     <enum name="Direction">
       <value name="Horizontal">Left-to-right layout</value>
@@ -85,7 +69,6 @@ Every module XML file follows this skeleton:
     </enum>
   </enums>
 
-  <!-- Declare a C struct with Lua bindings -->
   <struct name="MyStruct">
     <fields>
       <field name="X" type="float"/>
@@ -97,7 +80,6 @@ Every module XML file follows this skeleton:
     </methods>
   </struct>
 
-  <!-- Declare an abstract interface (global functions grouped by prefix) -->
   <interface name="Object" prefix="OBJ_" export="Object">
     <methods>
       <method name="Create" static="true" lua="true">
@@ -107,7 +89,6 @@ Every module XML file follows this skeleton:
     </methods>
   </interface>
 
-  <!-- Declare a component (attach-only: must use addComponent) -->
   <class name="MyComponent" attach-only="true">
     <summary>Moves an object at a configurable speed.</summary>
     <handles>
@@ -125,85 +106,22 @@ Every module XML file follows this skeleton:
 </module>
 ```
 
-See the [Module XML Guide](../MODULE_XML_GUIDE.md) for a complete element reference.
+See the [Module Codegen Guide](../MODULE_XML_GUIDE.md) for a complete element reference.
 
 ---
 
-## PHP Data Model
+## C Generator Architecture
 
-The templates access the parsed XML through the `Model` class defined in `tools/model/module.php`:
-
-```php
-$model = new Model($argv[1]);  // parse the XML file
-
-$model->getInterfaces();   // array of Interface objects
-$model->getStructs();      // array of Struct objects
-$model->getEnums();        // array of Enum objects
-$model->getComponents();   // array of Component (class) objects
-$model->getFunctions();    // array of Method objects (global functions)
-$model->getEvents();       // array of Event objects
-```
-
-Templates iterate these collections to emit C or Markdown output.
-
----
-
-## Template Architecture
-
-Templates live in `tools/templates/` and are plain PHP scripts executed by `pyphp`. The entry point is `tools/templates/index.php`, which routes to controller classes in `tools/templates/controllers/`:
-
-| Controller | Actions | Purpose |
-|---|---|---|
-| `CodegenController` | `header`, `export`, `properties` | Generate C files |
-| `DocsController` | `docs` | Generate Markdown API docs |
-| `DtdController` | `dtd` | Generate the XML DTD schema |
-
-The header and export outputs are each split into focused sub-templates:
-
-**Header sub-templates** (`tools/templates/header/`):
-
-| Template | Variables | Output |
-|---|---|---|
-| `preamble.php` | module, namespace, includes, … | `#pragma once`, includes, forward declarations |
-| `enums.php` | enums | Enum `typedef` + string converters |
-| `declarations.php` | structs, functions, prefix, interfaces | Function prototypes |
-| `structs.php` | structs | Struct `typedef` + method stubs |
-| `components.php` | components | Component struct + accessor macros |
-| `footer.php` | — | Closing guards |
-
-**Export sub-templates** (`tools/templates/`):
-
-| Template | Purpose |
-|---|---|
-| `export_preamble.php` | `#include` directives |
-| `export_enums.php` | Enum ↔ string conversion functions |
-| `export_interfaces.php` | Lua wrappers for interface methods |
-| `export_structs.php` | Lua wrappers for struct methods |
-| `export_components.php` | Component registration + property accessors |
-| `export_functions.php` | Wrappers for global functions |
-| `export_luaopen.php` | `luaopen_orca_<module>()` function |
-
----
-
-## pyphp Limitations
-
-The `pyphp` Python-PHP bridge supports most PHP syntax but has a few quirks to be aware of when editing templates:
-
-- **No `(string)$expr`** — use `strval($expr)` instead
-- **No negated `isset` in conditions** — `if (!isset($arr[$key]))` silently runs the body unconditionally; workaround: `$v = isset($arr[$k]) ? $arr[$k] : ""; if ($v === "") { … }`
-- **No ternary as a dict value** — hoist to a variable first: `$ns = $x ? $a : $b; $vars = ["ns" => $ns];`
-- **No `new $varName()`** — only `new ConcreteClass()` works; same restriction applies to `$obj->$method()`
-- **`?>` eats the following newline** — use `echo "…\n"` inside PHP blocks when emitting C code that must end with a newline
-
----
-
-## Key Files
+The host executable in `tools/codegen/src/` loads a `.cgen` file with libxml2, builds a flat model with parent IDs, loads a generator plugin with `dlopen`, and asks the plugin to write output.
 
 | File | Role |
 |---|---|
-| `docs/schemas/module.dtd` | XML schema — update when adding new XML elements |
-| `tools/model/module.php` | PHP data model — add methods to parse new elements |
-| `tools/templates/docs.php` | Docs generator — add rendering for new elements |
-| `tools/templates/header.php` | Orchestrates header sub-templates |
-| `tools/templates/export.php` | Orchestrates export sub-templates |
-| `source/core/core.xml` | Reference example with topics and 70+ methods |
+| `tools/codegen/src/model.c` | Parser/model loader for `.cgen` files |
+| `tools/codegen/src/main.c` | CLI, plugin loading, stdout/`-o` output selection |
+| `tools/codegen/include/cg_api.h` | Stable host/plugin API |
+| `tools/codegen/plugins/header.c` | C header generator |
+| `tools/codegen/plugins/properties.c` | Property/hash header generator |
+| `tools/codegen/plugins/export.c` | Lua export generator |
+| `source/core/core.cgen` | Reference example with topics and 70+ methods |
+
+Generator plugins should use `cg_foreach(model, parent_id, kind, node)` for direct children instead of scanning descendants unless they explicitly need dependency lookup.

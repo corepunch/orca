@@ -1,6 +1,39 @@
 #include "object_internal.h"
 
-#include <plugins/UIKit/UIKit.h>
+static bool_t
+_PopupSetDialogResult(struct Object *modal, float value)
+{
+  struct Property *dialog_result = NULL;
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
+    return FALSE;
+  }
+  PROP_SetValue(dialog_result, &value);
+  return TRUE;
+}
+
+static bool_t
+_PopupGetDialogResult(struct Object *modal, float *out_value)
+{
+  struct Property *dialog_result = NULL;
+  if (!out_value) {
+    return FALSE;
+  }
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
+    return FALSE;
+  }
+  float const *value = (float const *)PROP_GetValue(dialog_result);
+  if (!value) {
+    return FALSE;
+  }
+  *out_value = *value;
+  return TRUE;
+}
 
 struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is_template)
 {
@@ -170,7 +203,7 @@ OBJ_MoveToFront(struct Object *object)
 struct Object *
 OBJ_GetModal(struct Object const *self)
 {
-  if (OBJ_GetComponent((struct Object *)self, ID_Screen)) {
+  if (OBJ_GetComponent((struct Object *)self, fnv1a32("Screen"))) {
     return self->next;
   } else {
     return NULL;
@@ -185,7 +218,8 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
     return FALSE;
   }
 
-  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, ID_Screen)) {
+  uint32_t const screen_id = fnv1a32("Screen");
+  while (OBJ_GetParent(self) && !OBJ_GetComponent(self, screen_id)) {
     self = OBJ_GetParent(self);
   }
   if (!self) {
@@ -201,23 +235,35 @@ OBJ_ShowModalObject(struct Object *self, struct Object *modal)
   struct Object **next = &self->next;
   while (*next) next = &(*next)->next;
   *next = modal;
+  OBJ_AddRef(modal);
   modal->parent = self;
   modal->flags |= OF_NOACTIVATE;
+  if (!_PopupSetDialogResult(modal, NAN)) {
+    Con_Error("Modal popup missing DialogResult property");
+  }
   return TRUE;
 }
 
 static int modal_continue(lua_State *L, int status, lua_KContext ctx)
 {
-  struct Screen* modal = GetScreen((struct Object *)ctx);
-  if (!isnan(modal->DialogResult)) {
-    if (modal->DialogResult) {
+  struct Object *modal_obj = (struct Object *)ctx;
+  float result = NAN;
+  if (!_PopupGetDialogResult(modal_obj, &result)) {
+    Con_Error("Modal popup missing DialogResult property");
+    OBJ_ReleaseRef(modal_obj);
+    lua_pushboolean(L, FALSE);
+    lua_pushstring(L, "Cancelled");
+    return 2;
+  }
+  if (!isnan(result)) {
+    OBJ_ReleaseRef(modal_obj);
+    if (result) {
       lua_pushboolean(L, TRUE);
-      lua_pushboolean(L, modal->DialogResult != 2);
+      lua_pushboolean(L, result != 2);
     } else {
       lua_pushboolean(L, FALSE);
       lua_pushstring(L, "Cancelled");
     }
-    OBJ_RemoveFromParent((struct Object *)ctx);
     return 2; // resume Lua script after ShowModal()
   } else {
     return lua_yieldk(L, 0, ctx, modal_continue);
@@ -230,5 +276,6 @@ OBJ_ShowModal(lua_State* L, struct Object *self, struct Object *modal)
   if (!OBJ_ShowModalObject(self, modal)) {
     return 0;
   }
+  OBJ_AddRef(modal);
   return lua_yieldk(L, 0, (lua_KContext)modal, modal_continue);
 }

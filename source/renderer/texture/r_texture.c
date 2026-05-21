@@ -485,7 +485,6 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
 #if __APPLE__
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/gl.h>
 #include <OpenGL/glext.h>
 bool_t
 IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)

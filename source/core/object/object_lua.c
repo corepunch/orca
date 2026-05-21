@@ -215,7 +215,15 @@ luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id)
 {
   struct Property *event = PROP_FindByLongID(OBJ_GetProperties(object), id);
   if (event && PROP_GetType(event) == kDataTypeEvent) {
-    lua_geti(L, LUA_REGISTRYINDEX, *(event_t*)PROP_GetValue(event));
+    event_t ref = *(event_t*)PROP_GetValue(event);
+    if (!ref) {
+      return NULL;
+    }
+    lua_geti(L, LUA_REGISTRYINDEX, ref);
+    if (!lua_isfunction(L, -1)) {
+      lua_pop(L, 1);
+      return NULL;
+    }
     return event;
   }
   return NULL;

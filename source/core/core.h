@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/header.php
+// Auto-generated from core.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_H__
 #define __CORE_H__
@@ -312,7 +312,7 @@ ORCA_API void
 core_FlushQueue(struct lua_State*);
 
 /// @brief Returns the number of live engine objects.
-ORCA_API void
+ORCA_API int
 core_GetObjectCount(struct lua_State*);
 
 
@@ -1050,11 +1050,11 @@ struct Setter {
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 
-/// @brief Opens a named popup as a modal child of the current screen
+/// @brief Loads a popup template and shows it modally
 /** ShowModalAction component */
 struct ShowModalAction {
 	struct Trigger* Trigger; ///< Triggering condition or state image
-	const char* Path; ///< Relative path to the popup object that should be shown modally
+	const char* Path; ///< Asset path to the popup template that should be shown modally
 };
 ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
 ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx);
@@ -1094,7 +1094,7 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
-	struct Object** Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
+	struct Trigger* Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
 	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;

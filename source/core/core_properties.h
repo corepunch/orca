@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/properties.php
+// Auto-generated from core.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_PROPERTIES_H__
 #define __CORE_PROPERTIES_H__

@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/export.php
+// Auto-generated from core.cgen by tools/codegen/plugins/export.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
 #include <include/codegen.h>
@@ -1645,8 +1645,7 @@ int f_core_FlushQueue(lua_State *L) {
 	return 0;
 }
 int f_core_GetObjectCount(lua_State *L) {
-	core_GetObjectCount(L );
-	return 1;
+	return core_GetObjectCount(L);
 }
 
 ORCA_API int luaopen_orca_core(lua_State *L) {

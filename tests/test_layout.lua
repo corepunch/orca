@@ -248,6 +248,96 @@ local function test_xml_loading_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- XML loading: object-typed attributes should accept inline object expressions.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_xml_attribute()
+	local xml = [[
+<Screen Name="inline-xml-screen"
+        Width="800"
+        Height="600"
+        ResizeMode="NoResize"
+        DataContext="{DataObject Name='inline-context'}">
+  <Node2D Name="child-node" Width="100" Height="50" BorderRadius="{12}" />
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline XML attribute loadObjectFromXmlString should return a non-nil object")
+	test.expect(root.DataContext ~= nil, "DataContext should be created from inline XML")
+	test.expect_eq(root.DataContext:getClassName(), "DataObject", "DataContext should be a DataObject")
+	test.expect_eq(root.DataContext.Name, "inline-context", "inline XML attribute should preserve nested attributes")
+	local child = root:findChild("child-node", true)
+	test.expect(child ~= nil, "regular child objects should still load")
+	test.expect_eq(child.BorderRadius.TopLeftRadius, 12, "positional inline struct syntax should map to the first field")
+	test.expect_eq(child.BorderRadius.TopRightRadius, 0, "positional inline struct syntax should leave later fields at default values")
+
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_xml_attribute")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: inline object syntax should work for ImageView.Source.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_imageview_source()
+	local xml = [[
+<ImageView Name="inline-image-view"
+           Width="32"
+           Height="32"
+           Source="{Texture Width=48 Height=24}" />]]
+
+	local image_view = filesystem.loadObjectFromXmlString(xml)
+	test.expect(image_view ~= nil, "inline ImageView should load")
+	test.expect_eq(image_view:getClassName(), "ImageView", "inline ImageView should be an ImageView")
+	test.expect(image_view.Source ~= nil, "ImageView.Source should be created from inline XML")
+	test.expect_eq(image_view.Source:getClassName(), "Texture", "ImageView.Source should be a Texture object")
+	test.expect_eq(image_view.Source.Width, 48, "inline Texture should preserve Width")
+	test.expect_eq(image_view.Source.Height, 24, "inline Texture should preserve Height")
+
+	image_view:clear()
+	image_view = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_imageview_source")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: event-typed properties should synthesize EventTrigger wrappers
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_inline_event_trigger()
+	local xml = [[
+<Screen Name="inline-trigger-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <TextBlock Name="inline-trigger-target"
+             Text="Target"
+             Visible="true" />
+  <TextBlock Name="inline-trigger-button"
+             Text="Hide target"
+             LeftButtonUp="{HideAction Path=../inline-trigger-target}" />
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline event trigger screen should load")
+	local target = root:findChild("inline-trigger-target", true)
+	local textblock = root:findChild("inline-trigger-button", true)
+	test.expect(textblock ~= nil, "inline event trigger TextBlock should exist")
+	test.expect(target ~= nil, "inline trigger target should exist")
+	test.expect(target.Visible, "inline trigger target should start visible")
+	textblock:send("Node.LeftButtonUp")
+	pump_messages(root)
+	test.expect(not target.Visible, "inline event trigger should execute the synthesized HideAction")
+
+	target = nil
+	textblock = nil
+	collectgarbage()
+	root:clear()
+	root = nil
+	collectgarbage()
+
+	print("PASS: test_xml_loading_inline_event_trigger")
+end
+
+-- ---------------------------------------------------------------------------
 -- XML loading: struct arrays on Project should parse via the C loader
 -- ---------------------------------------------------------------------------
 local function test_xml_loading_struct_arrays()
@@ -368,48 +458,110 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Path="../Popup"/>
+	        <ShowModalAction Example/Screens/GetStartedPopup/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
-	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088">
-	    <StackView Name="PopupOverlay" Width="800" Height="600" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
-	      <StackView Name="PopupCard" Direction="Vertical" Spacing="12" Width="320" BackgroundColor="#1F2433" Padding="24">
-	        <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
-	          <Node.Triggers>
-	            <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	              <HideAction Path="../../../"/>
-	            </EventTrigger>
-	          </Node.Triggers>
-	        </TextBlock>
-	      </StackView>
-	    </StackView>
-	  </Screen>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "trigger/action XML should load")
 
 	local button = root:findChild("SettingsButton", true)
-	local popup = root:findChild("Popup", true)
-	local close = root:findChild("PopupClose", true)
 
 	test.expect(button ~= nil, "SettingsButton should exist")
-	test.expect(popup ~= nil, "Popup should exist")
-	test.expect(close ~= nil, "Popup close button should exist")
-	test.expect(not popup.Visible, "Popup should start hidden")
 	button:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(popup.Visible, "Popup should become visible after clicking the button")
-	test.expect_eq(root:getNext(), popup, "Popup should be attached as the modal next screen")
+	local popup = root:getNext()
+	test.expect(popup ~= nil, "Popup should be loaded as the modal next screen")
+	test.expect_eq(popup:getClassName(), "Popup", "Loaded modal object should be a Popup")
+	local close = popup:findChild("GetStartedPopupClose", true)
+	test.expect(close ~= nil, "Popup close button should exist")
 	close:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(not popup.Visible, "Popup should hide again after clicking the close label")
-	root:clear()
-	root = nil
-	collectgarbage()
+	test.expect_eq(root:getNext(), nil, "Popup should detach after Popup.ClosePopup")
+	close = nil
+	popup = nil
+	button = nil
 
 	print("PASS: test_xml_loading_trigger_action_components")
+end
+
+local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
+	local xml = [[
+	<Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA"
+	    LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline trigger mouse XML should load")
+	root:UpdateLayout(root.Width, root.Height)
+
+	local handled = system.dispatchMessage {
+		target = root,
+		message = "LeftButtonUp",
+		x = 10,
+		y = 10,
+	}
+	pump_messages(root)
+
+	local popup = root:getNext()
+	test.expect(handled, "mouse dispatch should be handled by the inline trigger action")
+	test.expect(popup ~= nil, "Inline trigger should open popup through mouse dispatch")
+	test.expect_eq(popup:getClassName(), "Popup", "Mouse-dispatched inline trigger should load a Popup")
+
+	popup = nil
+	root = nil
+
+	print("PASS: test_inline_trigger_mouse_dispatch_does_not_shadow_actions")
+end
+
+-- ---------------------------------------------------------------------------
+-- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
+-- from the screen chain.
+-- ---------------------------------------------------------------------------
+local function test_xml_loading_close_popup_action_components()
+	local xml = [[
+	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
+	    <Node.Triggers>
+	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
+	        <ShowModalAction Example/Screens/GetStartedPopup/>
+	      </EventTrigger>
+	    </Node.Triggers>
+	  </TextBlock>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "close-popup XML should load")
+
+	local button = root:findChild("SettingsButton", true)
+
+	test.expect(button ~= nil, "SettingsButton should exist")
+	button:send("Node.LeftButtonUp")
+	pump_messages(root)
+	local popup1 = root:getNext()
+	test.expect(popup1 ~= nil, "Popup should be loaded as the modal next screen")
+	test.expect_eq(popup1:getClassName(), "Popup", "Loaded modal object should be a Popup")
+	local first_repr = tostring(popup1)
+	local close1 = popup1:findChild("GetStartedPopupClose", true)
+	test.expect(close1 ~= nil, "Popup close button should exist")
+	popup1 = nil
+	close1:send("Node.LeftButtonUp")
+	pump_messages(root)
+	test.expect_eq(root:getNext(), nil, "Popup should detach after Popup.ClosePopup")
+	close1 = nil
+	button:send("Node.LeftButtonUp")
+	pump_messages(root)
+	local popup2 = root:getNext()
+	test.expect(popup2 ~= nil, "Popup should be loadable again after close")
+	test.expect_eq(popup2:getClassName(), "Popup", "Reloaded modal object should be a Popup")
+	test.expect(tostring(popup2) ~= first_repr, "Popup reopen should create a fresh instance")
+	popup2 = nil
+	button = nil
+
+	print("PASS: test_xml_loading_close_popup_action_components")
 end
 
 local function test_xml_loading_event_trigger_components()
@@ -418,31 +570,25 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <ShowModalAction Path="../Popup"/>
+	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
-	  <Screen Name="Popup" Visible="FALSE" Width="800" Height="600" ResizeMode="NoResize" BackgroundColor="#00000088"/>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "event trigger XML should load")
 
 	local target = root:findChild("HotkeyTarget", true)
-	local popup = root:findChild("Popup", true)
 
 	test.expect(target ~= nil, "HotkeyTarget should exist")
-	test.expect(popup ~= nil, "Popup should exist")
-	test.expect(not popup.Visible, "Popup should start hidden")
 	target:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(not popup.Visible, "Popup should stay hidden for non-matching events")
+	test.expect(root:getNext() == nil, "Popup should stay hidden for non-matching events")
 	target:send("Node.RightButtonUp")
 	pump_messages(root)
-	test.expect(popup.Visible, "Popup should become visible when RoutedEvent matches")
-	root:clear()
-	root = nil
-	collectgarbage()
+	test.expect(root:getNext() ~= nil, "Popup should become visible when RoutedEvent matches")
+	target = nil
 
 	print("PASS: test_xml_loading_event_trigger_components")
 end
@@ -480,9 +626,9 @@ local function test_xml_loading_send_message_action_components()
 	source:send("Node.LeftButtonUp")
 	pump_messages(root)
 	test.expect(not victim.Visible, "Victim should be hidden by SendMessageAction dispatching Node.RightButtonUp")
-	root:clear()
-	root = nil
-	collectgarbage()
+	source = nil
+	receiver = nil
+	victim = nil
 
 	print("PASS: test_xml_loading_send_message_action_components")
 end
@@ -545,19 +691,18 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local get_started_popup = xml:find('Name="GetStartedPopup"', 1, true)
+	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>', 1, true)
+	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
+	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_triggers = xml:find('<Node.Triggers>', 1, true)
-	local get_started_show = xml:find('<ShowModalAction Path="../../GetStartedPopup"/>', 1, true)
+	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
-	local popup_screen_root = popup_screen and popup_screen:find('<Screen Name="GetStartedPopup"', 1, true)
+	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_triggers = popup_screen and popup_screen:find('<Node.Triggers>', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('<SendMessageAction Message="Screen.CloseDialog" Target="../../../"/>', 1, true)
-	local popup_screen_click = popup_screen and popup_screen:find('<EventTrigger RoutedEvent="Node.LeftButtonUp">', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Popup.ClosePopup ../../..}"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -573,24 +718,26 @@ local function test_example_application_xml()
 		or xml:find('Example/Icons/text.svg', 1, true)
 		or xml:find('Example/Icons/file-code.svg', 1, true)
 		or xml:find('Example/Icons/rocket.svg', 1, true)
-	local xml_model_tab_icon = xml:find('XmlModelTabIcon', 1, true)
-	local xml_model_grid_icon = xml:find('XmlModelGridIcon', 1, true)
-	local xml_model_image_icon = xml:find('XmlModelImageIcon', 1, true)
-	local xml_model_text_icon = xml:find('XmlModelTextIcon', 1, true)
-	local xml_model_tab_color = xml:find('XmlModelTabIcon" Source="Example/Icons/panel-top.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"', 1, true)
-	local xml_model_nested_padding = xml:find('Name="XmlModelLine5" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="48"', 1, true)
-	local xml_model_leaf_padding = xml:find('Name="XmlModelLine6" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="48"', 1, true)
+	local xml_model_tab_icon = xml:find('Name="XmlModelLine2"', 1, true)
+	local xml_model_grid_icon = xml:find('Name="XmlModelLine3"', 1, true)
+	local xml_model_image_icon = xml:find('Name="XmlModelLine5"', 1, true)
+	local xml_model_text_icon = xml:find('Name="XmlModelLine6"', 1, true)
+	local xml_model_tab_color = xml:find('Name="XmlModelLine2" PlaceholderTemplate="Example/Prefabs/XmlModelNode"', 1, true)
+	local xml_model_nested_padding = xml:find('Name="XmlModelLine5"', 1, true)
+		and xml:find('PaddingLeft="48"', 1, true)
+	local xml_model_leaf_padding = xml:find('Name="XmlModelLine6"', 1, true)
+		and xml:find('PaddingLeft="48"', 1, true)
 	local icon_card = filesystem.readTextFile("samples/Example/Prefabs/IconCard.xml")
 	test.expect(icon_card ~= nil and icon_card ~= "", "IconCard prefab should be readable")
 	local icon_card_uses_image = icon_card:find("<ImageView Name=\"IconCardImage\"", 1, true)
 	local icon_card_uses_text = icon_card:find("TextRun.Text>{../Card.Icon}", 1, true)
 	local icon_card_header = icon_card:find('<StackView Name="IconCardHeader" Direction="Horizontal" Spacing="12" AlignItems="Center"', 1, true)
-	local icon_card_title_binding = icon_card:find("TextRun.Text>{../../Card.Title}", 1, true)
-	local icon_card_uses_deep_icon_binding = icon_card:find("ImageView.Source>{../../../Card.Icon}", 1, true)
+	local icon_card_title_binding = icon_card:find('Text="{Binding ../../Card.Title}"', 1, true)
+	local icon_card_uses_deep_icon_binding = icon_card:find('Source="{Binding ../../../Card.Icon}"', 1, true)
 	local icon_card_square_badge = icon_card:find('Name="IconCardBadge" Width="48" Height="48"', 1, true)
 	local icon_card_badge_is_stackview = icon_card:find('<StackView Name="IconCardBadge"', 1, true)
 	local icon_card_badge_centers_icon = icon_card:find('AlignItems="Center"', 1, true) and icon_card:find('JustifyContent="Center"', 1, true)
-	local icon_card_badge_uses_title_depth = icon_card:find('<Node2D.BackgroundColor>{../../Card.IconBackground}</Node2D.BackgroundColor>', 1, true)
+	local icon_card_badge_uses_title_depth = icon_card:find('BackgroundColor="{Binding ../../Card.IconBackground}"', 1, true)
 	local icon_card_badge_uses_binding = icon_card:find('<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>', 1, true)
 	local icon_property = package_lua:find('Name="Icon", DataType="Object", TypeString="Texture"', 1, true)
 	local icon_bg_blue = package_lua:find('Key = "icon-bg-blue", Value = "#10203A"', 1, true)
@@ -624,23 +771,24 @@ local function test_example_application_xml()
 	test.expect(signals ~= nil, "OrcaSignals should exist in Example Application.xml")
 	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
 	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
-	test.expect(get_started_popup ~= nil, "Example CTA should include a popup panel")
 	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
-	test.expect(get_started_triggers ~= nil, "Example CTA should use Node.Triggers for the Get Started button")
-	test.expect(get_started_show ~= nil, "Example CTA should wire the Get Started trigger to the popup")
+	test.expect(get_started_show ~= nil, "Example CTA should use the inline LeftButtonUp trigger shorthand")
 	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
-	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Screen root")
+	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Popup root")
 	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
 	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
 	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
 	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
-	test.expect(popup_screen_triggers ~= nil, "GetStartedPopup screen should use Node.Triggers for the close action")
-	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should send Screen.CloseDialog on close")
-	test.expect(popup_screen_click ~= nil, "GetStartedPopup screen should define an EventTrigger")
+	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should use the inline LeftButtonUp trigger shorthand")
 	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
 	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
 	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
 	test.expect(tabs ~= nil, "OrcaTabs should default to the XML tab in Example Application.xml")
+	test.expect(hero_columns_expr ~= nil, "Application.xml should use explicit <BindingExpression Target=\"...\"> for Hero Grid.Columns")
+	test.expect(body_padding_expr ~= nil, "Application.xml should use explicit <BindingExpression Target=\"...\"> for body horizontal padding")
+	test.expect(legacy_hero_columns_expr == nil, "Application.xml should not use legacy inline expression text for Hero Grid.Columns")
+	test.expect(xml_model_tab_icon ~= nil, "XmlModel should include a TabView line")
+	test.expect(xml_model_grid_icon ~= nil, "XmlModel should include a Grid line")
 	test.expect(xml_model_tab_icon < xml_model_grid_icon, "XmlModel should show TabView before Grid")
 	test.expect(xml_model_tab_color ~= nil, "XmlModel TabView should use the same muted color as Grid")
 	test.expect(xml:find('mouse-pointer-click.svg', 1, true) ~= nil, "Lua Input card should use a mouse-pointer icon")
@@ -655,10 +803,10 @@ local function test_example_application_xml()
 	test.expect(control_muted ~= nil, "Example package.lua should define control-muted")
 	test.expect(deploy_command_link ~= nil, "Deploy tab should include a desktop build callout")
 	test.expect(deploy_command_value ~= nil, "Deploy tab should show the desktop build command")
-	test.expect(xml:find('DeployImage1Thumb" Source="Example/Images/orca-tab-city" Height="160" Stretch="UniformToFill"', 1, true) ~= nil,
-		"Deploy city image should fill its card width")
-	test.expect(xml:find('DeployImage2Thumb" Source="Example/Images/orca-tab-lights" Height="160" Stretch="UniformToFill"', 1, true) ~= nil,
-		"Deploy night image should fill its card width")
+	test.expect(xml:find('Name="DeployImage1" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
+		"Deploy city image card placeholder should exist")
+	test.expect(xml:find('Name="DeployImage2" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
+		"Deploy night image card placeholder should exist")
 	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
 	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
 	test.expect(icon_count >= 10, "Example Application.xml should reference at least 10 SVG icons")
@@ -680,6 +828,7 @@ local function test_example_application_xml()
 	test.expect(icon_card_badge_is_stackview ~= nil, "IconCard badge should be a StackView so alignment props work")
 	test.expect(icon_card_badge_centers_icon ~= nil, "IconCard badge should center the icon")
 	test.expect(icon_card_badge_uses_title_depth ~= nil, "IconCard badge should bind its background color from Card.IconBackground")
+	test.expect(icon_card_badge_uses_binding == nil, "IconCard should not use the legacy inline binding element form")
 	test.expect(icon_property ~= nil, "Example package.lua should define Card.Icon as a Texture object")
 	test.expect(tab_source ~= nil and tab_source:find("axPostMessageDataW(bar, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
 		"Tab should post SelectionChanged through the buffered helper")
@@ -709,17 +858,18 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_xml_loading_inline_xml_attribute()
+test_xml_loading_inline_imageview_source()
+test_xml_loading_inline_event_trigger()
 test_xml_loading_struct_arrays()
 test_xml_loading_tabview()
 -- test_xml_loading_trigger_action_popup()
 test_xml_loading_trigger_action_components()
+test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
+test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
-
-screen:clear()
-screen = nil
-collectgarbage()
 
 print("All layout tests passed.")

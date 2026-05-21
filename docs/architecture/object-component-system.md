@@ -154,7 +154,7 @@ Property values for component-defined properties are stored in the component's u
 
 ## Message Dispatch
 
-Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `source/core/core_properties.h` (generated from `core.xml`):
+Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `source/core/core_properties.h` (generated from `core.cgen`):
 
 | Message | When sent |
 |---|---|
@@ -172,7 +172,7 @@ _SendMessage(object, Object, Start);
 _SendMessage(object, Object, PropertyChanged, .Property = myProp);
 ```
 
-Custom messages are declared with `<message>` in any module XML. The `routing=` attribute controls bubbling/tunneling behaviour.
+Custom messages are declared with `<message>` in any module `.cgen`. The `routing=` attribute controls bubbling/tunneling behaviour.
 
 See [Macros Reference](macros-reference.md) for full documentation of `HANDLER`, `_SendMessage`, and related macros.
 
@@ -203,11 +203,11 @@ Migration rules:
 
 ## How to Add a New Component Type
 
-> **Rule: XML → codegen → handlers → Xcode project → tests.**  Do not skip or reorder any step.  Skipping the XML step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — the C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
+> **Rule: `.cgen` → codegen → handlers → Xcode project → tests.**  Do not skip or reorder any step.  Skipping the `.cgen` step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — the C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
 
-### 1. Declare in the module XML
+### 1. Declare in the module `.cgen`
 
-Add a `<class>` entry to the relevant module `.xml` file (e.g. `source/core/core.xml`). Every message handler must have a matching `<handle>` entry, and every message the component dispatches must be declared under `<messages>`.  **Handlers without `<handle>` entries are orphaned — the generated Proc switch will not contain them and they will never be called.**
+Add a `<class>` entry to the relevant module `.cgen` file (e.g. `source/core/core.cgen`). Every message handler must have a matching `<handle>` entry, and every message the component dispatches must be declared under `<messages>`.  **Handlers without `<handle>` entries are orphaned — the generated Proc switch will not contain them and they will never be called.**
 
 ```xml
 <class name="MyComponent" attach-only="true">
@@ -234,10 +234,10 @@ Use `attach-only="true"` for components that augment existing objects; omit it f
 ### 2. Regenerate bindings
 
 ```bash
-cd tools && make
+make modules
 ```
 
-This regenerates `<module>.h` (struct + accessor macro), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings). **After regenerating, open `<module>_export.c` and verify that `MyComponentProc` contains `case` entries for every declared message.** An empty `switch {}` means the XML step was incomplete.
+This regenerates `<module>.h` (struct + accessor macro), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings). **After regenerating, open `<module>_export.c` and verify that `MyComponentProc` contains `case` entries for every declared message.** An empty `switch {}` means the `.cgen` step was incomplete.
 
 ### 3. Write the C handlers
 
