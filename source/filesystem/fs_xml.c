@@ -448,6 +448,12 @@ _HandleAttachOnlyComponent(struct Object *obj, xmlNodePtr element,
       continue;
     }
 
+    if (!strcmp(subtag, "Binding") ||
+        !strcmp(subtag, "BindingExpression") ||
+        !strcmp(subtag, "ExpressionBinding")) {
+      continue;
+    }
+
     // Try to construct as a child object and assign to the matching property.
     struct Object *child = FS_ConstructNode(sub);
     if (child) {
@@ -565,11 +571,14 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
       continue;
     }
 
-    // Lua-only elements: no-op in the C XML parser
+    // Non-constructible declarative elements: handled elsewhere or by Lua.
     if (!strcmp(tag, "script")        ||
         !strcmp(tag, "EventListener") ||
         !strcmp(tag, "StyleSheet")    ||
-        !strcmp(tag, "ValueTicker")) {
+        !strcmp(tag, "ValueTicker")   ||
+        !strcmp(tag, "Binding")       ||
+        !strcmp(tag, "BindingExpression") ||
+        !strcmp(tag, "ExpressionBinding")) {
       continue;
     }
 
@@ -584,10 +593,13 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
     }
   }
 
-  // Second pass: handle explicit top-level ExpressionBinding and Binding elements
+  // Second pass: handle explicit top-level BindingExpression, legacy
+  // ExpressionBinding, and Binding elements.
   xmlForEach(sub, element) {
     lpcString_t tag = (lpcString_t)sub->name;
-    if (!strcmp(tag, "ExpressionBinding") || !strcmp(tag, "Binding")) {
+    if (!strcmp(tag, "BindingExpression") ||
+        !strcmp(tag, "ExpressionBinding") ||
+        !strcmp(tag, "Binding")) {
       xmlChar* target_attr = xmlGetProp(sub, XMLSTR("Target"));
       if (!target_attr) {
         Con_Error("<%s> element is missing required Target attribute", tag);
@@ -601,7 +613,7 @@ _FS_ConstructNode(xmlNodePtr element, bool_t send_start)
         if (expr_text) xmlFree(expr_text);
         continue;
       }
-      
+
       fixedString_t normalized_expr = {0};
       if (!strcmp(tag, "Binding")) {
         if (!_MakeBindingExpr(expr, normalized_expr)) {
