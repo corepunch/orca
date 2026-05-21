@@ -203,7 +203,7 @@ OBJ_MoveToFront(struct Object *object)
 struct Object *
 OBJ_GetModal(struct Object const *self)
 {
-  if (OBJ_GetComponent((struct Object *)self, ID_Screen)) {
+  if (OBJ_GetComponent((struct Object *)self, fnv1a32("Screen"))) {
     return self->next;
   } else {
     return NULL;

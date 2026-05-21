@@ -67,7 +67,7 @@ static char const *type_kind(cg_model const *m, char const *type) {
 static int type_decl(char *dst, size_t dsz, cg_model const *m,
                      char const *type, uint32_t flags) {
     char const *kind = type_kind(m, type);
-    char base[256];
+    char base[248];
     if (!type || !type[0]) type = "void";
     if (!strcmp(kind, "float")) snprintf(base, sizeof(base), "float");
     else if (!strcmp(kind, "int")) snprintf(base, sizeof(base), "int32_t");
@@ -187,7 +187,7 @@ static void event_effective_struct_name(char *dst, size_t dsz, cg_model const *m
 static void event_effective_type_decl(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
     cg_node const *p;
     if (event_has_own_fields(m, msg)) {
-        char s[256];
+        char s[240];
         event_struct_name(s, sizeof(s), m, msg);
         snprintf(dst, dsz, "struct %s", s);
         return;
@@ -198,7 +198,7 @@ static void event_effective_type_decl(char *dst, size_t dsz, cg_model const *m, 
         return;
     }
     if (!msg->type || !msg->type[0] || !strcmp(msg->type, "void")) {
-        char s[256];
+        char s[240];
         event_struct_name(s, sizeof(s), m, msg);
         snprintf(dst, dsz, "struct %s", s);
         return;

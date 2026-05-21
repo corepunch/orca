@@ -230,6 +230,13 @@ typedef struct {
     size_t             enum_n, enum_cap;
 } walk_ctx;
 
+static char *dup_string(char const *s) {
+    size_t n = strlen(s) + 1u;
+    char *copy = malloc(n);
+    if (copy) memcpy(copy, s, n);
+    return copy;
+}
+
 static int wctx_push(walk_ctx *ctx, char const *name) {
     if (ctx->enum_n == ctx->enum_cap) {
         size_t nc = ctx->enum_cap ? ctx->enum_cap * 2 : 64;
@@ -237,7 +244,8 @@ static int wctx_push(walk_ctx *ctx, char const *name) {
         if (!np) return -1;
         ctx->enum_names = np; ctx->enum_cap = nc;
     }
-    ctx->enum_names[ctx->enum_n++] = strdup(name);
+    ctx->enum_names[ctx->enum_n++] = dup_string(name);
+    if (!ctx->enum_names[ctx->enum_n - 1]) return -1;
     return 0;
 }
 

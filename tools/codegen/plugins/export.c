@@ -181,7 +181,7 @@ static char const *type_kind(cg_model const *m, char const *type) {
 
 static int type_decl(char *dst, size_t dsz, cg_model const *m, char const *type, uint32_t flags) {
     char const *kind = type_kind(m, type);
-    char base[256];
+    char base[248];
     if (!type || !type[0]) type = "void";
     if (!strcmp(kind, "float")) snprintf(base, sizeof(base), "float");
     else if (!strcmp(kind, "int")) snprintf(base, sizeof(base), "int32_t");
@@ -729,13 +729,12 @@ static void dot_to_underscore(char *dst, size_t dsz, char const *s) {
 
 static int emit_component_parents(ob *b, cg_host_v1 const *h, cg_node const *c, int refs_only) {
     char parents[512];
-    char *save = NULL;
     char *tok;
     int first = 1;
     if (refs_only) {
         if (c->type && c->type[0]) {
             snprintf(parents, sizeof(parents), "%s", c->type);
-            for (tok = strtok_r(parents, ",", &save); tok; tok = strtok_r(NULL, ",", &save)) {
+            for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
                 while (*tok == ' ' || *tok == '\t') ++tok;
                 if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
                 first = 0;
@@ -749,7 +748,7 @@ static int emit_component_parents(ob *b, cg_host_v1 const *h, cg_node const *c, 
     }
     if (c->type && c->type[0]) {
         snprintf(parents, sizeof(parents), "%s", c->type);
-        for (tok = strtok_r(parents, ",", &save); tok; tok = strtok_r(NULL, ",", &save)) {
+        for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
             while (*tok == ' ' || *tok == '\t') ++tok;
             if (ob_printf(b, "#define ID_%s 0x%08x\n", tok, h->fnv1a32(tok)) < 0) return -1;
         }
