@@ -125,7 +125,7 @@ static struct Object *make_styled_object(void) {
 /*
  * Frees all properties, all component data, then the object itself.
  * Does NOT call OBJ_Release (which needs a Lua state for Lua-owned objects).
- * We dispatch Object.Release manually so attach-only components
+ * We dispatch Object.Release manually so component components
  * (StyleController) can clean up before the component memory is freed.
  */
 static void destroy_object(struct Object *obj) {

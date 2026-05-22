@@ -99,22 +99,6 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumProperties = k##NAME##NumProperties, \
 };
 
-#define REGISTER_ATTACH_ONLY_CLASS(NAME, ...) \
-ORCA_API struct ClassDesc _##NAME = { \
-	.ClassName = #NAME, \
-	.DefaultName = #NAME, \
-	.ContentType = #NAME, \
-	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
-	.ParentClasses = { __VA_ARGS__ }, \
-	.ClassID = ID_##NAME, \
-	.ClassSize = sizeof(struct NAME), \
-	.Properties = NAME##Properties, \
-	.ObjProc = NAME##Proc, \
-	.Defaults = &NAME##Defaults, \
-	.NumProperties = k##NAME##NumProperties, \
-	.IsAttachOnly = TRUE, \
-};
-
 #define REGISTER_MESSAGE_TYPE(MESSAGE_ID, MESSAGE_NAME, STRUCT_NAME) \
 static struct MessageDesc const _##STRUCT_NAME##_MessageDesc = { \
 	.MessageName = MESSAGE_NAME, \

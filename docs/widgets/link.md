@@ -18,7 +18,7 @@ make_footer = (active_route, navigate) ->   -- navigate must be passed in
                 LeftButtonUp: -> navigate item.route   -- repeated on every nav item
 ```
 
-## Design decision: standalone wrapper node, not attach-only component
+## Design decision: standalone wrapper node, not component component
 
 Two approaches were considered:
 
@@ -36,7 +36,7 @@ Link Destination: "/forecast", ->
 - No closure threading in layout code. Layouts become purely declarative.
 - Mirrors the semantics of HTML `<a href>`: universal, immediately readable.
 
-### Option B — `Link` as an attach-only component (rejected)
+### Option B — `Link` as an component component (rejected)
 
 ```moonscript
 ImageView Source: "page-icon", ->
@@ -44,11 +44,11 @@ ImageView Source: "page-icon", ->
 ```
 
 This does not work with the current DSL. In the `->` / `=>` block, everything is a
-**child scene node**, not an attached component. `attach-only` is enforced by
+**child scene node**, not an attached component. `component` is enforced by
 `OBJ_AddComponentByName`, which is never called by the DSL constructor path. `Link` would
 become a child layout node inside `ImageView`, not an interceptor on it.
 
-Attach-only makes sense for **orthogonal cross-cutting behaviors** (e.g. audio feedback on
+Component makes sense for **orthogonal cross-cutting behaviors** (e.g. audio feedback on
 any node type). Navigation intent is tightly bound to the tapped node, so wrapping is the
 correct model.
 

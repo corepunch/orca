@@ -53,8 +53,8 @@ Neither the Aliases nor the Locale migration had any test coverage.  Both StyleC
 
 ## Animation System
 
-### `AnimationCurve` was initially `attach-only` (wrong design)
-The first version of the component system made `AnimationCurve` an attach-only component bolted onto the `AnimationClip` object's component list. This was wrong: `AnimationCurve` is a data object that belongs as a **child** of `AnimationClip` in the object hierarchy, not as an attached component. Components are for behaviour; child objects are for data. The rule is: if something has identity (a name, can be referenced, carries data that outlives a single message) it should be a child object, not an attach-only component.
+### `AnimationCurve` was initially `component` (wrong design)
+The first version of the component system made `AnimationCurve` an component component bolted onto the `AnimationClip` object's component list. This was wrong: `AnimationCurve` is a data object that belongs as a **child** of `AnimationClip` in the object hierarchy, not as an attached component. Components are for behaviour; child objects are for data. The rule is: if something has identity (a name, can be referenced, carries data that outlives a single message) it should be a child object, not an component component.
 
 ### `AnimationPlayer` iterates clip's children, not components
 Because `AnimationCurve` is now a child object of `AnimationClip`, `AnimationPlayer.Animate` uses `FOR_EACH_OBJECT` to walk the clip's children and calls `GetAnimationCurve(child)` on each. If the relationship between clip and curves ever changes (e.g. grandchildren), this traversal will break silently because `FOR_EACH_OBJECT` only walks direct children.
@@ -69,8 +69,8 @@ In `AnimationPlayer.c`, `TANGENT_MODE_BEZIER` must appear before `keyframe_evalu
 ### `OBJ_SendMessageW` does NOT mask routing bits
 The routing bits (lower 2 bits of every message ID) are **not** stripped by `OBJ_SendMessageW` before calling each component's `ObjProc`. Generated `*Proc` functions mask in their `switch` statement: `case ID_Object_Start & MSG_DATA_MASK:`. Direct callers of `OBJ_SendMessageW` that compare raw `msg` values inside their proc will silently match the wrong case unless they also mask. Always use `& MSG_DATA_MASK` when comparing message IDs inside an `ObjProc`.
 
-### `IsAttachOnly` is only enforced at the Lua bridge
-The `IsAttachOnly` flag in `ClassDesc` is checked by `OBJ_AddComponentByName` (the Lua bridge, which raises a `luaL_error`). Direct C callers of `OBJ_AddComponent(obj, classID)` are **not** restricted. The flag is architectural documentation, not a hard constraint in C code. If you call `OBJ_AddComponent` directly with a non-attach-only class ID, the engine will silently attach it as a component rather than refusing.
+### `ClassFlags` is only enforced at the Lua bridge
+The `ClassFlags` flag in `ClassDesc` is checked by `OBJ_AddComponentByName` (the Lua bridge, which raises a `luaL_error`). Direct C callers of `OBJ_AddComponent(obj, classID)` are **not** restricted. The flag is architectural documentation, not a hard constraint in C code. If you call `OBJ_AddComponent` directly with a non-component class ID, the engine will silently attach it as a component rather than refusing.
 
 ### `objectProc_t` receives a potentially unmasked message ID
 The `cmp` argument to `ObjProc` is the component's `pUserData` — not a `struct component*`. The `msg` parameter is forwarded as-is from `OBJ_SendMessageW`; it may include routing bits. Always mask: `(msg & MSG_DATA_MASK)` before switching or comparing.
@@ -171,7 +171,7 @@ The object pseudo-properties and the broadened `core.flushQueue()` semantics are
 ### `OBJ_AddComponentByName` vs `OBJ_AddComponent`
 Two distinct APIs exist:
 - `OBJ_AddComponent(struct Object *, uint32_t)` — C-only 2-arg API, unrestricted
-- `OBJ_AddComponentByName(lua_State*, struct Object *, const char*)` — 3-arg Lua bridge, checks `IsAttachOnly`, raises `luaL_error` on failure
+- `OBJ_AddComponentByName(lua_State*, struct Object *, const char*)` — 3-arg Lua bridge, checks `ClassFlags`, raises `luaL_error` on failure
 
 The names are similar enough to cause confusion. The rename from the original 3-arg `OBJ_AddComponent` was necessary to avoid a conflicting C declaration with the 2-arg public API in `orca.h`. When calling from C, always use the 2-arg form.
 

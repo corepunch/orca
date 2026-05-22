@@ -1,714 +1,405 @@
-#include <ctype.h>
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 #include "fs_xml_inline.h"
 
-// Forward declarations for the node-construction functions
-static struct Object *_FS_ConstructNode(xmlNodePtr element, bool_t send_start);
-struct Object *FS_ConstructNode(xmlNodePtr element);
-
-// External declaration of the property string parser defined in core/property/property_flow.c
-// parse_property handles all common property types (bool, int, float, string, color, enum,
-// struct) in pure C without a Lua state.  For kDataTypeObject it calls FS_LoadObjectFromXml.
 extern int parse_property(const char* str,
-                           struct PropertyType const* prop, void* valueptr);
+                          struct PropertyType const* prop,
+                          void* valueptr);
 
-static lpcString_t
-_SkipSpace(lpcString_t s)
-{
-  while (*s && isspace((unsigned char)*s)) s++;
-  return s;
-}
+static struct Object *node(struct _xmlNode* x);
 
-static void
-_TrimView(lpcString_t in, lpcString_t *begin, lpcString_t *end)
+static struct PropertyType const *
+propdesc(struct Object *o, lpcString_t name)
 {
-  lpcString_t b = in;
-  lpcString_t e = in + strlen(in);
-  while (b < e && isspace((unsigned char)*b)) b++;
-  while (e > b && isspace((unsigned char)*(e - 1))) e--;
-  *begin = b;
-  *end = e;
-}
-
-static void
-_TrimRange(lpcString_t *begin, lpcString_t *end)
-{
-  while (*begin < *end && isspace((unsigned char)**begin)) (*begin)++;
-  while (*end > *begin && isspace((unsigned char)*((*end) - 1))) (*end)--;
-}
-
-// Map a PropertyAttribute name string to its enum value.
-static enum PropertyAttribute
-_ParseAttributeStr(lpcString_t s)
-{
-  static lpcString_t names[] = {
-    "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA",
-    "VectorX", "VectorY", "VectorZ", "VectorW", NULL
-  };
-  for (int i = 0; names[i]; i++) {
-    if (!strcmp(s, names[i])) return (enum PropertyAttribute)i;
-  }
-  return kPropertyAttributeWholeProperty;
-}
-
-// Map a BindingMode name string to its enum value.
-static enum BindingMode
-_ParseBindingModeStr(lpcString_t s)
-{
-  static lpcString_t names[] = {
-    "OneWay", "TwoWay", "OneWayToSource", "Expression", NULL
-  };
-  for (int i = 0; names[i]; i++) {
-    if (!strcmp(s, names[i])) return (enum BindingMode)i;
-  }
-  return kBindingModeExpression;
+  struct PropertyType const *pd = OBJ_FindImplicitProperty(o, name);
+  return pd ? pd : OBJ_FindExplicitProperty(o, name);
 }
 
 static bool_t
-_MakeBindingExpr(lpcString_t input, fixedString_t out)
+special_attr(struct Object *o, lpcString_t name, lpcString_t value)
 {
-  lpcString_t begin = NULL;
-  lpcString_t end = NULL;
-  _TrimView(input, &begin, &end);
-  if (begin == end) {
+  if (!strcmp(name, "ClassName") || !strcmp(name, "PlaceholderTemplate")) return TRUE;
+  if (!strcmp(name, "Name") || !strcmp(name, "id")) {
+    OBJ_SetName(o, value);
+    return TRUE;
+  }
+  if (!strcmp(name, "class")) {
+    _SendMessage(o, StyleController, AddClasses, .ClassNames = value);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static bool_t
+binding_attr(struct Object *o, struct PropertyType const *pd, lpcString_t value)
+{
+  size_t n = strlen(value);
+  fixedString_t expr = {0};
+  if (n <= 10 || strncmp(value, "{Binding ", 9) || value[n - 1] != '}') return FALSE;
+  snprintf(expr, sizeof(expr), "{%.*s}", (int)(n - 10), value + 9);
+  return OBJ_AttachPropertyProgram(o, pd->Name, expr, kBindingModeExpression, TRUE);
+}
+
+static bool_t
+append_object(struct Property *p, struct Object *item)
+{
+  struct PropertyType const *pd = PROP_GetDesc(p);
+  void *old_items = NULL;
+  int old_count = 0;
+  if (!pd || !pd->IsArray || pd->DataType != kDataTypeObject) return FALSE;
+  if (PROP_GetValue(p)) {
+    memcpy(&old_items, PROP_GetValue(p), sizeof(old_items));
+    memcpy(&old_count, (char *)PROP_GetValue(p) + sizeof(old_items), sizeof(old_count));
+  }
+
+  int count = old_count + 1;
+  struct Object **items = calloc((size_t)count, sizeof(struct Object *));
+  if (!items) return FALSE;
+  if (old_items && old_count > 0) {
+    memcpy(items, old_items, (size_t)old_count * sizeof(struct Object *));
+  }
+  items[old_count] = item;
+
+  struct { void *items; int count; } value = { items, count };
+  PROP_SetValue(p, &value);
+  return TRUE;
+}
+
+static bool_t
+inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
+{
+  struct Property *triggers = NULL;
+  struct PropertyType const *td = OBJ_FindImplicitProperty(o, "Triggers");
+  struct Object *action = _LoadObjectFromXmlFragment(value, 0);
+  struct Object *trigger = action ? OBJ_Create(ID_EventTrigger) : NULL;
+  char routed[MAX_PROPERTY_STRING] = {0};
+
+  if (!td || FAILED(OBJ_FindLongProperty(o, td->FullIdentifier, &triggers)) || !trigger) {
+    if (action) OBJ_ReleaseRef(action);
+    Con_Error("Property '%s' does not support inline trigger shorthand", pd->Name);
     return FALSE;
   }
 
-  if ((size_t)(end - begin) > 8 && !strncmp(begin, "{Binding", 8) && *(end - 1) == '}') {
-    lpcString_t path_begin = begin + 8;
-    lpcString_t path_end = end - 1;
-    _TrimRange(&path_begin, &path_end);
-    if (path_begin >= path_end) return FALSE;
-
-    fixedString_t path = {0};
-    size_t path_len = (size_t)(path_end - path_begin);
-    if (path_len >= sizeof(path)) return FALSE;
-    memcpy(path, path_begin, path_len);
-    path[path_len] = '\0';
-
-    if (!strncmp(path, "Template/", 9)) {
-      int n = snprintf(out, sizeof(fixedString_t), "{##Template/%s}", path + 9);
-      return n > 0 && n < (int)sizeof(fixedString_t);
-    }
-    if (!strncmp(path, "##Template/", 11) ||
-        !strncmp(path, "##Root/", 7) ||
-        !strncmp(path, "DataContext/", 12) ||
-        *path == '.' || *path == '#') {
-      int n = snprintf(out, sizeof(fixedString_t), "{%s}", path);
-      return n > 0 && n < (int)sizeof(fixedString_t);
-    }
-
-    {
-      int n = snprintf(out, sizeof(fixedString_t), "{##Template/%s}", path);
-      return n > 0 && n < (int)sizeof(fixedString_t);
-    }
+  snprintf(routed, sizeof(routed),
+           (pd->Category && *pd->Category) ? "%s.%s" : "%s",
+           (pd->Category && *pd->Category) ? pd->Category : pd->Name,
+           pd->Name);
+  lpcString_t routed_value = routed;
+  if (FAILED(OBJ_SetPropertyValue(trigger, "RoutedEvent", &routed_value))) {
+    OBJ_ReleaseRef(trigger);
+    OBJ_ReleaseRef(action);
+    return FALSE;
   }
 
-  if (*begin == '{' && *(end - 1) == '}') {
-    size_t n = (size_t)(end - begin);
-    if (n >= sizeof(fixedString_t)) return FALSE;
-    memcpy(out, begin, n);
-    out[n] = '\0';
+  OBJ_AddChild(trigger, action, FALSE);
+  if (append_object(triggers, trigger)) return TRUE;
+  OBJ_ReleaseRef(trigger);
+  return FALSE;
+}
+
+static bool_t
+inline_value(struct Object *o, struct PropertyType const *pd,
+             struct Property *p, lpcString_t value)
+{
+  if (pd->DataType == kDataTypeEvent) return inline_event(o, pd, value);
+  if (pd->DataType == kDataTypeStruct) return _LoadStructFromXmlFragment(p, pd, value);
+
+  struct Object *child = _LoadObjectFromXmlFragment(value, 0);
+  if (!child) return FALSE;
+  if (GetBinding(child) || GetBindingExpression(child)) {
+    bool_t ok = OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);
+    OBJ_ReleaseRef(child);
+    return ok;
+  }
+  if (pd->DataType == kDataTypeObject) {
+    PROP_SetValue(p, &child);
     return TRUE;
   }
 
-  lpcString_t path_begin = begin;
-  lpcString_t path_end = end;
+  OBJ_ReleaseRef(child);
+  Con_Error("Unsupported inline object for property '%s'", pd->Name);
+  return FALSE;
+}
 
-  fixedString_t path = {0};
-  size_t path_len = (size_t)(path_end - path_begin);
-  if (path_len >= sizeof(path)) return FALSE;
-  memcpy(path, path_begin, path_len);
-  path[path_len] = '\0';
-
-  if (!strncmp(path, "Template/", 9)) {
-    int n = snprintf(out, sizeof(fixedString_t), "{##Template/%s}", path + 9);
-    return n > 0 && n < (int)sizeof(fixedString_t);
+static void
+set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
+{
+  struct Property *p = NULL;
+  char tmp[MAX_PROPERTY_STRING] = {0};
+  if (!value || !*value) return;
+  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+    Con_Error("Could not get property slot for '%s'", pd->Name);
+    return;
   }
-  if (!strncmp(path, "##Template/", 11) ||
-      !strncmp(path, "##Root/", 7) ||
-      !strncmp(path, "DataContext/", 12) ||
-      *path == '.' || *path == '#') {
-    int n = snprintf(out, sizeof(fixedString_t), "{%s}", path);
-    return n > 0 && n < (int)sizeof(fixedString_t);
+  if (binding_attr(o, pd, value)) return;
+
+  switch (value[0]) {
+    case '$':
+      value = FS_GetThemeValue(value);
+      if (!value) Con_Error("Could not resolve theme value for property '%s'", pd->Name);
+      break;
+    case '@': {
+      struct Object *ref = OBJ_FindByPath(o, value + 1);
+      if (ref && pd->DataType == kDataTypeObject) PROP_SetValue(p, &ref);
+      else Con_Error("Could not resolve object reference '%s' for property '%s'", value + 1, pd->Name);
+      return;
+    }
+    case '{':
+    case '<':
+      inline_value(o, pd, p, value);
+      return;
+  }
+  if (!value || !parse_property(value, pd, tmp)) return;
+  PROP_SetValue(p, tmp);
+  if (pd->DataType == kDataTypeString) free(*(char**)tmp);
+}
+
+static bool_t
+fill_struct(void *dst, struct PropertyType const *pd, struct _xmlNode* x)
+{
+  struct StructDesc const *sd = OBJ_FindStructDesc(pd->TypeString);
+  bool_t ok = sd && dst;
+
+  if (!ok) {
+    Con_Error("Could not prepare struct '%s' for property '%s'", pd->TypeString, pd->Name);
+    return FALSE;
   }
 
-  {
-    int n = snprintf(out, sizeof(fixedString_t), "{##Template/%s}", path);
-    return n > 0 && n < (int)sizeof(fixedString_t);
+  FOR_EACH_LIST(xmlAttr, a, x->properties) {
+    xmlChar *v = xmlGetProp(x, a->name);
+    struct PropertyType const *fd = _FindStructField(sd, (lpcString_t)a->name);
+    if (!v || !fd || !_SetStructFieldFromString(fd, (char *)dst + fd->Offset, (lpcString_t)v)) {
+      ok = FALSE;
+      Con_Error("Could not set field '%s' on struct '%s'", a->name, sd->StructName);
+    }
+    if (v) xmlFree(v);
+  }
+
+  if (!ok) _ClearStructValue(sd, dst);
+  return ok;
+}
+
+static bool_t
+set_struct_node(struct Property *p, struct PropertyType const *pd, struct _xmlNode* x)
+{
+  struct StructDesc const *sd = OBJ_FindStructDesc(pd->TypeString);
+  void *tmp = sd ? calloc(1, (size_t)sd->StructSize) : NULL;
+  bool_t ok = fill_struct(tmp, pd, x);
+
+  if (ok) PROP_SetValue(p, tmp);
+  free(tmp);
+  return ok;
+}
+
+static void
+array_prop(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
+{
+  struct Property *p = NULL;
+  struct StructDesc const *sd = pd->DataType == kDataTypeStruct ? OBJ_FindStructDesc(pd->TypeString) : NULL;
+  int count = 0;
+  int index = 0;
+
+  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+    Con_Error("Could not get property slot for '%s'", pd->Name);
+    return;
+  }
+  if (pd->DataType != kDataTypeObject && pd->DataType != kDataTypeStruct) {
+    Con_Error("array property '%s' not supported in XML loader", pd->Name);
+    return;
+  }
+  if (pd->DataType == kDataTypeStruct && !sd) {
+    Con_Error("Could not resolve struct descriptor '%s' for array property '%s'", pd->TypeString, pd->Name);
+    return;
+  }
+
+  xmlForEach(c, x) count++;
+  void *items = count ? calloc((size_t)count, (size_t)pd->DataSize) : NULL;
+  if (count && !items) return;
+
+  xmlForEach(c, x) {
+    if (pd->DataType == kDataTypeObject) {
+      struct Object *child = node(c);
+      if (child) ((struct Object **)items)[index++] = child;
+    } else {
+      void *dst = (char *)items + (size_t)index * pd->DataSize;
+      if (fill_struct(dst, pd, c)) index++;
+    }
+  }
+
+  struct { void *items; int count; } value = { items, index };
+  PROP_SetValue(p, &value);
+}
+
+static void
+property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
+{
+  struct Property *p = NULL;
+  if (pd->IsArray) {
+    array_prop(o, pd, x);
+    return;
+  }
+  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+    Con_Error("Could not get property slot for '%s'", pd->Name);
+    return;
+  }
+
+  if (pd->DataType == kDataTypeStruct && x->properties) {
+    set_struct_node(p, pd, x);
+    return;
+  }
+
+  xmlChar *text = xmlNodeGetContent(x);
+  if (text && *text && (!x->children || x->children->type == XML_TEXT_NODE)) {
+    set_text(o, pd, (lpcString_t)text);
+    xmlFree(text);
+    return;
+  }
+  if (text) xmlFree(text);
+
+  xmlForEach(c, x) {
+    if (pd->DataType == kDataTypeStruct) {
+      set_struct_node(p, pd, c);
+      return;
+    }
+    struct Object *child = node(c);
+    if (!child) return;
+    if (GetBinding(child) || GetBindingExpression(child)) {
+      OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);
+      OBJ_ReleaseRef(child);
+    } else if (pd->DataType == kDataTypeObject) {
+      PROP_SetValue(p, &child);
+    } else {
+      OBJ_ReleaseRef(child);
+      Con_Error("Property '%s' does not accept object child", pd->Name);
+    }
+    return;
   }
 }
 
 static bool_t
-_AttachPropertyProgramFromExpression(struct Object *obj,
-                                     lpcString_t prop_name,
-                                     lpcString_t expression,
-                                     xmlNodePtr attr_source,
-                                     xmlNodePtr fallback_attr_source)
+binding_node(struct Object *o, struct _xmlNode* x)
 {
-  enum PropertyAttribute attribute = kPropertyAttributeWholeProperty;
-  enum BindingMode mode = kBindingModeExpression;
-  bool_t enabled = TRUE;
-
-  xmlChar* attr_xml = attr_source ? xmlGetProp(attr_source, XMLSTR("Attribute")) : NULL;
-  xmlChar* mode_xml = attr_source ? xmlGetProp(attr_source, XMLSTR("Mode")) : NULL;
-  xmlChar* en_xml   = attr_source ? xmlGetProp(attr_source, XMLSTR("Enabled")) : NULL;
-
-  if (!attr_xml && fallback_attr_source) attr_xml = xmlGetProp(fallback_attr_source, XMLSTR("Attribute"));
-  if (!mode_xml && fallback_attr_source) mode_xml = xmlGetProp(fallback_attr_source, XMLSTR("Mode"));
-  if (!en_xml && fallback_attr_source) en_xml = xmlGetProp(fallback_attr_source, XMLSTR("Enabled"));
-
-  if (attr_xml) {
-    attribute = _ParseAttributeStr((lpcString_t)attr_xml);
-    xmlFree(attr_xml);
-  }
-  if (mode_xml) {
-    mode = _ParseBindingModeStr((lpcString_t)mode_xml);
-    xmlFree(mode_xml);
-  }
-  if (en_xml) {
-    enabled = strcmp((lpcString_t)en_xml, "false") != 0;
-    xmlFree(en_xml);
+  lpcString_t tag = (lpcString_t)x->name;
+  if (strcmp(tag, "Binding") && strcmp(tag, "BindingExpression") && strcmp(tag, "ExpressionBinding")) {
+    return FALSE;
   }
 
-  return OBJ_AttachPropertyProgram(obj, prop_name, expression,
-                                   attribute, mode, enabled);
-}
-
-// Parse a single XML attribute value and set it on obj.
-// Handles Name/id, class, and all registered properties.
-static void
-_SetPropertyFromString(struct Object *obj, lpcString_t name, lpcString_t value)
-{
-  // Skip editor-only / template attributes
-  if (!strcmp(name, "ClassName") || !strcmp(name, "PlaceholderTemplate"))
-    return;
-
-  // Identity attributes
-  if (!strcmp(name, "Name") || !strcmp(name, "id")) {
-    OBJ_SetName(obj, value);
-    return;
+  xmlChar *target = xmlGetProp(x, XMLSTR("Target"));
+  xmlChar *text = xmlNodeGetContent(x);
+  if (target && text && *text) {
+    OBJ_AttachPropertyProgram(o, (lpcString_t)target, (lpcString_t)text,
+                              kBindingModeExpression, TRUE);
+  } else {
+    Con_Error("<%s> requires Target and text content", tag);
   }
-
-  // CSS class list
-  if (!strcmp(name, "class")) {
-    _SendMessage(obj, StyleController, AddClasses, .ClassNames = value);
-    return;
-  }
-
-  // Look up the property type descriptor (implicit first, then full-qualified)
-  struct PropertyType const *pdesc = OBJ_FindImplicitProperty(obj, name);
-  if (!pdesc) pdesc = OBJ_FindExplicitProperty(obj, name);
-  if (!pdesc) {
-    Con_Error("Unknown property '%s' for class '%s'",
-               name, OBJ_GetClassName(obj));
-    return;
-  }
-
-  // Find or create the property slot
-  struct Property *prop = NULL;
-  if (FAILED(OBJ_FindLongProperty(obj, pdesc->FullIdentifier, &prop))) {
-    Con_Error("Could not get property slot for '%s'", pdesc->Name);
-    return;
-  }
-
-  // Resolve theme variables: "$accent" → FS_GetThemeValue("$accent")
-  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
-  if (!resolved) resolved = value;
-
-  // Syntax sugar: {Binding Card.Title} => {##Template/Card.Title}
-  // This attaches a property program rather than treating it as a literal.
-  if (pdesc->DataType != kDataTypeEvent) {
-    fixedString_t binding_expr = {0};
-    if (_MakeBindingExpr(resolved, binding_expr) && !strncmp(_SkipSpace(resolved), "{Binding", 8)) {
-      _AttachPropertyProgramFromExpression(obj, pdesc->Name, binding_expr, NULL, NULL);
-      return;
-    }
-  }
-
-  // XML object references: "@../Popup" resolves against the current object.
-  // This keeps trigger/action wiring declarative without requiring file loads.
-  if (pdesc->DataType == kDataTypeObject && resolved[0] == '@') {
-    struct Object *ref = OBJ_FindByPath(obj, resolved + 1);
-    if (!ref) {
-      Con_Error("Could not resolve object reference '%s' for property '%s'",
-                 resolved + 1, pdesc->Name);
-      return;
-    }
-    PROP_SetValue(prop, &ref);
-    return;
-  }
-
-  // Inline object expressions can be assigned directly to object properties.
-  // The fragment is parsed as a self-contained XML document and constructed
-  // the same way as a file-backed object.
-  lpcString_t inline_expr = resolved;
-  while (*inline_expr && isspace((unsigned char)*inline_expr)) inline_expr++;
-  if (pdesc->DataType == kDataTypeEvent && *inline_expr == '{') {
-    if (_LoadEventTriggerFromXmlFragment(obj, pdesc, inline_expr)) {
-      return;
-    }
-  }
-  if (pdesc->DataType == kDataTypeStruct && *inline_expr == '{') {
-    if (_LoadStructFromXmlFragment(prop, pdesc, inline_expr, pdesc->Name)) {
-      return;
-    }
-  }
-  if (pdesc->DataType == kDataTypeObject &&
-      (*inline_expr == '<' || *inline_expr == '{')) {
-    struct Object *inline_obj = _LoadObjectFromXmlFragment(inline_expr, pdesc->Name, 0);
-    if (!inline_obj) {
-      return;
-    }
-    PROP_SetValue(prop, &inline_obj);
-    return;
-  }
-
-  // Parse the string value into a stack-allocated buffer using pure-C parse_property.
-  // Handles bool, int, float, string, color, enum, struct (via OBJ_ParseStruct),
-  // and kDataTypeObject (via FS_LoadObjectFromXml).
-  char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  if (!parse_property(resolved, pdesc, tmpbuf)) return;
-
-  PROP_SetValue(prop, tmpbuf);
-
-  // parse_property allocates a new string with strdup() for kDataTypeString.
-  // PROP_SetValue → PROP_SetStateValue then strdup's it again internally, so
-  // free the temporary copy here to avoid a memory leak.
-  if (pdesc->DataType == kDataTypeString) {
-    free(*(char**)tmpbuf);
-  }
-}
-
-// Build an object-property child element (e.g. <Grid.Columns>).
-static void
-_ConstructProperty(struct Object *obj,
-                   struct PropertyType const *pdesc, xmlNodePtr element)
-{
-  // Array properties are built from child elements. Object arrays instantiate
-  // child objects; struct arrays populate struct blobs from attributes.
-  if (pdesc->IsArray) {
-    if (pdesc->DataType != kDataTypeObject && pdesc->DataType != kDataTypeStruct) {
-      Con_Error("array property '%s' not supported in C-only XML parser - skipped",
-                pdesc->Name);
-      return;
-    }
-
-    struct Property *prop = NULL;
-    if (FAILED(OBJ_FindLongProperty(obj, pdesc->FullIdentifier, &prop))) {
-      Con_Error("Could not get array property slot for '%s'", pdesc->Name);
-      return;
-    }
-    int numitems = 0;
-    xmlForEach(sub, element) {
-      xmlChar* dis = xmlGetProp(sub, XMLSTR("IsDisabled"));
-      bool_t is_disabled = dis && !xmlStrcmp(dis, XMLSTR("true"));
-      if (dis) xmlFree(dis);
-      if (!is_disabled && sub->type == XML_ELEMENT_NODE) {
-        numitems++;
-      }
-    }
-
-    void *items = numitems ? calloc((size_t)numitems, (size_t)pdesc->DataSize) : NULL;
-    struct StructDesc const *sdesc = NULL;
-    if (pdesc->DataType == kDataTypeStruct) {
-      sdesc = OBJ_FindStructDesc(pdesc->TypeString);
-      if (!sdesc) {
-        Con_Error("Could not resolve struct descriptor '%s' for array property '%s'",
-                  pdesc->TypeString, pdesc->Name);
-        free(items);
-        return;
-      }
-    }
-    if (numitems > 0 && !items) {
-      Con_Error("Could not allocate array storage for property '%s'", pdesc->Name);
-      return;
-    }
-
-    int index = 0;
-    xmlForEach(sub, element) {
-      if (sub->type != XML_ELEMENT_NODE) {
-        continue;
-      }
-      xmlChar* dis = xmlGetProp(sub, XMLSTR("IsDisabled"));
-      bool_t is_disabled = dis && !xmlStrcmp(dis, XMLSTR("true"));
-      if (dis) xmlFree(dis);
-      if (is_disabled) {
-        continue;
-      }
-
-      if (pdesc->DataType == kDataTypeObject) {
-        struct Object *child = FS_ConstructNode(sub);
-        if (!child) {
-          continue;
-        }
-        if (items) {
-          ((struct Object **)items)[index++] = child;
-        }
-      } else {
-        void *dst = items ? (char*)items + (size_t)index * pdesc->DataSize : NULL;
-        void *tmp = sdesc ? calloc(1, (size_t)sdesc->StructSize) : NULL;
-        if (!tmp) {
-          Con_Error("Could not allocate struct storage for '%s' while parsing array property '%s'",
-                    sdesc->StructName, pdesc->Name);
-          continue;
-        }
-        bool_t ok = TRUE;
-        FOR_EACH_LIST(xmlAttr, attr, sub->properties) {
-          xmlChar* val = xmlGetProp(sub, attr->name);
-          if (!val) {
-            continue;
-          }
-          struct PropertyType const *field = _FindStructField(sdesc, (lpcString_t)attr->name);
-          if (!field) {
-            Con_Error("Unknown field '%s' for struct '%s' in array property '%s'",
-                      attr->name, sdesc->StructName, pdesc->Name);
-            xmlFree(val);
-            continue;
-          }
-          if (!_SetStructFieldFromString(field, (char*)tmp + field->Offset, (lpcString_t)val)) {
-            ok = FALSE;
-          }
-          xmlFree(val);
-        }
-        if (ok && tmp && dst) {
-          memcpy(dst, tmp, (size_t)sdesc->StructSize);
-          index++;
-        }
-        if (!ok && tmp) {
-          _ClearStructValue(sdesc, tmp);
-        }
-        free(tmp);
-      }
-    }
-
-    struct {
-      void *items;
-      int count;
-    } array_value = { .items = items, .count = index };
-    PROP_SetValue(prop, &array_value);
-    return;
-  }
-
-  // Non-array case: check for a Value attribute first
-  xmlChar* val = xmlGetProp(element, XMLSTR("Value"));
-  if (val) {
-    _SetPropertyFromString(obj, pdesc->Name, (lpcString_t)val);
-    xmlFree(val);
-    return;
-  }
-
-  // Allow implicit text-content expressions (backward compatible):
-  //   <Some.Property>{../Card.Title}</Some.Property>
-  //   <Some.Property>IF(STEP(...), "auto", "manual")</Some.Property>
-  xmlChar* text = xmlNodeGetContent(element);
-  lpcString_t expr_text = text ? _SkipSpace((lpcString_t)text) : NULL;
-  if (expr_text && *expr_text) {
-    fixedString_t expr = {0};
-    if (_MakeBindingExpr(expr_text, expr) && strstr(expr_text, "{Binding") == expr_text) {
-      _AttachPropertyProgramFromExpression(obj, pdesc->Name, expr, NULL, NULL);
-    } else if (expr_text[0] == '{' || !strncmp(expr_text, "IF(", 3) || !strncmp(expr_text, "STEP(", 5)) {
-      _AttachPropertyProgramFromExpression(obj, pdesc->Name, expr_text, NULL, NULL);
-    } else {
-      Con_Error("Property '%s' has unexpected text content (not an expression); use Value=\"...\" instead",
-                pdesc->Name);
-    }
-  }
+  if (target) xmlFree(target);
   if (text) xmlFree(text);
+  return TRUE;
 }
 
-// Handle an attach-only component element generically: attach the component to
-// obj, apply all XML attributes as properties on the parent object, and process
-// any child elements that correspond to explicit properties on the parent or to
-// inline child objects whose tag name matches a property of the parent.
 static void
-_HandleAttachOnlyComponent(struct Object *obj, xmlNodePtr element,
-                           struct ClassDesc const *cls)
+visit_attr(struct Object *o, xmlAttrPtr a)
 {
-  OBJ_AddComponent(obj, cls->ClassID);
+  xmlChar *value = xmlGetProp(a->parent, a->name);
+  lpcString_t name = (lpcString_t)a->name;
+  struct PropertyType const *pd = propdesc(o, name);
 
-  // Apply XML attributes as properties on the parent object.
-  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
-    xmlChar* val = xmlGetProp(element, attr->name);
-    if (val) {
-      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
-      xmlFree(val);
-    }
+  if (!value) return;
+  if (!special_attr(o, name, (lpcString_t)value)) {
+    if (pd) set_text(o, pd, (lpcString_t)value);
+    else Con_Error("Unknown property '%s' for class '%s'", name, OBJ_GetClassName(o));
   }
-
-  // Process child elements: explicit properties of the parent, or inline child
-  // objects assigned to a parent property whose name matches the element tag.
-  xmlForEach(sub, element) {
-    lpcString_t subtag = (lpcString_t)sub->name;
-
-    struct ClassDesc const *subcls = OBJ_FindClass(subtag);
-    if (subcls && subcls->IsAttachOnly) {
-      _HandleAttachOnlyComponent(obj, sub, subcls);
-      continue;
-    }
-
-    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(obj, subtag);
-    if (pdesc) {
-      _ConstructProperty(obj, pdesc, sub);
-      continue;
-    }
-
-    if (!strcmp(subtag, "Binding") ||
-        !strcmp(subtag, "BindingExpression") ||
-        !strcmp(subtag, "ExpressionBinding")) {
-      continue;
-    }
-
-    // Try to construct as a child object and assign to the matching property.
-    struct Object *child = FS_ConstructNode(sub);
-    if (child) {
-      struct Property *prop = NULL;
-      if (SUCCEEDED(OBJ_FindShortProperty(obj, subtag, &prop))) {
-        PROP_SetValue(prop, &child);
-      } else {
-        OBJ_AddChild(obj, child, FALSE);
-      }
-    }
-  }
+  xmlFree(value);
 }
 
-// Handle <LayerPrefabPlaceholder> and <ObjectPrefabPlaceholder>: load the
-// linked XML file (PlaceholderTemplate attribute) in-place and apply the
-// remaining attributes to the loaded object before dispatching Object.Start.
-// No Lua state is required.
-static struct Object *
-_HandlePrefabPlaceholder(xmlNodePtr element)
+static void
+visit_child(struct Object *o, struct _xmlNode* c)
 {
-  xmlChar* tmpl = xmlGetProp(element, XMLSTR("PlaceholderTemplate"));
-  if (!tmpl) {
-    Con_Error("PrefabPlaceholder missing PlaceholderTemplate attribute");
-    return NULL;
+  if (binding_node(o, c)) return;
+
+  struct PropertyType const *pd = OBJ_FindExplicitProperty(o, (lpcString_t)c->name);
+  if (pd) {
+    property_node(o, pd, c);
+    return;
   }
-  // Load the template XML doc manually so we can defer Object.Start on the
-  // root until after placeholder attribute overrides have been applied.
-  struct Object *obj = FS_LoadObject((char*)tmpl);
-  xmlFree(tmpl);
-  if (obj) {
-    OBJ_SetFlags(obj, OBJ_GetFlags(obj) | OF_TEMPLATE);
-  }
-  return obj;
+
+  struct Object *child = node(c);
+  if (child) OBJ_AddChild(o, child, FALSE);
 }
 
-// Build an Object tree from an XML element node.
-// send_start: when TRUE, dispatches Object.Start on the root after construction.
-//             Set FALSE in _HandlePrefabPlaceholder to defer Start until after
-//             placeholder attribute overrides have been applied.
 static struct Object *
-_FS_ConstructNode(xmlNodePtr element, bool_t send_start)
+prefab(struct _xmlNode* x)
 {
-  lpcString_t tag = (lpcString_t)element->name;
-  struct Object *obj = NULL;
-  bool_t prefab = FALSE;
-  
-  // PrefabPlaceholder: handled separately; it manages Start dispatch itself
-  if (!strcmp(tag, "LayerPrefabPlaceholder") ||
-      !strcmp(tag, "ObjectPrefabPlaceholder") ||
-      !strcmp(tag, "LibraryPlaceholder"))
-  {
-    obj = _HandlePrefabPlaceholder(element);
-    prefab = TRUE;
-  }
-  else
-  {
-    struct ClassDesc const *cls = OBJ_FindClass(tag);
-    if (!cls) {
-      Con_Error("Unknown element type '%s'", tag);
-      return NULL;
-    }
-    obj = OBJ_Create(cls->ClassID);
-  }
-  
-  if (!obj) {
-    Con_Error("Can not allocate object");
+  xmlChar* tmpl = xmlGetProp(x, XMLSTR("PlaceholderTemplate"));
+  struct Object *o = tmpl ? FS_LoadObject((char*)tmpl) : NULL;
+  if (tmpl) xmlFree(tmpl);
+  if (o) OBJ_SetFlags(o, OBJ_GetFlags(o) | OF_TEMPLATE);
+  else Con_Error("PrefabPlaceholder missing PlaceholderTemplate attribute");
+  return o;
+}
+
+static struct Object *
+node(struct _xmlNode* x)
+{
+  lpcString_t tag = (lpcString_t)x->name;
+  bool_t is_prefab = !strcmp(tag, "LayerPrefabPlaceholder") ||
+                     !strcmp(tag, "ObjectPrefabPlaceholder") ||
+                     !strcmp(tag, "LibraryPlaceholder");
+  struct ClassDesc const *cls = is_prefab ? NULL : OBJ_FindClass(tag);
+  struct Object *o = is_prefab ? prefab(x) : cls ? OBJ_Create(cls->ClassID) : NULL;
+
+  if (!o) {
+    if (!is_prefab) Con_Error("Unknown element type '%s'", tag);
     return NULL;
   }
 
-  // Parse all XML attributes as object properties
-  FOR_EACH_LIST(xmlAttr, attr, element->properties) {
-    xmlChar* val = xmlGetProp(element, attr->name);
-    if (val) {
-      _SetPropertyFromString(obj, (lpcString_t)attr->name, (lpcString_t)val);
-      xmlFree(val);
+  FOR_EACH_LIST(xmlAttr, a, x->properties) visit_attr(o, a);
+
+  FOR_EACH_LIST(xmlNode, t, x->children) {
+    if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
+      OBJ_SetTextContent(o, (lpcString_t)t->content);
+      if (!is_prefab) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
+      return o;
     }
   }
 
-  // If the element has a direct text child (e.g. <Label>Hello</Label>), store it
-  // and return early without processing child elements.  The XML parser has
-  // XML_PARSE_NOBLANKS active, so only non-blank text nodes survive.
-  xmlChar* direct_text = NULL;
-  FOR_EACH_LIST(xmlNode, tnode, element->children) {
-    if (tnode->type == XML_TEXT_NODE && xmlStrlen(tnode->content) > 0) {
-      direct_text = tnode->content;
-      break;
-    }
-  }
-  if (direct_text) {
-    OBJ_SetTextContent(obj, (lpcString_t)direct_text);
-    if (send_start) OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
-    return obj;
-  }
-
-  // Process child elements
-  xmlForEach(sub, element) {
-    // Skip elements marked as disabled
-    xmlChar* dis = xmlGetProp(sub, XMLSTR("IsDisabled"));
-    bool_t is_disabled = dis && !xmlStrcmp(dis, XMLSTR("true"));
-    if (dis) xmlFree(dis);
-    if (is_disabled) continue;
-
-    lpcString_t tag = (lpcString_t)sub->name;
-
-    // Explicit property child (e.g. <Grid.Columns> or <AnimationClip.Keyframes>)
-    struct PropertyType const *pdesc = OBJ_FindExplicitProperty(obj, tag);
-    if (pdesc) {
-      _ConstructProperty(obj, pdesc, sub);
-      continue;
-    }
-
-    struct ClassDesc const *subcls = OBJ_FindClass(tag);
-    if (subcls && subcls->IsAttachOnly) {
-      _HandleAttachOnlyComponent(obj, sub, subcls);
-      continue;
-    }
-
-    // Non-constructible declarative elements: handled elsewhere or by Lua.
-    if (!strcmp(tag, "script")        ||
-        !strcmp(tag, "EventListener") ||
-        !strcmp(tag, "StyleSheet")    ||
-        !strcmp(tag, "ValueTicker")   ||
-        !strcmp(tag, "Binding")       ||
-        !strcmp(tag, "BindingExpression") ||
-        !strcmp(tag, "ExpressionBinding")) {
-      continue;
-    }
-
-    if (!prefab) {
-      // Regular child object: recurse and attach (children always get Start)
-      struct Object *child = _FS_ConstructNode(sub, TRUE);
-      if (child) {
-        OBJ_AddChild(obj, child, FALSE);
-      }
-    } else {
-      Con_Error("Can't parse node %s", tag);
-    }
-  }
-
-  // Second pass: handle explicit top-level BindingExpression, legacy
-  // ExpressionBinding, and Binding elements.
-  xmlForEach(sub, element) {
-    lpcString_t tag = (lpcString_t)sub->name;
-    if (!strcmp(tag, "BindingExpression") ||
-        !strcmp(tag, "ExpressionBinding") ||
-        !strcmp(tag, "Binding")) {
-      xmlChar* target_attr = xmlGetProp(sub, XMLSTR("Target"));
-      if (!target_attr) {
-        Con_Error("<%s> element is missing required Target attribute", tag);
-        continue;
-      }
-      xmlChar* expr_text = xmlNodeGetContent(sub);
-      lpcString_t expr = expr_text ? _SkipSpace((lpcString_t)expr_text) : NULL;
-      if (!expr || !*expr) {
-        Con_Error("<%s Target=\"%s\"> has empty content", tag, target_attr);
-        xmlFree(target_attr);
-        if (expr_text) xmlFree(expr_text);
-        continue;
-      }
-
-      fixedString_t normalized_expr = {0};
-      if (!strcmp(tag, "Binding")) {
-        if (!_MakeBindingExpr(expr, normalized_expr)) {
-          Con_Error("<%s Target=\"%s\"> has malformed binding expression", tag, target_attr);
-          xmlFree(target_attr);
-          xmlFree(expr_text);
-          continue;
-        }
-        _AttachPropertyProgramFromExpression(obj, (lpcString_t)target_attr, normalized_expr, NULL, NULL);
-      } else {
-        _AttachPropertyProgramFromExpression(obj, (lpcString_t)target_attr, expr, NULL, NULL);
-      }
-      xmlFree(target_attr);
-      if (expr_text) xmlFree(expr_text);
-    }
-  }
-
-  if (send_start) OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
-  return obj;
+  xmlForEach(c, x) visit_child(o, c);
+  if (!is_prefab) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
+  return o;
 }
 
-// Public wrapper: always sends Object.Start for the root.
-struct Object *
-FS_ConstructNode(xmlNodePtr element)
+static struct Object *
+load_doc(char const *xml, int len, lpcString_t name)
 {
-  return _FS_ConstructNode(element, TRUE);
+  char *expanded = _ExpandXmlPositionalArgs(xml);
+  struct _xmlDoc *doc = xmlReadMemory(expanded ? expanded : xml,
+                              expanded ? (int)strlen(expanded) : len,
+                              name, NULL, XML_FLAGS);
+  free(expanded);
+  if (!doc) return NULL;
+
+  struct _xmlNode* root = xmlDocGetRootElement(doc);
+  struct Object *o = root ? node(root) : NULL;
+  xmlFreeDoc(doc);
+  return o;
 }
 
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path)
 {
-  if (!path) return NULL;
   struct file* fp = FS_LoadFile(path);
-  if (fp) {
-    char *normalized = _NormalizeXmlShorthand((lpcString_t)fp->data);
-    const char *xml_text = normalized ? normalized : (lpcString_t)fp->data;
-    int xml_len = normalized ? (int)strlen(xml_text) : (int)fp->size;
-    xmlDoc* doc = xmlReadMemory(xml_text, xml_len,
-                                path, NULL, XML_FLAGS);
-    FS_FreeFile(fp);
-    if (!doc) {
-      free(normalized);
-      Con_Error("Failed to parse '%s'", path);
-      return NULL;
-    }
-    xmlNodePtr root = xmlDocGetRootElement(doc);
-    struct Object *result = root ? FS_ConstructNode(root) : NULL;
-    xmlFreeDoc(doc);
-    free(normalized);
-    if (result) {
-      OBJ_SetSourceFile(result, path);
-//      OBJ_RegisterPrefab(result, path);
-    }
-    return result;
-  } else {
-    Con_Error("Failed to load '%s'", path);
-    return NULL;
-  }
-  return NULL;
-}
-
-ORCA_API struct Object *
-FS_LoadObjectFromXML(lpcString_t path)
-{
-  return FS_LoadObjectFromXml(path);
+  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path) : NULL;
+  if (fp) FS_FreeFile(fp);
+  if (o) OBJ_SetSourceFile(o, path);
+  else Con_Error("Failed to parse '%s'", path);
+  return o;
 }
 
 ORCA_API struct Object *
 FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
-  char *normalized = _NormalizeXmlShorthand(xml_string);
-  const char *xml_text = normalized ? normalized : xml_string;
-  xmlDoc* doc = xmlReadMemory(xml_text, normalized ? (int)strlen(xml_text) : (int)strlen(xml_string),
-                              NULL, NULL, XML_FLAGS);
-  if (!doc) {
-    free(normalized);
-    Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
-    return NULL;
-  }
-  xmlNodePtr root = xmlDocGetRootElement(doc);
-  struct Object *result = root ? FS_ConstructNode(root) : NULL;
-  xmlFreeDoc(doc);
-  free(normalized);
-  return result;
-}
-
-ORCA_API struct Object *
-FS_LoadObjectFromXMLString(lpcString_t xml_string)
-{
-  return FS_LoadObjectFromXmlString(xml_string);
+  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL);
+  if (!o) Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
+  return o;
 }

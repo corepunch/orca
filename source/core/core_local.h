@@ -87,8 +87,6 @@ struct file_loader {
   struct Object* (*fn)(int argc, const char* argv[]);
 };
 
-struct property_program;
-
 struct game
 {
   longTime_t realtime;
@@ -102,7 +100,7 @@ struct game
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
-  struct property_program* programs;
+  struct Property* binding_properties;
   struct message_desc_entry message_types[MAX_MESSAGE_TYPES];
 };
 
@@ -192,7 +190,7 @@ CMP_SetProperty(struct component*, struct Property *);
 uint32_t
 PROP_GetShortID(struct Property const *);
 bool_t
-PROP_Import(struct Property *, enum PropertyAttribute, struct vm_register*);
+PROP_Import(struct Property *, struct vm_register*);
 void
 PROP_SetTypeSize(struct Property *, eDataType_t, uint32_t);
 struct Property *
@@ -215,9 +213,13 @@ UI_ProcessCommands(struct lua_State* L, struct Object *root);
 
 ORCA_API void
 PROP_AttachProgram(struct Property *,
-                   enum PropertyAttribute,
-                   struct token* program,
-                   lpcString_t source);
+                   struct token* program);
+
+ORCA_API bool_t
+PROP_SetBinding(struct Property *,
+                lpcString_t expression,
+                eBindingMode_t mode,
+                bool_t enabled);
 
 extern struct game core;
 

@@ -170,7 +170,6 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "parent");
             n.extra = xattr(e, "concept");
-            if (bflag(e, "attach-only")) n.flags |= CG_FLAG_ATTACH_ONLY;
             break;
         case CG_KIND_METHOD:
             n.name  = xattr(e, "name");

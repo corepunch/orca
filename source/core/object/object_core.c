@@ -126,7 +126,7 @@ OBJ_Release(struct Object *pobj)
     PROP_Clear(p);
   }
 
-  // Dispatch Object.Release so attach-only components (e.g., StyleController) can clean up.
+  // Dispatch Object.Release so components (e.g., StyleController) can clean up.
   // Script-side cleanup is deferred through kEventClearReference.
   OBJ_SendMessageW(pobj, ID_Object_Release, 0, NULL);
   OBJ_ReleaseProperties(pobj);
@@ -167,10 +167,6 @@ OBJ_AddComponentByName(lua_State* L, struct Object *pobj, lpcString_t className)
   struct ClassDesc const *cls = OBJ_FindClass(className);
   if (!cls) {
     luaL_error(L, "addComponent: class '%s' not found", className);
-    return;
-  }
-  if (!cls->IsAttachOnly) {
-    luaL_error(L, "addComponent: class '%s' is not attach-only; use it as a standalone object instead", className);
     return;
   }
   OBJ_AddComponent(pobj, cls->ClassID);

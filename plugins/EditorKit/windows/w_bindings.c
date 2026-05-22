@@ -30,8 +30,8 @@ ED_PrintProperty2(LPPROPDEF pdef, LPVOID parm)
   ED_Echo(wnd, "%-*.*s", NAME_WIDTH, NAME_WIDTH, pdef->szName);
   ED_Echo(wnd, FMT_NEXT_LINE, 0);
   
-  if (pdef->pPrograms[0]) {
-    ED_Echo(wnd, pdef->pPrograms[0]);
+  if (pdef->pProgram) {
+    ED_Echo(wnd, pdef->pProgram);
     ED_Echo(wnd, FMT_NEXT_LINE, 0);
   }
 }

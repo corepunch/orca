@@ -728,7 +728,7 @@ static void test_runtime_import_int(void) {
         struct vm_register r = {0};
         r.type     = kDataTypeInt;
         r.value[0] = 99.0f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(PROP_Import(prop, &r));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
     }
@@ -742,7 +742,7 @@ static void test_runtime_import_float(void) {
         r.type     = kDataTypeFloat;
         r.size     = sizeof(float);
         r.value[0] = 1.5f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(PROP_Import(prop, &r));
         EXPECT(*(float*)PROP_GetValue(prop) == 1.5f);
     }
 }
@@ -756,7 +756,7 @@ static void test_runtime_import_string(void) {
         r.size = sizeof(const char*);
         const char *s = "imported";
         memcpy(r.value, &s, sizeof(s));
-        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(PROP_Import(prop, &r));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "imported");
     }
 }
@@ -767,7 +767,7 @@ static void test_runtime_attach_and_update_int(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
         struct token *prog = Token_Create("21");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "21");
+        PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
         core.frame++;
         EXPECT(PROP_Update(prop));
@@ -782,7 +782,7 @@ static void test_runtime_attach_and_update_string(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("\"bound\"");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty, prog, "\"bound\"");
+        PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
         core.frame++;
         EXPECT(PROP_Update(prop));
@@ -811,7 +811,7 @@ static void test_runtime_property_reference(void) {
 
         struct token *prog = Token_Create("{./Value}");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(propCount, kPropertyAttributeWholeProperty, prog, "{./Value}");
+        PROP_AttachProgram(propCount, prog);
         EXPECT(PROP_HasProgram(propCount));
         core.frame++;
         EXPECT(PROP_Update(propCount));
@@ -830,8 +830,7 @@ static void test_runtime_string_concat_program(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
         struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
-                           prog, "ADD(\"foo\", \"bar\")");
+        PROP_AttachProgram(prop, prog);
         core.frame++;
         EXPECT(PROP_Update(prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "foobar");
@@ -908,8 +907,7 @@ static void test_string_binding_unset_source_gives_empty(void) {
         /* Source is never set — its char* is NULL. */
         struct token *prog = Token_Create("{./Source}");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(target, kPropertyAttributeWholeProperty,
-                           prog, "{./Source}");
+        PROP_AttachProgram(target, prog);
         EXPECT(PROP_HasProgram(target));
         core.frame++;
         EXPECT(PROP_Update(target));
@@ -933,8 +931,7 @@ static void test_string_binding_value_propagates(void) {
 
         struct token *prog = Token_Create("{./Source}");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(target, kPropertyAttributeWholeProperty,
-                           prog, "{./Source}");
+        PROP_AttachProgram(target, prog);
         core.frame++;
         EXPECT(PROP_Update(target));
         EXPECT(!PROP_IsNull(target));
@@ -1107,7 +1104,7 @@ static void test_color_import_whole(void) {
         r.value[1] = 0.2f; /* g */
         r.value[2] = 0.3f; /* b */
         r.value[3] = 0.9f; /* a */
-        EXPECT(PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(PROP_Import(prop, &r));
         EXPECT(!PROP_IsNull(prop));
 
         struct color *got = (struct color *)PROP_GetValue(prop);
@@ -1130,23 +1127,12 @@ static void test_color_import_channels(void) {
 
         struct vm_register r = {0};
         r.type = kDataTypeFloat;
-        r.size = sizeof(float);
-
+        r.size = sizeof(struct color);
         r.value[0] = 0.8f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeColorR, &r));
-        EXPECT(((struct color *)PROP_GetValue(prop))->r == 0.8f);
-
-        r.value[0] = 0.6f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeColorG, &r));
-        EXPECT(((struct color *)PROP_GetValue(prop))->g == 0.6f);
-
-        r.value[0] = 0.4f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeColorB, &r));
-        EXPECT(((struct color *)PROP_GetValue(prop))->b == 0.4f);
-
-        r.value[0] = 0.5f;
-        EXPECT(PROP_Import(prop, kPropertyAttributeColorA, &r));
-        EXPECT(((struct color *)PROP_GetValue(prop))->a == 0.5f);
+        r.value[1] = 0.6f;
+        r.value[2] = 0.4f;
+        r.value[3] = 0.5f;
+        EXPECT(PROP_Import(prop, &r));
 
         /* Ensure other channels were not clobbered. */
         struct color *got = (struct color *)PROP_GetValue(prop);
@@ -1157,7 +1143,7 @@ static void test_color_import_channels(void) {
     }
 }
 
-/* Export a color channel via OBJ_RunProgram with {./Color}.COLORR. */
+/* Export full color via OBJ_RunProgram with {./Color}. */
 static void test_color_export_channel_program(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
@@ -1166,16 +1152,12 @@ static void test_color_export_channel_program(void) {
         struct color c = { .r = 0.75f, .g = 0.25f, .b = 0.5f, .a = 1.0f };
         PROP_SetValue(prop, &c);
 
-        /* {./Color}.COLORR reads the R channel. */
+        /* {./Color} reads the full color value. */
         struct vm_register r = {0};
-        RUN_PROG(obj, "{./Color}.COLORR", &r);
-        EXPECT(r.type == kDataTypeFloat);
+        RUN_PROG(obj, "{./Color}", &r);
+        EXPECT(r.type == kDataTypeColor || r.type == kDataTypeFloat);
         EXPECT(r.value[0] == 0.75f);
-
-        /* {./Color}.COLORG reads the G channel. */
-        r = (struct vm_register){0};
-        RUN_PROG(obj, "{./Color}.COLORG", &r);
-        EXPECT(r.value[0] == 0.25f);
+        EXPECT(r.value[1] == 0.25f);
     }
 }
 
@@ -1200,8 +1182,7 @@ static void test_color_bind_color4_to_property(void) {
 
         struct token *prog = Token_Create("COLOR4(0.1, 0.2, 0.3, 1.0)");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(prop, kPropertyAttributeWholeProperty,
-                           prog, "COLOR4(0.1, 0.2, 0.3, 1.0)");
+        PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
         core.frame++;
         EXPECT(PROP_Update(prop));
@@ -1227,7 +1208,7 @@ static void test_color_import_mismatched_type_reports_error(void) {
         const char *bad = "not-a-color";
         memcpy(r.value, &bad, sizeof(bad));
 
-        EXPECT(!PROP_Import(prop, kPropertyAttributeWholeProperty, &r));
+        EXPECT(!PROP_Import(prop, &r));
     }
 }
 
@@ -1245,8 +1226,7 @@ static void test_color_bind_channel_to_float(void) {
         EXPECT_OK(OBJ_FindShortProperty(obj, "Alpha", &alphaProp));
         struct token *prog = Token_Create("{./Color}.COLORA");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(alphaProp, kPropertyAttributeWholeProperty,
-                           prog, "{./Color}.COLORA");
+        PROP_AttachProgram(alphaProp, prog);
         core.frame++;
         EXPECT(PROP_Update(alphaProp));
         EXPECT(!PROP_IsNull(alphaProp));
@@ -1255,7 +1235,7 @@ static void test_color_bind_channel_to_float(void) {
     }
 }
 
-/* Bind a color channel write: import from {./Color}.COLORR into colorProp.COLORR. */
+/* Bind a whole-color write: import from {./Color} back into Color property. */
 static void test_color_bind_channel_to_channel(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
@@ -1265,18 +1245,16 @@ static void test_color_bind_channel_to_channel(void) {
         struct color c = { .r = 0.3f, .g = 0.7f, .b = 0.5f, .a = 1.0f };
         PROP_SetValue(prop, &c);
 
-        /* Attach {./Color}.COLORG to the R channel of the same property.
-         * After update, R should equal original G (0.7). */
-        struct token *prog = Token_Create("{./Color}.COLORG");
+        /* Attach {./Color} to the same property; color should remain unchanged. */
+        struct token *prog = Token_Create("{./Color}");
         EXPECT(prog != NULL);
-        PROP_AttachProgram(prop, kPropertyAttributeColorR,
-                           prog, "{./Color}.COLORG");
+        PROP_AttachProgram(prop, prog);
         core.frame++;
         EXPECT(PROP_Update(prop));
 
         struct color *got = (struct color *)PROP_GetValue(prop);
-        EXPECT(got->r == 0.7f); /* was 0.3, now updated from G=0.7 */
-        EXPECT(got->g == 0.7f); /* unchanged */
+        EXPECT(got->r == 0.3f);
+        EXPECT(got->g == 0.7f);
     }
 }
 

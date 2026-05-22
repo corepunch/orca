@@ -16,16 +16,15 @@ typedef enum cg_kind {
 } cg_kind;
 
 /* Flags packed into cg_node.flags */
-#define CG_FLAG_ATTACH_ONLY (1u<<0)  /* class: attach-only="true" */
-#define CG_FLAG_SEALED      (1u<<1)  /* struct: sealed="true" */
-#define CG_FLAG_STATIC      (1u<<2)  /* method: static="true" */
-#define CG_FLAG_LUA         (1u<<3)  /* method: lua="true" */
-#define CG_FLAG_NOEXPORT    (1u<<4)  /* field: noexport="true" */
-#define CG_FLAG_POINTER     (1u<<5)  /* field/property/arg: pointer="true" */
-#define CG_FLAG_CONST       (1u<<6)  /* field/method/arg: const="true" */
-#define CG_FLAG_ARRAY       (1u<<7)  /* property/field: array="true" or fixed-array set */
-#define CG_FLAG_NO_CHECK    (1u<<8)  /* interface: no-check="true" */
-#define CG_FLAG_PRIVATE     (1u<<9)  /* property/method: private="true" */
+#define CG_FLAG_SEALED      (1u<<0)  /* struct: sealed="true" */
+#define CG_FLAG_STATIC      (1u<<1)  /* method: static="true" */
+#define CG_FLAG_LUA         (1u<<2)  /* method: lua="true" */
+#define CG_FLAG_NOEXPORT    (1u<<3)  /* field: noexport="true" */
+#define CG_FLAG_POINTER     (1u<<4)  /* field/property/arg: pointer="true" */
+#define CG_FLAG_CONST       (1u<<5)  /* field/method/arg: const="true" */
+#define CG_FLAG_ARRAY       (1u<<6)  /* property/field: array="true" or fixed-array set */
+#define CG_FLAG_NO_CHECK    (1u<<7)  /* interface: no-check="true" */
+#define CG_FLAG_PRIVATE     (1u<<8)  /* property/method: private="true" */
 
 /*
  * cg_node — one XML entity in the flat model array.

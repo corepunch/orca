@@ -189,6 +189,26 @@ enum LocaleProperties {
 #define GetDataObject(_P) ((struct DataObject*)((_P)?OBJ_GetComponent(_P,ID_DataObject):NULL))
 #define DataObject_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_DataObject,sizeof(struct DataObject),_N)
 #define kDataObjectNumProperties 0
+// Binding
+#define ID_Binding 0xf37df202
+#define GetBinding(_P) ((struct Binding*)((_P)?OBJ_GetComponent(_P,ID_Binding):NULL))
+#define Binding_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_Binding,sizeof(struct Binding),_N)
+#define ID_Binding_Expression 0xe26a81d6 // Binding.Expression
+#define ID_Binding_Mode 0xe206dce7 // Binding.Mode
+#define ID_Binding_Enabled 0x223361a5 // Binding.Enabled
+#define ID_Binding_Compile 0xf02fb971 // Binding.Compile
+#define kBindingNumProperties 4
+enum BindingProperties {
+	kBindingExpression,
+	kBindingMode,
+	kBindingEnabled,
+	kBindingCompile,
+};
+// BindingExpression
+#define ID_BindingExpression 0xddf6d2b0
+#define GetBindingExpression(_P) ((struct BindingExpression*)((_P)?OBJ_GetComponent(_P,ID_BindingExpression):NULL))
+#define BindingExpression_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_BindingExpression,sizeof(struct BindingExpression),_N)
+#define kBindingExpressionNumProperties 0
 // Trigger
 #define ID_Trigger 0xa5ea0da3
 #define GetTrigger(_P) ((struct Trigger*)((_P)?OBJ_GetComponent(_P,ID_Trigger):NULL))
@@ -629,6 +649,8 @@ enum NodeProperties {
 #define ID_StateManagerController_ControllerChangedEventArgs 0x12c11cb3
 
 #define ID_StateManagerController_ControllerChangedEventArgs_Property 0x1ed8c3b6 // StateManagerController_ControllerChangedEventArgs.Property
+#define ID_Binding_CompileEventArgs 0x068eacf9
+
 #define ID_Trigger_TriggeredEventArgs 0x86976046
 
 #define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger

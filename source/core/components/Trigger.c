@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <source/core/core_local.h>
 #include <source/filesystem/filesystem.h>
 
@@ -25,6 +26,93 @@ _SetTargetVisible(struct Object *target, bool_t visible)
 {
   if (!target) return FALSE;
   return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
+}
+
+static lpcString_t
+_BindingSkipSpace(lpcString_t s)
+{
+  while (s && *s && isspace((unsigned char)*s)) s++;
+  return s;
+}
+
+
+static lpcString_t
+_BindingGetStringProperty(struct Object *obj, lpcString_t name)
+{
+  struct Property *prop = NULL;
+  if (FAILED(OBJ_FindShortProperty(obj, name, &prop)) || !prop) {
+    return NULL;
+  }
+  if (PROP_GetType(prop) != kDataTypeString) {
+    return NULL;
+  }
+  return *(lpcString_t*)PROP_GetValue(prop);
+}
+
+static int
+_BindingGetIntProperty(struct Object *obj, lpcString_t name, int fallback)
+{
+  struct Property *prop = NULL;
+  if (FAILED(OBJ_FindShortProperty(obj, name, &prop)) || !prop) {
+    return fallback;
+  }
+  if (PROP_GetType(prop) != kDataTypeEnum &&
+      PROP_GetType(prop) != kDataTypeInt &&
+      PROP_GetType(prop) != kDataTypeBool) {
+    return fallback;
+  }
+  return *(int*)PROP_GetValue(prop);
+}
+
+
+static LRESULT
+_BindingCompileToProperty(struct Object *hObject,
+                         struct Binding *binding,
+                         struct Property *property,
+                         bool_t normalize_markup)
+{
+  if (!property) {
+    Con_Error("Binding.Compile requires a target property in lParam");
+    return TRUE;
+  }
+
+  lpcString_t expr = _BindingGetStringProperty(hObject, "Expression");
+  if (!expr || !*expr) {
+    expr = OBJ_GetTextContent(hObject);
+  }
+  expr = _BindingSkipSpace(expr);
+  if (!expr || !*expr) {
+    Con_Error("Binding has no expression for property '%s'", PROP_GetName(property));
+    return TRUE;
+  }
+
+  enum BindingMode mode = (enum BindingMode)
+    _BindingGetIntProperty(hObject, "Mode", kBindingModeExpression);
+  bool_t enabled = _BindingGetIntProperty(hObject, "Enabled", TRUE) ? TRUE : FALSE;
+
+  lpcString_t final_expr = expr;
+  fixedString_t normalized_expr = {0};
+  if (normalize_markup) {
+    size_t len = strlen(expr);
+    if (len > 9 && !strncmp(expr, "{Binding ", 9) && expr[len - 1] == '}') {
+      /* {Binding X} → {X}; runtime default resolves X relative to template root */
+      snprintf(normalized_expr, sizeof(normalized_expr), "{%.*s}", (int)(len - 10), expr + 9);
+      final_expr = normalized_expr;
+    } else if (*expr != '{') {
+      /* Bare path X → {X}; runtime default resolves relative to template root */
+      snprintf(normalized_expr, sizeof(normalized_expr), "{%s}", expr);
+      final_expr = normalized_expr;
+    }
+  }
+
+  binding->property = property;
+  if (!PROP_SetBinding(property, final_expr, mode, enabled)) {
+    Con_Error("Binding failed for property '%s' on '%s'",
+              PROP_GetName(property),
+              OBJ_GetClassName(PROP_GetObject(property)));
+  }
+
+  return TRUE;
 }
 
 static bool_t
@@ -62,6 +150,22 @@ HANDLER(Trigger, Object, Attached)
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
   return FALSE;
+}
+
+HANDLER(Binding, Binding, Compile)
+{
+  return _BindingCompileToProperty(hObject,
+                                   pBinding,
+                                   (struct Property *)pCompile,
+                                   TRUE);
+}
+
+HANDLER(BindingExpression, Binding, Compile)
+{
+  return _BindingCompileToProperty(hObject,
+                                   (struct Binding *)pBindingExpression,
+                                   (struct Property *)pCompile,
+                                   FALSE);
 }
 
 HANDLER(Trigger, Object, PropertyChanged)

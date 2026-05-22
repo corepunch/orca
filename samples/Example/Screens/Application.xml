@@ -28,17 +28,17 @@
 					</Grid>
 				</StackView>
 				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
-				<BindingExpression Target="Node.Visible">STEP(640, {../../../Node.ActualWidth})</BindingExpression>
+				<BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
 				<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
 				</Grid>
 				<StackView Name="TabbedTechSection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
-					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="TabbedTechHeading" Text="Build the UI, not the ceremony" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="TabbedTechSubheading"
 						Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="OrcaSignals" Columns="auto auto auto" Spacing="14">
-						<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto auto", "auto auto")</BindingExpression>
+						<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto auto", "auto auto")</BindingExpression>
 						<LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
 							Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask" Card.Title="XML-first screens"
 							Card.Body="Layouts stay readable." Card.PrimaryColor="$accent"/>
@@ -205,7 +205,7 @@
 						Card.PrimaryColor="$accent-amber"/>
 				</Grid>
 				<StackView Name="GallerySection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
-					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="GalleryHeading" Text="Gallery" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="GallerySubheading"
 						Text="Screenshots and scenes rendered entirely by the ORCA engine."
@@ -220,13 +220,13 @@
 					</Grid>
 				</StackView>
 				<StackView Name="WorkflowSection" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="40">
-					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="WorkflowHeading" Text="How It Works" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="WorkflowSubheading"
 						Text="From XML layout to a live rendered scene in four simple steps."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing="16">
-								<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto auto auto", "auto auto")</BindingExpression>
+								<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto auto auto", "auto auto")</BindingExpression>
 						<LayerPrefabPlaceholder Name="Step1" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
 							Card.Title="01" Card.Subtitle="Define Layout" Card.PrimaryColor="$accent"
 							Card.Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
@@ -242,7 +242,7 @@
 					</Grid>
 				</StackView>
 				<StackView Name="TestimonialsSection" Direction="Vertical" Spacing="24" BackgroundColor="$surface" Padding="40">
-					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="TestimonialsHeading" Text="What Developers Say" FontSize="28" ForegroundColor="$text-primary"/>
 					<Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing="20">
 						<LayerPrefabPlaceholder Name="Quote1" PlaceholderTemplate="Example/Prefabs/Quote"
@@ -257,7 +257,7 @@
 					</Grid>
 				</StackView>
 				<StackView Name="CtaSection" Direction="Vertical" Spacing="24" BackgroundColor="$panel-background" Padding="60" AlignItems="Center">
-					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(60,60), Vector2(16,16))</BindingExpression>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(60,60), Vector2(16,16))</BindingExpression>
 					<TextBlock Name="CtaHeading" Text="Ready to build something great?" FontSize="36" ForegroundColor="$text-primary" TextHorizontalAlignment="Center"/>
 					<TextBlock Name="CtaBody"
 						Text="Download ORCA, open a sample project, and have your first screen running in minutes."

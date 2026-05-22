@@ -13,14 +13,9 @@ void _ClearStructValue(struct StructDesc const *sdesc, void *value);
 
 bool_t _LoadStructFromXmlFragment(struct Property *prop,
                                   struct PropertyType const *pdesc,
-                                  lpcString_t text,
-                                  lpcString_t prop_name);
-bool_t _LoadEventTriggerFromXmlFragment(struct Object *obj,
-                                        struct PropertyType const *pdesc,
-                                        lpcString_t text);
+                                  lpcString_t text);
 struct Object *_LoadObjectFromXmlFragment(lpcString_t text,
-                                          lpcString_t prop_name,
                                           int positional_start);
-char *_NormalizeXmlShorthand(lpcString_t xml);
+char *_ExpandXmlPositionalArgs(lpcString_t xml);
 
 #endif

@@ -89,7 +89,7 @@ Every module `.cgen` file is XML and follows this skeleton:
     </methods>
   </interface>
 
-  <class name="MyComponent" attach-only="true">
+  <class name="MyComponent" >
     <summary>Moves an object at a configurable speed.</summary>
     <handles>
       <handle message="Object.Start"/>

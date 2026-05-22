@@ -3,210 +3,119 @@
 #include <string.h>
 
 #include "fs_xml_inline.h"
-#include <source/core/core_properties.h>
-#include <source/core/property/property_internal.h>
 
 extern int parse_property(const char* str,
-                           struct PropertyType const* prop, void* valueptr);
+                          struct PropertyType const* prop,
+                          void* valueptr);
+
+struct reader {
+  char const *p;
+};
+
+struct strbuf {
+  char *s;
+  size_t n;
+  size_t cap;
+};
 
 static void
-_InlineSkipDelims(const char **p)
+skip(struct reader *r)
 {
-  while (**p && (isspace((unsigned char)**p) || **p == ',')) {
-    (*p)++;
+  while (*r->p && (isspace((unsigned char)*r->p) || *r->p == ',')) {
+    r->p++;
   }
 }
 
 static char *
-_InlineStrNDup(const char *s, size_t n)
+copy(char const *s, size_t n)
 {
-  char *out = (char *)malloc(n + 1);
-  if (!out) {
-    return NULL;
+  char *out = malloc(n + 1);
+  if (out) {
+    memcpy(out, s, n);
+    out[n] = 0;
   }
-  memcpy(out, s, n);
-  out[n] = '\0';
   return out;
 }
 
 static bool_t
-_InlineReadToken(const char **p, char **out)
+read_atom(struct reader *r, char **out)
 {
-  _InlineSkipDelims(p);
-  if (!**p || **p == '}') {
-    return FALSE;
-  }
+  skip(r);
+  if (!*r->p || *r->p == '}') return FALSE;
 
-  const char *start = *p;
-  if (**p == '"' || **p == '\'') {
-    char quote = *(*p)++;
-    start = *p;
-    while (**p && **p != quote) {
-      (*p)++;
-    }
-    *out = _InlineStrNDup(start, (size_t)(*p - start));
-    if (**p == quote) {
-      (*p)++;
-    }
-    return *out != NULL;
+  char quote = (*r->p == '"' || *r->p == '\'') ? *r->p++ : 0;
+  char const *start = r->p;
+  while (*r->p && (quote ? *r->p != quote :
+         (!isspace((unsigned char)*r->p) && *r->p != ',' && *r->p != '}' && *r->p != '='))) {
+    r->p++;
   }
-
-  while (**p &&
-         !isspace((unsigned char)**p) &&
-         **p != ',' &&
-         **p != '}' &&
-         **p != '=') {
-    (*p)++;
-  }
-  *out = _InlineStrNDup(start, (size_t)(*p - start));
-  return *out != NULL;
-}
-
-static bool_t
-_InlineReadValue(const char **p, char **out)
-{
-  _InlineSkipDelims(p);
-  if (!**p || **p == '}') {
-    return FALSE;
-  }
-
-  const char *start = *p;
-  if (**p == '"' || **p == '\'') {
-    char quote = *(*p)++;
-    start = *p;
-    while (**p && **p != quote) {
-      (*p)++;
-    }
-    *out = _InlineStrNDup(start, (size_t)(*p - start));
-    if (**p == quote) {
-      (*p)++;
-    }
-    return *out != NULL;
-  }
-
-  while (**p &&
-         !isspace((unsigned char)**p) &&
-         **p != ',' &&
-         **p != '}') {
-    (*p)++;
-  }
-  *out = _InlineStrNDup(start, (size_t)(*p - start));
+  *out = copy(start, (size_t)(r->p - start));
+  if (quote && *r->p == quote) r->p++;
   return *out != NULL;
 }
 
 static void
-_InlineBufferEnsure(char **buf, size_t *cap, size_t need)
+grow(struct strbuf *b, size_t need)
 {
-  if (*cap > need) {
-    return;
-  }
-  size_t newcap = *cap ? *cap : 128;
-  while (newcap <= need) {
-    newcap *= 2;
-  }
-  *buf = (char *)realloc(*buf, newcap);
-  *cap = newcap;
+  if (b->cap > need) return;
+  b->cap = b->cap ? b->cap * 2 : 128;
+  while (b->cap <= need) b->cap *= 2;
+  b->s = realloc(b->s, b->cap);
 }
 
 static void
-_InlineBufferAppendN(char **buf, size_t *len, size_t *cap,
-                     const char *text, size_t text_len)
+putn(struct strbuf *b, char const *s, size_t n)
 {
-  _InlineBufferEnsure(buf, cap, *len + text_len + 1);
-  memcpy(*buf + *len, text, text_len);
-  *len += text_len;
-  (*buf)[*len] = '\0';
+  grow(b, b->n + n + 1);
+  memcpy(b->s + b->n, s, n);
+  b->n += n;
+  b->s[b->n] = 0;
 }
 
 static void
-_InlineBufferAppend(char **buf, size_t *len, size_t *cap, const char *text)
+put(struct strbuf *b, char const *s)
 {
-  _InlineBufferAppendN(buf, len, cap, text, strlen(text));
+  putn(b, s, strlen(s));
 }
 
 static void
-_InlineBufferAppendChar(char **buf, size_t *len, size_t *cap, char ch)
+putc_xml(struct strbuf *b, char c)
 {
-  _InlineBufferEnsure(buf, cap, *len + 2);
-  (*buf)[(*len)++] = ch;
-  (*buf)[*len] = '\0';
+  grow(b, b->n + 2);
+  b->s[b->n++] = c;
+  b->s[b->n] = 0;
 }
 
-static const char *
-_XmlFindTagEnd(const char *p)
+static void
+put_escaped(struct strbuf *b, char const *s)
 {
-  char quote = 0;
-  while (*p) {
-    if (quote) {
-      if (*p == quote) {
-        quote = 0;
-      }
-    } else if (*p == '"' || *p == '\'') {
-      quote = *p;
-    } else if (*p == '>') {
-      return p;
+  for (; *s; s++) {
+    switch (*s) {
+      case '&': put(b, "&amp;"); break;
+      case '<': put(b, "&lt;"); break;
+      case '>': put(b, "&gt;"); break;
+      case '"': put(b, "&quot;"); break;
+      case '\'': put(b, "&apos;"); break;
+      default: putc_xml(b, *s); break;
     }
-    p++;
   }
-  return NULL;
 }
 
-static bool_t
-_XmlIsPositionalProperty(struct ClassDesc const *cls,
-                         struct PropertyType const *field)
+static char const *
+body_of(lpcString_t text)
 {
-  if (!cls || !field) {
-    return FALSE;
-  }
-  if (cls->NumProperties > 1 &&
-      !strcmp(field->Name, "Trigger") &&
-      field->DataType == kDataTypeObject) {
-    return FALSE;
-  }
-  return TRUE;
+  while (*text && isspace((unsigned char)*text)) text++;
+  return *text == '{' ? text + 1 : text;
 }
 
 static struct PropertyType const *
-_XmlFindNextPositionalField(struct ClassDesc const *cls,
-                           bool_t *used,
-                           int *cursor)
-{
-  if (!cls) {
-    return NULL;
-  }
-  while (*cursor < (int)cls->NumProperties) {
-    int idx = (*cursor)++;
-    struct PropertyType const *field = &cls->Properties[idx];
-    if ((!used || !used[idx]) && _XmlIsPositionalProperty(cls, field)) {
-      return field;
-    }
-  }
-  return NULL;
-}
-
-static void
-_InlineBufferAppendEscaped(char **buf, size_t *len, size_t *cap, const char *text)
-{
-  for (const unsigned char *p = (const unsigned char *)text; *p; ++p) {
-    switch (*p) {
-      case '&': _InlineBufferAppend(buf, len, cap, "&amp;"); break;
-      case '<': _InlineBufferAppend(buf, len, cap, "&lt;"); break;
-      case '>': _InlineBufferAppend(buf, len, cap, "&gt;"); break;
-      case '"': _InlineBufferAppend(buf, len, cap, "&quot;"); break;
-      case '\'': _InlineBufferAppend(buf, len, cap, "&apos;"); break;
-      default: _InlineBufferAppendChar(buf, len, cap, (char)*p); break;
-    }
-  }
-}
-
-static struct PropertyType const *
-_FindNextPositionalField(struct PropertyType const *fields, int count,
-                         bool_t *used, int *cursor)
+next_field(struct PropertyType const *fields, int count, bool_t *used, int *cursor)
 {
   while (*cursor < count) {
-    int idx = (*cursor)++;
-    if (!used || !used[idx]) {
-      return &fields[idx];
+    struct PropertyType const *field = &fields[(*cursor)++];
+    if ((!used || !used[field - fields]) &&
+        !(field->DataType == kDataTypeObject && !strcmp(field->Name, "Trigger"))) {
+      return field;
     }
   }
   return NULL;
@@ -216,32 +125,26 @@ struct PropertyType const *
 _FindStructField(struct StructDesc const *sdesc, lpcString_t name)
 {
   FOR_LOOP(i, sdesc->NumProperties) {
-    struct PropertyType const *field = &sdesc->Properties[i];
-    if (!strcmp(field->Name, name)) {
-      return field;
+    if (!strcmp(sdesc->Properties[i].Name, name)) {
+      return &sdesc->Properties[i];
     }
   }
   return NULL;
 }
 
 bool_t
-_SetStructFieldFromString(struct PropertyType const *pdesc, void *valueptr,
+_SetStructFieldFromString(struct PropertyType const *pdesc,
+                          void *valueptr,
                           lpcString_t value)
 {
-  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : NULL;
-  if (!resolved) {
-    resolved = value;
-  }
-
-  char tmpbuf[MAX_PROPERTY_STRING] = {0};
-  if (!parse_property(resolved, pdesc, tmpbuf)) {
-    return FALSE;
-  }
+  char tmp[MAX_PROPERTY_STRING] = {0};
+  lpcString_t resolved = (value[0] == '$') ? FS_GetThemeValue(value) : value;
+  if (!resolved || !parse_property(resolved, pdesc, tmp)) return FALSE;
 
   if (pdesc->DataType == kDataTypeString) {
-    *(char**)valueptr = *(char**)tmpbuf;
+    *(char**)valueptr = *(char**)tmp;
   } else {
-    memcpy(valueptr, tmpbuf, pdesc->DataSize);
+    memcpy(valueptr, tmp, pdesc->DataSize);
   }
   return TRUE;
 }
@@ -252,113 +155,16 @@ _ClearStructValue(struct StructDesc const *sdesc, void *value)
   FOR_LOOP(i, sdesc->NumProperties) {
     struct PropertyType const *field = &sdesc->Properties[i];
     if (field->DataType == kDataTypeString && field->DataSize == sizeof(char*)) {
-      char **slot = (char **)((char*)value + field->Offset);
-      if (*slot) {
-        free(*slot);
-        *slot = NULL;
-      }
+      free(*(char **)((char *)value + field->Offset));
     }
   }
-}
-
-static bool_t
-_LoadStructTokens(struct PropertyType const *pdesc,
-                  struct StructDesc const *sdesc,
-                  lpcString_t text,
-                  void *dst)
-{
-  const char *p = text;
-  char *token = NULL;
-  bool_t ok = TRUE;
-  int positional = 0;
-  bool_t *assigned = (bool_t *)calloc((size_t)sdesc->NumProperties, sizeof(bool_t));
-
-  if (!assigned) {
-    Con_Error("Could not allocate struct parse state for '%s'", pdesc->Name);
-    return FALSE;
-  }
-
-  while (ok) {
-    if (!_InlineReadToken(&p, &token)) {
-      break;
-    }
-
-    _InlineSkipDelims(&p);
-    if (*p == '=') {
-      p++;
-      char *value = NULL;
-      if (!_InlineReadValue(&p, &value)) {
-        Con_Error("Missing value for inline struct field '%s' on property '%s'",
-                  token, pdesc->Name);
-        free(token);
-        ok = FALSE;
-        break;
-      }
-      struct PropertyType const *field = _FindStructField(sdesc, token);
-      if (!field) {
-        Con_Error("Unknown field '%s' for struct '%s' in property '%s'",
-                  token, sdesc->StructName, pdesc->Name);
-        free(token);
-        free(value);
-        ok = FALSE;
-        break;
-      }
-      if (!_SetStructFieldFromString(field, (char*)dst + field->Offset, value)) {
-        ok = FALSE;
-      }
-      assigned[field - sdesc->Properties] = TRUE;
-      free(token);
-      free(value);
-      continue;
-    }
-
-    struct PropertyType const *field = _FindNextPositionalField(sdesc->Properties,
-                                                                (int)sdesc->NumProperties,
-                                                                assigned,
-                                                                &positional);
-    if (!field) {
-      Con_Error("Too many positional values for struct '%s' in property '%s'",
-                sdesc->StructName, pdesc->Name);
-      free(token);
-      ok = FALSE;
-      break;
-    }
-    if (assigned[field - sdesc->Properties]) {
-      int next = positional;
-      while (next < (int)sdesc->NumProperties && assigned[next]) {
-        next++;
-      }
-      positional = next;
-      field = (positional < (int)sdesc->NumProperties) ? &sdesc->Properties[positional++] : NULL;
-    }
-    if (!field) {
-      Con_Error("Too many positional values for struct '%s' in property '%s'",
-                sdesc->StructName, pdesc->Name);
-      free(token);
-      ok = FALSE;
-      break;
-    }
-
-    if (!_SetStructFieldFromString(field, (char*)dst + field->Offset, token)) {
-      ok = FALSE;
-    }
-    assigned[field - sdesc->Properties] = TRUE;
-    free(token);
-    token = NULL;
-  }
-
-  free(assigned);
-  return ok;
 }
 
 bool_t
 _LoadStructFromXmlFragment(struct Property *prop,
                            struct PropertyType const *pdesc,
-                           lpcString_t text,
-                           lpcString_t prop_name)
+                           lpcString_t text)
 {
-  (void)prop_name;
-
   struct StructDesc const *sdesc = OBJ_FindStructDesc(pdesc->TypeString);
   if (!sdesc) {
     Con_Error("Could not resolve struct descriptor '%s' for property '%s'",
@@ -367,416 +173,242 @@ _LoadStructFromXmlFragment(struct Property *prop,
   }
 
   void *tmp = calloc(1, (size_t)sdesc->StructSize);
-  if (!tmp) {
-    Con_Error("Could not allocate struct storage for property '%s'", pdesc->Name);
-    return FALSE;
+  bool_t *used = calloc((size_t)sdesc->NumProperties, sizeof(bool_t));
+  bool_t ok = tmp && used;
+  struct reader r = { body_of(text) };
+  int cursor = 0;
+
+  while (ok) {
+    char *name = NULL;
+    char *value = NULL;
+    if (!read_atom(&r, &name)) break;
+    skip(&r);
+
+    struct PropertyType const *field = NULL;
+    if (*r.p == '=') {
+      r.p++;
+      ok = read_atom(&r, &value);
+      field = ok ? _FindStructField(sdesc, name) : NULL;
+    } else {
+      value = name;
+      name = NULL;
+      field = next_field(sdesc->Properties, (int)sdesc->NumProperties, used, &cursor);
+    }
+
+    if (!field) {
+      Con_Error("Unknown or extra field while parsing struct '%s' for property '%s'",
+                sdesc->StructName, pdesc->Name);
+      ok = FALSE;
+    } else if (!_SetStructFieldFromString(field, (char *)tmp + field->Offset, value)) {
+      ok = FALSE;
+    } else {
+      used[field - sdesc->Properties] = TRUE;
+    }
+    free(name);
+    free(value);
   }
 
-  const char *body = text;
-  while (*body && isspace((unsigned char)*body)) {
-    body++;
-  }
-  if (*body == '{') {
-    body++;
-  }
-  size_t len = strlen(body);
-  while (len > 0 && isspace((unsigned char)body[len - 1])) {
-    len--;
-  }
-  if (len > 0 && body[len - 1] == '}') {
-    len--;
-  }
-
-  char *copy = _InlineStrNDup(body, len);
-  if (!copy) {
-    free(tmp);
-    return FALSE;
-  }
-
-  bool_t ok = _LoadStructTokens(pdesc, sdesc, copy, tmp);
   if (ok) {
     PROP_SetValue(prop, tmp);
-  } else {
+  } else if (tmp) {
     _ClearStructValue(sdesc, tmp);
   }
-
-  free(copy);
+  free(used);
   free(tmp);
   return ok;
 }
 
-static struct ClassDesc const *
-_FindInlineClass(lpcString_t name)
-{
-  return OBJ_FindClass(name);
-}
-
 static bool_t
-_BuildInlineObjectXml(struct ClassDesc const *cls,
-                      lpcString_t text,
-                      int positional_start,
-                      char **out_xml)
+inline_object_xml(lpcString_t text, int positional_start, char **out)
 {
-  const char *p = text;
-  while (*p && isspace((unsigned char)*p)) {
-    p++;
-  }
-  if (*p == '{') {
-    p++;
-  }
+  struct reader r = { body_of(text) };
   char *type = NULL;
-  if (!_InlineReadToken(&p, &type) || !type || !*type) {
-    free(type);
-    return FALSE;
-  }
+  if (!read_atom(&r, &type)) return FALSE;
 
-  struct ClassDesc const *target = cls ? cls : _FindInlineClass(type);
-  if (!target) {
+  struct ClassDesc const *cls = OBJ_FindClass(type);
+  if (!cls) {
     Con_Error("Unknown inline object type '%s'", type);
     free(type);
     return FALSE;
   }
 
-  size_t cap = 0;
-  size_t len = 0;
-  char *buf = NULL;
-  _InlineBufferAppendChar(&buf, &len, &cap, '<');
-  _InlineBufferAppend(&buf, &len, &cap, type);
+  struct strbuf xml = {0};
+  bool_t *used = calloc((size_t)cls->NumProperties, sizeof(bool_t));
+  int cursor = positional_start;
+  bool_t ok = used != NULL;
+  putc_xml(&xml, '<');
+  put(&xml, type);
 
-  int positional = positional_start;
-  bool_t *assigned = (bool_t *)calloc((size_t)target->NumProperties, sizeof(bool_t));
-  if (!assigned) {
-    free(type);
-    free(buf);
-    return FALSE;
-  }
-
-  while (TRUE) {
+  while (ok) {
     char *name = NULL;
-    if (!_InlineReadToken(&p, &name)) {
-      break;
-    }
-    _InlineSkipDelims(&p);
-    if (*p == '=') {
-      p++;
-      char *value = NULL;
-      if (!_InlineReadValue(&p, &value)) {
-        Con_Error("Missing inline object value for '%s'", name);
-        free(name);
-        free(assigned);
-        free(type);
-        free(buf);
-        return FALSE;
-      }
-      for (int i = 0; i < (int)target->NumProperties; i++) {
-        if (!assigned[i] && !strcmp(target->Properties[i].Name, name)) {
-          assigned[i] = TRUE;
+    char *value = NULL;
+    if (!read_atom(&r, &name)) break;
+    skip(&r);
+
+    struct PropertyType const *field = NULL;
+    if (*r.p == '=') {
+      r.p++;
+      ok = read_atom(&r, &value);
+      FOR_LOOP(i, cls->NumProperties) {
+        if (!strcmp(cls->Properties[i].Name, name)) {
+          field = &cls->Properties[i];
           break;
         }
       }
-      _InlineBufferAppendChar(&buf, &len, &cap, ' ');
-      _InlineBufferAppend(&buf, &len, &cap, name);
-      _InlineBufferAppend(&buf, &len, &cap, "=\"");
-      _InlineBufferAppendEscaped(&buf, &len, &cap, value);
-      _InlineBufferAppendChar(&buf, &len, &cap, '"');
-      free(value);
-      free(name);
-      continue;
+    } else {
+      value = name;
+      name = NULL;
+      field = next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
     }
 
-    struct PropertyType const *field = _FindNextPositionalField(target->Properties,
-                                                                (int)target->NumProperties,
-                                                                assigned,
-                                                                &positional);
-    if (!field) {
-      Con_Error("Too many positional values for inline object '%s'", type);
-      free(name);
-      free(assigned);
-      free(type);
-      free(buf);
-      return FALSE;
+    if (!field && name && (!strcmp(name, "Name") || !strcmp(name, "id") ||
+                           !strcmp(name, "class") || strchr(name, '.'))) {
+      putc_xml(&xml, ' ');
+      put(&xml, name);
+      put(&xml, "=\"");
+      put_escaped(&xml, value);
+      putc_xml(&xml, '"');
+    } else if (!field) {
+      Con_Error("Unknown or extra field while parsing inline object '%s'", type);
+      ok = FALSE;
+    } else {
+      used[field - cls->Properties] = TRUE;
+      putc_xml(&xml, ' ');
+      put(&xml, field->Name);
+      put(&xml, "=\"");
+      put_escaped(&xml, value);
+      putc_xml(&xml, '"');
     }
-    assigned[field - target->Properties] = TRUE;
-
-    _InlineBufferAppendChar(&buf, &len, &cap, ' ');
-    _InlineBufferAppend(&buf, &len, &cap, field->Name);
-    _InlineBufferAppend(&buf, &len, &cap, "=\"");
-    _InlineBufferAppendEscaped(&buf, &len, &cap, name);
-    _InlineBufferAppendChar(&buf, &len, &cap, '"');
     free(name);
+    free(value);
   }
 
-  _InlineBufferAppend(&buf, &len, &cap, "/>");
-  free(assigned);
+  put(&xml, "/>");
+  free(used);
   free(type);
-  *out_xml = buf;
-  return TRUE;
-}
-
-static bool_t
-_AppendObjectToArrayProperty(struct Property *prop, struct Object *item)
-{
-  struct PropertyType const *pdesc = PROP_GetDesc(prop);
-  if (!pdesc || !pdesc->IsArray || pdesc->DataType != kDataTypeObject) {
-    return FALSE;
-  }
-
-  void *current_items = NULL;
-  int current_count = 0;
-  if (prop->value) {
-    memcpy(&current_items, prop->value, sizeof(current_items));
-    memcpy(&current_count,
-           (char *)prop->value + sizeof(current_items),
-           sizeof(current_count));
-  }
-
-  int new_count = current_count + 1;
-  struct Object **items = (struct Object **)calloc((size_t)new_count, sizeof(struct Object *));
-  if (!items) {
-    return FALSE;
-  }
-
-  if (current_items && current_count > 0) {
-    memcpy(items, current_items, (size_t)current_count * sizeof(struct Object *));
-  }
-  items[current_count] = item;
-
-  void *next[2] = { items, NULL };
-  memcpy((char *)next + sizeof(void *), &new_count, sizeof(new_count));
-  PROP_SetValue(prop, next);
-  return TRUE;
+  if (!ok) free(xml.s);
+  *out = ok ? xml.s : NULL;
+  return ok;
 }
 
 struct Object *
-_LoadObjectFromXmlFragment(lpcString_t text,
-                           lpcString_t prop_name,
-                           int positional_start)
+_LoadObjectFromXmlFragment(lpcString_t text, int positional_start)
 {
-  (void)prop_name;
-
-  while (*text && isspace((unsigned char)*text)) {
-    text++;
-  }
-
-  if (*text == '<') {
-    return FS_LoadObjectFromXmlString(text);
-  }
-  if (*text != '{') {
-    return FS_LoadObjectFromXmlString(text);
-  }
+  while (*text && isspace((unsigned char)*text)) text++;
+  if (*text == '<') return FS_LoadObjectFromXmlString(text);
+  if (*text != '{') return FS_LoadObjectFromXmlString(text);
 
   char *xml = NULL;
-  if (!_BuildInlineObjectXml(NULL, text, positional_start, &xml)) {
-    return NULL;
-  }
-
-  struct Object *result = FS_LoadObjectFromXmlString(xml);
+  struct Object *obj = inline_object_xml(text, positional_start, &xml)
+    ? FS_LoadObjectFromXmlString(xml)
+    : NULL;
   free(xml);
-  return result;
+  return obj;
 }
 
-bool_t
-_LoadEventTriggerFromXmlFragment(struct Object *obj,
-                                 struct PropertyType const *pdesc,
-                                 lpcString_t text)
+static char const *
+tag_end(char const *p)
 {
-  if (!obj || !pdesc) {
-    return FALSE;
+  char quote = 0;
+  for (; *p; p++) {
+    if (quote) {
+      if (*p == quote) quote = 0;
+    } else if (*p == '"' || *p == '\'') {
+      quote = *p;
+    } else if (*p == '>') {
+      return p;
+    }
   }
+  return NULL;
+}
 
-  struct PropertyType const *triggers_desc = OBJ_FindImplicitProperty(obj, "Triggers");
-  if (!triggers_desc) {
-    Con_Error("Property '%s' does not support inline trigger shorthand", pdesc->Name);
-    return FALSE;
-  }
-
-  struct Property *triggers_prop = NULL;
-  if (FAILED(OBJ_FindLongProperty(obj, triggers_desc->FullIdentifier, &triggers_prop))) {
-    Con_Error("Could not get trigger array slot for '%s'", pdesc->Name);
-    return FALSE;
-  }
-
-  struct Object *action = _LoadObjectFromXmlFragment(text, pdesc->Name, 1);
-  if (!action) {
-    return FALSE;
-  }
-
-  struct Object *trigger = OBJ_Create(ID_EventTrigger);
-  if (!trigger) {
-    OBJ_ReleaseRef(action);
-    return FALSE;
-  }
-
-  char routed_event[MAX_PROPERTY_STRING] = {0};
-  if (pdesc->Category && *pdesc->Category) {
-    snprintf(routed_event, sizeof(routed_event), "%s.%s", pdesc->Category, pdesc->Name);
-  } else {
-    snprintf(routed_event, sizeof(routed_event), "%s", pdesc->Name);
-  }
-
-  lpcString_t routed_event_value = routed_event;
-  if (FAILED(OBJ_SetPropertyValue(trigger, "RoutedEvent", &routed_event_value))) {
-    OBJ_ReleaseRef(trigger);
-    OBJ_ReleaseRef(action);
-    return FALSE;
-  }
-
-  OBJ_AddChild(trigger, action, FALSE);
-  if (!_AppendObjectToArrayProperty(triggers_prop, trigger)) {
-    OBJ_ReleaseRef(trigger);
-    return FALSE;
-  }
-
-  return TRUE;
+static bool_t
+name_char(char c)
+{
+  return isalnum((unsigned char)c) || c == '_' || c == '-' || c == ':' || c == '.';
 }
 
 char *
-_NormalizeXmlShorthand(lpcString_t xml)
+_ExpandXmlPositionalArgs(lpcString_t xml)
 {
-  if (!xml) return NULL;
-
-  size_t cap = strlen(xml) + 1;
-  char *out = (char *)calloc(cap, 1);
-  size_t len = 0;
-  const char *p = xml;
-  if (!out) return NULL;
+  struct strbuf out = {0};
+  char const *p = xml;
 
   while (*p) {
-    const char *lt = strchr(p, '<');
+    char const *lt = strchr(p, '<');
     if (!lt) {
-      _InlineBufferAppend(&out, &len, &cap, p);
+      put(&out, p);
       break;
     }
 
-    _InlineBufferAppendN(&out, &len, &cap, p, (size_t)(lt - p));
-
-    if (!strncmp(lt, "<!--", 4)) {
-      const char *end = strstr(lt + 4, "-->");
-      if (!end) {
-        _InlineBufferAppend(&out, &len, &cap, lt);
-        break;
-      }
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 3 - lt));
-      p = end + 3;
-      continue;
-    }
-
-    if (!strncmp(lt, "<?", 2)) {
-      const char *end = strstr(lt + 2, "?>");
-      if (!end) {
-        _InlineBufferAppend(&out, &len, &cap, lt);
-        break;
-      }
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 2 - lt));
-      p = end + 2;
-      continue;
-    }
-
-    if (lt[1] == '!' || lt[1] == '/') {
-      const char *end = strchr(lt, '>');
-      if (!end) {
-        _InlineBufferAppend(&out, &len, &cap, lt);
-        break;
-      }
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
-      p = end + 1;
-      continue;
-    }
-
-    const char *name_start = lt + 1;
-    const char *name_end = name_start;
-    while (*name_end &&
-           (isalnum((unsigned char)*name_end) ||
-            *name_end == '_' ||
-            *name_end == '-' ||
-            *name_end == ':' ||
-            *name_end == '.')) {
-      name_end++;
-    }
-    if (name_end == name_start) {
-      _InlineBufferAppendChar(&out, &len, &cap, *lt);
-      p = lt + 1;
-      continue;
-    }
-
-    const char *end = _XmlFindTagEnd(name_end);
+    putn(&out, p, (size_t)(lt - p));
+    char const *end = tag_end(lt + 1);
     if (!end) {
-      _InlineBufferAppend(&out, &len, &cap, lt);
+      put(&out, lt);
       break;
     }
+    if (lt[1] == '/' || lt[1] == '!' || lt[1] == '?') {
+      putn(&out, lt, (size_t)(end + 1 - lt));
+      p = end + 1;
+      continue;
+    }
 
-    char *class_name = _InlineStrNDup(name_start, (size_t)(name_end - name_start));
-    struct ClassDesc const *cls = class_name ? OBJ_FindClass(class_name) : NULL;
-    free(class_name);
+    char const *name = lt + 1;
+    char const *name_end = name;
+    while (name_char(*name_end)) name_end++;
+
+    char *type = copy(name, (size_t)(name_end - name));
+    struct ClassDesc const *cls = type ? OBJ_FindClass(type) : NULL;
+    free(type);
     if (!cls) {
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+      putn(&out, lt, (size_t)(end + 1 - lt));
       p = end + 1;
       continue;
     }
 
-    const char *body_start = name_end;
-    const char *body_end = end;
-    while (body_end > body_start && isspace((unsigned char)body_end[-1])) {
+    char const *body = name_end;
+    char const *body_end = end;
+    bool_t self_close = FALSE;
+    while (body_end > body && isspace((unsigned char)body_end[-1])) body_end--;
+    if (body_end > body && body_end[-1] == '/') {
+      self_close = TRUE;
       body_end--;
-    }
-    bool_t self_closing = FALSE;
-    if (body_end > body_start && body_end[-1] == '/') {
-      self_closing = TRUE;
-      body_end--;
-      while (body_end > body_start && isspace((unsigned char)body_end[-1])) {
-        body_end--;
-      }
+      while (body_end > body && isspace((unsigned char)body_end[-1])) body_end--;
     }
 
-    const char *q = body_start;
-    while (q < body_end && isspace((unsigned char)*q)) {
-      q++;
-    }
-    if (q >= body_end) {
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
-      p = end + 1;
-      continue;
-    }
-
-    const char *token_start = q;
-    while (q < body_end && !isspace((unsigned char)*q) && *q != '=') {
-      q++;
-    }
-    const char *token_end = q;
-    const char *after_token = q;
-    while (after_token < body_end && isspace((unsigned char)*after_token)) {
-      after_token++;
-    }
-
-    if (after_token < body_end && *after_token == '=') {
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
-      p = end + 1;
-      continue;
-    }
+    char const *tok = body;
+    while (tok < body_end && isspace((unsigned char)*tok)) tok++;
+    char const *tok_end = tok;
+    while (tok_end < body_end && !isspace((unsigned char)*tok_end) && *tok_end != '=') tok_end++;
+    char const *rest = tok_end;
+    while (rest < body_end && isspace((unsigned char)*rest)) rest++;
 
     int cursor = 0;
-    struct PropertyType const *field = _XmlFindNextPositionalField(cls, NULL, &cursor);
-    if (!field) {
-      _InlineBufferAppendN(&out, &len, &cap, lt, (size_t)(end + 1 - lt));
+    struct PropertyType const *field = next_field(cls->Properties, (int)cls->NumProperties, NULL, &cursor);
+    if (tok == tok_end || (rest < body_end && *rest == '=') || !field) {
+      putn(&out, lt, (size_t)(end + 1 - lt));
       p = end + 1;
       continue;
     }
 
-    _InlineBufferAppendChar(&out, &len, &cap, '<');
-    _InlineBufferAppendN(&out, &len, &cap, name_start, (size_t)(name_end - name_start));
-    _InlineBufferAppendChar(&out, &len, &cap, ' ');
-    _InlineBufferAppend(&out, &len, &cap, field->Name);
-    _InlineBufferAppend(&out, &len, &cap, "=\"");
-    _InlineBufferAppendN(&out, &len, &cap, token_start, (size_t)(token_end - token_start));
-    _InlineBufferAppendChar(&out, &len, &cap, '"');
-    if (after_token < body_end) {
-      _InlineBufferAppendChar(&out, &len, &cap, ' ');
+    putc_xml(&out, '<');
+    putn(&out, name, (size_t)(name_end - name));
+    putc_xml(&out, ' ');
+    put(&out, field->Name);
+    put(&out, "=\"");
+    char *value = copy(tok, (size_t)(tok_end - tok));
+    if (value) {
+      put_escaped(&out, value);
+      free(value);
     }
-    _InlineBufferAppendN(&out, &len, &cap, after_token, (size_t)(body_end - after_token));
-    _InlineBufferAppend(&out, &len, &cap, self_closing ? "/>" : ">");
-
+    putc_xml(&out, '"');
+    if (rest < body_end) {
+      putc_xml(&out, ' ');
+      putn(&out, rest, (size_t)(body_end - rest));
+    }
+    put(&out, self_close ? "/>" : ">");
     p = end + 1;
   }
 
-  return out;
+  return out.s;
 }

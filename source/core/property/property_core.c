@@ -31,6 +31,65 @@ print_name(struct Object *object)
 }
 #endif
 
+static void
+_UnindexBindingProperty(struct Property *property)
+{
+  if (!property || !property->inBindingIndex) {
+    return;
+  }
+  struct Property **link = &core.binding_properties;
+  while (*link) {
+    if (*link == property) {
+      *link = property->nextBinding;
+      property->nextBinding = NULL;
+      property->inBindingIndex = FALSE;
+      return;
+    }
+    link = &(*link)->nextBinding;
+  }
+  property->nextBinding = NULL;
+  property->inBindingIndex = FALSE;
+}
+
+static void
+_ReleaseBindingNode(struct Binding *binding)
+{
+  if (!binding) {
+    return;
+  }
+  SafeDelete(binding->token, Token_Release);
+  free(binding);
+}
+
+static bool_t
+_RunBinding(struct Property *property, struct Binding *binding)
+{
+  if (!binding->token) return TRUE;
+  if (binding->updateFrame == core.frame) return TRUE;
+  binding->updateFrame = core.frame;
+
+  struct vm_register r = { 0 };
+  if (!OBJ_RunProgram(property->object, binding->token, &r)) {
+#ifdef DEBUG_PROGRAM
+    print_name(property->object);
+#endif
+    Con_Error("Binding update failed while running program for %s/%s",
+              OBJ_GetName(property->object),
+              property->pdesc->Name);
+    return FALSE;
+  }
+  if (!PROP_Import(property, &r)) {
+#ifdef DEBUG_PROGRAM
+    print_name(property->object);
+#endif
+    Con_Error("Binding update failed while importing into %s/%s",
+              OBJ_GetName(property->object),
+              property->pdesc->Name);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 bool_t
 PROP_Update(struct Property *property)
 {
@@ -38,36 +97,12 @@ PROP_Update(struct Property *property)
       property->updateFrame == core.frame)
     return FALSE;
   property->updateFrame = core.frame;
-  FOR_EACH_LIST(struct property_program, pp, core.programs)
-  {
-    if (pp->property != property) continue;
-    if (!pp->token) continue; // disabled / failed to compile
-    if (pp->updateFrame == core.frame) continue;
-    pp->updateFrame = core.frame;
-    struct vm_register r = { 0 };
-    if (!OBJ_RunProgram(property->object, pp->token, &r)) {
-#ifdef DEBUG_PROGRAM
-      print_name(property->object);
-#endif
-      Con_Error("Binding update failed while running program for %s/%s",
-                OBJ_GetName(property->object),
-                property->pdesc->Name);
-      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      SafeDelete(pp->token, Token_Release);
-      free(pp->code);
-      free(pp);
-    } else if (!PROP_Import(property, pp->attr, &r)) {
-#ifdef DEBUG_PROGRAM
-      print_name(property->object);
-#endif
-      Con_Error("Binding update failed while importing into %s/%s",
-                OBJ_GetName(property->object),
-                property->pdesc->Name);
-      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      SafeDelete(pp->token, Token_Release);
-      free(pp->code);
-      free(pp);
-    }
+  if (property->binding && !_RunBinding(property, property->binding)) {
+    _ReleaseBindingNode(property->binding);
+    property->binding = NULL;
+  }
+  if (!property->binding) {
+    _UnindexBindingProperty(property);
   }
   return TRUE;
 }
@@ -149,14 +184,9 @@ OBJ_ReleaseProperties(struct Object *hobj)
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
-    FOR_EACH_LIST(struct property_program, pp, core.programs) {
-      if (pp->property == p) {
-        REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-        SafeDelete(pp->token, Token_Release);
-        free(pp->code);
-        free(pp);
-      }
-    }
+    _UnindexBindingProperty(p);
+    _ReleaseBindingNode(p->binding);
+    p->binding = NULL;
     free(p);
   }
 }
@@ -164,30 +194,11 @@ OBJ_ReleaseProperties(struct Object *hobj)
 void
 PROP_RunAllPrograms(void)
 {
-  FOR_EACH_LIST(struct property_program, pp, core.programs)
-  {
-    if (!pp->token) continue; // disabled / failed to compile
-    if (pp->updateFrame == core.frame) continue;
-    pp->updateFrame = core.frame;
-    pp->property->updateFrame = core.frame;
-    struct vm_register r = { 0 };
-    if (!OBJ_RunProgram(pp->property->object, pp->token, &r)) {
-      Con_Error("Binding update failed while running program for %s/%s",
-                OBJ_GetName(pp->property->object),
-                pp->property->pdesc->Name);
-      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      SafeDelete(pp->token, Token_Release);
-      free(pp->code);
-      free(pp);
-    } else if (!PROP_Import(pp->property, pp->attr, &r)) {
-      Con_Error("Binding update failed while importing into %s/%s",
-                OBJ_GetName(pp->property->object),
-                pp->property->pdesc->Name);
-      REMOVE_FROM_LIST(struct property_program, pp, core.programs);
-      SafeDelete(pp->token, Token_Release);
-      free(pp->code);
-      free(pp);
-    }
+  struct Property *p = core.binding_properties;
+  while (p) {
+    struct Property *next_property = p->nextBinding;
+    PROP_Update(p);
+    p = next_property;
   }
 }
 

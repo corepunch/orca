@@ -807,9 +807,7 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                 c->name, c->name, c->name, c->name,
                 c->name, c->name, c->name) < 0) return -1;
         if (emit_component_parents(b, h, c, 0) < 0) return -1;
-        if (ob_printf(b, "%s(%s, ",
-                (c->flags & CG_FLAG_ATTACH_ONLY) ? "REGISTER_ATTACH_ONLY_CLASS" : "REGISTER_CLASS",
-                c->name) < 0) return -1;
+        if (ob_printf(b, "REGISTER_CLASS(%s, ", c->name) < 0) return -1;
         if (emit_component_parents(b, h, c, 1) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
     }

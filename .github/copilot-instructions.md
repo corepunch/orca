@@ -236,7 +236,7 @@ struct ClassDesc {
   uint32_t          ClassSize;        // sizeof(struct ClassName)
   uint32_t          MemorySize;       // total size including parents
   void const       *Defaults;         // default values struct
-  bool_t            IsAttachOnly;     // cannot be instantiated standalone
+  bool_t            ClassFlags;     // cannot be instantiated standalone
 };
 ```
 
@@ -259,14 +259,14 @@ typedef LRESULT (*objectProc_t)(struct Object *obj,   // owning Object
 
 `cmp` is the component's `pUserData` (already allocated alongside the `struct component` header). Handlers cast it implicitly to `struct ClassName*` in C.
 
-**Standalone vs. attach-only:**
+**Standalone vs. component:**
 
 | XML attribute | Macro in `*_export.c` | Intended usage |
 |---|---|---|
 | *(none)* | `REGISTER_CLASS` | May be created standalone or attached as a component |
-| `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` |
+| `` | `REGISTER_CLASS` | Intended to be attached to an existing object via `addComponent` |
 
-`attach-only="true"` should be treated as an architectural convention. `OBJ_AddComponentByName` (the Lua bridge) enforces it with a `luaL_error`; direct C callers of `OBJ_AddComponent(pobj, class_id)` are unrestricted. Call `OBJ_RegisterClass(&_ClassName)` at module init. Call `OBJ_AddComponent(obj, ID_ClassName)` (C) or `obj:addComponent("ClassName")` (Lua) to attach at runtime.
+`` should be treated as an architectural convention. `OBJ_AddComponentByName` (the Lua bridge) enforces it with a `luaL_error`; direct C callers of `OBJ_AddComponent(pobj, class_id)` are unrestricted. Call `OBJ_RegisterClass(&_ClassName)` at module init. Call `OBJ_AddComponent(obj, ID_ClassName)` (C) or `obj:addComponent("ClassName")` (Lua) to attach at runtime.
 
 ### HANDLER macro — the message-handler pattern
 
@@ -316,7 +316,7 @@ Skipping the `.cgen` step means `struct MyComponent`, the message IDs, and the `
 Add a `<class>` to the relevant `.cgen` file (e.g. `source/core/core.cgen`). Every handler must have a matching `<handle>` entry, and every message the component dispatches must have a `<message>` declaration. **Handlers without `<handle>` entries are orphaned — they will never be called.**
 
 ```xml
-<class name="MyComponent" attach-only="true">
+<class name="MyComponent" >
   <summary>What this component does.</summary>
   <handles>
     <handle message="Object.Start"/>
@@ -335,7 +335,7 @@ Add a `<class>` to the relevant `.cgen` file (e.g. `source/core/core.cgen`). Eve
 </class>
 ```
 
-Use `attach-only="true"` for components meant to augment existing objects.  Omit it for standalone components that can be created as root objects (like `AnimationClip`).
+Use `` for components meant to augment existing objects.  Omit it for standalone components that can be created as root objects (like `AnimationClip`).
 
 #### Step 2 — Run code generation
 
@@ -371,7 +371,7 @@ The `HANDLER` macro expands to the correct function signature; `*_export.c` forw
 
 #### Step 4 — Register the class at module init
 
-The `REGISTER_CLASS` / `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`.  The generated `on_mymodule_registered` callback must call:
+The `REGISTER_CLASS` / `REGISTER_CLASS` macro in `*_export.c` defines `_MyComponent`.  The generated `on_mymodule_registered` callback must call:
 
 ```c
 OBJ_RegisterClass(&_MyComponent);
@@ -412,7 +412,7 @@ xvfb-run make test       # full test suite
 
 The `struct Object` currently has a number of **legacy embedded fields** — timers, state managers, style sheets, class lists — that predate the component architecture and create tight coupling in `OBJ_Release`.
 
-**Architectural goal: zero subsystem fields in Object.** Every subsystem moves into a proper `attach-only` component:
+**Architectural goal: zero subsystem fields in Object.** Every subsystem moves into a proper `component` component:
 
 | Legacy field | Target component | Status |
 |---|---|---|
@@ -425,7 +425,7 @@ The `struct Object` currently has a number of **legacy embedded fields** — tim
 
 **Migration checklist for each field:**
 1. Implement the component with `<handles>` for all messages it needs.
-2. Register it as `attach-only` via `REGISTER_ATTACH_ONLY_CLASS`.
+2. Register it as `component` via `REGISTER_CLASS`.
 3. Remove the field from `struct Object`.
 4. Remove the `_GetXxx(obj)` macro from `core_local.h`.
 5. Remove the manual release call from `OBJ_Release`.
@@ -471,11 +471,11 @@ _SendMessage(object, Object, PropertyChanged, .Property = myProp);
 _SendMessage(object, AnimationPlayer, Play);
 ```
 
-### `REGISTER_CLASS(NAME, parent_ids…)` / `REGISTER_ATTACH_ONLY_CLASS(NAME, …)` — define ClassDesc (generated)
+### `REGISTER_CLASS(NAME, parent_ids…)` / `REGISTER_CLASS(NAME, …)` — define ClassDesc (generated)
 
 ```c
 REGISTER_CLASS(AnimationClip, 0);              // standalone
-REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0); // attach-only
+REGISTER_CLASS(AnimationPlayer, 0); // component
 ```
 
 ### `FOR_EACH_OBJECT(var, parent)` / `FOR_EACH_LIST(TYPE, var, head)`

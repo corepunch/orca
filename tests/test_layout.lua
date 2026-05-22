@@ -847,6 +847,66 @@ local function test_example_application_xml()
 end
 
 -- ---------------------------------------------------------------------------
+-- Parser coverage: every XML syntax shape used by Example screens/prefabs
+-- should be accepted by loadObjectFromXmlString.
+-- ---------------------------------------------------------------------------
+local function test_example_xml_parser_coverage()
+	local files = {
+		"samples/Example/Screens/GetStartedPopup.xml",
+		"samples/Example/Prefabs/FeatureCard.xml",
+		"samples/Example/Prefabs/FeatureImageCard.xml",
+		"samples/Example/Prefabs/GalleryCard.xml",
+		"samples/Example/Prefabs/IconCard.xml",
+		"samples/Example/Prefabs/ImageCaptionCard.xml",
+		"samples/Example/Prefabs/Mertic.xml",
+		"samples/Example/Prefabs/Quote.xml",
+		"samples/Example/Prefabs/SignalCard.xml",
+		"samples/Example/Prefabs/TabPanelHeader.xml",
+		"samples/Example/Prefabs/WorkflowStep.xml",
+		"samples/Example/Prefabs/XmlModelNode.xml",
+	}
+
+	for _, path in ipairs(files) do
+		local xml = filesystem.readTextFile(path)
+		test.expect(xml ~= nil and xml ~= "", path .. " should be readable")
+
+		if xml and xml ~= "" then
+			local root = filesystem.loadObjectFromXmlString(xml)
+			test.expect(root ~= nil, path .. " should parse successfully")
+			if root then
+				root:clear()
+				root = nil
+			end
+		end
+	end
+
+	-- Cover Application.xml parser syntax with focused snippets:
+	-- BindingExpression formulas, dotted placeholder properties, inline action
+	-- shorthand, escaped ampersands in attribute values, and self-closing tags.
+	local syntax_xml = [[
+	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
+	  <Grid Name="Hero" Columns="auto auto" Spacing="24">
+	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
+	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
+	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
+	      Card.Title="XML-first screens"
+	      Card.Body="Layouts stay readable."
+	      Card.PrimaryColor="#55AAFF"/>
+	  </Grid>
+	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	</Screen>]]
+
+	local syntax_root = filesystem.loadObjectFromXmlString(syntax_xml)
+	test.expect(syntax_root ~= nil, "Application-style parser syntax should load from XML string")
+	if syntax_root then
+		syntax_root:clear()
+		syntax_root = nil
+	end
+
+	print("PASS: test_example_xml_parser_coverage")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_grid_fr_units()
@@ -871,5 +931,6 @@ test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
+test_example_xml_parser_coverage()
 
 print("All layout tests passed.")
