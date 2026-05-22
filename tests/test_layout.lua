@@ -634,6 +634,101 @@ local function test_xml_loading_send_message_action_components()
 end
 
 -- ---------------------------------------------------------------------------
+-- BindingExpression Target="Node.Visible" must react to layout width changes.
+-- ---------------------------------------------------------------------------
+local function test_binding_expression_visible_reacts_to_resize()
+	local xml = [[
+	<Screen Name="binding-visible-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
+	    <Node2D Name="HeroContent" Width="100" Height="40"/>
+	    <Node2D Name="HeroImage" Width="100" Height="40"/>
+	    <BindingExpression Target="Node.Visible">STEP(640, {./Node.ActualWidth})</BindingExpression>
+	  </Grid>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "binding-visible XML should load")
+
+	local hero = root and root:findChild("Hero", true) or nil
+	test.expect(hero ~= nil, "Hero grid should exist")
+
+	if not root or not hero then
+		return
+	end
+
+	root.Height = 600
+	root.Width = 800
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(hero.ActualWidth >= 640, "Hero actual width should start above threshold")
+	test.expect(hero:send("Node.IsVisible"), "Hero should be visible when width >= 640")
+
+	root.Width = 500
+	test.expect_eq(root.Width, 500, "Screen width property should update before layout")
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(hero.ActualWidth < 640, "Hero actual width should drop below threshold after resize")
+	test.expect(not hero:send("Node.IsVisible"), "Hero should be hidden when width < 640")
+
+	root.Width = 900
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(hero.ActualWidth >= 640, "Hero actual width should rise above threshold after expand")
+	test.expect(hero:send("Node.IsVisible"), "Hero should become visible again after width grows")
+
+	root:clear()
+	root = nil
+
+	print("PASS: test_binding_expression_visible_reacts_to_resize")
+end
+
+-- ---------------------------------------------------------------------------
+-- Bare binding paths (no ./ prefix) should resolve from template/root scope.
+-- This keeps {Node.ActualWidth} usable in screen trees.
+-- ---------------------------------------------------------------------------
+local function test_binding_expression_bare_path_resolves_from_root()
+	local xml = [[
+	<Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
+	    <Node2D Name="HeroContent" Width="100" Height="40"/>
+	    <Node2D Name="HeroImage" Width="100" Height="40"/>
+	    <BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
+	  </Grid>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "binding-bare-path XML should load")
+
+	local hero = root and root:findChild("Hero", true) or nil
+	test.expect(hero ~= nil, "Hero grid should exist")
+
+	if not root or not hero then
+		return
+	end
+
+	root.Height = 600
+	root.Width = 800
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(hero:send("Node.IsVisible"), "Hero should be visible when width >= 640")
+
+	root.Width = 500
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(not hero:send("Node.IsVisible"), "Hero should be hidden when width < 640")
+
+	root.Width = 900
+	core.advanceFrame()
+	root:UpdateLayout(root.Width, root.Height)
+	test.expect(hero:send("Node.IsVisible"), "Hero should become visible again after width grows")
+
+	root:clear()
+	root = nil
+
+	print("PASS: test_binding_expression_bare_path_resolves_from_root")
+end
+
+-- ---------------------------------------------------------------------------
 -- TabView should measure only the active panel, not the tallest hidden panel
 -- ---------------------------------------------------------------------------
 local function test_tabview_measures_active_panel_only()
@@ -691,8 +786,8 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>', 1, true)
-	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
+	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>', 1, true)
+	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
 	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"', 1, true)
@@ -886,7 +981,7 @@ local function test_example_xml_parser_coverage()
 	local syntax_xml = [[
 	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
 	  <Grid Name="Hero" Columns="auto auto" Spacing="24">
-	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
+	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
 	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
 	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
 	      Card.Title="XML-first screens"
@@ -929,6 +1024,8 @@ test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
+test_binding_expression_visible_reacts_to_resize()
+test_binding_expression_bare_path_resolves_from_root()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()

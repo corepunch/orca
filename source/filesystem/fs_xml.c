@@ -281,7 +281,7 @@ static bool_t
 binding_node(struct Object *o, struct _xmlNode* x)
 {
   lpcString_t tag = (lpcString_t)x->name;
-  if (strcmp(tag, "Binding") && strcmp(tag, "BindingExpression") && strcmp(tag, "ExpressionBinding")) {
+  if (strcmp(tag, "Binding") && strcmp(tag, "BindingExpression")) {
     return FALSE;
   }
 

@@ -148,6 +148,19 @@ getservice(struct Object *hobj, lpcString_t name)
   return NULL;
 }
 
+static struct Object *
+_BindingTemplateOrRoot(struct Object *object)
+{
+  struct Object *root = object;
+  for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
+    if (OBJ_GetFlags(it) & OF_TEMPLATE) {
+      return it;
+    }
+    root = it;
+  }
+  return root;
+}
+
 #define CALL(NAME) \
 if (!strcmp(token->text, #NAME) && t->type) \
 return (token->cache.func=op_##NAME)(token, t, object, output);
@@ -667,13 +680,11 @@ tok_op(argument)
       }
     }
   } else {
-    /* Default: bare path with no prefix resolves relative to the nearest template ancestor */
-    struct Object *it = OBJ_GetParent(object);
-    for (; it; it = OBJ_GetParent(it)) {
-      if (OBJ_GetFlags(it) & OF_TEMPLATE) {
-        p = OBJ_FindPropertyByPath(it, token->text);
-        break;
-      }
+    /* Default: bare path with no prefix resolves relative to template root.
+       If no template ancestor exists (regular screen trees), resolve from scene root. */
+    struct Object *scope = _BindingTemplateOrRoot(object);
+    if (scope) {
+      p = OBJ_FindPropertyByPath(scope, token->text);
     }
     if (!p) {
       /* Fallback: known prefab (legacy) */

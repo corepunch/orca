@@ -13,7 +13,7 @@
 			<TextBlock Name="NavDocs" FontSize="14" ForegroundColor="$text-secondary">Docs</TextBlock>
 		</StackView>
 		<StackView Name="Body" Direction="Vertical" Spacing="40" OverflowY="Scroll" ClipChildren="true" Padding="40" BackgroundColor="$surface-deep">
-			<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
+			<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 			<Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="$surface">
 				<StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="16">
 					<TextBlock Name="HeadlineLine1" FontSize="48" ForegroundColor="$text-primary">Build stunning</TextBlock>
@@ -29,7 +29,7 @@
 				</StackView>
 				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
 				<BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
-				<BindingExpression Target="Grid.Columns">IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
+				<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
 				</Grid>
 				<StackView Name="TabbedTechSection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
 					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
