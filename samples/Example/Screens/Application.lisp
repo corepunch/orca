@@ -357,22 +357,22 @@
                 "auto auto auto auto" "auto auto"))
           (LayerPrefabPlaceholder Name="Step1"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title=01 Card.Subtitle="Define Layout"
+                                  Card.Title="01" Card.Subtitle="Define Layout"
                                   Card.PrimaryColor="$accent"
                                   Card.Body="Write your screen as an XML file with familiar Grid and StackView containers.")
           (LayerPrefabPlaceholder Name="Step2"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title=02 Card.Subtitle="Load Assets"
+                                  Card.Title="02" Card.Subtitle="Load Assets"
                                   Card.PrimaryColor="$accent-blue"
                                   Card.Body="Images, fonts, and data files are streamed from packages at runtime.")
           (LayerPrefabPlaceholder Name="Step3"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title=03 Card.Subtitle="Script Logic"
+                                  Card.Title="03" Card.Subtitle="Script Logic"
                                   Card.PrimaryColor="$accent-green"
                                   Card.Body="Attach Lua scripts to any component for interactivity and data binding.")
           (LayerPrefabPlaceholder Name="Step4"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title=04 Card.Subtitle="Ship"
+                                  Card.Title="04" Card.Subtitle="Ship"
                                   Card.PrimaryColor="$accent-amber"
                                   Card.Body="Deploy to desktop, mobile, or WebGL with a single build command.")))
       (StackView Name="TestimonialsSection" Direction="Vertical" Spacing=24

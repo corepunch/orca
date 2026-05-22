@@ -389,9 +389,27 @@ parse_element_body(struct lsp_lex *l, struct lisp_node *node)
       if (eq && eq > l->str && eq[1] != '\0') {
         /* Inline atom assignment, e.g. Width=1280 */
         char *key = strndup(l->str, (size_t)(eq - l->str));
+        if (!key) {
+          Con_Error("Lisp: out of memory parsing attribute key (line %d)", l->line);
+          lsp_next(l);
+          continue;
+        }
         struct lisp_attr *a = calloc(1, sizeof(*a));
+        if (!a) {
+          Con_Error("Lisp: out of memory creating attribute node (line %d)", l->line);
+          free(key);
+          lsp_next(l);
+          continue;
+        }
         a->key = key;
         a->val = strdup(eq + 1);
+        if (!a->val) {
+          Con_Error("Lisp: out of memory parsing attribute value (line %d)", l->line);
+          free(a->key);
+          free(a);
+          lsp_next(l);
+          continue;
+        }
         *attr_tail = a;
         attr_tail = &a->next;
         lsp_next(l);
