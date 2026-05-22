@@ -385,7 +385,18 @@ parse_element_body(struct lsp_lex *l, struct lisp_node *node)
     /* --- Atom: key="val", key=(binding), or bare key (unquoted value) --- */
     if (l->tok == TOK_ATOM) {
       size_t alen = strlen(l->str);
-      if (alen > 1 && l->str[alen - 1] == '=') {
+      const char *eq = strchr(l->str, '=');
+      if (eq && eq > l->str && eq[1] != '\0') {
+        /* Inline atom assignment, e.g. Width=1280 */
+        char *key = strndup(l->str, (size_t)(eq - l->str));
+        struct lisp_attr *a = calloc(1, sizeof(*a));
+        a->key = key;
+        a->val = strdup(eq + 1);
+        *attr_tail = a;
+        attr_tail = &a->next;
+        lsp_next(l);
+
+      } else if (alen > 1 && l->str[alen - 1] == '=') {
         char *key = strndup(l->str, alen - 1);
         lsp_next(l);
 

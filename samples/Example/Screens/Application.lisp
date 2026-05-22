@@ -4,45 +4,45 @@
 ; Binding syntax:  Key=(if (step 640 (bind "Node.ActualWidth")) "auto" "wide")
 ; Directive syntax: (:bind Target="Prop" expr)
 
-(Screen Name="Application" Width="1280" Height="800" ClearColor="$surface"
-  (Grid Name="Root" Rows="64px auto" Spacing="0"
+(Screen Name="Application" Width=1280 Height=800 ClearColor="$surface"
+  (Grid Name="Root" Rows="64px auto" Spacing=0
     (StackView Name="NavBar" BackgroundColor="$panel-background"
-               Direction="Horizontal" Spacing="32" AlignItems="Center"
-               HorizontalPadding="40"
-      (StackView Name="BrandMark" Direction="Horizontal" Spacing="10" AlignItems="Center"
+               Direction="Horizontal" Spacing=32 AlignItems="Center"
+               HorizontalPadding=40
+      (StackView Name="BrandMark" Direction="Horizontal" Spacing=10 AlignItems="Center"
         (ImageView Name="BrandIcon"
                    Source="Example/Icons/blocks.svg?width=22&type=mask"
-                   Width="22" Height="22" ForegroundColor="$accent")
-        (TextBlock Name="Brand" FontSize="20" ForegroundColor="$accent"
+                   Width=22 Height=22 ForegroundColor="$accent")
+        (TextBlock Name="Brand" FontSize=20 ForegroundColor="$accent"
           "ORCA"))
-      (TextBlock Name="NavOverview" FontSize="14" ForegroundColor="$text-secondary"
+      (TextBlock Name="NavOverview" FontSize=14 ForegroundColor="$text-secondary"
         "Overview")
-      (TextBlock Name="NavFeatures" FontSize="14" ForegroundColor="$text-secondary"
+      (TextBlock Name="NavFeatures" FontSize=14 ForegroundColor="$text-secondary"
         "Features")
-      (TextBlock Name="NavGallery" FontSize="14" ForegroundColor="$text-secondary"
+      (TextBlock Name="NavGallery" FontSize=14 ForegroundColor="$text-secondary"
         "Gallery")
-      (TextBlock Name="NavDocs" FontSize="14" ForegroundColor="$text-secondary"
+      (TextBlock Name="NavDocs" FontSize=14 ForegroundColor="$text-secondary"
         "Docs"))
-    (StackView Name="Body" Direction="Vertical" Spacing="40" OverflowY="Scroll"
-               ClipChildren="true" Padding="40" BackgroundColor="$surface-deep"
+    (StackView Name="Body" Direction="Vertical" Spacing=40 OverflowY="Scroll"
+               ClipChildren="true" Padding=40 BackgroundColor="$surface-deep"
       (:bind Target="Node.HorizontalPadding"
         (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8)))
-      (Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="$surface"
+      (Grid Name="Hero" Columns="auto auto" Spacing=24 BackgroundColor="$surface"
         (:bind Target="Node.Visible"
           (step 640 (bind "Node.ActualWidth")))
         (:bind Target="Grid.Columns"
           (if (step 640 (bind "Node.ActualWidth")) "auto auto" "auto"))
-        (StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="16"
-          (TextBlock Name="HeadlineLine1" FontSize="48" ForegroundColor="$text-primary"
+        (StackView Name="HeroContent" Direction="Vertical" Spacing=0 Padding=16
+          (TextBlock Name="HeadlineLine1" FontSize=48 ForegroundColor="$text-primary"
             "Build stunning")
-          (TextBlock Name="HeadlineLine2" FontSize="48" ForegroundColor="$accent"
+          (TextBlock Name="HeadlineLine2" FontSize=48 ForegroundColor="$accent"
             "UI in real-time.")
-          (Node2D Name="HeadlineSpacer" Height="20")
-          (TextBlock Name="SubHeadline" FontSize="15" ForegroundColor="$text-muted"
+          (Node2D Name="HeadlineSpacer" Height=20)
+          (TextBlock Name="SubHeadline" FontSize=15 ForegroundColor="$text-muted"
                      WordWrap="true"
             "A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.")
-          (Node2D Name="MetricSpacer" Height="40")
-          (Grid Name="Metrics" Columns="auto auto auto" Spacing="16"
+          (Node2D Name="MetricSpacer" Height=40)
+          (Grid Name="Metrics" Columns="auto auto auto" Spacing=16
             (LayerPrefabPlaceholder Name="MetricUsers"
                                     PlaceholderTemplate="Example/Prefabs/Mertic"
                                     Card.Title="2.4 M"
@@ -60,16 +60,16 @@
                                     Card.PrimaryColor="$accent-blue")))
         (ImageView Name="HeroImage" Source="Example/Images/people"
                    Stretch="UniformToFill"))
-      (StackView Name="TabbedTechSection" Direction="Vertical" Spacing="20"
-                 BackgroundColor="$surface" Padding="40"
+      (StackView Name="TabbedTechSection" Direction="Vertical" Spacing=20
+                 BackgroundColor="$surface" Padding=40
         (:bind Target="Node.HorizontalPadding"
           (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8)))
         (TextBlock Name="TabbedTechHeading" Text="Build the UI, not the ceremony"
-                   FontSize="28" ForegroundColor="$text-primary")
+                   FontSize=28 ForegroundColor="$text-primary")
         (TextBlock Name="TabbedTechSubheading"
                    Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."
-                   FontSize="14" ForegroundColor="$text-muted")
-        (Grid Name="OrcaSignals" Columns="auto auto auto" Spacing="14"
+                   FontSize=14 ForegroundColor="$text-muted")
+        (Grid Name="OrcaSignals" Columns="auto auto auto" Spacing=14
           (:bind Target="Grid.Columns"
             (if (step 640 (bind "Node.ActualWidth")) "auto auto auto" "auto auto"))
           (LayerPrefabPlaceholder Name="SignalXml"
@@ -109,77 +109,77 @@
                                   Card.Body="Same UI, larger ambitions."
                                   Card.PrimaryColor="$text-muted"))
         (TabView Name="OrcaTabs" SelectedValue="xml"
-          (TabBar Name="OrcaTabBar" Height="44" BackgroundColor="$panel-background"
-                  Padding="8 8 8 0" Spacing="12"
-            (Tab Name="XmlTab" Value="xml" Width="140" "XML")
-            (Tab Name="LuaTab" Value="lua" Width="140" "Lua")
-            (Tab Name="MoonTab" Value="moon" Width="140" "MoonScript")
-            (Tab Name="DeployTab" Value="deploy" Width="140" "Deploy"))
-          (StackView Name="xml" Direction="Vertical" Spacing="24"
-                     BackgroundColor="$surface-deep" Padding="32"
+          (TabBar Name="OrcaTabBar" Height=44 BackgroundColor="$panel-background"
+                  Padding="8 8 8 0" Spacing=12
+            (Tab Name="XmlTab" Value="xml" Width=140 "XML")
+            (Tab Name="LuaTab" Value="lua" Width=140 "Lua")
+            (Tab Name="MoonTab" Value="moon" Width=140 "MoonScript")
+            (Tab Name="DeployTab" Value="deploy" Width=140 "Deploy"))
+          (StackView Name="xml" Direction="Vertical" Spacing=24
+                     BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="XmlPanelHeader"
                                     PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
                                     Card.Icon="Example/Icons/grid.svg?width=26&type=mask"
                                     Card.Title="XML reads like a blueprint"
                                     Card.PrimaryColor="$accent")
-            (Grid Name="XmlGrid" Columns="auto auto" Spacing="20"
-              (StackView Name="XmlCopy" Direction="Vertical" Spacing="14"
+            (Grid Name="XmlGrid" Columns="auto auto" Spacing=20
+              (StackView Name="XmlCopy" Direction="Vertical" Spacing=14
                 (TextBlock Name="XmlBody"
                            Text="The screen stays legible at a glance, which makes it easy to scan, compare, and reshape as the design evolves."
-                           FontSize="14" ForegroundColor="$text-muted" WordWrap="true")
-                (StackView Name="XmlNotes" Direction="Vertical" Spacing="8"
-                           BackgroundColor="$panel-background" Padding="20"
+                           FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
+                (StackView Name="XmlNotes" Direction="Vertical" Spacing=8
+                           BackgroundColor="$panel-background" Padding=20
                   (TextBlock Name="XmlNote1"
                              Text="• Grids and stacks stay visible in the source."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")
                   (TextBlock Name="XmlNote2"
                              Text="• Spacing, padding, and hierarchy remain explicit."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")
                   (TextBlock Name="XmlNote3"
                              Text="• The shape of the screen is easy to read before it ever runs."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")))
-              (StackView Name="XmlModel" Direction="Vertical" Spacing="10"
-                         BackgroundColor="$card-background" Padding="20"
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")))
+              (StackView Name="XmlModel" Direction="Vertical" Spacing=10
+                         BackgroundColor="$card-background" Padding=20
                 (TextBlock Name="XmlModelHeading" Text="The structure stays honest"
-                           FontSize="16" ForegroundColor="$text-primary")
+                           FontSize=16 ForegroundColor="$text-primary")
                 (LayerPrefabPlaceholder Name="XmlModelLine1"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/monitor.svg?width=20&type=mask"
                                         Card.Title="Screen"
-                                        PaddingLeft="0"
+                                        PaddingLeft=0
                                         Card.PrimaryColor="$accent")
                 (LayerPrefabPlaceholder Name="XmlModelLine2"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/panel-top.svg?width=20&type=mask"
                                         Card.Title="TabView"
-                                        PaddingLeft="16"
+                                        PaddingLeft=16
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine3"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/grid.svg?width=20&type=mask"
                                         Card.Title="Grid"
-                                        PaddingLeft="32"
+                                        PaddingLeft=32
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine4"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/layers.svg?width=20&type=mask"
                                         Card.Title="StackView"
-                                        PaddingLeft="32"
+                                        PaddingLeft=32
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine5"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/image.svg?width=20&type=mask"
                                         Card.Title="ImageView"
-                                        PaddingLeft="48"
+                                        PaddingLeft=48
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine6"
                                         PlaceholderTemplate="Example/Prefabs/XmlModelNode"
                                         Card.Icon="Example/Icons/type.svg?width=20&type=mask"
                                         Card.Title="TextBlock"
-                                        PaddingLeft="48"
+                                        PaddingLeft=48
                                         Card.PrimaryColor="$text-secondary"))))
-          (StackView Name="lua" Direction="Vertical" Spacing="24"
-                     BackgroundColor="$surface-deep" Padding="32"
+          (StackView Name="lua" Direction="Vertical" Spacing=24
+                     BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="LuaPanelHeader"
                                     PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
                                     Card.Icon="Example/Icons/code.svg?width=26&type=mask"
@@ -187,8 +187,8 @@
                                     Card.PrimaryColor="$accent-blue")
             (TextBlock Name="LuaBody"
                        Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."
-                       FontSize="14" ForegroundColor="$text-muted" WordWrap="true")
-            (Grid Name="LuaGrid" Columns="auto auto auto" Spacing="16"
+                       FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
+            (Grid Name="LuaGrid" Columns="auto auto auto" Spacing=16
               (LayerPrefabPlaceholder Name="LuaCard1"
                                       PlaceholderTemplate="Example/Prefabs/IconCard"
                                       Card.Icon="Example/Icons/mouse-pointer-click.svg?width=40&type=mask"
@@ -210,43 +210,43 @@
                                       Card.Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."
                                       Card.PrimaryColor="$accent-green"
                                       Card.IconBackground="$icon-bg-green")))
-          (StackView Name="moon" Direction="Vertical" Spacing="24"
-                     BackgroundColor="$surface-deep" Padding="32"
+          (StackView Name="moon" Direction="Vertical" Spacing=24
+                     BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="MoonPanelHeader"
                                     PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
                                     Card.Icon="Example/Icons/moon.svg?width=26&type=mask"
                                     Card.Title="MoonScript trims the noise"
                                     Card.PrimaryColor="$text-secondary")
-            (Grid Name="MoonGrid" Columns="auto auto" Spacing="20"
-              (StackView Name="MoonCopy" Direction="Vertical" Spacing="14"
+            (Grid Name="MoonGrid" Columns="auto auto" Spacing=20
+              (StackView Name="MoonCopy" Direction="Vertical" Spacing=14
                 (TextBlock Name="MoonBody"
                            Text="MoonScript keeps larger app code compact and expressive, while still compiling to the same Lua runtime."
-                           FontSize="14" ForegroundColor="$text-muted" WordWrap="true")
-                (StackView Name="MoonNotes" Direction="Vertical" Spacing="8"
-                           BackgroundColor="$panel-background" Padding="20"
+                           FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
+                (StackView Name="MoonNotes" Direction="Vertical" Spacing=8
+                           BackgroundColor="$panel-background" Padding=20
                   (TextBlock Name="MoonNote1"
                              Text="• Helpful when app modules get a little larger."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")
                   (TextBlock Name="MoonNote2"
                              Text="• The syntax stays concise, but the runtime stays Lua."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")
                   (TextBlock Name="MoonNote3"
                              Text="• It pairs naturally with XML screens and Lua helpers."
-                             FontSize="13" ForegroundColor="$text-secondary" WordWrap="true")))
-              (StackView Name="MoonModel" Direction="Vertical" Spacing="10"
-                         BackgroundColor="$card-background" Padding="20"
+                             FontSize=13 ForegroundColor="$text-secondary" WordWrap="true")))
+              (StackView Name="MoonModel" Direction="Vertical" Spacing=10
+                         BackgroundColor="$card-background" Padding=20
                 (TextBlock Name="MoonModelHeading" Text="Same runtime, less ceremony"
-                           FontSize="16" ForegroundColor="$text-primary")
+                           FontSize=16 ForegroundColor="$text-primary")
                 (TextBlock Name="MoonModelLine1" Text="Cleaner class bodies"
-                           FontSize="14" ForegroundColor="$text-secondary")
+                           FontSize=14 ForegroundColor="$text-secondary")
                 (TextBlock Name="MoonModelLine2" Text="Readable app controllers"
-                           FontSize="14" ForegroundColor="$text-secondary")
+                           FontSize=14 ForegroundColor="$text-secondary")
                 (TextBlock Name="MoonModelLine3" Text="Plain Lua at runtime"
-                           FontSize="14" ForegroundColor="$text-secondary")
+                           FontSize=14 ForegroundColor="$text-secondary")
                 (TextBlock Name="MoonModelLine4" Text="Comfortable beside XML layouts"
-                           FontSize="14" ForegroundColor="$text-secondary"))))
-          (StackView Name="deploy" Direction="Vertical" Spacing="24"
-                     BackgroundColor="$surface-deep" Padding="32"
+                           FontSize=14 ForegroundColor="$text-secondary"))))
+          (StackView Name="deploy" Direction="Vertical" Spacing=24
+                     BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="DeployPanelHeader"
                                     PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
                                     Card.Icon="Example/Icons/globe.svg?width=26&type=mask"
@@ -254,8 +254,8 @@
                                     Card.PrimaryColor="$accent-green")
             (TextBlock Name="DeployBody"
                        Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."
-                       FontSize="14" ForegroundColor="$text-muted" WordWrap="true")
-            (Grid Name="DeployGrid" Columns="auto auto auto" Spacing="16"
+                       FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
+            (Grid Name="DeployGrid" Columns="auto auto auto" Spacing=16
               (LayerPrefabPlaceholder Name="DeployCard1"
                                       PlaceholderTemplate="Example/Prefabs/IconCard"
                                       Card.Icon="Example/Icons/monitor.svg?width=40&type=mask"
@@ -277,7 +277,7 @@
                                       Card.Body="The same screen model can carry into browser workflows without being rewritten."
                                       Card.PrimaryColor="$accent-blue"
                                       Card.IconBackground="$icon-bg-blue"))
-            (Grid Name="DeployImages" Columns="auto auto" Spacing="12"
+            (Grid Name="DeployImages" Columns="auto auto" Spacing=12
               (LayerPrefabPlaceholder Name="DeployImage1"
                                       PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
                                       Card.Image="Example/Images/orca-tab-city"
@@ -286,18 +286,18 @@
                                       PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
                                       Card.Image="Example/Images/orca-tab-lights"
                                       Card.Title="Night light"))
-            (StackView Name="DeployCommandLink" Direction="Horizontal" Spacing="12"
-                       AlignItems="Center" BackgroundColor="$panel-background" Padding="16"
+            (StackView Name="DeployCommandLink" Direction="Horizontal" Spacing=12
+                       AlignItems="Center" BackgroundColor="$panel-background" Padding=16
               (ImageView Name="DeployCommandIcon"
                          Source="Example/Icons/monitor.svg?width=20&type=mask"
-                         Width="20" Height="20" ForegroundColor="$accent-green")
-              (StackView Name="DeployCommandCopy" Direction="Vertical" Spacing="2"
+                         Width=20 Height=20 ForegroundColor="$accent-green")
+              (StackView Name="DeployCommandCopy" Direction="Vertical" Spacing=2
                 (TextBlock Name="DeployCommandLabel" Text="Desktop build"
-                           FontSize="13" ForegroundColor="$text-secondary")
+                           FontSize=13 ForegroundColor="$text-secondary")
                 (TextBlock Name="DeployCommandValue"
                            Text="make clean && make -j8 && build/bin/orca samples/Example"
-                           FontSize="14" ForegroundColor="$text-primary" WordWrap="true"))))))
-      (Grid Name="FeatureSection" Columns="auto auto auto auto" Spacing="20"
+                           FontSize=14 ForegroundColor="$text-primary" WordWrap="true"))))))
+      (Grid Name="FeatureSection" Columns="auto auto auto auto" Spacing=20
         (LayerPrefabPlaceholder Name="FeatureXmlCard"
                                 PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
                                 Card.Icon="Example/Icons/layers.svg?width=40&type=mask"
@@ -322,16 +322,16 @@
                                 Card.Title="Fast iteration"
                                 Card.Body="Edit, reload, and refine quickly without losing the overall shape of the interface."
                                 Card.PrimaryColor="$accent-amber"))
-      (StackView Name="GallerySection" Direction="Vertical" Spacing="20"
-                 BackgroundColor="$surface" Padding="40"
+      (StackView Name="GallerySection" Direction="Vertical" Spacing=20
+                 BackgroundColor="$surface" Padding=40
         (:bind Target="Node.HorizontalPadding"
           (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8)))
         (TextBlock Name="GalleryHeading" Text="Gallery"
-                   FontSize="28" ForegroundColor="$text-primary")
+                   FontSize=28 ForegroundColor="$text-primary")
         (TextBlock Name="GallerySubheading"
                    Text="Screenshots and scenes rendered entirely by the ORCA engine."
-                   FontSize="14" ForegroundColor="$text-muted")
-        (Grid Name="GalleryGrid" Columns="auto auto" Spacing="16"
+                   FontSize=14 ForegroundColor="$text-muted")
+        (Grid Name="GalleryGrid" Columns="auto auto" Spacing=16
           (LayerPrefabPlaceholder Name="GalleryCard1"
                                   PlaceholderTemplate="Example/Prefabs/GalleryCard"
                                   Card.Image="Example/Images/lake"
@@ -342,46 +342,46 @@
                                   Card.Image="Example/Images/peacock"
                                   Card.Title="Peacock"
                                   Card.Subtitle="High-fidelity texture sampling with anisotropic filtering.")))
-      (StackView Name="WorkflowSection" Direction="Vertical" Spacing="24"
-                 BackgroundColor="$surface-deep" Padding="40"
+      (StackView Name="WorkflowSection" Direction="Vertical" Spacing=24
+                 BackgroundColor="$surface-deep" Padding=40
         (:bind Target="Node.HorizontalPadding"
           (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8)))
         (TextBlock Name="WorkflowHeading" Text="How It Works"
-                   FontSize="28" ForegroundColor="$text-primary")
+                   FontSize=28 ForegroundColor="$text-primary")
         (TextBlock Name="WorkflowSubheading"
                    Text="From XML layout to a live rendered scene in four simple steps."
-                   FontSize="14" ForegroundColor="$text-muted")
-        (Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing="16"
+                   FontSize=14 ForegroundColor="$text-muted")
+        (Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing=16
           (:bind Target="Grid.Columns"
             (if (step 640 (bind "Node.ActualWidth"))
                 "auto auto auto auto" "auto auto"))
           (LayerPrefabPlaceholder Name="Step1"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title="01" Card.Subtitle="Define Layout"
+                                  Card.Title=01 Card.Subtitle="Define Layout"
                                   Card.PrimaryColor="$accent"
                                   Card.Body="Write your screen as an XML file with familiar Grid and StackView containers.")
           (LayerPrefabPlaceholder Name="Step2"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title="02" Card.Subtitle="Load Assets"
+                                  Card.Title=02 Card.Subtitle="Load Assets"
                                   Card.PrimaryColor="$accent-blue"
                                   Card.Body="Images, fonts, and data files are streamed from packages at runtime.")
           (LayerPrefabPlaceholder Name="Step3"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title="03" Card.Subtitle="Script Logic"
+                                  Card.Title=03 Card.Subtitle="Script Logic"
                                   Card.PrimaryColor="$accent-green"
                                   Card.Body="Attach Lua scripts to any component for interactivity and data binding.")
           (LayerPrefabPlaceholder Name="Step4"
                                   PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-                                  Card.Title="04" Card.Subtitle="Ship"
+                                  Card.Title=04 Card.Subtitle="Ship"
                                   Card.PrimaryColor="$accent-amber"
                                   Card.Body="Deploy to desktop, mobile, or WebGL with a single build command.")))
-      (StackView Name="TestimonialsSection" Direction="Vertical" Spacing="24"
-                 BackgroundColor="$surface" Padding="40"
+      (StackView Name="TestimonialsSection" Direction="Vertical" Spacing=24
+                 BackgroundColor="$surface" Padding=40
         (:bind Target="Node.HorizontalPadding"
           (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8)))
         (TextBlock Name="TestimonialsHeading" Text="What Developers Say"
-                   FontSize="28" ForegroundColor="$text-primary")
-        (Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing="20"
+                   FontSize=28 ForegroundColor="$text-primary")
+        (Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing=20
           (LayerPrefabPlaceholder Name="Quote1"
                                   PlaceholderTemplate="Example/Prefabs/Quote"
                                   Card.PrimaryColor="$accent"
@@ -397,26 +397,26 @@
                                   Card.PrimaryColor="$accent-blue"
                                   Card.Title="— Jordan M." Card.Subtitle="Game Developer"
                                   Card.Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA.")))
-      (StackView Name="CtaSection" Direction="Vertical" Spacing="24"
-                 BackgroundColor="$panel-background" Padding="60" AlignItems="Center"
+      (StackView Name="CtaSection" Direction="Vertical" Spacing=24
+                 BackgroundColor="$panel-background" Padding=60 AlignItems="Center"
         (:bind Target="Node.HorizontalPadding"
           (if (step 640 (bind "Node.ActualWidth")) (vector2 60 60) (vector2 16 16)))
         (TextBlock Name="CtaHeading" Text="Ready to build something great?"
-                   FontSize="36" ForegroundColor="$text-primary"
+                   FontSize=36 ForegroundColor="$text-primary"
                    TextHorizontalAlignment="Center")
         (TextBlock Name="CtaBody"
                    Text="Download ORCA, open a sample project, and have your first screen running in minutes."
-                   FontSize="15" ForegroundColor="$text-muted" WordWrap="true"
+                   FontSize=15 ForegroundColor="$text-muted" WordWrap="true"
                    TextHorizontalAlignment="Center")
-        (StackView Name="CtaButtons" Direction="Horizontal" Spacing="16"
+        (StackView Name="CtaButtons" Direction="Horizontal" Spacing=16
           (TextBlock Name="CtaButtonPrimary" Text="Get Started"
-                     FontSize="14" ForegroundColor="$white"
-                     BackgroundColor="$accent" Padding="16" Width="140" Height="44"
+                     FontSize=14 ForegroundColor="$white"
+                     BackgroundColor="$accent" Padding=16 Width=140 Height=44
                      TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
                      LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}")
           (TextBlock Name="CtaButtonSecondary" Text="Learn more"
-                     FontSize="14" ForegroundColor="$text-secondary"
-                     BackgroundColor="$card-background" Padding="16"
-                     Width="140" Height="44"
+                     FontSize=14 ForegroundColor="$text-secondary"
+                     BackgroundColor="$card-background" Padding=16
+                     Width=140 Height=44
                      TextHorizontalAlignment="Center"
                      TextVerticalAlignment="Center"))))))

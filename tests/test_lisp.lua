@@ -44,7 +44,7 @@ end
 local function test_basic_elements()
   ensure_fs()
   local obj = filesystem.loadObjectFromLispString([[
-    (Screen Name="TestScreen" Width="100" Height="100"
+    (Screen Name="TestScreen" Width=100 Height=100
       (StackView Name="Inner" Direction="Vertical"))
   ]])
   test.expect(obj ~= nil, "basic: root object should be created")
@@ -62,7 +62,7 @@ local function test_text_content()
   ensure_fs()
   local obj = filesystem.loadObjectFromLispString([[
     (StackView Name="Row"
-      (TextBlock Name="Label" FontSize="14" ForegroundColor="$text-primary"
+      (TextBlock Name="Label" FontSize=14 ForegroundColor="$text-primary"
         "Hello, world"))
   ]])
   test.expect(obj ~= nil, "text: root should exist")
@@ -84,7 +84,7 @@ local function test_binding_attr()
   ensure_fs()
   local ok, err = pcall(function()
     local obj = filesystem.loadObjectFromLispString([[
-      (Grid Name="TestGrid" Spacing="0"
+      (Grid Name="TestGrid" Spacing=0
         Columns=(if (step 640 (bind "Node.ActualWidth")) "auto auto" "auto"))
     ]])
     test.expect(obj ~= nil, "binding_attr: object should be created")
@@ -151,12 +151,16 @@ local function test_application_lisp_readable()
   local has_brandmark   = src:find('Name="BrandMark"', 1, true) ~= nil
   local has_bind        = src:find('(:bind ', 1, true) ~= nil
   local has_prefab      = src:find('LayerPrefabPlaceholder', 1, true) ~= nil
+  local has_numeric_atoms = src:find('Width=1280', 1, true) ~= nil
+  local no_numeric_strings = src:find('Width="1280"', 1, true) == nil
   local no_xml_entities = src:find('&amp;', 1, true) == nil
   test.expect(has_screen,      "application_lisp: should contain (Screen ...")
   test.expect(has_tabview,     "application_lisp: should contain (TabView ...")
   test.expect(has_brandmark,   "application_lisp: should contain BrandMark element")
   test.expect(has_bind,        "application_lisp: should contain :bind directives")
   test.expect(has_prefab,      "application_lisp: should contain LayerPrefabPlaceholder")
+  test.expect(has_numeric_atoms, "application_lisp: numeric properties should use bare atoms (e.g. Width=1280)")
+  test.expect(no_numeric_strings, "application_lisp: numeric properties should not use quoted numeric strings")
   test.expect(no_xml_entities, "application_lisp: should NOT contain &amp; XML entities (use & directly)")
   print("PASS: test_application_lisp_readable")
 end
@@ -218,7 +222,7 @@ local function test_binding_translation()
           (if (step 640 (bind "Node.ActualWidth")) (vector2 40 40) (vector2 8 8))))
     ]],
     -- IF with string branches on column definition
-    [[(Grid Name="T3" Spacing="0"
+    [[(Grid Name="T3" Spacing=0
         (:bind Target="Grid.Columns"
           (if (step 640 (bind "Node.ActualWidth")) "auto auto" "auto")))
     ]],
