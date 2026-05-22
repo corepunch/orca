@@ -358,9 +358,301 @@ _compile(lpcString_t code, lpcString_t filename)
   return token;
 }
 
+struct _lisp_buf {
+  char *s;
+  size_t n;
+  size_t cap;
+};
+
+static bool_t
+_lisp_buf_putn(struct _lisp_buf *b, lpcString_t s, size_t len)
+{
+  if (!len) return TRUE;
+  if (b->n + len + 1 > b->cap) {
+    size_t need = b->n + len + 1;
+    size_t cap = b->cap ? b->cap * 2 : 128;
+    if (cap < need) cap = need;
+    char *next = realloc(b->s, cap);
+    if (!next) return FALSE;
+    b->s = next;
+    b->cap = cap;
+  }
+  memcpy(b->s + b->n, s, len);
+  b->n += len;
+  b->s[b->n] = '\0';
+  return TRUE;
+}
+
+static bool_t
+_lisp_buf_put(struct _lisp_buf *b, lpcString_t s)
+{
+  return _lisp_buf_putn(b, s, strlen(s));
+}
+
+static bool_t
+_lisp_buf_putc(struct _lisp_buf *b, char c)
+{
+  return _lisp_buf_putn(b, &c, 1);
+}
+
+static lpcString_t
+_lisp_skip(lpcString_t p)
+{
+  while (*p && isspace((unsigned char)*p)) p++;
+  return p;
+}
+
+static char *
+_lisp_read_atom(lpcString_t *pp)
+{
+  lpcString_t p = _lisp_skip(*pp);
+  lpcString_t start = p;
+  while (*p && !isspace((unsigned char)*p) && *p != '(' && *p != ')') p++;
+  size_t len = (size_t)(p - start);
+  char *out = malloc(len + 1);
+  if (!out) return NULL;
+  memcpy(out, start, len);
+  out[len] = '\0';
+  *pp = p;
+  return out;
+}
+
+static char *
+_lisp_parse_expr(lpcString_t *pp, bool_t *ok);
+
+static char *
+_lisp_parse_string(lpcString_t *pp, bool_t *ok)
+{
+  lpcString_t p = _lisp_skip(*pp);
+  struct _lisp_buf out = {0};
+  if (*p != '"') {
+    *ok = FALSE;
+    return NULL;
+  }
+  p++;
+  if (!_lisp_buf_putc(&out, '"')) {
+    *ok = FALSE;
+    free(out.s);
+    return NULL;
+  }
+  while (*p && *p != '"') {
+    char c = *p++;
+    if (c == '\\' && *p) {
+      char esc = *p++;
+      if (esc == '"' || esc == '\\') {
+        if (!_lisp_buf_putc(&out, '\\') || !_lisp_buf_putc(&out, esc)) {
+          *ok = FALSE;
+          free(out.s);
+          return NULL;
+        }
+      } else if (esc == 'n') {
+        if (!_lisp_buf_put(&out, "\\n")) {
+          *ok = FALSE;
+          free(out.s);
+          return NULL;
+        }
+      } else if (esc == 't') {
+        if (!_lisp_buf_put(&out, "\\t")) {
+          *ok = FALSE;
+          free(out.s);
+          return NULL;
+        }
+      } else {
+        if (!_lisp_buf_putc(&out, '\\') || !_lisp_buf_putc(&out, esc)) {
+          *ok = FALSE;
+          free(out.s);
+          return NULL;
+        }
+      }
+    } else {
+      if (c == '"' && !_lisp_buf_putc(&out, '\\')) {
+        *ok = FALSE;
+        free(out.s);
+        return NULL;
+      }
+      if (!_lisp_buf_putc(&out, c)) {
+        *ok = FALSE;
+        free(out.s);
+        return NULL;
+      }
+    }
+  }
+  if (*p != '"') {
+    *ok = FALSE;
+    free(out.s);
+    return NULL;
+  }
+  p++;
+  if (!_lisp_buf_putc(&out, '"')) {
+    *ok = FALSE;
+    free(out.s);
+    return NULL;
+  }
+  *pp = p;
+  return out.s ? out.s : strdup("\"\"");
+}
+
+static char *
+_lisp_parse_list(lpcString_t *pp, bool_t *ok)
+{
+  lpcString_t p = _lisp_skip(*pp);
+  struct _lisp_buf out = {0};
+  if (*p != '(') {
+    *ok = FALSE;
+    return NULL;
+  }
+  p++;
+
+  char *fn = _lisp_read_atom(&p);
+  if (!fn || !*fn) {
+    free(fn);
+    *ok = FALSE;
+    return NULL;
+  }
+
+  if (!strcasecmp(fn, "bind")) {
+    free(fn);
+    char *arg = _lisp_parse_expr(&p, ok);
+    if (!*ok || !arg) {
+      free(arg);
+      return NULL;
+    }
+    size_t len = strlen(arg);
+    bool_t quoted = len >= 2 && arg[0] == '"' && arg[len - 1] == '"';
+    if (!quoted) {
+      free(arg);
+      *ok = FALSE;
+      return NULL;
+    }
+    if (!_lisp_buf_putc(&out, '{') ||
+        !_lisp_buf_putn(&out, arg + 1, len - 2) ||
+        !_lisp_buf_putc(&out, '}')) {
+      free(arg);
+      free(out.s);
+      *ok = FALSE;
+      return NULL;
+    }
+    free(arg);
+    p = _lisp_skip(p);
+    if (*p != ')') {
+      *ok = FALSE;
+      free(out.s);
+      return NULL;
+    }
+    p++;
+    *pp = p;
+    return out.s;
+  }
+
+  for (char *c = fn; *c; c++) {
+    *c = (char)toupper((unsigned char)*c);
+  }
+  if (!_lisp_buf_put(&out, fn) || !_lisp_buf_putc(&out, '(')) {
+    free(fn);
+    free(out.s);
+    *ok = FALSE;
+    return NULL;
+  }
+  free(fn);
+
+  bool_t first = TRUE;
+  for (;;) {
+    p = _lisp_skip(p);
+    if (*p == ')') {
+      p++;
+      break;
+    }
+    if (!*p) {
+      free(out.s);
+      *ok = FALSE;
+      return NULL;
+    }
+    char *arg = _lisp_parse_expr(&p, ok);
+    if (!*ok || !arg) {
+      free(arg);
+      free(out.s);
+      return NULL;
+    }
+    if (!first && !_lisp_buf_put(&out, ", ")) {
+      free(arg);
+      free(out.s);
+      *ok = FALSE;
+      return NULL;
+    }
+    if (!_lisp_buf_put(&out, arg)) {
+      free(arg);
+      free(out.s);
+      *ok = FALSE;
+      return NULL;
+    }
+    free(arg);
+    first = FALSE;
+  }
+
+  if (!_lisp_buf_putc(&out, ')')) {
+    free(out.s);
+    *ok = FALSE;
+    return NULL;
+  }
+  *pp = p;
+  return out.s;
+}
+
+static char *
+_lisp_parse_expr(lpcString_t *pp, bool_t *ok)
+{
+  lpcString_t p = _lisp_skip(*pp);
+  if (!*p) {
+    *ok = FALSE;
+    return NULL;
+  }
+  if (*p == '(') {
+    char *list = _lisp_parse_list(&p, ok);
+    if (!*ok) return NULL;
+    *pp = p;
+    return list;
+  }
+  if (*p == '"') {
+    char *s = _lisp_parse_string(&p, ok);
+    if (!*ok) return NULL;
+    *pp = p;
+    return s;
+  }
+  char *atom = _lisp_read_atom(&p);
+  if (!atom) {
+    *ok = FALSE;
+    return NULL;
+  }
+  *pp = p;
+  return atom;
+}
+
+ORCA_API char *
+PROP_TranslateLispBinding(lpcString_t code)
+{
+  lpcString_t p = _lisp_skip(code);
+  bool_t ok = TRUE;
+  if (*p != '(') {
+    return NULL;
+  }
+  char *translated = _lisp_parse_expr(&p, &ok);
+  p = _lisp_skip(p);
+  if (!ok || !translated || *p) {
+    free(translated);
+    return NULL;
+  }
+  return translated;
+}
+
 ORCA_API struct token*
 Token_Create(lpcString_t code)
 {
   struct token* _compile(lpcString_t code, lpcString_t filename);
+  char *lisp = PROP_TranslateLispBinding(code);
+  if (lisp) {
+    struct token *result = _compile(lisp, "binding");
+    free(lisp);
+    return result;
+  }
   return _compile(code, "binding");
 }

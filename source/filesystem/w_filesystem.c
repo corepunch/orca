@@ -391,7 +391,6 @@ static int f_loadObjectFromLispString(lua_State* L) {
 
 void on_filesystem_module_registered(lua_State* L)
 {
-  OBJ_RegisterFileLoader(".xml", _xml_file_loader);
   OBJ_RegisterFileLoader(".css", _css_file_loader);
   OBJ_RegisterFileLoader(".lisp", _lisp_file_loader);
 
