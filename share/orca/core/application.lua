@@ -1,7 +1,7 @@
 local core = require "orca.core"
+local renderer = require "orca.renderer"
 local system = require "orca.system"
 local filesystem = require "orca.filesystem"
-local renderer = require "orca.renderer"
 
 local Widget = require "orca.core.widget"
 local Router = require "orca.core.router"
