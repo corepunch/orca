@@ -865,6 +865,17 @@ The XML attribute iterator in `source/parsers/p_xml.c` previously used `xmlNodeL
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 ```
 
+### Weather Sample — Tailwind vs ThemeLibrary (Do Not Mix Runtime Logic Into package.lua)
+
+- `tailwind.lua` and `ThemeLibrary` are complementary, not interchangeable:
+  - `tailwind.lua` defines class-based style tokens (`bg-*`, `text-*`, etc.) used by the Tailwind plugin.
+  - `ThemeLibrary` provides `$key` lookups consumed by XML and UIKit/default control theme paths (`$accent`, `$control-background`, `$card-background`, etc.).
+- Missing `$...` keys (`FS_GetThemeValue: missing theme key ...`) are fixed by adding static `ThemeLibrary` entries in `package.lua`, not by changing Tailwind classes.
+- Keep `samples/*/package.lua` declarative data only. Do not call `require` or runtime APIs from `package.lua`; project loading executes package chunks in a restricted project table environment.
+- If a sample uses Tailwind and also relies on UIKit controls, ensure both are present:
+  - Tailwind color tokens in `config/tailwind.lua` (`extend.colors`)
+  - Engine/UI theme fallback keys in `ThemeLibrary` (at minimum: `accent`, `accent-background`, `accent-foreground`, `panel-background`, `card-background`, `control-background`, `control-foreground`, `control-border`, `control-muted`)
+
 ### Property VM — `Token_Release` Must Recurse into `args[]`
 
 `Token_Release` in `source/core/property/property_runtime.c` walks `token->next` to release sibling tokens, but **does not** recurse into `token->args[]`. Every function-call token (`ADD`, `MUL`, `IF`, …) keeps its argument sub-tokens in `args[0..TOKEN_MAX_ARGS-1]`. Failing to release them leaks all arguments of every operator token.

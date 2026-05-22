@@ -12,6 +12,29 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static struct Object *workspace = NULL;
 
+static struct ThemeValue const _defaultThemeLibrary[] = {
+  { "accent", "#8B5CF6" },
+  { "accent-background", "#2A2145" },
+  { "accent-foreground", "#FFFFFF" },
+  { "panel-background", "#141420" },
+  { "card-background", "#1A1A28" },
+  { "control-background", "#141420" },
+  { "control-foreground", "#F1F5F9" },
+  { "control-border", "#2B3142" },
+  { "control-muted", "#64748B" },
+};
+
+static lpcString_t
+_GetDefaultThemeValue(lpcString_t key)
+{
+  FOR_LOOP(i, (int32_t)(sizeof(_defaultThemeLibrary) / sizeof(_defaultThemeLibrary[0]))) {
+    if (!strcmp(_defaultThemeLibrary[i].Key, key)) {
+      return _defaultThemeLibrary[i].Value;
+    }
+  }
+  return NULL;
+}
+
 static bool_t
 _BuildSamplePath(lpcString_t input, fixedString_t output)
 {
@@ -53,6 +76,12 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
 //          return node->Resources[i].Value;
 //      }
 //    }
+  }
+  {
+    lpcString_t fallback = _GetDefaultThemeValue(name);
+    if (fallback) {
+      return fallback;
+    }
   }
   fprintf(stderr, "FS_GetThemeValue: missing theme key '%s'\n", key);
   return NULL;
