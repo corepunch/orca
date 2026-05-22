@@ -648,11 +648,14 @@ ORCA_API struct token*
 Token_Create(lpcString_t code)
 {
   struct token* _compile(lpcString_t code, lpcString_t filename);
-  char *lisp = PROP_TranslateLispBinding(code);
-  if (lisp) {
-    struct token *result = _compile(lisp, "binding");
-    free(lisp);
-    return result;
+  lpcString_t p = _lisp_skip(code);
+  if (*p == '(') {
+    char *lisp = PROP_TranslateLispBinding(code);
+    if (lisp) {
+      struct token *result = _compile(lisp, "binding");
+      free(lisp);
+      return result;
+    }
   }
   return _compile(code, "binding");
 }
