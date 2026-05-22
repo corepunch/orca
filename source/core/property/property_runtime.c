@@ -131,7 +131,6 @@ navigatenode(xmlNodePtr data, xmlChar const* sep)
 static xmlNodePtr
 getservice(struct Object *hobj, lpcString_t name)
 {
-  (void)hobj;
 #if SERVICE_ENABLED
   lua_State* L = core.L;
   lua_getfield(L, LUA_REGISTRYINDEX, name);
@@ -143,8 +142,23 @@ getservice(struct Object *hobj, lpcString_t name)
     lua_pop(L, -1);
     return NULL;
   }
+#else
+  (void)hobj;
 #endif
   return NULL;
+}
+
+static struct Object *
+_BindingTemplateOrRoot(struct Object *object)
+{
+  struct Object *root = object;
+  for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
+    if (OBJ_GetFlags(it) & OF_TEMPLATE) {
+      return it;
+    }
+    root = it;
+  }
+  return root;
 }
 
 #define CALL(NAME) \
@@ -255,8 +269,12 @@ tok_op(CREATEROTATION_XYZ) {
     return FALSE;
   }
 }
+static inline bool_t DATA_IsVector(eDataType_t type) {
+  return type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor;
+}
 tok_op(EXTRACT_XYZ) {
-  if (regs->type == kDataTypeFloat && regs->size == sizeof(struct vec3)) {
+  if (DATA_IsVector(regs->type) &&
+      regs->size >= sizeof(float) * (uint32_t)(token->cache.component + 1)) {
     InitOutput(output, kDataTypeFloat, sizeof(float));
     output->value[0] = regs->value[token->cache.component];
     return TRUE;
@@ -390,6 +408,10 @@ tok_op(call)
   CALL_XYZ(VECTOR3X, EXTRACT_XYZ, 0);
   CALL_XYZ(VECTOR3Y, EXTRACT_XYZ, 1);
   CALL_XYZ(VECTOR3Z, EXTRACT_XYZ, 2);
+  CALL_XYZ(COLORR, EXTRACT_XYZ, 0);
+  CALL_XYZ(COLORG, EXTRACT_XYZ, 1);
+  CALL_XYZ(COLORB, EXTRACT_XYZ, 2);
+  CALL_XYZ(COLORA, EXTRACT_XYZ, 3);
   CALL_XYZ(EXTRACTEULERX, EXTRACT_XYZ, 0);
   CALL_XYZ(EXTRACTEULERY, EXTRACT_XYZ, 1);
   CALL_XYZ(EXTRACTEULERZ, EXTRACT_XYZ, 2);
@@ -446,246 +468,129 @@ PrintToProperty(struct Property *prop, struct vm_register* r)
   }
 }
 
-static inline bool_t DATA_IsVector(eDataType_t type) {
-  return type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor;
-}
-
 bool_t
 PROP_Import(struct Property *prop,
-            enum PropertyAttribute attr,
             struct vm_register* r)
 {
-  eDataType_t type = PROP_GetType(prop);
-  if (!attr) {
-    if (PROP_GetType(prop) == kDataTypeNone) {
-      PROP_SetTypeSize(prop, r->type, r->size);
-    }
-    
-    switch (PROP_GetType(prop)) {
-      case kDataTypeString:
-        return PrintToProperty(prop, r);
-        
-      case kDataTypeEnum:
-        if (r->type == kDataTypeString) {
-          lpcString_t const* enum_values = PROP_GetDesc(prop)->EnumValues;
-          int idx = 0;
-          while (enum_values && enum_values[idx] && strcasecmp(enum_values[idx], VM_REG_STR(r)) != 0)
-            idx++;
-          PROP_SetValue(prop, &idx);
-          return TRUE;
-        }
-        break;
-        
-      case kDataTypeBool:
-        switch (r->type) {
-          case kDataTypeFloat:
-            PROP_SetValue(prop, &(float){ *r->value > 0 });
-            return TRUE;
-          case kDataTypeInt:
-          case kDataTypeBool:
-          case kDataTypeEnum:
-            PROP_SetValue(prop, &(int){ *r->value > 0 });
-            return TRUE;
-          case kDataTypeString: {
-            const char *boolstr = *r->value > 0 ? "true" : "false";
-            PROP_SetValue(prop, &boolstr);
-            return TRUE;
-          }
-          default:
-            return FALSE;
-        }
-        
-      case kDataTypeInt:
-        switch (r->type) {
-          case kDataTypeInt:
-          case kDataTypeBool:
-          case kDataTypeEnum:
-          case kDataTypeFloat:
-            PROP_SetValue(prop, &(int){ *r->value });
-            return TRUE;
-          default:
-            return FALSE;
-        }
-        
-      case kDataTypeFloat:
-        switch (r->type) {
-          case kDataTypeString:
-            assert(PROP_GetSize(prop) == sizeof(float));
-            PROP_SetValue(prop, &(float){ (float)atof(VM_REG_STR(r)) });
-            return TRUE;
-          case kDataTypeInt:
-          case kDataTypeBool:
-          case kDataTypeEnum:
-            PROP_SetValue(prop, &(int){ *r->value });
-            return TRUE;
-          case kDataTypeFloat:
-            PROP_SetValue(prop, r->value);
-            return TRUE;
-          default:
-            return FALSE;
-        }
-        
-      case kDataTypeColor:
-      case kDataTypeStruct:
-        if (DATA_IsVector(r->type)) {
-          PROP_SetValue(prop, r->value);
-          return TRUE;
-        }
-        if (PROP_GetSize(prop) == r->size) {
-          PROP_SetValue(prop, r->value);
-          return TRUE;
-        }
-        Con_Error("Binding import failed: cannot assign register type %d (size %u) to property %s of type %d (size %u)",
-                  r->type,
-                  r->size,
-                  PROP_GetName(prop),
-                  PROP_GetType(prop),
-                  PROP_GetSize(prop));
-        return FALSE;
-        
-      default:
-        if (r->type != PROP_GetType(prop)) {
-          Con_Error("Binding import failed: cannot assign register type %d to property %s of type %d",
-                    r->type,
-                    PROP_GetName(prop),
-                    PROP_GetType(prop));
-          return FALSE;
-        }
-        PROP_SetValue(prop, r->value);
+  if (PROP_GetType(prop) == kDataTypeNone) {
+    PROP_SetTypeSize(prop, r->type, r->size);
+  }
+
+  switch (PROP_GetType(prop)) {
+    case kDataTypeString:
+      return PrintToProperty(prop, r);
+
+    case kDataTypeEnum:
+      if (r->type == kDataTypeString) {
+        lpcString_t const* enum_values = PROP_GetDesc(prop)->EnumValues;
+        int idx = 0;
+        while (enum_values && enum_values[idx] && strcasecmp(enum_values[idx], VM_REG_STR(r)) != 0)
+          idx++;
+        PROP_SetValue(prop, &idx);
         return TRUE;
-    }
-    return FALSE;
-    
-  } else if (type == kDataTypeFloat || type == kDataTypeStruct || type == kDataTypeColor) {
-    if (type == kDataTypeColor) {
-      struct color color = *(struct color const*)PROP_GetValue(prop);
-      switch ((uint32_t)attr) {
-        case kPropertyAttributeColorR:
-          assert(r->type < kDataTypeString);
-          color.r = r->value[0];
-          PROP_SetValue(prop, &color);
+      }
+      break;
+
+    case kDataTypeBool:
+      switch (r->type) {
+        case kDataTypeFloat:
+          PROP_SetValue(prop, &(float){ *r->value > 0 });
           return TRUE;
-        case kPropertyAttributeColorG:
-          assert(r->type < kDataTypeString);
-          color.g = r->value[0];
-          PROP_SetValue(prop, &color);
+        case kDataTypeInt:
+        case kDataTypeBool:
+        case kDataTypeEnum:
+          PROP_SetValue(prop, &(int){ *r->value > 0 });
           return TRUE;
-        case kPropertyAttributeColorB:
-          assert(r->type < kDataTypeString);
-          color.b = r->value[0];
-          PROP_SetValue(prop, &color);
+        case kDataTypeString: {
+          const char *boolstr = *r->value > 0 ? "true" : "false";
+          PROP_SetValue(prop, &boolstr);
           return TRUE;
-        case kPropertyAttributeColorA:
-          assert(r->type < kDataTypeString);
-          color.a = r->value[0];
-          PROP_SetValue(prop, &color);
+        }
+        default:
+          return FALSE;
+      }
+
+    case kDataTypeInt:
+      switch (r->type) {
+        case kDataTypeInt:
+        case kDataTypeBool:
+        case kDataTypeEnum:
+        case kDataTypeFloat:
+          PROP_SetValue(prop, &(int){ *r->value });
           return TRUE;
         default:
-          Con_Error("Unsupported attribute %d for struct color", attr);
-          return show_error();
+          return FALSE;
       }
-    }
-    struct vec4 vector = *(struct vec4 const*)PROP_GetValue(prop);
-    switch ((uint32_t)attr) {
-      case kPropertyAttributeVectorX:
-        assert(r->type < kDataTypeString);
-        assert(PROP_GetSize(prop) >= sizeof(struct vec2));
-        vector.x = r->value[0];
-        PROP_SetValue(prop, &vector);
+
+    case kDataTypeFloat:
+      switch (r->type) {
+        case kDataTypeString:
+          assert(PROP_GetSize(prop) == sizeof(float));
+          PROP_SetValue(prop, &(float){ (float)atof(VM_REG_STR(r)) });
+          return TRUE;
+        case kDataTypeInt:
+        case kDataTypeBool:
+        case kDataTypeEnum:
+          PROP_SetValue(prop, &(int){ *r->value });
+          return TRUE;
+        case kDataTypeFloat:
+          PROP_SetValue(prop, r->value);
+          return TRUE;
+        default:
+          return FALSE;
+      }
+
+    case kDataTypeColor:
+    case kDataTypeStruct:
+      if (DATA_IsVector(r->type)) {
+        PROP_SetValue(prop, r->value);
         return TRUE;
-      case kPropertyAttributeVectorY:
-        assert(r->type < kDataTypeString);
-        assert(PROP_GetSize(prop) >= sizeof(struct vec2));
-        vector.y = r->value[0];
-        PROP_SetValue(prop, &vector);
+      }
+      if (PROP_GetSize(prop) == r->size) {
+        PROP_SetValue(prop, r->value);
         return TRUE;
-      case kPropertyAttributeVectorZ:
-        assert(r->type < kDataTypeString);
-        assert(PROP_GetSize(prop) >= sizeof(struct vec3));
-        vector.z = r->value[0];
-        PROP_SetValue(prop, &vector);
-        return TRUE;
-      case kPropertyAttributeVectorW:
-        assert(r->type < kDataTypeString);
-        assert(PROP_GetSize(prop) >= sizeof(struct vec4));
-        vector.w = r->value[0];
-        PROP_SetValue(prop, &vector);
-        return TRUE;
-      default:
-        Con_Error("Unsupported attribute %d for VECTOR%d",
-                   attr,
-                   (int)(PROP_GetSize(prop) / sizeof(float)));
-        return show_error();
-    }
-  } else {
-    Con_Error("Unsupported attribute %d for property %s of type %d",
-               attr,
-               PROP_GetName(prop),
-               PROP_GetType(prop));
-    return show_error();
+      }
+      Con_Error("Binding import failed: cannot assign register type %d (size %u) to property %s of type %d (size %u)",
+                r->type,
+                r->size,
+                PROP_GetName(prop),
+                PROP_GetType(prop),
+                PROP_GetSize(prop));
+      return FALSE;
+
+    default:
+      if (r->type != PROP_GetType(prop)) {
+        Con_Error("Binding import failed: cannot assign register type %d to property %s of type %d",
+                  r->type,
+                  PROP_GetName(prop),
+                  PROP_GetType(prop));
+        return FALSE;
+      }
+      PROP_SetValue(prop, r->value);
+      return TRUE;
   }
+  return FALSE;
 }
 
 static bool_t
 PROP_Export(struct Property *prop,
-                 enum PropertyAttribute attr,
-                 struct vm_register* r)
+            struct vm_register* r)
 {
   PROP_Update(prop);
-//  if (PROP_IsNull(prop)) {
-//    return show_error();
-//  }
-  if (!attr) {
-    switch (InitOutput(r, PROP_GetType(prop), PROP_GetSize(prop))) {
-      case kDataTypeInt:
-      case kDataTypeBool:
-        *r->value = *(int*)PROP_GetValue(prop);
-        return TRUE;
-      case kDataTypeString: {
-        lpcString_t *str = (lpcString_t*)PROP_GetValue(prop);
-        InitOutput(r, kDataTypeString, sizeof(const char *));
-        VM_REG_SET_STR(r, vm_strtmp(*str));
-        return TRUE;
-      }
-      default:
-        memcpy(r->value, PROP_GetValue(prop), PROP_GetSize(prop));
-        return TRUE;
+  switch (InitOutput(r, PROP_GetType(prop), PROP_GetSize(prop))) {
+    case kDataTypeInt:
+    case kDataTypeBool:
+      *r->value = *(int*)PROP_GetValue(prop);
+      return TRUE;
+    case kDataTypeString: {
+      lpcString_t *str = (lpcString_t*)PROP_GetValue(prop);
+      InitOutput(r, kDataTypeString, sizeof(const char *));
+      VM_REG_SET_STR(r, vm_strtmp(*str));
+      return TRUE;
     }
-  }
-  if (PROP_GetType(prop) == kDataTypeColor) {
-    switch ((uint32_t)attr) {
-      case kPropertyAttributeColorR:
-      case kPropertyAttributeColorG:
-      case kPropertyAttributeColorB:
-      case kPropertyAttributeColorA:
-        InitOutput(r, kDataTypeFloat, sizeof(float));
-        r->value[0] = ((float const*)PROP_GetValue(prop))[attr-kPropertyAttributeColorR];
-        return TRUE;
-      default:
-        Con_Error("Unsupported attribute %d for struct color", attr);
-        return show_error();
-    }
-  }
-  if (PROP_GetType(prop) == kDataTypeStruct) {
-    if (strstr(PROP_GetUserData(prop), "Vector")) {
-      switch ((uint32_t)attr) {
-        case kPropertyAttributeVectorX:
-        case kPropertyAttributeVectorY:
-        case kPropertyAttributeVectorZ:
-        case kPropertyAttributeVectorW:
-          InitOutput(r, kDataTypeFloat, sizeof(float));
-          r->value[0] = ((float*)PROP_GetValue(prop))[attr-kPropertyAttributeVectorX];
-          return TRUE;
-        default:
-          Con_Error("Unsupported attribute %d for VECTOR", attr);
-          return show_error();
-      }
-    } else {
-      Con_Error("Unsupported attribute %d for property %s", attr, PROP_GetName(prop));
-      return show_error();
-    }
-  } else {
-    return TRUE;
+    default:
+      memcpy(r->value, PROP_GetValue(prop), PROP_GetSize(prop));
+      return TRUE;
   }
 }
 
@@ -775,18 +680,27 @@ tok_op(argument)
       }
     }
   } else {
-    lpcString_t innerpath = NULL;
-    struct Object *prefab = OBJ_FindKnownPrefab(token->text, &innerpath);
-    if (prefab && strchr(innerpath, '/')) {
-      path_t path = { 0 };
-      sprintf(path, ".%s", strchr(innerpath, '/'));
-      p = OBJ_FindPropertyByPath(prefab, path);
+    /* Default: bare path with no prefix resolves relative to template root.
+       If no template ancestor exists (regular screen trees), resolve from scene root. */
+    struct Object *scope = _BindingTemplateOrRoot(object);
+    if (scope) {
+      p = OBJ_FindPropertyByPath(scope, token->text);
+    }
+    if (!p) {
+      /* Fallback: known prefab (legacy) */
+      lpcString_t innerpath = NULL;
+      struct Object *prefab = OBJ_FindKnownPrefab(token->text, &innerpath);
+      if (prefab && strchr(innerpath, '/')) {
+        path_t path = { 0 };
+        sprintf(path, ".%s", strchr(innerpath, '/'));
+        p = OBJ_FindPropertyByPath(prefab, path);
+      }
     }
   }
 return_value:
   if (p) {
     token->cache.property = p;
-    return PROP_Export(p, token->attr, output);
+    return PROP_Export(p, output);
   } else {
     Con_Error("Can't find property \"%s\"", token->text);
     memset(output, 0, sizeof(*output));

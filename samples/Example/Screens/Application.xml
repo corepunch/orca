@@ -13,7 +13,7 @@
 			<TextBlock Name="NavDocs" FontSize="14" ForegroundColor="$text-secondary">Docs</TextBlock>
 		</StackView>
 		<StackView Name="Body" Direction="Vertical" Spacing="40" OverflowY="Scroll" ClipChildren="true" Padding="40" BackgroundColor="$surface-deep">
-			<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
+			<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 			<Grid Name="Hero" Columns="auto auto" Spacing="24" BackgroundColor="$surface">
 				<StackView Name="HeroContent" Direction="Vertical" Spacing="0" Padding="16">
 					<TextBlock Name="HeadlineLine1" FontSize="48" ForegroundColor="$text-primary">Build stunning</TextBlock>
@@ -27,60 +27,36 @@
 						<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="1.2 ms" Card.Subtitle="Frame time" Card.PrimaryColor="$accent-blue"/>
 					</Grid>
 				</StackView>
-				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill">
-					<Node.Visible>STEP(640, {../../../Node.ActualWidth})</Node.Visible>
-				</ImageView>
-				<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>
+				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
+				<BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
+				<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
 				</Grid>
 				<StackView Name="TabbedTechSection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
-					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="TabbedTechHeading" Text="Build the UI, not the ceremony" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="TabbedTechSubheading"
 						Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="OrcaSignals" Columns="auto auto auto" Spacing="14">
-						<StackView Name="SignalXml" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalXmlIcon" Source="Example/Icons/code.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$accent"/>
-							<StackView Name="SignalXmlCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalXmlTitle" Text="XML-first screens" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalXmlBody" Text="Layouts stay readable." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
-						<StackView Name="SignalLua" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalLuaIcon" Source="Example/Icons/file.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$accent-blue"/>
-							<StackView Name="SignalLuaCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalLuaTitle" Text="Lua beside the view" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalLuaBody" Text="Behavior stays close." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
-						<StackView Name="SignalMoon" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalMoonIcon" Source="Example/Icons/moon.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$text-secondary"/>
-							<StackView Name="SignalMoonCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalMoonTitle" Text="MoonScript when it grows" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalMoonBody" Text="Less noise, same runtime." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
-						<StackView Name="SignalShip" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalShipIcon" Source="Example/Icons/globe.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$accent-green"/>
-							<StackView Name="SignalShipCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalShipTitle" Text="Desktop, mobile, web" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalShipBody" Text="One screen, many targets." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
-						<StackView Name="SignalSpeed" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalSpeedIcon" Source="Example/Icons/zap.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$accent-amber"/>
-							<StackView Name="SignalSpeedCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalSpeedTitle" Text="Fast edit-run-refine" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalSpeedBody" Text="See changes immediately." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
-						<StackView Name="SignalScale" Direction="Horizontal" Spacing="12" BackgroundColor="$panel-background" Padding="16" AlignItems="Center">
-								<ImageView Name="SignalScaleIcon" Source="Example/Icons/cpu.svg?width=28&amp;type=mask" Width="28" Height="28" ForegroundColor="$text-muted"/>
-							<StackView Name="SignalScaleCopy" Direction="Vertical" Spacing="2">
-								<TextBlock Name="SignalScaleTitle" Text="Built to scale" FontSize="14" ForegroundColor="$text-primary"/>
-								<TextBlock Name="SignalScaleBody" Text="Same UI, larger ambitions." FontSize="12" ForegroundColor="$text-muted"/>
-							</StackView>
-						</StackView>
+						<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto auto", "auto auto")</BindingExpression>
+						<LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask" Card.Title="XML-first screens"
+							Card.Body="Layouts stay readable." Card.PrimaryColor="$accent"/>
+						<LayerPrefabPlaceholder Name="SignalLua" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/file.svg?width=28&amp;type=mask" Card.Title="Lua beside the view"
+							Card.Body="Behavior stays close." Card.PrimaryColor="$accent-blue"/>
+						<LayerPrefabPlaceholder Name="SignalMoon" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/moon.svg?width=28&amp;type=mask" Card.Title="MoonScript when it grows"
+							Card.Body="Less noise, same runtime." Card.PrimaryColor="$text-secondary"/>
+						<LayerPrefabPlaceholder Name="SignalShip" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/globe.svg?width=28&amp;type=mask" Card.Title="Desktop, mobile, web"
+							Card.Body="One screen, many targets." Card.PrimaryColor="$accent-green"/>
+						<LayerPrefabPlaceholder Name="SignalSpeed" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/zap.svg?width=28&amp;type=mask" Card.Title="Fast edit-run-refine"
+							Card.Body="See changes immediately." Card.PrimaryColor="$accent-amber"/>
+						<LayerPrefabPlaceholder Name="SignalScale" PlaceholderTemplate="Example/Prefabs/SignalCard"
+							Card.Icon="Example/Icons/cpu.svg?width=28&amp;type=mask" Card.Title="Built to scale"
+							Card.Body="Same UI, larger ambitions." Card.PrimaryColor="$text-muted"/>
 					</Grid>
 					<TabView Name="OrcaTabs" SelectedValue="xml">
 						<TabBar Name="OrcaTabBar" Height="44" BackgroundColor="$panel-background" Padding="8 8 8 0" Spacing="12">
@@ -90,10 +66,9 @@
 							<Tab Name="DeployTab" Value="deploy" Width="140">Deploy</Tab>
 						</TabBar>
 						<StackView Name="xml" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<StackView Name="XmlPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
-									<ImageView Name="XmlPanelIcon" Source="Example/Icons/grid.svg?width=26&amp;type=mask" Width="26" Height="26" ForegroundColor="$accent"/>
-								<TextBlock Name="XmlTitle" Text="XML reads like a blueprint" FontSize="24" ForegroundColor="$text-primary"/>
-							</StackView>
+							<LayerPrefabPlaceholder Name="XmlPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+								Card.Icon="Example/Icons/grid.svg?width=26&amp;type=mask" Card.Title="XML reads like a blueprint"
+								Card.PrimaryColor="$accent"/>
 							<Grid Name="XmlGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="XmlCopy" Direction="Vertical" Spacing="14">
 									<TextBlock Name="XmlBody"
@@ -107,38 +82,31 @@
 								</StackView>
 								<StackView Name="XmlModel" Direction="Vertical" Spacing="10" BackgroundColor="$card-background" Padding="20">
 									<TextBlock Name="XmlModelHeading" Text="The structure stays honest" FontSize="16" ForegroundColor="$text-primary"/>
-									<StackView Name="XmlModelLine1" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="0">
-										<ImageView Name="XmlModelScreenIcon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$accent"/>
-										<TextBlock Text="Screen" FontSize="14" ForegroundColor="$accent"/>
-									</StackView>
-									<StackView Name="XmlModelLine2" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="16">
-										<ImageView Name="XmlModelTabIcon" Source="Example/Icons/panel-top.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"/>
-										<TextBlock Text="TabView" FontSize="14" ForegroundColor="$text-secondary"/>
-									</StackView>
-									<StackView Name="XmlModelLine3" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="32">
-										<ImageView Name="XmlModelGridIcon" Source="Example/Icons/grid.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"/>
-										<TextBlock Text="Grid" FontSize="14" ForegroundColor="$text-secondary"/>
-									</StackView>
-									<StackView Name="XmlModelLine4" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="32">
-										<ImageView Name="XmlModelStackIcon" Source="Example/Icons/layers.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"/>
-										<TextBlock Text="StackView" FontSize="14" ForegroundColor="$text-secondary"/>
-									</StackView>
-									<StackView Name="XmlModelLine5" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="48">
-										<ImageView Name="XmlModelImageIcon" Source="Example/Icons/image.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"/>
-										<TextBlock Text="ImageView" FontSize="14" ForegroundColor="$text-secondary"/>
-									</StackView>
-									<StackView Name="XmlModelLine6" Direction="Horizontal" Spacing="10" AlignItems="Center" PaddingLeft="48">
-										<ImageView Name="XmlModelTextIcon" Source="Example/Icons/type.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$text-secondary"/>
-										<TextBlock Text="TextBlock" FontSize="14" ForegroundColor="$text-secondary"/>
-									</StackView>
+									<LayerPrefabPlaceholder Name="XmlModelLine1" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/monitor.svg?width=20&amp;type=mask" Card.Title="Screen"
+										PaddingLeft="0" Card.PrimaryColor="$accent"/>
+									<LayerPrefabPlaceholder Name="XmlModelLine2" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/panel-top.svg?width=20&amp;type=mask" Card.Title="TabView"
+										PaddingLeft="16" Card.PrimaryColor="$text-secondary"/>
+									<LayerPrefabPlaceholder Name="XmlModelLine3" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/grid.svg?width=20&amp;type=mask" Card.Title="Grid"
+										PaddingLeft="32" Card.PrimaryColor="$text-secondary"/>
+									<LayerPrefabPlaceholder Name="XmlModelLine4" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/layers.svg?width=20&amp;type=mask" Card.Title="StackView"
+										PaddingLeft="32" Card.PrimaryColor="$text-secondary"/>
+									<LayerPrefabPlaceholder Name="XmlModelLine5" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/image.svg?width=20&amp;type=mask" Card.Title="ImageView"
+										PaddingLeft="48" Card.PrimaryColor="$text-secondary"/>
+									<LayerPrefabPlaceholder Name="XmlModelLine6" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+										Card.Icon="Example/Icons/type.svg?width=20&amp;type=mask" Card.Title="TextBlock"
+										PaddingLeft="48" Card.PrimaryColor="$text-secondary"/>
 								</StackView>
 							</Grid>
 						</StackView>
 						<StackView Name="lua" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<StackView Name="LuaPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
-									<ImageView Name="LuaPanelIcon" Source="Example/Icons/code.svg?width=26&amp;type=mask" Width="26" Height="26" ForegroundColor="$accent-blue"/>
-								<TextBlock Name="LuaTitle" Text="Lua stays close to the surface" FontSize="24" ForegroundColor="$text-primary"/>
-							</StackView>
+							<LayerPrefabPlaceholder Name="LuaPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+								Card.Icon="Example/Icons/code.svg?width=26&amp;type=mask" Card.Title="Lua stays close to the surface"
+								Card.PrimaryColor="$accent-blue"/>
 							<TextBlock Name="LuaBody"
 								Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -158,10 +126,9 @@
 							</Grid>
 						</StackView>
 						<StackView Name="moon" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<StackView Name="MoonPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
-									<ImageView Name="MoonPanelIcon" Source="Example/Icons/moon.svg?width=26&amp;type=mask" Width="26" Height="26" ForegroundColor="$text-secondary"/>
-								<TextBlock Name="MoonTitle" Text="MoonScript trims the noise" FontSize="24" ForegroundColor="$text-primary"/>
-							</StackView>
+							<LayerPrefabPlaceholder Name="MoonPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+								Card.Icon="Example/Icons/moon.svg?width=26&amp;type=mask" Card.Title="MoonScript trims the noise"
+								Card.PrimaryColor="$text-secondary"/>
 							<Grid Name="MoonGrid" Columns="auto auto" Spacing="20">
 								<StackView Name="MoonCopy" Direction="Vertical" Spacing="14">
 									<TextBlock Name="MoonBody"
@@ -183,10 +150,9 @@
 							</Grid>
 						</StackView>
 						<StackView Name="deploy" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="32">
-							<StackView Name="DeployPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
-									<ImageView Name="DeployPanelIcon" Source="Example/Icons/globe.svg?width=26&amp;type=mask" Width="26" Height="26" ForegroundColor="$accent-green"/>
-								<TextBlock Name="DeployTitle" Text="One UI, many targets" FontSize="24" ForegroundColor="$text-primary"/>
-							</StackView>
+							<LayerPrefabPlaceholder Name="DeployPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+								Card.Icon="Example/Icons/globe.svg?width=26&amp;type=mask" Card.Title="One UI, many targets"
+								Card.PrimaryColor="$accent-green"/>
 							<TextBlock Name="DeployBody"
 								Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."
 								FontSize="14" ForegroundColor="$text-muted" WordWrap="true"/>
@@ -205,14 +171,10 @@
 							Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
 							</Grid>
 							<Grid Name="DeployImages" Columns="auto auto" Spacing="12">
-								<StackView Name="DeployImage1" Direction="Vertical" Spacing="8" BackgroundColor="$panel-background" Padding="16">
-									<ImageView Name="DeployImage1Thumb" Source="Example/Images/orca-tab-city" Height="160" Stretch="UniformToFill"/>
-									<TextBlock Name="DeployImage1Title" Text="City glow" FontSize="13" ForegroundColor="$text-secondary"/>
-								</StackView>
-								<StackView Name="DeployImage2" Direction="Vertical" Spacing="8" BackgroundColor="$panel-background" Padding="16">
-									<ImageView Name="DeployImage2Thumb" Source="Example/Images/orca-tab-lights" Height="160" Stretch="UniformToFill"/>
-									<TextBlock Name="DeployImage2Title" Text="Night light" FontSize="13" ForegroundColor="$text-secondary"/>
-								</StackView>
+								<LayerPrefabPlaceholder Name="DeployImage1" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
+									Card.Image="Example/Images/orca-tab-city" Card.Title="City glow"/>
+								<LayerPrefabPlaceholder Name="DeployImage2" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
+									Card.Image="Example/Images/orca-tab-lights" Card.Title="Night light"/>
 							</Grid>
 							<StackView Name="DeployCommandLink" Direction="Horizontal" Spacing="12" AlignItems="Center" BackgroundColor="$panel-background" Padding="16">
 								<ImageView Name="DeployCommandIcon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask" Width="20" Height="20" ForegroundColor="$accent-green"/>
@@ -225,37 +187,25 @@
 					</TabView>
 				</StackView>
 				<Grid Name="FeatureSection" Columns="auto auto auto auto" Spacing="20">
-					<StackView Name="FeatureXmlCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureXmlIcon" Source="Example/Icons/layers.svg?width=40&amp;type=mask" Width="40" Height="40" ForegroundColor="$accent"/>
-						<TextBlock Name="FeatureXmlTitle" Text="XML stays readable" FontSize="16" ForegroundColor="$text-primary"/>
-						<TextBlock Name="FeatureXmlBody"
-							Text="The layout tree is right there in the page, so structure and spacing stay easy to tune."
-							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
-					</StackView>
-					<StackView Name="FeatureLuaCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureLuaIcon" Source="Example/Icons/monitor.svg?width=40&amp;type=mask" Width="40" Height="40" ForegroundColor="$accent-blue"/>
-						<TextBlock Name="FeatureLuaTitle" Text="Lua stays close" FontSize="16" ForegroundColor="$text-primary"/>
-						<TextBlock Name="FeatureLuaBody"
-							Text="Interactions, bindings, and state can live next to the screen that owns them."
-							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
-					</StackView>
-					<StackView Name="FeatureShipCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureShipIcon" Source="Example/Icons/globe.svg?width=40&amp;type=mask" Width="40" Height="40" ForegroundColor="$accent-green"/>
-						<TextBlock Name="FeatureShipTitle" Text="Ships everywhere" FontSize="16" ForegroundColor="$text-primary"/>
-						<TextBlock Name="FeatureShipBody"
-							Text="The same UI can move across desktop, mobile, and web-friendly targets."
-							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
-					</StackView>
-					<StackView Name="FeatureSpeedCard" Direction="Vertical" Spacing="12" BackgroundColor="$card-background" Padding="28">
-						<ImageView Name="FeatureSpeedIcon" Source="Example/Icons/zap.svg?width=40&amp;type=mask" Width="40" Height="40" ForegroundColor="$accent-amber"/>
-						<TextBlock Name="FeatureSpeedTitle" Text="Fast iteration" FontSize="16" ForegroundColor="$text-primary"/>
-						<TextBlock Name="FeatureSpeedBody"
-							Text="Edit, reload, and refine quickly without losing the overall shape of the interface."
-							FontSize="13" ForegroundColor="$text-dim" WordWrap="true"/>
-					</StackView>
+					<LayerPrefabPlaceholder Name="FeatureXmlCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+						Card.Icon="Example/Icons/layers.svg?width=40&amp;type=mask" Card.Title="XML stays readable"
+						Card.Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."
+						Card.PrimaryColor="$accent"/>
+					<LayerPrefabPlaceholder Name="FeatureLuaCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+						Card.Icon="Example/Icons/monitor.svg?width=40&amp;type=mask" Card.Title="Lua stays close"
+						Card.Body="Interactions, bindings, and state can live next to the screen that owns them."
+						Card.PrimaryColor="$accent-blue"/>
+					<LayerPrefabPlaceholder Name="FeatureShipCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+						Card.Icon="Example/Icons/globe.svg?width=40&amp;type=mask" Card.Title="Ships everywhere"
+						Card.Body="The same UI can move across desktop, mobile, and web-friendly targets."
+						Card.PrimaryColor="$accent-green"/>
+					<LayerPrefabPlaceholder Name="FeatureSpeedCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+						Card.Icon="Example/Icons/zap.svg?width=40&amp;type=mask" Card.Title="Fast iteration"
+						Card.Body="Edit, reload, and refine quickly without losing the overall shape of the interface."
+						Card.PrimaryColor="$accent-amber"/>
 				</Grid>
 				<StackView Name="GallerySection" Direction="Vertical" Spacing="20" BackgroundColor="$surface" Padding="40">
-					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="GalleryHeading" Text="Gallery" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="GallerySubheading"
 						Text="Screenshots and scenes rendered entirely by the ORCA engine."
@@ -270,13 +220,13 @@
 					</Grid>
 				</StackView>
 				<StackView Name="WorkflowSection" Direction="Vertical" Spacing="24" BackgroundColor="$surface-deep" Padding="40">
-					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="WorkflowHeading" Text="How It Works" FontSize="28" ForegroundColor="$text-primary"/>
 					<TextBlock Name="WorkflowSubheading"
 						Text="From XML layout to a live rendered scene in four simple steps."
 						FontSize="14" ForegroundColor="$text-muted"/>
 					<Grid Name="WorkflowSteps" Columns="auto auto auto auto" Spacing="16">
-						<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto auto auto", "auto auto")</Grid.Columns>
+								<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto auto auto", "auto auto")</BindingExpression>
 						<LayerPrefabPlaceholder Name="Step1" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
 							Card.Title="01" Card.Subtitle="Define Layout" Card.PrimaryColor="$accent"
 							Card.Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
@@ -292,7 +242,7 @@
 					</Grid>
 				</StackView>
 				<StackView Name="TestimonialsSection" Direction="Vertical" Spacing="24" BackgroundColor="$surface" Padding="40">
-					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</Node.HorizontalPadding>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 					<TextBlock Name="TestimonialsHeading" Text="What Developers Say" FontSize="28" ForegroundColor="$text-primary"/>
 					<Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing="20">
 						<LayerPrefabPlaceholder Name="Quote1" PlaceholderTemplate="Example/Prefabs/Quote"
@@ -307,22 +257,16 @@
 					</Grid>
 				</StackView>
 				<StackView Name="CtaSection" Direction="Vertical" Spacing="24" BackgroundColor="$panel-background" Padding="60" AlignItems="Center">
-					<Node.HorizontalPadding>IF(STEP(640, {../../Node.ActualWidth}), Vector2(60,60), Vector2(16,16))</Node.HorizontalPadding>
+					<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(60,60), Vector2(16,16))</BindingExpression>
 					<TextBlock Name="CtaHeading" Text="Ready to build something great?" FontSize="36" ForegroundColor="$text-primary" TextHorizontalAlignment="Center"/>
 					<TextBlock Name="CtaBody"
 						Text="Download ORCA, open a sample project, and have your first screen running in minutes."
 						FontSize="15" ForegroundColor="$text-muted" WordWrap="true" TextHorizontalAlignment="Center"/>
-						<LayerPrefabPlaceholder Name="GetStartedPopup" PlaceholderTemplate="Example/Screens/GetStartedPopup"/>
 						<StackView Name="CtaButtons" Direction="Horizontal" Spacing="16">
 							<TextBlock Name="CtaButtonPrimary" Text="Get Started" FontSize="14" ForegroundColor="$white"
 								BackgroundColor="$accent" Padding="16" Width="140" Height="44"
-								TextHorizontalAlignment="Center" TextVerticalAlignment="Center">
-								<Node.Triggers>
-									<EventTrigger RoutedEvent="Node.LeftButtonUp">
-										<ShowModalAction Path="../../GetStartedPopup"/>
-									</EventTrigger>
-								</Node.Triggers>
-							</TextBlock>
+								TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+								LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
 						<TextBlock Name="CtaButtonSecondary" Text="Learn more" FontSize="14" ForegroundColor="$text-secondary"
 							BackgroundColor="$card-background" Padding="16" Width="140" Height="44"
 							TextHorizontalAlignment="Center" TextVerticalAlignment="Center"/>

@@ -11,11 +11,6 @@ void SV_Shutdown(void);
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
 
-ORCA_API struct property_program const*
-core_GetPrograms(void) {
-  return core.programs;
-}
-
 bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt)
 {
@@ -899,8 +894,9 @@ ORCA_API void core_FlushQueue(lua_State* L) {
   }
 }
 
-ORCA_API void core_GetObjectCount(lua_State* L) {
+ORCA_API int core_GetObjectCount(lua_State* L) {
   lua_pushinteger(L, OBJ_GetObjectCount());
+  return 1;
 }
 
 

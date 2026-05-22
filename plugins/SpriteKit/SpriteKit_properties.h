@@ -1,4 +1,4 @@
-// Auto-generated from SpriteKit.xml by tools/templates/properties.php
+// Auto-generated from SpriteKit.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __SPRITEKIT_PROPERTIES_H__
 #define __SPRITEKIT_PROPERTIES_H__

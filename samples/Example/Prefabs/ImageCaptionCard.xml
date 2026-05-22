@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="ImageCaptionCard" Direction="Vertical" Spacing="8" BackgroundColor="$panel-background" Padding="16">
+	<ImageView Name="ImageCaptionCardImage" Height="160" Stretch="UniformToFill" Source="{Binding Card.Image}"/>
+	<TextBlock Name="ImageCaptionCardTitle" Text="{Binding Card.Title}" FontSize="13" ForegroundColor="$text-secondary"/>
+</StackView>

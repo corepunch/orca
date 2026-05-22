@@ -9,7 +9,7 @@ Style _classes_ are attached to objects at load time; _stylesheet rules_ map sel
 
 ```
 Object
-  └─ StyleController (attach-only component)
+  └─ StyleController (component component)
        ├─ classes:    style_class* ─── linked list of parsed class tokens
        └─ stylesheet: style_rule* ─── linked list of CSS-like rules
 ```
@@ -22,8 +22,8 @@ Pseudo-state rules (`:hover`, `:focus`, `:active`, `:dark`) are applied only whe
 
 ## StyleController component
 
-`StyleController` is an **attach-only component** defined in `source/core/core.xml` and implemented in `source/core/components/StyleController.c`.
-It is automatically attached to every `Node2D` (and any class that lists `StyleController` as a parent) because `Node2D` declares `parent="Node,StyleController"` in `UIKit.xml`.
+`StyleController` is an **component component** defined in `source/core/core.cgen` and implemented in `source/core/components/StyleController.c`.
+It is automatically attached to every `Node2D` (and any class that lists `StyleController` as a parent) because `Node2D` declares `parent="Node,StyleController"` in `UIKit.cgen`.
 
 ```c
 // Retrieve the component pointer; returns NULL if not attached

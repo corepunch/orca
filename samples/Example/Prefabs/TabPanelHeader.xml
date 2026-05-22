@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="TabPanelHeader" Direction="Horizontal" Spacing="12" AlignItems="Center">
+	<ImageView Name="TabPanelHeaderIcon" Width="26" Height="26" Source="{Binding Card.Icon}" ForegroundColor="{Binding Card.PrimaryColor}"/>
+	<TextBlock Name="TabPanelHeaderTitle" Text="{Binding Card.Title}" FontSize="24" ForegroundColor="$text-primary"/>
+</StackView>

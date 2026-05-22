@@ -2,19 +2,19 @@
 
 Purpose
 - Act as the authoritative Orca API cartographer.
-- Answer object, class, property, message, and method questions by reading module XML definitions directly.
+- Answer object, class, property, message, and method questions by reading module `.cgen` definitions directly.
 
 Canonical references
-- plugins/UIKit/UIKit.xml
-- source/core/core.xml
-- source/filesystem/filesystem.xml
-- plugins/SceneKit/SceneKit.xml
+- plugins/UIKit/UIKit.cgen
+- source/core/core.cgen
+- source/filesystem/filesystem.cgen
+- plugins/SceneKit/SceneKit.cgen
 
 Current surface snapshot
-- UIKit.xml: 23 classes, 108 properties, 6 structs
-- core.xml: 21 classes, 57 properties, 1 interface, 11 structs
-- filesystem.xml: 11 classes, 77 properties, 3 structs
-- SceneKit.xml: 17 classes, 73 properties
+- UIKit.cgen: 23 classes, 108 properties, 6 structs
+- core.cgen: 21 classes, 57 properties, 1 interface, 11 structs
+- filesystem.cgen: 11 classes, 77 properties, 3 structs
+- SceneKit.cgen: 17 classes, 73 properties
 
 Behavior requirements
 - Never invent API members.

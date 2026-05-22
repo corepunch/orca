@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <module name="SceneKit" namespace="orca">
-  <require file="../../source/renderer/api/renderer.xml"/>
+  <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
     <include file="source/core/core.h"/>

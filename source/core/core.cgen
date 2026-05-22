@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="core" namespace="orca" on-luaopen="before_core_module_registered" after-luaopen="after_core_module_registered">
-  <require file="../geometry/geometry.xml"/>
+  <require file="../geometry/geometry.cgen"/>
   <externals>
     <external struct="localization"/>
     <external struct="game"/>
     <external struct="Property"/>
+    <external struct="token"/>
     <external struct="lua_State"/>
     <external struct="style_class_selector"/>
   </externals>
@@ -31,18 +32,6 @@
       <value name="TwoWay">Updates target property when source changes and updates source when target changes</value>
       <value name="OneWayToSource">Updates source property when target changes, but not the other way around</value>
       <value name="Expression">Allows binding to a custom expression</value>
-    </enum>
-    <enum name="PropertyAttribute">
-      <summary>Attributes that can be applied to properties for binding purposes.</summary>
-      <value name="WholeProperty">Default binding to the whole property</value>
-      <value name="ColorR">Bind to the red channel of a color property</value>
-      <value name="ColorG">Bind to the green channel of a color property</value>
-      <value name="ColorB">Bind to the blue channel of a color property</value>
-      <value name="ColorA">Bind to the alpha channel of a color property</value>
-      <value name="VectorX">Bind to the X component of a vector property</value>
-      <value name="VectorY">Bind to the Y component of a vector property</value>
-      <value name="VectorZ">Bind to the Z component of a vector property</value>
-      <value name="VectorW">Bind to the W component of a vector property</value>
     </enum>
     <enum name="AnimationMode">
       <summary>Defines how an animation clip repeats after reaching its end.</summary>
@@ -381,7 +370,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Enables attaching custom programs to bindings to perform calculations and transformations on bound data. For example, multiplying a DataSource value: DataSource.Speed * 20. The attached program is evaluated whenever the source data changes, allowing for dynamic property updates based on complex expressions. This allows for complex binding expressions and dynamic property computation without requiring explicit code-behind logic.</details>
           <arg name="name" type="string">The full name of the property to attach the program to</arg>
           <arg name="program" type="string">The program or expression to attach to the property</arg>
-          <arg name="attribute" type="PropertyAttribute">The attribute of the property to attach the program to (e.g., Value, Color, etc.)</arg>
           <arg name="mode" type="BindingMode">The binding mode for the property program (e.g., OneWay, TwoWay, OneWayToSource)</arg>
           <arg name="enabled" type="bool">Whether the property program is enabled</arg>
           <returns type="bool">True if the property program was successfully attached, false otherwise</returns>
@@ -617,9 +605,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="StopTime" type="float">End time of the active region in seconds</property>
       </properties>
     </class>
-    <class name="AnimationPlayer" attach-only="true">
+    <class name="AnimationPlayer">
       <summary>Component for managing and playing animations on UI elements.</summary>
-      <details>AnimationPlayer is an attach-only component that drives keyframe animation on the object it is attached to. Attach it to any node with addComponent("AnimationPlayer") or as an XML child element. Set the Clip property to an AnimationClip object, then set Playing=true (or send the Play message) to start playback. The component advances CurrentTime each frame when it receives the Object.Animate message and evaluates all AnimationCurves in the clip.</details>
+      <details>AnimationPlayer is a component that drives keyframe animation on the object it is attached to. Attach it to any node with addComponent("AnimationPlayer") or as an XML child element. Set the Clip property to an AnimationClip object, then set Playing=true (or send the Play message) to start playback. The component advances CurrentTime each frame when it receives the Object.Animate message and evaluates all AnimationCurves in the clip.</details>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Animate"/>
@@ -672,8 +660,8 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
       </messages>
     </class>
-    <class name="PropertyAnimation" attach-only="true">
-      <summary>Attach-only component that tweens one property value to a target, then self-destructs.</summary>
+    <class name="PropertyAnimation">
+      <summary>Component that tweens one property value to a target, then self-destructs.</summary>
       <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
       <handles>
         <handle message="Object.Animate"/>
@@ -711,7 +699,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <field name="flags" type="uint32">Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
       </fields>
     </class>
-    <class name="StyleController" attach-only="true">
+    <class name="StyleController">
       <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
       <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. The StyleSheet property points to a StyleSheet object that contains StyleRule children — each rule maps a selector to pre-parsed property overrides stored as attached Lua properties on the StyleRule object. This avoids re-parsing property values on every ThemeChanged.</details>
       <handles>
@@ -769,9 +757,9 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Path" type="string">Optional path from the host object to the target object. Empty string means the host object itself.</property>
       </properties>
     </class>
-    <class name="StateManagerController" attach-only="true">
-      <summary>Attach-only component that applies state-driven property overrides from a StateManager object.</summary>
-      <details>StateManagerController is an attach-only component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies its attached properties to the target object.</details>
+    <class name="StateManagerController">
+      <summary>Component that applies state-driven property overrides from a StateManager object.</summary>
+      <details>StateManagerController is a component. Assign a StateManager object to the StateManager property; the controller will then mark every tracked controller property with PF_USED_IN_STATE_MANAGER so that property_events.c automatically dispatches ControllerChanged when any of those properties change value. On ControllerChanged it iterates the StateManager's StateGroup children to find the first matching State and applies its attached properties to the target object.</details>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
@@ -805,6 +793,37 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     <class name="DataObject">
       <summary>Base class for data-holding objects within the framework</summary>
       <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
+    </class>
+    <class name="Binding">
+      <summary>Declarative property binding object that attaches a property program to its parent object.</summary>
+      <details>Binding is created from XML like any other object. Property wrappers compile it by sending Binding.Compile with the target Property pointer in lParam.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Binding.Compile"/>
+      </handles>
+      <properties>
+        <property name="Expression" type="string">Binding expression text. If omitted, object text content is used.</property>
+        <property name="Mode" type="BindingMode">Binding mode (Expression, OneWay, TwoWay, OneWayToSource).</property>
+        <property name="Enabled" type="bool" default="TRUE">When false, stores the expression but does not compile/execute it.</property>
+      </properties>
+      <fields>
+        <field name="property" type="Property" pointer="true">Resolved target property slot.</field>
+        <field name="token" type="token" pointer="true">Compiled VM token tree for this binding expression.</field>
+        <field name="updateFrame" type="uint32">Last frame this binding executed.</field>
+      </fields>
+      <messages>
+        <message name="Compile">
+          <summary>Compiles and attaches this binding to the target property passed in lParam.</summary>
+        </message>
+      </messages>
+    </class>
+    <class name="BindingExpression" parent="Binding">
+      <summary>Legacy explicit-expression binding element alias.</summary>
+      <details>Equivalent to Binding for compatibility with existing XML assets that use BindingExpression tags.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Binding.Compile"/>
+      </handles>
     </class>
     <class name="Trigger">
       <summary>Base class for event-driven actions within the UI system</summary>
@@ -872,8 +891,8 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
     </class>
     <class name="ShowModalAction">
-      <summary>Opens a named popup as a modal child of the current screen</summary>
-      <details>Resolves a relative path to the popup object, reattaches it to the screen, and marks it modal so it captures input.</details>
+      <summary>Loads a popup template and shows it modally</summary>
+      <details>Resolves the path as a popup template asset, loads a fresh object instance, and marks it modal so it captures input.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Attached"/>
@@ -881,7 +900,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </handles>
       <properties>
         <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
-        <property name="Path" type="string">Relative path to the popup object that should be shown modally</property>
+        <property name="Path" type="string">Asset path to the popup template that should be shown modally</property>
       </properties>
     </class>
     <class name="HideAction">
@@ -1086,6 +1105,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </function>
     <function name="GetObjectCount" lua="true" export="objectCount">
       <summary>Returns the number of live engine objects.</summary>
+      <returns type="nresults">Number of Lua results pushed by the binding function.</returns>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->

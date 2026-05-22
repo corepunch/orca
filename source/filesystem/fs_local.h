@@ -34,7 +34,4 @@ struct file *_ReadOnDisk(FILE *fp);
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path);
 
-struct Object *
-FS_LoadObjectFromXML(lpcString_t path);
-
 #endif

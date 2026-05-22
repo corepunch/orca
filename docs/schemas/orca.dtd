@@ -299,7 +299,7 @@
 	%TextBlockConceptAttribs;
 ">
 <!ENTITY % TextBlockElements "%Node2DElements;|%TextBlockConceptElements;">
-<!ELEMENT TextBlock (#PCDATA|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%TextBlockElements;)*>
+<!ELEMENT TextBlock (#PCDATA|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|BindingExpression|%TextBlockElements;)*>
 <!ATTLIST TextBlock %TextBlockAttribs;>
 <!ENTITY % InputAttribs "
 	%TextBlockAttribs;
@@ -329,7 +329,7 @@
 <!ELEMENT Button.Type (#PCDATA | Binding)*>
 <!ATTLIST Button.Type Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ButtonElements "Button.Type|%TextBlockElements;">
-<!ELEMENT Button (#PCDATA|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ButtonElements;)*>
+<!ELEMENT Button (#PCDATA|Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|BindingExpression|%ButtonElements;)*>
 <!ATTLIST Button %ButtonAttribs;>
 <!ENTITY % LabelAttribs "
 	%TextBlockAttribs;
@@ -359,7 +359,7 @@
 <!ELEMENT StackView.Spacing (#PCDATA | Binding)*>
 <!ATTLIST StackView.Spacing Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % StackViewElements "StackView.Reversed|StackView.Direction|StackView.AlignItems|StackView.JustifyContent|StackView.Spacing|%Node2DElements;">
-<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%StackViewElements;)*>
+<!ELEMENT StackView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|BindingExpression|%StackViewElements;)*>
 <!ATTLIST StackView %StackViewAttribs;>
 <!ENTITY % FormAttribs "
 	%StackViewAttribs;
@@ -389,23 +389,33 @@
 <!ELEMENT Control.Scale (#PCDATA | Binding)*>
 <!ATTLIST Control.Scale Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ControlElements "Control.Pressed|Control.Disabled|Control.Hovered|Control.Focused|Control.Value|Control.Scale|%Node2DElements;">
-<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
+<!ELEMENT Control (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ControlElements;)*>
 <!ATTLIST Control %ControlAttribs;>
 <!ENTITY % ScreenAttribs "
 	%Node2DAttribs;
 	ClearColor CDATA #IMPLIED
 	ResizeMode (%ResizeMode;) #IMPLIED
-	DialogResult CDATA #IMPLIED
 ">
 <!ELEMENT Screen.ClearColor (#PCDATA | Binding)*>
 <!ATTLIST Screen.ClearColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ELEMENT Screen.ResizeMode (#PCDATA | Binding)*>
 <!ATTLIST Screen.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ELEMENT Screen.DialogResult (#PCDATA | Binding)*>
-<!ATTLIST Screen.DialogResult Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
-<!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|Screen.DialogResult|%Node2DElements;">
-<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
+<!ENTITY % ScreenElements "Screen.ClearColor|Screen.ResizeMode|%Node2DElements;">
+<!ELEMENT Screen (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ScreenElements;)*>
 <!ATTLIST Screen %ScreenAttribs;>
+<!ENTITY % PopupAttribs "
+	%ScreenAttribs;
+	DialogResult CDATA #IMPLIED
+">
+<!ELEMENT Popup.ClearColor (#PCDATA | Binding)*>
+<!ATTLIST Popup.ClearColor Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Popup.ResizeMode (#PCDATA | Binding)*>
+<!ATTLIST Popup.ResizeMode Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ELEMENT Popup.DialogResult (#PCDATA | Binding)*>
+<!ATTLIST Popup.DialogResult Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
+<!ENTITY % PopupElements "Popup.ClearColor|Popup.ResizeMode|Popup.DialogResult|%Node2DElements;">
+<!ELEMENT Popup (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Popup|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%PopupElements;)*>
+<!ATTLIST Popup %PopupAttribs;>
 <!ENTITY % CinematicAttribs "
 	%Node2DAttribs;
 	FileName CDATA #IMPLIED
@@ -470,7 +480,7 @@
 <!ELEMENT ImageView.Stretch (#PCDATA | Binding)*>
 <!ATTLIST ImageView.Stretch Mode (expression|oneway) #IMPLIED Attribute CDATA #IMPLIED Enabled (true|false) #IMPLIED>
 <!ENTITY % ImageViewElements "ImageView.Src|ImageView.Source|ImageView.Edges|ImageView.Insets|ImageView.Viewbox|ImageView.Stretch|%Node2DElements;">
-<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|%ImageViewElements;)*>
+<!ELEMENT ImageView (Node2D|PrefabView2D|TextBlock|Input|Button|Label|StackView|Form|Control|Screen|Cinematic|Grid|ImageView|NinePatchImage|ConsoleView|Page|PageHost|PageViewport|SKView|Viewport3D|Resource|StyleSheet|LayerPrefabPlaceholder|BindingExpression|%ImageViewElements;)*>
 <!ATTLIST ImageView %ImageViewAttribs;>
 <!ENTITY % NinePatchImageAttribs "
 	%Node2DAttribs;
@@ -1370,12 +1380,18 @@
 
 <!ELEMENT StyleSheet (#PCDATA)>
 
+
 <!ELEMENT Binding (#PCDATA)>
 <!ATTLIST Binding 
 	Property CDATA #REQUIRED
 	Mode (expression|oneway) #IMPLIED
 	Enabled (true|false)  #IMPLIED
 	Attribute (VECTOR_X|VECTOR_Y|VECTOR_Z|VECTOR_W|COLOR_R|COLOR_G|COLOR_B|COLOR_A|WHOLE_PROPERTY) #IMPLIED
+>
+
+<!ELEMENT BindingExpression (#PCDATA)>
+<!ATTLIST BindingExpression 
+	Target CDATA #REQUIRED
 >
 
 <!ELEMENT LayerPrefabPlaceholder (%Node2DElements;)*>

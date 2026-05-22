@@ -12,18 +12,11 @@ After cloning, initialize submodules before building or running code generation:
 git submodule update --init --recursive
 ```
 
-This pulls two required submodules:
+This pulls the required platform submodule:
 
 | Submodule | Path | Purpose |
 |---|---|---|
 | `platform` | `libs/platform` | Cross-platform abstraction layer (window, input, audio) |
-| `pyphp` | `tools/pyphp` | Python-to-PHP bridge for running the code generation templates |
-
-Install `pyphp` as a Python package before running any `make` target in `tools/`:
-
-```bash
-pip install -e tools/pyphp
-```
 
 ---
 
@@ -45,10 +38,8 @@ orca/
 ├── include/         # Public C headers (orca.h, renderer.h, …)
 ├── docs/            # MkDocs website source (Markdown + schemas)
 ├── tools/           # Code-generation toolchain
-│   ├── model/       # PHP data model (module.php — XML parser)
-│   ├── templates/   # PHP code-gen templates (header, export, docs, …)
-│   ├── Makefile     # `make all` → headers+exports; `make docs` → Markdown docs
-│   └── pyphp/       # pyphp submodule (install with `pip install -e tools/pyphp`)
+│   ├── codegen/     # C codegen host and generator plugins
+│   └── Makefile     # Module generation recipes used by root `make modules`
 └── samples/         # Example projects
 ```
 
@@ -60,7 +51,7 @@ Every C module lives in `source/<module>/` or `plugins/<name>/` and follows the 
 
 ```
 <module>/
-├── <module>.xml            # API definition — source of truth for the public interface
+├── <module>.cgen           # API definition — source of truth for the public interface
 ├── <module>.h              # Generated C header  (do not edit by hand)
 ├── <module>_properties.h   # Generated property hash constants  (do not edit)
 ├── <module>_export.c       # Generated Lua binding code  (do not edit)
@@ -98,5 +89,5 @@ Each plugin module is compiled into its own shared library (`.so` / `.dll`) and 
 
 - [Object + Component System](object-component-system.md) — How Objects and Components work, and how to add new component types.
 - [Plugin System](plugin-system.md) — C component plugins and Lua script plugins, with UIKit as a worked example.
-- [Code Generation](code-generation.md) — How the pyphp toolchain converts XML module definitions into C headers and Lua bindings.
-- [Module XML Guide](../MODULE_XML_GUIDE.md) — Full reference for writing `.xml` module files.
+- [Code Generation](code-generation.md) — How the C codegen toolchain converts `.cgen` module definitions into C headers and Lua bindings.
+- [Module Codegen Guide](../MODULE_XML_GUIDE.md) — Full reference for writing `.cgen` module files.

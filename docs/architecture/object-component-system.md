@@ -64,7 +64,7 @@ struct ClassDesc {
     uint32_t          ClassSize;        // sizeof(struct ClassName)
     uint32_t          MemorySize;       // total size including parents
     void const       *Defaults;         // default values struct
-    bool_t            IsAttachOnly;     // cannot be instantiated standalone
+    bool_t            ClassFlags;     // cannot be instantiated standalone
 };
 ```
 
@@ -111,14 +111,14 @@ obj:addComponent("AnimationPlayer")     -- attach by name (Lua API)
 
 The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defaults` into the new block, appends it to the object's component list, and then recursively attaches any `ParentClasses`.
 
-### Standalone vs. attach-only
+### Standalone vs. component
 
 | Kind | XML attribute | Macro | Use |
 |---|---|---|---|
 | Standalone | *(default)* | `REGISTER_CLASS` | May be created as a root object or attached as a component (e.g. `AnimationClip`) |
-| Attach-only | `attach-only="true"` | `REGISTER_ATTACH_ONLY_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`) |
+| Component | `` | `REGISTER_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`) |
 
-Attach-only components set `IsAttachOnly = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `IsAttachOnly` and raises an error if a non-attach-only class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
+Component components set `ClassFlags = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `ClassFlags` and raises an error if a non-component class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
 
 ### Inheritance
 
@@ -154,7 +154,7 @@ Property values for component-defined properties are stored in the component's u
 
 ## Message Dispatch
 
-Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `source/core/core_properties.h` (generated from `core.xml`):
+Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `source/core/core_properties.h` (generated from `core.cgen`):
 
 | Message | When sent |
 |---|---|
@@ -172,7 +172,7 @@ _SendMessage(object, Object, Start);
 _SendMessage(object, Object, PropertyChanged, .Property = myProp);
 ```
 
-Custom messages are declared with `<message>` in any module XML. The `routing=` attribute controls bubbling/tunneling behaviour.
+Custom messages are declared with `<message>` in any module `.cgen`. The `routing=` attribute controls bubbling/tunneling behaviour.
 
 See [Macros Reference](macros-reference.md) for full documentation of `HANDLER`, `_SendMessage`, and related macros.
 
@@ -182,7 +182,7 @@ See [Macros Reference](macros-reference.md) for full documentation of `HANDLER`,
 
 The current `struct Object` contains a number of embedded subsystem fields — `timers`, `stateManager`, `stylesheet`, `classes`, `aliases` — that predate the component architecture. These are **legacy fields** that violate the principle that functionality belongs in components.
 
-**The goal:** every subsystem moves into a proper `attach-only` component:
+**The goal:** every subsystem moves into a proper `component` component:
 
 | Legacy field | Target component | Status |
 |---|---|---|
@@ -195,7 +195,7 @@ The current `struct Object` contains a number of embedded subsystem fields — `
 
 Migration rules:
 1. Implement the component with `<handles>` for the messages it needs.
-2. Register it as `attach-only` via `REGISTER_ATTACH_ONLY_CLASS`.
+2. Register it as `component` via `REGISTER_CLASS`.
 3. Remove the corresponding field from `struct Object`.
 4. Remove the `_GetXxx(obj)` macro and the manual release call from `OBJ_Release`.
 
@@ -203,14 +203,14 @@ Migration rules:
 
 ## How to Add a New Component Type
 
-> **Rule: XML → codegen → handlers → Xcode project → tests.**  Do not skip or reorder any step.  Skipping the XML step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — the C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
+> **Rule: `.cgen` → codegen → handlers → Xcode project → tests.**  Do not skip or reorder any step.  Skipping the `.cgen` step means `struct MyComponent`, the message IDs, and the `REGISTER_*` macro are never generated — the C file will not compile.  Skipping tests means silent integration failures that are invisible until runtime.
 
-### 1. Declare in the module XML
+### 1. Declare in the module `.cgen`
 
-Add a `<class>` entry to the relevant module `.xml` file (e.g. `source/core/core.xml`). Every message handler must have a matching `<handle>` entry, and every message the component dispatches must be declared under `<messages>`.  **Handlers without `<handle>` entries are orphaned — the generated Proc switch will not contain them and they will never be called.**
+Add a `<class>` entry to the relevant module `.cgen` file (e.g. `source/core/core.cgen`). Every message handler must have a matching `<handle>` entry, and every message the component dispatches must be declared under `<messages>`.  **Handlers without `<handle>` entries are orphaned — the generated Proc switch will not contain them and they will never be called.**
 
 ```xml
-<class name="MyComponent" attach-only="true">
+<class name="MyComponent" >
   <summary>What this component does.</summary>
   <handles>
     <handle message="Object.Start"/>
@@ -229,15 +229,15 @@ Add a `<class>` entry to the relevant module `.xml` file (e.g. `source/core/core
 </class>
 ```
 
-Use `attach-only="true"` for components that augment existing objects; omit it for standalone data objects (like `AnimationClip`) that may be created as root objects.
+Use `` for components that augment existing objects; omit it for standalone data objects (like `AnimationClip`) that may be created as root objects.
 
 ### 2. Regenerate bindings
 
 ```bash
-cd tools && make
+make modules
 ```
 
-This regenerates `<module>.h` (struct + accessor macro), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings). **After regenerating, open `<module>_export.c` and verify that `MyComponentProc` contains `case` entries for every declared message.** An empty `switch {}` means the XML step was incomplete.
+This regenerates `<module>.h` (struct + accessor macro), `<module>_properties.h` (FNV hash IDs), and `<module>_export.c` (Proc switch + REGISTER macro + Lua bindings). **After regenerating, open `<module>_export.c` and verify that `MyComponentProc` contains `case` entries for every declared message.** An empty `switch {}` means the `.cgen` step was incomplete.
 
 ### 3. Write the C handlers
 
@@ -265,7 +265,7 @@ The `HANDLER` macro provides the correct function signature. `*_export.c` forwar
 
 ### 4. Register the class at module init
 
-The `REGISTER_CLASS` / `REGISTER_ATTACH_ONLY_CLASS` macro in `*_export.c` defines `_MyComponent`.  Wire it into the module's `on-luaopen` callback:
+The `REGISTER_CLASS` / `REGISTER_CLASS` macro in `*_export.c` defines `_MyComponent`.  Wire it into the module's `on-luaopen` callback:
 
 ```c
 OBJ_RegisterClass(&_MyComponent);
@@ -298,7 +298,7 @@ Without tests, an empty `MyComponentProc` (caused by missing `<handle>` entries 
 local clip = orca.AnimationClip()
 clip.StopTime = 2.0
 
--- Attach-only:
+-- Component:
 obj:addComponent("AnimationPlayer")
 obj.Clip    = clip
 obj.Playing = true

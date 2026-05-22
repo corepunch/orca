@@ -41,14 +41,14 @@ bool_t
 OBJ_AttachPropertyProgram(struct Object *self,
                           lpcString_t name,
                           lpcString_t program,
-                          ePropertyAttribute_t attribute,
                           eBindingMode_t mode,
                           bool_t enabled)
 {
+  (void)mode;
   struct token *compiled = enabled ? Token_Create(program) : NULL;
   struct Property *property = NULL;
   if (SUCCEEDED(OBJ_FindLongProperty(self, fnv1a32(name), &property))) {
-    PROP_AttachProgram(property, attribute, compiled, program);
+    PROP_AttachProgram(property, compiled);
     return TRUE;
   } else {
     return FALSE;

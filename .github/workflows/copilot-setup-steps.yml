@@ -44,11 +44,6 @@ jobs:
             libgles2-mesa-dev \
             xvfb
 
-      # ── pyphp — Python-to-PHP bridge for code generation ──────────────────
-      # Required by `cd tools && make`.  The submodule lives at tools/pyphp.
-      - name: Install pyphp (code-generation bridge)
-        run: pip install -e tools/pyphp
-
       # ── MkDocs (docs preview) ──────────────────────────────────────────────
       - name: Install MkDocs Material (docs build)
         run: pip install mkdocs-material

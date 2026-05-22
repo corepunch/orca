@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/export.php
+// Auto-generated from core.cgen by tools/codegen/plugins/export.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #include <include/api.h>
 #include <include/codegen.h>
@@ -14,6 +14,9 @@ extern struct game* luaX_checkgame(lua_State *L, int index);
 // Property
 extern void luaX_pushProperty(lua_State *L, struct Property const* value);
 extern struct Property* luaX_checkProperty(lua_State *L, int index);
+// token
+extern void luaX_pushtoken(lua_State *L, struct token const* value);
+extern struct token* luaX_checktoken(lua_State *L, int index);
 // lua_State
 extern void luaX_pushlua_State(lua_State *L, struct lua_State const* value);
 extern struct lua_State* luaX_checklua_State(lua_State *L, int index);
@@ -24,7 +27,6 @@ extern struct style_class_selector* luaX_checkstyle_class_selector(lua_State *L,
 ENUM(MessageRouting, "Bubbling", "TunnelingBubbling", "Tunneling", "Direct")
 ENUM(PropertyState, "Normal", "Hover", "Focus", "Select", "Disable")
 ENUM(BindingMode, "OneWay", "TwoWay", "OneWayToSource", "Expression")
-ENUM(PropertyAttribute, "WholeProperty", "ColorR", "ColorG", "ColorB", "ColorA", "VectorX", "VectorY", "VectorZ", "VectorW")
 ENUM(AnimationMode, "PlayOnce", "Loop", "PingPong")
 ENUM(PlaybackMode, "Normal", "Reverse", "PingPong")
 ENUM(InterpolationMode, "Linear", "Const", "Back", "Bounce", "Circ", "Cubic", "Elastic", "Expo", "Quad", "Quart", "Quint", "Sine")
@@ -184,10 +186,9 @@ int f_OBJ_AttachPropertyProgram(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	const char* name = luaL_checkstring(L, 2);
 	const char* program = luaL_checkstring(L, 3);
-	enum PropertyAttribute attribute = luaX_checkPropertyAttribute(L, 4);
-	enum BindingMode mode = luaX_checkBindingMode(L, 5);
-	bool_t enabled = lua_toboolean(L, 6);
-	bool_t result_ = OBJ_AttachPropertyProgram(this_, name, program, attribute, mode, enabled);
+	enum BindingMode mode = luaX_checkBindingMode(L, 4);
+	bool_t enabled = lua_toboolean(L, 5);
+	bool_t result_ = OBJ_AttachPropertyProgram(this_, name, program, mode, enabled);
 	lua_pushboolean(L, result_);
 	return 1;
 }
@@ -704,6 +705,10 @@ struct PropertyType _StateManagerController_ControllerChangedEventArgs_Propertie
 	DECL(0x5221f9e8, StateManagerController_ControllerChangedEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // StateManagerController_ControllerChangedEventArgs.Property
 };
 #define _StateManagerController_ControllerChangedEventArgs _StateManagerController_ControllerChangedEventArgs_Properties
+static luaL_Reg _Binding_CompileEventArgs_Methods[] = { { NULL, NULL } };
+struct PropertyType _Binding_CompileEventArgs_Properties[] = {
+};
+#define _Binding_CompileEventArgs _Binding_CompileEventArgs_Properties
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Trigger_TriggeredEventArgs_Properties[] = {
 	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
@@ -979,6 +984,7 @@ STRUCT(StyleController_ThemeChangedEventArgs, StyleController_ThemeChangedEventA
 STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
+STRUCT(Binding_CompileEventArgs, Binding_CompileEventArgs);
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
 STRUCT(Node_UpdateMatrixEventArgs, Node_UpdateMatrixEventArgs);
 STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
@@ -1099,7 +1105,7 @@ void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* Animat
 struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx) {
 	return GetAnimationPlayer(luaX_checkObject(L, idx));
 }
-REGISTER_ATTACH_ONLY_CLASS(AnimationPlayer, 0);
+REGISTER_CLASS(AnimationPlayer, 0);
 HANDLER(PropertyAnimation, Object, Animate);
 HANDLER(PropertyAnimation, Object, Release);
 static struct PropertyType const PropertyAnimationProperties[kPropertyAnimationNumProperties] = {
@@ -1126,7 +1132,7 @@ void luaX_pushPropertyAnimation(lua_State *L, struct PropertyAnimation const* Pr
 struct PropertyAnimation* luaX_checkPropertyAnimation(lua_State *L, int idx) {
 	return GetPropertyAnimation(luaX_checkObject(L, idx));
 }
-REGISTER_ATTACH_ONLY_CLASS(PropertyAnimation, 0);
+REGISTER_CLASS(PropertyAnimation, 0);
 static struct PropertyType const StyleSheetProperties[kStyleSheetNumProperties] = {
 };
 static struct StyleSheet StyleSheetDefaults = {
@@ -1192,7 +1198,7 @@ void luaX_pushStyleController(lua_State *L, struct StyleController const* StyleC
 struct StyleController* luaX_checkStyleController(lua_State *L, int idx) {
 	return GetStyleController(luaX_checkObject(L, idx));
 }
-REGISTER_ATTACH_ONLY_CLASS(StyleController, 0);
+REGISTER_CLASS(StyleController, 0);
 static struct PropertyType const StateManagerProperties[kStateManagerNumProperties] = {
 };
 static struct StateManager StateManagerDefaults = {
@@ -1267,7 +1273,7 @@ void luaX_pushStateManagerController(lua_State *L, struct StateManagerController
 struct StateManagerController* luaX_checkStateManagerController(lua_State *L, int idx) {
 	return GetStateManagerController(luaX_checkObject(L, idx));
 }
-REGISTER_ATTACH_ONLY_CLASS(StateManagerController, 0);
+REGISTER_CLASS(StateManagerController, 0);
 static struct PropertyType const ResourceDictionaryProperties[kResourceDictionaryNumProperties] = {
 };
 static struct ResourceDictionary ResourceDictionaryDefaults = {
@@ -1320,6 +1326,49 @@ struct DataObject* luaX_checkDataObject(lua_State *L, int idx) {
 	return GetDataObject(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(DataObject, 0);
+HANDLER(Binding, Binding, Compile);
+static struct PropertyType const BindingProperties[kBindingNumProperties] = {
+	DECL(0xeb81bd0b, Binding, Expression, Expression, kDataTypeString), // Binding.Expression
+	DECL(0x534e7732, Binding, Mode, Mode, kDataTypeEnum, .EnumValues = _BindingMode), // Binding.Mode
+	DECL(0x9c86e43e, Binding, Enabled, Enabled, kDataTypeBool), // Binding.Enabled
+	DECL(0x52fafc3e, Binding, Compile, Compile, kDataTypeEvent, .TypeString = "Binding_CompileEventArgs"), // Binding.Compile
+};
+static struct Binding BindingDefaults = {
+		
+  .Enabled = TRUE,
+};
+LRESULT BindingProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Binding_Compile: return Binding_Compile(object, cmp, wparm, lparm); // Binding.Compile
+	}
+	return FALSE;
+}
+void luaX_pushBinding(lua_State *L, struct Binding const* Binding) {
+	luaX_pushObject(L, CMP_GetObject(Binding));
+}
+struct Binding* luaX_checkBinding(lua_State *L, int idx) {
+	return GetBinding(luaX_checkObject(L, idx));
+}
+REGISTER_CLASS(Binding, 0);
+HANDLER(BindingExpression, Binding, Compile);
+static struct PropertyType const BindingExpressionProperties[kBindingExpressionNumProperties] = {
+};
+static struct BindingExpression BindingExpressionDefaults = {
+};
+LRESULT BindingExpressionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+	switch (message) {
+		case ID_Binding_Compile: return BindingExpression_Compile(object, cmp, wparm, lparm); // Binding.Compile
+	}
+	return FALSE;
+}
+void luaX_pushBindingExpression(lua_State *L, struct BindingExpression const* BindingExpression) {
+	luaX_pushObject(L, CMP_GetObject(BindingExpression));
+}
+struct BindingExpression* luaX_checkBindingExpression(lua_State *L, int idx) {
+	return GetBindingExpression(luaX_checkObject(L, idx));
+}
+#define ID_Binding 0xf37df202
+REGISTER_CLASS(BindingExpression, ID_Binding, 0);
 HANDLER(Trigger, Object, PropertyChanged);
 HANDLER(Trigger, Object, Attached);
 HANDLER(Trigger, Trigger, Triggered);
@@ -1645,8 +1694,7 @@ int f_core_FlushQueue(lua_State *L) {
 	return 0;
 }
 int f_core_GetObjectCount(lua_State *L) {
-	core_GetObjectCount(L );
-	return 1;
+	return core_GetObjectCount(L);
 }
 
 ORCA_API int luaopen_orca_core(lua_State *L) {
@@ -1681,6 +1729,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	REGISTER_MESSAGE_TYPE(ID_StyleController_AddClass, "StyleController.AddClass", StyleController_AddClassEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_StyleController_AddClasses, "StyleController.AddClasses", StyleController_AddClassesEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_StateManagerController_ControllerChanged, "StateManagerController.ControllerChanged", StateManagerController_ControllerChangedEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Binding_Compile, "Binding.Compile", Binding_CompileEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Trigger_Triggered, "Trigger.Triggered", Trigger_TriggeredEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Node_UpdateMatrix, "Node.UpdateMatrix", Node_UpdateMatrixEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Node_LoadView, "Node.LoadView", Node_LoadViewEventArgs);
@@ -1742,6 +1791,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassEventArgs(L), -2), "StyleController_AddClassEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Binding_CompileEventArgs(L), -2), "Binding_CompileEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");
@@ -1787,6 +1837,8 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_ResourceDictionary), -2), "ResourceDictionary");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Locale), -2), "Locale");
 	lua_setfield(L, ((void)lua_pushclass(L, &_DataObject), -2), "DataObject");
+	lua_setfield(L, ((void)lua_pushclass(L, &_Binding), -2), "Binding");
+	lua_setfield(L, ((void)lua_pushclass(L, &_BindingExpression), -2), "BindingExpression");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Trigger), -2), "Trigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnPropertyChangedTrigger), -2), "OnPropertyChangedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");

@@ -1,4 +1,4 @@
-// Auto-generated from renderer.xml by tools/templates/header.php
+// Auto-generated from renderer.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __RENDERER_H__
 #define __RENDERER_H__

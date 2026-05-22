@@ -8,7 +8,6 @@ ORCA_API struct Object *root_node = NULL;
 typedef struct
 {
   path_t path;
-  enum PropertyAttribute attr;
 } argument_t;
 
 struct lexer_state
@@ -19,27 +18,10 @@ struct lexer_state
   uint32_t numargs;
 };
 
-enum PropertyAttribute
-parsePropertyAttrInCode(lpcString_t s)
-{
-  if (!strcmp(s, "COLORR")) return kPropertyAttributeColorR;
-  if (!strcmp(s, "COLORG")) return kPropertyAttributeColorG;
-  if (!strcmp(s, "COLORB")) return kPropertyAttributeColorB;
-  if (!strcmp(s, "COLORA")) return kPropertyAttributeColorA;
-  if (!strcmp(s, "VECTORX")||!strcmp(s, "VECTOR_X")) return kPropertyAttributeVectorX;
-  if (!strcmp(s, "VECTORY")||!strcmp(s, "VECTOR_Y")) return kPropertyAttributeVectorY;
-  if (!strcmp(s, "VECTORZ")||!strcmp(s, "VECTOR_Z")) return kPropertyAttributeVectorZ;
-  if (!strcmp(s, "VECTORW")||!strcmp(s, "VECTOR_W")) return kPropertyAttributeVectorW;
-  assert(0);
-  return kPropertyAttributeWholeProperty;
-}
-
 bool_t
 isoperator(int c)
 {
-  return c == '+' || c == '-' || c == '%' || c == '*' || c == '/' || c == '=' ||
-         c == '<' || c == '>' || c == '&' || c == '|' || c == '^' || c == '!' ||
-         c == '~';
+  return c && strchr("+-%*/=<>&|!^~", c) != NULL;
 }
 
 struct token*
@@ -76,6 +58,30 @@ _TokenMakeOperator(char ch)
       assert(0);
       return NULL;
   }
+}
+
+static struct token*
+_TokenMaybeExtract(struct token *tok, lpcString_t name, lpcString_t end)
+{
+  struct {
+    lpcString_t name;
+    lpcString_t call;
+  } extractors[] = {
+    { "COLORR", "COLORR" }, { "COLORG", "COLORG" },
+    { "COLORB", "COLORB" }, { "COLORA", "COLORA" },
+    { "VECTORX", "VECTOR3X" }, { "VECTORY", "VECTOR3Y" },
+    { "VECTORZ", "VECTOR3Z" }, { NULL, NULL },
+  };
+
+  for (int i = 0; extractors[i].name; i++) {
+    if (strlen(extractors[i].name) == (size_t)(end - name) &&
+        !strncasecmp(name, extractors[i].name, (size_t)(end - name))) {
+      struct token *call = _TokenMakeCall(extractors[i].call);
+      call->args[0] = tok;
+      return call;
+    }
+  }
+  return tok;
 }
 
 lpcString_t*
@@ -142,22 +148,69 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
       int arg = atoi(*str) % MAX_ARGS;
       argument_t* a = &lex->arguments[arg];
       tok = _TokenMake(a->path, strchr(a->path, 0), tok_argument);
-      tok->attr = a->attr;
       *str = strchr(*str, '}') + 1;
     } else {
       if (**str == '@')
         (*str)++;
+      lpcString_t content = *str;
       *str = strchr(*str, '}');
-      tok = _TokenMake(beg + 1, (*str)++, tok_argument);
+      if (!*str) {
+        Con_Error("Expected }");
+        return NULL;
+      }
+      lpcString_t content_end = *str;
+      (*str)++;  /* skip '}' */
+
+      /* Look for ", Source=X" suffix inside {PropPath, Source=X} */
+      lpcString_t source_sep = NULL;
+      for (lpcString_t p = content; p < content_end; p++) {
+        if (*p == ',') {
+          lpcString_t q = p + 1;
+          while (q < content_end && *q == ' ') q++;
+          if (content_end - q >= 7 && !strncmp(q, "Source=", 7)) {
+            source_sep = p;
+            break;
+          }
+        }
+      }
+
+      if (source_sep) {
+        lpcString_t prop_end = source_sep;
+        while (prop_end > content && prop_end[-1] == ' ') prop_end--;
+
+        lpcString_t src = source_sep + 1;
+        while (src < content_end && (*src == ' ' || *src == ',')) src++;
+        src += 7;  /* skip "Source=" */
+
+        size_t prop_len = (size_t)(prop_end - content);
+        size_t src_len = (size_t)(content_end - src);
+
+        path_t internal = {0};
+        if (src_len == 4 && !strncmp(src, "Root", 4)) {
+          snprintf(internal, sizeof(internal), "##Root/%.*s", (int)prop_len, content);
+        } else if (src_len == 11 && !strncmp(src, "DataContext", 11)) {
+          snprintf(internal, sizeof(internal), "DataContext/%.*s", (int)prop_len, content);
+        } else if (*src == '.' || *src == '#') {
+          /* Relative path or #-prefixed — append prop, adding '/' if needed */
+          if (src_len > 0 && src[src_len - 1] == '/') {
+            snprintf(internal, sizeof(internal), "%.*s%.*s", (int)src_len, src, (int)prop_len, content);
+          } else {
+            snprintf(internal, sizeof(internal), "%.*s/%.*s", (int)src_len, src, (int)prop_len, content);
+          }
+        } else {
+          /* Named element: Source=Body → #Body/PropPath */
+          snprintf(internal, sizeof(internal), "#%.*s/%.*s", (int)src_len, src, (int)prop_len, content);
+        }
+        tok = _TokenMake(internal, strchr(internal, 0), tok_argument);
+      } else {
+        tok = _TokenMake(content, content_end, tok_argument);
+      }
     }
     if (eat_token(str, '.')) {
-      lpcString_t s = *str;
+      lpcString_t name = *str;
       while (isalpha(**str)||**str=='_')
         (*str)++;
-      shortStr_t attr = { 0 };
-      for (LPSTR a = attr; s != *str; *(a++) = toupper(*(s++)))
-        ;
-      tok->attr = parsePropertyAttrInCode(attr);
+      tok = _TokenMaybeExtract(tok, name, *str);
     }
     tok->rootnode = root_node;
     return tok;
@@ -216,8 +269,12 @@ _TokenParse(lpcString_t* str, struct lexer_state* lex)
     return _TokenMake(beg, *str, tok_constant);
   }
 
-  assert(0);
-  Con_Warning("%s", *str);
+  if (**str) {
+    Con_Error("Unexpected token '%c' (0x%02X) in binding expression near: %s",
+              **str, (unsigned char)**str, *str);
+  } else {
+    Con_Error("Unexpected end of binding expression");
+  }
   return NULL;
 }
 

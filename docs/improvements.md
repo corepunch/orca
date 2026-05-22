@@ -6,12 +6,12 @@ This document records design issues, gotchas, misleading patterns, and known imp
 
 ## Component Development Workflow
 
-### The mandatory order: XML → codegen → C handlers → Xcode → tests
+### The mandatory order: `.cgen` → codegen → C handlers → Xcode → tests
 
 Every successful component addition in this repo (StyleController, StateManagerController, AnimationPlayer, PropertyAnimation) followed the same order:
 
-1. Declare the `<class>` with all `<handle>`, `<property>`, and `<message>` entries in the module XML
-2. Run `cd tools && make` to regenerate the struct, property IDs, and the Proc switch
+1. Declare the `<class>` with all `<handle>`, `<property>`, and `<message>` entries in the module `.cgen`
+2. Run `make modules` to regenerate the struct, property IDs, and the Proc switch
 3. Implement the `HANDLER(...)` functions in a new `.c` file
 4. Call `OBJ_RegisterClass(&_ClassName)` in the `on-luaopen` callback
 5. Add the `.c` file to `orca.xcodeproj/project.pbxproj` (four places)
@@ -21,7 +21,7 @@ Every successful component addition in this repo (StyleController, StateManagerC
 
 ### Case study: Aliases component — XML class never declared
 
-`source/core/components/Aliases.c` was written with `HANDLER(Aliases, ...)` macros and `pAliases->aliases` field accesses, but no `<class name="Aliases">` was ever added to `core.xml`.  Consequences:
+`source/core/components/Aliases.c` was written with `HANDLER(Aliases, ...)` macros and `pAliases->aliases` field accesses, but no `<class name="Aliases">` was ever added to `core.cgen`.  Consequences:
 
 - `struct Aliases` was never generated → the file cannot compile
 - `AliasesProc` was never generated → the `HANDLER` functions have no dispatch table
@@ -32,7 +32,7 @@ The component is entirely inert, yet it looks complete at first glance because t
 
 ### Case study: Locale component — XML declared, implementation disconnected
 
-`source/core/core.xml` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
+`source/core/core.cgen` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
 
 Consequences:
 - Attaching a `Locale` component and setting `Language` + `Entries` does nothing
@@ -53,8 +53,8 @@ Neither the Aliases nor the Locale migration had any test coverage.  Both StyleC
 
 ## Animation System
 
-### `AnimationCurve` was initially `attach-only` (wrong design)
-The first version of the component system made `AnimationCurve` an attach-only component bolted onto the `AnimationClip` object's component list. This was wrong: `AnimationCurve` is a data object that belongs as a **child** of `AnimationClip` in the object hierarchy, not as an attached component. Components are for behaviour; child objects are for data. The rule is: if something has identity (a name, can be referenced, carries data that outlives a single message) it should be a child object, not an attach-only component.
+### `AnimationCurve` was initially `component` (wrong design)
+The first version of the component system made `AnimationCurve` an component component bolted onto the `AnimationClip` object's component list. This was wrong: `AnimationCurve` is a data object that belongs as a **child** of `AnimationClip` in the object hierarchy, not as an attached component. Components are for behaviour; child objects are for data. The rule is: if something has identity (a name, can be referenced, carries data that outlives a single message) it should be a child object, not an component component.
 
 ### `AnimationPlayer` iterates clip's children, not components
 Because `AnimationCurve` is now a child object of `AnimationClip`, `AnimationPlayer.Animate` uses `FOR_EACH_OBJECT` to walk the clip's children and calls `GetAnimationCurve(child)` on each. If the relationship between clip and curves ever changes (e.g. grandchildren), this traversal will break silently because `FOR_EACH_OBJECT` only walks direct children.
@@ -69,8 +69,8 @@ In `AnimationPlayer.c`, `TANGENT_MODE_BEZIER` must appear before `keyframe_evalu
 ### `OBJ_SendMessageW` does NOT mask routing bits
 The routing bits (lower 2 bits of every message ID) are **not** stripped by `OBJ_SendMessageW` before calling each component's `ObjProc`. Generated `*Proc` functions mask in their `switch` statement: `case ID_Object_Start & MSG_DATA_MASK:`. Direct callers of `OBJ_SendMessageW` that compare raw `msg` values inside their proc will silently match the wrong case unless they also mask. Always use `& MSG_DATA_MASK` when comparing message IDs inside an `ObjProc`.
 
-### `IsAttachOnly` is only enforced at the Lua bridge
-The `IsAttachOnly` flag in `ClassDesc` is checked by `OBJ_AddComponentByName` (the Lua bridge, which raises a `luaL_error`). Direct C callers of `OBJ_AddComponent(obj, classID)` are **not** restricted. The flag is architectural documentation, not a hard constraint in C code. If you call `OBJ_AddComponent` directly with a non-attach-only class ID, the engine will silently attach it as a component rather than refusing.
+### `ClassFlags` is only enforced at the Lua bridge
+The `ClassFlags` flag in `ClassDesc` is checked by `OBJ_AddComponentByName` (the Lua bridge, which raises a `luaL_error`). Direct C callers of `OBJ_AddComponent(obj, classID)` are **not** restricted. The flag is architectural documentation, not a hard constraint in C code. If you call `OBJ_AddComponent` directly with a non-component class ID, the engine will silently attach it as a component rather than refusing.
 
 ### `objectProc_t` receives a potentially unmasked message ID
 The `cmp` argument to `ObjProc` is the component's `pUserData` — not a `struct component*`. The `msg` parameter is forwarded as-is from `OBJ_SendMessageW`; it may include routing bits. Always mask: `(msg & MSG_DATA_MASK)` before switching or comparing.
@@ -122,7 +122,7 @@ Why it is shim-like:
 
 ### `LoadPrefabs` compatibility wrapper
 
-Files: `source/core/core.xml`, `source/core/object/object_component.c`
+Files: `source/core/core.cgen`, `source/core/object/object_component.c`
 
 `LoadPrefabs` is explicitly documented as a compatibility wrapper. It recursively traverses a subtree and dispatches `Node.LoadView` to prefab view objects.
 
@@ -171,7 +171,7 @@ The object pseudo-properties and the broadened `core.flushQueue()` semantics are
 ### `OBJ_AddComponentByName` vs `OBJ_AddComponent`
 Two distinct APIs exist:
 - `OBJ_AddComponent(struct Object *, uint32_t)` — C-only 2-arg API, unrestricted
-- `OBJ_AddComponentByName(lua_State*, struct Object *, const char*)` — 3-arg Lua bridge, checks `IsAttachOnly`, raises `luaL_error` on failure
+- `OBJ_AddComponentByName(lua_State*, struct Object *, const char*)` — 3-arg Lua bridge, checks `ClassFlags`, raises `luaL_error` on failure
 
 The names are similar enough to cause confusion. The rename from the original 3-arg `OBJ_AddComponent` was necessary to avoid a conflicting C declaration with the 2-arg public API in `orca.h`. When calling from C, always use the 2-arg form.
 
@@ -192,11 +192,11 @@ The module DTD does not permit `<message>` as a direct child of `<module>`. Mess
 
 ## Code Generation
 
-### `pyphp` silently empties generated files if pyphp is not installed
-Running `make` or `make -C tools` when `pyphp` is not installed will **truncate all generated files to zero bytes** because the shell redirect `> file` runs even when the command before it fails. Always verify `python3 -c "import pyphp"` before running code generation. Corrupted generated files look like successful builds until you hit a missing symbol.
+### Codegen output should fail before truncating committed files
+`make modules` writes generated files through shell redirects. Keep `cgen` and its generator plugins buildable from the root Makefile before any module recipes run, so missing generator binaries fail early instead of producing empty committed outputs.
 
-### Block comments in PHP templates cause `SyntaxError`
-The `pyphp` preprocessor does **not** strip `/* ... */` C-style block comments from PHP code blocks. They pass through to generated Python verbatim, causing `SyntaxError`. Use `//` line comments in PHP templates; pyphp converts `//` to `#`.
+### Generator plugins should use direct-child iteration
+The C model keeps parent IDs for parsed nodes. Prefer `cg_foreach(model, parent_id, kind, node)` in generator plugins so nested elements are not accidentally treated as top-level API entries.
 
 ### `FOR_EACH_LIST` — only the exact macro signature is safe
 The `FOR_EACH_LIST` macro in `include/orcadef.h` uses a specific pattern for the `next` pointer initialisation:

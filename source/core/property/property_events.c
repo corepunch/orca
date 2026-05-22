@@ -60,30 +60,49 @@ PROP_FireNotification(lua_State* L,
 
 void
 PROP_AttachProgram(struct Property *p,
-                   enum PropertyAttribute a,
-                   struct token* program,
-                   lpcString_t code)
+                   struct token* program)
 {
-  FOR_EACH_LIST(struct property_program, pp, core.programs) {
-    if (pp->property == p && pp->attr == a) {
-      SafeSet(pp->code, strdup(code), free);
-      SafeSet(pp->token, program, Token_Release);
-      return;
-    }
+  if (p->binding) {
+    SafeSet(p->binding->token, program, Token_Release);
+    return;
   }
-  struct property_program* pp = ZeroAlloc(sizeof(struct property_program));
-  pp->property = p;
-  pp->attr = a;
-  pp->code = strdup(code);
-  pp->token = program;
-  ADD_TO_LIST(pp, core.programs);
+  p->binding = ZeroAlloc(sizeof(struct Binding));
+  p->binding->property = p;
+  p->binding->token = program;
+
+  if (!p->inBindingIndex) {
+    p->nextBinding = core.binding_properties;
+    core.binding_properties = p;
+    p->inBindingIndex = TRUE;
+  }
+}
+
+ORCA_API bool_t
+PROP_SetBinding(struct Property *property,
+                lpcString_t expression,
+                eBindingMode_t mode,
+                bool_t enabled)
+{
+  (void)mode;
+  if (!property) {
+    Con_Error("PROP_SetBinding: target property is NULL");
+    return FALSE;
+  }
+
+  if (!expression || !*expression) {
+    Con_Error("PROP_SetBinding: empty binding expression for %s/%s",
+              OBJ_GetClassName(property->object),
+              PROP_GetName(property));
+    return FALSE;
+  }
+
+  struct token *compiled = enabled ? Token_Create(expression) : NULL;
+  PROP_AttachProgram(property, compiled);
+  return TRUE;
 }
 
 bool_t
 PROP_HasProgram(struct Property *p)
 {
-  FOR_EACH_LIST(struct property_program, pp, core.programs) {
-    if (pp->property == p && pp->token != NULL) return TRUE;
-  }
-  return FALSE;
+  return p && p->binding && p->binding->token != NULL;
 }

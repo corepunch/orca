@@ -169,7 +169,7 @@ typedef struct _PROPDEF {
   lpcString_t const* lpEnumArray;
   DWORD dwFlags;
   DWORD dwSize;
-  LPSTR pPrograms[PropertyAttribute_Count];
+  LPSTR pProgram;
   BOOL bHasBinding;
   BOOL bIsUsedInBinding;
 } *LPPROPDEF;

@@ -12,7 +12,7 @@ The animation system is composed of three building blocks:
 |---|---|
 | **`AnimationCurve`** | Describes how a single property changes over time (a sequence of keyframes) |
 | **`AnimationClip`** | Groups one or more `AnimationCurve` children into a named, reusable asset |
-| **`AnimationPlayer`** | Attach-only component that drives a clip on any scene object |
+| **`AnimationPlayer`** | Component component that drives a clip on any scene object |
 
 A typical workflow:
 
@@ -129,7 +129,7 @@ Bool properties are driven by a **rising-edge** heuristic: when the value crosse
 
 ## AnimationPlayer Component
 
-`AnimationPlayer` is an **attach-only** component. Attach it to any scene node:
+`AnimationPlayer` is an **component** component. Attach it to any scene node:
 
 ```xml
 <!-- Inline attachment in a Screen/Node/etc. file -->
@@ -228,7 +228,7 @@ end)
 2. If the name is not found, the existing `Clip` is kept unchanged.
 3. If `Play` is sent without a name (or with an empty name), `Clip` is used as-is.
 
-> **`NumClips`** is an `int` property automatically generated alongside `Clips` because `Clips` is declared with `array="true"` in the module XML. It reflects the number of entries in the array and can be read as `obj.NumClips` from Lua.
+> **`NumClips`** is an `int` property automatically generated alongside `Clips` because `Clips` is declared with `array="true"` in the module `.cgen`. It reflects the number of entries in the array and can be read as `obj.NumClips` from Lua.
 
 ---
 
@@ -245,7 +245,7 @@ obj:animate("Opacity", 0, {
 })
 ```
 
-This internally creates a `PropertyAnimation` attach-only component that removes itself when the tween completes.
+This internally creates a `PropertyAnimation` component component that removes itself when the tween completes.
 
 | Option | Type | Default | Description |
 |---|---|---|---|

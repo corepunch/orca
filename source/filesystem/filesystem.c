@@ -12,6 +12,42 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static struct Object *workspace = NULL;
 
+static struct ThemeValue const _defaultThemeLibrary[] = {
+  { "accent", "#8B5CF6" },
+  { "accent-background", "#2A2145" },
+  { "accent-foreground", "#FFFFFF" },
+  { "panel-background", "#141420" },
+  { "card-background", "#1A1A28" },
+  { "control-background", "#141420" },
+  { "control-foreground", "#F1F5F9" },
+  { "control-border", "#2B3142" },
+  { "control-muted", "#64748B" },
+};
+
+static lpcString_t
+_GetDefaultThemeValue(lpcString_t key)
+{
+  FOR_LOOP(i, (int32_t)(sizeof(_defaultThemeLibrary) / sizeof(_defaultThemeLibrary[0]))) {
+    if (!strcmp(_defaultThemeLibrary[i].Key, key)) {
+      return _defaultThemeLibrary[i].Value;
+    }
+  }
+  return NULL;
+}
+
+static bool_t
+_BuildSamplePath(lpcString_t input, fixedString_t output)
+{
+  if (!input || !*input) {
+    return FALSE;
+  }
+  if (strstr(input, "..")) {
+    return FALSE;
+  }
+  int written = snprintf(output, sizeof(fixedString_t), "samples/%s", input);
+  return written > 0 && written < (int)sizeof(fixedString_t);
+}
+
 // Walk workspace → projects → ThemeLibrary → ThemeGroups → _selectedTheme
 // to resolve a theme variable.  Key must start with '$' (e.g. "$accent").
 // Returns the value string owned by the ResourceEntry, or NULL if not found.
@@ -40,6 +76,12 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
 //          return node->Resources[i].Value;
 //      }
 //    }
+  }
+  {
+    lpcString_t fallback = _GetDefaultThemeValue(name);
+    if (fallback) {
+      return fallback;
+    }
   }
   fprintf(stderr, "FS_GetThemeValue: missing theme key '%s'\n", key);
   return NULL;
@@ -231,6 +273,28 @@ void FS_Shutdown(void) {
 bool_t
 FS_FileExists(lpcString_t path)
 {
+  struct Object *ws = FS_GetWorkspace();
+  if (!path || !*path) {
+    return FALSE;
+  }
+  {
+    FILE *fp = fopen(path, "rb");
+    if (fp) {
+      fclose(fp);
+      return TRUE;
+    }
+    fixedString_t sample_path = {0};
+    if (_BuildSamplePath(path, sample_path)) {
+      fp = fopen(sample_path, "rb");
+      if (fp) {
+        fclose(fp);
+        return TRUE;
+      }
+    }
+  }
+  if (!ws) {
+    return FALSE;
+  }
   FS_FindPackage(search, path) {
     if (_SendMessage(search, Project, FileExists, path + strlen(OBJ_GetName(search)) + 1)) {
       return TRUE;
@@ -244,17 +308,28 @@ FS_LoadFile(lpcString_t szFileName)
 {
   struct file* pFile;
   FILE* fp = NULL;
+  struct Object *ws = FS_GetWorkspace();
   // Try to open as a regular file first
   if ((fp = fopen(szFileName, "rb"))) {
     pFile = _ReadOnDisk(fp);
     fclose(fp);
     return pFile;
   }
-  if (!FS_GetWorkspace()) {
-    return NULL;
+  {
+    fixedString_t sample_path = {0};
+    if (_BuildSamplePath(szFileName, sample_path)) {
+      if ((fp = fopen(sample_path, "rb"))) {
+        pFile = _ReadOnDisk(fp);
+        fclose(fp);
+        return pFile;
+      }
+    }
   }
 
   // If that fails, try to find it in loaded packages
+  if (!ws) {
+    return NULL;
+  }
   FS_FindPackage(package, szFileName) {
     if ((pFile = (struct file*)_SendMessage(package, Project, OpenFile, szFileName + strlen(OBJ_GetName(package)) + 1))) {
       return pFile;

@@ -1,4 +1,4 @@
-// Auto-generated from geometry.xml by tools/templates/properties.php
+// Auto-generated from geometry.cgen by tools/codegen/plugins/properties.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __GEOMETRY_PROPERTIES_H__
 #define __GEOMETRY_PROPERTIES_H__

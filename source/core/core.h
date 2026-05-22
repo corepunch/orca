@@ -1,4 +1,4 @@
-// Auto-generated from core.xml by tools/templates/header.php
+// Auto-generated from core.cgen by tools/codegen/plugins/header.c
 // DO NOT EDIT — run 'cd tools && make' to regenerate.
 #ifndef __CORE_H__
 #define __CORE_H__
@@ -11,6 +11,7 @@ typedef struct lua_State lua_State;
 struct localization;
 struct game;
 struct Property;
+struct token;
 struct lua_State;
 struct style_class_selector;
 
@@ -38,6 +39,7 @@ typedef struct StyleController_ThemeChangedEventArgs StyleController_ThemeChange
 typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,* StyleController_AddClassMsgPtr;
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
+typedef struct Binding_CompileEventArgs Binding_CompileMsg_t,* Binding_CompileMsgPtr;
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
@@ -109,24 +111,6 @@ typedef enum BindingMode {
 ORCA_API const char *BindingModeToString(enum BindingMode value);
 ORCA_API enum BindingMode luaX_checkBindingMode(lua_State *L, int idx);
 ORCA_API void luaX_pushBindingMode(lua_State *L, enum BindingMode value);
-
-/// @brief Attributes that can be applied to properties for binding purposes.
-/** PropertyAttribute enum */
-typedef enum PropertyAttribute {
-	kPropertyAttributeWholeProperty, ///< Default binding to the whole property
-	kPropertyAttributeColorR, ///< Bind to the red channel of a color property
-	kPropertyAttributeColorG, ///< Bind to the green channel of a color property
-	kPropertyAttributeColorB, ///< Bind to the blue channel of a color property
-	kPropertyAttributeColorA, ///< Bind to the alpha channel of a color property
-	kPropertyAttributeVectorX, ///< Bind to the X component of a vector property
-	kPropertyAttributeVectorY, ///< Bind to the Y component of a vector property
-	kPropertyAttributeVectorZ, ///< Bind to the Z component of a vector property
-	kPropertyAttributeVectorW, ///< Bind to the W component of a vector property
-} ePropertyAttribute_t;
-#define PropertyAttribute_Count 9
-ORCA_API const char *PropertyAttributeToString(enum PropertyAttribute value);
-ORCA_API enum PropertyAttribute luaX_checkPropertyAttribute(lua_State *L, int idx);
-ORCA_API void luaX_pushPropertyAttribute(lua_State *L, enum PropertyAttribute value);
 
 /// @brief Defines how an animation clip repeats after reaching its end.
 /** AnimationMode enum */
@@ -312,7 +296,7 @@ ORCA_API void
 core_FlushQueue(struct lua_State*);
 
 /// @brief Returns the number of live engine objects.
-ORCA_API void
+ORCA_API int
 core_GetObjectCount(struct lua_State*);
 
 
@@ -422,7 +406,7 @@ OBJ_FindExplicitProperty(struct Object*, const char*);
 
 /// @brief Attaches a property program to the specified property
 ORCA_API bool_t
-OBJ_AttachPropertyProgram(struct Object*, const char*, const char*, enum PropertyAttribute, enum BindingMode, bool_t);
+OBJ_AttachPropertyProgram(struct Object*, const char*, const char*, enum BindingMode, bool_t);
 
 /// @brief Finds a property by navigating a hierarchical path
 ORCA_API struct Property*
@@ -777,6 +761,11 @@ struct StateManagerController_ControllerChangedEventArgs {
 };
 ORCA_API void luaX_pushStateManagerController_ControllerChangedEventArgs(lua_State *L, struct StateManagerController_ControllerChangedEventArgs const* data);
 ORCA_API struct StateManagerController_ControllerChangedEventArgs* luaX_checkStateManagerController_ControllerChangedEventArgs(lua_State *L, int idx);
+/** Binding_CompileEventArgs struct */
+struct Binding_CompileEventArgs {
+};
+ORCA_API void luaX_pushBinding_CompileEventArgs(lua_State *L, struct Binding_CompileEventArgs const* data);
+ORCA_API struct Binding_CompileEventArgs* luaX_checkBinding_CompileEventArgs(lua_State *L, int idx);
 /** Trigger_TriggeredEventArgs struct */
 struct Trigger_TriggeredEventArgs {
 	struct Trigger* Trigger;
@@ -903,7 +892,7 @@ struct AnimationPlayer {
 ORCA_API void luaX_pushAnimationPlayer(lua_State *L, struct AnimationPlayer const* AnimationPlayer);
 ORCA_API struct AnimationPlayer* luaX_checkAnimationPlayer(lua_State *L, int idx);
 
-/// @brief Attach-only component that tweens one property value to a target, then self-destructs.
+/// @brief Component that tweens one property value to a target, then self-destructs.
 /** PropertyAnimation component */
 struct PropertyAnimation {
 	const char* Property; ///< Property to animate
@@ -973,7 +962,7 @@ struct State {
 ORCA_API void luaX_pushState(lua_State *L, struct State const* State);
 ORCA_API struct State* luaX_checkState(lua_State *L, int idx);
 
-/// @brief Attach-only component that applies state-driven property overrides from a StateManager object.
+/// @brief Component that applies state-driven property overrides from a StateManager object.
 /** StateManagerController component */
 struct StateManagerController {
 	struct StateManager* StateManager; ///< The StateManager object that supplies the StateGroup definitions. Setting this property automatically marks all tracked controller properties.
@@ -1005,6 +994,27 @@ struct DataObject {
 };
 ORCA_API void luaX_pushDataObject(lua_State *L, struct DataObject const* DataObject);
 ORCA_API struct DataObject* luaX_checkDataObject(lua_State *L, int idx);
+
+/// @brief Declarative property binding object that attaches a property program to its parent object.
+/** Binding component */
+struct Binding {
+	const char* Expression; ///< Binding expression text. If omitted, object text content is used.
+	enum BindingMode Mode; ///< Binding mode (Expression, OneWay, TwoWay, OneWayToSource).
+	bool_t Enabled; ///< When false, stores the expression but does not compile/execute it.
+	struct Property* property; ///< Resolved target property slot.
+	struct token* token; ///< Compiled VM token tree for this binding expression.
+	uint32_t updateFrame; ///< Last frame this binding executed.
+	event_t Compile;
+};
+ORCA_API void luaX_pushBinding(lua_State *L, struct Binding const* Binding);
+ORCA_API struct Binding* luaX_checkBinding(lua_State *L, int idx);
+
+/// @brief Legacy explicit-expression binding element alias.
+/** BindingExpression component */
+struct BindingExpression {
+};
+ORCA_API void luaX_pushBindingExpression(lua_State *L, struct BindingExpression const* BindingExpression);
+ORCA_API struct BindingExpression* luaX_checkBindingExpression(lua_State *L, int idx);
 
 /// @brief Base class for event-driven actions within the UI system
 /** Trigger component */
@@ -1050,11 +1060,11 @@ struct Setter {
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 
-/// @brief Opens a named popup as a modal child of the current screen
+/// @brief Loads a popup template and shows it modally
 /** ShowModalAction component */
 struct ShowModalAction {
 	struct Trigger* Trigger; ///< Triggering condition or state image
-	const char* Path; ///< Relative path to the popup object that should be shown modally
+	const char* Path; ///< Asset path to the popup template that should be shown modally
 };
 ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
 ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx);
@@ -1094,7 +1104,7 @@ struct Node {
 	struct DataObject* DataContext; ///< Data context (used for data binding, similar to XAML's DataContext).
 	struct ResourceEntry* Resources; ///< Array of resources associated with this node. Can be aliases to objects or other resources.
 	int32_t NumResources;
-	struct Object** Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
+	struct Trigger* Triggers; ///< Array of trigger objects attached to this node. Each trigger can own nested action components.
 	int32_t NumTriggers;
 	long _tags; ///< Calculated tags value
 	event_t UpdateMatrix;
