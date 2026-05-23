@@ -709,6 +709,11 @@ static luaL_Reg _Binding_CompileEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Binding_CompileEventArgs_Properties[] = {
 };
 #define _Binding_CompileEventArgs _Binding_CompileEventArgs_Properties
+static luaL_Reg _Binding_EvaluateEventArgs_Methods[] = { { NULL, NULL } };
+struct PropertyType _Binding_EvaluateEventArgs_Properties[] = {
+	DECL(0x5221f9e8, Binding_EvaluateEventArgs, Property, Property, kDataTypeStruct, .TypeString = "Property"), // Binding_EvaluateEventArgs.Property
+};
+#define _Binding_EvaluateEventArgs _Binding_EvaluateEventArgs_Properties
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Trigger_TriggeredEventArgs_Properties[] = {
 	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
@@ -985,6 +990,7 @@ STRUCT(StyleController_AddClassEventArgs, StyleController_AddClassEventArgs);
 STRUCT(StyleController_AddClassesEventArgs, StyleController_AddClassesEventArgs);
 STRUCT(StateManagerController_ControllerChangedEventArgs, StateManagerController_ControllerChangedEventArgs);
 STRUCT(Binding_CompileEventArgs, Binding_CompileEventArgs);
+STRUCT(Binding_EvaluateEventArgs, Binding_EvaluateEventArgs);
 STRUCT(Trigger_TriggeredEventArgs, Trigger_TriggeredEventArgs);
 STRUCT(Node_UpdateMatrixEventArgs, Node_UpdateMatrixEventArgs);
 STRUCT(Node_LoadViewEventArgs, Node_LoadViewEventArgs);
@@ -1327,11 +1333,13 @@ struct DataObject* luaX_checkDataObject(lua_State *L, int idx) {
 }
 REGISTER_CLASS(DataObject, 0);
 HANDLER(Binding, Binding, Compile);
+HANDLER(Binding, Binding, Evaluate);
 static struct PropertyType const BindingProperties[kBindingNumProperties] = {
 	DECL(0xeb81bd0b, Binding, Expression, Expression, kDataTypeString), // Binding.Expression
 	DECL(0x534e7732, Binding, Mode, Mode, kDataTypeEnum, .EnumValues = _BindingMode), // Binding.Mode
 	DECL(0x9c86e43e, Binding, Enabled, Enabled, kDataTypeBool), // Binding.Enabled
 	DECL(0x52fafc3e, Binding, Compile, Compile, kDataTypeEvent, .TypeString = "Binding_CompileEventArgs"), // Binding.Compile
+	DECL(0xa35bdf2a, Binding, Evaluate, Evaluate, kDataTypeEvent, .TypeString = "Binding_EvaluateEventArgs"), // Binding.Evaluate
 };
 static struct Binding BindingDefaults = {
 		
@@ -1340,6 +1348,7 @@ static struct Binding BindingDefaults = {
 LRESULT BindingProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 		case ID_Binding_Compile: return Binding_Compile(object, cmp, wparm, lparm); // Binding.Compile
+		case ID_Binding_Evaluate: return Binding_Evaluate(object, cmp, wparm, lparm); // Binding.Evaluate
 	}
 	return FALSE;
 }
@@ -1730,6 +1739,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	REGISTER_MESSAGE_TYPE(ID_StyleController_AddClasses, "StyleController.AddClasses", StyleController_AddClassesEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_StateManagerController_ControllerChanged, "StateManagerController.ControllerChanged", StateManagerController_ControllerChangedEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Binding_Compile, "Binding.Compile", Binding_CompileEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Binding_Evaluate, "Binding.Evaluate", Binding_EvaluateEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Trigger_Triggered, "Trigger.Triggered", Trigger_TriggeredEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Node_UpdateMatrix, "Node.UpdateMatrix", Node_UpdateMatrixEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Node_LoadView, "Node.LoadView", Node_LoadViewEventArgs);
@@ -1792,6 +1802,7 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 		lua_setfield(L, ((void)luaopen_orca_StyleController_AddClassesEventArgs(L), -2), "StyleController_AddClassesEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_StateManagerController_ControllerChangedEventArgs(L), -2), "StateManagerController_ControllerChangedEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Binding_CompileEventArgs(L), -2), "Binding_CompileEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Binding_EvaluateEventArgs(L), -2), "Binding_EvaluateEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Trigger_TriggeredEventArgs(L), -2), "Trigger_TriggeredEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Node_UpdateMatrixEventArgs(L), -2), "Node_UpdateMatrixEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Node_LoadViewEventArgs(L), -2), "Node_LoadViewEventArgs");

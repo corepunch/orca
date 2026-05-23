@@ -34,4 +34,10 @@ struct file *_ReadOnDisk(FILE *fp);
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path);
 
+ORCA_API struct Object *
+FS_LoadObjectFromLisp(const char *path);
+
+ORCA_API struct Object *
+FS_LoadObjectFromLispString(const char *lisp_string);
+
 #endif

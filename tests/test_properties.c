@@ -686,6 +686,12 @@ static void test_runtime_token_create_arithmetic(void) {
     }
 }
 
+static void test_runtime_token_create_lisp_if(void) {
+    WITH(struct token, prog, Token_Create("(if 1 10 20)"), Token_Release) {
+        EXPECT(prog != NULL);
+    }
+}
+
 static void test_runtime_run_int_constant(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct vm_register r = {0};
@@ -853,6 +859,14 @@ static void test_runtime_if_false_branch(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct vm_register r = {0};
         RUN_PROG(obj, "IF(0, 10, 20)", &r);
+        EXPECT((int)r.value[0] == 20);
+    }
+}
+
+static void test_runtime_if_lisp_branch(void) {
+    WITH(struct Object, obj, make_rt_object(), destroy_object) {
+        struct vm_register r = {0};
+        RUN_PROG(obj, "(if 0 10 20)", &r);
         EXPECT((int)r.value[0] == 20);
     }
 }
@@ -1354,6 +1368,7 @@ int main(void) {
         DECL_TEST(test_runtime_token_create_float),
         DECL_TEST(test_runtime_token_create_string),
         DECL_TEST(test_runtime_token_create_arithmetic),
+        DECL_TEST(test_runtime_token_create_lisp_if),
         DECL_TEST(test_runtime_run_int_constant),
         DECL_TEST(test_runtime_run_float_constant),
         DECL_TEST(test_runtime_run_string_constant),
@@ -1367,6 +1382,7 @@ int main(void) {
         DECL_TEST(test_runtime_string_concat_program),
         DECL_TEST(test_runtime_if_true_branch),
         DECL_TEST(test_runtime_if_false_branch),
+        DECL_TEST(test_runtime_if_lisp_branch),
         DECL_TEST(test_runtime_if_string_branch),
         DECL_TEST(test_object_refcount_direct),
         DECL_TEST(test_object_property_holds_reference),

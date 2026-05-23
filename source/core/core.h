@@ -40,6 +40,7 @@ typedef struct StyleController_AddClassEventArgs StyleController_AddClassMsg_t,*
 typedef struct StyleController_AddClassesEventArgs StyleController_AddClassesMsg_t,* StyleController_AddClassesMsgPtr;
 typedef struct StateManagerController_ControllerChangedEventArgs StateManagerController_ControllerChangedMsg_t,* StateManagerController_ControllerChangedMsgPtr;
 typedef struct Binding_CompileEventArgs Binding_CompileMsg_t,* Binding_CompileMsgPtr;
+typedef struct Binding_EvaluateEventArgs Binding_EvaluateMsg_t,* Binding_EvaluateMsgPtr;
 typedef struct Trigger_TriggeredEventArgs Trigger_TriggeredMsg_t,* Trigger_TriggeredMsgPtr;
 typedef struct Node_UpdateMatrixEventArgs Node_UpdateMatrixMsg_t,* Node_UpdateMatrixMsgPtr;
 typedef struct Node_LoadViewEventArgs Node_LoadViewMsg_t,* Node_LoadViewMsgPtr;
@@ -766,6 +767,12 @@ struct Binding_CompileEventArgs {
 };
 ORCA_API void luaX_pushBinding_CompileEventArgs(lua_State *L, struct Binding_CompileEventArgs const* data);
 ORCA_API struct Binding_CompileEventArgs* luaX_checkBinding_CompileEventArgs(lua_State *L, int idx);
+/** Binding_EvaluateEventArgs struct */
+struct Binding_EvaluateEventArgs {
+	struct Property* Property; ///< Target property to import evaluation result into.
+};
+ORCA_API void luaX_pushBinding_EvaluateEventArgs(lua_State *L, struct Binding_EvaluateEventArgs const* data);
+ORCA_API struct Binding_EvaluateEventArgs* luaX_checkBinding_EvaluateEventArgs(lua_State *L, int idx);
 /** Trigger_TriggeredEventArgs struct */
 struct Trigger_TriggeredEventArgs {
 	struct Trigger* Trigger;
@@ -1002,9 +1009,11 @@ struct Binding {
 	enum BindingMode Mode; ///< Binding mode (Expression, OneWay, TwoWay, OneWayToSource).
 	bool_t Enabled; ///< When false, stores the expression but does not compile/execute it.
 	struct Property* property; ///< Resolved target property slot.
+	struct Object* owner; ///< Binding holder object used for message-driven evaluation (optional in raw fallback mode).
 	struct token* token; ///< Compiled VM token tree for this binding expression.
 	uint32_t updateFrame; ///< Last frame this binding executed.
 	event_t Compile;
+	event_t Evaluate;
 };
 ORCA_API void luaX_pushBinding(lua_State *L, struct Binding const* Binding);
 ORCA_API struct Binding* luaX_checkBinding(lua_State *L, int idx);

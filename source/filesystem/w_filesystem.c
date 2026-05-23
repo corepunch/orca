@@ -378,10 +378,21 @@ static struct Object* _css_file_loader(int argc, const char* argv[]) {
   return (argc > 0) ? FS_LoadObjectFromCss(argv[0]) : NULL;
 }
 
+static struct Object* _lisp_file_loader(int argc, const char* argv[]) {
+  return (argc > 0) ? FS_LoadObjectFromLisp(argv[0]) : NULL;
+}
+
+static int f_loadObjectFromLispString(lua_State* L) {
+  const char* lisp_string = luaL_checkstring(L, 1);
+  struct Object* result = FS_LoadObjectFromLispString(lisp_string);
+  luaX_pushObject(L, result);
+  return 1;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
-  OBJ_RegisterFileLoader(".xml", _xml_file_loader);
   OBJ_RegisterFileLoader(".css", _css_file_loader);
+  OBJ_RegisterFileLoader(".lisp", _lisp_file_loader);
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
@@ -404,6 +415,9 @@ void on_filesystem_module_registered(lua_State* L)
   
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
+
+  lua_pushcfunction(L, f_loadObjectFromLispString);
+  lua_setfield(L, -2, "loadObjectFromLispString");
   
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");

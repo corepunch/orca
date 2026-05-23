@@ -197,12 +197,14 @@ enum LocaleProperties {
 #define ID_Binding_Mode 0xe206dce7 // Binding.Mode
 #define ID_Binding_Enabled 0x223361a5 // Binding.Enabled
 #define ID_Binding_Compile 0xf02fb971 // Binding.Compile
-#define kBindingNumProperties 4
+#define ID_Binding_Evaluate 0x9d397507 // Binding.Evaluate
+#define kBindingNumProperties 5
 enum BindingProperties {
 	kBindingExpression,
 	kBindingMode,
 	kBindingEnabled,
 	kBindingCompile,
+	kBindingEvaluate,
 };
 // BindingExpression
 #define ID_BindingExpression 0xddf6d2b0
@@ -651,6 +653,9 @@ enum NodeProperties {
 #define ID_StateManagerController_ControllerChangedEventArgs_Property 0x1ed8c3b6 // StateManagerController_ControllerChangedEventArgs.Property
 #define ID_Binding_CompileEventArgs 0x068eacf9
 
+#define ID_Binding_EvaluateEventArgs 0x712631ad
+
+#define ID_Binding_EvaluateEventArgs_Property 0xf93f76b4 // Binding_EvaluateEventArgs.Property
 #define ID_Trigger_TriggeredEventArgs 0x86976046
 
 #define ID_Trigger_TriggeredEventArgs_Trigger 0xa8841074 // Trigger_TriggeredEventArgs.Trigger

@@ -42,5 +42,6 @@ PROP_HasHandler(struct Property const *property)
 struct Object *PROP_GetObjectValue(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
+bool_t PROP_EvaluateBinding(struct Property *property, struct Binding *binding);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

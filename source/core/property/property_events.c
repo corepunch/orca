@@ -66,8 +66,28 @@ PROP_AttachProgram(struct Property *p,
     SafeSet(p->binding->token, program, Token_Release);
     return;
   }
-  p->binding = ZeroAlloc(sizeof(struct Binding));
+  struct Object *binding_object = NULL;
+  if (OBJ_FindClassW(ID_Binding)) {
+    binding_object = OBJ_Create(ID_Binding);
+    if (binding_object) {
+      OBJ_AddRef(binding_object);
+      p->binding = GetBinding(binding_object);
+    }
+  }
+  if (!p->binding) {
+    if (binding_object) {
+      OBJ_ReleaseRef(binding_object);
+      binding_object = NULL;
+    }
+    p->binding = ZeroAlloc(sizeof(struct Binding));
+    if (!p->binding) {
+      SafeDelete(program, Token_Release);
+      return;
+    }
+  }
+
   p->binding->property = p;
+  p->binding->owner = binding_object;
   p->binding->token = program;
 
   if (!p->inBindingIndex) {

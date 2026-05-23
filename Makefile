@@ -338,6 +338,9 @@ test-tab-interaction: app copyshare
 test-node: app copyshare
 	$(TARGET) -test=tests/test_node.lua
 
+test-lisp: app copyshare
+	$(TARGET) -test=tests/test_lisp.lua
+
 test: test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node
 	$(TARGET) -test=tests/test.xml
 
@@ -367,5 +370,6 @@ test-headless: unite test-properties test-styles test-filesystem test-message-re
 	$(TARGET) -test=tests/test_parsers.lua
 	$(TARGET) -test=tests/test_object_hierarchy.lua
 	$(TARGET) -test=tests/test_tabbar.lua
+	$(TARGET) -test=tests/test_lisp.lua
 
 include Makefile.webgl
