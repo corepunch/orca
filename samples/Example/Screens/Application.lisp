@@ -44,17 +44,17 @@
           (Node2D Name="MetricSpacer" Height=40)
           (Grid Name="Metrics" Columns="auto auto auto" Spacing=16
             (LayerPrefabPlaceholder Name="MetricUsers"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
+                                    PlaceholderTemplate="Example/Prefabs/Metric.lisp"
                                     Card.Title="2.4 M"
                                     Card.Subtitle="Active users"
                                     Card.PrimaryColor="$accent")
             (LayerPrefabPlaceholder Name="MetricUptime"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
+                                    PlaceholderTemplate="Example/Prefabs/Metric.lisp"
                                     Card.Title="99.9 %"
                                     Card.Subtitle="Uptime SLA"
                                     Card.PrimaryColor="$accent-green")
             (LayerPrefabPlaceholder Name="MetricFrame"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
+                                    PlaceholderTemplate="Example/Prefabs/Metric.lisp"
                                     Card.Title="1.2 ms"
                                     Card.Subtitle="Frame time"
                                     Card.PrimaryColor="$accent-blue")))
