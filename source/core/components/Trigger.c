@@ -67,8 +67,7 @@ _BindingGetIntProperty(struct Object *obj, lpcString_t name, int fallback)
 static LRESULT
 _BindingCompileToProperty(struct Object *hObject,
                          struct Binding *binding,
-                         struct Property *property,
-                         bool_t normalize_markup)
+                         struct Property *property)
 {
   if (!property) {
     Con_Error("Binding.Compile requires a target property in lParam");
@@ -89,23 +88,8 @@ _BindingCompileToProperty(struct Object *hObject,
     _BindingGetIntProperty(hObject, "Mode", kBindingModeExpression);
   bool_t enabled = _BindingGetIntProperty(hObject, "Enabled", TRUE) ? TRUE : FALSE;
 
-  lpcString_t final_expr = expr;
-  fixedString_t normalized_expr = {0};
-  if (normalize_markup) {
-    size_t len = strlen(expr);
-    if (len > 9 && !strncmp(expr, "{Binding ", 9) && expr[len - 1] == '}') {
-      /* {Binding X} → {X}; runtime default resolves X relative to template root */
-      snprintf(normalized_expr, sizeof(normalized_expr), "{%.*s}", (int)(len - 10), expr + 9);
-      final_expr = normalized_expr;
-    } else if (*expr != '{') {
-      /* Bare path X → {X}; runtime default resolves relative to template root */
-      snprintf(normalized_expr, sizeof(normalized_expr), "{%s}", expr);
-      final_expr = normalized_expr;
-    }
-  }
-
   binding->property = property;
-  if (!PROP_SetBinding(property, final_expr, mode, enabled)) {
+  if (!PROP_SetBinding(property, expr, mode, enabled)) {
     Con_Error("Binding failed for property '%s' on '%s'",
               PROP_GetName(property),
               OBJ_GetClassName(PROP_GetObject(property)));
@@ -155,16 +139,14 @@ HANDLER(Binding, Binding, Compile)
 {
   return _BindingCompileToProperty(hObject,
                                    pBinding,
-                                   (struct Property *)pCompile,
-                                   TRUE);
+                                   (struct Property *)pCompile);
 }
 
 HANDLER(BindingExpression, Binding, Compile)
 {
   return _BindingCompileToProperty(hObject,
                                    (struct Binding *)pBindingExpression,
-                                   (struct Property *)pCompile,
-                                   FALSE);
+                                   (struct Property *)pCompile);
 }
 
 HANDLER(Binding, Binding, Evaluate)
