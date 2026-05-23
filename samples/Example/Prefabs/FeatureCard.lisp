@@ -1,0 +1,7 @@
+(StackView Name="FeatureCard" Direction="Vertical" Spacing=10 BackgroundColor="$card-background" Padding=28
+  (TextBlock Name="FeatureCardIcon" FontSize=20 Width=44 Height=40
+             TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+             Text="{../Card.Icon}" ForegroundColor="{../Card.PrimaryColor}" BackgroundColor="{../Card.IconBackground}")
+  (Node2D Name="FeatureCardSpacer" Height=8)
+  (TextBlock Name="FeatureCardTitle" FontSize=16 ForegroundColor="$text-primary" Text="{../Card.Title}")
+  (TextBlock Name="FeatureCardBody" FontSize=13 ForegroundColor="$text-dim" WordWrap="true" Text="{../Card.Body}"))

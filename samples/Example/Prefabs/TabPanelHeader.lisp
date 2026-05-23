@@ -1,0 +1,3 @@
+(StackView Name="TabPanelHeader" Direction="Horizontal" Spacing=12 AlignItems="Center"
+  (ImageView Name="TabPanelHeaderIcon" Width=26 Height=26 Source="{Card.Icon}" ForegroundColor="{Card.PrimaryColor}")
+  (TextBlock Name="TabPanelHeaderTitle" Text="{Card.Title}" FontSize=24 ForegroundColor="$text-primary"))

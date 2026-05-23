@@ -44,17 +44,17 @@
           (Node2D Name="MetricSpacer" Height=40)
           (Grid Name="Metrics" Columns="auto auto auto" Spacing=16
             (LayerPrefabPlaceholder Name="MetricUsers"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic"
+                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
                                     Card.Title="2.4 M"
                                     Card.Subtitle="Active users"
                                     Card.PrimaryColor="$accent")
             (LayerPrefabPlaceholder Name="MetricUptime"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic"
+                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
                                     Card.Title="99.9 %"
                                     Card.Subtitle="Uptime SLA"
                                     Card.PrimaryColor="$accent-green")
             (LayerPrefabPlaceholder Name="MetricFrame"
-                                    PlaceholderTemplate="Example/Prefabs/Mertic"
+                                    PlaceholderTemplate="Example/Prefabs/Mertic.lisp"
                                     Card.Title="1.2 ms"
                                     Card.Subtitle="Frame time"
                                     Card.PrimaryColor="$accent-blue")))
@@ -73,37 +73,37 @@
           (:bind Target="Grid.Columns"
             (if (step 640 (bind "Node.ActualWidth")) "auto auto auto" "auto auto"))
           (LayerPrefabPlaceholder Name="SignalXml"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/code.svg?width=28&type=mask"
                                   Card.Title="XML-first screens"
                                   Card.Body="Layouts stay readable."
                                   Card.PrimaryColor="$accent")
           (LayerPrefabPlaceholder Name="SignalLua"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/file.svg?width=28&type=mask"
                                   Card.Title="Lua beside the view"
                                   Card.Body="Behavior stays close."
                                   Card.PrimaryColor="$accent-blue")
           (LayerPrefabPlaceholder Name="SignalMoon"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/moon.svg?width=28&type=mask"
                                   Card.Title="MoonScript when it grows"
                                   Card.Body="Less noise, same runtime."
                                   Card.PrimaryColor="$text-secondary")
           (LayerPrefabPlaceholder Name="SignalShip"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/globe.svg?width=28&type=mask"
                                   Card.Title="Desktop, mobile, web"
                                   Card.Body="One screen, many targets."
                                   Card.PrimaryColor="$accent-green")
           (LayerPrefabPlaceholder Name="SignalSpeed"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/zap.svg?width=28&type=mask"
                                   Card.Title="Fast edit-run-refine"
                                   Card.Body="See changes immediately."
                                   Card.PrimaryColor="$accent-amber")
           (LayerPrefabPlaceholder Name="SignalScale"
-                                  PlaceholderTemplate="Example/Prefabs/SignalCard"
+                                  PlaceholderTemplate="Example/Prefabs/SignalCard.lisp"
                                   Card.Icon="Example/Icons/cpu.svg?width=28&type=mask"
                                   Card.Title="Built to scale"
                                   Card.Body="Same UI, larger ambitions."
@@ -118,7 +118,7 @@
           (StackView Name="xml" Direction="Vertical" Spacing=24
                      BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="XmlPanelHeader"
-                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader.lisp"
                                     Card.Icon="Example/Icons/grid.svg?width=26&type=mask"
                                     Card.Title="XML reads like a blueprint"
                                     Card.PrimaryColor="$accent")
@@ -143,37 +143,37 @@
                 (TextBlock Name="XmlModelHeading" Text="The structure stays honest"
                            FontSize=16 ForegroundColor="$text-primary")
                 (LayerPrefabPlaceholder Name="XmlModelLine1"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/monitor.svg?width=20&type=mask"
                                         Card.Title="Screen"
                                         PaddingLeft=0
                                         Card.PrimaryColor="$accent")
                 (LayerPrefabPlaceholder Name="XmlModelLine2"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/panel-top.svg?width=20&type=mask"
                                         Card.Title="TabView"
                                         PaddingLeft=16
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine3"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/grid.svg?width=20&type=mask"
                                         Card.Title="Grid"
                                         PaddingLeft=32
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine4"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/layers.svg?width=20&type=mask"
                                         Card.Title="StackView"
                                         PaddingLeft=32
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine5"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/image.svg?width=20&type=mask"
                                         Card.Title="ImageView"
                                         PaddingLeft=48
                                         Card.PrimaryColor="$text-secondary")
                 (LayerPrefabPlaceholder Name="XmlModelLine6"
-                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode"
+                                        PlaceholderTemplate="Example/Prefabs/XmlModelNode.lisp"
                                         Card.Icon="Example/Icons/type.svg?width=20&type=mask"
                                         Card.Title="TextBlock"
                                         PaddingLeft=48
@@ -181,7 +181,7 @@
           (StackView Name="lua" Direction="Vertical" Spacing=24
                      BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="LuaPanelHeader"
-                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader.lisp"
                                     Card.Icon="Example/Icons/code.svg?width=26&type=mask"
                                     Card.Title="Lua stays close to the surface"
                                     Card.PrimaryColor="$accent-blue")
@@ -190,21 +190,21 @@
                        FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
             (Grid Name="LuaGrid" Columns="auto auto auto" Spacing=16
               (LayerPrefabPlaceholder Name="LuaCard1"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/mouse-pointer-click.svg?width=40&type=mask"
                                       Card.Title="Input"
                                       Card.Body="Tap, click, and selection handling can sit right beside the view that needs it."
                                       Card.PrimaryColor="$accent"
                                       Card.IconBackground="$icon-bg-purple")
               (LayerPrefabPlaceholder Name="LuaCard2"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/database.svg?width=40&type=mask"
                                       Card.Title="State"
                                       Card.Body="Small state objects stay local, so the screen remains easy to reason about."
                                       Card.PrimaryColor="$accent-blue"
                                       Card.IconBackground="$icon-bg-blue")
               (LayerPrefabPlaceholder Name="LuaCard3"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/link-2.svg?width=40&type=mask"
                                       Card.Title="Binding"
                                       Card.Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."
@@ -213,7 +213,7 @@
           (StackView Name="moon" Direction="Vertical" Spacing=24
                      BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="MoonPanelHeader"
-                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader.lisp"
                                     Card.Icon="Example/Icons/moon.svg?width=26&type=mask"
                                     Card.Title="MoonScript trims the noise"
                                     Card.PrimaryColor="$text-secondary")
@@ -248,7 +248,7 @@
           (StackView Name="deploy" Direction="Vertical" Spacing=24
                      BackgroundColor="$surface-deep" Padding=32
             (LayerPrefabPlaceholder Name="DeployPanelHeader"
-                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
+                                    PlaceholderTemplate="Example/Prefabs/TabPanelHeader.lisp"
                                     Card.Icon="Example/Icons/globe.svg?width=26&type=mask"
                                     Card.Title="One UI, many targets"
                                     Card.PrimaryColor="$accent-green")
@@ -257,21 +257,21 @@
                        FontSize=14 ForegroundColor="$text-muted" WordWrap="true")
             (Grid Name="DeployGrid" Columns="auto auto auto" Spacing=16
               (LayerPrefabPlaceholder Name="DeployCard1"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/monitor.svg?width=40&type=mask"
                                       Card.Title="Desktop"
                                       Card.Body="Best when you want denser information, more breathing room, and precision input."
                                       Card.PrimaryColor="$accent"
                                       Card.IconBackground="$icon-bg-purple")
               (LayerPrefabPlaceholder Name="DeployCard2"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/smartphone.svg?width=40&type=mask"
                                       Card.Title="Mobile"
                                       Card.Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."
                                       Card.PrimaryColor="$accent-green"
                                       Card.IconBackground="$icon-bg-green")
               (LayerPrefabPlaceholder Name="DeployCard3"
-                                      PlaceholderTemplate="Example/Prefabs/IconCard"
+                                      PlaceholderTemplate="Example/Prefabs/IconCard.lisp"
                                       Card.Icon="Example/Icons/globe.svg?width=40&type=mask"
                                       Card.Title="Web"
                                       Card.Body="The same screen model can carry into browser workflows without being rewritten."
@@ -279,11 +279,11 @@
                                       Card.IconBackground="$icon-bg-blue"))
             (Grid Name="DeployImages" Columns="auto auto" Spacing=12
               (LayerPrefabPlaceholder Name="DeployImage1"
-                                      PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
+                                      PlaceholderTemplate="Example/Prefabs/ImageCaptionCard.lisp"
                                       Card.Image="Example/Images/orca-tab-city"
                                       Card.Title="City glow")
               (LayerPrefabPlaceholder Name="DeployImage2"
-                                      PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
+                                      PlaceholderTemplate="Example/Prefabs/ImageCaptionCard.lisp"
                                       Card.Image="Example/Images/orca-tab-lights"
                                       Card.Title="Night light"))
             (StackView Name="DeployCommandLink" Direction="Horizontal" Spacing=12
@@ -299,25 +299,25 @@
                            FontSize=14 ForegroundColor="$text-primary" WordWrap="true"))))))
       (Grid Name="FeatureSection" Columns="auto auto auto auto" Spacing=20
         (LayerPrefabPlaceholder Name="FeatureXmlCard"
-                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard.lisp"
                                 Card.Icon="Example/Icons/layers.svg?width=40&type=mask"
                                 Card.Title="XML stays readable"
                                 Card.Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."
                                 Card.PrimaryColor="$accent")
         (LayerPrefabPlaceholder Name="FeatureLuaCard"
-                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard.lisp"
                                 Card.Icon="Example/Icons/monitor.svg?width=40&type=mask"
                                 Card.Title="Lua stays close"
                                 Card.Body="Interactions, bindings, and state can live next to the screen that owns them."
                                 Card.PrimaryColor="$accent-blue")
         (LayerPrefabPlaceholder Name="FeatureShipCard"
-                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard.lisp"
                                 Card.Icon="Example/Icons/globe.svg?width=40&type=mask"
                                 Card.Title="Ships everywhere"
                                 Card.Body="The same UI can move across desktop, mobile, and web-friendly targets."
                                 Card.PrimaryColor="$accent-green")
         (LayerPrefabPlaceholder Name="FeatureSpeedCard"
-                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
+                                PlaceholderTemplate="Example/Prefabs/FeatureImageCard.lisp"
                                 Card.Icon="Example/Icons/zap.svg?width=40&type=mask"
                                 Card.Title="Fast iteration"
                                 Card.Body="Edit, reload, and refine quickly without losing the overall shape of the interface."
@@ -333,12 +333,12 @@
                    FontSize=14 ForegroundColor="$text-muted")
         (Grid Name="GalleryGrid" Columns="auto auto" Spacing=16
           (LayerPrefabPlaceholder Name="GalleryCard1"
-                                  PlaceholderTemplate="Example/Prefabs/GalleryCard"
+                                  PlaceholderTemplate="Example/Prefabs/GalleryCard.lisp"
                                   Card.Image="Example/Images/lake"
                                   Card.Title="Lake Scene"
                                   Card.Subtitle="Real-time reflections and water surface rendered at 60 fps.")
           (LayerPrefabPlaceholder Name="GalleryCard2"
-                                  PlaceholderTemplate="Example/Prefabs/GalleryCard"
+                                  PlaceholderTemplate="Example/Prefabs/GalleryCard.lisp"
                                   Card.Image="Example/Images/peacock"
                                   Card.Title="Peacock"
                                   Card.Subtitle="High-fidelity texture sampling with anisotropic filtering.")))
@@ -356,22 +356,22 @@
             (if (step 640 (bind "Node.ActualWidth"))
                 "auto auto auto auto" "auto auto"))
           (LayerPrefabPlaceholder Name="Step1"
-                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep.lisp"
                                   Card.Title="01" Card.Subtitle="Define Layout"
                                   Card.PrimaryColor="$accent"
                                   Card.Body="Write your screen as an XML file with familiar Grid and StackView containers.")
           (LayerPrefabPlaceholder Name="Step2"
-                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep.lisp"
                                   Card.Title="02" Card.Subtitle="Load Assets"
                                   Card.PrimaryColor="$accent-blue"
                                   Card.Body="Images, fonts, and data files are streamed from packages at runtime.")
           (LayerPrefabPlaceholder Name="Step3"
-                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep.lisp"
                                   Card.Title="03" Card.Subtitle="Script Logic"
                                   Card.PrimaryColor="$accent-green"
                                   Card.Body="Attach Lua scripts to any component for interactivity and data binding.")
           (LayerPrefabPlaceholder Name="Step4"
-                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep"
+                                  PlaceholderTemplate="Example/Prefabs/WorkflowStep.lisp"
                                   Card.Title="04" Card.Subtitle="Ship"
                                   Card.PrimaryColor="$accent-amber"
                                   Card.Body="Deploy to desktop, mobile, or WebGL with a single build command.")))
@@ -383,17 +383,17 @@
                    FontSize=28 ForegroundColor="$text-primary")
         (Grid Name="TestimonialsGrid" Columns="auto auto auto" Spacing=20
           (LayerPrefabPlaceholder Name="Quote1"
-                                  PlaceholderTemplate="Example/Prefabs/Quote"
+                                  PlaceholderTemplate="Example/Prefabs/Quote.lisp"
                                   Card.PrimaryColor="$accent"
                                   Card.Title="— Alex R." Card.Subtitle="Lead Engineer"
                                   Card.Body="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products.")
           (LayerPrefabPlaceholder Name="Quote2"
-                                  PlaceholderTemplate="Example/Prefabs/Quote"
+                                  PlaceholderTemplate="Example/Prefabs/Quote.lisp"
                                   Card.PrimaryColor="$accent-green"
                                   Card.Title="— Sam T." Card.Subtitle="UI Architect"
                                   Card.Body="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split.")
           (LayerPrefabPlaceholder Name="Quote3"
-                                  PlaceholderTemplate="Example/Prefabs/Quote"
+                                  PlaceholderTemplate="Example/Prefabs/Quote.lisp"
                                   Card.PrimaryColor="$accent-blue"
                                   Card.Title="— Jordan M." Card.Subtitle="Game Developer"
                                   Card.Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA.")))
@@ -413,7 +413,7 @@
                      FontSize=14 ForegroundColor="$white"
                      BackgroundColor="$accent" Padding=16 Width=140 Height=44
                      TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
-                     LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}")
+                     LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup.lisp}")
           (TextBlock Name="CtaButtonSecondary" Text="Learn more"
                      FontSize=14 ForegroundColor="$text-secondary"
                      BackgroundColor="$card-background" Padding=16

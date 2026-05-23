@@ -1,0 +1,4 @@
+(StackView Name="FeatureImageCard" Direction="Vertical" Spacing=12 BackgroundColor="$card-background" Padding=28
+  (ImageView Name="FeatureImageCardIcon" Width=40 Height=40 Source="{Card.Icon}" ForegroundColor="{Card.PrimaryColor}")
+  (TextBlock Name="FeatureImageCardTitle" Text="{Card.Title}" FontSize=16 ForegroundColor="$text-primary")
+  (TextBlock Name="FeatureImageCardBody" Text="{Card.Body}" FontSize=13 ForegroundColor="$text-dim" WordWrap="true"))
