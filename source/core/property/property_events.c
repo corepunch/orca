@@ -75,11 +75,12 @@ PROP_AttachProgram(struct Property *p,
     }
   }
   if (!p->binding) {
+    if (binding_object) {
+      OBJ_ReleaseRef(binding_object);
+      binding_object = NULL;
+    }
     p->binding = ZeroAlloc(sizeof(struct Binding));
     if (!p->binding) {
-      if (binding_object) {
-        OBJ_ReleaseRef(binding_object);
-      }
       SafeDelete(program, Token_Release);
       return;
     }

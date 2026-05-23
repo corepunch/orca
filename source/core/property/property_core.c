@@ -74,6 +74,13 @@ _RunBinding(struct Property *property, struct Binding *binding)
   if (binding_object) {
     return _SendMessage(binding_object, Binding, Evaluate, .Property = property);
   }
+  return PROP_EvaluateBinding(property, binding);
+}
+
+bool_t
+PROP_EvaluateBinding(struct Property *property, struct Binding *binding)
+{
+  if (!property || !binding || !binding->token) return TRUE;
   if (binding->updateFrame == core.frame) return TRUE;
   binding->updateFrame = core.frame;
 
