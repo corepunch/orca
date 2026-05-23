@@ -800,6 +800,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Binding.Compile"/>
+        <handle message="Binding.Evaluate"/>
       </handles>
       <properties>
         <property name="Expression" type="string">Binding expression text. If omitted, object text content is used.</property>
@@ -808,12 +809,19 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
       <fields>
         <field name="property" type="Property" pointer="true">Resolved target property slot.</field>
+        <field name="owner" type="Object" pointer="true">Binding holder object used for message-driven evaluation (optional in raw fallback mode).</field>
         <field name="token" type="token" pointer="true">Compiled VM token tree for this binding expression.</field>
         <field name="updateFrame" type="uint32">Last frame this binding executed.</field>
       </fields>
       <messages>
         <message name="Compile">
           <summary>Compiles and attaches this binding to the target property passed in lParam.</summary>
+        </message>
+        <message name="Evaluate">
+          <summary>Evaluates the binding token program and imports the result into the target property.</summary>
+          <fields>
+            <field name="Property" type="Property" pointer="true">Target property to import evaluation result into.</field>
+          </fields>
         </message>
       </messages>
     </class>

@@ -64,6 +64,36 @@ _BindingGetIntProperty(struct Object *obj, lpcString_t name, int fallback)
   return *(int*)PROP_GetValue(prop);
 }
 
+static bool_t
+_BindingEvaluate(struct Property *property, struct Binding *binding)
+{
+  if (!property || !binding) {
+    return FALSE;
+  }
+  if (!binding->token) {
+    return TRUE;
+  }
+  if (binding->updateFrame == core.frame) {
+    return TRUE;
+  }
+  binding->updateFrame = core.frame;
+
+  struct vm_register r = { 0 };
+  if (!OBJ_RunProgram(property->object, binding->token, &r)) {
+    Con_Error("Binding update failed while running program for %s/%s",
+              OBJ_GetName(property->object),
+              property->pdesc->Name);
+    return FALSE;
+  }
+  if (!PROP_Import(property, &r)) {
+    Con_Error("Binding update failed while importing into %s/%s",
+              OBJ_GetName(property->object),
+              property->pdesc->Name);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 
 static LRESULT
 _BindingCompileToProperty(struct Object *hObject,
@@ -166,6 +196,14 @@ HANDLER(BindingExpression, Binding, Compile)
                                    (struct Binding *)pBindingExpression,
                                    (struct Property *)pCompile,
                                    FALSE);
+}
+
+HANDLER(Binding, Binding, Evaluate)
+{
+  struct Property *property = pEvaluate && pEvaluate->Property
+    ? pEvaluate->Property
+    : pBinding->property;
+  return _BindingEvaluate(property, pBinding);
 }
 
 HANDLER(Trigger, Object, PropertyChanged)

@@ -58,13 +58,22 @@ _ReleaseBindingNode(struct Binding *binding)
     return;
   }
   SafeDelete(binding->token, Token_Release);
-  free(binding);
+  struct Object *binding_object = binding->owner;
+  if (binding_object) {
+    OBJ_ReleaseRef(binding_object);
+  } else {
+    free(binding);
+  }
 }
 
 static bool_t
 _RunBinding(struct Property *property, struct Binding *binding)
 {
   if (!binding->token) return TRUE;
+  struct Object *binding_object = binding->owner;
+  if (binding_object) {
+    return _SendMessage(binding_object, Binding, Evaluate, .Property = property);
+  }
   if (binding->updateFrame == core.frame) return TRUE;
   binding->updateFrame = core.frame;
 
