@@ -681,7 +681,11 @@ static void
 sax_start(void *user_data, const xmlChar *name, const xmlChar **atts)
 {
   struct sax_ctx *ctx = (struct sax_ctx*)user_data;
-  if (ctx->depth >= XML_MAX_DEPTH) return;
+  if (ctx->depth >= XML_MAX_DEPTH) {
+    Con_Error("XML nesting exceeds maximum depth of %d at element '<%s>'",
+              XML_MAX_DEPTH, name);
+    return;
+  }
 
   lpcString_t tag = (lpcString_t)name;
 
@@ -694,6 +698,10 @@ sax_start(void *user_data, const xmlChar *name, const xmlChar **atts)
       names_buf [n] = (lpcString_t)atts[n * 2];
       values_buf[n] = (lpcString_t)atts[n * 2 + 1];
       n++;
+    }
+    if (atts[n * 2]) {
+      Con_Error("Element '<%s>' has more than %d attributes; extras ignored",
+                tag, XML_MAX_ATTRS);
     }
   }
 
@@ -749,14 +757,13 @@ load_doc(char const *xml, int len, lpcString_t name)
   lpcString_t src = expanded ? expanded : xml;
   int          sz  = expanded ? (int)strlen(expanded) : len;
 
-  static xmlSAXHandler handler;
-  if (!handler.initialized) {
-    handler.startElement       = sax_start;
-    handler.endElement         = sax_end;
-    handler.characters         = sax_chars;
-    handler.ignorableWhitespace = sax_chars;
-    handler.initialized        = 1;
-  }
+  static xmlSAXHandler handler = {
+    .startElement        = sax_start,
+    .endElement          = sax_end,
+    .characters          = sax_chars,
+    .ignorableWhitespace = sax_chars,
+    .initialized         = 1,
+  };
 
   struct sax_ctx ctx = {0};
   xmlSAXUserParseMemory(&handler, &ctx, src, sz);
