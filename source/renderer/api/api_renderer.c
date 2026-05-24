@@ -1,7 +1,5 @@
 #include "../r_local.h"
 
-#include <libxml/parser.h>
-
 #define API_TYPE_WINDOW "renderer"
 
 #define WINAPI(NAME, ...) \

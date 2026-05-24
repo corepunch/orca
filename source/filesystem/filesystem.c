@@ -1,6 +1,4 @@
 #include <include/orca.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
 #include <stdio.h>
 #include <include/api.h>
 

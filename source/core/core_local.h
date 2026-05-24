@@ -6,9 +6,7 @@
 
 // TODO: Move to orca.h
 #include <source/core/core.h>
-
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <source/parsers/p_xml_dom.h>
 
 #define CORE_COMMANDS "__commands__"
 #define CORE_KEMAP "__keymap__"

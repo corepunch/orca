@@ -1,5 +1,4 @@
 #include <source/core/core_local.h>
-#include <libxml/tree.h>
 
 typedef struct _LOCALE
 {

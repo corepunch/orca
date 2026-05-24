@@ -9,9 +9,6 @@
 #include <include/renderer.h>
 #include <include/version.h>
 
-#include <libxml/tree.h>
-#include <libxml/parser.h>
-
 #ifdef _WIN32
 #include <windows.h>
 #elif __EMSCRIPTEN__

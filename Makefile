@@ -53,13 +53,16 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
-CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 libxml-2.0 2>/dev/null)
-LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
+# Core/source now builds against Expat; EditorKit/vsomeip keep libxml2 via plugin-specific flags below.
+CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 expat 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 expat 2>/dev/null)
+LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng expat 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng expat 2>/dev/null)
 
 CODEGEN := $(BINDIR)/cgen
 CODEGEN_SRC := $(shell find tools/codegen/src -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGIN_SRC := $(shell find tools/codegen/plugins -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGINS := $(patsubst tools/codegen/plugins/%.c,$(BUILDDIR)/plugins/codegen/lib%.so,$(CODEGEN_PLUGIN_SRC))
+PLUGIN_XML_CFLAGS := -DORCA_USE_LIBXML2 $(shell pkg-config --cflags libxml-2.0 2>/dev/null)
+PLUGIN_XML_LDFLAGS := $(shell pkg-config --libs libxml-2.0 2>/dev/null)
 CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -Itools/codegen/include -Itools/codegen/src $(shell pkg-config --cflags libxml-2.0)
 CODEGEN_LDFLAGS := $(shell pkg-config --libs libxml-2.0) -ldl $(ARCH_FLAGS)
 CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
@@ -110,13 +113,13 @@ buildplugins: buildlib
 ifeq ($(shell uname -s),Darwin)
 	$(foreach p,$(PLUGINS), \
 		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
-		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
-		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,@loader_path || exit 1;)
+		$(CC) $(CFLAGS) $(PLUGIN_XML_CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) $(PLUGIN_XML_LDFLAGS) -Wl,-rpath,@loader_path || exit 1;)
 else
 	$(foreach p,$(PLUGINS), \
 		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
-		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
-		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..' || exit 1;)
+		$(CC) $(CFLAGS) $(PLUGIN_XML_CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
+		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) $(PLUGIN_XML_LDFLAGS) -Wl,-rpath,'$$ORIGIN/..' || exit 1;)
 endif
 
 app: platform
@@ -284,7 +287,7 @@ test-trigger-actions: platform $(SOURCEMODULES2) buildlib
 	$(TEST_TRIGGER_ACTIONS_BIN)
 
 test-editor: buildplugins
-	$(CC) $(CFLAGS) -Wall tests/test_editor.c $(OBJECTDIR)/plugin_EditorKit.o -o $(TEST_EDITOR_BIN) $(TEST_LDFLAGS) -lplatform -lm
+	$(CC) $(CFLAGS) -Wall tests/test_editor.c $(OBJECTDIR)/plugin_EditorKit.o -o $(TEST_EDITOR_BIN) $(TEST_LDFLAGS) $(PLUGIN_XML_LDFLAGS) -lplatform -lm
 	$(TEST_EDITOR_BIN)
 
 test-state-manager: app copyshare

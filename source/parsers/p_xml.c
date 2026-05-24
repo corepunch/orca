@@ -1,11 +1,9 @@
 #include <ctype.h>
 #include <string.h>
 
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
 #include <include/api.h>
 
+#include "p_xml_dom.h"
 #include "xml_local.h"
 
 #define API_TYPE_XML_DOC "XmlDoc"
@@ -84,8 +82,6 @@ static int lua_xml_read_document(lua_State* L)
 //  }
   return 1;
 }
-
-#include <libxml/HTMLparser.h>
 
 // void printNodeStructure(xmlNode *node, int depth) {
 //	while (node) {

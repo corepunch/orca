@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <expat.h>
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
@@ -429,7 +430,7 @@ visitor_for_element(lpcString_t tag, lpcString_t const *ns, lpcString_t const *v
 /* SAX */
 
 static void
-sax_start(void *ud, const xmlChar *name, const xmlChar **atts)
+sax_start(void *ud, const XML_Char *name, const XML_Char **atts)
 {
   struct sax_ctx *ctx = ud;
   if (ctx->depth >= XML_MAX_DEPTH) {
@@ -449,7 +450,7 @@ sax_start(void *ud, const xmlChar *name, const xmlChar **atts)
 }
 
 static void
-sax_end(void *ud, const xmlChar *name)
+sax_end(void *ud, const XML_Char *name)
 {
   (void)name;
   struct sax_ctx *ctx = ud;
@@ -463,7 +464,7 @@ sax_end(void *ud, const xmlChar *name)
 }
 
 static void
-sax_chars(void *ud, const xmlChar *ch, int len)
+sax_chars(void *ud, const XML_Char *ch, int len)
 {
   struct sax_ctx *ctx = ud;
   if (ctx->depth > 0 && ctx->stack[ctx->depth-1]->text)
@@ -476,12 +477,19 @@ load_doc(char const *xml, int len)
   char *expanded = _ExpandXmlPositionalArgs(xml);
   lpcString_t src = expanded ? expanded : xml;
   int sz = expanded ? (int)strlen(expanded) : len;
-  static xmlSAXHandler sax = {
-    .startElement = sax_start, .endElement = sax_end,
-    .characters = sax_chars, .ignorableWhitespace = sax_chars, .initialized = 1,
-  };
   struct sax_ctx ctx = {0};
-  xmlSAXUserParseMemory(&sax, &ctx, src, sz);
+  XML_Parser parser = XML_ParserCreate(NULL);
+  if (!parser) {
+    free(expanded);
+    return NULL;
+  }
+  XML_SetUserData(parser, &ctx);
+  XML_SetElementHandler(parser, sax_start, sax_end);
+  XML_SetCharacterDataHandler(parser, sax_chars);
+  if (XML_Parse(parser, src, sz, 1) == XML_STATUS_ERROR) {
+    ctx.result = NULL;
+  }
+  XML_ParserFree(parser);
   free(expanded);
   return ctx.result;
 }

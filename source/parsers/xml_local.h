@@ -1,7 +1,5 @@
 #include <source/core/core.h>
-
-#include <libxml/parser.h>
-#include <libxml/tree.h>
+#include <source/parsers/p_xml_dom.h>
 
 //#define SUPPORT_DYNAMIC_PROPERTIES
 
