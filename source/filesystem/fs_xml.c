@@ -80,7 +80,6 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
     Con_Error("Property '%s' does not support inline trigger shorthand", pd->Name);
     return FALSE;
   }
-
   snprintf(routed, sizeof(routed),
            (pd->Category && *pd->Category) ? "%s.%s" : "%s",
            (pd->Category && *pd->Category) ? pd->Category : pd->Name,

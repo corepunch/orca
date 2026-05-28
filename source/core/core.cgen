@@ -917,7 +917,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Generic action that dispatches a registered message to a target object. It supports no-argument messages directly and can populate payload fields from matching properties present on the action object.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Object.Attached"/>
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>

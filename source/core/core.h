@@ -1052,7 +1052,6 @@ ORCA_API struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx);
 /// @brief Applies property values when triggered by specified conditions
 /** Setter component */
 struct Setter {
-	struct Trigger* Trigger; ///< Triggering condition or state image
 	const char* Property; ///< Target property name to set
 	const char* Value; ///< Value to apply to the property
 };
@@ -1062,7 +1061,6 @@ ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
 /// @brief Loads a popup template and shows it modally
 /** ShowModalAction component */
 struct ShowModalAction {
-	struct Trigger* Trigger; ///< Triggering condition or state image
 	const char* Path; ///< Asset path to the popup template that should be shown modally
 };
 ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
@@ -1071,7 +1069,6 @@ ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx
 /// @brief Hides the object at the provided path when triggered
 /** HideAction component */
 struct HideAction {
-	struct Trigger* Trigger; ///< Triggering condition or state image
 	const char* Path; ///< Relative path to the object that should be hidden
 };
 ORCA_API void luaX_pushHideAction(lua_State *L, struct HideAction const* HideAction);
