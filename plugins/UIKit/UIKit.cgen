@@ -641,6 +641,7 @@
       <handles>
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
+        <handle message="Screen.ShowModal"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>

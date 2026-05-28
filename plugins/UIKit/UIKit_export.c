@@ -862,6 +862,7 @@ struct Control* luaX_checkControl(lua_State *L, int idx) {
 REGISTER_CLASS(Control, ID_Node2D, 0);
 HANDLER(Screen, Screen, UpdateLayout);
 HANDLER(Screen, Screen, RenderScreen);
+HANDLER(Screen, Screen, ShowModal);
 HANDLER(Screen, Node2D, MeasureOverride);
 HANDLER(Screen, Object, Create);
 HANDLER(Screen, Object, Destroy);
@@ -880,6 +881,7 @@ LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 	switch (message) {
 		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
 		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
+		case ID_Screen_ShowModal: return Screen_ShowModal(object, cmp, wparm, lparm); // Screen.ShowModal
 		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy

@@ -385,7 +385,20 @@ node(struct _xmlNode* x)
     return NULL;
   }
 
-  FOR_EACH_LIST(xmlAttr, a, x->properties) visit_attr(o, a);
+  if (GetSendMessageAction(o)) {
+    FOR_EACH_LIST(xmlAttr, a, x->properties) {
+      if (!strcmp((lpcString_t)a->name, "Message")) {
+        visit_attr(o, a);
+      }
+    }
+  }
+
+  FOR_EACH_LIST(xmlAttr, a, x->properties) {
+    if (GetSendMessageAction(o) && !strcmp((lpcString_t)a->name, "Message")) {
+      continue;
+    }
+    visit_attr(o, a);
+  }
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
