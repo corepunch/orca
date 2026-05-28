@@ -16,10 +16,20 @@
 
 #include "mem_tracker.h"
 
+#include <lua.h>
+#include <lauxlib.h>
+#include <lualib.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+
+#include "source/filesystem/fs_xml_inline.h"
+
+extern int luaopen_orca_core(lua_State *L);
+extern int luaopen_orca_geometry(lua_State *L);
+extern int luaopen_orca_renderer(lua_State *L);
 
 /* Mirror the constants from filesystem.c so we can declare matching arrays.
  * If these diverge from the source, the _Static_assert below will catch it. */
@@ -70,6 +80,26 @@ call_parse(const char *path, const char *query,
 {
     argv[0] = path;
     return _ParseLoaderArgs(query, argv, 1, FS_LOADER_MAX_ARGS, arg_buf);
+}
+
+static void
+ensure_class_registry(void)
+{
+    static int initialized = 0;
+    if (initialized) {
+        return;
+    }
+
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    luaL_requiref(L, "orca.core", luaopen_orca_core, 1);
+    lua_pop(L, 1);
+    luaL_requiref(L, "orca.geometry", luaopen_orca_geometry, 1);
+    lua_pop(L, 1);
+    luaL_requiref(L, "orca.renderer", luaopen_orca_renderer, 1);
+    lua_pop(L, 1);
+    lua_close(L);
+    initialized = 1;
 }
 
 /* ------------------------------------------------------------------ */
@@ -209,6 +239,18 @@ static void test_too_many_args(void)
     });
 }
 
+static void test_inline_xml_expansion(void)
+{
+    RUN("inline_xml_expansion_supports_comma_and_nested_braces", {
+        ensure_class_registry();
+        const char *xml = "<Material Texture={Texture Width=48, Height=24}/>";
+        char *expanded = _ExpandXmlPositionalArgs(xml);
+        EXPECT(expanded != NULL);
+        EXPECT_STR_EQ(expanded, "<Material Texture=\"{Texture Width=48, Height=24}\"/>");
+        free(expanded);
+    });
+}
+
 /* ------------------------------------------------------------------ */
 /* Entry point                                                         */
 /* ------------------------------------------------------------------ */
@@ -224,6 +266,7 @@ int main(void)
     test_sentinel_always_null();
     test_truncation();
     test_too_many_args();
+    test_inline_xml_expansion();
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;

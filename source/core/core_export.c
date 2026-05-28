@@ -1472,27 +1472,6 @@ struct Setter* luaX_checkSetter(lua_State *L, int idx) {
 	return GetSetter(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(Setter, 0);
-HANDLER(ShowModalAction, Object, Attached);
-HANDLER(ShowModalAction, Trigger, Triggered);
-static struct PropertyType const ShowModalActionProperties[kShowModalActionNumProperties] = {
-	DECL(0xeb66e456, ShowModalAction, Path, Path, kDataTypeString), // ShowModalAction.Path
-};
-static struct ShowModalAction ShowModalActionDefaults = {
-};
-LRESULT ShowModalActionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
-	switch (message) {
-		case ID_Object_Attached: return ShowModalAction_Attached(object, cmp, wparm, lparm); // Object.Attached
-		case ID_Trigger_Triggered: return ShowModalAction_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
-	}
-	return FALSE;
-}
-void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction) {
-	luaX_pushObject(L, CMP_GetObject(ShowModalAction));
-}
-struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx) {
-	return GetShowModalAction(luaX_checkObject(L, idx));
-}
-REGISTER_CLASS(ShowModalAction, 0);
 HANDLER(HideAction, Object, Attached);
 HANDLER(HideAction, Trigger, Triggered);
 static struct PropertyType const HideActionProperties[kHideActionNumProperties] = {
@@ -1836,7 +1815,6 @@ ORCA_API int luaopen_orca_core(lua_State *L) {
 	lua_setfield(L, ((void)lua_pushclass(L, &_OnAttachedTrigger), -2), "OnAttachedTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_EventTrigger), -2), "EventTrigger");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Setter), -2), "Setter");
-	lua_setfield(L, ((void)lua_pushclass(L, &_ShowModalAction), -2), "ShowModalAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_HideAction), -2), "HideAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_SendMessageAction), -2), "SendMessageAction");
 	lua_setfield(L, ((void)lua_pushclass(L, &_Node), -2), "Node");

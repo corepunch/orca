@@ -3,10 +3,12 @@
 #include <lualib.h>
 
 #include <include/orca.h>
+#include <include/codegen.h>
 #include <source/core/core_local.h>
 #include <source/core/core_properties.h>
 #include <source/core/object/object_internal.h>
 #include <source/filesystem/fs_local.h>
+#include <plugins/UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_properties.h>
 
 #include <stdio.h>
@@ -312,6 +314,24 @@ static struct MessageDesc s_popup_close_message_desc = {
   .ExtraData = NULL,
 };
 
+static struct PropertyType s_screen_show_modal_message_fields[] = {
+  DECL(0xeb66e456, Screen_ShowModalEventArgs, Path, Path, kDataTypeString),
+};
+
+static struct StructDesc const s_screen_show_modal_message_desc = {
+  .StructName = "Screen_ShowModalEventArgs",
+  .Properties = s_screen_show_modal_message_fields,
+  .NumProperties = sizeof(s_screen_show_modal_message_fields) / sizeof(s_screen_show_modal_message_fields[0]),
+  .StructSize = sizeof(struct Screen_ShowModalEventArgs),
+};
+
+static struct MessageDesc s_screen_show_modal_message_desc_info = {
+  .MessageName = "Screen.ShowModal",
+  .MessageID = ID_Screen_ShowModal,
+  .Payload = &s_screen_show_modal_message_desc,
+  .ExtraData = NULL,
+};
+
 static LRESULT
 TestSourceProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
 {
@@ -357,11 +377,28 @@ static struct ClassDesc s_event_source_class = {
 static LRESULT
 TestScreenProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
 {
-  (void)object;
   (void)cmp;
-  (void)msg;
   (void)wparam;
-  (void)lparam;
+  if (msg == ID_Screen_ShowModal) {
+    struct Screen_ShowModalEventArgs const *args = (struct Screen_ShowModalEventArgs const *)lparam;
+    if (!args || !args->Path || !*args->Path) {
+      return FALSE;
+    }
+
+    struct Object *target = FS_LoadObject(args->Path);
+    if (!target) {
+      return FALSE;
+    }
+
+    if (!GetPopup(target) || !OBJ_ShowModalObject(object, target)) {
+      OBJ_ReleaseRef(target);
+      return FALSE;
+    }
+
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(target, "Visible", &visible);
+    return TRUE;
+  }
   return FALSE;
 }
 
@@ -419,6 +456,7 @@ register_trigger_action_test_types(void)
   OBJ_RegisterMessageDesc(&s_no_args_message_desc);
   OBJ_RegisterMessageDesc(&s_value_message_desc_info);
   OBJ_RegisterMessageDesc(&s_mixed_message_desc_info);
+  OBJ_RegisterMessageDesc(&s_screen_show_modal_message_desc_info);
   OBJ_RegisterMessageDesc(&s_popup_close_message_desc);
 
   OBJ_RegisterMessagePropertyTypes("TestMessage.Value",
@@ -567,14 +605,16 @@ static void
 test_show_modal_action_property_order(void)
 {
   RUN("show_modal_action_property_order", {
-    struct Object *action = make_object(ID_ShowModalAction, "Action");
+    struct Object *action = make_object(ID_SendMessageAction, "Action");
     struct Property *path_prop = NULL;
+    const char *message = "Screen.ShowModal";
 
     EXPECT(action != NULL);
-    EXPECT_OK(OBJ_FindShortProperty(action, "Path", &path_prop));
+    EXPECT_OK(OBJ_SetPropertyValue(action, "Message", &message));
+    EXPECT_OK(OBJ_FindLongProperty(action, ID_Screen_ShowModalEventArgs_Path, &path_prop));
     EXPECT(path_prop != NULL);
     EXPECT(strcmp(PROP_GetName(path_prop), "Path") == 0);
-    EXPECT(ShowModalAction_GetProperty(action, kShowModalActionPath) == path_prop);
+    EXPECT(PROP_GetLongIdentifier(path_prop) == ID_Screen_ShowModalEventArgs_Path);
   });
 }
 
@@ -598,7 +638,7 @@ test_show_modal_action_short_form(void)
     char root_xml[1024];
     snprintf(root_xml, sizeof(root_xml),
       "<Screen Name=\"TmpScreen\">\n"
-      "  <Node Name=\"OpenButton\" LeftButtonUp=\"{ShowModalAction %s}\"/>\n"
+      "  <Node Name=\"OpenButton\" LeftButtonUp=\"{Screen.ShowModal Path=%s}\"/>\n"
       "</Screen>",
       popup_base);
 

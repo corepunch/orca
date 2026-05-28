@@ -673,6 +673,13 @@
             <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
           </fields>
         </message>
+        <message name="ShowModal" routing="Bubbling">
+          <summary>Requests the screen to load and present a popup modally.</summary>
+          <details>The message bubbles to the owning Screen so it can load the popup template, attach it as the current modal child, and refresh the screen immediately.</details>
+          <fields>
+            <field name="Path" type="string">Popup template path to load.</field>
+          </fields>
+        </message>
       </messages>
     </class>
     <class name="Popup" parent="Screen">

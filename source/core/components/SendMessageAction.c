@@ -39,7 +39,7 @@ HANDLER(SendMessageAction, Trigger, Triggered)
 
   if (!fields || field_count == 0) {
     axPostMessageW(target, msg_id, 0, NULL);
-    return FALSE;
+    return TRUE;
   }
 
   char payload[MAX_MESSAGE_SIZE];
@@ -87,5 +87,5 @@ HANDLER(SendMessageAction, Trigger, Triggered)
     payload_size = MAX_MESSAGE_SIZE;
   }
   axPostMessageDataW(target, msg_id, 0, payload, payload_size);
-  return FALSE;
+  return TRUE;
 }

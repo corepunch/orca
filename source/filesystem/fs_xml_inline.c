@@ -43,14 +43,43 @@ read_atom(struct reader *r, char **out)
   skip(r);
   if (!*r->p || *r->p == '}') return FALSE;
 
-  char quote = (*r->p == '"' || *r->p == '\'') ? *r->p++ : 0;
+  if (*r->p == '"' || *r->p == '\'') {
+    char quote = *r->p++;
+    char const *start = r->p;
+    while (*r->p && *r->p != quote) r->p++;
+    *out = copy(start, (size_t)(r->p - start));
+    if (*r->p == quote) r->p++;
+    return *out != NULL;
+  }
+
+  if (*r->p == '{') {
+    int depth = 0;
+    char quote = 0;
+    char const *start = r->p;
+    while (*r->p) {
+      char c = *r->p++;
+      if (quote) {
+        if (c == quote) quote = 0;
+        continue;
+      }
+      if (c == '"' || c == '\'') {
+        quote = c;
+      } else if (c == '{') {
+        depth++;
+      } else if (c == '}') {
+        if (--depth == 0) break;
+      }
+    }
+    if (depth != 0) return FALSE;
+    *out = copy(start, (size_t)(r->p - start));
+    return *out != NULL;
+  }
+
   char const *start = r->p;
-  while (*r->p && (quote ? *r->p != quote :
-         (!isspace((unsigned char)*r->p) && *r->p != ',' && *r->p != '}' && *r->p != '='))) {
+  while (*r->p && !isspace((unsigned char)*r->p) && *r->p != ',' && *r->p != '}' && *r->p != '=') {
     r->p++;
   }
   *out = copy(start, (size_t)(r->p - start));
-  if (quote && *r->p == quote) r->p++;
   return *out != NULL;
 }
 
@@ -106,6 +135,41 @@ body_of(lpcString_t text)
 {
   while (*text && isspace((unsigned char)*text)) text++;
   return *text == '{' ? text + 1 : text;
+}
+
+static bool_t
+is_special_inline_name(char const *name)
+{
+  return !strcmp(name, "Name") || !strcmp(name, "id") ||
+         !strcmp(name, "class") || strchr(name, '.');
+}
+
+static struct PropertyType const *
+find_field_by_name(struct PropertyType const *fields, int count, char const *name)
+{
+  FOR_LOOP(i, count) {
+    if (!strcmp(fields[i].Name, name)) {
+      return &fields[i];
+    }
+  }
+  return NULL;
+}
+
+static void
+emit_attr(struct strbuf *xml,
+          struct PropertyType const *field,
+          char const *value,
+          bool_t use_full_name)
+{
+  putc_xml(xml, ' ');
+  if (use_full_name && field->Category && *field->Category) {
+    put(xml, field->Category);
+    putc_xml(xml, '.');
+  }
+  put(xml, field->Name);
+  put(xml, "=\"");
+  put_escaped(xml, value);
+  putc_xml(xml, '"');
 }
 
 static struct PropertyType const *
@@ -226,6 +290,16 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
   if (!read_atom(&r, &type)) return FALSE;
 
   struct ClassDesc const *cls = OBJ_FindClass(type);
+  struct PropertyType const *message_fields = NULL;
+  uint32_t message_field_count = 0;
+  bool_t is_message_dispatch = FALSE;
+  if (!cls && strchr(type, '.')) {
+    cls = OBJ_FindClass("SendMessageAction");
+    is_message_dispatch = cls != NULL;
+    if (is_message_dispatch) {
+      message_fields = OBJ_FindMessagePropertyTypes(type, &message_field_count);
+    }
+  }
   if (!cls) {
     Con_Error("Unknown inline object type '%s'", type);
     free(type);
@@ -233,11 +307,17 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
   }
 
   struct strbuf xml = {0};
-  bool_t *used = calloc((size_t)cls->NumProperties, sizeof(bool_t));
+  uint32_t used_count = is_message_dispatch ? message_field_count : cls->NumProperties;
+  bool_t *used = calloc((size_t)used_count, sizeof(bool_t));
   int cursor = positional_start;
-  bool_t ok = used != NULL;
+  bool_t ok = used_count == 0 || used != NULL;
   putc_xml(&xml, '<');
-  put(&xml, type);
+  put(&xml, is_message_dispatch ? "SendMessageAction" : type);
+  if (is_message_dispatch) {
+    put(&xml, " Message=\"");
+    put_escaped(&xml, type);
+    putc_xml(&xml, '"');
+  }
 
   while (ok) {
     char *name = NULL;
@@ -246,23 +326,39 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
     skip(&r);
 
     struct PropertyType const *field = NULL;
+    bool_t use_full_name = FALSE;
     if (*r.p == '=') {
       r.p++;
       ok = read_atom(&r, &value);
-      FOR_LOOP(i, cls->NumProperties) {
-        if (!strcmp(cls->Properties[i].Name, name)) {
-          field = &cls->Properties[i];
-          break;
+      if (is_message_dispatch && !strcmp(name, "Message")) {
+        free(name);
+        free(value);
+        continue;
+      }
+      if (is_message_dispatch) {
+        field = find_field_by_name(cls->Properties, (int)cls->NumProperties, name);
+        if (!field && message_fields) {
+          field = find_field_by_name(message_fields, (int)message_field_count, name);
+          use_full_name = field != NULL;
+        }
+      } else {
+        FOR_LOOP(i, cls->NumProperties) {
+          if (!strcmp(cls->Properties[i].Name, name)) {
+            field = &cls->Properties[i];
+            break;
+          }
         }
       }
     } else {
       value = name;
       name = NULL;
-      field = next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
+      field = is_message_dispatch
+        ? next_field(message_fields, (int)message_field_count, used, &cursor)
+        : next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
+      use_full_name = is_message_dispatch && field != NULL;
     }
 
-    if (!field && name && (!strcmp(name, "Name") || !strcmp(name, "id") ||
-                           !strcmp(name, "class") || strchr(name, '.'))) {
+    if (!field && name && is_special_inline_name(name)) {
       putc_xml(&xml, ' ');
       put(&xml, name);
       put(&xml, "=\"");
@@ -272,12 +368,16 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
       Con_Error("Unknown or extra field while parsing inline object '%s'", type);
       ok = FALSE;
     } else {
-      used[field - cls->Properties] = TRUE;
-      putc_xml(&xml, ' ');
-      put(&xml, field->Name);
-      put(&xml, "=\"");
-      put_escaped(&xml, value);
-      putc_xml(&xml, '"');
+      if (is_message_dispatch && used && message_fields &&
+          field >= message_fields &&
+          field < message_fields + message_field_count) {
+        used[field - message_fields] = TRUE;
+      } else if (!is_message_dispatch && used &&
+                 field >= cls->Properties &&
+                 field < cls->Properties + cls->NumProperties) {
+        used[field - cls->Properties] = TRUE;
+      }
+      emit_attr(&xml, field, value, use_full_name);
     }
     free(name);
     free(value);
@@ -369,44 +469,82 @@ _ExpandXmlPositionalArgs(lpcString_t xml)
     char const *body = name_end;
     char const *body_end = end;
     bool_t self_close = FALSE;
+    bool_t has_quoted_attrs = FALSE;
     while (body_end > body && isspace((unsigned char)body_end[-1])) body_end--;
     if (body_end > body && body_end[-1] == '/') {
       self_close = TRUE;
       body_end--;
       while (body_end > body && isspace((unsigned char)body_end[-1])) body_end--;
     }
-
-    char const *tok = body;
-    while (tok < body_end && isspace((unsigned char)*tok)) tok++;
-    char const *tok_end = tok;
-    while (tok_end < body_end && !isspace((unsigned char)*tok_end) && *tok_end != '=') tok_end++;
-    char const *rest = tok_end;
-    while (rest < body_end && isspace((unsigned char)*rest)) rest++;
-
-    int cursor = 0;
-    struct PropertyType const *field = next_field(cls->Properties, (int)cls->NumProperties, NULL, &cursor);
-    if (tok == tok_end || (rest < body_end && *rest == '=') || !field) {
+    for (char const *scan = body; scan < body_end; scan++) {
+      if (*scan == '"' || *scan == '\'') {
+        has_quoted_attrs = TRUE;
+        break;
+      }
+    }
+    if (has_quoted_attrs) {
       putn(&out, lt, (size_t)(end + 1 - lt));
       p = end + 1;
       continue;
     }
 
+    char *body_copy = copy(body, (size_t)(body_end - body));
+    struct reader r = { body_copy };
+    bool_t *used = calloc((size_t)cls->NumProperties, sizeof(bool_t));
+    int cursor = 0;
+    bool_t ok = used != NULL;
     putc_xml(&out, '<');
     putn(&out, name, (size_t)(name_end - name));
-    putc_xml(&out, ' ');
-    put(&out, field->Name);
-    put(&out, "=\"");
-    char *value = copy(tok, (size_t)(tok_end - tok));
-    if (value) {
-      put_escaped(&out, value);
-      free(value);
-    }
-    putc_xml(&out, '"');
-    if (rest < body_end) {
-      putc_xml(&out, ' ');
-      putn(&out, rest, (size_t)(body_end - rest));
+    while (ok) {
+      char *arg_name = NULL;
+      char *arg_value = NULL;
+      if (!read_atom(&r, &arg_name)) break;
+      skip(&r);
+
+      struct PropertyType const *field = NULL;
+      if (*r.p == '=') {
+        r.p++;
+        ok = read_atom(&r, &arg_value);
+        FOR_LOOP(i, cls->NumProperties) {
+          if (!strcmp(cls->Properties[i].Name, arg_name)) {
+            field = &cls->Properties[i];
+            break;
+          }
+        }
+      } else {
+        arg_value = arg_name;
+        arg_name = NULL;
+        field = next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
+      }
+
+      if (!field && arg_name && is_special_inline_name(arg_name)) {
+        putc_xml(&out, ' ');
+        put(&out, arg_name);
+        put(&out, "=\"");
+        put_escaped(&out, arg_value);
+        putc_xml(&out, '"');
+      } else if (!field) {
+        Con_Error("Unknown or extra field while parsing inline object '%s'", type);
+        ok = FALSE;
+      } else {
+        used[field - cls->Properties] = TRUE;
+        putc_xml(&out, ' ');
+        put(&out, field->Name);
+        put(&out, "=\"");
+        put_escaped(&out, arg_value);
+        putc_xml(&out, '"');
+      }
+      free(arg_name);
+      free(arg_value);
     }
     put(&out, self_close ? "/>" : ">");
+    free(used);
+    free(body_copy);
+    if (!ok) {
+      free(out.s);
+      out.s = NULL;
+      break;
+    }
     p = end + 1;
   }
 

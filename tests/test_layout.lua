@@ -11,7 +11,6 @@ local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 test.expect(core.EventTrigger ~= nil, "EventTrigger should be exported from orca.core")
-test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
 test.expect(core.SendMessageAction ~= nil, "SendMessageAction should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
@@ -285,7 +284,7 @@ local function test_xml_loading_inline_imageview_source()
 <ImageView Name="inline-image-view"
            Width="32"
            Height="32"
-           Source="{Texture Width=48 Height=24}" />]]
+           Source="{Texture Width=48, Height=24}" />]]
 
 	local image_view = filesystem.loadObjectFromXmlString(xml)
 	test.expect(image_view ~= nil, "inline ImageView should load")
@@ -458,7 +457,7 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Example/Screens/GetStartedPopup/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -491,7 +490,7 @@ local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 	local xml = [[
 	<Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA"
-	    LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -527,7 +526,7 @@ local function test_xml_loading_close_popup_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Example/Screens/GetStartedPopup/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -570,7 +569,7 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -790,14 +789,14 @@ local function test_example_application_xml()
 	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"', 1, true)
+	local get_started_show = xml:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Popup.ClosePopup ../../..}"', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{Popup.ClosePopup}"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -988,7 +987,7 @@ local function test_example_xml_parser_coverage()
 	      Card.Body="Layouts stay readable."
 	      Card.PrimaryColor="#55AAFF"/>
 	  </Grid>
-	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
 	</Screen>]]
 
 	local syntax_root = filesystem.loadObjectFromXmlString(syntax_xml)

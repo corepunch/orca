@@ -258,15 +258,6 @@ enum SetterProperties {
 	kSetterProperty,
 	kSetterValue,
 };
-// ShowModalAction
-#define ID_ShowModalAction 0x43164ff7
-#define GetShowModalAction(_P) ((struct ShowModalAction*)((_P)?OBJ_GetComponent(_P,ID_ShowModalAction):NULL))
-#define ShowModalAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ShowModalAction,sizeof(struct ShowModalAction),_N)
-#define ID_ShowModalAction_Path 0xa62e790c // ShowModalAction.Path
-#define kShowModalActionNumProperties 1
-enum ShowModalActionProperties {
-	kShowModalActionPath,
-};
 // HideAction
 #define ID_HideAction 0x4bb53017
 #define GetHideAction(_P) ((struct HideAction*)((_P)?OBJ_GetComponent(_P,ID_HideAction):NULL))

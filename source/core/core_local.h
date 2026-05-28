@@ -178,6 +178,8 @@ OBJ_NameEquals(struct Object *object, lpcString_t name)
 }
 
 struct Property *
+PROP_Create(lua_State*, struct Object *, struct PropertyType const *);
+struct Property *
 OBJ_AddComponentProperty(lua_State*, struct component*, struct PropertyType const *);
 //struct Property *
 //OBJ_AddComponentProperty2(lua_State*, struct component*, lpcString_t);

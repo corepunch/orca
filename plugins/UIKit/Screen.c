@@ -1,6 +1,7 @@
 #include <include/renderer.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <source/filesystem/filesystem.h>
 #include <source/core/object/object_internal.h>
 
 #define SCREEN_WIDTH 640
@@ -659,6 +660,32 @@ _CloseModalPopup(struct Object *hObject, float result)
   if (_RemoveFromModalChain(hObject)) {
     OBJ_RemoveFromParent(hObject);
   }
+}
+
+HANDLER(Screen, Screen, ShowModal) {
+  if (!pShowModal || !pShowModal->Path || !*pShowModal->Path) {
+    Con_Error("Screen.ShowModal missing Path");
+    return FALSE;
+  }
+
+  struct Object *target = FS_LoadObject(pShowModal->Path);
+  if (!target) {
+    Con_Error("Screen.ShowModal could not load template '%s'", pShowModal->Path);
+    return FALSE;
+  }
+
+  if (!GetPopup(target)) {
+    Con_Error("Screen.ShowModal template '%s' is not a Popup", pShowModal->Path);
+    OBJ_ReleaseRef(target); // Release the loaded object since we're not going to use it
+    return FALSE;
+  }
+
+  if (OBJ_ShowModalObject(hObject, target)) {
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(target, "Visible", &visible);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 HANDLER(Popup, Popup, ClosePopup) {

@@ -2,10 +2,44 @@
 
 #define ID_TextureTiling 0x861dbc5b
 
+static struct PropertyType const *
+_FindMessageFieldProperty(struct Object *object, uint32_t ident, lpcString_t name)
+{
+  struct SendMessageAction const *action = GetSendMessageAction(object);
+  if (!action || !action->Message || !*action->Message) {
+    return NULL;
+  }
+
+  uint32_t count = 0;
+  struct PropertyType const *fields = OBJ_FindMessagePropertyTypes(action->Message, &count);
+  if (!fields) {
+    return NULL;
+  }
+
+  FOR_LOOP(i, count) {
+    struct PropertyType const *field = &fields[i];
+    if ((ident && field->FullIdentifier == ident) ||
+        (name && !strcmp(field->Name, name))) {
+      return field;
+    }
+  }
+  return NULL;
+}
+
 static struct Property *
 _CreateProjectProperty(struct Object *object, uint32_t ident)
 {
   struct PropertyType const *pt = OBJ_FindPropertyType(ident);
+  if (pt) {
+    return PROP_Create(NULL, object, pt);
+  }
+  return NULL;
+}
+
+static struct Property *
+_CreateMessageProperty(struct Object *object, uint32_t ident, lpcString_t name)
+{
+  struct PropertyType const *pt = _FindMessageFieldProperty(object, ident, name);
   if (pt) {
     return PROP_Create(NULL, object, pt);
   }
@@ -111,6 +145,8 @@ OBJ_FindLongProperty(struct Object *object,
     return NOERROR;
   } else if ((*ppProp = _CreateProjectProperty(object, identifier))) {
     return NOERROR;
+  } else if ((*ppProp = _CreateMessageProperty(object, identifier, NULL))) {
+    return NOERROR;
   } else {
     return E_ITEMNOTFOUND;
   }
@@ -125,7 +161,14 @@ OBJ_FindShortProperty(struct Object *object,
   if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
     return NOERROR;
   } else {
-    return OBJ_FindLongProperty(object, identifier, ppProp);
+    HRESULT hr = OBJ_FindLongProperty(object, identifier, ppProp);
+    if (SUCCEEDED(hr)) {
+      return hr;
+    }
+    if ((*ppProp = _CreateMessageProperty(object, identifier, name))) {
+      return NOERROR;
+    }
+    return hr;
   }
 }
 
