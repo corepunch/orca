@@ -173,7 +173,7 @@ static void _test_add_float_rule(struct Object *obj, lpcString_t className,
         PROP_SetValue(rp, &value);
     }
 
-    OBJ_AddChild(sheetObj, ruleObj, FALSE);
+    OBJ_AddChild(sheetObj, ruleObj);
 }
 
 /* ------------------------------------------------------------------ */

@@ -318,7 +318,7 @@ SV_CMD(POST, node) {
     if (OBJ_GetSourceFile(source)) return "Object is already a prefab";
     WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
       xmlDocSetRootElement(doc, ED_ConvertNode(source, NULL));
-      OBJ_AddChild(root, OBJ_LoadDocument(doc), FALSE);
+      OBJ_AddChild(root, OBJ_LoadDocument(doc));
     }
     path_t sourcepath = {0};
     OBJ_SetSourceFile(source, FS_JoinPaths(sourcepath, sizeof(sourcepath), endpoint, OBJ_GetName(source)));
@@ -333,7 +333,7 @@ SV_CMD(POST, node) {
   } else {
     struct Object *object = luaX_checkObject(L, -1);
     if (SV_ARG("name")) OBJ_SetName(object, SV_ARG("name"));
-    OBJ_AddChild(root, object, FALSE);
+    OBJ_AddChild(root, object);
     lua_pop(L, 1);
     return NULL;
   }

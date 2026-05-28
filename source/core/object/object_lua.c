@@ -134,7 +134,7 @@ int OBJ_CreateFromLuaState(lua_State *L) {
 
   struct Object ** ctx = lua_getextraspace(L);
   if (*ctx) {
-    OBJ_AddChild(*ctx, pobj, FALSE);
+    OBJ_AddChild(*ctx, pobj);
   }
 
   _ParseArguments(L, pobj);

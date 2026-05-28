@@ -882,7 +882,7 @@ void core_AddGlobalStyleRule(lua_State* L, struct Object* rule) {
     lua_setglobal(L, "__STYLE");
     lua_pop(L, 1);
   }
-  OBJ_AddChild(static_stylesheet, rule, FALSE);
+  OBJ_AddChild(static_stylesheet, rule);
 }
 
 ORCA_API void core_FlushQueue(lua_State* L) {

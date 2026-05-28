@@ -232,7 +232,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, struct Object *project)
       continue;
     }
 
-    OBJ_AddChild(project, anim_obj, FALSE);
+    OBJ_AddChild(project, anim_obj);
   }
 }
 #endif

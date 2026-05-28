@@ -328,7 +328,7 @@ OBJ_Rebuild(struct lua_State*, struct Object*);
 
 /// @brief Add a child object.
 ORCA_API struct Object*
-OBJ_AddChild(struct Object*, struct Object*, bool_t);
+OBJ_AddChild(struct Object*, struct Object*);
 
 /// @brief Detaches an object from its parent.
 ORCA_API void

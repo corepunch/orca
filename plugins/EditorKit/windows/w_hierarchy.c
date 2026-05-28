@@ -206,9 +206,9 @@ ED_HierarchyOnCommand(HEDWND wnd, LPVOID udata, DWORD cmd)
           struct Object *OBJ_LoadDocument(xmlDocPtr doc);
           struct Object *obj = OBJ_LoadDocument(doc);
           if (SceneView_GetSelection(wnd) && OBJ_GetParent(SceneView_GetSelection(wnd))) {
-            OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj, FALSE);
+            OBJ_AddChild(OBJ_GetParent(SceneView_GetSelection(wnd)), obj);
           } else {
-            OBJ_AddChild(root, obj, FALSE);
+            OBJ_AddChild(root, obj);
           }
         }
         ED_InvalidateWindow(wnd);
@@ -251,7 +251,7 @@ static LRESULT Hierarchy_OnDrop(HEDWND wnd, WORD item, LPEDDRAGITEM drag) {
     if (p == child)
       return FALSE;
   }
-  OBJ_AddChild(parent, child, FALSE);
+  OBJ_AddChild(parent, child);
   ED_InvalidateWindow(wnd);
   return TRUE;
 }

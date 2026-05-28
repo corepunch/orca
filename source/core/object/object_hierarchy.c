@@ -35,7 +35,7 @@ _PopupGetDialogResult(struct Object *modal, float *out_value)
   return TRUE;
 }
 
-struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is_template)
+struct Object *OBJ_AddChild(struct Object *self, struct Object *child)
 {
   if (child->parent == self) {
     REMOVE_FROM_LIST(struct Object, child, self->children);
@@ -51,9 +51,6 @@ struct Object *OBJ_AddChild(struct Object *self, struct Object *child, bool_t is
   struct Object_AttachedEventArgs attached_args = { .Sender = child };
   OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
-  if (is_template) {
-    OBJ_SetFlags(self, OBJ_GetFlags(self) | OF_TEMPLATE);
-  }
   return child;
 }
 

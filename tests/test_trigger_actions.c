@@ -486,8 +486,8 @@ test_event_trigger_no_args(void)
     EXPECT(source != NULL);
     EXPECT(target != NULL);
 
-    OBJ_AddChild(root, source, FALSE);
-    OBJ_AddChild(source, target, FALSE);
+    OBJ_AddChild(root, source);
+    OBJ_AddChild(source, target);
 
     set_up_source(source, "Node.RightButtonUp", "TestMessage.NoArgs", "Target");
 
@@ -515,8 +515,8 @@ test_event_trigger_single_value(void)
     EXPECT(source != NULL);
     EXPECT(target != NULL);
 
-    OBJ_AddChild(root, source, FALSE);
-    OBJ_AddChild(source, target, FALSE);
+    OBJ_AddChild(root, source);
+    OBJ_AddChild(source, target);
 
     set_up_source(source, "Node.KeyDown", "TestMessage.Value", "Target");
     SET_FLOAT(source, "Value", 3.25f);
@@ -546,8 +546,8 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
     EXPECT(source != NULL);
     EXPECT(target != NULL);
 
-    OBJ_AddChild(root, source, FALSE);
-    OBJ_AddChild(source, target, FALSE);
+    OBJ_AddChild(root, source);
+    OBJ_AddChild(source, target);
 
     set_up_source(source, "Node.RightButtonUp", "TestMessage.Mixed", "Target");
     SET_INT(source, "Count", 12);

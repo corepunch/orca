@@ -191,7 +191,7 @@ struct Object *UI_NewObject(struct Object *parent, lpcString_t szName, DWORD dwT
   struct Object *obj = luaX_checkObject(L, -1);
   ADD_TO_LIST_END(struct Object, obj, parent->children);
   obj->parent = parent;
-  OBJ_AddChild(parent, obj, FALSE);
+  OBJ_AddChild(parent, obj);
   OBJ_SetName(obj, szName);
   lua_pop(L, 1);
   return obj;

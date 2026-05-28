@@ -383,7 +383,7 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
             WITH(xmlDoc, doc, xmlNewDoc(XMLSTR("1.0")), xmlFree) {
               xmlDocSetRootElement(doc, xml);
               struct Object *OBJ_LoadDocument(xmlDocPtr doc);
-              OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(doc), FALSE);
+              OBJ_AddChild(OBJ_GetParent(data->selected), OBJ_LoadDocument(doc));
             }
           }
           return TRUE;

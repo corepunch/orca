@@ -365,7 +365,7 @@ FS_FreeFile(struct file* pFile)
 //  }
 //  lua_getfield(L, LUA_REGISTRYINDEX, cd->ClassName);
 //  lua_call(L, 0, 1);
-//  OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1), FALSE);
+//  OBJ_AddChild(((void**)param)[1], luaX_checkObject(L, -1));
 //  lua_pop(L, 1);
 //}
 
@@ -504,7 +504,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   }
 
 //  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
-  OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
+  OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project));
 
   _InitEnginePlugins(L, project);
   _InitPropertyTypes(project);
@@ -513,7 +513,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
   lua_pop(L, 1);
 
-  return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project), FALSE);
+  return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project));
 }
 
 #include "../core/core_local.h" // for file_loader

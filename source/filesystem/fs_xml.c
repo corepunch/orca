@@ -91,7 +91,7 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
     return FALSE;
   }
 
-  OBJ_AddChild(trigger, action, FALSE);
+  OBJ_AddChild(trigger, action);
   if (append_object(triggers, trigger)) return TRUE;
   OBJ_ReleaseRef(trigger);
   return FALSE;
@@ -324,7 +324,7 @@ visit_child(struct Object *o, struct _xmlNode* c)
   }
 
   struct Object *child = node(c);
-  if (child) OBJ_AddChild(o, child, FALSE);
+  if (child) OBJ_AddChild(o, child);
 }
 
 static struct Object *
