@@ -516,6 +516,49 @@ local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 	print("PASS: test_inline_trigger_mouse_dispatch_does_not_shadow_actions")
 end
 
+local function test_inline_show_modal_popup_flow()
+	local xml = [[
+	<Screen Name="inline-show-modal-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="OpenPopup" Text="Open" Width="140" Height="44" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
+	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline show modal XML should load")
+
+	local button = root and root:findChild("OpenPopup", true) or nil
+	test.expect(button ~= nil, "OpenPopup button should exist")
+
+	if button then
+		button:send("Node.LeftButtonUp")
+		pump_messages(root)
+	end
+
+	local popup = root and root:getNext() or nil
+	test.expect(popup ~= nil, "Popup should be loaded from inline ShowModal shorthand")
+	test.expect_eq(popup:getClassName(), "Popup", "Loaded modal object should be a Popup")
+
+	local close = popup and popup:findChild("GetStartedPopupClose", true) or nil
+	test.expect(close ~= nil, "Popup close button should exist")
+	if close then
+		close:send("Node.LeftButtonUp")
+		pump_messages(root)
+	end
+
+	test.expect_eq(root:getNext(), nil, "Popup should detach after ClosePopup")
+
+	if root then
+		root:clear()
+		root = nil
+	end
+	button = nil
+	close = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_inline_show_modal_popup_flow")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -1028,5 +1071,6 @@ test_binding_expression_bare_path_resolves_from_root()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()
+test_inline_show_modal_popup_flow()
 
 print("All layout tests passed.")
