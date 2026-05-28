@@ -108,7 +108,7 @@ inline_value(struct Object *o, struct PropertyType const *pd,
   struct Object *child = _LoadObjectFromXmlFragment(value, 0);
   if (!child) return FALSE;
   if (GetBinding(child) || GetBindingExpression(child)) {
-    bool_t ok = OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);
+    bool_t ok = (bool_t)OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);
     OBJ_ReleaseRef(child);
     return ok;
   }

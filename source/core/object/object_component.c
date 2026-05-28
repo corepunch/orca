@@ -201,7 +201,6 @@ _FireRoutedTrigger(struct Object *hObject, lpcString_t configured_event, lpcStri
     return FALSE;
   }
   return _SendMessage(hObject, Trigger, Triggered,
-                .Trigger = GetTrigger(hObject),
                 .Sender = sender ? sender : hObject);
 }
 

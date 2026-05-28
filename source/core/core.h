@@ -768,7 +768,6 @@ ORCA_API void luaX_pushBinding_CompileEventArgs(lua_State *L, struct Binding_Com
 ORCA_API struct Binding_CompileEventArgs* luaX_checkBinding_CompileEventArgs(lua_State *L, int idx);
 /** Trigger_TriggeredEventArgs struct */
 struct Trigger_TriggeredEventArgs {
-	struct Trigger* Trigger;
 	struct Object* Sender; ///< The object that caused the trigger to fire
 };
 ORCA_API void luaX_pushTrigger_TriggeredEventArgs(lua_State *L, struct Trigger_TriggeredEventArgs const* data);
@@ -1081,7 +1080,6 @@ ORCA_API struct HideAction* luaX_checkHideAction(lua_State *L, int idx);
 /// @brief Sends a typed message to a target object when triggered
 /** SendMessageAction component */
 struct SendMessageAction {
-	struct Trigger* Trigger; ///< Triggering condition or state image
 	const char* Message; ///< Fully qualified message name to send (e.g. "AnimationPlayer.Play", "StateManager.GoToState")
 	const char* Target; ///< Relative path to the target object that will receive the message
 };

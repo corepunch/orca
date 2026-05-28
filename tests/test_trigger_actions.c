@@ -472,16 +472,6 @@ set_up_source(struct Object *source,
   SET_STRING(source, "Target", target);
 }
 
-static bool_t
-is_trigger_bound(struct Object *source)
-{
-  struct Property *prop = NULL;
-  if (FAILED(OBJ_FindShortProperty(source, "Trigger", &prop)) || !prop) {
-    return FALSE;
-  }
-  return *(struct Object **)PROP_GetValue(prop) == CMP_GetObject(GetTrigger(source));
-}
-
 static void
 test_event_trigger_no_args(void)
 {
@@ -500,7 +490,6 @@ test_event_trigger_no_args(void)
     OBJ_AddChild(source, target, FALSE);
 
     set_up_source(source, "Node.RightButtonUp", "TestMessage.NoArgs", "Target");
-    EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
     pump_messages(root);
@@ -531,7 +520,6 @@ test_event_trigger_single_value(void)
 
     set_up_source(source, "Node.KeyDown", "TestMessage.Value", "Target");
     SET_FLOAT(source, "Value", 3.25f);
-    EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_KeyDown, 0, NULL);
     pump_messages(root);
@@ -563,7 +551,6 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
 
     set_up_source(source, "Node.RightButtonUp", "TestMessage.Mixed", "Target");
     SET_INT(source, "Count", 12);
-    EXPECT(is_trigger_bound(source));
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
     pump_messages(root);
@@ -581,17 +568,12 @@ test_show_modal_action_property_order(void)
 {
   RUN("show_modal_action_property_order", {
     struct Object *action = make_object(ID_ShowModalAction, "Action");
-    struct Property *trigger_prop = NULL;
     struct Property *path_prop = NULL;
 
     EXPECT(action != NULL);
-    EXPECT_OK(OBJ_FindShortProperty(action, "Trigger", &trigger_prop));
     EXPECT_OK(OBJ_FindShortProperty(action, "Path", &path_prop));
-    EXPECT(trigger_prop != NULL);
     EXPECT(path_prop != NULL);
-    EXPECT(strcmp(PROP_GetName(trigger_prop), "Trigger") == 0);
     EXPECT(strcmp(PROP_GetName(path_prop), "Path") == 0);
-    EXPECT(ShowModalAction_GetProperty(action, kShowModalActionTrigger) == trigger_prop);
     EXPECT(ShowModalAction_GetProperty(action, kShowModalActionPath) == path_prop);
   });
 }
@@ -637,6 +619,15 @@ test_show_modal_action_short_form(void)
     struct Object *close = popup ? OBJ_FindChild(popup, "Close", TRUE) : NULL;
     EXPECT(close != NULL);
     if (close) {
+      struct Property *triggers_prop = NULL;
+      struct Property *num_triggers_prop = NULL;
+      EXPECT_OK(OBJ_FindLongProperty(close, ID_Node_Triggers, &triggers_prop));
+      EXPECT_OK(OBJ_FindLongProperty(close, ID_Node_NumTriggers, &num_triggers_prop));
+      EXPECT(triggers_prop != NULL);
+      EXPECT(num_triggers_prop != NULL);
+      EXPECT(((int const *)PROP_GetValue(triggers_prop))[sizeof(void*) / sizeof(int)] == 1);
+      EXPECT(*(int*)PROP_GetValue(num_triggers_prop) == 1);
+
       OBJ_SendMessageW(close, ID_Node_LeftButtonUp, 0, NULL);
       pump_messages(root);
     }

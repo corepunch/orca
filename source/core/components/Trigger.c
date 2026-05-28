@@ -8,13 +8,6 @@ extern int parse_property(const char* str,
                           struct PropertyType const* prop,
                           void* valueptr);
 
-static bool_t
-_TriggerMatches(struct Trigger const* expected, struct Trigger_TriggeredEventArgs const* triggered)
-{
-  return !expected ||
-         (triggered && triggered->Trigger == expected);
-}
-
 static struct Object *
 _TriggerSender(struct Object *hObject, struct Trigger_TriggeredEventArgs const* triggered)
 {
@@ -115,34 +108,6 @@ _BindingCompileToProperty(struct Object *hObject,
   return TRUE;
 }
 
-static bool_t
-_BindActionTrigger(struct Object *hObject, struct Property **outProp)
-{
-  struct Property *prop = NULL;
-  struct Trigger *trigger = GetTrigger(hObject);
-  if (!trigger) {
-    struct Object *owner = OBJ_GetParent(hObject);
-    if (owner) {
-      trigger = GetTrigger(owner);
-      if (!trigger) {
-        struct Object *trigger_object = OBJ_FindChildOfClass(owner, ID_Trigger);
-        trigger = GetTrigger(trigger_object);
-      }
-    }
-  }
-  if (FAILED(OBJ_FindShortProperty(hObject, "Trigger", &prop))) {
-    return FALSE;
-  }
-  if (!trigger) {
-    return FALSE;
-  }
-  PROP_SetValue(prop, &trigger);
-  if (outProp) {
-    *outProp = prop;
-  }
-  return TRUE;
-}
-
 HANDLER(Trigger, Object, Attached)
 {
   struct Property *prop = NULL;
@@ -178,7 +143,7 @@ HANDLER(Trigger, Object, PropertyChanged)
     case kDataTypeFloat:
       if (fabs(*(float*)PROP_GetValue(pPropertyChanged->Property) -
                pTrigger->Value) < 0.001f) {
-        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = hObject);
+        _SendMessage(hObject, Trigger, Triggered, .Sender = hObject);
       }
       return FALSE;
     case kDataTypeInt:
@@ -186,7 +151,7 @@ HANDLER(Trigger, Object, PropertyChanged)
     case kDataTypeEnum:
       if (*(int*)PROP_GetValue(pPropertyChanged->Property) ==
           pTrigger->Value) {
-        _SendMessage(hObject, Trigger, Triggered, .Trigger = pTrigger, .Sender = hObject);
+        _SendMessage(hObject, Trigger, Triggered, .Sender = hObject);
       }
       return FALSE;
     default:
@@ -198,7 +163,6 @@ HANDLER(OnAttachedTrigger, Object, Attached)
 {
   struct Object *sender = OBJ_GetParent(hObject);
   _SendMessage(hObject, Trigger, Triggered,
-               .Trigger = GetTrigger(CMP_GetObject(pOnAttachedTrigger)),
                .Sender = sender ? sender : hObject);
   return FALSE;
 }
@@ -209,7 +173,6 @@ HANDLER(Trigger, Trigger, Triggered)
   
   for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
     LRESULT result = _SendMessage(child, Trigger, Triggered,
-                 .Trigger = pTriggered->Trigger,
                  .Sender = sender);
     if (result) return result;
   }
@@ -218,10 +181,6 @@ HANDLER(Trigger, Trigger, Triggered)
 
 HANDLER(Setter, Trigger, Triggered)
 {
-  if (!_TriggerMatches(pSetter->Trigger, pTriggered)) {
-    return FALSE;
-  }
-
   if (!pSetter->Property || !pSetter->Value) {
     Con_Error("Setter missing Property or Value");
     return FALSE;
@@ -257,7 +216,6 @@ _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrig
   if (strcmp(pEventTrigger->RoutedEvent, routed_event))
     return FALSE;
   return _SendMessage(hObject, Trigger, Triggered,
-                .Trigger = GetTrigger(CMP_GetObject(pEventTrigger)),
                 .Sender = sender ? sender : hObject);
 }
 
@@ -283,6 +241,18 @@ HANDLER(ShowModalAction, Trigger, Triggered)
   if (OBJ_ShowModalObject(sender, target)) {
     bool_t visible = TRUE;
     OBJ_SetPropertyValue(target, "Visible", &visible);
+    /* Force an immediate repaint on the owning screen so the modal appears
+     * without waiting for the next unrelated OS event. */
+    struct Object *screen = OBJ_GetParent(target);
+    if (screen) {
+      struct AXsize size = {0};
+      axGetSize(&size);
+      Window_PaintMsg_t paint = {
+        .WindowWidth = (int)size.width,
+        .WindowHeight = (int)size.height,
+      };
+      OBJ_SendMessageW(screen, ID_Window_Paint, MAKEDWORD(size.width, size.height), &paint);
+    }
     return TRUE; // This will tell the system to refresh the screen
   }
   return FALSE;
@@ -324,7 +294,6 @@ HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
              pOnPropertyChangedTrigger->Property))
     return FALSE;
   _SendMessage(hObject, Trigger, Triggered,
-               .Trigger = GetTrigger(CMP_GetObject(pOnPropertyChangedTrigger)),
                .Sender = hObject);
   return FALSE;
 }

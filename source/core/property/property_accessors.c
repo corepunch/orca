@@ -74,6 +74,9 @@ PROP_GetUserData(struct Property const *property)
 void const*
 PROP_GetValue(struct Property const *property)
 {
+  if (property && property->pdesc && property->pdesc->IsArray) {
+    return property->value;
+  }
   if (PROP_GetType(property) == kDataTypeObject) {
     static struct Object *obj[256];
     static uint8_t i = 0;

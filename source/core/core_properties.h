@@ -254,9 +254,8 @@ enum EventTriggerProperties {
 #define ID_Setter_Trigger 0xd1fad954 // Setter.Trigger
 #define ID_Setter_Property 0x89d17a41 // Setter.Property
 #define ID_Setter_Value 0x8fd76d09 // Setter.Value
-#define kSetterNumProperties 3
+#define kSetterNumProperties 2
 enum SetterProperties {
-	kSetterTrigger,
 	kSetterProperty,
 	kSetterValue,
 };
@@ -266,9 +265,8 @@ enum SetterProperties {
 #define ShowModalAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_ShowModalAction,sizeof(struct ShowModalAction),_N)
 #define ID_ShowModalAction_Trigger 0x943d9165 // ShowModalAction.Trigger
 #define ID_ShowModalAction_Path 0xa62e790c // ShowModalAction.Path
-#define kShowModalActionNumProperties 2
+#define kShowModalActionNumProperties 1
 enum ShowModalActionProperties {
-	kShowModalActionTrigger,
 	kShowModalActionPath,
 };
 // HideAction
@@ -277,21 +275,18 @@ enum ShowModalActionProperties {
 #define HideAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_HideAction,sizeof(struct HideAction),_N)
 #define ID_HideAction_Trigger 0xe5d9eec5 // HideAction.Trigger
 #define ID_HideAction_Path 0x79a688ec // HideAction.Path
-#define kHideActionNumProperties 2
+#define kHideActionNumProperties 1
 enum HideActionProperties {
-	kHideActionTrigger,
 	kHideActionPath,
 };
 // SendMessageAction
 #define ID_SendMessageAction 0x0d7a8364
 #define GetSendMessageAction(_P) ((struct SendMessageAction*)((_P)?OBJ_GetComponent(_P,ID_SendMessageAction):NULL))
 #define SendMessageAction_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_SendMessageAction,sizeof(struct SendMessageAction),_N)
-#define ID_SendMessageAction_Trigger 0x95148286 // SendMessageAction.Trigger
 #define ID_SendMessageAction_Message 0xaab3d25d // SendMessageAction.Message
 #define ID_SendMessageAction_Target 0xd2ed344f // SendMessageAction.Target
-#define kSendMessageActionNumProperties 3
+#define kSendMessageActionNumProperties 2
 enum SendMessageActionProperties {
-	kSendMessageActionTrigger,
 	kSendMessageActionMessage,
 	kSendMessageActionTarget,
 };

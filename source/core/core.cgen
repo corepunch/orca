@@ -840,9 +840,8 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       </properties>
       <messages>
         <message name="Triggered">
-          <summary>Fired when the trigger condition is met, carrying a reference to the trigger that activated.</summary>
+          <summary>Fired when the trigger condition is met.</summary>
           <fields>
-            <field name="Trigger" type="Trigger" pointer="true"/>
             <field name="Sender" type="Object" pointer="true">The object that caused the trigger to fire</field>
           </fields>
         </message>
@@ -885,7 +884,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
         <property name="Property" type="string">Target property name to set </property>
         <property name="Value" type="string">Value to apply to the property </property>
       </properties>
@@ -899,7 +897,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
         <property name="Path" type="string">Asset path to the popup template that should be shown modally</property>
       </properties>
     </class>
@@ -912,7 +909,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image </property>
         <property name="Path" type="string">Relative path to the object that should be hidden</property>
       </properties>
     </class>
@@ -925,7 +921,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Trigger.Triggered"/>
       </handles>
       <properties>
-        <property name="Trigger" type="Trigger" pointer="true">Triggering condition or state image</property>
         <property name="Message" type="string">Fully qualified message name to send (e.g. "AnimationPlayer.Play", "StateManager.GoToState")</property>
         <property name="Target" type="string">Relative path to the target object that will receive the message</property>
       </properties>

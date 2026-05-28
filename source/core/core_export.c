@@ -711,7 +711,6 @@ struct PropertyType _Binding_CompileEventArgs_Properties[] = {
 #define _Binding_CompileEventArgs _Binding_CompileEventArgs_Properties
 static luaL_Reg _Trigger_TriggeredEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Trigger_TriggeredEventArgs_Properties[] = {
-	DECL(0xa5ea0da3, Trigger_TriggeredEventArgs, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Trigger_TriggeredEventArgs.Trigger
 	DECL(0xe573f884, Trigger_TriggeredEventArgs, Sender, Sender, kDataTypeObject, .TypeString = "Object"), // Trigger_TriggeredEventArgs.Sender
 };
 #define _Trigger_TriggeredEventArgs _Trigger_TriggeredEventArgs_Properties
@@ -1456,7 +1455,6 @@ struct EventTrigger* luaX_checkEventTrigger(lua_State *L, int idx) {
 REGISTER_CLASS(EventTrigger, ID_Trigger, 0);
 HANDLER(Setter, Trigger, Triggered);
 static struct PropertyType const SetterProperties[kSetterNumProperties] = {
-	DECL(0xa5ea0da3, Setter, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // Setter.Trigger
 	DECL(0x5221f9e8, Setter, Property, Property, kDataTypeString), // Setter.Property
 	DECL(0xd147f96a, Setter, Value, Value, kDataTypeString), // Setter.Value
 };
@@ -1478,7 +1476,6 @@ REGISTER_CLASS(Setter, 0);
 HANDLER(ShowModalAction, Object, Attached);
 HANDLER(ShowModalAction, Trigger, Triggered);
 static struct PropertyType const ShowModalActionProperties[kShowModalActionNumProperties] = {
-	DECL(0xa5ea0da3, ShowModalAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // ShowModalAction.Trigger
 	DECL(0xeb66e456, ShowModalAction, Path, Path, kDataTypeString), // ShowModalAction.Path
 };
 static struct ShowModalAction ShowModalActionDefaults = {
@@ -1500,7 +1497,6 @@ REGISTER_CLASS(ShowModalAction, 0);
 HANDLER(HideAction, Object, Attached);
 HANDLER(HideAction, Trigger, Triggered);
 static struct PropertyType const HideActionProperties[kHideActionNumProperties] = {
-	DECL(0xa5ea0da3, HideAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // HideAction.Trigger
 	DECL(0xeb66e456, HideAction, Path, Path, kDataTypeString), // HideAction.Path
 };
 static struct HideAction HideActionDefaults = {
@@ -1519,10 +1515,8 @@ struct HideAction* luaX_checkHideAction(lua_State *L, int idx) {
 	return GetHideAction(luaX_checkObject(L, idx));
 }
 REGISTER_CLASS(HideAction, 0);
-HANDLER(SendMessageAction, Object, Attached);
 HANDLER(SendMessageAction, Trigger, Triggered);
 static struct PropertyType const SendMessageActionProperties[kSendMessageActionNumProperties] = {
-	DECL(0xa5ea0da3, SendMessageAction, Trigger, Trigger, kDataTypeObject, .TypeString = "Trigger"), // SendMessageAction.Trigger
 	DECL(0xae0ed984, SendMessageAction, Message, Message, kDataTypeString), // SendMessageAction.Message
 	DECL(0x8b67f168, SendMessageAction, Target, Target, kDataTypeString), // SendMessageAction.Target
 };
@@ -1530,7 +1524,6 @@ static struct SendMessageAction SendMessageActionDefaults = {
 };
 LRESULT SendMessageActionProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
-		case ID_Object_Attached: return SendMessageAction_Attached(object, cmp, wparm, lparm); // Object.Attached
 		case ID_Trigger_Triggered: return SendMessageAction_Triggered(object, cmp, wparm, lparm); // Trigger.Triggered
 	}
 	return FALSE;
