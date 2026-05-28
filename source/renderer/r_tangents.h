@@ -126,7 +126,7 @@ Model_GenerateTangents(PDRAWSURF model)
     }
     
     // Gram-Schmidt orthogonalize
-    struct vec3 temp, temp1, n, t3;
+    struct vec3 temp, temp1, n={0}, t3;
     
     vertex->normal = VEC3_Scale(n2, 1.0f / normalsPerVtx);
     

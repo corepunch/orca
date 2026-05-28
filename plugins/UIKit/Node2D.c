@@ -213,7 +213,7 @@ HANDLER(Node2D, Node, MouseMoved)
 }
 
 float Node2D_GetSize(struct Node2D *pNode2D, enum Direction axis, enum Sizing sizing) {
-  float const size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + axis);
+  float const size = Node2D_GetFrame(pNode2D, kBox3FieldWidth + (int)axis);
   switch (sizing) {
     case kSizingPlusMargin:
       return size + TOTAL_MARGIN(pNode2D, axis);
