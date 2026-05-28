@@ -26,7 +26,7 @@ UIKit composition rules
 - For hierarchical UI composition, prefer DSL block syntax with -> (for example stack "...", -> ...), instead of long node + chains.
 - Use node + only when attaching a pre-built node instance; for normal UI trees prefer constructor + block syntax.
 - Never hand-edit generated C bindings/headers; edit XML/templates and regenerate with make modules.
-- Modal popups should be declared as `<Popup>` roots and shown through `ShowModalAction` loading a popup template.
+- Modal popups should be declared as `<Popup>` roots and shown through the inline XML shorthand `{Screen.ShowModal Path=...}` loading a popup template.
 - Popups generally stretch their background/overlay to the full screen, so do not add root `Width`/`Height` unless the popup genuinely needs a custom bounds box.
 - The body function passed to a widget (StackView class: "...", =>) is run AFTER OBJ_Clear wipes the node. Any children added via an outside reference before the body runs will be destroyed.
 - To inject pre-built nodes (e.g. route content from content_for) into a widget, do it INSIDE the body closure.
