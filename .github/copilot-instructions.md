@@ -247,6 +247,14 @@ struct ClassDesc {
 - Popups generally rely on a full-screen background/overlay and should not set root `Width`/`Height` unless there is a specific layout need.
 - Use `Popup.ClosePopup` to dismiss the popup and return its result.
 
+## XML Message Dispatch Shorthand
+
+- Inline XML can dispatch any registered message type with the WPF-style shorthand, for example `{Node.RightButtonUp}`, `{Popup.ClosePopup}`, or `{Screen.ShowModal Path=...}`.
+- The shorthand lowers to `SendMessageAction` under the hood.
+- Named arguments map to the registered message payload fields, including short field names like `Path=...` when the message defines `Screen_ShowModalEventArgs.Path`.
+- Use commas between named arguments when helpful, and nested `{...}` expressions are allowed inside payload values.
+- Prefer this shorthand in XML when you want concise message dispatch instead of an explicit `SendMessageAction` element.
+
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 
 ```c

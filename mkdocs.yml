@@ -20,6 +20,7 @@ nav:
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
   - Module XML Guide: MODULE_XML_GUIDE.md
+  - XML Triggers, Actions, and Message Types: xml-triggers-actions-messages.md
   - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
   - WebGL / Emscripten: webgl.md
   - Developer Notes:
