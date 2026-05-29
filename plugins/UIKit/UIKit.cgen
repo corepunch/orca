@@ -238,7 +238,7 @@
         <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
         <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
         <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
-        <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
+        <property name="WordWrap" type="bool" default="TRUE">Enables automatic word wrapping of the text.</property>
         <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior.</property>
         <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
         <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
@@ -641,6 +641,8 @@
       <handles>
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
+        <handle message="Screen.ShowModal"/>
+        <handle message="Screen.SetModalObject"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
@@ -671,6 +673,20 @@
             <field name="stereo" type="float">The stereo value of the render screen</field>
             <field name="angle" type="float">The angle of the render screen</field>
             <field name="target" type="Texture" pointer="true">The target handle of the render screen</field>
+          </fields>
+        </message>
+        <message name="ShowModal" routing="Bubbling">
+          <summary>Requests the screen to load and present a popup modally.</summary>
+          <details>The message bubbles to the owning Screen so it can load the popup template, attach it as the current modal child, and refresh the screen immediately.</details>
+          <fields>
+            <field name="Path" type="string">Popup template path to load.</field>
+          </fields>
+        </message>
+        <message name="SetModalObject" routing="Direct">
+          <summary>Attaches an already-loaded popup as the screen's modal child.</summary>
+          <details>This message is the in-memory counterpart to ShowModal and lets callers present a popup object without loading it from disk.</details>
+          <fields>
+            <field name="Target" type="Object" pointer="true">Popup object to present modally.</field>
           </fields>
         </message>
       </messages>

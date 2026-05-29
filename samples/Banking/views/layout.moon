@@ -10,11 +10,11 @@ NAV_ITEMS = {
 }
 
 make_header = (title) ->
-	StackView class: "bg-header-bg px-5 py-3 justify-center", =>
+	StackView class: "bg-header-background px-5 py-3 justify-center", =>
 		TextBlock class: "text-2xl font-bold align-center text-accent-foreground", title
 
 make_footer = (active_route, navigate) ->
-	StackView class: "bg-header-bg flex-row justify-evenly items-center p-2", =>
+	StackView class: "bg-header-background flex-row justify-evenly items-center p-2", =>
 		for item in *NAV_ITEMS
 			selected = active_route == item.route
 			color  = selected and "text-accent" or "text-foreground-muted"

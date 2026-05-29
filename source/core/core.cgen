@@ -439,12 +439,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <summary>Sets the hover state for an object</summary>
           <details>Marks this object as the currently hovered object. This is typically called by the input system when the mouse cursor moves over an object.</details>
         </method>
-        <method name="ShowModal" lua="true">
-          <summary>Sets or clears the modal child object</summary>
-          <details>Sets a child object as modal, or clears the existing modal by passing null. When set, the previous modal is removed from the parent and the new modal object is attached. The modal object has the OF_NOACTIVATE flag set and its parent pointer is updated. Modal objects are typically used for popups, menus, or dialogs that should capture input.</details>
-          <arg name="modal" type="Object" pointer="true">The object to set as modal, or null to clear the current modal</arg>
-          <returns type="nresults">Starts a coroutine</returns>
-        </method>
         <method name="SetTimer">
           <summary>Set a timer on the object.</summary>
           <details>Creates and starts a timer associated with this object. Timers can be one-shot or repeating, and execute callback functions after specified delays or intervals. The timer is automatically cleaned up when the object is destroyed. Multiple timers can be active on the same object simultaneously. Timers integrate with the game's update loop and respect pause states.</details>
@@ -885,18 +879,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <properties>
         <property name="Property" type="string">Target property name to set </property>
         <property name="Value" type="string">Value to apply to the property </property>
-      </properties>
-    </class>
-    <class name="ShowModalAction">
-      <summary>Loads a popup template and shows it modally</summary>
-      <details>Resolves the path as a popup template asset, loads a fresh object instance, and marks it modal so it captures input.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.Attached"/>
-        <handle message="Trigger.Triggered"/>
-      </handles>
-      <properties>
-        <property name="Path" type="string">Asset path to the popup template that should be shown modally</property>
       </properties>
     </class>
     <class name="HideAction">

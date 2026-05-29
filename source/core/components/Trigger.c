@@ -219,50 +219,6 @@ _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrig
                 .Sender = sender ? sender : hObject);
 }
 
-HANDLER(ShowModalAction, Trigger, Triggered)
-{
-  if (!pShowModalAction->Path || !*pShowModalAction->Path) {
-    Con_Error("ShowModalAction missing Path");
-    return FALSE;
-  }
-
-  struct Object *sender = _TriggerSender(hObject, pTriggered);
-  struct Object *target = FS_LoadObject(pShowModalAction->Path);
-  if (!target) {
-    Con_Error("ShowModalAction could not load template '%s'", pShowModalAction->Path);
-    return FALSE;
-  }
-
-  if (!OBJ_GetComponent(target, fnv1a32("Popup"))) {
-    Con_Error("ShowModalAction template '%s' is not a Popup", pShowModalAction->Path);
-    OBJ_RemoveFromParent(target);
-    return FALSE;
-  }
-  if (OBJ_ShowModalObject(sender, target)) {
-    bool_t visible = TRUE;
-    OBJ_SetPropertyValue(target, "Visible", &visible);
-    /* Force an immediate repaint on the owning screen so the modal appears
-     * without waiting for the next unrelated OS event. */
-    struct Object *screen = OBJ_GetParent(target);
-    if (screen) {
-      struct AXsize size = {0};
-      axGetSize(&size);
-      Window_PaintMsg_t paint = {
-        .WindowWidth = (int)size.width,
-        .WindowHeight = (int)size.height,
-      };
-      OBJ_SendMessageW(screen, ID_Window_Paint, MAKEDWORD(size.width, size.height), &paint);
-    }
-    return TRUE; // This will tell the system to refresh the screen
-  }
-  return FALSE;
-}
-
-HANDLER(ShowModalAction, Object, Attached)
-{
-  return FALSE;
-}
-
 HANDLER(HideAction, Trigger, Triggered)
 {
   if (!pHideAction->Path || !*pHideAction->Path) {
@@ -278,7 +234,7 @@ HANDLER(HideAction, Trigger, Triggered)
   }
 
   _SetTargetVisible(target, FALSE);
-  return FALSE;
+  return TRUE;
 }
 
 HANDLER(HideAction, Object, Attached)

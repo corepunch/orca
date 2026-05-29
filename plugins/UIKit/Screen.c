@@ -1,10 +1,15 @@
 #include <include/renderer.h>
 
 #include <plugins/UIKit/UIKit.h>
+#include <source/filesystem/filesystem.h>
 #include <source/core/object/object_internal.h>
+#include <source/core/property/property_internal.h>
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+
+static bool_t
+_PopupSetDialogResult(struct Object *modal, float value);
 
 typedef struct _DRAW2DCONTENTSTRUCT
 {
@@ -51,6 +56,20 @@ _Pipeline2D(int width, int height)
       .viewport = { 0, 0, width, height },
       .scissor = { 0, 0, width, height },
 	};
+}
+
+static bool_t
+_PopupSetDialogResult(struct Object *modal, float value)
+{
+  struct Property *dialog_result = NULL;
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
+    return FALSE;
+  }
+  PROP_SetValue(dialog_result, &value);
+  return TRUE;
 }
 
 static void
@@ -642,23 +661,91 @@ _RemoveFromModalChain(struct Object *hObject)
   return FALSE;
 }
 
+static bool_t
+_AttachModalObject(struct Object *hObject, struct Object *target)
+{
+  if (!hObject || !target) {
+    Con_Error("Invalid arguments to modal attachment");
+    return FALSE;
+  }
+
+  if (target->parent) {
+    REMOVE_FROM_LIST(struct Object, target, target->parent->children);
+    REMOVE_FROM_LIST(struct Object, target, target->parent);
+  }
+
+  struct Object **next = &hObject->next;
+  while (*next) next = &(*next)->next;
+  *next = target;
+  OBJ_AddRef(target);
+  target->parent = hObject;
+  target->flags |= OF_NOACTIVATE;
+  if (!_PopupSetDialogResult(target, NAN)) {
+    Con_Error("Modal popup missing DialogResult property");
+  }
+  return TRUE;
+}
+
 static void
 _CloseModalPopup(struct Object *hObject, float result)
 {
   struct Popup *popup = GetPopup(hObject);
+  struct Property *dialog_result = NULL;
+  bool_t has_dialog_result_handler = FALSE;
   if (!popup) {
     return;
   }
 
-  popup->DialogResult = result;
+  if (SUCCEEDED(OBJ_FindShortProperty(hObject, "DialogResult", &dialog_result)) &&
+      dialog_result && PROP_GetType(dialog_result) == kDataTypeFloat) {
+    has_dialog_result_handler = PROP_HasHandler(dialog_result);
+    PROP_SetValue(dialog_result, &result);
+  } else {
+    popup->DialogResult = result;
+  }
   {
     bool_t visible = FALSE;
     OBJ_SetPropertyValue(hObject, "Visible", &visible);
   }
 
-  if (_RemoveFromModalChain(hObject)) {
+  if (!has_dialog_result_handler && _RemoveFromModalChain(hObject)) {
     OBJ_RemoveFromParent(hObject);
   }
+}
+
+HANDLER(Screen, Screen, ShowModal) {
+  if (!pShowModal || !pShowModal->Path || !*pShowModal->Path) {
+    Con_Error("Screen.ShowModal missing Path");
+    return FALSE;
+  }
+
+  struct Object *target = FS_LoadObject(pShowModal->Path);
+  if (!target) {
+    Con_Error("Screen.ShowModal could not load template '%s'", pShowModal->Path);
+    return FALSE;
+  }
+
+  if (!GetPopup(target)) {
+    Con_Error("Screen.ShowModal template '%s' is not a Popup", pShowModal->Path);
+    OBJ_ReleaseRef(target); // Release the loaded object since we're not going to use it
+    return FALSE;
+  }
+
+  if (_AttachModalObject(hObject, target)) {
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(target, "Visible", &visible);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+HANDLER(Screen, Screen, SetModalObject) {
+  if (_AttachModalObject(hObject, pSetModalObject->Target)) {
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(pSetModalObject->Target, "Visible", &visible);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 HANDLER(Popup, Popup, ClosePopup) {

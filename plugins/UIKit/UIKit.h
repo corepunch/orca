@@ -39,6 +39,8 @@ typedef struct TabBar_SelectionChangedEventArgs TabBar_SelectionChangedMsg_t,* T
 typedef struct TabView_SelectionChangedEventArgs TabView_SelectionChangedMsg_t,* TabView_SelectionChangedMsgPtr;
 typedef struct Screen_UpdateLayoutEventArgs Screen_UpdateLayoutMsg_t,* Screen_UpdateLayoutMsgPtr;
 typedef struct Screen_RenderScreenEventArgs Screen_RenderScreenMsg_t,* Screen_RenderScreenMsgPtr;
+typedef struct Screen_ShowModalEventArgs Screen_ShowModalMsg_t,* Screen_ShowModalMsgPtr;
+typedef struct Screen_SetModalObjectEventArgs Screen_SetModalObjectMsg_t,* Screen_SetModalObjectMsgPtr;
 typedef struct Popup_ClosePopupEventArgs Popup_ClosePopupMsg_t,* Popup_ClosePopupMsgPtr;
 typedef struct ConsoleView_PrintlnEventArgs ConsoleView_PrintlnMsg_t,* ConsoleView_PrintlnMsgPtr;
 typedef struct ConsoleView_EraseEventArgs ConsoleView_EraseMsg_t,* ConsoleView_EraseMsgPtr;
@@ -431,6 +433,18 @@ struct Screen_RenderScreenEventArgs {
 };
 ORCA_API void luaX_pushScreen_RenderScreenEventArgs(lua_State *L, struct Screen_RenderScreenEventArgs const* data);
 ORCA_API struct Screen_RenderScreenEventArgs* luaX_checkScreen_RenderScreenEventArgs(lua_State *L, int idx);
+/** Screen_ShowModalEventArgs struct */
+struct Screen_ShowModalEventArgs {
+	const char* Path; ///< Popup template path to load.
+};
+ORCA_API void luaX_pushScreen_ShowModalEventArgs(lua_State *L, struct Screen_ShowModalEventArgs const* data);
+ORCA_API struct Screen_ShowModalEventArgs* luaX_checkScreen_ShowModalEventArgs(lua_State *L, int idx);
+/** Screen_SetModalObjectEventArgs struct */
+struct Screen_SetModalObjectEventArgs {
+	struct Object* Target; ///< Popup object to present modally.
+};
+ORCA_API void luaX_pushScreen_SetModalObjectEventArgs(lua_State *L, struct Screen_SetModalObjectEventArgs const* data);
+ORCA_API struct Screen_SetModalObjectEventArgs* luaX_checkScreen_SetModalObjectEventArgs(lua_State *L, int idx);
 /** Popup_ClosePopupEventArgs struct */
 struct Popup_ClosePopupEventArgs {
 	float ReturnValue; ///< Numeric result to return from ShowModal()
@@ -753,6 +767,8 @@ struct Screen {
 	uint32_t _size; ///< Currently set size (to resize window when changed).
 	event_t UpdateLayout;
 	event_t RenderScreen;
+	event_t ShowModal;
+	event_t SetModalObject;
 };
 ORCA_API void luaX_pushScreen(lua_State *L, struct Screen const* Screen);
 ORCA_API struct Screen* luaX_checkScreen(lua_State *L, int idx);

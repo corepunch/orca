@@ -468,10 +468,6 @@ OBJ_IsFocused(struct Object const*);
 ORCA_API void
 OBJ_SetHover(struct Object*);
 
-/// @brief Sets or clears the modal child object
-ORCA_API int
-OBJ_ShowModal(struct lua_State*, struct Object*, struct Object*);
-
 /// @brief Set a timer on the object.
 ORCA_API int32_t
 OBJ_SetTimer(struct Object*, int32_t);
@@ -1057,14 +1053,6 @@ struct Setter {
 };
 ORCA_API void luaX_pushSetter(lua_State *L, struct Setter const* Setter);
 ORCA_API struct Setter* luaX_checkSetter(lua_State *L, int idx);
-
-/// @brief Loads a popup template and shows it modally
-/** ShowModalAction component */
-struct ShowModalAction {
-	const char* Path; ///< Asset path to the popup template that should be shown modally
-};
-ORCA_API void luaX_pushShowModalAction(lua_State *L, struct ShowModalAction const* ShowModalAction);
-ORCA_API struct ShowModalAction* luaX_checkShowModalAction(lua_State *L, int idx);
 
 /// @brief Hides the object at the provided path when triggered
 /** HideAction component */

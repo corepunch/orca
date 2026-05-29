@@ -1,6 +1,7 @@
 #include <include/api.h>
 #include <include/orca.h>
 
+#include <plugins/UIKit/UIKit.h>
 #include <source/core/core_local.h>
 
 enum
@@ -81,8 +82,6 @@ is_on_changed_callback_name(lpcString_t name)
   return len > 7 && strcmp(name + len - 7, "Changed") == 0;
 }
 
-
-#include <plugins/UIKit/UIKit.h>
 #include <source/filesystem/filesystem.h>
 bool_t
 OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)

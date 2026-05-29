@@ -11,7 +11,6 @@ local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 test.expect(core.EventTrigger ~= nil, "EventTrigger should be exported from orca.core")
-test.expect(core.ShowModalAction ~= nil, "ShowModalAction should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
 test.expect(core.SendMessageAction ~= nil, "SendMessageAction should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
@@ -189,6 +188,32 @@ local function test_grid_mixed_px_fr()
 end
 
 -- ---------------------------------------------------------------------------
+-- ImageView must fit inside a fixed grid column instead of measuring itself
+-- at its intrinsic bitmap size.
+-- ---------------------------------------------------------------------------
+local function test_grid_fixed_column_image_fits()
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local grid = outer + ui.Grid { Columns = "48px", Spacing = 0 }
+	local source = renderer.Texture {
+		Width = 400,
+		Height = 1200,
+	}
+	local image = grid + ui.ImageView {
+		Source = source,
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(image.ActualWidth, 48,
+		"image width should fit the fixed column")
+	test.expect_eq(image.ActualHeight, 144,
+		"image height should scale proportionally")
+
+	outer:removeFromParent()
+	print("PASS: test_grid_fixed_column_image_fits")
+end
+
+-- ---------------------------------------------------------------------------
 -- Grid with no Rows specified: children must wrap into implicit rows instead
 -- of all landing at y=0.
 -- ---------------------------------------------------------------------------
@@ -285,7 +310,7 @@ local function test_xml_loading_inline_imageview_source()
 <ImageView Name="inline-image-view"
            Width="32"
            Height="32"
-           Source="{Texture Width=48 Height=24}" />]]
+           Source="{Texture Width=48, Height=24}" />]]
 
 	local image_view = filesystem.loadObjectFromXmlString(xml)
 	test.expect(image_view ~= nil, "inline ImageView should load")
@@ -458,7 +483,7 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Example/Screens/GetStartedPopup/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -491,7 +516,7 @@ local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 	local xml = [[
 	<Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA"
-	    LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -517,6 +542,103 @@ local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 	print("PASS: test_inline_trigger_mouse_dispatch_does_not_shadow_actions")
 end
 
+local function test_inline_show_modal_popup_flow()
+	local xml = [[
+	<Screen Name="inline-show-modal-screen" Width="800" Height="600" ResizeMode="NoResize">
+	  <TextBlock Name="OpenPopup" Text="Open" Width="140" Height="44" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
+	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
+	</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inline show modal XML should load")
+
+	local button = root and root:findChild("OpenPopup", true) or nil
+	test.expect(button ~= nil, "OpenPopup button should exist")
+
+	if button then
+		button:send("Node.LeftButtonUp")
+		pump_messages(root)
+	end
+
+	local popup = root and root:getNext() or nil
+	test.expect(popup ~= nil, "Popup should be loaded from inline ShowModal shorthand")
+	test.expect_eq(popup:getClassName(), "Popup", "Loaded modal object should be a Popup")
+
+	local close = popup and popup:findChild("GetStartedPopupClose", true) or nil
+	test.expect(close ~= nil, "Popup close button should exist")
+	if close then
+		close:send("Node.LeftButtonUp")
+		pump_messages(root)
+	end
+
+	test.expect_eq(root:getNext(), nil, "Popup should detach after ClosePopup")
+
+	if root then
+		root:clear()
+		root = nil
+	end
+	button = nil
+	close = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_inline_show_modal_popup_flow")
+end
+
+local function test_lua_set_modal_object_dispatches_message()
+	local root = ui.Screen { Name = "lua-set-modal-screen", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local popup = ui.Popup { Name = "LuaModal", Width = 240, Height = 160, Visible = false }
+
+	local result = root:SetModalObject(popup)
+
+	test.expect_eq(result, 1, "SetModalObject shorthand should dispatch Screen.SetModalObject")
+	test.expect_eq(root:getNext(), popup, "SetModalObject should attach the popup through the screen message handler")
+	test.expect(popup.Visible, "SetModalObject should make the modal visible")
+	test.expect(popup.DialogResult ~= popup.DialogResult, "SetModalObject should reset DialogResult to NaN")
+
+	root:clear()
+	root = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_lua_set_modal_object_dispatches_message")
+end
+
+local function test_stackview_align_items_preserves_child_stretch_width()
+	local root = ui.Screen { Name = "PopupLayoutRoot", Width = 420, Height = 600, ResizeMode = "NoResize" }
+	local overlay = root + ui.StackView {
+		Name = "AdventurePopupOverlay",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+		HorizontalMargin = core.EdgeShorthand(32, 32),
+		VerticalMargin = core.EdgeShorthand(32, 32),
+		Padding = core.Thickness(16),
+	}
+	local card = overlay + ui.StackView {
+		Name = "AdventurePopupCard",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+		Padding = core.Thickness(24),
+		Spacing = 16,
+	}
+	local body = card + ui.TextBlock {
+		Name = "AdventurePopupBody",
+		Text = "There was a game running already. Do you want to continue it? There was a game running already. Do you want to continue it?",
+		FontSize = 14,
+	}
+
+	root:UpdateLayout(root.Width, root.Height)
+
+	test.expect_near(overlay.ActualWidth, 356, 1, "overlay should respect root width minus horizontal margins")
+	test.expect_near(card.ActualWidth, 324, 1, "stretched card should fill overlay content width minus padding")
+	test.expect(body.ActualWidth <= 276, "body text should be measured inside card padding")
+
+	root:clear()
+	print("PASS: test_stackview_align_items_preserves_child_stretch_width")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -527,7 +649,7 @@ local function test_xml_loading_close_popup_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <ShowModalAction Example/Screens/GetStartedPopup/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -570,7 +692,7 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <ShowModalAction Path="Example/Screens/GetStartedPopup"/>
+	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -790,14 +912,14 @@ local function test_example_application_xml()
 	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_show = xml:find('LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"', 1, true)
+	local get_started_show = xml:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
 	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
 	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{SendMessageAction Popup.ClosePopup ../../..}"', 1, true)
+	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{Popup.ClosePopup}"', 1, true)
 	local city_image = xml:find("orca-tab-city", 1, true)
 	local lights_image = xml:find("orca-tab-lights", 1, true)
 	local icon_count = count_occurrences(xml, "Example/Icons/")
@@ -935,8 +1057,8 @@ local function test_example_application_xml()
 		"TabView should size its buffered SelectionChanged payload")
 	test.expect(input_source ~= nil and input_source:find('SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);', 1, true) ~= nil,
 		"Input should copy its Submit payload before posting")
-	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, lua_touserdata(L, 3), lua_rawlen(L, 3));', 1, true) ~= nil,
-		"Lua object post helper should copy payload data before posting")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) ~= nil,
+		"Lua object post helper should post the built payload through the buffered helper")
 
 	print("PASS: test_example_application_xml")
 end
@@ -988,7 +1110,7 @@ local function test_example_xml_parser_coverage()
 	      Card.Body="Layouts stay readable."
 	      Card.PrimaryColor="#55AAFF"/>
 	  </Grid>
-	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{ShowModalAction Example/Screens/GetStartedPopup}"/>
+	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
 	</Screen>]]
 
 	local syntax_root = filesystem.loadObjectFromXmlString(syntax_xml)
@@ -1009,6 +1131,7 @@ test_grid_auto_columns()
 test_uniform_grid_columns()
 test_grid_in_vstack_height()
 test_grid_image_matches_sibling_stack_height()
+test_grid_fixed_column_image_fits()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
@@ -1029,5 +1152,8 @@ test_binding_expression_bare_path_resolves_from_root()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()
+test_inline_show_modal_popup_flow()
+test_lua_set_modal_object_dispatches_message()
+test_stackview_align_items_preserves_child_stretch_width()
 
 print("All layout tests passed.")

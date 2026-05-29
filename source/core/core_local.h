@@ -121,9 +121,6 @@ OBJ_ReleaseRef(struct Object *);
 void
 OBJ_DetachFromParent(struct Object *);
 
-bool_t
-OBJ_ShowModalObject(struct Object *, struct Object *);
-
 struct Object *
 OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 
@@ -177,6 +174,8 @@ OBJ_NameEquals(struct Object *object, lpcString_t name)
   return !strcmp(OBJ_GetName(object), name);
 }
 
+struct Property *
+PROP_Create(lua_State*, struct Object *, struct PropertyType const *);
 struct Property *
 OBJ_AddComponentProperty(lua_State*, struct component*, struct PropertyType const *);
 //struct Property *

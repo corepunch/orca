@@ -9,7 +9,7 @@ local LightTheme = {
 	["accent"]            = "#0284c7",  -- sky-600:   interactive accent
 	["accent-foreground"] = "#ffffff",  -- white:     text on accent backgrounds
 	["accent-subtle"]     = "#e0f2fe",  -- sky-100:   subtle text on selected rows
-	["header-bg"]         = "#075985",  -- sky-800:   header / bottom-nav background
+	["header-background"]         = "#075985",  -- sky-800:   header / bottom-nav background
 }
 
 local DarkTheme = {
@@ -21,7 +21,7 @@ local DarkTheme = {
 	["accent"]            = "#38bdf8",  -- sky-400:   interactive accent
 	["accent-foreground"] = "#ffffff",  -- white:     text on accent backgrounds
 	["accent-subtle"]     = "#e0f2fe",  -- sky-100:   subtle text on selected rows
-	["header-bg"]         = "#1e293b",  -- slate-800: header / bottom-nav background
+	["header-background"]         = "#1e293b",  -- slate-800: header / bottom-nav background
 }
 
 extend = {

@@ -116,7 +116,7 @@ Use these personas when delegating work or framing implementation choices.
   - Uses Tailwind utilities and the local Orca UI dialect as much as possible.
   - Applies Lapis user-guide patterns to route/view/widget/layout composition in Orca.
   - Proactively provides feedback when an Orca primitive is missing and proposes a Lapis-inspired improvement.
-  - For modal dialogs, prefer `<Popup>` templates that fill the screen via their background/overlay and are launched with `ShowModalAction`; avoid setting root `Width`/`Height` on popups unless the popup truly needs custom bounds.
+  - For modal dialogs, prefer `<Popup>` templates that fill the screen via their background/overlay and are launched with the inline XML shorthand `{Screen.ShowModal Path=...}`; avoid setting root `Width`/`Height` on popups unless the popup truly needs custom bounds.
 
 ### 2) Lua Engine Agent (Lua-First, MoonScript-Interop, Lapis Internals)
 
@@ -148,7 +148,7 @@ Use these personas when delegating work or framing implementation choices.
 |---|---|
 | Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
 | Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
-| Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `ShowModalAction` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
+| Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `{Screen.ShowModal Path=...}` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
 | Add a UI widget to UIKit | `plugins/UIKit/UIKit.cgen` + `plugins/UIKit/Button.c` as a reference |
 | Add a property binding or formula | `source/core/property/` + Module Codegen Guide |
 | Change what Lua exposes | Edit the module `.cgen`, run `make modules` |
@@ -202,6 +202,8 @@ Each plugin module is compiled into its own shared library (`.so` / `.dll`) and 
 
 ORCA uses an **Object/Component** architecture. An `Object` is the universal scene node — a named, hierarchical container. Functionality is added by attaching **components** (also called classes) to it.
 
+Lua can call message handlers directly with a capitalized method name on any object that owns the handler, for example `self:MessageName(...)` or `screen:SetModalObject(modal)`. This is the preferred shorthand for dispatching component messages from Lua when the method name matches the message name.
+
 ### Object (`source/core/object/object_internal.h`)
 
 Every scene element is an `Object`. Objects form a parent→children tree. Key fields:
@@ -243,9 +245,17 @@ struct ClassDesc {
 ## Popup Convention
 
 - Modal popups should be modeled as `Popup` objects, not `Screen` placeholders.
-- `ShowModalAction.Path` points to the popup template asset to instantiate, not a scene-tree path.
+- `{Screen.ShowModal Path=...}` points to the popup template asset to instantiate, not a scene-tree path.
 - Popups generally rely on a full-screen background/overlay and should not set root `Width`/`Height` unless there is a specific layout need.
 - Use `Popup.ClosePopup` to dismiss the popup and return its result.
+
+## XML Message Dispatch Shorthand
+
+- Inline XML can dispatch any registered message type with the WPF-style shorthand, for example `{Node.RightButtonUp}`, `{Popup.ClosePopup}`, or `{Screen.ShowModal Path=...}`.
+- The shorthand lowers to `SendMessageAction` under the hood.
+- Named arguments map to the registered message payload fields, including short field names like `Path=...` when the message defines `Screen_ShowModalEventArgs.Path`.
+- Use commas between named arguments when helpful, and nested `{...}` expressions are allowed inside payload values.
+- Prefer this shorthand in XML when you want concise message dispatch instead of an explicit `SendMessageAction` element.
 
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 

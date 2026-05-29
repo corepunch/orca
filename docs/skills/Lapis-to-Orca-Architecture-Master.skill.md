@@ -17,7 +17,7 @@ Orca references
 - share/orca/core2/application.lua
 - share/orca/core2/widget.lua
 - share/orca/core2/router.lua
-- docs/lua-scene-loading.md
+- docs/app/moonscript/scenes-and-rebuild.md
 - samples/Weather/
 - samples/Banking/
 

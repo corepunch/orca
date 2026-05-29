@@ -63,18 +63,29 @@ _Arrange(struct Object *hObject,
       break;
   }
   
+  struct Property *alignItems = StackView_GetProperty(hObject, kStackViewAlignItems);
+  enum Direction crossAxis = pStackView->Direction == kDirectionHorizontal
+    ? kDirectionVertical
+    : kDirectionHorizontal;
+  enum NodeProperties childAlignmentProperty = crossAxis == kDirectionHorizontal
+    ? kNodeHorizontalAlignment
+    : kNodeVerticalAlignment;
+  int stackAlignment = kHorizontalAlignmentStretch;
+  switch (pStackView->AlignItems) {
+    case kAlignItemsStart:
+    case kAlignItemsBaseline: stackAlignment = kHorizontalAlignmentLeft; break;
+    case kAlignItemsEnd: stackAlignment = kHorizontalAlignmentRight; break;
+    case kAlignItemsCenter: stackAlignment = kHorizontalAlignmentCenter; break;
+    case kAlignItemsStretch: stackAlignment = kHorizontalAlignmentStretch; break;
+  }
+
   FOR_EACH_LAYOUTABLE(child, hObject)
   {
     struct Node2D *subview = GetNode2D(child);
-    struct Property *p = StackView_GetProperty(hObject, kStackViewAlignItems);
-    int *alignment = &subview->_node->Alignment.Axis[!pStackView->Direction];
+    int *alignment = &subview->_node->Alignment.Axis[crossAxis];
     LRESULT s;
-    switch (p ? pStackView->AlignItems : -1) {
-      case kAlignItemsStart: *alignment = kHorizontalAlignmentLeft; break;
-      case kAlignItemsBaseline: *alignment = kHorizontalAlignmentLeft; break;
-      case kAlignItemsEnd: *alignment = kHorizontalAlignmentRight; break;
-      case kAlignItemsCenter: *alignment = kHorizontalAlignmentCenter; break;
-      case kAlignItemsStretch: *alignment = kHorizontalAlignmentStretch; break;
+    if (alignItems && !Node_GetProperty(child, childAlignmentProperty)) {
+      *alignment = stackAlignment;
     }
     switch (pStackView->Direction) {
       case kDirectionHorizontal:

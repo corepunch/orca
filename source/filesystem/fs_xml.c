@@ -13,7 +13,39 @@ static struct PropertyType const *
 propdesc(struct Object *o, lpcString_t name)
 {
   struct PropertyType const *pd = OBJ_FindImplicitProperty(o, name);
-  return pd ? pd : OBJ_FindExplicitProperty(o, name);
+  if (pd) {
+    return pd;
+  }
+  pd = OBJ_FindExplicitProperty(o, name);
+  if (pd) {
+    return pd;
+  }
+
+  struct SendMessageAction const *action = GetSendMessageAction(o);
+  if (!action || !action->Message || !*action->Message) {
+    return NULL;
+  }
+
+  uint32_t count = 0;
+  struct PropertyType const *fields = OBJ_FindMessagePropertyTypes(action->Message, &count);
+  if (!fields) {
+    return NULL;
+  }
+
+  FOR_LOOP(i, count) {
+    struct PropertyType const *field = &fields[i];
+    if (!strcmp(field->Name, name)) {
+      return field;
+    }
+    if (field->Category && *field->Category) {
+      fixedString_t full_name = {0};
+      snprintf(full_name, sizeof(full_name), "%s.%s", field->Category, field->Name);
+      if (!strcmp(full_name, name)) {
+        return field;
+      }
+    }
+  }
+  return NULL;
 }
 
 static bool_t
@@ -353,7 +385,20 @@ node(struct _xmlNode* x)
     return NULL;
   }
 
-  FOR_EACH_LIST(xmlAttr, a, x->properties) visit_attr(o, a);
+  if (GetSendMessageAction(o)) {
+    FOR_EACH_LIST(xmlAttr, a, x->properties) {
+      if (!strcmp((lpcString_t)a->name, "Message")) {
+        visit_attr(o, a);
+      }
+    }
+  }
+
+  FOR_EACH_LIST(xmlAttr, a, x->properties) {
+    if (GetSendMessageAction(o) && !strcmp((lpcString_t)a->name, "Message")) {
+      continue;
+    }
+    visit_attr(o, a);
+  }
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {

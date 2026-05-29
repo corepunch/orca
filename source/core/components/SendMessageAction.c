@@ -2,6 +2,44 @@
 #include <source/core/core_properties.h>
 
 static bool_t
+_SendMessageActionPayload(struct Object *source,
+                          lpcString_t message,
+                          char payload[MAX_MESSAGE_SIZE],
+                          size_t *payload_size)
+{
+  uint32_t count = 0;
+  struct PropertyType const *fields = OBJ_FindMessagePropertyTypes(message, &count);
+  if (!fields || count == 0) {
+    *payload_size = 0;
+    return FALSE;
+  }
+
+  memset(payload, 0, MAX_MESSAGE_SIZE);
+  *payload_size = 0;
+  FOR_LOOP(i, count) {
+    struct PropertyType const *field = &fields[i];
+    size_t field_end = field->Offset + field->DataSize;
+    if (field->Offset >= MAX_MESSAGE_SIZE || field_end > MAX_MESSAGE_SIZE) {
+      Con_Error("SendMessageAction field '%s' exceeds payload capacity for '%s'",
+                field->Name ? field->Name : "<unnamed>",
+                message);
+      continue;
+    }
+    if (field_end > *payload_size) {
+      *payload_size = field_end;
+    }
+    struct Property *prop = NULL;
+    if (SUCCEEDED(OBJ_FindShortProperty(source, field->Name, &prop)) && prop) {
+      void const *value = PROP_GetValue(prop);
+      if (value && field->DataSize > 0) {
+        memcpy(payload + field->Offset, value, field->DataSize);
+      }
+    }
+  }
+  return TRUE;
+}
+
+static bool_t
 _SendMessageAction_Matches(struct Trigger const* expected, struct Trigger_TriggeredEventArgs const* triggered)
 {
   (void)expected;
@@ -34,58 +72,17 @@ HANDLER(SendMessageAction, Trigger, Triggered)
   }
 
   uint32_t msg_id = fnv1a32(pSendMessageAction->Message);
-  uint32_t field_count = 0;
-  struct PropertyType const *fields = OBJ_FindMessagePropertyTypes(pSendMessageAction->Message, &field_count);
-
-  if (!fields || field_count == 0) {
-    axPostMessageW(target, msg_id, 0, NULL);
-    return FALSE;
-  }
-
   char payload[MAX_MESSAGE_SIZE];
-  memset(payload, 0, sizeof(payload));
   size_t payload_size = 0;
 
-  for (uint32_t i = 0; i < field_count; i++) {
-    struct PropertyType const *field = &fields[i];
-    if (field->Offset >= MAX_MESSAGE_SIZE) {
-      Con_Error("SendMessageAction field '%s' has invalid message definition offset %zu (limit %u)",
-                field->Name ? field->Name : "<unnamed>",
-                (size_t)field->Offset,
-                (unsigned)MAX_MESSAGE_SIZE);
-      continue;
-    }
-    size_t max_copy_size = MAX_MESSAGE_SIZE - field->Offset;
-    size_t copy_size = (size_t)field->DataSize;
-    if (copy_size > max_copy_size) {
-      Con_Error("SendMessageAction field '%s' size %zu exceeds payload capacity %zu; skipping field",
-                field->Name ? field->Name : "<unnamed>",
-                copy_size,
-                max_copy_size);
-      continue;
-    }
-
-    size_t field_end = field->Offset + copy_size;
-    if (field_end > payload_size) {
-      payload_size = field_end;
-    }
-
-    struct Property *prop = NULL;
-    if (SUCCEEDED(OBJ_FindShortProperty(hObject, field->Name, &prop)) && prop) {
-      void const *value = PROP_GetValue(prop);
-      if (value && copy_size > 0) {
-        memcpy(payload + field->Offset, value, copy_size);
-      }
-    }
+  if (!_SendMessageActionPayload(hObject,
+                                 pSendMessageAction->Message,
+                                 payload,
+                                 &payload_size)) {
+    axPostMessageW(target, msg_id, 0, NULL);
+    return TRUE;
   }
 
-  if (payload_size > MAX_MESSAGE_SIZE) {
-    Con_Error("SendMessageAction payload for '%s' exceeded limit (%zu > %u) and was clamped",
-              pSendMessageAction->Message,
-              payload_size,
-              (unsigned)MAX_MESSAGE_SIZE);
-    payload_size = MAX_MESSAGE_SIZE;
-  }
   axPostMessageDataW(target, msg_id, 0, payload, payload_size);
-  return FALSE;
+  return TRUE;
 }

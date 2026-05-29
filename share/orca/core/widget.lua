@@ -104,6 +104,90 @@ function Widget:has_content_for(name)
   return type(ctx.slots) == 'table' and ctx.slots[name] ~= nil
 end
 
+function Widget:url_for(first, ...)
+  local app = require("orca.core.application").current(false)
+  assert(app, "url_for requires an active application")
+  return app:url_for(first, ...)
+end
+
+local function is_widget_class(value)
+  if type(value) ~= "table" then return false end
+  local mt = getmetatable(value)
+  local base = rawget(value, "__base")
+  return type(mt) == "table" and type(mt.__call) == "function" and
+         type(base) == "table" and type(base.content) == "function"
+end
+
+local function modal_return_values(result)
+  if type(result) ~= "number" then
+    return false, "Cancelled"
+  end
+  if result ~= 0 then
+    return true, result ~= 2
+  end
+  return false, "Cancelled"
+end
+
+function Widget:showModal(modal, ...)
+  assert(modal ~= nil, "showModal: modal must not be nil")
+
+  local Application = require "orca.core.application"
+  local UIKit = require "orca.UIKit"
+  local app = Application.current(false)
+  local screen = rawget(self, "screen")
+  if screen == nil and app then
+    screen = app.screen
+  end
+  assert(screen, "showModal requires an active screen")
+
+  if is_widget_class(modal) then
+    modal = modal(...)
+  end
+
+  if type(modal) == "table" and type(modal.content) == "function" then
+    local widget = modal
+    local popup = UIKit.Popup { BackgroundColor = "#000000D0" }
+    local previous_on_result = rawget(widget, "on_result")
+    local co, is_main = coroutine.running()
+    local should_wait = co and not is_main
+    local done = false
+
+    rawset(widget, "screen", screen)
+    widget.on_result = function(first, second)
+      local result = second
+      if second == nil and first ~= widget then
+        result = first
+      end
+      if previous_on_result then previous_on_result(result) end
+      done = true
+      popup:ClosePopup(result)
+    end
+
+    local content = widget:content()
+    if content ~= nil then
+      popup:addChild(content)
+    end
+    local sent = screen:SetModalObject(popup)
+    if should_wait then
+      while not done and screen:getNext() == popup do
+        coroutine.yield()
+      end
+      return popup.DialogResult
+    end
+    return sent
+  end
+
+  local sent = screen:SetModalObject(modal)
+  local co, is_main = coroutine.running()
+  if sent and co and not is_main then
+    while type(modal.DialogResult) == "number" and modal.DialogResult ~= modal.DialogResult do
+      coroutine.yield()
+    end
+    return modal_return_values(modal.DialogResult)
+  end
+  return sent
+end
+
 function Widget:_find_helper_value(key)
   local function scan_helpers(helpers)
     if not helpers then return nil end
