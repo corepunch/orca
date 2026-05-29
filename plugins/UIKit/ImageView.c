@@ -41,10 +41,7 @@ HANDLER(ImageView, Node2D, MeasureOverride)
 {
   if (pImageView->Source) {
     struct vec2 size = _GetImageSize(hObject, pImageView);
-    struct edges const* e = (struct edges const*)&pImageView->Insets;
-    if (pImageView->Stretch == kStretchNone) {
-      return MAKEDWORD(size.x - e->left - e->right, size.y - e->top - e->bottom);
-    } else if (pImageView->Stretch == kStretchUniform) {
+    if (pImageView->Stretch == kStretchNone || pImageView->Stretch == kStretchUniform) {
       float avail_w = isinf(pMeasureOverride->Width)  ? size.x : pMeasureOverride->Width;
       float avail_h = isinf(pMeasureOverride->Height) ? size.y : pMeasureOverride->Height;
       struct rect avail = {0, 0, avail_w, avail_h};

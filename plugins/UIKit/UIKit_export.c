@@ -372,6 +372,8 @@ static struct TextBlockConcept TextBlockConceptDefaults = {
   .UseFullFontHeight = TRUE,
 		
   .ConstrainContentHeight = TRUE,
+		
+  .WordWrap = TRUE,
 };
 LRESULT TextBlockConceptProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {

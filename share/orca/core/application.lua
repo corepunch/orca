@@ -52,8 +52,11 @@ Application = Widget:extend {
 
   -- Generate a URL from a named route or return the path unchanged.
   -- Usage: self:url_for("home")  →  "/"
-  url_for = function(self, name)
-    return self.router:url_for(name)
+  url_for = function(self, first, ...)
+    if type(first) == "table" and type(first.url_params) == "function" then
+      return self.router:url_for(first:url_params(self, ...))
+    end
+    return self.router:url_for(first, ...)
   end,
 
   resolve_body = function(self, body, route_info)

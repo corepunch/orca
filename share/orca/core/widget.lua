@@ -104,6 +104,25 @@ function Widget:has_content_for(name)
   return type(ctx.slots) == 'table' and ctx.slots[name] ~= nil
 end
 
+function Widget:url_for(first, ...)
+  local app = require("orca.core.application").current(false)
+  assert(app, "url_for requires an active application")
+  return app:url_for(first, ...)
+end
+
+function Widget:showModal(modal)
+  assert(modal ~= nil, "showModal: modal must not be nil")
+
+  local Application = require "orca.core.application"
+  local app = Application.current(false)
+  local screen = rawget(self, "screen")
+  if screen == nil and app then
+    screen = app.screen
+  end
+  assert(screen, "showModal requires an active screen")
+  return screen:showModal(modal)
+end
+
 function Widget:_find_helper_value(key)
   local function scan_helpers(helpers)
     if not helpers then return nil end

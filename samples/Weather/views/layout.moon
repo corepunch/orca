@@ -10,11 +10,11 @@ NAV_ITEMS = {
 }
 
 make_header = (title) ->
-	StackView class: "bg-header-bg px-5 py-3 justify-center", =>
+	StackView class: "bg-header-background px-5 py-3 justify-center", =>
 		TextBlock class: "text-2xl font-bold align-center text-accent-foreground", title
 
 make_footer = (active_route, navigate) ->
-	UniformGrid class: "bg-header-bg p-2", =>
+	UniformGrid class: "bg-header-background p-2", =>
 			for item in *NAV_ITEMS
 				selected = active_route == item.route
 				color = selected and "text-amber-300" or "text-sky-100"
@@ -41,9 +41,9 @@ class Default extends Widget
 
 		Screen ->
 			Grid Rows: "32px 52px 1fr 72px 24px", =>
-				Node2D class: "bg-header-bg"
+				Node2D class: "bg-header-background"
 				make_header title
 				@addChild (inner or make_placeholder!)
 				@addChild (footer or make_footer active_route, navigate)
-				Node2D class: "bg-header-bg"
+				Node2D class: "bg-header-background"
 		

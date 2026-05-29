@@ -238,7 +238,7 @@
         <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
         <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
         <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
-        <property name="WordWrap" type="bool">Enables automatic word wrapping of the text.</property>
+        <property name="WordWrap" type="bool" default="TRUE">Enables automatic word wrapping of the text.</property>
         <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior.</property>
         <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
         <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>

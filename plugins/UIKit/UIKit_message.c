@@ -325,7 +325,9 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
 {
   uint32_t msg;
   struct Node_KeyMessageEventArgs key = {0};
-  build_key_msg(e, &key, &msg);
+  if (!build_key_msg(e, &key, &msg)) {
+    return FALSE;
+  }
   return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct AXmessage) {
     .target = core_GetFocus(),
     .message = msg,
@@ -382,6 +384,11 @@ LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
     case kEventKeyUp:
     case kEventChar:
       return UI_HandleKeyEvent(L, msg);
+    case kEventModifiersChanged:
+      /* Flags-changed is a Cocoa-only modifier-state notification. It does
+         not map cleanly to an Orca object callback, so ignore it here rather
+         than routing the raw NSWindow* into the object bridge. */
+      return FALSE;
     case kEventResumeCoroutine:
     case kEventStopCoroutine:
       /* Coroutine events carry a lua_State* as target, not an Object.

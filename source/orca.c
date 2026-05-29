@@ -14,12 +14,15 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <direct.h>
 #elif __EMSCRIPTEN__
 #include <emscripten.h>
-#elif __linux__
-#include <unistd.h>
 #elif __APPLE__
 #include <mach-o/dyld.h>
+#endif
+
+#if defined(__linux__) || defined(__APPLE__)
+#include <unistd.h>
 #endif
 
 #define ORCA_FEATURE_DEBUG
@@ -54,6 +57,42 @@ get_exe_filename(LPSTR buf, uint32_t sz)
 #else
   strcpy(buf, "./orca");
 #endif
+}
+
+static bool_t
+path_is_absolute(lpcString_t path)
+{
+  if (!path || !*path) return FALSE;
+#ifdef _WIN32
+  return (isalpha((unsigned char)path[0]) && path[1] == ':') ||
+         (path[0] == '\\' && path[1] == '\\');
+#else
+  return path[0] == '/';
+#endif
+}
+
+static bool_t
+resolve_project_dir(lpcString_t input, path_t output)
+{
+  if (!input || !*input) return FALSE;
+  if (path_is_absolute(input)) {
+    strncpy(output, input, sizeof(path_t) - 1);
+    output[sizeof(path_t) - 1] = '\0';
+    return TRUE;
+  }
+
+  path_t cwd = {0};
+#ifdef _WIN32
+  if (!_getcwd(cwd, sizeof(cwd))) {
+    return FALSE;
+  }
+#else
+  if (!getcwd(cwd, sizeof(cwd))) {
+    return FALSE;
+  }
+#endif
+  snprintf(output, sizeof(path_t), "%s/%s", cwd, input);
+  return TRUE;
 }
 
 lpcString_t requires[] = {
@@ -156,6 +195,23 @@ int main (int argc, LPSTR *argv)
   }
 #endif
   
+  path_t projectdir = {0};
+  if (szProject) {
+    if (!resolve_project_dir(szProject, projectdir)) {
+      Con_Error("Failed to resolve project directory: %s\n", szProject);
+      return 1;
+    }
+#ifdef _WIN32
+    if (_chdir(projectdir) != 0) {
+#else
+    if (chdir(projectdir) != 0) {
+#endif
+      Con_Error("Failed to change directory to project: %s\n", projectdir);
+      return 1;
+    }
+    szProject = projectdir;
+  }
+
   do {
     lua_State* L = luaL_newstate();
     

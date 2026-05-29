@@ -1,5 +1,29 @@
 local Widget = require "orca.core.widget"
 
+local function encode_query_component(value)
+  value = tostring(value)
+  value = value:gsub(" ", "+")
+  value = value:gsub("([^%w%-_%.~])", function(c)
+    return string.format("%%%02X", string.byte(c))
+  end)
+  return value
+end
+
+local function encode_query_string(params)
+  if type(params) ~= "table" then
+    return params and tostring(params) or ""
+  end
+
+  local parts = {}
+  for key, value in pairs(params) do
+    if value ~= nil then
+      parts[#parts + 1] = encode_query_component(key) .. "=" .. encode_query_component(value)
+    end
+  end
+  table.sort(parts)
+  return table.concat(parts, "&")
+end
+
 local Router = Widget:extend {
   __init = function(self, owner)
     self.owner = owner
@@ -21,11 +45,31 @@ local Router = Widget:extend {
     return handler
   end,
 
-  url_for = function(self, name)
+  url_for = function(self, name, params, query)
     if type(name) == "string" and string.byte(name, 1) == 47 then
-      return name
+      local path = name
+      if query ~= nil then
+        local query_string = encode_query_string(query)
+        if query_string ~= "" then
+          path = path .. "?" .. query_string
+        end
+      end
+      return path
     end
-    return self.named_routes[name]
+
+    local path = self.named_routes[name]
+    if not path then
+      return nil
+    end
+
+    if query ~= nil then
+      local query_string = encode_query_string(query)
+      if query_string ~= "" then
+        path = path .. "?" .. query_string
+      end
+    end
+
+    return path
   end,
 
   match = function(self, name, url, handler)

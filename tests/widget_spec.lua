@@ -1,9 +1,23 @@
 local test = require "orca.test"
 -- Headless tests for orca.core.widget
 -- Covers: content_for, set_render_context, instance-level include_helpers,
--- class-level include_helpers, and helper/core-method non-shadowing.
+-- class-level include_helpers, helper/core-method non-shadowing, and modal
+-- coroutine handoff.
 
 local Widget = require "orca.core.widget"
+local filesystem = require "orca.filesystem"
+local ui = require "orca.UIKit"
+local system = require "orca.system"
+
+local function pump_messages(root)
+  while true do
+    local msg = system.peekMessage()
+    if not msg then
+      return
+    end
+    system.dispatchMessage(root, msg)
+  end
+end
 
 -- ---------------------------------------------------------------------------
 -- Test 1: content_for errors without a render context
@@ -118,5 +132,38 @@ local function test_content_for_rejects_non_string_name()
 end
 
 test_content_for_rejects_non_string_name()
+
+-- ---------------------------------------------------------------------------
+-- Test 9: showModal attaches the modal popup and Popup.ClosePopup stores the result
+-- ---------------------------------------------------------------------------
+local function test_show_modal_attaches_and_closes_popup()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local modal = filesystem.loadObjectFromXmlString([[
+<Popup Name="DialogPopup" BackgroundColor="#00000088">
+  <StackView Name="DialogPopupOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+    <StackView Name="DialogPopupCard" Direction="Vertical" Spacing="12" Width="240" BackgroundColor="#223344" Padding="16">
+      <TextBlock Name="DialogPopupClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+        LeftButtonUp="{Popup.ClosePopup ReturnValue=2.25}"/>
+    </StackView>
+  </StackView>
+</Popup>]])
+  test.expect(modal ~= nil, "popup XML should load")
+  local close = modal:findChild("DialogPopupClose", true)
+  test.expect(close ~= nil, "close label should exist")
+
+  local w = Widget()
+  rawset(w, "screen", screen)
+  w:showModal(modal)
+  test.expect_eq(screen:getNext(), modal, "screen:showModal should attach the popup as the modal child")
+
+  close:send("Node.LeftButtonUp")
+  pump_messages(screen)
+  test.expect_eq(modal.DialogResult, 2.25, "Popup.ClosePopup should store the modal DialogResult")
+  test.expect_eq(screen:getNext(), nil, "Popup should detach from the screen after closing")
+
+  print("PASS: test_show_modal_attaches_and_closes_popup")
+end
+
+test_show_modal_attaches_and_closes_popup()
 
 print("All widget tests passed.")

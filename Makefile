@@ -45,7 +45,7 @@ CFLAGS += -fpic -I. -I$(CURDIR)
 LDFLAGS = -L$(LIBDIR)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core vsomeip
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
@@ -55,16 +55,6 @@ UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libjpeg freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libjpeg freetype2 libxml-2.0 2>/dev/null)
 LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libjpeg libpng libxml-2.0 2>/dev/null)
-
-CODEGEN := $(BINDIR)/cgen
-CODEGEN_SRC := $(shell find tools/codegen/src -name "*.c" 2>/dev/null | sort)
-CODEGEN_PLUGIN_SRC := $(shell find tools/codegen/plugins -name "*.c" 2>/dev/null | sort)
-CODEGEN_PLUGINS := $(patsubst tools/codegen/plugins/%.c,$(BUILDDIR)/plugins/codegen/lib%.so,$(CODEGEN_PLUGIN_SRC))
-CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -Itools/codegen/include -Itools/codegen/src $(shell pkg-config --cflags libxml-2.0)
-CODEGEN_LDFLAGS := $(shell pkg-config --libs libxml-2.0) -ldl $(ARCH_FLAGS)
-CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
-CODEGEN_PROPERTIES_PLUGIN := $(BUILDDIR)/plugins/codegen/libproperties.so
-CODEGEN_EXPORT_PLUGIN := $(BUILDDIR)/plugins/codegen/libexport.so
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
@@ -82,75 +72,77 @@ INST_LIBDIR ?= $(INST_PREFIX)/lib/lua/5.4
 INST_LUADIR ?= $(INST_PREFIX)/share/lua/5.4
 INST_SHAREDIR ?= $(INST_PREFIX)/share/orca
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-async test-tabbar test-tab-interaction
+ifeq ($(V),1)
+Q =
+else
+Q = @
+endif
+
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout
 
 default: directories modules unite
 all: default
 build: default
 
-/%:
-	find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
+/%: | modules directories
+	$(Q)echo "Compiling $(notdir $@)"
+	$(Q)find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
 platform: | directories
-	$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
+	$(Q)$(MAKE) -C $(PLATFORM_LIBDIR) OUTDIR=../../$(LIBDIR) ARCH_FLAGS="$(ARCH_FLAGS)"
 
 $(SOURCEMODULES2): | directories
 
-buildunite: $(SOURCEMODULES2)
+buildunite: modules $(SOURCEMODULES2)
 
 buildlib: platform buildunite
 ifeq ($(shell uname -s),Darwin)
-	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
+	$(Q)echo "Linking $(notdir $(TARGETLIB))"
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,@loader_path
 else
-	$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
+	$(Q)echo "Linking $(notdir $(TARGETLIB))"
+	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
-buildplugins: buildlib
-	mkdir -p $(PLUGINLIBDIR)
+buildplugins: buildlib $(PLUGINLIBS)
+
+$(PLUGINLIBDIR)/%.so: buildlib | directories
+	$(Q)mkdir -p $(PLUGINLIBDIR)
+	$(Q)echo "Building plugin $*"
 ifeq ($(shell uname -s),Darwin)
-	$(foreach p,$(PLUGINS), \
-		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
-		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
-		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,@loader_path || exit 1;)
+	$(Q)find $(PLUGINDIR)/$* -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$*.o - && \
+		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca -o $@ $(LDFLAGS) -Wl,-rpath,@loader_path
 else
-	$(foreach p,$(PLUGINS), \
-		find $(PLUGINDIR)/$(p) -name "*.c" | sed 's/.*/#include "&"/' | \
-		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$(p).o - && \
-		$(CC) $(OBJECTDIR)/plugin_$(p).o -shared -Wall $(LIBS) -lorca -o $(PLUGINLIBDIR)/$(p).so $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..' || exit 1;)
+	$(Q)find $(PLUGINDIR)/$* -name "*.c" | sed 's/.*/#include "&"/' | \
+		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$*.o - && \
+		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca -o $@ $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..'
 endif
 
-app: platform
-	$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
+app: modules platform
+	$(Q)echo "Linking $(APPNAME)"
+	$(Q)$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
 unite: directories buildunite buildlib buildplugins app copyshare
 
-%.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))
+%.o: %.c $(HEADERS) | modules
+	$(Q)$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))
 
 directories:
-	mkdir -p ${OBJECTDIR}
-	mkdir -p ${BINDIR}
-	mkdir -p ${LIBDIR}
-	mkdir -p ${PLUGINLIBDIR}
-	mkdir -p ${SHAREDIR}
+	$(Q)mkdir -p ${OBJECTDIR}
+	$(Q)mkdir -p ${BINDIR}
+	$(Q)mkdir -p ${LIBDIR}
+	$(Q)mkdir -p ${PLUGINLIBDIR}
+	$(Q)mkdir -p ${SHAREDIR}
 
-codegen-host: $(CODEGEN) $(CODEGEN_PLUGINS)
+codegen-host:
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= codegen-host
 
-$(CODEGEN): $(CODEGEN_SRC) | directories
-	$(CC) $(CODEGEN_CFLAGS) $^ -o $@ $(CODEGEN_LDFLAGS)
-
-$(BUILDDIR)/plugins/codegen/lib%.so: tools/codegen/plugins/%.c tools/codegen/include/cg_api.h | directories
-	@mkdir -p $(dir $@)
-	$(CC) $(CODEGEN_CFLAGS) -shared $< -o $@
-
-codegen-sample: codegen-host
-	@mkdir -p $(BUILDDIR)/codegen
-	$(CODEGEN) source/core/core.cgen $(CODEGEN_HEADER_PLUGIN) > $(BUILDDIR)/codegen/core_stub.h
+codegen-sample:
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= codegen-sample
 
 codegen-clean:
-	-rm -f $(CODEGEN)
-	-rm -rf $(BUILDDIR)/plugins/codegen
-	-rm -rf $(BUILDDIR)/codegen
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= codegen-clean
 
 copyshare:
 	mkdir -p ${SHAREDIR}
@@ -223,13 +215,13 @@ move_pz2:
 	done
 
 modules:
-	$(MAKE) -j8 -f tools/Makefile MODULE_ROOT=
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT=
 
 modules-c-preview:
-	$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-preview
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-preview
 
 modules-c-diff:
-	$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-diff
+	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-diff
 
 fonts:
 	python3 cd tools && \
@@ -262,110 +254,56 @@ TEST_MESSAGE_REGISTRY_BIN = $(BINDIR)/test_message_registry
 TEST_TRIGGER_ACTIONS_BIN = $(BINDIR)/test_trigger_actions
 TEST_EDITOR_BIN = $(BINDIR)/test_editor
 TEST_LDFLAGS = $(LDFLAGS) -lorca -ldl -lpthread
+define C_TEST_RULE
+$(1): $(4)
+	$(Q)echo "Building $(1)"
+	$(Q)$(CC) $(CFLAGS) $(5) -Wall $(2) -o $(3) $(6)
+	$(Q)$(3)
+endef
 
-test-properties: platform $(SOURCEMODULES2) buildlib
-	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_properties.c -o $(TEST_PROPERTIES_BIN) $(TEST_LDFLAGS)
-	$(TEST_PROPERTIES_BIN)
+define LUA_TEST_RULE
+$(1): $(3)
+	$(Q)echo "Running $(1)"
+	$(Q)$(TARGET) -test=$(2)
+endef
 
-test-styles: platform $(SOURCEMODULES2) buildlib
-	$(CC) $(CFLAGS) -DTEST_MEMORY -Wall tests/test_styles.c -o $(TEST_STYLES_BIN) $(TEST_LDFLAGS)
-	$(TEST_STYLES_BIN)
+$(eval $(call C_TEST_RULE,test-properties,tests/test_properties.c,$(TEST_PROPERTIES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-styles,tests/test_styles.c,$(TEST_STYLES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-filesystem,tests/test_filesystem.c,$(TEST_FILESYSTEM_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-message-registry,tests/test_message_registry.c,$(TEST_MESSAGE_REGISTRY_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TEST_TRIGGER_ACTIONS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c,$(TEST_EDITOR_BIN),buildplugins,,$(TEST_LDFLAGS) -lplatform -lm $(OBJECTDIR)/plugin_EditorKit.o))
 
-test-filesystem: platform $(SOURCEMODULES2) buildlib
-	$(CC) $(CFLAGS) -Wall tests/test_filesystem.c -o $(TEST_FILESYSTEM_BIN) $(TEST_LDFLAGS)
-	$(TEST_FILESYSTEM_BIN)
+HEADLESS_LUA_TESTS = test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-node
 
-test-message-registry: platform $(SOURCEMODULES2) buildlib
-	$(CC) $(CFLAGS) -Wall tests/test_message_registry.c -o $(TEST_MESSAGE_REGISTRY_BIN) $(TEST_LDFLAGS)
-	$(TEST_MESSAGE_REGISTRY_BIN)
+$(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-state-manager,tests/test_state_manager.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-animations,tests/test_animations.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-timers,tests/test_timers.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-styles-lua,tests/test_styles_lua.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-body,tests/test_body.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-console-view,tests/test_console_view.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-object-retention,tests/test_object_retention.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-async,tests/test_async.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-widget,tests/widget_spec.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-router,tests/router_spec.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-application,tests/application_spec.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-url-for,tests/url_for_spec.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-geometry,tests/test_geometry.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-parsers,tests/test_parsers.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-object-hierarchy,tests/test_object_hierarchy.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-tabbar,tests/test_tabbar.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-tab-interaction,tests/test_tab_interaction.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-text-layout,tests/test_text_layout.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-stack-layout,tests/test_stack_layout.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-grid-layout,tests/test_grid_layout.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-interaction,tests/test_interaction.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 
-test-trigger-actions: platform $(SOURCEMODULES2) buildlib
-	$(CC) $(CFLAGS) -Wall tests/test_trigger_actions.c -o $(TEST_TRIGGER_ACTIONS_BIN) $(TEST_LDFLAGS)
-	$(TEST_TRIGGER_ACTIONS_BIN)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor $(HEADLESS_LUA_TESTS)
 
-test-editor: buildplugins
-	$(CC) $(CFLAGS) -Wall tests/test_editor.c $(OBJECTDIR)/plugin_EditorKit.o -o $(TEST_EDITOR_BIN) $(TEST_LDFLAGS) -lplatform -lm
-	$(TEST_EDITOR_BIN)
-
-test-state-manager: app copyshare
-	$(TARGET) -test=tests/test_state_manager.lua
-
-test-animations: app copyshare
-	$(TARGET) -test=tests/test_animations.lua
-
-test-timers: app copyshare
-	$(TARGET) -test=tests/test_timers.lua
-
-test-styles-lua: app copyshare
-	$(TARGET) -test=tests/test_styles_lua.lua
-
-test-async: app copyshare
-	$(TARGET) -test=tests/test_async.lua
-
-test-body: app copyshare
-	$(TARGET) -test=tests/test_body.lua
-
-test-console-view: unite
-	$(TARGET) -test=tests/test_console_view.lua
-
-test-widget: app copyshare
-	$(TARGET) -test=tests/widget_spec.lua
-
-test-router: app copyshare
-	$(TARGET) -test=tests/router_spec.lua
-
-test-application: app copyshare
-	$(TARGET) -test=tests/application_spec.lua
-
-test-text-layout: app copyshare
-	$(TARGET) -test=tests/test_text_layout.lua
-
-test-stack-layout: app copyshare
-	$(TARGET) -test=tests/test_stack_layout.lua
-
-test-grid-layout: app copyshare
-	$(TARGET) -test=tests/test_grid_layout.lua
-
-test-interaction: app copyshare
-	$(TARGET) -test=tests/test_interaction.lua
-
-test-tabbar: app copyshare
-	$(TARGET) -test=tests/test_tabbar.lua
-
-test-tab-interaction: app copyshare
-	$(TARGET) -test=tests/test_tab_interaction.lua
-
-test-node: app copyshare
-	$(TARGET) -test=tests/test_node.lua
-
-test: test-headless test-properties test-styles test-filesystem test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node
-	$(TARGET) -test=tests/test.xml
-
-test-geometry: unite
-	$(TARGET) -test=tests/test_geometry.lua
-
-test-parsers: unite
-	$(TARGET) -test=tests/test_parsers.lua
-
-test-object-hierarchy: app copyshare
-	$(TARGET) -test=tests/test_object_hierarchy.lua
-
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor
-	$(TARGET) -test=tests/test_layout.lua
-	$(TARGET) -test=tests/test_state_manager.lua
-	$(TARGET) -test=tests/test_animations.lua
-	$(TARGET) -test=tests/test_timers.lua
-	$(TARGET) -test=tests/test_styles_lua.lua
-	$(TARGET) -test=tests/test_body.lua
-	$(TARGET) -test=tests/test_console_view.lua
-	$(TARGET) -test=tests/test_object_retention.lua
-	$(TARGET) -test=tests/test_async.lua
-	$(TARGET) -test=tests/widget_spec.lua
-	$(TARGET) -test=tests/router_spec.lua
-	$(TARGET) -test=tests/application_spec.lua
-	$(TARGET) -test=tests/test_geometry.lua
-	$(TARGET) -test=tests/test_parsers.lua
-	$(TARGET) -test=tests/test_object_hierarchy.lua
-	$(TARGET) -test=tests/test_tabbar.lua
+test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node
+	$(Q)echo "Running test"
+	$(Q)$(TARGET) -test=tests/test.xml
 
 include Makefile.webgl

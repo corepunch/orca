@@ -265,11 +265,6 @@ int f_OBJ_SetHover(lua_State *L) {
 	OBJ_SetHover(this_ );
 	return 0;
 }
-int f_OBJ_ShowModal(lua_State *L) {
-	struct Object* this_ = luaX_checkObject(L, 1);
-	struct Object* modal = luaX_checkObject(L, 2);
-	return OBJ_ShowModal(L, this_, modal);
-}
 int f_OBJ_SetTimer(lua_State *L) {
 	struct Object* this_ = luaX_checkObject(L, 1);
 	int32_t duration = (int32_t)luaL_checkinteger(L, 2);
@@ -420,7 +415,6 @@ int luaopen_orca_Object(lua_State *L) {
 		{ "setFocus", f_OBJ_SetFocus },
 		{ "isFocused", f_OBJ_IsFocused },
 		{ "setHover", f_OBJ_SetHover },
-		{ "showModal", f_OBJ_ShowModal },
 		{ "setTimer", f_OBJ_SetTimer },
 		{ "getName", f_OBJ_GetName },
 		{ "setName", f_OBJ_SetName },

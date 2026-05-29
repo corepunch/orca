@@ -188,6 +188,32 @@ local function test_grid_mixed_px_fr()
 end
 
 -- ---------------------------------------------------------------------------
+-- ImageView must fit inside a fixed grid column instead of measuring itself
+-- at its intrinsic bitmap size.
+-- ---------------------------------------------------------------------------
+local function test_grid_fixed_column_image_fits()
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local grid = outer + ui.Grid { Columns = "48px", Spacing = 0 }
+	local source = renderer.Texture {
+		Width = 400,
+		Height = 1200,
+	}
+	local image = grid + ui.ImageView {
+		Source = source,
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(image.ActualWidth, 48,
+		"image width should fit the fixed column")
+	test.expect_eq(image.ActualHeight, 144,
+		"image height should scale proportionally")
+
+	outer:removeFromParent()
+	print("PASS: test_grid_fixed_column_image_fits")
+end
+
+-- ---------------------------------------------------------------------------
 -- Grid with no Rows specified: children must wrap into implicit rows instead
 -- of all landing at y=0.
 -- ---------------------------------------------------------------------------
@@ -1051,6 +1077,7 @@ test_grid_auto_columns()
 test_uniform_grid_columns()
 test_grid_in_vstack_height()
 test_grid_image_matches_sibling_stack_height()
+test_grid_fixed_column_image_fits()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()

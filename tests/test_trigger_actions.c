@@ -374,6 +374,27 @@ static struct ClassDesc s_event_source_class = {
   .NumProperties = sizeof(s_source_properties) / sizeof(s_source_properties[0]),
 };
 
+static bool_t
+TestShowModalObject(struct Object *hObject, struct Object *target)
+{
+  if (!hObject || !target) {
+    return FALSE;
+  }
+
+  if (target->parent) {
+    REMOVE_FROM_LIST(struct Object, target, target->parent->children);
+    REMOVE_FROM_LIST(struct Object, target, target->parent);
+  }
+
+  struct Object **next = &hObject->next;
+  while (*next) next = &(*next)->next;
+  *next = target;
+  OBJ_AddRef(target);
+  target->parent = hObject;
+  target->flags |= OF_NOACTIVATE;
+  return TRUE;
+}
+
 static LRESULT
 TestScreenProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
 {
@@ -390,7 +411,7 @@ TestScreenProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, 
       return FALSE;
     }
 
-    if (!GetPopup(target) || !OBJ_ShowModalObject(object, target)) {
+    if (!GetPopup(target) || !TestShowModalObject(object, target)) {
       OBJ_ReleaseRef(target);
       return FALSE;
     }

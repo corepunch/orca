@@ -37,7 +37,7 @@ class Chat extends require "orca.core.widget"
 					render_bubble msg, me
 
 		-- Override the layout footer with the message-compose bar.
-		@content_for "footer", StackView class: "bg-header-bg flex-row px-4 py-2 gap-2 items-center", =>
+		@content_for "footer", StackView class: "bg-header-background flex-row px-4 py-2 gap-2 items-center", =>
 			ImageView {
 				class: "text-foreground-muted"
 				Source: "assets/icons/back.svg?width=24&type=mask"
