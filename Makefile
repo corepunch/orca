@@ -253,7 +253,7 @@ TEST_FILESYSTEM_BIN = $(BINDIR)/test_filesystem
 TEST_MESSAGE_REGISTRY_BIN = $(BINDIR)/test_message_registry
 TEST_TRIGGER_ACTIONS_BIN = $(BINDIR)/test_trigger_actions
 TEST_EDITOR_BIN = $(BINDIR)/test_editor
-TEST_LDFLAGS = $(LDFLAGS) -lorca -ldl -lpthread
+TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
 define C_TEST_RULE
 $(1): $(4)
 	$(Q)echo "Building $(1)"
