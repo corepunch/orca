@@ -585,6 +585,25 @@ local function test_inline_show_modal_popup_flow()
 	print("PASS: test_inline_show_modal_popup_flow")
 end
 
+local function test_lua_set_modal_object_dispatches_message()
+	local root = ui.Screen { Name = "lua-set-modal-screen", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local popup = ui.Popup { Name = "LuaModal", Width = 240, Height = 160, Visible = false }
+
+	local result = root:SetModalObject(popup)
+
+	test.expect_eq(result, 1, "SetModalObject shorthand should dispatch Screen.SetModalObject")
+	test.expect_eq(root:getNext(), popup, "SetModalObject should attach the popup through the screen message handler")
+	test.expect(popup.Visible, "SetModalObject should make the modal visible")
+	test.expect(popup.DialogResult ~= popup.DialogResult, "SetModalObject should reset DialogResult to NaN")
+
+	root:clear()
+	root = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_lua_set_modal_object_dispatches_message")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -1003,8 +1022,8 @@ local function test_example_application_xml()
 		"TabView should size its buffered SelectionChanged payload")
 	test.expect(input_source ~= nil and input_source:find('SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);', 1, true) ~= nil,
 		"Input should copy its Submit payload before posting")
-	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, lua_touserdata(L, 3), lua_rawlen(L, 3));', 1, true) ~= nil,
-		"Lua object post helper should copy payload data before posting")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) ~= nil,
+		"Lua object post helper should post the built payload through the buffered helper")
 
 	print("PASS: test_example_application_xml")
 end
@@ -1099,5 +1118,6 @@ test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
+test_lua_set_modal_object_dispatches_message()
 
 print("All layout tests passed.")

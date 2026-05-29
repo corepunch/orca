@@ -642,6 +642,7 @@
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
         <handle message="Screen.ShowModal"/>
+        <handle message="Screen.SetModalObject"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
@@ -679,6 +680,13 @@
           <details>The message bubbles to the owning Screen so it can load the popup template, attach it as the current modal child, and refresh the screen immediately.</details>
           <fields>
             <field name="Path" type="string">Popup template path to load.</field>
+          </fields>
+        </message>
+        <message name="SetModalObject" routing="Direct">
+          <summary>Attaches an already-loaded popup as the screen's modal child.</summary>
+          <details>This message is the in-memory counterpart to ShowModal and lets callers present a popup object without loading it from disk.</details>
+          <fields>
+            <field name="Target" type="Object" pointer="true">Popup object to present modally.</field>
           </fields>
         </message>
       </messages>

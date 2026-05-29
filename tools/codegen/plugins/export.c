@@ -828,6 +828,8 @@ static int emit_luaopen(ob *b, cg_model const *m) {
     {
         size_t idx = 0;
         cg_node const *msg;
+        /* Export every local message type so Lua can resolve handlers as
+         * self:MessageName(...), including direct-routed messages. */
         while (foreach_local_event(m, &idx, &msg)) {
             cg_node const *owner = node_parent(m, msg);
             char s[256];

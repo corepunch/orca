@@ -375,13 +375,15 @@ enum ControlProperties {
 #define ID_Screen_UpdateLayout 0x7d9d5a12 // Screen.UpdateLayout
 #define ID_Screen_RenderScreen 0xd1601cf1 // Screen.RenderScreen
 #define ID_Screen_ShowModal 0xec8e1535 // Screen.ShowModal
-#define kScreenNumProperties 5
+#define ID_Screen_SetModalObject 0x8846654b // Screen.SetModalObject
+#define kScreenNumProperties 6
 enum ScreenProperties {
 	kScreenClearColor,
 	kScreenResizeMode,
 	kScreenUpdateLayout,
 	kScreenRenderScreen,
 	kScreenShowModal,
+	kScreenSetModalObject,
 };
 // Popup
 #define ID_Popup 0xe8eb787d
@@ -657,6 +659,9 @@ enum StyleProperties {
 #define ID_Screen_ShowModalEventArgs 0x92009ebd
 
 #define ID_Screen_ShowModalEventArgs_Path 0x3c69a1b2 // Screen_ShowModalEventArgs.Path
+#define ID_Screen_SetModalObjectEventArgs 0xd90589fd
+
+#define ID_Screen_SetModalObjectEventArgs_Target 0x45b3423c // Screen_SetModalObjectEventArgs.Target
 #define ID_Popup_ClosePopupEventArgs 0x7eb462e1
 
 #define ID_Popup_ClosePopupEventArgs_ReturnValue 0xbf8d75fc // Popup_ClosePopupEventArgs.ReturnValue

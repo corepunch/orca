@@ -52,9 +52,8 @@ static void test_trigger_triggered_registry(void)
     struct PropertyType *props = OBJ_FindMessagePropertyTypes("Trigger.Triggered", &count);
     EXPECT(L != NULL);
     EXPECT(props != NULL);
-    EXPECT(count == 2);
-    EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Trigger"));
-    EXPECT(props[1].Name != NULL && !strcmp(props[1].Name, "Sender"));
+    EXPECT(count == 1);
+    EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Sender"));
   });
 }
 

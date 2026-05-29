@@ -114,13 +114,41 @@ function Widget:showModal(modal)
   assert(modal ~= nil, "showModal: modal must not be nil")
 
   local Application = require "orca.core.application"
+  local UIKit = require "orca.UIKit"
   local app = Application.current(false)
   local screen = rawget(self, "screen")
   if screen == nil and app then
     screen = app.screen
   end
   assert(screen, "showModal requires an active screen")
-  return screen:showModal(modal)
+
+  if type(modal) == "table" and type(modal.content) == "function" then
+    local widget = modal
+    local popup = UIKit.Popup { BackgroundColor = "#000000D0" }
+    local previous_on_result = rawget(widget, "on_result")
+    local co, is_main = coroutine.running()
+
+    rawset(widget, "screen", screen)
+    widget.on_result = function(result)
+      if previous_on_result then previous_on_result(result) end
+      popup:ClosePopup(result)
+      if co and not is_main and coroutine.status(co) == "suspended" then
+        coroutine.resume(co, result)
+      end
+    end
+
+    local content = widget:content()
+    if content ~= nil then
+      popup:addChild(content)
+    end
+    local sent = screen:SetModalObject(popup)
+    if co and not is_main then
+      return coroutine.yield()
+    end
+    return sent
+  end
+
+  return screen:SetModalObject(modal)
 end
 
 function Widget:_find_helper_value(key)

@@ -661,11 +661,11 @@ _RemoveFromModalChain(struct Object *hObject)
   return FALSE;
 }
 
-ORCA_API bool_t
-Screen_ShowModalObject(struct Object *hObject, struct Object *target)
+static bool_t
+_AttachModalObject(struct Object *hObject, struct Object *target)
 {
   if (!hObject || !target) {
-    Con_Error("Invalid arguments to Screen_ShowModalObject");
+    Con_Error("Invalid arguments to modal attachment");
     return FALSE;
   }
 
@@ -684,12 +684,6 @@ Screen_ShowModalObject(struct Object *hObject, struct Object *target)
     Con_Error("Modal popup missing DialogResult property");
   }
   return TRUE;
-}
-
-ORCA_API bool_t
-OBJ_ShowModalObject(struct Object *hObject, struct Object *target)
-{
-  return Screen_ShowModalObject(hObject, target);
 }
 
 static void
@@ -737,9 +731,18 @@ HANDLER(Screen, Screen, ShowModal) {
     return FALSE;
   }
 
-  if (Screen_ShowModalObject(hObject, target)) {
+  if (_AttachModalObject(hObject, target)) {
     bool_t visible = TRUE;
     OBJ_SetPropertyValue(target, "Visible", &visible);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+HANDLER(Screen, Screen, SetModalObject) {
+  if (_AttachModalObject(hObject, pSetModalObject->Target)) {
+    bool_t visible = TRUE;
+    OBJ_SetPropertyValue(pSetModalObject->Target, "Visible", &visible);
     return TRUE;
   }
   return FALSE;

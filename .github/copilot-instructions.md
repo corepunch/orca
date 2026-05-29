@@ -202,6 +202,8 @@ Each plugin module is compiled into its own shared library (`.so` / `.dll`) and 
 
 ORCA uses an **Object/Component** architecture. An `Object` is the universal scene node — a named, hierarchical container. Functionality is added by attaching **components** (also called classes) to it.
 
+Lua can call message handlers directly with a capitalized method name on any object that owns the handler, for example `self:MessageName(...)` or `screen:SetModalObject(modal)`. This is the preferred shorthand for dispatching component messages from Lua when the method name matches the message name.
+
 ### Object (`source/core/object/object_internal.h`)
 
 Every scene element is an `Object`. Objects form a parent→children tree. Key fields:

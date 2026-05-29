@@ -166,4 +166,53 @@ end
 
 test_show_modal_attaches_and_closes_popup()
 
+-- ---------------------------------------------------------------------------
+-- Test 10: showModal wraps plain widget content in a UIKit Popup
+-- ---------------------------------------------------------------------------
+local function test_show_modal_wraps_widget_content()
+  local Prompt = Widget:extend {
+    content = function(self)
+      local root = ui.StackView { Name = "WidgetPromptContent" }
+      root:addChild(ui.TextBlock {
+        Name = "WidgetPromptYes",
+        Text = "Yes",
+        LeftButtonUp = function()
+          self.on_result(1)
+        end
+      })
+      return root
+    end
+  }
+
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local host = Widget()
+  local prompt = Prompt()
+  local result = nil
+  rawset(host, "screen", screen)
+
+  local co = coroutine.create(function()
+    result = host:showModal(prompt)
+  end)
+  local ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should start")
+  test.expect_eq(coroutine.status(co), "suspended", "showModal should wait for widget modal result")
+
+  local modal = screen:getNext()
+  test.expect(modal ~= nil, "widget showModal should attach a UIKit Popup")
+  test.expect_eq(modal:getClassName(), "Popup", "widget showModal wrapper should be a Popup")
+  test.expect(modal:findChild("WidgetPromptContent", true) ~= nil, "widget content should be inside the Popup")
+
+  test.expect(modal:findChild("WidgetPromptYes", true) ~= nil, "widget modal button should exist")
+  prompt.on_result(1)
+  pump_messages(screen)
+
+  test.expect_eq(result, 1, "widget showModal should return the widget result")
+  test.expect_eq(modal.DialogResult, 1, "widget showModal should close the Popup with the result")
+  test.expect_eq(screen:getNext(), nil, "widget modal should detach after closing")
+
+  print("PASS: test_show_modal_wraps_widget_content")
+end
+
+test_show_modal_wraps_widget_content()
+
 print("All widget tests passed.")

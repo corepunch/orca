@@ -208,6 +208,11 @@ struct PropertyType _Screen_ShowModalEventArgs_Properties[] = {
 	DECL(0xeb66e456, Screen_ShowModalEventArgs, Path, Path, kDataTypeString), // Screen_ShowModalEventArgs.Path
 };
 #define _Screen_ShowModalEventArgs _Screen_ShowModalEventArgs_Properties
+static luaL_Reg _Screen_SetModalObjectEventArgs_Methods[] = { { NULL, NULL } };
+struct PropertyType _Screen_SetModalObjectEventArgs_Properties[] = {
+	DECL(0x8b67f168, Screen_SetModalObjectEventArgs, Target, Target, kDataTypeObject, .TypeString = "Object"), // Screen_SetModalObjectEventArgs.Target
+};
+#define _Screen_SetModalObjectEventArgs _Screen_SetModalObjectEventArgs_Properties
 static luaL_Reg _Popup_ClosePopupEventArgs_Methods[] = { { NULL, NULL } };
 struct PropertyType _Popup_ClosePopupEventArgs_Properties[] = {
 	DECL(0x207072b4, Popup_ClosePopupEventArgs, ReturnValue, ReturnValue, kDataTypeFloat), // Popup_ClosePopupEventArgs.ReturnValue
@@ -270,6 +275,7 @@ STRUCT(TabView_SelectionChangedEventArgs, TabView_SelectionChangedEventArgs);
 STRUCT(Screen_UpdateLayoutEventArgs, Screen_UpdateLayoutEventArgs);
 STRUCT(Screen_RenderScreenEventArgs, Screen_RenderScreenEventArgs);
 STRUCT(Screen_ShowModalEventArgs, Screen_ShowModalEventArgs);
+STRUCT(Screen_SetModalObjectEventArgs, Screen_SetModalObjectEventArgs);
 STRUCT(Popup_ClosePopupEventArgs, Popup_ClosePopupEventArgs);
 STRUCT(ConsoleView_PrintlnEventArgs, ConsoleView_PrintlnEventArgs);
 STRUCT(ConsoleView_EraseEventArgs, ConsoleView_EraseEventArgs);
@@ -865,6 +871,7 @@ REGISTER_CLASS(Control, ID_Node2D, 0);
 HANDLER(Screen, Screen, UpdateLayout);
 HANDLER(Screen, Screen, RenderScreen);
 HANDLER(Screen, Screen, ShowModal);
+HANDLER(Screen, Screen, SetModalObject);
 HANDLER(Screen, Node2D, MeasureOverride);
 HANDLER(Screen, Object, Create);
 HANDLER(Screen, Object, Destroy);
@@ -876,6 +883,7 @@ static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 	DECL(0x928c657a, Screen, UpdateLayout, UpdateLayout, kDataTypeEvent, .TypeString = "Screen_UpdateLayoutEventArgs"), // Screen.UpdateLayout
 	DECL(0xd15bdf29, Screen, RenderScreen, RenderScreen, kDataTypeEvent, .TypeString = "Screen_RenderScreenEventArgs"), // Screen.RenderScreen
 	DECL(0xc40729ed, Screen, ShowModal, ShowModal, kDataTypeEvent, .TypeString = "Screen_ShowModalEventArgs"), // Screen.ShowModal
+	DECL(0xb5b64813, Screen, SetModalObject, SetModalObject, kDataTypeEvent, .TypeString = "Screen_SetModalObjectEventArgs"), // Screen.SetModalObject
 };
 static struct Screen ScreenDefaults = {
 };
@@ -884,6 +892,7 @@ LRESULT ScreenProc(struct Object* object, void* cmp, uint32_t message, wParam_t 
 		case ID_Screen_UpdateLayout: return Screen_UpdateLayout(object, cmp, wparm, lparm); // Screen.UpdateLayout
 		case ID_Screen_RenderScreen: return Screen_RenderScreen(object, cmp, wparm, lparm); // Screen.RenderScreen
 		case ID_Screen_ShowModal: return Screen_ShowModal(object, cmp, wparm, lparm); // Screen.ShowModal
+		case ID_Screen_SetModalObject: return Screen_SetModalObject(object, cmp, wparm, lparm); // Screen.SetModalObject
 		case ID_Node2D_MeasureOverride: return Screen_MeasureOverride(object, cmp, wparm, lparm); // Node2D.MeasureOverride
 		case ID_Object_Create: return Screen_Create(object, cmp, wparm, lparm); // Object.Create
 		case ID_Object_Destroy: return Screen_Destroy(object, cmp, wparm, lparm); // Object.Destroy
@@ -1231,6 +1240,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 	REGISTER_MESSAGE_TYPE(ID_Screen_UpdateLayout, "Screen.UpdateLayout", Screen_UpdateLayoutEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Screen_RenderScreen, "Screen.RenderScreen", Screen_RenderScreenEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Screen_ShowModal, "Screen.ShowModal", Screen_ShowModalEventArgs);
+	REGISTER_MESSAGE_TYPE(ID_Screen_SetModalObject, "Screen.SetModalObject", Screen_SetModalObjectEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_Popup_ClosePopup, "Popup.ClosePopup", Popup_ClosePopupEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_ConsoleView_Println, "ConsoleView.Println", ConsoleView_PrintlnEventArgs);
 	REGISTER_MESSAGE_TYPE(ID_ConsoleView_Erase, "ConsoleView.Erase", ConsoleView_EraseEventArgs);
@@ -1262,6 +1272,7 @@ ORCA_API int luaopen_orca_UIKit(lua_State *L) {
 		lua_setfield(L, ((void)luaopen_orca_Screen_UpdateLayoutEventArgs(L), -2), "Screen_UpdateLayoutEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Screen_RenderScreenEventArgs(L), -2), "Screen_RenderScreenEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Screen_ShowModalEventArgs(L), -2), "Screen_ShowModalEventArgs");
+		lua_setfield(L, ((void)luaopen_orca_Screen_SetModalObjectEventArgs(L), -2), "Screen_SetModalObjectEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_Popup_ClosePopupEventArgs(L), -2), "Popup_ClosePopupEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_PrintlnEventArgs(L), -2), "ConsoleView_PrintlnEventArgs");
 		lua_setfield(L, ((void)luaopen_orca_ConsoleView_EraseEventArgs(L), -2), "ConsoleView_EraseEventArgs");
