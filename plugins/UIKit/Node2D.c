@@ -294,12 +294,6 @@ HANDLER(Node2D, Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
   struct Size s = {0};
-  bool_t useArrangedWidth =
-    !isnan(NODE2D_FRAME(n, Size, 0).Requested) ||
-    (NODE2D_FRAME(n, Alignment, 0) == kUIAlignStretch && !isinf(pArrange->Width));
-  bool_t useArrangedHeight =
-    !isnan(NODE2D_FRAME(n, Size, 1).Requested) ||
-    (NODE2D_FRAME(n, Alignment, 1) == kUIAlignStretch && !isinf(pArrange->Height));
   
   if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     s.width = NODE2D_FRAME(n, Size, 0).Requested;
@@ -341,8 +335,8 @@ HANDLER(Node2D, Node2D, Arrange)
   // Final frame is the outer rect (including padding, excluding margin)
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
   Node2D_SetFrame(n, kBox3FieldY,      rect.y);
-  Node2D_SetFrame(n, kBox3FieldWidth,  useArrangedWidth  ? rect.width  : LOWORD(size) + TOTAL_PADDING(n, 0));
-  Node2D_SetFrame(n, kBox3FieldHeight, useArrangedHeight ? rect.height : HIWORD(size) + TOTAL_PADDING(n, 1));
+  Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
+  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1));
   
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
