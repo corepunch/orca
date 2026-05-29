@@ -110,7 +110,15 @@ function Widget:url_for(first, ...)
   return app:url_for(first, ...)
 end
 
-function Widget:showModal(modal)
+local function is_widget_class(value)
+  if type(value) ~= "table" then return false end
+  local mt = getmetatable(value)
+  local base = rawget(value, "__base")
+  return type(mt) == "table" and type(mt.__call) == "function" and
+         type(base) == "table" and type(base.content) == "function"
+end
+
+function Widget:showModal(modal, ...)
   assert(modal ~= nil, "showModal: modal must not be nil")
 
   local Application = require "orca.core.application"
@@ -121,6 +129,10 @@ function Widget:showModal(modal)
     screen = app.screen
   end
   assert(screen, "showModal requires an active screen")
+
+  if is_widget_class(modal) then
+    modal = modal(...)
+  end
 
   if type(modal) == "table" and type(modal.content) == "function" then
     local widget = modal

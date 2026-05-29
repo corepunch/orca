@@ -75,9 +75,9 @@ local function test_grid_fr_units()
 	local expected1 = math.floor(screen.Width / 3)
 	local expected2 = screen.Width - expected1  -- remaining after 1fr
 	test.expect(math.abs(cell1.ActualWidth - expected1) <= 1,
-		string.format("1fr column width should be ~%d, got %d", expected1, cell1.ActualWidth))
+		string.format("1fr column width should be ~%.0f, got %.1f", expected1, cell1.ActualWidth))
 	test.expect(math.abs(cell2.ActualWidth - expected2) <= 1,
-		string.format("2fr column width should be ~%d, got %d", expected2, cell2.ActualWidth))
+		string.format("2fr column width should be ~%.0f, got %.1f", expected2, cell2.ActualWidth))
 	-- 2fr cell should be roughly twice as wide as 1fr cell
 	test.expect(math.abs(cell2.ActualWidth - cell1.ActualWidth * 2) <= 2,
 		"2fr column should be approximately twice the width of 1fr column")

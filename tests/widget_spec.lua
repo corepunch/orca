@@ -170,8 +170,10 @@ test_show_modal_attaches_and_closes_popup()
 -- Test 10: showModal wraps plain widget content in a UIKit Popup
 -- ---------------------------------------------------------------------------
 local function test_show_modal_wraps_widget_content()
+  local last_prompt = nil
   local Prompt = Widget:extend {
     content = function(self)
+      last_prompt = self
       local root = ui.StackView { Name = "WidgetPromptContent" }
       root:addChild(ui.TextBlock {
         Name = "WidgetPromptYes",
@@ -186,12 +188,11 @@ local function test_show_modal_wraps_widget_content()
 
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local host = Widget()
-  local prompt = Prompt()
   local result = nil
   rawset(host, "screen", screen)
 
   local co = coroutine.create(function()
-    result = host:showModal(prompt)
+    result = host:showModal(Prompt)
   end)
   local ok, err = coroutine.resume(co)
   test.expect(ok, err or "showModal coroutine should start")
@@ -203,7 +204,8 @@ local function test_show_modal_wraps_widget_content()
   test.expect(modal:findChild("WidgetPromptContent", true) ~= nil, "widget content should be inside the Popup")
 
   test.expect(modal:findChild("WidgetPromptYes", true) ~= nil, "widget modal button should exist")
-  prompt.on_result(1)
+  test.expect(last_prompt ~= nil, "widget class should be instantiated by showModal")
+  last_prompt.on_result(1)
   pump_messages(screen)
 
   test.expect_eq(result, 1, "widget showModal should return the widget result")

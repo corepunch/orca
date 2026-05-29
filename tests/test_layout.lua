@@ -604,6 +604,41 @@ local function test_lua_set_modal_object_dispatches_message()
 	print("PASS: test_lua_set_modal_object_dispatches_message")
 end
 
+local function test_stackview_align_items_preserves_child_stretch_width()
+	local root = ui.Screen { Name = "PopupLayoutRoot", Width = 420, Height = 600, ResizeMode = "NoResize" }
+	local overlay = root + ui.StackView {
+		Name = "AdventurePopupOverlay",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+		HorizontalMargin = core.EdgeShorthand(32, 32),
+		VerticalMargin = core.EdgeShorthand(32, 32),
+		Padding = core.Thickness(16),
+	}
+	local card = overlay + ui.StackView {
+		Name = "AdventurePopupCard",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+		Padding = core.Thickness(24),
+		Spacing = 16,
+	}
+	local body = card + ui.TextBlock {
+		Name = "AdventurePopupBody",
+		Text = "There was a game running already. Do you want to continue it? There was a game running already. Do you want to continue it?",
+		FontSize = 14,
+	}
+
+	root:UpdateLayout(root.Width, root.Height)
+
+	test.expect_near(overlay.ActualWidth, 356, 1, "overlay should respect root width minus horizontal margins")
+	test.expect_near(card.ActualWidth, 324, 1, "stretched card should fill overlay content width minus padding")
+	test.expect(body.ActualWidth <= 276, "body text should be measured inside card padding")
+
+	root:clear()
+	print("PASS: test_stackview_align_items_preserves_child_stretch_width")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -1119,5 +1154,6 @@ test_example_application_xml()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
+test_stackview_align_items_preserves_child_stretch_width()
 
 print("All layout tests passed.")
