@@ -21,7 +21,7 @@
 #include <mach-o/dyld.h>
 #endif
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__EMSCRIPTEN__)
 #include <unistd.h>
 #endif
 
