@@ -47,6 +47,7 @@ CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
+PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 HEADERS = $(wildcard *.h)
@@ -254,6 +255,13 @@ TEST_MESSAGE_REGISTRY_BIN = $(BINDIR)/test_message_registry
 TEST_TRIGGER_ACTIONS_BIN = $(BINDIR)/test_trigger_actions
 TEST_EDITOR_BIN = $(BINDIR)/test_editor
 TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
+EDITOR_PLUGIN_OBJECT = $(OBJECTDIR)/plugin_EditorKit.o
+EDITOR_PLUGIN_SOURCES = $(shell find $(PLUGINDIR)/EditorKit -name "*.c" 2>/dev/null)
+
+$(EDITOR_PLUGIN_OBJECT): $(EDITOR_PLUGIN_SOURCES) buildlib | directories
+	$(Q)echo "Compiling plugin EditorKit"
+	$(Q)find $(PLUGINDIR)/EditorKit -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $@ -
+
 define C_TEST_RULE
 $(1): $(4)
 	$(Q)echo "Building $(1)"
@@ -272,7 +280,7 @@ $(eval $(call C_TEST_RULE,test-styles,tests/test_styles.c,$(TEST_STYLES_BIN),pla
 $(eval $(call C_TEST_RULE,test-filesystem,tests/test_filesystem.c,$(TEST_FILESYSTEM_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-message-registry,tests/test_message_registry.c,$(TEST_MESSAGE_REGISTRY_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TEST_TRIGGER_ACTIONS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
-$(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c,$(TEST_EDITOR_BIN),buildplugins,,$(TEST_LDFLAGS) -lplatform -lm $(OBJECTDIR)/plugin_EditorKit.o))
+$(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c,$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm $(EDITOR_PLUGIN_OBJECT)))
 
 HEADLESS_LUA_TESTS = test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-node
 
