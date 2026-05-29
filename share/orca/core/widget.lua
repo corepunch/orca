@@ -118,6 +118,16 @@ local function is_widget_class(value)
          type(base) == "table" and type(base.content) == "function"
 end
 
+local function modal_return_values(result)
+  if type(result) ~= "number" then
+    return false, "Cancelled"
+  end
+  if result ~= 0 then
+    return true, result ~= 2
+  end
+  return false, "Cancelled"
+end
+
 function Widget:showModal(modal, ...)
   assert(modal ~= nil, "showModal: modal must not be nil")
 
@@ -139,14 +149,18 @@ function Widget:showModal(modal, ...)
     local popup = UIKit.Popup { BackgroundColor = "#000000D0" }
     local previous_on_result = rawget(widget, "on_result")
     local co, is_main = coroutine.running()
+    local should_wait = co and not is_main
+    local done = false
 
     rawset(widget, "screen", screen)
-    widget.on_result = function(result)
-      if previous_on_result then previous_on_result(result) end
-      popup:ClosePopup(result)
-      if co and not is_main and coroutine.status(co) == "suspended" then
-        coroutine.resume(co, result)
+    widget.on_result = function(first, second)
+      local result = second
+      if second == nil and first ~= widget then
+        result = first
       end
+      if previous_on_result then previous_on_result(result) end
+      done = true
+      popup:ClosePopup(result)
     end
 
     local content = widget:content()
@@ -154,13 +168,24 @@ function Widget:showModal(modal, ...)
       popup:addChild(content)
     end
     local sent = screen:SetModalObject(popup)
-    if co and not is_main then
-      return coroutine.yield()
+    if should_wait then
+      while not done and screen:getNext() == popup do
+        coroutine.yield()
+      end
+      return popup.DialogResult
     end
     return sent
   end
 
-  return screen:SetModalObject(modal)
+  local sent = screen:SetModalObject(modal)
+  local co, is_main = coroutine.running()
+  if sent and co and not is_main then
+    while type(modal.DialogResult) == "number" and modal.DialogResult ~= modal.DialogResult do
+      coroutine.yield()
+    end
+    return modal_return_values(modal.DialogResult)
+  end
+  return sent
 end
 
 function Widget:_find_helper_value(key)

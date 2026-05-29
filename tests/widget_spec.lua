@@ -179,7 +179,7 @@ local function test_show_modal_wraps_widget_content()
         Name = "WidgetPromptYes",
         Text = "Yes",
         LeftButtonUp = function()
-          self.on_result(1)
+          self:on_result({ ReturnValue = 1 })
         end
       })
       return root
@@ -205,8 +205,15 @@ local function test_show_modal_wraps_widget_content()
 
   test.expect(modal:findChild("WidgetPromptYes", true) ~= nil, "widget modal button should exist")
   test.expect(last_prompt ~= nil, "widget class should be instantiated by showModal")
-  last_prompt.on_result(1)
+  ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should tolerate scheduler resumes before close")
+  test.expect_eq(coroutine.status(co), "suspended", "showModal should stay suspended until widget modal result")
+  test.expect_eq(result, nil, "widget showModal should not return nil before the modal closes")
+
+  last_prompt:on_result({ ReturnValue = 1 })
   pump_messages(screen)
+  ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should resume after modal result")
 
   test.expect_eq(result, 1, "widget showModal should return the widget result")
   test.expect_eq(modal.DialogResult, 1, "widget showModal should close the Popup with the result")
@@ -216,5 +223,53 @@ local function test_show_modal_wraps_widget_content()
 end
 
 test_show_modal_wraps_widget_content()
+
+-- ---------------------------------------------------------------------------
+-- Test 11: showModal waits for raw Popup close results in a coroutine
+-- ---------------------------------------------------------------------------
+local function test_show_modal_waits_for_popup_close_result()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local modal = filesystem.loadObjectFromXmlString([[
+<Popup Name="CoroutineDialogPopup" BackgroundColor="#00000088">
+  <StackView Name="CoroutineDialogOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+    <TextBlock Name="CoroutineDialogClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
+      LeftButtonUp="{Popup.ClosePopup ReturnValue=2}"/>
+  </StackView>
+</Popup>]])
+  test.expect(modal ~= nil, "popup XML should load")
+  local close = modal:findChild("CoroutineDialogClose", true)
+  test.expect(close ~= nil, "close label should exist")
+
+  local host = Widget()
+  local ok_result = nil
+  local accepted = nil
+  rawset(host, "screen", screen)
+
+  local co = coroutine.create(function()
+    ok_result, accepted = host:showModal(modal)
+  end)
+  local ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should start")
+  test.expect_eq(coroutine.status(co), "suspended", "showModal should wait for raw popup close")
+  test.expect_eq(screen:getNext(), modal, "showModal should attach the raw popup")
+
+  ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should tolerate scheduler resumes before raw popup close")
+  test.expect_eq(coroutine.status(co), "suspended", "showModal should keep waiting while raw popup remains attached")
+  test.expect_eq(ok_result, nil, "raw popup showModal should not return before close")
+
+  close:send("Node.LeftButtonUp")
+  pump_messages(screen)
+  ok, err = coroutine.resume(co)
+  test.expect(ok, err or "showModal coroutine should resume after raw popup closes")
+
+  test.expect_eq(ok_result, true, "raw popup showModal should return a successful modal status")
+  test.expect_eq(accepted, false, "raw popup showModal should preserve the C accepted-result convention")
+  test.expect_eq(screen:getNext(), nil, "raw popup should detach after closing")
+
+  print("PASS: test_show_modal_waits_for_popup_close_result")
+end
+
+test_show_modal_waits_for_popup_close_result()
 
 print("All widget tests passed.")
