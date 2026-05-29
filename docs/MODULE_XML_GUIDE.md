@@ -471,7 +471,7 @@ Declares which messages a component handles. The `<handles>` container holds one
 </handles>
 ```
 
-For the XML-side event/action shorthand that dispatches these messages, see [XML Triggers, Actions, and Message Types](xml-triggers-actions-messages.md).
+For the XML-side event/action shorthand that dispatches these messages, see [XML Triggers, Actions, and Message Types](app/xml/triggers-actions-messages.md).
 
 ### `<arg>` — Function/Method Arguments
 

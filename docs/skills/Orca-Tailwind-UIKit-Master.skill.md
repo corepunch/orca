@@ -6,7 +6,7 @@ Purpose
 Canonical references
 - share/plugins/tailwind.lua
 - plugins/UIKit/UIKit.cgen
-- docs/lua-scene-loading.md
+- docs/app/moonscript/scenes-and-rebuild.md
 - samples/Example/Screens/ApplicationTW.xml
 - samples/Banking/
 

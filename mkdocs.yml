@@ -20,14 +20,20 @@ nav:
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
   - Module XML Guide: MODULE_XML_GUIDE.md
-  - XML Triggers, Actions, and Message Types: xml-triggers-actions-messages.md
+  - App Writing:
+    - MoonScript:
+      - Overview: app/moonscript/index.md
+      - Scene Loading & Composition: app/moonscript/scenes-and-rebuild.md
+      - Link Navigation: app/moonscript/link-navigation.md
+    - XML:
+      - Overview: app/xml/index.md
+      - Triggers, Actions, and Message Types: app/xml/triggers-actions-messages.md
   - Mesh Pointer Boxing: MESH_POINTER_BOXING.md
   - WebGL / Emscripten: webgl.md
   - Developer Notes:
     - Way of Working: way-of-working.md
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
-    - Lua Scene Loading: lua-scene-loading.md
     - Style System: styling.md
     - Theme Values: theme-values.md
     - Dark Reign Formats: dark-reign-formats.md
