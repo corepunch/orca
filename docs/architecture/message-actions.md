@@ -3,7 +3,7 @@
 Orca represents every generated message as both:
 
 - a typed C payload struct for handlers
-- a generated `Action` subclass for XML and Lua construction
+- a generated `SendMessageAction` subclass for XML and Lua construction
 
 That keeps C handlers fast and typed while making message dispatch look like
 ordinary object/action dispatch in authoring surfaces.
@@ -24,6 +24,17 @@ ordinary object/action dispatch in authoring surfaces.
 
 `Action` itself is only the contract. Concrete actions handle
 `Action.Dispatch`.
+
+`SendMessageAction` is the generic base for generated message actions. It owns
+the common dispatch properties and the single shared dispatch handler:
+
+```xml
+<class name="SendMessageAction" parent="Action">
+  <property name="Target" type="string"/>
+  <property name="Mode" type="DispatchMode" default="Send"/>
+  <handle message="Action.Dispatch"/>
+</class>
+```
 
 Every `.cgen` `<message>` automatically gets a generated action class:
 
@@ -46,12 +57,15 @@ EventTrigger receives Trigger.Triggered
   -> each child action executes itself
 ```
 
-Generated message actions handle `Action.Dispatch` by resolving their
-dispatch target and sending the original typed message:
+Generated message actions inherit the `SendMessageAction` handler. That handler
+finds the concrete generated payload component on the action object, uses that
+component's class ID as the message ID, and sends the component data as the
+typed payload:
 
 ```text
 Screen.ShowModal action
-  -> resolve Target relative to Sender, or use Sender when unset
+  -> SendMessageAction resolves Target relative to Sender
+  -> finds the Screen_ShowModalAction payload component
   -> send/post ID_Screen_ShowModal with Screen_ShowModalEventArgs payload
 ```
 
@@ -64,8 +78,8 @@ message-action `ClassDesc`:
 
 - `ClassName` is the dotted message name, such as `Screen.ShowModal`
 - `ClassID` is the message hash
-- payload fields are the first properties
-- action bookkeeping fields are generated after payload fields
+- direct properties are only payload fields
+- `Target` and `Mode` are inherited from `SendMessageAction`
 
 Lua `object:send("Message.Name", ...)` creates the generated message-action
 object, fills its payload fields, and dispatches `Action.Dispatch`. It no
@@ -83,17 +97,21 @@ HANDLER(Screen, Screen, ShowModal) {
 ```
 
 The generated action struct keeps the payload fields first so the component can
-be passed as the corresponding `EventArgs` payload.
+be passed as the corresponding `EventArgs` payload. The generic
+`SendMessageAction` handler passes the generated component data directly to
+`OBJ_SendMessageW` or `axPostMessageDataW`.
 
 ## Removed Baggage
 
 This model removes:
 
-- the legacy generic message-dispatch adapter
+- the legacy XML-facing generic message-dispatch adapter
 - adapter-specific fake message-field properties
 - XML parser ordering special cases for `Message=...`
 - inline lowering to a generic adapter
+- per-message generated `Action.Dispatch` handlers
 - the runtime `core.message_types` registry
 - Lua's hand-built message payload buffer path
 
-Generated message actions are now the single metadata and dispatch surface.
+Generated message actions are now data-only message payload components that
+inherit one generic dispatch implementation.

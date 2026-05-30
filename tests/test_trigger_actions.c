@@ -335,18 +335,18 @@ test_generated_action_property_order(void)
 {
   RUN("generated_action_property_order", {
     struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
+    struct ClassDesc const *base = OBJ_FindClass("SendMessageAction");
     struct Property *x_prop = NULL;
     struct Property *target_prop = NULL;
 
     EXPECT(action != NULL);
+    EXPECT(base != NULL);
     EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction_x, &x_prop));
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction__ActionTarget, &target_prop));
+    EXPECT_OK(OBJ_FindLongProperty(action, ID_SendMessageAction_Target, &target_prop));
     EXPECT(x_prop != NULL);
     EXPECT(target_prop != NULL);
     EXPECT(strcmp(PROP_GetName(x_prop), "x") == 0);
     EXPECT(strcmp(PROP_GetName(target_prop), "Target") == 0);
-    char removed_class[] = "Send" "Message" "Action";
-    EXPECT(OBJ_FindClass(removed_class) == NULL);
   });
 }
 

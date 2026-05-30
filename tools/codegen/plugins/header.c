@@ -346,8 +346,6 @@ static int emit_message_action_struct(ob *b, cg_model const *m, cg_node const *m
     if (ob_printf(b, "/** %s generated message action */\nstruct %s {\n", s, s) < 0) return -1;
     if (emit_event_fields(b, m, msg) < 0) return -1;
     if (ob_printf(b,
-            "\tconst char* _ActionTarget;\n"
-            "\tenum DispatchMode _ActionMode;\n"
             "};\n"
             "ORCA_API void luaX_push%s(lua_State *L, struct %s const* %s);\n"
             "ORCA_API struct %s* luaX_check%s(lua_State *L, int idx);\n",

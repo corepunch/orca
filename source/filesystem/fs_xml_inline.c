@@ -185,6 +185,27 @@ _FindStructField(struct StructDesc const *sdesc, lpcString_t name)
   return NULL;
 }
 
+static struct PropertyType const *
+find_class_property(struct ClassDesc const *cls, lpcString_t name)
+{
+  if (!cls || !name) {
+    return NULL;
+  }
+  FOR_LOOP(i, cls->NumProperties) {
+    if (!strcmp(cls->Properties[i].Name, name)) {
+      return &cls->Properties[i];
+    }
+  }
+  for (uint32_t const *parent = cls->ParentClasses; *parent; parent++) {
+    struct PropertyType const *field =
+      find_class_property(OBJ_FindClassW(*parent), name);
+    if (field) {
+      return field;
+    }
+  }
+  return NULL;
+}
+
 bool_t
 _SetStructFieldFromString(struct PropertyType const *pdesc,
                           void *valueptr,
@@ -303,12 +324,7 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
     if (*r.p == '=') {
       r.p++;
       ok = read_atom(&r, &value);
-      FOR_LOOP(i, cls->NumProperties) {
-        if (!strcmp(cls->Properties[i].Name, name)) {
-          field = &cls->Properties[i];
-          break;
-        }
-      }
+      field = ok ? find_class_property(cls, name) : NULL;
     } else {
       value = name;
       name = NULL;
@@ -443,7 +459,7 @@ _ExpandXmlPositionalArgs(lpcString_t xml)
     struct reader r = { body_copy };
     bool_t *used = calloc((size_t)cls->NumProperties, sizeof(bool_t));
     int cursor = 0;
-    bool_t ok = used != NULL;
+    bool_t ok = cls->NumProperties == 0 || used != NULL;
     putc_xml(&out, '<');
     putn(&out, name, (size_t)(name_end - name));
     while (ok) {
@@ -456,12 +472,7 @@ _ExpandXmlPositionalArgs(lpcString_t xml)
       if (*r.p == '=') {
         r.p++;
         ok = read_atom(&r, &arg_value);
-        FOR_LOOP(i, cls->NumProperties) {
-          if (!strcmp(cls->Properties[i].Name, arg_name)) {
-            field = &cls->Properties[i];
-            break;
-          }
-        }
+        field = ok ? find_class_property(cls, arg_name) : NULL;
       } else {
         arg_value = arg_name;
         arg_name = NULL;
@@ -478,7 +489,9 @@ _ExpandXmlPositionalArgs(lpcString_t xml)
         Con_Error("Unknown or extra field while parsing inline object '%s'", type);
         ok = FALSE;
       } else {
-        used[field - cls->Properties] = TRUE;
+        if (field >= cls->Properties && field < cls->Properties + cls->NumProperties) {
+          used[field - cls->Properties] = TRUE;
+        }
         putc_xml(&out, ' ');
         put(&out, field->Name);
         put(&out, "=\"");
