@@ -1,6 +1,6 @@
 #include <include/api.h>
-#include <source/geometry/geometry.h>
-#include <source/core/core.h>
+#include <geometry/geometry.h>
+#include <core/core.h>
 
 #include "property_internal.h"
 

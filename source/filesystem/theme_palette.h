@@ -2,7 +2,7 @@
 #define ORCA_THEME_PALETTE_H
 
 #include <include/orca.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 #define THEME_COLOR_ACCENT              "$accent"
 #define THEME_COLOR_ACCENT_BACKGROUND   "$accent-background"

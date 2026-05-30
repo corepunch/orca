@@ -1,6 +1,6 @@
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 bool_t is_server = FALSE;
 
@@ -38,3 +38,5 @@ after_ui_module_registered(lua_State* L) {
     }
   }
 }
+
+#include <UIKit/UIKit_export.c>

@@ -5,11 +5,11 @@
 #include <include/orca.h>
 #include <include/codegen.h>
 #include <source/core/core_local.h>
-#include <source/core/core_properties.h>
+#include <core/core_properties.h>
 #include <source/core/object/object_internal.h>
 #include <source/filesystem/fs_local.h>
-#include <plugins/UIKit/UIKit.h>
-#include <plugins/UIKit/UIKit_properties.h>
+#include <UIKit/UIKit.h>
+#include <UIKit/UIKit_properties.h>
 
 #include <stdio.h>
 #include <unistd.h>

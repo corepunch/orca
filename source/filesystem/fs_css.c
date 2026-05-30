@@ -19,11 +19,11 @@
 #include <strings.h>
 #include <ctype.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <source/core/property/property_internal.h>
-#include <source/core/core_properties.h>
-#include <source/filesystem/filesystem.h>
+#include <core/core_properties.h>
+#include <filesystem/filesystem.h>
 
 // parse_property is ORCA_API but not declared in orca.h; forward-declare it.
 extern int parse_property(const char* str, struct PropertyType const* prop,

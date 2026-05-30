@@ -1543,3 +1543,5 @@ calculate_ninepatch(struct vec2 const* framesize,
   memcpy(&output->v[8], _u, sizeof(struct vec4));
   memcpy(&output->v[12], _v, sizeof(struct vec4));
 }
+
+#include <geometry/geometry_export.c>

@@ -895,8 +895,8 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#include <include/api.h>\n"
             "#include <include/codegen.h>\n\n"
-            "#include \"%s.h\"\n\n",
-            base_name(model->xml_path), model->module_name) < 0) goto fail;
+            "#include <%s/%s.h>\n\n",
+            base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {
         if (ob_printf(&b, "// %s\n"
                 "extern void luaX_push%s(lua_State *L, struct %s const* value);\n"

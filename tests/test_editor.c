@@ -20,8 +20,8 @@
 
 #include <include/editor.h>
 #include <libs/platform/events.h>
-#include <source/renderer/api/renderer_properties.h>
-#include <source/renderer/api/renderer.h>
+#include <renderer/renderer_properties.h>
+#include <renderer/renderer.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

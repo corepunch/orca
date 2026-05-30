@@ -1,7 +1,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 
 HANDLER(Light3D, Node3D, Render)
 {

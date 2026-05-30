@@ -59,9 +59,9 @@ But this shorthand depends on a full path through the engine:
 1. `plugins/UIKit/UIKit.cgen` declares `Screen.SetModalObject` and its `Target`
    payload field.
 2. Codegen emits:
-   - `plugins/UIKit/UIKit.h`
-   - `plugins/UIKit/UIKit_properties.h`
-   - `plugins/UIKit/UIKit_export.c`
+   - `generated/UIKit/UIKit.h`
+   - `generated/UIKit/UIKit_properties.h`
+   - `generated/UIKit/UIKit_export.c`
 3. `UIKit_export.c` exposes the event property and registers the payload type.
 4. `source/core/property/property_lua.c` turns event properties into Lua
    callable closures.

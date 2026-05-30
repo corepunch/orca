@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 
 #if 0
 static void

@@ -3,6 +3,7 @@ MODULES := $(patsubst $(MODULE_ROOT)%.cgen,%,$(shell find $(MODULE_ROOT)source $
 BUILDDIR := $(MODULE_ROOT)build
 SOURCEDIR := $(MODULE_ROOT)source
 PLUGINDIR := $(MODULE_ROOT)plugins
+GENERATEDDIR := $(MODULE_ROOT)generated
 APPNAME := orca
 LIBNAME := orca
 BINDIR := $(BUILDDIR)/bin
@@ -55,9 +56,10 @@ directories:
 define MODULE_RULE
 $(1): codegen-host
 	$(Q)echo "Generating $(1)..."
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(MODULE_ROOT)$(1).h
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(MODULE_ROOT)$(1)_properties.h
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(MODULE_ROOT)$(1)_export.c
+	$(Q)mkdir -p $(GENERATEDDIR)/$(notdir $(1))
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1)).h
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1))_properties.h
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1))_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
@@ -65,10 +67,10 @@ $(foreach mod,$(MODULES),$(eval $(call MODULE_RULE,$(mod))))
 define MODULE_C_PREVIEW_RULE
 cgen-preview-$(1): codegen-host
 	$(Q)echo "Preview C codegen $(1)..."
-	$(Q)mkdir -p $(CG_PREVIEW_DIR)/$(dir $(1))
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(CG_PREVIEW_DIR)/$(1).h
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(CG_PREVIEW_DIR)/$(1)_properties.h
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(CG_PREVIEW_DIR)/$(1)_export.c
+	$(Q)mkdir -p $(CG_PREVIEW_DIR)/$(notdir $(1))
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_HEADER) > $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1)).h
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_PROPERTIES) > $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1))_properties.h
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CG_PLUGIN_EXPORT) > $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1))_export.c
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_PREVIEW_RULE,$(mod))))
@@ -78,9 +80,9 @@ modules-c-preview: $(foreach mod,$(MODULES),cgen-preview-$(mod))
 define MODULE_C_DIFF_RULE
 cgen-diff-$(1):
 	$(Q)echo "Diff C preview $(1)..."
-	$(Q)cmp -s $(MODULE_ROOT)$(1).h $(CG_PREVIEW_DIR)/$(1).h || echo "  != $(1).h"
-	$(Q)cmp -s $(MODULE_ROOT)$(1)_properties.h $(CG_PREVIEW_DIR)/$(1)_properties.h || echo "  != $(1)_properties.h"
-	$(Q)cmp -s $(MODULE_ROOT)$(1)_export.c $(CG_PREVIEW_DIR)/$(1)_export.c || echo "  != $(1)_export.c"
+	$(Q)cmp -s $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1)).h $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1)).h || echo "  != $(notdir $(1)).h"
+	$(Q)cmp -s $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1))_properties.h $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1))_properties.h || echo "  != $(notdir $(1))_properties.h"
+	$(Q)cmp -s $(GENERATEDDIR)/$(notdir $(1))/$(notdir $(1))_export.c $(CG_PREVIEW_DIR)/$(notdir $(1))/$(notdir $(1))_export.c || echo "  != $(notdir $(1))_export.c"
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_C_DIFF_RULE,$(mod))))

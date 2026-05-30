@@ -1,10 +1,10 @@
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 #include <source/network/network.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 /* Cancel and release an in-flight fetch stored in the ImageView.
    Sets both _fetch and _src_object to NULL. */

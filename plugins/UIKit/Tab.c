@@ -1,9 +1,9 @@
 #include <include/orca.h>
 #include <source/core/core_local.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 #include <source/filesystem/theme_palette.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 #include <plugins/UIKit/UIKit_message.h>
 
 static void

@@ -3,7 +3,7 @@
 #include <include/plugapi.h>
 #include <include/renderer.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 
 enum

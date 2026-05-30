@@ -921,3 +921,5 @@ after_core_module_registered(lua_State* L)
 
 #undef OVERRIDE_NEW
 }
+
+#include <core/core_export.c>

@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 #define SCROLL_SENSIVITY 1.2f
 #define BUFFER_WIDTH 256

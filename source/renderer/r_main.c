@@ -7,7 +7,7 @@
 
 #include "r_local.h"
 #include <source/core/core_local.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 // parse_property is defined in source/core/property/property_lua.c (ORCA_API).
 // Forward-declare here because in the unity build r_main.c compiles before renderer_export.c.
@@ -1176,3 +1176,5 @@ ORCA_API void luaX_pushViewDef(lua_State* L, struct ViewDef const* viewdef) {
 ORCA_API void luaX_pushViewText(lua_State* L, struct ViewText const* viewtext) {
   lua_pushnil(L);
 }
+
+#include <renderer/renderer_export.c>

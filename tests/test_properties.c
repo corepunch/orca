@@ -31,7 +31,7 @@
 #include "mem_tracker.h"
 
 #include <source/core/core_local.h>
-#include <source/core/core.h>
+#include <core/core.h>
 #include <source/core/object/object_internal.h>
 #include <stdio.h>
 #include <stdlib.h>

@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/plugapi.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 HANDLER(Node2D, Node2D, UpdateGeometry) {
   float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);

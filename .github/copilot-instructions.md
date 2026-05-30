@@ -28,15 +28,15 @@ make
 ```
 This runs code generation and then C compilation. System libraries such as lua5.4-dev, libxml2-dev, liblz4-dev, and friends must be present.
 
-**C-only build** (skips code generation):
+**Incremental C build**:
 
-The generated files (`*_export.c`, `*.h`, `*_properties.h`) are committed to the repository. If you are only modifying `.c` or `.h` implementation files (not `.cgen` API definitions), you do **not** need to regenerate them. The full build will work if you have the system libraries:
+Generated files are written under `generated/` and are intentionally ignored by git. `make` and `make unite` both run `make modules` first, so the generated headers and exports are refreshed before compilation:
 ```bash
 make unite
 ```
 
 **Sandboxed / CI environments without system libraries:**
-You cannot compile the project. Review code changes manually or push to CI (GitHub Actions) which installs all required packages. Do not attempt `make` if Lua dev headers or `libs/platform` are absent — it will corrupt generated files.
+You cannot compile the project. Review code changes manually or push to CI (GitHub Actions) which installs all required packages. Do not attempt `make` if Lua dev headers or `libs/platform` are absent.
 
 **Running tests (requires a full build):**
 ```bash
@@ -96,7 +96,7 @@ ORCA is a C game engine with a layered architecture.  Working effectively on any
 Keep Makefiles concise and shaped like the repository. Prefer `find`/pattern rules over hand-maintained file lists, build from the repository root when paths describe repository files, and keep command lines readable enough to copy directly. For code generation, the preferred form is:
 
 ```bash
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > generated/core/core_export.c
 ```
 
 Avoid verbose flag syntax or directory hopping when a short root-relative command is clear.
@@ -165,10 +165,12 @@ Every C module lives in `source/<module>/` or `plugins/<name>/` and follows the 
 ```
 <module>/
 ├── <module>.xml            # API definition — source of truth for public interface
-├── <module>.h              # Generated C header (do not edit by hand)
-├── <module>_properties.h   # Generated property hash constants (do not edit)
-├── <module>_export.c       # Generated Lua binding code (do not edit)
 └── *.c / *.h               # Hand-written implementation files
+
+generated/<module>/
+├── <module>.h              # Generated C header (ignored by git)
+├── <module>_properties.h   # Generated property hash constants (ignored by git)
+└── <module>_export.c       # Generated Lua binding code included by the module main file
 ```
 
 ### Core modules (`source/`)
@@ -377,7 +379,7 @@ HANDLER(MyComponent, Object, Animate) {
 
 The `HANDLER` macro expands to the correct function signature; `*_export.c` forward-declares each handler and wires it into the generated `MyComponentProc` switch.
 
-**Do not `#include <plugins/UIKit/UIKit.h>` (or any plugin header) from `source/core/`.** Core must not depend on plugins; this is an architectural violation that causes circular build dependencies.
+**Do not `#include <UIKit/UIKit.h>` (or any plugin header) from `source/core/`.** Core must not depend on plugins; this is an architectural violation that causes circular build dependencies.
 
 #### Step 4 — Register the class at module init
 
@@ -701,9 +703,9 @@ make modules
 
 ```bash
 make codegen-host
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > source/core/core.h
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > source/core/core_properties.h
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > generated/core/core.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > generated/core/core_properties.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > generated/core/core_export.c
 ```
 
 ---
@@ -730,7 +732,7 @@ When implementing a new component, property, message, or any other API addition,
 3. **HANDLER implementations** — Write the hand-coded `.c` handler bodies using the `HANDLER` macro; never edit generated files.
 4. **Tests** — Add or update tests (Lua layout tests, C unit tests) and verify with `make test-headless` / `xvfb-run make test`.
 
-> **Never skip step 2.** Editing `.h` or `_export.c` by hand will be overwritten on the next `make`. Commit generated files alongside your XML changes.
+> **Never skip step 2.** Editing generated files by hand will be overwritten on the next `make`. Commit the `.cgen`, handwritten source, and build-rule changes, not the ignored `generated/` outputs.
 
 ---
 
@@ -935,7 +937,7 @@ Always verify the migration is *complete*: the old code path is deleted, and all
 
 **Anti-pattern 4: Including plugin headers from core**
 
-`source/core/` must never `#include <plugins/UIKit/UIKit.h>` or any other plugin header.  The dependency direction is: **plugins depend on core; core does not depend on plugins**.  Violating this creates circular build dependencies, breaks cross-platform builds, and makes the core untestable in isolation.  If core code needs a type from UIKit (e.g. `struct Node`), refactor so the lookup goes through a generic message or a registered accessor.
+`source/core/` must never `#include <UIKit/UIKit.h>` or any other plugin header.  The dependency direction is: **plugins depend on core; core does not depend on plugins**.  Violating this creates circular build dependencies, breaks cross-platform builds, and makes the core untestable in isolation.  If core code needs a type from UIKit (e.g. `struct Node`), refactor so the lookup goes through a generic message or a registered accessor.
 
 **Anti-pattern 5: Skipping tests**
 

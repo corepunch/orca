@@ -2,7 +2,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 
 void
 _CollectUniforms(struct Object *,

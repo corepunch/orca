@@ -3,8 +3,8 @@
   <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
-    <include file="source/core/core.h"/>
-    <include file="plugins/UIKit/UIKit.h"/>
+    <include file="core/core.h"/>
+    <include file="UIKit/UIKit.h"/>
   </includes>
   <enums>
     <enum name="StencilOp">

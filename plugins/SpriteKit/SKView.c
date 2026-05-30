@@ -1,4 +1,4 @@
-#include "SpriteKit.h"
+#include <SpriteKit/SpriteKit.h>
 
 static struct Object *
 find_viewport(struct Object *node) {

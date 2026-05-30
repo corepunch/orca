@@ -1,7 +1,7 @@
 #include <include/orca.h>
 #include <source/filesystem/theme_palette.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 struct Object *
 _NextTabStop(struct Object *hObject);

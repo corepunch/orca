@@ -594,7 +594,7 @@ PROP_Export(struct Property *prop,
   }
 }
 
-#include <plugins/UIKit/UIKit.h> // for GetNode(it)
+#include <UIKit/UIKit.h> // for GetNode(it)
 
 tok_op(argument)
 {

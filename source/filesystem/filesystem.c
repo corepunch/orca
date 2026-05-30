@@ -624,3 +624,5 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
   Con_Error("No file loader found for '%s'", tmpl);
   return NULL;
 }
+
+#include <filesystem/filesystem_export.c>

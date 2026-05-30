@@ -5,7 +5,7 @@
 #include <include/orca.h>
 #include <include/renderer.h>
 
-#include <source/renderer/api/renderer.h>
+#include <renderer/renderer.h>
 
 #if __APPLE__
 //#define GL_SILENCE_DEPRECATION

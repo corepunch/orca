@@ -1,6 +1,6 @@
 #include <include/api.h>
-#include <plugins/SpriteKit/SpriteKit.h>
-#include "DarkReign.h"
+#include <SpriteKit/SpriteKit.h>
+#include <DarkReign/DarkReign.h>
 
 /* forward declaration – defined in SprFormat.c, compiled as one unit */
 struct Object *_SprFile_Load(lua_State* L, uint8_t const *data, uint32_t size, lpcString_t name);
@@ -67,3 +67,5 @@ on_darkreign_module_registered(lua_State *L)
     lua_pop(L, 1);
   }
 }
+
+#include <DarkReign/DarkReign_export.c>

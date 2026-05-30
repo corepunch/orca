@@ -3,7 +3,7 @@
 #include <include/plugapi.h>
 #include <include/renderer.h>
 
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 
 // extern int stereoSeparation;
 int stereoSeparation = 0;

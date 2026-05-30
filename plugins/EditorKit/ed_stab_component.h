@@ -1,8 +1,8 @@
 #include "ed_local.h"
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
-#include <plugins/SceneKit/SceneKit.h>
+#include <SceneKit/SceneKit.h>
 
 struct ClassDesc const *
 get_node_class_desc(struct Object *object)

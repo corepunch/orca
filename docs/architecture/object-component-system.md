@@ -154,7 +154,7 @@ Property values for component-defined properties are stored in the component's u
 
 ## Message Dispatch
 
-Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `source/core/core_properties.h` (generated from `core.cgen`):
+Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core messages are defined in `generated/core/core_properties.h` (generated from `core.cgen`):
 
 | Message | When sent |
 |---|---|
@@ -261,7 +261,7 @@ HANDLER(MyComponent, Object, Animate) {
 
 The `HANDLER` macro provides the correct function signature. `*_export.c` forward-declares each handler and wires it into `MyComponentProc`. See [Macros Reference](macros-reference.md).
 
-> **Do not include plugin headers from core.** `source/core/` must never `#include <plugins/UIKit/UIKit.h>` or any other plugin header. The dependency direction is plugins → core, not the reverse.
+> **Do not include plugin headers from core.** `source/core/` must never `#include <UIKit/UIKit.h>` or any other plugin header. The dependency direction is plugins → core, not the reverse.
 
 ### 4. Register the class at module init
 

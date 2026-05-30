@@ -185,7 +185,7 @@ enum
  Property data structures
  */
 
-#include <source/core/core.h>
+#include <core/core.h>
 
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id);

@@ -5,7 +5,7 @@
 #include <include/renderer.h>
 
 // TODO: Move to orca.h
-#include <source/core/core.h>
+#include <core/core.h>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
