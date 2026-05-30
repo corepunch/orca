@@ -1,4 +1,4 @@
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 #include <include/renderer.h>
 
 extern objectTags_t GetTagsFromString(lpcString_t value);

@@ -13,8 +13,6 @@
 #define MAX_MSGLEN 4096           // max length of a message
 #define MAX_OSPATH 1024
 #define MAX_OBJECT_PROPERTIES 256 // for editor
-#define MAX_MESSAGE_TYPES 256 // max registered message property types
-#define MAX_MESSAGE_SIZE 1024 // max size of message payload
 #define FPS_BUFFER_SIZE 64
 #define PACKET_HEADER 10 // two ints and a short
 #define LERP(a, b, t) (a) * (1 - (t)) + (b) * (t)

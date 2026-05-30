@@ -1,4 +1,4 @@
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 
 HANDLER(Node3D, Node, UpdateMatrix)
 {

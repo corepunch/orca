@@ -48,9 +48,9 @@
 
 #include <include/orca.h>
 #include <include/renderer.h>
-#include <source/core/core.h>
-#include <plugins/SpriteKit/SpriteKit.h>
-#include "DarkReign.h"
+#include <core/core.h>
+#include <SpriteKit/SpriteKit.h>
+#include <DarkReign/DarkReign.h>
 
 #define FTG_MAX_FILENAME 28     /* 27 chars + 1 null terminator */
 #define FTG_MAX_FILES    65536  /* sanity cap to prevent DoS via huge fileCount */

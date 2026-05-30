@@ -1,6 +1,6 @@
-#include "SceneKit.h"
+#include <SceneKit/SceneKit.h>
 #include <include/api.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 HANDLER(PrefabView3D, Object, Start)
 {

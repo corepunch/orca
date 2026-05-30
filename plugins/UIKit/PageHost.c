@@ -1,4 +1,4 @@
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 #define PAGE_HISTORY_MAX 32
 

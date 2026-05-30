@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 #define UNIFORM_GRID_MAX_COLUMNS 16
 

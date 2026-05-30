@@ -1,6 +1,6 @@
 #include <ctype.h>
 #include <source/core/core_local.h>
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 #define kMsgTriggered 0x3b1c3ae2
 
@@ -12,6 +12,12 @@ static struct Object *
 _TriggerSender(struct Object *hObject, struct Trigger_TriggeredEventArgs const* triggered)
 {
   return (triggered && triggered->Sender) ? triggered->Sender : hObject;
+}
+
+static struct Object *
+_ActionSender(struct Object *hObject, struct Action_DispatchEventArgs const* dispatch)
+{
+  return (dispatch && dispatch->Sender) ? dispatch->Sender : hObject;
 }
 
 static bool_t
@@ -172,21 +178,21 @@ HANDLER(Trigger, Trigger, Triggered)
   struct Object *sender = _TriggerSender(hObject, pTriggered);
   
   for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
-    LRESULT result = _SendMessage(child, Trigger, Triggered,
+    LRESULT result = _SendMessage(child, Action, Dispatch,
                  .Sender = sender);
     if (result) return result;
   }
   return FALSE;
 }
 
-HANDLER(Setter, Trigger, Triggered)
+HANDLER(Setter, Action, Dispatch)
 {
   if (!pSetter->Property || !pSetter->Value) {
     Con_Error("Setter missing Property or Value");
     return FALSE;
   }
 
-  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *sender = _ActionSender(hObject, pDispatch);
   struct Property *p = NULL;
   if (FAILED(OBJ_FindShortProperty(sender, pSetter->Property, &p))) {
     Con_Error("Setter could not find property %s on %s",
@@ -219,14 +225,14 @@ _EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrig
                 .Sender = sender ? sender : hObject);
 }
 
-HANDLER(HideAction, Trigger, Triggered)
+HANDLER(HideAction, Action, Dispatch)
 {
   if (!pHideAction->Path || !*pHideAction->Path) {
     Con_Error("HideAction missing Path");
     return FALSE;
   }
 
-  struct Object *sender = _TriggerSender(hObject, pTriggered);
+  struct Object *sender = _ActionSender(hObject, pDispatch);
   struct Object *target = OBJ_FindByPath(sender, pHideAction->Path);
   if (!target) {
     Con_Error("HideAction could not resolve path '%s'", pHideAction->Path);

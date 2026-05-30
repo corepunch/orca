@@ -321,7 +321,7 @@ C header includes and external type references are grouped into container elemen
 <module name="UIKit" namespace="orca">
   <includes>
     <include file="include/renderer.h"/>
-    <include file="source/core/core.h"/>
+    <include file="core/core.h"/>
   </includes>
   <externals>
     <external struct="Object"/>
@@ -502,7 +502,7 @@ For the XML-side event/action shorthand that dispatches these messages, see [XML
 <!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
 <module name="example" namespace="orca">
   <includes>
-    <include file="source/core/core.h"/>
+    <include file="core/core.h"/>
   </includes>
   <externals>
     <external struct="lua_State"/>

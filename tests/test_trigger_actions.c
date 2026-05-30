@@ -5,14 +5,13 @@
 #include <include/orca.h>
 #include <include/codegen.h>
 #include <source/core/core_local.h>
-#include <source/core/core_properties.h>
+#include <core/core_properties.h>
 #include <source/core/object/object_internal.h>
 #include <source/filesystem/fs_local.h>
-#include <plugins/UIKit/UIKit.h>
-#include <plugins/UIKit/UIKit_properties.h>
+#include <UIKit/UIKit.h>
+#include <UIKit/UIKit_properties.h>
 
 #include <stdio.h>
-#include <unistd.h>
 #include <string.h>
 
 extern int luaopen_orca(lua_State *L);
@@ -56,35 +55,13 @@ static lua_State *s_lua_state = NULL;
   EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
 } while (0)
 
-#define SET_BOOL(obj, name, value) do { \
-  bool_t _v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
-} while (0)
-
-struct TestValueMessage {
-  float Value;
-};
-
-struct TestMixedMessage {
-  int Count;
-  float Value;
-  bool_t Enabled;
-};
-
-static uint32_t s_msg_value;
-static uint32_t s_msg_mixed;
-static uint32_t s_msg_no_args;
-
 static struct
 {
   bool_t Triggered;
-  int NoArgsCount;
-  int ValueCount;
-  int MixedCount;
+  int StartCount;
+  int RightButtonUpCount;
   float Value;
   int Count;
-  bool_t Enabled;
-  const char *Label;
 } s_observed;
 
 static lua_State *
@@ -170,167 +147,21 @@ TestSinkProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lP
   (void)cmp;
   (void)wparam;
 
-  if (msg == s_msg_value) {
-    struct TestValueMessage const *args = (struct TestValueMessage const *)lparam;
-    s_observed.ValueCount++;
-    s_observed.Value = args ? args->Value : 0.f;
+  if (msg == ID_Object_Start) {
+    s_observed.StartCount++;
     return TRUE;
   }
-  if (msg == s_msg_mixed) {
-    struct TestMixedMessage const *args = (struct TestMixedMessage const *)lparam;
-    s_observed.MixedCount++;
+  if (msg == ID_Node_RightButtonUp) {
+    Node_RightButtonUpMsg_t const *args = (Node_RightButtonUpMsg_t const *)lparam;
+    s_observed.RightButtonUpCount++;
     if (args) {
-      s_observed.Count = args->Count;
-      s_observed.Value = args->Value;
-      s_observed.Enabled = args->Enabled;
-    } else {
-      s_observed.Count = 0;
-      s_observed.Value = 0.f;
-      s_observed.Enabled = FALSE;
+      s_observed.Value = args->x;
+      s_observed.Count = args->clickCount;
     }
-    return TRUE;
-  }
-  if (msg == s_msg_no_args) {
-    s_observed.NoArgsCount++;
     return TRUE;
   }
   return FALSE;
 }
-
-static struct PropertyType const s_value_message_fields[] = {
-  {
-    .ShortIdentifier = 0xd147f96a, /* fnv1a32("Value") */
-    .FullIdentifier = 0xd147f96a,
-    .Name = "Value",
-    .Key = "Value",
-    .DataType = kDataTypeFloat,
-    .DataSize = sizeof(float),
-    .Offset = offsetof(struct TestValueMessage, Value),
-  },
-};
-
-static struct PropertyType const s_mixed_message_fields[] = {
-  {
-    .ShortIdentifier = 0xe1e7b894, /* fnv1a32("Count") */
-    .FullIdentifier = 0xe1e7b894,
-    .Name = "Count",
-    .Key = "Count",
-    .DataType = kDataTypeInt,
-    .DataSize = sizeof(int),
-    .Offset = offsetof(struct TestMixedMessage, Count),
-  },
-  {
-    .ShortIdentifier = 0xd147f96a, /* fnv1a32("Value") */
-    .FullIdentifier = 0xd147f96a,
-    .Name = "Value",
-    .Key = "Value",
-    .DataType = kDataTypeFloat,
-    .DataSize = sizeof(float),
-    .Offset = offsetof(struct TestMixedMessage, Value),
-  },
-  {
-    .ShortIdentifier = 0x9c86e43e, /* fnv1a32("Enabled") */
-    .FullIdentifier = 0x9c86e43e,
-    .Name = "Enabled",
-    .Key = "Enabled",
-    .DataType = kDataTypeBool,
-    .DataSize = sizeof(bool_t),
-    .Offset = offsetof(struct TestMixedMessage, Enabled),
-  },
-};
-
-struct TestSource {
-  int Count;
-  float Value;
-  bool_t Enabled;
-};
-
-static struct PropertyType const s_source_properties[] = {
-  {
-    .ShortIdentifier = 0xe1e7b894, /* fnv1a32("Count") */
-    .FullIdentifier = 0xe1e7b894,
-    .Name = "Count",
-    .Key = "Count",
-    .DataType = kDataTypeInt,
-    .DataSize = sizeof(int),
-    .Offset = offsetof(struct TestSource, Count),
-  },
-  {
-    .ShortIdentifier = 0xd147f96a, /* fnv1a32("Value") */
-    .FullIdentifier = 0xd147f96a,
-    .Name = "Value",
-    .Key = "Value",
-    .DataType = kDataTypeFloat,
-    .DataSize = sizeof(float),
-    .Offset = offsetof(struct TestSource, Value),
-  },
-  {
-    .ShortIdentifier = 0x9c86e43e, /* fnv1a32("Enabled") */
-    .FullIdentifier = 0x9c86e43e,
-    .Name = "Enabled",
-    .Key = "Enabled",
-    .DataType = kDataTypeBool,
-    .DataSize = sizeof(bool_t),
-    .Offset = offsetof(struct TestSource, Enabled),
-  },
-};
-
-static struct StructDesc const s_value_message_desc = {
-  .StructName = "TestMessage.Value",
-  .Properties = s_value_message_fields,
-  .NumProperties = sizeof(s_value_message_fields) / sizeof(s_value_message_fields[0]),
-  .StructSize = sizeof(struct TestValueMessage),
-};
-
-static struct StructDesc const s_mixed_message_desc = {
-  .StructName = "TestMessage.Mixed",
-  .Properties = s_mixed_message_fields,
-  .NumProperties = sizeof(s_mixed_message_fields) / sizeof(s_mixed_message_fields[0]),
-  .StructSize = sizeof(struct TestMixedMessage),
-};
-
-static struct MessageDesc s_no_args_message_desc = {
-  .MessageName = "TestMessage.NoArgs",
-  .Payload = NULL,
-  .ExtraData = NULL,
-};
-
-static struct MessageDesc s_value_message_desc_info = {
-  .MessageName = "TestMessage.Value",
-  .Payload = &s_value_message_desc,
-  .ExtraData = NULL,
-};
-
-static struct MessageDesc s_mixed_message_desc_info = {
-  .MessageName = "TestMessage.Mixed",
-  .Payload = &s_mixed_message_desc,
-  .ExtraData = NULL,
-};
-
-static struct MessageDesc s_popup_close_message_desc = {
-  .MessageName = "Popup.ClosePopup",
-  .MessageID = ID_Popup_ClosePopup,
-  .Payload = NULL,
-  .ExtraData = NULL,
-};
-
-static struct PropertyType s_screen_show_modal_message_fields[] = {
-  DECL(0xeb66e456, Screen_ShowModalEventArgs, Path, Path, kDataTypeString),
-};
-
-static struct StructDesc const s_screen_show_modal_message_desc = {
-  .StructName = "Screen_ShowModalEventArgs",
-  .Properties = s_screen_show_modal_message_fields,
-  .NumProperties = sizeof(s_screen_show_modal_message_fields) / sizeof(s_screen_show_modal_message_fields[0]),
-  .StructSize = sizeof(struct Screen_ShowModalEventArgs),
-};
-
-static struct MessageDesc s_screen_show_modal_message_desc_info = {
-  .MessageName = "Screen.ShowModal",
-  .MessageID = ID_Screen_ShowModal,
-  .Payload = &s_screen_show_modal_message_desc,
-  .ExtraData = NULL,
-};
 
 static LRESULT
 TestSourceProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
@@ -365,93 +196,10 @@ static struct ClassDesc s_sink_class = {
 
 static struct ClassDesc s_event_source_class = {
   .ObjProc = TestSourceProc,
-  .Properties = s_source_properties,
   .ClassName = "TestEventTriggerSource",
   .DefaultName = "TestEventTriggerSource",
-  .ParentClasses = { ID_EventTrigger, ID_SendMessageAction, 0 },
+  .ParentClasses = { ID_EventTrigger, 0 },
   .ClassID = 0xd79411fc,
-  .ClassSize = sizeof(struct TestSource),
-  .NumProperties = sizeof(s_source_properties) / sizeof(s_source_properties[0]),
-};
-
-static bool_t
-TestShowModalObject(struct Object *hObject, struct Object *target)
-{
-  if (!hObject || !target) {
-    return FALSE;
-  }
-
-  if (target->parent) {
-    REMOVE_FROM_LIST(struct Object, target, target->parent->children);
-    REMOVE_FROM_LIST(struct Object, target, target->parent);
-  }
-
-  struct Object **next = &hObject->next;
-  while (*next) next = &(*next)->next;
-  *next = target;
-  OBJ_AddRef(target);
-  target->parent = hObject;
-  target->flags |= OF_NOACTIVATE;
-  return TRUE;
-}
-
-static LRESULT
-TestScreenProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
-{
-  (void)cmp;
-  (void)wparam;
-  if (msg == ID_Screen_ShowModal) {
-    struct Screen_ShowModalEventArgs const *args = (struct Screen_ShowModalEventArgs const *)lparam;
-    if (!args || !args->Path || !*args->Path) {
-      return FALSE;
-    }
-
-    struct Object *target = FS_LoadObject(args->Path);
-    if (!target) {
-      return FALSE;
-    }
-
-    if (!GetPopup(target) || !TestShowModalObject(object, target)) {
-      OBJ_ReleaseRef(target);
-      return FALSE;
-    }
-
-    bool_t visible = TRUE;
-    OBJ_SetPropertyValue(target, "Visible", &visible);
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static LRESULT
-TestPopupProc(struct Object *object, void *cmp, uint32_t msg, wParam_t wparam, lParam_t lparam)
-{
-  (void)cmp;
-  (void)wparam;
-  (void)lparam;
-  if (msg == ID_Popup_ClosePopup) {
-    OBJ_RemoveFromParent(object);
-    return TRUE;
-  }
-  return FALSE;
-}
-
-static struct ClassDesc s_screen_class = {
-  .ObjProc = TestScreenProc,
-  .ClassName = "Screen",
-  .DefaultName = "Screen",
-  .ParentClasses = { ID_Node, 0 },
-  .ClassID = ID_Screen,
-  .ClassSize = 0,
-  .NumProperties = 0,
-};
-
-static struct ClassDesc s_popup_class = {
-  .ObjProc = TestPopupProc,
-  .ClassName = "Popup",
-  .DefaultName = "Popup",
-  .ParentClasses = { ID_Screen, 0 },
-  .ClassID = ID_Popup,
   .ClassSize = 0,
   .NumProperties = 0,
 };
@@ -468,28 +216,6 @@ register_trigger_action_test_types(void)
   OBJ_RegisterClass(&s_host_class);
   OBJ_RegisterClass(&s_sink_class);
   OBJ_RegisterClass(&s_event_source_class);
-  OBJ_RegisterClass(&s_screen_class);
-  OBJ_RegisterClass(&s_popup_class);
-
-  s_no_args_message_desc.MessageID = fnv1a32(s_no_args_message_desc.MessageName);
-  s_value_message_desc_info.MessageID = fnv1a32(s_value_message_desc_info.MessageName);
-  s_mixed_message_desc_info.MessageID = fnv1a32(s_mixed_message_desc_info.MessageName);
-  OBJ_RegisterMessageDesc(&s_no_args_message_desc);
-  OBJ_RegisterMessageDesc(&s_value_message_desc_info);
-  OBJ_RegisterMessageDesc(&s_mixed_message_desc_info);
-  OBJ_RegisterMessageDesc(&s_screen_show_modal_message_desc_info);
-  OBJ_RegisterMessageDesc(&s_popup_close_message_desc);
-
-  OBJ_RegisterMessagePropertyTypes("TestMessage.Value",
-                                   (struct PropertyType *)s_value_message_fields,
-                                   1);
-  OBJ_RegisterMessagePropertyTypes("TestMessage.Mixed",
-                                   (struct PropertyType *)s_mixed_message_fields,
-                                   (uint32_t)(sizeof(s_mixed_message_fields) / sizeof(s_mixed_message_fields[0])));
-
-  s_msg_no_args = fnv1a32("TestMessage.NoArgs");
-  s_msg_value = fnv1a32("TestMessage.Value");
-  s_msg_mixed = fnv1a32("TestMessage.Mixed");
 }
 
 static struct Object *
@@ -502,33 +228,11 @@ make_object(uint32_t class_id, const char *name)
   return obj;
 }
 
-static struct Object *
-load_xml_file_loader(int argc, const char *argv[])
-{
-  return (argc > 0) ? FS_LoadObjectFromXml(argv[0]) : NULL;
-}
-
-static bool_t
-write_text_file(const char *path, const char *contents)
-{
-  FILE *f = fopen(path, "w");
-  if (!f) {
-    return FALSE;
-  }
-  fputs(contents, f);
-  fclose(f);
-  return TRUE;
-}
-
 static void
 set_up_source(struct Object *source,
-              const char *routed_event,
-              const char *message,
-              const char *target)
+              const char *routed_event)
 {
   SET_STRING(source, "RoutedEvent", routed_event);
-  SET_STRING(source, "Message", message);
-  SET_STRING(source, "Target", target);
 }
 
 static void
@@ -540,23 +244,24 @@ test_event_trigger_no_args(void)
     struct Object *root = make_object(0xa3b95e0d, "Root");
     struct Object *source = make_object(0xd79411fc, "Source");
     struct Object *target = make_object(0xb5c4156c, "Target");
+    struct Object *action = make_object(ID_Object_StartAction, "Action");
 
     EXPECT(root != NULL);
     EXPECT(source != NULL);
     EXPECT(target != NULL);
+    EXPECT(action != NULL);
 
     OBJ_AddChild(root, source);
     OBJ_AddChild(source, target);
+    OBJ_AddChild(source, action);
 
-    set_up_source(source, "Node.RightButtonUp", "TestMessage.NoArgs", "Target");
+    set_up_source(source, "Node.RightButtonUp");
+    SET_STRING(action, "Target", "Target");
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
-    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
-    EXPECT(s_observed.NoArgsCount == 1);
-    EXPECT(s_observed.ValueCount == 0);
-    EXPECT(s_observed.MixedCount == 0);
+    EXPECT(s_observed.StartCount == 1);
   });
 }
 
@@ -569,24 +274,25 @@ test_event_trigger_single_value(void)
     struct Object *root = make_object(0xa3b95e0d, "Root");
     struct Object *source = make_object(0xd79411fc, "Source");
     struct Object *target = make_object(0xb5c4156c, "Target");
+    struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
 
     EXPECT(root != NULL);
     EXPECT(source != NULL);
     EXPECT(target != NULL);
+    EXPECT(action != NULL);
 
     OBJ_AddChild(root, source);
     OBJ_AddChild(source, target);
+    OBJ_AddChild(source, action);
 
-    set_up_source(source, "Node.KeyDown", "TestMessage.Value", "Target");
-    SET_FLOAT(source, "Value", 3.25f);
+    set_up_source(source, "Node.KeyDown");
+    SET_STRING(action, "Target", "Target");
+    SET_FLOAT(action, "x", 3.25f);
 
     OBJ_SendMessageW(source, ID_Node_KeyDown, 0, NULL);
-    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
-    EXPECT(s_observed.ValueCount == 1);
-    EXPECT(s_observed.MixedCount == 0);
-    EXPECT(s_observed.NoArgsCount == 0);
+    EXPECT(s_observed.RightButtonUpCount == 1);
     EXPECT(fabsf(s_observed.Value - 3.25f) < 0.0001f);
   });
 }
@@ -600,106 +306,118 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
     struct Object *root = make_object(0xa3b95e0d, "Root");
     struct Object *source = make_object(0xd79411fc, "Source");
     struct Object *target = make_object(0xb5c4156c, "Target");
+    struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
 
     EXPECT(root != NULL);
     EXPECT(source != NULL);
     EXPECT(target != NULL);
+    EXPECT(action != NULL);
 
     OBJ_AddChild(root, source);
     OBJ_AddChild(source, target);
+    OBJ_AddChild(source, action);
 
-    set_up_source(source, "Node.RightButtonUp", "TestMessage.Mixed", "Target");
-    SET_INT(source, "Count", 12);
+    set_up_source(source, "Node.RightButtonUp");
+    SET_STRING(action, "Target", "Target");
+    SET_INT(action, "clickCount", 12);
 
     OBJ_SendMessageW(source, ID_Node_RightButtonUp, 0, NULL);
-    pump_messages(root);
 
     EXPECT(s_observed.Triggered);
-    EXPECT(s_observed.MixedCount == 1);
+    EXPECT(s_observed.RightButtonUpCount == 1);
     EXPECT(s_observed.Count == 12);
     EXPECT(fabsf(s_observed.Value) < 0.0001f);
-    EXPECT(s_observed.Enabled == FALSE);
   });
 }
 
 static void
-test_show_modal_action_property_order(void)
+test_generated_action_property_order(void)
 {
-  RUN("show_modal_action_property_order", {
-    struct Object *action = make_object(ID_SendMessageAction, "Action");
-    struct Property *path_prop = NULL;
-    const char *message = "Screen.ShowModal";
+  RUN("generated_action_property_order", {
+    struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
+    struct Property *x_prop = NULL;
+    struct Property *target_prop = NULL;
 
     EXPECT(action != NULL);
-    EXPECT_OK(OBJ_SetPropertyValue(action, "Message", &message));
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_Screen_ShowModalEventArgs_Path, &path_prop));
-    EXPECT(path_prop != NULL);
-    EXPECT(strcmp(PROP_GetName(path_prop), "Path") == 0);
-    EXPECT(PROP_GetLongIdentifier(path_prop) == ID_Screen_ShowModalEventArgs_Path);
+    EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction_x, &x_prop));
+    EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction__ActionTarget, &target_prop));
+    EXPECT(x_prop != NULL);
+    EXPECT(target_prop != NULL);
+    EXPECT(strcmp(PROP_GetName(x_prop), "x") == 0);
+    EXPECT(strcmp(PROP_GetName(target_prop), "Target") == 0);
+    char removed_class[] = "Send" "Message" "Action";
+    EXPECT(OBJ_FindClass(removed_class) == NULL);
   });
 }
 
 static void
-test_show_modal_action_short_form(void)
+test_generated_action_xml(void)
 {
-  RUN("show_modal_action_short_form", {
-    const char *popup_base = "/tmp/orca_show_modal_short";
-    char popup_path[512];
-    snprintf(popup_path, sizeof(popup_path), "%s.xml", popup_base);
+  RUN("generated_action_xml", {
+    reset_observed();
 
-    unlink(popup_path);
-    EXPECT(write_text_file(popup_path,
-      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-      "<Popup Name=\"TmpPopup\">\n"
-      "  <Node Name=\"Close\" LeftButtonUp=\"{SendMessageAction Popup.ClosePopup}\"/>\n"
-      "</Popup>\n"));
-
-    OBJ_RegisterFileLoader(".xml", load_xml_file_loader);
-
-    char root_xml[1024];
-    snprintf(root_xml, sizeof(root_xml),
-      "<Screen Name=\"TmpScreen\">\n"
-      "  <Node Name=\"OpenButton\" LeftButtonUp=\"{Screen.ShowModal Path=%s}\"/>\n"
-      "</Screen>",
-      popup_base);
-
-    struct Object *root = FS_LoadObjectFromXmlString(root_xml);
+    struct Object *root = FS_LoadObjectFromXmlString(
+      "<TestTriggerHost Name=\"Root\">\n"
+      "  <TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">\n"
+      "    <Object.Start Target=\"../Target\"/>\n"
+      "  </TestEventTriggerSource>\n"
+      "  <TestTriggerSink Name=\"Target\"/>\n"
+      "</TestTriggerHost>");
     EXPECT(root != NULL);
+    reset_observed();
 
-    struct Object *button = root ? OBJ_FindChild(root, "OpenButton", TRUE) : NULL;
-    EXPECT(button != NULL);
-    if (button) {
-      OBJ_SendMessageW(button, ID_Node_LeftButtonUp, 0, NULL);
-      pump_messages(root);
-    }
-
-    struct Object *popup = root ? OBJ_GetNext(root) : NULL;
-    EXPECT(popup != NULL);
-    EXPECT(popup && !strcmp(OBJ_GetClassName(popup), "Popup"));
-
-    struct Object *close = popup ? OBJ_FindChild(popup, "Close", TRUE) : NULL;
-    EXPECT(close != NULL);
-    if (close) {
-      struct Property *triggers_prop = NULL;
-      struct Property *num_triggers_prop = NULL;
-      EXPECT_OK(OBJ_FindLongProperty(close, ID_Node_Triggers, &triggers_prop));
-      EXPECT_OK(OBJ_FindLongProperty(close, ID_Node_NumTriggers, &num_triggers_prop));
-      EXPECT(triggers_prop != NULL);
-      EXPECT(num_triggers_prop != NULL);
-      EXPECT(((int const *)PROP_GetValue(triggers_prop))[sizeof(void*) / sizeof(int)] == 1);
-      EXPECT(*(int*)PROP_GetValue(num_triggers_prop) == 1);
-
-      OBJ_SendMessageW(close, ID_Node_LeftButtonUp, 0, NULL);
-      pump_messages(root);
-    }
-
-    EXPECT(OBJ_GetNext(root) == NULL);
+    struct Object *source = root ? OBJ_FindChild(root, "Source", TRUE) : NULL;
+    EXPECT(source != NULL);
+    OBJ_SendMessageW(source, ID_Node_LeftButtonUp, 0, NULL);
+    EXPECT(s_observed.StartCount == 1);
 
     if (root) {
       OBJ_Clear(root);
       OBJ_ReleaseRef(root);
     }
-    unlink(popup_path);
+  });
+}
+
+static void
+test_generated_action_post_mode(void)
+{
+  RUN("generated_action_post_mode", {
+    reset_observed();
+
+    struct Object *root = make_object(0xa3b95e0d, "Root");
+    struct Object *sender = make_object(0xb5c4156c, "Sender");
+    struct Object *action = make_object(ID_Object_StartAction, "Action");
+    enum DispatchMode mode = kDispatchModePost;
+
+    EXPECT(root != NULL);
+    EXPECT(sender != NULL);
+    EXPECT(action != NULL);
+
+    OBJ_AddChild(root, sender);
+    OBJ_AddChild(root, action);
+    EXPECT_OK(OBJ_SetPropertyValue(action, "Mode", &mode));
+
+    _SendMessage(action, Action, Dispatch, .Sender = sender);
+    EXPECT(s_observed.StartCount == 0);
+    pump_messages(root);
+    EXPECT(s_observed.StartCount == 1);
+  });
+}
+
+static void
+test_generated_action_unset_target_dispatches_sender(void)
+{
+  RUN("generated_action_unset_target_dispatches_sender", {
+    reset_observed();
+
+    struct Object *sender = make_object(0xb5c4156c, "Sender");
+    struct Object *action = make_object(ID_Object_StartAction, "Action");
+
+    EXPECT(sender != NULL);
+    EXPECT(action != NULL);
+
+    _SendMessage(action, Action, Dispatch, .Sender = sender);
+    EXPECT(s_observed.StartCount == 1);
   });
 }
 
@@ -710,8 +428,10 @@ main(void)
   test_event_trigger_no_args();
   test_event_trigger_single_value();
   test_event_trigger_partial_payload_defaults_to_zero();
-  test_show_modal_action_property_order();
-  test_show_modal_action_short_form();
+  test_generated_action_property_order();
+  test_generated_action_xml();
+  test_generated_action_post_mode();
+  test_generated_action_unset_target_dispatches_sender();
 
   if (s_lua_state) {
     lua_close(s_lua_state);

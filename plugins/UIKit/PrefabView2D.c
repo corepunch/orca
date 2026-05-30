@@ -1,8 +1,8 @@
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 #include <include/api.h>
 
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 HANDLER(PrefabView2D, Object, Start)
 {

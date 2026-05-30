@@ -1,6 +1,6 @@
 #include <include/orca.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 /* Apply checked/unchecked state directly on a RadioButton child without
    going through the property system (avoids a redundant PropertyChanged

@@ -30,9 +30,9 @@ To run one generator manually, use the root-relative stdout form:
 
 ```bash
 make codegen-host
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > source/core/core.h
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > source/core/core_properties.h
-build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > source/core/core_export.c
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libheader.so > generated/core/core.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libproperties.so > generated/core/core_properties.h
+build/bin/cgen source/core/core.cgen build/plugins/codegen/libexport.so > generated/core/core_export.c
 ```
 
 `cgen` also accepts `-o <file>` for scripts that prefer explicit output paths.

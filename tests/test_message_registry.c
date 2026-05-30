@@ -44,49 +44,50 @@ static lua_State *make_lua_state(void)
   return s_lua_state;
 }
 
-static void test_trigger_triggered_registry(void)
+static uint32_t
+payload_property_count(struct ClassDesc const *cls)
 {
-  RUN("trigger_triggered_registry", {
+  return (cls && cls->NumProperties >= 2) ? cls->NumProperties - 2 : 0;
+}
+
+static void test_trigger_triggered_message_action_class(void)
+{
+  RUN("trigger_triggered_message_action_class", {
     lua_State *L = make_lua_state();
-    uint32_t count = 0;
-    struct PropertyType *props = OBJ_FindMessagePropertyTypes("Trigger.Triggered", &count);
+    struct ClassDesc const *cls = OBJ_FindClass("Trigger.Triggered");
     EXPECT(L != NULL);
-    EXPECT(props != NULL);
-    EXPECT(count == 1);
-    EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Sender"));
+    EXPECT(cls != NULL);
+    EXPECT(payload_property_count(cls) == 1);
+    EXPECT(cls->Properties[0].Name != NULL && !strcmp(cls->Properties[0].Name, "Sender"));
   });
 }
 
-static void test_object_attached_registry(void)
+static void test_object_attached_message_action_class(void)
 {
-  RUN("object_attached_registry", {
+  RUN("object_attached_message_action_class", {
     lua_State *L = make_lua_state();
-    uint32_t count = 0;
-    struct PropertyType *props = OBJ_FindMessagePropertyTypes("Object.Attached", &count);
+    struct ClassDesc const *cls = OBJ_FindClass("Object.Attached");
     EXPECT(L != NULL);
-    EXPECT(props != NULL);
-    EXPECT(count == 1);
-    EXPECT(props[0].Name != NULL && !strcmp(props[0].Name, "Sender"));
+    EXPECT(cls != NULL);
+    EXPECT(payload_property_count(cls) == 1);
+    EXPECT(cls->Properties[0].Name != NULL && !strcmp(cls->Properties[0].Name, "Sender"));
   });
 }
 
-static void test_unknown_message_registry_lookup(void)
+static void test_unknown_message_action_class_lookup(void)
 {
-  RUN("unknown_message_registry_lookup", {
+  RUN("unknown_message_action_class_lookup", {
     lua_State *L = make_lua_state();
-    uint32_t count = 123;
-    struct PropertyType *props = OBJ_FindMessagePropertyTypes("Nope.Unknown", &count);
     EXPECT(L != NULL);
-    EXPECT(props == NULL);
-    EXPECT(count == 0);
+    EXPECT(OBJ_FindClass("Nope.Unknown") == NULL);
   });
 }
 
 int main(void)
 {
-  test_trigger_triggered_registry();
-  test_object_attached_registry();
-  test_unknown_message_registry_lookup();
+  test_trigger_triggered_message_action_class();
+  test_object_attached_message_action_class();
+  test_unknown_message_action_class_lookup();
 
   if (s_lua_state) {
     lua_close(s_lua_state);

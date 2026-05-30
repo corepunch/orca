@@ -1,5 +1,5 @@
 #include <include/api.h>
-#include "SpriteKit.h"
+#include <SpriteKit/SpriteKit.h>
 
 static int
 f_createAnimation(lua_State *L)
@@ -68,3 +68,5 @@ on_spritekit_module_registered(lua_State *L)
   lua_pushcfunction(L, f_createAnimation);
   lua_setfield(L, -2, "createAnimation");
 }
+
+#include <SpriteKit/SpriteKit_export.c>

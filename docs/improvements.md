@@ -32,7 +32,7 @@ The component is entirely inert, yet it looks complete at first glance because t
 
 ### Case study: Locale component — XML declared, implementation disconnected
 
-`source/core/core.cgen` declares `<class name="Locale">` with `Language` and `Entries` properties, and `source/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
+`source/core/core.cgen` declares `<class name="Locale">` with `Language` and `Entries` properties, and `generated/core/core_export.c` registers the class.  However, `source/core/components/Locale.c` still implements the old global-list pattern: a `static PLOCALE locales` linked list and a standalone `Loc_GetString()` function that queries the list.  The `LocaleProc` generated from the XML has an **empty switch** because `<handles>` was never added to the XML.
 
 Consequences:
 - Attaching a `Locale` component and setting `Language` + `Entries` does nothing
@@ -47,7 +47,7 @@ Neither the Aliases nor the Locale migration had any test coverage.  Both StyleC
 
 ### Core must not include plugin headers
 
-`source/core/alias.c` and several other core files `#include <plugins/UIKit/UIKit.h>` to access `struct Node`.  This is an architectural violation: **plugins depend on core; core must not depend on plugins**.  The violation causes circular build dependencies and makes the core untestable in isolation.  When migrating alias lookup into a proper component, the `GetNode()` call must be replaced with a message-based lookup or a registered accessor, not a direct struct access via a plugin header.
+`source/core/alias.c` and several other core files `#include <UIKit/UIKit.h>` to access `struct Node`.  This is an architectural violation: **plugins depend on core; core must not depend on plugins**.  The violation causes circular build dependencies and makes the core untestable in isolation.  When migrating alias lookup into a proper component, the `GetNode()` call must be replaced with a message-based lookup or a registered accessor, not a direct struct access via a plugin header.
 
 ---
 

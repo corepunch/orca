@@ -1,4 +1,4 @@
-#include <plugins/SpriteKit/SpriteKit.h>
+#include <SpriteKit/SpriteKit.h>
 
 HANDLER(SKLabelNode, SKNode, Render) {
   return FALSE;

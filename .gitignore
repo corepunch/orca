@@ -8,6 +8,7 @@ Cache/*
 build/
 Build/
 DerivedData/
+generated/
 *.o
 *.so
 *.kzproj

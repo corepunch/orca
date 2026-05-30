@@ -3,7 +3,7 @@
 
 #include <include/orca.h>
 
-#include "filesystem.h"
+#include <filesystem/filesystem.h>
 
 struct _xmlNode*
 __xmlNewChild(struct _xmlNode* p, lpcString_t name, lpcString_t args[]);

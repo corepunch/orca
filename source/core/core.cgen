@@ -33,6 +33,11 @@
       <value name="OneWayToSource">Updates source property when target changes, but not the other way around</value>
       <value name="Expression">Allows binding to a custom expression</value>
     </enum>
+    <enum name="DispatchMode">
+      <summary>Controls whether generated message actions send immediately or post through the queue.</summary>
+      <value name="Send">Dispatch synchronously.</value>
+      <value name="Post">Post through the message queue.</value>
+    </enum>
     <enum name="AnimationMode">
       <summary>Defines how an animation clip repeats after reaching its end.</summary>
       <value name="PlayOnce">Play the animation once and stop at the last frame</value>
@@ -818,6 +823,19 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Binding.Compile"/>
       </handles>
     </class>
+    <class name="Action">
+      <summary>Base class for executable trigger actions.</summary>
+      <details>Action defines the dispatch message used by triggers to execute child actions. Concrete actions and generated message actions handle Action.Dispatch.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <messages>
+        <message name="Dispatch">
+          <summary>Executes an action from a trigger.</summary>
+          <fields>
+            <field name="Sender" type="Object" pointer="true">The object that caused the action to execute</field>
+          </fields>
+        </message>
+      </messages>
+    </class>
     <class name="Trigger">
       <summary>Base class for event-driven actions within the UI system</summary>
       <details>Triggers respond to various conditions and can execute actions like property changes or method calls. Part of the reactive UI behavior system.</details>
@@ -869,40 +887,28 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="RoutedEvent" type="string">Name of the routed event to handle (e.g., "Node.KeyDown", "Node.ScrollWheel") </property>
       </properties>
     </class>
-    <class name="Setter">
+    <class name="Setter" parent="Action">
       <summary>Applies property values when triggered by specified conditions</summary>
       <details>Part of the trigger system - sets target properties to specific values when the associated trigger condition is met.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Trigger.Triggered"/>
+        <handle message="Action.Dispatch"/>
       </handles>
       <properties>
         <property name="Property" type="string">Target property name to set </property>
         <property name="Value" type="string">Value to apply to the property </property>
       </properties>
     </class>
-    <class name="HideAction">
+    <class name="HideAction" parent="Action">
       <summary>Hides the object at the provided path when triggered</summary>
       <details>Useful for dismiss buttons and popup close affordances.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Attached"/>
-        <handle message="Trigger.Triggered"/>
+        <handle message="Action.Dispatch"/>
       </handles>
       <properties>
         <property name="Path" type="string">Relative path to the object that should be hidden</property>
-      </properties>
-    </class>
-    <class name="SendMessageAction">
-      <summary>Sends a typed message to a target object when triggered</summary>
-      <details>Generic action that dispatches a registered message to a target object. It supports no-argument messages directly and can populate payload fields from matching properties present on the action object.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Trigger.Triggered"/>
-      </handles>
-      <properties>
-        <property name="Message" type="string">Fully qualified message name to send (e.g. "AnimationPlayer.Play", "StateManager.GoToState")</property>
-        <property name="Target" type="string">Relative path to the target object that will receive the message</property>
       </properties>
     </class>
     <class name="Node">

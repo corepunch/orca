@@ -1,4 +1,4 @@
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
 
 #define DRAG_SESSION "__DRAG_SESSION__"

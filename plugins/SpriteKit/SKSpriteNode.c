@@ -1,4 +1,4 @@
-#include "SpriteKit.h"
+#include <SpriteKit/SpriteKit.h>
 
 extern unsigned long axGetMilliseconds(void);
 struct vec2 SKNode_GetReferenceSize(struct Object *node);

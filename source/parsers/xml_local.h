@@ -1,4 +1,4 @@
-#include <source/core/core.h>
+#include <core/core.h>
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>

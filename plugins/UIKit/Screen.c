@@ -1,7 +1,7 @@
 #include <include/renderer.h>
 
-#include <plugins/UIKit/UIKit.h>
-#include <source/filesystem/filesystem.h>
+#include <UIKit/UIKit.h>
+#include <filesystem/filesystem.h>
 #include <source/core/object/object_internal.h>
 #include <source/core/property/property_internal.h>
 

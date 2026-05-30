@@ -1,6 +1,6 @@
 #include <include/orca.h>
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 HANDLER(Label, Node, LeftButtonUp)
 {

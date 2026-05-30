@@ -41,7 +41,7 @@ endif
 # Allow CFLAGS to be passed from luarocks, but ensure we have base flags
 CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
-CFLAGS += -fpic -I. -I$(CURDIR)
+CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)

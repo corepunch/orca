@@ -75,9 +75,9 @@
 #include <include/orca.h>
 #include <include/api.h>
 #include <include/renderer.h>
-#include <source/core/core.h>
-#include <plugins/SpriteKit/SpriteKit.h>
-#include "DarkReign.h"
+#include <core/core.h>
+#include <SpriteKit/SpriteKit.h>
+#include <DarkReign/DarkReign.h>
 #include "DRPalette.h"
 
 #define SPR_DEFAULT_FRAMERATE 10.0f

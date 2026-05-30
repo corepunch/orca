@@ -101,7 +101,7 @@ Look at `tests/test_state_manager.lua` and `tests/test_styles_lua.lua` as templa
 
 1. Open `source/core/core.cgen`
 2. Add a `<class name="MyComponent">` with `<handles>`, `<properties>`, and optionally `<messages>`
-3. Run `make modules` — inspect `source/core/core_export.c` to confirm the struct and Proc switch look correct
+3. Run `make modules` — inspect `generated/core/core_export.c` to confirm the struct and Proc switch look correct
 4. Create `source/core/components/MyComponent.c` with `HANDLER(...)` implementations
 5. Confirm `on_core_registered` in `core_export.c` calls `OBJ_RegisterClass(&_MyComponent)` (or add the call manually if the callback is hand-written)
 6. Add `source/core/components/MyComponent.c` to `orca.xcodeproj/project.pbxproj` in all four required sections
@@ -134,7 +134,7 @@ Do not leave both the old global implementation and the new component active at 
 | Core → plugin | ❌ No |
 | Plugin A → plugin B | ⚠️ Avoid — use messages |
 
-`source/core/` must never `#include` a header from `plugins/`.  This rule exists because the core is meant to be buildable and testable without any plugins loaded.  A core file that includes `<plugins/UIKit/UIKit.h>` creates a hard compile-time dependency on UIKit, breaks cross-platform builds that exclude UIKit, and makes the engine impossible to use without all plugins present.
+`source/core/` must never `#include` a header from `plugins/`.  This rule exists because the core is meant to be buildable and testable without any plugins loaded.  A core file that includes `<UIKit/UIKit.h>` creates a hard compile-time dependency on UIKit, breaks cross-platform builds that exclude UIKit, and makes the engine impossible to use without all plugins present.
 
 If core code needs behaviour from a plugin (e.g. looking up a `struct Node` field), the correct approach is:
 - Define a message (e.g. `Object.FindResourceByKey`) and have the plugin handle it

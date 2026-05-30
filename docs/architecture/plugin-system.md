@@ -65,7 +65,7 @@ LRESULT Button_Proc(struct Object *obj, uint32_t msg,
 }
 ```
 
-Message IDs are `uint32_t` constants (FNV1a hashes) declared in `source/core/core_properties.h`. Custom events can be added by any module via the `<message>` XML element.
+Message IDs are `uint32_t` constants (FNV1a hashes) declared in `generated/core/core_properties.h`. Custom events can be added by any module via the `<message>` XML element.
 
 ### Inheritance via ParentClasses
 

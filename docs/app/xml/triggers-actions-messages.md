@@ -7,7 +7,7 @@ It is the XML-facing version of the engine's message-driven object/component mod
 - `EventTrigger` listens for a routed event.
 - Actions run when the trigger fires.
 - Message types define payload fields for a message.
-- Inline XML shorthand can dispatch any registered message type without writing an explicit `SendMessageAction` element.
+- Every registered message type also has a generated action element, such as `<Screen.ShowModal/>`.
 
 For a broader discussion of the component system, see [Object + Component System](architecture/object-component-system.md).
 
@@ -23,8 +23,7 @@ An action runs when the trigger fires. Common actions include:
 
 - `HideAction`
 - `ShowAction`
-- `SendMessageAction`
-- the old dedicated `ShowModalAction` helper is replaced by the XML shorthand `{Screen.ShowModal Path=...}`
+- generated message actions such as `Screen.ShowModal`, `Popup.ClosePopup`, and `Node.RightButtonUp`
 
 ### 3. Message Type
 
@@ -60,11 +59,9 @@ Use an `EventTrigger` when you want a node to respond to an input event:
 
 When the text block is clicked, the trigger fires and the action hides the target object.
 
-## SendMessageAction Example
+## Generated Message Action Example
 
-`SendMessageAction` is the generic action for dispatching any registered message type.
-
-Use it when you want the XML to be explicit about the message name:
+Use a generated message action when you want the XML to be explicit about the message name:
 
 ```xml
 <TextBlock Name="Source"
@@ -74,8 +71,7 @@ Use it when you want the XML to be explicit about the message name:
            Padding="16">
   <Node.Triggers>
     <EventTrigger RoutedEvent="Node.LeftButtonUp">
-      <SendMessageAction Message="Screen.ShowModal"
-                         Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
+      <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
     </EventTrigger>
   </Node.Triggers>
 </TextBlock>
@@ -84,7 +80,7 @@ Use it when you want the XML to be explicit about the message name:
 The same action can dispatch other messages too:
 
 ```xml
-<SendMessageAction Message="Node.RightButtonUp" Target="../Receiver"/>
+<Node.RightButtonUp Target="../Receiver"/>
 ```
 
 ## Inline Message Shorthand
@@ -101,7 +97,7 @@ For most XML use, the shorthand is shorter and easier to read:
            LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
 ```
 
-This shorthand lowers to `SendMessageAction` under the hood.
+This shorthand lowers directly to the generated message action element.
 
 ### General Form
 
@@ -129,15 +125,14 @@ Examples:
 Example with multiple arguments:
 
 ```xml
-<SendMessageAction Message="Example.CustomMessage"
-                   Example_CustomMessageEventArgs.Name="Header"
-                   Example_CustomMessageEventArgs.Value="{Binding ../../Node.ActualWidth}"/>
+<Example.CustomMessage Name="Header"
+                       Value="{Binding ../../Node.ActualWidth}"/>
 ```
 
 ## Recommended Patterns
 
 - Use `EventTrigger` for user input and routed events.
-- Use `SendMessageAction` when you want an explicit XML element.
+- Use generated message actions when you want an explicit XML element.
 - Use inline shorthand when you want a concise message dispatch expression.
 - Use `Screen.ShowModal` for modal popup loading.
 - Use `Popup.ClosePopup` to close a popup and return a result.

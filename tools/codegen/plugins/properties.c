@@ -309,6 +309,88 @@ static uint32_t hash2(cg_host_v1 const *h, char const *a, char const *b) {
     return h->fnv1a32(k);
 }
 
+static cg_node const *node_parent(cg_model const *m, cg_node const *n) {
+    return n ? cg_node_by_id(m, n->parent) : NULL;
+}
+
+static int local_node(cg_node const *n) {
+    return n && n->parent == 0;
+}
+
+static cg_node const *find_event(cg_model const *m, cg_node const *owner, char const *name) {
+    if (!name || !name[0]) return NULL;
+    if (owner) {
+        cg_foreach(m, owner->id, CG_KIND_MESSAGE, msg)
+            if (!strcmp(msg->name, name)) return msg;
+    }
+    for (size_t i = 0; i < m->node_count; ++i)
+        if (m->nodes[i].kind == CG_KIND_MESSAGE && !strcmp(m->nodes[i].name, name))
+            return &m->nodes[i];
+    return NULL;
+}
+
+static cg_node const *event_parent(cg_model const *m, cg_node const *msg) {
+    return (msg->extra && msg->extra[0])
+        ? find_event(m, node_parent(m, msg), msg->extra)
+        : NULL;
+}
+
+static void message_action_name(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
+    cg_node const *owner = node_parent(m, msg);
+    snprintf(dst, dsz, "%s_%sAction", owner ? owner->name : "", msg->name);
+}
+
+static void message_xml_name(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
+    cg_node const *owner = node_parent(m, msg);
+    snprintf(dst, dsz, "%s.%s", owner ? owner->name : "", msg->name);
+}
+
+static uint32_t event_field_count(cg_model const *m, cg_node const *msg) {
+    uint32_t count = 0;
+    cg_node const *p = event_parent(m, msg);
+    if (p) count += event_field_count(m, p);
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        (void)f;
+        count++;
+    }
+    return count;
+}
+
+static int emit_message_action_field_ids(cg_host_v1 const *h, ob *b, cg_model const *m,
+                                         cg_node const *msg, char const *action) {
+    cg_node const *p = event_parent(m, msg);
+    if (p && emit_message_action_field_ids(h, b, m, p, action) < 0) return -1;
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
+                action, f->name, hash2(h, action, f->name), action, f->name) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *msg) {
+    char action[256], xml_name[512];
+    uint32_t idx = event_field_count(m, msg);
+    message_action_name(action, sizeof(action), m, msg);
+    message_xml_name(xml_name, sizeof(xml_name), m, msg);
+    if (ob_printf(b,
+            "// %s\n"
+            "#define ID_%s 0x%08x // %s\n"
+            "#define Get%s(_P) ((struct %s*)((_P)?OBJ_GetComponent(_P,ID_%s):NULL))\n"
+            "#define %s_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_%s,sizeof(struct %s),_N)\n",
+            xml_name, action, h->fnv1a32(xml_name), xml_name,
+            action, action, action,
+            action, action, action) < 0) return -1;
+    if (emit_message_action_field_ids(h, b, m, msg, action) < 0) return -1;
+    if (ob_printf(b,
+            "#define ID_%s__ActionTarget 0x%08x // %s._ActionTarget\n"
+            "#define ID_%s__ActionMode 0x%08x // %s._ActionMode\n"
+            "#define k%sNumProperties %u\n",
+            action, hash2(h, action, "_ActionTarget"), action,
+            action, hash2(h, action, "_ActionMode"), action,
+            action, idx + 2) < 0) return -1;
+    return 0;
+}
+
 static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *c,
                       sentry const *smap, size_t scount) {
     uint32_t idx = 0;
@@ -436,6 +518,14 @@ static int emit_properties(cg_host_v1 const *host, cg_model const *model, char c
 
     cg_foreach(model, 0, CG_KIND_CLASS, c) {
         if (emit_class(host, &b, model, c, smap, scount) < 0) goto fail;
+    }
+    for (size_t i = 0; i < model->node_count; ++i) {
+        cg_node const *msg = &model->nodes[i];
+        cg_node const *owner = node_parent(model, msg);
+        if (msg->kind == CG_KIND_MESSAGE && local_node(owner) &&
+            (owner->kind == CG_KIND_INTERFACE || owner->kind == CG_KIND_CLASS)) {
+            if (emit_message_action(host, &b, model, msg) < 0) goto fail;
+        }
     }
     if (ob_printf(&b, "\n") < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_INTERFACE, iface) {

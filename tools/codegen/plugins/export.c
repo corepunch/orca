@@ -697,6 +697,169 @@ static int emit_events(ob *b, cg_host_v1 const *h, cg_model const *m,
     return 0;
 }
 
+static void message_action_name(cg_model const *m, cg_node const *msg, char *dst, size_t dsz) {
+    cg_node const *owner = node_parent(m, msg);
+    snprintf(dst, dsz, "%s_%sAction", owner ? owner->name : "", msg->name);
+}
+
+static void message_xml_name(cg_model const *m, cg_node const *msg, char *dst, size_t dsz) {
+    cg_node const *owner = node_parent(m, msg);
+    snprintf(dst, dsz, "%s.%s", owner ? owner->name : "", msg->name);
+}
+
+static int event_field_count(cg_model const *m, cg_node const *msg) {
+    int count = 0;
+    cg_node const *p = event_parent(m, msg);
+    if (p) count += event_field_count(m, p);
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        (void)f;
+        count++;
+    }
+    return count;
+}
+
+static int emit_action_payload_properties(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                          cg_node const *msg, char const *action_name) {
+    cg_node const *p = event_parent(m, msg);
+    if (p && emit_action_payload_properties(b, h, m, p, action_name) < 0) return -1;
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        if (emit_raw_field_row(b, h, m, action_name, f) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg_node const *msg) {
+    cg_node const *owner = node_parent(m, msg);
+    char action[256], xml_name[512], event_args[256];
+    int has_payload = event_field_count(m, msg) > 0;
+    message_action_name(m, msg, action, sizeof(action));
+    message_xml_name(m, msg, xml_name, sizeof(xml_name));
+    event_struct_name(m, msg, event_args, sizeof(event_args));
+
+    if (ob_printf(b,
+            "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
+            action, action) < 0) return -1;
+    if (emit_action_payload_properties(b, h, m, msg, action) < 0) return -1;
+    if (ob_printf(b,
+            "\t{ .Name = \"Target\", .Category = \"%s\", .ShortIdentifier = 0x%08x, .FullIdentifier = ID_%s__ActionTarget, .Offset = offsetof(struct %s, _ActionTarget), .DataSize = sizeof(((struct %s *)NULL)->_ActionTarget), .DataType = kDataTypeString }, // %s.Target\n"
+            "\t{ .Name = \"Mode\", .Category = \"%s\", .ShortIdentifier = 0x%08x, .FullIdentifier = ID_%s__ActionMode, .Offset = offsetof(struct %s, _ActionMode), .DataSize = sizeof(((struct %s *)NULL)->_ActionMode), .DataType = kDataTypeEnum, .EnumValues = _DispatchMode }, // %s.Mode\n",
+            action, h->fnv1a32("Target"), action, action, action, action,
+            action, h->fnv1a32("Mode"), action, action, action, action) < 0) return -1;
+    if (ob_printf(b,
+            "};\n"
+            "static struct %s %sDefaults = {\n"
+            "\t._ActionMode = kDispatchModeSend,\n"
+            "};\n"
+            "HANDLER(%s, Action, Dispatch)\n"
+            "{\n"
+            "\tstruct Object *sender = (pDispatch && pDispatch->Sender) ? pDispatch->Sender : hObject;\n"
+            "\tstruct Object *target = sender;\n"
+            "\tbool_t explicit_target = FALSE;\n"
+            "\tif (p%s->_ActionTarget && *p%s->_ActionTarget) {\n"
+            "\t\texplicit_target = TRUE;\n"
+            "\t\ttarget = OBJ_FindByPath(sender, p%s->_ActionTarget);\n"
+            "\t\tif (!target) {\n"
+            "\t\t\tCon_Error(\"%s could not resolve target path '%%s'\", p%s->_ActionTarget);\n"
+            "\t\t\treturn FALSE;\n"
+            "\t\t}\n"
+            "\t}\n"
+            "\tif (p%s->_ActionMode == kDispatchModePost) {\n",
+            action, action,
+            action,
+            action, action,
+            action,
+            xml_name, action,
+            action) < 0) return -1;
+    if (has_payload) {
+        if (ob_printf(b,
+                "\t\taxPostMessageDataW(target, ID_%s_%s, 0, p%s, sizeof(struct %s));\n",
+                owner->name, msg->name, action, event_args) < 0) return -1;
+    } else {
+        if (ob_printf(b,
+                "\t\taxPostMessageW(target, ID_%s_%s, 0, NULL);\n",
+                owner->name, msg->name) < 0) return -1;
+    }
+    if (ob_printf(b,
+            "\t\treturn TRUE;\n"
+            "\t}\n") < 0) return -1;
+    if (has_payload) {
+        if (ob_printf(b,
+                "\tif (!explicit_target) {\n"
+                "\t\tfor (struct Object *receiver = target; receiver; receiver = OBJ_GetParent(receiver)) {\n"
+                "\t\t\tLRESULT result = OBJ_SendMessageW(receiver, ID_%s_%s, 0, p%s);\n"
+                "\t\t\tif (result) return result;\n"
+                "\t\t}\n"
+                "\t\treturn FALSE;\n"
+                "\t}\n"
+                "\treturn OBJ_SendMessageW(target, ID_%s_%s, 0, p%s);\n",
+                owner->name, msg->name, action,
+                owner->name, msg->name, action) < 0) return -1;
+    } else {
+        if (ob_printf(b,
+                "\tif (!explicit_target) {\n"
+                "\t\tfor (struct Object *receiver = target; receiver; receiver = OBJ_GetParent(receiver)) {\n"
+                "\t\t\tLRESULT result = OBJ_SendMessageW(receiver, ID_%s_%s, 0, NULL);\n"
+                "\t\t\tif (result) return result;\n"
+                "\t\t}\n"
+                "\t\treturn FALSE;\n"
+                "\t}\n"
+                "\treturn OBJ_SendMessageW(target, ID_%s_%s, 0, NULL);\n",
+                owner->name, msg->name,
+                owner->name, msg->name) < 0) return -1;
+    }
+    if (ob_printf(b,
+            "}\n"
+            "LRESULT %sProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
+            "\tswitch (message) {\n"
+            "\t\tcase ID_Action_Dispatch: return %s_Dispatch(object, cmp, wparm, lparm);\n"
+            "\t}\n"
+            "\treturn FALSE;\n"
+            "}\n"
+            "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
+            "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
+            "}\n"
+            "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
+            "\treturn Get%s(luaX_checkObject(L, idx));\n"
+            "}\n"
+            "ORCA_API struct ClassDesc _%s = {\n"
+            "\t.ClassName = \"%s\",\n"
+            "\t.DefaultName = \"%s\",\n"
+            "\t.ContentType = \"%s\",\n"
+            "\t.Xmlns = \"http://schemas.corepunch.com/orca/2006/xml/presentation\",\n"
+            "\t.ParentClasses = { ID_Action, 0 },\n"
+            "\t.ClassID = ID_%s,\n"
+            "\t.ClassSize = sizeof(struct %s),\n"
+            "\t.Properties = %sProperties,\n"
+            "\t.ObjProc = %sProc,\n"
+            "\t.Defaults = &%sDefaults,\n"
+            "\t.NumProperties = k%sNumProperties,\n"
+            "};\n",
+            action,
+            action,
+            action, action, action, action,
+            action, action, action,
+            action,
+            xml_name,
+            xml_name,
+            action,
+            action,
+            action,
+            action,
+            action,
+            action,
+            action) < 0) return -1;
+    return 0;
+}
+
+static int emit_message_actions(ob *b, cg_host_v1 const *h, cg_model const *m) {
+    size_t idx = 0;
+    cg_node const *msg;
+    while (foreach_local_event(m, &idx, &msg)) {
+        if (emit_message_action(b, h, m, msg) < 0) return -1;
+    }
+    return 0;
+}
+
 static int emit_component_handlers(ob *b, cg_node const *c, cg_model const *m) {
     cg_foreach(m, c->id, CG_KIND_HANDLE, hdl) {
         char ident[512];
@@ -825,19 +988,6 @@ static int emit_luaopen(ob *b, cg_model const *m) {
     if (m->on_luaopen && m->on_luaopen[0]) {
         if (ob_printf(b, "\tvoid %s(lua_State *L);\n\t%s(L);\n", m->on_luaopen, m->on_luaopen) < 0) return -1;
     }
-    {
-        size_t idx = 0;
-        cg_node const *msg;
-        /* Export every local message type so Lua can resolve handlers as
-         * self:MessageName(...), including direct-routed messages. */
-        while (foreach_local_event(m, &idx, &msg)) {
-            cg_node const *owner = node_parent(m, msg);
-            char s[256];
-            event_struct_name(m, msg, s, sizeof(s));
-            if (ob_printf(b, "\tREGISTER_MESSAGE_TYPE(ID_%s_%s, \"%s.%s\", %s);\n",
-                    owner->name, msg->name, owner->name, msg->name, s) < 0) return -1;
-        }
-    }
     cg_foreach(m, 0, CG_KIND_STRUCT, s)
         if (ob_printf(b, "\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n",
                 s->name, export_name(s)) < 0) return -1;
@@ -856,6 +1006,17 @@ static int emit_luaopen(ob *b, cg_model const *m) {
     cg_foreach(m, 0, CG_KIND_CLASS, c)
         if (ob_printf(b, "\tlua_setfield(L, ((void)lua_pushclass(L, &_%s), -2), \"%s\");\n",
                 c->name, export_name(c)) < 0) return -1;
+    {
+        size_t idx = 0;
+        cg_node const *msg;
+        while (foreach_local_event(m, &idx, &msg)) {
+            char action[256], xml_name[512];
+            message_action_name(m, msg, action, sizeof(action));
+            message_xml_name(m, msg, xml_name, sizeof(xml_name));
+            if (ob_printf(b, "\tlua_setfield(L, ((void)lua_pushclass(L, &_%s), -2), \"%s\");\n",
+                    action, xml_name) < 0) return -1;
+        }
+    }
     if (m->after_luaopen && m->after_luaopen[0]) {
         if (ob_printf(b, "\tvoid %s(lua_State *L);\n\t%s(L);\n", m->after_luaopen, m->after_luaopen) < 0) return -1;
     }
@@ -895,8 +1056,8 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#include <include/api.h>\n"
             "#include <include/codegen.h>\n\n"
-            "#include \"%s.h\"\n\n",
-            base_name(model->xml_path), model->module_name) < 0) goto fail;
+            "#include <%s/%s.h>\n\n",
+            base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {
         if (ob_printf(&b, "// %s\n"
                 "extern void luaX_push%s(lua_State *L, struct %s const* value);\n"
@@ -904,11 +1065,15 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
                 ext->name, ext->name, ext->name, ext->name, ext->name) < 0) goto fail;
     }
     if (ob_printf(&b, "\n") < 0) goto fail;
+    if (strcmp(model->module_name, "core")) {
+        if (ob_printf(&b, "extern const char *_DispatchMode[];\n") < 0) goto fail;
+    }
     if (emit_extern_enums(&b, model) < 0) goto fail;
     if (emit_enum_macros(&b, model) < 0) goto fail;
     if (emit_interfaces(&b, model) < 0) goto fail;
     if (emit_structs(&b, host, model, smap, scount) < 0) goto fail;
     if (emit_events(&b, host, model, smap, scount) < 0) goto fail;
+    if (emit_message_actions(&b, host, model) < 0) goto fail;
     if (emit_components(&b, host, model, smap, scount) < 0) goto fail;
     if (emit_method_wrappers(&b, model, NULL, model->prefix ? model->prefix : "") < 0) goto fail;
     if (emit_luaopen(&b, model) < 0) goto fail;

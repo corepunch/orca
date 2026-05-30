@@ -1,6 +1,6 @@
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
-#include <source/core/core_properties.h>
+#include <core/core_properties.h>
 #include "fs_xml_inline.h"
 
 extern int parse_property(const char* str,
@@ -19,31 +19,6 @@ propdesc(struct Object *o, lpcString_t name)
   pd = OBJ_FindExplicitProperty(o, name);
   if (pd) {
     return pd;
-  }
-
-  struct SendMessageAction const *action = GetSendMessageAction(o);
-  if (!action || !action->Message || !*action->Message) {
-    return NULL;
-  }
-
-  uint32_t count = 0;
-  struct PropertyType const *fields = OBJ_FindMessagePropertyTypes(action->Message, &count);
-  if (!fields) {
-    return NULL;
-  }
-
-  FOR_LOOP(i, count) {
-    struct PropertyType const *field = &fields[i];
-    if (!strcmp(field->Name, name)) {
-      return field;
-    }
-    if (field->Category && *field->Category) {
-      fixedString_t full_name = {0};
-      snprintf(full_name, sizeof(full_name), "%s.%s", field->Category, field->Name);
-      if (!strcmp(full_name, name)) {
-        return field;
-      }
-    }
   }
   return NULL;
 }
@@ -349,7 +324,9 @@ visit_child(struct Object *o, struct _xmlNode* c)
 {
   if (binding_node(o, c)) return;
 
-  struct PropertyType const *pd = OBJ_FindExplicitProperty(o, (lpcString_t)c->name);
+  struct PropertyType const *pd = OBJ_FindClass((lpcString_t)c->name)
+    ? NULL
+    : OBJ_FindExplicitProperty(o, (lpcString_t)c->name);
   if (pd) {
     property_node(o, pd, c);
     return;
@@ -385,18 +362,7 @@ node(struct _xmlNode* x)
     return NULL;
   }
 
-  if (GetSendMessageAction(o)) {
-    FOR_EACH_LIST(xmlAttr, a, x->properties) {
-      if (!strcmp((lpcString_t)a->name, "Message")) {
-        visit_attr(o, a);
-      }
-    }
-  }
-
   FOR_EACH_LIST(xmlAttr, a, x->properties) {
-    if (GetSendMessageAction(o) && !strcmp((lpcString_t)a->name, "Message")) {
-      continue;
-    }
     visit_attr(o, a);
   }
 

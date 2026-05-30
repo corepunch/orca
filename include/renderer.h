@@ -436,7 +436,7 @@ typedef struct _DRAWSURF
   uint32_t numSubmeshes;
 } DRAWSURF, *PDRAWSURF;
 
-#include <source/renderer/api/renderer.h>
+#include <renderer/renderer.h>
 
 typedef struct _LOADIMGSTRUCT
 {

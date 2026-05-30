@@ -34,6 +34,19 @@ static char const *base_name(char const *path) {
     return slash ? slash + 1 : (path ? path : "");
 }
 
+static void module_name_from_path(char const *path, char *out, size_t out_sz) {
+    char const *base = base_name(path);
+    size_t len;
+    if (!out_sz) return;
+    snprintf(out, out_sz, "%s", base);
+    len = strlen(out);
+    if (len >= 5u && !strcmp(out + len - 5u, ".cgen")) {
+        out[len - 5u] = 0;
+    } else if (len >= 4u && !strcmp(out + len - 4u, ".xml")) {
+        out[len - 4u] = 0;
+    }
+}
+
 static char *upper(char const *s) {
     size_t i, n = strlen(s);
     char *d = (char *)malloc(n + 1u);
@@ -171,6 +184,11 @@ static int event_has_any_fields(cg_model const *m, cg_node const *msg) {
 static void event_struct_name(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
     cg_node const *owner = find_event_owner(m, msg);
     snprintf(dst, dsz, "%s_%sEventArgs", owner ? owner->name : "", msg->name);
+}
+
+static void message_action_name(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
+    cg_node const *owner = find_event_owner(m, msg);
+    snprintf(dst, dsz, "%s_%sAction", owner ? owner->name : "", msg->name);
 }
 
 static void event_effective_struct_name(char *dst, size_t dsz, cg_model const *m, cg_node const *msg) {
@@ -322,6 +340,21 @@ static int emit_event_struct(ob *b, cg_model const *m, cg_node const *msg) {
             s, s, s, s);
 }
 
+static int emit_message_action_struct(ob *b, cg_model const *m, cg_node const *msg) {
+    char s[256];
+    message_action_name(s, sizeof(s), m, msg);
+    if (ob_printf(b, "/** %s generated message action */\nstruct %s {\n", s, s) < 0) return -1;
+    if (emit_event_fields(b, m, msg) < 0) return -1;
+    if (ob_printf(b,
+            "\tconst char* _ActionTarget;\n"
+            "\tenum DispatchMode _ActionMode;\n"
+            "};\n"
+            "ORCA_API void luaX_push%s(lua_State *L, struct %s const* %s);\n"
+            "ORCA_API struct %s* luaX_check%s(lua_State *L, int idx);\n",
+            s, s, s, s, s) < 0) return -1;
+    return 0;
+}
+
 static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
     if (emit_doc(b, c, 1) < 0) return -1;
     if (ob_printf(b, "/** %s component */\nstruct %s {\n", c->name, c->name) < 0) return -1;
@@ -374,24 +407,23 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
     cg_foreach(model, 0, CG_KIND_INCLUDE, inc)
         if (ob_printf(&b, "#include <%s>\n", inc->name) < 0) goto fail;
 
-    if (ob_printf(&b, "\n#include \"%s_properties.h\"\n", model->module_name) < 0) goto fail;
+    if (ob_printf(&b, "\n#include <%s/%s_properties.h>\n", model->module_name, model->module_name) < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_REQUIRE, req) {
-        char dep[512];
-        size_t len = strlen(req->name);
-        if (len >= 5u && !strcmp(req->name + len - 5u, ".cgen")) {
-            size_t n = len - 5u;
-            if (n >= sizeof(dep) - 3u) n = sizeof(dep) - 4u;
-            memcpy(dep, req->name, n);
-            memcpy(dep + n, ".h", 3u);
-        } else if (len >= 4u && !strcmp(req->name + len - 4u, ".xml")) {
-            size_t n = len - 4u;
-            if (n >= sizeof(dep) - 3u) n = sizeof(dep) - 4u;
-            memcpy(dep, req->name, n);
-            memcpy(dep + n, ".h", 3u);
-        } else {
-            snprintf(dep, sizeof(dep), "%s.h", req->name);
+        char dep[256];
+        module_name_from_path(req->name, dep, sizeof(dep));
+        if (ob_printf(&b, "#include <%s/%s.h>\n", dep, dep) < 0) goto fail;
+    }
+    if (strcmp(model->module_name, "core")) {
+        int has_messages = 0;
+        for (size_t i = 0; i < model->node_count; ++i) {
+            cg_node const *msg = &model->nodes[i];
+            cg_node const *owner = msg->kind == CG_KIND_MESSAGE ? find_event_owner(model, msg) : NULL;
+            if (is_local_owner(owner) && (owner->kind == CG_KIND_INTERFACE || owner->kind == CG_KIND_CLASS)) {
+                has_messages = 1;
+                break;
+            }
         }
-        if (ob_printf(&b, "#include \"%s\"\n", dep) < 0) goto fail;
+        if (has_messages && ob_printf(&b, "#include <core/core.h>\n") < 0) goto fail;
     }
 
     if (ob_printf(&b, "\n") < 0) goto fail;
@@ -466,6 +498,17 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
 
     cg_foreach(model, 0, CG_KIND_CLASS, c) {
         if (emit_component_def(&b, model, c) < 0) goto fail;
+    }
+
+    {
+        int emitted_actions = 0;
+        for (size_t i = 0; i < model->node_count; ++i) {
+            cg_node const *msg = &model->nodes[i];
+            if (msg->kind != CG_KIND_MESSAGE || !is_local_owner(find_event_owner(model, msg))) continue;
+            if (!emitted_actions && ob_printf(&b, "\n") < 0) goto fail;
+            emitted_actions = 1;
+            if (emit_message_action_struct(&b, model, msg) < 0) goto fail;
+        }
     }
 
     if (ob_printf(&b, "\n#endif\n") < 0) goto fail;

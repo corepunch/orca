@@ -30,7 +30,7 @@ int cmp_prop(const void *a, const void *b) {
   return strcmp(PROP_GetName(nodeA), PROP_GetName(nodeB));
 }
 
-#include <plugins/UIKit/UIKit.h>
+#include <UIKit/UIKit.h>
 
 void UI_FillOutObjectView(struct Object *object, LPOBJDEF lpOut) {
   memset(lpOut, 0, sizeof(struct _OBJDEF));
@@ -264,7 +264,7 @@ xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url) {
 //  return 0;
 //}
 
-#include <source/filesystem/filesystem.h>
+#include <filesystem/filesystem.h>
 
 ORCA_API xmlNodePtr ED_ConvertNode(struct Object *object, xmlNodePtr parent) {
   struct ClassDesc const *cls = get_node_class_desc((struct Object *)object);

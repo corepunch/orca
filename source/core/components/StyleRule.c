@@ -1,5 +1,5 @@
 #include <source/core/core_local.h>
-#include <source/core/core_properties.h>
+#include <core/core_properties.h>
 
 // ============================================================================
 // StyleRule COMPONENT
