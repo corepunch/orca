@@ -8,6 +8,7 @@ nav:
   - Architecture:
     - Overview: architecture/index.md
     - Object + Component System: architecture/object-component-system.md
+    - Message Actions: architecture/message-actions.md
     - Plugin System: architecture/plugin-system.md
     - Code Generation: architecture/code-generation.md
     - Macros Reference: architecture/macros-reference.md
