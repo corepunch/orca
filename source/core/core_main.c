@@ -718,9 +718,6 @@ before_core_module_registered(lua_State* L)
   OBJ_RegisterStructParser("vec2",          c_parse_vec2);
   OBJ_RegisterStructParser("vec3",          c_parse_vec3);
   
-  void Init_KnownPrefabs(void);
-  Init_KnownPrefabs();
-  
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");
   

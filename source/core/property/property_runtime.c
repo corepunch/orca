@@ -686,16 +686,6 @@ tok_op(argument)
     if (scope) {
       p = OBJ_FindPropertyByPath(scope, token->text);
     }
-    if (!p) {
-      /* Fallback: known prefab (legacy) */
-      lpcString_t innerpath = NULL;
-      struct Object *prefab = OBJ_FindKnownPrefab(token->text, &innerpath);
-      if (prefab && strchr(innerpath, '/')) {
-        path_t path = { 0 };
-        sprintf(path, ".%s", strchr(innerpath, '/'));
-        p = OBJ_FindPropertyByPath(prefab, path);
-      }
-    }
   }
 return_value:
   if (p) {
