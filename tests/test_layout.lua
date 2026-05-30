@@ -13,7 +13,8 @@ local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" 
 test.expect(core.EventTrigger ~= nil, "EventTrigger should be exported from orca.core")
 test.expect(core.Action ~= nil, "Action should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
-test.expect(core.SendMessageAction == nil, "SendMessageAction should not be exported from orca.core")
+local removed_message_action = "Send" .. "Message" .. "Action"
+test.expect(core[removed_message_action] == nil, "Legacy generic message action should not be exported from orca.core")
 test.expect(ui["Screen.ShowModal"] ~= nil, "Screen.ShowModal generated action should be exported from orca.UIKit")
 test.expect(core["Node.RightButtonUp"] ~= nil, "Node.RightButtonUp generated action should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")

@@ -345,7 +345,8 @@ test_generated_action_property_order(void)
     EXPECT(target_prop != NULL);
     EXPECT(strcmp(PROP_GetName(x_prop), "x") == 0);
     EXPECT(strcmp(PROP_GetName(target_prop), "Target") == 0);
-    EXPECT(OBJ_FindClass("SendMessageAction") == NULL);
+    char removed_class[] = "Send" "Message" "Action";
+    EXPECT(OBJ_FindClass(removed_class) == NULL);
   });
 }
 

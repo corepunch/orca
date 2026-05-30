@@ -89,8 +89,8 @@ be passed as the corresponding `EventArgs` payload.
 
 This model removes:
 
-- the generic `SendMessageAction` component
-- fake message-field properties on `SendMessageAction`
+- the legacy generic message-dispatch adapter
+- adapter-specific fake message-field properties
 - XML parser ordering special cases for `Message=...`
 - inline lowering to a generic adapter
 - the runtime `core.message_types` registry

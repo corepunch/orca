@@ -235,7 +235,6 @@
 		78E4A9D52E9548BD00E3A503 /* r_render_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D42E9548B800E3A503 /* r_render_texture.c */; };
 		78E4A9D72E95497D00E3A503 /* r_cube_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D62E95497900E3A503 /* r_cube_texture.c */; };
 		78E4A9D92E9549F700E3A503 /* r_gradient_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9D82E9549F200E3A503 /* r_gradient_texture.c */; };
-		78E9D0A12F9A100100ABCDEF /* SendMessageAction.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */; };
 		78ED00012F000000000000001 /* ed_stubs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78ED00002F000000000000001 /* ed_stubs.c */; };
 		78EE10E62E4349E60005DB2A /* w_splitview.c in Sources */ = {isa = PBXBuildFile; fileRef = 78EE10E52E4349DE0005DB2A /* w_splitview.c */; };
 		78EE10EA2E4389200005DB2A /* w_sceneview.c in Sources */ = {isa = PBXBuildFile; fileRef = 78EE10E92E43891D0005DB2A /* w_sceneview.c */; };
@@ -663,7 +662,6 @@
 		78E4A9D42E9548B800E3A503 /* r_render_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_render_texture.c; sourceTree = "<group>"; };
 		78E4A9D62E95497900E3A503 /* r_cube_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_cube_texture.c; sourceTree = "<group>"; };
 		78E4A9D82E9549F200E3A503 /* r_gradient_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_gradient_texture.c; sourceTree = "<group>"; };
-		78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = SendMessageAction.c; sourceTree = "<group>"; };
 		78ED00002F000000000000001 /* ed_stubs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ed_stubs.c; sourceTree = "<group>"; };
 		78EE10E52E4349DE0005DB2A /* w_splitview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_splitview.c; sourceTree = "<group>"; };
 		78EE10E92E43891D0005DB2A /* w_sceneview.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = w_sceneview.c; sourceTree = "<group>"; };
@@ -1094,7 +1092,6 @@
 				78A444002F881D1C00AF52A4 /* StateManagerController.c */,
 				7800000001000000000000002 /* Node.c */,
 				7800000001000000000000004 /* Trigger.c */,
-				78E9D0A22F9A100100ABCDEF /* SendMessageAction.c */,
 				781CA77A2E1557B900FFCFD9 /* Locale.c */,
 			);
 			path = components;
@@ -1975,7 +1972,6 @@
 				781CA7782E1557A900FFCFD9 /* StateManagerController.c in Sources */,
 				7800000001000000000000001 /* Node.c in Sources */,
 				7800000001000000000000003 /* Trigger.c in Sources */,
-				78E9D0A12F9A100100ABCDEF /* SendMessageAction.c in Sources */,
 				781CA77A2E1557A900FFCFD9 /* Locale.c in Sources */,
 				78AF62512F562AEB008D08A3 /* property_program.c in Sources */,
 				78A442BD2F87FA8200AF52A4 /* PropertyAnimation.c in Sources */,

@@ -254,10 +254,10 @@ struct ClassDesc {
 ## XML Message Dispatch Shorthand
 
 - Inline XML can dispatch any registered message type with the WPF-style shorthand, for example `{Node.RightButtonUp}`, `{Popup.ClosePopup}`, or `{Screen.ShowModal Path=...}`.
-- The shorthand lowers to `SendMessageAction` under the hood.
+- The shorthand lowers directly to the generated dotted message action class.
 - Named arguments map to the registered message payload fields, including short field names like `Path=...` when the message defines `Screen_ShowModalEventArgs.Path`.
 - Use commas between named arguments when helpful, and nested `{...}` expressions are allowed inside payload values.
-- Prefer this shorthand in XML when you want concise message dispatch instead of an explicit `SendMessageAction` element.
+- Prefer this shorthand for concise dispatch; use an explicit dotted action element when nested XML reads better.
 
 **`objectProc_t` signature** — note the `void* cmp` second parameter:
 
