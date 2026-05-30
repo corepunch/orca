@@ -382,12 +382,8 @@ static int emit_message_action(cg_host_v1 const *h, ob *b, cg_model const *m, cg
             action, action, action) < 0) return -1;
     if (emit_message_action_field_ids(h, b, m, msg, action) < 0) return -1;
     if (ob_printf(b,
-            "#define ID_%s__ActionTarget 0x%08x // %s._ActionTarget\n"
-            "#define ID_%s__ActionMode 0x%08x // %s._ActionMode\n"
             "#define k%sNumProperties %u\n",
-            action, hash2(h, action, "_ActionTarget"), action,
-            action, hash2(h, action, "_ActionMode"), action,
-            action, idx + 2) < 0) return -1;
+            action, idx) < 0) return -1;
     return 0;
 }
 

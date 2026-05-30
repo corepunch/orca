@@ -8,10 +8,10 @@ extern void read_property(lua_State *L, int idx, struct PropertyType const* prop
 static uint32_t
 _MessagePayloadPropertyCount(struct ClassDesc const *cls)
 {
-  if (!cls || cls->NumProperties < 2) {
+  if (!cls) {
     return 0;
   }
-  return cls->NumProperties - 2;
+  return cls->NumProperties;
 }
 
 static void
@@ -85,24 +85,16 @@ _CreateMessageAction(lua_State *L,
     return NULL;
   }
 
-  struct PropertyType const *target_field = cls->NumProperties >= 2
-    ? &cls->Properties[cls->NumProperties - 2]
-    : NULL;
-  struct PropertyType const *mode_field = cls->NumProperties >= 1
-    ? &cls->Properties[cls->NumProperties - 1]
-    : NULL;
-
-  if (target_field) {
-    struct Property *target_prop = NULL;
-    lpcString_t direct_target = ".";
-    if (SUCCEEDED(OBJ_FindLongProperty(action, target_field->FullIdentifier, &target_prop)) && target_prop) {
-      PROP_SetValue(target_prop, &direct_target);
-    }
+  struct Property *target_prop = NULL;
+  lpcString_t direct_target = ".";
+  if (SUCCEEDED(OBJ_FindLongProperty(action, ID_SendMessageAction_Target, &target_prop)) && target_prop) {
+    PROP_SetValue(target_prop, &direct_target);
   }
-  if (post && mode_field) {
+
+  if (post) {
     struct Property *mode_prop = NULL;
     enum DispatchMode mode = kDispatchModePost;
-    if (SUCCEEDED(OBJ_FindLongProperty(action, mode_field->FullIdentifier, &mode_prop)) && mode_prop) {
+    if (SUCCEEDED(OBJ_FindLongProperty(action, ID_SendMessageAction_Mode, &mode_prop)) && mode_prop) {
       PROP_SetValue(mode_prop, &mode);
     }
   }

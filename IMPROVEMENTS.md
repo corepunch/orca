@@ -2,8 +2,8 @@
 
 This document records the lessons from the `Screen.SetModalObject` work and
 the follow-up review. The short version is: the architecture is coherent, but it
-has sharp edges. Small API changes can cross `.cgen`, generated C, global
-message registration, component dispatch, Lua wrappers, tests, and compiled
+has sharp edges. Small API changes can cross `.cgen`, generated C, generated
+message-action classes, component dispatch, Lua wrappers, tests, and compiled
 runtime shared libraries. When one layer is stale, the source can look correct
 while runtime behavior still looks like nothing changed.
 
@@ -25,7 +25,7 @@ The assessment from the thread is broadly correct:
   - generated headers
   - generated property IDs
   - generated Lua export bindings
-  - global message registry
+  - generated message-action metadata
   - object/component dispatch
   - Lua method wrappers
   - tests
@@ -37,10 +37,10 @@ The assessment from the thread is broadly correct:
   Lua could not build the message payload and the handler did not fire.
 
 The system has a coherent shape. `screen:SetModalObject(popup)` fits it well:
-the message has a payload, the generated event property exposes it to Lua, the
-Lua bridge converts positional or table arguments into a payload, and the
-Screen component handler attaches the object. The roughness is in the workflow
-and in a few implementation details.
+the message has a payload, the generated message-action class exposes that
+payload as properties, the Lua bridge fills the action from positional or table
+arguments, and the Screen component handler attaches the object. The roughness
+is in the workflow and in a few implementation details.
 
 The right label is "sharp-edged", not "rotten".
 
@@ -62,11 +62,12 @@ But this shorthand depends on a full path through the engine:
    - `generated/UIKit/UIKit.h`
    - `generated/UIKit/UIKit_properties.h`
    - `generated/UIKit/UIKit_export.c`
-3. `UIKit_export.c` exposes the event property and registers the payload type.
+3. Codegen synthesizes the `Screen.SetModalObject` action class with payload
+   properties plus `Target` and `Mode` dispatch properties.
 4. `source/core/property/property_lua.c` turns event properties into Lua
    callable closures.
-5. `source/core/object/object_lua_msg.c` looks up the message payload fields in
-   the runtime registry and copies Lua arguments into a C payload buffer.
+5. `source/core/object/object_lua_msg.c` creates the generated action object
+   and copies Lua arguments into its payload properties.
 6. `ScreenProc` dispatches `ID_Screen_SetModalObject` to the handler.
 7. `plugins/UIKit/Screen.c` attaches the popup and marks it visible.
 8. The compiled `build/lib/liborca/UIKit.so` must actually contain the updated
@@ -87,8 +88,7 @@ The `SetModalObject` change follows the intended architecture:
 - The generated property ID exists as `ID_Screen_SetModalObject`.
 - `ScreenProperties` includes `SetModalObject` as a `kDataTypeEvent`.
 - `ScreenProc` has a dispatch case for `ID_Screen_SetModalObject`.
-- `UIKit_export.c` registers the message payload type with
-  `REGISTER_MESSAGE_TYPE`.
+- `UIKit_export.c` registers the generated `Screen.SetModalObject` action class.
 - Lua method shorthand resolves through the normal event property path.
 - `tests/test_layout.lua` now includes a direct regression test:
   `test_lua_set_modal_object_dispatches_message`.
@@ -100,7 +100,9 @@ PASS: test_lua_set_modal_object_dispatches_message
 All layout tests passed.
 ```
 
-`make test-message-registry` also passed:
+`make test-message-registry` also passed. The target name is historical now;
+the useful coverage is that message metadata is reachable through generated
+classes:
 
 ```text
 3 test(s) run, 0 failure(s)
@@ -234,16 +236,17 @@ Every new message should follow this workflow:
    - the event args struct exists
    - the property ID exists
    - the event property exists
+   - the generated dotted message-action class exists
    - the Proc switch has a dispatch case
-   - `REGISTER_MESSAGE_TYPE` exists for messages with payload fields
+   - payload fields appear as generated action properties
 5. Implement the C `HANDLER(...)`.
 6. Rebuild the runtime plugin or full `unite` target.
 7. Add a focused regression test that calls the Lua shorthand or dispatch path.
 8. Run the focused test through a target that rebuilds plugins.
 9. Run `make test-headless` before merging.
 
-The important rule: source review is not enough for message work. The runtime
-registry and loaded shared libraries must be verified.
+The important rule: source review is not enough for message work. Generated
+class metadata and loaded shared libraries must be verified.
 
 ---
 
@@ -264,12 +267,12 @@ For every new message, add a tiny test that checks the real runtime path:
   - wrong object type
   - unknown path or target
 
-For message registry coverage, add C tests where practical:
+For generated message-action metadata coverage, add C tests where practical:
 
-- `OBJ_FindMessagePropertyTypes("Screen.SetModalObject", &count)` returns
-  payload fields.
+- `OBJ_FindClass("Screen.SetModalObject")` returns the generated action class.
 - Field names and count match the `.cgen` declaration.
-- Unknown messages return `NULL` and reset count to zero.
+- Dispatch meta-properties such as `Target` and `Mode` are present.
+- Unknown message-action classes return `NULL`.
 
 ---
 
@@ -293,71 +296,81 @@ Use this for tests that load UIKit, SceneKit, SpriteKit, or other plugin
 classes. Keep a separate lightweight rule only for tests that exercise core Lua
 modules without plugin shared libraries.
 
-### Add a runtime registry verification command
+### Add a runtime message-action verification command
 
 Add a small dev command that verifies the loaded runtime, not just generated
 source. It should:
 
 - start the built app or a small test binary
 - load `orca.UIKit`
-- query `OBJ_FindMessagePropertyTypes`
-- verify known message payloads
+- query `OBJ_FindClass` for generated dotted message-action classes
+- verify known message payload properties
 - optionally print the loaded plugin path and modification time
 
 Example checks:
 
-- `Screen.SetModalObject` exists
+- `Screen.SetModalObject` exists as a generated class
 - payload count is `1`
 - payload field is `Target`
 - payload field type is `Object`
+- dispatch `Mode` exists and defaults to `Send`
 - `ScreenProc` dispatches the message
 
 ### Make stale plugin diagnosis obvious
 
-When Lua tries to dispatch an event payload but the runtime registry has no
-message payload fields, the error currently appears far from the real cause.
+When Lua tries to dispatch a message but the generated message-action class is
+missing from the loaded runtime, the error can appear far from the real cause.
 
 Possible improvements:
 
-- Log when `_LuaMessagePayload` cannot find fields for an event property that
-  has a generated `TypeString`.
+- Log when `_CreateMessageAction` cannot find a generated class for a message
+  that has an event property.
 - Include the message name and loaded module path in the warning.
 - Add a debug-only check that generated event property metadata agrees with the
-  runtime message registry.
+  generated message-action class metadata.
 
 ---
 
-## Design Notes About the Two Overlapping Abstractions
+## Design Notes About Objects, Components, and Messages
 
-The current design has two overlapping but workable abstractions.
+The thread originally called out that components are classes while Lua often
+sees everything through generic `Object`. That is not inherently a problem. It
+is a useful boundary: C can keep component storage, generated structs, and
+dispatch tables as implementation detail, while Lua works with object identity
+and capabilities.
 
-Messages are both:
-
-- C handlers dispatched through generated `Proc` switches
-- Lua-callable event properties exposed through generated bindings
-
-Components are classes, but Lua often sees everything through generic `Object`.
-That lets Lua code stay pleasant:
+This is exactly why the Lua surface can stay pleasant:
 
 ```lua
 screen:SetModalObject(popup)
 ```
 
-But it also hides the number of moving parts underneath. The bridge has to
-resolve a property, notice that it is an event, create a callable closure, look
-up the message payload schema, copy Lua arguments into a payload struct, and
-send the message through object/component dispatch.
+The problem was not that Lua sees an `Object`. The problem was that messages
+used to live partly outside the class/property/object system. Lua had to build
+payload buffers by hand, XML needed a generic adapter, and payload metadata
+lived in a separate runtime registry. That made messages feel like a parallel
+abstraction instead of another generated class with properties.
 
-This is a reasonable design. The cost is that metadata consistency matters a
-lot.
+Generated message actions improve the shape:
 
-The practical improvement is not to remove the abstraction. The practical
-improvement is to add verification at the boundaries:
+- message metadata now lives in the generated `ClassDesc`
+- XML can use dotted message classes directly, such as `<Screen.ShowModal/>`
+- Lua dispatch creates the generated action and fills its payload properties
+- `SendMessageAction` provides one generic `Action.Dispatch` handler for all
+  generated message actions
+- C handlers still receive the same typed `EventArgs` payload structs
+
+So the practical improvement is not to make Lua expose component internals. The
+practical improvement is to keep messages inside the same class/property/object
+machinery that objects and actions already use.
+
+The remaining guardrail work is to verify the boundaries:
 
 - `.cgen` agrees with generated files
 - generated files agree with committed source
 - committed source agrees with compiled libraries
-- compiled libraries register the payload schema that Lua uses at runtime
+- compiled libraries expose the generated message-action classes Lua uses at
+  runtime
 - focused tests rebuild the libraries they depend on
 
 ---
@@ -407,18 +420,19 @@ Add tests for:
 - moving an already-parented popup does not leak or leave stale parent links
 - closing a modal after a move detaches and releases correctly
 
-### 4. Add registry coverage
+### 4. Add generated message-action coverage
 
 Extend `tests/test_message_registry.c` with:
 
-- `Screen.SetModalObject` exists
+- `Screen.SetModalObject` exists as a generated action class
 - count is `1`
 - field name is `Target`
 - field type is `kDataTypeObject`
 - type string is `Object`
+- `Target` and `Mode` dispatch properties exist
 
 This test should load UIKit, not only core, otherwise it will miss plugin
-message registry problems.
+message-action metadata problems.
 
 ---
 
@@ -452,11 +466,11 @@ When adding a message:
 - [ ] Confirm generated event args exist.
 - [ ] Confirm generated property IDs exist.
 - [ ] Confirm generated `Proc` dispatch exists.
-- [ ] Confirm `REGISTER_MESSAGE_TYPE` exists for payload messages.
+- [ ] Confirm the generated dotted message-action class exists.
 - [ ] Implement `HANDLER(...)`.
 - [ ] Rebuild plugins with `make unite` or equivalent.
 - [ ] Add a Lua test for shorthand dispatch.
-- [ ] Add a registry test for payload metadata.
+- [ ] Add a generated-action metadata test for payload fields.
 - [ ] Run a plugin-aware focused test.
 - [ ] Run `make test-headless`.
 
@@ -465,7 +479,7 @@ When debugging a message that "does nothing":
 - [ ] Check the `.cgen` message declaration.
 - [ ] Check `<handle message="..."/>`.
 - [ ] Check generated IDs and dispatch switch.
-- [ ] Check `REGISTER_MESSAGE_TYPE`.
+- [ ] Check the generated dotted message-action class.
 - [ ] Check the handler signature and payload struct name.
 - [ ] Check Lua event property exposure.
 - [ ] Check loaded plugin `.so` timestamp.
@@ -483,8 +497,8 @@ generated code, and loaded runtime artifacts.
 The highest-value improvements are:
 
 1. Make plugin-dependent Lua tests rebuild plugins.
-2. Add message registry regression tests for every new payload message.
-3. Add a dev command that verifies loaded runtime registries.
+2. Add generated message-action metadata tests for every new payload message.
+3. Add a dev command that verifies loaded runtime message-action classes.
 4. Tighten `Screen.SetModalObject` validation.
 5. Fix modal attachment ownership when moving existing objects.
 

@@ -47,7 +47,22 @@ static lua_State *make_lua_state(void)
 static uint32_t
 payload_property_count(struct ClassDesc const *cls)
 {
-  return (cls && cls->NumProperties >= 2) ? cls->NumProperties - 2 : 0;
+  return cls ? cls->NumProperties : 0;
+}
+
+static bool_t
+inherits_from_send_message_action(struct ClassDesc const *cls)
+{
+  struct ClassDesc const *base = OBJ_FindClass("SendMessageAction");
+  if (!cls || !base) {
+    return FALSE;
+  }
+  for (uint32_t const *parent = cls->ParentClasses; *parent; parent++) {
+    if (*parent == base->ClassID) {
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 static void test_trigger_triggered_message_action_class(void)
@@ -57,6 +72,7 @@ static void test_trigger_triggered_message_action_class(void)
     struct ClassDesc const *cls = OBJ_FindClass("Trigger.Triggered");
     EXPECT(L != NULL);
     EXPECT(cls != NULL);
+    EXPECT(inherits_from_send_message_action(cls));
     EXPECT(payload_property_count(cls) == 1);
     EXPECT(cls->Properties[0].Name != NULL && !strcmp(cls->Properties[0].Name, "Sender"));
   });
@@ -69,6 +85,7 @@ static void test_object_attached_message_action_class(void)
     struct ClassDesc const *cls = OBJ_FindClass("Object.Attached");
     EXPECT(L != NULL);
     EXPECT(cls != NULL);
+    EXPECT(inherits_from_send_message_action(cls));
     EXPECT(payload_property_count(cls) == 1);
     EXPECT(cls->Properties[0].Name != NULL && !strcmp(cls->Properties[0].Name, "Sender"));
   });

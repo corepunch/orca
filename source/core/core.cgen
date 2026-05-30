@@ -825,7 +825,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="Action">
       <summary>Base class for executable trigger actions.</summary>
-      <details>Action defines the dispatch message used by triggers to execute child actions. Concrete actions and generated message actions handle Action.Dispatch.</details>
+      <details>Action defines the dispatch message used by triggers to execute child actions. Concrete actions and SendMessageAction handle Action.Dispatch.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <messages>
         <message name="Dispatch">
@@ -835,6 +835,18 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           </fields>
         </message>
       </messages>
+    </class>
+    <class name="SendMessageAction" parent="Action">
+      <summary>Base class for generated message actions.</summary>
+      <details>SendMessageAction handles Action.Dispatch for generated dotted message-action classes by sending or posting the typed message payload stored on the concrete generated action component.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Action.Dispatch"/>
+      </handles>
+      <properties>
+        <property name="Target" type="string">Optional path resolved relative to the dispatch sender; when unset, the message bubbles from the sender through its parents.</property>
+        <property name="Mode" type="DispatchMode" default="Send">Send dispatches synchronously; Post queues the message for later dispatch.</property>
+      </properties>
     </class>
     <class name="Trigger">
       <summary>Base class for event-driven actions within the UI system</summary>
