@@ -11,8 +11,11 @@ local system = require "orca.system"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 test.expect(core.EventTrigger ~= nil, "EventTrigger should be exported from orca.core")
+test.expect(core.Action ~= nil, "Action should be exported from orca.core")
 test.expect(core.HideAction ~= nil, "HideAction should be exported from orca.core")
-test.expect(core.SendMessageAction ~= nil, "SendMessageAction should be exported from orca.core")
+test.expect(core.SendMessageAction == nil, "SendMessageAction should not be exported from orca.core")
+test.expect(ui["Screen.ShowModal"] ~= nil, "Screen.ShowModal generated action should be exported from orca.UIKit")
+test.expect(core["Node.RightButtonUp"] ~= nil, "Node.RightButtonUp generated action should be exported from orca.core")
 test.expect(system.peekMessage ~= nil, "orca.system.peekMessage should be exported for non-blocking queue drains")
 
 local function pump_messages(root)
@@ -483,7 +486,7 @@ local function test_xml_loading_trigger_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
+	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -604,6 +607,66 @@ local function test_lua_set_modal_object_dispatches_message()
 	print("PASS: test_lua_set_modal_object_dispatches_message")
 end
 
+local function test_lua_set_modal_object_table_dispatches_message()
+	local root = ui.Screen { Name = "lua-set-modal-table-screen", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local popup = ui.Popup { Name = "LuaTableModal", Width = 240, Height = 160, Visible = false }
+
+	local result = root:SetModalObject { Target = popup }
+
+	test.expect_eq(result, 1, "SetModalObject table shorthand should dispatch Screen.SetModalObject")
+	test.expect_eq(root:getNext(), popup, "SetModalObject table payload should attach the popup")
+	test.expect(popup.Visible, "SetModalObject table payload should make the modal visible")
+	test.expect(popup.DialogResult ~= popup.DialogResult, "SetModalObject table payload should reset DialogResult to NaN")
+
+	root:clear()
+	root = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_lua_set_modal_object_table_dispatches_message")
+end
+
+local function test_lua_close_popup_table_dispatches_message()
+	local root = ui.Screen { Name = "lua-close-popup-screen", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local popup = ui.Popup { Name = "LuaCloseModal", Width = 240, Height = 160, Visible = false }
+
+	root:SetModalObject { Target = popup }
+	test.expect_eq(root:getNext(), popup, "Popup should be modal before ClosePopup")
+
+	local result = popup:ClosePopup { ReturnValue = 2.25 }
+
+	test.expect_eq(result, 1, "ClosePopup table shorthand should dispatch Popup.ClosePopup")
+	test.expect_eq(root:getNext(), nil, "ClosePopup table payload should detach the modal")
+	test.expect_near(popup.DialogResult, 2.25, 0.001, "ClosePopup table payload should set DialogResult")
+
+	root:clear()
+	root = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_lua_close_popup_table_dispatches_message")
+end
+
+local function test_lua_post_generated_message_with_payload()
+	local root = ui.Screen { Name = "lua-post-modal-screen", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local popup = ui.Popup { Name = "LuaPostModal", Width = 240, Height = 160, Visible = false }
+
+	root:post("Screen.SetModalObject", { Target = popup })
+	test.expect_eq(root:getNext(), nil, "Posted Screen.SetModalObject should not run synchronously")
+
+	pump_messages(root)
+
+	test.expect_eq(root:getNext(), popup, "Posted Screen.SetModalObject should dispatch with payload after pumping")
+	test.expect(popup.Visible, "Posted Screen.SetModalObject should make the modal visible")
+
+	root:clear()
+	root = nil
+	popup = nil
+	collectgarbage()
+
+	print("PASS: test_lua_post_generated_message_with_payload")
+end
+
 local function test_stackview_align_items_preserves_child_stretch_width()
 	local root = ui.Screen { Name = "PopupLayoutRoot", Width = 420, Height = 600, ResizeMode = "NoResize" }
 	local overlay = root + ui.StackView {
@@ -649,7 +712,7 @@ local function test_xml_loading_close_popup_action_components()
 	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
+	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -692,7 +755,7 @@ local function test_xml_loading_event_trigger_components()
 	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <SendMessageAction Message="Screen.ShowModal" Screen_ShowModalEventArgs.Path="Example/Screens/GetStartedPopup"/>
+	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -717,11 +780,11 @@ end
 
 local function test_xml_loading_send_message_action_components()
 	local xml = [[
-	<Screen Name="send-message-screen" Width="800" Height="600" ResizeMode="NoResize">
+	<Screen Name="generated-message-action-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF">
 	    <Node.Triggers>
 	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <SendMessageAction Message="Node.RightButtonUp" Target="../Receiver"/>
+	        <Node.RightButtonUp Target="../Receiver"/>
 	      </EventTrigger>
 	    </Node.Triggers>
 	  </TextBlock>
@@ -736,7 +799,7 @@ local function test_xml_loading_send_message_action_components()
 	</Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "send-message-action XML should load")
+	test.expect(root ~= nil, "generated message action XML should load")
 
 	local source = root:findChild("Source", true)
 	local receiver = root:findChild("Receiver", true)
@@ -747,7 +810,7 @@ local function test_xml_loading_send_message_action_components()
 	test.expect(victim ~= nil, "Victim should exist")
 	source:send("Node.LeftButtonUp")
 	pump_messages(root)
-	test.expect(not victim.Visible, "Victim should be hidden by SendMessageAction dispatching Node.RightButtonUp")
+	test.expect(not victim.Visible, "Victim should be hidden by generated Node.RightButtonUp action")
 	source = nil
 	receiver = nil
 	victim = nil
@@ -1057,8 +1120,10 @@ local function test_example_application_xml()
 		"TabView should size its buffered SelectionChanged payload")
 	test.expect(input_source ~= nil and input_source:find('SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);', 1, true) ~= nil,
 		"Input should copy its Submit payload before posting")
-	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) ~= nil,
-		"Lua object post helper should post the built payload through the buffered helper")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('_CreateMessageAction(L, message, TRUE)', 1, true) ~= nil,
+		"Lua object post helper should dispatch through generated message action classes")
+	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) == nil,
+		"Lua object post helper should no longer build message payload buffers by hand")
 
 	print("PASS: test_example_application_xml")
 end
@@ -1154,6 +1219,9 @@ test_example_application_xml()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
+test_lua_set_modal_object_table_dispatches_message()
+test_lua_close_popup_table_dispatches_message()
+test_lua_post_generated_message_with_payload()
 test_stackview_align_items_preserves_child_stretch_width()
 
 print("All layout tests passed.")

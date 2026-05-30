@@ -144,17 +144,6 @@ is_special_inline_name(char const *name)
          !strcmp(name, "class") || strchr(name, '.');
 }
 
-static struct PropertyType const *
-find_field_by_name(struct PropertyType const *fields, int count, char const *name)
-{
-  FOR_LOOP(i, count) {
-    if (!strcmp(fields[i].Name, name)) {
-      return &fields[i];
-    }
-  }
-  return NULL;
-}
-
 static void
 emit_attr(struct strbuf *xml,
           struct PropertyType const *field,
@@ -290,16 +279,6 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
   if (!read_atom(&r, &type)) return FALSE;
 
   struct ClassDesc const *cls = OBJ_FindClass(type);
-  struct PropertyType const *message_fields = NULL;
-  uint32_t message_field_count = 0;
-  bool_t is_message_dispatch = FALSE;
-  if (!cls && strchr(type, '.')) {
-    cls = OBJ_FindClass("SendMessageAction");
-    is_message_dispatch = cls != NULL;
-    if (is_message_dispatch) {
-      message_fields = OBJ_FindMessagePropertyTypes(type, &message_field_count);
-    }
-  }
   if (!cls) {
     Con_Error("Unknown inline object type '%s'", type);
     free(type);
@@ -307,17 +286,12 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
   }
 
   struct strbuf xml = {0};
-  uint32_t used_count = is_message_dispatch ? message_field_count : cls->NumProperties;
+  uint32_t used_count = cls->NumProperties;
   bool_t *used = calloc((size_t)used_count, sizeof(bool_t));
   int cursor = positional_start;
   bool_t ok = used_count == 0 || used != NULL;
   putc_xml(&xml, '<');
-  put(&xml, is_message_dispatch ? "SendMessageAction" : type);
-  if (is_message_dispatch) {
-    put(&xml, " Message=\"");
-    put_escaped(&xml, type);
-    putc_xml(&xml, '"');
-  }
+  put(&xml, type);
 
   while (ok) {
     char *name = NULL;
@@ -326,36 +300,19 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
     skip(&r);
 
     struct PropertyType const *field = NULL;
-    bool_t use_full_name = FALSE;
     if (*r.p == '=') {
       r.p++;
       ok = read_atom(&r, &value);
-      if (is_message_dispatch && !strcmp(name, "Message")) {
-        free(name);
-        free(value);
-        continue;
-      }
-      if (is_message_dispatch) {
-        field = find_field_by_name(cls->Properties, (int)cls->NumProperties, name);
-        if (!field && message_fields) {
-          field = find_field_by_name(message_fields, (int)message_field_count, name);
-          use_full_name = field != NULL;
-        }
-      } else {
-        FOR_LOOP(i, cls->NumProperties) {
-          if (!strcmp(cls->Properties[i].Name, name)) {
-            field = &cls->Properties[i];
-            break;
-          }
+      FOR_LOOP(i, cls->NumProperties) {
+        if (!strcmp(cls->Properties[i].Name, name)) {
+          field = &cls->Properties[i];
+          break;
         }
       }
     } else {
       value = name;
       name = NULL;
-      field = is_message_dispatch
-        ? next_field(message_fields, (int)message_field_count, used, &cursor)
-        : next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
-      use_full_name = is_message_dispatch && field != NULL;
+      field = next_field(cls->Properties, (int)cls->NumProperties, used, &cursor);
     }
 
     if (!field && name && is_special_inline_name(name)) {
@@ -368,16 +325,10 @@ inline_object_xml(lpcString_t text, int positional_start, char **out)
       Con_Error("Unknown or extra field while parsing inline object '%s'", type);
       ok = FALSE;
     } else {
-      if (is_message_dispatch && used && message_fields &&
-          field >= message_fields &&
-          field < message_fields + message_field_count) {
-        used[field - message_fields] = TRUE;
-      } else if (!is_message_dispatch && used &&
-                 field >= cls->Properties &&
-                 field < cls->Properties + cls->NumProperties) {
+      if (used && field >= cls->Properties && field < cls->Properties + cls->NumProperties) {
         used[field - cls->Properties] = TRUE;
       }
-      emit_attr(&xml, field, value, use_full_name);
+      emit_attr(&xml, field, value, FALSE);
     }
     free(name);
     free(value);

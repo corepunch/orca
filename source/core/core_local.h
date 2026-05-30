@@ -44,14 +44,6 @@
 struct lua_State;
 struct alias;
 
-// Message descriptor registry entry
-struct message_desc_entry
-{
-  struct MessageDesc desc; // resolved descriptor used at runtime
-  struct StructDesc payload_storage; // backing storage for legacy registration path
-  bool_t used;
-};
-
 // Parsed style class selector (e.g., "button:hover/50")
 struct style_class_selector
 {
@@ -101,7 +93,6 @@ struct game
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct Property* binding_properties;
-  struct message_desc_entry message_types[MAX_MESSAGE_TYPES];
 };
 
 // stateman.c
