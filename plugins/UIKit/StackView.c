@@ -186,7 +186,13 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       float size = Node2D_GetFrame(subview, kBox3FieldWidth + i);
       scrollSize[i] = MAX(scrollSize[i], pos + size);
     }
-    NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
+    struct Property *scrollProperty = NULL;
+    uint32_t const scrollPropertyIds[] = { ID_Node_ScrollWidth, ID_Node_ScrollHeight };
+    if (SUCCEEDED(OBJ_FindLongProperty(hObject, scrollPropertyIds[i], &scrollProperty))) {
+      PROP_SetValue(scrollProperty, &scrollSize[i]);
+    } else {
+      NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
+    }
   }
   
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);

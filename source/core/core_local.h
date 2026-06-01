@@ -122,10 +122,6 @@ int64_t
 OBJ_GetObjectCount(void);
 
 
-struct Object *
-OBJ_FindKnownPrefab(lpcString_t szFileName, lpcString_t* ppRemaining);
-
-
 void
 OBJ_EnumStyleClasses(struct Object *, lpcString_t, struct style_class_selector*);
 

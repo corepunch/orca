@@ -729,15 +729,10 @@ static int emit_action_payload_properties(ob *b, cg_host_v1 const *h, cg_model c
 }
 
 static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg_node const *msg) {
-    char action[256], xml_name[512], properties_ref[256];
+    char action[256], xml_name[512];
     int prop_count = event_field_count(m, msg);
     message_action_name(m, msg, action, sizeof(action));
     message_xml_name(m, msg, xml_name, sizeof(xml_name));
-    if (prop_count > 0) {
-        snprintf(properties_ref, sizeof(properties_ref), "%sProperties", action);
-    } else {
-        snprintf(properties_ref, sizeof(properties_ref), "NULL");
-    }
 
     if (prop_count > 0) {
         if (ob_printf(b,
@@ -762,7 +757,7 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
             "\t.ParentClasses = { ID_SendMessageAction, 0 },\n"
             "\t.ClassID = ID_%s,\n"
             "\t.ClassSize = sizeof(struct %s),\n"
-            "\t.Properties = %s,\n"
+            "\t.Properties = %s%s,\n"
             "\t.ObjProc = NULL,\n"
             "\t.Defaults = NULL,\n"
             "\t.NumProperties = k%sNumProperties,\n"
@@ -775,7 +770,8 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
             action,
             action,
             action,
-            properties_ref,
+            prop_count > 0 ? action : "",
+            prop_count > 0 ? "Properties" : "NULL",
             action) < 0) return -1;
     return 0;
 }

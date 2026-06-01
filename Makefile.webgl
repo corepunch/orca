@@ -32,6 +32,7 @@ WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
 WEBGL_DEMO    ?= samples/Example
 WEBGL_EMCC     = emcc
+WEBGL_HOST_CC ?= cc
 WEBGL_SHELL   ?= web/shell.html
 WEBGL_VERSION ?= dev
 
@@ -53,7 +54,7 @@ WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/
 # plugin sources and builds the plugin_modules[] table used by orcalib.c.
 WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 
-WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sFETCH=1
@@ -114,13 +115,18 @@ WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-.PHONY: webgl webgl-demo webgl-debug webgl-debug-demo wasm-deps
+.PHONY: webgl webgl-demo webgl-debug webgl-debug-demo webgl-modules wasm-deps
+
+# emmake adjusts pkg-config for the Emscripten sysroot.  Code generation is a
+# host tool, so build it with the host compiler and native pkg-config search.
+webgl-modules:
+	env -u PKG_CONFIG_LIBDIR $(MAKE) -f tools/Makefile MODULE_ROOT= CC="$(WEBGL_HOST_CC)"
 
 # ─── WebGL build target ────────────────────────────────────────────────────
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the section at the top of this file
 # for a full list of prerequisites and usage notes.
-webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
+webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -177,7 +183,7 @@ webgl-demo:
 # ──────────────────────────────────────────────────────────────────────────
 
 # Debug CFLAGS: replace -Oz -flto with -g -O1.
-WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                       -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sFETCH=1 \
@@ -206,7 +212,7 @@ WEBGL_DEBUG_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_DEBUG_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-webgl-debug: $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl-debug: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_DEBUG_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \

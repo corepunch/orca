@@ -38,6 +38,11 @@ jobs:
         with:
           php-version: '8.2'
 
+      - name: Install build dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config libxml2-dev
+
       - name: Install MkDocs
         run: pip install mkdocs-material
 

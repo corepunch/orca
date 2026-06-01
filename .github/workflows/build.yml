@@ -134,6 +134,11 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install codegen dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y pkg-config libxml2-dev
+
       - name: Install Emscripten
         uses: mymindstorm/setup-emsdk@v14
         with:

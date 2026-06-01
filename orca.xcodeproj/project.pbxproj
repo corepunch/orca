@@ -225,7 +225,6 @@
 		78D75A552E3E5286004EA6DA /* MainToolbar.c in Sources */ = {isa = PBXBuildFile; fileRef = 78D75A542E3E5286004EA6DA /* MainToolbar.c */; };
 		78DE4E922D994A4B00C0488C /* pz2.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B1376A2AF3CC4E00AAAE53 /* pz2.c */; };
 		78E4A99F2E93D71500E3A503 /* xml_local.h in Headers */ = {isa = PBXBuildFile; fileRef = 78E4A99E2E93D71300E3A503 /* xml_local.h */; };
-		78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A9A12E93DD4200E3A503 /* known_prefabs.c */; };
 		78E4A9A32E93E0A200E3A503 /* xml_local.h in Sources */ = {isa = PBXBuildFile; fileRef = 78E4A99E2E93D71300E3A503 /* xml_local.h */; };
 		78E4A9A82E93E58A00E3A503 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		78E4A9A92E93E59800E3A503 /* liborca.parsers.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7D72E15B22500FFCFD9 /* liborca.parsers.so */; };
@@ -659,7 +658,6 @@
 		78DE4E792D987F4C00C0488C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		78DE4E912D994A3E00C0488C /* pz2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = pz2; sourceTree = BUILT_PRODUCTS_DIR; };
 		78E4A99E2E93D71300E3A503 /* xml_local.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = xml_local.h; sourceTree = "<group>"; };
-		78E4A9A12E93DD4200E3A503 /* known_prefabs.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = known_prefabs.c; sourceTree = "<group>"; };
 		78E4A9C62E941ECD00E3A503 /* liborca.system.so */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = liborca.system.so; sourceTree = BUILT_PRODUCTS_DIR; };
 		78E4A9D42E9548B800E3A503 /* r_render_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_render_texture.c; sourceTree = "<group>"; };
 		78E4A9D62E95497900E3A503 /* r_cube_texture.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_cube_texture.c; sourceTree = "<group>"; };
@@ -1220,7 +1218,6 @@
 				7839770D2E60A5AB00DCFC0F /* core_export.c */,
 				78C737C42B8F620100FD598E /* core_main.c */,
 				78FD532F2D929AFE00122823 /* debug.c */,
-				78E4A9A12E93DD4200E3A503 /* known_prefabs.c */,
 				78C737652B8F60C600FD598E /* core_local.h */,
 				787040442F6F197000A84406 /* core_properties.h */,
 				783976FE2E54B25900DCFC0F /* core.h */,
@@ -1982,7 +1979,6 @@
 				78A442BE2F87FA8200AF52A4 /* AnimationClip.c in Sources */,
 				781CA7D22E15783F00FFCFD9 /* debug.c in Sources */,
 				781CA76E2E1557A900FFCFD9 /* object_component.c in Sources */,
-				78E4A9A22E93DD4C00E3A503 /* known_prefabs.c in Sources */,
 				7870404B2F6F197000A84406 /* property_core.c in Sources */,
 				7870404C2F6F197000A84406 /* property_accessors.c in Sources */,
 				7870404E2F6F197000A84406 /* property_events.c in Sources */,

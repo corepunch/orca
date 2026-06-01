@@ -28,6 +28,10 @@ HANDLER(Node2D, Node, HitTest) {
   }
   int16_t x = (int16_t)pHitTest->x;
   int16_t y = (int16_t)pHitTest->y;
+  bool_t contains = _ContainsPoint(pNode2D, x, y);
+  if (!contains && pNode2D->ClipChildren) {
+    return FALSE;
+  }
   struct Object *result = NULL;
   FOR_EACH_OBJECT(hChild, hObject) {
     struct Object *childHit = (struct Object *)_SendMessage(hChild, Node, HitTest, .x = x, .y = y);
@@ -35,7 +39,7 @@ HANDLER(Node2D, Node, HitTest) {
   }
   if (result) {
     return (intptr_t)result;
-  } else if (_ContainsPoint(pNode2D, x, y)) {
+  } else if (contains) {
     return (intptr_t)hObject;
   } else {
     return FALSE;
@@ -370,5 +374,6 @@ HANDLER(Node2D, Node2D, SetScrollTop)
   struct vec2 offset = pNode2D->ContentOffset;
   offset.y = fmin(0, Node2D_GetFrame(pNode2D, kBox3FieldHeight) - pSetScrollTop->Value);
   pNode2D->ContentOffset = offset;
+  OBJ_SetDirty(hObject);
   return TRUE;
 }
