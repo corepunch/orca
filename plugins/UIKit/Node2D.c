@@ -374,5 +374,6 @@ HANDLER(Node2D, Node2D, SetScrollTop)
   struct vec2 offset = pNode2D->ContentOffset;
   offset.y = fmin(0, Node2D_GetFrame(pNode2D, kBox3FieldHeight) - pSetScrollTop->Value);
   pNode2D->ContentOffset = offset;
+  OBJ_SetDirty(hObject);
   return TRUE;
 }
