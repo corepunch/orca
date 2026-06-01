@@ -98,11 +98,39 @@ local function test_horizontal_stack_view_layout()
 end
 
 -- ---------------------------------------------------------------------------
+-- ScrollHeight change notification after StackView arrange
+-- ---------------------------------------------------------------------------
+local function test_stack_view_scroll_height_changed()
+	local last_scroll_height = nil
+	local stack = screen + ui.StackView {
+		Direction = "Vertical",
+		Height = 40,
+		onScrollHeightChanged = function(_, value)
+			last_scroll_height = value
+		end,
+	}
+
+	stack:addChild(ui.Node2D { Height = 30 })
+	stack:addChild(ui.Node2D { Height = 30 })
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+	core.flushQueue()
+
+	test.expect_eq(stack.ScrollHeight, 60,
+		"StackView ScrollHeight should reflect arranged child content height")
+	test.expect_eq(last_scroll_height, 60,
+		"onScrollHeightChanged should fire after StackView computes scroll height")
+
+	screen:clear()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
 
 test_stack_view_layout()
 test_horizontal_stack_view_layout()
+test_stack_view_scroll_height_changed()
 
 print("All StackView layout tests passed.")
