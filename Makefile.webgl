@@ -53,7 +53,7 @@ WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/
 # plugin sources and builds the plugin_modules[] table used by orcalib.c.
 WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 
-WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                 -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sFETCH=1
@@ -120,7 +120,7 @@ endif
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the section at the top of this file
 # for a full list of prerequisites and usage notes.
-webgl: $(WEBGL_PLUGINS_H) $(LIBDIR)
+webgl: modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -177,7 +177,7 @@ webgl-demo:
 # ──────────────────────────────────────────────────────────────────────────
 
 # Debug CFLAGS: replace -Oz -flto with -g -O1.
-WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -I$(PLATFORM_LIBDIR) \
+WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                       -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
                       -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                       -sFETCH=1 \
@@ -206,7 +206,7 @@ WEBGL_DEBUG_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_DEBUG_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-webgl-debug: $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl-debug: modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_DEBUG_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
