@@ -32,6 +32,7 @@ WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
 WEBGL_DEMO    ?= samples/Example
 WEBGL_EMCC     = emcc
+WEBGL_HOST_CC ?= cc
 WEBGL_SHELL   ?= web/shell.html
 WEBGL_VERSION ?= dev
 
@@ -114,13 +115,18 @@ WEBGL_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-.PHONY: webgl webgl-demo webgl-debug webgl-debug-demo wasm-deps
+.PHONY: webgl webgl-demo webgl-debug webgl-debug-demo webgl-modules wasm-deps
+
+# emmake adjusts pkg-config for the Emscripten sysroot.  Code generation is a
+# host tool, so build it with the host compiler and native pkg-config search.
+webgl-modules:
+	env -u PKG_CONFIG_LIBDIR $(MAKE) -f tools/Makefile MODULE_ROOT= CC="$(WEBGL_HOST_CC)"
 
 # ─── WebGL build target ────────────────────────────────────────────────────
 # Compiles all engine modules into a self-contained orca.html + orca.js +
 # orca.wasm triple using Emscripten.  See the section at the top of this file
 # for a full list of prerequisites and usage notes.
-webgl: modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
@@ -206,7 +212,7 @@ WEBGL_DEBUG_LDFLAGS += --preload-file $(WEBGL_DATA)@/$(WEBGL_DATA)
 WEBGL_DEBUG_CFLAGS  += -DPROJECTDIR='"$(WEBGL_DATA)"'
 endif
 
-webgl-debug: modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
+webgl-debug: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 	$(WEBGL_EMCC) $(WEBGL_DEBUG_CFLAGS) \
 		$(WEBGL_PLAT_SRC) \
 		$(WEBGL_SOURCES) \
