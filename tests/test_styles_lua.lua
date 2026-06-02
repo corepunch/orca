@@ -277,6 +277,293 @@ local function test_style_apply_transitive()
   print("PASS: test_style_apply_transitive")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 14: CSS block comments are ignored
+-- ---------------------------------------------------------------------------
+local function test_css_comments_are_ignored()
+  local css = [[
+    /* .commented { opacity: 0.0; } */
+    .clean { opacity: 0.42; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "clean"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.42, 0.001, "CSS comments should not create rules")
+
+  node:removeFromParent()
+  print("PASS: test_css_comments_are_ignored")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 15: Comma-separated selector lists apply to every selector
+-- ---------------------------------------------------------------------------
+local function test_css_comma_selectors()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".alpha, .beta { width: 123; height: 45; }"
+  local a = screen + ui.Node2D {}
+  local b = screen + ui.Node2D {}
+
+  a.class = "alpha"
+  b.class = "beta"
+  applyStyles(a)
+  applyStyles(b)
+
+  test.expect_near(a.Width, 123, 0.5, "comma selector .alpha applied Width=123")
+  test.expect_near(b.Width, 123, 0.5, "comma selector .beta applied Width=123")
+  test.expect_near(a.Height, 45, 0.5, "comma selector .alpha applied Height=45")
+  test.expect_near(b.Height, 45, 0.5, "comma selector .beta applied Height=45")
+
+  a:removeFromParent()
+  b:removeFromParent()
+  print("PASS: test_css_comma_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 16: Repeated selectors merge declarations
+-- ---------------------------------------------------------------------------
+local function test_css_repeated_selector_merges()
+  local css = [[
+    .repeat { width: 40; }
+    .repeat { height: 50; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D {}
+
+  node.class = "repeat"
+  applyStyles(node)
+
+  test.expect_near(node.Width, 40, 0.5, "repeated selector keeps first declaration")
+  test.expect_near(node.Height, 50, 0.5, "repeated selector adds later declaration")
+
+  node:removeFromParent()
+  print("PASS: test_css_repeated_selector_merges")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 17: Property names are case-insensitive and duplicate keys last-win
+-- ---------------------------------------------------------------------------
+local function test_css_property_name_ignorecase_and_duplicate_overwrite()
+  local css = ".casey { OpAcItY: 0.2; opacity: 0.65; WIDTH: 111; }"
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "casey"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.65, 0.001, "duplicate opacity declaration should use the last value")
+  test.expect_near(node.Width, 111, 0.5, "uppercase WIDTH should map to Width")
+
+  node:removeFromParent()
+  print("PASS: test_css_property_name_ignorecase_and_duplicate_overwrite")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 18: Selectors may omit the leading dot
+-- ---------------------------------------------------------------------------
+local function test_css_selector_without_dot()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString "bare { height: 33; }"
+  local node = screen + ui.Node2D {}
+
+  node.class = "bare"
+  applyStyles(node)
+
+  test.expect_near(node.Height, 33, 0.5, "selector without leading dot should match class")
+
+  node:removeFromParent()
+  print("PASS: test_css_selector_without_dot")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 19: Selectors are case-sensitive
+-- ---------------------------------------------------------------------------
+local function test_css_selectors_are_case_sensitive()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".Token { opacity: 0.25; }"
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "token"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 1.0, 0.001, "selector class names should be case-sensitive")
+
+  node:removeFromParent()
+  print("PASS: test_css_selectors_are_case_sensitive")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 20: Unsupported declarations are ignored while supported ones apply
+-- ---------------------------------------------------------------------------
+local function test_css_unsupported_declarations_are_ignored()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".plain { made-up-property: 123; opacity: 0.66; }"
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "plain"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.66, 0.001, "supported declarations should still apply")
+
+  node:removeFromParent()
+  print("PASS: test_css_unsupported_declarations_are_ignored")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 21: Boolean CSS values are parsed case-insensitively
+-- ---------------------------------------------------------------------------
+local function test_css_boolean_value_ignorecase()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".wrapped { word-wrap: TRUE; }"
+  local text = screen + ui.TextBlock {
+    Text = "wrap me",
+    WordWrap = false,
+  }
+
+  text.class = "wrapped"
+  applyStyles(text)
+
+  test.expect(text.WordWrap == true, "CSS bool value TRUE should apply as true")
+
+  text:removeFromParent()
+  print("PASS: test_css_boolean_value_ignorecase")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 22: Mapped color properties are parsed and applied
+-- ---------------------------------------------------------------------------
+local function test_css_color_properties()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".painted { background-color: #336699; }"
+  local node = screen + ui.Node2D {}
+
+  node.class = "painted"
+  applyStyles(node)
+
+  test.expect_near(node.BackgroundColor.R, 0x33 / 255, 0.01, "background-color R")
+  test.expect_near(node.BackgroundColor.G, 0x66 / 255, 0.01, "background-color G")
+  test.expect_near(node.BackgroundColor.B, 0x99 / 255, 0.01, "background-color B")
+
+  node:removeFromParent()
+  print("PASS: test_css_color_properties")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 23: Text CSS properties map onto TextRun/TextBlockConcept properties
+-- ---------------------------------------------------------------------------
+local function test_css_text_property_map()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".copy { font-size: 18; line-height: 1.5; letter-spacing: 2; text-overflow: clip; }"
+  local text = screen + ui.TextBlock {
+    Text = "copy",
+    FontSize = 10,
+    LineHeight = 1,
+    LetterSpacing = 0,
+    TextOverflow = "Ellipsis",
+  }
+
+  text.class = "copy"
+  applyStyles(text)
+
+  test.expect_near(text.FontSize, 18, 0.5, "font-size maps to FontSize")
+  test.expect_near(text.LineHeight, 1.5, 0.01, "line-height maps to LineHeight")
+  test.expect_near(text.LetterSpacing, 2, 0.01, "letter-spacing maps to LetterSpacing")
+  test.expect_eq(text.TextOverflow, "Clip", "text-overflow maps to TextOverflow")
+
+  text:removeFromParent()
+  print("PASS: test_css_text_property_map")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 24: @apply can reference selectors without a leading dot
+-- ---------------------------------------------------------------------------
+local function test_css_apply_reference_without_dot()
+  local css = [[
+    .base { opacity: 0.37; }
+    .child { @apply: base; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "child"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.37, 0.001, "@apply should resolve references without dots")
+
+  node:removeFromParent()
+  print("PASS: test_css_apply_reference_without_dot")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 25: @apply merges multiple sources
+-- ---------------------------------------------------------------------------
+local function test_css_apply_multiple_sources()
+  local css = [[
+    .size-x { width: 71; }
+    .size-y { height: 72; }
+    .both { @apply: .size-x .size-y; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D {}
+
+  node.class = "both"
+  applyStyles(node)
+
+  test.expect_near(node.Width, 71, 0.5, "@apply copied Width from first source")
+  test.expect_near(node.Height, 72, 0.5, "@apply copied Height from second source")
+
+  node:removeFromParent()
+  print("PASS: test_css_apply_multiple_sources")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 26: Local declarations override @apply sources
+-- ---------------------------------------------------------------------------
+local function test_css_apply_preserves_local_declarations()
+  local css = [[
+    .base { opacity: 0.2; width: 12; }
+    .child { opacity: 0.8; @apply: .base; }
+  ]]
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local node = screen + ui.Node2D { Opacity = 1.0 }
+
+  node.class = "child"
+  applyStyles(node)
+
+  test.expect_near(node.Opacity, 0.8, 0.001, "local opacity should beat @apply opacity")
+  test.expect_near(node.Width, 12, 0.5, "@apply should still copy missing properties")
+
+  node:removeFromParent()
+  print("PASS: test_css_apply_preserves_local_declarations")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 27: Body selector applies to the root object that owns the stylesheet
+-- ---------------------------------------------------------------------------
+local function test_css_body_selector_applies_to_root()
+  local screen = ui.Screen {
+    Width = 200,
+    Height = 200,
+    ResizeMode = "NoResize",
+    Opacity = 1.0,
+    StyleSheet = filesystem.loadObjectFromCssString "body { opacity: 0.44; }",
+  }
+
+  applyStyles(screen)
+
+  test.expect_near(screen.Opacity, 0.44, 0.001, "body selector should apply to stylesheet root")
+
+  print("PASS: test_css_body_selector_applies_to_root")
+end
+
 
 test_style_applies_opacity()
 test_style_not_applied_without_class()
@@ -291,5 +578,19 @@ test_style_enum_value_ignorecase()
 test_style_applies_to_new_node()
 test_style_apply_directive()
 test_style_apply_transitive()
+test_css_comments_are_ignored()
+test_css_comma_selectors()
+test_css_repeated_selector_merges()
+test_css_property_name_ignorecase_and_duplicate_overwrite()
+test_css_selector_without_dot()
+test_css_selectors_are_case_sensitive()
+test_css_unsupported_declarations_are_ignored()
+test_css_boolean_value_ignorecase()
+test_css_color_properties()
+test_css_text_property_map()
+test_css_apply_reference_without_dot()
+test_css_apply_multiple_sources()
+test_css_apply_preserves_local_declarations()
+test_css_body_selector_applies_to_root()
 
 print("All style tests passed.")

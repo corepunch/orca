@@ -98,6 +98,140 @@ The selector is a class name (with or without a leading `.`); the optional pseud
 .selector[:pseudo-state...]  { propertyName: "value" }
 ```
 
+### CSS stylesheet loader
+
+The filesystem module can parse a small CSS subset into a `StyleSheet` object.
+Assign the returned object to a `StyleController.StyleSheet` property, usually on a root `Screen`, then apply `ThemeChanged` to the styled object or root.
+
+```lua
+local filesystem = require "orca.filesystem"
+local ui         = require "orca.UIKit"
+
+local screen = ui.Screen {
+    Width = 800,
+    Height = 600,
+    ResizeMode = "NoResize",
+    StyleSheet = filesystem.loadObjectFromCssString [[
+        .card {
+            background-color: #223344;
+            opacity: 0.9;
+            padding-left: 12;
+        }
+
+        .title {
+            font-size: 22;
+            text-overflow: ellipsis;
+        }
+
+        .muted {
+            opacity: 0.6;
+        }
+
+        .button-primary {
+            @apply: .muted;
+            width: 160;
+            height: 40;
+        }
+    ]],
+}
+
+local card = screen + ui.Node2D { class = "card" }
+card:ThemeChanged()
+```
+
+```lua
+-- Load a stylesheet file through ORCA's filesystem.
+screen.StyleSheet = filesystem.loadObjectFromCss("assets/app.css")
+screen:ThemeChanged(StyleController_ThemeChangedEventArgs{ recursive = true })
+```
+
+#### Supported CSS syntax
+
+The parser is intentionally CSS-like rather than a full browser CSS implementation.
+It supports:
+
+| Feature | Example | Notes |
+|---------|---------|-------|
+| Block comments | `/* ignored */` | Comments are stripped before parsing |
+| Simple class selectors | `.button { ... }` | The leading `.` is optional, so `button { ... }` also works |
+| `body` selector | `body { opacity: 1; }` | Applies to a root object that owns the stylesheet |
+| Comma selector lists | `.a, .b { width: 100; }` | Each selector gets the same declaration block |
+| Pseudo-states | `.button:hover { opacity: 0.8; }` | Supported states are `hover`, `focus`, `active`, and `dark` |
+| Declarations | `width: 120;` | Declarations are `property: value;` pairs |
+| Repeated selectors | `.a { width: 1; } .a { height: 2; }` | Declarations are merged into the same rule |
+| `@apply` | `.child { @apply: .base; }` | Copies declarations from one or more selectors |
+| Transitive `@apply` | `.a { @apply: .b; } .b { @apply: .c; }` | Resolution runs for up to 10 passes |
+
+The parser does not support element selectors, ID selectors, descendant selectors, child selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
+
+#### Case and duplicate rules
+
+- CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.
+- Enum values are case-insensitive: `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
+- Selector names are case-sensitive: `.Button` and `.button` are different classes.
+- Pseudo-state names are case-sensitive and should be lowercase.
+- `@apply` is case-sensitive and must be written exactly as `@apply`.
+- Repeating the same declaration key in one selector uses the last value, matched case-insensitively.
+- Unsupported CSS properties are ignored.
+
+#### `@apply` behavior
+
+`@apply` accepts one or more whitespace-separated selector references:
+
+```css
+.base {
+    opacity: 0.5;
+    width: 120;
+}
+
+.accent {
+    height: 36;
+}
+
+.button {
+    @apply: .base accent;
+    opacity: 0.8;
+}
+```
+
+References can include or omit the leading dot. Local declarations win over declarations copied through `@apply`; in the example above, `.button` keeps `opacity: 0.8` while inheriting `width` and `height`.
+
+#### Supported CSS properties
+
+CSS declarations are mapped to ORCA properties before values are parsed.
+Values use ORCA's normal property parsers, so numeric values are bare numbers rather than browser CSS units.
+
+| CSS property | ORCA property | Value type |
+|--------------|---------------|------------|
+| `background-color` | `Node2D.BackgroundColor` | color |
+| `color` | `Node2D.ForegroundColor` | color |
+| `opacity` | `Node.Opacity` | float |
+| `width` | `Node.Width` | float |
+| `height` | `Node.Height` | float |
+| `min-width` | `Node.MinWidth` | float |
+| `min-height` | `Node.MinHeight` | float |
+| `margin` | `Node.Margin` | `Thickness` |
+| `margin-top` | `Node.MarginTop` | float |
+| `margin-right` | `Node.MarginRight` | float |
+| `margin-bottom` | `Node.MarginBottom` | float |
+| `margin-left` | `Node.MarginLeft` | float |
+| `padding` | `Node.Padding` | `Thickness` |
+| `padding-top` | `Node.PaddingTop` | float |
+| `padding-right` | `Node.PaddingRight` | float |
+| `padding-bottom` | `Node.PaddingBottom` | float |
+| `padding-left` | `Node.PaddingLeft` | float |
+| `border` | `Node.Border` | `BorderShorthand` |
+| `border-color` | `Node.BorderColor` | color |
+| `border-width` | `Node.BorderWidth` | `Thickness` |
+| `font-size` | `TextRun.FontSize` | float |
+| `font-family` | `TextRun.FontFamily` | object path |
+| `line-height` | `TextRun.LineHeight` | float |
+| `letter-spacing` | `TextRun.LetterSpacing` | float |
+| `word-wrap` | `TextBlockConcept.WordWrap` | bool |
+| `text-overflow` | `TextBlockConcept.TextOverflow` | enum: `Clip`, `Ellipsis` |
+
+Unknown properties do not create dynamic properties; they are skipped when the stylesheet is converted into `StyleRule` objects.
+
 ### Loading stylesheets from Lua
 
 `addStyleRule()` is a Lua method available on any `Node2D` (or any object with `StyleController`).
@@ -218,6 +352,7 @@ When `StyleController` receives `Object.ThemeChanged` for an object:
 | `hover` | `STYLE_HOVER`  | `core_GetHover() == object` |
 | `focus` | `STYLE_FOCUS`  | `core_GetFocus() == object` |
 | `active`| `STYLE_SELECT` | `OBJ_GetFlags(object) & OF_SELECTED` |
+| `dark`  | `STYLE_DARK`   | `axIsDarkTheme()` (system-wide) |
 
 ---
 
@@ -228,7 +363,6 @@ They are defined in a project package theme library and referenced as `$token-na
 
 For a focused guide with examples and the default UIKit keys used by tabs and buttons, see
 [Theme Values](theme-values.md).
-| `dark`  | `STYLE_DARK`   | `axIsDarkTheme()` (system-wide) |
 
 ### Example: dark-mode background
 
