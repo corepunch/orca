@@ -372,8 +372,22 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) return;
     if (!prop || !PROP_GetDesc(prop)) return;
 
+    struct PropertyType const* desc = PROP_GetDesc(prop);
+    if (desc->DataType == kDataTypeEnum) {
+        lpcString_t const* values = desc->EnumValues;
+        for (int i = 0; values && values[i]; i++) {
+            if (!strcasecmp(values[i], css_value)) {
+                PROP_SetValue(prop, &i);
+                return;
+            }
+        }
+        Con_Error("Invalid enum value %s for CSS property '%s'",
+                  css_value, desc->Name);
+        return;
+    }
+
     char buf[MAX_PROPERTY_STRING] = {0};
-    if (parse_property(css_value, PROP_GetDesc(prop), buf))
+    if (parse_property(css_value, desc, buf))
         PROP_SetValue(prop, buf);
 }
 

@@ -195,7 +195,27 @@ local function test_style_numeric_value()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 10: Applying a style to a fresh object (no prior property set)
+-- Test 10: Enum CSS values are matched case-insensitively
+-- ---------------------------------------------------------------------------
+local function test_style_enum_value_ignorecase()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString ".overflowing { text-overflow: ellipsis; }"
+  local text = screen + ui.TextBlock {
+    Text = "long text",
+    TextOverflow = "Clip",
+  }
+
+  text.class = "overflowing"
+  applyStyles(text)
+
+  test.expect_eq(text.TextOverflow, "Ellipsis", "CSS enum value 'ellipsis' applied as TextOverflow=Ellipsis")
+
+  text:removeFromParent()
+  print("PASS: test_style_enum_value_ignorecase")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 11: Applying a style to a fresh object (no prior property set)
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -214,7 +234,7 @@ end
 
 
 -- ---------------------------------------------------------------------------
--- Test 11: @apply directive merges another rule's declarations
+-- Test 12: @apply directive merges another rule's declarations
 -- ---------------------------------------------------------------------------
 local function test_style_apply_directive()
   local css = [[
@@ -235,7 +255,7 @@ local function test_style_apply_directive()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 12: Transitive @apply chain  A → B → C propagates C's properties to A
+-- Test 13: Transitive @apply chain  A → B → C propagates C's properties to A
 -- ---------------------------------------------------------------------------
 local function test_style_apply_transitive()
   -- .c defines the property; .b applies .c; .a applies .b
@@ -267,6 +287,7 @@ test_style_non_hover_rule_applies()
 test_style_recursive_children()
 test_style_dot_prefix_selector()
 test_style_numeric_value()
+test_style_enum_value_ignorecase()
 test_style_applies_to_new_node()
 test_style_apply_directive()
 test_style_apply_transitive()
