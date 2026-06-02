@@ -172,6 +172,7 @@ enum
   PF_SPECIALIZED = (1 << 6),
   PF_PROPERTY_TYPE = (1 << 7),
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
+  PF_INHERITED = (1 << 9), // value is cached from an inherited ancestor, not locally set
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"
@@ -198,6 +199,9 @@ PROP_Update(struct Property *);
 
 ORCA_API void
 PROP_SetValue(struct Property *, void const* source);
+
+ORCA_API void
+PROP_SetInheritedValue(struct Property *, void const* source);
 
 ORCA_API void
 PROP_SetStringValue(struct Property *, char const* source);

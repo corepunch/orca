@@ -643,19 +643,19 @@ Text_GetInfo(struct ViewText const* pViewText,
 }
 
 HANDLER(FontFamily, Object, Start) {
-  if (*pFontFamily->Regular) {
+  if (pFontFamily->Regular && *pFontFamily->Regular) {
     /*pFontFamily->regular = */
     Font_Load(pFontFamily->Regular, pFontFamily);
   }
-  if (*pFontFamily->Bold) {
+  if (pFontFamily->Bold && *pFontFamily->Bold) {
     /*pFontFamily->bold = */
     Font_Load(pFontFamily->Bold, pFontFamily);
   }
-  if (*pFontFamily->Italic) {
+  if (pFontFamily->Italic && *pFontFamily->Italic) {
     /*pFontFamily->italic = */
     Font_Load(pFontFamily->Italic, pFontFamily);
   }
-  if (*pFontFamily->BoldItalic) {
+  if (pFontFamily->BoldItalic && *pFontFamily->BoldItalic) {
     /*pFontFamily->bolditalic = */
     Font_Load(pFontFamily->BoldItalic, pFontFamily);
   }

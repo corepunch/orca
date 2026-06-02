@@ -444,7 +444,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     OBJ_SetFlags(hObject, flags | OF_ACTIVATED);
   }
 
-  if (!Node2D_GetProperty(hObject, kNode2DForegroundColor)) {
+  if (PROP_IsNull(Node2D_GetProperty(hObject, kNode2DForegroundColor))) {
     pNode2D->Foreground.Color = pDraw2DContent->ForegroundColor;
   }
 

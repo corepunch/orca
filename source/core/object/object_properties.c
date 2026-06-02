@@ -12,6 +12,66 @@ _CreateProjectProperty(struct Object *object, uint32_t ident)
   return NULL;
 }
 
+static bool_t
+_HasLocalValue(struct Property const *property)
+{
+  return property && (PROP_GetFlags(property) & PF_MODIFIED);
+}
+
+static void
+_ApplyInheritedProperty(struct Object *object,
+                        struct PropertyType const *desc,
+                        void const *value)
+{
+  struct Property *property = PROP_FindByLongID(object->properties,
+                                               desc->FullIdentifier);
+  if (_HasLocalValue(property)) {
+    value = PROP_GetValue(property);
+  } else {
+    if (FAILED(OBJ_FindLongProperty(object, desc->FullIdentifier, &property))) {
+      return;
+    }
+    PROP_SetInheritedValue(property, value);
+    value = PROP_GetValue(property);
+  }
+
+  FOR_EACH_LIST(struct Object, child, object->children) {
+    _ApplyInheritedProperty(child, desc, value);
+  }
+}
+
+void
+OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property)
+{
+  if (!object || !property) {
+    return;
+  }
+  struct PropertyType const *desc = PROP_GetDesc(property);
+  if (!desc || !desc->IsInherited) {
+    return;
+  }
+  void const *value = PROP_GetValue(property);
+  FOR_EACH_LIST(struct Object, child, object->children) {
+    _ApplyInheritedProperty(child, desc, value);
+  }
+}
+
+void
+OBJ_ApplyInheritedProperties(struct Object *object)
+{
+  if (!object || !object->parent) {
+    return;
+  }
+  for (struct Property *property = object->parent->properties; property;
+       property = PROP_GetNext(property)) {
+    struct PropertyType const *desc = PROP_GetDesc(property);
+    if (!desc || !desc->IsInherited || PROP_IsNull(property)) {
+      continue;
+    }
+    _ApplyInheritedProperty(object, desc, PROP_GetValue(property));
+  }
+}
+
 uint32_t
 OBJ_GetUniforms(struct Object *object, struct uniform* pUniforms)
 {

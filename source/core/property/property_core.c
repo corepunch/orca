@@ -128,7 +128,7 @@ _ReleaseArrayItems(struct Property *property)
 bool_t
 PROP_IsNull(struct Property const *property)
 {
-  return property == NULL || !(property->flags & PF_MODIFIED);
+  return property == NULL || !(property->flags & (PF_MODIFIED | PF_INHERITED));
 }
 
 void
@@ -154,7 +154,7 @@ PROP_Clear(struct Property *property)
   if (property->value) {
     memset(property->value, 0, PROP_GetSize(property));
   }
-  property->flags &= ~PF_MODIFIED;
+  property->flags &= ~(PF_MODIFIED | PF_INHERITED);
   if (property->pdesc->DataType == kDataTypeString && property->value) {
     *(char**)property->value = NULL;
   }

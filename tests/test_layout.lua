@@ -275,6 +275,65 @@ local function test_xml_loading_properties()
 	print("PASS: test_xml_loading_properties")
 end
 
+local function test_inherited_foreground_color()
+	local xml = [[
+<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize" ForegroundColor="#336699">
+  <StackView Name="parent-stack">
+    <TextBlock Name="inherited-text" Text="Inherited" />
+    <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
+  </StackView>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inherited foreground XML should load")
+
+	local inherited = root:findChild("inherited-text", true)
+	local local_text = root:findChild("local-text", true)
+	test.expect(inherited ~= nil, "inherited text should exist")
+	test.expect(local_text ~= nil, "local text should exist")
+
+	test.expect_near(inherited.ForegroundColor.R, 0x33 / 255, 0.01, "inherited ForegroundColor.R")
+	test.expect_near(inherited.ForegroundColor.G, 0x66 / 255, 0.01, "inherited ForegroundColor.G")
+	test.expect_near(inherited.ForegroundColor.B, 0x99 / 255, 0.01, "inherited ForegroundColor.B")
+	test.expect_near(inherited.ForegroundColor.A, 1.0, 0.01, "inherited ForegroundColor.A")
+
+	test.expect_near(local_text.ForegroundColor.R, 0xCC / 255, 0.01, "local ForegroundColor.R")
+	test.expect_near(local_text.ForegroundColor.G, 0x33 / 255, 0.01, "local ForegroundColor.G")
+	test.expect_near(local_text.ForegroundColor.B, 0.0, 0.01, "local ForegroundColor.B")
+	test.expect_near(local_text.ForegroundColor.A, 1.0, 0.01, "local ForegroundColor.A")
+
+	root.ForegroundColor = "#00CC66"
+	test.expect_near(inherited.ForegroundColor.R, 0.0, 0.01, "updated inherited ForegroundColor.R")
+	test.expect_near(inherited.ForegroundColor.G, 0xCC / 255, 0.01, "updated inherited ForegroundColor.G")
+	test.expect_near(inherited.ForegroundColor.B, 0x66 / 255, 0.01, "updated inherited ForegroundColor.B")
+	test.expect_near(local_text.ForegroundColor.R, 0xCC / 255, 0.01, "local ForegroundColor.R should still win")
+	test.expect_near(local_text.ForegroundColor.G, 0x33 / 255, 0.01, "local ForegroundColor.G should still win")
+
+	print("PASS: test_inherited_foreground_color")
+end
+
+local function test_attached_inherited_text_font_family()
+	local root = ui.Screen { Name = "font-inherit-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local stack = root + ui.StackView { Name = "font-parent-stack" }
+	local inherited = stack + ui.TextBlock { Name = "font-inherited-text", Text = "Inherited" }
+	local local_text = stack + ui.TextBlock { Name = "font-local-text", Text = "Local" }
+	local font_a = renderer.FontFamily { Regular = "" }
+	local font_b = renderer.FontFamily { Regular = "" }
+	local font_local = renderer.FontFamily { Regular = "" }
+
+	root["TextRun.FontFamily"] = font_a
+	test.expect_eq(inherited.FontFamily, font_a, "TextRun.FontFamily attached to root should inherit into TextBlock")
+	test.expect_eq(local_text.FontFamily, font_a, "TextRun.FontFamily should inherit through non-TextRun parent")
+
+	local_text.FontFamily = font_local
+	root["TextRun.FontFamily"] = font_b
+	test.expect_eq(inherited.FontFamily, font_b, "TextRun.FontFamily parent update should propagate")
+	test.expect_eq(local_text.FontFamily, font_local, "local TextRun.FontFamily should beat inherited value")
+
+	root:removeFromParent()
+	print("PASS: test_attached_inherited_text_font_family")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: object-typed attributes should accept inline object expressions.
 -- ---------------------------------------------------------------------------
@@ -1201,6 +1260,8 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_inherited_foreground_color()
+test_attached_inherited_text_font_family()
 test_xml_loading_inline_xml_attribute()
 test_xml_loading_inline_imageview_source()
 test_xml_loading_inline_event_trigger()

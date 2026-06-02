@@ -99,8 +99,20 @@ PROP_SetDirty(struct Property *property)
 }
 
 static void
+PROP_MarkValueStored(struct Property *property, bool_t local)
+{
+  if (local) {
+    PROP_SetDirty(property);
+  } else {
+    property->flags |= PF_INHERITED;
+    OBJ_SetDirty(property->object);
+  }
+}
+
+static void
 PROP_SetStoredValue(struct Property *property,
-                    void const* source)
+                    void const* source,
+                    bool_t local)
 {
   if (property->pdesc->IsArray) {
     void *old_ptr = *(void**)property->value;
@@ -125,7 +137,7 @@ PROP_SetStoredValue(struct Property *property,
         }
       }
     }
-    PROP_SetDirty(property);
+    PROP_MarkValueStored(property, local);
     return;
   }
   if (PROP_GetType(property) == kDataTypeString) {
@@ -139,7 +151,7 @@ PROP_SetStoredValue(struct Property *property,
     /* Object properties own a ref, but they do not parent the object. */
     if (!object) {
       memset(property->value, 0, PROP_GetSize(property));
-      property->flags &= ~PF_MODIFIED;
+      property->flags &= ~(PF_MODIFIED | PF_INHERITED);
       if (old_object) {
         OBJ_ReleaseRef(old_object);
       }
@@ -166,7 +178,7 @@ PROP_SetStoredValue(struct Property *property,
   } else {
     memcpy(property->value, source, PROP_GetSize(property));
   }
-  PROP_SetDirty(property);
+  PROP_MarkValueStored(property, local);
 }
 
 static void*
@@ -184,7 +196,7 @@ PROP_NormalizeObjectValue(struct Property const *property, void const* source)
 static bool_t
 PROP_IsSameValue(struct Property const *property, void const* source)
 {
-  if (!(property->value && source && (property->flags & PF_MODIFIED)))
+  if (!(property->value && source && (property->flags & (PF_MODIFIED | PF_INHERITED))))
     return FALSE;
   if (property->pdesc->IsArray) {
     if (property->pdesc->DataType != kDataTypeObject) {
@@ -223,8 +235,21 @@ PROP_IsSameValue(struct Property const *property, void const* source)
 void
 PROP_SetValue(struct Property *property, void const* source)
 {
-  if (PROP_IsSameValue(property, source)) return;
-  PROP_SetStoredValue(property, source);
+  if (PROP_IsSameValue(property, source)) {
+    if (property->flags & PF_INHERITED) {
+      property->flags &= ~PF_INHERITED;
+      PROP_SetDirty(property);
+      if (property->pdesc->IsInherited) {
+        OBJ_PropagateInheritedProperty(property->object, property);
+      }
+    }
+    return;
+  }
+  property->flags &= ~PF_INHERITED;
+  PROP_SetStoredValue(property, source, TRUE);
+  if (property->pdesc->IsInherited) {
+    OBJ_PropagateInheritedProperty(property->object, property);
+  }
   if (property->pdesc->IsArray) {
     return;
   }
@@ -234,6 +259,15 @@ PROP_SetValue(struct Property *property, void const* source)
     axPostMessageW(property->object, ID_PropertyChangedMessage,
                    PROP_GetShortID(property), property);
   }
+}
+
+void
+PROP_SetInheritedValue(struct Property *property, void const* source)
+{
+  if (!property || !property->pdesc || !property->pdesc->IsInherited) return;
+  if (property->flags & PF_MODIFIED) return;
+  if (PROP_IsSameValue(property, source)) return;
+  PROP_SetStoredValue(property, source, FALSE);
 }
 
 void

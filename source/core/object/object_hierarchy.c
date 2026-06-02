@@ -14,6 +14,7 @@ OBJ_AddChild(struct Object *self, struct Object *child)
   OBJ_AddRef(child);
   ADD_TO_LIST_END(struct Object, child, self->children);
   child->parent = self;
+  OBJ_ApplyInheritedProperties(child);
   OBJ_SetDirty(self);
   struct Object_AttachedEventArgs attached_args = { .Sender = child };
   OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);

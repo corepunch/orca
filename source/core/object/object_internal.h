@@ -43,4 +43,7 @@ struct Object
   byte_t   data[MAX_OBJECT_DATA];
 };
 
+void OBJ_ApplyInheritedProperties(struct Object *object);
+void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
+
 #endif /* __OBJECT_INTERNAL_H__ */

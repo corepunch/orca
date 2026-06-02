@@ -208,7 +208,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <properties>
         <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.</property>
-        <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE">Font definition used for text rendering. Contains typeface, size, and style information.</property>
+        <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE" inherited="true">Font definition used for text rendering. Contains typeface, size, and style information.</property>
         <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
         <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
         <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
@@ -285,7 +285,7 @@
         <property name="Matrix" type="mat4" private="true">Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.</property>
         <property name="RenderTarget" type="Texture" pointer="true">Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.</property>
         <property name="Background" type="BrushShorthand">Background brush for the element. Supports solid color, image, or material.</property>
-        <property name="Foreground" type="BrushShorthand">Foreground brush for the element. Typically used for text or shape fills.</property>
+        <property name="Foreground" type="BrushShorthand" inherited="true">Foreground brush for the element. Typically used for text or shape fills.</property>
         <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>

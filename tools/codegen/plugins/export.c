@@ -359,20 +359,21 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
             (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
             h->fnv1a32(leaf), owner_name, leaf, addr, property_datatype(m, actual_type)) < 0) return -1;
     if (!strcmp(kind, "enum")) {
-        if (ob_printf(b, ", .EnumValues = _%s), // %s.%s\n", actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .EnumValues = _%s", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "external_struct")) {
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n", actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "struct") && strcmp(actual_type, "color")) {
         cg_node const *st = find_kind(m, actual_type, CG_KIND_STRUCT);
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n",
-                st ? export_name(st) : actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"",
+                st ? export_name(st) : actual_type) < 0) return -1;
     } else if (!strcmp(kind, "component") || !strcmp(kind, "interface")) {
         cg_node const *n = find_kind(m, actual_type, !strcmp(kind, "component") ? CG_KIND_CLASS : CG_KIND_INTERFACE);
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n",
-                n ? export_name(n) : actual_type, owner_name, leaf) < 0) return -1;
-    } else {
-        if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"",
+                n ? export_name(n) : actual_type) < 0) return -1;
     }
+    if (actual_flags & CG_FLAG_INHERITED)
+        if (ob_printf(b, ", .IsInherited = TRUE") < 0) return -1;
+    if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
     return 0;
 }
 
@@ -412,12 +413,12 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
             int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
         if (fixed > 0) {
                 if (emit_fixed_array(b, h, m, smap, scount, owner_name, segs, n_segs,
-                        f->name, f->type, fixed, f->flags) < 0) return -1;
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
             } else {
                 memcpy(next, segs, sizeof(next));
                 snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
                 if (emit_walk_property(b, h, m, smap, scount, owner_name, next,
-                        n_segs + 1, f->type, f->flags) < 0) return -1;
+                        n_segs + 1, f->type, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
             }
         }
     }

@@ -205,6 +205,7 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             if (bflag(e, "pointer")) n.flags |= CG_FLAG_POINTER;
             if (bflag(e, "const"))   n.flags |= CG_FLAG_CONST;
             if (bflag(e, "private")) n.flags |= CG_FLAG_PRIVATE;
+            if (bflag(e, "inherited")) n.flags |= CG_FLAG_INHERITED;
             { tmp = xattr(e, "array"); if (tmp[0]) n.flags |= CG_FLAG_ARRAY; free(tmp); }
             break;
         case CG_KIND_HANDLE:
