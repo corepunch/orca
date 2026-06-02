@@ -90,7 +90,8 @@ OBJ_ParseClassAttribute(struct Object *obj, const char* classAttr);
 ## Stylesheet rules
 
 A **stylesheet rule** maps a selector and a property name to a string value.
-The selector is a class name (with or without a leading `.`); the optional pseudo-states on the selector gate when the rule fires.
+Selectors can match style classes, object names, ORCA class names, or a direct parent/child relationship.
+The optional pseudo-states on the selector gate when the rule fires.
 
 ### Rule structure
 
@@ -118,9 +119,17 @@ local screen = ui.Screen {
             padding-left: 12;
         }
 
-        .title {
+        #HeroImage {
+            opacity: 0.85;
+        }
+
+        Label {
             font-size: 22;
             text-overflow: ellipsis;
+        }
+
+        StackView > Label:active {
+            opacity: 1;
         }
 
         .muted {
@@ -153,22 +162,27 @@ It supports:
 | Feature | Example | Notes |
 |---------|---------|-------|
 | Block comments | `/* ignored */` | Comments are stripped before parsing |
-| Simple class selectors | `.button { ... }` | The leading `.` is optional, so `button { ... }` also works |
+| Class selectors | `.button { ... }` | Matches objects whose `class` contains `button` |
+| ID selectors | `#HeroImage { ... }` | Matches object `Name` |
+| Type selectors | `ImageView { ... }`, `Label { ... }` | Matches ORCA class names, similar to HTML element selectors |
+| Direct parent selectors | `StackView > Label { ... }` | Matches only immediate children for now |
 | `body` selector | `body { opacity: 1; }` | Applies to a root object that owns the stylesheet |
 | Comma selector lists | `.a, .b { width: 100; }` | Each selector gets the same declaration block |
-| Pseudo-states | `.button:hover { opacity: 0.8; }` | Supported states are `hover`, `focus`, `active`, and `dark` |
+| Pseudo-states | `.button:hover { opacity: 0.8; }`, `#Save:active { ... }`, `Label:active { ... }` | Supported states are `hover`, `focus`, `active`, and `dark`; for `>` selectors, put pseudo-states on the child selector |
 | Declarations | `width: 120;` | Declarations are `property: value;` pairs |
 | Repeated selectors | `.a { width: 1; } .a { height: 2; }` | Declarations are merged into the same rule |
 | `@apply` | `.child { @apply: .base; }` | Copies declarations from one or more selectors |
 | Transitive `@apply` | `.a { @apply: .b; } .b { @apply: .c; }` | Resolution runs for up to 10 passes |
 
-The parser does not support element selectors, ID selectors, descendant selectors, child selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
+The parser does not support descendant selectors, arbitrary child combinators beyond the direct `Parent > Child` form, sibling selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
 
 #### Case and duplicate rules
 
 - CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.
 - Enum values are case-insensitive: `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
 - Selector names are case-sensitive: `.Button` and `.button` are different classes.
+- Type selector names are case-sensitive and should match ORCA class names exactly, for example `ImageView` or `Label`.
+- ID selector names are case-sensitive and should match the object's `Name` exactly.
 - Pseudo-state names are case-sensitive and should be lowercase.
 - `@apply` is case-sensitive and must be written exactly as `@apply`.
 - Repeating the same declaration key in one selector uses the last value, matched case-insensitively.
@@ -415,16 +429,15 @@ struct style_class {
 ```c
 struct style_rule {
     struct style_rule* next;
-    uint32_t class_id;    // FNV1a32 of base selector (without leading '.')
-    uint32_t prop_id;     // FNV1a32 of property name
+    uint32_t class_id;    // FNV1a32 of ClassName, retained for compatibility/debugging
     uint32_t flags;       // pseudo-state gate mask (same bit layout as style_class.flags)
-    shortStr_t classname; // selector string (e.g., ".button")
-    shortStr_t name;      // property name (e.g., "Background")
-    shortStr_t value;     // property value string (e.g., "#3c6")
+    const char* ClassName;   // selector without pseudo-state qualifiers
+    const char* PseudoClass; // pseudo-state qualifiers, e.g. "hover" or "active"
 };
 ```
 
-`class_id` and `prop_id` are pre-computed at rule-insertion time for O(1) matching during resolution.
+The stylesheet loader stores property overrides as attached `Property` objects on the `StyleRule`.
+During resolution, `ClassName` is matched as a selector and matching overrides are copied to the target object.
 
 ---
 

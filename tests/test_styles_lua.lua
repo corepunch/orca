@@ -364,20 +364,19 @@ local function test_css_property_name_ignorecase_and_duplicate_overwrite()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 18: Selectors may omit the leading dot
+-- Test 18: Type selectors match the ORCA class name
 -- ---------------------------------------------------------------------------
-local function test_css_selector_without_dot()
+local function test_css_type_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "bare { height: 33; }"
-  local node = screen + ui.Node2D {}
+  screen.StyleSheet = filesystem.loadObjectFromCssString "Label { height: 33; }"
+  local label = screen + ui.Label { Text = "caption" }
 
-  node.class = "bare"
-  applyStyles(node)
+  applyStyles(label)
 
-  test.expect_near(node.Height, 33, 0.5, "selector without leading dot should match class")
+  test.expect_near(label.Height, 33, 0.5, "type selector Label should match ui.Label")
 
-  node:removeFromParent()
-  print("PASS: test_css_selector_without_dot")
+  label:removeFromParent()
+  print("PASS: test_css_type_selector")
 end
 
 -- ---------------------------------------------------------------------------
@@ -564,6 +563,139 @@ local function test_css_body_selector_applies_to_root()
   print("PASS: test_css_body_selector_applies_to_root")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 28: ID selectors match object names
+-- ---------------------------------------------------------------------------
+local function test_css_id_selector()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString "#HeroImage { opacity: 0.73; }"
+  local image = screen + ui.ImageView {
+    Name = "HeroImage",
+    Opacity = 1.0,
+  }
+  local other = screen + ui.ImageView {
+    Name = "OtherImage",
+    Opacity = 1.0,
+  }
+
+  applyStyles(image)
+  applyStyles(other)
+
+  test.expect_near(image.Opacity, 0.73, 0.001, "#HeroImage should match object Name=HeroImage")
+  test.expect_near(other.Opacity, 1.0, 0.001, "#HeroImage should not match a different object name")
+
+  image:removeFromParent()
+  other:removeFromParent()
+  print("PASS: test_css_id_selector")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 29: Direct parent selectors match only immediate children
+-- ---------------------------------------------------------------------------
+local function test_css_direct_parent_selector()
+  local css = "StackView > Label { opacity: 0.31; }"
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local stack = screen + ui.StackView {}
+  local direct = stack + ui.Label { Text = "direct", Opacity = 1.0 }
+  local wrapper = stack + ui.Node2D {}
+  local nested = wrapper + ui.Label { Text = "nested", Opacity = 1.0 }
+
+  applyStyles(direct)
+  applyStyles(nested)
+
+  test.expect_near(direct.Opacity, 0.31, 0.001, "StackView > Label should match a direct child Label")
+  test.expect_near(nested.Opacity, 1.0, 0.001, "StackView > Label should not match nested descendants")
+
+  stack:removeFromParent()
+  print("PASS: test_css_direct_parent_selector")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 30: Direct parent selectors also support class and ID selectors
+-- ---------------------------------------------------------------------------
+local function test_css_direct_parent_class_and_id_selectors()
+  local css = [[
+    .toolbar > #SaveLabel { width: 88; }
+    #Footer > .status { height: 22; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local toolbar = screen + ui.StackView { class = "toolbar" }
+  local save = toolbar + ui.Label { Name = "SaveLabel", Text = "Save" }
+  local footer = screen + ui.StackView { Name = "Footer" }
+  local status = footer + ui.Label { class = "status", Text = "Ready" }
+
+  applyStyles(save)
+  applyStyles(status)
+
+  test.expect_near(save.Width, 88, 0.5, ".toolbar > #SaveLabel should match")
+  test.expect_near(status.Height, 22, 0.5, "#Footer > .status should match")
+
+  toolbar:removeFromParent()
+  footer:removeFromParent()
+  print("PASS: test_css_direct_parent_class_and_id_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 31: Pseudo-classes apply to class, ID, and type selectors
+-- ---------------------------------------------------------------------------
+local function test_css_pseudo_classes_on_selector_types()
+  local css = [[
+    .choice:active { opacity: 0.4; }
+    #NamedChoice:active { width: 91; }
+    Label:active { height: 29; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  local inactive = screen + ui.Label {
+    Name = "NamedChoice",
+    class = "choice",
+    Text = "inactive",
+    Opacity = 1.0,
+  }
+  local active = screen + ui.Label {
+    Name = "NamedChoice",
+    class = "choice",
+    Text = "active",
+    Opacity = 1.0,
+  }
+
+  active.selected = true
+  applyStyles(inactive)
+  applyStyles(active)
+
+  test.expect_near(inactive.Opacity, 1.0, 0.001, ":active should not apply before selected=true")
+  test.expect_near(active.Opacity, 0.4, 0.001, ".choice:active should match selected object")
+  test.expect_near(active.Width, 91, 0.5, "#NamedChoice:active should match selected object")
+  test.expect_near(active.Height, 29, 0.5, "Label:active should match selected object")
+
+  inactive:removeFromParent()
+  active:removeFromParent()
+  print("PASS: test_css_pseudo_classes_on_selector_types")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 32: Pseudo-classes work on direct parent selectors
+-- ---------------------------------------------------------------------------
+local function test_css_direct_parent_selector_with_pseudo_class()
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString "StackView > Label:active { opacity: 0.21; }"
+  local stack = screen + ui.StackView {}
+  local label = stack + ui.Label {
+    Text = "selected",
+    Opacity = 1.0,
+  }
+
+  label.selected = true
+  applyStyles(label)
+
+  test.expect_near(label.Opacity, 0.21, 0.001, "StackView > Label:active should match selected direct child")
+
+  stack:removeFromParent()
+  print("PASS: test_css_direct_parent_selector_with_pseudo_class")
+end
+
 
 test_style_applies_opacity()
 test_style_not_applied_without_class()
@@ -582,7 +714,7 @@ test_css_comments_are_ignored()
 test_css_comma_selectors()
 test_css_repeated_selector_merges()
 test_css_property_name_ignorecase_and_duplicate_overwrite()
-test_css_selector_without_dot()
+test_css_type_selector()
 test_css_selectors_are_case_sensitive()
 test_css_unsupported_declarations_are_ignored()
 test_css_boolean_value_ignorecase()
@@ -592,5 +724,10 @@ test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()
 test_css_body_selector_applies_to_root()
+test_css_id_selector()
+test_css_direct_parent_selector()
+test_css_direct_parent_class_and_id_selectors()
+test_css_pseudo_classes_on_selector_types()
+test_css_direct_parent_selector_with_pseudo_class()
 
 print("All style tests passed.")

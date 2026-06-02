@@ -1,6 +1,8 @@
 #include <include/api.h>
 #include <include/orca.h>
 
+#include <ctype.h>
+
 #include <source/core/core_local.h>
 #include <core/core_properties.h>
 
@@ -12,11 +14,12 @@
 //   - Stored in StyleController.StyleSheet (per-object) or static_stylesheet (global).
 //
 // StyleRule: child object of a StyleSheet.
-//   - ClassName:  the base class name (e.g., "button") — matched against the
-//                 object's class list.
+//   - ClassName:  selector without pseudo-state (e.g., "button", ".button",
+//                 "#Logo", "ImageView", or "StackView > Label").
 //   - PseudoClass: colon-separated pseudo-states (e.g., "hover:focus") —
 //                 empty means the rule applies to all states.
 //   - class_id / flags: cached from ClassName / PseudoClass
+//     (class_id is retained for compatibility/debugging; matching uses ClassName)
 //   - Attached C properties (ruleObj->properties with !PF_PROPERTY_TYPE):
 //     the pre-parsed CSS property overrides.  _ApplyStyleRule copies these
 //     directly to the target — no string parsing on every ThemeChanged.
@@ -61,6 +64,17 @@ _ParsePseudoStateFlags(lpcString_t str)
   return flags;
 }
 
+static void
+_CopyTrim(char* dst, size_t dst_size, lpcString_t start, lpcString_t end)
+{
+  while (start < end && isspace((unsigned char)*start)) start++;
+  while (end > start && isspace((unsigned char)*(end - 1))) end--;
+  size_t len = (size_t)(end - start);
+  if (len >= dst_size) len = dst_size - 1;
+  memcpy(dst, start, len);
+  dst[len] = '\0';
+}
+
 // Parse a single style class token (e.g., "blue/50:hover", "btn:hover:focus")
 // Returns a newly allocated style_class_selector.
 struct style_class_selector*
@@ -100,6 +114,20 @@ _ParseClass(lpcString_t str)
 
   cls->opacity = slash ? (byte_t)atoi(slash + 1) : 100;
   return cls;
+}
+
+static struct style_class_selector*
+_FindMatchingClass(struct Object *obj, lpcString_t className, uint32_t objFlags)
+{
+  struct StyleController* sc = GetStyleController(obj);
+  if (!sc) return NULL;
+  FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) {
+    if (!strcmp(cls->value, className) &&
+        ((objFlags & cls->flags) == cls->flags)) {
+      return cls;
+    }
+  }
+  return NULL;
 }
 
 // Append a parsed style_class_selector to the object's class list
@@ -163,6 +191,87 @@ OBJ_GetStyleFlags(struct Object *pobj)
   return dwValue;
 }
 
+static bool_t
+_MatchSimpleSelector(struct Object *target,
+                     lpcString_t selector,
+                     uint32_t objFlags,
+                     struct style_class_selector** matchedClass)
+{
+  if (!selector || !selector[0]) return FALSE;
+
+  if (selector[0] == '.') {
+    struct style_class_selector* cls =
+      _FindMatchingClass(target, selector + 1, objFlags);
+    if (!cls) return FALSE;
+    if (matchedClass) *matchedClass = cls;
+    return TRUE;
+  }
+
+  if (selector[0] == '#') {
+    lpcString_t name = OBJ_GetName(target);
+    return name && !strcmp(name, selector + 1);
+  }
+
+  if (!strcmp(selector, "body")) {
+    return OBJ_GetParent(target) == NULL;
+  }
+
+  lpcString_t className = OBJ_GetClassName(target);
+  if (className && !strcmp(className, selector)) {
+    return TRUE;
+  }
+
+  // Compatibility with existing programmatic StyleRule users: a bare selector
+  // still matches a style class. CSS authors should prefer ".class" for class
+  // selectors and "TypeName" for type selectors.
+  struct style_class_selector* cls =
+    _FindMatchingClass(target, selector, objFlags);
+  if (!cls) return FALSE;
+  if (matchedClass) *matchedClass = cls;
+  return TRUE;
+}
+
+static bool_t
+_SelectorMatchesTarget(struct Object *target,
+                       lpcString_t selector,
+                       uint32_t objFlags,
+                       struct style_class_selector** matchedClass)
+{
+  char targetSelector[256] = {0};
+  char parentSelector[256] = {0};
+
+  lpcString_t childStart = selector;
+  lpcString_t gt = strchr(selector, '>');
+  if (gt) {
+    _CopyTrim(parentSelector, sizeof(parentSelector), selector, gt);
+    childStart = gt + 1;
+  }
+  _CopyTrim(targetSelector, sizeof(targetSelector),
+            childStart, childStart + strlen(childStart));
+
+  if (!_MatchSimpleSelector(target, targetSelector, objFlags, matchedClass)) {
+    return FALSE;
+  }
+
+  if (!gt) return TRUE;
+
+  struct Object *parent = OBJ_GetParent(target);
+  if (!parent) return FALSE;
+  uint32_t parentFlags = OBJ_GetStyleFlags(parent);
+  return _MatchSimpleSelector(parent, parentSelector, parentFlags, NULL);
+}
+
+static bool_t
+_StyleRuleBaseMatches(struct Object *target,
+                      struct StyleRule* sr,
+                      uint32_t objFlags,
+                      struct style_class_selector** matchedClass)
+{
+  if (!sr || !sr->ClassName || !sr->ClassName[0]) return FALSE;
+  if (matchedClass) *matchedClass = NULL;
+  return _SelectorMatchesTarget(target, sr->ClassName, objFlags, matchedClass);
+}
+
 // Apply all C property overrides from ruleObj to the target object.
 // ruleObj->properties contains the pre-parsed overrides (PF_PROPERTY_TYPE not set).
 // ruleFlags: the rule's state flags (0 = default, non-zero = pseudo-state rule).
@@ -205,38 +314,40 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
 // Walk one stylesheet's rules for a matching selector and invoke _ApplyStyleRule.
 static void
 _EnumSheetRules(struct Object *sheetObj, struct Object *target,
-                uint32_t dwClassID, uint32_t objFlags,
-                struct style_class_selector* cls)
+                uint32_t objFlags)
 {
   if (!sheetObj) return;
   FOR_EACH_OBJECT(child, sheetObj) {
     struct StyleRule* sr = GetStyleRule(child);
-    if (!sr || sr->class_id != dwClassID) continue;
-    if (sr->flags & STYLE_HOVER) OBJ_SetFlags(target, OF_HOVERABLE);
-    if ((objFlags & sr->flags) == sr->flags) {
-      _ApplyStyleRule(target, child, sr->flags, cls);
+    struct style_class_selector* cls = NULL;
+    if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls)) continue;
+    if (sr->flags & STYLE_HOVER) {
+      OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
     }
+    if ((objFlags & sr->flags) != sr->flags) continue;
+    _ApplyStyleRule(target, child, sr->flags, cls);
   }
 }
 
-// Walk global and per-object stylesheets for rules that match classname,
+// Walk global and per-object stylesheets for rules that match this object,
 // and invoke _ApplyStyleRule for each matching rule.
 void
 OBJ_EnumStyleClasses(struct Object *pobj,
                      lpcString_t classname,
                      struct style_class_selector* cls)
 {
-  uint32_t dwClassID = fnv1a32(classname);
+  (void)classname;
+  (void)cls;
   uint32_t objFlags  = OBJ_GetStyleFlags(pobj);
 
   // Global stylesheet first
-  _EnumSheetRules(static_stylesheet, pobj, dwClassID, objFlags, cls);
+  _EnumSheetRules(static_stylesheet, pobj, objFlags);
 
   // Walk up the object hierarchy
   for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc || !sc->StyleSheet) continue;
-    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, dwClassID, objFlags, cls);
+    _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags);
   }
 }
 
@@ -265,32 +376,13 @@ HANDLER(StyleController, Object, Release) {
   return FALSE;
 }
 
-#define ID_body 0xdbaa7975 // "body" class
-
 // Recalculate and apply all active style rules to this object.
 HANDLER(StyleController, StyleController, ThemeChanged) {
   bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
 
   PROP_ClearSpecialized(OBJ_GetProperties(hObject));
 
-  // Root objects: apply "body" rules from the local stylesheet
-  // A workaround, ideally 'body' style should just propagate to all children
-  if (!OBJ_GetParent(hObject) && pStyleController->StyleSheet) {
-    struct Object *sheetObj = CMP_GetObject(pStyleController->StyleSheet);
-    FOR_EACH_OBJECT(child, sheetObj) {
-      struct StyleRule* sr = GetStyleRule(child);
-      if (sr && sr->class_id == ID_body) {
-        _ApplyStyleRule(hObject, child, 0, &(struct style_class_selector){ .opacity = 100 });
-      }
-    }
-  }
-
-  // Apply each class whose state flags match the current object state
-  FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes) {
-    if ((OBJ_GetStyleFlags(hObject) & cls->flags) == cls->flags) {
-      OBJ_EnumStyleClasses(hObject, cls->value, cls);
-    }
-  }
+  OBJ_EnumStyleClasses(hObject, NULL, NULL);
 
   if (recursive) {
     FOR_EACH_OBJECT(child, hObject) {

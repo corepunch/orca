@@ -684,16 +684,16 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="StyleRule">
       <summary>A single style rule that maps a class name (with optional pseudo-class) to property overrides.</summary>
-      <details>StyleRule is a child object of a StyleSheet. ClassName holds the base selector (e.g., "button"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
+      <details>StyleRule is a child object of a StyleSheet. ClassName holds the selector without pseudo-state qualifiers (for example "button", ".button", "#Logo", "ImageView", or "StackView &gt; Label"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
       <handles>
         <handle message="Object.PropertyChanged"/>
       </handles>
       <properties>
-        <property name="ClassName" type="string">Base class name without leading dot (e.g., "button" for a rule matching nodes with class "button").</property>
+        <property name="ClassName" type="string">Selector without pseudo-state qualifiers. Supports class selectors, object-name selectors, ORCA type selectors, and direct parent selectors.</property>
         <property name="PseudoClass" type="string">Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.</property>
       </properties>
       <fields>
-        <field name="class_id" type="uint32">FNV1a hash of ClassName (cached for fast matching)</field>
+        <field name="class_id" type="uint32">FNV1a hash of ClassName, retained for compatibility and debugging.</field>
         <field name="flags" type="uint32">Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
       </fields>
     </class>

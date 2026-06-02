@@ -2,13 +2,17 @@
 //
 // Parses a CSS text string into an ORCA StyleSheet object containing
 // StyleRule children.  Each StyleRule carries:
-//   - ClassName   : base selector without leading dot (e.g. "button")
+//   - ClassName   : selector without pseudo-state (e.g. ".button", "#Logo",
+//                   "ImageView", or "StackView > Label")
 //   - PseudoClass : colon-separated pseudo-states  (e.g. "hover:focus")
 //   - ORCA property overrides stored as C properties
 //
 // Supported CSS subset:
 //   - Block comments /* ... */
 //   - Simple class selectors: .foo { ... }
+//   - ID selectors: #Logo { ... }
+//   - Type selectors: ImageView { ... }
+//   - Direct parent selectors: StackView > Label { ... }
 //   - Comma-separated selectors: .foo, .bar { ... }
 //   - Pseudo-classes: .foo:hover { ... }
 //   - @apply directives (merges another selector's declarations)
@@ -332,26 +336,23 @@ css_resolve_apply(css_doc_t* doc)
 // Selector → (ClassName, PseudoClass) split
 // ---------------------------------------------------------------------------
 
-// selector: ".button:hover" → class_out="button", pseudo_out="hover"
-// selector: ".card"         → class_out="card",   pseudo_out=""
-// selector: "card"          → class_out="card",   pseudo_out=""
+// selector: ".button:hover"     → class_out=".button", pseudo_out="hover"
+// selector: "#Logo"             → class_out="#Logo",   pseudo_out=""
+// selector: "StackView > Label" → class_out="StackView > Label", pseudo_out=""
 static void
 css_split_selector(const char* selector,
                    char* class_out, int class_max,
                    char* pseudo_out, int pseudo_max)
 {
-    // skip optional leading dot
-    const char* base = (selector[0] == '.') ? selector + 1 : selector;
-
+    const char* base = selector;
     const char* colon = strchr(base, ':');
     if (colon) {
         int len = (int)(colon - base);
         if (len >= class_max) len = class_max - 1;
-        memcpy(class_out, base, len);
-        class_out[len] = '\0';
+        copy_trim(class_out, base, base + len, class_max);
         snprintf(pseudo_out, pseudo_max, "%s", colon + 1);
     } else {
-        snprintf(class_out,  class_max,  "%s", base);
+        copy_trim(class_out, base, base + strlen(base), class_max);
         pseudo_out[0] = '\0';
     }
 }

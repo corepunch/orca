@@ -11,7 +11,7 @@
 //                 carry this class in their class attribute.
 //   - PseudoClass: colon-separated pseudo-state qualifiers (e.g., "hover" or
 //                 "hover:focus") — empty means the rule applies to all states.
-//   - class_id:  FNV1a32 of ClassName, cached for fast matching.
+//   - class_id:  FNV1a32 of ClassName, retained for compatibility/debugging.
 //   - flags:     STYLE_* bitmask derived from PseudoClass, cached.
 //   - Attached C properties: the CSS property overrides (e.g., Width=42.0f).
 //     These are stored as Property objects in ruleObj->properties with
