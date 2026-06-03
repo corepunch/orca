@@ -10,7 +10,7 @@ Every scene element is an `Object` (defined in `source/core/object/object_intern
 
 - A **name**, class name, and source file path
 - A linked list of attached **components** (via the `components` field in the union below)
-- A flat byte buffer (`data[]`) for property value storage
+- Heap-allocated storage for dynamic/extra property values
 - A **Lua state** pointer for scripting
 
 Objects are created and destroyed via the Lua API (`orca.Object()`) or loaded from XML project files. Hierarchy is manipulated with `OBJ_AddChild`, `OBJ_RemoveFromParent`, and related functions.
@@ -33,12 +33,11 @@ struct Object {
     struct component*     components;   // component chain
     struct Property*      properties;
 
-    uint32_t alias, unique, userdata, luaObject, flags, rdflags, datasize;
+    uint32_t alias, unique, userdata, luaObject, flags, rdflags;
     objectTags_t tags;
     longTime_t dirty;
     lua_State *domain;
 
-    byte_t data[MAX_OBJECT_DATA]; // extra property values stored here
 };
 ```
 
@@ -148,7 +147,7 @@ struct PropertyType {
 
 The `DECL` and `ARRAY_DECL` macros in `*_export.c` build these entries. See [Macros Reference](macros-reference.md) for details.
 
-Property values for component-defined properties are stored in the component's user-data block (heap-allocated alongside the `struct component` header). The `Offset` field is relative to the component's `pUserData` start. The object's `data[]` flat buffer provides overflow storage for dynamic/extra properties not tied to a specific component.
+Property values for component-defined properties are stored in the component's user-data block (heap-allocated alongside the `struct component` header). The `Offset` field is relative to the component's `pUserData` start. Dynamic/extra properties not tied to a specific component allocate their own storage when registered, and that storage is released with the property.
 
 ---
 

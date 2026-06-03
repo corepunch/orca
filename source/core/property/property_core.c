@@ -208,6 +208,10 @@ OBJ_ReleaseProperties(struct Object *hobj)
     _UnindexBindingProperty(p);
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
+    if (p->flags & PF_OWNS_STORAGE) {
+      free(p->value);
+      p->value = NULL;
+    }
     free(p);
   }
 }

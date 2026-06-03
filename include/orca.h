@@ -177,6 +177,7 @@ enum
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
   PF_INHERITED = (1 << 9), // value is cached from an inherited ancestor, not locally set
   PF_OWNS_VALUE = (1 << 10), // inherited property owns the slot currently stored in property->value
+  PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"

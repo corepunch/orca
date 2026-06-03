@@ -3,8 +3,6 @@
 
 #include <source/core/core_local.h>
 
-#define MAX_OBJECT_DATA (MAX_PROPERTY_STRING*32) // 1024
-
 struct component
 {
   struct component* next;
@@ -35,12 +33,9 @@ struct Object
   uint32_t userdata;
   uint32_t flags;
   uint32_t rdflags;
-  uint32_t datasize;
   objectTags_t tags;
 
   longTime_t dirty;
-  
-  byte_t   data[MAX_OBJECT_DATA];
 };
 
 void OBJ_ApplyInheritedProperties(struct Object *object);

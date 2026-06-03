@@ -161,14 +161,19 @@ HRESULT
 _RegisterProperty(struct Object *object, struct Property *property)
 {
   struct PropertyType const *desc = PROP_GetDesc(property);
-  uint32_t psize = desc && desc->IsInherited && !desc->IsArray
-    ? sizeof(void *)
-    : PROP_GetSize(property);
-  assert(object->datasize + psize < MAX_OBJECT_DATA);
   PROP_AddToList(property, &object->properties);
-  if (!CMP_SetProperty(object->components, property)) {
-    PROP_SetValuePtr(property, object->data + object->datasize);
-    object->datasize += psize;
+  if (!object->components || !CMP_SetProperty(object->components, property)) {
+    uint32_t psize = PROP_GetSize(property);
+    if (desc && desc->IsInherited && !desc->IsArray) {
+      psize = sizeof(void *);
+    } else if (desc && desc->IsArray) {
+      psize = sizeof(void *) + sizeof(int);
+    }
+    if (psize == 0) {
+      psize = 1;
+    }
+    PROP_SetValuePtr(property, ZeroAlloc(psize));
+    PROP_SetFlag(property, PF_OWNS_STORAGE);
   }
   return NOERROR;
 }

@@ -212,12 +212,12 @@ Every scene element is an `Object`. Objects form a parent→children tree. Key f
 
 - Identity: `Name`, `ClassName`, `identifier` (FNV1a hash), `SourceFile`
 - Hierarchy: `parent`, `children` (first child), `next` (next sibling)
-- A flat `data[]` byte buffer for property value storage
+- Heap-allocated storage for dynamic/extra property values
 - A `lua_State *domain` for scripting
 
 ```c
 struct component* components;   // attached component chain
-struct Property* properties; // property table (name, type, offset in data[], etc.)
+struct Property* properties; // property table (name, type, value storage, etc.)
 ```
 
 Fields marked as planned replacements are being progressively replaced by proper components (see "Object Struct Refactoring" below).
