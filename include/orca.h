@@ -4,6 +4,7 @@
 #include "orcadef.h"
 
 #include <libs/platform/platform.h>
+#include <stddef.h>
 
 typedef struct lua_State lua_State;
 
@@ -26,6 +27,8 @@ typedef uint32_t propertyID_t;
 typedef uint32_t messageID_t;
 typedef uint32_t classID_t;
 typedef uint32_t event_t;
+
+typedef int (*structParserFn_t)(const char* str, void* dst, size_t size);
 
 #include <assert.h>
 #include <ctype.h>
@@ -383,6 +386,7 @@ struct StructDesc
 {
   lpcString_t StructName; // human-readable name of the struct, used for XML and Lua construction
   struct PropertyType const *Properties; // pointer to an array of field descriptors
+  structParserFn_t Parser; // optional string parser for XML/Lua/style shorthand values
   uint32_t NumProperties; // number of fields in the struct
   uint32_t StructSize; // size of the struct in bytes
 };
@@ -451,7 +455,7 @@ ORCA_API struct ClassDesc const *
 OBJ_FindClass(lpcString_t);
 
 ORCA_API bool_t
-OBJ_RegisterStructDesc(struct StructDesc const *);
+OBJ_RegisterStructDesc(struct StructDesc *);
 
 ORCA_API struct StructDesc const *
 OBJ_FindStructDesc(lpcString_t);
@@ -460,7 +464,7 @@ OBJ_FindStructDesc(lpcString_t);
 // The parser should write the parsed value to dst (of size `sz`) and return TRUE on success.
 ORCA_API void
 OBJ_RegisterStructParser(const char* type_name,
-                         int (*fn)(const char* str, void* dst, size_t sz));
+                         structParserFn_t fn);
 
 // Parse a struct of the given type name from a string using a registered C parser.
 // Returns TRUE on success, FALSE if no parser is registered or parsing fails.

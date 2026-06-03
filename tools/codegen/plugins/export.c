@@ -699,6 +699,46 @@ static int emit_enum_macros(ob *b, cg_model const *m) {
     return 0;
 }
 
+static int model_has_enum(cg_model const *m, char const *name) {
+    return find_kind(m, name, CG_KIND_ENUM) != NULL;
+}
+
+static int emit_struct_parser_helpers(ob *b, cg_model const *m) {
+    int has_axis_alignment = !strcmp(m->module_name, "core") &&
+                             model_has_enum(m, "HorizontalAlignment") &&
+                             model_has_enum(m, "VerticalAlignment") &&
+                             model_has_enum(m, "DepthAlignment");
+    if (ob_printf(b,
+            "static int cg_num(const char*s){char*e;strtof(s,&e);if(e==s)return 0;return !*e||!strcasecmp(e,\"px\")||!strcasecmp(e,\"pt\");}\n"
+            "static int cg_i(struct PropertyType const*p,int z,const char*n){for(int i=0;i<z;i++)if(!strcmp(p[i].Name,n))return i;return -1;}\n"
+            "static int cg_enum(const char**v,const char*s,void*d){for(int i=0;v&&v[i];i++)if(!strcasecmp(v[i],s)){*(int*)d=i;return TRUE;}return FALSE;}\n") < 0) return -1;
+    if (has_axis_alignment) {
+        if (ob_printf(b,
+                "static int cg_axis_enum(struct PropertyType const*p,const char*s,void*d){return !strcmp(p->Name,\"Horizontal\")?cg_enum(_HorizontalAlignment,s,d):!strcmp(p->Name,\"Vertical\")?cg_enum(_VerticalAlignment,s,d):!strcmp(p->Name,\"Depth\")?cg_enum(_DepthAlignment,s,d):FALSE;}\n") < 0) return -1;
+    } else {
+        if (ob_printf(b,
+                "static int cg_axis_enum(struct PropertyType const*p,const char*s,void*d){(void)p;(void)s;(void)d;return FALSE;}\n") < 0) return -1;
+    }
+    return ob_printf(b,
+            "static int cg_p(const char*s,struct PropertyType const*p,void*d){char tmp[MAX_PROPERTY_STRING]={0};if(cg_axis_enum(p,s,d))return TRUE;if(p->DataType==kDataTypeEnum)return cg_enum(p->EnumValues,s,d);if((p->DataType==kDataTypeFloat||p->DataType==kDataTypeInt)&&!cg_num(s))return FALSE;if(p->DataType==kDataTypeStruct)return OBJ_ParseStruct(p->TypeString,s,d,p->DataSize);if(!parse_property(s,p,tmp))return FALSE;memcpy(d,tmp,p->DataSize);return TRUE;}\n"
+            "static int cg_put(char*s,void*d,struct PropertyType const*p){return cg_p(s,p,(char*)d+p->Offset);}\n"
+            "static int cg_box(void*d,struct PropertyType const*p,int n,char**t,int nt,const char*pre){char a[32];int L,R,T,B,F,K,k=0;if(nt>4)return 0;while(k<nt&&cg_num(t[k]))k++;if(!k)return 0;snprintf(a,sizeof(a),\"%%sLeft\",pre);L=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sRight\",pre);R=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sTop\",pre);T=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBottom\",pre);B=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sFront\",pre);F=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBack\",pre);K=cg_i(p,n,a);if(L<0||R<0||T<0||B<0)return 0;cg_put(t[0],d,&p[L]);cg_put(k>2?t[2]:t[0],d,&p[R]);cg_put(k>1?t[1]:t[0],d,&p[T]);cg_put(k>3?t[3]:(k>1?t[1]:t[0]),d,&p[B]);if(pre[0]&&F>=0&&K>=0){cg_put(t[0],d,&p[F]);cg_put(t[0],d,&p[K]);}return k;}\n"
+            "static int cg_req(void*d,struct PropertyType const*p,int n,char**t,int nt){int H,V,D;if(nt>3)return 0;for(int i=0;i<nt;i++)if(!cg_num(t[i]))return 0;H=cg_i(p,n,\"HorizontalRequested\");V=cg_i(p,n,\"VerticalRequested\");D=cg_i(p,n,\"DepthRequested\");if(H<0||V<0)return 0;cg_put(t[0],d,&p[H]);if(nt>1)cg_put(t[1],d,&p[V]);if(nt>2&&D>=0)cg_put(t[2],d,&p[D]);return nt;}\n"
+            "static int cg_same(struct PropertyType const*p,int n){for(int i=1;i<n;i++)if(p[i].DataType!=p[0].DataType||p[i].EnumValues!=p[0].EnumValues)return 0;return n>1;}\n"
+            "static int cg_join(char**t,int n,char*b){b[0]=0;for(int i=0;i<n;i++){if(i)strcat(b,\" \");strcat(b,t[i]);}return TRUE;}\n"
+            "static int cg_span(char**t,int nt,struct PropertyType const*p,void*d,int*used){char b[MAX_PROPERTY_STRING];if(p->DataType!=kDataTypeStruct)return nt&&!used[0]&&cg_put(t[0],d,p)?1:0;for(int c=nt;c>0;c--){int ok=1;for(int j=0;j<c;j++)if(used[j])ok=0;if(!ok)continue;cg_join(t,c,b);if(cg_put(b,d,p))return c;}return 0;}\n"
+            "static int cg_parse(const char*s,void*d,size_t z,struct PropertyType const*p,int n){char b[MAX_PROPERTY_STRING]={0},*t[32],*x;int nt=0,u[32]={0},f[64]={0},any=FALSE;if(!d)return FALSE;memset(d,0,z);snprintf(b,sizeof(b),\"%%s\",s);for(x=strtok(b,\" \\t\\r\\n\");x&&nt<32;x=strtok(NULL,\" \\t\\r\\n\"))t[nt++]=x;if(!nt)return FALSE;if(cg_box(d,p,n,t,nt,\"\")==nt)return TRUE;if(cg_req(d,p,n,t,nt)==nt)return TRUE;if(nt==1&&cg_same(p,n)){for(int i=0;i<n;i++)any|=cg_put(t[0],d,&p[i]);return any;}int c=cg_box(d,p,n,t,nt,\"Width\");for(int i=0;i<c;i++)u[i]=any=TRUE;for(int pass=0;pass<4;pass++)for(int j=0;j<nt;j++)if(!u[j])for(int i=0;i<n;i++){int dt=p[i].DataType;if(f[i]||(pass==0&&dt!=kDataTypeEnum)||(pass==1&&(dt==kDataTypeEnum||dt==kDataTypeColor||dt==kDataTypeObject))||(pass==2&&dt!=kDataTypeColor)||(pass==3&&dt!=kDataTypeObject))continue;c=cg_span(&t[j],nt-j,&p[i],d,&u[j]);if(c){for(int q=0;q<c;q++)u[j+q]=TRUE;f[i]=any=TRUE;break;}}if(!any)return FALSE;for(int i=0;i<nt;i++)if(!u[i])return FALSE;return TRUE;}\n");
+}
+
+static int emit_struct_parser_wrappers(ob *b, cg_model const *m) {
+    cg_foreach(m, 0, CG_KIND_STRUCT, s) {
+        if (ob_printf(b,
+                "static int cg_parse_%s(const char*s,void*d,size_t z){return z==sizeof(struct %s)&&cg_parse(s,d,z,_%s,sizeof(_%s)/sizeof(*_%s));}\n",
+                s->name, s->name, s->name, s->name, s->name) < 0) return -1;
+    }
+    return 0;
+}
+
 static int emit_call_args(ob *b, cg_model const *m, cg_node const *method, cg_node const *owner) {
     int first = 1;
     if (method->flags & CG_FLAG_LUA) {
@@ -819,8 +859,11 @@ static int emit_structs(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, "\t{ NULL, NULL }\n};\n") < 0) return -1;
     }
     if (ob_printf(b, "\n") < 0) return -1;
+    if (emit_struct_parser_helpers(b, m) < 0) return -1;
+    if (emit_struct_parser_wrappers(b, m) < 0) return -1;
     cg_foreach(m, 0, CG_KIND_STRUCT, s) {
-        if (ob_printf(b, "STRUCT(%s, %s);\n", s->name, export_name(s)) < 0) return -1;
+        if (ob_printf(b, "STRUCT_PARSER(%s, %s, cg_parse_%s);\n",
+                s->name, export_name(s), s->name) < 0) return -1;
     }
     return 0;
 }
@@ -1199,6 +1242,9 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#include <include/api.h>\n"
             "#include <include/codegen.h>\n\n"
+            "#include <stdlib.h>\n"
+            "#include <string.h>\n"
+            "#include <strings.h>\n\n"
             "#include <%s/%s.h>\n\n",
             base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {
