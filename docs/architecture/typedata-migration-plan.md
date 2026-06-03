@@ -371,3 +371,129 @@ allocating a `Property` node for every static field on every object.
 | 5 | App smoke test; `tests/test_layout.lua` |
 | 6 | Full suite + ASAN; binary size check |
 | 7 | XML/Lua round-trip; prefab `{Binding Card.*}` works; editor introspection correct |
+
+---
+
+## Phase 8 — Remove `struct component* components` from Object
+
+**Goal:** Eliminate the last use of the component linked list. After Phases 1–7
+every UIKit class uses typedata. What remains on `Object.components` falls into
+four distinct categories, each with a targeted replacement.
+
+### What still uses `components` and why
+
+**Category 1 — Dead weight (three callers, trivial)**
+
+| File | Call | Fix |
+|---|---|---|
+| `object_accessors.c:12` | `OBJ_GetClassName` reads `components->pcls->ClassName` | Use `object->type->ClassName` directly |
+| `object_hierarchy.c:134` | `OBJ_FindChildOfClass` calls `OBJ_GetComponent(it, id)` | Replace with `OBJ_IsKindOfW(it->type, id)` |
+| `object_hierarchy.c:144` | `OBJ_FindParentOfClass` calls `OBJ_GetComponent(self, id)` | Replace with `OBJ_IsKindOfW(self->type, id)` |
+
+**Category 2 — Cross-plugin Node2D subclasses (`Viewport3D`, `SKView`)**
+
+`Viewport3D` (SceneKit) and `SKView` (SpriteKit) have `parent="Node2D"` — they
+are Node2D layout rectangles that happen to render 3D or sprite content. Their
+structs belong in `UIData` conceptually; the only blocker is a circular include
+(`UIData` in UIKit can't include SceneKit headers).
+
+Solution — **sized opaque slots in UIData**:
+
+```c
+/* In ui_data.h — no SceneKit/SpriteKit headers needed */
+#define VIEWPORT3D_STORAGE_SIZE  64
+#define SKVIEW_STORAGE_SIZE      32
+
+struct UIData {
+  ...
+  char _viewport3d[VIEWPORT3D_STORAGE_SIZE];
+  char _skview[SKVIEW_STORAGE_SIZE];
+};
+```
+
+Each plugin registers its offset at startup and adds a `static_assert` that its
+struct fits:
+
+```c
+/* In SceneKit's on_luaopen */
+static_assert(sizeof(struct Viewport3D) <= VIEWPORT3D_STORAGE_SIZE, "");
+OBJ_SetClassTypedataOffset(ID_Viewport3D,
+    offsetof(struct UIData, _viewport3d));
+```
+
+`GetViewport3D(obj)` becomes a direct cast into typedata — zero indirection, no
+list walk. UIKit has no dependency on SceneKit struct internals. The size
+constant is the documented contract between the two modules.
+
+This pattern follows the SDL_Event union approach: fixed reserved space, the
+owner module casts to its own type, a `static_assert` guards the size contract.
+
+**Category 3 — SendMessageAction (generated message payload)**
+
+`SendMessageAction` today attaches a second component holding the typed message
+payload (e.g. `Button_ClickAction`). It walks `action->components` to find it.
+
+Fix: generated action objects get a direct `void *payload` + `uint32_t
+payloadSize` field on the Action struct in `core.cgen`. `SendMessageAction`
+reads `pSendMessageAction->payload` directly. No component walk.
+
+**Category 4 — PropertyAnimation (the only genuinely dynamic case)**
+
+`PropertyAnimation` is attached to any arbitrary object at runtime from Lua — it
+is not known at compile time which objects will be animated. This is the one
+case where a linked list of runtime-attached data is legitimately the right
+model.
+
+Fix: rename `Object.components` → `Object.animations` and narrow its type and
+all related code to PropertyAnimation only. The field survives with an honest
+name and a single documented purpose. All component infrastructure that is not
+needed for PropertyAnimation is deleted.
+
+### Steps
+
+1. **Fix Category 1** — replace the three `OBJ_GetComponent` / `components`
+   accesses with `type`-based equivalents. Delete `OBJ_GetPropertyAtIndex`
+   (only caller uses component userdata; replaced by typedata offset).
+
+2. **Add sized slots to UIData** — add `_viewport3d` and `_skview` byte arrays,
+   size constants, and `REG_UIDATA_FIXED` macro. Register from SceneKit and
+   SpriteKit `on_luaopen`. Remove `OBJ_GetComponent` calls in `SKView.c` and
+   `Viewport3D` dispatch.
+
+3. **Fix SendMessageAction** — add `payload` + `payloadSize` fields to the
+   Action struct in `core.cgen`. Update `SendMessageAction.c` to read directly.
+   Delete `_FindMessageActionPayload`.
+
+4. **Rename `components` → `animations`** — mechanical rename throughout
+   `object_component.c`, `object_core.c`, `object_internal.h`. Remove all
+   component infrastructure that is not path-critical for PropertyAnimation
+   (`OBJ_AddComponent`, `OBJ_GetComponent`, `CMP_SetProperty`, etc. either
+   deleted or narrowed to animation use only).
+
+5. **Retire `struct component`** once PropertyAnimation is the only consumer —
+   replace with a minimal `struct animation` that carries only what
+   PropertyAnimation needs: `next`, `ClassDesc*`, `pUserData[]`.
+
+### Files changed
+
+`source/core/object/object_internal.h`,
+`source/core/object/object_core.c`,
+`source/core/object/object_component.c` (major reduction),
+`source/core/object/object_accessors.c`,
+`source/core/object/object_hierarchy.c`,
+`source/core/components/SendMessageAction.c`,
+`source/core/core.cgen`,
+`plugins/UIKit/ui_data.h`,
+`plugins/SceneKit/SceneKit.cgen` (on_luaopen registration),
+`plugins/SpriteKit/SpriteKit.cgen` (on_luaopen registration),
+`plugins/SpriteKit/SKView.c`
+
+### Verification
+
+- `Viewport3D` renders correctly with a 3D scene embedded in a 2D layout
+- `SKView` renders sprite content
+- PropertyAnimation still works from Lua on any object type
+- `SendMessageAction` triggers fire correctly from XML triggers
+- `object_component.c` line count drops by ~60% (most of the file is component
+  list management that disappears)
+- `struct Object` loses the `components` field; binary size decreases
