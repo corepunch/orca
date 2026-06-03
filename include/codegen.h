@@ -5,6 +5,12 @@
 #define INHERITED_DECL(SHORT, CLASS, NAME, FIELD, VALUE_TYPE, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(VALUE_TYPE), .DataType=TYPE, .IsInherited=TRUE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
+/* Variants that store offsets relative to the storage-family struct (e.g. UIData)
+ * instead of the per-class struct. STORAGE is the family struct name (UIData, etc.) */
+#define UIDATA_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define UIDATA_INHERITED_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, VALUE_TYPE, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(VALUE_TYPE), .DataType=TYPE, .IsInherited=TRUE, ##__VA_ARGS__ }
+#define UIDATA_ARRAY_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
 const char *NAME##ToString(enum NAME value) { \
@@ -163,6 +169,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ParentClasses = { __VA_ARGS__ }, \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
+	.TypedataOffset = UINT32_MAX, \
 	.Properties = NAME##Properties, \
 	.Shorthands = NAME##Shorthands, \
 	.ObjProc = NAME##Proc, \
@@ -170,5 +177,6 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumShorthands = k##NAME##NumShorthands, \
 };
+
 
 #endif

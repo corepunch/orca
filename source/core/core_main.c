@@ -202,6 +202,17 @@ OBJ_IsKindOfW(struct ClassDesc const *cls, uint32_t parent_id)
 }
 
 void
+OBJ_SetClassTypedataOffset(uint32_t class_id, uint32_t offset)
+{
+  FOR_LOOP(i, MAX_CLASSES) {
+    if (core.classes[i] && core.classes[i]->ClassID == class_id) {
+      ((struct ClassDesc *)core.classes[i])->TypedataOffset = offset;
+      return;
+    }
+  }
+}
+
+void
 OBJ_RegisterStorageFamily(uint32_t super_id, size_t data_size)
 {
   FOR_LOOP(i, MAX_STORAGE_FAMILIES) {

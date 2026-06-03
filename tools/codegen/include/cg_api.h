@@ -73,6 +73,7 @@ typedef struct cg_model {
     char const  *prefix;
     char const  *on_luaopen;
     char const  *after_luaopen;
+    char const  *storage_struct; /* e.g. "UIData" — offsets emitted as offsetof(storage_struct, Class.field) */
     cg_node const *nodes;
     size_t         node_count;
 } cg_model;

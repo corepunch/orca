@@ -296,9 +296,10 @@ int cg_model_load(char const *xml_path, cg_model *out) {
         p[n + 1u] = '\0';
         out->prefix = p;
     }
-    out->on_luaopen    = xattr(root, "on-luaopen");
-    out->after_luaopen = xattr(root, "after-luaopen");
-    out->nodes         = nodes.v;
+    out->on_luaopen      = xattr(root, "on-luaopen");
+    out->after_luaopen   = xattr(root, "after-luaopen");
+    out->storage_struct  = xattr(root, "storage-struct");
+    out->nodes           = nodes.v;
     out->node_count    = nodes.n;
     xmlFreeDoc(doc);
     return 0;
@@ -313,6 +314,7 @@ void cg_model_free(cg_model *model) {
     free((void *)model->prefix);
     free((void *)model->on_luaopen);
     free((void *)model->after_luaopen);
+    free((void *)model->storage_struct);
     for (i = 0; i < model->node_count; ++i) {
         free((void *)model->nodes[i].name);
         free((void *)model->nodes[i].type);

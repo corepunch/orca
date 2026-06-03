@@ -26,13 +26,18 @@ OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
 
   assert(comp);
 
-  if (cls->Defaults) {
-    memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
-  }
-
   comp->pcls = cls;
   comp->pobj = pobj;
-  
+
+  if (cls->Defaults) {
+    memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
+    /* For UIData objects, also seed the typedata slot from defaults.
+     * ClassDesc.TypedataOffset holds offsetof(UIData, ClassName) — set in Phase 4b. */
+    if (pobj->super_id == SUPER_ID_NODE2D && cls->TypedataOffset != UINT32_MAX) {
+      memcpy(pobj->typedata + cls->TypedataOffset, cls->Defaults, cls->ClassSize);
+    }
+  }
+
   ADD_TO_LIST_END(struct component, comp, pobj->components);
 
   for (uint32_t const* p = cls->ParentClasses; *p; OBJ_AddComponent(pobj, *(p++)));
@@ -329,7 +334,13 @@ CMP_SetProperty(struct component* comp, struct Property *property)
       struct Property ** properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
       properties[index] = property;
       PROP_SetFlag(property, PF_PROPERTY_TYPE);
-      PROP_SetValuePtr(property, comp->pUserData + pdesc->Offset);
+      /* UIKit properties have UIData-relative offsets; others are component-relative. */
+      struct Object *obj = comp->pobj;
+      if (obj && obj->super_id == SUPER_ID_NODE2D) {
+        PROP_SetValuePtr(property, obj->typedata + pdesc->Offset);
+      } else {
+        PROP_SetValuePtr(property, comp->pUserData + pdesc->Offset);
+      }
       return TRUE;
     }
   }

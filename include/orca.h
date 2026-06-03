@@ -381,6 +381,7 @@ struct ClassDesc
   uint32_t ClassID; // hash of the class name, used for quick comparisons and lookups, should be unique across all classes
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
   uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
+  uint32_t TypedataOffset; // offsetof(StorageFamily, ClassName) for storage-family classes; UINT32_MAX otherwise
   void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
 };
 
@@ -403,6 +404,9 @@ OBJ_SuperID(struct Object const *object);
 
 ORCA_API void
 OBJ_RegisterStorageFamily(uint32_t super_id, size_t data_size);
+
+ORCA_API void
+OBJ_SetClassTypedataOffset(uint32_t class_id, uint32_t offset);
 
 ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
