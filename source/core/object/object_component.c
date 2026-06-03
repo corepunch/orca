@@ -493,16 +493,33 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
+  /* Lifecycle messages broadcast to every component regardless of return value.
+   * All other messages use first-handled-wins. */
+  bool_t is_broadcast = (MsgID == ID_Object_Create  ||
+                         MsgID == ID_Object_Destroy ||
+                         MsgID == ID_Object_Release);
+  LRESULT broadcast_result = FALSE;
+
   for (struct component *cmp = pobj->components; cmp; ) {
     struct component *next = cmp->next;
     if (cmp->pcls->ObjProc) {
-      LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData, MsgID, wParam, lParam);
-      if (res) {
+      /* For UIData objects, pass the typedata-resident struct instead of
+       * component userdata so handlers receive the live storage pointer. */
+      void *cmp_data = cmp->pUserData;
+      if (pobj->super_id == SUPER_ID_NODE2D &&
+          cmp->pcls->TypedataOffset != UINT32_MAX) {
+        cmp_data = pobj->typedata + cmp->pcls->TypedataOffset;
+      }
+      LRESULT res = cmp->pcls->ObjProc(pobj, cmp_data, MsgID, wParam, lParam);
+      if (is_broadcast) {
+        if (res) broadcast_result = res;
+      } else if (res) {
         return res;
       }
     }
     cmp = next;
   }
+  if (is_broadcast && broadcast_result) return broadcast_result;
   if (_IsNodeTriggerMessage(MsgID)) {
     LRESULT handled = _DispatchEventTriggerSpecialCase(pobj, MsgID, wParam, lParam, NULL);
     if (handled) {

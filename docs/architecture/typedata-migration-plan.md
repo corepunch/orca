@@ -227,7 +227,7 @@ allocate a `Property` node — verify with a malloc count or ASAN.
 
 ---
 
-## Phase 5 — Flatten message dispatch to single class proc per UIKit class
+## Phase 5 — Flatten message dispatch to single class proc per UIKit class [Done]
 
 **Goal:** Each concrete UIKit class proc calls explicit base procs rather than
 walking the component list. Lifecycle messages use broadcast semantics.
