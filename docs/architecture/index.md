@@ -89,6 +89,7 @@ Each plugin module is compiled into its own shared library (`.so` / `.dll`) and 
 
 - [Object + Component System](object-component-system.md) — How Objects and Components work, and how to add new component types.
 - [Orca Language](orca-language.md) — Living design note for replacing duplicated XML, C, and MoonScript declarations with `.orca` object definitions.
+- [Atomic Properties And Authoring Shorthands](atomic-properties-and-shorthands.md) — Design draft for keeping generated structs flat while lowering grouped authoring syntax to atomic property writes.
 - [Plugin System](plugin-system.md) — C component plugins and Lua script plugins, with UIKit as a worked example.
 - [Code Generation](code-generation.md) — How the C codegen toolchain converts `.cgen` module definitions into C headers and Lua bindings.
 - [Module Codegen Guide](../MODULE_XML_GUIDE.md) — Full reference for writing `.cgen` module files.
