@@ -54,6 +54,22 @@ CMP_GetOwner(struct component* hcmp)
 struct Property *
 _CreateClassProperty(struct Object *object, uint32_t ident)
 {
+  /* For UIData objects, search all registered classes for the property
+   * descriptor without needing the component list. */
+  if (object->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || cls->TypedataOffset == UINT32_MAX) continue;
+      FOR_LOOP(i, cls->NumProperties) {
+        struct PropertyType const *pdesc = &cls->Properties[i];
+        if (pdesc->ShortIdentifier == ident || pdesc->FullIdentifier == ident) {
+          struct Property *p = PROP_Create(NULL, object, pdesc);
+          return p;
+        }
+      }
+    }
+  }
   FOR_EACH_LIST(struct component, cmp, object->components)
   {
     FOR_LOOP(i, cmp->pcls->NumProperties)
@@ -73,7 +89,18 @@ struct PropertyType const *
 OBJ_FindImplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-//  return PROP_FindByShortID(object->properties, identifier);
+  if (object->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || cls->TypedataOffset == UINT32_MAX) continue;
+      FOR_LOOP(i, cls->NumProperties) {
+        struct PropertyType const *pdesc = &cls->Properties[i];
+        if (pdesc->ShortIdentifier == identifier)
+          return pdesc;
+      }
+    }
+  }
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
@@ -89,7 +116,18 @@ struct PropertyType const *
 OBJ_FindExplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  //  return PROP_FindByShortID(object->properties, identifier);
+  if (object->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || cls->TypedataOffset == UINT32_MAX) continue;
+      FOR_LOOP(i, cls->NumProperties) {
+        struct PropertyType const *pdesc = &cls->Properties[i];
+        if (pdesc->FullIdentifier == identifier)
+          return pdesc;
+      }
+    }
+  }
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
@@ -105,6 +143,17 @@ struct PropertyShorthand const *
 OBJ_FindImplicitShorthand(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
+  if (object->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || cls->TypedataOffset == UINT32_MAX || !cls->Shorthands) continue;
+      FOR_LOOP(i, cls->NumShorthands) {
+        struct PropertyShorthand const *sh = &cls->Shorthands[i];
+        if (sh->ShortIdentifier == identifier) return sh;
+      }
+    }
+  }
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumShorthands) {
       struct PropertyShorthand const *sh = &cmp->pcls->Shorthands[i];
@@ -120,6 +169,17 @@ struct PropertyShorthand const *
 OBJ_FindExplicitShorthand(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
+  if (object->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || cls->TypedataOffset == UINT32_MAX || !cls->Shorthands) continue;
+      FOR_LOOP(i, cls->NumShorthands) {
+        struct PropertyShorthand const *sh = &cls->Shorthands[i];
+        if (sh->FullIdentifier == identifier) return sh;
+      }
+    }
+  }
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumShorthands) {
       struct PropertyShorthand const *sh = &cmp->pcls->Shorthands[i];
@@ -493,23 +553,35 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
 //		return FALSE;
 //#endif
-  /* Lifecycle messages broadcast to every component regardless of return value.
+  /* Lifecycle messages broadcast to every handler regardless of return value.
    * All other messages use first-handled-wins. */
   bool_t is_broadcast = (MsgID == ID_Object_Create  ||
                          MsgID == ID_Object_Destroy ||
                          MsgID == ID_Object_Release);
   LRESULT broadcast_result = FALSE;
 
+  /* UIData objects: walk the global class registry instead of component list.
+   * Non-UIData objects fall through to the component list below. */
+  if (pobj->super_id == SUPER_ID_NODE2D) {
+    extern struct game core;
+    FOR_LOOP(ci, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[ci];
+      if (!cls || !cls->ObjProc || cls->TypedataOffset == UINT32_MAX) continue;
+      void *cmp_data = pobj->typedata + cls->TypedataOffset;
+      LRESULT res = cls->ObjProc(pobj, cmp_data, MsgID, wParam, lParam);
+      if (is_broadcast) {
+        if (res) broadcast_result = res;
+      } else if (res) {
+        return res;
+      }
+    }
+    if (is_broadcast && broadcast_result) return broadcast_result;
+  }
+
   for (struct component *cmp = pobj->components; cmp; ) {
     struct component *next = cmp->next;
     if (cmp->pcls->ObjProc) {
-      /* For UIData objects, pass the typedata-resident struct instead of
-       * component userdata so handlers receive the live storage pointer. */
       void *cmp_data = cmp->pUserData;
-      if (pobj->super_id == SUPER_ID_NODE2D &&
-          cmp->pcls->TypedataOffset != UINT32_MAX) {
-        cmp_data = pobj->typedata + cmp->pcls->TypedataOffset;
-      }
       LRESULT res = cmp->pcls->ObjProc(pobj, cmp_data, MsgID, wParam, lParam);
       if (is_broadcast) {
         if (res) broadcast_result = res;

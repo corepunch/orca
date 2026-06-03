@@ -38,8 +38,8 @@ struct UIData {
 };
 
 /*
- * Accessor overrides — prefer typedata over component lookup for UIKit classes.
- * Non-UIKit objects (super_id != SUPER_ID_NODE2D) fall back to OBJ_GetComponent.
+ * Accessor overrides — direct typedata access for UIKit (Node2D) objects.
+ * Returns NULL for non-UIKit objects or NULL pointer input.
  */
 #define _UI(_P, FIELD) \
   ((_P) && (_P)->super_id == SUPER_ID_NODE2D \
@@ -47,22 +47,13 @@ struct UIData {
     : NULL)
 
 #undef  GetNode
-#define GetNode(_P) \
-  ((_P) && (_P)->super_id == SUPER_ID_NODE2D \
-    ? &((struct UIData *)(_P)->typedata)->Node \
-    : (struct Node *)OBJ_GetComponent(_P, ID_Node))
+#define GetNode(_P)            _UI(_P, Node)
 
 #undef  GetNode2D
-#define GetNode2D(_P) \
-  ((_P) && (_P)->super_id == SUPER_ID_NODE2D \
-    ? &((struct UIData *)(_P)->typedata)->Node2D \
-    : (struct Node2D *)OBJ_GetComponent(_P, ID_Node2D))
+#define GetNode2D(_P)          _UI(_P, Node2D)
 
 #undef  GetStyleController
-#define GetStyleController(_P) \
-  ((_P) && (_P)->super_id == SUPER_ID_NODE2D \
-    ? &((struct UIData *)(_P)->typedata)->StyleController \
-    : (struct StyleController *)OBJ_GetComponent(_P, ID_StyleController))
+#define GetStyleController(_P) _UI(_P, StyleController)
 
 #undef  GetTextRun
 #define GetTextRun(_P)      _UI(_P, TextRun)

@@ -68,7 +68,11 @@ OBJ_Create(uint32_t class_id) {
   object->class_id = class_id;
   object->super_id = sid;
   object->type = cls;
-  OBJ_AddComponent(object, class_id);
+  /* UIData objects carry storage in typedata[]; no component allocation needed.
+   * Non-UIData objects still use the component list. */
+  if (sid != SUPER_ID_NODE2D) {
+    OBJ_AddComponent(object, class_id);
+  }
   OBJ_SetDirty(object);
   if (cls->DefaultName) {
     OBJ_SetName(object, cls->DefaultName);
@@ -186,6 +190,22 @@ _RegisterProperty(struct Object *object, struct Property *property)
 {
   struct PropertyType const *desc = PROP_GetDesc(property);
   PROP_AddToList(property, &object->properties);
+  /* For UIData objects, wire directly to typedata when offset is valid. */
+  if (object->super_id == SUPER_ID_NODE2D && desc &&
+      desc->Offset < OBJ_StorageFamilySize(SUPER_ID_NODE2D)) {
+    PROP_SetFlag(property, PF_PROPERTY_TYPE);
+    if (desc->IsInherited && !desc->IsArray) {
+      /* Inherited properties store a pointer-to-slot; the slot lives in typedata. */
+      uint32_t psize = sizeof(void *);
+      void *slot = ZeroAlloc(psize);
+      *(void **)slot = object->typedata + desc->Offset;
+      PROP_SetValuePtr(property, slot);
+      PROP_SetFlag(property, PF_OWNS_STORAGE);
+    } else {
+      PROP_SetValuePtr(property, object->typedata + desc->Offset);
+    }
+    return NOERROR;
+  }
   if (!object->components || !CMP_SetProperty(object->components, property)) {
     uint32_t psize = PROP_GetSize(property);
     if (desc && desc->IsInherited && !desc->IsArray) {

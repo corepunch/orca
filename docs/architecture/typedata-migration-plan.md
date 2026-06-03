@@ -271,7 +271,7 @@ remaining UIKit `.c` files with a proc.
 
 ---
 
-## Phase 6 — Remove component infrastructure for fixed classes
+## Phase 6 — Remove component infrastructure for fixed classes [Done]
 
 **Goal:** `Object.components` linked list and `struct component` are gone for
 objects covered by a typedata family.
