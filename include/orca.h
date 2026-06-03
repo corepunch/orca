@@ -402,6 +402,9 @@ ORCA_API uint32_t
 OBJ_SuperID(struct Object const *object);
 
 ORCA_API void
+OBJ_RegisterStorageFamily(uint32_t super_id, size_t data_size);
+
+ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
 
 ORCA_API HRESULT

@@ -60,11 +60,13 @@ OBJ_Create(uint32_t class_id) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
     return NULL;
   }
-  struct Object *object = ZeroAlloc(sizeof(struct Object));
+  uint32_t sid = resolve_super_id(cls);
+  size_t typedata_size = OBJ_StorageFamilySize(sid);
+  struct Object *object = ZeroAlloc(sizeof(struct Object) + typedata_size);
   OBJ_AddRef(object);
   object->unique = ++unique_counter;
   object->class_id = class_id;
-  object->super_id = resolve_super_id(cls);
+  object->super_id = sid;
   object->type = cls;
   OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);

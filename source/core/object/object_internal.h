@@ -44,6 +44,8 @@ struct Object
   struct ClassDesc const *type; /* pointer to concrete ClassDesc */
 
   longTime_t dirty;
+
+  char typedata[];              /* storage family data — UIData, SceneData, … */
 };
 
 void OBJ_ApplyInheritedProperties(struct Object *object);

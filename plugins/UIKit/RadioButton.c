@@ -1,3 +1,4 @@
+#include <plugins/UIKit/ui_data.h>
 #include <include/orca.h>
 #include <source/core/core_local.h>
 #include <source/filesystem/theme_palette.h>

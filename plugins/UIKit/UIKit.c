@@ -6,7 +6,8 @@
 struct UIData *
 Object_UIData(struct Object *object)
 {
-  return NULL; /* wired in Phase 3 */
+  if (!object || object->super_id != SUPER_ID_NODE2D) return NULL;
+  return (struct UIData *)object->typedata;
 }
 
 bool_t is_server = FALSE;
@@ -49,6 +50,7 @@ c_parse_transform2(const char* str, void* dst, size_t sz)
 
 void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
+  OBJ_RegisterStorageFamily(SUPER_ID_NODE2D, sizeof(struct UIData));
   OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
