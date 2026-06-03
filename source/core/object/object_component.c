@@ -56,7 +56,7 @@ _CreateClassProperty(struct Object *object, uint32_t ident)
 {
   /* For UIData objects, search all registered classes for the property
    * descriptor without needing the component list. */
-  if (object->super_id == SUPER_ID_NODE2D) {
+  if (OBJ_UsesTypedata(object)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
@@ -89,7 +89,7 @@ struct PropertyType const *
 OBJ_FindImplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  if (object->super_id == SUPER_ID_NODE2D) {
+  if (OBJ_UsesTypedata(object)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
@@ -116,7 +116,7 @@ struct PropertyType const *
 OBJ_FindExplicitProperty(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  if (object->super_id == SUPER_ID_NODE2D) {
+  if (OBJ_UsesTypedata(object)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
@@ -143,7 +143,7 @@ struct PropertyShorthand const *
 OBJ_FindImplicitShorthand(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  if (object->super_id == SUPER_ID_NODE2D) {
+  if (OBJ_UsesTypedata(object)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
@@ -169,7 +169,7 @@ struct PropertyShorthand const *
 OBJ_FindExplicitShorthand(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  if (object->super_id == SUPER_ID_NODE2D) {
+  if (OBJ_UsesTypedata(object)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
@@ -561,8 +561,9 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
   LRESULT broadcast_result = FALSE;
 
   /* UIData objects: walk the global class registry instead of component list.
-   * Non-UIData objects fall through to the component list below. */
-  if (pobj->super_id == SUPER_ID_NODE2D) {
+   * Classes without a registered TypedataOffset (e.g. Viewport3D from SceneKit)
+   * are SUPER_ID_NODE2D by inheritance but use the component list instead. */
+  if (OBJ_UsesTypedata(pobj)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];

@@ -68,9 +68,12 @@ OBJ_Create(uint32_t class_id) {
   object->class_id = class_id;
   object->super_id = sid;
   object->type = cls;
-  /* UIData objects carry storage in typedata[]; no component allocation needed.
-   * Non-UIData objects still use the component list. */
-  if (sid != SUPER_ID_NODE2D) {
+  /* UIData objects whose class has a registered typedata slot use typedata
+   * storage; their component list stays empty. Classes that resolve to
+   * SUPER_ID_NODE2D but haven't registered a TypedataOffset (e.g. Viewport3D
+   * from SceneKit) still need the component list for dispatch and property
+   * wiring, so they fall through to OBJ_AddComponent. */
+  if (!OBJ_UsesTypedata(object)) {
     OBJ_AddComponent(object, class_id);
   }
   OBJ_SetDirty(object);
@@ -191,7 +194,7 @@ _RegisterProperty(struct Object *object, struct Property *property)
   struct PropertyType const *desc = PROP_GetDesc(property);
   PROP_AddToList(property, &object->properties);
   /* For UIData objects, wire directly to typedata when offset is valid. */
-  if (object->super_id == SUPER_ID_NODE2D && desc &&
+  if (OBJ_UsesTypedata(object) && desc &&
       desc->Offset < OBJ_StorageFamilySize(SUPER_ID_NODE2D)) {
     PROP_SetFlag(property, PF_PROPERTY_TYPE);
     if (desc->IsInherited && !desc->IsArray) {

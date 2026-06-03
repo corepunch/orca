@@ -48,6 +48,18 @@ struct Object
   char typedata[];              /* storage family data — UIData, SceneData, … */
 };
 
+/* True when the object uses the monolithic typedata block for storage.
+ * False for classes that inherit from Node2D but haven't registered a
+ * TypedataOffset (e.g. Viewport3D from SceneKit). */
+static INLINE bool_t
+OBJ_UsesTypedata(struct Object const *object)
+{
+  return object &&
+         object->super_id == SUPER_ID_NODE2D &&
+         object->type &&
+         object->type->TypedataOffset != UINT32_MAX;
+}
+
 void OBJ_ApplyInheritedProperties(struct Object *object);
 void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
 
