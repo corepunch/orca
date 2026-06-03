@@ -195,6 +195,12 @@ is_class_inherited(struct ClassDesc const *self, uint32_t parent)
   return FALSE;
 }
 
+bool_t
+OBJ_IsKindOfW(struct ClassDesc const *cls, uint32_t parent_id)
+{
+  return is_class_inherited(cls, parent_id);
+}
+
 void
 OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(struct ClassDesc const *, void*), void* param)
 {

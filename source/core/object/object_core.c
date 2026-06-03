@@ -32,6 +32,26 @@ OBJ_ReleaseRef(struct Object *pobj)
   return pobj->refcount;
 }
 
+uint32_t
+OBJ_SuperID(struct Object const *object)
+{
+  return object ? object->super_id : 0;
+}
+
+static uint32_t
+resolve_super_id(struct ClassDesc const *cls)
+{
+  static const uint32_t families[] = {
+    SUPER_ID_NODE2D, SUPER_ID_NODE3D,
+    SUPER_ID_RESOURCE, SUPER_ID_ACTION, SUPER_ID_PROJECT,
+    0
+  };
+  for (const uint32_t *f = families; *f; f++) {
+    if (OBJ_IsKindOfW(cls, *f)) return *f;
+  }
+  return SUPER_ID_NODE;
+}
+
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
   g_object_count++;
@@ -43,6 +63,9 @@ OBJ_Create(uint32_t class_id) {
   struct Object *object = ZeroAlloc(sizeof(struct Object));
   OBJ_AddRef(object);
   object->unique = ++unique_counter;
+  object->class_id = class_id;
+  object->super_id = resolve_super_id(cls);
+  object->type = cls;
   OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);
   if (cls->DefaultName) {

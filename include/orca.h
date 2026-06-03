@@ -395,6 +395,12 @@ struct StructDesc
 
 struct component;
 
+ORCA_API bool_t
+OBJ_IsKindOfW(struct ClassDesc const *cls, uint32_t parent_id);
+
+ORCA_API uint32_t
+OBJ_SuperID(struct Object const *object);
+
 ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
 

@@ -11,6 +11,14 @@ struct component
   char pUserData[];
 };
 
+/* Storage-family IDs — fnv1a32 of the root class name */
+#define SUPER_ID_NODE         0x3468032du
+#define SUPER_ID_NODE2D       0x6c63a2abu
+#define SUPER_ID_NODE3D       0xce61fe5au
+#define SUPER_ID_RESOURCE     0x23b0d815u
+#define SUPER_ID_ACTION       0x0a77a91fu
+#define SUPER_ID_PROJECT      0x7b5fea5eu
+
 struct Object
 {
   LPSTR Name;
@@ -30,6 +38,10 @@ struct Object
   uint32_t alias;
   uint32_t unique;
   uint32_t flags;
+
+  uint32_t class_id;            /* concrete class — Button, TextBlock, … */
+  uint32_t super_id;            /* storage family — SUPER_ID_NODE2D, … */
+  struct ClassDesc const *type; /* pointer to concrete ClassDesc */
 
   longTime_t dirty;
 };
