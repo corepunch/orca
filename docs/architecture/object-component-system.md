@@ -21,6 +21,7 @@ Objects are created and destroyed via the Lua API (`orca.Object()`) or loaded fr
 struct Object {
     LPSTR Name;
     uint32_t identifier;        // FNV1a hash of Name
+    uint32_t refcount;
 
     struct Object *parent;
     struct Object *children;        // first child (singly-linked)
@@ -28,15 +29,12 @@ struct Object {
 
     LPSTR SourceFile;
     LPSTR TextContent;
-    LPSTR ClassName;
 
     struct component*     components;   // component chain
     struct Property*      properties;
 
-    uint32_t alias, unique, userdata, luaObject, flags, rdflags;
-    objectTags_t tags;
+    uint32_t alias, unique, flags;
     longTime_t dirty;
-    lua_State *domain;
 
 };
 ```

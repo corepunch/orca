@@ -472,11 +472,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Retrieves the runtime type information for this object, useful for type checking and reflection.</details>
           <returns type="string">Class name of the object type</returns>
         </method>
-        <method name="SetClassName">
-          <summary>Sets the class name of the object</summary>
-          <details>Assigns a class name to this object. The class name can be used for styling, identification, or querying objects with similar characteristics. This enables flexible categorization and styling of UI elements without relying solely on object types.</details>
-          <arg name="classID" type="string">The class name to assign to the object</arg>
-        </method>
         <method name="CheckName" const="true">
           <summary>Checks if object has a specific name</summary>
           <details>Performs name comparison to determine if this object matches the given identifier.</details>

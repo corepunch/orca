@@ -151,7 +151,6 @@ OBJ_Release(struct Object *pobj)
   SafeFree(pobj->SourceFile);
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
-  SafeFree(pobj->ClassName);
 
   pobj->refcount = 0;
   free(pobj);

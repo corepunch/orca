@@ -23,17 +23,13 @@ struct Object
 
   LPSTR SourceFile;
   LPSTR TextContent;
-  LPSTR ClassName;
 
   struct component* components;
   struct Property* properties;
 
   uint32_t alias;
   uint32_t unique;
-  uint32_t userdata;
   uint32_t flags;
-  uint32_t rdflags;
-  objectTags_t tags;
 
   longTime_t dirty;
 };

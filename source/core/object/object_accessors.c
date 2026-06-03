@@ -43,12 +43,6 @@ OBJ_SetTextContent(struct Object *pobj, lpcString_t szValue)
   OBJ_SetDirty(pobj);
 }
 
-void
-OBJ_SetClassName(struct Object *pobj, lpcString_t szClassName)
-{
-  SafeSet(pobj->ClassName, strdup(szClassName), free);
-}
-
 lpcString_t OBJ_GetSourceFile(struct Object const *object) {
   return object->SourceFile;
 }
