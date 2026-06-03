@@ -1,6 +1,13 @@
 #include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <filesystem/filesystem.h>
+#include <plugins/UIKit/ui_data.h>
+
+struct UIData *
+Object_UIData(struct Object *object)
+{
+  return NULL; /* wired in Phase 3 */
+}
 
 bool_t is_server = FALSE;
 
