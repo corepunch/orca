@@ -130,7 +130,6 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
       if (tr->Font.Style) base.Font.Style = tr->Font.Style;
       if (tr->Font.Size) base.Font.Size = tr->Font.Size;
       if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextRun_GetProperty(run, kTextRunUnderline)) base.Underline = tr->Underline;
       if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
       if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;
       if (TextRun_GetProperty(run, kTextRunUnderlineColor)) base.Underline.Color = tr->Underline.Color;

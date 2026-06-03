@@ -370,7 +370,10 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     if (!orca_name) return; // unsupported property
 
     struct Property *prop = NULL;
-    if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) return;
+    if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) {
+        OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
+        return;
+    }
     if (!prop || !PROP_GetDesc(prop)) return;
 
     struct PropertyType const* desc = PROP_GetDesc(prop);

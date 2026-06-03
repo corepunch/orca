@@ -1,3 +1,6 @@
+#include <ctype.h>
+#include <strings.h>
+
 #include <include/api.h>
 
 #include "core_local.h"
@@ -10,6 +13,10 @@ void SV_Shutdown(void);
 
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
+extern const char *_HorizontalAlignment[];
+extern const char *_VerticalAlignment[];
+extern const char *_DepthAlignment[];
+extern const char *_BorderStyle[];
 
 bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt)
@@ -39,12 +46,44 @@ OBJ_FindPropertyType(uint32_t ident)
 }
 
 bool_t
+OBJ_RegisterPropertyShorthand(struct PropertyShorthand const *sh)
+{
+  FOR_LOOP(i, MAX_PROPERTY_SHORTHANDS) {
+    if (!core.shorthands[i].Name) {
+      memcpy(&core.shorthands[i], sh, sizeof(struct PropertyShorthand));
+      return TRUE;
+    } else if (core.shorthands[i].FullIdentifier == sh->FullIdentifier) {
+      return TRUE;
+    }
+  }
+  Con_Error("No space left to register property shorthand %s.%s",
+            sh->Category ? sh->Category : "",
+            sh->Name ? sh->Name : "");
+  return FALSE;
+}
+
+struct PropertyShorthand const *
+OBJ_FindPropertyShorthand(uint32_t ident)
+{
+  FOR_LOOP(i, MAX_PROPERTY_SHORTHANDS) {
+    struct PropertyShorthand const *sh = &core.shorthands[i];
+    if (sh->Name && sh->FullIdentifier == ident) {
+      return sh;
+    }
+  }
+  return NULL;
+}
+
+bool_t
 OBJ_RegisterClass(struct ClassDesc const *class)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
         OBJ_RegisterPropertyType(&class->Properties[j]);
+      }
+      FOR_LOOP(j, class->NumShorthands) {
+        OBJ_RegisterPropertyShorthand(&class->Shorthands[j]);
       }
 //      Con_Printf("%s %d", class->ClassName, i);
       core.classes[i] = class;
@@ -646,6 +685,98 @@ static int c_parse_vec3(const char* str, void* dst, size_t sz) {
   }
 }
 
+static bool_t parse_float_token(const char *token, float *out) {
+  char *end = NULL;
+  float value = strtof(token, &end);
+  if (end == token) return FALSE;
+  while (*end && isspace((unsigned char)*end)) end++;
+  if (*end && strcasecmp(end, "px")) return FALSE;
+  *out = value;
+  return TRUE;
+}
+
+static bool_t parse_enum_token(const char **values, const char *token, int *out) {
+  for (int i = 0; values && values[i]; i++) {
+    if (!strcasecmp(values[i], token)) {
+      *out = i;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static int c_parse_SizeShorthand(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct SizeShorthand)) return FALSE;
+  float x = 0, y = 0, z = 0;
+  struct SizeShorthand self = {0};
+  switch (sscanf(str, "%f %f %f", &x, &y, &z)) {
+    case 3:
+      self.Axis[2].Requested = z;
+      self.Axis[1].Requested = y;
+      self.Axis[0].Requested = x;
+      *(struct SizeShorthand*)dst = self;
+      return TRUE;
+    case 2:
+      self.Axis[1].Requested = y;
+      self.Axis[0].Requested = x;
+      *(struct SizeShorthand*)dst = self;
+      return TRUE;
+    case 1:
+      self.Axis[0].Requested = x;
+      *(struct SizeShorthand*)dst = self;
+      return TRUE;
+    default: Con_Printf("SizeShorthand: cannot parse '%s'", str); return FALSE;
+  }
+}
+
+static int c_parse_AlignmentShorthand(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct AlignmentShorthand)) return FALSE;
+  char buf[MAX_PROPERTY_STRING] = {0};
+  struct AlignmentShorthand self = {0};
+  snprintf(buf, sizeof(buf), "%s", str);
+  char *tok = strtok(buf, " \t\r\n,");
+  int axis = 0;
+  while (tok && axis < 3) {
+    int value = 0;
+    const char **values = axis == 0 ? _HorizontalAlignment
+                         : axis == 1 ? _VerticalAlignment
+                                     : _DepthAlignment;
+    if (!parse_enum_token(values, tok, &value)) return FALSE;
+    self.Axis[axis++] = value;
+    tok = strtok(NULL, " \t\r\n,");
+  }
+  *(struct AlignmentShorthand*)dst = self;
+  return axis > 0;
+}
+
+static int c_parse_BorderShorthand(const char* str, void* dst, size_t sz) {
+  if (!dst || sz != sizeof(struct BorderShorthand)) return FALSE;
+  char buf[MAX_PROPERTY_STRING] = {0};
+  struct BorderShorthand self = {0};
+  bool_t any = FALSE;
+  snprintf(buf, sizeof(buf), "%s", str);
+  char *tok = strtok(buf, " \t\r\n");
+  while (tok) {
+    float f = 0;
+    int style = 0;
+    if (parse_float_token(tok, &f)) {
+      self.Width.Axis[0] = (struct EdgeShorthand){f, f};
+      self.Width.Axis[1] = (struct EdgeShorthand){f, f};
+      self.Width.Axis[2] = (struct EdgeShorthand){f, f};
+      any = TRUE;
+    } else if (parse_enum_token(_BorderStyle, tok, &style)) {
+      self.Style = (enum BorderStyle)style;
+      any = TRUE;
+    } else {
+      self.Color = COLOR_Parse(tok);
+      any = TRUE;
+    }
+    tok = strtok(NULL, " \t\r\n");
+  }
+  *(struct BorderShorthand*)dst = self;
+  return any;
+}
+
 // --- Struct parser registry -------------------------------------------------
 
 void
@@ -719,6 +850,9 @@ before_core_module_registered(lua_State* L)
   OBJ_RegisterStructParser("CornerRadius",  c_parse_CornerRadius);
   OBJ_RegisterStructParser("vec2",          c_parse_vec2);
   OBJ_RegisterStructParser("vec3",          c_parse_vec3);
+  OBJ_RegisterStructParser("SizeShorthand", c_parse_SizeShorthand);
+  OBJ_RegisterStructParser("AlignmentShorthand", c_parse_AlignmentShorthand);
+  OBJ_RegisterStructParser("BorderShorthand", c_parse_BorderShorthand);
   
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");

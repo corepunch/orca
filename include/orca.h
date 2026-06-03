@@ -342,16 +342,37 @@ typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lPar
 #define OF_NOACTIVATE (1 << 12)
 #define OF_ANIMATE_QUEUED (1 << 13)
 
+struct PropertyShorthandTarget
+{
+  lpcString_t Name; // field name accepted by table-based shorthand assignment
+  uint32_t PropertyID; // full identifier of the atomic property this field writes
+  uint32_t Offset; // offset of the field inside the shorthand struct
+};
+
+struct PropertyShorthand
+{
+  lpcString_t Name; // shorthand name, e.g. Margin or Font
+  lpcString_t Category; // owning class/category, e.g. Node or TextRun
+  lpcString_t TypeString; // struct parser/type name, e.g. Thickness
+  uint32_t ShortIdentifier; // hash of Name
+  uint32_t FullIdentifier; // hash of Category.Name
+  uint32_t StructSize; // sizeof(struct TypeString)
+  struct PropertyShorthandTarget const *Targets;
+  uint32_t NumTargets;
+};
+
 struct ClassDesc
 {
   objectProc_t ObjProc; // pointer to the main message handling function for this class, used for dispatching messages to objects of this class
   struct PropertyType const *Properties; // pointer to an array of property descriptors, should be sorted by long identifier for efficient lookup
+  struct PropertyShorthand const *Shorthands; // pointer to generated shorthand descriptors that unfold into atomic properties
   lpcString_t ClassName; // human-readable name of the class, used for debugging and editor display, should be unique across all classes
   lpcString_t DefaultName; // string used for naming objects of this class when no name is provided, should be unique across all classes
   lpcString_t ContentType; // optional string describing the type of content this class represents, used for auto-detecting packages and for editor filtering
   lpcString_t Xmlns; // optional XML namespace associated with this class, used for auto-detecting packages
   uint32_t ParentClasses[16]; // array of class IDs of parent classes, used for inheritance and type checking, should be ordered from most derived to least derived
   uint32_t NumProperties; // number of properties defined directly on this class, used for iterating over properties and for calculating offsets of properties in the object struct
+  uint32_t NumShorthands; // number of shorthand descriptors defined directly on this class
   uint32_t ClassID; // hash of the class name, used for quick comparisons and lookups, should be unique across all classes
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
   uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
@@ -454,6 +475,39 @@ OBJ_FindPropertyType(uint32_t);
 
 ORCA_API bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt);
+
+ORCA_API struct PropertyShorthand const *
+OBJ_FindPropertyShorthand(uint32_t ident);
+
+ORCA_API bool_t
+OBJ_RegisterPropertyShorthand(struct PropertyShorthand const *sh);
+
+ORCA_API struct PropertyShorthand const *
+OBJ_FindImplicitShorthand(struct Object *object, lpcString_t name);
+
+ORCA_API struct PropertyShorthand const *
+OBJ_FindExplicitShorthand(struct Object *object, lpcString_t name);
+
+ORCA_API bool_t
+OBJ_SetShorthandValueFromString(struct Object *object,
+                                lpcString_t name,
+                                lpcString_t value);
+
+ORCA_API bool_t
+OBJ_SetShorthandValueFromStruct(struct Object *object,
+                                lpcString_t name,
+                                void *value);
+
+ORCA_API bool_t
+OBJ_SetShorthandValueFromLua(lua_State *L,
+                             struct Object *object,
+                             lpcString_t name,
+                             int value_idx);
+
+ORCA_API bool_t
+OBJ_PushShorthandValue(lua_State *L,
+                       struct Object *object,
+                       lpcString_t name);
 
 ORCA_API void
 OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(struct ClassDesc const *, void*), void*);

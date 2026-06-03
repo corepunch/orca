@@ -1,5 +1,17 @@
 #include "object_internal.h"
 
+extern int parse_property(const char* str,
+                          struct PropertyType const* prop,
+                          void* valueptr);
+extern void read_property(lua_State *L,
+                          int idx,
+                          struct PropertyType const* prop,
+                          void* valueptr);
+extern int luaX_readProperty(lua_State* L, int idx, struct Property *p);
+extern int write_property(lua_State *L,
+                          struct PropertyType const* prop,
+                          void const* valueptr);
+
 struct component*
 OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
 {
@@ -82,6 +94,202 @@ OBJ_FindExplicitProperty(struct Object *object, lpcString_t name)
     }
   }
   return OBJ_FindPropertyType(identifier);
+}
+
+struct PropertyShorthand const *
+OBJ_FindImplicitShorthand(struct Object *object, lpcString_t name)
+{
+  uint32_t identifier = fnv1a32(name);
+  FOR_EACH_LIST(struct component, cmp, object->components) {
+    FOR_LOOP(i, cmp->pcls->NumShorthands) {
+      struct PropertyShorthand const *sh = &cmp->pcls->Shorthands[i];
+      if (sh->ShortIdentifier == identifier) {
+        return sh;
+      }
+    }
+  }
+  return NULL;
+}
+
+struct PropertyShorthand const *
+OBJ_FindExplicitShorthand(struct Object *object, lpcString_t name)
+{
+  uint32_t identifier = fnv1a32(name);
+  FOR_EACH_LIST(struct component, cmp, object->components) {
+    FOR_LOOP(i, cmp->pcls->NumShorthands) {
+      struct PropertyShorthand const *sh = &cmp->pcls->Shorthands[i];
+      if (sh->FullIdentifier == identifier) {
+        return sh;
+      }
+    }
+  }
+  return OBJ_FindPropertyShorthand(identifier);
+}
+
+static struct PropertyShorthand const *
+find_shorthand(struct Object *object, lpcString_t name)
+{
+  struct PropertyShorthand const *sh = OBJ_FindImplicitShorthand(object, name);
+  return sh ? sh : OBJ_FindExplicitShorthand(object, name);
+}
+
+static bool_t
+apply_shorthand_struct(struct Object *object,
+                       struct PropertyShorthand const *sh,
+                       void *value)
+{
+  bool_t ok = TRUE;
+  FOR_LOOP(i, sh->NumTargets) {
+    struct PropertyShorthandTarget const *target = &sh->Targets[i];
+    void *src = (char *)value + target->Offset;
+    struct Property *property = NULL;
+    if (FAILED(OBJ_FindLongProperty(object, target->PropertyID, &property)) || !property) {
+      ok = FALSE;
+      continue;
+    }
+    PROP_SetValue(property, src);
+    if (PROP_GetType(property) == kDataTypeString) {
+      free(*(char **)src);
+      *(char **)src = NULL;
+    }
+  }
+  return ok;
+}
+
+bool_t
+OBJ_SetShorthandValueFromString(struct Object *object,
+                                lpcString_t name,
+                                lpcString_t value)
+{
+  struct PropertyShorthand const *sh = find_shorthand(object, name);
+  if (!sh || !value) {
+    return FALSE;
+  }
+
+  struct PropertyType fake = {
+    .Name = sh->Name,
+    .Category = sh->Category,
+    .ShortIdentifier = sh->ShortIdentifier,
+    .FullIdentifier = sh->FullIdentifier,
+    .Offset = 0,
+    .DataSize = sh->StructSize,
+    .DataType = kDataTypeStruct,
+    .TypeString = sh->TypeString,
+  };
+  void *tmp = calloc(1, sh->StructSize);
+  if (!tmp) {
+    return FALSE;
+  }
+  bool_t ok = parse_property(value, &fake, tmp) &&
+              apply_shorthand_struct(object, sh, tmp);
+  free(tmp);
+  return ok;
+}
+
+bool_t
+OBJ_SetShorthandValueFromStruct(struct Object *object,
+                                lpcString_t name,
+                                void *value)
+{
+  struct PropertyShorthand const *sh = find_shorthand(object, name);
+  if (!sh || !value) {
+    return FALSE;
+  }
+  return apply_shorthand_struct(object, sh, value);
+}
+
+bool_t
+OBJ_SetShorthandValueFromLua(lua_State *L,
+                             struct Object *object,
+                             lpcString_t name,
+                             int value_idx)
+{
+  struct PropertyShorthand const *sh = find_shorthand(object, name);
+  if (!sh) {
+    return FALSE;
+  }
+
+  value_idx = lua_absindex(L, value_idx);
+  if (lua_istable(L, value_idx)) {
+    bool_t ok = TRUE;
+    FOR_LOOP(i, sh->NumTargets) {
+      struct PropertyShorthandTarget const *target = &sh->Targets[i];
+      struct Property *property = NULL;
+      if (FAILED(OBJ_FindLongProperty(object, target->PropertyID, &property)) || !property) {
+        ok = FALSE;
+        continue;
+      }
+      lua_getfield(L, value_idx, target->Name);
+      if (lua_isnil(L, -1)) {
+        lua_pop(L, 1);
+        lua_getfield(L, value_idx, PROP_GetName(property));
+      }
+      if (!lua_isnil(L, -1)) {
+        luaX_readProperty(L, -1, property);
+      }
+      lua_pop(L, 1);
+    }
+    return ok;
+  }
+  if (lua_isstring(L, value_idx)) {
+    return OBJ_SetShorthandValueFromString(object, name, lua_tostring(L, value_idx));
+  }
+
+  struct PropertyType fake = {
+    .Name = sh->Name,
+    .Category = sh->Category,
+    .ShortIdentifier = sh->ShortIdentifier,
+    .FullIdentifier = sh->FullIdentifier,
+    .Offset = 0,
+    .DataSize = sh->StructSize,
+    .DataType = kDataTypeStruct,
+    .TypeString = sh->TypeString,
+  };
+  void *tmp = calloc(1, sh->StructSize);
+  if (!tmp) {
+    return FALSE;
+  }
+  read_property(L, value_idx, &fake, tmp);
+  bool_t ok = apply_shorthand_struct(object, sh, tmp);
+  free(tmp);
+  return ok;
+}
+
+bool_t
+OBJ_PushShorthandValue(lua_State *L,
+                       struct Object *object,
+                       lpcString_t name)
+{
+  struct PropertyShorthand const *sh = find_shorthand(object, name);
+  if (!sh) {
+    return FALSE;
+  }
+  void *tmp = calloc(1, sh->StructSize);
+  if (!tmp) {
+    lua_pushnil(L);
+    return TRUE;
+  }
+  FOR_LOOP(i, sh->NumTargets) {
+    struct PropertyShorthandTarget const *target = &sh->Targets[i];
+    struct Property *property = NULL;
+    if (SUCCEEDED(OBJ_FindLongProperty(object, target->PropertyID, &property)) &&
+        property && !PROP_IsNull(property)) {
+      memcpy((char *)tmp + target->Offset, PROP_GetValue(property), PROP_GetSize(property));
+    }
+  }
+  struct PropertyType fake = {
+    .Name = sh->Name,
+    .Category = sh->Category,
+    .ShortIdentifier = sh->ShortIdentifier,
+    .FullIdentifier = sh->FullIdentifier,
+    .Offset = 0,
+    .DataSize = sh->StructSize,
+    .DataType = kDataTypeStruct,
+    .TypeString = sh->TypeString,
+  };
+  write_property(L, &fake, tmp);
+  free(tmp);
+  return TRUE;
 }
 
 void

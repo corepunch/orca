@@ -264,6 +264,7 @@ static int walk_fixed_array(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs,
 }
 
 static int walk_prop(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs, char const *type_name) {
+    sentry const *s;
     /* Build dot-joined ucfirsted path */
     char path[512] = "";
     int i;
@@ -279,12 +280,12 @@ static int walk_prop(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs, char c
     uint32_t h = ctx->h->fnv1a32(full);
     if (ob_printf(ctx->b, "#define ID_%s_%s 0x%08x // %s\n",
             ctx->class_name, leaf, h, full) < 0) return -1;
-    if (ctx->record_enum) {
+    s = find_struct(ctx->smap, ctx->scount, type_name);
+    if (ctx->record_enum && !(s && !s->sealed)) {
         if (wctx_push(ctx, leaf) < 0) return -1;
         if (ctx->pidx) (*ctx->pidx)++;
     }
     /* Recurse into non-sealed struct */
-    sentry const *s = find_struct(ctx->smap, ctx->scount, type_name);
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
         cg_foreach(ctx->m, s->id, CG_KIND_FIELD, f) {
             char fn[64]; snprintf(fn, sizeof(fn), "%s", f->name);

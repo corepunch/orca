@@ -95,9 +95,11 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
 	.Properties = NAME##Properties, \
+	.Shorthands = NAME##Shorthands, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
+	.NumShorthands = k##NAME##NumShorthands, \
 };
 
 #endif

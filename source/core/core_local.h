@@ -62,6 +62,7 @@ struct vm_register
 
 #define MAX_CLASSES 256
 #define MAX_PROPERTY_TYPES 1024
+#define MAX_PROPERTY_SHORTHANDS 1024
 #define MAX_STRUCTS 256
 #define MAX_STRUCT_PARSERS 256
 #define MAX_FILE_LOADERS 256
@@ -90,6 +91,7 @@ struct game
   struct ClassDesc const *classes[MAX_CLASSES];
   struct StructDesc const *structs[MAX_STRUCTS];
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
+  struct PropertyShorthand shorthands[MAX_PROPERTY_SHORTHANDS];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct Property* binding_properties;

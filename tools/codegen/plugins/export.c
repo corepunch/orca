@@ -413,7 +413,7 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               char const *type, uint32_t flags) {
     sentry const *s;
     s = find_struct(smap, scount, type);
-    if (!((flags & CG_FLAG_INHERITED) && s && !s->sealed)) {
+    if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
         if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags) < 0) return -1;
     }
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
@@ -454,6 +454,212 @@ static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const
             if (emit_property_row(b, h, m, owner_name, segs, 1, "int", 0) < 0) return -1;
         }
     }
+    return 0;
+}
+
+static int shorthand_target_count(cg_model const *m,
+                                  sentry const *smap, size_t scount,
+                                  char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    int count = 0;
+    if (!(s && !s->sealed)) return 1;
+    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+        if (fixed > 0) {
+            count += fixed * shorthand_target_count(m, smap, scount, f->type);
+        } else {
+            count += shorthand_target_count(m, smap, scount, f->type);
+        }
+    }
+    return count;
+}
+
+static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                      sentry const *smap, size_t scount,
+                                      char const *owner_name,
+                                      char const *shorthand_type,
+                                      char full_segs[][64], int n_full,
+                                      char field_segs[][64], int n_field,
+                                      char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (s && !s->sealed && n_full < MAX_DEPTH - 1 && n_field < MAX_DEPTH - 1) {
+        cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+            int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+            if (fixed > 0) {
+                int i;
+                for (i = 0; i < fixed; ++i) {
+                    char next_full[MAX_DEPTH][64];
+                    char next_field[MAX_DEPTH][64];
+                    memcpy(next_full, full_segs, sizeof(next_full));
+                    memcpy(next_field, field_segs, sizeof(next_field));
+                    snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                    snprintf(next_field[n_field], sizeof(next_field[n_field]), "%s[%d]", f->name, i);
+                    if (emit_shorthand_target_walk(b, h, m, smap, scount,
+                            owner_name, shorthand_type,
+                            next_full, n_full + 1,
+                            next_field, n_field + 1,
+                            f->type) < 0) return -1;
+                }
+            } else {
+                char next_full[MAX_DEPTH][64];
+                char next_field[MAX_DEPTH][64];
+                memcpy(next_full, full_segs, sizeof(next_full));
+                memcpy(next_field, field_segs, sizeof(next_field));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+                snprintf(next_field[n_field], sizeof(next_field[n_field]), "%s", f->name);
+                if (emit_shorthand_target_walk(b, h, m, smap, scount,
+                        owner_name, shorthand_type,
+                        next_full, n_full + 1,
+                        next_field, n_field + 1,
+                        f->type) < 0) return -1;
+            }
+        }
+        return 0;
+    }
+
+    char leaf[256], field[256], addr[512];
+    property_leaf(full_segs, n_full, leaf, sizeof(leaf));
+    property_leaf(field_segs, n_field, field, sizeof(field));
+    property_addr(field_segs, n_field, addr, sizeof(addr));
+    return ob_printf(b,
+            "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s) },\n",
+            field, owner_name, leaf, shorthand_type, addr);
+}
+
+static void shorthand_target_symbol(char *dst, size_t dsz,
+                                    char const *owner_name,
+                                    char segs[][64], int n_segs) {
+    char leaf[256];
+    property_leaf(segs, n_segs, leaf, sizeof(leaf));
+    snprintf(dst, dsz, "%s%sShorthandTargets", owner_name, leaf);
+}
+
+static int emit_shorthand_arrays_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                      sentry const *smap, size_t scount,
+                                      char const *owner_name,
+                                      char full_segs[][64], int n_full,
+                                      char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    int count = 0;
+    if (!(s && !s->sealed)) return 0;
+
+    char targets[512];
+    char field_segs[MAX_DEPTH][64] = {{0}};
+    shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
+    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[%d] = {\n",
+            targets, shorthand_target_count(m, smap, scount, type)) < 0) return -1;
+    if (emit_shorthand_target_walk(b, h, m, smap, scount,
+            owner_name, type, full_segs, n_full, field_segs, 0, type) < 0) return -1;
+    if (ob_printf(b, "};\n") < 0) return -1;
+    count++;
+
+    if (n_full >= MAX_DEPTH - 1) return count;
+    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+        if (fixed > 0) {
+            int i;
+            for (i = 0; i < fixed; ++i) {
+                char next_full[MAX_DEPTH][64];
+                int nested;
+                memcpy(next_full, full_segs, sizeof(next_full));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                nested = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                        owner_name, next_full, n_full + 1, f->type);
+                if (nested < 0) return -1;
+                count += nested;
+            }
+        } else {
+            char next_full[MAX_DEPTH][64];
+            int nested;
+            memcpy(next_full, full_segs, sizeof(next_full));
+            snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+            nested = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                    owner_name, next_full, n_full + 1, f->type);
+            if (nested < 0) return -1;
+            count += nested;
+        }
+    }
+    return count;
+}
+
+static int emit_shorthand_entries_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                       sentry const *smap, size_t scount,
+                                       char const *owner_name,
+                                       char full_segs[][64], int n_full,
+                                       char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed)) return 0;
+
+    char leaf[256], targets[512];
+    property_leaf(full_segs, n_full, leaf, sizeof(leaf));
+    shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
+    if (ob_printf(b,
+            "\t{ .Name = \"%s\", .Category = \"%s\", .TypeString = \"%s\", "
+            ".ShortIdentifier = 0x%08x, .FullIdentifier = ID_%s_%s, "
+            ".StructSize = sizeof(struct %s), .Targets = %s, "
+            ".NumTargets = sizeof(%s) / sizeof(*%s) },\n",
+            leaf, owner_name, s->export_name,
+            h->fnv1a32(leaf), owner_name, leaf,
+            type, targets, targets, targets) < 0) return -1;
+
+    if (n_full >= MAX_DEPTH - 1) return 0;
+    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+        if (fixed > 0) {
+            int i;
+            for (i = 0; i < fixed; ++i) {
+                char next_full[MAX_DEPTH][64];
+                memcpy(next_full, full_segs, sizeof(next_full));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                        owner_name, next_full, n_full + 1, f->type) < 0) return -1;
+            }
+        } else {
+            char next_full[MAX_DEPTH][64];
+            memcpy(next_full, full_segs, sizeof(next_full));
+            snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+            if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                    owner_name, next_full, n_full + 1, f->type) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static int emit_class_shorthands(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 cg_node const *c) {
+    int count = 0;
+    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+        sentry const *s = find_struct(smap, scount, p->type);
+        if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+            char full_segs[MAX_DEPTH][64] = {{0}};
+            int emitted;
+            snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+            emitted = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                    c->name, full_segs, 1, p->type);
+            if (emitted < 0) return -1;
+            count += emitted;
+        }
+    }
+    if (!count) {
+        if (ob_printf(b, "#define %sShorthands NULL\n#define k%sNumShorthands 0\n",
+                c->name, c->name) < 0) return -1;
+        return 0;
+    }
+
+    if (ob_printf(b, "static struct PropertyShorthand const %sShorthands[] = {\n",
+            c->name) < 0) return -1;
+    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+        sentry const *s = find_struct(smap, scount, p->type);
+        if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+            char full_segs[MAX_DEPTH][64] = {{0}};
+            snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+            if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                    c->name, full_segs, 1, p->type) < 0) return -1;
+        }
+    }
+    if (ob_printf(b, "};\n#define k%sNumShorthands (sizeof(%sShorthands) / sizeof(*%sShorthands))\n",
+            c->name, c->name, c->name) < 0) return -1;
     return 0;
 }
 
@@ -862,6 +1068,7 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
         if (emit_component_handlers(b, c, m) < 0) return -1;
+        if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
         if (ob_printf(b, "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
                 c->name, c->name) < 0) return -1;
         if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1) < 0) return -1;
