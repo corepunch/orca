@@ -51,7 +51,7 @@ struct; a Property node is only allocated when a binding or callback is attached
 
 ---
 
-## Phase 1 — Add `class_id`, `super_id`, and `type` to Object
+## Phase 1 — Add `class_id`, `super_id`, and `type` to Object [Done]
 
 **Goal:** Give every object an explicit concrete-class identity and a
 storage-family identity, without breaking anything yet.
@@ -84,7 +84,7 @@ storage-family identity, without breaking anything yet.
 
 ---
 
-## Phase 2 — Define `struct UIData`
+## Phase 2 — Define `struct UIData` [Done]
 
 **Goal:** Create the monolithic storage struct for all UIKit objects and an
 accessor. No allocation changes yet.
@@ -122,7 +122,7 @@ accessor. No allocation changes yet.
 
 ---
 
-## Phase 3 — Embed `typedata[]` in Object and allocate UIData
+## Phase 3 — Embed `typedata[]` in Object and allocate UIData [Done]
 
 **Goal:** Objects with `super_id == ID_Node2D` carry a live `UIData` block.
 `Object_UIData` returns a real pointer. The `data[MAX_OBJECT_DATA]` blob is
