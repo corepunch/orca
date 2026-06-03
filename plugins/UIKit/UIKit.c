@@ -59,11 +59,18 @@ void on_ui_module_registered(lua_State* L) {
   REG_UIDATA(StyleController);
   REG_UIDATA(TextRun);
   REG_UIDATA(TextBlock);
+  REG_UIDATA(PrefabView2D);
   REG_UIDATA(ImageView);
   REG_UIDATA(Grid);
   REG_UIDATA(UniformGrid);
   REG_UIDATA(StackView);
+  REG_UIDATA(Form);
+  REG_UIDATA(RadioButton);
+  REG_UIDATA(RadioGroup);
+  REG_UIDATA(Tab);
+  REG_UIDATA(TabBar);
   REG_UIDATA(Button);
+  REG_UIDATA(Label);
   REG_UIDATA(Input);
   REG_UIDATA(Screen);
   REG_UIDATA(Popup);

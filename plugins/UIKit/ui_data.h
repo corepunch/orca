@@ -19,11 +19,18 @@ struct UIData {
   struct StyleController StyleController;
   struct TextRun        TextRun;
   struct TextBlock      TextBlock;
+  struct PrefabView2D   PrefabView2D;
   struct ImageView      ImageView;
   struct Grid           Grid;
   struct UniformGrid    UniformGrid;
   struct StackView      StackView;
+  struct Form           Form;
+  struct RadioButton    RadioButton;
+  struct RadioGroup     RadioGroup;
+  struct Tab            Tab;
+  struct TabBar         TabBar;
   struct Button         Button;
+  struct Label          Label;
   struct Input          Input;
   struct Screen         Screen;
   struct Popup          Popup;
@@ -56,10 +63,31 @@ struct UIData {
 #define GetStyleController(_P) _UI(_P, StyleController)
 
 #undef  GetTextRun
-#define GetTextRun(_P)      _UI(_P, TextRun)
+#define GetTextRun(_P)       _UI(_P, TextRun)
 
 #undef  GetTextBlock
-#define GetTextBlock(_P)    _UI(_P, TextBlock)
+#define GetTextBlock(_P)     _UI(_P, TextBlock)
+
+#undef  GetPrefabView2D
+#define GetPrefabView2D(_P)  _UI(_P, PrefabView2D)
+
+#undef  GetForm
+#define GetForm(_P)          _UI(_P, Form)
+
+#undef  GetRadioButton
+#define GetRadioButton(_P)   _UI(_P, RadioButton)
+
+#undef  GetRadioGroup
+#define GetRadioGroup(_P)    _UI(_P, RadioGroup)
+
+#undef  GetTab
+#define GetTab(_P)           _UI(_P, Tab)
+
+#undef  GetTabBar
+#define GetTabBar(_P)        _UI(_P, TabBar)
+
+#undef  GetLabel
+#define GetLabel(_P)         _UI(_P, Label)
 
 #undef  GetImageView
 #define GetImageView(_P)    _UI(_P, ImageView)

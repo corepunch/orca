@@ -305,7 +305,7 @@ decreases.
 
 ---
 
-## Phase 7 — Migrate remaining concept components
+## Phase 7 — Migrate remaining concept components [Done]
 
 **Goal:** Any surviving pseudo-class "concept" components (like the already-
 removed `TextBlockConcept`) are folded into the owning struct or class proc.
