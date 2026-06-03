@@ -40,6 +40,7 @@ OBJ_Create(uint32_t class_id) {
     return NULL;
   }
   struct Object *object = ZeroAlloc(sizeof(struct Object));
+  OBJ_AddRef(object);
   object->unique = ++unique_counter;
   OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);
@@ -90,15 +91,29 @@ OBJ_Clear(struct Object *pobj)
 void
 OBJ_RemoveFromParent(struct Object *self)
 {
+  bool_t had_parent = self->parent != NULL;
   OBJ_DetachFromParent(self);
   if (core.focus == self) core.focus = NULL;
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
   axRemoveFromQueue(self);
-  OBJ_ReleaseRef(self);
+  if (had_parent) {
+    OBJ_ReleaseRef(self);
+  }
 }
 
 #include "../property/property_internal.h"
+
+static void
+OBJ_ClearInheritedProperties(struct Object *pobj)
+{
+  for (struct Property *p = pobj->properties; p; p = PROP_GetNext(p)) {
+    struct PropertyType const *desc = PROP_GetDesc(p);
+    if (desc && desc->IsInherited && !PROP_IsNull(p)) {
+      PROP_Clear(p);
+    }
+  }
+}
 
 static void
 OBJ_Release(struct Object *pobj)
@@ -107,6 +122,7 @@ OBJ_Release(struct Object *pobj)
   counter--;
 #endif
   g_object_count--;
+  OBJ_ClearInheritedProperties(pobj);
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_DetachFromParent(pobj);
@@ -141,17 +157,13 @@ OBJ_Release(struct Object *pobj)
   free(pobj);
 }
 
-void
-OBJ_ReleaseOrphan(lua_State* L, struct Object *pobj)
-{
-  (void)L;
-  OBJ_ReleaseRef(pobj);
-}
-
 HRESULT
 _RegisterProperty(struct Object *object, struct Property *property)
 {
-  uint32_t psize = PROP_GetSize(property);
+  struct PropertyType const *desc = PROP_GetDesc(property);
+  uint32_t psize = desc && desc->IsInherited && !desc->IsArray
+    ? sizeof(void *)
+    : PROP_GetSize(property);
   assert(object->datasize + psize < MAX_OBJECT_DATA);
   PROP_AddToList(property, &object->properties);
   if (!CMP_SetProperty(object->components, property)) {

@@ -89,32 +89,26 @@ _MakeViewTextRun(struct Object *hObject,
                  struct TextRun text,
                  lpcString_t szText)
 {
-  for (struct Object *node = hObject; node; node = OBJ_GetParent(node)) {
-    struct Property *plist = OBJ_GetProperties(node);
-    struct Property *p = PROP_FindByLongID(plist, ID_TextRun_FontSize);
-    if (p) {
-      text.Font.Size = *(float const *)PROP_GetValue(p);
-      break;
-    }
-//    if (Node_GetProperty(node, kNodeFontSize)) {
-//      font.Size = GetNode(node)->Font.Size;
-//      break;
-//    }
-  }
+  (void)hObject;
+  struct FontShorthand font = IVALUE(text.Font, ((struct FontShorthand){ .Size = DEFAULT_FONT_SIZE }));
+  font.Weight = IVALUE(text.FontWeight, font.Weight);
+  font.Style = IVALUE(text.FontStyle, font.Style);
+  font.Size = IVALUE(text.FontSize, font.Size ? font.Size : DEFAULT_FONT_SIZE);
+  font.Family = IVALUE(text.FontFamily, font.Family);
   struct ViewTextRun view = {
     .string = szText,
-    .fontFamily = text.Font.Family,
-    .fontSize = text.Font.Size,
+    .fontFamily = font.Family,
+    .fontSize = font.Size,
     .letterSpacing = text.LetterSpacing,
     .fixedCharacterWidth = text.FixedCharacterWidth,
     .underlineWidth = text.Underline.Width,
     .underlineOffset = text.Underline.Offset,
     .fontStyle = 0,
   };
-  if (text.Font.Weight == kFontWeightBold) {
+  if (font.Weight == kFontWeightBold) {
     view.fontStyle += FS_BOLD;
   }
-  if (text.Font.Style == kFontStyleItalic) {
+  if (font.Style == kFontStyleItalic) {
     view.fontStyle += FS_ITALIC;
   }
   return view;
@@ -132,11 +126,11 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
       struct TextRun base = *pTextRun;
-      if (TextRun_GetProperty(run, kTextRunFont)) base.Font = tr->Font;
-      if (TextRun_GetProperty(run, kTextRunFontWeight)) base.Font.Weight = tr->Font.Weight;
-      if (TextRun_GetProperty(run, kTextRunFontStyle)) base.Font.Style = tr->Font.Style;
-      if (TextRun_GetProperty(run, kTextRunFontSize)) base.Font.Size = tr->Font.Size;
-      if (TextRun_GetProperty(run, kTextRunFontFamily)) base.Font.Family = tr->Font.Family;
+      if (tr->Font) base.Font = tr->Font;
+      if (tr->FontWeight) base.FontWeight = tr->FontWeight;
+      if (tr->FontStyle) base.FontStyle = tr->FontStyle;
+      if (tr->FontSize) base.FontSize = tr->FontSize;
+      if (tr->FontFamily) base.FontFamily = tr->FontFamily;
       if (TextRun_GetProperty(run, kTextRunUnderline)) base.Underline = tr->Underline;
       if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
       if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;

@@ -343,8 +343,7 @@ int f_init(lua_State* L)
 {
   struct Object* workspace = OBJ_Create(ID_Workspace);
   FS_SetWorkspace(workspace);
-  /* Pin the workspace userdata in the registry so the __gc metamethod
-   * (OBJ_ReleaseOrphan) never fires on it. The workspace is owned by the
+  /* Pin the workspace userdata in the registry. The workspace is owned by the
    * C filesystem layer, not by Lua GC. */
   luaX_pushObject(L, workspace);
   lua_setfield(L, LUA_REGISTRYINDEX, "_orca_workspace_pin");

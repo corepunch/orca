@@ -346,6 +346,7 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     char leaf[256], addr[512];
     char const *kind;
     char actual_type[256];
+    char value_decl[256];
     uint32_t actual_flags = flags;
     sentry const *s;
     (void)s;
@@ -355,9 +356,17 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     if (!strcmp(type_kind(m, actual_type), "int") && find_kind(m, leaf, CG_KIND_ENUM))
         snprintf(actual_type, sizeof(actual_type), "%s", leaf);
     kind = type_kind(m, actual_type);
-    if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
-            (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
-            h->fnv1a32(leaf), owner_name, leaf, addr, property_datatype(m, actual_type)) < 0) return -1;
+    type_decl(value_decl, sizeof(value_decl), m, actual_type, actual_flags);
+    if (actual_flags & CG_FLAG_INHERITED) {
+        if (ob_printf(b, "\tINHERITED_DECL(0x%08x, %s, %s, %s, %s, %s",
+                h->fnv1a32(leaf), owner_name, leaf, leaf, value_decl,
+                property_datatype(m, actual_type)) < 0) return -1;
+    } else {
+        if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
+                (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
+                h->fnv1a32(leaf), owner_name, leaf, addr,
+                property_datatype(m, actual_type)) < 0) return -1;
+    }
     if (!strcmp(kind, "enum")) {
         if (ob_printf(b, ", .EnumValues = _%s", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "external_struct")) {
@@ -371,8 +380,6 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, ", .TypeString = \"%s\"",
                 n ? export_name(n) : actual_type) < 0) return -1;
     }
-    if (actual_flags & CG_FLAG_INHERITED)
-        if (ob_printf(b, ", .IsInherited = TRUE") < 0) return -1;
     if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
     return 0;
 }
@@ -864,6 +871,7 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, "};\nstatic struct %s %sDefaults = {\n", c->name, c->name) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
             char const *kind = type_kind(m, p->type);
+            if (p->flags & CG_FLAG_INHERITED) continue;
             if (p->extra && p->extra[0]) {
                 if (!strcmp(kind, "string")) {
                     if (ob_printf(b, "\t\t\n  .%s = \"%s\",\n", p->name, p->extra) < 0) return -1;

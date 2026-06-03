@@ -18,9 +18,13 @@ Input_ApplyTextDefaults(struct Object *hObject)
     FS_GetThemeColor(
       THEME_COLOR_CARD_BACKGROUND,
       COLOR_CONTROL_BACKGROUND));
-  node2d->Foreground.Color = FS_GetThemeColor(
+  struct color foreground = FS_GetThemeColor(
     THEME_COLOR_CONTROL_FOREGROUND,
     COLOR_CONTROL_FOREGROUND);
+  struct Property *foregroundProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+    PROP_SetValue(foregroundProp, &foreground);
+  }
   node->Border.Color = FS_GetThemeColor(
     THEME_COLOR_CONTROL_BORDER,
     FS_GetThemeColor(

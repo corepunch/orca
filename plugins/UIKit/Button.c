@@ -75,9 +75,13 @@ HANDLER(Button, Object, Create)
 
   struct Node2D *node2d = GetNode2D(hObject);
   if (node2d) {
-    node2d->Foreground.Color = FS_GetThemeColor(
+    struct color foreground = FS_GetThemeColor(
       THEME_COLOR_CONTROL_FOREGROUND,
       COLOR_ACCENT_FOREGROUND);
+    struct Property *prop = NULL;
+    if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &prop))) {
+      PROP_SetValue(prop, &foreground);
+    }
   }
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);

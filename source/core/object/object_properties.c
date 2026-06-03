@@ -26,13 +26,13 @@ _ApplyInheritedProperty(struct Object *object,
   struct Property *property = PROP_FindByLongID(object->properties,
                                                desc->FullIdentifier);
   if (_HasLocalValue(property)) {
-    value = PROP_GetValue(property);
+    value = PROP_GetRawValueSlot(property);
   } else {
     if (FAILED(OBJ_FindLongProperty(object, desc->FullIdentifier, &property))) {
       return;
     }
     PROP_SetInheritedValue(property, value);
-    value = PROP_GetValue(property);
+    value = PROP_GetRawValueSlot(property);
   }
 
   FOR_EACH_LIST(struct Object, child, object->children) {
@@ -50,7 +50,7 @@ OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property)
   if (!desc || !desc->IsInherited) {
     return;
   }
-  void const *value = PROP_GetValue(property);
+  void const *value = PROP_GetRawValueSlot(property);
   FOR_EACH_LIST(struct Object, child, object->children) {
     _ApplyInheritedProperty(child, desc, value);
   }
@@ -68,7 +68,7 @@ OBJ_ApplyInheritedProperties(struct Object *object)
     if (!desc || !desc->IsInherited || PROP_IsNull(property)) {
       continue;
     }
-    _ApplyInheritedProperty(object, desc, PROP_GetValue(property));
+    _ApplyInheritedProperty(object, desc, PROP_GetRawValueSlot(property));
   }
 }
 

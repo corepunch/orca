@@ -40,8 +40,10 @@ PROP_HasHandler(struct Property const *property)
 }
 
 struct Object *PROP_GetObjectValue(struct Property const *property);
+void const *PROP_GetRawValueSlot(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
+void OBJ_ApplyInheritedProperties(struct Object *object);
 void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

@@ -23,16 +23,17 @@ PROP_FindByShortID(struct Property *list, uint32_t identifier) {
 struct Object *
 PROP_GetObjectValue(struct Property const *property)
 {
-  if (!property || PROP_GetType(property) != kDataTypeObject || !property->value) {
+  void const *slot = PROP_GetRawValueSlot(property);
+  if (!property || PROP_GetType(property) != kDataTypeObject || !slot) {
     return NULL;
   }
   /* Object-typed properties store a reference-counted object pointer.
    * If the property targets a component, the stored pointer is the component
    * userdata and CMP_GetObject recovers the owning object. */
   if (property->pdesc->TypeString) {
-    return CMP_GetObject(*(void **)property->value);
+    return CMP_GetObject(*(void **)slot);
   }
-  return *(struct Object **)property->value;
+  return *(struct Object **)slot;
 }
 
 struct Property *
@@ -71,11 +72,27 @@ PROP_GetUserData(struct Property const *property)
   return property->pdesc->TypeString;
 }
 
+void const *
+PROP_GetRawValueSlot(struct Property const *property)
+{
+  if (!property || !property->value) {
+    return NULL;
+  }
+  if (property->pdesc && property->pdesc->IsInherited && !property->pdesc->IsArray) {
+    return *(void * const *)property->value;
+  }
+  return property->value;
+}
+
 void const*
 PROP_GetValue(struct Property const *property)
 {
   if (property && property->pdesc && property->pdesc->IsArray) {
     return property->value;
+  }
+  void const *slot = PROP_GetRawValueSlot(property);
+  if (!slot) {
+    return NULL;
   }
   if (PROP_GetType(property) == kDataTypeObject) {
     static struct Object *obj[256];
@@ -83,7 +100,7 @@ PROP_GetValue(struct Property const *property)
     obj[i] = PROP_GetObjectValue(property);
     return &obj[i++];
   } else {
-    return property->value;
+    return slot;
   }
 }
 
@@ -114,9 +131,18 @@ PROP_SetStoredValue(struct Property *property,
                     void const* source,
                     bool_t local)
 {
+  void *storage = property->value;
+  if (property->pdesc->IsInherited && !property->pdesc->IsArray) {
+    storage = *(void **)property->value;
+    if (local && !(property->flags & PF_OWNS_VALUE)) {
+      storage = ZeroAlloc(PROP_GetSize(property));
+      ISET_SLOT(property, storage);
+      property->flags |= PF_OWNS_VALUE;
+    }
+  }
   if (property->pdesc->IsArray) {
-    void *old_ptr = *(void**)property->value;
-    int old_count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+    void *old_ptr = *(void**)storage;
+    int old_count = ((int*)storage)[sizeof(void*)/sizeof(int)];
     if (old_ptr) {
       if (property->pdesc->DataType == kDataTypeObject) {
         FOR_LOOP(i, old_count) {
@@ -127,10 +153,10 @@ PROP_SetStoredValue(struct Property *property,
       }
       free(old_ptr);
     }
-    memcpy(property->value, source, sizeof(void*) + sizeof(int));
+    memcpy(storage, source, sizeof(void*) + sizeof(int));
     if (property->pdesc->DataType == kDataTypeObject) {
-      void **items = *(void**)property->value;
-      int count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+      void **items = *(void**)storage;
+      int count = ((int*)storage)[sizeof(void*)/sizeof(int)];
       FOR_LOOP(i, count) {
         if (items && items[i]) {
           OBJ_AddRef((struct Object*)items[i]);
@@ -141,16 +167,18 @@ PROP_SetStoredValue(struct Property *property,
     return;
   }
   if (PROP_GetType(property) == kDataTypeString) {
-    if (*(LPSTR*)property->value) {
-      free(*(LPSTR*)property->value);
+    if (*(LPSTR*)storage) {
+      free(*(LPSTR*)storage);
     }
-    *(LPSTR*)property->value = strdup(*(LPSTR*)source);
+    *(LPSTR*)storage = strdup(*(LPSTR*)source);
   } else if (PROP_GetType(property) == kDataTypeObject) {
     struct Object *object = *(struct Object **)source;
-    struct Object *old_object = PROP_GetObjectValue(property);
+    bool_t old_value_is_owned = !property->pdesc->IsInherited ||
+      (property->flags & PF_OWNS_VALUE);
+    struct Object *old_object = old_value_is_owned ? PROP_GetObjectValue(property) : NULL;
     /* Object properties own a ref, but they do not parent the object. */
     if (!object) {
-      memset(property->value, 0, PROP_GetSize(property));
+      memset(storage, 0, PROP_GetSize(property));
       property->flags &= ~(PF_MODIFIED | PF_INHERITED);
       if (old_object) {
         OBJ_ReleaseRef(old_object);
@@ -167,16 +195,16 @@ PROP_SetStoredValue(struct Property *property,
                   OBJ_GetClassName(object));
         return;
       }
-      memcpy(property->value, &udata, PROP_GetSize(property));
+      memcpy(storage, &udata, PROP_GetSize(property));
     } else {
-      memcpy(property->value, &object, PROP_GetSize(property));
+      memcpy(storage, &object, PROP_GetSize(property));
     }
     OBJ_AddRef(object);
     if (old_object) {
       OBJ_ReleaseRef(old_object);
     }
   } else {
-    memcpy(property->value, source, PROP_GetSize(property));
+    memcpy(storage, source, PROP_GetSize(property));
   }
   PROP_MarkValueStored(property, local);
 }
@@ -196,7 +224,8 @@ PROP_NormalizeObjectValue(struct Property const *property, void const* source)
 static bool_t
 PROP_IsSameValue(struct Property const *property, void const* source)
 {
-  if (!(property->value && source && (property->flags & (PF_MODIFIED | PF_INHERITED))))
+  void const *slot = PROP_GetRawValueSlot(property);
+  if (!(slot && source && (property->flags & (PF_MODIFIED | PF_INHERITED))))
     return FALSE;
   if (property->pdesc->IsArray) {
     if (property->pdesc->DataType != kDataTypeObject) {
@@ -217,25 +246,26 @@ PROP_IsSameValue(struct Property const *property, void const* source)
     return TRUE;
   }
   if (PROP_GetType(property) == kDataTypeString) {
-    lpcString_t old = *(lpcString_t*)property->value;
+    lpcString_t old = *(lpcString_t const*)slot;
     lpcString_t newv = *(lpcString_t const*)source;
     return old == newv || (old && newv && strcmp(old, newv) == 0);
   }
   if (PROP_GetType(property) == kDataTypeObject) {
-    void* oldv = *(void**)property->value;
+    void* oldv = *(void* const*)slot;
     void* newv = PROP_NormalizeObjectValue(property, source);
     struct Object *object = *(struct Object *const*)source;
     if (!object) return oldv == NULL;
     if (!newv) return oldv == NULL;
     return oldv == newv;
   }
-  return memcmp(property->value, source, PROP_GetSize(property)) == 0;
+  return memcmp(slot, source, PROP_GetSize(property)) == 0;
 }
 
 void
 PROP_SetValue(struct Property *property, void const* source)
 {
-  if (PROP_IsSameValue(property, source)) {
+  if (PROP_IsSameValue(property, source) &&
+      (!property->pdesc->IsInherited || (property->flags & PF_MODIFIED))) {
     if (property->flags & PF_INHERITED) {
       property->flags &= ~PF_INHERITED;
       PROP_SetDirty(property);
@@ -266,6 +296,18 @@ PROP_SetInheritedValue(struct Property *property, void const* source)
 {
   if (!property || !property->pdesc || !property->pdesc->IsInherited) return;
   if (property->flags & PF_MODIFIED) return;
+  if (!property->pdesc->IsArray) {
+    void *old_slot = *(void **)property->value;
+    if (old_slot == source) return;
+    ISET_SLOT(property, source);
+    if (source) {
+      PROP_MarkValueStored(property, FALSE);
+    } else {
+      property->flags &= ~PF_INHERITED;
+      OBJ_SetDirty(property->object);
+    }
+    return;
+  }
   if (PROP_IsSameValue(property, source)) return;
   PROP_SetStoredValue(property, source, FALSE);
 }

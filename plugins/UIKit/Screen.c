@@ -38,6 +38,16 @@ Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
   return view;
 }
 
+static struct BrushShorthand
+_Node2DGetForegroundBrush(struct Node2D const *node, struct color fallback)
+{
+  struct BrushShorthand brush = IVALUE(node->Foreground, ((struct BrushShorthand){ 0 }));
+  brush.Color = IVALUE(node->ForegroundColor, fallback);
+  brush.Image = IVALUE(node->ForegroundImage, brush.Image);
+  brush.Material = IVALUE(node->ForegroundMaterial, brush.Material);
+  return brush;
+}
+
 static struct _PIPELINESTATE
 _Pipeline2D(int width, int height)
 {
@@ -254,7 +264,8 @@ static void _RenderSubViews(struct Object *hObject) {
   _GetContentsMatrix(GetNode2D(hObject), &projection, &view);
 
   Node2D_Draw2DContent(hObject, node2D, 0, &(DRAW2DCONTENTSTRUCT){
-      .ForegroundColor = GetNode2D(hObject)->Foreground.Color,
+      .ForegroundColor = _Node2DGetForegroundBrush(GetNode2D(hObject),
+                                                   (struct color){ 1, 1, 1, 1 }).Color,
       .ProjectionMatrix = projection,
       .ViewMatrix = view,
       .BoundsMatrix = projection,
@@ -444,9 +455,8 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     OBJ_SetFlags(hObject, flags | OF_ACTIVATED);
   }
 
-  if (PROP_IsNull(Node2D_GetProperty(hObject, kNode2DForegroundColor))) {
-    pNode2D->Foreground.Color = pDraw2DContent->ForegroundColor;
-  }
+  struct BrushShorthand foregroundBrush =
+    _Node2DGetForegroundBrush(pNode2D, pDraw2DContent->ForegroundColor);
 
   if (pNode2D->Ring.Width > 0) {
     _SendMessage(hObject, Node2D, DrawBrush,
@@ -493,7 +503,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     _SendMessage(hObject, Node2D, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .image = foreground,
-      .brush = pNode2D->Foreground,
+      .brush = foregroundBrush,
       .foreground = TRUE,
       .viewdef = &viewdef);
 
@@ -502,11 +512,11 @@ HANDLER(Node2D, Node2D, Draw2DContent)
       uint8_t clipRef = parentStencilRef + 1;
       _EnterStencilClip(pNode2D, &viewdef, clipRef);
       pDraw2DContent->StencilRef = clipRef;
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, foregroundBrush.Color);
       pDraw2DContent->StencilRef = parentStencilRef;
       _ExitStencilClip(parentStencilRef);
     } else {
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, foregroundBrush.Color);
     }
   }
   return TRUE;

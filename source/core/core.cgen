@@ -244,9 +244,15 @@
           <summary>Clear all children of the object.</summary>
           <details>Removes and properly releases all child objects from this object's hierarchy. This operation recursively clears each child object, removes them from the parent-child relationship, unreferences their Lua objects, and sets their parent pointer to NULL. The children list is then cleared. This is a destructive operation that completely empties the object's child hierarchy.</details>
         </method>
-        <method name="ReleaseOrphan" export="__gc" lua="true">
-          <summary>Release one Lua-owned reference during garbage collection.</summary>
-          <details>Decrements the object's reference count. If that count reaches zero, the object is destroyed: children are cleared recursively, focus/hover references are dropped, a "Destroy" message is sent, components and properties are released, and all allocated strings and memory are freed. This keeps Lua __gc aligned with the same reference-counted ownership model used by the rest of the engine.</details>
+        <method name="AddRef">
+          <summary>Add one owned reference.</summary>
+          <details>Increments the object's reference count and returns the new count. Every owner that keeps an Object pointer beyond the current call must hold a reference and later release it with ReleaseRef.</details>
+          <returns type="uint">The new reference count.</returns>
+        </method>
+        <method name="ReleaseRef" export="__gc">
+          <summary>Release one owned reference.</summary>
+          <details>Decrements the object's reference count and destroys the object when the count reaches zero. Lua userdata finalization calls this directly, because each Lua object wrapper owns one reference acquired when the wrapper is created.</details>
+          <returns type="uint">The remaining reference count, or 0 when the object was destroyed.</returns>
         </method>
         <method name="Equals" const="true" export="__eq">
           <summary>Compare two objects for equality.</summary>

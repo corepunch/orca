@@ -30,9 +30,13 @@ RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadi
     FS_GetThemeColor(
       THEME_COLOR_CARD_BACKGROUND,
       COLOR_CARD_BACKGROUND));
-  node2d->Foreground.Color = FS_GetThemeColor(
+  struct color foreground = FS_GetThemeColor(
     THEME_COLOR_ACCENT_FOREGROUND,
     COLOR_ACCENT_FOREGROUND);
+  struct Property *foregroundProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+    PROP_SetValue(foregroundProp, &foreground);
+  }
 }
 
 static void
@@ -255,7 +259,10 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float dotOffset = (indicatorSize - dotSize) * 0.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    entity.material.color = pNode2D->Foreground.Color;
+    struct BrushShorthand foreground =
+      IVALUE(pNode2D->Foreground, ((struct BrushShorthand){ 0 }));
+    foreground.Color = IVALUE(pNode2D->ForegroundColor, foreground.Color);
+    entity.material.color = foreground.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly
