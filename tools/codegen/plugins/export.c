@@ -359,7 +359,7 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     type_decl(value_decl, sizeof(value_decl), m, actual_type, actual_flags);
     if (actual_flags & CG_FLAG_INHERITED) {
         if (ob_printf(b, "\tINHERITED_DECL(0x%08x, %s, %s, %s, %s, %s",
-                h->fnv1a32(leaf), owner_name, leaf, leaf, value_decl,
+                h->fnv1a32(leaf), owner_name, leaf, addr, value_decl,
                 property_datatype(m, actual_type)) < 0) return -1;
     } else {
         if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
@@ -412,8 +412,10 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               char const *owner_name, char segs[][64], int n_segs,
                               char const *type, uint32_t flags) {
     sentry const *s;
-    if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags) < 0) return -1;
     s = find_struct(smap, scount, type);
+    if (!((flags & CG_FLAG_INHERITED) && s && !s->sealed)) {
+        if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags) < 0) return -1;
+    }
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
         cg_foreach(m, s->id, CG_KIND_FIELD, f) {
             char next[MAX_DEPTH][64];

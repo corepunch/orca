@@ -121,56 +121,72 @@ static cg_node const *find_kind_node(cg_model const *m, char const *name, cg_kin
     return NULL;
 }
 
-static void inherited_leaf_name(char *dst, size_t dsz, char names[][64], int count) {
-    size_t pos = 0;
-    int i;
-    if (dsz) dst[0] = 0;
-    for (i = 0; i < count; ++i) {
-        char const *s = names[i];
-        int first = 1;
-        while (*s && pos + 1u < dsz) {
-            char c = *s++;
-            if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')))
-                continue;
-            if (first && c >= 'a' && c <= 'z') c = (char)(c - 32);
-            dst[pos++] = c;
-            first = 0;
-        }
-    }
-    if (dsz) dst[pos < dsz ? pos : dsz - 1u] = 0;
-}
-
 static int emit_inherited_slot_field(ob *b, cg_model const *m,
                                      char const *type, uint32_t flags,
                                      char const *name, char const *doc) {
     char t[256];
     if (type_decl_slot(t, sizeof(t), m, type, flags) < 0) return -1;
     if (ob_printf(b, "\t%s %s;", t, name) < 0) return -1;
-    if (doc && doc[0])
-        if (ob_printf(b, " ///< %s", doc) < 0) return -1;
+    if (doc && doc[0]) {
+        if (ob_printf(b, " ///< %s [inherited].", doc) < 0) return -1;
+    } else if (ob_printf(b, " ///< [inherited].") < 0) {
+        return -1;
+    }
     return ob_printf(b, "\n");
 }
 
 #define INHERITED_MAX_DEPTH 16
 
-static int emit_inherited_leaf_slots(ob *b, cg_model const *m,
-                                     char names[][64], int depth,
-                                     char const *type) {
+static int is_expandable_inherited_struct(cg_model const *m, char const *type) {
     cg_node const *st = find_kind_node(m, type, CG_KIND_STRUCT);
-    if (!st || (st->flags & CG_FLAG_SEALED) || depth >= INHERITED_MAX_DEPTH - 1)
+    return st && !(st->flags & CG_FLAG_SEALED);
+}
+
+static int emit_tabs(ob *b, int count) {
+    int i;
+    for (i = 0; i < count; ++i)
+        if (ob_printf(b, "\t") < 0) return -1;
+    return 0;
+}
+
+static int emit_inherited_slot_member(ob *b, cg_model const *m,
+                                      char const *type, uint32_t flags,
+                                      char const *name, char const *doc,
+                                      int indent) {
+    char t[256];
+    if (type_decl_slot(t, sizeof(t), m, type, flags) < 0) return -1;
+    if (emit_tabs(b, indent) < 0) return -1;
+    if (ob_printf(b, "%s %s;", t, name) < 0) return -1;
+    if (doc && doc[0]) {
+        if (ob_printf(b, " ///< %s [inherited].", doc) < 0) return -1;
+    } else if (ob_printf(b, " ///< [inherited].") < 0) {
+        return -1;
+    }
+    return ob_printf(b, "\n");
+}
+
+static int emit_inherited_slot_members(ob *b, cg_model const *m,
+                                       char const *type, int indent) {
+    cg_node const *st = find_kind_node(m, type, CG_KIND_STRUCT);
+    if (!st || (st->flags & CG_FLAG_SEALED))
         return 0;
     cg_foreach(m, st->id, CG_KIND_FIELD, f) {
-        char next[INHERITED_MAX_DEPTH][64];
-        char leaf[256];
         int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
         if (fixed > 0) continue;
-        memcpy(next, names, sizeof(next));
-        snprintf(next[depth], sizeof(next[depth]), "%s", f->name);
-        inherited_leaf_name(leaf, sizeof(leaf), next, depth + 1);
-        if (emit_inherited_slot_field(b, m, f->type, f->flags, leaf, f->doc) < 0)
+        if (is_expandable_inherited_struct(m, f->type)) {
+            if (emit_tabs(b, indent) < 0) return -1;
+            if (ob_printf(b, "struct {\n") < 0) return -1;
+            if (emit_inherited_slot_members(b, m, f->type, indent + 1) < 0)
+                return -1;
+            if (emit_tabs(b, indent) < 0) return -1;
+            if (ob_printf(b, "} %s;", f->name) < 0) return -1;
+            if (f->doc && f->doc[0])
+                if (ob_printf(b, " ///< %s", f->doc) < 0) return -1;
+            if (ob_printf(b, "\n") < 0) return -1;
+        } else if (emit_inherited_slot_member(b, m, f->type, f->flags,
+                                              f->name, f->doc, indent) < 0) {
             return -1;
-        if (emit_inherited_leaf_slots(b, m, next, depth + 1, f->type) < 0)
-            return -1;
+        }
     }
     return 0;
 }
@@ -429,12 +445,17 @@ static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
     cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
         char t[256];
         if (p->flags & CG_FLAG_INHERITED) {
-            char names[INHERITED_MAX_DEPTH][64] = {{0}};
-            if (emit_inherited_slot_field(b, m, p->type, p->flags, p->name, p->doc) < 0)
-                return -1;
-            snprintf(names[0], sizeof(names[0]), "%s", p->name);
-            if (emit_inherited_leaf_slots(b, m, names, 1, p->type) < 0)
-                return -1;
+            if (is_expandable_inherited_struct(m, p->type)) {
+                if (ob_printf(b, "\tstruct {\n") < 0) return -1;
+                if (emit_inherited_slot_members(b, m, p->type, 2) < 0) return -1;
+                if (ob_printf(b, "\t} %s;", p->name) < 0) return -1;
+                if (p->doc && p->doc[0])
+                    if (ob_printf(b, " ///< %s", p->doc) < 0) return -1;
+                if (ob_printf(b, "\n") < 0) return -1;
+            } else {
+                if (emit_inherited_slot_field(b, m, p->type, p->flags, p->name, p->doc) < 0)
+                    return -1;
+            }
         } else {
             type_decl(t, sizeof(t), m, p->type, p->flags);
             if (ob_printf(b, "\t%s %s;", t, p->name) < 0) return -1;

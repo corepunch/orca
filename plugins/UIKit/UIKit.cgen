@@ -218,7 +218,6 @@
       </properties>
       <fields>
         <field name="_textinfo" type="text_info">Internal text information structure.</field>
-        <field name="_font" type="FontShorthand" pointer="true">Reference to the font shorthand configuration.</field>
       </fields>
     </class>
     <class name="TextBlockConcept" parent="TextRun">

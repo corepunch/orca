@@ -90,11 +90,11 @@ _MakeViewTextRun(struct Object *hObject,
                  lpcString_t szText)
 {
   (void)hObject;
-  struct FontShorthand font = IVALUE(text.Font, ((struct FontShorthand){ .Size = DEFAULT_FONT_SIZE }));
-  font.Weight = IVALUE(text.FontWeight, font.Weight);
-  font.Style = IVALUE(text.FontStyle, font.Style);
-  font.Size = IVALUE(text.FontSize, font.Size ? font.Size : DEFAULT_FONT_SIZE);
-  font.Family = IVALUE(text.FontFamily, font.Family);
+  struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
+  font.Weight = IVALUE(text.Font.Weight, font.Weight);
+  font.Style = IVALUE(text.Font.Style, font.Style);
+  font.Size = IVALUE(text.Font.Size, font.Size ? font.Size : DEFAULT_FONT_SIZE);
+  font.Family = IVALUE(text.Font.Family, font.Family);
   struct ViewTextRun view = {
     .string = szText,
     .fontFamily = font.Family,
@@ -126,11 +126,10 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
       struct TextRun base = *pTextRun;
-      if (tr->Font) base.Font = tr->Font;
-      if (tr->FontWeight) base.FontWeight = tr->FontWeight;
-      if (tr->FontStyle) base.FontStyle = tr->FontStyle;
-      if (tr->FontSize) base.FontSize = tr->FontSize;
-      if (tr->FontFamily) base.FontFamily = tr->FontFamily;
+      if (tr->Font.Weight) base.Font.Weight = tr->Font.Weight;
+      if (tr->Font.Style) base.Font.Style = tr->Font.Style;
+      if (tr->Font.Size) base.Font.Size = tr->Font.Size;
+      if (tr->Font.Family) base.Font.Family = tr->Font.Family;
       if (TextRun_GetProperty(run, kTextRunUnderline)) base.Underline = tr->Underline;
       if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
       if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;

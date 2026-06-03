@@ -334,6 +334,42 @@ local function test_attached_inherited_text_font_family()
 	print("PASS: test_attached_inherited_text_font_family")
 end
 
+local function test_attached_inherited_text_font_leaves()
+	local root = ui.Screen { Name = "font-leaves-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local stack = root + ui.StackView { Name = "font-leaves-stack" }
+	local inherited = stack + ui.TextBlock { Name = "font-leaves-inherited", Text = "Inherited" }
+	local local_text = stack + ui.TextBlock {
+		Name = "font-leaves-local",
+		Text = "Local",
+		FontSize = 15,
+		FontWeight = "Normal",
+		FontStyle = "Normal",
+	}
+
+	root["TextRun.FontSize"] = 22
+	root["TextRun.FontWeight"] = "Bold"
+	root["TextRun.FontStyle"] = "Italic"
+	test.expect_near(inherited.FontSize, 22, 0.001, "TextRun.FontSize should inherit through nested Font.Size slot")
+	test.expect_eq(inherited.FontWeight, "Bold", "TextRun.FontWeight should inherit through nested Font.Weight slot")
+	test.expect_eq(inherited.FontStyle, "Italic", "TextRun.FontStyle should inherit through nested Font.Style slot")
+	test.expect_near(local_text.FontSize, 15, 0.001, "local FontSize should beat inherited Font.Size")
+	test.expect_eq(local_text.FontWeight, "Normal", "local FontWeight should beat inherited Font.Weight")
+	test.expect_eq(local_text.FontStyle, "Normal", "local FontStyle should beat inherited Font.Style")
+
+	root["TextRun.FontSize"] = 28
+	root["TextRun.FontWeight"] = "Normal"
+	root["TextRun.FontStyle"] = "Normal"
+	test.expect_near(inherited.FontSize, 28, 0.001, "TextRun.FontSize parent update should propagate")
+	test.expect_eq(inherited.FontWeight, "Normal", "TextRun.FontWeight parent update should propagate")
+	test.expect_eq(inherited.FontStyle, "Normal", "TextRun.FontStyle parent update should propagate")
+	test.expect_near(local_text.FontSize, 15, 0.001, "local FontSize should remain detached after parent update")
+	test.expect_eq(local_text.FontWeight, "Normal", "local FontWeight should remain detached after parent update")
+	test.expect_eq(local_text.FontStyle, "Normal", "local FontStyle should remain detached after parent update")
+
+	root:removeFromParent()
+	print("PASS: test_attached_inherited_text_font_leaves")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: object-typed attributes should accept inline object expressions.
 -- ---------------------------------------------------------------------------
@@ -1262,6 +1298,7 @@ test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_inherited_foreground_color()
 test_attached_inherited_text_font_family()
+test_attached_inherited_text_font_leaves()
 test_xml_loading_inline_xml_attribute()
 test_xml_loading_inline_imageview_source()
 test_xml_loading_inline_event_trigger()
