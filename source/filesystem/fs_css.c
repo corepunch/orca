@@ -62,8 +62,8 @@ k_css_prop_map[] = {
     { "font-family",       "TextRun.FontFamily"            },
     { "line-height",       "TextRun.LineHeight"            },
     { "letter-spacing",    "TextRun.LetterSpacing"         },
-    { "word-wrap",         "TextBlockConcept.WordWrap"     },
-    { "text-overflow",     "TextBlockConcept.TextOverflow" },
+    { "word-wrap",         "TextBlock.WordWrap"            },
+    { "text-overflow",     "TextBlock.TextOverflow"        },
     { NULL, NULL }
 };
 

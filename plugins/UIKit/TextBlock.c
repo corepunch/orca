@@ -17,7 +17,7 @@ static bool_t
 is_updated(struct Object *hObject,
            enum label_step label_step)
 {
-  struct TextBlockConcept *output = GetTextBlockConcept(hObject);
+  struct TextBlock *output = GetTextBlock(hObject);
   longTime_t dirty = OBJ_GetTimestamp(hObject);
   if (output->_steps[label_step] != dirty) {
     output->_steps[label_step] = dirty;
@@ -43,7 +43,7 @@ text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 
 static struct rect
 mesh_rect(struct Node2D *pNode2D,
-          struct TextBlockConcept *frame,
+          struct TextBlock *frame,
           struct text_info* pTextInfo)
 {
   return (struct rect){
@@ -62,7 +62,7 @@ mesh_rect(struct Node2D *pNode2D,
 
 static lpcString_t
 _GetTextBlockText(struct Object *hObject,
-                  struct TextBlockConcept *pTextBlockConcept,
+                  struct TextBlock *pTextBlock,
                   struct TextRun *pTextRun)
 {
   struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
@@ -70,9 +70,9 @@ _GetTextBlockText(struct Object *hObject,
   {
     return pTextRun->Text;
   }
-  else if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
+  else if (pTextBlock->TextResourceID && *pTextBlock->TextResourceID && !PROP_HasProgram(hProp))
   {
-    return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
+    return Loc_GetString(pTextBlock->TextResourceID, LOC_TEXT);
   }
   else if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
   {
@@ -80,7 +80,7 @@ _GetTextBlockText(struct Object *hObject,
   }
   else
   {
-    return pTextBlockConcept->PlaceholderText;
+    return pTextBlock->PlaceholderText;
   }
 }
 
@@ -114,12 +114,12 @@ _MakeViewTextRun(struct Object *hObject,
   return view;
 }
 
-HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
+HANDLER(TextBlock, TextBlock, MakeText)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
 //  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlock, pTextRun));
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
     struct TextRun *tr = GetTextRun(run);
@@ -141,11 +141,11 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
       pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
     }
   }
-  pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
+  pViewText->flags = pTextBlock->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
 //  pViewText->lineSpacing = pTextRun->LineHeight;
   pViewText->availableWidth = pMakeText->availableSpace;
-  pViewText->textWrapping = (enum text_wrap)pTextBlockConcept->TextWrapping;
-  pViewText->textOverflow = (enum text_overflow)pTextBlockConcept->TextOverflow;
+  pViewText->textWrapping = (enum text_wrap)pTextBlock->TextWrapping;
+  pViewText->textOverflow = (enum text_overflow)pTextBlock->TextOverflow;
   pViewText->scale = axGetScaling();
   return TRUE;
 }
@@ -153,8 +153,8 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
   struct TextRun *output = GetTextRun(hObject);
-  struct TextBlockConcept *textblock = GetTextBlockConcept(hObject);
-  _SendMessage(hObject, TextBlockConcept, MakeText,
+  struct TextBlock *textblock = GetTextBlock(hObject);
+  _SendMessage(hObject, TextBlock, MakeText,
                    .text = textblock->_text,
                    .availableSpace = pMeasureOverride->Width);
   Text_GetInfo(textblock->_text, &output->_textinfo);
@@ -170,7 +170,7 @@ HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
   if (is_updated(hObject, STEP_GEOMETRY)) {
     struct TextRun *run = GetTextRun(hObject);
-    struct rect const rect = mesh_rect(pTextBlock->_node2D, GetTextBlockConcept(hObject), &run->_textinfo);
+    struct rect const rect = mesh_rect(pTextBlock->_node2D, pTextBlock, &run->_textinfo);
     struct edges insets = run->_textinfo.txInsets;
     struct rect const geom = {
       .x = floorf(rect.x - insets.left),
@@ -192,7 +192,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     return FALSE;
 
   struct ViewEntity entity;
-  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
+  struct TextBlock *text = GetTextBlock(hObject);
   float modopacity = 1.f;
   if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
@@ -210,7 +210,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
     entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
-//    struct TextBlockConcept *label = GetTextBlockConcept(hObject);
+//    struct TextBlock *label = GetTextBlock(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
     struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
@@ -240,18 +240,13 @@ HANDLER(TextBlock, Object, Create)
   struct Property *p;
   OBJ_FindShortProperty(hObject, "Text", &p);
   pTextBlock->_node2D = GetNode2D(hObject);
+  pTextBlock->_node = GetNode(hObject);
+  pTextBlock->_text = ZeroAlloc(sizeof(struct ViewText) + sizeof(struct ViewTextRun) * MAX_TEXT_RUNS);
   return FALSE;
 }
 
-HANDLER(TextBlockConcept, Object, Create)
+HANDLER(TextBlock, Object, Destroy)
 {
-  pTextBlockConcept->_node = GetNode(hObject);
-  pTextBlockConcept->_text = ZeroAlloc(sizeof(struct ViewText) + sizeof(struct ViewTextRun) * MAX_TEXT_RUNS);
-  return FALSE;
-}
-
-HANDLER(TextBlockConcept, Object, Destroy)
-{
-  SafeDelete(pTextBlockConcept->_text, free);
+  SafeDelete(pTextBlock->_text, free);
   return FALSE;
 }

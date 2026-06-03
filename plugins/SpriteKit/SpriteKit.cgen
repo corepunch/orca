@@ -71,9 +71,9 @@
         <property name="UvRect" type="rect">UV texture coordinates for sprite atlas sampling</property>
       </properties>
     </class>
-    <class name="SKLabelNode" parent="SKNode" concept="TextBlockConcept">
+    <class name="SKLabelNode" parent="SKNode,TextRun">
       <summary>2D text label node for displaying text in sprite space</summary>
-      <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling and layout from the TextBlockConcept.</details>
+      <details>Renders text as a 2D sprite node that participates in the sprite scene hierarchy. Inherits text styling from TextRun.</details>
       <handles>
         <handle message="SKNode.Render"/>
         <handle message="Object.Create"/>

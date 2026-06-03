@@ -38,6 +38,8 @@ mesh_rect(struct Object * hObject, struct TextBlock3D *frame)
 }
 #endif
 
+#if 0
+
 HANDLER(TextBlock3D, Node3D, Render)
 {
 #if 0
@@ -103,3 +105,5 @@ HANDLER(TextBlock3D, Object, Create)
   pTextBlock3D->_node3D = GetNode3D(hObject);
   return FALSE;
 }
+
+#endif

@@ -44,7 +44,7 @@ HANDLER(Input, Node2D, DrawBrush)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
   struct Node2D *pNode2D = GetNode2D(hObject);
-  struct TextBlockConcept *pTextBlockConcept = GetTextBlockConcept(hObject);
+  struct TextBlock *pTextBlock = GetTextBlock(hObject);
 
   struct ViewEntity entity;
 
@@ -60,11 +60,11 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.max.x += pTextRun->_textinfo.txInsets.left;
     entity.bbox.max.y += pTextRun->_textinfo.txInsets.top;
     float offset_x = text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
-                              pTextBlockConcept->TextHorizontalAlignment,
+                              pTextBlock->TextHorizontalAlignment,
                               pTextRun->_textinfo.txWidth,
                               Node2D_GetFrame(pNode2D, kBox3FieldWidth));
     float offset_y = text_pos(NODE2D_FRAME(pNode2D, Padding, 1),
-                              pTextBlockConcept->TextVerticalAlignment,
+                              pTextBlock->TextVerticalAlignment,
                               pTextRun->_textinfo.txHeight,
                               Node2D_GetFrame(pNode2D, kBox3FieldHeight));
     entity.bbox.min.x += offset_x;
@@ -120,7 +120,7 @@ HANDLER(Input, Node2D, DrawBrush)
   return FALSE;
 }
 
-HANDLER(Input, TextBlockConcept, MakeText)
+HANDLER(Input, TextBlock, MakeText)
 {
   const char* text = GetTextRun(hObject)->Text;
   pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);

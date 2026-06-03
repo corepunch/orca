@@ -86,7 +86,7 @@ HANDLER(Button, Object, Create)
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
 
-  GetTextBlockConcept(hObject)->TextHorizontalAlignment = kTextHorizontalAlignmentCenter;
+  GetTextBlock(hObject)->TextHorizontalAlignment = kTextHorizontalAlignmentCenter;
   return FALSE;
 }
 

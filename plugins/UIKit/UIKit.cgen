@@ -220,43 +220,6 @@
         <field name="_textinfo" type="text_info">Internal text information structure.</field>
       </fields>
     </class>
-    <class name="TextBlockConcept" parent="TextRun">
-      <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
-      <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.Create"/>
-        <handle message="Object.Destroy"/>
-        <handle message="TextBlockConcept.MakeText"/>
-      </handles>
-      <properties>
-        <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
-        <property name="TextResourceConfiguration" type="string">Configuration key used when resolving text resources.</property>
-        <property name="PlaceholderText" type="string">Placeholder text displayed when no main text is set.</property>
-        <property name="TextOverflow" type="TextOverflow">Defines how overflowing text should be handled.</property>
-        <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
-        <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
-        <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
-        <property name="WordWrap" type="bool" default="TRUE">Enables automatic word wrapping of the text.</property>
-        <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior.</property>
-        <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
-        <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
-      </properties>
-      <fields>
-        <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
-        <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
-        <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
-      </fields>
-      <messages>
-        <message name="MakeText">
-          <summary>Requests the component to lay out and render its text content.</summary>
-          <fields>
-            <field name="text" type="ViewText" pointer="true">Text view to render</field>
-            <field name="availableSpace" type="uint">Available space for text layout</field>
-          </fields>
-        </message>
-      </messages>
-    </class>
     <class name="Node2D" parent="Node,StyleController" children="Node2D">
       <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
       <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
@@ -412,8 +375,8 @@
         <property name="Prefab" type="string">Prefab resource name within the archive </property>
       </properties>
     </class>
-    <class name="TextBlock" parent="Node2D" concept="TextBlockConcept" allow-text="true">
-      <summary>Concrete implementation of text display combining Node2D and TextBlockConcept</summary>
+    <class name="TextBlock" parent="Node2D,TextRun" allow-text="true">
+      <summary>Concrete implementation of text display combining Node2D and TextRun</summary>
       <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options. For script readability, prefer value-style text authoring such as `TextBlock class: "text-3xl", title`.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
@@ -421,11 +384,38 @@
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.UpdateGeometry"/>
         <handle message="Object.Create"/>
+        <handle message="Object.Destroy"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="TextBlock.MakeText"/>
       </handles>
+      <properties>
+        <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
+        <property name="TextResourceConfiguration" type="string">Configuration key used when resolving text resources.</property>
+        <property name="PlaceholderText" type="string">Placeholder text displayed when no main text is set.</property>
+        <property name="TextOverflow" type="TextOverflow">Defines how overflowing text should be handled.</property>
+        <property name="Placeholder" type="BrushShorthand">Brush definition for rendering placeholder text.</property>
+        <property name="UseFullFontHeight" type="bool" default="TRUE">When true, uses the font's full height for layout calculations.</property>
+        <property name="ConstrainContentHeight" type="bool" default="TRUE">Constrains the content height to the text's bounding box.</property>
+        <property name="WordWrap" type="bool" default="TRUE">Enables automatic word wrapping of the text.</property>
+        <property name="TextWrapping" type="TextWrapping">Controls text wrapping behavior.</property>
+        <property name="TextHorizontalAlignment" type="TextHorizontalAlignment">Horizontal alignment of the text within its bounds.</property>
+        <property name="TextVerticalAlignment" type="TextVerticalAlignment">Vertical alignment of the text within its bounds.</property>
+      </properties>
       <fields>
         <field name="_node2D" type="Node2D" pointer="true">Internal reference to the underlying Node2D instance </field>
+        <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
+        <field name="_node" type="Node" pointer="true">Reference to the owning node.</field>
+        <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
       </fields>
+      <messages>
+        <message name="MakeText">
+          <summary>Requests the component to lay out and render its text content.</summary>
+          <fields>
+            <field name="text" type="ViewText" pointer="true">Text view to render</field>
+            <field name="availableSpace" type="uint">Available space for text layout</field>
+          </fields>
+        </message>
+      </messages>
     </class>
     <class name="Input" parent="TextBlock">
       <summary>Interactive text input control with multiple input modes</summary>
@@ -434,7 +424,7 @@
       <handles>
         <handle message="Object.Create"/>
         <handle message="Node2D.DrawBrush"/>
-        <handle message="TextBlockConcept.MakeText"/>
+        <handle message="TextBlock.MakeText"/>
         <handle message="Node.KeyDown"/>
         <handle message="Node.KillFocus"/>
         <handle message="Node.LeftButtonUp"/>

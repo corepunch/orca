@@ -87,7 +87,7 @@ Tab_ApplyThemeDefaults(struct Tab *tab)
 
 HANDLER(Tab, Object, Create)
 {
-  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
+  struct TextBlock *text = GetTextBlock(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_Tab_IsSelected);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);

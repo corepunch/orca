@@ -8,6 +8,7 @@ nav:
   - Architecture:
     - Overview: architecture/index.md
     - Object + Component System: architecture/object-component-system.md
+    - Object Typedata Model: architecture/object-typedata-model.md
     - Orca Language: architecture/orca-language.md
     - Atomic Properties And Shorthands: architecture/atomic-properties-and-shorthands.md
     - Message Actions: architecture/message-actions.md
