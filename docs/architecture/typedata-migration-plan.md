@@ -186,7 +186,7 @@ identically.
 
 ---
 
-## Phase 4 — Redirect property descriptor offsets into UIData
+## Phase 4 — Redirect property descriptor offsets into UIData [Done]
 
 **Goal:** `PropertyType.Offset` values reference `offsetof(struct UIData, …)`
 so property reads/writes go directly into the embedded typedata. The `Property`
