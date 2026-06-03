@@ -131,7 +131,7 @@ struct Object *
 OBJ_FindChildOfClass(struct Object *self, uint32_t comp_id)
 {
   FOR_EACH_OBJECT(it, self) {
-    if (OBJ_GetComponent(it, comp_id)) {
+    if (it->type && OBJ_IsKindOfW(it->type, comp_id)) {
       return it;
     }
   }
@@ -141,7 +141,7 @@ OBJ_FindChildOfClass(struct Object *self, uint32_t comp_id)
 struct Object *
 OBJ_FindParentOfClass(struct Object *self, uint32_t comp_id)
 {
-  if (OBJ_GetComponent(self, comp_id)) {
+  if (self->type && OBJ_IsKindOfW(self->type, comp_id)) {
     return self;
   } else if ((self = OBJ_GetParent(self))) {
     return OBJ_FindParentOfClass(self, comp_id);

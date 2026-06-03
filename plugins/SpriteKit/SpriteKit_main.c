@@ -1,5 +1,12 @@
 #include <include/api.h>
+#include <plugins/UIKit/ui_data.h>
 #include <SpriteKit/SpriteKit.h>
+
+#include <assert.h>
+#include <stddef.h>
+
+static_assert(sizeof(struct SKView) <= UIDATA_SKVIEW_SIZE,
+    "SKView exceeds reserved UIData slot — increase UIDATA_SKVIEW_SIZE");
 
 static int
 f_createAnimation(lua_State *L)
@@ -65,6 +72,8 @@ f_createAnimation(lua_State *L)
 void
 on_spritekit_module_registered(lua_State *L)
 {
+  OBJ_SetClassTypedataOffset(ID_SKView,
+      (uint32_t)offsetof(struct UIData, _skview));
   lua_pushcfunction(L, f_createAnimation);
   lua_setfield(L, -2, "createAnimation");
 }

@@ -8,62 +8,67 @@ _SendMessageActionSender(struct Object *hObject,
   return (dispatch && dispatch->Sender) ? dispatch->Sender : hObject;
 }
 
-static bool_t
-_ClassInherits(struct ClassDesc const *cls, uint32_t parent)
+HANDLER(SendMessageAction, Object, Create)
 {
-  if (!cls) return FALSE;
-  if (!parent || cls->ClassID == parent) return TRUE;
-  for (uint32_t const *id = cls->ParentClasses; *id; id++) {
-    if (_ClassInherits(OBJ_FindClassW(*id), parent)) {
-      return TRUE;
-    }
+  /* Record the concrete class ID and payload size so Dispatch doesn't need
+   * to walk the component list. The object's type IS the concrete action class
+   * (e.g. Button_ClickAction); SendMessageAction is its parent. */
+  struct ClassDesc const *concrete = hObject->type;
+  if (concrete && concrete->ClassID != ID_SendMessageAction) {
+    pSendMessageAction->_payload_class_id = concrete->ClassID;
+    pSendMessageAction->_payload_size     = concrete->ClassSize;
   }
   return FALSE;
 }
 
-static struct component *
-_FindMessageActionPayload(struct Object *action)
-{
-  FOR_EACH_LIST(struct component, cmp, action ? action->components : NULL) {
-    if (cmp->pcls->ClassID == ID_SendMessageAction) {
-      continue;
-    }
-    if (_ClassInherits(cmp->pcls, ID_SendMessageAction)) {
-      return cmp;
-    }
-  }
-  return NULL;
-}
-
 HANDLER(SendMessageAction, Action, Dispatch)
 {
-  struct component *payload_cmp = _FindMessageActionPayload(hObject);
-  if (!payload_cmp) {
-    Con_Error("SendMessageAction could not find a generated message payload");
+  uint32_t message   = pSendMessageAction->_payload_class_id;
+  uint32_t psize     = pSendMessageAction->_payload_size;
+  bool_t has_payload = psize > 0;
+
+  if (!message) {
+    Con_Error("SendMessageAction: payload class not set — was Object.Create sent?");
     return FALSE;
+  }
+
+  /* The payload data lives in the object's own typedata or component userdata
+   * at offset 0 of the concrete class's slot. For Action-family objects that
+   * aren't yet in a storage family we fall back to the component list. */
+  lParam_t payload = NULL;
+  if (has_payload) {
+    if (OBJ_UsesTypedata(hObject)) {
+      payload = (lParam_t)(hObject->typedata +
+                           (hObject->type ? hObject->type->TypedataOffset : 0));
+    } else {
+      /* Fallback: find concrete data in component list */
+      FOR_EACH_LIST(struct component, cmp, hObject->animations) {
+        if (cmp->pcls->ClassID == message) {
+          payload = (lParam_t)cmp->pUserData;
+          break;
+        }
+      }
+    }
   }
 
   struct Object *sender = _SendMessageActionSender(hObject, pDispatch);
   struct Object *target = sender;
   bool_t explicit_target = FALSE;
+
   if (pSendMessageAction->Target && *pSendMessageAction->Target) {
     explicit_target = TRUE;
     target = OBJ_FindByPath(sender, pSendMessageAction->Target);
     if (!target) {
       Con_Error("%s could not resolve target path '%s'",
-                payload_cmp->pcls->ClassName,
+                hObject->type ? hObject->type->ClassName : "SendMessageAction",
                 pSendMessageAction->Target);
       return FALSE;
     }
   }
 
-  uint32_t message = payload_cmp->pcls->ClassID;
-  bool_t has_payload = payload_cmp->pcls->NumProperties > 0;
-  lParam_t payload = has_payload ? payload_cmp->pUserData : NULL;
-
   if (pSendMessageAction->Mode == kDispatchModePost) {
     if (has_payload) {
-      axPostMessageDataW(target, message, 0, payload, payload_cmp->pcls->ClassSize);
+      axPostMessageDataW(target, message, 0, payload, psize);
     } else {
       axPostMessageW(target, message, 0, NULL);
     }

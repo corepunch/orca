@@ -32,7 +32,7 @@ struct Object
   LPSTR SourceFile;
   LPSTR TextContent;
 
-  struct component* components;
+  struct component* animations; /* PropertyAnimation instances attached at runtime */
   struct Property* properties;
 
   uint32_t alias;

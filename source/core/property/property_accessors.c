@@ -186,8 +186,18 @@ PROP_SetStoredValue(struct Property *property,
       return;
     }
     if (property->pdesc->TypeString) {
-      int ident = fnv1a32(property->pdesc->TypeString);
-      void* udata = OBJ_GetComponent(object, ident);
+      uint32_t ident = fnv1a32(property->pdesc->TypeString);
+      /* For UIData objects, find the typed slot via the class registry.
+       * For legacy component objects, fall back to OBJ_GetComponent. */
+      void* udata = NULL;
+      if (OBJ_UsesTypedata(object)) {
+        struct ClassDesc const *cls = OBJ_FindClassW(ident);
+        if (cls && cls->TypedataOffset != UINT32_MAX) {
+          udata = object->typedata + cls->TypedataOffset;
+        }
+      } else {
+        udata = OBJ_GetComponent(object, ident);
+      }
       if (!udata) {
         Con_Error("No %s component in object %s(%s)",
                   property->pdesc->TypeString,
@@ -218,7 +228,13 @@ PROP_NormalizeObjectValue(struct Property const *property, void const* source)
   if (!object) return NULL;
   if (!property->pdesc->TypeString || strcmp(property->pdesc->TypeString, "Object") == 0)
     return object;
-  return OBJ_GetComponent(object, fnv1a32(property->pdesc->TypeString));
+  uint32_t ident = fnv1a32(property->pdesc->TypeString);
+  if (OBJ_UsesTypedata(object)) {
+    struct ClassDesc const *cls = OBJ_FindClassW(ident);
+    if (cls && cls->TypedataOffset != UINT32_MAX)
+      return object->typedata + cls->TypedataOffset;
+  }
+  return OBJ_GetComponent(object, ident);
 }
 
 static bool_t

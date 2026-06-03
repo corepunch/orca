@@ -374,7 +374,7 @@ allocating a `Property` node for every static field on every object.
 
 ---
 
-## Phase 8 — Remove `struct component* components` from Object
+## Phase 8 — Remove `struct component* components` from Object [Done]
 
 **Goal:** Eliminate the last use of the component linked list. After Phases 1–7
 every UIKit class uses typedata. What remains on `Object.components` falls into

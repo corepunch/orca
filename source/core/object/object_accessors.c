@@ -9,11 +9,7 @@ OBJ_GetName(struct Object const *object)
 lpcString_t
 OBJ_GetClassName(struct Object const *object)
 {
-  if (object->components) {
-    return CMP_GetClassName(object->components);
-  } else {
-    return "(none)";
-  }
+  return (object && object->type) ? object->type->ClassName : "(none)";
 }
 
 bool_t

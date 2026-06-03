@@ -42,6 +42,24 @@ struct UIData {
   struct Cinematic      Cinematic;
   struct Control        Control;
   struct NinePatchImage NinePatchImage;
+
+  /*
+   * Reserved opaque slots for cross-plugin Node2D subclasses.
+   *
+   * These classes have parent="Node2D" in their cgen so they belong in the
+   * UI layout tree, but their struct definitions live in other plugins
+   * (SceneKit, SpriteKit). UIKit cannot include those headers.
+   *
+   * Each plugin registers its class offset via OBJ_SetClassTypedataOffset()
+   * in on_luaopen, and adds a static_assert that its struct fits the slot.
+   * The size constants are the documented contract between modules.
+   * Add 8 bytes of pad on top of the current sizeof so there is room for
+   * one extra field before a slot resize is needed.
+   */
+#define UIDATA_VIEWPORT3D_SIZE  64   /* sizeof(Viewport3D)=40 on 64-bit + pad */
+#define UIDATA_SKVIEW_SIZE      32   /* sizeof(SKView)=16 on 64-bit + pad     */
+  char _viewport3d[UIDATA_VIEWPORT3D_SIZE];
+  char _skview[UIDATA_SKVIEW_SIZE];
 };
 
 /*
@@ -136,6 +154,13 @@ struct UIData {
 
 #undef  GetNinePatchImage
 #define GetNinePatchImage(_P) _UI(_P, NinePatchImage)
+
+/* Raw byte-slot accessor for opaque cross-plugin fields.
+ * Cast the result to the owning plugin's concrete struct type. */
+#define _UI_RAW(_P, FIELD) \
+  ((_P) && (_P)->super_id == SUPER_ID_NODE2D \
+    ? (void *)((struct UIData *)(_P)->typedata)->FIELD \
+    : NULL)
 
 struct UIData *Object_UIData(struct Object *object);
 

@@ -3,7 +3,13 @@
 #include <include/plugapi.h>
 #include <include/renderer.h>
 
+#include <plugins/UIKit/ui_data.h>
 #include <SceneKit/SceneKit.h>
+
+/* Override generated GetViewport3D to use the UIData typedata slot. */
+#undef  GetViewport3D
+#define GetViewport3D(_P) \
+  ((_P) ? (struct Viewport3D *)((struct UIData *)(_P)->typedata)->_viewport3d : NULL)
 
 // extern int stereoSeparation;
 int stereoSeparation = 0;

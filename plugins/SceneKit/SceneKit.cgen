@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<module name="SceneKit" namespace="orca">
+<module name="SceneKit" namespace="orca" on-luaopen="on_scenekit_registered">
   <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>

@@ -843,11 +843,16 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Action.Dispatch"/>
+        <handle message="Object.Create"/>
       </handles>
       <properties>
         <property name="Target" type="string">Optional path resolved relative to the dispatch sender; when unset, the message bubbles from the sender through its parents.</property>
         <property name="Mode" type="DispatchMode" default="Send">Send dispatches synchronously; Post queues the message for later dispatch.</property>
       </properties>
+      <fields>
+        <field name="_payload_class_id" type="uint32_t" noexport="true">Concrete message class ID, set at create time from object->type.</field>
+        <field name="_payload_size" type="uint32_t" noexport="true">Byte size of the concrete message struct, set at create time.</field>
+      </fields>
     </class>
     <class name="Trigger">
       <summary>Base class for event-driven actions within the UI system</summary>

@@ -1,8 +1,14 @@
+#include <plugins/UIKit/ui_data.h>
 #include <SpriteKit/SpriteKit.h>
+
+/* Override generated GetSKView to use the UIData typedata slot. */
+#undef  GetSKView
+#define GetSKView(_P) \
+  ((_P) ? (struct SKView *)((struct UIData *)(_P)->typedata)->_skview : NULL)
 
 static struct Object *
 find_viewport(struct Object *node) {
-  if (!node || OBJ_GetComponent(node, ID_SKView))
+  if (!node || (node->type && OBJ_IsKindOfW(node->type, ID_SKView)))
     return node;
   return find_viewport(OBJ_GetParent(node));
 }
