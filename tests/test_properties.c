@@ -398,6 +398,10 @@ struct InheritedComp {
     struct RTComp **Child;
 };
 
+static struct Object *s_expectedInheritedChangedObject;
+static struct Property *s_expectedInheritedChangedProperty;
+static int s_inheritedChangedCount;
+
 static struct PropertyType s_inheritedProps[3] = {
     { .Name = "FontSize", .Key = "FontSize", .DataType = kDataTypeFloat,
       .DataSize = sizeof(float),
@@ -416,7 +420,14 @@ static struct PropertyType s_inheritedProps[3] = {
 
 static LRESULT InheritedComp_Proc(struct Object *o, void* cmp, uint32_t msg,
                                   wParam_t w, lParam_t l) {
-    (void)o; (void)cmp; (void)msg; (void)w; (void)l;
+    (void)cmp; (void)w;
+    if (msg == fnv1a32("Object.PropertyChanged")) {
+        struct Object_PropertyChangedEventArgs *args = l;
+        if (o == s_expectedInheritedChangedObject &&
+            args && args->Property == s_expectedInheritedChangedProperty) {
+            s_inheritedChangedCount++;
+        }
+    }
     return 0;
 }
 
@@ -866,6 +877,62 @@ static void test_inherited_parent_release_detaches_surviving_child_slot(void) {
         EXPECT(OBJ_ReleaseRef(parent) == 0);
         EXPECT(childCmp->FontSize == NULL);
         EXPECT(PROP_IsNull(childProp));
+        EXPECT(OBJ_ReleaseRef(child) == 0);
+    }
+}
+
+static void test_inherited_parent_update_notifies_child_effective_property(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parent = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *parentProp, *childProp;
+        struct InheritedComp *childCmp = inherited_comp(child);
+
+        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(parentProp, &(float){12.0f});
+        OBJ_AddChild(parent, child);
+        EXPECT(childCmp->FontSize == PROP_GetRawValueSlot(parentProp));
+
+        s_expectedInheritedChangedObject = child;
+        s_expectedInheritedChangedProperty = childProp;
+        s_inheritedChangedCount = 0;
+
+        PROP_SetValue(parentProp, &(float){18.0f});
+
+        EXPECT(*childCmp->FontSize == 18.0f);
+        EXPECT(s_inheritedChangedCount == 1);
+
+        s_expectedInheritedChangedObject = NULL;
+        s_expectedInheritedChangedProperty = NULL;
+        s_inheritedChangedCount = 0;
+
+        EXPECT(OBJ_ReleaseRef(parent) == 0);
+        EXPECT(OBJ_ReleaseRef(child) == 0);
+    }
+}
+
+static void test_inherited_remove_from_parent_clears_parent_slot(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parent = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *parentProp, *childProp;
+        struct InheritedComp *childCmp = inherited_comp(child);
+
+        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(parentProp, &(float){21.0f});
+        OBJ_AddChild(parent, child);
+
+        EXPECT(childCmp->FontSize == PROP_GetRawValueSlot(parentProp));
+        EXPECT(*childCmp->FontSize == 21.0f);
+
+        OBJ_RemoveFromParent(child);
+        EXPECT(OBJ_GetParent(child) == NULL);
+        EXPECT(childCmp->FontSize == NULL);
+        EXPECT(PROP_IsNull(childProp));
+
+        EXPECT(OBJ_ReleaseRef(parent) == 0);
         EXPECT(OBJ_ReleaseRef(child) == 0);
     }
 }
@@ -1833,6 +1900,8 @@ int main(void) {
         DECL_TEST(test_inherited_object_slot_stores_component_pointer),
         DECL_TEST(test_inherited_object_local_override_does_not_release_parent_value),
         DECL_TEST(test_inherited_parent_release_detaches_surviving_child_slot),
+        DECL_TEST(test_inherited_parent_update_notifies_child_effective_property),
+        DECL_TEST(test_inherited_remove_from_parent_clears_parent_slot),
         DECL_TEST(test_string_export_unset_produces_empty),
         DECL_TEST(test_string_binding_unset_source_gives_empty),
         DECL_TEST(test_string_binding_value_propagates),

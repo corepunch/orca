@@ -350,6 +350,7 @@ struct PropertyShorthandTarget
   lpcString_t Name; // field name accepted by table-based shorthand assignment
   uint32_t PropertyID; // full identifier of the atomic property this field writes
   uint32_t Offset; // offset of the field inside the shorthand struct
+  uint64_t PresentBit; // bit set by generated parsers when this field was supplied
 };
 
 struct PropertyShorthand
@@ -470,6 +471,18 @@ OBJ_RegisterStructParser(const char* type_name,
 // Returns TRUE on success, FALSE if no parser is registered or parsing fails.
 ORCA_API int
 OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz);
+
+ORCA_API void
+OBJ_SetStructParseMask(uint64_t mask);
+
+ORCA_API uint64_t
+OBJ_GetStructParseMask(bool_t *valid);
+
+ORCA_API void
+CORE_RegisterFontFamily(lpcString_t name, lpcString_t path);
+
+ORCA_API lpcString_t
+CORE_FindFontFamily(lpcString_t name);
 
 ORCA_API struct ClassDesc const *
 OBJ_FindClassW(uint32_t);

@@ -480,7 +480,8 @@ static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const
                                       char const *shorthand_type,
                                       char full_segs[][64], int n_full,
                                       char field_segs[][64], int n_field,
-                                      char const *type) {
+                                      char const *type,
+                                      int *present_bit) {
     sentry const *s = find_struct(smap, scount, type);
     if (s && !s->sealed && n_full < MAX_DEPTH - 1 && n_field < MAX_DEPTH - 1) {
         cg_foreach(m, s->id, CG_KIND_FIELD, f) {
@@ -498,7 +499,7 @@ static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const
                             owner_name, shorthand_type,
                             next_full, n_full + 1,
                             next_field, n_field + 1,
-                            f->type) < 0) return -1;
+                            f->type, present_bit) < 0) return -1;
                 }
             } else {
                 char next_full[MAX_DEPTH][64];
@@ -511,19 +512,21 @@ static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const
                         owner_name, shorthand_type,
                         next_full, n_full + 1,
                         next_field, n_field + 1,
-                        f->type) < 0) return -1;
+                        f->type, present_bit) < 0) return -1;
             }
         }
         return 0;
     }
 
     char leaf[256], field[256], addr[512];
+    uint64_t bit = *present_bit < 64 ? ((uint64_t)1 << *present_bit) : 0;
+    (*present_bit)++;
     property_leaf(full_segs, n_full, leaf, sizeof(leaf));
     property_leaf(field_segs, n_field, field, sizeof(field));
     property_addr(field_segs, n_field, addr, sizeof(addr));
     return ob_printf(b,
-            "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s) },\n",
-            field, owner_name, leaf, shorthand_type, addr);
+            "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s), .PresentBit = 0x%llxULL },\n",
+            field, owner_name, leaf, shorthand_type, addr, (unsigned long long)bit);
 }
 
 static void shorthand_target_symbol(char *dst, size_t dsz,
@@ -545,11 +548,13 @@ static int emit_shorthand_arrays_walk(ob *b, cg_host_v1 const *h, cg_model const
 
     char targets[512];
     char field_segs[MAX_DEPTH][64] = {{0}};
+    int present_bit = 0;
     shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
     if (ob_printf(b, "static struct PropertyShorthandTarget const %s[%d] = {\n",
             targets, shorthand_target_count(m, smap, scount, type)) < 0) return -1;
     if (emit_shorthand_target_walk(b, h, m, smap, scount,
-            owner_name, type, full_segs, n_full, field_segs, 0, type) < 0) return -1;
+            owner_name, type, full_segs, n_full, field_segs, 0, type,
+            &present_bit) < 0) return -1;
     if (ob_printf(b, "};\n") < 0) return -1;
     count++;
 
@@ -721,13 +726,14 @@ static int emit_struct_parser_helpers(ob *b, cg_model const *m) {
     }
     return ob_printf(b,
             "static int cg_p(const char*s,struct PropertyType const*p,void*d){char tmp[MAX_PROPERTY_STRING]={0};if(cg_axis_enum(p,s,d))return TRUE;if(p->DataType==kDataTypeEnum)return cg_enum(p->EnumValues,s,d);if((p->DataType==kDataTypeFloat||p->DataType==kDataTypeInt)&&!cg_num(s))return FALSE;if(p->DataType==kDataTypeStruct)return OBJ_ParseStruct(p->TypeString,s,d,p->DataSize);if(!parse_property(s,p,tmp))return FALSE;memcpy(d,tmp,p->DataSize);return TRUE;}\n"
-            "static int cg_put(char*s,void*d,struct PropertyType const*p){return cg_p(s,p,(char*)d+p->Offset);}\n"
-            "static int cg_box(void*d,struct PropertyType const*p,int n,char**t,int nt,const char*pre){char a[32];int L,R,T,B,F,K,k=0;if(nt>4)return 0;while(k<nt&&cg_num(t[k]))k++;if(!k)return 0;snprintf(a,sizeof(a),\"%%sLeft\",pre);L=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sRight\",pre);R=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sTop\",pre);T=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBottom\",pre);B=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sFront\",pre);F=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBack\",pre);K=cg_i(p,n,a);if(L<0||R<0||T<0||B<0)return 0;cg_put(t[0],d,&p[L]);cg_put(k>2?t[2]:t[0],d,&p[R]);cg_put(k>1?t[1]:t[0],d,&p[T]);cg_put(k>3?t[3]:(k>1?t[1]:t[0]),d,&p[B]);if(pre[0]&&F>=0&&K>=0){cg_put(t[0],d,&p[F]);cg_put(t[0],d,&p[K]);}return k;}\n"
-            "static int cg_req(void*d,struct PropertyType const*p,int n,char**t,int nt){int H,V,D;if(nt>3)return 0;for(int i=0;i<nt;i++)if(!cg_num(t[i]))return 0;H=cg_i(p,n,\"HorizontalRequested\");V=cg_i(p,n,\"VerticalRequested\");D=cg_i(p,n,\"DepthRequested\");if(H<0||V<0)return 0;cg_put(t[0],d,&p[H]);if(nt>1)cg_put(t[1],d,&p[V]);if(nt>2&&D>=0)cg_put(t[2],d,&p[D]);return nt;}\n"
+            "static int cg_put(char*s,void*d,struct PropertyType const*p,int i,uint64_t*m){if(cg_p(s,&p[i],(char*)d+p[i].Offset)){if(i<64)*m|=((uint64_t)1<<i);return TRUE;}return FALSE;}\n"
+            "static int cg_box(void*d,struct PropertyType const*p,int n,char**t,int nt,const char*pre,uint64_t*m){char a[32];int L,R,T,B,F,K,k=0;if(nt>4)return 0;while(k<nt&&cg_num(t[k]))k++;if(!k)return 0;snprintf(a,sizeof(a),\"%%sLeft\",pre);L=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sRight\",pre);R=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sTop\",pre);T=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBottom\",pre);B=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sFront\",pre);F=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBack\",pre);K=cg_i(p,n,a);if(L<0||R<0||T<0||B<0)return 0;cg_put(t[0],d,p,L,m);cg_put(k>2?t[2]:t[0],d,p,R,m);cg_put(k>1?t[1]:t[0],d,p,T,m);cg_put(k>3?t[3]:(k>1?t[1]:t[0]),d,p,B,m);if(pre[0]&&F>=0&&K>=0){cg_put(t[0],d,p,F,m);cg_put(t[0],d,p,K,m);}return k;}\n"
+            "static int cg_req(void*d,struct PropertyType const*p,int n,char**t,int nt,uint64_t*m){int H,V,D;if(nt>3)return 0;for(int i=0;i<nt;i++)if(!cg_num(t[i]))return 0;H=cg_i(p,n,\"HorizontalRequested\");V=cg_i(p,n,\"VerticalRequested\");D=cg_i(p,n,\"DepthRequested\");if(H<0||V<0)return 0;cg_put(t[0],d,p,H,m);if(nt>1)cg_put(t[1],d,p,V,m);if(nt>2&&D>=0)cg_put(t[2],d,p,D,m);return nt;}\n"
             "static int cg_same(struct PropertyType const*p,int n){for(int i=1;i<n;i++)if(p[i].DataType!=p[0].DataType||p[i].EnumValues!=p[0].EnumValues)return 0;return n>1;}\n"
             "static int cg_join(char**t,int n,char*b){b[0]=0;for(int i=0;i<n;i++){if(i)strcat(b,\" \");strcat(b,t[i]);}return TRUE;}\n"
-            "static int cg_span(char**t,int nt,struct PropertyType const*p,void*d,int*used){char b[MAX_PROPERTY_STRING];if(p->DataType!=kDataTypeStruct)return nt&&!used[0]&&cg_put(t[0],d,p)?1:0;for(int c=nt;c>0;c--){int ok=1;for(int j=0;j<c;j++)if(used[j])ok=0;if(!ok)continue;cg_join(t,c,b);if(cg_put(b,d,p))return c;}return 0;}\n"
-            "static int cg_parse(const char*s,void*d,size_t z,struct PropertyType const*p,int n){char b[MAX_PROPERTY_STRING]={0},*t[32],*x;int nt=0,u[32]={0},f[64]={0},any=FALSE;if(!d)return FALSE;memset(d,0,z);snprintf(b,sizeof(b),\"%%s\",s);for(x=strtok(b,\" \\t\\r\\n\");x&&nt<32;x=strtok(NULL,\" \\t\\r\\n\"))t[nt++]=x;if(!nt)return FALSE;if(cg_box(d,p,n,t,nt,\"\")==nt)return TRUE;if(cg_req(d,p,n,t,nt)==nt)return TRUE;if(nt==1&&cg_same(p,n)){for(int i=0;i<n;i++)any|=cg_put(t[0],d,&p[i]);return any;}int c=cg_box(d,p,n,t,nt,\"Width\");for(int i=0;i<c;i++)u[i]=any=TRUE;for(int pass=0;pass<4;pass++)for(int j=0;j<nt;j++)if(!u[j])for(int i=0;i<n;i++){int dt=p[i].DataType;if(f[i]||(pass==0&&dt!=kDataTypeEnum)||(pass==1&&(dt==kDataTypeEnum||dt==kDataTypeColor||dt==kDataTypeObject))||(pass==2&&dt!=kDataTypeColor)||(pass==3&&dt!=kDataTypeObject))continue;c=cg_span(&t[j],nt-j,&p[i],d,&u[j]);if(c){for(int q=0;q<c;q++)u[j+q]=TRUE;f[i]=any=TRUE;break;}}if(!any)return FALSE;for(int i=0;i<nt;i++)if(!u[i])return FALSE;return TRUE;}\n");
+            "static int cg_span(char**t,int nt,struct PropertyType const*p,int i,void*d,int*used,uint64_t*m){char b[MAX_PROPERTY_STRING];if(p[i].DataType!=kDataTypeStruct)return nt&&!used[0]&&cg_put(t[0],d,p,i,m)?1:0;for(int c=nt;c>0;c--){int ok=1;for(int j=0;j<c;j++)if(used[j])ok=0;if(!ok)continue;cg_join(t,c,b);if(cg_put(b,d,p,i,m))return c;}return 0;}\n"
+            "static int cg_done(uint64_t m){OBJ_SetStructParseMask(m);return TRUE;}\n"
+            "static int cg_parse(const char*s,void*d,size_t z,struct PropertyType const*p,int n){char b[MAX_PROPERTY_STRING]={0},*t[32],*x;int nt=0,u[32]={0},f[64]={0},any=FALSE;uint64_t m=0;if(!d)return FALSE;memset(d,0,z);snprintf(b,sizeof(b),\"%%s\",s);for(x=strtok(b,\" \\t\\r\\n\");x&&nt<32;x=strtok(NULL,\" \\t\\r\\n\"))t[nt++]=x;if(!nt)return FALSE;if(cg_box(d,p,n,t,nt,\"\",&m)==nt)return cg_done(m);if(cg_req(d,p,n,t,nt,&m)==nt)return cg_done(m);if(nt==1&&cg_same(p,n)){for(int i=0;i<n;i++)any|=cg_put(t[0],d,p,i,&m);return any?cg_done(m):FALSE;}int c=cg_box(d,p,n,t,nt,\"Width\",&m);for(int i=0;i<c;i++)u[i]=any=TRUE;for(int pass=0;pass<4;pass++)for(int j=0;j<nt;j++)if(!u[j])for(int i=0;i<n;i++){int dt=p[i].DataType;if(f[i]||(pass==0&&dt!=kDataTypeEnum)||(pass==1&&(dt==kDataTypeEnum||dt==kDataTypeColor||dt==kDataTypeObject))||(pass==2&&dt!=kDataTypeColor)||(pass==3&&dt!=kDataTypeObject))continue;c=cg_span(&t[j],nt-j,p,i,d,&u[j],&m);if(c){for(int q=0;q<c;q++)u[j+q]=TRUE;f[i]=any=TRUE;break;}}if(!any)return FALSE;for(int i=0;i<nt;i++)if(!u[i])return FALSE;return cg_done(m);}\n");
 }
 
 static int emit_struct_parser_wrappers(ob *b, cg_model const *m) {

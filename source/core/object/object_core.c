@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include "../property/property_internal.h"
 
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
@@ -59,6 +60,7 @@ OBJ_DetachFromParent(struct Object *self)
     REMOVE_FROM_LIST(struct Object, self, self->parent->children);
     REMOVE_FROM_LIST(struct Object, self, self->parent);
     self->parent = NULL;
+    OBJ_ApplyInheritedProperties(self);
   }
 }
 
@@ -101,8 +103,6 @@ OBJ_RemoveFromParent(struct Object *self)
     OBJ_ReleaseRef(self);
   }
 }
-
-#include "../property/property_internal.h"
 
 static void
 OBJ_ClearInheritedProperties(struct Object *pobj)

@@ -370,6 +370,23 @@ local function test_attached_inherited_text_font_leaves()
 	print("PASS: test_attached_inherited_text_font_leaves")
 end
 
+local function test_partial_font_shorthand_preserves_inherited_size()
+	local root = ui.Screen { Name = "font-shorthand-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local text = root + ui.TextBlock {
+		Name = "font-shorthand-text",
+		Text = "Inherited size",
+	}
+
+	root["TextRun.FontSize"] = 26
+	text.Font = "Bold"
+
+	test.expect_eq(text.FontWeight, "Bold", "Font shorthand should apply supplied FontWeight")
+	test.expect_near(text.FontSize, 26, 0.001, "partial Font shorthand should not zero inherited FontSize")
+
+	root:removeFromParent()
+	print("PASS: test_partial_font_shorthand_preserves_inherited_size")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: object-typed attributes should accept inline object expressions.
 -- ---------------------------------------------------------------------------
@@ -1299,6 +1316,7 @@ test_xml_loading_properties()
 test_inherited_foreground_color()
 test_attached_inherited_text_font_family()
 test_attached_inherited_text_font_leaves()
+test_partial_font_shorthand_preserves_inherited_size()
 test_xml_loading_inline_xml_attribute()
 test_xml_loading_inline_imageview_source()
 test_xml_loading_inline_event_trigger()

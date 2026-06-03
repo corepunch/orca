@@ -66,6 +66,7 @@ struct vm_register
 #define MAX_STRUCTS 256
 #define MAX_STRUCT_PARSERS 256
 #define MAX_FILE_LOADERS 256
+#define MAX_FONT_FAMILIES 512
 
 #define ID_PropertyChangedMessage 0xdffd83eb // PropertyChangedMessage
 
@@ -79,6 +80,11 @@ struct struct_parser_entry {
 struct file_loader {
   const char* extension;
   struct Object* (*fn)(int argc, const char* argv[]);
+};
+
+struct font_registry_entry {
+  fixedString_t name;
+  path_t path;
 };
 
 struct game
@@ -95,7 +101,10 @@ struct game
   struct PropertyShorthand shorthands[MAX_PROPERTY_SHORTHANDS];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
+  struct font_registry_entry fonts[MAX_FONT_FAMILIES];
   struct Property* binding_properties;
+  uint64_t struct_parse_mask;
+  bool_t struct_parse_mask_valid;
 };
 
 // stateman.c

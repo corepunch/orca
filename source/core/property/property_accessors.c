@@ -262,6 +262,20 @@ PROP_IsSameValue(struct Property const *property, void const* source)
 }
 
 void
+PROP_NotifyChanged(struct Property *property)
+{
+  if (property->pdesc->IsArray) {
+    return;
+  }
+  _SendMessage(property->object, Object, PropertyChanged, property);
+  if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
+    property->flags |= PF_NOTIFICATION_QUEUED;
+    axPostMessageW(property->object, ID_PropertyChangedMessage,
+                   PROP_GetShortID(property), property);
+  }
+}
+
+void
 PROP_SetValue(struct Property *property, void const* source)
 {
   if (PROP_IsSameValue(property, source) &&
@@ -283,12 +297,7 @@ PROP_SetValue(struct Property *property, void const* source)
   if (property->pdesc->IsArray) {
     return;
   }
-  _SendMessage(property->object, Object, PropertyChanged, property);
-  if (PROP_HasHandler(property) && !(property->flags & PF_NOTIFICATION_QUEUED)) {
-    property->flags |= PF_NOTIFICATION_QUEUED;
-    axPostMessageW(property->object, ID_PropertyChangedMessage,
-                   PROP_GetShortID(property), property);
-  }
+  PROP_NotifyChanged(property);
 }
 
 void
@@ -306,10 +315,12 @@ PROP_SetInheritedValue(struct Property *property, void const* source)
       property->flags &= ~PF_INHERITED;
       OBJ_SetDirty(property->object);
     }
+    PROP_NotifyChanged(property);
     return;
   }
   if (PROP_IsSameValue(property, source)) return;
   PROP_SetStoredValue(property, source, FALSE);
+  PROP_NotifyChanged(property);
 }
 
 void

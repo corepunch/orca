@@ -21,22 +21,28 @@ _HasLocalValue(struct Property const *property)
 static void
 _ApplyInheritedProperty(struct Object *object,
                         struct PropertyType const *desc,
-                        void const *value)
+                        void const *value,
+                        bool_t notify_same_slot)
 {
   struct Property *property = PROP_FindByLongID(object->properties,
                                                desc->FullIdentifier);
   if (_HasLocalValue(property)) {
     value = PROP_GetRawValueSlot(property);
+    notify_same_slot = FALSE;
   } else {
     if (FAILED(OBJ_FindLongProperty(object, desc->FullIdentifier, &property))) {
       return;
     }
+    void const *old_value = PROP_GetRawValueSlot(property);
     PROP_SetInheritedValue(property, value);
+    if (notify_same_slot && old_value == value && value) {
+      PROP_NotifyChanged(property);
+    }
     value = PROP_GetRawValueSlot(property);
   }
 
   FOR_EACH_LIST(struct Object, child, object->children) {
-    _ApplyInheritedProperty(child, desc, value);
+    _ApplyInheritedProperty(child, desc, value, notify_same_slot);
   }
 }
 
@@ -52,14 +58,27 @@ OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property)
   }
   void const *value = PROP_GetRawValueSlot(property);
   FOR_EACH_LIST(struct Object, child, object->children) {
-    _ApplyInheritedProperty(child, desc, value);
+    _ApplyInheritedProperty(child, desc, value, TRUE);
   }
 }
 
 void
 OBJ_ApplyInheritedProperties(struct Object *object)
 {
-  if (!object || !object->parent) {
+  if (!object) {
+    return;
+  }
+  if (!object->parent) {
+    for (struct Property *property = object->properties; property;
+         property = PROP_GetNext(property)) {
+      struct PropertyType const *desc = PROP_GetDesc(property);
+      if (!desc || !desc->IsInherited || _HasLocalValue(property) ||
+          PROP_IsNull(property)) {
+        continue;
+      }
+      PROP_SetInheritedValue(property, NULL);
+      OBJ_PropagateInheritedProperty(object, property);
+    }
     return;
   }
   for (struct Property *property = object->parent->properties; property;
@@ -68,7 +87,7 @@ OBJ_ApplyInheritedProperties(struct Object *object)
     if (!desc || !desc->IsInherited || PROP_IsNull(property)) {
       continue;
     }
-    _ApplyInheritedProperty(object, desc, PROP_GetRawValueSlot(property));
+    _ApplyInheritedProperty(object, desc, PROP_GetRawValueSlot(property), FALSE);
   }
 }
 

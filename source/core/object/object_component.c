@@ -136,11 +136,17 @@ find_shorthand(struct Object *object, lpcString_t name)
 static bool_t
 apply_shorthand_struct(struct Object *object,
                        struct PropertyShorthand const *sh,
-                       void *value)
+                       void *value,
+                       uint64_t present_mask,
+                       bool_t has_present_mask)
 {
   bool_t ok = TRUE;
   FOR_LOOP(i, sh->NumTargets) {
     struct PropertyShorthandTarget const *target = &sh->Targets[i];
+    if (has_present_mask && target->PresentBit &&
+        !(present_mask & target->PresentBit)) {
+      continue;
+    }
     void *src = (char *)value + target->Offset;
     struct Property *property = NULL;
     if (FAILED(OBJ_FindLongProperty(object, target->PropertyID, &property)) || !property) {
@@ -180,8 +186,12 @@ OBJ_SetShorthandValueFromString(struct Object *object,
   if (!tmp) {
     return FALSE;
   }
-  bool_t ok = parse_property(value, &fake, tmp) &&
-              apply_shorthand_struct(object, sh, tmp);
+  bool_t parsed = parse_property(value, &fake, tmp);
+  bool_t has_present_mask = FALSE;
+  uint64_t present_mask = parsed ? OBJ_GetStructParseMask(&has_present_mask) : 0;
+  bool_t ok = parsed &&
+              apply_shorthand_struct(object, sh, tmp,
+                                     present_mask, has_present_mask);
   free(tmp);
   return ok;
 }
@@ -195,7 +205,7 @@ OBJ_SetShorthandValueFromStruct(struct Object *object,
   if (!sh || !value) {
     return FALSE;
   }
-  return apply_shorthand_struct(object, sh, value);
+  return apply_shorthand_struct(object, sh, value, 0, FALSE);
 }
 
 bool_t
@@ -250,7 +260,7 @@ OBJ_SetShorthandValueFromLua(lua_State *L,
     return FALSE;
   }
   read_property(L, value_idx, &fake, tmp);
-  bool_t ok = apply_shorthand_struct(object, sh, tmp);
+  bool_t ok = apply_shorthand_struct(object, sh, tmp, 0, FALSE);
   free(tmp);
   return ok;
 }

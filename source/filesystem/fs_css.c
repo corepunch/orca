@@ -77,6 +77,87 @@ css_lookup_orca_property(const char* css_name)
     return NULL;
 }
 
+static bool_t
+css_is_generic_font_family(const char *name)
+{
+    static const char *generics[] = {
+        "serif", "sans-serif", "monospace", "cursive", "fantasy",
+        "system", "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace",
+        "emoji", "math", "fangsong", "-apple-system", "BlinkMacSystemFont",
+        NULL
+    };
+    for (int i = 0; generics[i]; i++) {
+        if (!strcasecmp(name, generics[i])) return TRUE;
+    }
+    return FALSE;
+}
+
+static void
+css_copy_font_token(char *dst, size_t dst_size, const char *start, const char *end)
+{
+    while (start < end && isspace((unsigned char)*start)) start++;
+    while (end > start && isspace((unsigned char)end[-1])) end--;
+    if (end - start >= 2 &&
+        ((*start == '"' && end[-1] == '"') || (*start == '\'' && end[-1] == '\''))) {
+        start++;
+        end--;
+        while (start < end && isspace((unsigned char)*start)) start++;
+        while (end > start && isspace((unsigned char)end[-1])) end--;
+    }
+    size_t len = (size_t)(end - start);
+    if (len >= dst_size) len = dst_size - 1;
+    memcpy(dst, start, len);
+    dst[len] = '\0';
+}
+
+static bool_t
+css_font_path_exists(const char *path)
+{
+    path_t with_ext = {0};
+    if (FS_FileExists(path)) return TRUE;
+    snprintf(with_ext, sizeof(with_ext), "%s.xml", path);
+    return FS_FileExists(with_ext);
+}
+
+static const char*
+css_resolve_font_family(const char *value, char *out, size_t out_size)
+{
+    const char *p = value;
+    while (*p) {
+        char quote = 0;
+        const char *start = p;
+        const char *end;
+        while (*start && (isspace((unsigned char)*start) || *start == ',')) start++;
+        if (!*start) break;
+        end = start;
+        while (*end) {
+            if (quote) {
+                if (*end == quote) quote = 0;
+            } else if (*end == '"' || *end == '\'') {
+                quote = *end;
+            } else if (*end == ',') {
+                break;
+            }
+            end++;
+        }
+        char name[MAX_PROPERTY_STRING] = {0};
+        css_copy_font_token(name, sizeof(name), start, end);
+        if (name[0]) {
+            lpcString_t registered = CORE_FindFontFamily(name);
+            if (registered) {
+                snprintf(out, out_size, "%s", registered);
+                return out;
+            }
+            if (!css_is_generic_font_family(name) && css_font_path_exists(name)) {
+                snprintf(out, out_size, "%s", name);
+                return out;
+            }
+        }
+        p = *end == ',' ? end + 1 : end;
+    }
+    return value;
+}
+
 // ---------------------------------------------------------------------------
 // Parsed CSS in-memory representation
 // ---------------------------------------------------------------------------
@@ -368,6 +449,10 @@ css_apply_decl_to_rule(struct Object *rule_obj,
 {
     const char* orca_name = css_lookup_orca_property(css_key);
     if (!orca_name) return; // unsupported property
+    char resolved_value[CSS_MAX_VALLEN] = {0};
+    if (!strcasecmp(css_key, "font-family")) {
+        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
+    }
 
     struct Property *prop = NULL;
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) {

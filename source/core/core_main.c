@@ -1,4 +1,5 @@
 #include <include/api.h>
+#include <strings.h>
 
 #include "core_local.h"
 #include "property/property_internal.h"
@@ -10,6 +11,45 @@ void SV_Shutdown(void);
 
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
+
+static bool_t
+CORE_FindFontFamilyIndex(lpcString_t name, int *index)
+{
+  if (!name || !*name) return FALSE;
+  FOR_LOOP(i, MAX_FONT_FAMILIES) {
+    if (core.fonts[i].name[0] && !strcasecmp(core.fonts[i].name, name)) {
+      if (index) *index = i;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void
+CORE_RegisterFontFamily(lpcString_t name, lpcString_t path)
+{
+  int index = -1;
+  if (!name || !*name || !path || !*path) return;
+  if (CORE_FindFontFamilyIndex(name, &index)) {
+    snprintf(core.fonts[index].path, sizeof(core.fonts[index].path), "%s", path);
+    return;
+  }
+  FOR_LOOP(i, MAX_FONT_FAMILIES) {
+    if (!core.fonts[i].name[0]) {
+      snprintf(core.fonts[i].name, sizeof(core.fonts[i].name), "%s", name);
+      snprintf(core.fonts[i].path, sizeof(core.fonts[i].path), "%s", path);
+      return;
+    }
+  }
+  Con_Error("No space left to register font family '%s'", name);
+}
+
+lpcString_t
+CORE_FindFontFamily(lpcString_t name)
+{
+  int index = -1;
+  return CORE_FindFontFamilyIndex(name, &index) ? core.fonts[index].path : NULL;
+}
 
 bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt)
@@ -678,17 +718,38 @@ OBJ_RegisterStructParser(const char* type_name,
   Con_Error("No space to register struct parser for '%s'", type_name);
 }
 
+void
+OBJ_SetStructParseMask(uint64_t mask)
+{
+  core.struct_parse_mask = mask;
+  core.struct_parse_mask_valid = TRUE;
+}
+
+uint64_t
+OBJ_GetStructParseMask(bool_t *valid)
+{
+  if (valid) *valid = core.struct_parse_mask_valid;
+  return core.struct_parse_mask;
+}
+
 int
 OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz)
 {
+  int parsed = FALSE;
+  core.struct_parse_mask = 0;
+  core.struct_parse_mask_valid = FALSE;
   struct StructDesc const *desc = OBJ_FindStructDesc(type_name);
   if (desc && desc->Parser) {
-    return desc->Parser(str, dst, sz);
+    parsed = desc->Parser(str, dst, sz);
+    if (!parsed) core.struct_parse_mask_valid = FALSE;
+    return parsed;
   }
   FOR_LOOP(i, MAX_STRUCT_PARSERS) {
     struct struct_parser_entry const* e = &core.struct_parsers[i];
     if (e->type_name && !strcmp(e->type_name, type_name)) {
-      return e->fn(str, dst, sz);
+      parsed = e->fn(str, dst, sz);
+      if (!parsed) core.struct_parse_mask_valid = FALSE;
+      return parsed;
     }
   }
   return FALSE;
@@ -700,9 +761,15 @@ before_core_module_registered(lua_State* L)
   // Preserve registered classes: lua_pushclass calls OBJ_RegisterClass before
   // this function runs, so we must not zero core.classes[] here.
   struct ClassDesc const *saved_classes[MAX_CLASSES];
+  struct file_loader saved_file_loaders[MAX_FILE_LOADERS];
+  struct font_registry_entry saved_fonts[MAX_FONT_FAMILIES];
   memcpy(saved_classes, core.classes, sizeof(core.classes));
+  memcpy(saved_file_loaders, core.file_loaders, sizeof(core.file_loaders));
+  memcpy(saved_fonts, core.fonts, sizeof(core.fonts));
   memset(&core, 0, sizeof(struct game));
   memcpy(core.classes, saved_classes, sizeof(core.classes));
+  memcpy(core.file_loaders, saved_file_loaders, sizeof(core.file_loaders));
+  memcpy(core.fonts, saved_fonts, sizeof(core.fonts));
   core.realtime = axGetMilliseconds();
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
 

@@ -1,7 +1,9 @@
 #include <include/orca.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <dirent.h>
 #include <stdio.h>
+#include <strings.h>
 #include <include/api.h>
 
 #include "fs_local.h"
@@ -407,6 +409,68 @@ _InitProjectRefences(lua_State *L, struct Project *project, lpcString_t szDirnam
 }
 
 static bool_t
+has_suffix(lpcString_t str, lpcString_t suffix)
+{
+  size_t slen = strlen(str);
+  size_t xlen = strlen(suffix);
+  return slen >= xlen && !strcasecmp(str + slen - xlen, suffix);
+}
+
+static void
+read_font_family_name(lpcString_t filename, lpcString_t fallback, LPSTR out, size_t out_size)
+{
+  snprintf(out, out_size, "%s", fallback);
+  xmlDocPtr doc = xmlReadFile(filename, NULL, XML_PARSE_NONET);
+  if (!doc) return;
+  xmlNodePtr root = xmlDocGetRootElement(doc);
+  if (root) {
+    xmlChar *name = xmlGetProp(root, XMLSTR("Name"));
+    if (name && *name) {
+      snprintf(out, out_size, "%s", (char*)name);
+    }
+    if (name) xmlFree(name);
+  }
+  xmlFreeDoc(doc);
+}
+
+static void
+_RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
+{
+  if (!project || !project->FontLibrary) return;
+  struct Object *project_obj = CMP_GetObject(project);
+  struct Object *library_obj = CMP_GetObject(project->FontLibrary);
+  lpcString_t project_name = OBJ_GetName(project_obj);
+  lpcString_t library_name = OBJ_GetName(library_obj);
+  if (!project_name || !*project_name || !library_name || !*library_name) return;
+
+  path_t font_dir = {0};
+  FS_JoinPaths(font_dir, sizeof(font_dir), szDirname, library_name);
+  DIR *dir = opendir(font_dir);
+  if (!dir) return;
+
+  struct dirent *entry;
+  while ((entry = readdir(dir))) {
+    if (!has_suffix(entry->d_name, ".xml")) continue;
+    char stem[MAX_NAMELEN] = {0};
+    size_t stem_len = strlen(entry->d_name) - 4;
+    if (stem_len >= sizeof(stem)) stem_len = sizeof(stem) - 1;
+    memcpy(stem, entry->d_name, stem_len);
+
+    path_t xml_path = {0};
+    path_t object_path = {0};
+    fixedString_t family_name = {0};
+    FS_JoinPaths(xml_path, sizeof(xml_path), font_dir, entry->d_name);
+    read_font_family_name(xml_path, stem, family_name, sizeof(family_name));
+    snprintf(object_path, sizeof(object_path), "%s/%s/%s", project_name, library_name, stem);
+    CORE_RegisterFontFamily(family_name, object_path);
+    if (strcasecmp(family_name, stem)) {
+      CORE_RegisterFontFamily(stem, object_path);
+    }
+  }
+  closedir(dir);
+}
+
+static bool_t
 _HasExistingPackages(lpcString_t szDirname, lpcString_t szName)
 {
   FOR_EACH_OBJECT(package, FS_GetWorkspace()) {
@@ -508,6 +572,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
   _InitEnginePlugins(L, project);
   _InitPropertyTypes(project);
+  _RegisterProjectFonts(project, szDirname);
   _InitProjectRefences(L, project, szDirname);
 //  _InitTheme(L, project);
 

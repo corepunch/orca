@@ -9,6 +9,7 @@ local test = require "orca.test"
 -- screen.StyleSheet → class assignment → ThemeChanged → values applied.
 
 local filesystem = require "orca.filesystem"
+require "orca.renderer"
 local ui         = require "orca.UIKit"
 
 -- filesystem.loadObjectFromCssString exposes the pure-C CSS parser.
@@ -696,6 +697,28 @@ local function test_css_direct_parent_selector_with_pseudo_class()
   print("PASS: test_css_direct_parent_selector_with_pseudo_class")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 33: CSS font-family accepts quoted names and generic fallbacks
+-- ---------------------------------------------------------------------------
+local function test_css_font_family_list_uses_registered_fallback()
+  local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+    .novel { font-family: "Times New Roman", serif; }
+  ]]
+  local text = screen + ui.TextBlock {
+    Text = "chapter",
+  }
+
+  text.class = "novel"
+  applyStyles(text)
+
+  test.expect(text.FontFamily ~= nil, "font-family list should resolve through registered generic fallback")
+  test.expect_eq(text.FontFamily.Regular, "NotoSerif-Regular.ttf", "serif should resolve to shared Noto Serif")
+
+  text:removeFromParent()
+  print("PASS: test_css_font_family_list_uses_registered_fallback")
+end
+
 
 test_style_applies_opacity()
 test_style_not_applied_without_class()
@@ -729,5 +752,6 @@ test_css_direct_parent_selector()
 test_css_direct_parent_class_and_id_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
+test_css_font_family_list_uses_registered_fallback()
 
 print("All style tests passed.")

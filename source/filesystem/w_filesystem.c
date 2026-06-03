@@ -377,10 +377,61 @@ static struct Object* _css_file_loader(int argc, const char* argv[]) {
   return (argc > 0) ? FS_LoadObjectFromCss(argv[0]) : NULL;
 }
 
+static void
+register_font_aliases(lpcString_t path, lpcString_t const *aliases)
+{
+  for (int i = 0; aliases[i]; i++) {
+    CORE_RegisterFontFamily(aliases[i], path);
+  }
+}
+
+static bool_t
+find_shared_font_paths(lpcString_t share, path_t sans, path_t serif, path_t mono)
+{
+  path_t test = {0};
+  if (!share || !*share) return FALSE;
+  snprintf(sans, sizeof(path_t), "%s/fonts/NotoSans/NotoSans", share);
+  snprintf(test, sizeof(test), "%s.xml", sans);
+  if (!FS_FileExists(test)) return FALSE;
+  snprintf(serif, sizeof(path_t), "%s/fonts/NotoSerif/NotoSerif", share);
+  snprintf(mono, sizeof(path_t), "%s/fonts/NotoSansMono/NotoSansMono", share);
+  return TRUE;
+}
+
+static void
+register_shared_fonts(lua_State* L)
+{
+  path_t sans = {0};
+  path_t serif = {0};
+  path_t mono = {0};
+
+  lua_getglobal(L, "SHAREDIR");
+  lpcString_t share = lua_isstring(L, -1) ? lua_tostring(L, -1) : NULL;
+  bool_t found = find_shared_font_paths(share, sans, serif, mono) ||
+                 find_shared_font_paths("build/share", sans, serif, mono) ||
+                 find_shared_font_paths("share", sans, serif, mono);
+  lua_pop(L, 1);
+
+  if (found) {
+    register_font_aliases(sans, (lpcString_t const[]){
+      "default", "Noto Sans", "sans-serif", "ui-sans-serif", "system",
+      "system-ui", "-apple-system", "BlinkMacSystemFont", "Arial",
+      "Helvetica", "Helvetica Neue", NULL
+    });
+    register_font_aliases(serif, (lpcString_t const[]){
+      "Noto Serif", "serif", "ui-serif", "Times", NULL
+    });
+    register_font_aliases(mono, (lpcString_t const[]){
+      "Noto Sans Mono", "monospace", "ui-monospace", NULL
+    });
+  }
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(".xml", _xml_file_loader);
   OBJ_RegisterFileLoader(".css", _css_file_loader);
+  register_shared_fonts(L);
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
