@@ -546,15 +546,6 @@ Shader_BindMaterial(struct shader const* shader,
     .height = view->viewSize.y * axGetScaling(),
   };
 
-  if (ent->text && ent->text->numTextRuns && ent->text->run->string) {
-    struct Texture const* label = Text_GetImage(ent->text);
-    if (label) {
-      texture = label;
-      ((struct ViewEntity *)ent)->bbox.max.x = ((struct ViewEntity *)ent)->bbox.min.x + label->Width;
-      ((struct ViewEntity *)ent)->bbox.max.y = ((struct ViewEntity *)ent)->bbox.min.y + label->Height;
-    }
-  }
-
   float w = MAX(1, (ent->bbox.max.x - ent->bbox.min.x) + ent->borderOffset);
   float h = MAX(1, (ent->bbox.max.y - ent->bbox.min.y) + ent->borderOffset);
   float radiusLimit = MIN(w, h) * 0.5f;

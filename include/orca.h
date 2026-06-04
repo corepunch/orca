@@ -13,7 +13,6 @@ struct game;
 struct localization;
 struct uniform;
 struct AXbuffer;
-struct ViewText;
 struct ViewEntity;
 struct ViewDef;
 struct view_camera;

@@ -43,7 +43,6 @@ HANDLER(Input, Node2D, DrawBrush)
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
-    entity.text = NULL;
     entity.bbox = BOX3_FromRect(pTextRun->_textinfo.cursor);
     entity.bbox.min.x += pTextRun->_textinfo.txInsets.left;
     entity.bbox.min.y += pTextRun->_textinfo.txInsets.top;
@@ -104,7 +103,7 @@ HANDLER(Input, TextBlockConcept, MakeText)
 {
   const char* text = GetTextRun(hObject)->Text;
   pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);
-  pMakeText->text->cursor = pInput->Cursor;
+  GetTextBlockConcept(hObject)->_text->cursor = pInput->Cursor;
   return FALSE;
 }
 
