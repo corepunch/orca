@@ -175,8 +175,7 @@ enum
   PF_SPECIALIZED = (1 << 6),
   PF_PROPERTY_TYPE = (1 << 7),
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
-  PF_INHERITED = (1 << 9), // value is cached from an inherited ancestor, not locally set
-  PF_OWNS_VALUE = (1 << 10), // inherited property owns the slot currently stored in property->value
+  PF_INHERITED = (1 << 9), // value was propagated from an ancestor
   PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
 };
 
@@ -245,7 +244,6 @@ ORCA_API enum DataType
 PROP_GetType(struct Property const *);
 
 #define IVALUE(slot, fallback) ((slot) ? *(slot) : (fallback))
-#define ISET_SLOT(property, slot) (*(void **)((property)->value) = (void *)(slot))
 
 ORCA_API uint32_t
 PROP_GetSize(struct Property const *);

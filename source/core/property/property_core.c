@@ -126,28 +126,18 @@ PROP_Clear(struct Property *property)
   if (old_array) {
     free(old_array);
   }
-  bool_t owns_object_value = !property->pdesc->IsInherited ||
-    (property->flags & PF_OWNS_VALUE);
   if (property->pdesc->DataType == kDataTypeObject &&
-      storage && !property->pdesc->IsArray && owns_object_value) {
+      storage && !property->pdesc->IsArray) {
     struct Object *object = PROP_GetObjectValue(property);
     if (object) {
       OBJ_ReleaseRef(object);
     }
   }
-  if (storage && (!(property->pdesc->IsInherited && !property->pdesc->IsArray) ||
-                  (property->flags & PF_OWNS_VALUE))) {
+  if (storage) {
     memset(storage, 0, PROP_GetSize(property));
   }
-  if (property->pdesc->IsInherited && !property->pdesc->IsArray && property->value) {
-    if (property->flags & PF_OWNS_VALUE) {
-      free(storage);
-    }
-    ISET_SLOT(property, NULL);
-  }
-  property->flags &= ~(PF_MODIFIED | PF_INHERITED | PF_OWNS_VALUE);
-  if (property->pdesc->DataType == kDataTypeString && storage &&
-      !(property->pdesc->IsInherited && !property->pdesc->IsArray)) {
+  property->flags &= ~(PF_MODIFIED | PF_INHERITED);
+  if (property->pdesc->DataType == kDataTypeString && storage) {
     *(char**)storage = NULL;
   }
   if (propagate_inherited) {

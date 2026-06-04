@@ -163,9 +163,7 @@ _RegisterProperty(struct Object *object, struct Property *property)
   PROP_AddToList(property, &object->properties);
   if (!object->components || !CMP_SetProperty(object->components, property)) {
     uint32_t psize = PROP_GetSize(property);
-    if (desc && desc->IsInherited && !desc->IsArray) {
-      psize = sizeof(void *);
-    } else if (desc && desc->IsArray) {
+    if (desc && desc->IsArray) {
       psize = sizeof(void *) + sizeof(int);
     }
     if (psize == 0) {

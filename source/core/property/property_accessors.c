@@ -78,9 +78,6 @@ PROP_GetRawValueSlot(struct Property const *property)
   if (!property || !property->value) {
     return NULL;
   }
-  if (property->pdesc && property->pdesc->IsInherited && !property->pdesc->IsArray) {
-    return *(void * const *)property->value;
-  }
   return property->value;
 }
 
@@ -132,14 +129,6 @@ PROP_SetStoredValue(struct Property *property,
                     bool_t local)
 {
   void *storage = property->value;
-  if (property->pdesc->IsInherited && !property->pdesc->IsArray) {
-    storage = *(void **)property->value;
-    if (local && !(property->flags & PF_OWNS_VALUE)) {
-      storage = ZeroAlloc(PROP_GetSize(property));
-      ISET_SLOT(property, storage);
-      property->flags |= PF_OWNS_VALUE;
-    }
-  }
   if (property->pdesc->IsArray) {
     void *old_ptr = *(void**)storage;
     int old_count = ((int*)storage)[sizeof(void*)/sizeof(int)];
@@ -173,9 +162,7 @@ PROP_SetStoredValue(struct Property *property,
     *(LPSTR*)storage = strdup(*(LPSTR*)source);
   } else if (PROP_GetType(property) == kDataTypeObject) {
     struct Object *object = *(struct Object **)source;
-    bool_t old_value_is_owned = !property->pdesc->IsInherited ||
-      (property->flags & PF_OWNS_VALUE);
-    struct Object *old_object = old_value_is_owned ? PROP_GetObjectValue(property) : NULL;
+    struct Object *old_object = PROP_GetObjectValue(property);
     /* Object properties own a ref, but they do not parent the object. */
     if (!object) {
       memset(storage, 0, PROP_GetSize(property));
@@ -278,15 +265,7 @@ PROP_NotifyChanged(struct Property *property)
 void
 PROP_SetValue(struct Property *property, void const* source)
 {
-  if (PROP_IsSameValue(property, source) &&
-      (!property->pdesc->IsInherited || (property->flags & PF_MODIFIED))) {
-    if (property->flags & PF_INHERITED) {
-      property->flags &= ~PF_INHERITED;
-      PROP_SetDirty(property);
-      if (property->pdesc->IsInherited) {
-        OBJ_PropagateInheritedProperty(property->object, property);
-      }
-    }
+  if (PROP_IsSameValue(property, source) && (property->flags & PF_MODIFIED)) {
     return;
   }
   property->flags &= ~PF_INHERITED;
@@ -305,21 +284,13 @@ PROP_SetInheritedValue(struct Property *property, void const* source)
 {
   if (!property || !property->pdesc || !property->pdesc->IsInherited) return;
   if (property->flags & PF_MODIFIED) return;
-  if (!property->pdesc->IsArray) {
-    void *old_slot = *(void **)property->value;
-    if (old_slot == source) return;
-    ISET_SLOT(property, source);
-    if (source) {
-      PROP_MarkValueStored(property, FALSE);
-    } else {
-      property->flags &= ~PF_INHERITED;
-      OBJ_SetDirty(property->object);
-    }
-    PROP_NotifyChanged(property);
-    return;
-  }
   if (PROP_IsSameValue(property, source)) return;
-  PROP_SetStoredValue(property, source, FALSE);
+  if (source) {
+    PROP_SetStoredValue(property, source, FALSE);
+  } else {
+    property->flags &= ~PF_INHERITED;
+    OBJ_SetDirty(property->object);
+  }
   PROP_NotifyChanged(property);
 }
 

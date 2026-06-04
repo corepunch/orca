@@ -509,9 +509,7 @@ static int f_parse_property(lua_State* L) {
   struct PropertyType const* pt = luaX_checkPropertyType(L, 2);
   char buf[MAX_PROPERTY_STRING] = {0};
   if (parse_property(str, pt, buf)) {
-    struct PropertyType raw = *pt;
-    raw.IsInherited = FALSE;
-    write_property(L, &raw, buf);
+    write_property(L, pt, buf);
     return 1;
   } else {
     return 0;

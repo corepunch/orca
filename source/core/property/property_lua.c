@@ -228,13 +228,6 @@ ORCA_API int
 write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr)
 {
     // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
-    if (prop->IsInherited && !prop->IsArray) {
-      valueptr = valueptr ? *(void * const *)valueptr : NULL;
-      if (!valueptr) {
-        lua_pushnil(L);
-        return 1;
-      }
-    }
     switch (prop->DataType) {
       case kDataTypeBool:
         lua_pushboolean(L, *(bool*)valueptr);
