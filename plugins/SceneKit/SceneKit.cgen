@@ -156,7 +156,7 @@
         <property name="SelectedItemIndex" type="float">Index of currently selected item (supports fractional values for smooth transitions)</property>
       </properties>
     </class>
-    <class name="Viewport3D" parent="Node2D" children="Node3D">
+    <class name="Viewport3D" parent="Node2D" children="Node3D" storage-struct="SceneViewport3D">
       <summary>2D viewport component that renders 3D scene content</summary>
       <details>Bridge between 2D UI layout and 3D scene rendering. Allows embedding 3D scenes within 2D user interfaces with independent camera and rendering configuration.</details>
       <handles>

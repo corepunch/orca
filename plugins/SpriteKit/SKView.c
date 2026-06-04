@@ -1,10 +1,6 @@
 #include <UIKit/UIKit.h>
 #include <SpriteKit/SpriteKit.h>
 
-/* Override generated GetSKView to use the UINode2D typedata slot. */
-#undef  GetSKView
-#define GetSKView(_P) \
-  ((_P) ? (struct SKView *)((struct UINode2D *)(_P)->typedata)->_skview : NULL)
 
 static struct Object *
 find_viewport(struct Object *node) {

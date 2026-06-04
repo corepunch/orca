@@ -5,9 +5,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-static_assert(sizeof(struct SKView) <= UIDATA_SKVIEW_SIZE,
-    "SKView exceeds reserved UINode2D slot — increase UIDATA_SKVIEW_SIZE");
-
 struct SKData *
 Object_SKData(struct Object *object)
 {
@@ -76,11 +73,16 @@ f_createAnimation(lua_State *L)
   return 1;
 }
 
+struct SKViewData *
+Object_SKViewData(struct Object *object)
+{
+  if (!object || !OBJ_IsKindOfW(object->type, ID_SKView)) return NULL;
+  return (struct SKViewData *)object->typedata;
+}
+
 void
 on_spritekit_module_registered(lua_State *L)
 {
-  OBJ_SetClassTypedataOffset(ID_SKView,
-      (uint32_t)offsetof(struct UINode2D, _skview));
   lua_pushcfunction(L, f_createAnimation);
   lua_setfield(L, -2, "createAnimation");
 }

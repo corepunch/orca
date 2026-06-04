@@ -39,8 +39,8 @@ struct Object
    *   core:       SendMessageAction, Setter, HideAction,
    *               OnPropertyChangedTrigger, OnAttachedTrigger, EventTrigger,
    *               AnimationCurve, AnimationClip, AnimationPlayer
-   *   SceneKit:   Viewport3D (reserved slot in UINode2D — needs cross-module solution)
-   *   SpriteKit:  SKView (reserved slot in UINode2D — needs cross-module solution)
+   *   SceneKit:   Viewport3D → struct SceneViewport3D { Node2D; Viewport3D; }
+   *   SpriteKit:  SKView    → struct SKViewData       { Node2D; SKView; }
    *   renderer:   Texture, Image, RenderTargetTexture, CubeMapTexture, IOSurfaceTexture,
    *               VertexShader, FragmentShader, Shader, Material, Mesh, FontFamily,
    *               Trajectory, Timeline

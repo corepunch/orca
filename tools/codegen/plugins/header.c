@@ -705,6 +705,23 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
                 " */\n"
                 "struct %s {\n",
                 ss, root_cls ? root_cls->name : ss, ss) < 0) goto fail;
+            /* Emit external ancestor slots first (outermost first) so offsets
+             * are compatible with sibling storage structs from other modules. */
+            if (root_cls) {
+                /* collect external ancestors in reverse order, then emit */
+                char const *ext_chain[32]; int n_ext = 0;
+                char pbuf[512]; char *tok;
+                snprintf(pbuf, sizeof(pbuf), "%s", root_cls->type ? root_cls->type : "");
+                for (tok = strtok(pbuf, ","); tok; tok = strtok(NULL, ",")) {
+                    while (*tok == ' ') ++tok;
+                    /* only non-local classes (not defined in this module) */
+                    if (!find_kind_node(model, tok, CG_KIND_CLASS) && tok[0] && n_ext < 32)
+                        ext_chain[n_ext++] = tok; /* points into pbuf — safe within emission loop */
+                }
+                /* emit outermost-first: for "Node2D" the chain is just [Node2D] */
+                for (int ei = 0; ei < n_ext; ++ei)
+                    if (ob_printf(&b, "  struct %-24s %s;\n", ext_chain[ei], ext_chain[ei]) < 0) goto fail;
+            }
             cg_foreach(model, 0, CG_KIND_CLASS, c) {
                 char ss_buf[256];
                 char const *cname = class_storage_name(model, c, ss_buf, sizeof(ss_buf));
