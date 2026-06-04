@@ -18,7 +18,6 @@
     <enum name="DataType">
       <summary>Specifies the underlying data type of a property.</summary>
       <details>DataType defines the fundamental type of value a property can hold, ranging from basic primitives like Bool and Float to complex structures such as Transform3D or custom Objects. It helps the engine interpret, validate, and serialize property values appropriately.</details>
-      <value name="None">No data type specified.</value>
       <value name="Bool">Boolean value representing true or false.</value>
       <value name="Int">Signed integer value.</value>
       <value name="Enum">Enumeration type represented by integer values mapped to named constants.</value>
