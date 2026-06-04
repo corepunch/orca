@@ -88,12 +88,9 @@ PROP_GetValue(struct Property const *property)
   if (property->pdesc && property->pdesc->IsArray) {
     return property->value;
   }
-  if (property->pdesc && property->pdesc->IsInherited &&
-      !(property->flags & PF_MODIFIED)) {
-    for (struct Object *obj = property->object ? property->object->parent : NULL;
-         obj; obj = obj->parent) {
-      struct Property *p = PROP_FindByLongID(obj->properties,
-                                             property->pdesc->FullIdentifier);
+  if (property->pdesc && property->pdesc->IsInherited && !(property->flags & PF_MODIFIED)) {
+    for (struct Object *obj = property->object ? OBJ_GetParent(property->object) : NULL; obj; obj = OBJ_GetParent(obj)) {
+      struct Property *p = PROP_FindByLongID(OBJ_GetProperties(obj), property->pdesc->FullIdentifier);
       if (p && (p->flags & PF_MODIFIED)) {
         return PROP_GetValue(p);
       }

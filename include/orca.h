@@ -239,8 +239,6 @@ PROP_GetValue(struct Property const *);
 ORCA_API enum DataType
 PROP_GetType(struct Property const *);
 
-#define IVALUE(slot, fallback) ((slot) ? *(slot) : (fallback))
-
 ORCA_API uint32_t
 PROP_GetSize(struct Property const *);
 
@@ -397,6 +395,9 @@ OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Prop
 
 ORCA_API HRESULT
 OBJ_FindLongProperty(struct Object *object, uint32_t long_id, struct Property ** output);
+
+ORCA_API bool_t
+OBJ_ReadProperty(struct Object *object, uint32_t long_id, void *output);
 
 ORCA_API HRESULT
 OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value);

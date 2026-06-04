@@ -89,12 +89,13 @@ _MakeViewTextRun(struct Object *hObject,
                  struct TextRun text,
                  lpcString_t szText)
 {
-  (void)hObject;
   struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
-  font.Weight = IVALUE(text.Font.Weight, font.Weight);
-  font.Style = IVALUE(text.Font.Style, font.Style);
-  font.Size = IVALUE(text.Font.Size, font.Size ? font.Size : DEFAULT_FONT_SIZE);
-  font.Family = IVALUE(text.Font.Family, font.Family);
+
+  TextRun_ReadProperty(hObject, Font.Weight, &font.Weight);
+  TextRun_ReadProperty(hObject, Font.Style, &font.Style);
+  TextRun_ReadProperty(hObject, Font.Size, &font.Size);
+  TextRun_ReadProperty(hObject, Font.Family, &font.Family);
+
   struct ViewTextRun view = {
     .string = szText,
     .fontFamily = font.Family,

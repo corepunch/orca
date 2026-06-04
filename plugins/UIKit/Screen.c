@@ -37,12 +37,16 @@ Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
 }
 
 static struct BrushShorthand
-_Node2DGetForegroundBrush(struct Node2D const *node)
+_Node2DGetForegroundBrush(struct Object *object)
 {
   struct BrushShorthand brush = { 0 };
-  brush.Color = IVALUE(node->Foreground.Color, ((struct color){ 1, 1, 1, 1 }));
-  brush.Image = IVALUE(node->Foreground.Image, brush.Image);
-  brush.Material = IVALUE(node->Foreground.Material, brush.Material);
+
+  brush.Color = (struct color){ 1, 1, 1, 1 };
+
+  Node2D_ReadProperty(object, Foreground.Color, &brush.Color);
+  Node2D_ReadProperty(object, Foreground.Image, &brush.Image);
+  Node2D_ReadProperty(object, Foreground.Material, &brush.Material);
+
   return brush;
 }
 
@@ -448,7 +452,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   }
 
   struct BrushShorthand foregroundBrush =
-    _Node2DGetForegroundBrush(pNode2D);
+    _Node2DGetForegroundBrush(hObject);
 
   if (pNode2D->Ring.Width > 0) {
     _SendMessage(hObject, Node2D, DrawBrush,

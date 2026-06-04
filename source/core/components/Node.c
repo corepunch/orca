@@ -7,7 +7,10 @@ HANDLER(Node, Node, GetSize)
 
 HANDLER(Node, Node, IsVisible)
 {
-  PROP_Update(Node_GetProperty(hObject, kNodeVisible));
+  struct Property *visible = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node_Visible, &visible))) {
+    PROP_Update(visible);
+  }
   return pNode->Visible && !GetNode(hObject)->QuickHide;
 }
 

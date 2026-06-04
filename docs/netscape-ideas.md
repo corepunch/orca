@@ -48,13 +48,11 @@ and generated component structs should not expose nested storage such as:
 text.Font.Weight
 ```
 
-Hot code should read flat inherited slots:
+Hot code should read effective atomic properties:
 
 ```c
-text.FontWeight
-text.FontStyle
-text.FontSize
-text.FontFamily
+TextRun_GetProperty(object, offsetof(struct TextRun, Font.Weight))
+PROP_GetValue(property)
 ```
 
 The shorthand type is still useful. `FontShorthand` can remain a convenience
@@ -110,7 +108,7 @@ Today ORCA has several property sources:
 - Bindings.
 
 These sources should be modeled explicitly as a cascade of declarations before
-they become final property slot values.
+they become final effective property values.
 
 A useful shape is:
 
@@ -159,7 +157,7 @@ authored value
   -> parse
   -> concrete value or generated binding
   -> binding evaluates to concrete atomic value
-  -> property slot stores final effective value
+  -> property stores local value or resolves an inherited effective value
 ```
 
 Simple values write directly:
@@ -245,7 +243,7 @@ This computed declaration set should be typed as early as practical. ORCA has
 generated `PropertyType` metadata, so the style system can parse property values
 into the same binary representation used by XML and Lua.
 
-The final property slots should not need to know whether a value came from:
+The final effective properties should not need to know whether a value came from:
 
 - XML attribute.
 - Lua assignment.
@@ -263,10 +261,11 @@ This also suggests a cleaner lifecycle for style updates:
 2. Recompute declarations for the affected object.
 3. Compare against the previous winning declarations.
 4. Apply only changed atomic properties.
-5. Propagate inherited atomic property changes through existing inherited slots.
+5. Resolve inherited atomic properties through the property accessor path.
 
-That fits the inherited-slot design: inheritance remains attached to atomic
-properties only. Shorthands disappear before inheritance runs.
+That fits the pull-inheritance design: inheritance remains attached to atomic
+properties only, and `PROP_GetValue` resolves the effective value. Shorthands
+disappear before inheritance runs.
 
 ## 5. Normalize Names Across CSS, XML, Lua, And C
 
@@ -355,7 +354,7 @@ authoring input
   -> produce atomic declarations
   -> cascade by priority/order
   -> direct write or generated binding
-  -> final atomic inherited slot
+  -> final effective atomic property
   -> optional generated convenience struct for C hot code
 ```
 
@@ -382,4 +381,4 @@ The big rule stays simple:
 > Store atomic properties. Treat shorthands as authoring and convenience APIs.
 
 Netscape's style system points toward a useful layered architecture, but ORCA's
-version should remain generated, typed, and slot-friendly.
+version should remain generated, typed, and property-driven.

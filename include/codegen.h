@@ -3,6 +3,10 @@
 
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+#define UIDATA_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) DECL(SHORT, CLASS, NAME, FIELD, TYPE, ##__VA_ARGS__)
+#define UIDATA_ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE, ##__VA_ARGS__)
+#define SHORTHAND_TARGET(TYPE, FIELD, CLASS, PROPERTY, BIT) { .Name=#FIELD, .PropertyID=ID_##CLASS##_##PROPERTY, .Offset=offsetof(struct TYPE, FIELD), .PresentBit=BIT }
+#define SHORTHAND(CLASS, NAME, TYPE_NAME, TYPE, SHORT) { .Name=#NAME, .Category=#CLASS, .TypeString=TYPE_NAME, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .StructSize=sizeof(struct TYPE), .Targets=CLASS##NAME##ShorthandTargets, .NumTargets=sizeof(CLASS##NAME##ShorthandTargets) / sizeof(*CLASS##NAME##ShorthandTargets) }
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -172,8 +176,8 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Shorthands = NAME##Shorthands, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
-	.NumProperties = k##NAME##NumProperties, \
-	.NumShorthands = k##NAME##NumShorthands, \
+	.NumProperties = sizeof(NAME##Properties) / sizeof(*NAME##Properties), \
+	.NumShorthands = sizeof(NAME##Shorthands) / sizeof(*NAME##Shorthands), \
 };
 
 #define REGISTER_MESSAGE_ACTION(NAME, XML_NAME, NUM_PROPS, PROPS) \

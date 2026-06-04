@@ -260,9 +260,9 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
     struct BrushShorthand foreground = { 0 };
-    foreground.Color = IVALUE(pNode2D->Foreground.Color, foreground.Color);
-    foreground.Image = IVALUE(pNode2D->Foreground.Image, foreground.Image);
-    foreground.Material = IVALUE(pNode2D->Foreground.Material, foreground.Material);
+    Node2D_ReadProperty(hObject, Foreground.Color, &foreground.Color);
+    Node2D_ReadProperty(hObject, Foreground.Image, &foreground.Image);
+    Node2D_ReadProperty(hObject, Foreground.Material, &foreground.Material);
     entity.material.color = foreground.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {

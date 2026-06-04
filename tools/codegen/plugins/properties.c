@@ -310,6 +310,9 @@ static int walk_prop(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs,
             type_name && type_name[0] ? type_name : "void") < 0) return -1;
     s = find_struct(ctx->smap, ctx->scount, type_name);
     if (ctx->record_enum && !(s && !s->sealed)) {
+        if (ob_printf(ctx->b,
+                "#define k%s%s offsetof(struct %s, %s)\n",
+                ctx->class_name, leaf, ctx->class_name, addr) < 0) return -1;
         if (wctx_push(ctx, leaf, addr, *ctx->pidx) < 0) return -1;
         if (ctx->pidx) (*ctx->pidx)++;
     }
@@ -381,6 +384,8 @@ static int emit_message_action_field_ids(cg_host_v1 const *h, ob *b, cg_model co
     cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
         if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
                 action, f->name, hash2(h, action, f->name), action, f->name) < 0) return -1;
+        if (ob_printf(b, "#define k%s%s offsetof(struct %s, %s)\n",
+                action, f->name, action, f->name) < 0) return -1;
     }
     return 0;
 }
@@ -396,6 +401,10 @@ static int emit_message_action(cg_host_v1 const *h, ob *b, cg_model const *m, cg
             "ORCA_API struct Property *%s_GetProperty(struct Object *_P, size_t _O);\n",
             xml_name, action, h->fnv1a32(xml_name), xml_name,
             action, action, action,
+            action, action, action) < 0) return -1;
+    if (ob_printf(b,
+            "ORCA_API bool_t %s_ReadPropertyAtOffset(struct Object *_P, size_t _O, void *_Out);\n"
+            "#define %s_ReadProperty(_P, _N, _Out) readprop((_P), %s, _N, (_Out))\n",
             action, action, action) < 0) return -1;
         if (emit_message_action_field_ids(h, b, m, msg, action) < 0) return -1;
     return 0;
@@ -416,6 +425,10 @@ static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node con
             c->name, c->name, h->fnv1a32(c->name),
             c->name, c->name, c->name,
             c->name, c->name, c->name) < 0) return -1;
+    if (ob_printf(b,
+            "ORCA_API bool_t %s_ReadPropertyAtOffset(struct Object *_P, size_t _O, void *_Out);\n"
+            "#define %s_ReadProperty(_P, _N, _Out) readprop((_P), %s, _N, (_Out))\n",
+            c->name, c->name, c->name) < 0) return -1;
 
     /* properties with struct expansion */
     cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
@@ -427,6 +440,9 @@ static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node con
             if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
                     c->name, num, hash2(h, c->name, num), c->name, num) < 0) {
                 free(ctx.cases); return -1; }
+            if (ob_printf(b, "#define k%s%s offsetof(struct %s, %s)\n",
+                    c->name, num, c->name, num) < 0) {
+                free(ctx.cases); return -1; }
             if (wctx_push(&ctx, num, num, idx) < 0) { free(ctx.cases); return -1; }
             idx++;
         }
@@ -436,6 +452,8 @@ static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node con
         if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
                 c->name, msg->name, hash2(h, c->name, msg->name),
                 c->name, msg->name) < 0) { free(ctx.cases); return -1; }
+        if (ob_printf(b, "#define k%s%s offsetof(struct %s, %s)\n",
+                c->name, msg->name, c->name, msg->name) < 0) { free(ctx.cases); return -1; }
         if (wctx_push(&ctx, msg->name, msg->name, idx) < 0) { free(ctx.cases); return -1; }
         idx++;
     }
@@ -516,6 +534,9 @@ static int emit_properties(cg_host_v1 const *host, cg_model const *model, char c
             "#include <stddef.h>\n\n"
             "#ifndef getprop\n"
             "#define getprop(_P, _C, _N) _C##_GetProperty((_P), offsetof(struct _C, _N))\n"
+            "#endif\n\n"
+            "#ifndef readprop\n"
+            "#define readprop(_P, _C, _N, _OUT) _C##_ReadPropertyAtOffset((_P), offsetof(struct _C, _N), (_OUT))\n"
             "#endif\n\n",
             base_name(model->xml_path), guard, guard) < 0) goto fail;
 
