@@ -14,17 +14,90 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static struct Object *workspace = NULL;
 
+#define THEME_VALUE(KEY, VALUE) { KEY, VALUE }
+#define TAILWIND_TONES(NAME, C50, C100, C200, C300, C400, C500, C600, C700, C800, C900, C950) \
+  THEME_VALUE(NAME "-50", C50), \
+  THEME_VALUE(NAME "-100", C100), \
+  THEME_VALUE(NAME "-200", C200), \
+  THEME_VALUE(NAME "-300", C300), \
+  THEME_VALUE(NAME "-400", C400), \
+  THEME_VALUE(NAME "-500", C500), \
+  THEME_VALUE(NAME "-600", C600), \
+  THEME_VALUE(NAME "-700", C700), \
+  THEME_VALUE(NAME "-800", C800), \
+  THEME_VALUE(NAME "-900", C900), \
+  THEME_VALUE(NAME "-950", C950)
+
 static struct ThemeValue const _defaultThemeLibrary[] = {
+  { "background", "#0B0B12" },
+  { "foreground", "#F1F5F9" },
   { "accent", "#8B5CF6" },
   { "accent-background", "#2A2145" },
   { "accent-foreground", "#FFFFFF" },
-  { "panel-background", "#141420" },
-  { "card-background", "#1A1A28" },
+  { "accent-green", "#10B981" },
+  { "accent-blue", "#3B82F6" },
+  { "accent-amber", "#F59E0B" },
+  { "accent-subtle", "#E0F2FE" },
+  { "panel-background", "#1A1A28" },
+  { "surface", "#0B0B12" },
+  { "surface-deep", "#09090F" },
+  { "surface-alt", "#1A1A28" },
+  { "card-background", "#141420" },
+  { "card", "#141420" },
+  { "card-foreground", "#F1F5F9" },
+  { "popover", "#141420" },
+  { "popover-foreground", "#F1F5F9" },
+  { "primary", "#8B5CF6" },
+  { "primary-foreground", "#FFFFFF" },
+  { "secondary", "#1A1A28" },
+  { "secondary-foreground", "#F1F5F9" },
+  { "muted", "#1A1A28" },
+  { "muted-foreground", "#94A3B8" },
+  { "destructive", "#5A1313" },
+  { "destructive-foreground", "#F8FAFC" },
+  { "border", "#2B3142" },
+  { "input", "#141420" },
+  { "ring", "#8B5CF6" },
+  { "header-background", "#141420" },
+  { "text-primary", "#F1F5F9" },
+  { "text-secondary", "#94A3B8" },
+  { "text-muted", "#64748B" },
+  { "text-dim", "#4B5563" },
+  { "foreground-muted", "#94A3B8" },
+  { "white", "#FFFFFF" },
   { "control-background", "#141420" },
   { "control-foreground", "#F1F5F9" },
   { "control-border", "#2B3142" },
   { "control-muted", "#64748B" },
+  { "icon-bg-purple", "#1E1833" },
+  { "icon-bg-blue", "#10203A" },
+  { "icon-bg-green", "#0D2020" },
+  TAILWIND_TONES("slate", "#f8fafc", "#f1f5f9", "#e2e8f0", "#cbd5e1", "#94a3b8", "#64748b", "#475569", "#334155", "#1e293b", "#0f172a", "#020617"),
+  TAILWIND_TONES("gray", "#f9fafb", "#f3f4f6", "#e5e7eb", "#d1d5db", "#9ca3af", "#6b7280", "#4b5563", "#374151", "#1f2937", "#111827", "#030712"),
+  TAILWIND_TONES("zinc", "#fafafa", "#f4f4f5", "#e4e4e7", "#d4d4d8", "#a1a1aa", "#71717a", "#52525b", "#3f3f46", "#27272a", "#18181b", "#09090b"),
+  TAILWIND_TONES("neutral", "#fafafa", "#f5f5f5", "#e5e5e5", "#d4d4d4", "#a3a3a3", "#737373", "#525252", "#404040", "#262626", "#171717", "#0a0a0a"),
+  TAILWIND_TONES("stone", "#fafaf9", "#f5f5f4", "#e7e5e4", "#d6d3d1", "#a8a29e", "#78716c", "#57534e", "#44403c", "#292524", "#1c1917", "#0c0a09"),
+  TAILWIND_TONES("red", "#fef2f2", "#fee2e2", "#fecaca", "#fca5a5", "#f87171", "#ef4444", "#dc2626", "#b91c1c", "#991b1b", "#7f1d1d", "#450a0a"),
+  TAILWIND_TONES("orange", "#fff7ed", "#ffedd5", "#fed7aa", "#fdba74", "#fb923c", "#f97316", "#ea580c", "#c2410c", "#9a3412", "#7c2d12", "#431407"),
+  TAILWIND_TONES("amber", "#fffbeb", "#fef3c7", "#fde68a", "#fcd34d", "#fbbf24", "#f59e0b", "#d97706", "#b45309", "#92400e", "#78350f", "#451a03"),
+  TAILWIND_TONES("yellow", "#fefce8", "#fef9c3", "#fef08a", "#fde047", "#facc15", "#eab308", "#ca8a04", "#a16207", "#854d0e", "#713f12", "#422006"),
+  TAILWIND_TONES("lime", "#f7fee7", "#ecfccb", "#d9f99d", "#bef264", "#a3e635", "#84cc16", "#65a30d", "#4d7c0f", "#3f6212", "#365314", "#1a2e05"),
+  TAILWIND_TONES("green", "#f0fdf4", "#dcfce7", "#bbf7d0", "#86efac", "#4ade80", "#22c55e", "#16a34a", "#15803d", "#166534", "#14532d", "#052e16"),
+  TAILWIND_TONES("emerald", "#ecfdf5", "#d1fae5", "#a7f3d0", "#6ee7b7", "#34d399", "#10b981", "#059669", "#047857", "#065f46", "#064e3b", "#022c22"),
+  TAILWIND_TONES("teal", "#f0fdfa", "#ccfbf1", "#99f6e4", "#5eead4", "#2dd4bf", "#14b8a6", "#0d9488", "#0f766e", "#115e59", "#134e4a", "#042f2e"),
+  TAILWIND_TONES("cyan", "#ecfeff", "#cffafe", "#a5f3fc", "#67e8f9", "#22d3ee", "#06b6d4", "#0891b2", "#0e7490", "#155e75", "#164e63", "#083344"),
+  TAILWIND_TONES("sky", "#f0f9ff", "#e0f2fe", "#bae6fd", "#7dd3fc", "#38bdf8", "#0ea5e9", "#0284c7", "#0369a1", "#075985", "#0c4a6e", "#082f49"),
+  TAILWIND_TONES("blue", "#eff6ff", "#dbeafe", "#bfdbfe", "#93c5fd", "#60a5fa", "#3b82f6", "#2563eb", "#1d4ed8", "#1e40af", "#1e3a8a", "#172554"),
+  TAILWIND_TONES("indigo", "#eef2ff", "#e0e7ff", "#c7d2fe", "#a5b4fc", "#818cf8", "#6366f1", "#4f46e5", "#4338ca", "#3730a3", "#312e81", "#1e1b4b"),
+  TAILWIND_TONES("violet", "#f5f3ff", "#ede9fe", "#ddd6fe", "#c4b5fd", "#a78bfa", "#8b5cf6", "#7c3aed", "#6d28d9", "#5b21b6", "#4c1d95", "#2e1065"),
+  TAILWIND_TONES("purple", "#faf5ff", "#f3e8ff", "#e9d5ff", "#d8b4fe", "#c084fc", "#a855f7", "#9333ea", "#7e22ce", "#6b21a8", "#581c87", "#3b0764"),
+  TAILWIND_TONES("fuchsia", "#fdf4ff", "#fae8ff", "#f5d0fe", "#f0abfc", "#e879f9", "#d946ef", "#c026d3", "#a21caf", "#86198f", "#701a75", "#4a044e"),
+  TAILWIND_TONES("pink", "#fdf2f8", "#fce7f3", "#fbcfe8", "#f9a8d4", "#f472b6", "#ec4899", "#db2777", "#be185d", "#9d174d", "#831843", "#500724"),
+  TAILWIND_TONES("rose", "#fff1f2", "#ffe4e6", "#fecdd3", "#fda4af", "#fb7185", "#f43f5e", "#e11d48", "#be123c", "#9f1239", "#881337", "#4c0519"),
 };
+
+#undef TAILWIND_TONES
+#undef THEME_VALUE
 
 static lpcString_t
 _GetDefaultThemeValue(lpcString_t key)
@@ -58,16 +131,16 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
   if (!key || key[0] != '$') return NULL;
   lpcString_t name = key + 1;  // strip the leading '$'
   struct Object *ws = FS_GetWorkspace();
-  if (!ws) return NULL;
-  FOR_EACH_OBJECT(project_obj, ws) {
-    struct Project *project = GetProject(project_obj);
-    if (!project || !project->ThemeLibrary) continue;
+  if (ws) {
+    FOR_EACH_OBJECT(project_obj, ws) {
+      struct Project *project = GetProject(project_obj);
+      if (!project || !project->ThemeLibrary) continue;
 //    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
-    FOR_LOOP(i, project->NumThemeLibrary) {
-      if (project->ThemeLibrary[i].Key && strcmp(project->ThemeLibrary[i].Key, name) == 0) {
-        return project->ThemeLibrary[i].Value;
+      FOR_LOOP(i, project->NumThemeLibrary) {
+        if (project->ThemeLibrary[i].Key && strcmp(project->ThemeLibrary[i].Key, name) == 0) {
+          return project->ThemeLibrary[i].Value;
+        }
       }
-    }
 //    FOR_EACH_OBJECT(themeGroup_obj, themes) {
 //      struct ThemeGroup* tg = GetThemeGroup(themeGroup_obj);
 //      if (!tg || !tg->_selectedTheme) continue;
@@ -78,6 +151,7 @@ ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
 //          return node->Resources[i].Value;
 //      }
 //    }
+    }
   }
   {
     lpcString_t fallback = _GetDefaultThemeValue(name);
@@ -526,30 +600,64 @@ _InitEnginePlugins(lua_State *L, struct Project const *project)
   }
 }
 
-//static void
-//register_theme_value(lpcString_t name, lpcString_t value, void* L)
-//{
-//  // Update the Lua orca.theme table for backward compatibility
-//  luaX_require(L, "orca", 1);
-//  lua_getfield(L, -1, "theme");
-//  lua_pushfstring(L, "$%s", name);
-//  lua_pushstring(L, value);
-//  lua_settable(L, -3);
-//  lua_pop(L, 2);
-//}
+static void
+_RegisterThemeValue(lua_State *L, lpcString_t name, lpcString_t value, bool_t overwrite)
+{
+  if (!name || !value) return;
 
-//static void
-//_InitTheme(lua_State *L, struct Project *project)
-//{
-//  if (project->ThemeLibrary) {
-//    struct Object *themes = CMP_GetObject(project->ThemeLibrary);
-//    FOR_EACH_OBJECT(themeGroup, themes) {
-//      if (GetThemeGroup(themeGroup) && GetThemeGroup(themeGroup)->_selectedTheme) {
-//        UI_EnumObjectAliases(GetThemeGroup(themeGroup)->_selectedTheme, register_theme_value, L);
-//      }
-//    }
-//  }
-//}
+  if (luaX_require(L, "orca", 1) != LUA_OK) {
+    return;
+  }
+
+  lua_getfield(L, -1, "theme");
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -3, "theme");
+  }
+
+  if (!overwrite) {
+    lua_pushfstring(L, "$%s", name);
+    lua_gettable(L, -2);
+    if (!lua_isnil(L, -1)) {
+      lua_pop(L, 3);
+      return;
+    }
+    lua_pop(L, 1);
+  }
+
+  lua_pushfstring(L, "$%s", name);
+  lua_pushstring(L, value);
+  lua_settable(L, -3);
+
+  lua_getfield(L, -1, "colors");
+  if (!lua_istable(L, -1)) {
+    lua_pop(L, 1);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);
+    lua_setfield(L, -3, "colors");
+  }
+
+  lua_pushstring(L, name);
+  lua_pushstring(L, value);
+  lua_settable(L, -3);
+
+  lua_pop(L, 3);
+}
+
+static void
+_InitTheme(lua_State *L, struct Project const *project, bool_t overwrite)
+{
+  FOR_LOOP(i, (int32_t)(sizeof(_defaultThemeLibrary) / sizeof(_defaultThemeLibrary[0]))) {
+    _RegisterThemeValue(L, _defaultThemeLibrary[i].Key, _defaultThemeLibrary[i].Value, FALSE);
+  }
+
+  if (!project || !project->ThemeLibrary) return;
+  FOR_LOOP(i, project->NumThemeLibrary) {
+    _RegisterThemeValue(L, project->ThemeLibrary[i].Key, project->ThemeLibrary[i].Value, overwrite);
+  }
+}
 
 struct Object*
 FS_LoadBundle(lua_State* L, lpcString_t szDirname)
@@ -567,14 +675,20 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
     return NULL;
   }
 
+  bool_t is_primary_project = TRUE;
+  FOR_EACH_OBJECT(child, FS_GetWorkspace()) {
+    is_primary_project = FALSE;
+    break;
+  }
+
 //  OBJ_EnumClasses(ID_Library, _AddLibrary, ((void*[]){ L, CMP_GetObject(project) }));
   OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project));
 
+  _InitTheme(L, project, is_primary_project);
   _InitEnginePlugins(L, project);
   _InitPropertyTypes(project);
   _RegisterProjectFonts(project, szDirname);
   _InitProjectRefences(L, project, szDirname);
-//  _InitTheme(L, project);
 
   lua_pop(L, 1);
 

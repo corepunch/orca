@@ -15,24 +15,10 @@ RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadi
   struct Node2D *node2d = GetNode2D(hObject);
   if (!node || !node2d) return;
 
-  pRadioButton->AccentColor = FS_GetThemeColor(
-    THEME_COLOR_ACCENT_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_ACCENT,
-      COLOR_ACCENT));
-  node->Border.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BORDER,
-    FS_GetThemeColor(
-      THEME_COLOR_CONTROL_MUTED,
-      COLOR_CONTROL_BORDER));
-  node2d->Background.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_CARD_BACKGROUND,
-      COLOR_CARD_BACKGROUND));
-  struct color foreground = FS_GetThemeColor(
-    THEME_COLOR_ACCENT_FOREGROUND,
-    COLOR_ACCENT_FOREGROUND);
+  pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
+  node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
+  node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
+  struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
   struct Property *foregroundProp = NULL;
   if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
     PROP_SetValue(foregroundProp, &foreground);

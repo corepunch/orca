@@ -13,23 +13,13 @@ Input_ApplyTextDefaults(struct Object *hObject)
   struct Node2D *node2d = GetNode2D(hObject);
   if (!node || !node2d) return;
 
-  node2d->Background.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_CARD_BACKGROUND,
-      COLOR_CONTROL_BACKGROUND));
-  struct color foreground = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_FOREGROUND,
-    COLOR_CONTROL_FOREGROUND);
+  node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
+  struct color foreground = FS_GetThemeColor(THEME_COLOR_CONTROL_FOREGROUND);
   struct Property *foregroundProp = NULL;
   if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
     PROP_SetValue(foregroundProp, &foreground);
   }
-  node->Border.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BORDER,
-    FS_GetThemeColor(
-      THEME_COLOR_CONTROL_MUTED,
-      COLOR_CONTROL_BORDER));
+  node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
   node->Border.Width.Axis[0].Left = 1.0f;
   node->Border.Width.Axis[0].Right = 1.0f;
   node->Border.Width.Axis[1].Left = 1.0f;
@@ -76,19 +66,9 @@ HANDLER(Input, Node2D, DrawBrush)
   }
   
   if (pInput->Type == kInputTypeCheckbox) {
-    struct color unchecked = FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_CARD_BACKGROUND,
-        COLOR_CONTROL_BACKGROUND_SOLID));
-    struct color checked = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_ACCENT,
-        COLOR_ACCENT_CHECKED));
-    struct color checkmark = FS_GetThemeColor(
-      THEME_COLOR_ACCENT_FOREGROUND,
-      COLOR_ACCENT_FOREGROUND);
+    struct color unchecked = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
+    struct color checked = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
+    struct color checkmark = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
     memset(&entity, 0, sizeof(entity));
     struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);

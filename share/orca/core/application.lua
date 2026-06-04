@@ -160,8 +160,8 @@ Application = Widget:extend {
       elseif msg:is "RequestReload" then return DATADIR
       else
         -- Detect OS appearance changes by polling is_dark_theme() on each
-        -- paint event.  When the theme flips we trigger a full reload so the
-        -- tailwind config (re-evaluated at startup) picks up the new colours.
+        -- paint event. When the theme flips we trigger a full reload so
+        -- project theme values are evaluated again at startup.
         if msg:is "Window.Paint" and system.is_dark_theme() ~= startup_dark_theme then
           return DATADIR
         end

@@ -71,18 +71,8 @@ Tab_Select(struct Object *object, struct Tab *tab)
 static void
 Tab_ApplyThemeDefaults(struct Tab *tab)
 {
-  tab->SelectedColor = FS_GetThemeColor(
-    THEME_COLOR_ACCENT,
-    FS_GetThemeColor(
-      THEME_COLOR_ACCENT_BACKGROUND,
-      COLOR_ACCENT_BACKGROUND));
-  tab->UnselectedColor = FS_GetThemeColor(
-    THEME_COLOR_PANEL_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_CONTROL_BACKGROUND,
-      FS_GetThemeColor(
-        THEME_COLOR_CARD_BACKGROUND,
-        COLOR_PANEL_BACKGROUND)));
+  tab->SelectedColor = FS_GetThemeColor(THEME_COLOR_ACCENT);
+  tab->UnselectedColor = FS_GetThemeColor(THEME_COLOR_PANEL_BACKGROUND);
 }
 
 HANDLER(Tab, Object, Create)

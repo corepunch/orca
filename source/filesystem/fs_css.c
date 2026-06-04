@@ -438,6 +438,94 @@ css_split_selector(const char* selector,
     }
 }
 
+static void
+css_copy_cstr(char *dst, size_t dst_size, const char *src)
+{
+    if (!dst || dst_size == 0) return;
+    if (!src) src = "";
+    strncpy(dst, src, dst_size - 1);
+    dst[dst_size - 1] = '\0';
+}
+
+static void
+css_theme_key_from_token(char *key, size_t key_size, const char *token)
+{
+    if (!key || key_size == 0) return;
+    key[0] = '\0';
+    if (!token || !*token) return;
+
+    if (token[0] == '$') {
+        css_copy_cstr(key, key_size, token);
+        return;
+    }
+
+    if (key_size < 2) return;
+    key[0] = '$';
+    key[1] = '\0';
+
+    if (token[0] == '-' && token[1] == '-') {
+        token += 2;
+    }
+    css_copy_cstr(key + 1, key_size - 1, token);
+}
+
+static const char*
+css_resolve_theme_value(const char *value, char *out, size_t out_size)
+{
+    if (!value || !out || out_size == 0) return value;
+
+    char text[CSS_MAX_VALLEN] = {0};
+    copy_trim(text, value, value + strlen(value), (int)sizeof(text));
+    if (!text[0]) return value;
+
+    if (text[0] == '$') {
+        lpcString_t theme_value = FS_GetThemeValue(text);
+        if (theme_value) {
+            css_copy_cstr(out, out_size, theme_value);
+            return out;
+        }
+        return value;
+    }
+
+    if (strncasecmp(text, "var(", 4)) {
+        return value;
+    }
+
+    const char *start = text + 4;
+    const char *end = text + strlen(text);
+    while (end > start && isspace((unsigned char)end[-1])) end--;
+    if (end <= start || end[-1] != ')') {
+        return value;
+    }
+    end--;
+
+    const char *comma = start;
+    while (comma < end && *comma != ',') comma++;
+
+    char token[CSS_MAX_VALLEN] = {0};
+    copy_trim(token, start, comma, (int)sizeof(token));
+    if (token[0]) {
+        char key[CSS_MAX_VALLEN] = {0};
+        css_theme_key_from_token(key, sizeof(key), token);
+        lpcString_t theme_value = FS_GetThemeValue(key);
+        if (theme_value) {
+            css_copy_cstr(out, out_size, theme_value);
+            return out;
+        }
+    }
+
+    if (comma < end) {
+        char fallback[CSS_MAX_VALLEN] = {0};
+        char resolved_fallback[CSS_MAX_VALLEN] = {0};
+        copy_trim(fallback, comma + 1, end, (int)sizeof(fallback));
+        const char *resolved = css_resolve_theme_value(fallback, resolved_fallback, sizeof(resolved_fallback));
+        css_copy_cstr(out, out_size, resolved);
+        return out;
+    }
+
+    return value;
+}
+
 // ---------------------------------------------------------------------------
 // StyleRule property assignment
 // ---------------------------------------------------------------------------
@@ -449,7 +537,9 @@ css_apply_decl_to_rule(struct Object *rule_obj,
 {
     const char* orca_name = css_lookup_orca_property(css_key);
     if (!orca_name) return; // unsupported property
+    char theme_value[CSS_MAX_VALLEN] = {0};
     char resolved_value[CSS_MAX_VALLEN] = {0};
+    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
     if (!strcasecmp(css_key, "font-family")) {
         css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
     }

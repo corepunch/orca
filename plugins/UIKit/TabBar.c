@@ -11,14 +11,7 @@ HANDLER(TabBar, Object, Create)
     stack->Direction = kDirectionHorizontal;
   }
 
-  const char *accent = FS_GetThemeValue2(
-    THEME_COLOR_ACCENT,
-    THEME_COLOR_ACCENT_BACKGROUND);
-  if (accent) {
-    node->Border.Color = COLOR_Parse(accent);
-  } else {
-    node->Border.Color = COLOR_ACCENT_BACKGROUND;
-  }
+  node->Border.Color = FS_GetThemeColor(THEME_COLOR_ACCENT);
 
   node->Border.Width.Axis[1].Right = 1.0f;
   node->Padding.Axis[1].Right = 1.0f;
