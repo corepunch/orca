@@ -164,7 +164,7 @@ HANDLER(TextBlock, Node2D, MeasureOverride)
 
 HANDLER(TextBlock, Node2D, ForegroundContent)
 {
-  return FALSE;
+  return TRUE;
 }
 
 HANDLER(TextBlock, Node2D, UpdateGeometry)

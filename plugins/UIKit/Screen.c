@@ -421,6 +421,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   if (_IsOutOfBounds(pNode2D, pDraw2DContent))
     return FALSE;
 
+  LRESULT foregroundContent = FALSE;
   struct Texture* foreground = NULL;
 
 #define kMsgDrawBrush 0x0875c1d1
@@ -428,7 +429,8 @@ HANDLER(Node2D, Node2D, Draw2DContent)
 #define kMsgForegroundContent 0x9a7735e5
 
   _SendMessage(hObject, Node2D, UpdateGeometry);
-  foreground = (struct Texture*)_SendMessage(hObject, Node2D, ForegroundContent);
+  foregroundContent = _SendMessage(hObject, Node2D, ForegroundContent);
+  foreground = foregroundContent == TRUE ? NULL : (struct Texture*)foregroundContent;
   
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
@@ -451,8 +453,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     OBJ_SetFlags(hObject, flags | OF_ACTIVATED);
   }
 
-  struct BrushShorthand foregroundBrush =
-    _Node2DGetForegroundBrush(hObject);
+  struct BrushShorthand foregroundBrush = _Node2DGetForegroundBrush(hObject);
 
   if (pNode2D->Ring.Width > 0) {
     _SendMessage(hObject, Node2D, DrawBrush,
@@ -496,12 +497,14 @@ HANDLER(Node2D, Node2D, Draw2DContent)
      .foreground = FALSE,
      .viewdef = &viewdef);
 
-    _SendMessage(hObject, Node2D, DrawBrush,
-      .projection = pDraw2DContent->ProjectionMatrix,
-      .image = foreground,
-      .brush = foregroundBrush,
-      .foreground = TRUE,
-      .viewdef = &viewdef);
+    if (foregroundContent) {
+      _SendMessage(hObject, Node2D, DrawBrush,
+        .projection = pDraw2DContent->ProjectionMatrix,
+        .image = foreground,
+        .brush = foregroundBrush,
+        .foreground = TRUE,
+        .viewdef = &viewdef);
+    }
 
     if (pNode2D->ClipChildren && pDraw2DContent->StencilRef < 255) {
       uint8_t parentStencilRef = pDraw2DContent->StencilRef;
