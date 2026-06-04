@@ -526,7 +526,10 @@ local function test_css_expanded_property_aliases()
       vertical-align: bottom;
       margin-inline: 4;
       padding-block: 6;
+      border-color: #aabbcc;
+      border-width: 7;
       border-style: solid;
+      border-radius: 13;
       border-left-width: 3;
       border-top-left-radius: 5;
       background: #112233;
@@ -572,7 +575,10 @@ local function test_css_expanded_property_aliases()
   test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.PaddingTop, 6, 0.001, "padding-block maps to vertical padding")
   test.expect_near(stack.PaddingBottom, 6, 0.001, "padding-block maps to vertical padding")
+  test.expect_near(stack.BorderColor.R, 0xaa / 255, 0.01, "border-color maps to Node.BorderColor")
+  test.expect_near(stack.BorderWidthRight, 7, 0.001, "border-width maps to Node.BorderWidth")
   test.expect_eq(stack.BorderStyle, "Solid", "border-style maps to Node.BorderStyle")
+  test.expect_near(stack.BorderRadius.TopRightRadius, 13, 0.001, "border-radius maps to Node.BorderRadius")
   test.expect_near(stack.BorderWidthLeft, 3, 0.001, "border-left-width maps to Node.BorderWidthLeft")
   test.expect_near(stack.BorderRadius.TopLeftRadius, 5, 0.001, "border-top-left-radius maps to Node.BorderTopLeftRadius")
   test.expect_near(stack.BackgroundColor.R, 0x11 / 255, 0.01, "background maps to BackgroundColor")
