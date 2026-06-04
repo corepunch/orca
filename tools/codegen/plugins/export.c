@@ -1291,12 +1291,7 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
         }
         if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
         if (emit_class_getter(b, m, smap, scount, c, mx) < 0) return -1;
-        if (ss) {
-            if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
-                    c->name, ss, ss, c->name) < 0) return -1;
-        } else {
-            if (ob_printf(b, "REGISTER_CLASS(%s, 0, UINT32_MAX, ", c->name) < 0) return -1;
-        }
+        if (ob_printf(b, "REGISTER_CLASS(%s, ", c->name) < 0) return -1;
         if (emit_component_parents(b, c) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
         if (ss) { if (ob_printf(b, "#undef _STORAGE_STRUCT\n") < 0) return -1; }
