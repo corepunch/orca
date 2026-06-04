@@ -32,7 +32,7 @@ struct Object
   LPSTR SourceFile;
   LPSTR TextContent;
 
-  struct component* animations; /* PropertyAnimation instances attached at runtime */
+  struct component* components; /* non-UIData objects only: Action, StyleSheet, Viewport3D fallback */
   struct Property* properties;
 
   uint32_t alias;

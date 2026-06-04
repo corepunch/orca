@@ -17,15 +17,26 @@ static size_t psize[] = {
   [kDataTypeObject] = sizeof(struct Object *),
 };
 
+struct PropertyTween
+{
+  void                  *from;
+  void                  *to;
+  uint32_t               start;
+  int32_t                duration;
+  enum InterpolationMode ipo;
+  enum Easing            easing;
+};
+
 struct Property
 {
-  struct Property*           next;
-  struct Binding*            binding;
-  struct Object*             object;
+  struct Property           *next;
+  struct Binding            *binding;
+  struct Object             *object;
   struct PropertyType const *pdesc;
-  void*                      value;
+  struct PropertyTween      *tween; /* non-NULL while a tween is running */
+  void                      *value;
   uint32_t                   flags;
-  uint32_t                   changeCallback; // Lua registry reference for the change callback function
+  uint32_t                   changeCallback;
   uint32_t                   updateFrame;
 };
 

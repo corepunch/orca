@@ -211,6 +211,8 @@ OBJ_ReleaseComponents(struct Object *);
 void
 OBJ_ReleaseProperties(struct Object *);
 void
+OBJ_AnimateProperties(struct Object *);
+void
 CMP_Detach(void* userdata);
 
 void

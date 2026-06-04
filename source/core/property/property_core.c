@@ -184,6 +184,12 @@ OBJ_ReleaseProperties(struct Object *hobj)
     PROP_Clear(p);
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
+    if (p->tween) {
+      free(p->tween->from);
+      free(p->tween->to);
+      free(p->tween);
+      p->tween = NULL;
+    }
     if (p->flags & PF_OWNS_STORAGE) {
       free(p->value);
       p->value = NULL;

@@ -548,6 +548,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
 {
   if (MsgID == ID_Object_Animate) {
     OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
+    OBJ_AnimateProperties(pobj);
   }
 //#ifndef KANZI_SUPPORT
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))

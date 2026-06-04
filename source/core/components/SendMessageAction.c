@@ -42,7 +42,7 @@ HANDLER(SendMessageAction, Action, Dispatch)
                            (hObject->type ? hObject->type->TypedataOffset : 0));
     } else {
       /* Fallback: find concrete data in component list */
-      FOR_EACH_LIST(struct component, cmp, hObject->animations) {
+      FOR_EACH_LIST(struct component, cmp, hObject->components) {
         if (cmp->pcls->ClassID == message) {
           payload = (lParam_t)cmp->pUserData;
           break;

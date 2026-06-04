@@ -659,26 +659,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </message>
       </messages>
     </class>
-    <class name="PropertyAnimation">
-      <summary>Component that tweens one property value to a target, then self-destructs.</summary>
-      <details>Created internally by OBJ_DoTween (the Lua animate method). Advances a single property from a captured start value to the target value over the specified duration using the chosen easing curve, then removes itself from the object.</details>
-      <handles>
-        <handle message="Object.Animate"/>
-        <handle message="Object.Release"/>
-      </handles>
-      <properties>
-        <property name="Property" type="string">Property to animate</property>
-	      <property name="From" type="string">Start value (raw bytes)</property>
-	      <property name="To" type="string">End value (raw bytes)</property>
-        <property name="Interpolation" type="InterpolationMode">Interpolation method</property>
-        <property name="Easing" type="Easing">Easing function</property>
-        <property name="Start" type="int">Timestamp when animation started</property>
-        <property name="Duration" type="int">Duration in milliseconds</property>
-      </properties>
-      <fields>
-        <field name="_property" type="Property" pointer="true">The property being animated</field>
-      </fields>
-    </class>
     <class name="StyleSheet">
       <summary>Container object for StyleRule definitions.</summary>
       <details>StyleSheet is a standalone object (like StateManager) that holds StyleRule children. Each StyleRule maps a CSS selector to property overrides via attached Lua properties. Assign a StyleSheet object to StyleController.StyleSheet on the target node to apply its rules.</details>
