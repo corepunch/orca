@@ -31,8 +31,8 @@ OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
 
   if (cls->Defaults) {
     memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
-    /* For UIData objects, also seed the typedata slot from defaults.
-     * ClassDesc.TypedataOffset holds offsetof(UIData, ClassName) — set in Phase 4b. */
+    /* For typedata objects, also seed the typedata slot from defaults.
+     * ClassDesc.TypedataOffset holds offsetof(UINode2D, ClassName) — set in Phase 4b. */
     if (cls->TypedataOffset != UINT32_MAX) {
       memcpy(pobj->typedata + cls->TypedataOffset, cls->Defaults, cls->ClassSize);
     }
@@ -54,7 +54,7 @@ CMP_GetOwner(struct component* hcmp)
 struct Property *
 _CreateClassProperty(struct Object *object, uint32_t ident)
 {
-  /* For UIData objects, search all registered classes for the property
+  /* For typedata objects, search all registered classes for the property
    * descriptor without needing the component list. */
   if (OBJ_UsesTypedata(object)) {
     extern struct game core;
@@ -394,7 +394,7 @@ CMP_SetProperty(struct component* comp, struct Property *property)
       struct Property ** properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
       properties[index] = property;
       PROP_SetFlag(property, PF_PROPERTY_TYPE);
-      /* UIKit properties have UIData-relative offsets; others are component-relative. */
+      /* UIKit properties have typedata-relative offsets; others are component-relative. */
       struct Object *obj = comp->pobj;
       if (obj && obj->type && obj->type->TypedataOffset != UINT32_MAX) {
         PROP_SetValuePtr(property, obj->typedata + pdesc->Offset);
@@ -561,7 +561,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
                          MsgID == ID_Object_Release);
   LRESULT broadcast_result = FALSE;
 
-  /* UIData objects: walk the global class registry instead of component list.
+  /* typedata objects: walk the global class registry instead of component list.
    * Classes without a registered TypedataOffset (e.g. Viewport3D from SceneKit)
    * Classes without a TypedataOffset use the component list instead. */
   if (OBJ_UsesTypedata(pobj)) {

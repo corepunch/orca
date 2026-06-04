@@ -169,6 +169,46 @@ static cg_node const *find_kind(cg_model const *m, char const *name, cg_kind kin
     return NULL;
 }
 
+/* Walk a comma-separated parent list and return the first that is a local class. */
+static cg_node const *find_local_parent(cg_model const *m, char const *parent_list) {
+    char buf[512]; char *tok;
+    if (!parent_list || !parent_list[0]) return NULL;
+    snprintf(buf, sizeof(buf), "%s", parent_list);
+    for (tok = strtok(buf, ","); tok; tok = strtok(NULL, ",")) {
+        while (*tok == ' ') ++tok;
+        cg_node const *p = find_kind(m, tok, CG_KIND_CLASS);
+        if (p) return p;
+    }
+    return NULL;
+}
+
+/* Find the storage-root ancestor of class c (the nearest ancestor with CG_FLAG_STORAGE_ROOT,
+ * including c itself). Returns NULL if no ancestor has the flag. */
+static cg_node const *class_storage_root(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->flags & CG_FLAG_STORAGE_ROOT) return c;
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
+/* Compute the storage struct name for class c into dst.
+ * Returns dst if c has a storage root, else returns NULL (no typedata). */
+static char const *class_storage_name(cg_model const *m, cg_node const *c,
+                                      char *dst, size_t dsz) {
+    cg_node const *root;
+    /* Module-level override still supported for backwards compat */
+    if (m->storage_struct && m->storage_struct[0]) {
+        snprintf(dst, dsz, "%s", m->storage_struct);
+        return dst;
+    }
+    root = class_storage_root(m, c);
+    if (!root) return NULL;
+    snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
+    return dst;
+}
+
 static char const *type_kind(cg_model const *m, char const *type) {
     if (!type || !type[0]) return "void";
     if (find_kind(m, type, CG_KIND_ENUM)) return "enum";
@@ -1083,18 +1123,21 @@ static int emit_defaults_for_props(ob *b, cg_model const *m, uint32_t owner_id) 
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
+        char ss_buf[256];
+        char const *ss = class_storage_name(m, c, ss_buf, sizeof(ss_buf));
         cg_node const *mx = (c->aux && c->aux[0])
             ? (find_kind(m, c->aux, CG_KIND_MIXIN) ? find_kind(m, c->aux, CG_KIND_MIXIN)
                                                     : find_kind(m, c->aux, CG_KIND_CLASS))
             : NULL;
         if (emit_component_handlers(b, c, m) < 0) return -1;
         if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
+        if (ss) { if (ob_printf(b, "#define _STORAGE_STRUCT %s\n", ss) < 0) return -1; }
         if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",
                 c->name) < 0) return -1;
-        if (mx && emit_properties_for_fields(b, h, m, smap, scount, mx, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
-        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
+        if (mx && emit_properties_for_fields(b, h, m, smap, scount, mx, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
+        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
-            const char *decl_macro = (m->storage_struct && m->storage_struct[0]) ? "UIDATA_DECL" : "DECL";
+            const char *decl_macro = ss ? "UIDATA_DECL" : "DECL";
             if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
                     decl_macro, h->fnv1a32(msg->name), c->name, msg->name, msg->name,
                     c->name, msg->name, c->name, msg->name) < 0) return -1;
@@ -1112,14 +1155,15 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                     ident, c->name, after_dot(hdl->name), hdl->name) < 0) return -1;
         }
         if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
-        if (m->storage_struct && m->storage_struct[0]) {
+        if (ss) {
             if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
-                    c->name, m->storage_struct, m->storage_struct, c->name) < 0) return -1;
+                    c->name, ss, ss, c->name) < 0) return -1;
         } else {
             if (ob_printf(b, "REGISTER_CLASS(%s, 0, UINT32_MAX, ", c->name) < 0) return -1;
         }
         if (emit_component_parents(b, c) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
+        if (ss) { if (ob_printf(b, "#undef _STORAGE_STRUCT\n") < 0) return -1; }
     }
     return 0;
 }
@@ -1208,12 +1252,6 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "#include <strings.h>\n\n"
             "#include <%s/%s.h>\n\n",
             base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
-    if (model->storage_struct && model->storage_struct[0]) {
-        /* Define _STORAGE_STRUCT so UIDATA_DECL/UIDATA_ARRAY_DECL need no explicit storage arg. */
-        if (ob_printf(&b, "#define _STORAGE_STRUCT %s\n\n",
-                model->storage_struct) < 0) goto fail;
-    }
-
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {
         if (ob_printf(&b, "// %s\n"
                 "extern void luaX_push%s(lua_State *L, struct %s const* value);\n"

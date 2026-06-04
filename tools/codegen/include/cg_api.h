@@ -25,7 +25,8 @@ typedef enum cg_kind {
 #define CG_FLAG_ARRAY       (1u<<6)  /* property/field: array="true" or fixed-array set */
 #define CG_FLAG_NO_CHECK    (1u<<7)  /* interface: no-check="true" */
 #define CG_FLAG_PRIVATE     (1u<<8)  /* property/method: private="true" */
-#define CG_FLAG_INHERITED   (1u<<9)  /* property: inherited="true" */
+#define CG_FLAG_INHERITED      (1u<<9)  /* property: inherited="true" */
+#define CG_FLAG_STORAGE_ROOT   (1u<<10) /* class: storage-struct="true" — this class heads its own XxxData struct */
 
 /*
  * cg_node — one XML entity in the flat model array.

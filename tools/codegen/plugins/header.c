@@ -113,6 +113,42 @@ static int type_decl_slot(char *dst, size_t dsz, cg_model const *m,
     return 0;
 }
 
+static cg_node const *find_local_parent(cg_model const *m, char const *parent_list) {
+    char buf[512]; char *tok;
+    if (!parent_list || !parent_list[0]) return NULL;
+    snprintf(buf, sizeof(buf), "%s", parent_list);
+    for (tok = strtok(buf, ","); tok; tok = strtok(NULL, ",")) {
+        while (*tok == ' ') ++tok;
+        size_t i;
+        for (i = 0; i < m->node_count; ++i)
+            if (m->nodes[i].kind == CG_KIND_CLASS && !strcmp(m->nodes[i].name, tok))
+                return &m->nodes[i];
+    }
+    return NULL;
+}
+
+static cg_node const *class_storage_root(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->flags & CG_FLAG_STORAGE_ROOT) return c;
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
+static char const *class_storage_name(cg_model const *m, cg_node const *c,
+                                      char *dst, size_t dsz) {
+    cg_node const *root;
+    if (m->storage_struct && m->storage_struct[0]) {
+        snprintf(dst, dsz, "%s", m->storage_struct);
+        return dst;
+    }
+    root = class_storage_root(m, c);
+    if (!root) return NULL;
+    snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
+    return dst;
+}
+
 static cg_node const *find_kind_node(cg_model const *m, char const *name, cg_kind kind) {
     size_t i;
     if (!name || !name[0]) return NULL;
@@ -631,39 +667,72 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
         }
     }
 
-    /* Storage-family block — emit struct <StorageStruct> and Get* accessors */
-    if (model->storage_struct && model->storage_struct[0]) {
-        const char *ss = model->storage_struct;
-        if (ob_printf(&b,
-            "\n/*\n"
-            " * Monolithic storage block for all %s objects.\n"
-            " * Every object in this module has one of these embedded at the end of its\n"
-            " * Object allocation. Fields are ordered base-first so offsets remain stable.\n"
-            " */\n"
-            "struct %s {\n", model->module_name, ss) < 0) goto fail;
+    /* Storage-family block — one struct per storage root class */
+    {
+        /* Collect unique storage root names (there may be multiple per module) */
+        char seen_roots[16][256];
+        int num_roots = 0;
         cg_foreach(model, 0, CG_KIND_CLASS, c) {
-            if (ob_printf(&b, "  struct %-24s %s;\n", c->name, c->name) < 0) goto fail;
+            char ss_buf[256];
+            char const *ss = class_storage_name(model, c, ss_buf, sizeof(ss_buf));
+            int found = 0, r;
+            if (!ss) continue;
+            for (r = 0; r < num_roots; ++r)
+                if (!strcmp(seen_roots[r], ss)) { found = 1; break; }
+            if (!found && num_roots < 16)
+                snprintf(seen_roots[num_roots++], 256, "%s", ss);
         }
-        if (ob_printf(&b, "};\n") < 0) goto fail;
 
-        /* Get* accessor macros */
-        if (ob_printf(&b,
-            "\n"
-            "#define _%s(_P, FIELD) \\\n"
-            "  ((_P) && OBJ_IsKindOfW((_P)->type, ID_%s) \\\n"
-            "    ? &((struct %s *)(_P)->typedata)->FIELD \\\n"
-            "    : NULL)\n\n",
-            ss, model->module_name, ss) < 0) goto fail;
-        cg_foreach(model, 0, CG_KIND_CLASS, c) {
+        for (int ri = 0; ri < num_roots; ++ri) {
+            char const *ss = seen_roots[ri];
+            /* Find the root class node for this struct (the one with STORAGE_ROOT flag) */
+            cg_node const *root_cls = NULL;
+            cg_foreach(model, 0, CG_KIND_CLASS, c) {
+                char ss_buf[256];
+                char const *cname = class_storage_name(model, c, ss_buf, sizeof(ss_buf));
+                if (cname && !strcmp(cname, ss) && (c->flags & CG_FLAG_STORAGE_ROOT)) {
+                    root_cls = c; break;
+                }
+            }
+
             if (ob_printf(&b,
-                "#undef  Get%s\n"
-                "#define Get%s(_P) _%s(_P, %s)\n",
-                c->name, c->name, ss, c->name) < 0) goto fail;
-        }
+                "\n/*\n"
+                " * Storage block for %s objects (rooted at %s).\n"
+                " * Embedded at the end of each Object allocation.\n"
+                " */\n"
+                "struct %s {\n",
+                ss, root_cls ? root_cls->name : ss, ss) < 0) goto fail;
+            cg_foreach(model, 0, CG_KIND_CLASS, c) {
+                char ss_buf[256];
+                char const *cname = class_storage_name(model, c, ss_buf, sizeof(ss_buf));
+                if (cname && !strcmp(cname, ss))
+                    if (ob_printf(&b, "  struct %-24s %s;\n", c->name, c->name) < 0) goto fail;
+            }
+            if (ob_printf(&b, "};\n") < 0) goto fail;
 
-        if (ob_printf(&b,
-            "\nstruct %s *Object_%s(struct Object *object);\n",
-            ss, ss) < 0) goto fail;
+            /* root_cls is the "kind" check for the accessor macro */
+            char const *kind_name = root_cls ? root_cls->name : ss;
+            if (ob_printf(&b,
+                "\n"
+                "#define _%s(_P, FIELD) \\\n"
+                "  ((_P) && OBJ_IsKindOfW((_P)->type, ID_%s) \\\n"
+                "    ? &((struct %s *)(_P)->typedata)->FIELD \\\n"
+                "    : NULL)\n\n",
+                ss, kind_name, ss) < 0) goto fail;
+            cg_foreach(model, 0, CG_KIND_CLASS, c) {
+                char ss_buf[256];
+                char const *cname = class_storage_name(model, c, ss_buf, sizeof(ss_buf));
+                if (cname && !strcmp(cname, ss))
+                    if (ob_printf(&b,
+                        "#undef  Get%s\n"
+                        "#define Get%s(_P) _%s(_P, %s)\n",
+                        c->name, c->name, ss, c->name) < 0) goto fail;
+            }
+
+            if (ob_printf(&b,
+                "\nstruct %s *Object_%s(struct Object *object);\n",
+                ss, ss) < 0) goto fail;
+        }
     }
 
     if (ob_printf(&b, "\n#endif\n") < 0) goto fail;

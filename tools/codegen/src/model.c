@@ -172,6 +172,9 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.type  = xattr(e, "parent");
             n.extra = xattr(e, "concept");
             n.aux   = xattr(e, "mixin");
+            { tmp = xattr(e, "storage-struct");
+              if (!strcmp(tmp, "true")) n.flags |= CG_FLAG_STORAGE_ROOT;
+              free(tmp); }
             break;
         case CG_KIND_MIXIN:
             n.name  = xattr(e, "name");

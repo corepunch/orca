@@ -2,11 +2,11 @@
 #include <include/api.h>
 #include <filesystem/filesystem.h>
 
-struct UIData *
-Object_UIData(struct Object *object)
+struct UINode2D *
+Object_UINode2D(struct Object *object)
 {
   if (!object || !OBJ_IsKindOfW(object->type, ID_Node2D)) return NULL;
-  return (struct UIData *)object->typedata;
+  return (struct UINode2D *)object->typedata;
 }
 
 bool_t is_server = FALSE;

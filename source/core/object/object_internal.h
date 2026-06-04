@@ -33,9 +33,9 @@ struct Object
    *               StateManager, StateGroup, State, StateManagerController,
    *               ResourceDictionary, Locale, DataObject, Binding, BindingExpression, Node
    *   SceneKit:   Node3D, Scene, Model3D, Camera, Light3D, PlaneMeshNode,
-   *               PrefabView3D, SpriteView, Viewport3D (reserved slot in UIData),
+   *               PrefabView3D, SpriteView, Viewport3D (reserved slot in UINode2D),
    *               RenderPass and subclasses, PipelineStateRenderPass
-   *   SpriteKit:  SKNode, SKScene, SKSpriteNode, SKLabelNode, SKView (reserved slot in UIData)
+   *   SpriteKit:  SKNode, SKScene, SKSpriteNode, SKLabelNode, SKView (reserved slot in UINode2D)
    *   renderer:   Texture, Image, RenderTargetTexture, CubeMapTexture, IOSurfaceTexture,
    *               VertexShader, FragmentShader, Shader, Material, Mesh, FontFamily,
    *               Trajectory, Timeline
@@ -54,7 +54,7 @@ struct Object
 
   longTime_t dirty;
 
-  char typedata[];              /* storage family data — UIData, SceneData, … */
+  char typedata[];              /* storage family data — UINode2D, SceneNode3D, … */
 };
 
 /* True when the object uses the monolithic typedata block for storage.

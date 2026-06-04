@@ -6,10 +6,10 @@
 #include <UIKit/UIKit.h>
 #include <SceneKit/SceneKit.h>
 
-/* Override generated GetViewport3D to use the UIData typedata slot. */
+/* Override generated GetViewport3D to use the UINode2D typedata slot. */
 #undef  GetViewport3D
 #define GetViewport3D(_P) \
-  ((_P) ? (struct Viewport3D *)((struct UIData *)(_P)->typedata)->_viewport3d : NULL)
+  ((_P) ? (struct Viewport3D *)((struct UINode2D *)(_P)->typedata)->_viewport3d : NULL)
 
 // extern int stereoSeparation;
 int stereoSeparation = 0;
