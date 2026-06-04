@@ -48,8 +48,8 @@ OBJ_SendMessageW(OBJECT, ID_##CLASS##_##MESSAGE, 0, &(CLASS##_##MESSAGE##Msg_t) 
 
 #define HANDLER(CLASS, NS, EVENT)                                              \
   LRESULT CLASS##_##EVENT(struct Object* hObject,                              \
-                          struct CLASS* p##CLASS,                                 \
-                          wParam_t wParam,                                       \
+                          struct CLASS* p##CLASS,                               \
+                          wParam_t wParam,                                      \
                           NS##_##EVENT##MsgPtr p##EVENT)
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(*x))

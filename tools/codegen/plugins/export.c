@@ -467,22 +467,6 @@ static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const
     return 0;
 }
 
-static int shorthand_target_count(cg_model const *m,
-                                  sentry const *smap, size_t scount,
-                                  char const *type) {
-    sentry const *s = find_struct(smap, scount, type);
-    int count = 0;
-    if (!(s && !s->sealed)) return 1;
-    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
-        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
-        if (fixed > 0) {
-            count += fixed * shorthand_target_count(m, smap, scount, f->type);
-        } else {
-            count += shorthand_target_count(m, smap, scount, f->type);
-        }
-    }
-    return count;
-}
 
 static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
                                       sentry const *smap, size_t scount,
@@ -534,21 +518,9 @@ static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const
     property_leaf(full_segs, n_full, leaf, sizeof(leaf));
     property_leaf(field_segs, n_field, field, sizeof(field));
     property_addr(field_segs, n_field, addr, sizeof(addr));
-    if (m->storage_struct && m->storage_struct[0]) {
-        /* Shorthand target offset relative to storage-family struct.
-         * full_segs has the full path within the class (e.g. Font.Weight),
-         * so prefix it with owner_name to get UIData.TextRun.Font.Weight. */
-        char class_addr[512];
-        property_addr(full_segs, n_full, class_addr, sizeof(class_addr));
-        char full_addr[768];
-        snprintf(full_addr, sizeof(full_addr), "%s.%s", owner_name, class_addr);
-        return ob_printf(b,
-                "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s), .PresentBit = 0x%llxULL },\n",
-                field, owner_name, leaf, m->storage_struct, full_addr, (unsigned long long)bit);
-    }
     return ob_printf(b,
-            "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s), .PresentBit = 0x%llxULL },\n",
-            field, owner_name, leaf, shorthand_type, addr, (unsigned long long)bit);
+            "\tSHORTHAND_TARGET(%s, %s, %s, %s, 0x%llx),\n",
+            shorthand_type, addr, owner_name, leaf, (unsigned long long)bit);
 }
 
 static void shorthand_target_symbol(char *dst, size_t dsz,
@@ -572,8 +544,8 @@ static int emit_shorthand_arrays_walk(ob *b, cg_host_v1 const *h, cg_model const
     char field_segs[MAX_DEPTH][64] = {{0}};
     int present_bit = 0;
     shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
-    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[%d] = {\n",
-            targets, shorthand_target_count(m, smap, scount, type)) < 0) return -1;
+    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[] = {\n",
+            targets) < 0) return -1;
     if (emit_shorthand_target_walk(b, h, m, smap, scount,
             owner_name, type, full_segs, n_full, field_segs, 0, type,
             &present_bit) < 0) return -1;
@@ -621,13 +593,9 @@ static int emit_shorthand_entries_walk(ob *b, cg_host_v1 const *h, cg_model cons
     property_leaf(full_segs, n_full, leaf, sizeof(leaf));
     shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
     if (ob_printf(b,
-            "\t{ .Name = \"%s\", .Category = \"%s\", .TypeString = \"%s\", "
-            ".ShortIdentifier = 0x%08x, .FullIdentifier = ID_%s_%s, "
-            ".StructSize = sizeof(struct %s), .Targets = %s, "
-            ".NumTargets = sizeof(%s) / sizeof(*%s) },\n",
-            leaf, owner_name, s->export_name,
-            h->fnv1a32(leaf), owner_name, leaf,
-            type, targets, targets, targets) < 0) return -1;
+            "\tSHORTHAND(%s, %s, \"%s\", %s, 0x%08x),\n",
+            owner_name, leaf, s->export_name, type,
+            h->fnv1a32(leaf)) < 0) return -1;
 
     if (n_full >= MAX_DEPTH - 1) return 0;
     cg_foreach(m, s->id, CG_KIND_FIELD, f) {
@@ -668,25 +636,20 @@ static int emit_class_shorthands(ob *b, cg_host_v1 const *h, cg_model const *m,
             count += emitted;
         }
     }
-    if (!count) {
-        if (ob_printf(b, "#define %sShorthands NULL\n#define k%sNumShorthands 0\n",
-                c->name, c->name) < 0) return -1;
-        return 0;
-    }
-
     if (ob_printf(b, "static struct PropertyShorthand const %sShorthands[] = {\n",
             c->name) < 0) return -1;
-    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-        sentry const *s = find_struct(smap, scount, p->type);
-        if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
-            char full_segs[MAX_DEPTH][64] = {{0}};
-            snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
-            if (emit_shorthand_entries_walk(b, h, m, smap, scount,
-                    c->name, full_segs, 1, p->type) < 0) return -1;
+    if (count) {
+        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+            sentry const *s = find_struct(smap, scount, p->type);
+            if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+                char full_segs[MAX_DEPTH][64] = {{0}};
+                snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+                if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                        c->name, full_segs, 1, p->type) < 0) return -1;
+            }
         }
     }
-    if (ob_printf(b, "};\n#define k%sNumShorthands (sizeof(%sShorthands) / sizeof(*%sShorthands))\n",
-            c->name, c->name, c->name) < 0) return -1;
+    if (ob_printf(b, "};\n") < 0) return -1;
     return 0;
 }
 
@@ -1023,24 +986,15 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
 
     if (prop_count > 0) {
         if (ob_printf(b,
-                "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                action, action) < 0) return -1;
+                "static struct PropertyType const %sProperties[%d] = {\n",
+                action, prop_count) < 0) return -1;
         if (emit_action_payload_properties(b, h, m, msg, action) < 0) return -1;
         if (ob_printf(b, "};\n") < 0) return -1;
     }
 
     if (ob_printf(b,
-            "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-            "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-            "}\n"
-            "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-            "\treturn Get%s(luaX_checkObject(L, idx));\n"
-            "}\n"
-            "REGISTER_MESSAGE_ACTION(%s, \"%s\", %s%s);\n",
-            action, action, action, action,
-            action, action, action,
-            action,
-            xml_name,
+            "REGISTER_MESSAGE_ACTION(%s, \"%s\", %d, %s%s);\n",
+            action, xml_name, prop_count,
             prop_count > 0 ? action : "",
             prop_count > 0 ? "Properties" : "NULL") < 0) return -1;
     return 0;
@@ -1087,35 +1041,23 @@ static void dot_to_underscore(char *dst, size_t dsz, char const *s) {
     for (i = 0; dst[i]; ++i) if (dst[i] == '.') dst[i] = '_';
 }
 
-static int emit_component_parents(ob *b, cg_host_v1 const *h, cg_node const *c, int refs_only) {
+static int emit_component_parents(ob *b, cg_node const *c) {
     char parents[512];
     char *tok;
     int first = 1;
-    if (refs_only) {
-        if (c->type && c->type[0]) {
-            snprintf(parents, sizeof(parents), "%s", c->type);
-            for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
-                while (*tok == ' ' || *tok == '\t') ++tok;
-                if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
-                first = 0;
-            }
-        }
-        if (c->extra && c->extra[0]) {
-            if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
-            first = 0;
-        }
-        return ob_printf(b, "%s0", first ? "" : ", ");
-    }
     if (c->type && c->type[0]) {
         snprintf(parents, sizeof(parents), "%s", c->type);
         for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
             while (*tok == ' ' || *tok == '\t') ++tok;
-            if (ob_printf(b, "#define ID_%s 0x%08x\n", tok, h->fnv1a32(tok)) < 0) return -1;
+            if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
+            first = 0;
         }
     }
-    if (c->extra && c->extra[0])
-        if (ob_printf(b, "#define ID_%s 0x%08x\n", c->extra, h->fnv1a32(c->extra)) < 0) return -1;
-    return 0;
+    if (c->extra && c->extra[0]) {
+        if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
+        first = 0;
+    }
+    return ob_printf(b, "%s0", first ? "" : ", ");
 }
 
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
@@ -1123,8 +1065,8 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
         if (emit_component_handlers(b, c, m) < 0) return -1;
         if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
-        if (ob_printf(b, "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                c->name, c->name) < 0) return -1;
+        if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",
+                c->name) < 0) return -1;
         if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
             const char *decl_macro = (m->storage_struct && m->storage_struct[0]) ? "UIDATA_DECL" : "DECL";
@@ -1138,43 +1080,34 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
             if (p->flags & CG_FLAG_INHERITED) continue;
             if (p->extra && p->extra[0]) {
                 if (!strcmp(kind, "string")) {
-                    if (ob_printf(b, "\t\t\n  .%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
+                    if (ob_printf(b, "\t.%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
                 } else if (!strcmp(kind, "enum")) {
-                    if (ob_printf(b, "\t\t\n  .%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
+                    if (ob_printf(b, "\t.%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
                 } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
                            !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
-                    if (ob_printf(b, "\t\t\n  .%s = {%s},\n", p->name, p->extra) < 0) return -1;
+                    if (ob_printf(b, "\t.%s = {%s},\n", p->name, p->extra) < 0) return -1;
                 } else {
-                    if (ob_printf(b, "\t\t\n  .%s = %s,\n", p->name, p->extra) < 0) return -1;
+                    if (ob_printf(b, "\t.%s = %s,\n", p->name, p->extra) < 0) return -1;
                 }
             }
         }
-        if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
-                "\tswitch (message) {\n", c->name) < 0) return -1;
+        if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
+                "\tstruct %s* cmp = OBJ_GetTypedata(object, ID_%s);\n"
+                "\tswitch (message) {\n", c->name, c->name, c->name) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_HANDLE, hdl) {
             char ident[512];
             dot_to_underscore(ident, sizeof(ident), hdl->name);
             if (ob_printf(b, "\t\tcase ID_%s: return %s_%s(object, cmp, wparm, lparm); // %s\n",
                     ident, c->name, after_dot(hdl->name), hdl->name) < 0) return -1;
         }
-        if (ob_printf(b,
-                "\t}\n\treturn FALSE;\n}\n"
-                "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-                "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-                "}\n"
-                "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-                "\treturn Get%s(luaX_checkObject(L, idx));\n"
-                "}\n",
-                c->name, c->name, c->name, c->name,
-                c->name, c->name, c->name) < 0) return -1;
-        if (emit_component_parents(b, h, c, 0) < 0) return -1;
+        if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
         if (m->storage_struct && m->storage_struct[0]) {
             if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
                     c->name, m->storage_struct, m->storage_struct, c->name) < 0) return -1;
         } else {
             if (ob_printf(b, "REGISTER_CLASS(%s, 0, UINT32_MAX, ", c->name) < 0) return -1;
         }
-        if (emit_component_parents(b, h, c, 1) < 0) return -1;
+        if (emit_component_parents(b, c) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
     }
     return 0;

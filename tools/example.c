@@ -1941,7 +1941,7 @@ static struct PropertyType const StyleProperties[kStyleNumProperties] = {
 };
 static struct Style StyleDefaults = {
 };
-LRESULT StyleProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {
+LRESULT StyleProc(struct Object* object, uint32_t message, wParam_t wparm, lParam_t lparm) {
 	switch (message) {
 	return FALSE;
 }

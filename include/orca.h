@@ -316,7 +316,7 @@ ORCA_API bool_t UI_EnumObjectAliases(struct Object *object, EnumAliasProc, void*
 #define FOR_EACH_CHILD(object, func, ...)                                      \
   FOR_EACH_OBJECT(child, object) func(child, ##__VA_ARGS__)
 
-typedef LRESULT (*objectProc_t)(struct Object *, void*, uint32_t, wParam_t, lParam_t);
+typedef LRESULT (*objectProc_t)(struct Object *, uint32_t, wParam_t, lParam_t);
 
 #ifndef ID_Node_IsVisible
 #define ID_Node_IsVisible 0xa03cfb85 // Node.IsVisible

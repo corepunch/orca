@@ -49,6 +49,24 @@ OBJ_UsesTypedata(struct Object const *object)
          object->type->TypedataOffset != UINT32_MAX;
 }
 
+/* Return a pointer to the per-class data for class_id on this object.
+ * For typedata objects: typedata + TypedataOffset of the matching ancestor.
+ * For component objects: the component's pUserData block. */
+static INLINE void *
+OBJ_GetTypedata(struct Object *object, uint32_t class_id)
+{
+  if (!object) return NULL;
+  if (OBJ_UsesTypedata(object)) {
+    extern struct game core;
+    FOR_LOOP(i, MAX_CLASSES) {
+      struct ClassDesc const *cls = core.classes[i];
+      if (cls && cls->ClassID == class_id && cls->TypedataOffset != UINT32_MAX)
+        return object->typedata + cls->TypedataOffset;
+    }
+  }
+  return OBJ_GetComponent(object, class_id);
+}
+
 void OBJ_ApplyInheritedProperties(struct Object *object);
 void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
 

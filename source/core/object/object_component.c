@@ -569,8 +569,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
     FOR_LOOP(ci, MAX_CLASSES) {
       struct ClassDesc const *cls = core.classes[ci];
       if (!cls || !cls->ObjProc || cls->TypedataOffset == UINT32_MAX) continue;
-      void *cmp_data = pobj->typedata + cls->TypedataOffset;
-      LRESULT res = cls->ObjProc(pobj, cmp_data, MsgID, wParam, lParam);
+      LRESULT res = cls->ObjProc(pobj, MsgID, wParam, lParam);
       if (is_broadcast) {
         if (res) broadcast_result = res;
       } else if (res) {
@@ -583,8 +582,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
   for (struct component *cmp = pobj->components; cmp; ) {
     struct component *next = cmp->next;
     if (cmp->pcls->ObjProc) {
-      void *cmp_data = cmp->pUserData;
-      LRESULT res = cmp->pcls->ObjProc(pobj, cmp_data, MsgID, wParam, lParam);
+      LRESULT res = cmp->pcls->ObjProc(pobj, MsgID, wParam, lParam);
       if (is_broadcast) {
         if (res) broadcast_result = res;
       } else if (res) {

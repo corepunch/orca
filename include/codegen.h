@@ -11,17 +11,22 @@
 #define UIDATA_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct _STORAGE_STRUCT, CLASS.FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define UIDATA_ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct _STORAGE_STRUCT, CLASS.FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
+#define SHORTHAND_TARGET(CTYPE, FIELD, OWNER, PROP_LEAF, PRESENT_BIT) \
+	{ .Name = #FIELD, .PropertyID = ID_##OWNER##_##PROP_LEAF, \
+	  .Offset = offsetof(struct CTYPE, FIELD), .PresentBit = PRESENT_BIT##ULL }
+
+#define SHORTHAND(CATEGORY, NAME, TYPE_STRING, CTYPE, SHORT_ID) \
+	{ .Name = #NAME, .Category = #CATEGORY, .TypeString = TYPE_STRING, \
+	  .ShortIdentifier = SHORT_ID, .FullIdentifier = ID_##CATEGORY##_##NAME, \
+	  .StructSize = sizeof(struct CTYPE), \
+	  .Targets = CATEGORY##NAME##ShorthandTargets, \
+	  .NumTargets = sizeof(CATEGORY##NAME##ShorthandTargets) / sizeof(*CATEGORY##NAME##ShorthandTargets) }
+
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
-const char *NAME##ToString(enum NAME value) { \
-	return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); \
-} \
-enum NAME luaX_check##NAME(lua_State *L, int idx) { \
-	return luaL_checkoption(L, idx, NULL, _##NAME); \
-} \
-void luaX_push##NAME(lua_State *L, enum NAME value) { \
-	lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); \
-}
+const char *NAME##ToString(enum NAME value) { return (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value]); } \
+enum NAME luaX_check##NAME(lua_State *L, int idx) { return luaL_checkoption(L, idx, NULL, _##NAME); } \
+void luaX_push##NAME(lua_State *L, enum NAME value) { lua_pushstring(L, (assert(value >= 0 && value < sizeof(_##NAME) / sizeof(*_##NAME) - 1), _##NAME[value])); }
 
 #define STRUCT(NAME, EXPORT) \
 static struct StructDesc _##NAME##_StructDesc = { \
@@ -161,6 +166,8 @@ int luaopen_orca_##NAME(lua_State *L) { \
 }
 
 #define REGISTER_CLASS(NAME, TYPEDATA_SIZE, TYPEDATA_OFFSET, ...) \
+void luaX_push##NAME(lua_State *L, struct NAME const* NAME) { luaX_pushObject(L, CMP_GetObject(NAME)); } \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return Get##NAME(luaX_checkObject(L, idx)); } \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
 	.DefaultName = #NAME, \
@@ -175,11 +182,13 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Shorthands = NAME##Shorthands, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
-	.NumProperties = k##NAME##NumProperties, \
-	.NumShorthands = k##NAME##NumShorthands, \
+	.NumProperties = sizeof(NAME##Properties) / sizeof(*NAME##Properties), \
+	.NumShorthands = sizeof(NAME##Shorthands) / sizeof(*NAME##Shorthands), \
 };
 
-#define REGISTER_MESSAGE_ACTION(NAME, XML_NAME, PROPERTIES_EXPR) \
+#define REGISTER_MESSAGE_ACTION(NAME, XML_NAME, NUM_PROPERTIES, PROPERTIES_EXPR) \
+void luaX_push##NAME(lua_State *L, struct NAME const* NAME) { luaX_pushObject(L, CMP_GetObject(NAME)); } \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { return Get##NAME(luaX_checkObject(L, idx)); } \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = XML_NAME, \
 	.DefaultName = XML_NAME, \
@@ -193,7 +202,7 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Shorthands = NULL, \
 	.ObjProc = NULL, \
 	.Defaults = NULL, \
-	.NumProperties = k##NAME##NumProperties, \
+	.NumProperties = NUM_PROPERTIES, \
 	.NumShorthands = 0, \
 };
 
