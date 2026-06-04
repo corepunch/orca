@@ -165,6 +165,7 @@ It supports:
 | Class selectors | `.button { ... }` | Matches objects whose `class` contains `button` |
 | ID selectors | `#HeroImage { ... }` | Matches object `Name` |
 | Type selectors | `ImageView { ... }`, `Label { ... }` | Matches ORCA class names, similar to HTML element selectors |
+| Compound selectors | `Button.primary { ... }`, `#Save.primary { ... }` | Matches multiple conditions on the same object |
 | Descendant selectors | `.popup .panel { ... }`, `StackView Label { ... }` | Matches when the left selector appears anywhere in the target's ancestors |
 | Direct parent selectors | `StackView > Label { ... }` | Matches only immediate children |
 | `body` selector | `body { opacity: 1; }` | Applies to a root object that owns the stylesheet |

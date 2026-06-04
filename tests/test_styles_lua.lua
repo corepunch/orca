@@ -825,7 +825,71 @@ local function test_css_mixed_descendant_and_direct_child_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: Pseudo-classes apply to class, ID, and type selectors
+-- Test 33: Compound selectors match type, class, and ID on one object
+-- ---------------------------------------------------------------------------
+local function test_css_compound_type_class_selectors()
+  local css = [[
+    Button.primary {
+      background-color: #112233;
+      color: #ddeeff;
+      width: 101;
+    }
+
+    Button.secondary {
+      background-color: #445566;
+      height: 33;
+    }
+
+    .popup Button.primary {
+      padding-left: 32;
+    }
+
+    #PrimaryButton.primary {
+      padding-right: 24;
+    }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local primary = popup + ui.Button {
+    Name = "PrimaryButton",
+    class = "primary",
+    Text = "Primary",
+  }
+  local secondary = popup + ui.Button {
+    class = "secondary",
+    Text = "Secondary",
+  }
+  local plain = popup + ui.Button {
+    Text = "Plain",
+  }
+  local label = popup + ui.Label {
+    class = "primary",
+    Text = "Not a button",
+  }
+
+  applyStyles(primary)
+  applyStyles(secondary)
+  applyStyles(plain)
+  applyStyles(label)
+
+  test.expect_near(primary.BackgroundColor.R, 0x11 / 255, 0.01, "Button.primary should match button class primary")
+  test.expect_near(primary.ForegroundColor.G, 0xee / 255, 0.01, "Button.primary color should map to ForegroundColor")
+  test.expect_near(primary.Width, 101, 0.5, "Button.primary should apply Width")
+  test.expect_near(primary.PaddingLeft, 32, 0.5, ".popup Button.primary should match nested primary button")
+  test.expect_near(primary.PaddingRight, 24, 0.5, "#PrimaryButton.primary should match id and class")
+
+  test.expect_near(secondary.BackgroundColor.G, 0x55 / 255, 0.01, "Button.secondary should match button class secondary")
+  test.expect_near(secondary.Height, 33, 0.5, "Button.secondary should apply Height")
+  test.expect_near(plain.Width, 0, 0.5, "Button.primary should not match a plain button")
+  test.expect_near(label.Width, 0, 0.5, "Button.primary should not match a Label with class primary")
+
+  popup:removeFromParent()
+  print("PASS: test_css_compound_type_class_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 34: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -863,7 +927,7 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 34: Pseudo-classes work on direct parent selectors
+-- Test 35: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
@@ -884,7 +948,7 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 35: CSS font-family accepts quoted names and generic fallbacks
+-- Test 36: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
@@ -940,6 +1004,7 @@ test_css_direct_parent_selector()
 test_css_direct_parent_class_and_id_selectors()
 test_css_descendant_selector()
 test_css_mixed_descendant_and_direct_child_selectors()
+test_css_compound_type_class_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
 test_css_font_family_list_uses_registered_fallback()

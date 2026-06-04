@@ -12,6 +12,7 @@
 //   - Simple class selectors: .foo { ... }
 //   - ID selectors: #Logo { ... }
 //   - Type selectors: ImageView { ... }
+//   - Compound selectors: Button.primary { ... }, #Save.primary { ... }
 //   - Descendant selectors: .popup .panel { ... }
 //   - Direct parent selectors: StackView > Label { ... }
 //   - Comma-separated selectors: .foo, .bar { ... }

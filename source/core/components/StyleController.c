@@ -196,6 +196,49 @@ _MatchSimpleSelector(struct Object *target,
 {
   if (!selector || !selector[0]) return FALSE;
 
+  bool_t hasCompoundMarker = strchr(selector, '.') || strchr(selector, '#');
+  if (hasCompoundMarker) {
+    lpcString_t p = selector;
+
+    if (*p != '.' && *p != '#') {
+      lpcString_t typeStart = p;
+      while (*p && *p != '.' && *p != '#') p++;
+      char typeName[256] = {0};
+      _CopyTrim(typeName, sizeof(typeName), typeStart, p);
+
+      if (!strcmp(typeName, "body")) {
+        if (OBJ_GetParent(target) != NULL) return FALSE;
+      } else {
+        lpcString_t className = OBJ_GetClassName(target);
+        if (!className || strcmp(className, typeName)) return FALSE;
+      }
+    }
+
+    while (*p) {
+      char marker = *p++;
+      lpcString_t valueStart = p;
+      while (*p && *p != '.' && *p != '#') p++;
+      if (valueStart == p) return FALSE;
+
+      char value[256] = {0};
+      _CopyTrim(value, sizeof(value), valueStart, p);
+
+      if (marker == '.') {
+        struct style_class_selector* cls =
+          _FindMatchingClass(target, value, objFlags);
+        if (!cls) return FALSE;
+        if (matchedClass && !*matchedClass) *matchedClass = cls;
+      } else if (marker == '#') {
+        lpcString_t name = OBJ_GetName(target);
+        if (!name || strcmp(name, value)) return FALSE;
+      } else {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
+  }
+
   if (selector[0] == '.') {
     struct style_class_selector* cls =
       _FindMatchingClass(target, selector + 1, objFlags);
