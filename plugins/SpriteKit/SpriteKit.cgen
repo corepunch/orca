@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
+<module name="SpriteKit" namespace="orca" prefix="SK" on-luaopen="on_spritekit_module_registered">
   <require file="../../source/renderer/api/renderer.cgen"/>
 
   <includes>
@@ -101,7 +101,7 @@
         <field name="_node" type="SKNode" pointer="true"/>
       </fields>
     </class>
-    <class name="SKView" parent="Node2D" children="SKNode" storage-struct="SKViewData">
+    <class name="SKView" parent="Node2D" children="SKNode" external-storage="UINode2D" storage-struct="SKViewData">
       <summary>2D viewport that renders an SKScene into the UI hierarchy</summary>
       <details>Acts as the bridge between the 2D UI system and the sprite scene hierarchy. Renders the attached SKScene using a 2D orthographic projection into its Node2D bounds.</details>
       <handles>

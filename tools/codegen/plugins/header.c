@@ -136,20 +136,46 @@ static cg_node const *class_storage_root(cg_model const *m, cg_node const *c) {
     return NULL;
 }
 
+static cg_node const *find_external_storage_ancestor(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->extra && c->extra[0]) return c;
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
 static char const *class_storage_name(cg_model const *m, cg_node const *c,
                                       char *dst, size_t dsz) {
-    cg_node const *root;
+    cg_node const *root, *ext;
     if (m->storage_struct && m->storage_struct[0]) {
         snprintf(dst, dsz, "%s", m->storage_struct);
         return dst;
     }
     root = class_storage_root(m, c);
-    if (!root) return NULL;
-    if (root->aux2 && root->aux2[0])
-        snprintf(dst, dsz, "%s", root->aux2);
-    else
-        snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
-    return dst;
+    if (root) {
+        if (root->aux2 && root->aux2[0])
+            snprintf(dst, dsz, "%s", root->aux2);
+        else
+            snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
+        return dst;
+    }
+    ext = find_external_storage_ancestor(m, c);
+    if (ext) {
+        char pbuf[256]; char *tok;
+        char ext_parent[256] = {0};
+        snprintf(pbuf, sizeof(pbuf), "%s", ext->type ? ext->type : "");
+        for (tok = strtok(pbuf, ","); tok; tok = strtok(NULL, ",")) {
+            while (*tok == ' ') ++tok;
+            if (!find_local_parent(m, tok)) { /* not a local class = external */
+                snprintf(ext_parent, sizeof(ext_parent), "%s", tok);
+                break;
+            }
+        }
+        snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", ext_parent);
+        return dst;
+    }
+    return NULL;
 }
 
 static cg_node const *find_kind_node(cg_model const *m, char const *name, cg_kind kind) {
@@ -708,19 +734,21 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
             /* Emit external ancestor slots first (outermost first) so offsets
              * are compatible with sibling storage structs from other modules. */
             if (root_cls) {
-                /* collect external ancestors in reverse order, then emit */
-                char const *ext_chain[32]; int n_ext = 0;
-                char pbuf[512]; char *tok;
-                snprintf(pbuf, sizeof(pbuf), "%s", root_cls->type ? root_cls->type : "");
-                for (tok = strtok(pbuf, ","); tok; tok = strtok(NULL, ",")) {
-                    while (*tok == ' ') ++tok;
-                    /* only non-local classes (not defined in this module) */
-                    if (!find_kind_node(model, tok, CG_KIND_CLASS) && tok[0] && n_ext < 32)
-                        ext_chain[n_ext++] = tok; /* points into pbuf — safe within emission loop */
+                if (root_cls->extra && root_cls->extra[0]) {
+                    /* External-rooted struct: embed the external storage struct first.
+                     * e.g. SCNNode2D = { struct UINode2D UINode2D; Viewport3D; } */
+                    if (ob_printf(&b, "  struct %-24s %s;\n",
+                            root_cls->extra, root_cls->extra) < 0) goto fail;
+                } else {
+                    /* Local root: emit individual external parent slots */
+                    char pbuf[512]; char *tok;
+                    snprintf(pbuf, sizeof(pbuf), "%s", root_cls->type ? root_cls->type : "");
+                    for (tok = strtok(pbuf, ","); tok; tok = strtok(NULL, ",")) {
+                        while (*tok == ' ') ++tok;
+                        if (!find_kind_node(model, tok, CG_KIND_CLASS) && tok[0])
+                            if (ob_printf(&b, "  struct %-24s %s;\n", tok, tok) < 0) goto fail;
+                    }
                 }
-                /* emit outermost-first: for "Node2D" the chain is just [Node2D] */
-                for (int ei = 0; ei < n_ext; ++ei)
-                    if (ob_printf(&b, "  struct %-24s %s;\n", ext_chain[ei], ext_chain[ei]) < 0) goto fail;
             }
             cg_foreach(model, 0, CG_KIND_CLASS, c) {
                 char ss_buf[256];

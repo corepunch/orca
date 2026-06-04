@@ -4,25 +4,25 @@
 #include <assert.h>
 #include <stddef.h>
 
-struct SceneNode3D *
-Object_SceneNode3D(struct Object *object)
+struct SCNNode3D *
+Object_SCNNode3D(struct Object *object)
 {
   if (!object || !OBJ_IsKindOfW(object->type, ID_Node3D)) return NULL;
-  return (struct SceneNode3D *)object->typedata;
+  return (struct SCNNode3D *)object->typedata;
 }
 
-struct SceneRenderPass *
-Object_SceneRenderPass(struct Object *object)
+struct SCNRenderPass *
+Object_SCNRenderPass(struct Object *object)
 {
   if (!object || !OBJ_IsKindOfW(object->type, ID_RenderPass)) return NULL;
-  return (struct SceneRenderPass *)object->typedata;
+  return (struct SCNRenderPass *)object->typedata;
 }
 
-struct SceneViewport3D *
-Object_SceneViewport3D(struct Object *object)
+struct SCNViewport3D *
+Object_SCNViewport3D(struct Object *object)
 {
   if (!object || !OBJ_IsKindOfW(object->type, ID_Viewport3D)) return NULL;
-  return (struct SceneViewport3D *)object->typedata;
+  return (struct SCNViewport3D *)object->typedata;
 }
 
 void

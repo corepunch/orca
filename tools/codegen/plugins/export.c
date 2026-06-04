@@ -193,24 +193,54 @@ static cg_node const *class_storage_root(cg_model const *m, cg_node const *c) {
     return NULL;
 }
 
+/* Walk the parent list of c and return the first that has external-storage set. */
+static cg_node const *find_external_storage_ancestor(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->extra && c->extra[0]) return c; /* has external-storage attr */
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
 /* Compute the storage struct name for class c into dst.
  * Returns dst if c has a storage root, else returns NULL (no typedata). */
 static char const *class_storage_name(cg_model const *m, cg_node const *c,
                                       char *dst, size_t dsz) {
-    cg_node const *root;
+    cg_node const *root, *ext;
     /* Module-level override still supported for backwards compat */
     if (m->storage_struct && m->storage_struct[0]) {
         snprintf(dst, dsz, "%s", m->storage_struct);
         return dst;
     }
     root = class_storage_root(m, c);
-    if (!root) return NULL;
-    /* Explicit name override on root class (storage-struct="ExplicitName") */
-    if (root->aux2 && root->aux2[0])
-        snprintf(dst, dsz, "%s", root->aux2);
-    else
-        snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
-    return dst;
+    if (root) {
+        /* Explicit name override on root class (storage-struct="ExplicitName") */
+        if (root->aux2 && root->aux2[0])
+            snprintf(dst, dsz, "%s", root->aux2);
+        else
+            snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
+        return dst;
+    }
+    /* No local root — check for external-storage annotation on this class or ancestor */
+    ext = find_external_storage_ancestor(m, c);
+    if (ext) {
+        /* external-storage="UINode2D" on the class itself, or walk up to find it */
+        /* struct name: {this_prefix}{external_parent_name} */
+        char pbuf[256]; char *tok;
+        char ext_parent[256] = {0};
+        snprintf(pbuf, sizeof(pbuf), "%s", ext->type ? ext->type : "");
+        for (tok = strtok(pbuf, ","); tok; tok = strtok(NULL, ",")) {
+            while (*tok == ' ') ++tok;
+            if (!find_kind(m, tok, CG_KIND_CLASS)) { /* external */
+                snprintf(ext_parent, sizeof(ext_parent), "%s", tok);
+                break;
+            }
+        }
+        snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", ext_parent);
+        return dst;
+    }
+    return NULL;
 }
 
 static char const *type_kind(cg_model const *m, char const *type) {

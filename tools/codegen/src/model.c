@@ -170,7 +170,8 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
         case CG_KIND_CLASS:
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "parent");
-            n.extra = xattr(e, "concept");
+            n.extra = xattr(e, "external-storage"); /* name of external parent's storage struct */
+            if (n.extra && n.extra[0]) n.flags |= CG_FLAG_STORAGE_ROOT;
             n.aux   = xattr(e, "mixin");
             { tmp = xattr(e, "storage-struct");
               if (tmp && tmp[0]) {

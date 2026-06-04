@@ -27,8 +27,8 @@ struct Object
   /* Component list — fallback for classes not yet in a typedata block.
    * Migrated to typedata (storage-struct="true/Name" on root + module prefix):
    *   UIKit/Node2D     → struct UINode2D       (prefix="UI")
-   *   SceneKit/Node3D  → struct SceneNode3D    (prefix="Scene")
-   *   SceneKit/RenderPass → struct SceneRenderPass
+   *   SceneKit/Node3D     → struct SCNNode3D      (prefix="SCN")
+   *   SceneKit/RenderPass → struct SCNRenderPass
    *   SpriteKit/SKNode → struct SKData         (explicit name)
    *
    * Still on component list:
@@ -39,8 +39,8 @@ struct Object
    *   core:       SendMessageAction, Setter, HideAction,
    *               OnPropertyChangedTrigger, OnAttachedTrigger, EventTrigger,
    *               AnimationCurve, AnimationClip, AnimationPlayer
-   *   SceneKit:   Viewport3D → struct SceneViewport3D { Node2D; Viewport3D; }
-   *   SpriteKit:  SKView    → struct SKViewData       { Node2D; SKView; }
+   *   SceneKit/Viewport3D → struct SCNViewport3D { UINode2D; Viewport3D; }
+   *   SpriteKit/SKView    → struct SKViewData   { UINode2D; SKView; }
    *   renderer:   Texture, Image, RenderTargetTexture, CubeMapTexture, IOSurfaceTexture,
    *               VertexShader, FragmentShader, Shader, Material, Mesh, FontFamily,
    *               Trajectory, Timeline
