@@ -689,6 +689,7 @@ _AttachModalObject(struct Object *hObject, struct Object *target)
   OBJ_AddRef(target);
   target->parent = hObject;
   target->flags |= OF_NOACTIVATE;
+  _SendMessage(target, StyleController, ThemeChanged, .recursive = TRUE);
   if (!_PopupSetDialogResult(target, NAN)) {
     Con_Error("Modal popup missing DialogResult property");
   }

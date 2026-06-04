@@ -814,6 +814,103 @@ local function test_stackview_align_items_preserves_child_stretch_width()
 	print("PASS: test_stackview_align_items_preserves_child_stretch_width")
 end
 
+local function test_css_popup_padding_insets_stretched_panel()
+	local root = ui.Screen {
+		Name = "CssPopupLayoutRoot",
+		Width = 420,
+		Height = 600,
+		ResizeMode = "NoResize",
+		StyleSheet = filesystem.loadObjectFromCssString [[
+			.popup {
+				padding: 16;
+			}
+
+			.popup > .panel {
+				background-color: #FFFFFF;
+				color: #0B0F1A;
+				border: 1 solid #E3E8F0;
+				padding: 24;
+			}
+		]],
+	}
+	local overlay = root + ui.StackView {
+		Name = "CssPopupOverlay",
+		class = "popup",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+	}
+	local card = overlay + ui.StackView {
+		Name = "CssPopupCard",
+		class = "panel",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+	}
+	local body = card + ui.TextBlock {
+		Name = "CssPopupBody",
+		Text = "There was a game running already. Do you want to continue it?",
+		FontSize = 14,
+	}
+
+	root:UpdateLayout(root.Width, root.Height)
+
+	test.expect_near(overlay.PaddingLeft, 16, 0.001, ".popup CSS padding should set left padding")
+	test.expect_near(overlay.PaddingRight, 16, 0.001, ".popup CSS padding should set right padding")
+	test.expect_near(card.PaddingLeft, 24, 0.001, ".popup > .panel CSS padding should set panel padding")
+	test.expect_near(card.BorderWidthLeft, 1, 0.001, ".popup > .panel CSS border should set panel border")
+	test.expect_near(card.ActualWidth, root.Width - 32 - 2, 1,
+		"stretched panel should be inset by popup padding and its border")
+	test.expect(body.ActualWidth <= root.Width - 32 - 2 - 48,
+		"body text should be measured inside popup and panel padding")
+
+	root:clear()
+	print("PASS: test_css_popup_padding_insets_stretched_panel")
+end
+
+local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
+	local root = ui.Screen {
+		Name = "CssModalStyleRoot",
+		Width = 420,
+		Height = 600,
+		ResizeMode = "NoResize",
+		StyleSheet = filesystem.loadObjectFromCssString [[
+			.popup {
+				padding: 16;
+			}
+
+			.popup > .panel {
+				padding: 24;
+			}
+		]],
+	}
+	local modal = ui.Popup { Name = "CssModalWrapper" }
+	local overlay = modal + ui.StackView {
+		Name = "CssModalOverlay",
+		class = "popup",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+	}
+	local card = overlay + ui.StackView {
+		Name = "CssModalCard",
+		class = "panel",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+	}
+
+	root:SetModalObject(modal)
+
+	test.expect_near(overlay.PaddingLeft, 16, 0.001,
+		"modal attach should reapply screen stylesheet to popup content")
+	test.expect_near(card.PaddingLeft, 24, 0.001,
+		"modal attach should reapply screen stylesheet to nested panel content")
+
+	root:clear()
+	print("PASS: test_modal_attach_applies_screen_stylesheet_to_popup_content")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -1339,5 +1436,7 @@ test_lua_set_modal_object_table_dispatches_message()
 test_lua_close_popup_table_dispatches_message()
 test_lua_post_generated_message_with_payload()
 test_stackview_align_items_preserves_child_stretch_width()
+test_css_popup_padding_insets_stretched_panel()
+test_modal_attach_applies_screen_stylesheet_to_popup_content()
 
 print("All layout tests passed.")
