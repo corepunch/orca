@@ -68,13 +68,6 @@ Tab_Select(struct Object *object, struct Tab *tab)
   return TRUE;
 }
 
-static void
-Tab_ApplyThemeDefaults(struct Tab *tab)
-{
-  tab->SelectedColor = FS_GetThemeColor(THEME_COLOR_ACCENT);
-  tab->UnselectedColor = FS_GetThemeColor(THEME_COLOR_PANEL_BACKGROUND);
-}
-
 HANDLER(Tab, Object, Create)
 {
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
@@ -87,7 +80,9 @@ HANDLER(Tab, Object, Create)
     text->TextVerticalAlignment = kTextVerticalAlignmentCenter;
   }
 
-  Tab_ApplyThemeDefaults(pTab);
+  pTab->SelectedColor = FS_GetThemeColor(THEME_COLOR_ACCENT);
+  pTab->UnselectedColor = FS_GetThemeColor(THEME_COLOR_PANEL_BACKGROUND);
+
   Tab_SetSelected(hObject, pTab, pTab->IsSelected);
   return FALSE;
 }

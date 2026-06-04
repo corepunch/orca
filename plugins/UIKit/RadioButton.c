@@ -9,23 +9,6 @@ struct Object *
 _NextTabStop(struct Object *hObject);
 
 static void
-RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadioButton)
-{
-  struct Node *node = GetNode(hObject);
-  struct Node2D *node2d = GetNode2D(hObject);
-  if (!node || !node2d) return;
-
-  pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
-  node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
-  node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
-  struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
-  struct Property *foregroundProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
-    PROP_SetValue(foregroundProp, &foreground);
-  }
-}
-
-static void
 RadioButton_SetChecked(struct Object *object,
                        struct RadioButton *button,
                        bool_t checked)
@@ -136,7 +119,14 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
 
 HANDLER(RadioButton, Object, Create)
 {
-  RadioButton_ApplyThemeDefaults(hObject, pRadioButton);
+  pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
+  GetNode(hObject)->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
+  GetNode2D(hObject)->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
+  struct Property *foregroundProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+    struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
+    PROP_SetValue(foregroundProp, &foreground);
+  }
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
