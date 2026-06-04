@@ -369,14 +369,3 @@ PROP_GetDesc(struct Property const *prop) {
   return prop->pdesc;
 }
 
-struct Property *
-OBJ_FindInheritedProperty(struct Object *object, uint32_t long_id)
-{
-  for (struct Object *obj = object; obj; obj = obj->parent) {
-    struct Property *p = PROP_FindByLongID(obj->properties, long_id);
-    if (p && !PROP_IsNull(p)) {
-      return p;
-    }
-  }
-  return NULL;
-}

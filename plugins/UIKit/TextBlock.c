@@ -84,31 +84,16 @@ _GetTextBlockText(struct Object *hObject,
   }
 }
 
-static struct FontShorthand
-_InheritedFont(struct Object *hObject)
-{
-  struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
-  struct Property *p;
-  p = OBJ_FindInheritedProperty(OBJ_GetParent(hObject), ID_TextRun_FontWeight);
-  if (p) font.Weight = *(enum FontWeight const *)PROP_GetValue(p);
-  p = OBJ_FindInheritedProperty(OBJ_GetParent(hObject), ID_TextRun_FontStyle);
-  if (p) font.Style = *(enum FontStyle const *)PROP_GetValue(p);
-  p = OBJ_FindInheritedProperty(OBJ_GetParent(hObject), ID_TextRun_FontSize);
-  if (p) font.Size = *(float const *)PROP_GetValue(p);
-  p = OBJ_FindInheritedProperty(OBJ_GetParent(hObject), ID_TextRun_FontFamily);
-  if (p) font.Family = *(struct FontFamily *const *)PROP_GetValue(p);
-  return font;
-}
-
 static struct ViewTextRun
 _MakeViewTextRun(struct Object *hObject,
                  struct TextRun text,
                  lpcString_t szText)
 {
-  struct FontShorthand font = _InheritedFont(hObject);
+  (void)hObject;
+  struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
   font.Weight = IVALUE(text.Font.Weight, font.Weight);
   font.Style = IVALUE(text.Font.Style, font.Style);
-  font.Size = IVALUE(text.Font.Size, font.Size);
+  font.Size = IVALUE(text.Font.Size, font.Size ? font.Size : DEFAULT_FONT_SIZE);
   font.Family = IVALUE(text.Font.Family, font.Family);
   struct ViewTextRun view = {
     .string = szText,

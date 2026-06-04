@@ -404,9 +404,6 @@ OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Prop
 ORCA_API HRESULT
 OBJ_FindLongProperty(struct Object *object, uint32_t long_id, struct Property ** output);
 
-ORCA_API struct Property *
-OBJ_FindInheritedProperty(struct Object *object, uint32_t long_id);
-
 ORCA_API HRESULT
 OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value);
 
