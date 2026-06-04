@@ -86,6 +86,7 @@ static cg_kind elem_kind(xmlNode const *e) {
     if (!strcmp(t, "interface")) return CG_KIND_INTERFACE;
     if (!strcmp(t, "struct"))    return CG_KIND_STRUCT;
     if (!strcmp(t, "class"))     return CG_KIND_CLASS;
+    if (!strcmp(t, "mixin"))     return CG_KIND_MIXIN;
     if (!strcmp(t, "method"))    return CG_KIND_METHOD;
     if (!strcmp(t, "function"))  return CG_KIND_METHOD;
     if (!strcmp(t, "message"))   return CG_KIND_MESSAGE;
@@ -170,6 +171,12 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "parent");
             n.extra = xattr(e, "concept");
+            n.aux   = xattr(e, "mixin");
+            break;
+        case CG_KIND_MIXIN:
+            n.name  = xattr(e, "name");
+            n.type  = xdup("");
+            n.extra = xdup("");
             break;
         case CG_KIND_METHOD:
             n.name  = xattr(e, "name");

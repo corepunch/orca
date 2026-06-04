@@ -2,6 +2,7 @@
 <module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered" after-luaopen="after_ui_module_registered" storage-struct="UIData">
   <require file="../../source/core/core.cgen"/>
   <require file="../../source/renderer/api/renderer.cgen"/>
+
   <includes>
     <include file="include/renderer.h"/>
     <include file="core/core.h"/>
@@ -202,10 +203,8 @@
         <property name="Color" type="color">The color value used to fill the target area.</property>
       </properties>
     </class>
-    <class name="TextRun">
-      <summary>Shared concept for text rendering in 2D and 3D nodes.</summary>
-      <details>This class is not instantiated directly. Instead, it provides the common properties and functionality for text rendering, used internally by higher-level components such as 2D and 3D text nodes. The concept encapsulates text content, resources, formatting options, alignment, and font configuration.</details>
-      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+    <mixin name="TextRun">
+      <summary>Shared text rendering properties inlined into TextBlock and similar classes.</summary>
       <properties>
         <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.</property>
         <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE" inherited="true">Font definition used for text rendering. Contains typeface, size, and style information.</property>
@@ -219,7 +218,7 @@
       <fields>
         <field name="_textinfo" type="text_info">Internal text information structure.</field>
       </fields>
-    </class>
+    </mixin>
     <class name="Node2D" parent="Node,StyleController" children="Node2D">
       <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
       <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
@@ -375,7 +374,7 @@
         <property name="Prefab" type="string">Prefab resource name within the archive </property>
       </properties>
     </class>
-    <class name="TextBlock" parent="Node2D,TextRun" allow-text="true">
+    <class name="TextBlock" parent="Node2D" mixin="TextRun" allow-text="true">
       <summary>Concrete implementation of text display combining Node2D and TextRun</summary>
       <details>Primary class for displaying static text with full typography control. Combines 2D rendering capabilities with comprehensive text formatting options. For script readability, prefer value-style text authoring such as `TextBlock class: "text-3xl", title`.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>

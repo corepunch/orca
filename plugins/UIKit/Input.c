@@ -43,7 +43,7 @@ Input_ApplyTextDefaults(struct Object *hObject)
 
 HANDLER(Input, Node2D, DrawBrush)
 {
-  struct TextRun *pTextRun = GetTextRun(hObject);
+  struct TextBlock *pTextRun = GetTextBlock(hObject);
   struct Node2D *pNode2D = GetNode2D(hObject);
   struct TextBlock *pTextBlock = GetTextBlock(hObject);
 
@@ -123,7 +123,7 @@ HANDLER(Input, Node2D, DrawBrush)
 
 HANDLER(Input, TextBlock, MakeText)
 {
-  const char* text = GetTextRun(hObject)->Text;
+  const char* text = GetTextBlock(hObject)->Text;
   pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);
   pMakeText->text->cursor = pInput->Cursor;
   return FALSE;
@@ -160,7 +160,7 @@ _NextTabStop(struct Object *hObject)
 HANDLER(Input, Node, KeyDown)
 {
   char szText[MAX_PROPERTY_STRING];
-  const char* currentText = GetTextRun(hObject)->Text;
+  const char* currentText = GetTextBlock(hObject)->Text;
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
@@ -224,7 +224,7 @@ HANDLER(Input, Node, KeyDown)
       }
       break;
   }
-  struct Property *prop = TextRun_GetProperty(hObject, Text);
+  struct Property *prop = TextBlock_GetProperty(hObject, Text);
   if (prop) {
     PROP_SetStringValue(prop, szText);
   }

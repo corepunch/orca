@@ -346,11 +346,36 @@ static int emit_message_action(cg_host_v1 const *h, ob *b, cg_model const *m, cg
     return 0;
 }
 
-static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *c,
-                      sentry const *smap, size_t scount) {
+static cg_node const *find_mixin(cg_model const *m, char const *name) {
+    size_t i;
+    if (!name || !name[0]) return NULL;
+    for (i = 0; i < m->node_count; ++i)
+        if (m->nodes[i].kind == CG_KIND_MIXIN && !strcmp(m->nodes[i].name, name))
+            return &m->nodes[i];
+    return NULL;
+}
+
+static int emit_prop_ids(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *c,
+                         uint32_t owner_id, sentry const *smap, size_t scount) {
     walk_ctx ctx = {0};
     ctx.b = b; ctx.m = m; ctx.smap = smap; ctx.scount = scount;
     ctx.h = h; ctx.class_name = c->name;
+    cg_foreach(m, owner_id, CG_KIND_PROPERTY, p) {
+        char segs[MAX_DEPTH][64];
+        snprintf(segs[0], 64, "%s", p->name);
+        if (walk_prop(&ctx, segs, 1, p->type) < 0) return -1;
+        if (p->flags & CG_FLAG_ARRAY) {
+            char num[256]; snprintf(num, sizeof(num), "Num%s", p->name);
+            if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
+                    c->name, num, hash2(h, c->name, num), c->name, num) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *c,
+                      sentry const *smap, size_t scount) {
+    cg_node const *mx = find_mixin(m, c->aux);
 
     if (ob_printf(b,
             "// %s\n"
@@ -361,16 +386,8 @@ static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node con
             c->name, c->name, c->name,
             c->name, c->name, c->name) < 0) return -1;
 
-    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-        char segs[MAX_DEPTH][64];
-        snprintf(segs[0], 64, "%s", p->name);
-        if (walk_prop(&ctx, segs, 1, p->type) < 0) return -1;
-        if (p->flags & CG_FLAG_ARRAY) {
-            char num[256]; snprintf(num, sizeof(num), "Num%s", p->name);
-            if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
-                    c->name, num, hash2(h, c->name, num), c->name, num) < 0) return -1;
-        }
-    }
+    if (mx && emit_prop_ids(h, b, m, c, mx->id, smap, scount) < 0) return -1;
+    if (emit_prop_ids(h, b, m, c, c->id, smap, scount) < 0) return -1;
     cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
         if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
                 c->name, msg->name, hash2(h, c->name, msg->name),

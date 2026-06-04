@@ -439,10 +439,17 @@ static int emit_message_action_struct(ob *b, cg_model const *m, cg_node const *m
     return 0;
 }
 
-static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
-    if (emit_doc(b, c, 1) < 0) return -1;
-    if (ob_printf(b, "/** %s component */\nstruct %s {\n", c->name, c->name) < 0) return -1;
-    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+static cg_node const *find_mixin(cg_model const *m, char const *name) {
+    size_t i;
+    if (!name || !name[0]) return NULL;
+    for (i = 0; i < m->node_count; ++i)
+        if (m->nodes[i].kind == CG_KIND_MIXIN && !strcmp(m->nodes[i].name, name))
+            return &m->nodes[i];
+    return NULL;
+}
+
+static int emit_component_props(ob *b, cg_model const *m, uint32_t owner_id) {
+    cg_foreach(m, owner_id, CG_KIND_PROPERTY, p) {
         char t[256];
         if (p->flags & CG_FLAG_INHERITED) {
             if (is_expandable_inherited_struct(m, p->type)) {
@@ -466,6 +473,20 @@ static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
         if (p->flags & CG_FLAG_ARRAY)
             if (ob_printf(b, "\tint32_t Num%s;\n", p->name) < 0) return -1;
     }
+    return 0;
+}
+
+static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
+    cg_node const *mx = find_mixin(m, c->aux);
+    if (emit_doc(b, c, 1) < 0) return -1;
+    if (ob_printf(b, "/** %s component */\nstruct %s {\n", c->name, c->name) < 0) return -1;
+    if (mx) {
+        if (ob_printf(b, "\t/* --- %s mixin --- */\n", mx->name) < 0) return -1;
+        if (emit_component_props(b, m, mx->id) < 0) return -1;
+        if (emit_struct_contents(b, m, mx->id, CG_KIND_FIELD, 0) < 0) return -1;
+        if (ob_printf(b, "\t/* --- %s fields --- */\n", c->name) < 0) return -1;
+    }
+    if (emit_component_props(b, m, c->id) < 0) return -1;
     if (emit_struct_contents(b, m, c->id, CG_KIND_FIELD, 0) < 0) return -1;
     cg_foreach(m, c->id, CG_KIND_MESSAGE, msg)
         if (ob_printf(b, "\tevent_t %s;\n", msg->name) < 0) return -1;

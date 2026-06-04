@@ -63,13 +63,12 @@ mesh_rect(struct Node2D *pNode2D,
 
 static lpcString_t
 _GetTextBlockText(struct Object *hObject,
-                  struct TextBlock *pTextBlock,
-                  struct TextRun *pTextRun)
+                  struct TextBlock *pTextBlock)
 {
-  struct Property *hProp = TextRun_GetProperty(hObject, Text);
-  if (pTextRun->Text && *pTextRun->Text)
+  struct Property *hProp = TextBlock_GetProperty(hObject, Text);
+  if (pTextBlock->Text && *pTextBlock->Text)
   {
-    return pTextRun->Text;
+    return pTextBlock->Text;
   }
   else if (pTextBlock->TextResourceID && *pTextBlock->TextResourceID && !PROP_HasProgram(hProp))
   {
@@ -87,7 +86,7 @@ _GetTextBlockText(struct Object *hObject,
 
 static struct ViewTextRun
 _MakeViewTextRun(struct Object *hObject,
-                 struct TextRun text,
+                 struct TextBlock text,
                  lpcString_t szText)
 {
   (void)hObject;
@@ -117,33 +116,30 @@ _MakeViewTextRun(struct Object *hObject,
 
 HANDLER(TextBlock, TextBlock, MakeText)
 {
-  struct TextRun *pTextRun = GetTextRun(hObject);
   struct ViewText* pViewText = pMakeText->text;
-//  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlock, pTextRun));
+  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextBlock, _GetTextBlockText(hObject, pTextBlock));
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
-    struct TextRun *tr = GetTextRun(run);
+    struct TextBlock *tr = GetTextBlock(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
-      struct TextRun base = *pTextRun;
+      struct TextBlock base = *pTextBlock;
       if (tr->Font.Weight) base.Font.Weight = tr->Font.Weight;
       if (tr->Font.Style) base.Font.Style = tr->Font.Style;
       if (tr->Font.Size) base.Font.Size = tr->Font.Size;
       if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextRun_GetProperty(run, Underline.Offset)) base.Underline.Offset = tr->Underline.Offset;
-      if (TextRun_GetProperty(run, Underline.Width)) base.Underline.Width = tr->Underline.Width;
-      if (TextRun_GetProperty(run, Underline.Color)) base.Underline.Color = tr->Underline.Color;
-      if (TextRun_GetProperty(run, LetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
-      if (TextRun_GetProperty(run, LineHeight)) base.LineHeight = tr->LineHeight;
-      if (TextRun_GetProperty(run, CharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
-      if (TextRun_GetProperty(run, FixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
-      if (TextRun_GetProperty(run, RemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
+      if (TextBlock_GetProperty(run, Underline.Offset)) base.Underline.Offset = tr->Underline.Offset;
+      if (TextBlock_GetProperty(run, Underline.Width)) base.Underline.Width = tr->Underline.Width;
+      if (TextBlock_GetProperty(run, Underline.Color)) base.Underline.Color = tr->Underline.Color;
+      if (TextBlock_GetProperty(run, LetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
+      if (TextBlock_GetProperty(run, LineHeight)) base.LineHeight = tr->LineHeight;
+      if (TextBlock_GetProperty(run, CharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
+      if (TextBlock_GetProperty(run, FixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
+      if (TextBlock_GetProperty(run, RemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
       pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
     }
   }
   pViewText->flags = pTextBlock->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-//  pViewText->lineSpacing = pTextRun->LineHeight;
   pViewText->availableWidth = pMakeText->availableSpace;
   pViewText->textWrapping = (enum text_wrap)pTextBlock->TextWrapping;
   pViewText->textOverflow = (enum text_overflow)pTextBlock->TextOverflow;
@@ -153,13 +149,11 @@ HANDLER(TextBlock, TextBlock, MakeText)
 
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
-  struct TextRun *output = GetTextRun(hObject);
-  struct TextBlock *textblock = GetTextBlock(hObject);
   _SendMessage(hObject, TextBlock, MakeText,
-                   .text = textblock->_text,
+                   .text = pTextBlock->_text,
                    .availableSpace = pMeasureOverride->Width);
-  Text_GetInfo(textblock->_text, &output->_textinfo);
-  return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
+  Text_GetInfo(pTextBlock->_text, &pTextBlock->_textinfo);
+  return MAKEDWORD(pTextBlock->_textinfo.txWidth, pTextBlock->_textinfo.txHeight);
 }
 
 HANDLER(TextBlock, Node2D, ForegroundContent)
@@ -170,9 +164,8 @@ HANDLER(TextBlock, Node2D, ForegroundContent)
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
   if (is_updated(hObject, STEP_GEOMETRY)) {
-    struct TextRun *run = GetTextRun(hObject);
-    struct rect const rect = mesh_rect(pTextBlock->_node2D, pTextBlock, &run->_textinfo);
-    struct edges insets = run->_textinfo.txInsets;
+    struct rect const rect = mesh_rect(pTextBlock->_node2D, pTextBlock, &pTextBlock->_textinfo);
+    struct edges insets = pTextBlock->_textinfo.txInsets;
     struct rect const geom = {
       .x = floorf(rect.x - insets.left),
       .y = floorf(rect.y - insets.top),
@@ -214,7 +207,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
 //    struct TextBlock *label = GetTextBlock(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
-    struct Property *hProp = TextRun_GetProperty(hObject, Text);
+    struct Property *hProp = TextBlock_GetProperty(hObject, Text);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
     }

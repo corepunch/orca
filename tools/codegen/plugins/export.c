@@ -1060,13 +1060,35 @@ static int emit_component_parents(ob *b, cg_node const *c) {
     return ob_printf(b, "%s0", first ? "" : ", ");
 }
 
+static int emit_defaults_for_props(ob *b, cg_model const *m, uint32_t owner_id) {
+    cg_foreach(m, owner_id, CG_KIND_PROPERTY, p) {
+        char const *kind = type_kind(m, p->type);
+        if (p->flags & CG_FLAG_INHERITED) continue;
+        if (p->extra && p->extra[0]) {
+            if (!strcmp(kind, "string")) {
+                if (ob_printf(b, "\t.%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "enum")) {
+                if (ob_printf(b, "\t.%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
+                       !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
+                if (ob_printf(b, "\t.%s = {%s},\n", p->name, p->extra) < 0) return -1;
+            } else {
+                if (ob_printf(b, "\t.%s = %s,\n", p->name, p->extra) < 0) return -1;
+            }
+        }
+    }
+    return 0;
+}
+
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
+        cg_node const *mx = (c->aux && c->aux[0]) ? find_kind(m, c->aux, CG_KIND_MIXIN) : NULL;
         if (emit_component_handlers(b, c, m) < 0) return -1;
         if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
         if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",
                 c->name) < 0) return -1;
+        if (mx && emit_properties_for_fields(b, h, m, smap, scount, mx, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
         if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
             const char *decl_macro = (m->storage_struct && m->storage_struct[0]) ? "UIDATA_DECL" : "DECL";
@@ -1075,22 +1097,8 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                     c->name, msg->name, c->name, msg->name) < 0) return -1;
         }
         if (ob_printf(b, "};\nstatic struct %s %sDefaults = {\n", c->name, c->name) < 0) return -1;
-        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-            char const *kind = type_kind(m, p->type);
-            if (p->flags & CG_FLAG_INHERITED) continue;
-            if (p->extra && p->extra[0]) {
-                if (!strcmp(kind, "string")) {
-                    if (ob_printf(b, "\t.%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "enum")) {
-                    if (ob_printf(b, "\t.%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
-                           !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
-                    if (ob_printf(b, "\t.%s = {%s},\n", p->name, p->extra) < 0) return -1;
-                } else {
-                    if (ob_printf(b, "\t.%s = %s,\n", p->name, p->extra) < 0) return -1;
-                }
-            }
-        }
+        if (mx && emit_defaults_for_props(b, m, mx->id) < 0) return -1;
+        if (emit_defaults_for_props(b, m, c->id) < 0) return -1;
         if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
                 "\tstruct %s* cmp = OBJ_GetTypedata(object, ID_%s);\n"
                 "\tswitch (message) {\n", c->name, c->name, c->name) < 0) return -1;
