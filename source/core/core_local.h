@@ -67,8 +67,6 @@ struct vm_register
 #define MAX_STRUCT_PARSERS 256
 #define MAX_FILE_LOADERS 256
 #define MAX_FONT_FAMILIES 512
-#define MAX_STORAGE_FAMILIES 8
-
 #define ID_PropertyChangedMessage 0xdffd83eb // PropertyChangedMessage
 
 // Legacy fallback for C-level string-to-struct parsers registered before the
@@ -76,11 +74,6 @@ struct vm_register
 struct struct_parser_entry {
   const char* type_name;
   structParserFn_t fn;
-};
-
-struct storage_family {
-  uint32_t super_id;    /* SUPER_ID_NODE2D, SUPER_ID_NODE3D, … */
-  size_t   data_size;   /* sizeof the typedata struct */
 };
 
 struct file_loader {
@@ -108,7 +101,6 @@ struct game
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct font_registry_entry fonts[MAX_FONT_FAMILIES];
-  struct storage_family storage_families[MAX_STORAGE_FAMILIES];
   uint64_t struct_parse_mask;
   bool_t struct_parse_mask_valid;
 };
@@ -161,8 +153,6 @@ OBJ_RequestAnimate(struct Object *);
 ORCA_API void
 OBJ_SetAlias(struct Object *, uint32_t);
 
-size_t
-OBJ_StorageFamilySize(uint32_t super_id);
 
 
 struct timer;

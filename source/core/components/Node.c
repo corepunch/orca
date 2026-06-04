@@ -7,7 +7,7 @@ HANDLER(Node, Node, GetSize)
 
 HANDLER(Node, Node, IsVisible)
 {
-  PROP_Update(Node_GetProperty(hObject, kNodeVisible));
+  PROP_Update(Node_GetProperty(hObject, Visible));
   return pNode->Visible && !GetNode(hObject)->QuickHide;
 }
 

@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <include/renderer.h>
 
 #include <UIKit/UIKit.h>
@@ -208,7 +208,7 @@ HANDLER(Node2D, Node2D, DrawBrush)
     return FALSE;
 
   if (pDrawBrush->foreground && !pDrawBrush->image &&
-      !Node2D_GetProperty(hObject, kNode2DForegroundMaterial)
+      !Node2D_GetProperty(hObject, Foreground.Material)
       // && !PROP_FindByLongID(OBJ_GetProperties(hObject), ID_Material_Texture)
   ) {
     return FALSE;

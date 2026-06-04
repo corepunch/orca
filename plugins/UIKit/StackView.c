@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -64,13 +64,13 @@ _Arrange(struct Object *hObject,
       break;
   }
   
-  struct Property *alignItems = StackView_GetProperty(hObject, kStackViewAlignItems);
+  struct Property *alignItems = StackView_GetProperty(hObject, AlignItems);
   enum Direction crossAxis = pStackView->Direction == kDirectionHorizontal
     ? kDirectionVertical
     : kDirectionHorizontal;
-  enum NodeProperties childAlignmentProperty = crossAxis == kDirectionHorizontal
-    ? kNodeHorizontalAlignment
-    : kNodeVerticalAlignment;
+  uint32_t childAlignmentOffset = crossAxis == kDirectionHorizontal
+    ? offsetof(struct Node, Alignment.Axis[0].Left)
+    : offsetof(struct Node, Alignment.Axis[1].Left);
   int stackAlignment = kHorizontalAlignmentStretch;
   switch (pStackView->AlignItems) {
     case kAlignItemsStart:
@@ -85,7 +85,7 @@ _Arrange(struct Object *hObject,
     struct Node2D *subview = GetNode2D(child);
     int *alignment = &subview->_node->Alignment.Axis[crossAxis];
     LRESULT s;
-    if (alignItems && !Node_GetProperty(child, childAlignmentProperty)) {
+    if (alignItems && !OBJ_GetPropertyByOffset(child, ID_Node, childAlignmentOffset)) {
       *alignment = stackAlignment;
     }
     switch (pStackView->Direction) {

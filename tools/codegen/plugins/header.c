@@ -609,6 +609,41 @@ static int emit_header(cg_host_v1 const *host, cg_model const *model, char const
         }
     }
 
+    /* Storage-family block — emit struct <StorageStruct> and Get* accessors */
+    if (model->storage_struct && model->storage_struct[0]) {
+        const char *ss = model->storage_struct;
+        if (ob_printf(&b,
+            "\n/*\n"
+            " * Monolithic storage block for all %s objects.\n"
+            " * Every object in this module has one of these embedded at the end of its\n"
+            " * Object allocation. Fields are ordered base-first so offsets remain stable.\n"
+            " */\n"
+            "struct %s {\n", model->module_name, ss) < 0) goto fail;
+        cg_foreach(model, 0, CG_KIND_CLASS, c) {
+            if (ob_printf(&b, "  struct %-24s %s;\n", c->name, c->name) < 0) goto fail;
+        }
+        if (ob_printf(&b, "};\n") < 0) goto fail;
+
+        /* Get* accessor macros */
+        if (ob_printf(&b,
+            "\n"
+            "#define _%s(_P, FIELD) \\\n"
+            "  ((_P) && OBJ_IsKindOfW((_P)->type, ID_%s) \\\n"
+            "    ? &((struct %s *)(_P)->typedata)->FIELD \\\n"
+            "    : NULL)\n\n",
+            ss, model->module_name, ss) < 0) goto fail;
+        cg_foreach(model, 0, CG_KIND_CLASS, c) {
+            if (ob_printf(&b,
+                "#undef  Get%s\n"
+                "#define Get%s(_P) _%s(_P, %s)\n",
+                c->name, c->name, ss, c->name) < 0) goto fail;
+        }
+
+        if (ob_printf(&b,
+            "\nstruct %s *Object_%s(struct Object *object);\n",
+            ss, ss) < 0) goto fail;
+    }
+
     if (ob_printf(&b, "\n#endif\n") < 0) goto fail;
 
     free(guard);

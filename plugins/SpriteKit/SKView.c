@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <SpriteKit/SpriteKit.h>
 
 /* Override generated GetSKView to use the UIData typedata slot. */

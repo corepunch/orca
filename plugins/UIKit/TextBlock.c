@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -66,7 +66,7 @@ _GetTextBlockText(struct Object *hObject,
                   struct TextBlock *pTextBlock,
                   struct TextRun *pTextRun)
 {
-  struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
+  struct Property *hProp = TextRun_GetProperty(hObject, Text);
   if (pTextRun->Text && *pTextRun->Text)
   {
     return pTextRun->Text;
@@ -131,14 +131,14 @@ HANDLER(TextBlock, TextBlock, MakeText)
       if (tr->Font.Style) base.Font.Style = tr->Font.Style;
       if (tr->Font.Size) base.Font.Size = tr->Font.Size;
       if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
-      if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;
-      if (TextRun_GetProperty(run, kTextRunUnderlineColor)) base.Underline.Color = tr->Underline.Color;
-      if (TextRun_GetProperty(run, kTextRunLetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
-      if (TextRun_GetProperty(run, kTextRunLineHeight)) base.LineHeight = tr->LineHeight;
-      if (TextRun_GetProperty(run, kTextRunCharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
-      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
-      if (TextRun_GetProperty(run, kTextRunRemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
+      if (TextRun_GetProperty(run, Underline.Offset)) base.Underline.Offset = tr->Underline.Offset;
+      if (TextRun_GetProperty(run, Underline.Width)) base.Underline.Width = tr->Underline.Width;
+      if (TextRun_GetProperty(run, Underline.Color)) base.Underline.Color = tr->Underline.Color;
+      if (TextRun_GetProperty(run, LetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
+      if (TextRun_GetProperty(run, LineHeight)) base.LineHeight = tr->LineHeight;
+      if (TextRun_GetProperty(run, CharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
+      if (TextRun_GetProperty(run, FixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
+      if (TextRun_GetProperty(run, RemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
       pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
     }
   }
@@ -214,7 +214,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
 //    struct TextBlock *label = GetTextBlock(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
     entity.text = text->_text;
-    struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
+    struct Property *hProp = TextRun_GetProperty(hObject, Text);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
     }

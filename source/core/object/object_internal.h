@@ -11,14 +11,6 @@ struct component
   char pUserData[];
 };
 
-/* Storage-family IDs — fnv1a32 of the root class name */
-#define SUPER_ID_NODE         0x3468032du
-#define SUPER_ID_NODE2D       0x6c63a2abu
-#define SUPER_ID_NODE3D       0xce61fe5au
-#define SUPER_ID_RESOURCE     0x23b0d815u
-#define SUPER_ID_ACTION       0x0a77a91fu
-#define SUPER_ID_PROJECT      0x7b5fea5eu
-
 struct Object
 {
   LPSTR Name;
@@ -32,7 +24,7 @@ struct Object
   LPSTR SourceFile;
   LPSTR TextContent;
 
-  struct component* components; /* non-UIData objects only: Action, StyleSheet, Viewport3D fallback */
+  struct component* components; /* fallback for classes without a TypedataOffset */
   struct Property* properties;
 
   uint32_t alias;
@@ -40,7 +32,6 @@ struct Object
   uint32_t flags;
 
   uint32_t class_id;            /* concrete class — Button, TextBlock, … */
-  uint32_t super_id;            /* storage family — SUPER_ID_NODE2D, … */
   struct ClassDesc const *type; /* pointer to concrete ClassDesc */
 
   longTime_t dirty;
@@ -49,13 +40,11 @@ struct Object
 };
 
 /* True when the object uses the monolithic typedata block for storage.
- * False for classes that inherit from Node2D but haven't registered a
- * TypedataOffset (e.g. Viewport3D from SceneKit). */
+ * False for classes without a registered TypedataOffset (e.g. Viewport3D). */
 static INLINE bool_t
 OBJ_UsesTypedata(struct Object const *object)
 {
   return object &&
-         object->super_id == SUPER_ID_NODE2D &&
          object->type &&
          object->type->TypedataOffset != UINT32_MAX;
 }

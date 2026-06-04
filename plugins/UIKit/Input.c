@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <include/orca.h>
 
 #include <source/filesystem/theme_palette.h>
@@ -224,7 +224,7 @@ HANDLER(Input, Node, KeyDown)
       }
       break;
   }
-  struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
+  struct Property *prop = TextRun_GetProperty(hObject, Text);
   if (prop) {
     PROP_SetStringValue(prop, szText);
   }

@@ -1,4 +1,4 @@
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/plugapi.h>
@@ -132,7 +132,7 @@ HANDLER(Node2D, Node, UpdateMatrix)
     struct vec2 size = { frame.width, frame.height };
     struct vec2 pivot = VEC2_Mul(&size, &pNode2D->RenderTransformOrigin);
     struct vec2 center = VEC2_Scale(&size, 0.5f);
-    struct Property* matprop = Node2D_GetProperty(hObject, kNode2DMatrix);
+    struct Property* matprop = Node2D_GetProperty(hObject, Matrix);
 
     layoutMatrix = transform2_ToMatrix3D(
       &(struct transform2){ .translation = { frame.x, frame.y },

@@ -380,7 +380,7 @@ struct ClassDesc
   uint32_t NumShorthands; // number of shorthand descriptors defined directly on this class
   uint32_t ClassID; // hash of the class name, used for quick comparisons and lookups, should be unique across all classes
   uint32_t ClassSize; // size of the class itself excluding components, used for calculating offsets of components and properties
-  uint32_t MemorySize; // total size of an instance of this class including components, used for memory allocation
+  uint32_t TypedataSize; // sizeof the storage-family block (e.g. sizeof(UIData)); set on the root ancestor, propagated to all subclasses
   uint32_t TypedataOffset; // offsetof(StorageFamily, ClassName) for storage-family classes; UINT32_MAX otherwise
   void const *Defaults; // pointer to a struct containing default values for properties of this class, used for resetting to defaults and for inheriting default values in subclasses
 };
@@ -398,15 +398,6 @@ struct component;
 
 ORCA_API bool_t
 OBJ_IsKindOfW(struct ClassDesc const *cls, uint32_t parent_id);
-
-ORCA_API uint32_t
-OBJ_SuperID(struct Object const *object);
-
-ORCA_API void
-OBJ_RegisterStorageFamily(uint32_t super_id, size_t data_size);
-
-ORCA_API void
-OBJ_SetClassTypedataOffset(uint32_t class_id, uint32_t offset);
 
 ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
@@ -451,8 +442,7 @@ ORCA_API void*
 OBJ_GetComponent(struct Object *pobj, uint32_t class_id);
 
 ORCA_API struct Property *
-OBJ_GetPropertyAtIndex(struct Object *object, uint32_t classid,
-                       size_t classsize, uint32_t index);
+OBJ_GetPropertyByOffset(struct Object *object, uint32_t classid, uint32_t offset);
 
 ORCA_API struct Object *
 CMP_GetObject(void const*);

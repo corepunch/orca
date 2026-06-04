@@ -359,15 +359,12 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     type_decl(value_decl, sizeof(value_decl), m, actual_type, actual_flags);
     if (storage && storage[0]) {
         /* Offsets relative to the storage-family struct (e.g. UIData) */
+        const char *macro = (actual_flags & CG_FLAG_ARRAY) ? "UIDATA_ARRAY_DECL" : "UIDATA_DECL";
+        if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
+                macro, h->fnv1a32(leaf), owner_name, leaf, addr,
+                property_datatype(m, actual_type)) < 0) return -1;
         if (actual_flags & CG_FLAG_INHERITED) {
-            if (ob_printf(b, "\tUIDATA_INHERITED_DECL(0x%08x, %s, %s, %s, %s, %s, %s",
-                    h->fnv1a32(leaf), storage, owner_name, leaf, addr, value_decl,
-                    property_datatype(m, actual_type)) < 0) return -1;
-        } else {
-            if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s, %s",
-                    (actual_flags & CG_FLAG_ARRAY) ? "UIDATA_ARRAY_DECL" : "UIDATA_DECL",
-                    h->fnv1a32(leaf), storage, owner_name, leaf, addr,
-                    property_datatype(m, actual_type)) < 0) return -1;
+            if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
         }
     } else if (actual_flags & CG_FLAG_INHERITED) {
         if (ob_printf(b, "\tINHERITED_DECL(0x%08x, %s, %s, %s, %s, %s",
@@ -1039,30 +1036,13 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
             "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
             "\treturn Get%s(luaX_checkObject(L, idx));\n"
             "}\n"
-            "ORCA_API struct ClassDesc _%s = {\n"
-            "\t.ClassName = \"%s\",\n"
-            "\t.DefaultName = \"%s\",\n"
-            "\t.ContentType = \"%s\",\n"
-            "\t.Xmlns = \"http://schemas.corepunch.com/orca/2006/xml/presentation\",\n"
-            "\t.ParentClasses = { ID_SendMessageAction, 0 },\n"
-            "\t.ClassID = ID_%s,\n"
-            "\t.ClassSize = sizeof(struct %s),\n"
-            "\t.Properties = %s%s,\n"
-            "\t.ObjProc = NULL,\n"
-            "\t.Defaults = NULL,\n"
-            "\t.NumProperties = k%sNumProperties,\n"
-            "};\n",
+            "REGISTER_MESSAGE_ACTION(%s, \"%s\", %s%s);\n",
             action, action, action, action,
             action, action, action,
             action,
             xml_name,
-            xml_name,
-            action,
-            action,
-            action,
             prop_count > 0 ? action : "",
-            prop_count > 0 ? "Properties" : "NULL",
-            action) < 0) return -1;
+            prop_count > 0 ? "Properties" : "NULL") < 0) return -1;
     return 0;
 }
 
@@ -1147,8 +1127,9 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                 c->name, c->name) < 0) return -1;
         if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, m->storage_struct) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
-            if (ob_printf(b, "\tDECL(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
-                    h->fnv1a32(msg->name), c->name, msg->name, msg->name,
+            const char *decl_macro = (m->storage_struct && m->storage_struct[0]) ? "UIDATA_DECL" : "DECL";
+            if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
+                    decl_macro, h->fnv1a32(msg->name), c->name, msg->name, msg->name,
                     c->name, msg->name, c->name, msg->name) < 0) return -1;
         }
         if (ob_printf(b, "};\nstatic struct %s %sDefaults = {\n", c->name, c->name) < 0) return -1;
@@ -1187,7 +1168,12 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                 c->name, c->name, c->name, c->name,
                 c->name, c->name, c->name) < 0) return -1;
         if (emit_component_parents(b, h, c, 0) < 0) return -1;
-        if (ob_printf(b, "REGISTER_CLASS(%s, ", c->name) < 0) return -1;
+        if (m->storage_struct && m->storage_struct[0]) {
+            if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
+                    c->name, m->storage_struct, m->storage_struct, c->name) < 0) return -1;
+        } else {
+            if (ob_printf(b, "REGISTER_CLASS(%s, 0, UINT32_MAX, ", c->name) < 0) return -1;
+        }
         if (emit_component_parents(b, h, c, 1) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
     }
@@ -1214,7 +1200,7 @@ static int emit_luaopen(ob *b, cg_model const *m) {
         while (foreach_local_event(m, &idx, &msg)) {
             char s[256];
             event_struct_name(m, msg, s, sizeof(s));
-            if (ob_printf(b, "\t\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
+            if (ob_printf(b, "\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
         }
     }
     cg_foreach(m, 0, CG_KIND_INTERFACE, iface)
@@ -1279,10 +1265,11 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "#include <%s/%s.h>\n\n",
             base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
     if (model->storage_struct && model->storage_struct[0]) {
-        /* ui_data.h defines struct UIData (or equivalent) needed for offsetof */
-        if (ob_printf(&b, "#include <plugins/%s/ui_data.h>\n\n",
-                model->module_name) < 0) goto fail;
+        /* Define _STORAGE_STRUCT so UIDATA_DECL/UIDATA_ARRAY_DECL need no explicit storage arg. */
+        if (ob_printf(&b, "#define _STORAGE_STRUCT %s\n\n",
+                model->storage_struct) < 0) goto fail;
     }
+
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {
         if (ob_printf(&b, "// %s\n"
                 "extern void luaX_push%s(lua_State *L, struct %s const* value);\n"

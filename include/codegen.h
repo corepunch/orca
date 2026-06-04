@@ -5,11 +5,11 @@
 #define INHERITED_DECL(SHORT, CLASS, NAME, FIELD, VALUE_TYPE, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(VALUE_TYPE), .DataType=TYPE, .IsInherited=TRUE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
-/* Variants that store offsets relative to the storage-family struct (e.g. UIData)
- * instead of the per-class struct. STORAGE is the family struct name (UIData, etc.) */
-#define UIDATA_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define UIDATA_INHERITED_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, VALUE_TYPE, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(VALUE_TYPE), .DataType=TYPE, .IsInherited=TRUE, ##__VA_ARGS__ }
-#define UIDATA_ARRAY_DECL(SHORT, STORAGE, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct STORAGE, CLASS.FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
+/* Variants that store offsets relative to the storage-family struct (e.g. UIData).
+ * Generated files define _STORAGE_STRUCT to the concrete struct name so the
+ * STORAGE arg can be omitted at call sites. */
+#define UIDATA_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct _STORAGE_STRUCT, CLASS.FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
+#define UIDATA_ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct _STORAGE_STRUCT, CLASS.FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 #define ENUM(NAME, ...) \
 ORCA_API const char *_##NAME[] = {__VA_ARGS__, NULL}; \
@@ -160,7 +160,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	return 1; \
 }
 
-#define REGISTER_CLASS(NAME, ...) \
+#define REGISTER_CLASS(NAME, TYPEDATA_SIZE, TYPEDATA_OFFSET, ...) \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
 	.DefaultName = #NAME, \
@@ -169,13 +169,32 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.ParentClasses = { __VA_ARGS__ }, \
 	.ClassID = ID_##NAME, \
 	.ClassSize = sizeof(struct NAME), \
-	.TypedataOffset = UINT32_MAX, \
+	.TypedataSize   = (TYPEDATA_SIZE), \
+	.TypedataOffset = (TYPEDATA_OFFSET), \
 	.Properties = NAME##Properties, \
 	.Shorthands = NAME##Shorthands, \
 	.ObjProc = NAME##Proc, \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumShorthands = k##NAME##NumShorthands, \
+};
+
+#define REGISTER_MESSAGE_ACTION(NAME, XML_NAME, PROPERTIES_EXPR) \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = XML_NAME, \
+	.DefaultName = XML_NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { ID_SendMessageAction, 0 }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.TypedataOffset = UINT32_MAX, \
+	.Properties = PROPERTIES_EXPR, \
+	.Shorthands = NULL, \
+	.ObjProc = NULL, \
+	.Defaults = NULL, \
+	.NumProperties = k##NAME##NumProperties, \
+	.NumShorthands = 0, \
 };
 
 

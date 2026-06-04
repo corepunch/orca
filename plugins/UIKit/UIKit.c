@@ -1,12 +1,11 @@
 #include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <filesystem/filesystem.h>
-#include <plugins/UIKit/ui_data.h>
 
 struct UIData *
 Object_UIData(struct Object *object)
 {
-  if (!object || object->super_id != SUPER_ID_NODE2D) return NULL;
+  if (!object || !OBJ_IsKindOfW(object->type, ID_Node2D)) return NULL;
   return (struct UIData *)object->typedata;
 }
 
@@ -48,40 +47,8 @@ c_parse_transform2(const char* str, void* dst, size_t sz)
   }
 }
 
-#define REG_UIDATA(NAME) \
-  OBJ_SetClassTypedataOffset(ID_##NAME, (uint32_t)offsetof(struct UIData, NAME))
-
 void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
-  OBJ_RegisterStorageFamily(SUPER_ID_NODE2D, sizeof(struct UIData));
-  /* Register UIData-relative offsets so defaults copy into the right slot */
-  REG_UIDATA(Node2D);
-  REG_UIDATA(StyleController);
-  REG_UIDATA(TextRun);
-  REG_UIDATA(TextBlock);
-  REG_UIDATA(PrefabView2D);
-  REG_UIDATA(ImageView);
-  REG_UIDATA(Grid);
-  REG_UIDATA(UniformGrid);
-  REG_UIDATA(StackView);
-  REG_UIDATA(Form);
-  REG_UIDATA(RadioButton);
-  REG_UIDATA(RadioGroup);
-  REG_UIDATA(Tab);
-  REG_UIDATA(TabBar);
-  REG_UIDATA(Button);
-  REG_UIDATA(Label);
-  REG_UIDATA(Input);
-  REG_UIDATA(Screen);
-  REG_UIDATA(Popup);
-  REG_UIDATA(TabView);
-  REG_UIDATA(ConsoleView);
-  REG_UIDATA(Page);
-  REG_UIDATA(PageHost);
-  REG_UIDATA(PageViewport);
-  REG_UIDATA(Cinematic);
-  REG_UIDATA(Control);
-  REG_UIDATA(NinePatchImage);
   OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);

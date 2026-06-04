@@ -110,14 +110,18 @@ void OBJ_SetAlias(struct Object *pobj, uint32_t alias) {
 }
 
 struct Property *
-OBJ_GetPropertyAtIndex(struct Object *object,
-                       uint32_t classid,
-                       size_t classsize,
-                       uint32_t index)
+OBJ_GetPropertyByOffset(struct Object *object,
+                        uint32_t classid,
+                        uint32_t offset)
 {
-  void* userdata = OBJ_GetComponent(object, classid);
-  if (!userdata)
-    return NULL;
-  struct Property ** props = (void*)(userdata + classsize);
-  return props[index];
+  FOR_EACH_LIST(struct component, cmp, object->components) {
+    if (cmp->pcls->ClassID != classid) continue;
+    FOR_LOOP(i, cmp->pcls->NumProperties) {
+      if (cmp->pcls->Properties[i].Offset == offset) {
+        struct Property **props = (void*)(cmp->pUserData + cmp->pcls->ClassSize);
+        return props[i];
+      }
+    }
+  }
+  return NULL;
 }

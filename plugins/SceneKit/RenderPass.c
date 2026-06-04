@@ -50,7 +50,7 @@ ScreenRect_Create(enum ViewportMode mode,
 
 //#define IS_DEFINED(rp, RP_NAME) (*((uint32_t*)&rp->RP_NAME) != -1)
 #define IS_DEFINED(RP_NAME) \
-!PROP_IsNull(PipelineStateRenderPass_GetProperty(obj, kPipelineStateRenderPass##RP_NAME))
+!PROP_IsNull(PipelineStateRenderPass_GetProperty(obj, RP_NAME))
 
 #define SETPIPEVALUE(RP_NAME, PIPE_NAME) \
 if (IS_DEFINED(RP_NAME)) curr.PIPE_NAME = (int)rp->RP_NAME;

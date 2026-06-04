@@ -201,39 +201,6 @@ OBJ_IsKindOfW(struct ClassDesc const *cls, uint32_t parent_id)
   return is_class_inherited(cls, parent_id);
 }
 
-void
-OBJ_SetClassTypedataOffset(uint32_t class_id, uint32_t offset)
-{
-  FOR_LOOP(i, MAX_CLASSES) {
-    if (core.classes[i] && core.classes[i]->ClassID == class_id) {
-      ((struct ClassDesc *)core.classes[i])->TypedataOffset = offset;
-      return;
-    }
-  }
-}
-
-void
-OBJ_RegisterStorageFamily(uint32_t super_id, size_t data_size)
-{
-  FOR_LOOP(i, MAX_STORAGE_FAMILIES) {
-    if (core.storage_families[i].super_id == super_id ||
-        core.storage_families[i].super_id == 0) {
-      core.storage_families[i].super_id  = super_id;
-      core.storage_families[i].data_size = data_size;
-      return;
-    }
-  }
-}
-
-size_t
-OBJ_StorageFamilySize(uint32_t super_id)
-{
-  FOR_LOOP(i, MAX_STORAGE_FAMILIES) {
-    if (core.storage_families[i].super_id == super_id)
-      return core.storage_families[i].data_size;
-  }
-  return 0;
-}
 
 void
 OBJ_EnumClasses(uint32_t superclass, void (*fnProc)(struct ClassDesc const *, void*), void* param)

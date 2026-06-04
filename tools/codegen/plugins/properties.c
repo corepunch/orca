@@ -223,31 +223,7 @@ typedef struct {
     size_t             scount;
     cg_host_v1 const  *h;
     char const        *class_name;
-    uint32_t          *pidx;      /* points into caller's count */
-    int                record_enum;
-    /* accumulate (id, name) pairs for enum; grow on heap */
-    char             **enum_names;
-    size_t             enum_n, enum_cap;
 } walk_ctx;
-
-static char *dup_string(char const *s) {
-    size_t n = strlen(s) + 1u;
-    char *copy = malloc(n);
-    if (copy) memcpy(copy, s, n);
-    return copy;
-}
-
-static int wctx_push(walk_ctx *ctx, char const *name) {
-    if (ctx->enum_n == ctx->enum_cap) {
-        size_t nc = ctx->enum_cap ? ctx->enum_cap * 2 : 64;
-        char **np = realloc(ctx->enum_names, nc * sizeof(*np));
-        if (!np) return -1;
-        ctx->enum_names = np; ctx->enum_cap = nc;
-    }
-    ctx->enum_names[ctx->enum_n++] = dup_string(name);
-    if (!ctx->enum_names[ctx->enum_n - 1]) return -1;
-    return 0;
-}
 
 static int walk_prop(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs, char const *type_name);
 
@@ -281,10 +257,6 @@ static int walk_prop(walk_ctx *ctx, char segs[MAX_DEPTH][64], int n_segs, char c
     if (ob_printf(ctx->b, "#define ID_%s_%s 0x%08x // %s\n",
             ctx->class_name, leaf, h, full) < 0) return -1;
     s = find_struct(ctx->smap, ctx->scount, type_name);
-    if (ctx->record_enum && !(s && !s->sealed)) {
-        if (wctx_push(ctx, leaf) < 0) return -1;
-        if (ctx->pidx) (*ctx->pidx)++;
-    }
     /* Recurse into non-sealed struct */
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
         cg_foreach(ctx->m, s->id, CG_KIND_FIELD, f) {
@@ -346,16 +318,6 @@ static void message_xml_name(char *dst, size_t dsz, cg_model const *m, cg_node c
     snprintf(dst, dsz, "%s.%s", owner ? owner->name : "", msg->name);
 }
 
-static uint32_t event_field_count(cg_model const *m, cg_node const *msg) {
-    uint32_t count = 0;
-    cg_node const *p = event_parent(m, msg);
-    if (p) count += event_field_count(m, p);
-    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
-        (void)f;
-        count++;
-    }
-    return count;
-}
 
 static int emit_message_action_field_ids(cg_host_v1 const *h, ob *b, cg_model const *m,
                                          cg_node const *msg, char const *action) {
@@ -370,79 +332,51 @@ static int emit_message_action_field_ids(cg_host_v1 const *h, ob *b, cg_model co
 
 static int emit_message_action(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *msg) {
     char action[256], xml_name[512];
-    uint32_t idx = event_field_count(m, msg);
     message_action_name(action, sizeof(action), m, msg);
     message_xml_name(xml_name, sizeof(xml_name), m, msg);
     if (ob_printf(b,
             "// %s\n"
             "#define ID_%s 0x%08x // %s\n"
             "#define Get%s(_P) ((struct %s*)((_P)?OBJ_GetComponent(_P,ID_%s):NULL))\n"
-            "#define %s_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_%s,sizeof(struct %s),_N)\n",
+            "#define %s_GetProperty(_P,FIELD) OBJ_GetPropertyByOffset(_P,ID_%s,offsetof(struct %s,FIELD))\n",
             xml_name, action, h->fnv1a32(xml_name), xml_name,
             action, action, action,
             action, action, action) < 0) return -1;
     if (emit_message_action_field_ids(h, b, m, msg, action) < 0) return -1;
-    if (ob_printf(b,
-            "#define k%sNumProperties %u\n",
-            action, idx) < 0) return -1;
     return 0;
 }
 
 static int emit_class(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *c,
                       sentry const *smap, size_t scount) {
-    uint32_t idx = 0;
-    uint32_t prop_count = 0;
     walk_ctx ctx = {0};
     ctx.b = b; ctx.m = m; ctx.smap = smap; ctx.scount = scount;
-    ctx.h = h; ctx.class_name = c->name; ctx.pidx = &idx; ctx.record_enum = 1;
+    ctx.h = h; ctx.class_name = c->name;
 
     if (ob_printf(b,
             "// %s\n"
             "#define ID_%s 0x%08x\n"
             "#define Get%s(_P) ((struct %s*)((_P)?OBJ_GetComponent(_P,ID_%s):NULL))\n"
-            "#define %s_GetProperty(_P,_N) OBJ_GetPropertyAtIndex(_P,ID_%s,sizeof(struct %s),_N)\n",
+            "#define %s_GetProperty(_P,FIELD) OBJ_GetPropertyByOffset(_P,ID_%s,offsetof(struct %s,FIELD))\n",
             c->name, c->name, h->fnv1a32(c->name),
             c->name, c->name, c->name,
             c->name, c->name, c->name) < 0) return -1;
 
-    /* properties with struct expansion */
     cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
         char segs[MAX_DEPTH][64];
         snprintf(segs[0], 64, "%s", p->name);
-        if (walk_prop(&ctx, segs, 1, p->type) < 0) { free(ctx.enum_names); return -1; }
+        if (walk_prop(&ctx, segs, 1, p->type) < 0) return -1;
         if (p->flags & CG_FLAG_ARRAY) {
             char num[256]; snprintf(num, sizeof(num), "Num%s", p->name);
             if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
-                    c->name, num, hash2(h, c->name, num), c->name, num) < 0) {
-                free(ctx.enum_names); return -1; }
-            if (wctx_push(&ctx, num) < 0) { free(ctx.enum_names); return -1; }
-            idx++;
+                    c->name, num, hash2(h, c->name, num), c->name, num) < 0) return -1;
         }
     }
-    prop_count = idx;
-    /* message IDs */
     cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
         if (ob_printf(b, "#define ID_%s_%s 0x%08x // %s.%s\n",
                 c->name, msg->name, hash2(h, c->name, msg->name),
-                c->name, msg->name) < 0) { free(ctx.enum_names); return -1; }
-        if (wctx_push(&ctx, msg->name) < 0) { free(ctx.enum_names); return -1; }
-        idx++;
+                c->name, msg->name) < 0) return -1;
     }
-    if (ob_printf(b, "#define k%sNumProperties %u\n", c->name, idx) < 0) goto fail;
-    if (prop_count) {
-        size_t ei;
-        if (ob_printf(b, "enum %sProperties {\n", c->name) < 0) goto fail;
-        for (ei = 0; ei < ctx.enum_n; ei++)
-            if (ob_printf(b, "\tk%s%s,\n", c->name, ctx.enum_names[ei]) < 0) goto fail;
-        if (ob_printf(b, "};\n") < 0) goto fail;
-    }
-    for (size_t ei = 0; ei < ctx.enum_n; ei++) free(ctx.enum_names[ei]);
-    free(ctx.enum_names);
     return 0;
-fail:
-    for (size_t ei = 0; ei < ctx.enum_n; ei++) free(ctx.enum_names[ei]);
-    free(ctx.enum_names);
-    return -1;
 }
 
 static int emit_interface_msgs(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node const *iface) {
@@ -462,10 +396,7 @@ static int emit_struct(cg_host_v1 const *h, ob *b, cg_model const *m, cg_node co
         char segs[MAX_DEPTH][64] = {{0}};
         int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
         ctx.b = b; ctx.m = m; ctx.h = h; ctx.class_name = s->name;
-        ctx.pidx = NULL;
-        ctx.record_enum = 0;
-        ctx.smap = smap;
-        ctx.scount = scount;
+        ctx.smap = smap; ctx.scount = scount;
         if (fixed > 0) {
             if (walk_fixed_array(&ctx, segs, 0, f->name, f->type, fixed) < 0) return -1;
         } else {

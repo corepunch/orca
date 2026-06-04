@@ -32,47 +32,22 @@ OBJ_ReleaseRef(struct Object *pobj)
   return pobj->refcount;
 }
 
-uint32_t
-OBJ_SuperID(struct Object const *object)
-{
-  return object ? object->super_id : 0;
-}
-
-static uint32_t
-resolve_super_id(struct ClassDesc const *cls)
-{
-  static const uint32_t families[] = {
-    SUPER_ID_NODE2D, SUPER_ID_NODE3D,
-    SUPER_ID_RESOURCE, SUPER_ID_ACTION, SUPER_ID_PROJECT,
-    0
-  };
-  for (const uint32_t *f = families; *f; f++) {
-    if (OBJ_IsKindOfW(cls, *f)) return *f;
-  }
-  return SUPER_ID_NODE;
-}
-
 ORCA_API struct Object *
 OBJ_Create(uint32_t class_id) {
   g_object_count++;
   struct ClassDesc const *cls = OBJ_FindClassW(class_id);
-   if (!cls) {
+  if (!cls) {
     Con_Error("Class ID 0x%08x not found\n", class_id);
     return NULL;
   }
-  uint32_t sid = resolve_super_id(cls);
-  size_t typedata_size = OBJ_StorageFamilySize(sid);
-  struct Object *object = ZeroAlloc(sizeof(struct Object) + typedata_size);
+  struct Object *object = ZeroAlloc(sizeof(struct Object) + cls->TypedataSize);
   OBJ_AddRef(object);
   object->unique = ++unique_counter;
   object->class_id = class_id;
-  object->super_id = sid;
   object->type = cls;
-  /* UIData objects whose class has a registered typedata slot use typedata
-   * storage; their component list stays empty. Classes that resolve to
-   * SUPER_ID_NODE2D but haven't registered a TypedataOffset (e.g. Viewport3D
-   * from SceneKit) still need the component list for dispatch and property
-   * wiring, so they fall through to OBJ_AddComponent. */
+  /* Objects whose class has a registered TypedataOffset use typedata storage;
+   * their component list stays empty. Classes without a TypedataOffset
+   * (e.g. Viewport3D from SceneKit) still need the component list. */
   if (!OBJ_UsesTypedata(object)) {
     OBJ_AddComponent(object, class_id);
   }
@@ -193,9 +168,9 @@ _RegisterProperty(struct Object *object, struct Property *property)
 {
   struct PropertyType const *desc = PROP_GetDesc(property);
   PROP_AddToList(property, &object->properties);
-  /* For UIData objects, wire directly to typedata when offset is valid. */
+  /* For typedata objects, wire directly to typedata when offset is valid. */
   if (OBJ_UsesTypedata(object) && desc &&
-      desc->Offset < OBJ_StorageFamilySize(SUPER_ID_NODE2D)) {
+      desc->Offset < object->type->TypedataSize) {
     PROP_SetFlag(property, PF_PROPERTY_TYPE);
     if (desc->IsInherited && !desc->IsArray) {
       /* Inherited properties store a pointer-to-slot; the slot lives in typedata. */

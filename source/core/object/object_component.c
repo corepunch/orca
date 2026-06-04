@@ -33,7 +33,7 @@ OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
     memcpy(comp->pUserData, cls->Defaults, cls->ClassSize);
     /* For UIData objects, also seed the typedata slot from defaults.
      * ClassDesc.TypedataOffset holds offsetof(UIData, ClassName) — set in Phase 4b. */
-    if (pobj->super_id == SUPER_ID_NODE2D && cls->TypedataOffset != UINT32_MAX) {
+    if (cls->TypedataOffset != UINT32_MAX) {
       memcpy(pobj->typedata + cls->TypedataOffset, cls->Defaults, cls->ClassSize);
     }
   }
@@ -396,7 +396,7 @@ CMP_SetProperty(struct component* comp, struct Property *property)
       PROP_SetFlag(property, PF_PROPERTY_TYPE);
       /* UIKit properties have UIData-relative offsets; others are component-relative. */
       struct Object *obj = comp->pobj;
-      if (obj && obj->super_id == SUPER_ID_NODE2D) {
+      if (obj && obj->type && obj->type->TypedataOffset != UINT32_MAX) {
         PROP_SetValuePtr(property, obj->typedata + pdesc->Offset);
       } else {
         PROP_SetValuePtr(property, comp->pUserData + pdesc->Offset);
@@ -563,7 +563,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
 
   /* UIData objects: walk the global class registry instead of component list.
    * Classes without a registered TypedataOffset (e.g. Viewport3D from SceneKit)
-   * are SUPER_ID_NODE2D by inheritance but use the component list instead. */
+   * Classes without a TypedataOffset use the component list instead. */
   if (OBJ_UsesTypedata(pobj)) {
     extern struct game core;
     FOR_LOOP(ci, MAX_CLASSES) {

@@ -3,7 +3,7 @@
 #include <include/plugapi.h>
 #include <include/renderer.h>
 
-#include <plugins/UIKit/ui_data.h>
+#include <UIKit/UIKit.h>
 #include <SceneKit/SceneKit.h>
 
 /* Override generated GetViewport3D to use the UIData typedata slot. */
