@@ -823,12 +823,15 @@ local function test_css_popup_padding_insets_stretched_panel()
 		StyleSheet = filesystem.loadObjectFromCssString [[
 			.popup {
 				padding: 16;
+				align-items: center;
+				justify-content: center;
 			}
 
 			.popup > .panel {
 				background-color: #FFFFFF;
 				color: #0B0F1A;
 				border: 1 solid #E3E8F0;
+				border-radius: 16;
 				padding: 24;
 			}
 		]],
@@ -857,8 +860,12 @@ local function test_css_popup_padding_insets_stretched_panel()
 
 	test.expect_near(overlay.PaddingLeft, 16, 0.001, ".popup CSS padding should set left padding")
 	test.expect_near(overlay.PaddingRight, 16, 0.001, ".popup CSS padding should set right padding")
+	test.expect_eq(overlay.AlignItems, "Center", ".popup CSS align-items should set StackView.AlignItems")
+	test.expect_eq(overlay.JustifyContent, "Center", ".popup CSS justify-content should set StackView.JustifyContent")
 	test.expect_near(card.PaddingLeft, 24, 0.001, ".popup > .panel CSS padding should set panel padding")
 	test.expect_near(card.BorderWidthLeft, 1, 0.001, ".popup > .panel CSS border should set panel border")
+	test.expect_near(card.BorderRadius.TopLeftRadius, 16, 0.001,
+		".popup > .panel CSS border-radius should set panel corner radius")
 	test.expect_near(card.ActualWidth, root.Width - 32 - 2, 1,
 		"stretched panel should be inset by popup padding and its border")
 	test.expect(body.ActualWidth <= root.Width - 32 - 2 - 48,
@@ -877,9 +884,12 @@ local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
 		StyleSheet = filesystem.loadObjectFromCssString [[
 			.popup {
 				padding: 16;
+				align-items: center;
+				justify-content: center;
 			}
 
 			.popup > .panel {
+				border-radius: 16;
 				padding: 24;
 			}
 		]],
@@ -904,8 +914,14 @@ local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
 
 	test.expect_near(overlay.PaddingLeft, 16, 0.001,
 		"modal attach should reapply screen stylesheet to popup content")
+	test.expect_eq(overlay.AlignItems, "Center",
+		"modal attach should apply CSS align-items to popup content")
+	test.expect_eq(overlay.JustifyContent, "Center",
+		"modal attach should apply CSS justify-content to popup content")
 	test.expect_near(card.PaddingLeft, 24, 0.001,
 		"modal attach should reapply screen stylesheet to nested panel content")
+	test.expect_near(card.BorderRadius.TopLeftRadius, 16, 0.001,
+		"modal attach should apply CSS border-radius to nested panel content")
 
 	root:clear()
 	print("PASS: test_modal_attach_applies_screen_stylesheet_to_popup_content")

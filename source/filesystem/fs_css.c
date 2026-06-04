@@ -38,6 +38,7 @@ extern int parse_property(const char* str, struct PropertyType const* prop,
 // ---------------------------------------------------------------------------
 static const struct { const char* css; const char* orca; }
 k_css_prop_map[] = {
+    /* Node layout */
     { "background-color",  "Node2D.BackgroundColor"        },
     { "color",             "Node2D.ForegroundColor"        },
     { "opacity",           "Node.Opacity"                  },
@@ -45,25 +46,102 @@ k_css_prop_map[] = {
     { "height",            "Node.Height"                   },
     { "min-width",         "Node.MinWidth"                 },
     { "min-height",        "Node.MinHeight"                },
+    { "horizontal-align",  "Node.HorizontalAlignment"      },
+    { "horizontal-alignment", "Node.HorizontalAlignment"   },
+    { "vertical-align",    "Node.VerticalAlignment"        },
+    { "vertical-alignment", "Node.VerticalAlignment"       },
+    { "align-self",        "Node.HorizontalAlignment"      },
     { "margin",            "Node.Margin"                   },
     { "margin-top",        "Node.MarginTop"                },
     { "margin-right",      "Node.MarginRight"              },
     { "margin-bottom",     "Node.MarginBottom"             },
     { "margin-left",       "Node.MarginLeft"               },
+    { "margin-inline",     "Node.HorizontalMargin"         },
+    { "margin-block",      "Node.VerticalMargin"           },
     { "padding",           "Node.Padding"                  },
     { "padding-top",       "Node.PaddingTop"               },
     { "padding-right",     "Node.PaddingRight"             },
     { "padding-bottom",    "Node.PaddingBottom"            },
     { "padding-left",      "Node.PaddingLeft"              },
+    { "padding-inline",    "Node.HorizontalPadding"        },
+    { "padding-block",     "Node.VerticalPadding"          },
     { "border",            "Node.Border"                   },
     { "border-color",      "Node.BorderColor"              },
+    { "border-style",      "Node.BorderStyle"              },
     { "border-width",      "Node.BorderWidth"              },
+    { "border-left-width", "Node.BorderWidthLeft"          },
+    { "border-right-width", "Node.BorderWidthRight"        },
+    { "border-top-width",  "Node.BorderWidthTop"           },
+    { "border-bottom-width", "Node.BorderWidthBottom"      },
+    { "border-radius",     "Node.BorderRadius"             },
+    { "border-top-left-radius", "Node.BorderTopLeftRadius" },
+    { "border-top-right-radius", "Node.BorderTopRightRadius" },
+    { "border-bottom-right-radius", "Node.BorderBottomRightRadius" },
+    { "border-bottom-left-radius", "Node.BorderBottomLeftRadius" },
+    { "visibility",        "Node.Visible"                  },
+
+    /* Node2D rendering */
+    { "background",        "Node2D.Background"             },
+    { "background-image",  "Node2D.BackgroundImage"        },
+    { "foreground",        "Node2D.Foreground"             },
+    { "foreground-color",  "Node2D.ForegroundColor"        },
+    { "box-shadow",        "Node2D.BoxShadow"              },
+    { "box-shadow-color",  "Node2D.BoxShadowColor"         },
+    { "box-shadow-blur",   "Node2D.BoxShadowBlurRadius"    },
+    { "box-shadow-blur-radius", "Node2D.BoxShadowBlurRadius" },
+    { "box-shadow-spread", "Node2D.BoxShadowSpreadRadius"  },
+    { "box-shadow-spread-radius", "Node2D.BoxShadowSpreadRadius" },
+    { "overflow",          "Node2D.Overflow"               },
+    { "overflow-x",        "Node2D.OverflowX"              },
+    { "overflow-y",        "Node2D.OverflowY"              },
+    { "ring",              "Node2D.Ring"                   },
+    { "ring-color",        "Node2D.RingColor"              },
+    { "ring-offset",       "Node2D.RingOffset"             },
+    { "ring-width",        "Node2D.RingWidth"              },
+    { "clip-children",     "Node2D.ClipChildren"           },
+    { "content-stretch",   "Node2D.ContentStretch"         },
+    { "ignore-hit-test",   "Node2D.IgnoreHitTest"          },
+    { "pointer-events",    "Node2D.IgnoreHitTest"          },
+    { "size-to-content",   "Node2D.SizeToContent"          },
+    { "snap-to-pixel",     "Node2D.SnapToPixel"            },
+
+    /* StackView */
+    { "align-items",       "StackView.AlignItems"           },
+    { "justify-content",   "StackView.JustifyContent"      },
+    { "flex-direction",    "StackView.Direction"           },
+    { "direction",         "StackView.Direction"           },
+    { "gap",               "StackView.Spacing"             },
+    { "spacing",           "StackView.Spacing"             },
+    { "reversed",          "StackView.Reversed"            },
+
+    /* Text */
+    { "font",              "TextRun.Font"                  },
     { "font-size",         "TextRun.FontSize"              },
     { "font-family",       "TextRun.FontFamily"            },
+    { "font-weight",       "TextRun.FontWeight"            },
+    { "font-style",        "TextRun.FontStyle"             },
     { "line-height",       "TextRun.LineHeight"            },
     { "letter-spacing",    "TextRun.LetterSpacing"         },
+    { "character-spacing", "TextRun.CharacterSpacing"      },
+    { "fixed-character-width", "TextRun.FixedCharacterWidth" },
+    { "text-decoration",   "TextRun.Underline"             },
+    { "text-decoration-color", "TextRun.UnderlineColor"    },
+    { "text-decoration-thickness", "TextRun.UnderlineWidth" },
+    { "underline",         "TextRun.Underline"             },
+    { "underline-color",   "TextRun.UnderlineColor"        },
+    { "underline-width",   "TextRun.UnderlineWidth"        },
+    { "underline-offset",  "TextRun.UnderlineOffset"       },
     { "word-wrap",         "TextBlockConcept.WordWrap"     },
+    { "overflow-wrap",     "TextBlockConcept.WordWrap"     },
+    { "text-wrap",         "TextBlockConcept.TextWrapping" },
+    { "text-wrapping",     "TextBlockConcept.TextWrapping" },
     { "text-overflow",     "TextBlockConcept.TextOverflow" },
+    { "text-align",        "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-horizontal-align", "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-horizontal-alignment", "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
+    { "text-vertical-alignment", "TextBlockConcept.TextVerticalAlignment" },
+    { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
     { NULL, NULL }
 };
 
@@ -75,6 +153,56 @@ css_lookup_orca_property(const char* css_name)
             return k_css_prop_map[i].orca;
     }
     return NULL;
+}
+
+static bool_t
+css_name_equals_enum_value(const char *css_value, const char *enum_value)
+{
+    while (*css_value || *enum_value) {
+        while (*css_value == '-' || *css_value == '_' || isspace((unsigned char)*css_value)) {
+            css_value++;
+        }
+        while (*enum_value == '-' || *enum_value == '_' || isspace((unsigned char)*enum_value)) {
+            enum_value++;
+        }
+        if (tolower((unsigned char)*css_value) != tolower((unsigned char)*enum_value)) {
+            return FALSE;
+        }
+        if (*css_value) css_value++;
+        if (*enum_value) enum_value++;
+    }
+    return TRUE;
+}
+
+static const char*
+css_normalize_decl_value(const char *css_key,
+                         const char *css_value,
+                         char *out,
+                         size_t out_size)
+{
+    if (!strcasecmp(css_key, "visibility")) {
+        if (!strcasecmp(css_value, "hidden") || !strcasecmp(css_value, "collapse")) {
+            snprintf(out, out_size, "false");
+            return out;
+        }
+        if (!strcasecmp(css_value, "visible")) {
+            snprintf(out, out_size, "true");
+            return out;
+        }
+    }
+
+    if (!strcasecmp(css_key, "pointer-events")) {
+        if (!strcasecmp(css_value, "none")) {
+            snprintf(out, out_size, "true");
+            return out;
+        }
+        if (!strcasecmp(css_value, "auto")) {
+            snprintf(out, out_size, "false");
+            return out;
+        }
+    }
+
+    return css_value;
 }
 
 static bool_t
@@ -506,7 +634,11 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     if (!orca_name) return; // unsupported property
     char theme_value[CSS_MAX_VALLEN] = {0};
     char resolved_value[CSS_MAX_VALLEN] = {0};
+    char normalized_value[CSS_MAX_VALLEN] = {0};
     css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    css_value = css_normalize_decl_value(css_key, css_value,
+                                         normalized_value,
+                                         sizeof(normalized_value));
     if (!strcasecmp(css_key, "font-family")) {
         css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
     }
@@ -522,7 +654,7 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     if (desc->DataType == kDataTypeEnum) {
         lpcString_t const* values = desc->EnumValues;
         for (int i = 0; values && values[i]; i++) {
-            if (!strcasecmp(values[i], css_value)) {
+            if (css_name_equals_enum_value(css_value, values[i])) {
                 PROP_SetValue(prop, &i);
                 return;
             }

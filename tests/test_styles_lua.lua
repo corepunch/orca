@@ -516,7 +516,94 @@ local function test_css_text_property_map()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 24: @apply can reference selectors without a leading dot
+-- Test 24: Expanded CSS property aliases map onto UIKit/Core properties
+-- ---------------------------------------------------------------------------
+local function test_css_expanded_property_aliases()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+    .layout-css {
+      horizontal-align: center;
+      vertical-align: bottom;
+      margin-inline: 4;
+      padding-block: 6;
+      border-style: solid;
+      border-left-width: 3;
+      border-top-left-radius: 5;
+      background: #112233;
+      foreground: #445566;
+      overflow-x: hidden;
+      ring-width: 2;
+      ring-color: #778899;
+      box-shadow-color: #010203;
+      clip-children: true;
+      pointer-events: none;
+      flex-direction: horizontal;
+      gap: 11;
+      align-items: end;
+      justify-content: space-between;
+    }
+
+    .copy-css {
+      font-weight: bold;
+      font-style: italic;
+      character-spacing: 3;
+      fixed-character-width: 9;
+      text-decoration-thickness: 2;
+      text-align: right;
+      text-vertical-align: bottom;
+      text-wrap: no-wrap;
+    }
+  ]]
+
+  local stack = screen + ui.StackView {
+    class = "layout-css",
+  }
+  local text = screen + ui.TextBlock {
+    class = "copy-css",
+    Text = "copy",
+  }
+
+  applyStyles(stack)
+  applyStyles(text)
+
+  test.expect_eq(stack.HorizontalAlignment, "Center", "horizontal-align maps to Node.HorizontalAlignment")
+  test.expect_eq(stack.VerticalAlignment, "Bottom", "vertical-align maps to Node.VerticalAlignment")
+  test.expect_near(stack.MarginLeft, 4, 0.001, "margin-inline maps to horizontal margin")
+  test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
+  test.expect_near(stack.PaddingTop, 6, 0.001, "padding-block maps to vertical padding")
+  test.expect_near(stack.PaddingBottom, 6, 0.001, "padding-block maps to vertical padding")
+  test.expect_eq(stack.BorderStyle, "Solid", "border-style maps to Node.BorderStyle")
+  test.expect_near(stack.BorderWidthLeft, 3, 0.001, "border-left-width maps to Node.BorderWidthLeft")
+  test.expect_near(stack.BorderRadius.TopLeftRadius, 5, 0.001, "border-top-left-radius maps to Node.BorderTopLeftRadius")
+  test.expect_near(stack.BackgroundColor.R, 0x11 / 255, 0.01, "background maps to BackgroundColor")
+  test.expect_near(stack.ForegroundColor.G, 0x55 / 255, 0.01, "foreground maps to ForegroundColor")
+  test.expect_eq(stack.OverflowX, "Hidden", "overflow-x maps to Node2D.OverflowX")
+  test.expect_near(stack.RingWidth, 2, 0.001, "ring-width maps to Node2D.RingWidth")
+  test.expect_near(stack.RingColor.B, 0x99 / 255, 0.01, "ring-color maps to Node2D.RingColor")
+  test.expect_near(stack.BoxShadowColor.B, 0x03 / 255, 0.01, "box-shadow-color maps to Node2D.BoxShadowColor")
+  test.expect(stack.ClipChildren == true, "clip-children maps to Node2D.ClipChildren")
+  test.expect(stack.IgnoreHitTest == true, "pointer-events: none maps to Node2D.IgnoreHitTest")
+  test.expect_eq(stack.Direction, "Horizontal", "flex-direction maps to StackView.Direction")
+  test.expect_near(stack.Spacing, 11, 0.001, "gap maps to StackView.Spacing")
+  test.expect_eq(stack.AlignItems, "End", "align-items maps to StackView.AlignItems")
+  test.expect_eq(stack.JustifyContent, "SpaceBetween", "hyphenated justify-content value maps to SpaceBetween")
+
+  test.expect_eq(text.FontWeight, "Bold", "font-weight maps to TextRun.FontWeight")
+  test.expect_eq(text.FontStyle, "Italic", "font-style maps to TextRun.FontStyle")
+  test.expect_near(text.CharacterSpacing, 3, 0.001, "character-spacing maps to TextRun.CharacterSpacing")
+  test.expect_near(text.FixedCharacterWidth, 9, 0.001, "fixed-character-width maps to TextRun.FixedCharacterWidth")
+  test.expect_near(text.UnderlineWidth, 2, 0.001, "text-decoration-thickness maps to TextRun.UnderlineWidth")
+  test.expect_eq(text.TextHorizontalAlignment, "Right", "text-align maps to TextHorizontalAlignment")
+  test.expect_eq(text.TextVerticalAlignment, "Bottom", "text-vertical-align maps to TextVerticalAlignment")
+  test.expect_eq(text.TextWrapping, "NoWrap", "hyphenated text-wrap value maps to NoWrap")
+
+  stack:removeFromParent()
+  text:removeFromParent()
+  print("PASS: test_css_expanded_property_aliases")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 25: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -780,6 +867,7 @@ test_css_boolean_value_ignorecase()
 test_css_color_properties()
 test_css_theme_variables()
 test_css_text_property_map()
+test_css_expanded_property_aliases()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()
