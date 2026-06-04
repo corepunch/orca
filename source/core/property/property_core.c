@@ -32,26 +32,6 @@ print_name(struct Object *object)
 #endif
 
 static void
-_UnindexBindingProperty(struct Property *property)
-{
-  if (!property || !property->inBindingIndex) {
-    return;
-  }
-  struct Property **link = &core.binding_properties;
-  while (*link) {
-    if (*link == property) {
-      *link = property->nextBinding;
-      property->nextBinding = NULL;
-      property->inBindingIndex = FALSE;
-      return;
-    }
-    link = &(*link)->nextBinding;
-  }
-  property->nextBinding = NULL;
-  property->inBindingIndex = FALSE;
-}
-
-static void
 _ReleaseBindingNode(struct Binding *binding)
 {
   if (!binding) {
@@ -100,9 +80,6 @@ PROP_Update(struct Property *property)
   if (property->binding && !_RunBinding(property, property->binding)) {
     _ReleaseBindingNode(property->binding);
     property->binding = NULL;
-  }
-  if (!property->binding) {
-    _UnindexBindingProperty(property);
   }
   return TRUE;
 }
@@ -205,7 +182,6 @@ OBJ_ReleaseProperties(struct Object *hobj)
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
-    _UnindexBindingProperty(p);
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
     if (p->flags & PF_OWNS_STORAGE) {
@@ -216,14 +192,25 @@ OBJ_ReleaseProperties(struct Object *hobj)
   }
 }
 
-void
-PROP_RunAllPrograms(void)
+static void
+_RunObjectPrograms(struct Object *object)
 {
-  struct Property *p = core.binding_properties;
-  while (p) {
-    struct Property *next_property = p->nextBinding;
-    PROP_Update(p);
-    p = next_property;
+  FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(object))
+  {
+    if (p->binding) {
+      PROP_Update(p);
+    }
+  }
+  FOR_EACH_OBJECT(child, object) {
+    _RunObjectPrograms(child);
+  }
+}
+
+void
+PROP_RunAllPrograms(struct Object *root)
+{
+  if (root) {
+    _RunObjectPrograms(root);
   }
 }
 

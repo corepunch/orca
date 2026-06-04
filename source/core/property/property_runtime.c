@@ -440,9 +440,6 @@ static bool_t
 PrintToProperty(struct Property *prop, struct vm_register* r)
 {
   char dest[MAX_PROPERTY_STRING];
-  if (r->type == kDataTypeNone) {
-    r->type = kDataTypeString;
-  }
   switch (r->type) {
     case kDataTypeBool:
     case kDataTypeInt:
@@ -465,10 +462,6 @@ bool_t
 PROP_Import(struct Property *prop,
             struct vm_register* r)
 {
-  if (PROP_GetType(prop) == kDataTypeNone) {
-    PROP_SetTypeSize(prop, r->type, r->size);
-  }
-
   switch (PROP_GetType(prop)) {
     case kDataTypeString:
       return PrintToProperty(prop, r);

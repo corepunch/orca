@@ -102,7 +102,6 @@ struct game
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct font_registry_entry fonts[MAX_FONT_FAMILIES];
-  struct Property* binding_properties;
   uint64_t struct_parse_mask;
   bool_t struct_parse_mask_valid;
 };

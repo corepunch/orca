@@ -197,7 +197,7 @@ ORCA_API struct Object *
 OBJ_Create(uint32_t class_id);
 
 ORCA_API void
-PROP_RunAllPrograms(void);
+PROP_RunAllPrograms(struct Object *root);
 
 ORCA_API bool_t
 PROP_Update(struct Property *);

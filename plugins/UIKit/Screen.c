@@ -596,7 +596,7 @@ draw_screen(struct Object* hObject,
   if (get_size(hObject) != _size) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
-    PROP_RunAllPrograms();
+    PROP_RunAllPrograms(hObject);
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
   
@@ -625,7 +625,7 @@ draw_screen(struct Object* hObject,
 }
 
 HANDLER(Screen, Window, Paint) {
-  PROP_RunAllPrograms();
+  PROP_RunAllPrograms(hObject);
 
   R_BeginFrame(pScreen->ClearColor);
 
