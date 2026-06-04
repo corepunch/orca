@@ -507,6 +507,142 @@ static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const
     return 0;
 }
 
+static cg_node const *event_parent(cg_model const *m, cg_node const *msg);
+static void message_action_name(cg_model const *m, cg_node const *msg, char *dst, size_t dsz);
+
+static int emit_getter_case_row(ob *b, char const *owner_name, char segs[][64], int n_segs,
+                                uint32_t *idx) {
+    char addr[512];
+    property_addr(segs, n_segs, addr, sizeof(addr));
+    if (ob_printf(b,
+            "\t\tcase offsetof(struct %s, %s): return OBJ_GetPropertyAtIndex(_P, ID_%s, sizeof(struct %s), %u);\n",
+            owner_name, addr, owner_name, owner_name, *idx) < 0) return -1;
+    (*idx)++;
+    return 0;
+}
+
+static int emit_walk_getter_case(ob *b, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 char const *owner_name, char segs[][64], int n_segs,
+                                 char const *type, uint32_t flags, uint32_t *idx);
+
+static int emit_fixed_getter_case(ob *b, cg_model const *m,
+                                  sentry const *smap, size_t scount,
+                                  char const *owner_name, char segs[][64], int n_segs,
+                                  char const *field_name, char const *field_type, int fixed,
+                                  uint32_t flags, uint32_t *idx) {
+    int i;
+    for (i = 0; i < fixed; ++i) {
+        char next[MAX_DEPTH][64];
+        memcpy(next, segs, sizeof(next));
+        snprintf(next[n_segs], sizeof(next[n_segs]), "%s[%d]", field_name, i);
+        if (emit_walk_getter_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY, idx) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_walk_getter_case(ob *b, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 char const *owner_name, char segs[][64], int n_segs,
+                                 char const *type, uint32_t flags, uint32_t *idx) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
+        return emit_getter_case_row(b, owner_name, segs, n_segs, idx);
+    }
+    if (n_segs < MAX_DEPTH - 1) {
+        cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+            char next[MAX_DEPTH][64];
+            int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+            if (fixed > 0) {
+                if (emit_fixed_getter_case(b, m, smap, scount, owner_name, segs, n_segs,
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED), idx) < 0) return -1;
+            } else {
+                memcpy(next, segs, sizeof(next));
+                snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
+                if (emit_walk_getter_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                        f->type, f->flags | (flags & CG_FLAG_INHERITED), idx) < 0) return -1;
+            }
+        }
+    }
+    return 0;
+}
+
+static int emit_getter_cases_for_fields(ob *b, cg_model const *m,
+                                        sentry const *smap, size_t scount,
+                                        cg_node const *owner, char const *owner_name,
+                                        cg_kind kind, int include_array_count,
+                                        uint32_t *idx) {
+    cg_foreach(m, owner->id, kind, p) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
+        if (fixed > 0) {
+            if (emit_fixed_getter_case(b, m, smap, scount, owner_name, segs, 0,
+                    p->name, p->type, fixed, p->flags, idx) < 0) return -1;
+        } else {
+            snprintf(segs[0], sizeof(segs[0]), "%s", p->name);
+            if (emit_walk_getter_case(b, m, smap, scount, owner_name, segs, 1,
+                    p->type, p->flags, idx) < 0) return -1;
+        }
+        if (include_array_count && (p->flags & CG_FLAG_ARRAY)) {
+            snprintf(segs[0], sizeof(segs[0]), "Num%s", p->name);
+            if (emit_getter_case_row(b, owner_name, segs, 1, idx) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static int emit_class_getter(ob *b, cg_model const *m,
+                             sentry const *smap, size_t scount,
+                             cg_node const *c, cg_node const *mx) {
+    uint32_t idx = 0;
+    if (ob_printf(b,
+            "ORCA_API struct Property *%s_GetProperty(struct Object *_P, size_t _O) {\n"
+            "\tswitch (_O) {\n",
+            c->name) < 0) return -1;
+    if (mx && emit_getter_cases_for_fields(b, m, smap, scount, mx, c->name,
+            CG_KIND_PROPERTY, 1, &idx) < 0) return -1;
+    if (emit_getter_cases_for_fields(b, m, smap, scount, c, c->name,
+            CG_KIND_PROPERTY, 1, &idx) < 0) return -1;
+    cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        snprintf(segs[0], sizeof(segs[0]), "%s", msg->name);
+        if (emit_getter_case_row(b, c->name, segs, 1, &idx) < 0) return -1;
+    }
+    return ob_printf(b,
+            "\t\tdefault: return NULL;\n"
+            "\t}\n"
+            "}\n");
+}
+
+static int emit_message_action_getter_cases(ob *b, cg_model const *m,
+                                            cg_node const *msg, char const *action,
+                                            uint32_t *idx) {
+    cg_node const *p = event_parent(m, msg);
+    if (p && emit_message_action_getter_cases(b, m, p, action, idx) < 0) return -1;
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        if (ob_printf(b,
+                "\t\tcase offsetof(struct %s, %s): return OBJ_GetPropertyAtIndex(_P, ID_%s, sizeof(struct %s), %u);\n",
+                action, f->name, action, action, (*idx)++) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action_getter(ob *b, cg_model const *m, cg_node const *msg) {
+    char action[256];
+    uint32_t idx = 0;
+    message_action_name(m, msg, action, sizeof(action));
+    if (ob_printf(b,
+            "ORCA_API struct Property *%s_GetProperty(struct Object *_P, size_t _O) {\n"
+            "\tswitch (_O) {\n",
+            action) < 0) return -1;
+    if (emit_message_action_getter_cases(b, m, msg, action, &idx) < 0) return -1;
+    return ob_printf(b,
+            "\t\tdefault: return NULL;\n"
+            "\t}\n"
+            "}\n");
+}
+
 
 static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
                                       sentry const *smap, size_t scount,
@@ -1038,6 +1174,7 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
             action, xml_name, prop_count,
             prop_count > 0 ? action : "",
             prop_count > 0 ? "Properties" : "NULL") < 0) return -1;
+    if (emit_message_action_getter(b, m, msg) < 0) return -1;
     return 0;
 }
 
@@ -1153,6 +1290,7 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                     ident, c->name, after_dot(hdl->name), hdl->name) < 0) return -1;
         }
         if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
+        if (emit_class_getter(b, m, smap, scount, c, mx) < 0) return -1;
         if (ss) {
             if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
                     c->name, ss, ss, c->name) < 0) return -1;
