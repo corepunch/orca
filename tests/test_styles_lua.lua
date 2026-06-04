@@ -13,7 +13,7 @@ local geometry = require "orca.geometry"
 require "orca.renderer"
 local ui         = require "orca.UIKit"
 
--- filesystem.loadObjectFromCssString exposes the pure-C CSS parser.
+-- ui.loadObjectFromCssString exposes the pure-C CSS parser.
 
 -- ---------------------------------------------------------------------------
 -- Node2D inherits StyleController, so every Node2D has one attached.
@@ -30,7 +30,7 @@ local function test_style_applies_opacity()
     Width = 200,
     Height = 200,
     ResizeMode = "NoResize",
-    StyleSheet = filesystem.loadObjectFromCssString ".highlight { opacity: 0.4; }",
+    StyleSheet = ui.loadObjectFromCssString ".highlight { opacity: 0.4; }",
   }
   local node = screen + ui.Node2D {
     class = "highlight",
@@ -50,7 +50,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_not_applied_without_class()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".hidden { opacity: 0.0; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".hidden { opacity: 0.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 0.8
@@ -68,7 +68,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".box { width: 200; height: 80; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".box { width: 200; height: 80; }"
   local node = screen + ui.Node2D { Width = 100, Height = 50 }
 
   node.class = "box"
@@ -86,7 +86,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_classes()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -107,7 +107,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_hover_not_applied_by_default()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".btn:hover { opacity: 0.6; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".btn:hover { opacity: 0.6; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -127,7 +127,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_non_hover_rule_applies()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -145,7 +145,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_recursive_children()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".dim { opacity: 0.3; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".dim { opacity: 0.3; }"
   local parent = screen + ui.Node2D {}
   local child  = parent + ui.Node2D {}
 
@@ -166,7 +166,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_dot_prefix_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".primary { opacity: 0.55; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".primary { opacity: 0.55; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -184,7 +184,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_numeric_value()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".sized { width: 150; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".sized { width: 150; }"
   local node = screen + ui.Node2D {}
 
   node.class = "sized"
@@ -201,7 +201,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_enum_value_ignorecase()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".overflowing { text-overflow: ellipsis; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".overflowing { text-overflow: ellipsis; }"
   local text = screen + ui.TextBlock {
     Text = "long text",
     TextOverflow = "Clip",
@@ -221,7 +221,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".ghost { opacity: 0.1; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".ghost { opacity: 0.1; }"
   local node = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
@@ -244,7 +244,7 @@ local function test_style_apply_directive()
     .child { @apply: .base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -267,7 +267,7 @@ local function test_style_apply_transitive()
     .a { @apply: .b; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "a"
@@ -288,7 +288,7 @@ local function test_css_comments_are_ignored()
     .clean { opacity: 0.42; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "clean"
@@ -305,7 +305,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_comma_selectors()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".alpha, .beta { width: 123; height: 45; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".alpha, .beta { width: 123; height: 45; }"
   local a = screen + ui.Node2D {}
   local b = screen + ui.Node2D {}
 
@@ -333,7 +333,7 @@ local function test_css_repeated_selector_merges()
     .repeat { height: 50; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D {}
 
   node.class = "repeat"
@@ -352,7 +352,7 @@ end
 local function test_css_property_name_ignorecase_and_duplicate_overwrite()
   local css = ".casey { OpAcItY: 0.2; opacity: 0.65; WIDTH: 111; }"
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "casey"
@@ -370,7 +370,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_type_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "Label { height: 33; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "Label { height: 33; }"
   local label = screen + ui.Label { Text = "caption" }
 
   applyStyles(label)
@@ -386,7 +386,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_selectors_are_case_sensitive()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".Token { opacity: 0.25; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".Token { opacity: 0.25; }"
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "token"
@@ -403,7 +403,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_unsupported_declarations_are_ignored()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".plain { made-up-property: 123; opacity: 0.66; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".plain { made-up-property: 123; opacity: 0.66; }"
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "plain"
@@ -420,7 +420,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_boolean_value_ignorecase()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".wrapped { word-wrap: TRUE; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".wrapped { word-wrap: TRUE; }"
   local text = screen + ui.TextBlock {
     Text = "wrap me",
     WordWrap = false,
@@ -440,7 +440,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_color_properties()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".painted { background-color: #336699; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".painted { background-color: #336699; }"
   local node = screen + ui.Node2D {}
 
   node.class = "painted"
@@ -459,7 +459,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_theme_variables()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+  screen.StyleSheet = ui.loadObjectFromCssString [[
     .themed {
       background-color: var(--accent);
       color: var(--accent-foreground);
@@ -494,7 +494,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_text_property_map()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".copy { font-size: 18; line-height: 1.5; letter-spacing: 2; text-overflow: clip; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".copy { font-size: 18; line-height: 1.5; letter-spacing: 2; text-overflow: clip; }"
   local text = screen + ui.TextBlock {
     Text = "copy",
     FontSize = 10,
@@ -520,7 +520,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_expanded_property_aliases()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+  screen.StyleSheet = ui.loadObjectFromCssString [[
     .layout-css {
       horizontal-align: center;
       vertical-align: bottom;
@@ -617,7 +617,7 @@ local function test_css_apply_reference_without_dot()
     .child { @apply: base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -639,7 +639,7 @@ local function test_css_apply_multiple_sources()
     .both { @apply: .size-x .size-y; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D {}
 
   node.class = "both"
@@ -661,7 +661,7 @@ local function test_css_apply_preserves_local_declarations()
     .child { opacity: 0.8; @apply: .base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -683,7 +683,7 @@ local function test_css_body_selector_applies_to_root()
     Height = 200,
     ResizeMode = "NoResize",
     Opacity = 1.0,
-    StyleSheet = filesystem.loadObjectFromCssString "body { opacity: 0.44; }",
+    StyleSheet = ui.loadObjectFromCssString "body { opacity: 0.44; }",
   }
 
   applyStyles(screen)
@@ -698,7 +698,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_id_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "#HeroImage { opacity: 0.73; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "#HeroImage { opacity: 0.73; }"
   local image = screen + ui.ImageView {
     Name = "HeroImage",
     Opacity = 1.0,
@@ -725,7 +725,7 @@ end
 local function test_css_direct_parent_selector()
   local css = "StackView > Label { opacity: 0.31; }"
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local stack = screen + ui.StackView {}
   local direct = stack + ui.Label { Text = "direct", Opacity = 1.0 }
   local wrapper = stack + ui.Node2D {}
@@ -750,7 +750,7 @@ local function test_css_direct_parent_class_and_id_selectors()
     #Footer > .status { height: 22; }
   ]]
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local toolbar = screen + ui.StackView { class = "toolbar" }
   local save = toolbar + ui.Label { Name = "SaveLabel", Text = "Save" }
   local footer = screen + ui.StackView { Name = "Footer" }
@@ -768,7 +768,64 @@ local function test_css_direct_parent_class_and_id_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 31: Pseudo-classes apply to class, ID, and type selectors
+-- Test 31: Descendant selectors match any ancestor, not just direct parents
+-- ---------------------------------------------------------------------------
+local function test_css_descendant_selector()
+  local css = [[
+    .popup .panel { opacity: 0.27; }
+    .popup Label { width: 77; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local wrapper = popup + ui.Node2D {}
+  local panel = wrapper + ui.Node2D { class = "panel", Opacity = 1.0 }
+  local label = wrapper + ui.Label { Text = "nested" }
+  local outside = screen + ui.Node2D { class = "panel", Opacity = 1.0 }
+
+  applyStyles(panel)
+  applyStyles(label)
+  applyStyles(outside)
+
+  test.expect_near(panel.Opacity, 0.27, 0.001, ".popup .panel should match nested descendants")
+  test.expect_near(label.Width, 77, 0.5, ".popup Label should match nested type selectors")
+  test.expect_near(outside.Opacity, 1.0, 0.001, ".popup .panel should not match without popup ancestor")
+
+  popup:removeFromParent()
+  outside:removeFromParent()
+  print("PASS: test_css_descendant_selector")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 32: Descendant selectors compose with direct child selectors
+-- ---------------------------------------------------------------------------
+local function test_css_mixed_descendant_and_direct_child_selectors()
+  local css = [[
+    .popup > .chrome .panel { height: 64; }
+    .popup .chrome > .panel { width: 65; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local chrome = popup + ui.Node2D { class = "chrome" }
+  local direct = chrome + ui.Node2D { class = "panel" }
+  local wrapper = chrome + ui.Node2D {}
+  local nested = wrapper + ui.Node2D { class = "panel" }
+
+  applyStyles(direct)
+  applyStyles(nested)
+
+  test.expect_near(direct.Height, 64, 0.5, ".popup > .chrome .panel should match direct panel")
+  test.expect_near(direct.Width, 65, 0.5, ".popup .chrome > .panel should match direct panel")
+  test.expect_near(nested.Height, 64, 0.5, ".popup > .chrome .panel should match nested panel")
+  test.expect_near(nested.Width, 0, 0.5, ".popup .chrome > .panel should not match nested panel")
+
+  popup:removeFromParent()
+  print("PASS: test_css_mixed_descendant_and_direct_child_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 33: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -777,7 +834,7 @@ local function test_css_pseudo_classes_on_selector_types()
     Label:active { height: 29; }
   ]]
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local inactive = screen + ui.Label {
     Name = "NamedChoice",
     class = "choice",
@@ -806,11 +863,11 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 32: Pseudo-classes work on direct parent selectors
+-- Test 34: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "StackView > Label:active { opacity: 0.21; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "StackView > Label:active { opacity: 0.21; }"
   local stack = screen + ui.StackView {}
   local label = stack + ui.Label {
     Text = "selected",
@@ -827,11 +884,11 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: CSS font-family accepts quoted names and generic fallbacks
+-- Test 35: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+  screen.StyleSheet = ui.loadObjectFromCssString [[
     .novel { font-family: "Times New Roman", serif; }
   ]]
   local text = screen + ui.TextBlock {
@@ -881,6 +938,8 @@ test_css_body_selector_applies_to_root()
 test_css_id_selector()
 test_css_direct_parent_selector()
 test_css_direct_parent_class_and_id_selectors()
+test_css_descendant_selector()
+test_css_mixed_descendant_and_direct_child_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
 test_css_font_family_list_uses_registered_fallback()

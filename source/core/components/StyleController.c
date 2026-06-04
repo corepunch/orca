@@ -15,7 +15,7 @@
 //
 // StyleRule: child object of a StyleSheet.
 //   - ClassName:  selector without pseudo-state (e.g., "button", ".button",
-//                 "#Logo", "ImageView", or "StackView > Label").
+//                 "#Logo", "ImageView", "StackView > Label", or ".popup .panel").
 //   - PseudoClass: colon-separated pseudo-states (e.g., "hover:focus") —
 //                 empty means the rule applies to all states.
 //   - class_id / flags: cached from ClassName / PseudoClass
@@ -231,34 +231,108 @@ _MatchSimpleSelector(struct Object *target,
   return TRUE;
 }
 
+typedef enum {
+  STYLE_COMBINATOR_NONE,
+  STYLE_COMBINATOR_DESCENDANT,
+  STYLE_COMBINATOR_CHILD,
+} style_combinator_t;
+
+struct selector_part {
+  char selector[256];
+  style_combinator_t combinator;
+};
+
+static int
+_ParseSelectorParts(lpcString_t selector,
+                    struct selector_part* parts,
+                    int maxParts)
+{
+  int count = 0;
+  style_combinator_t relation = STYLE_COMBINATOR_NONE;
+  lpcString_t p = selector;
+
+  while (p && *p) {
+    bool_t sawSpace = FALSE;
+    while (*p && isspace((unsigned char)*p)) {
+      sawSpace = TRUE;
+      p++;
+    }
+    if (!*p) break;
+
+    if (*p == '>') {
+      relation = STYLE_COMBINATOR_CHILD;
+      p++;
+      continue;
+    }
+
+    if (count > 0 && relation == STYLE_COMBINATOR_NONE && sawSpace) {
+      relation = STYLE_COMBINATOR_DESCENDANT;
+    }
+
+    lpcString_t start = p;
+    while (*p && *p != '>' && !isspace((unsigned char)*p)) p++;
+
+    if (start == p) continue;
+    if (count >= maxParts) return 0;
+
+    _CopyTrim(parts[count].selector,
+              sizeof(parts[count].selector),
+              start,
+              p);
+    parts[count].combinator =
+      count == 0 ? STYLE_COMBINATOR_NONE :
+                   (relation == STYLE_COMBINATOR_NONE
+                      ? STYLE_COMBINATOR_DESCENDANT
+                      : relation);
+    count++;
+    relation = STYLE_COMBINATOR_NONE;
+  }
+
+  return count;
+}
+
 static bool_t
 _SelectorMatchesTarget(struct Object *target,
                        lpcString_t selector,
                        uint32_t objFlags,
                        struct style_class_selector** matchedClass)
 {
-  char targetSelector[256] = {0};
-  char parentSelector[256] = {0};
+  struct selector_part parts[16] = {0};
+  int count = _ParseSelectorParts(selector, parts, ARRAY_SIZE(parts));
+  if (count <= 0) return FALSE;
 
-  lpcString_t childStart = selector;
-  lpcString_t gt = strchr(selector, '>');
-  if (gt) {
-    _CopyTrim(parentSelector, sizeof(parentSelector), selector, gt);
-    childStart = gt + 1;
-  }
-  _CopyTrim(targetSelector, sizeof(targetSelector),
-            childStart, childStart + strlen(childStart));
-
-  if (!_MatchSimpleSelector(target, targetSelector, objFlags, matchedClass)) {
+  if (!_MatchSimpleSelector(target,
+                            parts[count - 1].selector,
+                            objFlags,
+                            matchedClass)) {
     return FALSE;
   }
 
-  if (!gt) return TRUE;
+  struct Object *cursor = target;
+  for (int i = count - 1; i > 0; i--) {
+    if (parts[i].combinator == STYLE_COMBINATOR_CHILD) {
+      cursor = OBJ_GetParent(cursor);
+      if (!cursor) return FALSE;
+      uint32_t flags = OBJ_GetStyleFlags(cursor);
+      if (!_MatchSimpleSelector(cursor, parts[i - 1].selector, flags, NULL)) {
+        return FALSE;
+      }
+      continue;
+    }
 
-  struct Object *parent = OBJ_GetParent(target);
-  if (!parent) return FALSE;
-  uint32_t parentFlags = OBJ_GetStyleFlags(parent);
-  return _MatchSimpleSelector(parent, parentSelector, parentFlags, NULL);
+    struct Object *ancestor = OBJ_GetParent(cursor);
+    while (ancestor) {
+      uint32_t flags = OBJ_GetStyleFlags(ancestor);
+      if (_MatchSimpleSelector(ancestor, parts[i - 1].selector, flags, NULL)) {
+        break;
+      }
+      ancestor = OBJ_GetParent(ancestor);
+    }
+    if (!ancestor) return FALSE;
+    cursor = ancestor;
+  }
+
+  return TRUE;
 }
 
 static bool_t

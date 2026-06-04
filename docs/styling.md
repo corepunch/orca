@@ -101,7 +101,7 @@ The optional pseudo-states on the selector gate when the rule fires.
 
 ### CSS stylesheet loader
 
-The filesystem module can parse a small CSS subset into a `StyleSheet` object.
+The UIKit module can parse a small CSS subset into a `StyleSheet` object.
 Assign the returned object to a `StyleController.StyleSheet` property, usually on a root `Screen`, then apply `ThemeChanged` to the styled object or root.
 
 ```lua
@@ -112,7 +112,7 @@ local screen = ui.Screen {
     Width = 800,
     Height = 600,
     ResizeMode = "NoResize",
-    StyleSheet = filesystem.loadObjectFromCssString [[
+    StyleSheet = ui.loadObjectFromCssString [[
         .card {
             background-color: #223344;
             opacity: 0.9;
@@ -149,8 +149,8 @@ card:ThemeChanged()
 ```
 
 ```lua
--- Load a stylesheet file through ORCA's filesystem.
-screen.StyleSheet = filesystem.loadObjectFromCss("assets/app.css")
+-- Load a stylesheet file through UIKit's CSS parser.
+screen.StyleSheet = ui.loadObjectFromCss("assets/app.css")
 screen:ThemeChanged(StyleController_ThemeChangedEventArgs{ recursive = true })
 ```
 
@@ -165,16 +165,17 @@ It supports:
 | Class selectors | `.button { ... }` | Matches objects whose `class` contains `button` |
 | ID selectors | `#HeroImage { ... }` | Matches object `Name` |
 | Type selectors | `ImageView { ... }`, `Label { ... }` | Matches ORCA class names, similar to HTML element selectors |
-| Direct parent selectors | `StackView > Label { ... }` | Matches only immediate children for now |
+| Descendant selectors | `.popup .panel { ... }`, `StackView Label { ... }` | Matches when the left selector appears anywhere in the target's ancestors |
+| Direct parent selectors | `StackView > Label { ... }` | Matches only immediate children |
 | `body` selector | `body { opacity: 1; }` | Applies to a root object that owns the stylesheet |
 | Comma selector lists | `.a, .b { width: 100; }` | Each selector gets the same declaration block |
-| Pseudo-states | `.button:hover { opacity: 0.8; }`, `#Save:active { ... }`, `Label:active { ... }` | Supported states are `hover`, `focus`, `active`, and `dark`; for `>` selectors, put pseudo-states on the child selector |
+| Pseudo-states | `.button:hover { opacity: 0.8; }`, `#Save:active { ... }`, `Label:active { ... }` | Supported states are `hover`, `focus`, `active`, and `dark`; for combinator selectors, put pseudo-states on the rightmost target selector |
 | Declarations | `width: 120;` | Declarations are `property: value;` pairs |
 | Repeated selectors | `.a { width: 1; } .a { height: 2; }` | Declarations are merged into the same rule |
 | `@apply` | `.child { @apply: .base; }` | Copies declarations from one or more selectors |
 | Transitive `@apply` | `.a { @apply: .b; } .b { @apply: .c; }` | Resolution runs for up to 10 passes |
 
-The parser does not support descendant selectors, arbitrary child combinators beyond the direct `Parent > Child` form, sibling selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
+The parser does not support sibling selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
 
 #### Case and duplicate rules
 
@@ -215,46 +216,7 @@ References can include or omit the leading dot. Local declarations win over decl
 CSS declarations are mapped to ORCA properties before values are parsed.
 Values use ORCA's normal property parsers, so numeric values are bare numbers rather than browser CSS units.
 
-| CSS property | ORCA property | Value type |
-|--------------|---------------|------------|
-| `background-color` | `Node2D.BackgroundColor` | color |
-| `color` | `Node2D.ForegroundColor` | color |
-| `opacity` | `Node.Opacity` | float |
-| `width` | `Node.Width` | float |
-| `height` | `Node.Height` | float |
-| `min-width` | `Node.MinWidth` | float |
-| `min-height` | `Node.MinHeight` | float |
-| `margin` | `Node.Margin` | `Thickness` |
-| `margin-top` | `Node.MarginTop` | float |
-| `margin-right` | `Node.MarginRight` | float |
-| `margin-bottom` | `Node.MarginBottom` | float |
-| `margin-left` | `Node.MarginLeft` | float |
-| `padding` | `Node.Padding` | `Thickness` |
-| `padding-top` | `Node.PaddingTop` | float |
-| `padding-right` | `Node.PaddingRight` | float |
-| `padding-bottom` | `Node.PaddingBottom` | float |
-| `padding-left` | `Node.PaddingLeft` | float |
-| `border` | `Node.Border` | `BorderShorthand` |
-| `border-color` | `Node.BorderColor` | color |
-| `border-width` | `Node.BorderWidth` | `Thickness` |
-| `font-size` | `TextRun.FontSize` | float |
-| `font-family` | `TextRun.FontFamily` | registered family list or object path |
-| `line-height` | `TextRun.LineHeight` | float |
-| `letter-spacing` | `TextRun.LetterSpacing` | float |
-| `word-wrap` | `TextBlockConcept.WordWrap` | bool |
-| `text-overflow` | `TextBlockConcept.TextOverflow` | enum: `Clip`, `Ellipsis` |
-
-Unknown properties do not create dynamic properties; they are skipped when the stylesheet is converted into `StyleRule` objects.
-
-`font-family` follows CSS list semantics:
-
-```css
-.reader {
-  font-family: "Times New Roman", serif;
-}
-```
-
-Each family name is tried in order. Project fonts from `FontLibrary` are registered by their `<FontFamily Name="...">` value and by XML filename stem, so `"Times New Roman"` can resolve without spelling the project path. Shared defaults register CSS generic aliases such as `serif`, `sans-serif`, and `monospace` to Noto families under `share/fonts`. Explicit object paths still work for existing stylesheets.
+See [CSS Compatibility](css-compatibility.md) for the complete property mapping table and special value normalization rules.
 
 ### Loading stylesheets from Lua
 

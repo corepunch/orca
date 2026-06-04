@@ -820,7 +820,7 @@ local function test_css_popup_padding_insets_stretched_panel()
 		Width = 420,
 		Height = 600,
 		ResizeMode = "NoResize",
-		StyleSheet = filesystem.loadObjectFromCssString [[
+		StyleSheet = ui.loadObjectFromCssString [[
 			.popup {
 				padding: 16;
 				align-items: center;
@@ -881,7 +881,7 @@ local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
 		Width = 420,
 		Height = 600,
 		ResizeMode = "NoResize",
-		StyleSheet = filesystem.loadObjectFromCssString [[
+		StyleSheet = ui.loadObjectFromCssString [[
 			.popup {
 				padding: 16;
 				align-items: center;

@@ -38,6 +38,7 @@ nav:
     - Renderer Internals: renderer-internals.md
     - Lua Scripting: lua-scripting.md
     - Style System: styling.md
+    - CSS Compatibility: css-compatibility.md
     - Theme Values: theme-values.md
     - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md

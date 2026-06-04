@@ -3,7 +3,7 @@
 // Parses a CSS text string into an ORCA StyleSheet object containing
 // StyleRule children.  Each StyleRule carries:
 //   - ClassName   : selector without pseudo-state (e.g. ".button", "#Logo",
-//                   "ImageView", or "StackView > Label")
+//                   "ImageView", "StackView > Label", or ".popup .panel")
 //   - PseudoClass : colon-separated pseudo-states  (e.g. "hover:focus")
 //   - ORCA property overrides stored as C properties
 //
@@ -12,6 +12,7 @@
 //   - Simple class selectors: .foo { ... }
 //   - ID selectors: #Logo { ... }
 //   - Type selectors: ImageView { ... }
+//   - Descendant selectors: .popup .panel { ... }
 //   - Direct parent selectors: StackView > Label { ... }
 //   - Comma-separated selectors: .foo, .bar { ... }
 //   - Pseudo-classes: .foo:hover { ... }
@@ -548,6 +549,7 @@ css_resolve_apply(css_doc_t* doc)
 // selector: ".button:hover"     → class_out=".button", pseudo_out="hover"
 // selector: "#Logo"             → class_out="#Logo",   pseudo_out=""
 // selector: "StackView > Label" → class_out="StackView > Label", pseudo_out=""
+// selector: ".popup .panel"     → class_out=".popup .panel", pseudo_out=""
 static void
 css_split_selector(const char* selector,
                    char* class_out, int class_max,
@@ -688,7 +690,7 @@ fs_load_text_file(const char* path)
 // Public: parse a CSS string and return a new StyleSheet object
 // ---------------------------------------------------------------------------
 
-struct Object *FS_LoadObjectFromCssString(const char* css_text)
+struct Object *UIKit_LoadObjectFromCssString(const char* css_text)
 {
     if (!css_text) return NULL;
 
@@ -743,16 +745,16 @@ struct Object *FS_LoadObjectFromCssString(const char* css_text)
     return sheet;
 }
 
-struct Object *FS_LoadObjectFromCss(const char* path)
+struct Object *UIKit_LoadObjectFromCss(const char* path)
 {
     if (!path) return NULL;
     char* css_text = fs_load_text_file(path);
     if (!css_text) {
-        Con_Error("FS_LoadObjectFromCss: can't load '%s'", path);
+        Con_Error("UIKit_LoadObjectFromCss: can't load '%s'", path);
         return NULL;
     }
 
-    struct Object *sheet = FS_LoadObjectFromCssString(css_text);
+    struct Object *sheet = UIKit_LoadObjectFromCssString(css_text);
     free(css_text);
     return sheet;
 }

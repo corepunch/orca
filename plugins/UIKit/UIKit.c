@@ -6,6 +6,13 @@ bool_t is_server = FALSE;
 
 extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
+struct Object *UIKit_LoadObjectFromCss(const char* path);
+
+static struct Object*
+_css_file_loader(int argc, const char* argv[])
+{
+  return (argc > 0) ? UIKit_LoadObjectFromCss(argv[0]) : NULL;
+}
 
 static int
 c_parse_transform2(const char* str, void* dst, size_t sz)
@@ -49,6 +56,7 @@ void on_ui_module_registered(lua_State* L) {
   SV_RegisterMessageProc(ui_handle_event);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");
+  OBJ_RegisterFileLoader(".css", _css_file_loader);
 }
 
 void
