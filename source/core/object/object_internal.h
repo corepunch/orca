@@ -34,7 +34,5 @@ struct Object
   longTime_t dirty;
 };
 
-void OBJ_ApplyInheritedProperties(struct Object *object);
-void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
 
 #endif /* __OBJECT_INTERNAL_H__ */

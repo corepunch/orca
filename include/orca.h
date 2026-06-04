@@ -175,7 +175,6 @@ enum
   PF_SPECIALIZED = (1 << 6),
   PF_PROPERTY_TYPE = (1 << 7),
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
-  PF_INHERITED = (1 << 9), // value was propagated from an ancestor
   PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
 };
 
@@ -203,9 +202,6 @@ PROP_Update(struct Property *);
 
 ORCA_API void
 PROP_SetValue(struct Property *, void const* source);
-
-ORCA_API void
-PROP_SetInheritedValue(struct Property *, void const* source);
 
 ORCA_API void
 PROP_SetStringValue(struct Property *, char const* source);

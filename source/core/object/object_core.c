@@ -60,7 +60,6 @@ OBJ_DetachFromParent(struct Object *self)
     REMOVE_FROM_LIST(struct Object, self, self->parent->children);
     REMOVE_FROM_LIST(struct Object, self, self->parent);
     self->parent = NULL;
-    OBJ_ApplyInheritedProperties(self);
   }
 }
 
@@ -105,24 +104,12 @@ OBJ_RemoveFromParent(struct Object *self)
 }
 
 static void
-OBJ_ClearInheritedProperties(struct Object *pobj)
-{
-  for (struct Property *p = pobj->properties; p; p = PROP_GetNext(p)) {
-    struct PropertyType const *desc = PROP_GetDesc(p);
-    if (desc && desc->IsInherited && !PROP_IsNull(p)) {
-      PROP_Clear(p);
-    }
-  }
-}
-
-static void
 OBJ_Release(struct Object *pobj)
 {
 #ifdef DEBUG_COUNT_OBJECTS
   counter--;
 #endif
   g_object_count--;
-  OBJ_ClearInheritedProperties(pobj);
   OBJ_Clear(pobj);
   OBJ_SendMessage(pobj, "Destroy", 0, NULL);
   OBJ_DetachFromParent(pobj);

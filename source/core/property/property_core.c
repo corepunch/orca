@@ -106,14 +106,12 @@ _ReleaseArrayItems(struct Property *property)
 bool_t
 PROP_IsNull(struct Property const *property)
 {
-  return property == NULL || !(property->flags & (PF_MODIFIED | PF_INHERITED));
+  return property == NULL || !(property->flags & PF_MODIFIED);
 }
 
 void
 PROP_Clear(struct Property *property)
 {
-  bool_t propagate_inherited = property && property->pdesc &&
-    property->pdesc->IsInherited && !PROP_IsNull(property);
   void *storage = property ? (void *)PROP_GetRawValueSlot(property) : NULL;
   void *old_array = NULL;
   if (property->pdesc->DataType == kDataTypeString && storage && *(LPSTR*)storage) {
@@ -136,15 +134,9 @@ PROP_Clear(struct Property *property)
   if (storage) {
     memset(storage, 0, PROP_GetSize(property));
   }
-  property->flags &= ~(PF_MODIFIED | PF_INHERITED);
+  property->flags &= ~PF_MODIFIED;
   if (property->pdesc->DataType == kDataTypeString && storage) {
     *(char**)storage = NULL;
-  }
-  if (propagate_inherited) {
-    if (property->object && OBJ_GetParent(property->object)) {
-      OBJ_ApplyInheritedProperties(property->object);
-    }
-    OBJ_PropagateInheritedProperty(property->object, property);
   }
 }
 
