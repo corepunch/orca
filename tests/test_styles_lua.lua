@@ -462,8 +462,8 @@ local function test_css_theme_variables()
   screen.StyleSheet = filesystem.loadObjectFromCssString [[
     .themed {
       background-color: var(--accent);
-      color: var($accent-foreground);
-      border-color: $control-border;
+      color: var(--accent-foreground);
+      border-color: var(--control-border);
     }
   ]]
   local node = screen + ui.Node2D {}
@@ -478,12 +478,12 @@ local function test_css_theme_variables()
   test.expect_near(node.BackgroundColor.R, bg.R, 0.01, "var(--accent) BackgroundColor.R")
   test.expect_near(node.BackgroundColor.G, bg.G, 0.01, "var(--accent) BackgroundColor.G")
   test.expect_near(node.BackgroundColor.B, bg.B, 0.01, "var(--accent) BackgroundColor.B")
-  test.expect_near(node.ForegroundColor.R, fg.R, 0.01, "var($accent-foreground) ForegroundColor.R")
-  test.expect_near(node.ForegroundColor.G, fg.G, 0.01, "var($accent-foreground) ForegroundColor.G")
-  test.expect_near(node.ForegroundColor.B, fg.B, 0.01, "var($accent-foreground) ForegroundColor.B")
-  test.expect_near(node.BorderColor.R, border.R, 0.01, "$control-border BorderColor.R")
-  test.expect_near(node.BorderColor.G, border.G, 0.01, "$control-border BorderColor.G")
-  test.expect_near(node.BorderColor.B, border.B, 0.01, "$control-border BorderColor.B")
+  test.expect_near(node.ForegroundColor.R, fg.R, 0.01, "var(--accent-foreground) ForegroundColor.R")
+  test.expect_near(node.ForegroundColor.G, fg.G, 0.01, "var(--accent-foreground) ForegroundColor.G")
+  test.expect_near(node.ForegroundColor.B, fg.B, 0.01, "var(--accent-foreground) ForegroundColor.B")
+  test.expect_near(node.BorderColor.R, border.R, 0.01, "var(--control-border) BorderColor.R")
+  test.expect_near(node.BorderColor.G, border.G, 0.01, "var(--control-border) BorderColor.G")
+  test.expect_near(node.BorderColor.B, border.B, 0.01, "var(--control-border) BorderColor.B")
 
   node:removeFromParent()
   print("PASS: test_css_theme_variables")

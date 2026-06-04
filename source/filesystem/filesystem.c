@@ -124,12 +124,14 @@ _BuildSamplePath(lpcString_t input, fixedString_t output)
 }
 
 // Walk workspace → projects → ThemeLibrary → ThemeGroups → _selectedTheme
-// to resolve a theme variable.  Key must start with '$' (e.g. "$accent").
+// to resolve a theme variable. XML/property references may include the '$'
+// marker, but ThemeLibrary keys themselves are stored without it. CSS uses
+// var(--theme-name) and resolves to the same bare key.
 // Returns the value string owned by the ResourceEntry, or NULL if not found.
 // Single-threaded only: Lua and XML loading run on one thread.
 ORCA_API lpcString_t FS_GetThemeValue(lpcString_t key) {
-  if (!key || key[0] != '$') return NULL;
-  lpcString_t name = key + 1;  // strip the leading '$'
+  if (!key || !key[0]) return NULL;
+  lpcString_t name = key[0] == '$' ? key + 1 : key;
   struct Object *ws = FS_GetWorkspace();
   if (ws) {
     FOR_EACH_OBJECT(project_obj, ws) {

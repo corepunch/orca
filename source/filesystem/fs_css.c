@@ -447,28 +447,6 @@ css_copy_cstr(char *dst, size_t dst_size, const char *src)
     dst[dst_size - 1] = '\0';
 }
 
-static void
-css_theme_key_from_token(char *key, size_t key_size, const char *token)
-{
-    if (!key || key_size == 0) return;
-    key[0] = '\0';
-    if (!token || !*token) return;
-
-    if (token[0] == '$') {
-        css_copy_cstr(key, key_size, token);
-        return;
-    }
-
-    if (key_size < 2) return;
-    key[0] = '$';
-    key[1] = '\0';
-
-    if (token[0] == '-' && token[1] == '-') {
-        token += 2;
-    }
-    css_copy_cstr(key + 1, key_size - 1, token);
-}
-
 static const char*
 css_resolve_theme_value(const char *value, char *out, size_t out_size)
 {
@@ -477,15 +455,6 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
     char text[CSS_MAX_VALLEN] = {0};
     copy_trim(text, value, value + strlen(value), (int)sizeof(text));
     if (!text[0]) return value;
-
-    if (text[0] == '$') {
-        lpcString_t theme_value = FS_GetThemeValue(text);
-        if (theme_value) {
-            css_copy_cstr(out, out_size, theme_value);
-            return out;
-        }
-        return value;
-    }
 
     if (strncasecmp(text, "var(", 4)) {
         return value;
@@ -504,10 +473,8 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
 
     char token[CSS_MAX_VALLEN] = {0};
     copy_trim(token, start, comma, (int)sizeof(token));
-    if (token[0]) {
-        char key[CSS_MAX_VALLEN] = {0};
-        css_theme_key_from_token(key, sizeof(key), token);
-        lpcString_t theme_value = FS_GetThemeValue(key);
+    if (token[0] == '-' && token[1] == '-') {
+        lpcString_t theme_value = FS_GetThemeValue(token + 2);
         if (theme_value) {
             css_copy_cstr(out, out_size, theme_value);
             return out;
