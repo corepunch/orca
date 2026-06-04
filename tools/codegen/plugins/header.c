@@ -105,92 +105,6 @@ static int type_decl(char *dst, size_t dsz, cg_model const *m,
     return 0;
 }
 
-static int type_decl_slot(char *dst, size_t dsz, cg_model const *m,
-                          char const *type, uint32_t flags) {
-    char base[256];
-    if (type_decl(base, sizeof(base), m, type, flags) < 0) return -1;
-    snprintf(dst, dsz, "%s*", base);
-    return 0;
-}
-
-static cg_node const *find_kind_node(cg_model const *m, char const *name, cg_kind kind) {
-    size_t i;
-    if (!name || !name[0]) return NULL;
-    for (i = 0; i < m->node_count; ++i)
-        if (m->nodes[i].kind == kind && !strcmp(m->nodes[i].name, name)) return &m->nodes[i];
-    return NULL;
-}
-
-static int emit_inherited_slot_field(ob *b, cg_model const *m,
-                                     char const *type, uint32_t flags,
-                                     char const *name, char const *doc) {
-    char t[256];
-    if (type_decl_slot(t, sizeof(t), m, type, flags) < 0) return -1;
-    if (ob_printf(b, "\t%s %s;", t, name) < 0) return -1;
-    if (doc && doc[0]) {
-        if (ob_printf(b, " ///< %s [inherited].", doc) < 0) return -1;
-    } else if (ob_printf(b, " ///< [inherited].") < 0) {
-        return -1;
-    }
-    return ob_printf(b, "\n");
-}
-
-#define INHERITED_MAX_DEPTH 16
-
-static int is_expandable_inherited_struct(cg_model const *m, char const *type) {
-    cg_node const *st = find_kind_node(m, type, CG_KIND_STRUCT);
-    return st && !(st->flags & CG_FLAG_SEALED);
-}
-
-static int emit_tabs(ob *b, int count) {
-    int i;
-    for (i = 0; i < count; ++i)
-        if (ob_printf(b, "\t") < 0) return -1;
-    return 0;
-}
-
-static int emit_inherited_slot_member(ob *b, cg_model const *m,
-                                      char const *type, uint32_t flags,
-                                      char const *name, char const *doc,
-                                      int indent) {
-    char t[256];
-    if (type_decl_slot(t, sizeof(t), m, type, flags) < 0) return -1;
-    if (emit_tabs(b, indent) < 0) return -1;
-    if (ob_printf(b, "%s %s;", t, name) < 0) return -1;
-    if (doc && doc[0]) {
-        if (ob_printf(b, " ///< %s [inherited].", doc) < 0) return -1;
-    } else if (ob_printf(b, " ///< [inherited].") < 0) {
-        return -1;
-    }
-    return ob_printf(b, "\n");
-}
-
-static int emit_inherited_slot_members(ob *b, cg_model const *m,
-                                       char const *type, int indent) {
-    cg_node const *st = find_kind_node(m, type, CG_KIND_STRUCT);
-    if (!st || (st->flags & CG_FLAG_SEALED))
-        return 0;
-    cg_foreach(m, st->id, CG_KIND_FIELD, f) {
-        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
-        if (fixed > 0) continue;
-        if (is_expandable_inherited_struct(m, f->type)) {
-            if (emit_tabs(b, indent) < 0) return -1;
-            if (ob_printf(b, "struct {\n") < 0) return -1;
-            if (emit_inherited_slot_members(b, m, f->type, indent + 1) < 0)
-                return -1;
-            if (emit_tabs(b, indent) < 0) return -1;
-            if (ob_printf(b, "} %s;", f->name) < 0) return -1;
-            if (f->doc && f->doc[0])
-                if (ob_printf(b, " ///< %s", f->doc) < 0) return -1;
-            if (ob_printf(b, "\n") < 0) return -1;
-        } else if (emit_inherited_slot_member(b, m, f->type, f->flags,
-                                              f->name, f->doc, indent) < 0) {
-            return -1;
-        }
-    }
-    return 0;
-}
-
 static cg_node const *method_returns(cg_model const *m, cg_node const *method) {
     return cg_first(m, method->id, CG_KIND_RETURNS);
 }
@@ -444,25 +358,11 @@ static int emit_component_def(ob *b, cg_model const *m, cg_node const *c) {
     if (ob_printf(b, "/** %s component */\nstruct %s {\n", c->name, c->name) < 0) return -1;
     cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
         char t[256];
-        if (p->flags & CG_FLAG_INHERITED) {
-            if (is_expandable_inherited_struct(m, p->type)) {
-                if (ob_printf(b, "\tstruct {\n") < 0) return -1;
-                if (emit_inherited_slot_members(b, m, p->type, 2) < 0) return -1;
-                if (ob_printf(b, "\t} %s;", p->name) < 0) return -1;
-                if (p->doc && p->doc[0])
-                    if (ob_printf(b, " ///< %s", p->doc) < 0) return -1;
-                if (ob_printf(b, "\n") < 0) return -1;
-            } else {
-                if (emit_inherited_slot_field(b, m, p->type, p->flags, p->name, p->doc) < 0)
-                    return -1;
-            }
-        } else {
-            type_decl(t, sizeof(t), m, p->type, p->flags);
-            if (ob_printf(b, "\t%s %s;", t, p->name) < 0) return -1;
-            if (p->doc && p->doc[0])
-                if (ob_printf(b, " ///< %s", p->doc) < 0) return -1;
-            if (ob_printf(b, "\n") < 0) return -1;
-        }
+        type_decl(t, sizeof(t), m, p->type, p->flags);
+        if (ob_printf(b, "\t%s %s;", t, p->name) < 0) return -1;
+        if (p->doc && p->doc[0])
+            if (ob_printf(b, " ///< %s", p->doc) < 0) return -1;
+        if (ob_printf(b, "\n") < 0) return -1;
         if (p->flags & CG_FLAG_ARRAY)
             if (ob_printf(b, "\tint32_t Num%s;\n", p->name) < 0) return -1;
     }

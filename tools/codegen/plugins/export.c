@@ -169,12 +169,55 @@ static cg_node const *find_kind(cg_model const *m, char const *name, cg_kind kin
     return NULL;
 }
 
+/* Walk a comma-separated parent list and return the first that is a local class. */
+static cg_node const *find_local_parent(cg_model const *m, char const *parent_list) {
+    char buf[512]; char *tok;
+    if (!parent_list || !parent_list[0]) return NULL;
+    snprintf(buf, sizeof(buf), "%s", parent_list);
+    for (tok = strtok(buf, ","); tok; tok = strtok(NULL, ",")) {
+        while (*tok == ' ') ++tok;
+        cg_node const *p = find_kind(m, tok, CG_KIND_CLASS);
+        if (p) return p;
+    }
+    return NULL;
+}
+
+/* Walk the parent list of c and return the first that has external-storage set. */
+static cg_node const *find_external_storage_ancestor(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->extra && c->extra[0]) return c; /* has external-storage attr */
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
+/* Compute the storage struct name for class c into dst.
+ * Returns dst if c has a storage root, else returns NULL (no typedata). */
+static char const *class_storage_name(cg_model const *m, cg_node const *c,
+                                      char *dst, size_t dsz) {
+    cg_node const *ext = find_external_storage_ancestor(m, c);
+    if (ext && ext->extra && ext->extra[0]) {
+        snprintf(dst, dsz, "%s", ext->extra);
+        return dst;
+    }
+    return NULL;
+}
+
 static char const *type_kind(cg_model const *m, char const *type) {
     if (!type || !type[0]) return "void";
+    if (!strcmp(type, "float")) return "float";
+    if (!strcmp(type, "int")) return "int";
+    if (!strcmp(type, "uint")) return "uint";
+    if (!strcmp(type, "long")) return "long";
+    if (!strcmp(type, "bool") || !strcmp(type, "bool_t")) return "bool";
+    if (!strcmp(type, "string") || !strcmp(type, "char*")) return "string";
+    if (!strcmp(type, "nresults")) return "nresults";
+    if (!strcmp(type, "void")) return "void";
     if (find_kind(m, type, CG_KIND_ENUM)) return "enum";
     if (find_kind(m, type, CG_KIND_STRUCT)) return "struct";
-    if (find_kind(m, type, CG_KIND_INTERFACE)) return "interface";
     if (find_kind(m, type, CG_KIND_CLASS)) return "component";
+    if (find_kind(m, type, CG_KIND_INTERFACE)) return "interface";
     if (find_kind(m, type, CG_KIND_EXTERNAL)) return "external_struct";
     return type;
 }
@@ -342,11 +385,10 @@ static char const *property_datatype(cg_model const *m, char const *type) {
 
 static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
                              char const *owner_name, char segs[][64], int n_segs,
-                             char const *type, uint32_t flags) {
+                             char const *type, uint32_t flags, char const *storage) {
     char leaf[256], addr[512];
     char const *kind;
     char actual_type[256];
-    char value_decl[256];
     uint32_t actual_flags = flags;
     sentry const *s;
     (void)s;
@@ -356,16 +398,23 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     if (!strcmp(type_kind(m, actual_type), "int") && find_kind(m, leaf, CG_KIND_ENUM))
         snprintf(actual_type, sizeof(actual_type), "%s", leaf);
     kind = type_kind(m, actual_type);
-    type_decl(value_decl, sizeof(value_decl), m, actual_type, actual_flags);
-    if (actual_flags & CG_FLAG_INHERITED) {
-        if (ob_printf(b, "\tINHERITED_DECL(0x%08x, %s, %s, %s, %s, %s",
-                h->fnv1a32(leaf), owner_name, leaf, addr, value_decl,
+    if (storage && storage[0]) {
+        /* Offsets relative to the storage-family struct (e.g. UIData) */
+        const char *macro = (actual_flags & CG_FLAG_ARRAY) ? "UIDATA_ARRAY_DECL" : "UIDATA_DECL";
+        if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
+                macro, h->fnv1a32(leaf), owner_name, leaf, addr,
                 property_datatype(m, actual_type)) < 0) return -1;
+        if (actual_flags & CG_FLAG_INHERITED) {
+            if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
+        }
     } else {
         if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
                 (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
                 h->fnv1a32(leaf), owner_name, leaf, addr,
                 property_datatype(m, actual_type)) < 0) return -1;
+        if (actual_flags & CG_FLAG_INHERITED) {
+            if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
+        }
     }
     if (!strcmp(kind, "enum")) {
         if (ob_printf(b, ", .EnumValues = _%s", actual_type) < 0) return -1;
@@ -389,20 +438,20 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               sentry const *smap, size_t scount,
                               char const *owner_name, char segs[][64], int n_segs,
-                              char const *type, uint32_t flags);
+                              char const *type, uint32_t flags, char const *storage);
 
 static int emit_fixed_array(ob *b, cg_host_v1 const *h, cg_model const *m,
                             sentry const *smap, size_t scount,
                             char const *owner_name, char segs[][64], int n_segs,
                             char const *field_name, char const *field_type, int fixed,
-                            uint32_t flags) {
+                            uint32_t flags, char const *storage) {
     int i;
     for (i = 0; i < fixed; ++i) {
         char next[MAX_DEPTH][64];
         memcpy(next, segs, sizeof(next));
         snprintf(next[n_segs], sizeof(next[n_segs]), "%s[%d]", field_name, i);
         if (emit_walk_property(b, h, m, smap, scount, owner_name, next, n_segs + 1,
-                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY) < 0) return -1;
+                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY, storage) < 0) return -1;
     }
     return 0;
 }
@@ -410,11 +459,11 @@ static int emit_fixed_array(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               sentry const *smap, size_t scount,
                               char const *owner_name, char segs[][64], int n_segs,
-                              char const *type, uint32_t flags) {
+                              char const *type, uint32_t flags, char const *storage) {
     sentry const *s;
     s = find_struct(smap, scount, type);
     if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
-        if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags) < 0) return -1;
+        if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags, storage) < 0) return -1;
     }
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
         cg_foreach(m, s->id, CG_KIND_FIELD, f) {
@@ -422,12 +471,12 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
             int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
         if (fixed > 0) {
                 if (emit_fixed_array(b, h, m, smap, scount, owner_name, segs, n_segs,
-                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED), storage) < 0) return -1;
             } else {
                 memcpy(next, segs, sizeof(next));
                 snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
                 if (emit_walk_property(b, h, m, smap, scount, owner_name, next,
-                        n_segs + 1, f->type, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
+                        n_segs + 1, f->type, f->flags | (flags & CG_FLAG_INHERITED), storage) < 0) return -1;
             }
         }
     }
@@ -437,42 +486,27 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const *m,
                                       sentry const *smap, size_t scount,
                                       cg_node const *owner, char const *owner_name,
-                                      cg_kind kind, int include_array_count) {
+                                      cg_kind kind, int include_array_count,
+                                      char const *storage) {
     cg_foreach(m, owner->id, kind, p) {
         char segs[MAX_DEPTH][64] = {{0}};
         int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
         if (fixed > 0) {
             if (emit_fixed_array(b, h, m, smap, scount, owner_name, segs, 0,
-                    p->name, p->type, fixed, p->flags) < 0) return -1;
+                    p->name, p->type, fixed, p->flags, storage) < 0) return -1;
         } else {
             snprintf(segs[0], sizeof(segs[0]), "%s", p->name);
             if (emit_walk_property(b, h, m, smap, scount, owner_name, segs, 1,
-                    p->type, p->flags) < 0) return -1;
+                    p->type, p->flags, storage) < 0) return -1;
         }
         if (include_array_count && (p->flags & CG_FLAG_ARRAY)) {
             snprintf(segs[0], sizeof(segs[0]), "Num%s", p->name);
-            if (emit_property_row(b, h, m, owner_name, segs, 1, "int", 0) < 0) return -1;
+            if (emit_property_row(b, h, m, owner_name, segs, 1, "int", 0, storage) < 0) return -1;
         }
     }
     return 0;
 }
 
-static int shorthand_target_count(cg_model const *m,
-                                  sentry const *smap, size_t scount,
-                                  char const *type) {
-    sentry const *s = find_struct(smap, scount, type);
-    int count = 0;
-    if (!(s && !s->sealed)) return 1;
-    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
-        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
-        if (fixed > 0) {
-            count += fixed * shorthand_target_count(m, smap, scount, f->type);
-        } else {
-            count += shorthand_target_count(m, smap, scount, f->type);
-        }
-    }
-    return count;
-}
 
 static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
                                       sentry const *smap, size_t scount,
@@ -525,8 +559,8 @@ static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const
     property_leaf(field_segs, n_field, field, sizeof(field));
     property_addr(field_segs, n_field, addr, sizeof(addr));
     return ob_printf(b,
-            "\t{ .Name = \"%s\", .PropertyID = ID_%s_%s, .Offset = offsetof(struct %s, %s), .PresentBit = 0x%llxULL },\n",
-            field, owner_name, leaf, shorthand_type, addr, (unsigned long long)bit);
+            "\tSHORTHAND_TARGET(%s, %s, %s, %s, 0x%llx),\n",
+            shorthand_type, addr, owner_name, leaf, (unsigned long long)bit);
 }
 
 static void shorthand_target_symbol(char *dst, size_t dsz,
@@ -550,8 +584,8 @@ static int emit_shorthand_arrays_walk(ob *b, cg_host_v1 const *h, cg_model const
     char field_segs[MAX_DEPTH][64] = {{0}};
     int present_bit = 0;
     shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
-    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[%d] = {\n",
-            targets, shorthand_target_count(m, smap, scount, type)) < 0) return -1;
+    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[] = {\n",
+            targets) < 0) return -1;
     if (emit_shorthand_target_walk(b, h, m, smap, scount,
             owner_name, type, full_segs, n_full, field_segs, 0, type,
             &present_bit) < 0) return -1;
@@ -599,13 +633,9 @@ static int emit_shorthand_entries_walk(ob *b, cg_host_v1 const *h, cg_model cons
     property_leaf(full_segs, n_full, leaf, sizeof(leaf));
     shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
     if (ob_printf(b,
-            "\t{ .Name = \"%s\", .Category = \"%s\", .TypeString = \"%s\", "
-            ".ShortIdentifier = 0x%08x, .FullIdentifier = ID_%s_%s, "
-            ".StructSize = sizeof(struct %s), .Targets = %s, "
-            ".NumTargets = sizeof(%s) / sizeof(*%s) },\n",
-            leaf, owner_name, s->export_name,
-            h->fnv1a32(leaf), owner_name, leaf,
-            type, targets, targets, targets) < 0) return -1;
+            "\tSHORTHAND(%s, %s, \"%s\", %s, 0x%08x),\n",
+            owner_name, leaf, s->export_name, type,
+            h->fnv1a32(leaf)) < 0) return -1;
 
     if (n_full >= MAX_DEPTH - 1) return 0;
     cg_foreach(m, s->id, CG_KIND_FIELD, f) {
@@ -646,25 +676,20 @@ static int emit_class_shorthands(ob *b, cg_host_v1 const *h, cg_model const *m,
             count += emitted;
         }
     }
-    if (!count) {
-        if (ob_printf(b, "#define %sShorthands NULL\n#define k%sNumShorthands 0\n",
-                c->name, c->name) < 0) return -1;
-        return 0;
-    }
-
     if (ob_printf(b, "static struct PropertyShorthand const %sShorthands[] = {\n",
             c->name) < 0) return -1;
-    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-        sentry const *s = find_struct(smap, scount, p->type);
-        if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
-            char full_segs[MAX_DEPTH][64] = {{0}};
-            snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
-            if (emit_shorthand_entries_walk(b, h, m, smap, scount,
-                    c->name, full_segs, 1, p->type) < 0) return -1;
+    if (count) {
+        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+            sentry const *s = find_struct(smap, scount, p->type);
+            if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+                char full_segs[MAX_DEPTH][64] = {{0}};
+                snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+                if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                        c->name, full_segs, 1, p->type) < 0) return -1;
+            }
         }
     }
-    if (ob_printf(b, "};\n#define k%sNumShorthands (sizeof(%sShorthands) / sizeof(*%sShorthands))\n",
-            c->name, c->name, c->name) < 0) return -1;
+    if (ob_printf(b, "};\n") < 0) return -1;
     return 0;
 }
 
@@ -713,10 +738,7 @@ static int emit_struct_parser_helpers(ob *b, cg_model const *m) {
                              model_has_enum(m, "HorizontalAlignment") &&
                              model_has_enum(m, "VerticalAlignment") &&
                              model_has_enum(m, "DepthAlignment");
-    if (ob_printf(b,
-            "static int cg_num(const char*s){char*e;strtof(s,&e);if(e==s)return 0;return !*e||!strcasecmp(e,\"px\")||!strcasecmp(e,\"pt\");}\n"
-            "static int cg_i(struct PropertyType const*p,int z,const char*n){for(int i=0;i<z;i++)if(!strcmp(p[i].Name,n))return i;return -1;}\n"
-            "static int cg_enum(const char**v,const char*s,void*d){for(int i=0;v&&v[i];i++)if(!strcasecmp(v[i],s)){*(int*)d=i;return TRUE;}return FALSE;}\n") < 0) return -1;
+        if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
     if (has_axis_alignment) {
         if (ob_printf(b,
                 "static int cg_axis_enum(struct PropertyType const*p,const char*s,void*d){return !strcmp(p->Name,\"Horizontal\")?cg_enum(_HorizontalAlignment,s,d):!strcmp(p->Name,\"Vertical\")?cg_enum(_VerticalAlignment,s,d):!strcmp(p->Name,\"Depth\")?cg_enum(_DepthAlignment,s,d):FALSE;}\n") < 0) return -1;
@@ -737,11 +759,15 @@ static int emit_struct_parser_helpers(ob *b, cg_model const *m) {
 }
 
 static int emit_struct_parser_wrappers(ob *b, cg_model const *m) {
+    if (ob_printf(b,
+            "#define CG_PARSE_WRAPPER(NAME) \\\n"
+            "static int cg_parse_##NAME(const char*s,void*d,size_t z){ \\\n"
+            "\treturn z==sizeof(struct NAME)&&cg_parse(s,d,z,_##NAME,sizeof(_##NAME)/sizeof(*_##NAME)); \\\n"
+            "}\n") < 0) return -1;
     cg_foreach(m, 0, CG_KIND_STRUCT, s) {
-        if (ob_printf(b,
-                "static int cg_parse_%s(const char*s,void*d,size_t z){return z==sizeof(struct %s)&&cg_parse(s,d,z,_%s,sizeof(_%s)/sizeof(*_%s));}\n",
-                s->name, s->name, s->name, s->name, s->name) < 0) return -1;
+        if (ob_printf(b, "CG_PARSE_WRAPPER(%s)\n", s->name) < 0) return -1;
     }
+    if (ob_printf(b, "#undef CG_PARSE_WRAPPER\n") < 0) return -1;
     return 0;
 }
 
@@ -857,7 +883,7 @@ static int emit_structs(ob *b, cg_host_v1 const *h, cg_model const *m,
         char const *prefix = owner_prefix(s);
         if (emit_method_wrappers(b, m, s, prefix) < 0) return -1;
         if (ob_printf(b, "static struct PropertyType _%s[] = {\n", s->name) < 0) return -1;
-        if (emit_properties_for_fields(b, h, m, smap, scount, s, s->name, CG_KIND_FIELD, 0) < 0) return -1;
+        if (emit_properties_for_fields(b, h, m, smap, scount, s, s->name, CG_KIND_FIELD, 0, NULL) < 0) return -1;
         if (ob_printf(b, "};\nstatic luaL_Reg _%s_Methods[] = {\n", s->name) < 0) return -1;
         cg_foreach(m, s->id, CG_KIND_METHOD, method)
             if (ob_printf(b, "\t{ \"%s\", f_%s%s },\n",
@@ -1001,43 +1027,17 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
 
     if (prop_count > 0) {
         if (ob_printf(b,
-                "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                action, action) < 0) return -1;
+                "static struct PropertyType const %sProperties[%d] = {\n",
+                action, prop_count) < 0) return -1;
         if (emit_action_payload_properties(b, h, m, msg, action) < 0) return -1;
         if (ob_printf(b, "};\n") < 0) return -1;
     }
 
     if (ob_printf(b,
-            "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-            "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-            "}\n"
-            "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-            "\treturn Get%s(luaX_checkObject(L, idx));\n"
-            "}\n"
-            "ORCA_API struct ClassDesc _%s = {\n"
-            "\t.ClassName = \"%s\",\n"
-            "\t.DefaultName = \"%s\",\n"
-            "\t.ContentType = \"%s\",\n"
-            "\t.Xmlns = \"http://schemas.corepunch.com/orca/2006/xml/presentation\",\n"
-            "\t.ParentClasses = { ID_SendMessageAction, 0 },\n"
-            "\t.ClassID = ID_%s,\n"
-            "\t.ClassSize = sizeof(struct %s),\n"
-            "\t.Properties = %s%s,\n"
-            "\t.ObjProc = NULL,\n"
-            "\t.Defaults = NULL,\n"
-            "\t.NumProperties = k%sNumProperties,\n"
-            "};\n",
-            action, action, action, action,
-            action, action, action,
-            action,
-            xml_name,
-            xml_name,
-            action,
-            action,
-            action,
+            "REGISTER_MESSAGE_ACTION(%s, \"%s\", %d, %s%s);\n",
+            action, xml_name, prop_count,
             prop_count > 0 ? action : "",
-            prop_count > 0 ? "Properties" : "NULL",
-            action) < 0) return -1;
+            prop_count > 0 ? "Properties" : "NULL") < 0) return -1;
     return 0;
 }
 
@@ -1082,89 +1082,86 @@ static void dot_to_underscore(char *dst, size_t dsz, char const *s) {
     for (i = 0; dst[i]; ++i) if (dst[i] == '.') dst[i] = '_';
 }
 
-static int emit_component_parents(ob *b, cg_host_v1 const *h, cg_node const *c, int refs_only) {
+static int emit_component_parents(ob *b, cg_node const *c) {
     char parents[512];
     char *tok;
     int first = 1;
-    if (refs_only) {
-        if (c->type && c->type[0]) {
-            snprintf(parents, sizeof(parents), "%s", c->type);
-            for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
-                while (*tok == ' ' || *tok == '\t') ++tok;
-                if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
-                first = 0;
-            }
-        }
-        if (c->extra && c->extra[0]) {
-            if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
-            first = 0;
-        }
-        return ob_printf(b, "%s0", first ? "" : ", ");
-    }
     if (c->type && c->type[0]) {
         snprintf(parents, sizeof(parents), "%s", c->type);
         for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
             while (*tok == ' ' || *tok == '\t') ++tok;
-            if (ob_printf(b, "#define ID_%s 0x%08x\n", tok, h->fnv1a32(tok)) < 0) return -1;
+            if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
+            first = 0;
         }
     }
-    if (c->extra && c->extra[0])
-        if (ob_printf(b, "#define ID_%s 0x%08x\n", c->extra, h->fnv1a32(c->extra)) < 0) return -1;
+    if (c->extra && c->extra[0]) {
+        if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
+        first = 0;
+    }
+    return ob_printf(b, "%s0", first ? "" : ", ");
+}
+
+static int emit_defaults_for_props(ob *b, cg_model const *m, uint32_t owner_id) {
+    cg_foreach(m, owner_id, CG_KIND_PROPERTY, p) {
+        char const *kind = type_kind(m, p->type);
+        if (p->flags & CG_FLAG_INHERITED) continue;
+        if (p->extra && p->extra[0]) {
+            if (!strcmp(kind, "string")) {
+                if (ob_printf(b, "\t.%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "enum")) {
+                if (ob_printf(b, "\t.%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
+                       !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
+                if (ob_printf(b, "\t.%s = {%s},\n", p->name, p->extra) < 0) return -1;
+            } else {
+                if (ob_printf(b, "\t.%s = %s,\n", p->name, p->extra) < 0) return -1;
+            }
+        }
+    }
     return 0;
 }
 
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
+        char ss_buf[256];
+        char const *ss = class_storage_name(m, c, ss_buf, sizeof(ss_buf));
+        cg_node const *mx = (c->aux && c->aux[0]) ? find_kind(m, c->aux, CG_KIND_CLASS) : NULL;
         if (emit_component_handlers(b, c, m) < 0) return -1;
         if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
-        if (ob_printf(b, "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                c->name, c->name) < 0) return -1;
-        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1) < 0) return -1;
+        if (ss) { if (ob_printf(b, "#define _STORAGE_STRUCT %s\n", ss) < 0) return -1; }
+        if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",
+                c->name) < 0) return -1;
+        if (mx && emit_properties_for_fields(b, h, m, smap, scount, mx, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
+        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
-            if (ob_printf(b, "\tDECL(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
-                    h->fnv1a32(msg->name), c->name, msg->name, msg->name,
+            const char *decl_macro = ss ? "UIDATA_DECL" : "DECL";
+            if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
+                    decl_macro, h->fnv1a32(msg->name), c->name, msg->name, msg->name,
                     c->name, msg->name, c->name, msg->name) < 0) return -1;
         }
         if (ob_printf(b, "};\nstatic struct %s %sDefaults = {\n", c->name, c->name) < 0) return -1;
-        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-            char const *kind = type_kind(m, p->type);
-            if (p->flags & CG_FLAG_INHERITED) continue;
-            if (p->extra && p->extra[0]) {
-                if (!strcmp(kind, "string")) {
-                    if (ob_printf(b, "\t\t\n  .%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "enum")) {
-                    if (ob_printf(b, "\t\t\n  .%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
-                           !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
-                    if (ob_printf(b, "\t\t\n  .%s = {%s},\n", p->name, p->extra) < 0) return -1;
-                } else {
-                    if (ob_printf(b, "\t\t\n  .%s = %s,\n", p->name, p->extra) < 0) return -1;
-                }
-            }
-        }
-        if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
-                "\tswitch (message) {\n", c->name) < 0) return -1;
+        if (mx && emit_defaults_for_props(b, m, mx->id) < 0) return -1;
+        if (emit_defaults_for_props(b, m, c->id) < 0) return -1;
+        if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
+                "\tstruct %s* cmp = OBJ_GetTypedata(object, ID_%s);\n"
+                "\tswitch (message) {\n", c->name, c->name, c->name) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_HANDLE, hdl) {
             char ident[512];
             dot_to_underscore(ident, sizeof(ident), hdl->name);
             if (ob_printf(b, "\t\tcase ID_%s: return %s_%s(object, cmp, wparm, lparm); // %s\n",
                     ident, c->name, after_dot(hdl->name), hdl->name) < 0) return -1;
         }
-        if (ob_printf(b,
-                "\t}\n\treturn FALSE;\n}\n"
-                "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-                "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-                "}\n"
-                "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-                "\treturn Get%s(luaX_checkObject(L, idx));\n"
-                "}\n",
-                c->name, c->name, c->name, c->name,
-                c->name, c->name, c->name) < 0) return -1;
-        if (emit_component_parents(b, h, c, 0) < 0) return -1;
-        if (ob_printf(b, "REGISTER_CLASS(%s, ", c->name) < 0) return -1;
-        if (emit_component_parents(b, h, c, 1) < 0) return -1;
+        if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
+        if (ss) {
+            if (ob_printf(b, "REGISTER_CLASS(%s, sizeof(struct %s), offsetof(struct %s, %s), ",
+                    c->name, ss, ss, c->name) < 0) return -1;
+        } else {
+            if (ob_printf(b, "REGISTER_CLASS(%s, 0, UINT32_MAX, ", c->name) < 0) return -1;
+        }
+        if (emit_component_parents(b, c) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
+        if (ss) { if (ob_printf(b, "#undef _STORAGE_STRUCT\n") < 0) return -1; }
     }
     return 0;
 }
@@ -1189,7 +1186,7 @@ static int emit_luaopen(ob *b, cg_model const *m) {
         while (foreach_local_event(m, &idx, &msg)) {
             char s[256];
             event_struct_name(m, msg, s, sizeof(s));
-            if (ob_printf(b, "\t\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
+            if (ob_printf(b, "\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
         }
     }
     cg_foreach(m, 0, CG_KIND_INTERFACE, iface)

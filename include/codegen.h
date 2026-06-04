@@ -2,7 +2,6 @@
 #define ORCA_CODEGEN_H
 
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
-#define INHERITED_DECL(SHORT, CLASS, NAME, FIELD, VALUE_TYPE, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(VALUE_TYPE), .DataType=TYPE, .IsInherited=TRUE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 
 #define ENUM(NAME, ...) \
@@ -155,6 +154,12 @@ int luaopen_orca_##NAME(lua_State *L) { \
 }
 
 #define REGISTER_CLASS(NAME, ...) \
+void luaX_push##NAME(lua_State *L, struct NAME const* NAME) { \
+	luaX_pushObject(L, CMP_GetObject(NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { \
+	return Get##NAME(luaX_checkObject(L, idx)); \
+} \
 ORCA_API struct ClassDesc _##NAME = { \
 	.ClassName = #NAME, \
 	.DefaultName = #NAME, \
@@ -169,6 +174,29 @@ ORCA_API struct ClassDesc _##NAME = { \
 	.Defaults = &NAME##Defaults, \
 	.NumProperties = k##NAME##NumProperties, \
 	.NumShorthands = k##NAME##NumShorthands, \
+};
+
+#define REGISTER_MESSAGE_ACTION(NAME, XML_NAME, NUM_PROPS, PROPS) \
+void luaX_push##NAME(lua_State *L, struct NAME const* NAME) { \
+	luaX_pushObject(L, CMP_GetObject(NAME)); \
+} \
+struct NAME* luaX_check##NAME(lua_State *L, int idx) { \
+	return Get##NAME(luaX_checkObject(L, idx)); \
+} \
+ORCA_API struct ClassDesc _##NAME = { \
+	.ClassName = XML_NAME, \
+	.DefaultName = XML_NAME, \
+	.ContentType = #NAME, \
+	.Xmlns = "http://schemas.corepunch.com/orca/2006/xml/presentation", \
+	.ParentClasses = { ID_SendMessageAction, 0 }, \
+	.ClassID = ID_##NAME, \
+	.ClassSize = sizeof(struct NAME), \
+	.Properties = PROPS, \
+	.Shorthands = NULL, \
+	.ObjProc = NULL, \
+	.Defaults = NULL, \
+	.NumProperties = NUM_PROPS, \
+	.NumShorthands = 0, \
 };
 
 #endif
