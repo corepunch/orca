@@ -62,19 +62,24 @@ void
 PROP_AttachProgram(struct Property *p,
                    struct token* program)
 {
-  if (p->binding) {
-    SafeSet(p->binding->token, program, Token_Release);
+  if (!p) {
+    SafeDelete(program, Token_Release);
     return;
   }
+
+  if (p->binding) {
+    SafeDelete(p->binding->token, Token_Release);
+    free(p->binding);
+    p->binding = NULL;
+  }
+
+  if (!program) {
+    return;
+  }
+
   p->binding = ZeroAlloc(sizeof(struct Binding));
   p->binding->property = p;
   p->binding->token = program;
-
-  if (!p->inBindingIndex) {
-    p->nextBinding = core.binding_properties;
-    core.binding_properties = p;
-    p->inBindingIndex = TRUE;
-  }
 }
 
 ORCA_API bool_t

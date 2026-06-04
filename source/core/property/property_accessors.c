@@ -361,11 +361,7 @@ PROP_GetComponentName(struct Property const *property)
 uint32_t
 PROP_GetSize(struct Property const *property)
 {
-  if (property->pdesc) {
-    return property->pdesc->IsArray ? sizeof(void*) : (uint32_t)property->pdesc->DataSize;
-  } else {
-    return (uint32_t)psize[kDataTypeNone];
-  }
+  return property->pdesc->IsArray ? sizeof(void*) : (uint32_t)property->pdesc->DataSize;
 }
 
 uint32_t

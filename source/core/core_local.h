@@ -109,7 +109,6 @@ struct game
   struct file_loader file_loaders[MAX_FILE_LOADERS];
   struct font_registry_entry fonts[MAX_FONT_FAMILIES];
   struct storage_family storage_families[MAX_STORAGE_FAMILIES];
-  struct Property* binding_properties;
   uint64_t struct_parse_mask;
   bool_t struct_parse_mask_valid;
 };
@@ -199,8 +198,6 @@ uint32_t
 PROP_GetShortID(struct Property const *);
 bool_t
 PROP_Import(struct Property *, struct vm_register*);
-void
-PROP_SetTypeSize(struct Property *, eDataType_t, uint32_t);
 struct Property *
 PROP_AddToList(struct Property *, struct Property **);
 void

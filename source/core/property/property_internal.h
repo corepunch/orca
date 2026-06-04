@@ -6,7 +6,6 @@
 #define ID_ContentOffset 0x35a57c45
 
 static size_t psize[] = {
-  [kDataTypeNone] = 0,
   [kDataTypeBool] = sizeof(bool_t),
   [kDataTypeInt] = sizeof(int),
   [kDataTypeEnum] = sizeof(int),
@@ -21,7 +20,6 @@ static size_t psize[] = {
 struct Property
 {
   struct Property*           next;
-  struct Property*           nextBinding;
   struct Binding*            binding;
   struct Object*             object;
   struct PropertyType const *pdesc;
@@ -29,7 +27,6 @@ struct Property
   uint32_t                   flags;
   uint32_t                   changeCallback; // Lua registry reference for the change callback function
   uint32_t                   updateFrame;
-  bool_t                     inBindingIndex;
 };
 
 static inline bool_t
@@ -44,6 +41,7 @@ void const *PROP_GetRawValueSlot(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 void PROP_NotifyChanged(struct Property *property);
+void PROP_RunProgramsInTree(struct Object *root);
 void OBJ_ApplyInheritedProperties(struct Object *object);
 void OBJ_PropagateInheritedProperty(struct Object *object, struct Property *property);
 

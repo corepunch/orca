@@ -32,26 +32,6 @@ print_name(struct Object *object)
 #endif
 
 static void
-_UnindexBindingProperty(struct Property *property)
-{
-  if (!property || !property->inBindingIndex) {
-    return;
-  }
-  struct Property **link = &core.binding_properties;
-  while (*link) {
-    if (*link == property) {
-      *link = property->nextBinding;
-      property->nextBinding = NULL;
-      property->inBindingIndex = FALSE;
-      return;
-    }
-    link = &(*link)->nextBinding;
-  }
-  property->nextBinding = NULL;
-  property->inBindingIndex = FALSE;
-}
-
-static void
 _ReleaseBindingNode(struct Binding *binding)
 {
   if (!binding) {
@@ -100,9 +80,6 @@ PROP_Update(struct Property *property)
   if (property->binding && !_RunBinding(property, property->binding)) {
     _ReleaseBindingNode(property->binding);
     property->binding = NULL;
-  }
-  if (!property->binding) {
-    _UnindexBindingProperty(property);
   }
   return TRUE;
 }
@@ -205,7 +182,6 @@ OBJ_ReleaseProperties(struct Object *hobj)
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
-    _UnindexBindingProperty(p);
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
     if (p->flags & PF_OWNS_STORAGE) {
@@ -216,15 +192,31 @@ OBJ_ReleaseProperties(struct Object *hobj)
   }
 }
 
+static void
+_RunProgramsForObject(struct Object *object)
+{
+  if (!object) {
+    return;
+  }
+  FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(object)) {
+    PROP_Update(p);
+  }
+  FOR_EACH_CHILD(object, _RunProgramsForObject);
+}
+
+void
+PROP_RunProgramsInTree(struct Object *root)
+{
+  for (struct Object *object = root; object; object = OBJ_GetNext(object)) {
+    _RunProgramsForObject(object);
+  }
+}
+
 void
 PROP_RunAllPrograms(void)
 {
-  struct Property *p = core.binding_properties;
-  while (p) {
-    struct Property *next_property = p->nextBinding;
-    PROP_Update(p);
-    p = next_property;
-  }
+  struct Object *focus = core_GetFocus();
+  PROP_RunProgramsInTree(focus ? OBJ_GetRoot(focus) : NULL);
 }
 
 void
@@ -236,14 +228,6 @@ PROP_ClearSpecialized(struct Property *pprop) {
       memset(p->value, 0, PROP_GetSize(p));
     }
   }
-}
-
-void
-PROP_SetTypeSize(struct Property *p, eDataType_t t, uint32_t s)
-{
-  (void)p;
-  (void)t;
-  (void)s;
 }
 
 void
