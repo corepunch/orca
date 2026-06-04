@@ -48,6 +48,8 @@ LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
+PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
+PLUGIN_EXTRA_LIBS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 HEADERS = $(wildcard *.h)
@@ -105,19 +107,20 @@ else
 	$(Q)$(CC) $(addprefix ${OBJECTDIR}/,$(UNITEOBJECTS)) -shared -Wall $(LIBS) -o $(TARGETLIB) $(LDFLAGS) -Wl,-rpath,'$$ORIGIN'
 endif
 
+.SECONDEXPANSION:
 buildplugins: buildlib $(PLUGINLIBS)
 
-$(PLUGINLIBDIR)/%.so: buildlib | directories
+$(PLUGINLIBDIR)/%.so: buildlib $$(PLUGIN_DEPS_$$*) | directories
 	$(Q)mkdir -p $(PLUGINLIBDIR)
 	$(Q)echo "Building plugin $*"
 ifeq ($(shell uname -s),Darwin)
 	$(Q)find $(PLUGINDIR)/$* -name "*.c" | sed 's/.*/#include "&"/' | \
 		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$*.o - && \
-		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca -o $@ $(LDFLAGS) -Wl,-rpath,@loader_path
+		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca $(PLUGIN_EXTRA_LIBS_$*) -o $@ $(LDFLAGS) -Wl,-rpath,@loader_path
 else
 	$(Q)find $(PLUGINDIR)/$* -name "*.c" | sed 's/.*/#include "&"/' | \
 		$(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)/plugin_$*.o - && \
-		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca -o $@ $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..'
+		$(CC) $(OBJECTDIR)/plugin_$*.o -shared -Wall $(LIBS) -lorca $(PLUGIN_EXTRA_LIBS_$*) -o $@ $(LDFLAGS) -Wl,-rpath,'$$ORIGIN/..'
 endif
 
 app: modules platform
