@@ -10,7 +10,7 @@
   <externals>
     <external struct="Object"/>
     <external struct="ViewEntity"/>
-    <external struct="ViewText"/>
+    <external struct="TextBlockText"/>
     <external struct="ViewDef"/>
     <external struct="text_info"/>
     <external struct="lua_State"/>
@@ -245,13 +245,12 @@
       <fields>
         <field name="_steps" type="uiLabelSteps">Internal step-based rendering parameters.</field>
         <field name="_node" type="Node" pointer="true">Reference to the owning node using this concept.</field>
-        <field name="_text" type="ViewText" pointer="true">Internal view representation of the text.</field>
+        <field name="_text" type="TextBlockText" pointer="true">Internal prepared text content.</field>
       </fields>
       <messages>
         <message name="MakeText">
           <summary>Requests the component to lay out and render its text content.</summary>
           <fields>
-            <field name="text" type="ViewText" pointer="true">Text view to render</field>
             <field name="availableSpace" type="uint">Available space for text layout</field>
           </fields>
         </message>

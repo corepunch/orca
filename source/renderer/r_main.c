@@ -136,42 +136,6 @@ R_DrawLines(struct ViewDef const* view, PDRAWLINESSTRUCT def)
   return S_OK;
 }
 
-uint32_t
-R_GetTextHash(struct ViewText* text)
-{
-  uint32_t size = sizeof(struct ViewTextRun) - sizeof(lpcString_t);
-  uint32_t text_hash = 0;
-  uint32_t format_hash = fnv1a32_range((char*)text, (char*)text + sizeof(struct ViewText));
-  for (struct ViewTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
-    text_hash ^= fnv1a32(run->string);
-    format_hash ^= fnv1a32_range((char*)&run->fontFamily, ((char*)&run->fontFamily) + size);
-  }
-  return text_hash ^ format_hash;
-}
-
-struct Texture*
-Text_GetImage(struct ViewText* text)
-{
-  uint32_t value = R_GetTextHash(text);
-  FOR_LOOP(i, MAX_TEXTCACHE)
-  {
-    if (tr.textcache[i].value == value) {
-      tr.textcache[i].frame = tr.frame;
-      return tr.textcache[i].image;
-    }
-  }
-  FOR_LOOP(i, MAX_TEXTCACHE)
-  {
-    if (tr.textcache[i].frame != tr.frame) {
-      Text_Print(text, &tr.textcache[i].image, TRUE);
-      tr.textcache[i].value = value;
-      tr.textcache[i].frame = tr.frame;
-      return tr.textcache[i].image;
-    }
-  }
-  return NULL;
-}
-
 DRAWVERT
 vertex_new2(float x, float y, float u, float v);
 
@@ -1030,18 +994,6 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
   return NOERROR;
 }
 
-HRESULT
-R_ClearTextCache(void)
-{
-  FOR_LOOP(i, MAX_TEXTCACHE) {
-    if (tr.textcache[i].image) {
-      SafeDelete(tr.textcache[i].image, Texture_Release);
-    }
-  }
-  memset(tr.textcache, 0, sizeof(tr.textcache));
-  return NOERROR;
-}
-
 void
 renderer_Shutdown(void)
 {
@@ -1052,8 +1004,6 @@ renderer_Shutdown(void)
   Con_Printf("Shutting down renderer...");
 
   axMakeCurrentContext();
-
-  R_ClearTextCache();
 
   FOR_LOOP(i, SHADER_COUNT) SafeDelete(tr.shaders[i].shader, Shader_Release);
   FOR_LOOP(i, TX_COUNT) SafeDelete(tr.textures[i], Texture_Release);
@@ -1170,10 +1120,6 @@ void on_renderer_module_registered(lua_State* L) {
 
 
 ORCA_API void luaX_pushViewDef(lua_State* L, struct ViewDef const* viewdef) {
-  lua_pushnil(L);
-}
-
-ORCA_API void luaX_pushViewText(lua_State* L, struct ViewText const* viewtext) {
   lua_pushnil(L);
 }
 

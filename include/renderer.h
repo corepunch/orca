@@ -41,7 +41,7 @@ struct fontface;
 struct model;
 struct shape;
 struct user_data;
-struct ViewText;
+struct FontFamily;
 
 typedef void* handle_t;
 typedef uint32_t DRAWINDEX, *PDRAWINDEX;
@@ -347,7 +347,6 @@ struct ViewEntity
 {
   struct mat4 matrix;
   struct ViewMaterial material;
-  struct ViewText* text;
   struct Mesh const* mesh;
   struct Shader const* shader;
   struct color32 const *palette; // optional palette for indexed (8-bit) textures
@@ -512,43 +511,6 @@ typedef struct _DRAWIMAGESTRUCT
   struct color color;
 } DRAWIMAGESTRUCT, *PDRAWIMAGESTRUCT;
 
-typedef enum
-{
-  FS_NORMAL,
-  FS_BOLD,
-  FS_ITALIC,
-  FS_BOLD_ITALIC,
-  FS_COUNT,
-} FontStyle;
-
-struct FontFamily;
-struct ViewTextRun
-{
-  lpcString_t string;
-  struct FontFamily const *fontFamily; // NOTE: must be second field for R_GetTextHash()
-  FontStyle fontStyle;
-  uint32_t fontSize;
-  uint32_t fixedCharacterWidth;
-  uint32_t underlineWidth;
-  uint32_t underlineOffset;
-  float letterSpacing;
-  float lineSpacing;
-};
-
-#define MAX_TEXT_RUNS 256
-
-struct ViewText
-{
-  uint32_t flags;
-  uint32_t availableWidth;
-  uint32_t cursor;
-  uint32_t numTextRuns;
-  float scale;
-  enum text_wrap textWrapping;
-  enum text_overflow textOverflow;
-  struct ViewTextRun run[];
-};
-
 // typedef struct screen_rect {
 //     int x, y, w, h;
 // } SCREENRECT, *PSCREENRECT;
@@ -594,9 +556,7 @@ ORCA_API HRESULT R_ClearScreen(struct color color, float depth, byte_t stencil);
 ORCA_API HRESULT R_SetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_GetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
-ORCA_API HRESULT R_ClearTextCache(void);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
-ORCA_API HRESULT Text_GetInfo(struct ViewText const*, struct text_info*);
 ORCA_API HRESULT Image_GetInfo(struct Texture const*, struct image_info*);
 ORCA_API HRESULT Shader_EnumUniforms(struct shader const*, SHADERENUMPROC, void*);
 ORCA_API HRESULT Shape_GetPointLocation(struct shape const*, float, struct vec3*);
@@ -613,6 +573,9 @@ ORCA_API HRESULT UserData_Create(lpcString_t, uint32_t, void**);
 // Resource operations
 ORCA_API HRESULT Texture_Create(PCREATEIMGSTRUCT, struct Texture**);
 ORCA_API HRESULT Texture_Release(struct Texture*);
+ORCA_API void Texture_Reallocate(struct Texture*, PCREATEIMGSTRUCT);
+ORCA_API void *FontFamily_GetFace(struct FontFamily const*, uint32_t);
+ORCA_API struct FontFamily const *Font_GetDefaultFamily(void);
 ORCA_API struct Object *R_LoadImageFromMemory(void*, uint32_t);
 ORCA_API HRESULT R_BeginFrame(struct color);
 ORCA_API HRESULT R_EndFrame(void);

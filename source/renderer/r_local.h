@@ -165,15 +165,6 @@ struct shape
   struct vec3 lineDirection;
 };
 
-#define MAX_TEXTCACHE 256
-
-typedef struct _TEXTCACHE
-{
-  struct Texture* image;
-  uint32_t value;
-  uint32_t frame;
-} TEXTCACHE, *PTEXTCACHE;
-
 // Shader and model enums are now in public renderer.h header
 
 enum
@@ -203,7 +194,6 @@ struct renderer
 {
   uint32_t frame, drawCalls, buffer, vao;
   struct Texture* currentRenderTarget;
-  TEXTCACHE textcache[MAX_TEXTCACHE];
   PIPELINESTATE state;
   CINEMATICBUF cinbuf;
   struct managed_resource* resources;
@@ -265,12 +255,6 @@ extern struct shader_desc shader_roundedbox;
 // font
 struct fontface*
 Font_Load(lpcString_t, struct FontFamily *);
-
-// text
-struct Texture*
-Text_GetImage(struct ViewText*);
-HRESULT
-Text_Print(struct ViewText const*, struct Texture**, bool_t /*reuse*/);
 
 // shape
 struct shape*

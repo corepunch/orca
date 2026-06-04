@@ -60,111 +60,20 @@ mesh_rect(struct Node2D *pNode2D,
   };
 }
 
-static lpcString_t
-_GetTextBlockText(struct Object *hObject,
-                  struct TextBlockConcept *pTextBlockConcept,
-                  struct TextRun *pTextRun)
-{
-  struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
-  if (pTextRun->Text && *pTextRun->Text)
-  {
-    return pTextRun->Text;
-  }
-  else if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
-  {
-    return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
-  }
-  else if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
-  {
-    return OBJ_GetTextContent(hObject);
-  }
-  else
-  {
-    return pTextBlockConcept->PlaceholderText;
-  }
-}
-
-static struct ViewTextRun
-_MakeViewTextRun(struct Object *hObject,
-                 struct TextRun text,
-                 lpcString_t szText)
-{
-  struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
-
-  TextRun_ReadProperty(hObject, Font.Weight, &font.Weight);
-  TextRun_ReadProperty(hObject, Font.Style, &font.Style);
-  TextRun_ReadProperty(hObject, Font.Size, &font.Size);
-  TextRun_ReadProperty(hObject, Font.Family, &font.Family);
-
-  struct ViewTextRun view = {
-    .string = szText,
-    .fontFamily = font.Family,
-    .fontSize = font.Size,
-    .letterSpacing = text.LetterSpacing,
-    .fixedCharacterWidth = text.FixedCharacterWidth,
-    .underlineWidth = text.Underline.Width,
-    .underlineOffset = text.Underline.Offset,
-    .fontStyle = 0,
-  };
-  if (font.Weight == kFontWeightBold) {
-    view.fontStyle += FS_BOLD;
-  }
-  if (font.Style == kFontStyleItalic) {
-    view.fontStyle += FS_ITALIC;
-  }
-  return view;
-}
-
-HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
-{
-  struct TextRun *pTextRun = GetTextRun(hObject);
-  struct ViewText* pViewText = pMakeText->text;
-//  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run[0] = _MakeViewTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
-  pViewText->numTextRuns = 1;
-  FOR_EACH_OBJECT(run, hObject) {
-    struct TextRun *tr = GetTextRun(run);
-    if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
-      lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
-      struct TextRun base = *pTextRun;
-      if (tr->Font.Weight) base.Font.Weight = tr->Font.Weight;
-      if (tr->Font.Style) base.Font.Style = tr->Font.Style;
-      if (tr->Font.Size) base.Font.Size = tr->Font.Size;
-      if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
-      if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;
-      if (TextRun_GetProperty(run, kTextRunUnderlineColor)) base.Underline.Color = tr->Underline.Color;
-      if (TextRun_GetProperty(run, kTextRunLetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
-      if (TextRun_GetProperty(run, kTextRunLineHeight)) base.LineHeight = tr->LineHeight;
-      if (TextRun_GetProperty(run, kTextRunCharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
-      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
-      if (TextRun_GetProperty(run, kTextRunRemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
-      pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
-    }
-  }
-  pViewText->flags = pTextBlockConcept->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-//  pViewText->lineSpacing = pTextRun->LineHeight;
-  pViewText->availableWidth = pMakeText->availableSpace;
-  pViewText->textWrapping = (enum text_wrap)pTextBlockConcept->TextWrapping;
-  pViewText->textOverflow = (enum text_overflow)pTextBlockConcept->TextOverflow;
-  pViewText->scale = axGetScaling();
-  return TRUE;
-}
-
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
   struct TextRun *output = GetTextRun(hObject);
   struct TextBlockConcept *textblock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, TextBlockConcept, MakeText,
-                   .text = textblock->_text,
                    .availableSpace = pMeasureOverride->Width);
-  Text_GetInfo(textblock->_text, &output->_textinfo);
+  TextBlockText_GetInfo(textblock->_text, &output->_textinfo);
   return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
 
 HANDLER(TextBlock, Node2D, ForegroundContent)
 {
-  return TRUE;
+  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
+  return (intptr_t)TextBlockText_GetTexture(text->_text);
 }
 
 HANDLER(TextBlock, Node2D, UpdateGeometry)
@@ -195,7 +104,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
   struct ViewEntity entity;
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   float modopacity = 1.f;
-  if (text->PlaceholderText == text->_text->run[0].string && pDrawBrush->foreground) {
+  if (text->_text->placeholder && pDrawBrush->foreground) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
       pDrawBrush->brush = text->Placeholder;
@@ -213,7 +122,6 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
 //    struct TextBlockConcept *label = GetTextBlockConcept(hObject);
 //    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
-    entity.text = text->_text;
     struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
@@ -241,18 +149,5 @@ HANDLER(TextBlock, Object, Create)
   struct Property *p;
   OBJ_FindShortProperty(hObject, "Text", &p);
   pTextBlock->_node2D = GetNode2D(hObject);
-  return FALSE;
-}
-
-HANDLER(TextBlockConcept, Object, Create)
-{
-  pTextBlockConcept->_node = GetNode(hObject);
-  pTextBlockConcept->_text = ZeroAlloc(sizeof(struct ViewText) + sizeof(struct ViewTextRun) * MAX_TEXT_RUNS);
-  return FALSE;
-}
-
-HANDLER(TextBlockConcept, Object, Destroy)
-{
-  SafeDelete(pTextBlockConcept->_text, free);
   return FALSE;
 }

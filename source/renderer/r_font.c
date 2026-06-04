@@ -7,6 +7,8 @@
 #include FT_TRUETYPE_TABLES_H
 
 #include "r_local.h"
+#include <filesystem/filesystem.h>
+#include <plugins/UIKit/uidef.h>
 
 extern struct Object *FS_LoadObject(lpcString_t path);
 
@@ -15,6 +17,15 @@ extern struct Object *FS_LoadObject(lpcString_t path);
 #define FT_FONTSCALE(font)
 
 #define CARET_WIDTH 2
+
+typedef enum
+{
+  FS_NORMAL,
+  FS_BOLD,
+  FS_ITALIC,
+  FS_BOLD_ITALIC,
+  FS_COUNT,
+} FontStyle;
 
 static FT_UInt const offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL,
                                             0x000E2080UL, 0x03C82080UL,
@@ -93,27 +104,36 @@ T_GetDefaultFontFamily(void)
   return fg.defaultFont;
 }
 
-static FT_Face
-T_GetFontFace(struct ViewTextRun const* run)
+struct FontFamily const *
+Font_GetDefaultFamily(void)
 {
-  if (run->fontFamily) {
-    if ((&run->fontFamily->regular)[run->fontStyle]) {
-      return (&run->fontFamily->regular)[run->fontStyle]->face;
-    }
-    FOR_LOOP(i, FS_COUNT) {
-      if ((&run->fontFamily->regular)[i]) {
-        return (&run->fontFamily->regular)[i]->face;
-      }
-    }
+  return T_GetDefaultFontFamily();
+}
+
+void *
+FontFamily_GetFace(struct FontFamily const *family, uint32_t fontStyle)
+{
+  if (!family) return NULL;
+  if ((&family->regular)[fontStyle]) {
+    return (&family->regular)[fontStyle]->face;
   }
-  struct FontFamily const *font = T_GetDefaultFontFamily();
-  if (font && (&font->regular)[run->fontStyle]) {
-    return (&font->regular)[run->fontStyle]->face;
-  }
-  if (font && font->regular) {
-    return font->regular->face;
+  FOR_LOOP(i, FS_COUNT) {
+    if ((&family->regular)[i]) {
+      return (&family->regular)[i]->face;
+    }
   }
   return NULL;
+}
+
+static FT_Face
+T_GetFontFace(struct TextBlockTextRun const* run)
+{
+  if (run->fontFamily) {
+    FT_Face face = FontFamily_GetFace(run->fontFamily, run->fontStyle);
+    if (face) return face;
+  }
+  struct FontFamily const *font = T_GetDefaultFontFamily();
+  return FontFamily_GetFace(font, run->fontStyle);
 }
 
 HRESULT
@@ -231,7 +251,7 @@ FT_Load_CharGlyph(FT_Face face, FT_ULong charcode, FT_Int32 load_flags)
 }
 
 static struct AXsize
-T_GetSize(struct ViewText const* text,
+T_GetSize(struct TextBlockText const* text,
           struct rect* rcursor)
 {
   struct AXsize textSize = { 0 };
@@ -247,7 +267,7 @@ T_GetSize(struct ViewText const* text,
   // FT_SCALE(descender));
   //	}
 
-  for (struct ViewTextRun const *run = text->run;
+  for (struct TextBlockTextRun const *run = text->run;
        run - text->run < text->numTextRuns;
        run++)
   {
@@ -362,7 +382,7 @@ static void write_char(FT_Bitmap *bitmap, uint8_t *image_data,
 }
 
 HRESULT
-Text_Print(struct ViewText const* pViewText,
+TextBlockText_Print(struct TextBlockText const* pViewText,
            struct Texture** pTexture,
            bool_t bReuseTexture)
 {
@@ -398,7 +418,7 @@ Text_Print(struct ViewText const* pViewText,
   if (image_data == NULL)
     return E_OUTOFMEMORY;
 
-  for (struct ViewTextRun const *run = pViewText->run;
+  for (struct TextBlockTextRun const *run = pViewText->run;
        run - pViewText->run < pViewText->numTextRuns && !bDone;
        run++)
   {
@@ -640,6 +660,43 @@ Text_Print(struct ViewText const* pViewText,
   }
 }
 
+ORCA_API uint32_t
+TextBlockText_GetHash(struct TextBlockText *text)
+{
+  uint32_t size = sizeof(struct TextBlockTextRun) - sizeof(lpcString_t);
+  uint32_t text_hash = 0;
+  uint32_t format_hash = fnv1a32_range((char*)text, (char*)&text->textureHash);
+  for (struct TextBlockTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
+    text_hash ^= fnv1a32(run->string);
+    format_hash ^= fnv1a32_range((char*)&run->fontFamily, ((char*)&run->fontFamily) + size);
+  }
+  return text_hash ^ format_hash;
+}
+
+ORCA_API struct Texture *
+TextBlockText_GetTexture(struct TextBlockText *text)
+{
+  uint32_t hash = TextBlockText_GetHash(text);
+  if (text->texture && text->textureHash == hash) {
+    return text->texture;
+  }
+  if (FAILED(TextBlockText_Print(text, &text->texture, text->texture != NULL))) {
+    SafeDelete(text->texture, Texture_Release);
+    text->textureHash = 0;
+    return NULL;
+  }
+  text->textureHash = hash;
+  return text->texture;
+}
+
+ORCA_API void
+TextBlockText_Release(struct TextBlockText *text)
+{
+  if (!text) return;
+  SafeDelete(text->texture, Texture_Release);
+  free(text);
+}
+
 struct fontface*
 Font_Load(lpcString_t szFileName, struct FontFamily *pFontFamily)
 {
@@ -672,17 +729,17 @@ Font_ResolvePath(struct Object *object, lpcString_t path, path_t resolved)
 }
 
 HRESULT
-Text_GetInsets(struct ViewText const* text,
+TextBlockText_GetInsets(struct TextBlockText const* text,
                struct edges* edges)
 {
-  for (struct ViewTextRun const *run = text->run;
+  for (struct TextBlockTextRun const *run = text->run;
        run - text->run < text->numTextRuns;
        run++)
   {
     FT_Face const face = T_GetFontFace(run);
     if (!face ||
         FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale) ||
-        (text->flags & RF_USE_FONT_HEIGHT))
+        (text->flags & UI_TEXT_USE_FONT_HEIGHT))
     {
       *edges = (struct edges){ 0 };
       return S_OK;
@@ -699,8 +756,8 @@ Text_GetInsets(struct ViewText const* text,
   return S_OK;
 }
 
-HRESULT
-Text_GetInfo(struct ViewText const* pViewText,
+ORCA_API HRESULT
+TextBlockText_GetInfo(struct TextBlockText const* pViewText,
              struct text_info* info)
 {
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
@@ -711,7 +768,7 @@ Text_GetInfo(struct ViewText const* pViewText,
   info->cursor.width /= pViewText->scale;
   info->cursor.height /= pViewText->scale;
   info->cursor.width += CARET_WIDTH;
-  Text_GetInsets(pViewText, &info->txInsets);
+  TextBlockText_GetInsets(pViewText, &info->txInsets);
   return NOERROR;
 }
 

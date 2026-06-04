@@ -4,63 +4,13 @@
 
 #include <SceneKit/SceneKit.h>
 
-#if 0
-static void
-text_from_label(struct Object * hObject, struct TextBlock3D *label, struct ViewText* text)
-{
-	text->font          = label->Font;
-	text->fontSize      = label->FontSize;
-	text->flags         = label->UseFullFontHeight ? RF_USE_FONT_HEIGHT : 0;
-	text->lineSpacing   = label->LineHeight;
-	text->letterSpacing = label->LetterSpacing;
-	text->fixedCharacterWidth = label->FixedCharacterWidth;
-	
-	memcpy(text->string, label->Text, MAX_PROPERTY_STRING);
-}
-
-static struct rect
-mesh_rect(struct Object * hObject, struct TextBlock3D *frame)
-{
-	struct ViewText     text = {0};
-	struct text_info info;
-	text_from_label(hObject, frame, &text);
-	Text_GetInfo(&text, info);
-//	struct rect const rect = {
-//		.width  = Node2D_GetFrame(hObject, kBox3FieldWidth),
-//		.height = Node2D_GetFrame(hObject, kBox3FieldHeight),
-//	};
-	return (struct rect){
-		.x      = 0,//text_x(frame, info.txWidth, rect.width),
-		.y      = 0,//text_y(frame, info.txHeight, rect.height),
-		.width  = info.txWidth,
-		.height = info.txHeight,
-	};
-}
-#endif
-
 HANDLER(TextBlock3D, Node3D, Render)
 {
-#if 0
-	struct ViewText text;
-	text_from_label(hObject, pTextBlock3D, &text);
-	struct ViewEntity entity = {
-		.debugName   = OBJ_GetName(hObject),
-		.mesh        = BOX_PTR(Mesh, MD_PLANE),
-		.opacity     = GetNode3D(hObject)->_opacity,
-		.matrix      = GetNode3D(hObject)->Matrix,
-		.bbox        = BOX3_FromRect(mesh_rect(hObject, pTextBlock3D)),
-		.text 		 = &text,
-	};
-	
-	R_DrawEntity(parm, &entity);
-#endif
-  
   struct TextRun *pTextRun = GetTextRun(hObject);
   struct TextBlockConcept *pTextBlock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, TextBlockConcept, MakeText,
-                   .text = pTextBlock->_text,
                    .availableSpace = 512);
-  Text_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
+  TextBlockText_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
   
   float w = pTextRun->_textinfo.txWidth;
   float h = pTextRun->_textinfo.txHeight;
@@ -68,11 +18,10 @@ HANDLER(TextBlock3D, Node3D, Render)
   struct ViewEntity entity = {
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
-    .text = pTextBlock->_text,
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,
       .color = {1,1,1,1},
-      .texture = 0,
+      .texture = TextBlockText_GetTexture(pTextBlock->_text),
       .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
     },
     .matrix = GetNode3D(hObject)->Matrix,

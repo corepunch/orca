@@ -770,7 +770,6 @@ HANDLER(Screen, Window, Resized) {
     node->Size.Axis[0].Requested = pResized->WindowWidth;
     node->Size.Axis[1].Requested = pResized->WindowHeight;
   }
-  R_ClearTextCache();
   OBJ_SetTreeDirty(hObject);
   OBJ_SendMessageW(hObject, ID_Window_Paint, wParam, pResized);
   return FALSE;
