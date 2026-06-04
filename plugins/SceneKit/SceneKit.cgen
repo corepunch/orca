@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<module name="SceneKit" namespace="orca" on-luaopen="on_scenekit_registered">
+<module name="SceneKit" namespace="orca" prefix="Scene" on-luaopen="on_scenekit_registered">
   <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
     <include file="include/renderer.h"/>
@@ -57,7 +57,7 @@
     </enum>
   </enums>
   <classes>
-    <class name="Node3D" parent="Node" children="Node3D">
+    <class name="Node3D" parent="Node" children="Node3D" storage-struct="true">
       <summary>Base class for all 3D scene graph nodes with transform and positioning capabilities</summary>
       <details>Provides fundamental 3D transformation properties including layout transforms, render transforms, and matrix calculations. All 3D objects in the scene inherit from this component.</details>
       <handles>
@@ -182,7 +182,7 @@
         <property name="Prefab" type="string">Path to prefab asset file to instantiate</property>
       </properties>
     </class>
-    <class name="RenderPass" parent="Node">
+    <class name="RenderPass" parent="Node" storage-struct="true">
       <summary>Base class for render pass components in the rendering pipeline</summary>
       <details>Abstract base for all render pass types. Render passes define stages in the rendering pipeline, allowing complex effects through multi-pass rendering, post-processing, and custom rendering operations.</details>
     </class>

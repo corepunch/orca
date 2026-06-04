@@ -173,7 +173,11 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.extra = xattr(e, "concept");
             n.aux   = xattr(e, "mixin");
             { tmp = xattr(e, "storage-struct");
-              if (!strcmp(tmp, "true")) n.flags |= CG_FLAG_STORAGE_ROOT;
+              if (tmp && tmp[0]) {
+                  n.flags |= CG_FLAG_STORAGE_ROOT;
+                  /* non-"true" value = explicit struct name override stored in aux2 */
+                  if (strcmp(tmp, "true")) { free((void*)n.aux2); n.aux2 = tmp; tmp = NULL; }
+              }
               free(tmp); }
             break;
         case CG_KIND_MIXIN:

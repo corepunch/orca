@@ -25,24 +25,22 @@ struct Object
   LPSTR TextContent;
 
   /* Component list — fallback for classes not yet in a typedata block.
-   * Migrated to typedata (storage-struct="true" on root + module prefix):
-   *   UIKit/Node2D  → struct UINode2D  (prefix="UI", Node2D storage-struct="true")
+   * Migrated to typedata (storage-struct="true/Name" on root + module prefix):
+   *   UIKit/Node2D     → struct UINode2D       (prefix="UI")
+   *   SceneKit/Node3D  → struct SceneNode3D    (prefix="Scene")
+   *   SceneKit/RenderPass → struct SceneRenderPass
+   *   SpriteKit/SKNode → struct SKData         (explicit name)
    *
-   * Still on component list — candidate root classes shown in parentheses:
-   *   UIKit:      Action (→ UIAction), Trigger (→ UITrigger),
-   *               StyleSheet, StyleRule, StyleController (→ UIAction or UITrigger?)
-   *               StateManager, StateGroup, State, StateManagerController
-   *               ResourceDictionary, Locale, DataObject, Binding, BindingExpression
-   *               Node (no-op — never instantiated directly)
+   * Still on component list:
+   *   UIKit:      Action, Trigger, StyleSheet, StyleRule, StyleController,
+   *               StateManager, StateGroup, State, StateManagerController,
+   *               ResourceDictionary, Locale, DataObject, Binding, BindingExpression,
+   *               Node (abstract — never instantiated directly)
    *   core:       SendMessageAction, Setter, HideAction,
    *               OnPropertyChangedTrigger, OnAttachedTrigger, EventTrigger,
    *               AnimationCurve, AnimationClip, AnimationPlayer
-   *   SceneKit:   Node3D (→ SceneNode3D), Scene, Model3D, Camera, Light3D,
-   *               PlaneMeshNode, PrefabView3D, SpriteView,
-   *               Viewport3D (reserved slot in UINode2D — move to SceneNode3D later),
-   *               RenderPass and subclasses, PipelineStateRenderPass
-   *   SpriteKit:  SKNode (→ SKNode), SKScene, SKSpriteNode, SKLabelNode,
-   *               SKView (reserved slot in UINode2D — move to SKNode later)
+   *   SceneKit:   Viewport3D (reserved slot in UINode2D — needs cross-module solution)
+   *   SpriteKit:  SKView (reserved slot in UINode2D — needs cross-module solution)
    *   renderer:   Texture, Image, RenderTargetTexture, CubeMapTexture, IOSurfaceTexture,
    *               VertexShader, FragmentShader, Shader, Material, Mesh, FontFamily,
    *               Trajectory, Timeline

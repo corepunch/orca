@@ -8,6 +8,13 @@
 static_assert(sizeof(struct SKView) <= UIDATA_SKVIEW_SIZE,
     "SKView exceeds reserved UINode2D slot — increase UIDATA_SKVIEW_SIZE");
 
+struct SKData *
+Object_SKData(struct Object *object)
+{
+  if (!object || !OBJ_IsKindOfW(object->type, ID_SKNode)) return NULL;
+  return (struct SKData *)object->typedata;
+}
+
 static int
 f_createAnimation(lua_State *L)
 {

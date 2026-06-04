@@ -205,7 +205,11 @@ static char const *class_storage_name(cg_model const *m, cg_node const *c,
     }
     root = class_storage_root(m, c);
     if (!root) return NULL;
-    snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
+    /* Explicit name override on root class (storage-struct="ExplicitName") */
+    if (root->aux2 && root->aux2[0])
+        snprintf(dst, dsz, "%s", root->aux2);
+    else
+        snprintf(dst, dsz, "%s%s", m->prefix ? m->prefix : "", root->name);
     return dst;
 }
 

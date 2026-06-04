@@ -26,7 +26,7 @@
         <field name="Palette" type="uint" pointer="true" const="true"/>
       </fields>
     </class>
-    <class name="SKNode" parent="Node" children="SKNode">
+    <class name="SKNode" parent="Node" children="SKNode" storage-struct="SKData">
       <summary>Base 2D sprite node with transform and matrix</summary>
       <details>Provides fundamental 2D transformation properties for sprite scene graph nodes. All sprite objects in the scene inherit from this component.</details>
       <handles>
