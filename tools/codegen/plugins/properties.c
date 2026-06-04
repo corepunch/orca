@@ -350,7 +350,8 @@ static cg_node const *find_mixin(cg_model const *m, char const *name) {
     size_t i;
     if (!name || !name[0]) return NULL;
     for (i = 0; i < m->node_count; ++i)
-        if (m->nodes[i].kind == CG_KIND_MIXIN && !strcmp(m->nodes[i].name, name))
+        if ((m->nodes[i].kind == CG_KIND_MIXIN || m->nodes[i].kind == CG_KIND_CLASS)
+                && !strcmp(m->nodes[i].name, name))
             return &m->nodes[i];
     return NULL;
 }

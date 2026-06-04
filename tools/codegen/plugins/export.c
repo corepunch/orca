@@ -1083,7 +1083,10 @@ static int emit_defaults_for_props(ob *b, cg_model const *m, uint32_t owner_id) 
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
-        cg_node const *mx = (c->aux && c->aux[0]) ? find_kind(m, c->aux, CG_KIND_MIXIN) : NULL;
+        cg_node const *mx = (c->aux && c->aux[0])
+            ? (find_kind(m, c->aux, CG_KIND_MIXIN) ? find_kind(m, c->aux, CG_KIND_MIXIN)
+                                                    : find_kind(m, c->aux, CG_KIND_CLASS))
+            : NULL;
         if (emit_component_handlers(b, c, m) < 0) return -1;
         if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
         if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",

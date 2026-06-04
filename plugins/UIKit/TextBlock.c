@@ -120,7 +120,7 @@ HANDLER(TextBlock, TextBlock, MakeText)
   pViewText->run[0] = _MakeViewTextRun(hObject, *pTextBlock, _GetTextBlockText(hObject, pTextBlock));
   pViewText->numTextRuns = 1;
   FOR_EACH_OBJECT(run, hObject) {
-    struct TextBlock *tr = GetTextBlock(run);
+    struct TextRun *tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
       struct TextBlock base = *pTextBlock;
@@ -128,14 +128,14 @@ HANDLER(TextBlock, TextBlock, MakeText)
       if (tr->Font.Style) base.Font.Style = tr->Font.Style;
       if (tr->Font.Size) base.Font.Size = tr->Font.Size;
       if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextBlock_GetProperty(run, Underline.Offset)) base.Underline.Offset = tr->Underline.Offset;
-      if (TextBlock_GetProperty(run, Underline.Width)) base.Underline.Width = tr->Underline.Width;
-      if (TextBlock_GetProperty(run, Underline.Color)) base.Underline.Color = tr->Underline.Color;
-      if (TextBlock_GetProperty(run, LetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
-      if (TextBlock_GetProperty(run, LineHeight)) base.LineHeight = tr->LineHeight;
-      if (TextBlock_GetProperty(run, CharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
-      if (TextBlock_GetProperty(run, FixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
-      if (TextBlock_GetProperty(run, RemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
+      if (TextRun_GetProperty(run, Underline.Offset)) base.Underline.Offset = tr->Underline.Offset;
+      if (TextRun_GetProperty(run, Underline.Width)) base.Underline.Width = tr->Underline.Width;
+      if (TextRun_GetProperty(run, Underline.Color)) base.Underline.Color = tr->Underline.Color;
+      if (TextRun_GetProperty(run, LetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
+      if (TextRun_GetProperty(run, LineHeight)) base.LineHeight = tr->LineHeight;
+      if (TextRun_GetProperty(run, CharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
+      if (TextRun_GetProperty(run, FixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
+      if (TextRun_GetProperty(run, RemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
       pViewText->run[pViewText->numTextRuns++] = _MakeViewTextRun(run, base, str);
     }
   }

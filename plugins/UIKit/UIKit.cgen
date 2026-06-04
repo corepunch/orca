@@ -203,8 +203,8 @@
         <property name="Color" type="color">The color value used to fill the target area.</property>
       </properties>
     </class>
-    <mixin name="TextRun">
-      <summary>Shared text rendering properties inlined into TextBlock and similar classes.</summary>
+    <class name="TextRun">
+      <summary>Inline text run for rich text inside a TextBlock. Also used as a mixin to inline text properties directly onto TextBlock and similar classes.</summary>
       <properties>
         <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.</property>
         <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE" inherited="true">Font definition used for text rendering. Contains typeface, size, and style information.</property>
@@ -218,7 +218,7 @@
       <fields>
         <field name="_textinfo" type="text_info">Internal text information structure.</field>
       </fields>
-    </mixin>
+    </class>
     <class name="Node2D" parent="Node,StyleController" children="Node2D">
       <summary>Primary class for 2D UI elements with comprehensive rendering capabilities</summary>
       <details>Extends Node with 2D-specific functionality including transforms, visual effects, composition, and event handling. This is the base class for most visible UI elements. \snippet docs/creating_node2d.lua</details>
