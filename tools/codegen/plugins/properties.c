@@ -243,15 +243,20 @@ static char *dup_string(char const *s) {
 
 static int property_addr(char segs[][64], int n_segs, char *addr, size_t addr_sz) {
     int i;
+    size_t len = 0;
+    if (!addr_sz) return 0;
     addr[0] = 0;
     for (i = 0; i < n_segs; i++) {
-        size_t pl;
         if (i > 0) {
-            pl = strlen(addr);
-            if (pl + 1u < addr_sz) { addr[pl] = '.'; addr[pl + 1u] = 0; }
+            if (len + 1u >= addr_sz) break;
+            addr[len++] = '.';
         }
-        pl = strlen(addr);
-        snprintf(addr + pl, addr_sz - pl, "%s", segs[i]);
+        size_t n = 0;
+        while (n < sizeof(segs[i]) && segs[i][n]) ++n;
+        if (n > addr_sz - len - 1u) n = addr_sz - len - 1u;
+        memcpy(addr + len, segs[i], n);
+        len += n;
+        addr[len] = 0;
     }
     return 0;
 }
