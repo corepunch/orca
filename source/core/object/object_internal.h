@@ -24,7 +24,25 @@ struct Object
   LPSTR SourceFile;
   LPSTR TextContent;
 
-  struct component* components; /* fallback for classes without a TypedataOffset */
+  /* Component list — used by classes not yet in a storage-family typedata block.
+   * Remaining families (each a candidate for its own XxxData struct):
+   *   core:       Action, SendMessageAction, Setter, HideAction,
+   *               Trigger, OnPropertyChangedTrigger, OnAttachedTrigger, EventTrigger,
+   *               AnimationCurve, AnimationClip, AnimationPlayer,
+   *               StyleSheet, StyleRule, StyleController,
+   *               StateManager, StateGroup, State, StateManagerController,
+   *               ResourceDictionary, Locale, DataObject, Binding, BindingExpression, Node
+   *   SceneKit:   Node3D, Scene, Model3D, Camera, Light3D, PlaneMeshNode,
+   *               PrefabView3D, SpriteView, Viewport3D (reserved slot in UIData),
+   *               RenderPass and subclasses, PipelineStateRenderPass
+   *   SpriteKit:  SKNode, SKScene, SKSpriteNode, SKLabelNode, SKView (reserved slot in UIData)
+   *   renderer:   Texture, Image, RenderTargetTexture, CubeMapTexture, IOSurfaceTexture,
+   *               VertexShader, FragmentShader, Shader, Material, Mesh, FontFamily,
+   *               Trajectory, Timeline
+   *   filesystem: Project, Directory, Package, Entry, Library, Workspace,
+   *               Locale*, Tag, LocaleReferenceItem, ThemeDefaultValuesDictionary
+   */
+  struct component* components;
   struct Property* properties;
 
   uint32_t alias;
