@@ -6,27 +6,6 @@
 
 #define PLACEHOLDER_OPACITY 0.5f
 
-enum label_step
-{
-  STEP_GEOMETRY,
-  STEP_IMAGE,
-  STEP_COUNT
-};
-
-static bool_t
-is_updated(struct Object *hObject,
-           enum label_step label_step)
-{
-  struct TextBlockConcept *output = GetTextBlockConcept(hObject);
-  longTime_t dirty = OBJ_GetTimestamp(hObject);
-  if (output->_steps[label_step] != dirty) {
-    output->_steps[label_step] = dirty;
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
-
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
@@ -60,6 +39,21 @@ mesh_rect(struct Node2D *pNode2D,
   };
 }
 
+static struct rect
+text_texture_rect(struct Node2D *pNode2D,
+                  struct TextBlockConcept *frame,
+                  struct text_info *pTextInfo)
+{
+  struct rect const rect = mesh_rect(pNode2D, frame, pTextInfo);
+  struct edges insets = pTextInfo->txInsets;
+  return (struct rect){
+    .x = floorf(rect.x - insets.left),
+    .y = floorf(rect.y - insets.top),
+    .width = floorf(rect.width + insets.right + insets.left),
+    .height = floorf(rect.height + insets.bottom + insets.top),
+  };
+}
+
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
   struct TextRun *output = GetTextRun(hObject);
@@ -78,18 +72,7 @@ HANDLER(TextBlock, Node2D, ForegroundContent)
 
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
-  if (is_updated(hObject, STEP_GEOMETRY)) {
-    struct TextRun *run = GetTextRun(hObject);
-    struct rect const rect = mesh_rect(pTextBlock->_node2D, GetTextBlockConcept(hObject), &run->_textinfo);
-    struct edges insets = run->_textinfo.txInsets;
-    struct rect const geom = {
-      .x = floorf(rect.x - insets.left),
-      .y = floorf(rect.y - insets.top),
-      .width = floorf(rect.width + insets.right + insets.left),
-      .height = floorf(rect.height + insets.bottom + insets.top),
-    };
-    pTextBlock->_node2D->_rect = geom;
-  }
+  pTextBlock->_node2D->_rect = Node2D_GetBackgroundRect(pTextBlock->_node2D);
   return TRUE;
 }
 
@@ -116,11 +99,10 @@ HANDLER(TextBlock, Node2D, DrawBrush)
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
 
   if (pDrawBrush->foreground) {
+    struct TextRun *run = GetTextRun(hObject);
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
-    entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
-//    struct TextBlockConcept *label = GetTextBlockConcept(hObject);
-//    entity.bbox = BOX3_FromRect(mesh_rect(pTextBlock->_node2D, label, &label->_textinfo));
+    entity.bbox = BOX3_FromRect(text_texture_rect(pTextBlock->_node2D, text, &run->_textinfo));
     struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);
