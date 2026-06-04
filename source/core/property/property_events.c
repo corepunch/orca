@@ -69,12 +69,6 @@ PROP_AttachProgram(struct Property *p,
   p->binding = ZeroAlloc(sizeof(struct Binding));
   p->binding->property = p;
   p->binding->token = program;
-
-  if (!p->inBindingIndex) {
-    p->nextBinding = core.binding_properties;
-    core.binding_properties = p;
-    p->inBindingIndex = TRUE;
-  }
 }
 
 ORCA_API bool_t

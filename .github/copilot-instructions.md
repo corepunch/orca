@@ -212,12 +212,12 @@ Every scene element is an `Object`. Objects form a parent→children tree. Key f
 
 - Identity: `Name`, `ClassName`, `identifier` (FNV1a hash), `SourceFile`
 - Hierarchy: `parent`, `children` (first child), `next` (next sibling)
-- A flat `data[]` byte buffer for property value storage
+- Heap-allocated storage for dynamic/extra property values
 - A `lua_State *domain` for scripting
 
 ```c
 struct component* components;   // attached component chain
-struct Property* properties; // property table (name, type, offset in data[], etc.)
+struct Property* properties; // property table (name, type, value storage, etc.)
 ```
 
 Fields marked as planned replacements are being progressively replaced by proper components (see "Object Struct Refactoring" below).
@@ -877,16 +877,13 @@ The XML attribute iterator in `source/parsers/p_xml.c` previously used `xmlNodeL
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 ```
 
-### Weather Sample — Tailwind vs ThemeLibrary (Do Not Mix Runtime Logic Into package.lua)
+### Tailwind Colors Come From ThemeLibrary
 
-- `tailwind.lua` and `ThemeLibrary` are complementary, not interchangeable:
-  - `tailwind.lua` defines class-based style tokens (`bg-*`, `text-*`, etc.) used by the Tailwind plugin.
-  - `ThemeLibrary` provides `$key` lookups consumed by XML and UIKit/default control theme paths (`$accent`, `$control-background`, `$card-background`, etc.).
-- Missing `$...` keys (`FS_GetThemeValue: missing theme key ...`) are fixed by adding static `ThemeLibrary` entries in `package.lua`, not by changing Tailwind classes.
+- `tailwind.lua` defines class-based style utilities (`bg-*`, `text-*`, etc.), but color values come from `ThemeLibrary` / `orca.theme.colors`.
+- Do not add or restore `config/tailwind.lua`; the Tailwind plugin does not load per-project Tailwind config.
+- Missing `$...` keys (`FS_GetThemeValue: missing theme key ...`) are fixed by adding static `ThemeLibrary` entries in `package.lua`.
 - Keep `samples/*/package.lua` declarative data only. Do not call `require` or runtime APIs from `package.lua`; project loading executes package chunks in a restricted project table environment.
-- If a sample uses Tailwind and also relies on UIKit controls, ensure both are present:
-  - Tailwind color tokens in `config/tailwind.lua` (`extend.colors`)
-  - Engine/UI theme fallback keys in `ThemeLibrary` (at minimum: `accent`, `accent-background`, `accent-foreground`, `panel-background`, `card-background`, `control-background`, `control-foreground`, `control-border`, `control-muted`)
+- If a sample uses Tailwind and also relies on UIKit controls, define any project-specific colors in `ThemeLibrary` using the same keys used by classes and CSS variables (`accent`, `background`, `foreground`, `control-background`, etc.).
 
 ### Property VM — `Token_Release` Must Recurse into `args[]`
 

@@ -9,6 +9,8 @@ local test = require "orca.test"
 -- screen.StyleSheet → class assignment → ThemeChanged → values applied.
 
 local filesystem = require "orca.filesystem"
+local geometry = require "orca.geometry"
+require "orca.renderer"
 local ui         = require "orca.UIKit"
 
 -- filesystem.loadObjectFromCssString exposes the pure-C CSS parser.
@@ -453,6 +455,41 @@ local function test_css_color_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 23: CSS theme variables resolve through the active theme
+-- ---------------------------------------------------------------------------
+local function test_css_theme_variables()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+    .themed {
+      background-color: var(--accent);
+      color: var($accent-foreground);
+      border-color: $control-border;
+    }
+  ]]
+  local node = screen + ui.Node2D {}
+
+  node.class = "themed"
+  applyStyles(node)
+
+  local bg = geometry.Color.parse(filesystem.getThemeValue("$accent"))
+  local fg = geometry.Color.parse(filesystem.getThemeValue("$accent-foreground"))
+  local border = geometry.Color.parse(filesystem.getThemeValue("$control-border"))
+
+  test.expect_near(node.BackgroundColor.R, bg.R, 0.01, "var(--accent) BackgroundColor.R")
+  test.expect_near(node.BackgroundColor.G, bg.G, 0.01, "var(--accent) BackgroundColor.G")
+  test.expect_near(node.BackgroundColor.B, bg.B, 0.01, "var(--accent) BackgroundColor.B")
+  test.expect_near(node.ForegroundColor.R, fg.R, 0.01, "var($accent-foreground) ForegroundColor.R")
+  test.expect_near(node.ForegroundColor.G, fg.G, 0.01, "var($accent-foreground) ForegroundColor.G")
+  test.expect_near(node.ForegroundColor.B, fg.B, 0.01, "var($accent-foreground) ForegroundColor.B")
+  test.expect_near(node.BorderColor.R, border.R, 0.01, "$control-border BorderColor.R")
+  test.expect_near(node.BorderColor.G, border.G, 0.01, "$control-border BorderColor.G")
+  test.expect_near(node.BorderColor.B, border.B, 0.01, "$control-border BorderColor.B")
+
+  node:removeFromParent()
+  print("PASS: test_css_theme_variables")
+end
+
+-- ---------------------------------------------------------------------------
 -- Test 23: Text CSS properties map onto TextRun/TextBlockConcept properties
 -- ---------------------------------------------------------------------------
 local function test_css_text_property_map()
@@ -696,6 +733,28 @@ local function test_css_direct_parent_selector_with_pseudo_class()
   print("PASS: test_css_direct_parent_selector_with_pseudo_class")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 33: CSS font-family accepts quoted names and generic fallbacks
+-- ---------------------------------------------------------------------------
+local function test_css_font_family_list_uses_registered_fallback()
+  local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
+  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+    .novel { font-family: "Times New Roman", serif; }
+  ]]
+  local text = screen + ui.TextBlock {
+    Text = "chapter",
+  }
+
+  text.class = "novel"
+  applyStyles(text)
+
+  test.expect(text.FontFamily ~= nil, "font-family list should resolve through registered generic fallback")
+  test.expect_eq(text.FontFamily.Regular, "NotoSerif-Regular.ttf", "serif should resolve to shared Noto Serif")
+
+  text:removeFromParent()
+  print("PASS: test_css_font_family_list_uses_registered_fallback")
+end
+
 
 test_style_applies_opacity()
 test_style_not_applied_without_class()
@@ -719,6 +778,7 @@ test_css_selectors_are_case_sensitive()
 test_css_unsupported_declarations_are_ignored()
 test_css_boolean_value_ignorecase()
 test_css_color_properties()
+test_css_theme_variables()
 test_css_text_property_map()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
@@ -729,5 +789,6 @@ test_css_direct_parent_selector()
 test_css_direct_parent_class_and_id_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
+test_css_font_family_list_uses_registered_fallback()
 
 print("All style tests passed.")

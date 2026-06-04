@@ -132,19 +132,12 @@ static xmlNodePtr
 getservice(struct Object *hobj, lpcString_t name)
 {
 #if SERVICE_ENABLED
-  lua_State* L = core.L;
-  lua_getfield(L, LUA_REGISTRYINDEX, name);
-  if (!lua_isnil(L, -1)) {
-    xmlNodePtr service = lua_touserdata(L, -1);
-    lua_pop(L, -1);
-    return service;
-  } else {
-    lua_pop(L, -1);
-    return NULL;
-  }
+  (void)name;
+  Con_Error("SERVICE_ENABLED requires an explicit Lua state provider");
 #else
-  (void)hobj;
+  (void)name;
 #endif
+  (void)hobj;
   return NULL;
 }
 
@@ -447,9 +440,6 @@ static bool_t
 PrintToProperty(struct Property *prop, struct vm_register* r)
 {
   char dest[MAX_PROPERTY_STRING];
-  if (r->type == kDataTypeNone) {
-    r->type = kDataTypeString;
-  }
   switch (r->type) {
     case kDataTypeBool:
     case kDataTypeInt:
@@ -472,10 +462,6 @@ bool_t
 PROP_Import(struct Property *prop,
             struct vm_register* r)
 {
-  if (PROP_GetType(prop) == kDataTypeNone) {
-    PROP_SetTypeSize(prop, r->type, r->size);
-  }
-
   switch (PROP_GetType(prop)) {
     case kDataTypeString:
       return PrintToProperty(prop, r);

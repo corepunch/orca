@@ -13,13 +13,11 @@ _PopupSetDialogResult(struct Object *modal, float value);
 
 typedef struct _DRAW2DCONTENTSTRUCT
 {
-  struct color ForegroundColor;
   struct mat4 ProjectionMatrix;
   struct mat4 ViewMatrix;
   struct mat4 BoundsMatrix;
   bool_t ForceRender;
   bool_t OnlyDecorations;
-  float FontSize;
   uint8_t StencilRef;
 } DRAW2DCONTENTSTRUCT, *Node2D_Draw2DContentMsgPtr;
 
@@ -36,6 +34,20 @@ Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
   view->viewMatrix = parms->ViewMatrix;
 
   return view;
+}
+
+static struct BrushShorthand
+_Node2DGetForegroundBrush(struct Object *object)
+{
+  struct BrushShorthand brush = { 0 };
+
+  brush.Color = (struct color){ 1, 1, 1, 1 };
+
+  Node2D_ReadProperty(object, Foreground.Color, &brush.Color);
+  Node2D_ReadProperty(object, Foreground.Image, &brush.Image);
+  Node2D_ReadProperty(object, Foreground.Material, &brush.Material);
+
+  return brush;
 }
 
 static struct _PIPELINESTATE
@@ -165,12 +177,10 @@ _ExitStencilClip(uint8_t parentRef)
 
 static void
 draw_children(struct Object *hObject,
-              Node2D_Draw2DContentMsgPtr pDraw2DContent,
-              struct color fg)
+              Node2D_Draw2DContentMsgPtr pDraw2DContent)
 {
   struct Node2D *node2D = GetNode2D(hObject);
   DRAW2DCONTENTSTRUCT tmp = *pDraw2DContent;
-  tmp.ForegroundColor = fg;
 
   if (!node2D || OBJ_IsHidden(hObject)) {
     return;
@@ -254,7 +264,6 @@ static void _RenderSubViews(struct Object *hObject) {
   _GetContentsMatrix(GetNode2D(hObject), &projection, &view);
 
   Node2D_Draw2DContent(hObject, node2D, 0, &(DRAW2DCONTENTSTRUCT){
-      .ForegroundColor = GetNode2D(hObject)->Foreground.Color,
       .ProjectionMatrix = projection,
       .ViewMatrix = view,
       .BoundsMatrix = projection,
@@ -304,9 +313,7 @@ HANDLER(Screen, Screen, RenderScreen) {
   
   // setup pipeline
   PIPELINESTATE ps = _Pipeline2D(width, height);
-  DRAW2DCONTENTSTRUCT params = {
-    .ForegroundColor = { 1, 1, 1, 1 },
-  };
+  DRAW2DCONTENTSTRUCT params = { 0 };
 
   float dist = fmax(width, height) / (2.0 * tan(UI_FOV));
   struct vec3 p = { width / 2, height / 2, -dist }, d = { 0, 0, 1 };
@@ -444,9 +451,8 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     OBJ_SetFlags(hObject, flags | OF_ACTIVATED);
   }
 
-  if (!Node2D_GetProperty(hObject, kNode2DForegroundColor)) {
-    pNode2D->Foreground.Color = pDraw2DContent->ForegroundColor;
-  }
+  struct BrushShorthand foregroundBrush =
+    _Node2DGetForegroundBrush(hObject);
 
   if (pNode2D->Ring.Width > 0) {
     _SendMessage(hObject, Node2D, DrawBrush,
@@ -493,7 +499,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     _SendMessage(hObject, Node2D, DrawBrush,
       .projection = pDraw2DContent->ProjectionMatrix,
       .image = foreground,
-      .brush = pNode2D->Foreground,
+      .brush = foregroundBrush,
       .foreground = TRUE,
       .viewdef = &viewdef);
 
@@ -502,11 +508,11 @@ HANDLER(Node2D, Node2D, Draw2DContent)
       uint8_t clipRef = parentStencilRef + 1;
       _EnterStencilClip(pNode2D, &viewdef, clipRef);
       pDraw2DContent->StencilRef = clipRef;
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
       pDraw2DContent->StencilRef = parentStencilRef;
       _ExitStencilClip(parentStencilRef);
     } else {
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent, pNode2D->Foreground.Color);
+      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
     }
   }
   return TRUE;
@@ -594,7 +600,7 @@ draw_screen(struct Object* hObject,
   if (get_size(hObject) != _size) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
-    PROP_RunAllPrograms();
+    PROP_RunAllPrograms(hObject);
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
   
@@ -623,7 +629,7 @@ draw_screen(struct Object* hObject,
 }
 
 HANDLER(Screen, Window, Paint) {
-  PROP_RunAllPrograms();
+  PROP_RunAllPrograms(hObject);
 
   R_BeginFrame(pScreen->ClearColor);
 

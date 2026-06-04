@@ -32,26 +32,6 @@ print_name(struct Object *object)
 #endif
 
 static void
-_UnindexBindingProperty(struct Property *property)
-{
-  if (!property || !property->inBindingIndex) {
-    return;
-  }
-  struct Property **link = &core.binding_properties;
-  while (*link) {
-    if (*link == property) {
-      *link = property->nextBinding;
-      property->nextBinding = NULL;
-      property->inBindingIndex = FALSE;
-      return;
-    }
-    link = &(*link)->nextBinding;
-  }
-  property->nextBinding = NULL;
-  property->inBindingIndex = FALSE;
-}
-
-static void
 _ReleaseBindingNode(struct Binding *binding)
 {
   if (!binding) {
@@ -101,23 +81,21 @@ PROP_Update(struct Property *property)
     _ReleaseBindingNode(property->binding);
     property->binding = NULL;
   }
-  if (!property->binding) {
-    _UnindexBindingProperty(property);
-  }
   return TRUE;
 }
 
 static void
 _ReleaseArrayItems(struct Property *property)
 {
-  if (!property->pdesc->IsArray || !property->value) {
+  void *storage = property ? (void *)PROP_GetRawValueSlot(property) : NULL;
+  if (!property->pdesc->IsArray || !storage) {
     return;
   }
   if (property->pdesc->DataType != kDataTypeObject) {
     return;
   }
-  void **items = *(void**)property->value;
-  int count = ((int*)property->value)[sizeof(void*)/sizeof(int)];
+  void **items = *(void**)storage;
+  int count = ((int*)storage)[sizeof(void*)/sizeof(int)];
   FOR_LOOP(i, count) {
     if (items && items[i]) {
       OBJ_ReleaseRef((struct Object*)items[i]);
@@ -134,29 +112,31 @@ PROP_IsNull(struct Property const *property)
 void
 PROP_Clear(struct Property *property)
 {
+  void *storage = property ? (void *)PROP_GetRawValueSlot(property) : NULL;
   void *old_array = NULL;
-  if (property->pdesc->DataType == kDataTypeString && property->value && *(LPSTR*)property->value) {
-    free(*(LPSTR*)property->value);
+  if (property->pdesc->DataType == kDataTypeString && storage && *(LPSTR*)storage) {
+    free(*(LPSTR*)storage);
   }
-  if (property->pdesc->IsArray && property->value) {
-    old_array = *(void**)property->value;
+  if (property->pdesc->IsArray && storage) {
+    old_array = *(void**)storage;
   }
   _ReleaseArrayItems(property);
   if (old_array) {
     free(old_array);
   }
-  if (property->pdesc->DataType == kDataTypeObject && property->value && !property->pdesc->IsArray) {
+  if (property->pdesc->DataType == kDataTypeObject &&
+      storage && !property->pdesc->IsArray) {
     struct Object *object = PROP_GetObjectValue(property);
     if (object) {
       OBJ_ReleaseRef(object);
     }
   }
-  if (property->value) {
-    memset(property->value, 0, PROP_GetSize(property));
+  if (storage) {
+    memset(storage, 0, PROP_GetSize(property));
   }
   property->flags &= ~PF_MODIFIED;
-  if (property->pdesc->DataType == kDataTypeString && property->value) {
-    *(char**)property->value = NULL;
+  if (property->pdesc->DataType == kDataTypeString && storage) {
+    *(char**)storage = NULL;
   }
 }
 
@@ -184,21 +164,35 @@ OBJ_ReleaseProperties(struct Object *hobj)
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
-    _UnindexBindingProperty(p);
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
+    if (p->flags & PF_OWNS_STORAGE) {
+      free(p->value);
+      p->value = NULL;
+    }
     free(p);
   }
 }
 
-void
-PROP_RunAllPrograms(void)
+static void
+_RunObjectPrograms(struct Object *object)
 {
-  struct Property *p = core.binding_properties;
-  while (p) {
-    struct Property *next_property = p->nextBinding;
-    PROP_Update(p);
-    p = next_property;
+  FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(object))
+  {
+    if (p->binding) {
+      PROP_Update(p);
+    }
+  }
+  FOR_EACH_OBJECT(child, object) {
+    _RunObjectPrograms(child);
+  }
+}
+
+void
+PROP_RunAllPrograms(struct Object *root)
+{
+  if (root) {
+    _RunObjectPrograms(root);
   }
 }
 

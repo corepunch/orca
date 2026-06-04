@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include "../property/property_internal.h"
 
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
@@ -40,6 +41,7 @@ OBJ_Create(uint32_t class_id) {
     return NULL;
   }
   struct Object *object = ZeroAlloc(sizeof(struct Object));
+  OBJ_AddRef(object);
   object->unique = ++unique_counter;
   OBJ_AddComponent(object, class_id);
   OBJ_SetDirty(object);
@@ -90,15 +92,16 @@ OBJ_Clear(struct Object *pobj)
 void
 OBJ_RemoveFromParent(struct Object *self)
 {
+  bool_t had_parent = self->parent != NULL;
   OBJ_DetachFromParent(self);
   if (core.focus == self) core.focus = NULL;
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
   axRemoveFromQueue(self);
-  OBJ_ReleaseRef(self);
+  if (had_parent) {
+    OBJ_ReleaseRef(self);
+  }
 }
-
-#include "../property/property_internal.h"
 
 static void
 OBJ_Release(struct Object *pobj)
@@ -135,28 +138,26 @@ OBJ_Release(struct Object *pobj)
   SafeFree(pobj->SourceFile);
   SafeFree(pobj->TextContent);
   SafeFree(pobj->Name);
-  SafeFree(pobj->ClassName);
 
   pobj->refcount = 0;
   free(pobj);
 }
 
-void
-OBJ_ReleaseOrphan(lua_State* L, struct Object *pobj)
-{
-  (void)L;
-  OBJ_ReleaseRef(pobj);
-}
-
 HRESULT
 _RegisterProperty(struct Object *object, struct Property *property)
 {
-  uint32_t psize = PROP_GetSize(property);
-  assert(object->datasize + psize < MAX_OBJECT_DATA);
+  struct PropertyType const *desc = PROP_GetDesc(property);
   PROP_AddToList(property, &object->properties);
-  if (!CMP_SetProperty(object->components, property)) {
-    PROP_SetValuePtr(property, object->data + object->datasize);
-    object->datasize += psize;
+  if (!object->components || !CMP_SetProperty(object->components, property)) {
+    uint32_t psize = PROP_GetSize(property);
+    if (desc && desc->IsArray) {
+      psize = sizeof(void *) + sizeof(int);
+    }
+    if (psize == 0) {
+      psize = 1;
+    }
+    PROP_SetValuePtr(property, ZeroAlloc(psize));
+    PROP_SetFlag(property, PF_OWNS_STORAGE);
   }
   return NOERROR;
 }

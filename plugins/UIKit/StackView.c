@@ -67,7 +67,7 @@ _Arrange(struct Object *hObject,
   enum Direction crossAxis = pStackView->Direction == kDirectionHorizontal
     ? kDirectionVertical
     : kDirectionHorizontal;
-  enum NodeProperties childAlignmentProperty = crossAxis == kDirectionHorizontal
+  size_t childAlignmentProperty = crossAxis == kDirectionHorizontal
     ? kNodeHorizontalAlignment
     : kNodeVerticalAlignment;
   int stackAlignment = kHorizontalAlignmentStretch;

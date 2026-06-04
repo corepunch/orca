@@ -195,6 +195,9 @@ HANDLER(Setter, Action, Dispatch)
   struct Object *sender = _ActionSender(hObject, pDispatch);
   struct Property *p = NULL;
   if (FAILED(OBJ_FindShortProperty(sender, pSetter->Property, &p))) {
+    if (OBJ_SetShorthandValueFromString(sender, pSetter->Property, pSetter->Value)) {
+      return FALSE;
+    }
     Con_Error("Setter could not find property %s on %s",
               pSetter->Property, OBJ_GetClassName(sender));
     return FALSE;

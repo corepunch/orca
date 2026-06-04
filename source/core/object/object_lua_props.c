@@ -135,6 +135,8 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
     }
     luaX_readProperty(L, 3, property);
     return TRUE;
+  } else if (OBJ_SetShorthandValueFromLua(L, self, name, 3)) {
+    return TRUE;
   } else if (lua_type(L, 3) == LUA_TFUNCTION && is_on_changed_callback_name(name)) {
     // handle "onXChanged" event callback assignment
     if (strncmp(name, "on", 2) || !isupper(name[2]))
@@ -246,6 +248,8 @@ int OBJ_GetProperty(lua_State* L, struct Object *self, lpcString_t name)
   struct Property const *property = NULL;
   bool_t OBJ_PushClassProperty(lua_State *, struct Object *, uint32_t);
   if (OBJ_PushClassProperty(L, self, ident)) {
+    return 1;
+  } else if (OBJ_PushShorthandValue(L, self, name)) {
     return 1;
   } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
     luaX_pushProperty(L, property);

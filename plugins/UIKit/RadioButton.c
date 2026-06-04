@@ -15,24 +15,14 @@ RadioButton_ApplyThemeDefaults(struct Object *hObject, struct RadioButton *pRadi
   struct Node2D *node2d = GetNode2D(hObject);
   if (!node || !node2d) return;
 
-  pRadioButton->AccentColor = FS_GetThemeColor(
-    THEME_COLOR_ACCENT_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_ACCENT,
-      COLOR_ACCENT));
-  node->Border.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BORDER,
-    FS_GetThemeColor(
-      THEME_COLOR_CONTROL_MUTED,
-      COLOR_CONTROL_BORDER));
-  node2d->Background.Color = FS_GetThemeColor(
-    THEME_COLOR_CONTROL_BACKGROUND,
-    FS_GetThemeColor(
-      THEME_COLOR_CARD_BACKGROUND,
-      COLOR_CARD_BACKGROUND));
-  node2d->Foreground.Color = FS_GetThemeColor(
-    THEME_COLOR_ACCENT_FOREGROUND,
-    COLOR_ACCENT_FOREGROUND);
+  pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
+  node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
+  node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
+  struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
+  struct Property *foregroundProp = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+    PROP_SetValue(foregroundProp, &foreground);
+  }
 }
 
 static void
@@ -255,7 +245,11 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     float dotOffset = (indicatorSize - dotSize) * 0.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + dotOffset, by + dotOffset, dotSize, dotSize}));
     entity.radius = (struct vec4){dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f, dotSize * 0.5f};
-    entity.material.color = pNode2D->Foreground.Color;
+    struct BrushShorthand foreground = { 0 };
+    Node2D_ReadProperty(hObject, Foreground.Color, &foreground.Color);
+    Node2D_ReadProperty(hObject, Foreground.Image, &foreground.Image);
+    Node2D_ReadProperty(hObject, Foreground.Material, &foreground.Material);
+    entity.material.color = foreground.Color;
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly

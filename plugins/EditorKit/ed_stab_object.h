@@ -39,8 +39,6 @@ void UI_FillOutObjectView(struct Object *object, LPOBJDEF lpOut) {
   lpOut->szSuperclass = OBJ_GetClassName(object);
   lpOut->hIdentifier  = object->unique;
   lpOut->hParent      = object->parent ? object->parent->unique : -1;
-  lpOut->lpFlags      = &object->rdflags;
-  lpOut->lpUserData   = &object->userdata;
   lpOut->bHasChildren = object->children != NULL;
   lpOut->stateman     = GetStateManagerController(object);
   lpOut->szClass      = OBJ_GetClassName(object);
@@ -269,7 +267,7 @@ xmlNsPtr xmlFindNs(xmlNodePtr node, xmlChar const *url) {
 ORCA_API xmlNodePtr ED_ConvertNode(struct Object *object, xmlNodePtr parent) {
   struct ClassDesc const *cls = get_node_class_desc((struct Object *)object);
   xmlNodePtr node;
-  xmlChar const *name = XMLSTR(object->ClassName ? object->ClassName : cls->ClassName);
+  xmlChar const *name = XMLSTR(cls->ClassName);
   if (parent && object->SourceFile) {
     name = XMLSTR("ObjectPrefabPlaceholder");
     node = xmlNewChild(parent, NULL, name, NULL);

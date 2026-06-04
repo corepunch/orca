@@ -162,6 +162,36 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
 }
 
 static bool_t
+set_shorthand_text(struct Object *o, lpcString_t name, lpcString_t value)
+{
+  if (!value || !*value) return FALSE;
+  if (value[0] != '{' && value[0] != '<') {
+    return OBJ_SetShorthandValueFromString(o, name, value);
+  }
+
+  struct PropertyShorthand const *sh = OBJ_FindImplicitShorthand(o, name);
+  if (!sh) sh = OBJ_FindExplicitShorthand(o, name);
+  struct StructDesc const *sd = sh ? OBJ_FindStructDesc(sh->TypeString) : NULL;
+  void *tmp = sd ? calloc(1, (size_t)sd->StructSize) : NULL;
+  if (!tmp) return FALSE;
+
+  struct PropertyType fake = {
+    .Name = sh->Name,
+    .Category = sh->Category,
+    .ShortIdentifier = sh->ShortIdentifier,
+    .FullIdentifier = sh->FullIdentifier,
+    .Offset = 0,
+    .DataSize = sh->StructSize,
+    .DataType = kDataTypeStruct,
+    .TypeString = sh->TypeString,
+  };
+  bool_t ok = _ParseStructXmlFragment(&fake, tmp, value) &&
+              OBJ_SetShorthandValueFromStruct(o, name, tmp);
+  free(tmp);
+  return ok;
+}
+
+static bool_t
 fill_struct(void *dst, struct PropertyType const *pd, struct _xmlNode* x)
 {
   struct StructDesc const *sd = OBJ_FindStructDesc(pd->TypeString);
@@ -314,6 +344,7 @@ visit_attr(struct Object *o, xmlAttrPtr a)
   if (!value) return;
   if (!special_attr(o, name, (lpcString_t)value)) {
     if (pd) set_text(o, pd, (lpcString_t)value);
+    else if (set_shorthand_text(o, name, (lpcString_t)value)) {}
     else Con_Error("Unknown property '%s' for class '%s'", name, OBJ_GetClassName(o));
   }
   xmlFree(value);
@@ -331,6 +362,13 @@ visit_child(struct Object *o, struct _xmlNode* c)
     property_node(o, pd, c);
     return;
   }
+
+  xmlChar *text = xmlNodeGetContent(c);
+  if (text && *text && set_shorthand_text(o, (lpcString_t)c->name, (lpcString_t)text)) {
+    xmlFree(text);
+    return;
+  }
+  if (text) xmlFree(text);
 
   struct Object *child = node(c);
   if (child) OBJ_AddChild(o, child);

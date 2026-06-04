@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include "source/core/property/property_internal.h"
 
 #define ID_TextureTiling 0x861dbc5b
 
@@ -11,6 +12,7 @@ _CreateProjectProperty(struct Object *object, uint32_t ident)
   }
   return NULL;
 }
+
 
 uint32_t
 OBJ_GetUniforms(struct Object *object, struct uniform* pUniforms)
@@ -114,6 +116,37 @@ OBJ_FindLongProperty(struct Object *object,
   } else {
     return E_ITEMNOTFOUND;
   }
+}
+
+bool_t
+OBJ_ReadProperty(struct Object *object, uint32_t identifier, void *output)
+{
+  struct Property *property = NULL;
+  HRESULT hr;
+
+  if (!object || !output) {
+    return FALSE;
+  }
+
+  hr = OBJ_FindLongProperty(object, identifier, &property);
+  if (FAILED(hr) || !property) {
+    struct Object *parent = OBJ_GetParent(object);
+    return parent ? OBJ_ReadProperty(parent, identifier, output) : FALSE;
+  }
+
+  if (PROP_GetDesc(property)->IsInherited &&
+      !(PROP_GetFlags(property) & PF_MODIFIED)) {
+    struct Object *parent = OBJ_GetParent(object);
+    return parent ? OBJ_ReadProperty(parent, identifier, output) : FALSE;
+  }
+
+  void const *slot = PROP_GetRawValueSlot(property);
+  if (!slot) {
+    return FALSE;
+  }
+
+  memcpy(output, slot, PROP_GetSize(property));
+  return TRUE;
 }
 
 HRESULT

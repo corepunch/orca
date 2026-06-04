@@ -169,12 +169,55 @@ static cg_node const *find_kind(cg_model const *m, char const *name, cg_kind kin
     return NULL;
 }
 
+/* Walk a comma-separated parent list and return the first that is a local class. */
+static cg_node const *find_local_parent(cg_model const *m, char const *parent_list) {
+    char buf[512]; char *tok;
+    if (!parent_list || !parent_list[0]) return NULL;
+    snprintf(buf, sizeof(buf), "%s", parent_list);
+    for (tok = strtok(buf, ","); tok; tok = strtok(NULL, ",")) {
+        while (*tok == ' ') ++tok;
+        cg_node const *p = find_kind(m, tok, CG_KIND_CLASS);
+        if (p) return p;
+    }
+    return NULL;
+}
+
+/* Walk the parent list of c and return the first that has external-storage set. */
+static cg_node const *find_external_storage_ancestor(cg_model const *m, cg_node const *c) {
+    int depth = 0;
+    while (c && depth++ < 64) {
+        if (c->extra && c->extra[0]) return c; /* has external-storage attr */
+        c = find_local_parent(m, c->type);
+    }
+    return NULL;
+}
+
+/* Compute the storage struct name for class c into dst.
+ * Returns dst if c has a storage root, else returns NULL (no typedata). */
+static char const *class_storage_name(cg_model const *m, cg_node const *c,
+                                      char *dst, size_t dsz) {
+    cg_node const *ext = find_external_storage_ancestor(m, c);
+    if (ext && ext->extra && ext->extra[0]) {
+        snprintf(dst, dsz, "%s", ext->extra);
+        return dst;
+    }
+    return NULL;
+}
+
 static char const *type_kind(cg_model const *m, char const *type) {
     if (!type || !type[0]) return "void";
+    if (!strcmp(type, "float")) return "float";
+    if (!strcmp(type, "int")) return "int";
+    if (!strcmp(type, "uint")) return "uint";
+    if (!strcmp(type, "long")) return "long";
+    if (!strcmp(type, "bool") || !strcmp(type, "bool_t")) return "bool";
+    if (!strcmp(type, "string") || !strcmp(type, "char*")) return "string";
+    if (!strcmp(type, "nresults")) return "nresults";
+    if (!strcmp(type, "void")) return "void";
     if (find_kind(m, type, CG_KIND_ENUM)) return "enum";
     if (find_kind(m, type, CG_KIND_STRUCT)) return "struct";
-    if (find_kind(m, type, CG_KIND_INTERFACE)) return "interface";
     if (find_kind(m, type, CG_KIND_CLASS)) return "component";
+    if (find_kind(m, type, CG_KIND_INTERFACE)) return "interface";
     if (find_kind(m, type, CG_KIND_EXTERNAL)) return "external_struct";
     return type;
 }
@@ -312,15 +355,20 @@ static void property_leaf(char segs[][64], int n_segs, char *leaf, size_t leaf_s
 
 static void property_addr(char segs[][64], int n_segs, char *addr, size_t addr_sz) {
     int i;
+    size_t len = 0;
+    if (!addr_sz) return;
     addr[0] = 0;
     for (i = 0; i < n_segs; ++i) {
-        size_t pl;
         if (i > 0) {
-            pl = strlen(addr);
-            if (pl + 1u < addr_sz) { addr[pl] = '.'; addr[pl + 1u] = 0; }
+            if (len + 1u >= addr_sz) break;
+            addr[len++] = '.';
         }
-        pl = strlen(addr);
-        snprintf(addr + pl, addr_sz - pl, "%s", segs[i]);
+        size_t n = 0;
+        while (n < sizeof(segs[i]) && segs[i][n]) ++n;
+        if (n > addr_sz - len - 1u) n = addr_sz - len - 1u;
+        memcpy(addr + len, segs[i], n);
+        len += n;
+        addr[len] = 0;
     }
 }
 
@@ -342,7 +390,7 @@ static char const *property_datatype(cg_model const *m, char const *type) {
 
 static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
                              char const *owner_name, char segs[][64], int n_segs,
-                             char const *type, uint32_t flags) {
+                             char const *type, uint32_t flags, char const *storage) {
     char leaf[256], addr[512];
     char const *kind;
     char actual_type[256];
@@ -355,24 +403,38 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
     if (!strcmp(type_kind(m, actual_type), "int") && find_kind(m, leaf, CG_KIND_ENUM))
         snprintf(actual_type, sizeof(actual_type), "%s", leaf);
     kind = type_kind(m, actual_type);
-    if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
-            (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
-            h->fnv1a32(leaf), owner_name, leaf, addr, property_datatype(m, actual_type)) < 0) return -1;
+    if (storage && storage[0]) {
+        /* Offsets relative to the storage-family struct (e.g. UIData) */
+        const char *macro = (actual_flags & CG_FLAG_ARRAY) ? "UIDATA_ARRAY_DECL" : "UIDATA_DECL";
+        if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
+                macro, h->fnv1a32(leaf), owner_name, leaf, addr,
+                property_datatype(m, actual_type)) < 0) return -1;
+        if (actual_flags & CG_FLAG_INHERITED) {
+            if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
+        }
+    } else {
+        if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, %s",
+                (actual_flags & CG_FLAG_ARRAY) ? "ARRAY_DECL" : "DECL",
+                h->fnv1a32(leaf), owner_name, leaf, addr,
+                property_datatype(m, actual_type)) < 0) return -1;
+        if (actual_flags & CG_FLAG_INHERITED) {
+            if (ob_printf(b, ", .IsInherited=TRUE") < 0) return -1;
+        }
+    }
     if (!strcmp(kind, "enum")) {
-        if (ob_printf(b, ", .EnumValues = _%s), // %s.%s\n", actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .EnumValues = _%s", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "external_struct")) {
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n", actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"", actual_type) < 0) return -1;
     } else if (!strcmp(kind, "struct") && strcmp(actual_type, "color")) {
         cg_node const *st = find_kind(m, actual_type, CG_KIND_STRUCT);
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n",
-                st ? export_name(st) : actual_type, owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"",
+                st ? export_name(st) : actual_type) < 0) return -1;
     } else if (!strcmp(kind, "component") || !strcmp(kind, "interface")) {
         cg_node const *n = find_kind(m, actual_type, !strcmp(kind, "component") ? CG_KIND_CLASS : CG_KIND_INTERFACE);
-        if (ob_printf(b, ", .TypeString = \"%s\"), // %s.%s\n",
-                n ? export_name(n) : actual_type, owner_name, leaf) < 0) return -1;
-    } else {
-        if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
+        if (ob_printf(b, ", .TypeString = \"%s\"",
+                n ? export_name(n) : actual_type) < 0) return -1;
     }
+    if (ob_printf(b, "), // %s.%s\n", owner_name, leaf) < 0) return -1;
     return 0;
 }
 
@@ -381,20 +443,20 @@ static int emit_property_row(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               sentry const *smap, size_t scount,
                               char const *owner_name, char segs[][64], int n_segs,
-                              char const *type, uint32_t flags);
+                              char const *type, uint32_t flags, char const *storage);
 
 static int emit_fixed_array(ob *b, cg_host_v1 const *h, cg_model const *m,
                             sentry const *smap, size_t scount,
                             char const *owner_name, char segs[][64], int n_segs,
                             char const *field_name, char const *field_type, int fixed,
-                            uint32_t flags) {
+                            uint32_t flags, char const *storage) {
     int i;
     for (i = 0; i < fixed; ++i) {
         char next[MAX_DEPTH][64];
         memcpy(next, segs, sizeof(next));
         snprintf(next[n_segs], sizeof(next[n_segs]), "%s[%d]", field_name, i);
         if (emit_walk_property(b, h, m, smap, scount, owner_name, next, n_segs + 1,
-                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY) < 0) return -1;
+                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY, storage) < 0) return -1;
     }
     return 0;
 }
@@ -402,22 +464,24 @@ static int emit_fixed_array(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
                               sentry const *smap, size_t scount,
                               char const *owner_name, char segs[][64], int n_segs,
-                              char const *type, uint32_t flags) {
+                              char const *type, uint32_t flags, char const *storage) {
     sentry const *s;
-    if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags) < 0) return -1;
     s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
+        if (emit_property_row(b, h, m, owner_name, segs, n_segs, type, flags, storage) < 0) return -1;
+    }
     if (s && !s->sealed && n_segs < MAX_DEPTH - 1) {
         cg_foreach(m, s->id, CG_KIND_FIELD, f) {
             char next[MAX_DEPTH][64];
             int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
         if (fixed > 0) {
                 if (emit_fixed_array(b, h, m, smap, scount, owner_name, segs, n_segs,
-                        f->name, f->type, fixed, f->flags) < 0) return -1;
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED), storage) < 0) return -1;
             } else {
                 memcpy(next, segs, sizeof(next));
                 snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
                 if (emit_walk_property(b, h, m, smap, scount, owner_name, next,
-                        n_segs + 1, f->type, f->flags) < 0) return -1;
+                        n_segs + 1, f->type, f->flags | (flags & CG_FLAG_INHERITED), storage) < 0) return -1;
             }
         }
     }
@@ -427,23 +491,490 @@ static int emit_walk_property(ob *b, cg_host_v1 const *h, cg_model const *m,
 static int emit_properties_for_fields(ob *b, cg_host_v1 const *h, cg_model const *m,
                                       sentry const *smap, size_t scount,
                                       cg_node const *owner, char const *owner_name,
-                                      cg_kind kind, int include_array_count) {
+                                      cg_kind kind, int include_array_count,
+                                      char const *storage) {
     cg_foreach(m, owner->id, kind, p) {
         char segs[MAX_DEPTH][64] = {{0}};
         int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
         if (fixed > 0) {
             if (emit_fixed_array(b, h, m, smap, scount, owner_name, segs, 0,
-                    p->name, p->type, fixed, p->flags) < 0) return -1;
+                    p->name, p->type, fixed, p->flags, storage) < 0) return -1;
         } else {
             snprintf(segs[0], sizeof(segs[0]), "%s", p->name);
             if (emit_walk_property(b, h, m, smap, scount, owner_name, segs, 1,
+                    p->type, p->flags, storage) < 0) return -1;
+        }
+        if (include_array_count && (p->flags & CG_FLAG_ARRAY)) {
+            snprintf(segs[0], sizeof(segs[0]), "Num%s", p->name);
+            if (emit_property_row(b, h, m, owner_name, segs, 1, "int", 0, storage) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static cg_node const *event_parent(cg_model const *m, cg_node const *msg);
+static void message_action_name(cg_model const *m, cg_node const *msg, char *dst, size_t dsz);
+
+static int emit_getter_case_row(ob *b, char const *owner_name, char segs[][64], int n_segs,
+                                uint32_t *idx) {
+    char addr[512];
+    property_addr(segs, n_segs, addr, sizeof(addr));
+    if (ob_printf(b,
+            "\t\tcase offsetof(struct %s, %s): return OBJ_GetPropertyAtIndex(_P, ID_%s, sizeof(struct %s), %u);\n",
+            owner_name, addr, owner_name, owner_name, *idx) < 0) return -1;
+    (*idx)++;
+    return 0;
+}
+
+static int emit_walk_getter_case(ob *b, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 char const *owner_name, char segs[][64], int n_segs,
+                                 char const *type, uint32_t flags, uint32_t *idx);
+
+static int emit_fixed_getter_case(ob *b, cg_model const *m,
+                                  sentry const *smap, size_t scount,
+                                  char const *owner_name, char segs[][64], int n_segs,
+                                  char const *field_name, char const *field_type, int fixed,
+                                  uint32_t flags, uint32_t *idx) {
+    int i;
+    for (i = 0; i < fixed; ++i) {
+        char next[MAX_DEPTH][64];
+        memcpy(next, segs, sizeof(next));
+        snprintf(next[n_segs], sizeof(next[n_segs]), "%s[%d]", field_name, i);
+        if (emit_walk_getter_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY, idx) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_walk_getter_case(ob *b, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 char const *owner_name, char segs[][64], int n_segs,
+                                 char const *type, uint32_t flags, uint32_t *idx) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
+        return emit_getter_case_row(b, owner_name, segs, n_segs, idx);
+    }
+    if (n_segs < MAX_DEPTH - 1) {
+        cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+            char next[MAX_DEPTH][64];
+            int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+            if (fixed > 0) {
+                if (emit_fixed_getter_case(b, m, smap, scount, owner_name, segs, n_segs,
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED), idx) < 0) return -1;
+            } else {
+                memcpy(next, segs, sizeof(next));
+                snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
+                if (emit_walk_getter_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                        f->type, f->flags | (flags & CG_FLAG_INHERITED), idx) < 0) return -1;
+            }
+        }
+    }
+    return 0;
+}
+
+static int emit_getter_cases_for_fields(ob *b, cg_model const *m,
+                                        sentry const *smap, size_t scount,
+                                        cg_node const *owner, char const *owner_name,
+                                        cg_kind kind, int include_array_count,
+                                        uint32_t *idx) {
+    cg_foreach(m, owner->id, kind, p) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
+        if (fixed > 0) {
+            if (emit_fixed_getter_case(b, m, smap, scount, owner_name, segs, 0,
+                    p->name, p->type, fixed, p->flags, idx) < 0) return -1;
+        } else {
+            snprintf(segs[0], sizeof(segs[0]), "%s", p->name);
+            if (emit_walk_getter_case(b, m, smap, scount, owner_name, segs, 1,
+                    p->type, p->flags, idx) < 0) return -1;
+        }
+        if (include_array_count && (p->flags & CG_FLAG_ARRAY)) {
+            snprintf(segs[0], sizeof(segs[0]), "Num%s", p->name);
+            if (emit_getter_case_row(b, owner_name, segs, 1, idx) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static int emit_read_case_row(ob *b, char const *owner_name, char segs[][64], int n_segs) {
+    char addr[512];
+    char leaf[256];
+    property_addr(segs, n_segs, addr, sizeof(addr));
+    property_leaf(segs, n_segs, leaf, sizeof(leaf));
+    return ob_printf(b,
+            "\t\tcase offsetof(struct %s, %s): return OBJ_ReadProperty(_P, ID_%s_%s, _Out);\n",
+            owner_name, addr, owner_name, leaf);
+}
+
+static int emit_walk_read_case(ob *b, cg_model const *m,
+                               sentry const *smap, size_t scount,
+                               char const *owner_name, char segs[][64], int n_segs,
+                               char const *type, uint32_t flags);
+
+static int emit_fixed_read_case(ob *b, cg_model const *m,
+                                sentry const *smap, size_t scount,
+                                char const *owner_name, char segs[][64], int n_segs,
+                                char const *field_name, char const *field_type, int fixed,
+                                uint32_t flags) {
+    int i;
+    for (i = 0; i < fixed; ++i) {
+        char next[MAX_DEPTH][64];
+        memcpy(next, segs, sizeof(next));
+        snprintf(next[n_segs], sizeof(next[n_segs]), "%s[%d]", field_name, i);
+        if (emit_walk_read_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                field_type, flags & ~(uint32_t)CG_FLAG_ARRAY) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_walk_read_case(ob *b, cg_model const *m,
+                               sentry const *smap, size_t scount,
+                               char const *owner_name, char segs[][64], int n_segs,
+                               char const *type, uint32_t flags) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed && !(flags & CG_FLAG_ARRAY))) {
+        return emit_read_case_row(b, owner_name, segs, n_segs);
+    }
+    if (n_segs < MAX_DEPTH - 1) {
+        cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+            char next[MAX_DEPTH][64];
+            int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+            if (fixed > 0) {
+                if (emit_fixed_read_case(b, m, smap, scount, owner_name, segs, n_segs,
+                        f->name, f->type, fixed, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
+            } else {
+                memcpy(next, segs, sizeof(next));
+                snprintf(next[n_segs], sizeof(next[n_segs]), "%s", f->name);
+                if (emit_walk_read_case(b, m, smap, scount, owner_name, next, n_segs + 1,
+                        f->type, f->flags | (flags & CG_FLAG_INHERITED)) < 0) return -1;
+            }
+        }
+    }
+    return 0;
+}
+
+static int emit_read_cases_for_fields(ob *b, cg_model const *m,
+                                      sentry const *smap, size_t scount,
+                                      cg_node const *owner, char const *owner_name,
+                                      cg_kind kind, int include_array_count) {
+    cg_foreach(m, owner->id, kind, p) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        int fixed = (kind == CG_KIND_FIELD && p->extra && p->extra[0]) ? atoi(p->extra) : 0;
+        if (fixed > 0) {
+            if (emit_fixed_read_case(b, m, smap, scount, owner_name, segs, 0,
+                    p->name, p->type, fixed, p->flags) < 0) return -1;
+        } else {
+            snprintf(segs[0], sizeof(segs[0]), "%s", p->name);
+            if (emit_walk_read_case(b, m, smap, scount, owner_name, segs, 1,
                     p->type, p->flags) < 0) return -1;
         }
         if (include_array_count && (p->flags & CG_FLAG_ARRAY)) {
             snprintf(segs[0], sizeof(segs[0]), "Num%s", p->name);
-            if (emit_property_row(b, h, m, owner_name, segs, 1, "int", 0) < 0) return -1;
+            if (emit_read_case_row(b, owner_name, segs, 1) < 0) return -1;
         }
     }
+    return 0;
+}
+
+static int emit_class_getter(ob *b, cg_model const *m,
+                             sentry const *smap, size_t scount,
+                             cg_node const *c, cg_node const *mx) {
+    uint32_t idx = 0;
+    if (ob_printf(b,
+            "ORCA_API struct Property *%s_GetProperty(struct Object *_P, size_t _O) {\n"
+            "\tswitch (_O) {\n",
+            c->name) < 0) return -1;
+    if (mx && emit_getter_cases_for_fields(b, m, smap, scount, mx, c->name,
+            CG_KIND_PROPERTY, 1, &idx) < 0) return -1;
+    if (emit_getter_cases_for_fields(b, m, smap, scount, c, c->name,
+            CG_KIND_PROPERTY, 1, &idx) < 0) return -1;
+    cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        snprintf(segs[0], sizeof(segs[0]), "%s", msg->name);
+        if (emit_getter_case_row(b, c->name, segs, 1, &idx) < 0) return -1;
+    }
+    return ob_printf(b,
+            "\t\tdefault: return NULL;\n"
+            "\t}\n"
+            "}\n");
+}
+
+static int emit_class_reader(ob *b, cg_model const *m,
+                             sentry const *smap, size_t scount,
+                             cg_node const *c, cg_node const *mx) {
+    if (ob_printf(b,
+            "ORCA_API bool_t %s_ReadPropertyAtOffset(struct Object *_P, size_t _O, void *_Out) {\n"
+            "\tswitch (_O) {\n",
+            c->name) < 0) return -1;
+    if (mx && emit_read_cases_for_fields(b, m, smap, scount, mx, c->name,
+            CG_KIND_PROPERTY, 1) < 0) return -1;
+    if (emit_read_cases_for_fields(b, m, smap, scount, c, c->name,
+            CG_KIND_PROPERTY, 1) < 0) return -1;
+    cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
+        char segs[MAX_DEPTH][64] = {{0}};
+        snprintf(segs[0], sizeof(segs[0]), "%s", msg->name);
+        if (emit_read_case_row(b, c->name, segs, 1) < 0) return -1;
+    }
+    return ob_printf(b,
+            "\t\tdefault: return FALSE;\n"
+            "\t}\n"
+            "}\n");
+}
+
+static int emit_class_parent_ids(ob *b, cg_host_v1 const *h, cg_node const *c) {
+    char parents[512];
+    char *tok;
+    if (c->type && c->type[0]) {
+        snprintf(parents, sizeof(parents), "%s", c->type);
+        for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
+            while (*tok == ' ' || *tok == '\t') ++tok;
+            if (ob_printf(b, "#define ID_%s 0x%08x\n", tok, h->fnv1a32(tok)) < 0) return -1;
+        }
+    }
+    if (c->extra && c->extra[0]) {
+        if (ob_printf(b, "#define ID_%s 0x%08x\n", c->extra, h->fnv1a32(c->extra)) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action_getter_cases(ob *b, cg_model const *m,
+                                            cg_node const *msg, char const *action,
+                                            uint32_t *idx) {
+    cg_node const *p = event_parent(m, msg);
+    if (p && emit_message_action_getter_cases(b, m, p, action, idx) < 0) return -1;
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        if (ob_printf(b,
+                "\t\tcase offsetof(struct %s, %s): return OBJ_GetPropertyAtIndex(_P, ID_%s, sizeof(struct %s), %u);\n",
+                action, f->name, action, action, (*idx)++) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action_reader_cases(ob *b, cg_model const *m,
+                                            cg_node const *msg, char const *action) {
+    cg_node const *p = event_parent(m, msg);
+    if (p && emit_message_action_reader_cases(b, m, p, action) < 0) return -1;
+    cg_foreach(m, msg->id, CG_KIND_FIELD, f) {
+        if (ob_printf(b,
+                "\t\tcase offsetof(struct %s, %s): return OBJ_ReadProperty(_P, ID_%s_%s, _Out);\n",
+                action, f->name, action, f->name) < 0) return -1;
+    }
+    return 0;
+}
+
+static int emit_message_action_getter(ob *b, cg_model const *m, cg_node const *msg) {
+    char action[256];
+    uint32_t idx = 0;
+    message_action_name(m, msg, action, sizeof(action));
+    if (ob_printf(b,
+            "ORCA_API struct Property *%s_GetProperty(struct Object *_P, size_t _O) {\n"
+            "\tswitch (_O) {\n",
+            action) < 0) return -1;
+    if (emit_message_action_getter_cases(b, m, msg, action, &idx) < 0) return -1;
+    return ob_printf(b,
+            "\t\tdefault: return NULL;\n"
+            "\t}\n"
+            "}\n");
+}
+
+static int emit_message_action_reader(ob *b, cg_model const *m, cg_node const *msg) {
+    char action[256];
+    message_action_name(m, msg, action, sizeof(action));
+    if (ob_printf(b,
+            "ORCA_API bool_t %s_ReadPropertyAtOffset(struct Object *_P, size_t _O, void *_Out) {\n"
+            "\tswitch (_O) {\n",
+            action) < 0) return -1;
+    if (emit_message_action_reader_cases(b, m, msg, action) < 0) return -1;
+    return ob_printf(b,
+            "\t\tdefault: return FALSE;\n"
+            "\t}\n"
+            "}\n");
+}
+
+
+static int emit_shorthand_target_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                      sentry const *smap, size_t scount,
+                                      char const *owner_name,
+                                      char const *shorthand_type,
+                                      char full_segs[][64], int n_full,
+                                      char field_segs[][64], int n_field,
+                                      char const *type,
+                                      int *present_bit) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (s && !s->sealed && n_full < MAX_DEPTH - 1 && n_field < MAX_DEPTH - 1) {
+        cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+            int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+            if (fixed > 0) {
+                int i;
+                for (i = 0; i < fixed; ++i) {
+                    char next_full[MAX_DEPTH][64];
+                    char next_field[MAX_DEPTH][64];
+                    memcpy(next_full, full_segs, sizeof(next_full));
+                    memcpy(next_field, field_segs, sizeof(next_field));
+                    snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                    snprintf(next_field[n_field], sizeof(next_field[n_field]), "%s[%d]", f->name, i);
+                    if (emit_shorthand_target_walk(b, h, m, smap, scount,
+                            owner_name, shorthand_type,
+                            next_full, n_full + 1,
+                            next_field, n_field + 1,
+                            f->type, present_bit) < 0) return -1;
+                }
+            } else {
+                char next_full[MAX_DEPTH][64];
+                char next_field[MAX_DEPTH][64];
+                memcpy(next_full, full_segs, sizeof(next_full));
+                memcpy(next_field, field_segs, sizeof(next_field));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+                snprintf(next_field[n_field], sizeof(next_field[n_field]), "%s", f->name);
+                if (emit_shorthand_target_walk(b, h, m, smap, scount,
+                        owner_name, shorthand_type,
+                        next_full, n_full + 1,
+                        next_field, n_field + 1,
+                        f->type, present_bit) < 0) return -1;
+            }
+        }
+        return 0;
+    }
+
+    char leaf[256], field[256], addr[512];
+    uint64_t bit = *present_bit < 64 ? ((uint64_t)1 << *present_bit) : 0;
+    (*present_bit)++;
+    property_leaf(full_segs, n_full, leaf, sizeof(leaf));
+    property_leaf(field_segs, n_field, field, sizeof(field));
+    property_addr(field_segs, n_field, addr, sizeof(addr));
+    return ob_printf(b,
+            "\tSHORTHAND_TARGET(%s, %s, %s, %s, 0x%llx),\n",
+            shorthand_type, addr, owner_name, leaf, (unsigned long long)bit);
+}
+
+static void shorthand_target_symbol(char *dst, size_t dsz,
+                                    char const *owner_name,
+                                    char segs[][64], int n_segs) {
+    char leaf[256];
+    property_leaf(segs, n_segs, leaf, sizeof(leaf));
+    snprintf(dst, dsz, "%s%sShorthandTargets", owner_name, leaf);
+}
+
+static int emit_shorthand_arrays_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                      sentry const *smap, size_t scount,
+                                      char const *owner_name,
+                                      char full_segs[][64], int n_full,
+                                      char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    int count = 0;
+    if (!(s && !s->sealed)) return 0;
+
+    char targets[512];
+    char field_segs[MAX_DEPTH][64] = {{0}};
+    int present_bit = 0;
+    shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
+    if (ob_printf(b, "static struct PropertyShorthandTarget const %s[] = {\n",
+            targets) < 0) return -1;
+    if (emit_shorthand_target_walk(b, h, m, smap, scount,
+            owner_name, type, full_segs, n_full, field_segs, 0, type,
+            &present_bit) < 0) return -1;
+    if (ob_printf(b, "};\n") < 0) return -1;
+    count++;
+
+    if (n_full >= MAX_DEPTH - 1) return count;
+    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+        if (fixed > 0) {
+            int i;
+            for (i = 0; i < fixed; ++i) {
+                char next_full[MAX_DEPTH][64];
+                int nested;
+                memcpy(next_full, full_segs, sizeof(next_full));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                nested = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                        owner_name, next_full, n_full + 1, f->type);
+                if (nested < 0) return -1;
+                count += nested;
+            }
+        } else {
+            char next_full[MAX_DEPTH][64];
+            int nested;
+            memcpy(next_full, full_segs, sizeof(next_full));
+            snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+            nested = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                    owner_name, next_full, n_full + 1, f->type);
+            if (nested < 0) return -1;
+            count += nested;
+        }
+    }
+    return count;
+}
+
+static int emit_shorthand_entries_walk(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                       sentry const *smap, size_t scount,
+                                       char const *owner_name,
+                                       char full_segs[][64], int n_full,
+                                       char const *type) {
+    sentry const *s = find_struct(smap, scount, type);
+    if (!(s && !s->sealed)) return 0;
+
+    char leaf[256], targets[512];
+    property_leaf(full_segs, n_full, leaf, sizeof(leaf));
+    shorthand_target_symbol(targets, sizeof(targets), owner_name, full_segs, n_full);
+    if (ob_printf(b,
+            "\tSHORTHAND(%s, %s, \"%s\", %s, 0x%08x),\n",
+            owner_name, leaf, s->export_name, type,
+            h->fnv1a32(leaf)) < 0) return -1;
+
+    if (n_full >= MAX_DEPTH - 1) return 0;
+    cg_foreach(m, s->id, CG_KIND_FIELD, f) {
+        int fixed = (f->extra && f->extra[0]) ? atoi(f->extra) : 0;
+        if (fixed > 0) {
+            int i;
+            for (i = 0; i < fixed; ++i) {
+                char next_full[MAX_DEPTH][64];
+                memcpy(next_full, full_segs, sizeof(next_full));
+                snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s[%d]", f->name, i);
+                if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                        owner_name, next_full, n_full + 1, f->type) < 0) return -1;
+            }
+        } else {
+            char next_full[MAX_DEPTH][64];
+            memcpy(next_full, full_segs, sizeof(next_full));
+            snprintf(next_full[n_full], sizeof(next_full[n_full]), "%s", f->name);
+            if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                    owner_name, next_full, n_full + 1, f->type) < 0) return -1;
+        }
+    }
+    return 0;
+}
+
+static int emit_class_shorthands(ob *b, cg_host_v1 const *h, cg_model const *m,
+                                 sentry const *smap, size_t scount,
+                                 cg_node const *c) {
+    int count = 0;
+    cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+        sentry const *s = find_struct(smap, scount, p->type);
+        if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+            char full_segs[MAX_DEPTH][64] = {{0}};
+            int emitted;
+            snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+            emitted = emit_shorthand_arrays_walk(b, h, m, smap, scount,
+                    c->name, full_segs, 1, p->type);
+            if (emitted < 0) return -1;
+            count += emitted;
+        }
+    }
+    if (ob_printf(b, "static struct PropertyShorthand const %sShorthands[] = {\n",
+            c->name) < 0) return -1;
+    if (count) {
+        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
+            sentry const *s = find_struct(smap, scount, p->type);
+            if (s && !s->sealed && !(p->flags & CG_FLAG_ARRAY)) {
+                char full_segs[MAX_DEPTH][64] = {{0}};
+                snprintf(full_segs[0], sizeof(full_segs[0]), "%s", p->name);
+                if (emit_shorthand_entries_walk(b, h, m, smap, scount,
+                        c->name, full_segs, 1, p->type) < 0) return -1;
+            }
+        }
+    }
+    if (ob_printf(b, "};\n") < 0) return -1;
     return 0;
 }
 
@@ -480,6 +1011,51 @@ static int emit_enum_macros(ob *b, cg_model const *m) {
         }
         if (ob_printf(b, ")\n") < 0) return -1;
     }
+    return 0;
+}
+
+static int model_has_enum(cg_model const *m, char const *name) {
+    return find_kind(m, name, CG_KIND_ENUM) != NULL;
+}
+
+static int emit_struct_parser_helpers(ob *b, cg_model const *m) {
+    int has_axis_alignment = !strcmp(m->module_name, "core") &&
+                             model_has_enum(m, "HorizontalAlignment") &&
+                             model_has_enum(m, "VerticalAlignment") &&
+                             model_has_enum(m, "DepthAlignment");
+    if (ob_printf(b,
+            "static int cg_num(const char*s){char*e;strtof(s,&e);if(e==s)return 0;return !*e||!strcasecmp(e,\"px\")||!strcasecmp(e,\"pt\");}\n"
+            "static int cg_i(struct PropertyType const*p,int z,const char*n){for(int i=0;i<z;i++)if(!strcmp(p[i].Name,n))return i;return -1;}\n"
+            "static int cg_enum(const char**v,const char*s,void*d){for(int i=0;v&&v[i];i++)if(!strcasecmp(v[i],s)){*(int*)d=i;return TRUE;}return FALSE;}\n") < 0) return -1;
+    if (has_axis_alignment) {
+        if (ob_printf(b,
+                "static int cg_axis_enum(struct PropertyType const*p,const char*s,void*d){return !strcmp(p->Name,\"Horizontal\")?cg_enum(_HorizontalAlignment,s,d):!strcmp(p->Name,\"Vertical\")?cg_enum(_VerticalAlignment,s,d):!strcmp(p->Name,\"Depth\")?cg_enum(_DepthAlignment,s,d):FALSE;}\n") < 0) return -1;
+    } else {
+        if (ob_printf(b,
+                "static int cg_axis_enum(struct PropertyType const*p,const char*s,void*d){(void)p;(void)s;(void)d;return FALSE;}\n") < 0) return -1;
+    }
+    return ob_printf(b,
+            "static int cg_p(const char*s,struct PropertyType const*p,void*d){char tmp[MAX_PROPERTY_STRING]={0};if(cg_axis_enum(p,s,d))return TRUE;if(p->DataType==kDataTypeEnum)return cg_enum(p->EnumValues,s,d);if((p->DataType==kDataTypeFloat||p->DataType==kDataTypeInt)&&!cg_num(s))return FALSE;if(p->DataType==kDataTypeStruct)return OBJ_ParseStruct(p->TypeString,s,d,p->DataSize);if(!parse_property(s,p,tmp))return FALSE;memcpy(d,tmp,p->DataSize);return TRUE;}\n"
+            "static int cg_put(char*s,void*d,struct PropertyType const*p,int i,uint64_t*m){if(cg_p(s,&p[i],(char*)d+p[i].Offset)){if(i<64)*m|=((uint64_t)1<<i);return TRUE;}return FALSE;}\n"
+            "static int cg_box(void*d,struct PropertyType const*p,int n,char**t,int nt,const char*pre,uint64_t*m){char a[32];int L,R,T,B,F,K,k=0;if(nt>4)return 0;while(k<nt&&cg_num(t[k]))k++;if(!k)return 0;snprintf(a,sizeof(a),\"%%sLeft\",pre);L=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sRight\",pre);R=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sTop\",pre);T=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBottom\",pre);B=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sFront\",pre);F=cg_i(p,n,a);snprintf(a,sizeof(a),\"%%sBack\",pre);K=cg_i(p,n,a);if(L<0||R<0||T<0||B<0)return 0;cg_put(t[0],d,p,L,m);cg_put(k>2?t[2]:t[0],d,p,R,m);cg_put(k>1?t[1]:t[0],d,p,T,m);cg_put(k>3?t[3]:(k>1?t[1]:t[0]),d,p,B,m);if(pre[0]&&F>=0&&K>=0){cg_put(t[0],d,p,F,m);cg_put(t[0],d,p,K,m);}return k;}\n"
+            "static int cg_req(void*d,struct PropertyType const*p,int n,char**t,int nt,uint64_t*m){int H,V,D;if(nt>3)return 0;for(int i=0;i<nt;i++)if(!cg_num(t[i]))return 0;H=cg_i(p,n,\"HorizontalRequested\");V=cg_i(p,n,\"VerticalRequested\");D=cg_i(p,n,\"DepthRequested\");if(H<0||V<0)return 0;cg_put(t[0],d,p,H,m);if(nt>1)cg_put(t[1],d,p,V,m);if(nt>2&&D>=0)cg_put(t[2],d,p,D,m);return nt;}\n"
+            "static int cg_same(struct PropertyType const*p,int n){for(int i=1;i<n;i++)if(p[i].DataType!=p[0].DataType||p[i].EnumValues!=p[0].EnumValues)return 0;return n>1;}\n"
+            "static int cg_join(char**t,int n,char*b){b[0]=0;for(int i=0;i<n;i++){if(i)strcat(b,\" \");strcat(b,t[i]);}return TRUE;}\n"
+            "static int cg_span(char**t,int nt,struct PropertyType const*p,int i,void*d,int*used,uint64_t*m){char b[MAX_PROPERTY_STRING];if(p[i].DataType!=kDataTypeStruct)return nt&&!used[0]&&cg_put(t[0],d,p,i,m)?1:0;for(int c=nt;c>0;c--){int ok=1;for(int j=0;j<c;j++)if(used[j])ok=0;if(!ok)continue;cg_join(t,c,b);if(cg_put(b,d,p,i,m))return c;}return 0;}\n"
+            "static int cg_done(uint64_t m){OBJ_SetStructParseMask(m);return TRUE;}\n"
+            "static int cg_parse(const char*s,void*d,size_t z,struct PropertyType const*p,int n){char b[MAX_PROPERTY_STRING]={0},*t[32],*x;int nt=0,u[32]={0},f[64]={0},any=FALSE;uint64_t m=0;if(!d)return FALSE;memset(d,0,z);snprintf(b,sizeof(b),\"%%s\",s);for(x=strtok(b,\" \\t\\r\\n\");x&&nt<32;x=strtok(NULL,\" \\t\\r\\n\"))t[nt++]=x;if(!nt)return FALSE;if(cg_box(d,p,n,t,nt,\"\",&m)==nt)return cg_done(m);if(cg_req(d,p,n,t,nt,&m)==nt)return cg_done(m);if(nt==1&&cg_same(p,n)){for(int i=0;i<n;i++)any|=cg_put(t[0],d,p,i,&m);return any?cg_done(m):FALSE;}int c=cg_box(d,p,n,t,nt,\"Width\",&m);for(int i=0;i<c;i++)u[i]=any=TRUE;for(int pass=0;pass<4;pass++)for(int j=0;j<nt;j++)if(!u[j])for(int i=0;i<n;i++){int dt=p[i].DataType;if(f[i]||(pass==0&&dt!=kDataTypeEnum)||(pass==1&&(dt==kDataTypeEnum||dt==kDataTypeColor||dt==kDataTypeObject))||(pass==2&&dt!=kDataTypeColor)||(pass==3&&dt!=kDataTypeObject))continue;c=cg_span(&t[j],nt-j,p,i,d,&u[j],&m);if(c){for(int q=0;q<c;q++)u[j+q]=TRUE;f[i]=any=TRUE;break;}}if(!any)return FALSE;for(int i=0;i<nt;i++)if(!u[i])return FALSE;return cg_done(m);}\n");
+}
+
+static int emit_struct_parser_wrappers(ob *b, cg_model const *m) {
+    if (ob_printf(b,
+            "#define CG_PARSE_WRAPPER(NAME) \\\n"
+            "static int cg_parse_##NAME(const char*s,void*d,size_t z){ \\\n"
+            "\treturn z==sizeof(struct NAME)&&cg_parse(s,d,z,_##NAME,sizeof(_##NAME)/sizeof(*_##NAME)); \\\n"
+            "}\n") < 0) return -1;
+    cg_foreach(m, 0, CG_KIND_STRUCT, s) {
+        if (ob_printf(b, "CG_PARSE_WRAPPER(%s)\n", s->name) < 0) return -1;
+    }
+    if (ob_printf(b, "#undef CG_PARSE_WRAPPER\n") < 0) return -1;
     return 0;
 }
 
@@ -595,7 +1171,7 @@ static int emit_structs(ob *b, cg_host_v1 const *h, cg_model const *m,
         char const *prefix = owner_prefix(s);
         if (emit_method_wrappers(b, m, s, prefix) < 0) return -1;
         if (ob_printf(b, "static struct PropertyType _%s[] = {\n", s->name) < 0) return -1;
-        if (emit_properties_for_fields(b, h, m, smap, scount, s, s->name, CG_KIND_FIELD, 0) < 0) return -1;
+        if (emit_properties_for_fields(b, h, m, smap, scount, s, s->name, CG_KIND_FIELD, 0, NULL) < 0) return -1;
         if (ob_printf(b, "};\nstatic luaL_Reg _%s_Methods[] = {\n", s->name) < 0) return -1;
         cg_foreach(m, s->id, CG_KIND_METHOD, method)
             if (ob_printf(b, "\t{ \"%s\", f_%s%s },\n",
@@ -603,8 +1179,11 @@ static int emit_structs(ob *b, cg_host_v1 const *h, cg_model const *m,
         if (ob_printf(b, "\t{ NULL, NULL }\n};\n") < 0) return -1;
     }
     if (ob_printf(b, "\n") < 0) return -1;
+    if (emit_struct_parser_helpers(b, m) < 0) return -1;
+    if (emit_struct_parser_wrappers(b, m) < 0) return -1;
     cg_foreach(m, 0, CG_KIND_STRUCT, s) {
-        if (ob_printf(b, "STRUCT(%s, %s);\n", s->name, export_name(s)) < 0) return -1;
+        if (ob_printf(b, "STRUCT_PARSER(%s, %s, cg_parse_%s);\n",
+                s->name, export_name(s), s->name) < 0) return -1;
     }
     return 0;
 }
@@ -736,43 +1315,19 @@ static int emit_message_action(ob *b, cg_host_v1 const *h, cg_model const *m, cg
 
     if (prop_count > 0) {
         if (ob_printf(b,
-                "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                action, action) < 0) return -1;
+                "static struct PropertyType const %sProperties[%d] = {\n",
+                action, prop_count) < 0) return -1;
         if (emit_action_payload_properties(b, h, m, msg, action) < 0) return -1;
         if (ob_printf(b, "};\n") < 0) return -1;
     }
 
     if (ob_printf(b,
-            "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-            "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-            "}\n"
-            "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-            "\treturn Get%s(luaX_checkObject(L, idx));\n"
-            "}\n"
-            "ORCA_API struct ClassDesc _%s = {\n"
-            "\t.ClassName = \"%s\",\n"
-            "\t.DefaultName = \"%s\",\n"
-            "\t.ContentType = \"%s\",\n"
-            "\t.Xmlns = \"http://schemas.corepunch.com/orca/2006/xml/presentation\",\n"
-            "\t.ParentClasses = { ID_SendMessageAction, 0 },\n"
-            "\t.ClassID = ID_%s,\n"
-            "\t.ClassSize = sizeof(struct %s),\n"
-            "\t.Properties = %s%s,\n"
-            "\t.ObjProc = NULL,\n"
-            "\t.Defaults = NULL,\n"
-            "\t.NumProperties = k%sNumProperties,\n"
-            "};\n",
-            action, action, action, action,
-            action, action, action,
-            action,
-            xml_name,
-            xml_name,
-            action,
-            action,
-            action,
+            "REGISTER_MESSAGE_ACTION(%s, \"%s\", %d, %s%s);\n",
+            action, xml_name, prop_count,
             prop_count > 0 ? action : "",
-            prop_count > 0 ? "Properties" : "NULL",
-            action) < 0) return -1;
+            prop_count > 0 ? "Properties" : "NULL") < 0) return -1;
+    if (emit_message_action_getter(b, m, msg) < 0) return -1;
+    if (emit_message_action_reader(b, m, msg) < 0) return -1;
     return 0;
 }
 
@@ -817,65 +1372,67 @@ static void dot_to_underscore(char *dst, size_t dsz, char const *s) {
     for (i = 0; dst[i]; ++i) if (dst[i] == '.') dst[i] = '_';
 }
 
-static int emit_component_parents(ob *b, cg_host_v1 const *h, cg_node const *c, int refs_only) {
+static int emit_component_parents(ob *b, cg_node const *c) {
     char parents[512];
     char *tok;
     int first = 1;
-    if (refs_only) {
-        if (c->type && c->type[0]) {
-            snprintf(parents, sizeof(parents), "%s", c->type);
-            for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
-                while (*tok == ' ' || *tok == '\t') ++tok;
-                if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
-                first = 0;
-            }
-        }
-        if (c->extra && c->extra[0]) {
-            if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
-            first = 0;
-        }
-        return ob_printf(b, "%s0", first ? "" : ", ");
-    }
     if (c->type && c->type[0]) {
         snprintf(parents, sizeof(parents), "%s", c->type);
         for (tok = strtok(parents, ","); tok; tok = strtok(NULL, ",")) {
             while (*tok == ' ' || *tok == '\t') ++tok;
-            if (ob_printf(b, "#define ID_%s 0x%08x\n", tok, h->fnv1a32(tok)) < 0) return -1;
+            if (ob_printf(b, "%sID_%s", first ? "" : ", ", tok) < 0) return -1;
+            first = 0;
         }
     }
-    if (c->extra && c->extra[0])
-        if (ob_printf(b, "#define ID_%s 0x%08x\n", c->extra, h->fnv1a32(c->extra)) < 0) return -1;
+    if (c->extra && c->extra[0]) {
+        if (ob_printf(b, "%sID_%s", first ? "" : ", ", c->extra) < 0) return -1;
+        first = 0;
+    }
+    return ob_printf(b, "%s0", first ? "" : ", ");
+}
+
+static int emit_defaults_for_props(ob *b, cg_model const *m, uint32_t owner_id) {
+    cg_foreach(m, owner_id, CG_KIND_PROPERTY, p) {
+        char const *kind = type_kind(m, p->type);
+        if (p->flags & CG_FLAG_INHERITED) continue;
+        if (p->extra && p->extra[0]) {
+            if (!strcmp(kind, "string")) {
+                if (ob_printf(b, "\t.%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "enum")) {
+                if (ob_printf(b, "\t.%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
+            } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
+                       !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
+                if (ob_printf(b, "\t.%s = {%s},\n", p->name, p->extra) < 0) return -1;
+            } else {
+                if (ob_printf(b, "\t.%s = %s,\n", p->name, p->extra) < 0) return -1;
+            }
+        }
+    }
     return 0;
 }
 
 static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
                            sentry const *smap, size_t scount) {
     cg_foreach(m, 0, CG_KIND_CLASS, c) {
+        char ss_buf[256];
+        char const *ss = class_storage_name(m, c, ss_buf, sizeof(ss_buf));
+        cg_node const *mx = (c->aux && c->aux[0]) ? find_kind(m, c->aux, CG_KIND_CLASS) : NULL;
         if (emit_component_handlers(b, c, m) < 0) return -1;
-        if (ob_printf(b, "static struct PropertyType const %sProperties[k%sNumProperties] = {\n",
-                c->name, c->name) < 0) return -1;
-        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1) < 0) return -1;
+        if (emit_class_shorthands(b, h, m, smap, scount, c) < 0) return -1;
+        if (ss) { if (ob_printf(b, "#define _STORAGE_STRUCT %s\n", ss) < 0) return -1; }
+        if (ob_printf(b, "static struct PropertyType const %sProperties[] = {\n",
+                c->name) < 0) return -1;
+        if (mx && emit_properties_for_fields(b, h, m, smap, scount, mx, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
+        if (emit_properties_for_fields(b, h, m, smap, scount, c, c->name, CG_KIND_PROPERTY, 1, ss) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_MESSAGE, msg) {
-            if (ob_printf(b, "\tDECL(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
-                    h->fnv1a32(msg->name), c->name, msg->name, msg->name,
+            const char *decl_macro = ss ? "UIDATA_DECL" : "DECL";
+            if (ob_printf(b, "\t%s(0x%08x, %s, %s, %s, kDataTypeEvent, .TypeString = \"%s_%sEventArgs\"), // %s.%s\n",
+                    decl_macro, h->fnv1a32(msg->name), c->name, msg->name, msg->name,
                     c->name, msg->name, c->name, msg->name) < 0) return -1;
         }
         if (ob_printf(b, "};\nstatic struct %s %sDefaults = {\n", c->name, c->name) < 0) return -1;
-        cg_foreach(m, c->id, CG_KIND_PROPERTY, p) {
-            char const *kind = type_kind(m, p->type);
-            if (p->extra && p->extra[0]) {
-                if (!strcmp(kind, "string")) {
-                    if (ob_printf(b, "\t\t\n  .%s = \"%s\",\n", p->name, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "enum")) {
-                    if (ob_printf(b, "\t\t\n  .%s = k%s%s,\n", p->name, p->type, p->extra) < 0) return -1;
-                } else if (!strcmp(kind, "struct") || !strcmp(kind, "component") ||
-                           !strcmp(kind, "interface") || !strcmp(kind, "external_struct")) {
-                    if (ob_printf(b, "\t\t\n  .%s = {%s},\n", p->name, p->extra) < 0) return -1;
-                } else {
-                    if (ob_printf(b, "\t\t\n  .%s = %s,\n", p->name, p->extra) < 0) return -1;
-                }
-            }
-        }
+        if (mx && emit_defaults_for_props(b, m, mx->id) < 0) return -1;
+        if (emit_defaults_for_props(b, m, c->id) < 0) return -1;
         if (ob_printf(b, "};\nLRESULT %sProc(struct Object* object, void* cmp, uint32_t message, wParam_t wparm, lParam_t lparm) {\n"
                 "\tswitch (message) {\n", c->name) < 0) return -1;
         cg_foreach(m, c->id, CG_KIND_HANDLE, hdl) {
@@ -884,20 +1441,14 @@ static int emit_components(ob *b, cg_host_v1 const *h, cg_model const *m,
             if (ob_printf(b, "\t\tcase ID_%s: return %s_%s(object, cmp, wparm, lparm); // %s\n",
                     ident, c->name, after_dot(hdl->name), hdl->name) < 0) return -1;
         }
-        if (ob_printf(b,
-                "\t}\n\treturn FALSE;\n}\n"
-                "void luaX_push%s(lua_State *L, struct %s const* %s) {\n"
-                "\tluaX_pushObject(L, CMP_GetObject(%s));\n"
-                "}\n"
-                "struct %s* luaX_check%s(lua_State *L, int idx) {\n"
-                "\treturn Get%s(luaX_checkObject(L, idx));\n"
-                "}\n",
-                c->name, c->name, c->name, c->name,
-                c->name, c->name, c->name) < 0) return -1;
-        if (emit_component_parents(b, h, c, 0) < 0) return -1;
+        if (ob_printf(b, "\t}\n\treturn FALSE;\n}\n") < 0) return -1;
+        if (emit_class_getter(b, m, smap, scount, c, mx) < 0) return -1;
+        if (emit_class_reader(b, m, smap, scount, c, mx) < 0) return -1;
+        if (emit_class_parent_ids(b, h, c) < 0) return -1;
         if (ob_printf(b, "REGISTER_CLASS(%s, ", c->name) < 0) return -1;
-        if (emit_component_parents(b, h, c, 1) < 0) return -1;
+        if (emit_component_parents(b, c) < 0) return -1;
         if (ob_printf(b, ");\n") < 0) return -1;
+        if (ss) { if (ob_printf(b, "#undef _STORAGE_STRUCT\n") < 0) return -1; }
     }
     return 0;
 }
@@ -922,7 +1473,7 @@ static int emit_luaopen(ob *b, cg_model const *m) {
         while (foreach_local_event(m, &idx, &msg)) {
             char s[256];
             event_struct_name(m, msg, s, sizeof(s));
-            if (ob_printf(b, "\t\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
+            if (ob_printf(b, "\tlua_setfield(L, ((void)luaopen_orca_%s(L), -2), \"%s\");\n", s, s) < 0) return -1;
         }
     }
     cg_foreach(m, 0, CG_KIND_INTERFACE, iface)
@@ -981,6 +1532,9 @@ static int emit_export(cg_host_v1 const *host, cg_model const *model, char const
             "// DO NOT EDIT — run 'cd tools && make' to regenerate.\n"
             "#include <include/api.h>\n"
             "#include <include/codegen.h>\n\n"
+            "#include <stdlib.h>\n"
+            "#include <string.h>\n"
+            "#include <strings.h>\n\n"
             "#include <%s/%s.h>\n\n",
             base_name(model->xml_path), model->module_name, model->module_name) < 0) goto fail;
     cg_foreach(model, 0, CG_KIND_EXTERNAL, ext) {

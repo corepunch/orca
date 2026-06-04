@@ -8,12 +8,7 @@
 
 #include "r_local.h"
 
-#include "builtin/Gudea_Bold_ttf.h"
-#include "builtin/Gudea_Regular_ttf.h"
-
-#define RegisterDefaultFont(font)                                              \
-  Font_LoadFromMemory((void*)Gudea_Regular_ttf, Gudea_Regular_ttf_len, font);  \
-  Font_LoadFromMemory((void*)Gudea_Bold_ttf, Gudea_Bold_ttf_len, font);
+extern struct Object *FS_LoadObject(lpcString_t path);
 
 #define FT_ERROR(...) Con_Error("FONT: " __VA_ARGS__)
 #define FT_SCALE(x) ((x) >> 6)
@@ -38,6 +33,9 @@ static char const trailingBytesForUTF8[256] = {
   2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
 };
 
+static bool_t T_LoadDefaultFontBase(lpcString_t base);
+static void FontFamily_ReleaseFaces(struct FontFamily *family);
+
 struct fontface
 {
   FT_Face face;
@@ -46,7 +44,10 @@ struct fontface
 
 static struct _FONTGLOBALS
 {
-  struct FontFamily font;
+  struct Object* defaultFontObject;
+  struct FontFamily defaultFontStorage;
+  struct FontFamily* defaultFont;
+  bool_t defaultFontTried;
   void* ft;
 } fg = { 0 };
 
@@ -75,6 +76,23 @@ static FT_UInt u8_readchar(lpcString_t* text)
   return ch;
 }
 
+static struct FontFamily const*
+T_GetDefaultFontFamily(void)
+{
+  if (fg.defaultFont) return fg.defaultFont;
+
+  lpcString_t path = CORE_FindFontFamily("default");
+  if (path && T_LoadDefaultFontBase(path)) return fg.defaultFont;
+  if (T_LoadDefaultFontBase("build/share/fonts/NotoSans/NotoSans")) return fg.defaultFont;
+  if (T_LoadDefaultFontBase("share/fonts/NotoSans/NotoSans")) return fg.defaultFont;
+
+  if (fg.defaultFontTried || !path) return NULL;
+  fg.defaultFontTried = TRUE;
+  fg.defaultFontObject = FS_LoadObject(path);
+  fg.defaultFont = GetFontFamily(fg.defaultFontObject);
+  return fg.defaultFont;
+}
+
 static FT_Face
 T_GetFontFace(struct ViewTextRun const* run)
 {
@@ -88,11 +106,12 @@ T_GetFontFace(struct ViewTextRun const* run)
       }
     }
   }
-  if ((&fg.font.regular)[run->fontStyle]) {
-    return (&fg.font.regular)[run->fontStyle]->face;
+  struct FontFamily const *font = T_GetDefaultFontFamily();
+  if (font && (&font->regular)[run->fontStyle]) {
+    return (&font->regular)[run->fontStyle]->face;
   }
-  if (fg.font.regular) {
-    return fg.font.regular->face;
+  if (font && font->regular) {
+    return font->regular->face;
   }
   return NULL;
 }
@@ -142,24 +161,60 @@ Font_LoadFromMemory(void* buffer, int fileSize, struct FontFamily* family)
   return fontface;
 }
 
+static void
+FontFamily_ReleaseFaces(struct FontFamily *family)
+{
+  SafeDelete(family->regular, Font_Release);
+  SafeDelete(family->bold, Font_Release);
+  SafeDelete(family->italic, Font_Release);
+  SafeDelete(family->bolditalic, Font_Release);
+}
+
+static bool_t
+T_LoadDefaultFontBase(lpcString_t base)
+{
+  path_t regular = {0};
+  path_t bold = {0};
+  path_t italic = {0};
+  path_t bolditalic = {0};
+  snprintf(regular, sizeof(regular), "%s-Regular.ttf", base);
+  if (!FS_FileExists(regular)) return FALSE;
+
+  snprintf(bold, sizeof(bold), "%s-Bold.ttf", base);
+  snprintf(italic, sizeof(italic), "%s-Italic.ttf", base);
+  snprintf(bolditalic, sizeof(bolditalic), "%s-BoldItalic.ttf", base);
+
+  Font_Load(regular, &fg.defaultFontStorage);
+  if (FS_FileExists(bold)) Font_Load(bold, &fg.defaultFontStorage);
+  if (FS_FileExists(italic)) Font_Load(italic, &fg.defaultFontStorage);
+  if (FS_FileExists(bolditalic)) Font_Load(bolditalic, &fg.defaultFontStorage);
+
+  if (fg.defaultFontStorage.regular) {
+    fg.defaultFont = &fg.defaultFontStorage;
+    return TRUE;
+  }
+  FontFamily_ReleaseFaces(&fg.defaultFontStorage);
+  return FALSE;
+}
+
 void
 FT_Init(void)
 {
   if (FT_Init_FreeType((FT_Library*)&fg.ft)) {
     FT_ERROR("Unable to initialize FreeType.");
   }
-  //    fg.font = Font_LoadFromMemory((void *)Gudea_Bold_ttf,
-  //    Gudea_Bold_ttf_len);
-  RegisterDefaultFont(&fg.font);
 }
 
 void
 FT_Shutdown(void)
 {
-  SafeDelete(fg.font.regular, Font_Release);
-  SafeDelete(fg.font.bold, Font_Release);
-  SafeDelete(fg.font.italic, Font_Release);
-  SafeDelete(fg.font.bolditalic, Font_Release);
+  if (fg.defaultFontObject) {
+    OBJ_ReleaseRef(fg.defaultFontObject);
+    fg.defaultFontObject = NULL;
+  }
+  FontFamily_ReleaseFaces(&fg.defaultFontStorage);
+  fg.defaultFont = NULL;
+  fg.defaultFontTried = FALSE;
 
   FT_Done_FreeType(fg.ft);
   fg.ft = NULL;
@@ -598,6 +653,24 @@ Font_Load(lpcString_t szFileName, struct FontFamily *pFontFamily)
   }
 }
 
+static lpcString_t
+Font_ResolvePath(struct Object *object, lpcString_t path, path_t resolved)
+{
+  lpcString_t source = OBJ_GetSourceFile(object);
+  lpcString_t slash;
+  if (!path || !*path) return path;
+  if (FS_FileExists(path)) return path;
+  if (!source || !*source) return path;
+  slash = strrchr(source, '/');
+  if (!slash) return path;
+  size_t dir_len = (size_t)(slash - source);
+  if (dir_len + 1 + strlen(path) >= sizeof(path_t)) return path;
+  memcpy(resolved, source, dir_len);
+  resolved[dir_len] = '/';
+  strcpy(resolved + dir_len + 1, path);
+  return FS_FileExists(resolved) ? resolved : path;
+}
+
 HRESULT
 Text_GetInsets(struct ViewText const* text,
                struct edges* edges)
@@ -643,29 +716,26 @@ Text_GetInfo(struct ViewText const* pViewText,
 }
 
 HANDLER(FontFamily, Object, Start) {
-  if (*pFontFamily->Regular) {
-    /*pFontFamily->regular = */
-    Font_Load(pFontFamily->Regular, pFontFamily);
+  if (pFontFamily->Regular && *pFontFamily->Regular) {
+    path_t resolved = {0};
+    Font_Load(Font_ResolvePath(hObject, pFontFamily->Regular, resolved), pFontFamily);
   }
-  if (*pFontFamily->Bold) {
-    /*pFontFamily->bold = */
-    Font_Load(pFontFamily->Bold, pFontFamily);
+  if (pFontFamily->Bold && *pFontFamily->Bold) {
+    path_t resolved = {0};
+    Font_Load(Font_ResolvePath(hObject, pFontFamily->Bold, resolved), pFontFamily);
   }
-  if (*pFontFamily->Italic) {
-    /*pFontFamily->italic = */
-    Font_Load(pFontFamily->Italic, pFontFamily);
+  if (pFontFamily->Italic && *pFontFamily->Italic) {
+    path_t resolved = {0};
+    Font_Load(Font_ResolvePath(hObject, pFontFamily->Italic, resolved), pFontFamily);
   }
-  if (*pFontFamily->BoldItalic) {
-    /*pFontFamily->bolditalic = */
-    Font_Load(pFontFamily->BoldItalic, pFontFamily);
+  if (pFontFamily->BoldItalic && *pFontFamily->BoldItalic) {
+    path_t resolved = {0};
+    Font_Load(Font_ResolvePath(hObject, pFontFamily->BoldItalic, resolved), pFontFamily);
   }
   return TRUE;
 }
 
 HANDLER(FontFamily, Object, Destroy) {
-  SafeDelete(pFontFamily->regular, Font_Release);
-  SafeDelete(pFontFamily->bold, Font_Release);
-  SafeDelete(pFontFamily->italic, Font_Release);
-  SafeDelete(pFontFamily->bolditalic, Font_Release);
+  FontFamily_ReleaseFaces(pFontFamily);
   return TRUE;
 }

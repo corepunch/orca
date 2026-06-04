@@ -45,7 +45,10 @@ end
 function Startup.load_plugins()
   for path in system.list_dir(SHAREDIR .. "/plugins") do
     if path:match("%.lua$") then
-      Startup.load_plugin_config(path:match("^(.+)%.lua$"))
+      local plugin_name = path:match("^(.+)%.lua$")
+      if plugin_name ~= "tailwind" then
+        Startup.load_plugin_config(plugin_name)
+      end
       if xpcall(dofile, print, SHAREDIR .. "/plugins/" .. path) then
         io.stderr:write(string.format("Loaded plugin %s\n", path))
       else

@@ -275,6 +275,118 @@ local function test_xml_loading_properties()
 	print("PASS: test_xml_loading_properties")
 end
 
+local function test_inherited_foreground_color()
+	local xml = [[
+<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize" ForegroundColor="#336699">
+  <StackView Name="parent-stack">
+    <TextBlock Name="inherited-text" Text="Inherited" />
+    <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
+  </StackView>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inherited foreground XML should load")
+
+	local inherited = root:findChild("inherited-text", true)
+	local local_text = root:findChild("local-text", true)
+	test.expect(inherited ~= nil, "inherited text should exist")
+	test.expect(local_text ~= nil, "local text should exist")
+
+	test.expect_near(inherited.ForegroundColor.R, 0x33 / 255, 0.01, "inherited ForegroundColor.R")
+	test.expect_near(inherited.ForegroundColor.G, 0x66 / 255, 0.01, "inherited ForegroundColor.G")
+	test.expect_near(inherited.ForegroundColor.B, 0x99 / 255, 0.01, "inherited ForegroundColor.B")
+	test.expect_near(inherited.ForegroundColor.A, 1.0, 0.01, "inherited ForegroundColor.A")
+
+	test.expect_near(local_text.ForegroundColor.R, 0xCC / 255, 0.01, "local ForegroundColor.R")
+	test.expect_near(local_text.ForegroundColor.G, 0x33 / 255, 0.01, "local ForegroundColor.G")
+	test.expect_near(local_text.ForegroundColor.B, 0.0, 0.01, "local ForegroundColor.B")
+	test.expect_near(local_text.ForegroundColor.A, 1.0, 0.01, "local ForegroundColor.A")
+
+	root.ForegroundColor = "#00CC66"
+	test.expect_near(inherited.ForegroundColor.R, 0.0, 0.01, "updated inherited ForegroundColor.R")
+	test.expect_near(inherited.ForegroundColor.G, 0xCC / 255, 0.01, "updated inherited ForegroundColor.G")
+	test.expect_near(inherited.ForegroundColor.B, 0x66 / 255, 0.01, "updated inherited ForegroundColor.B")
+	test.expect_near(local_text.ForegroundColor.R, 0xCC / 255, 0.01, "local ForegroundColor.R should still win")
+	test.expect_near(local_text.ForegroundColor.G, 0x33 / 255, 0.01, "local ForegroundColor.G should still win")
+
+	print("PASS: test_inherited_foreground_color")
+end
+
+local function test_attached_inherited_text_font_family()
+	local root = ui.Screen { Name = "font-inherit-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local stack = root + ui.StackView { Name = "font-parent-stack" }
+	local inherited = stack + ui.TextBlock { Name = "font-inherited-text", Text = "Inherited" }
+	local local_text = stack + ui.TextBlock { Name = "font-local-text", Text = "Local" }
+	local font_a = renderer.FontFamily { Regular = "" }
+	local font_b = renderer.FontFamily { Regular = "" }
+	local font_local = renderer.FontFamily { Regular = "" }
+
+	root["TextRun.FontFamily"] = font_a
+	test.expect_eq(inherited.FontFamily, font_a, "TextRun.FontFamily attached to root should inherit into TextBlock")
+	test.expect_eq(local_text.FontFamily, font_a, "TextRun.FontFamily should inherit through non-TextRun parent")
+
+	local_text.FontFamily = font_local
+	root["TextRun.FontFamily"] = font_b
+	test.expect_eq(inherited.FontFamily, font_b, "TextRun.FontFamily parent update should propagate")
+	test.expect_eq(local_text.FontFamily, font_local, "local TextRun.FontFamily should beat inherited value")
+
+	root:removeFromParent()
+	print("PASS: test_attached_inherited_text_font_family")
+end
+
+local function test_attached_inherited_text_font_leaves()
+	local root = ui.Screen { Name = "font-leaves-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local stack = root + ui.StackView { Name = "font-leaves-stack" }
+	local inherited = stack + ui.TextBlock { Name = "font-leaves-inherited", Text = "Inherited" }
+	local local_text = stack + ui.TextBlock {
+		Name = "font-leaves-local",
+		Text = "Local",
+		FontSize = 15,
+		FontWeight = "Normal",
+		FontStyle = "Normal",
+	}
+
+	root["TextRun.FontSize"] = 22
+	root["TextRun.FontWeight"] = "Bold"
+	root["TextRun.FontStyle"] = "Italic"
+	test.expect_near(inherited.FontSize, 22, 0.001, "TextRun.FontSize should inherit through nested Font.Size slot")
+	test.expect_eq(inherited.FontWeight, "Bold", "TextRun.FontWeight should inherit through nested Font.Weight slot")
+	test.expect_eq(inherited.FontStyle, "Italic", "TextRun.FontStyle should inherit through nested Font.Style slot")
+	test.expect_near(local_text.FontSize, 15, 0.001, "local FontSize should beat inherited Font.Size")
+	test.expect_eq(local_text.FontWeight, "Normal", "local FontWeight should beat inherited Font.Weight")
+	test.expect_eq(local_text.FontStyle, "Normal", "local FontStyle should beat inherited Font.Style")
+
+	root["TextRun.FontSize"] = 28
+	root["TextRun.FontWeight"] = "Normal"
+	root["TextRun.FontStyle"] = "Normal"
+	test.expect_near(inherited.FontSize, 28, 0.001, "TextRun.FontSize parent update should propagate")
+	test.expect_eq(inherited.FontWeight, "Normal", "TextRun.FontWeight parent update should propagate")
+	test.expect_eq(inherited.FontStyle, "Normal", "TextRun.FontStyle parent update should propagate")
+	test.expect_near(local_text.FontSize, 15, 0.001, "local FontSize should remain detached after parent update")
+	test.expect_eq(local_text.FontWeight, "Normal", "local FontWeight should remain detached after parent update")
+	test.expect_eq(local_text.FontStyle, "Normal", "local FontStyle should remain detached after parent update")
+
+	root:removeFromParent()
+	print("PASS: test_attached_inherited_text_font_leaves")
+end
+
+local function test_partial_font_shorthand_preserves_inherited_size()
+	local root = ui.Screen { Name = "font-shorthand-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
+	local text = root + ui.TextBlock {
+		Name = "font-shorthand-text",
+		Text = "Inherited size",
+	}
+
+	root["TextRun.FontSize"] = 26
+	text.Font = "Bold"
+
+	test.expect_eq(text.FontWeight, "Bold", "Font shorthand should apply supplied FontWeight")
+	test.expect_near(text.FontSize, 26, 0.001, "partial Font shorthand should not zero inherited FontSize")
+
+	root:removeFromParent()
+	print("PASS: test_partial_font_shorthand_preserves_inherited_size")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: object-typed attributes should accept inline object expressions.
 -- ---------------------------------------------------------------------------
@@ -1201,6 +1313,10 @@ test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
+test_inherited_foreground_color()
+test_attached_inherited_text_font_family()
+test_attached_inherited_text_font_leaves()
+test_partial_font_shorthand_preserves_inherited_size()
 test_xml_loading_inline_xml_attribute()
 test_xml_loading_inline_imageview_source()
 test_xml_loading_inline_event_trigger()

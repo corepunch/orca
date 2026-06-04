@@ -7,8 +7,42 @@ bool_t is_server = FALSE;
 extern int f_beginDraggingSession(lua_State *L);
 extern LRESULT ui_handle_event(lua_State* L, struct AXmessage *msg);
 
+static int
+c_parse_transform2(const char* str, void* dst, size_t sz)
+{
+  if (!dst || sz != sizeof(struct transform2)) return FALSE;
+  float x = 0, y = 0, r = 0, sx = 1, sy = 1;
+  struct transform2 self = { .scale = {1, 1} };
+  switch (sscanf(str, "%f %f %f %f %f", &x, &y, &r, &sx, &sy)) {
+    case 5:
+      self.scale.y = sy;
+      self.scale.x = sx;
+      self.rotation = r;
+      self.translation = (struct vec2){x, y};
+      *(struct transform2*)dst = self;
+      return TRUE;
+    case 4:
+      self.scale.x = sx;
+      self.rotation = r;
+      self.translation = (struct vec2){x, y};
+      *(struct transform2*)dst = self;
+      return TRUE;
+    case 3:
+      self.rotation = r;
+      self.translation = (struct vec2){x, y};
+      *(struct transform2*)dst = self;
+      return TRUE;
+    case 2:
+      self.translation = (struct vec2){x, y};
+      *(struct transform2*)dst = self;
+      return TRUE;
+    default: return FALSE;
+  }
+}
+
 void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
+  OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);

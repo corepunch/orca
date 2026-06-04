@@ -77,6 +77,87 @@ css_lookup_orca_property(const char* css_name)
     return NULL;
 }
 
+static bool_t
+css_is_generic_font_family(const char *name)
+{
+    static const char *generics[] = {
+        "serif", "sans-serif", "monospace", "cursive", "fantasy",
+        "system", "system-ui", "ui-serif", "ui-sans-serif", "ui-monospace",
+        "emoji", "math", "fangsong", "-apple-system", "BlinkMacSystemFont",
+        NULL
+    };
+    for (int i = 0; generics[i]; i++) {
+        if (!strcasecmp(name, generics[i])) return TRUE;
+    }
+    return FALSE;
+}
+
+static void
+css_copy_font_token(char *dst, size_t dst_size, const char *start, const char *end)
+{
+    while (start < end && isspace((unsigned char)*start)) start++;
+    while (end > start && isspace((unsigned char)end[-1])) end--;
+    if (end - start >= 2 &&
+        ((*start == '"' && end[-1] == '"') || (*start == '\'' && end[-1] == '\''))) {
+        start++;
+        end--;
+        while (start < end && isspace((unsigned char)*start)) start++;
+        while (end > start && isspace((unsigned char)end[-1])) end--;
+    }
+    size_t len = (size_t)(end - start);
+    if (len >= dst_size) len = dst_size - 1;
+    memcpy(dst, start, len);
+    dst[len] = '\0';
+}
+
+static bool_t
+css_font_path_exists(const char *path)
+{
+    path_t with_ext = {0};
+    if (FS_FileExists(path)) return TRUE;
+    snprintf(with_ext, sizeof(with_ext), "%s.xml", path);
+    return FS_FileExists(with_ext);
+}
+
+static const char*
+css_resolve_font_family(const char *value, char *out, size_t out_size)
+{
+    const char *p = value;
+    while (*p) {
+        char quote = 0;
+        const char *start = p;
+        const char *end;
+        while (*start && (isspace((unsigned char)*start) || *start == ',')) start++;
+        if (!*start) break;
+        end = start;
+        while (*end) {
+            if (quote) {
+                if (*end == quote) quote = 0;
+            } else if (*end == '"' || *end == '\'') {
+                quote = *end;
+            } else if (*end == ',') {
+                break;
+            }
+            end++;
+        }
+        char name[MAX_PROPERTY_STRING] = {0};
+        css_copy_font_token(name, sizeof(name), start, end);
+        if (name[0]) {
+            lpcString_t registered = CORE_FindFontFamily(name);
+            if (registered) {
+                snprintf(out, out_size, "%s", registered);
+                return out;
+            }
+            if (!css_is_generic_font_family(name) && css_font_path_exists(name)) {
+                snprintf(out, out_size, "%s", name);
+                return out;
+            }
+        }
+        p = *end == ',' ? end + 1 : end;
+    }
+    return value;
+}
+
 // ---------------------------------------------------------------------------
 // Parsed CSS in-memory representation
 // ---------------------------------------------------------------------------
@@ -357,6 +438,94 @@ css_split_selector(const char* selector,
     }
 }
 
+static void
+css_copy_cstr(char *dst, size_t dst_size, const char *src)
+{
+    if (!dst || dst_size == 0) return;
+    if (!src) src = "";
+    strncpy(dst, src, dst_size - 1);
+    dst[dst_size - 1] = '\0';
+}
+
+static void
+css_theme_key_from_token(char *key, size_t key_size, const char *token)
+{
+    if (!key || key_size == 0) return;
+    key[0] = '\0';
+    if (!token || !*token) return;
+
+    if (token[0] == '$') {
+        css_copy_cstr(key, key_size, token);
+        return;
+    }
+
+    if (key_size < 2) return;
+    key[0] = '$';
+    key[1] = '\0';
+
+    if (token[0] == '-' && token[1] == '-') {
+        token += 2;
+    }
+    css_copy_cstr(key + 1, key_size - 1, token);
+}
+
+static const char*
+css_resolve_theme_value(const char *value, char *out, size_t out_size)
+{
+    if (!value || !out || out_size == 0) return value;
+
+    char text[CSS_MAX_VALLEN] = {0};
+    copy_trim(text, value, value + strlen(value), (int)sizeof(text));
+    if (!text[0]) return value;
+
+    if (text[0] == '$') {
+        lpcString_t theme_value = FS_GetThemeValue(text);
+        if (theme_value) {
+            css_copy_cstr(out, out_size, theme_value);
+            return out;
+        }
+        return value;
+    }
+
+    if (strncasecmp(text, "var(", 4)) {
+        return value;
+    }
+
+    const char *start = text + 4;
+    const char *end = text + strlen(text);
+    while (end > start && isspace((unsigned char)end[-1])) end--;
+    if (end <= start || end[-1] != ')') {
+        return value;
+    }
+    end--;
+
+    const char *comma = start;
+    while (comma < end && *comma != ',') comma++;
+
+    char token[CSS_MAX_VALLEN] = {0};
+    copy_trim(token, start, comma, (int)sizeof(token));
+    if (token[0]) {
+        char key[CSS_MAX_VALLEN] = {0};
+        css_theme_key_from_token(key, sizeof(key), token);
+        lpcString_t theme_value = FS_GetThemeValue(key);
+        if (theme_value) {
+            css_copy_cstr(out, out_size, theme_value);
+            return out;
+        }
+    }
+
+    if (comma < end) {
+        char fallback[CSS_MAX_VALLEN] = {0};
+        char resolved_fallback[CSS_MAX_VALLEN] = {0};
+        copy_trim(fallback, comma + 1, end, (int)sizeof(fallback));
+        const char *resolved = css_resolve_theme_value(fallback, resolved_fallback, sizeof(resolved_fallback));
+        css_copy_cstr(out, out_size, resolved);
+        return out;
+    }
+
+    return value;
+}
+
 // ---------------------------------------------------------------------------
 // StyleRule property assignment
 // ---------------------------------------------------------------------------
@@ -368,9 +537,18 @@ css_apply_decl_to_rule(struct Object *rule_obj,
 {
     const char* orca_name = css_lookup_orca_property(css_key);
     if (!orca_name) return; // unsupported property
+    char theme_value[CSS_MAX_VALLEN] = {0};
+    char resolved_value[CSS_MAX_VALLEN] = {0};
+    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    if (!strcasecmp(css_key, "font-family")) {
+        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
+    }
 
     struct Property *prop = NULL;
-    if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) return;
+    if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) {
+        OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
+        return;
+    }
     if (!prop || !PROP_GetDesc(prop)) return;
 
     struct PropertyType const* desc = PROP_GetDesc(prop);

@@ -238,13 +238,23 @@ Values use ORCA's normal property parsers, so numeric values are bare numbers ra
 | `border-color` | `Node.BorderColor` | color |
 | `border-width` | `Node.BorderWidth` | `Thickness` |
 | `font-size` | `TextRun.FontSize` | float |
-| `font-family` | `TextRun.FontFamily` | object path |
+| `font-family` | `TextRun.FontFamily` | registered family list or object path |
 | `line-height` | `TextRun.LineHeight` | float |
 | `letter-spacing` | `TextRun.LetterSpacing` | float |
 | `word-wrap` | `TextBlockConcept.WordWrap` | bool |
 | `text-overflow` | `TextBlockConcept.TextOverflow` | enum: `Clip`, `Ellipsis` |
 
 Unknown properties do not create dynamic properties; they are skipped when the stylesheet is converted into `StyleRule` objects.
+
+`font-family` follows CSS list semantics:
+
+```css
+.reader {
+  font-family: "Times New Roman", serif;
+}
+```
+
+Each family name is tried in order. Project fonts from `FontLibrary` are registered by their `<FontFamily Name="...">` value and by XML filename stem, so `"Times New Roman"` can resolve without spelling the project path. Shared defaults register CSS generic aliases such as `serif`, `sans-serif`, and `monospace` to Noto families under `share/fonts`. Explicit object paths still work for existing stylesheets.
 
 ### Loading stylesheets from Lua
 

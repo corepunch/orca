@@ -43,7 +43,12 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
       Con_Error("No C parser registered for struct '%s' (property '%s')", prop->TypeString, prop->Name);
       return FALSE;
     case kDataTypeObject: {
-      struct Object *loaded = FS_LoadObject(str);
+      lpcString_t path = str;
+      if (prop->TypeString && !strcmp(prop->TypeString, "FontFamily")) {
+        lpcString_t font_path = CORE_FindFontFamily(str);
+        if (font_path) path = font_path;
+      }
+      struct Object *loaded = FS_LoadObject(path);
       if (!loaded) {
         Con_Error("Failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;

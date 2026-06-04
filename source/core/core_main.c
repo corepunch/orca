@@ -1,4 +1,5 @@
 #include <include/api.h>
+#include <strings.h>
 
 #include "core_local.h"
 #include "property/property_internal.h"
@@ -10,6 +11,45 @@ void SV_Shutdown(void);
 
 ORCA_API int luaopen_orca_object(lua_State* L);
 ORCA_API int luaopen_orca_network(lua_State* L);
+
+static bool_t
+CORE_FindFontFamilyIndex(lpcString_t name, int *index)
+{
+  if (!name || !*name) return FALSE;
+  FOR_LOOP(i, MAX_FONT_FAMILIES) {
+    if (core.fonts[i].name[0] && !strcasecmp(core.fonts[i].name, name)) {
+      if (index) *index = i;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void
+CORE_RegisterFontFamily(lpcString_t name, lpcString_t path)
+{
+  int index = -1;
+  if (!name || !*name || !path || !*path) return;
+  if (CORE_FindFontFamilyIndex(name, &index)) {
+    snprintf(core.fonts[index].path, sizeof(core.fonts[index].path), "%s", path);
+    return;
+  }
+  FOR_LOOP(i, MAX_FONT_FAMILIES) {
+    if (!core.fonts[i].name[0]) {
+      snprintf(core.fonts[i].name, sizeof(core.fonts[i].name), "%s", name);
+      snprintf(core.fonts[i].path, sizeof(core.fonts[i].path), "%s", path);
+      return;
+    }
+  }
+  Con_Error("No space left to register font family '%s'", name);
+}
+
+lpcString_t
+CORE_FindFontFamily(lpcString_t name)
+{
+  int index = -1;
+  return CORE_FindFontFamilyIndex(name, &index) ? core.fonts[index].path : NULL;
+}
 
 bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt)
@@ -39,12 +79,44 @@ OBJ_FindPropertyType(uint32_t ident)
 }
 
 bool_t
+OBJ_RegisterPropertyShorthand(struct PropertyShorthand const *sh)
+{
+  FOR_LOOP(i, MAX_PROPERTY_SHORTHANDS) {
+    if (!core.shorthands[i].Name) {
+      memcpy(&core.shorthands[i], sh, sizeof(struct PropertyShorthand));
+      return TRUE;
+    } else if (core.shorthands[i].FullIdentifier == sh->FullIdentifier) {
+      return TRUE;
+    }
+  }
+  Con_Error("No space left to register property shorthand %s.%s",
+            sh->Category ? sh->Category : "",
+            sh->Name ? sh->Name : "");
+  return FALSE;
+}
+
+struct PropertyShorthand const *
+OBJ_FindPropertyShorthand(uint32_t ident)
+{
+  FOR_LOOP(i, MAX_PROPERTY_SHORTHANDS) {
+    struct PropertyShorthand const *sh = &core.shorthands[i];
+    if (sh->Name && sh->FullIdentifier == ident) {
+      return sh;
+    }
+  }
+  return NULL;
+}
+
+bool_t
 OBJ_RegisterClass(struct ClassDesc const *class)
 {
   FOR_LOOP(i, MAX_CLASSES) {
     if (!core.classes[i]) {
       FOR_LOOP(j, class->NumProperties) {
         OBJ_RegisterPropertyType(&class->Properties[j]);
+      }
+      FOR_LOOP(j, class->NumShorthands) {
+        OBJ_RegisterPropertyShorthand(&class->Shorthands[j]);
       }
 //      Con_Printf("%s %d", class->ClassName, i);
       core.classes[i] = class;
@@ -59,10 +131,17 @@ OBJ_RegisterClass(struct ClassDesc const *class)
 }
 
 bool_t
-OBJ_RegisterStructDesc(struct StructDesc const *desc)
+OBJ_RegisterStructDesc(struct StructDesc *desc)
 {
   FOR_LOOP(i, MAX_STRUCTS) {
     if (!core.structs[i]) {
+      FOR_LOOP(j, MAX_STRUCT_PARSERS) {
+        if (core.struct_parsers[j].type_name &&
+            !strcmp(core.struct_parsers[j].type_name, desc->StructName)) {
+          desc->Parser = core.struct_parsers[j].fn;
+          break;
+        }
+      }
       core.structs[i] = desc;
       return TRUE;
     } else if (!strcmp(core.structs[i]->StructName, desc->StructName)) {
@@ -587,63 +666,6 @@ static int f_CornerRadius_New(lua_State* L) {
   }
 }
 
-// --- Pure-C struct string parsers (no Lua state required) -------------------
-
-static int c_parse_EdgeShorthand(const char* str, void* dst, size_t sz) {
-  if (!dst || sz != sizeof(struct EdgeShorthand)) return FALSE;
-  float a = 0, b = 0;
-  switch (sscanf(str, "%f %f", &a, &b)) {
-    case 2: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, b}; return TRUE;
-    case 1: *(struct EdgeShorthand*)dst = (struct EdgeShorthand){a, a}; return TRUE;
-    default: Con_Printf("EdgeShorthand: cannot parse '%s'", str); return FALSE;
-  }
-}
-
-static int c_parse_Thickness(const char* str, void* dst, size_t sz) {
-  if (!dst || sz != sizeof(struct Thickness)) return FALSE;
-  float a = 0, b = 0, c = 0, d = 0;
-  struct Thickness self = {0};
-  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
-    case 4: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, d}; break;
-    case 3: self.Axis[0] = (struct EdgeShorthand){a, c}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
-    case 2: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){b, b}; break;
-    case 1: self.Axis[0] = (struct EdgeShorthand){a, a}; self.Axis[1] = (struct EdgeShorthand){a, a}; break;
-    default: Con_Printf("Thickness: cannot parse '%s'", str); return FALSE;
-  }
-  *(struct Thickness*)dst = self;
-  return TRUE;
-}
-
-static int c_parse_CornerRadius(const char* str, void* dst, size_t sz) {
-  if (!dst || sz != sizeof(struct CornerRadius)) return FALSE;
-  float a = 0, b = 0, c = 0, d = 0;
-  switch (sscanf(str, "%f %f %f %f", &a, &b, &c, &d)) {
-    case 4: *(struct CornerRadius*)dst = (struct CornerRadius){a, b, c, d}; return TRUE;
-    case 1: *(struct CornerRadius*)dst = (struct CornerRadius){a, a, a, a}; return TRUE;
-    default: Con_Printf("CornerRadius: cannot parse '%s'", str); return FALSE;
-  }
-}
-
-static int c_parse_vec2(const char* str, void* dst, size_t sz) {
-  if (!dst || sz != sizeof(struct vec2)) return FALSE;
-  float x = 0, y = 0;
-  switch (sscanf(str, "%f %f", &x, &y)) {
-    case 2: *(struct vec2*)dst = (struct vec2){x, y}; return TRUE;
-    case 1: *(struct vec2*)dst = (struct vec2){x, x}; return TRUE;
-    default: Con_Printf("vec2: cannot parse '%s'", str); return FALSE;
-  }
-}
-
-static int c_parse_vec3(const char* str, void* dst, size_t sz) {
-  if (!dst || sz != sizeof(struct vec3)) return FALSE;
-  float x = 0, y = 0, z = 0;
-  switch (sscanf(str, "%f %f %f", &x, &y, &z)) {
-    case 3: *(struct vec3*)dst = (struct vec3){x, y, z}; return TRUE;
-    case 1: *(struct vec3*)dst = (struct vec3){x, x, x}; return TRUE;  // broadcast scalar to all components
-    default: Con_Printf("vec3: cannot parse '%s'", str); return FALSE;
-  }
-}
-
 // --- Struct parser registry -------------------------------------------------
 
 void
@@ -668,8 +690,15 @@ OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, con
 
 void
 OBJ_RegisterStructParser(const char* type_name,
-                          int (*fn)(const char* str, void* dst, size_t sz))
+                          structParserFn_t fn)
 {
+  FOR_LOOP(i, MAX_STRUCTS) {
+    struct StructDesc *desc = core.structs[i];
+    if (desc && !strcmp(desc->StructName, type_name)) {
+      desc->Parser = fn;
+      return;
+    }
+  }
   FOR_LOOP(i, MAX_STRUCT_PARSERS) {
     if (core.struct_parsers[i].type_name &&
         !strcmp(core.struct_parsers[i].type_name, type_name)) {
@@ -687,13 +716,38 @@ OBJ_RegisterStructParser(const char* type_name,
   Con_Error("No space to register struct parser for '%s'", type_name);
 }
 
+void
+OBJ_SetStructParseMask(uint64_t mask)
+{
+  core.struct_parse_mask = mask;
+  core.struct_parse_mask_valid = TRUE;
+}
+
+uint64_t
+OBJ_GetStructParseMask(bool_t *valid)
+{
+  if (valid) *valid = core.struct_parse_mask_valid;
+  return core.struct_parse_mask;
+}
+
 int
 OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz)
 {
+  int parsed = FALSE;
+  core.struct_parse_mask = 0;
+  core.struct_parse_mask_valid = FALSE;
+  struct StructDesc const *desc = OBJ_FindStructDesc(type_name);
+  if (desc && desc->Parser) {
+    parsed = desc->Parser(str, dst, sz);
+    if (!parsed) core.struct_parse_mask_valid = FALSE;
+    return parsed;
+  }
   FOR_LOOP(i, MAX_STRUCT_PARSERS) {
     struct struct_parser_entry const* e = &core.struct_parsers[i];
     if (e->type_name && !strcmp(e->type_name, type_name)) {
-      return e->fn(str, dst, sz);
+      parsed = e->fn(str, dst, sz);
+      if (!parsed) core.struct_parse_mask_valid = FALSE;
+      return parsed;
     }
   }
   return FALSE;
@@ -705,19 +759,18 @@ before_core_module_registered(lua_State* L)
   // Preserve registered classes: lua_pushclass calls OBJ_RegisterClass before
   // this function runs, so we must not zero core.classes[] here.
   struct ClassDesc const *saved_classes[MAX_CLASSES];
+  struct file_loader saved_file_loaders[MAX_FILE_LOADERS];
+  struct font_registry_entry saved_fonts[MAX_FONT_FAMILIES];
   memcpy(saved_classes, core.classes, sizeof(core.classes));
+  memcpy(saved_file_loaders, core.file_loaders, sizeof(core.file_loaders));
+  memcpy(saved_fonts, core.fonts, sizeof(core.fonts));
   memset(&core, 0, sizeof(struct game));
   memcpy(core.classes, saved_classes, sizeof(core.classes));
+  memcpy(core.file_loaders, saved_file_loaders, sizeof(core.file_loaders));
+  memcpy(core.fonts, saved_fonts, sizeof(core.fonts));
   core.realtime = axGetMilliseconds();
   //  lua_setfield(L, LUA_REGISTRYINDEX, IID_GAME);
 
-  // Register pure-C struct parsers so parse_property works without a Lua state
-  OBJ_RegisterStructParser("EdgeShorthand", c_parse_EdgeShorthand);
-  OBJ_RegisterStructParser("Thickness",     c_parse_Thickness);
-  OBJ_RegisterStructParser("CornerRadius",  c_parse_CornerRadius);
-  OBJ_RegisterStructParser("vec2",          c_parse_vec2);
-  OBJ_RegisterStructParser("vec3",          c_parse_vec3);
-  
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");
   

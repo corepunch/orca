@@ -62,21 +62,29 @@ struct vm_register
 
 #define MAX_CLASSES 256
 #define MAX_PROPERTY_TYPES 1024
+#define MAX_PROPERTY_SHORTHANDS 1024
 #define MAX_STRUCTS 256
 #define MAX_STRUCT_PARSERS 256
 #define MAX_FILE_LOADERS 256
+#define MAX_FONT_FAMILIES 512
 
 #define ID_PropertyChangedMessage 0xdffd83eb // PropertyChangedMessage
 
-// C-level string-to-struct parsers registered without a Lua state.
+// Legacy fallback for C-level string-to-struct parsers registered before the
+// generated struct descriptor is available.
 struct struct_parser_entry {
   const char* type_name;
-  int (*fn)(const char* str, void* dst, size_t size);
+  structParserFn_t fn;
 };
 
 struct file_loader {
   const char* extension;
   struct Object* (*fn)(int argc, const char* argv[]);
+};
+
+struct font_registry_entry {
+  fixedString_t name;
+  path_t path;
 };
 
 struct game
@@ -88,11 +96,14 @@ struct game
   struct Object *hover2;
   fixedString_t tags[MAX_TAGS];
   struct ClassDesc const *classes[MAX_CLASSES];
-  struct StructDesc const *structs[MAX_STRUCTS];
+  struct StructDesc *structs[MAX_STRUCTS];
   struct PropertyType ptypes[MAX_PROPERTY_TYPES];
+  struct PropertyShorthand shorthands[MAX_PROPERTY_SHORTHANDS];
   struct struct_parser_entry struct_parsers[MAX_STRUCT_PARSERS];
   struct file_loader file_loaders[MAX_FILE_LOADERS];
-  struct Property* binding_properties;
+  struct font_registry_entry fonts[MAX_FONT_FAMILIES];
+  uint64_t struct_parse_mask;
+  bool_t struct_parse_mask_valid;
 };
 
 // stateman.c

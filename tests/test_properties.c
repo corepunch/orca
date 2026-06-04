@@ -33,6 +33,7 @@
 #include <source/core/core_local.h>
 #include <core/core.h>
 #include <source/core/object/object_internal.h>
+#include <source/core/property/property_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -383,15 +384,114 @@ static struct Object *make_rt_object_holder(void) {
     return OBJ_Create(fnv1a32("RTObjectHolderComp"));
 }
 
+static struct Object *make_object(void);
+static void destroy_object(struct Object *obj);
+
+/* ------------------------------------------------------------------ */
+/* Inherited-property test component                                  */
+/* Exercises pull reads used by generated inherited properties.        */
+/* ------------------------------------------------------------------ */
+
+struct InheritedComp {
+    float FontSize;
+    struct color Tint;
+    struct RTComp *Child;
+};
+
+static struct Object *s_expectedInheritedChangedObject;
+static struct Property *s_expectedInheritedChangedProperty;
+static int s_inheritedChangedCount;
+
+static struct PropertyType s_inheritedProps[3] = {
+    { .Name = "FontSize", .Key = "FontSize", .DataType = kDataTypeFloat,
+      .DataSize = sizeof(float),
+      .Offset = offsetof(struct InheritedComp, FontSize),
+      .IsInherited = TRUE },
+    { .Name = "Tint", .Key = "Tint", .DataType = kDataTypeColor,
+      .DataSize = sizeof(struct color),
+      .Offset = offsetof(struct InheritedComp, Tint),
+      .IsInherited = TRUE },
+    { .Name = "Child", .Key = "Child", .DataType = kDataTypeObject,
+      .DataSize = sizeof(struct RTComp *),
+      .TypeString = "RTComp",
+      .Offset = offsetof(struct InheritedComp, Child),
+      .IsInherited = TRUE },
+};
+
+static LRESULT InheritedComp_Proc(struct Object *o, void* cmp, uint32_t msg,
+                                  wParam_t w, lParam_t l) {
+    (void)cmp; (void)w;
+    if (msg == fnv1a32("Object.PropertyChanged")) {
+        struct Object_PropertyChangedEventArgs *args = l;
+        if (o == s_expectedInheritedChangedObject &&
+            args && args->Property == s_expectedInheritedChangedProperty) {
+            s_inheritedChangedCount++;
+        }
+    }
+    return 0;
+}
+
+static struct ClassDesc s_inheritedClass = {
+    .ObjProc       = InheritedComp_Proc,
+    .Properties    = s_inheritedProps,
+    .ClassName     = "InheritedComp",
+    .ClassSize     = sizeof(struct InheritedComp),
+    .NumProperties = 3,
+    .DefaultName   = "inheritedcomp",
+};
+
+static void register_inherited_class(void) {
+    uint32_t cls = fnv1a32("InheritedComp");
+    s_inheritedClass.ClassID = cls;
+    for (int i = 0; i < 3; ++i) {
+        char full[128];
+        s_inheritedProps[i].ShortIdentifier = fnv1a32(s_inheritedProps[i].Name);
+        snprintf(full, sizeof(full), "InheritedComp.%s", s_inheritedProps[i].Name);
+        s_inheritedProps[i].FullIdentifier = fnv1a32(full);
+    }
+    OBJ_RegisterClass(&s_inheritedClass);
+}
+
+static struct Object *make_inherited_object(void) {
+    return OBJ_Create(fnv1a32("InheritedComp"));
+}
+
+static void link_child_for_inheritance(struct Object *parent, struct Object *child) {
+    parent->children = child;
+    child->parent = parent;
+    child->next = NULL;
+}
+
+static void unlink_child_for_inheritance(struct Object *parent, struct Object *child) {
+    if (parent->children == child) parent->children = NULL;
+    child->parent = NULL;
+    child->next = NULL;
+}
+
 static void test_object_refcount_direct(void) {
     for (int _pass = 1; _pass; _pass = 0) {
         int64_t baseline = OBJ_GetObjectCount();
         struct Object *obj = make_rt_object();
         EXPECT(OBJ_GetObjectCount() == baseline + 1);
 
-        OBJ_AddRef(obj);
-        OBJ_AddRef(obj);
+        EXPECT(OBJ_AddRef(obj) == 2);
+        EXPECT(OBJ_AddRef(obj) == 3);
+        EXPECT(OBJ_ReleaseRef(obj) == 2);
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
         EXPECT(OBJ_ReleaseRef(obj) == 1);
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+        EXPECT(OBJ_ReleaseRef(obj) == 0);
+        EXPECT(OBJ_GetObjectCount() == baseline);
+    }
+}
+
+static void test_remove_from_parent_without_parent_does_not_release(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        int64_t baseline = OBJ_GetObjectCount();
+        struct Object *obj = make_rt_object();
+        EXPECT(OBJ_GetObjectCount() == baseline + 1);
+
+        OBJ_RemoveFromParent(obj);
         EXPECT(OBJ_GetObjectCount() == baseline + 1);
         EXPECT(OBJ_ReleaseRef(obj) == 0);
         EXPECT(OBJ_GetObjectCount() == baseline);
@@ -408,7 +508,6 @@ static void test_object_property_holds_reference(void) {
         EXPECT(OBJ_GetObjectCount() == baseline + 2);
         EXPECT_OK(OBJ_FindShortProperty(holder, "Child", &prop));
 
-        OBJ_AddRef(child);
         PROP_SetValue(prop, &child);
         EXPECT(*(struct Object **)PROP_GetValue(prop) == child);
 
@@ -420,6 +519,407 @@ static void test_object_property_holds_reference(void) {
 
         OBJ_ReleaseRef(holder);
         EXPECT(OBJ_GetObjectCount() == baseline);
+    }
+}
+
+static void test_inherited_property_starts_unset_without_ancestor(void) {
+    WITH(struct Object, obj, make_inherited_object(), destroy_object) {
+        struct Property *prop;
+        float value = 99.0f;
+        EXPECT_OK(OBJ_FindShortProperty(obj, "FontSize", &prop));
+        EXPECT(PROP_IsNull(prop));
+        EXPECT(PROP_GetValue(prop) == NULL);
+        EXPECT(!OBJ_ReadProperty(obj, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 99.0f);
+    }
+}
+
+static void test_inherited_scalar_reads_parent_value(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            float value = 0.0f;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+            PROP_SetValue(parentProp, &(float){12.0f});
+            link_child_for_inheritance(parent, child);
+
+            EXPECT(PROP_IsNull(childProp));
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 12.0f);
+            EXPECT(*(float *)PROP_GetValue(childProp) == 12.0f);
+
+            PROP_SetValue(parentProp, &(float){16.0f});
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 16.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_attached_parent_property_late_set_reads_child(void) {
+    WITH(struct Object, parent, make_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *attachedProp, *childProp;
+            float value = 0.0f;
+            uint32_t fontSizeID = s_inheritedProps[0].FullIdentifier;
+
+            EXPECT_OK(OBJ_FindLongProperty(parent, fontSizeID, &attachedProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT(PROP_IsNull(attachedProp));
+            EXPECT(PROP_IsNull(childProp));
+            link_child_for_inheritance(parent, child);
+            EXPECT(!OBJ_ReadProperty(child, fontSizeID, &value));
+
+            PROP_SetValue(attachedProp, &(float){22.0f});
+            EXPECT(OBJ_ReadProperty(child, fontSizeID, &value));
+            EXPECT(value == 22.0f);
+
+            PROP_SetValue(attachedProp, &(float){24.0f});
+            EXPECT(OBJ_ReadProperty(child, fontSizeID, &value));
+            EXPECT(value == 24.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_late_attach_reads_existing_attached_value(void) {
+    WITH(struct Object, parent, make_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *attachedProp, *childProp;
+            float value = 0.0f;
+            uint32_t fontSizeID = s_inheritedProps[0].FullIdentifier;
+
+            EXPECT_OK(OBJ_FindLongProperty(parent, fontSizeID, &attachedProp));
+            PROP_SetValue(attachedProp, &(float){18.0f});
+
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            link_child_for_inheritance(parent, child);
+            EXPECT(PROP_IsNull(childProp));
+            EXPECT(OBJ_ReadProperty(child, fontSizeID, &value));
+            EXPECT(value == 18.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_local_override_wins_over_parent(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            float value = 0.0f;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+            PROP_SetValue(parentProp, &(float){10.0f});
+            link_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 10.0f);
+
+            PROP_SetValue(childProp, &(float){30.0f});
+            EXPECT((PROP_GetFlags(childProp) & PF_MODIFIED) != 0);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 30.0f);
+
+            PROP_SetValue(parentProp, &(float){40.0f});
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 30.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_same_value_local_override_still_wins(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            float value = 0.0f;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+            PROP_SetValue(parentProp, &(float){14.0f});
+            link_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 14.0f);
+
+            PROP_SetValue(childProp, &(float){14.0f});
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 14.0f);
+
+            PROP_SetValue(parentProp, &(float){28.0f});
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 14.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_clear_returns_to_parent_value(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            float value = 0.0f;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+            PROP_SetValue(parentProp, &(float){11.0f});
+            link_child_for_inheritance(parent, child);
+            PROP_SetValue(childProp, &(float){21.0f});
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 21.0f);
+
+            PROP_Clear(childProp);
+            EXPECT(PROP_IsNull(childProp));
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 11.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_parent_clear_removes_effective_value(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            float value = 0.0f;
+            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+            PROP_SetValue(parentProp, &(float){17.0f});
+            link_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+            EXPECT(value == 17.0f);
+
+            PROP_Clear(parentProp);
+            EXPECT(PROP_IsNull(parentProp));
+            EXPECT(PROP_IsNull(childProp));
+            EXPECT(!OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_nearest_ancestor_wins_and_reveals_grandparent_on_clear(void) {
+    WITH(struct Object, grandparent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+            WITH(struct Object, child, make_inherited_object(), destroy_object) {
+                struct Property *grandparentProp, *parentProp, *childProp;
+                float value = 0.0f;
+                EXPECT_OK(OBJ_FindShortProperty(grandparent, "FontSize", &grandparentProp));
+                EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+                EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+
+                PROP_SetValue(grandparentProp, &(float){10.0f});
+                PROP_SetValue(parentProp, &(float){20.0f});
+                link_child_for_inheritance(grandparent, parent);
+                link_child_for_inheritance(parent, child);
+
+                EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+                EXPECT(value == 20.0f);
+
+                PROP_Clear(parentProp);
+                EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+                EXPECT(value == 10.0f);
+
+                PROP_Clear(grandparentProp);
+                EXPECT(PROP_IsNull(grandparentProp));
+                EXPECT(PROP_IsNull(parentProp));
+                EXPECT(PROP_IsNull(childProp));
+                EXPECT(!OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+
+                unlink_child_for_inheritance(parent, child);
+                unlink_child_for_inheritance(grandparent, parent);
+            }
+        }
+    }
+}
+
+static void test_inherited_reparent_reads_new_parent_value(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parentA = make_inherited_object();
+        struct Object *parentB = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *propA, *propB, *childProp;
+        float value = 0.0f;
+
+        EXPECT_OK(OBJ_FindShortProperty(parentA, "FontSize", &propA));
+        EXPECT_OK(OBJ_FindShortProperty(parentB, "FontSize", &propB));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(propA, &(float){12.0f});
+        PROP_SetValue(propB, &(float){34.0f});
+
+        OBJ_AddChild(parentA, child);
+        EXPECT(OBJ_GetParent(child) == parentA);
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 12.0f);
+
+        OBJ_AddChild(parentB, child);
+        EXPECT(OBJ_GetParent(child) == parentB);
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 34.0f);
+
+        EXPECT(OBJ_ReleaseRef(parentA) == 0);
+        EXPECT(OBJ_ReleaseRef(parentB) == 0);
+        EXPECT(PROP_IsNull(childProp));
+        EXPECT(!OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(OBJ_ReleaseRef(child) == 0);
+    }
+}
+
+static void test_inherited_color_reads_color_value(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Property *parentProp, *childProp;
+            struct color value = { 0 };
+            struct color red = { .r = 1, .g = 0, .b = 0, .a = 1 };
+            struct color blue = { .r = 0, .g = 0, .b = 1, .a = 1 };
+            EXPECT_OK(OBJ_FindShortProperty(parent, "Tint", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "Tint", &childProp));
+            EXPECT(PROP_GetSize(parentProp) == sizeof(struct color));
+
+            PROP_SetValue(parentProp, &red);
+            link_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[1].FullIdentifier, &value));
+            EXPECT(value.r == 1.0f);
+
+            PROP_SetValue(parentProp, &blue);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[1].FullIdentifier, &value));
+            EXPECT(value.b == 1.0f);
+            EXPECT(((struct color *)PROP_GetValue(childProp))->b == 1.0f);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_object_read_returns_component_pointer(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Object *target = make_rt_object();
+            struct Property *parentProp, *childProp;
+            struct RTComp *value = NULL;
+            struct RTComp *targetComp = OBJ_GetComponent(target, fnv1a32("RTComp"));
+            EXPECT(targetComp != NULL);
+            EXPECT_OK(OBJ_FindShortProperty(parent, "Child", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "Child", &childProp));
+
+            PROP_SetValue(parentProp, &target);
+            link_child_for_inheritance(parent, child);
+
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[2].FullIdentifier, &value));
+            EXPECT(value == targetComp);
+            EXPECT(*(struct Object **)PROP_GetValue(childProp) == target);
+
+            unlink_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReleaseRef(target) == 1);
+        }
+    }
+}
+
+static void test_inherited_object_local_override_does_not_release_parent_value(void) {
+    WITH(struct Object, parent, make_inherited_object(), destroy_object) {
+        WITH(struct Object, child, make_inherited_object(), destroy_object) {
+            struct Object *parentValue = make_rt_object();
+            struct Object *childValue = make_rt_object();
+            struct Property *parentProp, *childProp;
+            struct RTComp *childValueComp = OBJ_GetComponent(childValue, fnv1a32("RTComp"));
+            struct RTComp *value = NULL;
+
+            EXPECT_OK(OBJ_FindShortProperty(parent, "Child", &parentProp));
+            EXPECT_OK(OBJ_FindShortProperty(child, "Child", &childProp));
+
+            PROP_SetValue(parentProp, &parentValue);
+            link_child_for_inheritance(parent, child);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[2].FullIdentifier, &value));
+            EXPECT(value == OBJ_GetComponent(parentValue, fnv1a32("RTComp")));
+
+            PROP_SetValue(childProp, &childValue);
+            EXPECT(OBJ_ReadProperty(child, s_inheritedProps[2].FullIdentifier, &value));
+            EXPECT(value == childValueComp);
+            EXPECT(OBJ_ReleaseRef(parentValue) == 1);
+            EXPECT(OBJ_ReleaseRef(childValue) == 1);
+
+            unlink_child_for_inheritance(parent, child);
+        }
+    }
+}
+
+static void test_inherited_parent_release_removes_effective_value(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parent = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *parentProp, *childProp;
+        float value = 0.0f;
+
+        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(parentProp, &(float){19.0f});
+        OBJ_AddChild(parent, child);
+
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 19.0f);
+
+        EXPECT(OBJ_ReleaseRef(parent) == 0);
+        EXPECT(PROP_IsNull(childProp));
+        EXPECT(!OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(OBJ_ReleaseRef(child) == 0);
+    }
+}
+
+static void test_inherited_parent_update_changes_effective_read(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parent = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *parentProp, *childProp;
+        float value = 0.0f;
+
+        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(parentProp, &(float){12.0f});
+        OBJ_AddChild(parent, child);
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 12.0f);
+
+        PROP_SetValue(parentProp, &(float){18.0f});
+
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 18.0f);
+
+        EXPECT(OBJ_ReleaseRef(parent) == 0);
+        EXPECT(OBJ_ReleaseRef(child) == 0);
+    }
+}
+
+static void test_inherited_remove_from_parent_clears_effective_value(void) {
+    for (int _pass = 1; _pass; _pass = 0) {
+        struct Object *parent = make_inherited_object();
+        struct Object *child = make_inherited_object();
+        struct Property *parentProp, *childProp;
+        float value = 0.0f;
+
+        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
+        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        PROP_SetValue(parentProp, &(float){21.0f});
+        OBJ_AddChild(parent, child);
+
+        EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+        EXPECT(value == 21.0f);
+
+        OBJ_RemoveFromParent(child);
+        EXPECT(OBJ_GetParent(child) == NULL);
+        EXPECT(PROP_IsNull(childProp));
+        EXPECT(!OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
+
+        EXPECT(OBJ_ReleaseRef(parent) == 0);
+        EXPECT(OBJ_ReleaseRef(child) == 0);
     }
 }
 
@@ -1324,6 +1824,7 @@ int main(void) {
     register_color_class();
     register_rt_color_class();
     register_rt_object_holder_class();
+    register_inherited_class();
     register_project_types();
 
     /*
@@ -1369,7 +1870,24 @@ int main(void) {
         DECL_TEST(test_runtime_if_false_branch),
         DECL_TEST(test_runtime_if_string_branch),
         DECL_TEST(test_object_refcount_direct),
+        DECL_TEST(test_remove_from_parent_without_parent_does_not_release),
         DECL_TEST(test_object_property_holds_reference),
+        DECL_TEST(test_inherited_property_starts_unset_without_ancestor),
+        DECL_TEST(test_inherited_scalar_reads_parent_value),
+        DECL_TEST(test_inherited_attached_parent_property_late_set_reads_child),
+        DECL_TEST(test_inherited_late_attach_reads_existing_attached_value),
+        DECL_TEST(test_inherited_local_override_wins_over_parent),
+        DECL_TEST(test_inherited_same_value_local_override_still_wins),
+        DECL_TEST(test_inherited_clear_returns_to_parent_value),
+        DECL_TEST(test_inherited_parent_clear_removes_effective_value),
+        DECL_TEST(test_inherited_nearest_ancestor_wins_and_reveals_grandparent_on_clear),
+        DECL_TEST(test_inherited_reparent_reads_new_parent_value),
+        DECL_TEST(test_inherited_color_reads_color_value),
+        DECL_TEST(test_inherited_object_read_returns_component_pointer),
+        DECL_TEST(test_inherited_object_local_override_does_not_release_parent_value),
+        DECL_TEST(test_inherited_parent_release_removes_effective_value),
+        DECL_TEST(test_inherited_parent_update_changes_effective_read),
+        DECL_TEST(test_inherited_remove_from_parent_clears_effective_value),
         DECL_TEST(test_string_export_unset_produces_empty),
         DECL_TEST(test_string_binding_unset_source_gives_empty),
         DECL_TEST(test_string_binding_value_propagates),

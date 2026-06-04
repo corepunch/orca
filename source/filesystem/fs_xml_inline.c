@@ -235,9 +235,9 @@ _ClearStructValue(struct StructDesc const *sdesc, void *value)
 }
 
 bool_t
-_LoadStructFromXmlFragment(struct Property *prop,
-                           struct PropertyType const *pdesc,
-                           lpcString_t text)
+_ParseStructXmlFragment(struct PropertyType const *pdesc,
+                        void *dst,
+                        lpcString_t text)
 {
   struct StructDesc const *sdesc = OBJ_FindStructDesc(pdesc->TypeString);
   if (!sdesc) {
@@ -246,9 +246,8 @@ _LoadStructFromXmlFragment(struct Property *prop,
     return FALSE;
   }
 
-  void *tmp = calloc(1, (size_t)sdesc->StructSize);
   bool_t *used = calloc((size_t)sdesc->NumProperties, sizeof(bool_t));
-  bool_t ok = tmp && used;
+  bool_t ok = dst && used;
   struct reader r = { body_of(text) };
   int cursor = 0;
 
@@ -273,7 +272,7 @@ _LoadStructFromXmlFragment(struct Property *prop,
       Con_Error("Unknown or extra field while parsing struct '%s' for property '%s'",
                 sdesc->StructName, pdesc->Name);
       ok = FALSE;
-    } else if (!_SetStructFieldFromString(field, (char *)tmp + field->Offset, value)) {
+    } else if (!_SetStructFieldFromString(field, (char *)dst + field->Offset, value)) {
       ok = FALSE;
     } else {
       used[field - sdesc->Properties] = TRUE;
@@ -282,12 +281,25 @@ _LoadStructFromXmlFragment(struct Property *prop,
     free(value);
   }
 
-  if (ok) {
-    PROP_SetValue(prop, tmp);
-  } else if (tmp) {
-    _ClearStructValue(sdesc, tmp);
-  }
+  if (!ok && dst) _ClearStructValue(sdesc, dst);
   free(used);
+  return ok;
+}
+
+bool_t
+_LoadStructFromXmlFragment(struct Property *prop,
+                           struct PropertyType const *pdesc,
+                           lpcString_t text)
+{
+  struct StructDesc const *sdesc = OBJ_FindStructDesc(pdesc->TypeString);
+  if (!sdesc) {
+    Con_Error("Could not resolve struct descriptor '%s' for property '%s'",
+              pdesc->TypeString, pdesc->Name);
+    return FALSE;
+  }
+  void *tmp = sdesc ? calloc(1, (size_t)sdesc->StructSize) : NULL;
+  bool_t ok = tmp && _ParseStructXmlFragment(pdesc, tmp, text);
+  if (ok) PROP_SetValue(prop, tmp);
   free(tmp);
   return ok;
 }
