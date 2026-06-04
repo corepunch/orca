@@ -586,6 +586,15 @@ OBJ_PushClassProperty(lua_State *L, struct Object *object, uint32_t id)
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
       if (pdesc->ShortIdentifier == id) {
+        if (pdesc->IsInherited) {
+          void *value = calloc(1, pdesc->DataSize);
+          if (value && OBJ_ReadProperty(object, pdesc->FullIdentifier, value)) {
+            write_property(L, pdesc, value);
+            free(value);
+            return TRUE;
+          }
+          free(value);
+        }
         write_property(L, pdesc, cmp->pUserData + pdesc->Offset);
         return TRUE;
       }
