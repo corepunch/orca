@@ -405,11 +405,12 @@ struct style_rule {
     uint32_t flags;       // pseudo-state gate mask (same bit layout as style_class.flags)
     const char* ClassName;   // selector without pseudo-state qualifiers
     const char* PseudoClass; // pseudo-state qualifiers, e.g. "hover" or "active"
+    style_selector* selector; // compiled selector parts cached from ClassName
 };
 ```
 
 The stylesheet loader stores property overrides as attached `Property` objects on the `StyleRule`.
-During resolution, `ClassName` is matched as a selector and matching overrides are copied to the target object.
+During resolution, the compiled selector is matched right-to-left and matching overrides are copied to the target object.
 
 ---
 

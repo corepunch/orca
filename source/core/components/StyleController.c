@@ -20,6 +20,7 @@
 //                 empty means the rule applies to all states.
 //   - class_id / flags: cached from ClassName / PseudoClass
 //     (class_id is retained for compatibility/debugging; matching uses ClassName)
+//   - selector: compiled right-to-left selector parts cached from ClassName
 //   - Attached C properties (ruleObj->properties with !PF_PROPERTY_TYPE):
 //     the pre-parsed CSS property overrides.  _ApplyStyleRule copies these
 //     directly to the target — no string parsing on every ThemeChanged.
@@ -147,11 +148,7 @@ static void
 _ReleaseNativeStyleRule(struct Object *ruleObj)
 {
   if (!ruleObj) return;
-  struct StyleRule* sr = GetStyleRule(ruleObj);
-  if (sr) {
-    // Free Selector string if it was set directly (not via property system)
-    // In practice Selector is set via PROP_Create; OBJ_ReleaseProperties frees it.
-  }
+  OBJ_SendMessageW(ruleObj, ID_Object_Release, 0, NULL);
   OBJ_ReleaseProperties(ruleObj);
   OBJ_ReleaseComponents(ruleObj);
   free((void*)OBJ_GetName(ruleObj));
@@ -231,20 +228,9 @@ _MatchSimpleSelector(struct Object *target,
   return TRUE;
 }
 
-typedef enum {
-  STYLE_COMBINATOR_NONE,
-  STYLE_COMBINATOR_DESCENDANT,
-  STYLE_COMBINATOR_CHILD,
-} style_combinator_t;
-
-struct selector_part {
-  char selector[256];
-  style_combinator_t combinator;
-};
-
 static int
 _ParseSelectorParts(lpcString_t selector,
-                    struct selector_part* parts,
+                    struct style_selector_part* parts,
                     int maxParts)
 {
   int count = 0;
@@ -275,10 +261,7 @@ _ParseSelectorParts(lpcString_t selector,
     if (start == p) continue;
     if (count >= maxParts) return 0;
 
-    _CopyTrim(parts[count].selector,
-              sizeof(parts[count].selector),
-              start,
-              p);
+    _CopyTrim(parts[count].selector, sizeof(parts[count].selector), start, p);
     parts[count].combinator =
       count == 0 ? STYLE_COMBINATOR_NONE :
                    (relation == STYLE_COMBINATOR_NONE
@@ -291,30 +274,52 @@ _ParseSelectorParts(lpcString_t selector,
   return count;
 }
 
+struct style_selector *
+OBJ_CompileStyleSelector(lpcString_t selector)
+{
+  if (!selector || !selector[0]) return NULL;
+
+  struct style_selector *compiled = ZeroAlloc(sizeof(*compiled));
+  int count = _ParseSelectorParts(selector,
+                                  compiled->parts,
+                                  ARRAY_SIZE(compiled->parts));
+  if (count <= 0) {
+    free(compiled);
+    return NULL;
+  }
+
+  compiled->count = (byte_t)count;
+  return compiled;
+}
+
+void
+OBJ_FreeStyleSelector(struct style_selector *selector)
+{
+  free(selector);
+}
+
 static bool_t
 _SelectorMatchesTarget(struct Object *target,
-                       lpcString_t selector,
+                       struct style_selector const *selector,
                        uint32_t objFlags,
                        struct style_class_selector** matchedClass)
 {
-  struct selector_part parts[16] = {0};
-  int count = _ParseSelectorParts(selector, parts, ARRAY_SIZE(parts));
-  if (count <= 0) return FALSE;
+  if (!selector || selector->count == 0) return FALSE;
 
   if (!_MatchSimpleSelector(target,
-                            parts[count - 1].selector,
+                            selector->parts[selector->count - 1].selector,
                             objFlags,
                             matchedClass)) {
     return FALSE;
   }
 
   struct Object *cursor = target;
-  for (int i = count - 1; i > 0; i--) {
-    if (parts[i].combinator == STYLE_COMBINATOR_CHILD) {
+  for (int i = selector->count - 1; i > 0; i--) {
+    if (selector->parts[i].combinator == STYLE_COMBINATOR_CHILD) {
       cursor = OBJ_GetParent(cursor);
       if (!cursor) return FALSE;
       uint32_t flags = OBJ_GetStyleFlags(cursor);
-      if (!_MatchSimpleSelector(cursor, parts[i - 1].selector, flags, NULL)) {
+      if (!_MatchSimpleSelector(cursor, selector->parts[i - 1].selector, flags, NULL)) {
         return FALSE;
       }
       continue;
@@ -323,7 +328,7 @@ _SelectorMatchesTarget(struct Object *target,
     struct Object *ancestor = OBJ_GetParent(cursor);
     while (ancestor) {
       uint32_t flags = OBJ_GetStyleFlags(ancestor);
-      if (_MatchSimpleSelector(ancestor, parts[i - 1].selector, flags, NULL)) {
+      if (_MatchSimpleSelector(ancestor, selector->parts[i - 1].selector, flags, NULL)) {
         break;
       }
       ancestor = OBJ_GetParent(ancestor);
@@ -343,7 +348,17 @@ _StyleRuleBaseMatches(struct Object *target,
 {
   if (!sr || !sr->ClassName || !sr->ClassName[0]) return FALSE;
   if (matchedClass) *matchedClass = NULL;
-  return _SelectorMatchesTarget(target, sr->ClassName, objFlags, matchedClass);
+
+  struct style_selector *selector = sr->selector;
+  bool_t freeSelector = FALSE;
+  if (!selector) {
+    selector = OBJ_CompileStyleSelector(sr->ClassName);
+    freeSelector = TRUE;
+  }
+
+  bool_t matched = _SelectorMatchesTarget(target, selector, objFlags, matchedClass);
+  if (freeSelector) OBJ_FreeStyleSelector(selector);
+  return matched;
 }
 
 // Apply all C property overrides from ruleObj to the target object.

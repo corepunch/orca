@@ -53,6 +53,26 @@ struct style_class_selector
   byte_t opacity;      // 0–100 percentage (default 100); sourced from "/N" syntax
 };
 
+#define MAX_STYLE_SELECTOR_PARTS 16
+
+typedef enum style_combinator {
+  STYLE_COMBINATOR_NONE,
+  STYLE_COMBINATOR_DESCENDANT,
+  STYLE_COMBINATOR_CHILD,
+} style_combinator_t;
+
+struct style_selector_part
+{
+  fixedString_t selector;
+  style_combinator_t combinator;
+};
+
+struct style_selector
+{
+  byte_t count;
+  struct style_selector_part parts[MAX_STYLE_SELECTOR_PARTS];
+};
+
 struct vm_register
 {
   eDataType_t type;
@@ -138,6 +158,12 @@ OBJ_EnumStyleClasses(struct Object *, lpcString_t, struct style_class_selector*)
 
 uint32_t
 OBJ_GetStyleFlags(struct Object *);
+
+struct style_selector *
+OBJ_CompileStyleSelector(lpcString_t);
+
+void
+OBJ_FreeStyleSelector(struct style_selector *);
 
 bool_t
 OBJ_RunProgram(struct Object *, struct token*, struct vm_register*);

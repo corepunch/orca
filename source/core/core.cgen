@@ -9,6 +9,7 @@
     <external struct="token"/>
     <external struct="lua_State"/>
     <external struct="style_class_selector"/>
+    <external struct="style_selector"/>
   </externals>
   <enums>
     <enum name="MessageRouting">
@@ -685,17 +686,19 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="StyleRule">
       <summary>A single style rule that maps a class name (with optional pseudo-class) to property overrides.</summary>
-      <details>StyleRule is a child object of a StyleSheet. ClassName holds the selector without pseudo-state qualifiers (for example "button", ".button", "#Logo", "ImageView", or "StackView &gt; Label"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
+      <details>StyleRule is a child object of a StyleSheet. ClassName holds the selector without pseudo-state qualifiers (for example "button", ".button", "#Logo", "ImageView", "StackView &gt; Label", or ".popup .panel"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
       <handles>
+        <handle message="Object.Release"/>
         <handle message="Object.PropertyChanged"/>
       </handles>
       <properties>
-        <property name="ClassName" type="string">Selector without pseudo-state qualifiers. Supports class selectors, object-name selectors, ORCA type selectors, and direct parent selectors.</property>
+        <property name="ClassName" type="string">Selector without pseudo-state qualifiers. Supports class selectors, object-name selectors, ORCA type selectors, direct parent selectors, and descendant selectors.</property>
         <property name="PseudoClass" type="string">Colon-separated pseudo-state qualifiers (e.g., "hover" or "hover:focus"). Empty string means the rule applies to all states.</property>
       </properties>
       <fields>
         <field name="class_id" type="uint32">FNV1a hash of ClassName, retained for compatibility and debugging.</field>
         <field name="flags" type="uint32">Pseudo-state bitmask derived from PseudoClass (STYLE_HOVER, STYLE_FOCUS, etc.)</field>
+        <field name="selector" type="style_selector" pointer="true">Compiled selector parts cached from ClassName for fast repeated matching.</field>
       </fields>
     </class>
     <class name="StyleController">
