@@ -4,6 +4,8 @@ ORCA stylesheets parse a CSS-like subset and map supported CSS declaration names
 
 Values use ORCA property parsers. Numeric values are bare numbers; browser units such as `px`, `rem`, `vh`, and `%` are not converted. Unsupported properties are ignored when the stylesheet is converted into `StyleRule` objects.
 
+CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thickness` parser. For example, `padding: 10 32;` means top/bottom `10` and left/right `32`; `margin: 1 2 3 4;` means top `1`, right `2`, bottom `3`, left `4`.
+
 | CSS property | ORCA property | Value type |
 |--------------|---------------|------------|
 | `background-color` | `Node2D.BackgroundColor` | color |

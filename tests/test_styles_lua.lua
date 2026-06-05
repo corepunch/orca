@@ -609,7 +609,62 @@ local function test_css_expanded_property_aliases()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 25: @apply can reference selectors without a leading dot
+-- Test 25: CSS edge shorthands use CSS order before ORCA Thickness parsing
+-- ---------------------------------------------------------------------------
+local function test_css_edge_shorthand_order()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .two-values {
+      padding: 10 32;
+      margin: 4 8;
+    }
+
+    .three-values {
+      padding: 10 20 30;
+    }
+
+    .four-values {
+      margin: 1 2 3 4;
+      border-width: 5 6 7 8;
+    }
+  ]]
+  local two = screen + ui.Node2D { class = "two-values" }
+  local three = screen + ui.Node2D { class = "three-values" }
+  local four = screen + ui.Node2D { class = "four-values" }
+
+  applyStyles(two)
+  applyStyles(three)
+  applyStyles(four)
+
+  test.expect_near(two.PaddingTop, 10, 0.001, "padding: 10 32 sets vertical padding to 10")
+  test.expect_near(two.PaddingBottom, 10, 0.001, "padding: 10 32 sets bottom padding to 10")
+  test.expect_near(two.PaddingLeft, 32, 0.001, "padding: 10 32 sets horizontal padding to 32")
+  test.expect_near(two.PaddingRight, 32, 0.001, "padding: 10 32 sets right padding to 32")
+  test.expect_near(two.MarginTop, 4, 0.001, "margin: 4 8 sets vertical margin to 4")
+  test.expect_near(two.MarginLeft, 8, 0.001, "margin: 4 8 sets horizontal margin to 8")
+
+  test.expect_near(three.PaddingTop, 10, 0.001, "padding: 10 20 30 sets top padding to 10")
+  test.expect_near(three.PaddingLeft, 20, 0.001, "padding: 10 20 30 sets horizontal padding to 20")
+  test.expect_near(three.PaddingRight, 20, 0.001, "padding: 10 20 30 sets right padding to 20")
+  test.expect_near(three.PaddingBottom, 30, 0.001, "padding: 10 20 30 sets bottom padding to 30")
+
+  test.expect_near(four.MarginTop, 1, 0.001, "margin: 1 2 3 4 sets top margin to 1")
+  test.expect_near(four.MarginRight, 2, 0.001, "margin: 1 2 3 4 sets right margin to 2")
+  test.expect_near(four.MarginBottom, 3, 0.001, "margin: 1 2 3 4 sets bottom margin to 3")
+  test.expect_near(four.MarginLeft, 4, 0.001, "margin: 1 2 3 4 sets left margin to 4")
+  test.expect_near(four.BorderWidthTop, 5, 0.001, "border-width: 5 6 7 8 sets top border to 5")
+  test.expect_near(four.BorderWidthRight, 6, 0.001, "border-width: 5 6 7 8 sets right border to 6")
+  test.expect_near(four.BorderWidthBottom, 7, 0.001, "border-width: 5 6 7 8 sets bottom border to 7")
+  test.expect_near(four.BorderWidthLeft, 8, 0.001, "border-width: 5 6 7 8 sets left border to 8")
+
+  two:removeFromParent()
+  three:removeFromParent()
+  four:removeFromParent()
+  print("PASS: test_css_edge_shorthand_order")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 26: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -630,7 +685,7 @@ local function test_css_apply_reference_without_dot()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 25: @apply merges multiple sources
+-- Test 27: @apply merges multiple sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_multiple_sources()
   local css = [[
@@ -653,7 +708,7 @@ local function test_css_apply_multiple_sources()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 26: Local declarations override @apply sources
+-- Test 28: Local declarations override @apply sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_preserves_local_declarations()
   local css = [[
@@ -675,7 +730,7 @@ local function test_css_apply_preserves_local_declarations()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 27: Body selector applies to the root object that owns the stylesheet
+-- Test 29: Body selector applies to the root object that owns the stylesheet
 -- ---------------------------------------------------------------------------
 local function test_css_body_selector_applies_to_root()
   local screen = ui.Screen {
@@ -694,7 +749,7 @@ local function test_css_body_selector_applies_to_root()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 28: ID selectors match object names
+-- Test 30: ID selectors match object names
 -- ---------------------------------------------------------------------------
 local function test_css_id_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
@@ -720,7 +775,7 @@ local function test_css_id_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 29: Direct parent selectors match only immediate children
+-- Test 31: Direct parent selectors match only immediate children
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector()
   local css = "StackView > Label { opacity: 0.31; }"
@@ -742,7 +797,7 @@ local function test_css_direct_parent_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 30: Direct parent selectors also support class and ID selectors
+-- Test 32: Direct parent selectors also support class and ID selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_class_and_id_selectors()
   local css = [[
@@ -768,7 +823,7 @@ local function test_css_direct_parent_class_and_id_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 31: Descendant selectors match any ancestor, not just direct parents
+-- Test 33: Descendant selectors match any ancestor, not just direct parents
 -- ---------------------------------------------------------------------------
 local function test_css_descendant_selector()
   local css = [[
@@ -797,7 +852,7 @@ local function test_css_descendant_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 32: Descendant selectors compose with direct child selectors
+-- Test 34: Descendant selectors compose with direct child selectors
 -- ---------------------------------------------------------------------------
 local function test_css_mixed_descendant_and_direct_child_selectors()
   local css = [[
@@ -825,7 +880,7 @@ local function test_css_mixed_descendant_and_direct_child_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: Compound selectors match type, class, and ID on one object
+-- Test 35: Compound selectors match type, class, and ID on one object
 -- ---------------------------------------------------------------------------
 local function test_css_compound_type_class_selectors()
   local css = [[
@@ -889,7 +944,7 @@ local function test_css_compound_type_class_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 34: Pseudo-classes apply to class, ID, and type selectors
+-- Test 36: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -927,7 +982,7 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 35: Pseudo-classes work on direct parent selectors
+-- Test 37: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
@@ -948,7 +1003,7 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 36: CSS font-family accepts quoted names and generic fallbacks
+-- Test 38: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
@@ -995,6 +1050,7 @@ test_css_color_properties()
 test_css_theme_variables()
 test_css_text_property_map()
 test_css_expanded_property_aliases()
+test_css_edge_shorthand_order()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()

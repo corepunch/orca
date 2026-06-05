@@ -35,6 +35,16 @@
 extern int parse_property(const char* str, struct PropertyType const* prop,
                           void* valueptr);
 
+static void
+copy_trim(char* dst, const char* s, const char* e, int n);
+
+#define CSS_MAX_RULES    512
+#define CSS_MAX_PROPS    64
+#define CSS_MAX_APPLY    8
+#define CSS_MAX_SELLEN   256
+#define CSS_MAX_PROPNAME 64
+#define CSS_MAX_VALLEN   256
+
 // ---------------------------------------------------------------------------
 // CSS property name → ORCA full property name mapping
 // ---------------------------------------------------------------------------
@@ -182,6 +192,45 @@ css_normalize_decl_value(const char *css_key,
                          char *out,
                          size_t out_size)
 {
+    if (!strcasecmp(css_key, "margin") ||
+        !strcasecmp(css_key, "padding") ||
+        !strcasecmp(css_key, "border-width")) {
+        char values[4][CSS_MAX_VALLEN] = {{0}};
+        int count = 0;
+        const char *p = css_value;
+
+        while (*p && count < 4) {
+            while (*p && isspace((unsigned char)*p)) p++;
+            const char *start = p;
+            while (*p && !isspace((unsigned char)*p)) p++;
+            if (start < p) {
+                copy_trim(values[count], start, p, (int)sizeof(values[count]));
+                count++;
+            }
+        }
+
+        if (count == 2) {
+            // CSS: vertical horizontal. ORCA Thickness: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[1], values[0], values[1], values[0]);
+            return out;
+        }
+
+        if (count == 3) {
+            // CSS: top horizontal bottom. ORCA: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[1], values[0], values[1], values[2]);
+            return out;
+        }
+
+        if (count == 4) {
+            // CSS: top right bottom left. ORCA: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[3], values[0], values[1], values[2]);
+            return out;
+        }
+    }
+
     if (!strcasecmp(css_key, "visibility")) {
         if (!strcasecmp(css_value, "hidden") || !strcasecmp(css_value, "collapse")) {
             snprintf(out, out_size, "false");
@@ -291,13 +340,6 @@ css_resolve_font_family(const char *value, char *out, size_t out_size)
 // ---------------------------------------------------------------------------
 // Parsed CSS in-memory representation
 // ---------------------------------------------------------------------------
-#define CSS_MAX_RULES    512
-#define CSS_MAX_PROPS    64
-#define CSS_MAX_APPLY    8
-#define CSS_MAX_SELLEN   256
-#define CSS_MAX_PROPNAME 64
-#define CSS_MAX_VALLEN   256
-
 typedef struct {
     char key[CSS_MAX_PROPNAME]; // CSS name, e.g. "opacity"
     char val[CSS_MAX_VALLEN];   // CSS value, e.g. "0.4"
