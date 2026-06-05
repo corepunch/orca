@@ -14,6 +14,9 @@
 #define CARET_WIDTH 2
 #define FT_Pixel uint8_t
 
+static uint32_t s_text_measure_count;
+static uint32_t s_text_render_count;
+
 static FT_UInt const offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL,
                                             0x000E2080UL, 0x03C82080UL,
                                             0xFA082080UL, 0x82082080UL };
@@ -82,6 +85,8 @@ static struct AXsize
 T_GetSize(struct TextBlockText const* text,
           struct rect* rcursor)
 {
+  s_text_measure_count++;
+
   struct AXsize textSize = { 0 };
   FT_Int textwidth = 0;
   FT_Int wordwidth = 0;
@@ -202,11 +207,18 @@ write_char(FT_Bitmap *bitmap,
 }
 
 static HRESULT
-TextBlockText_Print(struct TextBlockText const* pViewText,
+TextBlockText_Print(struct TextBlockText* pViewText,
                     struct Texture** pTexture,
                     bool_t bReuseTexture)
 {
-  struct AXsize textSize = T_GetSize(pViewText, NULL);
+  s_text_render_count++;
+
+  struct text_info info;
+  TextBlockText_GetInfo(pViewText, &info);
+  struct AXsize textSize = {
+    .width = info.txWidth * pViewText->scale,
+    .height = info.txHeight * pViewText->scale,
+  };
 
   if (textSize.width == 0)
     return E_INVALIDARG;
@@ -502,6 +514,25 @@ TextBlockText_Release(struct TextBlockText *text)
   free(text);
 }
 
+ORCA_API uint32_t
+TextBlockText_GetMeasureCount(void)
+{
+  return s_text_measure_count;
+}
+
+ORCA_API uint32_t
+TextBlockText_GetRenderCount(void)
+{
+  return s_text_render_count;
+}
+
+ORCA_API void
+TextBlockText_ResetStats(void)
+{
+  s_text_measure_count = 0;
+  s_text_render_count = 0;
+}
+
 static HRESULT
 TextBlockText_GetInsets(struct TextBlockText const* text,
                         struct edges* edges)
@@ -531,9 +562,15 @@ TextBlockText_GetInsets(struct TextBlockText const* text,
 }
 
 ORCA_API HRESULT
-TextBlockText_GetInfo(struct TextBlockText const* pViewText,
+TextBlockText_GetInfo(struct TextBlockText* pViewText,
                       struct text_info* info)
 {
+  uint32_t hash = TextBlockText_GetHash(pViewText);
+  if (pViewText->infoHash && pViewText->infoHash == hash) {
+    *info = pViewText->info;
+    return NOERROR;
+  }
+
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
   info->txWidth = textSize.width / pViewText->scale;
   info->txHeight = textSize.height / pViewText->scale;
@@ -543,6 +580,8 @@ TextBlockText_GetInfo(struct TextBlockText const* pViewText,
   info->cursor.height /= pViewText->scale;
   info->cursor.width += CARET_WIDTH;
   TextBlockText_GetInsets(pViewText, &info->txInsets);
+  pViewText->info = *info;
+  pViewText->infoHash = hash;
   return NOERROR;
 }
 
@@ -636,6 +675,23 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   pViewText->textOverflow = (uint32_t)pTextBlockConcept->TextOverflow;
   pViewText->scale = axGetScaling();
   return TRUE;
+}
+
+HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
+{
+  struct text_info *info = (struct text_info*)pGetInfo;
+  if (!info || !pTextBlockConcept->_text) {
+    return FALSE;
+  }
+  return SUCCEEDED(TextBlockText_GetInfo(pTextBlockConcept->_text, info));
+}
+
+HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)
+{
+  if (!pTextBlockConcept->_text) {
+    return 0;
+  }
+  return (intptr_t)TextBlockText_GetTexture(pTextBlockConcept->_text);
 }
 
 HANDLER(TextBlockConcept, Object, Create)

@@ -242,6 +242,8 @@
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
         <handle message="TextBlockConcept.MakeText"/>
+        <handle message="TextBlockConcept.GetInfo"/>
+        <handle message="TextBlockConcept.GetTexture"/>
       </handles>
       <properties>
         <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
@@ -267,6 +269,12 @@
           <fields>
             <field name="availableSpace" type="uint">Available space for text layout</field>
           </fields>
+        </message>
+        <message name="GetInfo">
+          <summary>Requests measured information for the prepared text content.</summary>
+        </message>
+        <message name="GetTexture">
+          <summary>Requests the texture for the prepared text content.</summary>
         </message>
       </messages>
     </class>

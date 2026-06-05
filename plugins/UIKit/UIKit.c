@@ -15,6 +15,27 @@ _css_file_loader(int argc, const char* argv[])
 }
 
 static int
+f_getTextMeasureCount(lua_State *L)
+{
+  lua_pushinteger(L, TextBlockText_GetMeasureCount());
+  return 1;
+}
+
+static int
+f_getTextRenderCount(lua_State *L)
+{
+  lua_pushinteger(L, TextBlockText_GetRenderCount());
+  return 1;
+}
+
+static int
+f_resetTextStats(lua_State *L)
+{
+  TextBlockText_ResetStats();
+  return 0;
+}
+
+static int
 c_parse_transform2(const char* str, void* dst, size_t sz)
 {
   if (!dst || sz != sizeof(struct transform2)) return FALSE;
@@ -56,6 +77,12 @@ void on_ui_module_registered(lua_State* L) {
   SV_RegisterMessageProc(ui_handle_event);
   lua_pushcfunction(L, f_beginDraggingSession);
   lua_setfield(L, -2, "beginDraggingSession");
+  lua_pushcfunction(L, f_getTextMeasureCount);
+  lua_setfield(L, -2, "getTextMeasureCount");
+  lua_pushcfunction(L, f_getTextRenderCount);
+  lua_setfield(L, -2, "getTextRenderCount");
+  lua_pushcfunction(L, f_resetTextStats);
+  lua_setfield(L, -2, "resetTextStats");
   OBJ_RegisterFileLoader(".css", _css_file_loader);
 }
 

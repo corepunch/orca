@@ -381,6 +381,8 @@ The `HANDLER` macro expands to the correct function signature; `*_export.c` forw
 
 **Do not `#include <UIKit/UIKit.h>` (or any plugin header) from `source/core/`.** Core must not depend on plugins; this is an architectural violation that causes circular build dependencies.
 
+Plugins must not link against other plugins or call another plugin's exported helper symbols. When one plugin needs behavior owned by another plugin, expose that behavior as an object/component message in the owning plugin's `.cgen` file and dispatch it through `OBJ_SendMessageW` / `_SendMessage`. Header-level knowledge of shared component/message types is acceptable when codegen requires it, but runtime coupling between plugins should flow through the message system.
+
 #### Step 4 — Register the class at module init
 
 The `REGISTER_CLASS` / `REGISTER_CLASS` macro in `*_export.c` defines `_MyComponent`.  The generated `on_mymodule_registered` callback must call:

@@ -19,8 +19,6 @@ enum
 
 struct FontFamily;
 struct Texture;
-struct text_info;
-
 struct TextBlockTextRun
 {
   lpcString_t string;
@@ -44,6 +42,8 @@ struct TextBlockText
   uint32_t textWrapping;
   uint32_t textOverflow;
   uint32_t textureHash;
+  uint32_t infoHash;
+  struct text_info info;
   bool_t placeholder;
   struct Texture *texture;
   struct TextBlockTextRun run[UI_MAX_TEXT_RUNS];
@@ -51,8 +51,11 @@ struct TextBlockText
 
 ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
 ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
-ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText const *text, struct text_info *info);
+ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
 ORCA_API void TextBlockText_Release(struct TextBlockText *text);
+ORCA_API uint32_t TextBlockText_GetMeasureCount(void);
+ORCA_API uint32_t TextBlockText_GetRenderCount(void);
+ORCA_API void TextBlockText_ResetStats(void);
 
 /// @typedef uiGridViewBuffer_t
 /// @brief Internal buffer for grid layout calculations

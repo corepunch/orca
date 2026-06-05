@@ -134,6 +134,43 @@ local function test_empty_text_block_foreground_content()
 end
 
 -- ---------------------------------------------------------------------------
+-- Text measurement cache: repeated layout must not redo the expensive FreeType
+-- measurement work unless text inputs change.
+-- ---------------------------------------------------------------------------
+local function test_text_layout_uses_cached_measurement()
+	local text = screen + ui.TextBlock {
+		HorizontalAlignment = "Left",
+		Text = "Cached text metrics",
+		FontSize = 24,
+	}
+
+	ui.resetTextStats()
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	local measured_after_layout = ui.getTextMeasureCount()
+	local rendered_after_layout = ui.getTextRenderCount()
+
+	test.expect(measured_after_layout > 0, "Text layout should measure text at least once")
+	test.expect_eq(rendered_after_layout, 0, "Layout should not rasterize text foreground texture")
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(ui.getTextMeasureCount(), measured_after_layout,
+		"Repeated layout should not remeasure unchanged text")
+	test.expect_eq(ui.getTextRenderCount(), rendered_after_layout,
+		"Repeated layout should not rasterize text foreground texture")
+
+	text.Text = "Cached text metrics changed"
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(ui.getTextMeasureCount() > measured_after_layout,
+		"Changing text should invalidate cached measurement")
+
+	text:removeFromParent()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
@@ -142,5 +179,6 @@ test_text_block_layout()
 test_text_single_line_layout()
 test_text_nowrap_keeps_metric_value_on_one_line()
 test_empty_text_block_foreground_content()
+test_text_layout_uses_cached_measurement()
 
 print("All text layout tests passed.")
