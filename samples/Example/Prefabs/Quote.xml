@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="Quote" Direction="Vertical" Spacing="16" BackgroundColor="$card-background" Padding="28">
-	<TextBlock Name="QuoteMark" Text="&#x201C;" FontSize="48" ForegroundColor="{Binding ../Card.PrimaryColor}"/>
-	<TextBlock Name="QuoteText" FontSize="13" ForegroundColor="$text-secondary" WordWrap="true" Text="{Binding ../Card.Body}"/>
-	<StackView Name="QuoteAuthor" Direction="Horizontal" Spacing="12" AlignItems="Center">
-		<TextBlock Name="QuoteAuthorName" FontSize="13" ForegroundColor="$text-primary" Text="{Binding ../../Card.Title}"/>
-		<TextBlock Name="QuoteAuthorRole" FontSize="11" ForegroundColor="$text-dim" Text="{Binding ../../Card.Subtitle}"/>
+<StackView Name="Quote" class="card quote-card">
+	<TextBlock Name="QuoteMark" class="quote-mark" Text="&#x201C;" ForegroundColor="{Binding ../Card.PrimaryColor}"/>
+	<TextBlock Name="QuoteText" class="quote-text" Text="{Binding ../Card.Body}"/>
+	<StackView Name="QuoteAuthor" class="quote-author">
+		<TextBlock Name="QuoteAuthorName" class="quote-author-name" Text="{Binding ../../Card.Title}"/>
+		<TextBlock Name="QuoteAuthorRole" class="quote-author-role" Text="{Binding ../../Card.Subtitle}"/>
 	</StackView>
 </StackView>

@@ -141,7 +141,8 @@ static bool_t
 is_special_inline_name(char const *name)
 {
   return !strcmp(name, "Name") || !strcmp(name, "id") ||
-         !strcmp(name, "class") || strchr(name, '.');
+         !strcmp(name, "class") || !strcmp(name, "StyleClass") ||
+         strchr(name, '.');
 }
 
 static void

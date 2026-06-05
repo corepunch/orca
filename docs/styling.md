@@ -62,19 +62,25 @@ Multiple pseudo-states can be chained: `button:hover:focus` requires both hover 
 ### Setting classes from XML
 
 ```xml
+<Button StyleClass="button:hover primary/80" />
 <Button class="button:hover primary/80" />
 ```
 
-The `class` XML attribute is parsed by `StyleController.AddClasses()` at load time.
+The `StyleClass` XML attribute is parsed by `StyleController.AddClasses()` at load time.
+The lowercase `class` form is also accepted for CSS/Tailwind-style authoring and
+compatibility with existing screens.
 Tokens are space-separated; each token is parsed into a `style_class` node.
 
 ### Setting classes from Lua
 
 ```lua
 -- At object creation (via the property table):
-local btn = UIKit.Button { class = "primary:hover" }
+local btn = UIKit.Button { StyleClass = "primary:hover" }
 
 -- At runtime (assign a space-separated class string):
+btn.StyleClass = "selected"
+
+-- The CSS-like alias remains supported:
 btn.class = "selected"
 ```
 
@@ -92,6 +98,8 @@ OBJ_ParseClassAttribute(struct Object *obj, const char* classAttr);
 A **stylesheet rule** maps a selector and a property name to a string value.
 Selectors can match style classes, object names, ORCA class names, or a direct parent/child relationship.
 The optional pseudo-states on the selector gate when the rule fires.
+
+When working on ORCA apps or app styles, use this document as the style-system reference before adding or moving visual properties.
 
 ### Rule structure
 
@@ -182,6 +190,7 @@ The parser does not support sibling selectors, attribute selectors, media querie
 
 - CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.
 - Enum values are case-insensitive: `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
+- Prefer lowercase enum values in CSS declarations because they read more like CSS: use `direction: vertical;`, `align-items: center;`, `overflow-y: scroll;`, and `text-wrapping: nowrap;` rather than ORCA's native enum casing.
 - Selector names are case-sensitive: `.Button` and `.button` are different classes.
 - Type selector names are case-sensitive and should match ORCA class names exactly, for example `ImageView` or `Label`.
 - ID selector names are case-sensitive and should match the object's `Name` exactly.
@@ -189,6 +198,15 @@ The parser does not support sibling selectors, attribute selectors, media querie
 - `@apply` is case-sensitive and must be written exactly as `@apply`.
 - Repeating the same declaration key in one selector uses the last value, matched case-insensitively.
 - Unsupported CSS properties are ignored.
+
+#### Selector conventions for app styles
+
+- Prefer reusable class selectors for visual styling, similar to application CSS on HTML pages: `.card`, `.section-heading`, `.toolbar`, `.button-primary`.
+- Keep object `Name` values for identity, bindings, tests, and lookups. Do not make styling depend on `#Name` selectors when a reusable class can describe the role.
+- Use ID selectors only for exceptional one-off overrides that are genuinely tied to a single object identity.
+- Prefer classic semantic class names for app-owned styles. Avoid defining one-off utility classes such as `.gap-12`, `.text-14`, or `.w-40` inside an app stylesheet; use the existing utility systems when a utility approach is explicitly desired.
+- Reuse the same component class for repeated visual roles, especially card-like elements. If several cards differ only by incidental colors or spacing, consolidate them behind one class and reserve variants for meaningful states or hierarchy.
+- Combining semantic classes is fine when each class describes a reusable role or variant, for example `StyleClass="card feature-card"` or `StyleClass="button button-primary"`.
 
 #### `@apply` behavior
 
@@ -327,7 +345,7 @@ When `StyleController` receives `Object.ThemeChanged` for an object:
 ### When styles are applied automatically
 
 - On `Object.ThemeChanged` (non-recursive) — sent automatically by the engine when hover state changes (`CORE_UpdateHover`) or focus changes (`OBJ_SetFocus`). `StyleController` handles this message directly; no intermediate Node handler is needed.
-- On `Object.PropertyChanged` for the `class` property — when Lua sets `node.class = "…"`.
+- On `Object.PropertyChanged` for style class aliases — when Lua sets `node.StyleClass = "…"` or `node.class = "…"`.
 - Explicitly by application code after state changes.
 
 ---
@@ -364,7 +382,7 @@ screen:addStyleRule(".card:dark", {
 ```
 
 ```xml
-<Node2D class="card" />
+<Node2D StyleClass="card" />
 ```
 
 When the user switches to dark mode, `Object.ThemeChanged` is broadcast, `StyleController` re-runs style application, and the `:dark` rule takes precedence.
@@ -377,7 +395,7 @@ Color properties can be dimmed using the `/N` opacity syntax on the class token:
 
 ```xml
 <!-- "primary" class at 70% opacity -->
-<Node2D class="primary/70" />
+<Node2D StyleClass="primary/70" />
 ```
 
 After the color value is resolved, the alpha channel is overwritten with `N / 100.0`.
@@ -448,7 +466,7 @@ screen:addStyleRule(".btn:active", {
 
 -- Create a button and assign the "btn" class
 local myBtn = screen + ui.Button {
-    class = "btn",
+    StyleClass = "btn",
     Text  = "Click me",
     Width = 120,
     Height = 36,

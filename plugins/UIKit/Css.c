@@ -123,6 +123,7 @@ k_css_prop_map[] = {
     { "flex-direction",    "StackView.Direction"           },
     { "direction",         "StackView.Direction"           },
     { "gap",               "StackView.Spacing"             },
+    { "gap",               "Grid.Spacing"                  },
     { "spacing",           "StackView.Spacing"             },
     { "reversed",          "StackView.Reversed"            },
 
@@ -156,16 +157,6 @@ k_css_prop_map[] = {
     { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
     { NULL, NULL }
 };
-
-static const char*
-css_lookup_orca_property(const char* css_name)
-{
-    for (int i = 0; k_css_prop_map[i].css; i++) {
-        if (!strcasecmp(css_name, k_css_prop_map[i].css))
-            return k_css_prop_map[i].orca;
-    }
-    return NULL;
-}
 
 static bool_t
 css_name_equals_enum_value(const char *css_value, const char *enum_value)
@@ -670,24 +661,12 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
 // StyleRule property assignment
 // ---------------------------------------------------------------------------
 
-// Apply one CSS declaration (key/value) to an ORCA StyleRule object.
 static void
-css_apply_decl_to_rule(struct Object *rule_obj,
-                       const char* css_key, const char* css_value)
+css_apply_orca_value_to_rule(struct Object *rule_obj,
+                             const char* orca_name,
+                             const char* css_key,
+                             const char* css_value)
 {
-    const char* orca_name = css_lookup_orca_property(css_key);
-    if (!orca_name) return; // unsupported property
-    char theme_value[CSS_MAX_VALLEN] = {0};
-    char resolved_value[CSS_MAX_VALLEN] = {0};
-    char normalized_value[CSS_MAX_VALLEN] = {0};
-    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
-    css_value = css_normalize_decl_value(css_key, css_value,
-                                         normalized_value,
-                                         sizeof(normalized_value));
-    if (!strcasecmp(css_key, "font-family")) {
-        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
-    }
-
     struct Property *prop = NULL;
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) {
         OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
@@ -712,6 +691,41 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     char buf[MAX_PROPERTY_STRING] = {0};
     if (parse_property(css_value, desc, buf))
         PROP_SetValue(prop, buf);
+}
+
+// Apply one CSS declaration (key/value) to an ORCA StyleRule object.
+static void
+css_apply_decl_to_rule(struct Object *rule_obj,
+                       const char* css_key, const char* css_value)
+{
+    bool_t has_mapping = FALSE;
+    for (int i = 0; k_css_prop_map[i].css; i++) {
+        if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
+            has_mapping = TRUE;
+            break;
+        }
+    }
+    if (!has_mapping) return; // unsupported property
+
+    char theme_value[CSS_MAX_VALLEN] = {0};
+    char resolved_value[CSS_MAX_VALLEN] = {0};
+    char normalized_value[CSS_MAX_VALLEN] = {0};
+    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    css_value = css_normalize_decl_value(css_key, css_value,
+                                         normalized_value,
+                                         sizeof(normalized_value));
+    if (!strcasecmp(css_key, "font-family")) {
+        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
+    }
+
+    for (int i = 0; k_css_prop_map[i].css; i++) {
+        if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
+            css_apply_orca_value_to_rule(rule_obj,
+                                         k_css_prop_map[i].orca,
+                                         css_key,
+                                         css_value);
+        }
+    }
 }
 
 static char*

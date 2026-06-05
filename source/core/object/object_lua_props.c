@@ -82,6 +82,24 @@ is_on_changed_callback_name(lpcString_t name)
   return len > 7 && strcmp(name + len - 7, "Changed") == 0;
 }
 
+static bool_t
+set_style_classes_from_lua(lua_State* L, struct Object *self, int index)
+{
+  if (lua_type(L, index) == LUA_TSTRING) {
+    _SendMessage(self, StyleController, AddClasses, luaL_checkstring(L, index));
+    return TRUE;
+  }
+
+  luaL_checktype(L, index, LUA_TTABLE);
+  lua_pushnil(L);
+  while (lua_next(L, index)) {
+    _SendMessage(self, StyleController, AddClass, luaL_checkstring(L, -1));
+    lua_pop(L, 1);
+  }
+  lua_pop(L, 1);
+  return TRUE;
+}
+
 #include <filesystem/filesystem.h>
 bool_t
 OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
@@ -105,19 +123,10 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
 			return TRUE;
 		}
 		case p_class:
-			if (lua_type(L, 3) == LUA_TSTRING) {
-        _SendMessage(self, StyleController, AddClasses, luaL_checkstring(L, 3));
-				return TRUE;
-			} else {
-				luaL_checktype(L, 3, LUA_TTABLE);
-				lua_pushnil(L);
-				while (lua_next(L, 3)) {
-          _SendMessage(self, StyleController, AddClass, luaL_checkstring(L, -1));
-					lua_pop(L, 1);
-				}
-				lua_pop(L, 1);
-				return TRUE;
-			}
+			return set_style_classes_from_lua(L, self, 3);
+  }
+  if (!strcmp(name, "StyleClass")) {
+    return set_style_classes_from_lua(L, self, 3);
   }
   if (!strcmp(name, "x") && GetNode2D(self)) {
     GetNode2D(self)->LayoutTransform.translation.x = luaL_checknumber(L, 3);

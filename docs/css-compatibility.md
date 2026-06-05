@@ -75,7 +75,7 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `justify-content` | `StackView.JustifyContent` | enum: JustifyContent |
 | `flex-direction` | `StackView.Direction` | enum: Direction |
 | `direction` | `StackView.Direction` | enum: Direction |
-| `gap` | `StackView.Spacing` | float |
+| `gap` | `StackView.Spacing`, `Grid.Spacing` | float |
 | `spacing` | `StackView.Spacing` | float |
 | `reversed` | `StackView.Reversed` | bool |
 | `font` | `TextRun.Font` | FontShorthand |

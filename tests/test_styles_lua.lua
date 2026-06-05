@@ -1,6 +1,6 @@
 local test = require "orca.test"
 -- Headless tests for the ORCA style system — exercised from Lua using
--- the CSS string API, node.class, and StyleController.ThemeChanged.
+-- the CSS string API, node.StyleClass/node.class, and StyleController.ThemeChanged.
 --
 -- Run with: $(TARGET) -test=tests/test_styles_lua.lua
 --
@@ -20,6 +20,61 @@ local ui         = require "orca.UIKit"
 -- applyStyles(node) triggers style resolution.
 local function applyStyles(node)
   node:send("StyleController.ThemeChanged")
+end
+
+local function test_styleclass_lua_alias()
+  local screen = ui.Screen {
+    Width = 200,
+    Height = 200,
+    ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString ".native-alias { opacity: 0.33; } .runtime-alias { opacity: 0.44; }",
+  }
+  local node = screen + ui.Node2D {
+    StyleClass = "native-alias",
+    Opacity = 1.0,
+  }
+  local runtime = screen + ui.Node2D {
+    Opacity = 1.0,
+  }
+  runtime.StyleClass = "runtime-alias"
+
+  applyStyles(node)
+  applyStyles(runtime)
+
+  test.expect_near(node.Opacity, 0.33, 0.001, "StyleClass property table alias applies style classes")
+  test.expect_near(runtime.Opacity, 0.44, 0.001, "StyleClass runtime assignment applies style classes")
+
+  runtime:removeFromParent()
+  node:removeFromParent()
+  print("PASS: test_styleclass_lua_alias")
+end
+
+local function test_styleclass_xml_alias()
+  local root = filesystem.loadObjectFromXmlString [[
+<Screen Name="styleclass-root" Width="200" Height="200" ResizeMode="NoResize">
+  <Node2D Name="pascal-style" StyleClass="pascal-alias" Opacity="1" />
+  <Node2D Name="html-style" class="html-alias" Opacity="1" />
+</Screen>]]
+
+  test.expect(root ~= nil, "StyleClass XML should load")
+  root.StyleSheet = ui.loadObjectFromCssString [[
+    .pascal-alias { opacity: 0.42; }
+    .html-alias { opacity: 0.24; }
+  ]]
+
+  local pascal = root:findChild("pascal-style", true)
+  local html = root:findChild("html-style", true)
+  test.expect(pascal ~= nil, "StyleClass XML child should exist")
+  test.expect(html ~= nil, "class XML child should exist")
+
+  applyStyles(pascal)
+  applyStyles(html)
+
+  test.expect_near(pascal.Opacity, 0.42, 0.001, "StyleClass XML alias applies style classes")
+  test.expect_near(html.Opacity, 0.24, 0.001, "class XML alias still applies style classes")
+
+  root:removeFromParent()
+  print("PASS: test_styleclass_xml_alias")
 end
 
 -- ---------------------------------------------------------------------------
@@ -561,12 +616,16 @@ local function test_css_expanded_property_aliases()
   local stack = screen + ui.StackView {
     class = "layout-css",
   }
+  local grid = screen + ui.Grid {
+    class = "layout-css",
+  }
   local text = screen + ui.TextBlock {
     class = "copy-css",
     Text = "copy",
   }
 
   applyStyles(stack)
+  applyStyles(grid)
   applyStyles(text)
 
   test.expect_eq(stack.HorizontalAlignment, "Center", "horizontal-align maps to Node.HorizontalAlignment")
@@ -591,6 +650,7 @@ local function test_css_expanded_property_aliases()
   test.expect(stack.IgnoreHitTest == true, "pointer-events: none maps to Node2D.IgnoreHitTest")
   test.expect_eq(stack.Direction, "Horizontal", "flex-direction maps to StackView.Direction")
   test.expect_near(stack.Spacing, 11, 0.001, "gap maps to StackView.Spacing")
+  test.expect_near(grid.Spacing, 11, 0.001, "gap maps to Grid.Spacing")
   test.expect_eq(stack.AlignItems, "End", "align-items maps to StackView.AlignItems")
   test.expect_eq(stack.JustifyContent, "SpaceBetween", "hyphenated justify-content value maps to SpaceBetween")
 
@@ -604,6 +664,7 @@ local function test_css_expanded_property_aliases()
   test.expect_eq(text.TextWrapping, "NoWrap", "hyphenated text-wrap value maps to NoWrap")
 
   stack:removeFromParent()
+  grid:removeFromParent()
   text:removeFromParent()
   print("PASS: test_css_expanded_property_aliases")
 end
@@ -1024,6 +1085,8 @@ local function test_css_font_family_list_uses_registered_fallback()
 end
 
 
+test_styleclass_lua_alias()
+test_styleclass_xml_alias()
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()

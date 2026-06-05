@@ -686,7 +686,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="StyleRule">
       <summary>A single style rule that maps a class name (with optional pseudo-class) to property overrides.</summary>
-      <details>StyleRule is a child object of a StyleSheet. ClassName holds the selector without pseudo-state qualifiers (for example "button", ".button", "#Logo", "ImageView", "StackView &gt; Label", or ".popup .panel"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's class attribute (e.g., class="text-color/50") and is not part of the rule definition.</details>
+      <details>StyleRule is a child object of a StyleSheet. ClassName holds the selector without pseudo-state qualifiers (for example "button", ".button", "#Logo", "ImageView", "StackView &gt; Label", or ".popup .panel"); PseudoClass holds optional colon-separated pseudo-states (e.g., "hover" or "hover:focus"). Attached properties on the rule's Lua object (using full dotted names like "Node2D.BackgroundColor") are applied to matching objects when ThemeChanged fires. Opacity is a per-usage concern expressed on the node's StyleClass/class attribute (e.g., StyleClass="text-color/50" or class="text-color/50") and is not part of the rule definition.</details>
       <handles>
         <handle message="Object.Release"/>
         <handle message="Object.PropertyChanged"/>
@@ -703,7 +703,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     </class>
     <class name="StyleController">
       <summary>Manages CSS-style classes and stylesheet rules for an object.</summary>
-      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML class attributes and matched against stylesheet rules. The StyleSheet property points to a StyleSheet object that contains StyleRule children — each rule maps a selector to pre-parsed property overrides stored as attached Lua properties on the StyleRule object. This avoids re-parsing property values on every ThemeChanged.</details>
+      <details>StyleController provides CSS-like styling capabilities. Style classes (e.g., "button:hover:dark") are parsed from XML StyleClass/class attributes and matched against stylesheet rules. The StyleSheet property points to a StyleSheet object that contains StyleRule children — each rule maps a selector to pre-parsed property overrides stored as attached Lua properties on the StyleRule object. This avoids re-parsing property values on every ThemeChanged.</details>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.Release"/>

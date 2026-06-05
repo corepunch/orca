@@ -149,6 +149,7 @@ Use these personas when delegating work or framing implementation choices.
 | Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
 | Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
 | Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `{Screen.ShowModal Path=...}` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
+| Work on an app's visual styling | `docs/styling.md` — use it as the style-system reference before adding or moving visual properties |
 | Add a UI widget to UIKit | `plugins/UIKit/UIKit.cgen` + `plugins/UIKit/Button.c` as a reference |
 | Add a property binding or formula | `source/core/property/` + Module Codegen Guide |
 | Change what Lua exposes | Edit the module `.cgen`, run `make modules` |
