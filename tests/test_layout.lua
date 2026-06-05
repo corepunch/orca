@@ -1143,6 +1143,47 @@ local function test_binding_expression_bare_path_resolves_from_bound_object()
 end
 
 -- ---------------------------------------------------------------------------
+-- Bare project-property bindings inside prefab templates should fall back to
+-- the template root when the bound child has only an auto-created empty value.
+-- ---------------------------------------------------------------------------
+local function test_prefab_card_bindings_resolve_from_template_root()
+	filesystem.init("samples/Example")
+
+	local xml = [[
+<Screen Name="prefab-binding-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
+    Card.Title="XML-first screens"
+    Card.Body="Layouts stay readable."
+    Card.PrimaryColor="#55AAFF"/>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "prefab binding XML should load")
+
+	local title = root and root:findChild("SignalCardTitle", true) or nil
+	local body = root and root:findChild("SignalCardBody", true) or nil
+	local card = root and root:findChild("SignalXml", true) or nil
+	test.expect(card ~= nil, "SignalCard prefab root should keep placeholder name")
+	test.expect(title ~= nil, "SignalCard title should exist")
+	test.expect(body ~= nil, "SignalCard body should exist")
+
+	if card and title and body then
+		core.advanceFrame()
+		root:UpdateLayout(root.Width, root.Height)
+		test.expect_eq(card.Title, "XML-first screens", "Placeholder Card.Title should be copied to prefab root")
+		test.expect_eq(title.Text, "XML-first screens", "Bare Card.Title binding should resolve from prefab template root")
+		test.expect_eq(body.Text, "Layouts stay readable.", "Bare Card.Body binding should resolve from prefab template root")
+	end
+
+	if root then
+		root:clear()
+		root = nil
+	end
+
+	print("PASS: test_prefab_card_bindings_resolve_from_template_root")
+end
+
+-- ---------------------------------------------------------------------------
 -- TabView should measure only the active panel, not the tallest hidden panel
 -- ---------------------------------------------------------------------------
 local function test_tabview_measures_active_panel_only()
@@ -1458,5 +1499,6 @@ test_lua_post_generated_message_with_payload()
 test_stackview_align_items_preserves_child_stretch_width()
 test_css_popup_padding_insets_stretched_panel()
 test_modal_attach_applies_screen_stylesheet_to_popup_content()
+test_prefab_card_bindings_resolve_from_template_root()
 
 print("All layout tests passed.")

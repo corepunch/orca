@@ -609,7 +609,11 @@ tok_op(argument)
   struct Property *p = NULL;
   if (token->cache.property) {
     p = token->cache.property;
-    goto return_value;
+    if (!PROP_IsNull(p)) {
+      goto return_value;
+    }
+    token->cache.property = NULL;
+    p = NULL;
   }
   if (*token->text == '#') {
     lpcString_t eon = strchr(token->text, '/');
@@ -689,18 +693,23 @@ tok_op(argument)
     }
   } else {
     /* Default: bare paths first target the bound object. If not found, keep
-       compatibility with template/root-scoped bindings. */
+       compatibility with template/root-scoped bindings. Project property types
+       can auto-create empty properties, so an unmodified local property should
+       not block a real value on the template root. */
+    struct Object *scope = _BindingTemplateOrRoot(object);
     p = OBJ_FindPropertyByPath(object, token->text);
-    if (!p) {
-      struct Object *scope = _BindingTemplateOrRoot(object);
-      if (scope) {
-        p = OBJ_FindPropertyByPath(scope, token->text);
+    if (scope && scope != object && (!p || PROP_IsNull(p))) {
+      struct Property *scoped = OBJ_FindPropertyByPath(scope, token->text);
+      if (scoped && (!PROP_IsNull(scoped) || !p)) {
+        p = scoped;
       }
     }
   }
 return_value:
   if (p) {
-    token->cache.property = p;
+    if (!PROP_IsNull(p)) {
+      token->cache.property = p;
+    }
     return PROP_Export(p, output);
   } else {
     Con_Error("Can't find property \"%s\"", token->text);
