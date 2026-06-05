@@ -1,0 +1,5 @@
+.popup-overlay { direction: vertical; align-items: center; justify-content: center; padding: 40; background-color: #100020D0; }
+.popup-card { gap: 14; width: 420; padding: 24; background-color: var(--surface-deep); border-width: 2; border-color: var(--accent); }
+.popup-close-button { height: 34; padding: 8; align-self: center; }
+.popup-title { font-size: 20; color: var(--text-primary); }
+.popup-body { font-size: 14; color: var(--text-muted); word-wrap: true; }

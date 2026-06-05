@@ -1,0 +1,17 @@
+.feature-section .card { padding: 28; }
+.feature-section .stack-card { gap: 12; }
+.gallery-section .card { padding: 0; }
+.workflow-section .card { padding: 24; }
+.workflow-section .stack-card { gap: 12; }
+.testimonials-section .card { padding: 28; }
+.testimonials-section .stack-card { gap: 16; }
+
+.model-panel { gap: 10; padding: 20; }
+.feature-card { gap: 10; }
+.icon-card { gap: 10; padding: 28; }
+.feature-image-card { gap: 12; }
+.quote-card { gap: 16; }
+.workflow-step { gap: 12; }
+.image-caption-card { gap: 8; padding: 16; }
+.gallery-card { gap: 0; }
+.metric-card { gap: 4; width: 120; padding: 20; }

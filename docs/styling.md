@@ -172,6 +172,25 @@ Stylesheet files can load shared substyles with `@import`. Relative imports are 
 }
 ```
 
+For larger apps, keep the loaded stylesheet as a small manifest and split styles by responsibility:
+
+```text
+Styles/
+  app.css
+  base.css
+  layout.css
+  typography.css
+  components/
+    button.css
+    modal.css
+    sidebar.css
+  pages/
+    home.css
+    profile.css
+```
+
+Use `components/` for reusable controls and UI roles. Use `pages/` for screen-level composition and page-specific overrides, especially when a top-level navigation bar will switch between screens. Keep files coarse enough to be navigable; avoid turning every class into its own file.
+
 #### Supported CSS syntax
 
 The parser is intentionally CSS-like rather than a full browser CSS implementation.

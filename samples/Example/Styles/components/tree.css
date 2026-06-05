@@ -1,0 +1,7 @@
+.moon-model-line { font-size: 13; color: var(--text-secondary); }
+.model-line-text { font-size: 14; }
+
+.model-indent-root { padding-left: 0; }
+.model-indent-child { padding-left: 16; }
+.model-indent-grandchild { padding-left: 32; }
+.model-indent-leaf { padding-left: 48; }

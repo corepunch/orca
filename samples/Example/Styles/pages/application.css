@@ -1,0 +1,7 @@
+.app-body { direction: vertical; gap: 40; overflow-x: hidden; overflow-y: scroll; padding: 40; background-color: var(--surface-deep); }
+.hero { gap: 24; background-color: var(--surface); }
+.hero-content { direction: vertical; gap: 0; padding: 16; }
+.section { direction: vertical; gap: 24; padding: 40; }
+.cta-section { gap: 24; padding: 60; align-items: center; }
+.cta-heading { font-size: 36; color: var(--text-primary); text-align: center; }
+.cta-body { font-size: 15; color: var(--text-muted); text-align: center; word-wrap: true; }

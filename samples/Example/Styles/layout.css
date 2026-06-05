@@ -1,0 +1,22 @@
+.grid { gap: 16; }
+.stack-card { direction: vertical; }
+.app-shell { gap: 0; }
+
+.copy-stack { direction: vertical; gap: 14; }
+.note-panel { direction: vertical; gap: 8; padding: 20; }
+.gallery-caption { direction: vertical; gap: 4; padding: 16; }
+.signal-copy { direction: vertical; gap: 2; }
+.command-copy { direction: vertical; gap: 2; }
+
+.model-line,
+.signal-card,
+.command-link,
+.cta-button-row,
+.icon-card-header,
+.quote-author,
+.tab-panel-header {
+    direction: horizontal; align-items: center; gap: 12;
+}
+
+.command-link { padding: 16; }
+.model-line { gap: 10; }

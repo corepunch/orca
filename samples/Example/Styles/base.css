@@ -1,0 +1,6 @@
+body { width: 1280; height: 800; }
+
+.panel { background-color: var(--panel-background); }
+.card { background-color: var(--card-background); }
+.surface-section { background-color: var(--surface); }
+.deep-section { background-color: var(--surface-deep); }

@@ -1,0 +1,13 @@
+.model-line-icon { width: 20; height: 20; }
+.command-icon { width: 20; height: 20; color: var(--accent-green); }
+.icon-card-image { width: 24; height: 24; }
+.tab-panel-icon { width: 26; height: 26; }
+.signal-icon { width: 28; height: 28; }
+.feature-image-card-icon { width: 40; height: 40; }
+.icon-badge { width: 48; height: 48; align-items: center; justify-content: center; }
+.feature-card-icon { width: 44; height: 40; font-size: 20; text-align: center; text-vertical-align: center; }
+.gallery-image { height: 180; }
+.caption-image { height: 160; }
+.headline-spacer { height: 20; }
+.metric-spacer { height: 40; }
+.feature-card-spacer { height: 8; }

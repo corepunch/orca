@@ -1,0 +1,5 @@
+.navbar { direction: horizontal; align-items: center; gap: 32; padding-inline: 40; }
+.brand-mark { direction: horizontal; align-items: center; gap: 10; }
+.brand-icon { width: 22; height: 22; color: var(--accent); }
+.brand-text { font-size: 20; color: var(--accent); }
+.nav-link { font-size: 14; color: var(--text-secondary); }
