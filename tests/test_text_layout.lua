@@ -100,11 +100,26 @@ local function test_text_single_line_layout()
 end
 
 -- ---------------------------------------------------------------------------
+-- Empty TextBlock: render texture lookup must tolerate no resolved text
+-- ---------------------------------------------------------------------------
+local function test_empty_text_block_foreground_content()
+	local empty = screen + ui.TextBlock { HorizontalAlignment = "Left" }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+	local texture = empty:send("Node2D.ForegroundContent")
+
+	test.expect_eq(texture, nil, "Empty TextBlock should not create a foreground texture")
+
+	empty:removeFromParent()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
 
 test_text_block_layout()
 test_text_single_line_layout()
+test_empty_text_block_foreground_content()
 
 print("All text layout tests passed.")

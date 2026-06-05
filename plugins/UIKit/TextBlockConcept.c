@@ -469,6 +469,9 @@ TextBlockText_GetHash(struct TextBlockText *text)
   uint32_t text_hash = 0;
   uint32_t format_hash = fnv1a32_range((char*)text, (char*)&text->textureHash);
   for (struct TextBlockTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
+    if (!run->string) {
+      continue;
+    }
     text_hash ^= fnv1a32(run->string);
     format_hash ^= fnv1a32_range((char*)&run->fontFamily, ((char*)&run->fontFamily) + size);
   }
