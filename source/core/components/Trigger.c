@@ -94,7 +94,7 @@ _BindingCompileToProperty(struct Object *hObject,
   if (normalize_markup) {
     size_t len = strlen(expr);
     if (len > 9 && !strncmp(expr, "{Binding ", 9) && expr[len - 1] == '}') {
-      /* {Binding X} → {X}; runtime default resolves X relative to template root */
+      /* {Binding X} -> {X}; runtime default resolves X from the bound object first. */
       snprintf(normalized_expr, sizeof(normalized_expr), "{%.*s}", (int)(len - 10), expr + 9);
       final_expr = normalized_expr;
     } else if (*expr != '{') {

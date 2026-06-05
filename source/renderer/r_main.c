@@ -325,7 +325,19 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   }
 
   if (!shader->shader) {
-    Con_Error("no shader loaded for rendering");
+    static uint32_t missing_shader_log_mask = 0;
+    enum shader_type shader_index = SHADER_COUNT;
+    FOR_LOOP(i, SHADER_COUNT) {
+      if (shader == &tr.shaders[i]) {
+        shader_index = i;
+        break;
+      }
+    }
+    uint32_t bit = shader_index < 32 ? (1u << shader_index) : 0;
+    if (!bit || !(missing_shader_log_mask & bit)) {
+      Con_Error("no shader loaded for rendering (shader index %d)", shader_index);
+      missing_shader_log_mask |= bit;
+    }
     return E_FAIL;
   }
 

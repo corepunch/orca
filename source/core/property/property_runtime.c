@@ -563,31 +563,74 @@ PROP_Export(struct Property *prop,
             struct vm_register* r)
 {
   PROP_Update(prop);
+  void const *value = PROP_GetValue(prop);
   switch (InitOutput(r, PROP_GetType(prop), PROP_GetSize(prop))) {
     case kDataTypeInt:
     case kDataTypeBool:
-      *r->value = *(int*)PROP_GetValue(prop);
+      *r->value = value ? *(int*)value : 0;
       return TRUE;
     case kDataTypeString: {
-      lpcString_t *str = (lpcString_t*)PROP_GetValue(prop);
+      lpcString_t *str = (lpcString_t*)value;
       InitOutput(r, kDataTypeString, sizeof(const char *));
-      VM_REG_SET_STR(r, vm_strtmp(*str));
+      VM_REG_SET_STR(r, vm_strtmp(str ? *str : NULL));
       return TRUE;
     }
     default:
-      memcpy(r->value, PROP_GetValue(prop), PROP_GetSize(prop));
+      if (value) {
+        memcpy(r->value, value, PROP_GetSize(prop));
+      } else {
+        memset(r->value, 0, PROP_GetSize(prop));
+      }
       return TRUE;
   }
 }
 
-#include <UIKit/UIKit.h> // for GetNode(it)
+static bool_t
+_BindingPropertyHasEffectiveValue(struct Property *prop)
+{
+  if (!prop) {
+    return FALSE;
+  }
+  if (!PROP_IsNull(prop)) {
+    return TRUE;
+  }
+  return PROP_GetDesc(prop) && PROP_GetDesc(prop)->IsInherited && PROP_GetValue(prop) != NULL;
+}
+
+#include <UIKit/UIKit.h> // for GetNode/GetScreen
+
+static struct Object *
+_FindDataContextObject(struct Object *object, void **component)
+{
+  struct Node *node = GetNode(object);
+  if (node && node->DataContext) {
+    if (component) {
+      *component = node->DataContext;
+    }
+    return CMP_GetObject(node->DataContext);
+  }
+
+  struct Screen *screen = GetScreen(object);
+  if (screen && screen->DataContext) {
+    if (component) {
+      *component = screen->DataContext;
+    }
+    return CMP_GetObject(screen->DataContext);
+  }
+
+  return NULL;
+}
 
 tok_op(argument)
 {
   struct Property *p = NULL;
   if (token->cache.property) {
     p = token->cache.property;
-    goto return_value;
+    if (_BindingPropertyHasEffectiveValue(p)) {
+      goto return_value;
+    }
+    token->cache.property = NULL;
+    p = NULL;
   }
   if (*token->text == '#') {
     lpcString_t eon = strchr(token->text, '/');
@@ -613,9 +656,9 @@ tok_op(argument)
     p = OBJ_FindPropertyByPath(object, token->text);
   } else if (!strncmp(token->text, "DataContext/", 12)) {
     for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
-      struct Node* node = GetNode(it);
-      if (node && node->DataContext) {
-        if ((p = OBJ_FindPropertyByPath(CMP_GetObject(node->DataContext), token->text + 12))) {
+      struct Object *context = _FindDataContextObject(it, NULL);
+      if (context) {
+        if ((p = OBJ_FindPropertyByPath(context, token->text + 12))) {
           goto return_value;
         }
       }
@@ -625,9 +668,9 @@ tok_op(argument)
     return TRUE;
   } else if (!strcmp(token->text, "DataContext")) {
     for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
-      struct Node* node = GetNode(it);
-      if (node && node->DataContext) {
-        memcpy(output->value, &node->DataContext, sizeof(void*));
+      void *dataContext = NULL;
+      if (_FindDataContextObject(it, &dataContext)) {
+        memcpy(output->value, &dataContext, sizeof(void*));
         InitOutput(output, kDataTypeObject, sizeof(handle_t));
         return TRUE;
       }
@@ -666,16 +709,24 @@ tok_op(argument)
       }
     }
   } else {
-    /* Default: bare path with no prefix resolves relative to template root.
-       If no template ancestor exists (regular screen trees), resolve from scene root. */
+    /* Default: bare paths first target the bound object. If not found, keep
+       compatibility with template/root-scoped bindings. Project property types
+       can auto-create empty properties, so an unmodified local property should
+       not block a real value on the template root. */
     struct Object *scope = _BindingTemplateOrRoot(object);
-    if (scope) {
-      p = OBJ_FindPropertyByPath(scope, token->text);
+    p = OBJ_FindPropertyByPath(object, token->text);
+    if (scope && scope != object && (!p || !_BindingPropertyHasEffectiveValue(p))) {
+      struct Property *scoped = OBJ_FindPropertyByPath(scope, token->text);
+      if (scoped && (_BindingPropertyHasEffectiveValue(scoped) || !p)) {
+        p = scoped;
+      }
     }
   }
 return_value:
   if (p) {
-    token->cache.property = p;
+    if (_BindingPropertyHasEffectiveValue(p)) {
+      token->cache.property = p;
+    }
     return PROP_Export(p, output);
   } else {
     Con_Error("Can't find property \"%s\"", token->text);

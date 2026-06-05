@@ -278,25 +278,24 @@ static void _RenderSubViews(struct Object *hObject) {
 // float __angle = 0;
 //
 static bool_t
-_FallThrough(struct Screen const* s, struct Node const* n, Screen_RenderScreenMsgPtr r)
+_FallThrough(struct Screen const* s, Screen_RenderScreenMsgPtr r)
 {
   if (s->ResizeMode==kResizeModeCanResize)
     return TRUE;
-  if (isnan(n->Size.Axis[0].Requested) || isnan(n->Size.Axis[1].Requested))
+  if (isnan(s->Width) || isnan(s->Height))
     return TRUE;
-  if (n->Size.Axis[0].Requested != r->width || n->Size.Axis[1].Requested != r->height)
+  if (s->Width != r->width || s->Height != r->height)
     return FALSE;
   return TRUE;
 }
 
 HANDLER(Screen, Screen, RenderScreen) {
-  struct Node *node = GetNode(hObject);
   float width = pRenderScreen->width;
   float height = pRenderScreen->height;
   struct Texture *rt = pRenderScreen->target;
-  if (!_FallThrough(pScreen, node, pRenderScreen)) {
-    width = node->Size.Axis[0].Requested;
-    height = node->Size.Axis[1].Requested;
+  if (!_FallThrough(pScreen, pRenderScreen)) {
+    width = pScreen->Width;
+    height = pScreen->Height;
     if (!pScreen->_rt) {
       RenderTexture_Create(&(CREATERTSTRUCT) {
         .Width = width * axGetScaling(),
@@ -304,11 +303,11 @@ HANDLER(Screen, Screen, RenderScreen) {
       }, &pScreen->_rt);
     }
     rt = pScreen->_rt;
-  } else if (!isnan(node->Size.Axis[0].Requested) &&
-             !isnan(node->Size.Axis[1].Requested))
-  {
-    node->Size.Axis[0].Requested = width;
-    node->Size.Axis[1].Requested = height;
+  } else if (pScreen->ResizeMode == kResizeModeCanResize ||
+             isnan(pScreen->Width) ||
+             isnan(pScreen->Height)) {
+    pScreen->Width = width;
+    pScreen->Height = height;
   }
   
   // setup pipeline
@@ -343,7 +342,7 @@ HANDLER(Screen, Screen, RenderScreen) {
   R_BindFramebuffer(rt);
   R_SetPipelineState(&ps);
 
-  Node2D_Draw2DContent(hObject, GetNode2D(hObject), 0, &params);
+  FOR_EACH_CHILD(hObject, draw_children, &params);
 
   if (pRenderScreen->target != rt) {
     R_BindFramebuffer(pRenderScreen->target);
@@ -521,42 +520,6 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   return TRUE;
 }
 
-HANDLER(Screen, Node2D, MeasureOverride) {
-  struct Node const* n = GetNode(hObject);
-  struct Node2D *n2d = GetNode2D(hObject);
-  
-//#if defined(__EMSCRIPTEN__) || defined(__QNX__)
-  if (pScreen->ResizeMode == kResizeModeCanResize) {
-    struct AXsize size;
-    if (axGetSize(&size)) {
-      struct Node *node = GetNode(hObject);
-      node->Size.Axis[0].Requested = (float)size.width;
-      node->Size.Axis[1].Requested = (float)size.height;
-    }
-  }
-//#endif
-
-  if (!isnan(n->Size.Axis[0].Requested)) {
-    pMeasureOverride->Width = n->Size.Axis[0].Requested;
-  }
-  if (!isnan(n->Size.Axis[1].Requested)) {
-    pMeasureOverride->Height = n->Size.Axis[1].Requested;
-  }
-  uint32_t newsize = MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
-  if (pScreen->_size != newsize) {
-//    axSetSize(pUpdateLayout->Width, pUpdateLayout->Height, TRUE);
-    pScreen->_size = newsize;
-  }
-  // Measure children against the Screen content box, not outer size.
-  // This keeps text wrapping consistent with final arranged bounds.
-  float childWidth = fmaxf(0, pMeasureOverride->Width - TOTAL_PADDING(n2d, 0));
-  float childHeight = fmaxf(0, pMeasureOverride->Height - TOTAL_PADDING(n2d, 1));
-  FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Measure,
-    .Width = childWidth,
-    .Height = childHeight);
-  return MAKEDWORD(pMeasureOverride->Width, pMeasureOverride->Height);
-}
-
 //HANDLER(Screen, Object, Create) {
 //  extern bool_t is_server;
 //  pScreen->_size = axGetSize(NULL);
@@ -583,33 +546,28 @@ HANDLER(Screen, Object, Destroy) {
   return FALSE;
 }
 
-static uint32_t get_size(struct Object *obj) {
-  return MAKEDWORD(NODE2D_FRAME(GetNode2D(obj), Size, 0).Actual,
-                   NODE2D_FRAME(GetNode2D(obj), Size, 1).Actual);
-}
-
 static void
 draw_screen(struct Object* hObject,
             struct Screen* pScreen,
             uint32_t WindowWidth,
             uint32_t WindowHeight)
 {
-  uint32_t const _size = get_size(hObject);
+  if (!pScreen || !pScreen->Visible) {
+    return;
+  }
+
+  uint32_t const _size = pScreen->_size;
 
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
-  if (get_size(hObject) != _size) {
+  if (pScreen->_size != _size) {
     ORCA_API void CORE_AdvanceFrame(void);
     CORE_AdvanceFrame();
     PROP_RunAllPrograms(hObject);
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
-  
-  _SendMessage(hObject, Node, UpdateMatrix,
-               .parent = MAT4_Identity(),
-               .opacity = 1);
   
   _SendMessage(hObject, Screen, RenderScreen,
                .width = WindowWidth,
@@ -641,6 +599,21 @@ HANDLER(Screen, Window, Paint) {
   R_EndFrame();
 
   return TRUE;
+}
+
+HANDLER(Screen, Node, HitTest) {
+  if (!pScreen->Visible) {
+    return FALSE;
+  }
+
+  struct Object *result = NULL;
+  FOR_EACH_OBJECT(child, hObject) {
+    struct Object *childHit = (struct Object *)_SendMessage(child, Node, HitTest,
+      .x = pHitTest->x,
+      .y = pHitTest->y);
+    if (childHit) result = childHit;
+  }
+  return (intptr_t)result;
 }
 
 static void OBJ_SetTreeDirty(struct Object *obj) {
@@ -689,6 +662,7 @@ _AttachModalObject(struct Object *hObject, struct Object *target)
   OBJ_AddRef(target);
   target->parent = hObject;
   target->flags |= OF_NOACTIVATE;
+  _SendMessage(target, StyleController, ThemeChanged, .recursive = TRUE);
   if (!_PopupSetDialogResult(target, NAN)) {
     Con_Error("Modal popup missing DialogResult property");
   }
@@ -763,12 +737,11 @@ HANDLER(Popup, Popup, ClosePopup) {
 }
 
 HANDLER(Screen, Window, Resized) {
-  struct Node *node = GetNode(hObject);
   if (pScreen->ResizeMode == kResizeModeCanResize ||
-      isnan(node->Size.Axis[0].Requested) ||
-      isnan(node->Size.Axis[1].Requested)) {
-    node->Size.Axis[0].Requested = pResized->WindowWidth;
-    node->Size.Axis[1].Requested = pResized->WindowHeight;
+      isnan(pScreen->Width) ||
+      isnan(pScreen->Height)) {
+    pScreen->Width = pResized->WindowWidth;
+    pScreen->Height = pResized->WindowHeight;
   }
   OBJ_SetTreeDirty(hObject);
   OBJ_SendMessageW(hObject, ID_Window_Paint, wParam, pResized);
@@ -777,8 +750,27 @@ HANDLER(Screen, Window, Resized) {
 
 
 HANDLER(Screen, Screen, UpdateLayout) {
-  _SendMessage(hObject, Node2D, Measure, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
-  _SendMessage(hObject, Node2D, Arrange, .Width = pUpdateLayout->Width, .Height = pUpdateLayout->Height);
-  _SendMessage(hObject, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
+  float width = pUpdateLayout->Width;
+  float height = pUpdateLayout->Height;
+
+  if (pScreen->ResizeMode == kResizeModeCanResize ||
+      isnan(pScreen->Width) ||
+      isnan(pScreen->Height)) {
+    pScreen->Width = width;
+    pScreen->Height = height;
+  } else {
+    width = pScreen->Width;
+    height = pScreen->Height;
+  }
+
+  pScreen->_size = MAKEDWORD(width, height);
+
+  FOR_EACH_OBJECT(child, hObject) {
+    if (!GetNode2D(child)) continue;
+    _SendMessage(child, Node2D, Measure, .Width = width, .Height = height);
+    _SendMessage(child, Node2D, Arrange, .Width = width, .Height = height);
+    _SendMessage(child, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
+  }
+  PROP_RunAllPrograms(hObject);
   return TRUE;
 }

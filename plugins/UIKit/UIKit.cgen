@@ -190,6 +190,20 @@
       </fields>
     </struct>
   </structs>
+  <functions>
+    <function name="LoadObjectFromCss" export="loadObjectFromCss">
+      <summary>Loads a stylesheet object from a CSS file</summary>
+      <details>Reads the specified CSS file and parses it into a StyleSheet object containing StyleRule children. Returns the root stylesheet object on success, or nil on failure.</details>
+      <arg name="path" type="string">The path to the CSS file to load</arg>
+      <returns type="Object" pointer="true">The stylesheet object constructed from the CSS file, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromCssString" export="loadObjectFromCssString">
+      <summary>Parses a stylesheet object from a CSS string</summary>
+      <details>Parses the provided CSS string into a StyleSheet object containing StyleRule children. Returns the stylesheet object on success, or nil on failure.</details>
+      <arg name="cssString" type="string">The CSS string to parse</arg>
+      <returns type="Object" pointer="true">The stylesheet object constructed from the CSS string, or nil on failure</returns>
+    </function>
+  </functions>
   <classes>
     <class name="Brush">
       <summary>Base class for all brush types used in rendering.</summary>
@@ -228,6 +242,8 @@
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
         <handle message="TextBlockConcept.MakeText"/>
+        <handle message="TextBlockConcept.GetInfo"/>
+        <handle message="TextBlockConcept.GetTexture"/>
       </handles>
       <properties>
         <property name="TextResourceID" type="string">Resource identifier for localized text lookup.</property>
@@ -253,6 +269,12 @@
           <fields>
             <field name="availableSpace" type="uint">Available space for text layout</field>
           </fields>
+        </message>
+        <message name="GetInfo">
+          <summary>Requests measured information for the prepared text content.</summary>
+        </message>
+        <message name="GetTexture">
+          <summary>Requests the texture for the prepared text content.</summary>
         </message>
       </messages>
     </class>
@@ -632,22 +654,26 @@
         <property name="Scale" type="float">Visual scale factor for size adjustments </property>
       </properties>
     </class>
-    <class name="Screen" parent="Node2D">
+    <class name="Screen" parent="StyleController" children="Node2D">
       <summary>Top-level container representing a display surface or window</summary>
-      <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
+      <details>Provides the root rendering context for UI hierarchies. Screen is a host object, not a drawable Node; it owns viewport dimensions and lays out/renders child Node2D objects.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
         <handle message="Screen.ShowModal"/>
         <handle message="Screen.SetModalObject"/>
-        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node.HitTest"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
         <handle message="Window.Resized"/>
         <handle message="Window.Paint"/>
       </handles>
       <properties>
+        <property name="Width" type="float" default="NAN">Viewport width for fixed-size screens and CSS viewport calculations.</property>
+        <property name="Height" type="float" default="NAN">Viewport height for fixed-size screens and CSS viewport calculations.</property>
+        <property name="Visible" type="bool" default="TRUE">Whether this screen or popup participates in rendering.</property>
+        <property name="DataContext" type="DataObject" pointer="true">Root data context for bindings and child content.</property>
         <property name="ClearColor" type="color">Background clear color for the screen </property>
         <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
       </properties>

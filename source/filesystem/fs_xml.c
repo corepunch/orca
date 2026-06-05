@@ -31,7 +31,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     OBJ_SetName(o, value);
     return TRUE;
   }
-  if (!strcmp(name, "class")) {
+  if (!strcmp(name, "class") || !strcmp(name, "StyleClass")) {
     _SendMessage(o, StyleController, AddClasses, .ClassNames = value);
     return TRUE;
   }

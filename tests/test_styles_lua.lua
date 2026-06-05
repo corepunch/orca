@@ -1,6 +1,6 @@
 local test = require "orca.test"
 -- Headless tests for the ORCA style system — exercised from Lua using
--- the CSS string API, node.class, and StyleController.ThemeChanged.
+-- the CSS string API, node.StyleClass/node.class, and StyleController.ThemeChanged.
 --
 -- Run with: $(TARGET) -test=tests/test_styles_lua.lua
 --
@@ -13,13 +13,68 @@ local geometry = require "orca.geometry"
 require "orca.renderer"
 local ui         = require "orca.UIKit"
 
--- filesystem.loadObjectFromCssString exposes the pure-C CSS parser.
+-- ui.loadObjectFromCssString exposes the pure-C CSS parser.
 
 -- ---------------------------------------------------------------------------
 -- Node2D inherits StyleController, so every Node2D has one attached.
 -- applyStyles(node) triggers style resolution.
 local function applyStyles(node)
   node:send("StyleController.ThemeChanged")
+end
+
+local function test_styleclass_lua_alias()
+  local screen = ui.Screen {
+    Width = 200,
+    Height = 200,
+    ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString ".native-alias { opacity: 0.33; } .runtime-alias { opacity: 0.44; }",
+  }
+  local node = screen + ui.Node2D {
+    StyleClass = "native-alias",
+    Opacity = 1.0,
+  }
+  local runtime = screen + ui.Node2D {
+    Opacity = 1.0,
+  }
+  runtime.StyleClass = "runtime-alias"
+
+  applyStyles(node)
+  applyStyles(runtime)
+
+  test.expect_near(node.Opacity, 0.33, 0.001, "StyleClass property table alias applies style classes")
+  test.expect_near(runtime.Opacity, 0.44, 0.001, "StyleClass runtime assignment applies style classes")
+
+  runtime:removeFromParent()
+  node:removeFromParent()
+  print("PASS: test_styleclass_lua_alias")
+end
+
+local function test_styleclass_xml_alias()
+  local root = filesystem.loadObjectFromXmlString [[
+<Screen Name="styleclass-root" Width="200" Height="200" ResizeMode="NoResize">
+  <Node2D Name="pascal-style" StyleClass="pascal-alias" Opacity="1" />
+  <Node2D Name="html-style" class="html-alias" Opacity="1" />
+</Screen>]]
+
+  test.expect(root ~= nil, "StyleClass XML should load")
+  root.StyleSheet = ui.loadObjectFromCssString [[
+    .pascal-alias { opacity: 0.42; }
+    .html-alias { opacity: 0.24; }
+  ]]
+
+  local pascal = root:findChild("pascal-style", true)
+  local html = root:findChild("html-style", true)
+  test.expect(pascal ~= nil, "StyleClass XML child should exist")
+  test.expect(html ~= nil, "class XML child should exist")
+
+  applyStyles(pascal)
+  applyStyles(html)
+
+  test.expect_near(pascal.Opacity, 0.42, 0.001, "StyleClass XML alias applies style classes")
+  test.expect_near(html.Opacity, 0.24, 0.001, "class XML alias still applies style classes")
+
+  root:removeFromParent()
+  print("PASS: test_styleclass_xml_alias")
 end
 
 -- ---------------------------------------------------------------------------
@@ -30,7 +85,7 @@ local function test_style_applies_opacity()
     Width = 200,
     Height = 200,
     ResizeMode = "NoResize",
-    StyleSheet = filesystem.loadObjectFromCssString ".highlight { opacity: 0.4; }",
+    StyleSheet = ui.loadObjectFromCssString ".highlight { opacity: 0.4; }",
   }
   local node = screen + ui.Node2D {
     class = "highlight",
@@ -50,7 +105,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_not_applied_without_class()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".hidden { opacity: 0.0; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".hidden { opacity: 0.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 0.8
@@ -68,7 +123,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_properties()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".box { width: 200; height: 80; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".box { width: 200; height: 80; }"
   local node = screen + ui.Node2D { Width = 100, Height = 50 }
 
   node.class = "box"
@@ -86,7 +141,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_multiple_classes()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".alpha50 { opacity: 0.5; } .alpha25 { opacity: 0.25; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -107,7 +162,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_hover_not_applied_by_default()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".btn:hover { opacity: 0.6; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".btn:hover { opacity: 0.6; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -127,7 +182,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_non_hover_rule_applies()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".card { opacity: 0.7; } .card:hover { opacity: 1.0; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -145,7 +200,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_recursive_children()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".dim { opacity: 0.3; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".dim { opacity: 0.3; }"
   local parent = screen + ui.Node2D {}
   local child  = parent + ui.Node2D {}
 
@@ -166,7 +221,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_dot_prefix_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".primary { opacity: 0.55; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".primary { opacity: 0.55; }"
   local node = screen + ui.Node2D {}
 
   node.Opacity = 1.0
@@ -184,7 +239,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_numeric_value()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".sized { width: 150; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".sized { width: 150; }"
   local node = screen + ui.Node2D {}
 
   node.class = "sized"
@@ -201,7 +256,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_enum_value_ignorecase()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".overflowing { text-overflow: ellipsis; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".overflowing { text-overflow: ellipsis; }"
   local text = screen + ui.TextBlock {
     Text = "long text",
     TextOverflow = "Clip",
@@ -221,7 +276,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_style_applies_to_new_node()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".ghost { opacity: 0.1; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".ghost { opacity: 0.1; }"
   local node = screen + ui.Node2D {}
 
   -- Opacity defaults to 1.0; style overrides it
@@ -244,7 +299,7 @@ local function test_style_apply_directive()
     .child { @apply: .base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -267,7 +322,7 @@ local function test_style_apply_transitive()
     .a { @apply: .b; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "a"
@@ -288,7 +343,7 @@ local function test_css_comments_are_ignored()
     .clean { opacity: 0.42; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "clean"
@@ -305,7 +360,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_comma_selectors()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".alpha, .beta { width: 123; height: 45; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".alpha, .beta { width: 123; height: 45; }"
   local a = screen + ui.Node2D {}
   local b = screen + ui.Node2D {}
 
@@ -333,7 +388,7 @@ local function test_css_repeated_selector_merges()
     .repeat { height: 50; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D {}
 
   node.class = "repeat"
@@ -352,7 +407,7 @@ end
 local function test_css_property_name_ignorecase_and_duplicate_overwrite()
   local css = ".casey { OpAcItY: 0.2; opacity: 0.65; WIDTH: 111; }"
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "casey"
@@ -370,7 +425,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_type_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "Label { height: 33; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "Label { height: 33; }"
   local label = screen + ui.Label { Text = "caption" }
 
   applyStyles(label)
@@ -386,7 +441,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_selectors_are_case_sensitive()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".Token { opacity: 0.25; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".Token { opacity: 0.25; }"
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "token"
@@ -403,7 +458,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_unsupported_declarations_are_ignored()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".plain { made-up-property: 123; opacity: 0.66; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".plain { made-up-property: 123; opacity: 0.66; }"
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "plain"
@@ -420,7 +475,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_boolean_value_ignorecase()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".wrapped { word-wrap: TRUE; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".wrapped { word-wrap: TRUE; }"
   local text = screen + ui.TextBlock {
     Text = "wrap me",
     WordWrap = false,
@@ -440,7 +495,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_color_properties()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".painted { background-color: #336699; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".painted { background-color: #336699; }"
   local node = screen + ui.Node2D {}
 
   node.class = "painted"
@@ -459,7 +514,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_theme_variables()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+  screen.StyleSheet = ui.loadObjectFromCssString [[
     .themed {
       background-color: var(--accent);
       color: var(--accent-foreground);
@@ -494,7 +549,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_css_text_property_map()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString ".copy { font-size: 18; line-height: 1.5; letter-spacing: 2; text-overflow: clip; }"
+  screen.StyleSheet = ui.loadObjectFromCssString ".copy { font-size: 18; line-height: 1.5; letter-spacing: 2; text-overflow: clip; }"
   local text = screen + ui.TextBlock {
     Text = "copy",
     FontSize = 10,
@@ -516,7 +571,161 @@ local function test_css_text_property_map()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 24: @apply can reference selectors without a leading dot
+-- Test 24: Expanded CSS property aliases map onto UIKit/Core properties
+-- ---------------------------------------------------------------------------
+local function test_css_expanded_property_aliases()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .layout-css {
+      horizontal-align: center;
+      vertical-align: bottom;
+      margin-inline: 4;
+      padding-block: 6;
+      border-color: #aabbcc;
+      border-width: 7;
+      border-style: solid;
+      border-radius: 13;
+      border-left-width: 3;
+      border-top-left-radius: 5;
+      background: #112233;
+      foreground: #445566;
+      overflow-x: hidden;
+      ring-width: 2;
+      ring-color: #778899;
+      box-shadow-color: #010203;
+      clip-children: true;
+      pointer-events: none;
+      flex-direction: horizontal;
+      gap: 11;
+      align-items: end;
+      justify-content: space-between;
+    }
+
+    .copy-css {
+      font-weight: bold;
+      font-style: italic;
+      character-spacing: 3;
+      fixed-character-width: 9;
+      text-decoration-thickness: 2;
+      text-align: right;
+      text-vertical-align: bottom;
+      text-wrap: no-wrap;
+    }
+  ]]
+
+  local stack = screen + ui.StackView {
+    class = "layout-css",
+  }
+  local grid = screen + ui.Grid {
+    class = "layout-css",
+  }
+  local text = screen + ui.TextBlock {
+    class = "copy-css",
+    Text = "copy",
+  }
+
+  applyStyles(stack)
+  applyStyles(grid)
+  applyStyles(text)
+
+  test.expect_eq(stack.HorizontalAlignment, "Center", "horizontal-align maps to Node.HorizontalAlignment")
+  test.expect_eq(stack.VerticalAlignment, "Bottom", "vertical-align maps to Node.VerticalAlignment")
+  test.expect_near(stack.MarginLeft, 4, 0.001, "margin-inline maps to horizontal margin")
+  test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
+  test.expect_near(stack.PaddingTop, 6, 0.001, "padding-block maps to vertical padding")
+  test.expect_near(stack.PaddingBottom, 6, 0.001, "padding-block maps to vertical padding")
+  test.expect_near(stack.BorderColor.R, 0xaa / 255, 0.01, "border-color maps to Node.BorderColor")
+  test.expect_near(stack.BorderWidthRight, 7, 0.001, "border-width maps to Node.BorderWidth")
+  test.expect_eq(stack.BorderStyle, "Solid", "border-style maps to Node.BorderStyle")
+  test.expect_near(stack.BorderRadius.TopRightRadius, 13, 0.001, "border-radius maps to Node.BorderRadius")
+  test.expect_near(stack.BorderWidthLeft, 3, 0.001, "border-left-width maps to Node.BorderWidthLeft")
+  test.expect_near(stack.BorderRadius.TopLeftRadius, 5, 0.001, "border-top-left-radius maps to Node.BorderTopLeftRadius")
+  test.expect_near(stack.BackgroundColor.R, 0x11 / 255, 0.01, "background maps to BackgroundColor")
+  test.expect_near(stack.ForegroundColor.G, 0x55 / 255, 0.01, "foreground maps to ForegroundColor")
+  test.expect_eq(stack.OverflowX, "Hidden", "overflow-x maps to Node2D.OverflowX")
+  test.expect_near(stack.RingWidth, 2, 0.001, "ring-width maps to Node2D.RingWidth")
+  test.expect_near(stack.RingColor.B, 0x99 / 255, 0.01, "ring-color maps to Node2D.RingColor")
+  test.expect_near(stack.BoxShadowColor.B, 0x03 / 255, 0.01, "box-shadow-color maps to Node2D.BoxShadowColor")
+  test.expect(stack.ClipChildren == true, "clip-children maps to Node2D.ClipChildren")
+  test.expect(stack.IgnoreHitTest == true, "pointer-events: none maps to Node2D.IgnoreHitTest")
+  test.expect_eq(stack.Direction, "Horizontal", "flex-direction maps to StackView.Direction")
+  test.expect_near(stack.Spacing, 11, 0.001, "gap maps to StackView.Spacing")
+  test.expect_near(grid.Spacing, 11, 0.001, "gap maps to Grid.Spacing")
+  test.expect_eq(stack.AlignItems, "End", "align-items maps to StackView.AlignItems")
+  test.expect_eq(stack.JustifyContent, "SpaceBetween", "hyphenated justify-content value maps to SpaceBetween")
+
+  test.expect_eq(text.FontWeight, "Bold", "font-weight maps to TextRun.FontWeight")
+  test.expect_eq(text.FontStyle, "Italic", "font-style maps to TextRun.FontStyle")
+  test.expect_near(text.CharacterSpacing, 3, 0.001, "character-spacing maps to TextRun.CharacterSpacing")
+  test.expect_near(text.FixedCharacterWidth, 9, 0.001, "fixed-character-width maps to TextRun.FixedCharacterWidth")
+  test.expect_near(text.UnderlineWidth, 2, 0.001, "text-decoration-thickness maps to TextRun.UnderlineWidth")
+  test.expect_eq(text.TextHorizontalAlignment, "Right", "text-align maps to TextHorizontalAlignment")
+  test.expect_eq(text.TextVerticalAlignment, "Bottom", "text-vertical-align maps to TextVerticalAlignment")
+  test.expect_eq(text.TextWrapping, "NoWrap", "hyphenated text-wrap value maps to NoWrap")
+
+  stack:removeFromParent()
+  grid:removeFromParent()
+  text:removeFromParent()
+  print("PASS: test_css_expanded_property_aliases")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 25: CSS edge shorthands use CSS order before ORCA Thickness parsing
+-- ---------------------------------------------------------------------------
+local function test_css_edge_shorthand_order()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .two-values {
+      padding: 10 32;
+      margin: 4 8;
+    }
+
+    .three-values {
+      padding: 10 20 30;
+    }
+
+    .four-values {
+      margin: 1 2 3 4;
+      border-width: 5 6 7 8;
+    }
+  ]]
+  local two = screen + ui.Node2D { class = "two-values" }
+  local three = screen + ui.Node2D { class = "three-values" }
+  local four = screen + ui.Node2D { class = "four-values" }
+
+  applyStyles(two)
+  applyStyles(three)
+  applyStyles(four)
+
+  test.expect_near(two.PaddingTop, 10, 0.001, "padding: 10 32 sets vertical padding to 10")
+  test.expect_near(two.PaddingBottom, 10, 0.001, "padding: 10 32 sets bottom padding to 10")
+  test.expect_near(two.PaddingLeft, 32, 0.001, "padding: 10 32 sets horizontal padding to 32")
+  test.expect_near(two.PaddingRight, 32, 0.001, "padding: 10 32 sets right padding to 32")
+  test.expect_near(two.MarginTop, 4, 0.001, "margin: 4 8 sets vertical margin to 4")
+  test.expect_near(two.MarginLeft, 8, 0.001, "margin: 4 8 sets horizontal margin to 8")
+
+  test.expect_near(three.PaddingTop, 10, 0.001, "padding: 10 20 30 sets top padding to 10")
+  test.expect_near(three.PaddingLeft, 20, 0.001, "padding: 10 20 30 sets horizontal padding to 20")
+  test.expect_near(three.PaddingRight, 20, 0.001, "padding: 10 20 30 sets right padding to 20")
+  test.expect_near(three.PaddingBottom, 30, 0.001, "padding: 10 20 30 sets bottom padding to 30")
+
+  test.expect_near(four.MarginTop, 1, 0.001, "margin: 1 2 3 4 sets top margin to 1")
+  test.expect_near(four.MarginRight, 2, 0.001, "margin: 1 2 3 4 sets right margin to 2")
+  test.expect_near(four.MarginBottom, 3, 0.001, "margin: 1 2 3 4 sets bottom margin to 3")
+  test.expect_near(four.MarginLeft, 4, 0.001, "margin: 1 2 3 4 sets left margin to 4")
+  test.expect_near(four.BorderWidthTop, 5, 0.001, "border-width: 5 6 7 8 sets top border to 5")
+  test.expect_near(four.BorderWidthRight, 6, 0.001, "border-width: 5 6 7 8 sets right border to 6")
+  test.expect_near(four.BorderWidthBottom, 7, 0.001, "border-width: 5 6 7 8 sets bottom border to 7")
+  test.expect_near(four.BorderWidthLeft, 8, 0.001, "border-width: 5 6 7 8 sets left border to 8")
+
+  two:removeFromParent()
+  three:removeFromParent()
+  four:removeFromParent()
+  print("PASS: test_css_edge_shorthand_order")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 26: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -524,7 +733,7 @@ local function test_css_apply_reference_without_dot()
     .child { @apply: base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -537,7 +746,7 @@ local function test_css_apply_reference_without_dot()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 25: @apply merges multiple sources
+-- Test 27: @apply merges multiple sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_multiple_sources()
   local css = [[
@@ -546,7 +755,7 @@ local function test_css_apply_multiple_sources()
     .both { @apply: .size-x .size-y; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D {}
 
   node.class = "both"
@@ -560,7 +769,7 @@ local function test_css_apply_multiple_sources()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 26: Local declarations override @apply sources
+-- Test 28: Local declarations override @apply sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_preserves_local_declarations()
   local css = [[
@@ -568,7 +777,7 @@ local function test_css_apply_preserves_local_declarations()
     .child { opacity: 0.8; @apply: .base; }
   ]]
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local node = screen + ui.Node2D { Opacity = 1.0 }
 
   node.class = "child"
@@ -582,30 +791,29 @@ local function test_css_apply_preserves_local_declarations()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 27: Body selector applies to the root object that owns the stylesheet
+-- Test 29: Body selector applies to the root object that owns the stylesheet
 -- ---------------------------------------------------------------------------
 local function test_css_body_selector_applies_to_root()
   local screen = ui.Screen {
     Width = 200,
     Height = 200,
     ResizeMode = "NoResize",
-    Opacity = 1.0,
-    StyleSheet = filesystem.loadObjectFromCssString "body { opacity: 0.44; }",
+    StyleSheet = ui.loadObjectFromCssString "body { width: 240; }",
   }
 
   applyStyles(screen)
 
-  test.expect_near(screen.Opacity, 0.44, 0.001, "body selector should apply to stylesheet root")
+  test.expect_near(screen.Width, 240, 0.001, "body selector should apply to screen root properties")
 
   print("PASS: test_css_body_selector_applies_to_root")
 end
 
 -- ---------------------------------------------------------------------------
--- Test 28: ID selectors match object names
+-- Test 30: ID selectors match object names
 -- ---------------------------------------------------------------------------
 local function test_css_id_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "#HeroImage { opacity: 0.73; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "#HeroImage { opacity: 0.73; }"
   local image = screen + ui.ImageView {
     Name = "HeroImage",
     Opacity = 1.0,
@@ -627,12 +835,12 @@ local function test_css_id_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 29: Direct parent selectors match only immediate children
+-- Test 31: Direct parent selectors match only immediate children
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector()
   local css = "StackView > Label { opacity: 0.31; }"
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local stack = screen + ui.StackView {}
   local direct = stack + ui.Label { Text = "direct", Opacity = 1.0 }
   local wrapper = stack + ui.Node2D {}
@@ -649,7 +857,7 @@ local function test_css_direct_parent_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 30: Direct parent selectors also support class and ID selectors
+-- Test 32: Direct parent selectors also support class and ID selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_class_and_id_selectors()
   local css = [[
@@ -657,7 +865,7 @@ local function test_css_direct_parent_class_and_id_selectors()
     #Footer > .status { height: 22; }
   ]]
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local toolbar = screen + ui.StackView { class = "toolbar" }
   local save = toolbar + ui.Label { Name = "SaveLabel", Text = "Save" }
   local footer = screen + ui.StackView { Name = "Footer" }
@@ -675,7 +883,128 @@ local function test_css_direct_parent_class_and_id_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 31: Pseudo-classes apply to class, ID, and type selectors
+-- Test 33: Descendant selectors match any ancestor, not just direct parents
+-- ---------------------------------------------------------------------------
+local function test_css_descendant_selector()
+  local css = [[
+    .popup .panel { opacity: 0.27; }
+    .popup Label { width: 77; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local wrapper = popup + ui.Node2D {}
+  local panel = wrapper + ui.Node2D { class = "panel", Opacity = 1.0 }
+  local label = wrapper + ui.Label { Text = "nested" }
+  local outside = screen + ui.Node2D { class = "panel", Opacity = 1.0 }
+
+  applyStyles(panel)
+  applyStyles(label)
+  applyStyles(outside)
+
+  test.expect_near(panel.Opacity, 0.27, 0.001, ".popup .panel should match nested descendants")
+  test.expect_near(label.Width, 77, 0.5, ".popup Label should match nested type selectors")
+  test.expect_near(outside.Opacity, 1.0, 0.001, ".popup .panel should not match without popup ancestor")
+
+  popup:removeFromParent()
+  outside:removeFromParent()
+  print("PASS: test_css_descendant_selector")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 34: Descendant selectors compose with direct child selectors
+-- ---------------------------------------------------------------------------
+local function test_css_mixed_descendant_and_direct_child_selectors()
+  local css = [[
+    .popup > .chrome .panel { height: 64; }
+    .popup .chrome > .panel { width: 65; }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local chrome = popup + ui.Node2D { class = "chrome" }
+  local direct = chrome + ui.Node2D { class = "panel" }
+  local wrapper = chrome + ui.Node2D {}
+  local nested = wrapper + ui.Node2D { class = "panel" }
+
+  applyStyles(direct)
+  applyStyles(nested)
+
+  test.expect_near(direct.Height, 64, 0.5, ".popup > .chrome .panel should match direct panel")
+  test.expect_near(direct.Width, 65, 0.5, ".popup .chrome > .panel should match direct panel")
+  test.expect_near(nested.Height, 64, 0.5, ".popup > .chrome .panel should match nested panel")
+  test.expect_near(nested.Width, 0, 0.5, ".popup .chrome > .panel should not match nested panel")
+
+  popup:removeFromParent()
+  print("PASS: test_css_mixed_descendant_and_direct_child_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 35: Compound selectors match type, class, and ID on one object
+-- ---------------------------------------------------------------------------
+local function test_css_compound_type_class_selectors()
+  local css = [[
+    Button.primary {
+      background-color: #112233;
+      color: #ddeeff;
+      width: 101;
+    }
+
+    Button.secondary {
+      background-color: #445566;
+      height: 33;
+    }
+
+    .popup Button.primary {
+      padding-left: 32;
+    }
+
+    #PrimaryButton.primary {
+      padding-right: 24;
+    }
+  ]]
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
+  local popup = screen + ui.Node2D { class = "popup" }
+  local primary = popup + ui.Button {
+    Name = "PrimaryButton",
+    class = "primary",
+    Text = "Primary",
+  }
+  local secondary = popup + ui.Button {
+    class = "secondary",
+    Text = "Secondary",
+  }
+  local plain = popup + ui.Button {
+    Text = "Plain",
+  }
+  local label = popup + ui.Label {
+    class = "primary",
+    Text = "Not a button",
+  }
+
+  applyStyles(primary)
+  applyStyles(secondary)
+  applyStyles(plain)
+  applyStyles(label)
+
+  test.expect_near(primary.BackgroundColor.R, 0x11 / 255, 0.01, "Button.primary should match button class primary")
+  test.expect_near(primary.ForegroundColor.G, 0xee / 255, 0.01, "Button.primary color should map to ForegroundColor")
+  test.expect_near(primary.Width, 101, 0.5, "Button.primary should apply Width")
+  test.expect_near(primary.PaddingLeft, 32, 0.5, ".popup Button.primary should match nested primary button")
+  test.expect_near(primary.PaddingRight, 24, 0.5, "#PrimaryButton.primary should match id and class")
+
+  test.expect_near(secondary.BackgroundColor.G, 0x55 / 255, 0.01, "Button.secondary should match button class secondary")
+  test.expect_near(secondary.Height, 33, 0.5, "Button.secondary should apply Height")
+  test.expect_near(plain.Width, 0, 0.5, "Button.primary should not match a plain button")
+  test.expect_near(label.Width, 0, 0.5, "Button.primary should not match a Label with class primary")
+
+  popup:removeFromParent()
+  print("PASS: test_css_compound_type_class_selectors")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 36: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -684,7 +1013,7 @@ local function test_css_pseudo_classes_on_selector_types()
     Label:active { height: 29; }
   ]]
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString(css)
+  screen.StyleSheet = ui.loadObjectFromCssString(css)
   local inactive = screen + ui.Label {
     Name = "NamedChoice",
     class = "choice",
@@ -713,11 +1042,11 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 32: Pseudo-classes work on direct parent selectors
+-- Test 37: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString "StackView > Label:active { opacity: 0.21; }"
+  screen.StyleSheet = ui.loadObjectFromCssString "StackView > Label:active { opacity: 0.21; }"
   local stack = screen + ui.StackView {}
   local label = stack + ui.Label {
     Text = "selected",
@@ -734,11 +1063,11 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: CSS font-family accepts quoted names and generic fallbacks
+-- Test 38: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
-  screen.StyleSheet = filesystem.loadObjectFromCssString [[
+  screen.StyleSheet = ui.loadObjectFromCssString [[
     .novel { font-family: "Times New Roman", serif; }
   ]]
   local text = screen + ui.TextBlock {
@@ -756,6 +1085,8 @@ local function test_css_font_family_list_uses_registered_fallback()
 end
 
 
+test_styleclass_lua_alias()
+test_styleclass_xml_alias()
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()
@@ -780,6 +1111,8 @@ test_css_boolean_value_ignorecase()
 test_css_color_properties()
 test_css_theme_variables()
 test_css_text_property_map()
+test_css_expanded_property_aliases()
+test_css_edge_shorthand_order()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()
@@ -787,6 +1120,9 @@ test_css_body_selector_applies_to_root()
 test_css_id_selector()
 test_css_direct_parent_selector()
 test_css_direct_parent_class_and_id_selectors()
+test_css_descendant_selector()
+test_css_mixed_descendant_and_direct_child_selectors()
+test_css_compound_type_class_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
 test_css_font_family_list_uses_registered_fallback()

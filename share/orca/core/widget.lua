@@ -146,7 +146,8 @@ function Widget:showModal(modal, ...)
 
   if type(modal) == "table" and type(modal.content) == "function" then
     local widget = modal
-    local popup = UIKit.Popup { BackgroundColor = "#000000D0" }
+    local popup = UIKit.Popup {}
+    local overlay = popup + UIKit.Node2D { BackgroundColor = "#000000D0" }
     local previous_on_result = rawget(widget, "on_result")
     local co, is_main = coroutine.running()
     local should_wait = co and not is_main
@@ -165,7 +166,7 @@ function Widget:showModal(modal, ...)
 
     local content = widget:content()
     if content ~= nil then
-      popup:addChild(content)
+      overlay:addChild(content)
     end
     local sent = screen:SetModalObject(popup)
     if should_wait then

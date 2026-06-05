@@ -6,6 +6,26 @@
 
 #define PLACEHOLDER_OPACITY 0.5f
 
+enum label_step
+{
+  STEP_GEOMETRY,
+  STEP_COUNT
+};
+
+static bool_t
+is_updated(struct Object *hObject,
+           enum label_step label_step)
+{
+  struct TextBlockConcept *output = GetTextBlockConcept(hObject);
+  longTime_t dirty = OBJ_GetTimestamp(hObject);
+  if (output->_steps[label_step] != dirty) {
+    output->_steps[label_step] = dirty;
+    return TRUE;
+  } else {
+    return FALSE;
+  }
+}
+
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
@@ -72,7 +92,11 @@ HANDLER(TextBlock, Node2D, ForegroundContent)
 
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
-  pTextBlock->_node2D->_rect = Node2D_GetBackgroundRect(pTextBlock->_node2D);
+  if (is_updated(hObject, STEP_GEOMETRY)) {
+    struct TextRun *run = GetTextRun(hObject);
+    struct TextBlockConcept *text = GetTextBlockConcept(hObject);
+    pTextBlock->_node2D->_rect = text_texture_rect(pTextBlock->_node2D, text, &run->_textinfo);
+  }
   return TRUE;
 }
 
@@ -99,10 +123,9 @@ HANDLER(TextBlock, Node2D, DrawBrush)
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
 
   if (pDrawBrush->foreground) {
-    struct TextRun *run = GetTextRun(hObject);
     entity.material.opacity *= modopacity;
     entity.radius = (struct vec4){0};
-    entity.bbox = BOX3_FromRect(text_texture_rect(pTextBlock->_node2D, text, &run->_textinfo));
+    entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
     struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
     if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
       Loc_GetString(text->TextResourceID, LOC_TEXT);

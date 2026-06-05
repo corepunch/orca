@@ -277,11 +277,13 @@ end
 
 local function test_inherited_foreground_color()
 	local xml = [[
-<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize" ForegroundColor="#336699">
-  <StackView Name="parent-stack">
-    <TextBlock Name="inherited-text" Text="Inherited" />
-    <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
-  </StackView>
+<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize">
+  <Node2D Name="visual-root" ForegroundColor="#336699">
+    <StackView Name="parent-stack">
+      <TextBlock Name="inherited-text" Text="Inherited" />
+      <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
+    </StackView>
+  </Node2D>
 </Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -291,6 +293,8 @@ local function test_inherited_foreground_color()
 	local local_text = root:findChild("local-text", true)
 	test.expect(inherited ~= nil, "inherited text should exist")
 	test.expect(local_text ~= nil, "local text should exist")
+	local visual_root = root:findChild("visual-root", true)
+	test.expect(visual_root ~= nil, "visual root should exist")
 
 	test.expect_near(inherited.ForegroundColor.R, 0x33 / 255, 0.01, "inherited ForegroundColor.R")
 	test.expect_near(inherited.ForegroundColor.G, 0x66 / 255, 0.01, "inherited ForegroundColor.G")
@@ -302,7 +306,7 @@ local function test_inherited_foreground_color()
 	test.expect_near(local_text.ForegroundColor.B, 0.0, 0.01, "local ForegroundColor.B")
 	test.expect_near(local_text.ForegroundColor.A, 1.0, 0.01, "local ForegroundColor.A")
 
-	root.ForegroundColor = "#00CC66"
+	visual_root.ForegroundColor = "#00CC66"
 	test.expect_near(inherited.ForegroundColor.R, 0.0, 0.01, "updated inherited ForegroundColor.R")
 	test.expect_near(inherited.ForegroundColor.G, 0xCC / 255, 0.01, "updated inherited ForegroundColor.G")
 	test.expect_near(inherited.ForegroundColor.B, 0x66 / 255, 0.01, "updated inherited ForegroundColor.B")
@@ -310,6 +314,39 @@ local function test_inherited_foreground_color()
 	test.expect_near(local_text.ForegroundColor.G, 0x33 / 255, 0.01, "local ForegroundColor.G should still win")
 
 	print("PASS: test_inherited_foreground_color")
+end
+
+local function test_binding_expression_reads_inherited_property()
+	local xml = [[
+<Screen Name="binding-inherited-root" Width="800" Height="600" ResizeMode="NoResize">
+  <Node2D Name="visual-root" ForegroundColor="#336699">
+    <TextBlock Name="bound-text" Text="Inherited binding">
+      <BindingExpression Target="Node2D.BackgroundColor">{./Node2D.ForegroundColor}</BindingExpression>
+    </TextBlock>
+  </Node2D>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inherited binding XML should load")
+
+	local text = root and root:findChild("bound-text", true) or nil
+	test.expect(text ~= nil, "bound text should exist")
+
+	if text then
+		core.advanceFrame()
+		root:UpdateLayout(root.Width, root.Height)
+		test.expect_near(text.BackgroundColor.R, 0x33 / 255, 0.01, "bound inherited BackgroundColor.R")
+		test.expect_near(text.BackgroundColor.G, 0x66 / 255, 0.01, "bound inherited BackgroundColor.G")
+		test.expect_near(text.BackgroundColor.B, 0x99 / 255, 0.01, "bound inherited BackgroundColor.B")
+		test.expect_near(text.BackgroundColor.A, 1.0, 0.01, "bound inherited BackgroundColor.A")
+	end
+
+	if root then
+		root:clear()
+		root = nil
+	end
+
+	print("PASS: test_binding_expression_reads_inherited_property")
 end
 
 local function test_attached_inherited_text_font_family()
@@ -814,6 +851,119 @@ local function test_stackview_align_items_preserves_child_stretch_width()
 	print("PASS: test_stackview_align_items_preserves_child_stretch_width")
 end
 
+local function test_css_popup_padding_insets_stretched_panel()
+	local root = ui.Screen {
+		Name = "CssPopupLayoutRoot",
+		Width = 420,
+		Height = 600,
+		ResizeMode = "NoResize",
+		StyleSheet = ui.loadObjectFromCssString [[
+			.popup {
+				padding: 16;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.popup > .panel {
+				background-color: #FFFFFF;
+				color: #0B0F1A;
+				border: 1 solid #E3E8F0;
+				border-radius: 16;
+				padding: 24;
+			}
+		]],
+	}
+	local overlay = root + ui.StackView {
+		Name = "CssPopupOverlay",
+		class = "popup",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+	}
+	local card = overlay + ui.StackView {
+		Name = "CssPopupCard",
+		class = "panel",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+	}
+	local body = card + ui.TextBlock {
+		Name = "CssPopupBody",
+		Text = "There was a game running already. Do you want to continue it?",
+		FontSize = 14,
+	}
+
+	root:UpdateLayout(root.Width, root.Height)
+
+	test.expect_near(overlay.PaddingLeft, 16, 0.001, ".popup CSS padding should set left padding")
+	test.expect_near(overlay.PaddingRight, 16, 0.001, ".popup CSS padding should set right padding")
+	test.expect_eq(overlay.AlignItems, "Center", ".popup CSS align-items should set StackView.AlignItems")
+	test.expect_eq(overlay.JustifyContent, "Center", ".popup CSS justify-content should set StackView.JustifyContent")
+	test.expect_near(card.PaddingLeft, 24, 0.001, ".popup > .panel CSS padding should set panel padding")
+	test.expect_near(card.BorderWidthLeft, 1, 0.001, ".popup > .panel CSS border should set panel border")
+	test.expect_near(card.BorderRadius.TopLeftRadius, 16, 0.001,
+		".popup > .panel CSS border-radius should set panel corner radius")
+	test.expect_near(card.ActualWidth, root.Width - 32 - 2, 1,
+		"stretched panel should be inset by popup padding and its border")
+	test.expect(body.ActualWidth <= root.Width - 32 - 2 - 48,
+		"body text should be measured inside popup and panel padding")
+
+	root:clear()
+	print("PASS: test_css_popup_padding_insets_stretched_panel")
+end
+
+local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
+	local root = ui.Screen {
+		Name = "CssModalStyleRoot",
+		Width = 420,
+		Height = 600,
+		ResizeMode = "NoResize",
+		StyleSheet = ui.loadObjectFromCssString [[
+			.popup {
+				padding: 16;
+				align-items: center;
+				justify-content: center;
+			}
+
+			.popup > .panel {
+				border-radius: 16;
+				padding: 24;
+			}
+		]],
+	}
+	local modal = ui.Popup { Name = "CssModalWrapper" }
+	local overlay = modal + ui.StackView {
+		Name = "CssModalOverlay",
+		class = "popup",
+		Direction = "Vertical",
+		AlignItems = "Center",
+		JustifyContent = "Center",
+		HorizontalAlignment = "Stretch",
+	}
+	local card = overlay + ui.StackView {
+		Name = "CssModalCard",
+		class = "panel",
+		Direction = "Vertical",
+		HorizontalAlignment = "Stretch",
+	}
+
+	root:SetModalObject(modal)
+
+	test.expect_near(overlay.PaddingLeft, 16, 0.001,
+		"modal attach should reapply screen stylesheet to popup content")
+	test.expect_eq(overlay.AlignItems, "Center",
+		"modal attach should apply CSS align-items to popup content")
+	test.expect_eq(overlay.JustifyContent, "Center",
+		"modal attach should apply CSS justify-content to popup content")
+	test.expect_near(card.PaddingLeft, 24, 0.001,
+		"modal attach should reapply screen stylesheet to nested panel content")
+	test.expect_near(card.BorderRadius.TopLeftRadius, 16, 0.001,
+		"modal attach should apply CSS border-radius to nested panel content")
+
+	root:clear()
+	print("PASS: test_modal_attach_applies_screen_stylesheet_to_popup_content")
+end
+
 -- ---------------------------------------------------------------------------
 -- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
@@ -980,10 +1130,10 @@ local function test_binding_expression_visible_reacts_to_resize()
 end
 
 -- ---------------------------------------------------------------------------
--- Bare binding paths (no ./ prefix) should resolve from template/root scope.
--- This keeps {Node.ActualWidth} usable in screen trees.
+-- Bare binding paths (no ./ prefix) should resolve from the bound object first.
+-- This keeps {Node.ActualWidth} usable on elements inside non-Node Screen trees.
 -- ---------------------------------------------------------------------------
-local function test_binding_expression_bare_path_resolves_from_root()
+local function test_binding_expression_bare_path_resolves_from_bound_object()
 	local xml = [[
 	<Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
@@ -1022,7 +1172,48 @@ local function test_binding_expression_bare_path_resolves_from_root()
 	root:clear()
 	root = nil
 
-	print("PASS: test_binding_expression_bare_path_resolves_from_root")
+	print("PASS: test_binding_expression_bare_path_resolves_from_bound_object")
+end
+
+-- ---------------------------------------------------------------------------
+-- Bare project-property bindings inside prefab templates should fall back to
+-- the template root when the bound child has only an auto-created empty value.
+-- ---------------------------------------------------------------------------
+local function test_prefab_card_bindings_resolve_from_template_root()
+	filesystem.init("samples/Example")
+
+	local xml = [[
+<Screen Name="prefab-binding-screen" Width="800" Height="600" ResizeMode="NoResize">
+  <LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
+    Card.Title="XML-first screens"
+    Card.Body="Layouts stay readable."
+    Card.PrimaryColor="#55AAFF"/>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "prefab binding XML should load")
+
+	local title = root and root:findChild("SignalCardTitle", true) or nil
+	local body = root and root:findChild("SignalCardBody", true) or nil
+	local card = root and root:findChild("SignalXml", true) or nil
+	test.expect(card ~= nil, "SignalCard prefab root should keep placeholder name")
+	test.expect(title ~= nil, "SignalCard title should exist")
+	test.expect(body ~= nil, "SignalCard body should exist")
+
+	if card and title and body then
+		core.advanceFrame()
+		root:UpdateLayout(root.Width, root.Height)
+		test.expect_eq(card.Title, "XML-first screens", "Placeholder Card.Title should be copied to prefab root")
+		test.expect_eq(title.Text, "XML-first screens", "Bare Card.Title binding should resolve from prefab template root")
+		test.expect_eq(body.Text, "Layouts stay readable.", "Bare Card.Body binding should resolve from prefab template root")
+	end
+
+	if root then
+		root:clear()
+		root = nil
+	end
+
+	print("PASS: test_prefab_card_bindings_resolve_from_template_root")
 end
 
 -- ---------------------------------------------------------------------------
@@ -1083,8 +1274,8 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>', 1, true)
-	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
+	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>', 1, true)
+	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
 	local get_started_show = xml:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
@@ -1152,6 +1343,9 @@ local function test_example_application_xml()
 	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
 	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
 	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
+	local metric_prefab = filesystem.readTextFile("samples/Example/Prefabs/Mertic.xml")
+	local metric_value_nowrap = metric_prefab and metric_prefab:find('Name="MetricUsersValue"', 1, true)
+		and metric_prefab:find('TextWrapping="NoWrap"', 1, true)
 	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
 	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
 	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")
@@ -1236,6 +1430,7 @@ local function test_example_application_xml()
 		"Lua object post helper should dispatch through generated message action classes")
 	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) == nil,
 		"Lua object post helper should no longer build message payload buffers by hand")
+	test.expect(metric_value_nowrap ~= nil, "Metric value should not wrap numeric units onto a second line")
 
 	print("PASS: test_example_application_xml")
 end
@@ -1280,7 +1475,7 @@ local function test_example_xml_parser_coverage()
 	local syntax_xml = [[
 	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
 	  <Grid Name="Hero" Columns="auto auto" Spacing="24">
-	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
+	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>
 	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
 	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
 	      Card.Title="XML-first screens"
@@ -1314,6 +1509,7 @@ test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_inherited_foreground_color()
+test_binding_expression_reads_inherited_property()
 test_attached_inherited_text_font_family()
 test_attached_inherited_text_font_leaves()
 test_partial_font_shorthand_preserves_inherited_size()
@@ -1329,7 +1525,7 @@ test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_binding_expression_visible_reacts_to_resize()
-test_binding_expression_bare_path_resolves_from_root()
+test_binding_expression_bare_path_resolves_from_bound_object()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()
@@ -1339,5 +1535,8 @@ test_lua_set_modal_object_table_dispatches_message()
 test_lua_close_popup_table_dispatches_message()
 test_lua_post_generated_message_with_payload()
 test_stackview_align_items_preserves_child_stretch_width()
+test_css_popup_padding_insets_stretched_panel()
+test_modal_attach_applies_screen_stylesheet_to_popup_content()
+test_prefab_card_bindings_resolve_from_template_root()
 
 print("All layout tests passed.")

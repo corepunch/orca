@@ -7,10 +7,9 @@
 HANDLER(TextBlock3D, Node3D, Render)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
-  struct TextBlockConcept *pTextBlock = GetTextBlockConcept(hObject);
   _SendMessage(hObject, TextBlockConcept, MakeText,
                    .availableSpace = 512);
-  TextBlockText_GetInfo(pTextBlock->_text, &pTextRun->_textinfo);
+  OBJ_SendMessageW(hObject, ID_TextBlockConcept_GetInfo, 0, &pTextRun->_textinfo);
   
   float w = pTextRun->_textinfo.txWidth;
   float h = pTextRun->_textinfo.txHeight;
@@ -21,7 +20,7 @@ HANDLER(TextBlock3D, Node3D, Render)
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,
       .color = {1,1,1,1},
-      .texture = TextBlockText_GetTexture(pTextBlock->_text),
+      .texture = (struct Texture*)_SendMessage(hObject, TextBlockConcept, GetTexture),
       .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
     },
     .matrix = GetNode3D(hObject)->Matrix,

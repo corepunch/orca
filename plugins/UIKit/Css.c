@@ -3,7 +3,7 @@
 // Parses a CSS text string into an ORCA StyleSheet object containing
 // StyleRule children.  Each StyleRule carries:
 //   - ClassName   : selector without pseudo-state (e.g. ".button", "#Logo",
-//                   "ImageView", or "StackView > Label")
+//                   "ImageView", "StackView > Label", or ".popup .panel")
 //   - PseudoClass : colon-separated pseudo-states  (e.g. "hover:focus")
 //   - ORCA property overrides stored as C properties
 //
@@ -12,6 +12,8 @@
 //   - Simple class selectors: .foo { ... }
 //   - ID selectors: #Logo { ... }
 //   - Type selectors: ImageView { ... }
+//   - Compound selectors: Button.primary { ... }, #Save.primary { ... }
+//   - Descendant selectors: .popup .panel { ... }
 //   - Direct parent selectors: StackView > Label { ... }
 //   - Comma-separated selectors: .foo, .bar { ... }
 //   - Pseudo-classes: .foo:hover { ... }
@@ -33,11 +35,22 @@
 extern int parse_property(const char* str, struct PropertyType const* prop,
                           void* valueptr);
 
+static void
+copy_trim(char* dst, const char* s, const char* e, int n);
+
+#define CSS_MAX_RULES    512
+#define CSS_MAX_PROPS    64
+#define CSS_MAX_APPLY    8
+#define CSS_MAX_SELLEN   256
+#define CSS_MAX_PROPNAME 64
+#define CSS_MAX_VALLEN   256
+
 // ---------------------------------------------------------------------------
 // CSS property name → ORCA full property name mapping
 // ---------------------------------------------------------------------------
 static const struct { const char* css; const char* orca; }
 k_css_prop_map[] = {
+    /* Node layout */
     { "background-color",  "Node2D.BackgroundColor"        },
     { "color",             "Node2D.ForegroundColor"        },
     { "opacity",           "Node.Opacity"                  },
@@ -45,36 +58,193 @@ k_css_prop_map[] = {
     { "height",            "Node.Height"                   },
     { "min-width",         "Node.MinWidth"                 },
     { "min-height",        "Node.MinHeight"                },
+    { "horizontal-align",  "Node.HorizontalAlignment"      },
+    { "horizontal-alignment", "Node.HorizontalAlignment"   },
+    { "vertical-align",    "Node.VerticalAlignment"        },
+    { "vertical-alignment", "Node.VerticalAlignment"       },
+    { "align-self",        "Node.HorizontalAlignment"      },
     { "margin",            "Node.Margin"                   },
     { "margin-top",        "Node.MarginTop"                },
     { "margin-right",      "Node.MarginRight"              },
     { "margin-bottom",     "Node.MarginBottom"             },
     { "margin-left",       "Node.MarginLeft"               },
+    { "margin-inline",     "Node.HorizontalMargin"         },
+    { "margin-block",      "Node.VerticalMargin"           },
     { "padding",           "Node.Padding"                  },
     { "padding-top",       "Node.PaddingTop"               },
     { "padding-right",     "Node.PaddingRight"             },
     { "padding-bottom",    "Node.PaddingBottom"            },
     { "padding-left",      "Node.PaddingLeft"              },
+    { "padding-inline",    "Node.HorizontalPadding"        },
+    { "padding-block",     "Node.VerticalPadding"          },
     { "border",            "Node.Border"                   },
     { "border-color",      "Node.BorderColor"              },
+    { "border-style",      "Node.BorderStyle"              },
     { "border-width",      "Node.BorderWidth"              },
+    { "border-left-width", "Node.BorderWidthLeft"          },
+    { "border-right-width", "Node.BorderWidthRight"        },
+    { "border-top-width",  "Node.BorderWidthTop"           },
+    { "border-bottom-width", "Node.BorderWidthBottom"      },
+    { "border-radius",     "Node.BorderRadius"             },
+    { "border-top-left-radius", "Node.BorderTopLeftRadius" },
+    { "border-top-right-radius", "Node.BorderTopRightRadius" },
+    { "border-bottom-right-radius", "Node.BorderBottomRightRadius" },
+    { "border-bottom-left-radius", "Node.BorderBottomLeftRadius" },
+    { "visibility",        "Node.Visible"                  },
+
+    /* Node2D rendering */
+    { "background",        "Node2D.Background"             },
+    { "background-image",  "Node2D.BackgroundImage"        },
+    { "foreground",        "Node2D.Foreground"             },
+    { "foreground-color",  "Node2D.ForegroundColor"        },
+    { "box-shadow",        "Node2D.BoxShadow"              },
+    { "box-shadow-color",  "Node2D.BoxShadowColor"         },
+    { "box-shadow-blur",   "Node2D.BoxShadowBlurRadius"    },
+    { "box-shadow-blur-radius", "Node2D.BoxShadowBlurRadius" },
+    { "box-shadow-spread", "Node2D.BoxShadowSpreadRadius"  },
+    { "box-shadow-spread-radius", "Node2D.BoxShadowSpreadRadius" },
+    { "overflow",          "Node2D.Overflow"               },
+    { "overflow-x",        "Node2D.OverflowX"              },
+    { "overflow-y",        "Node2D.OverflowY"              },
+    { "ring",              "Node2D.Ring"                   },
+    { "ring-color",        "Node2D.RingColor"              },
+    { "ring-offset",       "Node2D.RingOffset"             },
+    { "ring-width",        "Node2D.RingWidth"              },
+    { "clip-children",     "Node2D.ClipChildren"           },
+    { "content-stretch",   "Node2D.ContentStretch"         },
+    { "ignore-hit-test",   "Node2D.IgnoreHitTest"          },
+    { "pointer-events",    "Node2D.IgnoreHitTest"          },
+    { "size-to-content",   "Node2D.SizeToContent"          },
+    { "snap-to-pixel",     "Node2D.SnapToPixel"            },
+
+    /* StackView */
+    { "align-items",       "StackView.AlignItems"           },
+    { "justify-content",   "StackView.JustifyContent"      },
+    { "flex-direction",    "StackView.Direction"           },
+    { "direction",         "StackView.Direction"           },
+    { "gap",               "StackView.Spacing"             },
+    { "gap",               "Grid.Spacing"                  },
+    { "spacing",           "StackView.Spacing"             },
+    { "reversed",          "StackView.Reversed"            },
+
+    /* Text */
+    { "font",              "TextRun.Font"                  },
     { "font-size",         "TextRun.FontSize"              },
     { "font-family",       "TextRun.FontFamily"            },
+    { "font-weight",       "TextRun.FontWeight"            },
+    { "font-style",        "TextRun.FontStyle"             },
     { "line-height",       "TextRun.LineHeight"            },
     { "letter-spacing",    "TextRun.LetterSpacing"         },
+    { "character-spacing", "TextRun.CharacterSpacing"      },
+    { "fixed-character-width", "TextRun.FixedCharacterWidth" },
+    { "text-decoration",   "TextRun.Underline"             },
+    { "text-decoration-color", "TextRun.UnderlineColor"    },
+    { "text-decoration-thickness", "TextRun.UnderlineWidth" },
+    { "underline",         "TextRun.Underline"             },
+    { "underline-color",   "TextRun.UnderlineColor"        },
+    { "underline-width",   "TextRun.UnderlineWidth"        },
+    { "underline-offset",  "TextRun.UnderlineOffset"       },
     { "word-wrap",         "TextBlockConcept.WordWrap"     },
+    { "overflow-wrap",     "TextBlockConcept.WordWrap"     },
+    { "text-wrap",         "TextBlockConcept.TextWrapping" },
+    { "text-wrapping",     "TextBlockConcept.TextWrapping" },
     { "text-overflow",     "TextBlockConcept.TextOverflow" },
+    { "text-align",        "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-horizontal-align", "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-horizontal-alignment", "TextBlockConcept.TextHorizontalAlignment" },
+    { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
+    { "text-vertical-alignment", "TextBlockConcept.TextVerticalAlignment" },
+    { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
     { NULL, NULL }
 };
 
-static const char*
-css_lookup_orca_property(const char* css_name)
+static bool_t
+css_name_equals_enum_value(const char *css_value, const char *enum_value)
 {
-    for (int i = 0; k_css_prop_map[i].css; i++) {
-        if (!strcasecmp(css_name, k_css_prop_map[i].css))
-            return k_css_prop_map[i].orca;
+    while (*css_value || *enum_value) {
+        while (*css_value == '-' || *css_value == '_' || isspace((unsigned char)*css_value)) {
+            css_value++;
+        }
+        while (*enum_value == '-' || *enum_value == '_' || isspace((unsigned char)*enum_value)) {
+            enum_value++;
+        }
+        if (tolower((unsigned char)*css_value) != tolower((unsigned char)*enum_value)) {
+            return FALSE;
+        }
+        if (*css_value) css_value++;
+        if (*enum_value) enum_value++;
     }
-    return NULL;
+    return TRUE;
+}
+
+static const char*
+css_normalize_decl_value(const char *css_key,
+                         const char *css_value,
+                         char *out,
+                         size_t out_size)
+{
+    if (!strcasecmp(css_key, "margin") ||
+        !strcasecmp(css_key, "padding") ||
+        !strcasecmp(css_key, "border-width")) {
+        char values[4][CSS_MAX_VALLEN] = {{0}};
+        int count = 0;
+        const char *p = css_value;
+
+        while (*p && count < 4) {
+            while (*p && isspace((unsigned char)*p)) p++;
+            const char *start = p;
+            while (*p && !isspace((unsigned char)*p)) p++;
+            if (start < p) {
+                copy_trim(values[count], start, p, (int)sizeof(values[count]));
+                count++;
+            }
+        }
+
+        if (count == 2) {
+            // CSS: vertical horizontal. ORCA Thickness: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[1], values[0], values[1], values[0]);
+            return out;
+        }
+
+        if (count == 3) {
+            // CSS: top horizontal bottom. ORCA: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[1], values[0], values[1], values[2]);
+            return out;
+        }
+
+        if (count == 4) {
+            // CSS: top right bottom left. ORCA: left top right bottom.
+            snprintf(out, out_size, "%s %s %s %s",
+                     values[3], values[0], values[1], values[2]);
+            return out;
+        }
+    }
+
+    if (!strcasecmp(css_key, "visibility")) {
+        if (!strcasecmp(css_value, "hidden") || !strcasecmp(css_value, "collapse")) {
+            snprintf(out, out_size, "false");
+            return out;
+        }
+        if (!strcasecmp(css_value, "visible")) {
+            snprintf(out, out_size, "true");
+            return out;
+        }
+    }
+
+    if (!strcasecmp(css_key, "pointer-events")) {
+        if (!strcasecmp(css_value, "none")) {
+            snprintf(out, out_size, "true");
+            return out;
+        }
+        if (!strcasecmp(css_value, "auto")) {
+            snprintf(out, out_size, "false");
+            return out;
+        }
+    }
+
+    return css_value;
 }
 
 static bool_t
@@ -161,13 +331,6 @@ css_resolve_font_family(const char *value, char *out, size_t out_size)
 // ---------------------------------------------------------------------------
 // Parsed CSS in-memory representation
 // ---------------------------------------------------------------------------
-#define CSS_MAX_RULES    512
-#define CSS_MAX_PROPS    64
-#define CSS_MAX_APPLY    8
-#define CSS_MAX_SELLEN   256
-#define CSS_MAX_PROPNAME 64
-#define CSS_MAX_VALLEN   256
-
 typedef struct {
     char key[CSS_MAX_PROPNAME]; // CSS name, e.g. "opacity"
     char val[CSS_MAX_VALLEN];   // CSS value, e.g. "0.4"
@@ -420,6 +583,7 @@ css_resolve_apply(css_doc_t* doc)
 // selector: ".button:hover"     → class_out=".button", pseudo_out="hover"
 // selector: "#Logo"             → class_out="#Logo",   pseudo_out=""
 // selector: "StackView > Label" → class_out="StackView > Label", pseudo_out=""
+// selector: ".popup .panel"     → class_out=".popup .panel", pseudo_out=""
 static void
 css_split_selector(const char* selector,
                    char* class_out, int class_max,
@@ -497,20 +661,12 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
 // StyleRule property assignment
 // ---------------------------------------------------------------------------
 
-// Apply one CSS declaration (key/value) to an ORCA StyleRule object.
 static void
-css_apply_decl_to_rule(struct Object *rule_obj,
-                       const char* css_key, const char* css_value)
+css_apply_orca_value_to_rule(struct Object *rule_obj,
+                             const char* orca_name,
+                             const char* css_key,
+                             const char* css_value)
 {
-    const char* orca_name = css_lookup_orca_property(css_key);
-    if (!orca_name) return; // unsupported property
-    char theme_value[CSS_MAX_VALLEN] = {0};
-    char resolved_value[CSS_MAX_VALLEN] = {0};
-    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
-    if (!strcasecmp(css_key, "font-family")) {
-        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
-    }
-
     struct Property *prop = NULL;
     if (!SUCCEEDED(OBJ_FindShortProperty(rule_obj, orca_name, &prop))) {
         OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
@@ -522,7 +678,7 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     if (desc->DataType == kDataTypeEnum) {
         lpcString_t const* values = desc->EnumValues;
         for (int i = 0; values && values[i]; i++) {
-            if (!strcasecmp(values[i], css_value)) {
+            if (css_name_equals_enum_value(css_value, values[i])) {
                 PROP_SetValue(prop, &i);
                 return;
             }
@@ -535,6 +691,41 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     char buf[MAX_PROPERTY_STRING] = {0};
     if (parse_property(css_value, desc, buf))
         PROP_SetValue(prop, buf);
+}
+
+// Apply one CSS declaration (key/value) to an ORCA StyleRule object.
+static void
+css_apply_decl_to_rule(struct Object *rule_obj,
+                       const char* css_key, const char* css_value)
+{
+    bool_t has_mapping = FALSE;
+    for (int i = 0; k_css_prop_map[i].css; i++) {
+        if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
+            has_mapping = TRUE;
+            break;
+        }
+    }
+    if (!has_mapping) return; // unsupported property
+
+    char theme_value[CSS_MAX_VALLEN] = {0};
+    char resolved_value[CSS_MAX_VALLEN] = {0};
+    char normalized_value[CSS_MAX_VALLEN] = {0};
+    css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    css_value = css_normalize_decl_value(css_key, css_value,
+                                         normalized_value,
+                                         sizeof(normalized_value));
+    if (!strcasecmp(css_key, "font-family")) {
+        css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
+    }
+
+    for (int i = 0; k_css_prop_map[i].css; i++) {
+        if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
+            css_apply_orca_value_to_rule(rule_obj,
+                                         k_css_prop_map[i].orca,
+                                         css_key,
+                                         css_value);
+        }
+    }
 }
 
 static char*
@@ -556,7 +747,7 @@ fs_load_text_file(const char* path)
 // Public: parse a CSS string and return a new StyleSheet object
 // ---------------------------------------------------------------------------
 
-struct Object *FS_LoadObjectFromCssString(const char* css_text)
+struct Object *UIKit_LoadObjectFromCssString(const char* css_text)
 {
     if (!css_text) return NULL;
 
@@ -611,16 +802,16 @@ struct Object *FS_LoadObjectFromCssString(const char* css_text)
     return sheet;
 }
 
-struct Object *FS_LoadObjectFromCss(const char* path)
+struct Object *UIKit_LoadObjectFromCss(const char* path)
 {
     if (!path) return NULL;
     char* css_text = fs_load_text_file(path);
     if (!css_text) {
-        Con_Error("FS_LoadObjectFromCss: can't load '%s'", path);
+        Con_Error("UIKit_LoadObjectFromCss: can't load '%s'", path);
         return NULL;
     }
 
-    struct Object *sheet = FS_LoadObjectFromCssString(css_text);
+    struct Object *sheet = UIKit_LoadObjectFromCssString(css_text);
     free(css_text);
     return sheet;
 }

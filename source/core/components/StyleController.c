@@ -15,11 +15,12 @@
 //
 // StyleRule: child object of a StyleSheet.
 //   - ClassName:  selector without pseudo-state (e.g., "button", ".button",
-//                 "#Logo", "ImageView", or "StackView > Label").
+//                 "#Logo", "ImageView", "StackView > Label", or ".popup .panel").
 //   - PseudoClass: colon-separated pseudo-states (e.g., "hover:focus") —
 //                 empty means the rule applies to all states.
 //   - class_id / flags: cached from ClassName / PseudoClass
 //     (class_id is retained for compatibility/debugging; matching uses ClassName)
+//   - selector: compiled right-to-left selector parts cached from ClassName
 //   - Attached C properties (ruleObj->properties with !PF_PROPERTY_TYPE):
 //     the pre-parsed CSS property overrides.  _ApplyStyleRule copies these
 //     directly to the target — no string parsing on every ThemeChanged.
@@ -147,11 +148,7 @@ static void
 _ReleaseNativeStyleRule(struct Object *ruleObj)
 {
   if (!ruleObj) return;
-  struct StyleRule* sr = GetStyleRule(ruleObj);
-  if (sr) {
-    // Free Selector string if it was set directly (not via property system)
-    // In practice Selector is set via PROP_Create; OBJ_ReleaseProperties frees it.
-  }
+  OBJ_SendMessageW(ruleObj, ID_Object_Release, 0, NULL);
   OBJ_ReleaseProperties(ruleObj);
   OBJ_ReleaseComponents(ruleObj);
   free((void*)OBJ_GetName(ruleObj));
@@ -199,6 +196,49 @@ _MatchSimpleSelector(struct Object *target,
 {
   if (!selector || !selector[0]) return FALSE;
 
+  bool_t hasCompoundMarker = strchr(selector, '.') || strchr(selector, '#');
+  if (hasCompoundMarker) {
+    lpcString_t p = selector;
+
+    if (*p != '.' && *p != '#') {
+      lpcString_t typeStart = p;
+      while (*p && *p != '.' && *p != '#') p++;
+      char typeName[256] = {0};
+      _CopyTrim(typeName, sizeof(typeName), typeStart, p);
+
+      if (!strcmp(typeName, "body")) {
+        if (OBJ_GetParent(target) != NULL) return FALSE;
+      } else {
+        lpcString_t className = OBJ_GetClassName(target);
+        if (!className || strcmp(className, typeName)) return FALSE;
+      }
+    }
+
+    while (*p) {
+      char marker = *p++;
+      lpcString_t valueStart = p;
+      while (*p && *p != '.' && *p != '#') p++;
+      if (valueStart == p) return FALSE;
+
+      char value[256] = {0};
+      _CopyTrim(value, sizeof(value), valueStart, p);
+
+      if (marker == '.') {
+        struct style_class_selector* cls =
+          _FindMatchingClass(target, value, objFlags);
+        if (!cls) return FALSE;
+        if (matchedClass && !*matchedClass) *matchedClass = cls;
+      } else if (marker == '#') {
+        lpcString_t name = OBJ_GetName(target);
+        if (!name || strcmp(name, value)) return FALSE;
+      } else {
+        return FALSE;
+      }
+    }
+
+    return TRUE;
+  }
+
   if (selector[0] == '.') {
     struct style_class_selector* cls =
       _FindMatchingClass(target, selector + 1, objFlags);
@@ -231,34 +271,116 @@ _MatchSimpleSelector(struct Object *target,
   return TRUE;
 }
 
+static int
+_ParseSelectorParts(lpcString_t selector,
+                    struct style_selector_part* parts,
+                    int maxParts)
+{
+  int count = 0;
+  style_combinator_t relation = STYLE_COMBINATOR_NONE;
+  lpcString_t p = selector;
+
+  while (p && *p) {
+    bool_t sawSpace = FALSE;
+    while (*p && isspace((unsigned char)*p)) {
+      sawSpace = TRUE;
+      p++;
+    }
+    if (!*p) break;
+
+    if (*p == '>') {
+      relation = STYLE_COMBINATOR_CHILD;
+      p++;
+      continue;
+    }
+
+    if (count > 0 && relation == STYLE_COMBINATOR_NONE && sawSpace) {
+      relation = STYLE_COMBINATOR_DESCENDANT;
+    }
+
+    lpcString_t start = p;
+    while (*p && *p != '>' && !isspace((unsigned char)*p)) p++;
+
+    if (start == p) continue;
+    if (count >= maxParts) return 0;
+
+    _CopyTrim(parts[count].selector, sizeof(parts[count].selector), start, p);
+    parts[count].combinator =
+      count == 0 ? STYLE_COMBINATOR_NONE :
+                   (relation == STYLE_COMBINATOR_NONE
+                      ? STYLE_COMBINATOR_DESCENDANT
+                      : relation);
+    count++;
+    relation = STYLE_COMBINATOR_NONE;
+  }
+
+  return count;
+}
+
+struct style_selector *
+OBJ_CompileStyleSelector(lpcString_t selector)
+{
+  if (!selector || !selector[0]) return NULL;
+
+  struct style_selector *compiled = ZeroAlloc(sizeof(*compiled));
+  int count = _ParseSelectorParts(selector,
+                                  compiled->parts,
+                                  ARRAY_SIZE(compiled->parts));
+  if (count <= 0) {
+    free(compiled);
+    return NULL;
+  }
+
+  compiled->count = (byte_t)count;
+  return compiled;
+}
+
+void
+OBJ_FreeStyleSelector(struct style_selector *selector)
+{
+  free(selector);
+}
+
 static bool_t
 _SelectorMatchesTarget(struct Object *target,
-                       lpcString_t selector,
+                       struct style_selector const *selector,
                        uint32_t objFlags,
                        struct style_class_selector** matchedClass)
 {
-  char targetSelector[256] = {0};
-  char parentSelector[256] = {0};
+  if (!selector || selector->count == 0) return FALSE;
 
-  lpcString_t childStart = selector;
-  lpcString_t gt = strchr(selector, '>');
-  if (gt) {
-    _CopyTrim(parentSelector, sizeof(parentSelector), selector, gt);
-    childStart = gt + 1;
-  }
-  _CopyTrim(targetSelector, sizeof(targetSelector),
-            childStart, childStart + strlen(childStart));
-
-  if (!_MatchSimpleSelector(target, targetSelector, objFlags, matchedClass)) {
+  if (!_MatchSimpleSelector(target,
+                            selector->parts[selector->count - 1].selector,
+                            objFlags,
+                            matchedClass)) {
     return FALSE;
   }
 
-  if (!gt) return TRUE;
+  struct Object *cursor = target;
+  for (int i = selector->count - 1; i > 0; i--) {
+    if (selector->parts[i].combinator == STYLE_COMBINATOR_CHILD) {
+      cursor = OBJ_GetParent(cursor);
+      if (!cursor) return FALSE;
+      uint32_t flags = OBJ_GetStyleFlags(cursor);
+      if (!_MatchSimpleSelector(cursor, selector->parts[i - 1].selector, flags, NULL)) {
+        return FALSE;
+      }
+      continue;
+    }
 
-  struct Object *parent = OBJ_GetParent(target);
-  if (!parent) return FALSE;
-  uint32_t parentFlags = OBJ_GetStyleFlags(parent);
-  return _MatchSimpleSelector(parent, parentSelector, parentFlags, NULL);
+    struct Object *ancestor = OBJ_GetParent(cursor);
+    while (ancestor) {
+      uint32_t flags = OBJ_GetStyleFlags(ancestor);
+      if (_MatchSimpleSelector(ancestor, selector->parts[i - 1].selector, flags, NULL)) {
+        break;
+      }
+      ancestor = OBJ_GetParent(ancestor);
+    }
+    if (!ancestor) return FALSE;
+    cursor = ancestor;
+  }
+
+  return TRUE;
 }
 
 static bool_t
@@ -269,7 +391,17 @@ _StyleRuleBaseMatches(struct Object *target,
 {
   if (!sr || !sr->ClassName || !sr->ClassName[0]) return FALSE;
   if (matchedClass) *matchedClass = NULL;
-  return _SelectorMatchesTarget(target, sr->ClassName, objFlags, matchedClass);
+
+  struct style_selector *selector = sr->selector;
+  bool_t freeSelector = FALSE;
+  if (!selector) {
+    selector = OBJ_CompileStyleSelector(sr->ClassName);
+    freeSelector = TRUE;
+  }
+
+  bool_t matched = _SelectorMatchesTarget(target, selector, objFlags, matchedClass);
+  if (freeSelector) OBJ_FreeStyleSelector(selector);
+  return matched;
 }
 
 // Apply all C property overrides from ruleObj to the target object.

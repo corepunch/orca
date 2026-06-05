@@ -149,6 +149,7 @@ Use these personas when delegating work or framing implementation choices.
 | Add a new component | [Way of Working → Component workflow](docs/way-of-working.md) |
 | Understand message routing | [Object + Component System](docs/architecture/object-component-system.md) → Message Dispatch |
 | Build a modal popup | `samples/Example/Screens/GetStartedPopup.xml` and `{Screen.ShowModal Path=...}` loading a `<Popup>` template; keep the popup root unbounded unless you need custom sizing |
+| Work on an app's visual styling | `docs/styling.md` — use it as the style-system reference before adding or moving visual properties |
 | Add a UI widget to UIKit | `plugins/UIKit/UIKit.cgen` + `plugins/UIKit/Button.c` as a reference |
 | Add a property binding or formula | `source/core/property/` + Module Codegen Guide |
 | Change what Lua exposes | Edit the module `.cgen`, run `make modules` |
@@ -380,6 +381,8 @@ HANDLER(MyComponent, Object, Animate) {
 The `HANDLER` macro expands to the correct function signature; `*_export.c` forward-declares each handler and wires it into the generated `MyComponentProc` switch.
 
 **Do not `#include <UIKit/UIKit.h>` (or any plugin header) from `source/core/`.** Core must not depend on plugins; this is an architectural violation that causes circular build dependencies.
+
+Plugins must not link against other plugins or call another plugin's exported helper symbols. When one plugin needs behavior owned by another plugin, expose that behavior as an object/component message in the owning plugin's `.cgen` file and dispatch it through `OBJ_SendMessageW` / `_SendMessage`. Header-level knowledge of shared component/message types is acceptable when codegen requires it, but runtime coupling between plugins should flow through the message system.
 
 #### Step 4 — Register the class at module init
 

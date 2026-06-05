@@ -373,10 +373,6 @@ static struct Object* _xml_file_loader(int argc, const char* argv[]) {
   return (argc > 0) ? FS_LoadObjectFromXml(argv[0]) : NULL;
 }
 
-static struct Object* _css_file_loader(int argc, const char* argv[]) {
-  return (argc > 0) ? FS_LoadObjectFromCss(argv[0]) : NULL;
-}
-
 static void
 register_font_aliases(lpcString_t path, lpcString_t const *aliases)
 {
@@ -430,7 +426,6 @@ register_shared_fonts(lua_State* L)
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(".xml", _xml_file_loader);
-  OBJ_RegisterFileLoader(".css", _css_file_loader);
   register_shared_fonts(L);
 
   lua_register(L, "fs_findmodule", f_find_module);

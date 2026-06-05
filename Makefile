@@ -49,7 +49,6 @@ MODULES = geometry orca platform sysutil console parsers debug network renderer 
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
-PLUGIN_EXTRA_LIBS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
 SOURCEMODULES = $(addprefix ${SOURCEDIR}/, $(MODULES))
 OBJECTS = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
 HEADERS = $(wildcard *.h)
