@@ -6,26 +6,6 @@
 
 #define PLACEHOLDER_OPACITY 0.5f
 
-enum label_step
-{
-  STEP_GEOMETRY,
-  STEP_COUNT
-};
-
-static bool_t
-is_updated(struct Object *hObject,
-           enum label_step label_step)
-{
-  struct TextBlockConcept *output = GetTextBlockConcept(hObject);
-  longTime_t dirty = OBJ_GetTimestamp(hObject);
-  if (output->_steps[label_step] != dirty) {
-    output->_steps[label_step] = dirty;
-    return TRUE;
-  } else {
-    return FALSE;
-  }
-}
-
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
@@ -92,11 +72,14 @@ HANDLER(TextBlock, Node2D, ForegroundContent)
 
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
-  if (is_updated(hObject, STEP_GEOMETRY)) {
-    struct TextRun *run = GetTextRun(hObject);
-    struct TextBlockConcept *text = GetTextBlockConcept(hObject);
-    pTextBlock->_node2D->_rect = text_texture_rect(pTextBlock->_node2D, text, &run->_textinfo);
-  }
+  struct TextRun *run = GetTextRun(hObject);
+  struct TextBlockConcept *text = GetTextBlockConcept(hObject);
+  float availableWidth = Node2D_GetFrame(pTextBlock->_node2D, kBox3FieldWidth) -
+                         TOTAL_PADDING(pTextBlock->_node2D, 0);
+  _SendMessage(hObject, TextBlockConcept, MakeText,
+               .availableSpace = MAX(0, availableWidth));
+  TextBlockText_GetInfo(text->_text, &run->_textinfo);
+  pTextBlock->_node2D->_rect = text_texture_rect(pTextBlock->_node2D, text, &run->_textinfo);
   return TRUE;
 }
 
