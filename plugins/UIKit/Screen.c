@@ -229,13 +229,7 @@ HANDLER(Node2D, Node2D, DrawBrush)
   Node2D_GetViewEntity(GetNode2D(hObject),&entity,pDrawBrush->image,&pDrawBrush->brush);
 
   if (!pDrawBrush->foreground) {
-		entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
-    if (_ScreenShouldClipByOverflow(pNode2D)) {
-			float new_width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.bbox.max.x - entity.bbox.min.x);
-			float new_height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.bbox.max.y - entity.bbox.min.y);
-			entity.bbox.max.x = entity.bbox.min.x + new_width;
-			entity.bbox.max.y = entity.bbox.min.y + new_height;
-		}
+    entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
   }
 
   entity.borderWidth = pDrawBrush->borderWidth;
