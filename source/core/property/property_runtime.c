@@ -563,21 +563,38 @@ PROP_Export(struct Property *prop,
             struct vm_register* r)
 {
   PROP_Update(prop);
+  void const *value = PROP_GetValue(prop);
   switch (InitOutput(r, PROP_GetType(prop), PROP_GetSize(prop))) {
     case kDataTypeInt:
     case kDataTypeBool:
-      *r->value = *(int*)PROP_GetValue(prop);
+      *r->value = value ? *(int*)value : 0;
       return TRUE;
     case kDataTypeString: {
-      lpcString_t *str = (lpcString_t*)PROP_GetValue(prop);
+      lpcString_t *str = (lpcString_t*)value;
       InitOutput(r, kDataTypeString, sizeof(const char *));
-      VM_REG_SET_STR(r, vm_strtmp(*str));
+      VM_REG_SET_STR(r, vm_strtmp(str ? *str : NULL));
       return TRUE;
     }
     default:
-      memcpy(r->value, PROP_GetValue(prop), PROP_GetSize(prop));
+      if (value) {
+        memcpy(r->value, value, PROP_GetSize(prop));
+      } else {
+        memset(r->value, 0, PROP_GetSize(prop));
+      }
       return TRUE;
   }
+}
+
+static bool_t
+_BindingPropertyHasEffectiveValue(struct Property *prop)
+{
+  if (!prop) {
+    return FALSE;
+  }
+  if (!PROP_IsNull(prop)) {
+    return TRUE;
+  }
+  return prop->pdesc && prop->pdesc->IsInherited && PROP_GetValue(prop) != NULL;
 }
 
 #include <UIKit/UIKit.h> // for GetNode/GetScreen
@@ -609,7 +626,7 @@ tok_op(argument)
   struct Property *p = NULL;
   if (token->cache.property) {
     p = token->cache.property;
-    if (!PROP_IsNull(p)) {
+    if (_BindingPropertyHasEffectiveValue(p)) {
       goto return_value;
     }
     token->cache.property = NULL;
@@ -698,16 +715,16 @@ tok_op(argument)
        not block a real value on the template root. */
     struct Object *scope = _BindingTemplateOrRoot(object);
     p = OBJ_FindPropertyByPath(object, token->text);
-    if (scope && scope != object && (!p || PROP_IsNull(p))) {
+    if (scope && scope != object && (!p || !_BindingPropertyHasEffectiveValue(p))) {
       struct Property *scoped = OBJ_FindPropertyByPath(scope, token->text);
-      if (scoped && (!PROP_IsNull(scoped) || !p)) {
+      if (scoped && (_BindingPropertyHasEffectiveValue(scoped) || !p)) {
         p = scoped;
       }
     }
   }
 return_value:
   if (p) {
-    if (!PROP_IsNull(p)) {
+    if (_BindingPropertyHasEffectiveValue(p)) {
       token->cache.property = p;
     }
     return PROP_Export(p, output);

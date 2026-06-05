@@ -316,6 +316,39 @@ local function test_inherited_foreground_color()
 	print("PASS: test_inherited_foreground_color")
 end
 
+local function test_binding_expression_reads_inherited_property()
+	local xml = [[
+<Screen Name="binding-inherited-root" Width="800" Height="600" ResizeMode="NoResize">
+  <Node2D Name="visual-root" ForegroundColor="#336699">
+    <TextBlock Name="bound-text" Text="Inherited binding">
+      <BindingExpression Target="Node2D.BackgroundColor">{./Node2D.ForegroundColor}</BindingExpression>
+    </TextBlock>
+  </Node2D>
+</Screen>]]
+
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "inherited binding XML should load")
+
+	local text = root and root:findChild("bound-text", true) or nil
+	test.expect(text ~= nil, "bound text should exist")
+
+	if text then
+		core.advanceFrame()
+		root:UpdateLayout(root.Width, root.Height)
+		test.expect_near(text.BackgroundColor.R, 0x33 / 255, 0.01, "bound inherited BackgroundColor.R")
+		test.expect_near(text.BackgroundColor.G, 0x66 / 255, 0.01, "bound inherited BackgroundColor.G")
+		test.expect_near(text.BackgroundColor.B, 0x99 / 255, 0.01, "bound inherited BackgroundColor.B")
+		test.expect_near(text.BackgroundColor.A, 1.0, 0.01, "bound inherited BackgroundColor.A")
+	end
+
+	if root then
+		root:clear()
+		root = nil
+	end
+
+	print("PASS: test_binding_expression_reads_inherited_property")
+end
+
 local function test_attached_inherited_text_font_family()
 	local root = ui.Screen { Name = "font-inherit-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
 	local stack = root + ui.StackView { Name = "font-parent-stack" }
@@ -1241,8 +1274,8 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<Grid Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>', 1, true)
-	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Node.ActualWidth}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
+	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>', 1, true)
+	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
 	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
 	local get_started_show = xml:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
@@ -1438,7 +1471,7 @@ local function test_example_xml_parser_coverage()
 	local syntax_xml = [[
 	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
 	  <Grid Name="Hero" Columns="auto auto" Spacing="24">
-	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Node.ActualWidth}), "auto auto", "auto")</BindingExpression>
+	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>
 	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
 	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
 	      Card.Title="XML-first screens"
@@ -1472,6 +1505,7 @@ test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
 test_xml_loading_properties()
 test_inherited_foreground_color()
+test_binding_expression_reads_inherited_property()
 test_attached_inherited_text_font_family()
 test_attached_inherited_text_font_leaves()
 test_partial_font_shorthand_preserves_inherited_size()
