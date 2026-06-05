@@ -181,7 +181,7 @@
 					</StackView>
 				</TabView>
 			</StackView>
-			<Grid Name="FeatureSection" Columns="auto auto auto auto" class="grid">
+			<Grid Name="FeatureSection" Columns="auto auto auto auto" class="grid feature-section">
 				<LayerPrefabPlaceholder Name="FeatureXmlCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
 					Card.Icon="Example/Icons/layers.svg?width=40&amp;type=mask" Card.Title="XML stays readable"
 					Card.Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."
@@ -199,7 +199,7 @@
 					Card.Body="Edit, reload, and refine quickly without losing the overall shape of the interface."
 					Card.PrimaryColor="$accent"/>
 			</Grid>
-			<StackView Name="GallerySection" class="section surface-section">
+			<StackView Name="GallerySection" class="section surface-section gallery-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="GalleryHeading" class="section-heading" Text="Gallery"/>
 				<TextBlock Name="GallerySubheading" class="section-copy"
@@ -213,7 +213,7 @@
 						Card.Subtitle="High-fidelity texture sampling with anisotropic filtering."/>
 				</Grid>
 			</StackView>
-			<StackView Name="WorkflowSection" class="section deep-section">
+			<StackView Name="WorkflowSection" class="section deep-section workflow-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="WorkflowHeading" class="section-heading" Text="How It Works"/>
 				<TextBlock Name="WorkflowSubheading" class="section-copy"
@@ -234,7 +234,7 @@
 						Card.Body="Deploy to desktop, mobile, or WebGL with a single build command."/>
 				</Grid>
 			</StackView>
-			<StackView Name="TestimonialsSection" class="section surface-section">
+			<StackView Name="TestimonialsSection" class="section surface-section testimonials-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="TestimonialsHeading" class="section-heading" Text="What Developers Say"/>
 				<Grid Name="TestimonialsGrid" Columns="auto auto auto" class="grid">
