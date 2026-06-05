@@ -23,6 +23,13 @@ typedef struct _DRAW2DCONTENTSTRUCT
 
 HANDLER(Node2D, Node2D, Draw2DContent);
 
+static bool_t
+_ScreenShouldClipByOverflow(struct Node2D *pNode2D)
+{
+  return pNode2D->Overflow.x != kOverflowVisible ||
+         pNode2D->Overflow.y != kOverflowVisible;
+}
+
 static struct ViewDef*
 Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
 {
@@ -223,7 +230,7 @@ HANDLER(Node2D, Node2D, DrawBrush)
 
   if (!pDrawBrush->foreground) {
 		entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
-		if (pNode2D->ClipChildren) {
+    if (_ScreenShouldClipByOverflow(pNode2D)) {
 			float new_width = MAX(pNode2D->_node->Size.Axis[0].Scroll, entity.bbox.max.x - entity.bbox.min.x);
 			float new_height = MAX(pNode2D->_node->Size.Axis[1].Scroll, entity.bbox.max.y - entity.bbox.min.y);
 			entity.bbox.max.x = entity.bbox.min.x + new_width;
@@ -505,7 +512,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
         .viewdef = &viewdef);
     }
 
-    if (pNode2D->ClipChildren && pDraw2DContent->StencilRef < 255) {
+    if (_ScreenShouldClipByOverflow(pNode2D) && pDraw2DContent->StencilRef < 255) {
       uint8_t parentStencilRef = pDraw2DContent->StencilRef;
       uint8_t clipRef = parentStencilRef + 1;
       _EnterStencilClip(pNode2D, &viewdef, clipRef);

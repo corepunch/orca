@@ -190,7 +190,7 @@ The parser does not support sibling selectors, attribute selectors, media querie
 
 - CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.
 - Enum values are case-insensitive: `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
-- Prefer lowercase enum values in CSS declarations because they read more like CSS: use `direction: vertical;`, `align-items: center;`, `overflow-y: scroll;`, and `text-wrapping: nowrap;` rather than ORCA's native enum casing.
+- Prefer lowercase enum values in CSS declarations because they read more like CSS: use `direction: vertical;`, `align-items: center;`, `overflow-y: scroll;`, and `text-wrap: nowrap;` rather than ORCA's native enum casing.
 - Selector names are case-sensitive: `.Button` and `.button` are different classes.
 - Type selector names are case-sensitive and should match ORCA class names exactly, for example `ImageView` or `Label`.
 - ID selector names are case-sensitive and should match the object's `Name` exactly.
@@ -230,6 +230,48 @@ Moving visual properties from XML into CSS should reduce repetition, not create 
 - Preserve intentional visual variety. Sharing classes should not flatten the type scale, accent palette, or hierarchy. If the design uses different font sizes or colors to make the page scan well, keep those differences as named role rules or XML data.
 - Prefer semantic bases over local utility classes. Use `.stack-card` or `.section-copy` when it describes an app role; avoid recreating utilities such as `.gap-12`, `.text-muted`, or `.w-140` inside app CSS.
 - Watch stylesheet size during a style move. If the CSS is about as long as the XML it replaced, do another reuse pass before stopping.
+
+#### Readable CSS playbook (app styles)
+
+Use this checklist when writing or reviewing app-owned stylesheets:
+
+- Prefer semantic, component-oriented class names: `.hero`, `.section`, `.card`, `.tab-panel`, `.quote-card`.
+- Keep most rules short and scannable. As a guideline, aim for roughly 3-6 declarations per class; tiny one-property rules are fine for spacers and size tokens.
+- Keep selector lists small. Prefer 2-3 related selectors per grouped rule. If a list grows beyond that, split it by component role.
+- Use parent-scoped selectors for contextual variation instead of cloning card variants, for example `.workflow-section .card { ... }` and `.testimonials-section .card { ... }`.
+- Compose classes in XML from reusable roles, for example `class="card stack-card quote-card"`, instead of creating one-off classes per instance.
+- Control clipping through `overflow`, `overflow-x`, and `overflow-y`. Do not use `clip-children` in app CSS.
+- Keep content-specific values in XML/prefab data (titles, image sources, accent colors) and keep structural visual rules in CSS.
+- Avoid ID selectors for normal styling. Reserve `#Name` selectors for true one-off overrides tied to identity.
+- Avoid utility-like class proliferation inside app CSS (`.gap-12`, `.w-140`, `.text-14`) unless the app intentionally adopts a utility workflow.
+
+Recommended top-to-bottom order in app stylesheets:
+
+1. Surface/base tokens (`.panel`, `.card`, `.surface-section`)
+2. Layout primitives (`.grid`, `.stack-card`)
+3. Main composition (`.app-body`, `.section`, `.tab-panel`)
+4. Parent-scoped reuse (`.feature-section .card`, `.workflow-section .card`)
+5. Component specifics (icons, cards, controls)
+6. Typography/text roles
+7. Small utilities (spacers, indent helpers)
+
+Good (semantic + contextual):
+
+```css
+.card { background-color: var(--card-background); }
+.stack-card { direction: vertical; }
+
+.workflow-section .card { padding: 24; }
+.workflow-section .stack-card { gap: 12; }
+```
+
+Avoid (utility-like explosion in app CSS):
+
+```css
+.gap-12 { gap: 12; }
+.p-24 { padding: 24; }
+.text-14 { font-size: 14; }
+```
 
 #### `@apply` behavior
 

@@ -165,7 +165,7 @@ local function test_tabview_scroll_then_click()
     Height = 320,
     Direction = "Vertical",
     OverflowY = "Scroll",
-    ClipChildren = true,
+    OverflowX = "Hidden",
   }
 
   local spacer = scroll + ui.Node2D { Height = 520 }

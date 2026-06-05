@@ -593,7 +593,6 @@ local function test_css_expanded_property_aliases()
       ring-width: 2;
       ring-color: #778899;
       box-shadow-color: #010203;
-      clip-children: true;
       pointer-events: none;
       flex-direction: horizontal;
       gap: 11;
@@ -646,7 +645,6 @@ local function test_css_expanded_property_aliases()
   test.expect_near(stack.RingWidth, 2, 0.001, "ring-width maps to Node2D.RingWidth")
   test.expect_near(stack.RingColor.B, 0x99 / 255, 0.01, "ring-color maps to Node2D.RingColor")
   test.expect_near(stack.BoxShadowColor.B, 0x03 / 255, 0.01, "box-shadow-color maps to Node2D.BoxShadowColor")
-  test.expect(stack.ClipChildren == true, "clip-children maps to Node2D.ClipChildren")
   test.expect(stack.IgnoreHitTest == true, "pointer-events: none maps to Node2D.IgnoreHitTest")
   test.expect_eq(stack.Direction, "Horizontal", "flex-direction maps to StackView.Direction")
   test.expect_near(stack.Spacing, 11, 0.001, "gap maps to StackView.Spacing")

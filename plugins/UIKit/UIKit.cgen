@@ -316,7 +316,6 @@
         <property name="ForceComposition" type="bool">Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.</property>
         <property name="CacheResult" type="bool">Enables caching of rendering results. Reduces redraw cost at the expense of memory.</property>
         <property name="SnapToPixel" type="bool">Snaps rendering to device pixels. Improves text sharpness.</property>
-        <property name="ClipChildren" type="bool">Controls whether children are clipped to the bounds of the element.</property>
         <property name="ContentStretch" type="bool">Determines if content stretches to fill available space.</property>
         <property name="Hovered" type="bool" private="true">Indicates if the element is currently hovered by pointer/mouse.</property>
         <property name="IgnoreHitTest" type="bool">Marks object as ignored during hit testing (mouse interaction).</property>

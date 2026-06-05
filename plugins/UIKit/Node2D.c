@@ -22,6 +22,13 @@ static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
   return RECT_Contains(&(struct rect){0,0,w,h}, (struct vec2 const*)&out);
 }
 
+static bool_t
+_Node2DShouldClipByOverflow(struct Node2D *pNode2D)
+{
+  return pNode2D->Overflow.x != kOverflowVisible ||
+         pNode2D->Overflow.y != kOverflowVisible;
+}
+
 HANDLER(Node2D, Node, HitTest) {
   if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
     return FALSE;
@@ -29,7 +36,7 @@ HANDLER(Node2D, Node, HitTest) {
   int16_t x = (int16_t)pHitTest->x;
   int16_t y = (int16_t)pHitTest->y;
   bool_t contains = _ContainsPoint(pNode2D, x, y);
-  if (!contains && pNode2D->ClipChildren) {
+  if (!contains && _Node2DShouldClipByOverflow(pNode2D)) {
     return FALSE;
   }
   struct Object *result = NULL;

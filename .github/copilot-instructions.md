@@ -2,6 +2,15 @@
 
 This file gives GitHub Copilot (and any AI coding assistant) the essential context needed to work effectively in the ORCA repository without having to re-discover it from scratch.
 
+## Pre-Release Compatibility Policy
+
+ORCA is currently pre-release. Prioritize the cleanest architecture over backward compatibility.
+
+- Do not preserve legacy APIs or style aliases just for compatibility.
+- Prefer removing obsolete properties and patterns instead of layering deprecations.
+- For UI clipping behavior, use `Overflow` (`overflow`, `overflow-x`, `overflow-y`) as the source of truth.
+- Do not introduce or rely on `ClipChildren` in new code or app stylesheets.
+
 ---
 
 ## Repository Setup

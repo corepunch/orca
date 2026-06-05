@@ -177,12 +177,10 @@ end
 
 add_rule("overflow-x-scroll", {
 	["Node2D.OverflowX"] = "Scroll",
-	["Node2D.ClipChildren"] = true,
 })
 
 add_rule("overflow-y-scroll", {
 	["Node2D.OverflowY"] = "Scroll",
-	["Node2D.ClipChildren"] = true,
 })
 
 for k, v in pairs {

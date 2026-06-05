@@ -65,7 +65,6 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `ring-color` | `Node2D.RingColor` | color |
 | `ring-offset` | `Node2D.RingOffset` | float |
 | `ring-width` | `Node2D.RingWidth` | float |
-| `clip-children` | `Node2D.ClipChildren` | bool |
 | `content-stretch` | `Node2D.ContentStretch` | bool |
 | `ignore-hit-test` | `Node2D.IgnoreHitTest` | bool; `pointer-events: none` maps to `true`, `auto` maps to `false` |
 | `pointer-events` | `Node2D.IgnoreHitTest` | bool; `pointer-events: none` maps to `true`, `auto` maps to `false` |
@@ -97,7 +96,6 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `word-wrap` | `TextBlockConcept.WordWrap` | bool |
 | `overflow-wrap` | `TextBlockConcept.WordWrap` | bool |
 | `text-wrap` | `TextBlockConcept.TextWrapping` | enum: TextWrapping |
-| `text-wrapping` | `TextBlockConcept.TextWrapping` | enum: TextWrapping |
 | `text-overflow` | `TextBlockConcept.TextOverflow` | enum: TextOverflow |
 | `text-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
 | `text-horizontal-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
@@ -113,3 +111,4 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
 - `pointer-events` maps to `Node2D.IgnoreHitTest`: `none` becomes `true`; `auto` becomes `false`.
+- Child clipping behavior is controlled through `overflow`, `overflow-x`, and `overflow-y`.
