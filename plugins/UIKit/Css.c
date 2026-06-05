@@ -17,6 +17,7 @@
 //   - Direct parent selectors: StackView > Label { ... }
 //   - Comma-separated selectors: .foo, .bar { ... }
 //   - Pseudo-classes: .foo:hover { ... }
+//   - File imports: @import "shared.css"; (loadObjectFromCss only)
 //   - @apply directives (merges another selector's declarations)
 //   - Standard property declarations: key: value;
 
@@ -41,6 +42,7 @@ copy_trim(char* dst, const char* s, const char* e, int n);
 #define CSS_MAX_RULES    512
 #define CSS_MAX_PROPS    64
 #define CSS_MAX_APPLY    8
+#define CSS_MAX_IMPORT_DEPTH 16
 #define CSS_MAX_SELLEN   256
 #define CSS_MAX_PROPNAME 64
 #define CSS_MAX_VALLEN   256
@@ -741,6 +743,187 @@ fs_load_text_file(const char* path)
     return buf;
 }
 
+static bool_t
+css_append_text(char **out, size_t *len, size_t *cap, const char *text, size_t text_len)
+{
+    if (!out || !len || !cap || !text) return FALSE;
+
+    if (*len + text_len + 1 > *cap) {
+        size_t next_cap = *cap ? *cap : 1024;
+        while (*len + text_len + 1 > next_cap) {
+            next_cap *= 2;
+        }
+        char *next = (char*)realloc(*out, next_cap);
+        if (!next) return FALSE;
+        *out = next;
+        *cap = next_cap;
+    }
+
+    memcpy(*out + *len, text, text_len);
+    *len += text_len;
+    (*out)[*len] = '\0';
+    return TRUE;
+}
+
+static bool_t
+css_copy_import_path(char *dst, size_t dst_size, const char *start, const char *end)
+{
+    if (!dst || dst_size == 0) return FALSE;
+    while (start < end && isspace((unsigned char)*start)) start++;
+    while (end > start && isspace((unsigned char)end[-1])) end--;
+    if (end - start >= 2 &&
+        ((*start == '"' && end[-1] == '"') || (*start == '\'' && end[-1] == '\''))) {
+        start++;
+        end--;
+        while (start < end && isspace((unsigned char)*start)) start++;
+        while (end > start && isspace((unsigned char)end[-1])) end--;
+    }
+    copy_trim(dst, start, end, (int)dst_size);
+    return dst[0] != '\0';
+}
+
+static bool_t
+css_parse_import_path(const char *start, const char *end, char *out, size_t out_size)
+{
+    while (start < end && isspace((unsigned char)*start)) start++;
+    if (start >= end) return FALSE;
+
+    if (end - start >= 4 && !strncasecmp(start, "url(", 4)) {
+        const char *path_start = start + 4;
+        const char *path_end = end;
+        while (path_end > path_start && isspace((unsigned char)path_end[-1])) path_end--;
+        if (path_end > path_start && path_end[-1] == ')') {
+            path_end--;
+        }
+        return css_copy_import_path(out, out_size, path_start, path_end);
+    }
+
+    if (*start == '"' || *start == '\'') {
+        char quote = *start++;
+        const char *path_end = start;
+        while (path_end < end && *path_end != quote) path_end++;
+        return css_copy_import_path(out, out_size, start, path_end);
+    }
+
+    const char *path_end = start;
+    while (path_end < end && !isspace((unsigned char)*path_end)) path_end++;
+    return css_copy_import_path(out, out_size, start, path_end);
+}
+
+static void
+css_resolve_import_path(char *out, size_t out_size, const char *base_path, const char *import_path)
+{
+    if (!out || out_size == 0) return;
+    out[0] = '\0';
+    if (!import_path || !import_path[0]) return;
+
+    if (import_path[0] == '/' || strchr(import_path, ':')) {
+        snprintf(out, out_size, "%s", import_path);
+        return;
+    }
+
+    const char *slash = base_path ? strrchr(base_path, '/') : NULL;
+    if (slash) {
+        size_t base_len = (size_t)(slash - base_path + 1);
+        snprintf(out, out_size, "%.*s%s", (int)base_len, base_path, import_path);
+    } else {
+        snprintf(out, out_size, "%s", import_path);
+    }
+}
+
+static char*
+css_load_text_file_with_imports(const char* path, int depth);
+
+static char*
+css_expand_imports(const char *css_text, const char *base_path, int depth)
+{
+    const char *p = css_text;
+    char *out = NULL;
+    size_t len = 0;
+    size_t cap = 0;
+
+    while (*p) {
+        const char *at = strstr(p, "@import");
+        if (!at) {
+            if (!css_append_text(&out, &len, &cap, p, strlen(p))) {
+                free(out);
+                return NULL;
+            }
+            break;
+        }
+
+        const char *after = at + 7;
+        if (*after && !isspace((unsigned char)*after)) {
+            if (!css_append_text(&out, &len, &cap, p, (size_t)(at - p + 1))) {
+                free(out);
+                return NULL;
+            }
+            p = at + 1;
+            continue;
+        }
+
+        if (!css_append_text(&out, &len, &cap, p, (size_t)(at - p))) {
+            free(out);
+            return NULL;
+        }
+
+        const char *semi = strchr(after, ';');
+        if (!semi) {
+            if (!css_append_text(&out, &len, &cap, at, strlen(at))) {
+                free(out);
+                return NULL;
+            }
+            break;
+        }
+
+        path_t import_path = {0};
+        path_t resolved_path = {0};
+        if (css_parse_import_path(after, semi, import_path, sizeof(import_path))) {
+            css_resolve_import_path(resolved_path, sizeof(resolved_path), base_path, import_path);
+            char *imported = css_load_text_file_with_imports(resolved_path, depth + 1);
+            if (imported) {
+                if (!css_append_text(&out, &len, &cap, imported, strlen(imported)) ||
+                    !css_append_text(&out, &len, &cap, "\n", 1)) {
+                    free(imported);
+                    free(out);
+                    return NULL;
+                }
+                free(imported);
+            } else {
+                Con_Printf("css_parser: can't import '%s' from '%s'", import_path, base_path ? base_path : "");
+            }
+        }
+
+        p = semi + 1;
+    }
+
+    if (!out) {
+        out = (char*)malloc(1);
+        if (out) out[0] = '\0';
+    }
+    return out;
+}
+
+static char*
+css_load_text_file_with_imports(const char* path, int depth)
+{
+    if (depth > CSS_MAX_IMPORT_DEPTH) {
+        Con_Printf("css_parser: @import depth exceeded while loading '%s'", path ? path : "");
+        return NULL;
+    }
+
+    char* css_text = fs_load_text_file(path);
+    if (!css_text) return NULL;
+
+    char* clean = css_strip_comments(css_text);
+    free(css_text);
+    if (!clean) return NULL;
+
+    char* expanded = css_expand_imports(clean, path, depth);
+    free(clean);
+    return expanded;
+}
+
 // ---------------------------------------------------------------------------
 // Public: parse a CSS string and return a new StyleSheet object
 // ---------------------------------------------------------------------------
@@ -803,7 +986,7 @@ struct Object *UIKit_LoadObjectFromCssString(const char* css_text)
 struct Object *UIKit_LoadObjectFromCss(const char* path)
 {
     if (!path) return NULL;
-    char* css_text = fs_load_text_file(path);
+    char* css_text = css_load_text_file_with_imports(path, 0);
     if (!css_text) {
         Con_Error("UIKit_LoadObjectFromCss: can't load '%s'", path);
         return NULL;

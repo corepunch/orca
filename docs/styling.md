@@ -162,6 +162,16 @@ screen.StyleSheet = ui.loadObjectFromCss("assets/app.css")
 screen:ThemeChanged(StyleController_ThemeChangedEventArgs{ recursive = true })
 ```
 
+Stylesheet files can load shared substyles with `@import`. Relative imports are resolved from the importing stylesheet's directory and are expanded in place, so rules after the import can override imported declarations.
+
+```css
+@import "shared/cards.css";
+
+.feature-card {
+    padding: 24;
+}
+```
+
 #### Supported CSS syntax
 
 The parser is intentionally CSS-like rather than a full browser CSS implementation.
@@ -181,10 +191,11 @@ It supports:
 | Pseudo-states | `.button:hover { opacity: 0.8; }`, `#Save:active { ... }`, `Label:active { ... }` | Supported states are `hover`, `focus`, `active`, and `dark`; for combinator selectors, put pseudo-states on the rightmost target selector |
 | Declarations | `width: 120;` | Declarations are `property: value;` pairs |
 | Repeated selectors | `.a { width: 1; } .a { height: 2; }` | Declarations are merged into the same rule |
+| `@import` | `@import "shared.css";` | File loader only; relative paths resolve from the importing stylesheet |
 | `@apply` | `.child { @apply: .base; }` | Copies declarations from one or more selectors |
 | Transitive `@apply` | `.a { @apply: .b; } .b { @apply: .c; }` | Resolution runs for up to 10 passes |
 
-The parser does not support sibling selectors, attribute selectors, media queries, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
+The parser does not support sibling selectors, attribute selectors, media queries, import conditions, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
 
 #### Case and duplicate rules
 

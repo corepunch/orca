@@ -356,6 +356,34 @@ local function test_css_comments_are_ignored()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 14b: @import loads relative substyles from CSS files
+-- ---------------------------------------------------------------------------
+local function test_css_import_loads_relative_substyles()
+  local screen = ui.Screen {
+    Width = 300,
+    Height = 300,
+    ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCss("tests/fixtures/css/import-main.css"),
+  }
+  local imported = screen + ui.Node2D { class = "from-import" }
+  local local_rule = screen + ui.Node2D { class = "from-main" }
+  local merged = screen + ui.Node2D { class = "shared" }
+
+  applyStyles(imported)
+  applyStyles(local_rule)
+  applyStyles(merged)
+
+  test.expect_near(imported.Width, 77, 0.5, "@import should load rules from a relative CSS file")
+  test.expect_near(local_rule.Height, 33, 0.5, "local rules should still parse after @import")
+  test.expect_near(merged.Width, 22, 0.5, "local rules after @import should override imported declarations")
+
+  imported:removeFromParent()
+  local_rule:removeFromParent()
+  merged:removeFromParent()
+  print("PASS: test_css_import_loads_relative_substyles")
+end
+
+-- ---------------------------------------------------------------------------
 -- Test 15: Comma-separated selector lists apply to every selector
 -- ---------------------------------------------------------------------------
 local function test_css_comma_selectors()
@@ -1099,6 +1127,7 @@ test_style_applies_to_new_node()
 test_style_apply_directive()
 test_style_apply_transitive()
 test_css_comments_are_ignored()
+test_css_import_loads_relative_substyles()
 test_css_comma_selectors()
 test_css_repeated_selector_merges()
 test_css_property_name_ignorecase_and_duplicate_overwrite()
