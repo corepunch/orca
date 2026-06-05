@@ -168,7 +168,7 @@ It supports:
 | Compound selectors | `Button.primary { ... }`, `#Save.primary { ... }` | Matches multiple conditions on the same object |
 | Descendant selectors | `.popup .panel { ... }`, `StackView Label { ... }` | Matches when the left selector appears anywhere in the target's ancestors |
 | Direct parent selectors | `StackView > Label { ... }` | Matches only immediate children |
-| `body` selector | `body { opacity: 1; }` | Applies to a root object that owns the stylesheet |
+| `body` selector | `body { width: 800; }` | Applies to a root object that owns the stylesheet |
 | Comma selector lists | `.a, .b { width: 100; }` | Each selector gets the same declaration block |
 | Pseudo-states | `.button:hover { opacity: 0.8; }`, `#Save:active { ... }`, `Label:active { ... }` | Supported states are `hover`, `focus`, `active`, and `dark`; for combinator selectors, put pseudo-states on the rightmost target selector |
 | Declarations | `width: 120;` | Declarations are `property: value;` pairs |

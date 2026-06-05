@@ -277,11 +277,13 @@ end
 
 local function test_inherited_foreground_color()
 	local xml = [[
-<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize" ForegroundColor="#336699">
-  <StackView Name="parent-stack">
-    <TextBlock Name="inherited-text" Text="Inherited" />
-    <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
-  </StackView>
+<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize">
+  <Node2D Name="visual-root" ForegroundColor="#336699">
+    <StackView Name="parent-stack">
+      <TextBlock Name="inherited-text" Text="Inherited" />
+      <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
+    </StackView>
+  </Node2D>
 </Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -291,6 +293,8 @@ local function test_inherited_foreground_color()
 	local local_text = root:findChild("local-text", true)
 	test.expect(inherited ~= nil, "inherited text should exist")
 	test.expect(local_text ~= nil, "local text should exist")
+	local visual_root = root:findChild("visual-root", true)
+	test.expect(visual_root ~= nil, "visual root should exist")
 
 	test.expect_near(inherited.ForegroundColor.R, 0x33 / 255, 0.01, "inherited ForegroundColor.R")
 	test.expect_near(inherited.ForegroundColor.G, 0x66 / 255, 0.01, "inherited ForegroundColor.G")
@@ -302,7 +306,7 @@ local function test_inherited_foreground_color()
 	test.expect_near(local_text.ForegroundColor.B, 0.0, 0.01, "local ForegroundColor.B")
 	test.expect_near(local_text.ForegroundColor.A, 1.0, 0.01, "local ForegroundColor.A")
 
-	root.ForegroundColor = "#00CC66"
+	visual_root.ForegroundColor = "#00CC66"
 	test.expect_near(inherited.ForegroundColor.R, 0.0, 0.01, "updated inherited ForegroundColor.R")
 	test.expect_near(inherited.ForegroundColor.G, 0xCC / 255, 0.01, "updated inherited ForegroundColor.G")
 	test.expect_near(inherited.ForegroundColor.B, 0x66 / 255, 0.01, "updated inherited ForegroundColor.B")
@@ -1093,10 +1097,10 @@ local function test_binding_expression_visible_reacts_to_resize()
 end
 
 -- ---------------------------------------------------------------------------
--- Bare binding paths (no ./ prefix) should resolve from template/root scope.
--- This keeps {Node.ActualWidth} usable in screen trees.
+-- Bare binding paths (no ./ prefix) should resolve from the bound object first.
+-- This keeps {Node.ActualWidth} usable on elements inside non-Node Screen trees.
 -- ---------------------------------------------------------------------------
-local function test_binding_expression_bare_path_resolves_from_root()
+local function test_binding_expression_bare_path_resolves_from_bound_object()
 	local xml = [[
 	<Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize">
 	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
@@ -1135,7 +1139,7 @@ local function test_binding_expression_bare_path_resolves_from_root()
 	root:clear()
 	root = nil
 
-	print("PASS: test_binding_expression_bare_path_resolves_from_root")
+	print("PASS: test_binding_expression_bare_path_resolves_from_bound_object")
 end
 
 -- ---------------------------------------------------------------------------
@@ -1442,7 +1446,7 @@ test_xml_loading_close_popup_action_components()
 test_xml_loading_event_trigger_components()
 test_xml_loading_send_message_action_components()
 test_binding_expression_visible_reacts_to_resize()
-test_binding_expression_bare_path_resolves_from_root()
+test_binding_expression_bare_path_resolves_from_bound_object()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_example_xml_parser_coverage()

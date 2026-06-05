@@ -737,13 +737,12 @@ local function test_css_body_selector_applies_to_root()
     Width = 200,
     Height = 200,
     ResizeMode = "NoResize",
-    Opacity = 1.0,
-    StyleSheet = ui.loadObjectFromCssString "body { opacity: 0.44; }",
+    StyleSheet = ui.loadObjectFromCssString "body { width: 240; }",
   }
 
   applyStyles(screen)
 
-  test.expect_near(screen.Opacity, 0.44, 0.001, "body selector should apply to stylesheet root")
+  test.expect_near(screen.Width, 240, 0.001, "body selector should apply to screen root properties")
 
   print("PASS: test_css_body_selector_applies_to_root")
 end

@@ -646,22 +646,26 @@
         <property name="Scale" type="float">Visual scale factor for size adjustments </property>
       </properties>
     </class>
-    <class name="Screen" parent="Node2D">
+    <class name="Screen" parent="StyleController" children="Node2D">
       <summary>Top-level container representing a display surface or window</summary>
-      <details>Provides the root rendering context for UI hierarchies. Manages screen-level operations like clearing and render target management.</details>
+      <details>Provides the root rendering context for UI hierarchies. Screen is a host object, not a drawable Node; it owns viewport dimensions and lays out/renders child Node2D objects.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Screen.UpdateLayout"/>
         <handle message="Screen.RenderScreen"/>
         <handle message="Screen.ShowModal"/>
         <handle message="Screen.SetModalObject"/>
-        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node.HitTest"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
         <handle message="Window.Resized"/>
         <handle message="Window.Paint"/>
       </handles>
       <properties>
+        <property name="Width" type="float" default="NAN">Viewport width for fixed-size screens and CSS viewport calculations.</property>
+        <property name="Height" type="float" default="NAN">Viewport height for fixed-size screens and CSS viewport calculations.</property>
+        <property name="Visible" type="bool" default="TRUE">Whether this screen or popup participates in rendering.</property>
+        <property name="DataContext" type="DataObject" pointer="true">Root data context for bindings and child content.</property>
         <property name="ClearColor" type="color">Background clear color for the screen </property>
         <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
       </properties>

@@ -139,8 +139,8 @@ test_content_for_rejects_non_string_name()
 local function test_show_modal_attaches_and_closes_popup()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local modal = filesystem.loadObjectFromXmlString([[
-<Popup Name="DialogPopup" BackgroundColor="#00000088">
-  <StackView Name="DialogPopupOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+<Popup Name="DialogPopup">
+  <StackView Name="DialogPopupOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24" BackgroundColor="#00000088">
     <StackView Name="DialogPopupCard" Direction="Vertical" Spacing="12" Width="240" BackgroundColor="#223344" Padding="16">
       <TextBlock Name="DialogPopupClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
         LeftButtonUp="{Popup.ClosePopup ReturnValue=2.25}"/>
@@ -230,8 +230,8 @@ test_show_modal_wraps_widget_content()
 local function test_show_modal_waits_for_popup_close_result()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   local modal = filesystem.loadObjectFromXmlString([[
-<Popup Name="CoroutineDialogPopup" BackgroundColor="#00000088">
-  <StackView Name="CoroutineDialogOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24">
+<Popup Name="CoroutineDialogPopup">
+  <StackView Name="CoroutineDialogOverlay" Direction="Vertical" AlignItems="Center" JustifyContent="Center" Padding="24" BackgroundColor="#00000088">
     <TextBlock Name="CoroutineDialogClose" Text="Close" Height="32" BackgroundColor="#4466AA" TextHorizontalAlignment="Center" TextVerticalAlignment="Center"
       LeftButtonUp="{Popup.ClosePopup ReturnValue=2}"/>
   </StackView>
