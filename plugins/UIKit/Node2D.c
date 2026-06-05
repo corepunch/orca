@@ -13,20 +13,34 @@ HANDLER(Node2D, Node2D, UpdateGeometry) {
   return TRUE;
 }
 
-static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
+static struct vec3 _Node2DToLocalPoint(struct Node2D *pNode2D, float x, float y) {
   struct mat4 inv = MAT4_Inverse(&pNode2D->Matrix);
 	struct vec3 point = {x,y,0};
+  return MAT4_MultiplyVector3D(&inv, &point);
+}
+
+static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  struct vec3 out = MAT4_MultiplyVector3D(&inv, &point);
+  struct vec3 out = _Node2DToLocalPoint(pNode2D, x, y);
   return RECT_Contains(&(struct rect){0,0,w,h}, (struct vec2 const*)&out);
 }
 
 static bool_t
-_Node2DShouldClipByOverflow(struct Node2D *pNode2D)
+_Node2DShouldClipPointByOverflow(struct Node2D *pNode2D, float x, float y)
 {
-  return pNode2D->Overflow.x != kOverflowVisible ||
-         pNode2D->Overflow.y != kOverflowVisible;
+  struct vec3 local = _Node2DToLocalPoint(pNode2D, x, y);
+  float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
+  float const h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+  if (pNode2D->Overflow.x != kOverflowVisible &&
+      (local.x < 0 || local.x > w)) {
+    return TRUE;
+  }
+  if (pNode2D->Overflow.y != kOverflowVisible &&
+      (local.y < 0 || local.y > h)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 HANDLER(Node2D, Node, HitTest) {
@@ -36,7 +50,7 @@ HANDLER(Node2D, Node, HitTest) {
   int16_t x = (int16_t)pHitTest->x;
   int16_t y = (int16_t)pHitTest->y;
   bool_t contains = _ContainsPoint(pNode2D, x, y);
-  if (!contains && _Node2DShouldClipByOverflow(pNode2D)) {
+  if (_Node2DShouldClipPointByOverflow(pNode2D, x, y)) {
     return FALSE;
   }
   struct Object *result = NULL;
