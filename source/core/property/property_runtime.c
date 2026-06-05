@@ -594,7 +594,7 @@ _BindingPropertyHasEffectiveValue(struct Property *prop)
   if (!PROP_IsNull(prop)) {
     return TRUE;
   }
-  return prop->pdesc && prop->pdesc->IsInherited && PROP_GetValue(prop) != NULL;
+  return PROP_GetDesc(prop) && PROP_GetDesc(prop)->IsInherited && PROP_GetValue(prop) != NULL;
 }
 
 #include <UIKit/UIKit.h> // for GetNode/GetScreen
