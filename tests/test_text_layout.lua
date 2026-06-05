@@ -99,6 +99,26 @@ local function test_text_single_line_layout()
 	two_words:removeFromParent()
 end
 
+local function test_text_nowrap_keeps_metric_value_on_one_line()
+	local container = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 120,
+		Padding = core.Thickness(20),
+	}
+	local metric = container + ui.TextBlock {
+		Text = "99.9 %",
+		FontSize = 28,
+		TextWrapping = "NoWrap",
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(metric.ActualHeight > 0, "NoWrap metric value should be measured")
+	test.expect(metric.ActualHeight < 50, "NoWrap metric value should stay on one line")
+
+	container:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Empty TextBlock: render texture lookup must tolerate no resolved text
 -- ---------------------------------------------------------------------------
@@ -120,6 +140,7 @@ orca.async = function (callback) callback() end
 
 test_text_block_layout()
 test_text_single_line_layout()
+test_text_nowrap_keeps_metric_value_on_one_line()
 test_empty_text_block_foreground_content()
 
 print("All text layout tests passed.")

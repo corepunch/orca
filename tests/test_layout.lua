@@ -1343,6 +1343,9 @@ local function test_example_application_xml()
 	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
 	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
 	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
+	local metric_prefab = filesystem.readTextFile("samples/Example/Prefabs/Mertic.xml")
+	local metric_value_nowrap = metric_prefab and metric_prefab:find('Name="MetricUsersValue"', 1, true)
+		and metric_prefab:find('TextWrapping="NoWrap"', 1, true)
 	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
 	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
 	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")
@@ -1427,6 +1430,7 @@ local function test_example_application_xml()
 		"Lua object post helper should dispatch through generated message action classes")
 	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) == nil,
 		"Lua object post helper should no longer build message payload buffers by hand")
+	test.expect(metric_value_nowrap ~= nil, "Metric value should not wrap numeric units onto a second line")
 
 	print("PASS: test_example_application_xml")
 end
