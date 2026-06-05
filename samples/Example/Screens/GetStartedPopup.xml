@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Popup Name="GetStartedPopup" StyleSheet="Example/Styles/app.css">
   <StackView Name="GetStartedPopupOverlay" class="popup-overlay">
-    <StackView Name="GetStartedPopupCard" class="popup-card">
+    <StackView Name="GetStartedPopupCard" class="stack-card popup-card">
       <TextBlock Name="GetStartedPopupTitle" class="popup-title" Text="What ORCA gives you"/>
       <TextBlock Name="GetStartedPopupBody" class="popup-body"
         Text="XML keeps layout honest, Lua keeps behavior close, and MoonScript gives you a tighter way to grow the surface. The same codebase can ship to desktop, mobile, and the web."/>

@@ -208,6 +208,29 @@ The parser does not support sibling selectors, attribute selectors, media querie
 - Reuse the same component class for repeated visual roles, especially card-like elements. If several cards differ only by incidental colors or spacing, consolidate them behind one class and reserve variants for meaningful states or hierarchy.
 - Combining semantic classes is fine when each class describes a reusable role or variant, for example `StyleClass="card feature-card"` or `StyleClass="button button-primary"`.
 
+#### Keeping app CSS compact
+
+Moving visual properties from XML into CSS should reduce repetition, not create a one-rule-per-object stylesheet. Before adding a new class, check whether the property belongs to an existing semantic base class or grouped selector.
+
+- Start with a few reusable bases for common visual roles, for example `.section`, `.panel`, `.card`, `.stack-card`, `.grid`, `.button`, and `.section-copy`.
+- Compose semantic classes in XML instead of cloning declarations: `class="card stack-card quote-card"` is preferable to repeating `background-color`, `direction`, `gap`, and `padding` in every card-specific rule.
+- Group selectors when several named roles share the same declaration and the grouping still reads as design-system intent:
+
+```css
+.navbar,
+.command-link,
+.tab-panel-header,
+.signal-card {
+    direction: horizontal;
+    align-items: center;
+}
+```
+
+- Keep instance-specific data in XML when it is content or art direction rather than layout structure. Per-card colors, icon backgrounds, image sources, and titles can remain XML attributes such as `Card.PrimaryColor="$accent-green"` while the prefab keeps the shared class.
+- Preserve intentional visual variety. Sharing classes should not flatten the type scale, accent palette, or hierarchy. If the design uses different font sizes or colors to make the page scan well, keep those differences as named role rules or XML data.
+- Prefer semantic bases over local utility classes. Use `.stack-card` or `.section-copy` when it describes an app role; avoid recreating utilities such as `.gap-12`, `.text-muted`, or `.w-140` inside app CSS.
+- Watch stylesheet size during a style move. If the CSS is about as long as the XML it replaced, do another reuse pass before stopping.
+
 #### `@apply` behavior
 
 `@apply` accepts one or more whitespace-separated selector references:

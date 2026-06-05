@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="Quote" class="card quote-card">
+<StackView Name="Quote" class="card stack-card quote-card">
 	<TextBlock Name="QuoteMark" class="quote-mark" Text="&#x201C;" ForegroundColor="{Binding ../Card.PrimaryColor}"/>
 	<TextBlock Name="QuoteText" class="quote-text" Text="{Binding ../Card.Body}"/>
 	<StackView Name="QuoteAuthor" class="quote-author">

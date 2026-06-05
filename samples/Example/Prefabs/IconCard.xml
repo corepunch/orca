@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<StackView Name="IconCard" class="card icon-card">
+<StackView Name="IconCard" class="card stack-card icon-card">
 	<StackView Name="IconCardHeader" class="icon-card-header">
 		<StackView Name="IconCardBadge" class="icon-badge" BackgroundColor="{Binding ../../Card.IconBackground}">
 			<ImageView Name="IconCardImage" class="icon-card-image" Stretch="Uniform" Source="{Binding ../../../Card.Icon}" ForegroundColor="{Binding ../../../Card.PrimaryColor}"/>

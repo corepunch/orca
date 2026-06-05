@@ -78,7 +78,7 @@
 									<TextBlock Name="XmlNote3" class="note-text" Text="• The shape of the screen is easy to read before it ever runs."/>
 								</StackView>
 							</StackView>
-							<StackView Name="XmlModel" class="card model-panel">
+							<StackView Name="XmlModel" class="card stack-card model-panel">
 								<TextBlock Name="XmlModelHeading" class="card-title" Text="The structure stays honest"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine1" class="model-indent-root" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
 									Card.Icon="Example/Icons/monitor.svg?width=20&amp;type=mask" Card.Title="Screen"
@@ -136,7 +136,7 @@
 									<TextBlock Name="MoonNote3" class="note-text" Text="• It pairs naturally with XML screens and Lua helpers."/>
 								</StackView>
 							</StackView>
-							<StackView Name="MoonModel" class="card model-panel">
+							<StackView Name="MoonModel" class="card stack-card model-panel">
 								<TextBlock Name="MoonModelHeading" class="card-title" Text="Same runtime, less ceremony"/>
 								<TextBlock Name="MoonModelLine1" class="moon-model-line" Text="Cleaner class bodies"/>
 								<TextBlock Name="MoonModelLine2" class="moon-model-line" Text="Readable app controllers"/>
