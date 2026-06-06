@@ -789,7 +789,77 @@ local function test_css_edge_shorthand_order()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 27: @apply can reference selectors without a leading dot
+-- Test 27: margin shorthand auto tokens align TextBlock using measured width
+-- ---------------------------------------------------------------------------
+local function test_css_margin_shorthand_auto_textblock_alignment()
+  local screen = ui.Screen { Width = 400, Height = 240, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .left-copy { margin: 0; }
+    .centered-copy { margin: 0 auto; }
+    .right-copy { margin: 0 0 0 auto; }
+  ]]
+
+  local left = screen + ui.TextBlock {
+    class = "left-copy",
+    Text = "Left Me",
+    FontSize = 20,
+  }
+  local centered = screen + ui.TextBlock {
+    class = "centered-copy",
+    Text = "Center Me",
+    FontSize = 20,
+  }
+  local right = screen + ui.TextBlock {
+    class = "right-copy",
+    Text = "Right Me",
+    FontSize = 20,
+  }
+
+  applyStyles(left)
+  applyStyles(centered)
+  applyStyles(right)
+
+  local function measured_text_width(text)
+    local packed_size = text:send("Node2D.MeasureOverride", {
+      Width = math.huge,
+      Height = math.huge,
+    })
+    return packed_size % 65536
+  end
+
+  local left_text_width = measured_text_width(left)
+  local centered_text_width = measured_text_width(centered)
+  local right_text_width = measured_text_width(right)
+  left.Width = left_text_width
+  centered.Width = centered_text_width
+  right.Width = right_text_width
+
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  local centered_expected_x = (screen.Width - centered_text_width) * 0.5
+  local right_expected_x = screen.Width - right_text_width
+
+  test.expect_near(left.ActualWidth, left_text_width, 0.01,
+    "left TextBlock width should match measured text width")
+  test.expect_near(centered.ActualWidth, centered_text_width, 0.01,
+    "center TextBlock width should match measured text width")
+  test.expect_near(right.ActualWidth, right_text_width, 0.01,
+    "right TextBlock width should match measured text width")
+  test.expect_near(left.ActualX, 0, 0.01,
+    "margin: 0 should left-align TextBlock using measured text width")
+  test.expect_near(centered.ActualX, centered_expected_x, 0.01,
+    "margin: 0 auto should center TextBlock using measured text width")
+  test.expect_near(right.ActualX, right_expected_x, 0.01,
+    "margin: 0 0 0 auto should right-align TextBlock using measured text width")
+
+  left:removeFromParent()
+  centered:removeFromParent()
+  right:removeFromParent()
+  print("PASS: test_css_margin_shorthand_auto_textblock_alignment")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 28: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -1179,6 +1249,7 @@ test_css_text_property_map()
 test_css_expanded_property_aliases()
 test_css_removed_text_alignment_aliases()
 test_css_edge_shorthand_order()
+test_css_margin_shorthand_auto_textblock_alignment()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()
