@@ -2,9 +2,18 @@
 
 ORCA stylesheets parse a CSS-like subset and map supported CSS declaration names to ORCA properties before value parsing. This table is extracted from `plugins/UIKit/Css.c` (`k_css_prop_map`).
 
-Values use ORCA property parsers. Numeric values are bare numbers; browser units such as `px`, `rem`, `vh`, and `%` are not converted. Unsupported properties are ignored when the stylesheet is converted into `StyleRule` objects.
+Values use ORCA property parsers. Numeric values are bare numbers; browser units such as `px`, `rem`, `vh`, and `%` are not converted, except for the special `width: 100%` stretch shorthand below. Unsupported properties are ignored when the stylesheet is converted into `StyleRule` objects.
 
 CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thickness` parser. For example, `padding: 10 32;` means top/bottom `10` and left/right `32`; `margin: 1 2 3 4;` means top `1`, right `2`, bottom `3`, left `4`.
+
+For layout alignment, prefer CSS-native sizing and auto margins:
+
+- `width: auto` maps to `Node.Width = NaN`, which is also the default and stretches in finite layout space.
+- `width: 100%` also maps to `Node.Width = NaN` as a compatibility stretch shorthand.
+- `margin-left: auto; margin-right: auto;` centers an explicit-width node horizontally.
+- `margin-left: auto;` aligns an explicit-width node to the trailing/right edge.
+- `margin-top: auto; margin-bottom: auto;` centers an explicit-height node vertically.
+- `margin-top: auto;` aligns an explicit-height node to the trailing/bottom edge.
 
 | CSS property | ORCA property | Value type |
 |--------------|---------------|------------|
@@ -105,5 +114,7 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 - Enum values are matched case-insensitively and may use CSS-style separators; for example `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
+- `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space.
+- `margin-* : auto` normalizes to `NaN` and is used for alignment.
 - `pointer-events` maps to `Node2D.IgnoreHitTest`: `none` becomes `true`; `auto` becomes `false`.
 - Child clipping behavior is controlled through `overflow`, `overflow-x`, and `overflow-y`.
