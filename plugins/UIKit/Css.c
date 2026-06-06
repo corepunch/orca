@@ -236,6 +236,12 @@ css_normalize_decl_value(const char *css_key,
         return out;
     }
 
+    if (!strcasecmp(css_key, "width") &&
+        !strcasecmp(css_value, "100%")) {
+        snprintf(out, out_size, "nan");
+        return out;
+    }
+
     if (!strcasecmp(css_key, "pointer-events")) {
         if (!strcasecmp(css_value, "none")) {
             snprintf(out, out_size, "true");

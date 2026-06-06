@@ -638,6 +638,10 @@ local function test_css_expanded_property_aliases()
       text-vertical-align: bottom;
       text-wrap: no-wrap;
     }
+
+    .percent-css {
+      width: 100%;
+    }
   ]]
 
   local stack = screen + ui.StackView {
@@ -650,12 +654,17 @@ local function test_css_expanded_property_aliases()
     class = "copy-css",
     Text = "copy",
   }
+  local percent = screen + ui.Node2D {
+    class = "percent-css",
+  }
 
   applyStyles(stack)
   applyStyles(grid)
   applyStyles(text)
+  applyStyles(percent)
 
   test.expect(stack.Width ~= stack.Width, "width: auto maps to Width=NaN")
+  test.expect(percent.Width ~= percent.Width, "width: 100% maps to Width=NaN")
   test.expect(stack.MarginLeft ~= stack.MarginLeft, "margin-left: auto maps to MarginLeft=NaN")
   test.expect_near(stack.MarginLeft, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
@@ -692,6 +701,7 @@ local function test_css_expanded_property_aliases()
   stack:removeFromParent()
   grid:removeFromParent()
   text:removeFromParent()
+  percent:removeFromParent()
   print("PASS: test_css_expanded_property_aliases")
 end
 
