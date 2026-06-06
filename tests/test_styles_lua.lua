@@ -605,9 +605,9 @@ local function test_css_expanded_property_aliases()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   screen.StyleSheet = ui.loadObjectFromCssString [[
     .layout-css {
-      horizontal-align: center;
-      vertical-align: bottom;
+      width: auto;
       margin-inline: 4;
+      margin-left: auto;
       padding-block: 6;
       border-color: #aabbcc;
       border-width: 7;
@@ -655,8 +655,8 @@ local function test_css_expanded_property_aliases()
   applyStyles(grid)
   applyStyles(text)
 
-  test.expect_eq(stack.HorizontalAlignment, "Center", "horizontal-align maps to Node.HorizontalAlignment")
-  test.expect_eq(stack.VerticalAlignment, "Bottom", "vertical-align maps to Node.VerticalAlignment")
+  test.expect(stack.Width ~= stack.Width, "width: auto maps to Width=NaN")
+  test.expect(stack.MarginLeft ~= stack.MarginLeft, "margin-left: auto maps to MarginLeft=NaN")
   test.expect_near(stack.MarginLeft, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.PaddingTop, 6, 0.001, "padding-block maps to vertical padding")

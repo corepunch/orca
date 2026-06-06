@@ -228,8 +228,6 @@ local function test_vertical_overflow_keeps_horizontal_hit_visible()
   local horizontal_child = scroll + ui.Node2D {
     Width = 40,
     Height = 40,
-    HorizontalAlignment = "Left",
-    VerticalAlignment = "Top",
     MarginLeft = 140,
     MarginTop = 20,
     LeftButtonUp = function()
@@ -241,8 +239,6 @@ local function test_vertical_overflow_keeps_horizontal_hit_visible()
   local vertical_child = scroll + ui.Node2D {
     Width = 40,
     Height = 40,
-    HorizontalAlignment = "Left",
-    VerticalAlignment = "Top",
     MarginLeft = 20,
     MarginTop = 140,
     LeftButtonUp = function()

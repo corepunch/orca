@@ -77,27 +77,6 @@
       <value name="In">Easing function that starts slow and speeds up towards the end</value>
       <value name="Out">Easing function that starts fast and slows down towards the end</value>
     </enum>
-    <enum name="HorizontalAlignment">
-      <summary>Horizontal alignment of elements within their parent container</summary>
-      <value name="Stretch">Stretch to fill container width</value>
-      <value name="Left">Align to left edge of container</value>
-      <value name="Center">Center within container</value>
-      <value name="Right">Align to right edge of container</value>
-    </enum>
-    <enum name="VerticalAlignment">
-      <summary>Vertical alignment of elements within their parent container</summary>
-      <value name="Stretch">Stretch to fill container height</value>
-      <value name="Top">Align to top edge of container</value>
-      <value name="Center">Center within container</value>
-      <value name="Bottom">Align to bottom edge of container</value>
-    </enum>
-    <enum name="DepthAlignment">
-      <summary>3D depth alignment options for positioning along Z-axis</summary>
-      <value name="Near">Align to near clipping plane</value>
-      <value name="Center">Center in depth</value>
-      <value name="Far">Align to far clipping plane</value>
-      <value name="Stretch">Stretch across depth</value>
-    </enum>
     <enum name="Sizing">
       <summary>Size calculation modes for layout operations</summary>
       <value name="PlusMargin">Include margins in size calculation</value>
@@ -184,13 +163,6 @@
       <fields>
         <field name="Left" type="float">Leading edge value (left for horizontal, top for vertical, near for depth)</field>
         <field name="Right" type="float">Trailing edge value (right for horizontal, bottom for vertical, far for depth)</field>
-      </fields>
-    </struct>
-    <struct name="AlignmentShorthand">
-      <summary>Axis-specific alignment parameters.</summary>
-      <details>Stores per-axis alignment information (e.g., Horizontal, Vertical, Depth). Used by Node and its derived classes to control alignment.</details>
-      <fields>
-        <field name="Axis" type="int" fixed-array="3">Alignment of the element within its parent (similar to HorizontalAlignment/VerticalAlignment in XAML).</field>
       </fields>
     </struct>
     <struct name="Thickness">
@@ -941,7 +913,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Margin" type="Thickness">External spacing around the element</property>
         <property name="Padding" type="Thickness">Internal spacing between element border and content</property>
         <property name="Border" type="BorderShorthand">Border definition along each axis</property>
-        <property name="Alignment" type="AlignmentShorthand">Alignment definition for each axis.</property>
         <property name="Visible" type="bool" default="TRUE">Whether this node is visible in the scene.</property>
         <property name="QuickHide" type="bool">If true, node is quickly hidden without triggering full visibility transitions.</property>
         <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>

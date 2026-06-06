@@ -1,5 +1,5 @@
 local test = require "orca.test"
--- Tests for Node2D properties: horizontal alignment, padding-aware container
+-- Tests for Node2D properties: stretch sizing, auto-margin alignment, padding-aware container
 -- height (with TextBlock child), Visible toggle, and property change
 -- notifications (onXxxChanged callbacks). Part of the full `test` target.
 
@@ -10,35 +10,55 @@ local ui = require "orca.UIKit"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
--- Node2D alignment: stretch vs explicit width
+-- Node2D layout: NaN size stretches, explicit size plus NaN margins aligns
 -- ---------------------------------------------------------------------------
 local function test_node_alignment()
-	-- A node with default HorizontalAlignment (Stretch) fills parent width
+	local auto = 0 / 0
+	local center_hit = false
+	local right_hit = false
+
+	-- A node with default Width=NaN fills parent width
 	local stretch_node = screen + ui.Node2D {}
 
-	-- A node with HorizontalAlignment = "Left" and explicit Width uses that width
 	local fixed_width = 200
 	local left_node = screen + ui.Node2D {
-		HorizontalAlignment = "Left",
 		Width = fixed_width,
+	}
+	local center_node = screen + ui.Node2D {
+		Width = fixed_width,
+		MarginLeft = auto,
+		MarginRight = auto,
+		LeftButtonUp = function()
+			center_hit = true
+			return true
+		end,
+	}
+	local right_node = screen + ui.Node2D {
+		Width = fixed_width,
+		MarginLeft = auto,
+		LeftButtonUp = function()
+			right_hit = true
+			return true
+		end,
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	-- Stretch node should fill the screen width
 	test.expect_eq(stretch_node.ActualWidth, screen.Width,
-		"Node with default HorizontalAlignment should stretch to fill screen width")
-
-	-- Left-aligned node with explicit width should use that width
+		"Node with default Width=NaN should stretch to fill screen width")
 	test.expect_eq(left_node.ActualWidth, fixed_width,
-		"Left-aligned node should have the explicitly set width")
-
-	-- The left-aligned node is narrower than the screen
+		"Explicit-width node should use that width")
 	test.expect(left_node.ActualWidth < screen.Width,
-		"Left-aligned node should be narrower than the screen")
+		"Explicit-width node should be narrower than the screen")
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 500, y = 1 }
+	test.expect(center_hit, "NaN left and right margins should center an explicit-width node")
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 999, y = 1 }
+	test.expect(right_hit, "NaN left margin should right-align an explicit-width node")
 
 	stretch_node:removeFromParent()
 	left_node:removeFromParent()
+	center_node:removeFromParent()
+	right_node:removeFromParent()
 end
 
 -- ---------------------------------------------------------------------------
@@ -104,7 +124,6 @@ local function test_property_change_notification()
 	-- the event queue when a property value changes.
 	local last_text = nil
 	local node = screen + ui.TextBlock {
-		HorizontalAlignment = "Left",
 		Text = "Initial",
 	}
 

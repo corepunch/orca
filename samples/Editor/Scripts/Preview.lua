@@ -11,8 +11,6 @@ local Preview = ui.Node2D:extend {
 				Image = renderer.IOSurfaceTexture {
 					IOSurface = tonumber(tex:get('IOSurface')),
 				},
-				HorizontalAlignment = "Stretch",
-				VerticalAlignment = "Stretch",
 				BlendMode = "Opaque",
 				Stretch = "Uniform",
 			}

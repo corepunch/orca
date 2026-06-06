@@ -823,7 +823,6 @@ local function test_stackview_align_items_preserves_child_stretch_width()
 		Direction = "Vertical",
 		AlignItems = "Center",
 		JustifyContent = "Center",
-		HorizontalAlignment = "Stretch",
 		HorizontalMargin = core.EdgeShorthand(32, 32),
 		VerticalMargin = core.EdgeShorthand(32, 32),
 		Padding = core.Thickness(16),
@@ -831,7 +830,6 @@ local function test_stackview_align_items_preserves_child_stretch_width()
 	local card = overlay + ui.StackView {
 		Name = "AdventurePopupCard",
 		Direction = "Vertical",
-		HorizontalAlignment = "Stretch",
 		Padding = core.Thickness(24),
 		Spacing = 16,
 	}
@@ -879,13 +877,11 @@ local function test_css_popup_padding_insets_stretched_panel()
 		Direction = "Vertical",
 		AlignItems = "Center",
 		JustifyContent = "Center",
-		HorizontalAlignment = "Stretch",
 	}
 	local card = overlay + ui.StackView {
 		Name = "CssPopupCard",
 		class = "panel",
 		Direction = "Vertical",
-		HorizontalAlignment = "Stretch",
 	}
 	local body = card + ui.TextBlock {
 		Name = "CssPopupBody",
@@ -938,13 +934,11 @@ local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
 		Direction = "Vertical",
 		AlignItems = "Center",
 		JustifyContent = "Center",
-		HorizontalAlignment = "Stretch",
 	}
 	local card = overlay + ui.StackView {
 		Name = "CssModalCard",
 		class = "panel",
 		Direction = "Vertical",
-		HorizontalAlignment = "Stretch",
 	}
 
 	root:SetModalObject(modal)
@@ -1262,6 +1256,9 @@ local function test_example_application_xml()
 			pos = found + #needle
 		end
 	end
+	local function find_named_tag(haystack, tag, name)
+		return haystack:match("<" .. tag .. "%s+[^>]-Name=\"" .. name .. "\"[^>]*/>")
+	end
 	local xml = filesystem.readTextFile("samples/Example/Screens/Application.xml")
 	local package_lua = filesystem.readTextFile("samples/Example/package.lua")
 	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
@@ -1277,9 +1274,13 @@ local function test_example_application_xml()
 	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>', 1, true)
 	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
 	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
-	local get_started_button = xml:find('Name="CtaButtonPrimary" Text="Get Started"', 1, true)
-	local get_started_show = xml:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
+	local cta_button = find_named_tag(xml, "TextBlock", "CtaButtonPrimary")
+	local get_started_button = cta_button and cta_button:find('Text="Get Started"', 1, true)
+	local get_started_show = cta_button and cta_button:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
 	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
+	local tree_css = filesystem.readTextFile("samples/Example/Styles/components/tree.css")
+	local media_css = filesystem.readTextFile("samples/Example/Styles/components/media.css")
+	local typography_css = filesystem.readTextFile("samples/Example/Styles/typography.css")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
@@ -1303,23 +1304,38 @@ local function test_example_application_xml()
 		or xml:find('Example/Icons/rocket.svg', 1, true)
 	local xml_model_tab_icon = xml:find('Name="XmlModelLine2"', 1, true)
 	local xml_model_grid_icon = xml:find('Name="XmlModelLine3"', 1, true)
+	local xml_model_tab_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine2")
+	local xml_model_grid_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine3")
 	local xml_model_image_icon = xml:find('Name="XmlModelLine5"', 1, true)
 	local xml_model_text_icon = xml:find('Name="XmlModelLine6"', 1, true)
-	local xml_model_tab_color = xml:find('Name="XmlModelLine2" PlaceholderTemplate="Example/Prefabs/XmlModelNode"', 1, true)
-	local xml_model_nested_padding = xml:find('Name="XmlModelLine5"', 1, true)
-		and xml:find('PaddingLeft="48"', 1, true)
-	local xml_model_leaf_padding = xml:find('Name="XmlModelLine6"', 1, true)
-		and xml:find('PaddingLeft="48"', 1, true)
+	local xml_model_tab_color = xml_model_tab_tag
+		and xml_model_grid_tag
+		and xml_model_tab_tag:find('Card.PrimaryColor="$text-secondary"', 1, true)
+		and xml_model_grid_tag:find('Card.PrimaryColor="$text-secondary"', 1, true)
+	local xml_model_image_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine5")
+	local xml_model_text_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine6")
+	local xml_model_nested_padding = xml_model_image_tag
+		and xml_model_image_tag:find('class="model-indent-leaf"', 1, true)
+		and tree_css
+		and tree_css:find(".model-indent-leaf { padding-left: 48; }", 1, true)
+	local xml_model_leaf_padding = xml_model_text_tag
+		and xml_model_text_tag:find('class="model-indent-leaf"', 1, true)
+		and tree_css
+		and tree_css:find(".model-indent-leaf { padding-left: 48; }", 1, true)
 	local icon_card = filesystem.readTextFile("samples/Example/Prefabs/IconCard.xml")
 	test.expect(icon_card ~= nil and icon_card ~= "", "IconCard prefab should be readable")
 	local icon_card_uses_image = icon_card:find("<ImageView Name=\"IconCardImage\"", 1, true)
 	local icon_card_uses_text = icon_card:find("TextRun.Text>{../Card.Icon}", 1, true)
-	local icon_card_header = icon_card:find('<StackView Name="IconCardHeader" Direction="Horizontal" Spacing="12" AlignItems="Center"', 1, true)
+	local icon_card_header = icon_card:find('<StackView Name="IconCardHeader" class="icon-card-header"', 1, true)
 	local icon_card_title_binding = icon_card:find('Text="{Binding ../../Card.Title}"', 1, true)
 	local icon_card_uses_deep_icon_binding = icon_card:find('Source="{Binding ../../../Card.Icon}"', 1, true)
-	local icon_card_square_badge = icon_card:find('Name="IconCardBadge" Width="48" Height="48"', 1, true)
+	local icon_card_square_badge = icon_card:find('Name="IconCardBadge" class="icon-badge"', 1, true)
+		and media_css
+		and media_css:find(".icon-badge { width: 48; height: 48;", 1, true)
 	local icon_card_badge_is_stackview = icon_card:find('<StackView Name="IconCardBadge"', 1, true)
-	local icon_card_badge_centers_icon = icon_card:find('AlignItems="Center"', 1, true) and icon_card:find('JustifyContent="Center"', 1, true)
+	local icon_card_badge_centers_icon = media_css
+		and media_css:find("align-items: center", 1, true)
+		and media_css:find("justify-content: center", 1, true)
 	local icon_card_badge_uses_title_depth = icon_card:find('BackgroundColor="{Binding ../../Card.IconBackground}"', 1, true)
 	local icon_card_badge_uses_binding = icon_card:find('<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>', 1, true)
 	local icon_property = package_lua:find('Name="Icon", DataType="Object", TypeString="Texture"', 1, true)
@@ -1345,7 +1361,9 @@ local function test_example_application_xml()
 	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
 	local metric_prefab = filesystem.readTextFile("samples/Example/Prefabs/Mertic.xml")
 	local metric_value_nowrap = metric_prefab and metric_prefab:find('Name="MetricUsersValue"', 1, true)
-		and metric_prefab:find('TextWrapping="NoWrap"', 1, true)
+		and metric_prefab:find('class="metric-value"', 1, true)
+		and typography_css
+		and typography_css:find(".metric-value { font-size: 28; text-wrap: nowrap; }", 1, true)
 	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
 	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
 	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")

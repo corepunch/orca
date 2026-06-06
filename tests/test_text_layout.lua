@@ -22,22 +22,21 @@ local function test_text_block_layout()
 	local text = screen + ui.TextBlock {
 		Name = "Text",
 		Text = config.text,
-		HorizontalAlignment = "Left",
 		HorizontalMargin = core.EdgeShorthand(config.margin.left, config.margin.right),
 		BorderRadius = core.CornerRadius(config.radius),
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	local text_width = text.ActualWidth
+	local text_width = text.DesiredWidth
 
 	-- Verify initial properties and layout
 	test.expect_eq(screen.Width, 1000, "Screen width should be 1000")
 	test.expect_eq(screen:findChild "Text", text, "Text block should be found as a child of the screen")
 	test.expect_eq(screen:findChild "Non-Existent", nil, "Non-Existent child should not be found")
 
-	-- Verify that the text block has a positive ActualWidth after layout update
-	test.expect(text.ActualWidth > 0, "Text block should have a positive ActualWidth after layout update")
+	-- Verify that the text block has a positive DesiredWidth after layout update
+	test.expect(text.DesiredWidth > 0, "Text block should have a positive DesiredWidth after layout update")
 	test.expect_eq(text:getRoot(), screen, "Text block's root should be the screen")
 
 	-- Verify that common classes and properties are available
@@ -71,8 +70,8 @@ local function test_text_block_layout()
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	-- Verify that the ActualWidth of the text block has increased after adding padding
-	test.expect_eq(text.ActualWidth, text_width + config.padding * 2, "Text block ActualWidth should increase after adding padding")
+	-- Verify that the DesiredWidth of the text block has increased after adding padding
+	test.expect_eq(text.DesiredWidth, text_width + config.padding * 2, "Text block DesiredWidth should increase after adding padding")
 
 	text:removeFromParent()
 
@@ -85,15 +84,15 @@ end
 -- Single-line text: two words must not wrap to a second line
 -- ---------------------------------------------------------------------------
 local function test_text_single_line_layout()
-	local single_word = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello" }
-	local two_words   = screen + ui.TextBlock { HorizontalAlignment = "Left", Text = "Hello World" }
+	local single_word = screen + ui.TextBlock { Text = "Hello" }
+	local two_words   = screen + ui.TextBlock { Text = "Hello World" }
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- "Hello World" should be wider than "Hello"
-	test.expect(two_words.ActualWidth > single_word.ActualWidth, "Two-word text should be wider than single-word text")
+	test.expect(two_words.DesiredWidth > single_word.DesiredWidth, "Two-word text should be wider than single-word text")
 	-- "Hello World" should have the same height as "Hello" (single line)
-	test.expect_eq(two_words.ActualHeight, single_word.ActualHeight, "Two-word text should have same height as single-word (one line, not two)")
+	test.expect_eq(two_words.DesiredHeight, single_word.DesiredHeight, "Two-word text should have same height as single-word (one line, not two)")
 
 	single_word:removeFromParent()
 	two_words:removeFromParent()
@@ -123,7 +122,7 @@ end
 -- Empty TextBlock: render texture lookup must tolerate no resolved text
 -- ---------------------------------------------------------------------------
 local function test_empty_text_block_foreground_content()
-	local empty = screen + ui.TextBlock { HorizontalAlignment = "Left" }
+	local empty = screen + ui.TextBlock {}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 	local texture = empty:send("Node2D.ForegroundContent")
@@ -139,7 +138,6 @@ end
 -- ---------------------------------------------------------------------------
 local function test_text_layout_uses_cached_measurement()
 	local text = screen + ui.TextBlock {
-		HorizontalAlignment = "Left",
 		Text = "Cached text metrics",
 		FontSize = 24,
 	}

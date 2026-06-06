@@ -15,11 +15,6 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `height` | `Node.Height` | float |
 | `min-width` | `Node.MinWidth` | float |
 | `min-height` | `Node.MinHeight` | float |
-| `horizontal-align` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
-| `horizontal-alignment` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
-| `vertical-align` | `Node.VerticalAlignment` | enum: VerticalAlignment |
-| `vertical-alignment` | `Node.VerticalAlignment` | enum: VerticalAlignment |
-| `align-self` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
 | `margin` | `Node.Margin` | Thickness |
 | `margin-top` | `Node.MarginTop` | float |
 | `margin-right` | `Node.MarginRight` | float |

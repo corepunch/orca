@@ -4,7 +4,7 @@
 	<TextBlock Name="test-text" FontSize="20" Text="This is a test screen." />
 	<!-- Test: v-stack > h-grid (auto cols) > v-stack > 2 nodes of known height.
 	     The grid must derive its height from the inner stack, not default to 0. -->
-	<StackView Name="outer-stack" Direction="Vertical" VerticalAlignment="Top">
+	<StackView Name="outer-stack" Direction="Vertical">
 		<Grid Name="test-grid" Columns="auto auto auto">
 			<StackView Name="inner-stack" Direction="Vertical">
 				<Node2D Name="node1" Height="50" />
@@ -14,7 +14,7 @@
 	</StackView>
 	<!-- Test: Node2D container with Padding wrapping a TextBlock must include
 	     the TextBlock height, not just the padding. -->
-	<Node2D Name="metric-users" Width="140" Padding="20" VerticalAlignment="Top">
+	<Node2D Name="metric-users" Width="140" Padding="20">
 		<TextBlock Name="metric-text" Text="2.4 M" FontSize="28" />
 	</Node2D>
 </Screen>

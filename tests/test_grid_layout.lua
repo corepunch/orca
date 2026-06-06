@@ -45,8 +45,8 @@ local function test_grid_view_in_stack_layout()
 	local row2  = stack  + ui.Grid { Columns = "auto auto" }
 	local text11 = row1  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 16 }
 	local text12 = row1  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 24 }
-	local text21 = row2  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 18, VerticalAlignment = "Top" }
-	local text22 = row2  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 32, VerticalAlignment = "Top" }
+	local text21 = row2  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 18, Height = 22 }
+	local text22 = row2  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 32, Height = 38 }
 
 	test.expect_eq(row1.ActualHeight, 0, "Row 1 should have zero height before layout update")
 
@@ -54,7 +54,7 @@ local function test_grid_view_in_stack_layout()
 
 	-- Each row should have height equal to the tallest cell in that row (since columns are auto-sized)
 	test.expect_eq(text11.ActualHeight, text12.ActualHeight, "Text blocks in the same row should have the same height when vertical alignment is 'Stretch'")
-	test.expect(text21.ActualHeight ~= text22.ActualHeight, "Text blocks in the same row can have different heights if vertical alignment is not 'Stretch'")
+	test.expect(text21.ActualHeight ~= text22.ActualHeight, "Text blocks in the same row can have different explicit heights")
 	test.expect_eq(row1.ActualHeight, text11.ActualHeight + 2 * config.grid_margin, "Row 1 height should match tallest cell plus margin")
 	test.expect_eq(row2.ActualHeight, math.max(text21.ActualHeight, text22.ActualHeight) + 2 * config.grid_margin, "Row 2 height should match tallest cell plus margin")
 

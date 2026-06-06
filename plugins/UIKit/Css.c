@@ -60,11 +60,6 @@ k_css_prop_map[] = {
     { "height",            "Node.Height"                   },
     { "min-width",         "Node.MinWidth"                 },
     { "min-height",        "Node.MinHeight"                },
-    { "horizontal-align",  "Node.HorizontalAlignment"      },
-    { "horizontal-alignment", "Node.HorizontalAlignment"   },
-    { "vertical-align",    "Node.VerticalAlignment"        },
-    { "vertical-alignment", "Node.VerticalAlignment"       },
-    { "align-self",        "Node.HorizontalAlignment"      },
     { "margin",            "Node.Margin"                   },
     { "margin-top",        "Node.MarginTop"                },
     { "margin-right",      "Node.MarginRight"              },
@@ -231,6 +226,14 @@ css_normalize_decl_value(const char *css_key,
             snprintf(out, out_size, "true");
             return out;
         }
+    }
+
+    if ((!strcasecmp(css_key, "width") ||
+         !strcasecmp(css_key, "height") ||
+         !strncasecmp(css_key, "margin", 6)) &&
+        !strcasecmp(css_value, "auto")) {
+        snprintf(out, out_size, "nan");
+        return out;
     }
 
     if (!strcasecmp(css_key, "pointer-events")) {
