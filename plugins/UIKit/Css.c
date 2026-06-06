@@ -145,10 +145,7 @@ k_css_prop_map[] = {
     { "text-wrap",         "TextBlockConcept.TextWrapping" },
     { "text-overflow",     "TextBlockConcept.TextOverflow" },
     { "text-align",        "TextBlockConcept.TextHorizontalAlignment" },
-    { "text-horizontal-align", "TextBlockConcept.TextHorizontalAlignment" },
-    { "text-horizontal-alignment", "TextBlockConcept.TextHorizontalAlignment" },
     { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
-    { "text-vertical-alignment", "TextBlockConcept.TextVerticalAlignment" },
     { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
     { NULL, NULL }
 };

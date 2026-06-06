@@ -229,6 +229,8 @@ Use width/height and auto margins as the layout alignment model:
 
 Prefer these CSS-native rules over legacy `HorizontalAlignment`/`VerticalAlignment` properties. Those alignment properties are compatibility helpers that translate back into size and auto-margin values.
 
+For text inside controls, use `text-align` for horizontal placement. ORCA also supports `text-vertical-align` for vertical placement inside text bounds; plain `TextBlock` content defaults to `top`, while `Input` text defaults to `center`, so normal inputs do not need an explicit `text-vertical-align: center;`.
+
 #### Case and duplicate rules
 
 - CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.

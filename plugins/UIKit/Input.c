@@ -20,8 +20,8 @@ Input_ApplyTextDefaults(struct Object *hObject)
     PROP_SetValue(foregroundProp, &foreground);
   }
   node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
-  node->Border.Width = (struct Thickness){{1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f}};
-  node->Padding = (struct Thickness){{8.0f, 8.0f}, {6.0f, 6.0f}, {0.0f, 0.0f}};
+  node->Border.Width = (struct Thickness){{{1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f}}};
+  node->Padding = (struct Thickness){{{8.0f, 8.0f}, {6.0f, 6.0f}, {0.0f, 0.0f}}};
   GetTextBlockConcept(hObject)->TextVerticalAlignment = kTextVerticalAlignmentCenter;
 }
 

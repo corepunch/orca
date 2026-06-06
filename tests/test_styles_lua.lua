@@ -706,7 +706,35 @@ local function test_css_expanded_property_aliases()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 25: CSS edge shorthands use CSS order before ORCA Thickness parsing
+-- Test 25: Removed text alignment aliases stay unsupported
+-- ---------------------------------------------------------------------------
+local function test_css_removed_text_alignment_aliases()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .copy {
+      text-horizontal-align: right;
+      text-horizontal-alignment: right;
+      text-vertical-alignment: bottom;
+    }
+  ]]
+  local text = screen + ui.TextBlock {
+    class = "copy",
+    Text = "copy",
+    TextHorizontalAlignment = "Left",
+    TextVerticalAlignment = "Top",
+  }
+
+  applyStyles(text)
+
+  test.expect_eq(text.TextHorizontalAlignment, "Left", "removed text horizontal aliases are ignored")
+  test.expect_eq(text.TextVerticalAlignment, "Top", "removed text vertical alias is ignored")
+
+  text:removeFromParent()
+  print("PASS: test_css_removed_text_alignment_aliases")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 26: CSS edge shorthands use CSS order before ORCA Thickness parsing
 -- ---------------------------------------------------------------------------
 local function test_css_edge_shorthand_order()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -761,7 +789,7 @@ local function test_css_edge_shorthand_order()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 26: @apply can reference selectors without a leading dot
+-- Test 27: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -782,7 +810,7 @@ local function test_css_apply_reference_without_dot()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 27: @apply merges multiple sources
+-- Test 28: @apply merges multiple sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_multiple_sources()
   local css = [[
@@ -805,7 +833,7 @@ local function test_css_apply_multiple_sources()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 28: Local declarations override @apply sources
+-- Test 29: Local declarations override @apply sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_preserves_local_declarations()
   local css = [[
@@ -827,7 +855,7 @@ local function test_css_apply_preserves_local_declarations()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 29: Body selector applies to the root object that owns the stylesheet
+-- Test 30: Body selector applies to the root object that owns the stylesheet
 -- ---------------------------------------------------------------------------
 local function test_css_body_selector_applies_to_root()
   local screen = ui.Screen {
@@ -845,7 +873,7 @@ local function test_css_body_selector_applies_to_root()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 30: ID selectors match object names
+-- Test 31: ID selectors match object names
 -- ---------------------------------------------------------------------------
 local function test_css_id_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
@@ -871,7 +899,7 @@ local function test_css_id_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 31: Direct parent selectors match only immediate children
+-- Test 32: Direct parent selectors match only immediate children
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector()
   local css = "StackView > Label { opacity: 0.31; }"
@@ -893,7 +921,7 @@ local function test_css_direct_parent_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 32: Direct parent selectors also support class and ID selectors
+-- Test 33: Direct parent selectors also support class and ID selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_class_and_id_selectors()
   local css = [[
@@ -919,7 +947,7 @@ local function test_css_direct_parent_class_and_id_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: Descendant selectors match any ancestor, not just direct parents
+-- Test 34: Descendant selectors match any ancestor, not just direct parents
 -- ---------------------------------------------------------------------------
 local function test_css_descendant_selector()
   local css = [[
@@ -948,7 +976,7 @@ local function test_css_descendant_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 34: Descendant selectors compose with direct child selectors
+-- Test 35: Descendant selectors compose with direct child selectors
 -- ---------------------------------------------------------------------------
 local function test_css_mixed_descendant_and_direct_child_selectors()
   local css = [[
@@ -976,7 +1004,7 @@ local function test_css_mixed_descendant_and_direct_child_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 35: Compound selectors match type, class, and ID on one object
+-- Test 36: Compound selectors match type, class, and ID on one object
 -- ---------------------------------------------------------------------------
 local function test_css_compound_type_class_selectors()
   local css = [[
@@ -1040,7 +1068,7 @@ local function test_css_compound_type_class_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 36: Pseudo-classes apply to class, ID, and type selectors
+-- Test 37: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -1078,7 +1106,7 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 37: Pseudo-classes work on direct parent selectors
+-- Test 38: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
@@ -1099,7 +1127,7 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 38: CSS font-family accepts quoted names and generic fallbacks
+-- Test 39: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
@@ -1149,6 +1177,7 @@ test_css_color_properties()
 test_css_theme_variables()
 test_css_text_property_map()
 test_css_expanded_property_aliases()
+test_css_removed_text_alignment_aliases()
 test_css_edge_shorthand_order()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()

@@ -15,6 +15,8 @@ For layout alignment, prefer CSS-native sizing and auto margins:
 - `margin-top: auto; margin-bottom: auto;` centers an explicit-height node vertically.
 - `margin-top: auto;` aligns an explicit-height node to the trailing/bottom edge.
 
+For text alignment, use the CSS-native `text-align` property for horizontal text placement. ORCA also supports `text-vertical-align` as a small extension for vertical text placement inside text bounds; `TextBlock` defaults to `top`, while `Input` defaults to `center`.
+
 | CSS property | ORCA property | Value type |
 |--------------|---------------|------------|
 | `background-color` | `Node2D.BackgroundColor` | color |
@@ -102,10 +104,7 @@ For layout alignment, prefer CSS-native sizing and auto margins:
 | `text-wrap` | `TextBlockConcept.TextWrapping` | enum: TextWrapping |
 | `text-overflow` | `TextBlockConcept.TextOverflow` | enum: TextOverflow |
 | `text-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
-| `text-horizontal-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
-| `text-horizontal-alignment` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
 | `text-vertical-align` | `TextBlockConcept.TextVerticalAlignment` | enum: TextVerticalAlignment |
-| `text-vertical-alignment` | `TextBlockConcept.TextVerticalAlignment` | enum: TextVerticalAlignment |
 | `placeholder-color` | `TextBlockConcept.PlaceholderColor` | color |
 
 ## Special Cases
@@ -116,5 +115,6 @@ For layout alignment, prefer CSS-native sizing and auto margins:
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
 - `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space.
 - `margin-* : auto` normalizes to `NaN` and is used for alignment.
+- `text-vertical-align` is an ORCA extension; use it only when text must be vertically positioned inside a `TextBlock` or `Input`.
 - `pointer-events` maps to `Node2D.IgnoreHitTest`: `none` becomes `true`; `auto` becomes `false`.
 - Child clipping behavior is controlled through `overflow`, `overflow-x`, and `overflow-y`.
