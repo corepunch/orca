@@ -20,14 +20,9 @@ Input_ApplyTextDefaults(struct Object *hObject)
     PROP_SetValue(foregroundProp, &foreground);
   }
   node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
-  node->Border.Width.Axis[0].Left = 1.0f;
-  node->Border.Width.Axis[0].Right = 1.0f;
-  node->Border.Width.Axis[1].Left = 1.0f;
-  node->Border.Width.Axis[1].Right = 1.0f;
-  node->Padding.Axis[0].Left = 8.0f;
-  node->Padding.Axis[0].Right = 8.0f;
-  node->Padding.Axis[1].Left = 6.0f;
-  node->Padding.Axis[1].Right = 6.0f;
+  node->Border.Width = (struct Thickness){{1.0f, 1.0f}, {1.0f, 1.0f}, {1.0f, 1.0f}};
+  node->Padding = (struct Thickness){{8.0f, 8.0f}, {6.0f, 6.0f}, {0.0f, 0.0f}};
+  GetTextBlockConcept(hObject)->TextVerticalAlignment = kTextVerticalAlignmentCenter;
 }
 
 HANDLER(Input, Node2D, DrawBrush)
@@ -44,10 +39,13 @@ HANDLER(Input, Node2D, DrawBrush)
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
     entity.bbox = BOX3_FromRect(pTextRun->_textinfo.cursor);
-    entity.bbox.min.x += pTextRun->_textinfo.txInsets.left;
-    entity.bbox.min.y += pTextRun->_textinfo.txInsets.top;
-    entity.bbox.max.x += pTextRun->_textinfo.txInsets.left;
-    entity.bbox.max.y += pTextRun->_textinfo.txInsets.top;
+    struct vec3 inset = {
+      pTextRun->_textinfo.txInsets.left,
+      pTextRun->_textinfo.txInsets.top,
+      0,
+    };
+    entity.bbox.min = VEC3_Add(&entity.bbox.min, &inset);
+    entity.bbox.max = VEC3_Add(&entity.bbox.max, &inset);
     float offset_x = text_pos(NODE2D_FRAME(pNode2D, Padding, 0),
                               pTextBlockConcept->TextHorizontalAlignment,
                               pTextRun->_textinfo.txWidth,
@@ -56,10 +54,9 @@ HANDLER(Input, Node2D, DrawBrush)
                               pTextBlockConcept->TextVerticalAlignment,
                               pTextRun->_textinfo.txHeight,
                               Node2D_GetFrame(pNode2D, kBox3FieldHeight));
-    entity.bbox.min.x += offset_x;
-    entity.bbox.min.y += offset_y;
-    entity.bbox.max.x += offset_x;
-    entity.bbox.max.y += offset_y;
+    struct vec3 offset = { offset_x, offset_y, 0 };
+    entity.bbox.min = VEC3_Add(&entity.bbox.min, &offset);
+    entity.bbox.max = VEC3_Add(&entity.bbox.max, &offset);
 
     R_DrawEntity(pDrawBrush->viewdef, &entity);
   }
@@ -69,12 +66,13 @@ HANDLER(Input, Node2D, DrawBrush)
     struct color checked = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
     struct color checkmark = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
     memset(&entity, 0, sizeof(entity));
-    struct Node2D *pNode2D = GetNode2D(hObject);
     Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
-    float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-    float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-    entity.bbox.max.x = entity.bbox.min.x + w;
-    entity.bbox.max.y = entity.bbox.min.y + h;
+    struct vec3 size = {
+      Node2D_GetFrame(pNode2D, kBox3FieldWidth),
+      Node2D_GetFrame(pNode2D, kBox3FieldHeight),
+      0,
+    };
+    entity.bbox.max = VEC3_Add(&entity.bbox.min, &size);
     entity.radius = (struct vec4) {4,4,4,4};
     entity.material.color = unchecked;
     entity.material.opacity = pNode2D->_opacity;
