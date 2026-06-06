@@ -280,7 +280,8 @@ _AlignAxis(struct Node2D *pNode2D, struct rect const *rect, enum Direction axis,
   return r[axis] + offset + transformOffset;
 }
 
-static float _MeasureAxis(struct Node2D *n, float space, int axis) {
+static float _MeasureAxis(struct Node2D *n, float space, int axis)
+{
   if (!isnan(NODE2D_FRAME(n, Size, axis).Requested)) {
     return NODE2D_FRAME(n, Size, axis).Requested;
   } else if (n->RenderTarget) {
@@ -291,6 +292,20 @@ static float _MeasureAxis(struct Node2D *n, float space, int axis) {
   } else {
     return space;
   }
+}
+
+static float
+_ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
+{
+  float const requested = NODE2D_FRAME(n, Size, axis).Requested;
+  if (!isnan(requested)) return requested;
+  if (isinf(available)) return NODE2D_FRAME(n, Size, axis).Desired;
+
+  bool_t const leadingAuto = _MarginIsAuto(n, axis, FALSE);
+  bool_t const trailingAuto = _MarginIsAuto(n, axis, TRUE);
+  if (leadingAuto && trailingAuto) return NODE2D_FRAME(n, Size, axis).Desired;
+
+  return available - TOTAL_MARGIN(n, axis);
 }
 
 HANDLER(Node2D, Node2D, Measure)
@@ -317,24 +332,11 @@ HANDLER(Node2D, Node2D, Measure)
 HANDLER(Node2D, Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
-  struct Size s = {0};
-  
-  if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
-    s.width = NODE2D_FRAME(n, Size, 0).Requested;
-  } else if (isinf(pArrange->Width)) {
-    s.width = NODE2D_FRAME(n, Size, 0).Desired;
-  } else {
-    s.width = pArrange->Width - TOTAL_MARGIN(n, 0);
-  }
+  struct Size s = {
+    _ArrangeAxisSize(n, pArrange->Width, 0),
+    _ArrangeAxisSize(n, pArrange->Height, 1),
+  };
 
-  if (!isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
-    s.height = NODE2D_FRAME(n, Size, 1).Requested;
-  } else if (isinf(pArrange->Height)) {
-    s.height = NODE2D_FRAME(n, Size, 1).Desired;
-  } else {
-    s.height = pArrange->Height - TOTAL_MARGIN(n, 1);
-  }
-  
   struct rect m = {
     pArrange->X + MARGIN_TOP(n, 0),
     pArrange->Y + MARGIN_TOP(n, 1),
@@ -348,20 +350,20 @@ HANDLER(Node2D, Node2D, Arrange)
     .width  = s.width,
     .height = s.height,
   };
-  
+
   LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
     .X      = PADDING_TOP(n, 0),
     .Y      = PADDING_TOP(n, 1),
     .Width  = rect.width  - TOTAL_PADDING(n, 0),
     .Height = rect.height - TOTAL_PADDING(n, 1),
   );
-  
+
   // Final frame is the outer rect (including padding, excluding margin)
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
   Node2D_SetFrame(n, kBox3FieldY,      rect.y);
   Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
   Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1));
-  
+
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
 

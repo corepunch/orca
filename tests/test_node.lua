@@ -74,6 +74,45 @@ local function test_node_alignment()
 	bottom_node:removeFromParent()
 end
 
+local function test_auto_size_with_auto_margins_uses_desired_size()
+	local auto = 0 / 0
+	local root = screen + ui.Node2D {
+		Width = 400,
+		Height = 300,
+	}
+
+	local centered = root + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+		MarginRight = auto,
+	}
+	local centered_label = centered + ui.TextBlock { Text = "Center me", FontSize = 16 }
+
+	local right = root + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+	}
+	local right_label = right + ui.TextBlock { Text = "Right", FontSize = 16 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(centered.ActualWidth, centered_label.ActualWidth + 16,
+		"Auto width with dual auto margins should collapse to content width plus horizontal padding")
+	test.expect_near(centered.ActualX, (root.ActualWidth - centered.ActualWidth) * 0.5, 0.01,
+		"Auto width + dual auto margins should center horizontally")
+	test.expect_near(right.ActualX, root.ActualWidth - right.ActualWidth, 0.01,
+		"Auto width + leading auto margin should align to the right edge")
+	test.expect(right.ActualWidth >= right_label.ActualWidth + 16,
+		"Right-aligned auto-width node should include horizontal padding around content")
+
+	root:removeFromParent()
+	print("PASS: test_auto_size_with_auto_margins_uses_desired_size")
+end
+
 local function test_legacy_alignment_bridge()
 	local node = screen + ui.Node2D {
 		Width = 200,
@@ -197,6 +236,7 @@ end
 orca.async = function (callback) callback() end
 
 test_node_alignment()
+test_auto_size_with_auto_margins_uses_desired_size()
 test_legacy_alignment_bridge()
 test_node2d_container_height()
 test_node_visibility()
