@@ -83,6 +83,31 @@
       <value name="SizeOnly">Return only the base size</value>
       <value name="MinusPadding">Subtract padding from size</value>
     </enum>
+    <!-- Compatibility helper enums for old WPF-style alignment authoring.
+         Layout does not read these as a source of truth; Node translates them
+         to canonical Width/Height/Depth = NaN and Margin* = NaN semantics.
+         They may be removed once callers have migrated to size/auto margins. -->
+    <enum name="HorizontalAlignment">
+      <summary>Compatibility alignment values translated to width and horizontal margins.</summary>
+      <value name="Left">Align to the leading horizontal edge.</value>
+      <value name="Center">Center horizontally using automatic horizontal margins.</value>
+      <value name="Right">Align to the trailing horizontal edge using an automatic leading margin.</value>
+      <value name="Stretch">Stretch horizontally by clearing the requested width to auto.</value>
+    </enum>
+    <enum name="VerticalAlignment">
+      <summary>Compatibility alignment values translated to height and vertical margins.</summary>
+      <value name="Top">Align to the leading vertical edge.</value>
+      <value name="Center">Center vertically using automatic vertical margins.</value>
+      <value name="Bottom">Align to the trailing vertical edge using an automatic leading margin.</value>
+      <value name="Stretch">Stretch vertically by clearing the requested height to auto.</value>
+    </enum>
+    <enum name="DepthAlignment">
+      <summary>Compatibility alignment values translated to depth and depth margins.</summary>
+      <value name="Front">Align to the leading depth edge.</value>
+      <value name="Center">Center in depth using automatic depth margins.</value>
+      <value name="Back">Align to the trailing depth edge using an automatic leading margin.</value>
+      <value name="Stretch">Stretch in depth by clearing the requested depth to auto.</value>
+    </enum>
     <enum name="BorderStyle">
       <summary>Visual styles for element borders</summary>
       <value name="None">No border</value>
@@ -196,6 +221,13 @@
       <details>You can set values and the engine will try its best to preserve those.</details>
       <fields>
         <field name="Axis" type="SizeAxisShorthand" fixed-array="3">A number value per axis</field>
+      </fields>
+    </struct>
+    <struct name="AlignmentShorthand">
+      <summary>Compatibility alignment shorthand translated to size and auto-margin properties.</summary>
+      <details>Compatibility helper only. These fields remain as an authoring and API bridge and may be removed in the future. Layout reads Width/Height/Depth and Margin* as the canonical model.</details>
+      <fields>
+        <field name="Axis" type="int" fixed-array="3">Compatibility alignment per axis.</field>
       </fields>
     </struct>
   </structs>
@@ -907,9 +939,11 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <handle message="Node.GetSize"/>
         <handle message="Node.IsVisible"/>
         <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
       </handles>
       <properties>
         <property name="Size" type="SizeShorthand">Sizing configuration of this element</property>
+        <property name="Alignment" type="AlignmentShorthand">Compatibility helper bridge for old alignment authoring; may be removed. Prefer auto size and auto margins.</property>
         <property name="Margin" type="Thickness">External spacing around the element</property>
         <property name="Padding" type="Thickness">Internal spacing between element border and content</property>
         <property name="Border" type="BorderShorthand">Border definition along each axis</property>

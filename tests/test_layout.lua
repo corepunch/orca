@@ -259,6 +259,7 @@ local function test_xml_loading_properties()
 	local xml = [[
 <Screen Name="xml-screen" Width="800" Height="600" ResizeMode="NoResize">
   <Node2D Name="child-node" Width="100" Height="50" />
+  <Node2D Name="legacy-aligned" Width="120" Height="60" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
 </Screen>]]
 
 	local root = filesystem.loadObjectFromXmlString(xml)
@@ -271,6 +272,13 @@ local function test_xml_loading_properties()
 	test.expect(child ~= nil, "child-node should exist")
 	test.expect_eq(child.Width, 100, "child Width from XML")
 	test.expect_eq(child.Height, 50, "child Height from XML")
+
+	local aligned = root:findChild("legacy-aligned", true)
+	test.expect(aligned ~= nil, "legacy-aligned should exist")
+	test.expect(aligned.MarginLeft ~= aligned.MarginLeft, "HorizontalAlignment XML should map to auto left margin")
+	test.expect(aligned.MarginRight ~= aligned.MarginRight, "HorizontalAlignment XML should map to auto right margin")
+	test.expect(aligned.MarginTop ~= aligned.MarginTop, "VerticalAlignment XML should map to auto top margin")
+	test.expect_near(aligned.MarginBottom, 0, 0.001, "VerticalAlignment XML should clear bottom margin")
 
 	print("PASS: test_xml_loading_properties")
 end

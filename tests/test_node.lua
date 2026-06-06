@@ -17,8 +17,9 @@ local function test_node_alignment()
 	local center_hit = false
 	local right_hit = false
 
-	-- A node with default Width=NaN fills parent width
-	local stretch_node = screen + ui.Node2D {}
+	local stretch_node = screen + ui.Node2D {
+		Width = auto,
+	}
 
 	local fixed_width = 200
 	local left_node = screen + ui.Node2D {
@@ -41,15 +42,26 @@ local function test_node_alignment()
 			return true
 		end,
 	}
+	local bottom_node = screen + ui.Node2D {
+		Width = 100,
+		Height = 100,
+		MarginTop = auto,
+	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	test.expect_eq(stretch_node.ActualWidth, screen.Width,
-		"Node with default Width=NaN should stretch to fill screen width")
+		"Node with Width=NaN should stretch to fill screen width")
 	test.expect_eq(left_node.ActualWidth, fixed_width,
 		"Explicit-width node should use that width")
 	test.expect(left_node.ActualWidth < screen.Width,
 		"Explicit-width node should be narrower than the screen")
+	test.expect_near(center_node.ActualX, (screen.Width - fixed_width) / 2, 0.001,
+		"NaN left and right margins should arrange an explicit-width node in the center")
+	test.expect_near(right_node.ActualX, screen.Width - fixed_width, 0.001,
+		"NaN left margin should arrange an explicit-width node against the right edge")
+	test.expect_near(bottom_node.ActualY, screen.Height - bottom_node.ActualHeight, 0.001,
+		"NaN top margin should arrange an explicit-height node against the bottom edge")
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 500, y = 1 }
 	test.expect(center_hit, "NaN left and right margins should center an explicit-width node")
 	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 999, y = 1 }
@@ -59,6 +71,42 @@ local function test_node_alignment()
 	left_node:removeFromParent()
 	center_node:removeFromParent()
 	right_node:removeFromParent()
+	bottom_node:removeFromParent()
+end
+
+local function test_legacy_alignment_bridge()
+	local node = screen + ui.Node2D {
+		Width = 200,
+		Height = 80,
+		HorizontalAlignment = "Center",
+		VerticalAlignment = "Bottom",
+	}
+
+	test.expect(node.MarginLeft ~= node.MarginLeft,
+		"HorizontalAlignment=Center should map to auto left margin")
+	test.expect(node.MarginRight ~= node.MarginRight,
+		"HorizontalAlignment=Center should map to auto right margin")
+	test.expect(node.MarginTop ~= node.MarginTop,
+		"VerticalAlignment=Bottom should map to auto top margin")
+	test.expect_near(node.MarginBottom, 0, 0.001,
+		"VerticalAlignment=Bottom should clear bottom margin")
+
+	node.HorizontalAlignment = "Right"
+	test.expect(node.MarginLeft ~= node.MarginLeft,
+		"HorizontalAlignment=Right should map to auto left margin")
+	test.expect_near(node.MarginRight, 0, 0.001,
+		"HorizontalAlignment=Right should clear right margin")
+
+	node.HorizontalAlignment = "Stretch"
+	test.expect(node.Width ~= node.Width,
+		"HorizontalAlignment=Stretch should map to Width=NaN")
+	test.expect_near(node.MarginLeft, 0, 0.001,
+		"HorizontalAlignment=Stretch should clear left margin")
+	test.expect_near(node.MarginRight, 0, 0.001,
+		"HorizontalAlignment=Stretch should clear right margin")
+
+	node:removeFromParent()
+	print("PASS: test_legacy_alignment_bridge")
 end
 
 -- ---------------------------------------------------------------------------
@@ -149,6 +197,7 @@ end
 orca.async = function (callback) callback() end
 
 test_node_alignment()
+test_legacy_alignment_bridge()
 test_node2d_container_height()
 test_node_visibility()
 test_property_change_notification()
