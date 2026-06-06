@@ -83,26 +83,23 @@
       <value name="SizeOnly">Return only the base size</value>
       <value name="MinusPadding">Subtract padding from size</value>
     </enum>
-    <!-- Compatibility helper enums for old WPF-style alignment authoring.
-         Layout does not read these as a source of truth; Node translates them
-         to canonical Width/Height/Depth = NaN and Margin* = NaN semantics.
-         They may be removed once callers have migrated to size/auto margins. -->
+    <!-- Compatibility helper enums: Node translates these to Width/Height/Depth and Margin* NaN semantics; may be removed. -->
     <enum name="HorizontalAlignment">
-      <summary>Compatibility alignment values translated to width and horizontal margins.</summary>
+      <summary>Compatibility helper translated to width and horizontal margins; may be removed.</summary>
       <value name="Left">Align to the leading horizontal edge.</value>
       <value name="Center">Center horizontally using automatic horizontal margins.</value>
       <value name="Right">Align to the trailing horizontal edge using an automatic leading margin.</value>
       <value name="Stretch">Stretch horizontally by clearing the requested width to auto.</value>
     </enum>
     <enum name="VerticalAlignment">
-      <summary>Compatibility alignment values translated to height and vertical margins.</summary>
+      <summary>Compatibility helper translated to height and vertical margins; may be removed.</summary>
       <value name="Top">Align to the leading vertical edge.</value>
       <value name="Center">Center vertically using automatic vertical margins.</value>
       <value name="Bottom">Align to the trailing vertical edge using an automatic leading margin.</value>
       <value name="Stretch">Stretch vertically by clearing the requested height to auto.</value>
     </enum>
     <enum name="DepthAlignment">
-      <summary>Compatibility alignment values translated to depth and depth margins.</summary>
+      <summary>Compatibility helper translated to depth and depth margins; may be removed.</summary>
       <value name="Front">Align to the leading depth edge.</value>
       <value name="Center">Center in depth using automatic depth margins.</value>
       <value name="Back">Align to the trailing depth edge using an automatic leading margin.</value>
@@ -224,8 +221,8 @@
       </fields>
     </struct>
     <struct name="AlignmentShorthand">
-      <summary>Compatibility alignment shorthand translated to size and auto-margin properties.</summary>
-      <details>Compatibility helper only. These fields remain as an authoring and API bridge and may be removed in the future. Layout reads Width/Height/Depth and Margin* as the canonical model.</details>
+      <summary>Compatibility helper translated to size and auto-margin properties; may be removed.</summary>
+      <details>Layout reads Width/Height/Depth and Margin* as the canonical model.</details>
       <fields>
         <field name="Axis" type="int" fixed-array="3">Compatibility alignment per axis.</field>
       </fields>

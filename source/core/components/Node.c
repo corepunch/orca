@@ -2,6 +2,12 @@
 
 #include <math.h>
 
+static void Node_SetFloatProperty(struct Object *object, uint32_t id, float value)
+{
+  struct Property *property = NULL;
+  if (SUCCEEDED(OBJ_FindLongProperty(object, id, &property))) PROP_SetValue(property, &value);
+}
+
 HANDLER(Node, Node, GetSize)
 {
   return MAKEDWORD(pNode->Size.Axis[0].Actual, pNode->Size.Axis[1].Actual);
@@ -36,84 +42,23 @@ HANDLER(Node, Object, Start)
 
 HANDLER(Node, Object, PropertyChanged)
 {
-  if (!pPropertyChanged || !pPropertyChanged->Property) {
-    return FALSE;
-  }
+  if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
 
-  /* Compatibility helper layer for old Horizontal/Vertical/DepthAlignment
-   * properties. These are not canonical layout inputs and may be removed once
-   * callers migrate to Width/Height/Depth = NaN and Margin* = NaN alignment. */
-  static uint32_t const size_ids[] = {
-    ID_Node_Width,
-    ID_Node_Height,
-    ID_Node_Depth,
+  /* Compatibility helper: old *Alignment props translate to Width/Height/Depth
+   * and Margin* NaN semantics. Not canonical layout input; may be removed. */
+  static uint32_t const ids[3][4] = {
+    {ID_Node_HorizontalAlignment, ID_Node_Width,  ID_Node_MarginLeft,  ID_Node_MarginRight},
+    {ID_Node_VerticalAlignment,   ID_Node_Height, ID_Node_MarginTop,   ID_Node_MarginBottom},
+    {ID_Node_DepthAlignment,      ID_Node_Depth,  ID_Node_MarginFront, ID_Node_MarginBack},
   };
-  static uint32_t const leading_margin_ids[] = {
-    ID_Node_MarginLeft,
-    ID_Node_MarginTop,
-    ID_Node_MarginFront,
-  };
-  static uint32_t const trailing_margin_ids[] = {
-    ID_Node_MarginRight,
-    ID_Node_MarginBottom,
-    ID_Node_MarginBack,
-  };
-  static uint32_t const alignment_ids[] = {
-    ID_Node_HorizontalAlignment,
-    ID_Node_VerticalAlignment,
-    ID_Node_DepthAlignment,
-  };
-
-  uint32_t changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  uint32_t const changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
   for (int axis = 0; axis < 3; axis++) {
-    if (changed != alignment_ids[axis]) {
-      continue;
-    }
-
+    if (changed != ids[axis][0]) continue;
     int alignment = *(int *)PROP_GetValue(pPropertyChanged->Property);
-    float zero = 0;
-    float auto_value = NAN;
-    struct Property *property = NULL;
-
-    switch (alignment) {
-      case 1: /* Center */
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, leading_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &auto_value);
-        }
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, trailing_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &auto_value);
-        }
-        break;
-      case 2: /* Right, Bottom, Back */
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, leading_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &auto_value);
-        }
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, trailing_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &zero);
-        }
-        break;
-      case 3: /* Stretch */
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, size_ids[axis], &property))) {
-          PROP_SetValue(property, &auto_value);
-        }
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, leading_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &zero);
-        }
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, trailing_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &zero);
-        }
-        break;
-      case 0: /* Left, Top, Front */
-      default:
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, leading_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &zero);
-        }
-        if (SUCCEEDED(OBJ_FindLongProperty(hObject, trailing_margin_ids[axis], &property))) {
-          PROP_SetValue(property, &auto_value);
-        }
-        break;
-    }
-
+    if (alignment < 0 || alignment > 3) alignment = 0;
+    if (alignment == 3) Node_SetFloatProperty(hObject, ids[axis][1], NAN);
+    Node_SetFloatProperty(hObject, ids[axis][2], (alignment == 1 || alignment == 2) ? NAN : 0);
+    Node_SetFloatProperty(hObject, ids[axis][3], (alignment == 0 || alignment == 1) ? NAN : 0);
     return FALSE;
   }
   return FALSE;
