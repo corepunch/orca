@@ -795,6 +795,7 @@
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="Object.Create"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Destroy"/>

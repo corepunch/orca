@@ -316,3 +316,11 @@ HANDLER(ImageView, Node, LoadView)
 
   return TRUE;
 }
+
+HANDLER(ImageView, Object, Create) {
+  struct Property *p;
+  struct color white = {1,1,1,1};
+  OBJ_FindShortProperty(hObject, "ForegroundColor", &p);
+  PROP_SetValue(p, &white);
+  return FALSE;
+}
