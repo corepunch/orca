@@ -259,6 +259,12 @@ _MarginIsAuto(struct Node2D *pNode2D, enum Direction axis, bool_t trailing)
   return isnan(value);
 }
 
+static bool_t
+_AxisHasAutoMargin(struct Node2D *pNode2D, enum Direction axis)
+{
+  return _MarginIsAuto(pNode2D, axis, FALSE) || _MarginIsAuto(pNode2D, axis, TRUE);
+}
+
 static float
 _AlignAxis(struct Node2D *pNode2D, struct rect const *rect, enum Direction axis, float length)
 {
@@ -289,6 +295,8 @@ static float _MeasureAxis(struct Node2D *n, float space, int axis)
     Image_GetInfo(n->RenderTarget, &image);
     int const size[] = { image.bmWidth, image.bmHeight, 0 };
     return size[axis] + TOTAL_PADDING(n, axis);
+  } else if (_AxisHasAutoMargin(n, axis)) {
+    return INFINITY;
   } else {
     return space;
   }
@@ -301,9 +309,9 @@ _ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
   if (!isnan(requested)) return requested;
   if (isinf(available)) return NODE2D_FRAME(n, Size, axis).Desired;
 
-  bool_t const leadingAuto = _MarginIsAuto(n, axis, FALSE);
-  bool_t const trailingAuto = _MarginIsAuto(n, axis, TRUE);
-  if (leadingAuto && trailingAuto) return NODE2D_FRAME(n, Size, axis).Desired;
+  if (_AxisHasAutoMargin(n, axis)) {
+    return fmin(NODE2D_FRAME(n, Size, axis).Desired, available - TOTAL_MARGIN(n, axis));
+  }
 
   return available - TOTAL_MARGIN(n, axis);
 }

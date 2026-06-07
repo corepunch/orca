@@ -35,7 +35,7 @@ struct TextBlockTextRun
 struct TextBlockText
 {
   uint32_t flags;
-  uint32_t availableWidth;
+  float availableWidth;
   uint32_t cursor;
   uint32_t numTextRuns;
   float scale;

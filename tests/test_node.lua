@@ -113,6 +113,33 @@ local function test_auto_size_with_auto_margins_uses_desired_size()
 	print("PASS: test_auto_size_with_auto_margins_uses_desired_size")
 end
 
+local function test_stackview_auto_margin_child_uses_desired_cross_size()
+	local auto = 0 / 0
+	local column = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 400,
+		Height = 300,
+	}
+	local bubble = column + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+		MarginRight = 16,
+	}
+	local label = bubble + ui.TextBlock { Text = "north", FontSize = 16 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(bubble.ActualWidth, label.ActualWidth + 16,
+		"Auto-width StackView child with auto margin should use desired width on the cross axis")
+	test.expect_near(bubble.ActualX, column.ActualWidth - bubble.ActualWidth - 16, 0.01,
+		"Auto-width StackView child with auto left margin should align to the right edge")
+
+	column:removeFromParent()
+	print("PASS: test_stackview_auto_margin_child_uses_desired_cross_size")
+end
+
 local function test_legacy_alignment_bridge()
 	local node = screen + ui.Node2D {
 		Width = 200,
@@ -237,6 +264,7 @@ orca.async = function (callback) callback() end
 
 test_node_alignment()
 test_auto_size_with_auto_margins_uses_desired_size()
+test_stackview_auto_margin_child_uses_desired_cross_size()
 test_legacy_alignment_bridge()
 test_node2d_container_height()
 test_node_visibility()

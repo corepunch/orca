@@ -267,7 +267,7 @@
         <message name="MakeText">
           <summary>Requests the component to lay out and render its text content.</summary>
           <fields>
-            <field name="availableSpace" type="uint">Available space for text layout</field>
+            <field name="availableSpace" type="float">Available space for text layout</field>
           </fields>
         </message>
         <message name="GetInfo">

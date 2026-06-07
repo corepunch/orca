@@ -220,12 +220,12 @@ The parser does not support sibling selectors, attribute selectors, media querie
 
 Use width/height and auto margins as the layout alignment model:
 
-- Omit `width`, or set `width: auto`, to keep `Node.Width = NaN`, which stretches in finite layout space.
+- Omit `width`, or set `width: auto`, to keep `Node.Width = NaN`, which stretches in finite layout space unless that axis has an auto margin.
 - `width: 100%` is accepted as a compatibility stretch shorthand and also maps to `Node.Width = NaN`.
-- Center an explicit-width node with `margin-left: auto; margin-right: auto;`.
-- Align an explicit-width node to the right/trailing edge with `margin-left: auto;`.
-- Center an explicit-height node with `margin-top: auto; margin-bottom: auto;`.
-- Align an explicit-height node to the bottom/trailing edge with `margin-top: auto;`.
+- Center a node with `margin-left: auto; margin-right: auto;`; auto-width nodes use their desired content width.
+- Align a node to the right/trailing edge with `margin-left: auto;`; auto-width nodes use their desired content width.
+- Center a node with `margin-top: auto; margin-bottom: auto;`; auto-height nodes use their desired content height.
+- Align a node to the bottom/trailing edge with `margin-top: auto;`; auto-height nodes use their desired content height.
 
 Prefer these CSS-native rules over legacy `HorizontalAlignment`/`VerticalAlignment` properties. Those alignment properties are compatibility helpers that translate back into size and auto-margin values.
 

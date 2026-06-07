@@ -13,6 +13,9 @@
 #define FT_SCALE(x) ((x) >> 6)
 #define CARET_WIDTH 2
 #define FT_Pixel uint8_t
+#define WRAP_FUZZ 1
+
+#define SCALE_CEIL(value, scale) (((value) + MAX(1, (scale)) - 1) / MAX(1, (scale)))
 
 static uint32_t s_text_measure_count;
 static uint32_t s_text_render_count;
@@ -133,7 +136,7 @@ T_GetSize(struct TextBlockText const* text,
         if (eos && (run+1) - text->run >= text->numTextRuns) spaceWidth = 0;
         if (textwidth == 0) {
             textwidth += spaceWidth;
-        } else if (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > text->availableWidth * text->scale) {
+        } else if (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > text->availableWidth * text->scale + WRAP_FUZZ) {
           textSize.height += FT_SCALE(lineheight);
           textSize.width = MAX(textSize.width, textwidth);
           textwidth = 0;
@@ -299,7 +302,7 @@ TextBlockText_Print(struct TextBlockText* pViewText,
         if (textwidth == 0) {
           x += spaceWidth;
           textwidth += spaceWidth;
-        } else if (pViewText->availableWidth > 0 && pViewText->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > pViewText->availableWidth * pViewText->scale) {
+        } else if (pViewText->availableWidth > 0 && pViewText->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > pViewText->availableWidth * pViewText->scale + WRAP_FUZZ) {
           textwidth = 0;
           y += FT_SCALE(lineheight);
           x = 0;
@@ -572,8 +575,8 @@ TextBlockText_GetInfo(struct TextBlockText* pViewText,
   }
 
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
-  info->txWidth = textSize.width / pViewText->scale;
-  info->txHeight = textSize.height / pViewText->scale;
+  info->txWidth = SCALE_CEIL(textSize.width, pViewText->scale);
+  info->txHeight = SCALE_CEIL(textSize.height, pViewText->scale);
   info->cursor.x /= pViewText->scale;
   info->cursor.y /= pViewText->scale;
   info->cursor.width /= pViewText->scale;

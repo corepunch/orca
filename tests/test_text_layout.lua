@@ -118,6 +118,38 @@ local function test_text_nowrap_keeps_metric_value_on_one_line()
 	container:removeFromParent()
 end
 
+local function test_textblock_auto_margin_bubble_measures_full_phrase()
+	local auto = 0 / 0
+	local column = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 400,
+		Height = 300,
+	}
+	local take = column + ui.TextBlock {
+		Text = "take",
+		FontSize = 16,
+		Padding = core.Thickness(8, 16),
+		MarginLeft = auto,
+		MarginRight = 16,
+	}
+	local bubble = column + ui.TextBlock {
+		Text = "take it",
+		FontSize = 16,
+		Padding = core.Thickness(8, 16),
+		MarginLeft = auto,
+		MarginRight = 16,
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(bubble.ActualWidth > take.ActualWidth,
+		"Auto-margin TextBlock bubble should measure the full phrase, not only the first word")
+	test.expect_near(bubble.ActualX, column.ActualWidth - bubble.ActualWidth - 16, 0.01,
+		"Auto-margin TextBlock bubble should align to the right edge")
+
+	column:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Empty TextBlock: render texture lookup must tolerate no resolved text
 -- ---------------------------------------------------------------------------
@@ -176,6 +208,7 @@ orca.async = function (callback) callback() end
 test_text_block_layout()
 test_text_single_line_layout()
 test_text_nowrap_keeps_metric_value_on_one_line()
+test_textblock_auto_margin_bubble_measures_full_phrase()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()
 
