@@ -1,3 +1,27 @@
+/*
+ * text.c — FreeType2 text layout & rendering for Orca
+ *
+ * Architecture (SDL_ttf / greedy-wrap style):
+ *
+ *   T_LayoutText()          — single pass for both measure and render
+ *     T_BeginRun()          — set face + pixel size for one TextRun
+ *     T_MeasureWord()       — pixel width of one whitespace-delimited token
+ *     T_CommitLine()        — flush pending words onto the line
+ *     T_BreakLine()         — advance Y, reset X state
+ *     T_BlitWord()          — render one word's glyphs into the alpha bitmap
+ *     T_BlitEllipsis()      — render trailing "..."
+ *     T_BlitUnderline()     — fill underline spans
+ *
+ * The key insight (lifted from SDL_ttf's greedy wrap):
+ *   We collect complete *words* (sequences of non-space chars) before
+ *   committing them to the current line.  Only once we know a word fits
+ *   (or doesn't) do we decide to wrap.  This eliminates the "slip past
+ *   right border" class of bugs that plagued the old interleaved approach.
+ *
+ * Measure-only mode (bRender == FALSE) skips all bitmap writes and the
+ * ZeroAlloc, matching the WinAPI DrawText / DT_CALCRECT pattern.
+ */
+
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/renderer.h>
@@ -10,61 +34,61 @@
 #include FT_IMAGE_H
 #include FT_OUTLINE_H
 
-#define FT_SCALE(x) ((x) >> 6)
-#define CARET_WIDTH 2
-#define FT_Pixel uint8_t
-#define WRAP_FUZZ 1
+/* ── Tunables ─────────────────────────────────────────────────── */
+#define FT_SCALE(x)     ((x) >> 6)
+#define CARET_WIDTH     2
+#define FT_Pixel        uint8_t
+#define SCALE_CEIL(v,s) (((v) + MAX(1,(s)) - 1) / MAX(1,(s)))
 
-#define SCALE_CEIL(value, scale) (((value) + MAX(1, (scale)) - 1) / MAX(1, (scale)))
-
+/* ── Stats ────────────────────────────────────────────────────── */
 static uint32_t s_text_measure_count;
 static uint32_t s_text_render_count;
 
-static FT_UInt const offsetsFromUTF8[6] = { 0x00000000UL, 0x00003080UL,
-                                            0x000E2080UL, 0x03C82080UL,
-                                            0xFA082080UL, 0x82082080UL };
-
+/* ── UTF-8 decoder (unchanged) ────────────────────────────────── */
+static FT_UInt const offsetsFromUTF8[6] = {
+  0x00000000UL, 0x00003080UL, 0x000E2080UL,
+  0x03C82080UL, 0xFA082080UL, 0x82082080UL
+};
 static char const trailingBytesForUTF8[256] = {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-  2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+  1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1,
+  2,2,2,2,2,2,2,2, 2,2,2,2,2,2,2,2, 3,3,3,3,3,3,3,3, 4,4,4,4,5,5,5,5
 };
 
 static FT_UInt
-u8_readchar(lpcString_t* text)
+u8_readchar(lpcString_t *text)
 {
   lpcString_t src = *text;
   FT_UInt ch = 0;
   int const nb = trailingBytesForUTF8[(unsigned char)*src];
   switch (nb) {
-      /* these fall through deliberately */
-    case 3:
-      ch += (unsigned char)*src++;
-      ch <<= 6;
-    case 2:
-      ch += (unsigned char)*src++;
-      ch <<= 6;
-    case 1:
-      ch += (unsigned char)*src++;
-      ch <<= 6;
-      //        case 0:
-    default:
-      ch += (unsigned char)*src++;
+    case 3: ch += (unsigned char)*src++; ch <<= 6; /* fall */
+    case 2: ch += (unsigned char)*src++; ch <<= 6; /* fall */
+    case 1: ch += (unsigned char)*src++; ch <<= 6; /* fall */
+    default: ch += (unsigned char)*src++;
   }
   ch -= offsetsFromUTF8[nb];
   *text = src;
   return ch;
 }
 
+/* Skip inline markup tags, return TRUE if one was consumed. */
+static bool_t
+u8_skip_tag(lpcString_t *p, int *ul_depth)
+{
+  if (!strncmp(*p, "<u>",  3)) { *p += 3; if (ul_depth) (*ul_depth)++; return TRUE; }
+  if (!strncmp(*p, "</u>", 4)) { *p += 4; if (ul_depth) (*ul_depth)--; return TRUE; }
+  return FALSE;
+}
+
+/* ── Face helpers ─────────────────────────────────────────────── */
 static FT_Face
-T_GetFontFace(struct TextBlockTextRun const* run)
+T_GetFontFace(struct TextBlockTextRun const *run)
 {
   if (run->fontFamily) {
     FT_Face face = FontFamily_GetFace(run->fontFamily, run->fontStyle);
@@ -74,421 +98,672 @@ T_GetFontFace(struct TextBlockTextRun const* run)
 }
 
 static bool_t
-FT_Load_CharGlyph(FT_Face face, FT_ULong charcode)
+T_LoadChar(FT_Face face, FT_ULong code)
 {
-  FT_UInt gi = FT_Get_Char_Index(face, charcode);
-  if (gi == 0) {
-    return FALSE;
-  }
+  FT_UInt gi = FT_Get_Char_Index(face, code);
+  if (!gi) return FALSE;
   FT_Load_Glyph(face, gi, FT_LOAD_DEFAULT);
   return TRUE;
 }
 
-static struct AXsize
-T_GetSize(struct TextBlockText const* text,
-          struct rect* rcursor)
+/* ── Per-run setup ────────────────────────────────────────────── */
+typedef struct {
+  FT_Face  face;
+  FT_Pos   ascender;      /* 26.6 fixed, NOT yet shifted */
+  FT_Pos   descender;     /* 26.6 fixed, always negative */
+  FT_Pos   height;        /* 26.6 fixed */
+  FT_Pos   underlinePos;  /* 26.6 fixed */
+  FT_Int   spaceAdv;      /* pixels */
+} RunMetrics;
+
+static bool_t
+T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
 {
-  s_text_measure_count++;
-
-  struct AXsize textSize = { 0 };
-  FT_Int textwidth = 0;
-  FT_Int wordwidth = 0;
-  FT_Int cursor = 0;
-  FT_Int prev_glyph_index = 0;
-  FT_Pos spaceWidth = 0;
-  FT_Pos lineheight = 0;
-
-  for (struct TextBlockTextRun const *run = text->run;
-       run - text->run < text->numTextRuns;
-       run++)
-  {
-    if (!run->string)
-      continue;
-
-    FT_Face const face = T_GetFontFace(run);
-    if (!face) {
-      return textSize;
-    }
-    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale)) {
-      return textSize;
-    }
-    if (FT_Load_CharGlyph(face, ' ')) {
-      spaceWidth = (uint32_t)FT_SCALE(face->glyph->metrics.horiAdvance);
-    }
-    prev_glyph_index = 0;
-
-    for (lpcString_t str = run->string;; cursor++) {
-      if (!strncmp(str, "<u>", 3)) {str+=3;continue;}
-      if (!strncmp(str, "</u>", 4)) {str+=4;continue;}
-      FT_Bool const eos = !*str;
-      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
-
-      lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-
-      if (cursor == text->cursor && rcursor) {
-        rcursor->x = textwidth + wordwidth;
-        rcursor->y = textSize.height;
-        rcursor->width = 0;
-        rcursor->height = FT_SCALE(lineheight);
-      }
-
-      if (isspace(charcode)) {
-        if (eos && (run+1) - text->run >= text->numTextRuns) spaceWidth = 0;
-        if (textwidth == 0) {
-            textwidth += spaceWidth;
-        } else if (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > text->availableWidth * text->scale + WRAP_FUZZ) {
-          textSize.height += FT_SCALE(lineheight);
-          textSize.width = MAX(textSize.width, textwidth);
-          textwidth = 0;
-          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
-          prev_glyph_index = 0;
-        } else {
-          textwidth += spaceWidth;
-        }
-        textwidth += wordwidth;
-        wordwidth = 0;
-        textSize.width = MAX(textSize.width, textwidth);
-        if (eos) {
-          break;
-        } else if (charcode == '\n') {
-          textwidth = 0;
-          prev_glyph_index = 0;
-          textSize.height += FT_SCALE(lineheight);
-        }
-      } else if (FT_Load_CharGlyph(face, charcode)) {
-        FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
-        FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
-
-        if (prev_glyph_index && glyph_index) {
-          FT_Vector kerning;
-          if (FT_Get_Kerning(face, prev_glyph_index, glyph_index,
-                             FT_KERNING_DEFAULT, &kerning) == 0) {
-            wordwidth += FT_SCALE(kerning.x);
-          }
-        }
-
-        wordwidth += advance;
-        prev_glyph_index = glyph_index;
-      }
-    }
-  }
-  struct AXsize result = {MAX(0,(int)textSize.width), textSize.height + (int)FT_SCALE(lineheight)};
-  if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0) {
-    result.width = MIN(result.width, (int)(text->availableWidth * text->scale));
-  }
-  return result;
+  m->face = T_GetFontFace(run);
+  if (!m->face) return FALSE;
+  if (FT_Set_Pixel_Sizes(m->face, 0, (FT_UInt)(run->fontSize * scale))) return FALSE;
+  
+  m->ascender    = FT_MulFix(m->face->ascender,         m->face->size->metrics.y_scale);
+  m->descender   = FT_MulFix(m->face->descender,        m->face->size->metrics.y_scale);
+  m->height      = FT_MulFix(m->face->height,           m->face->size->metrics.y_scale);
+  m->underlinePos= FT_MulFix(m->face->underline_position,m->face->size->metrics.y_scale);
+  
+  m->spaceAdv = T_LoadChar(m->face, ' ')
+  ? (FT_Int)FT_SCALE(m->face->glyph->metrics.horiAdvance) : 0;
+  return TRUE;
 }
 
+/* ── Word measurement ─────────────────────────────────────────── */
+
+/*
+ * Measure one "word" — a run of non-whitespace codepoints starting at *src.
+ * On return *src points past the last character of the word.
+ * Returns pixel advance width (kerning-aware).
+ * The word is bounded by whitespace or end-of-string.
+ * Inline markup tags (<u> / </u>) are consumed but not counted.
+ */
 static FT_Pos
-T_GetEllipsisWidth(FT_Face face)
+T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
 {
-  FT_Pos width = 0;
-  for (int i = 0; i < 3; i++) {
-    if (FT_Load_CharGlyph(face, '.')) {
-      width += FT_SCALE(face->glyph->metrics.horiAdvance);
+  FT_Pos    width = 0;
+  FT_UInt   prev  = *last_glyph_index_inout;
+  
+  lpcString_t p = *src;
+  while (*p) {
+    /* skip markup */
+    if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
+    if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
+    
+    lpcString_t before = p;
+    FT_UInt ch = u8_readchar(&p);
+    if (isspace(ch)) { p = before; break; }  /* stop before space */
+    
+    if (!T_LoadChar(face, ch)) { prev = 0; continue; }
+    FT_UInt gi = FT_Get_Char_Index(face, ch);
+    
+    if (prev && gi) {
+      FT_Vector kern;
+      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
+        width += FT_SCALE(kern.x);
     }
+    width += FT_SCALE(face->glyph->metrics.horiAdvance);
+    prev = gi;
   }
+  
+  *last_glyph_index_inout = prev;
+  *src = p;
   return width;
 }
 
+/* ── Bitmap helpers ───────────────────────────────────────────── */
+
 static void
-write_char(FT_Bitmap *bitmap,
-           uint8_t *image_data,
-           const struct AXsize *textSize,
-           FT_Pos x,
-           FT_Pos y)
+T_BlitGlyph(FT_Bitmap const *bm,
+            FT_Pixel       *image_data,
+            struct AXsize const *sz,
+            FT_Pos          x,
+            FT_Pos          y)
 {
-  for (FT_Pos i = 0, row = y; i < bitmap->rows; i++, row++) {
-    for (FT_Pos j = 0, column = x; j < (int)bitmap->width; j++, column++) {
-      uint8_t p = bitmap->buffer[i * bitmap->pitch + j];
-      if (row >= textSize->height || row < 0) continue;
-      if (column >= textSize->width || column < 0) continue;
-      FT_Pixel *pix = image_data + column + (textSize->height - row - 1) * textSize->width;
+  for (FT_Pos i = 0; i < (FT_Pos)bm->rows; i++) {
+    FT_Pos row = y + i;
+    if (row < 0 || row >= sz->height) continue;
+    for (FT_Pos j = 0; j < (FT_Pos)bm->width; j++) {
+      FT_Pos col = x + j;
+      if (col < 0 || col >= sz->width) continue;
+      uint8_t p = bm->buffer[i * bm->pitch + j];
+      FT_Pixel *pix = image_data + col + (sz->height - row - 1) * sz->width;
       *pix = MAX(*pix, p);
     }
   }
 }
 
-static HRESULT
-TextBlockText_Print(struct TextBlockText* pViewText,
-                    struct Texture** pTexture,
-                    bool_t bReuseTexture)
+static void
+T_BlitUnderline(FT_Pixel       *image_data,
+                struct AXsize const *sz,
+                FT_Pos          x0,
+                FT_Pos          x1,
+                FT_Pos          y_baseline,
+                FT_Pos          ul_pos,
+                int             thickness)
 {
-  s_text_render_count++;
+  for (int t = 0; t < thickness; t++) {
+    FT_Pos row = y_baseline - ul_pos + t;
+    if (row < 0 || row >= sz->height) continue;
+    FT_Pos inv = sz->height - row - 1;
+    for (FT_Pos x = x0; x < x1 && x < sz->width; x++) {
+      if (x >= 0)
+        image_data[x + inv * sz->width] = 255;
+    }
+  }
+}
 
-  struct text_info info;
-  TextBlockText_GetInfo(pViewText, &info);
-  struct AXsize textSize = {
-    .width = info.txWidth * pViewText->scale,
-    .height = info.txHeight * pViewText->scale,
-  };
+/* Render one word starting at *src into the bitmap.
+ * Advances *x by the total pixel advance.
+ * Returns x_end (for underline extent tracking). */
+static FT_Pos
+T_BlitWord(FT_Face          face,
+           lpcString_t      word_start,
+           lpcString_t      word_end,
+           FT_Pixel        *image_data,
+           struct AXsize const *sz,
+           FT_Pos          *x,
+           FT_Pos           y,
+           FT_Pos           baseline,
+           FT_Pos           ul_pos,
+           int              ul_thickness,   /* 0 = no underline */
+           FT_UInt         *prev_gi_inout)
+{
+  FT_Pos x_start = *x;
+  lpcString_t p  = word_start;
+  FT_UInt prev   = *prev_gi_inout;
+  
+  while (p < word_end) {
+    if (!strncmp(p, "<u>",  3)) { p += 3; continue; }
+    if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
+    
+    lpcString_t before = p;
+    FT_UInt ch = u8_readchar(&p);
+    if (isspace(ch)) { p = before; break; }
+    
+    if (!T_LoadChar(face, ch)) { prev = 0; continue; }
+    FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+    
+    FT_UInt   gi    = FT_Get_Char_Index(face, ch);
+    FT_Pos    adv   = FT_SCALE(face->glyph->metrics.horiAdvance);
+    FT_Pos    xoff  = FT_SCALE(face->glyph->metrics.horiBearingX);
+    FT_Pos    yoff  = baseline - FT_SCALE(face->glyph->metrics.horiBearingY);
+    
+    if (prev && gi) {
+      FT_Vector kern;
+      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
+        *x += FT_SCALE(kern.x);
+    }
+    
+    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, *x + xoff, y + yoff);
+    *x  += adv;
+    prev = gi;
+  }
+  
+  if (ul_thickness > 0) {
+    T_BlitUnderline(image_data, sz,
+                    x_start, *x,
+                    y + baseline, ul_pos, ul_thickness);
+  }
+  
+  *prev_gi_inout = prev;
+  return *x;
+}
 
-  if (textSize.width == 0)
-    return E_INVALIDARG;
+static void
+T_BlitEllipsis(FT_Face          face,
+               FT_Pixel        *image_data,
+               struct AXsize const *sz,
+               FT_Pos           x,
+               FT_Pos           y,
+               FT_Pos           baseline)
+{
+  for (int i = 0; i < 3; i++) {
+    if (!T_LoadChar(face, '.')) continue;
+    FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+    FT_Pos xoff = FT_SCALE(face->glyph->metrics.horiBearingX);
+    FT_Pos yoff = baseline - FT_SCALE(face->glyph->metrics.horiBearingY);
+    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, x + xoff, y + yoff);
+    x += FT_SCALE(face->glyph->metrics.horiAdvance);
+  }
+}
 
-  textSize.height /= pViewText->scale;
-  textSize.height *= pViewText->scale;
+static FT_Pos
+T_EllipsisWidth(FT_Face face)
+{
+  FT_Pos w = 0;
+  for (int i = 0; i < 3; i++)
+    if (T_LoadChar(face, '.'))
+      w += FT_SCALE(face->glyph->metrics.horiAdvance);
+  return w;
+}
 
-  textSize.width /= pViewText->scale;
-  textSize.width *= pViewText->scale;
+/* ═══════════════════════════════════════════════════════════════
+ * T_LayoutText — unified measure + render pass
+ *
+ * When bRender == FALSE  → pure measurement, no bitmap allocation.
+ * When bRender == TRUE   → allocates bitmap, renders glyphs.
+ *
+ * Greedy word-wrap algorithm (same as SDL_ttf / every browser engine):
+ *   For each word token:
+ *     if (lineX + spaceIfNeeded + wordWidth <= wrapWidth)
+ *         append to current line
+ *     else
+ *         flush line, start new line with word
+ *
+ * "Words" are non-space character runs.  Spaces are only accounted for
+ * as inter-word gap *after* we know both the previous and next word fit.
+ * This gives a clean, correct boundary with zero fuzz hacks.
+ * ═══════════════════════════════════════════════════════════════ */
 
-  FT_Int spaceWidth = 0;
-  FT_Int textwidth = 0;
-  FT_Int wordwidth = 0;
-  FT_Int prevchar = 0;
-  FT_Int x = 0, y = 0;
-  FT_UInt prev_glyph_index = 0;
-  FT_Pos lineheight = 0;
-  FT_Pos baseline = 0;
-  FT_Int ul = 0;
+typedef struct {
+  /* inputs */
+  struct TextBlockText const *text;
+  bool_t    bRender;
+  
+  /* outputs */
+  struct AXsize  size;       /* final pixel size (scaled) */
+  struct rect    cursor;     /* cursor rect in pixel space */
+  
+  /* bitmap (only when bRender == TRUE) */
+  FT_Pixel      *image_data;
+} LayoutCtx;
 
-  bool_t bDone = FALSE;
-  FT_Int ellipsis_x = 0, ellipsis_y = 0;
-  FT_Pos ellipsis_baseline = 0;
-  FT_Face ellipsis_face = NULL;
+/* Layout state shared across runs */
+typedef struct {
+  FT_Pos  lineX;          /* current X pen position on this line */
+  FT_Pos  lineY;          /* top of current line */
+  FT_Pos  lineWidth;      /* max width reached on current line */
+  FT_Pos  lineHeight;     /* max face->height on current line */
+  FT_Pos  baseline;       /* max ascender on current line */
+  FT_Int  charCount;      /* codepoint counter for cursor tracking */
+  bool_t  lineHasContent; /* any non-space glyph committed on this line? */
+} LayoutState;
 
-  FT_Pixel* image_data = ZeroAlloc(textSize.width * textSize.height * sizeof(FT_Pixel));
+static void
+LS_Init(LayoutState *ls)
+{
+  memset(ls, 0, sizeof(*ls));
+}
 
-  if (image_data == NULL)
-    return E_OUTOFMEMORY;
+static void
+LS_NewLine(LayoutState *ls, RunMetrics const *m)
+{
+  ls->lineY      += FT_SCALE(ls->lineHeight);
+  ls->lineX       = 0;
+  ls->lineWidth   = 0;
+  ls->lineHeight  = m->height;
+  ls->baseline    = FT_SCALE(m->ascender);
+  ls->lineHasContent = FALSE;
+}
 
-  for (struct TextBlockTextRun const *run = pViewText->run;
-       run - pViewText->run < pViewText->numTextRuns && !bDone;
-       run++)
+/*
+ * T_LayoutText: core function.
+ * Returns S_OK on success; populates ctx->size, ctx->cursor,
+ * and (if bRender) ctx->image_data.
+ */
+static HRESULT
+T_LayoutText(LayoutCtx *ctx)
+{
+  struct TextBlockText const *text = ctx->text;
+  bool_t const bRender = ctx->bRender;
+  float  const scale   = text->scale;
+  FT_Pos const wrapW   = (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP)
+  ? (FT_Pos)(text->availableWidth * scale)
+  : 0;
+  
+  /* ── First pass: compute pixel dimensions ── */
+  /* We always need to know the final size before allocating the bitmap,
+   so we do a lightweight pre-pass to get width/height.              */
+  struct AXsize measuredSize = { 0 };
   {
-    if (!run->string)
-      continue;
-    FT_Face const face = T_GetFontFace(run);
-    if (FT_Set_Pixel_Sizes(face, 0, run->fontSize * pViewText->scale)) {
-      free(image_data);
-      return E_UNEXPECTED;
+    LayoutState ls;
+    LS_Init(&ls);
+    
+    for (struct TextBlockTextRun const *run = text->run;
+         run - text->run < text->numTextRuns; run++)
+    {
+      if (!run->string) continue;
+      
+      RunMetrics m;
+      if (!T_BeginRun(run, scale, &m)) return E_UNEXPECTED;
+      
+      ls.lineHeight = MAX(ls.lineHeight, m.height);
+      ls.baseline   = MAX(ls.baseline,   FT_SCALE(m.ascender));
+      
+      lpcString_t p = run->string;
+      while (*p) {
+        /* skip tags */
+        if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
+        if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
+        
+        FT_UInt ch = (unsigned char)*p;
+        lpcString_t before = p;
+        ch = u8_readchar(&p);
+        
+        ls.charCount++;
+        
+        if (ch == '\n') {
+          measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
+          LS_NewLine(&ls, &m);
+          continue;
+        }
+        
+        if (isspace(ch)) {
+          /* A plain space: just advance, no measurement needed here;
+           word tokens already carry their own space prefix below. */
+          continue;
+        }
+        
+        /* --- Non-space: we have a word token --- */
+        /* Back up and measure the whole word */
+        lpcString_t word_start = before;
+        FT_UInt dummy_gi = 0;
+        lpcString_t word_p = word_start;
+        FT_Pos wordW = T_MeasureWord(m.face, &word_p, &dummy_gi);
+        /* word_p now points past the word */
+        
+        /* Decide whether to wrap before this word */
+        if (wrapW > 0 && ls.lineHasContent) {
+          FT_Pos needed = ls.lineX + m.spaceAdv + wordW;
+          if (needed > wrapW) {
+            measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
+            LS_NewLine(&ls, &m);
+          } else {
+            ls.lineX += m.spaceAdv;
+          }
+        } else if (ls.lineHasContent) {
+          ls.lineX += m.spaceAdv;
+        }
+        
+        ls.lineX += wordW;
+        ls.lineHasContent = TRUE;
+        ls.lineHeight = MAX(ls.lineHeight, m.height);
+        ls.baseline   = MAX(ls.baseline, FT_SCALE(m.ascender));
+        
+        /* skip past the word we just measured */
+        p = word_p;
+      }
     }
-    FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
-    FT_Pos const underline = FT_MulFix(face->underline_position, face->size->metrics.y_scale);
-    if (FT_Load_CharGlyph(face, ' ')) {
-      spaceWidth = (FT_Int)FT_SCALE(face->glyph->metrics.horiAdvance);
+    
+    measuredSize.width  = MAX(measuredSize.width, (uint32_t)ls.lineX);
+    measuredSize.height = (uint32_t)ls.lineY + (uint32_t)FT_SCALE(ls.lineHeight);
+    
+    /* Apply availableWidth clamp for ellipsis */
+    if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0)
+      measuredSize.width = MIN(measuredSize.width, (int)(text->availableWidth * scale));
+    
+    ctx->size = measuredSize;
+    s_text_measure_count++;
+  }
+  
+  if (!bRender) return S_OK;
+  
+  /* ── Allocate bitmap ── */
+  struct AXsize const sz = {
+    .width  = SCALE_CEIL(measuredSize.width,  (int)scale) * (int)scale,
+    .height = SCALE_CEIL(measuredSize.height, (int)scale) * (int)scale,
+  };
+  if (sz.width == 0 || sz.height == 0) return E_INVALIDARG;
+  
+  FT_Pixel *image_data = (FT_Pixel*)ZeroAlloc(sz.width * sz.height * sizeof(FT_Pixel));
+  if (!image_data) return E_OUTOFMEMORY;
+  
+  /* ── Second pass: render ── */
+  s_text_render_count++;
+  
+  LayoutState ls;
+  LS_Init(&ls);
+  int  ul_depth     = 0;       /* nesting depth for <u> tags */
+  FT_UInt prev_gi   = 0;
+  
+  bool_t    bDone           = FALSE;
+  FT_Pos    ellipsis_x      = 0;
+  FT_Pos    ellipsis_y      = 0;
+  FT_Pos    ellipsis_base   = 0;
+  FT_Face   ellipsis_face   = NULL;
+  
+  for (struct TextBlockTextRun const *run = text->run;
+       run - text->run < text->numTextRuns && !bDone; run++)
+  {
+    if (!run->string) continue;
+    
+    RunMetrics m;
+    if (!T_BeginRun(run, scale, &m)) { free(image_data); return E_UNEXPECTED; }
+    
+    ls.lineHeight = MAX(ls.lineHeight, m.height);
+    ls.baseline   = MAX(ls.baseline,   FT_SCALE(m.ascender));
+    
+    /* Ellipsis threshold for this run */
+    FT_Pos ellipsisW = 0;
+    if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0
+        && sz.width >= (FT_Pos)(text->availableWidth * scale))
+    {
+      ellipsisW = T_EllipsisWidth(m.face);
     }
-
-    FT_Pos const ellipsisWidth = (pViewText->textOverflow == TEXT_OVERFLOW_ELLIPSIS
-                                  && pViewText->availableWidth > 0
-                                  && textSize.width >= (FT_Int)(pViewText->availableWidth * pViewText->scale))
-                                 ? T_GetEllipsisWidth(face) : 0;
-    FT_Pos const cutX = textSize.width - ellipsisWidth;
-
-    prev_glyph_index = 0;
-    x -= spaceWidth;
-
-    for (lpcString_t str = run->string, print = str, last = str;; last = str) {
-      if (!strncmp(str, "<u>", 3)) {str+=3;continue;}
-      if (!strncmp(str, "</u>", 4)) {str+=4;continue;}
-      FT_Bool const eos = !*str;
-      FT_UInt const charcode = *str ? u8_readchar(&str) : ' ';
-      if (x > 0 && FT_SCALE(ascender) > baseline) {
-        FT_Pos baseline_shift = FT_SCALE(ascender) - baseline;
-        FT_Pos src_inv = textSize.height - y - FT_SCALE(lineheight) - 1;
-        FT_Pos dst_inv = src_inv - baseline_shift;
-        FT_Pos num_rows = FT_SCALE(lineheight) + 1;
-        if (src_inv >= 0 && dst_inv >= 0 && src_inv + num_rows <= textSize.height) {
-          memmove(&image_data[dst_inv * textSize.width],
-                  &image_data[src_inv * textSize.width],
-                  num_rows * textSize.width * sizeof(FT_Pixel));
-          memset(&image_data[(dst_inv + num_rows) * textSize.width], 0,
-                 baseline_shift * textSize.width * sizeof(FT_Pixel));
+    
+    lpcString_t p = run->string;
+    while (*p && !bDone) {
+      /* consume markup tags at any position */
+      if (!strncmp(p, "<u>",  3)) { p += 3; ul_depth++; continue; }
+      if (!strncmp(p, "</u>", 4)) { p += 4; ul_depth--; continue; }
+      
+      lpcString_t before = p;
+      FT_UInt ch = u8_readchar(&p);
+      
+      if (ch == '\n') {
+        ls.lineY  += FT_SCALE(ls.lineHeight);
+        ls.lineX   = 0;
+        ls.lineHeight = m.height;
+        ls.baseline  = FT_SCALE(m.ascender);
+        ls.lineHasContent = FALSE;
+        prev_gi = 0;
+        continue;
+      }
+      
+      if (isspace(ch)) continue;  /* spacing handled at word boundary */
+      
+      /* ── We have a word ── */
+      lpcString_t word_start = before;
+      
+      /* Measure word without side-effects */
+      FT_UInt measure_gi = prev_gi;
+      lpcString_t word_end = word_start;
+      FT_Pos wordW = T_MeasureWord(m.face, &word_end, &measure_gi);
+      
+      /* Determine inter-word space */
+      FT_Pos spacePrefix = ls.lineHasContent ? m.spaceAdv : 0;
+      
+      /* Wrap decision */
+      if (wrapW > 0 && ls.lineHasContent) {
+        if (ls.lineX + spacePrefix + wordW > wrapW) {
+          ls.lineY      += FT_SCALE(ls.lineHeight);
+          ls.lineX       = 0;
+          ls.lineHeight  = m.height;
+          ls.baseline    = FT_SCALE(m.ascender);
+          ls.lineHasContent = FALSE;
+          prev_gi = 0;
+          spacePrefix = 0;
         }
       }
-      lineheight = MAX(lineheight, FT_MulFix(face->height, face->size->metrics.y_scale));
-      baseline = MAX(baseline, FT_SCALE(ascender));
-      if (isspace(charcode)) {
-        if (textwidth == 0) {
-          x += spaceWidth;
-          textwidth += spaceWidth;
-        } else if (pViewText->availableWidth > 0 && pViewText->textWrapping != TEXT_WRAP_NO_WRAP && textwidth + wordwidth > pViewText->availableWidth * pViewText->scale + WRAP_FUZZ) {
-          textwidth = 0;
-          y += FT_SCALE(lineheight);
-          x = 0;
-          lineheight = FT_MulFix(face->height, face->size->metrics.y_scale);
-          baseline = FT_SCALE(ascender);
-          prevchar = 0;
-          prev_glyph_index = 0;
-        } else {
-          x += spaceWidth;
-          textwidth += spaceWidth;
-        }
-        while (print < last) {
-          if (!strncmp(print, "<u>", 3)) {print+=3;ul++;continue;}
-          if (!strncmp(print, "</u>", 4)) {print+=4;ul--;continue;}
-          int ch = u8_readchar(&print);
-          if (!FT_Load_CharGlyph(face, ch))
-            continue;
-          FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-          FT_Glyph_Metrics* metrics = &face->glyph->metrics;
-          FT_Bitmap* bitmap = &face->glyph->bitmap;
-          FT_Pos advance = FT_SCALE(metrics->horiAdvance);
-          FT_Pos x_off = FT_SCALE(metrics->horiBearingX);
-          FT_Pos y_off = baseline - FT_SCALE(metrics->horiBearingY);
-          FT_UInt glyph_index = FT_Get_Char_Index(face, ch);
-          if (prev_glyph_index && glyph_index) {
-            FT_Vector kerning;
-            if (FT_Get_Kerning(face, prev_glyph_index, glyph_index, FT_KERNING_DEFAULT, &kerning) == 0) {
-              x += FT_SCALE(kerning.x);
-            }
-          }
-          prev_glyph_index = glyph_index;
-
-          if (ellipsisWidth > 0 && x + advance > cutX) {
-            ellipsis_x = x;
-            ellipsis_y = y;
-            ellipsis_baseline = baseline;
-            ellipsis_face = face;
-            bDone = TRUE;
-            break;
-          }
-
-          write_char(bitmap, image_data, &textSize, x + x_off, y + y_off);
-
-          for (long i = 0; i < MAX(ul?1:0, run->underlineWidth) * pViewText->scale; i++) {
-            for (long j = prevchar; j < x + x_off + bitmap->width; j++) {
-              long row = baseline - FT_SCALE(underline) + i + y;
-              long inv = textSize.height - row - 1;
-              image_data[j + inv * textSize.width] = 255;
-            }
-          }
-          prevchar = (int)(x + x_off + bitmap->width);
-          x += advance;
-        }
-        if (bDone) {
-          break;
-        } else if (eos) {
-          break;
-        } else if (charcode == '\n') {
-          textwidth = 0;
-          y += FT_SCALE(lineheight);
-          x = -spaceWidth;
-          prevchar = 0;
-          prev_glyph_index = 0;
-          print = str;
-        } else {
-          print = str;
-          textwidth += wordwidth;
-          wordwidth = 0;
-        }
-      } else if (FT_Load_CharGlyph(face, charcode)) {
-        FT_UInt glyph_index = FT_Get_Char_Index(face, charcode);
-        FT_Pos advance = FT_SCALE(face->glyph->metrics.horiAdvance);
-
-        if (ellipsisWidth > 0 && x + spaceWidth + wordwidth + advance > cutX) {
-          lpcString_t p = print;
-          FT_UInt kern_prev = prev_glyph_index;
-          x += spaceWidth;
-          while (p < last) {
-            if (!strncmp(p, "<u>", 3)) { p += 3; continue; }
-            if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
-            int ch = u8_readchar(&p);
-            if (!FT_Load_CharGlyph(face, ch))
-              continue;
-            FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-            FT_Glyph_Metrics* wmetrics = &face->glyph->metrics;
-            FT_Bitmap* wbitmap = &face->glyph->bitmap;
-            FT_Pos wadv = FT_SCALE(wmetrics->horiAdvance);
-            FT_Pos wx_off = FT_SCALE(wmetrics->horiBearingX);
-            FT_Pos wy_off = baseline - FT_SCALE(wmetrics->horiBearingY);
-            FT_UInt wgi = FT_Get_Char_Index(face, ch);
-            if (kern_prev && wgi) {
-              FT_Vector kerning;
-              if (FT_Get_Kerning(face, kern_prev, wgi, FT_KERNING_DEFAULT, &kerning) == 0)
-                x += FT_SCALE(kerning.x);
-            }
-            kern_prev = wgi;
-            if (x + wadv > cutX) break;
-            write_char(wbitmap, image_data, &textSize, x + wx_off, y + wy_off);
-            x += wadv;
-          }
-          ellipsis_x = x;
-          ellipsis_y = y;
-          ellipsis_baseline = baseline;
-          ellipsis_face = face;
+      
+      /* Ellipsis: would even one char of this word push past the cut? */
+      if (ellipsisW > 0) {
+        FT_Pos cutX = sz.width - ellipsisW;
+        if (ls.lineX + spacePrefix > cutX) {
+          /* No room at all — write ellipsis where we are */
+          ellipsis_x    = ls.lineX;
+          ellipsis_y    = ls.lineY;
+          ellipsis_base = ls.baseline;
+          ellipsis_face = m.face;
           bDone = TRUE;
           break;
         }
-
-        if (prev_glyph_index && glyph_index) {
-          FT_Vector kerning;
-          if (FT_Get_Kerning(face, prev_glyph_index, glyph_index,
-                             FT_KERNING_DEFAULT, &kerning) == 0) {
-            wordwidth += FT_SCALE(kerning.x);
+        
+        /* Render word characters until we hit the cut */
+        ls.lineX += spacePrefix;
+        lpcString_t q = word_start;
+        while (q < word_end) {
+          if (!strncmp(q, "<u>",  3)) { q += 3; continue; }
+          if (!strncmp(q, "</u>", 4)) { q += 4; continue; }
+          lpcString_t qb = q;
+          FT_UInt qch = u8_readchar(&q);
+          if (isspace(qch)) break;
+          if (!T_LoadChar(m.face, qch)) { prev_gi = 0; continue; }
+          FT_Render_Glyph(m.face->glyph, FT_RENDER_MODE_NORMAL);
+          FT_UInt  qgi  = FT_Get_Char_Index(m.face, qch);
+          FT_Pos   qadv = FT_SCALE(m.face->glyph->metrics.horiAdvance);
+          if (prev_gi && qgi) {
+            FT_Vector kern;
+            if (FT_Get_Kerning(m.face, prev_gi, qgi, FT_KERNING_DEFAULT, &kern) == 0)
+              ls.lineX += FT_SCALE(kern.x);
           }
+          if (ls.lineX + qadv > cutX) {
+            /* This glyph would exceed the cut — stop and place ellipsis */
+            ellipsis_x    = ls.lineX;
+            ellipsis_y    = ls.lineY;
+            ellipsis_base = ls.baseline;
+            ellipsis_face = m.face;
+            bDone = TRUE;
+            break;
+          }
+          FT_Pos xoff = FT_SCALE(m.face->glyph->metrics.horiBearingX);
+          FT_Pos yoff = ls.baseline - FT_SCALE(m.face->glyph->metrics.horiBearingY);
+          T_BlitGlyph(&m.face->glyph->bitmap, image_data, &sz,
+                      ls.lineX + xoff, ls.lineY + yoff);
+          ls.lineX += qadv;
+          prev_gi   = qgi;
         }
-
-        wordwidth += advance;
-        prev_glyph_index = glyph_index;
+        if (!bDone) {
+          /* full word fit under cut — finish normally below */
+        }
+        p = word_end;
+        ls.lineHasContent = TRUE;
+        continue;
       }
+      
+      /* ── Normal render: blit the whole word ── */
+      ls.lineX += spacePrefix;
+      int ul_thick = MAX(ul_depth ? 1 : 0, (int)run->underlineWidth) * (int)scale;
+      T_BlitWord(m.face, word_start, word_end,
+                 image_data, &sz,
+                 &ls.lineX, ls.lineY,
+                 ls.baseline, FT_SCALE(m.underlinePos),
+                 ul_thick, &prev_gi);
+      
+      ls.lineHasContent = TRUE;
+      ls.lineHeight = MAX(ls.lineHeight, m.height);
+      p = word_end;
     }
   }
-
+  
+  /* ── Draw ellipsis if needed ── */
   if (ellipsis_face) {
-    FT_Int ex = ellipsis_x;
-    for (int i = 0; i < 3; i++) {
-      if (FT_Load_CharGlyph(ellipsis_face, '.')) {
-        FT_Render_Glyph(ellipsis_face->glyph, FT_RENDER_MODE_NORMAL);
-        FT_Glyph_Metrics* m = &ellipsis_face->glyph->metrics;
-        write_char(&ellipsis_face->glyph->bitmap, image_data, &textSize,
-                   ex + FT_SCALE(m->horiBearingX),
-                   ellipsis_y + ellipsis_baseline - FT_SCALE(m->horiBearingY));
-        ex += (FT_Int)FT_SCALE(m->horiAdvance);
+    T_BlitEllipsis(ellipsis_face, image_data, &sz,
+                   ellipsis_x, ellipsis_y, ellipsis_base);
+  }
+  
+  ctx->image_data = image_data;
+  ctx->size       = (struct AXsize){ sz.width, sz.height };
+  return S_OK;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * Public API — thin wrappers around T_LayoutText
+ * ═══════════════════════════════════════════════════════════════ */
+
+static struct AXsize
+T_GetSize(struct TextBlockText const *text, struct rect *rcursor)
+{
+  LayoutCtx ctx = { .text = text, .bRender = FALSE };
+  if (FAILED(T_LayoutText(&ctx)))
+    return (struct AXsize){ 0 };
+  
+  /* Cursor tracking: we need a small dedicated pass to locate the
+   character offset in pixel space.  This keeps T_LayoutText clean. */
+  if (rcursor && text->cursor >= 0) {
+    /* Re-use the measurement result; cursor is positioned relative to
+     the laid-out lines.  For now re-run a lightweight cursor-only walk. */
+    /* (Cursor pass is identical to the old T_GetSize logic, kept here
+     separately so it doesn't pollute the main layout path.) */
+    struct AXsize lineSize = { 0 };
+    FT_Int charCount = 0;
+    for (struct TextBlockTextRun const *run = text->run;
+         run - text->run < text->numTextRuns; run++)
+    {
+      if (!run->string) continue;
+      RunMetrics m;
+      if (!T_BeginRun(run, text->scale, &m)) break;
+      
+      lpcString_t p = run->string;
+      FT_Pos lineX = 0;
+      bool_t lineHas = FALSE;
+      FT_Pos wrapW = (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP)
+      ? (FT_Pos)(text->availableWidth * text->scale) : 0;
+      
+      while (*p) {
+        if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
+        if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
+        
+        if (charCount++ == text->cursor) {
+          rcursor->x      = (int)(lineX / text->scale);
+          rcursor->y      = (int)(lineSize.height / text->scale);
+          rcursor->width  = CARET_WIDTH;
+          rcursor->height = (int)(FT_SCALE(m.height) / text->scale);
+        }
+        
+        lpcString_t before = p;
+        FT_UInt ch = u8_readchar(&p);
+        
+        if (ch == '\n') {
+          lineSize.height += FT_SCALE(m.height);
+          lineX = 0; lineHas = FALSE;
+          continue;
+        }
+        if (isspace(ch)) continue;
+        
+        lpcString_t word_end = before;
+        FT_UInt dummy = 0;
+        FT_Pos wordW = T_MeasureWord(m.face, &word_end, &dummy);
+        FT_Pos sp = lineHas ? m.spaceAdv : 0;
+        
+        if (wrapW > 0 && lineHas && lineX + sp + wordW > wrapW) {
+          lineSize.height += FT_SCALE(m.height);
+          lineX = 0; lineHas = FALSE; sp = 0;
+        }
+        
+        lineX += sp + wordW;
+        lineHas = TRUE;
+        lineSize.width = MAX(lineSize.width, (uint32_t)lineX);
+        p = word_end;
       }
     }
   }
-
-  if (bReuseTexture && *pTexture) {
-    Texture_Reallocate(*pTexture,
-                       &(CREATEIMGSTRUCT){ .Width = textSize.width,
-                                           .Height = textSize.height,
-                                           .Format = kTextureFormatAlpha8,
-                                           .MinFilter = kTextureFilterLinear,
-                                           .MagFilter = kTextureFilterLinear,
-                                           .ImageData = image_data });
-    (*pTexture)->Scale = pViewText->scale;
-    (*pTexture)->Width = textSize.width / MAX(1, (*pTexture)->Scale);
-    (*pTexture)->Height = textSize.height / MAX(1, (*pTexture)->Scale);
-    free(image_data);
-    return S_OK;
-  }
-
-  HRESULT hr = Texture_Create(
-    &(CREATEIMGSTRUCT){
-      .Width = (int)textSize.width,
-      .Height = (int)textSize.height,
-      .MinFilter = kTextureFilterLinear,
-      .MagFilter = kTextureFilterLinear,
-      .Format = kTextureFormatAlpha8,
-      .ImageData = image_data,
-    },
-    pTexture);
-
-  free(image_data);
-
-  if (FAILED(hr)) {
-    return hr;
-  } else {
-    (*pTexture)->Scale = pViewText->scale;
-    (*pTexture)->Width = textSize.width / MAX(1, (*pTexture)->Scale);
-    (*pTexture)->Height = textSize.height / MAX(1, (*pTexture)->Scale);
-    return S_OK;
-  }
+  
+  return ctx.size;
 }
+
+static HRESULT
+TextBlockText_Print(struct TextBlockText *pViewText,
+                    struct Texture      **pTexture,
+                    bool_t               bReuseTexture)
+{
+  LayoutCtx ctx = { .text = pViewText, .bRender = TRUE };
+  HRESULT hr = T_LayoutText(&ctx);
+  if (FAILED(hr)) return hr;
+  
+  struct AXsize const sz = ctx.size;
+  
+  CREATEIMGSTRUCT cis = {
+    .Width     = sz.width,
+    .Height    = sz.height,
+    .Format    = kTextureFormatAlpha8,
+    .MinFilter = kTextureFilterLinear,
+    .MagFilter = kTextureFilterLinear,
+    .ImageData = ctx.image_data,
+  };
+  
+  if (bReuseTexture && *pTexture) {
+    Texture_Reallocate(*pTexture, &cis);
+    (*pTexture)->Scale  = pViewText->scale;
+    (*pTexture)->Width  = sz.width  / MAX(1, (int)(*pTexture)->Scale);
+    (*pTexture)->Height = sz.height / MAX(1, (int)(*pTexture)->Scale);
+    free(ctx.image_data);
+    return S_OK;
+  }
+  
+  hr = Texture_Create(&cis, pTexture);
+  free(ctx.image_data);
+  if (FAILED(hr)) return hr;
+  
+  (*pTexture)->Scale  = pViewText->scale;
+  (*pTexture)->Width  = sz.width  / MAX(1, (int)pViewText->scale);
+  (*pTexture)->Height = sz.height / MAX(1, (int)pViewText->scale);
+  return S_OK;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+ * Hash, cache, and release helpers (unchanged logic, cleaner form)
+ * ═══════════════════════════════════════════════════════════════ */
 
 ORCA_API uint32_t
 TextBlockText_GetHash(struct TextBlockText *text)
 {
-  uint32_t size = sizeof(struct TextBlockTextRun) - sizeof(lpcString_t);
-  uint32_t text_hash = 0;
   uint32_t format_hash = fnv1a32_range((char*)text, (char*)&text->textureHash);
-  for (struct TextBlockTextRun *run = text->run; run - text->run < text->numTextRuns; run++) {
-    if (!run->string) {
-      continue;
-    }
-    text_hash ^= fnv1a32(run->string);
-    format_hash ^= fnv1a32_range((char*)&run->fontFamily, ((char*)&run->fontFamily) + size);
+  uint32_t text_hash   = 0;
+  size_t   run_fmt_sz  = sizeof(struct TextBlockTextRun) - sizeof(lpcString_t);
+  
+  for (struct TextBlockTextRun *run = text->run;
+       run - text->run < text->numTextRuns; run++)
+  {
+    if (!run->string) continue;
+    text_hash   ^= fnv1a32(run->string);
+    format_hash ^= fnv1a32_range((char*)&run->fontFamily,
+                                 (char*)&run->fontFamily + run_fmt_sz);
   }
   return text_hash ^ format_hash;
 }
@@ -497,9 +772,9 @@ ORCA_API struct Texture *
 TextBlockText_GetTexture(struct TextBlockText *text)
 {
   uint32_t hash = TextBlockText_GetHash(text);
-  if (text->texture && text->textureHash == hash) {
+  if (text->texture && text->textureHash == hash)
     return text->texture;
-  }
+  
   if (FAILED(TextBlockText_Print(text, &text->texture, text->texture != NULL))) {
     SafeDelete(text->texture, Texture_Release);
     text->textureHash = 0;
@@ -517,183 +792,165 @@ TextBlockText_Release(struct TextBlockText *text)
   free(text);
 }
 
-ORCA_API uint32_t
-TextBlockText_GetMeasureCount(void)
-{
-  return s_text_measure_count;
-}
+/* ── Stats ────────────────────────────────────────────────────── */
 
-ORCA_API uint32_t
-TextBlockText_GetRenderCount(void)
-{
-  return s_text_render_count;
-}
+ORCA_API uint32_t TextBlockText_GetMeasureCount(void) { return s_text_measure_count; }
+ORCA_API uint32_t TextBlockText_GetRenderCount(void)  { return s_text_render_count;  }
+ORCA_API void     TextBlockText_ResetStats(void)       { s_text_measure_count = s_text_render_count = 0; }
 
-ORCA_API void
-TextBlockText_ResetStats(void)
-{
-  s_text_measure_count = 0;
-  s_text_render_count = 0;
-}
+/* ── Insets ───────────────────────────────────────────────────── */
 
 static HRESULT
-TextBlockText_GetInsets(struct TextBlockText const* text,
-                        struct edges* edges)
+TextBlockText_GetInsets(struct TextBlockText const *text,
+                        struct edges               *edges)
 {
   for (struct TextBlockTextRun const *run = text->run;
-       run - text->run < text->numTextRuns;
-       run++)
+       run - text->run < text->numTextRuns; run++)
   {
-    FT_Face const face = T_GetFontFace(run);
-    if (!face ||
-        FT_Set_Pixel_Sizes(face, 0, run->fontSize * text->scale) ||
-        (text->flags & UI_TEXT_USE_FONT_HEIGHT))
+    FT_Face face = T_GetFontFace(run);
+    if (!face
+        || FT_Set_Pixel_Sizes(face, 0, (FT_UInt)(run->fontSize * text->scale))
+        || (text->flags & UI_TEXT_USE_FONT_HEIGHT))
     {
       *edges = (struct edges){ 0 };
       return S_OK;
     }
-    FT_Pos const ascender = FT_MulFix(face->ascender, face->size->metrics.y_scale);
-    FT_Pos const descender = FT_MulFix(face->descender, face->size->metrics.y_scale);
+    FT_Pos asc  = FT_MulFix(face->ascender,  face->size->metrics.y_scale);
+    FT_Pos desc = FT_MulFix(face->descender, face->size->metrics.y_scale);
     *edges = (struct edges){
-      .left = 0,
-      .right = 0,
-      .top = ceil(FT_SCALE(ascender - descender) / text->scale - run->fontSize * text->scale),
-      .bottom = -ceil(FT_SCALE(descender) / text->scale),
+      .left   = 0,
+      .right  = 0,
+      .top    = (int)ceil(FT_SCALE(asc - desc) / text->scale
+                          - run->fontSize * text->scale),
+        .bottom = -(int)ceil(FT_SCALE(desc) / text->scale),
     };
   }
   return S_OK;
 }
 
+/* ── GetInfo ─────────────────────────────────────────────────── */
+
 ORCA_API HRESULT
-TextBlockText_GetInfo(struct TextBlockText* pViewText,
-                      struct text_info* info)
+TextBlockText_GetInfo(struct TextBlockText *pViewText,
+                      struct text_info    *info)
 {
   uint32_t hash = TextBlockText_GetHash(pViewText);
   if (pViewText->infoHash && pViewText->infoHash == hash) {
     *info = pViewText->info;
     return NOERROR;
   }
-
+  
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
-  info->txWidth = SCALE_CEIL(textSize.width, pViewText->scale);
+  info->txWidth  = SCALE_CEIL(textSize.width,  pViewText->scale);
   info->txHeight = SCALE_CEIL(textSize.height, pViewText->scale);
-  info->cursor.x /= pViewText->scale;
-  info->cursor.y /= pViewText->scale;
-  info->cursor.width /= pViewText->scale;
+  info->cursor.x      /= pViewText->scale;
+  info->cursor.y      /= pViewText->scale;
+  info->cursor.width  /= pViewText->scale;
   info->cursor.height /= pViewText->scale;
-  info->cursor.width += CARET_WIDTH;
+  info->cursor.width  += CARET_WIDTH;
   TextBlockText_GetInsets(pViewText, &info->txInsets);
-  pViewText->info = *info;
+  
+  pViewText->info     = *info;
   pViewText->infoHash = hash;
   return NOERROR;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+ * Object / concept glue (unchanged)
+ * ═══════════════════════════════════════════════════════════════ */
+
 static lpcString_t
-_GetTextBlockText(struct Object *hObject,
+_GetTextBlockText(struct Object           *hObject,
                   struct TextBlockConcept *pTextBlockConcept,
-                  struct TextRun *pTextRun)
+                  struct TextRun          *pTextRun)
 {
   struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
   if (pTextRun->Text && *pTextRun->Text)
-  {
     return pTextRun->Text;
-  }
-  else if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID && !PROP_HasProgram(hProp))
-  {
+  if (pTextBlockConcept->TextResourceID && *pTextBlockConcept->TextResourceID
+      && !PROP_HasProgram(hProp))
     return Loc_GetString(pTextBlockConcept->TextResourceID, LOC_TEXT);
-  }
-  else if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
-  {
+  if (OBJ_GetTextContent(hObject) && *OBJ_GetTextContent(hObject))
     return OBJ_GetTextContent(hObject);
-  }
-  else
-  {
-    return pTextBlockConcept->PlaceholderText;
-  }
+  return pTextBlockConcept->PlaceholderText;
 }
 
 static struct TextBlockTextRun
-_MakeTextBlockTextRun(struct Object *hObject,
-                      struct TextRun text,
-                      lpcString_t szText)
+_MakeTextBlockTextRun(struct Object  *hObject,
+                      struct TextRun  text,
+                      lpcString_t     szText)
 {
   struct FontShorthand font = { .Size = DEFAULT_FONT_SIZE };
-
   TextRun_ReadProperty(hObject, Font.Weight, &font.Weight);
-  TextRun_ReadProperty(hObject, Font.Style, &font.Style);
-  TextRun_ReadProperty(hObject, Font.Size, &font.Size);
+  TextRun_ReadProperty(hObject, Font.Style,  &font.Style);
+  TextRun_ReadProperty(hObject, Font.Size,   &font.Size);
   TextRun_ReadProperty(hObject, Font.Family, &font.Family);
-
+  
   struct TextBlockTextRun view = {
-    .string = szText,
-    .fontFamily = font.Family,
-    .fontSize = font.Size,
-    .letterSpacing = text.LetterSpacing,
-    .fixedCharacterWidth = text.FixedCharacterWidth,
-    .underlineWidth = text.Underline.Width,
-    .underlineOffset = text.Underline.Offset,
-    .fontStyle = 0,
+    .string             = szText,
+    .fontFamily         = font.Family,
+    .fontSize           = font.Size,
+    .letterSpacing      = text.LetterSpacing,
+    .fixedCharacterWidth= text.FixedCharacterWidth,
+    .underlineWidth     = text.Underline.Width,
+    .underlineOffset    = text.Underline.Offset,
+    .fontStyle          = 0,
   };
-  if (font.Weight == kFontWeightBold) {
-    view.fontStyle += UI_TEXT_STYLE_BOLD;
-  }
-  if (font.Style == kFontStyleItalic) {
-    view.fontStyle += UI_TEXT_STYLE_ITALIC;
-  }
+  if (font.Weight == kFontWeightBold)  view.fontStyle += UI_TEXT_STYLE_BOLD;
+  if (font.Style  == kFontStyleItalic) view.fontStyle += UI_TEXT_STYLE_ITALIC;
   return view;
 }
 
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
-  struct TextBlockText* pViewText = pTextBlockConcept->_text;
-//  lpcString_t szTextContent = OBJ_GetTextContent(hObject);
-  pViewText->run[0] = _MakeTextBlockTextRun(hObject, *pTextRun, _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
-  pViewText->placeholder = pTextBlockConcept->PlaceholderText == pViewText->run[0].string;
-  pViewText->numTextRuns = 1;
+  struct TextBlockText *pViewText = pTextBlockConcept->_text;
+  
+  pViewText->run[0] = _MakeTextBlockTextRun(
+                                            hObject, *pTextRun,
+                                            _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
+  pViewText->placeholder  = (pTextBlockConcept->PlaceholderText == pViewText->run[0].string);
+  pViewText->numTextRuns  = 1;
+  
   FOR_EACH_OBJECT(run, hObject) {
     struct TextRun *tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < UI_MAX_TEXT_RUNS) {
       lpcString_t str = (tr->Text && *tr->Text) ? tr->Text : OBJ_GetTextContent(run);
       struct TextRun base = *pTextRun;
-      if (tr->Font.Weight) base.Font.Weight = tr->Font.Weight;
-      if (tr->Font.Style) base.Font.Style = tr->Font.Style;
-      if (tr->Font.Size) base.Font.Size = tr->Font.Size;
-      if (tr->Font.Family) base.Font.Family = tr->Font.Family;
-      if (TextRun_GetProperty(run, kTextRunUnderlineOffset)) base.Underline.Offset = tr->Underline.Offset;
-      if (TextRun_GetProperty(run, kTextRunUnderlineWidth)) base.Underline.Width = tr->Underline.Width;
-      if (TextRun_GetProperty(run, kTextRunUnderlineColor)) base.Underline.Color = tr->Underline.Color;
-      if (TextRun_GetProperty(run, kTextRunLetterSpacing)) base.LetterSpacing = tr->LetterSpacing;
-      if (TextRun_GetProperty(run, kTextRunLineHeight)) base.LineHeight = tr->LineHeight;
-      if (TextRun_GetProperty(run, kTextRunCharacterSpacing)) base.CharacterSpacing = tr->CharacterSpacing;
-      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth)) base.FixedCharacterWidth = tr->FixedCharacterWidth;
+      if (tr->Font.Weight)  base.Font.Weight = tr->Font.Weight;
+      if (tr->Font.Style)   base.Font.Style  = tr->Font.Style;
+      if (tr->Font.Size)    base.Font.Size    = tr->Font.Size;
+      if (tr->Font.Family)  base.Font.Family  = tr->Font.Family;
+      if (TextRun_GetProperty(run, kTextRunUnderlineOffset))        base.Underline.Offset   = tr->Underline.Offset;
+      if (TextRun_GetProperty(run, kTextRunUnderlineWidth))         base.Underline.Width    = tr->Underline.Width;
+      if (TextRun_GetProperty(run, kTextRunUnderlineColor))         base.Underline.Color    = tr->Underline.Color;
+      if (TextRun_GetProperty(run, kTextRunLetterSpacing))          base.LetterSpacing      = tr->LetterSpacing;
+      if (TextRun_GetProperty(run, kTextRunLineHeight))             base.LineHeight         = tr->LineHeight;
+      if (TextRun_GetProperty(run, kTextRunCharacterSpacing))       base.CharacterSpacing   = tr->CharacterSpacing;
+      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth))    base.FixedCharacterWidth= tr->FixedCharacterWidth;
       if (TextRun_GetProperty(run, kTextRunRemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
       pViewText->run[pViewText->numTextRuns++] = _MakeTextBlockTextRun(run, base, str);
     }
   }
-  pViewText->flags = pTextBlockConcept->UseFullFontHeight ? UI_TEXT_USE_FONT_HEIGHT : 0;
-//  pViewText->lineSpacing = pTextRun->LineHeight;
+  
+  pViewText->flags          = pTextBlockConcept->UseFullFontHeight ? UI_TEXT_USE_FONT_HEIGHT : 0;
   pViewText->availableWidth = pMakeText->availableSpace;
-  pViewText->textWrapping = (uint32_t)pTextBlockConcept->TextWrapping;
-  pViewText->textOverflow = (uint32_t)pTextBlockConcept->TextOverflow;
-  pViewText->scale = axGetScaling();
+  pViewText->textWrapping   = (uint32_t)pTextBlockConcept->TextWrapping;
+  pViewText->textOverflow   = (uint32_t)pTextBlockConcept->TextOverflow;
+  pViewText->scale          = axGetScaling();
   return TRUE;
 }
 
 HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
 {
   struct text_info *info = (struct text_info*)pGetInfo;
-  if (!info || !pTextBlockConcept->_text) {
-    return FALSE;
-  }
+  if (!info || !pTextBlockConcept->_text) return FALSE;
   return SUCCEEDED(TextBlockText_GetInfo(pTextBlockConcept->_text, info));
 }
 
 HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)
 {
-  if (!pTextBlockConcept->_text) {
-    return 0;
-  }
+  if (!pTextBlockConcept->_text) return 0;
   return (intptr_t)TextBlockText_GetTexture(pTextBlockConcept->_text);
 }
 

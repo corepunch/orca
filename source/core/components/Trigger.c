@@ -216,17 +216,17 @@ HANDLER(Setter, Action, Dispatch)
   }
   return FALSE;
 }
-
-static LRESULT
-_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
-{
-  if (!pEventTrigger->RoutedEvent || !*pEventTrigger->RoutedEvent)
-    return FALSE;
-  if (strcmp(pEventTrigger->RoutedEvent, routed_event))
-    return FALSE;
-  return _SendMessage(hObject, Trigger, Triggered,
-                .Sender = sender ? sender : hObject);
-}
+//
+//static LRESULT
+//_EventTrigger_Fire(struct Object *hObject, struct EventTrigger const *pEventTrigger, struct Object *sender, lpcString_t routed_event)
+//{
+//  if (!pEventTrigger->RoutedEvent || !*pEventTrigger->RoutedEvent)
+//    return FALSE;
+//  if (strcmp(pEventTrigger->RoutedEvent, routed_event))
+//    return FALSE;
+//  return _SendMessage(hObject, Trigger, Triggered,
+//                .Sender = sender ? sender : hObject);
+//}
 
 HANDLER(HideAction, Action, Dispatch)
 {
