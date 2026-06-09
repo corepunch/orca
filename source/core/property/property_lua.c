@@ -190,6 +190,9 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
                     Con_Error("Double-check if it chrashes afterwards");
                     free(*(char**)buf);
                   }
+                } else if (lua_type(L, -1) == LUA_TSTRING &&
+                           (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
+                  OBJ_SetName(obj, lua_tostring(L, -1));
                 }
               }
               lua_pop(L, 1); // pop value, keep key for lua_next
