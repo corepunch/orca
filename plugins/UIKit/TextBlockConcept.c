@@ -385,6 +385,7 @@ T_LayoutText(LayoutCtx *ctx)
     LayoutState ls;
     LS_Init(&ls);
     FT_Int current_char = 0; /* true per-character index, parallel to pInput->Cursor */
+    FT_Pos spaceOffset  = 0; /* accumulated space advance since last committed word */
 
     for (struct TextBlockTextRun const *run = text->run;
          run - text->run < text->numTextRuns; run++)
@@ -420,6 +421,7 @@ T_LayoutText(LayoutCtx *ctx)
           current_char++;
           measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
           LS_NewLine(&ls, &m);
+          spaceOffset = 0;
           continue;
         }
 
@@ -427,12 +429,13 @@ T_LayoutText(LayoutCtx *ctx)
           /* A plain space: just advance, no measurement needed here;
            word tokens already carry their own space prefix below. */
           if (!ctx->cursorSet && current_char == text->cursor) {
-            ctx->cursor.x      = (int)(ls.lineX / scale);
+            ctx->cursor.x      = (int)((ls.lineX + spaceOffset) / scale);
             ctx->cursor.y      = (int)(ls.lineY / scale);
             ctx->cursor.width  = CARET_WIDTH;
             ctx->cursor.height = (int)(FT_SCALE(m.height) / scale);
             ctx->cursorSet     = TRUE;
           }
+          spaceOffset += m.spaceAdv;
           current_char++;
           continue;
         }
@@ -491,6 +494,7 @@ T_LayoutText(LayoutCtx *ctx)
         ls.lineHasContent = TRUE;
         ls.lineHeight = MAX(ls.lineHeight, m.height);
         ls.baseline   = MAX(ls.baseline, FT_SCALE(m.ascender));
+        spaceOffset = 0;
 
         /* skip past the word we just measured */
         p = word_p;
@@ -499,7 +503,7 @@ T_LayoutText(LayoutCtx *ctx)
 
     /* cursor at end-of-text */
     if (!ctx->cursorSet && current_char == text->cursor) {
-      ctx->cursor.x      = (int)(ls.lineX / scale);
+      ctx->cursor.x      = (int)((ls.lineX + spaceOffset) / scale);
       ctx->cursor.y      = (int)(ls.lineY / scale);
       ctx->cursor.width  = CARET_WIDTH;
       ctx->cursor.height = (int)(FT_SCALE(ls.lineHeight) / scale);
