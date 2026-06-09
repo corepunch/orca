@@ -421,7 +421,11 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
     if (!pdesc || !pdesc->Name) continue;
 
     struct Property *hprop = NULL;
-    if (FAILED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) continue;
+    if (FAILED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) {
+      if (!pdesc->FullIdentifier ||
+          FAILED(OBJ_FindLongProperty(target, pdesc->FullIdentifier, &hprop)))
+        continue;
+    }
 
     if (ruleFlags) {
       PROP_SetFlag(hprop, PF_SPECIALIZED);

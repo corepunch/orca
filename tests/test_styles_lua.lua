@@ -1264,4 +1264,89 @@ test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
 test_css_font_family_list_uses_registered_fallback()
 
+-- ---------------------------------------------------------------------------
+-- Test 40: Font shorthand fields are inherited by a TextBlock through Node2D
+--          containers at depth 1, 2, and 3.
+--
+-- Layout per depth:
+--   depth=1: screen → .transcript(Node2D) → TextBlock
+--   depth=2: screen → .transcript(Node2D) → wrapper(Node2D) → TextBlock
+--   depth=3: screen → .transcript(Node2D) → w1(Node2D) → w2(Node2D) → TextBlock
+--
+-- The stylesheet sets all Font shorthand fields only on .transcript.
+-- None of the containers are TextBlocks, so the fields must propagate
+-- through the inheritance chain (IsInherited=TRUE on each field).
+-- ---------------------------------------------------------------------------
+local function test_css_font_shorthand_fields_inherited_by_textblock()
+  local css = [[
+    .transcript {
+      font-family: "Times New Roman", serif;
+      font-size: 18;
+      font-weight: bold;
+      font-style: italic;
+    }
+  ]]
+
+  local function make_scene()
+    local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+    screen.StyleSheet = ui.loadObjectFromCssString(css)
+    return screen
+  end
+
+  -- depth 1: .transcript → TextBlock
+  local s1 = make_scene()
+  local transcript1 = s1 + ui.Node2D { class = "transcript" }
+  local text1 = transcript1 + ui.TextBlock { Text = "d1" }
+  applyStyles(transcript1)
+  applyStyles(text1)
+
+  test.expect(text1.FontFamily ~= nil,     "depth=1: FontFamily should inherit from .transcript")
+  test.expect_eq(text1.FontFamily.Regular, "NotoSerif-Regular.ttf",
+                 "depth=1: FontFamily should resolve to serif fallback")
+  test.expect_near(text1.FontSize, 18, 0.01, "depth=1: FontSize should inherit from .transcript")
+  test.expect_eq(text1.FontWeight, "Bold",   "depth=1: FontWeight should inherit from .transcript")
+  test.expect_eq(text1.FontStyle,  "Italic", "depth=1: FontStyle should inherit from .transcript")
+  s1:removeFromParent()
+
+  -- depth 2: .transcript → wrapper → TextBlock
+  local s2 = make_scene()
+  local transcript2 = s2 + ui.Node2D { class = "transcript" }
+  local wrapper2 = transcript2 + ui.Node2D {}
+  local text2 = wrapper2 + ui.TextBlock { Text = "d2" }
+  applyStyles(transcript2)
+  applyStyles(wrapper2)
+  applyStyles(text2)
+
+  test.expect(text2.FontFamily ~= nil,     "depth=2: FontFamily should inherit through intermediate node")
+  test.expect_eq(text2.FontFamily.Regular, "NotoSerif-Regular.ttf",
+                 "depth=2: FontFamily should resolve to serif fallback")
+  test.expect_near(text2.FontSize, 18, 0.01, "depth=2: FontSize should inherit through intermediate node")
+  test.expect_eq(text2.FontWeight, "Bold",   "depth=2: FontWeight should inherit through intermediate node")
+  test.expect_eq(text2.FontStyle,  "Italic", "depth=2: FontStyle should inherit through intermediate node")
+  s2:removeFromParent()
+
+  -- depth 3: .transcript → w1 → w2 → TextBlock
+  local s3 = make_scene()
+  local transcript3 = s3 + ui.Node2D { class = "transcript" }
+  local w1 = transcript3 + ui.Node2D {}
+  local w2 = w1 + ui.Node2D {}
+  local text3 = w2 + ui.TextBlock { Text = "d3" }
+  applyStyles(transcript3)
+  applyStyles(w1)
+  applyStyles(w2)
+  applyStyles(text3)
+
+  test.expect(text3.FontFamily ~= nil,     "depth=3: FontFamily should inherit through two intermediate nodes")
+  test.expect_eq(text3.FontFamily.Regular, "NotoSerif-Regular.ttf",
+                 "depth=3: FontFamily should resolve to serif fallback")
+  test.expect_near(text3.FontSize, 18, 0.01, "depth=3: FontSize should inherit through two intermediate nodes")
+  test.expect_eq(text3.FontWeight, "Bold",   "depth=3: FontWeight should inherit through two intermediate nodes")
+  test.expect_eq(text3.FontStyle,  "Italic", "depth=3: FontStyle should inherit through two intermediate nodes")
+  s3:removeFromParent()
+
+  print("PASS: test_css_font_shorthand_fields_inherited_by_textblock")
+end
+
+test_css_font_shorthand_fields_inherited_by_textblock()
+
 print("All style tests passed.")
