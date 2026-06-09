@@ -17,6 +17,7 @@
 .tab-panel-header {
     direction: horizontal; align-items: center; gap: 12;
 }
+.cta-button-row { margin: 0 auto; }
 
 .command-link { padding: 16; }
 .model-line { gap: 10; }
