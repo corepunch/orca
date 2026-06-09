@@ -460,6 +460,7 @@
         <handle message="Node.LeftButtonUp"/>
         <handle message="Node.TextInput"/>
         <handle message="Node2D.MeasureOverride"/>
+        <handle message="Input.Clear"/>
       </handles>
       <properties>
         <property name="Name" type="string">Input identifier for forms and data binding </property>
@@ -474,6 +475,12 @@
       <messages>
         <message name="Submit">
           <summary>Fired when the input is submitted by the user.</summary>
+          <fields>
+            <field name="Text" type="string">The current value of the input at the time of submission.</field>
+          </fields>
+        </message>
+        <message name="Clear">
+          <summary>Clears the input's current value.</summary>
         </message>
       </messages>
     </class>

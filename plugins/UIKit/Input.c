@@ -162,8 +162,9 @@ HANDLER(Input, Node, KeyDown)
     case AX_KEY_ENTER:
       if (!pInput->Multiline) {
         OBJ_SetFocus(NULL);
-//        axPostMessageDataW(hObject, ID_Input_Submit, 0, szText, strlen(szText) + 1);
-        axPostMessageW(hObject, ID_Input_Submit, 0, NULL);
+        struct Input_SubmitEventArgs args = { .Text = currentText };
+        axPostMessageDataW(hObject, ID_Input_Submit, 0, &args, sizeof(args));
+//        axPostMessageW(hObject, ID_Input_Submit, 0, NULL);
       } else {
         if (dwLength + 1 < sizeof(szText) - 1) {
           szText[dwLength + 1] = 0;
@@ -260,3 +261,15 @@ HANDLER(Input, Object, Create)
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
   return FALSE;
 }
+
+HANDLER(Input, Input, Clear)
+{
+  struct Property *text;
+  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_TextRun_Text, &text))) {
+    PROP_Clear(text);
+  }
+  pInput->Cursor = 0;
+  OBJ_SetDirty(hObject);
+  return TRUE;
+}
+
