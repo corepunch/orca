@@ -421,7 +421,7 @@ void ED_EnumField(LPTERMINAL p, DWORD *value, lpcString_t const* values, DWORD w
 void ED_BooleanField(LPTERMINAL p, BOOL *value, lpcString_t name, DWORD width);
 void ED_SetDragData(DWORD  dwType, lpcString_t szTitle, LPVOID lpObject, BYTE indent);
 void ED_PrintStatus(lpcString_t szFormat, ...);
-void ED_HandleTextInput(wParam_t wparam);
+void ED_HandleTextInput(wParam_t wparam, lParam_t lparam);
 WORD ED_GetSelectedItem(HEDWND wnd);
 void ED_SetSelectedItem(HEDWND wnd, WORD itemIndex);
 void ED_SetHoveredItem(HEDWND wnd, WORD itemIndex);

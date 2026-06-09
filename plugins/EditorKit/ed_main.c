@@ -716,7 +716,7 @@ LRESULT ED_DispatchMessage(DWORD msg, wParam_t wparam, lParam_t lparam) {
       return ED_SendMessage(wnd, kEventLeftButtonDragged, _LocalCoord(wnd, wparam), lparam);
     case kEventKeyDown:
       if (editor.textEdit.active) {
-        ED_HandleTextInput(wparam);
+        ED_HandleTextInput(wparam, lparam);
         return TRUE;
       } else if (!editor.focus) {
         return FALSE;

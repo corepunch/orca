@@ -32,7 +32,7 @@ static void ED_AcceptInput(void) {
   ED_CancelInput();
 }
 
-void ED_HandleTextInput(wParam_t wparam) {
+void ED_HandleTextInput(wParam_t wparam, lParam_t lparam) {
   WORD keyName = wparam;
   if (keyName == AX_KEY_DOWNARROW) {
     editor.textEdit.callback(TEXTEDIT_DOWN, editor.textEdit.parm);
@@ -52,7 +52,8 @@ void ED_HandleTextInput(wParam_t wparam) {
     }
     ED_CancelInput();
   } else if (keyName > 32 && keyName < 127) {
-    _InstertChar((wparam & AX_MOD_SHIFT) ? keyName : tolower(keyName));
+    unsigned char osch = ((unsigned char *)&lparam)[0];
+    _InstertChar((osch > 32 && osch < 127) ? osch : keyName);
     if (editor.textEdit.callback) {
       editor.textEdit.callback(TEXTEDIT_INPUT, editor.textEdit.parm);
     }

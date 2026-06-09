@@ -187,28 +187,46 @@ HANDLER(Input, Node, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      if (pKeyDown->character && pInput->Cursor < (int)sizeof(szText) - 1) {
-        if (dwLength + 1 < sizeof(szText) - 1) {
-          szText[dwLength + 1] = 0;
-          for (uint32_t s = dwLength; s > pInput->Cursor; s--) {
-            szText[s] = szText[s - 1];
-          }
-        }
-//        szText[pInput->Cursor++] = *(char*)&pKeyDown->lParam;
-        szText[pInput->Cursor++] = pKeyDown->character;
-        textChanged = TRUE;
-      }
       break;
   }
   struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
     PROP_SetStringValue(prop, szText);
   }
-  if (textChanged) {
-    SV_PostMessage(hObject, "TextInput", 0, 0);
-    SV_PostMessage(hObject, "Char", 0, 0);
-  }
   OBJ_SetDirty(hObject);
+  return TRUE;
+}
+
+static bool_t
+_InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
+{
+  char szText[MAX_PROPERTY_STRING];
+  const char *currentText = GetTextRun(hObject)->Text;
+  strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
+  szText[sizeof(szText) - 1] = 0;
+  uint32_t dwLength = (uint32_t)strlen(szText);
+
+  if (pInput->Cursor >= (int)sizeof(szText) - 1)
+    return FALSE;
+  if (dwLength + 1 < sizeof(szText) - 1) {
+    szText[dwLength + 1] = 0;
+    for (uint32_t s = dwLength; s > (uint32_t)pInput->Cursor; s--)
+      szText[s] = szText[s - 1];
+  }
+  szText[pInput->Cursor++] = (char)ch;
+
+  struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
+  if (prop) PROP_SetStringValue(prop, szText);
+  SV_PostMessage(hObject, "TextInput", 0, 0);
+  SV_PostMessage(hObject, "Char", 0, 0);
+  OBJ_SetDirty(hObject);
+  return TRUE;
+}
+
+HANDLER(Input, Node, TextInput)
+{
+  if (pTextInput->character > 32 && (unsigned char)pTextInput->character < 127)
+    _InsertCharacter(hObject, pInput, (unsigned char)pTextInput->character);
   return TRUE;
 }
 
