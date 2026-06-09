@@ -6,9 +6,9 @@ do
   local _class_0
   local _base_0 = {
     url_params = function(self, req, ...)
-      return "Adventure", nil, {
+      return "Adventure", {
         game = self.id
-      }, ...
+      }, nil, ...
     end
   }
   _base_0.__index = _base_0
@@ -34,6 +34,40 @@ do
   _base_0.__class = _class_0
   Game = _class_0
 end
+local Session
+do
+  local _class_0
+  local _base_0 = {
+    url_params = function(self, req, ...)
+      return "Adventure", {
+        game = self.game_id,
+        session = self.id
+      }, nil, ...
+    end
+  }
+  _base_0.__index = _base_0
+  _class_0 = setmetatable({
+    __init = function(self, attrs)
+      if attrs == nil then
+        attrs = { }
+      end
+      for k, v in pairs(attrs) do
+        self[k] = v
+      end
+    end,
+    __base = _base_0,
+    __name = "Session"
+  }, {
+    __index = _base_0,
+    __call = function(cls, ...)
+      local _self_0 = setmetatable({}, _base_0)
+      cls.__init(_self_0, ...)
+      return _self_0
+    end
+  })
+  _base_0.__class = _class_0
+  Session = _class_0
+end
 local build_app
 build_app = function()
   local App
@@ -47,7 +81,7 @@ build_app = function()
         end
       }),
       [{
-        Adventure = "/adventure"
+        Adventure = "/adventure/:game(/:session)"
       }] = function()
         return "ok"
       end
@@ -90,7 +124,9 @@ end
 local application_url_for_named_route
 application_url_for_named_route = function()
   local app = build_app()
-  test.expect_eq(app:url_for("Adventure"), "/adventure", "app:url_for('Adventure') should return the named route path")
+  test.expect_eq(app:url_for("Adventure", {
+    game = "zork1"
+  }), "/adventure/zork1", "app:url_for('Adventure', params) should interpolate path params")
   return print("PASS: application_url_for_named_route")
 end
 local application_url_for_model_object
@@ -99,8 +135,18 @@ application_url_for_model_object = function()
   local game = Game({
     id = "zork1"
   })
-  test.expect_eq(app:url_for(game), "/adventure?game=zork1", "app:url_for(game) should use game:url_params()")
+  test.expect_eq(app:url_for(game), "/adventure/zork1", "app:url_for(game) should use game:url_params()")
   return print("PASS: application_url_for_model_object")
+end
+local application_url_for_session_model_object
+application_url_for_session_model_object = function()
+  local app = build_app()
+  local session = Session({
+    game_id = "zork1",
+    id = "s1"
+  })
+  test.expect_eq(app:url_for(session), "/adventure/zork1/s1", "app:url_for(session) should include session path segment")
+  return print("PASS: application_url_for_session_model_object")
 end
 local widget_url_for_delegates_to_application
 widget_url_for_delegates_to_application = function()
@@ -111,12 +157,20 @@ widget_url_for_delegates_to_application = function()
   local game = Game({
     id = "zork1"
   })
-  test.expect_eq(widget:url_for("Adventure"), "/adventure", "widget:url_for should resolve named routes through the current app")
-  test.expect_eq(widget:url_for(game), "/adventure?game=zork1", "widget:url_for should resolve model objects through the current app")
+  local session = Session({
+    game_id = "zork1",
+    id = "s1"
+  })
+  test.expect_eq(widget:url_for("Adventure", {
+    game = "zork1"
+  }), "/adventure/zork1", "widget:url_for should resolve named routes through the current app")
+  test.expect_eq(widget:url_for(game), "/adventure/zork1", "widget:url_for should resolve model objects through the current app")
+  test.expect_eq(widget:url_for(session), "/adventure/zork1/s1", "widget:url_for should resolve session model objects through the current app")
   Application.app = previous
   return print("PASS: widget_url_for_delegates_to_application")
 end
 application_url_for_named_route()
 application_url_for_model_object()
+application_url_for_session_model_object()
 widget_url_for_delegates_to_application()
 return print("All url_for tests passed.")

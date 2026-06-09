@@ -189,10 +189,70 @@ local function test_url_for_named_reused_patterns()
   print("PASS: test_url_for_named_reused_patterns")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 13: optional segment (:game(/:session)) resolves with or without session
+-- ---------------------------------------------------------------------------
+local function test_optional_segment_resolve()
+  local owner = {}
+  local router = Router(owner)
+  router:add("Adventure", "/adventure/:game(/:session)", function(self)
+    return (self.params.game or "nil") .. "/" .. (self.params.session or "nil")
+  end)
+
+  local r1 = router:resolve("/adventure/zork1")
+  test.expect(r1 ~= nil, "optional segment: should resolve with game only")
+  test.expect_eq(r1 and r1.params.game, "zork1", "optional segment: game param set")
+  test.expect_eq(r1 and r1.params.session, nil, "optional segment: session nil when absent")
+
+  local r2 = router:resolve("/adventure/zork1/s1")
+  test.expect(r2 ~= nil, "optional segment: should resolve with game and session")
+  test.expect_eq(r2 and r2.params.game, "zork1", "optional segment: game param set with session")
+  test.expect_eq(r2 and r2.params.session, "s1", "optional segment: session captured")
+
+  print("PASS: test_optional_segment_resolve")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 14: url_for with optional segment omits the group when param absent
+-- ---------------------------------------------------------------------------
+local function test_optional_segment_url_for()
+  local owner = {}
+  local router = Router(owner)
+  router:add("Adventure", "/adventure/:game(/:session)", function() end)
+
+  test.expect_eq(router:url_for("Adventure", { game = "zork1" }), "/adventure/zork1",
+    "url_for: optional segment omitted when session absent")
+  test.expect_eq(router:url_for("Adventure", { game = "zork1", session = "s1" }), "/adventure/zork1/s1",
+    "url_for: optional segment included when session present")
+
+  print("PASS: test_optional_segment_url_for")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 15: dispatch populates params correctly for optional segment routes
+-- ---------------------------------------------------------------------------
+local function test_optional_segment_dispatch_params()
+  local owner = {}
+  local router = Router(owner)
+  router:add("Adventure", "/adventure/:game(/:session)", function(self)
+    return (self.params.game or "nil") .. "/" .. tostring(self.params.session)
+  end)
+
+  test.expect_eq(router:dispatch("/adventure/zork1"), "zork1/nil",
+    "dispatch: session nil when not provided")
+  test.expect_eq(router:dispatch("/adventure/zork1/abc"), "zork1/abc",
+    "dispatch: session populated when provided")
+
+  print("PASS: test_optional_segment_dispatch_params")
+end
+
 test_url_for_named()
 test_url_for_named_with_params()
 test_url_for_passthrough()
 test_url_for_unknown_returns_nil()
 test_url_for_named_reused_patterns()
+test_optional_segment_resolve()
+test_optional_segment_url_for()
+test_optional_segment_dispatch_params()
 
 print("All router tests passed.")

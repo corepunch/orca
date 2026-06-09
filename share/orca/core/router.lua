@@ -34,7 +34,12 @@ local function compile_route_pattern(url)
   local i = 1
   while i <= #url do
     local ch = url:sub(i, i)
-    if ch == ":" then
+    if ch == "(" then
+      -- skip: optional groups handled by expand_route_patterns, not inline
+      i = i + 1
+    elseif ch == ")" then
+      i = i + 1
+    elseif ch == ":" then
       local name = url:sub(i + 1):match("^([%a_][%w_]*)")
       if name then
         i = i + #name + 1
@@ -43,7 +48,8 @@ local function compile_route_pattern(url)
           local close = url:find("]", i, true)
           if close then class = url:sub(i + 1, close - 1); i = close + 1 end
         end
-        names[#names + 1] = name; parts[#parts + 1] = "(" .. class .. ")"
+        names[#names + 1] = name
+        parts[#parts + 1] = "(" .. class .. ")"
       else
         parts[#parts + 1] = "%:"; i = i + 1
       end
@@ -57,47 +63,111 @@ local function compile_route_pattern(url)
   return table.concat(parts), names
 end
 
+-- Expand a URL template with optional groups into a list of concrete variants.
+-- "/adventure/:game(/:session)" → { "/adventure/:game", "/adventure/:game/:session" }
+-- Works recursively so nested optionals work too.
+local function expand_route_patterns(url)
+  local s, e = url:find("%b()")
+  if not s then return { url } end
+  local before = url:sub(1, s - 1)
+  local inside = url:sub(s + 1, e - 1)
+  local after  = url:sub(e + 1)
+  local results = {}
+  -- variant without the optional segment
+  for _, v in ipairs(expand_route_patterns(before .. after)) do
+    results[#results + 1] = v
+  end
+  -- variant with the optional segment
+  for _, v in ipairs(expand_route_patterns(before .. inside .. after)) do
+    results[#results + 1] = v
+  end
+  return results
+end
+
 local function build_route(name, url, handler)
   local pattern, names = compile_route_pattern(url)
+  local variants = expand_route_patterns(url)
+  -- Build a sub-pattern per concrete variant (sorted longest first so
+  -- the most-specific variant wins during resolve).
+  table.sort(variants, function(a, b) return #a > #b end)
+  local sub_patterns = {}
+  for _, v in ipairs(variants) do
+    local p, n = compile_route_pattern(v)
+    sub_patterns[#sub_patterns + 1] = { pattern = p, names = n, url = v }
+  end
   return {
-    name     = name or url,
-    url      = url,
-    handler  = handler,
-    pattern  = pattern,
-    names    = names,
-    is_dynamic = #names > 0 or url:find("*", 1, true) ~= nil,
+    name         = name or url,
+    url          = url,
+    handler      = handler,
+    pattern      = pattern,   -- kept for is_dynamic detection
+    names        = names,
+    is_dynamic   = #names > 0 or url:find("*", 1, true) ~= nil
+                   or url:find("(", 1, true) ~= nil,
+    sub_patterns = sub_patterns,
   }
 end
+
+-- Expand one optional group segment, returning the filled text or "" if any
+-- enclosed param is missing. Handles the plain-param and splat sub-cases only
+-- (no nested groups — those are handled by the outer recursive call in
+-- fill_path_params).
+local function expand_optional(segment, params)
+  -- Check whether every :param inside this segment is present.
+  local ok = true
+  local result = segment
+    :gsub(":([%a_][%w_]*)%b[]", function(name)
+      local v = params[name]; if v == nil then ok = false; return "" end
+      return encode_component(v)
+    end)
+    :gsub(":([%a_][%w_]*)", function(name)
+      local v = params[name]; if v == nil then ok = false; return "" end
+      return encode_component(v)
+    end)
+    :gsub("%*", function()
+      return params.splat ~= nil and tostring(params.splat) or ""
+    end)
+  return ok and result or ""
+end
+
 
 local function fill_path_params(path, params)
   if type(path) ~= "string" then return nil end
   if type(params) ~= "table" then
-    return (path:find(":[%a_][%w_]*") or path:find("*", 1, true)) and nil or path
+    return (path:find(":[%a_][%w_]*") or path:find("*", 1, true)
+            or path:find("(", 1, true)) and nil or path
   end
-  local ok = true
-  local function replace_param(name)
-    local v = params[name]; if v == nil then ok = false; return "" end
-    return encode_component(v)
+
+  -- Expand optional groups into concrete variants, try longest first.
+  local variants = expand_route_patterns(path)
+  table.sort(variants, function(a, b) return #a > #b end)
+  for _, variant in ipairs(variants) do
+    local ok = true
+    local function replace_param(name)
+      local v = params[name]; if v == nil then ok = false; return "" end
+      return encode_component(v)
+    end
+    local result = variant
+      :gsub(":([%a_][%w_]*)%b[]", replace_param)
+      :gsub(":([%a_][%w_]*)",     replace_param)
+      :gsub("%*", function()
+        return params.splat ~= nil and tostring(params.splat) or ""
+      end)
+    if ok then return result end
   end
-  path = path:gsub(":([%a_][%w_]*)%b[]", replace_param)
-  path = path:gsub(":([%a_][%w_]*)", replace_param)
-  path = path:gsub("%*", function()
-    return params.splat ~= nil and tostring(params.splat) or ""
-  end)
-  return ok and path or nil
+  return nil
 end
 
 local Router = Widget:extend {
   __init = function(self, owner)
-    self.owner       = owner
-    self.routes      = {}
+    self.owner          = owner
+    self.routes         = {}
     self.routes_by_path = {}
     self.named_routes   = {}
     self:registerRoutes(owner)
   end,
 
   add = function(self, name, url, handler)
-    assert(type(url) == "string",    "route url must be a string")
+    assert(type(url) == "string",       "route url must be a string")
     assert(type(handler) == "function", "route handler must be a function")
     local route = build_route(name, url, handler)
     self.routes[#self.routes + 1] = route
@@ -131,18 +201,13 @@ local Router = Widget:extend {
     local routes = self.named_routes[name]
     if not routes then return nil end
 
-    local best_path = nil
-    local best_score = -1
-    local best_len = -1
+    local best_path, best_score, best_len = nil, -1, -1
     for _, route in ipairs(routes) do
       local path = fill_path_params(route.url, params)
       if path then
-        local score = #route.names
-        local len = #route.url
+        local score, len = #route.names, #route.url
         if score > best_score or (score == best_score and len > best_len) then
-          best_score = score
-          best_len = len
-          best_path = path
+          best_score, best_len, best_path = score, len, path
         end
       end
     end
@@ -183,11 +248,15 @@ local Router = Widget:extend {
 
     for _, candidate in ipairs(self.routes) do
       if candidate.is_dynamic then
-        local captures = { path:match(candidate.pattern) }
-        if #captures > 0 then
-          local params = {}
-          for i, key in ipairs(candidate.names) do params[key] = captures[i] end
-          return { name = candidate.name, url = candidate.url, handler = candidate.handler, params = params, path = path }
+        for _, sp in ipairs(candidate.sub_patterns) do
+          local captures = { path:match(sp.pattern) }
+          if #captures > 0 or path:match(sp.pattern) ~= nil then
+            local params = {}
+            for i, key in ipairs(sp.names) do
+              if captures[i] ~= nil then params[key] = captures[i] end
+            end
+            return { name = candidate.name, url = candidate.url, handler = candidate.handler, params = params, path = path }
+          end
         end
       end
     end
