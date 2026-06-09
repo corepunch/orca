@@ -324,11 +324,12 @@ typedef struct {
   /* inputs */
   struct TextBlockText const *text;
   bool_t    bRender;
-  
+
   /* outputs */
-  struct AXsize  size;       /* final pixel size (scaled) */
-  struct rect    cursor;     /* cursor rect in pixel space */
-  
+  struct AXsize  size;         /* final pixel size (scaled) */
+  struct rect    cursor;       /* cursor rect in unscaled pixel space */
+  bool_t         cursorSet;    /* TRUE once cursor rect has been written */
+
   /* bitmap (only when bRender == TRUE) */
   FT_Pixel      *image_data;
 } LayoutCtx;
@@ -383,42 +384,59 @@ T_LayoutText(LayoutCtx *ctx)
   {
     LayoutState ls;
     LS_Init(&ls);
-    
+    FT_Int current_char = 0; /* true per-character index, parallel to pInput->Cursor */
+
     for (struct TextBlockTextRun const *run = text->run;
          run - text->run < text->numTextRuns; run++)
     {
       if (!run->string) continue;
-      
+
       RunMetrics m;
       if (!T_BeginRun(run, scale, &m)) return E_UNEXPECTED;
-      
+
       ls.lineHeight = MAX(ls.lineHeight, m.height);
       ls.baseline   = MAX(ls.baseline,   FT_SCALE(m.ascender));
-      
+
       lpcString_t p = run->string;
       while (*p) {
         /* skip tags */
         if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
         if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
-        
+
         FT_UInt ch = (unsigned char)*p;
         lpcString_t before = p;
         ch = u8_readchar(&p);
-        
+
         ls.charCount++;
-        
+
         if (ch == '\n') {
+          if (!ctx->cursorSet && current_char == text->cursor) {
+            ctx->cursor.x      = (int)(ls.lineX / scale);
+            ctx->cursor.y      = (int)(ls.lineY / scale);
+            ctx->cursor.width  = CARET_WIDTH;
+            ctx->cursor.height = (int)(FT_SCALE(m.height) / scale);
+            ctx->cursorSet     = TRUE;
+          }
+          current_char++;
           measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
           LS_NewLine(&ls, &m);
           continue;
         }
-        
+
         if (isspace(ch)) {
           /* A plain space: just advance, no measurement needed here;
            word tokens already carry their own space prefix below. */
+          if (!ctx->cursorSet && current_char == text->cursor) {
+            ctx->cursor.x      = (int)(ls.lineX / scale);
+            ctx->cursor.y      = (int)(ls.lineY / scale);
+            ctx->cursor.width  = CARET_WIDTH;
+            ctx->cursor.height = (int)(FT_SCALE(m.height) / scale);
+            ctx->cursorSet     = TRUE;
+          }
+          current_char++;
           continue;
         }
-        
+
         /* --- Non-space: we have a word token --- */
         /* Back up and measure the whole word */
         lpcString_t word_start = before;
@@ -426,7 +444,7 @@ T_LayoutText(LayoutCtx *ctx)
         lpcString_t word_p = word_start;
         FT_Pos wordW = T_MeasureWord(m.face, &word_p, &dummy_gi);
         /* word_p now points past the word */
-        
+
         /* Decide whether to wrap before this word */
         if (wrapW > 0 && ls.lineHasContent) {
           FT_Pos needed = ls.lineX + m.spaceAdv + wordW;
@@ -439,24 +457,62 @@ T_LayoutText(LayoutCtx *ctx)
         } else if (ls.lineHasContent) {
           ls.lineX += m.spaceAdv;
         }
-        
+
+        /* cursor: walk the word char-by-char to count and find x if needed */
+        {
+          FT_Pos cx = ls.lineX;
+          FT_UInt prev_gi2 = 0;
+          lpcString_t wp = word_start;
+          while (wp < word_p) {
+            if (!strncmp(wp, "<u>",  3)) { wp += 3; continue; }
+            if (!strncmp(wp, "</u>", 4)) { wp += 4; continue; }
+            if (!ctx->cursorSet && current_char == text->cursor) {
+              ctx->cursor.x      = (int)(cx / scale);
+              ctx->cursor.y      = (int)(ls.lineY / scale);
+              ctx->cursor.width  = CARET_WIDTH;
+              ctx->cursor.height = (int)(FT_SCALE(m.height) / scale);
+              ctx->cursorSet     = TRUE;
+            }
+            FT_UInt wch = u8_readchar(&wp);
+            current_char++;
+            if (!T_LoadChar(m.face, wch)) { prev_gi2 = 0; continue; }
+            FT_UInt gi = FT_Get_Char_Index(m.face, wch);
+            if (prev_gi2 && gi) {
+              FT_Vector kern;
+              if (FT_Get_Kerning(m.face, prev_gi2, gi, FT_KERNING_DEFAULT, &kern) == 0)
+                cx += FT_SCALE(kern.x);
+            }
+            cx += FT_SCALE(m.face->glyph->metrics.horiAdvance);
+            prev_gi2 = gi;
+          }
+        }
+
         ls.lineX += wordW;
         ls.lineHasContent = TRUE;
         ls.lineHeight = MAX(ls.lineHeight, m.height);
         ls.baseline   = MAX(ls.baseline, FT_SCALE(m.ascender));
-        
+
         /* skip past the word we just measured */
         p = word_p;
       }
     }
-    
+
+    /* cursor at end-of-text */
+    if (!ctx->cursorSet && current_char == text->cursor) {
+      ctx->cursor.x      = (int)(ls.lineX / scale);
+      ctx->cursor.y      = (int)(ls.lineY / scale);
+      ctx->cursor.width  = CARET_WIDTH;
+      ctx->cursor.height = (int)(FT_SCALE(ls.lineHeight) / scale);
+      ctx->cursorSet     = TRUE;
+    }
+
     measuredSize.width  = MAX(measuredSize.width, (uint32_t)ls.lineX);
     measuredSize.height = (uint32_t)ls.lineY + (uint32_t)FT_SCALE(ls.lineHeight);
-    
+
     /* Apply availableWidth clamp for ellipsis */
     if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0)
       measuredSize.width = MIN(measuredSize.width, (int)(text->availableWidth * scale));
-    
+
     ctx->size = measuredSize;
     s_text_measure_count++;
   }
@@ -642,68 +698,10 @@ T_GetSize(struct TextBlockText const *text, struct rect *rcursor)
   LayoutCtx ctx = { .text = text, .bRender = FALSE };
   if (FAILED(T_LayoutText(&ctx)))
     return (struct AXsize){ 0 };
-  
-  /* Cursor tracking: we need a small dedicated pass to locate the
-   character offset in pixel space.  This keeps T_LayoutText clean. */
-  if (rcursor && text->cursor >= 0) {
-    /* Re-use the measurement result; cursor is positioned relative to
-     the laid-out lines.  For now re-run a lightweight cursor-only walk. */
-    /* (Cursor pass is identical to the old T_GetSize logic, kept here
-     separately so it doesn't pollute the main layout path.) */
-    struct AXsize lineSize = { 0 };
-    FT_Int charCount = 0;
-    for (struct TextBlockTextRun const *run = text->run;
-         run - text->run < text->numTextRuns; run++)
-    {
-      if (!run->string) continue;
-      RunMetrics m;
-      if (!T_BeginRun(run, text->scale, &m)) break;
-      
-      lpcString_t p = run->string;
-      FT_Pos lineX = 0;
-      bool_t lineHas = FALSE;
-      FT_Pos wrapW = (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP)
-      ? (FT_Pos)(text->availableWidth * text->scale) : 0;
-      
-      while (*p) {
-        if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
-        if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
-        
-        if (charCount++ == text->cursor) {
-          rcursor->x      = (int)(lineX / text->scale);
-          rcursor->y      = (int)(lineSize.height / text->scale);
-          rcursor->width  = CARET_WIDTH;
-          rcursor->height = (int)(FT_SCALE(m.height) / text->scale);
-        }
-        
-        lpcString_t before = p;
-        FT_UInt ch = u8_readchar(&p);
-        
-        if (ch == '\n') {
-          lineSize.height += FT_SCALE(m.height);
-          lineX = 0; lineHas = FALSE;
-          continue;
-        }
-        if (isspace(ch)) continue;
-        
-        lpcString_t word_end = before;
-        FT_UInt dummy = 0;
-        FT_Pos wordW = T_MeasureWord(m.face, &word_end, &dummy);
-        FT_Pos sp = lineHas ? m.spaceAdv : 0;
-        
-        if (wrapW > 0 && lineHas && lineX + sp + wordW > wrapW) {
-          lineSize.height += FT_SCALE(m.height);
-          lineX = 0; lineHas = FALSE; sp = 0;
-        }
-        
-        lineX += sp + wordW;
-        lineHas = TRUE;
-        lineSize.width = MAX(lineSize.width, (uint32_t)lineX);
-        p = word_end;
-      }
-    }
-  }
-  
+
+  if (rcursor && ctx.cursorSet)
+    *rcursor = ctx.cursor;
+
   return ctx.size;
 }
 
@@ -843,11 +841,7 @@ TextBlockText_GetInfo(struct TextBlockText *pViewText,
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
   info->txWidth  = SCALE_CEIL(textSize.width,  pViewText->scale);
   info->txHeight = SCALE_CEIL(textSize.height, pViewText->scale);
-  info->cursor.x      /= pViewText->scale;
-  info->cursor.y      /= pViewText->scale;
-  info->cursor.width  /= pViewText->scale;
-  info->cursor.height /= pViewText->scale;
-  info->cursor.width  += CARET_WIDTH;
+  /* cursor rect is already in unscaled logical pixels from T_LayoutText */
   TextBlockText_GetInsets(pViewText, &info->txInsets);
   
   pViewText->info     = *info;
