@@ -50,6 +50,7 @@ local function test_resolve_returns_route()
   test.expect(route ~= nil, "resolve should find registered route")
   test.expect_eq(route.handler, handler, "resolve should return correct handler")
   test.expect_eq(route.name, "home", "resolve should return correct name")
+  test.expect_eq(route.url, "/home", "resolve should return the route pattern")
   print("PASS: test_resolve_returns_route")
 end
 
@@ -100,6 +101,20 @@ local function test_multiple_routes()
   print("PASS: test_multiple_routes")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 7: dispatch sets owner.params from dynamic route captures
+-- ---------------------------------------------------------------------------
+local function test_dispatch_dynamic_params()
+  local owner = {}
+  local router = Router(owner)
+  router:add("adventure", "/adventure/:game/:session", function(self)
+    return self.params.game .. ":" .. self.params.session
+  end)
+
+  test.expect_eq(router:dispatch("/adventure/zork1/s1"), "zork1:s1", "dispatch should capture dynamic route params")
+  print("PASS: test_dispatch_dynamic_params")
+end
+
 -- Run all
 test_dispatch_calls_correct_handler()
 test_dispatch_nil_for_unknown_route()
@@ -107,9 +122,10 @@ test_resolve_returns_route()
 test_resolve_nil_for_unknown()
 test_register_routes_auto_discovery()
 test_multiple_routes()
+test_dispatch_dynamic_params()
 
 -- ---------------------------------------------------------------------------
--- Test 7: url_for returns the URL for a named route
+-- Test 8: url_for returns the URL for a named route
 -- ---------------------------------------------------------------------------
 local function test_url_for_named()
   local owner = {}
@@ -123,18 +139,32 @@ local function test_url_for_named()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 8: url_for passes through a path string unchanged
+-- Test 9: url_for interpolates params into named route paths
+-- ---------------------------------------------------------------------------
+local function test_url_for_named_with_params()
+  local owner = {}
+  local router = Router(owner)
+  router:add("adventure", "/adventure/:game/:session", function() end)
+
+  test.expect_eq(router:url_for("adventure", { game = "zork1", session = "abc123" }), "/adventure/zork1/abc123", "url_for should interpolate named route params")
+  test.expect_eq(router:url_for("adventure", { game = "zork1" }), nil, "url_for should return nil when params are missing")
+  print("PASS: test_url_for_named_with_params")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 10: url_for interpolates params into direct path templates
 -- ---------------------------------------------------------------------------
 local function test_url_for_passthrough()
   local owner = {}
   local router = Router(owner)
 
   test.expect_eq(router:url_for("/dashboard"), "/dashboard", "url_for('/dashboard') should return path unchanged")
+  test.expect_eq(router:url_for("/adventure/:game/:session", { game = "zork1", session = "s1" }), "/adventure/zork1/s1", "url_for should interpolate params in direct path templates")
   print("PASS: test_url_for_passthrough")
 end
 
 -- ---------------------------------------------------------------------------
--- Test 9: url_for returns nil for an undefined route name
+-- Test 11: url_for returns nil for an undefined route name
 -- ---------------------------------------------------------------------------
 local function test_url_for_unknown_returns_nil()
   local owner = {}
@@ -145,8 +175,24 @@ local function test_url_for_unknown_returns_nil()
   print("PASS: test_url_for_unknown_returns_nil")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 12: url_for selects fillable pattern when a route name is reused
+-- ---------------------------------------------------------------------------
+local function test_url_for_named_reused_patterns()
+  local owner = {}
+  local router = Router(owner)
+  router:add("Adventure", "/adventure/:game", function() end)
+  router:add("Adventure", "/adventure/:game/:session", function() end)
+
+  test.expect_eq(router:url_for("Adventure", { game = "zork1" }), "/adventure/zork1", "url_for should pick the one-segment pattern when only game is provided")
+  test.expect_eq(router:url_for("Adventure", { game = "zork1", session = "s1" }), "/adventure/zork1/s1", "url_for should pick the two-segment pattern when session is provided")
+  print("PASS: test_url_for_named_reused_patterns")
+end
+
 test_url_for_named()
+test_url_for_named_with_params()
 test_url_for_passthrough()
 test_url_for_unknown_returns_nil()
+test_url_for_named_reused_patterns()
 
 print("All router tests passed.")
