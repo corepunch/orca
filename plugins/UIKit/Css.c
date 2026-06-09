@@ -147,6 +147,10 @@ k_css_prop_map[] = {
     { "text-align",        "TextBlockConcept.TextHorizontalAlignment" },
     { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
     { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
+
+    /* Custom properties */
+    { "grid-template-columns", "Grid.Columns" },
+    { "grid-template-rows", "Grid.Rows" },
     { NULL, NULL }
 };
 
