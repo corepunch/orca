@@ -99,6 +99,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
   uint32_t height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
   struct vec2 imgsize = _GetImageSize(hObject, pImageView);
   struct ViewEntity entity;
+  struct Image *source_image = pImageView->_src_object ? GetImage((struct Object *)pImageView->_src_object) : NULL;
 
 	if (!memcmp(&pDrawBrush->brush,
 							&(struct BrushShorthand){0},
@@ -137,7 +138,12 @@ HANDLER(ImageView, Node2D, DrawBrush)
 
   entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
-  entity.material.blendMode = OBJ_GetInteger(hObject, ID_Material_BlendMode, kBlendModeAlpha);
+  entity.material.blendMode = OBJ_GetInteger(
+    hObject,
+    ID_Material_BlendMode,
+    source_image && source_image->PremultiplyAlpha
+      ? kBlendModePremultipliedAlpha
+      : kBlendModeAlpha);
 
   if (pImageView->Stretch == kStretchUniform) {
     struct rect temp_rect = {
@@ -309,4 +315,12 @@ HANDLER(ImageView, Node, LoadView)
   OBJ_SetDirty(hObject);
 
   return TRUE;
+}
+
+HANDLER(ImageView, Object, Create) {
+  struct Property *p;
+  struct color white = {1,1,1,1};
+  OBJ_FindShortProperty(hObject, "ForegroundColor", &p);
+  PROP_SetValue(p, &white);
+  return FALSE;
 }

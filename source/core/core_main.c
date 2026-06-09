@@ -28,6 +28,7 @@ CORE_FindFontFamilyIndex(lpcString_t name, int *index)
 void
 CORE_RegisterFontFamily(lpcString_t name, lpcString_t path)
 {
+  printf("Registering font family '%s' with path '%s'\n", name, path);
   int index = -1;
   if (!name || !*name || !path || !*path) return;
   if (CORE_FindFontFamilyIndex(name, &index)) {

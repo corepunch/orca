@@ -11,6 +11,17 @@ ORCA is currently pre-release. Prioritize the cleanest architecture over backwar
 - For UI clipping behavior, use `Overflow` (`overflow`, `overflow-x`, `overflow-y`) as the source of truth.
 - Do not introduce or rely on `ClipChildren` in new code or app stylesheets.
 
+## Concise C Style Policy
+
+When editing C code in this repository, optimize for the shortest clear form.
+
+- Prefer full-struct assignments over per-field writes when setting known defaults.
+- Prefer shorthand initializers and direct assignment of aggregate values (`struct`, `vec`, `Thickness`, etc.) wherever possible.
+- Prefer vector and geometry helpers (`VEC2_*`, `VEC3_*`, `RECT_*`, `BOX3_*`) over manual coordinate-by-coordinate math.
+- Avoid verbose per-axis or per-member setter sequences when one aggregate assignment expresses the same intent.
+- If two implementations are equivalent, choose the one with fewer lines and less repetition.
+- Keep readability: concise does not mean cryptic; use explicit named types/casts when needed for clarity.
+
 ---
 
 ## Repository Setup

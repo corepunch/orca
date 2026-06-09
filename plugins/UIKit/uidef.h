@@ -35,7 +35,7 @@ struct TextBlockTextRun
 struct TextBlockText
 {
   uint32_t flags;
-  uint32_t availableWidth;
+  float availableWidth;
   uint32_t cursor;
   uint32_t numTextRuns;
   float scale;
@@ -74,8 +74,9 @@ typedef float actualPos_t[3];
 #endif
 
 #define NODE2D_FRAME(node2d, param, num) node2d->_node->param.Axis[num]
-#define MARGIN_TOP(node2d, axis) (NODE2D_FRAME(node2d, Margin, axis)._RIGHT + NODE2D_FRAME(node2d, Border.Width, axis)._RIGHT)
-#define MARGIN_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Margin, axis)._LEFT + NODE2D_FRAME(node2d, Border.Width, axis)._LEFT)
+#define MARGIN_VALUE(value) ((value) != (value) ? 0 : (value))
+#define MARGIN_TOP(node2d, axis) (MARGIN_VALUE(NODE2D_FRAME(node2d, Margin, axis)._RIGHT) + NODE2D_FRAME(node2d, Border.Width, axis)._RIGHT)
+#define MARGIN_BOTTOM(node2d, axis) (MARGIN_VALUE(NODE2D_FRAME(node2d, Margin, axis)._LEFT) + NODE2D_FRAME(node2d, Border.Width, axis)._LEFT)
 #define PADDING_TOP(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._RIGHT)
 #define PADDING_BOTTOM(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._LEFT)
 #define TOTAL_PADDING(node2d, axis) (PADDING_TOP(node2d, axis) + PADDING_BOTTOM(node2d, axis))

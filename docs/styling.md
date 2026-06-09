@@ -216,6 +216,21 @@ It supports:
 
 The parser does not support sibling selectors, attribute selectors, media queries, import conditions, keyframes, custom properties, nested CSS, `!important`, browser units, or automatic CSS shorthand expansion beyond the ORCA property parsers listed below.
 
+#### Layout sizing and alignment
+
+Use width/height and auto margins as the layout alignment model:
+
+- Omit `width`, or set `width: auto`, to keep `Node.Width = NaN`, which stretches in finite layout space unless that axis has an auto margin.
+- `width: 100%` is accepted as a compatibility stretch shorthand and also maps to `Node.Width = NaN`.
+- Center a node with `margin-left: auto; margin-right: auto;`; auto-width nodes use their desired content width.
+- Align a node to the right/trailing edge with `margin-left: auto;`; auto-width nodes use their desired content width.
+- Center a node with `margin-top: auto; margin-bottom: auto;`; auto-height nodes use their desired content height.
+- Align a node to the bottom/trailing edge with `margin-top: auto;`; auto-height nodes use their desired content height.
+
+Prefer these CSS-native rules over legacy `HorizontalAlignment`/`VerticalAlignment` properties. Those alignment properties are compatibility helpers that translate back into size and auto-margin values.
+
+For text inside controls, use `text-align` for horizontal placement. ORCA also supports `text-vertical-align` for vertical placement inside text bounds; plain `TextBlock` content defaults to `top`, while `Input` text defaults to `center`, so normal inputs do not need an explicit `text-vertical-align: center;`.
+
 #### Case and duplicate rules
 
 - CSS property names are case-insensitive: `opacity`, `Opacity`, and `OPACITY` all map to `Node.Opacity`.

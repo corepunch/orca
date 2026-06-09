@@ -267,7 +267,7 @@
         <message name="MakeText">
           <summary>Requests the component to lay out and render its text content.</summary>
           <fields>
-            <field name="availableSpace" type="uint">Available space for text layout</field>
+            <field name="availableSpace" type="float">Available space for text layout</field>
           </fields>
         </message>
         <message name="GetInfo">
@@ -795,6 +795,7 @@
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.DrawBrush"/>
+        <handle message="Object.Create"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Destroy"/>

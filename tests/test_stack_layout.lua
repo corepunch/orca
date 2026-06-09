@@ -22,7 +22,6 @@ local function test_stack_view_layout()
 	local stack = screen + ui.StackView {
 		Name = "test_stack_view_layout",
 		Direction = "Vertical",
-		VerticalAlignment = "Top",
 		Margin = core.Thickness(config.stack_margin),
 		Spacing = config.stack_spacing
 	}
@@ -39,9 +38,8 @@ local function test_stack_view_layout()
 	screen:UpdateLayout(screen.Width, screen.Height)
 
 	-- Verify stack view properties and layout
-	test.expect_eq(stack.HorizontalAlignment, "Stretch", "StackView HorizontalAlignment should be 'Stretch'")
 	test.expect_eq(stack.ActualWidth, screen.Width - 2 * config.stack_margin, "StackView ActualWidth should account for horizontal margins")
-	test.expect_eq(stack.ActualHeight, 2 * config.node_height + 2 * config.node_margin + config.stack_spacing, "StackView ActualHeight should account for child heights and spacing")
+	test.expect_eq(stack.DesiredHeight, 2 * config.node_height + 2 * config.node_margin + config.stack_spacing, "StackView DesiredHeight should account for child heights and spacing")
 
 	-- Verify child node properties and layout
 	test.expect_eq(node1.ActualWidth, stack.ActualWidth, "Child node ActualWidth should match stack ActualWidth when horizontal alignment is 'Stretch'")
@@ -61,7 +59,6 @@ local function test_horizontal_stack_view_layout()
 	}
 	local stack = screen + ui.StackView {
 		Direction = "Horizontal",
-		HorizontalAlignment = "Left",
 		Spacing = config.stack_spacing,
 	}
 	local node1 = stack + ui.TextBlock {
@@ -78,14 +75,13 @@ local function test_horizontal_stack_view_layout()
 
 	-- Verify stack direction and default vertical alignment (cross-axis should stretch)
 	test.expect_eq(stack.Direction, "Horizontal", "StackView direction should be 'Horizontal'")
-	test.expect_eq(stack.VerticalAlignment, "Stretch", "Horizontal StackView VerticalAlignment should default to 'Stretch'")
 
 	-- Vertical (cross-axis) should fill the screen height
 	test.expect_eq(stack.ActualHeight, screen.Height, "Horizontal StackView should stretch to fill screen height")
 
 	-- Width (main axis) = node1 width + spacing + node2 width + node2 left/right margins
-	test.expect_eq(stack.ActualWidth, 2 * config.node_width + 2 * config.node_margin + config.stack_spacing,
-		"Horizontal StackView ActualWidth should account for child widths, margins, and spacing")
+	test.expect_eq(stack.DesiredWidth, 2 * config.node_width + 2 * config.node_margin + config.stack_spacing,
+		"Horizontal StackView DesiredWidth should account for child widths, margins, and spacing")
 
 	-- In a horizontal stack's cross-axis (vertical), children stretch to fill the stack height
 	test.expect_eq(node1.ActualHeight, stack.ActualHeight,

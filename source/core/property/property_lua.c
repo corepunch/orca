@@ -4,6 +4,9 @@
 
 #include "property_internal.h"
 
+#include <math.h>
+#include <strings.h>
+
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
 extern struct Object* FS_LoadObject(const char* path);
 extern int f_msgSend(lua_State *L);
@@ -28,7 +31,7 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
       Con_Error("Invalid enum value %s for property '%s'", str, prop->Name);
       return FALSE;
     case kDataTypeFloat:
-      *(float*)valueptr = atof(str);
+      *(float*)valueptr = (!strcasecmp(str, "auto") || !strcasecmp(str, "nan")) ? NAN : atof(str);
       return TRUE;
     case kDataTypeString:
       if (*(char**)valueptr) free(*(char**)valueptr); // Free existing string if necessary

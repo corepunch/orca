@@ -213,10 +213,68 @@ local function test_tabview_scroll_then_click()
 end
 
 -- ---------------------------------------------------------------------------
+-- Overflow clipping: a vertical scroll container clips Y but leaves X visible.
+-- ---------------------------------------------------------------------------
+local function test_vertical_overflow_keeps_horizontal_hit_visible()
+  local horizontal_hit = false
+  local vertical_hit = false
+
+  local scroll = screen + ui.Node2D {
+    Width = 100,
+    Height = 100,
+    OverflowY = "Scroll",
+  }
+
+  local horizontal_child = scroll + ui.Node2D {
+    Width = 40,
+    Height = 40,
+    MarginLeft = 140,
+    MarginTop = 20,
+    LeftButtonUp = function()
+      horizontal_hit = true
+      return true
+    end,
+  }
+
+  local vertical_child = scroll + ui.Node2D {
+    Width = 40,
+    Height = 40,
+    MarginLeft = 20,
+    MarginTop = 140,
+    LeftButtonUp = function()
+      vertical_hit = true
+      return true
+    end,
+  }
+
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  orca.system.dispatchMessage {
+    target = screen,
+    message = "LeftButtonUp",
+    x = 145,
+    y = 25,
+  }
+  test.expect(horizontal_hit, "overflow-y scroll should not clip horizontally visible child hit testing")
+
+  orca.system.dispatchMessage {
+    target = screen,
+    message = "LeftButtonUp",
+    x = 25,
+    y = 145,
+  }
+  test.expect(not vertical_hit, "overflow-y scroll should clip vertically overflowing child hit testing")
+
+  scroll:removeFromParent()
+  print("PASS: test_vertical_overflow_keeps_horizontal_hit_visible")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_tabbar_click_interaction()
 test_tabview_click_interaction()
 test_tabview_scroll_then_click()
+test_vertical_overflow_keeps_horizontal_hit_visible()
 
 print("All Tab interaction tests passed.")

@@ -605,9 +605,9 @@ local function test_css_expanded_property_aliases()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
   screen.StyleSheet = ui.loadObjectFromCssString [[
     .layout-css {
-      horizontal-align: center;
-      vertical-align: bottom;
+      width: auto;
       margin-inline: 4;
+      margin-left: auto;
       padding-block: 6;
       border-color: #aabbcc;
       border-width: 7;
@@ -638,6 +638,10 @@ local function test_css_expanded_property_aliases()
       text-vertical-align: bottom;
       text-wrap: no-wrap;
     }
+
+    .percent-css {
+      width: 100%;
+    }
   ]]
 
   local stack = screen + ui.StackView {
@@ -650,13 +654,18 @@ local function test_css_expanded_property_aliases()
     class = "copy-css",
     Text = "copy",
   }
+  local percent = screen + ui.Node2D {
+    class = "percent-css",
+  }
 
   applyStyles(stack)
   applyStyles(grid)
   applyStyles(text)
+  applyStyles(percent)
 
-  test.expect_eq(stack.HorizontalAlignment, "Center", "horizontal-align maps to Node.HorizontalAlignment")
-  test.expect_eq(stack.VerticalAlignment, "Bottom", "vertical-align maps to Node.VerticalAlignment")
+  test.expect(stack.Width ~= stack.Width, "width: auto maps to Width=NaN")
+  test.expect(percent.Width ~= percent.Width, "width: 100% maps to Width=NaN")
+  test.expect(stack.MarginLeft ~= stack.MarginLeft, "margin-left: auto maps to MarginLeft=NaN")
   test.expect_near(stack.MarginLeft, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.MarginRight, 4, 0.001, "margin-inline maps to horizontal margin")
   test.expect_near(stack.PaddingTop, 6, 0.001, "padding-block maps to vertical padding")
@@ -692,11 +701,40 @@ local function test_css_expanded_property_aliases()
   stack:removeFromParent()
   grid:removeFromParent()
   text:removeFromParent()
+  percent:removeFromParent()
   print("PASS: test_css_expanded_property_aliases")
 end
 
 -- ---------------------------------------------------------------------------
--- Test 25: CSS edge shorthands use CSS order before ORCA Thickness parsing
+-- Test 25: Removed text alignment aliases stay unsupported
+-- ---------------------------------------------------------------------------
+local function test_css_removed_text_alignment_aliases()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .copy {
+      text-horizontal-align: right;
+      text-horizontal-alignment: right;
+      text-vertical-alignment: bottom;
+    }
+  ]]
+  local text = screen + ui.TextBlock {
+    class = "copy",
+    Text = "copy",
+    TextHorizontalAlignment = "Left",
+    TextVerticalAlignment = "Top",
+  }
+
+  applyStyles(text)
+
+  test.expect_eq(text.TextHorizontalAlignment, "Left", "removed text horizontal aliases are ignored")
+  test.expect_eq(text.TextVerticalAlignment, "Top", "removed text vertical alias is ignored")
+
+  text:removeFromParent()
+  print("PASS: test_css_removed_text_alignment_aliases")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 26: CSS edge shorthands use CSS order before ORCA Thickness parsing
 -- ---------------------------------------------------------------------------
 local function test_css_edge_shorthand_order()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -751,7 +789,77 @@ local function test_css_edge_shorthand_order()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 26: @apply can reference selectors without a leading dot
+-- Test 27: margin shorthand auto tokens align TextBlock using measured width
+-- ---------------------------------------------------------------------------
+local function test_css_margin_shorthand_auto_textblock_alignment()
+  local screen = ui.Screen { Width = 400, Height = 240, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .left-copy { margin: 0; }
+    .centered-copy { margin: 0 auto; }
+    .right-copy { margin: 0 0 0 auto; }
+  ]]
+
+  local left = screen + ui.TextBlock {
+    class = "left-copy",
+    Text = "Left Me",
+    FontSize = 20,
+  }
+  local centered = screen + ui.TextBlock {
+    class = "centered-copy",
+    Text = "Center Me",
+    FontSize = 20,
+  }
+  local right = screen + ui.TextBlock {
+    class = "right-copy",
+    Text = "Right Me",
+    FontSize = 20,
+  }
+
+  applyStyles(left)
+  applyStyles(centered)
+  applyStyles(right)
+
+  local function measured_text_width(text)
+    local packed_size = text:send("Node2D.MeasureOverride", {
+      Width = math.huge,
+      Height = math.huge,
+    })
+    return packed_size % 65536
+  end
+
+  local left_text_width = measured_text_width(left)
+  local centered_text_width = measured_text_width(centered)
+  local right_text_width = measured_text_width(right)
+  left.Width = left_text_width
+  centered.Width = centered_text_width
+  right.Width = right_text_width
+
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  local centered_expected_x = (screen.Width - centered_text_width) * 0.5
+  local right_expected_x = screen.Width - right_text_width
+
+  test.expect_near(left.ActualWidth, left_text_width, 0.01,
+    "left TextBlock width should match measured text width")
+  test.expect_near(centered.ActualWidth, centered_text_width, 0.01,
+    "center TextBlock width should match measured text width")
+  test.expect_near(right.ActualWidth, right_text_width, 0.01,
+    "right TextBlock width should match measured text width")
+  test.expect_near(left.ActualX, 0, 0.01,
+    "margin: 0 should left-align TextBlock using measured text width")
+  test.expect_near(centered.ActualX, centered_expected_x, 0.01,
+    "margin: 0 auto should center TextBlock using measured text width")
+  test.expect_near(right.ActualX, right_expected_x, 0.01,
+    "margin: 0 0 0 auto should right-align TextBlock using measured text width")
+
+  left:removeFromParent()
+  centered:removeFromParent()
+  right:removeFromParent()
+  print("PASS: test_css_margin_shorthand_auto_textblock_alignment")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 28: @apply can reference selectors without a leading dot
 -- ---------------------------------------------------------------------------
 local function test_css_apply_reference_without_dot()
   local css = [[
@@ -772,7 +880,7 @@ local function test_css_apply_reference_without_dot()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 27: @apply merges multiple sources
+-- Test 28: @apply merges multiple sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_multiple_sources()
   local css = [[
@@ -795,7 +903,7 @@ local function test_css_apply_multiple_sources()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 28: Local declarations override @apply sources
+-- Test 29: Local declarations override @apply sources
 -- ---------------------------------------------------------------------------
 local function test_css_apply_preserves_local_declarations()
   local css = [[
@@ -817,7 +925,7 @@ local function test_css_apply_preserves_local_declarations()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 29: Body selector applies to the root object that owns the stylesheet
+-- Test 30: Body selector applies to the root object that owns the stylesheet
 -- ---------------------------------------------------------------------------
 local function test_css_body_selector_applies_to_root()
   local screen = ui.Screen {
@@ -835,7 +943,7 @@ local function test_css_body_selector_applies_to_root()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 30: ID selectors match object names
+-- Test 31: ID selectors match object names
 -- ---------------------------------------------------------------------------
 local function test_css_id_selector()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
@@ -861,7 +969,7 @@ local function test_css_id_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 31: Direct parent selectors match only immediate children
+-- Test 32: Direct parent selectors match only immediate children
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector()
   local css = "StackView > Label { opacity: 0.31; }"
@@ -883,7 +991,7 @@ local function test_css_direct_parent_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 32: Direct parent selectors also support class and ID selectors
+-- Test 33: Direct parent selectors also support class and ID selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_class_and_id_selectors()
   local css = [[
@@ -909,7 +1017,7 @@ local function test_css_direct_parent_class_and_id_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 33: Descendant selectors match any ancestor, not just direct parents
+-- Test 34: Descendant selectors match any ancestor, not just direct parents
 -- ---------------------------------------------------------------------------
 local function test_css_descendant_selector()
   local css = [[
@@ -938,7 +1046,7 @@ local function test_css_descendant_selector()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 34: Descendant selectors compose with direct child selectors
+-- Test 35: Descendant selectors compose with direct child selectors
 -- ---------------------------------------------------------------------------
 local function test_css_mixed_descendant_and_direct_child_selectors()
   local css = [[
@@ -966,7 +1074,7 @@ local function test_css_mixed_descendant_and_direct_child_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 35: Compound selectors match type, class, and ID on one object
+-- Test 36: Compound selectors match type, class, and ID on one object
 -- ---------------------------------------------------------------------------
 local function test_css_compound_type_class_selectors()
   local css = [[
@@ -1030,7 +1138,7 @@ local function test_css_compound_type_class_selectors()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 36: Pseudo-classes apply to class, ID, and type selectors
+-- Test 37: Pseudo-classes apply to class, ID, and type selectors
 -- ---------------------------------------------------------------------------
 local function test_css_pseudo_classes_on_selector_types()
   local css = [[
@@ -1068,7 +1176,7 @@ local function test_css_pseudo_classes_on_selector_types()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 37: Pseudo-classes work on direct parent selectors
+-- Test 38: Pseudo-classes work on direct parent selectors
 -- ---------------------------------------------------------------------------
 local function test_css_direct_parent_selector_with_pseudo_class()
   local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
@@ -1089,7 +1197,7 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 38: CSS font-family accepts quoted names and generic fallbacks
+-- Test 39: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
   local screen = ui.Screen { Width = 300, Height = 120, ResizeMode = "NoResize" }
@@ -1139,7 +1247,9 @@ test_css_color_properties()
 test_css_theme_variables()
 test_css_text_property_map()
 test_css_expanded_property_aliases()
+test_css_removed_text_alignment_aliases()
 test_css_edge_shorthand_order()
+test_css_margin_shorthand_auto_textblock_alignment()
 test_css_apply_reference_without_dot()
 test_css_apply_multiple_sources()
 test_css_apply_preserves_local_declarations()

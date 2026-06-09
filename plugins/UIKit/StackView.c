@@ -63,46 +63,51 @@ _Arrange(struct Object *hObject,
       break;
   }
   
-  struct Property *alignItems = StackView_GetProperty(hObject, kStackViewAlignItems);
   enum Direction crossAxis = pStackView->Direction == kDirectionHorizontal
     ? kDirectionVertical
     : kDirectionHorizontal;
-  size_t childAlignmentProperty = crossAxis == kDirectionHorizontal
-    ? kNodeHorizontalAlignment
-    : kNodeVerticalAlignment;
-  int stackAlignment = kHorizontalAlignmentStretch;
-  switch (pStackView->AlignItems) {
-    case kAlignItemsStart:
-    case kAlignItemsBaseline: stackAlignment = kHorizontalAlignmentLeft; break;
-    case kAlignItemsEnd: stackAlignment = kHorizontalAlignmentRight; break;
-    case kAlignItemsCenter: stackAlignment = kHorizontalAlignmentCenter; break;
-    case kAlignItemsStretch: stackAlignment = kHorizontalAlignmentStretch; break;
-  }
 
   FOR_EACH_LAYOUTABLE(child, hObject)
   {
     struct Node2D *subview = GetNode2D(child);
-    int *alignment = &subview->_node->Alignment.Axis[crossAxis];
-    LRESULT s;
-    if (alignItems && !Node_GetProperty(child, childAlignmentProperty)) {
-      *alignment = stackAlignment;
+    float crossMin = oppositeBounds.min;
+    float crossSize = oppositeBounds.max - oppositeBounds.min;
+    if (!isnan(NODE2D_FRAME(subview, Size, crossAxis).Requested)) {
+      float occupied = NODE2D_FRAME(subview, Size, crossAxis).Desired + TOTAL_MARGIN(subview, crossAxis);
+      switch (pStackView->AlignItems) {
+        case kAlignItemsEnd:
+          crossMin = oppositeBounds.max - occupied;
+          crossSize = occupied;
+          break;
+        case kAlignItemsCenter:
+          crossMin = (oppositeBounds.min + oppositeBounds.max - occupied) * 0.5f;
+          crossSize = occupied;
+          break;
+        case kAlignItemsStart:
+        case kAlignItemsBaseline:
+          crossSize = occupied;
+          break;
+        case kAlignItemsStretch:
+          break;
+      }
     }
+    LRESULT s;
     switch (pStackView->Direction) {
       case kDirectionHorizontal:
         s = _SendMessage(child, Node2D, Arrange,
           counter,
-          oppositeBounds.min,
+          crossMin,
           NODE2D_FRAME(subview, Size, 0).Desired + TOTAL_MARGIN(subview, 0),
-          oppositeBounds.max - oppositeBounds.min,
+          crossSize,
         );
         counter += LOWORD(s) + pStackView->Spacing + distributed;
         maxsize = fmax(maxsize, HIWORD(s));
         break;
       case kDirectionVertical:
         s = _SendMessage(child, Node2D, Arrange,
-          oppositeBounds.min,
+          crossMin,
           counter,
-          oppositeBounds.max - oppositeBounds.min,
+          crossSize,
           NODE2D_FRAME(subview, Size, 1).Desired + TOTAL_MARGIN(subview, 1),
         );
         counter += HIWORD(s) + pStackView->Spacing + distributed;

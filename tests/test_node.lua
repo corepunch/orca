@@ -1,5 +1,5 @@
 local test = require "orca.test"
--- Tests for Node2D properties: horizontal alignment, padding-aware container
+-- Tests for Node2D properties: stretch sizing, auto-margin alignment, padding-aware container
 -- height (with TextBlock child), Visible toggle, and property change
 -- notifications (onXxxChanged callbacks). Part of the full `test` target.
 
@@ -10,35 +10,169 @@ local ui = require "orca.UIKit"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
--- Node2D alignment: stretch vs explicit width
+-- Node2D layout: NaN size stretches, explicit size plus NaN margins aligns
 -- ---------------------------------------------------------------------------
 local function test_node_alignment()
-	-- A node with default HorizontalAlignment (Stretch) fills parent width
-	local stretch_node = screen + ui.Node2D {}
+	local auto = 0 / 0
+	local center_hit = false
+	local right_hit = false
 
-	-- A node with HorizontalAlignment = "Left" and explicit Width uses that width
+	local stretch_node = screen + ui.Node2D {
+		Width = auto,
+	}
+
 	local fixed_width = 200
 	local left_node = screen + ui.Node2D {
-		HorizontalAlignment = "Left",
 		Width = fixed_width,
+	}
+	local center_node = screen + ui.Node2D {
+		Width = fixed_width,
+		MarginLeft = auto,
+		MarginRight = auto,
+		LeftButtonUp = function()
+			center_hit = true
+			return true
+		end,
+	}
+	local right_node = screen + ui.Node2D {
+		Width = fixed_width,
+		MarginLeft = auto,
+		LeftButtonUp = function()
+			right_hit = true
+			return true
+		end,
+	}
+	local bottom_node = screen + ui.Node2D {
+		Width = 100,
+		Height = 100,
+		MarginTop = auto,
 	}
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	-- Stretch node should fill the screen width
 	test.expect_eq(stretch_node.ActualWidth, screen.Width,
-		"Node with default HorizontalAlignment should stretch to fill screen width")
-
-	-- Left-aligned node with explicit width should use that width
+		"Node with Width=NaN should stretch to fill screen width")
 	test.expect_eq(left_node.ActualWidth, fixed_width,
-		"Left-aligned node should have the explicitly set width")
-
-	-- The left-aligned node is narrower than the screen
+		"Explicit-width node should use that width")
 	test.expect(left_node.ActualWidth < screen.Width,
-		"Left-aligned node should be narrower than the screen")
+		"Explicit-width node should be narrower than the screen")
+	test.expect_near(center_node.ActualX, (screen.Width - fixed_width) / 2, 0.001,
+		"NaN left and right margins should arrange an explicit-width node in the center")
+	test.expect_near(right_node.ActualX, screen.Width - fixed_width, 0.001,
+		"NaN left margin should arrange an explicit-width node against the right edge")
+	test.expect_near(bottom_node.ActualY, screen.Height - bottom_node.ActualHeight, 0.001,
+		"NaN top margin should arrange an explicit-height node against the bottom edge")
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 500, y = 1 }
+	test.expect(center_hit, "NaN left and right margins should center an explicit-width node")
+	orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 999, y = 1 }
+	test.expect(right_hit, "NaN left margin should right-align an explicit-width node")
 
 	stretch_node:removeFromParent()
 	left_node:removeFromParent()
+	center_node:removeFromParent()
+	right_node:removeFromParent()
+	bottom_node:removeFromParent()
+end
+
+local function test_auto_size_with_auto_margins_uses_desired_size()
+	local auto = 0 / 0
+	local root = screen + ui.Node2D {
+		Width = 400,
+		Height = 300,
+	}
+
+	local centered = root + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+		MarginRight = auto,
+	}
+	local centered_label = centered + ui.TextBlock { Text = "Center me", FontSize = 16 }
+
+	local right = root + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+	}
+	local right_label = right + ui.TextBlock { Text = "Right", FontSize = 16 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(centered.ActualWidth, centered_label.ActualWidth + 16,
+		"Auto width with dual auto margins should collapse to content width plus horizontal padding")
+	test.expect_near(centered.ActualX, (root.ActualWidth - centered.ActualWidth) * 0.5, 0.01,
+		"Auto width + dual auto margins should center horizontally")
+	test.expect_near(right.ActualX, root.ActualWidth - right.ActualWidth, 0.01,
+		"Auto width + leading auto margin should align to the right edge")
+	test.expect(right.ActualWidth >= right_label.ActualWidth + 16,
+		"Right-aligned auto-width node should include horizontal padding around content")
+
+	root:removeFromParent()
+	print("PASS: test_auto_size_with_auto_margins_uses_desired_size")
+end
+
+local function test_stackview_auto_margin_child_uses_desired_cross_size()
+	local auto = 0 / 0
+	local column = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 400,
+		Height = 300,
+	}
+	local bubble = column + ui.Node2D {
+		Width = auto,
+		Height = 40,
+		Padding = core.Thickness(8, 0),
+		MarginLeft = auto,
+		MarginRight = 16,
+	}
+	local label = bubble + ui.TextBlock { Text = "north", FontSize = 16 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(bubble.ActualWidth, label.ActualWidth + 16,
+		"Auto-width StackView child with auto margin should use desired width on the cross axis")
+	test.expect_near(bubble.ActualX, column.ActualWidth - bubble.ActualWidth - 16, 0.01,
+		"Auto-width StackView child with auto left margin should align to the right edge")
+
+	column:removeFromParent()
+	print("PASS: test_stackview_auto_margin_child_uses_desired_cross_size")
+end
+
+local function test_legacy_alignment_bridge()
+	local node = screen + ui.Node2D {
+		Width = 200,
+		Height = 80,
+		HorizontalAlignment = "Center",
+		VerticalAlignment = "Bottom",
+	}
+
+	test.expect(node.MarginLeft ~= node.MarginLeft,
+		"HorizontalAlignment=Center should map to auto left margin")
+	test.expect(node.MarginRight ~= node.MarginRight,
+		"HorizontalAlignment=Center should map to auto right margin")
+	test.expect(node.MarginTop ~= node.MarginTop,
+		"VerticalAlignment=Bottom should map to auto top margin")
+	test.expect_near(node.MarginBottom, 0, 0.001,
+		"VerticalAlignment=Bottom should clear bottom margin")
+
+	node.HorizontalAlignment = "Right"
+	test.expect(node.MarginLeft ~= node.MarginLeft,
+		"HorizontalAlignment=Right should map to auto left margin")
+	test.expect_near(node.MarginRight, 0, 0.001,
+		"HorizontalAlignment=Right should clear right margin")
+
+	node.HorizontalAlignment = "Stretch"
+	test.expect(node.Width ~= node.Width,
+		"HorizontalAlignment=Stretch should map to Width=NaN")
+	test.expect_near(node.MarginLeft, 0, 0.001,
+		"HorizontalAlignment=Stretch should clear left margin")
+	test.expect_near(node.MarginRight, 0, 0.001,
+		"HorizontalAlignment=Stretch should clear right margin")
+
+	node:removeFromParent()
+	print("PASS: test_legacy_alignment_bridge")
 end
 
 -- ---------------------------------------------------------------------------
@@ -104,7 +238,6 @@ local function test_property_change_notification()
 	-- the event queue when a property value changes.
 	local last_text = nil
 	local node = screen + ui.TextBlock {
-		HorizontalAlignment = "Left",
 		Text = "Initial",
 	}
 
@@ -130,6 +263,9 @@ end
 orca.async = function (callback) callback() end
 
 test_node_alignment()
+test_auto_size_with_auto_margins_uses_desired_size()
+test_stackview_auto_margin_child_uses_desired_cross_size()
+test_legacy_alignment_bridge()
 test_node2d_container_height()
 test_node_visibility()
 test_property_change_notification()

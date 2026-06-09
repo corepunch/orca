@@ -7,6 +7,7 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
+#define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 
 static bool_t
 _PopupSetDialogResult(struct Object *modal, float value);
@@ -124,7 +125,31 @@ _IsOutOfBounds(struct Node2D *node, Node2D_Draw2DContentMsgPtr param)
 }
 
 static void
-_EnterStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef, uint8_t clipRef)
+_DrawStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef)
+{
+  struct ViewEntity clip = { 0 };
+  struct rect clipRect = Node2D_GetBackgroundRect(pNode2D);
+
+  if (pNode2D->Overflow.x == kOverflowVisible) {
+    clipRect.x = -STENCIL_VISIBLE_OVERFLOW_EXTENT;
+    clipRect.width = STENCIL_VISIBLE_OVERFLOW_EXTENT * 2.0f;
+  }
+  if (pNode2D->Overflow.y == kOverflowVisible) {
+    clipRect.y = -STENCIL_VISIBLE_OVERFLOW_EXTENT;
+    clipRect.height = STENCIL_VISIBLE_OVERFLOW_EXTENT * 2.0f;
+  }
+
+  clip.bbox = BOX3_FromRect(clipRect);
+  clip.matrix = pNode2D->Matrix;
+  clip.material.opacity = 1;
+  R_DrawEntity(viewdef, &clip);
+}
+
+static void
+_EnterStencilClip(struct Node2D *pNode2D,
+                  struct ViewDef* viewdef,
+                  uint8_t parentRef,
+                  uint8_t clipRef)
 {
   PIPELINESTATE ps;
   R_GetPipelineState(&ps);
@@ -132,20 +157,16 @@ _EnterStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef, uint8_t clipR
   ps.color_write_mode = COLOR_WRITE_MODE_NONE;
   ps.stencil = (struct stencil_state){
     .mask = 0xFF,
-    .ref = clipRef,
+    .ref = parentRef > 0 ? parentRef : clipRef,
     .write = TRUE,
-    .func = COMPARE_FUNC_ALWAYS,
+    .func = parentRef > 0 ? COMPARE_FUNC_EQUAL : COMPARE_FUNC_ALWAYS,
     .fail = STENCIL_OP_KEEP,
     .zfail = STENCIL_OP_KEEP,
-    .zpass = STENCIL_OP_REPLACE,
+    .zpass = parentRef > 0 ? STENCIL_OP_INCREMENT : STENCIL_OP_REPLACE,
   };
   R_SetPipelineState(&ps);
 
-  struct ViewEntity clip = { 0 };
-  clip.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
-  clip.matrix = pNode2D->Matrix;
-  clip.material.opacity = 1;
-  R_DrawEntity(viewdef, &clip);
+  _DrawStencilClip(pNode2D, viewdef);
 
   ps.color_write_mode = COLOR_WRITE_MODE_RGBA;
   ps.stencil = (struct stencil_state){
@@ -161,10 +182,29 @@ _EnterStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef, uint8_t clipR
 }
 
 static void
-_ExitStencilClip(uint8_t parentRef)
+_ExitStencilClip(struct Node2D *pNode2D,
+                 struct ViewDef* viewdef,
+                 uint8_t parentRef,
+                 uint8_t clipRef)
 {
   PIPELINESTATE ps;
   R_GetPipelineState(&ps);
+
+  ps.color_write_mode = COLOR_WRITE_MODE_NONE;
+  ps.stencil = (struct stencil_state){
+    .mask = 0xFF,
+    .ref = clipRef,
+    .write = TRUE,
+    .func = COMPARE_FUNC_EQUAL,
+    .fail = STENCIL_OP_KEEP,
+    .zfail = STENCIL_OP_KEEP,
+    .zpass = STENCIL_OP_DECREMENT,
+  };
+  R_SetPipelineState(&ps);
+
+  _DrawStencilClip(pNode2D, viewdef);
+
+  ps.color_write_mode = COLOR_WRITE_MODE_RGBA;
 
   if (parentRef > 0) {
     ps.stencil = (struct stencil_state){
@@ -509,11 +549,11 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     if (_ScreenShouldClipByOverflow(pNode2D) && pDraw2DContent->StencilRef < 255) {
       uint8_t parentStencilRef = pDraw2DContent->StencilRef;
       uint8_t clipRef = parentStencilRef + 1;
-      _EnterStencilClip(pNode2D, &viewdef, clipRef);
+      _EnterStencilClip(pNode2D, &viewdef, parentStencilRef, clipRef);
       pDraw2DContent->StencilRef = clipRef;
       FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
       pDraw2DContent->StencilRef = parentStencilRef;
-      _ExitStencilClip(parentStencilRef);
+      _ExitStencilClip(pNode2D, &viewdef, parentStencilRef, clipRef);
     } else {
       FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
     }

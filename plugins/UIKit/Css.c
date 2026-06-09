@@ -60,11 +60,6 @@ k_css_prop_map[] = {
     { "height",            "Node.Height"                   },
     { "min-width",         "Node.MinWidth"                 },
     { "min-height",        "Node.MinHeight"                },
-    { "horizontal-align",  "Node.HorizontalAlignment"      },
-    { "horizontal-alignment", "Node.HorizontalAlignment"   },
-    { "vertical-align",    "Node.VerticalAlignment"        },
-    { "vertical-alignment", "Node.VerticalAlignment"       },
-    { "align-self",        "Node.HorizontalAlignment"      },
     { "margin",            "Node.Margin"                   },
     { "margin-top",        "Node.MarginTop"                },
     { "margin-right",      "Node.MarginRight"              },
@@ -150,10 +145,7 @@ k_css_prop_map[] = {
     { "text-wrap",         "TextBlockConcept.TextWrapping" },
     { "text-overflow",     "TextBlockConcept.TextOverflow" },
     { "text-align",        "TextBlockConcept.TextHorizontalAlignment" },
-    { "text-horizontal-align", "TextBlockConcept.TextHorizontalAlignment" },
-    { "text-horizontal-alignment", "TextBlockConcept.TextHorizontalAlignment" },
     { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
-    { "text-vertical-alignment", "TextBlockConcept.TextVerticalAlignment" },
     { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
     { NULL, NULL }
 };
@@ -175,6 +167,47 @@ css_name_equals_enum_value(const char *css_value, const char *enum_value)
         if (*enum_value) enum_value++;
     }
     return TRUE;
+}
+
+static void
+css_normalize_margin_auto_tokens(char *value, size_t value_size)
+{
+    char normalized[CSS_MAX_VALLEN] = {0};
+    const char *p = value;
+    size_t used = 0;
+    bool_t first = TRUE;
+
+    while (*p) {
+        char token[CSS_MAX_VALLEN] = {0};
+        const char *start;
+        size_t len;
+        const char *mapped;
+        int wrote;
+
+        while (*p && isspace((unsigned char)*p)) p++;
+        if (!*p) break;
+
+        start = p;
+        while (*p && !isspace((unsigned char)*p)) p++;
+        len = (size_t)(p - start);
+        if (len >= sizeof(token)) len = sizeof(token) - 1;
+        memcpy(token, start, len);
+        token[len] = '\0';
+
+        mapped = !strcasecmp(token, "auto") ? "nan" : token;
+        wrote = snprintf(normalized + used, sizeof(normalized) - used,
+                         "%s%s", first ? "" : " ", mapped);
+        if (wrote < 0 || (size_t)wrote >= sizeof(normalized) - used) {
+            break;
+        }
+        used += (size_t)wrote;
+        first = FALSE;
+    }
+
+    if (normalized[0]) {
+        strncpy(value, normalized, value_size - 1);
+        value[value_size - 1] = '\0';
+    }
 }
 
 static const char*
@@ -204,6 +237,9 @@ css_normalize_decl_value(const char *css_key,
             // CSS: vertical horizontal. ORCA Thickness: left top right bottom.
             snprintf(out, out_size, "%s %s %s %s",
                      values[1], values[0], values[1], values[0]);
+            if (!strncasecmp(css_key, "margin", 6)) {
+                css_normalize_margin_auto_tokens(out, out_size);
+            }
             return out;
         }
 
@@ -211,6 +247,9 @@ css_normalize_decl_value(const char *css_key,
             // CSS: top horizontal bottom. ORCA: left top right bottom.
             snprintf(out, out_size, "%s %s %s %s",
                      values[1], values[0], values[1], values[2]);
+            if (!strncasecmp(css_key, "margin", 6)) {
+                css_normalize_margin_auto_tokens(out, out_size);
+            }
             return out;
         }
 
@@ -218,6 +257,9 @@ css_normalize_decl_value(const char *css_key,
             // CSS: top right bottom left. ORCA: left top right bottom.
             snprintf(out, out_size, "%s %s %s %s",
                      values[3], values[0], values[1], values[2]);
+            if (!strncasecmp(css_key, "margin", 6)) {
+                css_normalize_margin_auto_tokens(out, out_size);
+            }
             return out;
         }
     }
@@ -231,6 +273,20 @@ css_normalize_decl_value(const char *css_key,
             snprintf(out, out_size, "true");
             return out;
         }
+    }
+
+    if ((!strcasecmp(css_key, "width") ||
+         !strcasecmp(css_key, "height") ||
+         !strncasecmp(css_key, "margin", 6)) &&
+        !strcasecmp(css_value, "auto")) {
+        snprintf(out, out_size, "nan");
+        return out;
+    }
+
+    if (!strcasecmp(css_key, "width") &&
+        !strcasecmp(css_value, "100%")) {
+        snprintf(out, out_size, "nan");
+        return out;
     }
 
     if (!strcasecmp(css_key, "pointer-events")) {
@@ -711,11 +767,66 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     char resolved_value[CSS_MAX_VALLEN] = {0};
     char normalized_value[CSS_MAX_VALLEN] = {0};
     css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    const char *css_value_before_normalize = css_value;
     css_value = css_normalize_decl_value(css_key, css_value,
                                          normalized_value,
                                          sizeof(normalized_value));
     if (!strcasecmp(css_key, "font-family")) {
         css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
+    }
+
+    if (!strcasecmp(css_key, "margin") &&
+        (strstr(css_value_before_normalize, "auto") || strstr(css_value, "nan"))) {
+        char part[4][CSS_MAX_VALLEN] = {{0}};
+        char left[CSS_MAX_VALLEN] = {0};
+        char top[CSS_MAX_VALLEN] = {0};
+        char right[CSS_MAX_VALLEN] = {0};
+        char bottom[CSS_MAX_VALLEN] = {0};
+        int count = 0;
+        const char *p = css_value_before_normalize;
+
+        while (*p && count < 4) {
+            while (*p && isspace((unsigned char)*p)) p++;
+            const char *start = p;
+            while (*p && !isspace((unsigned char)*p)) p++;
+            if (start < p) {
+                copy_trim(part[count], start, p, (int)sizeof(part[count]));
+                if (!strcasecmp(part[count], "auto")) {
+                    strcpy(part[count], "nan");
+                }
+                count++;
+            }
+        }
+
+        if (count == 1) {
+            strcpy(top, part[0]);
+            strcpy(right, part[0]);
+            strcpy(bottom, part[0]);
+            strcpy(left, part[0]);
+        } else if (count == 2) {
+            strcpy(top, part[0]);
+            strcpy(right, part[1]);
+            strcpy(bottom, part[0]);
+            strcpy(left, part[1]);
+        } else if (count == 3) {
+            strcpy(top, part[0]);
+            strcpy(right, part[1]);
+            strcpy(bottom, part[2]);
+            strcpy(left, part[1]);
+        } else if (count == 4) {
+            strcpy(top, part[0]);
+            strcpy(right, part[1]);
+            strcpy(bottom, part[2]);
+            strcpy(left, part[3]);
+        }
+
+        if (count >= 1 && count <= 4) {
+            css_apply_orca_value_to_rule(rule_obj, "Node.MarginLeft", css_key, left);
+            css_apply_orca_value_to_rule(rule_obj, "Node.MarginTop", css_key, top);
+            css_apply_orca_value_to_rule(rule_obj, "Node.MarginRight", css_key, right);
+            css_apply_orca_value_to_rule(rule_obj, "Node.MarginBottom", css_key, bottom);
+            return;
+        }
     }
 
     for (int i = 0; k_css_prop_map[i].css; i++) {

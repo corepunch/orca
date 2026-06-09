@@ -13,20 +13,34 @@ HANDLER(Node2D, Node2D, UpdateGeometry) {
   return TRUE;
 }
 
-static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
+static struct vec3 _Node2DToLocalPoint(struct Node2D *pNode2D, float x, float y) {
   struct mat4 inv = MAT4_Inverse(&pNode2D->Matrix);
 	struct vec3 point = {x,y,0};
+  return MAT4_MultiplyVector3D(&inv, &point);
+}
+
+static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {
   float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-  struct vec3 out = MAT4_MultiplyVector3D(&inv, &point);
+  struct vec3 out = _Node2DToLocalPoint(pNode2D, x, y);
   return RECT_Contains(&(struct rect){0,0,w,h}, (struct vec2 const*)&out);
 }
 
 static bool_t
-_Node2DShouldClipByOverflow(struct Node2D *pNode2D)
+_Node2DShouldClipPointByOverflow(struct Node2D *pNode2D, float x, float y)
 {
-  return pNode2D->Overflow.x != kOverflowVisible ||
-         pNode2D->Overflow.y != kOverflowVisible;
+  struct vec3 local = _Node2DToLocalPoint(pNode2D, x, y);
+  float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
+  float const h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+  if (pNode2D->Overflow.x != kOverflowVisible &&
+      (local.x < 0 || local.x > w)) {
+    return TRUE;
+  }
+  if (pNode2D->Overflow.y != kOverflowVisible &&
+      (local.y < 0 || local.y > h)) {
+    return TRUE;
+  }
+  return FALSE;
 }
 
 HANDLER(Node2D, Node, HitTest) {
@@ -36,7 +50,7 @@ HANDLER(Node2D, Node, HitTest) {
   int16_t x = (int16_t)pHitTest->x;
   int16_t y = (int16_t)pHitTest->y;
   bool_t contains = _ContainsPoint(pNode2D, x, y);
-  if (!contains && _Node2DShouldClipByOverflow(pNode2D)) {
+  if (_Node2DShouldClipPointByOverflow(pNode2D, x, y)) {
     return FALSE;
   }
   struct Object *result = NULL;
@@ -236,33 +250,44 @@ float Node2D_GetSize(struct Node2D *pNode2D, enum Direction axis, enum Sizing si
   return 0;
 }
 
-enum ui_align
+static bool_t
+_MarginIsAuto(struct Node2D *pNode2D, enum Direction axis, bool_t trailing)
 {
-  kUIAlignStretch,
-  kUIAlignLeft,
-  kUIAlignCenter,
-  kUIAlignRight,
-  kUIAlignTop = kUIAlignLeft,
-  kUIAlignBottom = kUIAlignRight,
-};
-
-float
-Node2D_Align(struct Node2D *pNode2D, struct rect const *rect, enum Direction axis, int align, float length)
-{
-  struct transform2 const* transform = &(pNode2D->LayoutTransform);
-  float const value = ((float const*)&transform->translation)[axis];
-  float const *r = &rect->x;
-  float bmin = r[axis], bmax = r[axis] + r[axis + 2];
-  switch (align) {
-    case kUIAlignLeft: return bmin + value;
-    case kUIAlignRight: return bmax - length + value;
-    case kUIAlignCenter: return (bmax + bmin - length) * 0.5f + value;
-    case kUIAlignStretch: return bmin;
-    default: return 0;
-  }
+  float const value = trailing
+    ? NODE2D_FRAME(pNode2D, Margin, axis)._LEFT
+    : NODE2D_FRAME(pNode2D, Margin, axis)._RIGHT;
+  return isnan(value);
 }
 
-static float _MeasureAxis(struct Node2D *n, float space, int axis) {
+static bool_t
+_AxisHasAutoMargin(struct Node2D *pNode2D, enum Direction axis)
+{
+  return _MarginIsAuto(pNode2D, axis, FALSE) || _MarginIsAuto(pNode2D, axis, TRUE);
+}
+
+static float
+_AlignAxis(struct Node2D *pNode2D, struct rect const *rect, enum Direction axis, float length)
+{
+  struct transform2 const *transform = &pNode2D->LayoutTransform;
+  float const transformOffset = ((float const*)&transform->translation)[axis];
+  float const *r = &rect->x;
+  float const available = r[axis + 2];
+  float const leftover = fmax(available - length, 0);
+  float offset = 0;
+
+  bool_t const leadingAuto = _MarginIsAuto(pNode2D, axis, FALSE);
+  bool_t const trailingAuto = _MarginIsAuto(pNode2D, axis, TRUE);
+  if (leadingAuto && trailingAuto) {
+    offset = leftover * 0.5f;
+  } else if (leadingAuto) {
+    offset = leftover;
+  }
+
+  return r[axis] + offset + transformOffset;
+}
+
+static float _MeasureAxis(struct Node2D *n, float space, int axis)
+{
   if (!isnan(NODE2D_FRAME(n, Size, axis).Requested)) {
     return NODE2D_FRAME(n, Size, axis).Requested;
   } else if (n->RenderTarget) {
@@ -270,14 +295,25 @@ static float _MeasureAxis(struct Node2D *n, float space, int axis) {
     Image_GetInfo(n->RenderTarget, &image);
     int const size[] = { image.bmWidth, image.bmHeight, 0 };
     return size[axis] + TOTAL_PADDING(n, axis);
-  } else if (NODE2D_FRAME(n, Alignment, axis)) {
-    /* Non-stretch alignment (Top/Left/Center/Right/Bottom): no explicit size
-     * requested, so measure with infinite space so children can report their
-     * true desired size and the node auto-sizes to content. */
+  } else if (_AxisHasAutoMargin(n, axis)) {
     return INFINITY;
   } else {
     return space;
   }
+}
+
+static float
+_ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
+{
+  float const requested = NODE2D_FRAME(n, Size, axis).Requested;
+  if (!isnan(requested)) return requested;
+  if (isinf(available)) return NODE2D_FRAME(n, Size, axis).Desired;
+
+  if (_AxisHasAutoMargin(n, axis)) {
+    return fmin(NODE2D_FRAME(n, Size, axis).Desired, available - TOTAL_MARGIN(n, axis));
+  }
+
+  return available - TOTAL_MARGIN(n, axis);
 }
 
 HANDLER(Node2D, Node2D, Measure)
@@ -304,24 +340,11 @@ HANDLER(Node2D, Node2D, Measure)
 HANDLER(Node2D, Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
-  struct Size s = {0};
-  
-  if (!isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
-    s.width = NODE2D_FRAME(n, Size, 0).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 0) || isinf(pArrange->Width)) {
-    s.width = NODE2D_FRAME(n, Size, 0).Desired;
-  } else {
-    s.width = pArrange->Width - TOTAL_MARGIN(n, 0);
-  }
+  struct Size s = {
+    _ArrangeAxisSize(n, pArrange->Width, 0),
+    _ArrangeAxisSize(n, pArrange->Height, 1),
+  };
 
-  if (!isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
-    s.height = NODE2D_FRAME(n, Size, 1).Requested;
-  } else if (NODE2D_FRAME(n, Alignment, 1) || isinf(pArrange->Height)) {
-    s.height = NODE2D_FRAME(n, Size, 1).Desired;
-  } else {
-    s.height = pArrange->Height - TOTAL_MARGIN(n, 1);
-  }
-  
   struct rect m = {
     pArrange->X + MARGIN_TOP(n, 0),
     pArrange->Y + MARGIN_TOP(n, 1),
@@ -330,25 +353,25 @@ HANDLER(Node2D, Node2D, Arrange)
   };
 
   struct rect rect = {
-    .x = Node2D_Align(n, &m, 0, NODE2D_FRAME(n, Alignment, 0), s.width),
-    .y = Node2D_Align(n, &m, 1, NODE2D_FRAME(n, Alignment, 1), s.height),
+    .x = _AlignAxis(n, &m, 0, s.width),
+    .y = _AlignAxis(n, &m, 1, s.height),
     .width  = s.width,
     .height = s.height,
   };
-  
+
   LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
     .X      = PADDING_TOP(n, 0),
     .Y      = PADDING_TOP(n, 1),
     .Width  = rect.width  - TOTAL_PADDING(n, 0),
     .Height = rect.height - TOTAL_PADDING(n, 1),
   );
-  
+
   // Final frame is the outer rect (including padding, excluding margin)
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
   Node2D_SetFrame(n, kBox3FieldY,      rect.y);
   Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
   Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1));
-  
+
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
 

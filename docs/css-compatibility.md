@@ -2,9 +2,20 @@
 
 ORCA stylesheets parse a CSS-like subset and map supported CSS declaration names to ORCA properties before value parsing. This table is extracted from `plugins/UIKit/Css.c` (`k_css_prop_map`).
 
-Values use ORCA property parsers. Numeric values are bare numbers; browser units such as `px`, `rem`, `vh`, and `%` are not converted. Unsupported properties are ignored when the stylesheet is converted into `StyleRule` objects.
+Values use ORCA property parsers. Numeric values are bare numbers; browser units such as `px`, `rem`, `vh`, and `%` are not converted, except for the special `width: 100%` stretch shorthand below. Unsupported properties are ignored when the stylesheet is converted into `StyleRule` objects.
 
 CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thickness` parser. For example, `padding: 10 32;` means top/bottom `10` and left/right `32`; `margin: 1 2 3 4;` means top `1`, right `2`, bottom `3`, left `4`.
+
+For layout alignment, prefer CSS-native sizing and auto margins:
+
+- `width: auto` maps to `Node.Width = NaN`, which is also the default and stretches in finite layout space unless that axis has an auto margin.
+- `width: 100%` also maps to `Node.Width = NaN` as a compatibility stretch shorthand.
+- `margin-left: auto; margin-right: auto;` centers a node horizontally; auto-width nodes use their desired content width.
+- `margin-left: auto;` aligns a node to the trailing/right edge; auto-width nodes use their desired content width.
+- `margin-top: auto; margin-bottom: auto;` centers a node vertically; auto-height nodes use their desired content height.
+- `margin-top: auto;` aligns a node to the trailing/bottom edge; auto-height nodes use their desired content height.
+
+For text alignment, use the CSS-native `text-align` property for horizontal text placement. ORCA also supports `text-vertical-align` as a small extension for vertical text placement inside text bounds; `TextBlock` defaults to `top`, while `Input` defaults to `center`.
 
 | CSS property | ORCA property | Value type |
 |--------------|---------------|------------|
@@ -15,11 +26,6 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `height` | `Node.Height` | float |
 | `min-width` | `Node.MinWidth` | float |
 | `min-height` | `Node.MinHeight` | float |
-| `horizontal-align` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
-| `horizontal-alignment` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
-| `vertical-align` | `Node.VerticalAlignment` | enum: VerticalAlignment |
-| `vertical-alignment` | `Node.VerticalAlignment` | enum: VerticalAlignment |
-| `align-self` | `Node.HorizontalAlignment` | enum: HorizontalAlignment |
 | `margin` | `Node.Margin` | Thickness |
 | `margin-top` | `Node.MarginTop` | float |
 | `margin-right` | `Node.MarginRight` | float |
@@ -98,10 +104,7 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 | `text-wrap` | `TextBlockConcept.TextWrapping` | enum: TextWrapping |
 | `text-overflow` | `TextBlockConcept.TextOverflow` | enum: TextOverflow |
 | `text-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
-| `text-horizontal-align` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
-| `text-horizontal-alignment` | `TextBlockConcept.TextHorizontalAlignment` | enum: TextHorizontalAlignment |
 | `text-vertical-align` | `TextBlockConcept.TextVerticalAlignment` | enum: TextVerticalAlignment |
-| `text-vertical-alignment` | `TextBlockConcept.TextVerticalAlignment` | enum: TextVerticalAlignment |
 | `placeholder-color` | `TextBlockConcept.PlaceholderColor` | color |
 
 ## Special Cases
@@ -110,5 +113,8 @@ CSS edge shorthands use CSS ordering before being passed to ORCA's WPF-like `Thi
 - Enum values are matched case-insensitively and may use CSS-style separators; for example `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
+- `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space unless that axis has an auto margin.
+- `margin-* : auto` normalizes to `NaN` and is used for alignment.
+- `text-vertical-align` is an ORCA extension; use it only when text must be vertically positioned inside a `TextBlock` or `Input`.
 - `pointer-events` maps to `Node2D.IgnoreHitTest`: `none` becomes `true`; `auto` becomes `false`.
 - Child clipping behavior is controlled through `overflow`, `overflow-x`, and `overflow-y`.

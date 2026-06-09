@@ -25,7 +25,8 @@ return ui.Node2D {
     Name = "GameView",
     Width = 1366,
     Height = 768,
-    HorizontalAlignment = "Center",
+    MarginLeft = 0 / 0,
+    MarginRight = 0 / 0,
     Scene = "Level",
     Level {
       Name = "Level",
@@ -37,7 +38,8 @@ return ui.Node2D {
     Height = 768,
     ReferenceWidth = 1366,
     ReferenceHeight = 768,
-    HorizontalAlignment = "Center",
+    MarginLeft = 0 / 0,
+    MarginRight = 0 / 0,
     Scene = "Root",
     sk.SKScene {
       Name = "Root",
