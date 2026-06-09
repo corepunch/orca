@@ -106,8 +106,6 @@ struct token
 
 #define SV_PostMessage(OBJ, MSG, _W, _L) \
 axPostMessageW(OBJ, fnv1a32(MSG), _W, _L);
-#define SV_PostMessageData(OBJ, MSG, _W, _L, _S) \
-axPostMessageDataW(OBJ, fnv1a32(MSG), _W, _L, _S);
 
 ORCA_API void
 axPostMessageDataW(void *hobj, uint32_t event, uint32_t wparam,

@@ -458,6 +458,7 @@
         <handle message="Node.KeyDown"/>
         <handle message="Node.KillFocus"/>
         <handle message="Node.LeftButtonUp"/>
+        <handle message="Node.TextInput"/>
         <handle message="Node2D.MeasureOverride"/>
       </handles>
       <properties>
@@ -470,6 +471,11 @@
       <fields>
         <field name="_checkmark" type="Texture" pointer="true">Internal checkmark image for checkbox rendering</field>
       </fields>
+      <messages>
+        <message name="Submit">
+          <summary>Fired when the input is submitted by the user.</summary>
+        </message>
+      </messages>
     </class>
     <class name="Button" parent="TextBlock" allow-text="true">
       <summary>Interactive button control for user actions</summary>

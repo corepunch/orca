@@ -162,7 +162,8 @@ HANDLER(Input, Node, KeyDown)
     case AX_KEY_ENTER:
       if (!pInput->Multiline) {
         OBJ_SetFocus(NULL);
-        SV_PostMessageData(hObject, "Submit", 0, szText, strlen(szText) + 1);
+//        axPostMessageDataW(hObject, ID_Input_Submit, 0, szText, strlen(szText) + 1);
+        axPostMessageW(hObject, ID_Input_Submit, 0, NULL);
       } else {
         if (dwLength + 1 < sizeof(szText) - 1) {
           szText[dwLength + 1] = 0;
@@ -205,7 +206,6 @@ _InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
-
   if (pInput->Cursor >= (int)sizeof(szText) - 1)
     return FALSE;
   if (dwLength + 1 < sizeof(szText) - 1) {
@@ -214,19 +214,17 @@ _InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
       szText[s] = szText[s - 1];
   }
   szText[pInput->Cursor++] = (char)ch;
-
   struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) PROP_SetStringValue(prop, szText);
-  SV_PostMessage(hObject, "TextInput", 0, 0);
-  SV_PostMessage(hObject, "Char", 0, 0);
   OBJ_SetDirty(hObject);
   return TRUE;
 }
 
 HANDLER(Input, Node, TextInput)
 {
-  if (pTextInput->character > 32 && (unsigned char)pTextInput->character < 127)
+  if (pTextInput->character > 32 && (unsigned char)pTextInput->character < 127) {
     _InsertCharacter(hObject, pInput, (unsigned char)pTextInput->character);
+  }
   return TRUE;
 }
 

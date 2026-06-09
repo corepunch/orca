@@ -10,6 +10,8 @@ luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 static void
 push_object_message_arg(lua_State* L, struct Object *sender, struct AXmessage* msg, struct Property *handler)
 {
+  luaX_pushObject(L, sender);
+
   if (!msg->lParam) {
     lua_pushnil(L);
     return;
@@ -33,7 +35,7 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
       push_object_message_arg(L, msg->target, msg, handler);
 
       // call orca.async
-      if (lua_pcall(L, 3, 0, 0) != LUA_OK) {
+      if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
         Con_Error("Message handler 0x%08x: %s", msg->message, luaL_checkstring(L, -1));
         lua_pop(L, 1);
       }
