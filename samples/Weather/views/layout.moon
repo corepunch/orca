@@ -15,15 +15,15 @@ make_header = (title) ->
 
 make_footer = (active_route, navigate) ->
 	UniformGrid class: "bg-header-background p-2", =>
-			for item in *NAV_ITEMS
-				selected = active_route == item.route
-				color = selected and "text-amber-300" or "text-sky-100"
-				weight = selected and "font-bold" or "font-normal"
-				cell = StackView class: "w-full h-full flex-col items-center justify-center gap-1", LeftButtonUp: -> navigate item.route
-				cell\addChild ImageView
-					class: "align-middle-center #{color}"
-					Source: "#{item.icon}?width=36&type=mask"
-				cell\addChild TextBlock class: "text-xs #{color} #{weight}", item.label
+		for item in *NAV_ITEMS
+			selected = active_route == item.route
+			color = selected and "text-amber-300" or "text-sky-100"
+			weight = selected and "font-bold" or "font-normal"
+			cell = StackView class: "w-full h-full flex-col items-center justify-center gap-1", LeftButtonUp: -> navigate item.route
+			cell\addChild ImageView
+				class: "align-middle-center #{color}"
+				Source: "#{item.icon}?width=36&type=mask"
+			cell\addChild TextBlock class: "text-xs #{color} #{weight}", item.label
 
 make_placeholder = ->
 	StackView class: "bg-background p-6 gap-2", =>
@@ -34,8 +34,7 @@ class Default extends Widget
 		inner = @content_for "inner"
 		title_slot = @content_for "title"
 		title = if title_slot then title_slot else if @app_title then @app_title! else "Weather"
-		route_value = @current_route
-		active_route = if type(route_value) == "function" then route_value! else route_value or "/"
+		active_route = @path or "/"
 		navigate = @navigate
 		footer = @content_for("footer") or make_footer active_route, navigate
 

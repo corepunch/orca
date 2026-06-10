@@ -12,7 +12,6 @@ class App extends Application
 
 	@include_helpers {
 		app_title: => "Banking"
-		current_route: => @current_route or "/"
 	}
 
 	dispatch: (req) =>
@@ -31,7 +30,6 @@ class App extends Application
 				route = "/sign-in"
 				req   = "/sign-in"
 
-		@current_route = route or "/"
 		App.__parent.dispatch self, req
 
 	navigate: (route) =>

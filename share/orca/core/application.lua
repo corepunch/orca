@@ -92,6 +92,7 @@ Application = Widget:extend {
         body:set_render_context(ctx)
       end
       if type(body.include_helper) == "function" then
+        body:include_helper(self)
         body:include_helper(req)
       end
       if type(body.content) == "function" then
@@ -119,8 +120,8 @@ Application = Widget:extend {
     if type(layout_def) == "table" and layout_def.__class then
       local layout = layout_def()
       layout:set_render_context(ctx)
-      layout:include_helper(req)
       layout:include_helper(self)
+      layout:include_helper(req)
       if type(layout.content) == "function" then
         view = layout:content()
       end

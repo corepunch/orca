@@ -36,8 +36,7 @@ class Default extends Widget
 		title_slot = @content_for "title"
 		no_chrome  = @content_for "no_chrome"
 		navigate   = @navigate
-		route_val  = @current_route
-		active_route = if type(route_val) == "function" then route_val! else route_val or "/"
+		active_route = @path or "/"
 		footer     = @content_for("footer") or make_footer active_route, navigate
 
 		-- Compute title: prefer the slot set by the screen, then the app helper, then the default.

@@ -6,12 +6,9 @@ class App extends require "orca.core.application"
 
 	@include_helpers {
 		app_title: => "WeatherTabs"
-		current_route: => @current_route or "/"
 	}
 
 	dispatch: (req) =>
-		route = if type(req) == "table" then req.path or req.url or req.route else req
-		@current_route = route or @current_route or "/"
 		App.__parent.dispatch self, req
 
 	navigate: (route) =>
