@@ -754,6 +754,17 @@ OBJ_ParseStruct(const char* type_name, const char* str, void* dst, size_t sz)
   return FALSE;
 }
 
+static int f_widget(lua_State* L) {
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  int nargs = lua_gettop(L) - 1;
+  lua_call(L, nargs, 1);
+  if (!lua_isnil(L, -1)) {
+    struct Object *ctx = *(struct Object **)lua_getextraspace(L);
+    if (ctx) OBJ_AddChild(ctx, luaX_checkObject(L, -1));
+  }
+  return 1;
+}
+
 void
 before_core_module_registered(lua_State* L)
 {
@@ -774,6 +785,9 @@ before_core_module_registered(lua_State* L)
 
   lua_pushcfunction(L, MakeLocalizedString);
   lua_setglobal(L, "L");
+
+  lua_pushcfunction(L, f_widget);
+  lua_setglobal(L, "widget");
   
   SV_Init();
   SV_RegisterMessageProc(CORE_ProcessMessage);
