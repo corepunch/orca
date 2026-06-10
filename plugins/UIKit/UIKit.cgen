@@ -134,6 +134,19 @@
       <value name="Generic">Base style applied to all components of the specified target type. Serves as a default visual definition.</value>
       <value name="Named">Style associated with a specific theme or visual skin. Used to switch appearance dynamically based on active theme.</value>
     </enum>
+    <enum name="TextDecoration">
+      <summary>Specifies text decoration styles such as underline or strikethrough.</summary>
+      <value name="None">No text decoration</value>
+      <value name="Underline">Underline text</value>
+      <value name="Strikethrough">Strikethrough text</value>
+    </enum>
+    <enum name="TextDecorationStyle">
+      <summary>Specifies the style of text decoration lines (underline, strikethrough, etc.)</summary>
+      <value name="Solid">A solid line</value>
+      <value name="Dashed">A dashed line</value>
+      <value name="Dotted">A dotted line</value>
+      <value name="Double">Two parallel lines</value>
+    </enum>
   </enums>
   <structs>
     <struct name="FontShorthand">
@@ -181,12 +194,14 @@
         <field name="y" type="Overflow">Vertical overflow handling</field>
       </fields>
     </struct>
-    <struct name="UnderlineShorthand">
-      <summary>Defines shorthand underline properties (offset, width, and color).</summary>
+    <struct name="TextDecorationShorthand">
+      <summary>Defines shorthand text decoration properties (underline, strikethrough, etc.).</summary>
       <fields>
-        <field name="Offset" type="float">Vertical offset of the underline from the baseline.</field>
-        <field name="Width" type="float">Line thickness of the underline.</field>
-        <field name="Color" type="color">Color of the underline.</field>
+        <field name="Type" type="TextDecoration">Type of text decoration to apply (none, underline, strikethrough)</field>
+        <field name="Color" type="color">Color of the text decoration.</field>
+        <field name="Style" type="TextDecorationStyle">Style of the text decoration (solid, dashed, dotted, etc.)</field>
+        <field name="Width" type="float">Line thickness of the text decoration.</field>
+        <field name="Offset" type="float">Vertical offset of the text decoration from the baseline.</field>
       </fields>
     </struct>
   </structs>
@@ -223,7 +238,7 @@
       <properties>
         <property name="Text" type="string">The short text string displayed in the block, limited to 64 bytes. If you need more space consider using `TextResourceID`. In Lua/MoonScript authoring, prefer passing text as the trailing value argument (for example: `TextBlock class: "text-3xl", title` or `Button class: "btn", "Save"`) instead of setting `Text=` explicitly when possible.</property>
         <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE" inherited="true">Font definition used for text rendering. Contains typeface, size, and style information.</property>
-        <property name="Underline" type="UnderlineShorthand">Underline style applied to the text.</property>
+        <property name="TextDecoration" type="TextDecorationShorthand">Text decoration style applied to the text.</property>
         <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
         <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
         <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>

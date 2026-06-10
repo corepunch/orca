@@ -890,8 +890,8 @@ _MakeTextBlockTextRun(struct Object  *hObject,
     .fontSize           = font.Size,
     .letterSpacing      = text.LetterSpacing,
     .fixedCharacterWidth= text.FixedCharacterWidth,
-    .underlineWidth     = text.Underline.Width,
-    .underlineOffset    = text.Underline.Offset,
+    .underlineWidth     = text.TextDecoration.Type == kTextDecorationUnderline ? MAX(1, text.TextDecoration.Width) : 0,
+    .underlineOffset    = text.TextDecoration.Offset,
     .fontStyle          = 0,
   };
   if (font.Weight == kFontWeightBold)  view.fontStyle += UI_TEXT_STYLE_BOLD;
@@ -917,15 +917,16 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
       struct TextRun base = *pTextRun;
       if (tr->Font.Weight)  base.Font.Weight = tr->Font.Weight;
       if (tr->Font.Style)   base.Font.Style  = tr->Font.Style;
-      if (tr->Font.Size)    base.Font.Size    = tr->Font.Size;
-      if (tr->Font.Family)  base.Font.Family  = tr->Font.Family;
-      if (TextRun_GetProperty(run, kTextRunUnderlineOffset))        base.Underline.Offset   = tr->Underline.Offset;
-      if (TextRun_GetProperty(run, kTextRunUnderlineWidth))         base.Underline.Width    = tr->Underline.Width;
-      if (TextRun_GetProperty(run, kTextRunUnderlineColor))         base.Underline.Color    = tr->Underline.Color;
-      if (TextRun_GetProperty(run, kTextRunLetterSpacing))          base.LetterSpacing      = tr->LetterSpacing;
-      if (TextRun_GetProperty(run, kTextRunLineHeight))             base.LineHeight         = tr->LineHeight;
-      if (TextRun_GetProperty(run, kTextRunCharacterSpacing))       base.CharacterSpacing   = tr->CharacterSpacing;
-      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth))    base.FixedCharacterWidth= tr->FixedCharacterWidth;
+      if (tr->Font.Size)    base.Font.Size   = tr->Font.Size;
+      if (tr->Font.Family)  base.Font.Family = tr->Font.Family;
+      if (TextRun_GetProperty(run, kTextRunTextDecorationType))  base.TextDecoration.Type   = tr->TextDecoration.Type;
+      if (TextRun_GetProperty(run, kTextRunTextDecorationWidth)) base.TextDecoration.Width  = tr->TextDecoration.Width;
+      if (TextRun_GetProperty(run, kTextRunTextDecorationOffset))base.TextDecoration.Offset = tr->TextDecoration.Offset;
+      if (TextRun_GetProperty(run, kTextRunTextDecorationColor)) base.TextDecoration.Color  = tr->TextDecoration.Color;
+      if (TextRun_GetProperty(run, kTextRunLetterSpacing))       base.LetterSpacing         = tr->LetterSpacing;
+      if (TextRun_GetProperty(run, kTextRunLineHeight))          base.LineHeight            = tr->LineHeight;
+      if (TextRun_GetProperty(run, kTextRunCharacterSpacing))    base.CharacterSpacing      = tr->CharacterSpacing;
+      if (TextRun_GetProperty(run, kTextRunFixedCharacterWidth)) base.FixedCharacterWidth   = tr->FixedCharacterWidth;
       if (TextRun_GetProperty(run, kTextRunRemoveSideBearingsProperty)) base.RemoveSideBearingsProperty = tr->RemoveSideBearingsProperty;
       pViewText->run[pViewText->numTextRuns++] = _MakeTextBlockTextRun(run, base, str);
     }
