@@ -27,6 +27,43 @@ When editing C code in this repository, optimize for the shortest clear form.
 - If two implementations are equivalent, choose the one with fewer lines and less repetition.
 - Keep readability: concise does not mean cryptic; use explicit named types/casts when needed for clarity.
 
+
+## General
+- Minimize vertical space. Prefer fewer, denser lines over many short ones.
+- Single-statement functions go on one line: `int f(void) { return 0; }`
+- Omit braces for single-statement `if`/`else`/`while` bodies.
+
+## Packing multiple statements
+- Chain sequential, logically related statements on one line with `;`:
+  `lua_pushvalue(L, 2); lua_pushvalue(L, 1);`
+- Merge declarations that belong to the same logical step:
+  `int key_idx = lua_absindex(L, -2), val_idx = lua_absindex(L, -1);`
+
+## Ternary + comma operator for conditional initialization
+- When an assignment depends on a condition that also has side effects, use
+  the comma operator inside the ternary branch to keep it a single expression:
+```c
+  int nargs = lua_isnoneornil(L, 2) ? 1 : (lua_pushvalue(L, 2), lua_xmove(L, co, 1), 2);
+```
+  The comma operator sequences the side-effect calls; the branch evaluates to
+  the final value. Use this to avoid splitting a variable's initialization from
+  its declaration.
+
+## Braces
+- Omit braces when the body is a single statement or a single comma-chained expression.
+- Keep braces for `WITH` blocks, multi-statement `while` bodies, and anything
+  that would become ambiguous without them.
+
+## Pointers and casts
+- Inline pointer-through-cast writes where the intent is clear:
+  `*((struct Object **)lua_getextraspace(L)) = self;`
+
+## What to avoid
+- Do not introduce helper variables just to name an intermediate result if the
+  expression is already readable inline.
+- Do not add blank lines between short, related statements.
+- Do not split a declaration and its first assignment onto separate lines.
+
 ---
 
 ## Repository Setup
