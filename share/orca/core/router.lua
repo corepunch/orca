@@ -28,6 +28,18 @@ local function split_path_and_query(path)
   return route_path, query ~= "" and query or nil
 end
 
+local function normalize_request(req)
+  if type(req) == "table" then
+    req.path = req.path or req.url or req.route
+    req.params = req.params or {}
+    return req
+  end
+  return {
+    path = req,
+    params = {}
+  }
+end
+
 local function compile_route_pattern(url)
   local names = {}
   local parts = { "^" }
@@ -166,6 +178,10 @@ local Router = Widget:extend {
     self:registerRoutes(owner)
   end,
 
+  normalize_request = function(self, req)
+    return normalize_request(req)
+  end,
+
   add = function(self, name, url, handler)
     assert(type(url) == "string",       "route url must be a string")
     assert(type(handler) == "function", "route handler must be a function")
@@ -264,10 +280,11 @@ local Router = Widget:extend {
   end,
 
   dispatch = function(self, req, route, ...)
+    req = self:normalize_request(req)
     route = route or self:resolve(req)
     local owner = self.owner or self
-    owner.params = route and route.params or {}
-    if type(req) == "table" then req.params = owner.params end
+    req.params = route and route.params or {}
+    if route and route.name ~= nil then req.route_name = route.name end
     return route and route.handler(owner, req, ...) or nil
   end,
 }

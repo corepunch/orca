@@ -110,6 +110,61 @@ local function test_class_helpers_accessible_in_layout()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 5: body widgets receive request-scoped params helpers
+-- ---------------------------------------------------------------------------
+local function test_body_widget_receives_request_params()
+  local captured_widget = nil
+
+  local Body = Widget:extend {
+    content = function(self)
+      captured_widget = self
+      self._game = self.params and self.params.game or nil
+      self._path = self.path
+      return "body"
+    end
+  }
+
+  local App = Application:extend {
+    layout = MockLayout,
+    [{ Adventure = "/adventure/:game" }] = function(self, req)
+      return Body()
+    end,
+  }
+
+  local app = App()
+  local result = app:dispatch("/adventure/zork1")
+
+  test.expect(captured_widget ~= nil, "body widget should be rendered")
+  test.expect_eq(captured_widget._game, "zork1", "widget params should come from the request")
+  test.expect_eq(captured_widget._path, "/adventure/zork1", "widget should see request path helpers")
+  test.expect_eq(result.context.req.params.game, "zork1", "request params should be stored in render context")
+  print("PASS: test_body_widget_receives_request_params")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 6: route actions receive a normalized request table with params
+-- ---------------------------------------------------------------------------
+local function test_route_action_receives_request_table()
+  local seen_req = nil
+  local App = Application:extend {
+    layout = MockLayout,
+    [{ Adventure = "/adventure/:game" }] = function(self, req)
+      seen_req = req
+      return req.params.game
+    end,
+  }
+
+  local app = App()
+  local result = app:dispatch("/adventure/zork1")
+
+  test.expect(type(seen_req) == "table", "route action should receive a request table")
+  test.expect_eq(seen_req.path, "/adventure/zork1", "request.path should preserve the dispatched path")
+  test.expect_eq(seen_req.params.game, "zork1", "request.params should include route captures")
+  test.expect_eq(result.context.slots.inner, "zork1", "route action should render using request params")
+  print("PASS: test_route_action_receives_request_table")
+end
+
+-- ---------------------------------------------------------------------------
 -- Test 5: unknown route returns nil body but still produces a result table
 -- ---------------------------------------------------------------------------
 local function test_unknown_route_returns_nil_body()
@@ -372,6 +427,8 @@ test_route_result_stored_in_inner()
 test_layout_content_called()
 test_layout_receives_render_context()
 test_class_helpers_accessible_in_layout()
+test_body_widget_receives_request_params()
+test_route_action_receives_request_table()
 test_unknown_route_returns_nil_body()
 test_dispatch_result_shape()
 test_resolve_body_default_passthrough()

@@ -2,6 +2,11 @@
 
 This file gives GitHub Copilot (and any AI coding assistant) the essential context needed to work effectively in the ORCA repository without having to re-discover it from scratch.
 
+## Core Principles
+
+- Convention over configuration.
+- Don't Repeat Yourself (DRY).
+
 ## Pre-Release Compatibility Policy
 
 ORCA is currently pre-release. Prioritize the cleanest architecture over backward compatibility.

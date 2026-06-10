@@ -19,7 +19,8 @@ local function test_dispatch_calls_correct_handler()
   router:add("/", "/", handler)
 
   local result = router:dispatch("/")
-  test.expect_eq(called_with, "/", "handler should receive the request")
+  test.expect(type(called_with) == "table", "handler should receive a request table")
+  test.expect_eq(called_with.path, "/", "request.path should preserve the dispatched path")
   test.expect_eq(result, "result", "dispatch should return handler return value")
   print("PASS: test_dispatch_calls_correct_handler")
 end
@@ -102,13 +103,13 @@ local function test_multiple_routes()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 7: dispatch sets owner.params from dynamic route captures
+-- Test 7: dispatch sets req.params from dynamic route captures
 -- ---------------------------------------------------------------------------
 local function test_dispatch_dynamic_params()
   local owner = {}
   local router = Router(owner)
-  router:add("adventure", "/adventure/:game/:session", function(self)
-    return self.params.game .. ":" .. self.params.session
+  router:add("adventure", "/adventure/:game/:session", function(self, req)
+    return req.params.game .. ":" .. req.params.session
   end)
 
   test.expect_eq(router:dispatch("/adventure/zork1/s1"), "zork1:s1", "dispatch should capture dynamic route params")
@@ -234,8 +235,8 @@ end
 local function test_optional_segment_dispatch_params()
   local owner = {}
   local router = Router(owner)
-  router:add("Adventure", "/adventure/:game(/:session)", function(self)
-    return (self.params.game or "nil") .. "/" .. tostring(self.params.session)
+  router:add("Adventure", "/adventure/:game(/:session)", function(self, req)
+    return (req.params.game or "nil") .. "/" .. tostring(req.params.session)
   end)
 
   test.expect_eq(router:dispatch("/adventure/zork1"), "zork1/nil",
@@ -246,6 +247,26 @@ local function test_optional_segment_dispatch_params()
   print("PASS: test_optional_segment_dispatch_params")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test 16: dispatch keeps params on the provided request object
+-- ---------------------------------------------------------------------------
+local function test_dispatch_populates_given_request()
+  local owner = {}
+  local router = Router(owner)
+  local captured_req = nil
+  router:add("Adventure", "/adventure/:game", function(self, req)
+    captured_req = req
+    return req.params.game
+  end)
+
+  local req = { path = "/adventure/zork1" }
+  test.expect_eq(router:dispatch(req), "zork1", "dispatch should use params from the provided request")
+  test.expect_eq(captured_req, req, "dispatch should pass through the provided request table")
+  test.expect_eq(req.params.game, "zork1", "dispatch should populate request.params")
+
+  print("PASS: test_dispatch_populates_given_request")
+end
+
 test_url_for_named()
 test_url_for_named_with_params()
 test_url_for_passthrough()
@@ -254,5 +275,6 @@ test_url_for_named_reused_patterns()
 test_optional_segment_resolve()
 test_optional_segment_url_for()
 test_optional_segment_dispatch_params()
+test_dispatch_populates_given_request()
 
 print("All router tests passed.")

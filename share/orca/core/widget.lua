@@ -189,22 +189,28 @@ function Widget:showModal(modal, ...)
   return sent
 end
 
+local function get_helper_value(helper, key)
+  if not helper then return nil end
+  local value = helper[key]
+  if value == nil then return nil end
+  if type(value) == 'function' then
+    local needs_helper_self = rawget(helper, key) == value
+    return function(_, ...)
+      if needs_helper_self then
+        return value(helper, ...)
+      end
+      return value(...)
+    end
+  end
+  return value
+end
+
 function Widget:_find_helper_value(key)
   local function scan_helpers(helpers)
     if not helpers then return nil end
     for i = #helpers, 1, -1 do
-      local helper = helpers[i]
-      local value = helper and helper[key]
+      local value = get_helper_value(helpers[i], key)
       if value ~= nil then
-        if type(value) == 'function' then
-            local needs_helper_self = rawget(helper, key) == value
-            return function(_, ...)
-              if needs_helper_self then
-                return value(helper, ...)
-              end
-              return value(...)
-          end
-        end
         return value
       end
     end

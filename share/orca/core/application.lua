@@ -68,11 +68,15 @@ Application = Widget:extend {
   end,
 
   dispatch = function(self, req)
+    req = self.router:normalize_request(req)
+    req.app = req.app or self
     local ctx = self:new_render_context(req)
 
     -- Run before filters; first filter returning non-nil short-circuits the action.
     local body = nil
-    local route_info = nil
+    local route_info = self.router:resolve(req)
+    req.params = route_info and route_info.params or req.params or {}
+    if route_info and route_info.name ~= nil then req.route_name = route_info.name end
     local cls = rawget(getmetatable(self) or {}, '__class')
     for _, filter in ipairs(collect_before_filters(cls)) do
       body = filter(self, req)
@@ -80,13 +84,15 @@ Application = Widget:extend {
     end
 
     if body == nil then
-      route_info = self.router:resolve(req)
-      body = self:resolve_body(self.router:dispatch(req), route_info)
+      body = self:resolve_body(self.router:dispatch(req, route_info), route_info)
     end
 
     if type(body) == "table" then
       if type(body.set_render_context) == "function" then
         body:set_render_context(ctx)
+      end
+      if type(body.include_helper) == "function" then
+        body:include_helper(req)
       end
       if type(body.content) == "function" then
         local inner = body:content()
@@ -113,6 +119,7 @@ Application = Widget:extend {
     if type(layout_def) == "table" and layout_def.__class then
       local layout = layout_def()
       layout:set_render_context(ctx)
+      layout:include_helper(req)
       layout:include_helper(self)
       if type(layout.content) == "function" then
         view = layout:content()
