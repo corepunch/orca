@@ -794,6 +794,7 @@
         <property name="Spacing" type="float">Space between grid cells </property>
         <property name="CellWidth" type="float">Default width for auto-sized cells </property>
         <property name="CellHeight" type="float">Default height for auto-sized cells </property>
+        <property name="AlignItems" type="AlignItems" default="Stretch">Vertical alignment of children within their grid cell</property>
       </properties>
       <fields>
         <field name="_buffer" type="uiGridViewBuffer">Internal buffer for grid calculations </field>

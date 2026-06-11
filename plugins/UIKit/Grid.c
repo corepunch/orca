@@ -327,13 +327,33 @@ HANDLER(Grid, Node2D, ArrangeOverride)
   float actual_width  = pArrangeOverride->Width;
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
+    struct Node2D *subview = GetNode2D(hChild);
     struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
     struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+    float y = pArrangeOverride->Y + (h ? h->position : 0);
+    float height = h ? h->width : pArrangeOverride->Height;
+    if (h && pGrid->Rows == NULL && vcols->count == 1 && pArrangeOverride->Height > height)
+      height = pArrangeOverride->Height;
+    float occupied = NODE2D_FRAME(subview, Size, kDirectionVertical).Desired + TOTAL_MARGIN(subview, kDirectionVertical);
+    switch (pGrid->AlignItems) {
+      case kAlignItemsEnd:
+        y += height - occupied; height = occupied;
+        break;
+      case kAlignItemsCenter:
+        y += (height - occupied) * 0.5f; height = occupied;
+        break;
+      case kAlignItemsStart:
+      case kAlignItemsBaseline:
+        height = occupied;
+        break;
+      case kAlignItemsStretch:
+        break;
+    }
     _SendMessage(hChild, Node2D, Arrange,
       .X = pArrangeOverride->X + (w ? w->position : 0),
-      .Y = pArrangeOverride->Y + (h ? h->position : 0),
+      .Y = y,
       .Width = (w ? w->width : pArrangeOverride->Width),
-      .Height = (h ? h->width : pArrangeOverride->Height),
+      .Height = height,
     );
     if (h) actual_height = fmax(actual_height, h->position + h->width);
     if (w) actual_width  = fmax(actual_width,  w->position + w->width);

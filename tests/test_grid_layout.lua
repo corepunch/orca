@@ -145,6 +145,45 @@ local function test_grid_auto_rows_respect_content_height()
 end
 
 -- ---------------------------------------------------------------------------
+-- Grid AlignItems=Center vertically centers children inside fixed-height rows.
+-- ---------------------------------------------------------------------------
+local function test_grid_align_items_center()
+	local grid = screen + ui.Grid { Columns = "100px 100px", Rows = "100px", AlignItems = "Center" }
+	local left = grid + ui.Node2D { Height = 20 }
+	local right = grid + ui.Node2D { Height = 40 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(left.ActualHeight, 20, "AlignItems=Center should preserve explicit child height")
+	test.expect_eq(right.ActualHeight, 40, "AlignItems=Center should preserve explicit child height")
+	test.expect_eq(left.ActualY, 40, "20px child should be vertically centered in a 100px grid row")
+	test.expect_eq(right.ActualY, 30, "40px child should be vertically centered in a 100px grid row")
+
+	grid:removeFromParent()
+	print("PASS: test_grid_align_items_center")
+end
+
+-- ---------------------------------------------------------------------------
+-- A Grid with only Columns gets an implicit row. If its parent arranges it into
+-- a taller slot, AlignItems=Center should use that full slot height.
+-- ---------------------------------------------------------------------------
+local function test_grid_align_items_center_implicit_row_in_fixed_parent()
+	local parent = screen + ui.Grid { Rows = "52px" }
+	local header = parent + ui.Grid { Columns = "32px 1fr", AlignItems = "Center" }
+	local icon = header + ui.Node2D { Width = 32, Height = 32 }
+	local title = header + ui.Node2D { Height = 28 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(header.ActualHeight, 52, "Implicit-row header grid should fill the fixed parent row")
+	test.expect_eq(icon.ActualY, 10, "32px icon should be centered in a 52px implicit grid row")
+	test.expect_eq(title.ActualY, 12, "28px title should be centered in a 52px implicit grid row")
+
+	parent:removeFromParent()
+	print("PASS: test_grid_align_items_center_implicit_row_in_fixed_parent")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
@@ -154,5 +193,7 @@ test_grid_view_in_stack_layout()
 test_grid_fr_units()
 test_grid_in_vstack_height()
 test_grid_auto_rows_respect_content_height()
+test_grid_align_items_center()
+test_grid_align_items_center_implicit_row_in_fixed_parent()
 
 print("All Grid layout tests passed.")

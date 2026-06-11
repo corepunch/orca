@@ -115,6 +115,7 @@ k_css_prop_map[] = {
 
     /* StackView */
     { "align-items",       "StackView.AlignItems"           },
+    { "align-items",       "Grid.AlignItems"                },
     { "justify-content",   "StackView.JustifyContent"      },
     { "flex-direction",    "StackView.Direction"           },
     { "direction",         "StackView.Direction"           },

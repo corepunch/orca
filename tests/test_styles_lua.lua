@@ -687,6 +687,7 @@ local function test_css_expanded_property_aliases()
   test.expect_near(stack.Spacing, 11, 0.001, "gap maps to StackView.Spacing")
   test.expect_near(grid.Spacing, 11, 0.001, "gap maps to Grid.Spacing")
   test.expect_eq(stack.AlignItems, "End", "align-items maps to StackView.AlignItems")
+  test.expect_eq(grid.AlignItems, "End", "align-items maps to Grid.AlignItems")
   test.expect_eq(stack.JustifyContent, "SpaceBetween", "hyphenated justify-content value maps to SpaceBetween")
 
   test.expect_eq(text.FontWeight, "Bold", "font-weight maps to TextRun.FontWeight")

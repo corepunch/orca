@@ -129,7 +129,7 @@ for _, v1 in ipairs(spacing) do
 end
 
 for k, v in pairs {start="Start",["end"]="End",center="Center",baseline="Baseline",stretch="Stretch"} do
-	add_rule("items-"..k, { ["StackView.AlignItems"] = v })
+	add_rule("items-"..k, { ["StackView.AlignItems"] = v, ["Grid.AlignItems"] = v })
 end
 
 for k, v in pairs {left="Left",center="Center",right="Right"} do
