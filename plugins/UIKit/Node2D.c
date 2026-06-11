@@ -218,12 +218,14 @@ HANDLER(Node2D, Node, ScrollWheel)
 {
   struct Node *node = pNode2D->_node;
   if (pNode2D->Overflow.y == kOverflowScroll) {
-    struct vec2 Offset = pNode2D->ContentOffset;
-    float Scroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
-    Offset.y = MAX(MIN(Offset.y + pScrollWheel->deltaY, 0), Scroll);
-    pNode2D->ContentOffset = Offset;
-    OBJ_SetDirty(hObject);
-    return TRUE;
+    float maxScroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
+    if (maxScroll < 0) {
+      struct vec2 Offset = pNode2D->ContentOffset;
+      Offset.y = MAX(MIN(Offset.y + pScrollWheel->deltaY, 0), maxScroll);
+      pNode2D->ContentOffset = Offset;
+      OBJ_SetDirty(hObject);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -396,6 +398,17 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
                  .Y = pArrangeOverride->Y,
                  .Width = pArrangeOverride->Width,
                  .Height = pArrangeOverride->Height);
+
+  float scroll[2] = { 0, 0 };
+  FOR_EACH_LAYOUTABLE(hChild, hObject) {
+    struct Node2D *child = GetNode2D(hChild);
+    FOR_LOOP(i, 2)
+      scroll[i] = MAX(scroll[i], Node2D_GetFrame(child, kBox3FieldX + i)
+                               + Node2D_GetFrame(child, kBox3FieldWidth + i));
+  }
+  pNode2D->_node->Size.Axis[0].Scroll = scroll[0];
+  pNode2D->_node->Size.Axis[1].Scroll = scroll[1];
+
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }
 

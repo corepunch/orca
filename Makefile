@@ -305,6 +305,7 @@ $(eval $(call LUA_TEST_RULE,test-object-hierarchy,tests/test_object_hierarchy.lu
 $(eval $(call LUA_TEST_RULE,test-tabbar,tests/test_tabbar.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-tab-interaction,tests/test_tab_interaction.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-text-layout,tests/test_text_layout.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-node2d-scroll,tests/test_node2d_scroll.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-stack-layout,tests/test_stack_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-grid-layout,tests/test_grid_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-interaction,tests/test_interaction.lua,app copyshare))
@@ -313,7 +314,7 @@ $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor $(HEADLESS_LUA_TESTS)
 
-test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node
+test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"
 	$(Q)$(TARGET) -test=tests/test.xml
 
