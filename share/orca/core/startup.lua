@@ -7,6 +7,12 @@ local UIKit = require "orca.UIKit"
 
 local Startup = {}
 
+local function startup_route(route)
+  return (type(route) == "string" and route ~= "" and route)
+      or rawget(_G, "STARTUP_URL")
+      or "/"
+end
+
 function Startup.load_screen(path)
   if not path then
     return UIKit.Screen()
@@ -21,7 +27,7 @@ function Startup.load_controller(Application, path, route)
   local ok, class = pcall(require, path)
   assert(ok, "Failed to load view controller: " .. path .. ", " .. tostring(class))
   local app = class()
-  app:activate_route(route or "/")
+  app:activate_route(startup_route(route))
   return app
 end
 

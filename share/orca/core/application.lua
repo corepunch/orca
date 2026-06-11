@@ -156,7 +156,10 @@ Application = Widget:extend {
   end,
 
   activate_route = function(self, req)
-    return self:activate_controller(self:dispatch(req))
+    local normalized_req = self.router:normalize_request(req)
+    local route = normalized_req and normalized_req.path or req
+    io.stderr:write("Navigate: " .. tostring(route or "/") .. "\n")
+    return self:activate_controller(self:dispatch(normalized_req))
   end,
 
   run = function(self)

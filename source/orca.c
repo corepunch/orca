@@ -32,12 +32,14 @@ struct args {
   lpcString_t plugins;
   lpcString_t server;
   lpcString_t test;
+  lpcString_t url;
 } args = {0};
 
 struct { lpcString_t name, *target; } argsmap[] = {
   { "-plugins=", &args.plugins },
   { "-server=", &args.server },
   { "-test=", &args.test },
+  { "-url=", &args.url },
 };
 
 static void
@@ -298,6 +300,11 @@ int main (int argc, LPSTR *argv)
 
     lua_pushstring(L, szProject);
     lua_setglobal(L, "DATADIR");
+
+    if (args.url) {
+      lua_pushstring(L, args.url);
+      lua_setglobal(L, "STARTUP_URL");
+    }
     
     if (!args.test) {
       const char* bootstrap =
