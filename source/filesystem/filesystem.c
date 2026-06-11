@@ -694,7 +694,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
   lua_pop(L, 1);
 
-  return OBJ_AddChild(FS_GetWorkspace(), CMP_GetObject(project));
+  return CMP_GetObject(project);
 }
 
 #include "../core/core_local.h" // for file_loader

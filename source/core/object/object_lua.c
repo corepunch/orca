@@ -1,6 +1,6 @@
 #include <include/api.h>
 #include <include/orca.h>
-#include <source/core/core_local.h>
+#include "object_internal.h"
 
 struct Object *luaX_checkObject(lua_State* L, int arg) { return *(struct Object **)luaL_checkudata(L, arg, API_TYPE_OBJECT); }
 
