@@ -78,7 +78,13 @@ static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
 static int f_rebuild(lua_State *L) {
   struct Object *self = luaX_checkObject(L, 1);
   if (lua_type(L, 2) == LUA_TFUNCTION) {
-    OBJ_Clear(self); lua_pushvalue(L, 2); lua_pushvalue(L, 1);
+    if (self->body_ref) luaL_unref(L, LUA_REGISTRYINDEX, self->body_ref);
+    lua_pushvalue(L, 2);
+    self->body_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  }
+  if (self->body_ref) {
+    OBJ_Clear(self);
+    lua_geti(L, LUA_REGISTRYINDEX, self->body_ref); lua_pushvalue(L, 1);
     return lua_pcallk(L, 1, 0, 0, (lua_KContext)self, f_rebuild_finalize);
   } else if (lua_type(L, 2) == LUA_TSTRING) {
     OBJ_SetTextContent(self, luaL_checkstring(L, 2));

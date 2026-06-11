@@ -223,7 +223,7 @@ _InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
 
 HANDLER(Input, Node, TextInput)
 {
-  if (pTextInput->character > 32 && (unsigned char)pTextInput->character < 127) {
+  if (pTextInput->character >= 32 && (unsigned char)pTextInput->character < 127) {
     _InsertCharacter(hObject, pInput, (unsigned char)pTextInput->character);
   }
   return TRUE;

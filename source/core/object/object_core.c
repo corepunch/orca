@@ -128,6 +128,10 @@ OBJ_Release(struct Object *pobj)
     }
     PROP_Clear(p);
   }
+  if (pobj->body_ref) {
+    axPostMessageW(NULL, kEventClearReference, pobj->body_ref, NULL);
+    pobj->body_ref = 0;
+  }
 
   // Dispatch Object.Release so components (e.g., StyleController) can clean up.
   // Script-side cleanup is deferred through kEventClearReference.

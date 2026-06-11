@@ -32,6 +32,7 @@ struct Object
   uint32_t flags;
 
   longTime_t dirty;
+  event_t body_ref;
 };
 
 
