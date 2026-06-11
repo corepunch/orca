@@ -625,6 +625,11 @@ T_LayoutText(LayoutCtx *ctx)
         }
         
         /* Render word characters until we hit the cut */
+        int ul_thick = MAX(ul_depth ? 1 : 0, (int)run->underlineWidth) * (int)scale;
+        if (ul_thick > 0 && spacePrefix > 0)
+          T_BlitUnderline(image_data, &sz,
+                          ls.lineX, ls.lineX + spacePrefix,
+                          ls.lineY + ls.baseline, FT_SCALE(m.underlinePos), ul_thick);
         ls.lineX += spacePrefix;
         lpcString_t q = word_start;
         while (q < word_end) {
@@ -667,8 +672,12 @@ T_LayoutText(LayoutCtx *ctx)
       }
       
       /* ── Normal render: blit the whole word ── */
-      ls.lineX += spacePrefix;
       int ul_thick = MAX(ul_depth ? 1 : 0, (int)run->underlineWidth) * (int)scale;
+      if (ul_thick > 0 && spacePrefix > 0)
+        T_BlitUnderline(image_data, &sz,
+                        ls.lineX, ls.lineX + spacePrefix,
+                        ls.lineY + ls.baseline, FT_SCALE(m.underlinePos), ul_thick);
+      ls.lineX += spacePrefix;
       T_BlitWord(m.face, word_start, word_end,
                  image_data, &sz,
                  &ls.lineX, ls.lineY,
