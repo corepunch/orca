@@ -112,6 +112,39 @@ local function test_grid_in_vstack_height()
 end
 
 -- ---------------------------------------------------------------------------
+-- auto-row Grid: each row must size to its tallest cell, not distribute
+-- available height equally. Regression for the bug where ArrangeOverride
+-- reset auto-row heights to equal shares of the total measured height,
+-- making shorter rows too tall and taller rows too short.
+-- ---------------------------------------------------------------------------
+local function test_grid_auto_rows_respect_content_height()
+	-- Two rows of an "auto auto" Grid have unequal content heights.
+	-- Row 0: two 20px-tall cells.  Row 1: two 60px-tall cells.
+	-- The Grid should measure at 80px and arrange each row at its content height.
+	local outer = screen + ui.StackView { Direction = "Vertical" }
+	local grid  = outer  + ui.Grid { Columns = "auto auto" }
+	local r0c0  = grid   + ui.Node2D { Height = 20 }
+	local r0c1  = grid   + ui.Node2D { Height = 20 }
+	local r1c0  = grid   + ui.Node2D { Height = 60 }
+	local r1c1  = grid   + ui.Node2D { Height = 60 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(grid.ActualHeight, 80,
+		"Grid with unequal auto rows must measure at sum of row content heights (20+60=80)")
+	test.expect_eq(r0c0.ActualHeight, 20,
+		"Row 0 cells must be arranged at their content height (20px), not an equal share of total")
+	test.expect_eq(r1c0.ActualHeight, 60,
+		"Row 1 cells must be arranged at their content height (60px), not an equal share of total")
+	-- Verify Y positions: row 1 starts immediately after row 0.
+	test.expect_eq(r1c0.ActualY, r0c0.ActualY + 20,
+		"Row 1 top must be directly below row 0 (row 0 height = 20, not 40)")
+
+	outer:removeFromParent()
+	print("PASS: test_grid_auto_rows_respect_content_height")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
@@ -120,5 +153,6 @@ test_grid_view_layout()
 test_grid_view_in_stack_layout()
 test_grid_fr_units()
 test_grid_in_vstack_height()
+test_grid_auto_rows_respect_content_height()
 
 print("All Grid layout tests passed.")
