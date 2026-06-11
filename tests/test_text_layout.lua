@@ -201,6 +201,29 @@ local function test_text_layout_uses_cached_measurement()
 end
 
 -- ---------------------------------------------------------------------------
+-- line-height: explicit pixel height must increase measured block height
+-- ---------------------------------------------------------------------------
+local function test_text_line_height_property()
+	local default_height = screen + ui.TextBlock {
+		Text = "Line\nHeight",
+		FontSize = 18,
+	}
+	local tall_height = screen + ui.TextBlock {
+		Text = "Line\nHeight",
+		FontSize = 18,
+		LineHeight = 32,
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(tall_height.DesiredHeight > default_height.DesiredHeight,
+		"TextBlock with LineHeight=32 should be taller than default line height for FontSize=18")
+
+	default_height:removeFromParent()
+	tall_height:removeFromParent()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
@@ -211,5 +234,6 @@ test_text_nowrap_keeps_metric_value_on_one_line()
 test_textblock_auto_margin_bubble_measures_full_phrase()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()
+test_text_line_height_property()
 
 print("All text layout tests passed.")

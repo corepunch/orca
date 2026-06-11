@@ -27,6 +27,7 @@
 #include <include/renderer.h>
 
 #include <UIKit/UIKit.h>
+#include "TextBlockText.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -125,8 +126,15 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
   
   m->ascender    = FT_MulFix(m->face->ascender,         m->face->size->metrics.y_scale);
   m->descender   = FT_MulFix(m->face->descender,        m->face->size->metrics.y_scale);
-  m->height      = FT_MulFix(m->face->height,           m->face->size->metrics.y_scale);
+  m->height      = MAX(FT_MulFix(m->face->height, m->face->size->metrics.y_scale),
+                       m->ascender - m->descender);
   m->underlinePos= FT_MulFix(m->face->underline_position,m->face->size->metrics.y_scale);
+
+  /* line-height: if set to a value > 1 it is an absolute pixel height override */
+  if (run->lineHeight > 1.0f) {
+    FT_Pos lh = (FT_Pos)(run->lineHeight * scale * 64);
+    if (lh > m->height) m->height = lh;
+  }
   
   m->spaceAdv = T_LoadChar(m->face, ' ')
   ? (FT_Int)FT_SCALE(m->face->glyph->metrics.horiAdvance) : 0;
@@ -898,6 +906,7 @@ _MakeTextBlockTextRun(struct Object  *hObject,
     .fontFamily         = font.Family,
     .fontSize           = font.Size,
     .letterSpacing      = text.LetterSpacing,
+    .lineHeight         = text.LineHeight,
     .fixedCharacterWidth= text.FixedCharacterWidth,
     .underlineWidth     = text.TextDecoration.Type == kTextDecorationUnderline ? MAX(1, text.TextDecoration.Width) : 0,
     .underlineOffset    = text.TextDecoration.Offset,

@@ -2,6 +2,7 @@
 
 #include <source/filesystem/theme_palette.h>
 #include <UIKit/UIKit.h>
+#include "TextBlockText.h"
 
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);

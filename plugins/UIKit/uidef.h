@@ -5,61 +5,9 @@
 /// @brief Internal step-based rendering parameters for text labels
 typedef longTime_t uiLabelSteps_t[4];
 
-#define UI_MAX_TEXT_RUNS 256
 #define UI_TEXT_USE_FONT_HEIGHT (1 << 0)
 
-enum
-{
-  UI_TEXT_STYLE_NORMAL,
-  UI_TEXT_STYLE_BOLD,
-  UI_TEXT_STYLE_ITALIC,
-  UI_TEXT_STYLE_BOLD_ITALIC,
-  UI_TEXT_STYLE_COUNT,
-};
-
-struct FontFamily;
-struct Texture;
-struct TextBlockTextRun
-{
-  lpcString_t string;
-  struct FontFamily const *fontFamily; // NOTE: must stay second for TextBlockText_GetHash()
-  uint32_t fontStyle;
-  uint32_t fontSize;
-  uint32_t fixedCharacterWidth;
-  uint32_t underlineWidth;
-  uint32_t underlineOffset;
-  float letterSpacing;
-  float lineSpacing;
-};
-
-struct TextBlockText
-{
-  uint32_t flags;
-  float availableWidth;
-  uint32_t cursor;
-  uint32_t numTextRuns;
-  float scale;
-  uint32_t textWrapping;
-  uint32_t textOverflow;
-  uint32_t textureHash;
-  uint32_t infoHash;
-  struct text_info info;
-  bool_t placeholder;
-  struct Texture *texture;
-  struct TextBlockTextRun run[UI_MAX_TEXT_RUNS];
-};
-
-ORCA_API uint32_t TextBlockText_GetHash(struct TextBlockText *text);
-ORCA_API struct Texture *TextBlockText_GetTexture(struct TextBlockText *text);
-ORCA_API HRESULT TextBlockText_GetInfo(struct TextBlockText *text, struct text_info *info);
-ORCA_API void TextBlockText_Release(struct TextBlockText *text);
-ORCA_API uint32_t TextBlockText_GetMeasureCount(void);
-ORCA_API uint32_t TextBlockText_GetRenderCount(void);
-ORCA_API void TextBlockText_ResetStats(void);
-
-/// @typedef uiGridViewBuffer_t
-/// @brief Internal buffer for grid layout calculations
-typedef char uiGridViewBuffer_t[256];
+#include "TextBlockText.h"
 
 /// @typedef actualPos_t
 /// @brief 3D position array [x, y, z] for actual computed positions

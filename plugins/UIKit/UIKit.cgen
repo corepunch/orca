@@ -240,7 +240,7 @@
         <property name="Font" type="FontShorthand" default=".Size=DEFAULT_FONT_SIZE" inherited="true">Font definition used for text rendering. Contains typeface, size, and style information.</property>
         <property name="TextDecoration" type="TextDecorationShorthand">Text decoration style applied to the text.</property>
         <property name="LetterSpacing" type="float">Additional spacing applied between letters.</property>
-        <property name="LineHeight" type="float" default="1">Line height multiplier for multi-line text layout.</property>
+        <property name="LineHeight" type="float" default="1" inherited="true">Line height multiplier for multi-line text layout.</property>
         <property name="CharacterSpacing" type="float">Extra spacing between characters, beyond kerning.</property>
         <property name="FixedCharacterWidth" type="float">Forces a fixed width per character (monospace effect).</property>
         <property name="RemoveSideBearingsProperty" type="bool">Removes side bearings (spacing) defined by the font.</property>
@@ -796,9 +796,6 @@
         <property name="CellHeight" type="float">Default height for auto-sized cells </property>
         <property name="AlignItems" type="AlignItems" default="Stretch">Vertical alignment of children within their grid cell</property>
       </properties>
-      <fields>
-        <field name="_buffer" type="uiGridViewBuffer">Internal buffer for grid calculations </field>
-      </fields>
     </class>
     <class name="UniformGrid" parent="Grid">
       <summary>Grid-based layout container that auto-generates equal-width columns.</summary>

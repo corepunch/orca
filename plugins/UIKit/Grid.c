@@ -29,22 +29,33 @@ struct columns
   struct column columns[MAX_COLUMNS];
 };
 
+struct grid_layout
+{
+  struct columns axes[2];
+};
+
 typedef struct column* PCOLUMN;
 typedef struct columns* PCOLUMNS;
 typedef struct Grid* PGRIDVIEW;
+typedef struct grid_layout* PGRIDLAYOUT;
 
 static struct column
-column_parse(lpcString_t a)
+column_parse(lpcString_t a, lpcString_t *end)
 {
+  *end = a;
   if (!strncmp(a, "auto", 4)) {
+    *end = a + 4;
     return (struct column){ column_type_auto, 1, 0 };
-  } else if (!isdigit(*a)) {
+  } else if (!isdigit((unsigned char)*a)) {
     return (struct column){ column_type_invalid, 0 };
   } else {
-    float value = strtof(a, (LPSTR*)&a);
-    if (!strncmp(a, "fr", 2)) {
+    LPSTR tail = NULL;
+    float value = strtof(a, &tail);
+    if (!strncmp(tail, "fr", 2)) {
+      *end = tail + 2;
       return (struct column){ column_type_fr, value > 0 ? value : 1, 0 };
-    } else if (!strncmp(a, "px", 2)) {
+    } else if (!strncmp(tail, "px", 2)) {
+      *end = tail + 2;
       return (struct column){ column_type_pixel, value };
     } else {
       return (struct column){ column_type_invalid, 0 };
@@ -53,46 +64,52 @@ column_parse(lpcString_t a)
 }
 
 static void
-columns_parse(lpcString_t start, struct columns* out)
+columns_parse(lpcString_t a, struct columns* out)
 {
-  static char buffer[256];
-  strncpy(buffer, start, sizeof(buffer));
   out->count = 0;
-  for (lpcString_t tok = strtok(buffer, " "); tok; tok = strtok(NULL, " ")) {
+  while (*a) {
+    while (isspace((unsigned char)*a)) a++;
+    if (!*a)
+      break;
     assert(out->count < MAX_COLUMNS);
-    out->columns[out->count++] = column_parse(tok);
+    out->columns[out->count++] = column_parse(a, &a);
+    while (*a && !isspace((unsigned char)*a)) a++;
   }
 }
 
 static PCOLUMNS
-columns_at_axis(PGRIDVIEW pGrid, enum Direction axis, bool_t parse)
+columns_at_axis(PGRIDLAYOUT layout, PGRIDVIEW pGrid, enum Direction axis, bool_t parse)
 {
-  struct columns* columns = (struct columns*)pGrid->_buffer;
   switch (axis) {
     case kDirectionHorizontal:
+      if (parse)
+        layout->axes[axis] = (struct columns){0};
       if (parse && pGrid->Columns)
-        columns_parse(pGrid->Columns, &columns[axis]);
-      return &columns[axis];
+        columns_parse(pGrid->Columns, &layout->axes[axis]);
+      return &layout->axes[axis];
     case kDirectionVertical:
+      if (parse)
+        layout->axes[axis] = (struct columns){0};
       if (parse && pGrid->Rows)
-        columns_parse(pGrid->Rows, &columns[axis]);
-      return &columns[axis];
+        columns_parse(pGrid->Rows, &layout->axes[axis]);
+      return &layout->axes[axis];
     default:
       return NULL;
   }
 }
 
 static struct column*
-column_at_cellindex(PGRIDVIEW pGrid, enum Direction axis, int cellindex)
+column_at_cellindex(PGRIDLAYOUT layout, PGRIDVIEW pGrid, enum Direction axis, int cellindex)
 {
-  PCOLUMNS axis_columns = columns_at_axis(pGrid, axis, FALSE);
-  PCOLUMNS dir_columns = columns_at_axis(pGrid, pGrid->Direction, FALSE);
-  if (axis_columns->count == 0) {
+  PCOLUMNS axis_columns = columns_at_axis(layout, pGrid, axis, FALSE);
+  PCOLUMNS dir_columns = columns_at_axis(layout, pGrid, pGrid->Direction, FALSE);
+  int dir_count = dir_columns ? dir_columns->count : 0;
+  if (!axis_columns || axis_columns->count == 0) {
     return NULL;
   } else if (axis == pGrid->Direction) {
-    return &dir_columns->columns[cellindex % dir_columns->count];
+    return dir_count ? &dir_columns->columns[cellindex % dir_count] : NULL;
   } else {
-    return &axis_columns->columns[(cellindex / MAX(1, dir_columns->count)) %
+    return &axis_columns->columns[(cellindex / MAX(1, dir_count)) %
                                   axis_columns->count];
   }
 }
@@ -110,7 +127,7 @@ _column_is_flexible(struct column const *col)
  * instead of all landing at position 0 on the secondary axis.
  */
 static void
-_EnsureImplicitSecondaryAxis(PGRIDVIEW pGrid, struct Object *hObject)
+_EnsureImplicitSecondaryAxis(PGRIDLAYOUT layout, PGRIDVIEW pGrid, struct Object *hObject)
 {
   enum Direction secondary = (pGrid->Direction == kDirectionHorizontal)
     ? kDirectionVertical : kDirectionHorizontal;
@@ -118,9 +135,9 @@ _EnsureImplicitSecondaryAxis(PGRIDVIEW pGrid, struct Object *hObject)
     ? !pGrid->Rows : !pGrid->Columns;
   if (!secondary_unset)
     return;
-  PCOLUMNS primary_cols   = columns_at_axis(pGrid, pGrid->Direction, FALSE);
-  PCOLUMNS secondary_cols = columns_at_axis(pGrid, secondary, FALSE);
-  if (primary_cols->count == 0)
+  PCOLUMNS primary_cols   = columns_at_axis(layout, pGrid, pGrid->Direction, FALSE);
+  PCOLUMNS secondary_cols = columns_at_axis(layout, pGrid, secondary, FALSE);
+  if (!primary_cols || !secondary_cols || primary_cols->count == 0)
     return;
   int child_count = 0;
   FOR_EACH_LAYOUTABLE(hChild, hObject) child_count++;
@@ -167,13 +184,14 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
 HANDLER(Grid, Node2D, MeasureOverride)
 {
   uint32_t cellindex = 0;
+  struct grid_layout layout = {0};
   Node2D_MeasureOverrideMsg_t size = *pMeasureOverride;
   struct Size desired = {0};
 
-  PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
-  PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
+  PCOLUMNS hcols = columns_at_axis(&layout, pGrid, kDirectionHorizontal, TRUE);
+  PCOLUMNS vcols = columns_at_axis(&layout, pGrid, kDirectionVertical, TRUE);
 
-  _EnsureImplicitSecondaryAxis(pGrid, hObject);
+  _EnsureImplicitSecondaryAxis(&layout, pGrid, hObject);
 
   _CalculateAutos(pGrid->Spacing, size.Width, hcols);
   _CalculateAutos(pGrid->Spacing, size.Height, vcols);
@@ -188,8 +206,8 @@ HANDLER(Grid, Node2D, MeasureOverride)
   if (isinf(size.Height) && vcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
-      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
         LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = (w ? w->width : size.Width),
@@ -214,8 +232,8 @@ HANDLER(Grid, Node2D, MeasureOverride)
   if (isinf(size.Width) && hcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
-      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
         LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = INFINITY,
@@ -238,8 +256,8 @@ HANDLER(Grid, Node2D, MeasureOverride)
   cellindex = 0;
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
-    struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-    struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+    struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+    struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
 
     LRESULT s = _SendMessage(hChild, Node2D, Measure,
       .Width  = (w ? w->width : size.Width),
@@ -258,9 +276,10 @@ HANDLER(Grid, Node2D, MeasureOverride)
 HANDLER(Grid, Node2D, ArrangeOverride)
 {
   uint32_t cellindex = 0;
-  PCOLUMNS hcols = columns_at_axis(pGrid, 0, TRUE);
-  PCOLUMNS vcols = columns_at_axis(pGrid, 1, TRUE);
-  _EnsureImplicitSecondaryAxis(pGrid, hObject);
+  struct grid_layout layout = {0};
+  PCOLUMNS hcols = columns_at_axis(&layout, pGrid, kDirectionHorizontal, TRUE);
+  PCOLUMNS vcols = columns_at_axis(&layout, pGrid, kDirectionVertical, TRUE);
+  _EnsureImplicitSecondaryAxis(&layout, pGrid, hObject);
   _CalculateAutos(pGrid->Spacing, pArrangeOverride->Width, hcols);
   _CalculateAutos(pGrid->Spacing, pArrangeOverride->Height, vcols);
   /* Implicit auto tracks (generated by _EnsureImplicitSecondaryAxis because no
@@ -278,8 +297,8 @@ HANDLER(Grid, Node2D, ArrangeOverride)
   if ((pArrangeOverride->Height == 0 || pGrid->Rows == NULL) && vcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
-      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
       if (h && _column_is_flexible(h)) {
         LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = (w ? w->width : pArrangeOverride->Width),
@@ -302,8 +321,8 @@ HANDLER(Grid, Node2D, ArrangeOverride)
   if ((pArrangeOverride->Width == 0 || pGrid->Columns == NULL) && hcols->count > 0) {
     cellindex = 0;
     FOR_EACH_LAYOUTABLE(hChild, hObject) {
-      struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-      struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+      struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+      struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
       if (w && _column_is_flexible(w)) {
         LRESULT s = _SendMessage(hChild, Node2D, Measure,
           .Width  = INFINITY,
@@ -328,8 +347,8 @@ HANDLER(Grid, Node2D, ArrangeOverride)
   FOR_EACH_LAYOUTABLE(hChild, hObject)
   {
     struct Node2D *subview = GetNode2D(hChild);
-    struct column* w = column_at_cellindex(pGrid, kDirectionHorizontal, cellindex);
-    struct column* h = column_at_cellindex(pGrid, kDirectionVertical, cellindex);
+    struct column* w = column_at_cellindex(&layout, pGrid, kDirectionHorizontal, cellindex);
+    struct column* h = column_at_cellindex(&layout, pGrid, kDirectionVertical, cellindex);
     float y = pArrangeOverride->Y + (h ? h->position : 0);
     float height = h ? h->width : pArrangeOverride->Height;
     if (h && pGrid->Rows == NULL && vcols->count == 1 && pArrangeOverride->Height > height)
