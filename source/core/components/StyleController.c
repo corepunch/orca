@@ -526,7 +526,7 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
     }
   }
 
-  return FALSE;
+  return TRUE;
 }
 
 HANDLER(StyleController, StyleController, AddClass)
