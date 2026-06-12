@@ -538,7 +538,33 @@ local function test_css_color_properties()
 end
 
 -- ---------------------------------------------------------------------------
--- Test 23: CSS theme variables resolve through the active theme
+-- Test 23: Border image CSS properties map onto Node2D border image fields
+-- ---------------------------------------------------------------------------
+local function test_css_border_image_properties()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .framed {
+      border-image-slice: 12 13 14 15;
+      border-image-repeat: stretch;
+    }
+  ]]
+  local node = screen + ui.Node2D {}
+
+  node.class = "framed"
+  applyStyles(node)
+
+  test.expect_near(node.BorderImageSlice.Left, 12, 0.001, "border-image-slice left")
+  test.expect_near(node.BorderImageSlice.Top, 13, 0.001, "border-image-slice top")
+  test.expect_near(node.BorderImageSlice.Right, 14, 0.001, "border-image-slice right")
+  test.expect_near(node.BorderImageSlice.Bottom, 15, 0.001, "border-image-slice bottom")
+  test.expect_eq(node.BorderImageRepeat, "Stretch", "border-image-repeat maps to BorderImageRepeat")
+
+  node:removeFromParent()
+  print("PASS: test_css_border_image_properties")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 24: CSS theme variables resolve through the active theme
 -- ---------------------------------------------------------------------------
 local function test_css_theme_variables()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
@@ -1245,6 +1271,7 @@ test_css_selectors_are_case_sensitive()
 test_css_unsupported_declarations_are_ignored()
 test_css_boolean_value_ignorecase()
 test_css_color_properties()
+test_css_border_image_properties()
 test_css_theme_variables()
 test_css_text_property_map()
 test_css_expanded_property_aliases()

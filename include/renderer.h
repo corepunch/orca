@@ -322,6 +322,7 @@ struct ViewMaterial
   uint32_t numUniforms;                // Count of shader parameters
   enum blend_mode blendMode;
   float opacity;
+  uint32_t textureWrap;                // Override wrap mode for this draw (0 = use texture default, kTextureWrapRepeat = tile)
 };
 
 // Helper macro to convert rect (x, y, width, height) to box3 (min, max)

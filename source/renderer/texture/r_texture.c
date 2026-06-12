@@ -377,9 +377,12 @@ HANDLER(Image, Object, Start) {
     FS_FreeFile(pFile);
   } else {
     Con_Error("%s: can't load image", pImage->Source);
+    tex = texture_make_error(GL_TEXTURE_2D);
+    R_ApplyImageParms(pTexture, GL_TEXTURE_2D, FALSE);
   }
   if (tex.width == 0 || tex.height == 0) {
     tex = texture_make_error(GL_TEXTURE_2D);
+    R_ApplyImageParms(pTexture, GL_TEXTURE_2D, FALSE);
   }
   pTexture->Width = tex.width / MAX(1, pTexture->Scale);
   pTexture->Height = tex.height / MAX(1, pTexture->Scale);

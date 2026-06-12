@@ -56,6 +56,9 @@ For text alignment, use the CSS-native `text-align` property for horizontal text
 | `visibility` | `Node.Visible` | bool; `visible` maps to `true`, `hidden` and `collapse` map to `false` |
 | `background` | `Node2D.Background` | BrushShorthand |
 | `background-image` | `Node2D.BackgroundImage` | Texture |
+| `border-image-source` | `Node2D.BorderImageSource` | Texture |
+| `border-image-slice` | `Node2D.BorderImageSlice` | Thickness: left top right bottom pixels |
+| `border-image-repeat` | `Node2D.BorderImageRepeat` | enum: BorderImageRepeat |
 | `foreground` | `Node2D.Foreground` | BrushShorthand |
 | `foreground-color` | `Node2D.ForegroundColor` | color |
 | `box-shadow` | `Node2D.BoxShadow` | ShadowShorthand |

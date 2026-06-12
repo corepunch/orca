@@ -27,6 +27,7 @@
 #include <ctype.h>
 
 #include <UIKit/UIKit.h>
+#include <renderer/renderer.h>
 #include <include/api.h>
 #include <source/core/property/property_internal.h>
 #include <core/core_properties.h>
@@ -35,6 +36,15 @@
 // parse_property is ORCA_API but not declared in orca.h; forward-declare it.
 extern int parse_property(const char* str, struct PropertyType const* prop,
                           void* valueptr);
+
+static struct Object *
+css_load_deferred_texture_object(const char *path)
+{
+    struct Object *image = OBJ_Create(ID_Image);
+    if (!image) return NULL;
+    OBJ_SetPropertyValue(image, "Source", &path);
+    return image;
+}
 
 static void
 copy_trim(char* dst, const char* s, const char* e, int n);
@@ -92,6 +102,9 @@ k_css_prop_map[] = {
     /* Node2D rendering */
     { "background",        "Node2D.Background"             },
     { "background-image",  "Node2D.BackgroundImage"        },
+    { "border-image-source", "Node2D.BorderImageSource"    },
+    { "border-image-slice", "Node2D.BorderImageSlice"      },
+    { "border-image-repeat", "Node2D.BorderImageRepeat"    },
     { "foreground",        "Node2D.Foreground"             },
     { "foreground-color",  "Node2D.ForegroundColor"        },
     { "box-shadow",        "Node2D.BoxShadow"              },
@@ -736,6 +749,15 @@ css_apply_orca_value_to_rule(struct Object *rule_obj,
     if (!prop || !PROP_GetDesc(prop)) return;
 
     struct PropertyType const* desc = PROP_GetDesc(prop);
+    if (desc->DataType == kDataTypeObject && desc->TypeString &&
+        !strcmp(desc->TypeString, "Texture")) {
+        struct Object *image = css_load_deferred_texture_object(css_value);
+        if (!image) return;
+        PROP_SetValue(prop, &image);
+        OBJ_ReleaseRef(image);
+        return;
+    }
+
     if (desc->DataType == kDataTypeEnum) {
         lpcString_t const* values = desc->EnumValues;
         for (int i = 0; values && values[i]; i++) {
@@ -771,7 +793,27 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     char theme_value[CSS_MAX_VALLEN] = {0};
     char resolved_value[CSS_MAX_VALLEN] = {0};
     char normalized_value[CSS_MAX_VALLEN] = {0};
+    char url_value[CSS_MAX_VALLEN] = {0};
     css_value = css_resolve_theme_value(css_value, theme_value, sizeof(theme_value));
+    /* Strip url("...") / url('...') / url(...) → bare path */
+    if (!strncasecmp(css_value, "url(", 4)) {
+        const char *inner = css_value + 4;
+        const char *end = css_value + strlen(css_value);
+        while (end > inner && isspace((unsigned char)end[-1])) end--;
+        if (end > inner && end[-1] == ')') end--;
+        while (inner < end && isspace((unsigned char)*inner)) inner++;
+        if (inner < end && (*inner == '"' || *inner == '\'')) {
+            char q = *inner++;
+            const char *q_end = end;
+            while (q_end > inner && q_end[-1] != q) q_end--;
+            if (q_end > inner) end = q_end - 1;
+        }
+        int len = (int)(end - inner);
+        if (len >= (int)sizeof(url_value)) len = (int)sizeof(url_value) - 1;
+        memcpy(url_value, inner, len);
+        url_value[len] = '\0';
+        css_value = url_value;
+    }
     const char *css_value_before_normalize = css_value;
     css_value = css_normalize_decl_value(css_key, css_value,
                                          normalized_value,

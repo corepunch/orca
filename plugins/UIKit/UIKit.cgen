@@ -122,6 +122,13 @@
       <value name="Fill">Scale content to fill both width and height, ignoring aspect ratio</value>
       <value name="UniformToFill">Scale content uniformly to fill the area, preserving aspect ratio but cropping if necessary</value>
     </enum>
+    <enum name="BorderImageRepeat">
+      <summary>Controls how border-image edge regions are drawn.</summary>
+      <value name="Stretch">Stretch each edge region to fit its destination side</value>
+      <value name="Repeat">Repeat each edge region to fill its destination side</value>
+      <value name="Round">Repeat and scale each edge region so tiles fit evenly</value>
+      <value name="Space">Repeat each edge region and distribute extra space between tiles</value>
+    </enum>
     <enum name="TransitionType">
       <summary>Specifies the type of transition animation to use when navigating between pages.</summary>
       <value name="None">No transition</value>
@@ -324,6 +331,9 @@
         <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
+        <property name="BorderImageSource" type="Texture" pointer="true">Image used to draw the element border as a nine-patch.</property>
+        <property name="BorderImageSlice" type="Thickness">Border image slices in left/top/right/bottom pixels.</property>
+        <property name="BorderImageRepeat" type="BorderImageRepeat" default="Stretch">How border image edge regions are drawn.</property>
         <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
         <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
         <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>
@@ -544,7 +554,7 @@
       <properties>
         <property name="Reversed" type="bool">Reverse the order of child elements </property>
         <property name="Direction" type="Direction" default="Vertical">Layout direction (horizontal or vertical) </property>
-        <property name="AlignItems" type="AlignItems">Cross-axis alignment of children </property>
+        <property name="AlignItems" type="AlignItems" default="Stretch">Cross-axis alignment of children </property>
         <property name="JustifyContent" type="JustifyContent">Main-axis distribution of children </property>
         <property name="Spacing" type="float">Space between adjacent children </property>
       </properties>

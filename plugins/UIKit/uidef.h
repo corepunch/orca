@@ -30,4 +30,16 @@ typedef float actualPos_t[3];
 #define TOTAL_PADDING(node2d, axis) (PADDING_TOP(node2d, axis) + PADDING_BOTTOM(node2d, axis))
 #define TOTAL_MARGIN(node2d, axis) (MARGIN_TOP(node2d, axis) + MARGIN_BOTTOM(node2d, axis))
 
+typedef struct _DRAW2DCONTENTSTRUCT
+{
+  struct mat4 ProjectionMatrix;
+  struct mat4 ViewMatrix;
+  struct mat4 BoundsMatrix;
+  bool_t ForceRender;
+  bool_t OnlyDecorations;
+  uint8_t StencilRef;
+} DRAW2DCONTENTSTRUCT, *Node2D_Draw2DContentMsgPtr;
+
+struct _PIPELINESTATE _Pipeline2D(int width, int height);
+
 #endif

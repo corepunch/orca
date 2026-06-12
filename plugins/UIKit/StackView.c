@@ -72,7 +72,7 @@ _Arrange(struct Object *hObject,
     struct Node2D *subview = GetNode2D(child);
     float crossMin = oppositeBounds.min;
     float crossSize = oppositeBounds.max - oppositeBounds.min;
-    if (!isnan(NODE2D_FRAME(subview, Size, crossAxis).Requested)) {
+    if (pStackView->AlignItems != kAlignItemsStretch) {
       float occupied = NODE2D_FRAME(subview, Size, crossAxis).Desired + TOTAL_MARGIN(subview, crossAxis);
       switch (pStackView->AlignItems) {
         case kAlignItemsEnd:
@@ -180,7 +180,7 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       break;
   }
   
-  float scrollSize[2] = { 0, 0 };
+  float scrollSize[2] = { PADDING_TOP(pNode2D, 0), PADDING_TOP(pNode2D, 1) };
   
   FOR_LOOP(i, 2)
   {
@@ -191,6 +191,7 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       float size = Node2D_GetFrame(subview, kBox3FieldWidth + i);
       scrollSize[i] = MAX(scrollSize[i], pos + size);
     }
+    scrollSize[i] += PADDING_BOTTOM(pNode2D, i);
     struct Property *scrollProperty = NULL;
     uint32_t const scrollPropertyIds[] = { ID_Node_ScrollWidth, ID_Node_ScrollHeight };
     if (SUCCEEDED(OBJ_FindLongProperty(hObject, scrollPropertyIds[i], &scrollProperty))) {

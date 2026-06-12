@@ -614,6 +614,11 @@ Shader_BindMaterial(struct shader const* shader,
 #endif
         } else {
           Texture_Bind(texture, GL_TEXTURE_2D, location, 0);
+          if (ent->material.textureWrap) {
+            GLenum gl_wrap = ent->material.textureWrap == kTextureWrapRepeat ? GL_REPEAT : GL_CLAMP_TO_EDGE;
+            R_Call(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_wrap);
+            R_Call(glTexParameteri, GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wrap);
+          }
         }
         break;
       case kShaderUniform_TextureSize:

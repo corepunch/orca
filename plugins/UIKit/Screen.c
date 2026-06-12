@@ -9,87 +9,20 @@
 #define SCREEN_HEIGHT 480
 #define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 
+HANDLER(Node2D, Node2D, Draw2DContent);
+
+void
+draw_children(struct Object *hObject,
+              Node2D_Draw2DContentMsgPtr pDraw2DContent);
+
 static bool_t
 _PopupSetDialogResult(struct Object *modal, float value);
-
-typedef struct _DRAW2DCONTENTSTRUCT
-{
-  struct mat4 ProjectionMatrix;
-  struct mat4 ViewMatrix;
-  struct mat4 BoundsMatrix;
-  bool_t ForceRender;
-  bool_t OnlyDecorations;
-  uint8_t StencilRef;
-} DRAW2DCONTENTSTRUCT, *Node2D_Draw2DContentMsgPtr;
-
-HANDLER(Node2D, Node2D, Draw2DContent);
 
 static bool_t
 _ScreenShouldClipByOverflow(struct Node2D *pNode2D)
 {
   return pNode2D->Overflow.x != kOverflowVisible ||
          pNode2D->Overflow.y != kOverflowVisible;
-}
-
-static struct ViewDef*
-Init_ViewDef(struct ViewDef* view, Node2D_Draw2DContentMsgPtr parms)
-{
-  memset(view, 0, sizeof(struct ViewDef));
-
-  view->viewMatrix = MAT4_Identity();
-
-  view->projectionMatrix = parms->ProjectionMatrix;
-  view->viewMatrix = parms->ViewMatrix;
-
-  return view;
-}
-
-static struct BrushShorthand
-_Node2DGetForegroundBrush(struct Object *object)
-{
-  struct BrushShorthand brush = { 0 };
-
-  brush.Color = (struct color){ 1, 1, 1, 1 };
-
-  Node2D_ReadProperty(object, Foreground.Color, &brush.Color);
-  Node2D_ReadProperty(object, Foreground.Image, &brush.Image);
-  Node2D_ReadProperty(object, Foreground.Material, &brush.Material);
-
-  return brush;
-}
-
-static struct _PIPELINESTATE
-_Pipeline2D(int width, int height)
-{
-  return (struct _PIPELINESTATE) {
-		.blend_mode = BLEND_MODE_PREMULTIPLIED_ALPHA,
-		.color_write_mode = COLOR_WRITE_MODE_RGBA,
-		.cull_mode = CULL_MODE_NONE,
-		.depth = {
-			.write = FALSE,
-			.func = COMPARE_FUNC_ALWAYS,
-		},
-			.stencil = {
-				.write = FALSE,
-				.func = COMPARE_FUNC_ALWAYS,
-			},
-      .viewport = { 0, 0, width, height },
-      .scissor = { 0, 0, width, height },
-	};
-}
-
-static bool_t
-_PopupSetDialogResult(struct Object *modal, float value)
-{
-  struct Property *dialog_result = NULL;
-  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
-    return FALSE;
-  }
-  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
-    return FALSE;
-  }
-  PROP_SetValue(dialog_result, &value);
-  return TRUE;
 }
 
 static void
@@ -108,176 +41,24 @@ _GetContentsMatrix(struct Node2D *pNode2D,
                  });
 }
 
-static bool_t
-_IsOutOfBounds(struct Node2D *node, Node2D_Draw2DContentMsgPtr param)
+struct _PIPELINESTATE
+_Pipeline2D(int width, int height)
 {
-  if (param->ForceRender)
-    return FALSE;
-  struct mat4 mvp;
-  mvp = MAT4_Multiply(&param->BoundsMatrix, &node->Matrix);
-  struct vec3 _min = MAT4_MultiplyVector3D(&mvp, &(struct vec3){ 0, 0, 0 });
-  struct vec3 _max =
-    MAT4_MultiplyVector3D(&mvp,
-                          &(struct vec3){ Node2D_GetFrame(node, kBox3FieldWidth),
-                                          Node2D_GetFrame(node, kBox3FieldHeight),
-                                          0 });
-  return _max.x < -1.0f || _min.x > 1.0f || _min.y < -1.0f || _max.y > 1.0f; /* NDC bounds */
-}
-
-static void
-_DrawStencilClip(struct Node2D *pNode2D, struct ViewDef* viewdef)
-{
-  struct ViewEntity clip = { 0 };
-  struct rect clipRect = Node2D_GetBackgroundRect(pNode2D);
-
-  if (pNode2D->Overflow.x == kOverflowVisible) {
-    clipRect.x = -STENCIL_VISIBLE_OVERFLOW_EXTENT;
-    clipRect.width = STENCIL_VISIBLE_OVERFLOW_EXTENT * 2.0f;
-  }
-  if (pNode2D->Overflow.y == kOverflowVisible) {
-    clipRect.y = -STENCIL_VISIBLE_OVERFLOW_EXTENT;
-    clipRect.height = STENCIL_VISIBLE_OVERFLOW_EXTENT * 2.0f;
-  }
-
-  clip.bbox = BOX3_FromRect(clipRect);
-  clip.matrix = pNode2D->Matrix;
-  clip.material.opacity = 1;
-  R_DrawEntity(viewdef, &clip);
-}
-
-static void
-_EnterStencilClip(struct Node2D *pNode2D,
-                  struct ViewDef* viewdef,
-                  uint8_t parentRef,
-                  uint8_t clipRef)
-{
-  PIPELINESTATE ps;
-  R_GetPipelineState(&ps);
-
-  ps.color_write_mode = COLOR_WRITE_MODE_NONE;
-  ps.stencil = (struct stencil_state){
-    .mask = 0xFF,
-    .ref = parentRef > 0 ? parentRef : clipRef,
-    .write = TRUE,
-    .func = parentRef > 0 ? COMPARE_FUNC_EQUAL : COMPARE_FUNC_ALWAYS,
-    .fail = STENCIL_OP_KEEP,
-    .zfail = STENCIL_OP_KEEP,
-    .zpass = parentRef > 0 ? STENCIL_OP_INCREMENT : STENCIL_OP_REPLACE,
-  };
-  R_SetPipelineState(&ps);
-
-  _DrawStencilClip(pNode2D, viewdef);
-
-  ps.color_write_mode = COLOR_WRITE_MODE_RGBA;
-  ps.stencil = (struct stencil_state){
-    .mask = 0xFF,
-    .ref = clipRef,
-    .write = FALSE,
-    .func = COMPARE_FUNC_EQUAL,
-    .fail = STENCIL_OP_KEEP,
-    .zfail = STENCIL_OP_KEEP,
-    .zpass = STENCIL_OP_KEEP,
-  };
-  R_SetPipelineState(&ps);
-}
-
-static void
-_ExitStencilClip(struct Node2D *pNode2D,
-                 struct ViewDef* viewdef,
-                 uint8_t parentRef,
-                 uint8_t clipRef)
-{
-  PIPELINESTATE ps;
-  R_GetPipelineState(&ps);
-
-  ps.color_write_mode = COLOR_WRITE_MODE_NONE;
-  ps.stencil = (struct stencil_state){
-    .mask = 0xFF,
-    .ref = clipRef,
-    .write = TRUE,
-    .func = COMPARE_FUNC_EQUAL,
-    .fail = STENCIL_OP_KEEP,
-    .zfail = STENCIL_OP_KEEP,
-    .zpass = STENCIL_OP_DECREMENT,
-  };
-  R_SetPipelineState(&ps);
-
-  _DrawStencilClip(pNode2D, viewdef);
-
-  ps.color_write_mode = COLOR_WRITE_MODE_RGBA;
-
-  if (parentRef > 0) {
-    ps.stencil = (struct stencil_state){
-      .mask = 0xFF,
-      .ref = parentRef,
-      .write = FALSE,
-      .func = COMPARE_FUNC_EQUAL,
-      .fail = STENCIL_OP_KEEP,
-      .zfail = STENCIL_OP_KEEP,
-      .zpass = STENCIL_OP_KEEP,
-    };
-  } else {
-    ps.stencil = (struct stencil_state){ 0 };
-  }
-  R_SetPipelineState(&ps);
-}
-
-static void
-draw_children(struct Object *hObject,
-              Node2D_Draw2DContentMsgPtr pDraw2DContent)
-{
-  struct Node2D *node2D = GetNode2D(hObject);
-  DRAW2DCONTENTSTRUCT tmp = *pDraw2DContent;
-
-  if (!node2D || OBJ_IsHidden(hObject)) {
-    return;
-  } else if (!node2D->RenderTarget) {
-    Node2D_Draw2DContent(hObject, node2D, 0, &tmp);
-  } else if (!node2D->OffscreenRendering) {
-    struct ViewEntity entity;
-    struct ViewDef viewdef;
-    handle_t rt = node2D->RenderTarget;
-    Node2D_GetViewEntity(node2D, &entity, rt, 0);
-    Init_ViewDef(&viewdef, pDraw2DContent);
-    entity.material.opacity = 1;
-    tmp.OnlyDecorations = TRUE;
-    Node2D_Draw2DContent(hObject, node2D, 0, &tmp);
-    //		struct rect frame = Node2D_GetRect(node2D);
-    //		struct vec2 offset = VEC2_Div(&node2D->ContentOffset,
-    //&frame.size); 		MAT3_Translate(&entity.textureMatrix, &offset);
-    R_DrawEntity(&viewdef, &entity);
-  }
-}
-
-HANDLER(Node2D, Node2D, DrawBrush)
-{
-  // #define ID_Material_Texture 0x0789ca7d
-	if (!memcmp(&pDrawBrush->brush,
-							&(struct BrushShorthand){0},
-							sizeof(struct BrushShorthand)))
-    return FALSE;
-
-  if (pDrawBrush->foreground && !pDrawBrush->image &&
-      !Node2D_GetProperty(hObject, kNode2DForegroundMaterial)
-      // && !PROP_FindByLongID(OBJ_GetProperties(hObject), ID_Material_Texture)
-  ) {
-    return FALSE;
-  }
-
-  struct ViewEntity entity;
-
-  Node2D_GetViewEntity(GetNode2D(hObject),&entity,pDrawBrush->image,&pDrawBrush->brush);
-
-  if (!pDrawBrush->foreground) {
-    entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
-  }
-
-  entity.borderWidth = pDrawBrush->borderWidth;
-  entity.borderOffset = pDrawBrush->borderOffset;
-
-  R_DrawEntity(pDrawBrush->viewdef, &entity);
-
-  return TRUE;
+  return (struct _PIPELINESTATE) {
+		.blend_mode = BLEND_MODE_PREMULTIPLIED_ALPHA,
+		.color_write_mode = COLOR_WRITE_MODE_RGBA,
+		.cull_mode = CULL_MODE_NONE,
+		.depth = {
+			.write = FALSE,
+			.func = COMPARE_FUNC_ALWAYS,
+		},
+			.stencil = {
+				.write = FALSE,
+				.func = COMPARE_FUNC_ALWAYS,
+			},
+      .viewport = { 0, 0, width, height },
+      .scissor = { 0, 0, width, height },
+	};
 }
 
 static void _RenderSubViews(struct Object *hObject) {
@@ -312,6 +93,20 @@ static void _RenderSubViews(struct Object *hObject) {
     });
 
   OBJ_SetFlags(hObject, (dwFlags & (~OF_SCROLL)) | OF_RENDERED);
+}
+
+static bool_t
+_PopupSetDialogResult(struct Object *modal, float value)
+{
+  struct Property *dialog_result = NULL;
+  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+    return FALSE;
+  }
+  if (PROP_GetType(dialog_result) != kDataTypeFloat) {
+    return FALSE;
+  }
+  PROP_SetValue(dialog_result, &value);
+  return TRUE;
 }
 
 #define UI_FOV (M_PI / 10)
@@ -397,168 +192,6 @@ HANDLER(Screen, Screen, RenderScreen) {
   }
   R_BindFramebuffer(0);
   return FALSE;
-}
-
-void
-Node2D_GetViewEntity(struct Node2D* node2d,
-                     struct ViewEntity* entity,
-										 struct Texture const* image,
-										 struct BrushShorthand const* brush)
-{
-  static struct uniform uniforms[MAX_UNIFORMS];
-
-  memset(entity, 0, sizeof(struct ViewEntity));
-
-  entity->bbox = BOX3_FromRect(node2d->_rect);
-  entity->matrix = node2d->Matrix;
-  entity->radius = *(struct vec4*)&node2d->_node->Border.Radius;
-  entity->material = (struct ViewMaterial) {
-    .opacity = node2d->_opacity,
-    .texture = image,
-    .textureMatrix = MAT3_Identity(),
-    // Use explicit alpha blending for UI brushes to avoid inherited blend state.
-    .blendMode = BLEND_MODE_ALPHA,
-    .uniforms = uniforms,
-    .numUniforms = OBJ_GetUniforms(node2d->_object, uniforms),
-  };
-	if (!brush) {
-	} else if (brush->Material) {
-    // if (material->blendMode != BLEND_MODE_INHERIT)
-    // entity->blendMode = (enum blend_mode)material->blendMode;
-    entity->shader = brush->Material->Shader;
-    entity->material.numUniforms +=
-    OBJ_GetUniforms(CMP_GetObject(brush->Material),
-                    uniforms + entity->material.numUniforms);
-	} else if (brush->Image) {
-		entity->material.texture = brush->Image;
-	} else {
-		entity->material.color = brush->Color;
-	}
-}
-
-struct rect
-Node2D_GetBackgroundRect(struct Node2D *pNode2D)
-{
-  return (struct rect){
-    .width = Node2D_GetFrame(pNode2D, kBox3FieldWidth),
-    .height = Node2D_GetFrame(pNode2D, kBox3FieldHeight),
-  };
-  //	return (struct rect) {
-  //		.x = -MARGIN_TOP(pNode2D, kDirectionHorizontal),
-  //		.y = -MARGIN_TOP(pNode2D, kDirectionVertical),
-  //		.width = Node2D_GetFrame(pNode2D, kBox3FieldWidth) +
-  // TOTAL_MARGIN(pNode2D, kDirectionHorizontal), 		.height =
-  // Node2D_GetFrame(pNode2D, kBox3FieldHeight) + TOTAL_MARGIN(pNode2D,
-  // kDirectionVertical),
-  //	};
-}
-
-HANDLER(Node2D, Node2D, Draw2DContent)
-{
-  if (OBJ_IsHidden(hObject))
-    return FALSE;
-  
-  if (_IsOutOfBounds(pNode2D, pDraw2DContent))
-    return FALSE;
-
-  LRESULT foregroundContent = FALSE;
-  struct Texture* foreground = NULL;
-
-#define kMsgDrawBrush 0x0875c1d1
-#define kMsgUpdateGeometry 0x12c1a314
-#define kMsgForegroundContent 0x9a7735e5
-
-  _SendMessage(hObject, Node2D, UpdateGeometry);
-  foregroundContent = _SendMessage(hObject, Node2D, ForegroundContent);
-  foreground = foregroundContent == TRUE ? NULL : (struct Texture*)foregroundContent;
-  
-  if (pNode2D->BoxShadow.Color.a) {
-    //		struct mat4 mat, offset;
-    //		offset = MAT4_Identity();
-    //		MAT4_Translate(&offset, &(struct
-    // vec3){pNode2D->Shadow.Offset.x,
-    // pNode2D->Shadow.Offset.y}); 		MAT4_Multiply(pDraw2DContent,
-    // &offset, &mat); 		OBJ_SendMessage(hObject, ID_Node2D_DrawBrush, 0,
-    //&(DRAWBRUSHSTRUCT){ 			.projection = &mat,
-    //.image      = foreground.result, 			.brush      =
-    // pNode2D->Shadow.Color, 			.foreground = FALSE });
-  }
-
-  uint32_t flags = OBJ_GetFlags(hObject);
-  struct ViewDef viewdef;
-
-  Init_ViewDef(&viewdef, pDraw2DContent);
-
-  if (!(flags & OF_ACTIVATED)) {
-    OBJ_SetFlags(hObject, flags | OF_ACTIVATED);
-  }
-
-  struct BrushShorthand foregroundBrush = _Node2DGetForegroundBrush(hObject);
-
-  if (pNode2D->Ring.Width > 0) {
-    _SendMessage(hObject, Node2D, DrawBrush,
-      .projection = pDraw2DContent->ProjectionMatrix,
-      .borderOffset = pNode2D->Ring.Offset,
-      .borderWidth = {
-        pNode2D->Ring.Width,
-        pNode2D->Ring.Width,
-        pNode2D->Ring.Width,
-        pNode2D->Ring.Width
-      },
-      .foreground = FALSE,
-      .viewdef = &viewdef,
-      .brush = {
-        .Color = pNode2D->Ring.Color
-      });
-  }
-  
-  struct vec4 BorderWidth = {
-    NODE2D_FRAME(pNode2D, Border.Width, 0).Left,
-    NODE2D_FRAME(pNode2D, Border.Width, 0).Right,
-    NODE2D_FRAME(pNode2D, Border.Width, 1).Left,
-    NODE2D_FRAME(pNode2D, Border.Width, 1).Right,
-  }, Zero = {0};
-
-  if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
-    _SendMessage(hObject, Node2D, DrawBrush,
-      .projection = pDraw2DContent->ProjectionMatrix,
-      .borderWidth = BorderWidth,
-      .foreground = FALSE,
-      .viewdef = &viewdef,
-      .brush = {
-        .Color = pNode2D->_node->Border.Color
-      });
-  }
-
-  if (!pDraw2DContent->OnlyDecorations) {
-    _SendMessage(hObject, Node2D, DrawBrush,
-     .projection = pDraw2DContent->ProjectionMatrix,
-     .brush = pNode2D->Background,
-     .foreground = FALSE,
-     .viewdef = &viewdef);
-
-    if (foregroundContent) {
-      _SendMessage(hObject, Node2D, DrawBrush,
-        .projection = pDraw2DContent->ProjectionMatrix,
-        .image = foreground,
-        .brush = foregroundBrush,
-        .foreground = TRUE,
-        .viewdef = &viewdef);
-    }
-
-    if (_ScreenShouldClipByOverflow(pNode2D) && pDraw2DContent->StencilRef < 255) {
-      uint8_t parentStencilRef = pDraw2DContent->StencilRef;
-      uint8_t clipRef = parentStencilRef + 1;
-      _EnterStencilClip(pNode2D, &viewdef, parentStencilRef, clipRef);
-      pDraw2DContent->StencilRef = clipRef;
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
-      pDraw2DContent->StencilRef = parentStencilRef;
-      _ExitStencilClip(pNode2D, &viewdef, parentStencilRef, clipRef);
-    } else {
-      FOR_EACH_CHILD(hObject, draw_children, pDraw2DContent);
-    }
-  }
-  return TRUE;
 }
 
 //HANDLER(Screen, Object, Create) {

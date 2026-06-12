@@ -120,6 +120,106 @@ local function test_stack_view_scroll_height_changed()
 	screen:clear()
 end
 
+local function test_stack_view_scroll_height_includes_bottom_padding()
+	local stack = screen + ui.StackView {
+		Direction = "Vertical",
+		Height = 40,
+		PaddingTop = 5,
+		PaddingBottom = 11,
+	}
+
+	stack:addChild(ui.Node2D { Height = 20 })
+	stack:addChild(ui.Node2D { Height = 20 })
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(stack.ScrollHeight, 56,
+		"StackView ScrollHeight should include top padding, child content, and bottom padding")
+
+	screen:clear()
+end
+
+-- ---------------------------------------------------------------------------
+-- AlignItems: children without explicit cross-axis size should be positioned
+-- ---------------------------------------------------------------------------
+local function test_stack_view_align_items_center()
+	local row = screen + ui.StackView {
+		Direction = "Horizontal",
+		Width = 200,
+		Height = 64,
+		AlignItems = "Center",
+	}
+	local tall  = row + ui.Node2D { Width = 40, Height = 64 }
+	local short = row + ui.Node2D { Width = 40, Height = 16 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	-- short child should be vertically centered within the 64px row
+	test.expect_near(short.ActualY, (64 - 16) * 0.5, 0.5,
+		"AlignItems=Center: short child Y should be centered in the row height")
+	test.expect_near(tall.ActualY, 0, 0.5,
+		"AlignItems=Center: tall child (fills row) should start at Y=0")
+
+	screen:clear()
+end
+
+local function test_stack_view_align_items_center_implicit_height()
+	-- Regression: TextBlock with no explicit Height set (Requested=NaN) should
+	-- still be centered when AlignItems=Center is set on the parent.
+	local row = screen + ui.StackView {
+		Direction = "Horizontal",
+		Width = 200,
+		Height = 64,
+		AlignItems = "Center",
+	}
+	local icon = row + ui.Node2D { Width = 64, Height = 64 }
+	local label = row + ui.TextBlock { Text = "Hello", FontSize = 14 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	local label_h = label.ActualHeight
+	test.expect(label_h > 0, "label should have a measured height")
+	test.expect_near(label.ActualY, (64 - label_h) * 0.5, 1.0,
+		"AlignItems=Center: TextBlock without explicit Height should be vertically centered")
+
+	screen:clear()
+end
+
+local function test_stack_view_align_items_start()
+	local row = screen + ui.StackView {
+		Direction = "Horizontal",
+		Width = 200,
+		Height = 64,
+		AlignItems = "Start",
+	}
+local _ = row + ui.Node2D { Width = 40, Height = 20 }
+	local short = row + ui.Node2D { Width = 40, Height = 20 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_near(short.ActualY, 0, 0.5,
+		"AlignItems=Start: child should be pinned to the top")
+
+	screen:clear()
+end
+
+local function test_stack_view_align_items_end()
+	local row = screen + ui.StackView {
+		Direction = "Horizontal",
+		Width = 200,
+		Height = 64,
+		AlignItems = "End",
+	}
+	local short = row + ui.Node2D { Width = 40, Height = 20 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_near(short.ActualY, 64 - 20, 0.5,
+		"AlignItems=End: child should be pinned to the bottom")
+
+	screen:clear()
+end
+
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
@@ -128,5 +228,10 @@ orca.async = function (callback) callback() end
 test_stack_view_layout()
 test_horizontal_stack_view_layout()
 test_stack_view_scroll_height_changed()
+test_stack_view_scroll_height_includes_bottom_padding()
+test_stack_view_align_items_center()
+test_stack_view_align_items_center_implicit_height()
+test_stack_view_align_items_start()
+test_stack_view_align_items_end()
 
 print("All StackView layout tests passed.")
