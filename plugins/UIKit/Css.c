@@ -236,7 +236,8 @@ css_normalize_decl_value(const char *css_key,
 {
     if (!strcasecmp(css_key, "margin") ||
         !strcasecmp(css_key, "padding") ||
-        !strcasecmp(css_key, "border-width")) {
+        !strcasecmp(css_key, "border-width") ||
+        !strcasecmp(css_key, "border-image-slice")) {
         char values[4][CSS_MAX_VALLEN] = {{0}};
         int count = 0;
         const char *p = css_value;

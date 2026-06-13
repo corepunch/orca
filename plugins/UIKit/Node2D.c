@@ -787,6 +787,13 @@ HANDLER(Node2D, Node2D, Draw2DContent)
 
   struct BrushShorthand foregroundBrush = _Node2DGetForegroundBrush(hObject);
 
+  if (!pDraw2DContent->OnlyDecorations) {
+    _SendMessage(hObject, Node2D, DrawBackground,
+     .projection = pDraw2DContent->ProjectionMatrix,
+     .brush = pNode2D->Background,
+     .viewdef = &viewdef);
+  }
+
   if (pNode2D->Ring.Width > 0) {
     _SendMessage(hObject, Node2D, DrawBackground,
       .projection = pDraw2DContent->ProjectionMatrix,
@@ -830,10 +837,6 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   }
 
   if (!pDraw2DContent->OnlyDecorations) {
-    _SendMessage(hObject, Node2D, DrawBackground,
-     .projection = pDraw2DContent->ProjectionMatrix,
-     .brush = pNode2D->Background,
-     .viewdef = &viewdef);
 
     if (foregroundContent) {
       _SendMessage(hObject, Node2D, DrawForeground,
