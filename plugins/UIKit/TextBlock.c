@@ -6,6 +6,8 @@
 
 #define PLACEHOLDER_OPACITY 0.5f
 
+HANDLER(Node2D, Node2D, DrawBrush);
+
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
@@ -85,11 +87,9 @@ HANDLER(TextBlock, Node2D, UpdateGeometry)
 
 HANDLER(TextBlock, Node2D, DrawBrush)
 {
-	if (!memcmp(&pDrawBrush->brush,
-							&(struct BrushShorthand){0},
-							sizeof(struct BrushShorthand)) &&
-			!pDrawBrush->foreground)
-    return FALSE;
+  if (!pDrawBrush->foreground) return Node2D_DrawBrush(hObject, GetNode2D(hObject), wParam, pDrawBrush);
+
+  if (!memcmp(&pDrawBrush->brush, &(struct BrushShorthand){0}, sizeof(struct BrushShorthand))) return FALSE;
 
   struct ViewEntity entity;
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
@@ -105,16 +105,12 @@ HANDLER(TextBlock, Node2D, DrawBrush)
 
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
 
-  if (pDrawBrush->foreground) {
-    entity.material.opacity *= modopacity;
-    entity.radius = (struct vec4){0};
-    entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
-    struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
-    if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
-      Loc_GetString(text->TextResourceID, LOC_TEXT);
-    }
-  } else {
-    entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pTextBlock->_node2D));
+  entity.material.opacity *= modopacity;
+  entity.radius = (struct vec4){0};
+  entity.bbox = BOX3_FromRect(pTextBlock->_node2D->_rect);
+  struct Property *hProp = TextRun_GetProperty(hObject, kTextRunText);
+  if (text->TextResourceID && *text->TextResourceID && !PROP_HasProgram(hProp)) {
+    Loc_GetString(text->TextResourceID, LOC_TEXT);
   }
 
   entity.borderWidth = pDrawBrush->borderWidth;
