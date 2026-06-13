@@ -26,7 +26,7 @@ Input_ApplyTextDefaults(struct Object *hObject)
   GetTextBlockConcept(hObject)->TextVerticalAlignment = kTextVerticalAlignmentCenter;
 }
 
-HANDLER(Input, Node2D, DrawBrush)
+HANDLER(Input, Node2D, DrawForeground)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -34,9 +34,9 @@ HANDLER(Input, Node2D, DrawBrush)
 
   struct ViewEntity entity;
 
-  if (pDrawBrush->foreground && core_GetFocus() == hObject) {
+  if (core_GetFocus() == hObject) {
     memset(&entity, 0, sizeof(entity));
-    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawForeground->brush);
     memset(&entity.borderWidth, 0, sizeof(entity.borderWidth));
     memset(&entity.radius, 0, sizeof(entity.radius));
     entity.bbox = BOX3_FromRect(pTextRun->_textinfo.cursor);
@@ -59,15 +59,15 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.bbox.min = VEC3_Add(&entity.bbox.min, &offset);
     entity.bbox.max = VEC3_Add(&entity.bbox.max, &offset);
 
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
   }
-  
+
   if (pInput->Type == kInputTypeCheckbox) {
     struct color unchecked = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
     struct color checked = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
     struct color checkmark = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
     memset(&entity, 0, sizeof(entity));
-    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawForeground->brush);
     struct vec3 size = {
       Node2D_GetFrame(pNode2D, kBox3FieldWidth),
       Node2D_GetFrame(pNode2D, kBox3FieldHeight),
@@ -79,7 +79,7 @@ HANDLER(Input, Node2D, DrawBrush)
     entity.material.opacity = pNode2D->_opacity;
     entity.material.blendMode = BLEND_MODE_ALPHA;
     entity.material.texture = NULL;
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
 
     if (pInput->Checked) {
       entity.radius = (struct vec4) {0,0,0,0};
@@ -87,12 +87,12 @@ HANDLER(Input, Node2D, DrawBrush)
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = NULL;
       entity.borderWidth = (struct vec4){0, 0, 0, 0};
-      R_DrawEntity(pDrawBrush->viewdef, &entity);
+      R_DrawEntity(pDrawForeground->viewdef, &entity);
 
       entity.material.color = checkmark;
       entity.material.opacity = pNode2D->_opacity;
       entity.material.texture = pInput->_checkmark;
-      R_DrawEntity(pDrawBrush->viewdef, &entity);
+      R_DrawEntity(pDrawForeground->viewdef, &entity);
     }
   }
   return FALSE;

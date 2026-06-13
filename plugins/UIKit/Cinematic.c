@@ -8,13 +8,12 @@ typedef struct Cinematic* PCINEMATIC;
 longTime_t
 UI_GetTime(void);
 
-HANDLER(Cinematic, Node2D, DrawBrush)
+HANDLER(Cinematic, Node2D, DrawForeground)
 {
-	if (!memcmp(&pDrawBrush->brush,
-							&(struct BrushShorthand){0},
-							sizeof(struct BrushShorthand)) &&
-			!pDrawBrush->foreground)
-		return FALSE;
+  if (!memcmp(&pDrawForeground->brush,
+              &(struct BrushShorthand){0},
+              sizeof(struct BrushShorthand)))
+    return FALSE;
 
   struct ViewEntity entity;
 
@@ -27,7 +26,7 @@ HANDLER(Cinematic, Node2D, DrawBrush)
     pCinematic->_starttime = realtime;
   }
 
-  Node2D_GetViewEntity(GetNode2D(hObject), &entity, 0, &pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, 0, &pDrawForeground->brush);
 
   entity.bbox = BOX3_FromRect(GetNode2D(hObject)->_rect);
   entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
@@ -47,7 +46,7 @@ HANDLER(Cinematic, Node2D, DrawBrush)
     if (pCinematic->FileName) {
       strncpy((char*)&entity.ninepatch, pCinematic->FileName, sizeof(entity.ninepatch) - 1);
     }
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
   }
 
   return TRUE;

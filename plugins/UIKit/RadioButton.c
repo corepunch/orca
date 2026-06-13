@@ -199,10 +199,8 @@ HANDLER(RadioButton, Node, KeyDown)
   }
 }
 
-HANDLER(RadioButton, Node2D, DrawBrush)
+HANDLER(RadioButton, Node2D, DrawBackground)
 {
-  if (pDrawBrush->foreground) return FALSE;
-
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
   struct Node *pNode = GetNode(hObject);
@@ -228,7 +226,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
       .opacity   = pNode2D->_opacity,
       .blendMode = BLEND_MODE_ALPHA,
     };
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawBackground->viewdef, &entity);
 
     /* Inner white dot */
     float dotSize = indicatorSize * 0.4f;
@@ -240,7 +238,7 @@ HANDLER(RadioButton, Node2D, DrawBrush)
     Node2D_ReadProperty(hObject, Foreground.Image, &foreground.Image);
     Node2D_ReadProperty(hObject, Foreground.Material, &foreground.Material);
     entity.material.color = foreground.Color;
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawBackground->viewdef, &entity);
   } else {
     /* Empty circle: light fill with a subtle border drawn as a slightly
        larger background circle behind a smaller inner white circle. */
@@ -249,14 +247,14 @@ HANDLER(RadioButton, Node2D, DrawBrush)
       .opacity   = pNode2D->_opacity,
       .blendMode = BLEND_MODE_ALPHA,
     };
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawBackground->viewdef, &entity);
 
     float innerSize = indicatorSize - 3.0f;
     float innerOffset = 1.5f;
     entity.bbox = BOX3_FromRect(((struct rect){bx + innerOffset, by + innerOffset, innerSize, innerSize}));
     entity.radius = (struct vec4){innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f, innerSize * 0.5f};
     entity.material.color = pNode2D->Background.Color;
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawBackground->viewdef, &entity);
   }
 
   return FALSE;

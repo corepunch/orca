@@ -207,7 +207,7 @@ HANDLER(ConsoleView, Object, Create) {
   return FALSE;
 }
 
-HANDLER(ConsoleView, Node2D, DrawBrush) {
+HANDLER(ConsoleView, Node2D, DrawForeground) {
   bool_t bFocused = OBJ_IsFocused(hObject)||OBJ_GetFlags(hObject)&OF_NOACTIVATE;
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
     .Buffer = pConsoleView->_buffer,

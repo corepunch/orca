@@ -82,11 +82,11 @@ HANDLER(NinePatchImage, Node2D, ForegroundContent)
   return TRUE;
 }
 
-HANDLER(NinePatchImage, Node2D, DrawBrush)
+HANDLER(NinePatchImage, Node2D, DrawForeground)
 {
-	if (!memcmp(&pDrawBrush->brush,
-							&(struct BrushShorthand){0},
-							sizeof(struct BrushShorthand)))
+  if (!memcmp(&pDrawForeground->brush,
+              &(struct BrushShorthand){0},
+              sizeof(struct BrushShorthand)))
     return FALSE;
 
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -121,11 +121,11 @@ HANDLER(NinePatchImage, Node2D, DrawBrush)
     };
     struct ViewEntity entity;
 
-    Node2D_GetViewEntity(pNode2D, &entity, images[index], &pDrawBrush->brush);
+    Node2D_GetViewEntity(pNode2D, &entity, images[index], &pDrawForeground->brush);
 
     entity.bbox = BOX3_FromRect(frame);
 
-    R_DrawEntity(pDrawBrush->viewdef, &entity);
+    R_DrawEntity(pDrawForeground->viewdef, &entity);
   }
   return TRUE;
 }

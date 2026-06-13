@@ -347,67 +347,85 @@ Node2D_GetBackgroundRect(struct Node2D *pNode2D)
   };
 }
 
-HANDLER(Node2D, Node2D, DrawBrush)
+HANDLER(Node2D, Node2D, DrawBackground)
 {
-  if (!memcmp(&pDrawBrush->brush,
+  if (!memcmp(&pDrawBackground->brush,
               &(struct BrushShorthand){0},
               sizeof(struct BrushShorthand)))
     return FALSE;
 
-  if (pDrawBrush->foreground && !pDrawBrush->image &&
+  struct ViewEntity entity;
+
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, NULL, &pDrawBackground->brush);
+  _Node2DEnsureTextureStarted((struct Texture *)entity.material.texture);
+
+  entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
+
+  if (entity.material.texture) {
+    if (pNode2D->BorderImageSource &&
+        entity.material.texture == pNode2D->BorderImageSource) {
+      struct image_info img;
+      if (SUCCEEDED(Image_GetInfo(entity.material.texture, &img)) &&
+          img.bmWidth > 0 && img.bmHeight > 0) {
+        struct rect bg = Node2D_GetBackgroundRect(pNode2D);
+        struct edges slice = _Node2DBorderImageSliceEdges(pNode2D);
+        calculate_ninepatch(&(struct vec2){ bg.width, bg.height },
+                            &(struct vec2){ img.bmWidth, img.bmHeight },
+                            &(struct edges){ 0 },
+                            &slice,
+                            &(struct rect){ 0, 0, 1, 1 },
+                            &entity.ninepatch);
+        entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
+      }
+    } else {
+      /* Stretch image to view width, maintain aspect ratio, tile vertically. */
+      float tw = (float)entity.material.texture->Width;
+      float th = (float)entity.material.texture->Height;
+      if (tw > 0 && th > 0) {
+        float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
+        float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+        float tile_h = th * (w / tw);
+        float ox = pNode2D->ContentOffset.x;
+        float oy = pNode2D->ContentOffset.y;
+        entity.material.textureMatrix = MAT3_Identity();
+        entity.material.textureMatrix.v[0] = 1.0f;
+        entity.material.textureMatrix.v[4] = h / tile_h;
+        entity.material.textureMatrix.v[6] = ox / w;
+        entity.material.textureMatrix.v[7] = oy / tile_h;
+        entity.material.textureWrap = kTextureWrapRepeat;
+      }
+    }
+  }
+
+  entity.borderWidth = pDrawBackground->borderWidth;
+  entity.borderOffset = pDrawBackground->borderOffset;
+
+  R_DrawEntity(pDrawBackground->viewdef, &entity);
+
+  return TRUE;
+}
+
+HANDLER(Node2D, Node2D, DrawForeground)
+{
+  if (!memcmp(&pDrawForeground->brush,
+              &(struct BrushShorthand){0},
+              sizeof(struct BrushShorthand)))
+    return FALSE;
+
+  if (!pDrawForeground->image &&
       !Node2D_GetProperty(hObject, kNode2DForegroundMaterial)) {
     return FALSE;
   }
 
   struct ViewEntity entity;
 
-  Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawForeground->image, &pDrawForeground->brush);
   _Node2DEnsureTextureStarted((struct Texture *)entity.material.texture);
 
-  if (!pDrawBrush->foreground) {
-    entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
+  entity.borderWidth = pDrawForeground->borderWidth;
+  entity.borderOffset = pDrawForeground->borderOffset;
 
-    if (entity.material.texture) {
-      if (pNode2D->BorderImageSource &&
-          entity.material.texture == pNode2D->BorderImageSource) {
-        struct image_info img;
-        if (SUCCEEDED(Image_GetInfo(entity.material.texture, &img)) &&
-            img.bmWidth > 0 && img.bmHeight > 0) {
-          struct rect bg = Node2D_GetBackgroundRect(pNode2D);
-          struct edges slice = _Node2DBorderImageSliceEdges(pNode2D);
-          calculate_ninepatch(&(struct vec2){ bg.width, bg.height },
-                              &(struct vec2){ img.bmWidth, img.bmHeight },
-                              &(struct edges){ 0 },
-                              &slice,
-                              &(struct rect){ 0, 0, 1, 1 },
-                              &entity.ninepatch);
-          entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
-        }
-      } else {
-        /* Stretch image to view width, maintain aspect ratio, tile vertically. */
-        float tw = (float)entity.material.texture->Width;
-        float th = (float)entity.material.texture->Height;
-        if (tw > 0 && th > 0) {
-          float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-          float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-          float tile_h = th * (w / tw);
-          float ox = pNode2D->ContentOffset.x;
-          float oy = pNode2D->ContentOffset.y;
-          entity.material.textureMatrix = MAT3_Identity();
-          entity.material.textureMatrix.v[0] = 1.0f;
-          entity.material.textureMatrix.v[4] = h / tile_h;
-          entity.material.textureMatrix.v[6] = ox / w;
-          entity.material.textureMatrix.v[7] = oy / tile_h;
-          entity.material.textureWrap = kTextureWrapRepeat;
-        }
-      }
-    }
-  }
-
-  entity.borderWidth = pDrawBrush->borderWidth;
-  entity.borderOffset = pDrawBrush->borderOffset;
-
-  R_DrawEntity(pDrawBrush->viewdef, &entity);
+  R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
 }
@@ -738,7 +756,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   LRESULT foregroundContent = FALSE;
   struct Texture* foreground = NULL;
 
-#define kMsgDrawBrush 0x0875c1d1
+#define kMsgDrawBackground 0x0875c1d1
 #define kMsgUpdateGeometry 0x12c1a314
 #define kMsgForegroundContent 0x9a7735e5
 
@@ -770,7 +788,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   struct BrushShorthand foregroundBrush = _Node2DGetForegroundBrush(hObject);
 
   if (pNode2D->Ring.Width > 0) {
-    _SendMessage(hObject, Node2D, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBackground,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderOffset = pNode2D->Ring.Offset,
       .borderWidth = {
@@ -779,7 +797,6 @@ HANDLER(Node2D, Node2D, Draw2DContent)
         pNode2D->Ring.Width,
         pNode2D->Ring.Width
       },
-      .foreground = FALSE,
       .viewdef = &viewdef,
       .brush = {
         .Color = pNode2D->Ring.Color
@@ -787,15 +804,14 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   }
 
   if (pNode2D->BorderImageSource && Node2D_HasBorderImageSlice(pNode2D)) {
-    _SendMessage(hObject, Node2D, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBackground,
       .projection = pDraw2DContent->ProjectionMatrix,
-      .foreground = FALSE,
       .viewdef = &viewdef,
       .brush = {
         .Image = pNode2D->BorderImageSource
       });
   }
-  
+
   struct vec4 BorderWidth = {
     NODE2D_FRAME(pNode2D, Border.Width, 0).Left,
     NODE2D_FRAME(pNode2D, Border.Width, 0).Right,
@@ -804,10 +820,9 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   }, Zero = {0};
 
   if (memcmp(&BorderWidth, &Zero, sizeof(struct vec4))) {
-    _SendMessage(hObject, Node2D, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBackground,
       .projection = pDraw2DContent->ProjectionMatrix,
       .borderWidth = BorderWidth,
-      .foreground = FALSE,
       .viewdef = &viewdef,
       .brush = {
         .Color = pNode2D->_node->Border.Color
@@ -815,18 +830,16 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   }
 
   if (!pDraw2DContent->OnlyDecorations) {
-    _SendMessage(hObject, Node2D, DrawBrush,
+    _SendMessage(hObject, Node2D, DrawBackground,
      .projection = pDraw2DContent->ProjectionMatrix,
      .brush = pNode2D->Background,
-     .foreground = FALSE,
      .viewdef = &viewdef);
 
     if (foregroundContent) {
-      _SendMessage(hObject, Node2D, DrawBrush,
+      _SendMessage(hObject, Node2D, DrawForeground,
         .projection = pDraw2DContent->ProjectionMatrix,
         .image = foreground,
         .brush = foregroundBrush,
-        .foreground = TRUE,
         .viewdef = &viewdef);
     }
 

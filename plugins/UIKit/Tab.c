@@ -104,15 +104,13 @@ HANDLER(Tab, Node, LeftButtonUp)
   return Tab_Select(hObject, pTab);
 }
 
-HANDLER(Tab, Node2D, DrawBrush)
+HANDLER(Tab, Node2D, DrawBackground)
 {
-  if (pDrawBrush->foreground) return FALSE;
-
   struct Node2D *pNode2D = GetNode2D(hObject);
   if (!pNode2D) return FALSE;
 
   struct ViewEntity entity;
-  Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBrush->brush);
+  Node2D_GetViewEntity(pNode2D, &entity, NULL, &pDrawBackground->brush);
   /* Keep the tab background anchored to the control bounds. Text alignment
      only affects the text layout rect, not the tab surface itself. */
   entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
@@ -129,7 +127,7 @@ HANDLER(Tab, Node2D, DrawBrush)
     .blendMode = BLEND_MODE_ALPHA,
   };
 
-  R_DrawEntity(pDrawBrush->viewdef, &entity);
+  R_DrawEntity(pDrawBackground->viewdef, &entity);
 
   if (pTab->IsSelected) {
     /* Draw a bottom highlight bar to visually connect the tab to the content */
@@ -139,7 +137,7 @@ HANDLER(Tab, Node2D, DrawBrush)
     bar.bbox.max.y = entity.bbox.max.y;
     bar.radius = (struct vec4){0, 0, 0, 0};
     bar.material.color = pTab->SelectedColor;
-    R_DrawEntity(pDrawBrush->viewdef, &bar);
+    R_DrawEntity(pDrawBackground->viewdef, &bar);
   }
 
   return TRUE;

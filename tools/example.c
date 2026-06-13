@@ -1680,7 +1680,8 @@ LRESULT Node2D_UpdateMatrix(struct Object*, struct Node2D*, wParam_t, UpdateMatr
 LRESULT Node2D_Create(struct Object*, struct Node2D*, wParam_t, CreatePtr);
 LRESULT Node2D_Destroy(struct Object*, struct Node2D*, wParam_t, DestroyPtr);
 LRESULT Node2D_UpdateGeometry(struct Object*, struct Node2D*, wParam_t, UpdateGeometryPtr);
-LRESULT Node2D_DrawBrush(struct Object*, struct Node2D*, wParam_t, DrawBrushPtr);
+LRESULT Node2D_DrawBackground(struct Object*, struct Node2D*, wParam_t, DrawBackgroundPtr);
+LRESULT Node2D_DrawForeground(struct Object*, struct Node2D*, wParam_t, DrawForegroundPtr);
 LRESULT Node2D_HandleMessage(struct Object*, struct Node2D*, wParam_t, HandleMessagePtr);
 LRESULT Node2D_ScrollWheel(struct Object*, struct Node2D*, wParam_t, ScrollWheelPtr);
 LRESULT Node2D_MouseMoved(struct Object*, struct Node2D*, wParam_t, MouseMovedPtr);
@@ -1752,14 +1753,14 @@ LRESULT TextBlock_MeasureOverride(struct Object*, struct TextBlock*, wParam_t, M
 LRESULT TextBlock_ForegroundContent(struct Object*, struct TextBlock*, wParam_t, ForegroundContentPtr);
 LRESULT TextBlock_UpdateGeometry(struct Object*, struct TextBlock*, wParam_t, UpdateGeometryPtr);
 LRESULT TextBlock_Create(struct Object*, struct TextBlock*, wParam_t, CreatePtr);
-LRESULT TextBlock_DrawBrush(struct Object*, struct TextBlock*, wParam_t, DrawBrushPtr);
+LRESULT TextBlock_DrawForeground(struct Object*, struct TextBlock*, wParam_t, DrawForegroundPtr);
 
 static struct PropertyType const TextBlockProperties[kTextBlockNumProperties] = {
 };
 static struct TextBlock TextBlockDefaults = {
 };
 LRESULT Input_Create(struct Object*, struct Input*, wParam_t, CreatePtr);
-LRESULT Input_DrawBrush(struct Object*, struct Input*, wParam_t, DrawBrushPtr);
+LRESULT Input_DrawForeground(struct Object*, struct Input*, wParam_t, DrawForegroundPtr);
 LRESULT Input_MakeText(struct Object*, struct Input*, wParam_t, MakeTextPtr);
 LRESULT Input_KeyDown(struct Object*, struct Input*, wParam_t, KeyDownPtr);
 LRESULT Input_KillFocus(struct Object*, struct Input*, wParam_t, KillFocusPtr);
@@ -1778,7 +1779,7 @@ static struct Input InputDefaults = {
 LRESULT Button_Create(struct Object*, struct Button*, wParam_t, CreatePtr);
 LRESULT Button_LeftButtonUp(struct Object*, struct Button*, wParam_t, LeftButtonUpPtr);
 LRESULT Button_KeyDown(struct Object*, struct Button*, wParam_t, KeyDownPtr);
-LRESULT Button_DrawBrush(struct Object*, struct Button*, wParam_t, DrawBrushPtr);
+LRESULT Button_DrawForeground(struct Object*, struct Button*, wParam_t, DrawForegroundPtr);
 
 static struct PropertyType const ButtonProperties[kButtonNumProperties] = {
 	DECL(0xd155d06d, Button, Type, Type, kDataTypeEnum, .Enums = _Type), // Button.Type
@@ -1834,7 +1835,7 @@ static struct PropertyType const ScreenProperties[kScreenNumProperties] = {
 };
 static struct Screen ScreenDefaults = {
 };
-LRESULT Cinematic_DrawBrush(struct Object*, struct Cinematic*, wParam_t, DrawBrushPtr);
+LRESULT Cinematic_DrawForeground(struct Object*, struct Cinematic*, wParam_t, DrawForegroundPtr);
 
 static struct PropertyType const CinematicProperties[kCinematicNumProperties] = {
 	DECL(0x5ffdd888, Cinematic, FileName, FileName, kDataTypeString), // Cinematic.FileName
@@ -1860,7 +1861,7 @@ static struct Grid GridDefaults = {
 LRESULT ImageView_MeasureOverride(struct Object*, struct ImageView*, wParam_t, MeasureOverridePtr);
 LRESULT ImageView_ArrangeOverride(struct Object*, struct ImageView*, wParam_t, ArrangeOverridePtr);
 LRESULT ImageView_ForegroundContent(struct Object*, struct ImageView*, wParam_t, ForegroundContentPtr);
-LRESULT ImageView_DrawBrush(struct Object*, struct ImageView*, wParam_t, DrawBrushPtr);
+LRESULT ImageView_DrawForeground(struct Object*, struct ImageView*, wParam_t, DrawForegroundPtr);
 LRESULT ImageView_LoadView(struct Object*, struct ImageView*, wParam_t, LoadViewPtr);
 
 static struct PropertyType const ImageViewProperties[kImageViewNumProperties] = {
@@ -1876,7 +1877,7 @@ static struct ImageView ImageViewDefaults = {
 };
 LRESULT NinePatchImage_MeasureOverride(struct Object*, struct NinePatchImage*, wParam_t, MeasureOverridePtr);
 LRESULT NinePatchImage_ForegroundContent(struct Object*, struct NinePatchImage*, wParam_t, ForegroundContentPtr);
-LRESULT NinePatchImage_DrawBrush(struct Object*, struct NinePatchImage*, wParam_t, DrawBrushPtr);
+LRESULT NinePatchImage_DrawForeground(struct Object*, struct NinePatchImage*, wParam_t, DrawForegroundPtr);
 
 static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProperties] = {
 	DECL(0x9f40b6ad, NinePatchImage, StretchTypeTop, StretchTypeTop, kDataTypeFloat), // NinePatchImage.StretchTypeTop
@@ -1897,7 +1898,7 @@ static struct PropertyType const NinePatchImageProperties[kNinePatchImageNumProp
 static struct NinePatchImage NinePatchImageDefaults = {
 };
 LRESULT ConsoleView_Create(struct Object*, struct ConsoleView*, wParam_t, CreatePtr);
-LRESULT ConsoleView_DrawBrush(struct Object*, struct ConsoleView*, wParam_t, DrawBrushPtr);
+LRESULT ConsoleView_DrawForeground(struct Object*, struct ConsoleView*, wParam_t, DrawForegroundPtr);
 LRESULT ConsoleView_ScrollWheel(struct Object*, struct ConsoleView*, wParam_t, ScrollWheelPtr);
 
 static struct PropertyType const ConsoleViewProperties[kConsoleViewNumProperties] = {

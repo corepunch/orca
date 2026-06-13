@@ -6,21 +6,19 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
-HANDLER(Button, Node2D, DrawBrush) {
+HANDLER(Button, Node2D, DrawForeground) {
   return false;
-  // if (pDrawBrush->foreground) return FALSE;
-
   // struct Node2D *pNode2D = GetNode2D(hObject);
   // if (!pNode2D) return FALSE;
 
   // struct ViewEntity entity;
-  // Node2D_GetViewEntity(pNode2D, &entity, pDrawBrush->image, &pDrawBrush->brush);
+  // Node2D_GetViewEntity(pNode2D, &entity, pDrawForeground->image, &pDrawForeground->brush);
 
   // /* Use the brush color if one is explicitly set (non-zero alpha),
   //    otherwise fall back to the component's DiffuseColor default. */
   // struct color faceColor =
-  //     (pDrawBrush->brush.Color.a > 0.0f)
-  //         ? pDrawBrush->brush.Color
+  //     (pDrawForeground->brush.Color.a > 0.0f)
+  //         ? pDrawForeground->brush.Color
   //         : pButton->DiffuseColor;
 
   // float opacity = entity.material.opacity;
@@ -49,7 +47,7 @@ HANDLER(Button, Node2D, DrawBrush) {
   //   .blendMode = BLEND_MODE_ALPHA,
   // };
 
-  // R_DrawEntity(pDrawBrush->viewdef, &entity);
+  // R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   // return TRUE;
 }

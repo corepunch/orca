@@ -6,8 +6,6 @@
 
 #define PLACEHOLDER_OPACITY 0.5f
 
-HANDLER(Node2D, Node2D, DrawBrush);
-
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space)
 {
@@ -85,25 +83,23 @@ HANDLER(TextBlock, Node2D, UpdateGeometry)
   return TRUE;
 }
 
-HANDLER(TextBlock, Node2D, DrawBrush)
+HANDLER(TextBlock, Node2D, DrawForeground)
 {
-  if (!pDrawBrush->foreground) return Node2D_DrawBrush(hObject, GetNode2D(hObject), wParam, pDrawBrush);
-
-  if (!memcmp(&pDrawBrush->brush, &(struct BrushShorthand){0}, sizeof(struct BrushShorthand))) return FALSE;
+  if (!memcmp(&pDrawForeground->brush, &(struct BrushShorthand){0}, sizeof(struct BrushShorthand))) return FALSE;
 
   struct ViewEntity entity;
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   float modopacity = 1.f;
-  if (text->_text->placeholder && pDrawBrush->foreground) {
+  if (text->_text->placeholder) {
     static struct BrushShorthand zero = { 0 };
     if (memcmp(&text->Placeholder, &zero, sizeof(struct BrushShorthand))) {
-      pDrawBrush->brush = text->Placeholder;
+      pDrawForeground->brush = text->Placeholder;
     } else {
       modopacity = PLACEHOLDER_OPACITY;
     }
   }
 
-  Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawBrush->image, &pDrawBrush->brush);
+  Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawForeground->image, &pDrawForeground->brush);
 
   entity.material.opacity *= modopacity;
   entity.radius = (struct vec4){0};
@@ -113,8 +109,8 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     Loc_GetString(text->TextResourceID, LOC_TEXT);
   }
 
-  entity.borderWidth = pDrawBrush->borderWidth;
-  entity.borderOffset = pDrawBrush->borderOffset;
+  entity.borderWidth = pDrawForeground->borderWidth;
+  entity.borderOffset = pDrawForeground->borderOffset;
 
   float bbox_width = entity.bbox.max.x - entity.bbox.min.x;
   float bbox_height = entity.bbox.max.y - entity.bbox.min.y;
@@ -122,7 +118,7 @@ HANDLER(TextBlock, Node2D, DrawBrush)
     return TRUE;
   }
 
-  R_DrawEntity(pDrawBrush->viewdef, &entity);
+  R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
 }

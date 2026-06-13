@@ -92,7 +92,7 @@ check_images(struct _SHADERCONST *u, void* pVoid)
 }
 #endif
 
-HANDLER(ImageView, Node2D, DrawBrush)
+HANDLER(ImageView, Node2D, DrawForeground)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
   uint32_t width = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
@@ -101,11 +101,10 @@ HANDLER(ImageView, Node2D, DrawBrush)
   struct ViewEntity entity;
   struct Image *source_image = pImageView->_src_object ? GetImage((struct Object *)pImageView->_src_object) : NULL;
 
-	if (!memcmp(&pDrawBrush->brush,
-							&(struct BrushShorthand){0},
-							sizeof(struct BrushShorthand)) &&
-			!pDrawBrush->foreground)
-		return FALSE;
+  if (!memcmp(&pDrawForeground->brush,
+              &(struct BrushShorthand){0},
+              sizeof(struct BrushShorthand)))
+    return FALSE;
 
 #if 0
   if (!pImageView->Source) {
@@ -113,7 +112,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
       .value = FALSE,
       .prop = OBJ_GetProperties(hObject),
     };
-    struct Material* pMaterial = GetMaterial(pDrawBrush->brush.Material);
+    struct Material* pMaterial = GetMaterial(pDrawForeground->brush.Material);
     if (!pMaterial) {
       return FALSE;
     }
@@ -126,8 +125,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
   }
 #endif
 
-  struct Texture *img = pDrawBrush->foreground ? pImageView->Source : NULL;
-  Node2D_GetViewEntity(pNode2D, &entity, img, &pDrawBrush->brush);
+  Node2D_GetViewEntity(pNode2D, &entity, pImageView->Source, &pDrawForeground->brush);
   
   calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
@@ -170,7 +168,7 @@ HANDLER(ImageView, Node2D, DrawBrush)
     entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
   }
   
-  R_DrawEntity(pDrawBrush->viewdef, &entity);
+  R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
 }
