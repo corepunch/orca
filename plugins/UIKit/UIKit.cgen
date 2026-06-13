@@ -193,6 +193,15 @@
         <field name="Color" type="color">Ring color and opacity</field>
       </fields>
     </struct>
+    <struct name="BorderImageShorthand">
+      <summary>Border image nine-patch configuration.</summary>
+      <details>Combines the source image, slice insets, and repeat mode into a single shorthand for CSS border-image.</details>
+      <fields>
+        <field name="Source" type="Texture" pointer="true">Image used to draw the element border as a nine-patch.</field>
+        <field name="Slice" type="Thickness">Border image slices in left/top/right/bottom pixels.</field>
+        <field name="Repeat" type="BorderImageRepeat">How border image edge regions are drawn.</field>
+      </fields>
+    </struct>
     <struct name="OverflowShorthand">
       <summary>Per-axis overflow behavior configuration</summary>
       <details>Controls how content that exceeds container bounds is handled for each axis independently.</details>
@@ -332,9 +341,7 @@
         <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
-        <property name="BorderImageSource" type="Texture" pointer="true">Image used to draw the element border as a nine-patch.</property>
-        <property name="BorderImageSlice" type="Thickness">Border image slices in left/top/right/bottom pixels.</property>
-        <property name="BorderImageRepeat" type="BorderImageRepeat" default="Stretch">How border image edge regions are drawn.</property>
+        <property name="BorderImage" type="BorderImageShorthand">Border image nine-patch configuration. Combines source, slice, and repeat.</property>
         <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
         <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
         <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>

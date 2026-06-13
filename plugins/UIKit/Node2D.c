@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-bool_t Node2D_HasBorderImageSlice(struct Node2D const *node2d);
+#define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 
 HANDLER(Node2D, Node2D, Draw2DContent);
 
@@ -18,6 +18,13 @@ HANDLER(Node2D, Node2D, UpdateGeometry) {
   pNode2D->_userdata = data;
   pNode2D->_rect = (struct rect){0,0,w,h};
   return TRUE;
+}
+
+static bool_t
+_ScreenShouldClipByOverflow(struct Node2D *pNode2D)
+{
+  return pNode2D->Overflow.x != kOverflowVisible ||
+  pNode2D->Overflow.y != kOverflowVisible;
 }
 
 static struct ViewDef*
@@ -278,26 +285,18 @@ Node2D_SetFrame(struct Node2D *pNode2D, enum Box3Field parm, float value)
   pNode2D->_bbox_flags |= 1 << parm;
 }
 
-static void
-_Node2DEnsureTextureStarted(struct Texture *texture)
-{
-  if (texture && texture->texnum == 0) {
-    OBJ_SendMessageW(CMP_GetObject(texture), ID_Object_Start, 0, NULL);
-  }
-}
-
 static struct edges
 _Node2DBorderImageSliceEdges(struct Node2D const *node2d)
 {
   return (struct edges) {
-    .left = node2d->BorderImageSlice.Axis[0].Left,
-    .top = node2d->BorderImageSlice.Axis[1].Left,
-    .right = node2d->BorderImageSlice.Axis[0].Right,
-    .bottom = node2d->BorderImageSlice.Axis[1].Right,
+    .left = node2d->BorderImage.Slice.Axis[0].Left,
+    .top = node2d->BorderImage.Slice.Axis[1].Left,
+    .right = node2d->BorderImage.Slice.Axis[0].Right,
+    .bottom = node2d->BorderImage.Slice.Axis[1].Right,
   };
 }
 
-bool_t
+static bool_t
 Node2D_HasBorderImageSlice(struct Node2D const *node2d)
 {
   struct edges const slice = _Node2DBorderImageSliceEdges(node2d);
@@ -357,43 +356,25 @@ HANDLER(Node2D, Node2D, DrawBackground)
   struct ViewEntity entity;
 
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, NULL, &pDrawBackground->brush);
-  _Node2DEnsureTextureStarted((struct Texture *)entity.material.texture);
 
   entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
 
   if (entity.material.texture) {
-    if (pNode2D->BorderImageSource &&
-        entity.material.texture == pNode2D->BorderImageSource) {
-      struct image_info img;
-      if (SUCCEEDED(Image_GetInfo(entity.material.texture, &img)) &&
-          img.bmWidth > 0 && img.bmHeight > 0) {
-        struct rect bg = Node2D_GetBackgroundRect(pNode2D);
-        struct edges slice = _Node2DBorderImageSliceEdges(pNode2D);
-        calculate_ninepatch(&(struct vec2){ bg.width, bg.height },
-                            &(struct vec2){ img.bmWidth, img.bmHeight },
-                            &(struct edges){ 0 },
-                            &slice,
-                            &(struct rect){ 0, 0, 1, 1 },
-                            &entity.ninepatch);
-        entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
-      }
-    } else {
-      /* Stretch image to view width, maintain aspect ratio, tile vertically. */
-      float tw = (float)entity.material.texture->Width;
-      float th = (float)entity.material.texture->Height;
-      if (tw > 0 && th > 0) {
-        float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
-        float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
-        float tile_h = th * (w / tw);
-        float ox = pNode2D->ContentOffset.x;
-        float oy = pNode2D->ContentOffset.y;
-        entity.material.textureMatrix = MAT3_Identity();
-        entity.material.textureMatrix.v[0] = 1.0f;
-        entity.material.textureMatrix.v[4] = h / tile_h;
-        entity.material.textureMatrix.v[6] = ox / w;
-        entity.material.textureMatrix.v[7] = oy / tile_h;
-        entity.material.textureWrap = kTextureWrapRepeat;
-      }
+    /* Stretch image to view width, maintain aspect ratio, tile vertically. */
+    float tw = (float)entity.material.texture->Width;
+    float th = (float)entity.material.texture->Height;
+    if (tw > 0 && th > 0) {
+      float w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
+      float h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+      float tile_h = th * (w / tw);
+      float ox = pNode2D->ContentOffset.x;
+      float oy = pNode2D->ContentOffset.y;
+      entity.material.textureMatrix = MAT3_Identity();
+      entity.material.textureMatrix.v[0] = 1.0f;
+      entity.material.textureMatrix.v[4] = h / tile_h;
+      entity.material.textureMatrix.v[6] = ox / w;
+      entity.material.textureMatrix.v[7] = oy / tile_h;
+      entity.material.textureWrap = kTextureWrapRepeat;
     }
   }
 
@@ -420,7 +401,6 @@ HANDLER(Node2D, Node2D, DrawForeground)
   struct ViewEntity entity;
 
   Node2D_GetViewEntity(GetNode2D(hObject), &entity, pDrawForeground->image, &pDrawForeground->brush);
-  _Node2DEnsureTextureStarted((struct Texture *)entity.material.texture);
 
   entity.borderWidth = pDrawForeground->borderWidth;
   entity.borderOffset = pDrawForeground->borderOffset;
@@ -745,6 +725,30 @@ _Node2DGetForegroundBrush(struct Object *object)
   return brush;
 }
 
+static void
+_DrawBorderImage(struct Node2D *pNode2D, struct ViewDef *viewdef)
+{
+  if (!pNode2D->BorderImage.Source || !Node2D_HasBorderImageSlice(pNode2D))
+    return;
+  struct image_info img = {0};
+  if (!SUCCEEDED(Image_GetInfo(pNode2D->BorderImage.Source, &img)) ||
+      img.bmWidth <= 0 || img.bmHeight <= 0)
+    return;
+  struct ViewEntity entity;
+  Node2D_GetViewEntity(pNode2D, &entity, pNode2D->BorderImage.Source, NULL);
+  struct rect bg = Node2D_GetBackgroundRect(pNode2D);
+  struct edges slice = _Node2DBorderImageSliceEdges(pNode2D);
+  entity.bbox = BOX3_FromRect(bg);
+  calculate_ninepatch(&(struct vec2){ bg.width, bg.height },
+                      &(struct vec2){ img.bmWidth, img.bmHeight },
+                      &(struct edges){ 0 },
+                      &slice,
+                      &(struct rect){ 0, 0, 1, 1 },
+                      &entity.ninepatch);
+  entity.mesh = BOX_PTR(Mesh, MD_NINEPATCH);
+  R_DrawEntity(viewdef, &entity);
+}
+
 HANDLER(Node2D, Node2D, Draw2DContent)
 {
   if (OBJ_IsHidden(hObject))
@@ -810,14 +814,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
       });
   }
 
-  if (pNode2D->BorderImageSource && Node2D_HasBorderImageSlice(pNode2D)) {
-    _SendMessage(hObject, Node2D, DrawBackground,
-      .projection = pDraw2DContent->ProjectionMatrix,
-      .viewdef = &viewdef,
-      .brush = {
-        .Image = pNode2D->BorderImageSource
-      });
-  }
+  _DrawBorderImage(pNode2D, &viewdef);
 
   struct vec4 BorderWidth = {
     NODE2D_FRAME(pNode2D, Border.Width, 0).Left,

@@ -155,8 +155,7 @@ CreateNinePatchMesh(struct ViewEntity* ent)
     for (int x = 0; x < 4; x++, i++) {
       float bbox_width = ent->bbox.max.x - ent->bbox.min.x;
       float bbox_height = ent->bbox.max.y - ent->bbox.min.y;
-      vertices[i] = vertex_new2(
-        _x[x] / bbox_width, _y[y] / bbox_height, _u[x], 1 - _v[y]);
+      vertices[i] = vertex_new2(_x[x] / bbox_width, _y[y] / bbox_height, _u[x], 1 - _v[y]);
     }
   }
 
@@ -254,6 +253,8 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
 #else
   enum shader_type fallback = SHADER_UI;
 #endif
+  if (fallback == SHADER_UI && ent->mesh == BOX_PTR(Mesh, MD_NINEPATCH))
+    fallback = SHADER_NINEPATCH;
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
   struct Shader const *shader = NULL;
@@ -629,6 +630,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_ui, &tr.shaders[SHADER_UI].shader);
   Shader_LoadFromDef(&shader_charset, &tr.shaders[SHADER_CHARSET].shader);
   Shader_LoadFromDef(&shader_cinematic, &tr.shaders[SHADER_CINEMATIC].shader);
+  Shader_LoadFromDef(&shader_ninepatch, &tr.shaders[SHADER_NINEPATCH].shader);
   Shader_LoadFromDef(&shader_vertexcolor, &tr.shaders[SHADER_VERTEXCOLOR].shader);
   Shader_LoadFromDef(&shader_error, &tr.shaders[SHADER_ERROR].shader);
   Shader_LoadFromDef(&shader_button, &tr.shaders[SHADER_BUTTON].shader);

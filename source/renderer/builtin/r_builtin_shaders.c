@@ -177,6 +177,41 @@ struct shader_desc shader_cinematic = {
   "}\n"
 };
 
+struct shader_desc shader_ninepatch = {
+  .Name = "Ninepatch Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_textureTransform", UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_texture", UT_SAMPLER_2D, PRECISION_LOW },
+    { "u_color", UT_COLOR, PRECISION_LOW },
+    { "u_bboxMin", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_bboxMax", UT_FLOAT_VEC3, PRECISION_LOW },
+    { "u_opacity", UT_FLOAT, PRECISION_LOW },
+  },
+    .Attributes = {
+      { "a_position", UT_FLOAT_VEC4 },
+      { "a_texcoord0", UT_FLOAT_VEC2 },
+    },
+    .Shared = {
+      { "v_texcoord0", UT_FLOAT_VEC2 },
+    },
+    .VertexShader =
+  "void main() {\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  v_texcoord0 = (u_textureTransform * vec3(a_texcoord0, 1.0)).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
+  "}\n",
+    .FragmentShader =
+  "void main() {\n"
+  "  vec4 col = texture(u_texture, v_texcoord0) * u_color;\n"
+  "  fragColor = vec4(col.rgb, col.a * u_opacity);\n"
+  "}\n"
+};
+
 #define CHARSER_WIDTH 16
 #define CONSOLE_CHAR_BASE 16
 

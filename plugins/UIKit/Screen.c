@@ -7,7 +7,6 @@
 
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
-#define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 
 HANDLER(Node2D, Node2D, Draw2DContent);
 
@@ -17,13 +16,6 @@ draw_children(struct Object *hObject,
 
 static bool_t
 _PopupSetDialogResult(struct Object *modal, float value);
-
-static bool_t
-_ScreenShouldClipByOverflow(struct Node2D *pNode2D)
-{
-  return pNode2D->Overflow.x != kOverflowVisible ||
-         pNode2D->Overflow.y != kOverflowVisible;
-}
 
 static void
 _GetContentsMatrix(struct Node2D *pNode2D,

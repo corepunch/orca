@@ -475,6 +475,12 @@ _DispatchNodeTriggers(struct Object *node_object, uint32_t MsgID, wParam_t wPara
 LRESULT
 OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t lParam)
 {
+  if (!pobj) return FALSE;
+  if (MsgID == ID_Object_Start) {
+    uint32_t flags = OBJ_GetFlags(pobj);
+    if (flags & OF_STARTED) return FALSE;
+    OBJ_SetFlags(pobj, flags | OF_STARTED);
+  }
   if (MsgID == ID_Object_Animate) {
     OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
   }

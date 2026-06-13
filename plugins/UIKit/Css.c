@@ -38,12 +38,50 @@ extern int parse_property(const char* str, struct PropertyType const* prop,
                           void* valueptr);
 
 static struct Object *
-css_load_deferred_texture_object(const char *path)
+css_create_texture_object(const char *path)
 {
+    static lpcString_t const exts[] = { ".png", ".jpg", ".jpeg", ".svg", NULL };
+    path_t source = {0};
+    char query[MAX_PROPERTY_STRING] = {0};
+    lpcString_t q = strchr(path, '?');
+    int path_len = q ? (int)(q - path) : (int)strlen(path);
+    snprintf(source, sizeof(source), "%.*s", path_len, path);
+    if (q) snprintf(query, sizeof(query), "%s", q + 1);
+    lpcString_t dot = strrchr(source, '.'), slash = strrchr(source, '/');
+    if (!dot || dot < slash) {
+        for (int i = 0; exts[i]; i++) {
+            path_t with_ext = {0};
+            snprintf(with_ext, sizeof(with_ext), "%s%s", source, exts[i]);
+            if (FS_FileExists(with_ext)) { snprintf(source, sizeof(source), "%s", with_ext); break; }
+        }
+    }
     struct Object *image = OBJ_Create(ID_Image);
     if (!image) return NULL;
-    OBJ_SetPropertyValue(image, "Source", &path);
+    lpcString_t src = source;
+    OBJ_SetPropertyValue(image, "Source", &src);
+    for (char *arg = strtok(query, "&"); arg; arg = strtok(NULL, "&")) {
+        char key[MAX_PROPERTY_STRING] = {0}, value[MAX_PROPERTY_STRING] = {0}, tmp[MAX_PROPERTY_STRING] = {0};
+        char *eq = strchr(arg, '=');
+        if (eq) snprintf(key, MIN((size_t)(eq - arg) + 1, sizeof(key)), "%s", arg), snprintf(value, sizeof(value), "%s", eq + 1);
+        else snprintf(key, sizeof(key), "%s", arg), snprintf(value, sizeof(value), "true");
+        if (key[0] >= 'a' && key[0] <= 'z') key[0] = (char)(key[0] - 'a' + 'A');
+        if (value[0] >= 'a' && value[0] <= 'z') value[0] = (char)(value[0] - 'a' + 'A');
+        if (!strcmp(key, "Source")) continue;
+        struct Property *prop = NULL;
+        if (SUCCEEDED(OBJ_FindShortProperty(image, key, &prop)) &&
+            parse_property(value, PROP_GetDesc(prop), tmp)) {
+            PROP_SetValue(prop, tmp);
+            if (PROP_GetType(prop) == kDataTypeString) free(*(char **)tmp);
+        }
+    }
     return image;
+}
+
+static bool_t
+css_is_texture_path(const char *value)
+{
+    return value && value[0] && strcasecmp(value, "none") &&
+           !strstr(value, "gradient(");
 }
 
 static void
@@ -105,6 +143,7 @@ k_css_prop_map[] = {
     { "border-image-source", "Node2D.BorderImageSource"    },
     { "border-image-slice", "Node2D.BorderImageSlice"      },
     { "border-image-repeat", "Node2D.BorderImageRepeat"    },
+    { "border-image",      "Node2D.BorderImage"            },
     { "foreground",        "Node2D.Foreground"             },
     { "foreground-color",  "Node2D.ForegroundColor"        },
     { "box-shadow",        "Node2D.BoxShadow"              },
@@ -752,7 +791,8 @@ css_apply_orca_value_to_rule(struct Object *rule_obj,
     struct PropertyType const* desc = PROP_GetDesc(prop);
     if (desc->DataType == kDataTypeObject && desc->TypeString &&
         !strcmp(desc->TypeString, "Texture")) {
-        struct Object *image = css_load_deferred_texture_object(css_value);
+        if (!css_is_texture_path(css_value)) return;
+        struct Object *image = css_create_texture_object(css_value);
         if (!image) return;
         PROP_SetValue(prop, &image);
         OBJ_ReleaseRef(image);

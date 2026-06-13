@@ -247,6 +247,7 @@ extern struct shader_desc shader_ui;
 extern struct shader_desc shader_rect;
 extern struct shader_desc shader_charset;
 extern struct shader_desc shader_cinematic;
+extern struct shader_desc shader_ninepatch;
 extern struct shader_desc shader_vertexcolor;
 extern struct shader_desc shader_error;
 extern struct shader_desc shader_button;
