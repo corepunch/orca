@@ -1251,18 +1251,42 @@ MAT4_FromTranslation(struct vec3 const* v)
 
 struct color COLOR_Parse(lpcString_t string) {
   int r = 255, g = 255, b = 255, a = 100;
-  if (sscanf(string, "#%02x%02x%02x%02x", &r, &g, &b, &a) == 4) {
+  if (sscanf(string, "#%02x%02x%02x%02x", &r, &g, &b, &a) == 4)
     return color_new(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
-  } else if (sscanf(string, "#%02x%02x%02x/%d", &r, &g, &b, &a) == 4) {
+  if (sscanf(string, "#%02x%02x%02x/%d", &r, &g, &b, &a) == 4)
     return color_new(r / 255.0f, g / 255.0f, b / 255.0f, a / 100.0f);
-  } else if (sscanf(string, "#%02x%02x%02x", &r, &g, &b) == 3) {
+  if (sscanf(string, "#%02x%02x%02x", &r, &g, &b) == 3)
     return color_new(r / 255.0f, g / 255.0f, b / 255.0f, 1.f);
-  } if (sscanf(string, "#%01x%01x%01x", &r, &g, &b) == 3) {
-    // Multiply each value by 17 to expand from 0-15 to 0-255
+  if (sscanf(string, "#%01x%01x%01x", &r, &g, &b) == 3)
     return color_new((r * 17) / 255.0f, (g * 17) / 255.0f, (b * 17) / 255.0f, 1.f);
-  } else {
-    return color_new(1, 1, 1, 1);
-  }
+
+  struct { char const* name; struct color color; } const named[] = {
+    { "transparent", { 0, 0, 0, 0 } },
+    { "black", { 0, 0, 0, 1 } },
+    { "white", { 1, 1, 1, 1 } },
+    { "red", { 1, 0, 0, 1 } },
+    { "green", { 0, 0.5019608f, 0, 1 } },
+    { "blue", { 0, 0, 1, 1 } },
+    { "yellow", { 1, 1, 0, 1 } },
+    { "cyan", { 0, 1, 1, 1 } },
+    { "magenta", { 1, 0, 1, 1 } },
+    { "gray", { 0.5019608f, 0.5019608f, 0.5019608f, 1 } },
+    { "grey", { 0.5019608f, 0.5019608f, 0.5019608f, 1 } },
+    { "silver", { 0.7529412f, 0.7529412f, 0.7529412f, 1 } },
+    { "maroon", { 0.5019608f, 0, 0, 1 } },
+    { "olive", { 0.5019608f, 0.5019608f, 0, 1 } },
+    { "purple", { 0.5019608f, 0, 0.5019608f, 1 } },
+    { "teal", { 0, 0.5019608f, 0.5019608f, 1 } },
+    { "navy", { 0, 0, 0.5019608f, 1 } },
+    { "orange", { 1, 0.64705884f, 0, 1 } },
+    { "aliceblue", { 0.9411765f, 0.972549f, 1, 1 } },
+  };
+
+  for (size_t i = 0; i < sizeof(named) / sizeof(named[0]); i++)
+    if (!strcasecmp(string, named[i].name))
+      return named[i].color;
+
+  return color_new(1, 1, 1, 1);
 }
 
 struct color COLOR_Lerp(struct color const* a, struct color const* b, float t) {
