@@ -15,7 +15,9 @@ network/editor core services.
 - `source/parsers/`
 - `source/localization/`
 - `source/network/`
-- `source/editor/server.c`
+- `plugins/EditorKit/`
+- `plugins/EditorKit/ed_stab_object.h`
+- `plugins/EditorKit/server.c`
 - `docs/architecture/object-component-system.md`
 - `docs/way-of-working.md`
 
@@ -62,6 +64,15 @@ Migration checklist:
   libxml2 storage can return `NULL` for non-empty values.
 - Package data and sample `package.lua` files should stay declarative when they
   are loaded as project metadata.
+
+## Editor Serialization
+
+- Editor serialization lives in `plugins/EditorKit/`, not `source/editor/`.
+- For object-to-XML behavior, start with `plugins/EditorKit/ed_stab_object.h`.
+- `ED_ConvertNode` serializes an object tree to XML nodes.
+- `OBJ_SaveDocument` wraps `ED_ConvertNode` in a document and saves it.
+- If core needs similar behavior, do not depend on EditorKit headers from core;
+  move shared logic into core or reimplement through core-owned APIs.
 
 ## System-Level Message Handlers
 
