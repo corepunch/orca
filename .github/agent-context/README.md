@@ -14,6 +14,8 @@ that area, instead of loading the full project guide on every session.
 | `.cgen` schema, generated headers/exports/properties, new C components | `codegen-and-components.md` |
 | Renderer, textures, palettes, shaders, meshes, WebGL, DarkReign assets | `renderer-and-assets.md` |
 | Build system, tests, Xcode project wiring, docs site | `build-tests-and-docs.md` |
+| C formatting/style only | `c-style.md` |
+| Writing reusable project instructions for other repos | `instructions-writing-guide.md` |
 
 `orca-reference.md` is the archived long guide. Use it only when the focused
 files and nearby source/docs do not contain enough context.
