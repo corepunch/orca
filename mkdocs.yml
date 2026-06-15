@@ -23,6 +23,15 @@ nav:
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
   - Module XML Guide: MODULE_XML_GUIDE.md
+  - Agent Docs:
+    - Project Map: PROJECT_MAP.md
+    - Architecture: ARCHITECTURE.md
+    - Build: BUILD.md
+    - Testing: TESTING.md
+    - Adding Classes: ADDING_CLASSES.md
+    - Coding Style: CODING_STYLE.md
+    - Lua API: LUA_API.md
+    - UI System: UI_SYSTEM.md
   - App Writing:
     - MoonScript:
       - Overview: app/moonscript/index.md
