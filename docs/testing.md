@@ -1,221 +1,282 @@
 # Testing Guide
 
-This page documents the ORCA test harness, how to write and run tests, and common gotchas that contributors encounter.
+This document describes the C and Lua testing infrastructure used in the Orca project.
+
+## Table of Contents
+- [C Tests](#c-tests)
+- [Lua Tests](#lua-tests)
+- [Helpers & Macros](#helpers--macros)
+- [Naming Conventions](#naming-conventions)
+- [How to Add a New Test](#how-to-add-a-new-test)
 
 ---
 
-## Running Tests
+## C Tests
 
-### Headless layout tests (no display needed)
+### File Location
 
-```bash
-make test-properties    # C unit tests for the property VM
-make test-headless      # All headless Lua tests (layout, animations, styles, body, …)
-make test-body          # Lua scene-loading / body() tests only
-```
+C tests live in `tests/` with filenames matching the pattern `test_<component>.c`.
 
-These run without a display or OpenGL context.
+### Structure
 
-### Display-required tests
+Each C test file follows this structure:
 
-```bash
-xvfb-run make test      # Full suite including test1.lua and test.xml
-```
+1. **Helper functions** (optional) — static functions that set up test fixtures or
+   create test-specific objects. These are prefixed with `_` and documented with
+   block comments.
 
-These require either a real display or a virtual framebuffer (`xvfb-run` on Linux, `Xvfb` on macOS CI). The engine creates a real window, initializes the renderer, and runs the test Lua/XML file.
+2. **Test functions** — individual `static void test_<name>(void)` functions, each
+   testing a single behavior or edge case.
 
-### Running a single XML test
+3. **Test registry** — a static array of `{ name, function }` pairs using the
+   `DECL_TEST` macro.
 
-```bash
-./build/bin/orca -test=tests/test.xml
-```
+4. **`main()`** — iterates over the registry, running each test and tracking
+   memory snapshots for leak detection.
 
-The `-test=<file>` flag wraps the file in a short bootstrap script that `require`s all modules and then calls `require("orca.filesystem").loadObject(file)` (for `.xml`) or `luaL_dofile` (for `.lua`).
-
----
-
-## Writing Layout Tests
-
-### Lua test files
-
-Layout tests are plain Lua scripts that use the `orca.UIKit` module. The engine bootstraps `orca`, `orca.UIKit`, and all plugins before running the file.
-
-```lua
-local orca = require "orca"
-orca.init()
-local ui = require "orca.UIKit"
-
--- IMPORTANT: Always set ResizeMode = "NoResize" for test screens
-local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
-
-screen:UpdateLayout(screen.Width, screen.Height)
-
-assert(screen.Width == 1000, "Width should be 1000")
-```
-
-### XML test files
-
-XML test files are loaded by `filesystem.loadObject()` from `orca.filesystem`. Any `<script>` element inside the root element is executed after the node tree is constructed.
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Screen Name="test" Width="1000" Height="1000" ResizeMode="NoResize">
-    <Node2D Name="box" Width="100" Height="50" />
-    <script>
-        updateLayout(_ENV, Width, Height)
-        local box = _ENV:findChild("box", true)
-        assert(box.ActualWidth == 100)
-        assert(box.ActualHeight == 50)
-    </script>
-</Screen>
-```
-
----
-
-## Testing `body()` and Scene Loading
-
-Tests that exercise `rebuild()` and `body()` require special handling.
-`rebuild()` is asynchronous — it queues a coroutine for the next event loop
-tick.  Call `core.flushQueue()` after all `rebuild()` calls and before any
-child-count assertions. `core.flushQueue()` drains the pending platform event
-queue and dispatches each queued message immediately, which is what allows the
-posted `kEventResumeCoroutine` rebuild work to complete during headless tests.
-
-See [Scene Loading, `rebuild()`, and Component Composition](app/moonscript/scenes-and-rebuild.md) for the full explanation and
-all patterns.  `tests/test_body.lua` is the reference implementation.
-
-```lua
-local core = require "orca.core"
-local ui   = require "orca.UIKit"
-
-local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-local node   = screen + ui.Node2D {}
-
-node:rebuild(function(self)
-  self:addChild(ui.Node2D { Name = "Child" })
-end)
-
-core.flushQueue()   -- ← flush before asserting
-
-local n = 0
-for _ in node.children do n = n + 1 end
-assert(n == 1)
-```
-
----
-
-## Common Gotchas
-
-### Screen dimensions are overridden by the window size
-
-`Screen.MeasureOverride` calls `axGetSize()` and overrides the screen's `Width`/`Height` with the actual window dimensions **when `ResizeMode == kResizeModeCanResize`**, which is the default.
-
-On CI virtual displays (`xvfb-run`), the window is typically 640×480 — so a screen created without `ResizeMode = "NoResize"` silently becomes 640×480 instead of your intended size, causing layout assertions like `assert(screen.Width == 1000)` to fail.
-
-**Always set `ResizeMode = "NoResize"` for test screens:**
-
-```lua
--- Lua
-local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
-```
-
-```xml
-<!-- XML -->
-<Screen Width="1000" Height="1000" ResizeMode="NoResize">
-```
-
-### `test-properties` vs display tests
-
-`make test-properties` compiles and runs `tests/test_properties.c` as a standalone C binary with `TEST_MEMORY=1`. This binary intercepts `malloc`/`free` to track leaks — it does **not** link against the main orca library and has no Lua or renderer dependencies. It runs entirely headless.
-
-`make test` runs `test-properties` first, then `test-headless`, then the display-required tests (`test1.lua`, `test.xml`). If `test-properties` fails, the display tests are never reached.
-
-### The `TEST_MEMORY` allocator
-
-The `tests/test_properties.c` test binary defines custom `malloc`/`calloc`/`realloc`/`free` wrappers that track allocation counts:
-
-- On first call, `init_alloc_funcs()` resolves the real libc symbols via `dlsym(RTLD_NEXT, ...)`. A 1 KB bootstrap buffer handles the one `calloc` that `dlsym` makes internally.
-- A recursion guard (`s_init_in_progress`) prevents re-entrancy during `dlsym`.
-- Tracking is only active after `mem_init()` is called; allocations made during module initialization (GnuTLS, libEGL) are not counted.
-
-> **macOS note:** The `__libc_malloc` / `__libc_free` symbols are glibc-internal and do not exist on Apple platforms. Always use `dlsym(RTLD_NEXT, "malloc")` for portable interception.
-
----
-
-## Property VM Bindings
-
-### Binding expressions
-
-Property bindings in XML use a formula language evaluated by the property VM (`source/core/property/property_runtime.c`):
-
-```xml
-<!-- Simple property reference -->
-<property name="Visible">
-    <Binding>{./IsActive}</Binding>
-</property>
-
-<!-- Arithmetic -->
-<property name="Width">
-    <Binding>MUL({./Scale}, 100)</Binding>
-</property>
-
-<!-- Conditional (IF operator) -->
-<property name="Text">
-    <Binding>IF(EQUAL({./IsActive}, 1), "Active", "Inactive")</Binding>
-</property>
-```
-
-### Supported operators
-
-| Operator | Description |
-|---|---|
-| `{./PropertyPath}` | Property reference — reads from the binding target |
-| `ADD(a, b)` | Addition |
-| `SUB(a, b)` | Subtraction |
-| `MUL(a, b)` | Multiplication |
-| `DIV(a, b)` | Division |
-| `EQUAL(a, b)` | Returns 1 if equal, 0 otherwise |
-| `IF(cond, true-val, false-val)` | Conditional — returns `true-val` if `cond != 0` (or non-empty string), else `false-val` |
-| `"string literal"` | String constant |
-| `123`, `1.5` | Numeric constants |
-
-### IF operator semantics
-
-- Condition is truthy when: numeric `cond != 0`, or string `cond` is non-empty.
-- The result type follows the selected branch (`true-val` or `false-val`).
-- Both branches can be any expression, including nested operators.
-
-### Binding modes
-
-The `Mode` attribute on a `<Binding>` element controls when the binding is re-evaluated:
-
-| Mode | Description |
-|---|---|
-| `Expression` (default) | Re-evaluated whenever the source property changes |
-| `OneTime` | Evaluated once when the node is created |
-| `OneWay` | Same as `Expression` |
-
-```xml
-<property name="Opacity">
-    <Binding Mode="Expression" Attribute="WholeProperty">{./Alpha}</Binding>
-</property>
-```
-
----
-
-## XML Attribute Parsing
-
-### Namespace-aware attribute iteration
-
-When iterating XML attributes in C (`source/parsers/p_xml.c`), use `xmlGetProp`/`xmlGetNsProp` rather than `xmlNodeListGetString`:
+### Example
 
 ```c
-/* Correct — works with XML_PARSE_COMPACT */
-xmlChar* value = attr->ns
-    ? xmlGetNsProp(attr->parent, attr->name, attr->ns->href)
-    : xmlGetProp(attr->parent, attr->name);
-lua_pushstring(L, (const char*)value);
-xmlFree(value);
+/* Test: parsing a :hover pseudo-class sets OF_HOVERABLE */
+static void test_parse_class_hover_flag(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        EXPECT(!(OBJ_GetFlags(obj) & OF_HOVERABLE));
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover");
+        EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
+    }
+}
 ```
 
-`xmlNodeListGetString(doc, attr->children, 1)` can return `NULL` when `XML_PARSE_COMPACT` alters how small text nodes are stored internally. The canonical `xmlGetProp` API is immune to this.
+Key points:
+- Tests are `static` — they are not visible outside the test file.
+- The `WITH` macro handles setup/teardown (resource management).
+- `EXPECT` asserts conditions; failures increment `s_tests_failed`.
+- `MEM_SNAPSHOT()` / `MEM_CHECK_LEAK()` detect memory leaks per test.
+
+---
+
+## Lua Tests
+
+### File Location
+
+Lua tests live in `tests/` with filenames matching the pattern `test_<component>.lua`.
+
+### Structure
+
+Each Lua test file follows this structure:
+
+1. **Setup** — `require('test_utils')` to import helpers, then initialize the
+   framework (e.g., `mem_init()`).
+
+2. **Test blocks** — `it()` calls that group related assertions. Each `it()` takes
+   a string description and a function body.
+
+3. **Assertions** — `expect()` calls with chainable matchers (`.to_be()`,
+   `.to_equal()`, `.to_have_key()`, etc.).
+
+4. **Spies/Mocks** — `spy()` wraps functions to track calls, arguments, and return
+   values.
+
+5. **Test runner** — a call to the test framework's runner (e.g., `run_tests()`)
+   that executes all registered `it()` blocks and reports results.
+
+### Example
+
+```lua
+local tu = require('test_utils')
+local it = tu.it
+local expect = tu.expect
+local spy = tu.spy
+
+it('creates an object with the given class name', function()
+    local obj = OBJ_Create(ID_TestObj)
+    expect(OBJ_GetClassName(obj)).to_be('test')
+    OBJ_Release(obj)
+end)
+
+it('tracks calls to a spied function', function()
+    local add = spy.new(function(a, b) return a + b end)
+    expect(add(2, 3)).to_equal(5)
+    expect(add.calls).to_have_key(1)
+    expect(add.calls[1].args).to_equal({2, 3})
+end)
+```
+
+Key points:
+- `it()` blocks are registered at parse time and executed by the runner.
+- `expect()` returns a matcher object with fluent methods like `.to_be()`,
+  `.to_equal()`, `.to_be_nil()`, `.to_have_key()`.
+- `spy.new()` wraps any function, recording all calls in `.calls`.
+
+---
+
+## Helpers & Macros
+
+### C Helpers
+
+| Helper | Description |
+|--------|-------------|
+| `WITH(type, name, init_expr, cleanup_fn)` | RAII-style resource management. `init_expr` creates/allocates; `cleanup_fn` frees on scope exit. |
+| `EXPECT(expr)` | Asserts `expr` is non-zero (true). Increments `s_tests_failed` on failure. |
+| `EXPECT_OK(result)` | Asserts `SUCCEEDED(result)`. For COM-style HRESULT checks. |
+| `MEM_SNAPSHOT()` | Captures current allocation state for leak detection. |
+| `MEM_CHECK_LEAK(snap, test_name)` | Compares current allocations against `snap`; reports leaks. |
+| `_SendMessage(obj, Component, Message, ...)` | Sends a message to a component, bypassing the public API for test access. |
+| `make_<fixture>()` | Test helper that creates a configured object for testing. |
+
+### Lua Helpers
+
+| Helper | Description |
+|--------|-------------|
+| `it(description, fn)` | Registers a test case. Executed by the test runner. |
+| `expect(value)` | Returns a matcher object for fluent assertions. |
+| `spy.new(fn)` | Wraps `fn` to record all calls, arguments, and return values. |
+| `tu.it`, `tu.expect`, `tu.spy` | Accessed via `require('test_utils')`. |
+
+### Lua Matchers
+
+| Matcher | Checks |
+|---------|--------|
+| `.to_be(expected)` | Strict equality (`==`). |
+| `.to_equal(expected)` | Deep/equivalent equality. |
+| `.to_be_nil()` | Value is `nil`. |
+| `.to_be_truthy()` / `.to_be_falsy()` | Boolean truthiness. |
+| `.to_have_key(key)` | Table contains the given key. |
+| `.to_have_length(n)` | Table/string has length `n`. |
+
+---
+
+## Naming Conventions
+
+### C Tests
+
+- **Test function**: `test_<component>_<behavior>`, e.g. `test_parse_class_hover_flag`.
+- **Helper functions**: `_` prefix, e.g. `_test_add_float_rule()`, `make_styled_object()`.
+- **Test registry array**: `tests[]` — static array of `{ name, function }` pairs.
+- **Global counters**: `s_tests_run`, `s_tests_failed`, `s_current_test`.
+
+### Lua Tests
+
+- **Test block description**: human-readable string, e.g. `'creates an object with the given class name'`.
+- **Test file**: `test_<component>.lua`, e.g. `test_object.lua`, `test_message.lua`.
+- **Test variables**: `local` scope, descriptive names, e.g. `obj`, `add`, `spy_obj`.
+
+---
+
+## How to Add a New Test
+
+### C Test
+
+1. **Create or open** `tests/test_<component>.c`.
+2. **Add helper functions** (if needed) with `_` prefix and block comments.
+3. **Write a test function**:
+   ```c
+   static void test_<component>_<behavior>(void) {
+       WITH(struct Object, obj, make_<fixture>(), destroy_<fixture>) {
+           /* setup */
+           EXPECT(condition);
+           /* action */
+           EXPECT(result);
+       }
+   }
+   ```
+4. **Register the test** in the `tests[]` array using `DECL_TEST`:
+   ```c
+   DECL_TEST(test_<component>_<behavior>),
+   ```
+5. **Build and run** the test binary. Verify it passes and reports no memory leaks.
+
+### Lua Test
+
+1. **Create or open** `tests/test_<component>.lua`.
+2. **Require helpers**:
+   ```lua
+   local tu = require('test_utils')
+   local it = tu.it
+   local expect = tu.expect
+   ```
+3. **Write test blocks**:
+   ```lua
+   it('describes the expected behavior', function()
+       -- setup
+       expect(value):to_be(expected)
+       -- action
+       expect(result):to_equal(expected)
+   end)
+   ```
+4. **Run the test** with the Lua test runner.
+
+---
+
+## C Example: Complete New Test
+
+```c
+/*
+ * test_trigger_actions.c
+ */
+
+/* Helper: creates a trigger-enabled object for testing */
+static struct Object* make_trigger_obj(void) {
+    struct Object *obj = OBJ_Create(ID_TriggerTest);
+    /* configure object for trigger testing */
+    return obj;
+}
+
+static void destroy_trigger_obj(struct Object *obj) {
+    OBJ_Release(obj);
+}
+
+/* Test: pressing a trigger button invokes the bound action */
+static void test_trigger_button_press(void) {
+    WITH(struct Object, obj, make_trigger_obj(), destroy_trigger_obj) {
+        /* Set up the trigger action */
+        _SendMessage(obj, Trigger, BindAction, "press", on_press_callback);
+
+        /* Simulate button press */
+        _SendMessage(obj, Trigger, Press, .button = BTN_A);
+
+        /* Verify the callback was invoked */
+        EXPECT(g_press_called == TRUE);
+    }
+}
+
+/* Register in tests[]: */
+DECL_TEST(test_trigger_button_press),
+```
+
+---
+
+## Lua Example: Complete New Test
+
+```lua
+-- test_filesystem.lua
+
+local tu = require('test_utils')
+local it = tu.it
+local expect = tu.expect
+
+-- Initialize framework
+mem_init()
+
+it('reads a file and returns its contents', function()
+    local path = 'tests/fixtures/sample.txt'
+    local contents = FS_ReadFile(path)
+    expect(contents).to_be_truthy()
+    expect(contents):to_have_length(> 0)
+end)
+
+it('returns nil for nonexistent files', function()
+    local contents = FS_ReadFile('tests/fixtures/does_not_exist.txt')
+    expect(contents).to_be_nil()
+end)
+
+it('tracks file system calls via spy', function()
+    local read_file = spy.new(FS_ReadFile)
+    local result = read_file('tests/fixtures/sample.txt')
+    expect(read_file.calls).to_have_key(1)
+    expect(read_file.calls[1].args[1]):to_equal('tests/fixtures/sample.txt')
+end)
+
+-- Run tests
+run_tests()
+```
