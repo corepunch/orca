@@ -1,6 +1,8 @@
 #include "object_internal.h"
 #include "../property/property_internal.h"
 
+#include <filesystem/filesystem.h>
+
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
 static void OBJ_Release(struct Object *pobj);
@@ -242,6 +244,8 @@ UI_EnumObjectAliases(struct Object *object, EnumAliasProc proc, void* args)
 struct Object *
 OBJ_Instantiate(struct Object *prefab)
 {
-  assert(!"Not implemented");
-  return NULL;
+  const char* xml = FS_SerializeObjectToXmlString(prefab);
+  struct Object* obj = FS_LoadObjectFromXmlString(xml);
+  free((char*)xml);
+  return obj;
 }
