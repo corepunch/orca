@@ -68,7 +68,6 @@ struct PropertyType const *
 OBJ_FindImplicitPropertyType(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-//  return PROP_FindByShortID(object->properties, identifier);
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
@@ -84,7 +83,6 @@ struct PropertyType const *
 OBJ_FindExplicitPropertyType(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
-  //  return PROP_FindByShortID(object->properties, identifier);
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       struct PropertyType const *pdesc = &cmp->pcls->Properties[i];
