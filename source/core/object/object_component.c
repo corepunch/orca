@@ -65,7 +65,7 @@ _CreateClassProperty(struct Object *object, uint32_t ident)
 }
 
 struct PropertyType const *
-OBJ_FindImplicitProperty(struct Object *object, lpcString_t name)
+OBJ_FindImplicitPropertyType(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
 //  return PROP_FindByShortID(object->properties, identifier);
@@ -81,7 +81,7 @@ OBJ_FindImplicitProperty(struct Object *object, lpcString_t name)
 }
 
 struct PropertyType const *
-OBJ_FindExplicitProperty(struct Object *object, lpcString_t name)
+OBJ_FindExplicitPropertyType(struct Object *object, lpcString_t name)
 {
   uint32_t identifier = fnv1a32(name);
   //  return PROP_FindByShortID(object->properties, identifier);

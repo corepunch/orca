@@ -365,13 +365,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <arg name="Property" type="string">The name of the property whose value to retrieve</arg>
           <returns type="nresults">The current value of the property, or nil if the property doesn't exist. Return type varies based on property data type</returns>
         </method>
-        <method name="FindImplicitProperty">
+        <method name="FindImplicitPropertyType">
           <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
           <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
           <arg name="name" type="string">The name of the property to find</arg>
           <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
         </method>
-        <method name="FindExplicitProperty">
+        <method name="FindExplicitPropertyType">
           <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
           <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
           <arg name="name" type="string">The full name of the property to find</arg>

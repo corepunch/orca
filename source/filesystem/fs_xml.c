@@ -12,11 +12,11 @@ static struct Object *node(struct _xmlNode* x);
 static struct PropertyType const *
 propdesc(struct Object *o, lpcString_t name)
 {
-  struct PropertyType const *pd = OBJ_FindImplicitProperty(o, name);
+  struct PropertyType const *pd = OBJ_FindImplicitPropertyType(o, name);
   if (pd) {
     return pd;
   }
-  pd = OBJ_FindExplicitProperty(o, name);
+  pd = OBJ_FindExplicitPropertyType(o, name);
   if (pd) {
     return pd;
   }
@@ -77,7 +77,7 @@ static bool_t
 inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
 {
   struct Property *triggers = NULL;
-  struct PropertyType const *td = OBJ_FindImplicitProperty(o, "Triggers");
+  struct PropertyType const *td = OBJ_FindImplicitPropertyType(o, "Triggers");
   struct Object *action = _LoadObjectFromXmlFragment(value, 0);
   struct Object *trigger = action ? OBJ_Create(ID_EventTrigger) : NULL;
   char routed[MAX_PROPERTY_STRING] = {0};
@@ -357,7 +357,7 @@ visit_child(struct Object *o, struct _xmlNode* c)
 
   struct PropertyType const *pd = OBJ_FindClass((lpcString_t)c->name)
     ? NULL
-    : OBJ_FindExplicitProperty(o, (lpcString_t)c->name);
+    : OBJ_FindExplicitPropertyType(o, (lpcString_t)c->name);
   if (pd) {
     property_node(o, pd, c);
     return;
