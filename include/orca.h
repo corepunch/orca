@@ -562,6 +562,10 @@ ORCA_API HRESULT FS_FreeFile(struct file*);
 //ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct AXsize*);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
 
+ORCA_API struct Object *FS_LoadObjectFromXml(lpcString_t path);
+ORCA_API struct Object *FS_LoadObjectFromXmlString(lpcString_t xml_string);
+ORCA_API LPSTR FS_SerializeObjectToXmlString(struct Object const *object);
+
 // Editor stuff
 ORCA_API void FS_InitHash(void);
 ORCA_API void FS_ShutdownHash(void);
