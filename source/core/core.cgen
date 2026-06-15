@@ -1113,6 +1113,11 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Returns the number of live engine objects.</summary>
       <returns type="nresults">Number of Lua results pushed by the binding function.</returns>
     </function>
+    <function name="FindPropertyType">
+      <summary>Looks for property type in project's registered properties</summary>
+      <arg name="id" type="int">Full identifier of the property type</arg>
+      <returns type="PropertyType" pointer="true" const="true"/>
+    </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->
 <!--    <arg name="command" type="string"/>-->

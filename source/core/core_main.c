@@ -68,7 +68,7 @@ OBJ_RegisterPropertyType(struct PropertyType const *pt)
 }
 
 struct PropertyType const *
-OBJ_FindPropertyType(uint32_t ident)
+core_FindPropertyType(int32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
     struct PropertyType const *pt = &core.ptypes[i];
