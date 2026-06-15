@@ -63,8 +63,8 @@ typedef uint32_t        event_t;    // event/message ID stored in a struct field
 Usage:
 
 ```c
-struct Property *prop = NULL;
-if (FAILED(OBJ_FindLongProperty(object, ID_Node2D_Width, &prop))) {
+struct Property *prop = OBJ_FindLongProperty(object, ID_Node2D_Width);
+if (!prop) {
     Con_Error("Width not found");
     return FALSE;
 }
@@ -391,29 +391,16 @@ xmlFindAllText(child, text, parent_node, XMLSTR("value")) {
 
 There are several find functions along two axes: *what you search through* and *what key you use*.
 
-**From a raw `Property *` list** — no slot creation, pure scan:
+**From an `Object` — slot-creating, returns `Property*`:**
 
 ```c
-// orca.h — takes (struct Property *list, uint32_t id)
-struct Property *p;
-p = PROP_FindByLongID(OBJ_GetProperties(obj), ID_Node2D_Width);  // FullIdentifier — unambiguous
-p = PROP_FindByShortID(OBJ_GetProperties(obj), fnv1a32("Width")); // ShortIdentifier — first match wins
-
-// Convenience macro (same as PROP_FindByLongID with fnv1a32):
-// #define PROP_FindByFullName(LIST, NAME) PROP_FindByLongID(LIST, fnv1a32(NAME))
-```
-
-Use these when you need to check whether a slot *already exists* without creating one.
-
-**From an `Object` — slot-creating, returns `HRESULT`:**
-
-```c
-// orca.h — allocates a property slot if not present, writes to *output
-struct Property *prop = NULL;
-if (FAILED(OBJ_FindLongProperty(object, ID_Node2D_Width, &prop)) || !prop)
+// orca.h — allocates a property slot if not present, returns property pointer directly
+struct Property *prop = OBJ_FindLongProperty(object, ID_Node2D_Width);
+if (!prop)
     return;  // property not defined on this object
 
-if (FAILED(OBJ_FindShortProperty(object, "Width", &prop)) || !prop)
+prop = OBJ_FindShortProperty(object, "Width");
+if (!prop)
     return;  // searches by bare name — first matching component wins
              // ambiguous when multiple components have "Width"; prefer Long form
 ```
@@ -448,22 +435,20 @@ struct Property *p = OBJ_FindPropertyByPath(root, "Body/NavBar/Width");
 
 | Function | Key type | Creates slot? | Returns | Public? |
 |---|---|---|---|---|
-| `PROP_FindByLongID(list, id)` | `uint32_t` FullIdentifier | No | `Property*` | Yes |
-| `PROP_FindByShortID(list, id)` | `uint32_t` ShortIdentifier | No | `Property*` | Yes |
-| `OBJ_FindLongProperty(obj, id, &p)` | `uint32_t` FullIdentifier | Yes | `HRESULT` | Yes |
-| `OBJ_FindShortProperty(obj, name, &p)` | `lpcString_t` bare name | Yes | `HRESULT` | Yes |
+| `OBJ_FindLongProperty(obj, id)` | `uint32_t` FullIdentifier | Yes | `Property*` | Yes |
+| `OBJ_FindShortProperty(obj, name)` | `lpcString_t` bare name | Yes | `Property*` | Yes |
 | `OBJ_ReadProperty(obj, id, buf)` | `uint32_t` FullIdentifier | No | `bool_t` | Yes |
 | `OBJ_FindImplicitProperty(obj, name)` | `lpcString_t` bare name | No | `PropertyType const*` | Internal |
 | `OBJ_FindExplicitProperty(obj, name)` | `lpcString_t` "Cat.Name" | No | `PropertyType const*` | Internal |
 | `OBJ_FindPropertyByPath(obj, path)` | `lpcString_t` slash path | No | `Property*` | Internal |
 
-**Rule of thumb:** use `OBJ_FindLongProperty` with an `ID_*` constant in component code — unambiguous, creates the slot. Use `PROP_FindByLongID(OBJ_GetProperties(obj), id)` when you only want to test existence without creating a slot.
+**Rule of thumb:** use `OBJ_FindLongProperty` with an `ID_*` constant in component code — unambiguous, creates the slot.
 
 ### Reading a property value
 
 ```c
-struct Property *prop = NULL;
-if (FAILED(OBJ_FindLongProperty(object, ID_Node2D_Width, &prop)) || !prop)
+struct Property *prop = OBJ_FindLongProperty(object, ID_Node2D_Width);
+if (!prop)
     return;
 if (PROP_IsNull(prop)) return;    // no value set
 float width = *(float *)PROP_GetValue(prop);
