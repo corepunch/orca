@@ -93,7 +93,7 @@ OBJ_FindExplicitPropertyType(struct Object *object, lpcString_t name)
       }
     }
   }
-  return OBJ_FindPropertyType(identifier);
+  return core_FindPropertyType(identifier);
 }
 
 struct PropertyShorthand const *

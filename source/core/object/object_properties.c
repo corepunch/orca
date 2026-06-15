@@ -6,7 +6,7 @@
 static struct Property *
 _CreateProjectProperty(struct Object *object, uint32_t ident)
 {
-  struct PropertyType const *pt = OBJ_FindPropertyType(ident);
+  struct PropertyType const *pt = core_FindPropertyType(ident);
   if (pt) {
     return PROP_Create(NULL, object, pt);
   }

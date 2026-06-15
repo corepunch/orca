@@ -497,9 +497,6 @@ CORE_FindFontFamily(lpcString_t name);
 ORCA_API struct ClassDesc const *
 OBJ_FindClassW(uint32_t);
 
-ORCA_API struct PropertyType const *
-OBJ_FindPropertyType(uint32_t);
-
 ORCA_API bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt);
 
