@@ -111,9 +111,8 @@ serialize_property_cb(struct Object const *object,
   if (pd->IsReadOnly) return;   /* Issue 5: skip runtime-computed properties */
   if (pd->Name[0] == '_') return;
 
-  struct Property *prop = NULL;
-  if (FAILED(OBJ_FindLongProperty((struct Object *)object,
-                                  pd->FullIdentifier, &prop)))
+  struct Property *prop = OBJ_FindLongProperty((struct Object *)object, pd->FullIdentifier);
+  if (!prop)
     return;
   if (!prop || PROP_IsNull(prop)) return;
   if (PROP_HasProgram(prop)) return; /* serialised as <BindingExpression> */
