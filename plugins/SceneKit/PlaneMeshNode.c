@@ -11,6 +11,7 @@ _CollectUniforms(struct Object *,
                  struct uniform*,
                  uint32_t);
 
+// PlaneMeshNode_Render
 HANDLER(PlaneMeshNode, Node3D, Render)
 {
   struct Model3D* mod = GetModel3D(hObject);
@@ -18,7 +19,7 @@ HANDLER(PlaneMeshNode, Node3D, Render)
   if (!strcmp("PointerNeedle", OBJ_GetName(hObject))) {
     pPlaneMeshNode->PlaneHeight = 9.5f;
   }
-  
+
   static struct uniform uniforms[MAX_UNIFORMS];
 
   struct ViewEntity entity = {

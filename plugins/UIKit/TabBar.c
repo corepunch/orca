@@ -3,6 +3,7 @@
 
 #include <UIKit/UIKit.h>
 
+// TabBar_Create
 HANDLER(TabBar, Object, Create)
 {
   struct Node *node = GetNode(hObject);
@@ -19,11 +20,13 @@ HANDLER(TabBar, Object, Create)
   return FALSE;
 }
 
+// TabBar_SelectionChanged
 HANDLER(TabBar, TabBar, SelectionChanged)
 {
   /* All state mutation is done in Tab_Select before the message is
      posted here.  Return FALSE so the event continues to bubble up
      the tree — allowing a parent TabView to intercept it via its own
-     HANDLER(TabView, TabBar, SelectionChanged) component proc. */
+     // TabView_SelectionChanged
+HANDLER(TabView, TabBar, SelectionChanged) component proc. */
   return FALSE;
 }

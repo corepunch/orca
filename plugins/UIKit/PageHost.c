@@ -41,6 +41,7 @@ PageHost_FindPageByPath(struct Object *hObject, const char* path)
   return NULL;
 }
 
+// PageHost_NavigateToPage
 HANDLER(PageHost, PageHost, NavigateToPage) {
   struct Page *pTarget = PageHost_FindPageByPath(hObject, pNavigateToPage->URL);
   if (!pTarget) {
@@ -58,6 +59,7 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
   return TRUE;
 }
 
+// PageHost_NavigateBack
 HANDLER(PageHost, PageHost, NavigateBack) {
   if (pPageHost->_historySize <= 0) return FALSE;
 
@@ -67,6 +69,7 @@ HANDLER(PageHost, PageHost, NavigateBack) {
   return TRUE;
 }
 
+// PageHost_ViewDidLoad
 HANDLER(PageHost, Node, ViewDidLoad) {
   FOR_EACH_OBJECT(hChild, hObject) {
     if (pPageHost->ActivePage == NULL) {
@@ -81,6 +84,7 @@ HANDLER(PageHost, Node, ViewDidLoad) {
   return TRUE;
 }
 
+// Page_Create
 HANDLER(Page, Object, Create) {
   pPage->_node = GetNode(hObject);
   return FALSE;

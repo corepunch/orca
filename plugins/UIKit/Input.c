@@ -26,6 +26,7 @@ Input_ApplyTextDefaults(struct Object *hObject)
   GetTextBlockConcept(hObject)->TextVerticalAlignment = kTextVerticalAlignmentCenter;
 }
 
+// Input_DrawForeground
 HANDLER(Input, Node2D, DrawForeground)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
@@ -98,6 +99,7 @@ HANDLER(Input, Node2D, DrawForeground)
   return FALSE;
 }
 
+// Input_MakeText
 HANDLER(Input, TextBlockConcept, MakeText)
 {
   const char* text = GetTextRun(hObject)->Text;
@@ -134,6 +136,7 @@ _NextTabStop(struct Object *hObject)
   return NULL;
 }
 
+// Input_KeyDown
 HANDLER(Input, Node, KeyDown)
 {
   char szText[MAX_PROPERTY_STRING];
@@ -222,6 +225,7 @@ _InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
   return TRUE;
 }
 
+// Input_TextInput
 HANDLER(Input, Node, TextInput)
 {
   if (pTextInput->character >= 32 && (unsigned char)pTextInput->character < 127) {
@@ -230,6 +234,7 @@ HANDLER(Input, Node, TextInput)
   return TRUE;
 }
 
+// Input_MeasureOverride
 HANDLER(Input, Node2D, MeasureOverride)
 {
   if (pInput->Type == kInputTypeCheckbox) {
@@ -239,12 +244,14 @@ HANDLER(Input, Node2D, MeasureOverride)
   }
 }
 
+// Input_KillFocus
 HANDLER(Input, Node, KillFocus)
 {
   SV_PostMessage(hObject, "Input", 0, 0);
   return FALSE;
 }
 
+// Input_LeftButtonUp
 HANDLER(Input, Node, LeftButtonUp)
 {
   OBJ_SetFocus(hObject);
@@ -255,6 +262,7 @@ HANDLER(Input, Node, LeftButtonUp)
   return TRUE;
 }
 
+// Input_Create
 HANDLER(Input, Object, Create)
 {
 //  pInput->_checkmark = Texture_Load("#checkmark");
@@ -263,6 +271,7 @@ HANDLER(Input, Object, Create)
   return FALSE;
 }
 
+// Input_Clear
 HANDLER(Input, Input, Clear)
 {
   struct Property *text;
@@ -273,4 +282,3 @@ HANDLER(Input, Input, Clear)
   OBJ_SetDirty(hObject);
   return TRUE;
 }
-

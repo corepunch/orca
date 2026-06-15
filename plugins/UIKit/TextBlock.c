@@ -54,6 +54,7 @@ text_texture_rect(struct Node2D *pNode2D,
   };
 }
 
+// TextBlock_MeasureOverride
 HANDLER(TextBlock, Node2D, MeasureOverride)
 {
   struct TextRun *output = GetTextRun(hObject);
@@ -64,12 +65,14 @@ HANDLER(TextBlock, Node2D, MeasureOverride)
   return MAKEDWORD(output->_textinfo.txWidth, output->_textinfo.txHeight);
 }
 
+// TextBlock_ForegroundContent
 HANDLER(TextBlock, Node2D, ForegroundContent)
 {
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   return (intptr_t)TextBlockText_GetTexture(text->_text);
 }
 
+// TextBlock_UpdateGeometry
 HANDLER(TextBlock, Node2D, UpdateGeometry)
 {
   struct TextRun *run = GetTextRun(hObject);
@@ -83,6 +86,7 @@ HANDLER(TextBlock, Node2D, UpdateGeometry)
   return TRUE;
 }
 
+// TextBlock_DrawForeground
 HANDLER(TextBlock, Node2D, DrawForeground)
 {
   if (!memcmp(&pDrawForeground->brush, &(struct BrushShorthand){0}, sizeof(struct BrushShorthand))) return FALSE;
@@ -123,6 +127,7 @@ HANDLER(TextBlock, Node2D, DrawForeground)
   return TRUE;
 }
 
+// TextBlock_Create
 HANDLER(TextBlock, Object, Create)
 {
   struct Property *p;

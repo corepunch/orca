@@ -20,6 +20,7 @@ enum
   kImageCount,
 };
 
+// NinePatchImage_MeasureOverride
 HANDLER(NinePatchImage, Node2D, MeasureOverride)
 {
   //    struct image_format format;
@@ -77,11 +78,13 @@ GetImageHeight(handle_t _in)
   return img.bmHeight;
 }
 
+// NinePatchImage_ForegroundContent
 HANDLER(NinePatchImage, Node2D, ForegroundContent)
 {
   return TRUE;
 }
 
+// NinePatchImage_DrawForeground
 HANDLER(NinePatchImage, Node2D, DrawForeground)
 {
   if (!memcmp(&pDrawForeground->brush,

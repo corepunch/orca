@@ -119,7 +119,7 @@ Font_LoadFromMemory(void* buffer, int fileSize, struct FontFamily* family)
   fontface->mem = mem;
 
   (&family->regular)[fs] = fontface;
-  
+
   return fontface;
 }
 
@@ -213,6 +213,7 @@ Font_ResolvePath(struct Object *object, lpcString_t path, path_t resolved)
   return FS_FileExists(resolved) ? resolved : path;
 }
 
+// FontFamily_Start
 HANDLER(FontFamily, Object, Start) {
   if (pFontFamily->Regular && *pFontFamily->Regular) {
     path_t resolved = {0};
@@ -233,6 +234,7 @@ HANDLER(FontFamily, Object, Start) {
   return TRUE;
 }
 
+// FontFamily_Destroy
 HANDLER(FontFamily, Object, Destroy) {
   FontFamily_ReleaseFaces(pFontFamily);
   return TRUE;

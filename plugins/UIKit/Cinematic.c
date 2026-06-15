@@ -8,6 +8,7 @@ typedef struct Cinematic* PCINEMATIC;
 longTime_t
 UI_GetTime(void);
 
+// Cinematic_DrawForeground
 HANDLER(Cinematic, Node2D, DrawForeground)
 {
   if (!memcmp(&pDrawForeground->brush,

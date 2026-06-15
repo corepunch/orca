@@ -53,6 +53,7 @@ _WatchFile(struct Directory* psrch, lpcString_t filename)
 }
 #endif
 
+// Directory_OpenFile
 HANDLER(Directory, Project, OpenFile) {
   assert(pDirectory->Path);
   assert(pOpenFile->FileName);
@@ -72,6 +73,7 @@ HANDLER(Directory, Project, OpenFile) {
   return (LRESULT)pFile;
 }
 
+// Directory_FileExists
 HANDLER(Directory, Project, FileExists) {
   path_t joined = {0};
   FILE* file = fopen(FS_JoinPaths(joined, sizeof(joined), pDirectory->Path, pFileExists->FileName), "rb");
@@ -83,6 +85,7 @@ HANDLER(Directory, Project, FileExists) {
   }
 }
 
+// Directory_HasChangedFiles
 HANDLER(Directory, Project, HasChangedFiles) {
 #ifdef MONITOR_FILES
   longTime_t time;
@@ -99,6 +102,7 @@ HANDLER(Directory, Project, HasChangedFiles) {
 #endif
 }
 
+// Directory_Destroy
 HANDLER(Directory, Object, Destroy) {
 #ifdef MONITOR_FILES
   FOR_EACH_LIST(struct _MONITOREDFILE, mf, (struct _MONITOREDFILE*)pDirectory->_monitoredfiles) free(mf);
@@ -135,6 +139,7 @@ lua_loadfile_with_env(lua_State *L, const char *filename, int env_index)
   return LUA_OK;
 }
 
+// Directory_LoadProject
 HANDLER(Directory, Project, LoadProject) {
   lua_State* L = (lua_State*)pDirectory;
   lua_pcall(L, (luaX_import(L, "orca.filesystem", "Directory"), 0), 1, 0);

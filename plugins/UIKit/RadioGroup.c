@@ -40,6 +40,7 @@ RadioGroup_SyncToSelectedValue(struct Object *object,
   }
 }
 
+// RadioGroup_Start
 HANDLER(RadioGroup, Object, Start)
 {
   /* Sync children to SelectedValue once all children are loaded. */
@@ -48,6 +49,7 @@ HANDLER(RadioGroup, Object, Start)
   return FALSE;
 }
 
+// RadioGroup_Attached
 HANDLER(RadioGroup, Object, Attached)
 {
   /* Re-apply the current selection when the group is attached so rebuilt
@@ -57,6 +59,7 @@ HANDLER(RadioGroup, Object, Attached)
   return FALSE;
 }
 
+// RadioGroup_PropertyChanged
 HANDLER(RadioGroup, Object, PropertyChanged)
 {
   /* When SelectedValue changes at runtime, keep child buttons in sync. */
@@ -66,6 +69,7 @@ HANDLER(RadioGroup, Object, PropertyChanged)
   return FALSE;
 }
 
+// RadioGroup_SelectionChanged
 HANDLER(RadioGroup, RadioGroup, SelectionChanged)
 {
   /* State is already updated by the child RadioButton before this fires.

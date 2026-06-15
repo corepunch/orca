@@ -73,6 +73,8 @@ Migration checklist:
 - `OBJ_SaveDocument` wraps `ED_ConvertNode` in a document and saves it.
 - If core needs similar behavior, do not depend on EditorKit headers from core;
   move shared logic into core or reimplement through core-owned APIs.
+- Do not fetch web documentation for local serialization work; the local code
+  already shows the libxml2 APIs in use.
 
 ## System-Level Message Handlers
 

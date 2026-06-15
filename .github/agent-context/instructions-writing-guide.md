@@ -42,6 +42,13 @@ in `.github/agent-context/` and read them only when needed.
 
 - State the 3-5 project rules that must apply to every task.
 - Search first; then read the smallest relevant line range.
+- Scope code-symbol searches to code directories so instruction files do not
+  pollute grep results.
+- Add a "plan-only" rule: for planning requests, read one area file plus a few
+  exact symbol ranges, then write the plan. Do not let the agent do full
+  implementation discovery before creating a plan.
+- Ban web fetches for local implementation work unless external docs are
+  explicitly requested.
 - Do not preload large files or attach broad `@file` context unless requested.
 - Do not edit generated files; edit sources and rerun generation.
 

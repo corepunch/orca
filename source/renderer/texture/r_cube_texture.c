@@ -49,11 +49,11 @@ Texture_CreateDefaultCube(struct Texture** img)
   R_Call(glGenTextures, 1, &texture->texnum);
   R_Call(glActiveTexture, GL_TEXTURE0);
   R_Call(glBindTexture, GL_TEXTURE_CUBE_MAP, texture->texnum);
-  
+
   FOR_LOOP(index, kCubemapNumImages) {
     R_Call(glTexImage2D,cubmap_to_gl(index),0,GL_RGBA,1,1,0,GL_RGBA,GL_UNSIGNED_BYTE,&white);
   }
-  
+
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -61,12 +61,13 @@ Texture_CreateDefaultCube(struct Texture** img)
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-  
+
   *img = texture;
-  
+
   return S_OK;
 }
 
+// CubeMapTexture_Start
 HANDLER(CubeMapTexture, Object, Start)
 {
   //  GLuint texID;
@@ -88,15 +89,15 @@ HANDLER(CubeMapTexture, Object, Start)
   //  texture->texnum = texID;
   //  *img = texture;
   //  return S_OK;
-  
+
   struct Texture *texture = GetTexture(hObject);
-  
+
   R_Call(glGenTextures, 1, &texture->texnum);
   R_Call(glActiveTexture, GL_TEXTURE0);
   R_Call(glBindTexture, GL_TEXTURE_CUBE_MAP, texture->texnum);
-  
+
   const char **images = &pCubeMapTexture->BackImage;
-  
+
   FOR_LOOP(index, kCubemapNumImages)
   {
     GLenum const target = cubmap_to_gl(index);
@@ -108,7 +109,7 @@ HANDLER(CubeMapTexture, Object, Start)
       R_LoadImageFromSource(target, texture, &img);
     }
   }
-  
+
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
@@ -116,7 +117,6 @@ HANDLER(CubeMapTexture, Object, Start)
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_BASE_LEVEL, 0);
   R_Call(glTexParameteri, GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL, 0);
-  
+
   return TRUE;
 }
-

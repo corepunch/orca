@@ -492,15 +492,17 @@ OBJ_EnumStyleClasses(struct Object *pobj,
 // STYLECONTROLLER COMPONENT HANDLERS
 // ============================================================================
 
+// StyleController_Create
 HANDLER(StyleController, Object, Create) {
   pStyleController->classes = NULL;
   return FALSE;
 }
 
+// StyleController_Release
 HANDLER(StyleController, Object, Release) {
   FOR_EACH_LIST(struct style_class_selector, cls, pStyleController->classes) free(cls);
   pStyleController->classes = NULL;
-  
+
   // Only release the sheet if we created it (owned_sheet).
   // When StyleSheet was assigned externally (e.g. shared between controllers),
   // we just clear our pointer without freeing the underlying object.
@@ -513,6 +515,7 @@ HANDLER(StyleController, Object, Release) {
 }
 
 // Recalculate and apply all active style rules to this object.
+// StyleController_ThemeChanged
 HANDLER(StyleController, StyleController, ThemeChanged) {
   bool_t recursive = pThemeChanged ? pThemeChanged->recursive : FALSE;
 
@@ -529,6 +532,7 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
   return TRUE;
 }
 
+// StyleController_AddClass
 HANDLER(StyleController, StyleController, AddClass)
 {
   _AddClass(hObject, _ParseClass(pAddClass->ClassName));
@@ -536,6 +540,7 @@ HANDLER(StyleController, StyleController, AddClass)
   return TRUE;
 }
 
+// StyleController_AddClasses
 HANDLER(StyleController, StyleController, AddClasses)
 {
   WITH(char, classes, strdup(pAddClasses->ClassNames), free)

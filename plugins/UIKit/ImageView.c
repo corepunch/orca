@@ -37,6 +37,7 @@ _GetImageSize(struct Object *hObject,
   return size;
 }
 
+// ImageView_MeasureOverride
 HANDLER(ImageView, Node2D, MeasureOverride)
 {
   if (pImageView->Source) {
@@ -64,6 +65,7 @@ HANDLER(ImageView, Node2D, MeasureOverride)
   }
 }
 
+// ImageView_ArrangeOverride
 HANDLER(ImageView, Node2D, ArrangeOverride) {
   return _SendMessage(hObject, Node2D, MeasureOverride,
                       .Width = pArrangeOverride->Width,
@@ -92,6 +94,7 @@ check_images(struct _SHADERCONST *u, void* pVoid)
 }
 #endif
 
+// ImageView_DrawForeground
 HANDLER(ImageView, Node2D, DrawForeground)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -126,7 +129,7 @@ HANDLER(ImageView, Node2D, DrawForeground)
 #endif
 
   Node2D_GetViewEntity(pNode2D, &entity, pImageView->Source, &pDrawForeground->brush);
-  
+
   calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
                       (struct edges const*)&pImageView->Insets,
@@ -167,17 +170,19 @@ HANDLER(ImageView, Node2D, DrawForeground)
     entity.material.textureMatrix.v[7] = pImageView->Viewbox.y + uvOffsetY * pImageView->Viewbox.w;
     entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
   }
-  
+
   R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
 }
 
+// ImageView_ForegroundContent
 HANDLER(ImageView, Node2D, ForegroundContent)
 {
   return (intptr_t)pImageView->Source;
 }
 
+// ImageView_Start
 HANDLER(ImageView, Object, Start)
 {
   struct Property *p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
@@ -188,6 +193,7 @@ HANDLER(ImageView, Object, Start)
   return FALSE;
 }
 
+// ImageView_PropertyChanged
 HANDLER(ImageView, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
@@ -198,6 +204,7 @@ HANDLER(ImageView, Object, PropertyChanged)
   return FALSE;
 }
 
+// ImageView_Destroy
 HANDLER(ImageView, Object, Destroy)
 {
   _ImageView_CancelFetch(pImageView);
@@ -226,6 +233,7 @@ HANDLER(ImageView, Object, Destroy)
  *  a fully initialised Texture component; we point Source at it and keep
  *  the Object alive in _src_object.
  */
+// ImageView_LoadView
 HANDLER(ImageView, Node, LoadView)
 {
   const char *src = pImageView->Src;
@@ -315,6 +323,7 @@ HANDLER(ImageView, Node, LoadView)
   return TRUE;
 }
 
+// ImageView_Create
 HANDLER(ImageView, Object, Create) {
   struct Property *p;
   struct color white = {1,1,1,1};

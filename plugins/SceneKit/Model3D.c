@@ -30,6 +30,7 @@ _CollectUniforms(struct Object *hObject,
 
 //#include "../renderer/r_local.h"
 
+// Model3D_Render
 HANDLER(Model3D, Node3D, Render)
 {
   static struct uniform u[MAX_UNIFORMS];
@@ -43,7 +44,7 @@ HANDLER(Model3D, Node3D, Render)
 //  if (!a) {
 //    GetNode3D(hObject)->RenderTransform.rotation.y = OBJ_GetWindow(hObject)->frame * 0.05;
 //  }
-  
+
   if (!pModel3D->Mesh)
     return FALSE;
 

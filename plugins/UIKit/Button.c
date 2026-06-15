@@ -6,6 +6,7 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
+// Button_DrawForeground
 HANDLER(Button, Node2D, DrawForeground) {
   return false;
   // struct Node2D *pNode2D = GetNode2D(hObject);
@@ -52,6 +53,7 @@ HANDLER(Button, Node2D, DrawForeground) {
   // return TRUE;
 }
 
+// Button_LeftButtonUp
 HANDLER(Button, Node, LeftButtonUp)
 {
   axPostMessageW(hObject, ID_Button_Click, 0, 0);
@@ -61,6 +63,7 @@ HANDLER(Button, Node, LeftButtonUp)
   return FALSE;
 }
 
+// Button_Create
 HANDLER(Button, Object, Create)
 {
   pButton->DiffuseColor = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
@@ -80,6 +83,7 @@ HANDLER(Button, Object, Create)
   return FALSE;
 }
 
+// Button_KeyDown
 HANDLER(Button, Node, KeyDown)
 {
   if (pKeyDown->keyCode == AX_KEY_TAB) {

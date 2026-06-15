@@ -123,7 +123,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
   m->face = T_GetFontFace(run);
   if (!m->face) return FALSE;
   if (FT_Set_Pixel_Sizes(m->face, 0, (FT_UInt)(run->fontSize * scale))) return FALSE;
-  
+
   m->ascender    = FT_MulFix(m->face->ascender,         m->face->size->metrics.y_scale);
   m->descender   = FT_MulFix(m->face->descender,        m->face->size->metrics.y_scale);
   m->height      = MAX(FT_MulFix(m->face->height, m->face->size->metrics.y_scale),
@@ -135,7 +135,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
     FT_Pos lh = (FT_Pos)(run->lineHeight * scale * 64);
     if (lh > m->height) m->height = lh;
   }
-  
+
   m->spaceAdv = T_LoadChar(m->face, ' ')
   ? (FT_Int)FT_SCALE(m->face->glyph->metrics.horiAdvance) : 0;
   return TRUE;
@@ -155,20 +155,20 @@ T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
 {
   FT_Pos    width = 0;
   FT_UInt   prev  = *last_glyph_index_inout;
-  
+
   lpcString_t p = *src;
   while (*p) {
     /* skip markup */
     if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
-    
+
     lpcString_t before = p;
     FT_UInt ch = u8_readchar(&p);
     if (isspace(ch)) { p = before; break; }  /* stop before space */
-    
+
     if (!T_LoadChar(face, ch)) { prev = 0; continue; }
     FT_UInt gi = FT_Get_Char_Index(face, ch);
-    
+
     if (prev && gi) {
       FT_Vector kern;
       if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
@@ -177,7 +177,7 @@ T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
     width += FT_SCALE(face->glyph->metrics.horiAdvance);
     prev = gi;
   }
-  
+
   *last_glyph_index_inout = prev;
   *src = p;
   return width;
@@ -244,40 +244,40 @@ T_BlitWord(FT_Face          face,
   FT_Pos x_start = *x;
   lpcString_t p  = word_start;
   FT_UInt prev   = *prev_gi_inout;
-  
+
   while (p < word_end) {
     if (!strncmp(p, "<u>",  3)) { p += 3; continue; }
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
-    
+
     lpcString_t before = p;
     FT_UInt ch = u8_readchar(&p);
     if (isspace(ch)) { p = before; break; }
-    
+
     if (!T_LoadChar(face, ch)) { prev = 0; continue; }
     FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
-    
+
     FT_UInt   gi    = FT_Get_Char_Index(face, ch);
     FT_Pos    adv   = FT_SCALE(face->glyph->metrics.horiAdvance);
     FT_Pos    xoff  = FT_SCALE(face->glyph->metrics.horiBearingX);
     FT_Pos    yoff  = baseline - FT_SCALE(face->glyph->metrics.horiBearingY);
-    
+
     if (prev && gi) {
       FT_Vector kern;
       if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
         *x += FT_SCALE(kern.x);
     }
-    
+
     T_BlitGlyph(&face->glyph->bitmap, image_data, sz, *x + xoff, y + yoff);
     *x  += adv;
     prev = gi;
   }
-  
+
   if (ul_thickness > 0) {
     T_BlitUnderline(image_data, sz,
                     x_start, *x,
                     y + baseline, ul_pos, ul_thickness);
   }
-  
+
   *prev_gi_inout = prev;
   return *x;
 }
@@ -384,7 +384,7 @@ T_LayoutText(LayoutCtx *ctx)
   FT_Pos const wrapW   = (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP)
   ? (FT_Pos)(text->availableWidth * scale)
   : 0;
-  
+
   /* ── First pass: compute pixel dimensions ── */
   /* We always need to know the final size before allocating the bitmap,
    so we do a lightweight pre-pass to get width/height.              */
@@ -528,44 +528,44 @@ T_LayoutText(LayoutCtx *ctx)
     ctx->size = measuredSize;
     s_text_measure_count++;
   }
-  
+
   if (!bRender) return S_OK;
-  
+
   /* ── Allocate bitmap ── */
   struct AXsize const sz = {
     .width  = SCALE_CEIL(measuredSize.width,  (int)scale) * (int)scale,
     .height = SCALE_CEIL(measuredSize.height, (int)scale) * (int)scale,
   };
   if (sz.width == 0 || sz.height == 0) return E_INVALIDARG;
-  
+
   FT_Pixel *image_data = (FT_Pixel*)ZeroAlloc(sz.width * sz.height * sizeof(FT_Pixel));
   if (!image_data) return E_OUTOFMEMORY;
-  
+
   /* ── Second pass: render ── */
   s_text_render_count++;
-  
+
   LayoutState ls;
   LS_Init(&ls);
   int  ul_depth     = 0;       /* nesting depth for <u> tags */
   FT_UInt prev_gi   = 0;
-  
+
   bool_t    bDone           = FALSE;
   FT_Pos    ellipsis_x      = 0;
   FT_Pos    ellipsis_y      = 0;
   FT_Pos    ellipsis_base   = 0;
   FT_Face   ellipsis_face   = NULL;
-  
+
   for (struct TextBlockTextRun const *run = text->run;
        run - text->run < text->numTextRuns && !bDone; run++)
   {
     if (!run->string) continue;
-    
+
     RunMetrics m;
     if (!T_BeginRun(run, scale, &m)) { free(image_data); return E_UNEXPECTED; }
-    
+
     ls.lineHeight = MAX(ls.lineHeight, m.height);
     ls.baseline   = MAX(ls.baseline,   FT_SCALE(m.ascender));
-    
+
     /* Ellipsis threshold for this run */
     FT_Pos ellipsisW = 0;
     if (text->textOverflow == TEXT_OVERFLOW_ELLIPSIS && text->availableWidth > 0
@@ -573,16 +573,16 @@ T_LayoutText(LayoutCtx *ctx)
     {
       ellipsisW = T_EllipsisWidth(m.face);
     }
-    
+
     lpcString_t p = run->string;
     while (*p && !bDone) {
       /* consume markup tags at any position */
       if (!strncmp(p, "<u>",  3)) { p += 3; ul_depth++; continue; }
       if (!strncmp(p, "</u>", 4)) { p += 4; ul_depth--; continue; }
-      
+
       lpcString_t before = p;
       FT_UInt ch = u8_readchar(&p);
-      
+
       if (ch == '\n') {
         ls.lineY  += FT_SCALE(ls.lineHeight);
         ls.lineX   = 0;
@@ -592,20 +592,20 @@ T_LayoutText(LayoutCtx *ctx)
         prev_gi = 0;
         continue;
       }
-      
+
       if (isspace(ch)) continue;  /* spacing handled at word boundary */
-      
+
       /* ── We have a word ── */
       lpcString_t word_start = before;
-      
+
       /* Measure word without side-effects */
       FT_UInt measure_gi = prev_gi;
       lpcString_t word_end = word_start;
       FT_Pos wordW = T_MeasureWord(m.face, &word_end, &measure_gi);
-      
+
       /* Determine inter-word space */
       FT_Pos spacePrefix = ls.lineHasContent ? m.spaceAdv : 0;
-      
+
       /* Wrap decision */
       if (wrapW > 0 && ls.lineHasContent) {
         if (ls.lineX + spacePrefix + wordW > wrapW) {
@@ -618,7 +618,7 @@ T_LayoutText(LayoutCtx *ctx)
           spacePrefix = 0;
         }
       }
-      
+
       /* Ellipsis: would even one char of this word push past the cut? */
       if (ellipsisW > 0) {
         FT_Pos cutX = sz.width - ellipsisW;
@@ -631,7 +631,7 @@ T_LayoutText(LayoutCtx *ctx)
           bDone = TRUE;
           break;
         }
-        
+
         /* Render word characters until we hit the cut */
         int ul_thick = MAX(ul_depth ? 1 : 0, (int)run->underlineWidth) * (int)scale;
         if (ul_thick > 0 && spacePrefix > 0)
@@ -678,7 +678,7 @@ T_LayoutText(LayoutCtx *ctx)
         ls.lineHasContent = TRUE;
         continue;
       }
-      
+
       /* ── Normal render: blit the whole word ── */
       int ul_thick = MAX(ul_depth ? 1 : 0, (int)run->underlineWidth) * (int)scale;
       if (ul_thick > 0 && spacePrefix > 0)
@@ -691,19 +691,19 @@ T_LayoutText(LayoutCtx *ctx)
                  &ls.lineX, ls.lineY,
                  ls.baseline, FT_SCALE(m.underlinePos),
                  ul_thick, &prev_gi);
-      
+
       ls.lineHasContent = TRUE;
       ls.lineHeight = MAX(ls.lineHeight, m.height);
       p = word_end;
     }
   }
-  
+
   /* ── Draw ellipsis if needed ── */
   if (ellipsis_face) {
     T_BlitEllipsis(ellipsis_face, image_data, &sz,
                    ellipsis_x, ellipsis_y, ellipsis_base);
   }
-  
+
   ctx->image_data = image_data;
   ctx->size       = (struct AXsize){ sz.width, sz.height };
   return S_OK;
@@ -734,9 +734,9 @@ TextBlockText_Print(struct TextBlockText *pViewText,
   LayoutCtx ctx = { .text = pViewText, .bRender = TRUE };
   HRESULT hr = T_LayoutText(&ctx);
   if (FAILED(hr)) return hr;
-  
+
   struct AXsize const sz = ctx.size;
-  
+
   CREATEIMGSTRUCT cis = {
     .Width     = sz.width,
     .Height    = sz.height,
@@ -745,7 +745,7 @@ TextBlockText_Print(struct TextBlockText *pViewText,
     .MagFilter = kTextureFilterLinear,
     .ImageData = ctx.image_data,
   };
-  
+
   if (bReuseTexture && *pTexture) {
     Texture_Reallocate(*pTexture, &cis);
     (*pTexture)->Scale  = pViewText->scale;
@@ -754,11 +754,11 @@ TextBlockText_Print(struct TextBlockText *pViewText,
     free(ctx.image_data);
     return S_OK;
   }
-  
+
   hr = Texture_Create(&cis, pTexture);
   free(ctx.image_data);
   if (FAILED(hr)) return hr;
-  
+
   (*pTexture)->Scale  = pViewText->scale;
   (*pTexture)->Width  = sz.width  / MAX(1, (int)pViewText->scale);
   (*pTexture)->Height = sz.height / MAX(1, (int)pViewText->scale);
@@ -775,7 +775,7 @@ TextBlockText_GetHash(struct TextBlockText *text)
   uint32_t format_hash = fnv1a32_range((char*)text, (char*)&text->textureHash);
   uint32_t text_hash   = 0;
   size_t   run_fmt_sz  = sizeof(struct TextBlockTextRun) - sizeof(lpcString_t);
-  
+
   for (struct TextBlockTextRun *run = text->run;
        run - text->run < text->numTextRuns; run++)
   {
@@ -793,7 +793,7 @@ TextBlockText_GetTexture(struct TextBlockText *text)
   uint32_t hash = TextBlockText_GetHash(text);
   if (text->texture && text->textureHash == hash)
     return text->texture;
-  
+
   if (FAILED(TextBlockText_Print(text, &text->texture, text->texture != NULL))) {
     SafeDelete(text->texture, Texture_Release);
     text->textureHash = 0;
@@ -858,13 +858,13 @@ TextBlockText_GetInfo(struct TextBlockText *pViewText,
     *info = pViewText->info;
     return NOERROR;
   }
-  
+
   struct AXsize textSize = T_GetSize(pViewText, &info->cursor);
   info->txWidth  = SCALE_CEIL(textSize.width,  pViewText->scale);
   info->txHeight = SCALE_CEIL(textSize.height, pViewText->scale);
   /* cursor rect is already in unscaled logical pixels from T_LayoutText */
   TextBlockText_GetInsets(pViewText, &info->txInsets);
-  
+
   pViewText->info     = *info;
   pViewText->infoHash = hash;
   return NOERROR;
@@ -900,7 +900,7 @@ _MakeTextBlockTextRun(struct Object  *hObject,
   TextRun_ReadProperty(hObject, Font.Style,  &font.Style);
   TextRun_ReadProperty(hObject, Font.Size,   &font.Size);
   TextRun_ReadProperty(hObject, Font.Family, &font.Family);
-  
+
   struct TextBlockTextRun view = {
     .string             = szText,
     .fontFamily         = font.Family,
@@ -917,17 +917,18 @@ _MakeTextBlockTextRun(struct Object  *hObject,
   return view;
 }
 
+// TextBlockConcept_MakeText
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
   struct TextBlockText *pViewText = pTextBlockConcept->_text;
-  
+
   pViewText->run[0] = _MakeTextBlockTextRun(
                                             hObject, *pTextRun,
                                             _GetTextBlockText(hObject, pTextBlockConcept, pTextRun));
   pViewText->placeholder  = (pTextBlockConcept->PlaceholderText == pViewText->run[0].string);
   pViewText->numTextRuns  = 1;
-  
+
   FOR_EACH_OBJECT(run, hObject) {
     struct TextRun *tr = GetTextRun(run);
     if (tr && pViewText->numTextRuns < UI_MAX_TEXT_RUNS) {
@@ -949,7 +950,7 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
       pViewText->run[pViewText->numTextRuns++] = _MakeTextBlockTextRun(run, base, str);
     }
   }
-  
+
   pViewText->flags          = pTextBlockConcept->UseFullFontHeight ? UI_TEXT_USE_FONT_HEIGHT : 0;
   pViewText->availableWidth = pMakeText->availableSpace;
   pViewText->textWrapping   = (uint32_t)pTextBlockConcept->TextWrapping;
@@ -958,6 +959,7 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   return TRUE;
 }
 
+// TextBlockConcept_GetInfo
 HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
 {
   struct text_info *info = (struct text_info*)pGetInfo;
@@ -965,12 +967,14 @@ HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
   return SUCCEEDED(TextBlockText_GetInfo(pTextBlockConcept->_text, info));
 }
 
+// TextBlockConcept_GetTexture
 HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)
 {
   if (!pTextBlockConcept->_text) return 0;
   return (intptr_t)TextBlockText_GetTexture(pTextBlockConcept->_text);
 }
 
+// TextBlockConcept_Create
 HANDLER(TextBlockConcept, Object, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
@@ -978,6 +982,7 @@ HANDLER(TextBlockConcept, Object, Create)
   return FALSE;
 }
 
+// TextBlockConcept_Destroy
 HANDLER(TextBlockConcept, Object, Destroy)
 {
   TextBlockText_Release(pTextBlockConcept->_text);

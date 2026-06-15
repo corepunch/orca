@@ -35,6 +35,7 @@ get_frame_index(uint32_t num_frames, float framerate, int32_t freeze_frame)
   return (uint32_t)((double)ms * framerate / 1000.0) % num_frames;
 }
 
+// SKSpriteNode_Render
 HANDLER(SKSpriteNode, SKNode, Render)
 {
   struct SKNode *node = GetSKNode(hObject);
@@ -81,13 +82,13 @@ HANDLER(SKSpriteNode, SKNode, Render)
     bbox.width = 16;
     bbox.height = 16;
   }
-  
+
   SKNode_anchor(hObject, &bbox);
 
   enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
     ? (enum blend_mode)pSKSpriteNode->BlendMode
     : BLEND_MODE_ALPHA;
-  
+
   struct ViewEntity entity = {
     .bbox = BOX3_FromRect(bbox),
     .matrix = node->Matrix,

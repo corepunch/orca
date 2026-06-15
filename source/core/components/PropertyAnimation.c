@@ -291,11 +291,13 @@ _PropertyAnimation_FreeBuffers(struct PropertyAnimation *anim)
     free((char*)anim->To);   anim->To   = NULL;
 }
 
+// PropertyAnimation_Release
 HANDLER(PropertyAnimation, Object, Release) {
     _PropertyAnimation_FreeBuffers(pPropertyAnimation);
     return FALSE;
 }
 
+// PropertyAnimation_Animate
 HANDLER(PropertyAnimation, Object, Animate) {
     if (!pPropertyAnimation->_property) {
         _PropertyAnimation_FreeBuffers(pPropertyAnimation);
@@ -398,4 +400,3 @@ OBJ_DoTween(lua_State* L,
   }
   OBJ_RequestAnimate(self);
 }
-
