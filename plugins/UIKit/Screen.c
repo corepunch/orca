@@ -91,8 +91,8 @@ static void _RenderSubViews(struct Object *hObject) {
 static bool_t
 _PopupSetDialogResult(struct Object *modal, float value)
 {
-  struct Property *dialog_result = NULL;
-  if (FAILED(OBJ_FindShortProperty(modal, "DialogResult", &dialog_result)) || !dialog_result) {
+  struct Property *dialog_result = OBJ_FindLongProperty(modal, ID_Popup_DialogResult);
+  if (!dialog_result) {
     return FALSE;
   }
   if (PROP_GetType(dialog_result) != kDataTypeFloat) {
@@ -345,14 +345,11 @@ static void
 _CloseModalPopup(struct Object *hObject, float result)
 {
   struct Popup *popup = GetPopup(hObject);
-  struct Property *dialog_result = NULL;
-  bool_t has_dialog_result_handler = FALSE;
-  if (!popup) {
+  if (!popup)
     return;
-  }
-
-  if (SUCCEEDED(OBJ_FindShortProperty(hObject, "DialogResult", &dialog_result)) &&
-      dialog_result && PROP_GetType(dialog_result) == kDataTypeFloat) {
+  struct Property *dialog_result = OBJ_FindLongProperty(hObject, ID_Popup_DialogResult);
+  bool_t has_dialog_result_handler = FALSE;
+  if (dialog_result && PROP_GetType(dialog_result) == kDataTypeFloat) {
     has_dialog_result_handler = PROP_HasHandler(dialog_result);
     PROP_SetValue(dialog_result, &result);
   } else {
@@ -360,7 +357,7 @@ _CloseModalPopup(struct Object *hObject, float result)
   }
   {
     bool_t visible = FALSE;
-    OBJ_SetPropertyValue(hObject, "Visible", &visible);
+    PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Node_Visible), &visible);
   }
 
   if (!has_dialog_result_handler && _RemoveFromModalChain(hObject)) {
@@ -389,7 +386,7 @@ HANDLER(Screen, Screen, ShowModal) {
 
   if (_AttachModalObject(hObject, target)) {
     bool_t visible = TRUE;
-    OBJ_SetPropertyValue(target, "Visible", &visible);
+    PROP_SetValue(OBJ_FindLongProperty(target, ID_Node_Visible), &visible);
     return TRUE;
   }
   return FALSE;
@@ -399,7 +396,7 @@ HANDLER(Screen, Screen, ShowModal) {
 HANDLER(Screen, Screen, SetModalObject) {
   if (_AttachModalObject(hObject, pSetModalObject->Target)) {
     bool_t visible = TRUE;
-    OBJ_SetPropertyValue(pSetModalObject->Target, "Visible", &visible);
+    PROP_SetValue(OBJ_FindLongProperty(pSetModalObject->Target, ID_Node_Visible), &visible);
     return TRUE;
   }
   return FALSE;

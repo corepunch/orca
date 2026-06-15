@@ -16,8 +16,8 @@ Input_ApplyTextDefaults(struct Object *hObject)
 
   node2d->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
   struct color foreground = FS_GetThemeColor(THEME_COLOR_CONTROL_FOREGROUND);
-  struct Property *foregroundProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+  struct Property *foregroundProp = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
+  if (foregroundProp) {
     PROP_SetValue(foregroundProp, &foreground);
   }
   node->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
@@ -274,8 +274,8 @@ HANDLER(Input, Object, Create)
 // Input_Clear
 HANDLER(Input, Input, Clear)
 {
-  struct Property *text;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_TextRun_Text, &text))) {
+  struct Property *text = OBJ_FindLongProperty(hObject, ID_TextRun_Text);
+  if (text) {
     PROP_Clear(text);
   }
   pInput->Cursor = 0;

@@ -333,9 +333,9 @@ LRESULT ED_CanvasView(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm) {
     case ID_Node_LeftButtonUp:
       if (data->mode == ID_OBJECT_IMAGE && data->selection.width && data->selection.height) {
         struct Object *newobj = UI_NewObject(CanvasView_GetScene(wnd), "Node", ID_OBJECT_IMAGE);
-        OBJ_SetPropertyValue(newobj, "LayoutTransformTranslation", &data->selection);
-        OBJ_SetPropertyValue(newobj, "Width", &data->selection.width);
-        OBJ_SetPropertyValue(newobj, "Height", &data->selection.height);
+        PROP_SetValue(OBJ_FindLongProperty(newobj, ID_Node2D_LayoutTransform), &data->selection);
+        PROP_SetValue(OBJ_FindLongProperty(newobj, ID_Node_Width), &data->selection.width);
+        PROP_SetValue(OBJ_FindLongProperty(newobj, ID_Node_Height), &data->selection.height);
         ED_SendMessage(editor.inspector, EVT_OBJECT_SELECTED, 0, newobj);
         ED_SendMessage(ED_FindWindowInChildren(ED_GetParent(wnd), ED_HierarchyNavigator), EVT_OBJECT_SELECTED, 0, newobj);
         ED_SendMessage(wnd, EVT_OBJECT_SELECTED, 0, newobj);

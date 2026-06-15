@@ -21,7 +21,7 @@ UI_EnumObjectPropertyTypes(struct Object *object,
   FOR_EACH_LIST(struct component, cmp, object->components) {
     FOR_LOOP(i, cmp->pcls->NumProperties) {
       LPCPDESC pdesc = cmp->pcls->Properties+i;
-      if (PROP_FindByLongID(OBJ_GetProperties(object), pdesc->ShortIdentifier))
+      if (OBJ_FindLongProperty(object, pdesc->ShortIdentifier))
         continue;
       fnProc(pdesc->Name, lpParam);
     }

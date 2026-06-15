@@ -148,8 +148,8 @@ apply_shorthand_struct(struct Object *object,
       continue;
     }
     void *src = (char *)value + target->Offset;
-    struct Property *property = NULL;
-    if (FAILED(OBJ_FindLongProperty(object, target->PropertyID, &property)) || !property) {
+    struct Property *property = OBJ_FindLongProperty(object, target->PropertyID);
+    if (!property) {
       ok = FALSE;
       continue;
     }
@@ -224,8 +224,8 @@ OBJ_SetShorthandValueFromLua(lua_State *L,
     bool_t ok = TRUE;
     FOR_LOOP(i, sh->NumTargets) {
       struct PropertyShorthandTarget const *target = &sh->Targets[i];
-      struct Property *property = NULL;
-      if (FAILED(OBJ_FindLongProperty(object, target->PropertyID, &property)) || !property) {
+      struct Property *property = OBJ_FindLongProperty(object, target->PropertyID);
+      if (!property) {
         ok = FALSE;
         continue;
       }
@@ -281,9 +281,8 @@ OBJ_PushShorthandValue(lua_State *L,
   }
   FOR_LOOP(i, sh->NumTargets) {
     struct PropertyShorthandTarget const *target = &sh->Targets[i];
-    struct Property *property = NULL;
-    if (SUCCEEDED(OBJ_FindLongProperty(object, target->PropertyID, &property)) &&
-        property && !PROP_IsNull(property)) {
+    struct Property *property = OBJ_FindLongProperty(object, target->PropertyID);
+    if (property && !PROP_IsNull(property)) {
       memcpy((char *)tmp + target->Offset, PROP_GetValue(property), PROP_GetSize(property));
     }
   }

@@ -16,8 +16,8 @@ _InitControllerProperties(struct StateManagerController* smc, struct Object *hos
   FOR_EACH_OBJECT(sgObj, smObj) {
     struct StateGroup* sg = GetStateGroup(sgObj);
     if (!sg || !sg->ControllerProperty || !sg->ControllerProperty[0]) continue;
-    struct Property *prop = NULL;
-    if (SUCCEEDED(OBJ_FindShortProperty(host, sg->ControllerProperty, &prop))) {
+    struct Property *prop = OBJ_FindShortProperty(host, fnv1a32(sg->ControllerProperty));
+    if (prop) {
       PROP_SetFlag(prop, PF_USED_IN_STATE_MANAGER);
     }
   }
@@ -36,8 +36,8 @@ _ApplyState(struct Object *host, struct Object *target, struct Object *stateObj)
     if (PROP_IsNull(rp)) continue;
     struct PropertyType const *pdesc = PROP_GetDesc(rp);
     if (!pdesc || !pdesc->Name) continue;
-    struct Property *hprop = NULL;
-    if (SUCCEEDED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) {
+    struct Property *hprop = OBJ_FindShortProperty(target, fnv1a32(pdesc->Name));
+    if (hprop) {
       PROP_SetValue(hprop, PROP_GetValue(rp));
     }
   }
@@ -84,8 +84,7 @@ _StateMatches(struct Property *prop, lpcString_t value)
 // StateManagerController_Start
 HANDLER(StateManagerController, Object, Start) {
   _InitControllerProperties(pStateManagerController, hObject);
-  struct Property *smProp = PROP_FindByLongID(OBJ_GetProperties(hObject),
-                                          ID_StateManagerController_StateManager);
+  struct Property *smProp = OBJ_FindLongProperty(hObject, ID_StateManagerController_StateManager);
   if (smProp) PROP_SetFlag(smProp, PF_USED_IN_TRIGGER);
   return FALSE;
 }
@@ -95,8 +94,7 @@ HANDLER(StateManagerController, Object, Start) {
 // StateManagerController_PropertyChanged
 HANDLER(StateManagerController, Object, PropertyChanged) {
   if (pPropertyChanged->Property &&
-      PROP_GetLongIdentifier(pPropertyChanged->Property) ==
-        ID_StateManagerController_StateManager) {
+      PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_StateManagerController_StateManager) {
     _InitControllerProperties(pStateManagerController, hObject);
   }
   return FALSE;

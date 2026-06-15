@@ -50,8 +50,8 @@ _UniformGridSyncColumns(struct Object *hObject,
     return;
   }
 
-  struct Property *prop = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Grid_Columns, &prop))) {
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_Grid_Columns);
+  if (prop) {
     pUniformGrid->_syncingColumns = TRUE;
     PROP_SetStringValue(prop, columns);
     pUniformGrid->_syncingColumns = FALSE;

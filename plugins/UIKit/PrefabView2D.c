@@ -7,7 +7,7 @@
 // PrefabView2D_Start
 HANDLER(PrefabView2D, Object, Start)
 {
-  struct Property *p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_PrefabView2D_Prefab);
+  struct Property *p = OBJ_FindLongProperty(hObject, ID_PrefabView2D_Prefab);
   if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
   if ((pPrefabView2D->Prefab && *pPrefabView2D->Prefab)) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);

@@ -198,8 +198,8 @@ struct Object *UI_NewObject(struct Object *parent, lpcString_t szName, DWORD dwT
 BOOL UI_GetObjectProperty(struct Object *     object,
                           lpcString_t    szPropertyName,
                           LPPROPDEF lpPropDef) {
-  HPROP property;
-  if (FAILED(OBJ_FindShortProperty(object, szPropertyName, &property))) {
+  HPROP property = OBJ_FindShortProperty(object, fnv1a32(szPropertyName));
+  if (!property) {
     return FALSE;
   }
   UI_FillOutPropDef(object, property, lpPropDef);

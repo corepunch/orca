@@ -356,7 +356,7 @@ OBJ_DoTween(lua_State* L,
             enum InterpolationMode ipo,
             enum Easing easing)
 {
-  struct Property *hprop = PROP_FindByFullName(OBJ_GetProperties(self), property);
+  struct Property *hprop = OBJ_FindLongProperty(self, fnv1a32(property));
   if (!hprop) {
     luaL_error(L, "Can't find property %s", property);
     return;

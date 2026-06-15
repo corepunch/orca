@@ -82,7 +82,7 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   struct Object *trigger = action ? OBJ_Create(ID_EventTrigger) : NULL;
   char routed[MAX_PROPERTY_STRING] = {0};
 
-  if (!td || FAILED(OBJ_FindLongProperty(o, td->FullIdentifier, &triggers)) || !trigger) {
+  if (!td || !(triggers = OBJ_FindLongProperty(o, td->FullIdentifier)) || !trigger) {
     if (action) OBJ_ReleaseRef(action);
     Con_Error("Property '%s' does not support inline trigger shorthand", pd->Name);
     return FALSE;
@@ -92,12 +92,13 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
            (pd->Category && *pd->Category) ? pd->Category : pd->Name,
            pd->Name);
   lpcString_t routed_value = routed;
-  if (FAILED(OBJ_SetPropertyValue(trigger, "RoutedEvent", &routed_value))) {
+  struct Property* evt = OBJ_FindLongProperty(trigger, ID_EventTrigger_RoutedEvent);
+  if (evt) {
     OBJ_ReleaseRef(trigger);
     OBJ_ReleaseRef(action);
     return FALSE;
   }
-
+  PROP_SetValue(evt, &routed_value);
   OBJ_AddChild(trigger, action);
   if (append_object(triggers, trigger)) return TRUE;
   OBJ_ReleaseRef(trigger);
@@ -134,7 +135,8 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   struct Property *p = NULL;
   char tmp[MAX_PROPERTY_STRING] = {0};
   if (!value || !*value) return;
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }
@@ -236,7 +238,8 @@ array_prop(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
   int count = 0;
   int index = 0;
 
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }
@@ -275,7 +278,8 @@ property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* 
     array_prop(o, pd, x);
     return;
   }
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }

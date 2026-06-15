@@ -537,7 +537,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       struct Object *object = e->target;
       struct Property *property = e->lParam;
       if (!property && object && e->wParam) {
-        property = PROP_FindByShortID(OBJ_GetProperties(object), e->wParam);
+        property = OBJ_FindShortProperty(object, e->wParam);
       }
       if (!property) {
         return FALSE;
@@ -868,3 +868,5 @@ after_core_module_registered(lua_State* L)
 }
 
 #include <core/core_export.c>
+
+

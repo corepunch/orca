@@ -44,8 +44,7 @@ Tab_Select(struct Object *object, struct Tab *tab)
      We must capture a copy of oldValue first because PROP_SetStringValue frees
      the previous string. */
   char *savedOld = oldValue ? strdup(oldValue) : NULL;
-  struct Property *prop = NULL;
-  OBJ_FindLongProperty(bar, ID_TabBar_SelectedValue, &prop);
+  struct Property *prop = OBJ_FindLongProperty(bar, ID_TabBar_SelectedValue);
   if (prop) PROP_SetStringValue(prop, tab->Value);
   OBJ_SetDirty(bar);
 
@@ -73,7 +72,7 @@ HANDLER(Tab, Object, Create)
 {
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
-  struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_Tab_IsSelected);
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_Tab_IsSelected);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
 
   if (text) {

@@ -420,12 +420,8 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
     struct PropertyType const *pdesc = PROP_GetDesc(rp);
     if (!pdesc || !pdesc->Name) continue;
 
-    struct Property *hprop = NULL;
-    if (FAILED(OBJ_FindShortProperty(target, pdesc->Name, &hprop))) {
-      if (!pdesc->FullIdentifier ||
-          FAILED(OBJ_FindLongProperty(target, pdesc->FullIdentifier, &hprop)))
-        continue;
-    }
+    struct Property *hprop = OBJ_FindLongProperty(target, pdesc->FullIdentifier);
+    if (!hprop) continue;
 
     if (ruleFlags) {
       PROP_SetFlag(hprop, PF_SPECIALIZED);
@@ -574,3 +570,4 @@ OBJ_GetRawStyleClasses(struct Object *object, LPSTR buf, uint32_t len)
   }
   return pos > 0 ? buf : NULL;
 }
+
