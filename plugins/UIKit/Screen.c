@@ -188,15 +188,14 @@ HANDLER(Screen, Screen, RenderScreen) {
   return FALSE;
 }
 
-//// Screen_Create
-HANDLER(Screen, Object, Create) {
+// Screen_Create
+//HANDLER(Screen, Object, Create) {
 //  extern bool_t is_server;
 //  pScreen->_size = axGetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
 //  axPostMessageW(hObject, ID_Window_Paint, pScreen->_size, NULL);
 //  return FALSE;
 //}
-
 
 // Screen_Create
 HANDLER(Screen, Object, Create) {

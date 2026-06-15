@@ -42,7 +42,7 @@ end
 local function add_rule(classname, props)
 	local rule = core.StyleRule { ClassName = classname }
 	for key, value in pairs(props) do
-		local ptype = rule:findExplicitProperty(key)
+		local ptype = rule:findExplicitPropertyType(key)
 		if type(value) == "string" and ptype then
 			rule[key] = orca.core.parseProperty(value, ptype)
 		else
