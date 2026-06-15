@@ -114,6 +114,7 @@ _BindingCompileToProperty(struct Object *hObject,
   return TRUE;
 }
 
+// Trigger_Attached
 HANDLER(Trigger, Object, Attached)
 {
   struct Property *prop = NULL;
@@ -123,6 +124,7 @@ HANDLER(Trigger, Object, Attached)
   return FALSE;
 }
 
+// Binding_Compile
 HANDLER(Binding, Binding, Compile)
 {
   return _BindingCompileToProperty(hObject,
@@ -131,6 +133,7 @@ HANDLER(Binding, Binding, Compile)
                                    TRUE);
 }
 
+// BindingExpression_Compile
 HANDLER(BindingExpression, Binding, Compile)
 {
   return _BindingCompileToProperty(hObject,
@@ -139,6 +142,7 @@ HANDLER(BindingExpression, Binding, Compile)
                                    FALSE);
 }
 
+// Trigger_PropertyChanged
 HANDLER(Trigger, Object, PropertyChanged)
 {
   if (!pPropertyChanged || !pPropertyChanged->Property ||
@@ -165,6 +169,7 @@ HANDLER(Trigger, Object, PropertyChanged)
   }
 }
 
+// OnAttachedTrigger_Attached
 HANDLER(OnAttachedTrigger, Object, Attached)
 {
   struct Object *sender = OBJ_GetParent(hObject);
@@ -173,10 +178,11 @@ HANDLER(OnAttachedTrigger, Object, Attached)
   return FALSE;
 }
 
+// Trigger_Triggered
 HANDLER(Trigger, Trigger, Triggered)
 {
   struct Object *sender = _TriggerSender(hObject, pTriggered);
-  
+
   for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
     LRESULT result = _SendMessage(child, Action, Dispatch,
                  .Sender = sender);
@@ -185,6 +191,7 @@ HANDLER(Trigger, Trigger, Triggered)
   return FALSE;
 }
 
+// Setter_Dispatch
 HANDLER(Setter, Action, Dispatch)
 {
   if (!pSetter->Property || !pSetter->Value) {
@@ -228,6 +235,7 @@ HANDLER(Setter, Action, Dispatch)
 //                .Sender = sender ? sender : hObject);
 //}
 
+// HideAction_Dispatch
 HANDLER(HideAction, Action, Dispatch)
 {
   if (!pHideAction->Path || !*pHideAction->Path) {
@@ -246,11 +254,13 @@ HANDLER(HideAction, Action, Dispatch)
   return TRUE;
 }
 
+// HideAction_Attached
 HANDLER(HideAction, Object, Attached)
 {
   return FALSE;
 }
 
+// OnPropertyChangedTrigger_PropertyChanged
 HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
 {
   if (!pPropertyChanged || !pPropertyChanged->Property ||
@@ -263,6 +273,7 @@ HANDLER(OnPropertyChangedTrigger, Object, PropertyChanged)
   return FALSE;
 }
 
+// OnPropertyChangedTrigger_Attached
 HANDLER(OnPropertyChangedTrigger, Object, Attached)
 {
   struct Property *pProp;

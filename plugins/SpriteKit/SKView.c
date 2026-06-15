@@ -34,6 +34,7 @@ SKNode_RenderTree(struct Object *hObject, struct ViewDef *viewdef)
   }
 }
 
+// SKView_ForegroundContent
 HANDLER(SKView, Node2D, ForegroundContent)
 {
   struct Object *scene = NULL;

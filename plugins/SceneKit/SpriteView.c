@@ -3,6 +3,7 @@
 
 #include <SceneKit/SceneKit.h>
 
+// SpriteView_Render
 HANDLER(SpriteView, Node3D, Render)
 {
   struct rect viewbox = {0};
@@ -31,7 +32,7 @@ HANDLER(SpriteView, Node3D, Render)
       viewbox.height = img.bmHeight;
     }
   }
-  
+
   struct ViewEntity entity = {
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){
@@ -47,8 +48,8 @@ HANDLER(SpriteView, Node3D, Render)
       .blendMode = BLEND_MODE_ALPHA,
     },
   };
-  
+
   R_DrawEntity(pRender->ViewDef, &entity);
-  
+
   return TRUE;
 }

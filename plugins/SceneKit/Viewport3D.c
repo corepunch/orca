@@ -81,6 +81,7 @@ _Node2D_GetRect(struct Node2D *pNode2D)
   };
 }
 
+// Viewport3D_ForegroundContent
 HANDLER(Viewport3D, Node2D, ForegroundContent)
 {
   struct Object *screen = OBJ_FindParentOfClass(hObject, ID_Screen);
@@ -107,7 +108,7 @@ HANDLER(Viewport3D, Node2D, ForegroundContent)
     .flags = camalias ? RF_CAMERA_ALIAS : 0,
     .renderPass = Viewport3D_renderpass(hObject),
   };
-  
+
   if (Viewport3D_scene(hObject)) {
     collect_lights(Viewport3D_scene(hObject), &viewdef);
     R_RenderViewport(Viewport3D_scene(hObject), &viewdef);

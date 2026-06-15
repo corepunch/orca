@@ -68,6 +68,7 @@ Tab_Select(struct Object *object, struct Tab *tab)
   return TRUE;
 }
 
+// Tab_Create
 HANDLER(Tab, Object, Create)
 {
   struct TextBlockConcept *text = GetTextBlockConcept(hObject);
@@ -87,6 +88,7 @@ HANDLER(Tab, Object, Create)
   return FALSE;
 }
 
+// Tab_PropertyChanged
 HANDLER(Tab, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property)
@@ -99,11 +101,13 @@ HANDLER(Tab, Object, PropertyChanged)
   return FALSE;
 }
 
+// Tab_LeftButtonUp
 HANDLER(Tab, Node, LeftButtonUp)
 {
   return Tab_Select(hObject, pTab);
 }
 
+// Tab_DrawBackground
 HANDLER(Tab, Node2D, DrawBackground)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);

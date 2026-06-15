@@ -27,6 +27,8 @@ code, or generated Lua exports.
 
 ## Message and Object API Notes
 
+- Object/Lua bridge code lives under `source/core/object/`; do not look for
+  `source/object/`.
 - Lua may call object message handlers directly with capitalized method names,
   for example `self:MessageName(...)` or `screen:SetModalObject(modal)`.
 - If a Lua API needs a new C method, declare it in `.cgen`, run `make modules`,

@@ -81,6 +81,7 @@ _StateMatches(struct Property *prop, lpcString_t value)
 // to fire ControllerChanged when they change.  Also mark the StateManager
 // property itself with PF_USED_IN_TRIGGER so Object.PropertyChanged fires
 // when the StateManager is replaced at runtime.
+// StateManagerController_Start
 HANDLER(StateManagerController, Object, Start) {
   _InitControllerProperties(pStateManagerController, hObject);
   struct Property *smProp = PROP_FindByLongID(OBJ_GetProperties(hObject),
@@ -91,6 +92,7 @@ HANDLER(StateManagerController, Object, Start) {
 
 // When the StateManager object property is changed, re-initialise the tracked
 // property flags against the new StateManager object.
+// StateManagerController_PropertyChanged
 HANDLER(StateManagerController, Object, PropertyChanged) {
   if (pPropertyChanged->Property &&
       PROP_GetLongIdentifier(pPropertyChanged->Property) ==
@@ -104,6 +106,7 @@ HANDLER(StateManagerController, Object, PropertyChanged) {
 // changes value.  Refresh tracked controller-property bindings first so that
 // runtime StateManager swaps are handled even if Object.PropertyChanged for the
 // StateManager property was not dispatched (e.g., assigned before Start ran).
+// StateManagerController_ControllerChanged
 HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
   _InitControllerProperties(pStateManagerController, hObject);
   if (!pStateManagerController->StateManager) return FALSE;
@@ -133,4 +136,3 @@ HANDLER(StateManagerController, StateManagerController, ControllerChanged) {
   }
   return FALSE;
 }
-

@@ -8,10 +8,23 @@ Keep this file tiny: Zed injects it into every model request. Put details in
 - Convention over configuration. Don't Repeat Yourself.
 - ORCA is pre-release: prefer clean architecture over legacy compatibility.
 - Do not preload large files or attach broad `@file` context unless requested.
-- Search first; then read the smallest relevant line range. Avoid whole-file
-  reads after grep has returned useful line numbers.
+- Search narrowly before reading files.
+- After any useful grep, read only the smallest relevant line range. Do not
+  re-read the same file or try regex variants once a known symbol or path has
+  been found.
+- For code symbol searches, scope to `source/**`, `plugins/**`, and `include/**`.
+  Do not search `.github/agent-context/**` unless looking for instructions.
+- Do not fetch web pages for local C/libxml2 work unless the user explicitly
+  asks for external docs.
 - Do not edit generated files under `generated/`; edit `.cgen` and rerun
   codegen.
+
+## Plan-Only Requests
+
+When asked to make a plan, do not perform implementation-level archaeology.
+Read one relevant area file plus exact symbol locations or at most three short
+line ranges, then write the plan. Do not read whole source files, repeat symbol
+searches, fetch web docs, or inspect unrelated areas.
 
 ## Before Editing
 
@@ -33,8 +46,10 @@ by default.
 ## Quick Paths
 
 - Core: `source/core/`, `include/orca.h`, `include/orcadef.h`
+- Object/Lua bridge: `source/core/object/`, not `source/object/`
 - Filesystem XML load/save: `source/filesystem/`, `source/parsers/`
-- Editor serialization: `plugins/EditorKit/ed_stab_object.h`
+- Editor serialization: `plugins/EditorKit/ed_stab_object.h`, not
+  `source/editor/`
 - UIKit: `plugins/UIKit/UIKit.cgen`, `plugins/UIKit/Button.c`
 - Codegen: `tools/codegen/`, `docs/MODULE_XML_GUIDE.md`
 - Tests: `tests/`

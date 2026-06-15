@@ -117,6 +117,7 @@ RadioButton_SyncToGroupSelection(struct Object *hObject, struct RadioButton *pRa
     RadioButton_SetChecked(hObject, pRadioButton, should_be_checked);
 }
 
+// RadioButton_Create
 HANDLER(RadioButton, Object, Create)
 {
   pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
@@ -136,12 +137,14 @@ HANDLER(RadioButton, Object, Create)
   return FALSE;
 }
 
+// RadioButton_Attached
 HANDLER(RadioButton, Object, Attached)
 {
   RadioButton_SyncToGroupSelection(hObject, pRadioButton);
   return FALSE;
 }
 
+// RadioButton_PropertyChanged
 HANDLER(RadioButton, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property)
@@ -161,11 +164,13 @@ HANDLER(RadioButton, Object, PropertyChanged)
   return FALSE;
 }
 
+// RadioButton_LeftButtonUp
 HANDLER(RadioButton, Node, LeftButtonUp)
 {
   return RadioButton_Select(hObject, pRadioButton);
 }
 
+// RadioButton_KeyDown
 HANDLER(RadioButton, Node, KeyDown)
 {
   switch (pKeyDown->keyCode) {
@@ -199,6 +204,7 @@ HANDLER(RadioButton, Node, KeyDown)
   }
 }
 
+// RadioButton_DrawBackground
 HANDLER(RadioButton, Node2D, DrawBackground)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);

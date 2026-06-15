@@ -181,6 +181,7 @@ _CalculateAutos(float spacing, float avl, PCOLUMNS columns)
   }
 }
 
+// Grid_MeasureOverride
 HANDLER(Grid, Node2D, MeasureOverride)
 {
   uint32_t cellindex = 0;
@@ -195,7 +196,7 @@ HANDLER(Grid, Node2D, MeasureOverride)
 
   _CalculateAutos(pGrid->Spacing, size.Width, hcols);
   _CalculateAutos(pGrid->Spacing, size.Height, vcols);
-  
+
   /*
    * When the available height is unconstrained (INFINITY) and we have
    * flexible (auto/fr) rows, do a content-sizing first pass: measure each
@@ -263,16 +264,17 @@ HANDLER(Grid, Node2D, MeasureOverride)
       .Width  = (w ? w->width : size.Width),
       .Height = (h ? h->width : size.Height),
     );
-    
+
     if(LOWORD(s)<0xffff)desired.width = fmax((w?w->position:0) + LOWORD(s), desired.width);
     if(HIWORD(s)<0xffff)desired.height = fmax((h?h->position:0) + HIWORD(s), desired.height);
     cellindex++;
   }
-  
+
   return MAKEDWORD(desired.width?desired.width:pMeasureOverride->Width,
                    desired.height?desired.height:pMeasureOverride->Height);
 }
 
+// Grid_ArrangeOverride
 HANDLER(Grid, Node2D, ArrangeOverride)
 {
   uint32_t cellindex = 0;

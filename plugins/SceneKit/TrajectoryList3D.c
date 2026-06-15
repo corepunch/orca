@@ -4,6 +4,7 @@
 
 #include <SceneKit/SceneKit.h>
 
+// TrajectoryList3D_UpdateMatrix
 HANDLER(TrajectoryList3D, Node, UpdateMatrix)
 {
   float index = -pTrajectoryList3D->SelectedItemIndex;

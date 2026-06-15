@@ -162,6 +162,7 @@ _ReadFtgEntry(PFTG ftg, struct _FTGFILE const *entry)
 
 /* ---- event handlers ---- */
 
+// FtgPackage_OpenFile
 HANDLER(FtgPackage, Project, OpenFile) {
   struct _FTGFILE *entry = _FindFtgEntry(pFtgPackage->_ftg, pOpenFile->FileName);
   if (!entry)
@@ -170,14 +171,17 @@ HANDLER(FtgPackage, Project, OpenFile) {
   return (LRESULT)_ReadFtgEntry(pFtgPackage->_ftg, entry);
 }
 
+// FtgPackage_FileExists
 HANDLER(FtgPackage, Project, FileExists) {
   return _FindFtgEntry(pFtgPackage->_ftg, pFileExists->FileName) != NULL;
 }
 
+// FtgPackage_HasChangedFiles
 HANDLER(FtgPackage, Project, HasChangedFiles) {
   return FALSE;
 }
 
+// FtgPackage_Destroy
 HANDLER(FtgPackage, Object, Destroy) {
   _FreeFtg(pFtgPackage->_ftg);
   return FALSE;
@@ -249,6 +253,7 @@ _LoadSprAnimations(lua_State* L, PFTG ftg, struct Object *project)
 
 #include <include/api.h>
 
+// FtgPackage_LoadProject
 HANDLER(FtgPackage, Project, LoadProject) {
   path_t tmp = { 0 };
   /*

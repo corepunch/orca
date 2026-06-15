@@ -27,7 +27,7 @@ _Arrange(struct Object *hObject,
   float span = primaryBounds.max - primaryBounds.min;
   float counter, distributed = 0;
   float maxsize = 0;
-  
+
   // Count children and leftover space (needed for space-* modes)
   uint32_t n = 0;
   float leftover = span;
@@ -35,7 +35,7 @@ _Arrange(struct Object *hObject,
     leftover -= NODE2D_FRAME(GetNode2D(child), Size, pStackView->Direction).Desired;
     n++;
   }
-  
+
   switch (pStackView->JustifyContent) {
     case kJustifyContentCenter:
       counter = primaryBounds.min + (span - content_size) * 0.5f;
@@ -62,7 +62,7 @@ _Arrange(struct Object *hObject,
       counter = primaryBounds.min;
       break;
   }
-  
+
   enum Direction crossAxis = pStackView->Direction == kDirectionHorizontal
     ? kDirectionVertical
     : kDirectionHorizontal;
@@ -118,7 +118,7 @@ _Arrange(struct Object *hObject,
         break;
     }
   }
-  
+
   switch (pStackView->Direction) {
     case kDirectionHorizontal:
       return MAKEDWORD(counter, maxsize);
@@ -131,6 +131,7 @@ _Arrange(struct Object *hObject,
   }
 }
 
+// StackView_MeasureOverride
 HANDLER(StackView, Node2D, MeasureOverride)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -159,6 +160,7 @@ HANDLER(StackView, Node2D, MeasureOverride)
   return MAKEDWORD(fmax(0,size.width), fmax(0,size.height));
 }
 
+// StackView_ArrangeOverride
 HANDLER(StackView, Node2D, ArrangeOverride)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -179,9 +181,9 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       // Not supported
       break;
   }
-  
+
   float scrollSize[2] = { PADDING_TOP(pNode2D, 0), PADDING_TOP(pNode2D, 1) };
-  
+
   FOR_LOOP(i, 2)
   {
     FOR_EACH_LAYOUTABLE(hChild, pNode2D->_object)
@@ -200,6 +202,6 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];
     }
   }
-  
+
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }

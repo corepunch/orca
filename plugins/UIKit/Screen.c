@@ -8,6 +8,7 @@
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
+// Node2D_Draw2DContent
 HANDLER(Node2D, Node2D, Draw2DContent);
 
 void
@@ -117,6 +118,7 @@ _FallThrough(struct Screen const* s, Screen_RenderScreenMsgPtr r)
   return TRUE;
 }
 
+// Screen_RenderScreen
 HANDLER(Screen, Screen, RenderScreen) {
   float width = pRenderScreen->width;
   float height = pRenderScreen->height;
@@ -137,7 +139,7 @@ HANDLER(Screen, Screen, RenderScreen) {
     pScreen->Width = width;
     pScreen->Height = height;
   }
-  
+
   // setup pipeline
   PIPELINESTATE ps = _Pipeline2D(width, height);
   DRAW2DCONTENTSTRUCT params = { 0 };
@@ -186,7 +188,8 @@ HANDLER(Screen, Screen, RenderScreen) {
   return FALSE;
 }
 
-//HANDLER(Screen, Object, Create) {
+//// Screen_Create
+HANDLER(Screen, Object, Create) {
 //  extern bool_t is_server;
 //  pScreen->_size = axGetSize(NULL);
 //  R_Init(LOWORD(pScreen->_size), HIWORD(pScreen->_size), is_server);
@@ -195,6 +198,7 @@ HANDLER(Screen, Screen, RenderScreen) {
 //}
 
 
+// Screen_Create
 HANDLER(Screen, Object, Create) {
 //  struct AXsize size;
 //  if (pScreen->ResizeMode == kResizeModeCanResize) {
@@ -207,6 +211,7 @@ HANDLER(Screen, Object, Create) {
   return FALSE;
 }
 
+// Screen_Destroy
 HANDLER(Screen, Object, Destroy) {
   SafeDelete(pScreen->_rt, Texture_Release);
   return FALSE;
@@ -225,7 +230,7 @@ draw_screen(struct Object* hObject,
   uint32_t const _size = pScreen->_size;
 
   _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
-  
+
   // If screen size has changed, we need to make sure all properties
   // are recalculated with the new size
   if (pScreen->_size != _size) {
@@ -234,39 +239,41 @@ draw_screen(struct Object* hObject,
     PROP_RunAllPrograms(hObject);
     _SendMessage(hObject, Screen, UpdateLayout, WindowWidth, WindowHeight);
   }
-  
+
   _SendMessage(hObject, Screen, RenderScreen,
                .width = WindowWidth,
                .height = WindowHeight,
                .stereo = 0,
                .target = 0,
                .angle = 0);
-  
+
   //  int tmp = 0;
   //  FOR_LOOP(i, MAX_FPS_CACHE) { tmp += _fps[i]; }
   //  void DEBUG_Draw(float fps, int bindings);
   //  DEBUG_Draw(MAX_FPS_CACHE*1000.f/tmp);
-  
+
   OBJ_ClearDirtyFlags(hObject);
-  
+
   if (OBJ_GetNext(hObject)) { // Render modal screens
     draw_screen(OBJ_GetNext(hObject), GetScreen(OBJ_GetNext(hObject)), WindowWidth, WindowHeight);
   }
 
 }
 
+// Screen_Paint
 HANDLER(Screen, Window, Paint) {
   PROP_RunAllPrograms(hObject);
 
   R_BeginFrame(pScreen->ClearColor);
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
-  
+
   R_EndFrame();
 
   return TRUE;
 }
 
+// Screen_HitTest
 HANDLER(Screen, Node, HitTest) {
   if (!pScreen->Visible) {
     return FALSE;
@@ -362,6 +369,7 @@ _CloseModalPopup(struct Object *hObject, float result)
   }
 }
 
+// Screen_ShowModal
 HANDLER(Screen, Screen, ShowModal) {
   if (!pShowModal || !pShowModal->Path || !*pShowModal->Path) {
     Con_Error("Screen.ShowModal missing Path");
@@ -388,6 +396,7 @@ HANDLER(Screen, Screen, ShowModal) {
   return FALSE;
 }
 
+// Screen_SetModalObject
 HANDLER(Screen, Screen, SetModalObject) {
   if (_AttachModalObject(hObject, pSetModalObject->Target)) {
     bool_t visible = TRUE;
@@ -397,11 +406,13 @@ HANDLER(Screen, Screen, SetModalObject) {
   return FALSE;
 }
 
+// Popup_ClosePopup
 HANDLER(Popup, Popup, ClosePopup) {
   _CloseModalPopup(hObject, pClosePopup->ReturnValue);
   return TRUE;
 }
 
+// Screen_Resized
 HANDLER(Screen, Window, Resized) {
   if (pScreen->ResizeMode == kResizeModeCanResize ||
       isnan(pScreen->Width) ||
@@ -415,6 +426,7 @@ HANDLER(Screen, Window, Resized) {
 }
 
 
+// Screen_UpdateLayout
 HANDLER(Screen, Screen, UpdateLayout) {
   float width = pUpdateLayout->Width;
   float height = pUpdateLayout->Height;

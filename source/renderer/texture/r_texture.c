@@ -26,12 +26,12 @@
 //	else if (!strcmp(direction, "to bottom"))       return 0.5f * M_PI;
 //	else if (!strcmp(direction, "to left"))         return M_PI;
 //	else if (!strcmp(direction, "to right"))        return 0.0f;
-//	
+//
 //	else if (!strcmp(direction, "to top left"))     return 1.25f * M_PI;
 //	else if (!strcmp(direction, "to top right"))    return 1.75f * M_PI;
 //	else if (!strcmp(direction, "to bottom left"))  return 0.75f * M_PI;
 //	else if (!strcmp(direction, "to bottom right")) return 0.25f * M_PI;
-//	
+//
 //	// Check for deg at the end
 //	size_t len = strlen(direction);
 //	if (len > 3 && !strcmp(direction + len - 3, "deg")) {
@@ -40,7 +40,7 @@
 //		float degrees = strtof(numberPart, NULL);
 //		return degrees * (M_PI / 180.0f);
 //	}
-//	
+//
 //	// Default fallback
 //	return 0.0f; // "to right"
 //}
@@ -140,7 +140,7 @@ R_ApplyImageParms(struct Texture* image, GLenum target, bool_t mipmaps)
   R_Call(glTexParameteri, target, GL_TEXTURE_MAG_FILTER, gl_mag);
   R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_S, gl_wrap);
   R_Call(glTexParameteri, target, GL_TEXTURE_WRAP_T, gl_wrap);
-  
+
   if (image->Format == kTextureFormatAlpha8) {
 #ifndef __EMSCRIPTEN__
     /* GL_TEXTURE_SWIZZLE_* is a desktop-GL feature; not available in WebGL 2
@@ -360,6 +360,7 @@ R_MakeGradientTexture(float angle, struct color a, struct color b);
 //  return S_OK;
 //}
 
+// Image_Start
 HANDLER(Image, Object, Start) {
   struct AXsize tex = MAKE_TEX_SIZE(0, 0);
   struct file* pFile;
@@ -386,7 +387,7 @@ HANDLER(Image, Object, Start) {
   }
   pTexture->Width = tex.width / MAX(1, pTexture->Scale);
   pTexture->Height = tex.height / MAX(1, pTexture->Scale);
-  
+
 //  if (*pImage->Source == '#') {
 //    struct Texture* pTexture = ZeroAlloc(sizeof(struct Texture));
 //    _Texture_Load(&(LOADIMGSTRUCT){ .source = pImage->Source }, &pTexture);
@@ -528,6 +529,7 @@ IOSurface_CreateTextureFrom(uint32_t surfaceID, struct Texture* img)
   }
 }
 
+// IOSurfaceTexture_Start
 HANDLER(IOSurfaceTexture, Object, Start) {
   struct Texture *img = GetTexture(hObject);
   if (!IOSurface_CreateTextureFrom(pIOSurfaceTexture->IOSurface, img)) {
@@ -550,6 +552,7 @@ HANDLER(IOSurfaceTexture, Object, Start) {
   return TRUE;
 }
 #else
+// IOSurfaceTexture_Start
 HANDLER(IOSurfaceTexture, Object, Start) {
   return TRUE;
 }

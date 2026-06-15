@@ -187,7 +187,7 @@ static GLuint _LoadGLShader(GLenum type, struct shader_desc* def)
   memset(pszCodes, 0, sizeof(pszCodes));
 
   strcpy(pszTexts[dwNumTexts++], v300);
-  
+
 #define ADD_TEXT(uniforms, prefix)                                             \
   for (struct uniform_def const* u = uniforms; *u->Name; u++) {                \
     assert(dwNumTexts < MAX_UNIFORMS);                                         \
@@ -790,6 +790,7 @@ static lpcString_t _PBRPointLight =
 "  return att * intensity * (diffuse + specular);\n"
 "}\n";
 
+// Shader_Start
 HANDLER(Shader, Object, Start) {
   uint32_t NumUniforms = 0;
   struct shader_desc desc = { .Name = OBJ_GetName(hObject) };
@@ -863,6 +864,7 @@ HANDLER(Shader, Object, Start) {
   return TRUE;
 }
 
+// Shader_Destroy
 HANDLER(Shader, Object, Destroy) {
   Shader_Release(pShader->shader);
   return TRUE;

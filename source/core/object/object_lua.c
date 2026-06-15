@@ -102,11 +102,6 @@ void OBJ_Rebuild(lua_State* L, struct Object *self) {
   axPostMessageW(co, kEventResumeCoroutine, MAKEDWORD(nargs, ref), NULL);
 }
 
-struct Object *OBJ_Instantiate(lua_State* L, struct Object *prefab) {
-  assert(!"Not implemented");
-  return NULL;
-}
-
 ORCA_API struct Property *luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id) {
   struct Property *event = PROP_FindByLongID(OBJ_GetProperties(object), id);
   if (event && PROP_GetType(event) == kDataTypeEvent) {

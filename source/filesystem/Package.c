@@ -56,12 +56,12 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
   // Initialize zlib structures
   z_stream stream;
   memset(&stream, 0, sizeof(stream));
-  
+
   if (inflateInit(&stream) != Z_OK) {
     Con_Error("Error initializing zlib");
     return E_ABORT;
   }
-  
+
   // Allocate memory for the compressed data
   LPSTR in_buffer = malloc(pf->filelen);
   if (!in_buffer) {
@@ -70,7 +70,7 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
   }
   stream.avail_in = (int)fread(in_buffer, 1, pf->filelen, inputfile);
   stream.next_in = (unsigned char *)in_buffer;
-  
+
   // Allocate memory for the decompressed data
   *ppFile = ZeroAlloc(sizeof(struct file) + pf->decompsize + 1);
   if (!*ppFile) {
@@ -79,13 +79,13 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
     free(in_buffer);
     return E_OUTOFMEMORY;
   }
-  
+
   stream.avail_out = pf->decompsize;
   stream.next_out = (*ppFile)->data;
-  
+
   // Decompress
   int ret = inflate(&stream, Z_FINISH);
-  
+
   if (ret != Z_STREAM_END || stream.total_out != pf->decompsize) {
     Con_Error("Error decompressing data");
     free(*ppFile);
@@ -93,7 +93,7 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
     inflateEnd(&stream);
     return E_FAIL;
   }
-  
+
   // Finish decompression
   if (inflateEnd(&stream) != Z_OK) {
     Con_Error("Error finishing decompression");
@@ -101,11 +101,11 @@ FS_DecompressZlib(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
     free(in_buffer);
     return E_FAIL;
   }
-  
+
   (*ppFile)->size = pf->decompsize;
-  
+
   free(in_buffer);
-  
+
   return NOERROR;
 }
 #endif
@@ -142,12 +142,12 @@ FS_DecompressLZ4(FILE* inputfile, PPACKFILE pf, struct file** ppFile)
     free(*ppFile);
     return E_FAIL;
   }
-  
+
   (*ppFile)->size = decompressed_size;
-  
+
   // Cleanup
   free(compressed_data);
-  
+
   return NOERROR;
 }
 #endif
@@ -157,10 +157,10 @@ _LoadPackFile(lpcString_t szPackfile)
 {
   struct dpackheader header;
   FILE* packhandle = fopen(szPackfile, "rb");
-  
+
   if (!packhandle)
     return NULL;
-  
+
   fread(&header, 1, sizeof(header), packhandle);
   if (header.identifier != IDPAKHEADER) {
     Con_Error("%s is not a PACK file", szPackfile);
@@ -174,17 +174,17 @@ _LoadPackFile(lpcString_t szPackfile)
     fclose(packhandle);
     return NULL;
   }
-  
+
   PPACK pack = ZeroAlloc(sizeof(struct _PACK));
   strcpy(pack->filename, szPackfile);
-  
+
   pack->numfiles = header.dirlen / sizeof(struct _PACKFILE);
   pack->files = ZeroAlloc(pack->numfiles * sizeof(struct _PACKFILE));
   pack->handle = packhandle;
-  
+
   fseek(packhandle, header.dirofs, SEEK_SET);
   fread(pack->files, 1, header.dirlen, packhandle);
-  
+
   return pack;
 }
 
@@ -194,14 +194,14 @@ FindPackFile(uint32_t id, PPACKFILE array, size_t size)
 {
   if (size == 0)
     return NULL;
-  
+
   size_t low = 0;
   size_t high = size - 1;
-  
+
   while (low <= high) {
     size_t mid = (low + high) / 2;
     uint32_t midIdentifier = array[mid].identifier;
-    
+
     if (midIdentifier == id) {
       return &array[mid];
     } else if (midIdentifier < id) {
@@ -212,7 +212,7 @@ FindPackFile(uint32_t id, PPACKFILE array, size_t size)
       break;
     }
   }
-  
+
   // Element not found
   return NULL;
 }
@@ -254,7 +254,7 @@ static struct file *_ReadFromPak(FILE *fp, PPACKFILE pf) {
       file->size = pf->filelen;
       _Read(file->data, pf->filelen, fp);
       return file;
-      
+
     default:
       return NULL;
   }
@@ -345,20 +345,24 @@ static char* _ExtractFileToTemp(PPACK pack, lpcString_t filename) {
 }
 
 
+// Package_OpenFile
 HANDLER(Package, Project, OpenFile) {
   return (intptr_t)_ReadPakFile(pPackage->_package, pOpenFile->FileName);
 }
 
 
+// Package_Destroy
 HANDLER(Package, Object, Destroy) {
   _FreePack(pPackage->_package);
   return FALSE;
 }
 
+// Package_FileExists
 HANDLER(Package, Project, FileExists) {
   return _FindPackFile(pPackage->_package, pFileExists->FileName);
 }
 
+// Package_HasChangedFiles
 HANDLER(Package, Project, HasChangedFiles) {
   return FALSE;
 }
@@ -366,6 +370,7 @@ HANDLER(Package, Project, HasChangedFiles) {
 int lua_loadfile_with_env(lua_State *L, const char *filename, int env_index);
 #include <include/api.h>
 
+// Package_LoadProject
 HANDLER(Package, Project, LoadProject) {
   path_t tmp={0};
   struct Object *package = NULL;

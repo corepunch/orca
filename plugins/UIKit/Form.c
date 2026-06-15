@@ -5,6 +5,7 @@
 #include <UIKit/UIKit.h>
 
 
+// Form_Create
 HANDLER(Form, Object, Create)
 {
   struct StackView *stackview = GetStackView(hObject);
@@ -12,6 +13,7 @@ HANDLER(Form, Object, Create)
   return FALSE;
 }
 
+// Form_Submit
 HANDLER(Form, Form, Submit)
 {
   return TRUE;

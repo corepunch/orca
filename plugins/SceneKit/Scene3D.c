@@ -1,5 +1,6 @@
 #include <SceneKit/SceneKit.h>
 
+// Scene_UpdateMatrix
 HANDLER(Scene, Node, UpdateMatrix)
 {
   struct Node3D* view = GetNode3D(hObject);

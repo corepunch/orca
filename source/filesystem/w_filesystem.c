@@ -40,7 +40,7 @@ int f_find_module(lua_State* L)
 			}
 		}
   }
-  
+
 #ifndef __EMSCRIPTEN__
 	lua_getglobal(L, "require");
 	lua_pushstring(L, "moonscript");
@@ -362,8 +362,9 @@ static lua_State *global_L;
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
 //}
 
+// Project_Start
 HANDLER(Project, Object, Start) {
-  
+
   return TRUE;
 }
 
@@ -430,12 +431,12 @@ void on_filesystem_module_registered(lua_State* L)
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
-  
+
   luaL_newmetatable(L, "DirectoryIterator");
   lua_pushcfunction(L, l_directory_gc);
   lua_setfield(L, -2, "__gc");
   lua_pop(L, 1);
-  
+
   //  luaL_newlib(L, ((luaL_Reg[]){
   //    { "loadBundle", f_loadBundle },
   //    { "file_exists", API_FileExists },
@@ -444,17 +445,17 @@ void on_filesystem_module_registered(lua_State* L)
   //    { "processClientRequests", f_processClientRequests },
   //    { NULL, NULL }
   //  }));
-  
+
   luaopen_io_open_override(L);
-  
+
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
-  
+
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");
-  
+
   API_MODULE_SHUTDOWN(L, filesystem_gc);
-    
+
   global_L = L;
 }
 
@@ -467,15 +468,15 @@ ORCA_API int luaopen_orca_filesystem_native(lua_State* L)
     { "fileexists", f_fileexists },
     { "getfileinfo", f_getfileinfo },
     { "readTextFile", f_loadNativeTextFile },
-    
+
     // path operations
     { "joinpaths", f_joinpaths },
     { "dirname", f_dirname },
     { "basename", f_basename },
     { "rootname", f_rootname },
-    
+
     { NULL, NULL }
   }));
-  
+
   return 1;
 }

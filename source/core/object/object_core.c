@@ -238,3 +238,10 @@ UI_EnumObjectAliases(struct Object *object, EnumAliasProc proc, void* args)
   }
   return TRUE;
 }
+
+struct Object *
+OBJ_Instantiate(struct Object *prefab)
+{
+  assert(!"Not implemented");
+  return NULL;
+}
