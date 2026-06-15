@@ -575,8 +575,24 @@ Module Codegen files should reference the DTD schema for validation:
 2. **Use container elements** — Group `<property>`, `<field>`, `<method>`, `<message>` and `<handle>` elements inside their respective container elements (`<properties>`, `<fields>`, `<methods>`, `<messages>`, `<handles>`)
 3. **Use `<topic>` for large interfaces** — If a `<methods>` block has more than ~10 methods, add `<topic title="...">` separators between method groups (Lifecycle, Hierarchy, etc.)
 4. **Follow element order** — For `<class>`: summary, details, xmlns, handles, properties, fields, methods, messages. For `<struct>`: summary, details, fields, methods
-5. **Test generation** — Run `make modules` after changes to verify XML is valid
-6. **Check generated code** — Review generated `.h` and `_export.c` files to ensure correctness
+5. **Treat `.cgen` docs as compressed context** — For local models, the `.cgen` file should explain purpose, lifecycle, property meaning, message semantics, units/defaults, and notable side-effects without requiring a source dive
+6. **Keep summaries dense** — Current generators surface `<summary>` and `<topic>` most directly, so make summaries specific enough to stand alone
+7. **Use `<details>` for operational facts** — Put ownership, attachment rules, ordering constraints, and "when to use / when not to use" guidance in `<details>`
+8. **Document payload-bearing messages and public properties precisely** — Describe sender/receiver expectations, field meaning, ranges, and default values in the surrounding docs text
+9. **Test generation** — Run `make modules` after changes to verify XML is valid
+10. **Check generated code** — Review generated `.h` and `_export.c` files to ensure correctness
+
+### Authoring `.cgen` docs for local models
+
+When a type is public, assume a local model may read only the generated docs and the touched source file. Optimize for that path:
+
+- Give every enum, struct, interface, class, method, property, and message a useful `<summary>`
+- Add `<details>` when the short summary cannot explain lifecycle, ownership, routing, or timing
+- Group large interfaces with `<topic>` so documentation readers can jump directly to the right method family
+- For classes, document what attaches the component and what messages drive it
+- For properties, include units, accepted values, and whether the property is input, derived state, or both
+- For messages, document who sends them, who handles them, and what the payload means
+- Reuse the same nouns in `.cgen`, handwritten code, tests, and docs so search stays cheap
 
 ## Troubleshooting
 
