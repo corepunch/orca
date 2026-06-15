@@ -452,10 +452,3 @@ FS_LoadObjectFromXmlString(lpcString_t xml_string)
   return o;
 }
 
-LPSTR FS_SerializeObjectToXmlString(struct Object const *object)
-{
-  // Serializes the given object into an XML string that can be loaded
-  // back with FS_LoadObjectFromXmlString. Returns a heap-allocated string
-  // that the caller must free with free().
-  return NULL; // Serialization not implemented yet
-}
