@@ -211,7 +211,7 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
  * Public API
  * ---------------------------------------------------------------------- */
 
-LPSTR
+const char*
 FS_SerializeObjectToXmlString(struct Object const *object)
 {
   if (!object) return NULL;
