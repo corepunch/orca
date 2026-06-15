@@ -71,6 +71,12 @@ PROP_AttachProgram(struct Property *p,
   p->binding->token = program;
 }
 
+ORCA_API lpcString_t
+PROP_GetBindingExpression(struct Property const *p)
+{
+  return (p && p->binding) ? p->binding->Expression : NULL;
+}
+
 ORCA_API bool_t
 PROP_SetBinding(struct Property *property,
                 lpcString_t expression,
@@ -92,6 +98,11 @@ PROP_SetBinding(struct Property *property,
 
   struct token *compiled = enabled ? Token_Create(expression) : NULL;
   PROP_AttachProgram(property, compiled);
+  /* Store original expression text for serialization round-trips */
+  if (property->binding) {
+    free((char *)property->binding->Expression);
+    property->binding->Expression = strdup(expression);
+  }
   return TRUE;
 }
 

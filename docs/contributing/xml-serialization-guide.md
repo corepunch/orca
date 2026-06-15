@@ -281,13 +281,13 @@ when implementing the serializer.
 
 | Issue | Status |
 |---|---|
-| `PDESC_Print` not in any header | Implemented locally in `fs_xml_write.c` |
-| `kDataTypeStruct` serialization needs `OBJ_FindStructDesc` | Implemented |
-| Binding expression text not stored post-compile | **Lossy** — emits Target stub only |
-| StyleClass / CSS `class` attribute not in public API | **Dropped silently** |
-| `OF_TEMPLATE` / prefab objects serialized as expanded tree | **Lossy** |
-| No `IsReadOnly` flag on `PropertyType` | Heuristic: skip `_`-prefixed names |
-| `LPSTR` return from `FS_SerializeObjectToXmlString` is `strdup`'d; caller uses `free()` not `xmlFree()` | Implemented correctly |
+| `PDESC_Print` broken for structs, not in header | **Fixed** — `OBJ_FormatPropertyValue` in `include/orca.h` |
+| Binding expression text not stored post-compile | **Fixed** — `PROP_GetBindingExpression` / `struct Binding.Expression` |
+| StyleClass not in public API | **Fixed** — `OBJ_GetRawStyleClasses` in `include/orca.h` |
+| Prefab objects serialized as expanded tree | **Fixed** — `OF_TEMPLATE` detection emits `<LayerPrefabPlaceholder>` |
+| No `IsReadOnly` flag respected | **Fixed** — `pd->IsReadOnly` skip in `serialize_property_cb` |
+| Block literal vs. function pointer | **Fixed** — plain C callback with `struct serialize_ctx *param` |
+| `LPSTR` return: `strdup`'d, free with `free()` | Correct |
 
 ---
 
