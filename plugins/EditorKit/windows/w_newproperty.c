@@ -63,9 +63,8 @@ ED_NewProperty(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
           return TRUE;
         case ID_NAV_ACCEPT:
           if (ED_GetSelectedItem(wnd) > 0) {
-            HPROP p = NULL;
             lpcString_t s =_GetPropertyTypeName(wnd, ED_GetSelectedItem(wnd));
-            OBJ_FindShortProperty(*(LPVOID*)ED_GetUserData(wnd), s, &p);
+            /*HPROP p = */OBJ_FindShortProperty(*(LPVOID*)ED_GetUserData(wnd), fnv1a32(s));
             return TRUE;
           } else {
             return FALSE;

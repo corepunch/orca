@@ -121,8 +121,8 @@ HANDLER(AnimationPlayer, Object, Animate) {
                 : hObject;
             if (!target) continue;
 
-            struct Property *property;
-            if (FAILED(OBJ_FindShortProperty(target, curve->Property, &property))) continue;
+            struct Property *property = OBJ_FindShortProperty(target, fnv1a32(curve->Property));
+            if (!property) continue;
 
             float value[4];
             for (int i = 0; i < 4; i++) {

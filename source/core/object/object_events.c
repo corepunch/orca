@@ -46,8 +46,8 @@ OBJ_AttachPropertyProgram(struct Object *self,
 {
   (void)mode;
   struct token *compiled = enabled ? Token_Create(program) : NULL;
-  struct Property *property = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(self, fnv1a32(name), &property))) {
+  struct Property *property = OBJ_FindLongProperty(self, fnv1a32(name));
+  if (property) {
     PROP_AttachProgram(property, compiled);
     return TRUE;
   } else {

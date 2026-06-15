@@ -130,8 +130,7 @@ HANDLER(TextBlock, Node2D, DrawForeground)
 // TextBlock_Create
 HANDLER(TextBlock, Object, Create)
 {
-  struct Property *p;
-  OBJ_FindShortProperty(hObject, "Text", &p);
+  OBJ_FindLongProperty(hObject, ID_TextRun_Text); // Initialize text
   pTextBlock->_node2D = GetNode2D(hObject);
   return FALSE;
 }

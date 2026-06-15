@@ -209,12 +209,6 @@ PROP_SetDirty(struct Property *property);
 ORCA_API bool_t
 PROP_IsNull(struct Property const *);
 
-ORCA_API struct Property *
-PROP_FindByLongID(struct Property *, uint32_t identifier);
-
-ORCA_API struct Property *
-PROP_FindByShortID(struct Property *, uint32_t identifier);
-
 ORCA_API uint32_t
 PROP_GetFlags(struct Property const *);
 
@@ -287,7 +281,6 @@ typedef void (*EnumAliasProc)(lpcString_t, lpcString_t, void*);
 ORCA_API bool_t UI_EnumObjectAliases(struct Object *object, EnumAliasProc, void* args);
 
 #define PROP_CopyValue(property, dest) memcpy(dest, PROP_GetValue(property), PROP_GetSize(property))
-#define PROP_FindByFullName(LIST, NAME) PROP_FindByLongID(LIST, fnv1a32(NAME));
 
 /*
  Object helper macros
@@ -404,17 +397,14 @@ struct component;
 ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
 
-ORCA_API HRESULT
-OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Property ** output);
+ORCA_API struct Property *
+OBJ_FindShortProperty(struct Object *object, uint32_t short_id);
 
-ORCA_API HRESULT
-OBJ_FindLongProperty(struct Object *object, uint32_t long_id, struct Property ** output);
+ORCA_API struct Property *
+OBJ_FindLongProperty(struct Object *object, uint32_t long_id);
 
 ORCA_API bool_t
 OBJ_ReadProperty(struct Object *object, uint32_t long_id, void *output);
-
-ORCA_API HRESULT
-OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value);
 
 ORCA_API LRESULT
 OBJ_SendMessage(struct Object *, lpcString_t, wParam_t, lParam_t);

@@ -102,34 +102,44 @@ OBJ_GetInteger(struct Object const *object, uint32_t ident, int fallback)
   return fallback;
 }
 
-HRESULT
+struct Property *
 OBJ_FindLongProperty(struct Object *object,
-                     uint32_t identifier,
-                     struct Property ** ppProp)
+                     uint32_t identifier)
 {
-  if ((*ppProp = PROP_FindByLongID(object->properties, identifier))) {
-    return NOERROR;
-  } else if ((*ppProp = _CreateClassProperty(object, identifier))) {
-    return NOERROR;
-  } else if ((*ppProp = _CreateProjectProperty(object, identifier))) {
-    return NOERROR;
-  } else {
-    return E_ITEMNOTFOUND;
+  FOR_EACH_LIST(struct Property, property, object->properties) {
+    if (property->pdesc->FullIdentifier == identifier) {
+      return property;
+    }
   }
+  struct Property* p = _CreateClassProperty(object, identifier);
+  if (p) return p;
+  p = _CreateProjectProperty(object, identifier);
+  if (p) return p;
+  return NULL;
+}
+
+struct Property *
+OBJ_FindShortProperty(struct Object *object, uint32_t identifier)
+{
+  FOR_EACH_LIST(struct Property, property, object->properties) {
+    if (property->pdesc->ShortIdentifier == identifier) {
+      return property;
+    }
+  }
+  return OBJ_FindLongProperty(object, identifier);
 }
 
 bool_t
 OBJ_ReadProperty(struct Object *object, uint32_t identifier, void *output)
 {
   struct Property *property = NULL;
-  HRESULT hr;
 
   if (!object || !output) {
     return FALSE;
   }
 
-  hr = OBJ_FindLongProperty(object, identifier, &property);
-  if (FAILED(hr) || !property) {
+  property = OBJ_FindLongProperty(object, identifier);
+  if (!property) {
     struct Object *parent = OBJ_GetParent(object);
     return parent ? OBJ_ReadProperty(parent, identifier, output) : FALSE;
   }
@@ -147,34 +157,6 @@ OBJ_ReadProperty(struct Object *object, uint32_t identifier, void *output)
 
   memcpy(output, slot, PROP_GetSize(property));
   return TRUE;
-}
-
-HRESULT
-OBJ_FindShortProperty(struct Object *object,
-                      lpcString_t name,
-                      struct Property ** ppProp)
-{
-  uint32_t identifier = fnv1a32(name);
-  if ((*ppProp = PROP_FindByShortID(object->properties, identifier))) {
-    return NOERROR;
-  } else {
-    HRESULT hr = OBJ_FindLongProperty(object, identifier, ppProp);
-    if (SUCCEEDED(hr)) {
-      return hr;
-    }
-    return hr;
-  }
-}
-
-HRESULT
-OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value)
-{
-  struct Property *prop;
-  HRESULT hr = OBJ_FindShortProperty(object, name, &prop);
-  if (SUCCEEDED(hr)) {
-    PROP_SetValue(prop, value);
-  }
-  return hr;
 }
 
 struct Property *

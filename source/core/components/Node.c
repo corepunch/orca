@@ -4,8 +4,8 @@
 
 static void Node_SetFloatProperty(struct Object *object, uint32_t id, float value)
 {
-  struct Property *property = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(object, id, &property))) PROP_SetValue(property, &value);
+  struct Property *property = OBJ_FindLongProperty(object, id);
+  if (property) PROP_SetValue(property, &value);
 }
 
 // Node_GetSize
@@ -17,8 +17,8 @@ HANDLER(Node, Node, GetSize)
 // Node_IsVisible
 HANDLER(Node, Node, IsVisible)
 {
-  struct Property *visible = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node_Visible, &visible))) {
+  struct Property *visible = OBJ_FindLongProperty(hObject, ID_Node_Visible);
+  if (visible) {
     PROP_Update(visible);
   }
   return pNode->Visible && !GetNode(hObject)->QuickHide;

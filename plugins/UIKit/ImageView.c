@@ -72,28 +72,6 @@ HANDLER(ImageView, Node2D, ArrangeOverride) {
                       .Height = pArrangeOverride->Height);
 }
 
-#if 0
-typedef struct
-{
-  bool_t value;
-  bool_t anyImagesNeeded;
-  struct Property *prop;
-} checkimg;
-
-static void
-check_images(struct _SHADERCONST *u, void* pVoid)
-{
-  checkimg* pParm = pVoid;
-  if (u->type != UT_SAMPLER_2D)
-    return;
-  pParm->anyImagesNeeded = TRUE;
-  struct Property *p = PROP_FindByLongID(pParm->prop, u->identifier);
-  if (!p)
-    return;
-  pParm->value = TRUE;
-}
-#endif
-
 // ImageView_DrawForeground
 HANDLER(ImageView, Node2D, DrawForeground)
 {
@@ -185,7 +163,7 @@ HANDLER(ImageView, Node2D, ForegroundContent)
 // ImageView_Start
 HANDLER(ImageView, Object, Start)
 {
-  struct Property *p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
+  struct Property *p = OBJ_FindLongProperty(hObject, ID_ImageView_Src);
   if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
   if (pImageView->Src && *pImageView->Src) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
@@ -325,9 +303,7 @@ HANDLER(ImageView, Node, LoadView)
 
 // ImageView_Create
 HANDLER(ImageView, Object, Create) {
-  struct Property *p;
-  struct color white = {1,1,1,1};
-  OBJ_FindShortProperty(hObject, "ForegroundColor", &p);
-  PROP_SetValue(p, &white);
+  struct Property *p = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
+  PROP_SetValue(p, &(struct color){1,1,1,1});
   return FALSE;
 }

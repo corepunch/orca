@@ -49,8 +49,8 @@ RadioButton_SyncGroup(struct Object *object, struct RadioButton *button)
      freed correctly, the new value is strdup'd, and Object.PropertyChanged
      fires on the group (which calls RadioGroup_SyncToSelectedValue to clear
      sibling buttons). */
-  struct Property *prop = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(group, ID_RadioGroup_SelectedValue, &prop)))
+  struct Property *prop = OBJ_FindLongProperty(group, ID_RadioGroup_SelectedValue);
+  if (prop)
     PROP_SetStringValue(prop, button->Value);
 
   struct RadioGroup_SelectionChangedEventArgs args = {
@@ -123,14 +123,14 @@ HANDLER(RadioButton, Object, Create)
   pRadioButton->AccentColor = FS_GetThemeColor(THEME_COLOR_ACCENT_BACKGROUND);
   GetNode(hObject)->Border.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BORDER);
   GetNode2D(hObject)->Background.Color = FS_GetThemeColor(THEME_COLOR_CONTROL_BACKGROUND);
-  struct Property *foregroundProp = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &foregroundProp))) {
+  struct Property *foregroundProp = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
+  if (foregroundProp) {
     struct color foreground = FS_GetThemeColor(THEME_COLOR_ACCENT_FOREGROUND);
     PROP_SetValue(foregroundProp, &foreground);
   }
 
   OBJ_SetStyle(hObject, OBJ_GetStyle(hObject) | OF_TABSTOP);
-  struct Property *prop = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_RadioButton_IsChecked);
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_RadioButton_IsChecked);
   if (prop) PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
 
   RadioButton_SetChecked(hObject, pRadioButton, pRadioButton->IsChecked);
@@ -265,3 +265,4 @@ HANDLER(RadioButton, Node2D, DrawBackground)
 
   return FALSE;
 }
+

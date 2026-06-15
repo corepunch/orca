@@ -194,9 +194,9 @@ HANDLER(StackView, Node2D, ArrangeOverride)
       scrollSize[i] = MAX(scrollSize[i], pos + size);
     }
     scrollSize[i] += PADDING_BOTTOM(pNode2D, i);
-    struct Property *scrollProperty = NULL;
     uint32_t const scrollPropertyIds[] = { ID_Node_ScrollWidth, ID_Node_ScrollHeight };
-    if (SUCCEEDED(OBJ_FindLongProperty(hObject, scrollPropertyIds[i], &scrollProperty))) {
+    struct Property *scrollProperty = OBJ_FindLongProperty(hObject, scrollPropertyIds[i]);
+    if (scrollProperty) {
       PROP_SetValue(scrollProperty, &scrollSize[i]);
     } else {
       NODE2D_FRAME(pNode2D, Size, i).Scroll = scrollSize[i];

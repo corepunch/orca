@@ -1072,8 +1072,8 @@ R_ApplyLoaderArgs(struct Object *obj, int argc, const char* argv[])
     // Source must always reflect the actual file path resolved by FS_LoadObject, not a
     // user-supplied redirect (which would make the object's name and path inconsistent).
     if (strcmp(key, "Source") == 0) continue;
-    struct Property *prop = NULL;
-    if (FAILED(OBJ_FindShortProperty(obj, key, &prop))) {
+    struct Property *prop = OBJ_FindShortProperty(obj, fnv1a32(key)); // here we have to use short property
+    if (!prop) {
       Con_Error("FS_LoadObject: object type '%s' does not have a property named '%s'\n",
                 OBJ_GetClassName(obj), key);
       continue;
@@ -1105,7 +1105,7 @@ R_LoadImageObject(int argc, const char* argv[])
   struct Object *obj = OBJ_Create(ID_Image);
   if (!obj) return NULL;
   OBJ_SetName(obj, r_basename(path));
-  OBJ_SetPropertyValue(obj, "Source", &path);
+  PROP_SetValue(OBJ_FindLongProperty(obj, ID_Image_Source), &path);
   R_ApplyLoaderArgs(obj, argc, argv);
   OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
