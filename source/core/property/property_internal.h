@@ -3,6 +3,15 @@
 
 #include <source/core/core_local.h>
 
+/* struct Binding is defined in generated/core/core.h (the Binding component).
+ * That same struct is used as the runtime binding node on struct Property.
+ * Fields relevant here:
+ *   token       — compiled VM token tree
+ *   property    — back-pointer to the owning Property
+ *   Expression  — original source text (const char*, set by PROP_SetBinding)
+ *   updateFrame — last frame this binding ran
+ */
+
 #define ID_ContentOffset 0x35a57c45
 
 static size_t psize[] = {

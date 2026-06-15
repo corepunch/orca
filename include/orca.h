@@ -242,6 +242,11 @@ PROP_GetSize(struct Property const *);
 ORCA_API bool_t
 PROP_HasProgram(struct Property *);
 
+/* Returns the original binding expression string as passed to PROP_SetBinding,
+ * or NULL if the property has no binding or was set before this was introduced. */
+ORCA_API lpcString_t
+PROP_GetBindingExpression(struct Property const *p);
+
 ORCA_API lpcString_t
 PROP_GetUserData(struct Property const *);
 
@@ -259,6 +264,17 @@ PROP_GetDesc(struct Property const *prop);
 
 ORCA_API void
 PROP_Print(struct Property *p, LPSTR buffer, uint32_t len);
+
+/* Format any property value to a human-readable string suitable for XML
+ * attribute serialization. Returns TRUE on success.  Returns FALSE (and
+ * leaves buf empty) for non-serializable types (kDataTypeObject,
+ * kDataTypeEvent) and for NULL values.  kDataTypeStruct fields are
+ * formatted recursively using OBJ_FindStructDesc. */
+ORCA_API bool_t
+OBJ_FormatPropertyValue(struct PropertyType const *pd,
+                        void const *value,
+                        LPSTR buf,
+                        uint32_t len);
 
 ORCA_API struct Property *
 PROP_Create(lua_State*,struct Object *,struct PropertyType const *);
@@ -565,6 +581,12 @@ ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
 ORCA_API struct Object *FS_LoadObjectFromXml(lpcString_t path);
 ORCA_API struct Object *FS_LoadObjectFromXmlString(lpcString_t xml_string);
 ORCA_API LPSTR FS_SerializeObjectToXmlString(struct Object const *object);
+
+/* Reconstruct the space-separated CSS class string for an object.
+ * Writes up to len bytes into buf and returns buf, or NULL if the object
+ * has no StyleController or no classes are set. */
+ORCA_API lpcString_t
+OBJ_GetRawStyleClasses(struct Object *object, LPSTR buf, uint32_t len);
 
 // Editor stuff
 ORCA_API void FS_InitHash(void);

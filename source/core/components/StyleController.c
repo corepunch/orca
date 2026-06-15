@@ -552,3 +552,25 @@ HANDLER(StyleController, StyleController, AddClasses)
   _SendMessage(hObject, StyleController, ThemeChanged, .recursive = FALSE);
   return TRUE;
 }
+
+/* Reconstruct the space-separated class string from the parsed selector list.
+ * Writes into buf (up to len bytes including the null terminator).
+ * Returns buf, or NULL if the object has no StyleController or no classes. */
+ORCA_API lpcString_t
+OBJ_GetRawStyleClasses(struct Object *object, LPSTR buf, uint32_t len)
+{
+  struct StyleController *sc = GetStyleController(object);
+  if (!sc || !sc->classes || !buf || !len) return NULL;
+  buf[0] = 0;
+  size_t pos = 0;
+  FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) {
+    size_t n = strlen(cls->value);
+    if (!n) continue;
+    if (pos > 0 && pos < len - 1) buf[pos++] = ' ';
+    if (pos + n >= len) break;
+    memcpy(buf + pos, cls->value, n);
+    pos += n;
+    buf[pos] = 0;
+  }
+  return pos > 0 ? buf : NULL;
+}
