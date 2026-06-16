@@ -44,7 +44,7 @@ typedef enum cg_kind {
  *   VALUE     : name=value-name   type=text-content extra=""
  *   INTERFACE : name=iface-name   type=prefix       extra=export-name
  *   STRUCT    : name=struct-name  type=prefix       extra=export-name
- *   CLASS     : name=class-name   type=parent-list  extra=concept
+ *   CLASS     : name=class-name   type=parent-list  extra=concept  aux=details  aux2=xmlns
  *   METHOD    : name=method-name  type=return-type  extra=export-name
  *   MESSAGE   : name=msg-name     type=routing      extra=same-as (parent msg)
  *   FIELD     : name=field-name   type=C-type       extra=fixed-array-count
