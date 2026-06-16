@@ -20,6 +20,7 @@ CODEGEN_LDFLAGS := $(shell pkg-config --libs libxml-2.0) -ldl $(ARCH_FLAGS)
 CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
 CODEGEN_PROPERTIES_PLUGIN := $(BUILDDIR)/plugins/codegen/libproperties.so
 CODEGEN_EXPORT_PLUGIN := $(BUILDDIR)/plugins/codegen/libexport.so
+CODEGEN_DOCS_PLUGIN := $(BUILDDIR)/plugins/codegen/libdocs.so
 CGEN := $(CODEGEN)
 CG_PLUGIN_HEADER := $(CODEGEN_HEADER_PLUGIN)
 CG_PLUGIN_PROPERTIES := $(CODEGEN_PROPERTIES_PLUGIN)
@@ -33,10 +34,10 @@ Q = @
 endif
 
 # Top-level targets
-.PHONY: all codegen-host codegen-sample codegen-clean modules-c-preview modules-c-diff $(MODULES)
+.PHONY: all codegen-host codegen-sample codegen-clean modules-c-preview modules-c-diff docs $(MODULES)
 
-all: $(MODULES)
-codegen-host: $(CODEGEN) $(CODEGEN_PLUGINS)
+all: $(MODULES) docs
+codegen-host: $(CODEGEN) $(CODEGEN_PLUGINS) $(CODEGEN_DOCS_PLUGIN)
 codegen-sample: codegen-host
 	$(Q)mkdir -p $(BUILDDIR)/codegen
 	$(Q)$(CODEGEN) $(MODULE_ROOT)source/core/core.cgen $(CODEGEN_HEADER_PLUGIN) > $(BUILDDIR)/codegen/core_stub.h
@@ -94,3 +95,17 @@ $(CODEGEN): $(CODEGEN_SRC) | directories
 $(BUILDDIR)/plugins/codegen/lib%.so: $(MODULE_ROOT)tools/codegen/plugins/%.c $(MODULE_ROOT)tools/codegen/include/cg_api.h | directories
 	$(Q)mkdir -p $(dir $@)
 	$(Q)$(CC) $(CODEGEN_CFLAGS) -shared $< -o $@
+
+# Documentation generation
+DOCS_OUTPUT_DIR := $(MODULE_ROOT)docs
+
+define MODULE_DOCS_RULE
+docs-$(1): codegen-host
+	$(Q)echo "Generating docs for $(1)..."
+	$(Q)mkdir -p $(DOCS_OUTPUT_DIR)/modules/$(notdir $(1))/classes
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/modules/$(notdir $(1))
+endef
+
+$(foreach mod,$(MODULES),$(eval $(call MODULE_DOCS_RULE,$(mod))))
+
+docs: $(foreach mod,$(MODULES),docs-$(mod))
