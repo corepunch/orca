@@ -16,6 +16,7 @@ OBJ_AddChild(struct Object *self, struct Object *child)
   child->parent = self;
   OBJ_SetDirty(self);
   struct Object_AttachedEventArgs attached_args = { .Sender = child };
+  OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
   OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
   return child;

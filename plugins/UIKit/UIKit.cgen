@@ -1009,6 +1009,13 @@
         <property name="Type" type="StyleType">Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.</property>
       </properties>
     </class>
+    <class name="ItemsControl">
+      <summary>Base class for controls that present a collection of items</summary>
+      <properties>
+        <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
+        <property name="ItemTemplate" type="Node2D" pointer="true">The template used to represent each item</property>
+      </properties>
+    </class>
     <class name="ListBox" parent="StackView,ItemsControl">
       <summary>A list box that allows the user to select one or more items from a collection</summary>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
