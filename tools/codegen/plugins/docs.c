@@ -291,10 +291,26 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
                 }
 
         /* Write module overview. */
-        if (host->write_file(output, b.s, b.n) < 0) {
-            host->logf("docs: failed write %s", output);
-            free(b.s);
-            return -1;
+        {
+            char path[512];
+            size_t base_len = strlen(output);
+            if (base_len + 11 < sizeof(path)) {
+                memcpy(path, output, base_len);
+                if (base_len > 0 && output[base_len - 1] != '/') {
+                    path[base_len] = '/';
+                    base_len++;
+                }
+                strcpy(path + base_len, "overview.md");
+                if (host->write_file(path, b.s, b.n) < 0) {
+                    host->logf("docs: failed write %s", path);
+                    free(b.s);
+                    return -1;
+                }
+            } else {
+                host->logf("docs: path too long for overview");
+                free(b.s);
+                return -1;
+            }
         }
         free(b.s);
 
