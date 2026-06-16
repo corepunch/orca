@@ -92,12 +92,21 @@ function pointer, not a clang block.
 
 ## Converting a property value to string
 
-There is **no public** `format_property` / `PropertyToString` function.
-`PDESC_Print` exists in `property_core.c` but is (a) not declared in any
-header, and (b) broken for `kDataTypeStruct` (treats struct bytes as a raw
-float array, ignoring field layout).
+Use `OBJ_FormatPropertyValue` (declared in `include/orca.h`):
 
-You must implement the conversion yourself.  The type switch is:
+```c
+// Returns TRUE when buf was populated; FALSE for kDataTypeObject,
+// kDataTypeEvent, NULL value, or unknown struct type.
+char buf[256];
+bool_t ok = OBJ_FormatPropertyValue(pd, value, buf, sizeof(buf));
+if (ok && buf[0]) {
+    xmlNewProp(xml_node, XMLSTR(pd->Name), XMLSTR(buf));
+}
+```
+
+It handles all scalar types and recurses into structs via `OBJ_FindStructDesc`.
+You only need to call it by hand if you need per-type control.  The full type
+switch for reference:
 
 | DataType | How to format |
 |---|---|
@@ -116,13 +125,20 @@ You must implement the conversion yourself.  The type switch is:
 `OBJ_FindStructDesc(pd->TypeString)` returns a `StructDesc` with its own
 `Properties` array.  Each field is itself a `PropertyType` with an `Offset`
 relative to the struct base.  Serialize fields space-separated in declaration
-order to match the positional inline syntax the deserializer accepts:
+order to match the positional inline syntax the deserializer accepts.
+
+`OBJ_FormatPropertyValue` handles this recursion automatically.  If you need
+to walk fields yourself:
 
 ```c
-// Serializes: "10 20" (e.g. a Vec2 with x=10, y=20)
+// Serializes e.g. "10 20" for a Vec2 {x=10, y=20}
+struct StructDesc const *sd = OBJ_FindStructDesc(pd->TypeString);
+if (!sd) return; // unknown struct, skip
 FOR_LOOP(i, sd->NumProperties) {
     struct PropertyType const *field = &sd->Properties[i];
-    format_value(field, (char*)value + field->Offset, &out);
+    char fbuf[64];
+    if (OBJ_FormatPropertyValue(field, (char*)value + field->Offset, fbuf, sizeof(fbuf)))
+        append_token(&out, fbuf);  // space-separate
 }
 ```
 
@@ -167,69 +183,39 @@ int count   = ((int *)raw_value)[sizeof(void*) / sizeof(int)];
 
 ## Binding expressions
 
-**The original expression string is not stored after compilation.**
-`PROP_SetBinding` calls `Token_Create(expression)` which builds a token tree
-in memory and discards the source text.  The `struct Binding` (defined only
-in the private `property_internal.h`) holds only:
+`PROP_SetBinding` stores the original expression string.  Use
+`PROP_GetBindingExpression` (declared in `include/orca.h`) to retrieve it:
 
 ```c
-struct Binding {
-  struct token  *token;       // compiled expression
-  struct Property *property;  // back-pointer
-  uint32_t updateFrame;
-};
+if (PROP_HasProgram(prop)) {
+    lpcString_t expr = PROP_GetBindingExpression(prop);
+    // expr is the original source string, e.g. "{Screen.Width} * 0.5"
+    // May be NULL for bindings compiled before this field was introduced.
+    if (expr) {
+        // emit <BindingExpression Target="Category.Name" Expression="..."/>
+    }
+}
 ```
 
-To serialize bindings round-trip you must store the expression string at parse
-time.  The cleanest fix is to add an `expression` field to `struct Binding` and
-populate it in `PROP_SetBinding`:
+Skip bound properties from plain attribute serialization; emit a
+`<BindingExpression>` child element instead.
 
-```c
-// in property_internal.h
-struct Binding {
-  struct token    *token;
-  struct Property *property;
-  LPSTR            expression;   // ADD THIS
-  uint32_t         updateFrame;
-};
-
-// in PROP_SetBinding:
-p->binding->expression = expression ? strdup(expression) : NULL;
-```
-
-Until that change lands, the serializer emits a `<BindingExpression
-Target="Category.Name"/>` stub with no expression text — the property name is
-preserved but the expression is lost.
-
-**Detection:** `PROP_HasProgram(prop)` returns `TRUE` if a binding is
-compiled.  Skip such properties from attribute serialization and instead emit
-the binding stub.
+**Detection:** `PROP_HasProgram(prop)` returns `TRUE` if a binding is active.
 
 ---
 
 ## StyleClass / CSS class attribute
 
-The `class` attribute (maps to `StyleClass` / CSS selector) is **not stored as
-a normal property**.  It is processed by the `StyleController` component and
-stored internally as a linked list of `struct style_class_selector` (declared
-in `core_local.h`, a private header).
-
-`OBJ_EnumStyleClasses` (also in `core_local.h`) is not in the public API and
-yields parsed selector structs including pseudo-state flags and opacity
-suffixes, not the original raw string.
-
-**To make StyleClass serializable, add a public accessor:**
+The `class` attribute is not a normal property — it is processed by
+`StyleController` and stored internally.  Use `OBJ_GetRawStyleClasses`
+(declared in `include/orca.h`) to get the original space-separated string:
 
 ```c
-// Option A: raw string accessor (simplest)
-ORCA_API lpcString_t OBJ_GetRawStyleClasses(struct Object *object);
-
-// Option B: store the raw string as a regular string property on Node
-// and update it whenever StyleController processes an AddClasses message
+char buf[1024];
+lpcString_t classes = OBJ_GetRawStyleClasses(object, buf, sizeof(buf));
+if (classes && *classes)
+    xmlNewProp(xml_node, XMLSTR("class"), XMLSTR(classes));
 ```
-
-Until either option is implemented, the `class` attribute is silently dropped
-during serialization.
 
 ---
 
@@ -255,17 +241,23 @@ Objects loaded via `LayerPrefabPlaceholder` / `ObjectPrefabPlaceholder` are
 re-loaded from their source file at runtime.  Their `SourceFile` field
 (`OBJ_GetSourceFile`) holds the original path.
 
-The correct round-trip serialization emits the placeholder element, not the
-expanded content:
+The serializer detects this and emits the placeholder form, not the expanded
+tree:
 
 ```xml
 <LayerPrefabPlaceholder PlaceholderTemplate="Example/Prefabs/Card" .../>
 ```
 
-**Detection:** `OBJ_GetFlags(object) & OF_TEMPLATE` and `OBJ_GetSourceFile`.
+**Detection pattern** (already used in `fs_xml_write.c`):
 
-The current implementation does not handle this — it serializes the expanded
-object tree instead.  This is lossy.
+```c
+if (OBJ_GetFlags(object) & OF_TEMPLATE) {
+    // emit placeholder, not children
+    lpcString_t src = OBJ_GetSourceFile(object);
+    _xmlSetProp(xml_node, "PlaceholderTemplate", src);
+    return;
+}
+```
 
 ---
 
@@ -277,17 +269,14 @@ when implementing the serializer.
 
 ---
 
-## Known limitations (summary)
+## Known limitations
 
-| Issue | Status |
+| Issue | Notes |
 |---|---|
-| `PDESC_Print` broken for structs, not in header | **Fixed** — `OBJ_FormatPropertyValue` in `include/orca.h` |
-| Binding expression text not stored post-compile | **Fixed** — `PROP_GetBindingExpression` / `struct Binding.Expression` |
-| StyleClass not in public API | **Fixed** — `OBJ_GetRawStyleClasses` in `include/orca.h` |
-| Prefab objects serialized as expanded tree | **Fixed** — `OF_TEMPLATE` detection emits `<LayerPrefabPlaceholder>` |
-| No `IsReadOnly` flag respected | **Fixed** — `pd->IsReadOnly` skip in `serialize_property_cb` |
-| Block literal vs. function pointer | **Fixed** — plain C callback with `struct serialize_ctx *param` |
-| `LPSTR` return: `strdup`'d, free with `free()` | Correct |
+| `kDataTypeObject` properties | Cannot serialize as a flat attribute; requires a child element wrapper (see Object-reference section above) |
+| `kDataTypeEvent` properties | Not serializable; skip them |
+| Binding `PROP_GetBindingExpression` may return NULL | For bindings compiled before expression storage was added; property name is preserved but expression text is lost |
+| Array items that are not `Object` instances | Array serialization assumes each item is an `Object` — plain-value arrays are not currently supported |
 
 ---
 
