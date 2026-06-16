@@ -797,13 +797,6 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Base class for data-holding objects within the framework</summary>
       <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
     </class>
-    <class name="ItemsControl" parent="Node2D">
-      <summary>Base class for controls that present a collection of items</summary>
-      <properties>
-        <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
-        <property name="ItemTemplate" type="Node" pointer="true">The template used to represent each item</property>
-      </properties>
-    </class>
     <class name="Binding">
       <summary>Declarative property binding object that attaches a property program to its parent object.</summary>
       <details>Binding is created from XML like any other object. Property wrappers compile it by sending Binding.Compile with the target Property pointer in lParam.</details>

@@ -165,8 +165,7 @@ PROP_SetStoredValue(struct Property *property,
       memcpy(storage, &object, PROP_GetSize(property));
     }
     OBJ_AddRef(object);
-    if (property->pdesc->TypeString && !strcmp(property->pdesc->TypeString, "Texture"))
-      OBJ_SendMessageW(object, ID_Object_Start, 0, NULL);
+    OBJ_SendMessageW(object, ID_Object_Start, 0, NULL);
     if (old_object) {
       OBJ_ReleaseRef(old_object);
     }
