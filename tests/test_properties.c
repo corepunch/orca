@@ -5,7 +5,7 @@
  *   - Int, float, bool property set/get
  *   - String property set/get, multiple reassignments (no double-free)
  *   - PROP_Clear: frees heap strings, resets state
- *   - OBJ_ReleaseProperties: frees all string memory on destruction
+ *   - object release: frees all string memory on destruction
  *   - OBJ_SetPropertyValue: lazy on-demand property creation
  *   - OBJ_FindShortProperty: lookup by name
  *   - PROP_IsNull: NULL check before and after set
@@ -30,24 +30,25 @@
 
 #include "mem_tracker.h"
 
-#include <source/core/core_local.h>
+#include <include/orca.h>
 #include <core/core.h>
-#include <source/core/object/object_internal.h>
-#include <source/core/property/property_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-/*
- * OBJ_Create and OBJ_ReleaseProperties are engine-internal functions
- * not declared in the public header.  They ARE exported from the shared
- * library (no -fvisibility=hidden in the build), so we declare them here.
- */
-extern struct Object *OBJ_Create(uint32_t class_id);
-extern void OBJ_ReleaseProperties(struct Object *);
+/* Narrow test-only declarations for the property VM surface. */
+struct vm_register
+{
+    eDataType_t type;
+    uint32_t size;
+    float value[MAX_PROPERTY_STRING / sizeof(float)];
+};
+
 extern int64_t OBJ_GetObjectCount(void);
-extern struct color COLOR_Parse(lpcString_t);
+extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register *);
+extern bool_t PROP_Import(struct Property *, struct vm_register *);
+extern void PROP_AttachProgram(struct Property *, struct token *);
 
 /* ------------------------------------------------------------------ */
 /* Minimal test harness                                               */
@@ -70,6 +71,11 @@ static const char* s_current_test = NULL;
 #define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
 #define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
 
+#define FIND_SHORT_PROPERTY(obj, name, out) \
+    (((*(out) = OBJ_FindShortProperty((obj), fnv1a32(name))) != NULL) ? NOERROR : E_FAIL)
+#define FIND_LONG_PROPERTY(obj, id, out) \
+    (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
+
 /*
  * PROP_STR — wrap a string literal as a char** suitable for PROP_SetValue.
  * String properties store a char* internally, so the API expects void const*
@@ -89,7 +95,7 @@ static const char* s_current_test = NULL;
 #define PROP_TEST(obj, name, dtype, setval, cmpval)                          \
     {                                                                        \
         struct Property *_p;                                                     \
-        EXPECT_OK(OBJ_FindShortProperty(obj, name, &_p));                    \
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, name, &_p));                    \
         EXPECT(PROP_GetType(_p) == dtype);                                   \
         EXPECT(PROP_IsNull(_p));                                             \
         PROP_SetValue(_p, setval);                                           \
@@ -457,15 +463,11 @@ static struct Object *make_inherited_object(void) {
 }
 
 static void link_child_for_inheritance(struct Object *parent, struct Object *child) {
-    parent->children = child;
-    child->parent = parent;
-    child->next = NULL;
+    OBJ_AddChild(parent, child);
 }
 
 static void unlink_child_for_inheritance(struct Object *parent, struct Object *child) {
-    if (parent->children == child) parent->children = NULL;
-    child->parent = NULL;
-    child->next = NULL;
+    if (OBJ_GetParent(child) == parent) OBJ_RemoveFromParent(child);
 }
 
 static void test_object_refcount_direct(void) {
@@ -506,7 +508,7 @@ static void test_object_property_holds_reference(void) {
         struct Property *prop;
 
         EXPECT(OBJ_GetObjectCount() == baseline + 2);
-        EXPECT_OK(OBJ_FindShortProperty(holder, "Child", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(holder, "Child", &prop));
 
         PROP_SetValue(prop, &child);
         EXPECT(*(struct Object **)PROP_GetValue(prop) == child);
@@ -526,7 +528,7 @@ static void test_inherited_property_starts_unset_without_ancestor(void) {
     WITH(struct Object, obj, make_inherited_object(), destroy_object) {
         struct Property *prop;
         float value = 99.0f;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "FontSize", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "FontSize", &prop));
         EXPECT(PROP_IsNull(prop));
         EXPECT(PROP_GetValue(prop) == NULL);
         EXPECT(!OBJ_ReadProperty(obj, s_inheritedProps[0].FullIdentifier, &value));
@@ -539,8 +541,8 @@ static void test_inherited_scalar_reads_parent_value(void) {
         WITH(struct Object, child, make_inherited_object(), destroy_object) {
             struct Property *parentProp, *childProp;
             float value = 0.0f;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
             PROP_SetValue(parentProp, &(float){12.0f});
             link_child_for_inheritance(parent, child);
@@ -566,8 +568,8 @@ static void test_inherited_attached_parent_property_late_set_reads_child(void) {
             float value = 0.0f;
             uint32_t fontSizeID = s_inheritedProps[0].FullIdentifier;
 
-            EXPECT_OK(OBJ_FindLongProperty(parent, fontSizeID, &attachedProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_LONG_PROPERTY(parent, fontSizeID, &attachedProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
             EXPECT(PROP_IsNull(attachedProp));
             EXPECT(PROP_IsNull(childProp));
             link_child_for_inheritance(parent, child);
@@ -593,10 +595,10 @@ static void test_inherited_late_attach_reads_existing_attached_value(void) {
             float value = 0.0f;
             uint32_t fontSizeID = s_inheritedProps[0].FullIdentifier;
 
-            EXPECT_OK(OBJ_FindLongProperty(parent, fontSizeID, &attachedProp));
+            EXPECT_OK(FIND_LONG_PROPERTY(parent, fontSizeID, &attachedProp));
             PROP_SetValue(attachedProp, &(float){18.0f});
 
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
             link_child_for_inheritance(parent, child);
             EXPECT(PROP_IsNull(childProp));
             EXPECT(OBJ_ReadProperty(child, fontSizeID, &value));
@@ -612,8 +614,8 @@ static void test_inherited_local_override_wins_over_parent(void) {
         WITH(struct Object, child, make_inherited_object(), destroy_object) {
             struct Property *parentProp, *childProp;
             float value = 0.0f;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
             PROP_SetValue(parentProp, &(float){10.0f});
             link_child_for_inheritance(parent, child);
@@ -639,8 +641,8 @@ static void test_inherited_same_value_local_override_still_wins(void) {
         WITH(struct Object, child, make_inherited_object(), destroy_object) {
             struct Property *parentProp, *childProp;
             float value = 0.0f;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
             PROP_SetValue(parentProp, &(float){14.0f});
             link_child_for_inheritance(parent, child);
@@ -665,8 +667,8 @@ static void test_inherited_clear_returns_to_parent_value(void) {
         WITH(struct Object, child, make_inherited_object(), destroy_object) {
             struct Property *parentProp, *childProp;
             float value = 0.0f;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
             PROP_SetValue(parentProp, &(float){11.0f});
             link_child_for_inheritance(parent, child);
@@ -689,8 +691,8 @@ static void test_inherited_parent_clear_removes_effective_value(void) {
         WITH(struct Object, child, make_inherited_object(), destroy_object) {
             struct Property *parentProp, *childProp;
             float value = 0.0f;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
             PROP_SetValue(parentProp, &(float){17.0f});
             link_child_for_inheritance(parent, child);
@@ -713,9 +715,9 @@ static void test_inherited_nearest_ancestor_wins_and_reveals_grandparent_on_clea
             WITH(struct Object, child, make_inherited_object(), destroy_object) {
                 struct Property *grandparentProp, *parentProp, *childProp;
                 float value = 0.0f;
-                EXPECT_OK(OBJ_FindShortProperty(grandparent, "FontSize", &grandparentProp));
-                EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-                EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+                EXPECT_OK(FIND_SHORT_PROPERTY(grandparent, "FontSize", &grandparentProp));
+                EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+                EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
 
                 PROP_SetValue(grandparentProp, &(float){10.0f});
                 PROP_SetValue(parentProp, &(float){20.0f});
@@ -750,9 +752,9 @@ static void test_inherited_reparent_reads_new_parent_value(void) {
         struct Property *propA, *propB, *childProp;
         float value = 0.0f;
 
-        EXPECT_OK(OBJ_FindShortProperty(parentA, "FontSize", &propA));
-        EXPECT_OK(OBJ_FindShortProperty(parentB, "FontSize", &propB));
-        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(parentA, "FontSize", &propA));
+        EXPECT_OK(FIND_SHORT_PROPERTY(parentB, "FontSize", &propB));
+        EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
         PROP_SetValue(propA, &(float){12.0f});
         PROP_SetValue(propB, &(float){34.0f});
 
@@ -781,8 +783,8 @@ static void test_inherited_color_reads_color_value(void) {
             struct color value = { 0 };
             struct color red = { .r = 1, .g = 0, .b = 0, .a = 1 };
             struct color blue = { .r = 0, .g = 0, .b = 1, .a = 1 };
-            EXPECT_OK(OBJ_FindShortProperty(parent, "Tint", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "Tint", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "Tint", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "Tint", &childProp));
             EXPECT(PROP_GetSize(parentProp) == sizeof(struct color));
 
             PROP_SetValue(parentProp, &red);
@@ -808,8 +810,8 @@ static void test_inherited_object_read_returns_component_pointer(void) {
             struct RTComp *value = NULL;
             struct RTComp *targetComp = OBJ_GetComponent(target, fnv1a32("RTComp"));
             EXPECT(targetComp != NULL);
-            EXPECT_OK(OBJ_FindShortProperty(parent, "Child", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "Child", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "Child", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "Child", &childProp));
 
             PROP_SetValue(parentProp, &target);
             link_child_for_inheritance(parent, child);
@@ -833,8 +835,8 @@ static void test_inherited_object_local_override_does_not_release_parent_value(v
             struct RTComp *childValueComp = OBJ_GetComponent(childValue, fnv1a32("RTComp"));
             struct RTComp *value = NULL;
 
-            EXPECT_OK(OBJ_FindShortProperty(parent, "Child", &parentProp));
-            EXPECT_OK(OBJ_FindShortProperty(child, "Child", &childProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "Child", &parentProp));
+            EXPECT_OK(FIND_SHORT_PROPERTY(child, "Child", &childProp));
 
             PROP_SetValue(parentProp, &parentValue);
             link_child_for_inheritance(parent, child);
@@ -859,8 +861,8 @@ static void test_inherited_parent_release_removes_effective_value(void) {
         struct Property *parentProp, *childProp;
         float value = 0.0f;
 
-        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
         PROP_SetValue(parentProp, &(float){19.0f});
         OBJ_AddChild(parent, child);
 
@@ -881,8 +883,8 @@ static void test_inherited_parent_update_changes_effective_read(void) {
         struct Property *parentProp, *childProp;
         float value = 0.0f;
 
-        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
         PROP_SetValue(parentProp, &(float){12.0f});
         OBJ_AddChild(parent, child);
         EXPECT(OBJ_ReadProperty(child, s_inheritedProps[0].FullIdentifier, &value));
@@ -905,8 +907,8 @@ static void test_inherited_remove_from_parent_clears_effective_value(void) {
         struct Property *parentProp, *childProp;
         float value = 0.0f;
 
-        EXPECT_OK(OBJ_FindShortProperty(parent, "FontSize", &parentProp));
-        EXPECT_OK(OBJ_FindShortProperty(child, "FontSize", &childProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(parent, "FontSize", &parentProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(child, "FontSize", &childProp));
         PROP_SetValue(parentProp, &(float){21.0f});
         OBJ_AddChild(parent, child);
 
@@ -938,17 +940,11 @@ static struct Object *make_object(void) {
 
 /*
  * Release an object created with make_object().
- * Frees all properties (including heap-allocated strings) via
- * OBJ_ReleaseProperties, frees all component blocks, and finally
- * frees the object itself.
- * Does NOT call OBJ_Release (which needs a Lua state and message dispatch).
+ * Releases the owned object reference created by OBJ_Create.
  */
 static void destroy_object(struct Object *obj) {
     if (!obj) return;
-    OBJ_ReleaseProperties(obj);
-    OBJ_ReleaseComponents(obj);
-    free(obj->Name);
-    free(obj);
+    OBJ_ReleaseRef(obj);
 }
 
 /* ------------------------------------------------------------------ */
@@ -958,7 +954,7 @@ static void destroy_object(struct Object *obj) {
 static void test_int_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeInt);
         EXPECT(PROP_IsNull(prop));
 
@@ -983,7 +979,7 @@ static void test_float_property(void) {
 static void test_bool_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Active", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Active", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeBool);
 
         bool_t yes = TRUE;
@@ -1006,7 +1002,7 @@ static void test_string_property_basic(void) {
 static void test_string_property_reassign(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR("first"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "first");
@@ -1026,7 +1022,7 @@ static void test_string_property_reassign(void) {
 static void test_string_property_clear(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR("some string"));
         EXPECT(!PROP_IsNull(prop));
@@ -1043,7 +1039,7 @@ static void test_string_property_clear(void) {
 static void test_string_property_clear_without_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
 
         /* Clearing a never-set string property must not crash */
         EXPECT(PROP_Clear(prop), PROP_IsNull(prop));
@@ -1053,7 +1049,7 @@ static void test_string_property_clear_without_set(void) {
 static void test_release_properties_frees_strings(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
         PROP_SetValue(prop, PROP_STR("will be freed"));
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
            free the strdup'd string without crashing. */
@@ -1066,11 +1062,11 @@ static void test_set_property_value_api(void) {
         EXPECT_OK(OBJ_SetPropertyValue(obj, "Count", &(int){99}));
 
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 99);
 
         EXPECT_OK(OBJ_SetPropertyValue(obj, "Label", PROP_STR("via api")));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "via api");
     }
 }
@@ -1078,7 +1074,7 @@ static void test_set_property_value_api(void) {
 static void test_property_state_string(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
 
         /* Set the hover state value */
         PROP_SetValue(prop, PROP_STR("normal"));
@@ -1096,7 +1092,7 @@ static void test_property_state_string(void) {
 static void test_struct_property(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Position", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Position", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeStruct);
 
         float pos[2] = {10.0f, 20.0f};
@@ -1110,15 +1106,15 @@ static void test_struct_property(void) {
 static void test_find_property_unknown(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop = NULL;
-        EXPECT(FAILED(OBJ_FindShortProperty(obj, "NonExistentProp", &prop)));
+        EXPECT(FAILED(FIND_SHORT_PROPERTY(obj, "NonExistentProp", &prop)));
     }
 }
 
 static void test_multiple_properties_independent(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *pCount, *pLabel;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &pCount));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &pLabel));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &pCount));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &pLabel));
         EXPECT(pCount != pLabel);
 
         int val = 5;
@@ -1138,7 +1134,7 @@ static void test_multiple_properties_independent(void) {
 static void test_string_empty(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
 
         PROP_SetValue(prop, PROP_STR(""));
         EXPECT(!PROP_IsNull(prop));
@@ -1150,7 +1146,7 @@ static void test_release_without_string_set(void) {
     WITH(struct Object, obj, make_object(), destroy_object) {
         /* Only set a non-string property */
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &prop));
         int val = 1;
         PROP_SetValue(prop, &val);
         /* destroy_object (called by WITH) calls OBJ_ReleaseProperties which must
@@ -1224,7 +1220,7 @@ static void test_runtime_run_arithmetic(void) {
 static void test_runtime_import_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeInt;
         r.value[0] = 99.0f;
@@ -1237,7 +1233,7 @@ static void test_runtime_import_int(void) {
 static void test_runtime_import_float(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Value", &prop));
         struct vm_register r = {0};
         r.type     = kDataTypeFloat;
         r.size     = sizeof(float);
@@ -1250,7 +1246,7 @@ static void test_runtime_import_float(void) {
 static void test_runtime_import_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
         struct vm_register r = {0};
         r.type = kDataTypeString;
         r.size = sizeof(const char*);
@@ -1264,12 +1260,12 @@ static void test_runtime_import_string(void) {
 static void test_runtime_attach_and_update_int(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &prop));
         struct token *prog = Token_Create("21");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(int*)PROP_GetValue(prop) == 21);
@@ -1279,12 +1275,12 @@ static void test_runtime_attach_and_update_int(void) {
 static void test_runtime_attach_and_update_string(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
         struct token *prog = Token_Create("\"bound\"");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "bound");
@@ -1302,8 +1298,8 @@ static void test_runtime_attach_and_update_string(void) {
 static void test_runtime_property_reference(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *propCount, *propValue;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Count", &propCount));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Value", &propValue));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Count", &propCount));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Value", &propValue));
 
         float v = 5.0f;
         PROP_SetValue(propValue, &v);
@@ -1313,7 +1309,7 @@ static void test_runtime_property_reference(void) {
         EXPECT(prog != NULL);
         PROP_AttachProgram(propCount, prog);
         EXPECT(PROP_HasProgram(propCount));
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(propCount));
         EXPECT(!PROP_IsNull(propCount));
         EXPECT(*(int*)PROP_GetValue(propCount) == 5);
@@ -1327,11 +1323,11 @@ static void test_runtime_property_reference(void) {
 static void test_runtime_string_concat_program(void) {
     WITH(struct Object, obj, make_rt_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Label", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Label", &prop));
         struct token *prog = Token_Create("ADD(\"foo\", \"bar\")");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, prog);
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(prop));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(prop), "foobar");
     }
@@ -1403,13 +1399,13 @@ static void test_string_export_unset_produces_empty(void) {
 static void test_string_binding_unset_source_gives_empty(void) {
     WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
         struct Property *target;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Target", &target));
         /* Source is never set — its char* is NULL. */
         struct token *prog = Token_Create("{./Source}");
         EXPECT(prog != NULL);
         PROP_AttachProgram(target, prog);
         EXPECT(PROP_HasProgram(target));
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(target));
         EXPECT(!PROP_IsNull(target));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(target), "");
@@ -1423,8 +1419,8 @@ static void test_string_binding_unset_source_gives_empty(void) {
 static void test_string_binding_value_propagates(void) {
     WITH(struct Object, obj, make_rtstring2_object(), destroy_object) {
         struct Property *source, *target;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Source", &source));
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Target", &target));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Source", &source));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Target", &target));
 
         PROP_SetValue(source, PROP_STR("hello"));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(source), "hello");
@@ -1432,7 +1428,7 @@ static void test_string_binding_value_propagates(void) {
         struct token *prog = Token_Create("{./Source}");
         EXPECT(prog != NULL);
         PROP_AttachProgram(target, prog);
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(target));
         EXPECT(!PROP_IsNull(target));
         EXPECT_STR_EQ(*(const char**)PROP_GetValue(target), "hello");
@@ -1446,10 +1442,10 @@ static void test_string_binding_value_propagates(void) {
 static void test_string_binding_parent_label(void) {
     WITH(struct Object, parent, make_rt_object(), destroy_object) {
         WITH(struct Object, child, make_rt_object(), destroy_object) {
-            child->parent = parent;
+            OBJ_AddChild(parent, child);
 
             struct Property *parentLabel;
-            EXPECT_OK(OBJ_FindShortProperty(parent, "Label", &parentLabel));
+            EXPECT_OK(FIND_SHORT_PROPERTY(parent, "Label", &parentLabel));
             PROP_SetValue(parentLabel, PROP_STR("world"));
 
             struct vm_register r = {0};
@@ -1457,7 +1453,7 @@ static void test_string_binding_parent_label(void) {
             EXPECT(r.type == kDataTypeString);
             EXPECT_STR_EQ(*(const char *const *)r.value, "world");
 
-            child->parent = NULL;
+            OBJ_RemoveFromParent(child);
         }
     }
 }
@@ -1469,7 +1465,7 @@ static void test_string_binding_parent_label(void) {
 static void test_string_binding_parent_label_unset(void) {
     WITH(struct Object, parent, make_rt_object(), destroy_object) {
         WITH(struct Object, child, make_rt_object(), destroy_object) {
-            child->parent = parent;
+            OBJ_AddChild(parent, child);
 
             /* Parent's Label is never set — char* is NULL. */
             struct vm_register r = {0};
@@ -1479,7 +1475,7 @@ static void test_string_binding_parent_label_unset(void) {
             EXPECT(str != NULL);
             EXPECT_STR_EQ(str, "");
 
-            child->parent = NULL;
+            OBJ_RemoveFromParent(child);
         }
     }
 }
@@ -1492,7 +1488,7 @@ static void test_string_binding_parent_label_unset(void) {
 static void test_color_property_basic(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Tint", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeColor);
         EXPECT(PROP_GetSize(prop) == sizeof(struct color));
         EXPECT(PROP_IsNull(prop));
@@ -1513,7 +1509,7 @@ static void test_color_property_basic(void) {
 static void test_color_property_reassign(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Tint", &prop));
 
         struct color c1 = { .r = 1.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
         PROP_SetValue(prop, &c1);
@@ -1532,7 +1528,7 @@ static void test_color_property_reassign(void) {
 static void test_color_property_clear(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Tint", &prop));
 
         struct color c = { .r = 0.2f, .g = 0.4f, .b = 0.6f, .a = 0.8f };
         PROP_SetValue(prop, &c);
@@ -1573,7 +1569,7 @@ static void test_color_parse_hex_rgba(void) {
 static void test_color_property_from_parse(void) {
     WITH(struct Object, obj, make_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Tint", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Tint", &prop));
 
         struct color c = COLOR_Parse("#00ff00"); /* green */
         PROP_SetValue(prop, &c);
@@ -1595,7 +1591,7 @@ static void test_color_property_from_parse(void) {
 static void test_color_import_whole(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         struct vm_register r = {0};
         r.type     = kDataTypeFloat;
@@ -1619,7 +1615,7 @@ static void test_color_import_whole(void) {
 static void test_color_import_channels(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         /* Initialize the color to known values first. */
         struct color init = { .r = 0.0f, .g = 0.0f, .b = 0.0f, .a = 1.0f };
@@ -1647,7 +1643,7 @@ static void test_color_import_channels(void) {
 static void test_color_export_channel_program(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         struct color c = { .r = 0.75f, .g = 0.25f, .b = 0.5f, .a = 1.0f };
         PROP_SetValue(prop, &c);
@@ -1678,13 +1674,13 @@ static void test_color_color4_function(void) {
 static void test_color_bind_color4_to_property(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         struct token *prog = Token_Create("COLOR4(0.1, 0.2, 0.3, 1.0)");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, prog);
         EXPECT(PROP_HasProgram(prop));
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(prop));
         EXPECT(!PROP_IsNull(prop));
 
@@ -1700,7 +1696,7 @@ static void test_color_bind_color4_to_property(void) {
 static void test_color_import_mismatched_type_reports_error(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         struct vm_register r = {0};
         r.type = kDataTypeString;
@@ -1717,17 +1713,17 @@ static void test_color_bind_channel_to_float(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         /* Set source color. */
         struct Property *colorProp;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &colorProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &colorProp));
         struct color src = { .r = 0.9f, .g = 0.3f, .b = 0.0f, .a = 1.0f };
         PROP_SetValue(colorProp, &src);
 
         /* Bind {./Color}.COLORA to Alpha float property. */
         struct Property *alphaProp;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Alpha", &alphaProp));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Alpha", &alphaProp));
         struct token *prog = Token_Create("{./Color}.COLORA");
         EXPECT(prog != NULL);
         PROP_AttachProgram(alphaProp, prog);
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(alphaProp));
         EXPECT(!PROP_IsNull(alphaProp));
         /* Alpha channel of src is 1.0; float property should be 1.0. */
@@ -1739,7 +1735,7 @@ static void test_color_bind_channel_to_float(void) {
 static void test_color_bind_channel_to_channel(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Color", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
 
         /* Initialize to a known color. */
         struct color c = { .r = 0.3f, .g = 0.7f, .b = 0.5f, .a = 1.0f };
@@ -1749,7 +1745,7 @@ static void test_color_bind_channel_to_channel(void) {
         struct token *prog = Token_Create("{./Color}");
         EXPECT(prog != NULL);
         PROP_AttachProgram(prop, prog);
-        core.frame++;
+        core_AdvanceFrame();
         EXPECT(PROP_Update(prop));
 
         struct color *got = (struct color *)PROP_GetValue(prop);
@@ -1795,7 +1791,7 @@ static void test_project_string_property_set_get(void) {
          * to OBJ_FindLongProperty which calls _CreateProjectProperty with the
          * same identifier — so we must pass the full "Card.ProjTitle" name.
          */
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Card.ProjTitle", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Card.ProjTitle", &prop));
         EXPECT(PROP_GetType(prop) == kDataTypeString);
         EXPECT(PROP_IsNull(prop));
 

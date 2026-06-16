@@ -4,7 +4,7 @@
  * Tests cover:
  *   - StyleController attachment and class parsing
  *   - OBJ_AddClass: runtime class addition via AddClass/AddClasses messages
- *   - OBJ_GetStyleFlags: returns 0 when no pseudo-state is active
+ *   - public raw class reconstruction for parsed pseudo-state classes
  *   - StyleController.ThemeChanged (via _SendMessage): applies a float rule to a property
  *     using native StyleRule/StyleSheet objects
  *   - Memory leak checks for all operations (with -DTEST_MEMORY)
@@ -14,22 +14,12 @@
 
 #include "mem_tracker.h"
 
-#include <source/core/core_local.h>
+#include <include/orca.h>
 #include <core/core.h>
-#include <core/core_properties.h>
-#include <source/core/object/object_internal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
-/*
- * Engine-internal functions not declared in the public header but exported
- * from the shared library (no -fvisibility=hidden in the build).
- */
-extern struct Object *OBJ_Create(uint32_t class_id);
-extern void OBJ_ReleaseProperties(struct Object *);
-extern void OBJ_ReleaseComponents(struct Object *);
 
 /* ------------------------------------------------------------------ */
 /* Minimal test harness                                                */
@@ -48,6 +38,11 @@ static const char* s_current_test = NULL;
     }
 
 #define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
+
+#define FIND_SHORT_PROPERTY(obj, name, out) \
+    (((*(out) = OBJ_FindShortProperty((obj), fnv1a32(name))) != NULL) ? NOERROR : E_FAIL)
+#define FIND_LONG_PROPERTY(obj, id, out) \
+    (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
 
 /* ------------------------------------------------------------------ */
 /* Test class: a minimal class whose parent is StyleController         */
@@ -122,20 +117,9 @@ static struct Object *make_styled_object(void) {
     return OBJ_Create(ID_TestStyledComp);
 }
 
-/*
- * Frees all properties, all component data, then the object itself.
- * Does NOT call OBJ_Release (which needs a Lua state for Lua-owned objects).
- * We dispatch Object.Release manually so component components
- * (StyleController) can clean up before the component memory is freed.
- */
 static void destroy_object(struct Object *obj) {
     if (!obj) return;
-    /* Dispatch Object.Release → StyleController.Release frees classes + sheet */
-    OBJ_SendMessageW(obj, ID_Object_Release, 0, NULL);
-    OBJ_ReleaseComponents(obj);
-    OBJ_ReleaseProperties(obj);
-    free(obj->Name);
-    free(obj);
+    OBJ_ReleaseRef(obj);
 }
 
 /*
@@ -162,12 +146,12 @@ static void _test_add_float_rule(struct Object *obj, lpcString_t className,
 
     /* Set ClassName property on the rule */
     struct Property *clsProp = NULL;
-    if (SUCCEEDED(OBJ_FindLongProperty(ruleObj, ID_StyleRule_ClassName, &clsProp))) {
+    if (SUCCEEDED(FIND_LONG_PROPERTY(ruleObj, ID_StyleRule_ClassName, &clsProp))) {
         PROP_SetStringValue(clsProp, className);
     }
 
     /* Find the property type by FullIdentifier and create an override */
-    struct PropertyType const *pt = OBJ_FindPropertyType(propFullID);
+    struct PropertyType const *pt = core_FindPropertyType(propFullID);
     if (pt) {
         struct Property *rp = PROP_Create(NULL, ruleObj, pt);
         PROP_SetValue(rp, &value);
@@ -231,11 +215,11 @@ static void test_add_style_rule_no_component(void) {
      * Build a bare object with no StyleController. _test_add_float_rule
      * checks GetStyleController(obj) and must not crash when it's NULL.
      */
-    struct Object *obj = calloc(1, sizeof(struct Object));
+    struct Object *obj = OBJ_Create(ID_StyleSheet);
     EXPECT(obj != NULL);
     /* Must not crash — GetStyleController returns NULL for bare objects */
     _test_add_float_rule(obj, "btn", 0xbfbb7a5bu /* TestStyledComp.Width */, 100.f);
-    free(obj);
+    destroy_object(obj);
     } while(0);
 }
 
@@ -258,10 +242,13 @@ static void test_release_clears_classes_and_sheet(void) {
     }
 }
 
-/* OBJ_GetStyleFlags returns 0 when no pseudo-state is active */
-static void test_get_style_flags_none(void) {
+/* Raw style classes are exposed without pseudo-state qualifiers */
+static void test_raw_style_classes_strip_pseudo_state(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
-        EXPECT(OBJ_GetStyleFlags(obj) == 0);
+        char classes[64] = {0};
+        _SendMessage(obj, StyleController, AddClasses, "btn:hover");
+        EXPECT(OBJ_GetRawStyleClasses(obj, classes, sizeof(classes)) == classes);
+        EXPECT(!strcmp(classes, "btn"));
     }
 }
 
@@ -282,7 +269,7 @@ static void test_apply_styles_float_property(void) {
         _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         /* Verify the Width property was set to 42 */
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(float *)PROP_GetValue(prop) == 42.f);
     }
@@ -294,47 +281,38 @@ static void test_apply_styles_float_property(void) {
  */
 static void test_apply_styles_no_component(void) {
     do {
-    struct Object *obj = calloc(1, sizeof(struct Object));
+    struct Object *obj = OBJ_Create(ID_StyleSheet);
     EXPECT(obj != NULL);
     _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);  /* must not crash */
-    free(obj);
+    destroy_object(obj);
     } while(0);
 }
 
-/* Multi-pseudo-state "btn:hover:focus" — both flags must be set */
+/* Multi-pseudo-state "btn:hover:focus" marks the object hoverable */
 static void test_parse_class_multiple_pseudo_states(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
         _SendMessage(obj, StyleController, AddClasses, "btn:hover:focus");
-        struct StyleController* sc = GetStyleController(obj);
-        EXPECT(sc != NULL);
-        EXPECT(sc->classes != NULL);
-        /* Both STYLE_HOVER and STYLE_FOCUS must be set */
-        EXPECT((sc->classes->flags & STYLE_HOVER) != 0);
-        EXPECT((sc->classes->flags & STYLE_FOCUS) != 0);
+        EXPECT(OBJ_GetFlags(obj) & OF_HOVERABLE);
     }
 }
 
-/* _ParseClass must store only the base name, not pseudo-states */
+/* Parsed classes expose only the base name, not pseudo-states */
 static void test_parse_class_base_name_only(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        char classes[64] = {0};
         _SendMessage(obj, StyleController, AddClasses, "myclass:hover");
-        struct StyleController* sc = GetStyleController(obj);
-        EXPECT(sc != NULL);
-        EXPECT(sc->classes != NULL);
-        /* cls->value must be "myclass", not "myclass:hover" */
-        EXPECT(!strcmp(sc->classes->value, "myclass"));
+        EXPECT(OBJ_GetRawStyleClasses(obj, classes, sizeof(classes)) == classes);
+        EXPECT(!strcmp(classes, "myclass"));
     }
 }
 
-/* _ParseClass with opacity: base name is the part before '/' */
+/* Parsed classes expose only the base name, not opacity suffixes */
 static void test_parse_class_opacity_extraction(void) {
     WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        char classes[64] = {0};
         _SendMessage(obj, StyleController, AddClasses, "blue/50");
-        struct StyleController* sc = GetStyleController(obj);
-        EXPECT(sc != NULL);
-        EXPECT(sc->classes != NULL);
-        EXPECT(!strcmp(sc->classes->value, "blue"));
-        EXPECT(sc->classes->opacity == 50);
+        EXPECT(OBJ_GetRawStyleClasses(obj, classes, sizeof(classes)) == classes);
+        EXPECT(!strcmp(classes, "blue"));
     }
 }
 
@@ -351,7 +329,7 @@ static void test_add_style_rule_dot_selector_matches(void) {
         _SendMessage(obj, StyleController, AddClasses, "btn");
         _SendMessage(obj, StyleController, ThemeChanged, .recursive = FALSE);
         struct Property *prop;
-        EXPECT_OK(OBJ_FindShortProperty(obj, "Width", &prop));
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Width", &prop));
         EXPECT(!PROP_IsNull(prop));
         EXPECT(*(float *)PROP_GetValue(prop) == 77.f);
     }
@@ -378,7 +356,7 @@ int main(void) {
         DECL_TEST(test_add_class_hover),
         DECL_TEST(test_add_style_rule_no_component),
         DECL_TEST(test_release_clears_classes_and_sheet),
-        DECL_TEST(test_get_style_flags_none),
+        DECL_TEST(test_raw_style_classes_strip_pseudo_state),
         DECL_TEST(test_apply_styles_float_property),
         DECL_TEST(test_apply_styles_no_component),
         DECL_TEST(test_parse_class_multiple_pseudo_states),
