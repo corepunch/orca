@@ -1018,6 +1018,7 @@
     </class>
     <class name="ListBox" parent="StackView,ItemsControl">
       <summary>A list box that allows the user to select one or more items from a collection</summary>
+      <details>Handles Object.Start to populate its children: verifies that ItemsSource and ItemTemplate are both set, iterates over each DataObject in the ItemsSource collection, and for each item instantiates the ItemTemplate via OBJ_Instantiate (falling back to a default TextBlock with text "Item" when no template is provided). Sets Node.DataContext on each instantiated item to the corresponding DataObject. Returns FALSE and logs an error if ItemsSource or ItemTemplate is not set.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Start"/>

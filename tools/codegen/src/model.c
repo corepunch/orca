@@ -166,11 +166,26 @@ static int walk(xmlNode const *e, uint32_t parent, nodebuf *b, char const *base_
             n.extra = xattr(e, "export");
             if (bflag(e, "sealed")) n.flags |= CG_FLAG_SEALED;
             break;
-        case CG_KIND_CLASS:
+        case CG_KIND_CLASS: {
+            xmlNode *ch;
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "parent");
             n.extra = xattr(e, "concept");
+            /* Capture <details> → aux, <xmlns> → aux2 for documentation. */
+            for (ch = e->children; ch; ch = ch->next) {
+                if (ch->type != XML_ELEMENT_NODE) continue;
+                if (!n.aux && !strcmp((char const *)ch->name, "details")) {
+                    xmlChar *v = xmlNodeGetContent(ch);
+                    n.aux = xtrimdup(v ? (char const *)v : "");
+                    if (v) xmlFree(v);
+                } else if (!n.aux2 && !strcmp((char const *)ch->name, "xmlns")) {
+                    xmlChar *v = xmlNodeGetContent(ch);
+                    n.aux2 = xtrimdup(v ? (char const *)v : "");
+                    if (v) xmlFree(v);
+                }
+            }
             break;
+        }
         case CG_KIND_METHOD:
             n.name  = xattr(e, "name");
             n.type  = xattr(e, "type");
