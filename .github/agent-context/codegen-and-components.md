@@ -6,10 +6,10 @@ shape.
 
 ## Start Here
 
+- `docs/schemas/module.dtd`
 - `source/core/core.cgen`
 - `plugins/UIKit/UIKit.cgen`
 - `docs/MODULE_XML_GUIDE.md`
-- `docs/schemas/module.dtd`
 - `tools/codegen/src/model.c`
 - `tools/codegen/plugins/header.c`
 - `tools/codegen/plugins/properties.c`

@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="DarkReign" namespace="orca" on-luaopen="on_darkreign_module_registered">
   <require file="../../source/filesystem/filesystem.cgen"/>
   <externals>
