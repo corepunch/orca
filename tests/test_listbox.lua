@@ -212,6 +212,383 @@ local function test_listbox_stackview_properties()
 end
 
 -- ---------------------------------------------------------------------------
+-- ListBox.Start: arranges children vertically (default direction)
+-- ---------------------------------------------------------------------------
+local function test_listbox_vertical_layout()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+
+  -- Create items collection
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  items:addChild(ui.DataObject { Name = "Data3" })
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed")
+
+  -- Verify children are arranged vertically (Y positions should be different)
+  local children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 3, "Should have 3 children")
+
+  local yPositions = {}
+  for i = 1, #children do
+    yPositions[i] = children[i].Position.y
+  end
+  test.expect(yPositions[1] ~= yPositions[2], "Vertical layout: first and second children should have different Y positions")
+  test.expect(yPositions[2] ~= yPositions[3], "Vertical layout: second and third children should have different Y positions")
+
+  screen:clear()
+  print("PASS: test_listbox_vertical_layout")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox.Start: arranges children horizontally when Direction is Horizontal
+-- ---------------------------------------------------------------------------
+local function test_listbox_horizontal_layout()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+  listbox.Direction = "Horizontal"
+
+  -- Create items collection
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  items:addChild(ui.DataObject { Name = "Data3" })
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed")
+
+  -- Verify children are arranged horizontally (X positions should be different)
+  local children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 3, "Should have 3 children")
+
+  local xPositions = {}
+  for i = 1, #children do
+    xPositions[i] = children[i].Position.x
+  end
+  test.expect(xPositions[1] ~= xPositions[2], "Horizontal layout: first and second children should have different X positions")
+  test.expect(xPositions[2] ~= xPositions[3], "Horizontal layout: second and third children should have different X positions")
+
+  screen:clear()
+  print("PASS: test_listbox_horizontal_layout")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox.Start: applies spacing between children
+-- ---------------------------------------------------------------------------
+local function test_listbox_spacing()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+  listbox.Direction = "Vertical"
+  listbox.Spacing = 20
+
+  -- Create items collection
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed")
+
+  -- Verify spacing is applied (Y positions should differ by approximately 20 units)
+  local children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 2, "Should have 2 children")
+
+  local yDiff = math.abs(children[2].Position.y - children[1].Position.y)
+  test.expect(yDiff == 20, "Vertical spacing should be 20 units")
+
+  screen:clear()
+  print("PASS: test_listbox_spacing")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox.Start: re-creates children when ItemsSource changes and Start is called again
+-- ---------------------------------------------------------------------------
+local function test_listbox_recreates_on_items_change()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+
+  -- Create initial items collection with 2 DataObjects
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  -- First Start
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "First Start should succeed")
+
+  local children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 2, "Should have 2 children after first Start")
+
+  -- Store the old children references
+  local oldChildren = {}
+  for i = 1, #children do
+    oldChildren[i] = children[i]
+  end
+
+  -- Clear and add 4 new items
+  items:clearChildren()
+  items:addChild(ui.DataObject { Name = "Data3" })
+  items:addChild(ui.DataObject { Name = "Data4" })
+  items:addChild(ui.DataObject { Name = "Data5" })
+  items:addChild(ui.DataObject { Name = "Data6" })
+
+  -- Second Start
+  result = listbox:send("Object.Start")
+  test.expect(result == 1, "Second Start should succeed")
+
+  children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 4, "Should have 4 children after second Start")
+
+  -- Verify old children were removed (no longer in children iterator)
+  local foundOld = false
+  for _, child in listbox.children do
+    for _, oldChild in ipairs(oldChildren) do
+      if child == oldChild then
+        foundOld = true
+        break
+      end
+    end
+  end
+  test.expect(foundOld == false, "Old children should be removed when re-starting")
+
+  screen:clear()
+  print("PASS: test_listbox_recreates_on_items_change")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox.Start: handles empty ItemsSource gracefully
+-- ---------------------------------------------------------------------------
+local function test_listbox_empty_items_source()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+
+  -- Create an empty items collection
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed with empty ItemsSource")
+
+  -- Verify no children were created
+  local childCount = 0
+  for _ in listbox.children do childCount = childCount + 1 end
+  test.expect_eq(childCount, 0, "ListBox should have 0 children with empty ItemsSource")
+
+  screen:clear()
+  print("PASS: test_listbox_empty_items_source")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: changes Direction after Start
+-- ---------------------------------------------------------------------------
+local function test_listbox_direction_change()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+  listbox.Direction = "Horizontal"
+
+  -- Create items collection
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  listbox.ItemsSource = items
+
+  -- Create a template with a TextBlock child
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed")
+
+  -- Verify Horizontal direction is applied
+  local children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 2, "Should have 2 children")
+
+  local xPositions = {}
+  for i = 1, #children do
+    xPositions[i] = children[i].Position.x
+  end
+  test.expect(xPositions[1] ~= xPositions[2], "Horizontal direction should arrange children horizontally")
+
+  -- Now switch to Vertical and re-start
+  listbox:clear()
+  listbox.Direction = "Vertical"
+
+  result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed after Direction change")
+
+  children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 2, "Should have 2 children after re-Start")
+
+  local yPositions = {}
+  for i = 1, #children do
+    yPositions[i] = children[i].Position.y
+  end
+  test.expect(yPositions[1] ~= yPositions[2], "Vertical direction should arrange children vertically")
+
+  screen:clear()
+  print("PASS: test_listbox_direction_change")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: changes ItemTemplate after Start
+-- ---------------------------------------------------------------------------
+local function test_listbox_template_change()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+
+  -- Create items collection with 2 DataObjects
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  items:addChild(ui.DataObject { Name = "Data1" })
+  items:addChild(ui.DataObject { Name = "Data2" })
+  listbox.ItemsSource = items
+
+  -- Create first template with a TextBlock child
+  local template1 = ui.Node2D { Name = "ItemTemplate1" }
+  template1 + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template1
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "First Start should succeed")
+
+  -- Verify 2 children were created
+  local childCount = 0
+  for _ in listbox.children do childCount = childCount + 1 end
+  test.expect_eq(childCount, 2, "Should have 2 children after first Start")
+
+  -- Store old children
+  local oldChildren = {}
+  for child in listbox.children do
+    oldChildren[#oldChildren + 1] = child
+  end
+
+  -- Create a second template and change ItemTemplate
+  local template2 = ui.Node2D { Name = "ItemTemplate2" }
+  template2 + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template2
+
+  -- Re-start with new template
+  result = listbox:send("Object.Start")
+  test.expect(result == 1, "Second Start should succeed")
+
+  -- Verify 2 new children were created with new template
+  children = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+  end
+  test.expect_eq(#children, 2, "Should have 2 children after re-Start")
+
+  -- Verify old children were removed
+  local foundOld = false
+  for _, child in listbox.children do
+    for _, oldChild in ipairs(oldChildren) do
+      if child == oldChild then
+        foundOld = true
+        break
+      end
+    end
+  end
+  test.expect(foundOld == false, "Old children should be removed when re-starting with new template")
+
+  screen:clear()
+  print("PASS: test_listbox_template_change")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: multiple data items with unique names
+-- ---------------------------------------------------------------------------
+local function test_listbox_unique_child_names()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local listbox = screen + ui.ListBox { Name = "TestListBox" }
+
+  -- Create items collection with 5 DataObjects
+  local items = screen + ui.DataObject { Name = "ItemsSource" }
+  for i = 1, 5 do
+    items:addChild(ui.DataObject { Name = "Data" .. i })
+  end
+  listbox.ItemsSource = items
+
+  -- Create a template
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template + ui.TextBlock { Name = "ItemText" }
+  listbox.ItemTemplate = template
+
+  local result = listbox:send("Object.Start")
+  test.expect(result == 1, "ListBox.Start should succeed")
+
+  -- Verify 5 children were created with unique names
+  local children = {}
+  local names = {}
+  for child in listbox.children do
+    children[#children + 1] = child
+    names[#names + 1] = child.Name
+  end
+  test.expect_eq(#children, 5, "Should have 5 children")
+
+  -- Verify all names are unique
+  for i = 1, #names do
+    for j = i + 1, #names do
+      test.expect(names[i] ~= names[j], "Child names should be unique")
+    end
+  end
+
+  screen:clear()
+  print("PASS: test_listbox_unique_child_names")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_listbox_properties()
@@ -222,5 +599,13 @@ test_listbox_instantiates_templates()
 test_listbox_sets_data_context()
 test_listbox_default_textblock()
 test_listbox_stackview_properties()
+test_listbox_vertical_layout()
+test_listbox_horizontal_layout()
+test_listbox_spacing()
+test_listbox_recreates_on_items_change()
+test_listbox_empty_items_source()
+test_listbox_direction_change()
+test_listbox_template_change()
+test_listbox_unique_child_names()
 
 print("All ListBox tests passed.")
