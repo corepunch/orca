@@ -32,25 +32,6 @@ static int s_tests_run    = 0;
 static int s_tests_failed = 0;
 static const char* s_current_test = NULL;
 
-#define EXPECT(...) \
-    if (!(__VA_ARGS__)) { \
-        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
-                s_current_test, #__VA_ARGS__, __LINE__); \
-        s_tests_failed++; \
-        break; \
-    }
-
-#define EXPECT_STR_EQ(a, b) \
-    do { const char *_a = (a); const char *_b = (b); EXPECT(_a && _b && !strcmp(_a, _b)); } while(0)
-
-#define RUN(name, block) \
-    do { \
-        s_current_test = name; \
-        s_tests_run++; \
-        printf("Running %s...\n", name); \
-        do { block } while (0); \
-    } while (0)
-
 /* ------------------------------------------------------------------ */
 /* Test class: a minimal component with a few properties              */
 /* ------------------------------------------------------------------ */
@@ -171,7 +152,7 @@ static void destroy_object(struct Object *obj) {
 
 static void test_null_input(void)
 {
-    RUN("null_input_returns_null", {
+    RUN_TEST("null_input_returns_null", {
         const char *xml = FS_SerializeObjectToXmlString(NULL);
         EXPECT(xml == NULL);
     });
@@ -179,7 +160,7 @@ static void test_null_input(void)
 
 static void test_simple_object(void)
 {
-    RUN("simple_object_serializes_class_name", {
+    RUN_TEST("simple_object_serializes_class_name", {
         register_test_classes();
         WITH(struct Object, obj, make_test_object(NULL, 100.f, 200.f), destroy_object) {
             const char *xml = FS_SerializeObjectToXmlString(obj);
@@ -194,7 +175,7 @@ static void test_simple_object(void)
 
 static void test_object_with_name(void)
 {
-    RUN("object_with_name_serializes_name_attribute", {
+    RUN_TEST("object_with_name_serializes_name_attribute", {
         register_test_classes();
         WITH(struct Object, obj, make_test_object("myobj", 50.f, 75.f), destroy_object) {
             const char *xml = FS_SerializeObjectToXmlString(obj);
@@ -209,7 +190,7 @@ static void test_object_with_name(void)
 
 static void test_object_with_zero_properties(void)
 {
-    RUN("object_with_zero_properties_serializes_no_attributes", {
+    RUN_TEST("object_with_zero_properties_serializes_no_attributes", {
         register_test_classes();
         WITH(struct Object, obj, make_test_object("zeros", 0.f, 0.f), destroy_object) {
             const char *xml = FS_SerializeObjectToXmlString(obj);
@@ -223,7 +204,7 @@ static void test_object_with_zero_properties(void)
 
 static void test_object_with_children(void)
 {
-    RUN("object_with_children_serializes_nested_elements", {
+    RUN_TEST("object_with_children_serializes_nested_elements", {
         register_test_classes();
         WITH(struct Object, parent, make_test_object("parent", 1.f, 2.f), destroy_object) {
             WITH(struct Object, child1, make_test_object("child1", 10.f, 20.f), destroy_object) {
@@ -247,7 +228,7 @@ static void test_object_with_children(void)
 
 static void test_object_with_template_flag(void)
 {
-    RUN("object_with_template_flag_serializes_as_prefab_placeholder", {
+    RUN_TEST("object_with_template_flag_serializes_as_prefab_placeholder", {
         register_test_classes();
         WITH(struct Object, obj, make_test_object("template", 99.f, 88.f), destroy_object) {
             OBJ_SetFlags(obj, OF_TEMPLATE);
@@ -267,7 +248,7 @@ static void test_object_with_template_flag(void)
 
 static void test_object_with_text_content(void)
 {
-    RUN("object_with_text_content_serializes_text", {
+    RUN_TEST("object_with_text_content_serializes_text", {
         register_test_classes();
         WITH(struct Object, obj, make_test_object("textobj", 1.f, 2.f), destroy_object) {
             OBJ_SetTextContent(obj, "Hello World");
@@ -282,7 +263,7 @@ static void test_object_with_text_content(void)
 
 static void test_object_with_no_properties(void)
 {
-    RUN("object_with_no_properties_serializes_empty_element", {
+    RUN_TEST("object_with_no_properties_serializes_empty_element", {
         register_test_classes();
         WITH(struct Object, obj, OBJ_Create(ID_TestObj2), destroy_object) {
             OBJ_SetName(obj, "noprops");
@@ -297,7 +278,7 @@ static void test_object_with_no_properties(void)
 
 static void test_deeply_nested_children(void)
 {
-    RUN("deeply_nested_children_serializes_all_levels", {
+    RUN_TEST("deeply_nested_children_serializes_all_levels", {
         register_test_classes();
         WITH(struct Object, level1, make_test_object("level1", 1.f, 1.f), destroy_object) {
             WITH(struct Object, level2, make_test_object("level2", 2.f, 2.f), destroy_object) {

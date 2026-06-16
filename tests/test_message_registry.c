@@ -49,7 +49,7 @@ inherits_from_send_message_action(struct ClassDesc const *cls)
 
 static void test_trigger_triggered_message_action_class(void)
 {
-  RUN("trigger_triggered_message_action_class", {
+  RUN_TEST(trigger_triggered_message_action_class", {
     lua_State *L = make_lua_state();
     struct ClassDesc const *cls = OBJ_FindClass("Trigger.Triggered");
     EXPECT(L != NULL);
@@ -62,7 +62,7 @@ static void test_trigger_triggered_message_action_class(void)
 
 static void test_object_attached_message_action_class(void)
 {
-  RUN("object_attached_message_action_class", {
+  RUN_TEST(object_attached_message_action_class", {
     lua_State *L = make_lua_state();
     struct ClassDesc const *cls = OBJ_FindClass("Object.Attached");
     EXPECT(L != NULL);
@@ -75,7 +75,7 @@ static void test_object_attached_message_action_class(void)
 
 static void test_unknown_message_action_class_lookup(void)
 {
-  RUN("unknown_message_action_class_lookup", {
+  RUN_TEST(unknown_message_action_class_lookup", {
     lua_State *L = make_lua_state();
     EXPECT(L != NULL);
     EXPECT(OBJ_FindClass("Nope.Unknown") == NULL);

@@ -11,65 +11,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "test_local.h"
+
 extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_system(lua_State *L);
-
-static int s_tests_run = 0;
-static int s_tests_failed = 0;
-static const char *s_current_test = NULL;
-static lua_State *s_lua_state = NULL;
-
-#define EXPECT(...) \
-  if (!(__VA_ARGS__)) { \
-    fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", s_current_test, #__VA_ARGS__, __LINE__); \
-    s_tests_failed++; \
-    break; \
-  }
-
-#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
-#define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp((a), (b)))
-
-#define FIND_LONG_PROPERTY(obj, id, out) \
-  (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
-
-static HRESULT
-OBJ_SetPropertyValue(struct Object *obj, lpcString_t name, void const *value)
-{
-  struct Property *prop = OBJ_FindShortProperty(obj, fnv1a32(name));
-  if (!prop) {
-    struct PropertyType const *type = OBJ_FindImplicitPropertyType(obj, name);
-    if (!type) type = OBJ_FindExplicitPropertyType(obj, name);
-    if (!type) return E_FAIL;
-    prop = PROP_Create(NULL, obj, type);
-    if (!prop) return E_FAIL;
-  }
-  PROP_SetValue(prop, value);
-  return NOERROR;
-}
-
-#define RUN(name, block) \
-  do { \
-    s_current_test = name; \
-    s_tests_run++; \
-    printf("Running %s...\n", name); \
-    do { block } while (0); \
-  } while (0)
-
-#define SET_STRING(obj, name, value) do { \
-  const char *_v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
-} while (0)
-
-#define SET_FLOAT(obj, name, value) do { \
-  float _v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
-} while (0)
-
-#define SET_INT(obj, name, value) do { \
-  int _v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
-} while (0)
 
 static struct
 {
@@ -254,7 +200,7 @@ set_up_source(struct Object *source,
 static void
 test_event_trigger_no_args(void)
 {
-  RUN("event_trigger_no_args", {
+  RUN_TEST(event_trigger_no_args", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -285,7 +231,7 @@ test_event_trigger_no_args(void)
 static void
 test_event_trigger_single_value(void)
 {
-  RUN("event_trigger_single_value", {
+  RUN_TEST(event_trigger_single_value", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -317,7 +263,7 @@ test_event_trigger_single_value(void)
 static void
 test_event_trigger_partial_payload_defaults_to_zero(void)
 {
-  RUN("event_trigger_partial_payload_defaults_to_zero", {
+  RUN_TEST(event_trigger_partial_payload_defaults_to_zero", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -350,7 +296,7 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
 static void
 test_generated_action_property_order(void)
 {
-  RUN("generated_action_property_order", {
+  RUN_TEST(generated_action_property_order", {
     struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
     struct ClassDesc const *base = OBJ_FindClass("SendMessageAction");
     struct Property *x_prop = NULL;
@@ -370,7 +316,7 @@ test_generated_action_property_order(void)
 static void
 test_generated_action_xml(void)
 {
-  RUN("generated_action_xml", {
+  RUN_TEST(generated_action_xml", {
     reset_observed();
 
     struct Object *root = FS_LoadObjectFromXmlString(
@@ -405,7 +351,7 @@ test_generated_action_xml(void)
 static void
 test_generated_action_post_mode(void)
 {
-  RUN("generated_action_post_mode", {
+  RUN_TEST(generated_action_post_mode", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -431,7 +377,7 @@ test_generated_action_post_mode(void)
 static void
 test_generated_action_unset_target_dispatches_sender(void)
 {
-  RUN("generated_action_unset_target_dispatches_sender", {
+  RUN_TEST(generated_action_unset_target_dispatches_sender", {
     reset_observed();
 
     struct Object *sender = make_object(0xb5c4156c, "Sender");
