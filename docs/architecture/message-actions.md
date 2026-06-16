@@ -64,12 +64,15 @@ typed payload:
 
 ```text
 Screen.ShowModal action
-  -> SendMessageAction resolves Target relative to Sender
+  -> SendMessageAction calls OBJ_FindByPath(Sender, Target)
+     Target is a slash path: "Body/NavBar", "../Sibling", "./Self"
+     If Target is empty, Sender is used directly.
   -> finds the Screen_ShowModalAction payload component
   -> send/post ID_Screen_ShowModal with Screen_ShowModalEventArgs payload
 ```
 
-Default `Mode` is synchronous `Send`. `Mode="Post"` posts through the queue.
+Default `Mode` is synchronous `Send` (calls `OBJ_SendMessageW` immediately).
+`Mode="Post"` defers through the message queue (`axPostMessageDataW`).
 
 ## Runtime Metadata
 
