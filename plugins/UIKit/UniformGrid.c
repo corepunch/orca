@@ -58,7 +58,6 @@ _UniformGridSyncColumns(struct Object *hObject,
   }
 }
 
-// UniformGrid_Create
 HANDLER(UniformGrid, Object, Create)
 {
   pUniformGrid->_autoColumns = TRUE;
@@ -66,7 +65,6 @@ HANDLER(UniformGrid, Object, Create)
   return FALSE;
 }
 
-// UniformGrid_PropertyChanged
 HANDLER(UniformGrid, Object, PropertyChanged)
 {
   struct Grid *pGrid = GetGrid(hObject);
@@ -80,7 +78,6 @@ HANDLER(UniformGrid, Object, PropertyChanged)
   return FALSE;
 }
 
-// UniformGrid_MeasureOverride
 HANDLER(UniformGrid, Node2D, MeasureOverride)
 {
   struct Grid *pGrid = GetGrid(hObject);
@@ -91,7 +88,6 @@ HANDLER(UniformGrid, Node2D, MeasureOverride)
   return Grid_MeasureOverride(hObject, pGrid, wParam, pMeasureOverride);
 }
 
-// UniformGrid_ArrangeOverride
 HANDLER(UniformGrid, Node2D, ArrangeOverride)
 {
   struct Grid *pGrid = GetGrid(hObject);

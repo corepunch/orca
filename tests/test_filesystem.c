@@ -14,6 +14,7 @@
  * Compiled via the `test-filesystem` Makefile target (depends on `buildlib`).
  */
 
+#include "test_local.h"
 #include "mem_tracker.h"
 
 #include <lua.h>

@@ -11,7 +11,6 @@ _CollectUniforms(struct Object *,
                  struct uniform*,
                  uint32_t);
 
-// PlaneMeshNode_Render
 HANDLER(PlaneMeshNode, Node3D, Render)
 {
   struct Model3D* mod = GetModel3D(hObject);

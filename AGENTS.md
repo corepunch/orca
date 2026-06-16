@@ -3,6 +3,7 @@
 ## Context policy
 
 Before reading source files, check whether a relevant operational document exists in `docs/`.
+Minimize the prompt size: avoid reading source files verbatim, use grep, regex and other tools wherever possible.
 Use those quick docs as the default map, then read only the file you need to change.
 
 ### Task-specific read order
@@ -28,8 +29,8 @@ Use those quick docs as the default map, then read only the file you need to cha
 3. Read at most one similar existing test.
 4. Do not scan all tests unless explicitly asked.
 
-### Codegen tasks
+### Working with APIs and classes
 
-- Treat `.cgen` files as the source of truth for public API shape and cheap context.
+- Treat `.cgen` files as the source of truth for public API/classes shape and cheap context.
 - Prefer reading `.cgen` summaries, details, topics, properties, and messages before reading generated files.
 - Never edit `generated/` by hand; edit `.cgen` or source and rerun `make modules`.

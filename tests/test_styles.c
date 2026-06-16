@@ -12,6 +12,7 @@
  * Compiled via the `test-styles` Makefile target (depends on `buildlib`).
  */
 
+#include "test_local.h"
 #include "mem_tracker.h"
 
 #include <include/orca.h>

@@ -8,13 +8,11 @@ static void Node_SetFloatProperty(struct Object *object, uint32_t id, float valu
   if (property) PROP_SetValue(property, &value);
 }
 
-// Node_GetSize
 HANDLER(Node, Node, GetSize)
 {
   return MAKEDWORD(pNode->Size.Axis[0].Actual, pNode->Size.Axis[1].Actual);
 }
 
-// Node_IsVisible
 HANDLER(Node, Node, IsVisible)
 {
   struct Property *visible = OBJ_FindLongProperty(hObject, ID_Node_Visible);
@@ -24,7 +22,6 @@ HANDLER(Node, Node, IsVisible)
   return pNode->Visible && !GetNode(hObject)->QuickHide;
 }
 
-// Node_Start
 HANDLER(Node, Object, Start)
 {
   FOR_LOOP(i, pNode->NumResources) {
@@ -43,7 +40,6 @@ HANDLER(Node, Object, Start)
   return FALSE;
 }
 
-// Node_PropertyChanged
 HANDLER(Node, Object, PropertyChanged)
 {
   if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
@@ -68,7 +64,6 @@ HANDLER(Node, Object, PropertyChanged)
   return FALSE;
 }
 
-// Node_Attached
 HANDLER(Node, Object, Attached)
 {
   return FALSE;

@@ -28,6 +28,7 @@
  * separate memleak test functions.
  */
 
+#include "test_local.h"
 #include "mem_tracker.h"
 
 #include <include/orca.h>
@@ -50,31 +51,20 @@ extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register
 extern bool_t PROP_Import(struct Property *, struct vm_register *);
 extern void PROP_AttachProgram(struct Property *, struct token *);
 
-/* ------------------------------------------------------------------ */
-/* Minimal test harness                                               */
-/* ------------------------------------------------------------------ */
-
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
-#define TEST_BEGIN(name)
-
-#define EXPECT(...) \
-    if (!(__VA_ARGS__)) { \
-        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
-                s_current_test, #__VA_ARGS__, __LINE__); \
-        s_tests_failed++; \
-        break; \
-    } 
-
-#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
-#define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp(a, b))
-
-#define FIND_SHORT_PROPERTY(obj, name, out) \
-    (((*(out) = OBJ_FindShortProperty((obj), fnv1a32(name))) != NULL) ? NOERROR : E_FAIL)
-#define FIND_LONG_PROPERTY(obj, id, out) \
-    (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
+static HRESULT
+OBJ_SetPropertyValue(struct Object *obj, lpcString_t name, void const *value)
+{
+    struct Property *prop = OBJ_FindShortProperty(obj, fnv1a32(name));
+    if (!prop) {
+        struct PropertyType const *type = OBJ_FindImplicitPropertyType(obj, name);
+        if (!type) type = OBJ_FindExplicitPropertyType(obj, name);
+        if (!type) return E_FAIL;
+        prop = PROP_Create(NULL, obj, type);
+        if (!prop) return E_FAIL;
+    }
+    PROP_SetValue(prop, value);
+    return NOERROR;
+}
 
 /*
  * PROP_STR — wrap a string literal as a char** suitable for PROP_SetValue.

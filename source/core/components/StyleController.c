@@ -528,7 +528,6 @@ HANDLER(StyleController, StyleController, ThemeChanged) {
   return TRUE;
 }
 
-// StyleController_AddClass
 HANDLER(StyleController, StyleController, AddClass)
 {
   _AddClass(hObject, _ParseClass(pAddClass->ClassName));
@@ -536,7 +535,6 @@ HANDLER(StyleController, StyleController, AddClass)
   return TRUE;
 }
 
-// StyleController_AddClasses
 HANDLER(StyleController, StyleController, AddClasses)
 {
   WITH(char, classes, strdup(pAddClasses->ClassNames), free)

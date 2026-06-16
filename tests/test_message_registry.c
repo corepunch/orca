@@ -6,28 +6,10 @@
 #include <lualib.h>
 
 #include <include/orca.h>
+#include "test_local.h"
 
 extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
-
-static int s_tests_run = 0;
-static int s_tests_failed = 0;
-static const char *s_current_test = NULL;
-
-#define EXPECT(...) \
-  if (!(__VA_ARGS__)) { \
-    fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", s_current_test, #__VA_ARGS__, __LINE__); \
-    s_tests_failed++; \
-    break; \
-  }
-
-#define RUN(name, block) \
-  do { \
-    s_current_test = name; \
-    s_tests_run++; \
-    printf("Running %s...\n", name); \
-    do { block } while (0); \
-  } while (0)
 
 static lua_State *s_lua_state = NULL;
 

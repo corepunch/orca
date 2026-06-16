@@ -67,7 +67,6 @@ Texture_CreateDefaultCube(struct Texture** img)
   return S_OK;
 }
 
-// CubeMapTexture_Start
 HANDLER(CubeMapTexture, Object, Start)
 {
   //  GLuint texID;

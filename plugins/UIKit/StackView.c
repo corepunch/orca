@@ -131,7 +131,6 @@ _Arrange(struct Object *hObject,
   }
 }
 
-// StackView_MeasureOverride
 HANDLER(StackView, Node2D, MeasureOverride)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -160,7 +159,6 @@ HANDLER(StackView, Node2D, MeasureOverride)
   return MAKEDWORD(fmax(0,size.width), fmax(0,size.height));
 }
 
-// StackView_ArrangeOverride
 HANDLER(StackView, Node2D, ArrangeOverride)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);

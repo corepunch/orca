@@ -4,7 +4,6 @@
 
 #include <SceneKit/SceneKit.h>
 
-// TextBlock3D_Render
 HANDLER(TextBlock3D, Node3D, Render)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
@@ -47,7 +46,6 @@ HANDLER(TextBlock3D, Node3D, Render)
   return TRUE;
 }
 
-// TextBlock3D_Create
 HANDLER(TextBlock3D, Object, Create)
 {
   pTextBlock3D->_node3D = GetNode3D(hObject);

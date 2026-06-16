@@ -18,6 +18,8 @@
  * (ED_SetDrawHook) bypasses the real renderer so tests run headless.
  */
 
+#include "test_local.h"
+
 #include <include/editor.h>
 #include <libs/platform/events.h>
 #include <renderer/renderer_properties.h>
@@ -30,10 +32,6 @@
 /* Minimal test harness                                                */
 /* ------------------------------------------------------------------ */
 
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
 #define EXPECT(...)                                                        \
     if (!(__VA_ARGS__)) {                                                  \
         fprintf(stderr, "  FAIL [%s]: %s (line %d)\n",                   \
@@ -41,14 +39,6 @@ static const char* s_current_test = NULL;
         s_tests_failed++;                                                  \
         break;                                                             \
     }
-
-#define RUN(name, block)                                                   \
-    do {                                                                   \
-        s_current_test = name;                                             \
-        s_tests_run++;                                                     \
-        printf("Running %s...\n", name);                                   \
-        do { block } while (0);                                            \
-    } while (0)
 
 /* ------------------------------------------------------------------ */
 /* Draw hook state                                                     */
