@@ -77,7 +77,7 @@ build.log
 
 # Generated API docs (built by make docs and deployed via GitHub Pages)
 docs/api/
-docs/modules/
+docs/generated/
 docs/renderer/
 
 # Auto-generated WebGL plugin registration header (produced by make webgl)
