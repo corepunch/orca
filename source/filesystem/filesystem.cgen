@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <require file="../core/core.cgen"/>
   <externals>

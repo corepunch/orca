@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="core" namespace="orca" on-luaopen="before_core_module_registered" after-luaopen="after_core_module_registered">
   <require file="../geometry/geometry.cgen"/>
   <externals>
