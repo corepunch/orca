@@ -102,8 +102,8 @@ DOCS_OUTPUT_DIR := $(MODULE_ROOT)docs
 define MODULE_DOCS_RULE
 docs-$(1): codegen-host
 	$(Q)echo "Generating docs for $(1)..."
-	$(Q)mkdir -p $(DOCS_OUTPUT_DIR)/modules/$(notdir $(1))/classes
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/modules/$(notdir $(1))
+	$(Q)mkdir -p $(DOCS_OUTPUT_DIR)/generated/$(notdir $(1))/classes
+	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/generated/$(notdir $(1))
 endef
 
 $(foreach mod,$(MODULES),$(eval $(call MODULE_DOCS_RULE,$(mod))))
