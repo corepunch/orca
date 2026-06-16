@@ -18,6 +18,105 @@ static cg_node const *find_class(cg_model const *m, char const *name) {
     return NULL;
 }
 
+/* Find an enum or struct node by name (returns first match). */
+static cg_node const *find_enum_or_struct(cg_model const *m, char const *name) {
+    size_t i;
+    if (!name || !name[0]) return NULL;
+    for (i = 0; i < m->node_count; ++i) {
+        cg_node const *n = &m->nodes[i];
+        if ((n->kind == CG_KIND_ENUM || n->kind == CG_KIND_STRUCT) && !strcmp(n->name, name))
+            return n;
+    }
+    return NULL;
+}
+
+/* Strip pointer/array from a type string to get the base name. */
+static char const *strip_ptr_array(char const *t) {
+    if (!t) return "";
+    while (*t == '*' || *t == ' ' || *t == '[') ++t;
+    return t;
+}
+
+/* Collect unique names from a comma-separated list, storing pointers in out[]. */
+static int collect_names(char const **out, int outsz, char const *list) {
+    char tmp[1024];
+    char *tok;
+    int n = 0;
+    if (!list || !list[0]) return 0;
+    snprintf(tmp, sizeof(tmp), "%s", list);
+    for (tok = strtok(tmp, ","); tok; tok = strtok(NULL, ",")) {
+        while (*tok == ' ' || *tok == '\t') ++tok;
+        if (*tok && n < outsz) {
+            out[n++] = tok;
+        }
+    }
+    return n;
+}
+
+/* Emit a ## See Also section with parent classes/structs and types used in properties/fields.
+ * Returns the number of links emitted, or -1 on error. */
+static int emit_see_also(outbuf *b, cg_model const *m, cg_node const *node, cg_kind child_kind, int is_class) {
+    char const *parents[64];
+    int np, i, count = 0;
+    cg_node const *found;
+    char const *base;
+    int first = 1;
+
+    np = collect_names(parents, sizeof(parents) / sizeof(parents[0]), node->type);
+
+    /* Count total links before emitting the section header. */
+    {
+        int total = 0;
+        cg_foreach(m, node->id, child_kind, _p) {
+            if (_p->flags & CG_FLAG_PRIVATE) continue;
+            base = strip_ptr_array(_p->type);
+            if (find_enum_or_struct(m, base) || find_class(m, base)) total++;
+        }
+        for (i = 0; i < np; ++i) {
+            if (is_class ? find_class(m, parents[i]) : find_enum_or_struct(m, parents[i])) total++;
+        }
+        if (total == 0) return 0;
+        if (ob_printf(b, "\n## See Also\n\n") < 0) return -1;
+    }
+
+    cg_foreach(m, node->id, child_kind, pr) {
+        if (pr->flags & CG_FLAG_PRIVATE) continue;
+        base = strip_ptr_array(pr->type);
+        found = find_enum_or_struct(m, base);
+        if (!found) found = find_class(m, base);
+        if (found) {
+            if (found->kind == CG_KIND_CLASS) {
+                if (ob_printf(b, "%s- [%s](classes/%s.md)\n",
+                        first ? "" : "\n", found->name, found->name) < 0)
+                    return -1;
+            } else {
+                if (ob_printf(b, "%s- [%s](%s/%s.md) — %s\n",
+                        first ? "" : "\n",
+                        found->name,
+                        found->kind == CG_KIND_ENUM ? "enums" : "structs",
+                        found->name,
+                        found->doc && found->doc[0] ? found->doc : "") < 0)
+                    return -1;
+            }
+            first = 0;
+            count++;
+        }
+    }
+
+    for (i = 0; i < np; ++i) {
+        cg_node const *parent = is_class ? find_class(m, parents[i]) : find_enum_or_struct(m, parents[i]);
+        if (parent) {
+            if (ob_printf(b, "%s- [%s](%s/%s.md)\n",
+                    first ? "" : "\n", parent->name,
+                    is_class ? "classes" : "structs", parent->name) < 0)
+                return -1;
+            first = 0;
+            count++;
+        }
+    }
+    return count;
+}
+
 /* Emit the C type string with pointer/array decoration. */
 static int emit_type(outbuf *b, cg_node const *p) {
     if ((p->flags & CG_FLAG_POINTER) && (p->flags & CG_FLAG_ARRAY))
@@ -197,6 +296,9 @@ static int emit_class_docs(cg_host_v1 const *host, cg_model const *m,
     /* Handled messages */
     if (emit_handles(&b, m, cls) < 0) { free(b.s); return -1; }
 
+    /* See Also */
+    if (emit_see_also(&b, m, cls, CG_KIND_PROPERTY, 1) < 0) { free(b.s); return -1; }
+
     /* Implementation details */
     if (cls->aux && cls->aux[0])
         if (ob_printf(&b, "\n## Implementation Details\n\n%s\n", cls->aux) < 0) { 
@@ -204,6 +306,75 @@ static int emit_class_docs(cg_host_v1 const *host, cg_model const *m,
         }
 
     /* Write to file */
+    if (host->write_file(out_path, b.s, b.n) < 0) {
+        host->logf("docs: failed write %s", out_path);
+        free(b.s);
+        return -1;
+    }
+    free(b.s);
+    return 0;
+}
+
+/* Emit the ## Members section for an enum (list of values). */
+static int emit_enum_members(outbuf *b, cg_model const *m, cg_node const *en) {
+    int has = 0;
+    cg_foreach(m, en->id, CG_KIND_VALUE, v) { (void)v; has = 1; break; }
+    if (!has) return 0;
+    if (ob_printf(b, "\n### Members\n\n") < 0) return -1;
+    cg_foreach(m, en->id, CG_KIND_VALUE, v) {
+        if (ob_printf(b, "| `%s` | %s |\n", v->name, v->doc ? v->doc : "") < 0) return -1;
+    }
+    return 0;
+}
+
+/* Emit the ## Fields section for a struct. */
+static int emit_struct_fields(outbuf *b, cg_model const *m, cg_node const *st) {
+    int has = 0;
+    cg_foreach(m, st->id, CG_KIND_FIELD, f) { (void)f; has = 1; break; }
+    if (!has) return 0;
+    if (ob_printf(b, "\n### Fields\n\n") < 0) return -1;
+    cg_foreach(m, st->id, CG_KIND_FIELD, f) {
+        if (ob_printf(b, "| Field | Type | Description |\n"
+                         "|-------|------|-------------|\n") < 0) return -1;
+        if (ob_printf(b, "| `%s` | ", f->name) < 0) return -1;
+        if (emit_type(b, f) < 0) return -1;
+        if (ob_printf(b, " | %s |\n", f->doc ? f->doc : "") < 0) return -1;
+    }
+    return 0;
+}
+
+/* Emit full documentation for an enum node. */
+static int emit_enum_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *en,
+                          char const *out_path) {
+    outbuf b = {0};
+    if (ob_printf(&b, "# %s\n\n", en->name) < 0) { free(b.s); return -1; }
+    if (ob_printf(&b, "**Definition:** `%s`\n", m->xml_path) < 0) { free(b.s); return -1; }
+    if (en->aux2 && en->aux2[0])
+        if (ob_printf(&b, "**Namespace:** `%s`\n", en->aux2) < 0) { free(b.s); return -1; }
+    if (en->doc && en->doc[0])
+        if (ob_printf(&b, "\n## Summary\n\n%s\n", en->doc) < 0) { free(b.s); return -1; }
+    if (emit_enum_members(&b, m, en) < 0) { free(b.s); return -1; }
+    if (host->write_file(out_path, b.s, b.n) < 0) {
+        host->logf("docs: failed write %s", out_path);
+        free(b.s);
+        return -1;
+    }
+    free(b.s);
+    return 0;
+}
+
+/* Emit full documentation for a struct node. */
+static int emit_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *st,
+                            char const *out_path) {
+    outbuf b = {0};
+    if (ob_printf(&b, "# %s\n\n", st->name) < 0) { free(b.s); return -1; }
+    if (ob_printf(&b, "**Definition:** `%s`\n", m->xml_path) < 0) { free(b.s); return -1; }
+    if (st->aux2 && st->aux2[0])
+        if (ob_printf(&b, "**Namespace:** `%s`\n", st->aux2) < 0) { free(b.s); return -1; }
+    if (st->doc && st->doc[0])
+        if (ob_printf(&b, "\n## Summary\n\n%s\n", st->doc) < 0) { free(b.s); return -1; }
+    if (emit_struct_fields(&b, m, st) < 0) { free(b.s); return -1; }
+    if (emit_see_also(&b, m, st, CG_KIND_FIELD, 0) < 0) { free(b.s); return -1; }
     if (host->write_file(out_path, b.s, b.n) < 0) {
         host->logf("docs: failed write %s", out_path);
         free(b.s);
@@ -267,12 +438,37 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
                     }
                 }
                 if (emit_handles(&b, model, cls) < 0) { free(b.s); return -1; }
+                if (emit_see_also(&b, model, cls, CG_KIND_PROPERTY, 1) < 0) { free(b.s); return -1; }
                 if (cls->aux && cls->aux[0])
                     if (ob_printf(&b, "\n## Implementation Details\n\n%s\n", cls->aux) < 0) {
                         free(b.s); return -1;
                     }
             }
         }
+        /* Emit all enum docs */
+        cg_foreach(model, 0, CG_KIND_ENUM, en) {
+            if (ob_printf(&b, "\n---\n\n") < 0) { free(b.s); return -1; }
+            if (ob_printf(&b, "# %s\n\n", en->name) < 0) { free(b.s); return -1; }
+            if (ob_printf(&b, "**Definition:** `%s`\n", model->xml_path) < 0) { free(b.s); return -1; }
+            if (en->aux2 && en->aux2[0])
+                if (ob_printf(&b, "**Namespace:** `%s`\n", en->aux2) < 0) { free(b.s); return -1; }
+            if (en->doc && en->doc[0])
+                if (ob_printf(&b, "\n## Summary\n\n%s\n", en->doc) < 0) { free(b.s); return -1; }
+            if (emit_enum_members(&b, model, en) < 0) { free(b.s); return -1; }
+        }
+
+        /* Emit all struct docs */
+        cg_foreach(model, 0, CG_KIND_STRUCT, st) {
+            if (ob_printf(&b, "\n---\n\n") < 0) { free(b.s); return -1; }
+            if (ob_printf(&b, "# %s\n\n", st->name) < 0) { free(b.s); return -1; }
+            if (ob_printf(&b, "**Definition:** `%s`\n", model->xml_path) < 0) { free(b.s); return -1; }
+            if (st->aux2 && st->aux2[0])
+                if (ob_printf(&b, "**Namespace:** `%s`\n", st->aux2) < 0) { free(b.s); return -1; }
+            if (st->doc && st->doc[0])
+                if (ob_printf(&b, "\n## Summary\n\n%s\n", st->doc) < 0) { free(b.s); return -1; }
+            if (emit_struct_fields(&b, model, st) < 0) { free(b.s); return -1; }
+        }
+
         if (host->write_file(output, b.s, b.n) < 0) {
             host->logf("docs: failed write %s", output);
             free(b.s);
@@ -281,6 +477,26 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         free(b.s);
     } else {
         /* Directory mode: emit overview with links and separate class files */
+        if (n_enum > 0) {
+            if (ob_printf(&b, "\n## Enums\n\n") < 0) { free(b.s); return -1; }
+            for (i = 0; i < model->node_count; ++i)
+                if (model->nodes[i].kind == CG_KIND_ENUM)
+                    if (ob_printf(&b, "- [%s](enums/%s.md)\n",
+                            model->nodes[i].name, model->nodes[i].name) < 0) {
+                        free(b.s);
+                        return -1;
+                    }
+        }
+        if (n_struct > 0) {
+            if (ob_printf(&b, "\n## Structs\n\n") < 0) { free(b.s); return -1; }
+            for (i = 0; i < model->node_count; ++i)
+                if (model->nodes[i].kind == CG_KIND_STRUCT)
+                    if (ob_printf(&b, "- [%s](structs/%s.md)\n",
+                            model->nodes[i].name, model->nodes[i].name) < 0) {
+                        free(b.s);
+                        return -1;
+                    }
+        }
         if (ob_printf(&b, "\n## Classes\n\n") < 0) { free(b.s); return -1; }
         for (i = 0; i < model->node_count; ++i)
             if (model->nodes[i].kind == CG_KIND_CLASS)
@@ -315,15 +531,14 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         free(b.s);
 
         /* Emit individual class documentation files. */
-        for (i = 0; i < model->node_count; ++i) {
+        cg_foreach(model, 0, CG_KIND_CLASS, c) {
             char path[512];
             size_t base_len;
-            if (model->nodes[i].kind != CG_KIND_CLASS) continue;
 
             /* Build output path: output/classes/ClassName.md */
             base_len = strlen(output);
-            if (base_len + 1 + strlen(model->nodes[i].name) + 12 >= sizeof(path)) {
-                host->logf("docs: path too long for %s", model->nodes[i].name);
+            if (base_len + 1 + strlen(c->name) + 12 >= sizeof(path)) {
+                host->logf("docs: path too long for %s", c->name);
                 continue;
             }
             memcpy(path, output, base_len);
@@ -332,10 +547,54 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
                 base_len++;
             }
             strcpy(path + base_len, "classes/");
-            strcpy(path + base_len + 8, model->nodes[i].name);
-            strcpy(path + base_len + 8 + strlen(model->nodes[i].name), ".md");
+            strcpy(path + base_len + 8, c->name);
+            strcpy(path + base_len + 8 + strlen(c->name), ".md");
 
-            if (emit_class_docs(host, model, &model->nodes[i], path) < 0)
+            if (emit_class_docs(host, model, c, path) < 0)
+                return -1;
+        }
+
+        /* Emit individual enum documentation files. */
+        cg_foreach(model, 0, CG_KIND_ENUM, en) {
+            char path[512];
+            size_t base_len;
+            base_len = strlen(output);
+            if (base_len + 1 + strlen(en->name) + 11 >= sizeof(path)) {
+                host->logf("docs: path too long for %s", en->name);
+                continue;
+            }
+            memcpy(path, output, base_len);
+            if (base_len > 0 && output[base_len - 1] != '/') {
+                path[base_len] = '/';
+                base_len++;
+            }
+            strcpy(path + base_len, "enums/");
+            strcpy(path + base_len + 6, en->name);
+            strcpy(path + base_len + 6 + strlen(en->name), ".md");
+
+            if (emit_enum_docs(host, model, en, path) < 0)
+                return -1;
+        }
+
+        /* Emit individual struct documentation files. */
+        cg_foreach(model, 0, CG_KIND_STRUCT, st) {
+            char path[512];
+            size_t base_len;
+            base_len = strlen(output);
+            if (base_len + 1 + strlen(st->name) + 12 >= sizeof(path)) {
+                host->logf("docs: path too long for %s", st->name);
+                continue;
+            }
+            memcpy(path, output, base_len);
+            if (base_len > 0 && output[base_len - 1] != '/') {
+                path[base_len] = '/';
+                base_len++;
+            }
+            strcpy(path + base_len, "structs/");
+            strcpy(path + base_len + 8, st->name);
+            strcpy(path + base_len + 8 + strlen(st->name), ".md");
+
+            if (emit_struct_docs(host, model, st, path) < 0)
                 return -1;
         }
     }
