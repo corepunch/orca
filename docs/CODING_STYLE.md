@@ -10,6 +10,8 @@ Use this file for the local conventions that matter most during edits.
 - Keep declarations close to first assignment.
 - Prefer existing helpers and macros over open-coded repetitive logic.
 - Match the surrounding file before introducing a new pattern.
+- Tests should include public aggregate headers rather than private `source/`
+  headers; keep any unavoidable private symbol use as a local `extern`.
 
 ## Architectural style
 

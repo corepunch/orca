@@ -34,6 +34,16 @@ When adding a new C test:
 3. Add a dedicated target to `Makefile` if the file is a new standalone binary.
 4. Prefer small arrange / act / assert blocks and explicit cleanup.
 
+Include policy:
+
+- Include public aggregate headers such as `<include/orca.h>`, `<core/core.h>`,
+  `<filesystem/filesystem.h>`, and plugin/module headers.
+- Do not include private implementation headers from `source/`, such as
+  `source/core/core_local.h`, `source/core/object/object_internal.h`, or
+  `source/filesystem/fs_xml_inline.h`.
+- If a C test must exercise an exported-but-private symbol, declare the narrow
+  `extern` locally in that test and add a short comment explaining the seam.
+
 Good references:
 
 - `tests/test_styles.c`

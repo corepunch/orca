@@ -4,12 +4,9 @@
 
 #include <include/orca.h>
 #include <include/codegen.h>
-#include <source/core/core_local.h>
-#include <core/core_properties.h>
-#include <source/core/object/object_internal.h>
-#include <source/filesystem/fs_local.h>
+#include <core/core.h>
+#include <filesystem/filesystem.h>
 #include <UIKit/UIKit.h>
-#include <UIKit/UIKit_properties.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -31,6 +28,9 @@ static lua_State *s_lua_state = NULL;
   }
 
 #define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
+
+#define FIND_LONG_PROPERTY(obj, id, out) \
+  (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
 
 #define RUN(name, block) \
   do { \
@@ -341,8 +341,8 @@ test_generated_action_property_order(void)
 
     EXPECT(action != NULL);
     EXPECT(base != NULL);
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction_x, &x_prop));
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_SendMessageAction_Target, &target_prop));
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_Node_RightButtonUpAction_x, &x_prop));
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_SendMessageAction_Target, &target_prop));
     EXPECT(x_prop != NULL);
     EXPECT(target_prop != NULL);
     EXPECT(strcmp(PROP_GetName(x_prop), "x") == 0);
