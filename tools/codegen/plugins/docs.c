@@ -213,10 +213,11 @@ static int emit_class_docs(cg_host_v1 const *host, cg_model const *m,
     return 0;
 }
 
-static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *output_dir) {
+static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *output) {
     outbuf b = {0};
     size_t i;
     uint32_t n_enum = 0, n_if = 0, n_struct = 0, n_class = 0;
+    int is_stdout = (output && !strcmp(output, "-"));
 
     /* Count nodes by kind. */
     for (i = 0; i < model->node_count; ++i) {
@@ -233,53 +234,94 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
             "- **enums:** %u\n"
             "- **interfaces:** %u\n"
             "- **structs:** %u\n"
-            "- **classes:** %u\n\n"
-            "## Classes\n\n",
+            "- **classes:** %u\n\n",
             model->module_name, model->xml_path, n_enum, n_if, n_struct, n_class) < 0) {
         free(b.s);
         return -1;
     }
 
-    /* List all classes in the overview with links. */
-    for (i = 0; i < model->node_count; ++i)
-        if (model->nodes[i].kind == CG_KIND_CLASS)
-            if (ob_printf(&b, "- [%s](classes/%s.md)\n",
-                    model->nodes[i].name, model->nodes[i].name) < 0) {
-                free(b.s);
-                return -1;
+    /* If stdout, emit all class docs inline; otherwise emit links. */
+    if (is_stdout) {
+        /* Emit all class docs in one file */
+        cg_foreach(model, 0, CG_KIND_CLASS, cls) {
+            if (ob_printf(&b, "\n---\n\n") < 0) { free(b.s); return -1; }
+            /* Inline class documentation */
+            {
+                int own_props, inh_props;
+                if (ob_printf(&b, "# %s\n\n", cls->name) < 0) { free(b.s); return -1; }
+                if (ob_printf(&b, "**Definition:** `%s`\n", model->xml_path) < 0) { free(b.s); return -1; }
+                if (cls->aux2 && cls->aux2[0])
+                    if (ob_printf(&b, "**Namespace:** `%s`\n", cls->aux2) < 0) { free(b.s); return -1; }
+                if (cls->doc && cls->doc[0])
+                    if (ob_printf(&b, "\n## Summary\n\n%s\n", cls->doc) < 0) { free(b.s); return -1; }
+                if (emit_inheritance(&b, model, cls) < 0) { free(b.s); return -1; }
+                own_props = has_any_props(model, cls);
+                inh_props = parents_have_props(model, cls->type);
+                if (own_props || inh_props) {
+                    if (ob_printf(&b, "\n## Properties\n") < 0) { free(b.s); return -1; }
+                    if (own_props && emit_props_for_class(&b, model, cls, cls->name, 1) < 0) {
+                        free(b.s); return -1;
+                    }
+                    if (inh_props && emit_inherited_props(&b, model, cls->type) < 0) {
+                        free(b.s); return -1;
+                    }
+                }
+                if (emit_handles(&b, model, cls) < 0) { free(b.s); return -1; }
+                if (cls->aux && cls->aux[0])
+                    if (ob_printf(&b, "\n## Implementation Details\n\n%s\n", cls->aux) < 0) {
+                        free(b.s); return -1;
+                    }
             }
-
-    /* Write module overview. */
-    if (host->write_file(output_dir, b.s, b.n) < 0) {
-        host->logf("docs: failed write %s", output_dir);
-        free(b.s);
-        return -1;
-    }
-    free(b.s);
-
-    /* Emit individual class documentation files. */
-    for (i = 0; i < model->node_count; ++i) {
-        char path[512];
-        size_t base_len;
-        if (model->nodes[i].kind != CG_KIND_CLASS) continue;
-
-        /* Build output path: output_dir/classes/ClassName.md */
-        base_len = strlen(output_dir);
-        if (base_len + 1 + strlen(model->nodes[i].name) + 12 >= sizeof(path)) {
-            host->logf("docs: path too long for %s", model->nodes[i].name);
-            continue;
         }
-        memcpy(path, output_dir, base_len);
-        if (base_len > 0 && output_dir[base_len - 1] != '/') {
-            path[base_len] = '/';
-            base_len++;
-        }
-        strcpy(path + base_len, "classes/");
-        strcpy(path + base_len + 8, model->nodes[i].name);
-        strcpy(path + base_len + 8 + strlen(model->nodes[i].name), ".md");
-
-        if (emit_class_docs(host, model, &model->nodes[i], path) < 0)
+        if (host->write_file(output, b.s, b.n) < 0) {
+            host->logf("docs: failed write %s", output);
+            free(b.s);
             return -1;
+        }
+        free(b.s);
+    } else {
+        /* Directory mode: emit overview with links and separate class files */
+        if (ob_printf(&b, "\n## Classes\n\n") < 0) { free(b.s); return -1; }
+        for (i = 0; i < model->node_count; ++i)
+            if (model->nodes[i].kind == CG_KIND_CLASS)
+                if (ob_printf(&b, "- [%s](classes/%s.md)\n",
+                        model->nodes[i].name, model->nodes[i].name) < 0) {
+                    free(b.s);
+                    return -1;
+                }
+
+        /* Write module overview. */
+        if (host->write_file(output, b.s, b.n) < 0) {
+            host->logf("docs: failed write %s", output);
+            free(b.s);
+            return -1;
+        }
+        free(b.s);
+
+        /* Emit individual class documentation files. */
+        for (i = 0; i < model->node_count; ++i) {
+            char path[512];
+            size_t base_len;
+            if (model->nodes[i].kind != CG_KIND_CLASS) continue;
+
+            /* Build output path: output/classes/ClassName.md */
+            base_len = strlen(output);
+            if (base_len + 1 + strlen(model->nodes[i].name) + 12 >= sizeof(path)) {
+                host->logf("docs: path too long for %s", model->nodes[i].name);
+                continue;
+            }
+            memcpy(path, output, base_len);
+            if (base_len > 0 && output[base_len - 1] != '/') {
+                path[base_len] = '/';
+                base_len++;
+            }
+            strcpy(path + base_len, "classes/");
+            strcpy(path + base_len + 8, model->nodes[i].name);
+            strcpy(path + base_len + 8 + strlen(model->nodes[i].name), ".md");
+
+            if (emit_class_docs(host, model, &model->nodes[i], path) < 0)
+                return -1;
+        }
     }
 
     return 0;
