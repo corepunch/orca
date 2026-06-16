@@ -35,7 +35,6 @@ _FindMessageActionPayload(struct Object *action)
   return NULL;
 }
 
-// SendMessageAction_Dispatch
 HANDLER(SendMessageAction, Action, Dispatch)
 {
   struct component *payload_cmp = _FindMessageActionPayload(hObject);

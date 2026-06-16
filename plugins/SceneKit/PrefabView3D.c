@@ -2,7 +2,6 @@
 #include <include/api.h>
 #include <filesystem/filesystem.h>
 
-// PrefabView3D_Start
 HANDLER(PrefabView3D, Object, Start)
 {
   struct Property *p = OBJ_FindLongProperty(hObject, ID_PrefabView3D_Prefab);
@@ -13,7 +12,6 @@ HANDLER(PrefabView3D, Object, Start)
   return FALSE;
 }
 
-// PrefabView3D_PropertyChanged
 HANDLER(PrefabView3D, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
@@ -24,7 +22,6 @@ HANDLER(PrefabView3D, Object, PropertyChanged)
   return FALSE;
 }
 
-// PrefabView3D_LoadView
 HANDLER(PrefabView3D, Node, LoadView)
 {
   if (pPrefabView3D->Prefab && *pPrefabView3D->Prefab) {

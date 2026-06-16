@@ -14,6 +14,7 @@
  * Compiled via the `test-xml-serialization` Makefile target (depends on `buildlib`).
  */
 
+#include "test_local.h"
 #include "mem_tracker.h"
 
 #include <include/orca.h>

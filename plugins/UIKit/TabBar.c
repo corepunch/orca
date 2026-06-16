@@ -3,7 +3,6 @@
 
 #include <UIKit/UIKit.h>
 
-// TabBar_Create
 HANDLER(TabBar, Object, Create)
 {
   struct Node *node = GetNode(hObject);
@@ -20,7 +19,6 @@ HANDLER(TabBar, Object, Create)
   return FALSE;
 }
 
-// TabBar_SelectionChanged
 HANDLER(TabBar, TabBar, SelectionChanged)
 {
   /* All state mutation is done in Tab_Select before the message is

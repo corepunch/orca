@@ -37,7 +37,6 @@ _GetImageSize(struct Object *hObject,
   return size;
 }
 
-// ImageView_MeasureOverride
 HANDLER(ImageView, Node2D, MeasureOverride)
 {
   if (pImageView->Source) {
@@ -72,7 +71,6 @@ HANDLER(ImageView, Node2D, ArrangeOverride) {
                       .Height = pArrangeOverride->Height);
 }
 
-// ImageView_DrawForeground
 HANDLER(ImageView, Node2D, DrawForeground)
 {
   struct Node2D *pNode2D = GetNode2D(hObject);
@@ -154,13 +152,11 @@ HANDLER(ImageView, Node2D, DrawForeground)
   return TRUE;
 }
 
-// ImageView_ForegroundContent
 HANDLER(ImageView, Node2D, ForegroundContent)
 {
   return (intptr_t)pImageView->Source;
 }
 
-// ImageView_Start
 HANDLER(ImageView, Object, Start)
 {
   struct Property *p = OBJ_FindLongProperty(hObject, ID_ImageView_Src);
@@ -171,7 +167,6 @@ HANDLER(ImageView, Object, Start)
   return FALSE;
 }
 
-// ImageView_PropertyChanged
 HANDLER(ImageView, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
@@ -182,7 +177,6 @@ HANDLER(ImageView, Object, PropertyChanged)
   return FALSE;
 }
 
-// ImageView_Destroy
 HANDLER(ImageView, Object, Destroy)
 {
   _ImageView_CancelFetch(pImageView);
@@ -211,7 +205,6 @@ HANDLER(ImageView, Object, Destroy)
  *  a fully initialised Texture component; we point Source at it and keep
  *  the Object alive in _src_object.
  */
-// ImageView_LoadView
 HANDLER(ImageView, Node, LoadView)
 {
   const char *src = pImageView->Src;

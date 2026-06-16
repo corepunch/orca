@@ -350,7 +350,6 @@ Node2D_GetBackgroundRect(struct Node2D *pNode2D)
   };
 }
 
-// Node2D_DrawBackground
 HANDLER(Node2D, Node2D, DrawBackground)
 {
   if (!memcmp(&pDrawBackground->brush,
@@ -391,7 +390,6 @@ HANDLER(Node2D, Node2D, DrawBackground)
   return TRUE;
 }
 
-// Node2D_DrawForeground
 HANDLER(Node2D, Node2D, DrawForeground)
 {
   if (!memcmp(&pDrawForeground->brush,
@@ -431,7 +429,6 @@ HANDLER(Node2D, Node2D, DrawForeground)
 //	return dwCounter;
 // }
 
-// Node2D_UpdateMatrix
 HANDLER(Node2D, Node, UpdateMatrix)
 {
   struct mat4 Matrix;
@@ -503,7 +500,6 @@ HANDLER(Node2D, Node, UpdateMatrix)
 //     }
 // }
 
-// Node2D_Destroy
 HANDLER(Node2D, Object, Destroy)
 {
   if (!pNode2D->OffscreenRendering) {
@@ -512,7 +508,6 @@ HANDLER(Node2D, Object, Destroy)
   return FALSE;
 }
 
-// Node2D_ScrollWheel
 HANDLER(Node2D, Node, ScrollWheel)
 {
   struct Node *node = pNode2D->_node;
@@ -529,7 +524,6 @@ HANDLER(Node2D, Node, ScrollWheel)
   return FALSE;
 }
 
-// Node2D_MouseMoved
 HANDLER(Node2D, Node, MouseMoved)
 {
   if (OBJ_GetFlags(hObject) & OF_HOVERABLE) {
@@ -618,7 +612,6 @@ _ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
   return available - TOTAL_MARGIN(n, axis);
 }
 
-// Node2D_Measure
 HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
@@ -640,7 +633,6 @@ HANDLER(Node2D, Node2D, Measure)
                    NODE2D_FRAME(n, Size, 1).Desired + TOTAL_MARGIN(n, 1));
 }
 
-// Node2D_Arrange
 HANDLER(Node2D, Node2D, Arrange)
 {
   struct Node2D *n = pNode2D;
@@ -679,7 +671,6 @@ HANDLER(Node2D, Node2D, Arrange)
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
 
-// Node2D_MeasureOverride
 HANDLER(Node2D, Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
@@ -694,7 +685,6 @@ HANDLER(Node2D, Node2D, MeasureOverride)
                    isinf(pMeasureOverride->Height) ? height : 0);
 }
 
-// Node2D_ArrangeOverride
 HANDLER(Node2D, Node2D, ArrangeOverride)
 {
   FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Arrange,
@@ -716,7 +706,6 @@ HANDLER(Node2D, Node2D, ArrangeOverride)
   return MAKEDWORD(pArrangeOverride->Width, pArrangeOverride->Height);
 }
 
-// Node2D_SetScrollTop
 HANDLER(Node2D, Node2D, SetScrollTop)
 {
   struct vec2 offset = pNode2D->ContentOffset;
@@ -764,7 +753,6 @@ _DrawBorderImage(struct Node2D *pNode2D, struct ViewDef *viewdef)
   R_DrawEntity(viewdef, &entity);
 }
 
-// Node2D_Draw2DContent
 HANDLER(Node2D, Node2D, Draw2DContent)
 {
   if (OBJ_IsHidden(hObject))

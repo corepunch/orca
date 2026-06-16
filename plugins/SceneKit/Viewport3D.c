@@ -81,7 +81,6 @@ _Node2D_GetRect(struct Node2D *pNode2D)
   };
 }
 
-// Viewport3D_ForegroundContent
 HANDLER(Viewport3D, Node2D, ForegroundContent)
 {
   struct Object *screen = OBJ_FindParentOfClass(hObject, ID_Screen);

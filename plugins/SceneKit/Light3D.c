@@ -3,7 +3,6 @@
 
 #include <SceneKit/SceneKit.h>
 
-// Light3D_Render
 HANDLER(Light3D, Node3D, Render)
 {
 //  struct ViewEntity entity = {

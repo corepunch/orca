@@ -917,7 +917,6 @@ _MakeTextBlockTextRun(struct Object  *hObject,
   return view;
 }
 
-// TextBlockConcept_MakeText
 HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
 {
   struct TextRun *pTextRun = GetTextRun(hObject);
@@ -959,7 +958,6 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   return TRUE;
 }
 
-// TextBlockConcept_GetInfo
 HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
 {
   struct text_info *info = (struct text_info*)pGetInfo;
@@ -967,14 +965,12 @@ HANDLER(TextBlockConcept, TextBlockConcept, GetInfo)
   return SUCCEEDED(TextBlockText_GetInfo(pTextBlockConcept->_text, info));
 }
 
-// TextBlockConcept_GetTexture
 HANDLER(TextBlockConcept, TextBlockConcept, GetTexture)
 {
   if (!pTextBlockConcept->_text) return 0;
   return (intptr_t)TextBlockText_GetTexture(pTextBlockConcept->_text);
 }
 
-// TextBlockConcept_Create
 HANDLER(TextBlockConcept, Object, Create)
 {
   pTextBlockConcept->_node = GetNode(hObject);
@@ -982,7 +978,6 @@ HANDLER(TextBlockConcept, Object, Create)
   return FALSE;
 }
 
-// TextBlockConcept_Destroy
 HANDLER(TextBlockConcept, Object, Destroy)
 {
   TextBlockText_Release(pTextBlockConcept->_text);

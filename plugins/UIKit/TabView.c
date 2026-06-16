@@ -36,7 +36,6 @@ TabView_GetActiveContent(struct Object *hObject, struct TabView *pTabView)
   return hSelected ? hSelected : (hVisible ? hVisible : hFallback);
 }
 
-// TabView_MeasureOverride
 HANDLER(TabView, Node2D, MeasureOverride)
 {
   uint16_t width = 0;
@@ -70,7 +69,6 @@ HANDLER(TabView, Node2D, MeasureOverride)
   return MAKEDWORD(width, headerHeight + contentHeight);
 }
 
-// TabView_ArrangeOverride
 HANDLER(TabView, Node2D, ArrangeOverride)
 {
   float headerHeight = 0;
@@ -196,21 +194,18 @@ TabView_ShowContent(struct Object *hObject, const char *value)
 
 /* On initial load: select first tab in the first TabBar child and
    show its matching content panel. */
-// TabView_Start
 HANDLER(TabView, Object, Start)
 {
   TabView_SyncInitialSelection(hObject, pTabView);
   return FALSE;
 }
 
-// TabView_Attached
 HANDLER(TabView, Object, Attached)
 {
   TabView_SyncInitialSelection(hObject, pTabView);
   return FALSE;
 }
 
-// TabView_ViewDidLoad
 HANDLER(TabView, Node, ViewDidLoad)
 {
   TabView_SyncInitialSelection(hObject, pTabView);
@@ -218,7 +213,6 @@ HANDLER(TabView, Node, ViewDidLoad)
 }
 
 /* Intercept SelectionChanged bubbling up from the TabBar child. */
-// TabView_SelectionChanged
 HANDLER(TabView, TabBar, SelectionChanged)
 {
   /* Capture a copy of the old value before overwriting it via the property

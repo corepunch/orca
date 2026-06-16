@@ -28,9 +28,25 @@ static lua_State *s_lua_state = NULL;
   }
 
 #define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
+#define EXPECT_STR_EQ(a, b) EXPECT((a) && (b) && !strcmp((a), (b)))
 
 #define FIND_LONG_PROPERTY(obj, id, out) \
   (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
+
+static HRESULT
+OBJ_SetPropertyValue(struct Object *obj, lpcString_t name, void const *value)
+{
+  struct Property *prop = OBJ_FindShortProperty(obj, fnv1a32(name));
+  if (!prop) {
+    struct PropertyType const *type = OBJ_FindImplicitPropertyType(obj, name);
+    if (!type) type = OBJ_FindExplicitPropertyType(obj, name);
+    if (!type) return E_FAIL;
+    prop = PROP_Create(NULL, obj, type);
+    if (!prop) return E_FAIL;
+  }
+  PROP_SetValue(prop, value);
+  return NOERROR;
+}
 
 #define RUN(name, block) \
   do { \
@@ -249,6 +265,7 @@ test_event_trigger_no_args(void)
     EXPECT(root != NULL);
     EXPECT(source != NULL);
     EXPECT(target != NULL);
+    EXPECT_STR_EQ(OBJ_GetClassName(target), "TestTriggerSink");
     EXPECT(action != NULL);
 
     OBJ_AddChild(root, source);
@@ -357,19 +374,26 @@ test_generated_action_xml(void)
     reset_observed();
 
     struct Object *root = FS_LoadObjectFromXmlString(
-      "<TestTriggerHost Name=\"Root\">\n"
-      "  <TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">\n"
-      "    <Object.Start Target=\"../Target\"/>\n"
-      "  </TestEventTriggerSource>\n"
-      "  <TestTriggerSink Name=\"Target\"/>\n"
+      "<TestTriggerHost Name=\"Root\">"
+      "<TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">"
+      "<TestTriggerSink Name=\"Target\"/>"
+      "<Object.Start Target=\"Target\"/>"
+      "</TestEventTriggerSource>"
       "</TestTriggerHost>");
     EXPECT(root != NULL);
     reset_observed();
 
     struct Object *source = root ? OBJ_FindChild(root, "Source", TRUE) : NULL;
+    struct Object *target = source ? OBJ_FindChild(source, "Target", TRUE) : NULL;
+    struct Object *action = source ? OBJ_FindChildOfClass(source, ID_Object_StartAction) : NULL;
     EXPECT(source != NULL);
+    EXPECT(target != NULL);
+    EXPECT(action != NULL);
+    struct Property *target_prop = NULL;
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_SendMessageAction_Target, &target_prop));
+    EXPECT_STR_EQ(*(const char **)PROP_GetValue(target_prop), "Target");
     OBJ_SendMessageW(source, ID_Node_LeftButtonUp, 0, NULL);
-    EXPECT(s_observed.StartCount == 1);
+    EXPECT(s_observed.Triggered);
 
     if (root) {
       OBJ_Clear(root);

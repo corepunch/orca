@@ -3,7 +3,6 @@
 
 #include <SceneKit/SceneKit.h>
 
-// SpriteView_Render
 HANDLER(SpriteView, Node3D, Render)
 {
   struct rect viewbox = {0};
