@@ -274,16 +274,9 @@ static char const *module_prefix(cg_model const *m, char *buf, size_t n) {
 }
 
 static int build_path(char *path, size_t psz, char const *base, char const *sub, size_t sublen, char const *name) {
-  size_t bl=strlen(base), nl=strlen(name);
-  if (bl+1+sublen+nl+4>=psz) return -1;
-  memcpy(path,base,bl);
-  if (bl>0&&base[bl-1]!='/') path[bl++]='/';
-  memcpy(path+bl,sub,sublen); bl+=sublen;
-  memcpy(path+bl,name,nl); bl+=nl;
-  memcpy(path+bl,".md",4);
-  return 0;
+  int n=snprintf(path,psz,"%s%s%.*s%s.md",base,base[0]&&base[strlen(base)-1]!='/'?"/":"",(int)sublen,sub,name);
+  return n<0||(size_t)n>=psz?-1:0;
 }
-
 /* --- Node doc emitters --- */
 
 static int emit_class_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *cls, char const *op) {
@@ -580,7 +573,7 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
     if (bl+12>=sizeof(path)) { host->logf("docs: path too long for overview"); free(b.s); return -1; }
     memcpy(path,output,bl);
     if (bl>0&&output[bl-1]!='/') path[bl++]='/';
-    strcat(path+bl,"overview.md");
+    path[bl]='\0'; strcat(path,"overview.md");
     if (host->write_file(path,b.s,b.n)<0) { host->logf("docs: failed write %s",path); free(b.s); return -1; }
   }
   free(b.s);
