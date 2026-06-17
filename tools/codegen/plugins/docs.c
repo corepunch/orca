@@ -274,9 +274,16 @@ static char const *module_prefix(cg_model const *m, char *buf, size_t n) {
 }
 
 static int build_path(char *path, size_t psz, char const *base, char const *sub, size_t sublen, char const *name) {
-  int n=snprintf(path,psz,"%s%s%.*s%s.md",base,base[0]&&base[strlen(base)-1]!='/'?"/":"",(int)sublen,sub,name);
-  return n<0||(size_t)n>=psz?-1:0;
+  size_t bl=strlen(base), nl=strlen(name);
+  if (bl+1+sublen+nl+4>=psz) return -1;
+  memcpy(path,base,bl);
+  if (bl>0&&base[bl-1]!='/') path[bl++]='/';
+  memcpy(path+bl,sub,sublen); bl+=sublen;
+  memcpy(path+bl,name,nl); bl+=nl;
+  memcpy(path+bl,".md",4);
+  return 0;
 }
+
 /* --- Node doc emitters --- */
 
 static int emit_class_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *cls, char const *op) {
@@ -338,6 +345,24 @@ static int emit_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node c
 err: free(b.s); return -1;
 }
 
+static int emit_lua_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *st, char const *op) {
+  outbuf b={0}; int has=0;
+  if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",st->name,m->xml_path)<0) goto err;
+  if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) goto err;
+  cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
+  if (has) {
+    if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
+    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
+      if (emit_type(&b,f)<0) goto err;
+      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+    }
+  }
+  if (emit_lua_methods_table(&b,m,st)<0) goto err;
+  WCHECK(host,op,&b);
+err: free(b.s); return -1;
+}
+
 static int emit_lua_class_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *node, char const *op) {
   outbuf b={0};
   if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",node->name,m->xml_path)<0) goto err;
@@ -345,6 +370,24 @@ static int emit_lua_class_docs(cg_host_v1 const *host, cg_model const *m, cg_nod
   if (emit_inheritance(&b,m,node)<0) goto err;
   if (emit_props_block(&b,m,node,"## Properties")<0) goto err;
   if (emit_lua_methods_table(&b,m,node)<0) goto err;
+  WCHECK(host,op,&b);
+err: free(b.s); return -1;
+}
+
+static int emit_xml_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node const *st, char const *op) {
+  outbuf b={0}; int has=0;
+  if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",st->name,m->xml_path)<0) goto err;
+  if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) goto err;
+  cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
+  if (has) {
+    if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
+    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
+      if (emit_type(&b,f)<0) goto err;
+      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+    }
+  }
+  if (emit_interface_methods(&b,m,st,st->type)<0) goto err;
   WCHECK(host,op,&b);
 err: free(b.s); return -1;
 }
@@ -499,6 +542,17 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (emit_props_block(&b,model,cls,"## Properties")<0) { free(b.s); return -1; }
         if (emit_lua_methods_table(&b,model,cls)<0) { free(b.s); return -1; }
       }
+      cg_foreach(model,0,CG_KIND_STRUCT,st) {
+        if (ob_printf(&b,"\n---\n\n# %s\n\n**Definition:** `%s`\n",st->name,model->xml_path)<0) { free(b.s); return -1; }
+        if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
+        { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
+          if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
+          cg_foreach(model,st->id,CG_KIND_FIELD,f) {
+            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (emit_type(&b,f)<0) { free(b.s); return -1; }
+            if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
+        if (emit_lua_methods_table(&b,model,st)<0) { free(b.s); return -1; }
+      }
     } else if (mode==API_XML) {
       cg_foreach(model,0,CG_KIND_CLASS,cls) {
         char const *xn=(cls->aux2&&cls->aux2[0])?cls->aux2:cls->name;
@@ -525,6 +579,17 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
           }
         }
         if (emit_handles(&b,model,cls)<0) { free(b.s); return -1; }
+      }
+      cg_foreach(model,0,CG_KIND_STRUCT,st) {
+        if (ob_printf(&b,"\n---\n\n# %s\n\n**Definition:** `%s`\n",st->name,model->xml_path)<0) { free(b.s); return -1; }
+        if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
+        { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
+          if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
+          cg_foreach(model,st->id,CG_KIND_FIELD,f) {
+            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (emit_type(&b,f)<0) { free(b.s); return -1; }
+            if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
+        if (emit_interface_methods(&b,model,st,st->type)<0) { free(b.s); return -1; }
       }
     } else {
       cg_foreach(model,0,CG_KIND_CLASS,cls)   if (emit_class_inline(&b,model,cls)<0) { free(b.s); return -1; }
@@ -583,6 +648,10 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
       if (build_path(path,sizeof(path),output,"interfaces/",11,iface->name)<0) { host->logf("docs: path too long for %s",iface->name); continue; }
       if (emit_lua_class_docs(host,model,iface,path)<0) return -1;
     }
+    cg_foreach(model,0,CG_KIND_STRUCT,st) {
+      if (build_path(path,sizeof(path),output,"structs/",8,st->name)<0) { host->logf("docs: path too long for %s",st->name); continue; }
+      if (emit_lua_struct_docs(host,model,st,path)<0) return -1;
+    }
     cg_foreach(model,0,CG_KIND_CLASS,cls) {
       if (build_path(path,sizeof(path),output,"classes/",8,cls->name)<0) { host->logf("docs: path too long for %s",cls->name); continue; }
       if (emit_lua_class_docs(host,model,cls,path)<0) return -1;
@@ -590,6 +659,10 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
     return 0;
   }
   if (mode==API_XML) {
+    cg_foreach(model,0,CG_KIND_STRUCT,st) {
+      if (build_path(path,sizeof(path),output,"structs/",8,st->name)<0) { host->logf("docs: path too long for %s",st->name); continue; }
+      if (emit_xml_struct_docs(host,model,st,path)<0) return -1;
+    }
     cg_foreach(model,0,CG_KIND_CLASS,cls) {
       if (build_path(path,sizeof(path),output,"classes/",8,cls->name)<0) { host->logf("docs: path too long for %s",cls->name); continue; }
       if (emit_xml_class_docs(host,model,cls,path)<0) return -1;
