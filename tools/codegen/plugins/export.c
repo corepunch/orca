@@ -1,4 +1,5 @@
 #include "cg_api.h"
+#include "axis_transform.h"
 
 #include <ctype.h>
 #include <stdarg.h>
@@ -39,118 +40,6 @@ static void ucfirst_into(char *dst, size_t dsz, char const *s) {
     if (!s || !*s || dsz < 2u) { if (dsz) dst[0] = 0; return; }
     dst[0] = (char)toupper((unsigned char)s[0]);
     snprintf(dst + 1u, dsz - 1u, "%s", s + 1);
-}
-
-static void strip_brackets_dots(char *dst, size_t dsz, char const *src) {
-    size_t i = 0;
-    for (; *src && i + 1u < dsz; ++src) {
-        if (*src != '.' && *src != '[' && *src != ']') dst[i++] = *src;
-    }
-    dst[i] = 0;
-}
-
-static char const *k_ax[3] = {"Horizontal", "Vertical", "Depth"};
-static char const *k_left[3] = {"Left", "Top", "Front"};
-static char const *k_right[3] = {"Right", "Bottom", "Back"};
-static char const *k_size_sub[5] = {"Requested", "Desired", "Min", "Actual", "Scroll"};
-static char const *k_size_names[3][5] = {
-    {"Width", "DesiredWidth", "MinWidth", "ActualWidth", "ScrollWidth"},
-    {"Height", "DesiredHeight", "MinHeight", "ActualHeight", "ScrollHeight"},
-    {"Depth", "DesiredDepth", "MinDepth", "ActualDepth", "ScrollDepth"},
-};
-
-static void axis_transform(char const *path, char *out, size_t out_sz) {
-    char result[512];
-    int n;
-    for (n = 0; n < 3; ++n) {
-        char tok[64];
-        snprintf(tok, sizeof(tok), "Size.Axis[%d].", n);
-        if (!strncmp(path, tok, strlen(tok))) {
-            char const *sub = path + strlen(tok);
-            int k;
-            if (!strncmp(sub, "Requested", 9)) {
-                snprintf(out, out_sz, "%s%s", k_size_names[n][0], sub + 9);
-                return;
-            }
-            for (k = 1; k < 5; ++k) {
-                if (!strcmp(sub, k_size_sub[k])) {
-                    snprintf(out, out_sz, "%s", k_size_names[n][k]);
-                    return;
-                }
-            }
-        }
-    }
-    for (n = 0; n < 3; ++n) {
-        char lt[64], rt[64], *pos;
-        snprintf(lt, sizeof(lt), ".Axis[%d].Left", n);
-        snprintf(rt, sizeof(rt), ".Axis[%d].Right", n);
-        if ((pos = strstr((char *)path, lt))) {
-            size_t pl = (size_t)(pos - path);
-            char prefix[256];
-            memcpy(prefix, path, pl); prefix[pl] = 0;
-            snprintf(result, sizeof(result), "%s%s%s", prefix, k_left[n], pos + strlen(lt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-        if ((pos = strstr((char *)path, rt))) {
-            size_t pl = (size_t)(pos - path);
-            char prefix[256];
-            memcpy(prefix, path, pl); prefix[pl] = 0;
-            snprintf(result, sizeof(result), "%s%s%s", prefix, k_right[n], pos + strlen(rt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    for (n = 0; n < 3; ++n) {
-        char tok[32];
-        size_t plen, tlen;
-        snprintf(tok, sizeof(tok), ".Axis[%d]", n);
-        plen = strlen(path); tlen = strlen(tok);
-        if (plen > tlen && !strcmp(path + plen - tlen, tok)) {
-            char prefix[256];
-            memcpy(prefix, path, plen - tlen); prefix[plen - tlen] = 0;
-            snprintf(result, sizeof(result), "%s%s", k_ax[n], prefix);
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    if (!strncmp(path, "Border.Radius.", 14)) {
-        char const *tail = path + 14;
-        size_t len = strlen(tail);
-        if (len > 6u && !strcmp(tail + len - 6u, "Radius")) {
-            snprintf(result, sizeof(result), "Border%.*sRadius", (int)(len - 6u), tail);
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    for (n = 0; n < 3; ++n) {
-        char lt[64], rt[64];
-        snprintf(lt, sizeof(lt), "Axis[%d].Left", n);
-        snprintf(rt, sizeof(rt), "Axis[%d].Right", n);
-        if (!strncmp(path, lt, strlen(lt))) {
-            snprintf(result, sizeof(result), "%s%s", k_left[n], path + strlen(lt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-        if (!strncmp(path, rt, strlen(rt))) {
-            snprintf(result, sizeof(result), "%s%s", k_right[n], path + strlen(rt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    for (n = 0; n < 3; ++n) {
-        char tok[32], *pos;
-        snprintf(tok, sizeof(tok), "Axis[%d]", n);
-        if ((pos = strstr((char *)path, tok))) {
-            size_t pl = (size_t)(pos - path);
-            char prefix[256];
-            memcpy(prefix, path, pl); prefix[pl] = 0;
-            snprintf(result, sizeof(result), "%s%s%s", prefix, k_ax[n], pos + strlen(tok));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    strip_brackets_dots(out, out_sz, path);
 }
 
 static cg_node const *node_parent(cg_model const *m, cg_node const *n) {
