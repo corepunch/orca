@@ -254,7 +254,7 @@ static int emit_lua_methods_table(outbuf *b, cg_model const *m, cg_node const *n
   int has=0; char nb[256];
   cg_foreach(m,node->id,CG_KIND_METHOD,mt) if (!(mt->flags&CG_FLAG_PRIVATE)) { has=1; break; }
   if (!has) return 0;
-  if (ob_printf(b,"\n### Methods\n\n| Method | Description | Parameters |\n|--------|-------------|------------|\n")<0) return -1;
+  if (ob_printf(b,"\n## Methods\n\n| Method | Description | Parameters |\n|--------|-------------|------------|\n")<0) return -1;
   cg_foreach(m,node->id,CG_KIND_METHOD,mt) {
     if (mt->flags&CG_FLAG_PRIVATE) continue;
     if (ob_printf(b,"| `%s` | %s | ",lua_method_name(mt,nb,sizeof(nb)),mt->doc?mt->doc:"")<0) return -1;
@@ -271,6 +271,156 @@ static char const *module_prefix(cg_model const *m, char *buf, size_t n) {
   if (m->prefix&&m->prefix[0]) return m->prefix;
   snprintf(buf,n,"%s_",m->module_name?m->module_name:"");
   return buf;
+}
+
+/* ---------- atom walk (mirrors properties.c walk_prop, docs-only) -------- */
+
+static void strip_brackets_dots(char *dst, size_t dsz, char const *src) {
+  size_t i=0;
+  for (; *src&&i+1<dsz; ++src) if (*src!='.'&&*src!='['&&*src!=']') dst[i++]=*src;
+  dst[i]=0;
+}
+
+static char const *k_ax[3]   ={"Horizontal","Vertical","Depth"};
+static char const *k_left[3] ={"Left","Top","Front"};
+static char const *k_right[3]={"Right","Bottom","Back"};
+static char const *k_size_sub[5]   ={"Requested","Desired","Min","Actual","Scroll"};
+static char const *k_size_names[3][5]={
+  {"Width","DesiredWidth","MinWidth","ActualWidth","ScrollWidth"},
+  {"Height","DesiredHeight","MinHeight","ActualHeight","ScrollHeight"},
+  {"Depth","DesiredDepth","MinDepth","ActualDepth","ScrollDepth"},
+};
+
+static void axis_transform(char const *path, char *out, size_t outsz) {
+  char result[512]; int n;
+  for (n=0; n<3; n++) {
+    char tok[64]; snprintf(tok,sizeof(tok),"Size.Axis[%d].",n);
+    if (strncmp(path,tok,strlen(tok))==0) {
+      char const *sub=path+strlen(tok); int k;
+      if (strncmp(sub,"Requested",9)==0) { snprintf(out,outsz,"%s%s",k_size_names[n][0],sub+9); goto done; }
+      for (k=1; k<5; k++) if (!strcmp(sub,k_size_sub[k])) { snprintf(out,outsz,"%s",k_size_names[n][k]); goto done; }
+    }
+  }
+  for (n=0; n<3; n++) {
+    char lt[64],rt[64]; char *pos;
+    snprintf(lt,sizeof(lt),".Axis[%d].Left",n);
+    snprintf(rt,sizeof(rt),".Axis[%d].Right",n);
+    if ((pos=strstr((char*)path,lt))!=NULL) {
+      size_t pl=(size_t)(pos-path); char prefix[256]; memcpy(prefix,path,pl); prefix[pl]=0;
+      snprintf(result,sizeof(result),"%s%s%s",prefix,k_left[n],pos+strlen(lt));
+      strip_brackets_dots(out,outsz,result); return;
+    }
+    if ((pos=strstr((char*)path,rt))!=NULL) {
+      size_t pl=(size_t)(pos-path); char prefix[256]; memcpy(prefix,path,pl); prefix[pl]=0;
+      snprintf(result,sizeof(result),"%s%s%s",prefix,k_right[n],pos+strlen(rt));
+      strip_brackets_dots(out,outsz,result); return;
+    }
+  }
+  for (n=0; n<3; n++) {
+    char tok[32]; snprintf(tok,sizeof(tok),".Axis[%d]",n);
+    size_t plen=strlen(path),tlen=strlen(tok);
+    if (plen>tlen && strcmp(path+plen-tlen,tok)==0) {
+      char prefix[256]; memcpy(prefix,path,plen-tlen); prefix[plen-tlen]=0;
+      snprintf(result,sizeof(result),"%s%s",k_ax[n],prefix);
+      strip_brackets_dots(out,outsz,result); return;
+    }
+  }
+  if (strncmp(path,"Border.Radius.",14)==0) {
+    char const *tail=path+14; size_t len=strlen(tail);
+    if (len>6 && strcmp(tail+len-6,"Radius")==0) {
+      snprintf(result,sizeof(result),"Border%.*sRadius",(int)(len-6),tail);
+      strip_brackets_dots(out,outsz,result); return;
+    }
+  }
+  for (n=0; n<3; n++) {
+    char lt[64],rt[64];
+    snprintf(lt,sizeof(lt),"Axis[%d].Left",n);  snprintf(rt,sizeof(rt),"Axis[%d].Right",n);
+    if (strncmp(path,lt,strlen(lt))==0) { snprintf(result,sizeof(result),"%s%s",k_left[n], path+strlen(lt)); strip_brackets_dots(out,outsz,result); return; }
+    if (strncmp(path,rt,strlen(rt))==0) { snprintf(result,sizeof(result),"%s%s",k_right[n],path+strlen(rt)); strip_brackets_dots(out,outsz,result); return; }
+  }
+  for (n=0; n<3; n++) {
+    char tok[32]; snprintf(tok,sizeof(tok),"Axis[%d]",n);
+    char const *pos=strstr(path,tok);
+    if (pos) {
+      size_t pl=(size_t)(pos-path); char prefix[256]; memcpy(prefix,path,pl); prefix[pl]=0;
+      snprintf(result,sizeof(result),"%s%s%s",prefix,k_ax[n],pos+strlen(tok));
+      strip_brackets_dots(out,outsz,result); return;
+    }
+  }
+  strip_brackets_dots(out,outsz,path); return;
+done:
+  /* out already written by snprintf above — strip in place */
+  { char tmp[512]; snprintf(tmp,sizeof(tmp),"%s",out); strip_brackets_dots(out,outsz,tmp); }
+}
+
+/* Returns the struct node for type if it exists and is NOT sealed (expandable). */
+static cg_node const *expandable_struct(cg_model const *m, char const *type) {
+  if (!type||!type[0]) return NULL;
+  for (size_t i=0; i<m->node_count; ++i) {
+    cg_node const *n=&m->nodes[i];
+    if (n->kind==CG_KIND_STRUCT && !strcmp(n->name,type) && !(n->flags&CG_FLAG_SEALED)) return n;
+  }
+  return NULL;
+}
+
+#define ATOM_MAXDEPTH 16
+typedef struct { outbuf *b; cg_model const *m; int header_done; } awctx;
+
+static int atom_walk(awctx *ctx, char *path, size_t pathsz, char const *type, int depth) {
+  cg_node const *s=expandable_struct(ctx->m, type);
+  if (!s || depth>=ATOM_MAXDEPTH) {
+    char leaf[512]; axis_transform(path, leaf, sizeof(leaf));
+    if (!ctx->header_done) {
+      if (ob_printf(ctx->b,"\n## Atoms\n\n| Atom | Type |\n|------|------|\n")<0) return -1;
+      ctx->header_done=1;
+    }
+    return ob_printf(ctx->b,"| `%s` | `%s` |\n", leaf, type?type:"");
+  }
+  size_t pl=strlen(path);
+  cg_foreach(ctx->m, s->id, CG_KIND_FIELD, f) {
+    int fixed=(f->extra&&f->extra[0])?atoi(f->extra):0;
+    if (fixed>0) {
+      for (int ai=0; ai<fixed; ai++) {
+        char seg[64]; snprintf(seg,sizeof(seg),"%s[%d]",f->name,ai);
+        char saved[512]; memcpy(saved,path,pl+1);
+        if (pl) snprintf(path+pl,pathsz-pl,".%s",seg);
+        else  snprintf(path,  pathsz,   "%s", seg);
+        if (atom_walk(ctx,path,pathsz,f->type,depth+1)<0) return -1;
+        memcpy(path,saved,pl+1);
+      }
+    } else {
+      char saved[512]; memcpy(saved,path,pl+1);
+      if (pl) snprintf(path+pl,pathsz-pl,".%s",f->name);
+      else  snprintf(path,  pathsz,   "%s", f->name);
+      if (atom_walk(ctx,path,pathsz,f->type,depth+1)<0) return -1;
+      memcpy(path,saved,pl+1);
+    }
+  }
+  return 0;
+}
+
+/* Emit ## Shorthands and ## Atoms sections for a class node (Lua/XML modes). */
+static int emit_shorthand_atoms(outbuf *b, cg_model const *m, cg_node const *cls) {
+  /* Shorthands = top-level public properties */
+  int has=0;
+  cg_foreach(m,cls->id,CG_KIND_PROPERTY,p) if (!(p->flags&CG_FLAG_PRIVATE)) { has=1; break; }
+  if (has) {
+    if (ob_printf(b,"\n## Shorthands\n\n| Property | Type | Description |\n|----------|------|-------------|\n")<0) return -1;
+    cg_foreach(m,cls->id,CG_KIND_PROPERTY,pr) {
+      if (pr->flags&CG_FLAG_PRIVATE) continue;
+      if (ob_printf(b,"| `%s` | ",pr->name)<0) return -1;
+      if (emit_type(b,pr)<0) return -1;
+      if (ob_printf(b," | %s |\n",pr->doc?pr->doc:"")<0) return -1;
+    }
+  }
+  /* Atoms = exploded leaves */
+  awctx ctx={b,m,0};
+  cg_foreach(m,cls->id,CG_KIND_PROPERTY,pr) {
+    if (pr->flags&CG_FLAG_PRIVATE) continue;
+    char path[512]; snprintf(path,sizeof(path),"%s",pr->name);
+    if (atom_walk(&ctx,path,sizeof(path),pr->type,0)<0) return -1;
+  }
+  return 0;
 }
 
 static int build_path(char *path, size_t psz, char const *base, char const *sub, size_t sublen, char const *name) {
@@ -333,12 +483,11 @@ static int emit_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node c
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
-      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
-        if (emit_type(&b,f)<0) goto err;
-        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-      }
+    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
+      if (emit_type(&b,f)<0) goto err;
+      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+    }
   }
   if (emit_interface_methods(&b,m,st,st->type)<0) goto err;
   if (emit_see_also(&b,m,st,CG_KIND_FIELD,0)<0) goto err;
@@ -353,12 +502,11 @@ static int emit_lua_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_no
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
-      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
-        if (emit_type(&b,f)<0) goto err;
-        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-      }
+    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
+      if (emit_type(&b,f)<0) goto err;
+      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+    }
   }
   if (emit_lua_methods_table(&b,m,st)<0) goto err;
   WCHECK(host,op,&b);
@@ -370,7 +518,7 @@ static int emit_lua_class_docs(cg_host_v1 const *host, cg_model const *m, cg_nod
   if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",node->name,m->xml_path)<0) goto err;
   if (node->doc&&node->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",node->doc)<0) goto err;
   if (emit_inheritance(&b,m,node)<0) goto err;
-  if (emit_props_block(&b,m,node,"## Properties")<0) goto err;
+  if (emit_shorthand_atoms(&b,m,node)<0) goto err;
   if (emit_lua_methods_table(&b,m,node)<0) goto err;
   WCHECK(host,op,&b);
 err: free(b.s); return -1;
@@ -383,12 +531,11 @@ static int emit_xml_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_no
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
-      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
-        if (emit_type(&b,f)<0) goto err;
-        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-      }
+    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
+      if (emit_type(&b,f)<0) goto err;
+      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+    }
   }
   if (emit_interface_methods(&b,m,st,st->type)<0) goto err;
   WCHECK(host,op,&b);
@@ -401,14 +548,7 @@ static int emit_xml_class_docs(cg_host_v1 const *host, cg_model const *m, cg_nod
   if (ob_printf(&b,"# %s\n\n**XML element:** `<%s>`\n**Definition:** `%s`\n",cls->name,xn,m->xml_path)<0) goto err;
   if (cls->doc&&cls->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",cls->doc)<0) goto err;
   if (emit_inheritance(&b,m,cls)<0) goto err;
-  {
-    int own=has_any_props(m,cls), inh=parents_have_props(m,cls->type);
-    if (own||inh) {
-      if (ob_printf(&b,"\n## Attributes\n\n> These properties are set as XML attributes on `<%s>`.\n",xn)<0) goto err;
-      if (own && emit_props_for_class(&b,m,cls,cls->name,1)<0) goto err;
-      if (inh && emit_inherited_props(&b,m,cls->type)<0) goto err;
-    }
-  }
+  if (emit_shorthand_atoms(&b,m,cls)<0) goto err;
   {
     int has=0;
     cg_foreach(m,cls->id,CG_KIND_MESSAGE,msg) { (void)msg; has=1; break; }
@@ -467,8 +607,9 @@ static int emit_overview(outbuf *b, cg_model const *model, api_mode mode,
       if (nf>0) {
         if (ob_printf(b,"\n## Functions\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
         for (size_t i=0; i<model->node_count; ++i) { cg_node const *fn=&model->nodes[i];
+          char lfn[256];
           if (fn->kind!=CG_KIND_METHOD||fn->parent!=0||(fn->flags&CG_FLAG_PRIVATE)) continue;
-          if (ob_printf(b,"| [%s%s](functions/%s%s.md) | %s |\n",pfx,fn->name,pfx,fn->name,fn->doc?fn->doc:"")<0) return -1; }
+          if (ob_printf(b,"| [%s](functions/%s%s.md) | %s |\n",lua_method_name(fn,lfn,sizeof(lfn)),pfx,fn->name,fn->doc?fn->doc:"")<0) return -1; }
       }
     }
     if (nc>0) {
@@ -565,7 +706,6 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
     if (mode==API_LUA) {
       cg_foreach(model,0,CG_KIND_INTERFACE,iface) {
         if (ob_printf(&b,"\n---\n\n")<0) { free(b.s); return -1; }
-        /* reuse lua inline: header+props+methods */
         if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",iface->name,model->xml_path)<0) { free(b.s); return -1; }
         if (iface->doc&&iface->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",iface->doc)<0) { free(b.s); return -1; }
         if (emit_inheritance(&b,model,iface)<0) { free(b.s); return -1; }
@@ -577,7 +717,7 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (ob_printf(&b,"# %s\n\n**Definition:** `%s`\n",cls->name,model->xml_path)<0) { free(b.s); return -1; }
         if (cls->doc&&cls->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",cls->doc)<0) { free(b.s); return -1; }
         if (emit_inheritance(&b,model,cls)<0) { free(b.s); return -1; }
-        if (emit_props_block(&b,model,cls,"## Properties")<0) { free(b.s); return -1; }
+        if (emit_shorthand_atoms(&b,model,cls)<0) { free(b.s); return -1; }
         if (emit_lua_methods_table(&b,model,cls)<0) { free(b.s); return -1; }
       }
       cg_foreach(model,0,CG_KIND_STRUCT,st) {
@@ -585,9 +725,8 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
-          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_lua_methods_table(&b,model,st)<0) { free(b.s); return -1; }
@@ -598,14 +737,7 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (ob_printf(&b,"\n---\n\n# %s\n\n**XML element:** `<%s>`\n**Definition:** `%s`\n",cls->name,xn,model->xml_path)<0) { free(b.s); return -1; }
         if (cls->doc&&cls->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",cls->doc)<0) { free(b.s); return -1; }
         if (emit_inheritance(&b,model,cls)<0) { free(b.s); return -1; }
-        {
-          int own=has_any_props(model,cls), inh=parents_have_props(model,cls->type);
-          if (own||inh) {
-            if (ob_printf(&b,"\n## Attributes\n\n> These properties are set as XML attributes on `<%s>`.\n",xn)<0) { free(b.s); return -1; }
-            if (own && emit_props_for_class(&b,model,cls,cls->name,1)<0) { free(b.s); return -1; }
-            if (inh && emit_inherited_props(&b,model,cls->type)<0) { free(b.s); return -1; }
-          }
-        }
+        if (emit_shorthand_atoms(&b,model,cls)<0) { free(b.s); return -1; }
         {
           int has=0;
           cg_foreach(model,cls->id,CG_KIND_MESSAGE,msg) { (void)msg; has=1; break; }
@@ -624,9 +756,8 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
-          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_interface_methods(&b,model,st,st->type)<0) { free(b.s); return -1; }
@@ -647,9 +778,8 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0]   && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
-          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_interface_methods(&b,model,st,st->type)<0) { free(b.s); return -1; }
