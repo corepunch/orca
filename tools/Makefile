@@ -99,13 +99,10 @@ $(BUILDDIR)/plugins/codegen/lib%.so: $(MODULE_ROOT)tools/codegen/plugins/%.c $(M
 # Documentation generation
 DOCS_OUTPUT_DIR := $(MODULE_ROOT)docs
 
-define MODULE_DOCS_RULE
-docs-$(1): codegen-host
-	$(Q)echo "Generating docs for $(1)..."
-	$(Q)mkdir -p $(DOCS_OUTPUT_DIR)/generated/$(notdir $(1))/classes
-	$(Q)$(CGEN) $(MODULE_ROOT)$(1).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/generated/$(notdir $(1))
-endef
-
-$(foreach mod,$(MODULES),$(eval $(call MODULE_DOCS_RULE,$(mod))))
-
-docs: $(foreach mod,$(MODULES),docs-$(mod))
+docs: codegen-host
+	$(Q)rm -rf $(DOCS_OUTPUT_DIR)/generated/*
+	$(Q)$(foreach mod,$(MODULES),\
+		echo "Generating docs for $(mod)..."; \
+		mkdir -p $(DOCS_OUTPUT_DIR)/generated/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/generated/$(notdir $(mod)); \
+	)
