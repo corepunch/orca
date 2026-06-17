@@ -22,6 +22,33 @@ nav:
     - UIKit: api/UIKit/README.md
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
+  - C API:
+    - core: generated/c/core/overview.md
+    - geometry: generated/c/geometry/overview.md
+    - filesystem: generated/c/filesystem/overview.md
+    - UIKit: generated/c/UIKit/overview.md
+    - SceneKit: generated/c/SceneKit/overview.md
+    - SpriteKit: generated/c/SpriteKit/overview.md
+    - renderer: generated/c/renderer/overview.md
+    - DarkReign: generated/c/DarkReign/overview.md
+  - Lua API:
+    - core: generated/lua/core/overview.md
+    - geometry: generated/lua/geometry/overview.md
+    - filesystem: generated/lua/filesystem/overview.md
+    - UIKit: generated/lua/UIKit/overview.md
+    - SceneKit: generated/lua/SceneKit/overview.md
+    - SpriteKit: generated/lua/SpriteKit/overview.md
+    - renderer: generated/lua/renderer/overview.md
+    - DarkReign: generated/lua/DarkReign/overview.md
+  - XML API:
+    - core: generated/xml/core/overview.md
+    - geometry: generated/xml/geometry/overview.md
+    - filesystem: generated/xml/filesystem/overview.md
+    - UIKit: generated/xml/UIKit/overview.md
+    - SceneKit: generated/xml/SceneKit/overview.md
+    - SpriteKit: generated/xml/SpriteKit/overview.md
+    - renderer: generated/xml/renderer/overview.md
+    - DarkReign: generated/xml/DarkReign/overview.md
   - Module XML Guide: MODULE_XML_GUIDE.md
   - Agent Docs:
     - Project Map: PROJECT_MAP.md

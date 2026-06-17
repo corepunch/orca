@@ -102,7 +102,17 @@ DOCS_OUTPUT_DIR := $(MODULE_ROOT)docs
 docs: codegen-host
 	$(Q)rm -rf $(DOCS_OUTPUT_DIR)/generated/*
 	$(Q)$(foreach mod,$(MODULES),\
-		echo "Generating docs for $(mod)..."; \
-		mkdir -p $(DOCS_OUTPUT_DIR)/generated/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o $(DOCS_OUTPUT_DIR)/generated/$(notdir $(mod)); \
+		echo "Generating C docs for $(mod)..."; \
+		mkdir -p $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/classes \
+		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/enums \
+		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/structs \
+		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/interfaces \
+		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/functions; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod)); \
+		echo "Generating Lua docs for $(mod)..."; \
+		mkdir -p $(DOCS_OUTPUT_DIR)/generated/lua/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(DOCS_OUTPUT_DIR)/generated/lua/$(notdir $(mod)); \
+		echo "Generating XML docs for $(mod)..."; \
+		mkdir -p $(DOCS_OUTPUT_DIR)/generated/xml/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(DOCS_OUTPUT_DIR)/generated/xml/$(notdir $(mod)); \
 	)
