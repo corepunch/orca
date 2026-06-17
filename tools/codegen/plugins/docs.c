@@ -254,7 +254,7 @@ static int emit_lua_methods_table(outbuf *b, cg_model const *m, cg_node const *n
   int has=0; char nb[256];
   cg_foreach(m,node->id,CG_KIND_METHOD,mt) if (!(mt->flags&CG_FLAG_PRIVATE)) { has=1; break; }
   if (!has) return 0;
-  if (ob_printf(b,"\n## Methods\n\n| Method | Description | Parameters |\n|--------|-------------|------------|\n")<0) return -1;
+  if (ob_printf(b,"\n### Methods\n\n| Method | Description | Parameters |\n|--------|-------------|------------|\n")<0) return -1;
   cg_foreach(m,node->id,CG_KIND_METHOD,mt) {
     if (mt->flags&CG_FLAG_PRIVATE) continue;
     if (ob_printf(b,"| `%s` | %s | ",lua_method_name(mt,nb,sizeof(nb)),mt->doc?mt->doc:"")<0) return -1;
@@ -333,11 +333,12 @@ static int emit_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_node c
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
-      if (emit_type(&b,f)<0) goto err;
-      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-    }
+      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
+      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
+        if (emit_type(&b,f)<0) goto err;
+        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+      }
   }
   if (emit_interface_methods(&b,m,st,st->type)<0) goto err;
   if (emit_see_also(&b,m,st,CG_KIND_FIELD,0)<0) goto err;
@@ -352,11 +353,12 @@ static int emit_lua_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_no
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
-      if (emit_type(&b,f)<0) goto err;
-      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-    }
+      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
+      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
+        if (emit_type(&b,f)<0) goto err;
+        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+      }
   }
   if (emit_lua_methods_table(&b,m,st)<0) goto err;
   WCHECK(host,op,&b);
@@ -381,11 +383,12 @@ static int emit_xml_struct_docs(cg_host_v1 const *host, cg_model const *m, cg_no
   cg_foreach(m,st->id,CG_KIND_FIELD,f) { (void)f; has=1; break; }
   if (has) {
     if (ob_printf(&b,"\n### Fields\n\n")<0) goto err;
-    cg_foreach(m,st->id,CG_KIND_FIELD,f) {
-      if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) goto err;
-      if (emit_type(&b,f)<0) goto err;
-      if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
-    }
+      if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) goto err;
+      cg_foreach(m,st->id,CG_KIND_FIELD,f) {
+        if (ob_printf(&b,"| `%s` | ",f->name)<0) goto err;
+        if (emit_type(&b,f)<0) goto err;
+        if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) goto err;
+      }
   }
   if (emit_interface_methods(&b,m,st,st->type)<0) goto err;
   WCHECK(host,op,&b);
@@ -439,11 +442,34 @@ static int emit_overview(outbuf *b, cg_model const *model, api_mode mode,
       model->module_name,label,model->xml_path,ne,ni,ns,nc)<0) return -1;
 
   if (mode==API_LUA) {
+    if (ne>0) {
+      if (ob_printf(b,"\n## Enums\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
+      for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
+        if (c->kind!=CG_KIND_ENUM) continue;
+        if (ob_printf(b,"| [%s](enums/%s.md) | %s |\n",c->name,c->name,c->doc?c->doc:"")<0) return -1; }
+    }
+    if (ns>0) {
+      if (ob_printf(b,"\n## Structs\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
+      for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
+        if (c->kind!=CG_KIND_STRUCT) continue;
+        if (ob_printf(b,"| [%s](structs/%s.md) | %s |\n",c->name,c->name,c->doc?c->doc:"")<0) return -1; }
+    }
     if (ni>0) {
       if (ob_printf(b,"\n## Interfaces\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
       for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
         if (c->kind!=CG_KIND_INTERFACE) continue;
         if (ob_printf(b,"| [%s](interfaces/%s.md) | %s |\n",c->name,c->name,c->doc?c->doc:"")<0) return -1; }
+    }
+    {
+      char pb[128]; char const *pfx=module_prefix(model,pb,sizeof(pb)); uint32_t nf=0;
+      for (size_t i=0; i<model->node_count; ++i)
+        if (model->nodes[i].kind==CG_KIND_METHOD&&model->nodes[i].parent==0&&!(model->nodes[i].flags&CG_FLAG_PRIVATE)) nf++;
+      if (nf>0) {
+        if (ob_printf(b,"\n## Functions\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
+        for (size_t i=0; i<model->node_count; ++i) { cg_node const *fn=&model->nodes[i];
+          if (fn->kind!=CG_KIND_METHOD||fn->parent!=0||(fn->flags&CG_FLAG_PRIVATE)) continue;
+          if (ob_printf(b,"| [%s%s](functions/%s%s.md) | %s |\n",pfx,fn->name,pfx,fn->name,fn->doc?fn->doc:"")<0) return -1; }
+      }
     }
     if (nc>0) {
       if (ob_printf(b,"\n## Classes\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
@@ -454,6 +480,18 @@ static int emit_overview(outbuf *b, cg_model const *model, api_mode mode,
     return 0;
   }
   if (mode==API_XML) {
+    if (ne>0) {
+      if (ob_printf(b,"\n## Enums\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
+      for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
+        if (c->kind!=CG_KIND_ENUM) continue;
+        if (ob_printf(b,"| [%s](enums/%s.md) | %s |\n",c->name,c->name,c->doc?c->doc:"")<0) return -1; }
+    }
+    if (ns>0) {
+      if (ob_printf(b,"\n## Structs\n\n| Name | Summary |\n|------|---------|\n")<0) return -1;
+      for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
+        if (c->kind!=CG_KIND_STRUCT) continue;
+        if (ob_printf(b,"| [%s](structs/%s.md) | %s |\n",c->name,c->name,c->doc?c->doc:"")<0) return -1; }
+    }
     if (ob_printf(b,"\n## Elements\n\n| Element | XML tag | Summary |\n|---------|---------|--------|\n")<0) return -1;
     for (size_t i=0; i<model->node_count; ++i) { cg_node const *c=&model->nodes[i];
       if (c->kind!=CG_KIND_CLASS) continue;
@@ -547,8 +585,9 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
+          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_lua_methods_table(&b,model,st)<0) { free(b.s); return -1; }
@@ -585,8 +624,9 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0] && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
+          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_interface_methods(&b,model,st,st->type)<0) { free(b.s); return -1; }
@@ -607,8 +647,9 @@ static int emit_docs(cg_host_v1 const *host, cg_model const *model, char const *
         if (st->doc&&st->doc[0]   && ob_printf(&b,"\n## Summary\n\n%s\n",st->doc)<0) { free(b.s); return -1; }
         { int has=0; cg_foreach(model,st->id,CG_KIND_FIELD,f){(void)f;has=1;break;}
           if (has) { if (ob_printf(&b,"\n### Fields\n\n")<0) { free(b.s); return -1; }
+          if (ob_printf(&b,"\n| Field | Type | Description |\n|-------|------|-------------|\n")<0) { free(b.s); return -1; }
           cg_foreach(model,st->id,CG_KIND_FIELD,f) {
-            if (ob_printf(&b,"| Field | Type | Description |\n|-------|------|-------------|\n| `%s` | ",f->name)<0) { free(b.s); return -1; }
+            if (ob_printf(&b,"| `%s` | ",f->name)<0) { free(b.s); return -1; }
             if (emit_type(&b,f)<0) { free(b.s); return -1; }
             if (ob_printf(&b," | %s |\n",f->doc?f->doc:"")<0) { free(b.s); return -1; } } } }
         if (emit_interface_methods(&b,model,st,st->type)<0) { free(b.s); return -1; }
