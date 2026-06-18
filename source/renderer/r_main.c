@@ -258,10 +258,7 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   // Handle shader pointer boxing: shader can be either a real pointer or a boxed tag value
   struct Shader const *shader = NULL;
-  if (ent->palette && !ent->shader) {
-    // Palette-indexed entity: automatically use the cinematic (palette lookup) shader
-    shader = &tr.shaders[SHADER_CINEMATIC];
-  } else if (!ent->shader) {
+  if (!ent->shader) {
     // Default shader when not specified
     shader = &tr.shaders[fallback];
   } else if (BOX_IS_PTR((uintptr_t)ent->shader)) {
@@ -271,10 +268,6 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
     // Boxed shader type - use directly as index into tr.shaders
     enum shader_type shader_index = (enum shader_type)((uintptr_t)ent->shader & MESH_TAG_MASK);
     shader = &tr.shaders[shader_index];
-  }
-
-  if (ent->palette) {
-    R_SetPalette(ent->palette);
   }
 
   if (((uintptr_t)ent->shader & MESH_TAG_MASK) == SHADER_CINEMATIC) {
@@ -512,10 +505,10 @@ static void Texture_CreatePalette(struct Texture **img) {
          16,1,0,GL_RGBA,GL_UNSIGNED_BYTE,palette);
 }
 
-/* The cinematic palette doubles as the sprite palette for palette-indexed
- * (8-bit) textures such as Dark Reign SPR files.
+/* The cinematic palette is a 256-entry lookup texture used by the cinematic
+ * player for PCX palette-indexed textures.
  * Index 0 is transparent. Indices 1-255 are a placeholder grayscale ramp
- * that can be replaced once the actual game palette is available. */
+ * that can be replaced once the actual palette is available. */
 static void Texture_CreateCinematicPalette(struct Texture **img) {
   struct color32 palette[256];
   palette[0] = (struct color32){ 0, 0, 0, 0 };   /* index 0: transparent */

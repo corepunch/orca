@@ -121,7 +121,7 @@ orca/
 │   ├── localization/# Multi-language string support
 │   ├── network/     # UDP/TCP networking
 │   └── editor/      # Built-in editor functionality
-├── plugins/         # Plugin modules: UIKit/, SceneKit/, SpriteKit/, DarkReign/
+├── plugins/         # Plugin modules: UIKit/, SceneKit/, SpriteKit/
 ├── libs/            # External libraries (platform submodule, lua5.4, libxml2, …)
 ├── include/         # Public C headers (orca.h, renderer.h, …)
 ├── docs/            # MkDocs website source (Markdown + schemas)
@@ -151,7 +151,6 @@ ORCA is a C game engine with a layered architecture.  Working effectively on any
 | **Build system** | `Makefile`, `orca.xcodeproj/` | GNU Make, pkg-config, Linux/macOS cross-platform C, Xcode project structure |
 | **Test harness** | `tests/`, `source/orca.c` (`RunTest`) | Lua test patterns, `assert`, `xvfb-run`, headless layout testing |
 | **Documentation** | `docs/`, `mkdocs.yml` | Markdown, MkDocs Material, `.cgen` API documentation |
-| **DarkReign / asset formats** | `plugins/DarkReign/` | Binary format parsing, palette-indexed sprites, `.pz2` package files |
 
 ## Makefile Style
 
@@ -256,7 +255,6 @@ generated/<module>/
 | **UIKit** | Full UI framework — buttons, layouts, text, image views, forms, grids |
 | **SceneKit** | 3D scene management, cameras, lights, mesh nodes |
 | **SpriteKit** | 2D sprite and animation framework |
-| **DarkReign** | Dark Reign game format support (.spr sprites, .pz2 packages) |
 | **vsomeip** | AUTOSAR SOME/IP communication for embedded targets |
 
 Each plugin module is compiled into its own shared library (`.so` / `.dll`) and loaded at runtime.
@@ -857,21 +855,12 @@ mkdocs serve
 
 Discoveries made during development that are non-obvious or can trip up developers.
 
-### Renderer: Palette-Indexed Textures
-
-- `palette_t = uint32_t[256]` — each entry is `0x00RRGGBB`; **index 0 is always transparent** (alpha = 0); all other entries get alpha = 255.
-- Set `ViewEntity.palette` to a `struct color32 const*` (256-entry array). Inside `R_DrawEntity`:
-  1. If `ent.shader` is `NULL`, the renderer **automatically selects `SHADER_CINEMATIC`** (palette look-up shader).
-  2. `R_SetPalette` is called to upload the LUT to the `TX_CINEMATICPALETTE` texture slot.
-- `R_SetPalette` is **`static`** (private to `r_main.c`) — never call it directly; set `ViewEntity.palette` instead.
-- `TX_CINEMATICPALETTE` is a **shared** 256×1 texture slot. The cinematic player and palette-indexed sprites both use it; whichever draws last wins.
-
 ### Renderer: Shader and Mesh Boxing
 
 - Use `BOX_PTR(Shader, SHADER_*)` to select a built-in shader type without looking up the real pointer.
 - Use `BOX_PTR(Mesh, MD_*)` for built-in geometry types (rectangle, capsule, ninepatch, …).
 - **Always** check `BOX_IS_PTR((uintptr_t)ptr)` before dereferencing a `mesh` or `shader` field — boxed values are small integers cast to pointers and must never be dereferenced.
-- Shader selection in `R_DrawEntity` (in priority order): palette → SHADER_CINEMATIC; no shader → SHADER_UI (or SHADER_2D_RECT on macOS IOSurface); real pointer → use directly; boxed tag → `tr.shaders[tag]`.
+- Shader selection in `R_DrawEntity` (in priority order): no shader → SHADER_UI (or SHADER_2D_RECT on macOS IOSurface); real pointer → use directly; boxed tag → `tr.shaders[tag]`.
 
 ### ClassDesc — Extended Fields
 
@@ -903,13 +892,6 @@ All child elements in `<class>`, `<struct>`, `<interface>`, and `<message>` are 
 - `<module>` top-level: `<includes>`, `<externals>`
 
 The C parser (`tools/codegen/src/model.c`) preserves direct parent/child relationships in a flat node array. Generator plugins should use `cg_foreach(model, parent_id, kind, node)` for direct children rather than scanning descendants unless the behavior explicitly needs dependency lookup.
-
-### Dark Reign SPR Format — Key Gotchas
-
-- Two sprite types: `"RSPR"` (normal) and `"SSPR"` (shadow). Shadow sprites fill all opaque pixels with **palette index 47** instead of reading pixel data from the stream.
-- Rotation 0 on disk means the sprite faces **right**. The loader shifts by `nrots/4` to align sprites with the conventional "up" direction.
-- `off_bits` is derived, not stored: `32 + 4*nanims*nrots + 16*nsects + 4*nanims + 8*npics + 4`.
-- The `TX_CINEMATICPALETTE` slot doubles as the sprite palette for palette-indexed textures.
 
 ### WebGL Build
 

@@ -27,10 +27,10 @@ Messages drive most cross-system behavior.
 
 ## Read order by task
 
-- Need the object model: `docs/architecture/object-component-system.md`
-- Need codegen details: `docs/architecture/code-generation.md`
-- Need plugin boundaries: `docs/architecture/plugin-system.md`
-- Need XML message shorthand: `docs/app/xml/triggers-actions-messages.md`
+- Need the object model: [object-component-system.md](./object-component-system.md)
+- Need codegen details: [code-generation.md](./code-generation.md)
+- Need plugin boundaries: See `docs/architecture/plugin-system.md`
+- Need XML message shorthand: See `skills/orca-xml/rules/triggers-actions-messages.md`
 
 ## For local models
 
