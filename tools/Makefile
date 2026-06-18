@@ -97,22 +97,27 @@ $(BUILDDIR)/plugins/codegen/lib%.so: $(MODULE_ROOT)tools/codegen/plugins/%.c $(M
 	$(Q)$(CC) $(CODEGEN_CFLAGS) -shared $< -o $@
 
 # Documentation generation
-DOCS_OUTPUT_DIR := $(MODULE_ROOT)docs
+SKILLS_OUTPUT_DIR := $(MODULE_ROOT)skills
 
 docs: codegen-host
-	$(Q)rm -rf $(DOCS_OUTPUT_DIR)/generated/*
 	$(Q)$(foreach mod,$(MODULES),\
 		echo "Generating C docs for $(mod)..."; \
-		mkdir -p $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/classes \
-		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/enums \
-		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/structs \
-		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/interfaces \
-		         $(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod))/functions; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(DOCS_OUTPUT_DIR)/generated/c/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/classes \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/enums \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/structs \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/interfaces \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/functions; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod)); \
 		echo "Generating Lua docs for $(mod)..."; \
-		mkdir -p $(DOCS_OUTPUT_DIR)/generated/lua/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(DOCS_OUTPUT_DIR)/generated/lua/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-lua/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(SKILLS_OUTPUT_DIR)/orca-lua/$(notdir $(mod)); \
 		echo "Generating XML docs for $(mod)..."; \
-		mkdir -p $(DOCS_OUTPUT_DIR)/generated/xml/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(DOCS_OUTPUT_DIR)/generated/xml/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-xml/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(SKILLS_OUTPUT_DIR)/orca-xml/$(notdir $(mod)); \
 	)
+
+documentation: docs
+	$(Q)mkdir -p $(MODULE_ROOT)docs/generated
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-c/* $(MODULE_ROOT)docs/generated/c/ 2>/dev/null || true
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-lua/* $(MODULE_ROOT)docs/generated/lua/ 2>/dev/null || true
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-xml/* $(MODULE_ROOT)docs/generated/xml/ 2>/dev/null || true

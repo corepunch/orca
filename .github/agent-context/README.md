@@ -12,7 +12,7 @@ that area, instead of loading the full project guide on every session.
 | Lua APIs, bindings, property formulas, scripts, app framework behavior | `lua-bindings-and-programs.md` |
 | Core object/component runtime, filesystem, parsers, localization, network | `core-object-and-filesystem.md` |
 | `.cgen` schema, generated headers/exports/properties, new C components | `codegen-and-components.md` |
-| Renderer, textures, palettes, shaders, meshes, WebGL, DarkReign assets | `renderer-and-assets.md` |
+| Renderer, textures, shaders, meshes, WebGL | `renderer-and-assets.md` |
 | Build system, tests, Xcode project wiring, docs site | `build-tests-and-docs.md` |
 | C formatting/style only | `c-style.md` |
 | Writing reusable project instructions for other repos | `instructions-writing-guide.md` |

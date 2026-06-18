@@ -9,7 +9,7 @@ It is the XML-facing version of the engine's message-driven object/component mod
 - Message types define payload fields for a message.
 - Every registered message type also has a generated action element, such as `<Screen.ShowModal/>`.
 
-For a broader discussion of the component system, see [Object + Component System](architecture/object-component-system.md).
+For a broader discussion of the component system, see [Object + Component System](../orca-c/rules/object-component-system.md).
 
 ## The Three Pieces
 
