@@ -624,6 +624,7 @@ _FindDataContextObject(struct Object *object, void **component)
 tok_op(argument)
 {
   struct Property *p = NULL;
+  int isDataContextPath = 0;
   if (token->cache.property) {
     p = token->cache.property;
     if (_BindingPropertyHasEffectiveValue(p)) {
@@ -659,6 +660,7 @@ tok_op(argument)
       struct Object *context = _FindDataContextObject(it, NULL);
       if (context) {
         if ((p = OBJ_FindPropertyByPath(context, token->text + 12))) {
+          isDataContextPath = 1;
           goto return_value;
         }
       }
@@ -724,7 +726,7 @@ tok_op(argument)
   }
 return_value:
   if (p) {
-    if (_BindingPropertyHasEffectiveValue(p)) {
+    if (_BindingPropertyHasEffectiveValue(p) && !isDataContextPath) {
       token->cache.property = p;
     }
     return PROP_Export(p, output);
