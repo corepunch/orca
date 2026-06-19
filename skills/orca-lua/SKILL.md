@@ -64,6 +64,20 @@ return MyComponent
 4. **Style classes for theming.** Apply CSS-like classes: `ui.Button ".primary"`.
 5. **Messages for communication.** Objects communicate via messages, not direct method calls.
 
+## Agent Workflow
+
+**API reference:** Use `generated/` markdown files for fast lookups. These contain class definitions, properties, and messages — all extracted from `.cgen`.
+
+**When to read source:** Only read `*.c` or `*.lua` files when actively implementing or modifying code. Never read source for reference.
+
+**Documentation rule:** If you must read a source file to understand behavior, update the relevant `generated/` or `rules/` markdown with your findings. Future agents should not need to repeat this work.
+
+**Quick lookup priority:**
+1. `generated/{module}/classes/` — class APIs, properties, messages
+2. `rules/` — patterns, conventions, workflows
+3. `.cgen` — only when adding/modifying components
+4. `source/` — only when implementing, never for reference
+
 ## Critical Rules
 
 ### Module System → [rules/lua-scripting.md](./rules/lua-scripting.md)

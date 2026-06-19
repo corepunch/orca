@@ -20,6 +20,22 @@ Components are declared in `.cgen` XML and implemented in C.
 4. **Messages over coupling.** Cross-subsystem calls should prefer messages over tight direct coupling.
 5. **Core stays plugin-free.** Core must remain buildable without plugin header dependencies.
 
+## Agent Workflow
+
+**API reference:** Use `generated/` markdown files for fast lookups. These contain class definitions, properties, messages, structs, enums, and interfaces — all extracted from `.cgen`.
+
+**When to read source:** Only read `*.c` files when actively implementing or modifying code. Never read source for reference.
+
+**Documentation rule:** If you must read a source file to understand behavior, update the relevant `generated/` or `rules/` markdown with your findings. Future agents should not need to repeat this work.
+
+**Quick lookup priority:**
+1. `generated/{module}/classes/` — class APIs, properties, messages
+2. `generated/{module}/structs/` — struct definitions
+3. `generated/{module}/enums/` — enum values
+4. `rules/` — patterns, conventions, workflows
+5. `.cgen` — only when adding/modifying components
+6. `source/` — only when implementing, never for reference
+
 ## Critical Rules
 
 ### Header Map → [rules/header-map.md](./rules/header-map.md)
