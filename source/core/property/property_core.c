@@ -46,9 +46,19 @@ _ReleaseBindingNode(struct Binding *binding)
 static bool_t
 _RunBinding(struct Property *property, struct Binding *binding)
 {
-  if (!binding->token) return TRUE;
-  if (binding->updateFrame == core.frame) return TRUE;
+  if (!binding->token) {
+    Con_Printf("DEBUG _RunBinding: no token, returning TRUE\n");
+    return TRUE;
+  }
+  if (binding->updateFrame == core.frame) {
+    Con_Printf("DEBUG _RunBinding: already updated this frame\n");
+    return TRUE;
+  }
   binding->updateFrame = core.frame;
+
+  Con_Printf("DEBUG _RunBinding: property=%s/%s expression=%s\n",
+             OBJ_GetName(property->object), property->pdesc->Name,
+             binding->Expression);
 
   struct vm_register r = { 0 };
   if (!OBJ_RunProgram(property->object, binding->token, &r)) {
@@ -60,6 +70,7 @@ _RunBinding(struct Property *property, struct Binding *binding)
               property->pdesc->Name);
     return FALSE;
   }
+  Con_Printf("DEBUG _RunBinding: result=%f type=%d\n", r.value[0], r.type);
   if (!PROP_Import(property, &r)) {
 #ifdef DEBUG_PROGRAM
     print_name(property->object);
@@ -75,13 +86,24 @@ _RunBinding(struct Property *property, struct Binding *binding)
 bool_t
 PROP_Update(struct Property *property)
 {
-  if (property == NULL ||
-      property->updateFrame == core.frame)
+  if (property == NULL)
     return FALSE;
+  Con_Printf("DEBUG PROP_Update: property=%s/%s updateFrame=%u core.frame=%u binding=%d\n",
+             property->object ? OBJ_GetName(property->object) : "NULL",
+             property->pdesc ? property->pdesc->Name : "NULL",
+             property->updateFrame, core.frame,
+             property->binding ? 1 : 0);
+  if (property->updateFrame == core.frame) {
+    Con_Printf("DEBUG PROP_Update: returning early due to updateFrame == core.frame\n");
+    return FALSE;
+  }
   property->updateFrame = core.frame;
-  if (property->binding && !_RunBinding(property, property->binding)) {
-    _ReleaseBindingNode(property->binding);
-    property->binding = NULL;
+  if (property->binding) {
+    Con_Printf("DEBUG PROP_Update: calling _RunBinding\n");
+    if (!_RunBinding(property, property->binding)) {
+      _ReleaseBindingNode(property->binding);
+      property->binding = NULL;
+    }
   }
   return TRUE;
 }

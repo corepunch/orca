@@ -38,8 +38,8 @@ A CSS-like styling system for ORCA applications. Stylesheets use a browser-compa
 ### Properties → [rules/properties.md](./rules/properties.md)
 
 - **Supported properties:** Layout, typography, colors, borders, shadows, overflow
-- **No browser units:** Use bare numbers, not `px`, `rem`, `vh`
-- **No shorthand expansion:** `margin: 10 20;` works, but `font: 14px/1.5` does not
+- **Browser units become bindings:** `rem`/`em` → parent Font.Size binding, `vh`/`vw` → viewport bindings
+- **Font shorthand works:** `font: 14px/1.5 sans-serif` expands to font-size, line-height, font-family
 
 ### Best Practices → [rules/best-practices.md](./rules/best-practices.md)
 
