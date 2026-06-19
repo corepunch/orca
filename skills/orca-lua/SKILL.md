@@ -58,11 +58,13 @@ return MyComponent
 
 ## Principles
 
-1. **Scene tree = component tree.** UIs are built by composing objects into a parent/child hierarchy.
-2. **`rebuild()` populates children.** Use `rebuild(function(self) ... end)` to define an object's children.
-3. **Properties at construction.** Pass properties as a table: `ui.Button { Name = "OK", Width = 100 }`.
-4. **Style classes for theming.** Apply CSS-like classes: `ui.Button ".primary"`.
-5. **Messages for communication.** Objects communicate via messages, not direct method calls.
+1. **`generated/` is your API reference.** For class definitions, properties, and messages — read the markdown in `generated/`, never `.cgen`.
+2. **`.cgen` is the build source of truth.** It defines the API shape for codegen, but agents should not parse it directly.
+3. **Scene tree = component tree.** UIs are built by composing objects into a parent/child hierarchy.
+4. **`rebuild()` populates children.** Use `rebuild(function(self) ... end)` to define an object's children.
+5. **Properties at construction.** Pass properties as a table: `ui.Button { Name = "OK", Width = 100 }`.
+6. **Style classes for theming.** Apply CSS-like classes: `ui.Button ".primary"`.
+7. **Messages for communication.** Objects communicate via messages, not direct method calls.
 
 ## Agent Workflow
 

@@ -14,8 +14,9 @@ Components are declared in `.cgen` XML and implemented in C.
 
 ## Principles
 
-1. **`.cgen` is source of truth.** Public API shape, properties, messages — all declared in `.cgen`.
-2. **Generated files are outputs.** Never edit `*_export.c`, `*_properties.h`, or `*_module.h` by hand.
+1. **`generated/` is your API reference.** For class definitions, properties, messages, structs, enums — read the markdown in `generated/`, never `.cgen`.
+2. **`.cgen` is the build source of truth.** It defines the API shape for codegen, but agents should not parse it directly.
+3. **Generated files are outputs.** Never edit `*_export.c`, `*_properties.h`, or `*_module.h` by hand.
 3. **Prefer components over fields.** New behavior should be a component, not a new embedded field on `Object`.
 4. **Messages over coupling.** Cross-subsystem calls should prefer messages over tight direct coupling.
 5. **Core stays plugin-free.** Core must remain buildable without plugin header dependencies.
