@@ -5,11 +5,42 @@ ORCA parses a CSS-like subset and maps declaration names to ORCA properties. Thi
 ## Key Differences from Browser CSS
 
 1. **No browser units.** Use bare numbers: `width: 120;` not `width: 120px;`
-2. **Limited shorthand.** `margin: 10 20;` works. `font: 14px/1.5` does not.
+2. **Limited shorthand syntax.** `margin: 10 20;` works. `font: 14px/1.5` does not — use separate properties instead.
 3. **No `!important`.** Use specificity instead.
 4. **No media queries.** Use ORCA's layout system.
 5. **No animations/keyframes.** Use ORCA's AnimationPlayer.
 6. **No custom properties.** Use theme variables `$token-name` instead.
+
+## Supported Shorthands
+
+ORCA supports these CSS shorthands:
+
+| Shorthand | Example | Notes |
+|-----------|---------|-------|
+| `margin` | `margin: 10 20;` | Top/bottom 10, left/right 20 |
+| `padding` | `padding: 10 20 30 40;` | Top, right, bottom, left |
+| `border` | `border: 1 solid red;` | Width, style, color |
+| `border-radius` | `border-radius: 8;` | All corners |
+| `box-shadow` | `box-shadow: 0 2 8 rgba(0,0,0,0.1);` | Offset, blur, spread, color |
+| `background` | `background: #333;` | Color shorthand |
+| `overflow` | `overflow: hidden;` | Both axes |
+| `font` | `font-size: 14;` | Use separate properties |
+| `text-decoration` | `text-decoration: underline;` | Use separate properties |
+
+For `font`, write each property separately:
+```css
+/* Good */
+.text {
+    font-size: 14;
+    font-family: sans-serif;
+    line-height: 1.5;
+}
+
+/* Bad - won't work */
+.text {
+    font: 14/1.5 sans-serif;
+}
+```
 
 ## Layout Properties
 
