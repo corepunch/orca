@@ -86,6 +86,39 @@ css_is_texture_path(const char *value)
 static void
 copy_trim(char* dst, const char* s, const char* e, int n);
 
+// Strip CSS units (px, pt, em, rem, vh, vw) from numeric values.
+// Returns TRUE if units were stripped and out contains the bare number.
+static bool_t
+css_strip_units(const char *value, char *out, size_t out_size)
+{
+  if (!value || !out || out_size == 0) return FALSE;
+  const char *p = value;
+  while (*p && isspace((unsigned char)*p)) p++;
+  // skip optional sign
+  if (*p == '+' || *p == '-') p++;
+  // parse digits and optional decimal
+  const char *num_start = p;
+  while (*p && (isdigit((unsigned char)*p) || *p == '.')) p++;
+  if (p == num_start) return FALSE; // no number
+  // check for unit suffix
+  const char *unit = p;
+  while (*p && !isspace((unsigned char)*p)) p++;
+  size_t num_len = (size_t)(unit - num_start);
+  if (num_len >= out_size) num_len = out_size - 1;
+  // recognized units: px, pt, em, rem, vh, vw, vmin, vmax
+  if (unit[0] && !isspace((unsigned char)*unit)) {
+    if (!strcasecmp(unit, "px") || !strcasecmp(unit, "pt") ||
+        !strcasecmp(unit, "em") || !strcasecmp(unit, "rem") ||
+        !strcasecmp(unit, "vh") || !strcasecmp(unit, "vw") ||
+        !strcasecmp(unit, "vmin") || !strcasecmp(unit, "vmax")) {
+      memcpy(out, num_start, num_len);
+      out[num_len] = '\0';
+      return TRUE;
+    }
+  }
+  return FALSE; // no recognized unit
+}
+
 #define CSS_MAX_RULES  512
 #define CSS_MAX_PROPS  64
 #define CSS_MAX_APPLY  8
@@ -357,6 +390,15 @@ css_normalize_decl_value(const char *css_key,
     }
   }
 
+  // Strip CSS units (px, pt, em, rem, vh, vw) from simple numeric values
+  {
+    char stripped[CSS_MAX_VALLEN] = {0};
+    if (css_strip_units(css_value, stripped, sizeof(stripped))) {
+      snprintf(out, out_size, "%s", stripped);
+      return out;
+    }
+  }
+
   return css_value;
 }
 
@@ -439,6 +481,85 @@ css_resolve_font_family(const char *value, char *out, size_t out_size)
     p = *end == ',' ? end + 1 : end;
   }
   return value;
+}
+
+// Expand CSS font shorthand: "font: 14px/1.5 sans-serif" → separate properties.
+// Returns number of expansions written to out_k/out_v arrays (max 4).
+static int
+css_expand_font_shorthand(const char *value,
+              char out_k[][CSS_MAX_PROPNAME],
+              char out_v[][CSS_MAX_VALLEN],
+              int max_out)
+{
+  if (!value || max_out < 1) return 0;
+  int n = 0;
+  const char *p = value;
+  while (*p && isspace((unsigned char)*p)) p++;
+
+  // Parse size (optional with /line-height)
+  char size_str[CSS_MAX_VALLEN] = {0};
+  char lh_str[CSS_MAX_VALLEN] = {0};
+  {
+    const char *start = p;
+    while (*p && !isspace((unsigned char)*p) && *p != '/') p++;
+    size_t len = (size_t)(p - start);
+    if (len >= sizeof(size_str)) len = sizeof(size_str) - 1;
+    memcpy(size_str, start, len);
+    size_str[len] = '\0';
+  }
+
+  // Parse optional /line-height
+  if (*p == '/') {
+    p++;
+    const char *start = p;
+    while (*p && !isspace((unsigned char)*p)) p++;
+    size_t len = (size_t)(p - start);
+    if (len >= sizeof(lh_str)) len = sizeof(lh_str) - 1;
+    memcpy(lh_str, start, len);
+    lh_str[len] = '\0';
+  }
+
+  // Parse font family (rest of value)
+  char family_str[CSS_MAX_VALLEN] = {0};
+  while (*p && isspace((unsigned char)*p)) p++;
+  if (*p) {
+    snprintf(family_str, sizeof(family_str), "%s", p);
+  }
+
+  // Emit font-size
+  if (size_str[0] && n < max_out) {
+    char stripped[CSS_MAX_VALLEN] = {0};
+    if (css_strip_units(size_str, stripped, sizeof(stripped))) {
+      snprintf(out_k[n], CSS_MAX_PROPNAME, "font-size");
+      snprintf(out_v[n], CSS_MAX_VALLEN, "%s", stripped);
+    } else {
+      snprintf(out_k[n], CSS_MAX_PROPNAME, "font-size");
+      snprintf(out_v[n], CSS_MAX_VALLEN, "%s", size_str);
+    }
+    n++;
+  }
+
+  // Emit line-height
+  if (lh_str[0] && n < max_out) {
+    char stripped[CSS_MAX_VALLEN] = {0};
+    if (css_strip_units(lh_str, stripped, sizeof(stripped))) {
+      snprintf(out_k[n], CSS_MAX_PROPNAME, "line-height");
+      snprintf(out_v[n], CSS_MAX_VALLEN, "%s", stripped);
+    } else {
+      snprintf(out_k[n], CSS_MAX_PROPNAME, "line-height");
+      snprintf(out_v[n], CSS_MAX_VALLEN, "%s", lh_str);
+    }
+    n++;
+  }
+
+  // Emit font-family
+  if (family_str[0] && n < max_out) {
+    snprintf(out_k[n], CSS_MAX_PROPNAME, "font-family");
+    snprintf(out_v[n], CSS_MAX_VALLEN, "%s", family_str);
+    n++;
+  }
+
+  return n;
 }
 
 // ---------------------------------------------------------------------------
@@ -829,6 +950,17 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     }
   }
   if (!has_mapping) return; // unsupported property
+
+  // Expand font shorthand: "font: 14px/1.5 sans-serif" → font-size, line-height, font-family
+  if (!strcasecmp(css_key, "font")) {
+    char ek[4][CSS_MAX_PROPNAME] = {{0}};
+    char ev[4][CSS_MAX_VALLEN] = {{0}};
+    int n = css_expand_font_shorthand(css_value, ek, ev, 4);
+    for (int i = 0; i < n; i++) {
+      css_apply_decl_to_rule(rule_obj, ek[i], ev[i]);
+    }
+    return;
+  }
 
   char theme_value[CSS_MAX_VALLEN] = {0};
   char resolved_value[CSS_MAX_VALLEN] = {0};

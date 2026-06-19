@@ -4,8 +4,8 @@ ORCA parses a CSS-like subset and maps declaration names to ORCA properties. Thi
 
 ## Key Differences from Browser CSS
 
-1. **No browser units.** Use bare numbers: `width: 120;` not `width: 120px;`
-2. **Limited shorthand syntax.** `margin: 10 20;` works. `font: 14px/1.5` does not — use separate properties instead.
+1. **Units are optional.** `width: 120px;` and `width: 120;` both work — units are stripped automatically.
+2. **Font shorthand works.** `font: 14px/1.5 sans-serif` expands to `font-size`, `line-height`, `font-family`.
 3. **No `!important`.** Use specificity instead.
 4. **No media queries.** Use ORCA's layout system.
 5. **No animations/keyframes.** Use ORCA's AnimationPlayer.
@@ -24,23 +24,15 @@ ORCA supports these CSS shorthands:
 | `box-shadow` | `box-shadow: 0 2 8 rgba(0,0,0,0.1);` | Offset, blur, spread, color |
 | `background` | `background: #333;` | Color shorthand |
 | `overflow` | `overflow: hidden;` | Both axes |
-| `font` | `font-size: 14;` | Use separate properties |
+| `font` | `font: 14px/1.5 sans-serif` | Expands to font-size, line-height, font-family |
 | `text-decoration` | `text-decoration: underline;` | Use separate properties |
 
-For `font`, write each property separately:
-```css
-/* Good */
-.text {
-    font-size: 14;
-    font-family: sans-serif;
-    line-height: 1.5;
-}
+Units are automatically stripped from numeric values:
+- `width: 120px;` → `width: 120;`
+- `font-size: 14pt;` → `font-size: 14;`
+- `margin: 1.5rem;` → `margin: 1.5;`
 
-/* Bad - won't work */
-.text {
-    font: 14/1.5 sans-serif;
-}
-```
+Supported units: `px`, `pt`, `em`, `rem`, `vh`, `vw`, `vmin`, `vmax`
 
 ## Layout Properties
 
