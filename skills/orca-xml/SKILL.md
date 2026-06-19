@@ -48,6 +48,20 @@ make run PROJECT=MyProject/package.xml
 4. **Styles are CSS-like.** Classes, selectors, pseudo-states, and properties.
 5. **Messages bridge XML and C.** Generated actions dispatch typed message payloads.
 
+## Agent Workflow
+
+**API reference:** Use `generated/` markdown files for fast lookups. These contain class definitions, properties, and messages — all extracted from `.cgen`.
+
+**When to read source:** Only read `*.c` or `*.xml` files when actively implementing or modifying code. Never read source for reference.
+
+**Documentation rule:** If you must read a source file to understand behavior, update the relevant `generated/` or `rules/` markdown with your findings. Future agents should not need to repeat this work.
+
+**Quick lookup priority:**
+1. `generated/{module}/classes/` — class APIs, properties, messages
+2. `rules/` — patterns, conventions, workflows
+3. `.cgen` — only when adding/modifying components
+4. `source/` — only when implementing, never for reference
+
 ## Critical Rules
 
 ### Triggers & Actions → [rules/triggers-actions-messages.md](./rules/triggers-actions-messages.md)
