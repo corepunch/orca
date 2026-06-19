@@ -4,7 +4,7 @@ ORCA parses a CSS-like subset and maps declaration names to ORCA properties. Thi
 
 ## Key Differences from Browser CSS
 
-1. **Units are optional.** `width: 120px;` and `width: 120;` both work — units are stripped automatically.
+1. **Units are ignored.** `width: 120px;` and `width: 120;` both work — numeric parsers stop at non-digits.
 2. **Font shorthand works.** `font: 14px/1.5 sans-serif` expands to `font-size`, `line-height`, `font-family`.
 3. **No `!important`.** Use specificity instead.
 4. **No media queries.** Use ORCA's layout system.
@@ -27,12 +27,10 @@ ORCA supports these CSS shorthands:
 | `font` | `font: 14px/1.5 sans-serif` | Expands to font-size, line-height, font-family |
 | `text-decoration` | `text-decoration: underline;` | Use separate properties |
 
-Units are automatically stripped from numeric values:
-- `width: 120px;` → `width: 120;`
-- `font-size: 14pt;` → `font-size: 14;`
-- `margin: 1.5rem;` → `margin: 1.5;`
-
-Supported units: `px`, `pt`, `em`, `rem`, `vh`, `vw`, `vmin`, `vmax`
+Units in numeric values are ignored by the parser:
+- `width: 14px;` → parsed as `14`
+- `font-size: 1.5rem;` → parsed as `1.5`
+- `margin: 2vh;` → parsed as `2`
 
 ## Layout Properties
 
