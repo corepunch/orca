@@ -1102,6 +1102,11 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Drains the pending platform message queue and dispatches each event immediately.</summary>
       <details>Processes queued events until the queue is empty, dispatching each message through the normal ORCA message pipeline. This is primarily useful in tests and other headless flows where asynchronous work such as rebuild() coroutines posts follow-up messages that need to run before assertions.</details>
     </function>
+    <function name="RunAllPrograms" lua="true" export="runAllPrograms">
+      <summary>Evaluates all pending property bindings on the given object and its descendants.</summary>
+      <details>Walks the property list of each object in the subtree and calls PROP_Update on properties that have bindings. This is the same function called during Screen_Paint to resolve binding expressions like {DataContext/Name}. Useful in headless tests where no paint event fires.</details>
+      <arg name="object" type="Object" pointer="true">Root object whose binding programs should be evaluated.</arg>
+    </function>
     <function name="GetObjectCount" lua="true" export="objectCount">
       <summary>Returns the number of live engine objects.</summary>
       <returns type="nresults">Number of Lua results pushed by the binding function.</returns>

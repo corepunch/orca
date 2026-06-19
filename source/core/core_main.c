@@ -844,6 +844,11 @@ ORCA_API int core_GetObjectCount(lua_State* L) {
   return 1;
 }
 
+ORCA_API void core_RunAllPrograms(lua_State* L, struct Object* root) {
+  (void)L;
+  PROP_RunAllPrograms(root);
+}
+
 
 
 
