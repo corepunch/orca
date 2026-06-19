@@ -220,6 +220,10 @@ move_pz2:
 modules:
 	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT=
 
+skills: modules
+	$(Q)mkdir -p .agents
+	$(Q)cp -r skills/* .agents/
+
 modules-c-preview:
 	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-preview
 

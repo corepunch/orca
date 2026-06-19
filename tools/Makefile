@@ -102,22 +102,22 @@ SKILLS_OUTPUT_DIR := $(MODULE_ROOT)skills
 docs: codegen-host
 	$(Q)$(foreach mod,$(MODULES),\
 		echo "Generating C docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/classes \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/enums \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/structs \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/interfaces \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod))/functions; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(SKILLS_OUTPUT_DIR)/orca-c/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/classes \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/enums \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/structs \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/interfaces \
+		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/functions; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod)); \
 		echo "Generating Lua docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-lua/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(SKILLS_OUTPUT_DIR)/orca-lua/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-lua/generated/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(SKILLS_OUTPUT_DIR)/orca-lua/generated/$(notdir $(mod)); \
 		echo "Generating XML docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-xml/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(SKILLS_OUTPUT_DIR)/orca-xml/$(notdir $(mod)); \
+		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-xml/generated/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(SKILLS_OUTPUT_DIR)/orca-xml/generated/$(notdir $(mod)); \
 	)
 
 documentation: docs
 	$(Q)mkdir -p $(MODULE_ROOT)docs/generated
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-c/* $(MODULE_ROOT)docs/generated/c/ 2>/dev/null || true
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-lua/* $(MODULE_ROOT)docs/generated/lua/ 2>/dev/null || true
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-xml/* $(MODULE_ROOT)docs/generated/xml/ 2>/dev/null || true
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-c/generated/* $(MODULE_ROOT)docs/generated/c/ 2>/dev/null || true
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-lua/generated/* $(MODULE_ROOT)docs/generated/lua/ 2>/dev/null || true
+	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-xml/generated/* $(MODULE_ROOT)docs/generated/xml/ 2>/dev/null || true
