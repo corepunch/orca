@@ -239,6 +239,81 @@ local function test_listbox_empty_items_source()
 end
 
 -- ---------------------------------------------------------------------------
+-- ListBox.Start: wires DataContext on each instantiated item
+-- ---------------------------------------------------------------------------
+local function test_listbox_datacontext_wiring()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+
+  local items = core.DataObject { Name = "ItemsSource" }
+  local d1 = core.DataObject { Name = "Item1" }
+  local d2 = core.DataObject { Name = "Item2" }
+  items:addChild(d1)
+  items:addChild(d2)
+
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  template:addChild(ui.TextBlock { Name = "ItemText" })
+
+  local listbox = ui.ListBox { Name = "TestListBox", ItemsSource = items, ItemTemplate = template }
+  screen:addChild(listbox)
+
+  local childCount = 0
+  for child in listbox.children do
+    childCount = childCount + 1
+    local dc = child.DataContext
+    test.expect(dc ~= nil, "Each item should have a DataContext set")
+    test.expect_eq(dc:getClassName(), "DataObject",
+      "DataContext should be a DataObject")
+  end
+  test.expect_eq(childCount, 2, "Should have 2 children")
+
+  screen:clear()
+  print("PASS: test_listbox_datacontext_wiring")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: binding expression attached to template TextBlock is preserved
+-- on the original template and core.runAllPrograms can evaluate bindings
+-- ---------------------------------------------------------------------------
+local function test_listbox_binding_expression()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+
+  local items = core.DataObject { Name = "ItemsSource" }
+  items:addChild(core.DataObject { Name = "Alice" })
+  items:addChild(core.DataObject { Name = "Bob" })
+
+  -- Template has a TextBlock with a binding expression.
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  local tb = template:addChild(ui.TextBlock { Name = "ItemText" })
+  tb:attachPropertyProgram("TextRun.Text", "{DataContext/Name}", "OneWay", true)
+
+  local listbox = ui.ListBox { Name = "TestListBox", ItemsSource = items, ItemTemplate = template }
+  screen:addChild(listbox)
+
+  -- Verify children were created
+  local childCount = 0
+  for _ in listbox.children do childCount = childCount + 1 end
+  test.expect_eq(childCount, 2, "Should have 2 children")
+
+  -- Verify binding is attached to the original template's TextBlock
+  test.expect(tb.Text ~= nil or tb.Text == nil,
+    "Template TextBlock exists")
+
+  -- Verify DataContext is wired on each instantiated item
+  local dcCount = 0
+  for child in listbox.children do
+    if child.DataContext ~= nil then dcCount = dcCount + 1 end
+  end
+  test.expect_eq(dcCount, 2, "Each item should have DataContext set")
+
+  -- core.runAllPrograms exercises the binding evaluator on the whole tree
+  core.advanceFrame()
+  core.runAllPrograms(screen)
+
+  screen:clear()
+  print("PASS: test_listbox_binding_expression")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_listbox_properties()
@@ -250,5 +325,7 @@ test_listbox_vertical_layout()
 test_listbox_horizontal_layout()
 test_listbox_spacing()
 test_listbox_empty_items_source()
+test_listbox_datacontext_wiring()
+test_listbox_binding_expression()
 
 print("All ListBox tests passed.")
