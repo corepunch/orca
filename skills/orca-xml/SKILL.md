@@ -42,11 +42,13 @@ make run PROJECT=MyProject/package.xml
 
 ## Principles
 
-1. **XML declares structure.** UI hierarchy, properties, and triggers are in XML.
-2. **Triggers listen for events.** `EventTrigger` reacts to routed events like `Node.LeftButtonUp`.
-3. **Actions run on trigger.** `HideAction`, `ShowAction`, or generated message actions.
-4. **Styles are CSS-like.** Classes, selectors, pseudo-states, and properties.
-5. **Messages bridge XML and C.** Generated actions dispatch typed message payloads.
+1. **`generated/` is your API reference.** For class definitions, properties, and messages — read the markdown in `generated/`, never `.cgen`.
+2. **`.cgen` is the build source of truth.** It defines the API shape for codegen, but agents should not parse it directly.
+3. **XML declares structure.** UI hierarchy, properties, and triggers are in XML.
+4. **Triggers listen for events.** `EventTrigger` reacts to routed events like `Node.LeftButtonUp`.
+5. **Actions run on trigger.** `HideAction`, `ShowAction`, or generated message actions.
+6. **Styles are CSS-like.** Classes, selectors, pseudo-states, and properties.
+7. **Messages bridge XML and C.** Generated actions dispatch typed message payloads.
 
 ## Agent Workflow
 
