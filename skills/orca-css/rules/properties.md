@@ -4,7 +4,7 @@ ORCA parses a CSS-like subset and maps declaration names to ORCA properties. Thi
 
 ## Key Differences from Browser CSS
 
-1. **Units are ignored.** `width: 120px;` and `width: 120;` both work — numeric parsers stop at non-digits.
+1. **Browser units are converted to bindings.** `rem`/`em` → parent Font.Size binding, `vh`/`vw` → viewport binding.
 2. **Font shorthand works.** `font: 14px/1.5 sans-serif` expands to `font-size`, `line-height`, `font-family`.
 3. **No `!important`.** Use specificity instead.
 4. **No media queries.** Use ORCA's layout system.
@@ -27,10 +27,19 @@ ORCA supports these CSS shorthands:
 | `font` | `font: 14px/1.5 sans-serif` | Expands to font-size, line-height, font-family |
 | `text-decoration` | `text-decoration: underline;` | Use separate properties |
 
-Units in numeric values are ignored by the parser:
-- `width: 14px;` → parsed as `14`
-- `font-size: 1.5rem;` → parsed as `1.5`
-- `margin: 2vh;` → parsed as `2`
+Browser units are converted to binding expressions:
+
+| Unit | Binding | Example |
+|------|---------|---------|
+| `rem` | `{../Font.Size} × n` | `1.5rem` → `{../Font.Size} * 1.5` |
+| `em` | `{../Font.Size} × n` | `2em` → `{../Font.Size} * 2` |
+| `vh` | `{Screen.Height} × n/100` | `100vh` → `{Screen.Height}` |
+| `vw` | `{Screen.Width} × n/100` | `50vw` → `{Screen.Width} * 0.5` |
+| `vmin` | min(`{Screen.Width}`, `{Screen.Height}`) × n/100 | `vmin` → viewport minimum |
+| `vmax` | max(`{Screen.Width}`, `{Screen.Height}`) × n/100 | `vmax` → viewport maximum |
+| `px`, `pt` | Bare number (no binding) | `120px` → `120` |
+
+Bare numbers (no unit) are passed as literal values.
 
 ## Layout Properties
 

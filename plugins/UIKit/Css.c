@@ -86,6 +86,145 @@ css_is_texture_path(const char *value)
 static void
 copy_trim(char* dst, const char* s, const char* e, int n);
 
+// ---------------------------------------------------------------------------
+// CSS unit detection and binding expression generation
+// ---------------------------------------------------------------------------
+
+static bool_t
+css_value_has_unit(const char *value)
+{
+  if (!value) return FALSE;
+  size_t len = strlen(value);
+  if (len < 3) return FALSE;
+  while (len > 0 && isspace((unsigned char)value[len - 1])) len--;
+  if (len < 3) return FALSE;
+  // Only rem/em create bindings; px/pt/vw/vh/vmin/vmax are treated as literals
+  static const char* const binding_units[] = { "rem", "em", NULL };
+  for (int i = 0; binding_units[i]; i++) {
+    size_t ulen = strlen(binding_units[i]);
+    if (len > ulen && strncmp(value + len - ulen, binding_units[i], ulen) == 0) {
+      size_t num_end = len - ulen;
+      if (num_end > 0 && (isdigit((unsigned char)value[num_end - 1]) || value[num_end - 1] == '.')) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+static void
+css_strip_unit(const char *value, char *out, size_t out_size)
+{
+  if (!value || !out || out_size == 0) return;
+  size_t len = strlen(value);
+  size_t i = 0;
+  while (i < len && isspace((unsigned char)value[i])) i++;
+  size_t j = 0;
+  while (i < len && j < out_size - 1) {
+    if (isdigit((unsigned char)value[i]) || value[i] == '.') {
+      out[j++] = value[i];
+    } else {
+      break;
+    }
+    i++;
+  }
+  out[j] = '\0';
+}
+
+static bool_t
+css_get_binding_path(const char *orca_name, char *out, size_t out_size)
+{
+  if (!orca_name || !out || out_size == 0) return FALSE;
+  if (!strcasecmp(orca_name, "TextRun.FontSize") ||
+      !strcasecmp(orca_name, "Font.Size")) {
+    snprintf(out, out_size, "../TextRun.FontSize");
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static bool_t
+css_is_viewport_unit(const char *value)
+{
+  if (!value) return FALSE;
+  size_t len = strlen(value);
+  static const char* const viewport_units[] = { "vw", "vh", "vmin", "vmax", NULL };
+  for (int i = 0; viewport_units[i]; i++) {
+    size_t ulen = strlen(viewport_units[i]);
+    if (len > ulen && strncmp(value + len - ulen, viewport_units[i], ulen) == 0) {
+      size_t num_end = len - ulen;
+      if (num_end > 0 && (isdigit((unsigned char)value[num_end - 1]) || value[num_end - 1] == '.')) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
+}
+
+static bool_t
+css_make_binding_expr(const char *css_value, const char *orca_name,
+                      char *out, size_t out_size)
+{
+  if (!css_value || !orca_name || !out || out_size == 0) return FALSE;
+
+  // Handle viewport units: vw, vh, vmin, vmax
+  if (css_is_viewport_unit(css_value)) {
+    char num_str[32] = {0};
+    css_strip_unit(css_value, num_str, sizeof(num_str));
+    if (num_str[0] == '\0') return FALSE;
+    double multiplier = atof(num_str);
+
+    // Find the unit suffix (after the numeric portion)
+    size_t len = strlen(css_value);
+    const char *unit = css_value + len;
+    while (unit > css_value && isalpha((unsigned char)unit[-1])) unit--;
+
+    const char *dim = NULL;
+    if (!strcasecmp(unit, "vw")) {
+      dim = "Screen.Width";
+    } else if (!strcasecmp(unit, "vh")) {
+      dim = "Screen.Height";
+    } else if (!strcasecmp(unit, "vmin")) {
+      dim = "Screen.Height"; // approximate: use smaller dimension
+    } else if (!strcasecmp(unit, "vmax")) {
+      dim = "Screen.Width"; // approximate: use larger dimension
+    }
+
+    if (!dim) return FALSE;
+
+    // vw/vh are percentages: 1vw = 1% of viewport width
+    double value = multiplier / 100.0;
+    if (value == 1.0) {
+      snprintf(out, out_size, "{%s}", dim);
+    } else {
+      // Format multiplier without trailing zeros
+      char mul_str[32];
+      snprintf(mul_str, sizeof(mul_str), "%g", value);
+      snprintf(out, out_size, "{%s} * %s", dim, mul_str);
+    }
+    Con_Printf("DEBUG css_make_binding_expr (viewport): css_value=%s out=%s\n", css_value, out);
+    return TRUE;
+  }
+
+  char base_path[64] = {0};
+  if (!css_get_binding_path(orca_name, base_path, sizeof(base_path))) {
+    return FALSE;
+  }
+  char num_str[32] = {0};
+  css_strip_unit(css_value, num_str, sizeof(num_str));
+  if (num_str[0] == '\0') return FALSE;
+  double multiplier = atof(num_str);
+  Con_Printf("DEBUG css_make_binding_expr: css_value=%s orca_name=%s num_str=%s multiplier=%f\n",
+             css_value, orca_name, num_str, multiplier);
+  if (multiplier == 1.0) {
+    snprintf(out, out_size, "{%s}", base_path);
+  } else {
+    snprintf(out, out_size, "{%s} * %s", base_path, num_str);
+  }
+  Con_Printf("DEBUG css_make_binding_expr: out=%s\n", out);
+  return TRUE;
+}
+
 #define CSS_MAX_RULES  512
 #define CSS_MAX_PROPS  64
 #define CSS_MAX_APPLY  8
@@ -97,113 +236,113 @@ copy_trim(char* dst, const char* s, const char* e, int n);
 // ---------------------------------------------------------------------------
 // CSS property name → ORCA full property name mapping
 // ---------------------------------------------------------------------------
-static const struct { const char* css; const char* orca; }
+static const struct { const char* css; const char* orca; uint32_t id; }
 k_css_prop_map[] = {
   /* Node layout */
-  { "background-color",  "Node2D.BackgroundColor"    },
-  { "color",       "Node2D.ForegroundColor"    },
-  { "opacity",       "Node.Opacity"          },
-  { "width",       "Node.Width"          },
-  { "height",      "Node.Height"           },
-  { "min-width",     "Node.MinWidth"         },
-  { "min-height",    "Node.MinHeight"        },
-  { "margin",      "Node.Margin"           },
-  { "margin-top",    "Node.MarginTop"        },
-  { "margin-right",    "Node.MarginRight"        },
-  { "margin-bottom",   "Node.MarginBottom"       },
-  { "margin-left",     "Node.MarginLeft"         },
-  { "margin-inline",   "Node.HorizontalMargin"     },
-  { "margin-block",    "Node.VerticalMargin"       },
-  { "padding",       "Node.Padding"          },
-  { "padding-top",     "Node.PaddingTop"         },
-  { "padding-right",   "Node.PaddingRight"       },
-  { "padding-bottom",  "Node.PaddingBottom"      },
-  { "padding-left",    "Node.PaddingLeft"        },
-  { "padding-inline",  "Node.HorizontalPadding"    },
-  { "padding-block",   "Node.VerticalPadding"      },
-  { "border",      "Node.Border"           },
-  { "border-color",    "Node.BorderColor"        },
-  { "border-style",    "Node.BorderStyle"        },
-  { "border-width",    "Node.BorderWidth"        },
-  { "border-left-width", "Node.BorderWidthLeft"      },
-  { "border-right-width", "Node.BorderWidthRight"    },
-  { "border-top-width",  "Node.BorderWidthTop"       },
-  { "border-bottom-width", "Node.BorderWidthBottom"    },
-  { "border-radius",   "Node.BorderRadius"       },
-  { "border-top-left-radius", "Node.BorderTopLeftRadius" },
-  { "border-top-right-radius", "Node.BorderTopRightRadius" },
-  { "border-bottom-right-radius", "Node.BorderBottomRightRadius" },
-  { "border-bottom-left-radius", "Node.BorderBottomLeftRadius" },
-  { "visibility",    "Node.Visible"          },
+  { "background-color",  "Node2D.BackgroundColor",    ID_Node2D_BackgroundColor },
+  { "color",       "Node2D.ForegroundColor",    ID_Node2D_ForegroundColor },
+  { "opacity",       "Node.Opacity",          ID_Node_Opacity },
+  { "width",       "Node.Width",          ID_Node_Width },
+  { "height",      "Node.Height",           ID_Node_Height },
+  { "min-width",     "Node.MinWidth",         ID_Node_MinWidth },
+  { "min-height",    "Node.MinHeight",        ID_Node_MinHeight },
+  { "margin",      "Node.Margin",           ID_Node_Margin },
+  { "margin-top",    "Node.MarginTop",        ID_Node_MarginTop },
+  { "margin-right",    "Node.MarginRight",        ID_Node_MarginRight },
+  { "margin-bottom",   "Node.MarginBottom",       ID_Node_MarginBottom },
+  { "margin-left",     "Node.MarginLeft",         ID_Node_MarginLeft },
+  { "margin-inline",   "Node.HorizontalMargin",     0 },
+  { "margin-block",    "Node.VerticalMargin",       0 },
+  { "padding",       "Node.Padding",          ID_Node_Padding },
+  { "padding-top",     "Node.PaddingTop",         ID_Node_PaddingTop },
+  { "padding-right",   "Node.PaddingRight",       ID_Node_PaddingRight },
+  { "padding-bottom",  "Node.PaddingBottom",      ID_Node_PaddingBottom },
+  { "padding-left",    "Node.PaddingLeft",        ID_Node_PaddingLeft },
+  { "padding-inline",  "Node.HorizontalPadding",    0 },
+  { "padding-block",   "Node.VerticalPadding",      0 },
+  { "border",      "Node.Border",           ID_Node_Border },
+  { "border-color",    "Node.BorderColor",        ID_Node_BorderColor },
+  { "border-style",    "Node.BorderStyle",        ID_Node_BorderStyle },
+  { "border-width",    "Node.BorderWidth",        ID_Node_BorderWidth },
+  { "border-left-width", "Node.BorderWidthLeft",      ID_Node_BorderWidthLeft },
+  { "border-right-width", "Node.BorderWidthRight",    ID_Node_BorderWidthRight },
+  { "border-top-width",  "Node.BorderWidthTop",       ID_Node_BorderWidthTop },
+  { "border-bottom-width", "Node.BorderWidthBottom",    ID_Node_BorderWidthBottom },
+  { "border-radius",   "Node.BorderRadius",       ID_Node_BorderRadius },
+  { "border-top-left-radius", "Node.BorderTopLeftRadius", ID_Node_BorderTopLeftRadius },
+  { "border-top-right-radius", "Node.BorderTopRightRadius", ID_Node_BorderTopRightRadius },
+  { "border-bottom-right-radius", "Node.BorderBottomRightRadius", ID_Node_BorderBottomRightRadius },
+  { "border-bottom-left-radius", "Node.BorderBottomLeftRadius", ID_Node_BorderBottomLeftRadius },
+  { "visibility",    "Node.Visible",          ID_Node_Visible },
 
   /* Node2D rendering */
-  { "background",    "Node2D.Background"       },
-  { "background-image",  "Node2D.BackgroundImage"    },
-  { "border-image-source", "Node2D.BorderImageSource"  },
-  { "border-image-slice", "Node2D.BorderImageSlice"    },
-  { "border-image-repeat", "Node2D.BorderImageRepeat"  },
-  { "border-image",    "Node2D.BorderImage"      },
-  { "foreground",    "Node2D.Foreground"       },
-  { "foreground-color",  "Node2D.ForegroundColor"    },
-  { "box-shadow",    "Node2D.BoxShadow"        },
-  { "box-shadow-color",  "Node2D.BoxShadowColor"     },
-  { "box-shadow-blur",   "Node2D.BoxShadowBlurRadius"  },
-  { "box-shadow-blur-radius", "Node2D.BoxShadowBlurRadius" },
-  { "box-shadow-spread", "Node2D.BoxShadowSpreadRadius"  },
-  { "box-shadow-spread-radius", "Node2D.BoxShadowSpreadRadius" },
-  { "overflow",      "Node2D.Overflow"         },
-  { "overflow-x",    "Node2D.OverflowX"        },
-  { "overflow-y",    "Node2D.OverflowY"        },
-  { "ring",        "Node2D.Ring"           },
-  { "ring-color",    "Node2D.RingColor"        },
-  { "ring-offset",     "Node2D.RingOffset"       },
-  { "ring-width",    "Node2D.RingWidth"        },
-  { "content-stretch",   "Node2D.ContentStretch"     },
-  { "ignore-hit-test",   "Node2D.IgnoreHitTest"      },
-  { "pointer-events",  "Node2D.IgnoreHitTest"      },
-  { "size-to-content",   "Node2D.SizeToContent"      },
-  { "snap-to-pixel",   "Node2D.SnapToPixel"      },
+  { "background",    "Node2D.Background",       ID_Node2D_Background },
+  { "background-image",  "Node2D.BackgroundImage",    ID_Node2D_BackgroundImage },
+  { "border-image-source", "Node2D.BorderImageSource",  ID_Node2D_BorderImageSource },
+  { "border-image-slice", "Node2D.BorderImageSlice",    ID_Node2D_BorderImageSlice },
+  { "border-image-repeat", "Node2D.BorderImageRepeat",  ID_Node2D_BorderImageRepeat },
+  { "border-image",    "Node2D.BorderImage",      ID_Node2D_BorderImage },
+  { "foreground",    "Node2D.Foreground",       ID_Node2D_Foreground },
+  { "foreground-color",  "Node2D.ForegroundColor",    ID_Node2D_ForegroundColor },
+  { "box-shadow",    "Node2D.BoxShadow",        ID_Node2D_BoxShadow },
+  { "box-shadow-color",  "Node2D.BoxShadowColor",     ID_Node2D_BoxShadowColor },
+  { "box-shadow-blur",   "Node2D.BoxShadowBlurRadius",  ID_Node2D_BoxShadowBlurRadius },
+  { "box-shadow-blur-radius", "Node2D.BoxShadowBlurRadius", ID_Node2D_BoxShadowBlurRadius },
+  { "box-shadow-spread", "Node2D.BoxShadowSpreadRadius",  ID_Node2D_BoxShadowSpreadRadius },
+  { "box-shadow-spread-radius", "Node2D.BoxShadowSpreadRadius", ID_Node2D_BoxShadowSpreadRadius },
+  { "overflow",      "Node2D.Overflow",         ID_Node2D_Overflow },
+  { "overflow-x",    "Node2D.OverflowX",        ID_Node2D_OverflowX },
+  { "overflow-y",    "Node2D.OverflowY",        ID_Node2D_OverflowY },
+  { "ring",        "Node2D.Ring",           ID_Node2D_Ring },
+  { "ring-color",    "Node2D.RingColor",        ID_Node2D_RingColor },
+  { "ring-offset",     "Node2D.RingOffset",       ID_Node2D_RingOffset },
+  { "ring-width",    "Node2D.RingWidth",        ID_Node2D_RingWidth },
+  { "content-stretch",   "Node2D.ContentStretch",     ID_Node2D_ContentStretch },
+  { "ignore-hit-test",   "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
+  { "pointer-events",  "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
+  { "size-to-content",   "Node2D.SizeToContent",      ID_Node2D_SizeToContent },
+  { "snap-to-pixel",   "Node2D.SnapToPixel",      ID_Node2D_SnapToPixel },
 
   /* StackView */
-  { "align-items",     "StackView.AlignItems"       },
-  { "align-items",     "Grid.AlignItems"        },
-  { "justify-content",   "StackView.JustifyContent"    },
-  { "flex-direction",  "StackView.Direction"       },
-  { "direction",     "StackView.Direction"       },
-  { "gap",         "StackView.Spacing"       },
-  { "gap",         "Grid.Spacing"          },
-  { "spacing",       "StackView.Spacing"       },
-  { "reversed",      "StackView.Reversed"      },
+  { "align-items",     "StackView.AlignItems",       ID_StackView_AlignItems },
+  { "align-items",     "Grid.AlignItems",        ID_Grid_AlignItems },
+  { "justify-content",   "StackView.JustifyContent",    ID_StackView_JustifyContent },
+  { "flex-direction",  "StackView.Direction",       ID_StackView_Direction },
+  { "direction",     "StackView.Direction",       ID_StackView_Direction },
+  { "gap",         "StackView.Spacing",       ID_StackView_Spacing },
+  { "gap",         "Grid.Spacing",          ID_Grid_Spacing },
+  { "spacing",       "StackView.Spacing",       ID_StackView_Spacing },
+  { "reversed",      "StackView.Reversed",      ID_StackView_Reversed },
 
   /* Text */
-  { "font",        "TextRun.Font"          },
-  { "font-size",     "TextRun.FontSize"        },
-  { "font-family",     "TextRun.FontFamily"      },
-  { "font-weight",     "TextRun.FontWeight"      },
-  { "font-style",    "TextRun.FontStyle"       },
-  { "line-height",     "TextRun.LineHeight"      },
-  { "letter-spacing",  "TextRun.LetterSpacing"     },
-  { "character-spacing", "TextRun.CharacterSpacing"    },
-  { "fixed-character-width", "TextRun.FixedCharacterWidth" },
-  { "text-decoration",   "TextRun.TextDecoration"       },
-  { "text-decoration-color", "TextRun.TextDecorationColor"  },
-  { "text-decoration-thickness", "TextRun.TextDecorationWidth" },
-  { "text-decoration-style", "TextRun.TextDecorationStyle"       },
-  { "text-decoration-color", "TextRun.TextDecorationColor"    },
-  { "text-decoration-width",   "TextRun.TextDecorationWidth"    },
-  { "text-decoration-offset", "TextRun.TextDecorationOffset"     },
-  { "word-wrap",     "TextBlockConcept.WordWrap"   },
-  { "overflow-wrap",   "TextBlockConcept.WordWrap"   },
-  { "text-wrap",     "TextBlockConcept.TextWrapping" },
-  { "text-overflow",   "TextBlockConcept.TextOverflow" },
-  { "text-align",    "TextBlockConcept.TextHorizontalAlignment" },
-  { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment" },
-  { "placeholder-color", "TextBlockConcept.PlaceholderColor" },
+  { "font",        "TextRun.Font",          ID_TextRun_Font },
+  { "font-size",     "TextRun.FontSize",        ID_TextRun_FontSize },
+  { "font-family",     "TextRun.FontFamily",      ID_TextRun_FontFamily },
+  { "font-weight",     "TextRun.FontWeight",      ID_TextRun_FontWeight },
+  { "font-style",    "TextRun.FontStyle",       ID_TextRun_FontStyle },
+  { "line-height",     "TextRun.LineHeight",      ID_TextRun_LineHeight },
+  { "letter-spacing",  "TextRun.LetterSpacing",     ID_TextRun_LetterSpacing },
+  { "character-spacing", "TextRun.CharacterSpacing",    ID_TextRun_CharacterSpacing },
+  { "fixed-character-width", "TextRun.FixedCharacterWidth", ID_TextRun_FixedCharacterWidth },
+  { "text-decoration",   "TextRun.TextDecoration",       ID_TextRun_TextDecoration },
+  { "text-decoration-color", "TextRun.TextDecorationColor",  ID_TextRun_TextDecorationColor },
+  { "text-decoration-thickness", "TextRun.TextDecorationWidth", ID_TextRun_TextDecorationWidth },
+  { "text-decoration-style", "TextRun.TextDecorationStyle",       ID_TextRun_TextDecorationStyle },
+  { "text-decoration-color", "TextRun.TextDecorationColor",    ID_TextRun_TextDecorationColor },
+  { "text-decoration-width",   "TextRun.TextDecorationWidth",    ID_TextRun_TextDecorationWidth },
+  { "text-decoration-offset", "TextRun.TextDecorationOffset",     ID_TextRun_TextDecorationOffset },
+  { "word-wrap",     "TextBlockConcept.WordWrap",   ID_TextBlockConcept_WordWrap },
+  { "overflow-wrap",   "TextBlockConcept.WordWrap",   ID_TextBlockConcept_WordWrap },
+  { "text-wrap",     "TextBlockConcept.TextWrapping", ID_TextBlockConcept_TextWrapping },
+  { "text-overflow",   "TextBlockConcept.TextOverflow", ID_TextBlockConcept_TextOverflow },
+  { "text-align",    "TextBlockConcept.TextHorizontalAlignment", ID_TextBlockConcept_TextHorizontalAlignment },
+  { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment", ID_TextBlockConcept_TextVerticalAlignment },
+  { "placeholder-color", "TextBlockConcept.PlaceholderColor", ID_TextBlockConcept_PlaceholderColor },
 
   /* Custom properties */
-  { "grid-template-columns", "Grid.Columns" },
-  { "grid-template-rows", "Grid.Rows" },
-  { NULL, NULL }
+  { "grid-template-columns", "Grid.Columns", ID_Grid_Columns },
+  { "grid-template-rows", "Grid.Rows", ID_Grid_Rows },
+  { NULL, NULL, 0 }
 };
 
 static bool_t
@@ -843,11 +982,35 @@ css_resolve_theme_value(const char *value, char *out, size_t out_size)
 
 static void
 css_apply_orca_value_to_rule(struct Object *rule_obj,
+               uint32_t orca_id,
                const char* orca_name,
                const char* css_key,
                const char* css_value)
 {
-  struct Property *prop = OBJ_FindShortProperty(rule_obj, fnv1a32(orca_name));
+  // Check for CSS units BEFORE the shorthand handling
+  // If we have a unit that creates a binding, we need to handle it differently
+  if (css_value_has_unit(css_value) || css_is_viewport_unit(css_value)) {
+    char binding_expr[CSS_MAX_VALLEN] = {0};
+    if (css_make_binding_expr(css_value, orca_name, binding_expr, sizeof(binding_expr))) {
+      // For shorthand properties (prop is NULL), we need to find/create the target property
+      struct Property *prop = OBJ_FindShortProperty(rule_obj, orca_id);
+      if (prop) {
+        PROP_SetBinding(prop, binding_expr, kBindingModeOneWay, TRUE);
+      } else {
+        // For shorthands, set via OBJ_SetShorthandValueFromString first to create the property,
+        // then find and bind it
+        OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
+        prop = OBJ_FindShortProperty(rule_obj, orca_id);
+        if (prop) {
+          PROP_SetBinding(prop, binding_expr, kBindingModeOneWay, TRUE);
+        }
+      }
+      return;
+    }
+    // Fall through to normal parsing for unsupported units (e.g., px, pt)
+  }
+
+  struct Property *prop = OBJ_FindShortProperty(rule_obj, orca_id);
   if (!prop) {
     OBJ_SetShorthandValueFromString(rule_obj, orca_name, css_value);
     return;
@@ -888,14 +1051,14 @@ static void
 css_apply_decl_to_rule(struct Object *rule_obj,
              const char* css_key, const char* css_value)
 {
-  bool_t has_mapping = FALSE;
+  int map_idx = -1;
   for (int i = 0; k_css_prop_map[i].css; i++) {
     if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
-      has_mapping = TRUE;
+      map_idx = i;
       break;
     }
   }
-  if (!has_mapping) return; // unsupported property
+  if (map_idx < 0) return; // unsupported property
 
   // Expand font shorthand: "font: 14px/1.5 sans-serif" → font-size, line-height, font-family
   if (!strcasecmp(css_key, "font")) {
@@ -986,10 +1149,10 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     }
 
     if (count >= 1 && count <= 4) {
-      css_apply_orca_value_to_rule(rule_obj, "Node.MarginLeft", css_key, left);
-      css_apply_orca_value_to_rule(rule_obj, "Node.MarginTop", css_key, top);
-      css_apply_orca_value_to_rule(rule_obj, "Node.MarginRight", css_key, right);
-      css_apply_orca_value_to_rule(rule_obj, "Node.MarginBottom", css_key, bottom);
+      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginLeft, "Node.MarginLeft", css_key, left);
+      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginTop, "Node.MarginTop", css_key, top);
+      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginRight, "Node.MarginRight", css_key, right);
+      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginBottom, "Node.MarginBottom", css_key, bottom);
       return;
     }
   }
@@ -997,6 +1160,7 @@ css_apply_decl_to_rule(struct Object *rule_obj,
   for (int i = 0; k_css_prop_map[i].css; i++) {
     if (!strcasecmp(css_key, k_css_prop_map[i].css)) {
       css_apply_orca_value_to_rule(rule_obj,
+                     k_css_prop_map[i].id,
                      k_css_prop_map[i].orca,
                      css_key,
                      css_value);

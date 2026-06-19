@@ -97,12 +97,19 @@ PROP_SetBinding(struct Property *property,
   }
 
   struct token *compiled = enabled ? Token_Create(expression) : NULL;
+  Con_Printf("DEBUG PROP_SetBinding: expression=%s compiled=%p\n", expression, compiled);
   PROP_AttachProgram(property, compiled);
   /* Store original expression text for serialization round-trips */
   if (property->binding) {
     free((char *)property->binding->Expression);
     property->binding->Expression = strdup(expression);
+    /* Reset binding's updateFrame to force evaluation on next PROP_Update */
+    property->binding->updateFrame = (uint32_t)-1;
   }
+  /* Mark property as modified so inheritance doesn't override the binding */
+  PROP_SetFlag(property, PF_MODIFIED);
+  /* Set updateFrame to a sentinel value different from core.frame to force evaluation */
+  property->updateFrame = core.frame == 0 ? (uint32_t)-1 : core.frame - 1;
   return TRUE;
 }
 
