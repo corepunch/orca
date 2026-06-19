@@ -182,3 +182,4 @@ make run PROJECT=MyProject/package.xml
 - [rules/triggers-actions-messages.md](./rules/triggers-actions-messages.md) — Triggers, actions, message types
 - [rules/styling.md](./rules/styling.md) — Style system, classes, selectors, properties
 - [rules/xml-helpers.md](./rules/xml-helpers.md) — C-side XML helpers and StyleClass API
+- [orca-css skill](../orca-css/SKILL.md) — CSS authoring reference for writing stylesheets
