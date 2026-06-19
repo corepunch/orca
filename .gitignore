@@ -79,7 +79,9 @@ build.log
 docs/api/
 docs/generated/
 docs/renderer/
-skills/
+
+# Generated skill docs (built by make docs)
+skills/*/generated/
 
 # Auto-generated WebGL plugin registration header (produced by make webgl)
 build/webgl/plugins_luaopen.h
