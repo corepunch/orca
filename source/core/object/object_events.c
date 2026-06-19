@@ -49,6 +49,11 @@ OBJ_AttachPropertyProgram(struct Object *self,
   struct Property *property = OBJ_FindLongProperty(self, fnv1a32(name));
   if (property) {
     PROP_AttachProgram(property, compiled);
+    if (property->binding) {
+      property->binding->updateFrame = (uint32_t)-1;
+    }
+    PROP_SetFlag(property, PF_MODIFIED);
+    property->updateFrame = core.frame == 0 ? (uint32_t)-1 : core.frame - 1;
     return TRUE;
   } else {
     return FALSE;

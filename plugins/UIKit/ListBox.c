@@ -2,6 +2,7 @@
 
 // ListBox_Start
 HANDLER(ListBox, Object, Start) {
+  OBJ_Clear(hObject);
   if (GetItemsControl(hObject)->ItemsSource) {
     struct Node2D* template = GetItemsControl(hObject)->ItemTemplate;
     FOR_EACH_OBJECT(data, CMP_GetObject(GetItemsControl(hObject)->ItemsSource)) {
@@ -17,8 +18,8 @@ HANDLER(ListBox, Object, Start) {
         Con_Printf("Can not instantiate ListBox item template");
         return FALSE;
       }
-//      struct DataObject* context = GetDataObject(data);
       PROP_SetValue(OBJ_FindLongProperty(item, ID_Node_DataContext), &data);
+      OBJ_AddChild(hObject, item);
     }
     return TRUE;
   } else {
