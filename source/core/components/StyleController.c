@@ -227,10 +227,7 @@ _FindMatchingClass(struct Object *obj, lpcString_t className, uint32_t objFlags)
 {
   struct StyleController* sc = GetStyleController(obj);
   if (!sc) return NULL;
-  Con_Printf("DEBUG _FindMatchingClass: obj=%s looking_for=%s\n", OBJ_GetName(obj), className);
   FOR_EACH_LIST(struct style_class_selector, cls, sc->classes) {
-    Con_Printf("DEBUG _FindMatchingClass: obj=%s has_class=%s flags=%d objFlags=%d\n",
-               OBJ_GetName(obj), cls->value, cls->flags, objFlags);
     if (!strcmp(cls->value, className) &&
         ((objFlags & cls->flags) == cls->flags)) {
       return cls;
@@ -520,7 +517,6 @@ static void
 _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
                 uint32_t ruleFlags, struct style_class_selector* cls)
 {
-  Con_Printf("DEBUG _ApplyStyleRule ENTER: target=%s ruleObj=%s\n", OBJ_GetName(target), OBJ_GetName(ruleObj));
   int prop_count = 0;
   int skip_type = 0, skip_null = 0, skip_pdesc = 0, skip_hprop = 0;
   for (struct Property *rp = OBJ_GetProperties(ruleObj); rp; rp = PROP_GetNext(rp)) {
@@ -533,10 +529,6 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
 
     // Skip null properties UNLESS they have a binding (from CSS units like rem/em)
     if (PROP_IsNull(rp) && !PROP_HasProgram(rp)) { skip_null++; continue; }
-
-    Con_Printf("DEBUG _ApplyStyleRule: prop=%s PF_PROPERTY_TYPE=%d IsNull=%d hasProgram=%d\n",
-               pdesc->Name, (PROP_GetFlags(rp) & PF_PROPERTY_TYPE) != 0,
-               PROP_IsNull(rp), PROP_HasProgram(rp));
 
     struct Property *hprop = OBJ_FindLongProperty(target, pdesc->FullIdentifier);
     if (!hprop) { skip_hprop++; continue; }
@@ -555,8 +547,6 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
     if (PROP_HasProgram(rp)) {
       lpcString_t expr = PROP_GetBindingExpression(rp);
       if (expr && expr[0]) {
-        Con_Printf("DEBUG _ApplyStyleRule: TRANSFERRING binding '%s' to %s/%s\n",
-                   expr, OBJ_GetName(target), pdesc->Name);
         PROP_SetBinding(hprop, expr, kBindingModeOneWay, TRUE);
         PROP_Update(hprop);  // Force immediate evaluation of the binding
         continue;
@@ -574,8 +564,6 @@ _ApplyStyleRule(struct Object *target, struct Object *ruleObj,
       PROP_SetValue(hprop, &clr);
     }
   }
-  Con_Printf("DEBUG _ApplyStyleRule EXIT: target=%s prop_count=%d skip_type=%d skip_null=%d skip_pdesc=%d skip_hprop=%d\n",
-             OBJ_GetName(target), prop_count, skip_type, skip_null, skip_pdesc, skip_hprop);
 }
 
 // Walk one stylesheet's rules for a matching selector and invoke _ApplyStyleRule.
@@ -587,15 +575,11 @@ _EnumSheetRules(struct Object *sheetObj, struct Object *target,
   FOR_EACH_OBJECT(child, sheetObj) {
     struct StyleRule* sr = GetStyleRule(child);
     struct style_class_selector* cls = NULL;
-    bool_t matches = _StyleRuleBaseMatches(target, sr, objFlags, &cls);
-    Con_Printf("DEBUG _EnumSheetRules: target=%s rule_class=%s matches=%d\n",
-               OBJ_GetName(target), sr->ClassName ? sr->ClassName : "NULL", matches);
     if (!_StyleRuleBaseMatches(target, sr, objFlags, &cls)) continue;
     if (sr->flags & STYLE_HOVER) {
       OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
     }
     if ((objFlags & sr->flags) != sr->flags) continue;
-    Con_Printf("DEBUG _EnumSheetRules: calling _ApplyStyleRule for %s\n", OBJ_GetName(target));
     _ApplyStyleRule(target, child, sr->flags, cls);
   }
 }
@@ -610,7 +594,6 @@ OBJ_EnumStyleClasses(struct Object *pobj,
   (void)classname;
   (void)cls;
   uint32_t objFlags  = OBJ_GetStyleFlags(pobj);
-  Con_Printf("DEBUG OBJ_EnumStyleClasses: pobj=%s\n", OBJ_GetName(pobj));
 
   // Global stylesheet first
   _EnumSheetRules(static_stylesheet, pobj, objFlags);
@@ -619,7 +602,6 @@ OBJ_EnumStyleClasses(struct Object *pobj,
   for (struct Object *p = pobj; p; p = OBJ_GetParent(p)) {
     struct StyleController* sc = GetStyleController(p);
     if (!sc || !sc->StyleSheet) continue;
-    Con_Printf("DEBUG OBJ_EnumStyleClasses: found StyleSheet on %s\n", OBJ_GetName(p));
     _EnumSheetRules(CMP_GetObject(sc->StyleSheet), pobj, objFlags);
   }
 }

@@ -88,18 +88,11 @@ PROP_Update(struct Property *property)
 {
   if (property == NULL)
     return FALSE;
-  Con_Printf("DEBUG PROP_Update: property=%s/%s updateFrame=%u core.frame=%u binding=%d\n",
-             property->object ? OBJ_GetName(property->object) : "NULL",
-             property->pdesc ? property->pdesc->Name : "NULL",
-             property->updateFrame, core.frame,
-             property->binding ? 1 : 0);
   if (property->updateFrame == core.frame) {
-    Con_Printf("DEBUG PROP_Update: returning early due to updateFrame == core.frame\n");
     return FALSE;
   }
   property->updateFrame = core.frame;
   if (property->binding) {
-    Con_Printf("DEBUG PROP_Update: calling _RunBinding\n");
     if (!_RunBinding(property, property->binding)) {
       _ReleaseBindingNode(property->binding);
       property->binding = NULL;
