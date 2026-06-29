@@ -50,6 +50,8 @@ OBJ_AttachPropertyProgram(struct Object *self,
   if (property) {
     PROP_AttachProgram(property, compiled);
     if (property->binding) {
+      free((char *)property->binding->Expression);
+      property->binding->Expression = strdup(program);
       property->binding->updateFrame = (uint32_t)-1;
     }
     PROP_SetFlag(property, PF_MODIFIED);

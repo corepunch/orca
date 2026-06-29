@@ -22,28 +22,16 @@
 #include <string.h>
 #include <assert.h>
 
-/* ------------------------------------------------------------------ */
-/* Minimal test harness                                                */
-/* ------------------------------------------------------------------ */
+/* Narrow test-only declarations for the property VM surface. */
+struct vm_register
+{
+    eDataType_t type;
+    uint32_t size;
+    float value[MAX_PROPERTY_STRING / sizeof(float)];
+};
 
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
-#define EXPECT(...)                                                         \
-    if (!(__VA_ARGS__)) {                                                   \
-        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n",                    \
-                s_current_test, #__VA_ARGS__, __LINE__);                   \
-        s_tests_failed++;                                                   \
-        break;                                                              \
-    }
-
-#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
-
-#define FIND_SHORT_PROPERTY(obj, name, out) \
-    (((*(out) = OBJ_FindShortProperty((obj), fnv1a32(name))) != NULL) ? NOERROR : E_FAIL)
-#define FIND_LONG_PROPERTY(obj, id, out) \
-    (((*(out) = OBJ_FindLongProperty((obj), (id))) != NULL) ? NOERROR : E_FAIL)
+extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register *);
+extern bool_t PROP_SetBinding(struct Property *, char const *, unsigned int, bool_t);
 
 /* ------------------------------------------------------------------ */
 /* Test class: a minimal class whose parent is StyleController         */

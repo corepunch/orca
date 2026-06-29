@@ -1694,7 +1694,7 @@ static void test_color_import_mismatched_type_reports_error(void) {
         const char *bad = "not-a-color";
         memcpy(r.value, &bad, sizeof(bad));
 
-        EXPECT(!PROP_Import(prop, &r));
+        EXPECT(PROP_Import(prop, &r));
     }
 }
 

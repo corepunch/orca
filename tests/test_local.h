@@ -39,12 +39,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
 #include <stdarg.h>
 #include <assert.h>
 #include <time.h>
 #include <sys/stat.h>
 #include <stdint.h>
+
+/* HRESULT and related error macros are provided by the ORCA project headers
+ * (orcadef.h, orcaerror.h) which are cross-platform. No windows.h needed. */
+
+/* Global failure counter — used by EXPECT macro and RUN_TEST harness.
+ * Each translation unit including this header gets its own copy. */
+static int          s_tests_run    = 0;
+static int          s_tests_failed = 0;
+static const char  *s_current_test = NULL;
 
 /* ------------------------------------------------------------------ */
 /* Core test harness                                                  */
@@ -73,19 +81,21 @@
     } while (0)
 
 /*
- * EXPECT — conditional test assertion inside a WITH block.
+ * EXPECT — conditional test assertion.
  *
  * Usage:
  *   EXPECT(condition);
  *   EXPECT(obj != NULL);
  *
- * On failure, prints file/line and the condition string, then breaks out
- * of the enclosing WITH block.
+ * On failure, prints file/line and the condition string, increments the
+ * failure counter, then breaks out of the enclosing WITH/RUN/RUN_TEST block.
  */
-#define EXPECT(expr)                                                         \
-    if (!(expr)) {                                                           \
-        printf("  FAIL: %s (at %s:%d)\n", #expr, __FILE__, __LINE__);        \
-        break;                                                               \
+#define EXPECT(...)                                                         \
+    if (!(__VA_ARGS__)) {                                                   \
+        fprintf(stderr, "  FAIL: %s (at %s:%d)\n", #__VA_ARGS__, __FILE__, __LINE__); \
+        s_tests_failed++;                                                   \
+        break;                                                              \
+    }
 
 /* EXPECT_OK — check that an HRESULT value indicates success. */
 #define EXPECT_OK(hr)                                                        \
@@ -109,7 +119,8 @@
  */
 #define RUN(test_name)                                                       \
     static void test_name(void) {                                            \
-        int _passed = 0, _failed = 0;                                        \
+        int _start_failed = s_tests_failed;                                   \
+        s_current_test = #test_name;                                         \
         printf("  %s: ", #test_name);                                       \
         for (;;) {                                                           \
             do {
@@ -117,9 +128,10 @@
 #define END_RUN                                                              \
             } while (0);                                                     \
         }                                                                    \
-        printf("%s\n", _failed ? "FAIL" : "OK");                             \
-        if (_failed) {                                                       \
-            printf("    %d/%d tests failed\n", _failed, _passed + _failed);  \
+        int _n = s_tests_failed - _start_failed;                             \
+        printf("%s\n", _n ? "FAIL" : "OK");                                  \
+        if (_n) {                                                            \
+            printf("    %d test(s) failed\n", _n);                           \
         }                                                                    \
     }
 
@@ -134,7 +146,7 @@
  *   FIND_SHORT_PROPERTY(obj, "Value", &prop);
  */
 #define FIND_SHORT_PROPERTY(obj, name, prop_ptr)                               \
-     ((*prop_ptr) = OBJ_FindShortProperty((obj), fnv1a32(name)))
+     (((*(prop_ptr) = OBJ_FindShortProperty((obj), fnv1a32(name))) != NULL) ? NOERROR : E_FAIL)
 
 /*
  * FIND_LONG_PROPERTY — find a property by long (uint32_t) identifier.
@@ -188,36 +200,7 @@
 /* Simple test harness (used by test_xml_serialization, test_filesystem)*/
 /* ------------------------------------------------------------------ */
 
-/*
- * s_tests_run / s_tests_failed — counters for the simple RUN_TEST harness.
- */
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
-/*
- * EXPECT — simple assertion that tracks failures via s_tests_failed.
- *
- * Usage:
- *   EXPECT(condition);
- *   EXPECT(str != NULL);
- *
- * On failure, prints test name, condition string, and line number, then
- * increments s_tests_failed and breaks out of the enclosing RUN_TEST block.
- */
-#define EXPECT(...)                                                         \
-    if (!(__VA_ARGS__)) {                                                   \
-        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n",                    \
-                s_current_test, #__VA_ARGS__, __LINE__);                   \
-        s_tests_failed++;                                                   \
-        break;                                                              \
-    }
-
-/* EXPECT_OK — check that an HRESULT equals NOERROR. */
-#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
-
-/*
- * RUN_TEST — lightweight test runner that tracks run/failed counts.
+/* RUN_TEST — lightweight test runner that tracks run/failed counts.
  *
  * Usage:
  *   RUN_TEST("test_name", {
