@@ -36,13 +36,15 @@ end
 -- ---------------------------------------------------------------------------
 local function test_animation_player_autoplay()
   local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
-  local node   = screen + ui.Node2D {}
+  -- Create the node unattached so Object.Start is delivered after the
+  -- component and AutoplayEnabled property are configured.
+  local node   = ui.Node2D()
 
   node:addComponentByName("AnimationPlayer")
   node.AutoplayEnabled = true
 
   test.expect(not node.Playing, "Playing is false before Start")
-  node:send("Object.Start")
+  screen:addChild(node)
   test.expect(node.Playing,  "Playing is true after Start with AutoplayEnabled")
 
   node:removeFromParent()
