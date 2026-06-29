@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="XmlModelNode" class="model-line">
-	<ImageView Name="XmlModelNodeIcon" class="model-line-icon" Source="{Binding Card.Icon}" ForegroundColor="{Binding Card.PrimaryColor}"/>
-	<TextBlock Name="XmlModelNodeText" class="model-line-text" Text="{Binding Card.Title}" ForegroundColor="{Binding Card.PrimaryColor}"/>
+	<ImageView Name="XmlModelNodeIcon" class="model-line-icon" Source="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
+	<TextBlock Name="XmlModelNodeText" class="model-line-text" Text="{Binding DataContext/Title}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
 </StackView>

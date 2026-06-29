@@ -2,10 +2,10 @@
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="IconCard" class="card stack-card icon-card">
 	<StackView Name="IconCardHeader" class="icon-card-header">
-		<StackView Name="IconCardBadge" class="icon-badge" BackgroundColor="{Binding ../../Card.IconBackground}">
-			<ImageView Name="IconCardImage" class="icon-card-image" Stretch="Uniform" Source="{Binding ../../../Card.Icon}" ForegroundColor="{Binding ../../../Card.PrimaryColor}"/>
+		<StackView Name="IconCardBadge" class="icon-badge" BackgroundColor="{Binding DataContext/IconBackground}">
+			<ImageView Name="IconCardImage" class="icon-card-image" Stretch="Uniform" Source="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
 		</StackView>
-		<TextBlock Name="IconCardTitle" class="card-title" Text="{Binding ../../Card.Title}"/>
+		<TextBlock Name="IconCardTitle" class="card-title" Text="{Binding DataContext/Title}"/>
 	</StackView>
-	<TextBlock Name="IconCardBody" class="card-body" Text="{Binding ../Card.Body}"/>
+	<TextBlock Name="IconCardBody" class="card-body" Text="{Binding DataContext/Body}"/>
 </StackView>
