@@ -1,4 +1,4 @@
-#include <core/core.h>
+#include <source/core/core_local.h>
 #include <include/api.h>
 #include <include/codegen.h>
 
