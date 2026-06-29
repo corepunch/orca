@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include "source/core/property/property_internal.h"
 
 void OBJ_SetFocus(struct Object *pobj)
 {

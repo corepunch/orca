@@ -169,6 +169,7 @@ end
 -- measurement work unless text inputs change.
 -- ---------------------------------------------------------------------------
 local function test_text_layout_uses_cached_measurement()
+	local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 	local text = screen + ui.TextBlock {
 		Text = "Cached text metrics",
 		FontSize = 24,
