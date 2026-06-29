@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="FeatureImageCard" class="card stack-card feature-image-card">
-	<ImageView Name="FeatureImageCardIcon" class="feature-image-card-icon" Source="{Binding Card.Icon}" ForegroundColor="{Binding Card.PrimaryColor}"/>
-	<TextBlock Name="FeatureImageCardTitle" class="card-title" Text="{Binding Card.Title}"/>
-	<TextBlock Name="FeatureImageCardBody" class="card-body" Text="{Binding Card.Body}"/>
+	<ImageView Name="FeatureImageCardIcon" class="feature-image-card-icon" Source="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
+	<TextBlock Name="FeatureImageCardTitle" class="card-title" Text="{Binding DataContext/Title}"/>
+	<TextBlock Name="FeatureImageCardBody" class="card-body" Text="{Binding DataContext/Body}"/>
 </StackView>

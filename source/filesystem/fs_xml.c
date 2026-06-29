@@ -35,6 +35,27 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     _SendMessage(o, StyleController, AddClasses, .ClassNames = value);
     return TRUE;
   }
+  if (!strcmp(name, "DataContextSource")) {
+    const char *colon = strrchr(value, ':');
+    if (colon) {
+      size_t pathLen = colon - value;
+      char path[256];
+      snprintf(path, sizeof(path), "%.*s", (int)pathLen, value);
+      struct Object *root = FS_LoadObject(path);
+      if (root) {
+        struct Object *child = OBJ_FindChild(root, colon + 1, FALSE);
+        if (child) {
+          PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
+        }
+      }
+    } else {
+      struct Object *dataObj = FS_LoadObject(value);
+      if (dataObj) {
+        PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
+      }
+    }
+    return TRUE;
+  }
   return FALSE;
 }
 

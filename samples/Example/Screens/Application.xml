@@ -22,9 +22,9 @@
 					<TextBlock Name="SubHeadline" class="hero-subtitle">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
 					<Node2D Name="MetricSpacer" class="metric-spacer"/>
 					<Grid Name="Metrics" Columns="auto auto auto" class="grid">
-						<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="2.4 M" Card.Subtitle="Active users" Card.PrimaryColor="$accent"/>
-						<LayerPrefabPlaceholder Name="MetricUptime" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="99.9 %" Card.Subtitle="Uptime SLA" Card.PrimaryColor="$accent-green"/>
-						<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" Card.Title="1.2 ms" Card.Subtitle="Frame time" Card.PrimaryColor="$accent-blue"/>
+					<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricUsers"/>
+					<LayerPrefabPlaceholder Name="MetricUptime" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricUptime"/>
+					<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricFrame"/>
 					</Grid>
 				</StackView>
 				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
@@ -39,23 +39,17 @@
 				<Grid Name="OrcaSignals" Columns="auto auto auto" class="grid">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto", "auto auto")</BindingExpression>
 					<LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask" Card.Title="XML-first screens"
-						Card.Body="Layouts stay readable." Card.PrimaryColor="$accent"/>
+						DataContextSource="Example/Data/ApplicationData:SignalXml"/>
 					<LayerPrefabPlaceholder Name="SignalLua" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/file.svg?width=28&amp;type=mask" Card.Title="Lua beside the view"
-						Card.Body="Behavior stays close." Card.PrimaryColor="$accent-blue"/>
+						DataContextSource="Example/Data/ApplicationData:SignalLua"/>
 					<LayerPrefabPlaceholder Name="SignalMoon" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/moon.svg?width=28&amp;type=mask" Card.Title="MoonScript when it grows"
-						Card.Body="Less noise, same runtime." Card.PrimaryColor="$text-secondary"/>
+						DataContextSource="Example/Data/ApplicationData:SignalMoon"/>
 					<LayerPrefabPlaceholder Name="SignalShip" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/globe.svg?width=28&amp;type=mask" Card.Title="Desktop, mobile, web"
-						Card.Body="One screen, many targets." Card.PrimaryColor="$accent-green"/>
+						DataContextSource="Example/Data/ApplicationData:SignalShip"/>
 					<LayerPrefabPlaceholder Name="SignalSpeed" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/zap.svg?width=28&amp;type=mask" Card.Title="Fast edit-run-refine"
-						Card.Body="See changes immediately." Card.PrimaryColor="$accent-amber"/>
+						DataContextSource="Example/Data/ApplicationData:SignalSpeed"/>
 					<LayerPrefabPlaceholder Name="SignalScale" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						Card.Icon="Example/Icons/cpu.svg?width=28&amp;type=mask" Card.Title="Built to scale"
-						Card.Body="Same UI, larger ambitions." Card.PrimaryColor="$text-muted"/>
+						DataContextSource="Example/Data/ApplicationData:SignalScale"/>
 				</Grid>
 				<TabView Name="OrcaTabs" SelectedValue="xml">
 					<TabBar Name="OrcaTabBar" class="panel tabbar">
@@ -66,8 +60,7 @@
 					</TabBar>
 					<StackView Name="xml" class="tab-panel">
 						<LayerPrefabPlaceholder Name="XmlPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							Card.Icon="Example/Icons/grid.svg?width=26&amp;type=mask" Card.Title="XML reads like a blueprint"
-							Card.PrimaryColor="$accent"/>
+							DataContextSource="Example/Data/ApplicationData:XmlPanelHeader"/>
 						<Grid Name="XmlGrid" Columns="auto auto" class="grid">
 							<StackView Name="XmlCopy" class="copy-stack">
 								<TextBlock Name="XmlBody" class="section-copy"
@@ -81,51 +74,37 @@
 							<StackView Name="XmlModel" class="card stack-card model-panel">
 								<TextBlock Name="XmlModelHeading" class="card-title" Text="The structure stays honest"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine1" class="model-indent-root" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/monitor.svg?width=20&amp;type=mask" Card.Title="Screen"
-									Card.PrimaryColor="$accent"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine1"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine2" class="model-indent-child" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/panel-top.svg?width=20&amp;type=mask" Card.Title="TabView"
-									Card.PrimaryColor="$text-secondary"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine2"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine3" class="model-indent-grandchild" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/grid.svg?width=20&amp;type=mask" Card.Title="Grid"
-									Card.PrimaryColor="$text-secondary"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine3"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine4" class="model-indent-grandchild" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/layers.svg?width=20&amp;type=mask" Card.Title="StackView"
-									Card.PrimaryColor="$text-secondary"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine4"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine5" class="model-indent-leaf" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/image.svg?width=20&amp;type=mask" Card.Title="ImageView"
-									Card.PrimaryColor="$text-secondary"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine5"/>
 								<LayerPrefabPlaceholder Name="XmlModelLine6" class="model-indent-leaf" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									Card.Icon="Example/Icons/type.svg?width=20&amp;type=mask" Card.Title="TextBlock"
-									Card.PrimaryColor="$text-secondary"/>
+									DataContextSource="Example/Data/ApplicationData:XmlModelLine6"/>
 							</StackView>
 						</Grid>
 					</StackView>
 					<StackView Name="lua" class="tab-panel">
 						<LayerPrefabPlaceholder Name="LuaPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							Card.Icon="Example/Icons/code.svg?width=26&amp;type=mask" Card.Title="Lua stays close to the surface"
-							Card.PrimaryColor="$accent-blue"/>
+							DataContextSource="Example/Data/ApplicationData:LuaPanelHeader"/>
 						<TextBlock Name="LuaBody" class="section-copy"
 							Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."/>
 						<Grid Name="LuaGrid" Columns="auto auto auto" class="grid">
 							<LayerPrefabPlaceholder Name="LuaCard1" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask" Card.Title="Input"
-								Card.Body="Tap, click, and selection handling can sit right beside the view that needs it."
-								Card.PrimaryColor="$accent" Card.IconBackground="$icon-bg-purple"/>
+								DataContextSource="Example/Data/ApplicationData:LuaCard1"/>
 							<LayerPrefabPlaceholder Name="LuaCard2" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/database.svg?width=40&amp;type=mask" Card.Title="State"
-								Card.Body="Small state objects stay local, so the screen remains easy to reason about."
-								Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
+								DataContextSource="Example/Data/ApplicationData:LuaCard2"/>
 							<LayerPrefabPlaceholder Name="LuaCard3" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/link-2.svg?width=40&amp;type=mask" Card.Title="Binding"
-								Card.Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."
-								Card.PrimaryColor="$accent-green" Card.IconBackground="$icon-bg-green"/>
+								DataContextSource="Example/Data/ApplicationData:LuaCard3"/>
 						</Grid>
 					</StackView>
 					<StackView Name="moon" class="tab-panel">
 						<LayerPrefabPlaceholder Name="MoonPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							Card.Icon="Example/Icons/moon.svg?width=26&amp;type=mask" Card.Title="MoonScript trims the noise"
-							Card.PrimaryColor="$text-secondary"/>
+							DataContextSource="Example/Data/ApplicationData:MoonPanelHeader"/>
 						<Grid Name="MoonGrid" Columns="auto auto" class="grid">
 							<StackView Name="MoonCopy" class="copy-stack">
 								<TextBlock Name="MoonBody" class="section-copy"
@@ -147,29 +126,22 @@
 					</StackView>
 					<StackView Name="deploy" class="tab-panel">
 						<LayerPrefabPlaceholder Name="DeployPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							Card.Icon="Example/Icons/globe.svg?width=26&amp;type=mask" Card.Title="One UI, many targets"
-							Card.PrimaryColor="$accent-green"/>
+							DataContextSource="Example/Data/ApplicationData:DeployPanelHeader"/>
 						<TextBlock Name="DeployBody" class="section-copy"
 							Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."/>
 						<Grid Name="DeployGrid" Columns="auto auto auto" class="grid">
 							<LayerPrefabPlaceholder Name="DeployCard1" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/monitor.svg?width=40&amp;type=mask" Card.Title="Desktop"
-								Card.Body="Best when you want denser information, more breathing room, and precision input."
-								Card.PrimaryColor="$accent" Card.IconBackground="$icon-bg-purple"/>
+								DataContextSource="Example/Data/ApplicationData:DeployCard1"/>
 							<LayerPrefabPlaceholder Name="DeployCard2" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/smartphone.svg?width=40&amp;type=mask" Card.Title="Mobile"
-								Card.Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."
-								Card.PrimaryColor="$accent-green" Card.IconBackground="$icon-bg-green"/>
+								DataContextSource="Example/Data/ApplicationData:DeployCard2"/>
 							<LayerPrefabPlaceholder Name="DeployCard3" PlaceholderTemplate="Example/Prefabs/IconCard"
-								Card.Icon="Example/Icons/globe.svg?width=40&amp;type=mask" Card.Title="Web"
-								Card.Body="The same screen model can carry into browser workflows without being rewritten."
-								Card.PrimaryColor="$accent-blue" Card.IconBackground="$icon-bg-blue"/>
+								DataContextSource="Example/Data/ApplicationData:DeployCard3"/>
 						</Grid>
 						<Grid Name="DeployImages" Columns="auto auto" class="grid">
 							<LayerPrefabPlaceholder Name="DeployImage1" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
-								Card.Image="Example/Images/orca-tab-city" Card.Title="City glow"/>
+								DataContextSource="Example/Data/ApplicationData:DeployImage1"/>
 							<LayerPrefabPlaceholder Name="DeployImage2" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
-								Card.Image="Example/Images/orca-tab-lights" Card.Title="Night light"/>
+								DataContextSource="Example/Data/ApplicationData:DeployImage2"/>
 						</Grid>
 						<StackView Name="DeployCommandLink" class="panel command-link">
 							<ImageView Name="DeployCommandIcon" class="command-icon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
@@ -183,21 +155,13 @@
 			</StackView>
 			<Grid Name="FeatureSection" Columns="auto auto auto auto" class="grid feature-section">
 				<LayerPrefabPlaceholder Name="FeatureXmlCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					Card.Icon="Example/Icons/layers.svg?width=40&amp;type=mask" Card.Title="XML stays readable"
-					Card.Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."
-					Card.PrimaryColor="$accent-blue"/>
+					DataContextSource="Example/Data/ApplicationData:FeatureXmlCard"/>
 				<LayerPrefabPlaceholder Name="FeatureLuaCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					Card.Icon="Example/Icons/monitor.svg?width=40&amp;type=mask" Card.Title="Lua stays close"
-					Card.Body="Interactions, bindings, and state can live next to the screen that owns them."
-					Card.PrimaryColor="$accent-green"/>
+					DataContextSource="Example/Data/ApplicationData:FeatureLuaCard"/>
 				<LayerPrefabPlaceholder Name="FeatureShipCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					Card.Icon="Example/Icons/globe.svg?width=40&amp;type=mask" Card.Title="Ships everywhere"
-					Card.Body="The same UI can move across desktop, mobile, and web-friendly targets."
-					Card.PrimaryColor="$accent-amber"/>
+					DataContextSource="Example/Data/ApplicationData:FeatureShipCard"/>
 				<LayerPrefabPlaceholder Name="FeatureSpeedCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					Card.Icon="Example/Icons/zap.svg?width=40&amp;type=mask" Card.Title="Fast iteration"
-					Card.Body="Edit, reload, and refine quickly without losing the overall shape of the interface."
-					Card.PrimaryColor="$accent"/>
+					DataContextSource="Example/Data/ApplicationData:FeatureSpeedCard"/>
 			</Grid>
 			<StackView Name="GallerySection" class="section surface-section gallery-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
@@ -206,11 +170,9 @@
 					Text="Screenshots and scenes rendered entirely by the ORCA engine."/>
 				<Grid Name="GalleryGrid" Columns="auto auto" class="grid">
 					<LayerPrefabPlaceholder Name="GalleryCard1" PlaceholderTemplate="Example/Prefabs/GalleryCard"
-						Card.Image="Example/Images/lake" Card.Title="Lake Scene"
-						Card.Subtitle="Real-time reflections and water surface rendered at 60 fps."/>
+						DataContextSource="Example/Data/ApplicationData:GalleryCard1"/>
 					<LayerPrefabPlaceholder Name="GalleryCard2" PlaceholderTemplate="Example/Prefabs/GalleryCard"
-						Card.Image="Example/Images/peacock" Card.Title="Peacock"
-						Card.Subtitle="High-fidelity texture sampling with anisotropic filtering."/>
+						DataContextSource="Example/Data/ApplicationData:GalleryCard2"/>
 				</Grid>
 			</StackView>
 			<StackView Name="WorkflowSection" class="section deep-section workflow-section">
@@ -221,17 +183,13 @@
 				<Grid Name="WorkflowSteps" Columns="auto auto auto auto" class="grid">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto auto", "auto auto")</BindingExpression>
 					<LayerPrefabPlaceholder Name="Step1" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						Card.Title="01" Card.Subtitle="Define Layout" Card.PrimaryColor="$accent"
-						Card.Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
+						DataContextSource="Example/Data/ApplicationData:Step1"/>
 					<LayerPrefabPlaceholder Name="Step2" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						Card.Title="02" Card.Subtitle="Load Assets" Card.PrimaryColor="$accent-blue"
-						Card.Body="Images, fonts, and data files are streamed from packages at runtime."/>
+						DataContextSource="Example/Data/ApplicationData:Step2"/>
 					<LayerPrefabPlaceholder Name="Step3" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						Card.Title="03" Card.Subtitle="Script Logic" Card.PrimaryColor="$accent-green"
-						Card.Body="Attach Lua scripts to any component for interactivity and data binding."/>
+						DataContextSource="Example/Data/ApplicationData:Step3"/>
 					<LayerPrefabPlaceholder Name="Step4" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						Card.Title="04" Card.Subtitle="Ship" Card.PrimaryColor="$accent-amber"
-						Card.Body="Deploy to desktop, mobile, or WebGL with a single build command."/>
+						DataContextSource="Example/Data/ApplicationData:Step4"/>
 				</Grid>
 			</StackView>
 			<StackView Name="TestimonialsSection" class="section surface-section testimonials-section">
@@ -239,14 +197,11 @@
 				<TextBlock Name="TestimonialsHeading" class="section-heading" Text="What Developers Say"/>
 				<Grid Name="TestimonialsGrid" Columns="auto auto auto" class="grid">
 					<LayerPrefabPlaceholder Name="Quote1" PlaceholderTemplate="Example/Prefabs/Quote"
-						Card.PrimaryColor="$accent" Card.Title="— Alex R." Card.Subtitle="Lead Engineer"
-						Card.Body="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
+						DataContextSource="Example/Data/ApplicationData:Quote1"/>
 					<LayerPrefabPlaceholder Name="Quote2" PlaceholderTemplate="Example/Prefabs/Quote"
-						Card.PrimaryColor="$accent-green" Card.Title="— Sam T." Card.Subtitle="UI Architect"
-						Card.Body="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
+						DataContextSource="Example/Data/ApplicationData:Quote2"/>
 					<LayerPrefabPlaceholder Name="Quote3" PlaceholderTemplate="Example/Prefabs/Quote"
-						Card.PrimaryColor="$accent-blue" Card.Title="— Jordan M." Card.Subtitle="Game Developer"
-						Card.Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
+						DataContextSource="Example/Data/ApplicationData:Quote3"/>
 				</Grid>
 			</StackView>
 			<StackView Name="CtaSection" class="section panel cta-section">

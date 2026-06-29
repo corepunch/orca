@@ -89,13 +89,15 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
     struct Property *p = OBJ_FindLongProperty(object, fnv1a32(path));
     if (p) {
       return p;
-    } else if (!strcmp(path, "Material.BlendIntensity")||
-               !strcmp(path, "_BlendIntensity"))
-    { // HACK: a workaround or expected behaviour?
-      return OBJ_FindLongProperty(object, ID_Node_Opacity);
-    } else {
-      return p;
     }
+    struct Object *child = OBJ_FindImmediateChild(object, fnv1a32(path));
+    if (child) {
+      struct Property *childVal = OBJ_FindLongProperty(child, ID_DataObject_Value);
+      if (childVal) {
+        return childVal;
+      }
+    }
+    return p;
   }
 }
 

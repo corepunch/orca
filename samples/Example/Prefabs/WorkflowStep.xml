@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="WorkflowStep" class="card stack-card workflow-step">
-	<TextBlock Name="WorkflowStepNumber" class="workflow-number" Text="{Binding ../Card.Title}" ForegroundColor="{Binding ../Card.PrimaryColor}"/>
-	<TextBlock Name="WorkflowStepTitle" class="workflow-title" Text="{Binding ../Card.Subtitle}"/>
-	<TextBlock Name="WorkflowStepBody" class="card-body" Text="{Binding ../Card.Body}"/>
+	<TextBlock Name="WorkflowStepNumber" class="workflow-number" Text="{Binding DataContext/Title}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
+	<TextBlock Name="WorkflowStepTitle" class="workflow-title" Text="{Binding DataContext/Subtitle}"/>
+	<TextBlock Name="WorkflowStepBody" class="card-body" Text="{Binding DataContext/Body}"/>
 </StackView>
