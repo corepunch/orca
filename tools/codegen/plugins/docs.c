@@ -187,7 +187,8 @@ static int emit_args_list(outbuf *b, cg_model const *m, uint32_t pid) {
   int first=1;
   for (cg_node const *a=cg_first(m,pid,CG_KIND_ARG); a; a=cg_next(m,a,pid,CG_KIND_ARG)) {
     if (!first && ob_printf(b,", ")<0) return -1;
-    if (emit_type(b,a)<0) return -1; first=0;
+    if (emit_type(b,a)<0) return -1;
+    first=0;
   }
   return first ? ob_printf(b,"\xe2\x80\x94") : 0;
 }
