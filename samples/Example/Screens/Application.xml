@@ -168,12 +168,9 @@
 				<TextBlock Name="GalleryHeading" class="section-heading" Text="Gallery"/>
 				<TextBlock Name="GallerySubheading" class="section-copy"
 					Text="Screenshots and scenes rendered entirely by the ORCA engine."/>
-				<Grid Name="GalleryGrid" Columns="auto auto" class="grid">
-					<LayerPrefabPlaceholder Name="GalleryCard1" PlaceholderTemplate="Example/Prefabs/GalleryCard"
-						DataContextSource="Example/Data/ApplicationData:GalleryCard1"/>
-					<LayerPrefabPlaceholder Name="GalleryCard2" PlaceholderTemplate="Example/Prefabs/GalleryCard"
-						DataContextSource="Example/Data/ApplicationData:GalleryCard2"/>
-				</Grid>
+				<ListBox Name="GalleryList" Direction="Horizontal" Spacing="16"
+					ItemsSource="Example/Data/ApplicationData:GalleryCards"
+					ItemTemplate="Example/Prefabs/GalleryCard"/>
 			</StackView>
 			<StackView Name="WorkflowSection" class="section deep-section workflow-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
