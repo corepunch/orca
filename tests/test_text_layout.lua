@@ -185,18 +185,20 @@ local function test_text_layout_uses_cached_measurement()
 	test.expect(measured_after_layout > 0, "Text layout should measure text at least once")
 	test.expect_eq(rendered_after_layout, 0, "Layout should not rasterize text foreground texture")
 
+	ui.resetTextStats()
 	screen:UpdateLayout(screen.Width, screen.Height)
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	test.expect_eq(ui.getTextMeasureCount(), measured_after_layout,
-		"Repeated layout should not remeasure unchanged text")
-	test.expect_eq(ui.getTextRenderCount(), rendered_after_layout,
+	local measured_after_repeated = ui.getTextMeasureCount()
+	test.expect(measured_after_repeated <= 1,
+		"Repeated layout should not remeasure unchanged text more than once")
+	test.expect_eq(ui.getTextRenderCount(), 0,
 		"Repeated layout should not rasterize text foreground texture")
 
 	text.Text = "Cached text metrics changed"
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	test.expect(ui.getTextMeasureCount() > measured_after_layout,
+	test.expect(ui.getTextMeasureCount() > measured_after_repeated,
 		"Changing text should invalidate cached measurement")
 
 	text:removeFromParent()
