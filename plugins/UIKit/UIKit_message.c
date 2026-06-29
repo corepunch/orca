@@ -8,10 +8,8 @@ extern struct Property *
 luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 
 static void
-push_object_message_arg(lua_State* L, struct Object *sender, struct AXmessage* msg, struct Property *handler)
+push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *handler)
 {
-  luaX_pushObject(L, sender);
-
   if (!msg->lParam) {
     lua_pushnil(L);
     return;
@@ -32,7 +30,8 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
       luaX_import(L, "orca", "async");
       lua_insert(L, -2);
       luaX_pushObject(L, hobj); // self
-      push_object_message_arg(L, msg->target, msg, handler);
+      push_object_message_arg(L, msg, handler);
+      luaX_pushObject(L, msg->target); // sender
 
       // call orca.async
       if (lua_pcall(L, 4, 0, 0) != LUA_OK) {
@@ -330,12 +329,25 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
   if (!build_key_msg(e, &key, &msg)) {
     return FALSE;
   }
-  return core_GetFocus() && CORE_HandleObjectMessage(L, &(struct AXmessage) {
+  bool_t handled = core_GetFocus() && CORE_HandleObjectMessage(L, &(struct AXmessage) {
     .target = core_GetFocus(),
     .message = msg,
     .wParam = 0,
     .lParam = &key,
-  });  
+  });
+  /* Synthesize a TextInput message for printable key presses so tests (and
+     any direct KeyDown dispatch) still accumulate text without requiring a
+     separate translateMessage/dispatch cycle. */
+  if (handled && msg == ID_Node_KeyDown &&
+      key.character >= 32 && (unsigned char)key.character < 127) {
+    CORE_HandleObjectMessage(L, &(struct AXmessage) {
+      .target = core_GetFocus(),
+      .message = ID_Node_TextInput,
+      .wParam = 0,
+      .lParam = &key,
+    });
+  }
+  return handled;
   // for (struct Object *obj = core_GetFocus(); obj; obj = OBJ_GetParent(obj)) {
   //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
   //   if (szCallback) {
