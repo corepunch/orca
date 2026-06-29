@@ -271,8 +271,8 @@ local function test_listbox_datacontext_wiring()
 end
 
 -- ---------------------------------------------------------------------------
--- ListBox: binding expression attached to template TextBlock is preserved
--- on the original template and core.runAllPrograms can evaluate bindings
+-- ListBox: binding expression {DataContext/Name} resolves to the data object's
+-- Name property after core.runAllPrograms evaluates bindings
 -- ---------------------------------------------------------------------------
 local function test_listbox_binding_expression()
   local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
@@ -281,7 +281,7 @@ local function test_listbox_binding_expression()
   items:addChild(core.DataObject { Name = "Alice" })
   items:addChild(core.DataObject { Name = "Bob" })
 
-  -- Template has a TextBlock with a binding expression.
+  -- Template has a TextBlock with a binding to DataContext/Name
   local template = ui.Node2D { Name = "ItemTemplate" }
   local tb = template:addChild(ui.TextBlock { Name = "ItemText" })
   tb:attachPropertyProgram("TextRun.Text", "{DataContext/Name}", "OneWay", true)
@@ -294,20 +294,22 @@ local function test_listbox_binding_expression()
   for _ in listbox.children do childCount = childCount + 1 end
   test.expect_eq(childCount, 2, "Should have 2 children")
 
-  -- Verify binding is attached to the original template's TextBlock
-  test.expect(tb.Text ~= nil or tb.Text == nil,
-    "Template TextBlock exists")
-
-  -- Verify DataContext is wired on each instantiated item
-  local dcCount = 0
-  for child in listbox.children do
-    if child.DataContext ~= nil then dcCount = dcCount + 1 end
-  end
-  test.expect_eq(dcCount, 2, "Each item should have DataContext set")
-
-  -- core.runAllPrograms exercises the binding evaluator on the whole tree
+  -- Advance frame and evaluate bindings
   core.advanceFrame()
   core.runAllPrograms(screen)
+
+  -- Verify binding resolved to the actual Name values
+  local names = {}
+  for child in listbox.children do
+    for grandchild in child.children do
+      if grandchild:getClassName() == "TextBlock" then
+        names[#names + 1] = grandchild.Text
+      end
+    end
+  end
+  test.expect_eq(#names, 2, "Should have 2 TextBlocks")
+  test.expect_eq(names[1], "Alice", "First item binding should resolve to 'Alice'")
+  test.expect_eq(names[2], "Bob", "Second item binding should resolve to 'Bob'")
 
   screen:clear()
   print("PASS: test_listbox_binding_expression")

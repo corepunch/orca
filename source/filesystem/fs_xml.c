@@ -114,7 +114,7 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
            pd->Name);
   lpcString_t routed_value = routed;
   struct Property* evt = OBJ_FindLongProperty(trigger, ID_EventTrigger_RoutedEvent);
-  if (evt) {
+  if (!evt) {
     OBJ_ReleaseRef(trigger);
     OBJ_ReleaseRef(action);
     return FALSE;

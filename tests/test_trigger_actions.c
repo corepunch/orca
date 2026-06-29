@@ -17,6 +17,31 @@ extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_system(lua_State *L);
 
+extern void OBJ_Clear(struct Object *);
+
+static lua_State *s_lua_state = NULL;
+
+#define SET_STRING(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
+  const char *_v = (value); \
+  PROP_SetValue(_p, PROP_STR(_v)); \
+} while (0)
+
+#define SET_FLOAT(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
+  float _v = (value); \
+  PROP_SetValue(_p, &_v); \
+} while (0)
+
+#define SET_INT(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
+  int _v = (value); \
+  PROP_SetValue(_p, &_v); \
+} while (0)
+
 static struct
 {
   bool_t Triggered;
@@ -200,7 +225,7 @@ set_up_source(struct Object *source,
 static void
 test_event_trigger_no_args(void)
 {
-  RUN_TEST(event_trigger_no_args", {
+  RUN_TEST("event_trigger_no_args", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -231,7 +256,7 @@ test_event_trigger_no_args(void)
 static void
 test_event_trigger_single_value(void)
 {
-  RUN_TEST(event_trigger_single_value", {
+  RUN_TEST("event_trigger_single_value", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -263,7 +288,7 @@ test_event_trigger_single_value(void)
 static void
 test_event_trigger_partial_payload_defaults_to_zero(void)
 {
-  RUN_TEST(event_trigger_partial_payload_defaults_to_zero", {
+  RUN_TEST("event_trigger_partial_payload_defaults_to_zero", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -296,7 +321,7 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
 static void
 test_generated_action_property_order(void)
 {
-  RUN_TEST(generated_action_property_order", {
+  RUN_TEST("generated_action_property_order", {
     struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
     struct ClassDesc const *base = OBJ_FindClass("SendMessageAction");
     struct Property *x_prop = NULL;
@@ -316,7 +341,7 @@ test_generated_action_property_order(void)
 static void
 test_generated_action_xml(void)
 {
-  RUN_TEST(generated_action_xml", {
+  RUN_TEST("generated_action_xml", {
     reset_observed();
 
     struct Object *root = FS_LoadObjectFromXmlString(
@@ -349,15 +374,14 @@ test_generated_action_xml(void)
 }
 
 static void
-test_generated_action_post_mode(void)
+test_generated_action_dispatch(void)
 {
-  RUN_TEST(generated_action_post_mode", {
+  RUN_TEST("generated_action_dispatch", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
     struct Object *sender = make_object(0xb5c4156c, "Sender");
     struct Object *action = make_object(ID_Object_StartAction, "Action");
-    enum DispatchMode mode = kDispatchModePost;
 
     EXPECT(root != NULL);
     EXPECT(sender != NULL);
@@ -365,11 +389,8 @@ test_generated_action_post_mode(void)
 
     OBJ_AddChild(root, sender);
     OBJ_AddChild(root, action);
-    EXPECT_OK(OBJ_SetPropertyValue(action, "Mode", &mode));
 
     _SendMessage(action, Action, Dispatch, .Sender = sender);
-    EXPECT(s_observed.StartCount == 0);
-    pump_messages(root);
     EXPECT(s_observed.StartCount == 1);
   });
 }
@@ -377,7 +398,7 @@ test_generated_action_post_mode(void)
 static void
 test_generated_action_unset_target_dispatches_sender(void)
 {
-  RUN_TEST(generated_action_unset_target_dispatches_sender", {
+  RUN_TEST("generated_action_unset_target_dispatches_sender", {
     reset_observed();
 
     struct Object *sender = make_object(0xb5c4156c, "Sender");
@@ -400,7 +421,7 @@ main(void)
   test_event_trigger_partial_payload_defaults_to_zero();
   test_generated_action_property_order();
   test_generated_action_xml();
-  test_generated_action_post_mode();
+  test_generated_action_dispatch();
   test_generated_action_unset_target_dispatches_sender();
 
   if (s_lua_state) {

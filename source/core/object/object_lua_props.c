@@ -107,9 +107,14 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
   uint32_t ident = fnv1a32(name);
   switch (ident) {
     case p_id:
-		case p_Name:
+		case p_Name: {
 			OBJ_SetName(self, luaL_checkstring(L, 3));
+			struct Property *nameProp = OBJ_FindLongProperty(self, ID_DataObject_Name);
+			if (nameProp) {
+				PROP_SetStringValue(nameProp, OBJ_GetName(self));
+			}
 			return TRUE;
+		}
 		case p_selected: {
 			uint32_t flags = OBJ_GetFlags(self);
 			if (lua_toboolean(L, 3)) {

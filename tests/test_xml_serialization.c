@@ -25,14 +25,6 @@
 #include <string.h>
 
 /* ------------------------------------------------------------------ */
-/* Minimal test harness (same style as test_properties.c and test_styles.c) */
-/* ------------------------------------------------------------------ */
-
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
-/* ------------------------------------------------------------------ */
 /* Test class: a minimal component with a few properties              */
 /* ------------------------------------------------------------------ */
 
