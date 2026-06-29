@@ -175,15 +175,16 @@
     <DataObjectString Name="Body" Value="Edit, reload, and refine quickly without losing the overall shape of the interface."/>
     <DataObjectString Name="PrimaryColor" Value="$accent"/>
   </DataObject>
-  <DataObject Name="GalleryCard1">
-    <DataObjectString Name="Image" Value="Example/Images/lake"/>
-    <DataObjectString Name="Title" Value="Lake Scene"/>
-    <DataObjectString Name="Subtitle" Value="Real-time reflections and water surface rendered at 60 fps."/>
-  </DataObject>
-  <DataObject Name="GalleryCard2">
-    <DataObjectString Name="Image" Value="Example/Images/peacock"/>
-    <DataObjectString Name="Title" Value="Peacock"/>
-    <DataObjectString Name="Subtitle" Value="High-fidelity texture sampling with anisotropic filtering."/>
+  <DataObject Name="GalleryCards">
+    <DataObject Name="GalleryCard1">
+      <DataObjectString Name="Image" Value="Example/Images/lake"/>
+      <DataObjectString Name="Title" Value="Lake Scene"/>
+      <DataObjectString Name="Subtitle" Value="Real-time reflections and water surface rendered at 60 fps."/>
+    </DataObject>
+    <DataObject Name="GalleryCard2">
+      <DataObjectString Name="Title" Value="Peacock"/>
+      <DataObjectString Name="Subtitle" Value="High-fidelity texture sampling with anisotropic filtering."/>
+    </DataObject>
   </DataObject>
   <DataObject Name="Step1">
     <DataObjectString Name="Title" Value="01"/>
