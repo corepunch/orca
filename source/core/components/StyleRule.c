@@ -39,12 +39,14 @@ _ParsePseudoClass(lpcString_t pseudo)
 }
 
 // Update cached fields whenever ClassName or PseudoClass changes.
+// StyleRule_Release
 HANDLER(StyleRule, Object, Release) {
   OBJ_FreeStyleSelector(pStyleRule->selector);
   pStyleRule->selector = NULL;
   return FALSE;
 }
 
+// StyleRule_PropertyChanged
 HANDLER(StyleRule, Object, PropertyChanged) {
   uint32_t changed = PROP_GetLongIdentifier(pPropertyChanged->Property);
 

@@ -48,7 +48,7 @@ WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c $(d)/*/*.c))
 WEBGL_PLAT_SRC = $(wildcard $(PLATFORM_LIBDIR)/webgl/*.c)
 
 # Plugins linked statically into the WebGL binary (vsomeip excluded: C++/sockets).
-WEBGL_PLUGINS     = UIKit SceneKit SpriteKit DarkReign
+WEBGL_PLUGINS     = UIKit SceneKit SpriteKit
 WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/*.c))
 # Generated header: forward-declares every luaopen_orca_* symbol found in the
 # plugin sources and builds the plugin_modules[] table used by orcalib.c.

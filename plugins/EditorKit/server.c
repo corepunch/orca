@@ -124,7 +124,7 @@ add_subproperty(xmlNodePtr xml,
   path_t buf;
   PDESC_Print(pdesc, buf, sizeof(buf), dest);
   xmlNodePtr n = _xmlAddProp(xml, pdesc->Name, buf, pdesc->DataType);
-  if (PROP_FindByLongID(OBJ_GetProperties(obj), pdesc->FullIdentifier)) {
+  if (OBJ_FindLongProperty((struct Object*)obj, pdesc->FullIdentifier)) {
     _xmlSetProp(n, "data-set", "true");
   }
   switch (pdesc->DataType) {
@@ -230,8 +230,8 @@ SV_CMD(PUT, node)
       OBJ_SetName(obj, arg->value);
     } else{
       path_t buf={0};
-      struct Property *property = NULL;
-      if (FAILED(OBJ_FindShortProperty(obj, arg->name, &property))) continue;
+      struct Property *property = OBJ_FindShortProperty(obj, fnv1a32(arg->name));
+      if (!property) continue;
       PROP_Print(property, buf, sizeof(buf));
       _xmlAddProp(response, arg->name, buf, PROP_GetType(property));
 //      PROP_Parse(property, arg->value);
@@ -391,8 +391,8 @@ SV_CMD(GET, property_types) {
 SV_CMD(POST, property_types) {
   REQUIRE(lpcString_t, classname, SV_ARG("name"), "Missing `name` argument");
   REQUIRE(struct Object *, object, OBJ_FindByPath(FS_GetWorkspace(), endpoint), ERROR_CANT_FIND_OBJECT);
-  struct Property *property;
-  if (FAILED(OBJ_FindLongProperty(object, fnv1a32(classname), &property))) {
+  struct Property *property = OBJ_FindLongProperty(object, fnv1a32(classname));
+  if (!property) {
     return "Can't create property";
   }
   return NULL;
@@ -485,3 +485,4 @@ LRESULT filesystem_handle_event(lua_State *L, struct AXmessage *msg) {
     return FALSE;
   }
 }
+

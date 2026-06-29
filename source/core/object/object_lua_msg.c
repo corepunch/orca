@@ -85,16 +85,16 @@ _CreateMessageAction(lua_State *L,
     return NULL;
   }
 
-  struct Property *target_prop = NULL;
   lpcString_t direct_target = ".";
-  if (SUCCEEDED(OBJ_FindLongProperty(action, ID_SendMessageAction_Target, &target_prop)) && target_prop) {
+  struct Property *target_prop = OBJ_FindLongProperty(action, ID_SendMessageAction_Target);
+  if (target_prop) {
     PROP_SetValue(target_prop, &direct_target);
   }
 
   if (post) {
-    struct Property *mode_prop = NULL;
+    struct Property *mode_prop = OBJ_FindLongProperty(action, ID_SendMessageAction_Mode);
     enum DispatchMode mode = kDispatchModePost;
-    if (SUCCEEDED(OBJ_FindLongProperty(action, ID_SendMessageAction_Mode, &mode_prop)) && mode_prop) {
+    if (mode_prop) {
       PROP_SetValue(mode_prop, &mode);
     }
   }

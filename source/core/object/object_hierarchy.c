@@ -16,6 +16,7 @@ OBJ_AddChild(struct Object *self, struct Object *child)
   child->parent = self;
   OBJ_SetDirty(self);
   struct Object_AttachedEventArgs attached_args = { .Sender = child };
+  OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
   OBJ_SendMessageW(child, ID_Object_Attached, 0, &attached_args);
   _SendMessage(child, StyleController, ThemeChanged, .recursive = TRUE);
   return child;
@@ -85,18 +86,18 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
       return child ? OBJ_FindPropertyByPath(child, ++split) : NULL;
     }
   } else {
-    struct Property *plist = OBJ_GetProperties(object);
-//    struct Property *p = PROP_FindByFullName(plist, path);
-    struct Property *p;
-    if (SUCCEEDED(OBJ_FindLongProperty(object, fnv1a32(path), &p))) {
-      return p;
-    } else if (!strcmp(path, "Material.BlendIntensity")||
-               !strcmp(path, "_BlendIntensity"))
-    { // HACK: a workaround or expected behaviour?
-      return PROP_FindByFullName(plist, "Node.Opacity");
-    } else {
+    struct Property *p = OBJ_FindLongProperty(object, fnv1a32(path));
+    if (p) {
       return p;
     }
+    struct Object *child = OBJ_FindImmediateChild(object, fnv1a32(path));
+    if (child) {
+      struct Property *childVal = OBJ_FindLongProperty(child, ID_DataObject_Value);
+      if (childVal) {
+        return childVal;
+      }
+    }
+    return p;
   }
 }
 

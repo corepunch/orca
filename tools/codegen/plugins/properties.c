@@ -49,137 +49,9 @@ static void ucfirst_into(char *dst, size_t dsz, char const *s) {
     snprintf(dst + 1, dsz - 1, "%s", s + 1);
 }
 
-/* strip chars '.' '[' ']' from src into dst */
-static void strip_brackets_dots(char *dst, size_t dsz, char const *src) {
-    size_t i = 0;
-    for (; *src && i + 1 < dsz; ++src) {
-        if (*src != '.' && *src != '[' && *src != ']') dst[i++] = *src;
-    }
-    dst[i] = 0;
-}
-
 /* ---------- axis name transform ------------------------------------------ */
 
-/* Names for axis index 0/1/2 */
-static char const *k_ax[3]      = {"Horizontal", "Vertical", "Depth"};
-static char const *k_left[3]    = {"Left",   "Top",    "Front"};
-static char const *k_right[3]   = {"Right",  "Bottom", "Back"};
-/* Size axis sub-field names and their axis-mapped display names */
-static char const *k_size_sub[5]     = {"Requested","Desired","Min","Actual","Scroll"};
-static char const *k_size_names[3][5] = {
-    {"Width","DesiredWidth","MinWidth","ActualWidth","ScrollWidth"},
-    {"Height","DesiredHeight","MinHeight","ActualHeight","ScrollHeight"},
-    {"Depth","DesiredDepth","MinDepth","ActualDepth","ScrollDepth"},
-};
-
-/* Transform dot-joined ucfirsted path (WITHOUT class prefix) to final name.
- * The rules mirror the legacy Axis property-name transform order. */
-static void axis_transform(char const *path, char *out, size_t out_sz) {
-    char result[512];
-    int n;
-    /* --- rules 7-9: Size.Axis[N].{Sub} --- */
-    for (n = 0; n < 3; n++) {
-        char tok[64]; snprintf(tok, sizeof(tok), "Size.Axis[%d].", n);
-        if (strncmp(path, tok, strlen(tok)) == 0) {
-            char const *sub = path + strlen(tok);
-            int k;
-            /* strip leading "Requested" if present */
-            if (strncmp(sub, "Requested", 9) == 0) {
-                char const *rest = sub + 9;
-                snprintf(out, out_sz, "%s%s", k_size_names[n][0], rest);
-                goto done;
-            }
-            for (k = 1; k < 5; k++) {
-                if (strcmp(sub, k_size_sub[k]) == 0) {
-                    snprintf(out, out_sz, "%s", k_size_names[n][k]);
-                    goto done;
-                }
-            }
-            /* fallthrough: unknown sub-field */
-        }
-    }
-    /* --- rules 1-6: (.+).Axis[N].Left/Right --- */
-    for (n = 0; n < 3; n++) {
-        char lt[64], rt[64];
-        snprintf(lt, sizeof(lt), ".Axis[%d].Left", n);
-        snprintf(rt, sizeof(rt), ".Axis[%d].Right", n);
-        char *pos;
-        if ((pos = strstr((char *)path, lt)) != NULL) {
-            size_t pl = (size_t)(pos - path);
-                char prefix[256]; memcpy(prefix, path, pl); prefix[pl] = 0;
-                char const *suf = pos + strlen(lt);
-                snprintf(result, sizeof(result), "%s%s%s", prefix, k_left[n], suf);
-                strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-        if ((pos = strstr((char *)path, rt)) != NULL) {
-            size_t pl = (size_t)(pos - path);
-            char prefix[256]; memcpy(prefix, path, pl); prefix[pl] = 0;
-            char const *suf = pos + strlen(rt);
-            snprintf(result, sizeof(result), "%s%s%s", prefix, k_right[n], suf);
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    /* --- rules 10-12: (.+).Axis[N] at end --- */
-    for (n = 0; n < 3; n++) {
-        char tok[32]; snprintf(tok, sizeof(tok), ".Axis[%d]", n);
-        size_t plen = strlen(path), tlen = strlen(tok);
-        if (plen > tlen && strcmp(path + plen - tlen, tok) == 0) {
-            char prefix[256]; memcpy(prefix, path, plen - tlen); prefix[plen - tlen] = 0;
-            snprintf(result, sizeof(result), "%s%s", k_ax[n], prefix);
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    /* --- rule 13: Border.Radius.(.+)Radius --- */
-    if (strncmp(path, "Border.Radius.", 14) == 0) {
-        char const *tail = path + 14;
-        size_t len = strlen(tail);
-        if (len > 6 && strcmp(tail + len - 6, "Radius") == 0) {
-            snprintf(result, sizeof(result), "Border%.*sRadius", (int)(len - 6), tail);
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    /* --- rules 14-19: Axis[N].Left/Right without leading segment --- */
-    for (n = 0; n < 3; n++) {
-        char lt[64], rt[64];
-        snprintf(lt, sizeof(lt), "Axis[%d].Left", n);
-        snprintf(rt, sizeof(rt), "Axis[%d].Right", n);
-        if (strncmp(path, lt, strlen(lt)) == 0) {
-            snprintf(result, sizeof(result), "%s%s", k_left[n], path + strlen(lt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-        if (strncmp(path, rt, strlen(rt)) == 0) {
-            snprintf(result, sizeof(result), "%s%s", k_right[n], path + strlen(rt));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    /* --- rules 20-22: bare Axis[N] --- */
-    for (n = 0; n < 3; n++) {
-        char tok[32]; snprintf(tok, sizeof(tok), "Axis[%d]", n);
-        if (strstr(path, tok) != NULL) {
-            char const *pos = strstr(path, tok);
-            size_t pl = (size_t)(pos - path);
-            char prefix[256];
-            memcpy(prefix, path, pl);
-            prefix[pl] = 0;
-            snprintf(result, sizeof(result), "%s%s%s",
-                    prefix, k_ax[n], pos + strlen(tok));
-            strip_brackets_dots(out, out_sz, result);
-            return;
-        }
-    }
-    /* No pattern matched: strip [,],. */
-    strip_brackets_dots(out, out_sz, path);
-    return;
-done:
-    /* out already written; just ensure no [,],. */
-    ;
-}
+#include "axis_transform.h"
 
 /* ---------- struct registry ---------------------------------------------- */
 
@@ -537,6 +409,9 @@ static int emit_properties(cg_host_v1 const *host, cg_model const *model, char c
             "#ifndef __%s_PROPERTIES_H__\n"
             "#define __%s_PROPERTIES_H__\n\n"
             "#include <stddef.h>\n\n"
+            "#ifndef ORCA_API\n"
+            "#define ORCA_API\n"
+            "#endif\n\n"
             "#ifndef getprop\n"
             "#define getprop(_P, _C, _N) _C##_GetProperty((_P), offsetof(struct _C, _N))\n"
             "#endif\n\n"

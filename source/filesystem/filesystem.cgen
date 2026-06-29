@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="filesystem" namespace="orca" on-luaopen="on_filesystem_module_registered" prefix="FS_">
   <require file="../core/core.cgen"/>
   <externals>
@@ -305,6 +306,12 @@
       <!-- <arg name="themeGroup" type="Object" pointer="true">Pointer to the ThemeGroup object to query</arg> -->
       <arg name="key" type="string">The key identifying the specific theme value to retrieve</arg>
       <returns type="string">The value associated with the specified key in the current theme, or nil if not found</returns>
+    </function>
+    <function name="SerializeObjectToXmlString" export="serializeObjectToXmlString">
+      <summary>Serializes an object tree to an XML string</summary>
+      <details>Traverses the object graph starting from the given object and produces a complete XML representation. Each object becomes an XML element with its class name as the tag. Properties are serialized as attributes, and child objects become nested elements. The result is a heap-allocated string that the caller must free with `free()`. Binding expressions and CSS class information are excluded from the output. Prefab objects are serialized as &lt;LayerPrefabPlaceholder&gt; elements. Returns NULL if the input is NULL or serialization fails.</details>
+      <arg name="object" type="Object" const="true" pointer="true">The root object to serialize</arg>
+      <returns type="string">Heap-allocated XML string representing the object tree; caller must free() it, or NULL on failure</returns>
     </function>
   </functions>
 </module>

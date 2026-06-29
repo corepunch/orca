@@ -67,7 +67,7 @@ _cmd(struct ConsoleView *t, lpcString_t str, struct tstate *state)
     }
     return strchr(str, cmd);
   }
-  
+
   return str;
 }
 
@@ -155,11 +155,13 @@ query_index_position(struct Object *o,
   return FALSE;
 }
 
+// ConsoleView_Unpack
 HANDLER(ConsoleView, ConsoleView, Unpack) {
   if (!pConsoleView->_buffer) return FALSE;
   return (LRESULT)(intptr_t)query_unpack(hObject, pConsoleView, pUnpack->X, pUnpack->Y);
 }
 
+// ConsoleView_GetIndexPosition
 HANDLER(ConsoleView, ConsoleView, GetIndexPosition) {
   int32_t x, y;
   if (!pConsoleView->_buffer) return FALSE;
@@ -176,6 +178,7 @@ HANDLER(ConsoleView, ConsoleView, GetIndexPosition) {
   return (LRESULT)(intptr_t)pack_position(x, y);
 }
 
+// ConsoleView_Println
 HANDLER(ConsoleView, ConsoleView, Println) {
   if (!pConsoleView->_buffer) return FALSE;
   lpcString_t text = pPrintln ? pPrintln->Text : NULL;
@@ -188,6 +191,7 @@ HANDLER(ConsoleView, ConsoleView, Println) {
   return FALSE;
 }
 
+// ConsoleView_Erase
 HANDLER(ConsoleView, ConsoleView, Erase) {
   if (!pConsoleView->_buffer) return FALSE;
   memset(pConsoleView->_buffer, 0, MEMSIZE(pConsoleView));
@@ -196,17 +200,20 @@ HANDLER(ConsoleView, ConsoleView, Erase) {
   return FALSE;
 }
 
+// ConsoleView_Invalidate
 HANDLER(ConsoleView, ConsoleView, Invalidate) {
   axPostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 
+// ConsoleView_Create
 HANDLER(ConsoleView, Object, Create) {
   pConsoleView->_buffer = ZeroAlloc(MEMSIZE(pConsoleView));
   axPostMessageW(hObject, kMsgPaint, 0, NULL);
   return FALSE;
 }
 
+// ConsoleView_DrawForeground
 HANDLER(ConsoleView, Node2D, DrawForeground) {
   bool_t bFocused = OBJ_IsFocused(hObject)||OBJ_GetFlags(hObject)&OF_NOACTIVATE;
   R_DrawConsole(&(DRAWCONSOLESTRUCT){
@@ -228,6 +235,7 @@ HANDLER(ConsoleView, Node2D, DrawForeground) {
   return TRUE;
 }
 
+// ConsoleView_ScrollWheel
 HANDLER(ConsoleView, Node, ScrollWheel) {
   int const h = (pConsoleView->ContentHeight) * CONSOLE_CHAR_HEIGHT;
   float const space = GetNode(hObject)->Size.Axis[1].Actual - h;

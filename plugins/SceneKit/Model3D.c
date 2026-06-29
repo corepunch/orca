@@ -43,7 +43,7 @@ HANDLER(Model3D, Node3D, Render)
 //  if (!a) {
 //    GetNode3D(hObject)->RenderTransform.rotation.y = OBJ_GetWindow(hObject)->frame * 0.05;
 //  }
-  
+
   if (!pModel3D->Mesh)
     return FALSE;
 

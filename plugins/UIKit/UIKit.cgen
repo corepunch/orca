@@ -1,4 +1,5 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="UIKit" namespace="orca" on-luaopen="on_ui_module_registered" after-luaopen="after_ui_module_registered">
   <require file="../../source/core/core.cgen"/>
   <require file="../../source/renderer/api/renderer.cgen"/>
@@ -1008,6 +1009,21 @@
         <property name="TargetType" type="string">Specifies the component type this style targets. Only components of the given type or its derived types will use the style.</property>
         <property name="Type" type="StyleType">Defines the classification of this style, such as Generic, Theme, Override, Local, or Template, determining its scope and application behavior.</property>
       </properties>
+    </class>
+    <class name="ItemsControl">
+      <summary>Base class for controls that present a collection of items</summary>
+      <properties>
+        <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
+        <property name="ItemTemplate" type="Node2D" pointer="true">The template used to represent each item</property>
+      </properties>
+    </class>
+    <class name="ListBox" parent="StackView,ItemsControl">
+      <summary>A list box that allows the user to select one or more items from a collection</summary>
+      <details>Handles Object.Start to populate its children: verifies that ItemsSource and ItemTemplate are both set, iterates over each DataObject in the ItemsSource collection, and for each item instantiates the ItemTemplate via OBJ_Instantiate (falling back to a default TextBlock with text "Item" when no template is provided). Sets Node.DataContext on each instantiated item to the corresponding DataObject. Returns FALSE and logs an error if ItemsSource or ItemTemplate is not set.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
     </class>
   </classes>
 </module>

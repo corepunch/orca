@@ -8,7 +8,9 @@
 
 #define UNIFORM_GRID_MAX_COLUMNS 16
 
+// Grid_MeasureOverride
 HANDLER(Grid, Node2D, MeasureOverride);
+// Grid_ArrangeOverride
 HANDLER(Grid, Node2D, ArrangeOverride);
 
 static void
@@ -48,8 +50,8 @@ _UniformGridSyncColumns(struct Object *hObject,
     return;
   }
 
-  struct Property *prop = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Grid_Columns, &prop))) {
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_Grid_Columns);
+  if (prop) {
     pUniformGrid->_syncingColumns = TRUE;
     PROP_SetStringValue(prop, columns);
     pUniformGrid->_syncingColumns = FALSE;

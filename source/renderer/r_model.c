@@ -90,7 +90,7 @@ static struct model*
 Model_Load(lpcString_t filename)
 {
   dmeshheader header;
-  
+
   if (*filename == '#') {
     if (!strcmp(filename, "#Quad")) {
       struct model* model;
@@ -105,35 +105,35 @@ Model_Load(lpcString_t filename)
       return model;
     }
   }
-  
+
   struct file* file = FS_LoadFile(filename);
-  
+
   if (!file) {
     Con_Error("%s: model not found", filename);
     return Model_CreateError();
   }
-  
+
   if (file->size < sizeof(dmeshheader)) {
     Con_Error("%s: file incorrect", filename);
     FS_FreeFile(file);
     return Model_CreateError();
   }
-  
+
   memcpy(&header, file->data, sizeof(dmeshheader));
-  
+
   if (header.identifier != IDMESHHEADER) {
     Con_Error("%s is not a MESH file", filename);
     FS_FreeFile(file);
     return Model_CreateError();
   }
-  
+
   int ofs_tris = sizeof(dmeshheader);
   int ofs_subm = ofs_tris + sizeof(DRAWINDEX) * header.numIndices;
   int ofs_verts = ofs_subm + sizeof(DRAWSUBMESH) * header.numSubmeshes;
-  
+
   void const* mem = file->data + ofs_verts;
   struct model* model = ZeroAlloc(sizeof(struct model));
-  
+
   R_Call(glGenVertexArrays, 1, &model->vao);
   R_Call(glBindVertexArray, model->vao);
   R_Call(glGenBuffers, VERTEX_SEMANTIC_COUNT, model->vertexBuffers);
@@ -144,13 +144,13 @@ Model_Load(lpcString_t filename)
          sizeof(DRAWINDEX) * header.numIndices,
          file->data + ofs_tris,
          GL_STATIC_DRAW);
-  
+
   FOR_LOOP(attr, header.numAttributes)
   {
     struct dvertattr_header const* dvattr = mem;
     struct va_datatype_desc const desc = va_datatype_info(dvattr->datatype);
     int const attrsize = desc.size * vertex_semantic_attributes(dvattr->semantic)->size;
-    
+
     R_Call(glBindBuffer, GL_ARRAY_BUFFER, model->vertexBuffers[dvattr->semantic]);
     R_Call(glBufferData,
            GL_ARRAY_BUFFER,
@@ -160,21 +160,23 @@ Model_Load(lpcString_t filename)
     mem += attrsize * header.numVertices + sizeof(struct dvertattr_header);
     model->attr[dvattr->semantic] = dvattr->datatype;
   }
-  
+
   model->numVertices = header.numVertices;
   model->numIndices = header.numIndices;
   model->numSubmeshes = header.numSubmeshes;
-  
+
   FS_FreeFile(file);
-  
+
   return model;
 }
 
+// Mesh_Start
 HANDLER(Mesh, Object, Start) {
   pMesh->model = Model_Load(pMesh->Source);
   return TRUE;
 }
 
+// Mesh_Destroy
 HANDLER(Mesh, Object, Destroy) {
   Model_Release(pMesh->model);
   return TRUE;

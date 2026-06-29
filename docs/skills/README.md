@@ -9,6 +9,7 @@ Available skills
 - Orca App MoonScript Lapis Builder: app-development guidance using MoonScript, Lapis patterns, Tailwind, and Orca dialect conventions.
 - Orca Lua Lapis Internals Architect: engine-side Lua API design using Lapis internals patterns and MoonScript interoperability awareness.
 - Orca C Engine WPF WinAPI Architect: C engine architecture, XML-first API design, WPF/WinAPI-inspired messaging, and Lua API negotiation.
+- Orca C Engine Dev: Deep C engine development — .cgen classes, property system, object/component lifecycle, message dispatch, bindings, triggers, actions, filesystem. Includes full codegen reference and generated class index.
 
 Lapis references
 - docs/lapis/lapis-user-guide.md: application-authoring reference for Orca app developers using Lapis-inspired patterns.

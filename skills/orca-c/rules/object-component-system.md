@@ -110,12 +110,12 @@ The engine allocates `sizeof(struct component) + ClassSize` bytes, copies `Defau
 
 ### Standalone vs. component
 
-| Kind | XML attribute | Macro | Use |
-|---|---|---|---|
-| Standalone | *(default)* | `REGISTER_CLASS` | May be created as a root object or attached as a component (e.g. `AnimationClip`) |
-| Component | `` | `REGISTER_CLASS` | Intended to be attached to an existing object via `addComponent` (e.g. `AnimationPlayer`) |
+| Kind | `.cgen` XML attribute | Use |
+|---|---|---|
+| Standalone | *(default — omit `component=`)*  | May be created as a root XML element or attached as a component (e.g. `AnimationClip`) |
+| Component | `<class name="..." component="true">` | Intended to be attached to an existing object via `addComponent`; cannot be a root element (e.g. `AnimationPlayer`) |
 
-Component components set `ClassFlags = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `ClassFlags` and raises an error if a non-component class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
+Component classes set `ClassFlags = TRUE` in their `ClassDesc`. This is currently an architectural convention: `OBJ_AddComponentByName` (the Lua bridge) checks `ClassFlags` and raises an error if a non-component class is passed; however, direct C callers of `OBJ_AddComponent(pobj, class_id)` are not restricted.
 
 ### Inheritance
 
@@ -156,7 +156,7 @@ Messages are `uint32_t` constants with routing bits in the lower 2 bits. Core me
 | Message | When sent |
 |---|---|
 | `ID_Object_Create` | Object has been created (sent once to all initially attached components) |
-| `ID_Object_Start` | All children loaded / object fully initialised |
+| `ID_Object_Start` | All children loaded / object fully initialised. **Sent automatically by the XML loader** (`fs_xml.c`) after the full subtree is built. When constructing objects programmatically in C, call it yourself after `OBJ_AddChild` calls are done. |
 | `ID_Object_Animate` | Per-frame animation tick |
 | `ID_Object_Destroy` | Object being destroyed |
 | `ID_Object_Timer` | Timer tick |
@@ -226,7 +226,7 @@ Add a `<class>` entry to the relevant module `.cgen` file (e.g. `source/core/cor
 </class>
 ```
 
-Use `` for components that augment existing objects; omit it for standalone data objects (like `AnimationClip`) that may be created as root objects.
+Use `component="true"` for components that augment existing objects; omit it for standalone data objects (like `AnimationClip`) that may be created as root objects.
 
 ### 2. Regenerate bindings
 
@@ -262,7 +262,7 @@ The `HANDLER` macro provides the correct function signature. `*_export.c` forwar
 
 ### 4. Register the class at module init
 
-The `REGISTER_CLASS` / `REGISTER_CLASS` macro in `*_export.c` defines `_MyComponent`.  Wire it into the module's `on-luaopen` callback:
+The `REGISTER_CLASS` macro in `*_export.c` defines `_MyComponent`.  Wire it into the module's `on-luaopen` callback:
 
 ```c
 OBJ_RegisterClass(&_MyComponent);

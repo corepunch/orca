@@ -209,12 +209,6 @@ PROP_SetDirty(struct Property *property);
 ORCA_API bool_t
 PROP_IsNull(struct Property const *);
 
-ORCA_API struct Property *
-PROP_FindByLongID(struct Property *, uint32_t identifier);
-
-ORCA_API struct Property *
-PROP_FindByShortID(struct Property *, uint32_t identifier);
-
 ORCA_API uint32_t
 PROP_GetFlags(struct Property const *);
 
@@ -242,6 +236,11 @@ PROP_GetSize(struct Property const *);
 ORCA_API bool_t
 PROP_HasProgram(struct Property *);
 
+/* Returns the original binding expression string as passed to PROP_SetBinding,
+ * or NULL if the property has no binding or was set before this was introduced. */
+ORCA_API lpcString_t
+PROP_GetBindingExpression(struct Property const *p);
+
 ORCA_API lpcString_t
 PROP_GetUserData(struct Property const *);
 
@@ -260,6 +259,17 @@ PROP_GetDesc(struct Property const *prop);
 ORCA_API void
 PROP_Print(struct Property *p, LPSTR buffer, uint32_t len);
 
+/* Format any property value to a human-readable string suitable for XML
+ * attribute serialization. Returns TRUE on success.  Returns FALSE (and
+ * leaves buf empty) for non-serializable types (kDataTypeObject,
+ * kDataTypeEvent) and for NULL values.  kDataTypeStruct fields are
+ * formatted recursively using OBJ_FindStructDesc. */
+ORCA_API bool_t
+OBJ_FormatPropertyValue(struct PropertyType const *pd,
+                        void const *value,
+                        LPSTR buf,
+                        uint32_t len);
+
 ORCA_API struct Property *
 PROP_Create(lua_State*,struct Object *,struct PropertyType const *);
 
@@ -271,7 +281,6 @@ typedef void (*EnumAliasProc)(lpcString_t, lpcString_t, void*);
 ORCA_API bool_t UI_EnumObjectAliases(struct Object *object, EnumAliasProc, void* args);
 
 #define PROP_CopyValue(property, dest) memcpy(dest, PROP_GetValue(property), PROP_GetSize(property))
-#define PROP_FindByFullName(LIST, NAME) PROP_FindByLongID(LIST, fnv1a32(NAME));
 
 /*
  Object helper macros
@@ -388,17 +397,14 @@ struct component;
 ORCA_API void
 OBJ_RegisterFileLoader(const char* extension, struct Object* (*fn)(int argc, const char* argv[]));
 
-ORCA_API HRESULT
-OBJ_FindShortProperty(struct Object *object, lpcString_t short_name, struct Property ** output);
+ORCA_API struct Property *
+OBJ_FindShortProperty(struct Object *object, uint32_t short_id);
 
-ORCA_API HRESULT
-OBJ_FindLongProperty(struct Object *object, uint32_t long_id, struct Property ** output);
+ORCA_API struct Property *
+OBJ_FindLongProperty(struct Object *object, uint32_t long_id);
 
 ORCA_API bool_t
 OBJ_ReadProperty(struct Object *object, uint32_t long_id, void *output);
-
-ORCA_API HRESULT
-OBJ_SetPropertyValue(struct Object *object, lpcString_t name, void const* value);
 
 ORCA_API LRESULT
 OBJ_SendMessage(struct Object *, lpcString_t, wParam_t, lParam_t);
@@ -481,9 +487,6 @@ CORE_FindFontFamily(lpcString_t name);
 ORCA_API struct ClassDesc const *
 OBJ_FindClassW(uint32_t);
 
-ORCA_API struct PropertyType const *
-OBJ_FindPropertyType(uint32_t);
-
 ORCA_API bool_t
 OBJ_RegisterPropertyType(struct PropertyType const *pt);
 
@@ -561,6 +564,12 @@ ORCA_API struct file* FS_LoadFile(lpcString_t);
 ORCA_API HRESULT FS_FreeFile(struct file*);
 //ORCA_API HRESULT FS_GetImageSize(lpcString_t, struct AXsize*);
 ORCA_API lpcString_t FS_ParseArgs(LPSTR s, reqArg_t *args, size_t maxargs);
+
+/* Reconstruct the space-separated CSS class string for an object.
+ * Writes up to len bytes into buf and returns buf, or NULL if the object
+ * has no StyleController or no classes are set. */
+ORCA_API lpcString_t
+OBJ_GetRawStyleClasses(struct Object *object, LPSTR buf, uint32_t len);
 
 // Editor stuff
 ORCA_API void FS_InitHash(void);

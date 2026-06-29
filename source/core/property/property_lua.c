@@ -183,8 +183,8 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
             while (lua_next(L, table_idx) != 0) {
               if (lua_type(L, -2) == LUA_TSTRING) {
                 lpcString_t short_name = lua_tostring(L, -2);
-                struct Property *property = NULL;
-                if (SUCCEEDED(OBJ_FindShortProperty(obj, short_name, &property))) {
+                struct Property *property = OBJ_FindShortProperty(obj, fnv1a32(short_name));
+                if (property) {
                   char buf[MAX_PROPERTY_STRING] = {0};
                   int luaX_readProperty(lua_State*, int, struct Property *);
                   luaX_readProperty(L, -1, property);

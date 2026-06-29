@@ -81,18 +81,17 @@ HANDLER(SKSpriteNode, SKNode, Render)
     bbox.width = 16;
     bbox.height = 16;
   }
-  
+
   SKNode_anchor(hObject, &bbox);
 
   enum blend_mode blendMode = (int)pSKSpriteNode->BlendMode >= 0
     ? (enum blend_mode)pSKSpriteNode->BlendMode
     : BLEND_MODE_ALPHA;
-  
+
   struct ViewEntity entity = {
     .bbox = BOX3_FromRect(bbox),
     .matrix = node->Matrix,
     .mesh = BOX_PTR(Mesh, MD_RECTANGLE),
-    .palette = anim ? (struct color32 const*)anim->Palette : NULL,
     .material = {
       .opacity = node->_opacity,
       .color = {1, 1, 1, 1},

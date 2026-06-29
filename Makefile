@@ -80,7 +80,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout
+.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -197,7 +197,7 @@ debug:
 
 DATA_DIR = ../icui
 PACK_DIR = ../icui_pz2
-ICUI_DATA = find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirname "$$(dirname "$$file")"; done | sort -u 
+ICUI_DATA = find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirname "$$(dirname "$$file")"; done | sort -u
 # XDESC_DIRS := $(shell find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirname $$(dirname $$file); done | sort -u)
 XDESC_DIRS = $(shell find $(DATA_DIR) -type f -name "*.xdesc" | while read file; do dirname $$(dirname $$file); done | sort -u | grep -vE "^\\.$$")
 
@@ -219,6 +219,10 @@ move_pz2:
 
 modules:
 	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT=
+
+skills: modules
+	$(Q)mkdir -p .agents
+	$(Q)cp -r skills/* .agents/
 
 modules-c-preview:
 	$(Q)$(MAKE) -f tools/Makefile MODULE_ROOT= modules-c-preview
@@ -256,6 +260,7 @@ TEST_FILESYSTEM_BIN = $(BINDIR)/test_filesystem
 TEST_MESSAGE_REGISTRY_BIN = $(BINDIR)/test_message_registry
 TEST_TRIGGER_ACTIONS_BIN = $(BINDIR)/test_trigger_actions
 TEST_EDITOR_BIN = $(BINDIR)/test_editor
+TEST_XML_SERIALIZATION_BIN = $(BINDIR)/test_xml_serialization
 TEST_LDFLAGS = $(subst $$ORIGIN,$$$$ORIGIN,$(LDFLAGS)) -lorca -ldl -lpthread
 EDITOR_PLUGIN_OBJECT = $(OBJECTDIR)/plugin_EditorKit.o
 EDITOR_PLUGIN_SOURCES = $(shell find $(PLUGINDIR)/EditorKit -name "*.c" 2>/dev/null)
@@ -283,8 +288,9 @@ $(eval $(call C_TEST_RULE,test-filesystem,tests/test_filesystem.c,$(TEST_FILESYS
 $(eval $(call C_TEST_RULE,test-message-registry,tests/test_message_registry.c,$(TEST_MESSAGE_REGISTRY_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TEST_TRIGGER_ACTIONS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT),$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm))
+$(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 
-HEADLESS_LUA_TESTS = test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node
+HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node
 
 $(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-state-manager,tests/test_state_manager.lua,app copyshare))
@@ -311,6 +317,7 @@ $(eval $(call LUA_TEST_RULE,test-grid-layout,tests/test_grid_layout.lua,app copy
 $(eval $(call LUA_TEST_RULE,test-interaction,tests/test_interaction.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-adventure-header-hit,tests/test_adventure_header_hit.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor $(HEADLESS_LUA_TESTS)
 

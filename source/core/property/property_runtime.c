@@ -1,5 +1,7 @@
 #include <source/core/core_local.h>
 
+extern struct Object *FS_LoadObject(lpcString_t path);
+
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
                    struct vm_register* regs,                                   \
@@ -527,6 +529,27 @@ PROP_Import(struct Property *prop,
       }
 
     case kDataTypeColor:
+      if (DATA_IsVector(r->type)) {
+        PROP_SetValue(prop, r->value);
+        return TRUE;
+      }
+      if (PROP_GetSize(prop) == r->size) {
+        PROP_SetValue(prop, r->value);
+        return TRUE;
+      }
+      if (r->type == kDataTypeString) {
+        struct color clr = COLOR_Parse(VM_REG_STR(r));
+        PROP_SetValue(prop, &clr);
+        return TRUE;
+      }
+      Con_Error("Binding import failed: cannot assign register type %d (size %u) to property %s of type %d (size %u)",
+                r->type,
+                r->size,
+                PROP_GetName(prop),
+                PROP_GetType(prop),
+                PROP_GetSize(prop));
+      return FALSE;
+
     case kDataTypeStruct:
       if (DATA_IsVector(r->type)) {
         PROP_SetValue(prop, r->value);
@@ -542,6 +565,24 @@ PROP_Import(struct Property *prop,
                 PROP_GetName(prop),
                 PROP_GetType(prop),
                 PROP_GetSize(prop));
+      return FALSE;
+
+    case kDataTypeObject:
+      if (r->type == kDataTypeString) {
+        struct Object *loaded = FS_LoadObject(VM_REG_STR(r));
+        if (loaded) {
+          PROP_SetValue(prop, &loaded);
+          return TRUE;
+        }
+      }
+      if (PROP_GetSize(prop) == r->size) {
+        PROP_SetValue(prop, r->value);
+        return TRUE;
+      }
+      Con_Error("Binding import failed: cannot assign register type %d to property %s of type %d",
+                r->type,
+                PROP_GetName(prop),
+                PROP_GetType(prop));
       return FALSE;
 
     default:
@@ -624,6 +665,7 @@ _FindDataContextObject(struct Object *object, void **component)
 tok_op(argument)
 {
   struct Property *p = NULL;
+  int isDataContextPath = 0;
   if (token->cache.property) {
     p = token->cache.property;
     if (_BindingPropertyHasEffectiveValue(p)) {
@@ -659,6 +701,7 @@ tok_op(argument)
       struct Object *context = _FindDataContextObject(it, NULL);
       if (context) {
         if ((p = OBJ_FindPropertyByPath(context, token->text + 12))) {
+          isDataContextPath = 1;
           goto return_value;
         }
       }
@@ -724,7 +767,7 @@ tok_op(argument)
   }
 return_value:
   if (p) {
-    if (_BindingPropertyHasEffectiveValue(p)) {
+    if (_BindingPropertyHasEffectiveValue(p) && !isDataContextPath) {
       token->cache.property = p;
     }
     return PROP_Export(p, output);

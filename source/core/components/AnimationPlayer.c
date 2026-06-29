@@ -66,6 +66,7 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
     return vec4_get(&kf[0].value, xyzw);
 }
 
+// AnimationPlayer_Start
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
     if (clip) {
@@ -86,6 +87,7 @@ HANDLER(AnimationPlayer, Object, Start) {
     return FALSE;
 }
 
+// AnimationPlayer_Animate
 HANDLER(AnimationPlayer, Object, Animate) {
     if (!pAnimationPlayer->Playing) {
         pAnimationPlayer->_prevRealtime = 0;
@@ -119,8 +121,8 @@ HANDLER(AnimationPlayer, Object, Animate) {
                 : hObject;
             if (!target) continue;
 
-            struct Property *property;
-            if (FAILED(OBJ_FindShortProperty(target, curve->Property, &property))) continue;
+            struct Property *property = OBJ_FindShortProperty(target, fnv1a32(curve->Property));
+            if (!property) continue;
 
             float value[4];
             for (int i = 0; i < 4; i++) {
@@ -193,6 +195,7 @@ HANDLER(AnimationPlayer, Object, Animate) {
     return FALSE;
 }
 
+// AnimationPlayer_Play
 HANDLER(AnimationPlayer, AnimationPlayer, Play) {
     if (pPlay->Name && pPlay->Name[0]) {
         struct AnimationClip *named = find_clip_by_name(pAnimationPlayer, pPlay->Name);
@@ -213,6 +216,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Play) {
     return FALSE;
 }
 
+// AnimationPlayer_Resume
 HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
     // Resume differs from Play: it continues from the current position without resetting CurrentTime.
     pAnimationPlayer->Playing = TRUE;
@@ -222,6 +226,7 @@ HANDLER(AnimationPlayer, AnimationPlayer, Resume) {
     return FALSE;
 }
 
+// AnimationPlayer_Stop
 HANDLER(AnimationPlayer, AnimationPlayer, Stop) {
     pAnimationPlayer->Playing = FALSE;
     pAnimationPlayer->_prevRealtime = 0;
@@ -231,10 +236,10 @@ HANDLER(AnimationPlayer, AnimationPlayer, Stop) {
     return FALSE;
 }
 
+// AnimationPlayer_Pause
 HANDLER(AnimationPlayer, AnimationPlayer, Pause) {
     pAnimationPlayer->Playing = FALSE;
     pAnimationPlayer->_prevRealtime = 0;
     _SendMessage(hObject, AnimationPlayer, Stopped);
     return FALSE;
 }
-

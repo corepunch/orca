@@ -291,11 +291,13 @@ _PropertyAnimation_FreeBuffers(struct PropertyAnimation *anim)
     free((char*)anim->To);   anim->To   = NULL;
 }
 
+// PropertyAnimation_Release
 HANDLER(PropertyAnimation, Object, Release) {
     _PropertyAnimation_FreeBuffers(pPropertyAnimation);
     return FALSE;
 }
 
+// PropertyAnimation_Animate
 HANDLER(PropertyAnimation, Object, Animate) {
     if (!pPropertyAnimation->_property) {
         _PropertyAnimation_FreeBuffers(pPropertyAnimation);
@@ -354,7 +356,7 @@ OBJ_DoTween(lua_State* L,
             enum InterpolationMode ipo,
             enum Easing easing)
 {
-  struct Property *hprop = PROP_FindByFullName(OBJ_GetProperties(self), property);
+  struct Property *hprop = OBJ_FindLongProperty(self, fnv1a32(property));
   if (!hprop) {
     luaL_error(L, "Can't find property %s", property);
     return;
@@ -398,4 +400,3 @@ OBJ_DoTween(lua_State* L,
   }
   OBJ_RequestAnimate(self);
 }
-

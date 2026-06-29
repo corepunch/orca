@@ -144,12 +144,10 @@ TabView_SyncInitialSelection(struct Object *hObject, struct TabView *pTabView)
   }
   if (!value || !*value) return;
 
-  struct Property *tb_prop = NULL;
-  OBJ_FindLongProperty(hTabBar, ID_TabBar_SelectedValue, &tb_prop);
+  struct Property *tb_prop = OBJ_FindLongProperty(hTabBar, ID_TabBar_SelectedValue);
   if (tb_prop) PROP_SetStringValue(tb_prop, value);
 
-  struct Property *tv_prop = NULL;
-  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
+  struct Property *tv_prop = OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue);
   if (tv_prop) PROP_SetStringValue(tv_prop, value);
 
   struct Object *hActiveTab = NULL;
@@ -222,8 +220,7 @@ HANDLER(TabView, TabBar, SelectionChanged)
      our own copy first to keep the event-args pointer valid for the call. */
   char *savedOld = pTabView->SelectedValue ? strdup(pTabView->SelectedValue) : NULL;
 
-  struct Property *tv_prop = NULL;
-  OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue, &tv_prop);
+  struct Property *tv_prop = OBJ_FindLongProperty(hObject, ID_TabView_SelectedValue);
   if (tv_prop) PROP_SetStringValue(tv_prop, pSelectionChanged->SelectedValue);
 
   TabView_ShowContent(hObject, pTabView->SelectedValue);

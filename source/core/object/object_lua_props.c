@@ -104,11 +104,17 @@ set_style_classes_from_lua(lua_State* L, struct Object *self, int index)
 bool_t
 OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
 {
-  switch (fnv1a32(name)) {
+  uint32_t ident = fnv1a32(name);
+  switch (ident) {
     case p_id:
-		case p_Name:
+		case p_Name: {
 			OBJ_SetName(self, luaL_checkstring(L, 3));
+			struct Property *nameProp = OBJ_FindLongProperty(self, ID_DataObject_Name);
+			if (nameProp) {
+				PROP_SetStringValue(nameProp, OBJ_GetName(self));
+			}
 			return TRUE;
+		}
 		case p_selected: {
 			uint32_t flags = OBJ_GetFlags(self);
 			if (lua_toboolean(L, 3)) {
@@ -136,8 +142,8 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
     GetNode2D(self)->LayoutTransform.translation.y = luaL_checknumber(L, 3);
     return TRUE;
   }
-  struct Property *property = NULL;
-  if (SUCCEEDED(OBJ_FindShortProperty(self, name, &property))) {
+  struct Property *property = OBJ_FindShortProperty(self, ident);
+  if (property) {
     if (PROP_GetType(property) == kDataTypeEvent &&
         (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
       axRemoveFromQueue(self);
@@ -158,8 +164,8 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
       assert(lname - lsuffix - 2 < MAX_NAMELEN); // ensure extracted name fits in shortStr_t
       strncpy(pname, name + 2, lname - lsuffix - 2); // 2 for "on", lsuffix for "Changed"
       // Find the property by the extracted name and register the callback
-      return SUCCEEDED(OBJ_FindShortProperty(self, pname, &property)) &&
-        PROP_RegisterChangedCallback(L, property, 3);
+      property = OBJ_FindShortProperty(self, fnv1a32(pname));
+      return property && PROP_RegisterChangedCallback(L, property, 3);
     }
     return FALSE;
   } else {
@@ -260,7 +266,7 @@ int OBJ_GetProperty(lua_State* L, struct Object *self, lpcString_t name)
     return 1;
   } else if (OBJ_PushShorthandValue(L, self, name)) {
     return 1;
-  } else if ((property = PROP_FindByShortID(OBJ_GetProperties(self), ident))) {
+  } else if ((property = OBJ_FindShortProperty(self, ident))) {
     luaX_pushProperty(L, property);
     return 1;
   } else {
@@ -268,3 +274,4 @@ int OBJ_GetProperty(lua_State* L, struct Object *self, lpcString_t name)
     return 1;
   }
 }
+

@@ -107,7 +107,7 @@ HANDLER(Viewport3D, Node2D, ForegroundContent)
     .flags = camalias ? RF_CAMERA_ALIAS : 0,
     .renderPass = Viewport3D_renderpass(hObject),
   };
-  
+
   if (Viewport3D_scene(hObject)) {
     collect_lights(Viewport3D_scene(hObject), &viewdef);
     R_RenderViewport(Viewport3D_scene(hObject), &viewdef);

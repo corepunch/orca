@@ -9,7 +9,7 @@ HANDLER(Node3D, Node, UpdateMatrix)
   struct transform3 const* layoutTransform3D = &(pNode3D->LayoutTransform);
   struct vec3 pivot = pNode3D->RenderTransformOrigin;
   struct vec3 contentOffset = pNode3D->ContentOffset;
-  
+
   layoutMatrix = transform3_ToMatrix3D(layoutTransform3D, &(struct vec3){0});
   renderMatrix = transform3_ToMatrix3D(renderTransform3D, &pivot);
 
@@ -17,7 +17,7 @@ HANDLER(Node3D, Node, UpdateMatrix)
 
   pNode3D->Matrix = MAT4_Multiply(&pUpdateMatrix->parent, &matrix);
   pNode3D->_opacity = GetNode(hObject)->Opacity * pUpdateMatrix->opacity;
-  
+
   matrix = pNode3D->Matrix;
 
   MAT4_Translate(&matrix, &contentOffset);

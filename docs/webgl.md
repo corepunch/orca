@@ -243,8 +243,8 @@ dlopen is not supported.
 
 **Status: resolved.** The Makefile `webgl` target now:
 
-1. Lists the plugins to bundle in `WEBGL_PLUGINS` (UIKit, SceneKit, SpriteKit,
-   DarkReign — vsomeip is excluded because it is C++ / SOME/IP).
+1. Lists the plugins to bundle in `WEBGL_PLUGINS` (UIKit, SceneKit, SpriteKit
+   — vsomeip is excluded because it is C++ / SOME/IP).
 2. Compiles all plugin `.c` sources directly into the single WASM binary
    alongside the engine modules.
 3. Auto-generates `build/webgl/plugins_luaopen.h` at build time by scanning

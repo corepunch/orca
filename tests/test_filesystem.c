@@ -14,6 +14,7 @@
  * Compiled via the `test-filesystem` Makefile target (depends on `buildlib`).
  */
 
+#include "test_local.h"
 #include "mem_tracker.h"
 
 #include <lua.h>
@@ -42,33 +43,6 @@ extern int _ParseLoaderArgs(const char *query_string,
                              int         argc_start,
                              int         argc_max,
                              char        arg_buf[][FS_LOADER_ARG_LEN]);
-
-/* ------------------------------------------------------------------ */
-/* Minimal test harness (same style as test_properties.c)             */
-/* ------------------------------------------------------------------ */
-
-static int s_tests_run    = 0;
-static int s_tests_failed = 0;
-static const char* s_current_test = NULL;
-
-#define EXPECT(...) \
-    if (!(__VA_ARGS__)) { \
-        fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", \
-                s_current_test, #__VA_ARGS__, __LINE__); \
-        s_tests_failed++; \
-        break; \
-    }
-
-#define EXPECT_STR_EQ(a, b) \
-    do { const char *_a = (a); const char *_b = (b); EXPECT(_a && _b && !strcmp(_a, _b)); } while(0)
-
-#define RUN(name, block) \
-    do { \
-        s_current_test = name; \
-        s_tests_run++; \
-        printf("Running %s...\n", name); \
-        do { block } while (0); \
-    } while (0)
 
 /* ------------------------------------------------------------------ */
 /* Helper: allocate argv + arg_buf, preset argv[0] = path.            */
@@ -108,7 +82,7 @@ ensure_class_registry(void)
 
 static void test_no_query(void)
 {
-    RUN("no_query_string", {
+    RUN_TEST("no_query_string", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", NULL, argv, arg_buf);
@@ -121,7 +95,7 @@ static void test_no_query(void)
 
 static void test_empty_query(void)
 {
-    RUN("empty_query_string", {
+    RUN_TEST("empty_query_string", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", "", argv, arg_buf);
@@ -132,7 +106,7 @@ static void test_empty_query(void)
 
 static void test_leading_question_mark(void)
 {
-    RUN("leading_question_mark_stripped", {
+    RUN_TEST("leading_question_mark_stripped", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", "?mask", argv, arg_buf);
@@ -144,7 +118,7 @@ static void test_leading_question_mark(void)
 
 static void test_single_flag(void)
 {
-    RUN("single_bare_flag", {
+    RUN_TEST("single_bare_flag", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", "?mask", argv, arg_buf);
@@ -157,7 +131,7 @@ static void test_single_flag(void)
 
 static void test_key_value(void)
 {
-    RUN("key_value_pair", {
+    RUN_TEST("key_value_pair", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", "?width=48", argv, arg_buf);
@@ -169,7 +143,7 @@ static void test_key_value(void)
 
 static void test_multiple_args(void)
 {
-    RUN("multiple_args_split_on_ampersand", {
+    RUN_TEST("multiple_args_split_on_ampersand", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("img.png", "?width=48&type=mask&scale=2", argv, arg_buf);
@@ -185,7 +159,7 @@ static void test_multiple_args(void)
 static void test_sentinel_always_null(void)
 {
     /* Verify argv[argc] == NULL for a non-trivial case. */
-    RUN("argv_argc_always_null", {
+    RUN_TEST("argv_argc_always_null", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         int argc = call_parse("a.png", "?x=1&y=2", argv, arg_buf);
@@ -197,7 +171,7 @@ static void test_sentinel_always_null(void)
 static void test_truncation(void)
 {
     /* An arg that is 65+ chars must be silently truncated to 64 visible chars. */
-    RUN("long_arg_truncated_to_64_chars", {
+    RUN_TEST("long_arg_truncated_to_64_chars", {
         /* 70 'a' characters */
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
@@ -217,7 +191,7 @@ static void test_truncation(void)
 static void test_too_many_args(void)
 {
     /* Build a query with MAX_LOADER_ARGS + 2 entries: only first MAX-1 should survive. */
-    RUN("extra_args_beyond_max_dropped", {
+    RUN_TEST("extra_args_beyond_max_dropped", {
         const char *argv[FS_LOADER_MAX_ARGS + 1];
         char arg_buf[FS_LOADER_MAX_ARGS][FS_LOADER_ARG_LEN];
         /* Construct "?a0&a1&...&a17" — 18 args, more than the 15 slots available */
@@ -241,7 +215,7 @@ static void test_too_many_args(void)
 
 static void test_inline_xml_expansion(void)
 {
-    RUN("inline_xml_expansion_supports_comma_and_nested_braces", {
+    RUN_TEST("inline_xml_expansion_supports_comma_and_nested_braces", {
         ensure_class_registry();
         const char *xml = "<Material Texture={Texture Width=48, Height=24}/>";
         char *expanded = _ExpandXmlPositionalArgs(xml);

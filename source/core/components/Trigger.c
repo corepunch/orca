@@ -24,7 +24,13 @@ static bool_t
 _SetTargetVisible(struct Object *target, bool_t visible)
 {
   if (!target) return FALSE;
-  return SUCCEEDED(OBJ_SetPropertyValue(target, "Visible", &visible));
+  struct Property* vis = OBJ_FindLongProperty(target, ID_Node_Visible);
+  if (vis) {
+    PROP_SetValue(vis, &visible);
+    return TRUE;
+  } else {
+    return FALSE;
+  }
 }
 
 static lpcString_t
@@ -36,10 +42,10 @@ _BindingSkipSpace(lpcString_t s)
 
 
 static lpcString_t
-_BindingGetStringProperty(struct Object *obj, lpcString_t name)
+_BindingGetStringProperty(struct Object *obj, uint32_t ident)
 {
-  struct Property *prop = NULL;
-  if (FAILED(OBJ_FindShortProperty(obj, name, &prop)) || !prop) {
+  struct Property *prop = OBJ_FindLongProperty(obj, ident);
+  if (!prop) {
     return NULL;
   }
   if (PROP_GetType(prop) != kDataTypeString) {
@@ -49,10 +55,10 @@ _BindingGetStringProperty(struct Object *obj, lpcString_t name)
 }
 
 static int
-_BindingGetIntProperty(struct Object *obj, lpcString_t name, int fallback)
+_BindingGetIntProperty(struct Object *obj, uint32_t ident, int fallback)
 {
-  struct Property *prop = NULL;
-  if (FAILED(OBJ_FindShortProperty(obj, name, &prop)) || !prop) {
+  struct Property *prop = OBJ_FindShortProperty(obj, ident);
+  if (!prop) {
     return fallback;
   }
   if (PROP_GetType(prop) != kDataTypeEnum &&
@@ -75,7 +81,7 @@ _BindingCompileToProperty(struct Object *hObject,
     return TRUE;
   }
 
-  lpcString_t expr = _BindingGetStringProperty(hObject, "Expression");
+  lpcString_t expr = _BindingGetStringProperty(hObject, ID_Binding_Expression);
   if (!expr || !*expr) {
     expr = OBJ_GetTextContent(hObject);
   }
@@ -85,9 +91,8 @@ _BindingCompileToProperty(struct Object *hObject,
     return TRUE;
   }
 
-  enum BindingMode mode = (enum BindingMode)
-    _BindingGetIntProperty(hObject, "Mode", kBindingModeExpression);
-  bool_t enabled = _BindingGetIntProperty(hObject, "Enabled", TRUE) ? TRUE : FALSE;
+  enum BindingMode mode = _BindingGetIntProperty(hObject, ID_Binding_Mode, kBindingModeExpression);
+  bool_t enabled = _BindingGetIntProperty(hObject, ID_Binding_Enabled, TRUE) ? TRUE : FALSE;
 
   lpcString_t final_expr = expr;
   fixedString_t normalized_expr = {0};
@@ -116,8 +121,8 @@ _BindingCompileToProperty(struct Object *hObject,
 
 HANDLER(Trigger, Object, Attached)
 {
-  struct Property *prop = NULL;
-  if (pTrigger->Property && SUCCEEDED(OBJ_FindShortProperty(hObject, pTrigger->Property, &prop)) && prop) {
+  struct Property *prop = pTrigger->Property ? OBJ_FindLongProperty(hObject, fnv1a32(pTrigger->Property)) : NULL;
+  if (prop) {
     PROP_SetFlag(prop, PF_USED_IN_TRIGGER);
   }
   return FALSE;
@@ -176,7 +181,7 @@ HANDLER(OnAttachedTrigger, Object, Attached)
 HANDLER(Trigger, Trigger, Triggered)
 {
   struct Object *sender = _TriggerSender(hObject, pTriggered);
-  
+
   for (struct Object *child = OBJ_GetFirstChild(hObject); child; child = OBJ_GetNext(child)) {
     LRESULT result = _SendMessage(child, Action, Dispatch,
                  .Sender = sender);
@@ -193,8 +198,8 @@ HANDLER(Setter, Action, Dispatch)
   }
 
   struct Object *sender = _ActionSender(hObject, pDispatch);
-  struct Property *p = NULL;
-  if (FAILED(OBJ_FindShortProperty(sender, pSetter->Property, &p))) {
+  struct Property *p = OBJ_FindLongProperty(sender, fnv1a32(pSetter->Property));
+  if (!p) {
     if (OBJ_SetShorthandValueFromString(sender, pSetter->Property, pSetter->Value)) {
       return FALSE;
     }
@@ -271,8 +276,11 @@ HANDLER(OnPropertyChangedTrigger, Object, Attached)
   if (pOnPropertyChangedTrigger->SourceNode && *pOnPropertyChangedTrigger->SourceNode) {
     source = OBJ_FindByPath(hObject, pOnPropertyChangedTrigger->SourceNode);
   }
-  if (szName && source && SUCCEEDED(OBJ_FindShortProperty(source, szName, &pProp))) {
-    PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);
+  if (szName && source) {
+    pProp = OBJ_FindShortProperty(source, fnv1a32(szName));
+    if (pProp) {
+      PROP_SetFlag(pProp, PF_USED_IN_TRIGGER);
+    }
   }
   return FALSE;
 }

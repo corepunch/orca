@@ -4,55 +4,42 @@
 
 #include <include/orca.h>
 #include <include/codegen.h>
-#include <source/core/core_local.h>
-#include <core/core_properties.h>
-#include <source/core/object/object_internal.h>
-#include <source/filesystem/fs_local.h>
+#include <core/core.h>
+#include <filesystem/filesystem.h>
 #include <UIKit/UIKit.h>
-#include <UIKit/UIKit_properties.h>
 
 #include <stdio.h>
 #include <string.h>
+
+#include "test_local.h"
 
 extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_system(lua_State *L);
 
-static int s_tests_run = 0;
-static int s_tests_failed = 0;
-static const char *s_current_test = NULL;
+extern void OBJ_Clear(struct Object *);
+
 static lua_State *s_lua_state = NULL;
 
-#define EXPECT(...) \
-  if (!(__VA_ARGS__)) { \
-    fprintf(stderr, "  FAIL [%s]: %s (line %d)\n", s_current_test, #__VA_ARGS__, __LINE__); \
-    s_tests_failed++; \
-    break; \
-  }
-
-#define EXPECT_OK(hr) EXPECT((hr) == NOERROR)
-
-#define RUN(name, block) \
-  do { \
-    s_current_test = name; \
-    s_tests_run++; \
-    printf("Running %s...\n", name); \
-    do { block } while (0); \
-  } while (0)
-
 #define SET_STRING(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
   const char *_v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
+  PROP_SetValue(_p, PROP_STR(_v)); \
 } while (0)
 
 #define SET_FLOAT(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
   float _v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
+  PROP_SetValue(_p, &_v); \
 } while (0)
 
 #define SET_INT(obj, name, value) do { \
+  struct Property *_p; \
+  EXPECT_OK(FIND_SHORT_PROPERTY((obj), (name), &_p)); \
   int _v = (value); \
-  EXPECT_OK(OBJ_SetPropertyValue((obj), (name), &_v)); \
+  PROP_SetValue(_p, &_v); \
 } while (0)
 
 static struct
@@ -238,7 +225,7 @@ set_up_source(struct Object *source,
 static void
 test_event_trigger_no_args(void)
 {
-  RUN("event_trigger_no_args", {
+  RUN_TEST("event_trigger_no_args", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -249,6 +236,7 @@ test_event_trigger_no_args(void)
     EXPECT(root != NULL);
     EXPECT(source != NULL);
     EXPECT(target != NULL);
+    EXPECT_STR_EQ(OBJ_GetClassName(target), "TestTriggerSink");
     EXPECT(action != NULL);
 
     OBJ_AddChild(root, source);
@@ -268,7 +256,7 @@ test_event_trigger_no_args(void)
 static void
 test_event_trigger_single_value(void)
 {
-  RUN("event_trigger_single_value", {
+  RUN_TEST("event_trigger_single_value", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -300,7 +288,7 @@ test_event_trigger_single_value(void)
 static void
 test_event_trigger_partial_payload_defaults_to_zero(void)
 {
-  RUN("event_trigger_partial_payload_defaults_to_zero", {
+  RUN_TEST("event_trigger_partial_payload_defaults_to_zero", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
@@ -333,7 +321,7 @@ test_event_trigger_partial_payload_defaults_to_zero(void)
 static void
 test_generated_action_property_order(void)
 {
-  RUN("generated_action_property_order", {
+  RUN_TEST("generated_action_property_order", {
     struct Object *action = make_object(ID_Node_RightButtonUpAction, "Action");
     struct ClassDesc const *base = OBJ_FindClass("SendMessageAction");
     struct Property *x_prop = NULL;
@@ -341,8 +329,8 @@ test_generated_action_property_order(void)
 
     EXPECT(action != NULL);
     EXPECT(base != NULL);
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_Node_RightButtonUpAction_x, &x_prop));
-    EXPECT_OK(OBJ_FindLongProperty(action, ID_SendMessageAction_Target, &target_prop));
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_Node_RightButtonUpAction_x, &x_prop));
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_SendMessageAction_Target, &target_prop));
     EXPECT(x_prop != NULL);
     EXPECT(target_prop != NULL);
     EXPECT(strcmp(PROP_GetName(x_prop), "x") == 0);
@@ -353,23 +341,30 @@ test_generated_action_property_order(void)
 static void
 test_generated_action_xml(void)
 {
-  RUN("generated_action_xml", {
+  RUN_TEST("generated_action_xml", {
     reset_observed();
 
     struct Object *root = FS_LoadObjectFromXmlString(
-      "<TestTriggerHost Name=\"Root\">\n"
-      "  <TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">\n"
-      "    <Object.Start Target=\"../Target\"/>\n"
-      "  </TestEventTriggerSource>\n"
-      "  <TestTriggerSink Name=\"Target\"/>\n"
+      "<TestTriggerHost Name=\"Root\">"
+      "<TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">"
+      "<TestTriggerSink Name=\"Target\"/>"
+      "<Object.Start Target=\"Target\"/>"
+      "</TestEventTriggerSource>"
       "</TestTriggerHost>");
     EXPECT(root != NULL);
     reset_observed();
 
     struct Object *source = root ? OBJ_FindChild(root, "Source", TRUE) : NULL;
+    struct Object *target = source ? OBJ_FindChild(source, "Target", TRUE) : NULL;
+    struct Object *action = source ? OBJ_FindChildOfClass(source, ID_Object_StartAction) : NULL;
     EXPECT(source != NULL);
+    EXPECT(target != NULL);
+    EXPECT(action != NULL);
+    struct Property *target_prop = NULL;
+    EXPECT_OK(FIND_LONG_PROPERTY(action, ID_SendMessageAction_Target, &target_prop));
+    EXPECT_STR_EQ(*(const char **)PROP_GetValue(target_prop), "Target");
     OBJ_SendMessageW(source, ID_Node_LeftButtonUp, 0, NULL);
-    EXPECT(s_observed.StartCount == 1);
+    EXPECT(s_observed.Triggered);
 
     if (root) {
       OBJ_Clear(root);
@@ -379,15 +374,14 @@ test_generated_action_xml(void)
 }
 
 static void
-test_generated_action_post_mode(void)
+test_generated_action_dispatch(void)
 {
-  RUN("generated_action_post_mode", {
+  RUN_TEST("generated_action_dispatch", {
     reset_observed();
 
     struct Object *root = make_object(0xa3b95e0d, "Root");
     struct Object *sender = make_object(0xb5c4156c, "Sender");
     struct Object *action = make_object(ID_Object_StartAction, "Action");
-    enum DispatchMode mode = kDispatchModePost;
 
     EXPECT(root != NULL);
     EXPECT(sender != NULL);
@@ -395,11 +389,8 @@ test_generated_action_post_mode(void)
 
     OBJ_AddChild(root, sender);
     OBJ_AddChild(root, action);
-    EXPECT_OK(OBJ_SetPropertyValue(action, "Mode", &mode));
 
     _SendMessage(action, Action, Dispatch, .Sender = sender);
-    EXPECT(s_observed.StartCount == 0);
-    pump_messages(root);
     EXPECT(s_observed.StartCount == 1);
   });
 }
@@ -407,7 +398,7 @@ test_generated_action_post_mode(void)
 static void
 test_generated_action_unset_target_dispatches_sender(void)
 {
-  RUN("generated_action_unset_target_dispatches_sender", {
+  RUN_TEST("generated_action_unset_target_dispatches_sender", {
     reset_observed();
 
     struct Object *sender = make_object(0xb5c4156c, "Sender");
@@ -430,7 +421,7 @@ main(void)
   test_event_trigger_partial_payload_defaults_to_zero();
   test_generated_action_property_order();
   test_generated_action_xml();
-  test_generated_action_post_mode();
+  test_generated_action_dispatch();
   test_generated_action_unset_target_dispatches_sender();
 
   if (s_lua_state) {

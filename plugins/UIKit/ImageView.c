@@ -64,33 +64,12 @@ HANDLER(ImageView, Node2D, MeasureOverride)
   }
 }
 
+// ImageView_ArrangeOverride
 HANDLER(ImageView, Node2D, ArrangeOverride) {
   return _SendMessage(hObject, Node2D, MeasureOverride,
                       .Width = pArrangeOverride->Width,
                       .Height = pArrangeOverride->Height);
 }
-
-#if 0
-typedef struct
-{
-  bool_t value;
-  bool_t anyImagesNeeded;
-  struct Property *prop;
-} checkimg;
-
-static void
-check_images(struct _SHADERCONST *u, void* pVoid)
-{
-  checkimg* pParm = pVoid;
-  if (u->type != UT_SAMPLER_2D)
-    return;
-  pParm->anyImagesNeeded = TRUE;
-  struct Property *p = PROP_FindByLongID(pParm->prop, u->identifier);
-  if (!p)
-    return;
-  pParm->value = TRUE;
-}
-#endif
 
 HANDLER(ImageView, Node2D, DrawForeground)
 {
@@ -126,7 +105,7 @@ HANDLER(ImageView, Node2D, DrawForeground)
 #endif
 
   Node2D_GetViewEntity(pNode2D, &entity, pImageView->Source, &pDrawForeground->brush);
-  
+
   calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
                       (struct edges const*)&pImageView->Insets,
@@ -167,7 +146,7 @@ HANDLER(ImageView, Node2D, DrawForeground)
     entity.material.textureMatrix.v[7] = pImageView->Viewbox.y + uvOffsetY * pImageView->Viewbox.w;
     entity.mesh = BOX_PTR(Mesh, MD_RECTANGLE);
   }
-  
+
   R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
@@ -180,7 +159,7 @@ HANDLER(ImageView, Node2D, ForegroundContent)
 
 HANDLER(ImageView, Object, Start)
 {
-  struct Property *p = PROP_FindByLongID(OBJ_GetProperties(hObject), ID_ImageView_Src);
+  struct Property *p = OBJ_FindLongProperty(hObject, ID_ImageView_Src);
   if (p) PROP_SetFlag(p, PF_USED_IN_TRIGGER);
   if (pImageView->Src && *pImageView->Src) {
     axPostMessageW(hObject, ID_Node_LoadView, 0, NULL);
@@ -315,10 +294,9 @@ HANDLER(ImageView, Node, LoadView)
   return TRUE;
 }
 
+// ImageView_Create
 HANDLER(ImageView, Object, Create) {
-  struct Property *p;
-  struct color white = {1,1,1,1};
-  OBJ_FindShortProperty(hObject, "ForegroundColor", &p);
-  PROP_SetValue(p, &white);
+  struct Property *p = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
+  PROP_SetValue(p, &(struct color){1,1,1,1});
   return FALSE;
 }

@@ -18,7 +18,7 @@ HANDLER(PlaneMeshNode, Node3D, Render)
   if (!strcmp("PointerNeedle", OBJ_GetName(hObject))) {
     pPlaneMeshNode->PlaneHeight = 9.5f;
   }
-  
+
   static struct uniform uniforms[MAX_UNIFORMS];
 
   struct ViewEntity entity = {

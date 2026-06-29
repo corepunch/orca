@@ -9,8 +9,10 @@
 
 #define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
 
+// Node2D_Draw2DContent
 HANDLER(Node2D, Node2D, Draw2DContent);
 
+// Node2D_UpdateGeometry
 HANDLER(Node2D, Node2D, UpdateGeometry) {
   float const w = Node2D_GetFrame(pNode2D, kBox3FieldWidth);
   float const h = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
@@ -208,6 +210,7 @@ _Node2DShouldClipPointByOverflow(struct Node2D *pNode2D, float x, float y)
   return FALSE;
 }
 
+// Node2D_HitTest
 HANDLER(Node2D, Node, HitTest) {
   if (OBJ_IsHidden(hObject) || pNode2D->IgnoreHitTest) {
     return FALSE;
@@ -233,6 +236,7 @@ HANDLER(Node2D, Node, HitTest) {
 }
 
 
+// Node2D_Create
 HANDLER(Node2D, Object, Create) {
   pNode2D->_object = hObject;
   pNode2D->_node = GetNode(hObject);
@@ -753,7 +757,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
 {
   if (OBJ_IsHidden(hObject))
     return FALSE;
-  
+
   if (_IsOutOfBounds(pNode2D, pDraw2DContent))
     return FALSE;
 
@@ -767,7 +771,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   _SendMessage(hObject, Node2D, UpdateGeometry);
   foregroundContent = _SendMessage(hObject, Node2D, ForegroundContent);
   foreground = foregroundContent == TRUE ? NULL : (struct Texture*)foregroundContent;
-  
+
   if (pNode2D->BoxShadow.Color.a) {
     //		struct mat4 mat, offset;
     //		offset = MAT4_Identity();

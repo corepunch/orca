@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="MetricUsers" class="card stack-card metric-card">
-	<TextBlock Name="MetricUsersValue" class="metric-value" ForegroundColor="{Binding ../Card.PrimaryColor}" Text="{Binding ../Card.Title}"/>
-	<TextBlock Name="MetricUsersLabel" class="metric-label" Text="{Binding ../Card.Subtitle}"/>
+	<TextBlock Name="MetricUsersValue" class="metric-value" ForegroundColor="{Binding DataContext/PrimaryColor}" Text="{Binding DataContext/Title}"/>
+	<TextBlock Name="MetricUsersLabel" class="metric-label" Text="{Binding DataContext/Subtitle}"/>
 </StackView>

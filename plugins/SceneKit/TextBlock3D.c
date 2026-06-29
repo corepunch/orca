@@ -10,10 +10,10 @@ HANDLER(TextBlock3D, Node3D, Render)
   _SendMessage(hObject, TextBlockConcept, MakeText,
                    .availableSpace = 512);
   OBJ_SendMessageW(hObject, ID_TextBlockConcept_GetInfo, 0, &pTextRun->_textinfo);
-  
+
   float w = pTextRun->_textinfo.txWidth;
   float h = pTextRun->_textinfo.txHeight;
-  
+
   struct ViewEntity entity = {
     .radius = (struct vec4){0},
     .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
@@ -25,7 +25,7 @@ HANDLER(TextBlock3D, Node3D, Render)
     },
     .matrix = GetNode3D(hObject)->Matrix,
   };
-  
+
   struct mat4 scale;
   scale = MAT4_Identity();
   MAT4_Scale(&scale, &(struct vec3) { 0.1, 0.1, 0.1 });
@@ -33,16 +33,16 @@ HANDLER(TextBlock3D, Node3D, Render)
   entity.material.textureMatrix = MAT3_Identity();
   entity.material.textureMatrix.v[4] = -1;
   entity.material.textureMatrix.v[7] =  1;
-  
+
 //  struct Property *hProp =
 //  TextBlockConcept_GetProperty(hObject, kTextBlockConceptText);
 //  if (*output->TextResourceID && !PROP_HasProgram(hProp)) {
 //    Loc_GetString(
 //                  OBJ_GetLocalization(hObject), output->TextResourceID, LOC_TEXT);
 //  }
-  
+
   R_DrawEntity(pRender->ViewDef, &entity);
-  
+
   return TRUE;
 }
 

@@ -22,7 +22,40 @@ nav:
     - UIKit: api/UIKit/README.md
     - SceneKit: api/SceneKit/README.md
     - SpriteKit: api/SpriteKit/README.md
+  - C API:
+    - core: generated/c/core/overview.md
+    - geometry: generated/c/geometry/overview.md
+    - filesystem: generated/c/filesystem/overview.md
+    - UIKit: generated/c/UIKit/overview.md
+    - SceneKit: generated/c/SceneKit/overview.md
+    - SpriteKit: generated/c/SpriteKit/overview.md
+    - renderer: generated/c/renderer/overview.md
+  - Lua API:
+    - core: generated/lua/core/overview.md
+    - geometry: generated/lua/geometry/overview.md
+    - filesystem: generated/lua/filesystem/overview.md
+    - UIKit: generated/lua/UIKit/overview.md
+    - SceneKit: generated/lua/SceneKit/overview.md
+    - SpriteKit: generated/lua/SpriteKit/overview.md
+    - renderer: generated/lua/renderer/overview.md
+  - XML API:
+    - core: generated/xml/core/overview.md
+    - geometry: generated/xml/geometry/overview.md
+    - filesystem: generated/xml/filesystem/overview.md
+    - UIKit: generated/xml/UIKit/overview.md
+    - SceneKit: generated/xml/SceneKit/overview.md
+    - SpriteKit: generated/xml/SpriteKit/overview.md
+    - renderer: generated/xml/renderer/overview.md
   - Module XML Guide: MODULE_XML_GUIDE.md
+  - Agent Docs:
+    - Project Map: PROJECT_MAP.md
+    - Architecture: ARCHITECTURE.md
+    - Build: BUILD.md
+    - Testing: TESTING.md
+    - Adding Classes: ADDING_CLASSES.md
+    - Coding Style: CODING_STYLE.md
+    - Lua API: LUA_API.md
+    - UI System: UI_SYSTEM.md
   - App Writing:
     - MoonScript:
       - Overview: app/moonscript/index.md
@@ -40,7 +73,6 @@ nav:
     - Style System: styling.md
     - CSS Compatibility: css-compatibility.md
     - Theme Values: theme-values.md
-    - Dark Reign Formats: dark-reign-formats.md
     - Testing Guide: testing.md
 
 theme:

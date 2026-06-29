@@ -6,6 +6,7 @@
 struct Object *
 _NextTabStop(struct Object *hObject);
 
+// Button_DrawForeground
 HANDLER(Button, Node2D, DrawForeground) {
   return false;
   // struct Node2D *pNode2D = GetNode2D(hObject);
@@ -68,8 +69,8 @@ HANDLER(Button, Object, Create)
   struct Node2D *node2d = GetNode2D(hObject);
   if (node2d) {
     struct color foreground = FS_GetThemeColor(THEME_COLOR_CONTROL_FOREGROUND);
-    struct Property *prop = NULL;
-    if (SUCCEEDED(OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor, &prop))) {
+    struct Property *prop = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
+    if (prop) {
       PROP_SetValue(prop, &foreground);
     }
   }

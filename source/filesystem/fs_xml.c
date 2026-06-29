@@ -12,11 +12,11 @@ static struct Object *node(struct _xmlNode* x);
 static struct PropertyType const *
 propdesc(struct Object *o, lpcString_t name)
 {
-  struct PropertyType const *pd = OBJ_FindImplicitProperty(o, name);
+  struct PropertyType const *pd = OBJ_FindImplicitPropertyType(o, name);
   if (pd) {
     return pd;
   }
-  pd = OBJ_FindExplicitProperty(o, name);
+  pd = OBJ_FindExplicitPropertyType(o, name);
   if (pd) {
     return pd;
   }
@@ -33,6 +33,27 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
   }
   if (!strcmp(name, "class") || !strcmp(name, "StyleClass")) {
     _SendMessage(o, StyleController, AddClasses, .ClassNames = value);
+    return TRUE;
+  }
+  if (!strcmp(name, "DataContextSource")) {
+    const char *colon = strrchr(value, ':');
+    if (colon) {
+      size_t pathLen = colon - value;
+      char path[256];
+      snprintf(path, sizeof(path), "%.*s", (int)pathLen, value);
+      struct Object *root = FS_LoadObject(path);
+      if (root) {
+        struct Object *child = OBJ_FindChild(root, colon + 1, FALSE);
+        if (child) {
+          PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
+        }
+      }
+    } else {
+      struct Object *dataObj = FS_LoadObject(value);
+      if (dataObj) {
+        PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
+      }
+    }
     return TRUE;
   }
   return FALSE;
@@ -77,12 +98,12 @@ static bool_t
 inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
 {
   struct Property *triggers = NULL;
-  struct PropertyType const *td = OBJ_FindImplicitProperty(o, "Triggers");
+  struct PropertyType const *td = OBJ_FindImplicitPropertyType(o, "Triggers");
   struct Object *action = _LoadObjectFromXmlFragment(value, 0);
   struct Object *trigger = action ? OBJ_Create(ID_EventTrigger) : NULL;
   char routed[MAX_PROPERTY_STRING] = {0};
 
-  if (!td || FAILED(OBJ_FindLongProperty(o, td->FullIdentifier, &triggers)) || !trigger) {
+  if (!td || !(triggers = OBJ_FindLongProperty(o, td->FullIdentifier)) || !trigger) {
     if (action) OBJ_ReleaseRef(action);
     Con_Error("Property '%s' does not support inline trigger shorthand", pd->Name);
     return FALSE;
@@ -92,12 +113,13 @@ inline_event(struct Object *o, struct PropertyType const *pd, lpcString_t value)
            (pd->Category && *pd->Category) ? pd->Category : pd->Name,
            pd->Name);
   lpcString_t routed_value = routed;
-  if (FAILED(OBJ_SetPropertyValue(trigger, "RoutedEvent", &routed_value))) {
+  struct Property* evt = OBJ_FindLongProperty(trigger, ID_EventTrigger_RoutedEvent);
+  if (!evt) {
     OBJ_ReleaseRef(trigger);
     OBJ_ReleaseRef(action);
     return FALSE;
   }
-
+  PROP_SetValue(evt, &routed_value);
   OBJ_AddChild(trigger, action);
   if (append_object(triggers, trigger)) return TRUE;
   OBJ_ReleaseRef(trigger);
@@ -134,7 +156,8 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   struct Property *p = NULL;
   char tmp[MAX_PROPERTY_STRING] = {0};
   if (!value || !*value) return;
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }
@@ -236,7 +259,8 @@ array_prop(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
   int count = 0;
   int index = 0;
 
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }
@@ -275,7 +299,8 @@ property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* 
     array_prop(o, pd, x);
     return;
   }
-  if (FAILED(OBJ_FindLongProperty(o, pd->FullIdentifier, &p))) {
+  p = OBJ_FindLongProperty(o, pd->FullIdentifier);
+  if (!p) {
     Con_Error("Could not get property slot for '%s'", pd->Name);
     return;
   }
@@ -357,7 +382,7 @@ visit_child(struct Object *o, struct _xmlNode* c)
 
   struct PropertyType const *pd = OBJ_FindClass((lpcString_t)c->name)
     ? NULL
-    : OBJ_FindExplicitProperty(o, (lpcString_t)c->name);
+    : OBJ_FindExplicitPropertyType(o, (lpcString_t)c->name);
   if (pd) {
     property_node(o, pd, c);
     return;
@@ -451,3 +476,4 @@ FS_LoadObjectFromXmlString(lpcString_t xml_string)
   if (!o) Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
   return o;
 }
+

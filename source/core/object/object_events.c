@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include "source/core/property/property_internal.h"
 
 void OBJ_SetFocus(struct Object *pobj)
 {
@@ -46,9 +47,16 @@ OBJ_AttachPropertyProgram(struct Object *self,
 {
   (void)mode;
   struct token *compiled = enabled ? Token_Create(program) : NULL;
-  struct Property *property = NULL;
-  if (SUCCEEDED(OBJ_FindLongProperty(self, fnv1a32(name), &property))) {
+  struct Property *property = OBJ_FindLongProperty(self, fnv1a32(name));
+  if (property) {
     PROP_AttachProgram(property, compiled);
+    if (property->binding) {
+      free((char *)property->binding->Expression);
+      property->binding->Expression = strdup(program);
+      property->binding->updateFrame = (uint32_t)-1;
+    }
+    PROP_SetFlag(property, PF_MODIFIED);
+    property->updateFrame = core.frame == 0 ? (uint32_t)-1 : core.frame - 1;
     return TRUE;
   } else {
     return FALSE;

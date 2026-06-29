@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="SpriteKit" namespace="orca" on-luaopen="on_spritekit_module_registered">
   <require file="../../source/renderer/api/renderer.cgen"/>
   <includes>
@@ -21,9 +22,6 @@
         <property name="Framerate" type="float">Frames per second</property>
         <property name="Frames" type="SpriteFrame" array="true">Variable-length frame data array</property>
       </properties>
-      <fields>
-        <field name="Palette" type="uint" pointer="true" const="true"/>
-      </fields>
     </class>
     <class name="SKNode" parent="Node" children="SKNode">
       <summary>Base 2D sprite node with transform and matrix</summary>

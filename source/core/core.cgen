@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/module.dtd">
+<!DOCTYPE module SYSTEM "https://corepunch.github.io/orca/schemas/cgen.dtd">
 <module name="core" namespace="orca" on-luaopen="before_core_module_registered" after-luaopen="after_core_module_registered">
   <require file="../geometry/geometry.cgen"/>
   <externals>
@@ -50,6 +50,15 @@
       <value name="Normal">Standard forward playback</value>
       <value name="Reverse">Reverse playback from end to start</value>
       <value name="PingPong">Alternating forward/reverse playback</value>
+    </enum>
+    <enum name="DataObjectDataType">
+      <summary>Value type discriminator for DataObject.Value.</summary>
+      <value name="Object">Hierarchy node with no value (default for base DataObject)</value>
+      <value name="String">String value</value>
+      <value name="Int">Integer value</value>
+      <value name="Float">Float value</value>
+      <value name="Bool">Boolean value</value>
+      <value name="List">List container</value>
     </enum>
     <enum name="InterpolationMode">
       <value name="Linear">Linear interpolation</value>
@@ -365,13 +374,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <arg name="Property" type="string">The name of the property whose value to retrieve</arg>
           <returns type="nresults">The current value of the property, or nil if the property doesn't exist. Return type varies based on property data type</returns>
         </method>
-        <method name="FindImplicitProperty">
+        <method name="FindImplicitPropertyType">
           <summary>Looks up a property by context-driven syntax, like "Column" instead of "Grid.Column"</summary>
           <details>Searches for a property using a context-driven approach, allowing shorthand notation for commonly used properties. This method simplifies property access by inferring the full property path based on the current context.</details>
           <arg name="name" type="string">The name of the property to find</arg>
           <returns type="PropertyType" pointer="true" const="true">Pointer to a property type, null if not found</returns>
         </method>
-        <method name="FindExplicitProperty">
+        <method name="FindExplicitPropertyType">
           <summary>Looks up a property by full syntax, like "Grid.Column" instead of "Column"</summary>
           <details>Searches for a property using the full property path, requiring the complete syntax for accurate identification. This method ensures precise property access by using the explicit path provided.</details>
           <arg name="name" type="string">The full name of the property to find</arg>
@@ -530,7 +539,7 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Establishes this object as the current creation context in the Lua environment. When new objects are created through Lua scripts without explicitly specifying a parent, they will automatically be added as children of this context object. This provides a convenient way to control object hierarchy during scripted object creation and helps maintain organized scene structures.</details>
         </method>
         <topic title="Prefabs and Aliases">Loads prefab templates and manages named child aliases.</topic>
-        <method name="Instantiate" lua="true">
+        <method name="Instantiate">
           <summary>Instantiates a new object from this prefab.</summary>
           <details>Will load from the source, not adding it to the static workspace hierarchy</details>
           <returns type="Object" pointer="true">Returns the instantiated object</returns>
@@ -790,12 +799,50 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <details>Locale is a standalone component (similar to StateManager) that holds locale entries as child LocaleEntry objects. Set the Language property to the BCP-47 language code.</details>
       <properties>
         <property name="Language" type="string">BCP-47 language code for this locale (e.g. "en", "fr-CA")</property>
-        <property name="Entries" type="LocaleEntry" array="true">Array of locale entries contained in this locale</property> 
+        <property name="Entries" type="LocaleEntry" array="true">Array of locale entries contained in this locale</property>
       </properties>
     </class>
     <class name="DataObject">
       <summary>Base class for data-holding objects within the framework</summary>
-      <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.</details>
+      <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.
+Every DataObject carries a Name identifier and optional Value (stored as string) with a DataType enum discriminator.
+Typed subclasses (DataObjectString, DataObjectInt, DataObjectFloat, DataObjectBool) set DataType automatically.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+      <properties>
+        <property name="Name" type="string">The name of this data object, used for identification in data binding.</property>
+        <property name="Value" type="string">The value of this data object, stored as string. Type is discriminated by the DataType property.</property>
+        <property name="DataType" type="DataObjectDataType">Value type discriminator indicating how to interpret the Value string.</property>
+      </properties>
+    </class>
+    <class name="DataObjectString" parent="DataObject">
+      <summary>Typed DataObject that sets DataType to String automatically.</summary>
+      <details>DataObjectString is a DataObject subclass whose DataType is preset to String. The Value property holds the string value. Useful in datasource XML and data binding scenarios.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+    </class>
+    <class name="DataObjectInt" parent="DataObject">
+      <summary>Typed DataObject that sets DataType to Int automatically.</summary>
+      <details>DataObjectInt is a DataObject subclass whose DataType is preset to Int. The Value property holds the integer as a string. Useful in datasource XML and data binding scenarios.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+    </class>
+    <class name="DataObjectFloat" parent="DataObject">
+      <summary>Typed DataObject that sets DataType to Float automatically.</summary>
+      <details>DataObjectFloat is a DataObject subclass whose DataType is preset to Float. The Value property holds the float as a string. Useful in datasource XML and data binding scenarios.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+    </class>
+    <class name="DataObjectBool" parent="DataObject">
+      <summary>Typed DataObject that sets DataType to Bool automatically.</summary>
+      <details>DataObjectBool is a DataObject subclass whose DataType is preset to Bool. The Value property holds "true" or "false" as a string. Useful in datasource XML and data binding scenarios.</details>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
     </class>
     <class name="Binding">
       <summary>Declarative property binding object that attaches a property program to its parent object.</summary>
@@ -1102,9 +1149,19 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
       <summary>Drains the pending platform message queue and dispatches each event immediately.</summary>
       <details>Processes queued events until the queue is empty, dispatching each message through the normal ORCA message pipeline. This is primarily useful in tests and other headless flows where asynchronous work such as rebuild() coroutines posts follow-up messages that need to run before assertions.</details>
     </function>
+    <function name="RunAllPrograms" lua="true" export="runAllPrograms">
+      <summary>Evaluates all pending property bindings on the given object and its descendants.</summary>
+      <details>Walks the property list of each object in the subtree and calls PROP_Update on properties that have bindings. This is the same function called during Screen_Paint to resolve binding expressions like {DataContext/Name}. Useful in headless tests where no paint event fires.</details>
+      <arg name="object" type="Object" pointer="true">Root object whose binding programs should be evaluated.</arg>
+    </function>
     <function name="GetObjectCount" lua="true" export="objectCount">
       <summary>Returns the number of live engine objects.</summary>
       <returns type="nresults">Number of Lua results pushed by the binding function.</returns>
+    </function>
+    <function name="FindPropertyType">
+      <summary>Looks for property type in project's registered properties</summary>
+      <arg name="id" type="int">Full identifier of the property type</arg>
+      <returns type="PropertyType" pointer="true" const="true"/>
     </function>
 <!--  <function name="AddCommands" lua="true">-->
 <!--    <summary>Retrieves currently active object.</summary>-->

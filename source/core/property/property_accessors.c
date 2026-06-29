@@ -1,25 +1,5 @@
 #include "property_internal.h"
 
-struct Property *
-PROP_FindByLongID(struct Property *list, uint32_t identifier) {
-  FOR_EACH_LIST(struct Property, property, list) {
-    if (property->pdesc->FullIdentifier == identifier) {
-      return property;
-    }
-  }
-  return NULL;
-}
-
-struct Property *
-PROP_FindByShortID(struct Property *list, uint32_t identifier) {
-  FOR_EACH_LIST(struct Property, property, list) {
-    if (property->pdesc->ShortIdentifier == identifier) {
-      return property;
-    }
-  }
-  return NULL;
-}
-
 struct Object *
 PROP_GetObjectValue(struct Property const *property)
 {
@@ -90,7 +70,7 @@ PROP_GetValue(struct Property const *property)
   }
   if (property->pdesc && property->pdesc->IsInherited && !(property->flags & PF_MODIFIED)) {
     for (struct Object *obj = property->object ? OBJ_GetParent(property->object) : NULL; obj; obj = OBJ_GetParent(obj)) {
-      struct Property *p = PROP_FindByLongID(OBJ_GetProperties(obj), property->pdesc->FullIdentifier);
+      struct Property *p = OBJ_FindLongProperty(obj, property->pdesc->FullIdentifier);
       if (p && (p->flags & PF_MODIFIED)) {
         return PROP_GetValue(p);
       }
@@ -185,8 +165,7 @@ PROP_SetStoredValue(struct Property *property,
       memcpy(storage, &object, PROP_GetSize(property));
     }
     OBJ_AddRef(object);
-    if (property->pdesc->TypeString && !strcmp(property->pdesc->TypeString, "Texture"))
-      OBJ_SendMessageW(object, ID_Object_Start, 0, NULL);
+    OBJ_SendMessageW(object, ID_Object_Start, 0, NULL);
     if (old_object) {
       OBJ_ReleaseRef(old_object);
     }
@@ -249,7 +228,7 @@ PROP_NotifyChanged(struct Property *property)
 void
 PROP_SetValue(struct Property *property, void const* source)
 {
-  if (PROP_IsSameValue(property, source)) {
+  if (!property || PROP_IsSameValue(property, source)) {
     return;
   }
   PROP_SetStoredValue(property, source);

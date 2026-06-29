@@ -68,7 +68,7 @@ OBJ_RegisterPropertyType(struct PropertyType const *pt)
 }
 
 struct PropertyType const *
-OBJ_FindPropertyType(uint32_t ident)
+core_FindPropertyType(int32_t ident)
 {
   FOR_LOOP(i, MAX_PROPERTY_TYPES) {
     struct PropertyType const *pt = &core.ptypes[i];
@@ -537,7 +537,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
       struct Object *object = e->target;
       struct Property *property = e->lParam;
       if (!property && object && e->wParam) {
-        property = PROP_FindByShortID(OBJ_GetProperties(object), e->wParam);
+        property = OBJ_FindShortProperty(object, e->wParam);
       }
       if (!property) {
         return FALSE;
@@ -844,6 +844,11 @@ ORCA_API int core_GetObjectCount(lua_State* L) {
   return 1;
 }
 
+ORCA_API void core_RunAllPrograms(lua_State* L, struct Object* root) {
+  (void)L;
+  PROP_RunAllPrograms(root);
+}
+
 
 
 
@@ -868,3 +873,5 @@ after_core_module_registered(lua_State* L)
 }
 
 #include <core/core_export.c>
+
+
