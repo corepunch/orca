@@ -172,6 +172,7 @@ local function test_text_layout_uses_cached_measurement()
 	local text = screen + ui.TextBlock {
 		Text = "Cached text metrics",
 		FontSize = 24,
+		Width = 1000,
 	}
 
 	ui.resetTextStats()
