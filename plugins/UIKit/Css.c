@@ -1414,9 +1414,11 @@ struct Object *UIKit_LoadObjectFromCssString(const char* css_text)
                    rule->decls[di].key,
                    rule->decls[di].val);
 
+    OBJ_SendMessageW(rule_obj, ID_Object_Start, 0, NULL);
     OBJ_AddChild(sheet, rule_obj);
   }
 
+  OBJ_SendMessageW(sheet, ID_Object_Start, 0, NULL);
   free(doc);
   return sheet;
 }

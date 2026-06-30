@@ -29,6 +29,7 @@ HANDLER(PrefabView3D, Node, LoadView)
     struct Object *loaded = FS_LoadObject(pPrefabView3D->Prefab);
     if (loaded) {
       OBJ_AddChild(hObject, loaded);
+      OBJ_SendMessageW(loaded, ID_Object_Start, 0, NULL);
     } else {
       Con_Error("Failed to load prefab '%s'", pPrefabView3D->Prefab);
     }
