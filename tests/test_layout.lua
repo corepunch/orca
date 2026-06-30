@@ -1244,10 +1244,10 @@ local function test_example_application_xml()
 	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
 
 	local tab_section = xml:find('<StackView Name="TabbedTechSection"')
-	local signals = xml:find('<Grid Name="OrcaSignals"')
+	local signals = xml:find('<GridBox Name="OrcaSignals"')
 	local brand_mark = xml:find('<StackView Name="BrandMark"', 1, true)
 	local brand_icon = xml:find('BrandIcon', 1, true)
-	local feature_section = xml:find('<Grid Name="FeatureSection"')
+	local feature_section = xml:find('<GridBox Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
 	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>', 1, true)
@@ -1385,10 +1385,10 @@ local function test_example_application_xml()
 	test.expect(control_muted ~= nil, "Example package.lua should define control-muted")
 	test.expect(deploy_command_link ~= nil, "Deploy tab should include a desktop build callout")
 	test.expect(deploy_command_value ~= nil, "Deploy tab should show the desktop build command")
-	test.expect(xml:find('Name="DeployImage1" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
-		"Deploy city image card placeholder should exist")
-	test.expect(xml:find('Name="DeployImage2" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
-		"Deploy night image card placeholder should exist")
+	test.expect(xml:find('ItemsSource="Example/Data/ApplicationData:DeployImages"', 1, true) ~= nil,
+		"Deploy images should be sourced from ApplicationData:DeployImages")
+	test.expect(xml:find('ItemTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
+		"Deploy images GridBox should use ImageCaptionCard template")
 	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
 	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
 	test.expect(icon_count >= 10, "Example Application.xml should reference at least 10 SVG icons")
