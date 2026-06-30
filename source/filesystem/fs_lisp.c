@@ -10,6 +10,7 @@
  * Binding expressions are translated from Lisp to the ORCA expression string
  * recognised by Token_Create / OBJ_AttachPropertyProgram:
  *   (bind "Node.ActualWidth")      → {Node.ActualWidth}
+ *   (Binding "Node.ActualWidth")   → {Node.ActualWidth}  (alias)
  *   (if  a b c)                    → IF(a, b, c)
  *   (step n x)                     → STEP(n, x)
  *   (vector2 x y)                  → Vector2(x, y)
@@ -173,8 +174,8 @@ translate_list_body(struct lsp_lex *l, struct sbuf *out)
   snprintf(fname, sizeof(fname), "%s", l->str);
   lsp_next(l);
 
-  /* (bind "PropPath") → {PropPath} */
-  if (!strcasecmp(fname, "bind")) {
+  /* (bind "PropPath") or (Binding "PropPath") → {PropPath} */
+  if (!strcasecmp(fname, "bind") || !strcasecmp(fname, "Binding")) {
     if (l->tok == TOK_STRING) {
       sbuf_putc(out, '{');
       sbuf_put(out, l->str);

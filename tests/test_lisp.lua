@@ -226,6 +226,9 @@ local function test_binding_translation()
         (:bind Target="Grid.Columns"
           (if (step 640 (bind "Node.ActualWidth")) "auto auto" "auto")))
     ]],
+    -- (Binding "path") alias
+    [[(TextBlock Name="T4" Text=(Binding "Card.Title"))
+    ]],
   }
 
   for i, src in ipairs(fixtures) do
