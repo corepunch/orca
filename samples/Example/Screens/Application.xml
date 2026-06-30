@@ -168,7 +168,7 @@
 				<TextBlock Name="GalleryHeading" class="section-heading" Text="Gallery"/>
 				<TextBlock Name="GallerySubheading" class="section-copy"
 					Text="Screenshots and scenes rendered entirely by the ORCA engine."/>
-				<ListBox Name="GalleryList" Direction="Horizontal" Spacing="16"
+				<GridBox Name="GalleryGrid" Columns="auto auto auto" Spacing="16"
 					ItemsSource="Example/Data/ApplicationData:GalleryCards"
 					ItemTemplate="Example/Prefabs/GalleryCard"/>
 			</StackView>
