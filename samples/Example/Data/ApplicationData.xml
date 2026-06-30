@@ -1,55 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DataObject Name="ApplicationData">
-  <DataObject Name="MetricUsers">
-    <DataObjectString Name="Title" Value="2.4 M"/>
-    <DataObjectString Name="Subtitle" Value="Active users"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
+  <DataObject Name="Metrics">
+    <DataObject Name="MetricUsers">
+      <DataObjectString Name="Title" Value="2.4 M"/>
+      <DataObjectString Name="Subtitle" Value="Active users"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+    </DataObject>
+    <DataObject Name="MetricUptime">
+      <DataObjectString Name="Title" Value="99.9 %"/>
+      <DataObjectString Name="Subtitle" Value="Uptime SLA"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+    </DataObject>
+    <DataObject Name="MetricFrame">
+      <DataObjectString Name="Title" Value="1.2 ms"/>
+      <DataObjectString Name="Subtitle" Value="Frame time"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+    </DataObject>
   </DataObject>
-  <DataObject Name="MetricUptime">
-    <DataObjectString Name="Title" Value="99.9 %"/>
-    <DataObjectString Name="Subtitle" Value="Uptime SLA"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-  </DataObject>
-  <DataObject Name="MetricFrame">
-    <DataObjectString Name="Title" Value="1.2 ms"/>
-    <DataObjectString Name="Subtitle" Value="Frame time"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-  </DataObject>
-  <DataObject Name="SignalXml">
-    <DataObjectString Name="Icon" Value="Example/Icons/code.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="XML-first screens"/>
-    <DataObjectString Name="Body" Value="Layouts stay readable."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-  </DataObject>
-  <DataObject Name="SignalLua">
-    <DataObjectString Name="Icon" Value="Example/Icons/file.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Lua beside the view"/>
-    <DataObjectString Name="Body" Value="Behavior stays close."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-  </DataObject>
-  <DataObject Name="SignalMoon">
-    <DataObjectString Name="Icon" Value="Example/Icons/moon.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="MoonScript when it grows"/>
-    <DataObjectString Name="Body" Value="Less noise, same runtime."/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
-  </DataObject>
-  <DataObject Name="SignalShip">
-    <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Desktop, mobile, web"/>
-    <DataObjectString Name="Body" Value="One screen, many targets."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-  </DataObject>
-  <DataObject Name="SignalSpeed">
-    <DataObjectString Name="Icon" Value="Example/Icons/zap.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Fast edit-run-refine"/>
-    <DataObjectString Name="Body" Value="See changes immediately."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
-  </DataObject>
-  <DataObject Name="SignalScale">
-    <DataObjectString Name="Icon" Value="Example/Icons/cpu.svg?width=28&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Built to scale"/>
-    <DataObjectString Name="Body" Value="Same UI, larger ambitions."/>
-    <DataObjectString Name="PrimaryColor" Value="$text-muted"/>
+  <DataObject Name="Signals">
+    <DataObject Name="SignalXml">
+      <DataObjectString Name="Icon" Value="Example/Icons/code.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="XML-first screens"/>
+      <DataObjectString Name="Body" Value="Layouts stay readable."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+    </DataObject>
+    <DataObject Name="SignalLua">
+      <DataObjectString Name="Icon" Value="Example/Icons/file.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Lua beside the view"/>
+      <DataObjectString Name="Body" Value="Behavior stays close."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+    </DataObject>
+    <DataObject Name="SignalMoon">
+      <DataObjectString Name="Icon" Value="Example/Icons/moon.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="MoonScript when it grows"/>
+      <DataObjectString Name="Body" Value="Less noise, same runtime."/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+    </DataObject>
+    <DataObject Name="SignalShip">
+      <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Desktop, mobile, web"/>
+      <DataObjectString Name="Body" Value="One screen, many targets."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+    </DataObject>
+    <DataObject Name="SignalSpeed">
+      <DataObjectString Name="Icon" Value="Example/Icons/zap.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Fast edit-run-refine"/>
+      <DataObjectString Name="Body" Value="See changes immediately."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
+    </DataObject>
+    <DataObject Name="SignalScale">
+      <DataObjectString Name="Icon" Value="Example/Icons/cpu.svg?width=28&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Built to scale"/>
+      <DataObjectString Name="Body" Value="Same UI, larger ambitions."/>
+      <DataObjectString Name="PrimaryColor" Value="$text-muted"/>
+    </DataObject>
   </DataObject>
   <DataObject Name="XmlPanelHeader">
     <DataObjectString Name="Icon" Value="Example/Icons/grid.svg?width=26&amp;type=mask"/>
@@ -91,26 +95,28 @@
     <DataObjectString Name="Title" Value="Lua stays close to the surface"/>
     <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
   </DataObject>
-  <DataObject Name="LuaCard1">
-    <DataObjectString Name="Icon" Value="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Input"/>
-    <DataObjectString Name="Body" Value="Tap, click, and selection handling can sit right beside the view that needs it."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-purple"/>
-  </DataObject>
-  <DataObject Name="LuaCard2">
-    <DataObjectString Name="Icon" Value="Example/Icons/database.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="State"/>
-    <DataObjectString Name="Body" Value="Small state objects stay local, so the screen remains easy to reason about."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-blue"/>
-  </DataObject>
-  <DataObject Name="LuaCard3">
-    <DataObjectString Name="Icon" Value="Example/Icons/link-2.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Binding"/>
-    <DataObjectString Name="Body" Value="Let Lua connect the moving pieces while XML keeps the hierarchy in view."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-green"/>
+  <DataObject Name="LuaCards">
+    <DataObject Name="LuaCard1">
+      <DataObjectString Name="Icon" Value="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Input"/>
+      <DataObjectString Name="Body" Value="Tap, click, and selection handling can sit right beside the view that needs it."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-purple"/>
+    </DataObject>
+    <DataObject Name="LuaCard2">
+      <DataObjectString Name="Icon" Value="Example/Icons/database.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="State"/>
+      <DataObjectString Name="Body" Value="Small state objects stay local, so the screen remains easy to reason about."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-blue"/>
+    </DataObject>
+    <DataObject Name="LuaCard3">
+      <DataObjectString Name="Icon" Value="Example/Icons/link-2.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Binding"/>
+      <DataObjectString Name="Body" Value="Let Lua connect the moving pieces while XML keeps the hierarchy in view."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-green"/>
+    </DataObject>
   </DataObject>
   <DataObject Name="MoonPanelHeader">
     <DataObjectString Name="Icon" Value="Example/Icons/moon.svg?width=26&amp;type=mask"/>
@@ -122,58 +128,64 @@
     <DataObjectString Name="Title" Value="One UI, many targets"/>
     <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
   </DataObject>
-  <DataObject Name="DeployCard1">
-    <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Desktop"/>
-    <DataObjectString Name="Body" Value="Best when you want denser information, more breathing room, and precision input."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-purple"/>
+  <DataObject Name="DeployCards">
+    <DataObject Name="DeployCard1">
+      <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Desktop"/>
+      <DataObjectString Name="Body" Value="Best when you want denser information, more breathing room, and precision input."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-purple"/>
+    </DataObject>
+    <DataObject Name="DeployCard2">
+      <DataObjectString Name="Icon" Value="Example/Icons/smartphone.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Mobile"/>
+      <DataObjectString Name="Body" Value="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-green"/>
+    </DataObject>
+    <DataObject Name="DeployCard3">
+      <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Web"/>
+      <DataObjectString Name="Body" Value="The same screen model can carry into browser workflows without being rewritten."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+      <DataObjectString Name="IconBackground" Value="$icon-bg-blue"/>
+    </DataObject>
   </DataObject>
-  <DataObject Name="DeployCard2">
-    <DataObjectString Name="Icon" Value="Example/Icons/smartphone.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Mobile"/>
-    <DataObjectString Name="Body" Value="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-green"/>
+  <DataObject Name="DeployImages">
+    <DataObject Name="DeployImage1">
+      <DataObjectString Name="Image" Value="Example/Images/orca-tab-city"/>
+      <DataObjectString Name="Title" Value="City glow"/>
+    </DataObject>
+    <DataObject Name="DeployImage2">
+      <DataObjectString Name="Image" Value="Example/Images/orca-tab-lights"/>
+      <DataObjectString Name="Title" Value="Night light"/>
+    </DataObject>
   </DataObject>
-  <DataObject Name="DeployCard3">
-    <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Web"/>
-    <DataObjectString Name="Body" Value="The same screen model can carry into browser workflows without being rewritten."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-    <DataObjectString Name="IconBackground" Value="$icon-bg-blue"/>
-  </DataObject>
-  <DataObject Name="DeployImage1">
-    <DataObjectString Name="Image" Value="Example/Images/orca-tab-city"/>
-    <DataObjectString Name="Title" Value="City glow"/>
-  </DataObject>
-  <DataObject Name="DeployImage2">
-    <DataObjectString Name="Image" Value="Example/Images/orca-tab-lights"/>
-    <DataObjectString Name="Title" Value="Night light"/>
-  </DataObject>
-  <DataObject Name="FeatureXmlCard">
-    <DataObjectString Name="Icon" Value="Example/Icons/layers.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="XML stays readable"/>
-    <DataObjectString Name="Body" Value="The layout tree is right there in the page, so structure and spacing stay easy to tune."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-  </DataObject>
-  <DataObject Name="FeatureLuaCard">
-    <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Lua stays close"/>
-    <DataObjectString Name="Body" Value="Interactions, bindings, and state can live next to the screen that owns them."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-  </DataObject>
-  <DataObject Name="FeatureShipCard">
-    <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Ships everywhere"/>
-    <DataObjectString Name="Body" Value="The same UI can move across desktop, mobile, and web-friendly targets."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
-  </DataObject>
-  <DataObject Name="FeatureSpeedCard">
-    <DataObjectString Name="Icon" Value="Example/Icons/zap.svg?width=40&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Fast iteration"/>
-    <DataObjectString Name="Body" Value="Edit, reload, and refine quickly without losing the overall shape of the interface."/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
+  <DataObject Name="FeatureCards">
+    <DataObject Name="FeatureXmlCard">
+      <DataObjectString Name="Icon" Value="Example/Icons/layers.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="XML stays readable"/>
+      <DataObjectString Name="Body" Value="The layout tree is right there in the page, so structure and spacing stay easy to tune."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+    </DataObject>
+    <DataObject Name="FeatureLuaCard">
+      <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Lua stays close"/>
+      <DataObjectString Name="Body" Value="Interactions, bindings, and state can live next to the screen that owns them."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+    </DataObject>
+    <DataObject Name="FeatureShipCard">
+      <DataObjectString Name="Icon" Value="Example/Icons/globe.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Ships everywhere"/>
+      <DataObjectString Name="Body" Value="The same UI can move across desktop, mobile, and web-friendly targets."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
+    </DataObject>
+    <DataObject Name="FeatureSpeedCard">
+      <DataObjectString Name="Icon" Value="Example/Icons/zap.svg?width=40&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Fast iteration"/>
+      <DataObjectString Name="Body" Value="Edit, reload, and refine quickly without losing the overall shape of the interface."/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+    </DataObject>
   </DataObject>
   <DataObject Name="GalleryCards">
     <DataObject Name="GalleryCard1">
@@ -186,46 +198,50 @@
       <DataObjectString Name="Subtitle" Value="High-fidelity texture sampling with anisotropic filtering."/>
     </DataObject>
   </DataObject>
-  <DataObject Name="Step1">
-    <DataObjectString Name="Title" Value="01"/>
-    <DataObjectString Name="Subtitle" Value="Define Layout"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-    <DataObjectString Name="Body" Value="Write your screen as an XML file with familiar Grid and StackView containers."/>
+  <DataObject Name="WorkflowSteps">
+    <DataObject Name="Step1">
+      <DataObjectString Name="Title" Value="01"/>
+      <DataObjectString Name="Subtitle" Value="Define Layout"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+      <DataObjectString Name="Body" Value="Write your screen as an XML file with familiar Grid and StackView containers."/>
+    </DataObject>
+    <DataObject Name="Step2">
+      <DataObjectString Name="Title" Value="02"/>
+      <DataObjectString Name="Subtitle" Value="Load Assets"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+      <DataObjectString Name="Body" Value="Images, fonts, and data files are streamed from packages at runtime."/>
+    </DataObject>
+    <DataObject Name="Step3">
+      <DataObjectString Name="Title" Value="03"/>
+      <DataObjectString Name="Subtitle" Value="Script Logic"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+      <DataObjectString Name="Body" Value="Attach Lua scripts to any component for interactivity and data binding."/>
+    </DataObject>
+    <DataObject Name="Step4">
+      <DataObjectString Name="Title" Value="04"/>
+      <DataObjectString Name="Subtitle" Value="Ship"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
+      <DataObjectString Name="Body" Value="Deploy to desktop, mobile, or WebGL with a single build command."/>
+    </DataObject>
   </DataObject>
-  <DataObject Name="Step2">
-    <DataObjectString Name="Title" Value="02"/>
-    <DataObjectString Name="Subtitle" Value="Load Assets"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-    <DataObjectString Name="Body" Value="Images, fonts, and data files are streamed from packages at runtime."/>
-  </DataObject>
-  <DataObject Name="Step3">
-    <DataObjectString Name="Title" Value="03"/>
-    <DataObjectString Name="Subtitle" Value="Script Logic"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-    <DataObjectString Name="Body" Value="Attach Lua scripts to any component for interactivity and data binding."/>
-  </DataObject>
-  <DataObject Name="Step4">
-    <DataObjectString Name="Title" Value="04"/>
-    <DataObjectString Name="Subtitle" Value="Ship"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent-amber"/>
-    <DataObjectString Name="Body" Value="Deploy to desktop, mobile, or WebGL with a single build command."/>
-  </DataObject>
-  <DataObject Name="Quote1">
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-    <DataObjectString Name="Title" Value="— Alex R."/>
-    <DataObjectString Name="Subtitle" Value="Lead Engineer"/>
-    <DataObjectString Name="Body" Value="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
-  </DataObject>
-  <DataObject Name="Quote2">
-    <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
-    <DataObjectString Name="Title" Value="— Sam T."/>
-    <DataObjectString Name="Subtitle" Value="UI Architect"/>
-    <DataObjectString Name="Body" Value="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
-  </DataObject>
-  <DataObject Name="Quote3">
-    <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
-    <DataObjectString Name="Title" Value="— Jordan M."/>
-    <DataObjectString Name="Subtitle" Value="Game Developer"/>
-    <DataObjectString Name="Body" Value="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
+  <DataObject Name="Quotes">
+    <DataObject Name="Quote1">
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+      <DataObjectString Name="Title" Value="— Alex R."/>
+      <DataObjectString Name="Subtitle" Value="Lead Engineer"/>
+      <DataObjectString Name="Body" Value="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
+    </DataObject>
+    <DataObject Name="Quote2">
+      <DataObjectString Name="PrimaryColor" Value="$accent-green"/>
+      <DataObjectString Name="Title" Value="— Sam T."/>
+      <DataObjectString Name="Subtitle" Value="UI Architect"/>
+      <DataObjectString Name="Body" Value="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
+    </DataObject>
+    <DataObject Name="Quote3">
+      <DataObjectString Name="PrimaryColor" Value="$accent-blue"/>
+      <DataObjectString Name="Title" Value="— Jordan M."/>
+      <DataObjectString Name="Subtitle" Value="Game Developer"/>
+      <DataObjectString Name="Body" Value="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
+    </DataObject>
   </DataObject>
 </DataObject>

@@ -21,11 +21,9 @@
 					<Node2D Name="HeadlineSpacer" class="headline-spacer"/>
 					<TextBlock Name="SubHeadline" class="hero-subtitle">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
 					<Node2D Name="MetricSpacer" class="metric-spacer"/>
-					<Grid Name="Metrics" Columns="auto auto auto" class="grid">
-					<LayerPrefabPlaceholder Name="MetricUsers" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricUsers"/>
-					<LayerPrefabPlaceholder Name="MetricUptime" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricUptime"/>
-					<LayerPrefabPlaceholder Name="MetricFrame" PlaceholderTemplate="Example/Prefabs/Mertic" DataContextSource="Example/Data/ApplicationData:MetricFrame"/>
-					</Grid>
+					<GridBox Name="Metrics" Columns="auto auto auto" class="grid"
+						ItemsSource="Example/Data/ApplicationData:Metrics"
+						ItemTemplate="Example/Prefabs/Mertic"/>
 				</StackView>
 				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
 				<BindingExpression Target="Node.Visible">STEP(640, {Screen.Width})</BindingExpression>
@@ -36,21 +34,11 @@
 				<TextBlock Name="TabbedTechHeading" class="section-heading" Text="Build the UI, not the ceremony"/>
 				<TextBlock Name="TabbedTechSubheading" class="section-copy"
 					Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."/>
-				<Grid Name="OrcaSignals" Columns="auto auto auto" class="grid">
+				<GridBox Name="OrcaSignals" Columns="auto auto auto" class="grid"
+					ItemsSource="Example/Data/ApplicationData:Signals"
+					ItemTemplate="Example/Prefabs/SignalCard">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto", "auto auto")</BindingExpression>
-					<LayerPrefabPlaceholder Name="SignalXml" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalXml"/>
-					<LayerPrefabPlaceholder Name="SignalLua" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalLua"/>
-					<LayerPrefabPlaceholder Name="SignalMoon" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalMoon"/>
-					<LayerPrefabPlaceholder Name="SignalShip" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalShip"/>
-					<LayerPrefabPlaceholder Name="SignalSpeed" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalSpeed"/>
-					<LayerPrefabPlaceholder Name="SignalScale" PlaceholderTemplate="Example/Prefabs/SignalCard"
-						DataContextSource="Example/Data/ApplicationData:SignalScale"/>
-				</Grid>
+				</GridBox>
 				<TabView Name="OrcaTabs" SelectedValue="xml">
 					<TabBar Name="OrcaTabBar" class="panel tabbar">
 						<Tab Name="XmlTab" Value="xml" class="tab">XML</Tab>
@@ -93,14 +81,9 @@
 							DataContextSource="Example/Data/ApplicationData:LuaPanelHeader"/>
 						<TextBlock Name="LuaBody" class="section-copy"
 							Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."/>
-						<Grid Name="LuaGrid" Columns="auto auto auto" class="grid">
-							<LayerPrefabPlaceholder Name="LuaCard1" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:LuaCard1"/>
-							<LayerPrefabPlaceholder Name="LuaCard2" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:LuaCard2"/>
-							<LayerPrefabPlaceholder Name="LuaCard3" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:LuaCard3"/>
-						</Grid>
+						<GridBox Name="LuaGrid" Columns="auto auto auto" class="grid"
+							ItemsSource="Example/Data/ApplicationData:LuaCards"
+							ItemTemplate="Example/Prefabs/IconCard"/>
 					</StackView>
 					<StackView Name="moon" class="tab-panel">
 						<LayerPrefabPlaceholder Name="MoonPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
@@ -129,20 +112,12 @@
 							DataContextSource="Example/Data/ApplicationData:DeployPanelHeader"/>
 						<TextBlock Name="DeployBody" class="section-copy"
 							Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."/>
-						<Grid Name="DeployGrid" Columns="auto auto auto" class="grid">
-							<LayerPrefabPlaceholder Name="DeployCard1" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:DeployCard1"/>
-							<LayerPrefabPlaceholder Name="DeployCard2" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:DeployCard2"/>
-							<LayerPrefabPlaceholder Name="DeployCard3" PlaceholderTemplate="Example/Prefabs/IconCard"
-								DataContextSource="Example/Data/ApplicationData:DeployCard3"/>
-						</Grid>
-						<Grid Name="DeployImages" Columns="auto auto" class="grid">
-							<LayerPrefabPlaceholder Name="DeployImage1" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
-								DataContextSource="Example/Data/ApplicationData:DeployImage1"/>
-							<LayerPrefabPlaceholder Name="DeployImage2" PlaceholderTemplate="Example/Prefabs/ImageCaptionCard"
-								DataContextSource="Example/Data/ApplicationData:DeployImage2"/>
-						</Grid>
+						<GridBox Name="DeployGrid" Columns="auto auto auto" class="grid"
+							ItemsSource="Example/Data/ApplicationData:DeployCards"
+							ItemTemplate="Example/Prefabs/IconCard"/>
+						<GridBox Name="DeployImages" Columns="auto auto" class="grid"
+							ItemsSource="Example/Data/ApplicationData:DeployImages"
+							ItemTemplate="Example/Prefabs/ImageCaptionCard"/>
 						<StackView Name="DeployCommandLink" class="panel command-link">
 							<ImageView Name="DeployCommandIcon" class="command-icon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
 							<StackView Name="DeployCommandCopy" class="command-copy">
@@ -153,16 +128,9 @@
 					</StackView>
 				</TabView>
 			</StackView>
-			<Grid Name="FeatureSection" Columns="auto auto auto auto" class="grid feature-section">
-				<LayerPrefabPlaceholder Name="FeatureXmlCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					DataContextSource="Example/Data/ApplicationData:FeatureXmlCard"/>
-				<LayerPrefabPlaceholder Name="FeatureLuaCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					DataContextSource="Example/Data/ApplicationData:FeatureLuaCard"/>
-				<LayerPrefabPlaceholder Name="FeatureShipCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					DataContextSource="Example/Data/ApplicationData:FeatureShipCard"/>
-				<LayerPrefabPlaceholder Name="FeatureSpeedCard" PlaceholderTemplate="Example/Prefabs/FeatureImageCard"
-					DataContextSource="Example/Data/ApplicationData:FeatureSpeedCard"/>
-			</Grid>
+			<GridBox Name="FeatureSection" Columns="auto auto auto auto" class="grid feature-section"
+				ItemsSource="Example/Data/ApplicationData:FeatureCards"
+				ItemTemplate="Example/Prefabs/FeatureImageCard"/>
 			<StackView Name="GallerySection" class="section surface-section gallery-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="GalleryHeading" class="section-heading" Text="Gallery"/>
@@ -177,29 +145,18 @@
 				<TextBlock Name="WorkflowHeading" class="section-heading" Text="How It Works"/>
 				<TextBlock Name="WorkflowSubheading" class="section-copy"
 					Text="From XML layout to a live rendered scene in four simple steps."/>
-				<Grid Name="WorkflowSteps" Columns="auto auto auto auto" class="grid">
+				<GridBox Name="WorkflowSteps" Columns="auto auto auto auto" class="grid"
+					ItemsSource="Example/Data/ApplicationData:WorkflowSteps"
+					ItemTemplate="Example/Prefabs/WorkflowStep">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto auto", "auto auto")</BindingExpression>
-					<LayerPrefabPlaceholder Name="Step1" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						DataContextSource="Example/Data/ApplicationData:Step1"/>
-					<LayerPrefabPlaceholder Name="Step2" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						DataContextSource="Example/Data/ApplicationData:Step2"/>
-					<LayerPrefabPlaceholder Name="Step3" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						DataContextSource="Example/Data/ApplicationData:Step3"/>
-					<LayerPrefabPlaceholder Name="Step4" PlaceholderTemplate="Example/Prefabs/WorkflowStep"
-						DataContextSource="Example/Data/ApplicationData:Step4"/>
-				</Grid>
+				</GridBox>
 			</StackView>
 			<StackView Name="TestimonialsSection" class="section surface-section testimonials-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="TestimonialsHeading" class="section-heading" Text="What Developers Say"/>
-				<Grid Name="TestimonialsGrid" Columns="auto auto auto" class="grid">
-					<LayerPrefabPlaceholder Name="Quote1" PlaceholderTemplate="Example/Prefabs/Quote"
-						DataContextSource="Example/Data/ApplicationData:Quote1"/>
-					<LayerPrefabPlaceholder Name="Quote2" PlaceholderTemplate="Example/Prefabs/Quote"
-						DataContextSource="Example/Data/ApplicationData:Quote2"/>
-					<LayerPrefabPlaceholder Name="Quote3" PlaceholderTemplate="Example/Prefabs/Quote"
-						DataContextSource="Example/Data/ApplicationData:Quote3"/>
-				</Grid>
+				<GridBox Name="TestimonialsGrid" Columns="auto auto auto" class="grid"
+					ItemsSource="Example/Data/ApplicationData:Quotes"
+					ItemTemplate="Example/Prefabs/Quote"/>
 			</StackView>
 			<StackView Name="CtaSection" class="section panel cta-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(60,60), Vector2(16,16))</BindingExpression>
