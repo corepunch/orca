@@ -1100,7 +1100,6 @@ R_LoadImageObject(int argc, const char* argv[])
   OBJ_SetName(obj, r_basename(path));
   PROP_SetValue(OBJ_FindLongProperty(obj, ID_Image_Source), &path);
   R_ApplyLoaderArgs(obj, argc, argv);
-  OBJ_SendMessageW(obj, ID_Object_Start, 0, NULL);
   return obj;
 }
 
