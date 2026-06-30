@@ -432,13 +432,11 @@ node(struct _xmlNode* x)
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
       OBJ_SetTextContent(o, (lpcString_t)t->content);
-      if (!is_prefab) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
       return o;
     }
   }
 
   xmlForEach(c, x) visit_child(o, c);
-  if (!is_prefab) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
   return o;
 }
 
@@ -455,6 +453,7 @@ load_doc(char const *xml, int len, lpcString_t name)
   struct _xmlNode* root = xmlDocGetRootElement(doc);
   struct Object *o = root ? node(root) : NULL;
   xmlFreeDoc(doc);
+  if (o) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
   return o;
 }
 
