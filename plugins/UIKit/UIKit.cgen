@@ -1025,5 +1025,13 @@
         <handle message="Object.Start"/>
       </handles>
     </class>
+    <class name="GridBox" parent="Grid,ItemsControl">
+      <summary>Grid layout container that data-binds items from a collection into wrapping rows</summary>
+      <details>Combines Grid's 2D layout with ItemsControl's data-binding. Specify Columns (and optionally Rows/Spacing), provide ItemsSource and ItemTemplate, and items fill the grid with automatic row wrapping when only Columns is specified.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Start"/>
+      </handles>
+    </class>
   </classes>
 </module>
