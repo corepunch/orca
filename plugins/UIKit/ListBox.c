@@ -23,7 +23,6 @@ HANDLER(ListBox, Object, Start) {
     }
     return TRUE;
   } else {
-    Con_Printf("ListBox needs ItemsSource and ItemTemplate to populate itself");
     return FALSE;
   }
 }

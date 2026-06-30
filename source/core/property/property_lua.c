@@ -51,7 +51,18 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
         lpcString_t font_path = CORE_FindFontFamily(str);
         if (font_path) path = font_path;
       }
-      struct Object *loaded = FS_LoadObject(path);
+      // Support "file:child" colon syntax (e.g. "Data/File:ChildName")
+      const char *colon = strrchr(path, ':');
+      struct Object *loaded = NULL;
+      if (colon) {
+        size_t pathLen = colon - path;
+        char filePath[256];
+        snprintf(filePath, sizeof(filePath), "%.*s", (int)pathLen, path);
+        struct Object *root = FS_LoadObject(filePath);
+        if (root) loaded = OBJ_FindChild(root, colon + 1, FALSE);
+      } else {
+        loaded = FS_LoadObject(path);
+      }
       if (!loaded) {
         Con_Error("Failed to load object '%s' for property '%s'", str, prop->Name);
         return FALSE;

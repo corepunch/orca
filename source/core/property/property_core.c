@@ -46,19 +46,9 @@ _ReleaseBindingNode(struct Binding *binding)
 static bool_t
 _RunBinding(struct Property *property, struct Binding *binding)
 {
-  if (!binding->token) {
-    Con_Printf("DEBUG _RunBinding: no token, returning TRUE\n");
-    return TRUE;
-  }
-  if (binding->updateFrame == core.frame) {
-    Con_Printf("DEBUG _RunBinding: already updated this frame\n");
-    return TRUE;
-  }
+  if (!binding->token) return TRUE;
+  if (binding->updateFrame == core.frame) return TRUE;
   binding->updateFrame = core.frame;
-
-  Con_Printf("DEBUG _RunBinding: property=%s/%s expression=%s\n",
-             OBJ_GetName(property->object), property->pdesc->Name,
-             binding->Expression);
 
   struct vm_register r = { 0 };
   if (!OBJ_RunProgram(property->object, binding->token, &r)) {
@@ -70,7 +60,6 @@ _RunBinding(struct Property *property, struct Binding *binding)
               property->pdesc->Name);
     return FALSE;
   }
-  Con_Printf("DEBUG _RunBinding: result=%f type=%d\n", r.value[0], r.type);
   if (!PROP_Import(property, &r)) {
 #ifdef DEBUG_PROGRAM
     print_name(property->object);
