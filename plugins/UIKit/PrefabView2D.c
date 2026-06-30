@@ -31,7 +31,6 @@ HANDLER(PrefabView2D, Node, LoadView)
     struct Object *loaded = FS_LoadObject(pPrefabView2D->Prefab);
     if (loaded) {
       OBJ_AddChild(hObject, loaded);
-      OBJ_SendMessageW(loaded, ID_Object_Start, 0, NULL);
     } else {
       Con_Error("Failed to load prefab '%s'", pPrefabView2D->Prefab);
     }
