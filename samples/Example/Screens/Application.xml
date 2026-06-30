@@ -61,18 +61,9 @@
 							</StackView>
 							<StackView Name="XmlModel" class="card stack-card model-panel">
 								<TextBlock Name="XmlModelHeading" class="card-title" Text="The structure stays honest"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine1" class="model-indent-root" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine1"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine2" class="model-indent-child" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine2"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine3" class="model-indent-grandchild" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine3"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine4" class="model-indent-grandchild" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine4"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine5" class="model-indent-leaf" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine5"/>
-								<LayerPrefabPlaceholder Name="XmlModelLine6" class="model-indent-leaf" PlaceholderTemplate="Example/Prefabs/XmlModelNode"
-									DataContextSource="Example/Data/ApplicationData:XmlModelLine6"/>
+								<GridBox Name="XmlModelGrid" Columns="auto"
+									ItemsSource="Example/Data/ApplicationData:XmlModel"
+									ItemTemplate="Example/Prefabs/XmlModelNode"/>
 							</StackView>
 						</Grid>
 					</StackView>
