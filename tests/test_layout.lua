@@ -1281,26 +1281,17 @@ local function test_example_application_xml()
 		or xml:find('Example/Icons/text.svg', 1, true)
 		or xml:find('Example/Icons/file-code.svg', 1, true)
 		or xml:find('Example/Icons/rocket.svg', 1, true)
-	local xml_model_tab_icon = xml:find('Name="XmlModelLine2"', 1, true)
-	local xml_model_grid_icon = xml:find('Name="XmlModelLine3"', 1, true)
-	local xml_model_tab_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine2")
-	local xml_model_grid_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine3")
-	local xml_model_image_icon = xml:find('Name="XmlModelLine5"', 1, true)
-	local xml_model_text_icon = xml:find('Name="XmlModelLine6"', 1, true)
-	local xml_model_tab_color = xml_model_tab_tag
-		and xml_model_grid_tag
-		and xml_model_tab_tag:find('DataContextSource="Example/Data/ApplicationData:XmlModelLine2"', 1, true)
-		and xml_model_grid_tag:find('DataContextSource="Example/Data/ApplicationData:XmlModelLine3"', 1, true)
-	local xml_model_image_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine5")
-	local xml_model_text_tag = find_named_tag(xml, "LayerPrefabPlaceholder", "XmlModelLine6")
-	local xml_model_nested_padding = xml_model_image_tag
-		and xml_model_image_tag:find('class="model-indent-leaf"', 1, true)
-		and tree_css
-		and tree_css:find(".model-indent-leaf { padding-left: 48; }", 1, true)
-	local xml_model_leaf_padding = xml_model_text_tag
-		and xml_model_text_tag:find('class="model-indent-leaf"', 1, true)
-		and tree_css
-		and tree_css:find(".model-indent-leaf { padding-left: 48; }", 1, true)
+	local xml_model_tab_icon = appdata_xml:find('Name="XmlModelLine2"', 1, true)
+	local xml_model_grid_icon = appdata_xml:find('Name="XmlModelLine3"', 1, true)
+	local xml_model_image_icon = appdata_xml:find('Name="XmlModelLine5"', 1, true)
+	local xml_model_text_icon = appdata_xml:find('Name="XmlModelLine6"', 1, true)
+	local xml_model_tab_color = xml_model_tab_icon and xml_model_grid_icon
+		and xml_model_tab_icon < xml_model_grid_icon
+	local xml_model_nested_padding = appdata_xml:find('Name="Indent" Value="48"', 1, true)
+	local xml_model_leaf_padding = xml_model_nested_padding
+	local xml_model_node_prefab = filesystem.readTextFile("samples/Example/Prefabs/XmlModelNode.xml")
+	local xml_model_indent_binding = xml_model_node_prefab
+		and xml_model_node_prefab:find('Node.PaddingLeft="{Binding DataContext/Indent}"', 1, true)
 	local icon_card = filesystem.readTextFile("samples/Example/Prefabs/IconCard.xml")
 	test.expect(icon_card ~= nil and icon_card ~= "", "IconCard prefab should be readable")
 	local icon_card_uses_image = icon_card:find("<ImageView Name=\"IconCardImage\"", 1, true)
@@ -1399,8 +1390,9 @@ local function test_example_application_xml()
 	test.expect(xml_model_tab_icon ~= nil, "XmlModel should include a TabView icon")
 	test.expect(xml_model_image_icon ~= nil, "XmlModel should include an ImageView icon")
 	test.expect(xml_model_text_icon ~= nil, "XmlModel should include a TextBlock icon")
-	test.expect(xml_model_nested_padding ~= nil, "XmlModel should preserve left padding on nested rows")
-	test.expect(xml_model_leaf_padding ~= nil, "XmlModel should preserve left padding on leaf rows")
+	test.expect(xml_model_nested_padding ~= nil, "XmlModel nested rows should have Indent=48 in data")
+	test.expect(xml_model_leaf_padding ~= nil, "XmlModel leaf rows should have Indent=48 in data")
+	test.expect(xml_model_indent_binding ~= nil, "XmlModelNode prefab should bind Node.PaddingLeft to DataContext/Indent")
 	test.expect(icon_card_uses_image ~= nil, "IconCard prefab should render its icon as an image")
 	test.expect(icon_card_header ~= nil, "IconCard should place its title and icon in a header row")
 	test.expect(icon_card_title_binding ~= nil, "IconCard title should bind from DataContext")

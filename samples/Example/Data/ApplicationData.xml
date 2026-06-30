@@ -60,35 +60,43 @@
     <DataObjectString Name="Title" Value="XML reads like a blueprint"/>
     <DataObjectString Name="PrimaryColor" Value="$accent"/>
   </DataObject>
-  <DataObject Name="XmlModelLine1">
-    <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Screen"/>
-    <DataObjectString Name="PrimaryColor" Value="$accent"/>
-  </DataObject>
-  <DataObject Name="XmlModelLine2">
-    <DataObjectString Name="Icon" Value="Example/Icons/panel-top.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="TabView"/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
-  </DataObject>
-  <DataObject Name="XmlModelLine3">
-    <DataObjectString Name="Icon" Value="Example/Icons/grid.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="Grid"/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
-  </DataObject>
-  <DataObject Name="XmlModelLine4">
-    <DataObjectString Name="Icon" Value="Example/Icons/layers.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="StackView"/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
-  </DataObject>
-  <DataObject Name="XmlModelLine5">
-    <DataObjectString Name="Icon" Value="Example/Icons/image.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="ImageView"/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
-  </DataObject>
-  <DataObject Name="XmlModelLine6">
-    <DataObjectString Name="Icon" Value="Example/Icons/type.svg?width=20&amp;type=mask"/>
-    <DataObjectString Name="Title" Value="TextBlock"/>
-    <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+  <DataObject Name="XmlModel">
+    <DataObject Name="XmlModelLine1">
+      <DataObjectString Name="Icon" Value="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Screen"/>
+      <DataObjectString Name="PrimaryColor" Value="$accent"/>
+      <DataObjectString Name="Indent" Value="0"/>
+    </DataObject>
+    <DataObject Name="XmlModelLine2">
+      <DataObjectString Name="Icon" Value="Example/Icons/panel-top.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="TabView"/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+      <DataObjectString Name="Indent" Value="16"/>
+    </DataObject>
+    <DataObject Name="XmlModelLine3">
+      <DataObjectString Name="Icon" Value="Example/Icons/grid.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="Grid"/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+      <DataObjectString Name="Indent" Value="32"/>
+    </DataObject>
+    <DataObject Name="XmlModelLine4">
+      <DataObjectString Name="Icon" Value="Example/Icons/layers.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="StackView"/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+      <DataObjectString Name="Indent" Value="32"/>
+    </DataObject>
+    <DataObject Name="XmlModelLine5">
+      <DataObjectString Name="Icon" Value="Example/Icons/image.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="ImageView"/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+      <DataObjectString Name="Indent" Value="48"/>
+    </DataObject>
+    <DataObject Name="XmlModelLine6">
+      <DataObjectString Name="Icon" Value="Example/Icons/type.svg?width=20&amp;type=mask"/>
+      <DataObjectString Name="Title" Value="TextBlock"/>
+      <DataObjectString Name="PrimaryColor" Value="$text-secondary"/>
+      <DataObjectString Name="Indent" Value="48"/>
+    </DataObject>
   </DataObject>
   <DataObject Name="LuaPanelHeader">
     <DataObjectString Name="Icon" Value="Example/Icons/code.svg?width=26&amp;type=mask"/>
