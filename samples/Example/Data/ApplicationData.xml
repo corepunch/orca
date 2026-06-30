@@ -202,6 +202,7 @@
       <DataObjectString Name="Subtitle" Value="Real-time reflections and water surface rendered at 60 fps."/>
     </DataObject>
     <DataObject Name="GalleryCard2">
+      <DataObjectString Name="Image" Value="Example/Images/peacock"/>
       <DataObjectString Name="Title" Value="Peacock"/>
       <DataObjectString Name="Subtitle" Value="High-fidelity texture sampling with anisotropic filtering."/>
     </DataObject>

@@ -3,7 +3,7 @@
 <StackView Name="GalleryCard" class="card stack-card gallery-card">
 	<ImageView Name="GalleryCardImage" class="gallery-image" Stretch="UniformToFill" Source="{Binding DataContext/Image}">
 		<!-- Bind visibility to whether DataContext/Image exists -->
-		<BindingExpression Target="Node.Visible">BOOL(DataContext/Image)</BindingExpression>
+		<BindingExpression Target="Node.Visible">BOOL({DataContext/Image})</BindingExpression>
 	</ImageView>
 	<StackView Name="GalleryCardCaption" class="gallery-caption">
 		<TextBlock Name="GalleryCardTitle" class="gallery-title" Text="{Binding DataContext/Title}"/>
