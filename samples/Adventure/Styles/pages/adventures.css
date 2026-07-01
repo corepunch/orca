@@ -3,3 +3,10 @@
 .game-copy { gap: 6; }
 .game-title { color: var(--foreground); font-size: 15; font-weight: bold; }
 .game-description { color: var(--muted-foreground); font-size: 12; }
+
+.footer { background-color: var(--accent-background); direction: horizontal; align-items: center; justify-content: space-around; padding: 8 0; }
+.tab-item { direction: vertical; align-items: center; gap: 2; }
+.tab-icon { width: 22; height: 22; color: var(--muted-foreground); }
+.tab-label { font-size: 10; color: var(--muted-foreground); }
+.tab-active .tab-icon { color: var(--accent); }
+.tab-active .tab-label { color: var(--accent); }

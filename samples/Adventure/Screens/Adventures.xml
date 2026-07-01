@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Adventures" Width="400" Height="800" ClearColor="$background" StyleSheet="Adventure/Styles/app.css">
-	<StackView Name="Root" class="page">
+	<Grid Name="Root" Rows="auto auto 56" class="page">
 		<StackView Name="Header" class="header">
 			<TextBlock Name="HeaderTitle" class="header-title">Chronicle</TextBlock>
 			<TextBlock Name="HeaderSubtitle" class="header-subtitle">Choose an adventure</TextBlock>
@@ -9,5 +9,19 @@
 		<GridBox Name="GameList" Columns="auto" class="game-list"
 			ItemsSource="Adventure/Data/Games:Games"
 			ItemTemplate="Adventure/Prefabs/GameCard"/>
-	</StackView>
+		<StackView Name="Footer" class="footer">
+			<StackView Name="TabAdventures" class="tab-item tab-active">
+				<ImageView Name="TabAdventuresIcon" class="tab-icon" Source="Adventure/Icons/blocks.svg?width=22&amp;type=mask"/>
+				<TextBlock Name="TabAdventuresLabel" class="tab-label">Adventures</TextBlock>
+			</StackView>
+			<StackView Name="TabLibrary" class="tab-item">
+				<ImageView Name="TabLibraryIcon" class="tab-icon" Source="Adventure/Icons/database.svg?width=22&amp;type=mask"/>
+				<TextBlock Name="TabLibraryLabel" class="tab-label">Library</TextBlock>
+			</StackView>
+			<StackView Name="TabSettings" class="tab-item">
+				<ImageView Name="TabSettingsIcon" class="tab-icon" Source="Adventure/Icons/layers.svg?width=22&amp;type=mask"/>
+				<TextBlock Name="TabSettingsLabel" class="tab-label">Settings</TextBlock>
+			</StackView>
+		</StackView>
+	</Grid>
 </Screen>
