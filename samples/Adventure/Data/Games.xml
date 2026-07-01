@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DataObject Name="Games">
+  <DataObject Name="Zork1">
+    <DataObjectString Name="Id" Value="zork1"/>
+    <DataObjectString Name="Title" Value="Zork I: The Great Underground Empire"/>
+    <DataObjectString Name="Description" Value="The original text-based adventure game that started it all. Explore the Great Underground Empire, solve puzzles, and uncover hidden treasures in this classic adventure."/>
+    <DataObjectString Name="Cover" Value="Adventure/Images/zork1"/>
+  </DataObject>
+  <DataObject Name="Horror">
+    <DataObjectString Name="Id" Value="horror"/>
+    <DataObjectString Name="Title" Value="Sanitarium: A Psychological Horror Adventure"/>
+    <DataObjectString Name="Description" Value="A chilling journey into the mind of a disturbed protagonist. Navigate through a series of psychological challenges and uncover dark secrets in this horror adventure."/>
+    <DataObjectString Name="Cover" Value="Adventure/Images/horror"/>
+  </DataObject>
+</DataObject>

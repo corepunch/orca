@@ -1,0 +1,7 @@
+body { width: 400; height: 800; }
+
+.page { background-color: var(--background); }
+.header { background-color: var(--accent); padding: 40 16 24 16; gap: 4; }
+.header-title { color: var(--accent-foreground); font-size: 24; font-weight: bold; }
+.header-subtitle { color: var(--accent-foreground); font-size: 13; }
+.game-list { padding: 8; gap: 8; }
