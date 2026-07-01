@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Grid SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Grid Name="GameCard" Columns="100px 1fr" class="game-card">
+	<ImageView Name="GameCardCover" class="game-cover" Source="{Binding DataContext/Cover}" Stretch="UniformToFill"/>
+	<StackView Name="GameCardCopy" class="game-copy">
+		<TextBlock Name="GameCardTitle" class="game-title" Text="{Binding DataContext/Title}"/>
+		<TextBlock Name="GameCardDescription" class="game-description" Text="{Binding DataContext/Description}"/>
+	</StackView>
+</Grid>

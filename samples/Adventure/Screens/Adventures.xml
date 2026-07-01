@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="Adventures" Width="400" Height="800" ClearColor="$background" StyleSheet="Adventure/Styles/app.css">
+	<Grid Name="Root" Rows="84px 1fr 96px" class="page">
+		<StackView Name="Header" class="header">
+			<TextBlock Name="HeaderTitle" class="header-title">Chronicle</TextBlock>
+			<TextBlock Name="HeaderSubtitle" class="header-subtitle">Choose an adventure</TextBlock>
+		</StackView>
+		<PageHost Name="Content" class="content"
+			CurrentPage="{../Footer/SelectedValue}">
+			<Page Key="games" Source="Adventure/Pages/GameList.xml"/>
+			<Page Key="library" Source="Adventure/Pages/Library.xml"/>
+			<Page Key="settings" Source="Adventure/Pages/Settings.xml"/>
+		</PageHost>
+		<ListBox Name="Footer" class="footer"
+			ItemsSource="Adventure/Data/Tabs"
+			ItemTemplate="Adventure/Prefabs/TabItem"
+			ValueProperty="Key"
+			SelectedValue="games"/>
+	</Grid>
+</Screen>

@@ -1,0 +1,14 @@
+body { width: 400; height: 800; }
+
+.page { background-color: var(--background); }
+.header { background-color: var(--accent); padding: 28 16 12 16; }
+.header-title { color: var(--accent-foreground); font-size: 24; font-weight: bold; }
+.header-subtitle { color: var(--accent-foreground); font-size: 13; }
+.game-list { padding: 8; gap: 8; }
+.footer { background-color: var(--accent-background); direction: horizontal; align-items: center; justify-content: space-around; padding: 8 0; }
+
+.tab-item { direction: vertical; align-items: center; gap: 2; }
+.tab-icon { color: var(--muted-foreground); }
+.tab-label { font-size: 10; color: var(--muted-foreground); }
+.tab-active .tab-icon { color: var(--accent); }
+.tab-active .tab-label { color: var(--accent); }
