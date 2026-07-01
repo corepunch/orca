@@ -959,6 +959,7 @@
         <handle message="Object.Create"/>
       </handles>
       <properties>
+        <property name="Key" type="string">Unique key used by PageHost to identify this page for navigation.</property>
         <property name="Title" type="string">The title of the page.</property>
         <property name="Path" type="string">The URL path of the page, like "/about".</property>
         <property name="Transition" type="float">The transition progress of the page.</property>
@@ -971,12 +972,15 @@
       <summary>Container that manages multiple pages and navigation between them.</summary>
       <details>Provides functionality for navigating between different Page instances, including maintaining a navigation stack, handling back/forward navigation, and managing page transitions.</details>
       <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node.ViewDidLoad"/>
         <handle message="PageHost.NavigateToPage"/>
         <handle message="PageHost.NavigateBack"/>
       </handles>
       <properties>
         <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
+        <property name="CurrentPage" type="string">Key of the currently active page. Bind this to a selection source (e.g. ListBox.SelectedValue) for declarative page switching.</property>
       </properties>
       <fields>
         <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
@@ -1023,7 +1027,22 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Start"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node.LeftButtonUp"/>
       </handles>
+      <properties>
+        <property name="SelectedValue" type="string">Value string of the currently selected item. Updated when the user clicks an item. Bind this to another property (e.g. PageHost.CurrentPage) for declarative navigation.</property>
+        <property name="ValueProperty" type="string">DataObject property name used as each item's value. Defaults to "Name" if empty. For example, "Key" reads DataContext/Key from each item.</property>
+      </properties>
+      <messages>
+        <message name="SelectionChanged">
+          <summary>Fired when the selected item changes. SelectedValue is already updated when this fires.</summary>
+          <fields>
+            <field name="SelectedValue" type="string">Value of the newly selected item</field>
+            <field name="OldValue" type="string">Value that was selected before this change</field>
+          </fields>
+        </message>
+      </messages>
     </class>
     <class name="GridBox" parent="Grid,ItemsControl">
       <summary>Grid layout container that data-binds items from a collection into wrapping rows</summary>

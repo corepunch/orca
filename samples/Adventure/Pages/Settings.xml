@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="Settings" class="page-content">
+  <StackView Name="SettingsPlaceholder" class="placeholder">
+    <TextBlock Name="SettingsTitle" class="placeholder-title">Settings</TextBlock>
+    <TextBlock Name="SettingsSubtitle" class="placeholder-subtitle">App preferences will appear here.</TextBlock>
+  </StackView>
+</StackView>

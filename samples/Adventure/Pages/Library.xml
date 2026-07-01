@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="Library" class="page-content">
+  <StackView Name="LibraryPlaceholder" class="placeholder">
+    <TextBlock Name="LibraryTitle" class="placeholder-title">Library</TextBlock>
+    <TextBlock Name="LibrarySubtitle" class="placeholder-subtitle">Your saved games will appear here.</TextBlock>
+  </StackView>
+</StackView>

@@ -1,16 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DataObject Name="Tabs">
   <DataObject Name="TabAdventures">
+    <DataObjectString Name="Key" Value="games"/>
     <DataObjectString Name="Icon" Value="Adventure/Icons/blocks.svg?width=32&amp;type=mask"/>
     <DataObjectString Name="Label" Value="Adventures"/>
     <DataObjectString Name="Active" Value="true"/>
   </DataObject>
   <DataObject Name="TabLibrary">
+    <DataObjectString Name="Key" Value="library"/>
     <DataObjectString Name="Icon" Value="Adventure/Icons/database.svg?width=32&amp;type=mask"/>
     <DataObjectString Name="Label" Value="Library"/>
     <DataObjectString Name="Active" Value="false"/>
   </DataObject>
   <DataObject Name="TabSettings">
+    <DataObjectString Name="Key" Value="settings"/>
     <DataObjectString Name="Icon" Value="Adventure/Icons/layers.svg?width=32&amp;type=mask"/>
     <DataObjectString Name="Label" Value="Settings"/>
     <DataObjectString Name="Active" Value="false"/>
