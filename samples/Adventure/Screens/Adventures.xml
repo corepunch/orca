@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="Adventures" Width="400" Height="800" ClearColor="$background" StyleSheet="Adventure/Styles/app.css">
+	<StackView Name="Root" class="page">
+		<StackView Name="Header" class="header">
+			<TextBlock Name="HeaderTitle" class="header-title">Chronicle</TextBlock>
+			<TextBlock Name="HeaderSubtitle" class="header-subtitle">Choose an adventure</TextBlock>
+		</StackView>
+		<GridBox Name="GameList" Columns="auto" class="game-list"
+			ItemsSource="Adventure/Data/Games:Games"
+			ItemTemplate="Adventure/Prefabs/GameCard"/>
+	</StackView>
+</Screen>
