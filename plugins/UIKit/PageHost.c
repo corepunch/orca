@@ -2,20 +2,6 @@
 
 #define PAGE_HISTORY_MAX 32
 
-//static struct Object *
-//_GetActivePage(struct Object *hObject, struct PageHost *pPageHost)
-//{
-//  if (pPageHost->ActivePage) {
-//    return CMP_GetObject(pPageHost->ActivePage);
-//  }
-//  FOR_EACH_OBJECT(hChild, hObject) {
-//    if (GetPage(hChild)) {
-//      return hChild;
-//    }
-//  }
-//  return NULL;
-//}
-
 static void
 _SetActivePage(struct PageHost *pPageHost, struct Page *pPage)
 {
@@ -39,6 +25,30 @@ PageHost_FindPageByPath(struct Object *hObject, const char* path)
     if (pFound) return pFound;
   }
   return NULL;
+}
+
+static struct Page *
+PageHost_FindPageByKey(struct Object *hObject, const char* key)
+{
+  FOR_EACH_OBJECT(hChild, hObject) {
+    struct Page *pPage = GetPage(hChild);
+    if (pPage && pPage->Key && strcmp(pPage->Key, key) == 0) {
+      return pPage;
+    }
+  }
+  return NULL;
+}
+
+static void
+PageHost_SyncToCurrentPage(struct Object *hObject, struct PageHost *pPageHost)
+{
+  if (!pPageHost->CurrentPage || !pPageHost->CurrentPage[0]) {
+    return;
+  }
+  struct Page *pTarget = PageHost_FindPageByKey(hObject, pPageHost->CurrentPage);
+  if (pTarget && pTarget != pPageHost->ActivePage) {
+    _SetActivePage(pPageHost, pTarget);
+  }
 }
 
 // PageHost_NavigateToPage
@@ -69,6 +79,24 @@ HANDLER(PageHost, PageHost, NavigateBack) {
   return TRUE;
 }
 
+// PageHost_Start — sync initial CurrentPage if set before ViewDidLoad
+HANDLER(PageHost, Object, Start) {
+  PageHost_SyncToCurrentPage(hObject, pPageHost);
+  return FALSE;
+}
+
+// PageHost_PropertyChanged — watch CurrentPage for binding-driven navigation
+HANDLER(PageHost, Object, PropertyChanged) {
+  if (!pPropertyChanged->Property)
+    return FALSE;
+
+  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_PageHost_CurrentPage) {
+    PageHost_SyncToCurrentPage(hObject, pPageHost);
+  }
+
+  return FALSE;
+}
+
 // PageHost_ViewDidLoad
 HANDLER(PageHost, Node, ViewDidLoad) {
   FOR_EACH_OBJECT(hChild, hObject) {
@@ -81,6 +109,8 @@ HANDLER(PageHost, Node, ViewDidLoad) {
       GetNode(hChild)->Visible = FALSE;
     }
   }
+  // If CurrentPage was set (e.g. via binding) but ActivePage wasn't resolved yet
+  PageHost_SyncToCurrentPage(hObject, pPageHost);
   return TRUE;
 }
 

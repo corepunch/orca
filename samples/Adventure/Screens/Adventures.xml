@@ -6,11 +6,16 @@
 			<TextBlock Name="HeaderTitle" class="header-title">Chronicle</TextBlock>
 			<TextBlock Name="HeaderSubtitle" class="header-subtitle">Choose an adventure</TextBlock>
 		</StackView>
-		<ListBox Name="GameList" class="game-list"
-			ItemsSource="Adventure/Data/Games:Catalog"
-			ItemTemplate="Adventure/Prefabs/GameCard"/>
+		<PageHost Name="Content" class="content"
+			CurrentPage="{../Footer/SelectedValue}">
+			<Page Key="games" Source="Adventure/Pages/GameList.xml"/>
+			<Page Key="library" Source="Adventure/Pages/Library.xml"/>
+			<Page Key="settings" Source="Adventure/Pages/Settings.xml"/>
+		</PageHost>
 		<ListBox Name="Footer" class="footer"
 			ItemsSource="Adventure/Data/Tabs"
-			ItemTemplate="Adventure/Prefabs/TabItem"/>
+			ItemTemplate="Adventure/Prefabs/TabItem"
+			ValueProperty="Key"
+			SelectedValue="games"/>
 	</Grid>
 </Screen>

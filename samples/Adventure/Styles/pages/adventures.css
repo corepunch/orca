@@ -4,3 +4,8 @@
 .game-title { color: var(--foreground); font-size: 15; font-weight: bold; }
 .game-description { color: var(--muted-foreground); font-size: 12; }
 
+.page-content { padding: 8; gap: 8; }
+.placeholder { align-items: center; justify-content: center; gap: 8; }
+.placeholder-title { color: var(--foreground); font-size: 20; font-weight: bold; }
+.placeholder-subtitle { color: var(--muted-foreground); font-size: 14; }
+
