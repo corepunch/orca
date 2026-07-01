@@ -10,7 +10,7 @@
 			ItemsSource="Adventure/Data/Games:Catalog"
 			ItemTemplate="Adventure/Prefabs/GameCard"/>
 		<ListBox Name="Footer" class="footer"
-			ItemsSource="Adventure/Data/Games:Tabs"
+			ItemsSource="Adventure/Data/Tabs:Tabs"
 			ItemTemplate="Adventure/Prefabs/TabItem"/>
 	</Grid>
 </Screen>
