@@ -1,15 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <DataObject Name="Games">
-  <DataObject Name="Zork1">
-    <DataObjectString Name="Id" Value="zork1"/>
-    <DataObjectString Name="Title" Value="Zork I: The Great Underground Empire"/>
-    <DataObjectString Name="Description" Value="The original text-based adventure game that started it all. Explore the Great Underground Empire, solve puzzles, and uncover hidden treasures in this classic adventure."/>
-    <DataObjectString Name="Cover" Value="Adventure/Images/zork1"/>
+  <DataObject Name="Catalog">
+    <DataObject Name="Zork1">
+      <DataObjectString Name="Id" Value="zork1"/>
+      <DataObjectString Name="Title" Value="Zork I: The Great Underground Empire"/>
+      <DataObjectString Name="Description" Value="The original text-based adventure game that started it all. Explore the Great Underground Empire, solve puzzles, and uncover hidden treasures in this classic adventure."/>
+      <DataObjectString Name="Cover" Value="Adventure/Images/zork1"/>
+    </DataObject>
+    <DataObject Name="Horror">
+      <DataObjectString Name="Id" Value="horror"/>
+      <DataObjectString Name="Title" Value="Sanitarium: A Psychological Horror Adventure"/>
+      <DataObjectString Name="Description" Value="A chilling journey into the mind of a disturbed protagonist. Navigate through a series of psychological challenges and uncover dark secrets in this horror adventure."/>
+      <DataObjectString Name="Cover" Value="Adventure/Images/horror"/>
+    </DataObject>
   </DataObject>
-  <DataObject Name="Horror">
-    <DataObjectString Name="Id" Value="horror"/>
-    <DataObjectString Name="Title" Value="Sanitarium: A Psychological Horror Adventure"/>
-    <DataObjectString Name="Description" Value="A chilling journey into the mind of a disturbed protagonist. Navigate through a series of psychological challenges and uncover dark secrets in this horror adventure."/>
-    <DataObjectString Name="Cover" Value="Adventure/Images/horror"/>
+  <DataObject Name="Tabs">
+    <DataObject Name="TabAdventures">
+      <DataObjectString Name="Icon" Value="Adventure/Icons/blocks.svg?width=22&amp;type=mask"/>
+      <DataObjectString Name="Label" Value="Adventures"/>
+      <DataObjectString Name="Active" Value="true"/>
+    </DataObject>
+    <DataObject Name="TabLibrary">
+      <DataObjectString Name="Icon" Value="Adventure/Icons/database.svg?width=22&amp;type=mask"/>
+      <DataObjectString Name="Label" Value="Library"/>
+      <DataObjectString Name="Active" Value="false"/>
+    </DataObject>
+    <DataObject Name="TabSettings">
+      <DataObjectString Name="Icon" Value="Adventure/Icons/layers.svg?width=22&amp;type=mask"/>
+      <DataObjectString Name="Label" Value="Settings"/>
+      <DataObjectString Name="Active" Value="false"/>
+    </DataObject>
   </DataObject>
 </DataObject>
