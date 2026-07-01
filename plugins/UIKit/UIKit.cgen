@@ -1029,12 +1029,19 @@
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
+        <handle message="ListBox.SelectItem"/>
       </handles>
       <properties>
         <property name="SelectedValue" type="string">Value string of the currently selected item. Updated when the user clicks an item. Bind this to another property (e.g. PageHost.CurrentPage) for declarative navigation.</property>
         <property name="ValueProperty" type="string">DataObject property name used as each item's value. Defaults to "Name" if empty. For example, "Key" reads DataContext/Key from each item.</property>
       </properties>
       <messages>
+        <message name="SelectItem">
+          <summary>Selects an item by its value. Finds the child whose ValueProperty matches the given value and selects it.</summary>
+          <fields>
+            <field name="Value" type="string">The value to match against each item's ValueProperty.</field>
+          </fields>
+        </message>
         <message name="SelectionChanged">
           <summary>Fired when the selected item changes. SelectedValue is already updated when this fires.</summary>
           <fields>

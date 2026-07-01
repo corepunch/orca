@@ -3,23 +3,29 @@
 static const char *
 ListBox_GetItemValue(struct Object *hObject, struct ListBox *pListBox, struct Object *item)
 {
-  struct Object *dataContext = NULL;
-  struct Property *dcProp = OBJ_FindLongProperty(item, ID_Node_DataContext);
-  if (dcProp) dataContext = *(struct Object **)PROP_GetValue(dcProp);
+  struct Node *node = GetNode(item);
+  if (!node || !node->DataContext) return NULL;
+
+  struct Object *dataContext = CMP_GetObject(node->DataContext);
   if (!dataContext) return NULL;
 
   const char *valueProp = pListBox->ValueProperty;
   if (!valueProp || !valueProp[0]) valueProp = "Name";
 
-  struct Property *valuePropObj = OBJ_FindPropertyByPath(dataContext, valueProp);
-  if (valuePropObj) {
-    return (const char *)PROP_GetValue(valuePropObj);
+  if (strcmp(valueProp, "Name") == 0) {
+    return OBJ_GetName(dataContext);
+  }
+
+  uint32_t childIdent = fnv1a32(valueProp);
+  struct Object *child = OBJ_FindImmediateChild(dataContext, childIdent);
+  if (child) {
+    return OBJ_GetName(child);
   }
   return NULL;
 }
 
 static void
-ListBox_SelectItem(struct Object *hObject, struct ListBox *pListBox, struct Object *item)
+ListBox_SetSelected(struct Object *hObject, struct ListBox *pListBox, struct Object *item)
 {
   const char *newValue = ListBox_GetItemValue(hObject, pListBox, item);
   if (!newValue) return;
@@ -49,7 +55,6 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
   FOR_EACH_OBJECT(child, hObject) {
     const char *val = ListBox_GetItemValue(hObject, pListBox, child);
     if (val && strcmp(val, pListBox->SelectedValue) == 0) {
-      // Mark this item as selected visually
       uint32_t flags = OBJ_GetFlags(child);
       OBJ_SetFlags(child, flags | OF_SELECTED);
     } else {
@@ -77,7 +82,11 @@ HANDLER(ListBox, Object, Start) {
         Con_Printf("Can not instantiate ListBox item template");
         return FALSE;
       }
-      PROP_SetValue(OBJ_FindLongProperty(item, ID_Node_DataContext), &data);
+      // Set DataContext directly on the Node struct (same as binding system reads it)
+      struct Node *itemNode = GetNode(item);
+      if (itemNode) {
+        itemNode->DataContext = OBJ_GetComponent(data, ID_DataObject);
+      }
       OBJ_AddChild(hObject, item);
     }
     // Auto-select first item if no SelectedValue is set
@@ -88,7 +97,7 @@ HANDLER(ListBox, Object, Start) {
         break;
       }
       if (first) {
-        ListBox_SelectItem(hObject, pListBox, first);
+        ListBox_SetSelected(hObject, pListBox, first);
       }
     } else {
       ListBox_SyncToSelectedValue(hObject, pListBox);
@@ -113,8 +122,6 @@ HANDLER(ListBox, Object, PropertyChanged) {
 
 // ListBox_LeftButtonUp — find clicked child and select it
 HANDLER(ListBox, Node, LeftButtonUp) {
-  // The LeftButtonUp message contains x,y in the sender's local space.
-  // Walk children and find which one the click landed on.
   struct Object *clickedChild = NULL;
 
   FOR_EACH_OBJECT(child, hObject) {
@@ -133,8 +140,23 @@ HANDLER(ListBox, Node, LeftButtonUp) {
   }
 
   if (clickedChild) {
-    ListBox_SelectItem(hObject, pListBox, clickedChild);
+    ListBox_SetSelected(hObject, pListBox, clickedChild);
     return TRUE;
+  }
+
+  return FALSE;
+}
+
+// ListBox_SelectItem — select an item by its value
+HANDLER(ListBox, ListBox, SelectItem) {
+  if (!pSelectItem->Value || !pSelectItem->Value[0]) return FALSE;
+
+  FOR_EACH_OBJECT(child, hObject) {
+    const char *val = ListBox_GetItemValue(hObject, pListBox, child);
+    if (val && strcmp(val, pSelectItem->Value) == 0) {
+      ListBox_SetSelected(hObject, pListBox, child);
+      return TRUE;
+    }
   }
 
   return FALSE;
