@@ -64,6 +64,7 @@ OBJ_FindByPath(struct Object *object, lpcString_t szObjectPath)
 struct Property *
 OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
 {
+  if (!object) return NULL;
   lpcString_t split = path;
   for (; *split && *split != '/'; split++)
     ;
