@@ -13,5 +13,3 @@ body { width: 400; height: 800; }
 .footer .tab-item:active { background-color: var(--background); border-radius: 10; padding: 6 14; }
 .footer .tab-item:active .tab-icon { color: var(--accent); }
 .footer .tab-item:active .tab-label { color: var(--accent); }
-.tab-active .tab-icon { color: var(--accent); }
-.tab-active .tab-label { color: var(--accent); }

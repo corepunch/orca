@@ -542,6 +542,92 @@ end
     end
 
 -- ---------------------------------------------------------------------------
+-- ListBox: :active styles apply to selected item descendants
+-- ---------------------------------------------------------------------------
+local function test_listbox_active_styles_on_descendants()
+        local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+        screen.StyleSheet = ui.loadObjectFromCssString [[
+            .footer .tab-label { color: #ffffff; }
+            .footer .tab-item:active .tab-label { color: #345ec7; }
+        ]]
+
+        local items = core.DataObject { Name = "Tabs" }
+        items:addChild(core.DataObject { Name = "games" })
+        items:addChild(core.DataObject { Name = "library" })
+
+        local template = ui.StackView {
+            Name = "TabItem",
+            class = "tab-item",
+            Width = 120,
+            Height = 60,
+            Direction = "Vertical",
+        }
+        template:addChild(ui.TextBlock {
+            Name = "TabLabel",
+            class = "tab-label",
+            Width = 110,
+            Height = 20,
+            Text = "label",
+        })
+
+        local footer = screen + ui.ListBox {
+            Name = "Footer",
+            class = "footer",
+            Y = 704,
+            Width = 400,
+            Height = 96,
+            Direction = "Horizontal",
+            ValueProperty = "Name",
+            SelectedValue = "games",
+            ItemsSource = items,
+            ItemTemplate = template,
+        }
+
+        screen:UpdateLayout(screen.Width, screen.Height)
+        pump_messages(screen)
+
+        local rows = {}
+        for child in footer.children do
+            rows[#rows + 1] = child
+        end
+        test.expect_eq(#rows, 2, "Footer should contain two rendered items")
+
+        local target = rows[2]
+        local x = target.ActualX + 5
+        local y = target.ActualY + 5
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+        pump_messages(screen)
+
+        local firstLabel, secondLabel = nil, nil
+        local idx = 0
+        for row in footer.children do
+            idx = idx + 1
+            for grandchild in row.children do
+                if grandchild.Name == "TabLabel" then
+                    if idx == 1 then firstLabel = grandchild end
+                    if idx == 2 then secondLabel = grandchild end
+                end
+            end
+        end
+
+        test.expect(firstLabel ~= nil and secondLabel ~= nil, "Both TabLabel nodes should exist")
+
+        local firstColor = firstLabel and firstLabel["ForegroundColor"]
+        local secondColor = secondLabel and secondLabel["ForegroundColor"]
+        test.expect(firstColor ~= nil and secondColor ~= nil, "TabLabel ForegroundColor should be available")
+
+        local secondB = secondColor and secondColor["B"] or 0
+        local firstB = firstColor and firstColor["B"] or 0
+
+        test.expect_near(secondB, 0xc7 / 255, 0.02, "Selected label should use accent blue")
+        test.expect_near(firstB, 1.0, 0.02, "Unselected label should remain white")
+
+        screen:clear()
+        print("PASS: test_listbox_active_styles_on_descendants")
+end
+
+-- ---------------------------------------------------------------------------
 -- PageHost + ListBox: binding propagates SelectedValue → ActivePage
 -- ---------------------------------------------------------------------------
 local function test_pagehost_listbox_binding()
@@ -613,6 +699,7 @@ test_listbox_click_updates_selection_and_pagehost()
 test_listbox_valueproperty_dataobject_value()
 test_listbox_click_slot_region_selection()
 test_listbox_auto_syncs_sibling_pagehost()
+test_listbox_active_styles_on_descendants()
 test_pagehost_listbox_binding()
 
 print("\nAll PageHost + ListBox tests passed.")

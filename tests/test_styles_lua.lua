@@ -1226,6 +1226,36 @@ local function test_css_direct_parent_selector_with_pseudo_class()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 38b: Pseudo-classes work on ancestor-descendant selectors
+-- ---------------------------------------------------------------------------
+local function test_css_ancestor_pseudo_descendant_selector()
+  local screen = ui.Screen { Width = 300, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .group .leaf { opacity: 1.0; }
+    .group:active .leaf { opacity: 0.33; }
+  ]]
+
+  local group = screen + ui.StackView { class = "group" }
+  local leaf = group + ui.Label {
+    class = "leaf",
+    Text = "selected",
+    Opacity = 1.0,
+  }
+
+  applyStyles(leaf)
+  test.expect_near(leaf.Opacity, 1.0, 0.001,
+    ".group:active .leaf should not apply when ancestor is not selected")
+
+  group.selected = true
+  applyStyles(leaf)
+  test.expect_near(leaf.Opacity, 0.33, 0.001,
+    ".group:active .leaf should apply when ancestor is selected")
+
+  group:removeFromParent()
+  print("PASS: test_css_ancestor_pseudo_descendant_selector")
+end
+
+-- ---------------------------------------------------------------------------
 -- Test 39: CSS font-family accepts quoted names and generic fallbacks
 -- ---------------------------------------------------------------------------
 local function test_css_font_family_list_uses_registered_fallback()
@@ -1292,6 +1322,7 @@ test_css_mixed_descendant_and_direct_child_selectors()
 test_css_compound_type_class_selectors()
 test_css_pseudo_classes_on_selector_types()
 test_css_direct_parent_selector_with_pseudo_class()
+test_css_ancestor_pseudo_descendant_selector()
 test_css_font_family_list_uses_registered_fallback()
 
 -- ---------------------------------------------------------------------------

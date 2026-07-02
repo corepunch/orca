@@ -43,7 +43,7 @@ ListBox_SetItemSelected(struct Object *item, bool_t selected)
 
   OBJ_SetFlags(item, flags);
   OBJ_SetDirty(item);
-  _SendMessage(item, StyleController, ThemeChanged, .recursive = FALSE);
+  _SendMessage(item, StyleController, ThemeChanged, .recursive = TRUE);
 }
 
 static void
@@ -150,9 +150,9 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
 HANDLER(ListBox, Object, Start) {
   OBJ_Clear(hObject);
   if (GetItemsControl(hObject)->ItemsSource) {
-    struct Node2D* template = GetItemsControl(hObject)->ItemTemplate;
+    struct Node2D *template = GetItemsControl(hObject)->ItemTemplate;
     FOR_EACH_OBJECT(data, CMP_GetObject(GetItemsControl(hObject)->ItemsSource)) {
-      struct Object* item;
+      struct Object *item;
       if (template) {
         item = OBJ_Instantiate(CMP_GetObject(GetItemsControl(hObject)->ItemTemplate));
       } else {
