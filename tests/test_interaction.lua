@@ -37,12 +37,13 @@ local function test_input_interaction()
 	local input = screen + ui.Input { Width = 100, Height = 100 }
 	input:setFocus()
 	screen:UpdateLayout(screen.Width, screen.Height)
-	-- Simulate a key down event on the input
+	-- Simulate key events: a real OS fires Char for each printable keypress
 	for i = 1, #config.text do
+		local ch = string.byte(config.text:sub(i, i))
 		orca.system.dispatchMessage {
 			target = screen,
-			message = "KeyDown",
-			key = string.byte(config.text:sub(i, i)),
+			message = "Char",
+			key = ch,
 			text = config.text:sub(i, i),
 		}
 	end
@@ -103,7 +104,7 @@ local function test_form_populate_inputs()
 	for i = 1, #config.username do
 		orca.system.dispatchMessage {
 			target = screen,
-			message = "KeyDown",
+			message = "Char",
 			key = string.byte(config.username:sub(i, i)),
 			text = config.username:sub(i, i),
 		}
@@ -114,7 +115,7 @@ local function test_form_populate_inputs()
 	for i = 1, #config.password do
 		orca.system.dispatchMessage {
 			target = screen,
-			message = "KeyDown",
+			message = "Char",
 			key = string.byte(config.password:sub(i, i)),
 			text = config.password:sub(i, i),
 		}
