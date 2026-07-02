@@ -141,7 +141,6 @@ HANDLER(Input, Node, KeyDown)
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
-  bool_t textChanged = FALSE;
 
   switch (pKeyDown->keyCode) {
     case AX_KEY_BACKSPACE:
@@ -149,7 +148,6 @@ HANDLER(Input, Node, KeyDown)
         pInput->Cursor--;
         for (char *a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
           ;
-        textChanged = TRUE;
       }
       break;
     case AX_KEY_ESCAPE:
@@ -165,7 +163,6 @@ HANDLER(Input, Node, KeyDown)
         OBJ_SetFocus(NULL);
         struct Input_SubmitEventArgs args = { .Text = currentText };
         axPostMessageDataW(hObject, ID_Input_Submit, 0, &args, sizeof(args));
-//        axPostMessageW(hObject, ID_Input_Submit, 0, NULL);
       } else {
         if (dwLength + 1 < sizeof(szText) - 1) {
           szText[dwLength + 1] = 0;
@@ -173,7 +170,6 @@ HANDLER(Input, Node, KeyDown)
             szText[s] = szText[s - 1];
           }
           szText[pInput->Cursor++] = '\n';
-          textChanged = TRUE;
         }
       }
       break;
@@ -190,7 +186,7 @@ HANDLER(Input, Node, KeyDown)
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
       break;
     default:
-      break;
+      return FALSE;
   }
   struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) {
