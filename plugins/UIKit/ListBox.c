@@ -17,11 +17,94 @@ ListBox_GetItemValue(struct Object *hObject, struct ListBox *pListBox, struct Ob
     return OBJ_GetName(dataContext);
   }
 
+  struct Property *prop = OBJ_FindPropertyByPath(dataContext, valueProp);
+  if (prop && PROP_GetType(prop) == kDataTypeString) {
+    const char *value = *(const char * const *)PROP_GetValue(prop);
+    if (value && value[0]) {
+      return value;
+    }
+  }
+
   uint32_t childIdent = fnv1a32(valueProp);
   struct Object *child = OBJ_FindImmediateChild(dataContext, childIdent);
   if (child) {
     return OBJ_GetName(child);
   }
+  return NULL;
+}
+
+static void
+ListBox_SetItemSelected(struct Object *item, bool_t selected)
+{
+  if (!item) return;
+
+  uint32_t flags = OBJ_GetFlags(item);
+  flags = selected ? (flags | OF_SELECTED) : (flags & ~OF_SELECTED);
+
+  OBJ_SetFlags(item, flags);
+  OBJ_SetDirty(item);
+  _SendMessage(item, StyleController, ThemeChanged, .recursive = FALSE);
+}
+
+static void
+ListBox_SyncLinkedPageHost(struct Object *hObject, const char *value)
+{
+  if (!value || !value[0]) return;
+
+  struct Object *parent = OBJ_GetParent(hObject);
+  if (!parent) return;
+
+  FOR_EACH_OBJECT(sibling, parent) {
+    if (!GetPageHost(sibling)) continue;
+
+    struct Property *prop = OBJ_FindLongProperty(sibling, ID_PageHost_ActivePage);
+    if (prop) {
+      PROP_SetStringValue(prop, value);
+    }
+    return;
+  }
+}
+
+static struct Object *
+ListBox_PickItemFromPoint(struct Object *hObject, struct ListBox *pListBox, float x, float y)
+{
+  struct Node2D *node2D = GetNode2D(hObject);
+  struct StackView *stack = GetStackView(hObject);
+  if (!node2D || !stack) return NULL;
+
+  int count = 0;
+  FOR_EACH_OBJECT(child, hObject) {
+    (void)child;
+    count++;
+  }
+  if (count <= 0) return NULL;
+
+  struct mat4 inv = MAT4_Inverse(&node2D->Matrix);
+  struct vec3 local = MAT4_MultiplyVector3D(&inv, &(struct vec3){ x, y, 0 });
+
+  float width = Node2D_GetFrame(node2D, kBox3FieldWidth);
+  float height = Node2D_GetFrame(node2D, kBox3FieldHeight);
+
+  int index = 0;
+  if (stack->Direction == kDirectionHorizontal && width > 0) {
+    float slot = width / (float)count;
+    index = (int)(local.x / slot);
+  } else if (height > 0) {
+    float slot = height / (float)count;
+    index = (int)(local.y / slot);
+  }
+
+  if (index < 0) index = 0;
+  if (index >= count) index = count - 1;
+
+  int i = 0;
+  FOR_EACH_OBJECT(child, hObject) {
+    if (i == index) {
+      return child;
+    }
+    i++;
+  }
+
   return NULL;
 }
 
@@ -56,11 +139,9 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
   FOR_EACH_OBJECT(child, hObject) {
     const char *val = ListBox_GetItemValue(hObject, pListBox, child);
     if (val && strcmp(val, pListBox->SelectedValue) == 0) {
-      uint32_t flags = OBJ_GetFlags(child);
-      OBJ_SetFlags(child, flags | OF_SELECTED);
+      ListBox_SetItemSelected(child, TRUE);
     } else {
-      uint32_t flags = OBJ_GetFlags(child);
-      OBJ_SetFlags(child, flags & ~OF_SELECTED);
+      ListBox_SetItemSelected(child, FALSE);
     }
   }
 }
@@ -116,6 +197,7 @@ HANDLER(ListBox, Object, PropertyChanged) {
 
   if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_ListBox_SelectedValue) {
     ListBox_SyncToSelectedValue(hObject, pListBox);
+    ListBox_SyncLinkedPageHost(hObject, pListBox->SelectedValue);
   }
 
   return FALSE;
@@ -126,18 +208,19 @@ HANDLER(ListBox, Node, LeftButtonUp) {
   struct Object *clickedChild = NULL;
 
   FOR_EACH_OBJECT(child, hObject) {
-    struct Node2D *childNode = GetNode2D(child);
-    if (!childNode) continue;
-
-    struct rect frame = childNode->_rect;
-    float x = pLeftButtonUp->x;
-    float y = pLeftButtonUp->y;
-
-    if (x >= frame.x && x <= frame.x + frame.width &&
-        y >= frame.y && y <= frame.y + frame.height) {
+    struct Object *hit = (struct Object *)_SendMessage(child, Node, HitTest,
+      .x = pLeftButtonUp->x,
+      .y = pLeftButtonUp->y);
+    if (hit) {
       clickedChild = child;
       break;
     }
+  }
+
+  if (!clickedChild) {
+    clickedChild = ListBox_PickItemFromPoint(hObject, pListBox,
+      pLeftButtonUp->x,
+      pLeftButtonUp->y);
   }
 
   if (clickedChild) {

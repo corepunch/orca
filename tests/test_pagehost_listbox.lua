@@ -2,6 +2,7 @@ local test = require "orca.test"
 local orca = require "orca"
 local core = require "orca.core"
 local ui = require "orca.UIKit"
+local filesystem = require "orca.filesystem"
 
 orca.async = function (fn, ...) fn(...) end
 
@@ -260,6 +261,287 @@ local function test_listbox_selectitem_message()
 end
 
 -- ---------------------------------------------------------------------------
+-- PageHost: syncing ActivePage should hide all non-active pages
+-- ---------------------------------------------------------------------------
+local function test_pagehost_sync_hides_non_active_pages()
+    local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+    local host = screen + ui.PageHost { Width = 400, Height = 600 }
+    local page_a = host + ui.Page { Name = "alpha", Width = 400, Height = 600 }
+    local page_b = host + ui.Page { Name = "beta", Width = 400, Height = 600 }
+    local page_c = host + ui.Page { Name = "gamma", Width = 400, Height = 600 }
+
+    host.ActivePage = "beta"
+    pump_messages(screen)
+
+    test.expect(page_a.Visible == false, "alpha should be hidden when ActivePage is beta")
+    test.expect(page_b.Visible == true, "beta should be visible when ActivePage is beta")
+    test.expect(page_c.Visible == false, "gamma should be hidden when ActivePage is beta")
+
+    host.ActivePage = "gamma"
+    pump_messages(screen)
+
+    test.expect(page_a.Visible == false, "alpha should remain hidden after switch")
+    test.expect(page_b.Visible == false, "beta should be hidden after switching to gamma")
+    test.expect(page_c.Visible == true, "gamma should be visible after switch")
+
+    screen:clear()
+    print("PASS: test_pagehost_sync_hides_non_active_pages")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: clicking an item updates SelectedValue and can drive ActivePage
+-- ---------------------------------------------------------------------------
+local function test_listbox_click_updates_selection_and_pagehost()
+    local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+    local host = screen + ui.PageHost { Width = 400, Height = 700, ActivePage = "games" }
+    local page_games = host + ui.Page { Name = "games", Width = 400, Height = 700 }
+    local page_library = host + ui.Page { Name = "library", Width = 400, Height = 700 }
+
+    local items = core.DataObject { Name = "Tabs" }
+    items:addChild(core.DataObject { Name = "games" })
+    items:addChild(core.DataObject { Name = "library" })
+
+    local template = ui.Node2D { Name = "TabItem", Width = 180, Height = 80 }
+
+    local footer = screen + ui.ListBox {
+        Y = 704,
+        Width = 400,
+        Height = 96,
+        Direction = "Horizontal",
+        ValueProperty = "Name",
+        SelectedValue = "games",
+        ItemsSource = items,
+        ItemTemplate = template,
+        SelectionChanged = function (self)
+            host.ActivePage = self.SelectedValue
+        end,
+    }
+
+    host:send("Node.ViewDidLoad")
+    screen:UpdateLayout(screen.Width, screen.Height)
+    pump_messages(screen)
+
+    test.expect_eq(footer.SelectedValue, "games", "Footer should start with games selected")
+    test.expect(page_games.Visible, "games page should be visible initially")
+    test.expect(page_library.Visible == false, "library page should be hidden initially")
+
+    local footerChildren = {}
+    for child in footer.children do
+        footerChildren[#footerChildren + 1] = child
+    end
+    test.expect_eq(#footerChildren, 2, "Footer should contain two items")
+
+    local target = footerChildren[2]
+    local x = target.ActualX + 5
+    local y = target.ActualY + 5
+
+    orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+    orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+    pump_messages(screen)
+
+    test.expect_eq(footer.SelectedValue, "library", "Clicking second item should select library")
+    test.expect_eq(host.ActivePage, "library", "Host ActivePage should follow ListBox selection")
+    test.expect(page_games.Visible == false, "games page should be hidden after click")
+    test.expect(page_library.Visible == true, "library page should be visible after click")
+
+    screen:clear()
+    print("PASS: test_listbox_click_updates_selection_and_pagehost")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: ValueProperty resolves DataObjectString.Value (not child Name)
+-- ---------------------------------------------------------------------------
+local function test_listbox_valueproperty_dataobject_value()
+        local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+        local items = filesystem.loadObjectFromXmlString [[
+            <DataObject Name="Tabs">
+                <DataObject Name="TabGames">
+                    <DataObjectString Name="Key" Value="games"/>
+                    <DataObjectString Name="Label" Value="Adventures"/>
+                </DataObject>
+                <DataObject Name="TabLibrary">
+                    <DataObjectString Name="Key" Value="library"/>
+                    <DataObjectString Name="Label" Value="Library"/>
+                </DataObject>
+            </DataObject>
+        ]]
+
+        local template = ui.StackView {
+            Name = "TabItem",
+            Width = 180,
+            Height = 80,
+        }
+        template:addChild(ui.TextBlock {
+            Name = "TabLabel",
+            Width = 180,
+            Height = 80,
+            Text = "tab",
+        })
+
+        local list = screen + ui.ListBox {
+            Width = 400,
+            Height = 96,
+            Direction = "Horizontal",
+            ItemsSource = items,
+            ItemTemplate = template,
+            ValueProperty = "Key",
+            SelectedValue = "games",
+        }
+
+        screen:UpdateLayout(screen.Width, screen.Height)
+        pump_messages(screen)
+
+        local children = {}
+        for child in list.children do
+            children[#children + 1] = child
+        end
+        test.expect_eq(#children, 2, "List should contain two footer items")
+
+        local target = children[2]
+        local x = target.ActualX + 10
+        local y = target.ActualY + 10
+
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+        pump_messages(screen)
+
+        test.expect_eq(list.SelectedValue, "library", "Click should set SelectedValue to DataObjectString Key value")
+
+        screen:clear()
+        print("PASS: test_listbox_valueproperty_dataobject_value")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox: clicking in slot gaps still selects by listbox region
+-- ---------------------------------------------------------------------------
+local function test_listbox_click_slot_region_selection()
+        local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+        local host = screen + ui.PageHost { Width = 400, Height = 700, ActivePage = "games" }
+        local page_games = host + ui.Page { Name = "games", Width = 400, Height = 700 }
+        local page_library = host + ui.Page { Name = "library", Width = 400, Height = 700 }
+        local page_settings = host + ui.Page { Name = "settings", Width = 400, Height = 700 }
+
+        local items = core.DataObject { Name = "Tabs" }
+        items:addChild(core.DataObject { Name = "games" })
+        items:addChild(core.DataObject { Name = "library" })
+        items:addChild(core.DataObject { Name = "settings" })
+
+        local template = ui.StackView {
+            Name = "TabItem",
+            Width = 40,
+            Height = 40,
+            Direction = "Vertical",
+        }
+        template:addChild(ui.TextBlock {
+            Name = "TabLabel",
+            Width = 36,
+            Height = 14,
+            Text = "tab",
+        })
+
+        local footer = screen + ui.ListBox {
+                Y = 704,
+                Width = 400,
+                Height = 96,
+                Direction = "Horizontal",
+                ValueProperty = "Name",
+                SelectedValue = "games",
+                ItemsSource = items,
+                ItemTemplate = template,
+                SelectionChanged = function (self)
+                        host.ActivePage = self.SelectedValue
+                end,
+        }
+
+        host:send("Node.ViewDidLoad")
+        screen:UpdateLayout(screen.Width, screen.Height)
+        pump_messages(screen)
+
+        local slotW = footer.ActualWidth / 3
+        local y = footer.ActualY + footer.ActualHeight * 0.5
+
+        -- Click in middle slot area where there may be no child hit.
+        local xLibrary = footer.ActualX + slotW * 1.5
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = xLibrary, y = y }
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = xLibrary, y = y }
+        pump_messages(screen)
+
+        test.expect_eq(footer.SelectedValue, "library", "Middle slot click should select library")
+        test.expect_eq(host.ActivePage, "library", "Middle slot click should update ActivePage")
+        test.expect(page_games.Visible == false, "games page should hide after middle slot click")
+        test.expect(page_library.Visible == true, "library page should show after middle slot click")
+
+        local xSettings = footer.ActualX + slotW * 2.5
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = xSettings, y = y }
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = xSettings, y = y }
+        pump_messages(screen)
+
+        test.expect_eq(footer.SelectedValue, "settings", "Last slot click should select settings")
+        test.expect_eq(host.ActivePage, "settings", "Last slot click should update ActivePage")
+        test.expect(page_library.Visible == false, "library page should hide after last slot click")
+        test.expect(page_settings.Visible == true, "settings page should show after last slot click")
+
+        screen:clear()
+        print("PASS: test_listbox_click_slot_region_selection")
+end
+
+    -- ---------------------------------------------------------------------------
+    -- ListBox: selection syncs sibling PageHost.ActivePage automatically
+    -- ---------------------------------------------------------------------------
+    local function test_listbox_auto_syncs_sibling_pagehost()
+        local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+        local host = screen + ui.PageHost { Width = 400, Height = 700, ActivePage = "games" }
+        local page_games = host + ui.Page { Name = "games", Width = 400, Height = 700 }
+        local page_library = host + ui.Page { Name = "library", Width = 400, Height = 700 }
+
+        local items = core.DataObject { Name = "Tabs" }
+        items:addChild(core.DataObject { Name = "games" })
+        items:addChild(core.DataObject { Name = "library" })
+
+        local template = ui.Node2D { Name = "TabItem", Width = 80, Height = 60 }
+
+        local footer = screen + ui.ListBox {
+            Y = 704,
+            Width = 400,
+            Height = 96,
+            Direction = "Horizontal",
+            ValueProperty = "Name",
+            SelectedValue = "games",
+            ItemsSource = items,
+            ItemTemplate = template,
+        }
+
+        host:send("Node.ViewDidLoad")
+        screen:UpdateLayout(screen.Width, screen.Height)
+        pump_messages(screen)
+
+        local children = {}
+        for child in footer.children do
+            children[#children + 1] = child
+        end
+        test.expect_eq(#children, 2, "Footer should contain two items")
+
+        local target = children[2]
+        local x = target.ActualX + 5
+        local y = target.ActualY + 5
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+        orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+        pump_messages(screen)
+
+        test.expect_eq(footer.SelectedValue, "library", "Footer click should select library")
+        test.expect_eq(host.ActivePage, "library", "Sibling PageHost should follow ListBox selection")
+        test.expect(page_games.Visible == false, "games page should be hidden after footer click")
+        test.expect(page_library.Visible == true, "library page should be visible after footer click")
+
+        screen:clear()
+        print("PASS: test_listbox_auto_syncs_sibling_pagehost")
+    end
+
+-- ---------------------------------------------------------------------------
 -- PageHost + ListBox: binding propagates SelectedValue → ActivePage
 -- ---------------------------------------------------------------------------
 local function test_pagehost_listbox_binding()
@@ -326,6 +608,11 @@ test_pagehost_listbox_end_to_end()
 test_pagehost_navigateback()
 test_pagehost_no_activepage_shows_first()
 test_listbox_selectitem_message()
+test_pagehost_sync_hides_non_active_pages()
+test_listbox_click_updates_selection_and_pagehost()
+test_listbox_valueproperty_dataobject_value()
+test_listbox_click_slot_region_selection()
+test_listbox_auto_syncs_sibling_pagehost()
 test_pagehost_listbox_binding()
 
 print("\nAll PageHost + ListBox tests passed.")

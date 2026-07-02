@@ -273,30 +273,6 @@ handle:
     .wParam = 0,
     .lParam = &mouse,
   });
-  // This allows for event delegation, where a parent object can choose to
-  // handle events for its children. For example, a list item could delegate
-  // mouse events to its parent list for handling selection.
-  // for (struct Object *obj = sender; !success && obj; obj = OBJ_GetParent(obj)) {
-  //   lpcString_t szCallback = OBJ_FindCallbackForID(obj, e->message);
-  //   if (szCallback) {
-  //     luaX_import(L, "orca", "async");
-  //     if (luaX_pushObject(L, obj), lua_isnil(L, -1)) {
-  //       Con_Warning("Object has no Lua representation: %p", obj);
-  //       lua_pop(L, 2);
-  //       continue;
-  //     }
-  //     lua_getfield(L, -1, szCallback);
-  //     lua_insert(L, -2); // Move callback before obj
-  //     luaX_pushObject(L, sender);
-  //     if (lua_pcall(L, lua_pushmousevent(L, obj, e) + 3, 0, 0) != LUA_OK) {
-  //       Con_Error("%s(): %s", szCallback, lua_tostring(L, -1));
-  //       lua_pop(L, 1);
-  //     }
-  //     success = TRUE;
-  //   } else if (send_mouse_message(obj, e)) {
-  //     success = TRUE;
-  //   }
-  // }
   
   // If the event wasn't handled by any object in the hierarchy, we still
   // need to process drag and drop events in order to properly update the
