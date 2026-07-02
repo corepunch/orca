@@ -4,13 +4,16 @@
 #define PAGE_HISTORY_MAX 32
 
 static void
-_SetActivePage(struct PageHost *pPageHost, struct Page *pPage)
+_SetActivePage(struct Object *hObject, struct PageHost *pPageHost, struct Page *pPage)
 {
-  if (pPageHost->_activePage) {
-    pPageHost->_activePage->_node->Visible = FALSE;
-  }
-  if ((pPageHost->_activePage = pPage)) {
-    pPage->_node->Visible = TRUE;
+  pPageHost->_activePage = pPage;
+
+  FOR_EACH_OBJECT(hChild, hObject) {
+    struct Page *childPage = GetPage(hChild);
+    struct Node *childNode = GetNode(hChild);
+    if (!childPage || !childNode) continue;
+
+    childNode->Visible = (childPage == pPage);
   }
 }
 
@@ -47,8 +50,8 @@ PageHost_SyncActivePage(struct Object *hObject, struct PageHost *pPageHost)
     return;
   }
   struct Page *pTarget = PageHost_FindPageByKey(hObject, pPageHost->ActivePage);
-  if (pTarget && pTarget != pPageHost->_activePage) {
-    _SetActivePage(pPageHost, pTarget);
+  if (pTarget) {
+    _SetActivePage(hObject, pPageHost, pTarget);
   }
 }
 
@@ -66,7 +69,7 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
   if (pPageHost->_activePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
     pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->_activePage;
   }
-  _SetActivePage(pPageHost, pTarget);
+  _SetActivePage(hObject, pPageHost, pTarget);
   return TRUE;
 }
 
@@ -75,7 +78,7 @@ HANDLER(PageHost, PageHost, NavigateBack) {
   if (pPageHost->_historySize <= 0) return FALSE;
 
   struct Page *pPrev = pPageHost->_historyStack[--pPageHost->_historySize];
-  _SetActivePage(pPageHost, pPrev);
+  _SetActivePage(hObject, pPageHost, pPrev);
 
   return TRUE;
 }
