@@ -106,6 +106,10 @@ HANDLER(ImageView, Node2D, DrawForeground)
 
   Node2D_GetViewEntity(pNode2D, &entity, pImageView->Source, &pDrawForeground->brush);
 
+  if (pImageView->TintMode == kTintModeNone) {
+    entity.material.color = (struct color){1, 1, 1, 1};
+  }
+
   calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
                       (struct edges const*)&pImageView->Insets,
@@ -294,9 +298,4 @@ HANDLER(ImageView, Node, LoadView)
   return TRUE;
 }
 
-// ImageView_Create
-HANDLER(ImageView, Object, Create) {
-  struct Property *p = OBJ_FindLongProperty(hObject, ID_Node2D_ForegroundColor);
-  PROP_SetValue(p, &(struct color){1,1,1,1});
-  return FALSE;
-}
+

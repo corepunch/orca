@@ -155,6 +155,12 @@
       <value name="Dotted">A dotted line</value>
       <value name="Double">Two parallel lines</value>
     </enum>
+    <enum name="TintMode">
+      <summary>Controls how inherited foreground color interacts with the image source</summary>
+      <details>When set to None, source pixels are drawn unmodified and any inherited Foreground color is ignored. When set to Template, the source alpha channel is used as a mask and the inherited Foreground color is applied as the fill, matching AppKit/UIKit template image behavior.</details>
+      <value name="None">Source pixels drawn unmodified; inherited Foreground is unused</value>
+      <value name="Template">Use source alpha as mask, fill with inherited Foreground color</value>
+    </enum>
   </enums>
   <structs>
     <struct name="FontShorthand">
@@ -849,7 +855,6 @@
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node2D.ForegroundContent"/>
         <handle message="Node2D.DrawForeground"/>
-        <handle message="Object.Create"/>
         <handle message="Object.Start"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Destroy"/>
@@ -862,6 +867,7 @@
         <property name="Insets" type="vec4">Content inset values for image positioning </property>
         <property name="Viewbox" type="vec4" default="0,0,1,1">Viewport rectangle for image cropping/scaling </property>
         <property name="Stretch" type="Stretch">Determines how the image is scaled to fill its allocated layout space</property>
+        <property name="TintMode" type="TintMode">Controls whether inherited foreground color tints the image. Default None draws source pixels unmodified; Template uses source alpha as mask with foreground color fill</property>
       </properties>
       <fields>
         <field name="_fetch" type="void" pointer="true">In-flight HTTP fetch handle (private)</field>
