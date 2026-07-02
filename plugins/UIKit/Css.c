@@ -911,6 +911,21 @@ css_split_selector(const char* selector,
   const char* base = selector;
   const char* colon = strchr(base, ':');
   if (colon) {
+    const char* after = colon + 1;
+    bool_t has_continuation = FALSE;
+    for (const char* p = after; *p; p++) {
+      if (isspace((unsigned char)*p) || *p == '>' || *p == '.' || *p == '#') {
+        has_continuation = TRUE;
+        break;
+      }
+    }
+
+    if (has_continuation) {
+      copy_trim(class_out, base, base + strlen(base), class_max);
+      pseudo_out[0] = '\0';
+      return;
+    }
+
     int len = (int)(colon - base);
     if (len >= class_max) len = class_max - 1;
     copy_trim(class_out, base, base + len, class_max);

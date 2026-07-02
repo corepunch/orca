@@ -171,6 +171,39 @@ _ParsePseudoStateFlags(lpcString_t str)
 }
 
 static void
+_SplitSelectorPseudo(lpcString_t selector,
+                    char *baseOut,
+                    size_t baseOutSize,
+                    uint32_t *pseudoFlags)
+{
+  if (baseOut && baseOutSize) baseOut[0] = '\0';
+  if (pseudoFlags) *pseudoFlags = 0;
+  if (!selector) return;
+
+  lpcString_t colon = strchr(selector, ':');
+  if (!colon) {
+    if (baseOut && baseOutSize) {
+      snprintf(baseOut, baseOutSize, "%s", selector);
+    }
+    return;
+  }
+
+  if (baseOut && baseOutSize) {
+    lpcString_t start = selector;
+    lpcString_t end = colon;
+    while (start < end && isspace((unsigned char)*start)) start++;
+    while (end > start && isspace((unsigned char)*(end - 1))) end--;
+    size_t len = (size_t)(end - start);
+    if (len >= baseOutSize) len = baseOutSize - 1;
+    memcpy(baseOut, start, len);
+    baseOut[len] = '\0';
+  }
+  if (pseudoFlags) {
+    *pseudoFlags = _ParsePseudoStateFlags(colon + 1);
+  }
+}
+
+static void
 _CopyTrim(char* dst, size_t dst_size, lpcString_t start, lpcString_t end)
 {
   while (start < end && isspace((unsigned char)*start)) start++;
@@ -300,6 +333,17 @@ _MatchSimpleSelector(struct Object *target,
                      struct style_class_selector** matchedClass)
 {
   if (!selector || !selector[0]) return FALSE;
+
+  char baseSelector[256] = {0};
+  uint32_t requiredFlags = 0;
+  _SplitSelectorPseudo(selector, baseSelector, sizeof(baseSelector), &requiredFlags);
+
+  if ((objFlags & requiredFlags) != requiredFlags) {
+    return FALSE;
+  }
+
+  selector = baseSelector;
+  if (!selector[0]) return FALSE;
 
   bool_t hasCompoundMarker = strchr(selector, '.') || strchr(selector, '#');
   if (hasCompoundMarker) {
