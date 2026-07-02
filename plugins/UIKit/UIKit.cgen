@@ -957,8 +957,10 @@
       <details>Used to store navigation related data while all the functionality comes from PageHost</details>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.Start"/>
       </handles>
       <properties>
+        <property name="Source" type="string">URL of an XML file whose content is loaded as children of this page when activated.</property>
         <property name="Title" type="string">The title of the page.</property>
         <property name="Path" type="string">The URL path of the page, like "/about".</property>
         <property name="Transition" type="float">The transition progress of the page.</property>
