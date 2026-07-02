@@ -1,4 +1,5 @@
 #include <UIKit/UIKit.h>
+#include <source/core/core_local.h>
 
 static const char *
 ListBox_GetItemValue(struct Object *hObject, struct ListBox *pListBox, struct Object *item)
