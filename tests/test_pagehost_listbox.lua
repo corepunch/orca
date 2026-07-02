@@ -14,13 +14,13 @@ local function pump_messages(root)
 end
 
 -- ---------------------------------------------------------------------------
--- PageHost: shows initial page matching CurrentPage
+-- PageHost: shows initial page matching ActivePage key
 -- ---------------------------------------------------------------------------
-local function test_pagehost_initial_page_from_currentpage()
+local function test_pagehost_initial_activepage()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
-    local host = screen + ui.PageHost { Width = 400, Height = 600, CurrentPage = "beta" }
-    local page_a = host + ui.Page { Name = "page_a", Key = "alpha", Width = 400, Height = 600 }
-    local page_b = host + ui.Page { Name = "page_b", Key = "beta", Width = 400, Height = 600 }
+    local host = screen + ui.PageHost { Width = 400, Height = 600, ActivePage = "beta" }
+    local page_a = host + ui.Page { Name = "alpha", Width = 400, Height = 600 }
+    local page_b = host + ui.Page { Name = "beta", Width = 400, Height = 600 }
 
     host:send("Node.ViewDidLoad")
     pump_messages(screen)
@@ -29,17 +29,17 @@ local function test_pagehost_initial_page_from_currentpage()
     test.expect(page_b.Visible == true, "page_b should be visible")
 
     screen:clear()
-    print("PASS: test_pagehost_initial_page_from_currentpage")
+    print("PASS: test_pagehost_initial_activepage")
 end
 
 -- ---------------------------------------------------------------------------
--- PageHost: switches page when CurrentPage changes
+-- PageHost: switches page when ActivePage key changes
 -- ---------------------------------------------------------------------------
-local function test_pagehost_switches_page_on_currentpage_change()
+local function test_pagehost_switches_page_on_activepage_change()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
-    local host = screen + ui.PageHost { Width = 400, Height = 600, CurrentPage = "alpha" }
-    local page_a = host + ui.Page { Name = "page_a", Key = "alpha", Width = 400, Height = 600 }
-    local page_b = host + ui.Page { Name = "page_b", Key = "beta", Width = 400, Height = 600 }
+    local host = screen + ui.PageHost { Width = 400, Height = 600, ActivePage = "alpha" }
+    local page_a = host + ui.Page { Name = "alpha", Width = 400, Height = 600 }
+    local page_b = host + ui.Page { Name = "beta", Width = 400, Height = 600 }
 
     host:send("Node.ViewDidLoad")
     pump_messages(screen)
@@ -47,14 +47,14 @@ local function test_pagehost_switches_page_on_currentpage_change()
     test.expect(page_a.Visible, "page_a should be visible initially")
     test.expect(page_b.Visible == false, "page_b should be hidden initially")
 
-    host.CurrentPage = "beta"
+    host.ActivePage = "beta"
     pump_messages(screen)
 
     test.expect(page_a.Visible == false, "page_a should be hidden after switch")
     test.expect(page_b.Visible == true, "page_b should be visible after switch")
 
     screen:clear()
-    print("PASS: test_pagehost_switches_page_on_currentpage_change")
+    print("PASS: test_pagehost_switches_page_on_activepage_change")
 end
 
 -- ---------------------------------------------------------------------------
@@ -126,9 +126,9 @@ end
 local function test_pagehost_listbox_end_to_end()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-    local host = screen + ui.PageHost { Width = 400, Height = 600, CurrentPage = "games" }
-    local page_games = host + ui.Page { Name = "page_games", Key = "games", Width = 400, Height = 600 }
-    local page_settings = host + ui.Page { Name = "page_settings", Key = "settings", Width = 400, Height = 600 }
+    local host = screen + ui.PageHost { Width = 400, Height = 600, ActivePage = "games" }
+    local page_games = host + ui.Page { Name = "games", Width = 400, Height = 600 }
+    local page_settings = host + ui.Page { Name = "settings", Width = 400, Height = 600 }
 
     local items = core.DataObject { Name = "Tabs" }
     items:addChild(core.DataObject { Name = "games" })
@@ -152,7 +152,7 @@ local function test_pagehost_listbox_end_to_end()
 
     -- Simulate binding: set both values (like {../Footer/SelectedValue} would)
     footer.SelectedValue = "settings"
-    host.CurrentPage = "settings"
+    host.ActivePage = "settings"
     pump_messages(screen)
 
     test.expect_eq(footer.SelectedValue, "settings", "Footer should show settings")
@@ -160,7 +160,7 @@ local function test_pagehost_listbox_end_to_end()
     test.expect(page_settings.Visible == true, "settings page should be visible")
 
     footer.SelectedValue = "games"
-    host.CurrentPage = "games"
+    host.ActivePage = "games"
     pump_messages(screen)
 
     test.expect_eq(footer.SelectedValue, "games", "Footer should show games")
@@ -176,9 +176,9 @@ end
 -- ---------------------------------------------------------------------------
 local function test_pagehost_navigateback()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
-    local host = screen + ui.PageHost { Width = 400, Height = 600, CurrentPage = "alpha" }
-    local page_a = host + ui.Page { Name = "page_a", Key = "alpha", Path = "/alpha", Width = 400, Height = 600 }
-    local page_b = host + ui.Page { Name = "page_b", Key = "beta", Path = "/beta", Width = 400, Height = 600 }
+    local host = screen + ui.PageHost { Width = 400, Height = 600, ActivePage = "alpha" }
+    local page_a = host + ui.Page { Name = "alpha", Path = "/alpha", Width = 400, Height = 600 }
+    local page_b = host + ui.Page { Name = "beta", Path = "/beta", Width = 400, Height = 600 }
 
     host:send("Node.ViewDidLoad")
     pump_messages(screen)
@@ -198,12 +198,12 @@ local function test_pagehost_navigateback()
 end
 
 -- ---------------------------------------------------------------------------
--- PageHost: no CurrentPage shows first page (legacy behavior)
+-- PageHost: empty ActivePage shows first page (legacy behavior)
 -- ---------------------------------------------------------------------------
-local function test_pagehost_no_currentpage_shows_first()
+local function test_pagehost_no_activepage_shows_first()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
     local host = screen + ui.PageHost { Width = 400, Height = 600 }
-    local page_a = host + ui.Page { Name = "page_a", Key = "alpha", Width = 400, Height = 600 }
+    local page_a = host + ui.Page { Name = "alpha", Width = 400, Height = 600 }
 
     host:send("Node.ViewDidLoad")
     pump_messages(screen)
@@ -211,7 +211,7 @@ local function test_pagehost_no_currentpage_shows_first()
     test.expect(page_a.Visible, "first page should be visible by default")
 
     screen:clear()
-    print("PASS: test_pagehost_no_currentpage_shows_first")
+    print("PASS: test_pagehost_no_activepage_shows_first")
 end
 
 -- ---------------------------------------------------------------------------
@@ -260,14 +260,14 @@ local function test_listbox_selectitem_message()
 end
 
 -- ---------------------------------------------------------------------------
--- PageHost + ListBox: binding propagates SelectedValue → CurrentPage
+-- PageHost + ListBox: binding propagates SelectedValue → ActivePage
 -- ---------------------------------------------------------------------------
 local function test_pagehost_listbox_binding()
     local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-    local host = screen + ui.PageHost { Width = 400, Height = 700, CurrentPage = "games" }
-    local page_games = host + ui.Page { Name = "page_games", Key = "games", Width = 400, Height = 700 }
-    local page_library = host + ui.Page { Name = "page_library", Key = "library", Width = 400, Height = 700 }
+    local host = screen + ui.PageHost { Width = 400, Height = 700, ActivePage = "games" }
+    local page_games = host + ui.Page { Name = "games", Width = 400, Height = 700 }
+    local page_library = host + ui.Page { Name = "library", Width = 400, Height = 700 }
 
     local items = core.DataObject { Name = "Tabs" }
     items:addChild(core.DataObject { Name = "games" })
@@ -283,9 +283,9 @@ local function test_pagehost_listbox_binding()
     }
     screen:addChild(footer)
 
-    -- Simulate the binding: watch footer.SelectedValue and sync to host.CurrentPage
+    -- Simulate the binding: watch footer.SelectedValue and sync to host.ActivePage
     local function sync_binding()
-        host.CurrentPage = footer.SelectedValue
+        host.ActivePage = footer.SelectedValue
     end
 
     host:send("Node.ViewDidLoad")
@@ -293,14 +293,14 @@ local function test_pagehost_listbox_binding()
 
     test.expect(page_games.Visible, "games page should be visible initially")
     test.expect(page_library.Visible == false, "library page should be hidden initially")
-    test.expect_eq(host.CurrentPage, "games", "CurrentPage should start as games")
+    test.expect_eq(host.ActivePage, "games", "ActivePage should start as games")
 
     -- Change footer selection and propagate via binding
     footer.SelectedValue = "library"
     sync_binding()
     pump_messages(screen)
 
-    test.expect_eq(host.CurrentPage, "library", "CurrentPage should follow binding to library")
+    test.expect_eq(host.ActivePage, "library", "ActivePage should follow binding to library")
     test.expect(page_games.Visible == false, "games page should be hidden")
     test.expect(page_library.Visible, "library page should be visible")
 
@@ -309,7 +309,7 @@ local function test_pagehost_listbox_binding()
     sync_binding()
     pump_messages(screen)
 
-    test.expect_eq(host.CurrentPage, "games", "CurrentPage should follow binding back to games")
+    test.expect_eq(host.ActivePage, "games", "ActivePage should follow binding back to games")
     test.expect(page_games.Visible, "games page should be visible again")
     test.expect(page_library.Visible == false, "library page should be hidden again")
 
@@ -318,13 +318,13 @@ local function test_pagehost_listbox_binding()
 end
 
 -- Run all tests
-test_pagehost_initial_page_from_currentpage()
-test_pagehost_switches_page_on_currentpage_change()
+test_pagehost_initial_activepage()
+test_pagehost_switches_page_on_activepage_change()
 test_listbox_selectedvalue_property()
 test_listbox_selectionchanged_fires()
 test_pagehost_listbox_end_to_end()
 test_pagehost_navigateback()
-test_pagehost_no_currentpage_shows_first()
+test_pagehost_no_activepage_shows_first()
 test_listbox_selectitem_message()
 test_pagehost_listbox_binding()
 

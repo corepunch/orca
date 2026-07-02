@@ -5,10 +5,10 @@
 static void
 _SetActivePage(struct PageHost *pPageHost, struct Page *pPage)
 {
-  if (pPageHost->ActivePage) {
-    pPageHost->ActivePage->_node->Visible = FALSE;
+  if (pPageHost->_activePage) {
+    pPageHost->_activePage->_node->Visible = FALSE;
   }
-  if ((pPageHost->ActivePage = pPage)) {
+  if ((pPageHost->_activePage = pPage)) {
     pPage->_node->Visible = TRUE;
   }
 }
@@ -32,7 +32,7 @@ PageHost_FindPageByKey(struct Object *hObject, const char* key)
 {
   FOR_EACH_OBJECT(hChild, hObject) {
     struct Page *pPage = GetPage(hChild);
-    if (pPage && pPage->Key && strcmp(pPage->Key, key) == 0) {
+    if (pPage && OBJ_GetName(hChild) && strcmp(OBJ_GetName(hChild), key) == 0) {
       return pPage;
     }
   }
@@ -40,13 +40,13 @@ PageHost_FindPageByKey(struct Object *hObject, const char* key)
 }
 
 static void
-PageHost_SyncToCurrentPage(struct Object *hObject, struct PageHost *pPageHost)
+PageHost_SyncActivePage(struct Object *hObject, struct PageHost *pPageHost)
 {
-  if (!pPageHost->CurrentPage || !pPageHost->CurrentPage[0]) {
+  if (!pPageHost->ActivePage || !pPageHost->ActivePage[0]) {
     return;
   }
-  struct Page *pTarget = PageHost_FindPageByKey(hObject, pPageHost->CurrentPage);
-  if (pTarget && pTarget != pPageHost->ActivePage) {
+  struct Page *pTarget = PageHost_FindPageByKey(hObject, pPageHost->ActivePage);
+  if (pTarget && pTarget != pPageHost->_activePage) {
     _SetActivePage(pPageHost, pTarget);
   }
 }
@@ -62,8 +62,8 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
     Con_Error("Page object not found for path: %s", pNavigateToPage->URL);
     return FALSE;
   }
-  if (pPageHost->ActivePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
-    pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->ActivePage;
+  if (pPageHost->_activePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
+    pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->_activePage;
   }
   _SetActivePage(pPageHost, pTarget);
   return TRUE;
@@ -79,19 +79,19 @@ HANDLER(PageHost, PageHost, NavigateBack) {
   return TRUE;
 }
 
-// PageHost_Start — sync initial CurrentPage if set before ViewDidLoad
+// PageHost_Start — sync initial ActivePage if set before ViewDidLoad
 HANDLER(PageHost, Object, Start) {
-  PageHost_SyncToCurrentPage(hObject, pPageHost);
+  PageHost_SyncActivePage(hObject, pPageHost);
   return FALSE;
 }
 
-// PageHost_PropertyChanged — watch CurrentPage for binding-driven navigation
+// PageHost_PropertyChanged — watch ActivePage for binding-driven navigation
 HANDLER(PageHost, Object, PropertyChanged) {
   if (!pPropertyChanged->Property)
     return FALSE;
 
-  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_PageHost_CurrentPage) {
-    PageHost_SyncToCurrentPage(hObject, pPageHost);
+  if (PROP_GetLongIdentifier(pPropertyChanged->Property) == ID_PageHost_ActivePage) {
+    PageHost_SyncActivePage(hObject, pPageHost);
   }
 
   return FALSE;
@@ -100,17 +100,17 @@ HANDLER(PageHost, Object, PropertyChanged) {
 // PageHost_ViewDidLoad
 HANDLER(PageHost, Node, ViewDidLoad) {
   FOR_EACH_OBJECT(hChild, hObject) {
-    if (pPageHost->ActivePage == NULL) {
-      pPageHost->ActivePage = GetPage(hChild);
+    if (pPageHost->_activePage == NULL) {
+      pPageHost->_activePage = GetPage(hChild);
       GetNode(hChild)->Visible = TRUE;
-    } else if (pPageHost->ActivePage == GetPage(hChild)) {
+    } else if (pPageHost->_activePage == GetPage(hChild)) {
       GetNode(hChild)->Visible = TRUE;
     } else {
       GetNode(hChild)->Visible = FALSE;
     }
   }
-  // If CurrentPage was set (e.g. via binding) but ActivePage wasn't resolved yet
-  PageHost_SyncToCurrentPage(hObject, pPageHost);
+  // If ActivePage was set (e.g. via binding) but _activePage wasn't resolved yet
+  PageHost_SyncActivePage(hObject, pPageHost);
   return TRUE;
 }
 

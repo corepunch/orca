@@ -959,7 +959,6 @@
         <handle message="Object.Create"/>
       </handles>
       <properties>
-        <property name="Key" type="string">Unique key used by PageHost to identify this page for navigation.</property>
         <property name="Title" type="string">The title of the page.</property>
         <property name="Path" type="string">The URL path of the page, like "/about".</property>
         <property name="Transition" type="float">The transition progress of the page.</property>
@@ -979,10 +978,10 @@
         <handle message="PageHost.NavigateBack"/>
       </handles>
       <properties>
-        <property name="ActivePage" type="Page" pointer="true">The currently active page.</property>
-        <property name="CurrentPage" type="string">Key of the currently active page. Bind this to a selection source (e.g. ListBox.SelectedValue) for declarative page switching.</property>
+        <property name="ActivePage" type="string">Name of the currently active Page child. Setting this shows the matching Page and hides others. Bind to a selection source (e.g. ListBox.SelectedValue) for declarative page switching.</property>
       </properties>
       <fields>
+        <field name="_activePage" type="Page" pointer="true">Resolved page object for the current ActivePage key.</field>
         <field name="_historyStack" type="Page" pointer="true" fixed-array="32">Navigation history stack.</field>
         <field name="_historySize" type="int">Number of entries in the navigation history stack.</field>
       </fields>
@@ -1032,7 +1031,7 @@
         <handle message="ListBox.SelectItem"/>
       </handles>
       <properties>
-        <property name="SelectedValue" type="string">Value string of the currently selected item. Updated when the user clicks an item. Bind this to another property (e.g. PageHost.CurrentPage) for declarative navigation.</property>
+        <property name="SelectedValue" type="string">Value string of the currently selected item. Updated when the user clicks an item. Bind this to another property (e.g. PageHost.ActivePage) for declarative navigation.</property>
         <property name="ValueProperty" type="string">DataObject property name used as each item's value. Defaults to "Name" if empty. For example, "Key" reads DataContext/Key from each item.</property>
       </properties>
       <messages>
