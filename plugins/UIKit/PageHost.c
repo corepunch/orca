@@ -1,4 +1,5 @@
 #include <UIKit/UIKit.h>
+#include <filesystem/filesystem.h>
 
 #define PAGE_HISTORY_MAX 32
 
@@ -117,5 +118,16 @@ HANDLER(PageHost, Node, ViewDidLoad) {
 // Page_Create
 HANDLER(Page, Object, Create) {
   pPage->_node = GetNode(hObject);
+  return FALSE;
+}
+
+// Page_Start — load page content from Source if set
+HANDLER(Page, Object, Start) {
+  if (pPage->Source && pPage->Source[0]) {
+    struct Object *content = FS_LoadObjectFromXml(pPage->Source);
+    if (content) {
+      OBJ_AddChild(hObject, content);
+    }
+  }
   return FALSE;
 }
