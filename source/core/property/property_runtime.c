@@ -685,7 +685,12 @@ tok_op(argument)
         }
       }
     } else if (!strncmp(token->text, "##Root/", 7)) {
-      p = OBJ_FindPropertyByPath(token->rootnode, ++eon);
+      if (!token->rootnode) {
+        Con_Error("##Root/ binding requires a root node — set root_node before compiling bindings");
+        p = NULL;
+      } else {
+        p = OBJ_FindPropertyByPath(token->rootnode, ++eon);
+      }
     } else /*for (; object; object = OBJ_GetParent(object))*/ if (object) {
       uint32_t ident = fnv1a32_range(token->text + 1, eon);
       struct Object *child = OBJ_FindChildByAlias(object, ident);
