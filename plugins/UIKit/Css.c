@@ -298,6 +298,7 @@ k_css_prop_map[] = {
   { "ring-offset",     "Node2D.RingOffset",       ID_Node2D_RingOffset },
   { "ring-width",    "Node2D.RingWidth",        ID_Node2D_RingWidth },
   { "content-stretch",   "Node2D.ContentStretch",     ID_Node2D_ContentStretch },
+  { "tint-mode",       "ImageView.TintMode",      ID_ImageView_TintMode },
   { "ignore-hit-test",   "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
   { "pointer-events",  "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
   { "size-to-content",   "Node2D.SizeToContent",      ID_Node2D_SizeToContent },
