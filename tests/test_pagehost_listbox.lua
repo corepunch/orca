@@ -214,6 +214,109 @@ local function test_pagehost_no_currentpage_shows_first()
     print("PASS: test_pagehost_no_currentpage_shows_first")
 end
 
+-- ---------------------------------------------------------------------------
+-- ListBox: SelectItem message selects item by value
+-- ---------------------------------------------------------------------------
+local function test_listbox_selectitem_message()
+    local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+    local items = core.DataObject { Name = "Tabs" }
+    items:addChild(core.DataObject { Name = "alpha" })
+    items:addChild(core.DataObject { Name = "beta" })
+    items:addChild(core.DataObject { Name = "gamma" })
+
+    local template = ui.Node2D { Name = "TabItem", Width = 400, Height = 50 }
+
+    local list = ui.ListBox {
+        Width = 400, Height = 200,
+        ItemsSource = items,
+        ItemTemplate = template,
+    }
+    screen:addChild(list)
+
+    host = screen
+    host:send("Node.ViewDidLoad")
+    pump_messages(screen)
+
+    -- Auto-selects first item; switch via SelectItem message
+    list:send("ListBox.SelectItem", { Value = "gamma" })
+    pump_messages(screen)
+
+    test.expect_eq(list.SelectedValue, "gamma", "SelectedValue should be gamma after SelectItem")
+
+    list:send("ListBox.SelectItem", { Value = "alpha" })
+    pump_messages(screen)
+
+    test.expect_eq(list.SelectedValue, "alpha", "SelectedValue should be alpha after second SelectItem")
+
+    -- SelectItem with nonexistent value should not change selection
+    list:send("ListBox.SelectItem", { Value = "nope" })
+    pump_messages(screen)
+
+    test.expect_eq(list.SelectedValue, "alpha", "SelectedValue should remain alpha for nonexistent value")
+
+    screen:clear()
+    print("PASS: test_listbox_selectitem_message")
+end
+
+-- ---------------------------------------------------------------------------
+-- PageHost + ListBox: binding propagates SelectedValue → CurrentPage
+-- ---------------------------------------------------------------------------
+local function test_pagehost_listbox_binding()
+    local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+    local host = screen + ui.PageHost { Width = 400, Height = 700, CurrentPage = "games" }
+    local page_games = host + ui.Page { Name = "page_games", Key = "games", Width = 400, Height = 700 }
+    local page_library = host + ui.Page { Name = "page_library", Key = "library", Width = 400, Height = 700 }
+
+    local items = core.DataObject { Name = "Tabs" }
+    items:addChild(core.DataObject { Name = "games" })
+    items:addChild(core.DataObject { Name = "library" })
+
+    local template = ui.Node2D { Name = "TabItem", Width = 200, Height = 100 }
+
+    local footer = ui.ListBox {
+        Width = 400, Height = 100,
+        SelectedValue = "games",
+        ItemsSource = items,
+        ItemTemplate = template,
+    }
+    screen:addChild(footer)
+
+    -- Simulate the binding: watch footer.SelectedValue and sync to host.CurrentPage
+    local function sync_binding()
+        host.CurrentPage = footer.SelectedValue
+    end
+
+    host:send("Node.ViewDidLoad")
+    pump_messages(screen)
+
+    test.expect(page_games.Visible, "games page should be visible initially")
+    test.expect(page_library.Visible == false, "library page should be hidden initially")
+    test.expect_eq(host.CurrentPage, "games", "CurrentPage should start as games")
+
+    -- Change footer selection and propagate via binding
+    footer.SelectedValue = "library"
+    sync_binding()
+    pump_messages(screen)
+
+    test.expect_eq(host.CurrentPage, "library", "CurrentPage should follow binding to library")
+    test.expect(page_games.Visible == false, "games page should be hidden")
+    test.expect(page_library.Visible, "library page should be visible")
+
+    -- Change back
+    footer.SelectedValue = "games"
+    sync_binding()
+    pump_messages(screen)
+
+    test.expect_eq(host.CurrentPage, "games", "CurrentPage should follow binding back to games")
+    test.expect(page_games.Visible, "games page should be visible again")
+    test.expect(page_library.Visible == false, "library page should be hidden again")
+
+    screen:clear()
+    print("PASS: test_pagehost_listbox_binding")
+end
+
 -- Run all tests
 test_pagehost_initial_page_from_currentpage()
 test_pagehost_switches_page_on_currentpage_change()
@@ -222,5 +325,7 @@ test_listbox_selectionchanged_fires()
 test_pagehost_listbox_end_to_end()
 test_pagehost_navigateback()
 test_pagehost_no_currentpage_shows_first()
+test_listbox_selectitem_message()
+test_pagehost_listbox_binding()
 
 print("\nAll PageHost + ListBox tests passed.")
