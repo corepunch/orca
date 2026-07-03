@@ -34,4 +34,17 @@ struct file *_ReadOnDisk(FILE *fp);
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path);
 
+void
+FS_RegisterDataSourceProvider(const char *type_name,
+                             struct Object *(*fetch)(const char *params));
+
+void
+FS_RegisterDataSource(const char *name, const char *type, const char *params);
+
+struct Object *
+FS_ResolveDataSource(const char *name, const char **out_params);
+
+struct Object *
+_xml_ds_fetch(const char *params);
+
 #endif

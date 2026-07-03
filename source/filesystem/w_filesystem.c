@@ -427,6 +427,7 @@ register_shared_fonts(lua_State* L)
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(".xml", _xml_file_loader);
+  FS_RegisterDataSourceProvider("Xml", _xml_ds_fetch);
   register_shared_fonts(L);
 
   lua_register(L, "fs_findmodule", f_find_module);

@@ -1451,6 +1451,59 @@ local function test_package_datasource_declarations()
 end
 
 -- ---------------------------------------------------------------------------
+-- DataContextSource should resolve datasource names through the provider registry
+-- ---------------------------------------------------------------------------
+local function test_datasource_provider_resolution()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "filesystem.init should load the Example project")
+	if not project then
+		return
+	end
+
+	test.expect_eq(project.NumDataSources, 1,
+		"Example project should have one DataSource registered")
+
+	local xml = '<Node2D Name="ds-test" DataContextSource="ApplicationData"/>'
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "XML with DataContextSource name should load")
+	test.expect(root.DataContext ~= nil,
+		"DataContextSource='ApplicationData' should resolve through provider registry; got DataContext=" .. tostring(root.DataContext))
+	test.expect_eq(root.DataContext:getClassName(), "DataObject",
+		"Resolved DataContext should be a DataObject")
+
+	project:clear()
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_datasource_provider_resolution")
+end
+
+-- ---------------------------------------------------------------------------
+-- DataContextSource with child selector should resolve name and find child
+-- ---------------------------------------------------------------------------
+local function test_datasource_provider_with_child()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "filesystem.init should load the Example project")
+	if not project then
+		return
+	end
+
+	local xml = '<Node2D Name="ds-child-test" DataContextSource="ApplicationData:Signals"/>'
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "XML with DataContextSource name:child should load")
+	test.expect(root.DataContext ~= nil,
+		"DataContextSource='ApplicationData:Signals' should resolve through provider registry")
+	test.expect_eq(root.DataContext.Name, "Signals",
+		"DataContextSource name:child should find the named child")
+
+	project:clear()
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_datasource_provider_with_child")
+end
+
+-- ---------------------------------------------------------------------------
 -- Parser coverage: every XML syntax shape used by Example screens/prefabs
 -- should be accepted by loadObjectFromXmlString.
 -- ---------------------------------------------------------------------------
@@ -1544,6 +1597,8 @@ test_binding_expression_bare_path_resolves_from_bound_object()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
 test_package_datasource_declarations()
+test_datasource_provider_resolution()
+test_datasource_provider_with_child()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
