@@ -1423,6 +1423,34 @@ local function test_example_application_xml()
 end
 
 -- ---------------------------------------------------------------------------
+-- package.lua should be able to declare datasource provider type and params
+-- ---------------------------------------------------------------------------
+local function test_package_datasource_declarations()
+	local project = filesystem.init("samples/Example")
+	local package_lua = filesystem.readTextFile("samples/Example/package.lua")
+	test.expect(project ~= nil, "filesystem.init should load the Example project")
+	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
+	if not project then
+		return
+	end
+
+	test.expect_eq(project.NumDataSources, 1,
+		"Example package.lua should expose one datasource declaration")
+	test.expect(package_lua:find('Name = "ApplicationData"', 1, true) ~= nil,
+		"Example package.lua should declare the ApplicationData datasource name")
+	test.expect(package_lua:find('Type = "Xml"', 1, true) ~= nil,
+		"Example package.lua should declare datasource type Xml")
+	test.expect(package_lua:find('Params = "Path=Example/Data/ApplicationData"', 1, true) ~= nil,
+		"Example package.lua should declare datasource provider params")
+
+	project:clear()
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_package_datasource_declarations")
+end
+
+-- ---------------------------------------------------------------------------
 -- Parser coverage: every XML syntax shape used by Example screens/prefabs
 -- should be accepted by loadObjectFromXmlString.
 -- ---------------------------------------------------------------------------
@@ -1515,6 +1543,7 @@ test_binding_expression_visible_reacts_to_resize()
 test_binding_expression_bare_path_resolves_from_bound_object()
 test_tabview_measures_active_panel_only()
 test_example_application_xml()
+test_package_datasource_declarations()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
