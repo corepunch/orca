@@ -11,6 +11,11 @@
 extern struct Object* FS_LoadObject(const char* path);
 extern int f_msgSend(lua_State *L);
 
+static void read_struct_table(lua_State *L, int idx,
+                              struct StructDesc const *desc, void *valueptr);
+static struct Object *create_object_from_table(lua_State *L, int idx,
+                                               struct PropertyType const *prop);
+
 ORCA_API int
 parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
 {
@@ -90,7 +95,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
     if (lua_type(L, idx) != LUA_TTABLE)
       luaL_error(L, "Expected a table for array property %s", prop->Name);
     int numitems = (int)lua_rawlen(L, idx);
-    void *tmp = malloc(prop->DataSize * numitems);
+    void *tmp = calloc((size_t)numitems, prop->DataSize);
     int i = 0;
     lua_pushnil(L);
     while (lua_next(L, idx) != 0) {
@@ -103,17 +108,19 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
           memcpy((char*)tmp + i * prop->DataSize, luaL_checkudata(L, -1, prop->TypeString), prop->DataSize);
           break;
         case LUA_TTABLE:
-          if (luaL_getmetatable(L, prop->TypeString)) {
-            lua_pushvalue(L, -2);
-            if (lua_pcall(L, 1, 1, 0)) {
+          if (prop->DataType == kDataTypeStruct) {
+            struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+            if (!desc) {
               free(tmp);
-              luaL_error(L, "read_property array: %s", luaL_checkstring(L, -1));
+              luaL_error(L, "Struct '%s' not found for array property '%s'", prop->TypeString, prop->Name);
             }
-            memcpy((char*)tmp + i * prop->DataSize, luaL_checkudata(L, -1, prop->TypeString), prop->DataSize);
-            lua_pop(L, 1);
+            read_struct_table(L, -1, desc, (char*)tmp + i * prop->DataSize);
+          } else if (prop->DataType == kDataTypeObject) {
+            struct Object *obj = create_object_from_table(L, -1, prop);
+            memcpy((char*)tmp + i * prop->DataSize, &obj, sizeof(obj));
           } else {
             free(tmp);
-            luaL_error(L, "Expected userdata of type %s in array table for property %s", prop->TypeString, prop->Name);
+            luaL_error(L, "Unsupported table element for array property %s", prop->Name);
           }
           break;
         case LUA_TNUMBER:
@@ -168,7 +175,15 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
       }
       break;
     case kDataTypeStruct:
-      memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
+      if (lua_istable(L, idx)) {
+        struct StructDesc const *desc = OBJ_FindStructDesc(prop->TypeString);
+        if (!desc) {
+          luaL_error(L, "Struct '%s' not found for property '%s'", prop->TypeString, prop->Name);
+        }
+        read_struct_table(L, idx, desc, valueptr);
+      } else {
+        memcpy(valueptr, luaL_checkudata(L, idx, prop->TypeString), prop->DataSize);
+      }
       break;
     case kDataTypeObject:
       switch (lua_type(L, (idx = lua_absindex(L, idx)))) {
@@ -179,41 +194,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
           parse_property(luaL_checkstring(L, idx), prop, valueptr);
           break;
         case LUA_TTABLE:
-          {
-            struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
-            if (!cls) {
-              luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name);
-            }
-            struct Object *obj = OBJ_Create(cls->ClassID);
-            if (!obj) {
-              luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
-            }
-
-            int table_idx = lua_absindex(L, idx);
-            lua_pushnil(L);
-            while (lua_next(L, table_idx) != 0) {
-              if (lua_type(L, -2) == LUA_TSTRING) {
-                lpcString_t short_name = lua_tostring(L, -2);
-                struct Property *property = OBJ_FindShortProperty(obj, fnv1a32(short_name));
-                if (property) {
-                  char buf[MAX_PROPERTY_STRING] = {0};
-                  int luaX_readProperty(lua_State*, int, struct Property *);
-                  luaX_readProperty(L, -1, property);
-                  PROP_SetValue(property, buf);
-                  if (PROP_GetType(property) == kDataTypeString) {
-                    Con_Error("Double-check if it chrashes afterwards");
-                    free(*(char**)buf);
-                  }
-                } else if (lua_type(L, -1) == LUA_TSTRING &&
-                           (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
-                  OBJ_SetName(obj, lua_tostring(L, -1));
-                }
-              }
-              lua_pop(L, 1); // pop value, keep key for lua_next
-            }
-
-            *(struct Object **)valueptr = obj;
-          }
+          *(struct Object **)valueptr = create_object_from_table(L, idx, prop);
           break;
         default:
           luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
@@ -240,11 +221,82 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
       break;
   }
 }
+
+static void
+read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *valueptr)
+{
+  idx = lua_absindex(L, idx);
+  memset(valueptr, 0, desc->StructSize);
+  for (uint32_t i = 0; i < desc->NumProperties; i++) {
+    lua_getfield(L, idx, desc->Properties[i].Name);
+    read_property(L, -1, &desc->Properties[i], (char*)valueptr + desc->Properties[i].Offset);
+    lua_pop(L, 1);
+  }
+}
+
+static struct Object *
+create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
+{
+  struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
+  if (!cls) {
+    luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name);
+  }
+
+  struct Object *obj = OBJ_Create(cls->ClassID);
+  if (!obj) {
+    luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
+  }
+
+  int table_idx = lua_absindex(L, idx);
+  lua_pushnil(L);
+  while (lua_next(L, table_idx) != 0) {
+    if (lua_type(L, -2) == LUA_TSTRING) {
+      lpcString_t short_name = lua_tostring(L, -2);
+      struct Property *property = OBJ_FindShortProperty(obj, fnv1a32(short_name));
+      if (property) {
+        int luaX_readProperty(lua_State*, int, struct Property *);
+        luaX_readProperty(L, -1, property);
+      } else if (lua_type(L, -1) == LUA_TSTRING &&
+                 (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
+        OBJ_SetName(obj, lua_tostring(L, -1));
+      }
+    }
+    lua_pop(L, 1);
+  }
+
+  return obj;
+}
   
 ORCA_API int
 write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr)
 {
     // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
+    if (prop->IsArray) {
+      void *items = valueptr ? *(void *const*)valueptr : NULL;
+      int count = valueptr ? ((int const*)valueptr)[sizeof(void*)/sizeof(int)] : 0;
+      struct PropertyType elem = *prop;
+      elem.IsArray = FALSE;
+
+      lua_createtable(L, count, 0);
+      for (int i = 0; i < count; i++) {
+        void const *item = NULL;
+        switch (prop->DataType) {
+          case kDataTypeString:
+            item = &((char**)items)[i];
+            break;
+          case kDataTypeObject:
+            item = &((void**)items)[i];
+            break;
+          default:
+            item = (char*)items + ((size_t)i * prop->DataSize);
+            break;
+        }
+        write_property(L, &elem, item);
+        lua_rawseti(L, -2, i + 1);
+      }
+      return 1;
+    }
+
     switch (prop->DataType) {
       case kDataTypeBool:
         lua_pushboolean(L, *(bool*)valueptr);

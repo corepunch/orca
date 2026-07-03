@@ -39,6 +39,15 @@
         <field name="Value" type="string">The value associated with the key, such as a color code like "#1A1A28"</field>
       </fields>
     </struct>
+    <struct name="DataSource" sealed="true">
+      <summary>Datasource declaration from package.lua</summary>
+      <details>Defines a named datasource provider plus an open-ended provider parameter string. This keeps package.lua flexible while staying compatible with the current struct codegen layer.</details>
+      <fields>
+        <field name="Name" type="string">Project-local datasource name</field>
+        <field name="Type" type="string">Provider type name such as "Xml"</field>
+        <field name="Params" type="string">Provider-specific params encoded as a free-form string such as "Path=Example/Data/ApplicationData"</field>
+      </fields>
+    </struct>
   </structs>
   <classes>
     <class name="Workspace">
@@ -94,6 +103,7 @@
         <property name="ProjectReferences" type="ProjectReference" array="true"/>
         <property name="SystemMessages" type="SystemMessage" array="true"/>
         <property name="EnginePlugins" type="EnginePlugin" array="true"/>
+        <property name="DataSources" type="DataSource" array="true"/>
         <property name="AnimationClipLibrary" type="Library" pointer="true"/>
         <property name="ScreenLibrary" type="Library" pointer="true"/>
         <property name="MaterialTypeLibrary" type="Library" pointer="true"/>

@@ -41,6 +41,13 @@ SystemMessages = {
 	{ Name="WindowClosed", Command="return" },
 	{ Name="RequestReload", Command="window:refresh()" },
 }
+DataSources = {
+	{
+		Name = "ApplicationData",
+		Type = "Xml",
+		Params = "Path=Example/Data/ApplicationData",
+	},
+}
 EnginePlugins = {
 	{ Name="orca.UIKit" },
 }
