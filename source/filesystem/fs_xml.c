@@ -37,20 +37,34 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
   }
   if (!strcmp(name, "DataContextSource")) {
     const char *colon = strrchr(value, ':');
+    const char *ds_name = NULL;
+
     if (colon) {
+      // "path:child" or "name:child" — strip the child suffix for lookup
+      static char ds_buf[256];
       size_t pathLen = colon - value;
-      char path[256];
-      snprintf(path, sizeof(path), "%.*s", (int)pathLen, value);
-      struct Object *root = FS_LoadObject(path);
-      if (root) {
-        struct Object *child = OBJ_FindChild(root, colon + 1, FALSE);
+      if (pathLen >= sizeof(ds_buf)) pathLen = sizeof(ds_buf) - 1;
+      memcpy(ds_buf, value, pathLen);
+      ds_buf[pathLen] = '\0';
+      ds_name = ds_buf;
+    } else {
+      ds_name = value;
+    }
+
+    // Try datasource provider registry first
+    struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
+    if (!dataObj) {
+      // Fallback: treat as a direct file path (backward compatibility)
+      dataObj = FS_LoadObject(value);
+    }
+
+    if (dataObj) {
+      if (colon) {
+        struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
         if (child) {
           PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
         }
-      }
-    } else {
-      struct Object *dataObj = FS_LoadObject(value);
-      if (dataObj) {
+      } else {
         PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
       }
     }

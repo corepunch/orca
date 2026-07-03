@@ -12,7 +12,72 @@
 FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
 if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename[strlen(OBJ_GetName(ITER))] == '/')
 
+#define MAX_DATASOURCE_PROVIDERS 64
+#define MAX_DATASOURCE_ENTRIES  256
+
 static struct Object *workspace = NULL;
+
+// --- DataSource provider registry -------------------------------------------
+
+struct ds_provider {
+  const char *type_name;
+  struct Object *(*fetch)(const char *params);
+};
+
+struct ds_entry {
+  char name[MAX_NAMELEN];
+  char type[64];
+  char params[MAX_PROPERTY_STRING];
+};
+
+static struct ds_provider _ds_providers[MAX_DATASOURCE_PROVIDERS];
+static struct ds_entry    _ds_entries[MAX_DATASOURCE_ENTRIES];
+static int _ds_provider_count = 0;
+static int _ds_entry_count = 0;
+
+void
+FS_RegisterDataSourceProvider(const char *type_name,
+                             struct Object *(*fetch)(const char *params))
+{
+  if (_ds_provider_count >= MAX_DATASOURCE_PROVIDERS) {
+    Con_Error("No space to register datasource provider '%s'", type_name);
+    return;
+  }
+  _ds_providers[_ds_provider_count++] = (struct ds_provider){ type_name, fetch };
+}
+
+void
+FS_RegisterDataSource(const char *name, const char *type, const char *params)
+{
+  if (_ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
+    Con_Error("No space to register datasource '%s'", name);
+    return;
+  }
+  struct ds_entry *e = &_ds_entries[_ds_entry_count++];
+  strncpy(e->name, name, sizeof(e->name) - 1);
+  strncpy(e->type, type, sizeof(e->type) - 1);
+  strncpy(e->params, params, sizeof(e->params) - 1);
+}
+
+struct Object *
+FS_ResolveDataSource(const char *name, const char **out_params)
+{
+  for (int i = 0; i < _ds_entry_count; i++) {
+    if (strcmp(_ds_entries[i].name, name) == 0) {
+      const char *type = _ds_entries[i].type;
+      const char *params = _ds_entries[i].params;
+      for (int j = 0; j < _ds_provider_count; j++) {
+        if (strcmp(_ds_providers[j].type_name, type) == 0) {
+          if (out_params) *out_params = params;
+          return _ds_providers[j].fetch(params);
+        }
+      }
+      Con_Error("No provider registered for datasource type '%s'", type);
+      return NULL;
+    }
+  }
+  return NULL;
+}
 
 #define THEME_VALUE(KEY, VALUE) { KEY, VALUE }
 #define TAILWIND_TONES(NAME, C50, C100, C200, C300, C400, C500, C600, C700, C800, C900, C950) \
@@ -692,6 +757,12 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _RegisterProjectFonts(project, szDirname);
   _InitProjectRefences(L, project, szDirname);
 
+  FOR_LOOP(i, project->NumDataSources) {
+    FS_RegisterDataSource(project->DataSources[i].Name,
+                          project->DataSources[i].Type,
+                          project->DataSources[i].Params);
+  }
+
   lua_pop(L, 1);
 
   return CMP_GetObject(project);
@@ -737,6 +808,21 @@ _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, i
   }
   argv[argc] = NULL;  // NULL-terminate like main()'s argv
   return argc;
+}
+
+struct Object *
+_xml_ds_fetch(const char *params)
+{
+  if (!params || !*params) return NULL;
+  const char *p = strstr(params, "Path=");
+  if (!p) return NULL;
+  p += 5;
+  const char *end = strchr(p, '&');
+  size_t len = end ? (size_t)(end - p) : strlen(p);
+  char path[MAX_PROPERTY_STRING] = {0};
+  if (len >= sizeof(path)) len = sizeof(path) - 1;
+  memcpy(path, p, len);
+  return FS_LoadObject(path);
 }
 
 // Load object from a file, trying registered file loaders based on extension.
