@@ -272,6 +272,7 @@ int main(int argc, LPSTR *argv) {
 
     if (!g_args.test) {
       char const *bootstrap =
+        "require 'orca'\n"
         "local Application = require 'orca.core.application'\n"
         "local Startup = require 'orca.core.startup'\n"
         "local app = assert(Startup.open(Application, DATADIR))\n"
