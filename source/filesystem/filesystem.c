@@ -17,6 +17,8 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 
 static struct Object *workspace = NULL;
 
+static struct ds_schema *_ParseSchema(const char *schema_path);
+
 // --- DataSource provider registry -------------------------------------------
 
 struct ds_provider {
@@ -26,11 +28,23 @@ struct ds_provider {
   bool_t (*revert)(struct Object *root, const char *params);
 };
 
+struct ds_entity {
+  char name[64];
+  struct ds_column columns[64];
+  int num_columns;
+};
+
+struct ds_schema {
+  struct ds_entity entities[32];
+  int num_entities;
+};
+
 struct ds_session {
   char name[MAX_NAMELEN];
   char params[MAX_PROPERTY_STRING];
   struct Object *root;
   bool_t dirty;
+  struct ds_schema *schema;
 };
 static struct ds_session _ds_sessions[MAX_DATASOURCE_ENTRIES];
 static int _ds_session_count = 0;
@@ -90,7 +104,8 @@ FS_RegisterDataSource(const char *name, const char *type, const char *params)
 
 void
 FS_RegisterProjectDataSource(struct Object *project, const char *name,
-                             const char *type, const char *params)
+                             const char *type, const char *params,
+                             const char *schema)
 {
   if (_ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
     Con_Error("No space to register datasource '%s'", name);
@@ -99,7 +114,11 @@ FS_RegisterProjectDataSource(struct Object *project, const char *name,
   struct ds_entry *e = &_ds_entries[_ds_entry_count++];
   strncpy(e->name, name, sizeof(e->name) - 1);
   strncpy(e->type, type, sizeof(e->type) - 1);
-  strncpy(e->params, params, sizeof(e->params) - 1);
+  if (schema && schema[0]) {
+    snprintf(e->params, sizeof(e->params), "%s&Schema=%s", params, schema);
+  } else {
+    strncpy(e->params, params, sizeof(e->params) - 1);
+  }
   e->project = project;
   e->generation = _ds_generation;
 }
@@ -138,6 +157,8 @@ FS_ClearProjectDataSources(struct Object *project)
         _ds_sessions[s_write] = _ds_sessions[s_read];
       }
       s_write++;
+    } else if (_ds_sessions[s_read].schema) {
+      free(_ds_sessions[s_read].schema);
     }
   }
   _ds_session_count = s_write;
@@ -146,8 +167,44 @@ FS_ClearProjectDataSources(struct Object *project)
 void
 FS_ClearAllDataSources(void)
 {
+  for (int i = 0; i < _ds_session_count; i++) {
+    if (_ds_sessions[i].schema) {
+      free(_ds_sessions[i].schema);
+    }
+  }
   _ds_entry_count = 0;
+  _ds_session_count = 0;
   _ds_generation++;
+}
+
+struct ds_schema const *
+FS_GetDataSourceSchema(const char *name)
+{
+  for (int i = 0; i < _ds_session_count; i++) {
+    if (_ds_sessions[i].name[0] &&
+        strcmp(_ds_sessions[i].name, name) == 0) {
+      return _ds_sessions[i].schema;
+    }
+  }
+  return NULL;
+}
+
+const struct ds_column *
+FS_FindSchemaColumn(const struct ds_schema *schema, const char *entity,
+                    const char *column)
+{
+  if (!schema || !entity || !column) return NULL;
+  for (int e = 0; e < schema->num_entities; e++) {
+    if (strcmp(schema->entities[e].name, entity) == 0) {
+      for (int c = 0; c < schema->entities[e].num_columns; c++) {
+        if (strcmp(schema->entities[e].columns[c].name, column) == 0) {
+          return &schema->entities[e].columns[c];
+        }
+      }
+      return NULL;
+    }
+  }
+  return NULL;
 }
 
 struct ds_session *
@@ -195,7 +252,22 @@ FS_ResolveDataSource(const char *name, const char **out_params)
           if (out_params) *out_params = params;
           struct Object *root = _ds_providers[j].fetch(params);
           session = _FindOrCreateSession(name, params);
-          if (session) session->root = root;
+          if (session) {
+            session->root = root;
+            // Parse schema from params if not already loaded
+            if (!session->schema) {
+              const char *sp = strstr(params, "Schema=");
+              if (sp) {
+                sp += 7;
+                const char *end = strchr(sp, '&');
+                size_t slen = end ? (size_t)(end - sp) : strlen(sp);
+                char spath[MAX_PROPERTY_STRING] = {0};
+                if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
+                memcpy(spath, sp, slen);
+                session->schema = _ParseSchema(spath);
+              }
+            }
+          }
           return root;
         }
       }
@@ -952,7 +1024,8 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
     FS_RegisterProjectDataSource(CMP_GetObject(project),
                                  project->DataSources[i].Name,
                                  project->DataSources[i].Type,
-                                 project->DataSources[i].Params);
+                                 project->DataSources[i].Params,
+                                 project->DataSources[i].Schema);
   }
 
   lua_pop(L, 1);
@@ -1000,6 +1073,60 @@ _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, i
   }
   argv[argc] = NULL;  // NULL-terminate like main()'s argv
   return argc;
+}
+
+static struct ds_schema *
+_ParseSchema(const char *schema_path)
+{
+  if (!schema_path || !*schema_path) return NULL;
+
+  xmlDocPtr doc = xmlParseFile(schema_path);
+  if (!doc) {
+    Con_Error("Failed to parse schema '%s'", schema_path);
+    return NULL;
+  }
+
+  xmlNodePtr root = xmlDocGetRootElement(doc);
+  if (!root || strcmp((const char*)root->name, "Schema") != 0) {
+    xmlFreeDoc(doc);
+    return NULL;
+  }
+
+  struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
+  if (!schema) { xmlFreeDoc(doc); return NULL; }
+
+  for (xmlNodePtr entity_node = root->children; entity_node; entity_node = entity_node->next) {
+    if (entity_node->type != XML_ELEMENT_NODE) continue;
+    if (strcmp((const char*)entity_node->name, "Entity") != 0) continue;
+
+    xmlChar *ename = xmlGetProp(entity_node, XMLSTR("Name"));
+    if (!ename) continue;
+    if (schema->num_entities >= 32) { xmlFree(ename); continue; }
+
+    struct ds_entity *entity = &schema->entities[schema->num_entities++];
+    strncpy(entity->name, (const char*)ename, sizeof(entity->name) - 1);
+    xmlFree(ename);
+
+    for (xmlNodePtr col_node = entity_node->children; col_node; col_node = col_node->next) {
+      if (col_node->type != XML_ELEMENT_NODE) continue;
+      if (strcmp((const char*)col_node->name, "Column") != 0) continue;
+      if (entity->num_columns >= 64) continue;
+
+      xmlChar *cname = xmlGetProp(col_node, XMLSTR("Name"));
+      xmlChar *ctype = xmlGetProp(col_node, XMLSTR("Type"));
+      xmlChar *ckey = xmlGetProp(col_node, XMLSTR("Key"));
+      if (!cname) { xmlFree(ctype); xmlFree(ckey); continue; }
+
+      struct ds_column *col = &entity->columns[entity->num_columns++];
+      strncpy(col->name, (const char*)cname, sizeof(col->name) - 1);
+      if (ctype) strncpy(col->type, (const char*)ctype, sizeof(col->type) - 1);
+      col->is_key = ckey && strcasecmp((const char*)ckey, "true") == 0;
+      xmlFree(cname); xmlFree(ctype); xmlFree(ckey);
+    }
+  }
+
+  xmlFreeDoc(doc);
+  return schema;
 }
 
 struct Object *

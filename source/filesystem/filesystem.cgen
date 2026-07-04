@@ -46,6 +46,7 @@
         <field name="Name" type="string">Project-local datasource name</field>
         <field name="Type" type="string">Provider type name such as "Xml"</field>
         <field name="Params" type="string">Provider-specific params encoded as a free-form string such as "Path=Example/Data/ApplicationData"</field>
+        <field name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</field>
       </fields>
     </struct>
   </structs>

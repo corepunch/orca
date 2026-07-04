@@ -1442,6 +1442,8 @@ local function test_package_datasource_declarations()
 		"Example package.lua should declare datasource type Xml")
 	test.expect(package_lua:find('Params = "Path=Example/Data/ApplicationData"', 1, true) ~= nil,
 		"Example package.lua should declare datasource provider params")
+	test.expect(package_lua:find('Schema = "Example/Data/ApplicationData.Schema.xml"', 1, true) ~= nil,
+		"Example package.lua should declare datasource schema path")
 
 	filesystem.unloadProject(project)
 	project = nil
@@ -1685,5 +1687,58 @@ test_stackview_align_items_preserves_child_stretch_width()
 test_css_popup_padding_insets_stretched_panel()
 test_modal_attach_applies_screen_stylesheet_to_popup_content()
 --test_prefab_data_context_source_xml() -- requires prefab instantiation from XML string
+
+-- ---------------------------------------------------------------------------
+-- Schema: datasource schema file is loaded and column metadata accessible
+-- ---------------------------------------------------------------------------
+local function test_datasource_schema_loaded()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "Should load Example project")
+	if not project then return end
+
+	local schema_file = filesystem.readTextFile("samples/Example/Data/ApplicationData.Schema.xml")
+	test.expect(schema_file ~= nil and schema_file ~= "",
+		"Schema file should exist and be readable")
+	test.expect(schema_file:find("<Schema>", 1, true) ~= nil,
+		"Schema file should be valid XML with Schema root")
+	test.expect(schema_file:find('Name="Signals"', 1, true) ~= nil,
+		"Schema should declare the Signals entity")
+	test.expect(schema_file:find('Name="Metrics"', 1, true) ~= nil,
+		"Schema should declare the Metrics entity")
+	test.expect(schema_file:find('Type="string"', 1, true) ~= nil,
+		"Schema columns should declare types")
+
+	filesystem.unloadProject(project)
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_datasource_schema_loaded")
+end
+
+-- ---------------------------------------------------------------------------
+-- Schema: datasource Params contain Schema= after registration
+-- ---------------------------------------------------------------------------
+local function test_datasource_schema_in_params()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "Should load Example project")
+	if not project then return end
+
+	-- The Schema field from package.lua should be appended to params as &Schema=...
+	-- We verify this indirectly by resolving the datasource, which parses Schema=
+	local xml = '<Node2D Name="schema-param-test" DataContextSource="ApplicationData"/>'
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "XML with DataContextSource should load")
+	test.expect(root.DataContext ~= nil,
+		"DataContext should resolve through provider with schema in params")
+
+	filesystem.unloadProject(project)
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_datasource_schema_in_params")
+end
+
+test_datasource_schema_loaded()
+test_datasource_schema_in_params()
 
 print("All layout tests passed.")

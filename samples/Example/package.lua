@@ -46,6 +46,7 @@ DataSources = {
 		Name = "ApplicationData",
 		Type = "Xml",
 		Params = "Path=Example/Data/ApplicationData",
+		Schema = "Example/Data/ApplicationData.Schema.xml",
 	},
 }
 EnginePlugins = {

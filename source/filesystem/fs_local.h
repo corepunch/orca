@@ -5,6 +5,13 @@
 
 #include <filesystem/filesystem.h>
 
+struct ds_schema;
+struct ds_column {
+  char name[64];
+  char type[32];
+  bool_t is_key;
+};
+
 struct _xmlNode*
 __xmlNewChild(struct _xmlNode* p, lpcString_t name, lpcString_t args[]);
 
@@ -47,12 +54,23 @@ FS_RegisterDataProvider(const char *type_name,
 void
 FS_RegisterDataSource(const char *name, const char *type, const char *params);
 
+struct ds_schema;
+struct ds_column;
+
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params);
 
+struct ds_schema const *
+FS_GetDataSourceSchema(const char *name);
+
+const struct ds_column *
+FS_FindSchemaColumn(const struct ds_schema *schema, const char *entity,
+                    const char *column);
+
 void
 FS_RegisterProjectDataSource(struct Object *project, const char *name,
-                             const char *type, const char *params);
+                             const char *type, const char *params,
+                             const char *schema);
 
 void
 FS_ClearProjectDataSources(struct Object *project);
