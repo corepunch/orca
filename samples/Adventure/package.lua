@@ -20,17 +20,9 @@ SystemMessages = {
 	{ Name = "WindowClosed", Command = "return" },
 	{ Name = "RequestReload", Command = "window:refresh()" },
 }
-DataSources = {
-	{
-		Name = "Games",
-		Type = "Xml",
-		Params = "Path=Adventure/Data/Games",
-	},
-	{
-		Name = "Tabs",
-		Type = "Xml",
-		Params = "Path=Adventure/Data/Tabs",
-	},
+DataSourceLibrary = {
+	XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" },
+	XmlDataSource { Name = "Tabs", Source = "Adventure/Data/Tabs" },
 }
 EnginePlugins = {
 	{ Name = "orca.UIKit" },

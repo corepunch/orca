@@ -383,6 +383,18 @@ HANDLER(Project, Object, Release) {
   return TRUE;
 }
 
+// XmlDataSource_Start — open the datasource session and load its XML source.
+// Registration with the owning project happens in FS_LoadBundle; by the time
+// this fires from there the entry exists, so resolving the datasource by name
+// loads (and caches) its backing object tree.
+HANDLER(XmlDataSource, Object, Start) {
+  lpcString_t name = OBJ_GetName(hObject);
+  if (name && *name) {
+    FS_ResolveDataSource(name, NULL);
+  }
+  return TRUE;
+}
+
 int luaopen_io_open_override(lua_State* L);
 
 static struct Object* _xml_file_loader(int argc, const char* argv[]) {

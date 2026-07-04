@@ -270,6 +270,18 @@ int OBJ_GetProperty(lua_State* L, struct Object *self, lpcString_t name)
     luaX_pushProperty(L, property);
     return 1;
   } else {
+    /* Fall back to a registered class constructor so declarative environments
+     * (e.g. package.lua) can build objects like XmlDataSource { ... }. */
+    lua_getfield(L, LUA_REGISTRYINDEX, name);
+    if (lua_type(L, -1) == LUA_TTABLE) {
+      lua_getfield(L, -1, "__nativeclass");
+      int is_class = !lua_isnil(L, -1);
+      lua_pop(L, 1);
+      if (is_class) {
+        return 1;
+      }
+    }
+    lua_pop(L, 1);
     lua_pushnil(L);
     return 1;
   }

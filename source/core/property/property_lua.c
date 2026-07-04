@@ -275,6 +275,12 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
                  (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
         OBJ_SetName(obj, lua_tostring(L, -1));
       }
+    } else if (lua_type(L, -2) == LUA_TNUMBER &&
+               lua_type(L, -1) == LUA_TUSERDATA) {
+      /* Array-part entries that are constructed objects become children,
+       * e.g. DataSourceLibrary = { XmlDataSource { ... } }. */
+      struct Object *child = luaX_checkObject(L, -1);
+      if (child) OBJ_AddChild(obj, child);
     }
     lua_pop(L, 1);
   }

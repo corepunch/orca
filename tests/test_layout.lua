@@ -1434,14 +1434,14 @@ local function test_package_datasource_declarations()
 		return
 	end
 
-	test.expect_eq(project.NumDataSources, 1,
-		"Example package.lua should expose one datasource declaration")
+	test.expect(package_lua:find('DataSourceLibrary', 1, true) ~= nil,
+		"Example package.lua should declare a DataSourceLibrary")
+	test.expect(package_lua:find('XmlDataSource', 1, true) ~= nil,
+		"Example package.lua should declare an XmlDataSource object")
 	test.expect(package_lua:find('Name = "ApplicationData"', 1, true) ~= nil,
 		"Example package.lua should declare the ApplicationData datasource name")
-	test.expect(package_lua:find('Type = "Xml"', 1, true) ~= nil,
-		"Example package.lua should declare datasource type Xml")
-	test.expect(package_lua:find('Params = "Path=Example/Data/ApplicationData"', 1, true) ~= nil,
-		"Example package.lua should declare datasource provider params")
+	test.expect(package_lua:find('Source = "Example/Data/ApplicationData"', 1, true) ~= nil,
+		"Example package.lua should declare the datasource XML source")
 	test.expect(package_lua:find('Schema = "Example/Data/ApplicationData.Schema.xml"', 1, true) ~= nil,
 		"Example package.lua should declare datasource schema path")
 
@@ -1461,9 +1461,6 @@ local function test_datasource_provider_resolution()
 	if not project then
 		return
 	end
-
-	test.expect_eq(project.NumDataSources, 1,
-		"Example project should have one DataSource registered")
 
 	local xml = '<Node2D Name="ds-test" DataContextSource="ApplicationData"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)

@@ -41,11 +41,10 @@ SystemMessages = {
 	{ Name="WindowClosed", Command="return" },
 	{ Name="RequestReload", Command="window:refresh()" },
 }
-DataSources = {
-	{
+DataSourceLibrary = {
+	XmlDataSource {
 		Name = "ApplicationData",
-		Type = "Xml",
-		Params = "Path=Example/Data/ApplicationData",
+		Source = "Example/Data/ApplicationData",
 		Schema = "Example/Data/ApplicationData.Schema.xml",
 	},
 }
