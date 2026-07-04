@@ -21,8 +21,8 @@ SystemMessages = {
 	{ Name = "RequestReload", Command = "window:refresh()" },
 }
 DataSourceLibrary = {
-	XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" },
-	XmlDataSource { Name = "Tabs", Source = "Adventure/Data/Tabs" },
+	require 'orca.filesystem.XmlDataSource' { Name = "Games", Source = "Adventure/Data/Games" },
+	require 'orca.filesystem.XmlDataSource' { Name = "Tabs", Source = "Adventure/Data/Tabs" },
 }
 EnginePlugins = {
 	{ Name = "orca.UIKit" },

@@ -41,6 +41,7 @@ SystemMessages = {
 	{ Name="WindowClosed", Command="return" },
 	{ Name="RequestReload", Command="window:refresh()" },
 }
+local XmlDataSource = require 'orca.filesystem.XmlDataSource'
 DataSourceLibrary = {
 	XmlDataSource {
 		Name = "ApplicationData",

@@ -451,6 +451,44 @@ register_shared_fonts(lua_State* L)
   }
 }
 
+// Loader returned by f_find_class: yields the pre-resolved class value.
+static int f_class_loader(lua_State* L)
+{
+  lua_pushvalue(L, lua_upvalueindex(1));
+  return 1;
+}
+
+// package.searchers entry: resolves "orca.<module>.<Class>" to the class field
+// exported by "orca.<module>". Lets declarative files do
+// `require 'orca.filesystem.XmlDataSource' { ... }`.
+static int f_find_class(lua_State* L)
+{
+  lpcString_t name = luaL_checkstring(L, 1);
+  const char* dot = strrchr(name, '.');
+  // Only handle dotted orca.* names whose final segment looks like a class.
+  if (strncmp(name, "orca.", 5) != 0 || !dot || dot == name ||
+      !(dot[1] >= 'A' && dot[1] <= 'Z')) {
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_getglobal(L, "require");
+  lua_pushlstring(L, name, (size_t)(dot - name));   // parent module name
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+    lua_pop(L, 1);
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_getfield(L, -1, dot + 1);                       // parent[Class]
+  lua_remove(L, -2);
+  if (lua_isnil(L, -1)) {
+    lua_pop(L, 1);
+    lua_pushnil(L);
+    return 1;
+  }
+  lua_pushcclosure(L, f_class_loader, 1);            // loader carrying the class
+  return 1;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(".xml", _xml_file_loader);
@@ -459,6 +497,9 @@ void on_filesystem_module_registered(lua_State* L)
 
   lua_register(L, "fs_findmodule", f_find_module);
   luaL_dostring(L, "table.insert(package.searchers, fs_findmodule)");
+
+  lua_register(L, "fs_findclass", f_find_class);
+  luaL_dostring(L, "table.insert(package.searchers, fs_findclass)");
 
   luaL_newmetatable(L, "DirectoryIterator");
   lua_pushcfunction(L, l_directory_gc);
