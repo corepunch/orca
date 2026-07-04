@@ -294,7 +294,7 @@ write_property(lua_State *L, struct PropertyType const* prop, void const* valuep
     // void const* valueptr = ((char const*)struct_ptr + prop->Offset);
     if (prop->IsArray) {
       void *items = valueptr ? *(void *const*)valueptr : NULL;
-      int count = valueptr ? ((int const*)valueptr)[sizeof(void*)/sizeof(int)] : 0;
+      int count = (valueptr && items) ? ((int const*)valueptr)[sizeof(void*)/sizeof(int)] : 0;
       struct PropertyType elem = *prop;
       elem.IsArray = FALSE;
 
