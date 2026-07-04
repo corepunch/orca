@@ -9,6 +9,7 @@
 
 // Forward declaration — avoids a circular include (filesystem.h → core.h → here)
 extern struct Object* FS_LoadObject(const char* path);
+extern struct Object* FS_ResolveDataSource(const char* name, const char** out_params);
 extern int f_msgSend(lua_State *L);
 
 static void read_struct_table(lua_State *L, int idx,
@@ -57,16 +58,30 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
         if (font_path) path = font_path;
       }
       // Support "file:child" colon syntax (e.g. "Data/File:ChildName")
+      // or "DataSourceName:ChildName" with provider resolution
       const char *colon = strrchr(path, ':');
       struct Object *loaded = NULL;
       if (colon) {
         size_t pathLen = colon - path;
-        char filePath[256];
-        snprintf(filePath, sizeof(filePath), "%.*s", (int)pathLen, path);
-        struct Object *root = FS_LoadObject(filePath);
-        if (root) loaded = OBJ_FindChild(root, colon + 1, FALSE);
+        char dsName[256];
+        snprintf(dsName, sizeof(dsName), "%.*s", (int)pathLen, path);
+        // Try provider registry first
+        loaded = FS_ResolveDataSource(dsName, NULL);
+        if (loaded) {
+          loaded = OBJ_FindChild(loaded, colon + 1, FALSE);
+        } else {
+          // Fallback: direct file path (deprecated)
+          Con_Warning("Property '%s' uses direct file path '%s'; migrate to datasource name",
+                      prop->Name, dsName);
+          struct Object *root = FS_LoadObject(dsName);
+          if (root) loaded = OBJ_FindChild(root, colon + 1, FALSE);
+        }
       } else {
-        loaded = FS_LoadObject(path);
+        // Try provider registry first, then direct file path
+        loaded = FS_ResolveDataSource(path, NULL);
+        if (!loaded) {
+          loaded = FS_LoadObject(path);
+        }
       }
       if (!loaded) {
         Con_Error("Failed to load object '%s' for property '%s'", str, prop->Name);

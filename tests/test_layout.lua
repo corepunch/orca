@@ -1376,7 +1376,7 @@ local function test_example_application_xml()
 	test.expect(control_muted ~= nil, "Example package.lua should define control-muted")
 	test.expect(deploy_command_link ~= nil, "Deploy tab should include a desktop build callout")
 	test.expect(deploy_command_value ~= nil, "Deploy tab should show the desktop build command")
-	test.expect(xml:find('ItemsSource="Example/Data/ApplicationData:DeployImages"', 1, true) ~= nil,
+	test.expect(xml:find('ItemsSource="ApplicationData:DeployImages"', 1, true) ~= nil,
 		"Deploy images should be sourced from ApplicationData:DeployImages")
 	test.expect(xml:find('ItemTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
 		"Deploy images GridBox should use ImageCaptionCard template")

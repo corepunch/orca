@@ -54,7 +54,9 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     // Try datasource provider registry first
     struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
     if (!dataObj) {
-      // Fallback: treat as a direct file path (backward compatibility)
+      // Fallback: treat as a direct file path (deprecated)
+      Con_Warning("DataContextSource='%s' uses direct file path; migrate to datasource name (e.g. '%s')",
+                  value, ds_name);
       dataObj = FS_LoadObject(value);
     }
 

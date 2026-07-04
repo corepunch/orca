@@ -2,6 +2,6 @@
 <!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <StackView Name="GameList" class="page-content">
   <GridBox Name="GameListGrid" Columns="auto" class="game-list"
-    ItemsSource="Adventure/Data/Games:Catalog"
+    ItemsSource="Games:Catalog"
     ItemTemplate="Adventure/Prefabs/GameCard"/>
 </StackView>

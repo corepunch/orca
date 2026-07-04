@@ -12,7 +12,7 @@
 			<Page Name="settings" Source="Adventure/Pages/Settings.xml"/>
 		</PageHost>
 		<ListBox Name="Footer" class="footer"
-			ItemsSource="Adventure/Data/Tabs"
+			ItemsSource="Tabs"
 			ItemTemplate="Adventure/Prefabs/TabItem"
 			ValueProperty="Key"
 			SelectedValue="games"/>
