@@ -350,6 +350,16 @@ int f_init(lua_State* L)
   luaX_pushObject(L, FS_LoadBundle(L, luaL_checkstring(L, 1)));
   return 1;
 }
+
+static int f_unloadProject(lua_State* L)
+{
+  struct Object* project = luaX_checkObject(L, 1);
+  if (!project) return 0;
+  FS_ClearProjectDataSources(project);
+  OBJ_Clear(project);
+  OBJ_RemoveFromParent(project);
+  return 0;
+}
 //
 //bool_t FS_HasChangedFiles(void) {
 //  static int changes_counter = 0;
@@ -364,7 +374,12 @@ static lua_State *global_L;
 
 // Project_Start
 HANDLER(Project, Object, Start) {
+  return TRUE;
+}
 
+// Project_Release — clean up datasource entries owned by this project
+HANDLER(Project, Object, Release) {
+  FS_ClearProjectDataSources(hObject);
   return TRUE;
 }
 
@@ -427,7 +442,7 @@ register_shared_fonts(lua_State* L)
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(".xml", _xml_file_loader);
-  FS_RegisterDataSourceProvider("Xml", _xml_ds_fetch);
+  FS_RegisterDataProvider("Xml", _xml_ds_fetch, _xml_ds_save, _xml_ds_revert);
   register_shared_fonts(L);
 
   lua_register(L, "fs_findmodule", f_find_module);
@@ -451,6 +466,9 @@ void on_filesystem_module_registered(lua_State* L)
 
   lua_pushcfunction(L, f_init);
   lua_setfield(L, -2, "init");
+
+  lua_pushcfunction(L, f_unloadProject);
+  lua_setfield(L, -2, "unloadProject");
 
   luaopen_orca_pipe(L);
   lua_setfield(L, -2, "pipe");

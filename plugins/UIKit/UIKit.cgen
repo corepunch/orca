@@ -727,6 +727,7 @@
         <handle message="Node.HitTest"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
+        <handle message="Screen.SaveChanges"/>
         <handle message="Window.Resized"/>
         <handle message="Window.Paint"/>
       </handles>
@@ -773,6 +774,10 @@
           <fields>
             <field name="Target" type="Object" pointer="true">Popup object to present modally.</field>
           </fields>
+        </message>
+        <message name="SaveChanges">
+          <summary>Persists all dirty datasource changes for this screen's project.</summary>
+          <details>Sends DataProvider.SaveChanges to every dirty datasource session. The screen traverses its provider sessions and saves each one that has pending changes.</details>
         </message>
       </messages>
     </class>

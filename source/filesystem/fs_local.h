@@ -39,12 +39,46 @@ FS_RegisterDataSourceProvider(const char *type_name,
                              struct Object *(*fetch)(const char *params));
 
 void
+FS_RegisterDataProvider(const char *type_name,
+                        struct Object *(*fetch)(const char *params),
+                        bool_t (*save)(struct Object *root, const char *params),
+                        bool_t (*revert)(struct Object *root, const char *params));
+
+void
 FS_RegisterDataSource(const char *name, const char *type, const char *params);
 
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params);
 
+void
+FS_RegisterProjectDataSource(struct Object *project, const char *name,
+                             const char *type, const char *params);
+
+void
+FS_ClearProjectDataSources(struct Object *project);
+
+void
+FS_ClearAllDataSources(void);
+
+void
+FS_MarkDataSourceDirty(const char *name);
+
+bool_t
+FS_IsDataSourceDirty(const char *name);
+
+bool_t
+FS_SaveDataSource(const char *name);
+
+bool_t
+FS_RevertDataSource(const char *name);
+
 struct Object *
 _xml_ds_fetch(const char *params);
+
+bool_t
+_xml_ds_save(struct Object *root, const char *params);
+
+bool_t
+_xml_ds_revert(struct Object *root, const char *params);
 
 #endif

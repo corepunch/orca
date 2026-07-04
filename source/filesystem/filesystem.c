@@ -22,18 +22,32 @@ static struct Object *workspace = NULL;
 struct ds_provider {
   const char *type_name;
   struct Object *(*fetch)(const char *params);
+  bool_t (*save)(struct Object *root, const char *params);
+  bool_t (*revert)(struct Object *root, const char *params);
 };
+
+struct ds_session {
+  char name[MAX_NAMELEN];
+  char params[MAX_PROPERTY_STRING];
+  struct Object *root;
+  bool_t dirty;
+};
+static struct ds_session _ds_sessions[MAX_DATASOURCE_ENTRIES];
+static int _ds_session_count = 0;
 
 struct ds_entry {
   char name[MAX_NAMELEN];
   char type[64];
   char params[MAX_PROPERTY_STRING];
+  struct Object *project;   /* owning project object, NULL = global/orphaned */
+  uint32_t generation;
 };
 
 static struct ds_provider _ds_providers[MAX_DATASOURCE_PROVIDERS];
 static struct ds_entry    _ds_entries[MAX_DATASOURCE_ENTRIES];
 static int _ds_provider_count = 0;
 static int _ds_entry_count = 0;
+static uint32_t _ds_generation = 1;
 
 void
 FS_RegisterDataSourceProvider(const char *type_name,
@@ -43,7 +57,20 @@ FS_RegisterDataSourceProvider(const char *type_name,
     Con_Error("No space to register datasource provider '%s'", type_name);
     return;
   }
-  _ds_providers[_ds_provider_count++] = (struct ds_provider){ type_name, fetch };
+  _ds_providers[_ds_provider_count++] = (struct ds_provider){ type_name, fetch, NULL, NULL };
+}
+
+void
+FS_RegisterDataProvider(const char *type_name,
+                        struct Object *(*fetch)(const char *params),
+                        bool_t (*save)(struct Object *root, const char *params),
+                        bool_t (*revert)(struct Object *root, const char *params))
+{
+  if (_ds_provider_count >= MAX_DATASOURCE_PROVIDERS) {
+    Con_Error("No space to register datasource provider '%s'", type_name);
+    return;
+  }
+  _ds_providers[_ds_provider_count++] = (struct ds_provider){ type_name, fetch, save, revert };
 }
 
 void
@@ -57,19 +84,119 @@ FS_RegisterDataSource(const char *name, const char *type, const char *params)
   strncpy(e->name, name, sizeof(e->name) - 1);
   strncpy(e->type, type, sizeof(e->type) - 1);
   strncpy(e->params, params, sizeof(e->params) - 1);
+  e->project = 0;
+  e->generation = _ds_generation;
+}
+
+void
+FS_RegisterProjectDataSource(struct Object *project, const char *name,
+                             const char *type, const char *params)
+{
+  if (_ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
+    Con_Error("No space to register datasource '%s'", name);
+    return;
+  }
+  struct ds_entry *e = &_ds_entries[_ds_entry_count++];
+  strncpy(e->name, name, sizeof(e->name) - 1);
+  strncpy(e->type, type, sizeof(e->type) - 1);
+  strncpy(e->params, params, sizeof(e->params) - 1);
+  e->project = project;
+  e->generation = _ds_generation;
+}
+
+void
+FS_ClearProjectDataSources(struct Object *project)
+{
+  int write = 0;
+  for (int read = 0; read < _ds_entry_count; read++) {
+    if (_ds_entries[read].project == project) {
+      continue;
+    }
+    if (write != read) {
+      _ds_entries[write] = _ds_entries[read];
+    }
+    write++;
+  }
+  if (write < _ds_entry_count) {
+    _ds_entry_count = write;
+    _ds_generation++;
+  }
+
+  // Invalidate sessions that no longer have a matching entry
+  int s_write = 0;
+  for (int s_read = 0; s_read < _ds_session_count; s_read++) {
+    bool_t found = FALSE;
+    for (int e = 0; e < _ds_entry_count; e++) {
+      if (_ds_entries[e].generation &&
+          strcmp(_ds_entries[e].name, _ds_sessions[s_read].name) == 0) {
+        found = TRUE;
+        break;
+      }
+    }
+    if (found) {
+      if (s_write != s_read) {
+        _ds_sessions[s_write] = _ds_sessions[s_read];
+      }
+      s_write++;
+    }
+  }
+  _ds_session_count = s_write;
+}
+
+void
+FS_ClearAllDataSources(void)
+{
+  _ds_entry_count = 0;
+  _ds_generation++;
+}
+
+struct ds_session *
+_FindSession(const char *name)
+{
+  for (int i = 0; i < _ds_session_count; i++) {
+    if (!_ds_sessions[i].name[0]) continue;
+    if (strcmp(_ds_sessions[i].name, name) == 0) {
+      return &_ds_sessions[i];
+    }
+  }
+  return NULL;
+}
+
+static struct ds_session *
+_FindOrCreateSession(const char *name, const char *params)
+{
+  struct ds_session *s = _FindSession(name);
+  if (s) return s;
+  if (_ds_session_count >= MAX_DATASOURCE_ENTRIES) return NULL;
+  s = &_ds_sessions[_ds_session_count++];
+  strncpy(s->name, name, sizeof(s->name) - 1);
+  strncpy(s->params, params, sizeof(s->params) - 1);
+  s->root = NULL;
+  s->dirty = FALSE;
+  return s;
 }
 
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params)
 {
+  struct ds_session *session = _FindSession(name);
+  if (session && session->root) {
+    if (out_params) *out_params = session->params;
+    return session->root;
+  }
+
   for (int i = 0; i < _ds_entry_count; i++) {
+    if (!_ds_entries[i].generation) continue;
     if (strcmp(_ds_entries[i].name, name) == 0) {
       const char *type = _ds_entries[i].type;
       const char *params = _ds_entries[i].params;
       for (int j = 0; j < _ds_provider_count; j++) {
         if (strcmp(_ds_providers[j].type_name, type) == 0) {
           if (out_params) *out_params = params;
-          return _ds_providers[j].fetch(params);
+          struct Object *root = _ds_providers[j].fetch(params);
+          session = _FindOrCreateSession(name, params);
+          if (session) session->root = root;
+          return root;
         }
       }
       Con_Error("No provider registered for datasource type '%s'", type);
@@ -77,6 +204,68 @@ FS_ResolveDataSource(const char *name, const char **out_params)
     }
   }
   return NULL;
+}
+
+void
+FS_MarkDataSourceDirty(const char *name)
+{
+  struct ds_session *s = _FindSession(name);
+  if (s) s->dirty = TRUE;
+}
+
+bool_t
+FS_IsDataSourceDirty(const char *name)
+{
+  struct ds_session *s = _FindSession(name);
+  return s ? s->dirty : FALSE;
+}
+
+bool_t
+FS_SaveDataSource(const char *name)
+{
+  struct ds_session *s = _FindSession(name);
+  if (!s || !s->dirty || !s->root) return FALSE;
+
+  for (int i = 0; i < _ds_entry_count; i++) {
+    if (!_ds_entries[i].generation) continue;
+    if (strcmp(_ds_entries[i].name, name) == 0) {
+      for (int j = 0; j < _ds_provider_count; j++) {
+        if (strcmp(_ds_providers[j].type_name, _ds_entries[i].type) == 0) {
+          if (_ds_providers[j].save) {
+            bool_t ok = _ds_providers[j].save(s->root, s->params);
+            if (ok) s->dirty = FALSE;
+            return ok;
+          }
+          return FALSE;
+        }
+      }
+    }
+  }
+  return FALSE;
+}
+
+bool_t
+FS_RevertDataSource(const char *name)
+{
+  struct ds_session *s = _FindSession(name);
+  if (!s || !s->dirty || !s->root) return FALSE;
+
+  for (int i = 0; i < _ds_entry_count; i++) {
+    if (!_ds_entries[i].generation) continue;
+    if (strcmp(_ds_entries[i].name, name) == 0) {
+      for (int j = 0; j < _ds_provider_count; j++) {
+        if (strcmp(_ds_providers[j].type_name, _ds_entries[i].type) == 0) {
+          if (_ds_providers[j].revert) {
+            bool_t ok = _ds_providers[j].revert(s->root, s->params);
+            if (ok) s->dirty = FALSE;
+            return ok;
+          }
+          return FALSE;
+        }
+      }
+    }
+  }
+  return FALSE;
 }
 
 #define THEME_VALUE(KEY, VALUE) { KEY, VALUE }
@@ -410,6 +599,8 @@ FS_JoinPaths(lpcString_t buffer, int32_t size, lpcString_t base, lpcString_t rel
 //}
 
 void FS_Shutdown(void) {
+  FS_ClearAllDataSources();
+  _ds_provider_count = 0;
   fprintf(stderr, "Shutting down filesystem\n");
 }
 
@@ -758,9 +949,10 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _InitProjectRefences(L, project, szDirname);
 
   FOR_LOOP(i, project->NumDataSources) {
-    FS_RegisterDataSource(project->DataSources[i].Name,
-                          project->DataSources[i].Type,
-                          project->DataSources[i].Params);
+    FS_RegisterProjectDataSource(CMP_GetObject(project),
+                                 project->DataSources[i].Name,
+                                 project->DataSources[i].Type,
+                                 project->DataSources[i].Params);
   }
 
   lua_pop(L, 1);
@@ -823,6 +1015,44 @@ _xml_ds_fetch(const char *params)
   if (len >= sizeof(path)) len = sizeof(path) - 1;
   memcpy(path, p, len);
   return FS_LoadObject(path);
+}
+
+bool_t
+_xml_ds_save(struct Object *root, const char *params)
+{
+  if (!root || !params || !*params) return FALSE;
+  const char *p = strstr(params, "Path=");
+  if (!p) return FALSE;
+  p += 5;
+  const char *end = strchr(p, '&');
+  size_t len = end ? (size_t)(end - p) : strlen(p);
+  char path[MAX_PROPERTY_STRING] = {0};
+  if (len >= sizeof(path)) len = sizeof(path) - 1;
+  memcpy(path, p, len);
+
+  const char *xml = FS_SerializeObjectToXmlString(root);
+  if (!xml) return FALSE;
+
+  FILE *fp = fopen(path, "w");
+  if (!fp) {
+    Con_Error("Failed to open '%s' for writing", path);
+    return FALSE;
+  }
+  fputs(xml, fp);
+  fclose(fp);
+  return TRUE;
+}
+
+bool_t
+_xml_ds_revert(struct Object *root, const char *params)
+{
+  // Reload marks the session clean; the caller should re-resolve
+  // to get the fresh root. The existing root is left intact.
+  (void)root;
+  if (!params || !*params) return FALSE;
+  const char *p = strstr(params, "Path=");
+  if (!p) return FALSE;
+  return TRUE;
 }
 
 // Load object from a file, trying registered file loaders based on extension.

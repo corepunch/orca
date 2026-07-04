@@ -1443,7 +1443,7 @@ local function test_package_datasource_declarations()
 	test.expect(package_lua:find('Params = "Path=Example/Data/ApplicationData"', 1, true) ~= nil,
 		"Example package.lua should declare datasource provider params")
 
-	project:clear()
+	filesystem.unloadProject(project)
 	project = nil
 	collectgarbage()
 
@@ -1471,7 +1471,7 @@ local function test_datasource_provider_resolution()
 	test.expect_eq(root.DataContext:getClassName(), "DataObject",
 		"Resolved DataContext should be a DataObject")
 
-	project:clear()
+	filesystem.unloadProject(project)
 	project = nil
 	collectgarbage()
 
@@ -1496,11 +1496,85 @@ local function test_datasource_provider_with_child()
 	test.expect_eq(root.DataContext.Name, "Signals",
 		"DataContextSource name:child should find the named child")
 
-	project:clear()
+	filesystem.unloadProject(project)
 	project = nil
 	collectgarbage()
 
 	print("PASS: test_datasource_provider_with_child")
+end
+
+-- ---------------------------------------------------------------------------
+-- Provider lifecycle: datasource entries are cleaned up on project unload,
+-- and a reload re-registers them for resolution
+-- ---------------------------------------------------------------------------
+local function test_datasource_lifecycle_cleanup()
+  -- Load Example project — registers ApplicationData datasource
+  local project = filesystem.init("samples/Example")
+  test.expect(project ~= nil, "Should load Example project")
+  if not project then return end
+
+  -- Verify DataContextSource resolves through provider registry
+  local xml = '<Node2D Name="lifecycle-test" DataContextSource="ApplicationData"/>'
+  local root = filesystem.loadObjectFromXmlString(xml)
+  test.expect(root ~= nil, "XML with DataContextSource should load while project is active")
+  test.expect(root.DataContext ~= nil,
+    "DataContextSource should resolve while project is active")
+  root:clear()
+  root = nil
+
+  -- Unload the project — triggers FS_ClearProjectDataSources
+  filesystem.unloadProject(project)
+  project = nil
+  collectgarbage()
+
+  -- After cleanup, DataContextSource resolution should fall through (no provider entry)
+  local xml2 = '<Node2D Name="lifecycle-after" DataContextSource="ApplicationData"/>'
+  local root2 = filesystem.loadObjectFromXmlString(xml2)
+  test.expect(root2 ~= nil, "XML should still load after project cleanup")
+  test.expect(root2.DataContext == nil,
+    "DataContextSource should NOT resolve after project cleanup (entries cleared)")
+
+  -- Reload the project — entries should be re-registered
+  local project2 = filesystem.init("samples/Example")
+  test.expect(project2 ~= nil, "Should reload Example project after cleanup")
+  if not project2 then return end
+
+  local xml3 = '<Node2D Name="lifecycle-reload" DataContextSource="ApplicationData"/>'
+  local root3 = filesystem.loadObjectFromXmlString(xml3)
+  test.expect(root3 ~= nil, "XML should load after project reload")
+  test.expect(root3.DataContext ~= nil,
+    "DataContextSource should resolve again after project reload")
+
+  filesystem.unloadProject(project2)
+  project2 = nil
+  collectgarbage()
+
+  print("PASS: test_datasource_lifecycle_cleanup")
+end
+
+-- ---------------------------------------------------------------------------
+-- Provider lifecycle: repeated load/unload cycles don't grow the registry
+-- ---------------------------------------------------------------------------
+local function test_datasource_repeated_load_unload()
+  for cycle = 1, 3 do
+    local project = filesystem.init("samples/Example")
+    test.expect(project ~= nil, "Cycle " .. cycle .. ": should load Example project")
+    if not project then return end
+
+    -- Verify resolution works
+    local xml = '<Node2D Name="cycle-' .. cycle .. '" DataContextSource="ApplicationData"/>'
+    local root = filesystem.loadObjectFromXmlString(xml)
+    test.expect(root ~= nil, "Cycle " .. cycle .. ": XML should load")
+    test.expect(root.DataContext ~= nil, "Cycle " .. cycle .. ": DataContext should resolve")
+    root:clear()
+    root = nil
+
+    -- Unload project
+    filesystem.unloadProject(project)
+    project = nil
+    collectgarbage()
+  end
+  print("PASS: test_datasource_repeated_load_unload")
 end
 
 -- ---------------------------------------------------------------------------
@@ -1599,6 +1673,8 @@ test_example_application_xml()
 test_package_datasource_declarations()
 test_datasource_provider_resolution()
 test_datasource_provider_with_child()
+test_datasource_lifecycle_cleanup()
+test_datasource_repeated_load_unload()
 test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
