@@ -383,15 +383,33 @@ HANDLER(Project, Object, Release) {
   return TRUE;
 }
 
-// XmlDataSource_Start — open the datasource session and load its XML source.
-// Registration with the owning project happens in FS_LoadBundle; by the time
-// this fires from there the entry exists, so resolving the datasource by name
-// loads (and caches) its backing object tree.
-HANDLER(XmlDataSource, Object, Start) {
-  lpcString_t name = OBJ_GetName(hObject);
-  if (name && *name) {
-    FS_ResolveDataSource(name, NULL);
+// XmlDataSource_Attached — register the datasource once its complete owning
+// hierarchy is attached, then open its session by loading the XML source.
+HANDLER(XmlDataSource, Object, Attached) {
+  struct DataSource *ds = GetDataSource(hObject);
+  struct Object *library = OBJ_GetParent(hObject);
+  struct Object *project = library ? OBJ_GetParent(library) : NULL;
+  if (!ds || !library || !project) {
+    return TRUE;
   }
+  lpcString_t project_name = OBJ_GetName(project);
+  lpcString_t library_name = OBJ_GetName(library);
+  lpcString_t name = OBJ_GetName(hObject);
+  if (!project_name || !*project_name || !library_name || !*library_name ||
+      !name || !*name) {
+    return TRUE;
+  }
+
+  char qualified[MAX_PROPERTY_STRING];
+  snprintf(qualified, sizeof(qualified), "%s/%s/%s",
+           project_name, library_name, name);
+
+  char params[MAX_PROPERTY_STRING];
+  snprintf(params, sizeof(params), "Path=%s",
+           pXmlDataSource->Source ? pXmlDataSource->Source : "");
+
+  FS_RegisterProjectDataSource(project, qualified, "Xml", params, ds->Schema);
+  FS_ResolveDataSource(qualified, NULL);
   return TRUE;
 }
 

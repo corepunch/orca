@@ -40,7 +40,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     const char *ds_name = NULL;
 
     if (colon) {
-      // "path:child" or "name:child" — strip the child suffix for lookup
+      // "Project/DataSourceLibrary/Name:child" — strip the child suffix
       static char ds_buf[256];
       size_t pathLen = colon - value;
       if (pathLen >= sizeof(ds_buf)) pathLen = sizeof(ds_buf) - 1;
@@ -51,7 +51,9 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       ds_name = value;
     }
 
-    // Try datasource provider registry first
+    // Datasources are referenced by their fully qualified
+    // "Project/Library/Name" path. Keep direct file paths as a deprecated
+    // compatibility fallback.
     struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
     if (!dataObj) {
       // Fallback: treat as a direct file path (deprecated)
@@ -60,15 +62,13 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       dataObj = FS_LoadObject(ds_name);
     }
 
-    if (dataObj) {
-      if (colon) {
-        struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
-        if (child) {
-          PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
-        }
-      } else {
-        PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
+    if (colon) {
+      struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
+      if (child) {
+        PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
       }
+    } else {
+      PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
     }
     return TRUE;
   }
@@ -491,4 +491,3 @@ FS_LoadObjectFromXmlString(lpcString_t xml_string)
   if (!o) Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
   return o;
 }
-

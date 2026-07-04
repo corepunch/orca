@@ -22,7 +22,7 @@
 					<TextBlock Name="SubHeadline" class="hero-subtitle">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
 					<Node2D Name="MetricSpacer" class="metric-spacer"/>
 					<GridBox Name="Metrics" Columns="auto auto auto" class="grid"
-						ItemsSource="ApplicationData:Metrics"
+						ItemsSource="Example/DataSources/ApplicationData:Metrics"
 						ItemTemplate="Example/Prefabs/Mertic"/>
 				</StackView>
 				<ImageView Name="HeroImage" Source="Example/Images/people" Stretch="UniformToFill"/>
@@ -35,7 +35,7 @@
 				<TextBlock Name="TabbedTechSubheading" class="section-copy"
 					Text="A clean XML surface, Lua where things move, MoonScript when the app grows, and one UI that can travel across targets."/>
 				<GridBox Name="OrcaSignals" Columns="auto auto auto" class="grid"
-					ItemsSource="ApplicationData:Signals"
+					ItemsSource="Example/DataSources/ApplicationData:Signals"
 					ItemTemplate="Example/Prefabs/SignalCard">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto", "auto auto")</BindingExpression>
 				</GridBox>
@@ -48,7 +48,7 @@
 					</TabBar>
 					<StackView Name="xml" class="tab-panel">
 						<LayerPrefabPlaceholder Name="XmlPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="ApplicationData:XmlPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader"/>
 						<Grid Name="XmlGrid" Columns="auto auto" class="grid">
 							<StackView Name="XmlCopy" class="copy-stack">
 								<TextBlock Name="XmlBody" class="section-copy"
@@ -62,23 +62,23 @@
 							<StackView Name="XmlModel" class="card stack-card model-panel">
 								<TextBlock Name="XmlModelHeading" class="card-title" Text="The structure stays honest"/>
 								<GridBox Name="XmlModelGrid" Columns="auto"
-									ItemsSource="ApplicationData:XmlModel"
+									ItemsSource="Example/DataSources/ApplicationData:XmlModel"
 									ItemTemplate="Example/Prefabs/XmlModelNode"/>
 							</StackView>
 						</Grid>
 					</StackView>
 					<StackView Name="lua" class="tab-panel">
 						<LayerPrefabPlaceholder Name="LuaPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="ApplicationData:LuaPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:LuaPanelHeader"/>
 						<TextBlock Name="LuaBody" class="section-copy"
 							Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."/>
 						<GridBox Name="LuaGrid" Columns="auto auto auto" class="grid"
-							ItemsSource="ApplicationData:LuaCards"
+							ItemsSource="Example/DataSources/ApplicationData:LuaCards"
 							ItemTemplate="Example/Prefabs/IconCard"/>
 					</StackView>
 					<StackView Name="moon" class="tab-panel">
 						<LayerPrefabPlaceholder Name="MoonPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="ApplicationData:MoonPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:MoonPanelHeader"/>
 						<Grid Name="MoonGrid" Columns="auto auto" class="grid">
 							<StackView Name="MoonCopy" class="copy-stack">
 								<TextBlock Name="MoonBody" class="section-copy"
@@ -100,14 +100,14 @@
 					</StackView>
 					<StackView Name="deploy" class="tab-panel">
 						<LayerPrefabPlaceholder Name="DeployPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="ApplicationData:DeployPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:DeployPanelHeader"/>
 						<TextBlock Name="DeployBody" class="section-copy"
 							Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."/>
 						<GridBox Name="DeployGrid" Columns="auto auto auto" class="grid"
-							ItemsSource="ApplicationData:DeployCards"
+							ItemsSource="Example/DataSources/ApplicationData:DeployCards"
 							ItemTemplate="Example/Prefabs/IconCard"/>
 						<GridBox Name="DeployImages" Columns="auto auto" class="grid"
-							ItemsSource="ApplicationData:DeployImages"
+							ItemsSource="Example/DataSources/ApplicationData:DeployImages"
 							ItemTemplate="Example/Prefabs/ImageCaptionCard"/>
 						<StackView Name="DeployCommandLink" class="panel command-link">
 							<ImageView Name="DeployCommandIcon" class="command-icon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
@@ -120,7 +120,7 @@
 				</TabView>
 			</StackView>
 			<GridBox Name="FeatureSection" Columns="auto auto auto auto" class="grid feature-section"
-				ItemsSource="ApplicationData:FeatureCards"
+				ItemsSource="Example/DataSources/ApplicationData:FeatureCards"
 				ItemTemplate="Example/Prefabs/FeatureImageCard"/>
 			<StackView Name="GallerySection" class="section surface-section gallery-section">
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
@@ -128,7 +128,7 @@
 				<TextBlock Name="GallerySubheading" class="section-copy"
 					Text="Screenshots and scenes rendered entirely by the ORCA engine."/>
 				<GridBox Name="GalleryGrid" Columns="auto auto auto" Spacing="16"
-					ItemsSource="ApplicationData:GalleryCards"
+					ItemsSource="Example/DataSources/ApplicationData:GalleryCards"
 					ItemTemplate="Example/Prefabs/GalleryCard"/>
 			</StackView>
 			<StackView Name="WorkflowSection" class="section deep-section workflow-section">
@@ -137,7 +137,7 @@
 				<TextBlock Name="WorkflowSubheading" class="section-copy"
 					Text="From XML layout to a live rendered scene in four simple steps."/>
 				<GridBox Name="WorkflowSteps" Columns="auto auto auto auto" class="grid"
-					ItemsSource="ApplicationData:WorkflowSteps"
+					ItemsSource="Example/DataSources/ApplicationData:WorkflowSteps"
 					ItemTemplate="Example/Prefabs/WorkflowStep">
 					<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto auto auto", "auto auto")</BindingExpression>
 				</GridBox>
@@ -146,7 +146,7 @@
 				<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>
 				<TextBlock Name="TestimonialsHeading" class="section-heading" Text="What Developers Say"/>
 				<GridBox Name="TestimonialsGrid" Columns="auto auto auto" class="grid"
-					ItemsSource="ApplicationData:Quotes"
+					ItemsSource="Example/DataSources/ApplicationData:Quotes"
 					ItemTemplate="Example/Prefabs/Quote"/>
 			</StackView>
 			<StackView Name="CtaSection" class="section panel cta-section">

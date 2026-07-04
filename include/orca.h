@@ -173,6 +173,7 @@ enum
   PF_PROPERTY_TYPE = (1 << 7),
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
   PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
+  PF_OWNS_OBJECT_CHILD = (1 << 12), // table-created Object value is parented
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"

@@ -43,6 +43,7 @@ SystemMessages = {
 }
 local XmlDataSource = require 'orca.filesystem.XmlDataSource'
 DataSourceLibrary = {
+	Name = "DataSources",
 	XmlDataSource {
 		Name = "ApplicationData",
 		Source = "Example/Data/ApplicationData",

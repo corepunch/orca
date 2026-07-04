@@ -1376,7 +1376,7 @@ local function test_example_application_xml()
 	test.expect(control_muted ~= nil, "Example package.lua should define control-muted")
 	test.expect(deploy_command_link ~= nil, "Deploy tab should include a desktop build callout")
 	test.expect(deploy_command_value ~= nil, "Deploy tab should show the desktop build command")
-	test.expect(xml:find('ItemsSource="ApplicationData:DeployImages"', 1, true) ~= nil,
+	test.expect(xml:find('ItemsSource="Example/DataSources/ApplicationData:DeployImages"', 1, true) ~= nil,
 		"Deploy images should be sourced from ApplicationData:DeployImages")
 	test.expect(xml:find('ItemTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
 		"Deploy images GridBox should use ImageCaptionCard template")
@@ -1462,7 +1462,7 @@ local function test_datasource_provider_resolution()
 		return
 	end
 
-	local xml = '<Node2D Name="ds-test" DataContextSource="ApplicationData"/>'
+	local xml = '<Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "XML with DataContextSource name should load")
 	test.expect(root.DataContext ~= nil,
@@ -1487,7 +1487,7 @@ local function test_datasource_provider_with_child()
 		return
 	end
 
-	local xml = '<Node2D Name="ds-child-test" DataContextSource="ApplicationData:Signals"/>'
+	local xml = '<Node2D Name="ds-child-test" DataContextSource="Example/DataSources/ApplicationData:Signals"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "XML with DataContextSource name:child should load")
 	test.expect(root.DataContext ~= nil,
@@ -1529,7 +1529,7 @@ local function test_datasource_lifecycle_cleanup()
   if not project then return end
 
   -- Verify DataContextSource resolves through provider registry
-  local xml = '<Node2D Name="lifecycle-test" DataContextSource="ApplicationData"/>'
+  local xml = '<Node2D Name="lifecycle-test" DataContextSource="Example/DataSources/ApplicationData"/>'
   local root = filesystem.loadObjectFromXmlString(xml)
   test.expect(root ~= nil, "XML with DataContextSource should load while project is active")
   test.expect(root.DataContext ~= nil,
@@ -1543,7 +1543,7 @@ local function test_datasource_lifecycle_cleanup()
   collectgarbage()
 
   -- After cleanup, DataContextSource resolution should fall through (no provider entry)
-  local xml2 = '<Node2D Name="lifecycle-after" DataContextSource="ApplicationData"/>'
+  local xml2 = '<Node2D Name="lifecycle-after" DataContextSource="Example/DataSources/ApplicationData"/>'
   local root2 = filesystem.loadObjectFromXmlString(xml2)
   test.expect(root2 ~= nil, "XML should still load after project cleanup")
   test.expect(root2.DataContext == nil,
@@ -1554,7 +1554,7 @@ local function test_datasource_lifecycle_cleanup()
   test.expect(project2 ~= nil, "Should reload Example project after cleanup")
   if not project2 then return end
 
-  local xml3 = '<Node2D Name="lifecycle-reload" DataContextSource="ApplicationData"/>'
+  local xml3 = '<Node2D Name="lifecycle-reload" DataContextSource="Example/DataSources/ApplicationData"/>'
   local root3 = filesystem.loadObjectFromXmlString(xml3)
   test.expect(root3 ~= nil, "XML should load after project reload")
   test.expect(root3.DataContext ~= nil,
@@ -1577,7 +1577,7 @@ local function test_datasource_repeated_load_unload()
     if not project then return end
 
     -- Verify resolution works
-    local xml = '<Node2D Name="cycle-' .. cycle .. '" DataContextSource="ApplicationData"/>'
+    local xml = '<Node2D Name="cycle-' .. cycle .. '" DataContextSource="Example/DataSources/ApplicationData"/>'
     local root = filesystem.loadObjectFromXmlString(xml)
     test.expect(root ~= nil, "Cycle " .. cycle .. ": XML should load")
     test.expect(root.DataContext ~= nil, "Cycle " .. cycle .. ": DataContext should resolve")
@@ -1739,7 +1739,7 @@ local function test_datasource_schema_in_params()
 
 	-- The Schema field from package.lua should be appended to params as &Schema=...
 	-- We verify this indirectly by resolving the datasource, which parses Schema=
-	local xml = '<Node2D Name="schema-param-test" DataContextSource="ApplicationData"/>'
+	local xml = '<Node2D Name="schema-param-test" DataContextSource="Example/DataSources/ApplicationData"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "XML with DataContextSource should load")
 	test.expect(root.DataContext ~= nil,
