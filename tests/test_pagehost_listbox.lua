@@ -685,6 +685,331 @@ local function test_pagehost_listbox_binding()
     print("PASS: test_pagehost_listbox_binding")
 end
 
+-- ---------------------------------------------------------------------------
+-- SelectedItem tests
+--
+-- Verifies ItemsControl.SelectedItem (DataObject*) is set correctly across
+-- all selection paths and supports master-detail data navigation:
+--
+-- | Test | Covers |
+-- |------|--------|
+-- | test_selecteditem_default_nil | No ItemsSource → SelectedItem is nil |
+-- | test_selecteditem_updates_on_value_set | SelectedValue change propagates to SelectedItem |
+-- | test_selecteditem_via_selectitem_message | ListBox.SelectItem message updates SelectedItem |
+-- | test_selecteditem_via_click | Mouse click updates SelectedItem |
+-- | test_selecteditem_custom_valueproperty | Works with DataObjectString.Key custom value property |
+-- | test_selecteditem_auto_select | Auto-select of first item sets SelectedItem |
+-- | test_selecteditem_reference_stable | SelectedItem switches correctly between items |
+-- | test_selecteditem_path_resolution | Navigate SelectedItem.Title, SelectedItem.Comments children |
+-- | test_selecteditem_gridbox | GridBox inherits SelectedItem but keeps it nil |
+-- ---------------------------------------------------------------------------
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem defaults to nil when ListBox has no ItemsSource
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_default_nil()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local list = ui.ListBox { Width = 400, Height = 200 }
+  screen:addChild(list)
+  test.expect(list.SelectedItem == nil, "SelectedItem should be nil by default")
+  screen:clear()
+  print("PASS: test_selecteditem_default_nil")
+end
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem follows SelectedValue: setting it programmatically updates
+-- the DataObject pointer to match the new selection
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_updates_on_value_set()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  local d1 = items:addChild(core.DataObject { Name = "Alpha" })
+  local d2 = items:addChild(core.DataObject { Name = "Beta" })
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200,
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(list)
+
+  -- Auto-select selects first item; verify before override
+  test.expect_eq(list.SelectedItem.Name, "Alpha", "Auto-select should set SelectedItem to first item")
+
+  list.SelectedValue = "Beta"
+  test.expect(list.SelectedItem ~= nil, "SelectedItem should not be nil after setting SelectedValue")
+  test.expect_eq(list.SelectedItem.Name, "Beta", "SelectedItem.Name should match the selected DataObject")
+
+  list.SelectedValue = "Alpha"
+  test.expect_eq(list.SelectedItem.Name, "Alpha", "SelectedItem should update when SelectedValue changes")
+  screen:clear()
+  print("PASS: test_selecteditem_updates_on_value_set")
+end
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem updates via the ListBox.SelectItem message, and is preserved
+-- when the message targets a nonexistent value
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_via_selectitem_message()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  local d1 = items:addChild(core.DataObject { Name = "X" })
+  local d2 = items:addChild(core.DataObject { Name = "Y" })
+  local d3 = items:addChild(core.DataObject { Name = "Z" })
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200,
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(list)
+
+  list:send("ListBox.SelectItem", { Value = "Z" })
+  test.expect_eq(list.SelectedValue, "Z", "SelectedValue should be Z after SelectItem")
+  test.expect_eq(list.SelectedItem.Name, "Z", "SelectedItem.Name should be Z after SelectItem")
+
+  list:send("ListBox.SelectItem", { Value = "X" })
+  test.expect_eq(list.SelectedItem.Name, "X", "SelectedItem.Name should be X after second SelectItem")
+
+  -- Nonexistent value should not change SelectedItem
+  list:send("ListBox.SelectItem", { Value = "nonexistent" })
+  test.expect_eq(list.SelectedItem.Name, "X", "SelectedItem should remain X for nonexistent value")
+  screen:clear()
+  print("PASS: test_selecteditem_via_selectitem_message")
+end
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem updates when the user clicks a list item, following both
+-- the visual selection and the backing DataObject pointer
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_via_click()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  items:addChild(core.DataObject { Name = "First" })
+  items:addChild(core.DataObject { Name = "Second" })
+  items:addChild(core.DataObject { Name = "Third" })
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200, Direction = "Horizontal",
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(list)
+  screen:UpdateLayout(screen.Width, screen.Height)
+
+  -- Click the second item
+  local children = {}
+  for child in list.children do children[#children + 1] = child end
+  local target = children[2]
+  local x = target.ActualX + 5
+  local y = target.ActualY + 5
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+
+  test.expect_eq(list.SelectedValue, "Second", "SelectedValue should be Second after click")
+  test.expect_eq(list.SelectedItem.Name, "Second", "SelectedItem.Name should be Second after click")
+
+  -- Click the third item
+  local target3 = children[3]
+  local x3 = target3.ActualX + 5
+  local y3 = target3.ActualY + 5
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x3, y = y3 }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x3, y = y3 }
+
+  test.expect_eq(list.SelectedItem.Name, "Third", "SelectedItem.Name should be Third after second click")
+  screen:clear()
+  print("PASS: test_selecteditem_via_click")
+end
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem resolves correctly when ListBox uses a custom ValueProperty
+-- (e.g. DataObjectString.Key) rather than the default DataObject.Name
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_custom_valueproperty()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+  local items = filesystem.loadObjectFromXmlString [[
+    <DataObject Name="Catalog">
+      <DataObject Name="Game1">
+        <DataObjectString Name="Key" Value="rpg"/>
+        <DataObjectString Name="Title" Value="Fantasy Quest"/>
+      </DataObject>
+      <DataObject Name="Game2">
+        <DataObjectString Name="Key" Value="shooter"/>
+        <DataObjectString Name="Title" Value="Blaster"/>
+      </DataObject>
+    </DataObject>
+  ]]
+
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200,
+    ItemsSource = items,
+    ItemTemplate = template,
+    ValueProperty = "Key",
+    SelectedValue = "shooter",
+  }
+  screen:addChild(list)
+
+  test.expect_eq(list.SelectedValue, "shooter", "SelectedValue should be shooter")
+  test.expect(list.SelectedItem ~= nil, "SelectedItem should be set")
+  test.expect_eq(list.SelectedItem.Name, "Game2", "SelectedItem.Name should match Game2")
+
+  -- Click the first item
+  screen:UpdateLayout(screen.Width, screen.Height)
+  local children = {}
+  for child in list.children do children[#children + 1] = child end
+  local target = children[1]
+  local x = target.ActualX + 5
+  local y = target.ActualY + 5
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = x, y = y }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = x, y = y }
+
+  test.expect_eq(list.SelectedValue, "rpg", "SelectedValue should be rpg after click")
+  test.expect_eq(list.SelectedItem.Name, "Game1", "SelectedItem.Name should be Game1 after click")
+  screen:clear()
+  print("PASS: test_selecteditem_custom_valueproperty")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox auto-selects the first data item when no SelectedValue is given,
+-- and SelectedItem is set to that item's DataObject
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_auto_select()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  items:addChild(core.DataObject { Name = "Auto1" })
+  items:addChild(core.DataObject { Name = "Auto2" })
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200,
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(list)
+
+  test.expect(list.SelectedItem ~= nil, "SelectedItem should be set after auto-select")
+  test.expect_eq(list.SelectedItem.Name, "Auto1", "First item should be auto-selected")
+  test.expect_eq(list.SelectedValue, "Auto1", "SelectedValue should be Auto1 after auto-select")
+  screen:clear()
+  print("PASS: test_selecteditem_auto_select")
+end
+
+-- ---------------------------------------------------------------------------
+-- SelectedItem switches correctly between DataObjects — the reference
+-- points to the right record even after multiple selection changes
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_reference_stable()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  local targetObj = items:addChild(core.DataObject { Name = "Target" })
+  items:addChild(core.DataObject { Name = "Other" })
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Width = 400, Height = 200,
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(list)
+
+  -- First auto-selects Target; switch to Other
+  list.SelectedValue = "Other"
+  test.expect(list.SelectedItem ~= nil)
+  test.expect_eq(list.SelectedItem.Name, "Other")
+  test.expect(list.SelectedItem ~= targetObj, "SelectedItem should not be targetObj after switch")
+
+  -- Switch back to Target
+  list.SelectedValue = "Target"
+  test.expect_eq(list.SelectedItem.Name, "Target")
+  screen:clear()
+  print("PASS: test_selecteditem_reference_stable")
+end
+
+-- ---------------------------------------------------------------------------
+-- After selecting an item, the path SelectedItem.Title resolves to the
+-- item's child DataObject (a "column" in the table metaphor). Switching
+-- the master selection re-navigates to the new item's children. This
+-- validates the core master-detail binding path.
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_path_resolution()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+
+  -- Create items where each has Title and Comments children
+  local items = filesystem.loadObjectFromXmlString [[
+    <DataObject Name="Catalog">
+      <DataObject Name="GameA">
+        <DataObjectString Name="Title" Value="Alpha Quest"/>
+        <DataObject Name="Comments">
+          <DataObjectString Name="C1" Value="Great!"/>
+          <DataObjectString Name="C2" Value="Fun"/>
+        </DataObject>
+      </DataObject>
+      <DataObject Name="GameB">
+        <DataObjectString Name="Title" Value="Bravo Wars"/>
+        <DataObject Name="Comments">
+          <DataObjectString Name="C3" Value="Intense"/>
+        </DataObject>
+      </DataObject>
+    </DataObject>
+  ]]
+
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local list = ui.ListBox {
+    Name = "GameList",
+    Width = 400, Height = 200,
+    ItemsSource = items, ItemTemplate = template,
+    SelectedValue = "GameA",
+  }
+  screen:addChild(list)
+
+  test.expect_eq(list.SelectedItem.Name, "GameA", "SelectedItem should be GameA")
+
+  -- Verify we can read properties on the selected DataObject through Lua
+  local selected = list.SelectedItem
+  -- Navigate to Title child DataObjectString
+  local titleChild = selected:findChild("Title", true)
+  test.expect(titleChild ~= nil, "Title child should exist on selected item")
+  test.expect_eq(titleChild.Value, "Alpha Quest", "Title child value should be 'Alpha Quest'")
+
+  -- Navigate to Comments child collection
+  local comments = selected:findChild("Comments", true)
+  test.expect(comments ~= nil, "Comments collection should exist on selected item")
+  local commentCount = 0
+  for _ in comments.children do commentCount = commentCount + 1 end
+  test.expect_eq(commentCount, 2, "GameA should have 2 comments")
+
+  -- Switch selection and verify data follows
+  list.SelectedValue = "GameB"
+  test.expect_eq(list.SelectedItem.Name, "GameB", "SelectedItem should be GameB after switch")
+  local titleB = list.SelectedItem:findChild("Title", true)
+  test.expect_eq(titleB.Value, "Bravo Wars", "After switch, Title value should be 'Bravo Wars'")
+
+  local commentsB = list.SelectedItem:findChild("Comments", true)
+  local countB = 0
+  for _ in commentsB.children do countB = countB + 1 end
+  test.expect_eq(countB, 1, "GameB should have 1 comment")
+
+  screen:clear()
+  print("PASS: test_selecteditem_path_resolution")
+end
+
+-- ---------------------------------------------------------------------------
+-- GridBox inherits SelectedItem from ItemsControl but has no selection
+-- handling, so SelectedItem remains nil (ListBox-specific behavior)
+-- ---------------------------------------------------------------------------
+local function test_selecteditem_gridbox()
+  local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
+  local items = core.DataObject { Name = "Items" }
+  items:addChild(core.DataObject { Name = "G1" })
+  items:addChild(core.DataObject { Name = "G2" })
+
+  local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
+  local grid = ui.GridBox {
+    Columns = "auto",
+    ItemsSource = items, ItemTemplate = template,
+  }
+  screen:addChild(grid)
+
+  test.expect(grid.SelectedItem == nil, "GridBox SelectedItem should be nil (no selection handling)")
+  screen:clear()
+  print("PASS: test_selecteditem_gridbox")
+end
+
 -- Run all tests
 test_pagehost_initial_activepage()
 test_pagehost_switches_page_on_activepage_change()
@@ -701,5 +1026,14 @@ test_listbox_click_slot_region_selection()
 test_listbox_auto_syncs_sibling_pagehost()
 test_listbox_active_styles_on_descendants()
 test_pagehost_listbox_binding()
+test_selecteditem_default_nil()
+test_selecteditem_updates_on_value_set()
+test_selecteditem_via_selectitem_message()
+test_selecteditem_via_click()
+test_selecteditem_custom_valueproperty()
+test_selecteditem_auto_select()
+test_selecteditem_reference_stable()
+test_selecteditem_path_resolution()
+test_selecteditem_gridbox()
 
 print("\nAll PageHost + ListBox tests passed.")

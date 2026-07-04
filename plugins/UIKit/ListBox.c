@@ -122,6 +122,16 @@ ListBox_SetSelected(struct Object *hObject, struct ListBox *pListBox, struct Obj
   struct Property *prop = OBJ_FindLongProperty(hObject, ID_ListBox_SelectedValue);
   if (prop) PROP_SetStringValue(prop, newValue);
 
+  // Update SelectedItem from the clicked item's DataContext
+  struct Node *itemNode = GetNode(item);
+  if (itemNode && itemNode->DataContext) {
+    struct ItemsControl *ic = GetItemsControl(hObject);
+    if (ic) {
+      ic->SelectedItem = itemNode->DataContext;
+      PROP_NotifyChanged(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem));
+    }
+  }
+
   OBJ_SetDirty(hObject);
 
   struct ListBox_SelectionChangedEventArgs args = {
@@ -136,10 +146,18 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
 {
   if (!pListBox->SelectedValue || !pListBox->SelectedValue[0]) return;
 
+  struct ItemsControl *ic = GetItemsControl(hObject);
+
   FOR_EACH_OBJECT(child, hObject) {
     const char *val = ListBox_GetItemValue(hObject, pListBox, child);
     if (val && strcmp(val, pListBox->SelectedValue) == 0) {
       ListBox_SetItemSelected(child, TRUE);
+      // Sync SelectedItem to this child's DataContext
+      struct Node *itemNode = GetNode(child);
+      if (itemNode && itemNode->DataContext && ic) {
+        ic->SelectedItem = itemNode->DataContext;
+        PROP_NotifyChanged(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem));
+      }
     } else {
       ListBox_SetItemSelected(child, FALSE);
     }
