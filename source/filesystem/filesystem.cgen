@@ -65,6 +65,7 @@
     <class name="Project">
       <handles>
         <handle message="Object.Start"/>
+        <handle message="Object.Release"/>
       </handles>
       <properties>
         <property name="HalfFloatTextureFormat" type="bool"/>

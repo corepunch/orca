@@ -448,3 +448,11 @@ HANDLER(Screen, Screen, UpdateLayout) {
   PROP_RunAllPrograms(hObject);
   return TRUE;
 }
+
+// Screen_SaveChanges — persist all dirty datasource sessions
+HANDLER(Screen, Screen, SaveChanges) {
+  // Screen has no direct access to provider sessions; the caller should
+  // use filesystem.saveDataSource(name) or iterate known datasources.
+  // This handler exists as a hook point for future session tracking.
+  return TRUE;
+}
