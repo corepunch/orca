@@ -1026,6 +1026,7 @@
       <properties>
         <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
         <property name="ItemTemplate" type="Node2D" pointer="true">The template used to represent each item</property>
+        <property name="SelectedItem" type="DataObject" pointer="true">The DataObject of the currently selected item. Set automatically by ListBox on selection. Bind a detail view's ItemsSource or DataContext to this for master-detail.</property>
       </properties>
     </class>
     <class name="ListBox" parent="StackView,ItemsControl">
