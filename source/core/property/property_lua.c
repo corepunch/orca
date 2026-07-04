@@ -15,7 +15,8 @@ extern int f_msgSend(lua_State *L);
 static void read_struct_table(lua_State *L, int idx,
                               struct StructDesc const *desc, void *valueptr);
 static struct Object *create_object_from_table(lua_State *L, int idx,
-                                               struct PropertyType const *prop);
+                                               struct PropertyType const *prop,
+                                               bool_t attach_children);
 
 ORCA_API int
 parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
@@ -57,27 +58,22 @@ parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
         lpcString_t font_path = CORE_FindFontFamily(str);
         if (font_path) path = font_path;
       }
-      // Support "file:child" colon syntax (e.g. "Data/File:ChildName")
-      // or "DataSourceName:ChildName" with provider resolution
+      // A trailing ":child" selects a named child of the resolved object, e.g.
+      // "Project/DataSourceLibrary/Name:ChildName". Datasources are referenced
+      // by their fully qualified path with no direct-file fallback.
       const char *colon = strrchr(path, ':');
       struct Object *loaded = NULL;
       if (colon) {
         size_t pathLen = colon - path;
         char dsName[256];
         snprintf(dsName, sizeof(dsName), "%.*s", (int)pathLen, path);
-        // Try provider registry first
         loaded = FS_ResolveDataSource(dsName, NULL);
         if (loaded) {
           loaded = OBJ_FindChild(loaded, colon + 1, FALSE);
-        } else {
-          // Fallback: direct file path (deprecated)
-          Con_Warning("Property '%s' uses direct file path '%s'; migrate to datasource name",
-                      prop->Name, dsName);
-          struct Object *root = FS_LoadObject(dsName);
-          if (root) loaded = OBJ_FindChild(root, colon + 1, FALSE);
         }
       } else {
-        // Try provider registry first, then direct file path
+        // A datasource path resolves through the provider registry; any other
+        // object path is loaded from the filesystem.
         loaded = FS_ResolveDataSource(path, NULL);
         if (!loaded) {
           loaded = FS_LoadObject(path);
@@ -131,7 +127,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
             }
             read_struct_table(L, -1, desc, (char*)tmp + i * prop->DataSize);
           } else if (prop->DataType == kDataTypeObject) {
-            struct Object *obj = create_object_from_table(L, -1, prop);
+            struct Object *obj = create_object_from_table(L, -1, prop, TRUE);
             memcpy((char*)tmp + i * prop->DataSize, &obj, sizeof(obj));
           } else {
             free(tmp);
@@ -209,7 +205,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
           parse_property(luaL_checkstring(L, idx), prop, valueptr);
           break;
         case LUA_TTABLE:
-          *(struct Object **)valueptr = create_object_from_table(L, idx, prop);
+          *(struct Object **)valueptr = create_object_from_table(L, idx, prop, TRUE);
           break;
         default:
           luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
@@ -250,7 +246,8 @@ read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *va
 }
 
 static struct Object *
-create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
+create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop,
+                         bool_t attach_children)
 {
   struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
   if (!cls) {
@@ -275,7 +272,7 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
                  (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
         OBJ_SetName(obj, lua_tostring(L, -1));
       }
-    } else if (lua_type(L, -2) == LUA_TNUMBER &&
+    } else if (attach_children && lua_type(L, -2) == LUA_TNUMBER &&
                lua_type(L, -1) == LUA_TUSERDATA) {
       /* Array-part entries that are constructed objects become children,
        * e.g. DataSourceLibrary = { XmlDataSource { ... } }. */
@@ -286,6 +283,21 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
   }
 
   return obj;
+}
+
+static void
+attach_object_children_from_table(lua_State *L, int idx, struct Object *obj)
+{
+  int table_idx = lua_absindex(L, idx);
+  lua_pushnil(L);
+  while (lua_next(L, table_idx) != 0) {
+    if (lua_type(L, -2) == LUA_TNUMBER &&
+        lua_type(L, -1) == LUA_TUSERDATA) {
+      struct Object *child = luaX_checkObject(L, -1);
+      if (child) OBJ_AddChild(obj, child);
+    }
+    lua_pop(L, 1);
+  }
 }
   
 ORCA_API int
@@ -384,6 +396,20 @@ luaX_readProperty(lua_State* L, int idx, struct Property *p)
       *(event_t *)p->value = 0;
     }
     PROP_Clear(p);
+    return 0;
+  }
+
+  if (PROP_GetType(p) == kDataTypeObject && lua_istable(L, idx)) {
+    /* Populate and name the property object before parenting it.  Its
+     * array-part objects are attached afterwards, so their automatic Start
+     * sees the complete owner/property hierarchy. */
+    struct Object *object = create_object_from_table(L, idx, p->pdesc, FALSE);
+    PROP_SetValue(p, &object);
+    if (p->object) {
+      OBJ_AddChild(p->object, object);
+      PROP_SetFlag(p, PF_OWNS_OBJECT_CHILD);
+    }
+    attach_object_children_from_table(L, idx, object);
     return 0;
   }
 

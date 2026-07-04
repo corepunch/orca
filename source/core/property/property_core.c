@@ -134,13 +134,18 @@ PROP_Clear(struct Property *property)
       storage && !property->pdesc->IsArray) {
     struct Object *object = PROP_GetObjectValue(property);
     if (object) {
+      if ((property->flags & PF_OWNS_OBJECT_CHILD) &&
+          OBJ_GetParent(object) == property->object) {
+        OBJ_DetachFromParent(object);
+        OBJ_ReleaseRef(object); /* hierarchy reference */
+      }
       OBJ_ReleaseRef(object);
     }
   }
   if (storage) {
     memset(storage, 0, PROP_GetSize(property));
   }
-  property->flags &= ~PF_MODIFIED;
+  property->flags &= ~(PF_MODIFIED | PF_OWNS_OBJECT_CHILD);
   if (property->pdesc->DataType == kDataTypeString && storage) {
     *(char**)storage = NULL;
   }

@@ -55,16 +55,16 @@
     </class>
     <class name="DataSource">
       <summary>Base class for a project datasource declared in a DataSourceLibrary.</summary>
-      <details>A datasource is an object, like an Image or a RenderTargetTexture. It is declared inside a project's DataSourceLibrary and identified by its Name. Concrete subclasses such as XmlDataSource load their backing data when they receive Object.Start.</details>
+      <details>A datasource is an object, like an Image or a RenderTargetTexture. It is declared inside a project's named DataSourceLibrary and identified by its Name. Concrete subclasses such as XmlDataSource load their backing data when attached to the complete project hierarchy. It is referenced from bindings by its fully qualified path "Project/Library/Name", for example "Adventure/DataSources/Games".</details>
       <properties>
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
     </class>
     <class name="XmlDataSource" parent="DataSource">
       <summary>XML-backed datasource that loads an object tree from a source file.</summary>
-      <details>Declared inside a project's DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. When the datasource receives Object.Start its session is opened and the XML source is loaded.</details>
+      <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. When the datasource receives Object.Attached with a complete project hierarchy, its session is opened and the XML source is loaded.</details>
       <handles>
-        <handle message="Object.Start"/>
+        <handle message="Object.Attached"/>
       </handles>
       <properties>
         <property name="Source" type="string">Path to the XML file to load, relative to the workspace (for example "Adventure/Data/Games").</property>

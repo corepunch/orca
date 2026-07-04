@@ -141,11 +141,17 @@ PROP_SetStoredValue(struct Property *property,
   } else if (PROP_GetType(property) == kDataTypeObject) {
     struct Object *object = *(struct Object **)source;
     struct Object *old_object = PROP_GetObjectValue(property);
-    /* Object properties own a ref, but they do not parent the object. */
+    /* Object references own a ref, but do not normally parent the object. */
     if (!object) {
       memset(storage, 0, PROP_GetSize(property));
       property->flags &= ~PF_MODIFIED;
       if (old_object) {
+        if ((property->flags & PF_OWNS_OBJECT_CHILD) &&
+            OBJ_GetParent(old_object) == property->object) {
+          OBJ_DetachFromParent(old_object);
+          OBJ_ReleaseRef(old_object); /* hierarchy reference */
+        }
+        property->flags &= ~PF_OWNS_OBJECT_CHILD;
         OBJ_ReleaseRef(old_object);
       }
       return;
@@ -167,6 +173,12 @@ PROP_SetStoredValue(struct Property *property,
     OBJ_AddRef(object);
     OBJ_SendMessageW(object, ID_Object_Start, 0, NULL);
     if (old_object) {
+      if ((property->flags & PF_OWNS_OBJECT_CHILD) &&
+          OBJ_GetParent(old_object) == property->object) {
+        OBJ_DetachFromParent(old_object);
+        OBJ_ReleaseRef(old_object); /* hierarchy reference */
+      }
+      property->flags &= ~PF_OWNS_OBJECT_CHILD;
       OBJ_ReleaseRef(old_object);
     }
   } else {
