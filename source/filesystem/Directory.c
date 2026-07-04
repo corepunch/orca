@@ -114,6 +114,52 @@ HANDLER(Directory, Object, Destroy) {
 
 // Loads a Lua file in text mode and assigns a custom environment.
 // Leaves compiled chunk on stack on success.
+
+// Proxy environment for declarative project files (package.lua): reads resolve
+// project properties first and fall back to the real globals (so `require`,
+// `print`, etc. remain available), while writes are forwarded to the project
+// object so `Property = value` still sets project properties.
+static int project_env_index(lua_State *L)
+{
+  // upvalue 1: project object; args: (env, key)
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_pushvalue(L, 2);
+  lua_gettable(L, -2);            // project[key] via Object __index
+  if (!lua_isnil(L, -1)) {
+    return 1;
+  }
+  lua_pop(L, 2);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_GLOBALS);
+  lua_pushvalue(L, 2);
+  lua_gettable(L, -2);           // _G[key]
+  return 1;
+}
+
+static int project_env_newindex(lua_State *L)
+{
+  // upvalue 1: project object; args: (env, key, value)
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_pushvalue(L, 2);
+  lua_pushvalue(L, 3);
+  lua_settable(L, -3);           // project[key] = value via Object __newindex
+  return 0;
+}
+
+// Pushes a proxy env table backed by the object at obj_index.
+static void push_declarative_env(lua_State *L, int obj_index)
+{
+  obj_index = lua_absindex(L, obj_index);
+  lua_newtable(L);                                   // env
+  lua_newtable(L);                                   // metatable
+  lua_pushvalue(L, obj_index);
+  lua_pushcclosure(L, project_env_index, 1);
+  lua_setfield(L, -2, "__index");
+  lua_pushvalue(L, obj_index);
+  lua_pushcclosure(L, project_env_newindex, 1);
+  lua_setfield(L, -2, "__newindex");
+  lua_setmetatable(L, -2);                           // setmetatable(env, mt)
+}
+
 ORCA_API int
 lua_loadfile_with_env(lua_State *L, const char *filename, int env_index)
 {
@@ -123,7 +169,7 @@ lua_loadfile_with_env(lua_State *L, const char *filename, int env_index)
     lua_pop(L, 1);
     return LUA_ERRRUN;
   }
-  lua_pushvalue(L, env_index);
+  push_declarative_env(L, env_index);                // proxy env on top
   if (lua_setupvalue(L, -2, 1) == NULL) {
     Con_Error("chunk has no _ENV upvalue");
     lua_pop(L, 1);
