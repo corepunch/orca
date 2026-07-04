@@ -19,6 +19,13 @@ static struct Object *workspace = NULL;
 
 static struct ds_schema *_ParseSchema(const char *schema_path);
 
+static void
+_CopyDsString(char *dst, size_t dst_size, const char *src)
+{
+  if (!dst || dst_size == 0) return;
+  snprintf(dst, dst_size, "%s", src ? src : "");
+}
+
 // --- DataSource provider registry -------------------------------------------
 
 struct ds_provider {
@@ -63,6 +70,19 @@ static int _ds_provider_count = 0;
 static int _ds_entry_count = 0;
 static uint32_t _ds_generation = 1;
 
+static struct ds_entry *
+_FindEntry(const char *name)
+{
+  if (!name) return NULL;
+  for (int i = 0; i < _ds_entry_count; i++) {
+    if (_ds_entries[i].name[0] &&
+        strcmp(_ds_entries[i].name, name) == 0) {
+      return &_ds_entries[i];
+    }
+  }
+  return NULL;
+}
+
 void
 FS_RegisterDataSourceProvider(const char *type_name,
                              struct Object *(*fetch)(const char *params))
@@ -90,14 +110,17 @@ FS_RegisterDataProvider(const char *type_name,
 void
 FS_RegisterDataSource(const char *name, const char *type, const char *params)
 {
-  if (_ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
+  struct ds_entry *e = _FindEntry(name);
+  if (!e && _ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
     Con_Error("No space to register datasource '%s'", name);
     return;
   }
-  struct ds_entry *e = &_ds_entries[_ds_entry_count++];
-  strncpy(e->name, name, sizeof(e->name) - 1);
-  strncpy(e->type, type, sizeof(e->type) - 1);
-  strncpy(e->params, params, sizeof(e->params) - 1);
+  if (!e) {
+    e = &_ds_entries[_ds_entry_count++];
+  }
+  _CopyDsString(e->name, sizeof(e->name), name);
+  _CopyDsString(e->type, sizeof(e->type), type);
+  _CopyDsString(e->params, sizeof(e->params), params);
   e->project = 0;
   e->generation = _ds_generation;
 }
@@ -107,17 +130,20 @@ FS_RegisterProjectDataSource(struct Object *project, const char *name,
                              const char *type, const char *params,
                              const char *schema)
 {
-  if (_ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
+  struct ds_entry *e = _FindEntry(name);
+  if (!e && _ds_entry_count >= MAX_DATASOURCE_ENTRIES) {
     Con_Error("No space to register datasource '%s'", name);
     return;
   }
-  struct ds_entry *e = &_ds_entries[_ds_entry_count++];
-  strncpy(e->name, name, sizeof(e->name) - 1);
-  strncpy(e->type, type, sizeof(e->type) - 1);
+  if (!e) {
+    e = &_ds_entries[_ds_entry_count++];
+  }
+  _CopyDsString(e->name, sizeof(e->name), name);
+  _CopyDsString(e->type, sizeof(e->type), type);
   if (schema && schema[0]) {
     snprintf(e->params, sizeof(e->params), "%s&Schema=%s", params, schema);
   } else {
-    strncpy(e->params, params, sizeof(e->params) - 1);
+    _CopyDsString(e->params, sizeof(e->params), params);
   }
   e->project = project;
   e->generation = _ds_generation;
@@ -226,10 +252,11 @@ _FindOrCreateSession(const char *name, const char *params)
   if (s) return s;
   if (_ds_session_count >= MAX_DATASOURCE_ENTRIES) return NULL;
   s = &_ds_sessions[_ds_session_count++];
-  strncpy(s->name, name, sizeof(s->name) - 1);
-  strncpy(s->params, params, sizeof(s->params) - 1);
+  _CopyDsString(s->name, sizeof(s->name), name);
+  _CopyDsString(s->params, sizeof(s->params), params);
   s->root = NULL;
   s->dirty = FALSE;
+  s->schema = NULL;
   return s;
 }
 

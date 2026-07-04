@@ -1503,6 +1503,22 @@ local function test_datasource_provider_with_child()
 end
 
 -- ---------------------------------------------------------------------------
+-- Backward-compatible path:child DataContextSource fallback still resolves
+-- using the stripped path before applying the child selector
+-- ---------------------------------------------------------------------------
+local function test_datasource_path_fallback_with_child()
+	local xml = '<Node2D Name="ds-path-child-test" DataContextSource="Example/Data/ApplicationData:Signals"/>'
+	local root = filesystem.loadObjectFromXmlString(xml)
+	test.expect(root ~= nil, "XML with direct path DataContextSource should load")
+	test.expect(root.DataContext ~= nil,
+		"Direct path DataContextSource with child selector should still resolve")
+	test.expect_eq(root.DataContext.Name, "Signals",
+		"Direct path DataContextSource should load the base object before finding the child")
+
+	print("PASS: test_datasource_path_fallback_with_child")
+end
+
+-- ---------------------------------------------------------------------------
 -- Provider lifecycle: datasource entries are cleaned up on project unload,
 -- and a reload re-registers them for resolution
 -- ---------------------------------------------------------------------------
@@ -1672,6 +1688,7 @@ test_example_application_xml()
 test_package_datasource_declarations()
 test_datasource_provider_resolution()
 test_datasource_provider_with_child()
+test_datasource_path_fallback_with_child()
 test_datasource_lifecycle_cleanup()
 test_datasource_repeated_load_unload()
 test_example_xml_parser_coverage()

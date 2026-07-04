@@ -57,7 +57,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       // Fallback: treat as a direct file path (deprecated)
       Con_Warning("DataContextSource='%s' uses direct file path; migrate to datasource name (e.g. '%s')",
                   value, ds_name);
-      dataObj = FS_LoadObject(value);
+      dataObj = FS_LoadObject(ds_name);
     }
 
     if (dataObj) {
