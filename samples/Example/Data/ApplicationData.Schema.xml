@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Schema>
+  <Entity Name="Signals">
+    <Column Name="Title" Type="string"/>
+    <Column Name="Body" Type="string"/>
+  </Entity>
+  <Entity Name="Metrics">
+    <Column Name="Title" Type="string"/>
+    <Column Name="Value" Type="string"/>
+  </Entity>
+</Schema>
