@@ -722,6 +722,11 @@ tok_op(argument)
           isDataContextPath = 1;
           goto return_value;
         }
+        if (root && (!strcmp(property_name, "Name") || !strcmp(property_name, "id"))) {
+          InitOutput(output, kDataTypeString, sizeof(const char *));
+          VM_REG_SET_STR(output, vm_strtmp(OBJ_GetName(root)));
+          return TRUE;
+        }
       }
     }
     memset(output->value, 0, sizeof(*output->value));

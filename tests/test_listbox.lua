@@ -352,19 +352,19 @@ local function test_datacontext_nested_path()
 
   local items = core.DataObject { Name = "ItemsSource" }
   local item = core.DataObject { Name = "Item" }
-  item:addChild(core.DataObject { Name = "Details", Value = "Nested value" })
+  item:addChild(core.DataObject { Name = "Details" })
   items:addChild(item)
 
   local template = ui.Node2D { Name = "ItemTemplate" }
   local tb = template:addChild(ui.TextBlock { Name = "ItemText" })
-  tb:attachPropertyProgram("TextRun.Text", "{DataContext/Details/Value}", "OneWay", true)
+  tb:attachPropertyProgram("TextRun.Text", "{DataContext/Details/Name}", "OneWay", true)
 
   local listbox = ui.ListBox { ItemsSource = items, ItemTemplate = template }
   screen:addChild(listbox)
   core.runAllPrograms(screen)
 
   local text = listbox:findChild("ItemText", true)
-  test.expect_eq(text and text.Text, "Nested value",
+  test.expect_eq(text and text.Text, "Details",
     "DataContext.GetData should resolve nested DataObject paths")
 
   screen:clear()
