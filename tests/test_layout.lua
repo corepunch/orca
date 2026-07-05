@@ -1526,6 +1526,99 @@ local function test_datasource_provider_with_child()
 end
 
 -- ---------------------------------------------------------------------------
+-- DataContext.GetData should resolve nested paths when DataContext is the
+-- datasource object itself (not only a direct DataObject child).
+-- ---------------------------------------------------------------------------
+local function test_datasource_getdata_from_source_context()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "filesystem.init should load the Example project")
+	if not project then
+		return
+	end
+
+	local source = project.DataSourceLibrary and project.DataSourceLibrary:findChild("ApplicationData", false) or nil
+	test.expect(source ~= nil, "ApplicationData XmlDataSource should exist")
+	if not source then
+		filesystem.unloadProject(project)
+		return
+	end
+
+	local host = ui.StackView { Name = "GetDataHost", Width = 400, Height = 200 }
+	host.DataContext = source
+	local title = host + ui.TextBlock { Name = "Title" }
+	title:attachPropertyProgram("TextRun.Text", "{DataContext/Signals/SignalXml/Title}", "OneWay", true)
+	core.runAllPrograms(host)
+
+	test.expect_eq(title.Text, "XML-first screens",
+		"DataContext.GetData should resolve nested path from XmlDataSource context")
+
+	host:clear()
+	filesystem.unloadProject(project)
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_datasource_getdata_from_source_context")
+end
+
+-- ---------------------------------------------------------------------------
+-- Adventure sample parity: Footer ListBox should bind to Tabs datasource and
+-- wire item DataContext/selection from provider-backed ItemsSource.
+-- ---------------------------------------------------------------------------
+local function test_adventure_footer_listbox_datasource_binding()
+	local project = filesystem.init("samples/Adventure")
+	test.expect(project ~= nil, "filesystem.init should load the Adventure project")
+	if not project then
+		return
+	end
+
+	local screen_xml = filesystem.readTextFile("samples/Adventure/Screens/Adventures.xml")
+	test.expect(screen_xml ~= nil and screen_xml ~= "", "Adventure screen XML should be readable")
+	if not screen_xml or screen_xml == "" then
+		filesystem.unloadProject(project)
+		return
+	end
+
+	local root = filesystem.loadObjectFromXmlString(screen_xml)
+	test.expect(root ~= nil, "Adventure screen XML should parse")
+	if not root then
+		filesystem.unloadProject(project)
+		return
+	end
+
+	local footer = root:findChild("Footer", true)
+	test.expect(footer ~= nil, "Adventure screen should contain Footer ListBox")
+	if not footer then
+		root:clear()
+		filesystem.unloadProject(project)
+		return
+	end
+
+	test.expect_eq(footer:getClassName(), "ListBox", "Footer should be a ListBox")
+	test.expect_eq(footer.SelectedValue, "games", "Footer should keep configured SelectedValue")
+	test.expect(footer.SelectedItem ~= nil,
+		"Footer ListBox should expose SelectedItem from datasource-bound row")
+
+	local childCount = 0
+	for child in footer.children do
+		childCount = childCount + 1
+		if childCount == 1 then
+			test.expect(child.DataContext ~= nil,
+				"ListBox item should carry DataContext from datasource row")
+			test.expect_eq(child.DataContext:getClassName(), "DataObject",
+				"ListBox item DataContext should resolve as DataObject row")
+		end
+	end
+	test.expect_eq(childCount, 3, "Adventure footer should render three tabs from datasource")
+
+	root:clear()
+	filesystem.unloadProject(project)
+	project = nil
+	collectgarbage()
+
+	print("PASS: test_adventure_footer_listbox_datasource_binding")
+end
+
+-- ---------------------------------------------------------------------------
 -- Backward-compatible path:child DataContextSource fallback still resolves
 -- using the stripped path before applying the child selector
 -- ---------------------------------------------------------------------------
@@ -1711,6 +1804,8 @@ test_example_application_xml()
 test_package_datasource_declarations()
 test_datasource_provider_resolution()
 test_datasource_provider_with_child()
+test_datasource_getdata_from_source_context()
+test_adventure_footer_listbox_datasource_binding()
 test_datasource_path_fallback_with_child()
 test_datasource_lifecycle_cleanup()
 test_datasource_repeated_load_unload()
