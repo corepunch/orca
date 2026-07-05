@@ -350,23 +350,27 @@ local function test_listbox_click_updates_selection_and_pagehost()
 end
 
 -- ---------------------------------------------------------------------------
--- ListBox: ValueProperty resolves DataObjectString.Value (not child Name)
+-- ListBox: ValueProperty resolves a schema column directly on the record
 -- ---------------------------------------------------------------------------
 local function test_listbox_valueproperty_dataobject_value()
         local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-        local items = filesystem.loadObjectFromXmlString [[
-            <DataObject Name="Tabs">
-                <DataObject Name="TabGames">
-                    <DataObjectString Name="Key" Value="games"/>
-                    <DataObjectString Name="Label" Value="Adventures"/>
-                </DataObject>
-                <DataObject Name="TabLibrary">
-                    <DataObjectString Name="Key" Value="library"/>
-                    <DataObjectString Name="Label" Value="Library"/>
-                </DataObject>
-            </DataObject>
-        ]]
+        local items = filesystem.loadObjectFromXmlStringWithSchema([[
+            <Tabs>
+                <Tab name="TabGames"   Key="games"   Label="Adventures"/>
+                <Tab name="TabLibrary" Key="library" Label="Library"/>
+            </Tabs>
+        ]], [[
+            <Schema>
+                <Entity Name="Tabs">
+                    <Column Name="Tab" Type="relation" Entity="Tab"/>
+                </Entity>
+                <Entity Name="Tab">
+                    <Column Name="Key"   Type="string" Key="true"/>
+                    <Column Name="Label" Type="string"/>
+                </Entity>
+            </Schema>
+        ]])
 
         local template = ui.StackView {
             Name = "TabItem",

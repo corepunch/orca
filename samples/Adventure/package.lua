@@ -22,8 +22,8 @@ SystemMessages = {
 }
 DataSourceLibrary = {
 	Name = "DataSources",
-	require 'orca.filesystem.XmlDataSource' { Name = "Games", Source = "Adventure/Data/Games" },
-	require 'orca.filesystem.XmlDataSource' { Name = "Tabs", Source = "Adventure/Data/Tabs" },
+	require 'orca.filesystem.XmlDataSource' { Name = "Games", Source = "Adventure/Data/Games", Schema = "Adventure/Data/Games.Schema.xml" },
+	require 'orca.filesystem.XmlDataSource' { Name = "Tabs",  Source = "Adventure/Data/Tabs",  Schema = "Adventure/Data/Tabs.Schema.xml"  },
 }
 EnginePlugins = {
 	{ Name = "orca.UIKit" },

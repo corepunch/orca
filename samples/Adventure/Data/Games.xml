@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<group name="Games">
-  <group name="Catalog">
-    <group name="Zork1">
-      <string name="Id">zork1</string>
-      <string name="Title">Zork I: The Great Underground Empire</string>
-      <string name="Description">The original text-based adventure game that started it all. Explore the Great Underground Empire, solve puzzles, and uncover hidden treasures in this classic adventure.</string>
-      <string name="Cover">Adventure/Images/zork1</string>
-    </group>
-    <group name="Horror">
-      <string name="Id">horror</string>
-      <string name="Title">Sanitarium: A Psychological Horror Adventure</string>
-      <string name="Description">A chilling journey into the mind of a disturbed protagonist. Navigate through a series of psychological challenges and uncover dark secrets in this horror adventure.</string>
-      <string name="Cover">Adventure/Images/horror</string>
-    </group>
-  </group>
-</group>
+<Games name="Games">
+  <Catalog>
+    <Game name="Zork1"
+          Id="zork1"
+          Title="Zork I: The Great Underground Empire"
+          Description="The original text-based adventure game that started it all. Explore the Great Underground Empire, solve puzzles, and uncover hidden treasures in this classic adventure."
+          Cover="Adventure/Images/zork1"/>
+    <Game name="Horror"
+          Id="horror"
+          Title="Sanitarium: A Psychological Horror Adventure"
+          Description="A chilling journey into the mind of a disturbed protagonist. Navigate through a series of psychological challenges and uncover dark secrets in this horror adventure."
+          Cover="Adventure/Images/horror"/>
+  </Catalog>
+</Games>

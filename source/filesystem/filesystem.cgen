@@ -325,6 +325,13 @@
       <arg name="xmlString" type="string">The XML string to parse</arg>
       <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
     </function>
+    <function name="LoadObjectFromXmlStringWithSchema" export="loadObjectFromXmlStringWithSchema">
+      <summary>Parses a data object tree from an XML string using a Schema XML string</summary>
+      <details>Parses the schema XML string to register entity classes, then parses the data XML string using those classes so each record element maps directly to its entity class with column values as typed properties. Returns the root object on success, or nil on failure.</details>
+      <arg name="xmlString" type="string">The data XML string to parse</arg>
+      <arg name="schemaXml" type="string">The schema XML string defining entities and columns</arg>
+      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
     <function name="GetThemeValue">
       <summary>Retrieves a theme value based on the provided key and theme group</summary>
       <details>Fetches the value associated with the specified key from the currently selected theme. This allows for dynamic theming of UI elements based on the active theme settings. The function returns the theme value as a string when found. If the key is not found, the function returns nil.</details>

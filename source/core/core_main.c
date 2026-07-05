@@ -132,6 +132,29 @@ OBJ_RegisterClass(struct ClassDesc const *class)
 }
 
 bool_t
+OBJ_UnregisterClass(uint32_t class_id)
+{
+  FOR_LOOP(i, MAX_CLASSES) {
+    if (core.classes[i] && core.classes[i]->ClassID == class_id) {
+      struct ClassDesc const *cls = core.classes[i];
+      /* Clear property type slots registered by this class. */
+      FOR_LOOP(j, cls->NumProperties) {
+        uint32_t fid = cls->Properties[j].FullIdentifier;
+        FOR_LOOP(k, MAX_PROPERTY_TYPES) {
+          if (core.ptypes[k].FullIdentifier == fid) {
+            memset(&core.ptypes[k], 0, sizeof(struct PropertyType));
+            break;
+          }
+        }
+      }
+      core.classes[i] = NULL;
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+bool_t
 OBJ_RegisterStructDesc(struct StructDesc *desc)
 {
   FOR_LOOP(i, MAX_STRUCTS) {

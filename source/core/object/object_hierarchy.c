@@ -105,18 +105,7 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
       return NULL;
     }
   } else {
-    struct Property *p = OBJ_FindLongProperty(object, fnv1a32(path));
-    if (p) {
-      return p;
-    }
-    struct Object *child = OBJ_FindImmediateChild(object, fnv1a32(path));
-    if (child) {
-      struct Property *childVal = OBJ_FindLongProperty(child, ID_DataObject_Value);
-      if (childVal) {
-        return childVal;
-      }
-    }
-    return p;
+    return OBJ_FindLongProperty(object, fnv1a32(path));
   }
 }
 

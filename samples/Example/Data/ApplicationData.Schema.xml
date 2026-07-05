@@ -1,11 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Schema>
-  <Entity Name="Signals">
-    <Column Name="Title" Type="string"/>
-    <Column Name="Body" Type="string"/>
+  <Entity Name="ApplicationData">
+    <Column Name="Metrics"           Type="relation" Entity="Metric"/>
+    <Column Name="Signals"           Type="relation" Entity="Signal"/>
+    <Column Name="XmlModel"          Type="relation" Entity="XmlModelLine"/>
+    <Column Name="LuaCards"          Type="relation" Entity="Card"/>
+    <Column Name="DeployCards"       Type="relation" Entity="Card"/>
+    <Column Name="DeployImages"      Type="relation" Entity="DeployImage"/>
+    <Column Name="FeatureCards"      Type="relation" Entity="Card"/>
+    <Column Name="GalleryCards"      Type="relation" Entity="GalleryCard"/>
+    <Column Name="WorkflowSteps"     Type="relation" Entity="WorkflowStep"/>
+    <Column Name="Quotes"            Type="relation" Entity="Quote"/>
+    <Column Name="XmlPanelHeader"    Type="relation" Entity="PanelHeader"/>
+    <Column Name="LuaPanelHeader"    Type="relation" Entity="PanelHeader"/>
+    <Column Name="MoonPanelHeader"   Type="relation" Entity="PanelHeader"/>
+    <Column Name="DeployPanelHeader" Type="relation" Entity="PanelHeader"/>
   </Entity>
-  <Entity Name="Metrics">
+  <Entity Name="Metric">
+    <Column Name="Title"        Type="string"/>
+    <Column Name="Subtitle"     Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
+  </Entity>
+  <Entity Name="Signal">
+    <Column Name="Icon"         Type="string"/>
+    <Column Name="Title"        Type="string"/>
+    <Column Name="Body"         Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
+  </Entity>
+  <Entity Name="XmlModelLine">
+    <Column Name="Icon"         Type="string"/>
+    <Column Name="Title"        Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
+    <Column Name="Indent"       Type="string"/>
+  </Entity>
+  <Entity Name="Card">
+    <Column Name="Icon"           Type="string"/>
+    <Column Name="Title"          Type="string"/>
+    <Column Name="Body"           Type="string"/>
+    <Column Name="PrimaryColor"   Type="string"/>
+    <Column Name="IconBackground" Type="string"/>
+  </Entity>
+  <Entity Name="DeployImage">
+    <Column Name="Image" Type="string"/>
     <Column Name="Title" Type="string"/>
-    <Column Name="Value" Type="string"/>
+  </Entity>
+  <Entity Name="GalleryCard">
+    <Column Name="Image"    Type="string"/>
+    <Column Name="Title"    Type="string"/>
+    <Column Name="Subtitle" Type="string"/>
+  </Entity>
+  <Entity Name="WorkflowStep">
+    <Column Name="Title"        Type="string"/>
+    <Column Name="Subtitle"     Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
+    <Column Name="Body"         Type="string"/>
+  </Entity>
+  <Entity Name="Quote">
+    <Column Name="PrimaryColor" Type="string"/>
+    <Column Name="Title"        Type="string"/>
+    <Column Name="Subtitle"     Type="string"/>
+    <Column Name="Body"         Type="string"/>
+  </Entity>
+  <Entity Name="PanelHeader">
+    <Column Name="Icon"         Type="string"/>
+    <Column Name="Title"        Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
   </Entity>
 </Schema>

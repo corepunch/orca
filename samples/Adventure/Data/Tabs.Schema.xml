@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Schema>
+  <Entity Name="Tabs">
+    <Column Name="Key"    Type="string" Key="true"/>
+    <Column Name="Icon"   Type="string"/>
+    <Column Name="Label"  Type="string"/>
+    <Column Name="Active" Type="bool"/>
+  </Entity>
+</Schema>
