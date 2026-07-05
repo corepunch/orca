@@ -174,7 +174,10 @@ HANDLER(ListBox, Object, Start) {
   FOR_EACH_OBJECT(data, CMP_GetObject(ic->ItemsSource)) { // iterate data items
     // instantiate template, or fall back to a plain TextBlock
     struct Object *item = tpl ? OBJ_Instantiate(CMP_GetObject(tpl)) : OBJ_Create(ID_TextBlock);
-    if (!item) return Con_Printf("Can not instantiate ListBox item template"), FALSE;
+    if (!item) {
+      Con_Printf("Can not instantiate ListBox item template");
+      return FALSE;
+    }
     if (!tpl) {
       char *text = "Item";
       PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), &text);

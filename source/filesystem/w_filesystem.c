@@ -388,9 +388,11 @@ HANDLER(XmlDataSource, Object, Start) {
   struct DataSource *source = GetDataSource(hObject);
   if (!source || !pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
   struct Object *data = FS_LoadObject(pXmlDataSource->Source);
-  if (!data || !GetDataObject(data))
-    return Con_Printf("Could not load XmlDataSource '%s' from '%s'",
-                      OBJ_GetName(hObject), pXmlDataSource->Source), FALSE;
+  if (!data || !GetDataObject(data)) {
+    Con_Printf("Could not load XmlDataSource '%s' from '%s'",
+               OBJ_GetName(hObject), pXmlDataSource->Source);
+    return FALSE;
+  }
   source->Data = GetDataObject(data);
   OBJ_AddChild(hObject, data);
   return FALSE;
