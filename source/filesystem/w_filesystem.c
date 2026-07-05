@@ -383,8 +383,21 @@ HANDLER(Project, Object, Release) {
   return TRUE;
 }
 
-// XmlDataSource_Attached — register the datasource once its complete owning
-// hierarchy is attached, then open its session by loading the XML source.
+// XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
+HANDLER(XmlDataSource, Object, Start) {
+  struct DataSource *ds = GetDataSource(hObject);
+  if (!ds || !pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
+  struct Object *data = FS_LoadObject(pXmlDataSource->Source);
+  if (!data || !GetDataObject(data))
+    return Con_Printf("Could not load XmlDataSource '%s' from '%s'",
+                      OBJ_GetName(hObject), pXmlDataSource->Source), FALSE;
+  PROP_SetValue(OBJ_FindLongProperty(hObject, ID_DataSource_Data), &data);
+  OBJ_AddChild(hObject, data);
+  return FALSE;
+}
+
+// XmlDataSource_Attached — publish the already loaded datasource under its
+// fully qualified project path.
 HANDLER(XmlDataSource, Object, Attached) {
   struct DataSource *ds = GetDataSource(hObject);
   struct Object *library = OBJ_GetParent(hObject);
@@ -407,7 +420,6 @@ HANDLER(XmlDataSource, Object, Attached) {
            pXmlDataSource->Source ? pXmlDataSource->Source : "");
 
   FS_RegisterProjectDataSource(project, qualified, "Xml", params, ds->Schema);
-  FS_ResolveDataSource(qualified, NULL);
   return TRUE;
 }
 

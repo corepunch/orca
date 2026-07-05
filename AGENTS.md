@@ -169,3 +169,51 @@ emit_properties (line 527)
               └── walk_fixed_array (line 495)
               └── walk_prop (line 498)
 ```
+
+## C coding style: compact idioms
+
+These patterns minimize vertical space and keep functions lean. They appear throughout the codebase and are preferred over traditional block forms.
+
+### Guard clauses
+Early return on failure instead of nesting in else:
+```c
+if (!ic->ItemsSource) return FALSE;
+```
+Avoid: `if (cond) { ... } else { return; }`.
+
+### Comma-operator returns
+Combine side-effect + return in one statement:
+```c
+return Con_Printf("error"), FALSE;
+```
+
+### Variable-initialization ternary
+Choose constructor/initializer inline in the declaration:
+```c
+struct Object *item = tpl ? OBJ_Instantiate(tpl) : OBJ_Create(ID_TextBlock);
+```
+
+### Guard-and-assign
+Use `&&` short-circuit to conditionally set a field:
+```c
+n && (n->DataContext = OBJ_GetComponent(data, ID_DataObject));
+```
+
+### Comma-operator in conditionals
+Side-effect call that must evaluate as truthy:
+```c
+first && (ListBox_SetSelected(hObject, pListBox, first), true);
+```
+
+### Loop break for first element
+Find first match without a helper function:
+```c
+FOR_EACH_OBJECT(c, hObject) { first = c; break; }
+```
+
+### Comments
+Add short comments only where the intent isn't obvious — avoid explaining what the code does when the code itself is clear. Prefer a single line above or beside the relevant line rather than a block:
+```c
+// fallback: registry lookup for class constructors (package.lua _ENV)
+lua_getfield(L, LUA_REGISTRYINDEX, name);
+```
