@@ -59,19 +59,17 @@
       <properties>
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
-      <fields>
-        <field name="Data" type="DataObject" pointer="true"/>
-      </fields>
-      <handles>
-        <handle message="DataContext.GetData"/>
-      </handles>
     </class>
     <class name="XmlDataSource" parent="DataSource">
       <summary>XML-backed datasource that loads an object tree from a source file.</summary>
       <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. On Object.Start it loads the XML source into a tree of DataObject, DataObjectString, DataObjectInt, DataObjectFloat, and DataObjectBool instances.</details>
+      <fields>
+        <field name="Data" type="DataObject" pointer="true"/>
+      </fields>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Attached"/>
+        <handle message="DataContext.GetData"/>
       </handles>
       <properties>
         <property name="Source" type="string">Path to the XML file to load, relative to the workspace (for example "Adventure/Data/Games").</property>
