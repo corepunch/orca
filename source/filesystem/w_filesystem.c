@@ -399,9 +399,11 @@ HANDLER(XmlDataSource, Object, Start) {
   struct Object *data = schema
     ? FS_LoadObjectFromXmlWithSchema(source, schema)
     : FS_LoadObject(pXmlDataSource->Source);
-  if (!data || !GetDataObject(data))
-    return Con_Printf("Could not load XmlDataSource '%s' from '%s'",
-                      OBJ_GetName(hObject), pXmlDataSource->Source), FALSE;
+  if (!data || !GetDataObject(data)) {
+    Con_Printf("Could not load XmlDataSource '%s' from '%s'",
+               OBJ_GetName(hObject), pXmlDataSource->Source);
+    return FALSE;
+  }
   pXmlDataSource->Data = GetDataObject(data);
   OBJ_AddChild(hObject, data);
   return FALSE;
