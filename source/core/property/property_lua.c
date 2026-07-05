@@ -12,11 +12,8 @@ extern struct Object* FS_LoadObject(const char* path);
 extern struct Object* FS_ResolveDataSource(const char* name, const char** out_params);
 extern int f_msgSend(lua_State *L);
 
-static void read_struct_table(lua_State *L, int idx,
-                              struct StructDesc const *desc, void *valueptr);
-static struct Object *create_object_from_table(lua_State *L, int idx,
-                                               struct PropertyType const *prop,
-                                               bool_t attach_children);
+static void read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *valueptr);
+static struct Object *create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop);
 
 ORCA_API int
 parse_property(const char* str, struct PropertyType const* prop, void* valueptr)
@@ -127,7 +124,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
             }
             read_struct_table(L, -1, desc, (char*)tmp + i * prop->DataSize);
           } else if (prop->DataType == kDataTypeObject) {
-            struct Object *obj = create_object_from_table(L, -1, prop, TRUE);
+            struct Object *obj = create_object_from_table(L, -1, prop);
             memcpy((char*)tmp + i * prop->DataSize, &obj, sizeof(obj));
           } else {
             free(tmp);
@@ -205,7 +202,7 @@ read_property(lua_State *L, int idx, struct PropertyType const* prop, void* valu
           parse_property(luaL_checkstring(L, idx), prop, valueptr);
           break;
         case LUA_TTABLE:
-          *(struct Object **)valueptr = create_object_from_table(L, idx, prop, TRUE);
+          *(struct Object **)valueptr = create_object_from_table(L, idx, prop);
           break;
         default:
           luaL_error(L, "Unsupported input type %d for property %s of type object", lua_type(L, idx), prop->Name);
@@ -246,8 +243,7 @@ read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *va
 }
 
 static struct Object *
-create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop,
-                         bool_t attach_children)
+create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
 {
   struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
   if (!cls) {
@@ -272,8 +268,7 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop,
                  (!strcmp(short_name, "Name") || !strcmp(short_name, "id"))) {
         OBJ_SetName(obj, lua_tostring(L, -1));
       }
-    } else if (attach_children && lua_type(L, -2) == LUA_TNUMBER &&
-               lua_type(L, -1) == LUA_TUSERDATA) {
+    } else if (lua_type(L, -2) == LUA_TNUMBER && lua_type(L, -1) == LUA_TUSERDATA) {
       /* Array-part entries that are constructed objects become children,
        * e.g. DataSourceLibrary = { XmlDataSource { ... } }. */
       struct Object *child = luaX_checkObject(L, -1);
@@ -284,22 +279,6 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop,
 
   return obj;
 }
-
-static void
-attach_object_children_from_table(lua_State *L, int idx, struct Object *obj)
-{
-  int table_idx = lua_absindex(L, idx);
-  lua_pushnil(L);
-  while (lua_next(L, table_idx) != 0) {
-    if (lua_type(L, -2) == LUA_TNUMBER &&
-        lua_type(L, -1) == LUA_TUSERDATA) {
-      struct Object *child = luaX_checkObject(L, -1);
-      if (child) OBJ_AddChild(obj, child);
-    }
-    lua_pop(L, 1);
-  }
-}
-  
 ORCA_API int
 write_property(lua_State *L, struct PropertyType const* prop, void const* valueptr)
 {
@@ -400,16 +379,12 @@ luaX_readProperty(lua_State* L, int idx, struct Property *p)
   }
 
   if (PROP_GetType(p) == kDataTypeObject && lua_istable(L, idx)) {
-    /* Populate and name the property object before parenting it.  Its
-     * array-part objects are attached afterwards, so their automatic Start
-     * sees the complete owner/property hierarchy. */
-    struct Object *object = create_object_from_table(L, idx, p->pdesc, FALSE);
+    struct Object *object = create_object_from_table(L, idx, p->pdesc);
     PROP_SetValue(p, &object);
     if (p->object) {
       OBJ_AddChild(p->object, object);
       PROP_SetFlag(p, PF_OWNS_OBJECT_CHILD);
     }
-    attach_object_children_from_table(L, idx, object);
     return 0;
   }
 
