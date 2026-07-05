@@ -1466,10 +1466,14 @@ local function test_datasource_provider_resolution()
 	local library = project.DataSourceLibrary
 	local source = library and library:findChild("ApplicationData", false) or nil
 	test.expect(source ~= nil, "ApplicationData XmlDataSource should exist")
-	test.expect(source and source.Data ~= nil,
+	local data
+	if source then
+		for child in source.children do data = child; break end
+	end
+	test.expect(data ~= nil,
 		"XmlDataSource.Start should eagerly materialize its DataObject root")
-	test.expect_eq(source and source.Data and source.Data:getClassName(), "DataObject",
-		"XmlDataSource.Data should be a DataObject tree")
+	test.expect_eq(data and data:getClassName(), "DataObject",
+		"XmlDataSource should own a DataObject tree")
 
 	local xml = '<Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)

@@ -271,7 +271,8 @@ struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params)
 {
   struct Object *source = FS_FindDataSource(name);
-  struct DataObject *data = core_GetDataContextData(source);
+  struct DataObject *data = (struct DataObject *)_SendMessage(
+      source, DataContext, GetData, .Path = "");
   if (GetDataSource(source) && data) {
     struct ds_entry *entry = _FindEntry(name);
     if (out_params) *out_params = entry ? entry->params : NULL;

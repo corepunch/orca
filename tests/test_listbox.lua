@@ -256,6 +256,7 @@ local function test_listbox_datacontext_wiring()
   local listbox = ui.ListBox { Name = "TestListBox", ItemsSource = items, ItemTemplate = template }
   screen:addChild(listbox)
 
+  local expected = { d1, d2 }
   local childCount = 0
   for child in listbox.children do
     childCount = childCount + 1
@@ -263,11 +264,39 @@ local function test_listbox_datacontext_wiring()
     test.expect(dc ~= nil, "Each item should have a DataContext set")
     test.expect_eq(dc:getClassName(), "DataObject",
       "DataContext should be a DataObject")
+    test.expect(dc == expected[childCount],
+      "Each item should receive its corresponding source object")
   end
   test.expect_eq(childCount, 2, "Should have 2 children")
 
   screen:clear()
   print("PASS: test_listbox_datacontext_wiring")
+end
+
+-- ---------------------------------------------------------------------------
+-- ListBox.Start: creates a usable TextBlock when ItemTemplate is omitted
+-- ---------------------------------------------------------------------------
+local function test_listbox_default_item_template()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+
+  local items = core.DataObject { Name = "ItemsSource" }
+  local data = core.DataObject { Name = "OnlyItem" }
+  items:addChild(data)
+
+  local listbox = ui.ListBox { Name = "TestListBox", ItemsSource = items }
+  screen:addChild(listbox)
+
+  local child
+  for item in listbox.children do child = item; break end
+  test.expect(child ~= nil, "ListBox should create an item without ItemTemplate")
+  test.expect_eq(child:getClassName(), "TextBlock",
+    "ListBox should fall back to a TextBlock")
+  test.expect_eq(child.Text, "Item", "Fallback TextBlock should have default text")
+  test.expect(child.DataContext == data,
+    "Fallback TextBlock should receive the source object as DataContext")
+
+  screen:clear()
+  print("PASS: test_listbox_default_item_template")
 end
 
 -- ---------------------------------------------------------------------------
@@ -316,6 +345,33 @@ local function test_listbox_binding_expression()
 end
 
 -- ---------------------------------------------------------------------------
+-- DataContext.GetData: base DataObject contexts resolve nested object paths
+-- ---------------------------------------------------------------------------
+local function test_datacontext_nested_path()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+
+  local items = core.DataObject { Name = "ItemsSource" }
+  local item = core.DataObject { Name = "Item" }
+  item:addChild(core.DataObject { Name = "Details", Value = "Nested value" })
+  items:addChild(item)
+
+  local template = ui.Node2D { Name = "ItemTemplate" }
+  local tb = template:addChild(ui.TextBlock { Name = "ItemText" })
+  tb:attachPropertyProgram("TextRun.Text", "{DataContext/Details/Value}", "OneWay", true)
+
+  local listbox = ui.ListBox { ItemsSource = items, ItemTemplate = template }
+  screen:addChild(listbox)
+  core.runAllPrograms(screen)
+
+  local text = listbox:findChild("ItemText", true)
+  test.expect_eq(text and text.Text, "Nested value",
+    "DataContext.GetData should resolve nested DataObject paths")
+
+  screen:clear()
+  print("PASS: test_datacontext_nested_path")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_listbox_properties()
@@ -328,6 +384,8 @@ test_listbox_horizontal_layout()
 test_listbox_spacing()
 test_listbox_empty_items_source()
 test_listbox_datacontext_wiring()
+test_listbox_default_item_template()
 test_listbox_binding_expression()
+test_datacontext_nested_path()
 
 print("All ListBox tests passed.")
