@@ -2,12 +2,59 @@
 #include <source/core/core_local.h>
 #include <core/core_properties.h>
 #include "fs_xml_inline.h"
+#include <ctype.h>
+#include <strings.h>
 
 extern int parse_property(const char* str,
                           struct PropertyType const* prop,
                           void* valueptr);
 
 static struct Object *node(struct _xmlNode* x);
+
+static bool_t
+has_attr_ci(struct _xmlNode *x, lpcString_t key)
+{
+  FOR_EACH_LIST(xmlAttr, a, x->properties) {
+    if (!strcasecmp((lpcString_t)a->name, key)) {
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+static lpcString_t
+alias_class_tag(lpcString_t tag)
+{
+  if (!tag) return tag;
+  if (!strcasecmp(tag, "group")) return "DataObject";
+  if (!strcasecmp(tag, "object")) return "DataObject";
+  if (!strcasecmp(tag, "string")) return "DataObjectString";
+  if (!strcasecmp(tag, "int")) return "DataObjectInt";
+  if (!strcasecmp(tag, "float")) return "DataObjectFloat";
+  if (!strcasecmp(tag, "bool")) return "DataObjectBool";
+  return tag;
+}
+
+static lpcString_t
+canonical_attr_name(lpcString_t raw, fixedString_t out)
+{
+  if (!raw || !*raw) return raw;
+  if (!strcasecmp(raw, "class")) return "class";
+  if (!strcasecmp(raw, "name")) return "Name";
+  if (!strcasecmp(raw, "value")) return "Value";
+  if (!strcasecmp(raw, "classname")) return "ClassName";
+  if (!strcasecmp(raw, "placeholdertemplate")) return "PlaceholderTemplate";
+  if (!strcasecmp(raw, "styleclass")) return "StyleClass";
+  if (!strcasecmp(raw, "datacontextsource")) return "DataContextSource";
+  if (!strcasecmp(raw, "target")) return "Target";
+
+  strncpy(out, raw, sizeof(fixedString_t) - 1);
+  out[sizeof(fixedString_t) - 1] = '\0';
+  if (out[0]) {
+    out[0] = (char)toupper((unsigned char)out[0]);
+  }
+  return out;
+}
 
 static struct PropertyType const *
 propdesc(struct Object *o, lpcString_t name)
@@ -361,8 +408,8 @@ binding_node(struct Object *o, struct _xmlNode* x)
   if (strcmp(tag, "Binding") && strcmp(tag, "BindingExpression")) {
     return FALSE;
   }
-
   xmlChar *target = xmlGetProp(x, XMLSTR("Target"));
+  if (!target) target = xmlGetProp(x, XMLSTR("target"));
   xmlChar *text = xmlNodeGetContent(x);
   if (target && text && *text) {
     OBJ_AttachPropertyProgram(o, (lpcString_t)target, (lpcString_t)text,
@@ -379,7 +426,8 @@ static void
 visit_attr(struct Object *o, xmlAttrPtr a)
 {
   xmlChar *value = xmlGetProp(a->parent, a->name);
-  lpcString_t name = (lpcString_t)a->name;
+  fixedString_t norm = {0};
+  lpcString_t name = canonical_attr_name((lpcString_t)a->name, norm);
   struct PropertyType const *pd = propdesc(o, name);
 
   if (!value) return;
@@ -396,7 +444,8 @@ visit_child(struct Object *o, struct _xmlNode* c)
 {
   if (binding_node(o, c)) return;
 
-  struct PropertyType const *pd = OBJ_FindClass((lpcString_t)c->name)
+  lpcString_t tag = alias_class_tag((lpcString_t)c->name);
+  struct PropertyType const *pd = OBJ_FindClass(tag)
     ? NULL
     : OBJ_FindExplicitPropertyType(o, (lpcString_t)c->name);
   if (pd) {
@@ -429,7 +478,7 @@ prefab(struct _xmlNode* x)
 static struct Object *
 node(struct _xmlNode* x)
 {
-  lpcString_t tag = (lpcString_t)x->name;
+  lpcString_t tag = alias_class_tag((lpcString_t)x->name);
   bool_t is_prefab = !strcmp(tag, "LayerPrefabPlaceholder") ||
                      !strcmp(tag, "ObjectPrefabPlaceholder") ||
                      !strcmp(tag, "LibraryPlaceholder");
@@ -447,7 +496,12 @@ node(struct _xmlNode* x)
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
-      OBJ_SetTextContent(o, (lpcString_t)t->content);
+      lpcString_t text = (lpcString_t)t->content;
+      struct PropertyType const *value_pd = propdesc(o, "Value");
+      if (value_pd && !has_attr_ci(x, "value")) {
+        set_text(o, value_pd, text);
+      }
+      OBJ_SetTextContent(o, text);
       return o;
     }
   }

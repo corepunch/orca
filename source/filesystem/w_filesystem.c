@@ -393,16 +393,14 @@ HANDLER(XmlDataSource, Object, Attached) {
     return TRUE;
   }
   lpcString_t project_name = OBJ_GetName(project);
-  lpcString_t library_name = OBJ_GetName(library);
   lpcString_t name = OBJ_GetName(hObject);
-  if (!project_name || !*project_name || !library_name || !*library_name ||
-      !name || !*name) {
+  if (!project_name || !*project_name || !name || !*name) {
     return TRUE;
   }
 
   char qualified[MAX_PROPERTY_STRING];
-  snprintf(qualified, sizeof(qualified), "%s/%s/%s",
-           project_name, library_name, name);
+  snprintf(qualified, sizeof(qualified), "%s/DataSources/%s",
+           project_name, name);
 
   char params[MAX_PROPERTY_STRING];
   snprintf(params, sizeof(params), "Path=%s",
