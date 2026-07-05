@@ -735,7 +735,7 @@
         <property name="Width" type="float" default="NAN">Viewport width for fixed-size screens and CSS viewport calculations.</property>
         <property name="Height" type="float" default="NAN">Viewport height for fixed-size screens and CSS viewport calculations.</property>
         <property name="Visible" type="bool" default="TRUE">Whether this screen or popup participates in rendering.</property>
-        <property name="DataContext" type="DataObject" pointer="true">Root data context for bindings and child content.</property>
+        <property name="DataContext" type="DataContext" pointer="true">Data source or data object used as the root for bindings and child content.</property>
         <property name="ClearColor" type="color">Background clear color for the screen </property>
         <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
       </properties>

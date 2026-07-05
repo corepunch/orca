@@ -261,14 +261,21 @@ _FindOrCreateSession(const char *name, const char *params)
 }
 
 struct Object *
+FS_FindDataSource(const char *name)
+{
+  struct Object *source = workspace && name ? OBJ_FindByPath(workspace, name) : NULL;
+  return GetDataSource(source) ? source : NULL;
+}
+
+struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params)
 {
-  struct Object *source = workspace ? OBJ_FindByPath(workspace, name) : NULL;
-  struct DataSource *data_source = GetDataSource(source);
-  if (data_source && data_source->Data) {
+  struct Object *source = FS_FindDataSource(name);
+  struct DataObject *data = core_GetDataContextData(source);
+  if (GetDataSource(source) && data) {
     struct ds_entry *entry = _FindEntry(name);
     if (out_params) *out_params = entry ? entry->params : NULL;
-    return CMP_GetObject(data_source->Data);
+    return CMP_GetObject(data);
   }
 
   struct ds_session *session = _FindSession(name);

@@ -705,7 +705,9 @@ tok_op(argument)
     for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
       struct Object *context = _FindDataContextObject(it, NULL);
       if (context) {
-        if ((p = OBJ_FindPropertyByPath(context, token->text + 12))) {
+        struct DataObject *data = core_GetDataContextData(context);
+        struct Object *root = data ? CMP_GetObject(data) : NULL;
+        if (root && (p = OBJ_FindPropertyByPath(root, token->text + 12))) {
           isDataContextPath = 1;
           goto return_value;
         }

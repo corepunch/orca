@@ -1476,8 +1476,18 @@ local function test_datasource_provider_resolution()
 	test.expect(root ~= nil, "XML with DataContextSource name should load")
 	test.expect(root.DataContext ~= nil,
 		"DataContextSource='ApplicationData' should resolve the datasource-owned tree; got DataContext=" .. tostring(root.DataContext))
-	test.expect_eq(root.DataContext:getClassName(), "DataObject",
-		"Resolved DataContext should be a DataObject")
+	test.expect_eq(root.DataContext:getClassName(), "XmlDataSource",
+		"Root DataContext should remain the XmlDataSource")
+
+	local bound = filesystem.loadObjectFromXmlString([[
+		<StackView DataContextSource="Example/DataSources/ApplicationData">
+			<TextBlock Name="source-bound-title" Text="{Binding DataContext/Signals/SignalXml/Title}"/>
+		</StackView>
+	]])
+	core.runAllPrograms(bound)
+	local title = bound and bound:findChild("source-bound-title", true) or nil
+	test.expect_eq(title and title.Text, "XML-first screens",
+		"Bindings should enter the DataObject tree through DataSource.getData")
 
 	filesystem.unloadProject(project)
 	project = nil

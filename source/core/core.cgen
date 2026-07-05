@@ -802,7 +802,14 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <property name="Entries" type="LocaleEntry" array="true">Array of locale entries contained in this locale</property>
       </properties>
     </class>
-    <class name="DataObject">
+    <class name="DataContext">
+      <summary>Base class for objects that provide a DataObject tree to bindings.</summary>
+      <details>DataSource returns its owned root DataObject while DataObject returns itself. Nodes can therefore use either a datasource or an individual data object as their DataContext.</details>
+      <properties>
+        <property name="Data" type="DataObject" pointer="true">Root DataObject exposed by this context. DataObject contexts implicitly expose themselves.</property>
+      </properties>
+    </class>
+    <class name="DataObject" parent="DataContext">
       <summary>Base class for data-holding objects within the framework</summary>
       <details>Provides fundamental data management capabilities and serves as the base for objects that participate in data binding operations.
 Every DataObject carries a Name identifier and optional Value (stored as string) with a DataType enum discriminator.
@@ -996,7 +1003,7 @@ Typed subclasses (DataObjectString, DataObjectInt, DataObjectFloat, DataObjectBo
         <property name="VisibleAmountInParent" type="float" default="1">Specifies how much of the node is visible within its parent container. Value in range [0.0, 1.0].</property>
         <property name="Opacity" type="float" default="1">Opacity of the node, range [0.0 = transparent, 1.0 = fully opaque].</property>
         <property name="Tags" type="string">Tag collection for categorizing or querying nodes.</property>
-        <property name="DataContext" type="DataObject" pointer="true">Data context (used for data binding, similar to XAML's DataContext).</property>
+        <property name="DataContext" type="DataContext" pointer="true">Data source or data object used as the root for data binding.</property>
         <property name="Resources" type="ResourceEntry" array="true">Array of resources associated with this node. Can be aliases to objects or other resources.</property>
         <property name="Triggers" type="Trigger" array="true">Array of trigger objects attached to this node. Each trigger can own nested action components.</property>
       </properties>
@@ -1129,6 +1136,11 @@ Typed subclasses (DataObjectString, DataObjectInt, DataObjectFloat, DataObjectBo
     </class>
   </classes>
   <functions>
+    <function name="GetDataContextData">
+      <summary>Returns the root DataObject exposed by a DataContext.</summary>
+      <arg name="context" type="Object" pointer="true"/>
+      <returns type="DataObject" pointer="true"/>
+    </function>
     <function name="GetFocus">
       <summary>Retrieves currently active object.</summary>
       <returns type="Object" pointer="true">Pointer to the currently focused object, or null if no object has focus</returns>

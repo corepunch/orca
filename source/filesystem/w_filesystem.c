@@ -385,13 +385,13 @@ HANDLER(Project, Object, Release) {
 
 // XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
 HANDLER(XmlDataSource, Object, Start) {
-  struct DataSource *ds = GetDataSource(hObject);
-  if (!ds || !pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
+  struct DataContext *context = GetDataContext(hObject);
+  if (!context || !pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
   struct Object *data = FS_LoadObject(pXmlDataSource->Source);
   if (!data || !GetDataObject(data))
     return Con_Printf("Could not load XmlDataSource '%s' from '%s'",
                       OBJ_GetName(hObject), pXmlDataSource->Source), FALSE;
-  PROP_SetValue(OBJ_FindLongProperty(hObject, ID_DataSource_Data), &data);
+  PROP_SetValue(OBJ_FindLongProperty(hObject, ID_DataContext_Data), &data);
   OBJ_AddChild(hObject, data);
   return FALSE;
 }

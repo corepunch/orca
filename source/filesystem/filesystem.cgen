@@ -53,11 +53,10 @@
         <property name="IsExternal" type="bool"/>
       </properties>
     </class>
-    <class name="DataSource">
+    <class name="DataSource" parent="DataContext">
       <summary>Base class for a project datasource declared in a DataSourceLibrary.</summary>
       <details>A datasource is an object, like an Image or a RenderTargetTexture. It owns an eagerly materialized DataObject tree loaded by a concrete subclass such as XmlDataSource. It is declared inside a project's named DataSourceLibrary and referenced from bindings by its fully qualified path "Project/Library/Name", for example "Adventure/DataSources/Games".</details>
       <properties>
-        <property name="Data" type="DataObject" pointer="true">Root of the eagerly materialized data object tree.</property>
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
     </class>
