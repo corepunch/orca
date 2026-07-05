@@ -2,13 +2,9 @@
 #include <include/api.h>
 #include <include/codegen.h>
 
-struct DataObject *
-core_GetDataContextData(struct Object *object)
-{
-  struct DataContext *context = GetDataContext(object);
-  if (!context) return NULL;
-  if (context->Data) return context->Data;
-  return GetDataObject(object);
+HANDLER(DataContext, DataContext, GetData) {
+  struct Object *data = OBJ_FindByPath(hObject, pGetData->Path ? pGetData->Path : "");
+  return (LRESULT)GetDataObject(data);
 }
 
 HANDLER(DataObject, Object, Start) {

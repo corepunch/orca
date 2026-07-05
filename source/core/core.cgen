@@ -805,9 +805,17 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
     <class name="DataContext">
       <summary>Base class for objects that provide a DataObject tree to bindings.</summary>
       <details>DataSource returns its owned root DataObject while DataObject returns itself. Nodes can therefore use either a datasource or an individual data object as their DataContext.</details>
-      <properties>
-        <property name="Data" type="DataObject" pointer="true">Root DataObject exposed by this context. DataObject contexts implicitly expose themselves.</property>
-      </properties>
+      <handles>
+        <handle message="DataContext.GetData"/>
+      </handles>
+      <messages>
+        <message name="GetData">
+          <summary>Returns the DataObject at the requested path.</summary>
+          <fields>
+            <field name="Path" type="string"/>
+          </fields>
+        </message>
+      </messages>
     </class>
     <class name="DataObject" parent="DataContext">
       <summary>Base class for data-holding objects within the framework</summary>
@@ -1136,11 +1144,6 @@ Typed subclasses (DataObjectString, DataObjectInt, DataObjectFloat, DataObjectBo
     </class>
   </classes>
   <functions>
-    <function name="GetDataContextData">
-      <summary>Returns the root DataObject exposed by a DataContext.</summary>
-      <arg name="context" type="Object" pointer="true"/>
-      <returns type="DataObject" pointer="true"/>
-    </function>
     <function name="GetFocus">
       <summary>Retrieves currently active object.</summary>
       <returns type="Object" pointer="true">Pointer to the currently focused object, or null if no object has focus</returns>

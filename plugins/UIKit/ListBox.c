@@ -175,7 +175,10 @@ HANDLER(ListBox, Object, Start) {
     // instantiate template, or fall back to a plain TextBlock
     struct Object *item = tpl ? OBJ_Instantiate(CMP_GetObject(tpl)) : OBJ_Create(ID_TextBlock);
     if (!item) return Con_Printf("Can not instantiate ListBox item template"), FALSE;
-    if (!tpl) PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), "Item"); // default text
+    if (!tpl) {
+      char *text = "Item";
+      PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), &text);
+    }
     // set DataContext directly on Node (binding system reads it from here)
     struct Node *n = GetNode(item);
     n && (n->DataContext = GetDataContext(data));

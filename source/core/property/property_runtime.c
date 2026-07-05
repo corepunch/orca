@@ -705,9 +705,20 @@ tok_op(argument)
     for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
       struct Object *context = _FindDataContextObject(it, NULL);
       if (context) {
-        struct DataObject *data = core_GetDataContextData(context);
+        char path[MAX_PROPERTY_STRING] = {0};
+        char const *property_path = token->text + 12;
+        char const *property_name = strrchr(property_path, '/');
+        if (property_name) {
+          size_t path_len = MIN((size_t)(property_name - property_path), sizeof(path) - 1);
+          memcpy(path, property_path, path_len);
+          property_name++;
+        } else {
+          property_name = property_path;
+        }
+        struct DataObject *data = (struct DataObject *)_SendMessage(
+            context, DataContext, GetData, .Path = path);
         struct Object *root = data ? CMP_GetObject(data) : NULL;
-        if (root && (p = OBJ_FindPropertyByPath(root, token->text + 12))) {
+        if (root && (p = OBJ_FindPropertyByPath(root, property_name))) {
           isDataContextPath = 1;
           goto return_value;
         }
