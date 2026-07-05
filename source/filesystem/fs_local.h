@@ -59,6 +59,7 @@ struct ds_column;
 
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params);
+struct Object *FS_FindDataSource(const char *name);
 
 struct ds_schema const *
 FS_GetDataSourceSchema(const char *name);

@@ -101,7 +101,8 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     // Datasources are referenced by their fully qualified
     // "Project/Library/Name" path. Keep direct file paths as a deprecated
     // compatibility fallback.
-    struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
+    struct Object *dataSource = FS_FindDataSource(ds_name);
+    struct Object *dataObj = dataSource ? FS_ResolveDataSource(ds_name, NULL) : NULL;
     if (!dataObj) {
       // Fallback: treat as a direct file path (deprecated)
       Con_Warning("DataContextSource='%s' uses direct file path; migrate to datasource name (e.g. '%s')",
@@ -114,6 +115,8 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       if (child) {
         PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
       }
+    } else if (dataSource) {
+      PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataSource);
     } else {
       PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &dataObj);
     }

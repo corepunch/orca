@@ -2,6 +2,15 @@
 #include <include/api.h>
 #include <include/codegen.h>
 
+struct DataObject *
+core_GetDataContextData(struct Object *object)
+{
+  struct DataContext *context = GetDataContext(object);
+  if (!context) return NULL;
+  if (context->Data) return context->Data;
+  return GetDataObject(object);
+}
+
 HANDLER(DataObject, Object, Start) {
   return FALSE;
 }
