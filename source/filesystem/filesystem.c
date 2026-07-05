@@ -1058,9 +1058,14 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
       snprintf(params, sizeof(params), "Path=%s",
                xds->Source ? xds->Source : "");
 
+      OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
       FS_RegisterProjectDataSource(CMP_GetObject(project), qualified,
                                    "Xml", params, ds->Schema);
       FS_ResolveDataSource(qualified, NULL);
+      if (xds->Source && *xds->Source) {
+        FS_RegisterProjectDataSource(CMP_GetObject(project), xds->Source,
+                                     "Xml", params, ds->Schema);
+      }
     }
   }
 
@@ -1135,14 +1140,18 @@ _xml_ds_fetch(const char *params)
     char spath[MAX_PROPERTY_STRING] = {0};
     if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
     memcpy(spath, sp, slen);
-    /* DS_ParseSchema registers classes and returns the schema.  The session
-       will hold onto it; we just need it alive for the load below. */
-    schema = DS_ParseSchema(spath);
+    struct file *schema_file = FS_LoadFile(spath);
+    schema = schema_file
+      ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+    if (schema_file) FS_FreeFile(schema_file);
   }
 
-  return schema
-    ? FS_LoadObjectFromXmlWithSchema(path, schema)
-    : FS_LoadObject(path);
+  path_t source = {0};
+  const char *dot = strrchr(path, '.');
+  const char *slash = strrchr(path, '/');
+  snprintf(source, sizeof(source), "%s%s", path,
+           !dot || dot < slash ? ".xml" : "");
+  return schema ? FS_LoadObjectFromXmlWithSchema(source, schema) : FS_LoadObject(path);
 }
 
 bool_t

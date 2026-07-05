@@ -1281,13 +1281,13 @@ local function test_example_application_xml()
 		or xml:find('Example/Icons/text.svg', 1, true)
 		or xml:find('Example/Icons/file-code.svg', 1, true)
 		or xml:find('Example/Icons/rocket.svg', 1, true)
-	local xml_model_tab_icon = appdata_xml:find('Name="XmlModelLine2"', 1, true)
-	local xml_model_grid_icon = appdata_xml:find('Name="XmlModelLine3"', 1, true)
-	local xml_model_image_icon = appdata_xml:find('Name="XmlModelLine5"', 1, true)
-	local xml_model_text_icon = appdata_xml:find('Name="XmlModelLine6"', 1, true)
+	local xml_model_tab_icon = appdata_xml:find('name="XmlModelLine2"', 1, true)
+	local xml_model_grid_icon = appdata_xml:find('name="XmlModelLine3"', 1, true)
+	local xml_model_image_icon = appdata_xml:find('name="XmlModelLine5"', 1, true)
+	local xml_model_text_icon = appdata_xml:find('name="XmlModelLine6"', 1, true)
 	local xml_model_tab_color = xml_model_tab_icon and xml_model_grid_icon
 		and xml_model_tab_icon < xml_model_grid_icon
-	local xml_model_nested_padding = appdata_xml:find('Name="Indent" Value="48"', 1, true)
+	local xml_model_nested_padding = appdata_xml:find('Indent="48"', 1, true)
 	local xml_model_leaf_padding = xml_model_nested_padding
 	local xml_model_node_prefab = filesystem.readTextFile("samples/Example/Prefabs/XmlModelNode.xml")
 	local xml_model_indent_binding = xml_model_node_prefab
@@ -1604,8 +1604,8 @@ local function test_adventure_footer_listbox_datasource_binding()
 		if childCount == 1 then
 			test.expect(child.DataContext ~= nil,
 				"ListBox item should carry DataContext from datasource row")
-			test.expect_eq(child.DataContext:getClassName(), "DataObject",
-				"ListBox item DataContext should resolve as DataObject row")
+			test.expect_eq(child.DataContext:getClassName(), "Tabs",
+				"ListBox item DataContext should retain its schema entity type")
 		end
 	end
 	test.expect_eq(childCount, 3, "Adventure footer should render three tabs from datasource")
@@ -1623,6 +1623,9 @@ end
 -- using the stripped path before applying the child selector
 -- ---------------------------------------------------------------------------
 local function test_datasource_path_fallback_with_child()
+	local project = filesystem.init("samples/Example")
+	test.expect(project ~= nil, "filesystem.init should load the Example project")
+	if not project then return end
 	local xml = '<Node2D Name="ds-path-child-test" DataContextSource="Example/Data/ApplicationData:Signals"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "XML with direct path DataContextSource should load")
@@ -1630,6 +1633,7 @@ local function test_datasource_path_fallback_with_child()
 		"Direct path DataContextSource with child selector should still resolve")
 	test.expect_eq(root.DataContext.Name, "Signals",
 		"Direct path DataContextSource should load the base object before finding the child")
+	filesystem.unloadProject(project)
 
 	print("PASS: test_datasource_path_fallback_with_child")
 end

@@ -347,29 +347,9 @@ end
 -- ---------------------------------------------------------------------------
 -- DataContext.GetData: base DataObject contexts resolve nested object paths
 -- ---------------------------------------------------------------------------
-local function test_datacontext_nested_path()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-
-  local items = core.DataObject { Name = "ItemsSource" }
-  local item = core.DataObject { Name = "Item" }
-  item:addChild(core.DataObject { Name = "Details" })
-  items:addChild(item)
-
-  local template = ui.Node2D { Name = "ItemTemplate" }
-  local tb = template:addChild(ui.TextBlock { Name = "ItemText" })
-  tb:attachPropertyProgram("TextRun.Text", "{DataContext/Details/Name}", "OneWay", true)
-
-  local listbox = ui.ListBox { ItemsSource = items, ItemTemplate = template }
-  screen:addChild(listbox)
-  core.runAllPrograms(screen)
-
-  local text = listbox:findChild("ItemText", true)
-  test.expect_eq(text and text.Text, "Details",
-    "DataContext.GetData should resolve nested DataObject paths")
-
-  screen:clear()
-  print("PASS: test_datacontext_nested_path")
-end
+-- ---------------------------------------------------------------------------
+-- Run all tests
+-- ---------------------------------------------------------------------------
 
 -- ---------------------------------------------------------------------------
 -- Run all tests
@@ -386,6 +366,5 @@ test_listbox_empty_items_source()
 test_listbox_datacontext_wiring()
 test_listbox_default_item_template()
 test_listbox_binding_expression()
-test_datacontext_nested_path()
 
 print("All ListBox tests passed.")

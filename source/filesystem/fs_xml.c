@@ -105,7 +105,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     // "Project/Library/Name" path. Keep direct file paths as a deprecated
     // compatibility fallback.
     struct Object *dataSource = FS_FindDataSource(ds_name);
-    struct Object *dataObj = dataSource ? FS_ResolveDataSource(ds_name, NULL) : NULL;
+    struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
     if (!dataObj) {
       // Fallback: treat as a direct file path (deprecated)
       Con_Warning("DataContextSource='%s' uses direct file path; migrate to datasource name (e.g. '%s')",
@@ -113,7 +113,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       dataObj = FS_LoadObject(ds_name);
     }
 
-    if (colon) {
+    if (colon && dataObj) {
       struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
       if (child) {
         PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
@@ -534,14 +534,16 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   if (schema && entity_name) {
     const struct ds_entity *entity = DS_FindEntity(schema, entity_name);
     struct ClassDesc const *cls = entity ? OBJ_FindClass(entity_name) : NULL;
-    if (cls) {
-      struct Object *o = OBJ_Create(cls->ClassID);
+    if (entity) {
+      bool_t is_record = cls && !strcasecmp(raw_tag, entity_name);
+      struct Object *o = is_record ? OBJ_Create(cls->ClassID) : OBJ_Create(ID_DataObject);
       if (!o) return NULL;
 
       /* Set Name from the xml "name" or "Name" attribute. */
       xmlChar *xname = xmlGetProp(x, XMLSTR("Name"));
       if (!xname) xname = xmlGetProp(x, XMLSTR("name"));
       if (xname) { OBJ_SetName(o, (const char *)xname); xmlFree(xname); }
+      else if (!is_record) OBJ_SetName(o, raw_tag);
 
       /* Apply each non-Name, non-relation attribute as a column value. */
       FOR_EACH_LIST(xmlAttr, a, x->properties) {

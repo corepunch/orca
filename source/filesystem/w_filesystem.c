@@ -386,12 +386,22 @@ HANDLER(Project, Object, Release) {
 // XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
 HANDLER(XmlDataSource, Object, Start) {
   if (!pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
-  struct Object *data = FS_LoadObject(pXmlDataSource->Source);
-  if (!data || !GetDataObject(data)) {
-    Con_Printf("Could not load XmlDataSource '%s' from '%s'",
-               OBJ_GetName(hObject), pXmlDataSource->Source);
-    return FALSE;
-  }
+  struct DataSource *ds = GetDataSource(hObject);
+  struct file *schema_file = ds && ds->Schema ? FS_LoadFile(ds->Schema) : NULL;
+  struct ds_schema const *schema = schema_file
+    ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+  if (schema_file) FS_FreeFile(schema_file);
+  path_t source = {0};
+  lpcString_t dot = strrchr(pXmlDataSource->Source, '.');
+  lpcString_t slash = strrchr(pXmlDataSource->Source, '/');
+  snprintf(source, sizeof(source), "%s%s", pXmlDataSource->Source,
+           !dot || dot < slash ? ".xml" : "");
+  struct Object *data = schema
+    ? FS_LoadObjectFromXmlWithSchema(source, schema)
+    : FS_LoadObject(pXmlDataSource->Source);
+  if (!data || !GetDataObject(data))
+    return Con_Printf("Could not load XmlDataSource '%s' from '%s'",
+                      OBJ_GetName(hObject), pXmlDataSource->Source), FALSE;
   pXmlDataSource->Data = GetDataObject(data);
   OBJ_AddChild(hObject, data);
   return FALSE;
