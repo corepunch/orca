@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<DataObject Name="Tabs">
-  <DataObject Name="TabAdventures">
-    <DataObjectString Name="Key" Value="games"/>
-    <DataObjectString Name="Icon" Value="Adventure/Icons/blocks.svg?width=32&amp;type=mask"/>
-    <DataObjectString Name="Label" Value="Adventures"/>
-    <DataObjectString Name="Active" Value="true"/>
-  </DataObject>
-  <DataObject Name="TabLibrary">
-    <DataObjectString Name="Key" Value="library"/>
-    <DataObjectString Name="Icon" Value="Adventure/Icons/database.svg?width=32&amp;type=mask"/>
-    <DataObjectString Name="Label" Value="Library"/>
-    <DataObjectString Name="Active" Value="false"/>
-  </DataObject>
-  <DataObject Name="TabSettings">
-    <DataObjectString Name="Key" Value="settings"/>
-    <DataObjectString Name="Icon" Value="Adventure/Icons/layers.svg?width=32&amp;type=mask"/>
-    <DataObjectString Name="Label" Value="Settings"/>
-    <DataObjectString Name="Active" Value="false"/>
-  </DataObject>
-</DataObject>
+<group name="Tabs">
+  <group name="TabAdventures">
+    <string name="Key">games</string>
+    <string name="Icon">Adventure/Icons/blocks.svg?width=32&amp;type=mask</string>
+    <string name="Label">Adventures</string>
+    <string name="Active">true</string>
+  </group>
+  <group name="TabLibrary">
+    <string name="Key">library</string>
+    <string name="Icon">Adventure/Icons/database.svg?width=32&amp;type=mask</string>
+    <string name="Label">Library</string>
+    <string name="Active">false</string>
+  </group>
+  <group name="TabSettings">
+    <string name="Key">settings</string>
+    <string name="Icon">Adventure/Icons/layers.svg?width=32&amp;type=mask</string>
+    <string name="Label">Settings</string>
+    <string name="Active">false</string>
+  </group>
+</group>

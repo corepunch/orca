@@ -1047,6 +1047,30 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _RegisterProjectFonts(project, szDirname);
   _InitProjectRefences(L, project, szDirname);
 
+  if (project->DataSourceLibrary) {
+    struct Object *lib = CMP_GetObject(project->DataSourceLibrary);
+    FOR_EACH_OBJECT(child, lib) {
+      struct XmlDataSource *xds = GetXmlDataSource(child);
+      struct DataSource *ds = GetDataSource(child);
+      lpcString_t name = OBJ_GetName(child);
+      if (!xds || !ds || !name || !*name) {
+        continue;
+      }
+
+      char qualified[MAX_PROPERTY_STRING];
+      snprintf(qualified, sizeof(qualified), "%s/DataSources/%s",
+               OBJ_GetName(CMP_GetObject(project)), name);
+
+      char params[MAX_PROPERTY_STRING];
+      snprintf(params, sizeof(params), "Path=%s",
+               xds->Source ? xds->Source : "");
+
+      FS_RegisterProjectDataSource(CMP_GetObject(project), qualified,
+                                   "Xml", params, ds->Schema);
+      FS_ResolveDataSource(qualified, NULL);
+    }
+  }
+
   lua_pop(L, 1);
 
   return CMP_GetObject(project);
