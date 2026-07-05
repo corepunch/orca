@@ -1,10 +1,10 @@
 # Datasource Views, Mutations, and Relationships
 
-Status: proposed design for the remaining work in [issue 360](https://github.com/corepunch/orca/issues/360).
+Status: partial implementation — DataContext hierarchy, DataSourceLibrary, schema parser, and name-based resolution are implemented. Provider sessions, mutation messages, and master-detail remain as future work. See [issue 360](https://github.com/corepunch/orca/issues/360).
 
 ## Summary
 
-ORCA should keep a provider gateway between UI binding and storage, but it should not materialize every field as a child `DataObject`. `ListBox` and `GridBox` bind directly to a provider table path. Resolving that path creates an internal fetched, selectable collection of lightweight records. A record identifies a provider row and resolves column values through the provider contract.
+ORCA keeps a provider gateway between UI binding and storage. `DataSource` is the package declaration resolved through `DataSourceLibrary`. At runtime, `DataContext` is the base class for both `DataSource` (which owns a root `DataObject` tree) and `DataObject` (which is itself a data record). `XmlDataSource` loads data from XML files, optionally backed by a `Schema.xml` that generates typed entity classes with inline column properties.
 
 This is the useful common ground between DBKit's `DBFetchGroup`/`DBRecordList`, EOF's `EODisplayGroup`, and the `socialfeed.orion` example:
 
@@ -15,7 +15,17 @@ This is the useful common ground between DBKit's `DBFetchGroup`/`DBRecordList`, 
 - mutations are messages sent through the provider gateway;
 - one save operation can commit changes from several related views.
 
-`DataSource` remains the package declaration (`Name`, `Type`, `Params`). At runtime it resolves to a provider session. `ItemsSource="ProjectName/DataProvider/TableName"` resolves a table collection from that session. There is no separate declaration for each view and no runtime object for every column value.
+`DataSource` is declared inside a `DataSourceLibrary` in `package.lua` using `require 'orca.filesystem.XmlDataSource' { ... }`. At runtime it resolves to a provider session. `ItemsSource="ProjectName/DataSources/Name"` resolves data from that datasource. There is no separate declaration for each view and no runtime object for every column value.
+
+### Current class hierarchy
+
+```text
+DataContext                  — base: handles DataContext.GetData
+├── DataSource               — owns a root DataObject tree; Schema property
+│   └── XmlDataSource        — loads from XML; handles Object.Start, Object.Attached
+└── DataObject               — schema entity instance with typed column properties
+    └── (schema-generated)   — one ClassDesc per Entity in Schema.xml
+```
 
 ## Goals
 
@@ -36,16 +46,25 @@ This is the useful common ground between DBKit's `DBFetchGroup`/`DBRecordList`, 
 ## Runtime model
 
 ```text
-package.lua DataSource declaration
+package.lua DataSourceLibrary declaration
+  require 'orca.filesystem.XmlDataSource' { Name = "Games", Source = "...", Schema = "..." }
               |
               v
-       DataProvider session
-       (backend gateway and unit of work)
-          |               |
-          v               v
-  master collection --> related detail collection
-       | current row       | reference-column rows
-       +-------- controls bind by column/key path --------+
+       XmlDataSource session
+       (loads Schema.xml → registers entity ClassDescs)
+       (loads Source XML  → builds DataObject tree with typed properties)
+              |
+              v
+       DataContext.GetData message
+       (binding engine walks DataContext chain to resolve data)
+              |
+       +------v-------+
+       | DataSource    |  returns its owned root DataObject
+       | DataObject    |  returns itself
+       +--------------+
+              |
+              v
+       controls bind by column/key path
 ```
 
 ### DataProvider
@@ -83,25 +102,69 @@ A schema-less provider can report equivalent metadata dynamically or support pla
 
 ## Declarative shape
 
-The canonical source address is:
+### package.lua declaration
 
-```text
-ProjectName/DataProvider/TableName
+Datasources are declared in a `DataSourceLibrary` using `require`:
+
+```lua
+DataSourceLibrary = {
+  Name = "DataSources",
+  require 'orca.filesystem.XmlDataSource' {
+    Name = "Games",
+    Source = "Adventure/Data/Games",
+    Schema = "Adventure/Data/Games.Schema.xml"
+  },
+}
 ```
 
-For example, both existing collection controls bind directly to the posts table:
+### Schema XML format
+
+Schema files declare entities and columns. Each `<Entity>` generates a `ClassDesc` with typed property descriptors:
 
 ```xml
-<ListBox Name="Posts"
-         ItemsSource="SocialFeed/db/posts"
-         ItemTemplate="SocialFeed/Prefabs/PostRow" />
-
-<GridBox Columns="3"
-         ItemsSource="SocialFeed/db/posts"
-         ItemTemplate="SocialFeed/Prefabs/PostCard" />
+<Schema>
+  <Entity Name="Game">
+    <Column Name="Id"          Type="string" Key="true"/>
+    <Column Name="Title"       Type="string"/>
+    <Column Name="Description" Type="string"/>
+  </Entity>
+</Schema>
 ```
 
-`ProjectName` selects the project resource scope, `DataProvider` selects the named datasource declaration, and `TableName` is interpreted by that provider. No `DataView`, `Master`, or `Relationship` objects are declared alongside the controls.
+Supported column types: `string` (default), `int`, `float`, `bool`, `relation` (nested entity container).
+
+### Data XML format (with schema)
+
+With a schema, data files use compact element-as-record syntax. Attributes map directly to entity columns:
+
+```xml
+<Games name="Games">
+  <Catalog>
+    <Game name="Zork1" Id="zork1" Title="Zork I" Cover="Images/zork1"/>
+    <Game name="Horror" Id="horror" Title="Sanitarium" Cover="Images/horror"/>
+  </Catalog>
+</Games>
+```
+
+Without a schema, the legacy `DataObject`/`DataObjectString` tree format is still supported but deprecated.
+
+### Binding syntax
+
+The canonical source address uses the `DataSourceLibrary` name and datasource name:
+
+```text
+ProjectName/DataSources/DatasourceName
+```
+
+For example, both existing collection controls bind directly to a datasource child path:
+
+```xml
+<GridBox Columns="3"
+         ItemsSource="Example/DataSources/ApplicationData:Signals"
+         ItemTemplate="Example/Prefabs/SignalCard" />
+```
+
+`ProjectName` selects the project resource scope, `DataSources` selects the `DataSourceLibrary`, and the colon separates the datasource name from the child selection path. No `DataView`, `Master`, or `Relationship` objects are declared alongside the controls.
 
 Item templates bind columns through their row `DataContext`:
 
@@ -221,16 +284,16 @@ This follows EOF's useful division: the model owns the relationship, the master 
 
 The replacement is name-based datasource/view resolution:
 
-- `DataContextSource="ApplicationData"` may remain temporarily for a provider's default/root view.
-- New collection UI should use `ItemsSource="ProjectName/DataProvider/TableName"` rather than `ApplicationData:Signals`.
+- `DataContextSource="ApplicationData"` resolves through the `DataContext` chain (DataSource returns its root DataObject, DataObject returns itself).
+- New collection UI should use `ItemsSource="ProjectName/DataSources/Name:ChildPath"` rather than the old file-path syntax.
 - A provider-specific path belongs in `package.lua` `Params`, never in screen markup.
 - Table selection is the third path segment; relationships are resolved through reference columns, not colon parsing.
 
-Migration should be staged:
+Migration status:
 
-1. Add provider table-path resolution and provider-backed record binding.
-2. Port `samples/Example` and `samples/Adventure` from file/child paths.
-3. Emit a deprecation warning whenever provider lookup fails and the direct-file fallback is taken.
+1. ~~Add provider table-path resolution and provider-backed record binding.~~ ✓ DataContext hierarchy and binding resolution implemented.
+2. ~~Port `samples/Example` and `samples/Adventure` from file/child paths.~~ ✓ Migrated to `DataSources/Name:Child` syntax.
+3. Emit a deprecation warning whenever provider lookup fails and the direct-file fallback is taken. (in progress — `FS_FindDataSource` added for non-resolving lookups)
 4. Remove colon child selection for provider-backed sources after all in-tree users migrate.
 5. Remove the direct `FS_LoadObject` fallback in the next compatibility-breaking release.
 
@@ -276,15 +339,15 @@ Provider callbacks must not return unowned roots with ambiguous lifetime. Resolu
 
 ## Compatibility and implementation sequence
 
-1. Introduce provider sessions and lifecycle ownership without changing existing XML sample behavior.
-2. Add provider collections, record handles, and provider-backed binding path resolution.
-3. Implement XML provider fetch/get-value behavior without per-field `DataObject` proxies.
-4. Add staged mutation messages, save/revert, and structured errors.
-5. Add reference-column metadata, selected-record binding, and master-detail dependencies.
-6. Port samples and deprecate direct file/child `DataContextSource` resolution.
-7. Add another provider (CLI or SQL is a stronger contract test than a second file provider).
+1. ~~Introduce provider sessions and lifecycle ownership without changing existing XML sample behavior.~~ ✓ DataContext base class, DataSource/XmlDataSource hierarchy, DataSourceLibrary.
+2. ~~Add provider collections, record handles, and provider-backed binding path resolution.~~ ✓ DataContext.GetData message, binding engine walks DataContext chain.
+3. ~~Implement XML provider fetch/get-value behavior without per-field `DataObject` proxies.~~ ✓ Schema parser generates ClassDesc per entity with typed column properties.
+4. Add staged mutation messages, save/revert, and structured errors. (future)
+5. Add reference-column metadata, selected-record binding, and master-detail dependencies. (future)
+6. ~~Port samples and deprecate direct file/child `DataContextSource` resolution.~~ ✓ Samples migrated, deprecation warnings in progress.
+7. Add another provider (CLI or SQL is a stronger contract test than a second file provider). (future)
 
-The XML provider may temporarily adapt an old `DataObject` source internally during migration, but that adapter must be behind the provider contract. Controls and bindings should see records and columns, not that compatibility tree.
+Schema-generated entity classes inherit from `DataObject` → `DataContext`, so the binding system recognises them as data records. Column values are inline typed properties on the object, not child `DataObject` wrappers.
 
 ## Required tests
 

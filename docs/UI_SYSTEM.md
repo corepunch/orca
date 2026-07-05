@@ -65,7 +65,7 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 ```xml
 <!-- Screen layout — single GridBox, no CSS indent classes -->
 <GridBox Columns="auto"
-  ItemsSource="Example/Data/ApplicationData:XmlModel"
+  ItemsSource="Example/DataSources/ApplicationData:XmlModel"
   ItemTemplate="Example/Prefabs/XmlModelNode"/>
 ```
 
@@ -78,17 +78,23 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 ```
 
 ```xml
-<!-- Data file — each item declares its own indent -->
-<DataObject Name="XmlModel">
-  <DataObject Name="Line1">
-    <DataObjectString Name="Indent" Value="0"/>
-    ...
-  </DataObject>
-  <DataObject Name="Line2">
-    <DataObjectString Name="Indent" Value="16"/>
-    ...
-  </DataObject>
-</DataObject>
+<!-- Schema defines entity columns (Example/Data/ApplicationData.Schema.xml) -->
+<Schema>
+  <Entity Name="XmlModelLine">
+    <Column Name="Icon"         Type="string"/>
+    <Column Name="Title"        Type="string"/>
+    <Column Name="PrimaryColor" Type="string"/>
+    <Column Name="Indent"       Type="string"/>
+  </Entity>
+</Schema>
+```
+
+```xml
+<!-- Data file — compact attribute syntax (no nested DataObject/DataObjectString) -->
+<XmlModel>
+  <XmlModelLine name="Line1" Icon="blocks.svg" Title="Structure" Indent="0"/>
+  <XmlModelLine name="Line2" Icon="code.svg"   Title="Bindings"  Indent="16"/>
+</XmlModel>
 ```
 
 ### When to use

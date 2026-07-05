@@ -47,7 +47,7 @@ DataSourceLibrary = {
 	XmlDataSource {
 		Name = "ApplicationData",
 		Source = "Example/Data/ApplicationData",
-		Schema = "Example/Data/ApplicationData.Schema.xml",
+		Schema = "Example/Data/ApplicationData.schema",
 	},
 }
 EnginePlugins = {

@@ -28,6 +28,15 @@ Use this file when changing Lua-visible behavior.
 - If module init order matters, call `require` explicitly.
 - Prefer messages and properties over tight plugin-to-plugin coupling.
 
+## DataContext and datasource API
+
+- `DataContext` is the base class for data-providing objects. It handles the `DataContext.GetData` message.
+- `DataSource` (parent: DataContext) owns a root `DataObject` tree loaded by a concrete subclass.
+- `XmlDataSource` (parent: DataSource) loads data from XML, optionally backed by a `Schema.xml`.
+- `DataObject` (parent: DataContext) is the runtime representation of a schema entity instance.
+- Schema files (`DS_ParseSchema`, `DS_ParseSchemaFromString` in `source/data/data_schema.c`) register `ClassDesc` entries with typed column properties.
+- Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself.
+
 ## Good follow-up reads
 
 - `docs/lua-scripting.md`

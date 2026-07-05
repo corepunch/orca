@@ -25,12 +25,12 @@ DataSourceLibrary = {
 	require 'orca.filesystem.XmlDataSource' {
 		Name = "Games",
 		Source = "Adventure/Data/Games",
-		Schema = "Adventure/Data/Games.Schema.xml"
+		Schema = "Adventure/Data/Games.schema"
 	},
 	require 'orca.filesystem.XmlDataSource' {
 		Name = "Tabs",
 		Source = "Adventure/Data/Tabs",
-		Schema = "Adventure/Data/Tabs.Schema.xml"
+		Schema = "Adventure/Data/Tabs.schema"
 	},
 }
 EnginePlugins = {
