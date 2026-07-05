@@ -59,19 +59,17 @@
       <properties>
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
-      <fields>
-        <field name="Data" type="DataObject" pointer="true"/>
-      </fields>
-      <handles>
-        <handle message="DataContext.GetData"/>
-      </handles>
     </class>
     <class name="XmlDataSource" parent="DataSource">
       <summary>XML-backed datasource that loads an object tree from a source file.</summary>
       <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. On Object.Start it loads the XML source into a tree of DataObject, DataObjectString, DataObjectInt, DataObjectFloat, and DataObjectBool instances.</details>
+      <fields>
+        <field name="Data" type="DataObject" pointer="true"/>
+      </fields>
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Attached"/>
+        <handle message="DataContext.GetData"/>
       </handles>
       <properties>
         <property name="Source" type="string">Path to the XML file to load, relative to the workspace (for example "Adventure/Data/Games").</property>
@@ -323,6 +321,13 @@
       <summary>Parses an object tree from an XML string</summary>
       <details>Parses the provided XML string and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
       <arg name="xmlString" type="string">The XML string to parse</arg>
+      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromXmlStringWithSchema" export="loadObjectFromXmlStringWithSchema">
+      <summary>Parses a data object tree from an XML string using a Schema XML string</summary>
+      <details>Parses the schema XML string to register entity classes, then parses the data XML string using those classes so each record element maps directly to its entity class with column values as typed properties. Returns the root object on success, or nil on failure.</details>
+      <arg name="xmlString" type="string">The data XML string to parse</arg>
+      <arg name="schemaXml" type="string">The schema XML string defining entities and columns</arg>
       <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
     </function>
     <function name="GetThemeValue">

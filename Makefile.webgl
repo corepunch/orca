@@ -40,7 +40,7 @@ WEBGL_VERSION ?= dev
 # discovery), server (host-only), editor (desktop UI).  network is included
 # and compiled against emscripten_fetch (no curl dependency).
 WEBGL_MODULES  = geometry orca sysutil console localization parsers debug \
-                 renderer filesystem core backend network
+                 renderer filesystem core data backend network
 WEBGL_SRCMODS  = $(addprefix $(SOURCEDIR)/, $(WEBGL_MODULES))
 WEBGL_SOURCES  = $(foreach d, $(WEBGL_SRCMODS), $(wildcard $(d)/*.c $(d)/*/*.c))
 

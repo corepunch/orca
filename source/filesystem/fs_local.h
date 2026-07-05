@@ -4,13 +4,7 @@
 #include <include/orca.h>
 
 #include <filesystem/filesystem.h>
-
-struct ds_schema;
-struct ds_column {
-  char name[64];
-  char type[32];
-  bool_t is_key;
-};
+#include <source/data/data_schema.h>
 
 struct _xmlNode*
 __xmlNewChild(struct _xmlNode* p, lpcString_t name, lpcString_t args[]);
@@ -41,6 +35,9 @@ struct file *_ReadOnDisk(FILE *fp);
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path);
 
+struct Object *
+FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema);
+
 void
 FS_RegisterDataSourceProvider(const char *type_name,
                              struct Object *(*fetch)(const char *params));
@@ -53,9 +50,6 @@ FS_RegisterDataProvider(const char *type_name,
 
 void
 FS_RegisterDataSource(const char *name, const char *type, const char *params);
-
-struct ds_schema;
-struct ds_column;
 
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params);

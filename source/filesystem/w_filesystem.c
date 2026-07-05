@@ -385,21 +385,32 @@ HANDLER(Project, Object, Release) {
 
 // XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
 HANDLER(XmlDataSource, Object, Start) {
-  struct DataSource *source = GetDataSource(hObject);
-  if (!source || !pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
-  struct Object *data = FS_LoadObject(pXmlDataSource->Source);
+  if (!pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
+  struct DataSource *ds = GetDataSource(hObject);
+  struct file *schema_file = ds && ds->Schema ? FS_LoadFile(ds->Schema) : NULL;
+  struct ds_schema const *schema = schema_file
+    ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+  if (schema_file) FS_FreeFile(schema_file);
+  path_t source = {0};
+  lpcString_t dot = strrchr(pXmlDataSource->Source, '.');
+  lpcString_t slash = strrchr(pXmlDataSource->Source, '/');
+  snprintf(source, sizeof(source), "%s%s", pXmlDataSource->Source,
+           !dot || dot < slash ? ".xml" : "");
+  struct Object *data = schema
+    ? FS_LoadObjectFromXmlWithSchema(source, schema)
+    : FS_LoadObject(pXmlDataSource->Source);
   if (!data || !GetDataObject(data)) {
     Con_Printf("Could not load XmlDataSource '%s' from '%s'",
                OBJ_GetName(hObject), pXmlDataSource->Source);
     return FALSE;
   }
-  source->Data = GetDataObject(data);
+  pXmlDataSource->Data = GetDataObject(data);
   OBJ_AddChild(hObject, data);
   return FALSE;
 }
 
-HANDLER(DataSource, DataContext, GetData) {
-  struct Object *root = pDataSource->Data ? CMP_GetObject(pDataSource->Data) : NULL;
+HANDLER(XmlDataSource, DataContext, GetData) {
+  struct Object *root = pXmlDataSource->Data ? CMP_GetObject(pXmlDataSource->Data) : NULL;
   char const *path = pGetData->Path ? pGetData->Path : "";
   struct Object *data = root ? OBJ_FindByPath(root, path) : NULL;
   return (LRESULT)GetDataObject(data);

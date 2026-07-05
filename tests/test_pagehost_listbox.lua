@@ -350,23 +350,27 @@ local function test_listbox_click_updates_selection_and_pagehost()
 end
 
 -- ---------------------------------------------------------------------------
--- ListBox: ValueProperty resolves DataObjectString.Value (not child Name)
+-- ListBox: ValueProperty resolves a schema column directly on the record
 -- ---------------------------------------------------------------------------
 local function test_listbox_valueproperty_dataobject_value()
         local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-        local items = filesystem.loadObjectFromXmlString [[
-            <DataObject Name="Tabs">
-                <DataObject Name="TabGames">
-                    <DataObjectString Name="Key" Value="games"/>
-                    <DataObjectString Name="Label" Value="Adventures"/>
-                </DataObject>
-                <DataObject Name="TabLibrary">
-                    <DataObjectString Name="Key" Value="library"/>
-                    <DataObjectString Name="Label" Value="Library"/>
-                </DataObject>
-            </DataObject>
-        ]]
+        local items = filesystem.loadObjectFromXmlStringWithSchema([[
+            <Tabs>
+                <FooterTab name="TabGames"   Key="games"   Label="Adventures"/>
+                <FooterTab name="TabLibrary" Key="library" Label="Library"/>
+            </Tabs>
+        ]], [[
+            <Schema>
+                <Entity Name="Tabs">
+                    <Column Name="FooterTab" Type="relation" Entity="FooterTab"/>
+                </Entity>
+                <Entity Name="FooterTab">
+                    <Column Name="Key"   Type="string" Key="true"/>
+                    <Column Name="Label" Type="string"/>
+                </Entity>
+            </Schema>
+        ]])
 
         local template = ui.StackView {
             Name = "TabItem",
@@ -825,18 +829,22 @@ end
 local function test_selecteditem_custom_valueproperty()
   local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-  local items = filesystem.loadObjectFromXmlString [[
-    <DataObject Name="Catalog">
-      <DataObject Name="Game1">
-        <DataObjectString Name="Key" Value="rpg"/>
-        <DataObjectString Name="Title" Value="Fantasy Quest"/>
-      </DataObject>
-      <DataObject Name="Game2">
-        <DataObjectString Name="Key" Value="shooter"/>
-        <DataObjectString Name="Title" Value="Blaster"/>
-      </DataObject>
-    </DataObject>
-  ]]
+  local items = filesystem.loadObjectFromXmlStringWithSchema([[
+    <Catalog>
+      <SelectedGame name="Game1" Key="rpg" Title="Fantasy Quest"/>
+      <SelectedGame name="Game2" Key="shooter" Title="Blaster"/>
+    </Catalog>
+  ]], [[
+    <Schema>
+      <Entity Name="Catalog">
+        <Column Name="SelectedGame" Type="relation" Entity="SelectedGame"/>
+      </Entity>
+      <Entity Name="SelectedGame">
+        <Column Name="Key" Type="string"/>
+        <Column Name="Title" Type="string"/>
+      </Entity>
+    </Schema>
+  ]])
 
   local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
   local list = ui.ListBox {
@@ -930,23 +938,24 @@ local function test_selecteditem_path_resolution()
   local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
   -- Create items where each has Title and Comments children
-  local items = filesystem.loadObjectFromXmlString [[
-    <DataObject Name="Catalog">
-      <DataObject Name="GameA">
-        <DataObjectString Name="Title" Value="Alpha Quest"/>
-        <DataObject Name="Comments">
-          <DataObjectString Name="C1" Value="Great!"/>
-          <DataObjectString Name="C2" Value="Fun"/>
-        </DataObject>
-      </DataObject>
-      <DataObject Name="GameB">
-        <DataObjectString Name="Title" Value="Bravo Wars"/>
-        <DataObject Name="Comments">
-          <DataObjectString Name="C3" Value="Intense"/>
-        </DataObject>
-      </DataObject>
-    </DataObject>
-  ]]
+  local items = filesystem.loadObjectFromXmlStringWithSchema([[
+    <Catalog>
+      <SelectedGameDetail name="GameA" Title="Alpha Quest">
+        <Comments><SelectedComment name="C1" Text="Great!"/><SelectedComment name="C2" Text="Fun"/></Comments>
+      </SelectedGameDetail>
+      <SelectedGameDetail name="GameB" Title="Bravo Wars">
+        <Comments><SelectedComment name="C3" Text="Intense"/></Comments>
+      </SelectedGameDetail>
+    </Catalog>
+  ]], [[
+    <Schema>
+      <Entity Name="Catalog"><Column Name="SelectedGameDetail" Type="relation" Entity="SelectedGameDetail"/></Entity>
+      <Entity Name="SelectedGameDetail">
+        <Column Name="Title" Type="string"/><Column Name="Comments" Type="relation" Entity="SelectedComment"/>
+      </Entity>
+      <Entity Name="SelectedComment"><Column Name="Text" Type="string"/></Entity>
+    </Schema>
+  ]])
 
   local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
   local list = ui.ListBox {
@@ -962,9 +971,7 @@ local function test_selecteditem_path_resolution()
   -- Verify we can read properties on the selected DataObject through Lua
   local selected = list.SelectedItem
   -- Navigate to Title child DataObjectString
-  local titleChild = selected:findChild("Title", true)
-  test.expect(titleChild ~= nil, "Title child should exist on selected item")
-  test.expect_eq(titleChild.Value, "Alpha Quest", "Title child value should be 'Alpha Quest'")
+  test.expect_eq(selected.Title, "Alpha Quest", "Title should be 'Alpha Quest'")
 
   -- Navigate to Comments child collection
   local comments = selected:findChild("Comments", true)
@@ -976,8 +983,7 @@ local function test_selecteditem_path_resolution()
   -- Switch selection and verify data follows
   list.SelectedValue = "GameB"
   test.expect_eq(list.SelectedItem.Name, "GameB", "SelectedItem should be GameB after switch")
-  local titleB = list.SelectedItem:findChild("Title", true)
-  test.expect_eq(titleB.Value, "Bravo Wars", "After switch, Title value should be 'Bravo Wars'")
+  test.expect_eq(list.SelectedItem.Title, "Bravo Wars", "After switch, Title should be 'Bravo Wars'")
 
   local commentsB = list.SelectedItem:findChild("Comments", true)
   local countB = 0

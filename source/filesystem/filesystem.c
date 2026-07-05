@@ -7,6 +7,7 @@
 #include <include/api.h>
 
 #include "fs_local.h"
+#include <source/data/data_schema.h>
 
 #define FS_FindPackage(ITER, filename) \
 FOR_EACH_OBJECT(ITER, FS_GetWorkspace()) \
@@ -16,8 +17,6 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 #define MAX_DATASOURCE_ENTRIES  256
 
 static struct Object *workspace = NULL;
-
-static struct ds_schema *_ParseSchema(const char *schema_path);
 
 static void
 _CopyDsString(char *dst, size_t dst_size, const char *src)
@@ -33,17 +32,6 @@ struct ds_provider {
   struct Object *(*fetch)(const char *params);
   bool_t (*save)(struct Object *root, const char *params);
   bool_t (*revert)(struct Object *root, const char *params);
-};
-
-struct ds_entity {
-  char name[64];
-  struct ds_column columns[64];
-  int num_columns;
-};
-
-struct ds_schema {
-  struct ds_entity entities[32];
-  int num_entities;
 };
 
 struct ds_session {
@@ -184,7 +172,7 @@ FS_ClearProjectDataSources(struct Object *project)
       }
       s_write++;
     } else if (_ds_sessions[s_read].schema) {
-      free(_ds_sessions[s_read].schema);
+      DS_FreeSchema(_ds_sessions[s_read].schema);
     }
   }
   _ds_session_count = s_write;
@@ -195,7 +183,7 @@ FS_ClearAllDataSources(void)
 {
   for (int i = 0; i < _ds_session_count; i++) {
     if (_ds_sessions[i].schema) {
-      free(_ds_sessions[i].schema);
+      DS_FreeSchema(_ds_sessions[i].schema);
     }
   }
   _ds_entry_count = 0;
@@ -219,18 +207,7 @@ const struct ds_column *
 FS_FindSchemaColumn(const struct ds_schema *schema, const char *entity,
                     const char *column)
 {
-  if (!schema || !entity || !column) return NULL;
-  for (int e = 0; e < schema->num_entities; e++) {
-    if (strcmp(schema->entities[e].name, entity) == 0) {
-      for (int c = 0; c < schema->entities[e].num_columns; c++) {
-        if (strcmp(schema->entities[e].columns[c].name, column) == 0) {
-          return &schema->entities[e].columns[c];
-        }
-      }
-      return NULL;
-    }
-  }
-  return NULL;
+  return DS_FindColumn(schema, entity, column);
 }
 
 struct ds_session *
@@ -307,7 +284,7 @@ FS_ResolveDataSource(const char *name, const char **out_params)
                 char spath[MAX_PROPERTY_STRING] = {0};
                 if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
                 memcpy(spath, sp, slen);
-                session->schema = _ParseSchema(spath);
+                session->schema = DS_ParseSchema(spath);
               }
             }
           }
@@ -1081,9 +1058,14 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
       snprintf(params, sizeof(params), "Path=%s",
                xds->Source ? xds->Source : "");
 
+      OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
       FS_RegisterProjectDataSource(CMP_GetObject(project), qualified,
                                    "Xml", params, ds->Schema);
       FS_ResolveDataSource(qualified, NULL);
+      if (xds->Source && *xds->Source) {
+        FS_RegisterProjectDataSource(CMP_GetObject(project), xds->Source,
+                                     "Xml", params, ds->Schema);
+      }
     }
   }
 
@@ -1134,60 +1116,6 @@ _ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, i
   return argc;
 }
 
-static struct ds_schema *
-_ParseSchema(const char *schema_path)
-{
-  if (!schema_path || !*schema_path) return NULL;
-
-  xmlDocPtr doc = xmlParseFile(schema_path);
-  if (!doc) {
-    Con_Error("Failed to parse schema '%s'", schema_path);
-    return NULL;
-  }
-
-  xmlNodePtr root = xmlDocGetRootElement(doc);
-  if (!root || strcmp((const char*)root->name, "Schema") != 0) {
-    xmlFreeDoc(doc);
-    return NULL;
-  }
-
-  struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
-  if (!schema) { xmlFreeDoc(doc); return NULL; }
-
-  for (xmlNodePtr entity_node = root->children; entity_node; entity_node = entity_node->next) {
-    if (entity_node->type != XML_ELEMENT_NODE) continue;
-    if (strcmp((const char*)entity_node->name, "Entity") != 0) continue;
-
-    xmlChar *ename = xmlGetProp(entity_node, XMLSTR("Name"));
-    if (!ename) continue;
-    if (schema->num_entities >= 32) { xmlFree(ename); continue; }
-
-    struct ds_entity *entity = &schema->entities[schema->num_entities++];
-    strncpy(entity->name, (const char*)ename, sizeof(entity->name) - 1);
-    xmlFree(ename);
-
-    for (xmlNodePtr col_node = entity_node->children; col_node; col_node = col_node->next) {
-      if (col_node->type != XML_ELEMENT_NODE) continue;
-      if (strcmp((const char*)col_node->name, "Column") != 0) continue;
-      if (entity->num_columns >= 64) continue;
-
-      xmlChar *cname = xmlGetProp(col_node, XMLSTR("Name"));
-      xmlChar *ctype = xmlGetProp(col_node, XMLSTR("Type"));
-      xmlChar *ckey = xmlGetProp(col_node, XMLSTR("Key"));
-      if (!cname) { xmlFree(ctype); xmlFree(ckey); continue; }
-
-      struct ds_column *col = &entity->columns[entity->num_columns++];
-      strncpy(col->name, (const char*)cname, sizeof(col->name) - 1);
-      if (ctype) strncpy(col->type, (const char*)ctype, sizeof(col->type) - 1);
-      col->is_key = ckey && strcasecmp((const char*)ckey, "true") == 0;
-      xmlFree(cname); xmlFree(ctype); xmlFree(ckey);
-    }
-  }
-
-  xmlFreeDoc(doc);
-  return schema;
-}
-
 struct Object *
 _xml_ds_fetch(const char *params)
 {
@@ -1200,7 +1128,30 @@ _xml_ds_fetch(const char *params)
   char path[MAX_PROPERTY_STRING] = {0};
   if (len >= sizeof(path)) len = sizeof(path) - 1;
   memcpy(path, p, len);
-  return FS_LoadObject(path);
+
+  /* Extract optional Schema= param and load it so entity classes are
+     registered before the data XML is parsed. */
+  const struct ds_schema *schema = NULL;
+  const char *sp = strstr(params, "Schema=");
+  if (sp) {
+    sp += 7;
+    const char *send = strchr(sp, '&');
+    size_t slen = send ? (size_t)(send - sp) : strlen(sp);
+    char spath[MAX_PROPERTY_STRING] = {0};
+    if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
+    memcpy(spath, sp, slen);
+    struct file *schema_file = FS_LoadFile(spath);
+    schema = schema_file
+      ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+    if (schema_file) FS_FreeFile(schema_file);
+  }
+
+  path_t source = {0};
+  const char *dot = strrchr(path, '.');
+  const char *slash = strrchr(path, '/');
+  snprintf(source, sizeof(source), "%s%s", path,
+           !dot || dot < slash ? ".xml" : "");
+  return schema ? FS_LoadObjectFromXmlWithSchema(source, schema) : FS_LoadObject(path);
 }
 
 bool_t

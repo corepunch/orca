@@ -174,6 +174,7 @@ enum
   PF_NOTIFICATION_QUEUED = (1 << 8), // notification is queued as PropertyChangedMessage
   PF_OWNS_STORAGE = (1 << 11), // property->value is object-owned heap storage
   PF_OWNS_OBJECT_CHILD = (1 << 12), // table-created Object value is parented
+  PF_DATA_FIELD = (1 << 13), // property belongs to a schema-generated entity class
 };
 
 #define ON_CHANGED_CALLBACK "on%sChanged"
@@ -452,6 +453,9 @@ typedef int
 
 ORCA_API bool_t
 OBJ_RegisterClass(struct ClassDesc const *);
+
+ORCA_API bool_t
+OBJ_UnregisterClass(uint32_t class_id);
 
 ORCA_API struct ClassDesc const *
 OBJ_FindClass(lpcString_t);

@@ -1,6 +1,7 @@
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
 #include <core/core_properties.h>
+#include <source/data/data_schema.h>
 #include "fs_xml_inline.h"
 #include <ctype.h>
 #include <strings.h>
@@ -8,8 +9,10 @@
 extern int parse_property(const char* str,
                           struct PropertyType const* prop,
                           void* valueptr);
+extern void const *PROP_GetRawValueSlot(struct Property const *property);
 
-static struct Object *node(struct _xmlNode* x);
+static struct Object *node(struct _xmlNode* x, const struct ds_schema *schema,
+                           const char *entity_name);
 
 static bool_t
 has_attr_ci(struct _xmlNode *x, lpcString_t key)
@@ -102,7 +105,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     // "Project/Library/Name" path. Keep direct file paths as a deprecated
     // compatibility fallback.
     struct Object *dataSource = FS_FindDataSource(ds_name);
-    struct Object *dataObj = dataSource ? FS_ResolveDataSource(ds_name, NULL) : NULL;
+    struct Object *dataObj = FS_ResolveDataSource(ds_name, NULL);
     if (!dataObj) {
       // Fallback: treat as a direct file path (deprecated)
       Con_Warning("DataContextSource='%s' uses direct file path; migrate to datasource name (e.g. '%s')",
@@ -110,7 +113,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
       dataObj = FS_LoadObject(ds_name);
     }
 
-    if (colon) {
+    if (colon && dataObj) {
       struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
       if (child) {
         PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
@@ -345,7 +348,7 @@ array_prop(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
 
   xmlForEach(c, x) {
     if (pd->DataType == kDataTypeObject) {
-      struct Object *child = node(c);
+      struct Object *child = node(c, NULL, NULL);
       if (child) ((struct Object **)items)[index++] = child;
     } else {
       void *dst = (char *)items + (size_t)index * pd->DataSize;
@@ -389,7 +392,7 @@ property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* 
       set_struct_node(p, pd, c);
       return;
     }
-    struct Object *child = node(c);
+    struct Object *child = node(c, NULL, NULL);
     if (!child) return;
     if (GetBinding(child) || GetBindingExpression(child)) {
       OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);
@@ -442,8 +445,35 @@ visit_attr(struct Object *o, xmlAttrPtr a)
   xmlFree(value);
 }
 
+/* Set a column attribute on a schema-loaded record object.
+   Finds the property by short identifier (column name) and sets it from the
+   string value, parsing to the declared type. */
 static void
-visit_child(struct Object *o, struct _xmlNode* c)
+set_column_attr(struct Object *o, const char *col_name, const char *value,
+                DSColumnType col_type)
+{
+  struct Property *p = OBJ_FindShortProperty(o, fnv1a32(col_name));
+  if (!p) {
+    Con_Error("Schema column '%s' not found on object of class '%s'",
+              col_name, OBJ_GetClassName(o));
+    return;
+  }
+  PROP_SetFlag(p, PF_DATA_FIELD);
+
+  eDataType_t dt = DS_ColumnDataType(col_type);
+  if (dt == kDataTypeString) {
+    PROP_SetStringValue(p, value);
+  } else {
+    /* Re-use the generic string parser for int/float/bool */
+    struct PropertyType const *pd = PROP_GetDesc(p);
+    void *slot = (void *)PROP_GetRawValueSlot(p);
+    if (pd && slot) parse_property(value, pd, slot);
+  }
+}
+
+static void
+visit_child(struct Object *o, struct _xmlNode* c,
+            const struct ds_schema *schema, const char *entity_name)
 {
   if (binding_node(o, c)) return;
 
@@ -463,7 +493,24 @@ visit_child(struct Object *o, struct _xmlNode* c)
   }
   if (text) xmlFree(text);
 
-  struct Object *child = node(c);
+  /* For schema-loaded records, determine child entity from relation columns. */
+  const char *child_entity = NULL;
+  if (schema && entity_name) {
+    const struct ds_entity *ent = DS_FindEntity(schema, entity_name);
+    if (ent) {
+      for (int i = 0; i < ent->num_columns; i++) {
+        if (ent->columns[i].type == DS_COL_RELATION &&
+            !strcasecmp(ent->columns[i].name, (const char *)c->name)) {
+          child_entity = ent->columns[i].entity[0]
+                         ? ent->columns[i].entity
+                         : (const char *)c->name;
+          break;
+        }
+      }
+    }
+  }
+
+  struct Object *child = node(c, schema, child_entity);
   if (child) OBJ_AddChild(o, child);
 }
 
@@ -479,9 +526,50 @@ prefab(struct _xmlNode* x)
 }
 
 static struct Object *
-node(struct _xmlNode* x)
+node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name)
 {
-  lpcString_t tag = alias_class_tag((lpcString_t)x->name);
+  lpcString_t raw_tag = (lpcString_t)x->name;
+
+  /* Schema path: tag matches a registered entity class. */
+  if (schema && entity_name) {
+    const struct ds_entity *entity = DS_FindEntity(schema, entity_name);
+    struct ClassDesc const *cls = entity ? OBJ_FindClass(entity_name) : NULL;
+    if (entity) {
+      bool_t is_record = cls && !strcasecmp(raw_tag, entity_name);
+      struct Object *o = is_record ? OBJ_Create(cls->ClassID) : OBJ_Create(ID_DataObject);
+      if (!o) return NULL;
+
+      /* Set Name from the xml "name" or "Name" attribute. */
+      xmlChar *xname = xmlGetProp(x, XMLSTR("Name"));
+      if (!xname) xname = xmlGetProp(x, XMLSTR("name"));
+      if (xname) { OBJ_SetName(o, (const char *)xname); xmlFree(xname); }
+      else if (!is_record) OBJ_SetName(o, raw_tag);
+
+      /* Apply each non-Name, non-relation attribute as a column value. */
+      FOR_EACH_LIST(xmlAttr, a, x->properties) {
+        const char *aname = (const char *)a->name;
+        if (!strcasecmp(aname, "name")) continue;
+        const struct ds_column *col = DS_FindColumn(schema, entity_name, aname);
+        if (col && col->type != DS_COL_RELATION) {
+          xmlChar *val = xmlGetProp(x, a->name);
+          if (val) {
+            set_column_attr(o, col->name, (const char *)val, col->type);
+            xmlFree(val);
+          }
+        }
+      }
+
+      /* Recurse into child elements for relation columns. */
+      xmlForEach(c, x) {
+        if (c->type != XML_ELEMENT_NODE) continue;
+        visit_child(o, c, schema, entity_name);
+      }
+      return o;
+    }
+  }
+
+  /* Non-schema path: standard object loading. */
+  lpcString_t tag = alias_class_tag(raw_tag);
   bool_t is_prefab = !strcmp(tag, "LayerPrefabPlaceholder") ||
                      !strcmp(tag, "ObjectPrefabPlaceholder") ||
                      !strcmp(tag, "LibraryPlaceholder");
@@ -500,21 +588,18 @@ node(struct _xmlNode* x)
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
       lpcString_t text = (lpcString_t)t->content;
-      struct PropertyType const *value_pd = propdesc(o, "Value");
-      if (value_pd && !has_attr_ci(x, "value")) {
-        set_text(o, value_pd, text);
-      }
       OBJ_SetTextContent(o, text);
       return o;
     }
   }
 
-  xmlForEach(c, x) visit_child(o, c);
+  xmlForEach(c, x) visit_child(o, c, NULL, NULL);
   return o;
 }
 
 static struct Object *
-load_doc(char const *xml, int len, lpcString_t name)
+load_doc(char const *xml, int len, lpcString_t name,
+         const struct ds_schema *schema)
 {
   char *expanded = _ExpandXmlPositionalArgs(xml);
   struct _xmlDoc *doc = xmlReadMemory(expanded ? expanded : xml,
@@ -524,7 +609,11 @@ load_doc(char const *xml, int len, lpcString_t name)
   if (!doc) return NULL;
 
   struct _xmlNode* root = xmlDocGetRootElement(doc);
-  struct Object *o = root ? node(root) : NULL;
+  /* When a schema is present the root tag is treated as the top-level entity. */
+  const char *root_entity = (schema && root)
+    ? (DS_FindEntity(schema, (const char *)root->name) ? (const char *)root->name : NULL)
+    : NULL;
+  struct Object *o = root ? node(root, schema, root_entity) : NULL;
   xmlFreeDoc(doc);
   if (o) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
   return o;
@@ -534,7 +623,18 @@ struct Object *
 FS_LoadObjectFromXml(lpcString_t path)
 {
   struct file* fp = FS_LoadFile(path);
-  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path) : NULL;
+  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, NULL) : NULL;
+  if (fp) FS_FreeFile(fp);
+  if (o) OBJ_SetSourceFile(o, path);
+  else Con_Error("Failed to parse '%s'", path);
+  return o;
+}
+
+struct Object *
+FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema)
+{
+  struct file* fp = FS_LoadFile(path);
+  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, schema) : NULL;
   if (fp) FS_FreeFile(fp);
   if (o) OBJ_SetSourceFile(o, path);
   else Con_Error("Failed to parse '%s'", path);
@@ -544,7 +644,24 @@ FS_LoadObjectFromXml(lpcString_t path)
 ORCA_API struct Object *
 FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
-  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL);
+  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL, NULL);
   if (!o) Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
+  return o;
+}
+
+ORCA_API struct Object *
+FS_LoadObjectFromXmlStringWithSchema(lpcString_t xml_string, lpcString_t schema_xml)
+{
+  struct ds_schema *schema = NULL;
+  if (schema_xml && *schema_xml) {
+    /* Write schema XML to a temp file so libxml can parse it via the file API,
+       or parse it inline via DS_ParseSchemaFromString if available.
+       For now: parse schema from a temp string using xmlReadMemory directly. */
+    schema = DS_ParseSchemaFromString(schema_xml);
+  }
+  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL, schema);
+  if (!o) Con_Error("FS_LoadObjectFromXmlStringWithSchema: failed to parse XML");
+  /* Schema classes stay registered until DS_FreeSchema; caller owns the schema.
+     For the in-process test use-case we leave classes registered until shutdown. */
   return o;
 }

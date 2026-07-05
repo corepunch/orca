@@ -63,7 +63,9 @@ project "orca.filesystem"
     targetdir "build/lib"
     files {
         "source/filesystem/**.c",
-        "source/filesystem/**.h"
+        "source/filesystem/**.h",
+        "source/data/**.c",
+        "source/data/**.h"
     }
     links { "orca.geometry" }
 

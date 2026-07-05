@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Schema>
+  <Entity Name="Games">
+    <Column Name="Catalog" Type="relation" Entity="Game"/>
+  </Entity>
+  <Entity Name="Game">
+    <Column Name="Id"          Type="string" Key="true"/>
+    <Column Name="Title"       Type="string"/>
+    <Column Name="Description" Type="string"/>
+    <Column Name="Cover"       Type="string"/>
+  </Entity>
+</Schema>
