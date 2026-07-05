@@ -263,6 +263,14 @@ _FindOrCreateSession(const char *name, const char *params)
 struct Object *
 FS_ResolveDataSource(const char *name, const char **out_params)
 {
+  struct Object *source = workspace ? OBJ_FindByPath(workspace, name) : NULL;
+  struct DataSource *data_source = GetDataSource(source);
+  if (data_source && data_source->Data) {
+    struct ds_entry *entry = _FindEntry(name);
+    if (out_params) *out_params = entry ? entry->params : NULL;
+    return CMP_GetObject(data_source->Data);
+  }
+
   struct ds_session *session = _FindSession(name);
   if (session && session->root) {
     if (out_params) *out_params = session->params;

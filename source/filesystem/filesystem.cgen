@@ -55,15 +55,17 @@
     </class>
     <class name="DataSource">
       <summary>Base class for a project datasource declared in a DataSourceLibrary.</summary>
-      <details>A datasource is an object, like an Image or a RenderTargetTexture. It is declared inside a project's named DataSourceLibrary and identified by its Name. Concrete subclasses such as XmlDataSource load their backing data when attached to the complete project hierarchy. It is referenced from bindings by its fully qualified path "Project/Library/Name", for example "Adventure/DataSources/Games".</details>
+      <details>A datasource is an object, like an Image or a RenderTargetTexture. It owns an eagerly materialized DataObject tree loaded by a concrete subclass such as XmlDataSource. It is declared inside a project's named DataSourceLibrary and referenced from bindings by its fully qualified path "Project/Library/Name", for example "Adventure/DataSources/Games".</details>
       <properties>
+        <property name="Data" type="DataObject" pointer="true">Root of the eagerly materialized data object tree.</property>
         <property name="Schema" type="string">Optional path to a schema file that declares entities, columns, types, and relationships for this datasource.</property>
       </properties>
     </class>
     <class name="XmlDataSource" parent="DataSource">
       <summary>XML-backed datasource that loads an object tree from a source file.</summary>
-      <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. When the datasource receives Object.Attached with a complete project hierarchy, its session is opened and the XML source is loaded.</details>
+      <details>Declared inside a project's named DataSourceLibrary as, for example, <![CDATA[XmlDataSource { Name = "Games", Source = "Adventure/Data/Games" }]]>. On Object.Start it loads the XML source into a tree of DataObject, DataObjectString, DataObjectInt, DataObjectFloat, and DataObjectBool instances.</details>
       <handles>
+        <handle message="Object.Start"/>
         <handle message="Object.Attached"/>
       </handles>
       <properties>

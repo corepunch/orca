@@ -167,46 +167,30 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
 
 // ListBox_Start
 HANDLER(ListBox, Object, Start) {
-  OBJ_Clear(hObject);
-  if (GetItemsControl(hObject)->ItemsSource) {
-    struct Node2D *template = GetItemsControl(hObject)->ItemTemplate;
-    FOR_EACH_OBJECT(data, CMP_GetObject(GetItemsControl(hObject)->ItemsSource)) {
-      struct Object *item;
-      if (template) {
-        item = OBJ_Instantiate(CMP_GetObject(GetItemsControl(hObject)->ItemTemplate));
-      } else {
-        if ((item = OBJ_Create(ID_TextBlock))) {
-          PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), "Item");
-        }
-      }
-      if (!item) {
-        Con_Printf("Can not instantiate ListBox item template");
-        return FALSE;
-      }
-      // Set DataContext directly on the Node struct (same as binding system reads it)
-      struct Node *itemNode = GetNode(item);
-      if (itemNode) {
-        itemNode->DataContext = OBJ_GetComponent(data, ID_DataObject);
-      }
-      OBJ_AddChild(hObject, item);
-    }
-    // Auto-select first item if no SelectedValue is set
-    if (!pListBox->SelectedValue || !pListBox->SelectedValue[0]) {
-      struct Object *first = NULL;
-      FOR_EACH_OBJECT(child, hObject) {
-        first = child;
-        break;
-      }
-      if (first) {
-        ListBox_SetSelected(hObject, pListBox, first);
-      }
-    } else {
-      ListBox_SyncToSelectedValue(hObject, pListBox);
-    }
-    return TRUE;
-  } else {
-    return FALSE;
+  OBJ_Clear(hObject); // wipe existing children
+  struct ItemsControl *ic = GetItemsControl(hObject);
+  if (!ic->ItemsSource) return FALSE; // nothing to bind
+  struct Node2D *tpl = ic->ItemTemplate;
+  FOR_EACH_OBJECT(data, CMP_GetObject(ic->ItemsSource)) { // iterate data items
+    // instantiate template, or fall back to a plain TextBlock
+    struct Object *item = tpl ? OBJ_Instantiate(CMP_GetObject(tpl)) : OBJ_Create(ID_TextBlock);
+    if (!item) return Con_Printf("Can not instantiate ListBox item template"), FALSE;
+    if (!tpl) PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), "Item"); // default text
+    // set DataContext directly on Node (binding system reads it from here)
+    struct Node *n = GetNode(item);
+    n && (n->DataContext = OBJ_GetComponent(data, ID_DataObject));
+    OBJ_AddChild(hObject, item);
   }
+  if (!pListBox->SelectedValue || !*pListBox->SelectedValue) {
+    // no selection yet -> auto-select first child
+    struct Object *first = NULL;
+    FOR_EACH_OBJECT(c, hObject) { first = c; break; }
+    first && (ListBox_SetSelected(hObject, pListBox, first), true);
+  } else {
+    // restore selection matching existing SelectedValue
+    ListBox_SyncToSelectedValue(hObject, pListBox);
+  }
+  return TRUE;
 }
 
 // ListBox_PropertyChanged — sync SelectedValue from binding

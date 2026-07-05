@@ -1453,7 +1453,8 @@ local function test_package_datasource_declarations()
 end
 
 -- ---------------------------------------------------------------------------
--- DataContextSource should resolve datasource names through the provider registry
+-- XmlDataSource should eagerly own its DataObject tree and DataContextSource
+-- should resolve that owned root.
 -- ---------------------------------------------------------------------------
 local function test_datasource_provider_resolution()
 	local project = filesystem.init("samples/Example")
@@ -1462,11 +1463,19 @@ local function test_datasource_provider_resolution()
 		return
 	end
 
+	local library = project.DataSourceLibrary
+	local source = library and library:findChild("ApplicationData", false) or nil
+	test.expect(source ~= nil, "ApplicationData XmlDataSource should exist")
+	test.expect(source and source.Data ~= nil,
+		"XmlDataSource.Start should eagerly materialize its DataObject root")
+	test.expect_eq(source and source.Data and source.Data:getClassName(), "DataObject",
+		"XmlDataSource.Data should be a DataObject tree")
+
 	local xml = '<Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData"/>'
 	local root = filesystem.loadObjectFromXmlString(xml)
 	test.expect(root ~= nil, "XML with DataContextSource name should load")
 	test.expect(root.DataContext ~= nil,
-		"DataContextSource='ApplicationData' should resolve through provider registry; got DataContext=" .. tostring(root.DataContext))
+		"DataContextSource='ApplicationData' should resolve the datasource-owned tree; got DataContext=" .. tostring(root.DataContext))
 	test.expect_eq(root.DataContext:getClassName(), "DataObject",
 		"Resolved DataContext should be a DataObject")
 
