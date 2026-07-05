@@ -9,6 +9,7 @@
 extern int parse_property(const char* str,
                           struct PropertyType const* prop,
                           void* valueptr);
+extern void const *PROP_GetRawValueSlot(struct Property const *property);
 
 static struct Object *node(struct _xmlNode* x, const struct ds_schema *schema,
                            const char *entity_name);
@@ -347,7 +348,7 @@ array_prop(struct Object *o, struct PropertyType const *pd, struct _xmlNode* x)
 
   xmlForEach(c, x) {
     if (pd->DataType == kDataTypeObject) {
-      struct Object *child = node(c);
+      struct Object *child = node(c, NULL, NULL);
       if (child) ((struct Object **)items)[index++] = child;
     } else {
       void *dst = (char *)items + (size_t)index * pd->DataSize;
@@ -391,7 +392,7 @@ property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* 
       set_struct_node(p, pd, c);
       return;
     }
-    struct Object *child = node(c);
+    struct Object *child = node(c, NULL, NULL);
     if (!child) return;
     if (GetBinding(child) || GetBindingExpression(child)) {
       OBJ_SendMessageW(child, ID_Binding_Compile, 0, p);

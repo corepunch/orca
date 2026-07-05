@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define XMLSTR(s) ((const xmlChar *)(s))
-
 /* DataObject class ID — inherits from DataContext which inherits from DataObject.
    Schema-generated entity classes declare this in their ParentClasses array so
    the binding system recognises them as data records. */
