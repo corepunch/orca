@@ -4,7 +4,7 @@
 	<Grid Name="Game" Rows="84px 1fr" class="page">
 		<StackView Name="GameHeader" class="header">
 			<StackView Name="GameNavigation" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">
-				<ImageView Name="GameBackIcon" class="header-icon" Source="Adventure/Icons/back.svg?width=16&amp;type=mask" Stretch="Uniform"/>
+				<VectorView Name="GameBackIcon" class="header-icon" Source="Adventure/Icons/back.svg" Stretch="Uniform"/>
 				<TextBlock Name="GameBack" class="header-subtitle" Text="All games"/>
 			</StackView>
 			<TextBlock Name="GameHeaderTitle" class="header-title" Text="{Binding DataContext/Title}"/>

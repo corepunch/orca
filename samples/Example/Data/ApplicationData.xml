@@ -16,95 +16,95 @@
   </Metrics>
   <Signals>
     <Signal name="SignalXml"  
-      Icon="Example/Icons/code.svg?width=28&amp;type=mask"   
+      Icon="Example/Icons/code.svg"   
       Title="XML-first screens"       
       Body="Layouts stay readable."           
       PrimaryColor="$accent"/>
     <Signal name="SignalLua"  
-      Icon="Example/Icons/file.svg?width=28&amp;type=mask"   
+      Icon="Example/Icons/file.svg"   
       Title="Lua beside the view"     
       Body="Behavior stays close."            
       PrimaryColor="$accent-blue"/>
     <Signal name="SignalMoon" 
-      Icon="Example/Icons/moon.svg?width=28&amp;type=mask"   
+      Icon="Example/Icons/moon.svg"   
       Title="MoonScript when it grows"
       Body="Less noise, same runtime."         
       PrimaryColor="$text-secondary"/>
     <Signal name="SignalShip" 
-      Icon="Example/Icons/globe.svg?width=28&amp;type=mask"  
+      Icon="Example/Icons/globe.svg"  
       Title="Desktop, mobile, web"    
       Body="One screen, many targets."         
       PrimaryColor="$accent-green"/>
     <Signal name="SignalSpeed"
-      Icon="Example/Icons/zap.svg?width=28&amp;type=mask"    
+      Icon="Example/Icons/zap.svg"    
       Title="Fast edit-run-refine"    
       Body="See changes immediately."          
       PrimaryColor="$accent-amber"/>
     <Signal name="SignalScale"
-      Icon="Example/Icons/cpu.svg?width=28&amp;type=mask"    
+      Icon="Example/Icons/cpu.svg"    
       Title="Built to scale"          
       Body="Same UI, larger ambitions."        
       PrimaryColor="$text-muted"/>
   </Signals>
   <XmlPanelHeader>
     <PanelHeader name="XmlPanelHeader"
-      Icon="Example/Icons/grid.svg?width=26&amp;type=mask" 
+      Icon="Example/Icons/grid.svg" 
       Title="XML reads like a blueprint"   
       PrimaryColor="$accent"/>
   </XmlPanelHeader>
   <XmlModel>
     <XmlModelLine name="XmlModelLine1"
-      Icon="Example/Icons/monitor.svg?width=20&amp;type=mask"   
+      Icon="Example/Icons/monitor.svg"   
       Title="Screen"    
       PrimaryColor="$accent"         
       Indent="0"/>
     <XmlModelLine name="XmlModelLine2"
-      Icon="Example/Icons/panel-top.svg?width=20&amp;type=mask" 
+      Icon="Example/Icons/panel-top.svg" 
       Title="TabView"   
       PrimaryColor="$text-secondary" 
       Indent="16"/>
     <XmlModelLine name="XmlModelLine3"
-      Icon="Example/Icons/grid.svg?width=20&amp;type=mask"      
+      Icon="Example/Icons/grid.svg"      
       Title="Grid"      
       PrimaryColor="$text-secondary" 
       Indent="32"/>
     <XmlModelLine name="XmlModelLine4"
-      Icon="Example/Icons/layers.svg?width=20&amp;type=mask"    
+      Icon="Example/Icons/layers.svg"    
       Title="StackView" 
       PrimaryColor="$text-secondary" 
       Indent="32"/>
     <XmlModelLine name="XmlModelLine5"
-      Icon="Example/Icons/image.svg?width=20&amp;type=mask"     
+      Icon="Example/Icons/image.svg"     
       Title="ImageView" 
       PrimaryColor="$text-secondary" 
       Indent="48"/>
     <XmlModelLine name="XmlModelLine6"
-      Icon="Example/Icons/type.svg?width=20&amp;type=mask"      
+      Icon="Example/Icons/type.svg"      
       Title="TextBlock" 
       PrimaryColor="$text-secondary" 
       Indent="48"/>
   </XmlModel>
   <LuaPanelHeader>
     <PanelHeader name="LuaPanelHeader"
-      Icon="Example/Icons/code.svg?width=26&amp;type=mask" 
+      Icon="Example/Icons/code.svg" 
       Title="Lua stays close to the surface"
       PrimaryColor="$accent-blue"/>
   </LuaPanelHeader>
   <LuaCards>
     <Card name="LuaCard1"
-      Icon="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask"
+      Icon="Example/Icons/mouse-pointer-click.svg"
       Title="Input"  
       Body="Tap, click, and selection handling can sit right beside the view that needs it."   
       PrimaryColor="$accent"      
       IconBackground="$icon-bg-purple"/>
     <Card name="LuaCard2"
-      Icon="Example/Icons/database.svg?width=40&amp;type=mask"           
+      Icon="Example/Icons/database.svg"           
       Title="State"  
       Body="Small state objects stay local, so the screen remains easy to reason about."       
       PrimaryColor="$accent-blue" 
       IconBackground="$icon-bg-blue"/>
     <Card name="LuaCard3"
-      Icon="Example/Icons/link-2.svg?width=40&amp;type=mask"             
+      Icon="Example/Icons/link-2.svg"             
       Title="Binding"
       Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."          
       PrimaryColor="$accent-green"
@@ -112,31 +112,31 @@
   </LuaCards>
   <MoonPanelHeader>
     <PanelHeader name="MoonPanelHeader"
-      Icon="Example/Icons/moon.svg?width=26&amp;type=mask"
+      Icon="Example/Icons/moon.svg"
       Title="MoonScript trims the noise"
       PrimaryColor="$text-secondary"/>
   </MoonPanelHeader>
   <DeployPanelHeader>
     <PanelHeader name="DeployPanelHeader"
-      Icon="Example/Icons/globe.svg?width=26&amp;type=mask"
+      Icon="Example/Icons/globe.svg"
       Title="One UI, many targets"
       PrimaryColor="$accent-green"/>
   </DeployPanelHeader>
   <DeployCards>
     <Card name="DeployCard1"
-      Icon="Example/Icons/monitor.svg?width=40&amp;type=mask"   
+      Icon="Example/Icons/monitor.svg"   
       Title="Desktop"
       Body="Best when you want denser information, more breathing room, and precision input."                        
       PrimaryColor="$accent"      
       IconBackground="$icon-bg-purple"/>
     <Card name="DeployCard2"
-      Icon="Example/Icons/smartphone.svg?width=40&amp;type=mask"
+      Icon="Example/Icons/smartphone.svg"
       Title="Mobile" 
       Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."                 
       PrimaryColor="$accent-green"
       IconBackground="$icon-bg-green"/>
     <Card name="DeployCard3"
-      Icon="Example/Icons/globe.svg?width=40&amp;type=mask"     
+      Icon="Example/Icons/globe.svg"     
       Title="Web"    
       Body="The same screen model can carry into browser workflows without being rewritten."                         
       PrimaryColor="$accent-blue" 
@@ -152,22 +152,22 @@
   </DeployImages>
   <FeatureCards>
     <Card name="FeatureXmlCard"  
-      Icon="Example/Icons/layers.svg?width=40&amp;type=mask" 
+      Icon="Example/Icons/layers.svg" 
       Title="XML stays readable"
       Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."                           
       PrimaryColor="$accent-blue"/>
     <Card name="FeatureLuaCard"  
-      Icon="Example/Icons/monitor.svg?width=40&amp;type=mask"
+      Icon="Example/Icons/monitor.svg"
       Title="Lua stays close"   
       Body="Interactions, bindings, and state can live next to the screen that owns them."                                   
       PrimaryColor="$accent-green"/>
     <Card name="FeatureShipCard" 
-      Icon="Example/Icons/globe.svg?width=40&amp;type=mask"  
+      Icon="Example/Icons/globe.svg"  
       Title="Ships everywhere"  
       Body="The same UI can move across desktop, mobile, and web-friendly targets."                                          
       PrimaryColor="$accent-amber"/>
     <Card name="FeatureSpeedCard"
-      Icon="Example/Icons/zap.svg?width=40&amp;type=mask"    
+      Icon="Example/Icons/zap.svg"    
       Title="Fast iteration"    
       Body="Edit, reload, and refine quickly without losing the overall shape of the interface."                             
       PrimaryColor="$accent"/>

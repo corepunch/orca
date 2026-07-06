@@ -40,7 +40,7 @@ extern int parse_property(const char* str, struct PropertyType const* prop,
 static struct Object *
 css_create_texture_object(const char *path)
 {
-  static lpcString_t const exts[] = { ".png", ".jpg", ".jpeg", ".svg", NULL };
+  static lpcString_t const exts[] = { ".png", ".jpg", ".jpeg", NULL };
   path_t source = {0};
   char query[MAX_PROPERTY_STRING] = {0};
   lpcString_t q = strchr(path, '?');
@@ -298,7 +298,6 @@ k_css_prop_map[] = {
   { "ring-offset",     "Node2D.RingOffset",       ID_Node2D_RingOffset },
   { "ring-width",    "Node2D.RingWidth",        ID_Node2D_RingWidth },
   { "content-stretch",   "Node2D.ContentStretch",     ID_Node2D_ContentStretch },
-  { "-orca-tint-mode",       "ImageView.TintMode",      ID_ImageView_TintMode },
   { "ignore-hit-test",   "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
   { "pointer-events",  "Node2D.IgnoreHitTest",      ID_Node2D_IgnoreHitTest },
   { "size-to-content",   "Node2D.SizeToContent",      ID_Node2D_SizeToContent },

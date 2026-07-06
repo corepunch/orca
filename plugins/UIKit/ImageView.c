@@ -106,10 +106,6 @@ HANDLER(ImageView, Node2D, DrawForeground)
 
   Node2D_GetViewEntity(pNode2D, &entity, pImageView->Source, &pDrawForeground->brush);
 
-  if (pImageView->TintMode == kTintModeNone) {
-    entity.material.color = (struct color){1, 1, 1, 1};
-  }
-
   calculate_ninepatch(&(struct vec2){ width, height },
                       &imgsize,
                       (struct edges const*)&pImageView->Insets,

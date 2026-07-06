@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 
 USERS = {
 	"StarWarsFan247", "DarthVibes",      "JediMasterLuke",   "SithLordOfficial",
@@ -25,7 +25,7 @@ class Tweets extends require "orca.core.widget"
 					StackView class: "flex-row justify-between mt-1 text-foreground-muted", =>
 						for action in *ACTIONS
 							StackView class: "flex-row gap-1 items-center", =>
-								ImageView
-									class: "align-middle-center"
-									Source: "assets/icons/#{action}.svg?width=16"
+							VectorView
+								class: "align-middle-center"
+								Source: "assets/icons/#{action}.svg"
 								TextBlock class: "text-xs text-foreground-muted", "28"

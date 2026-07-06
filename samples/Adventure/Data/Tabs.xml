@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Tabs>
-  <Tabs name="TabAdventures" Key="games"   Icon="Adventure/Icons/blocks.svg?width=32&amp;type=mask"   Label="Adventures" Active="true"/>
-  <Tabs name="TabLibrary"    Key="library" Icon="Adventure/Icons/database.svg?width=32&amp;type=mask" Label="Library"    Active="false"/>
-  <Tabs name="TabSettings"   Key="settings" Icon="Adventure/Icons/layers.svg?width=32&amp;type=mask"  Label="Settings"   Active="false"/>
+  <Tabs name="TabAdventures" Key="games"   Icon="Adventure/Icons/blocks.svg"   Label="Adventures" Active="true"/>
+  <Tabs name="TabLibrary"    Key="library" Icon="Adventure/Icons/database.svg" Label="Library"    Active="false"/>
+  <Tabs name="TabSettings"   Key="settings" Icon="Adventure/Icons/layers.svg"  Label="Settings"   Active="false"/>
 </Tabs>

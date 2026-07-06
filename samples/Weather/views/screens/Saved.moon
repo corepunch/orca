@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 Application = require "orca.core.application"
 import LOCATIONS, get_current_location, set_current_location, location_subtitle from require "model"
 
@@ -22,9 +22,9 @@ class SavedScreen extends require "orca.core.widget"
 					class: "align-middle-right bg-accent rounded-full p-2"
 					LeftButtonUp: -> navigate "/location-search"
 				}, =>
-					ImageView
-						class: "align-middle-center text-accent-foreground"
-						Source: "assets/icons/plus.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent-foreground"
+					Source: "assets/icons/plus.svg"
 			for loc in *LOCATIONS
 				selected = loc == current
 				row_class = selected and
@@ -37,9 +37,9 @@ class SavedScreen extends require "orca.core.widget"
 					class: row_class
 					LeftButtonUp: -> select_location loc
 				}, =>
-					ImageView
-						class: "align-middle-center #{icon_color}"
-						Source: "assets/icons/location.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center #{icon_color}"
+					Source: "assets/icons/location.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-base font-bold #{title_color}", loc.name
 						TextBlock class: "text-xs #{subtitle_color}", location_subtitle loc
