@@ -1004,6 +1004,7 @@
           <fields>
             <field name="URL" type="string">The URL of the page to navigate to.</field>
             <field name="TransitionType" type="TransitionType">The type of transition animation to use during navigation.</field>
+            <field name="DataContext" type="DataContext" pointer="true">Optional data context passed to the destination page.</field>
           </fields>
         </message>
         <message name="NavigateBack">

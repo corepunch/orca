@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="Game" class="page-content">
+	<TextBlock Name="GameBack" class="game-title" Text="&#x2190; All games"
+		LeftButtonUp="{PageHost.NavigateBack}"/>
+	<ImageView Name="GameCover" class="game-cover" Source="{Binding DataContext/Cover}" Stretch="UniformToFill"/>
+	<TextBlock Name="GameTitle" class="game-title" Text="{Binding DataContext/Title}"/>
+	<TextBlock Name="GameDescription" class="game-description" Text="{Binding DataContext/Description}"/>
+</StackView>

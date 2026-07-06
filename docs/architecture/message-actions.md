@@ -74,6 +74,10 @@ Screen.ShowModal action
 Default `Mode` is synchronous `Send` (calls `OBJ_SendMessageW` immediately).
 `Mode="Post"` defers through the message queue (`axPostMessageDataW`).
 
+If a generated message payload declares a `DataContext` object field and it is
+unset, dispatch inherits the triggering node's data context. This lets XML
+actions carry an item record to their destination without controller code.
+
 ## Runtime Metadata
 
 There is no separate message registry. Message metadata lives in the generated

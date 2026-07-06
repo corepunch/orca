@@ -194,15 +194,23 @@ struct Object *item = tpl ? OBJ_Instantiate(tpl) : OBJ_Create(ID_TextBlock);
 ```
 
 ### Guard-and-assign
-Use `&&` short-circuit to conditionally set a field:
+Use `&&` short-circuit to conditionally set a field when the condition is a simple null/pointer check and the assignment is one expression:
 ```c
 n && (n->DataContext = OBJ_GetComponent(data, ID_DataObject));
 ```
+Prefer a plain `if` when the condition is complex or the body has more than one statement:
+```c
+if (n) n->DataContext = OBJ_GetComponent(data, ID_DataObject);
+```
 
 ### Comma-operator in conditionals
-Side-effect call that must evaluate as truthy:
+Side-effect call guarded by a simple truthiness check:
 ```c
 first && (ListBox_SetSelected(hObject, pListBox, first), true);
+```
+Prefer a plain `if` when the guard is not a simple variable check or the call is long enough that the comma operator hurts readability:
+```c
+if (first) { ListBox_SetSelected(hObject, pListBox, first); return true; }
 ```
 
 ### Loop break for first element

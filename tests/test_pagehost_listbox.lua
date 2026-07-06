@@ -199,6 +199,41 @@ local function test_pagehost_navigateback()
 end
 
 -- ---------------------------------------------------------------------------
+-- PageHost: NavigateToPage passes a DataContext to the destination
+-- ---------------------------------------------------------------------------
+local function test_pagehost_navigation_context()
+    local screen = filesystem.loadObjectFromXmlString([[
+      <Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+        <PageHost Name="Host" Width="400" Height="800" ActivePage="alpha">
+          <Page Name="alpha" Path="/alpha" Width="400" Height="800">
+            <TextBlock Name="Card" Width="400" Height="100" Text="Game" DataContext="{DataObject Name=zork1}">
+              <Node.Triggers>
+                <EventTrigger RoutedEvent="Node.LeftButtonUp">
+                  <PageHost.NavigateToPage URL="/beta"/>
+                </EventTrigger>
+              </Node.Triggers>
+            </TextBlock>
+          </Page>
+          <Page Name="beta" Path="/beta" Width="400" Height="800"/>
+        </PageHost>
+      </Screen>
+    ]])
+    local card = screen:findChild("Card", true)
+    local page_b = screen:findChild("beta", true)
+
+    test.expect(card.DataContext ~= nil, "card should have a data context")
+    screen:findChild("Host", true):send("Node.ViewDidLoad")
+    card:send("Node.LeftButtonUp")
+    pump_messages(screen)
+
+    test.expect(page_b.Visible, "beta should be visible")
+    test.expect(page_b.DataContext ~= nil, "destination should receive the navigation context")
+
+    screen:clear()
+    print("PASS: test_pagehost_navigation_context")
+end
+
+-- ---------------------------------------------------------------------------
 -- PageHost: empty ActivePage shows first page (legacy behavior)
 -- ---------------------------------------------------------------------------
 local function test_pagehost_no_activepage_shows_first()
@@ -1023,6 +1058,7 @@ test_listbox_selectedvalue_property()
 test_listbox_selectionchanged_fires()
 test_pagehost_listbox_end_to_end()
 test_pagehost_navigateback()
+test_pagehost_navigation_context()
 test_pagehost_no_activepage_shows_first()
 test_listbox_selectitem_message()
 test_pagehost_sync_hides_non_active_pages()

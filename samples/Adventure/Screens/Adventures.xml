@@ -7,7 +7,8 @@
 			<TextBlock Name="HeaderSubtitle" class="header-subtitle">Choose an adventure</TextBlock>
 		</StackView>
 		<PageHost Name="Content" class="content" ActivePage="{Binding ../Footer/SelectedValue}">
-			<Page Name="games" Source="Adventure/Pages/GameList.xml"/>
+			<Page Name="games" Path="/games" Source="Adventure/Pages/GameList.xml"/>
+			<Page Name="game" Path="/game" Source="Adventure/Pages/Game.xml"/>
 			<Page Name="library" Source="Adventure/Pages/Library.xml"/>
 			<Page Name="settings" Source="Adventure/Pages/Settings.xml"/>
 		</PageHost>

@@ -35,6 +35,19 @@ _FindMessageActionPayload(struct Object *action)
   return NULL;
 }
 
+static void
+_InheritDataContext(struct Object *action, struct Object *sender)
+{
+  struct Property *prop = OBJ_FindShortProperty(action, fnv1a32("DataContext"));
+  struct Node *node = GetNode(sender);
+  if (!prop || PROP_GetType(prop) != kDataTypeObject || !node || !node->DataContext) return;
+  void *current = NULL;
+  memcpy(&current, PROP_GetValue(prop), sizeof(current));
+  if (current) return;
+  struct Object *data = CMP_GetObject(node->DataContext);
+  PROP_SetValue(prop, &data);
+}
+
 HANDLER(SendMessageAction, Action, Dispatch)
 {
   struct component *payload_cmp = _FindMessageActionPayload(hObject);
@@ -44,6 +57,7 @@ HANDLER(SendMessageAction, Action, Dispatch)
   }
 
   struct Object *sender = _SendMessageActionSender(hObject, pDispatch);
+  _InheritDataContext(hObject, sender);
   struct Object *target = sender;
   bool_t explicit_target = FALSE;
   if (pSendMessageAction->Target && *pSendMessageAction->Target) {

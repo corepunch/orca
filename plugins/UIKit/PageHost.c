@@ -66,6 +66,9 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
     Con_Error("Page object not found for path: %s", pNavigateToPage->URL);
     return FALSE;
   }
+  if (pNavigateToPage->DataContext) {
+    (GetNode(CMP_GetObject(pTarget))->DataContext = pNavigateToPage->DataContext);
+  }
   if (pPageHost->_activePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
     pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->_activePage;
   }
