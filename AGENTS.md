@@ -41,6 +41,10 @@ Read `docs/TESTING.md`, the target test file, and `tests/test_local.h` if shared
 
 Never edit `generated/` by hand — modify `.cgen` or source files and rerun `make modules`.
 
+## Icons
+
+Use [Lucide Icons](https://lucide.dev/icons) for all SVG icons. Import raw SVGs with `stroke="currentColor"` (stroke-based, not fill-based) to ensure consistent thickness and tinting via CSS `color` and `-orca-tint-mode: template`.
+
 ## Anti-exploration
 
 Avoid `Glob "**/*"`, reading every file in a directory, re-running searches for known facts, spawning subagents for small edits, or inferring conventions from many examples.

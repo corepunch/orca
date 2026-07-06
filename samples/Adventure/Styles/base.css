@@ -4,6 +4,8 @@ body { width: 400; height: 800; }
 .header { background-color: var(--accent); padding: 28 16 12 16; }
 .header-title { color: var(--accent-foreground); font-size: 24; font-weight: bold; }
 .header-subtitle { color: var(--accent-foreground); font-size: 13; }
+.header-icon { -orca-tint-mode: template; width: 16; height: 16; }
+.navigation-pop { direction: horizontal; align-items: center; gap: 6; }
 .game-list { padding: 8; gap: 8; }
 .footer { background-color: var(--accent-background); direction: horizontal; align-items: center; justify-content: space-around; padding-bottom: 32; }
 

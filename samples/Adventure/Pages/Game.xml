@@ -3,8 +3,10 @@
 <Page Name="GamePage">
 	<Grid Name="Game" Rows="84px 1fr" class="page">
 		<StackView Name="GameHeader" class="header">
-			<TextBlock Name="GameBack" class="header-subtitle" Text="&#x2190; All games"
-				LeftButtonUp="{NavigationHost.Pop}"/>
+			<StackView Name="GameNavigation" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">
+				<ImageView Name="GameBackIcon" class="header-icon" Source="Adventure/Icons/back.svg?width=16&amp;type=mask" Stretch="Uniform"/>
+				<TextBlock Name="GameBack" class="header-subtitle" Text="All games"/>
+			</StackView>
 			<TextBlock Name="GameHeaderTitle" class="header-title" Text="{Binding DataContext/Title}"/>
 		</StackView>
 		<StackView Name="GameContent" class="page-content">
