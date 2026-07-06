@@ -230,6 +230,46 @@ local function test_pagehost_navigation_context()
 end
 
 -- ---------------------------------------------------------------------------
+-- NavigationHost: pushed pages replace the tab shell and inherit row context
+-- ---------------------------------------------------------------------------
+local function test_navigationhost_push_pop()
+    local screen = filesystem.loadObjectFromXmlString([[
+      <Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
+        <NavigationHost Name="Navigation" Width="400" Height="800">
+          <Page Name="RootPage" Width="400" Height="800">
+            <TextBlock Name="Card" Text="Game" DataContext="{DataObject Name=zork1}"
+              LeftButtonUp="{NavigationHost.Push 'Adventure/Pages/Game.xml'}"/>
+          </Page>
+        </NavigationHost>
+      </Screen>
+    ]])
+    local navigation = screen:findChild("Navigation", true)
+    local root = screen:findChild("RootPage", true)
+    local card = screen:findChild("Card", true)
+
+    navigation:send("Node.ViewDidLoad")
+    card:send("Node.LeftButtonUp")
+    pump_messages(screen)
+
+    local detail = screen:findChild("GamePage", true)
+    test.expect(detail ~= nil, "push should load the game page")
+    test.expect(detail.Visible, "pushed page should be visible")
+    test.expect(root.Visible == false, "root page should hide while detail is pushed")
+    test.expect(navigation.CanGoBack, "navigation host should report that it can go back")
+    test.expect(detail.DataContext ~= nil, "pushed page should inherit the card data context")
+
+    screen:findChild("GameBack", true):send("Node.LeftButtonUp")
+    pump_messages(screen)
+
+    test.expect(root.Visible, "root page should be restored after pop")
+    test.expect(navigation.CanGoBack == false, "root page should not allow another pop")
+    test.expect(screen:findChild("GamePage", true) == nil, "popped page should be removed")
+
+    screen:clear()
+    print("PASS: test_navigationhost_push_pop")
+end
+
+-- ---------------------------------------------------------------------------
 -- PageHost: empty ActivePage shows first page (legacy behavior)
 -- ---------------------------------------------------------------------------
 local function test_pagehost_no_activepage_shows_first()
@@ -1055,6 +1095,7 @@ test_listbox_selectionchanged_fires()
 test_pagehost_listbox_end_to_end()
 test_pagehost_navigateback()
 test_pagehost_navigation_context()
+test_navigationhost_push_pop()
 test_pagehost_no_activepage_shows_first()
 test_listbox_selectitem_message()
 test_pagehost_sync_hides_non_active_pages()

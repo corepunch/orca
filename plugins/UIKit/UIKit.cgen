@@ -1015,6 +1015,34 @@
         </message>
       </messages>
     </class>
+    <class name="NavigationHost" parent="PageHost">
+      <summary>Hosts a stack of pages for push/pop navigation.</summary>
+      <details>Keeps hierarchical navigation separate from selection-driven PageHost navigation. The first Page child is the root; pushed Page templates replace it until popped.</details>
+      <handles>
+        <handle message="Node.ViewDidLoad"/>
+        <handle message="NavigationHost.Push"/>
+        <handle message="NavigationHost.Pop"/>
+      </handles>
+      <properties>
+        <property name="CanGoBack" type="bool">True when a pushed page can be popped.</property>
+      </properties>
+      <fields>
+        <field name="_stack" type="Page" pointer="true" fixed-array="32">Navigation page stack.</field>
+        <field name="_stackSize" type="int">Number of pages in the navigation stack.</field>
+      </fields>
+      <messages>
+        <message name="Push">
+          <summary>Loads and pushes a Page template.</summary>
+          <fields>
+            <field name="Path" type="string">Asset path of the Page XML template.</field>
+            <field name="DataContext" type="DataContext" pointer="true">Optional data context passed to the pushed page.</field>
+          </fields>
+        </message>
+        <message name="Pop">
+          <summary>Pops the current page and returns to the previous page.</summary>
+        </message>
+      </messages>
+    </class>
     <class name="PageViewport" parent="Node2D">
       <summary>Viewport for rendering the active page within a PageHost.</summary>
       <details>Responsible for displaying the content of the active page managed by a PageHost. Handles rendering and transition effects when switching between pages.</details>

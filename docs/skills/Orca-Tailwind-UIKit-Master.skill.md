@@ -27,7 +27,7 @@ UIKit composition rules
 - Use node + only when attaching a pre-built node instance; for normal UI trees prefer constructor + block syntax.
 - Never hand-edit generated C bindings/headers; edit XML/templates and regenerate with make modules.
 - Modal popups should be declared as `<Popup>` roots and shown through the inline XML shorthand `{Screen.ShowModal Path=...}` loading a popup template.
-- Prefer inline generated-message triggers for a single XML action, including positional payloads when clear: `LeftButtonUp="{PageHost.NavigateToPage '/game'}"`. Use `Node.Triggers` for multiple or complex actions.
+- Prefer inline generated-message triggers for a single XML action, including positional payloads when clear: `LeftButtonUp="{NavigationHost.Push 'Pages/Game.xml'}"`. Keep selection-driven tabs in `PageHost`; use `NavigationHost.Push`/`Pop` for hierarchical detail and back navigation. Use `Node.Triggers` for multiple or complex actions.
 - Popups generally stretch their background/overlay to the full screen, so do not add root `Width`/`Height` unless the popup genuinely needs a custom bounds box.
 - The body function passed to a widget (StackView class: "...", =>) is run AFTER OBJ_Clear wipes the node. Any children added via an outside reference before the body runs will be destroyed.
 - To inject pre-built nodes (e.g. route content from content_for) into a widget, do it INSIDE the body closure.
