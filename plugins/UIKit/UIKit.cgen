@@ -563,7 +563,7 @@
     </class>
     <class name="StackView" parent="Node2D">
       <summary>Linear layout container arranging children in a single direction</summary>
-      <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis.</details>
+      <details>Provides flexbox-style linear layout with configurable direction, alignment, spacing, and content justification. Children are arranged sequentially along the specified axis. StackView does not stretch children along the stacking direction: a horizontal StackView distributes horizontal space but each child keeps its desired width, and a vertical StackView distributes vertical space but each child keeps its desired height. Cross-axis stretching is controlled by AlignItems (default Stretch). If you need children to fill the available space along the main axis, use Grid instead. This matches WPF StackPanel behavior.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Node2D.MeasureOverride"/>

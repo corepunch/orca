@@ -114,7 +114,6 @@ HANDLER(NavigationHost, Node, ViewDidLoad) {
 }
 
 HANDLER(NavigationHost, NavigationHost, Push) {
-  Con_Printf("NavigationHost.Push: path=%s", pPush->Path ? pPush->Path : "(null)");
   if (!pPush->Path || !*pPush->Path) return Con_Error("NavigationHost.Push missing Path"), FALSE;
   NavigationHost_InitRoot(hObject, pNavigationHost);
   if (pNavigationHost->_stackSize >= NAVIGATION_STACK_MAX)
@@ -133,7 +132,6 @@ HANDLER(NavigationHost, NavigationHost, Push) {
   pNavigationHost->_stack[pNavigationHost->_stackSize++] = page;
   _SetActivePage(hObject, GetPageHost(hObject), page);
   NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
-  Con_Printf("NavigationHost.Push: pushed %s (stack size=%d)", pPush->Path, pNavigationHost->_stackSize);
   return TRUE;
 }
 
