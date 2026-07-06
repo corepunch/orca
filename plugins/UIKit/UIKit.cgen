@@ -1041,6 +1041,7 @@
       </handles>
       <properties>
         <property name="CanGoBack" type="bool">True when a pushed page can be popped.</property>
+        <property name="CurrentPageTitle" type="string">Title of the current active page; updated automatically on push/pop.</property>
       </properties>
       <fields>
         <field name="_stack" type="Page" pointer="true" fixed-array="32">Navigation page stack.</field>

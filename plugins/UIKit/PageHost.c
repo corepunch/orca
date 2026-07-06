@@ -96,6 +96,16 @@ NavigationHost_UpdateCanGoBack(struct Object *hObject, struct NavigationHost *pN
 }
 
 static void
+NavigationHost_UpdateTitle(struct Object *hObject, struct NavigationHost *pNavigationHost)
+{
+  struct Page *active = pNavigationHost->_stackSize > 0
+    ? pNavigationHost->_stack[pNavigationHost->_stackSize - 1] : NULL;
+  const char *title = (active && active->Title) ? active->Title : "";
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_NavigationHost_CurrentPageTitle);
+  if (prop) PROP_SetValue(prop, &title);
+}
+
+static void
 NavigationHost_InitRoot(struct Object *hObject, struct NavigationHost *pNavigationHost)
 {
   if (pNavigationHost->_stackSize) return;
@@ -106,6 +116,7 @@ NavigationHost_InitRoot(struct Object *hObject, struct NavigationHost *pNavigati
     break;
   }
   NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
+  NavigationHost_UpdateTitle(hObject, pNavigationHost);
 }
 
 HANDLER(NavigationHost, Node, ViewDidLoad) {
@@ -133,6 +144,7 @@ HANDLER(NavigationHost, NavigationHost, Push) {
   pNavigationHost->_stack[pNavigationHost->_stackSize++] = page;
   _SetActivePage(hObject, GetPageHost(hObject), page);
   NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
+  NavigationHost_UpdateTitle(hObject, pNavigationHost);
   Con_Printf("NavigationHost.Push: pushed %s (stack size=%d)", pPush->Path, pNavigationHost->_stackSize);
   return TRUE;
 }
@@ -147,6 +159,7 @@ HANDLER(NavigationHost, NavigationHost, Pop) {
   _SetActivePage(hObject, GetPageHost(hObject), previous);
   OBJ_RemoveFromParent(CMP_GetObject(current));
   NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
+  NavigationHost_UpdateTitle(hObject, pNavigationHost);
   return TRUE;
 }
 
