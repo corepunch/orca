@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Schema>
+  <Entity Name="Transcript">
+    <Column Name="Entries" Type="relation" Entity="Message"/>
+  </Entity>
+  <Entity Name="Message">
+    <Column Name="Id"   Type="string" Key="true"/>
+    <Column Name="Type" Type="string"/>
+    <Column Name="Text" Type="string"/>
+  </Entity>
+</Schema>

@@ -1,0 +1,10 @@
+.transcript { padding: 16; gap: 4; overflow-y: scroll; }
+.message { padding: 4 8; }
+.message-text { color: var(--foreground); font-size: 15; }
+.message .outgoing .message-text { color: var(--accent); }
+.message .incoming .message-text { color: var(--foreground); }
+
+.command-bar { background-color: var(--card-background); padding: 12 16; border-top-width: 1; border-top-color: var(--border); direction: horizontal; align-items: center; }
+.command-input { flex: 1; font-size: 15; color: var(--foreground); background-color: var(--background); height: 32; }
+
+.play-button { background-color: var(--accent); color: var(--accent-foreground); font-size: 16; font-weight: bold; padding: 12 24; text-align: center; margin-top: 8; }

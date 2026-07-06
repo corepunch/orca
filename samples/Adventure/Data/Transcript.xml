@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Transcript name="Transcript">
+  <Entries>
+    <Message name="Msg1" Id="msg1" Type="incoming" Text="West of House"/>
+    <Message name="Msg2" Id="msg2" Type="incoming" Text="You are standing in an open field west of a white house, with a boarded front door. There is a small mailbox here."/>
+    <Message name="Msg3" Id="msg3" Type="outgoing" Text="> open mailbox"/>
+    <Message name="Msg4" Id="msg4" Type="incoming" Text="Opening the small mailbox reveals a leaflet."/>
+    <Message name="Msg5" Id="msg5" Type="outgoing" Text="> read leaflet"/>
+    <Message name="Msg6" Id="msg6" Type="incoming" Text="(The leaflet is already inside the mailbox.)"/>
+    <Message name="Msg7" Id="msg7" Type="incoming" Text="WELCOME TO ZORK!"/>
+    <Message name="Msg8" Id="msg8" Type="incoming" Text="Zork is a game of adventure, danger, and low cunning. In it you will explore some of the most amazing territory ever seen by mortals. No computer should be without one!"/>
+  </Entries>
+</Transcript>

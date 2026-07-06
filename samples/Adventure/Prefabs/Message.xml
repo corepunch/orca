@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="Message" class="message" Direction="Vertical">
+	<TextBlock Name="MessageText" class="message-text" Text="{Binding DataContext/Text}"/>
+</StackView>

@@ -32,6 +32,11 @@ DataSourceLibrary = {
 		Source = "Adventure/Data/Tabs",
 		Schema = "Adventure/Data/Tabs.schema"
 	},
+	require 'orca.filesystem.XmlDataSource' {
+		Name = "Transcript",
+		Source = "Adventure/Data/Transcript",
+		Schema = "Adventure/Data/Transcript.schema"
+	},
 }
 EnginePlugins = {
 	{ Name = "orca.UIKit" },
