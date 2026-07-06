@@ -50,6 +50,7 @@ extern int64_t OBJ_GetObjectCount(void);
 extern bool_t OBJ_RunProgram(struct Object *, struct token *, struct vm_register *);
 extern bool_t PROP_Import(struct Property *, struct vm_register *);
 extern void PROP_AttachProgram(struct Property *, struct token *);
+extern lpcString_t FS_GetThemeValue(lpcString_t);
 
 static HRESULT
 OBJ_SetPropertyValue(struct Object *obj, lpcString_t name, void const *value)
@@ -1601,6 +1602,27 @@ static void test_color_import_whole(void) {
     }
 }
 
+static void test_color_import_theme_value(void) {
+    WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
+        struct Property *prop;
+        EXPECT_OK(FIND_SHORT_PROPERTY(obj, "Color", &prop));
+
+        struct vm_register r = {0};
+        r.type = kDataTypeString;
+        r.size = sizeof(const char *);
+        const char *value = "$accent";
+        memcpy(r.value, &value, sizeof(value));
+        EXPECT(PROP_Import(prop, &r));
+
+        struct color expected = COLOR_Parse(FS_GetThemeValue(value));
+        struct color *got = (struct color *)PROP_GetValue(prop);
+        EXPECT(got->r == expected.r);
+        EXPECT(got->g == expected.g);
+        EXPECT(got->b == expected.b);
+        EXPECT(got->a == expected.a);
+    }
+}
+
 /* Import individual RGBA channels via PROP_Import with attribute. */
 static void test_color_import_channels(void) {
     WITH(struct Object, obj, make_rt_color_object(), destroy_object) {
@@ -1887,6 +1909,7 @@ int main(void) {
         DECL_TEST(test_color_parse_hex_rgba),
         DECL_TEST(test_color_property_from_parse),
         DECL_TEST(test_color_import_whole),
+        DECL_TEST(test_color_import_theme_value),
         DECL_TEST(test_color_import_channels),
         DECL_TEST(test_color_export_channel_program),
         DECL_TEST(test_color_color4_function),

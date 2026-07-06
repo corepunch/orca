@@ -791,14 +791,23 @@ local function test_css_edge_shorthand_order()
       margin: 1 2 3 4;
       border-width: 5 6 7 8;
     }
+
+    .logical-values {
+      padding-inline: 40;
+      padding-block: 10 20;
+      margin-inline: 3 7;
+      margin-block: 11;
+    }
   ]]
   local two = screen + ui.Node2D { class = "two-values" }
   local three = screen + ui.Node2D { class = "three-values" }
   local four = screen + ui.Node2D { class = "four-values" }
+  local logical = screen + ui.Node2D { class = "logical-values" }
 
   applyStyles(two)
   applyStyles(three)
   applyStyles(four)
+  applyStyles(logical)
 
   test.expect_near(two.PaddingTop, 10, 0.001, "padding: 10 32 sets vertical padding to 10")
   test.expect_near(two.PaddingBottom, 10, 0.001, "padding: 10 32 sets bottom padding to 10")
@@ -821,9 +830,19 @@ local function test_css_edge_shorthand_order()
   test.expect_near(four.BorderWidthBottom, 7, 0.001, "border-width: 5 6 7 8 sets bottom border to 7")
   test.expect_near(four.BorderWidthLeft, 8, 0.001, "border-width: 5 6 7 8 sets left border to 8")
 
+  test.expect_near(logical.PaddingLeft, 40, 0.001, "padding-inline sets left padding")
+  test.expect_near(logical.PaddingRight, 40, 0.001, "padding-inline sets right padding")
+  test.expect_near(logical.PaddingTop, 10, 0.001, "padding-block sets top padding")
+  test.expect_near(logical.PaddingBottom, 20, 0.001, "padding-block sets bottom padding")
+  test.expect_near(logical.MarginLeft, 3, 0.001, "margin-inline sets left margin")
+  test.expect_near(logical.MarginRight, 7, 0.001, "margin-inline sets right margin")
+  test.expect_near(logical.MarginTop, 11, 0.001, "margin-block sets top margin")
+  test.expect_near(logical.MarginBottom, 11, 0.001, "margin-block sets bottom margin")
+
   two:removeFromParent()
   three:removeFromParent()
   four:removeFromParent()
+  logical:removeFromParent()
   print("PASS: test_css_edge_shorthand_order")
 end
 

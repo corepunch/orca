@@ -367,6 +367,7 @@ static int f_unloadProject(lua_State* L)
 //}
 
 static lua_State *global_L;
+extern bool_t fs_can_start_datasource;
 
 //struct Object *FS_FindProject(lpcString_t szName) {
 //  return OBJ_FindChild(FS_GetWorkspace(), szName, FALSE);
@@ -386,6 +387,7 @@ HANDLER(Project, Object, Release) {
 // XmlDataSource_Start — eagerly materialize the source as a DataObject tree.
 HANDLER(XmlDataSource, Object, Start) {
   if (!pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
+  if (!fs_can_start_datasource) return FALSE;
   struct DataSource *ds = GetDataSource(hObject);
   struct file *schema_file = ds && ds->Schema ? FS_LoadFile(ds->Schema) : NULL;
   struct ds_schema const *schema = schema_file
@@ -398,7 +400,7 @@ HANDLER(XmlDataSource, Object, Start) {
            !dot || dot < slash ? ".xml" : "");
   struct Object *data = schema
     ? FS_LoadObjectFromXmlWithSchema(source, schema)
-    : FS_LoadObject(pXmlDataSource->Source);
+    : FS_LoadObject(source);
   if (!data || !GetDataObject(data)) {
     Con_Printf("Could not load XmlDataSource '%s' from '%s'",
                OBJ_GetName(hObject), pXmlDataSource->Source);

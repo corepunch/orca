@@ -4,7 +4,7 @@
 	<Grid Name="Root" Rows="64px auto" class="app-shell">
 		<StackView Name="NavBar" class="panel navbar">
 			<StackView Name="BrandMark" class="brand-mark">
-				<ImageView Name="BrandIcon" class="brand-icon" Source="Example/Icons/blocks.svg?width=22&amp;type=mask"/>
+				<ImageView Name="BrandIcon" class="brand-icon" TintMode="Template" Source="Example/Icons/blocks.svg?width=22&amp;type=mask"/>
 				<TextBlock Name="Brand" class="brand-text">ORCA</TextBlock>
 			</StackView>
 			<TextBlock Name="NavOverview" class="nav-link">Overview</TextBlock>
@@ -48,7 +48,7 @@
 					</TabBar>
 					<StackView Name="xml" class="tab-panel">
 						<LayerPrefabPlaceholder Name="XmlPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader/XmlPanelHeader"/>
 						<Grid Name="XmlGrid" Columns="auto auto" class="grid">
 							<StackView Name="XmlCopy" class="copy-stack">
 								<TextBlock Name="XmlBody" class="section-copy"
@@ -61,15 +61,15 @@
 							</StackView>
 							<StackView Name="XmlModel" class="card stack-card model-panel">
 								<TextBlock Name="XmlModelHeading" class="card-title" Text="The structure stays honest"/>
-								<GridBox Name="XmlModelGrid" Columns="auto"
-									ItemsSource="Example/DataSources/ApplicationData:XmlModel"
-									ItemTemplate="Example/Prefabs/XmlModelNode"/>
+							<GridBox Name="XmlModelGrid" Columns="auto" class="model-grid"
+								ItemsSource="Example/DataSources/ApplicationData:XmlModel"
+								ItemTemplate="Example/Prefabs/XmlModelNode"/>
 							</StackView>
 						</Grid>
 					</StackView>
 					<StackView Name="lua" class="tab-panel">
 						<LayerPrefabPlaceholder Name="LuaPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="Example/DataSources/ApplicationData:LuaPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:LuaPanelHeader/LuaPanelHeader"/>
 						<TextBlock Name="LuaBody" class="section-copy"
 							Text="The parts that move stay beside the screen that uses them, so interaction and state feel close and easy to change."/>
 						<GridBox Name="LuaGrid" Columns="auto auto auto" class="grid"
@@ -78,7 +78,7 @@
 					</StackView>
 					<StackView Name="moon" class="tab-panel">
 						<LayerPrefabPlaceholder Name="MoonPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="Example/DataSources/ApplicationData:MoonPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:MoonPanelHeader/MoonPanelHeader"/>
 						<Grid Name="MoonGrid" Columns="auto auto" class="grid">
 							<StackView Name="MoonCopy" class="copy-stack">
 								<TextBlock Name="MoonBody" class="section-copy"
@@ -100,7 +100,7 @@
 					</StackView>
 					<StackView Name="deploy" class="tab-panel">
 						<LayerPrefabPlaceholder Name="DeployPanelHeader" PlaceholderTemplate="Example/Prefabs/TabPanelHeader"
-							DataContextSource="Example/DataSources/ApplicationData:DeployPanelHeader"/>
+							DataContextSource="Example/DataSources/ApplicationData:DeployPanelHeader/DeployPanelHeader"/>
 						<TextBlock Name="DeployBody" class="section-copy"
 							Text="Build once, tune the spacing, and carry the same design language across desktop, mobile, and web-oriented targets."/>
 						<GridBox Name="DeployGrid" Columns="auto auto auto" class="grid"
@@ -110,7 +110,7 @@
 							ItemsSource="Example/DataSources/ApplicationData:DeployImages"
 							ItemTemplate="Example/Prefabs/ImageCaptionCard"/>
 						<StackView Name="DeployCommandLink" class="panel command-link">
-							<ImageView Name="DeployCommandIcon" class="command-icon" Source="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
+							<ImageView Name="DeployCommandIcon" class="command-icon" TintMode="Template" Source="Example/Icons/monitor.svg?width=20&amp;type=mask"/>
 							<StackView Name="DeployCommandCopy" class="command-copy">
 								<TextBlock Name="DeployCommandLabel" class="command-label" Text="Desktop build"/>
 								<TextBlock Name="DeployCommandValue" class="command-value" Text="make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca samples/Example"/>

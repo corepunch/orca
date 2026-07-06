@@ -1,6 +1,7 @@
 #include <source/core/core_local.h>
 
 extern struct Object *FS_LoadObject(lpcString_t path);
+extern lpcString_t FS_GetThemeValue(lpcString_t key);
 
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
@@ -538,7 +539,10 @@ PROP_Import(struct Property *prop,
         return TRUE;
       }
       if (r->type == kDataTypeString) {
-        struct color clr = COLOR_Parse(VM_REG_STR(r));
+        lpcString_t value = VM_REG_STR(r);
+        value = value[0] == '$' ? FS_GetThemeValue(value) : value;
+        if (!value) return FALSE;
+        struct color clr = COLOR_Parse(value);
         PROP_SetValue(prop, &clr);
         return TRUE;
       }

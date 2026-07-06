@@ -114,7 +114,7 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     }
 
     if (colon && dataObj) {
-      struct Object *child = OBJ_FindChild(dataObj, colon + 1, FALSE);
+      struct Object *child = OBJ_FindByPath(dataObj, colon + 1);
       if (child) {
         PROP_SetValue(OBJ_FindLongProperty(o, ID_Node_DataContext), &child);
       }

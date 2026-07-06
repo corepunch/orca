@@ -648,6 +648,62 @@ css_expand_font_shorthand(const char *value,
   return n;
 }
 
+static int
+css_expand_edge_shorthand(const char *key, const char *value,
+              char out_k[][CSS_MAX_PROPNAME],
+              char out_v[][CSS_MAX_VALLEN])
+{
+  static const char *sides[] = { "top", "right", "bottom", "left" };
+  char part[4][CSS_MAX_VALLEN] = {{0}};
+  const char *prefix = NULL;
+  const char *p = value;
+  int count = 0;
+
+  while (*p && count < 4) {
+    while (*p && isspace((unsigned char)*p)) p++;
+    const char *start = p;
+    while (*p && !isspace((unsigned char)*p)) p++;
+    if (start < p) copy_trim(part[count++], start, p, CSS_MAX_VALLEN);
+  }
+
+  if (!strcasecmp(key, "padding-inline") || !strcasecmp(key, "margin-inline")) {
+    if (count < 1 || count > 2) return 0;
+    prefix = !strncasecmp(key, "padding", 7) ? "padding" : "margin";
+    snprintf(out_k[0], CSS_MAX_PROPNAME, "%s-left", prefix);
+    snprintf(out_k[1], CSS_MAX_PROPNAME, "%s-right", prefix);
+    snprintf(out_v[0], CSS_MAX_VALLEN, "%s", part[0]);
+    snprintf(out_v[1], CSS_MAX_VALLEN, "%s", part[count == 2 ? 1 : 0]);
+    return 2;
+  }
+
+  if (!strcasecmp(key, "padding-block") || !strcasecmp(key, "margin-block")) {
+    if (count < 1 || count > 2) return 0;
+    prefix = !strncasecmp(key, "padding", 7) ? "padding" : "margin";
+    snprintf(out_k[0], CSS_MAX_PROPNAME, "%s-top", prefix);
+    snprintf(out_k[1], CSS_MAX_PROPNAME, "%s-bottom", prefix);
+    snprintf(out_v[0], CSS_MAX_VALLEN, "%s", part[0]);
+    snprintf(out_v[1], CSS_MAX_VALLEN, "%s", part[count == 2 ? 1 : 0]);
+    return 2;
+  }
+
+  if (!strcasecmp(key, "padding")) prefix = "padding";
+  else if (!strcasecmp(key, "margin")) prefix = "margin";
+  else if (!strcasecmp(key, "border-width")) prefix = "border-width";
+  else return -1;
+  if (count < 1 || count > 4) return 0;
+
+  int source[] = { 0, count == 1 ? 0 : 1,
+           count < 3 ? 0 : 2, count < 2 ? 0 : count == 4 ? 3 : 1 };
+  for (int i = 0; i < 4; i++) {
+    if (!strcmp(prefix, "border-width"))
+      snprintf(out_k[i], CSS_MAX_PROPNAME, "border-%s-width", sides[i]);
+    else
+      snprintf(out_k[i], CSS_MAX_PROPNAME, "%s-%s", prefix, sides[i]);
+    snprintf(out_v[i], CSS_MAX_VALLEN, "%s", part[source[i]]);
+  }
+  return 4;
+}
+
 // ---------------------------------------------------------------------------
 // Parsed CSS in-memory representation
 // ---------------------------------------------------------------------------
@@ -1087,6 +1143,15 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     return;
   }
 
+  char ek[4][CSS_MAX_PROPNAME] = {{0}};
+  char ev[4][CSS_MAX_VALLEN] = {{0}};
+  int expanded = css_expand_edge_shorthand(css_key, css_value, ek, ev);
+  if (expanded >= 0) {
+    for (int i = 0; i < expanded; i++)
+      css_apply_decl_to_rule(rule_obj, ek[i], ev[i]);
+    return;
+  }
+
   char theme_value[CSS_MAX_VALLEN] = {0};
   char resolved_value[CSS_MAX_VALLEN] = {0};
   char normalized_value[CSS_MAX_VALLEN] = {0};
@@ -1111,66 +1176,11 @@ css_apply_decl_to_rule(struct Object *rule_obj,
     url_value[len] = '\0';
     css_value = url_value;
   }
-  const char *css_value_before_normalize = css_value;
   css_value = css_normalize_decl_value(css_key, css_value,
                      normalized_value,
                      sizeof(normalized_value));
   if (!strcasecmp(css_key, "font-family")) {
     css_value = css_resolve_font_family(css_value, resolved_value, sizeof(resolved_value));
-  }
-
-  if (!strcasecmp(css_key, "margin") &&
-    (strstr(css_value_before_normalize, "auto") || strstr(css_value, "nan"))) {
-    char part[4][CSS_MAX_VALLEN] = {{0}};
-    char left[CSS_MAX_VALLEN] = {0};
-    char top[CSS_MAX_VALLEN] = {0};
-    char right[CSS_MAX_VALLEN] = {0};
-    char bottom[CSS_MAX_VALLEN] = {0};
-    int count = 0;
-    const char *p = css_value_before_normalize;
-
-    while (*p && count < 4) {
-      while (*p && isspace((unsigned char)*p)) p++;
-      const char *start = p;
-      while (*p && !isspace((unsigned char)*p)) p++;
-      if (start < p) {
-        copy_trim(part[count], start, p, (int)sizeof(part[count]));
-        if (!strcasecmp(part[count], "auto")) {
-          strcpy(part[count], "nan");
-        }
-        count++;
-      }
-    }
-
-    if (count == 1) {
-      strcpy(top, part[0]);
-      strcpy(right, part[0]);
-      strcpy(bottom, part[0]);
-      strcpy(left, part[0]);
-    } else if (count == 2) {
-      strcpy(top, part[0]);
-      strcpy(right, part[1]);
-      strcpy(bottom, part[0]);
-      strcpy(left, part[1]);
-    } else if (count == 3) {
-      strcpy(top, part[0]);
-      strcpy(right, part[1]);
-      strcpy(bottom, part[2]);
-      strcpy(left, part[1]);
-    } else if (count == 4) {
-      strcpy(top, part[0]);
-      strcpy(right, part[1]);
-      strcpy(bottom, part[2]);
-      strcpy(left, part[3]);
-    }
-
-    if (count >= 1 && count <= 4) {
-      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginLeft, "Node.MarginLeft", css_key, left);
-      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginTop, "Node.MarginTop", css_key, top);
-      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginRight, "Node.MarginRight", css_key, right);
-      css_apply_orca_value_to_rule(rule_obj, ID_Node_MarginBottom, "Node.MarginBottom", css_key, bottom);
-      return;
-    }
   }
 
   for (int i = 0; k_css_prop_map[i].css; i++) {
@@ -1450,4 +1460,3 @@ struct Object *UIKit_LoadObjectFromCss(const char* path)
   free(css_text);
   return sheet;
 }
-

@@ -1442,7 +1442,7 @@ local function test_package_datasource_declarations()
 		"Example package.lua should declare the ApplicationData datasource name")
 	test.expect(package_lua:find('Source = "Example/Data/ApplicationData"', 1, true) ~= nil,
 		"Example package.lua should declare the datasource XML source")
-	test.expect(package_lua:find('Schema = "Example/Data/ApplicationData.Schema.xml"', 1, true) ~= nil,
+	test.expect(package_lua:find('Schema = "Example/Data/ApplicationData.schema"', 1, true) ~= nil,
 		"Example package.lua should declare datasource schema path")
 
 	filesystem.unloadProject(project)
@@ -1517,6 +1517,11 @@ local function test_datasource_provider_with_child()
 		"DataContextSource='ApplicationData:Signals' should resolve through provider registry")
 	test.expect_eq(root.DataContext.Name, "Signals",
 		"DataContextSource name:child should find the named child")
+
+	local nested = filesystem.loadObjectFromXmlString(
+		'<Node2D DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader/XmlPanelHeader"/>')
+	test.expect_eq(nested and nested.DataContext and nested.DataContext.Name, "XmlPanelHeader",
+		"DataContextSource child selector should resolve a nested path")
 
 	filesystem.unloadProject(project)
 	project = nil
@@ -1832,7 +1837,7 @@ local function test_datasource_schema_loaded()
 	test.expect(project ~= nil, "Should load Example project")
 	if not project then return end
 
-	local schema_file = filesystem.readTextFile("samples/Example/Data/ApplicationData.Schema.xml")
+	local schema_file = filesystem.readTextFile("samples/Example/Data/ApplicationData.schema")
 	test.expect(schema_file ~= nil and schema_file ~= "",
 		"Schema file should exist and be readable")
 	test.expect(schema_file:find("<Schema>", 1, true) ~= nil,

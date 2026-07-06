@@ -17,6 +17,7 @@ if (!strncmp(OBJ_GetName(ITER), filename, strlen(OBJ_GetName(ITER))) && filename
 #define MAX_DATASOURCE_ENTRIES  256
 
 static struct Object *workspace = NULL;
+bool_t fs_can_start_datasource;
 
 static void
 _CopyDsString(char *dst, size_t dst_size, const char *src)
@@ -284,7 +285,10 @@ FS_ResolveDataSource(const char *name, const char **out_params)
                 char spath[MAX_PROPERTY_STRING] = {0};
                 if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
                 memcpy(spath, sp, slen);
-                session->schema = DS_ParseSchema(spath);
+                struct file *schema_file = FS_LoadFile(spath);
+                session->schema = schema_file
+                  ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+                if (schema_file) FS_FreeFile(schema_file);
               }
             }
           }
@@ -1041,6 +1045,7 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
   _InitProjectRefences(L, project, szDirname);
 
   if (project->DataSourceLibrary) {
+    fs_can_start_datasource = TRUE;
     struct Object *lib = CMP_GetObject(project->DataSourceLibrary);
     FOR_EACH_OBJECT(child, lib) {
       struct XmlDataSource *xds = GetXmlDataSource(child);
@@ -1061,12 +1066,19 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
       OBJ_SendMessageW(child, ID_Object_Start, 0, NULL);
       FS_RegisterProjectDataSource(CMP_GetObject(project), qualified,
                                    "Xml", params, ds->Schema);
-      FS_ResolveDataSource(qualified, NULL);
+      if (!xds->Data) {
+        struct Object *data = FS_ResolveDataSource(qualified, NULL);
+        if (data && GetDataObject(data)) {
+          xds->Data = GetDataObject(data);
+          OBJ_AddChild(child, data);
+        }
+      }
       if (xds->Source && *xds->Source) {
         FS_RegisterProjectDataSource(CMP_GetObject(project), xds->Source,
                                      "Xml", params, ds->Schema);
       }
     }
+    fs_can_start_datasource = FALSE;
   }
 
   lua_pop(L, 1);

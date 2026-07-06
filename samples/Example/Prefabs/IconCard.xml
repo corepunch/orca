@@ -3,7 +3,7 @@
 <StackView Name="IconCard" class="card stack-card icon-card">
 	<StackView Name="IconCardHeader" class="icon-card-header">
 		<StackView Name="IconCardBadge" class="icon-badge" BackgroundColor="{Binding DataContext/IconBackground}">
-			<ImageView Name="IconCardImage" class="icon-card-image" Stretch="Uniform" Source="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
+			<ImageView Name="IconCardImage" class="icon-card-image" Stretch="Uniform" TintMode="Template" Source="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}"/>
 		</StackView>
 		<TextBlock Name="IconCardTitle" class="card-title" Text="{Binding DataContext/Title}"/>
 	</StackView>
