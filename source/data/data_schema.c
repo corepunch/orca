@@ -56,6 +56,7 @@ parse_col_type(const char *s)
   if (!strcasecmp(s, "int"))      return DS_COL_INT;
   if (!strcasecmp(s, "float"))    return DS_COL_FLOAT;
   if (!strcasecmp(s, "bool"))     return DS_COL_BOOL;
+  if (!strcasecmp(s, "texture"))  return DS_COL_STRING;
   if (!strcasecmp(s, "relation")) return DS_COL_RELATION;
   return DS_COL_STRING;
 }
@@ -126,20 +127,83 @@ register_entity_class(const struct ds_entity *entity)
   return cls;
 }
 
-static struct ds_schema *
-parse_schema_doc(xmlDocPtr doc, const char *source_label)
+static struct ds_entity *
+find_entity_mut(struct ds_schema *s, const char *name)
 {
+  if (!s || !name) return NULL;
+  for (int i = 0; i < s->num_entities; i++) {
+    if (!strcmp(s->entities[i].name, name)) return &s->entities[i];
+  }
+  return NULL;
+}
+
+static bool_t
+resolve_include_path(const char *base, const char *inc, char out[1024])
+{
+  if (!inc || !*inc || !out) return FALSE;
+  if (inc[0] == '/') {
+    snprintf(out, 1024, "%s", inc);
+    return TRUE;
+  }
+  if (!base || !*base || base[0] == '<') return FALSE;
+  const char *slash = strrchr(base, '/');
+  if (!slash) {
+    snprintf(out, 1024, "%s", inc);
+    return TRUE;
+  }
+  size_t dlen = (size_t)(slash - base);
+  if (dlen > 1000) dlen = 1000;
+  snprintf(out, 1024, "%.*s/%s", (int)dlen, base, inc);
+  return TRUE;
+}
+
+static struct ds_schema *
+parse_schema_doc(xmlDocPtr doc, const char *source_label, struct ds_schema *schema, int depth)
+{
+  if (depth > 8) {
+    Con_Error("DS_ParseSchema: include nesting too deep near '%s'", source_label ? source_label : "<unknown>");
+    return NULL;
+  }
+
   xmlNodePtr root = xmlDocGetRootElement(doc);
   if (!root || strcmp((const char *)root->name, "Schema") != 0) {
     Con_Error("DS_ParseSchema: root element must be <Schema> in '%s'", source_label);
     return NULL;
   }
 
-  struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
   if (!schema) return NULL;
 
   for (xmlNodePtr en = root->children; en; en = en->next) {
     if (en->type != XML_ELEMENT_NODE) continue;
+    if (strcmp((const char *)en->name, "Include") == 0) {
+      xmlChar *ipath = xmlGetProp(en, XMLSTR("Path"));
+      if (!ipath) ipath = xmlGetProp(en, XMLSTR("File"));
+      if (!ipath) {
+        Con_Warning("DS_ParseSchema: <Include> missing Path in '%s'", source_label);
+        continue;
+      }
+
+      char full[1024] = {0};
+      if (!resolve_include_path(source_label, (const char *)ipath, full)) {
+        Con_Warning("DS_ParseSchema: cannot resolve include '%s' from '%s'", (const char *)ipath, source_label);
+        xmlFree(ipath);
+        continue;
+      }
+      xmlFree(ipath);
+
+      xmlDocPtr idoc = xmlParseFile(full);
+      if (!idoc) {
+        Con_Error("DS_ParseSchema: failed to parse include '%s'", full);
+        continue;
+      }
+      if (!parse_schema_doc(idoc, full, schema, depth + 1)) {
+        xmlFreeDoc(idoc);
+        return NULL;
+      }
+      xmlFreeDoc(idoc);
+      continue;
+    }
+
     if (strcmp((const char *)en->name, "Entity") != 0) continue;
     if (schema->num_entities >= DS_MAX_ENTITIES) {
       Con_Warning("DS_ParseSchema: too many entities in '%s', ignoring remainder", source_label);
@@ -148,6 +212,11 @@ parse_schema_doc(xmlDocPtr doc, const char *source_label)
 
     xmlChar *ename = xmlGetProp(en, XMLSTR("Name"));
     if (!ename) continue;
+    if (find_entity_mut(schema, (const char *)ename)) {
+      Con_Warning("DS_ParseSchema: duplicate entity '%s' in '%s', ignoring", (const char *)ename, source_label);
+      xmlFree(ename);
+      continue;
+    }
 
     struct ds_entity *entity = &schema->entities[schema->num_entities++];
     strncpy(entity->name, (const char *)ename, sizeof(entity->name) - 1);
@@ -198,7 +267,14 @@ DS_ParseSchema(const char *path)
     Con_Error("DS_ParseSchema: failed to parse '%s'", path);
     return NULL;
   }
-  struct ds_schema *schema = parse_schema_doc(doc, path);
+  struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
+  if (!schema) { xmlFreeDoc(doc); return NULL; }
+  schema = parse_schema_doc(doc, path, schema, 0);
+  if (!schema) {
+    free(schema);
+    xmlFreeDoc(doc);
+    return NULL;
+  }
   xmlFreeDoc(doc);
   return schema;
 }
@@ -212,7 +288,14 @@ DS_ParseSchemaFromString(const char *xml)
     Con_Error("DS_ParseSchemaFromString: failed to parse schema XML");
     return NULL;
   }
-  struct ds_schema *schema = parse_schema_doc(doc, "<string>");
+  struct ds_schema *schema = calloc(1, sizeof(struct ds_schema));
+  if (!schema) { xmlFreeDoc(doc); return NULL; }
+  schema = parse_schema_doc(doc, "<string>", schema, 0);
+  if (!schema) {
+    free(schema);
+    xmlFreeDoc(doc);
+    return NULL;
+  }
   xmlFreeDoc(doc);
   return schema;
 }

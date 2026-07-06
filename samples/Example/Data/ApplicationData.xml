@@ -1,71 +1,224 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ApplicationData name="ApplicationData">
   <Metrics>
-    <Metric name="MetricUsers"  Title="2.4 M"    Subtitle="Active users"  PrimaryColor="$accent"/>
-    <Metric name="MetricUptime" Title="99.9 %"   Subtitle="Uptime SLA"   PrimaryColor="$accent-green"/>
-    <Metric name="MetricFrame"  Title="1.2 ms"   Subtitle="Frame time"   PrimaryColor="$accent-blue"/>
+    <Metric name="MetricUsers" 
+      Title="2.4 M"   
+      Subtitle="Active users" 
+      PrimaryColor="$accent"/>
+    <Metric name="MetricUptime"
+      Title="99.9 %"  
+      Subtitle="Uptime SLA"  
+      PrimaryColor="$accent-green"/>
+    <Metric name="MetricFrame" 
+      Title="1.2 ms"  
+      Subtitle="Frame time"  
+      PrimaryColor="$accent-blue"/>
   </Metrics>
   <Signals>
-    <Signal name="SignalXml"   Icon="Example/Icons/code.svg?width=28&amp;type=mask"    Title="XML-first screens"        Body="Layouts stay readable."            PrimaryColor="$accent"/>
-    <Signal name="SignalLua"   Icon="Example/Icons/file.svg?width=28&amp;type=mask"    Title="Lua beside the view"      Body="Behavior stays close."             PrimaryColor="$accent-blue"/>
-    <Signal name="SignalMoon"  Icon="Example/Icons/moon.svg?width=28&amp;type=mask"    Title="MoonScript when it grows" Body="Less noise, same runtime."          PrimaryColor="$text-secondary"/>
-    <Signal name="SignalShip"  Icon="Example/Icons/globe.svg?width=28&amp;type=mask"   Title="Desktop, mobile, web"     Body="One screen, many targets."          PrimaryColor="$accent-green"/>
-    <Signal name="SignalSpeed" Icon="Example/Icons/zap.svg?width=28&amp;type=mask"     Title="Fast edit-run-refine"     Body="See changes immediately."           PrimaryColor="$accent-amber"/>
-    <Signal name="SignalScale" Icon="Example/Icons/cpu.svg?width=28&amp;type=mask"     Title="Built to scale"           Body="Same UI, larger ambitions."         PrimaryColor="$text-muted"/>
+    <Signal name="SignalXml"  
+      Icon="Example/Icons/code.svg?width=28&amp;type=mask"   
+      Title="XML-first screens"       
+      Body="Layouts stay readable."           
+      PrimaryColor="$accent"/>
+    <Signal name="SignalLua"  
+      Icon="Example/Icons/file.svg?width=28&amp;type=mask"   
+      Title="Lua beside the view"     
+      Body="Behavior stays close."            
+      PrimaryColor="$accent-blue"/>
+    <Signal name="SignalMoon" 
+      Icon="Example/Icons/moon.svg?width=28&amp;type=mask"   
+      Title="MoonScript when it grows"
+      Body="Less noise, same runtime."         
+      PrimaryColor="$text-secondary"/>
+    <Signal name="SignalShip" 
+      Icon="Example/Icons/globe.svg?width=28&amp;type=mask"  
+      Title="Desktop, mobile, web"    
+      Body="One screen, many targets."         
+      PrimaryColor="$accent-green"/>
+    <Signal name="SignalSpeed"
+      Icon="Example/Icons/zap.svg?width=28&amp;type=mask"    
+      Title="Fast edit-run-refine"    
+      Body="See changes immediately."          
+      PrimaryColor="$accent-amber"/>
+    <Signal name="SignalScale"
+      Icon="Example/Icons/cpu.svg?width=28&amp;type=mask"    
+      Title="Built to scale"          
+      Body="Same UI, larger ambitions."        
+      PrimaryColor="$text-muted"/>
   </Signals>
   <XmlPanelHeader>
-    <PanelHeader name="XmlPanelHeader" Icon="Example/Icons/grid.svg?width=26&amp;type=mask"  Title="XML reads like a blueprint"    PrimaryColor="$accent"/>
+    <PanelHeader name="XmlPanelHeader"
+      Icon="Example/Icons/grid.svg?width=26&amp;type=mask" 
+      Title="XML reads like a blueprint"   
+      PrimaryColor="$accent"/>
   </XmlPanelHeader>
   <XmlModel>
-    <XmlModelLine name="XmlModelLine1" Icon="Example/Icons/monitor.svg?width=20&amp;type=mask"    Title="Screen"     PrimaryColor="$accent"          Indent="0"/>
-    <XmlModelLine name="XmlModelLine2" Icon="Example/Icons/panel-top.svg?width=20&amp;type=mask"  Title="TabView"    PrimaryColor="$text-secondary"  Indent="16"/>
-    <XmlModelLine name="XmlModelLine3" Icon="Example/Icons/grid.svg?width=20&amp;type=mask"       Title="Grid"       PrimaryColor="$text-secondary"  Indent="32"/>
-    <XmlModelLine name="XmlModelLine4" Icon="Example/Icons/layers.svg?width=20&amp;type=mask"     Title="StackView"  PrimaryColor="$text-secondary"  Indent="32"/>
-    <XmlModelLine name="XmlModelLine5" Icon="Example/Icons/image.svg?width=20&amp;type=mask"      Title="ImageView"  PrimaryColor="$text-secondary"  Indent="48"/>
-    <XmlModelLine name="XmlModelLine6" Icon="Example/Icons/type.svg?width=20&amp;type=mask"       Title="TextBlock"  PrimaryColor="$text-secondary"  Indent="48"/>
+    <XmlModelLine name="XmlModelLine1"
+      Icon="Example/Icons/monitor.svg?width=20&amp;type=mask"   
+      Title="Screen"    
+      PrimaryColor="$accent"         
+      Indent="0"/>
+    <XmlModelLine name="XmlModelLine2"
+      Icon="Example/Icons/panel-top.svg?width=20&amp;type=mask" 
+      Title="TabView"   
+      PrimaryColor="$text-secondary" 
+      Indent="16"/>
+    <XmlModelLine name="XmlModelLine3"
+      Icon="Example/Icons/grid.svg?width=20&amp;type=mask"      
+      Title="Grid"      
+      PrimaryColor="$text-secondary" 
+      Indent="32"/>
+    <XmlModelLine name="XmlModelLine4"
+      Icon="Example/Icons/layers.svg?width=20&amp;type=mask"    
+      Title="StackView" 
+      PrimaryColor="$text-secondary" 
+      Indent="32"/>
+    <XmlModelLine name="XmlModelLine5"
+      Icon="Example/Icons/image.svg?width=20&amp;type=mask"     
+      Title="ImageView" 
+      PrimaryColor="$text-secondary" 
+      Indent="48"/>
+    <XmlModelLine name="XmlModelLine6"
+      Icon="Example/Icons/type.svg?width=20&amp;type=mask"      
+      Title="TextBlock" 
+      PrimaryColor="$text-secondary" 
+      Indent="48"/>
   </XmlModel>
   <LuaPanelHeader>
-    <PanelHeader name="LuaPanelHeader" Icon="Example/Icons/code.svg?width=26&amp;type=mask"  Title="Lua stays close to the surface" PrimaryColor="$accent-blue"/>
+    <PanelHeader name="LuaPanelHeader"
+      Icon="Example/Icons/code.svg?width=26&amp;type=mask" 
+      Title="Lua stays close to the surface"
+      PrimaryColor="$accent-blue"/>
   </LuaPanelHeader>
   <LuaCards>
-    <Card name="LuaCard1" Icon="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask" Title="Input"   Body="Tap, click, and selection handling can sit right beside the view that needs it."    PrimaryColor="$accent"       IconBackground="$icon-bg-purple"/>
-    <Card name="LuaCard2" Icon="Example/Icons/database.svg?width=40&amp;type=mask"            Title="State"   Body="Small state objects stay local, so the screen remains easy to reason about."        PrimaryColor="$accent-blue"  IconBackground="$icon-bg-blue"/>
-    <Card name="LuaCard3" Icon="Example/Icons/link-2.svg?width=40&amp;type=mask"              Title="Binding" Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."           PrimaryColor="$accent-green" IconBackground="$icon-bg-green"/>
+    <Card name="LuaCard1"
+      Icon="Example/Icons/mouse-pointer-click.svg?width=40&amp;type=mask"
+      Title="Input"  
+      Body="Tap, click, and selection handling can sit right beside the view that needs it."   
+      PrimaryColor="$accent"      
+      IconBackground="$icon-bg-purple"/>
+    <Card name="LuaCard2"
+      Icon="Example/Icons/database.svg?width=40&amp;type=mask"           
+      Title="State"  
+      Body="Small state objects stay local, so the screen remains easy to reason about."       
+      PrimaryColor="$accent-blue" 
+      IconBackground="$icon-bg-blue"/>
+    <Card name="LuaCard3"
+      Icon="Example/Icons/link-2.svg?width=40&amp;type=mask"             
+      Title="Binding"
+      Body="Let Lua connect the moving pieces while XML keeps the hierarchy in view."          
+      PrimaryColor="$accent-green"
+      IconBackground="$icon-bg-green"/>
   </LuaCards>
   <MoonPanelHeader>
-    <PanelHeader name="MoonPanelHeader" Icon="Example/Icons/moon.svg?width=26&amp;type=mask" Title="MoonScript trims the noise" PrimaryColor="$text-secondary"/>
+    <PanelHeader name="MoonPanelHeader"
+      Icon="Example/Icons/moon.svg?width=26&amp;type=mask"
+      Title="MoonScript trims the noise"
+      PrimaryColor="$text-secondary"/>
   </MoonPanelHeader>
   <DeployPanelHeader>
-    <PanelHeader name="DeployPanelHeader" Icon="Example/Icons/globe.svg?width=26&amp;type=mask" Title="One UI, many targets" PrimaryColor="$accent-green"/>
+    <PanelHeader name="DeployPanelHeader"
+      Icon="Example/Icons/globe.svg?width=26&amp;type=mask"
+      Title="One UI, many targets"
+      PrimaryColor="$accent-green"/>
   </DeployPanelHeader>
   <DeployCards>
-    <Card name="DeployCard1" Icon="Example/Icons/monitor.svg?width=40&amp;type=mask"    Title="Desktop" Body="Best when you want denser information, more breathing room, and precision input."                         PrimaryColor="$accent"       IconBackground="$icon-bg-purple"/>
-    <Card name="DeployCard2" Icon="Example/Icons/smartphone.svg?width=40&amp;type=mask" Title="Mobile"  Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."                  PrimaryColor="$accent-green" IconBackground="$icon-bg-green"/>
-    <Card name="DeployCard3" Icon="Example/Icons/globe.svg?width=40&amp;type=mask"      Title="Web"     Body="The same screen model can carry into browser workflows without being rewritten."                          PrimaryColor="$accent-blue"  IconBackground="$icon-bg-blue"/>
+    <Card name="DeployCard1"
+      Icon="Example/Icons/monitor.svg?width=40&amp;type=mask"   
+      Title="Desktop"
+      Body="Best when you want denser information, more breathing room, and precision input."                        
+      PrimaryColor="$accent"      
+      IconBackground="$icon-bg-purple"/>
+    <Card name="DeployCard2"
+      Icon="Example/Icons/smartphone.svg?width=40&amp;type=mask"
+      Title="Mobile" 
+      Body="Responsive spacing keeps the same interface calm and touch-friendly on smaller screens."                 
+      PrimaryColor="$accent-green"
+      IconBackground="$icon-bg-green"/>
+    <Card name="DeployCard3"
+      Icon="Example/Icons/globe.svg?width=40&amp;type=mask"     
+      Title="Web"    
+      Body="The same screen model can carry into browser workflows without being rewritten."                         
+      PrimaryColor="$accent-blue" 
+      IconBackground="$icon-bg-blue"/>
   </DeployCards>
   <DeployImages>
-    <DeployImage name="DeployImage1" Image="Example/Images/orca-tab-city"   Title="City glow"/>
-    <DeployImage name="DeployImage2" Image="Example/Images/orca-tab-lights" Title="Night light"/>
+    <DeployImage name="DeployImage1"
+      Image="Example/Images/orca-tab-city"  
+      Title="City glow"/>
+    <DeployImage name="DeployImage2"
+      Image="Example/Images/orca-tab-lights"
+      Title="Night light"/>
   </DeployImages>
   <FeatureCards>
-    <Card name="FeatureXmlCard"   Icon="Example/Icons/layers.svg?width=40&amp;type=mask"  Title="XML stays readable" Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."                            PrimaryColor="$accent-blue"/>
-    <Card name="FeatureLuaCard"   Icon="Example/Icons/monitor.svg?width=40&amp;type=mask" Title="Lua stays close"    Body="Interactions, bindings, and state can live next to the screen that owns them."                                    PrimaryColor="$accent-green"/>
-    <Card name="FeatureShipCard"  Icon="Example/Icons/globe.svg?width=40&amp;type=mask"   Title="Ships everywhere"   Body="The same UI can move across desktop, mobile, and web-friendly targets."                                           PrimaryColor="$accent-amber"/>
-    <Card name="FeatureSpeedCard" Icon="Example/Icons/zap.svg?width=40&amp;type=mask"     Title="Fast iteration"     Body="Edit, reload, and refine quickly without losing the overall shape of the interface."                              PrimaryColor="$accent"/>
+    <Card name="FeatureXmlCard"  
+      Icon="Example/Icons/layers.svg?width=40&amp;type=mask" 
+      Title="XML stays readable"
+      Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."                           
+      PrimaryColor="$accent-blue"/>
+    <Card name="FeatureLuaCard"  
+      Icon="Example/Icons/monitor.svg?width=40&amp;type=mask"
+      Title="Lua stays close"   
+      Body="Interactions, bindings, and state can live next to the screen that owns them."                                   
+      PrimaryColor="$accent-green"/>
+    <Card name="FeatureShipCard" 
+      Icon="Example/Icons/globe.svg?width=40&amp;type=mask"  
+      Title="Ships everywhere"  
+      Body="The same UI can move across desktop, mobile, and web-friendly targets."                                          
+      PrimaryColor="$accent-amber"/>
+    <Card name="FeatureSpeedCard"
+      Icon="Example/Icons/zap.svg?width=40&amp;type=mask"    
+      Title="Fast iteration"    
+      Body="Edit, reload, and refine quickly without losing the overall shape of the interface."                             
+      PrimaryColor="$accent"/>
   </FeatureCards>
   <GalleryCards>
-    <GalleryCard name="GalleryCard1" Image="Example/Images/lake"    Title="Lake Scene" Subtitle="Real-time reflections and water surface rendered at 60 fps."/>
-    <GalleryCard name="GalleryCard2" Image="Example/Images/peacock" Title="Peacock"    Subtitle="High-fidelity texture sampling with anisotropic filtering."/>
+    <GalleryCard name="GalleryCard1"
+      Image="Example/Images/lake"   
+      Title="Lake Scene"
+      Subtitle="Real-time reflections and water surface rendered at 60 fps."/>
+    <GalleryCard name="GalleryCard2"
+      Image="Example/Images/peacock"
+      Title="Peacock"   
+      Subtitle="High-fidelity texture sampling with anisotropic filtering."/>
   </GalleryCards>
   <WorkflowSteps>
-    <WorkflowStep name="Step1" Title="01" Subtitle="Define Layout"  PrimaryColor="$accent"       Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
-    <WorkflowStep name="Step2" Title="02" Subtitle="Load Assets"    PrimaryColor="$accent-blue"  Body="Images, fonts, and data files are streamed from packages at runtime."/>
-    <WorkflowStep name="Step3" Title="03" Subtitle="Script Logic"   PrimaryColor="$accent-green" Body="Attach Lua scripts to any component for interactivity and data binding."/>
-    <WorkflowStep name="Step4" Title="04" Subtitle="Ship"           PrimaryColor="$accent-amber" Body="Deploy to desktop, mobile, or WebGL with a single build command."/>
+    <WorkflowStep name="Step1"
+      Title="01"
+      Subtitle="Define Layout" 
+      PrimaryColor="$accent"      
+      Body="Write your screen as an XML file with familiar Grid and StackView containers."/>
+    <WorkflowStep name="Step2"
+      Title="02"
+      Subtitle="Load Assets"   
+      PrimaryColor="$accent-blue" 
+      Body="Images, fonts, and data files are streamed from packages at runtime."/>
+    <WorkflowStep name="Step3"
+      Title="03"
+      Subtitle="Script Logic"  
+      PrimaryColor="$accent-green"
+      Body="Attach Lua scripts to any component for interactivity and data binding."/>
+    <WorkflowStep name="Step4"
+      Title="04"
+      Subtitle="Ship"          
+      PrimaryColor="$accent-amber"
+      Body="Deploy to desktop, mobile, or WebGL with a single build command."/>
   </WorkflowSteps>
   <Quotes>
-    <Quote name="Quote1" PrimaryColor="$accent"       Title="— Alex R."    Subtitle="Lead Engineer"  Body="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
-    <Quote name="Quote2" PrimaryColor="$accent-green" Title="— Sam T."     Subtitle="UI Architect"   Body="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
-    <Quote name="Quote3" PrimaryColor="$accent-blue"  Title="— Jordan M."  Subtitle="Game Developer" Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
+    <Quote name="Quote1"
+      PrimaryColor="$accent"      
+      Title="— Alex R."   
+      Subtitle="Lead Engineer" 
+      Body="ORCA lets us ship native-quality UI on every platform from a single XML source. It changed how we build products."/>
+    <Quote name="Quote2"
+      PrimaryColor="$accent-green"
+      Title="— Sam T."    
+      Subtitle="UI Architect"  
+      Body="The declarative layout system is a joy to work with. Our designers write XML and developers hook up the logic — perfect split."/>
+    <Quote name="Quote3"
+      PrimaryColor="$accent-blue" 
+      Title="— Jordan M." 
+      Subtitle="Game Developer"
+      Body="Sub-millisecond frame times even on mid-range hardware. We ditched our old HTML renderer the day we tried ORCA."/>
   </Quotes>
 </ApplicationData>

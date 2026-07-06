@@ -7,6 +7,6 @@
     <Column Name="Id"          Type="string" Key="true"/>
     <Column Name="Title"       Type="string"/>
     <Column Name="Description" Type="string"/>
-    <Column Name="Cover"       Type="string"/>
+    <Column Name="Cover"       Type="texture"/>
   </Entity>
 </Schema>
