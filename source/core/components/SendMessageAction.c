@@ -89,6 +89,7 @@ HANDLER(SendMessageAction, Action, Dispatch)
       LRESULT result = OBJ_SendMessageW(receiver, message, 0, payload);
       if (result) return result;
     }
+    Con_Error("%s: no handler found in ancestor chain", payload_cmp->pcls->ClassName);
     return FALSE;
   }
 
