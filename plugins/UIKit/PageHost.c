@@ -2,6 +2,7 @@
 #include <filesystem/filesystem.h>
 
 #define PAGE_HISTORY_MAX 32
+#define NAVIGATION_STACK_MAX 32
 
 static void
 _SetActivePage(struct Object *hObject, struct PageHost *pPageHost, struct Page *pPage)
@@ -66,6 +67,9 @@ HANDLER(PageHost, PageHost, NavigateToPage) {
     Con_Error("Page object not found for path: %s", pNavigateToPage->URL);
     return FALSE;
   }
+  if (pNavigateToPage->DataContext) {
+    (GetNode(CMP_GetObject(pTarget))->DataContext = pNavigateToPage->DataContext);
+  }
   if (pPageHost->_activePage && pPageHost->_historySize < PAGE_HISTORY_MAX) {
     pPageHost->_historyStack[pPageHost->_historySize++] = pPageHost->_activePage;
   }
@@ -80,6 +84,69 @@ HANDLER(PageHost, PageHost, NavigateBack) {
   struct Page *pPrev = pPageHost->_historyStack[--pPageHost->_historySize];
   _SetActivePage(hObject, pPageHost, pPrev);
 
+  return TRUE;
+}
+
+static void
+NavigationHost_UpdateCanGoBack(struct Object *hObject, struct NavigationHost *pNavigationHost)
+{
+  bool_t canGoBack = pNavigationHost->_stackSize > 1;
+  struct Property *prop = OBJ_FindLongProperty(hObject, ID_NavigationHost_CanGoBack);
+  if (prop) PROP_SetValue(prop, &canGoBack);
+}
+
+static void
+NavigationHost_InitRoot(struct Object *hObject, struct NavigationHost *pNavigationHost)
+{
+  if (pNavigationHost->_stackSize) return;
+  FOR_EACH_OBJECT(child, hObject) {
+    struct Page *page = GetPage(child);
+    if (!page) continue;
+    pNavigationHost->_stack[pNavigationHost->_stackSize++] = page;
+    break;
+  }
+  NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
+}
+
+HANDLER(NavigationHost, Node, ViewDidLoad) {
+  NavigationHost_InitRoot(hObject, pNavigationHost);
+  return FALSE;
+}
+
+HANDLER(NavigationHost, NavigationHost, Push) {
+  Con_Printf("NavigationHost.Push: path=%s", pPush->Path ? pPush->Path : "(null)");
+  if (!pPush->Path || !*pPush->Path) return Con_Error("NavigationHost.Push missing Path"), FALSE;
+  NavigationHost_InitRoot(hObject, pNavigationHost);
+  if (pNavigationHost->_stackSize >= NAVIGATION_STACK_MAX)
+    return Con_Error("NavigationHost stack is full"), FALSE;
+
+  struct Object *target = FS_LoadObject(pPush->Path);
+  if (!target) return Con_Error("NavigationHost.Push failed to load: %s", pPush->Path), FALSE;
+  struct Page *page = GetPage(target);
+  if (!page) {
+    OBJ_ReleaseRef(target);
+    return Con_Error("NavigationHost.Push template is not a Page: %s", pPush->Path), FALSE;
+  }
+  pPush->DataContext && (GetNode(target)->DataContext = pPush->DataContext);
+  OBJ_AddChild(hObject, target);
+  OBJ_ReleaseRef(target);
+  pNavigationHost->_stack[pNavigationHost->_stackSize++] = page;
+  _SetActivePage(hObject, GetPageHost(hObject), page);
+  NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
+  Con_Printf("NavigationHost.Push: pushed %s (stack size=%d)", pPush->Path, pNavigationHost->_stackSize);
+  return TRUE;
+}
+
+HANDLER(NavigationHost, NavigationHost, Pop) {
+  NavigationHost_InitRoot(hObject, pNavigationHost);
+  if (pNavigationHost->_stackSize <= 1) return FALSE;
+
+  struct Page *current = pNavigationHost->_stack[--pNavigationHost->_stackSize];
+  struct Page *previous = pNavigationHost->_stack[pNavigationHost->_stackSize - 1];
+  pNavigationHost->_stack[pNavigationHost->_stackSize] = NULL;
+  _SetActivePage(hObject, GetPageHost(hObject), previous);
+  OBJ_RemoveFromParent(CMP_GetObject(current));
+  NavigationHost_UpdateCanGoBack(hObject, pNavigationHost);
   return TRUE;
 }
 

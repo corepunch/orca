@@ -1,4 +1,4 @@
-import Screen, Grid, StackView, TextBlock, ImageView, Input from require "orca.UIKit"
+import Screen, Grid, StackView, TextBlock, VectorView, Input from require "orca.UIKit"
 Application = require "orca.core.application"
 
 import Users, Chats, Messages from require "model"
@@ -38,11 +38,11 @@ class Chat extends require "orca.core.widget"
 
 		-- Override the layout footer with the message-compose bar.
 		@content_for "footer", StackView class: "bg-header-background flex-row px-4 py-2 gap-2 items-center", =>
-			ImageView {
-				class: "text-foreground-muted"
-				Source: "assets/icons/back.svg?width=24&type=mask"
-				LeftButtonUp: -> navigate "/send-money"
-			}
+		VectorView {
+			class: "text-foreground-muted"
+			Source: "assets/icons/back.svg"
+			LeftButtonUp: -> navigate "/send-money"
+		}
 			Input
 				class: "bg-surface flex-1 px-4 py-2 rounded text-foreground"
 				PlaceholderText: ". . ."

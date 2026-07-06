@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 Application = require "orca.core.application"
 
 import Users from require "model"
@@ -18,10 +18,10 @@ class UserProfile extends require "orca.core.widget"
 				class: "flex-row items-center gap-2"
 				LeftButtonUp: -> navigate "/send-money"
 			}, =>
-				ImageView
-					class: "text-foreground-muted"
-					Source: "assets/icons/back.svg?width=24&type=mask"
-				TextBlock class: "text-foreground-muted", "Back"
+			VectorView
+				class: "text-foreground-muted"
+				Source: "assets/icons/back.svg"
+			TextBlock class: "text-foreground-muted", "Back"
 
 			if user
 				StackView class: "flex-col items-center gap-3 py-6", =>

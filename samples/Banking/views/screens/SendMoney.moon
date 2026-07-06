@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 
 import Users, Chats from require "model"
 import navigate from require "Banking/views/helpers"
@@ -20,9 +20,9 @@ class SendMoney extends require "orca.core.widget"
 					class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3"
 					LeftButtonUp: -> navigate "/chat", { chat: c["$id"] }
 				}, =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/people.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/people.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-base font-bold text-foreground",
 							Users\getFullName partner

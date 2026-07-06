@@ -480,7 +480,7 @@ visit_child(struct Object *o, struct _xmlNode* c,
   lpcString_t tag = alias_class_tag((lpcString_t)c->name);
   struct PropertyType const *pd = OBJ_FindClass(tag)
     ? NULL
-    : OBJ_FindExplicitPropertyType(o, (lpcString_t)c->name);
+    : propdesc(o, (lpcString_t)c->name);
   if (pd) {
     property_node(o, pd, c);
     return;
@@ -577,7 +577,7 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   struct Object *o = is_prefab ? prefab(x) : cls ? OBJ_Create(cls->ClassID) : NULL;
 
   if (!o) {
-    if (!is_prefab) Con_Error("Unknown element type '%s'", tag);
+    if (!is_prefab) Con_Error("Unknown element type '%s' in '%s'", tag, x->doc && x->doc->URL ? (const char *)x->doc->URL : "?");
     return NULL;
   }
 

@@ -1088,46 +1088,6 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
 #include "../core/core_local.h" // for file_loader
 
-#define MAX_LOADER_ARGS     16
-#define MAX_LOADER_ARG_LEN  65  // 64 visible chars + NUL
-
-// Parse a query string like "arg1&arg2=value" into argv/argc.
-// argv[0] is already set to the file path (with extension) by the caller.
-// argv[argc] is always set to NULL (mirrors main() convention).
-// Returns the total argc (including argv[0]).
-int
-_ParseLoaderArgs(lpcString_t query_string, const char* argv[], int argc_start, int argc_max,
-                 char arg_buf[][MAX_LOADER_ARG_LEN])
-{
-  int argc = argc_start;
-  if (!query_string || *query_string == '\0') {
-    argv[argc] = NULL;
-    return argc;
-  }
-
-  // query_string starts with '?' — skip it
-  const char* p = (*query_string == '?') ? query_string + 1 : query_string;
-
-  while (*p) {
-    const char* amp = strchr(p, '&');
-    size_t len = amp ? (size_t)(amp - p) : strlen(p);
-    if (argc >= argc_max) {
-      Con_Printf("FS_LoadObject: too many query args (max %d), ignoring remainder\n", argc_max - argc_start);
-      break;
-    }
-    if (len >= MAX_LOADER_ARG_LEN) {
-      Con_Printf("FS_LoadObject: query arg truncated to %d chars\n", MAX_LOADER_ARG_LEN - 1);
-      len = MAX_LOADER_ARG_LEN - 1;
-    }
-    snprintf(arg_buf[argc], MAX_LOADER_ARG_LEN, "%.*s", (int)len, p);
-    argv[argc] = arg_buf[argc];
-    argc++;
-    p = amp ? amp + 1 : p + strlen(p);
-  }
-  argv[argc] = NULL;  // NULL-terminate like main()'s argv
-  return argc;
-}
-
 struct Object *
 _xml_ds_fetch(const char *params)
 {
@@ -1207,27 +1167,10 @@ _xml_ds_revert(struct Object *root, const char *params)
 // Load object from a file, trying registered file loaders based on extension.
 // Returns NULL on failure.
 struct Object *FS_LoadObject(lpcString_t tmpl) {
-  path_t tmpl_with_ext = {0};
   path_t filename_only = {0};
-  lpcString_t query_string = NULL;
-  
-  // Extract query string if present
-  lpcString_t question = strchr(tmpl, '?');
-  if (question) {
-    query_string = question;
-    size_t filename_len = question - tmpl;
-    if (filename_len < sizeof(filename_only)) {
-      strncpy(filename_only, tmpl, filename_len);
-      filename_only[filename_len] = '\0';
-    } else {
-      Con_Error("filename too long: '%s'", tmpl);
-      return NULL;
-    }
-  } else {
-    strncpy(filename_only, tmpl, sizeof(filename_only) - 1);
-    filename_only[sizeof(filename_only) - 1] = '\0';
-  }
-  
+  strncpy(filename_only, tmpl, sizeof(filename_only) - 1);
+  filename_only[sizeof(filename_only) - 1] = '\0';
+
   lpcString_t dot = strrchr(filename_only, '.');
   lpcString_t slash = strrchr(filename_only, '/');
   // Go over registered file loaders and find the first one that matches the extension (if any)
@@ -1236,33 +1179,26 @@ struct Object *FS_LoadObject(lpcString_t tmpl) {
        loader < core.file_loaders + MAX_FILE_LOADERS && loader->extension;
        loader++)
   {
-    // Build argv: argv[0] = filename with extension, then parsed query args.
-    // Backing storage for arg strings (argv[0] uses tmpl_with_ext directly).
-    // argv[argc] is always NULL (mirrors main() convention); +1 for the sentinel.
-    char arg_buf[MAX_LOADER_ARGS][MAX_LOADER_ARG_LEN];
-    const char* argv[MAX_LOADER_ARGS + 1];
-    int argc = 0;
+    path_t resolved = {0};
+    const char* argv[2] = { NULL, NULL };
+    int argc = 1;
 
-    // If there's no dot or the dot is before the last slash, try adding the loader's extension and see if that file exists.
+    // If there's no dot or the dot is before the last slash, try adding the loader's extension.
     if (!dot || dot < slash) {
-      int n = snprintf(tmpl_with_ext, sizeof(tmpl_with_ext), "%s%s", filename_only, loader->extension);
-      if (n <= 0 || n >= (int)sizeof(tmpl_with_ext)) {
-        Con_Error("placeholder path too long: '%s'", tmpl);
+      int n = snprintf(resolved, sizeof(resolved), "%s%s", filename_only, loader->extension);
+      if (n <= 0 || n >= (int)sizeof(resolved)) {
+        Con_Error("FS_LoadObject: path too long: '%s'", tmpl);
         return NULL;
       }
-      if (FS_FileExists(tmpl_with_ext)) {
-        // argv[0] = "folder/file.ext"
-        argv[0] = tmpl_with_ext;
-        argc = _ParseLoaderArgs(query_string, argv, 1, MAX_LOADER_ARGS, arg_buf);
+      if (FS_FileExists(resolved)) {
+        argv[0] = resolved;
         return loader->fn(argc, argv);
       }
     } else if (dot > slash) {
       // There's an extension: try loading directly if it matches the loader's extension
       size_t ext_len = strlen(loader->extension), filename_len = strlen(filename_only);
       if (filename_len > ext_len && strcmp(filename_only + filename_len - ext_len, loader->extension) == 0) {
-        // argv[0] = filename_only (already has the extension)
         argv[0] = filename_only;
-        argc = _ParseLoaderArgs(query_string, argv, 1, MAX_LOADER_ARGS, arg_buf);
         return loader->fn(argc, argv);
       }
     }

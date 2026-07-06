@@ -1,4 +1,4 @@
-import Screen, Grid, StackView, TextBlock, ImageView, Node2D from require "orca.UIKit"
+import Screen, Grid, StackView, TextBlock, VectorView, Node2D from require "orca.UIKit"
 Widget = require "orca.core.widget"
 
 NAV_ITEMS = {
@@ -20,10 +20,10 @@ make_footer = (active_route, navigate) ->
 			color  = selected and "text-accent" or "text-foreground-muted"
 			weight = selected and "font-bold"   or "font-normal"
 			StackView class: "w-12 flex-col items-center justify-center gap-1", =>
-				ImageView
-					class: "align-middle-center #{color}"
-					Source: "#{item.icon}?width=28&type=mask"
-					LeftButtonUp: -> navigate item.route
+			VectorView
+				class: "align-middle-center #{color}"
+				Source: "#{item.icon}"
+				LeftButtonUp: -> navigate item.route
 				TextBlock class: "text-xs #{color} #{weight}", item.label
 
 make_placeholder = ->

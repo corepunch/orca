@@ -41,6 +41,10 @@ Read `docs/TESTING.md`, the target test file, and `tests/test_local.h` if shared
 
 Never edit `generated/` by hand — modify `.cgen` or source files and rerun `make modules`.
 
+## Icons
+
+Use [Lucide Icons](https://lucide.dev/icons) for all SVG icons. Import raw SVGs with `stroke="currentColor"` (stroke-based, not fill-based) to ensure consistent thickness and tinting via CSS `color` and `-orca-tint-mode: template`.
+
 ## Anti-exploration
 
 Avoid `Glob "**/*"`, reading every file in a directory, re-running searches for known facts, spawning subagents for small edits, or inferring conventions from many examples.
@@ -194,15 +198,23 @@ struct Object *item = tpl ? OBJ_Instantiate(tpl) : OBJ_Create(ID_TextBlock);
 ```
 
 ### Guard-and-assign
-Use `&&` short-circuit to conditionally set a field:
+Use `&&` short-circuit to conditionally set a field when the condition is a simple null/pointer check and the assignment is one expression:
 ```c
 n && (n->DataContext = OBJ_GetComponent(data, ID_DataObject));
 ```
+Prefer a plain `if` when the condition is complex or the body has more than one statement:
+```c
+if (n) n->DataContext = OBJ_GetComponent(data, ID_DataObject);
+```
 
 ### Comma-operator in conditionals
-Side-effect call that must evaluate as truthy:
+Side-effect call guarded by a simple truthiness check:
 ```c
 first && (ListBox_SetSelected(hObject, pListBox, first), true);
+```
+Prefer a plain `if` when the guard is not a simple variable check or the call is long enough that the comma operator hurts readability:
+```c
+if (first) { ListBox_SetSelected(hObject, pListBox, first); return true; }
 ```
 
 ### Loop break for first element

@@ -38,6 +38,14 @@ Use the shorthand when it is clearer than a full trigger/action block.
 - `Screen.ShowModal` should point to the popup asset path.
 - Use `Popup.ClosePopup` to dismiss and optionally return data.
 
+## Navigation rules
+
+- Use `PageHost.ActivePage` bindings for peer selection such as footer tabs.
+- Use `NavigationHost` for hierarchical push/pop flows above a tab shell.
+- Push detail pages with `{NavigationHost.Push 'Pages/Detail.xml'}`; the triggering node's `DataContext` is inherited when the message context is unset.
+- Pop with `{NavigationHost.Pop}` and bind navigation chrome to `NavigationHost.CanGoBack` when conditional back UI is needed.
+- Pushed templates must have a `Page` root. Popups remain modal overlays and should not be used as navigation pages.
+
 ## Data-driven layout pattern
 
 Separate visual data from layout structure by driving layout properties through data bindings rather than CSS classes or hardcoded attributes.

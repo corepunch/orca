@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 Application = require "orca.core.application"
 
 import Users, Transactions from require "model"
@@ -18,17 +18,17 @@ class Transaction extends require "orca.core.widget"
 				class: "flex-row items-center gap-2"
 				LeftButtonUp: -> navigate "/"
 			}, =>
-				ImageView
-					class: "text-foreground-muted"
-					Source: "assets/icons/back.svg?width=24&type=mask"
-				TextBlock class: "text-foreground-muted", "Back"
+			VectorView
+				class: "text-foreground-muted"
+				Source: "assets/icons/back.svg"
+			TextBlock class: "text-foreground-muted", "Back"
 
 			if txn
 				StackView class: "flex-col items-center gap-2 py-6", =>
 					TextBlock class: "text-sm text-foreground-muted", "You sent"
-					ImageView
-						class: "align-middle-center"
-						Source: "assets/icons/transfer.svg?width=48"
+				VectorView
+					class: "align-middle-center"
+					Source: "assets/icons/transfer.svg"
 					TextBlock class: "text-4xl font-bold text-primary",
 						Transactions\formatAmount txn
 					TextBlock class: "text-base text-foreground", "to " .. Users\getFullName txn.beneficiary

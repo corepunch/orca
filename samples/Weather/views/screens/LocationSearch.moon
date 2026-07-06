@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView, Input from require "orca.UIKit"
+import StackView, TextBlock, VectorView, Input from require "orca.UIKit"
 Application = require "orca.core.application"
 import add_location, location_subtitle, search_locations from require "model"
 
@@ -33,9 +33,9 @@ render_results = (query) ->
 					class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3"
 					LeftButtonUp: -> choose_location loc
 				}, =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/location.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/location.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-base font-bold text-foreground", loc.name
 						TextBlock class: "text-xs text-foreground-muted", location_subtitle loc

@@ -1,4 +1,4 @@
-import StackView, TextBlock, ImageView from require "orca.UIKit"
+import StackView, TextBlock, VectorView from require "orca.UIKit"
 import Weather, get_current_location, format_time from require "model"
 Application = require "orca.core.application"
 
@@ -25,11 +25,11 @@ class HomeScreen extends require "orca.core.widget"
 			return StackView class: "bg-background p-5 gap-3", =>
 				TextBlock class: "text-2xl font-bold text-foreground", "Today"
 				StackView class: "flex-row items-center gap-2", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/location.svg?width=16&type=mask"
-					TextBlock class: "text-sm text-foreground-muted", location_name
-				StackView class: "bg-surface rounded-3 px-4 py-4 gap-2", =>
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/location.svg"
+				TextBlock class: "text-sm text-foreground-muted", location_name
+			StackView class: "bg-surface rounded-3 px-4 py-4 gap-2", =>
 					TextBlock class: "text-base font-bold text-foreground", "Unable to load weather"
 					TextBlock class: "text-sm text-foreground-muted",
 						"Check your connection and tap refresh to try again."
@@ -58,10 +58,10 @@ class HomeScreen extends require "orca.core.widget"
 		StackView class: "bg-background overflow-y-scroll h-full p-5 gap-4", =>
 			-- Location row
 			StackView class: "flex-row items-center gap-2", =>
-				ImageView
-					class: "align-middle-center text-accent"
-					Source: "assets/icons/location.svg?width=16&type=mask"
-				TextBlock class: "text-sm text-foreground-muted", location_name
+			VectorView
+				class: "align-middle-center text-accent"
+				Source: "assets/icons/location.svg"
+			TextBlock class: "text-sm text-foreground-muted", location_name
 				TextBlock {
 					class: "text-xs font-bold text-accent align-middle-right"
 					LeftButtonUp: refresh_weather
@@ -70,9 +70,9 @@ class HomeScreen extends require "orca.core.widget"
 			-- Main weather card
 			StackView class: "bg-surface rounded-3 p-5 gap-3", =>
 				StackView class: "flex-row items-center gap-4", =>
-					ImageView
-						class: "align-middle-center"
-						Source: "#{icon_src}?width=80"
+				VectorView
+					class: "align-middle-center"
+					Source: "#{icon_src}"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-5xl font-bold text-foreground",
 							Weather\format_temp current.temperature_2m
@@ -86,18 +86,18 @@ class HomeScreen extends require "orca.core.widget"
 					h_temp = Weather\format_temp hourly.temperature_2m[i]
 					StackView class: "bg-surface rounded-3 px-3 py-2 flex-col items-center gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", h_time
-						ImageView
-							class: "align-middle-center"
-							Source: "#{h_icon}?width=24"
+					VectorView
+						class: "align-middle-center"
+						Source: "#{h_icon}"
 						TextBlock class: "text-sm font-bold text-foreground", h_temp
 
 			-- Stat cards
 			StackView class: "gap-3", =>
 				-- Feels like
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/thermometer.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/thermometer.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Feels like"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -105,9 +105,9 @@ class HomeScreen extends require "orca.core.widget"
 
 				-- Wind
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/wind.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/wind.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Wind"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -115,9 +115,9 @@ class HomeScreen extends require "orca.core.widget"
 
 				-- Humidity
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/humidity.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/humidity.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Humidity"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -125,9 +125,9 @@ class HomeScreen extends require "orca.core.widget"
 
 				-- UV Index
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/uv.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/uv.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "UV Index"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -135,9 +135,9 @@ class HomeScreen extends require "orca.core.widget"
 
 				-- Pressure
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/pressure.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/pressure.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Pressure"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -145,9 +145,9 @@ class HomeScreen extends require "orca.core.widget"
 
 				-- Visibility
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-accent"
-						Source: "assets/icons/visibility.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-accent"
+					Source: "assets/icons/visibility.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Visibility"
 						TextBlock class: "text-base font-bold text-foreground",
@@ -156,17 +156,17 @@ class HomeScreen extends require "orca.core.widget"
 			-- Sunrise / Sunset row
 			StackView class: "flex-row gap-3", =>
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-amber-400"
-						Source: "assets/icons/sunrise.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-amber-400"
+					Source: "assets/icons/sunrise.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Sunrise"
 						TextBlock class: "text-base font-bold text-foreground", sunrise_str
 
 				StackView class: "bg-surface rounded-3 px-4 py-3 flex-row items-center gap-3", =>
-					ImageView
-						class: "align-middle-center text-orange-400"
-						Source: "assets/icons/sunset.svg?width=22&type=mask"
+				VectorView
+					class: "align-middle-center text-orange-400"
+					Source: "assets/icons/sunset.svg"
 					StackView class: "gap-1", =>
 						TextBlock class: "text-xs text-foreground-muted", "Sunset"
 						TextBlock class: "text-base font-bold text-foreground", sunset_str

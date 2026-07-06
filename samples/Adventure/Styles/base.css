@@ -4,10 +4,12 @@ body { width: 400; height: 800; }
 .header { background-color: var(--accent); padding: 28 16 12 16; }
 .header-title { color: var(--accent-foreground); font-size: 24; font-weight: bold; }
 .header-subtitle { color: var(--accent-foreground); font-size: 13; }
+.header-icon { width: 16; height: 16; }
+.navigation-pop { direction: horizontal; align-items: center; gap: 6; }
 .game-list { padding: 8; gap: 8; }
 .footer { background-color: var(--accent-background); direction: horizontal; align-items: center; justify-content: space-around; padding-bottom: 32; }
 
 .tab-item { direction: vertical; align-items: center; gap: 4; color: var(--muted-foreground); }
-.tab-icon { -orca-tint-mode: template; }
+.tab-icon { width: 32; height: 32; }
 .tab-label { font-size: 10;  }
 .footer .tab-item:active { color: var(--accent); }

@@ -47,8 +47,8 @@
 		781CA7222E15370700FFCFD9 /* r_image_jpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DE2AF3CC4E00AAAE53 /* r_image_jpeg.c */; };
 		781CA7232E15370700FFCFD9 /* r_image_png.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136E12AF3CC4E00AAAE53 /* r_image_png.c */; };
 		781CA7242E15370700FFCFD9 /* r_image_pvr.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */; };
-		781CA7252E15370700FFCFD9 /* r_image_svg.c in Sources */ = {isa = PBXBuildFile; fileRef = 78BC7E1C2D4161CB00907913 /* r_image_svg.c */; };
 		781CA7292E15374000FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
+		781CA7B02E20000000AABBCC /* VectorView.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7B12E20000000AABBCC /* VectorView.c */; };
 		781CA7392E154E4A00FFCFD9 /* SpriteView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786F2A882E0EB75200B519AB /* SpriteView.c */; };
 		781CA73A2E154E4A00FFCFD9 /* Light3D.c in Sources */ = {isa = PBXBuildFile; fileRef = 780C82682E01EE7100228DEC /* Light3D.c */; };
 		781CA73B2E154E4A00FFCFD9 /* Model3D.c in Sources */ = {isa = PBXBuildFile; fileRef = 78C7376B2B8F60C600FD598E /* Model3D.c */; };
@@ -616,8 +616,8 @@
 		78B139A42AF3DE9800AAAE53 /* launcher */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = launcher; sourceTree = BUILT_PRODUCTS_DIR; };
 		78BC7E172D4161A500907913 /* nanosvg.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nanosvg.h; sourceTree = "<group>"; };
 		78BC7E182D4161A500907913 /* nanosvgrast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nanosvgrast.h; sourceTree = "<group>"; };
-		78BC7E1C2D4161CB00907913 /* r_image_svg.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = r_image_svg.c; sourceTree = "<group>"; };
 		78BC7E1E2D4BE7D800907913 /* p_json.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_json.c; sourceTree = "<group>"; };
+		781CA7B12E20000000AABBCC /* VectorView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = VectorView.c; sourceTree = "<group>"; };
 		78BCC20C2E61C23300CA0A41 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		78BCC20D2E62FA3A00CA0A41 /* ../../generated/UIKit/UIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ../../generated/UIKit/UIKit.h; sourceTree = "<group>"; };
 		78BCC20E2E62FA3A00CA0A41 /* UIKit.cgen */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = UIKit.cgen; sourceTree = "<group>"; };
@@ -1238,6 +1238,9 @@
 				787045162F7EF53100A84406 /* UIKit_message.c */,
 				78AF62CA2F58BE5B008D08A3 /* UIKit.c */,
 				781CA7A22E20000000AABBCC /* UniformGrid.c */,
+				781CA7B12E20000000AABBCC /* VectorView.c */,
+				78BC7E172D4161A500907913 /* nanosvg.h */,
+				78BC7E182D4161A500907913 /* nanosvgrast.h */,
 				78BCC20E2E62FA3A00CA0A41 /* UIKit.cgen */,
 				78BCC2142E6342D700CA0A41 /* ../../generated/UIKit/UIKit_properties.h */,
 				78BCC20D2E62FA3A00CA0A41 /* ../../generated/UIKit/UIKit.h */,
@@ -1274,11 +1277,8 @@
 				78B136DE2AF3CC4E00AAAE53 /* r_image_jpeg.c */,
 				78B136E12AF3CC4E00AAAE53 /* r_image_png.c */,
 				78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */,
-				78BC7E1C2D4161CB00907913 /* r_image_svg.c */,
 				78E4A9D42E9548B800E3A503 /* r_render_texture.c */,
 				78B136DB2AF3CC4E00AAAE53 /* r_texture.c */,
-				78BC7E172D4161A500907913 /* nanosvg.h */,
-				78BC7E182D4161A500907913 /* nanosvgrast.h */,
 			);
 			path = texture;
 			sourceTree = "<group>";
@@ -1876,7 +1876,6 @@
 				781CA7222E15370700FFCFD9 /* r_image_jpeg.c in Sources */,
 				781CA7232E15370700FFCFD9 /* r_image_png.c in Sources */,
 				781CA7242E15370700FFCFD9 /* r_image_pvr.c in Sources */,
-				781CA7252E15370700FFCFD9 /* r_image_svg.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1929,6 +1928,7 @@
 				781CA75F2E15571400FFCFD9 /* StackView.c in Sources */,
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
+				781CA7B02E20000000AABBCC /* VectorView.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
