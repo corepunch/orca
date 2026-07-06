@@ -206,13 +206,9 @@ local function test_pagehost_navigation_context()
       <Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
         <PageHost Name="Host" Width="400" Height="800" ActivePage="alpha">
           <Page Name="alpha" Path="/alpha" Width="400" Height="800">
-            <TextBlock Name="Card" Width="400" Height="100" Text="Game" DataContext="{DataObject Name=zork1}">
-              <Node.Triggers>
-                <EventTrigger RoutedEvent="Node.LeftButtonUp">
-                  <PageHost.NavigateToPage URL="/beta"/>
-                </EventTrigger>
-              </Node.Triggers>
-            </TextBlock>
+            <TextBlock Name="Card" Width="400" Height="100" Text="Game"
+              DataContext="{DataObject Name=zork1}"
+              LeftButtonUp="{PageHost.NavigateToPage '/beta'}"/>
           </Page>
           <Page Name="beta" Path="/beta" Width="400" Height="800"/>
         </PageHost>
