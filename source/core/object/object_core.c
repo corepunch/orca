@@ -261,6 +261,21 @@ OBJ_Instantiate(struct Object *prefab)
   return obj;
 }
 
+// Closure stored by BindHandler / wire_controller:
+// upvalue 1 = controller table, upvalue 2 = function.
+// When the event fires, orca.async calls this as func(node, args, sender).
+// We replace node with the controller table so handlers see self = controller.
+int
+_bind_handler_closure(lua_State *L)
+{
+  lua_pushvalue(L, lua_upvalueindex(1)); // push controller table
+  lua_replace(L, 1);                     // replace node self with controller table
+  lua_pushvalue(L, lua_upvalueindex(2)); // push the function
+  lua_insert(L, 1);                      // move it before self
+  lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
+  return lua_gettop(L);
+}
+
 static void
 wire_controller(lua_State *L, int tbl, struct Object *target)
 {
@@ -282,9 +297,17 @@ wire_controller(lua_State *L, int tbl, struct Object *target)
       if (child) { obj = child; event = sep + 1; }
     }
     struct Property *ep = OBJ_FindShortProperty(obj, fnv1a32(event));
-    if (ep && PROP_GetType(ep) == kDataTypeEvent)
+    if (ep && PROP_GetType(ep) == kDataTypeEvent) {
+      // Wrap in closure: upvalue 1 = controller table, upvalue 2 = function.
+      // This makes self = controller (with self.view = root node) in handlers.
+      lua_pushvalue(L, tbl);
+      lua_insert(L, -2);
+      lua_pushcclosure(L, _bind_handler_closure, 2);
       luaX_readProperty(L, -1, ep);
-    lua_pop(L, 1);
+      lua_pop(L, 1);
+    } else {
+      lua_pop(L, 1);
+    }
   }
 }
 
@@ -311,6 +334,11 @@ OBJ_LoadController(lua_State *L, struct Object *self, const char *path)
 
   lua_pushvalue(L, -1);
   self->controller_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  // Set controller.view = the root node so handlers can access the view hierarchy.
+  luaX_pushObject(L, self);
+  lua_setfield(L, -2, "view");
+
   wire_controller(L, -1, self);
   lua_pop(L, 1);
 }

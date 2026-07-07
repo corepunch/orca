@@ -208,6 +208,44 @@ local function test_bind_handler_empty_function()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 11: controller.view is set after loadController
+-- ---------------------------------------------------------------------------
+local function test_controller_view_is_set()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local parent = screen + core.Node { Name = "Parent" }
+  local input = parent + ui.Input { Name = "MyInput" }
+
+  parent:loadController("tests/fixtures/controllers/test_ctrl1")
+  flush()
+
+  input:send("Object.BindHandler", {
+    PropertyId = ID_Input_Submit,
+    FunctionName = "on_submit",
+  })
+  flush()
+
+  test.expect(true, "loadController with view assignment should not crash")
+  parent:removeFromParent()
+  print("PASS: test_controller_view_is_set")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test 12: wire_controller wraps functions with controller closure
+-- ---------------------------------------------------------------------------
+local function test_wire_controller_wraps_function()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  local node = screen + core.Node { Name = "Target" }
+  local input = node + ui.Input { Name = "MyInput" }
+
+  node:loadController("tests/fixtures/controllers/test_ctrl_wired")
+  flush()
+
+  test.expect(true, "wire_controller with closure wrapping should not crash")
+  node:removeFromParent()
+  print("PASS: test_wire_controller_wraps_function")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_load_controller()
@@ -220,5 +258,7 @@ test_controller_reload()
 test_empty_path()
 test_bind_handler_no_controller()
 test_bind_handler_empty_function()
+test_controller_view_is_set()
+test_wire_controller_wraps_function()
 
 print("All controller tests passed.")

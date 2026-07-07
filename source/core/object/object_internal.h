@@ -3,6 +3,9 @@
 
 #include <source/core/core_local.h>
 
+// Closure for controller event handlers: self = controller table (with .view = root node).
+int _bind_handler_closure(lua_State *L);
+
 struct component
 {
   struct component* next;

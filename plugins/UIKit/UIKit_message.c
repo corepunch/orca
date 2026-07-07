@@ -1,5 +1,6 @@
 #include <UIKit/UIKit.h>
 #include <include/api.h>
+#include <source/core/object/object_internal.h>
 
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
@@ -18,17 +19,6 @@ push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *ha
   luaL_getmetatable(L, PROP_GetDesc(handler)->TypeString);
   lua_pushlightuserdata(L, msg->lParam);
   lua_call(L, 1, 1);
-}
-
-// Closure stored by BindHandler: upvalue 1 = controller table, upvalue 2 = function.
-// When the event fires, orca.async calls this as func(self, args, sender).
-static int
-_bind_handler_closure(lua_State *L)
-{
-  lua_pushvalue(L, lua_upvalueindex(2)); // push the function
-  lua_insert(L, 1);                     // move it before self
-  lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
-  return lua_gettop(L);
 }
 
 bool_t
