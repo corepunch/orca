@@ -33,6 +33,7 @@ struct Object
 
   longTime_t dirty;
   event_t body_ref;
+  event_t controller_ref;
 };
 
 

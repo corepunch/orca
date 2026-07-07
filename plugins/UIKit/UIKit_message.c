@@ -7,6 +7,9 @@
 extern struct Property *
 luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 
+extern struct Object *
+OBJ_FindChild(struct Object *object, lpcString_t name, bool_t recursive);
+
 static void
 push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *handler)
 {
@@ -29,24 +32,24 @@ wire_controller(lua_State *L, int tbl, struct Object *target)
   tbl = lua_absindex(L, tbl);
   lua_pushnil(L);
   while (lua_next(L, tbl)) {
-    if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TFUNCTION) {
-      const char *key = lua_tostring(L, -2);
-      if (strcmp(key, "init") != 0) {
-        struct Property *ep = OBJ_FindShortProperty(target, fnv1a32(key));
-        if (ep && PROP_GetType(ep) == kDataTypeEvent)
-          luaX_readProperty(L, -1, ep);
-      }
+    if (lua_type(L, -2) != LUA_TSTRING || lua_type(L, -1) != LUA_TFUNCTION) {
+      lua_pop(L, 1); continue;
     }
-    lua_pop(L, 1);
-  }
-  lua_getfield(L, tbl, "init");
-  if (lua_isfunction(L, -1)) {
-    luaX_pushObject(L, target);
-    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
-      Con_Error("Controller init: %s", lua_tostring(L, -1));
-      lua_pop(L, 1);
+    const char *key = lua_tostring(L, -2);
+    // Split "ControlName_EventName" — last underscore separates object from event.
+    const char *sep = strrchr(key, '_');
+    struct Object *obj = target;
+    const char *event = key;
+    if (sep) {
+      char name[MAX_PROPERTY_STRING];
+      size_t len = sep - key < (int)sizeof(name) - 1 ? (size_t)(sep - key) : sizeof(name) - 1;
+      memcpy(name, key, len); name[len] = '\0';
+      struct Object *child = OBJ_FindChild(target, name, TRUE);
+      if (child) { obj = child; event = sep + 1; }
     }
-  } else {
+    struct Property *ep = OBJ_FindShortProperty(obj, fnv1a32(event));
+    if (ep && PROP_GetType(ep) == kDataTypeEvent)
+      luaX_readProperty(L, -1, ep);
     lua_pop(L, 1);
   }
 }
@@ -58,32 +61,13 @@ load_controller(lua_State *L, struct Object *target)
   if (!cprop || PROP_GetType(cprop) != kDataTypeString) return;
   const char *path_ptr = *(const char **)PROP_GetValue(cprop);
   if (!path_ptr || !*path_ptr) return;
-  char path[MAX_PROPERTY_STRING];
-  strncpy(path, path_ptr, sizeof(path) - 1);
-  path[sizeof(path) - 1] = '\0';
 
-  if (luaX_require(L, path, 1) != LUA_OK) return;
+  if (luaX_require(L, path_ptr, 1) != LUA_OK) return;
+  if (!lua_istable(L, -1)) { lua_pop(L, 1); return; }
 
-  // If the module returns a callable (function or table with __call), invoke it
-  // to get a fresh controller instance per node. Plain tables are used directly.
-  bool_t is_callable = lua_isfunction(L, -1);
-  if (!is_callable && lua_istable(L, -1)) {
-    if (luaL_getmetafield(L, -1, "__call") != LUA_TNIL) {
-      lua_pop(L, 1); // pop __call, we'll call the value itself
-      is_callable = TRUE;
-    }
-  }
-  if (is_callable) {
-    luaX_pushObject(L, target);
-    if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-      Con_Error("Controller(%s): %s", path, lua_tostring(L, -1));
-      lua_pop(L, 1); return;
-    }
-  }
-
-  if (lua_istable(L, -1))
-    wire_controller(L, -1, target);
-
+  lua_pushvalue(L, -1);
+  target->controller_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  wire_controller(L, -1, target);
   lua_pop(L, 1);
 }
 
