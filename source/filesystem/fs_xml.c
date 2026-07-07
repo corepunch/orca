@@ -87,7 +87,8 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
   }
   if (!strcmp(name, "Controller")) {
     // Queue controller load immediately so it's processed before any BindHandler.
-    struct Object_LoadControllerEventArgs args = { .Path = value };
+    // Must copy value — xmlFree'd at end of visit_attr.
+    struct Object_LoadControllerEventArgs args = { .Path = strdup(value) };
     axPostMessageDataW(o, ID_Object_LoadController, 0, &args, sizeof(args));
     return TRUE;
   }
@@ -258,7 +259,7 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   if (pd->DataType == kDataTypeEvent) {
     struct Object_BindHandlerEventArgs args = {
       .PropertyId = pd->FullIdentifier,
-      .FunctionName = value,
+      .FunctionName = strdup(value),
     };
     axPostMessageDataW(o, ID_Object_BindHandler, 0, &args, sizeof(args));
     return;

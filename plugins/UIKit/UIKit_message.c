@@ -38,6 +38,7 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     struct Object_LoadControllerEventArgs *args = (void *)msg->lParam;
     if (args->Path && *args->Path)
       OBJ_LoadController(L, msg->target, args->Path);
+    free((char *)args->Path);
     return TRUE;
   }
 
@@ -54,32 +55,35 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     struct Object_BindHandlerEventArgs *args = (void *)msg->lParam;
     uint32_t prop_id = args->PropertyId;
     const char *func_name = args->FunctionName;
-    if (!func_name || !*func_name) return FALSE;
-
-    // Walk up parents looking for a controller with this function.
-    for (struct Object *hobj = target; hobj; hobj = OBJ_GetParent(hobj)) {
-      if (!hobj->controller_ref) continue;
-      lua_geti(L, LUA_REGISTRYINDEX, hobj->controller_ref);
-      if (!lua_istable(L, -1)) { lua_pop(L, 1); continue; }
-      lua_getfield(L, -1, func_name);
-      if (lua_isfunction(L, -1)) {
-        // Create closure: function(ctrl, fn) return fn(self, ...) end
-        // Stack: ctrl_table, func
-        lua_pushcclosure(L, _bind_handler_closure, 2);
-        // Store closure in event property.
-        struct Property *ep = OBJ_FindLongProperty(target, prop_id);
-        if (ep && PROP_GetType(ep) == kDataTypeEvent) {
-          event_t *slot = (event_t *)PROP_GetValue(ep);
-          if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
-          *slot = luaL_ref(L, LUA_REGISTRYINDEX);
-        } else {
-          lua_pop(L, 1); // closure not stored
+    bool_t handled = FALSE;
+    if (func_name && *func_name) {
+      // Walk up parents looking for a controller with this function.
+      for (struct Object *hobj = target; hobj; hobj = OBJ_GetParent(hobj)) {
+        if (!hobj->controller_ref) continue;
+        lua_geti(L, LUA_REGISTRYINDEX, hobj->controller_ref);
+        if (!lua_istable(L, -1)) { lua_pop(L, 1); continue; }
+        lua_getfield(L, -1, func_name);
+        if (lua_isfunction(L, -1)) {
+          // Create closure: function(ctrl, fn) return fn(self, ...) end
+          // Stack: ctrl_table, func
+          lua_pushcclosure(L, _bind_handler_closure, 2);
+          // Store closure in event property.
+          struct Property *ep = OBJ_FindLongProperty(target, prop_id);
+          if (ep && PROP_GetType(ep) == kDataTypeEvent) {
+            event_t *slot = (event_t *)PROP_GetValue(ep);
+            if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
+            *slot = luaL_ref(L, LUA_REGISTRYINDEX);
+          } else {
+            lua_pop(L, 1); // closure not stored
+          }
+          handled = TRUE;
+          break;
         }
-        return TRUE;
+        lua_pop(L, 2); // nil, table
       }
-      lua_pop(L, 2); // nil, table
     }
-    return FALSE;
+    free((char *)func_name);
+    return handled;
   }
 
   for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
