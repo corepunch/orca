@@ -658,8 +658,6 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
             <field name="Path" type="string">Lua module path (e.g. "scripts/MyController" or "Adventure/Scripts/Play")</field>
           </fields>
         </message>
-          </fields>
-        </message>
       </messages>
     </interface>
   </interfaces>

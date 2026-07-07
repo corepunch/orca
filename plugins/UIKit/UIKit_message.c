@@ -20,6 +20,17 @@ push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *ha
   lua_call(L, 1, 1);
 }
 
+// Closure stored by BindHandler: upvalue 1 = controller table, upvalue 2 = function.
+// When the event fires, orca.async calls this as func(self, args, sender).
+static int
+_bind_handler_closure(lua_State *L)
+{
+  lua_pushvalue(L, lua_upvalueindex(2)); // push the function
+  lua_insert(L, 1);                     // move it before self
+  lua_call(L, lua_gettop(L) - 1, LUA_MULTRET);
+  return lua_gettop(L);
+}
+
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
@@ -46,16 +57,27 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     if (!func_name || !*func_name) return FALSE;
 
     // Walk up parents looking for a controller with this function.
-    if (OBJ_FindControllerFunction(L, target, func_name)) {
-      struct Property *ep = OBJ_FindLongProperty(target, prop_id);
-      if (ep && PROP_GetType(ep) == kDataTypeEvent) {
-        event_t *slot = (event_t *)PROP_GetValue(ep);
-        if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
-        *slot = luaL_ref(L, LUA_REGISTRYINDEX);
-      } else {
-        lua_pop(L, 1); // function not stored
+    for (struct Object *hobj = target; hobj; hobj = OBJ_GetParent(hobj)) {
+      if (!hobj->controller_ref) continue;
+      lua_geti(L, LUA_REGISTRYINDEX, hobj->controller_ref);
+      if (!lua_istable(L, -1)) { lua_pop(L, 1); continue; }
+      lua_getfield(L, -1, func_name);
+      if (lua_isfunction(L, -1)) {
+        // Create closure: function(ctrl, fn) return fn(self, ...) end
+        // Stack: ctrl_table, func
+        lua_pushcclosure(L, _bind_handler_closure, 2);
+        // Store closure in event property.
+        struct Property *ep = OBJ_FindLongProperty(target, prop_id);
+        if (ep && PROP_GetType(ep) == kDataTypeEvent) {
+          event_t *slot = (event_t *)PROP_GetValue(ep);
+          if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
+          *slot = luaL_ref(L, LUA_REGISTRYINDEX);
+        } else {
+          lua_pop(L, 1); // closure not stored
+        }
+        return TRUE;
       }
-      return TRUE;
+      lua_pop(L, 2); // nil, table
     }
     return FALSE;
   }
