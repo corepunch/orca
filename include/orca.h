@@ -438,6 +438,9 @@ OBJ_ReleaseRef(struct Object *);
 ORCA_API void*
 OBJ_GetComponent(struct Object *pobj, uint32_t class_id);
 
+ORCA_API bool_t
+OBJ_FindControllerFunction(lua_State *L, struct Object *obj, const char *name);
+
 ORCA_API struct Property *
 OBJ_GetPropertyAtIndex(struct Object *object, uint32_t classid,
                        size_t classsize, uint32_t index);

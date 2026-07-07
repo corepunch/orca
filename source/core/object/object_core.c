@@ -314,3 +314,21 @@ OBJ_LoadController(lua_State *L, struct Object *self, const char *path)
   wire_controller(L, -1, self);
   lua_pop(L, 1);
 }
+
+bool_t
+OBJ_FindControllerFunction(lua_State *L, struct Object *obj, const char *name)
+{
+  if (!name || !*name) return FALSE;
+  for (struct Object *hobj = obj; hobj; hobj = OBJ_GetParent(hobj)) {
+    if (!hobj->controller_ref) continue;
+    lua_geti(L, LUA_REGISTRYINDEX, hobj->controller_ref);
+    if (!lua_istable(L, -1)) { lua_pop(L, 1); continue; }
+    lua_getfield(L, -1, name);
+    if (lua_isfunction(L, -1)) {
+      lua_remove(L, -2); // drop table, leave function on top
+      return TRUE;
+    }
+    lua_pop(L, 2); // nil, table
+  }
+  return FALSE;
+}

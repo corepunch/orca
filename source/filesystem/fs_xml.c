@@ -85,6 +85,12 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     _SendMessage(o, StyleController, AddClasses, .ClassNames = value);
     return TRUE;
   }
+  if (!strcmp(name, "Controller")) {
+    // Queue controller load immediately so it's processed before any BindHandler.
+    struct Object_LoadControllerEventArgs args = { .Path = value };
+    axPostMessageDataW(o, ID_Object_LoadController, 0, &args, sizeof(args));
+    return TRUE;
+  }
   if (!strcmp(name, "DataContextSource")) {
     const char *colon = strrchr(value, ':');
     const char *ds_name = NULL;
@@ -247,6 +253,15 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
     case '<':
       inline_value(o, pd, p, value);
       return;
+  }
+  // Plain string on an event property → defer to BindHandler (controller not loaded yet).
+  if (pd->DataType == kDataTypeEvent) {
+    struct Object_BindHandlerEventArgs args = {
+      .PropertyId = pd->FullIdentifier,
+      .FunctionName = value,
+    };
+    axPostMessageDataW(o, ID_Object_BindHandler, 0, &args, sizeof(args));
+    return;
   }
   if (!value || !parse_property(value, pd, tmp)) return;
   PROP_SetValue(p, tmp);

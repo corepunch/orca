@@ -23,12 +23,41 @@ push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *ha
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
+  if (msg->message == ID_Object_LoadController && msg->target && msg->lParam) {
+    struct Object_LoadControllerEventArgs *args = (void *)msg->lParam;
+    if (args->Path && *args->Path)
+      OBJ_LoadController(L, msg->target, args->Path);
+    return TRUE;
+  }
+
   if (msg->message == ID_Node_ViewDidLoad && msg->target) {
     struct Property *cprop = OBJ_FindLongProperty(msg->target, ID_Node_Controller);
     if (cprop && PROP_GetType(cprop) == kDataTypeString) {
       const char *path = *(const char **)PROP_GetValue(cprop);
       OBJ_LoadController(L, msg->target, path);
     }
+  }
+
+  if (msg->message == ID_Object_BindHandler && msg->target && msg->lParam) {
+    struct Object *target = msg->target;
+    struct Object_BindHandlerEventArgs *args = (void *)msg->lParam;
+    uint32_t prop_id = args->PropertyId;
+    const char *func_name = args->FunctionName;
+    if (!func_name || !*func_name) return FALSE;
+
+    // Walk up parents looking for a controller with this function.
+    if (OBJ_FindControllerFunction(L, target, func_name)) {
+      struct Property *ep = OBJ_FindLongProperty(target, prop_id);
+      if (ep && PROP_GetType(ep) == kDataTypeEvent) {
+        event_t *slot = (event_t *)PROP_GetValue(ep);
+        if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
+        *slot = luaL_ref(L, LUA_REGISTRYINDEX);
+      } else {
+        lua_pop(L, 1); // function not stored
+      }
+      return TRUE;
+    }
+    return FALSE;
   }
 
   for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))

@@ -608,6 +608,21 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
             <field name="timerId" type="int">Timer identifier returned by setTimer</field>
           </fields>
         </message>
+        <message name="BindHandler">
+          <summary>Binds a Lua function from the controller to an event property.</summary>
+          <details>Posted by the XML parser when an event attribute has a plain string value (e.g. Submit="HandleSubmit"). When processed, looks up the function name in the object's controller table and stores a lua_ref in the event property. Relies on the Controller being loaded (and thus the message queue drained past ViewDidLoad) before this message is dispatched.</details>
+          <fields>
+            <field name="PropertyId" type="uint">FullIdentifier of the event property to bind</field>
+            <field name="FunctionName" type="string">Name of the function in the controller table</field>
+          </fields>
+        </message>
+        <message name="LoadController">
+          <summary>Loads the Lua controller module from the given path.</summary>
+          <details>Posted by the XML parser as soon as a Controller= attribute is encountered, ensuring the controller is loaded before any BindHandler messages are processed.</details>
+          <fields>
+            <field name="Path" type="string">Lua module path to load (e.g. "app.MyController")</field>
+          </fields>
+        </message>
       </messages>
     </interface>
   </interfaces>
