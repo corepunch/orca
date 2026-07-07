@@ -20,9 +20,79 @@ push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *ha
   lua_call(L, 1, 1);
 }
 
+#define ID_Node_ViewDidLoad 0x71bab7e1
+#define ID_Node_Controller  0xa15e8ea1 // fnv1a32("Controller")
+
+static void
+wire_controller(lua_State *L, int tbl, struct Object *target)
+{
+  tbl = lua_absindex(L, tbl);
+  lua_pushnil(L);
+  while (lua_next(L, tbl)) {
+    if (lua_type(L, -2) == LUA_TSTRING && lua_type(L, -1) == LUA_TFUNCTION) {
+      const char *key = lua_tostring(L, -2);
+      if (strcmp(key, "init") != 0) {
+        struct Property *ep = OBJ_FindShortProperty(target, fnv1a32(key));
+        if (ep && PROP_GetType(ep) == kDataTypeEvent)
+          luaX_readProperty(L, -1, ep);
+      }
+    }
+    lua_pop(L, 1);
+  }
+  lua_getfield(L, tbl, "init");
+  if (lua_isfunction(L, -1)) {
+    luaX_pushObject(L, target);
+    if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+      Con_Error("Controller init: %s", lua_tostring(L, -1));
+      lua_pop(L, 1);
+    }
+  } else {
+    lua_pop(L, 1);
+  }
+}
+
+static void
+load_controller(lua_State *L, struct Object *target)
+{
+  struct Property *cprop = OBJ_FindShortProperty(target, ID_Node_Controller);
+  if (!cprop || PROP_GetType(cprop) != kDataTypeString) return;
+  const char *path_ptr = *(const char **)PROP_GetValue(cprop);
+  if (!path_ptr || !*path_ptr) return;
+  char path[MAX_PROPERTY_STRING];
+  strncpy(path, path_ptr, sizeof(path) - 1);
+  path[sizeof(path) - 1] = '\0';
+
+  if (luaX_require(L, path, 1) != LUA_OK) return;
+
+  // If the module returns a callable (function or table with __call), invoke it
+  // to get a fresh controller instance per node. Plain tables are used directly.
+  bool_t is_callable = lua_isfunction(L, -1);
+  if (!is_callable && lua_istable(L, -1)) {
+    if (luaL_getmetafield(L, -1, "__call") != LUA_TNIL) {
+      lua_pop(L, 1); // pop __call, we'll call the value itself
+      is_callable = TRUE;
+    }
+  }
+  if (is_callable) {
+    luaX_pushObject(L, target);
+    if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+      Con_Error("Controller(%s): %s", path, lua_tostring(L, -1));
+      lua_pop(L, 1); return;
+    }
+  }
+
+  if (lua_istable(L, -1))
+    wire_controller(L, -1, target);
+
+  lua_pop(L, 1);
+}
+
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
+  if (msg->message == ID_Node_ViewDidLoad && msg->target)
+    load_controller(L, msg->target);
+
   for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {
     struct Property *handler = luaX_getobjectcallback(L, hobj, msg->message);
