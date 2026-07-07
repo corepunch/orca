@@ -804,8 +804,15 @@ _InitPropertyTypes(struct Project *project)
 {
   FOR_LOOP(i, project->NumPropertyTypes) {
     struct PropertyType *type = &project->PropertyTypes[i];
+    if (!type->Name || !*type->Name) {
+      Con_Error("PropertyType[%d]: Name is NULL or empty", i);
+      continue;
+    }
+    if (!type->Category) {
+      Con_Error("PropertyType[%s]: Category is NULL, defaulting to empty", type->Name);
+    }
     fixedString_t tmp={0};
-    if (*type->Category) {
+    if (type->Category && *type->Category) {
       snprintf(tmp, sizeof(tmp), "%s.%s", type->Category, type->Name);
     } else {
       strncpy(tmp, type->Name, sizeof(tmp));

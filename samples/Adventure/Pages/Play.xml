@@ -2,17 +2,13 @@
 <!DOCTYPE Page SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Page Name="PlayPage" Controller="Adventure/Scripts/Play">
 	<Grid Name="Play" Rows="84px 1fr 96px" class="page">
-		<StackView Name="PlayHeader" class="header">
-			<StackView Name="PlayNavigation" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">
-				<VectorView Name="PlayBackIcon" class="header-icon" Source="Adventure/Icons/back.svg" Stretch="Uniform"/>
-				<TextBlock Name="PlayBack" class="header-subtitle" Text="Back"/>
-			</StackView>
-			<TextBlock Name="PlayHeaderTitle" class="header-title" Text="{Binding DataContext/Title}"/>
-		</StackView>
+		<LayerPrefabPlaceholder Name="PlayHeader" 
+			PlaceholderTemplate="Adventure/Prefabs/NavigationBar" 
+			Page.Title="Play"/>
 		<ListBox Name="Transcript" class="transcript"
 			ItemsSource="Adventure/DataSources/Transcript:Entries"
 			ItemTemplate="Adventure/Prefabs/Message"/>
-		<Node2D Name="CommandBar" class="command-bar" Direction="Horizontal">
+		<Node2D Name="CommandBar" class="command-bar">
 			<Input Name="CommandInput" class="command-input" PlaceholderText="Enter command..."/>
 		</Node2D>
 	</Grid>

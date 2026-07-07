@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="NavigationBar" class="header" Direction="Vertical">
+	<StackView Name="NavigationRow" class="navigation-pop" Direction="Horizontal">
+		<StackView Name="BackButton" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">
+			<VectorView Name="BackIcon" class="header-icon" Source="Adventure/Icons/back.svg" Stretch="Uniform"/>
+			<TextBlock Name="BackLabel" class="header-subtitle" Text="Back"/>
+		</StackView>
+	</StackView>
+	<TextBlock Name="Title" class="header-title" Text="{Binding ../Page.Title}"/>
+</StackView>

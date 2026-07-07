@@ -2,13 +2,9 @@
 <!DOCTYPE Page SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Page Name="GamePage">
 	<Grid Name="Game" Rows="84px 1fr" class="page">
-		<StackView Name="GameHeader" class="header">
-			<StackView Name="GameNavigation" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">
-				<VectorView Name="GameBackIcon" class="header-icon" Source="Adventure/Icons/back.svg" Stretch="Uniform"/>
-				<TextBlock Name="GameBack" class="header-subtitle" Text="All games"/>
-			</StackView>
-			<TextBlock Name="GameHeaderTitle" class="header-title" Text="{Binding DataContext/Title}"/>
-		</StackView>
+		<LayerPrefabPlaceholder Name="GameHeader" 
+			PlaceholderTemplate="Adventure/Prefabs/NavigationBar" 
+			Page.Title="Game Details"/>
 		<StackView Name="GameContent" class="page-content">
 			<ImageView Name="GameCover" class="game-cover" Source="{Binding DataContext/Cover}" Stretch="UniformToFill"/>
 			<TextBlock Name="GameTitle" class="game-title" Text="{Binding DataContext/Title}"/>
