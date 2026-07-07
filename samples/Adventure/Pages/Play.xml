@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Page SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Page Name="PlayPage">
+<Page Name="PlayPage" Controller="Adventure/Scripts/Play">
 	<Grid Name="Play" Rows="84px 1fr 96px" class="page">
 		<StackView Name="PlayHeader" class="header">
 			<StackView Name="PlayNavigation" class="navigation-pop" LeftButtonUp="{NavigationHost.Pop}" Direction="Horizontal">

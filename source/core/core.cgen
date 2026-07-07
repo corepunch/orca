@@ -542,11 +542,26 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
       </methods>
       <messages>
+        <details>
+Object message lifecycle (order of dispatch):
+
+  XML loaded → objects created, properties set
+    └→ Object.Create        — component init; no children yet
+        └→ Object.Start     — properties settled, children attached; safe to read props
+            └→ (Node-specific messages follow — see Node class)
+                └→ Object.PropertyChanged  — ongoing; fires on any property change
+                    └→ Object.Destroy      — teardown; free resources
+                        └→ Object.Release   — final; object ref count reached zero
+
+Use Object.Start to initialize state, register listeners, or read properties set from XML.
+Use Object.Destroy to free timers, detach listeners, or flush state.
+Do not query layout geometry or child tree in Create — hierarchy may be incomplete.
+        </details>
         <message name="Create">
-          <summary>Sent once when the component is first created and attached to an object.</summary>
+          <summary>Sent once when the component is first created and attached to an object. Properties are set but children may not be attached yet — avoid layout queries here.</summary>
         </message>
         <message name="Start">
-          <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution.</summary>
+          <summary>Sent after the entire object hierarchy has been loaded, signalling that the scene is ready for logic execution. All properties from XML are settled, children are attached, and it is safe to read state or register listeners.</summary>
         </message>
         <message name="Animate">
           <summary>Requested when an animation update is needed.</summary>
@@ -570,10 +585,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           </fields>
         </message>
         <message name="Release">
-          <summary>Sent when the object is being released and its resources should be freed.</summary>
+          <summary>Sent when the object's reference count reaches zero. Final cleanup — the object will be freed after this handler returns. Free any Lua references or allocated memory here.</summary>
         </message>
         <message name="Destroy">
-          <summary>Sent just before the object is destroyed and removed from the scene.</summary>
+          <summary>Sent just before the object is destroyed and removed from the scene. Free timers, detach listeners, and flush held state here. Children are still attached at this point.</summary>
         </message>
         <message name="Timer">
           <summary>Sent on each timer tick registered for this object.</summary>
@@ -974,11 +989,26 @@ object-tree children, iterated by ItemsControl and ListBox.</details>
         <property name="DataContext" type="DataContext" pointer="true">Data source or data object used as the root for data binding.</property>
         <property name="Resources" type="ResourceEntry" array="true">Array of resources associated with this node. Can be aliases to objects or other resources.</property>
         <property name="Triggers" type="Trigger" array="true">Array of trigger objects attached to this node. Each trigger can own nested action components.</property>
+        <property name="Controller" type="string">Path to a Lua module loaded after the view is ready. The module is called with the node as its argument, enabling code-behind patterns (event handlers, dynamic data, etc.).</property>
       </properties>
       <fields>
         <field name="_tags" type="long">Calculated tags value</field>
       </fields>
       <messages>
+        <details>
+Node message lifecycle (order of dispatch):
+
+  XML loaded → objects created, properties set
+    └→ Object.Create        — component init; no children yet
+        └→ Object.Start     — properties settled, children attached; safe to read props
+            └→ Node.LoadView    — [async] post when node needs I/O (texture, prefab XML)
+                └→ Node.ViewDidLoad  — async load complete; safe to query geometry, attach Lua
+                    └→ Object.PropertyChanged  — ongoing; fires on any property change
+
+Use Object.Start to initialize state or register listeners.
+Use Node.LoadView for async resources (images, prefabs); re-post until result is ready.
+Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
+        </details>
         <message name="UpdateMatrix">
           <summary>Requests the node to recompute its transformation matrix from current transform properties.</summary>
           <fields>
@@ -988,7 +1018,7 @@ object-tree children, iterated by ItemsControl and ListBox.</details>
           </fields>
         </message>
         <message name="LoadView">
-          <summary>Initializes the component's Lua view state.</summary>
+          <summary>Asks the node to load an async resource (texture, prefab XML). Posted by the node itself when a property changes (e.g., Source). Re-post until the result is ready; ViewDidLoad fires on completion.</summary>
           <fields>
             <field name="lua_state" type="lua_State" pointer="true"/>
           </fields>
@@ -1004,7 +1034,7 @@ object-tree children, iterated by ItemsControl and ListBox.</details>
           <summary>Queries whether the node is currently visible in the scene.</summary>
         </message>
         <message name="ViewDidLoad">
-          <summary>Notifies the component that its view has finished loading.</summary>
+          <summary>Notifies the node that its async load (LoadView) has completed. Safe to query geometry, attach Lua controllers, or manipulate the child tree. Fired after LoadView succeeds.</summary>
         </message>
         <message name="KillFocus">
           <summary>Notifies that this node has lost keyboard focus.</summary>
