@@ -9,7 +9,7 @@
 			ItemsSource="Adventure/DataSources/Transcript:Entries"
 			ItemTemplate="Adventure/Prefabs/Message"/>
 		<Node2D Name="CommandBar" class="command-bar">
-			<Input Name="CommandInput" class="command-input" PlaceholderText="Enter command..."/>
+			<Input Name="CommandInput" class="command-input" PlaceholderText="Enter command..." Submit="HandleSubmit"/>
 		</Node2D>
 	</Grid>
 </Page>

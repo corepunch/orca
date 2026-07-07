@@ -1,5 +1,5 @@
 local Play = {
-  CommandInput_Submit = function(self, args, sender)
+  HandleSubmit = function(self, args, sender)
     print("Submit:", args.Text)
   end,
 }
