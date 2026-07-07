@@ -6,8 +6,6 @@
 #include <libs/platform/platform.h>
 #include <stddef.h>
 
-typedef struct lua_State lua_State;
-
 struct renderer;
 struct game;
 struct localization;
