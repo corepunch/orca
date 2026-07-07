@@ -1,7 +1,14 @@
 #include "object_internal.h"
 #include "../property/property_internal.h"
 
+#include <include/api.h>
 #include <filesystem/filesystem.h>
+
+extern struct Object *
+OBJ_FindChild(struct Object *object, lpcString_t name, bool_t recursive);
+
+extern int
+luaX_readProperty(lua_State* L, int idx, struct Property *p);
 
 static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
@@ -252,4 +259,58 @@ OBJ_Instantiate(struct Object *prefab)
   struct Object* obj = FS_LoadObjectFromXmlString(xml);
   free((char*)xml);
   return obj;
+}
+
+static void
+wire_controller(lua_State *L, int tbl, struct Object *target)
+{
+  tbl = lua_absindex(L, tbl);
+  lua_pushnil(L);
+  while (lua_next(L, tbl)) {
+    if (lua_type(L, -2) != LUA_TSTRING || lua_type(L, -1) != LUA_TFUNCTION) {
+      lua_pop(L, 1); continue;
+    }
+    const char *key = lua_tostring(L, -2);
+    const char *sep = strrchr(key, '_');
+    struct Object *obj = target;
+    const char *event = key;
+    if (sep) {
+      char name[MAX_PROPERTY_STRING];
+      size_t len = sep - key < (int)sizeof(name) - 1 ? (size_t)(sep - key) : sizeof(name) - 1;
+      memcpy(name, key, len); name[len] = '\0';
+      struct Object *child = OBJ_FindChild(target, name, TRUE);
+      if (child) { obj = child; event = sep + 1; }
+    }
+    struct Property *ep = OBJ_FindShortProperty(obj, fnv1a32(event));
+    if (ep && PROP_GetType(ep) == kDataTypeEvent)
+      luaX_readProperty(L, -1, ep);
+    lua_pop(L, 1);
+  }
+}
+
+void
+OBJ_LoadController(lua_State *L, struct Object *self, const char *path)
+{
+  if (!path || !*path) return;
+
+  // Load file via package searcher (fs_findmodule) without require's cache.
+  lua_getglobal(L, "fs_findmodule");
+  lua_pushstring(L, path);
+  if (lua_pcall(L, 1, 1, 0) != LUA_OK || lua_isnil(L, -1)) {
+    Con_Error("LoadController: cannot find '%s'", path);
+    lua_pop(L, 1);
+    return;
+  }
+
+  // Execute the loaded chunk to get the controller table.
+  if (lua_pcall(L, 0, 1, 0) != LUA_OK || !lua_istable(L, -1)) {
+    Con_Error("LoadController: '%s' did not return a table", path);
+    lua_pop(L, 1);
+    return;
+  }
+
+  lua_pushvalue(L, -1);
+  self->controller_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  wire_controller(L, -1, self);
+  lua_pop(L, 1);
 }

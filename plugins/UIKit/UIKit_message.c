@@ -7,9 +7,6 @@
 extern struct Property *
 luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 
-extern struct Object *
-OBJ_FindChild(struct Object *object, lpcString_t name, bool_t recursive);
-
 static void
 push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *handler)
 {
@@ -23,59 +20,16 @@ push_object_message_arg(lua_State* L, struct AXmessage* msg, struct Property *ha
   lua_call(L, 1, 1);
 }
 
-#define ID_Node_ViewDidLoad 0x71bab7e1
-#define ID_Node_Controller  0xa15e8ea1 // fnv1a32("Controller")
-
-static void
-wire_controller(lua_State *L, int tbl, struct Object *target)
-{
-  tbl = lua_absindex(L, tbl);
-  lua_pushnil(L);
-  while (lua_next(L, tbl)) {
-    if (lua_type(L, -2) != LUA_TSTRING || lua_type(L, -1) != LUA_TFUNCTION) {
-      lua_pop(L, 1); continue;
-    }
-    const char *key = lua_tostring(L, -2);
-    // Split "ControlName_EventName" — last underscore separates object from event.
-    const char *sep = strrchr(key, '_');
-    struct Object *obj = target;
-    const char *event = key;
-    if (sep) {
-      char name[MAX_PROPERTY_STRING];
-      size_t len = sep - key < (int)sizeof(name) - 1 ? (size_t)(sep - key) : sizeof(name) - 1;
-      memcpy(name, key, len); name[len] = '\0';
-      struct Object *child = OBJ_FindChild(target, name, TRUE);
-      if (child) { obj = child; event = sep + 1; }
-    }
-    struct Property *ep = OBJ_FindShortProperty(obj, fnv1a32(event));
-    if (ep && PROP_GetType(ep) == kDataTypeEvent)
-      luaX_readProperty(L, -1, ep);
-    lua_pop(L, 1);
-  }
-}
-
-static void
-load_controller(lua_State *L, struct Object *target)
-{
-  struct Property *cprop = OBJ_FindShortProperty(target, ID_Node_Controller);
-  if (!cprop || PROP_GetType(cprop) != kDataTypeString) return;
-  const char *path_ptr = *(const char **)PROP_GetValue(cprop);
-  if (!path_ptr || !*path_ptr) return;
-
-  if (luaX_require(L, path_ptr, 1) != LUA_OK) return;
-  if (!lua_istable(L, -1)) { lua_pop(L, 1); return; }
-
-  lua_pushvalue(L, -1);
-  target->controller_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  wire_controller(L, -1, target);
-  lua_pop(L, 1);
-}
-
 bool_t
 CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
 {
-  if (msg->message == ID_Node_ViewDidLoad && msg->target)
-    load_controller(L, msg->target);
+  if (msg->message == ID_Node_ViewDidLoad && msg->target) {
+    struct Property *cprop = OBJ_FindLongProperty(msg->target, ID_Node_Controller);
+    if (cprop && PROP_GetType(cprop) == kDataTypeString) {
+      const char *path = *(const char **)PROP_GetValue(cprop);
+      OBJ_LoadController(L, msg->target, path);
+    }
+  }
 
   for (struct Object *hobj = msg->target; hobj; hobj = OBJ_GetParent(hobj))
   {

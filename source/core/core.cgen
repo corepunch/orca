@@ -540,6 +540,18 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <details>Returns true if this object is a PrefabView, which is a special container that can dynamically load and instantiate different prefab templates based on its source property. Similar to Kanzi's PrefabView, this allows for runtime loading of reusable UI component templates by changing the source string, making it useful for dynamic UI composition and template-based layouts.</details>
           <returns type="bool">True if this object is a PrefabView, false otherwise</returns>
         </method>
+        <method name="LoadController" lua="true">
+          <summary>Loads a Lua controller module and wires its event handlers to this object.</summary>
+          <details>
+            Requires the Lua module at the given path, expects it to return a table, and stores
+            a reference to that table in <c>this->controller_ref</c>. Then iterates the table
+            keys looking for functions whose names follow the pattern <c>ControlName_EventName</c>
+            (the last underscore separates child name from event name). Each matching function is
+            attached as an event handler on the corresponding child (or on this object when
+            there is no underscore).
+          </details>
+          <arg name="path" type="string">Lua module path passed to require() (e.g. "app.MyController")</arg>
+        </method>
       </methods>
       <messages>
         <details>
