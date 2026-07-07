@@ -67,8 +67,6 @@ int OBJ_CreateFromLuaState(lua_State *L) {
 bool_t OBJ_Equals(struct Object const *self, struct Object const *other) { return self == other; }
 void OBJ_SetContext(lua_State* L, struct Object *self) { *((struct Object **)lua_getextraspace(L)) = self; }
 
-#define ID_Node_ViewDidLoad 0x71bab7e1 // Node.ViewDidLoad
-
 static int f_rebuild_finalize(lua_State *L, int status, lua_KContext ctx) {
   if (status != LUA_OK) return luaL_error(L, luaL_tolstring(L, -1, NULL));
   axPostMessageW((struct Object *)ctx, ID_Node_ViewDidLoad, 0, NULL);
