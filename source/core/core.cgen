@@ -543,14 +543,20 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         <method name="LoadController" lua="true">
           <summary>Loads a Lua controller module and wires its event handlers to this object.</summary>
           <details>
-            Requires the Lua module at the given path, expects it to return a table, and stores
-            a reference to that table in <c>this->controller_ref</c>. Then iterates the table
-            keys looking for functions whose names follow the pattern <c>ControlName_EventName</c>
-            (the last underscore separates child name from event name). Each matching function is
-            attached as an event handler on the corresponding child (or on this object when
-            there is no underscore).
+            <p>Loads the module at the given path via <c>fs_findmodule</c> (not
+            <c>require</c>), so each call creates a fresh table — modules are not
+            cached. The table is stored in the object's controller_ref.</p>
+            <p>Then iterates the table keys using the <c>ChildName_EventName</c>
+            naming convention: a key like <c>CommandInput_Submit</c> is split at
+            the last underscore, the child "CommandInput" is found via
+            OBJ_FindChild, and the function is attached to its Submit event.
+            Keys without an underscore are bound to events on this object
+            directly.</p>
+            <p>This is the programmatic equivalent of the XML <c>Controller=</c>
+            attribute. In XML the controller is loaded via the
+            Object.LoadController message; here it is called directly.</p>
           </details>
-          <arg name="path" type="string">Lua module path passed to require() (e.g. "app.MyController")</arg>
+          <arg name="path" type="string">Lua module path (e.g. "scripts/MyController" or "Adventure/Scripts/Play")</arg>
         </method>
       </methods>
       <messages>
@@ -610,17 +616,48 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
         </message>
         <message name="BindHandler">
           <summary>Binds a Lua function from the controller to an event property.</summary>
-          <details>Posted by the XML parser when an event attribute has a plain string value (e.g. Submit="HandleSubmit"). When processed, looks up the function name in the object's controller table and stores a lua_ref in the event property. Relies on the Controller being loaded (and thus the message queue drained past ViewDidLoad) before this message is dispatched.</details>
+          <details>
+            <p>Posted by the XML parser when an event-typed property receives a plain
+            string value. For example, <c>Submit="HandleSubmit"</c> on an Input element
+            posts BindHandler with PropertyId set to the FullIdentifier of Input.Submit
+            and FunctionName set to "HandleSubmit".</p>
+            <p>When processed, the handler walks up the object hierarchy looking for a
+            parent with a loaded controller (controller_ref). It looks up FunctionName
+            in that controller table and, if found, stores the resulting lua_ref in the
+            target event property so future event dispatch calls the function directly.</p>
+            <p>Processing order is critical: the XML parser queues LoadController messages
+            before BindHandler messages. Because the message queue is FIFO, the controller
+            is always loaded by the time BindHandler runs.</p>
+            <p>If no controller is found or the function does not exist, the message
+            returns FALSE and the event property is left unchanged.</p>
+          </details>
           <fields>
-            <field name="PropertyId" type="uint">FullIdentifier of the event property to bind</field>
-            <field name="FunctionName" type="string">Name of the function in the controller table</field>
+            <field name="PropertyId" type="uint">FullIdentifier of the event property to bind (e.g. ID_Input_Submit)</field>
+            <field name="FunctionName" type="string">Name of the function in the controller table to bind</field>
           </fields>
         </message>
         <message name="LoadController">
-          <summary>Loads the Lua controller module from the given path.</summary>
-          <details>Posted by the XML parser as soon as a Controller= attribute is encountered, ensuring the controller is loaded before any BindHandler messages are processed.</details>
+          <summary>Loads a Lua controller module and wires its event handlers.</summary>
+          <details>
+            <p>Posted by the XML parser as soon as a <c>Controller="path"</c> attribute
+            is encountered on any object. The path is a Lua module name passed to
+            <c>fs_findmodule</c> (not <c>require</c>), so each object gets a fresh
+            controller table — modules are not cached.</p>
+            <p>When processed, the handler loads the module, executes it to obtain the
+            controller table, stores a reference in the object's controller_ref, and
+            calls wire_controller. Wire_controller iterates the table keys using the
+            <c>ChildName_EventName</c> naming convention: a key like
+            <c>CommandInput_Submit</c> is split at the last underscore, the child
+            "CommandInput" is found via OBJ_FindChild, and the function is bound to
+            its Submit event.</p>
+            <p>This message is queued before any BindHandler messages from the same
+            XML element, so the controller is guaranteed to be loaded when
+            BindHandler runs.</p>
+          </details>
           <fields>
-            <field name="Path" type="string">Lua module path to load (e.g. "app.MyController")</field>
+            <field name="Path" type="string">Lua module path (e.g. "scripts/MyController" or "Adventure/Scripts/Play")</field>
+          </fields>
+        </message>
           </fields>
         </message>
       </messages>
