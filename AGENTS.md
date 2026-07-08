@@ -41,6 +41,10 @@ Read `docs/TESTING.md`, the target test file, and `tests/test_local.h` if shared
 
 Never edit `generated/` by hand — modify `.cgen` or source files and rerun `make modules`.
 
+## Lua API naming convention
+
+`.cgen` method names are PascalCase (`FindChild`, `AddChild`). The codegen lowercases the first letter when generating Lua exports (`tools/codegen/plugins/export.c:183`), so the Lua name is always camelCase (`findChild`, `addChild`). The authoritative source for actual Lua names is the `generated/*_export.c` registration tables, not `.cgen` or C headers.
+
 ## Icons
 
 Use [Lucide Icons](https://lucide.dev/icons) for all SVG icons. Import raw SVGs with `stroke="currentColor"` (stroke-based, not fill-based) to ensure consistent thickness and tinting via CSS `color` and `-orca-tint-mode: template`.
