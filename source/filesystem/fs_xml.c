@@ -242,7 +242,10 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   switch (value[0]) {
     case '$':
       value = FS_GetThemeValue(value);
-      if (!value) Con_Error("Could not resolve theme value for property '%s'", pd->Name);
+      if (!value) {
+        Con_Error("Could not resolve theme value for property '%s'", pd->Name);
+        return;
+      }
       break;
     case '@': {
       struct Object *ref = OBJ_FindByPath(o, value + 1);
@@ -264,7 +267,11 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
     axPostMessageDataW(o, ID_Object_BindHandler, 0, &args, sizeof(args));
     return;
   }
-  if (!value || !parse_property(value, pd, tmp)) return;
+  if (!parse_property(value, pd, tmp)) {
+    Con_Error("Could not convert value '%s' for property '%s' on class '%s'",
+              value, pd->Name, OBJ_GetClassName(o));
+    return;
+  }
   PROP_SetValue(p, tmp);
   if (pd->DataType == kDataTypeString) free(*(char**)tmp);
 }
@@ -631,7 +638,10 @@ load_doc(char const *xml, int len, lpcString_t name,
     : NULL;
   struct Object *o = root ? node(root, schema, root_entity) : NULL;
   xmlFreeDoc(doc);
-  if (o) OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
+  if (o) {
+    if (name) OBJ_SetSourceFile(o, name);
+    OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
+  }
   return o;
 }
 
@@ -641,8 +651,7 @@ FS_LoadObjectFromXml(lpcString_t path)
   struct file* fp = FS_LoadFile(path);
   struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, NULL) : NULL;
   if (fp) FS_FreeFile(fp);
-  if (o) OBJ_SetSourceFile(o, path);
-  else Con_Error("Failed to parse '%s'", path);
+  if (!o) Con_Error("Failed to parse '%s'", path);
   return o;
 }
 
@@ -652,8 +661,7 @@ FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema)
   struct file* fp = FS_LoadFile(path);
   struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, schema) : NULL;
   if (fp) FS_FreeFile(fp);
-  if (o) OBJ_SetSourceFile(o, path);
-  else Con_Error("Failed to parse '%s'", path);
+  if (!o) Con_Error("Failed to parse '%s'", path);
   return o;
 }
 

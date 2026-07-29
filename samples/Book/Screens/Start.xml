@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="Application" Width="1024" Height="768">
+  <ImageView Name="Background" Source="Book/Images/WORKSHOP-FLOOR.png" Stretch="UniformToFill"/>
+  <TextBlock Name="Title" Text="Book" FontSize="24" FontWeight="Bold" FontFamily="Literata"/>
+</Screen>

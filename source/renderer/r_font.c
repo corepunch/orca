@@ -189,10 +189,11 @@ Font_Load(lpcString_t szFileName, struct FontFamily *pFontFamily)
   if (pFile) {
     struct fontface *face = Font_LoadFromMemory(pFile->data, pFile->size, pFontFamily);
     FS_FreeFile(pFile);
+    if (!face) Con_Error("FONT: Failed to load font face from '%s'", szFileName);
     return face;
-  } else {
-    return NULL;
   }
+  Con_Error("FONT: Failed to load font file '%s'", szFileName);
+  return NULL;
 }
 
 static lpcString_t

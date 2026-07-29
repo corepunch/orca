@@ -379,6 +379,30 @@ local function test_attached_inherited_text_font_family()
 	print("PASS: test_attached_inherited_text_font_family")
 end
 
+local function test_xml_registered_font_family()
+	local root = filesystem.loadObjectFromXmlString([[
+<Screen Width="800" Height="600" ResizeMode="NoResize">
+  <StackView AlignItems="Start">
+    <TextBlock Name="font-text" Text="Book" FontSize="40" FontFamily="Noto Sans Mono"/>
+  </StackView>
+</Screen>]])
+	test.expect(root ~= nil, "TextBlock with registered FontFamily should load")
+	local text = root and root:findChild("font-text", true) or nil
+	test.expect(text and text.FontFamily ~= nil,
+		"registered FontFamily XML attribute should resolve to a FontFamily object")
+	if text and text.FontFamily then
+		test.expect_eq(text.FontFamily.Name, "Noto Sans Mono",
+			"registered FontFamily XML attribute should select Noto Sans Mono")
+	end
+
+	if root then
+		root:clear()
+		root = nil
+	end
+	collectgarbage()
+	print("PASS: test_xml_registered_font_family")
+end
+
 local function test_attached_inherited_text_font_leaves()
 	local root = ui.Screen { Name = "font-leaves-root", Width = 800, Height = 600, ResizeMode = "NoResize" }
 	local stack = root + ui.StackView { Name = "font-leaves-stack" }
@@ -1793,6 +1817,7 @@ test_xml_loading_properties()
 test_inherited_foreground_color()
 test_binding_expression_reads_inherited_property()
 test_attached_inherited_text_font_family()
+test_xml_registered_font_family()
 test_attached_inherited_text_font_leaves()
 test_partial_font_shorthand_preserves_inherited_size()
 test_xml_loading_inline_xml_attribute()
