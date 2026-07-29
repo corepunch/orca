@@ -36,6 +36,28 @@ f_resetTextStats(lua_State *L)
 }
 
 static int
+c_parse_shadow_shorthand(const char* str, void* dst, size_t sz)
+{
+  if (!dst || sz != sizeof(struct ShadowShorthand)) return FALSE;
+  struct ShadowShorthand self = {0};
+  float ox = 0, oy = 0, blur = 0, spread = 0;
+  char color_str[64] = {0};
+  switch (sscanf(str, "%f %f %f %f %63s", &ox, &oy, &blur, &spread, color_str)) {
+    case 5:
+      self.Color = COLOR_Parse(color_str);
+      /* fall through */
+    case 4:
+      self.SpreadRadius = spread;
+      self.BlurRadius = blur;
+      self.Offset = (struct vec2){ox, oy};
+      *(struct ShadowShorthand*)dst = self;
+      return TRUE;
+    default:
+      return FALSE;
+  }
+}
+
+static int
 c_parse_transform2(const char* str, void* dst, size_t sz)
 {
   if (!dst || sz != sizeof(struct transform2)) return FALSE;
@@ -71,6 +93,7 @@ c_parse_transform2(const char* str, void* dst, size_t sz)
 void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
   OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
+  OBJ_RegisterStructParser("ShadowShorthand", c_parse_shadow_shorthand);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);
