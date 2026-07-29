@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Application" Width="1024" Height="768">
+<Screen Name="Application" Width="1024" Height="768" StyleSheet="Book/Styles/Start.css">
   <ImageView Name="Background" Source="Book/Images/WORKSHOP-FLOOR.png" Stretch="UniformToFill"/>
-  <TextBlock Name="Title" Text="Book" FontSize="24" FontWeight="Bold" FontFamily="Literata"/>
+  <TextBlock Name="Title" Text="You are in Grandfather Tolliver's workshop. A brass key hook on the wall hangs empty — only a frayed string still dangles from it. Soft sawdust covers the floorboards like a golden blanket. A small pet door is cut into the workshop's main door to the north, and an old cuckoo clock ticks softly on the wall. The tool bench lies to the east." class="scene-description"/>
 </Screen>

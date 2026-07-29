@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Lua Exposure"
+  short_description: "Expose ORCA engine APIs to Lua"
+  default_prompt: "Use $orca-lua-exposure to expose an existing or new ORCA C API to Lua and verify the generated or handwritten bridge."

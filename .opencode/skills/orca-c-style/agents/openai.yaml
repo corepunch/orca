@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA C Style"
+  short_description: "Apply ORCA handwritten C conventions"
+  default_prompt: "Use $orca-c-style while writing or reviewing handwritten C code in ORCA."

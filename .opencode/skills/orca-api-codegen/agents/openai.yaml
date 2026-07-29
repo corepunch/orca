@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA API Codegen"
+  short_description: "Add or change generated ORCA APIs"
+  default_prompt: "Use $orca-api-codegen to add or change an ORCA class, property, method, message, struct, enum, or Lua export."

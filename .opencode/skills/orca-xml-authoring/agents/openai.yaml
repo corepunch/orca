@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA XML Authoring"
+  short_description: "Author ORCA screens, templates, and actions"
+  default_prompt: "Use $orca-xml-authoring to create or edit ORCA XML screens, templates, triggers, actions, and property markup."

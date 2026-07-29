@@ -13,7 +13,16 @@ generated/
 *.so
 *.kzproj
 .*
-!.github
+!.github/
+!.opencode/
+.opencode/*
+!.opencode/agents/
+!.opencode/agents/**
+!.opencode/skills/
+!.opencode/skills/**
+.opencode/node_modules/
+.opencode/package.json
+.opencode/package-lock.json
 .DS_Store
 *.mesh
 amg
@@ -75,13 +84,13 @@ dkms.conf
 build.log
 **/__pycache__
 
-# Generated API docs (built by make docs and deployed via GitHub Pages)
+# Generated API docs
 docs/api/
 docs/generated/
 docs/renderer/
 
-# Generated skill docs (built by make docs)
-skills/*/generated/
+# Canonical generated C/Lua/XML API reference (built by make docs)
+.opencode/generated/
 
 # Auto-generated WebGL plugin registration header (produced by make webgl)
 build/webgl/plugins_luaopen.h

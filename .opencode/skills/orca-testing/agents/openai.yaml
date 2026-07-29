@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Testing"
+  short_description: "Select and write focused ORCA tests"
+  default_prompt: "Use $orca-testing to add or run focused ORCA C, Lua, XML, layout, style, or headless tests."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Controller Binding"
+  short_description: "Bind ORCA XML views to Lua controllers"
+  default_prompt: "Use $orca-controller-binding to connect ORCA XML to Lua controllers, events, DataContext, and property bindings."

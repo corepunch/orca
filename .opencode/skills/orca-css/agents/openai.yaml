@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA CSS"
+  short_description: "Author ORCA CSS stylesheets and themes"
+  default_prompt: "Use $orca-css to write or review ORCA CSS selectors, properties, theme values, and reusable styles."

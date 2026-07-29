@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Feature Implementation"
+  short_description: "Implement cross-subsystem ORCA features"
+  default_prompt: "Use $orca-feature-implementation to implement an ORCA feature with focused architecture, codegen, C, and verification steps."

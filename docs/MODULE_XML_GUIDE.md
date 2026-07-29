@@ -11,7 +11,7 @@ Module Codegen files describe the public API of C modules in a declarative forma
 1. **C Header Files** (`.h`) - Type definitions and function declarations
 2. **C Export Files** (`_export.c`) - Lua bindings and registration code
 3. **Properties Headers** (`_properties.h`) - Property hash constants
-4. **API Documentation** - Markdown docs at `docs/api/`
+4. **API Documentation** - C, Lua, and XML Markdown references generated at `.opencode/generated/{c,lua,xml}/`
 5. **DTD Schema** - UI component XML schema (generated from module files)
 
 ## Location and Usage
@@ -31,6 +31,18 @@ To generate code from these `.cgen` files, run:
 ```bash
 make modules
 ```
+
+`make modules` also refreshes the canonical API reference under
+`.opencode/generated/{c,lua,xml}/<module>/`. To additionally populate the
+developer-facing mirror at `docs/generated/{c,lua,xml}/<module>/`, run:
+
+```bash
+make -f tools/Makefile MODULE_ROOT= documentation
+```
+
+Both output trees are generated and ignored by Git. On a fresh checkout,
+generate them before API lookup; if the generator cannot run, inspect only the
+relevant `.cgen` file as the authoritative fallback.
 
 ## XML File Structure
 
@@ -579,7 +591,7 @@ Module Codegen files should reference the DTD schema for validation:
 6. **Keep summaries dense** — Current generators surface `<summary>` and `<topic>` most directly, so make summaries specific enough to stand alone
 7. **Use `<details>` for operational facts** — Put ownership, attachment rules, ordering constraints, and "when to use / when not to use" guidance in `<details>`
 8. **Document payload-bearing messages and public properties precisely** — Describe sender/receiver expectations, field meaning, ranges, and default values in the surrounding docs text
-9. **Test generation** — Run `make modules` after changes to verify XML is valid
+9. **Test generation** — Run `make modules` after changes to verify XML is valid and refresh the canonical API docs
 10. **Check generated code** — Review generated `.h` and `_export.c` files to ensure correctness
 
 ### Authoring `.cgen` docs for local models

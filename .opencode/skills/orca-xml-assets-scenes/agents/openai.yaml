@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA XML Assets and Scenes"
+  short_description: "Declare ORCA assets and scenes in XML"
+  default_prompt: "Use $orca-xml-assets-scenes to author ORCA XML for images, textures, shaders, font families, and scene assets."

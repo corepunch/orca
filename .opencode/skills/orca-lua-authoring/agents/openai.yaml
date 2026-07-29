@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Lua Authoring"
+  short_description: "Write ORCA Lua and MoonScript applications"
+  default_prompt: "Use $orca-lua-authoring to write or refactor ORCA Lua or MoonScript modules, components, and scene composition."

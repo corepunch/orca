@@ -34,7 +34,7 @@ Q = @
 endif
 
 # Top-level targets
-.PHONY: all codegen-host codegen-sample codegen-clean modules-c-preview modules-c-diff docs $(MODULES)
+.PHONY: all codegen-host codegen-sample codegen-clean modules-c-preview modules-c-diff docs documentation $(MODULES)
 
 all: $(MODULES) docs
 codegen-host: $(CODEGEN) $(CODEGEN_PLUGINS) $(CODEGEN_DOCS_PLUGIN)
@@ -97,27 +97,27 @@ $(BUILDDIR)/plugins/codegen/lib%.so: $(MODULE_ROOT)tools/codegen/plugins/%.c $(M
 	$(Q)$(CC) $(CODEGEN_CFLAGS) -shared $< -o $@
 
 # Documentation generation
-SKILLS_OUTPUT_DIR := $(MODULE_ROOT)skills
+API_DOCS_OUTPUT_DIR := $(MODULE_ROOT).opencode/generated
 
 docs: codegen-host
 	$(Q)$(foreach mod,$(MODULES),\
 		echo "Generating C docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/classes \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/enums \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/structs \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/interfaces \
-		         $(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod))/functions; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(SKILLS_OUTPUT_DIR)/orca-c/generated/$(notdir $(mod)); \
+		mkdir -p $(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod))/classes \
+		         $(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod))/enums \
+		         $(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod))/structs \
+		         $(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod))/interfaces \
+		         $(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod))/functions; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o c:$(API_DOCS_OUTPUT_DIR)/c/$(notdir $(mod)); \
 		echo "Generating Lua docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-lua/generated/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(SKILLS_OUTPUT_DIR)/orca-lua/generated/$(notdir $(mod)); \
+		mkdir -p $(API_DOCS_OUTPUT_DIR)/lua/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o lua:$(API_DOCS_OUTPUT_DIR)/lua/$(notdir $(mod)); \
 		echo "Generating XML docs for $(mod)..."; \
-		mkdir -p $(SKILLS_OUTPUT_DIR)/orca-xml/generated/$(notdir $(mod))/classes; \
-		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(SKILLS_OUTPUT_DIR)/orca-xml/generated/$(notdir $(mod)); \
+		mkdir -p $(API_DOCS_OUTPUT_DIR)/xml/$(notdir $(mod))/classes; \
+		$(CGEN) $(MODULE_ROOT)$(mod).cgen $(CODEGEN_DOCS_PLUGIN) -o xml:$(API_DOCS_OUTPUT_DIR)/xml/$(notdir $(mod)); \
 	)
 
 documentation: docs
-	$(Q)mkdir -p $(MODULE_ROOT)docs/generated
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-c/generated/* $(MODULE_ROOT)docs/generated/c/ 2>/dev/null || true
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-lua/generated/* $(MODULE_ROOT)docs/generated/lua/ 2>/dev/null || true
-	$(Q)cp -r $(SKILLS_OUTPUT_DIR)/orca-xml/generated/* $(MODULE_ROOT)docs/generated/xml/ 2>/dev/null || true
+	$(Q)mkdir -p $(MODULE_ROOT)docs/generated/c $(MODULE_ROOT)docs/generated/lua $(MODULE_ROOT)docs/generated/xml
+	$(Q)cp -r $(API_DOCS_OUTPUT_DIR)/c/. $(MODULE_ROOT)docs/generated/c/
+	$(Q)cp -r $(API_DOCS_OUTPUT_DIR)/lua/. $(MODULE_ROOT)docs/generated/lua/
+	$(Q)cp -r $(API_DOCS_OUTPUT_DIR)/xml/. $(MODULE_ROOT)docs/generated/xml/
