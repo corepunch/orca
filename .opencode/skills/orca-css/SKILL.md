@@ -19,6 +19,24 @@ Treat ORCA CSS as a CSS-like subset mapped to ORCA properties. Do not assume a
 browser feature exists. Confirm the parser or an existing test before using a
 selector, unit, shorthand, or at-rule that is not already established.
 
+## Troubleshoot missing styles
+
+Separate the styling pipeline into selector matching, value parsing, property
+mapping, and rendering:
+
+1. Confirm the consuming view loads the stylesheet and applies the expected
+   class.
+2. Check `docs/css-compatibility.md` for the declaration name, value grammar,
+   and supported units. Replace browser-only units and shorthand syntax before
+   investigating rendering.
+3. Prove parsing and mapping by reading the target property after a recursive
+   theme refresh or by extending the nearest focused style test.
+4. If the property is set but no pixels change, inspect the owning control's
+   draw handler and one renderer call site. A mapping in `Css.c` proves only
+   that the value reaches the object; it does not prove the visual path exists.
+5. Keep parser/property coverage separate from display-backed rendering
+   coverage so a parse-only test cannot mask an unimplemented draw path.
+
 ## Author maintainable styles
 
 1. Use semantic classes such as `.card`, `.toolbar`, and `.primary-button`.

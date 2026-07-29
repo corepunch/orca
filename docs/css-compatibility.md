@@ -115,6 +115,7 @@ For text alignment, use the CSS-native `text-align` property for horizontal text
 - CSS property names are matched case-insensitively.
 - Enum values are matched case-insensitively and may use CSS-style separators; for example `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
+- `box-shadow` uses `x-offset y-offset blur-radius spread-radius color` with bare numeric values, for example `box-shadow: 2 2 0 0 black`. On `TextBlock`, the offset and color are rendered through the text glyph mask; blur and spread are parsed but are not yet rendered.
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
 - `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space unless that axis has an auto margin.
 - `margin-* : auto` normalizes to `NaN` and is used for alignment.

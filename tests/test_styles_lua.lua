@@ -1662,6 +1662,34 @@ local function test_css_unit_vh_full()
   print("PASS: test_css_unit_vh_full")
 end
 
+-- ---------------------------------------------------------------------------
+-- Test: box-shadow shorthand sets all sub-properties
+-- ---------------------------------------------------------------------------
+local function test_css_box_shadow_shorthand()
+  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
+  screen.StyleSheet = ui.loadObjectFromCssString [[
+    .shadow-box {
+      box-shadow: 2 2 3 4 #ff0000;
+    }
+  ]]
+
+  local node = screen + ui.Node2D {
+    class = "shadow-box",
+  }
+  applyStyles(node)
+
+  test.expect_near(node.BoxShadowOffset.X, 2, 0.001, "box-shadow shorthand sets Offset.X")
+  test.expect_near(node.BoxShadowOffset.Y, 2, 0.001, "box-shadow shorthand sets Offset.Y")
+  test.expect_near(node.BoxShadowBlurRadius, 3, 0.001, "box-shadow shorthand sets BlurRadius")
+  test.expect_near(node.BoxShadowSpreadRadius, 4, 0.001, "box-shadow shorthand sets SpreadRadius")
+  test.expect_near(node.BoxShadowColor.R, 1.0, 0.01, "box-shadow shorthand sets Color.R")
+  test.expect_near(node.BoxShadowColor.G, 0.0, 0.01, "box-shadow shorthand sets Color.G")
+  test.expect_near(node.BoxShadowColor.B, 0.0, 0.01, "box-shadow shorthand sets Color.B")
+
+  node:removeFromParent()
+  print("PASS: test_css_box_shadow_shorthand")
+end
+
 -- Run CSS unit binding tests
 test_css_unit_rem_binding()
 test_css_unit_em_binding()
@@ -1671,5 +1699,8 @@ test_css_unit_binding_updates_on_parent_change()
 test_css_unit_vh_binding()
 test_css_unit_vw_binding()
 test_css_unit_vh_full()
+
+-- Run box-shadow shorthand test
+test_css_box_shadow_shorthand()
 
 print("All style tests passed.")
