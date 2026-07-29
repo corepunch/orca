@@ -1056,11 +1056,6 @@
 			path = geometry;
 			sourceTree = "<group>";
 		};
-			isa = PBXGroup;
-			children = (
-			);
-			sourceTree = "<group>";
-		};
 		78A441A62F879A1700AF52A4 /* components */ = {
 			isa = PBXGroup;
 			children = (
@@ -1683,23 +1678,6 @@
 			);
 			productName = orca.ui;
 			productReference = 7868653E2F50A96100DC87FC /* liborca/SpriteKit.so */;
-			productType = "com.apple.product-type.library.dynamic";
-		};
-			isa = PBXNativeTarget;
-			buildPhases = (
-				789AE3B22F687AF90067DC75 /* Headers */,
-				789AE3B52F687AF90067DC75 /* Sources */,
-				789AE3BD2F687AF90067DC75 /* Frameworks */,
-				789AE3C22F687AF90067DC75 /* Embed Libraries */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				789AE3B02F687AF90067DC75 /* PBXTargetDependency */,
-			);
-			packageProductDependencies = (
-			);
-			productName = orca.ui;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		78B139A32AF3DE9800AAAE53 /* launcher */ = {
@@ -3041,14 +3019,6 @@
 			buildConfigurations = (
 				7868653C2F50A96100DC87FC /* Debug */,
 				7868653D2F50A96100DC87FC /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				789AE3C52F687AF90067DC75 /* Debug */,
-				789AE3C62F687AF90067DC75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
