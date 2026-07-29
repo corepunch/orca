@@ -30,11 +30,85 @@ Available built-in shader types:
 | `SHADER_UI` | Standard 2D sprite |
 | `SHADER_VERTEXCOLOR` | Per-vertex colour |
 | `SHADER_ERROR` | Error / missing shader placeholder |
-| `SHADER_CHARSET` | Glyph/font atlas rendering |
+| `SHADER_CHARSET` | Legacy terminal/console character-map rendering only (not used by `TextBlock`) |
 | `SHADER_CINEMATIC` | Cinematic player (PCX palette) |
 | `SHADER_BUTTON` | Rounded button with border |
 | `SHADER_ROUNDEDBOX` | Rounded rectangle fill |
 | `SHADER_2D_RECT` | macOS `IOSurface` / `GL_TEXTURE_RECTANGLE` path |
+
+---
+
+## Text Rendering Pipeline
+
+`TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via FreeType, then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).
+
+### Font registration and loading
+
+1. At project load, `_RegisterProjectFonts()` (`source/filesystem/filesystem.c`) walks the project's `FontLibrary/` directory, reads the `Name` attribute from each `.xml` descriptor, and calls `CORE_RegisterFontFamily(name, path)` (`source/core/core_main.c`) which stores the name→asset-path mapping in `core.fonts[]`.
+2. When a `FontFamily` object is instantiated (via `FS_LoadObject(path)` triggered by property assignment), its `Object.Start` handler in `source/renderer/r_font.c` calls `Font_Load()` for each of Regular / Bold / Italic / BoldItalic, which reads the TTF file and calls `FT_New_Memory_Face()`.
+3. `FontFamily_GetFace(family, style)` returns the correct `FT_Face` for a given weight/style combination.
+4. `Font_GetDefaultFamily()` lazily loads NotoSans as the fallback.
+
+### Property → TextBlockText assembly (`MakeText` message)
+
+When layout or draw requests text, the `TextBlockConcept` handler for `MakeText` (`plugins/UIKit/TextBlockConcept.c`) does the following:
+
+1. Calls `TextRun_ReadProperty()` to read `Font.Weight`, `Font.Style`, `Font.Size`, `Font.Family` from the property system on the `TextRun` component.
+2. `_MakeTextBlockTextRun()` constructs a `struct TextBlockTextRun` (`plugins/UIKit/TextBlockText.h`) holding the string, a `FontFamily*` pointer, `fontSize`, `fontStyle`, `letterSpacing`, `lineHeight`, and underline metadata.
+3. Child `TextRun` objects (for mixed-style spans) each become an additional entry in the `TextBlockText.run[]` array (up to `UI_MAX_TEXT_RUNS = 256`).
+
+**CSS path:** `font-family: Inter` in a stylesheet goes through `css_resolve_font_family()` (`plugins/UIKit/Css.c`) → `CORE_FindFontFamily("Inter")` → asset path → property set → `FS_LoadObject()` → `FontFamily.Object.Start`.
+
+### Rasterization: `TextBlockText_GetTexture`
+
+`TextBlockText_GetTexture()` is hash-cached: it computes an FNV-1a32 hash of the text content plus all format properties and only re-rasterizes when the hash changes.
+
+`TextBlockText_Print()` calls `T_LayoutText(bRender=TRUE)` which does a **two-pass** layout:
+
+- **Pass 1** (`bRender=FALSE`): measures each word with `T_MeasureWord()` (using `FT_Load_Glyph` + kerning) to determine the final pixel dimensions. No allocation.
+- **Pass 2** (`bRender=TRUE`): allocates a `uint8_t` bitmap of `width × height` bytes (alpha8), then blits each word with `T_BlitWord()`:
+  - `T_BeginRun()` calls `FontFamily_GetFace()` then `FT_Set_Pixel_Sizes(face, 0, fontSize * scale)` and reads ascender/descender/underline metrics.
+  - `T_BlitWord()` calls `FT_Load_Glyph()` + `FT_Render_Glyph(FT_RENDER_MODE_NORMAL)`, then `T_BlitGlyph()` copies each `FT_Bitmap` row into the pixel buffer with kerning advance.
+  - `T_BlitEllipsis()` renders trailing `"..."` when `TextOverflow=ellipsis`.
+  - `T_BlitUnderline()` fills horizontal spans for `TextDecoration=underline`.
+
+After layout, `Texture_Create(kTextureFormatAlpha8, width, height, bitmap)` uploads the buffer via `glTexImage2D(GL_TEXTURE_2D, GL_ALPHA8, ...)` and returns a `struct Texture*`.
+
+### 2D draw path (`TextBlock`)
+
+```
+Node2D_Draw2DContent
+  → TextBlock_Node2D_UpdateGeometry   (TextBlock.c)
+      → MakeText → _MakeTextBlockTextRun (assembles TextBlockText)
+      → TextBlockText_GetInfo → T_LayoutText(bRender=FALSE) → pixel dimensions
+  → TextBlock_Node2D_ForegroundContent (TextBlock.c)
+      → TextBlockText_GetTexture → Texture* (alpha8, cached by hash)
+  → TextBlock_Node2D_DrawForeground   (TextBlock.c)
+      → Node2D_GetViewEntity → ViewEntity{bbox=_rect, matrix, opacity, texture}
+      → R_DrawEntity → SHADER_UI (default; no explicit shader set)
+          → Shader_BindMaterial: glUniform u_modelViewProjectionTransform,
+                                 u_textureTransform, u_texture, u_color, u_opacity
+          → glDrawElements(GL_TRIANGLES, ...)
+          → fragment: fragColor = texture(u_texture, v_texcoord0) * u_color
+             (alpha8 glyph × foreground brush color, premultiplied-alpha blend)
+```
+
+### 3D draw path (`TextBlock3D`)
+
+The FreeType rasterization path is identical to 2D. The difference is the entry point and the `ViewEntity` setup:
+
+```
+Viewport3D_Node2D_ForegroundContent (Viewport3D.c)
+  → R_RenderViewport → DrawEntities(scene, viewdef)
+      → TextBlock3D_Node3D_Render      (TextBlock3D.c)
+          → MakeText (availableSpace=512)
+          → TextBlockText_GetTexture → same alpha8 texture path
+          → ViewEntity{bbox centered at origin, matrix = Node3D.Matrix × scale(0.1),
+                       textureMatrix: Y-flipped (v[4]=-1, v[7]=1)}
+          → R_DrawEntity → SHADER_UI (same GL path as 2D)
+```
+
+`Viewport3D` integrates into the 2D draw tree by implementing the `ForegroundContent` message hook and returning `FALSE` (meaning "drew directly") instead of returning a `Texture*`.
 
 ---
 

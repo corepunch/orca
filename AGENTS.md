@@ -67,6 +67,7 @@ After `.cgen` changes, run `make modules`.
 | Class / component | generated reference for its module, then related docs |
 | Lua API | generated Lua reference, then `docs/LUA_API.md` |
 | UI / layout / XML / style | `docs/UI_SYSTEM.md` |
+| Text rendering / fonts / glyphs | `docs/renderer-internals.md` → *Text Rendering Pipeline* |
 | C style | `docs/CODING_STYLE.md` |
 
 ## Working rules
