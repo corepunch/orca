@@ -37,6 +37,7 @@
 
 /* ── Tunables ─────────────────────────────────────────────────── */
 #define FT_SCALE(x)     ((x) >> 6)
+#define FT_SCALE_16_16(x) ((x) >> 16)
 #define CARET_WIDTH     2
 #define FT_Pixel        uint8_t
 #define SCALE_CEIL(v,s) (((v) + MAX(1,(s)) - 1) / MAX(1,(s)))
@@ -126,8 +127,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
 
   m->ascender    = FT_MulFix(m->face->ascender,         m->face->size->metrics.y_scale);
   m->descender   = FT_MulFix(m->face->descender,        m->face->size->metrics.y_scale);
-  m->height      = MAX(FT_MulFix(m->face->height, m->face->size->metrics.y_scale),
-                       m->ascender - m->descender);
+  m->height      = m->ascender - m->descender;
   m->underlinePos= FT_MulFix(m->face->underline_position,m->face->size->metrics.y_scale);
 
   /* line-height: if set to a value > 1 it is an absolute pixel height override */
@@ -137,7 +137,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
   }
 
   m->spaceAdv = T_LoadChar(m->face, ' ')
-  ? (FT_Int)FT_SCALE(m->face->glyph->metrics.horiAdvance) : 0;
+  ? (FT_Int)FT_SCALE_16_16(m->face->glyph->linearHoriAdvance) : 0;
   return TRUE;
 }
 
@@ -153,7 +153,7 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
 static FT_Pos
 T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
 {
-  FT_Pos    width = 0;
+  FT_Fixed  width16 = 0;   /* 16.16 accumulator for subpixel precision */
   FT_UInt   prev  = *last_glyph_index_inout;
 
   lpcString_t p = *src;
@@ -171,16 +171,16 @@ T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
 
     if (prev && gi) {
       FT_Vector kern;
-      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
-        width += FT_SCALE(kern.x);
+      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_UNFITTED, &kern) == 0)
+        width16 += kern.x << 10;  /* 26.6 -> 16.16 */
     }
-    width += FT_SCALE(face->glyph->metrics.horiAdvance);
+    width16 += face->glyph->linearHoriAdvance;
     prev = gi;
   }
 
   *last_glyph_index_inout = prev;
   *src = p;
-  return width;
+  return FT_SCALE_16_16(width16);  /* round to pixels at the end */
 }
 
 /* ── Bitmap helpers ───────────────────────────────────────────── */
@@ -245,6 +245,7 @@ T_BlitWord(FT_Face          face,
   lpcString_t p  = word_start;
   FT_UInt prev   = *prev_gi_inout;
 
+  FT_Fixed pen16 = (FT_Fixed)(*x) << 16;  /* 16.16 pen for subpixel advance */
   while (p < word_end) {
     if (!strncmp(p, "<u>",  3)) { p += 3; continue; }
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
@@ -257,20 +258,21 @@ T_BlitWord(FT_Face          face,
     FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
 
     FT_UInt   gi    = FT_Get_Char_Index(face, ch);
-    FT_Pos    adv   = FT_SCALE(face->glyph->metrics.horiAdvance);
     FT_Pos    xoff  = FT_SCALE(face->glyph->metrics.horiBearingX);
     FT_Pos    yoff  = baseline - FT_SCALE(face->glyph->metrics.horiBearingY);
 
     if (prev && gi) {
       FT_Vector kern;
-      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_DEFAULT, &kern) == 0)
-        *x += FT_SCALE(kern.x);
+      if (FT_Get_Kerning(face, prev, gi, FT_KERNING_UNFITTED, &kern) == 0)
+        pen16 += kern.x << 10;  /* 26.6 -> 16.16 */
     }
 
-    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, *x + xoff, y + yoff);
-    *x  += adv;
+    FT_Pos px = FT_SCALE_16_16(pen16);
+    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, px + xoff, y + yoff);
+    pen16 += face->glyph->linearHoriAdvance;
     prev = gi;
   }
+  *x = FT_SCALE_16_16(pen16);
 
   if (ul_thickness > 0) {
     T_BlitUnderline(image_data, sz,
@@ -290,24 +292,26 @@ T_BlitEllipsis(FT_Face          face,
                FT_Pos           y,
                FT_Pos           baseline)
 {
+  FT_Fixed pen16 = (FT_Fixed)x << 16;
   for (int i = 0; i < 3; i++) {
     if (!T_LoadChar(face, '.')) continue;
     FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
+    FT_Pos px   = FT_SCALE_16_16(pen16);
     FT_Pos xoff = FT_SCALE(face->glyph->metrics.horiBearingX);
     FT_Pos yoff = baseline - FT_SCALE(face->glyph->metrics.horiBearingY);
-    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, x + xoff, y + yoff);
-    x += FT_SCALE(face->glyph->metrics.horiAdvance);
+    T_BlitGlyph(&face->glyph->bitmap, image_data, sz, px + xoff, y + yoff);
+    pen16 += face->glyph->linearHoriAdvance;
   }
 }
 
 static FT_Pos
 T_EllipsisWidth(FT_Face face)
 {
-  FT_Pos w = 0;
+  FT_Fixed w16 = 0;
   for (int i = 0; i < 3; i++)
     if (T_LoadChar(face, '.'))
-      w += FT_SCALE(face->glyph->metrics.horiAdvance);
-  return w;
+      w16 += face->glyph->linearHoriAdvance;
+  return FT_SCALE_16_16(w16);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -471,14 +475,14 @@ T_LayoutText(LayoutCtx *ctx)
 
         /* cursor: walk the word char-by-char to count and find x if needed */
         {
-          FT_Pos cx = ls.lineX;
+          FT_Fixed cx16 = (FT_Fixed)ls.lineX << 16;
           FT_UInt prev_gi2 = 0;
           lpcString_t wp = word_start;
           while (wp < word_p) {
             if (!strncmp(wp, "<u>",  3)) { wp += 3; continue; }
             if (!strncmp(wp, "</u>", 4)) { wp += 4; continue; }
             if (!ctx->cursorSet && current_char == text->cursor) {
-              ctx->cursor.x      = (int)(cx / scale);
+              ctx->cursor.x      = (int)(FT_SCALE_16_16(cx16) / scale);
               ctx->cursor.y      = (int)(ls.lineY / scale);
               ctx->cursor.width  = CARET_WIDTH;
               ctx->cursor.height = (int)(FT_SCALE(m.height) / scale);
@@ -490,10 +494,10 @@ T_LayoutText(LayoutCtx *ctx)
             FT_UInt gi = FT_Get_Char_Index(m.face, wch);
             if (prev_gi2 && gi) {
               FT_Vector kern;
-              if (FT_Get_Kerning(m.face, prev_gi2, gi, FT_KERNING_DEFAULT, &kern) == 0)
-                cx += FT_SCALE(kern.x);
+              if (FT_Get_Kerning(m.face, prev_gi2, gi, FT_KERNING_UNFITTED, &kern) == 0)
+                cx16 += kern.x << 10;
             }
-            cx += FT_SCALE(m.face->glyph->metrics.horiAdvance);
+            cx16 += m.face->glyph->linearHoriAdvance;
             prev_gi2 = gi;
           }
         }
@@ -639,6 +643,7 @@ T_LayoutText(LayoutCtx *ctx)
                           ls.lineX, ls.lineX + spacePrefix,
                           ls.lineY + ls.baseline, FT_SCALE(m.underlinePos), ul_thick);
         ls.lineX += spacePrefix;
+        FT_Fixed epen16 = (FT_Fixed)ls.lineX << 16;
         lpcString_t q = word_start;
         while (q < word_end) {
           if (!strncmp(q, "<u>",  3)) { q += 3; continue; }
@@ -649,15 +654,15 @@ T_LayoutText(LayoutCtx *ctx)
           if (!T_LoadChar(m.face, qch)) { prev_gi = 0; continue; }
           FT_Render_Glyph(m.face->glyph, FT_RENDER_MODE_NORMAL);
           FT_UInt  qgi  = FT_Get_Char_Index(m.face, qch);
-          FT_Pos   qadv = FT_SCALE(m.face->glyph->metrics.horiAdvance);
           if (prev_gi && qgi) {
             FT_Vector kern;
-            if (FT_Get_Kerning(m.face, prev_gi, qgi, FT_KERNING_DEFAULT, &kern) == 0)
-              ls.lineX += FT_SCALE(kern.x);
+            if (FT_Get_Kerning(m.face, prev_gi, qgi, FT_KERNING_UNFITTED, &kern) == 0)
+              epen16 += kern.x << 10;
           }
-          if (ls.lineX + qadv > cutX) {
-            /* This glyph would exceed the cut — stop and place ellipsis */
-            ellipsis_x    = ls.lineX;
+          FT_Pos px = FT_SCALE_16_16(epen16);
+          FT_Fixed nextPen = epen16 + m.face->glyph->linearHoriAdvance;
+          if (FT_SCALE_16_16(nextPen) > cutX) {
+            ellipsis_x    = px;
             ellipsis_y    = ls.lineY;
             ellipsis_base = ls.baseline;
             ellipsis_face = m.face;
@@ -667,10 +672,11 @@ T_LayoutText(LayoutCtx *ctx)
           FT_Pos xoff = FT_SCALE(m.face->glyph->metrics.horiBearingX);
           FT_Pos yoff = ls.baseline - FT_SCALE(m.face->glyph->metrics.horiBearingY);
           T_BlitGlyph(&m.face->glyph->bitmap, image_data, &sz,
-                      ls.lineX + xoff, ls.lineY + yoff);
-          ls.lineX += qadv;
+                      px + xoff, ls.lineY + yoff);
+          epen16 = nextPen;
           prev_gi   = qgi;
         }
+        ls.lineX = FT_SCALE_16_16(epen16);
         if (!bDone) {
           /* full word fit under cut — finish normally below */
         }
