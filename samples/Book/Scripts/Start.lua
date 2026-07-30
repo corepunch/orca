@@ -44,6 +44,18 @@ local function init_game()
         print("ERROR: Failed to load wondertown module")
         return
     end
+
+    local companion_ok, companion_err = pcall(env.require, "books.wondertown.companion")
+    if companion_ok and companion_err ~= nil then
+        if type(env.CAPTURE_RESTART_STATE) == "function" then
+            env.CAPTURE_RESTART_STATE()
+        end
+    elseif companion_ok then
+        print("Warning: companion module returned nil")
+    else
+        print("Warning: no companion module: " .. tostring(companion_err))
+    end
+
     env._G = env
 
     game = runtime.create_game(env)
@@ -65,12 +77,12 @@ end
 
 local function query_choices()
     if not env or type(env.COMPANION_QUERY) ~= "function" then return nil end
-    return env.COMPANION_QUERY("casual", 5)
+    return env.COMPANION_QUERY()
 end
 
 local function select_choice(id)
     if not env or type(env.COMPANION_SELECT) ~= "function" then return nil end
-    return env.COMPANION_SELECT(id, "casual", 5)
+    return env.COMPANION_SELECT(id)
 end
 
 local function get_last_output()
