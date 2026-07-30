@@ -164,6 +164,7 @@ Application = Widget:extend {
 
   run = function(self)
     local startup_dark_theme = system.get_theme()
+    self.screen:post("Window.Paint", renderer.getSize())
     for msg in system.getMessage do
       if filesystem.hasChangedFiles() then return DATADIR end
       if msg:is "Window.Closed" then return
