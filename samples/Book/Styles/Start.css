@@ -1,6 +1,32 @@
+.scene-text {
+  padding: 10px 20px;
+}
+
 .scene-description {
+  font-size: 28px;
+  font-family: "Literata";
+  font-weight: bold;
+  box-shadow: 2 2 0 0 black;
+}
+
+.scene-title {
+  font-size: 36px;
+  font-family: "Literata";
+  font-weight: bold;
+  color: yellow;
+}
+
+.scene-option {
   font-size: 24px;
   font-family: "Literata";
   font-weight: bold;
   box-shadow: 2 2 0 0 black;
+  color: yellow;
+}
+
+.scene-options {
+  direction: vertical;
+  gap: 8px;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }

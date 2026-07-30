@@ -2,6 +2,11 @@ Name = "Book"
 StartupScreen = "Book/Screens/Start"
 WindowWidth = 1024
 WindowHeight = 768
+ProjectReferences = {
+	{ Name = "zilscript", Path = "libs/zilscript/zilscript" },
+	{ Name = "books", Path = "libs/zilscript/books" },
+	{ Name = "infocom", Path = "libs/zilscript/infocom" },
+}
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
 PrefabLibrary = { IsExternal = true }

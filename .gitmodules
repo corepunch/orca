@@ -1,3 +1,6 @@
 [submodule "libs/platform"]
 	path = libs/platform
 	url = https://github.com/corepunch/platform.git
+[submodule "samples/Book/libs/zilscript"]
+	path = samples/Book/libs/zilscript
+	url = https://github.com/corepunch/zilscript
