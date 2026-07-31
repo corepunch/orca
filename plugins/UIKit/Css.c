@@ -334,6 +334,7 @@ k_css_prop_map[] = {
   { "word-wrap",     "TextBlockConcept.WordWrap",   ID_TextBlockConcept_WordWrap },
   { "overflow-wrap",   "TextBlockConcept.WordWrap",   ID_TextBlockConcept_WordWrap },
   { "text-wrap",     "TextBlockConcept.TextWrapping", ID_TextBlockConcept_TextWrapping },
+  { "text-indent",   "TextBlockConcept.TextIndent",  ID_TextBlockConcept_TextIndent },
   { "text-overflow",   "TextBlockConcept.TextOverflow", ID_TextBlockConcept_TextOverflow },
   { "text-align",    "TextBlockConcept.TextHorizontalAlignment", ID_TextBlockConcept_TextHorizontalAlignment },
   { "text-vertical-align", "TextBlockConcept.TextVerticalAlignment", ID_TextBlockConcept_TextVerticalAlignment },

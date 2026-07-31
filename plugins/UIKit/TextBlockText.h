@@ -28,6 +28,7 @@ struct TextBlockText
   float scale;
   uint32_t textWrapping;
   uint32_t textOverflow;
+  float textIndent;
   uint32_t textureHash;
   uint32_t infoHash;
   struct text_info info;

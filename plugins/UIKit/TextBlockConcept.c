@@ -396,6 +396,8 @@ T_LayoutText(LayoutCtx *ctx)
   {
     LayoutState ls;
     LS_Init(&ls);
+    if (text->textIndent > 0)
+      ls.lineX = (FT_Pos)(text->textIndent * scale);
     FT_Int current_char = 0; /* true per-character index, parallel to pInput->Cursor */
     FT_Pos spaceOffset  = 0; /* accumulated space advance since last committed word */
 
@@ -550,6 +552,8 @@ T_LayoutText(LayoutCtx *ctx)
 
   LayoutState ls;
   LS_Init(&ls);
+  if (text->textIndent > 0)
+    ls.lineX = (FT_Pos)(text->textIndent * scale);
   int  ul_depth     = 0;       /* nesting depth for <u> tags */
   FT_UInt prev_gi   = 0;
 
@@ -960,6 +964,7 @@ HANDLER(TextBlockConcept, TextBlockConcept, MakeText)
   pViewText->availableWidth = pMakeText->availableSpace;
   pViewText->textWrapping   = (uint32_t)pTextBlockConcept->TextWrapping;
   pViewText->textOverflow   = (uint32_t)pTextBlockConcept->TextOverflow;
+  pViewText->textIndent     = pTextBlockConcept->TextIndent;
   pViewText->scale          = axGetScaling();
   return TRUE;
 }
