@@ -772,22 +772,53 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   foregroundContent = _SendMessage(hObject, Node2D, ForegroundContent);
   foreground = foregroundContent == TRUE ? NULL : (struct Texture*)foregroundContent;
 
-  if (pNode2D->BoxShadow.Color.a) {
-    //		struct mat4 mat, offset;
-    //		offset = MAT4_Identity();
-    //		MAT4_Translate(&offset, &(struct
-    // vec3){pNode2D->Shadow.Offset.x,
-    // pNode2D->Shadow.Offset.y}); 		MAT4_Multiply(pDraw2DContent,
-    // &offset, &mat); 		OBJ_SendMessage(hObject, ID_Node2D_DrawBrush, 0,
-    //&(DRAWBRUSHSTRUCT){ 			.projection = &mat,
-    //.image      = foreground.result, 			.brush      =
-    // pNode2D->Shadow.Color, 			.foreground = FALSE });
-  }
-
   uint32_t flags = OBJ_GetFlags(hObject);
   struct ViewDef viewdef;
 
   Init_ViewDef(&viewdef, pDraw2DContent);
+
+  if (pNode2D->BoxShadow.Color.a && foreground) {
+    float blur = pNode2D->BoxShadow.BlurRadius;
+    struct Texture *shadowTex = NULL;
+
+    if (blur > 0.f) {
+      // Rebuild cached blur when the object content changed.
+      long ts = OBJ_GetTimestamp(hObject);
+      if (!pNode2D->_shadowTexture || pNode2D->_shadowRevision != (int32_t)ts) {
+        uint32_t pw = foreground->Width  * MAX(foreground->Scale, 1u);
+        uint32_t ph = foreground->Height * MAX(foreground->Scale, 1u);
+        struct Texture *scratch = NULL, *newShadow = NULL;
+        CREATERTSTRUCT rtdesc = { .Width = pw, .Height = ph, .Scale = 1 };
+        if (pw > 0 && ph > 0 &&
+            SUCCEEDED(RenderTexture_Create(&rtdesc, &scratch)) &&
+            SUCCEEDED(RenderTexture_Create(&rtdesc, &newShadow))) {
+          float sigma = blur * (float)axGetScaling() / 3.f;
+          R_BlurTexture(foreground, newShadow, scratch, sigma);
+          if (pNode2D->_shadowTexture)
+            Texture_Release(pNode2D->_shadowTexture);
+          pNode2D->_shadowTexture = newShadow;
+          newShadow = NULL;
+          pNode2D->_shadowRevision = (int32_t)ts;
+        }
+        if (scratch)   Texture_Release(scratch);
+        if (newShadow) Texture_Release(newShadow);
+      }
+      shadowTex = pNode2D->_shadowTexture;
+    }
+
+    // Draw shadow: same bbox as foreground, matrix translated by shadow offset,
+    // tinted with BoxShadow.Color. Uses blurred texture when BlurRadius > 0.
+    struct ViewEntity shadow;
+    Node2D_GetViewEntity(pNode2D, &shadow, shadowTex ? shadowTex : foreground, NULL);
+    shadow.material.color = pNode2D->BoxShadow.Color;
+    shadow.material.blendMode = BLEND_MODE_ALPHA;
+    MAT4_Translate(&shadow.matrix, &(struct vec3){
+      pNode2D->BoxShadow.Offset.x,
+      pNode2D->BoxShadow.Offset.y,
+      0
+    });
+    R_DrawEntity(&viewdef, &shadow);
+  }
 
   if (!(flags & OF_ACTIVATED)) {
     OBJ_SetFlags(hObject, flags | OF_ACTIVATED);

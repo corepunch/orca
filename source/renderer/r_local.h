@@ -252,6 +252,8 @@ extern struct shader_desc shader_vertexcolor;
 extern struct shader_desc shader_error;
 extern struct shader_desc shader_button;
 extern struct shader_desc shader_roundedbox;
+extern struct shader_desc shader_blur_h;
+extern struct shader_desc shader_blur_v;
 
 // font
 struct fontface*

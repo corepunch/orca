@@ -307,6 +307,8 @@ enum shader_type {
   SHADER_BUTTON,
   SHADER_ROUNDEDBOX,
   SHADER_2D_RECT,
+  SHADER_BLUR_H,
+  SHADER_BLUR_V,
   SHADER_COUNT,
 };
 
@@ -555,6 +557,8 @@ ORCA_API HRESULT R_SetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_GetPipelineState(PPIPELINESTATE);
 ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
+ORCA_API HRESULT R_BlurTexture(struct Texture const *src, struct Texture *dst,
+                                struct Texture *scratch, float sigma);
 ORCA_API HRESULT Image_GetInfo(struct Texture const*, struct image_info*);
 ORCA_API HRESULT Shader_EnumUniforms(struct shader const*, SHADERENUMPROC, void*);
 ORCA_API HRESULT Shape_GetPointLocation(struct shape const*, float, struct vec3*);

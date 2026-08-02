@@ -364,6 +364,8 @@
         <field name="_actual_pos" type="actualPos">Internal computed position </field>
         <field name="_opacity" type="float">Internal opacity value </field>
         <field name="_bbox_flags" type="int">Internal bounding box flags </field>
+        <field name="_shadowTexture" type="Texture" pointer="true">Cached blurred shadow texture</field>
+        <field name="_shadowRevision" type="int">Shadow cache revision counter</field>
       </fields>
       <methods>
         <method name="SetFrame">

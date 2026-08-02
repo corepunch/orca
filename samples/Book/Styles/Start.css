@@ -6,7 +6,8 @@
   font-size: 28px;
   font-family: "Literata";
   font-weight: bold;
-  box-shadow: 2 2 0 0 black;
+  box-shadow: 2 2 4 0 black;
+  padding: 20px;
 }
 
 .scene-title {
@@ -20,7 +21,7 @@
   font-size: 24px;
   font-family: "Literata";
   font-weight: bold;
-  box-shadow: 2 2 0 0 black;
+  box-shadow: 2 2 4 0 black;
   color: yellow;
 }
 

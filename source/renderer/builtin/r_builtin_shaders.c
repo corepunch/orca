@@ -487,7 +487,7 @@ struct shader_desc shader_roundedbox = {
   "  vec3 reflectDir = reflect(lightDir, normal);\n"
   "  float spec = pow(max(dot(viewDir, reflectDir), 0.0), u_specularPower);\n"
   "  spec = smoothstep(0.25, 0.55, spec) * 0.5;"
-    
+
   // Rim lighting for depth
   "  float NdotV = max(dot(viewDir, -normal), 0.0);"
   "  float F0 = 0.04;" // base reflectance, ~0.04 for plastics
@@ -496,5 +496,105 @@ struct shader_desc shader_roundedbox = {
   // Combine texture, color, and lighting
   "  float baseColor = mix(0.45, 1.75, (diff + refr) * (1.0 - fresnel));"
   "  fragColor = vec4(u_color.rgb * baseColor, 1.0) * u_opacity + vec4(spec);\n"
+  "}\n"
+};
+
+// Separable Gaussian blur — horizontal pass.
+// u_texelSize.x = 1/textureWidth; u_sigma controls kernel width (9 taps).
+// Outputs alpha-only result as vec4(a,a,a,a); color is applied at composition.
+struct shader_desc shader_blur_h = {
+  .Name = "Blur H Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_texture",                      UT_SAMPLER_2D, PRECISION_LOW  },
+    { "u_texelSize",                    UT_FLOAT_VEC2, PRECISION_HIGH },
+    { "u_sigma",                        UT_FLOAT,      PRECISION_LOW  },
+    { "u_bboxMin",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+    { "u_bboxMax",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+    { "u_opacity",                      UT_FLOAT,      PRECISION_LOW  },
+  },
+  .Attributes = {
+    { "a_position",  UT_FLOAT_VEC4 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_texcoord1", UT_FLOAT_VEC2 },
+  },
+  .Shared = {
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
+  "}\n",
+  .FragmentShader =
+  "float gauss(float x, float s) { return exp(-(x*x)/(2.0*s*s)); }\n"
+  "void main() {\n"
+  "  float s = max(u_sigma, 0.001);\n"
+  "  float w0=gauss(0.0,s), w1=gauss(1.0,s), w2=gauss(2.0,s), w3=gauss(3.0,s), w4=gauss(4.0,s);\n"
+  "  float wsum = w0 + 2.0*(w1+w2+w3+w4);\n"
+  "  float dx = u_texelSize.x;\n"
+  "  float a = w0 * texture(u_texture, v_texcoord0).a\n"
+  "    + w1*(texture(u_texture,v_texcoord0+vec2( dx,0.0)).a+texture(u_texture,v_texcoord0+vec2(-dx,0.0)).a)\n"
+  "    + w2*(texture(u_texture,v_texcoord0+vec2( 2.0*dx,0.0)).a+texture(u_texture,v_texcoord0+vec2(-2.0*dx,0.0)).a)\n"
+  "    + w3*(texture(u_texture,v_texcoord0+vec2( 3.0*dx,0.0)).a+texture(u_texture,v_texcoord0+vec2(-3.0*dx,0.0)).a)\n"
+  "    + w4*(texture(u_texture,v_texcoord0+vec2( 4.0*dx,0.0)).a+texture(u_texture,v_texcoord0+vec2(-4.0*dx,0.0)).a);\n"
+  "  a /= wsum;\n"
+  "  fragColor = vec4(a,a,a,a) * u_opacity;\n"
+  "}\n"
+};
+
+// Separable Gaussian blur — vertical pass.
+struct shader_desc shader_blur_v = {
+  .Name = "Blur V Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_texture",                      UT_SAMPLER_2D, PRECISION_LOW  },
+    { "u_texelSize",                    UT_FLOAT_VEC2, PRECISION_HIGH },
+    { "u_sigma",                        UT_FLOAT,      PRECISION_LOW  },
+    { "u_bboxMin",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+    { "u_bboxMax",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+    { "u_opacity",                      UT_FLOAT,      PRECISION_LOW  },
+  },
+  .Attributes = {
+    { "a_position",  UT_FLOAT_VEC4 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_texcoord1", UT_FLOAT_VEC2 },
+  },
+  .Shared = {
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
+  "}\n",
+  .FragmentShader =
+  "float gauss(float x, float s) { return exp(-(x*x)/(2.0*s*s)); }\n"
+  "void main() {\n"
+  "  float s = max(u_sigma, 0.001);\n"
+  "  float w0=gauss(0.0,s), w1=gauss(1.0,s), w2=gauss(2.0,s), w3=gauss(3.0,s), w4=gauss(4.0,s);\n"
+  "  float wsum = w0 + 2.0*(w1+w2+w3+w4);\n"
+  "  float dy = u_texelSize.y;\n"
+  "  float a = w0 * texture(u_texture, v_texcoord0).a\n"
+  "    + w1*(texture(u_texture,v_texcoord0+vec2(0.0, dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-dy)).a)\n"
+  "    + w2*(texture(u_texture,v_texcoord0+vec2(0.0, 2.0*dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-2.0*dy)).a)\n"
+  "    + w3*(texture(u_texture,v_texcoord0+vec2(0.0, 3.0*dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-3.0*dy)).a)\n"
+  "    + w4*(texture(u_texture,v_texcoord0+vec2(0.0, 4.0*dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-4.0*dy)).a);\n"
+  "  a /= wsum;\n"
+  "  fragColor = vec4(a,a,a,a) * u_opacity;\n"
   "}\n"
 };
