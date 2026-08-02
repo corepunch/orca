@@ -3,11 +3,13 @@
 }
 
 .scene-description {
-  font-size: 28px;
+  font-size: 20px;
   font-family: "Literata";
   font-weight: bold;
-  box-shadow: 2 2 4 0 black;
-  padding: 20px;
+  box-shadow: 1 1 0 0 black;
+  padding: 10px 20px;
+  width: 512px;
+  text-indent: 24px;
 }
 
 .scene-title {
@@ -18,10 +20,10 @@
 }
 
 .scene-option {
-  font-size: 24px;
+  font-size: 20px;
   font-family: "Literata";
   font-weight: bold;
-  box-shadow: 2 2 4 0 black;
+  box-shadow: 1 1 0 0 black;
   color: yellow;
 }
 

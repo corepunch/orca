@@ -435,6 +435,8 @@ T_LayoutText(LayoutCtx *ctx)
           current_char++;
           measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
           LS_NewLine(&ls, &m);
+          if (text->textIndent > 0)
+            ls.lineX = (FT_Pos)(text->textIndent * scale);
           spaceOffset = 0;
           continue;
         }
@@ -593,7 +595,7 @@ T_LayoutText(LayoutCtx *ctx)
 
       if (ch == '\n') {
         ls.lineY  += FT_SCALE(ls.lineHeight);
-        ls.lineX   = 0;
+        ls.lineX   = text->textIndent > 0 ? (FT_Pos)(text->textIndent * scale) : 0;
         ls.lineHeight = m.height;
         ls.baseline  = FT_SCALE(m.ascender);
         ls.lineHasContent = FALSE;

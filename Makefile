@@ -190,7 +190,7 @@ weather: copyshare
 		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
 		exit 1; \
 	fi
-	$(TARGET) samples/Weather
+	$(TARGET) samples/Book
 
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)
