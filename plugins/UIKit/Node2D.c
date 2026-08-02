@@ -502,6 +502,7 @@ HANDLER(Node2D, Node, UpdateMatrix)
 
 HANDLER(Node2D, Object, Destroy)
 {
+  SafeDelete(pNode2D->_shadowTexture, Texture_Release);
   if (!pNode2D->OffscreenRendering) {
     SafeDelete(pNode2D->RenderTarget, Texture_Release);
   }
@@ -794,6 +795,11 @@ HANDLER(Node2D, Node2D, Draw2DContent)
             SUCCEEDED(RenderTexture_Create(&rtdesc, &newShadow))) {
           float sigma = blur * (float)axGetScaling() / 3.f;
           R_BlurTexture(foreground, newShadow, scratch, sigma);
+          // Render targets are allocated in physical pixels for the blur
+          // passes, but are composed in the source texture's logical space.
+          newShadow->Width = foreground->Width;
+          newShadow->Height = foreground->Height;
+          newShadow->Scale = foreground->Scale;
           if (pNode2D->_shadowTexture)
             Texture_Release(pNode2D->_shadowTexture);
           pNode2D->_shadowTexture = newShadow;

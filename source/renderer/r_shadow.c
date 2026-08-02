@@ -13,11 +13,14 @@ _BlurPass(struct Texture const *src,
           float texel_x, float texel_y,
           float sigma)
 {
-  uint32_t w = dst->Width;
-  uint32_t h = dst->Height;
+  float scale = (float)MAX(axGetScaling(), 1);
+  float w = dst->Width / scale;
+  float h = dst->Height / scale;
 
   R_BindFramebuffer(dst);
-  R_SetViewportRect(&(struct rect){ 0, 0, w, h });
+  struct rect bounds = { 0, 0, w, h };
+  R_SetViewportRect(&bounds);
+  R_SetScissorRect(&bounds);
 
   struct uniform uniforms[2] = {
     { .Type = UT_FLOAT_VEC2, .Identifier = HASH_U_TEXELSIZE,
@@ -33,7 +36,7 @@ _BlurPass(struct Texture const *src,
   struct ViewEntity ent = {
     .matrix  = MAT4_Identity(),
     .shader  = &tr.shaders[shader_idx],
-    .bbox    = BOX3_FromRect(((struct rect){ 0, 0, w, h })),
+    .bbox    = BOX3_FromRect(bounds),
     .material = {
       .texture      = src,
       .opacity      = 1.f,
@@ -68,6 +71,8 @@ R_BlurTexture(struct Texture const *src,
 
   // Save the current render target so we can restore it after the blur passes.
   struct Texture *saved_rt = tr.currentRenderTarget;
+  PIPELINESTATE saved_state;
+  R_GetPipelineState(&saved_state);
 
   // Horizontal pass: src → scratch
   _BlurPass(src, scratch, SHADER_BLUR_H, 1.f / pw, 1.f / ph, sigma);
@@ -77,6 +82,7 @@ R_BlurTexture(struct Texture const *src,
 
   // Restore previous render target
   R_BindFramebuffer(saved_rt);
+  R_SetPipelineState(&saved_state);
 
   return S_OK;
 }

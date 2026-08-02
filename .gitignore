@@ -102,3 +102,4 @@ gdb.txt
 samples/Weather/**/*.lua
 !samples/Weather/config/*.lua
 Error
+/samples/Book/Images

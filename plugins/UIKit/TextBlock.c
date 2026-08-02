@@ -118,17 +118,6 @@ HANDLER(TextBlock, Node2D, DrawForeground)
     return TRUE;
   }
 
-  struct Node2D *node = GetNode2D(hObject);
-  if (node->BoxShadow.Color.a) {
-    struct ViewEntity shadow = entity;
-    shadow.material.color = node->BoxShadow.Color;
-    shadow.bbox.min.x += node->BoxShadow.Offset.x;
-    shadow.bbox.max.x += node->BoxShadow.Offset.x;
-    shadow.bbox.min.y += node->BoxShadow.Offset.y;
-    shadow.bbox.max.y += node->BoxShadow.Offset.y;
-    R_DrawEntity(pDrawForeground->viewdef, &shadow);
-  }
-
   R_DrawEntity(pDrawForeground->viewdef, &entity);
 
   return TRUE;
