@@ -1,35 +1,47 @@
-.scene-text {
-  padding: 10px 20px;
+.story-text {
+  direction: vertical;
+  gap: 10px;
+  margin-left: 28px;
+  margin-top: 24px;
 }
 
 .scene-description {
-  font-size: 20px;
+  font-size: 18px;
   font-family: "Literata";
-  font-weight: bold;
-  box-shadow: 1 1 4 4 black;
-  padding: 10px 20px;
-  width: 512px;
+  color: #20180f;
+  background-color: #d8d0bccc;
+  box-shadow: 1 2 12 2 #0b090780;
+  padding: 14px 18px;
+  width: 480px;
   text-indent: 24px;
 }
 
-.scene-title {
-  font-size: 36px;
+.scene-label {
+  font-size: 15px;
   font-family: "Literata";
   font-weight: bold;
-  color: yellow;
+  color: #f6e8c8;
+  background-color: #211a13cc;
+  padding: 8px 12px;
 }
 
 .scene-option {
-  font-size: 20px;
+  font-size: 18px;
   font-family: "Literata";
   font-weight: bold;
-  box-shadow: 1 1 0 0 black;
-  color: yellow;
+  color: #f8edcf;
+  background-color: #211a13e6;
+  box-shadow: 1 2 8 1 #00000080;
+  padding: 10px 14px;
 }
 
 .scene-options {
   direction: vertical;
   gap: 8px;
-  margin-right: 20px;
-  margin-bottom: 20px;
+  margin-right: 24px;
+  margin-bottom: 24px;
+}
+
+.continue-option {
+  font-size: 22px;
 }

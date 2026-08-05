@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Width="1024" Height="768" StyleSheet="Book/Styles/Start.css" Controller="Book/Scripts/Start">
-  <ImageView Name="Background" Source="Book/Images/room-1.png" Stretch="UniformToFill"/>
-  <!-- <StackView Name="SceneText" class="scene-text" Width="640">
-    <TextBlock Name="SceneTitle" class="scene-title" Width="10000"/>
-    <TextBlock Name="SceneDescription" Width="640" class="scene-description"/>
-  </StackView> -->
-  <TextBlock Name="SceneDescription" class="scene-description"/> <!--RenderTransform="0 100"/-->
-  <StackView Name="Options" class="scene-options" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400" Height="200"/>
+  <Node2D Name="StoryPage" Width="1024" Height="768">
+    <ImageView Name="Background" Source="Book/Images/room-1.png" Stretch="UniformToFill" Width="1024" Height="768"/>
+    <StackView Name="StoryText" class="story-text" Width="480" HorizontalAlignment="Left" VerticalAlignment="Top">
+      <TextBlock Name="SceneLabel" class="scene-label"/>
+      <TextBlock Name="SceneDescription" class="scene-description"/>
+    </StackView>
+    <StackView Name="Options" class="scene-options" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400"/>
+  </Node2D>
 </Screen>

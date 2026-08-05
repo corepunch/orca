@@ -595,6 +595,11 @@ struct shader_desc shader_blur_v = {
   "    + w3*(texture(u_texture,v_texcoord0+vec2(0.0, 3.0*dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-3.0*dy)).a)\n"
   "    + w4*(texture(u_texture,v_texcoord0+vec2(0.0, 4.0*dy)).a+texture(u_texture,v_texcoord0+vec2(0.0,-4.0*dy)).a);\n"
   "  a /= wsum;\n"
+  // A normalized blur spreads glyph coverage over many pixels. Expand the
+  // resulting alpha nonlinearly so soft text shadows remain legible without
+  // changing fully opaque coverage.
+  "  float opacityBoost = 1.0 + min(s * 0.75, 2.0);\n"
+  "  a = 1.0 - pow(1.0 - clamp(a, 0.0, 1.0), opacityBoost);\n"
   "  fragColor = vec4(a,a,a,a) * u_opacity;\n"
   "}\n"
 };

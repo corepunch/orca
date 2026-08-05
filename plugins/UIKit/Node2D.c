@@ -783,9 +783,11 @@ HANDLER(Node2D, Node2D, Draw2DContent)
     struct Texture *shadowTex = NULL;
 
     if (blur > 0.f) {
-      // Rebuild cached blur when the object content changed.
+      // Descendant content changes propagate OF_DIRTY without updating this
+      // object's timestamp, so the dirty flag must also invalidate the blur.
       long ts = OBJ_GetTimestamp(hObject);
-      if (!pNode2D->_shadowTexture || pNode2D->_shadowRevision != (int32_t)ts) {
+      if (!pNode2D->_shadowTexture || (flags & OF_DIRTY) ||
+          pNode2D->_shadowRevision != (int32_t)ts) {
         uint32_t pw = foreground->Width  * MAX(foreground->Scale, 1u);
         uint32_t ph = foreground->Height * MAX(foreground->Scale, 1u);
         struct Texture *scratch = NULL, *newShadow = NULL;
