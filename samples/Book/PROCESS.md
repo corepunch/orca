@@ -172,6 +172,39 @@ and unfinished train; shelves mix colored books and jars; the floor has a
 partly worked plank, crates, offcuts, a broom, and shavings near active areas.
 Clear walking routes and camera text zones remain deliberately quiet.
 
+Shelf dressing uses the shelf's own local coordinate frame. Surface anchors
+belong at the center of the usable board, because placing a prefab origin on
+the front edge leaves half of that object unsupported. Books, trays, and jars
+stay fully inside the shelf depth with visible margin; small authored changes
+in yaw, depth, spacing, and scale break the rigid lineup while keeping every
+object grounded and the arrangement reproducible.
+
+Interior blockouts must be complete rooms, not wall-and-floor stage sets. The
+workshop therefore has a ceiling and exposed beams meeting the wall tops. Each
+room also needs motivated lighting that creates deliberate, readable shadows:
+here two warm point lights sit at the visible hanging-lamp bulbs, with the main
+bench light acting as key, the tool-bench lamp as weaker secondary practical,
+and cool moonlight entering horizontally through the back window. Ambient light
+only preserves low-level readability; it must not flatten the shadow design.
+
+Practical fixtures own their lights. The hanging-lamp prefab contains its
+cord, shadow-casting shade, visible bulb, and point light in one local frame.
+The bulb is unlit so it retains a warm-white authored color, and it does not
+cast shadows, preventing the emitter from blocking its own light. The point
+source sits inside the bulb just below the opaque shade lip, so translated or
+scaled lamp instances keep geometry, light, and dramatic shadow direction
+aligned without duplicated world-space coordinates in the workshop scene.
+
+Wall inserts own their openings for the same reason. The workshop window is a
+single prefab containing a `bool-negative-box`, four perimeter rails, inset
+pane, and mullions. The cutter's outer X/Y dimensions and the frame's outer
+boundary are both 2.0 by 1.7 units, eliminating the accidental plaster reveal
+created by the earlier 2.0-by-1.7 wall hole, 1.92-by-1.62 pane, and missing
+perimeter frame. SimpleSketch3D collects these prefab cutters before building
+walls, so one transformed window instance defines both placement and opening,
+even when it is declared after the wall. This is intentionally rectangular
+wall cutting rather than general-purpose mesh CSG.
+
 These assemblies are reusable prefabs rather than copied scene geometry:
 books, the special repair book, toy train, toy boat, oil can, nutcracker,
 clock, key hook, spool lift, tool caddy, mug, notes, sawhorse, shavings, parts
@@ -185,6 +218,10 @@ The next most valuable SimpleSketch3D authoring features are named material
 slots for multiple independently colored parts, per-camera visibility/state
 variants for open-versus-closed props, animation, object/layer naming for CLI
 inspection, aspect-safe cameras, textures/alpha, and softer lighting options.
+
+Reference renders for every declared workshop camera are generated at
+1536×1024 with stencil shadows and stored in `wonderbook/images/`. Filenames
+match camera names exactly so a shot can be traced back to its XML declaration.
 
 ## Prototype assets
 
