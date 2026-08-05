@@ -4,3 +4,6 @@
 [submodule "samples/Book/libs/zilscript"]
 	path = samples/Book/libs/zilscript
 	url = https://github.com/corepunch/zilscript
+[submodule "samples/Book/libs/simplesketch3d"]
+	path = samples/Book/libs/simplesketch3d
+	url = https://github.com/corepunch/simplesketch3d.git
