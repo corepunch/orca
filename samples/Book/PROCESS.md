@@ -141,6 +141,51 @@ such as Pip halfway up a stair or Bertrand's jaw snapping open.
 The host manifest is `Book/Scripts/WondertownScenes.lua`. Stable semantic keys
 are used instead of embedding image paths in ZIL.
 
+## SimpleSketch3D workshop blockout
+
+The reusable 3D blockout lives at
+`libs/simplesketch3d/scenes/books/wondertown/workshop.xml`. It keeps the major
+story affordances—the empty key hook, pet door, clock, main workbench, repair
+book, oil can, tool bench, Bertrand, and spool lift—in one coordinate system.
+This provides spatial continuity before an illustration is commissioned.
+
+Its cameras are story shots rather than generic coverage:
+
+- `WorkshopEstablishing` defines the workshop geography;
+- `EmptyHookReveal` isolates the missing-key beat;
+- `ClimbWorkbenchAction` makes the ascent read vertically;
+- `WorkbenchTopEstablishing` marks the tabletop as a new scene;
+- `RepairBookCloseup` and `OilCanCloseup` cover object interactions;
+- `ToolBenchEstablishing`, `WindBertrandAction`, and `SpoolLiftAction` cover
+  the later mechanical sequence;
+- `CountertopEstablishing` establishes the destination;
+- `LayoutPlan` is continuity reference, not a production story image.
+
+Each production camera declares its narrative purpose and preserves a quieter
+region for story text. Camera distance alternates wide, action, and close-up so
+the sequence does not read as one room photographed repeatedly.
+
+The workshop should feel alive, not merely crowded. Prop clusters imply work
+in progress: the repair book shares a bench with half-built toys, notes, a
+pencil, a mug, tools, and fresh shavings; Bertrand's station has a parts tray
+and unfinished train; shelves mix colored books and jars; the floor has a
+partly worked plank, crates, offcuts, a broom, and shavings near active areas.
+Clear walking routes and camera text zones remain deliberately quiet.
+
+These assemblies are reusable prefabs rather than copied scene geometry:
+books, the special repair book, toy train, toy boat, oil can, nutcracker,
+clock, key hook, spool lift, tool caddy, mug, notes, sawhorse, shavings, parts
+tray, shelf, hanging lamp, broom, crate, and jar. Prefab `scale` and scaled
+attach points are supported. A child shape marked `tint="1"` accepts the
+instance's `color` as a diffuse-only override; unmarked pieces keep their own
+appearance. Thus one `book` prefab can have red, blue, green, or ochre covers
+while every instance retains paper-colored pages.
+
+The next most valuable SimpleSketch3D authoring features are named material
+slots for multiple independently colored parts, per-camera visibility/state
+variants for open-versus-closed props, animation, object/layer naming for CLI
+inspection, aspect-safe cameras, textures/alpha, and softer lighting options.
+
 ## Prototype assets
 
 Generated with the built-in image-generation path using
