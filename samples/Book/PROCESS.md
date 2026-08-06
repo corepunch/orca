@@ -110,10 +110,10 @@ The prototype sequence is:
 6. The workbench-top scene now holds an open-book state; Pip must close the
    heavy pop-up book before climbing back down.
 7. Pip retrieves the oil can from beneath the workbench.
-8. Pip oils the spool-stair mechanism; the first spool jumps awake.
+8. Pip oils the folding loft-ladder mechanism; the ladder rises with a creak.
 9. Pip crosses to the tool bench.
 10. Pip winds Captain Bertrand; Bertrand awakens mid-salute.
-11. Pip climbs the moving spool staircase to the countertop.
+11. Pip climbs from a low crate to a chair and up three broad repair books to the countertop.
 
 The repair book is an experimental story addition placed on the workbench top.
 Its paper workshop rises
@@ -146,7 +146,7 @@ are used instead of embedding image paths in ZIL.
 The reusable 3D blockout lives at
 `libs/simplesketch3d/scenes/books/wondertown/workshop.xml`. It keeps the major
 story affordances—the empty key hook, pet door, clock, main workbench, repair
-book, oil can, tool bench, Bertrand, and spool lift—in one coordinate system.
+book, oil can, tool bench, Bertrand, and makeshift climb—in one coordinate system.
 This provides spatial continuity before an illustration is commissioned.
 
 Its cameras are story shots rather than generic coverage:
@@ -156,7 +156,7 @@ Its cameras are story shots rather than generic coverage:
 - `ClimbWorkbenchAction` makes the ascent read vertically;
 - `WorkbenchTopEstablishing` marks the tabletop as a new scene;
 - `RepairBookCloseup` and `OilCanCloseup` cover object interactions;
-- `ToolBenchEstablishing`, `WindBertrandAction`, and `SpoolLiftAction` cover
+- `ToolBenchEstablishing`, `WindBertrandAction`, and `MakeshiftClimbAction` cover
   the later mechanical sequence;
 - `CountertopEstablishing` establishes the destination;
 - `LayoutPlan` is continuity reference, not a production story image.
@@ -207,7 +207,7 @@ wall cutting rather than general-purpose mesh CSG.
 
 These assemblies are reusable prefabs rather than copied scene geometry:
 books, the special repair book, toy train, toy boat, oil can, nutcracker,
-clock, key hook, spool lift, tool caddy, mug, notes, sawhorse, shavings, parts
+clock, key hook, chair, crate, tool caddy, mug, notes, sawhorse, shavings, parts
 tray, shelf, hanging lamp, broom, crate, and jar. Prefab `scale` and scaled
 attach points are supported. A child shape marked `tint="1"` accepts the
 instance's `color` as a diffuse-only override; unmarked pieces keep their own

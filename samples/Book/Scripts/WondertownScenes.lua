@@ -57,7 +57,7 @@ return {
     ["workshop.floor-oiled"] = {
         asset = "Book/Images/Generated image 3.png",
         function_ = "establishing-consequence",
-        alt = "The workshop opens upward around the newly working spool stairs.",
+        alt = "The workshop opens upward around the newly raised folding loft ladder.",
     },
     ["workshop.floor-study-open"] = {
         asset = "Book/Images/Generated image 3.png",
