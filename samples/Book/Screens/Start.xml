@@ -2,9 +2,8 @@
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Name="Application" Width="1024" Height="768" StyleSheet="Book/Styles/Start.css" Controller="Book/Scripts/Start">
   <Node2D Name="StoryPage" Width="1024" Height="768">
-    <ImageView Name="Background" Source="Book/Images/room-1.png" Stretch="UniformToFill" Width="1024" Height="768"/>
-    <StackView Name="StoryText" class="story-text" Width="480" HorizontalAlignment="Left" VerticalAlignment="Top">
-      <TextBlock Name="SceneLabel" class="scene-label"/>
+    <ImageView Name="Background" Source="Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png" Stretch="UniformToFill" Width="1024" Height="768"/>
+    <StackView Name="StoryText" class="story-text" Width="440" HorizontalAlignment="Left" VerticalAlignment="Top">
       <TextBlock Name="SceneDescription" class="scene-description"/>
     </StackView>
     <StackView Name="Options" class="scene-options" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400"/>

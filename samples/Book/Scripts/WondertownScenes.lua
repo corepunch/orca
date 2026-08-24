@@ -14,25 +14,9 @@ return {
             asset = "Book/libs/zilscript/books/wondertown/illustrations/action-take-oil-can.png",
             function_ = "close-up-action",
         },
-        ["workshop-floor.oil-ladder"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-oil-spool-stairs.png",
-            function_ = "action-consequence",
-        },
-        ["workshop-floor.climb-loft"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-climb-spool-stairs.png",
-            function_ = "travel",
-        },
-        ["workshop-floor.go-toolbench"] = {
-            asset = "Book/Images/Generated image 1.png",
-            function_ = "travel",
-        },
         ["tool-bench.wind-bertrand"] = {
             asset = "Book/libs/zilscript/books/wondertown/illustrations/action-wind-bertrand.png",
             function_ = "action-reaction",
-        },
-        ["tool-bench.climb-countertop"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-climb-spool-stairs.png",
-            function_ = "travel",
         },
         ["workbench-top.open-repair-book"] = {
             asset = "Book/libs/zilscript/books/wondertown/illustrations/action-open-repair-book.png",
@@ -45,14 +29,13 @@ return {
     },
 
     default = {
-        asset = "Book/Images/room-1.png",
+        asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png",
         function_ = "establishing",
     },
 
     ["workshop.floor-initial"] = {
-        asset = "Book/Images/room-1.png",
+        asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png",
         function_ = "establishing",
-        alt = "Grandfather Tolliver's workshop, with the workbench, key hook, clock, and pet door visible.",
     },
     ["workshop.floor-oiled"] = {
         asset = "Book/Images/Generated image 3.png",

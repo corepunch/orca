@@ -228,6 +228,8 @@ match camera names exactly so a shot can be traced back to its XML declaration.
 Generated with the built-in image-generation path using
 `wondertown-cast-reference.png` as the identity reference:
 
+- `workshop-floor-establishing.png` — 3D-blockout-driven opening composition
+  with quiet plaster and floor fields reserved for box-free prose and choices;
 - `workshop-floor-initial-action.png` — missing-key reaction;
 - `action-climb-workbench.png` — upward physical action;
 - `action-take-oil-can.png` — object-interaction close-up;

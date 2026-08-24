@@ -99,7 +99,7 @@ local function clear_options(view)
 end
 
 local function show_action(self, choice, entry)
-    local action = scenes.actions[choice.id]
+    local action = choice.image_key and scenes.actions[choice.image_key]
     if not action or not entry then
         refresh_ui(self)
         return
@@ -108,9 +108,6 @@ local function show_action(self, choice, entry)
     local view = self.view
     local background = view:findChild("Background", true)
     if background then background.Source = action.asset end
-
-    local scene_label = view:findChild("SceneLabel", true)
-    if scene_label then scene_label.Text = choice.label end
 
     local scene_block = view:findChild("SceneDescription", true)
     if scene_block then scene_block.Text = entry.output or "" end
@@ -122,12 +119,12 @@ local function show_action(self, choice, entry)
             class = "scene-option continue-option",
             Text = "Continue",
         }
-        continue.LeftButtonUp = function() refresh_ui(self, true) end
+        continue.LeftButtonUp = function() refresh_ui(self) end
         options_view:addChild(continue)
     end
 end
 
-refresh_ui = function(self, use_scene_copy)
+refresh_ui = function(self)
     local view = self.view
     if not view then return end
 
@@ -141,18 +138,8 @@ refresh_ui = function(self, use_scene_copy)
     local background = view:findChild("Background", true)
     if background and scene_entry then background.Source = scene_entry.asset end
 
-    local scene_label = view:findChild("SceneLabel", true)
-    if scene_label then
-        scene_label.Text = (scene_entry and scene_entry.alt)
-            or (scene and scene.alt)
-            or ""
-    end
-
     local scene_block = view:findChild("SceneDescription", true)
-    if scene_block then
-        scene_block.Text = (use_scene_copy and scene_entry and scene_entry.alt)
-            or get_last_output()
-    end
+    if scene_block then scene_block.Text = get_last_output() end
 
     local options_view = view:findChild("Options", true)
     if options_view then
