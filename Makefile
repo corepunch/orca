@@ -290,6 +290,9 @@ $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TE
 $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT),$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 
+.PHONY: test-camera-projection
+$(eval $(call C_TEST_RULE,test-camera-projection,tests/test_camera_projection.c,$(BINDIR)/test_camera_projection,$(PLUGINLIBDIR)/SceneKit.so,,$(TEST_LDFLAGS) $(PLUGINLIBDIR)/SceneKit.so $(PLUGINLIBDIR)/UIKit.so -lm))
+
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost
 
 $(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
@@ -321,7 +324,7 @@ $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lu
 $(eval $(call LUA_TEST_RULE,test-navigationhost,tests/test_navigationhost.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor $(HEADLESS_LUA_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-camera-projection $(HEADLESS_LUA_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

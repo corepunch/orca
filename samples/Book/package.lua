@@ -10,6 +10,7 @@ ProjectReferences = {
 ScreenLibrary = { IsExternal = true }
 ImageLibrary = { IsExternal = true }
 PrefabLibrary = { IsExternal = true }
+SceneLibrary = { Name = "Scenes", IsExternal = true }
 FontLibrary = { Name = "Fonts", IsExternal = true }
 ThemeLibrary = {
 	{ Key = "background", Value = "#FFFFFF" },
@@ -28,4 +29,5 @@ SystemMessages = {
 }
 EnginePlugins = {
 	{ Name = "orca.UIKit" },
+	{ Name = "orca.SceneKit" },
 }

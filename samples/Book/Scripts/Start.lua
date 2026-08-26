@@ -1,176 +1,84 @@
 local ui = require "orca.UIKit"
+require "orca.SceneKit"
+local filesystem = require "orca.filesystem"
+local projection = require "Book.Scripts.SceneProjection"
+local native_projection = require "Book.Scripts.OrcaCameraProjection"
+local camera_export = require "Book.Scripts.WorkshopCamera"
+local interactions = require "Book.Scripts.WorkshopInteractions"
 local scenes = require "Book.Scripts.WondertownScenes"
-
 local Start = {}
-local game_initialized = false
-local env, game, session_history, runtime
 local refresh_ui
 
-local function init_runtime()
-    local bootstrap_file = io.open("zilscript/bootstrap.lua", "r")
-    if not bootstrap_file then return false end
-    local bootstrap_code = bootstrap_file:read("*a")
-    bootstrap_file:close()
-    return runtime.execute(bootstrap_code, "bootstrap", env)
+local function clear(view)
+    while view:getFirstChild() do view:getFirstChild():removeFromParent() end
 end
 
-local function init_game()
-    if game_initialized then return end
-
-    local ok, mod = pcall(require, "zilscript.runtime")
-    if not ok then
-        print("ERROR: Failed to load zilscript.runtime: " .. tostring(mod))
-        return
-    end
-    runtime = mod
-
-    package.path = "?.lua;?/init.lua;" .. package.path
-    package.zilpath = "?.zil;" .. (package.zilpath or "")
-
-    env = runtime.create_game_env()
-    env.rawget = rawget
-    env.rawset = rawset
-    env.rawequal = rawequal
-
-    local init_ok = init_runtime()
-    if not init_ok then
-        print("ERROR: Failed to init zilscript bootstrap")
-        return
-    end
-
-    env.require("zilscript")
-
-    local load_ok = runtime.load_modules(env, { "books.wondertown.wondertown" })
-    if not load_ok then
-        print("ERROR: Failed to load wondertown module")
-        return
-    end
-
-    local companion_ok, companion_err = pcall(env.require, "books.wondertown.companion")
-    if companion_ok and companion_err ~= nil then
-        if type(env.CAPTURE_RESTART_STATE) == "function" then
-            env.CAPTURE_RESTART_STATE()
-        end
-    elseif companion_ok then
-        print("Warning: companion module returned nil")
-    else
-        print("Warning: no companion module: " .. tostring(companion_err))
-    end
-
-    env._G = env
-
-    game = runtime.create_game(env)
-    session_history = { { cmd = nil, output = game:start() } }
-    game_initialized = true
-end
-
-local function entries()
-    return session_history or {}
-end
-
-local function submit(text)
-    if not text or text == "" or not game then return nil end
-    text = text:gsub("[\r\n]+$", "")
-    local entry = { cmd = text, output = game:resume(text) }
-    table.insert(entries(), entry)
-    return entry
-end
-
-local function query_choices()
-    if not env or type(env.COMPANION_QUERY) ~= "function" then return nil end
-    return env.COMPANION_QUERY()
-end
-
-local function select_choice(id)
-    if not env or type(env.COMPANION_SELECT) ~= "function" then return nil end
-    return env.COMPANION_SELECT(id)
-end
-
-local function get_last_output()
-    local history = entries()
-    if #history == 0 then return "" end
-    return history[#history].output or ""
-end
-
-local function clear_options(view)
-    while view:getFirstChild() do
-        view:getFirstChild():removeFromParent()
-    end
-end
-
-local function show_action(self, choice, entry)
-    local action = choice.image_key and scenes.actions[choice.image_key]
-    if not action or not entry then
-        refresh_ui(self)
-        return
-    end
-
-    local view = self.view
-    local background = view:findChild("Background", true)
-    if background then background.Source = action.asset end
-
-    local scene_block = view:findChild("SceneDescription", true)
-    if scene_block then scene_block.Text = entry.output or "" end
-
-    local options_view = view:findChild("Options", true)
-    if options_view then
-        clear_options(options_view)
-        local continue = ui.TextBlock {
-            class = "scene-option continue-option",
-            Text = "Continue",
-        }
-        continue.LeftButtonUp = function() refresh_ui(self) end
-        options_view:addChild(continue)
-    end
+local function show_action(self, id)
+    local beat = self.session:activate(id)
+    if not beat then return end
+    self.view:findChild("Hotspots", true).Visible = false
+    local action = beat.action and scenes.actions[beat.action]
+    self.view:findChild("Background", true).Source = action and action.asset or interactions.asset(self.session.env)
+    self.view:findChild("SceneDescription", true).Text = beat.output
+    self.view:findChild("Continue", true).Visible = true
 end
 
 refresh_ui = function(self)
-    local view = self.view
-    if not view then return end
-
-    init_game()
-    if not game_initialized then return end
-
-    local result = query_choices()
-    local scene = result and result.scene
-    local scene_entry = scene and scenes[scene.key] or scenes.default
-
-    local background = view:findChild("Background", true)
-    if background and scene_entry then background.Source = scene_entry.asset end
-
-    local scene_block = view:findChild("SceneDescription", true)
-    if scene_block then scene_block.Text = get_last_output() end
-
-    local options_view = view:findChild("Options", true)
-    if options_view then
-        clear_options(options_view)
-
-        if result and result.ok and #result.choices > 0 then
-            for _, choice in ipairs(result.choices) do
-                local tb = ui.TextBlock {
-                    class = "scene-option",
-                    Text = choice.label,
+    local env = self.session.env
+    self.view:findChild("Background", true).Source = interactions.asset(env)
+    self.view:findChild("SceneDescription", true).Text = self.session:description()
+    self.view:findChild("Continue", true).Visible = false
+    local layer = self.view:findChild("Hotspots", true)
+    clear(layer)
+    layer.Visible = true
+    local camera_node = assert(self.scene:findChild(camera_export.camera.name, true))
+    local camera = native_projection.camera(camera_node)
+    for _, target in ipairs(interactions.targets) do
+        if interactions.available(env, target) then
+            local anchor = assert(self.scene:findChild(target.id, true))
+            local point = native_projection.anchor(anchor)
+            local screen = projection.project(camera, point,
+                camera_export.source_width, camera_export.source_height, layer.Width, layer.Height, camera.near)
+            -- Never clamp cropped objects onto unrelated visible scenery.
+            if screen and screen.depth <= camera.far and screen.x >= 24 and screen.x <= layer.Width - 24
+                and screen.y >= 24 and screen.y <= layer.Height - 24 then
+                local circle = ui.Node2D {
+                    Name = "Hotspot_" .. target.id,
+                    class = "scene-hotspot",
+                    Width = 48, Height = 48,
+                    MarginRight = 0/0, MarginBottom = 0/0,
+                    MarginLeft = screen.x - 24, MarginTop = screen.y - 24,
                 }
-                tb.LeftButtonUp = function()
-                    local selected = select_choice(choice.id)
-                    if selected and selected.ok then
-                        local entry = submit(selected.command)
-                        show_action(self, choice, entry)
-                    end
-                end
-                options_view:addChild(tb)
+                circle.LeftButtonUp = function() show_action(self, target.id) end
+                layer:addChild(circle)
             end
         end
     end
 end
 
-local function bind_view(self, view)
+function Start:Continue_LeftButtonUp()
+    if not self.session or not self.session.pending then return end
+    self.session:continue()
     refresh_ui(self)
+end
+
+local function bind_view(self)
+    package.path = "?.lua;?/init.lua;" .. package.path
+    package.zilpath = "?.zil;" .. (package.zilpath or "")
+    local ok, err = pcall(function()
+        self.scene = assert(filesystem.loadObjectFromXml(camera_export.native_scene_path))
+        self.session = require("Book.Scripts.WorkshopSession").new()
+        refresh_ui(self)
+    end)
+    if not ok then
+        print("Book prototype: " .. tostring(err))
+        self.view:findChild("SceneDescription", true).Text = "The workshop could not be loaded."
+    end
 end
 
 return setmetatable(Start, {
     __newindex = function(self, key, value)
         rawset(self, key, value)
-        if key == "view" and value then bind_view(self, value) end
+        if key == "view" and value then bind_view(self) end
     end,
 })

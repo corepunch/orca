@@ -94,7 +94,7 @@ MAT4_Stereoperspective(float eyeOffset,
                        float far)
 {
   struct mat4 out = MAT4_Identity();
-  float radians = fov * 3.14159f / 360.0f;
+  float radians = fov * (float)M_PI / 360.0f;
   float f = 1.0f / tanf(radians);
   float width = f / aspectRatio;
   float height = f;
@@ -124,11 +124,11 @@ static struct mat4
 _GetProjectionMatrix(struct view_camera* c, struct ViewDef* vd)
 {
   float aspect = vd->viewSize.x / vd->viewSize.y;
-  float fov = (c->verticalFOV ? c->fov : (c->fov / aspect)) * 1.05f;
+  float fov = c->verticalFOV ? c->fov
+    : atanf(tanf(c->fov * (float)M_PI / 360.0f) / aspect) * 360.0f / (float)M_PI;
   float eye = 0.175f * vd->stereoSeparation;
   float dist = 50;
   struct mat4 out = MAT4_Stereoperspective(eye, dist, fov, aspect, c->zNear, c->zFar);
-  // out = MAT4_Perspective(fov * 1.05f, aspect, data->zNear, data->zFar);
   if (c->zPositive)
   {
       out.v[10] = -out.v[10];

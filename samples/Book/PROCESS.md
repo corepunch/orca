@@ -126,28 +126,76 @@ or changing the main quest topology.
 
 ZIL remains authoritative for world state and result prose.
 
-- `SCENE` keys select held establishing art.
-- Companion choice IDs select transient action art.
-- The host submits the selected hidden parser command immediately.
-- If the choice ID has action art, the host holds that art with the command's
-  result text and a single **Continue** action.
-- Continue queries the new `SCENE` and companion choices.
-- A choice without registered action art falls through directly to the next
-  establishing scene.
+- The current prototype has no companion suggestions or choice list. The
+  Book-specific `Scripts/WondertownPrototype.zil` entry point loads the original
+  gameplay without `companion.zil`.
+- White 48-unit circles sit on objects in the establishing image. Tapping one
+  submits its authored parser command, guarded by current ZIL state.
+- The host holds an action image and command result prose with **Continue**;
+  when there is no dedicated action art, it holds the current scene with the
+  result prose. All object circles are hidden during the beat.
+- Continue restores the room's authored description and state-dependent image
+  and circles. It does not issue LOOK or consume a game turn.
+- Taking the oil can removes both its visible geometry/shadow and its circle
+  on return to the establishing scene. Permanent scenery keeps its circle.
 
 This separation is important: room state cannot describe a transient instant
 such as Pip halfway up a stair or Bertrand's jaw snapping open.
 
-The host manifest is `Book/Scripts/WondertownScenes.lua`. Stable semantic keys
-are used instead of embedding image paths in ZIL.
+`Scripts/WorkshopInteractions.lua` owns the prototype's four interactions;
+`Scripts/WondertownScenes.lua` still maps stable action keys to existing art.
+
+### Camera export and screenshot prototype
+
+Use matching SimpleSketch3D screenshots for the technical experiment. These
+are blocking art, not a replacement for the illustration criteria below.
+The current slice stays on the workshop floor: examine hook, examine door,
+examine clock, and take oil can. Door traversal and the rest of the earlier
+opening sequence are outside this slice.
+
+`Tools/render_workshop_prototype.py` renders oil-present and oil-removed states
+from the same `WorkshopEstablishing` camera, saves the matching `.blks` snapshot,
+and runs `Tools/export_workshop_camera.lua`. That exporter produces native
+ORCA `Scene`/`Camera`/`Node3D` XML in `Scenes/WorkshopCamera.xml`, plus source
+render metadata in `Scripts/WorkshopCamera.lua`. Export camera position,
+orientation, vertical FOV, near/far planes, source image dimensions, and world
+anchors together; never manually copy screen-pixel circle positions.
+
+From `samples/Book`, run `python3 Tools/render_workshop_prototype.py` to
+regenerate the screenshots and camera export together. For an unchanged image
+snapshot, `lua Tools/export_workshop_camera.lua` exports just camera/anchors.
+The PNGs and source snapshot live under the repository-ignored `Images/` tree;
+the render script is their reproducible source, not a requirement to commit
+generated art.
+
+Both renderers use the declared vertical FOV without widening or compensation.
+ORCA converts horizontal FOV using `2*atan(tan(horizontalFov/2)/aspect)`;
+dividing the angle itself by aspect is incorrect. The exported camera preserves
+the source FOV unchanged. The screen projects loaded camera/anchor data,
+then applies the same centered `UniformToFill` scale and
+crop as the screenshot. A cropped/behind-camera target is hidden, not clamped
+onto an unrelated object. Marker diameter stays in UI units.
+
+The prototype uses a fixed 1024×768 page and 1536×1024 screenshots. Only explicit
+named or unique prefab-instance anchors with ordinary group transforms are
+supported; attach slots, pivot offsets, occlusion testing, arbitrary scene
+export and live 3D rendering are not implemented. New cameras need a visibility
+review because projecting a point alone cannot tell whether furniture hides it.
+
+For finished art, preserve the exported camera and object silhouettes closely
+enough for registration. Removable props need a clean background plus a prop
+and contact-shadow layer, or matching complete state images. Do not paint a
+takeable object permanently into the background and merely remove its circle.
 
 ## SimpleSketch3D workshop blockout
 
 The reusable 3D blockout lives at
-`libs/simplesketch3d/scenes/books/wondertown/workshop.xml`. It keeps the major
+`libs/simplesketch3d/scenes/books/wondertown/workshop.blks`. It keeps the major
 story affordances—the empty key hook, pet door, clock, main workbench, repair
 book, oil can, tool bench, Bertrand, and makeshift climb—in one coordinate system.
 This provides spatial continuity before an illustration is commissioned.
+It is a spatial scaffold, not the finished art direction. Apply the drawing
+instructions below to every render-to-illustration pass.
 
 Its cameras are story shots rather than generic coverage:
 
@@ -221,7 +269,135 @@ inspection, aspect-safe cameras, textures/alpha, and softer lighting options.
 
 Reference renders for every declared workshop camera are generated at
 1536×1024 with stencil shadows and stored in `wonderbook/images/`. Filenames
-match camera names exactly so a shot can be traced back to its XML declaration.
+match camera names exactly so a shot can be traced back to its scene declaration.
+
+## Drawing instructions: spatial fidelity, artistic freedom
+
+### Reference review — 26 August 2026
+
+The opening in `Images/generated-1.png` solved space for text but is not the
+target for visual richness. Its nearly frontal staging, isolated objects,
+uniform brown wall, thin bench and round dial on a rectangular clock board
+make the workshop feel like a dressed blockout. Surface texture alone does not
+restore the missing design, depth, scale or storytelling.
+
+Use these supplied references for distinct purposes, not as interchangeable
+images to copy:
+
+| Reference | What to carry forward |
+|---|---|
+| `Images/Generated image 1.png` | Pip-scale grandeur, massive turned bench legs, layered timber architecture, crafted clock silhouette, varied toy/tool clusters and foreground shavings. Its room layout is not authoritative. |
+| `Images/room-1.png` | Looming right-hand bench, teal painted timber against amber light, worn materials, layered depth, and a quieter left field made by atmosphere and softened detail rather than an empty wall. |
+| `Images/workshop-scenes/workshop-oil-can-discovery.png` | Bench underside as an overhead mass; expressive physical interaction; foreground/midground/background separation; small copper prop made important by light and gaze. |
+| `Images/workshop-scenes/workshop-ladder-repaired.png` | Upward perspective, architectural height, a readable mechanical action and warm/cool light separation. |
+| `Images/workshop-scenes/workshop-clock-secret-reveal.png` | A recognisable, crafted peaked clock case, dimensional joinery and hardware, and lighting that directs attention into the reveal. |
+
+The accompanying `*-source.png`, `*-blockout.png` and `*-blocking.png` files
+are spatial references, not finish targets. The finished workshop-scenes
+images demonstrate the desired leap from crude geometry to authored art.
+They are quality references, not permission to copy a different puzzle state,
+room layout or older Pip costume. These `Images/` references are local inputs;
+attach the actual files to the drawing brief rather than assuming their paths
+will be available to the image generator.
+
+### What the 3D render locks — and what it does not
+
+- Preserve room topology, object locations relative to one another, support
+  and contact points, routes, openings, useful scale relationships and the
+  selected shot's perspective. The oil can remains beneath the same bench;
+  the clock, hook and pet door do not migrate between shots.
+- Treat primitive shapes as labelled placeholders. Redesign cases, mouldings,
+  legs, trim, hardware, tool silhouettes and surface finish into convincing
+  handmade objects. Do not preserve flat blockout colours, faceting, crude
+  Roman numerals, bare boards or simplistic cylinders just because they are
+  present in the render. Arches remain smooth.
+- Give the clock an authored antique cuckoo-clock case with a peaked roof,
+  inset ivory dial, readable hands, pendulum and hanging weights, consistent
+  with its approved design and current state. A dial stuck onto a rectangular
+  plank is not a finished clock design. Carry the chosen case and hardware
+  across the establishing, close-up and open/reveal views.
+- Enrich the bench with substantial joinery, shaped legs, worn edges and
+  purposeful clusters of tools, half-finished toys and shavings. Decorative
+  dressing must not introduce new apparent exits, clues or interactive props,
+  hide required affordances, or contradict ZIL state.
+- If the camera flattens the room or makes Pip look ordinary-sized, adjust the
+  camera in the shared 3D scene and render again. Do not repair composition by
+  independently relocating furniture in each painting. A changed major
+  silhouette must still fit its neighbours and interaction clearances; update
+  the shared proxy if that envelope needs to change.
+
+### Richness means hierarchy, not detail everywhere
+
+Aim for a miniature adventurer in a vast, lived-in toy-maker's workshop.
+Use overlapping foreground, middle and distant forms, strong bench mass,
+receding beams and shelves, deliberate asymmetry and clustered work in
+progress. Texture should describe materials: directional worn wood grain,
+chipped teal paint, aged brass, copper, glass and curled shavings. Avoid
+uniform procedural-looking noise over every surface.
+
+Use motivated warm pools of practical light against cooler blue-green
+recesses and moonlight. Shape light and shadow to lead the eye toward Pip and
+the story object; atmospheric falloff and selective soft edges give depth.
+Do not turn the whole room into one evenly lit brown surface. Painterly
+environment richness can coexist with the approved clean, readable character
+design; older reference costumes do not override the selected cast model.
+
+### Text-safe does not mean empty
+
+Compose with the actual prose, object-circle and Continue footprints, including
+the displayed crop, from the start. Prose occupies the upper-left field;
+circles belong on objects and Continue appears only during action beats.
+There is no lower-right suggestion-list reservation. Keep reading regions in a narrow
+value range with soft edges and low local contrast. They can contain subdued
+plaster variation, distant shelving, atmosphere or broad natural shadows.
+Keep high-contrast grain, bright shavings, outlines and object tangencies away
+from letterforms. Put the richest accents outside the reading fields.
+
+The calm region must belong to the room, without a rectangular boundary,
+painted text panel or artificial blank-wall reservation. `room-1.png` shows
+how atmosphere can quiet a still-populated region. Check readability with
+real UI text; neither a beautiful busy image nor a barren readable image is
+an acceptable final result. Do not shorten or invent ZIL prose to fit the art.
+
+### Reference packet and reusable drawing prompt
+
+Supply the selected 3D camera render, one or two richness references above,
+the approved character reference and any already approved views of recurring
+props. Label each input by role. Never submit the blockout alone and ask only
+for a faithful repaint. Record the source camera, story state, references and
+prompt with the asset so subsequent shots can reproduce the same design.
+
+```text
+Use case: illustration-story
+Asset type: Wondertown storybook scene, painted over a shared-room 3D render.
+Primary request: Create a richly designed, atmospheric illustration using the
+blockout as a spatial scaffold, not as finished object or surface design.
+Input roles: [render] = geography, perspective and support relationships only;
+[older workshop art] = craft, depth, materials and lighting quality only;
+[cast/prop references] = approved identities and recurring object designs.
+Shot/state: [camera name; specific action; visible objects and current states].
+Composition: Preserve the rendered room relationships and tiny-Pip scale;
+build depth through overlap, substantial furniture and receding architecture.
+Art direction: Handcrafted toy-maker's workshop; designed clock case and bench
+joinery, purposeful toy/tool clusters, aged timber and metal, selective detail,
+warm light against cool recesses, expressive readable character acting.
+Text-safe regions: [actual prose/Continue footprints and intended display crop];
+natural low-contrast fields with soft detail, integrated into the room.
+Invariants: Same room, same object locations and functions, approved cast,
+correct story state and recurring prop design; smooth arches.
+Freedom: Replace crude proxy geometry with designed silhouettes and materials
+within its spatial envelope. Repaint lighting and add non-interactive dressing.
+Avoid: Literal primitive repaint, dial-on-plank clock, sparse showroom staging,
+uniform brown wash, texture noise everywhere, changed geography, costume drift,
+new clues/exits, text boxes, baked-in prose, UI labels or watermarks.
+```
+
+Before accepting an image, compare it with both the blockout and richness
+references: geography must agree with the first, and design quality must stand
+beside the second. Check the clock silhouette, tiny-Pip scale, depth layers,
+current puzzle state and recurring prop identity. Finally check real text and
+projected object circles at the app's crop and size without panels. Keep a candidate separate
+from the live asset until those checks pass.
 
 ## Prototype assets
 

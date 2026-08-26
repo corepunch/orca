@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Application" Width="1024" Height="768" StyleSheet="Book/Styles/Start.css" Controller="Book/Scripts/Start">
+<Screen Name="Application" Width="1024" Height="768" ResizeMode="NoResize" StyleSheet="Book/Styles/Start.css" Controller="Book/Scripts/Start">
   <Node2D Name="StoryPage" Width="1024" Height="768">
-    <ImageView Name="Background" Source="Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png" Stretch="UniformToFill" Width="1024" Height="768"/>
+    <ImageView Name="Background" Source="Book/Images/prototype/workshop-present.png" Stretch="UniformToFill" Width="1024" Height="768" IgnoreHitTest="true"/>
+    <Node2D Name="Hotspots" Width="1024" Height="768"/>
     <StackView Name="StoryText" class="story-text" Width="440" HorizontalAlignment="Left" VerticalAlignment="Top">
       <TextBlock Name="SceneDescription" class="scene-description"/>
     </StackView>
-    <StackView Name="Options" class="scene-options" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="400"/>
+    <TextBlock Name="Continue" class="continue-option" Text="Continue" Width="140" Height="48" Visible="false" LeftButtonUp="Continue_LeftButtonUp" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
   </Node2D>
 </Screen>
