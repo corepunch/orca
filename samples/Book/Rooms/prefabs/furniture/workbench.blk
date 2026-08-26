@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- workbench: footprint 2.0x0.9, baseline y=0, top surface at y=0.94.
+     Front is +Z. Work from the +Z side. Lower shelf at y=0.38. -->
+<prefab>
+  <attach name="top_surface" pos="0 0.94 0"/>
+  <attach name="under_center" pos="0 0.12 0"/>
+  <box pos="0 0.9 0" size="2.0 0.08 0.9" material="wood"/>
+  <box pos="0 0.38 0" size="1.8 0.04 0.75" material="wood"/>
+  <prism pos="-0.9 0.44 -0.38" radius="0.04" height="0.88" sides="4" material="wood"/>
+  <prism pos=" 0.9 0.44 -0.38" radius="0.04" height="0.88" sides="4" material="wood"/>
+  <prism pos="-0.9 0.44  0.38" radius="0.04" height="0.88" sides="4" material="wood"/>
+  <prism pos=" 0.9 0.44  0.38" radius="0.04" height="0.88" sides="4" material="wood"/>
+</prefab>

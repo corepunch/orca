@@ -51,13 +51,16 @@ function Export.generate(spec, scene)
         '    },',
         '    anchors = {',
     }
-    local ids = {}
-    for _, target in ipairs(spec.targets) do
-        assert(not ids[target.id], "duplicate interaction target")
-        ids[target.id] = true
-        local point = assert(Projection.anchor(scene, target.anchor, target.offset))
-        xml[#xml + 1] = '  <Node3D Name="' .. xmlEscape(target.id) .. '" RenderTransformTranslation="' .. vec(point) .. '"/>'
-        lua[#lua + 1] = '        [' .. quoted(target.id) .. '] = ' .. luaVec(point) .. ','
+    local names = {}
+    for name, node in pairs(scene.objects) do
+        if not node.error then names[#names + 1] = name end
+    end
+    table.sort(names)
+    for _, name in ipairs(names) do
+        assert(name ~= camera.name, "object name conflicts with exported camera")
+        local point = assert(Projection.anchor(scene, name))
+        xml[#xml + 1] = '  <Node3D Name="' .. xmlEscape(name) .. '" RenderTransformTranslation="' .. vec(point) .. '"/>'
+        lua[#lua + 1] = '        [' .. quoted(name) .. '] = ' .. luaVec(point) .. ','
     end
     xml[#xml + 1] = '</Scene>'
     lua[#lua + 1] = '    },'

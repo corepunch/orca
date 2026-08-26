@@ -20,10 +20,10 @@ close(nativeNode.RenderTransformTranslation.X, source.cameras[spec.camera].pos[1
 close(nativeCamera.fov, source.cameras[spec.camera].fov)
 close(nativeCamera.near, 0.1)
 close(nativeCamera.far, 100)
-for _, target in ipairs(spec.targets) do
-    local anchorNode = assert(nativeScene:findChild(target.id, true))
+for name in pairs(metadata.anchors) do
+    local anchorNode = assert(nativeScene:findChild(name, true))
     local point = Adapter.anchor(anchorNode)
-    local expectedPoint = assert(Projection.anchor(source, target.anchor, target.offset))
+    local expectedPoint = assert(Projection.anchor(source, name))
     for axis = 1, 3 do close(point[axis], expectedPoint[axis]) end
     for _, viewport in ipairs({{1536, 1024}, {1024, 768}, {1800, 900}}) do
         local a, aerr = Projection.project(source.cameras[spec.camera], expectedPoint, spec.source_width, spec.source_height, viewport[1], viewport[2])
@@ -32,4 +32,4 @@ for _, target in ipairs(spec.targets) do
         if a then close(a.x, b.x); close(a.y, b.y) end
     end
 end
-print("WorkshopCamera native XML: loaded Camera + four anchors match source projection")
+print("WorkshopCamera native XML: loaded Camera + named anchors match source projection")

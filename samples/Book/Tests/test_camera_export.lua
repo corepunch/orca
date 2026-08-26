@@ -45,9 +45,8 @@ nativeNode.RenderTransformRotation.Z = 5
 assert(not pcall(Adapter.camera, nativeNode))
 nativeNode.RenderTransformRotation.Z = 0
 assert(metadata.source_width == spec.source_width and metadata.source_height == spec.source_height)
-for _, target in ipairs(spec.targets) do
-    local sourcePoint = assert(Projection.anchor(scene, target.anchor, target.offset))
-    local exportedPoint = assert(metadata.anchors[target.id])
+for name, exportedPoint in pairs(metadata.anchors) do
+    local sourcePoint = assert(Projection.anchor(scene, name))
     local adaptedPoint = Adapter.anchor({RenderTransformTranslation = nativeVec(exportedPoint)})
     for axis = 1, 3 do close(sourcePoint[axis], exportedPoint[axis]) end
     for axis = 1, 3 do close(sourcePoint[axis], adaptedPoint[axis]) end
@@ -58,6 +57,22 @@ for _, target in ipairs(spec.targets) do
         if a then close(a.x, b.x); close(a.y, b.y) end
     end
 end
+for name, node in pairs(scene.objects) do
+    if not node.error then assert(metadata.anchors[name], "named scene object was not exported: " .. name) end
+end
+-- Export discovery is scene-driven: a new named object needs no game-side list.
+local discovered = assert(Projection.parse([[<scene>
+  <camera name="WorkshopEstablishing"/>
+  <group name="Z-NEW-OBJECT" pos="1 2 3"><box/></group>
+  <box name="A-DECORATION" pos="4 5 6"/>
+  <group attach="unknown:slot"><box name="UNRESOLVED"/></group>
+</scene>]]))
+local discoveredXml, discoveredLua = Export.generate(spec, discovered)
+local discoveredMetadata = assert(load(discoveredLua))()
+assert(discoveredMetadata.anchors["Z-NEW-OBJECT"][2] == 2)
+assert(discoveredMetadata.anchors["A-DECORATION"][3] == 6)
+assert(not discoveredMetadata.anchors.UNRESOLVED)
+assert(discoveredXml:find('Name="A-DECORATION"', 1, true) < discoveredXml:find('Name="Z-NEW-OBJECT"', 1, true))
 local empty = {cameras = {}}
 assert(not pcall(Export.generate, spec, empty))
 print("WorkshopCamera export: source/native camera alignment and freshness passed")

@@ -6,8 +6,11 @@
           RenderTransformRotation="-3.43152224968 -5.50547785798 0"
           Fov="60" FovType="Yfov" ProjectionType="Perspective"
           ZNear="0.1" ZFar="100" ZPositive="false"/>
-  <Node3D Name="hook" RenderTransformTranslation="0 1.7 -8.84"/>
-  <Node3D Name="oil" RenderTransformTranslation="1.9 0.14 -7.4"/>
-  <Node3D Name="door" RenderTransformTranslation="-3.9 0.3 -8.83"/>
-  <Node3D Name="clock" RenderTransformTranslation="1.62 2.25 -8.83"/>
+  <Node3D Name="CLOCK-FACE" RenderTransformTranslation="1.62 2.25 -8.83"/>
+  <Node3D Name="KEY-HOOK" RenderTransformTranslation="0 1.7 -8.84"/>
+  <Node3D Name="OIL-CAN" RenderTransformTranslation="1.9 0.14 -7.4"/>
+  <Node3D Name="PET-DOOR" RenderTransformTranslation="-3.9 0.3 -8.83"/>
+  <Node3D Name="counter_chair" RenderTransformTranslation="3.58 0 -2.5"/>
+  <Node3D Name="main_bench" RenderTransformTranslation="2 0 -7.5"/>
+  <Node3D Name="tool_bench" RenderTransformTranslation="4.45 0 -2.5"/>
 </Scene>

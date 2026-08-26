@@ -50,7 +50,7 @@ assert(not Projection.parse('<scene><camera fov="0"/></scene>'))
 assert(not Projection.parse('<scene><camera pos="0 1"/></scene>'))
 assert(not Projection.parse('<scene><camera name="a"/><camera name="a"/></scene>'))
 
-local workshop = assert(Projection.load("libs/simplesketch3d/scenes/books/wondertown/workshop.blks"))
+local workshop = assert(Projection.load("Rooms/workshop.blks"))
 assert(workshop.cameraCount == 11)
 local oil = assert(Projection.anchor(workshop, "items/oil_can", {0, 0.12, 0}))
 close(oil[1], 1.9)
@@ -61,6 +61,18 @@ local door = assert(Projection.anchor(workshop, "architecture/workshop_door", {0
 local doorMarker = assert(Projection.project(workshop.cameras.WorkshopEstablishing, door, 1536, 1024, 1024, 768))
 assert(doorMarker.x > 60 and doorMarker.x < 80 and doorMarker.y > 470 and doorMarker.y < 490)
 assert(Projection.anchor(workshop, "fixtures/key_hook"))
+-- Named groups select interaction centers while keeping prefab geometry fixed.
+local expected = {
+    ["KEY-HOOK"] = {0, 1.7, -8.84}, ["OIL-CAN"] = {1.9, 0.14, -7.4},
+    ["PET-DOOR"] = {-3.9, 0.30, -8.83}, ["CLOCK-FACE"] = {1.62, 2.25, -8.83},
+    ["items/oil_can"] = {1.9, 0, -7.4},
+    ["architecture/workshop_door"] = {-3.9, 0, -8.92},
+    ["fixtures/wall_clock"] = {1.62, 2.25, -8.91},
+}
+for name, position in pairs(expected) do
+    local actual = assert(Projection.anchor(workshop, name))
+    for axis = 1, 3 do close(actual[axis], position[axis]) end
+end
 assert(not Projection.anchor(workshop, "items/repair_book"))
 assert(not Projection.load("Tests/does-not-exist.blks"))
 print("SceneProjection: all tests passed")

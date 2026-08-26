@@ -1,6 +1,6 @@
--- Host-side mapping from Wondertown's stable companion scene keys to art.
+-- Host-side mapping from Wondertown's stable story keys to art.
 -- ZIL owns narrative state; this manifest owns presentation assets.
-return {
+local scenes = {
     actions = {
         ["workshop-floor.examine-hook"] = {
             asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-initial-action.png",
@@ -79,3 +79,10 @@ return {
         function_ = "reaction",
     },
 }
+
+-- Optional illustrations keyed by ZIL object + verb, not required interaction definitions.
+scenes.object_actions = {
+    ["KEY-HOOK.examine"] = scenes.actions["workshop-floor.examine-hook"],
+    ["OIL-CAN.take"] = scenes.actions["workshop-floor.take-oil-can"],
+}
+return scenes

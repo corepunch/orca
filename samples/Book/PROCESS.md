@@ -130,7 +130,9 @@ ZIL remains authoritative for world state and result prose.
   Book-specific `Scripts/WondertownPrototype.zil` entry point loads the original
   gameplay without `companion.zil`.
 - White 48-unit circles sit on objects in the establishing image. Tapping one
-  submits its authored parser command, guarded by current ZIL state.
+  submits a parser command derived from the matched ZIL object, guarded by
+  current ZIL state. Portable (`TAKEBIT`) objects default to TAKE; other objects
+  default to EXAMINE.
 - The host holds an action image and command result prose with **Continue**;
   when there is no dedicated action art, it holds the current scene with the
   result prose. All object circles are hidden during the beat.
@@ -142,8 +144,34 @@ ZIL remains authoritative for world state and result prose.
 This separation is important: room state cannot describe a transient instant
 such as Pip halfway up a stair or Bertrand's jaw snapping open.
 
-`Scripts/WorkshopInteractions.lua` owns the prototype's four interactions;
-`Scripts/WondertownScenes.lua` still maps stable action keys to existing art.
+`Scripts/WorkshopInteractions.lua` now stores only camera/image-state settings,
+not an authored target or command list. `Scripts/WondertownScenes.lua` optionally
+maps `ZIL-OBJECT.verb` keys to action art; missing art does not disable interaction.
+
+### Objects are the interaction model
+
+Name scene anchors exactly like ZIL objects: `OIL-CAN`, `KEY-HOOK`, `PET-DOOR`,
+`CLOCK-FACE`. Export all supported named scene nodes automatically. At runtime,
+match each native node to an actual ZIL object declaration and project its
+position with the imported camera. ZIL's Lua spelling (`OIL_CAN`) is also
+accepted. Unmatched decoration names and numeric globals do not create circles.
+
+ZIL owns object presence and visibility. Objects in inventory, elsewhere,
+marked INVISIBLE, or inside inaccessible closed containers have no scene circle.
+Objects on surfaces or in open containers remain eligible. Do not treat
+NDESCBIT as invisibility: it suppresses automatic prose, not interaction.
+
+For a new object, author it in ZIL and give its scene node the same name; no
+companion entry, priority, suggestion label or duplicate command is required.
+Place the named scene origin at the desired interaction center. A named group
+with an inversely offset visual child keeps the original geometry in place.
+
+Name matching determines what and where, not every intended verb. The current
+shared defaults are TAKE/EXAMINE. Door traversal, combining items and special
+puzzle actions need explicit world rules rather than guesses based on names.
+Keep those in ordinary ZIL object/exit behavior, not a second companion file.
+The legacy companion implementation remains available to other clients but is
+not loaded or queried by this Book prototype.
 
 ### Camera export and screenshot prototype
 
@@ -189,8 +217,41 @@ takeable object permanently into the background and merely remove its circle.
 
 ## SimpleSketch3D workshop blockout
 
+From the Book directory, `make run` builds ORCA (including plugins and shared
+resources) and launches it with this Book project.
+
 The reusable 3D blockout lives at
-`libs/simplesketch3d/scenes/books/wondertown/workshop.blks`. It keeps the major
+`Rooms/workshop.blks`, with all required prefabs under `Rooms/prefabs/`.
+The Book project owns these assets; `libs/simplesketch3d` supplies the renderer.
+From the Book directory, render all cameras of every room with:
+
+```sh
+make render
+make render ROOM=workshop
+make render ROOM=workshop FORMAT=png WIDTH=1536 HEIGHT=1024
+```
+
+The default is JPEG at 1536×1024, written to
+`Rooms/render/{room}/{camera}.jpg`. PNG uses the same layout with `.png`.
+Generated renders are ignored by Git. The Makefile builds the screenshot tool
+and runs it from `Rooms/`, with editor overlays hidden. Rendering requires a
+graphics session. These all-camera renders are separate from the prototype's
+paired oil-present/oil-removed screenshots and camera export.
+
+Run SimpleSketch3D from `Rooms/` so its relative `prefabs/` lookup resolves
+Book's assets. For example, from `Rooms/`:
+
+```sh
+../libs/simplesketch3d/build/bin/simplegl workshop.blks -list-cameras
+../libs/simplesketch3d/build/bin/simplegl workshop.blks -test
+```
+
+The prototype render script selects this working directory automatically.
+Shared prefabs still needed by SimpleSketch3D's demo/test scenes retain library
+copies; Book renders never depend on those copies. The `.blks` file in
+`Images/prototype/` is only a generated snapshot paired with the screenshots.
+
+The workshop keeps the major
 story affordances—the empty key hook, pet door, clock, main workbench, repair
 book, oil can, tool bench, Bertrand, and makeshift climb—in one coordinate system.
 This provides spatial continuity before an illustration is commissioned.

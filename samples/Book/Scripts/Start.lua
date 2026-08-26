@@ -17,7 +17,7 @@ local function show_action(self, id)
     local beat = self.session:activate(id)
     if not beat then return end
     self.view:findChild("Hotspots", true).Visible = false
-    local action = beat.action and scenes.actions[beat.action]
+    local action = beat.action and scenes.object_actions[beat.action]
     self.view:findChild("Background", true).Source = action and action.asset or interactions.asset(self.session.env)
     self.view:findChild("SceneDescription", true).Text = beat.output
     self.view:findChild("Continue", true).Visible = true
@@ -33,9 +33,9 @@ refresh_ui = function(self)
     layer.Visible = true
     local camera_node = assert(self.scene:findChild(camera_export.camera.name, true))
     local camera = native_projection.camera(camera_node)
-    for _, target in ipairs(interactions.targets) do
-        if interactions.available(env, target) then
-            local anchor = assert(self.scene:findChild(target.id, true))
+    for anchor in self.scene.children do
+        local target = self.session:target(anchor:getName())
+        if target then
             local point = native_projection.anchor(anchor)
             local screen = projection.project(camera, point,
                 camera_export.source_width, camera_export.source_height, layer.Width, layer.Height, camera.near)
@@ -43,13 +43,13 @@ refresh_ui = function(self)
             if screen and screen.depth <= camera.far and screen.x >= 24 and screen.x <= layer.Width - 24
                 and screen.y >= 24 and screen.y <= layer.Height - 24 then
                 local circle = ui.Node2D {
-                    Name = "Hotspot_" .. target.id,
+                    Name = "Hotspot_" .. target.name,
                     class = "scene-hotspot",
                     Width = 48, Height = 48,
                     MarginRight = 0/0, MarginBottom = 0/0,
                     MarginLeft = screen.x - 24, MarginTop = screen.y - 24,
                 }
-                circle.LeftButtonUp = function() show_action(self, target.id) end
+                circle.LeftButtonUp = function() show_action(self, target.name) end
                 layer:addChild(circle)
             end
         end

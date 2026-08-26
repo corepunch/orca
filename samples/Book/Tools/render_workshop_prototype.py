@@ -10,7 +10,8 @@ import xml.etree.ElementTree as ET
 
 BOOK = Path(__file__).resolve().parents[1]
 SKETCH = BOOK / "libs/simplesketch3d"
-SOURCE = SKETCH / "scenes/books/wondertown/workshop.blks"
+ROOMS = BOOK / "Rooms"
+SOURCE = ROOMS / "workshop.blks"
 OUTPUT = BOOK / "Images/prototype"
 
 
@@ -22,9 +23,9 @@ def main():
     camera, width, height = spec
     text = SOURCE.read_text()
     root = ET.fromstring(text)
-    cans = root.findall("./prefab[@source='items/oil_can']")
+    cans = root.findall("./group[@name='OIL-CAN']")
     if len(cans) != 1:
-        raise ValueError("Expected one floor-level oil-can instance")
+        raise ValueError("Expected one named OIL-CAN group")
     root.remove(cans[0])
     OUTPUT.mkdir(parents=True, exist_ok=True)
     # Finish both renders before replacing the matching camera snapshot.
@@ -37,7 +38,7 @@ def main():
                 str(SKETCH / "build/bin/screenshot"), str(temp / f"{state}.blks"),
                 "-cam", camera, "-w", width, "-h", height,
                 "-d", "24", "-o", str(temp / f"{state}.png"),
-            ], cwd=SKETCH, check=True)
+            ], cwd=ROOMS, check=True)
         for state in ("present", "taken"):
             (OUTPUT / f"workshop-{state}.png").write_bytes((temp / f"{state}.png").read_bytes())
         (OUTPUT / "workshop.blks").write_text(text)
