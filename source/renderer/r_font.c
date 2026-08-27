@@ -1,17 +1,13 @@
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_GLYPH_H
-#include FT_IMAGE_H
-#include FT_OUTLINE_H
-#include FT_SYSTEM_H
-#include FT_TRUETYPE_TABLES_H
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"
 
 #include "r_local.h"
 #include <filesystem/filesystem.h>
+#include <include/renderer_font.h>
 
 extern struct Object *FS_LoadObject(lpcString_t path);
 
-#define FT_ERROR(...) Con_Error("FONT: " __VA_ARGS__)
+#define FONT_ERROR(...) Con_Error("FONT: " __VA_ARGS__)
 
 typedef enum
 {
@@ -24,11 +20,12 @@ typedef enum
 
 static bool_t T_LoadDefaultFontBase(lpcString_t base);
 static void FontFamily_ReleaseFaces(struct FontFamily *family);
+static struct fontface* Font_LoadStyle(lpcString_t, struct FontFamily*, FontStyle);
 
 struct fontface
 {
-  FT_Face face;
-  void* mem;
+  stbtt_fontinfo info;
+  byte_t* mem;
 };
 
 static struct _FONTGLOBALS
@@ -37,7 +34,6 @@ static struct _FONTGLOBALS
   struct FontFamily defaultFontStorage;
   struct FontFamily* defaultFont;
   bool_t defaultFontTried;
-  void* ft;
 } fg = { 0 };
 
 static struct FontFamily const*
@@ -68,11 +64,11 @@ FontFamily_GetFace(struct FontFamily const *family, uint32_t fontStyle)
 {
   if (!family) return NULL;
   if ((&family->regular)[fontStyle]) {
-    return (&family->regular)[fontStyle]->face;
+    return (&family->regular)[fontStyle];
   }
   FOR_LOOP(i, FS_COUNT) {
     if ((&family->regular)[i]) {
-      return (&family->regular)[i]->face;
+      return (&family->regular)[i];
     }
   }
   return NULL;
@@ -81,46 +77,110 @@ FontFamily_GetFace(struct FontFamily const *family, uint32_t fontStyle)
 HRESULT
 Font_Release(struct fontface* font)
 {
-  FT_Done_Face(font->face);
   free(font->mem);
   free(font);
   return S_OK;
 }
 
 static struct fontface*
-Font_LoadFromMemory(void* buffer, int fileSize, struct FontFamily* family)
+Font_LoadFromMemory(void* buffer,
+                    int fileSize,
+                    struct FontFamily* family,
+                    FontStyle style)
 {
-  FT_Face face;
-  if (!fg.ft)
-    return NULL;
-
-  void* mem = ZeroAlloc(fileSize);
+  byte_t* mem = ZeroAlloc(fileSize);
   memcpy(mem, buffer, fileSize);
 
-  // allocate on the stack first in case we fail
-  if (FT_New_Memory_Face(fg.ft, mem, fileSize, 0, &face)) {
-    FT_ERROR("FreeType2, unable to allocate new face");
+  int const offset = stbtt_GetFontOffsetForIndex(mem, 0);
+  struct fontface* fontface = ZeroAlloc(sizeof(*fontface));
+  if (offset < 0 || !stbtt_InitFont(&fontface->info, mem, offset)) {
+    FONT_ERROR("Unable to initialize TrueType font");
+    free(fontface);
     free(mem);
     return NULL;
   }
 
-  FontStyle fs = FS_NORMAL;
-
-  TT_OS2* os2 = (TT_OS2*)FT_Get_Sfnt_Table(face, ft_sfnt_os2);
-  TT_Postscript* post = (TT_Postscript*)FT_Get_Sfnt_Table(face, ft_sfnt_post);
-
-  if (os2 && os2->usWeightClass > 400)
-    fs += FS_BOLD;
-  if (post && post->italicAngle != 0)
-    fs += FS_ITALIC;
-
-  struct fontface *fontface = malloc(sizeof(struct fontface));
-  fontface->face = face;
   fontface->mem = mem;
-
-  (&family->regular)[fs] = fontface;
+  SafeDelete((&family->regular)[style], Font_Release);
+  (&family->regular)[style] = fontface;
 
   return fontface;
+}
+
+int
+FontFace_GetMetrics(struct fontface* face,
+                    float logical_height,
+                    float device_scale,
+                    struct font_metrics* metrics)
+{
+  if (!face || !metrics || logical_height <= 0 || device_scale <= 0) return FALSE;
+  int ascent;
+  int descent;
+  int line_gap;
+  stbtt_GetFontVMetrics(&face->info, &ascent, &descent, &line_gap);
+  float const device_height = logical_height * device_scale;
+  metrics->raster_scale = stbtt_ScaleForMappingEmToPixels(&face->info, device_height);
+  metrics->ascender = (int)ceilf(ascent * metrics->raster_scale);
+  metrics->descender = (int)floorf(descent * metrics->raster_scale);
+  metrics->height = metrics->ascender - metrics->descender;
+  metrics->underline_position = (int)floorf(descent * metrics->raster_scale * 0.5f);
+  int space_advance;
+  stbtt_GetCodepointHMetrics(&face->info, ' ', &space_advance, NULL);
+  metrics->space_advance = (int32_t)lroundf(space_advance * metrics->raster_scale * 65536.0f);
+  return TRUE;
+}
+
+uint32_t
+FontFace_GetGlyphIndex(struct fontface* face, uint32_t codepoint)
+{
+  return face ? (uint32_t)stbtt_FindGlyphIndex(&face->info, (int)codepoint) : 0;
+}
+
+int32_t
+FontFace_GetGlyphAdvance(struct fontface* face, uint32_t glyph, float scale)
+{
+  int advance;
+  if (!face || !glyph) return 0;
+  stbtt_GetGlyphHMetrics(&face->info, (int)glyph, &advance, NULL);
+  return (int32_t)lroundf(advance * scale * 65536.0f);
+}
+
+int32_t
+FontFace_GetGlyphKerning(struct fontface* face,
+                         uint32_t left,
+                         uint32_t right,
+                         float scale)
+{
+  if (!face || !left || !right) return 0;
+  int const kern = stbtt_GetGlyphKernAdvance(&face->info, (int)left, (int)right);
+  return (int32_t)lroundf(kern * scale * 65536.0f);
+}
+
+int
+FontFace_RenderGlyph(struct fontface* face,
+                     uint32_t glyph,
+                     float scale,
+                     struct font_glyph* output)
+{
+  if (!face || !glyph || !output) return FALSE;
+  memset(output, 0, sizeof(*output));
+  output->bitmap = stbtt_GetGlyphBitmap(&face->info,
+                                       scale,
+                                       scale,
+                                       (int)glyph,
+                                       &output->width,
+                                       &output->height,
+                                       &output->xoff,
+                                       &output->yoff);
+  return output->bitmap != NULL;
+}
+
+void
+FontFace_FreeGlyph(struct font_glyph* glyph)
+{
+  if (!glyph) return;
+  stbtt_FreeBitmap(glyph->bitmap, NULL);
+  glyph->bitmap = NULL;
 }
 
 static void
@@ -146,10 +206,10 @@ T_LoadDefaultFontBase(lpcString_t base)
   snprintf(italic, sizeof(italic), "%s-Italic.ttf", base);
   snprintf(bolditalic, sizeof(bolditalic), "%s-BoldItalic.ttf", base);
 
-  Font_Load(regular, &fg.defaultFontStorage);
-  if (FS_FileExists(bold)) Font_Load(bold, &fg.defaultFontStorage);
-  if (FS_FileExists(italic)) Font_Load(italic, &fg.defaultFontStorage);
-  if (FS_FileExists(bolditalic)) Font_Load(bolditalic, &fg.defaultFontStorage);
+  Font_LoadStyle(regular, &fg.defaultFontStorage, FS_NORMAL);
+  if (FS_FileExists(bold)) Font_LoadStyle(bold, &fg.defaultFontStorage, FS_BOLD);
+  if (FS_FileExists(italic)) Font_LoadStyle(italic, &fg.defaultFontStorage, FS_ITALIC);
+  if (FS_FileExists(bolditalic)) Font_LoadStyle(bolditalic, &fg.defaultFontStorage, FS_BOLD_ITALIC);
 
   if (fg.defaultFontStorage.regular) {
     fg.defaultFont = &fg.defaultFontStorage;
@@ -160,15 +220,7 @@ T_LoadDefaultFontBase(lpcString_t base)
 }
 
 void
-FT_Init(void)
-{
-  if (FT_Init_FreeType((FT_Library*)&fg.ft)) {
-    FT_ERROR("Unable to initialize FreeType.");
-  }
-}
-
-void
-FT_Shutdown(void)
+Font_Shutdown(void)
 {
   if (fg.defaultFontObject) {
     OBJ_ReleaseRef(fg.defaultFontObject);
@@ -178,22 +230,29 @@ FT_Shutdown(void)
   fg.defaultFont = NULL;
   fg.defaultFontTried = FALSE;
 
-  FT_Done_FreeType(fg.ft);
-  fg.ft = NULL;
 }
 
-struct fontface*
-Font_Load(lpcString_t szFileName, struct FontFamily *pFontFamily)
+static struct fontface*
+Font_LoadStyle(lpcString_t szFileName,
+               struct FontFamily* pFontFamily,
+               FontStyle style)
 {
   struct file* pFile = FS_LoadFile(szFileName);
   if (pFile) {
-    struct fontface *face = Font_LoadFromMemory(pFile->data, pFile->size, pFontFamily);
+    struct fontface *face = Font_LoadFromMemory(pFile->data, pFile->size,
+                                                pFontFamily, style);
     FS_FreeFile(pFile);
     if (!face) Con_Error("FONT: Failed to load font face from '%s'", szFileName);
     return face;
   }
   Con_Error("FONT: Failed to load font file '%s'", szFileName);
   return NULL;
+}
+
+struct fontface*
+Font_Load(lpcString_t szFileName, struct FontFamily* pFontFamily)
+{
+  return Font_LoadStyle(szFileName, pFontFamily, FS_NORMAL);
 }
 
 static lpcString_t
@@ -218,19 +277,19 @@ Font_ResolvePath(struct Object *object, lpcString_t path, path_t resolved)
 HANDLER(FontFamily, Object, Start) {
   if (pFontFamily->Regular && *pFontFamily->Regular) {
     path_t resolved = {0};
-    Font_Load(Font_ResolvePath(hObject, pFontFamily->Regular, resolved), pFontFamily);
+    Font_LoadStyle(Font_ResolvePath(hObject, pFontFamily->Regular, resolved), pFontFamily, FS_NORMAL);
   }
   if (pFontFamily->Bold && *pFontFamily->Bold) {
     path_t resolved = {0};
-    Font_Load(Font_ResolvePath(hObject, pFontFamily->Bold, resolved), pFontFamily);
+    Font_LoadStyle(Font_ResolvePath(hObject, pFontFamily->Bold, resolved), pFontFamily, FS_BOLD);
   }
   if (pFontFamily->Italic && *pFontFamily->Italic) {
     path_t resolved = {0};
-    Font_Load(Font_ResolvePath(hObject, pFontFamily->Italic, resolved), pFontFamily);
+    Font_LoadStyle(Font_ResolvePath(hObject, pFontFamily->Italic, resolved), pFontFamily, FS_ITALIC);
   }
   if (pFontFamily->BoldItalic && *pFontFamily->BoldItalic) {
     path_t resolved = {0};
-    Font_Load(Font_ResolvePath(hObject, pFontFamily->BoldItalic, resolved), pFontFamily);
+    Font_LoadStyle(Font_ResolvePath(hObject, pFontFamily->BoldItalic, resolved), pFontFamily, FS_BOLD_ITALIC);
   }
   return TRUE;
 }

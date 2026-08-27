@@ -27,7 +27,6 @@ To install the required dependencies on **Linux**, run the following commands:
 
 ```sh
 sudo apt update && sudo apt install -y \
-    libfreetype6-dev \
     liblua5.4-dev \
     libxml2-dev \
     liblz4-dev \
@@ -42,7 +41,6 @@ For **Fedora**, use:
 
 ```sh
 sudo dnf install -y \
-    freetype-devel \
     lua-devel \
     libxml2-devel \
     lz4-devel \
@@ -53,7 +51,7 @@ sudo dnf install -y \
 For **Arch Linux**, use:
 
 ```sh
-sudo pacman -S freetype2 lua libxml2 lz4 zlib curl
+sudo pacman -S lua libxml2 lz4 zlib curl
 ```
 
 ### macOS
@@ -61,13 +59,7 @@ sudo pacman -S freetype2 lua libxml2 lz4 zlib curl
 To install dependencies on **macOS**, use **Homebrew**:
 
 ```sh
-brew install freetype lua libxml2 lz4 zlib curl pkg-config
-```
-
-**Note**: If `pkg-config` fails to find packages, you may need to run:
-
-```sh
-brew link --overwrite freetype
+brew install lua libxml2 lz4 zlib curl pkg-config
 ```
 
 ## Building the Project
