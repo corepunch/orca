@@ -1034,9 +1034,9 @@ renderer_Shutdown(void)
 static int renderer_gc(lua_State* L)
 {
   void renderer_Shutdown(void);
-  void FT_Shutdown(void);
+  void Font_Shutdown(void);
   renderer_Shutdown();
-  FT_Shutdown();
+  Font_Shutdown();
   axShutdown();
   return 0;
 }
@@ -1077,8 +1077,6 @@ void on_renderer_module_registered(lua_State* L) {
    * into integer heap".  window.snapCanvas is defined in shell.html. */
   EM_ASM({ if (window.snapCanvas) window.snapCanvas(); });
 #endif
-  FT_Init();
-
   // Register C file loaders for common image formats.
   OBJ_RegisterFileLoader(".png",  R_LoadImageObject);
   OBJ_RegisterFileLoader(".jpg",  R_LoadImageObject);
