@@ -1,15 +1,16 @@
 .DEFAULT_GOAL := render
 
-SCENER ?= scener
+SCENER ?= $(shell command -v scener 2>/dev/null || printf '%s/.local/bin/scener' "$$HOME")
 ROOMS := $(basename $(notdir $(wildcard Rooms/*.blks)))
 ROOM ?= $(ROOMS)
+FORMAT ?= jpg
 WIDTH ?= 1536
 HEIGHT ?= 1024
 RENDER_TARGETS := $(addprefix render-,$(ROOM))
 
 .PHONY: run render check-scener $(RENDER_TARGETS)
 
-run:
+run: render
 	$(MAKE) -C ../.. unite
 	cd ../.. && build/bin/orca samples/Book
 
@@ -23,4 +24,4 @@ check-scener:
 
 $(RENDER_TARGETS): render-%: Rooms/%.blks | check-scener
 	cd Rooms && "$(SCENER)" --render "$*.blks" --size "$(WIDTH)x$(HEIGHT)" \
-		--output-dir "render/$*"
+		--format "$(FORMAT)" --output-dir "render/$*"

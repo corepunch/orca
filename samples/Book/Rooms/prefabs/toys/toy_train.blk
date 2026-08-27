@@ -2,11 +2,11 @@
 <!-- toy_train: footprint 0.42x0.20, baseline y=0, front faces +X.
      tint=1 changes the painted body; wheels and fittings stay fixed. -->
 <prefab>
-  <box pos="0 0.10 0" size="0.34 0.14 0.16" color="0.48 0.08 0.06" shininess="16" tint="1"/>
-  <box pos="-0.13 0.21 0" size="0.12 0.12 0.15" color="0.48 0.08 0.06" shininess="16" tint="1"/>
-  <cylinder pos="0.10 0.21 0" radius="0.045" height="0.15" color="0.28 0.28 0.30" shininess="55"/>
-  <cylinder pos="-0.12 0.055 -0.10" rot="90 0 0" radius="0.055" height="0.035" color="0.16 0.09 0.04" shininess="12"/>
-  <cylinder pos="0.12 0.055 -0.10" rot="90 0 0" radius="0.055" height="0.035" color="0.16 0.09 0.04" shininess="12"/>
-  <cylinder pos="-0.12 0.055 0.10" rot="90 0 0" radius="0.055" height="0.035" color="0.16 0.09 0.04" shininess="12"/>
-  <cylinder pos="0.12 0.055 0.10" rot="90 0 0" radius="0.055" height="0.035" color="0.16 0.09 0.04" shininess="12"/>
+  <box pos="0 10 0" size="34 14 16" color="0.48 0.08 0.06" shininess="16" tint="1"/>
+  <box pos="-13 21 0" size="12 12 15" color="0.48 0.08 0.06" shininess="16" tint="1"/>
+  <cylinder pos="10 21 0" radius="4.5" height="15" color="0.28 0.28 0.30" shininess="55"/>
+  <cylinder pos="-12 5.5 -10" rot="90 0 0" radius="5.5" height="3.5" color="0.16 0.09 0.04" shininess="12"/>
+  <cylinder pos="12 5.5 -10" rot="90 0 0" radius="5.5" height="3.5" color="0.16 0.09 0.04" shininess="12"/>
+  <cylinder pos="-12 5.5 10" rot="90 0 0" radius="5.5" height="3.5" color="0.16 0.09 0.04" shininess="12"/>
+  <cylinder pos="12 5.5 10" rot="90 0 0" radius="5.5" height="3.5" color="0.16 0.09 0.04" shininess="12"/>
 </prefab>

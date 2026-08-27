@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- spool: footprint 0.56x0.56, baseline y=0, height 0.22. No natural front. -->
 <prefab>
-  <cylinder pos="0 0.015 0" radius="0.28" height="0.03" shininess="18"/>
-  <cylinder pos="0 0.11 0" radius="0.18" height="0.16" shininess="18"/>
-  <cylinder pos="0 0.205 0" radius="0.28" height="0.03" shininess="18"/>
+  <cylinder pos="0 1.5 0" radius="28" height="3" shininess="18"/>
+  <cylinder pos="0 11 0" radius="18" height="16" shininess="18"/>
+  <cylinder pos="0 20.5 0" radius="28" height="3" shininess="18"/>
 </prefab>

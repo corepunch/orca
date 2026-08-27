@@ -9,7 +9,7 @@
 -- Images are direct Scener renders, one per camera, produced by
 -- `make render ROOM=workshop`.
 
-local render_base, render_ext = "Book/Rooms/render/workshop/", ".png"
+local render_base, render_ext = "Book/Rooms/render/workshop/", ".jpg"
 
 local M = {}
 

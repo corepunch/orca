@@ -2,7 +2,11 @@
 
 Book scene art is rendered directly from the `.blks` files in `Rooms/` with
 Orion UI's installed `scener` CLI. Orion is an external tool, not a Book
-submodule. Scener writes one PNG for every named camera in a scene.
+submodule. The Book requests one JPEG for every named camera in a scene.
+
+Scener scene and prefab distances are authored in centimeters. Use values such
+as `2` and `15` for two and fifteen centimeters; do not write meter fractions
+such as `0.02` or `0.15`. Rotations remain degrees and `scale` remains unitless.
 
 ## Install Scener
 
@@ -42,13 +46,13 @@ make render ROOM=workshop
 Outputs are written to `Rooms/render/workshop/`, for example:
 
 ```text
-Rooms/render/workshop/WorkshopEstablishing.png
-Rooms/render/workshop/OilCanCloseup.png
-Rooms/render/workshop/LoftLadderCloseup.png
-Rooms/render/workshop/CountertopEstablishing.png
+Rooms/render/workshop/WorkshopEstablishing.jpg
+Rooms/render/workshop/OilCanCloseup.jpg
+Rooms/render/workshop/LoftLadderCloseup.jpg
+Rooms/render/workshop/CountertopEstablishing.jpg
 ```
 
-Generated renders are ignored by Git. The application expects these PNG names
+Generated renders are ignored by Git. The application expects these JPEG names
 directly and reports missing renders instead of falling back to old artwork.
 
 Render every `.blks` file directly under `Rooms/`, or selected rooms:
@@ -65,8 +69,9 @@ Set `SCENER` when the executable is not on `PATH`:
 make render ROOM=workshop SCENER="$HOME/.local/bin/scener"
 ```
 
-Scener's batch renderer always writes PNG. Do not add a format override without
-changing both the renderer contract and `Scripts/WondertownScenes.lua`.
+The Book defaults to `FORMAT=jpg`. Scener also supports `FORMAT=png`, but changing
+the runtime format requires updating `Scripts/WondertownScenes.lua` at the same
+time.
 
 ## Direct Scener Commands
 
@@ -76,7 +81,7 @@ Run direct commands from `Rooms/` so relative `prefabs/` paths resolve:
 cd Rooms
 scener --list-cameras workshop.blks
 scener --render workshop.blks --camera WorkshopEstablishing \
-  --size 1536x1024 --output-dir render/workshop
+  --size 1536x1024 --format jpg --output-dir render/workshop
 scener workshop.blks
 ```
 
@@ -85,7 +90,7 @@ third opens the interactive scene editor. Omit `--camera` to render all named
 cameras. Batch options also include `-no-shadows` and `-wireframe`.
 
 Scener names each output after its camera. For example, selecting
-`WorkshopEstablishing` writes `WorkshopEstablishing.png` inside the requested
+`WorkshopEstablishing` writes `WorkshopEstablishing.jpg` inside the requested
 output directory; `--output-dir` is a directory, not a filename.
 
 ## Cameras and Interaction Anchors
@@ -109,7 +114,7 @@ build/bin/orca -test=samples/Book/Tests/test_camera_export_native.lua
 
 Run the last command from the ORCA repository root. Projection can confirm that
 an anchor is inside the camera frame, but cannot detect foreground occlusion.
-Review every render after moving cameras or subjects. The PNG and exported
+Review every render after moving cameras or subjects. The JPEG and exported
 camera metadata must come from the same `.blks` revision and dimensions.
 
 ## Prototype State Renders
@@ -131,6 +136,11 @@ lua Tests/test_scene_projection.lua
 lua Tests/test_camera_export.lua
 cd libs/zilscript && lua ../../Tests/test_workshop_prototype.lua
 ```
+
+`make run` renders every Book scene first, then builds and launches ORCA. This
+ensures a fresh checkout has the ignored JPEG assets required by the runtime.
+The Makefile finds `scener` on `PATH` or at `$HOME/.local/bin/scener`; override
+`SCENER` only for an installation elsewhere.
 
 ## Troubleshooting
 
@@ -161,6 +171,5 @@ confirm the scene declares a non-empty camera name. Select it explicitly with
 
 ### The app shows an old or missing image
 
-Confirm that the expected `.png` exists under `Rooms/render/<scene>/` and that
-`Scripts/WondertownScenes.lua` names the same camera. Old JPEG files are not
-used by the runtime.
+Confirm that the expected `.jpg` exists under `Rooms/render/<scene>/` and that
+`Scripts/WondertownScenes.lua` names the same camera.

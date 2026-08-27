@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- oil_can: footprint 0.36x0.22, baseline y=0, spout points +X. -->
 <prefab>
-  <cylinder pos="0 0.11 0" radius="0.09" height="0.22" color="0.62 0.28 0.10" shininess="48"/>
-  <cone pos="0.14 0.16 0" rot="0 0 -90" radius="0.045" radiusTop="0.012" height="0.28" color="0.62 0.28 0.10" shininess="48"/>
-  <torus pos="-0.10 0.16 0" rot="90 0 0" majorRadius="0.075" minorRadius="0.015" color="0.62 0.28 0.10" shininess="48"/>
-  <cylinder pos="0 0.245 0" radius="0.035" height="0.05" color="0.72 0.47 0.12" shininess="58"/>
+  <cylinder pos="0 11 0" radius="9" height="22" color="0.62 0.28 0.10" shininess="48"/>
+  <cone pos="14 16 0" rot="0 0 -90" radius="4.5" radiusTop="1.2" height="28" color="0.62 0.28 0.10" shininess="48"/>
+  <torus pos="-10 16 0" rot="90 0 0" majorRadius="7.5" minorRadius="1.5" color="0.62 0.28 0.10" shininess="48"/>
+  <cylinder pos="0 24.5 0" radius="3.5" height="5" color="0.72 0.47 0.12" shininess="58"/>
 </prefab>

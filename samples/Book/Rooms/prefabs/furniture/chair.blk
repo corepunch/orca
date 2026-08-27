@@ -3,11 +3,11 @@
      Front direction is +Z (backrest = -Z).
      Rotate around Y to change facing: rotY(+90) -> faces +X, rotY(-90) -> faces -X. -->
 <prefab>
-  <attach name="seat" pos="0 0.475 0"/>
-  <box pos="0 0.45 0" size="0.45 0.05 0.45" material="wood"/>
-  <box pos="0 0.75 -0.2" size="0.45 0.55 0.05" material="wood"/>
-  <prism pos="-0.18 0.225 -0.18" radius="0.025" height="0.45" sides="4" material="wood"/>
-  <prism pos=" 0.18 0.225 -0.18" radius="0.025" height="0.45" sides="4" material="wood"/>
-  <prism pos="-0.18 0.225  0.18" radius="0.025" height="0.45" sides="4" material="wood"/>
-  <prism pos=" 0.18 0.225  0.18" radius="0.025" height="0.45" sides="4" material="wood"/>
+  <attach name="seat" pos="0 47.5 0"/>
+  <box pos="0 45 0" size="45 5 45" material="wood"/>
+  <box pos="0 75 -20" size="45 55 5" material="wood"/>
+  <prism pos="-18 22.5 -18" radius="2.5" height="45" sides="4" material="wood"/>
+  <prism pos="18 22.5 -18" radius="2.5" height="45" sides="4" material="wood"/>
+  <prism pos="-18 22.5 18" radius="2.5" height="45" sides="4" material="wood"/>
+  <prism pos="18 22.5 18" radius="2.5" height="45" sides="4" material="wood"/>
 </prefab>

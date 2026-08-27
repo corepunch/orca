@@ -231,6 +231,8 @@ resources) and launches it with this Book project.
 The reusable 3D blockout lives at
 `Rooms/workshop.blks`, with all required prefabs under `Rooms/prefabs/`.
 The Book project owns these assets; Orion UI supplies the external `scener` CLI.
+All `.blks` and `.blk` distances are authored in centimeters; rotations use
+degrees and `scale` is unitless.
 Install Orion separately with `make install PREFIX="$HOME/.local"`, add
 `$HOME/.local/bin` to `PATH`, then render all cameras from the Book directory:
 
@@ -240,8 +242,8 @@ make render ROOM=workshop
 make render ROOM=workshop WIDTH=1536 HEIGHT=1024
 ```
 
-The default is PNG at 1536×1024, written to
-`Rooms/render/{room}/{camera}.png`. Generated renders are ignored by Git. The
+The default is JPEG at 1536×1024, written to
+`Rooms/render/{room}/{camera}.jpg`. Generated renders are ignored by Git. The
 Makefile runs Scener from `Rooms/`. Rendering requires a graphics session.
 These all-camera renders are separate from the prototype's
 paired oil-present/oil-removed renders and camera export.

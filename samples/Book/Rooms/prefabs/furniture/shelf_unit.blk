@@ -2,12 +2,12 @@
 <!-- shelf_unit: footprint 2.40x0.34, baseline y=0, front faces +Z.
      Attach points mark the centers of shelf top surfaces at y=0.06, 0.68, and 1.30. -->
 <prefab>
-  <attach name="low" pos="0 0.06 0"/>
-  <attach name="middle" pos="0 0.68 0"/>
-  <attach name="high" pos="0 1.30 0"/>
-  <box pos="0 0.03 0" size="2.40 0.06 0.34" color="0.43 0.25 0.12" shininess="18"/>
-  <box pos="0 0.65 0" size="2.40 0.06 0.34" color="0.43 0.25 0.12" shininess="18"/>
-  <box pos="0 1.27 0" size="2.40 0.06 0.34" color="0.43 0.25 0.12" shininess="18"/>
-  <box pos="-1.17 0.65 0" size="0.06 1.30 0.34" color="0.20 0.10 0.05" shininess="12"/>
-  <box pos="1.17 0.65 0" size="0.06 1.30 0.34" color="0.20 0.10 0.05" shininess="12"/>
+  <attach name="low" pos="0 6 0"/>
+  <attach name="middle" pos="0 68 0"/>
+  <attach name="high" pos="0 130 0"/>
+  <box pos="0 3 0" size="240 6 34" color="0.43 0.25 0.12" shininess="18"/>
+  <box pos="0 65 0" size="240 6 34" color="0.43 0.25 0.12" shininess="18"/>
+  <box pos="0 127 0" size="240 6 34" color="0.43 0.25 0.12" shininess="18"/>
+  <box pos="-117 65 0" size="6 130 34" color="0.20 0.10 0.05" shininess="12"/>
+  <box pos="117 65 0" size="6 130 34" color="0.20 0.10 0.05" shininess="12"/>
 </prefab>

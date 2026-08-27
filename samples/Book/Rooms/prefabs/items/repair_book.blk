@@ -2,8 +2,8 @@
 <!-- repair_book: footprint 0.62x0.45, baseline y=0, spine faces -X.
      Instance color reaches the nested book covers; pages and emblem stay fixed. -->
 <prefab>
-  <attach name="top" pos="0 0.18 0"/>
+  <attach name="top" pos="0 18 0"/>
   <prefab source="items/book" scale="1.4 1.4 1.4"/>
-  <box pos="0.08 0.175 0" rot="0 35 0" size="0.16 0.012 0.16" color="0.72 0.47 0.12" shininess="58"/>
-  <torus pos="0.08 0.184 0" majorRadius="0.055" minorRadius="0.012" color="0.72 0.47 0.12" shininess="58"/>
+  <box pos="8 17.5 0" rot="0 35 0" size="16 1.2 16" color="0.72 0.47 0.12" shininess="58"/>
+  <torus pos="8 18.4 0" majorRadius="5.5" minorRadius="1.2" color="0.72 0.47 0.12" shininess="58"/>
 </prefab>

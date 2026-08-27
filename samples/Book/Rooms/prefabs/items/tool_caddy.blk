@@ -2,11 +2,11 @@
 <!-- tool_caddy: footprint 0.52x0.25, baseline y=0, handle spans X.
      tint=1 changes only the painted caddy. -->
 <prefab>
-  <box pos="0 0.08 0" size="0.50 0.16 0.24" color="0.28 0.16 0.07" shininess="12" tint="1"/>
-  <box pos="0 0.31 0" size="0.44 0.05 0.05" color="0.28 0.16 0.07" shininess="12" tint="1"/>
-  <box pos="-0.20 0.22 0" size="0.05 0.24 0.05" color="0.28 0.16 0.07" shininess="12" tint="1"/>
-  <box pos="0.20 0.22 0" size="0.05 0.24 0.05" color="0.28 0.16 0.07" shininess="12" tint="1"/>
-  <cylinder pos="-0.12 0.23 0" radius="0.018" height="0.34" color="0.55 0.55 0.60" shininess="70"/>
-  <cylinder pos="0.02 0.25 0" radius="0.016" height="0.38" color="0.55 0.55 0.60" shininess="70"/>
-  <cylinder pos="0.13 0.21 0" radius="0.020" height="0.30" color="0.72 0.47 0.12" shininess="58"/>
+  <box pos="0 8 0" size="50 16 24" color="0.28 0.16 0.07" shininess="12" tint="1"/>
+  <box pos="0 31 0" size="44 5 5" color="0.28 0.16 0.07" shininess="12" tint="1"/>
+  <box pos="-20 22 0" size="5 24 5" color="0.28 0.16 0.07" shininess="12" tint="1"/>
+  <box pos="20 22 0" size="5 24 5" color="0.28 0.16 0.07" shininess="12" tint="1"/>
+  <cylinder pos="-12 23 0" radius="1.8" height="34" color="0.55 0.55 0.60" shininess="70"/>
+  <cylinder pos="2 25 0" radius="1.6" height="38" color="0.55 0.55 0.60" shininess="70"/>
+  <cylinder pos="13 21 0" radius="2" height="30" color="0.72 0.47 0.12" shininess="58"/>
 </prefab>

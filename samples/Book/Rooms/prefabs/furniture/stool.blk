@@ -2,9 +2,9 @@
 <!-- stool: footprint 0.4x0.4, baseline y=0, seat at y=0.62.
      Rotationally symmetric, no natural front. -->
 <prefab>
-  <box pos="0 0.6 0" size="0.40 0.04 0.40" material="wood"/>
-  <prism pos="-0.16 0.3 -0.16" radius="0.022" height="0.6" sides="4" material="wood"/>
-  <prism pos=" 0.16 0.3 -0.16" radius="0.022" height="0.6" sides="4" material="wood"/>
-  <prism pos="-0.16 0.3  0.16" radius="0.022" height="0.6" sides="4" material="wood"/>
-  <prism pos=" 0.16 0.3  0.16" radius="0.022" height="0.6" sides="4" material="wood"/>
+  <box pos="0 60 0" size="40 4 40" material="wood"/>
+  <prism pos="-16 30 -16" radius="2.2" height="60" sides="4" material="wood"/>
+  <prism pos="16 30 -16" radius="2.2" height="60" sides="4" material="wood"/>
+  <prism pos="-16 30 16" radius="2.2" height="60" sides="4" material="wood"/>
+  <prism pos="16 30 16" radius="2.2" height="60" sides="4" material="wood"/>
 </prefab>

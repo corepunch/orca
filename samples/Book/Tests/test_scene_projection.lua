@@ -27,13 +27,13 @@ close(rightward.y, 400)
 local scene = assert(Projection.parse([[<?xml version="1.0"?>
 <scene>
   <!-- An ignored comment containing <box name="fake"/> -->
-  <camera name="Test" pos="1 2 3" look="0 0 0" fov="45"/>
-  <group pos="10 0 0" rot="0 90 0" scale="2 2 2">
-    <prefab name="prop" source="items/prop" pos="1 2 3" rot="0 0 90"/>
+  <camera name="Test" pos="100 200 300" look="0 0 0" fov="45"/>
+  <group pos="1000 0 0" rot="0 90 0" scale="2 2 2">
+    <prefab name="prop" source="items/prop" pos="100 200 300" rot="0 0 90"/>
   </group>
   <group attach="prop:surface"><prefab source="items/attached"/></group>
   <prefab source="items/repeated"/><prefab source="items/repeated"/>
-  <box name="pivot" pivotOffset="0 1 0"/>
+  <box name="pivot" pivotOffset="0 100 0"/>
 </scene>]]))
 assert(scene.cameras.Test.fov == 45 and not scene.objects.fake)
 local anchor = assert(Projection.anchor(scene, "prop", {1, 0, 0}))

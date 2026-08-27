@@ -14,7 +14,7 @@ authoritative for world state. Scope agreed with the author:
   `TOOL-BENCH`, `COUNTERTOP` (plus `STORAGE-LOFT` reachable).
 - **FOCUS interaction model** implemented host-side (see
   `libs/zilscript/books/wondertown/FOCUS_INTERACTION_MODEL.md`).
-- **Direct PNG renders** from `make render`, one per camera.
+- **Direct JPEG renders** from `make render`, one per camera.
 - ZIL changes allowed in Infocom style if needed (none were required).
 
 ## Mental model
@@ -144,10 +144,10 @@ Render the art (needs a graphics session and working OpenGL context):
 # from samples/Book
 export PATH="$HOME/.local/bin:$PATH"
 make check-scener
-make render ROOM=workshop            # -> Rooms/render/workshop/<Camera>.png
+make render ROOM=workshop            # -> Rooms/render/workshop/<Camera>.jpg
 ```
 
-Run the app (builds ORCA + plugins, needs a graphics session):
+Run the app (renders scenes, builds ORCA + plugins, and needs a graphics session):
 
 ```sh
 # from samples/Book
@@ -176,7 +176,7 @@ reported as load errors; previous artwork is never used as a fallback.
 ## Known gaps / next steps
 
 1. **Regenerate and review the scenes after scene changes.** The manifest expects
-  `Rooms/render/workshop/<Camera>.png`. Run
+  `Rooms/render/workshop/<Camera>.jpg`. Run
    `make render ROOM=workshop`, then `make run`, and verify hotspot registration
    for each camera. Cameras need a visibility review: projecting a point cannot
    tell whether furniture hides it.

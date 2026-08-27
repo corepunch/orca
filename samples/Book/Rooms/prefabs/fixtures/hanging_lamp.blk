@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- hanging_lamp: origin is ceiling suspension point; shade hangs below. -->
 <prefab>
-  <cylinder pos="0 -0.24 0" radius="0.018" height="0.48" color="0.20 0.21 0.24" shininess="50"/>
-  <cone pos="0 -0.53 0" radius="0.28" radiusTop="0.08" height="0.20" color="0.72 0.47 0.12" shininess="58"/>
-  <sphere pos="0 -0.61 0" radius="0.07" color="1.0 0.96 0.82" shininess="10" castShadow="0" unlit="1"/>
-  <light pos="0 -0.64 0" color="1.0 0.70 0.36" intensity="7.0" radius="3.0" castShadows="1"/>
+  <cylinder pos="0 -24 0" radius="1.8" height="48" color="0.20 0.21 0.24" shininess="50"/>
+  <cone pos="0 -53 0" radius="28" radiusTop="8" height="20" color="0.72 0.47 0.12" shininess="58"/>
+  <sphere pos="0 -61 0" radius="7" color="1.0 0.96 0.82" shininess="10" castShadow="0" unlit="1"/>
+  <light pos="0 -64 0" color="1.0 0.70 0.36" intensity="7.0" radius="300" castShadows="1"/>
 </prefab>

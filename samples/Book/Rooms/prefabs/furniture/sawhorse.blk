@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- sawhorse: footprint 1.15x0.55, baseline y=0, beam runs X. -->
 <prefab>
-  <box pos="0 0.76 0" size="1.15 0.10 0.20" color="0.43 0.25 0.12" shininess="18"/>
-  <prism pos="-0.46 0.36 -0.16" rot="0 0 -10" radius="0.045" height="0.72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
-  <prism pos="0.46 0.36 -0.16" rot="0 0 10" radius="0.045" height="0.72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
-  <prism pos="-0.46 0.36 0.16" rot="0 0 -10" radius="0.045" height="0.72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
-  <prism pos="0.46 0.36 0.16" rot="0 0 10" radius="0.045" height="0.72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
+  <box pos="0 76 0" size="115 10 20" color="0.43 0.25 0.12" shininess="18"/>
+  <prism pos="-46 36 -16" rot="0 0 -10" radius="4.5" height="72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
+  <prism pos="46 36 -16" rot="0 0 10" radius="4.5" height="72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
+  <prism pos="-46 36 16" rot="0 0 -10" radius="4.5" height="72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
+  <prism pos="46 36 16" rot="0 0 10" radius="4.5" height="72" sides="4" color="0.34 0.19 0.08" shininess="12"/>
 </prefab>

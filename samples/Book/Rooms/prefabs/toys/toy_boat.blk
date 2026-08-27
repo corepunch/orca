@@ -2,10 +2,10 @@
 <!-- toy_boat: footprint 0.42x0.20, baseline y=0, bow faces +X.
      tint=1 changes the hull; mast and sail keep their materials. -->
 <prefab>
-  <box pos="0 0.07 0" size="0.38 0.12 0.18" color="0.10 0.28 0.48" shininess="14" tint="1">
+  <box pos="0 7 0" size="38 12 18" color="0.10 0.28 0.48" shininess="14" tint="1">
     <taper amount="0.42" axis="x"/>
   </box>
-  <cylinder pos="0 0.28 0" radius="0.014" height="0.44" color="0.34 0.19 0.08" shininess="10"/>
-  <pyramid pos="0.09 0.31 0" rot="0 0 -90" radius="0.14" height="0.26" color="0.82 0.74 0.56" shininess="2"/>
-  <sphere pos="0 0.51 0" radius="0.025" color="0.70 0.45 0.12" shininess="40"/>
+  <cylinder pos="0 28 0" radius="1.4" height="44" color="0.34 0.19 0.08" shininess="10"/>
+  <pyramid pos="9 31 0" rot="0 0 -90" radius="14" height="26" color="0.82 0.74 0.56" shininess="2"/>
+  <sphere pos="0 51 0" radius="2.5" color="0.70 0.45 0.12" shininess="40"/>
 </prefab>

@@ -4,6 +4,7 @@
 -- requesting one of those anchors returns an error instead of a guessed position.
 local Projection = {}
 local radians = math.pi / 180
+local centimeters = 0.01
 
 local function number(value)
     local n = tonumber(value)
@@ -17,6 +18,12 @@ local function vector(value, default)
     for part in value:gmatch("%S+") do result[#result + 1] = number(part) end
     assert(#result == 3, "expected a three-component vector")
     return result
+end
+
+local function position(value, default)
+    local result = vector(value, default)
+    if not value then return result end
+    return {result[1] * centimeters, result[2] * centimeters, result[3] * centimeters}
 end
 
 local function dot(a, b)
@@ -35,7 +42,7 @@ end
 
 local function transform(attrs)
     return {
-        pos = vector(attrs.pos, {0, 0, 0}),
+        pos = position(attrs.pos, {0, 0, 0}),
         rot = vector(attrs.rot, {0, 0, 0}),
         scale = vector(attrs.scale, {1, 1, 1}),
     }
@@ -114,8 +121,8 @@ function Projection.parse(xml)
                     local fov = number(attrs.fov or 60)
                     assert(fov > 0 and fov < 180, "camera FOV must be between 0 and 180")
                     scene.cameras[name] = {
-                        name = name, pos = vector(attrs.pos, {0, 1.6, 5}),
-                        look = vector(attrs.look, {0, 1.2, 0}), fov = fov,
+                        name = name, pos = position(attrs.pos, {0, 1.6, 5}),
+                        look = position(attrs.look, {0, 1.2, 0}), fov = fov,
                     }
                     scene.cameraCount = (scene.cameraCount or 0) + 1
                 elseif objectTags[tag] then

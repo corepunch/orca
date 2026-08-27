@@ -2,7 +2,7 @@
 <!-- jar: footprint 0.18x0.18, baseline y=0, no natural front.
      tint=1 changes the visible contents; glass and lid stay fixed. -->
 <prefab>
-  <cylinder pos="0 0.14 0" radius="0.09" height="0.28" color="0.32 0.44 0.50" shininess="80"/>
-  <cylinder pos="0 0.10 0" radius="0.068" height="0.15" color="0.62 0.28 0.10" shininess="20" tint="1"/>
-  <cylinder pos="0 0.30 0" radius="0.075" height="0.04" color="0.72 0.47 0.12" shininess="58"/>
+  <cylinder pos="0 14 0" radius="9" height="28" color="0.32 0.44 0.50" shininess="80"/>
+  <cylinder pos="0 10 0" radius="6.8" height="15" color="0.62 0.28 0.10" shininess="20" tint="1"/>
+  <cylinder pos="0 30 0" radius="7.5" height="4" color="0.72 0.47 0.12" shininess="58"/>
 </prefab>
