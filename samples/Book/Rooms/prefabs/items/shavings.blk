@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- shavings: footprint 0.65x0.48, baseline y=0, no natural front. -->
-<prefab>
-  <torus pos="-18 2.5 -8" majorRadius="9" minorRadius="1.2" color="0.62 0.43 0.22" shininess="3"/>
-  <torus pos="13 2.2 10" majorRadius="7" minorRadius="1" color="0.70 0.50 0.27" shininess="3"/>
-  <torus pos="22 2 -13" majorRadius="5.5" minorRadius="0.9" color="0.58 0.38 0.18" shininess="3"/>
-  <box pos="-2 1.2 16" rot="0 24 0" size="30 2.4 3.5" color="0.68 0.47 0.24" shininess="3"/>
-  <box pos="2 1.1 -18" rot="0 -18 0" size="24 2.2 3" color="0.58 0.38 0.18" shininess="3"/>
-</prefab>

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- mug: footprint 0.24x0.18, baseline y=0, handle faces +X.
-     tint=1 changes the ceramic body and handle. -->
-<prefab>
-  <cylinder pos="0 11 0" radius="9" height="22" tube="1.8" color="0.24 0.38 0.42" shininess="24" tint="1"/>
-  <torus pos="10 12 0" rot="90 0 0" majorRadius="6.5" minorRadius="1.8" color="0.24 0.38 0.42" shininess="24" tint="1"/>
-  <cylinder pos="0 1 0" radius="7.2" height="2" color="0.10 0.05 0.025" shininess="4"/>
-</prefab>
