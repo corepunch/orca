@@ -1,15 +1,15 @@
 -- Presentation + focus manifest for the Wondertown workshop chapter.
 --
 -- ZIL owns world state and result prose. This manifest maps stable ZIL names to
--- SimpleSketch3D cameras, to the local choices a focused subject offers, and to
+-- Scener cameras, to the local choices a focused subject offers, and to
 -- the action art that owns a story beat. It never decides world logic: every
 -- choice submits an ordinary parser command that ZIL is free to accept, refuse,
 -- or reshape according to current state.
 --
--- Images are direct SimpleSketch3D screenshots, one per camera, produced by
+-- Images are direct Scener renders, one per camera, produced by
 -- `make render ROOM=workshop`.
 
-local render_base, render_ext = "Book/Rooms/render/workshop/", ".jpg"
+local render_base, render_ext = "Book/Rooms/render/workshop/", ".png"
 
 local M = {}
 

@@ -7,14 +7,14 @@ and test it, and what is deliberately left open.
 ## Goal of this milestone
 
 Turn the first Wondertown location into a fully playable, Disney-storybook-style
-chapter driven by direct SimpleSketch3D screenshots, while keeping ZIL
+chapter driven by direct Scener renders, while keeping ZIL
 authoritative for world state. Scope agreed with the author:
 
 - **Whole workshop building** playable: `WORKSHOP-FLOOR`, `WORKBENCH-TOP`,
   `TOOL-BENCH`, `COUNTERTOP` (plus `STORAGE-LOFT` reachable).
 - **FOCUS interaction model** implemented host-side (see
   `libs/zilscript/books/wondertown/FOCUS_INTERACTION_MODEL.md`).
-- **Direct screenshots** from `make render`, one per camera.
+- **Direct PNG renders** from `make render`, one per camera.
 - ZIL changes allowed in Infocom style if needed (none were required).
 
 ## Mental model
@@ -69,8 +69,8 @@ World (unchanged in this milestone):
   point (loads zork1 verbs + wondertown, no `companion.zil`).
 
 Scene blockout:
-- `Rooms/workshop.blks` — **not edited** this milestone (cannot render/verify in a
-  headless session). Named anchors matching ZIL objects: `KEY-HOOK`, `OIL-CAN`,
+- `Rooms/workshop.blks` — **not edited** this milestone. Named anchors matching
+  ZIL objects: `KEY-HOOK`, `OIL-CAN`,
   `CLOCK-FACE`, `PET-DOOR`. Decoration anchors reused via manifest `node=` alias:
   `main_bench`→`WORKBENCH`, `counter_chair`→`BERTRAND`, `tool_bench`.
 
@@ -123,6 +123,9 @@ climb down while open is refused; close it → climb **down** to the floor →
 
 ## How to run and test
 
+See `RENDERING.md` for the complete Scener rendering workflow, direct
+single-camera commands, validation, and troubleshooting.
+
 Headless logic (works anywhere with `lua` 5.4):
 
 ```sh
@@ -135,11 +138,13 @@ cd libs/zilscript && lua ../../Tests/test_workshop_prototype.lua
 
 All three currently PASS.
 
-Render the art (needs a graphics session — screenshots require a display):
+Render the art (needs a graphics session and working OpenGL context):
 
 ```sh
 # from samples/Book
-make render ROOM=workshop            # -> Rooms/render/workshop/<Camera>.jpg
+export PATH="$HOME/.local/bin:$PATH"
+make check-scener
+make render ROOM=workshop            # -> Rooms/render/workshop/<Camera>.png
 ```
 
 Run the app (builds ORCA + plugins, needs a graphics session):
@@ -163,19 +168,15 @@ Regenerate the camera export after any change to `Rooms/workshop.blks`:
 lua Tools/export_workshop_camera.lua   # rewrites Scenes/WorkshopCamera.xml + Scripts/WorkshopCamera.lua
 ```
 
-## Environment note for the current session
+## Environment note
 
-This handover was produced in a headless sandbox: `make render` and `make run`
-fail here with `SDL_Init: The video driver did not add any displays`, and no
-`build/bin/orca` exists. The Session/projection/export logic was validated with
-`lua`; the GUI and screenshots must be rendered/verified on a machine with a
-display. Missing renders are reported as load errors; previous artwork is never
-used as a fallback.
+Scener rendering and `make run` require a graphical session. Missing renders are
+reported as load errors; previous artwork is never used as a fallback.
 
 ## Known gaps / next steps
 
-1. **Render the screenshots.** The manifest expects
-   `Rooms/render/workshop/<Camera>.jpg` (JPEG is the `make render` default). Run
+1. **Regenerate and review the scenes after scene changes.** The manifest expects
+  `Rooms/render/workshop/<Camera>.png`. Run
    `make render ROOM=workshop`, then `make run`, and verify hotspot registration
    for each camera. Cameras need a visibility review: projecting a point cannot
    tell whether furniture hides it.
@@ -204,5 +205,5 @@ used as a fallback.
   command; do not encode puzzle logic in the manifest.
 - Focus is presentation only. Never assign a focused object to `HERE`.
 - Reading room prose or leaving a focus must not issue `LOOK` or spend a turn.
-- Screenshots are blocking art, not finished illustration; keep the exported
+- Scener renders are blocking art, not finished illustration; keep the exported
   camera and object silhouettes for registration when art is commissioned.

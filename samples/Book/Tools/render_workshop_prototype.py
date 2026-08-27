@@ -1,15 +1,16 @@
 """Render the two prototype states, then export their camera/anchors to ORCA.
 
 Run from any directory: python3 Tools/render_workshop_prototype.py
-Requires the SimpleSketch3D screenshot binary, a graphics session, and Lua 5.4.
+Requires Scener on PATH, a graphics session, and Lua 5.4.
 """
+import os
 from pathlib import Path
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
 
 BOOK = Path(__file__).resolve().parents[1]
-SKETCH = BOOK / "libs/simplesketch3d"
+SCENER = os.environ.get("SCENER", "scener")
 ROOMS = BOOK / "Rooms"
 SOURCE = ROOMS / "workshop.blks"
 OUTPUT = BOOK / "Images/prototype"
@@ -35,12 +36,13 @@ def main():
         ET.ElementTree(root).write(temp / "taken.blks", encoding="unicode")
         for state in ("present", "taken"):
             subprocess.run([
-                str(SKETCH / "build/bin/screenshot"), str(temp / f"{state}.blks"),
-                "-cam", camera, "-w", width, "-h", height,
-                "-d", "24", "-o", str(temp / f"{state}.png"),
+                SCENER, "--render", str(temp / f"{state}.blks"),
+                "--camera", camera, "--size", f"{width}x{height}",
+                "--output-dir", str(temp / state),
             ], cwd=ROOMS, check=True)
         for state in ("present", "taken"):
-            (OUTPUT / f"workshop-{state}.png").write_bytes((temp / f"{state}.png").read_bytes())
+            rendered = temp / state / f"{camera}.png"
+            (OUTPUT / f"workshop-{state}.png").write_bytes(rendered.read_bytes())
         (OUTPUT / "workshop.blks").write_text(text)
     subprocess.run(["lua", "Tools/export_workshop_camera.lua"], cwd=BOOK, check=True)
 

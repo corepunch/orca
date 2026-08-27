@@ -38,7 +38,7 @@ function Export.generate(spec, scene)
         local length = math.sqrt(dx*dx + dy*dy + dz*dz)
         -- Skip degenerate/overhead references: a vertical look has no yaw convention.
         if length > 1e-8 and math.sqrt(dx*dx + dz*dz) > 1e-8 then
-            -- ORCA: Rz*Ry*Rx, local -Z forward, +Y up; SimpleSketch3D is also Y-up.
+            -- ORCA: Rz*Ry*Rx, local -Z forward, +Y up; Scener is also Y-up.
             local rotation = {math.asin(dy/length)*180/math.pi, math.atan(-dx, -dz)*180/math.pi, 0}
             xml[#xml + 1] = '  <Camera Name="' .. xmlEscape(name) .. '"'
                 .. ' RenderTransformTranslation="' .. vec(camera.pos) .. '"'

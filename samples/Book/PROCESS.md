@@ -154,7 +154,7 @@ resolution) only. `Scripts/WondertownScenes.lua` is the presentation + focus
 manifest: it maps each ZIL room to a camera, each authored subject to its local
 choices and exit phrasing, and names the action-art camera for beats. Every
 choice is an ordinary parser command; ZIL decides the outcome. Images are direct
-SimpleSketch3D screenshots, one per camera, at `Rooms/render/workshop/`.
+Scener renders, one per camera, at `Rooms/render/workshop/`.
 
 ### Objects are the interaction model
 
@@ -181,9 +181,9 @@ Keep those in ordinary ZIL object/exit behavior, not a second companion file.
 The legacy companion implementation remains available to other clients but is
 not loaded or queried by this Book prototype.
 
-### Camera export and screenshot prototype
+### Camera export and rendered prototype
 
-Use matching SimpleSketch3D screenshots for the technical experiment. These
+Use matching Scener renders for the technical experiment. These
 are blocking art, not a replacement for the illustration criteria below.
 The current slice stays on the workshop floor: examine hook, examine door,
 examine clock, and take oil can. Door traversal and the rest of the earlier
@@ -198,13 +198,13 @@ orientation, vertical FOV, near/far planes, source image dimensions, and world
 anchors together; never manually copy screen-pixel circle positions.
 
 From `samples/Book`, run `python3 Tools/render_workshop_prototype.py` to
-regenerate the screenshots and camera export together. For an unchanged image
+regenerate the PNG renders and camera export together. For an unchanged image
 snapshot, `lua Tools/export_workshop_camera.lua` exports just camera/anchors.
 The PNGs and source snapshot live under the repository-ignored `Images/` tree;
 the render script is their reproducible source, not a requirement to commit
 generated art.
 
-Both renderers use the declared vertical FOV without widening or compensation.
+Scener and ORCA projection use the declared vertical FOV without compensation.
 ORCA converts horizontal FOV using `2*atan(tan(horizontalFov/2)/aspect)`;
 dividing the angle itself by aspect is incorrect. The exported camera preserves
 the source FOV unchanged. The screen projects loaded camera/anchor data,
@@ -212,7 +212,7 @@ then applies the same centered `UniformToFill` scale and
 crop as the screenshot. A cropped/behind-camera target is hidden, not clamped
 onto an unrelated object. Marker diameter stays in UI units.
 
-The prototype uses a fixed 1024×768 page and 1536×1024 screenshots. Only explicit
+The prototype uses a fixed 1024×768 page and 1536×1024 renders. Only explicit
 named or unique prefab-instance anchors with ordinary group transforms are
 supported; attach slots, pivot offsets, occlusion testing, arbitrary scene
 export and live 3D rendering are not implemented. New cameras need a visibility
@@ -223,41 +223,40 @@ enough for registration. Removable props need a clean background plus a prop
 and contact-shadow layer, or matching complete state images. Do not paint a
 takeable object permanently into the background and merely remove its circle.
 
-## SimpleSketch3D workshop blockout
+## Scener workshop blockout
 
 From the Book directory, `make run` builds ORCA (including plugins and shared
 resources) and launches it with this Book project.
 
 The reusable 3D blockout lives at
 `Rooms/workshop.blks`, with all required prefabs under `Rooms/prefabs/`.
-The Book project owns these assets; `libs/simplesketch3d` supplies the renderer.
-From the Book directory, render all cameras of every room with:
+The Book project owns these assets; Orion UI supplies the external `scener` CLI.
+Install Orion separately with `make install PREFIX="$HOME/.local"`, add
+`$HOME/.local/bin` to `PATH`, then render all cameras from the Book directory:
 
 ```sh
 make render
 make render ROOM=workshop
-make render ROOM=workshop FORMAT=png WIDTH=1536 HEIGHT=1024
+make render ROOM=workshop WIDTH=1536 HEIGHT=1024
 ```
 
-The default is JPEG at 1536×1024, written to
-`Rooms/render/{room}/{camera}.jpg`. PNG uses the same layout with `.png`.
-Generated renders are ignored by Git. The Makefile builds the screenshot tool
-and runs it from `Rooms/`, with editor overlays hidden. Rendering requires a
-graphics session. These all-camera renders are separate from the prototype's
-paired oil-present/oil-removed screenshots and camera export.
+The default is PNG at 1536×1024, written to
+`Rooms/render/{room}/{camera}.png`. Generated renders are ignored by Git. The
+Makefile runs Scener from `Rooms/`. Rendering requires a graphics session.
+These all-camera renders are separate from the prototype's
+paired oil-present/oil-removed renders and camera export.
 
-Run SimpleSketch3D from `Rooms/` so its relative `prefabs/` lookup resolves
-Book's assets. For example, from `Rooms/`:
+Run Scener from `Rooms/` so its relative `prefabs/` lookup resolves Book's
+assets. For example, from `Rooms/`:
 
 ```sh
-../libs/simplesketch3d/build/bin/simplegl workshop.blks -list-cameras
-../libs/simplesketch3d/build/bin/simplegl workshop.blks -test
+scener --list-cameras workshop.blks
+scener workshop.blks
 ```
 
 The prototype render script selects this working directory automatically.
-Shared prefabs still needed by SimpleSketch3D's demo/test scenes retain library
-copies; Book renders never depend on those copies. The `.blks` file in
-`Images/prototype/` is only a generated snapshot paired with the screenshots.
+The `.blks` file in `Images/prototype/` is only a generated snapshot paired with
+the renders.
 
 The workshop keeps the major
 story affordances—the empty key hook, pet door, clock, main workbench, repair
@@ -317,7 +316,7 @@ single prefab containing a `bool-negative-box`, four perimeter rails, inset
 pane, and mullions. The cutter's outer X/Y dimensions and the frame's outer
 boundary are both 2.0 by 1.7 units, eliminating the accidental plaster reveal
 created by the earlier 2.0-by-1.7 wall hole, 1.92-by-1.62 pane, and missing
-perimeter frame. SimpleSketch3D collects these prefab cutters before building
+perimeter frame. Scener collects these prefab cutters before building
 walls, so one transformed window instance defines both placement and opening,
 even when it is declared after the wall. This is intentionally rectangular
 wall cutting rather than general-purpose mesh CSG.
@@ -331,7 +330,7 @@ instance's `color` as a diffuse-only override; unmarked pieces keep their own
 appearance. Thus one `book` prefab can have red, blue, green, or ochre covers
 while every instance retains paper-colored pages.
 
-The next most valuable SimpleSketch3D authoring features are named material
+The next most valuable Scener authoring features are named material
 slots for multiple independently colored parts, per-camera visibility/state
 variants for open-versus-closed props, animation, object/layer naming for CLI
 inspection, aspect-safe cameras, textures/alpha, and softer lighting options.

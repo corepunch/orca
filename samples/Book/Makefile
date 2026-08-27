@@ -1,14 +1,13 @@
 .DEFAULT_GOAL := render
 
-SKETCH := libs/simplesketch3d
+SCENER ?= scener
 ROOMS := $(basename $(notdir $(wildcard Rooms/*.blks)))
 ROOM ?= $(ROOMS)
-FORMAT ?= jpg
 WIDTH ?= 1536
 HEIGHT ?= 1024
 RENDER_TARGETS := $(addprefix render-,$(ROOM))
 
-.PHONY: run render renderer $(RENDER_TARGETS)
+.PHONY: run render check-scener $(RENDER_TARGETS)
 
 run:
 	$(MAKE) -C ../.. unite
@@ -16,9 +15,12 @@ run:
 
 render: $(RENDER_TARGETS)
 
-renderer:
-	$(MAKE) -C $(SKETCH) screenshot
+check-scener:
+	@command -v "$(SCENER)" >/dev/null || { \
+		echo 'scener is required; install Orion with `make install PREFIX="$$HOME/.local"` and add $$HOME/.local/bin to PATH'; \
+		exit 1; \
+	}
 
-$(RENDER_TARGETS): render-%: Rooms/%.blks | renderer
-	cd Rooms && ../$(SKETCH)/build/bin/screenshot "$*.blks" -all \
-		-format "$(FORMAT)" -w "$(WIDTH)" -h "$(HEIGHT)" -d 24 -o "render/$*"
+$(RENDER_TARGETS): render-%: Rooms/%.blks | check-scener
+	cd Rooms && "$(SCENER)" --render "$*.blks" --size "$(WIDTH)x$(HEIGHT)" \
+		--output-dir "render/$*"

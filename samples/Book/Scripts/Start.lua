@@ -17,7 +17,7 @@ local function resolve_image(path)
         local file = io.open(prefix .. path, "r")
         if file then file:close(); return path end
     end
-    error("Missing SimpleSketch3D render: " .. path .. ". Run `make render ROOM=workshop`.")
+    error("Missing Scener render: " .. path .. ". Run `make render ROOM=workshop`.")
 end
 
 local function add_choice(self, container, label, handler, class)

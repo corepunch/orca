@@ -1,4 +1,4 @@
--- Camera/anchor import for SimpleSketch3D .blks scenes. No renderer dependency.
+-- Camera/anchor import for Scener .blks scenes. No renderer dependency.
 -- Supported anchors are scene/group children, including prefab instance origins.
 -- Prefab contents, attach slots and pivot offsets require a full scene resolver;
 -- requesting one of those anchors returns an error instead of a guessed position.
@@ -29,7 +29,7 @@ end
 
 local function normalize(v)
     local length = math.sqrt(dot(v, v))
-    if length <= 1e-8 then return {0, 0, 1} end -- SimpleSketch3D vnorm fallback.
+    if length <= 1e-8 then return {0, 0, 1} end -- Scener vnorm fallback.
     return {v[1] / length, v[2] / length, v[3] / length}
 end
 
