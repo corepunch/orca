@@ -52,7 +52,6 @@ struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
 // struct AXsize R_TexImageS3TC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageASTC(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImageJPEG(GLenum target, struct AXbuffer* rgb);
-struct AXsize R_TexImageJPEGwithAlpha(GLenum target,struct AXbuffer* rgb,struct AXbuffer* alpha,bool_t premultiply_alpha);
 
 
 void
@@ -260,26 +259,6 @@ R_TexImage(GLenum target,
 
     case JPEG0_HEADER:
     case JPEG1_HEADER:
-      //	if (filename && strstr(filename, ".jpg"))
-      //	{
-      //		lpcString_t    ext = strstr(filename, ".jpg");
-      //		path_t path;
-      //		memcpy(path, filename, ext - filename);
-      //		strcpy(path + (ext - filename), ".alpha");
-      //		struct file * pFile;
-      //		if ((pFile = FS_LoadFile(path)))
-      //		{
-      //			struct AXbuffer alpha = {
-      //				(void *)pFile->data, pFile->size,
-      // pFile->size, 0
-      //			};
-      //			struct AXsize const size =
-      //R_TexImageJPEGwithAlpha( 				target, sb, &alpha, premulalpha
-      //			);
-      //			FS_FreeFile(pFile);
-      //			return size;
-      //		}
-      //	}
       return R_TexImageJPEG(target, sb);
     default:
       return MAKE_TEX_SIZE(0, 0);

@@ -103,8 +103,6 @@ These libraries are fetched and compiled automatically by Emscripten via
 | Library   | Flag              |
 |-----------|-------------------|
 | zlib      | `-sUSE_ZLIB=1`    |
-| libpng    | `-sUSE_LIBPNG=1`  |
-| libjpeg   | `-sUSE_LIBJPEG=1` |
 | freetype  | `-sUSE_FREETYPE=1`|
 
 ### WASM libraries (built from source with emmake)

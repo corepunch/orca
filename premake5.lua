@@ -25,7 +25,7 @@ workspace "orca"
     buildoptions { 
         "-fpic",
         "-I.",
-        "`pkg-config --cflags libjpeg freetype2 libxml-2.0 2>/dev/null`"
+        "`pkg-config --cflags freetype2 libxml-2.0 2>/dev/null`"
     }
     
     -- Configuration specific settings
@@ -92,7 +92,7 @@ project "orca.renderer"
         "orca.geometry"
     }
     linkoptions {
-        "`pkg-config --libs freetype2 libjpeg libpng 2>/dev/null`"
+        "`pkg-config --libs freetype2 2>/dev/null`"
     }
     
     filter "system:macosx"
@@ -321,7 +321,7 @@ project "orca"
         "curl"
     }
     linkoptions {
-        "`pkg-config --libs lua5.4 freetype2 libjpeg libpng libxml-2.0 2>/dev/null`"
+        "`pkg-config --libs lua5.4 freetype2 libxml-2.0 2>/dev/null`"
     }
     
     filter "system:macosx"
