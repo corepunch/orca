@@ -265,11 +265,9 @@ Shape_Load(lpcString_t);
 HRESULT
 Shape_Release(struct shape*);
 
-// FT
+// font rasterizer
 void
-FT_Init(void);
-void
-FT_Shutdown(void);
+Font_Shutdown(void);
 
 // font
 HRESULT

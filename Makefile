@@ -13,7 +13,6 @@ PLUGINLIBDIR = $(LIBDIR)/liborca
 TARGET = $(BINDIR)/$(APPNAME)
 TARGETLIB = $(LIBDIR)/lib$(LIBNAME).so
 PLATFORM_LIBDIR = libs/platform
-#LIBS = -lm -ldl -lpthread -llua5.4 -lfreetype -lpng -ljpeg -lz -llz4 -lcurl -lxml2 -lplatform
 LIBS = -ldl -lpthread -lcurl -lplatform
 CC = gcc
 UNAME_S := $(shell uname -s)
@@ -55,8 +54,8 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
-CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 freetype2 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua freetype2 libxml-2.0 2>/dev/null)
-LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua freetype2 libxml-2.0 2>/dev/null)
+CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libxml-2.0 2>/dev/null)
+LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua libxml-2.0 2>/dev/null)
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION

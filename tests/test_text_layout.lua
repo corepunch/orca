@@ -165,7 +165,7 @@ local function test_empty_text_block_foreground_content()
 end
 
 -- ---------------------------------------------------------------------------
--- Text measurement cache: repeated layout must not redo the expensive FreeType
+-- Text measurement cache: repeated layout must not redo the expensive font
 -- measurement work unless text inputs change.
 -- ---------------------------------------------------------------------------
 local function test_text_layout_uses_cached_measurement()

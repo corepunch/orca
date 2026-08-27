@@ -40,13 +40,13 @@ Available built-in shader types:
 
 ## Text Rendering Pipeline
 
-`TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via FreeType, then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).
+`TextBlock` (2D) and `TextBlock3D` (3D) both rasterize text to an alpha8 texture via the vendored `stb_truetype`, then render it through `SHADER_UI`. `SHADER_CHARSET` is **not** used for UI text — it is only used by the legacy terminal console (`R_DrawConsole`).
 
 ### Font registration and loading
 
 1. At project load, `_RegisterProjectFonts()` (`source/filesystem/filesystem.c`) walks the project's `FontLibrary/` directory, reads the `Name` attribute from each `.xml` descriptor, and calls `CORE_RegisterFontFamily(name, path)` (`source/core/core_main.c`) which stores the name→asset-path mapping in `core.fonts[]`.
-2. When a `FontFamily` object is instantiated (via `FS_LoadObject(path)` triggered by property assignment), its `Object.Start` handler in `source/renderer/r_font.c` calls `Font_Load()` for each of Regular / Bold / Italic / BoldItalic, which reads the TTF file and calls `FT_New_Memory_Face()`.
-3. `FontFamily_GetFace(family, style)` returns the correct `FT_Face` for a given weight/style combination.
+2. When a `FontFamily` object is instantiated (via `FS_LoadObject(path)` triggered by property assignment), its `Object.Start` handler in `source/renderer/r_font.c` loads each declared Regular / Bold / Italic / BoldItalic TTF file and initializes an `stbtt_fontinfo` over the owned font bytes.
+3. `FontFamily_GetFace(family, style)` returns the matching opaque `fontface` for a given weight/style combination.
 4. `Font_GetDefaultFamily()` lazily loads NotoSans as the fallback.
 
 ### Property → TextBlockText assembly (`MakeText` message)
@@ -65,10 +65,10 @@ When layout or draw requests text, the `TextBlockConcept` handler for `MakeText`
 
 `TextBlockText_Print()` calls `T_LayoutText(bRender=TRUE)` which does a **two-pass** layout:
 
-- **Pass 1** (`bRender=FALSE`): measures each word with `T_MeasureWord()` (using `FT_Load_Glyph` + kerning) to determine the final pixel dimensions. No allocation.
+- **Pass 1** (`bRender=FALSE`): measures each word with `T_MeasureWord()` using stb glyph advances and kerning to determine the final pixel dimensions. No allocation.
 - **Pass 2** (`bRender=TRUE`): allocates a `uint8_t` bitmap of `width × height` bytes (alpha8), then blits each word with `T_BlitWord()`:
-  - `T_BeginRun()` calls `FontFamily_GetFace()` then `FT_Set_Pixel_Sizes(face, 0, fontSize * scale)` and reads ascender/descender/underline metrics.
-  - `T_BlitWord()` calls `FT_Load_Glyph()` + `FT_Render_Glyph(FT_RENDER_MODE_NORMAL)`, then `T_BlitGlyph()` copies each `FT_Bitmap` row into the pixel buffer with kerning advance.
+    - `T_BeginRun()` calls `FontFamily_GetFace()` then `FontFace_GetMetrics()` for the requested pixel height.
+    - `T_BlitWord()` calls `FontFace_RenderGlyph()`, then `T_BlitGlyph()` copies each grayscale bitmap row into the pixel buffer with stb advance and kerning values.
   - `T_BlitEllipsis()` renders trailing `"..."` when `TextOverflow=ellipsis`.
   - `T_BlitUnderline()` fills horizontal spans for `TextDecoration=underline`.
 
@@ -95,7 +95,7 @@ Node2D_Draw2DContent
 
 ### 3D draw path (`TextBlock3D`)
 
-The FreeType rasterization path is identical to 2D. The difference is the entry point and the `ViewEntity` setup:
+The stb_truetype rasterization path is identical to 2D. The difference is the entry point and the `ViewEntity` setup:
 
 ```
 Viewport3D_Node2D_ForegroundContent (Viewport3D.c)
@@ -159,7 +159,7 @@ The renderer has two distinct stages of initialization that are easy to conflate
 
 | Stage | Trigger | What it does |
 |---|---|---|
-| **Module load** | `require "orca.renderer"` → `luaopen_orca_renderer` → `on_renderer_module_registered` | Calls `axInit()` (platform window/display system) and `FT_Init()` (FreeType). No OpenGL context yet. |
+| **Module load** | `require "orca.renderer"` → `luaopen_orca_renderer` → `on_renderer_module_registered` | Calls `axInit()` for the platform window/display system. No OpenGL context yet. |
 | **Full init** | `renderer.init(width, height, offscreen)` | Creates the GL context, calls `R_InitBuffers()` (sets `tr.buffer`), loads built-in shaders and textures. |
 
 ### The `tr.buffer` Sentinel
@@ -176,7 +176,7 @@ if (!tr.buffer) {
 
 ### Shutdown Safety
 
-The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `FT_Shutdown` → `AX_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). If the renderer was never fully initialized, `renderer_Shutdown` returns early and `AX_Shutdown` tears down the window system cleanly.
+The shutdown sequence (`renderer_gc` → `renderer_Shutdown` → `Font_Shutdown` → `AX_Shutdown`) runs automatically when the Lua state is closed (`lua_close`). `Font_Shutdown` releases loaded font bytes; stb_truetype has no global library state. If the renderer was never fully initialized, `renderer_Shutdown` returns early and `AX_Shutdown` tears down the window system cleanly.
 
 > **Contributor note:** If you add new resources to `struct renderer`, ensure they are initialized with a sentinel value that `renderer_Shutdown` can detect before cleaning them up. The simplest pattern is to initialize to `NULL`/`0` (the `memset(&tr, 0, ...)` in `renderer_Shutdown` already clears them) and guard deletions with `SafeDelete`.
 
