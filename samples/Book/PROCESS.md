@@ -124,29 +124,37 @@ or changing the main quest topology.
 
 ## Runtime contract
 
-ZIL remains authoritative for world state and result prose.
+ZIL remains authoritative for world state and result prose. The host adds a
+**focus** layer between the ZIL world and the page, implementing
+`libs/zilscript/books/wondertown/FOCUS_INTERACTION_MODEL.md`. It carries no
+companion module; `Scripts/WondertownPrototype.zil` loads the original gameplay
+without `companion.zil`.
 
-- The current prototype has no companion suggestions or choice list. The
-  Book-specific `Scripts/WondertownPrototype.zil` entry point loads the original
-  gameplay without `companion.zil`.
-- White 48-unit circles sit on objects in the establishing image. Tapping one
-  submits a parser command derived from the matched ZIL object, guarded by
-  current ZIL state. Portable (`TAKEBIT`) objects default to TAKE; other objects
-  default to EXAMINE.
-- The host holds an action image and command result prose with **Continue**;
-  when there is no dedicated action art, it holds the current scene with the
-  result prose. All object circles are hidden during the beat.
-- Continue restores the room's authored description and state-dependent image
-  and circles. It does not issue LOOK or consume a game turn.
-- Taking the oil can removes both its visible geometry/shadow and its circle
-  on return to the establishing scene. Permanent scenery keeps its circle.
+- Each ZIL room maps to an establishing camera. White 48-unit circles sit on the
+  room's visible subjects; a subject whose anchor is cropped or unmodelled is
+  offered as a text choice instead. Room exits are always text choices.
+- Tapping a subject submits a parser command guarded by current ZIL state.
+  Portable (`TAKEBIT`) objects default to TAKE; an authored subject opens a
+  FOCUS; any other reachable object EXAMINEs. FOCUS narrows the page to that
+  subject's three-to-five local choices plus an in-world way to step back.
+- A command with dedicated action art, or one that changes room, is held
+  full-frame with its result prose and a single **Continue**; quieter results
+  refresh the focused page in place. Circles and choices hide during a beat.
+- Continue restores the current room or focus, refreshed to ZIL state. Leaving a
+  focus or reading authored room prose does not issue LOOK or consume a turn.
+- Taken portable objects lose their circle; permanent scenery keeps it. A
+  room-changing action (climb, walk) lands Continue on the next room's
+  establishing page.
 
 This separation is important: room state cannot describe a transient instant
 such as Pip halfway up a stair or Bertrand's jaw snapping open.
 
-`Scripts/WorkshopInteractions.lua` now stores only camera/image-state settings,
-not an authored target or command list. `Scripts/WondertownScenes.lua` optionally
-maps `ZIL-OBJECT.verb` keys to action art; missing art does not disable interaction.
+`Scripts/WorkshopInteractions.lua` is the camera export spec (source scene and
+resolution) only. `Scripts/WondertownScenes.lua` is the presentation + focus
+manifest: it maps each ZIL room to a camera, each authored subject to its local
+choices and exit phrasing, and names the action-art camera for beats. Every
+choice is an ordinary parser command; ZIL decides the outcome. Images are direct
+SimpleSketch3D screenshots, one per camera, at `Rooms/render/workshop/`.
 
 ### Objects are the interaction model
 

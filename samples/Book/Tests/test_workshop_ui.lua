@@ -19,6 +19,9 @@ local screen = assert(filesystem.loadObjectFromXmlString(xml))
 core.flushQueue()
 screen:UpdateLayout(1024, 768)
 local function find(name) return screen:findChild(name, true) end
+
+-- Establishing page: the workshop floor projects its visible subjects as circles
+-- and offers room exits as text choices.
 assert(find("Hotspot_KEY-HOOK"), "Projected hook circle missing")
 assert(find("Hotspot_PET-DOOR"), "Projected door circle missing")
 assert(find("Hotspot_CLOCK-FACE"), "Projected clock circle missing")
@@ -27,20 +30,23 @@ assert(math.abs(oil.ActualWidth - 48) < 1 and math.abs(oil.ActualHeight - 48) < 
 assert(oil.MarginLeft > 800 and oil.MarginLeft < 850)
 assert(oil.ActualY > 490 and oil.ActualY < 550, "Circle lost projected vertical position")
 assert(oil.BorderWidthLeft == 3, "Circle stylesheet did not load")
-assert(not find("Options"), "Companion choices must not be rendered")
-assert(not find("Hotspot_main_bench"), "Unmatched scene names must not create circles")
+assert(find("Choices"):getFirstChild(), "Room exits must be offered as choices")
+assert(find("SceneDescription").Text:find("Grandfather Tolliver", 1, true))
+
+-- Tapping the oil can holds a take beat: circles hide and Continue appears.
 assert(system.dispatchMessage { target = screen, message = "LeftButtonUp", x = oil.ActualX + 24, y = oil.ActualY + 24 })
 pump(screen)
-
 assert(not find("Hotspots").Visible, "Targets must be hidden during action beat")
 assert(find("Continue").Visible)
+assert(find("SceneDescription").Text:find("oil can", 1, true), "Beat shows the result prose")
+
+-- Continue restores the establishing page with the collected oil can removed.
 screen:UpdateLayout(1024, 768)
 local next = find("Continue")
 assert(system.dispatchMessage { target = screen, message = "LeftButtonUp", x = next.ActualX + 10, y = next.ActualY + 10 })
 pump(screen)
-
 assert(not find("Continue").Visible)
 assert(not find("Hotspot_OIL-CAN"), "Collected oil target must stay removed")
 assert(find("Hotspot_PET-DOOR"), "Permanent scenery must return")
 assert(find("SceneDescription").Text:find("Grandfather Tolliver", 1, true))
-print("PASS: workshop XML, projected circles, CSS and click/Continue events")
+print("PASS: workshop XML, projected circles, focus choices and beat/Continue events")

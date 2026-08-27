@@ -39,3 +39,40 @@
 .scene-hotspot:hover {
   background-color: #ffffff40;
 }
+
+.choice-list {
+  direction: vertical;
+  gap: 8;
+  margin-left: 32;
+  margin-bottom: 28;
+  width: 460;
+}
+
+.choice-option {
+  font-size: 19;
+  font-family: "Literata";
+  color: #f4e6ca;
+  background-color: #1208050073;
+  box-shadow: 1 2 0 0 #120b07e6;
+  padding: 7 14;
+  border-radius: 6;
+}
+
+.choice-option:hover {
+  color: #fff8e8;
+  background-color: #3a2412b0;
+}
+
+.exit-option {
+  font-size: 18;
+  font-family: "Literata";
+  font-style: italic;
+  color: #d8c6a4;
+  padding: 7 14;
+  border-radius: 6;
+}
+
+.exit-option:hover {
+  color: #fff8e8;
+  background-color: #3a2412b0;
+}

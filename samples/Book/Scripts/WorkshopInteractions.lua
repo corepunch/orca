@@ -1,15 +1,9 @@
--- Camera and rendered image states only. Scene object names identify ZIL objects.
-local M = {
-    scene_path = "Book/Images/prototype/workshop.blks",
-    camera = "WorkshopEstablishing",
+-- Camera export spec for the workshop blockout. Presentation and focus authoring
+-- live in WondertownScenes; this only tells the exporter which scene and source
+-- resolution to project, and which camera is the default reference.
+return {
+    scene_path = "Book/Rooms/workshop.blks",
     source_width = 1536,
     source_height = 1024,
-    present_asset = "Book/Images/prototype/workshop-present.png",
-    taken_asset = "Book/Images/prototype/workshop-taken.png",
+    camera = "WorkshopEstablishing",
 }
-
-function M.asset(env)
-    return env.INQ(env.OIL_CAN, env.WORKSHOP_FLOOR) and M.present_asset or M.taken_asset
-end
-
-return M

@@ -51,7 +51,7 @@ assert(not Projection.parse('<scene><camera pos="0 1"/></scene>'))
 assert(not Projection.parse('<scene><camera name="a"/><camera name="a"/></scene>'))
 
 local workshop = assert(Projection.load("Rooms/workshop.blks"))
-assert(workshop.cameraCount == 11)
+assert(workshop.cameraCount == 12)
 local oil = assert(Projection.anchor(workshop, "items/oil_can", {0, 0.12, 0}))
 close(oil[1], 1.9)
 close(oil[2], 0.12)
@@ -65,6 +65,9 @@ assert(Projection.anchor(workshop, "fixtures/key_hook"))
 local expected = {
     ["KEY-HOOK"] = {0, 1.7, -8.84}, ["OIL-CAN"] = {1.9, 0.14, -7.4},
     ["PET-DOOR"] = {-3.9, 0.30, -8.83}, ["CLOCK-FACE"] = {1.62, 2.25, -8.83},
+  ["LOFT-LADDER"] = {-4.25, 0, -6.65}, ["LADDER-MECH"] = {-3.87, 0.48, -6.65},
+  ["DISPLAY-CASE"] = {4.43, 0.94, -2.02}, ["MARZIPAN"] = {4.37, 0.94, -2.92},
+  ["SHOP-WINDOW"] = {4.88, 2.12, -2.5},
     ["items/oil_can"] = {1.9, 0, -7.4},
     ["architecture/workshop_door"] = {-3.9, 0, -8.92},
     ["fixtures/wall_clock"] = {1.62, 2.25, -8.91},

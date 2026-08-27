@@ -1,88 +1,202 @@
--- Host-side mapping from Wondertown's stable story keys to art.
--- ZIL owns narrative state; this manifest owns presentation assets.
-local scenes = {
-    actions = {
-        ["workshop-floor.examine-hook"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-initial-action.png",
-            function_ = "reaction",
-        },
-        ["workshop-floor.climb-workbench"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-climb-workbench.png",
-            function_ = "action",
-        },
-        ["workshop-floor.take-oil-can"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-take-oil-can.png",
-            function_ = "close-up-action",
-        },
-        ["tool-bench.wind-bertrand"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-wind-bertrand.png",
-            function_ = "action-reaction",
-        },
-        ["workbench-top.open-repair-book"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/action-open-repair-book.png",
-            function_ = "reveal",
-        },
-        ["workbench-top.close-repair-book"] = {
-            asset = "Book/libs/zilscript/books/wondertown/illustrations/workbench-top-closed.png",
-            function_ = "action-consequence",
-        },
-    },
+-- Presentation + focus manifest for the Wondertown workshop chapter.
+--
+-- ZIL owns world state and result prose. This manifest maps stable ZIL names to
+-- SimpleSketch3D cameras, to the local choices a focused subject offers, and to
+-- the action art that owns a story beat. It never decides world logic: every
+-- choice submits an ordinary parser command that ZIL is free to accept, refuse,
+-- or reshape according to current state.
+--
+-- Images are direct SimpleSketch3D screenshots, one per camera, produced by
+-- `make render ROOM=workshop`.
 
-    default = {
-        asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png",
-        function_ = "establishing",
-    },
+local render_base, render_ext = "Book/Rooms/render/workshop/", ".jpg"
 
-    ["workshop.floor-initial"] = {
-        asset = "Book/libs/zilscript/books/wondertown/illustrations/workshop-floor-establishing.png",
-        function_ = "establishing",
-    },
-    ["workshop.floor-oiled"] = {
-        asset = "Book/Images/Generated image 3.png",
-        function_ = "establishing-consequence",
-        alt = "The workshop opens upward around the newly raised folding loft ladder.",
-    },
-    ["workshop.floor-study-open"] = {
-        asset = "Book/Images/Generated image 3.png",
-        function_ = "reveal",
-        alt = "The workshop opens upward around Pip as the hidden route beyond the clock is revealed.",
-    },
-    ["workshop.floor-endgame"] = {
-        asset = "Book/Images/room-1.png",
-        function_ = "consequence",
-    },
+local M = {}
 
-    ["toolbench.bertrand-frozen"] = {
-        asset = "Book/Images/Generated image 1.png",
-        function_ = "establishing",
+function M.image(camera)
+    return render_base .. camera .. render_ext
+end
+
+-- Room establishing views. `camera` frames the room; `subjects` are the ordered
+-- ZIL objects offered as affordances. `node` names the scene anchor when the
+-- blockout labels that geometry with a decoration name instead of the ZIL name;
+-- subjects without a resolvable anchor are offered as text affordances instead of
+-- projected hotspots. `exits` are room-level movements shown as page choices.
+M.rooms = {
+    ["WORKSHOP-FLOOR"] = {
+        camera = "WorkshopEstablishing",
+        subjects = {
+            {name = "KEY-HOOK"},
+            {name = "WORKBENCH", node = "main_bench"},
+            {name = "OIL-CAN", art = "OilCanCloseup"},
+            {name = "LOFT-LADDER"},
+            {name = "CLOCK-FACE"},
+            {name = "PET-DOOR"},
+        },
+        exits = {
+            {label = "Cross to the tool bench", command = "east"},
+        },
     },
-    ["workbench.top-closed"] = {
-        asset = "Book/libs/zilscript/books/wondertown/illustrations/workbench-top-closed.png",
-        function_ = "establishing",
-        alt = "The workbench top, with Tolliver's closed illustrated repair book among half-finished toys.",
+    ["WORKBENCH-TOP"] = {
+        camera = "WorkbenchTopEstablishing",
+        subjects = {
+            {name = "REPAIR-BOOK"},
+            {name = "HALF-FINISHED-TOYS"},
+        },
+        exits = {
+            {label = "Climb back down to the floor", command = "down"},
+        },
     },
-    ["workbench.top-open"] = {
-        asset = "Book/libs/zilscript/books/wondertown/illustrations/action-open-repair-book.png",
-        function_ = "establishing-consequence",
-        alt = "Tolliver's open repair book, its paper workshop rising around Pip.",
+    ["TOOL-BENCH"] = {
+        camera = "ToolBenchEstablishing",
+        subjects = {
+            {name = "BERTRAND", node = "counter_chair"},
+            {name = "MAKESHIFT-STEPS"},
+            {name = "TOOL-RACK"},
+            {name = "VARNISH-POT"},
+        },
+        exits = {
+            {label = "Return to the workshop floor", command = "west"},
+        },
     },
-    ["toolbench.bertrand-wound"] = {
-        asset = "Book/Images/Generated image 1.png",
-        function_ = "establishing-consequence",
+    ["COUNTERTOP"] = {
+        camera = "CountertopEstablishing",
+        subjects = {
+            {name = "MARZIPAN"},
+            {name = "DISPLAY-CASE"},
+            {name = "SHOP-WINDOW"},
+        },
+        exits = {
+            {label = "Climb back down to the tool bench", command = "down"},
+        },
     },
-    ["countertop.initial"] = {
-        asset = "Book/libs/zilscript/books/wondertown/images/countertop.png",
-        function_ = "establishing",
+    -- Reachable but unmodelled; keep a camera so the page still renders.
+    ["STORAGE-LOFT"] = {camera = "WorkbenchTopEstablishing", subjects = {}, exits = {
+        {label = "Climb back down", command = "down"},
+    }},
+}
+
+-- Focus definitions keyed by canonical ZIL object name. `choices(env)` returns an
+-- ordered list of {label, command[, art]}; when a choice names an `art` camera the
+-- host holds that screenshot full-frame with the result prose and a single
+-- Continue, otherwise the result quietly refreshes the focused page. The host adds
+-- the `exit` affordance automatically so leaving a subject always reads in-world.
+M.focuses = {
+    ["KEY-HOOK"] = {
+        camera = "EmptyHookReveal",
+        exit = "Step back into the workshop",
+        choices = function()
+            return {
+                {label = "Examine the empty hook", command = "examine hook"},
+                {label = "Examine the frayed string", command = "examine string"},
+                {label = "Listen for the ticking", command = "listen to clock"},
+            }
+        end,
     },
-    ["countertop.marzipan-happy"] = {
-        asset = "Book/libs/zilscript/books/wondertown/images/countertop.png",
-        function_ = "reaction",
+    ["WORKBENCH"] = {
+        camera = "ClimbWorkbenchAction",
+        exit = "Step back from the bench",
+        choices = function()
+            return {
+                {label = "Examine the towering bench", command = "examine workbench"},
+                {label = "Look underneath the bench", command = "look under workbench"},
+                {label = "Climb the workbench leg", command = "climb workbench",
+                 art = "ClimbWorkbenchAction"},
+            }
+        end,
+    },
+    ["LOFT-LADDER"] = {
+        camera = "LoftLadderCloseup",
+        exit = "Step back from the ladder",
+        choices = function(env)
+            local choices = {
+                {label = "Examine the folding ladder", command = "examine ladder"},
+                {label = "Examine the lifting mechanism", command = "examine mechanism"},
+            }
+            if env.LADDER_OILED then
+                choices[#choices + 1] = {label = "Climb to the storage loft", command = "up"}
+            else
+                choices[#choices + 1] = {label = "Lubricate the rusty mechanism",
+                    command = "lubricate mechanism", art = "LoftLadderCloseup"}
+            end
+            return choices
+        end,
+    },
+    ["REPAIR-BOOK"] = {
+        camera = "RepairBookCloseup",
+        exit = "Step back from the book",
+        choices = function(env)
+            if env.REPAIR_BOOK_OPEN then
+                return {
+                    {label = "Read Tolliver's clue", command = "read book"},
+                    {label = "Close the heavy cover", command = "close book",
+                     art = "WorkbenchTopEstablishing"},
+                }
+            end
+            return {
+                {label = "Examine the leather book", command = "examine book"},
+                {label = "Heave the cover open", command = "open book",
+                 art = "RepairBookCloseup"},
+            }
+        end,
+    },
+    ["BERTRAND"] = {
+        camera = "WindBertrandAction",
+        exit = "Step away from Bertrand",
+        choices = function(env)
+            local choices = {{label = "Examine Captain Bertrand", command = "examine nutcracker"}}
+            if env.INQ(env.BERTRAND_KEY, env.TOOL_BENCH) then
+                choices[#choices + 1] = {label = "Examine the winding key", command = "examine winding key"}
+                choices[#choices + 1] = {label = "Take the winding key", command = "take winding key"}
+            end
+            if not env.BERTRAND_WOUND then
+                choices[#choices + 1] = {label = "Wind Bertrand", command = "wind nutcracker",
+                    art = "WindBertrandAction"}
+            end
+            return choices
+        end,
+    },
+    ["MAKESHIFT-STEPS"] = {
+        camera = "MakeshiftClimbAction",
+        exit = "Step back",
+        choices = function()
+            return {
+                {label = "Examine the climbing route", command = "examine steps"},
+                {label = "Climb to the countertop", command = "climb steps",
+                 art = "MakeshiftClimbAction"},
+            }
+        end,
+    },
+    ["DISPLAY-CASE"] = {
+        camera = "CountertopEstablishing",
+        exit = "Step back from the case",
+        choices = function(env)
+            if env.FSETQ(env.DISPLAY_CASE, env.OPENBIT) then
+                local choices = {{label = "Examine the open case", command = "examine case"}}
+                if env.INQ(env.TIN_SOLDIER, env.DISPLAY_CASE) then
+                    choices[#choices + 1] = {label = "Take the tin soldier", command = "take soldier"}
+                end
+                if env.INQ(env.MUSIC_BOX, env.DISPLAY_CASE) then
+                    choices[#choices + 1] = {label = "Take the music box", command = "take music box"}
+                end
+                return choices
+            end
+            return {
+                {label = "Examine the dusty case", command = "examine case"},
+                {label = "Open the glass case", command = "open case"},
+            }
+        end,
+    },
+    ["MARZIPAN"] = {
+        camera = "CountertopEstablishing",
+        exit = "Give her some space",
+        choices = function()
+            return {
+                {label = "Examine the rag doll", command = "examine doll"},
+                {label = "Ask Marzipan about the key", command = "ask doll about key"},
+            }
+        end,
     },
 }
 
--- Optional illustrations keyed by ZIL object + verb, not required interaction definitions.
-scenes.object_actions = {
-    ["KEY-HOOK.examine"] = scenes.actions["workshop-floor.examine-hook"],
-    ["OIL-CAN.take"] = scenes.actions["workshop-floor.take-oil-can"],
-}
-return scenes
+return M
