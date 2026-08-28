@@ -8,13 +8,19 @@ WIDTH ?= 1536
 HEIGHT ?= 1024
 RENDER_TARGETS := $(addprefix render-,$(ROOM))
 
-.PHONY: run render check-scener $(RENDER_TARGETS)
+LAYOUT_SCALE ?= 2
+
+.PHONY: run render layout check-scener $(RENDER_TARGETS) $(LAYOUT_TARGETS)
+
+LAYOUT_TARGETS := $(addprefix layout-,$(ROOM))
 
 run: render
 	$(MAKE) -C ../.. unite
 	cd ../.. && build/bin/orca samples/Book
 
 render: $(RENDER_TARGETS)
+
+layout: $(LAYOUT_TARGETS)
 
 check-scener:
 	@command -v "$(SCENER)" >/dev/null || { \
@@ -24,4 +30,8 @@ check-scener:
 
 $(RENDER_TARGETS): render-%: Rooms/%.blks | check-scener
 	cd Rooms && "$(SCENER)" --render "$*.blks" --size "$(WIDTH)x$(HEIGHT)" \
+		--format "$(FORMAT)" --output-dir "render/$*"
+
+$(LAYOUT_TARGETS): layout-%: Rooms/%.blks | check-scener
+	cd Rooms && "$(SCENER)" --layout "$*.blks" --scale "$(LAYOUT_SCALE)" \
 		--format "$(FORMAT)" --output-dir "render/$*"

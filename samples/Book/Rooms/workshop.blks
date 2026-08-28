@@ -3,7 +3,6 @@
 <scene ambient="0.55 0.58 0.60" background="midnight">
 
   <camera name="WorkshopEstablishing" comment="High front-left corner; lower-right floor is text-safe" pos="-540 420 -80" look="85 105 -735" fov="70"/>
-  <camera name="LayoutPlan" comment="Top-down geography reference" pos="0 620 -500" look="0 0 -500" fov="92"/>
 
   <material id="plaster"  color="0.38 0.52 0.50" shininess="3"/>
   <material id="wood"     color="0.55 0.30 0.12" shininess="16"/>
