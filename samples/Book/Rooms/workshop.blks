@@ -13,48 +13,54 @@
   <material id="floor"   color="0.18 0.20 0.22" shininess="4"/>
 
   <!-- motivated lighting: two warm practicals + cool moonlight from east window (30-45 deg pitch) -->
-  <light pos="-480 350 580" color="1.0 0.88 0.65" intensity="3.0" radius="800" castShadows="1"/>
-  <light pos="430 700 580"  color="0.95 0.82 0.60" intensity="1.6" radius="650" castShadows="0"/>
-  <sun dir="-0.75 -0.20 -0.63" color="0.55 0.68 0.92" intensity="0.75" castShadows="1"/>
+  <light pos="-420 360 520" color="1.0 0.88 0.65" intensity="3.5" radius="850" castShadows="1"/>
+  <light pos="420 720 520"  color="0.95 0.85 0.60" intensity="2.2" radius="750" castShadows="0"/>
+  <sun dir="-0.75 -0.20 -0.63" color="0.55 0.68 0.95" intensity="0.85" castShadows="1"/>
 
   <!-- room shell: 1200cm wide (X) × 1000cm deep (Y) × 640cm tall (Z) -->
   <box pos="0 500 -5"  size="1200 1000 10" material="floor" castShadow="0" sanityFloor="1"/>
   <box pos="0 500 650" size="1200 1000 12" material="wood"  castShadow="1"/>
+
+  <!-- structural ceiling beams to break the vast upper volume -->
+  <box pos="0 500 610" size="30 1000 60" material="wood" castShadow="1"/>
+  <box pos="-350 500 610" size="30 1000 60" material="wood" castShadow="1"/>
+  <box pos="350 500 610" size="30 1000 60" material="wood" castShadow="1"/>
 
   <wall pos="0 1000 0"    length="1200" height="640" thickness="24" material="plaster"/>
   <wall pos="-600 500 0"  rot="0 0 90" length="1000" height="640" thickness="24" material="plaster"/>
   <wall pos=" 600 500 0"  rot="0 0 90" length="1000" height="640" thickness="24" material="plaster"/>
   <wall pos="0 0 0"       length="1200" height="640" thickness="24" material="plaster" renderable="0" castShadow="0"/>
 
-  <!-- east wall: exit arch to tool-bench + arched window (Roman arch on every opening) -->
-  <bool-negative-arch pos="600 300 160" rot="0 0 90" width="200" height="320" depth="50"/>
-  <bool-negative-arch pos="600 820 265" rot="0 0 90" width="130" height="230" depth="50"/>
+  <!-- east wall: exit arch to tool-bench + arched window -->
+  <bool-negative-arch pos="600 240 160" rot="0 0 90" width="200" height="320" depth="50"/>
+  <bool-negative-arch pos="600 780 340" rot="0 0 90" width="160" height="280" depth="50"/>
 
-  <!-- pet door: small arch at base of north wall (to snowy alley) -->
-  <bool-negative-arch pos="-170 1000 50" width="80" height="100" depth="50"/>
+  <!-- north wall: pet door to snowy alley -->
+  <bool-negative-arch pos="100 1000 50" width="80" height="100" depth="50"/>
 
-  <!-- workbench — west (left) wall, mid-depth, highly visible in establishing shot -->
-  <box pos="-528 350 52" size="120 380 104" material="wood"/>
-  <!-- lamp shade above workbench -->
-  <box pos="-480 350 600" size="70 70 20" material="wood"/>
-  <box pos="-480 350 575" size="14 14 50" material="wood"/>
+  <!-- ==================== CLEAN BLOCKOUT MASSES ==================== -->
 
-  <!-- tool counter — north-east, flush against east wall -->
-  <box pos="476 720 46" size="200 90 92" material="wood"/>
-  <!-- lamp shade above tool counter -->
-  <box pos="430 700 600" size="55 55 16" material="wood"/>
-  <box pos="430 700 578" size="12 12 44" material="wood"/>
+  <!-- 1. WORKBENCH (Flush along west wall, foreground/midground) -->
+  <box pos="-470 380 55" size="200 420 110" material="wood"/>
 
-  <!-- crate stack — against east wall, mid-depth -->
-  <box pos="490 390 70" size="100 100 140" material="wood"/>
+  <!-- 2. STORAGE LOFT (NW corner, high) -->
+  <box pos="-460 860 480" size="260 260 18" material="wood"/>
+  <box pos="-330 730 240" size="16 16 480" material="wood"/>
+  <!-- Ladder stored flat against west wall under loft -->
+  <box pos="-576 800 240" size="12 40 480" material="wood"/>
 
-  <!-- loft platform — north-west corner, elevated -->
-  <box pos="-490 940 500" size="180 100 18" material="wood"/>
+  <!-- 3. TOOL COUNTER (Flush against east wall, low enough to keep window unobstructed) -->
+  <box pos="520 780 45" size="140 180 90" material="wood"/>
 
-  <!-- named anchors: position-only, no blockout geometry -->
-  <group name="CLOCK-FACE" pos="-576 560 390"/>
-  <group name="KEY-HOOK"   pos="-576 180 360"/>
-  <group name="OIL-CAN"    pos="-500 350  20"/>
-  <group name="PET-DOOR"   pos="-170 988   0"/>
+  <!-- 4. CRATE STACK (Against east wall, mid-depth, clear of doorway) -->
+  <box pos="520 480 50" size="120 120 100" material="wood"/>
+
+  <!-- named interaction anchors (positions only) -->
+  <group name="CLOCK-FACE" pos="-576 480 360"/>
+  <group name="KEY-HOOK"   pos="-576 180 320"/>
+  <group name="OIL-CAN"    pos="-470 380  20"/>
+  <group name="PET-DOOR"   pos="100  988   0"/>
+  <group name="LOFT-LADDER" pos="-576 800 240"/>
+  <group name="WORKBENCH"  pos="-470 380  80"/>
 
 </scene>

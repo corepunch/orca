@@ -27,6 +27,9 @@ applyTo: "Rooms/**/*.blk, Rooms/**/*.blks"
   workstations along a clipped foreground wall or beneath the camera where they
   are heavily cropped. Align major workstations along visible flanking walls
   (e.g., the left wall in a corner establishing shot).
+- Never place objects or furniture directly in front of doors, window cutouts, or
+  passages that obscure their silhouettes or light paths. All openings must have
+  an unobstructed line of sight and passage.
 - Avoid duplicate or conflicting major exits; ensure distinct room functions and
   clear passage silhouettes.
 - Keep directional and sunlight pitched downwards at 30 to 45 degrees from
@@ -40,8 +43,14 @@ applyTo: "Rooms/**/*.blk, Rooms/**/*.blks"
   knobs, handles, fasteners, loose debris, and surface clutter unless they are
   required for interaction or shot comprehension.
 - Block large semantic forms such as desks, ladders, drawers, doors, windows,
-  and major props. The blockout communicates stable layout; it must not imply
+  shelves, stairs, and major props. The blockout communicates stable layout; it must not imply
   that an artist should trace incidental detail literally.
+- Maintain pure blocking discipline: avoid adding small decorative components (legs, handles,
+  knobs, small clutter) during layout iteration. Rely on bold, well-proportioned masses,
+  architectural framing (beams, mezzanines, pillars), and clear functional zones.
+- Iterate through visual review: author blockout masses in `.blks`, render the establishing
+  shot, critically review depth, overlap, silhouette readability, and spatial balance,
+  and reposition masses until the shot reads strongly.
 - Use a frontal camera only when a specific story beat requires symmetry or
   direct confrontation.
 - Validate the unstyled blockout render. If the shot is boring without surface
