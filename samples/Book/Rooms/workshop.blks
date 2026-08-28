@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
-<!-- BLOCKOUT — 3ds Max convention: X=east  Y=north(depth)  Z=up
-     South wall = Y=0   North wall = Y=1000
-     Floor      = Z=0   Ceiling    = Z=640
-     West wall  = X=-600  East wall = X=600               -->
-<scene convention="3dsmax" ambient="0.55 0.58 0.60" background="midnight">
+<!-- BLOCKOUT — X=east  Y=north(depth)  Z=up
+     South wall Y=0   North wall Y=1000
+     Floor Z=0        Ceiling Z=640
+     West wall X=-600  East wall X=600  -->
+<scene ambient="0.55 0.58 0.60" background="midnight">
 
   <camera name="WorkshopEstablishing" comment="High front-left corner; lower-right floor is text-safe"
           pos="-540 80 420" look="85 735 105" fov="70"/>

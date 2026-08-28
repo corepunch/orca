@@ -53,8 +53,17 @@ The blockout does not own surface texture, ornament, wear, small hardware, or
 literal final-art shape design. An artist should preserve its geography and
 silhouettes, not trace every primitive.
 
-Distances are authored in centimeters. Rotations are degrees and `scale` is
-unitless.
+## Coordinate Convention
+
+Scene files use the 3ds Max axis convention. There is no other.
+
+| Axis | Direction |
+|------|-----------|
+| X | East — right on any north-up map |
+| Y | North — depth into the scene; Y=0 is the south wall |
+| Z | Up — height above the floor; Z=0 is the floor |
+
+Distances are centimetres. Rotations are degrees. `scale` is unitless.
 
 ## Geometry Budget
 
