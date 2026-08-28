@@ -73,7 +73,7 @@ for name, node in pairs(scene.objects) do
 end
 -- Export discovery is scene-driven: a new named object needs no game-side list.
 local discovered = assert(Projection.parse([[<scene>
-    <camera name="WorkshopEstablishing" pos="0 0 0" look="0 0 -100" fov="60"/>
+    <camera name="workshop-floor" pos="0 0 0" look="0 0 -100" fov="60"/>
     <group name="Z-NEW-OBJECT" pos="100 200 300"><box/></group>
     <box name="A-DECORATION" pos="400 500 600"/>
   <group attach="unknown:slot"><box name="UNRESOLVED"/></group>

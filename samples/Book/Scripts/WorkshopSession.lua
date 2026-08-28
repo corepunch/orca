@@ -7,6 +7,40 @@ local function canonical(name)
     return type(name) == "string" and name:upper():gsub("_", "-") or ""
 end
 
+-- ----------------------------------------------------------------- CoC images
+
+-- All renders for this scene live in one directory (per .blks file, not per room).
+local render_dir = "Book/Rooms/render/workshop/"
+
+local function image_exists(path)
+    local f = io.open(path, "r")
+    if f then f:close() return true end
+    return false
+end
+
+-- camera: the CoC-derived intent name (always returned, even if the image does
+--         not exist yet — used for scene-node lookup and test assertions).
+-- image:  best available file path, falling back toward the room establishing shot.
+--
+-- Convention (ILLUSTRATING_ADVENTURES.md):
+--   {subject}-{verb}.jpg  →  {subject}.jpg  →  {room}.jpg
+local function coc(room, subject, verb)
+    local cam = subject and verb and (subject:lower() .. "-" .. verb)
+             or (subject and subject:lower())
+             or room:lower()
+    local function try(name)
+        local p = render_dir .. name .. ".jpg"
+        return image_exists(p) and p or nil
+    end
+    local img = (subject and verb and try(subject:lower() .. "-" .. verb))
+             or (subject and try(subject:lower()))
+             or try(room:lower())
+             or (render_dir .. room:lower() .. ".jpg")
+    return cam, img
+end
+
+-- ------------------------------------------------------------------ bootstrap
+
 function Session.new()
     local env = runtime.create_game_env()
     env.rawequal = rawequal
@@ -16,14 +50,12 @@ function Session.new()
     assert(runtime.execute(bootstrap, "bootstrap", env), "Cannot initialize ZIL")
     env.require("zilscript")
     local objects, define_object = {}, env.OBJECT
-    -- Record actual declarations, not numeric globals that happen to equal object IDs.
     env.OBJECT = function(definition)
         local result = define_object(definition)
         local symbol = definition.ZIL_NAME or definition.NAME
         if definition.SYNONYM and definition.SYNONYM[1] then
             local nouns, adjective = {}
             for _, noun in ipairs(definition.SYNONYM) do nouns[noun] = true end
-            -- A synonym used as an adjective can be parsed as a second noun.
             for _, word in ipairs(definition.ADJECTIVE or {}) do
                 if not nouns[word] then adjective = word; break end
             end
@@ -50,14 +82,18 @@ function Session.new()
     }, Session)
 end
 
+-- ------------------------------------------------------------------ queries
+
 function Session:description()
-    -- Read authored room prose without submitting LOOK or advancing the clock.
     return self.env.GETP(self.env.HERE, self.env.PQLDESC) or ""
 end
 
--- Canonical name of the ZIL room Pip physically occupies (HERE), not the focus.
 function Session:room()
     return self.rooms_by_id[self.env.HERE]
+end
+
+function Session:current_camera()
+    return self.focus and self.focus:lower() or self:room():lower()
 end
 
 function Session:target(name)
@@ -80,9 +116,6 @@ function Session:target(name)
     return {name = canonical(name), object = id, verb = verb, command = verb .. " " .. object.noun}
 end
 
--- A currently reachable subject resolves to how the reader interacts with it:
--- a portable object defaults to TAKE, an authored subject opens a FOCUS, and any
--- other reachable object simply EXAMINEs. Returns nil when out of reach.
 function Session:subject_kind(name)
     local target = self:target(name)
     if not target then return nil end
@@ -91,61 +124,53 @@ function Session:subject_kind(name)
     return "examine", target
 end
 
--- The screenshot camera framing whatever the reader currently sees.
-function Session:current_camera()
-    if self.focus then return self.scenes.focuses[self.focus].camera end
-    local spec = self.scenes.rooms[self:room()]
-    return spec and spec.camera or "WorkshopEstablishing"
-end
+-- ------------------------------------------------------------------ view
 
-local function room_subject(spec, canon)
-    if not spec then return nil end
-    for _, entry in ipairs(spec.subjects) do
-        if canonical(entry.name) == canon then return entry end
-    end
-end
-
--- A single description of what to render now: a held action beat, a focused
--- subject with its local choices, or the room's establishing page.
 function Session:view()
+    local room = self:room()
     if self.pending then
         return {kind = "beat", camera = self.pending.camera,
-                image = self.scenes.image(self.pending.camera),
+                image = self.pending.image,
                 text = self.pending.text, continue = true}
     end
     if self.focus then
         local focus = self.scenes.focuses[self.focus]
+        local cam, img = coc(room, self.focus)
         local choices = {}
         for _, choice in ipairs(focus.choices(self.env, self) or {}) do
             choices[#choices + 1] = {label = choice.label, command = choice.command}
         end
-        return {kind = "focus", subject = self.focus, camera = focus.camera,
-                image = self.scenes.image(focus.camera), text = self.focus_text or "",
+        return {kind = "focus", subject = self.focus, camera = cam, image = img,
+                text = self.focus_text or "",
                 choices = choices, exit = focus.exit or "Step back"}
     end
-    local spec = self.scenes.rooms[self:room()]
-    local camera = spec and spec.camera or "WorkshopEstablishing"
+    local spec = self.scenes.rooms[room]
+    local cam, img = coc(room)
     local subjects, exits = {}, {}
     if spec then
-        for _, entry in ipairs(spec.subjects) do
-            local kind, target = self:subject_kind(entry.name)
+        for _, name in ipairs(spec.subjects) do
+            local kind, target = self:subject_kind(name)
             if kind then
-                local object = self.objects[canonical(entry.name)]
-                subjects[#subjects + 1] = {name = canonical(entry.name), node = entry.node or canonical(entry.name),
-                    kind = kind, command = target.command, art = entry.art,
-                    label = object and object.noun or canonical(entry.name)}
+                local object = self.objects[canonical(name)]
+                subjects[#subjects + 1] = {
+                    name = canonical(name),
+                    node = canonical(name),   -- ZIL name = .blks group name (CoC)
+                    kind = kind,
+                    command = target.command,
+                    label = object and object.noun or canonical(name):lower(),
+                }
             end
         end
         for _, exit in ipairs(spec.exits or {}) do
             exits[#exits + 1] = {label = exit.label, command = exit.command}
         end
     end
-    return {kind = "room", camera = camera, image = self.scenes.image(camera),
+    return {kind = "room", camera = cam, image = img,
             text = self:description(), subjects = subjects, exits = exits}
 end
 
--- Enter a focused subject. Its EXAMINE prose becomes the page's opening text, so
--- directing attention reads as an in-world action rather than opening a panel.
+-- ------------------------------------------------------------------ actions
+
 function Session:enter_focus(name, target)
     target = target or self:target(name)
     if not target then return nil end
@@ -154,58 +179,61 @@ function Session:enter_focus(name, target)
     return self:view()
 end
 
--- Submit a command and hold it as a story beat. Dedicated `art` owns the frame;
--- otherwise the current establishing/focus frame is held with the result prose.
-function Session:run_beat(command, art)
-    local before = self.env.HERE
-    local output = self.game:resume(command)
-    self.pending = {text = output or "", camera = art or self:current_camera(),
-                    room_changed = self.env.HERE ~= before}
-end
-
--- Tap a subject on the establishing page.
+-- Tap a subject on the room establishing page.
 function Session:tap(name)
     if self.pending then return nil end
     local kind, target = self:subject_kind(name)
     if not kind then return nil end
     if kind == "focus" then return self:enter_focus(canonical(name), target) end
-    local entry = room_subject(self.scenes.rooms[self:room()], canonical(name))
-    self:run_beat(target.command, entry and entry.art)
+    local room = self:room()
+    local before = self.env.HERE
+    local output = self.game:resume(target.command)
+    -- CoC: use subject image for the beat (falls back to room image if not rendered yet)
+    local cam, img = coc(room, canonical(name))
+    self.pending = {text = output or "", camera = cam, image = img,
+                    room_changed = self.env.HERE ~= before}
     return self:view()
 end
 
--- Choose one of the focused subject's local actions.
+-- Choose a focus-page action by 1-based index.
 function Session:choose(index)
     if self.pending or not self.focus then return nil end
     local focus = self.scenes.focuses[self.focus]
     local choice = (focus.choices(self.env, self) or {})[index]
     if not choice then return nil end
+    local room = self:room()
     local before = self.env.HERE
     local output = self.game:resume(choice.command)
-    if self.env.HERE ~= before then
-        self.pending = {text = output or "", camera = choice.art or self:current_camera(),
-                        room_changed = true}
-    elseif choice.art then
-        self.pending = {text = output or "", camera = choice.art, room_changed = false}
+    if choice.beat then
+        -- Explicit beat: action camera (focus + first verb), room_changed tracks transition
+        local verb = choice.command:match("^(%S+)") or ""
+        local cam, img = coc(room, self.focus, verb)
+        self.pending = {text = output or "", camera = cam, image = img,
+                        room_changed = self.env.HERE ~= before}
+    elseif self.env.HERE ~= before then
+        -- Implicit room transition (no beat flag): show new room image
+        local cam, img = coc(self:room())
+        self.pending = {text = output or "", camera = cam, image = img, room_changed = true}
     else
         self.focus_text = output or ""
     end
     return self:view()
 end
 
--- Take a room-level exit. A real move lands on the next establishing page; a
--- refused move is held as a beat so the reason reads before returning.
+-- Take a room-level exit.
 function Session:exit(command)
     if self.pending or self.focus then return nil end
+    local room = self:room()
     local before = self.env.HERE
     local output = self.game:resume(command)
     if self.env.HERE == before then
-        self.pending = {text = output or "", camera = self:current_camera(), room_changed = false}
+        -- Refused: hold prose as beat on current room image
+        local cam, img = coc(room)
+        self.pending = {text = output or "", camera = cam, image = img, room_changed = false}
     end
     return self:view()
 end
 
--- Leave the focused subject without spending a turn.
 function Session:leave_focus()
     if self.pending then return nil end
     self.focus, self.focus_text = nil, nil

@@ -5,5 +5,5 @@ return {
     scene_path = "Book/Rooms/workshop.blks",
     source_width = 1536,
     source_height = 1024,
-    camera = "WorkshopEstablishing",
+    camera = "workshop-floor",
 }
