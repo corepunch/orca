@@ -5,7 +5,7 @@
      Z=up (Floor Z=0, Ceiling Z=540cm)
      South wall Y=0   North wall Y=1000
      West wall X=-600 East wall X=600 -->
-<scene ambient="0.28 0.30 0.35" background="midnight">
+<scene ambient="0.04 0.05 0.07" background="midnight">
 
   <!-- ==================== PRODUCTION CAMERAS ==================== -->
 
@@ -35,27 +35,30 @@
           pos="0 500 530" look="0 500 0" fov="92"/>
 
   <!-- ==================== MATERIALS ==================== -->
-  <material id="wood_dark"   color="0.28 0.16 0.08" shininess="24"/>
-  <material id="wood_oak"    color="0.45 0.28 0.14" shininess="12"/>
-  <material id="wallpaper"   color="0.22 0.32 0.28" shininess="3"/>
-  <material id="stone"       color="0.32 0.30 0.29" shininess="6"/>
-  <material id="floor"       color="0.14 0.12 0.11" shininess="8"/>
-  <material id="leather"     color="0.36 0.12 0.10" shininess="18"/>
-  <material id="brass"       color="0.75 0.62 0.25" shininess="40"/>
-  <material id="ceiling_mat" color="0.24 0.18 0.14" shininess="8"/>
+  <material id="wood_dark"   color="0.45 0.30 0.20" shininess="24"/>
+  <material id="wood_oak"    color="0.65 0.45 0.28" shininess="12"/>
+  <material id="wallpaper"   color="0.38 0.52 0.45" shininess="4"/>
+  <material id="stone"       color="0.55 0.52 0.50" shininess="8"/>
+  <material id="floor"       color="0.35 0.30 0.26" shininess="12"/>
+  <material id="leather"     color="0.60 0.22 0.18" shininess="18"/>
+  <material id="brass"       color="0.90 0.78 0.35" shininess="40"/>
+  <material id="ceiling_mat" color="0.35 0.28 0.22" shininess="8"/>
 
-  <!-- ==================== MOTIVATED LIGHTING ==================== -->
-  <!-- 1. Cool pale moonlight streaming through west gothic window (pitched down ~39 deg from horizontal) -->
-  <sun dir="0.72 -0.22 -0.65" color="0.45 0.55 0.80" intensity="0.55" castShadows="1"/>
+  <!-- ==================== MOTIVATED LIGHTING (Doom 3 Style Local Pools) ==================== -->
+  <!-- 1. Cool pale moonlight pooling through west arched window -->
+  <light pos="-590 520 270" color="0.35 0.55 0.95" intensity="2.2" radius="340" castShadows="1"/>
 
-  <!-- 2. Warm flickering firelight from east hearth - tightened radius and reasonable intensity -->
-  <light pos="460 480 60" color="1.0 0.58 0.22" intensity="1.4" radius="250" castShadows="1"/>
+  <!-- 2. Intense warm flickering firelight in east hearth - local round pool on hearth and floor -->
+  <light pos="470 480 60" color="1.0 0.52 0.15" intensity="2.6" radius="280" castShadows="1"/>
 
-  <!-- 3. Warm gas chandelier pool over central study desk area -->
-  <light pos="-220 480 380" color="0.95 0.86 0.65" intensity="1.2" radius="350" castShadows="1"/>
+  <!-- 3. Focused gas reading lamp over central study desk -->
+  <light pos="-240 520 180" color="1.0 0.90 0.65" intensity="2.4" radius="280" castShadows="1"/>
 
-  <!-- 4. Subtle cool corridor spill through open north doorway -->
-  <light pos="220 960 220" color="0.55 0.65 0.80" intensity="0.8" radius="250" castShadows="0"/>
+  <!-- 4. North wall gas sconce creating round light scallop on wallpaper beside bookcase -->
+  <light pos="-140 970 240" color="1.0 0.82 0.50" intensity="2.0" radius="260" castShadows="1"/>
+
+  <!-- 5. Northeast corner sconce near grandfather clock -->
+  <light pos="460 760 240" color="1.0 0.80 0.45" intensity="1.8" radius="240" castShadows="1"/>
 
   <!-- ==================== ROOM SHELL ==================== -->
   <!-- Floor & Ceiling (1200cm wide × 1000cm deep × 540cm high) -->
