@@ -4,7 +4,7 @@
   <Node2D Name="StoryPage" Width="1024" Height="768">
     <ImageView Name="Background" Source="Book/Rooms/render/workshop/WorkshopEstablishing.jpg" Stretch="UniformToFill" Width="1024" Height="768" IgnoreHitTest="true"/>
     <Node2D Name="Hotspots" Width="1024" Height="768"/>
-    <StackView Name="StoryText" class="story-text" Width="440" HorizontalAlignment="Left" VerticalAlignment="Top">
+    <StackView Name="StoryText" class="story-text" Width="400" HorizontalAlignment="Right" VerticalAlignment="Bottom">
       <TextBlock Name="SceneDescription" class="scene-description"/>
     </StackView>
     <StackView Name="Choices" class="choice-list" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>

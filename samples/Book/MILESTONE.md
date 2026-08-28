@@ -123,7 +123,7 @@ climb down while open is refused; close it → climb **down** to the floor →
 
 ## How to run and test
 
-See `RENDERING.md` for the complete Scener rendering workflow, direct
+See `Work/RENDERING.md` for the complete Scener rendering workflow, direct
 single-camera commands, validation, and troubleshooting.
 
 Headless logic (works anywhere with `lua` 5.4):

@@ -1,8 +1,8 @@
 .story-text {
   direction: vertical;
   gap: 10;
-  margin-left: 32;
-  margin-top: 28;
+  margin-right: 32;
+  margin-bottom: 100;
 }
 
 .scene-description {
@@ -11,7 +11,7 @@
   color: #f4e6ca;
   box-shadow: 1 2 0 0 #120b07e6;
   line-height: 24;
-  width: 440;
+  width: 400;
 }
 
 .continue-option {

@@ -95,9 +95,48 @@ output directory; `--output-dir` is a directory, not a filename.
 
 ## Cameras and Interaction Anchors
 
-Named cameras and scene groups are exported for ORCA hotspot projection. After
-changing camera transforms, adding cameras, or moving named anchors, regenerate
-the native metadata:
+Named cameras and scene groups are exported for ORCA hotspot projection.
+
+### Shot Blocking
+
+See [Scene and Camera Composition](SCENE_COMPOSITION.md) for the complete room
+structure, geometry budget, camera grammar, text-safe, and review rules.
+
+Use the original 1992 *Alone in the Dark* as the primary fixed-camera reference.
+For establishing shots, place the camera in a room corner below the ceiling and
+aim diagonally across the room. Start at 65-85% of the room height, pitch down
+15-35 degrees, and use a 55-75 degree FOV. Keep it below roof beams or other
+structure that would obscure the view. The shot should show two wall planes,
+converging lines, foreground overlap, and clear foreground-to-background depth.
+Avoid centered, floor-level, or flat straight-on establishing views; reserve
+those angles for a specific suspense or action beat.
+
+This rule distills the original camera language rather than claiming every AITD
+shot uses one setup. Across the 89 cameras on the converted AITD1 mansion floors
+00-04, 88% are near a wall, 40% are near a corner, and 66% look diagonally
+relative to the wall axes. Median camera height is 70% of the associated room
+height, median downward pitch is 26.7 degrees, and median FOV is 55.3 degrees.
+The lower and more frontal cameras are useful authored exceptions for suspense,
+reveals, and action.
+
+When prose overlays a render, reserve one lower quadrant as text-safe negative
+space. Keep major props, exits, projected hotspots, and high-contrast detail out
+of it. For `WorkshopEstablishing`, the lower-right floor is the text-safe area;
+choices remain on the lower-left side of the screen.
+
+Block only stable layout and readable silhouettes. Include an object when its
+primary silhouette is at least 10 cm in the scene's centimeter units, or when it
+is essential to an interaction. Keep desks, ladders, drawers, doors, windows,
+and major props; omit clock hands, knobs, handles, fasteners, loose debris, and
+similar micro-detail. A blockout guides composition and spatial continuity. It
+is not a set of details for the final artist to trace literally.
+
+Block camera composition before applying art style. Validate the raw geometry
+in an unstyled render: the room should already feel dimensional and deliberate
+without relying on materials, lighting polish, or painted detail.
+
+After changing camera transforms, adding cameras, or moving named anchors,
+regenerate the native metadata:
 
 ```sh
 lua Tools/export_workshop_camera.lua
