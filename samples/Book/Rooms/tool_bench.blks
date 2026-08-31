@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!-- BLOCKOUT — Wondertown: Tool Bench & Countertop Transition
+     X=east/west (-600 to 600, width=1200cm)
+     Y=north/south (0 to 1000, depth=1000cm)
+     Z=up (Floor Z=0, Ceiling Z=540cm)
+     South wall Y=0   North wall Y=1000
+     West wall X=-600 East wall X=600 -->
+<scene ambient="0.05 0.06 0.08" background="midnight">
+
+  <!-- ==================== PRODUCTION CAMERAS ==================== -->
+  <!-- 1. ESTABLISHING: High SW corner looking diagonally along tool bench toward countertop -->
+  <camera name="ToolBenchEstablishing" comment="High SW corner view of tool bench, makeshift steps, and nutcracker guard"
+          pos="-500 120 360" look="80 650 140" fov="68"/>
+
+  <!-- 2. FOCUS: Captain Bertrand (Nutcracker Guard on Chair) -->
+  <camera name="BertrandFocus" comment="Focus on Captain Bertrand standing guard on the chair seat"
+          pos="120 320 180" look="320 520 140" fov="54"/>
+
+  <!-- ==================== MATERIALS ==================== -->
+  <material id="wood_dark"   color="0.35 0.22 0.14" shininess="20"/>
+  <material id="wood_oak"    color="0.55 0.38 0.22" shininess="12"/>
+  <material id="wallpaper"   color="0.28 0.38 0.34" shininess="4"/>
+  <material id="stone"       color="0.42 0.40 0.38" shininess="8"/>
+  <material id="floor"       color="0.30 0.25 0.20" shininess="10"/>
+  <material id="brass"       color="0.88 0.75 0.32" shininess="36"/>
+  <material id="red_paint"   color="0.65 0.15 0.12" shininess="24"/>
+
+  <!-- ==================== MOTIVATED LIGHTING ==================== -->
+  <!-- 1. Hanging work lamp illuminating tool bench -->
+  <light pos="0 500 360" color="1.0 0.85 0.55" intensity="2.6" radius="460" castShadows="1"/>
+
+  <!-- 2. Warm sconce over makeshift steps and countertop display -->
+  <light pos="380 750 320" color="1.0 0.78 0.42" intensity="2.0" radius="380" castShadows="1"/>
+
+  <!-- ==================== ROOM SHELL ==================== -->
+  <box pos="0 500 -5"  size="1200 1000 10" material="floor" castShadow="0" sanityFloor="1"/>
+  <box pos="0 500 545" size="1200 1000 12" material="wood_dark" castShadow="1"/>
+
+  <wall pos="0 1000 0"    length="1200" height="540" thickness="24" material="wallpaper"/>
+  <wall pos="-600 500 0"  rot="0 0 90" length="1000" height="540" thickness="24" material="wallpaper"/>
+  <wall pos=" 600 500 0"  rot="0 0 90" length="1000" height="540" thickness="24" material="wallpaper"/>
+  <wall pos="0 0 0"       length="1200" height="540" thickness="24" material="wallpaper" renderable="0" castShadow="0"/>
+
+  <!-- Archway back to main workshop floor (West wall) -->
+  <bool-negative-arch pos="-600 280 160" rot="0 0 90" width="180" height="300" depth="50"/>
+
+  <!-- ==================== SEMANTIC BLOCKOUT MASSES ==================== -->
+
+  <!-- 1. LONG TOOL BENCH (Flanking North wall) -->
+  <box pos="0 880 60" size="1100 200 120" material="wood_oak"/>
+  <!-- Tool rack mounted above bench -->
+  <box pos="0 970 240" size="800 20 120" material="wood_dark"/>
+
+  <!-- 2. MAKESHIFT CLIMBING STEPS TO COUNTERTOP (Right side) -->
+  <!-- Low wooden crate -->
+  <box pos="180 500 25" size="100 100 50" material="wood_oak"/>
+  <!-- Old wooden chair -->
+  <box pos="320 520 60" size="110 110 120" material="wood_dark"/>
+  <box pos="320 575 150" size="110 20 140" material="wood_dark"/>
+  <!-- Stack of 3 broad repair books on chair -->
+  <box pos="320 520 135" size="80 80 30" material="wood_dark"/>
+
+  <!-- 3. CAPTAIN BERTRAND (Painted wooden nutcracker guard on chair) -->
+  <box pos="320 520 175" size="30 30 50" material="red_paint"/>
+
+  <!-- 4. HIGH COUNTERTOP DISPLAY (NE Elevated section) -->
+  <box pos="420 850 160" size="320 240 200" material="wood_dark"/>
+
+  <!-- ==================== NAMED INTERACTION ANCHORS ==================== -->
+  <group name="BERTRAND"        pos="320 520 175"/>
+  <group name="MAKESHIFT-STEPS" pos="320 520 135"/>
+  <group name="TOOL-RACK"       pos="0   970 240"/>
+  <group name="VARNISH-POT"     pos="-200 880 125"/>
+
+</scene>
