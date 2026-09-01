@@ -220,7 +220,7 @@ unfinished area. Reserve one lower quadrant and keep it free of:
 - high-frequency detail;
 - bright highlights that reduce text contrast.
 
-For `WorkshopEstablishing`, the lower-right floor is the text-safe area. Story
+For `workshop-floor`, the lower-right floor is the text-safe area. Story
 prose is aligned there, choices remain lower-left, and Continue sits below the
 prose. Other cameras may use a different quadrant, but the scene and UI must
 agree on it.

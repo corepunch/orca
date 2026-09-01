@@ -107,7 +107,9 @@ function Projection.parse(xml)
                     assert(tag == "scene" and roots == 0, "expected one scene root")
                     roots = roots + 1
                 end
-                local node = {tag = tag, transform = transform(attrs), parent = parent}
+                local node = {tag = tag, attrs = attrs, transform = transform(attrs), parent = parent, children = {}}
+                if parent then parent.children[#parent.children + 1] = node else scene.root = node end
+                if tag == "box" then node.size = position(attrs.size, {0.01, 0.01, 0.01}) end
                 if attrs.attach then node.error = "attach slots are not supported by the metadata importer" end
                 if attrs.pivotOffset then node.error = "pivotOffset is not supported by the metadata importer" end
                 if parent and parent.tag ~= "scene" and parent.tag ~= "group" then
@@ -159,6 +161,139 @@ function Projection.anchor(scene, id, localOffset)
         node = node.parent
     end
     return point
+end
+
+local function worldPoint(node, point)
+    while node and node.tag ~= "scene" do
+        point = apply(node.transform, point)
+        node = node.parent
+    end
+    return point
+end
+
+local function includePoint(bounds, point)
+    if not bounds.min then
+        bounds.min = {point[1], point[2], point[3]}
+        bounds.max = {point[1], point[2], point[3]}
+        return
+    end
+    for axis = 1, 3 do
+        bounds.min[axis] = math.min(bounds.min[axis], point[axis])
+        bounds.max[axis] = math.max(bounds.max[axis], point[axis])
+    end
+end
+
+local function includeGeometry(owner, node, bounds)
+    if node ~= owner and node.attrs.name then return end
+    if node.tag == "box" and node.size then
+        for x = -1, 1, 2 do
+            for y = -1, 1, 2 do
+                for z = -1, 1, 2 do
+                    includePoint(bounds, worldPoint(node, {
+                        x * node.size[1] / 2, y * node.size[2] / 2, z * node.size[3] / 2,
+                    }))
+                end
+            end
+        end
+    end
+    for _, child in ipairs(node.children) do includeGeometry(owner, child, bounds) end
+end
+
+-- Named groups define semantic object assemblies. Joined primitives inside one
+-- assembly may overlap; positive-volume overlap between assemblies is invalid.
+function Projection.semanticBounds(scene)
+    local bounds = {}
+    local function visit(node)
+        if node.tag == "group" and node.attrs.name then
+            local objectBounds = {name = node.attrs.name}
+            includeGeometry(node, node, objectBounds)
+            if objectBounds.min then bounds[#bounds + 1] = objectBounds end
+        end
+        for _, child in ipairs(node.children) do visit(child) end
+    end
+    visit(scene.root)
+    table.sort(bounds, function(a, b) return a.name < b.name end)
+    return bounds
+end
+
+function Projection.objectBounds(scene, name)
+    for _, bounds in ipairs(Projection.semanticBounds(scene)) do
+        if bounds.name == name then return bounds end
+    end
+    return nil, "semantic object has no box geometry: " .. tostring(name)
+end
+
+function Projection.distance(first, second)
+    local gaps, squared = {}, 0
+    for axis = 1, 3 do
+        gaps[axis] = math.max(first.min[axis] - second.max[axis],
+            second.min[axis] - first.max[axis], 0)
+        squared = squared + gaps[axis] * gaps[axis]
+    end
+    return math.sqrt(squared), gaps
+end
+
+function Projection.roomBounds(scene)
+    local result = {}
+    for _, node in ipairs(scene.root.children) do
+        if node.tag == "wall" then
+            local length = number(node.attrs.length) * centimeters
+            local height = number(node.attrs.height) * centimeters
+            local thickness = number(node.attrs.thickness) * centimeters
+            local bounds = {}
+            for x = -1, 1, 2 do
+                for y = -1, 1, 2 do
+                    for z = 0, 1 do
+                        includePoint(bounds, worldPoint(node,
+                            {x * length / 2, y * thickness / 2, z * height}))
+                    end
+                end
+            end
+            local width, depth = bounds.max[1] - bounds.min[1], bounds.max[2] - bounds.min[2]
+            if width < depth then
+                if (bounds.min[1] + bounds.max[1]) / 2 < 0 then result.west = bounds.max[1]
+                else result.east = bounds.min[1] end
+            else
+                if (bounds.min[2] + bounds.max[2]) / 2 < 5 then result.south = bounds.max[2]
+                else result.north = bounds.min[2] end
+            end
+            result.floor = result.floor or bounds.min[3]
+            result.ceiling = math.max(result.ceiling or 0, bounds.max[3])
+        end
+    end
+    return result
+end
+
+function Projection.wallClearances(scene, bounds)
+    local room = Projection.roomBounds(scene)
+    return {
+        west = bounds.min[1] - room.west,
+        east = room.east - bounds.max[1],
+        south = bounds.min[2] - room.south,
+        north = room.north - bounds.max[2],
+        floor = bounds.min[3] - room.floor,
+        ceiling = room.ceiling - bounds.max[3],
+    }
+end
+
+function Projection.intersections(scene, tolerance)
+    tolerance = tolerance or 1e-6
+    local bounds, hits = Projection.semanticBounds(scene), {}
+    for first = 1, #bounds - 1 do
+        for second = first + 1, #bounds do
+            local overlap, intersects = {}, true
+            for axis = 1, 3 do
+                overlap[axis] = math.min(bounds[first].max[axis], bounds[second].max[axis])
+                    - math.max(bounds[first].min[axis], bounds[second].min[axis])
+                if overlap[axis] <= tolerance then intersects = false end
+            end
+            if intersects then
+                hits[#hits + 1] = {first = bounds[first].name, second = bounds[second].name,
+                    overlap = overlap}
+            end
+        end
+    end
+    return hits
 end
 
 -- Source dimensions must match the reference render used to paint the image.

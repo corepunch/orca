@@ -203,7 +203,7 @@ examine clock, and take oil can. Door traversal and the rest of the earlier
 opening sequence are outside this slice.
 
 `Tools/render_workshop_prototype.py` renders oil-present and oil-removed states
-from the same `WorkshopEstablishing` camera, saves the matching `.blks` snapshot,
+from the same `workshop-floor` camera, saves the matching `.blks` snapshot,
 and runs `Tools/export_workshop_camera.lua`. That exporter produces native
 ORCA `Scene`/`Camera`/`Node3D` XML in `Scenes/WorkshopCamera.xml`, plus source
 render metadata in `Scripts/WorkshopCamera.lua`. Export camera position,
@@ -285,11 +285,11 @@ instructions below to every render-to-illustration pass.
 
 Its cameras are story shots rather than generic coverage:
 
-- `WorkshopEstablishing` defines the workshop geography;
+- `workshop-floor` defines the workshop geography;
 - `EmptyHookReveal` isolates the missing-key beat;
 - `ClimbWorkbenchAction` makes the ascent read vertically;
 - `WorkbenchTopEstablishing` marks the tabletop as a new scene;
-- `RepairBookCloseup` and `OilCanCloseup` cover object interactions;
+- `repair-book` and `oil-can` cover object interactions;
 - `ToolBenchEstablishing`, `WindBertrandAction`, and `MakeshiftClimbAction` cover
   the later mechanical sequence;
 - `CountertopEstablishing` establishes the destination;
@@ -429,7 +429,7 @@ design; older reference costumes do not override the selected cast model.
 ### Text-safe does not mean empty
 
 Compose with the actual prose, object-circle and Continue footprints, including
-the displayed crop, from the start. In `WorkshopEstablishing`, prose occupies
+the displayed crop, from the start. In `workshop-floor`, prose occupies
 the lower-right floor, choices occupy the lower-left, circles belong on objects,
 and Continue sits below the prose during action beats. Keep reading regions in
 a narrow value range with soft edges and low local contrast. They can contain

@@ -16,7 +16,10 @@ local M = {}
 -- filters to those currently reachable. `exits` are room-level movements.
 M.rooms = {
     ["WORKSHOP-FLOOR"] = {
-        subjects = {"KEY-HOOK", "WORKBENCH", "OIL-CAN", "LOFT-LADDER", "CLOCK-FACE", "PET-DOOR"},
+        subjects = {
+            "KEY-HOOK", "KEY-STRING", "WORKBENCH", "OIL-CAN", "SAWDUST",
+            "SWEEP-BROOM", "LOFT-LADDER", "LADDER-MECH", "CLOCK-FACE", "PET-DOOR",
+        },
         exits = {
             {label = "Cross to the tool bench", command = "east"},
         },

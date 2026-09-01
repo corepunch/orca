@@ -3,6 +3,8 @@ local core = require "orca.core"
 local ui = require "orca.UIKit"
 local filesystem = require "orca.filesystem"
 local system = require "orca.system"
+local projection = require "Book.Scripts.SceneProjection"
+local camera_export = require "Book.Scripts.WorkshopCamera"
 local function pump(root)
     while true do
         local msg = system.peekMessage()
@@ -27,8 +29,11 @@ assert(find("Hotspot_PET-DOOR"), "Projected door circle missing")
 assert(find("Hotspot_CLOCK-FACE"), "Projected clock circle missing")
 local oil = assert(find("Hotspot_OIL-CAN"), "Projected oil circle missing")
 assert(math.abs(oil.ActualWidth - 48) < 1 and math.abs(oil.ActualHeight - 48) < 1)
-assert(oil.MarginLeft > 800 and oil.MarginLeft < 850)
-assert(oil.ActualY > 490 and oil.ActualY < 550, "Circle lost projected vertical position")
+local expectedOil = assert(projection.project(
+    camera_export.cameras[camera_export.default_camera], camera_export.anchors["OIL-CAN"],
+    camera_export.source_width, camera_export.source_height, 1024, 768))
+assert(math.abs(oil.MarginLeft - (expectedOil.x - 24)) < 1)
+assert(math.abs(oil.ActualY - (expectedOil.y - 24)) < 1, "Circle lost projected vertical position")
 assert(oil.BorderWidthLeft == 3, "Circle stylesheet did not load")
 assert(find("Choices"):getFirstChild(), "Room exits must be offered as choices")
 assert(find("SceneDescription").Text:find("Grandfather Tolliver", 1, true))

@@ -18,7 +18,7 @@ furniture mass. For the workshop establishing shot that means:
    Use round numbers for size and position; exact fit comes later.
 3. **Place two cameras and render both immediately.** The first two cameras to
    produce are always:
-   - `WorkshopEstablishing` — the high corner view, two walls converging, full
+   - `workshop-floor` — the high corner view, two walls converging, full
      foreground/mid/background read. Follow the recipe in
      [Establishing Camera Recipe](#establishing-camera-recipe).
    - `LayoutPlan` — a straight-down view from just below the ceiling
@@ -128,12 +128,113 @@ Use this starting point, then compose against the actual room:
 8. Establish foreground, middle-ground, and background overlap.
 9. Reserve a clear region for prose before adding secondary geometry.
 
+Every semantic element assigned to an establishing shot must read clearly at the
+final delivery size. Being mathematically inside the camera frustum is insufficient.
+Keep the complete identifying silhouette comfortably inside the frame and reject
+objects that appear tiny, edge-on, heavily occluded, cropped, or ambiguous.
+
+Orient important objects toward the view that best explains their function. A
+ladder is usually most recognizable from its rung side, shelves from their open
+face, a chair from an angle that separates its seat and back, and a workbench from
+an angle that exposes its working surface. Rotate or relocate an object, or revise
+the camera, when its functional face is hidden. This visual rule never overrides
+physical plausibility: the object must remain supported, reachable, and usable.
+
 Do not treat the numeric ranges as a substitute for looking at the render. A
 camera can satisfy every number and still be blocked by a beam or furniture.
 
 Use floor-level, centered, straight-on, or extreme overhead cameras only when a
 specific beat needs intimidation, concealment, disorientation, symmetry, or a
 map-like view. Name that purpose in the camera comment.
+
+## Spatial Plausibility and Functional Clearance
+
+A blockout must describe a place that can actually be occupied and used. Good
+framing does not excuse impossible architecture. Before adding detail or approving
+a camera, mentally walk a person from every entrance to every exit, workstation,
+vertical transition, and required story object.
+
+Use these rules for every room layout:
+
+1. **Preserve circulation.** Keep a continuous standing-width route between all
+   entrances, exits, and required destinations. Do not make a route depend on
+   squeezing through furniture, stepping over props, or clipping a wall.
+2. **Keep transition zones empty.** Do not place furniture, crates, shelves, or
+   decoration in doorways, arches, corridors, stair landings, or the approach to
+   a ladder. Include room for door swing where a hinged door is implied.
+3. **Resolve vertical transitions.** Every ladder and stair must connect two usable
+   surfaces. It must not terminate beneath a ceiling, beam, shelf, wall, or solid
+   floor slab. Provide a visible hatch or landing, head and shoulder clearance
+   through it, and enough clear floor to mount, dismount, and turn safely.
+4. **Make climbable geometry read as climbable.** When a ladder's function matters,
+   block rails and regularly spaced rungs rather than using one solid vertical box.
+   Align its top with the hatch or landing and support its bottom on the floor.
+5. **Protect windows.** Keep shelves, cabinets, picture frames, crates, and tall
+   furniture out of window openings, shutter paths, and principal light paths.
+   An obstruction is allowed only when the story explicitly requires it.
+6. **Give furniture a use zone.** Leave an accessible working side at desks and
+   benches, pull-out space behind chairs, opening space in front of drawers and
+   cabinets, and a reachable face on shelves and storage.
+7. **Mount wall objects plausibly.** Picture frames, clocks, hooks, and shelves sit
+   on wall surfaces, not inside them or across openings. Keep them separated from
+   doors, windows, trim, and one another. Shelves need believable support, depth,
+   and vertical room for contents.
+8. **Prevent interpenetration and unsupported forms.** Furniture does not pass
+   through walls or other furniture. Platforms, lofts, shelves, and heavy objects
+   need visible structural support appropriate to the blockout level.
+9. **Keep exits usable beyond the silhouette.** Check both sides of every opening.
+   A clear doorway is still invalid when the destination side immediately collides
+   with furniture, a wall, a drop, or another transition.
+10. **Check human scale in all three axes.** Compare widths, heights, reach, headroom,
+    and step distances against the intended character. A valid top-down footprint
+    can still hide a head strike or unreachable surface.
+
+Validate these rules in both representations. The layout render reveals footprints,
+routes, and overlaps; perspective renders reveal head clearance, mounting height,
+depth, support, and occlusion. Inspect each transition from its approach and landing,
+and render every neighboring camera affected by a moved architectural element.
+
+### Automated intersection sanity
+
+Wrap the primitives belonging to each multi-part story object in one named `<group>`
+whose name exactly matches its ZIL identifier. The group owns both the interaction
+anchor and the object's geometry:
+
+```xml
+<group name="SWEEP-BROOM" pos="-215 390 90">
+   <box rot="0 -10 0" size="12 12 180" material="wood_oak"/>
+   <box pos="0 0 -82" size="70 24 16" material="wood_dark"/>
+</group>
+```
+
+Run the semantic bounds check directly or through the normal render workflow:
+
+```sh
+make sanity ROOM=workshop
+make measure ROOM=workshop OBJECT=SWEEP-BROOM
+make measure ROOM=workshop OBJECT=SWEEP-BROOM TARGET=WORKBENCH
+make render ROOM=workshop   # runs sanity first
+make layout ROOM=workshop   # runs sanity first
+```
+
+The measurement command reports the transformed world bounds, clearances to the
+west, east, south, and north interior wall faces, floor and ceiling clearance,
+and nearest edge-to-edge distance to other semantic assemblies. Distances include
+rotation. Use a measure-adjust-remeasure loop: place the object upright, inspect
+its baseline clearances, apply the intended lean or rotation, then inspect the
+new clearances before rendering. Do not assume a rotation produces a particular
+offset; for example, a 180 cm handle leaned by 2 degrees moves its end only about
+$180\sin(2^\circ) \approx 6.3$ cm across its full length, or about 3.1 cm from a
+center pivot.
+
+Joined primitives inside one named group may overlap because they form one assembly,
+such as ladder rungs meeting rails or table legs meeting a top. Positive-volume AABB
+overlap between separate named groups is an error. Surface contact alone is allowed.
+
+This is a focused guard, not a physics engine. It currently checks box geometry in
+named groups. It does not validate ungrouped decoration, detailed mesh or prefab
+surfaces, door swing, reachability, moving states, or human headroom. Continue to
+inspect both layout and perspective renders for those conditions.
 
 ## Shot Roles
 
@@ -159,7 +260,7 @@ unfinished area. Reserve one lower quadrant and keep it free of:
 - high-frequency detail;
 - bright highlights that reduce text contrast.
 
-For `WorkshopEstablishing`, the lower-right floor is the text-safe area. Story
+For `workshop-floor`, the lower-right floor is the text-safe area. Story
 prose is aligned there, choices remain lower-left, and Continue sits below the
 prose. Other cameras may use a different quadrant, but the scene and UI must
 agree on it.
@@ -227,6 +328,20 @@ must come from the same `.blks` revision.
 
 ## Review Checklist
 
+- Every semantic element assigned to the establishing shot is clearly recognizable at delivery size.
+- Required objects show their strongest functional face rather than an edge-on or ambiguous silhouette.
+- Complete identifying silhouettes have comfortable frame margin and are not barely clipped by an edge.
+- No required element depends on prior location knowledge to be recognized in the establishing render.
+- A person can walk continuously from every entrance to every exit and required destination.
+- Doors, arches, corridors, stairs, ladder approaches, and landings remain unobstructed.
+- Every ladder or stair reaches a real opening or landing with head and shoulder clearance.
+- Windows and their principal light paths are free of shelves, frames, and tall furniture.
+- Furniture has believable approach, seating, working, drawer, and door-opening space.
+- Wall-mounted objects do not overlap openings, trim, other fixtures, or each other.
+- Platforms and heavy elevated forms have plausible support; geometry does not interpenetrate.
+- `make sanity ROOM=<room>` passes for all named semantic object assemblies.
+- Both sides of every room transition are usable and safe to enter.
+- Human scale and vertical clearance have been checked in perspective, not only in plan.
 - Camera is attached to a wall or corner rather than floating centrally.
 - Establishing view shows two converging wall planes.
 - Ceiling geometry does not dominate or block the view.

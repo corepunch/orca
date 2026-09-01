@@ -12,16 +12,30 @@
        Height=380cm (70% of 540cm), pitch=24 deg down, FOV=68 deg.
        Shows North & East walls, heavy workbench, ladder, and pet door.
        Lower-right floor is text-safe negative space. -->
-  <camera name="WorkshopEstablishing" comment="High SW corner diagonal establishing view of workshop floor"
-          pos="-520 90 380" look="60 680 90" fov="68"/>
+  <camera name="workshop-floor" comment="High SW corner diagonal establishing view of workshop floor"
+          pos="-520 90 380" look="-40 680 90" fov="70"/>
 
-  <!-- 2. FOCUS: Key Hook on West Wall -->
-  <camera name="KeyHookFocus" comment="Close inspection of empty brass key hook on west wall"
+  <!-- Object focus cameras use lowercased ZIL object names. -->
+  <camera name="key-hook" comment="Close inspection of empty brass key hook on west wall"
           pos="-450 180 300" look="-580 180 320" fov="52"/>
-
-  <!-- 3. FOCUS: Loft Ladder & Storage Mechanism -->
-  <camera name="LoftLadderFocus" comment="Focus on folding loft ladder and rusty lifting mechanism"
-          pos="-380 620 220" look="-550 820 260" fov="58"/>
+  <camera name="workbench" comment="Medium view across Tolliver's workbench and its stacked projects"
+          pos="180 230 230" look="-380 480 100" fov="58"/>
+  <camera name="oil-can" comment="Low close view beneath the workbench toward the copper oil can"
+          pos="-400 480 38" look="-450 360 18" fov="38"/>
+  <camera name="sawdust" comment="Low raking view across the sawdust-covered floorboards"
+          pos="250 180 85" look="-40 510 5" fov="58"/>
+  <camera name="pet-door" comment="Low view toward the moonlit pet door in the north wall"
+          pos="360 650 105" look="100 990 50" fov="52"/>
+        <camera name="sweep-broom" comment="Low focus on Pip's broom leaning against the west wall"
+          pos="-180 100 130" look="-574 250 90" fov="48"/>
+  <camera name="clock-face" comment="Upward inspection of the old cuckoo clock on the west wall"
+          pos="-300 480 290" look="-580 480 360" fov="46"/>
+  <camera name="key-string" comment="Tight view of the frayed string hanging from the key hook"
+          pos="-455 180 300" look="-580 180 292" fov="42"/>
+  <camera name="loft-ladder" comment="Frontal focus on the ladder mounted to the south side of the storage loft"
+          pos="-180 360 250" look="-410 700 240" fov="56"/>
+  <camera name="ladder-mech" comment="Close inspection of the rusty ladder lifting mechanism"
+          pos="-350 650 230" look="-576 680 220" fov="46"/>
 
   <!-- ==================== MATERIALS ==================== -->
   <material id="wood_dark"   color="0.35 0.22 0.14" shininess="20"/>
@@ -61,25 +75,53 @@
   <!-- ==================== SEMANTIC BLOCKOUT MASSES ==================== -->
 
   <!-- 1. TOLLIVER'S HEAVY OAK WORKBENCH (Flanking West wall) -->
-  <box pos="-380 480 50" size="240 400 100" material="wood_oak"/>
+        <group name="WORKBENCH" pos="-380 480 100">
+                <box pos="0 0 -10" size="240 400 20" material="wood_oak"/>
+                <box pos="-90 -160 -60" size="36 36 80" material="wood_oak"/>
+                <box pos="90 -160 -60" size="36 36 80" material="wood_oak"/>
+                <box pos="-90 160 -60" size="36 36 80" material="wood_oak"/>
+                <box pos="90 160 -60" size="36 36 80" material="wood_oak"/>
+        </group>
   <!-- Workbench wooden stool for 9yo Pip -->
   <box pos="-220 320 25" size="50 50 50" material="wood_dark"/>
   <!-- Illustrated Repair Book on desk -->
   <box pos="-360 440 108" size="70 50 14" material="wood_dark"/>
   <!-- Small copper oil can under bench -->
-  <box pos="-460 360 12" size="20 20 24" material="brass"/>
+        <box pos="-450 360 12" size="20 20 24" material="brass"/>
+        <!-- Pip's broom leans 2 degrees toward the west wall with measured clearance. -->
+        <group name="SWEEP-BROOM" pos="-574 250 90.2">
+                <box rot="0 -2 0" size="12 12 180" material="wood_oak"/>
+                <box pos="40 0 -82" size="70 24 16" material="wood_dark"/>
+        </group>
+
+        <!-- Broad sawdust patch: a readable floor-level story object, not loose debris -->
+        <box pos="-40 510 2" size="260 190 4" material="wood_oak" castShadow="0"/>
 
   <!-- 2. STORAGE LOFT MEZZANINE & FOLDING LADDER (NW Corner) -->
   <box pos="-440 850 420" size="300 280 20" material="wood_dark"/>
   <!-- Support beam -->
   <box pos="-300 710 210" size="20 20 420" material="wood_dark"/>
-  <!-- Folding wooden ladder stored along NW wall -->
-  <box pos="-576 820 210" size="16 48 420" material="wood_oak"/>
+  <!-- Folding ladder faces south on the loft fascia; rails extend above the deck as handholds. -->
+        <box pos="-432 698 240" size="12 12 480" material="wood_oak"/>
+        <box pos="-388 698 240" size="12 12 480" material="wood_oak"/>
+        <box pos="-410 698 35"  size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 70"  size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 105" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 140" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 175" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 210" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 245" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 280" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 315" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 350" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 385" size="56 14 10" material="wood_oak"/>
+        <box pos="-410 698 420" size="56 14 10" material="wood_oak"/>
   <!-- Rusty lifting winch mechanism on wall -->
   <box pos="-576 680 220" size="24 30 40" material="stone"/>
 
   <!-- 3. WALL CLOCK & EMPTY BRASS KEY HOOK (West Wall, Foreground) -->
   <box pos="-585 180 320" size="10 30 50" material="brass"/>
+        <box pos="-582 180 286" size="6 6 46" material="wood_oak"/>
   <box pos="-580 480 360" size="20 80 120" material="wood_dark"/>
 
   <!-- 4. TOOL CRATES & SWEEP BROOM (East Wall near archway) -->
@@ -88,10 +130,12 @@
 
   <!-- ==================== NAMED INTERACTION ANCHORS ==================== -->
   <group name="KEY-HOOK"   pos="-585 180 320"/>
-  <group name="WORKBENCH"  pos="-380 480 100"/>
-  <group name="OIL-CAN"    pos="-460 360  12"/>
+        <group name="KEY-STRING" pos="-582 180 286"/>
+        <group name="OIL-CAN"    pos="-450 360  12"/>
+        <group name="SAWDUST"    pos="-40  510   2"/>
   <group name="PET-DOOR"   pos="100  990  50"/>
-  <group name="LOFT-LADDER" pos="-576 820 210"/>
+        <group name="LOFT-LADDER" pos="-410 698 210"/>
+        <group name="LADDER-MECH" pos="-576 680 220"/>
   <group name="CLOCK-FACE" pos="-580 480 360"/>
 
 </scene>

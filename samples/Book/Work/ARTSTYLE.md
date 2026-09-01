@@ -124,7 +124,7 @@ at a real depth boundary rather than expanding into an arbitrary empty panel.
 - Contour wrapping around a foreground silhouette is welcome when readability
 	remains strong.
 - Match each camera's text-safe region to the actual runtime overlay. For
-	`WorkshopEstablishing`, prose occupies the lower-right floor, choices occupy
+	`workshop-floor`, prose occupies the lower-right floor, choices occupy
 	the lower-left, and Continue sits below the prose. Other shots may use a
 	different region when their UI and composition agree.
 

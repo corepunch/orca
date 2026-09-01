@@ -46,12 +46,23 @@ make render ROOM=workshop
 Outputs are written to `Rooms/render/workshop/`, for example:
 
 ```text
-Rooms/render/workshop/WorkshopEstablishing.jpg
-Rooms/render/workshop/OilCanCloseup.jpg
-Rooms/render/workshop/LoftLadderCloseup.jpg
-Rooms/render/workshop/CountertopEstablishing.jpg
+Rooms/render/workshop/workshop-floor.jpg
+Rooms/render/workshop/oil-can.jpg
+Rooms/render/workshop/loft-ladder.jpg
+Rooms/render/workshop/ladder-mech.jpg
 ```
 
+Story screenshot names must be the lowercase, hyphenated ZIL identifier of the
+room or object they depict: `WORKSHOP-FLOOR` becomes `workshop-floor.jpg` and
+`OIL-CAN` becomes `oil-can.jpg`. Camera names in `.blks` must use that exact
+lowercase spelling because Scener names each output after its camera. Do not add
+role suffixes such as `Focus`, `Closeup`, or `Establishing`. `layout.jpg` is the
+only non-ZIL filename in a room render directory; it is a development plan, not
+a story screenshot.
+
+Before rendering, the Makefile removes existing JPG and PNG story screenshots
+from the selected output directory while preserving `layout.jpg`. This prevents
+renamed or deleted cameras from leaving stale files beside the canonical set.
 Generated renders are ignored by Git. The application expects these JPEG names
 directly and reports missing renders instead of falling back to old artwork.
 
@@ -80,7 +91,7 @@ Run direct commands from `Rooms/` so relative `prefabs/` paths resolve:
 ```sh
 cd Rooms
 scener --list-cameras workshop.blks
-scener --render workshop.blks --camera WorkshopEstablishing \
+scener --render workshop.blks --camera workshop-floor \
   --size 1536x1024 --format jpg --output-dir render/workshop
 scener workshop.blks
 ```
@@ -90,8 +101,8 @@ third opens the interactive scene editor. Omit `--camera` to render all named
 cameras. Batch options also include `-no-shadows` and `-wireframe`.
 
 Scener names each output after its camera. For example, selecting
-`WorkshopEstablishing` writes `WorkshopEstablishing.jpg` inside the requested
-output directory; `--output-dir` is a directory, not a filename.
+`workshop-floor` writes `workshop-floor.jpg` inside the requested output
+directory; `--output-dir` is a directory, not a filename.
 
 ## Cameras and Interaction Anchors
 
@@ -121,7 +132,7 @@ reveals, and action.
 
 When prose overlays a render, reserve one lower quadrant as text-safe negative
 space. Keep major props, exits, projected hotspots, and high-contrast detail out
-of it. For `WorkshopEstablishing`, the lower-right floor is the text-safe area;
+of it. For `workshop-floor`, the lower-right floor is the text-safe area;
 choices remain on the lower-left side of the screen.
 
 Block only stable layout and readable silhouettes. Include an object when its
@@ -165,7 +176,7 @@ python3 Tools/render_workshop_prototype.py
 ```
 
 Set `SCENER=/absolute/path/to/scener` if needed. The script renders both states
-from `WorkshopEstablishing` and regenerates the camera export.
+from `workshop-floor` and regenerates the camera export.
 
 ## Run and Test the Book
 

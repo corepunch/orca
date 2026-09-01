@@ -33,6 +33,10 @@ assert(subject(view, "WORKBENCH").kind == "focus" and subject(view, "WORKBENCH")
 assert(subject(view, "OIL-CAN").kind == "take", "portable oil can defaults to take")
 assert(subject(view, "LOFT-LADDER").kind == "focus")
 assert(subject(view, "PET-DOOR").kind == "examine", "plain scenery examines")
+for _, name in ipairs({"KEY-STRING", "SAWDUST", "SWEEP-BROOM", "LADDER-MECH", "CLOCK-FACE"}) do
+    assert(subject(view, name), "workshop ZIL object missing from room page: " .. name)
+end
+assert(#view.subjects == 10, "every direct WORKSHOP-FLOOR object appears on the room page")
 assert(#view.exits == 1 and view.exits[1].command == "east")
 
 -- === FOCUS: the empty key hook narrows the action space ===

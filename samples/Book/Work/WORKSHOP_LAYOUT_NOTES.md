@@ -102,7 +102,7 @@ wrapper) so `Tools/export_workshop_camera.lua` can pick them up.
 |--------|---------------|--------------------|-------|
 | `CLOCK-FACE` | West wall | X=−576, Y=500, Z=390 | Needs a shaped case silhouette (see PROCESS.md — "give the clock an authored antique cuckoo-clock case") |
 | `KEY-HOOK` | West wall | X=−576, Y=250, Z=360 | Brass wall hook; small but story-critical |
-| `OIL-CAN` | Beneath workbench | X=−150, Y=90, Z=14 | Under the bench overhang, visible in `OilCanCloseup` |
+| `OIL-CAN` | Beneath workbench | X=−150, Y=90, Z=14 | Under the bench overhang, visible in `oil-can` |
 | `PET-DOOR` | North wall arch base | X=−170, Y=1000, Z=0 | At floor level inside the arch opening |
 
 ### Wall shelves

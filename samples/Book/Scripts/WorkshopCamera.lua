@@ -6,17 +6,61 @@ return {
     native_scene_path = "Book/Scenes/WorkshopCamera.xml",
     default_camera = "workshop-floor",
     cameras = {
+        ["clock-face"] = {
+            name = "clock-face", fov = 46, near = 0.1, far = 100,
+            pos = {-3, 4.8, 2.9}, look = {-5.8, 4.8, 3.6}, rotation = {0, 104.036243468, 0},
+        },
+        ["key-hook"] = {
+            name = "key-hook", fov = 52, near = 0.1, far = 100,
+            pos = {-4.5, 1.8, 3}, look = {-5.8, 1.8, 3.2}, rotation = {0, 98.7461622626, 0},
+        },
+        ["key-string"] = {
+            name = "key-string", fov = 42, near = 0.1, far = 100,
+            pos = {-4.55, 1.8, 3}, look = {-5.8, 1.8, 2.92}, rotation = {0, 86.3380644245, 0},
+        },
+        ["ladder-mech"] = {
+            name = "ladder-mech", fov = 46, near = 0.1, far = 100,
+            pos = {-3.5, 6.5, 2.3}, look = {-5.76, 6.8, 2.2}, rotation = {7.55412254319, 87.4664411116, 0},
+        },
+        ["loft-ladder"] = {
+            name = "loft-ladder", fov = 56, near = 0.1, far = 100,
+            pos = {-1.8, 3.6, 2.5}, look = {-4.1, 7, 2.4}, rotation = {55.8976910665, 87.510447078, 0},
+        },
+        ["oil-can"] = {
+            name = "oil-can", fov = 38, near = 0.1, far = 100,
+            pos = {-4, 4.8, 0.38}, look = {-4.5, 3.6, 0.18}, rotation = {-65.8311865642, 68.1985905136, 0},
+        },
+        ["pet-door"] = {
+            name = "pet-door", fov = 52, near = 0.1, far = 100,
+            pos = {3.6, 6.5, 1.05}, look = {1, 9.9, 0.5}, rotation = {51.9878077986, 78.0558228116, 0},
+        },
+        ["sawdust"] = {
+            name = "sawdust", fov = 58, near = 0.1, far = 100,
+            pos = {2.5, 1.8, 0.85}, look = {-0.4, 5.1, 0.05}, rotation = {47.6473025404, 74.5778386813, 0},
+        },
+        ["sweep-broom"] = {
+            name = "sweep-broom", fov = 48, near = 0.1, far = 100,
+            pos = {-1.8, 1, 1.3}, look = {-5.74, 2.5, 0.9}, rotation = {20.7448700633, 84.2030313809, 0},
+        },
+        ["workbench"] = {
+            name = "workbench", fov = 58, near = 0.1, far = 100,
+            pos = {1.8, 2.3, 2.3}, look = {-3.8, 4.8, 1}, rotation = {23.5025271267, 76.9306821037, 0},
+        },
         ["workshop-floor"] = {
             name = "workshop-floor", fov = 70, near = 0.1, far = 100,
-            pos = {-5.4, 0.8, 4.2}, look = {0.85, 7.35, 1.05}, rotation = {43.1022631367, -63.2518958371, 0},
+            pos = {-5.2, 0.9, 3.8}, look = {-0.4, 6.8, 0.9}, rotation = {46.453338522, -58.861027563, 0},
         },
     },
     anchors = {
-        ["CLOCK-FACE"] = {-5.76, 4.8, 3.6},
-        ["KEY-HOOK"] = {-5.76, 1.8, 3.2},
-        ["LOFT-LADDER"] = {-5.76, 8, 2.4},
-        ["OIL-CAN"] = {-4.7, 3.8, 0.2},
-        ["PET-DOOR"] = {1, 9.88, 0},
-        ["WORKBENCH"] = {-4.7, 3.8, 0.8},
+        ["CLOCK-FACE"] = {-5.8, 4.8, 3.6},
+        ["KEY-HOOK"] = {-5.85, 1.8, 3.2},
+        ["KEY-STRING"] = {-5.82, 1.8, 2.86},
+        ["LADDER-MECH"] = {-5.76, 6.8, 2.2},
+        ["LOFT-LADDER"] = {-4.1, 6.98, 2.1},
+        ["OIL-CAN"] = {-4.5, 3.6, 0.12},
+        ["PET-DOOR"] = {1, 9.9, 0.5},
+        ["SAWDUST"] = {-0.4, 5.1, 0.02},
+        ["SWEEP-BROOM"] = {-5.74, 2.5, 0.902},
+        ["WORKBENCH"] = {-3.8, 4.8, 1},
     },
 }

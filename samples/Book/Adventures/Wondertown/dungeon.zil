@@ -157,7 +157,7 @@
         (SYNONYM BROOM BRUSH)
         (ADJECTIVE HAND WOODEN SWEEP)
         (DESC "wooden sweep broom")
-        (LDESC "Pip's workshop broom leans against the workbench leg.")
+        (LDESC "Pip's workshop broom leans against the wall beside the workbench.")
         (FLAGS TAKEBIT)
         (SIZE 4)
         (ACTION SWEEP-BROOM-F)>

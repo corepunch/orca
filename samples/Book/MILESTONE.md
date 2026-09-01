@@ -100,17 +100,17 @@ blockout name differs.
 
 | Camera | Use |
 |---|---|
-| `WorkshopEstablishing` | WORKSHOP-FLOOR establishing |
-| `EmptyHookReveal` | KEY-HOOK focus |
-| `ClimbWorkbenchAction` | WORKBENCH focus + climb beat |
-| `WorkbenchTopEstablishing` | WORKBENCH-TOP establishing + close-book beat |
-| `RepairBookCloseup` | REPAIR-BOOK focus + open beat |
-| `OilCanCloseup` | oil-can take beat |
-| `ToolBenchEstablishing` | TOOL-BENCH establishing |
-| `WindBertrandAction` | BERTRAND focus + wind beat |
-| `MakeshiftClimbAction` | MAKESHIFT-STEPS focus + climb beat |
-| `CountertopEstablishing` | COUNTERTOP establishing + case/doll focus |
-| `LayoutPlan` | overhead reference; NOT exported/used |
+| `workshop-floor` | WORKSHOP-FLOOR establishing |
+| `key-hook` | KEY-HOOK focus |
+| `workbench`, `workbench-climb` | WORKBENCH focus + climb beat |
+| `workbench-top` | WORKBENCH-TOP establishing + close-book beat |
+| `repair-book`, `repair-book-open` | REPAIR-BOOK focus + open beat |
+| `oil-can` | OIL-CAN take beat |
+| `tool-bench` | TOOL-BENCH establishing |
+| `bertrand`, `bertrand-wind` | BERTRAND focus + wind beat |
+| `makeshift-steps`, `makeshift-steps-climb` | MAKESHIFT-STEPS focus + climb beat |
+| `countertop` | COUNTERTOP establishing |
+| `layout.jpg` | overhead development reference; not a story camera |
 
 ## Playable path (verified end-to-end headlessly)
 

@@ -6,6 +6,22 @@ applyTo: "Rooms/**/*.blk, Rooms/**/*.blks"
 # Scener Shot Composition
 
 - Follow `Work/SCENE_COMPOSITION.md` for the complete rationale and review workflow.
+- Name every story camera after the ZIL room or object it depicts, converted to
+  lowercase while preserving hyphens: `WORKSHOP-FLOOR` becomes `workshop-floor`
+  and `LOFT-LADDER` becomes `loft-ladder`. Do not use CamelCase or append camera
+  roles such as `Focus`, `Closeup`, or `Establishing`; Scener uses the camera name
+  as the screenshot filename. `layout.jpg` is the sole diagnostic exception.
+- Wrap the visible primitives of each multi-part story object in one named `<group>`
+  using its exact ZIL identifier. Geometry inside one group may join or overlap as
+  part of the same assembly; separate named groups must not intersect. Run
+  `make sanity ROOM=<room>` before visual review. Render and layout targets run
+  this check automatically and must not proceed when semantic objects overlap.
+- Use measurement rather than visual guessing when placing objects near walls,
+  furniture, openings, or each other. Run `make measure ROOM=<room> OBJECT=<ZIL-ID>`
+  for all room-shell and semantic-object clearances, or add `TARGET=<ZIL-ID>` for
+  one pair. Place the object unrotated, measure, apply the intended lean/rotation,
+  then measure again because rotation changes its world-space extents. Keep small
+  intentional clearances as test assertions when later edits could regress them.
 - Use the original 1992 *Alone in the Dark* as the primary fixed-camera
   reference. Favor sparse, readable silhouettes and deliberately restricted
   views over the denser environmental detail of later survival-horror games.
@@ -27,9 +43,47 @@ applyTo: "Rooms/**/*.blk, Rooms/**/*.blks"
   workstations along a clipped foreground wall or beneath the camera where they
   are heavily cropped. Align major workstations along visible flanking walls
   (e.g., the left wall in a corner establishing shot).
+- Every semantic element intended to communicate the room layout must be clearly
+  readable in the establishing shot, not merely technically inside the frame.
+  Show its complete identifying silhouette with comfortable margin from the frame
+  edge; do not accept an element that is tiny, heavily occluded, edge-on, cropped,
+  or reduced to an ambiguous fragment.
+- Orient each important object toward the camera angle that best communicates its
+  function. Prefer the view with the strongest recognizable silhouette: show a
+  ladder from the rung side, a chair from an angle that separates seat and back,
+  shelving from its open face, and a desk from a view that reveals its work surface.
+  Rotate or relocate the object, or revise the camera, when its functional face is
+  hidden. Physical placement and usability still take priority over presentation.
 - Never place objects or furniture directly in front of doors, window cutouts, or
   passages that obscure their silhouettes or light paths. All openings must have
   an unobstructed line of sight and passage.
+- Treat every layout as a physically usable place, not only a camera composition.
+  Mentally walk a person from each entrance to every exit, workstation, stair,
+  ladder, and story object. Preserve continuous standing-width routes and enough
+  space to approach, turn, operate, sit at, or open each feature.
+- Never terminate a ladder or stair into a ceiling, floor slab, beam, shelf, or
+  wall. Provide a visible landing or hatch at least as wide as the climber,
+  preserve head and shoulder clearance through the opening, and leave space to
+  step off safely at both ends. Use rails and rungs instead of a solid post when
+  the climb route needs to read clearly.
+- Keep doors, arches, corridors, stairs, ladders, and transition zones free of
+  furniture and props. Account for door swing, approach space, and the destination
+  beyond an opening; a visible doorway is not usable if its route is blocked.
+- Keep windows functionally clear. Do not place shelves, cabinets, picture frames,
+  crates, or tall furniture across window openings, sills, shutters, or primary
+  light paths unless the obstruction is an explicit story condition.
+- Place wall-mounted objects on actual wall surfaces with plausible support and
+  spacing. Do not overlap picture frames, shelves, hooks, clocks, windows, doors,
+  trim, or each other. Shelves need usable depth and vertical space for contents.
+- Keep furniture use zones plausible: chairs need pull-out space, desks and benches
+  need an accessible working side, drawers and cabinet doors need opening clearance,
+  and storage must be reachable without crossing another object.
+- Check vertical as well as plan clearance. A top-down layout can miss head impacts,
+  blocked hatches, low beams, floating objects, unsupported platforms, and objects
+  embedded in walls or ceilings.
+- Do not rely on the sanity check alone. It currently validates positive-volume
+  overlap between box geometry in named semantic groups; it cannot understand
+  ungrouped decoration, mesh/prefab surfaces, intended movement, or human clearance.
 - Avoid duplicate or conflicting major exits; ensure distinct room functions and
   clear passage silhouettes.
 - Keep directional and sunlight pitched downwards at 30 to 45 degrees from
@@ -51,6 +105,13 @@ applyTo: "Rooms/**/*.blk, Rooms/**/*.blks"
 - Iterate through visual review: author blockout masses in `.blks`, render the establishing
   shot, critically review depth, overlap, silhouette readability, and spatial balance,
   and reposition masses until the shot reads strongly.
+- Validate spatial logic with both `make layout ROOM=<room>` and perspective renders
+  from every affected camera. Inspect the route, both endpoints, and neighboring
+  geometry; never infer usability from an unobstructed anchor or one attractive view.
+- Review the establishing render at final delivery size. For every required element,
+  name what it is from silhouette alone and confirm that its entire meaningful form
+  has clear frame margin. If an element is recognizable only because its location is
+  already known, reorient, reposition, relight, or reframe it.
 - Use a frontal camera only when a specific story beat requires symmetry or
   direct confrontation.
 - Validate the unstyled blockout render. If the shot is boring without surface

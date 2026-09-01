@@ -50,11 +50,67 @@ assert(not Projection.parse('<scene><camera fov="0"/></scene>'))
 assert(not Projection.parse('<scene><camera pos="0 1"/></scene>'))
 assert(not Projection.parse('<scene><camera name="a"/><camera name="a"/></scene>'))
 
--- Blockout scene: one camera, no named geometry yet. Tests expand as the scene
--- gains named groups (ZIL name = .blks group name convention).
+local collisionScene = assert(Projection.parse([[<scene>
+  <group name="BENCH"><box pos="0 0 50" size="200 100 100"/></group>
+  <group name="BROOM"><box pos="90 0 80" size="20 20 160"/></group>
+  <group name="LADDER">
+    <box pos="300 -20 100" size="10 10 200"/>
+    <box pos="300 20 100" size="10 10 200"/>
+    <box pos="300 0 100" size="20 50 10"/>
+  </group>
+</scene>]]))
+local bounds = Projection.semanticBounds(collisionScene)
+assert(#bounds == 3 and bounds[1].name == "BENCH")
+local intersections = Projection.intersections(collisionScene)
+assert(#intersections == 1)
+assert(intersections[1].first == "BENCH" and intersections[1].second == "BROOM")
+assert(intersections[1].overlap[1] > 0 and intersections[1].overlap[2] > 0
+    and intersections[1].overlap[3] > 0)
+local benchBounds = assert(Projection.objectBounds(collisionScene, "BENCH"))
+local ladderBounds = assert(Projection.objectBounds(collisionScene, "LADDER"))
+local distance, gaps = Projection.distance(benchBounds, ladderBounds)
+close(distance, 1.9)
+close(gaps[1], 1.9)
+close(gaps[2], 0)
+close(gaps[3], 0)
+
+local measuredRoom = assert(Projection.parse([[<scene>
+  <wall pos="0 1000 0" length="1200" height="540" thickness="24"/>
+  <wall pos="-600 500 0" rot="0 0 90" length="1000" height="540" thickness="24"/>
+  <wall pos="600 500 0" rot="0 0 90" length="1000" height="540" thickness="24"/>
+  <wall pos="0 0 0" length="1200" height="540" thickness="24"/>
+  <group name="LEANING" pos="-570 500 100">
+    <box rot="0 -2 0" size="10 10 200"/>
+  </group>
+</scene>]]))
+local leaning = assert(Projection.objectBounds(measuredRoom, "LEANING"))
+local clearances = Projection.wallClearances(measuredRoom, leaning)
+assert(clearances.west > 0.09 and clearances.west < 0.10, "rotation affects wall clearance")
+assert(clearances.floor < 0 and clearances.floor > -0.002, "center-pivot lean dips below floor")
+assert(clearances.ceiling > 3.39 and clearances.ceiling < 3.40)
+
+-- Every direct WORKSHOP-FLOOR object has a named anchor and a matching focus
+-- camera (ZIL object name = .blks group name; lowercased name = camera name).
 local workshop = assert(Projection.load("Rooms/workshop.blks"))
-assert(workshop.cameraCount == 1)
+local workshopObjects = {
+  "KEY-HOOK", "WORKBENCH", "OIL-CAN", "SAWDUST", "PET-DOOR",
+  "SWEEP-BROOM", "CLOCK-FACE", "KEY-STRING", "LOFT-LADDER", "LADDER-MECH",
+}
+assert(workshop.cameraCount == #workshopObjects + 1)
 assert(workshop.cameras["workshop-floor"], "establishing camera present")
 assert(workshop.cameras["workshop-floor"].fov == 70)
+for _, name in ipairs(workshopObjects) do
+  assert(Projection.anchor(workshop, name), "missing workshop anchor: " .. name)
+  assert(workshop.cameras[name:lower()], "missing workshop focus camera: " .. name:lower())
+end
+assert(#Projection.semanticBounds(workshop) == 2, "workbench and broom semantic assemblies present")
+assert(#Projection.intersections(workshop) == 0, "workshop semantic objects must not intersect")
+local broomBounds = assert(Projection.objectBounds(workshop, "SWEEP-BROOM"))
+local broomWalls = Projection.wallClearances(workshop, broomBounds)
+assert(broomWalls.west > 0.048 and broomWalls.west < 0.049, "broom is about 5 cm from west wall")
+assert(broomWalls.floor >= 0 and broomWalls.floor < 0.001, "leaning broom rests just above floor")
+local workbenchBounds = assert(Projection.objectBounds(workshop, "WORKBENCH"))
+local broomToBench = Projection.distance(broomBounds, workbenchBounds)
+assert(broomToBench > 0.17 and broomToBench < 0.19, "broom remains clear of workbench")
 assert(not Projection.load("Tests/does-not-exist.blks"))
 print("SceneProjection: all tests passed")
