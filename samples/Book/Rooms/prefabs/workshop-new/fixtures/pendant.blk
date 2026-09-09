@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<!-- Pendant: suspension origin Z0; extends to -84; warm point source stays below opaque shade. -->
+<prefab>
+  <cylinder pos="0 0 -24" radius="1.4" height="48" material="iron" rot="90 0 0" sides="24" />
+  <cone pos="0 0 -59" rot="90 0 0" radius="25" radiusTop="7" height="22" material="teal-dark" sides="32" />
+  <cylinder pos="0 0 -70" radius="25.5" height="2" material="brass" rot="90 0 0" sides="24" />
+  <sphere pos="0 0 -76" radius="8" material="amber" unlit="1" castShadow="0" slices="20" rings="10" />
+  <light pos="0 0 -78" color="1 0.86 0.65" intensity="2.4" radius="430" castShadows="1" />
+</prefab>

@@ -1,0 +1,28 @@
+<!-- Z-up cm; baseline Z=0. Approach -Y and climb +Y; envelope X=-35..35 Y=-25.4..25 Z=0..36. Exactly three closed books form 12cm rises with exposed treads; top_surface Z=36. -->
+<prefab>
+  <attach name="top_surface" pos="0 13 36" />
+  <group name="book_step_1">
+    <box material="red" castShadow="1" pos="0 0 1" size="70 50 2" />
+    <box material="red" castShadow="1" pos="0 0 11" size="70 50 2" />
+    <box material="paper" castShadow="1" pos="0 0.8 6" size="66 46 8" />
+    <box material="red" castShadow="1" pos="0 -24 6" size="70 2 8" />
+    <box material="brass" castShadow="1" pos="-27 -25.2 6" size="2 0.4 10" />
+    <box material="brass" castShadow="1" pos="27 -25.2 6" size="2 0.4 10" />
+  </group>
+  <group name="book_step_2">
+    <box material="teal" castShadow="1" pos="0 7 13" size="64 36 2" />
+    <box material="teal" castShadow="1" pos="0 7 23" size="64 36 2" />
+    <box material="paper" castShadow="1" pos="0 7.8 18" size="60 32 8" />
+    <box material="teal" castShadow="1" pos="0 -10 18" size="64 2 8" />
+    <box material="brass" castShadow="1" pos="-24 -11.2 18" size="2 0.4 10" />
+    <box material="brass" castShadow="1" pos="24 -11.2 18" size="2 0.4 10" />
+  </group>
+  <group name="book_step_3">
+    <box material="green" castShadow="1" pos="0 13 25" size="58 24 2" />
+    <box material="green" castShadow="1" pos="0 13 35" size="58 24 2" />
+    <box material="paper" castShadow="1" pos="0 13.8 30" size="54 20 8" />
+    <box material="green" castShadow="1" pos="0 2 30" size="58 2 8" />
+    <box material="brass" castShadow="1" pos="-21 0.8 30" size="2 0.4 10" />
+    <box material="brass" castShadow="1" pos="21 0.8 30" size="2 0.4 10" />
+  </group>
+</prefab>

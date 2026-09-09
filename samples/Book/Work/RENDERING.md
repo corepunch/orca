@@ -4,85 +4,160 @@ Book scene art is rendered directly from the `.blks` files in `Rooms/` with
 Orion UI's installed `scener` CLI. Orion is an external tool, not a Book
 submodule. The Book requests one JPEG for every named camera in a scene.
 
+Do not produce SVG files, including camera-review wrappers or navigation
+overlays. Deliver `.blks`, `.blk` and `.jpg` files. Use raster contact sheets
+for review and Book's UI for interaction.
+
+The standard delivery pipeline continues from rendering into native Orca
+camera/anchor export and the existing `samples/Book` runtime. Follow the
+[standard scene integration workflow](PROCESS.md#standard-scene-integration-workflow):
+extend Book's existing scene and interaction components and verify the matching
+backgrounds, hotspots and navigation there.
+
 Scener scene and prefab distances are authored in centimeters. Use values such
 as `2` and `15` for two and fifteen centimeters; do not write meter fractions
 such as `0.02` or `0.15`. Rotations remain degrees and `scale` remains unitless.
 
-## Install Scener
+## Local checkout, build and deployment
 
-Build Orion in a separate checkout and install it under your user prefix:
-
-```sh
-git clone https://github.com/corepunch/orion-ui.git /tmp/orion-ui
-cd /tmp/orion-ui
-git submodule update --init
-make install PREFIX="$HOME/.local"
-export PATH="$HOME/.local/bin:$PATH"
-scener --version
-```
-
-Keep `$HOME/.local/bin` on `PATH` in later shells. Rendering requires a logged-in
-graphical desktop with a working OpenGL context.
-
-Verify the Book can find the installed CLI before rendering:
+Scener is maintained at `~/Developer/mapview/ui/apps/scener`; build from
+`~/Developer/mapview/ui`. Read that checkout's `AGENTS.md`,
+`apps/scener/AGENTS.md`, `apps/scener/CLI.md` and scene-format reference before
+editing. The current Book integration adds camera listing/selection, batch
+JPEG/PNG output, diagnostic layout and scene-relative prefab lookup.
 
 ```sh
-make check-scener
-scener --list-cameras Rooms/workshop.blks
+cd "$HOME/Developer/mapview/ui"
+make build/bin/scener build/bin/test_scener_input_test
+DYLD_LIBRARY_PATH="$PWD/build/lib" ./build/bin/test_scener_input_test
+python3 apps/scener/deploy.py --prefix "$HOME/.local"
+python3 apps/scener/tests/test_cli.py "$HOME/.local/bin/scener"
+python3 apps/scener/tests/test_shadow_backend.py "$HOME/.local/bin/scener"
 ```
 
-Do not add Orion UI or Scener as a repository submodule. Update or rebuild the
-separate Orion checkout when a newer renderer is required.
+`~/.local/bin/scener` launches a versioned bundle under
+`~/.local/lib/scener/`, containing the executable, required non-system dylibs and
+resources. The launcher supplies its own library path; callers can run it from
+Book's `Rooms/`. `BUILD.txt` identifies the source/build and working changes.
+There is no `make install` target in this checkout; copying a bare executable
+is not deployment. Preserve existing bundles when updating the launcher.
+
+Scenes retain their authored coordinates. New Book scenes declare
+`<scene up="z">`: cameras and navigation use Z up, while primitives retain their
+local axes. Cylinders and walls have local Y height and need `rot="90 0 0"`
+when that height should become world Z. Older scenes without `up` retain Y up;
+do not assume a Z-up legacy file will be converted implicitly.
+
+Rendering needs a graphical desktop with a working OpenGL context. Help,
+version and camera listing work without graphical startup. Invalid flags,
+cameras, dimensions, formats and incompatible modes fail explicitly.
+
+The workshop investigation reproduced different backends on the same Mac:
+restricted automation selected `Apple Software Renderer`, while a normal
+desktop process selected `Apple M1`. The software path produced triangular
+shadow artifacts with the same scene and binary that rendered correctly on the
+GPU. Record the actual GL renderer when reporting a defect or validating a fix;
+matching scene settings alone is not a controlled comparison.
+
+Scener reports vendor, renderer and version, and rejects shadow exports on the
+known-broken Apple software backend before writing images. Run these exports
+with GPU access; `-no-shadows` and the flat layout are diagnostic alternatives.
+Book renders into a temporary directory and replaces camera JPEGs/PNGs only
+after Scener succeeds, preserving the previous batch when rendering fails.
+
+## Modify and redeploy Scener when needed
+
+Capture one scene, camera, exact raster dimensions and expected result before
+changing code. Compare with the original renderer using the same transforms,
+projection, light/shadow flags and actual raster dimensions. In particular,
+supersampling changes the internal raster size: a 1000×750 output with factor2
+is rendered at 2000×1500. A clean low-resolution preview does not validate that
+larger render. Keep scene-composition defects separate from renderer defects.
+
+Keep the working drawable and render target sizes synchronized, then downsample
+to delivery size. Verify a supersampled output against an independently rendered
+image at the full working dimensions, under the same execution environment.
+Do not change shadow bias to conceal a capture-path regression. A successful
+render command or clean smaller preview does not establish correct shadows.
+
+After a fix, run focused code and image regressions, build and deploy using the
+commands above, then exercise the deployed path from Book:
+
+```sh
+make check-scener SCENER="$HOME/.local/bin/scener"
+make sanity ROOM=workshop-new
+make render ROOM=workshop-new WIDTH=1920 HEIGHT=1440
+make layout ROOM=workshop-new
+```
+
+Check actual JPEG/PNG encoding, dimensions, all camera files, prefab resolution,
+cast shadows and output at several camera positions. `check-scener` only proves
+executable discoverability. Inspect a travel contact sheet and real UI crop
+before reporting completion. For projection changes, also regenerate matching
+camera metadata and run the checks below.
+
+`--supersample 1`, `2`, `3` or `4` selects antialiasing through a larger offscreen
+render and downsampling. Check the current CLI's documented default and size
+limits. The diagnostic `--layout` is a flat-color orthographic cutaway with no
+lighting or shadows; its output is not a production perspective camera.
+
+Current scene features include vertical camera FOV, group/prefab transforms,
+camera-local transform overrides, finite-radius point lights, directional
+light, wall cuts, `castShadow` on shapes, `castShadows` on lights, `renderable`
+and `unlit`. Camera overrides represent explicit states, not permanent furniture
+relocated independently for each picture. The historical `SHADOWING.md` Z-pass
+investigation is not current build/renderer documentation.
 
 ## Render a Book Scene
 
 From `samples/Book`, render every named workshop camera at the Book's default
-1536x1024 resolution:
+1920x1440 resolution:
 
 ```sh
-make render ROOM=workshop
+make render ROOM=workshop-new
 ```
 
-Outputs are written to `Rooms/render/workshop/`, for example:
+Outputs are written to `Rooms/render/workshop-new/`, for example:
 
 ```text
-Rooms/render/workshop/workshop-floor.jpg
-Rooms/render/workshop/oil-can.jpg
-Rooms/render/workshop/loft-ladder.jpg
-Rooms/render/workshop/ladder-mech.jpg
+Rooms/render/workshop-new/workshop-floor.jpg
+Rooms/render/workshop-new/oil-can.jpg
+Rooms/render/workshop-new/loft-ladder.jpg
+Rooms/render/workshop-new/ladder-mech.jpg
 ```
 
 Story screenshot names must be the lowercase, hyphenated ZIL identifier of the
 room or object they depict: `WORKSHOP-FLOOR` becomes `workshop-floor.jpg` and
 `OIL-CAN` becomes `oil-can.jpg`. Camera names in `.blks` must use that exact
 lowercase spelling because Scener names each output after its camera. Do not add
-role suffixes such as `Focus`, `Closeup`, or `Establishing`. `layout.jpg` is the
-only non-ZIL filename in a room render directory; it is a development plan, not
-a story screenshot.
+role suffixes such as `Focus`, `Closeup`, or `Establishing`. `layout.jpg` is a development plan. Additional review-only cameras, such as
+`workshop-return`, may document reverse coverage; they are not runtime story
+bindings until explicitly mapped. Raster contact sheets are review outputs,
+separate from the clean story JPEGs.
 
-Before rendering, the Makefile removes existing JPG and PNG story screenshots
+After a successful batch, the Makefile replaces existing JPG and PNG story screenshots
 from the selected output directory while preserving `layout.jpg`. This prevents
 renamed or deleted cameras from leaving stale files beside the canonical set.
 Generated renders are ignored by Git. The application expects these JPEG names
 directly and reports missing renders instead of falling back to old artwork.
 
-Render every `.blks` file directly under `Rooms/`, or selected rooms:
+Render the active workshop by default, or select other scenes explicitly:
 
 ```sh
 make render
 make render ROOM="workshop another-room"
-make render ROOM=workshop WIDTH=1920 HEIGHT=1080
+make render ROOM=workshop-new WIDTH=1920 HEIGHT=1080
 ```
 
 Set `SCENER` when the executable is not on `PATH`:
 
 ```sh
-make render ROOM=workshop SCENER="$HOME/.local/bin/scener"
+make render ROOM=workshop-new SCENER="$HOME/.local/bin/scener"
 ```
 
-The Book defaults to `FORMAT=jpg`. Scener also supports `FORMAT=png`, but changing
-the runtime format requires updating `Scripts/WondertownScenes.lua` at the same
-time.
+The Book defaults to `FORMAT=jpg`. Its Makefile also accepts `FORMAT=png` and
+passes `--format png` to a compatible CLI. Changing the runtime format requires
+updating the image resolver in `Scripts/WorkshopSession.lua` at the same time.
 
 ## Direct Scener Commands
 
@@ -90,10 +165,10 @@ Run direct commands from `Rooms/` so relative `prefabs/` paths resolve:
 
 ```sh
 cd Rooms
-scener --list-cameras workshop.blks
-scener --render workshop.blks --camera workshop-floor \
-  --size 1536x1024 --format jpg --output-dir render/workshop
-scener workshop.blks
+scener --list-cameras workshop-new.blks
+scener --render workshop-new.blks --camera workshop-floor \
+  --size 1920x1440 --format jpg --output-dir render/workshop-new
+scener workshop-new.blks
 ```
 
 The first command lists camera names, the second renders one camera, and the
@@ -113,38 +188,18 @@ Named cameras and scene groups are exported for ORCA hotspot projection.
 See [Scene and Camera Composition](SCENE_COMPOSITION.md) for the complete room
 structure, geometry budget, camera grammar, text-safe, and review rules.
 
-Use the original 1992 *Alone in the Dark* as the primary fixed-camera reference.
-For establishing shots, place the camera in a room corner below the ceiling and
-aim diagonally across the room. Start at 65-85% of the room height, pitch down
-15-35 degrees, and use a 55-75 degree FOV. Keep it below roof beams or other
-structure that would obscure the view. The shot should show two wall planes,
-converging lines, foreground overlap, and clear foreground-to-background depth.
-Avoid centered, floor-level, or flat straight-on establishing views; reserve
-those angles for a specific suspense or action beat.
+Follow the composition guide's three passes: spatial blockout, designed room,
+then finished background. The roughly 10 cm proxy cutoff is not a production
+limit. Compare wall/corner, lower occupant-scale and threshold cameras rather
+than applying one high-angle recipe everywhere. Check density, functional
+silhouettes, motivated shadows and forward/reverse travel at the runtime crop.
+Use `make layout ROOM=<room>` for the diagnostic plan; it needs no story camera.
 
-This rule distills the original camera language rather than claiming every AITD
-shot uses one setup. Across the 89 cameras on the converted AITD1 mansion floors
-00-04, 88% are near a wall, 40% are near a corner, and 66% look diagonally
-relative to the wall axes. Median camera height is 70% of the associated room
-height, median downward pitch is 26.7 degrees, and median FOV is 55.3 degrees.
-The lower and more frontal cameras are useful authored exceptions for suspense,
-reveals, and action.
-
-When prose overlays a render, reserve one lower quadrant as text-safe negative
-space. Keep major props, exits, projected hotspots, and high-contrast detail out
-of it. For `workshop-floor`, the lower-right floor is the text-safe area;
-choices remain on the lower-left side of the screen.
-
-Block only stable layout and readable silhouettes. Include an object when its
-primary silhouette is at least 10 cm in the scene's centimeter units, or when it
-is essential to an interaction. Keep desks, ladders, drawers, doors, windows,
-and major props; omit clock hands, knobs, handles, fasteners, loose debris, and
-similar micro-detail. A blockout guides composition and spatial continuity. It
-is not a set of details for the final artist to trace literally.
-
-Block camera composition before applying art style. Validate the raw geometry
-in an unstyled render: the room should already feel dimensional and deliberate
-without relying on materials, lighting polish, or painted detail.
+For visual changes, render a baseline and a candidate with the same dimensions
+and state. Keep comparisons outside `Rooms/render/<room>/`: a successful `make render` clears
+that directory's previous story images. Record scene/prefab and renderer
+revisions, camera IDs, state and command with the review. Check the plan and
+perspective sequence, then real prose and projected markers in the app.
 
 After changing camera transforms, adding cameras, or moving named anchors,
 regenerate the native metadata:
@@ -167,16 +222,18 @@ an anchor is inside the camera frame, but cannot detect foreground occlusion.
 Review every render after moving cameras or subjects. The JPEG and exported
 camera metadata must come from the same `.blks` revision and dimensions.
 
-## Prototype State Renders
+## Historical Prototype State Renders
 
-The paired oil-present/oil-removed prototype images are generated separately:
+The old oil-present/oil-removed experiment uses `Rooms/workshop.blks` and
+`Images/prototype/`. It is not the active Book runtime or the new workshop
+render pipeline. Its historical command is:
 
 ```sh
 python3 Tools/render_workshop_prototype.py
 ```
 
-Set `SCENER=/absolute/path/to/scener` if needed. The script renders both states
-from `workshop-floor` and regenerates the camera export.
+Use `make run` for the active workshop. Do not use this historical script to
+validate or replace the new workshop camera export.
 
 ## Run and Test the Book
 
@@ -187,7 +244,8 @@ lua Tests/test_camera_export.lua
 cd libs/zilscript && lua ../../Tests/test_workshop_prototype.lua
 ```
 
-`make run` renders every Book scene first, then builds and launches ORCA. This
+`make run` renders `workshop-new` by default, regenerates its native camera
+and anchor export at the render dimensions, then builds and launches ORCA. This
 ensures a fresh checkout has the ignored JPEG assets required by the runtime.
 The Makefile finds `scener` on `PATH` or at `$HOME/.local/bin/scener`; override
 `SCENER` only for an installation elsewhere.
@@ -196,7 +254,8 @@ The Makefile finds `scener` on `PATH` or at `$HOME/.local/bin/scener`; override
 
 ### `scener` is not found
 
-Confirm the user-local installation and update `PATH`:
+Build and deploy the local checkout as described above, then check the
+executable and update `PATH`:
 
 ```sh
 test -x "$HOME/.local/bin/scener"
@@ -215,7 +274,7 @@ working directory so scene-relative `prefabs/` paths resolve.
 
 ### A camera is not rendered
 
-Use `scener --list-cameras Rooms/workshop.blks` from the Book directory and
+Use `(cd Rooms && scener --list-cameras workshop-new.blks)` from Book and
 confirm the scene declares a non-empty camera name. Select it explicitly with
 `--camera NAME` for a focused error.
 

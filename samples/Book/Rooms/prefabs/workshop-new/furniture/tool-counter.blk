@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!-- Stocked cabinet: 238 X x 80 Y x 106 Z. Baseline Z0; front -Y. -->
+<prefab>
+  <attach name="top_surface" pos="0 0 106" />
+  <box pos="0 0 100" size="238 80 12" material="oak-light" />
+  <box pos="0 0 8" size="224 70 16" material="teal-dark" />
+  <box pos="-107 0 52" size="10 70 88" material="teal" />
+  <box pos="0 0 52" size="10 70 88" material="teal" />
+  <box pos="107 0 52" size="10 70 88" material="teal" />
+  <box pos="0 31 52" size="214 8 88" material="oak-dark" />
+  <box pos="0 0 25" size="214 66 5" material="oak" />
+  <box pos="0 0 56" size="214 66 5" material="oak" />
+  <box pos="-79 -35 81" size="47 8 24" material="teal" />
+  <box pos="-79 -40 81" size="14 4 3" material="brass" />
+  <box pos="-27 -35 81" size="47 8 24" material="teal" />
+  <box pos="-27 -40 81" size="14 4 3" material="brass" />
+  <box pos="28 -35 81" size="47 8 24" material="teal" />
+  <box pos="28 -40 81" size="14 4 3" material="brass" />
+  <box pos="79 -35 81" size="47 8 24" material="teal" />
+  <box pos="79 -40 81" size="14 4 3" material="brass" />
+  <box pos="-81 -2 37" size="19 42 19" material="red" />
+  <box pos="-81 -24 37" size="13 1 4" material="paper" />
+  <box pos="-56 -2 37" size="19 42 19" material="oak-light" />
+  <box pos="-56 -24 37" size="13 1 4" material="paper" />
+  <box pos="-26 -2 37" size="19 42 19" material="oak-light" />
+  <box pos="-26 -24 37" size="13 1 4" material="paper" />
+  <box pos="25 -2 37" size="19 42 19" material="red" />
+  <box pos="25 -24 37" size="13 1 4" material="paper" />
+  <box pos="53 -2 37" size="19 42 19" material="oak-light" />
+  <box pos="53 -24 37" size="13 1 4" material="paper" />
+  <box pos="78 -2 37" size="19 42 19" material="oak-light" />
+  <box pos="78 -24 37" size="13 1 4" material="paper" />
+  <cylinder pos="-76 10 66" radius="8" height="15" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="-76 10 75" radius="8.5" height="3" material="teal-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="-38 10 66" radius="8" height="15" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="-38 10 75" radius="8.5" height="3" material="teal-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="39 10 66" radius="8" height="15" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="39 10 75" radius="8.5" height="3" material="teal-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="77 10 66" radius="8" height="15" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="77 10 75" radius="8.5" height="3" material="teal-dark" rot="90 0 0" sides="24" />
+</prefab>

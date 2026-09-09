@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!-- Old ladder-back chair: 53 X x 54 Y x 108 Z; front -Y; seat Z50. -->
+<prefab>
+  <attach name="top_surface" pos="0 0 50" />
+  <box pos="-22 -20 23" size="7 7 46" material="oak" />
+  <box pos="-22 20 23" size="7 7 46" material="oak" />
+  <box pos="22 -20 23" size="7 7 46" material="oak" />
+  <box pos="22 20 23" size="7 7 46" material="oak" />
+  <box pos="0 0 47" size="53 51 6" material="oak-light" />
+  <box pos="-23 23 74" size="7 7 60" material="teal-dark" />
+  <box pos="23 23 74" size="7 7 60" material="teal-dark" />
+  <box pos="0 23 103" size="53 9 9" material="teal" />
+  <box pos="-12 23 80" size="4 5 38" material="teal" />
+  <box pos="0 23 80" size="4 5 38" material="teal" />
+  <box pos="12 23 80" size="4 5 38" material="teal" />
+  <box pos="-22 0 15" size="4 42 5" material="oak-dark" />
+  <box pos="22 0 15" size="4 42 5" material="oak-dark" />
+</prefab>

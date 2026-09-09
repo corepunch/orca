@@ -10,7 +10,9 @@ end
 -- ----------------------------------------------------------------- CoC images
 
 -- All renders for this scene live in one directory (per .blks file, not per room).
-local render_dir = "Book/Rooms/render/workshop/"
+local source_path = require("Book.Scripts.WorkshopCamera").source_path
+local directory, scene_name = source_path:match("^(.*)/([^/]+)%.blks$")
+local render_dir = assert(directory, "invalid workshop source path") .. "/render/" .. scene_name .. "/"
 
 local function image_exists(path)
     local f = io.open(path, "r")

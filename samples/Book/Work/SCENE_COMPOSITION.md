@@ -1,151 +1,226 @@
 # Scene and Camera Composition
 
-This guide defines how Book scenes should be blocked for fixed-camera renders.
-The primary reference is the original 1992 *Alone in the Dark*. The goal is not
-to copy individual shots, but to use the same economical spatial language:
-strong architecture, deliberate viewpoints, readable silhouettes, and limited
-information.
+Canonical guide for Book's connected 3D environments and fixed-camera
+backgrounds. Use *Alone in the Dark* and *Resident Evil* as references for
+architecturally placed cameras, controlled reveals, occupied rooms and coherent
+travel. These are staging references; Wondertown's identity remains in
+[ARTSTYLE.md](ARTSTYLE.md) and [CHARACTER_DESIGN_BIBLE.md](CHARACTER_DESIGN_BIBLE.md).
+A mansion study is a separate visual exercise, not permission to turn
+Wondertown into a horror mansion.
 
-## Where to Start
+Read [LOCATION_BRIEFS.md](LOCATION_BRIEFS.md) to decide **what exists**;
+[RENDERING.md](RENDERING.md) owns commands, renderer capabilities and deployment.
 
-Begin with the room shell and four or five large anonymous boxes — one per major
-furniture mass. For the workshop establishing shot that means:
+## Build a place before choosing its pictures
 
-1. **Room shell first.** Four walls, floor, ceiling. Add one door opening in the
-   back wall so depth reads. Nothing else.
-2. **One box per mass.** Workbench (left, mid-depth), tool counter (right, rear),
-   loft platform (rear-left, elevated), crate-and-stool stack (right, mid).
-   Use round numbers for size and position; exact fit comes later.
-3. **Place two cameras and render both immediately.** The first two cameras to
-   produce are always:
-   - `workshop-floor` — the high corner view, two walls converging, full
-     foreground/mid/background read. Follow the recipe in
-     [Establishing Camera Recipe](#establishing-camera-recipe).
-   - `LayoutPlan` — a straight-down view from just below the ceiling
-     (`y ≈ 620`), FOV 92, aimed at the floor centre. Use a dark floor material
-     (`floor`) and warm wood for furniture so the top-down plan is legible as a
-     geography map.
-   Render both before touching anything else. The plan catches positional errors
-   that the perspective shot hides.
-4. **Evaluate composition, not content.** On the establishing shot: are
-   foreground, mid-ground, and background distinct? Does the loft break the
-   ceiling line without dominating the frame? Is the text-safe lower-right floor
-   clear? On the plan: do the furniture footprints leave clear routes to the
-   exit?
-5. **Stop.** Do not add prefabs, surface detail, secondary objects, or
-   additional cameras until both renders read correctly.
+A ZIL room can be a tabletop, a work area or a floor within one physical room.
+Do not turn every parser exit into a doorway. Map the relevant story locations
+onto a shared physical plan before adding architecture. Keep contiguous areas
+in one scene where practical; separate files need an explicit common origin or
+recorded transform and matching threshold dimensions.
 
-The current `Rooms/workshop.blks` is at this stage. It has only the shell and
-four masses. Render both cameras and confirm the layout before proceeding.
+For each connection record both location IDs, direction, passage type, clear
+width/height, floor elevations, door hinge/swing or climb endpoints, and any
+state that permits travel. The same door has the same position, proportions,
+trim and state from both sides. Model enough of the adjoining space to make a
+view through an opening convincing; an unexplained black rectangle is not a
+connected room. Use a real turn, door or lighting falloff to limit the view.
 
-## What the Blockout Owns
+Keep permanent furniture and dressing fixed between cameras. Changes such as a
+removed oil can, opened book or deployed ladder belong to explicit story states.
+A close-up must not silently move the subject to a better-lit part of the room.
 
-The `.blks` scene is the shared spatial source of truth. It owns:
+## Coordinate convention and scale
 
-- room dimensions, walls, floor, ceiling, and major openings;
-- stable locations and scale relationships for large objects;
-- routes between entrances, exits, and interactive areas;
-- named cameras and interaction anchors;
-- the perspective, overlap, and negative space of each shot;
-- broad light direction and pools of light.
+Book uses X east, Y north/depth, Z up; distances are centimetres, rotations are
+degrees, and scale is unitless. Z=0 is the local floor datum. Record the origin
+for each connected set; north is shared, not redefined for each camera.
+Declare `up="z"` in new Book scenes. Scener keeps its native primitive local
+axes; rotate a wall or cylinder's local Y height into world Z explicitly. See
+[RENDERING.md](RENDERING.md) and validate cameras and exported anchors together.
 
-The blockout does not own surface texture, ornament, wear, small hardware, or
-literal final-art shape design. An artist should preserve its geography and
-silhouettes, not trace every primitive.
+Use both a human furniture reference and Pip's approved 8–12 cm height when
+blocking Wondertown. A human-sized passage and a Pip route are different tests.
+Keep scale references consistent through floor, tabletop and loft views.
 
-Distances are authored in centimeters. Rotations are degrees and `scale` is
-unitless.
+Workshop architecture uses smooth Roman arches, plaster, timber and exposed
+beams. Use `bool-negative-arch` for its arched openings; check the current
+Scener scene-format guide for supported cutters. Do not substitute a rectangle
+because an old process example used one. Other locations follow their own brief.
 
-## Geometry Budget
+## Three passes with different detail budgets
 
-Model large semantic forms first: desks, benches, ladders, drawers, doors,
-windows, shelves, stairs, and major story props. Each form should explain the
-room or support an interaction.
+### 1. Spatial blockout
 
-Use 10 cm as the default minimum primary silhouette. Ignore smaller decorative
-components such as clock hands, knobs, handles, fasteners, loose debris, and
-surface clutter. A thinner part may remain when its overall silhouette is large
-and necessary, such as a ladder rail, shelf board, or book.
+Build the shell, actual openings, levels and four or five major furniture
+masses. Include ceiling and beams. Start with anonymous boxes, then render a
+perspective and `make layout ROOM=<room>` from Book. The layout command creates
+an overhead diagnostic; it does not require a `LayoutPlan` story camera.
 
-Interaction-critical objects are exceptions to the size threshold. Keep them
-simple, named, and visually distinct rather than surrounding them with detail.
+Check routes, scale, doorway alignment, foreground/middle/background and UI
+crop before adding dressing. A roughly 10 cm minimum primary silhouette is a
+useful workshop blockout shortcut, **not a finished-scene limit**. Small story
+objects are exceptions, especially at Pip's scale. Proceed when the render and
+plan pass these checks; no separate approval step is implied.
 
-Do not add small boxes merely to make a room look populated. They create false
-continuity obligations and imply that final art should reproduce arbitrary
-blockout noise.
+### 2. Designed room
 
-## Room Structure
+Replace proxy masses with recognizable furniture and structural assemblies:
+bench legs and apron, usable drawers, a shaped clock case, shelf supports,
+window reveals, door thickness, loft support and a real ladder landing. Design
+silhouettes first, then materials. Avoid a dial pasted onto a slab or shelves
+that read as empty planks.
 
-Build complete rooms rather than wall-and-floor stages. Include the ceiling and
-major beams so a camera can be placed against real architecture and checked for
-occlusion.
+Populate the room by activity rather than scattering props. Give each major
+work area a purposeful cluster: repair tools beside a partly repaired toy,
+stored supplies on shelves, a tray and book beside a working surface. Keep
+these clusters subordinate to the scene's focal subject. Non-interactive
+objects may enrich the room without receiving ZIL names or hotspots.
 
-For a standard establishing shot:
+### 3. Finished background
 
-- expose two wall planes and their intersection;
-- place at most one visible exit on each wall;
-- imply the entry behind or beside the camera when possible;
-- keep clear routes between exits and interactive landmarks;
-- distribute major objects across foreground, middle ground, and background;
-- avoid putting every landmark against one back wall.
+Add camera-visible secondary forms, material changes, fittings and selective
+wear. Thin handles, clock hands, book spines and tool parts are appropriate when
+they explain function or read in a focus view. Direct Scener backgrounds need
+this design in geometry/materials; a later illustration pass must not be the
+only plan for making an empty render appealing.
 
-The room may contain more narrative destinations than one image shows. A fixed
-camera should deliberately restrict information rather than flatten the entire
-map into one diagram.
+Use large, medium and small forms together. As an initial workshop composition
+exercise, try 3–5 furniture masses, 2–4 purposeful dressing clusters and one
+restrained foreground framing group. These are starting points, not quotas or
+measured rules from the reference games. Judge projected coverage at delivery
+size. A shelf of tiny indistinguishable cubes adds count without adding richness.
 
-## AITD1 Camera Findings
+Vary shelf occupancy, height, spacing and orientation in supported groups. Give
+one area a dense history of use and another a clean active surface. Put wear
+where hands, feet and tools actually touch. Do not distribute contrast and
+clutter evenly, fill every floor gap, or invent keys, documents or unusual
+symbols that look like new clues.
 
-The converted original scenes in `AitD/output/AITD1_floor00.xml` through
-`AITD1_floor04.xml` contain 89 mansion cameras. Comparing each camera with the
-nearest room wall bounds gives this baseline:
+## Compose a sequence of cameras
 
-| Measurement | Result |
-|---|---:|
-| Cameras near at least one wall | 88% |
-| Cameras near a room corner | 40% |
-| Cameras looking diagonally to wall axes | 66% |
-| Median height relative to room height | 70% |
-| Median downward pitch | 26.7 degrees |
-| Median field of view | 55.3 degrees |
+Write the shot's purpose, required visible subjects, approach/departure direction,
+state and UI footprint before setting its camera. Explore three candidates from
+the same unchanged room: an oblique wall/corner view, a lower occupant-scale view,
+and a threshold/reverse view. Compare thumbnails, then refine the strongest.
 
-The original game varies its cameras substantially. These numbers do not mean
-that every AITD shot is a high corner view. They show that cameras are usually
-architecturally anchored, commonly elevated and downward-looking, and often
-oblique. Low and frontal cameras are deliberate dramatic exceptions.
+For a high establishing view, 65–85% of room height, 15–35 degrees downward pitch
+and 55–75 degrees **vertical** FOV are optional starting ranges. They are not a
+requirement for every room. For a tiny protagonist, include a lower view that
+lets furniture tower above the route. Human-height and low cameras can establish
+geography too; clarity determines their role.
 
-## Establishing Camera Recipe
+Move the camera and target before widening the lens to fit everything. Excessive
+wide angle stretches foreground props and makes destinations tiny. Keep the
+camera within plausible architecture and inspect beam/ceiling occlusion. Do not
+disable a wall's shadows merely to rescue an obstructed camera. If a cutaway is
+needed for a diagnostic view, keep it separate from production coverage and
+check that production enclosure still blocks light correctly.
 
-Use this starting point, then compose against the actual room:
+Compose three depth layers: a restrained edge in the foreground, the actionable
+subject in the middle, and a destination or receding architecture behind it.
+Two converging wall planes are a useful depth cue, not a compulsory formula.
+Avoid equal-weight rows of furniture against a back wall. Leave distinct screen
+regions around the identifying faces of required objects: ladder rungs, an
+open shelf face, a workbench top, a clock dial. Check tangencies at frame edges
+and where dark silhouettes overlap. Crop decorative framing boldly; keep the
+identifying part of an actionable subject comfortably inside the runtime crop.
 
-1. Place the camera near a room corner, not in the middle of the room.
-2. Start at 65-85% of room height, below ceiling beams and rafters.
-3. Aim diagonally across the room so two walls converge in frame.
-4. Start with 15-35 degrees of downward pitch.
-5. Start with a 55-75 degree FOV.
-6. Put an exit or key landmark near the vanishing direction.
-7. Ensure key objects, major furniture masses (e.g. workbench), and primary
-   exits are prominently visible rather than cropped along near camera edges.
-8. Establish foreground, middle-ground, and background overlap.
-9. Reserve a clear region for prose before adding secondary geometry.
+Each establishing shot is the interaction overview for its current location.
+Every currently available subject must be discoverable there, together with
+travel in at least three readable directions where the story permits it. Do not
+require a hidden camera sweep to find an ordinary room object. Closely related
+small parts, such as hook and string, can share a focus entry with explicit local
+choices. Distinct physical zones can lead to their own establishing views.
 
-Every semantic element assigned to an establishing shot must read clearly at the
-final delivery size. Being mathematically inside the camera frustum is insufficient.
-Keep the complete identifying silhouette comfortably inside the frame and reject
-objects that appear tiny, edge-on, heavily occluded, cropped, or ambiguous.
+Use either a corner showing two populated wall planes plus a back affordance,
+or a camera against one wall showing the other three. A surface beneath a high
+camera should contain objects whose tops communicate their purpose. Reserve a
+clear back-arrow position in the presentation layer; never bake navigation into
+the background JPEG. A back control returns to the parent view and must not
+invent a parser exit. Stage hierarchy through size, spacing and light while
+keeping every current room interaction available.
 
-Orient important objects toward the view that best explains their function. A
-ladder is usually most recognizable from its rung side, shelves from their open
-face, a chair from an angle that separates its seat and back, and a workbench from
-an angle that exposes its working surface. Rotate or relocate an object, or revise
-the camera, when its functional face is hidden. This visual rule never overrides
-physical plausibility: the object must remain supported, reachable, and usable.
+### Cuts and connected travel
 
-Do not treat the numeric ranges as a substitute for looking at the render. A
-camera can satisfy every number and still be blocked by a beam or furniture.
+Review a contact sheet in travel order: arrival → approach → threshold → next
+arrival, then the reverse route. Preserve a recognizable landmark across each
+cut, or supply a threshold view that restores orientation. Keep travel direction
+consistent on screen where practical; if the camera crosses the movement axis,
+use an explanatory doorway or neutral view instead of an unexplained reversal.
 
-Use floor-level, centered, straight-on, or extreme overhead cameras only when a
-specific beat needs intimidation, concealment, disorientation, symmetry, or a
-map-like view. Name that purpose in the camera comment.
+Match floor levels, doorway views, recurring objects and world-space light
+sources across the cut. Screen-left illumination may become screen-right in a
+reverse view; do not rotate the world light to force the same screen direction.
+Change shot scale or angle for a meaningful action/reveal, while leaving a
+stable establishing camera for returning to the same unchanged room state.
+
+## Density, negative space and the Book overlay
+
+Density is the distribution of readable forms, not a prop count. At thumbnail
+size, identify one main subject, several supporting masses and a quiet reading
+field. At runtime size, inspect materials, support and interaction silhouettes.
+If the room reads as a showroom, add purposeful medium-scale clusters and
+architectural layering before adding tiny debris. If it reads as noise, group
+values and remove competing accents before deleting all dressing.
+
+The workshop places prose lower-right and choices lower-left. Check the actual
+UI for other shots. A 1536×1024 source fills a 1024×768 page with a centered
+horizontal crop; inspect that crop, not just the uncropped source. Use real
+prose, choice text and interaction circles. Quiet the reading field using a
+broad material/value mass and soft light transitions. It can contain subdued
+floorboards and shadows; it must not look like an artificially empty rectangle.
+Do not move a required prop beneath prose or shorten story text to fix framing.
+
+## Lighting and shadows
+
+First establish a readable value composition with one motivated key source.
+Add restrained fill to retain information in recesses, then a secondary practical
+or doorway spill only where it explains the room. Warm lamps and cool moonlight
+suit Wondertown, but a night shot may have a cool dominant key. Do not add warm
+rim lights to every object by formula.
+
+Put each practical source inside its fixture's local assembly. Check that the
+bulb does not shadow its own emitter and that its opaque shade blocks light in
+the intended directions. Window light must agree with the opening, reveal depth
+and visible exterior. Preserve source positions and scene time across cameras.
+
+Tune the key alone before adding fill. Inspect the shadows under furniture and
+at wall/floor contacts: objects must feel supported. Cast shadows should describe
+architecture and lead the eye, without producing a black lattice across a clue
+or a harsh stripe through prose. Test long diagonal shadows as deliberately as
+short ones. A 30–45 degree downward directional source is a useful starting
+point, not a ban on low-angle sunlight or moonlight. Diagnose streaks by checking
+source position, wall cuts, shadow-casting geometry and receiver surfaces.
+
+Separate desired lighting from renderer support. Do not promise area-light
+penumbrae, ambient occlusion, bounce lighting, textured materials or fog without
+checking the current renderer. More point lights do not automatically produce
+soft shadows; they can create multiple competing hard silhouettes. Use supported
+fill carefully and log a concrete Scener limitation when the intended result
+cannot be achieved. [RENDERING.md](RENDERING.md) describes that development loop.
+
+Review in color and grayscale at delivery size. Keep a full value range while
+retaining the route and story objects in shadow. Avoid clipped lamp pools,
+uniform brown lighting, glossy highlights on every material, detached contact
+shadows, light leaking through closed walls and bright shadows-as-subjects.
+
+## Interaction anchors and state
+
+Use the exact ZIL identifier for an interactive object's named group, with its
+origin at the intended interaction center. Pure decoration gets distinct names
+that do not impersonate story objects. An empty anchor is useful while blocking,
+but it does not make the final pictured object visible: model or paint its
+recognizable form and verify it against the projected marker.
+
+Projection checks only the point against the camera; it does not prove that a
+bench or wall is not hiding it. Inspect each required subject in the actual
+render. Cropped or unmodelled subjects need the runtime's text-choice fallback.
+
+Record visible state for every shot. Test present/removed props and closed/open
+or folded/deployed mechanisms. A taken object must disappear from the image,
+including its obsolete contact shadow. Permanent dressing stays put. Scener's
+camera features are not a substitute for the host's ZIL state mapping.
 
 ## Spatial Plausibility and Functional Clearance
 
@@ -156,7 +231,7 @@ vertical transition, and required story object.
 
 Use these rules for every room layout:
 
-1. **Preserve circulation.** Keep a continuous standing-width route between all
+1. **Preserve circulation.** Keep a continuous route wide enough for the intended occupant between all
    entrances, exits, and required destinations. Do not make a route depend on
    squeezing through furniture, stepping over props, or clipping a wall.
 2. **Keep transition zones empty.** Do not place furniture, crates, shelves, or
@@ -185,7 +260,7 @@ Use these rules for every room layout:
 9. **Keep exits usable beyond the silhouette.** Check both sides of every opening.
    A clear doorway is still invalid when the destination side immediately collides
    with furniture, a wall, a drop, or another transition.
-10. **Check human scale in all three axes.** Compare widths, heights, reach, headroom,
+10. **Check occupant scale in all three axes.** Compare widths, heights, reach, headroom,
     and step distances against the intended character. A valid top-down footprint
     can still hide a head strike or unreachable surface.
 
@@ -228,128 +303,59 @@ $180\sin(2^\circ) \approx 6.3$ cm across its full length, or about 3.1 cm from a
 center pivot.
 
 Joined primitives inside one named group may overlap because they form one assembly,
-such as ladder rungs meeting rails or table legs meeting a top. Positive-volume AABB
-overlap between separate named groups is an error. Surface contact alone is allowed.
+such as ladder rungs meeting rails or table legs meeting a top. The checker reports positive-volume AABB
+overlap between separate named groups as an error; rotated or nested shapes may
+need inspection because bounding boxes are conservative. Surface contact alone is allowed.
 
 This is a focused guard, not a physics engine. It currently checks box geometry in
 named groups. It does not validate ungrouped decoration, detailed mesh or prefab
 surfaces, door swing, reachability, moving states, or human headroom. Continue to
 inspect both layout and perspective renders for those conditions.
 
-## Shot Roles
+## Reference study: exported AITD scenes
 
-Each production camera should have one narrative job:
+Local exports are at `~/Developer/Temp/AITD/output/`; floor files include
+`AITD1_floor00.xml` through `AITD1_floor04.xml`. Other export variants may exist
+in `output2/`, `output3/` and `output4/`; record the exact variant used.
 
-- **Establishing:** communicates geography, routes, and a few affordances.
-- **Focus:** isolates an object or conversational subject.
-- **Action:** emphasizes movement, scale, or mechanical cause and effect.
-- **Reveal:** changes what the viewer understands about a known location.
-- **Plan:** documents continuity and is not production story art.
+Treat these as camera and spatial reference data, not finished material or
+lighting targets. The inspected `output/AITD1_floor00.xml` includes box proxies
+and a generic scene light. Its coordinates appear to use Y as height and
+metre-like dimensions, unlike Book's Z-up centimetres. Verify the converter's
+axis, scale, handedness and FOV convention before importing a camera or measuring
+it; do not paste those transforms into Book unchanged.
 
-Do not reuse one neutral camera for every state. Alternate wide, medium, action,
-and close views while keeping object locations and light direction stable.
+Choose a small related group of cameras and note framing, visible walls,
+foreground obstruction, route, reveal and the landmark retained across each cut.
+Pair proxy views with an identified original background when available before
+judging density, texture or shadow quality. Record file, camera ID and screenshot
+with each finding. The previously quoted 89-camera percentages had no retained
+measurement method here; do not use them as verified design constraints.
+Resident Evil is a qualitative staging reference until specific reference images
+are supplied and logged, not a source of measured lens presets.
 
-## Text-Safe Negative Space
+## Acceptance and iteration
 
-When prose overlays the image, negative space is functional composition, not an
-unfinished area. Reserve one lower quadrant and keep it free of:
+For each changed room, follow the commands in [RENDERING.md](RENDERING.md):
+run sanity, render the layout and affected cameras, and inspect the results.
+A plan cannot prove vertical clearance or shadow quality. Regenerate camera
+metadata and matching state renders when their source changes.
 
-- major props and exits;
-- projected interaction hotspots;
-- strong silhouette boundaries;
-- high-frequency detail;
-- bright highlights that reduce text contrast.
+Review these questions in order; fix the first failure before polishing detail:
 
-For `workshop-floor`, the lower-right floor is the text-safe area. Story
-prose is aligned there, choices remain lower-left, and Continue sits below the
-prose. Other cameras may use a different quadrant, but the scene and UI must
-agree on it.
+1. **Story and continuity:** correct source locations, real connections, stable
+   scale, matching door states and no invented clues?
+2. **Use:** supported furniture, clear routes, reachable objects and viable
+   climbs/landings for the intended occupant?
+3. **Composition:** clear subject at thumbnail size, layered depth, readable
+   functional faces and useful framing at the app crop?
+4. **Richness:** designed architecture and furniture, purposeful dressing
+   clusters and varied materials, with neither bare walls nor uniform clutter?
+5. **Light:** motivated source, readable recesses, grounded contacts and useful
+   shadows, without leaks or competing high-contrast patterns?
+6. **Sequence and UI:** coherent forward/reverse travel, consistent state,
+   readable prose/choices and correctly registered visible hotspots?
 
-## Occlusion and Landmark Separation
-
-Projection only proves that an anchor lies inside the camera frustum. It does
-not prove that the object is visible. Large foreground geometry can cover a
-valid hotspot completely.
-
-Separate important landmarks in both world space and screen space. In the
-workshop, the tool counter, rack, and display case originally shared the same
-sightline as the frosted window. Moving the window along the wall fixed the wide
-shot, but the countertop camera still placed the case in front of it. The final
-solution also moved the countertop camera so the window, case, and doll occupy
-different screen regions.
-
-After changing a camera or large object:
-
-1. Project every required interaction anchor.
-2. Render the changed camera.
-3. Inspect silhouettes and occlusion visually.
-4. Check the text-safe area at the runtime crop and aspect ratio.
-5. Render neighboring cameras that share the moved object.
-
-## Lighting
-
-Use one or two motivated light pools instead of uniform ambient illumination.
-Light should identify an exit, route, or interactive landmark while leaving
-quieter areas dark enough to create depth.
-
-Keep directional light and sunlight pitched downward at 30 to 45 degrees from
-the horizontal plane (e.g. $|Z| \approx 0.50\text{--}0.71$ on normalized direction).
-Never author near-horizontal light (10 to 20 degrees), which causes flat,
-unnatural light streaks across the room floor and walls.
-
-Keep the text-safe region comparatively even and low-detail. A soft value shift
-is useful; a point-light hotspot directly behind prose is not.
-
-## Naming and Continuity
-
-Name cameras by narrative function and name groups used as interaction anchors.
-Camera comments should state placement, target, and any reserved text region.
-
-Keep all shots in the same scene coordinate system. Move a shared object once,
-then review every camera that sees it. Do not repair continuity by moving the
-same landmark independently between rendered shots.
-
-After moving cameras or named anchors, regenerate metadata:
-
-```sh
-lua Tools/export_workshop_camera.lua
-```
-
-Then run the focused checks:
-
-```sh
-lua Tests/test_scene_projection.lua
-lua Tests/test_camera_export.lua
-cd libs/zilscript && lua ../../Tests/test_workshop_prototype.lua
-```
-
-Finally, render and inspect every changed camera. The exported metadata and JPEG
-must come from the same `.blks` revision.
-
-## Review Checklist
-
-- Every semantic element assigned to the establishing shot is clearly recognizable at delivery size.
-- Required objects show their strongest functional face rather than an edge-on or ambiguous silhouette.
-- Complete identifying silhouettes have comfortable frame margin and are not barely clipped by an edge.
-- No required element depends on prior location knowledge to be recognized in the establishing render.
-- A person can walk continuously from every entrance to every exit and required destination.
-- Doors, arches, corridors, stairs, ladder approaches, and landings remain unobstructed.
-- Every ladder or stair reaches a real opening or landing with head and shoulder clearance.
-- Windows and their principal light paths are free of shelves, frames, and tall furniture.
-- Furniture has believable approach, seating, working, drawer, and door-opening space.
-- Wall-mounted objects do not overlap openings, trim, other fixtures, or each other.
-- Platforms and heavy elevated forms have plausible support; geometry does not interpenetrate.
-- `make sanity ROOM=<room>` passes for all named semantic object assemblies.
-- Both sides of every room transition are usable and safe to enter.
-- Human scale and vertical clearance have been checked in perspective, not only in plan.
-- Camera is attached to a wall or corner rather than floating centrally.
-- Establishing view shows two converging wall planes.
-- Ceiling geometry does not dominate or block the view.
-- Major landmarks have distinct silhouettes and screen regions.
-- Foreground, middle ground, and background are readable.
-- Exit or key object receives compositional emphasis.
-- Text-safe negative space is intentional and matches the UI overlay.
-- No incidental object under 10 cm creates a false art requirement.
-- Required anchors project inside the frame.
-- The render has been inspected for real occlusion.
-- Neighboring shots preserve layout, object state, and light direction.
+Save the plan, representative before/after renders and a contact sheet with the
+room brief. Record remaining visual defects separately from renderer defects.
+Do not call a scene finished from a successful CLI exit or numeric camera check.

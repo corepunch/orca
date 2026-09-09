@@ -17,7 +17,7 @@ local function resolve_image(path)
         local file = io.open(prefix .. path, "r")
         if file then file:close(); return path end
     end
-    error("Missing Scener render: " .. path .. ". Run `make render ROOM=workshop`.")
+    error("Missing Scener render: " .. path .. ". Run `make run` from samples/Book.")
 end
 
 local function add_choice(self, container, label, handler, class)
@@ -47,7 +47,7 @@ local function place_hotspot(self, layer, camera, subject)
     end
     local circle = ui.Node2D {
         Name = "Hotspot_" .. subject.name, class = "scene-hotspot",
-        Width = 48, Height = 48, MarginRight = 0/0, MarginBottom = 0/0,
+        Width = 42, Height = 42, MarginRight = 0/0, MarginBottom = 0/0,
         MarginLeft = screen.x - 24, MarginTop = screen.y - 24,
     }
     circle.LeftButtonUp = function() self.session:tap(subject.name); render_ui(self) end

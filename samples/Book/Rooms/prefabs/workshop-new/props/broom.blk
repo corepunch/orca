@@ -1,0 +1,34 @@
+<!-- Z-up cm; baseline Z=0. Front -Y; envelope X=-10.4..10.4 Y=-3.55..3 Z=0..140. Canon SWEEP-BROOM; authored upright before placement. -->
+<prefab>
+  <cylinder material="oak-light" castShadow="1" pos="0 0 82" radius="1.5" height="116" rot="90 0 0" sides="16" />
+  <box material="oak-dark" castShadow="1" pos="0 0 23" size="16 6 7" />
+  <box material="brass" castShadow="1" pos="0 -3.3 24" size="16 0.5 2" />
+  <cylinder material="rope" castShadow="1" pos="-8 0 10.9" radius="0.8" height="20.451894777746144" rot="-80.998 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-7.8 2 10.9" radius="0.8" height="20.393136100168604" rot="-82.108 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-7.8 -2 10.9" radius="0.8" height="20.393136100168604" rot="-82.108 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-6 0 10.9" radius="0.8" height="20.342074623793906" rot="-83.224 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-5.85 2 10.9" radius="0.8" height="20.308865059377393" rot="-84.065 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-5.85 -2 10.9" radius="0.8" height="20.308865059377393" rot="-84.065 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-4 0 10.9" radius="0.8" height="20.2632672587616" rot="-85.471 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-3.9 2 10.9" radius="0.8" height="20.248456731316587" rot="-86.035 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-3.9 -2 10.9" radius="0.8" height="20.248456731316587" rot="-86.035 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-2 0 10.9" radius="0.8" height="20.2158353772482" rot="-87.732 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-1.95 2 10.9" radius="0.8" height="20.212125073826353" rot="-88.015 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="-1.95 -2 10.9" radius="0.8" height="20.212125073826353" rot="-88.015 0 90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="0 0 10.9" radius="0.8" height="20.2" rot="-90 0 -0" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="0 2 10.9" radius="0.8" height="20.2" rot="-90 0 -0" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="0 -2 10.9" radius="0.8" height="20.2" rot="-90 0 -0" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="2 0 10.9" radius="0.8" height="20.2158353772482" rot="-87.732 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="1.95 2 10.9" radius="0.8" height="20.212125073826353" rot="-88.015 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="1.95 -2 10.9" radius="0.8" height="20.212125073826353" rot="-88.015 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="4 0 10.9" radius="0.8" height="20.2632672587616" rot="-85.471 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="3.9 2 10.9" radius="0.8" height="20.248456731316587" rot="-86.035 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="3.9 -2 10.9" radius="0.8" height="20.248456731316587" rot="-86.035 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="6 0 10.9" radius="0.8" height="20.342074623793906" rot="-83.224 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="5.85 2 10.9" radius="0.8" height="20.308865059377393" rot="-84.065 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="5.85 -2 10.9" radius="0.8" height="20.308865059377393" rot="-84.065 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="8 0 10.9" radius="0.8" height="20.451894777746144" rot="-80.998 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="7.8 2 10.9" radius="0.8" height="20.393136100168604" rot="-82.108 0 -90" sides="16" />
+  <cylinder material="rope" castShadow="1" pos="7.8 -2 10.9" radius="0.8" height="20.393136100168604" rot="-82.108 0 -90" sides="16" />
+  <box pos="0 0 0.8" size="20.8 5.6 1.6" material="rope" castShadow="1" />
+</prefab>

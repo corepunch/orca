@@ -1,0 +1,33 @@
+<!-- Z-up cm; baseline Z=0. Bertrand faces -Y; envelope X=-11..11 Y=-7.5..8.55 Z=0..55. Painted wooden nutcracker, frozen at attention; key visible on back +Y. -->
+<prefab>
+  <box material="ink" castShadow="1" pos="-4 -1.5 2" size="6 12 4" />
+  <cylinder material="ink" castShadow="1" pos="-4 0 10" radius="2.3" height="12" rot="90 0 0" sides="16" />
+  <cylinder material="cream" castShadow="1" pos="-4 0 20" radius="2.6" height="8" rot="90 0 0" sides="16" />
+  <box material="ink" castShadow="1" pos="4 -1.5 2" size="6 12 4" />
+  <cylinder material="ink" castShadow="1" pos="4 0 10" radius="2.3" height="12" rot="90 0 0" sides="16" />
+  <cylinder material="cream" castShadow="1" pos="4 0 20" radius="2.6" height="8" rot="90 0 0" sides="16" />
+  <cone material="red" castShadow="1" pos="0 0 31" radius="7.2" radiusTop="5.6" height="14" rot="90 0 0" sides="8" />
+  <box material="ink" castShadow="1" pos="0 -6.1 26" size="12 1.2 2" />
+  <box material="brass" castShadow="1" pos="0 -6.9 26" size="3 0.5 3" />
+  <cylinder material="cream" castShadow="1" pos="0 0 42" radius="5" height="8" rot="90 0 0" sides="16" />
+  <cylinder material="ink" castShadow="1" pos="0 0 50" radius="5.8" height="8" rot="90 0 0" sides="16" />
+  <cylinder material="brass" castShadow="1" pos="0 0 54.5" radius="6.4" height="1" rot="90 0 0" sides="16" />
+  <box material="brass" castShadow="1" pos="0 -5.7 50" size="2 1 6" />
+  <sphere material="brass" castShadow="1" pos="-8.5 0 35" radius="2.5" scale="1 1 0.5" rings="8" slices="12" />
+  <cylinder material="red" castShadow="1" pos="-8.5 0 29" radius="2" height="11" rot="90 0 0" sides="16" />
+  <sphere material="cream" castShadow="1" pos="-8.5 0 22" radius="2" scale="1 1 1" rings="8" slices="12" />
+  <sphere material="brass" castShadow="1" pos="8.5 0 35" radius="2.5" scale="1 1 0.5" rings="8" slices="12" />
+  <cylinder material="red" castShadow="1" pos="8.5 0 29" radius="2" height="11" rot="90 0 0" sides="16" />
+  <sphere material="cream" castShadow="1" pos="8.5 0 22" radius="2" scale="1 1 1" rings="8" slices="12" />
+  <box material="brass" castShadow="1" pos="0 -6.3 29" size="9 0.6 0.65" />
+  <box material="brass" castShadow="1" pos="0 -6.3 32" size="9 0.6 0.65" />
+  <box material="brass" castShadow="1" pos="0 -6.3 35" size="9 0.6 0.65" />
+  <sphere material="ink" castShadow="1" pos="-2 -4.8 43" radius="0.65" scale="1 1 1" rings="8" slices="12" />
+  <box material="ink" castShadow="1" pos="-2 -4.8 39" size="3 1.5 1" rot="0 16 0" />
+  <sphere material="ink" castShadow="1" pos="2 -4.8 43" radius="0.65" scale="1 1 1" rings="8" slices="12" />
+  <box material="ink" castShadow="1" pos="2 -4.8 39" size="3 1.5 1" rot="0 -16 0" />
+  <box material="cream" castShadow="1" pos="0 -5 37.8" size="5 1.7 2" />
+  <box material="ink" castShadow="1" pos="0 -5.9 37.8" size="3.6 0.3 0.8" />
+  <cylinder material="brass" castShadow="1" pos="0 6.5 31" radius="0.7" height="3.0" rot="0 0 0" sides="16" />
+  <torus material="brass" castShadow="1" pos="0 8 33" majorRadius="1.8" minorRadius="0.55" majorSegments="16" minorSegments="8" />
+</prefab>

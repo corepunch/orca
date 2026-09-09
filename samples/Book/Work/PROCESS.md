@@ -3,6 +3,13 @@
 This file records the design experiment behind the `samples/Book` Wondertown
 prototype. It is a working process document, not a finished product spec.
 
+For current 3D production, start with [LOCATION_BRIEFS.md](LOCATION_BRIEFS.md),
+then [SCENE_COMPOSITION.md](SCENE_COMPOSITION.md) and
+[RENDERING.md](RENDERING.md). They own source selection, connected scene design
+and executable commands. The opening sequence and asset inventory below also
+record earlier experiments; verify active camera names in the current scene
+and host manifest before using them.
+
 ## The correction that shaped the prototype
 
 “Open book” refers to a physical book inside Wondertown, on a reachable work
@@ -60,7 +67,8 @@ sheets, silhouettes, palette, props, environments, and story identity.
 
 ## Shot grammar
 
-Every new illustration should change at least two of these:
+For a dedicated action or reveal illustration, normally change at least two of
+these. A return to the same unchanged room should retain its establishing shot:
 
 - shot scale;
 - camera angle;
@@ -167,7 +175,25 @@ resolution) only. `Scripts/WondertownScenes.lua` is the presentation + focus
 manifest: it maps each ZIL room to a camera, each authored subject to its local
 choices and exit phrasing, and names the action-art camera for beats. Every
 choice is an ordinary parser command; ZIL decides the outcome. Images are direct
-Scener renders, one per camera, at `Rooms/render/workshop/`.
+Scener renders, one per camera, at `Rooms/render/workshop-new/`.
+
+### Standard scene integration workflow
+
+This is how we work in `samples/Book`: author shared `.blks` scenes and `.blk`
+prefabs in Scener, render `.jpg` backgrounds, export the matching cameras and
+object anchors into native Orca XML, and integrate them into Book's existing UI.
+
+The workshop implementation is `Scenes/WorkshopCamera.xml` for native cameras
+and anchors, `Screens/Start.xml` for the page, and `Scripts/Start.lua` with
+`Scripts/WorkshopSession.lua` for hotspots, focus choices, Back, Continue and
+story state. Extend these existing components for new workshop artwork. Keep
+image bindings, camera axes, source dimensions and anchors synchronized, then
+review navigation and interaction in the actual Book runtime.
+
+Do not produce SVG scenes, review wrappers or overlays, or a separate viewer
+or navigation prototype. Raster contact sheets supplement visual review;
+interaction review belongs in Orca. Native Orca XML exports are expected
+runtime assets alongside the Scener source and JPEG backgrounds.
 
 ### Objects are the interaction model
 
@@ -195,6 +221,10 @@ The legacy companion implementation remains available to other clients but is
 not loaded or queried by this Book prototype.
 
 ### Camera export and rendered prototype
+
+The active workflow is `make run`: it renders `workshop-new`, exports matching
+native cameras and anchors, then launches Book. The paired PNG experiment
+described below is historical and is not the active runtime image pipeline.
 
 Use matching Scener renders for the technical experiment. These
 are blocking art, not a replacement for the illustration criteria below.
@@ -225,7 +255,7 @@ then applies the same centered `UniformToFill` scale and
 crop as the screenshot. A cropped/behind-camera target is hidden, not clamped
 onto an unrelated object. Marker diameter stays in UI units.
 
-The prototype uses a fixed 1024×768 page and 1536×1024 renders. Only explicit
+The active workshop uses a fixed 1024×768 page and 1920×1440 renders. Only explicit
 named or unique prefab-instance anchors with ordinary group transforms are
 supported; attach slots, pivot offsets, occlusion testing, arbitrary scene
 export and live 3D rendering are not implemented. New cameras need a visibility
@@ -236,124 +266,38 @@ enough for registration. Removable props need a clean background plus a prop
 and contact-shadow layer, or matching complete state images. Do not paint a
 takeable object permanently into the background and merely remove its circle.
 
-## Scener workshop blockout
+## Scener scene production
 
-The reusable authoring rules are documented in
-[Scene and Camera Composition](SCENE_COMPOSITION.md).
+The active shared workshop scene is `Rooms/workshop-new.blks`; reusable geometry lives in
+`Rooms/prefabs/`. Book owns those assets. Scener is maintained separately at
+`~/Developer/mapview/ui/apps/scener`. Follow [RENDERING.md](RENDERING.md) for the
+verified local build, the required Book CLI contract and deployment checks;
+new Book scenes explicitly declare `up="z"` for the deployed tool.
 
-From the Book directory, `make run` builds ORCA (including plugins and shared
-resources) and launches it with this Book project.
+Use [LOCATION_BRIEFS.md](LOCATION_BRIEFS.md) to map story locations onto physical
+zones. Compose the shell and routes first, then designed furniture, purposeful
+dressing clusters and final lighting/materials. The 10 cm proxy guideline only
+applies to early workshop blockout. Finished direct renders need enough designed
+geometry and supported material detail to stand as backgrounds on their own.
+Keep smaller features when needed for recognizable props or Pip-scale views.
 
-The reusable 3D blockout lives at
-`Rooms/workshop.blks`, with all required prefabs under `Rooms/prefabs/`.
-The Book project owns these assets; Orion UI supplies the external `scener` CLI.
-All `.blks` and `.blk` distances are authored in centimeters; rotations use
-degrees and `scale` is unitless.
-Install Orion separately with `make install PREFIX="$HOME/.local"`, add
-`$HOME/.local/bin` to `PATH`, then render all cameras from the Book directory:
+Practical lights belong to their fixtures; opening cutters and frames must
+share transforms and actual centimetre dimensions. Keep floors, ceilings and
+shadow-casting enclosure physically coherent. Use the composition guide for
+current arched-opening, motivated-light and visibility rules rather than old
+rectangular-window or horizontal-light examples.
 
-```sh
-make render
-make render ROOM=workshop
-make render ROOM=workshop WIDTH=1536 HEIGHT=1024
-```
+For fixed-camera references, use the local AITD exports for geography and camera
+study with the coordinate caveats in the composition guide. For storybook
+finishing, also supply the approved style/cast references below. The two output
+paths share geography, story state and camera registration; illustration is an
+optional finishing path, not a substitute for staging the 3D room.
 
-The default is JPEG at 1536×1024, written to
-`Rooms/render/{room}/{camera}.jpg`. Generated renders are ignored by Git. The
-Makefile runs Scener from `Rooms/`. Rendering requires a graphics session.
-These all-camera renders are separate from the prototype's
-paired oil-present/oil-removed renders and camera export.
-
-Run Scener from `Rooms/` so its relative `prefabs/` lookup resolves Book's
-assets. For example, from `Rooms/`:
-
-```sh
-scener --list-cameras workshop.blks
-scener workshop.blks
-```
-
-The prototype render script selects this working directory automatically.
-The `.blks` file in `Images/prototype/` is only a generated snapshot paired with
-the renders.
-
-The workshop keeps the major
-story affordances—the empty key hook, pet door, clock, main workbench, repair
-book, oil can, tool bench, Bertrand, and makeshift climb—in one coordinate system.
-This provides spatial continuity before an illustration is commissioned.
-It is a spatial scaffold, not the finished art direction. Apply the drawing
-instructions below to every render-to-illustration pass.
-
-Its cameras are story shots rather than generic coverage:
-
-- `workshop-floor` defines the workshop geography;
-- `EmptyHookReveal` isolates the missing-key beat;
-- `ClimbWorkbenchAction` makes the ascent read vertically;
-- `WorkbenchTopEstablishing` marks the tabletop as a new scene;
-- `repair-book` and `oil-can` cover object interactions;
-- `ToolBenchEstablishing`, `WindBertrandAction`, and `MakeshiftClimbAction` cover
-  the later mechanical sequence;
-- `CountertopEstablishing` establishes the destination;
-- `LayoutPlan` is continuity reference, not a production story image.
-
-Each production camera declares its narrative purpose and preserves a quieter
-region for story text. Camera distance alternates wide, action, and close-up so
-the sequence does not read as one room photographed repeatedly.
-
-The workshop should read as a stable spatial scaffold, not a crowded prop
-inventory. Keep large semantic forms such as benches, ladders, drawers, doors,
-windows, shelves, and major story objects. Use 10 cm as the default minimum
-primary silhouette and omit incidental handles, clock hands, fasteners, loose
-debris, and surface clutter unless an interaction requires them. Clear walking
-routes and camera text zones remain deliberately quiet.
-
-Objects placed on shelves and work surfaces use the parent's local coordinate
-frame and remain visibly supported. Their purpose is to communicate scale,
-route, or interaction; they are not literal detail for the final artist to
-trace.
-
-Interior blockouts must be complete rooms, not wall-and-floor stage sets. The
-workshop therefore has a ceiling and exposed beams meeting the wall tops. Each
-room also needs motivated lighting that creates deliberate, readable shadows:
-here two warm point lights sit at the visible hanging-lamp bulbs, with the main
-bench light acting as key, the tool-bench lamp as weaker secondary practical,
-and cool moonlight entering horizontally through the back window. Ambient light
-only preserves low-level readability; it must not flatten the shadow design.
-
-Practical fixtures own their lights. The hanging-lamp prefab contains its
-cord, shadow-casting shade, visible bulb, and point light in one local frame.
-The bulb is unlit so it retains a warm-white authored color, and it does not
-cast shadows, preventing the emitter from blocking its own light. The point
-source sits inside the bulb just below the opaque shade lip, so translated or
-scaled lamp instances keep geometry, light, and dramatic shadow direction
-aligned without duplicated world-space coordinates in the workshop scene.
-
-Wall inserts own their openings for the same reason. The workshop window is a
-single prefab containing a `bool-negative-box`, four perimeter rails, inset
-pane, and mullions. The cutter's outer X/Y dimensions and the frame's outer
-boundary are both 2.0 by 1.7 units, eliminating the accidental plaster reveal
-created by the earlier 2.0-by-1.7 wall hole, 1.92-by-1.62 pane, and missing
-perimeter frame. Scener collects these prefab cutters before building
-walls, so one transformed window instance defines both placement and opening,
-even when it is declared after the wall. This is intentionally rectangular
-wall cutting rather than general-purpose mesh CSG.
-
-These assemblies are reusable prefabs rather than copied scene geometry:
-books, the special repair book, toy train, toy boat, oil can, nutcracker,
-clock, key hook, chair, crate, tool caddy, mug, notes, sawhorse, shavings, parts
-tray, shelf, hanging lamp, broom, crate, and jar. Prefab `scale` and scaled
-attach points are supported. A child shape marked `tint="1"` accepts the
-instance's `color` as a diffuse-only override; unmarked pieces keep their own
-appearance. Thus one `book` prefab can have red, blue, green, or ochre covers
-while every instance retains paper-colored pages.
-
-The next most valuable Scener authoring features are named material
-slots for multiple independently colored parts, per-camera visibility/state
-variants for open-versus-closed props, animation, object/layer naming for CLI
-inspection, aspect-safe cameras, textures/alpha, and softer lighting options.
-
-Reference renders for every declared workshop camera are generated at
-1536×1024 with stencil shadows and stored in `wonderbook/images/`. Filenames
-match camera names exactly so a shot can be traced back to its scene declaration.
+Current scene cameras and `Scripts/WondertownScenes.lua` determine runtime
+filenames. Earlier names such as `EmptyHookReveal` and `LayoutPlan` describe
+historical experiments and must not be assumed present. The development floor
+plan is produced by `make layout`, separately from story cameras. Review both
+the plan and rendered sequence before accepting a spatial change.
 
 ## Drawing instructions: spatial fidelity, artistic freedom
 

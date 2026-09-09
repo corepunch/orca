@@ -1,6 +1,7 @@
 -- Run from repository root:
 -- build/bin/orca -test=samples/Book/Tests/test_camera_export_native.lua
 require "orca.core"
+require "orca.renderer"
 require "orca.UIKit"
 require "orca.SceneKit"
 local fs = require "orca.filesystem"
@@ -9,7 +10,7 @@ local Projection = dofile("samples/Book/Scripts/SceneProjection.lua")
 local Adapter = dofile("samples/Book/Scripts/OrcaCameraProjection.lua")
 local metadata = dofile("samples/Book/Scripts/WorkshopCamera.lua")
 local spec = dofile("samples/Book/Scripts/WorkshopInteractions.lua")
-local source = assert(Projection.load("samples/" .. spec.scene_path:gsub("^Book/", "")))
+local source = assert(Projection.load("samples/" .. spec.scene_path))
 local nativeScene = assert(fs.loadObjectFromXml(metadata.native_scene_path))
 local function close(a, b)
     assert(math.abs(a - b) < 0.001, tostring(a) .. " ~= " .. tostring(b))
@@ -33,7 +34,8 @@ for name in pairs(metadata.anchors) do
     local anchorNode = assert(nativeScene:findChild(name, true))
     local point = Adapter.anchor(anchorNode)
     local expectedPoint = assert(Projection.anchor(source, name))
-    for axis = 1, 3 do close(point[axis], expectedPoint[axis]) end
+    local converted = source.up == "z" and {expectedPoint[1], expectedPoint[3], -expectedPoint[2]} or expectedPoint
+    for axis = 1, 3 do close(point[axis], converted[axis]) end
     for _, viewport in ipairs({{1536, 1024}, {1024, 768}, {1800, 900}}) do
         local a, aerr = Projection.project(reference, expectedPoint, spec.source_width, spec.source_height, viewport[1], viewport[2])
         local b, berr = Projection.project(native, point, metadata.source_width, metadata.source_height, viewport[1], viewport[2], native.near)

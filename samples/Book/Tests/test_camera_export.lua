@@ -59,8 +59,9 @@ local native = metadata.cameras[spec.camera]
 for name, exportedPoint in pairs(metadata.anchors) do
     local sourcePoint = assert(Projection.anchor(scene, name))
     local adaptedPoint = Adapter.anchor({RenderTransformTranslation = nativeVec(exportedPoint)})
-    for axis = 1, 3 do close(sourcePoint[axis], exportedPoint[axis]) end
-    for axis = 1, 3 do close(sourcePoint[axis], adaptedPoint[axis]) end
+    local expected = scene.up == "z" and {sourcePoint[1], sourcePoint[3], -sourcePoint[2]} or sourcePoint
+    for axis = 1, 3 do close(expected[axis], exportedPoint[axis]) end
+    for axis = 1, 3 do close(expected[axis], adaptedPoint[axis]) end
     for _, viewport in ipairs({{1536, 1024}, {1024, 768}, {1800, 900}}) do
         local a, aerr = Projection.project(reference, sourcePoint, spec.source_width, spec.source_height, viewport[1], viewport[2])
         local b, berr = Projection.project(native, exportedPoint, metadata.source_width, metadata.source_height, viewport[1], viewport[2])

@@ -6,6 +6,20 @@ Target quality: **high-end illustrated children's storybook** — cinematic, atm
 
 ---
 
+## Relationship to connected 3D backgrounds
+
+[SCENE_COMPOSITION.md](SCENE_COMPOSITION.md) owns spatial continuity, staged
+room density, camera selection and lighting review. [LOCATION_BRIEFS.md](LOCATION_BRIEFS.md)
+owns story sources. This guide owns Wondertown's finish and visual identity;
+the fixed-camera game references do not replace its cast or palette.
+
+For images registered to exported interaction anchors, lock the camera,
+perspective and object positions. Make compositional changes in the shared 3D
+scene, then rerender and export matching metadata. Instructions below to adjust
+angles or perspective apply to unregistered concept exploration; they are not
+permission to drift a production image away from its projection. Desired haze,
+bounce, soft shadows and bloom are art targets, not claims of Scener support.
+
 ## Wondertown Visual Identity
 
 Wondertown uses the visual language of a classic hand-drawn romantic
@@ -186,9 +200,9 @@ Replace flat, even illumination with motivated storybook lighting. The scene sho
 
 Use several layers of light:
 
-- **One dominant warm key light** — sunlight entering from one side, window light, lantern light, moonlight, or another scene-appropriate source.
+- **One dominant motivated key light** — sunlight entering from one side, window light, lantern light, moonlight, or another scene-appropriate source.
 - **Soft ambient fill** in the shadows so details remain readable.
-- **Warm rim light** along important silhouettes, wooden edges, hair, clothing, and metal objects.
+- **Source-colored rim light**, where motivated, along important silhouettes, wooden edges, hair, clothing, and metal objects.
 - **Small pools of secondary light** — reflected light from the floor, windows, lamps, or glowing dust.
 - **Stronger light falloff** so the scene has bright focal areas and deep atmospheric shadows.
 - **Bounced light in shadows** — warm from floor, cool from sky.

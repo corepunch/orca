@@ -24,6 +24,15 @@ local rightward = assert(Projection.project(turned, {5, 2, 2}, 800, 800, 800, 80
 close(rightward.x, 600)
 close(rightward.y, 400)
 
+local zup = assert(Projection.parse([[<scene up="z">
+  <camera name="front" pos="0 0 0" look="0 100 0" fov="90"/>
+  <group name="TARGET" pos="100 200 100"/>
+</scene>]]))
+local zpoint = assert(Projection.project(zup.cameras.front, Projection.anchor(zup, "TARGET"), 1600, 800, 1600, 800))
+close(zpoint.x, 1000)
+close(zpoint.y, 200)
+assert(not Projection.parse('<scene up="x"/>'))
+
 local scene = assert(Projection.parse([[<?xml version="1.0"?>
 <scene>
   <!-- An ignored comment containing <box name="fake"/> -->
@@ -113,4 +122,12 @@ local workbenchBounds = assert(Projection.objectBounds(workshop, "WORKBENCH"))
 local broomToBench = Projection.distance(broomBounds, workbenchBounds)
 assert(broomToBench > 0.17 and broomToBench < 0.19, "broom remains clear of workbench")
 assert(not Projection.load("Tests/does-not-exist.blks"))
+local current = assert(Projection.load("Rooms/workshop-new.blks"))
+assert(current.up == "z" and current.cameraCount == 25)
+for _, name in ipairs(workshopObjects) do
+  local point = assert(Projection.anchor(current, name), "missing current workshop anchor: " .. name)
+  local screen = assert(Projection.project(current.cameras["workshop-floor"], point, 1920, 1440, 1024, 768))
+  assert(screen.x >= 24 and screen.x <= 1000 and screen.y >= 24 and screen.y <= 744,
+    "current workshop hotspot falls outside UI margin: " .. name)
+end
 print("SceneProjection: all tests passed")

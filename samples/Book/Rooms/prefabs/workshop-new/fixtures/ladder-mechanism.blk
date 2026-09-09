@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- Rusted lift winch 40 X x 26 Y x 50 Z; mount baseline Z0, front -Y. -->
+<prefab>
+  <box pos="0 0 25" size="36 7 50" material="oak-dark" />
+  <cylinder pos="0 -8 31" radius="12" height="7" material="iron" rot="0 0 0" sides="24" />
+  <cylinder pos="0 -13 31" radius="4" height="8" material="brass" rot="0 0 0" sides="24" />
+  <box pos="10 -20 31" size="24 4 5" material="iron" />
+  <cylinder pos="22 -21 25" radius="3" height="16" material="oak" rot="90 0 0" sides="24" />
+  <cylinder pos="-13 -4 8" radius="2" height="2" material="iron" rot="0 0 0" sides="24" />
+  <cylinder pos="-13 -4 44" radius="2" height="2" material="iron" rot="0 0 0" sides="24" />
+  <cylinder pos="13 -4 8" radius="2" height="2" material="iron" rot="0 0 0" sides="24" />
+  <cylinder pos="13 -4 44" radius="2" height="2" material="iron" rot="0 0 0" sides="24" />
+</prefab>

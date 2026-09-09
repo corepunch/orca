@@ -3,10 +3,10 @@
 SCENER ?= $(shell command -v scener 2>/dev/null || printf '%s/.local/bin/scener' "$$HOME")
 LUA ?= lua
 ROOMS := $(basename $(notdir $(wildcard Rooms/*.blks)))
-ROOM ?= $(ROOMS)
+ROOM ?= workshop-new
 FORMAT ?= jpg
-WIDTH ?= 1536
-HEIGHT ?= 1024
+WIDTH ?= 1920
+HEIGHT ?= 1440
 RENDER_TARGETS := $(addprefix render-,$(ROOM))
 SANITY_TARGETS := $(addprefix sanity-,$(ROOM))
 
@@ -17,6 +17,7 @@ LAYOUT_SCALE ?= 2
 LAYOUT_TARGETS := $(addprefix layout-,$(ROOM))
 
 run: render
+	$(LUA) Tools/export_workshop_camera.lua $(WIDTH) $(HEIGHT)
 	$(MAKE) -C ../.. unite
 	cd ../.. && build/bin/orca samples/Book
 
@@ -32,16 +33,20 @@ measure:
 
 check-scener:
 	@command -v "$(SCENER)" >/dev/null || { \
-		echo 'scener is required; install Orion with `make install PREFIX="$$HOME/.local"` and add $$HOME/.local/bin to PATH'; \
+		echo 'scener is required; build and deploy it as described in Work/RENDERING.md, then set SCENER or add $$HOME/.local/bin to PATH'; \
 		exit 1; \
 	}
 
 $(RENDER_TARGETS): render-%: Rooms/%.blks | check-scener
 	$(LUA) Tools/check_scene_sanity.lua "$<"
 	@mkdir -p "Rooms/render/$*"
-	@find "Rooms/render/$*" -maxdepth 1 -type f \( -name '*.jpg' -o -name '*.png' \) ! -name 'layout.*' -delete
-	cd Rooms && "$(SCENER)" --render "$*.blks" --size "$(WIDTH)x$(HEIGHT)" \
-		--format "$(FORMAT)" --output-dir "render/$*"
+	@set -e; cd Rooms; \
+		render_tmp=$$(mktemp -d "render/.$*.XXXXXX"); \
+		trap 'rm -rf "$$render_tmp"' EXIT HUP INT TERM; \
+		"$(SCENER)" --render "$*.blks" --size "$(WIDTH)x$(HEIGHT)" \
+			--format "$(FORMAT)" --output-dir "$$render_tmp"; \
+		find "render/$*" -maxdepth 1 -type f \( -name '*.jpg' -o -name '*.png' \) ! -name 'layout.*' -delete; \
+		find "$$render_tmp" -maxdepth 1 -type f -exec mv {} "render/$*/" \;
 
 $(LAYOUT_TARGETS): layout-%: Rooms/%.blks | check-scener
 	$(LUA) Tools/check_scene_sanity.lua "$<"

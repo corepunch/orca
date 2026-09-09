@@ -1,0 +1,6 @@
+<!-- Z-up cm; baseline Z=0. Display faces -Y; envelope X=-37..37 Y=-18.06..15.46 Z=0..44.5. Composite of canon half-rigged sailboat, wooden train and one-wheeled duck. -->
+<prefab>
+  <prefab source="workshop-new/props/toy-sailboat" pos="-19 6 0" />
+  <prefab source="workshop-new/props/toy-train" pos="22 7 0" rot="0 0 -8" />
+  <prefab source="workshop-new/props/toy-duck" pos="8 -11 0" rot="0 0 -15" />
+</prefab>

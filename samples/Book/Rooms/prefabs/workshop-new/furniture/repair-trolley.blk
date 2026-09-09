@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!-- Stocked trolley 112 X x 64 Y x 89 Z; front -Y; wheels on Z0. -->
+<prefab>
+  <box pos="0 0 65" size="112 64 7" material="oak-light" />
+  <box pos="0 0 16" size="98 56 5" material="oak" />
+  <box pos="-47 -23 34" size="7 7 62" material="teal-dark" />
+  <cylinder pos="-47 -23 5" radius="5" height="4" material="iron" rot="0 0 0" sides="24" />
+  <box pos="-47 23 34" size="7 7 62" material="teal-dark" />
+  <cylinder pos="-47 23 5" radius="5" height="4" material="iron" rot="0 0 0" sides="24" />
+  <box pos="47 -23 34" size="7 7 62" material="teal-dark" />
+  <cylinder pos="47 -23 5" radius="5" height="4" material="iron" rot="0 0 0" sides="24" />
+  <box pos="47 23 34" size="7 7 62" material="teal-dark" />
+  <cylinder pos="47 23 5" radius="5" height="4" material="iron" rot="0 0 0" sides="24" />
+  <prefab source="workshop-new/props/storage-crate" pos="-14 0 19" rot="0 0 0" scale="0.7 0.7 0.7" />
+  <cylinder pos="-34 3 78" radius="8" height="19" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="-34 3 88" radius="9" height="2" material="teal-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="8 3 78" radius="8" height="19" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="8 3 88" radius="9" height="2" material="teal-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="34 3 78" radius="8" height="19" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="34 3 88" radius="9" height="2" material="teal-dark" rot="90 0 0" sides="24" />
+  <box pos="4 -17 72" size="30 16 5" material="red" />
+</prefab>

@@ -4,6 +4,17 @@ This document defines the spatial blocking, camera grammar, lighting direction, 
 
 ---
 
+## Status and scope
+
+This is a historical composition study, not a source for Wondertown's
+TOLLIVER-STUDY or a verified snapshot of `Rooms/study.blks`. Its invented anchors,
+numeric settings and output list are proposals to recheck against current files.
+Use the story brief for production content and [SCENE_COMPOSITION.md](SCENE_COMPOSITION.md)
+for current rules. In particular, the 10 cm limit applies only to proxies;
+production rooms need purposeful secondary dressing. Avoid disabling a wall's
+shadow casting to fix camera occlusion. Generate diagnostic plans with
+`make layout ROOM=study`; a perspective `LayoutPlan` is not an orthographic plan.
+
 ## 1. Scene Architecture & Shell
 
 - **Dimensions:** $1200\text{ cm}$ (width $X$, $-600$ to $+600$) $\times 1000\text{ cm}$ (depth $Y$, $0$ to $1000$) $\times 540\text{ cm}$ (height $Z$, $0$ to $540$).

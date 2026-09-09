@@ -1,0 +1,11 @@
+<!-- Z-up cm; baseline Z=0. Front -Y; envelope X=-8.5..8.5 Y=-8.5..8.5 Z=0..21.5. Open tacky varnish surface; brush rests in pot, no floating lid. -->
+<prefab>
+  <cylinder material="iron" castShadow="1" pos="0 0 1" radius="8" height="2" rot="90 0 0" sides="16" />
+  <cylinder material="teal-dark" castShadow="1" pos="0 0 8" radius="7.7" height="12" rot="90 0 0" sides="16" />
+  <cylinder material="iron" castShadow="1" pos="0 0 14.5" radius="8.5" height="1" rot="90 0 0" sides="16" />
+  <cylinder material="amber" castShadow="1" pos="0 0 15.1" radius="7.1" height="0.3" rot="90 0 0" sides="16" />
+  <box material="paper" castShadow="1" pos="0 -7.7 8" size="7 0.3 6" />
+  <box material="ink" castShadow="1" pos="0 -7.9 8" size="4 0.1 1" />
+  <cylinder material="oak-light" castShadow="1" pos="0.5 0 16.5" radius="0.8" height="11.40175425099138" rot="52.125 0 -90" sides="16" />
+  <box material="oak-dark" castShadow="1" pos="-3 0 12" size="3 1.8 4" />
+</prefab>

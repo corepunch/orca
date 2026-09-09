@@ -14,6 +14,11 @@ end
 
 function Export.generate(spec, scene)
     assert(scene.cameras[spec.camera], "missing default export camera")
+    -- Rotate Z-up source coordinates into Orca's Y-up basis without mirroring.
+    local function nativePoint(point)
+        if scene.up == "z" then return {point[1], point[3], -point[2]} end
+        return point
+    end
     local order = {}
     for name in pairs(scene.cameras) do order[#order + 1] = name end
     table.sort(order)
@@ -33,12 +38,13 @@ function Export.generate(spec, scene)
         '    cameras = {',
     }
     for _, name in ipairs(order) do
-        local camera = scene.cameras[name]
+        local source = scene.cameras[name]
+        local camera = {pos = nativePoint(source.pos), look = nativePoint(source.look), fov = source.fov}
         local dx, dy, dz = camera.look[1]-camera.pos[1], camera.look[2]-camera.pos[2], camera.look[3]-camera.pos[3]
         local length = math.sqrt(dx*dx + dy*dy + dz*dz)
         -- Skip degenerate/overhead references: a vertical look has no yaw convention.
         if length > 1e-8 and math.sqrt(dx*dx + dz*dz) > 1e-8 then
-            -- ORCA: Rz*Ry*Rx, local -Z forward, +Y up; Scener is also Y-up.
+            -- ORCA: Rz*Ry*Rx, local -Z forward, +Y up.
             local rotation = {math.asin(dy/length)*180/math.pi, math.atan(-dx, -dz)*180/math.pi, 0}
             xml[#xml + 1] = '  <Camera Name="' .. xmlEscape(name) .. '"'
                 .. ' RenderTransformTranslation="' .. vec(camera.pos) .. '"'
@@ -62,7 +68,7 @@ function Export.generate(spec, scene)
     table.sort(names)
     for _, name in ipairs(names) do
         assert(not scene.cameras[name], "object name conflicts with an exported camera")
-        local point = assert(Projection.anchor(scene, name))
+        local point = nativePoint(assert(Projection.anchor(scene, name)))
         xml[#xml + 1] = '  <Node3D Name="' .. xmlEscape(name) .. '" RenderTransformTranslation="' .. vec(point) .. '"/>'
         lua[#lua + 1] = '        [' .. quoted(name) .. '] = ' .. luaVec(point) .. ','
     end
@@ -74,6 +80,11 @@ end
 
 if ... == "export_workshop_camera" then return Export end
 local spec = require "WorkshopInteractions"
+if arg and arg[1] then
+    spec.source_width = assert(tonumber(arg[1]), "expected source width")
+    spec.source_height = assert(tonumber(arg[2]), "expected source height")
+    assert(spec.source_width > 0 and spec.source_height > 0, "source dimensions must be positive")
+end
 local scene = assert(Projection.load(spec.scene_path:gsub("^Book/", "")))
 local xml, lua = Export.generate(spec, scene)
 local function write(path, contents)

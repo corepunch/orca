@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- Display case: 92 X x 50 Y x 80 Z; front -Y; rear and side glazed, front readable. -->
+<prefab>
+  <attach name="top_surface" pos="0 0 8" />
+  <box pos="0 0 4" size="92 48 8" material="oak-dark" />
+  <box pos="-43 -21 41" size="5 5 74" material="brass" />
+  <box pos="-43 21 41" size="5 5 74" material="brass" />
+  <box pos="43 -21 41" size="5 5 74" material="brass" />
+  <box pos="43 21 41" size="5 5 74" material="brass" />
+  <box pos="0 0 77" size="92 48 6" material="teal-dark" />
+  <box pos="0 23 40" size="82 1 68" material="glass" castShadow="0" />
+  <box pos="-44 0 40" size="1 39 68" material="glass" castShadow="0" />
+  <prefab source="workshop-new/props/toy-train" pos="-20 0 8" rot="0 0 0" scale="0.65 0.65 0.65" />
+  <prefab source="workshop-new/props/toy-duck" pos="19 -2 8" rot="0 0 0" scale="0.7 0.7 0.7" />
+  <box pos="0 -25 5" size="33 2 4" material="brass" />
+</prefab>

@@ -1,0 +1,37 @@
+<!-- Z-up cm; baseline Z=0. Front -Y; wall back Y=6. Footprint 110 x 12, height 90. Wall rack of chisels, files and tiny hammers. -->
+<prefab>
+  <box material="oak-dark" castShadow="1" pos="-51 3 45" size="8 6 90" />
+  <box material="oak-dark" castShadow="1" pos="51 3 45" size="8 6 90" />
+  <box material="oak" castShadow="1" pos="0 3 16" size="102 6 8" />
+  <box material="oak" castShadow="1" pos="0 3 49" size="102 6 8" />
+  <box material="oak" castShadow="1" pos="0 3 81" size="102 6 8" />
+  <cylinder material="oak-light" castShadow="1" pos="-39 -1 69" radius="2.5" height="14" rot="90 0 0" sides="16" />
+  <cylinder material="brass" castShadow="1" pos="-39 -1 61" radius="2.7" height="2" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="-39 -1 43" size="2.4 1.8 36" />
+  <box material="iron" castShadow="1" pos="-39 -1 25" size="4 1.9 4" />
+  <cylinder material="iron" castShadow="1" pos="-39 -2 73" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <cylinder material="oak-light" castShadow="1" pos="-24 -1 67" radius="2.5" height="14" rot="90 0 0" sides="16" />
+  <cylinder material="brass" castShadow="1" pos="-24 -1 59" radius="2.7" height="2" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="-24 -1 37.5" size="2.4 1.8 43" />
+  <box material="iron" castShadow="1" pos="-24 -1 16" size="4 1.9 4" />
+  <cylinder material="iron" castShadow="1" pos="-24 -2 71" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <cylinder material="oak-light" castShadow="1" pos="-9 -1 71" radius="2.5" height="14" rot="90 0 0" sides="16" />
+  <cylinder material="brass" castShadow="1" pos="-9 -1 63" radius="2.7" height="2" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="-9 -1 48" size="2.4 1.8 30" />
+  <box material="iron" castShadow="1" pos="-9 -1 33" size="4 1.9 4" />
+  <cylinder material="iron" castShadow="1" pos="-9 -2 75" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <cylinder material="oak-light" castShadow="1" pos="9 -1 66" radius="2.5" height="14" rot="90 0 0" sides="16" />
+  <cylinder material="brass" castShadow="1" pos="9 -1 58" radius="2.7" height="2" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="9 -1 35" size="2.4 1.8 46" />
+  <box material="iron" castShadow="1" pos="9 -1 12" size="4 1.9 4" />
+  <cylinder material="iron" castShadow="1" pos="9 -2 70" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <cylinder material="oak-light" castShadow="1" pos="27 -1 55.5" radius="1.4" height="35.0" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="27 -1 73" size="13 7 6" />
+  <cylinder material="iron" castShadow="1" pos="27 -2 64" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <cylinder material="oak-light" castShadow="1" pos="43 -1 50.5" radius="1.4" height="35.0" rot="90 0 0" sides="16" />
+  <box material="iron" castShadow="1" pos="43 -1 68" size="13 7 6" />
+  <cylinder material="iron" castShadow="1" pos="43 -2 59" radius="0.7" height="4.0" rot="0 0 180" sides="16" />
+  <box material="oak-light" castShadow="1" pos="-26 -2 12" size="33 8 8" />
+  <box material="iron" castShadow="1" pos="-26 -2 16.5" size="8 7 1" />
+  <box material="oak-dark" castShadow="1" pos="-30 -2 22" size="5 4 11" rot="0 -20 0" />
+</prefab>

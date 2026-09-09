@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<!-- Folded lifting ladder: 42 X x 28 Y x 234 Z, origin floor; front -Y; initial locked state. -->
+<prefab>
+  <box pos="-18 0 66" size="6 10 132" material="oak" />
+  <box pos="18 0 66" size="6 10 132" material="oak" />
+  <box pos="0 -1 12" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 30" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 48" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 66" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 84" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 102" size="32 8 5" material="oak-light" />
+  <box pos="0 -1 120" size="32 8 5" material="oak-light" />
+  <box pos="-18 12 73" size="6 10 118" material="oak-dark" />
+  <cylinder pos="-18 6 130" radius="6" height="20" material="iron" rot="0 0 0" sides="24" />
+  <box pos="18 12 73" size="6 10 118" material="oak-dark" />
+  <cylinder pos="18 6 130" radius="6" height="20" material="iron" rot="0 0 0" sides="24" />
+  <box pos="0 12 24" size="32 8 5" material="oak" />
+  <box pos="0 12 42" size="32 8 5" material="oak" />
+  <box pos="0 12 60" size="32 8 5" material="oak" />
+  <box pos="0 12 78" size="32 8 5" material="oak" />
+  <box pos="0 12 96" size="32 8 5" material="oak" />
+  <box pos="0 12 114" size="32 8 5" material="oak" />
+  <box pos="-18 15 182" size="5 8 104" material="iron" />
+  <box pos="18 15 182" size="5 8 104" material="iron" />
+</prefab>

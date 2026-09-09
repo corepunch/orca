@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!-- Stocked shelves: 186 X x 54 Y x 134 Z; front -Y; baseline bottom board. -->
+<prefab>
+  <box pos="-86 12 65" size="9 30 130" material="teal-dark" />
+  <box pos="86 12 65" size="9 30 130" material="teal-dark" />
+  <box pos="0 25 65" size="168 5 124" material="teal-dark" />
+  <box pos="0 0 5" size="186 54 8" material="oak" />
+  <box pos="0 0 64" size="186 54 8" material="oak" />
+  <box pos="0 0 125" size="186 54 8" material="oak" />
+  <attach name="shelf_lower" pos="0 0 9" />
+  <attach name="shelf_upper" pos="0 0 68" />
+  <box pos="-67 3 25.5" size="11 28 33" material="red" />
+  <box pos="-67 -11.5 17" size="8 1 2" material="brass" />
+  <box pos="-52 3 28" size="11 28 38" material="green" />
+  <box pos="-52 -11.5 17" size="8 1 2" material="brass" />
+  <box pos="-36 3 23.5" size="11 28 29" material="paper" />
+  <box pos="-36 -11.5 17" size="8 1 2" material="brass" />
+  <box pos="-22 3 26.5" size="11 28 35" material="blue" />
+  <box pos="-22 -11.5 17" size="8 1 2" material="brass" />
+  <cylinder pos="22 0 21" radius="9" height="24" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="22 0 34" radius="9.5" height="2" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="47 0 24" radius="9" height="30" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="47 0 40" radius="9.5" height="2" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="69 0 18.5" radius="9" height="19" material="cream" rot="90 0 0" sides="24" />
+  <cylinder pos="69 0 29" radius="9.5" height="2" material="oak-dark" rot="90 0 0" sides="24" />
+  <box pos="-59 3 85" size="32 35 34" material="oak-light" />
+  <box pos="-59 -15 85" size="14 1 8" material="paper" />
+  <box pos="-59 -16 75" size="33 2 3" material="oak" />
+  <box pos="-59 -16 96" size="33 2 3" material="oak" />
+  <box pos="-18 3 85" size="32 35 34" material="oak-light" />
+  <box pos="-18 -15 85" size="14 1 8" material="paper" />
+  <box pos="-18 -16 75" size="33 2 3" material="oak" />
+  <box pos="-18 -16 96" size="33 2 3" material="oak" />
+  <box pos="27 3 85" size="32 35 34" material="oak-light" />
+  <box pos="27 -15 85" size="14 1 8" material="paper" />
+  <box pos="27 -16 75" size="33 2 3" material="oak" />
+  <box pos="27 -16 96" size="33 2 3" material="oak" />
+  <box pos="65 3 85" size="32 35 34" material="oak-light" />
+  <box pos="65 -15 85" size="14 1 8" material="paper" />
+  <box pos="65 -16 75" size="33 2 3" material="oak" />
+  <box pos="65 -16 96" size="33 2 3" material="oak" />
+</prefab>

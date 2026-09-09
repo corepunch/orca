@@ -1,0 +1,431 @@
+<?xml version="1.0"?>
+<!-- Fresh workshop. X east, Y north, Z up; cm. Authoring source: Tools/build_workshop_new.py. Initial story state. -->
+<scene ambient=".40 .43 .48" background=".08 .12 .18" up="z">
+  <material id="oak" color="0.43 0.26 0.14" shininess="12" />
+  <material id="oak-light" color="0.67 0.45 0.24" shininess="8" />
+  <material id="oak-dark" color="0.22 0.13 0.085" shininess="5" />
+  <material id="plaster" color="0.73 0.65 0.5" shininess="2" />
+  <material id="teal" color="0.19 0.4 0.39" shininess="10" />
+  <material id="teal-dark" color="0.1 0.24 0.25" shininess="6" />
+  <material id="brass" color="0.75 0.53 0.22" shininess="38" />
+  <material id="iron" color="0.24 0.25 0.25" shininess="24" />
+  <material id="paper" color="0.8 0.72 0.53" shininess="2" />
+  <material id="red" color="0.57 0.17 0.13" shininess="9" />
+  <material id="cream" color="0.78 0.72 0.57" shininess="6" />
+  <material id="blue" color="0.16 0.29 0.47" shininess="12" />
+  <material id="green" color="0.19 0.32 0.18" shininess="9" />
+  <material id="glass" color="0.38 0.57 0.72" shininess="55" />
+  <material id="rope" color="0.5 0.38 0.22" shininess="2" />
+  <material id="ink" color="0.075 0.08 0.09" shininess="3" />
+  <material id="amber" color="1 0.9 0.64" shininess="3" />
+  <material id="stone" color="0.4 0.43 0.43" shininess="4" />
+  <material id="snow" color="0.6 0.7 0.82" shininess="3" />
+  <material id="floor0" color="0.39 0.27 0.17" shininess="5" />
+  <material id="floor1" color="0.43 0.3 0.2" shininess="5" />
+  <material id="floor2" color="0.47 0.33 0.21" shininess="5" />
+  <material id="floor3" color="0.4 0.28 0.19" shininess="5" />
+  <wall pos="0 760 0" rot="90 0 0" length="860" height="400" thickness="24" material="plaster" />
+  <wall pos="-430 245 0" rot="90 0 90" length="1030" height="400" thickness="24" material="plaster" />
+  <wall pos="430 245 0" rot="90 0 90" length="1030" height="400" thickness="24" material="plaster" />
+  <wall pos="0 -270 0" rot="90 0 0" length="860" height="400" thickness="24" material="plaster" />
+  <box pos="0 245 -10" size="860 1030 16" material="oak-dark" sanityFloor="1" />
+  <box pos="-420 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-420 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-420 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-420 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-420 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-400 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-400 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-400 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-400 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-400 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-380 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-380 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-380 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-380 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-380 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-360 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-360 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-360 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-360 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-360 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-340 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-340 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-340 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-340 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-340 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-320 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-320 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-320 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-320 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-320 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-300 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-300 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-300 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-300 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-300 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-280 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-280 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-280 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-280 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-280 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-260 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-260 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-260 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-260 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-260 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-240 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-240 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-240 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-240 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-240 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-220 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-220 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-220 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-220 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-220 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-200 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-200 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-200 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-200 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-200 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-180 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-180 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-180 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-180 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-180 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-160 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-160 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-160 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-160 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-160 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-140 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-140 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-140 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-140 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-140 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-120 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-120 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-120 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-120 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-120 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-100 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-100 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-100 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-100 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-100 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-80 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-80 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-80 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-80 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-80 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-60 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-60 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-60 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-60 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-60 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-40 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-40 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-40 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-40 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-40 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-20 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="-20 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="-20 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="-20 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="-20 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="0 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="0 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="0 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="0 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="0 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="20 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="20 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="20 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="20 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="20 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="40 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="40 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="40 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="40 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="40 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="60 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="60 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="60 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="60 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="60 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="80 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="80 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="80 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="80 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="80 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="100 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="100 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="100 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="100 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="100 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="120 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="120 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="120 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="120 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="120 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="140 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="140 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="140 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="140 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="140 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="160 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="160 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="160 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="160 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="160 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="180 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="180 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="180 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="180 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="180 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="200 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="200 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="200 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="200 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="200 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="220 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="220 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="220 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="220 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="220 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="240 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="240 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="240 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="240 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="240 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="260 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="260 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="260 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="260 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="260 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="280 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="280 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="280 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="280 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="280 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="300 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="300 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="300 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="300 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="300 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="320 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="320 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="320 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="320 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="320 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="340 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="340 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="340 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="340 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="340 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="360 -167 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="360 39 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="360 245 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="360 451 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="360 657 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="380 -167 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="380 39 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="380 245 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="380 451 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="380 657 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="400 -167 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="400 39 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="400 245 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="400 451 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="400 657 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="420 -167 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="420 39 -1" size="19.7 205.5 2" material="floor1" />
+  <box pos="420 245 -1" size="19.7 205.5 2" material="floor0" />
+  <box pos="420 451 -1" size="19.7 205.5 2" material="floor3" />
+  <box pos="420 657 -1" size="19.7 205.5 2" material="floor2" />
+  <box pos="0 245 407" size="884 1054 14" material="oak-dark" />
+  <box pos="-415 245 47" size="5 1005 94" material="teal-dark" />
+  <box pos="-415 245 100" size="12 1008 9" material="oak" />
+  <box pos="-412 -238 49" size="5 6 86" material="teal" />
+  <box pos="-412 -178 49" size="5 6 86" material="teal" />
+  <box pos="-412 -118 49" size="5 6 86" material="teal" />
+  <box pos="-412 -58 49" size="5 6 86" material="teal" />
+  <box pos="-412 2 49" size="5 6 86" material="teal" />
+  <box pos="-412 62 49" size="5 6 86" material="teal" />
+  <box pos="-412 122 49" size="5 6 86" material="teal" />
+  <box pos="-412 182 49" size="5 6 86" material="teal" />
+  <box pos="-412 242 49" size="5 6 86" material="teal" />
+  <box pos="-412 302 49" size="5 6 86" material="teal" />
+  <box pos="-412 362 49" size="5 6 86" material="teal" />
+  <box pos="-412 422 49" size="5 6 86" material="teal" />
+  <box pos="-412 482 49" size="5 6 86" material="teal" />
+  <box pos="-412 542 49" size="5 6 86" material="teal" />
+  <box pos="-412 602 49" size="5 6 86" material="teal" />
+  <box pos="-412 662 49" size="5 6 86" material="teal" />
+  <box pos="-412 722 49" size="5 6 86" material="teal" />
+  <box pos="415 245 47" size="5 1005 94" material="teal-dark" />
+  <box pos="415 245 100" size="12 1008 9" material="oak" />
+  <box pos="412 -238 49" size="5 6 86" material="teal" />
+  <box pos="412 -178 49" size="5 6 86" material="teal" />
+  <box pos="412 -118 49" size="5 6 86" material="teal" />
+  <box pos="412 -58 49" size="5 6 86" material="teal" />
+  <box pos="412 2 49" size="5 6 86" material="teal" />
+  <box pos="412 62 49" size="5 6 86" material="teal" />
+  <box pos="412 122 49" size="5 6 86" material="teal" />
+  <box pos="412 182 49" size="5 6 86" material="teal" />
+  <box pos="412 242 49" size="5 6 86" material="teal" />
+  <box pos="412 302 49" size="5 6 86" material="teal" />
+  <box pos="412 362 49" size="5 6 86" material="teal" />
+  <box pos="412 422 49" size="5 6 86" material="teal" />
+  <box pos="412 482 49" size="5 6 86" material="teal" />
+  <box pos="412 542 49" size="5 6 86" material="teal" />
+  <box pos="412 602 49" size="5 6 86" material="teal" />
+  <box pos="412 662 49" size="5 6 86" material="teal" />
+  <box pos="412 722 49" size="5 6 86" material="teal" />
+  <box pos="-178 744 48" size="454 5 96" material="teal-dark" />
+  <box pos="-178 740 100" size="454 12 9" material="oak" />
+  <box pos="316 744 48" size="196 5 96" material="teal-dark" />
+  <box pos="316 740 100" size="196 12 9" material="oak" />
+  <box pos="0 120 380" size="860 19 34" material="oak-dark" />
+  <box pos="0 400 380" size="860 19 34" material="oak-dark" />
+  <box pos="0 690 380" size="860 19 34" material="oak-dark" />
+  <box pos="-404 245 351" size="20 1030 22" material="oak" />
+  <box pos="-404 120 208" size="18 21 328" material="oak-dark" />
+  <box pos="-404 400 208" size="18 21 328" material="oak-dark" />
+  <box pos="-404 690 208" size="18 21 328" material="oak-dark" />
+  <box pos="404 245 351" size="20 1030 22" material="oak" />
+  <box pos="404 120 208" size="18 21 328" material="oak-dark" />
+  <box pos="404 400 208" size="18 21 328" material="oak-dark" />
+  <box pos="404 690 208" size="18 21 328" material="oak-dark" />
+  <prefab source="workshop-new/furniture/stocked-shelves" pos="-390.5 415 174" rot="0 0 90" scale="0.8 1 1" />
+  <prefab source="workshop-new/furniture/loft" pos="-263 656 0" rot="0 0 0" />
+  <prefab source="workshop-new/furniture/tool-counter" pos="324 411 0" rot="0 0 -90" />
+  <prefab source="workshop-new/props/storage-crate" pos="232 212 0" rot="0 0 0" scale="0.8 0.8 0.8" />
+  <prefab source="workshop-new/props/books-stack" pos="259 261 50" rot="0 0 -90" scale="0.7 0.9 1" />
+  <prefab source="workshop-new/furniture/repair-trolley" pos="-105 159 0" rot="0 0 -12" />
+  <prefab source="workshop-new/furniture/stocked-shelves" pos="338 724 108" rot="0 0 0" />
+  <prefab source="workshop-new/furniture/tool-counter" pos="0 -218 0" rot="0 0 180" />
+  <box pos="0 -254 155" size="180 7 10" material="oak" />
+  <box pos="-63 -251 197" size="44 5 66" material="oak-dark" />
+  <box pos="-63 -247 197" size="34 2 55" material="paper" />
+  <arch pos="-63 -245 197" rot="90 0 0" width="23" height="39" depth="1" tube="2" material="teal" segments="16" />
+  <box pos="0 -251 197" size="44 5 66" material="oak-dark" />
+  <box pos="0 -247 197" size="34 2 55" material="paper" />
+  <arch pos="0 -245 197" rot="90 0 0" width="23" height="39" depth="1" tube="2" material="teal" segments="16" />
+  <box pos="63 -251 197" size="44 5 66" material="oak-dark" />
+  <box pos="63 -247 197" size="34 2 55" material="paper" />
+  <arch pos="63 -245 197" rot="90 0 0" width="23" height="39" depth="1" tube="2" material="teal" segments="16" />
+  <group name="SAWDUST" pos="-182 370 0">
+    <box pos="0 106 0.5" size="8 1.3 1" material="oak-light" rot="0 0 0" />
+    <box pos="45.7478 -105.908 0.6" size="9 1.3 1" material="oak-light" rot="0 0 137.5" />
+    <box pos="-66.8469 105.633 0.7" size="10 1.3 1" material="oak-light" rot="0 0 275" />
+    <box pos="51.9292 -105.176 0.5" size="11 1.3 1" material="oak-light" rot="0 0 412.5" />
+    <box pos="-9.03229 104.536 0.6" size="12 1.3 1" material="oak-light" rot="0 0 550" />
+    <box pos="-38.7312 -103.716 0.7" size="13 1.3 1" material="oak-light" rot="0 0 687.5" />
+    <box pos="65.6265 102.716 0.5" size="14 1.3 1" material="oak-light" rot="0 0 825" />
+    <box pos="-57.1625 -101.539 0.6" size="8 1.3 1" material="oak-light" rot="0 0 962.5" />
+    <box pos="17.8997 100.186 0.7" size="9 1.3 1" material="oak-light" rot="0 0 1100" />
+    <box pos="31.0074 -98.6596 0.5" size="10 1.3 1" material="oak-light" rot="0 0 1237.5" />
+    <box pos="-63.2079 96.9627 0.6" size="11 1.3 1" material="oak-light" rot="0 0 1375" />
+    <box pos="61.3522 -95.098 0.7" size="12 1.3 1" material="oak-light" rot="0 0 1512.5" />
+    <box pos="-26.4403 93.0689 0.5" size="13 1.3 1" material="oak-light" rot="0 0 1650" />
+    <box pos="-22.7176 -90.8787 0.6" size="14 1.3 1" material="oak-light" rot="0 0 1787.5" />
+    <box pos="59.6353 88.5314 0.7" size="8 1.3 1" material="oak-light" rot="0 0 1925" />
+    <box pos="-64.4218 -86.0309 0.5" size="9 1.3 1" material="oak-light" rot="0 0 2062.5" />
+    <box pos="34.4981 83.3816 0.6" size="10 1.3 1" material="oak-light" rot="0 0 2200" />
+    <box pos="14.013 -80.5881 0.7" size="11 1.3 1" material="oak-light" rot="0 0 2337.5" />
+    <box pos="-54.974 77.6552 0.5" size="12 1.3 1" material="oak-light" rot="0 0 2475" />
+    <box pos="66.3152 -74.588 0.6" size="13 1.3 1" material="oak-light" rot="0 0 2612.5" />
+    <box pos="-41.9262 71.3918 0.7" size="14 1.3 1" material="oak-light" rot="0 0 2750" />
+    <box pos="-5.05252 -68.072 0.5" size="8 1.3 1" material="oak-light" rot="0 0 2887.5" />
+    <box pos="49.3089 64.6346 0.6" size="9 1.3 1" material="oak-light" rot="0 0 3025" />
+    <box pos="-66.9979 -61.0853 0.7" size="10 1.3 1" material="oak-light" rot="0 0 3162.5" />
+    <box pos="48.5887 57.4304 0.5" size="11 1.3 1" material="oak-light" rot="0 0 3300" />
+    <box pos="-4.00017 -53.6761 0.6" size="12 1.3 1" material="oak-light" rot="0 0 3437.5" />
+    <box pos="-42.7437 49.829 0.7" size="13 1.3 1" material="oak-light" rot="0 0 3575" />
+    <box pos="66.4574 -45.8957 0.5" size="14 1.3 1" material="oak-light" rot="0 0 3712.5" />
+    <box pos="-54.3642 41.8831 0.6" size="8 1.3 1" material="oak-light" rot="0 0 3850" />
+    <box pos="12.9798 -37.7979 0.7" size="9 1.3 1" material="oak-light" rot="0 0 3987.5" />
+  </group>
+  <prefab source="workshop-new/fixtures/pendant" pos="-184 365 400" rot="0 0 0" />
+  <prefab source="workshop-new/fixtures/pendant" pos="256 431 400" rot="0 0 0" />
+  <light pos="389 538 236" color="0.5 0.67 1" intensity="1.4" radius="340" castShadows="1" />
+  <camera name="workshop-floor" pos="0 -230 330" look="0 430 65" fov="62" comment="Interaction overview: left workbench, ahead pet door/loft, right tool bench; back UI lower left." />
+  <camera name="workbench-top" pos="-164 210 173" look="-323 386 111" fov="62" comment="Bench surface landscape, closed repair book and unfinished toys." />
+  <camera name="tool-bench" pos="52 162 173" look="321 388 86" fov="65" comment="East work zone; crate-chair-books climb, tools and Bertrand." />
+  <camera name="countertop" pos="163 624 207" look="321 473 133" fov="60" comment="Display case and doll beside frosted shop window; same countertop." />
+  <camera name="storage-loft" pos="-25 507 332" look="-278 685 259" fov="65" comment="Landing looking into stocked storage loft; return route at near edge." />
+  <camera name="key-hook" pos="-256 153 206" look="-413 310 188" fov="45" comment="Empty brass hook and frayed string, clear against plaster." />
+  <camera name="key-string" pos="-311 177 192" look="-413 310 180" fov="37" comment="Frayed remnant below the missing-key hook." />
+  <camera name="workbench" pos="-99 157 187" look="-317 369 75" fov="62" comment="Whole bench silhouette and clear front bay." />
+  <camera name="oil-can" pos="-166 248 36" look="-274 335 13" fov="43" comment="Oil can under open workbench front, visible body and spout." />
+  <camera name="sawdust" pos="-25 237 32" look="-184 372 2" fov="62" comment="Wood shavings across boards with bench feet as context." />
+  <camera name="sweep-broom" pos="-111 137 114" look="-290 246 66" fov="49" comment="Leaning broom beside the working bench." />
+  <camera name="clock-face" pos="-208 363 269" look="-404 540 258" fov="47" comment="Cuckoo clock case, dial, pendulum and roof silhouette." />
+  <camera name="pet-door" pos="28 546 88" look="126 755 49" fov="53" comment="Rear threshold, real pet opening and cool exterior continuation." />
+  <camera name="loft-ladder" pos="30 342 192" look="-181 586 158" fov="59" comment="Folded ladder, lift and recognizable loft landing together." />
+  <camera name="ladder-mech" pos="-28 450 107" look="-123 548 79" fov="42" comment="Rusted lift winch and its attachment to ladder support." />
+  <camera name="repair-book" pos="-187 253 161" look="-300 308 106" fov="46" comment="Closed green repair book on the shared bench." />
+  <camera name="half-finished-toys" pos="-185 353 163" look="-325 424 122" fov="51" comment="Half-finished sailboat, train and one-wheel duck." />
+  <camera name="bertrand" pos="120 242 65" look="225 335 29" fov="43" comment="Dormant nutcracker at the tool bench." />
+  <camera name="makeshift-steps" pos="53 148 139" look="267 275 57" fov="55" comment="Low crate, chair and three books lead up to tool counter." />
+  <camera name="tool-rack" pos="198 207 222" look="404 303 198" fov="49" comment="Readable chisels, files and hammers above the counter." />
+  <camera name="varnish-pot" pos="203 237 157" look="305 321 119" fov="39" comment="Varnish pot sits on its work surface." />
+  <camera name="display-case" pos="178 403 175" look="323 451 143" fov="48" comment="Display cabinet containing forgotten toys." />
+  <camera name="marzipan" pos="205 556 150" look="293 516 128" fov="40" comment="Doll beside the display case, against the frosted window." />
+  <camera name="shop-window" pos="181 401 232" look="425 537 223" fov="49" comment="Frosted arched shop window and heavy reveal." />
+  <camera name="workshop-return" pos="125 727 213" look="0 289 95" fov="68" comment="Reverse threshold view returning into the same inhabited room." />
+  <group name="KEY-STRING" pos="-407 310 177" />
+  <group name="WORKBENCH" pos="-270 365 99">
+    <prefab source="workshop-new/furniture/workbench" pos="-46 12 -99" rot="0 0 90" />
+  </group>
+  <group name="KEY-HOOK" pos="-407 310 186">
+    <prefab source="workshop-new/props/key-hook" pos="-6 0 -14" rot="0 0 90" />
+  </group>
+  <group name="CLOCK-FACE" pos="-394 540 270">
+    <prefab source="workshop-new/props/cuckoo-clock" pos="-13 0 -78" rot="0 0 90" />
+  </group>
+  <group name="SWEEP-BROOM" pos="-290 249 76">
+    <prefab source="workshop-new/props/broom" pos="0 -20 -75.1" rot="-15.5 0 0" />
+  </group>
+  <group name="OIL-CAN" pos="-274 335 13">
+    <prefab source="workshop-new/props/oil-can" pos="0 0 -13" rot="0 0 -25" />
+  </group>
+  <group name="REPAIR-BOOK" pos="-300 306 109">
+    <prefab source="workshop-new/props/repair-book" pos="0 0 -9" rot="0 0 80" />
+  </group>
+  <group name="HALF-FINISHED-TOYS" pos="-325 424 124">
+    <prefab source="workshop-new/props/unfinished-toys" pos="0 0 -24" rot="0 0 90" />
+  </group>
+  <group name="LOFT-LADDER" pos="-170 544 83">
+    <prefab source="workshop-new/furniture/folding-ladder" pos="0 6 -83" rot="0 0 0" />
+  </group>
+  <group name="LADDER-MECH" pos="-123 537 85">
+    <prefab source="workshop-new/fixtures/ladder-mechanism" pos="0 20 -30" rot="0 0 0" />
+  </group>
+  <group name="PET-DOOR" pos="126 746 26">
+    <prefab source="workshop-new/architecture/rear-door" pos="0 14 -26" rot="0 0 0" />
+  </group>
+  <group name="TOOL-RACK" pos="403 303 198">
+    <prefab source="workshop-new/props/tool-rack" pos="9 0 -43" rot="0 0 -90" />
+  </group>
+  <group name="SHOP-WINDOW" pos="415 538 223">
+    <prefab source="workshop-new/architecture/window" pos="15 0 -1" rot="0 0 -90" />
+  </group>
+  <group name="VARNISH-POT" pos="305 321 119">
+    <prefab source="workshop-new/props/varnish-pot" pos="0 0 -13" rot="0 0 0" />
+  </group>
+  <group name="BERTRAND" pos="225 335 29">
+    <prefab source="workshop-new/props/nutcracker" pos="0 0 -29" rot="0 0 -38" />
+  </group>
+  <group name="DISPLAY-CASE" pos="300 451 143">
+    <prefab source="workshop-new/furniture/display-case" pos="23 0 -37" rot="0 0 -90" />
+  </group>
+  <group name="MARZIPAN" pos="293 516 128">
+    <prefab source="workshop-new/props/doll" pos="0 0 -22" rot="0 0 -90" />
+  </group>
+  <group name="MAKESHIFT-STEPS" pos="259 261 62">
+    <prefab source="workshop-new/furniture/chair" pos="0 6 -62" rot="0 0 0" />
+  </group>
+</scene>

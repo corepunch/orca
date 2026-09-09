@@ -105,6 +105,8 @@ function Projection.parse(xml)
                 local parent = stack[#stack]
                 if not parent then
                     assert(tag == "scene" and roots == 0, "expected one scene root")
+                    scene.up = attrs.up or "y"
+                    assert(scene.up == "y" or scene.up == "z", "unsupported scene up axis")
                     roots = roots + 1
                 end
                 local node = {tag = tag, attrs = attrs, transform = transform(attrs), parent = parent, children = {}}
@@ -124,7 +126,7 @@ function Projection.parse(xml)
                     assert(fov > 0 and fov < 180, "camera FOV must be between 0 and 180")
                     scene.cameras[name] = {
                         name = name, pos = position(attrs.pos, {0, 1.6, 5}),
-                        look = position(attrs.look, {0, 1.2, 0}), fov = fov,
+                        look = position(attrs.look, {0, 1.2, 0}), fov = fov, up = scene.up,
                     }
                     scene.cameraCount = (scene.cameraCount or 0) + 1
                 elseif objectTags[tag] then
@@ -304,7 +306,7 @@ function Projection.project(camera, point, sourceWidth, sourceHeight, viewWidth,
         return nil, "invalid image or viewport dimensions"
     end
     local forward = normalize({camera.look[1]-camera.pos[1], camera.look[2]-camera.pos[2], camera.look[3]-camera.pos[3]})
-    local right = normalize(cross(forward, {0, 1, 0}))
+    local right = normalize(cross(forward, camera.up == "z" and {0, 0, 1} or {0, 1, 0}))
     local up = cross(right, forward)
     local delta = {point[1]-camera.pos[1], point[2]-camera.pos[2], point[3]-camera.pos[3]}
     local depth = dot(delta, forward)

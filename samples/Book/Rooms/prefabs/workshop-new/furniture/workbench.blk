@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!-- Fresh bench: 240 X x 104 Y x 100 Z. Baseline Z0; working front -Y. -->
+<prefab>
+  <attach name="top_surface" pos="0 0 100" />
+  <attach name="under_center" pos="0 0 0" />
+  <box pos="0 0 96" size="224 88 8" material="oak-light" />
+  <box pos="-116 0 96" size="8 88 8" material="oak" />
+  <box pos="116 0 96" size="8 88 8" material="oak" />
+  <box pos="-100 -31 46" size="14 14 92" material="oak" />
+  <box pos="-100 -31 12" size="18 18 18" material="oak-dark" />
+  <box pos="-100 31 46" size="14 14 92" material="oak" />
+  <box pos="-100 31 12" size="18 18 18" material="oak-dark" />
+  <box pos="100 -31 46" size="14 14 92" material="oak" />
+  <box pos="100 -31 12" size="18 18 18" material="oak-dark" />
+  <box pos="100 31 46" size="14 14 92" material="oak" />
+  <box pos="100 31 12" size="18 18 18" material="oak-dark" />
+  <box pos="0 -32 82" size="208 10 20" material="oak" />
+  <box pos="0 32 82" size="208 10 20" material="oak" />
+  <box pos="0 28 29" size="212 10 12" material="oak-dark" />
+  <box pos="48 12 36" size="86 42 5" material="oak" />
+  <box pos="23 12 46" size="16 31 15" material="red" />
+  <box pos="23 -4 45" size="12 1 3" material="paper" />
+  <box pos="44 12 48" size="16 31 19" material="blue" />
+  <box pos="44 -4 45" size="12 1 3" material="paper" />
+  <box pos="65 12 50" size="16 31 23" material="green" />
+  <box pos="65 -4 45" size="12 1 3" material="paper" />
+  <box pos="-76 -39 82" size="46 3 13" material="teal" />
+  <cylinder pos="-76 -42 82" radius="2.3" height="3" material="brass" rot="0 0 0" sides="24" />
+  <box pos="-25 -39 82" size="46 3 13" material="teal" />
+  <cylinder pos="-25 -42 82" radius="2.3" height="3" material="brass" rot="0 0 0" sides="24" />
+  <box pos="26 -39 82" size="46 3 13" material="teal" />
+  <cylinder pos="26 -42 82" radius="2.3" height="3" material="brass" rot="0 0 0" sides="24" />
+  <box pos="77 -39 82" size="46 3 13" material="teal" />
+  <cylinder pos="77 -42 82" radius="2.3" height="3" material="brass" rot="0 0 0" sides="24" />
+  <box pos="-75 -52 91" size="37 10 20" material="oak-dark" />
+  <cylinder pos="-75 -57 87" radius="3" height="18" material="iron" rot="0 0 0" sides="24" />
+  <cylinder pos="-75 -68 87" radius="1.5" height="24" material="oak-light" rot="90 0 0" sides="24" />
+  <cylinder pos="-84 -26 100.2" radius="1.3" height="0.4" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="-45 -26 100.2" radius="1.3" height="0.4" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="8 -26 100.2" radius="1.3" height="0.4" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="52 -26 100.2" radius="1.3" height="0.4" material="oak-dark" rot="90 0 0" sides="24" />
+  <cylinder pos="95 -26 100.2" radius="1.3" height="0.4" material="oak-dark" rot="90 0 0" sides="24" />
+</prefab>

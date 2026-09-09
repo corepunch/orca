@@ -1,0 +1,22 @@
+<!-- Z-up cm; baseline Z=0. Front/spine -Y; envelope X=-27.5..27.5 Y=-21.25..21 Z=0..10. Closed green leather REPAIR-BOOK, top_surface at Z=10. -->
+<prefab>
+  <attach name="top_surface" pos="0 0 10" />
+  <box material="green" castShadow="1" pos="0 0 1" size="55 42 2" />
+  <box material="green" castShadow="1" pos="0 0 8.5" size="55 42 2" />
+  <box material="green" castShadow="1" pos="0 -20 5" size="55 2 6" />
+  <box material="paper" castShadow="1" pos="0 0.5 5" size="51 37 6" />
+  <box material="oak-light" castShadow="1" pos="25.55 0.5 3" size="0.15 36 0.18" />
+  <box material="oak-light" castShadow="1" pos="25.55 0.5 5" size="0.15 36 0.18" />
+  <box material="oak-light" castShadow="1" pos="25.55 0.5 7" size="0.15 36 0.18" />
+  <box material="brass" castShadow="1" pos="-24 -18 9.7" size="7 6 0.6" />
+  <box material="brass" castShadow="1" pos="-24 18 9.7" size="7 6 0.6" />
+  <box material="brass" castShadow="1" pos="24 -18 9.7" size="7 6 0.6" />
+  <box material="brass" castShadow="1" pos="24 18 9.7" size="7 6 0.6" />
+  <box material="brass" castShadow="1" pos="-17 -21 5" size="2 0.5 8" />
+  <box material="brass" castShadow="1" pos="17 -21 5" size="2 0.5 8" />
+  <box material="oak-dark" castShadow="1" pos="0 0 9.55" size="24 26 0.1" />
+  <box material="green" castShadow="1" pos="0 0 9.65" size="19 21 0.1" />
+  <torus material="brass" castShadow="1" pos="0 0 9.8" majorRadius="5" minorRadius="0.2" majorSegments="16" minorSegments="8" rot="90 0 0" />
+  <box material="brass" castShadow="1" pos="0 0 9.9" size="1 9 0.2" />
+  <box material="brass" castShadow="1" pos="0 0 9.9" size="9 1 0.2" />
+</prefab>
