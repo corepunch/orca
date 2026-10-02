@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Flat" Uniform.Tint="#F2F4F7" Uniform.Intensity="1">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Flat: solid colour
+// Mirrors the Blender node group "IC_Flat"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  FragColor = vec4(Tint.rgb, Intensity);
+}
+</FragmentShader>
+</Shader>

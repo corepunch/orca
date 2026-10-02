@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Segments" Uniform.ColorOn="#FF2E20" Uniform.ColorOff="#2F3237" Uniform.Level="0.5" Uniform.Intensity="1">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Segments: segmented bar: each segment has one U value, segments below Level are lit
+// Mirrors the Blender node group "IC_Segments"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float lit = v_texcoord0.x &lt; Level ? 1.0 : 0.0;
+  FragColor = vec4(mix(ColorOff.rgb, ColorOn.rgb, lit), Intensity);
+}
+</FragmentShader>
+</Shader>

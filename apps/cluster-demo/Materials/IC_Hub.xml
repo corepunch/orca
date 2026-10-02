@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Hub" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Opaque" Uniform.Color0="#17191C" Uniform.Color1="#111113" Uniform.Color2="#09090B" Uniform.Pos0="0" Uniform.Pos1="0.5" Uniform.Pos2="1" Uniform.Intensity="1" Uniform.FadeIn="0" Uniform.FadeOut="0" Uniform.Soft="0" />

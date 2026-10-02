@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Runs every gauge animation at once: each curve writes a gauge player's
+     CurrentTime (0..1 = empty..full), the same thing an input binding does. -->
+<AnimationClip Name="FillAll" Mode="Loop" StartTime="0" StopTime="5">
+  <AnimationCurve Name="Gauge_Rev" Path="../ClusterView/Cluster/Animations/Gauge_Rev" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.5" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.5" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5" Value="0 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="Gauge_Boost" Path="../ClusterView/Cluster/Animations/Gauge_Boost" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.5" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.5" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5" Value="0 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="Gauge_Oil" Path="../ClusterView/Cluster/Animations/Gauge_Oil" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.5" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.5" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5" Value="0 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="Gauge_Water" Path="../ClusterView/Cluster/Animations/Gauge_Water" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.5" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.5" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5" Value="0 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="Gauge_Range" Path="../ClusterView/Cluster/Animations/Gauge_Range" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.5" Value="1 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.5" Value="0 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5" Value="0 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+</AnimationClip>

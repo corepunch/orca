@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Sweep" Uniform.Color0="#79140E" Uniform.Color1="#FF5A32" Uniform.Level="0.5" Uniform.Tail="0.2" Uniform.Intensity="0.8" Uniform.InnerFade="0.7">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Sweep: gauge fill: U spans the whole scale, lit up to Level with a tail fading back over Tail
+// Mirrors the Blender node group "IC_Sweep"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float u = v_texcoord0.x, v = v_texcoord0.y;
+  float a = clamp((u - Level + Tail) / Tail, 0.0, 1.0);
+  float lit = u &lt; Level ? 1.0 : 0.0;
+  float radial = 1.0 - InnerFade * (1.0 - v);
+  FragColor = vec4(mix(Color0.rgb, Color1.rgb, a), Intensity * a * a * lit * radial);
+}
+</FragmentShader>
+</Shader>

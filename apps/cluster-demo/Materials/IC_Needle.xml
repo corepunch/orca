@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Needle" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Opaque" Uniform.Color0="#FF2E20" Uniform.Color1="#FF5A32" Uniform.Color2="#FFD1AF" Uniform.Pos0="0" Uniform.Pos1="0.5" Uniform.Pos2="1" Uniform.Intensity="1" Uniform.FadeIn="0" Uniform.FadeOut="0" Uniform.Soft="0" />

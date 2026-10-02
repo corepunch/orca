@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Bar_Oil" Shader="ClusterDemo/Shaders/IC_Segments" BlendMode="Opaque" Uniform.ColorOn="#FF2E20" Uniform.ColorOff="#33363D" Uniform.Level="0.68" Uniform.Intensity="1" />
