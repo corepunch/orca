@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_RevRim" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Opaque" Uniform.Color0="#D7DCE4" Uniform.Color1="#FF893D" Uniform.Color2="#FF2E20" Uniform.Pos0="0.5" Uniform.Pos1="0.62" Uniform.Pos2="0.74" Uniform.Intensity="1" Uniform.FadeIn="0" Uniform.FadeOut="0" Uniform.Soft="0" />

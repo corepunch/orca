@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_White" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#F2F4F7" Uniform.Intensity="1" />

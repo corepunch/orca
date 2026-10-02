@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_HubRing" Shader="ClusterDemo/Shaders/IC_SpunMetal" BlendMode="Opaque" Uniform.ColorDark="#373A3F" Uniform.ColorLight="#F4F7FB" Uniform.Lobes="2" Uniform.Phase="0.125" Uniform.Sharpness="2" Uniform.Rings="1" Uniform.RingContrast="0" Uniform.EdgeDark="0.3" Uniform.Intensity="1" />

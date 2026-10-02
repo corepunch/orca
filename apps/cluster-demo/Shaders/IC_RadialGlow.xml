@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_RadialGlow" Uniform.Tint="#FF2E20" Uniform.Intensity="0.5" Uniform.Power="2">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_RadialGlow: soft round glow on a quad with UV 0..1
+// Mirrors the Blender node group "IC_RadialGlow"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float d = clamp(length(v_texcoord0 - vec2(0.5)) * 2.0, 0.0, 1.0);
+  FragColor = vec4(Tint.rgb, Intensity * pow(1.0 - d, Power));
+}
+</FragmentShader>
+</Shader>

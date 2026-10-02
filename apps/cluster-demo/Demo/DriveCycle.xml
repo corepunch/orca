@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Stand-in for the vehicle signals: each curve writes a gauge player's
+     CurrentTime (0..1 = empty..full), which is all an input binding has to do. -->
+<AnimationClip Name="DriveCycle" Mode="Loop" StartTime="0" StopTime="10">
+  <AnimationCurve Name="rpm" Path="../ClusterView/Cluster/Animations/Gauge_Rev" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0.11 0 0 0" TangentMode="1"/>
+      <Keyframe Time="0.8" Value="0.14 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.4" Value="0.86 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.6" Value="0.55 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.2" Value="0.90 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.4" Value="0.62 0 0 0" TangentMode="1"/>
+      <Keyframe Time="6.2" Value="0.88 0 0 0" TangentMode="1"/>
+      <Keyframe Time="8.4" Value="0.24 0 0 0" TangentMode="1"/>
+      <Keyframe Time="10" Value="0.11 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="boost" Path="../ClusterView/Cluster/Animations/Gauge_Boost" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0.05 0 0 0" TangentMode="1"/>
+      <Keyframe Time="0.8" Value="0.05 0 0 0" TangentMode="1"/>
+      <Keyframe Time="1.6" Value="0.85 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.4" Value="0.95 0 0 0" TangentMode="1"/>
+      <Keyframe Time="2.6" Value="0.30 0 0 0" TangentMode="1"/>
+      <Keyframe Time="3.2" Value="0.90 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.2" Value="0.95 0 0 0" TangentMode="1"/>
+      <Keyframe Time="4.4" Value="0.30 0 0 0" TangentMode="1"/>
+      <Keyframe Time="5.0" Value="0.90 0 0 0" TangentMode="1"/>
+      <Keyframe Time="6.2" Value="0.95 0 0 0" TangentMode="1"/>
+      <Keyframe Time="6.6" Value="0.05 0 0 0" TangentMode="1"/>
+      <Keyframe Time="10" Value="0.05 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="oil" Path="../ClusterView/Cluster/Animations/Gauge_Oil" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0.52 0 0 0" TangentMode="1"/>
+      <Keyframe Time="6.5" Value="0.78 0 0 0" TangentMode="1"/>
+      <Keyframe Time="10" Value="0.52 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="water" Path="../ClusterView/Cluster/Animations/Gauge_Water" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0.55 0 0 0" TangentMode="1"/>
+      <Keyframe Time="7" Value="0.68 0 0 0" TangentMode="1"/>
+      <Keyframe Time="10" Value="0.55 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+  <AnimationCurve Name="fuel" Path="../ClusterView/Cluster/Animations/Gauge_Range" Property="CurrentTime">
+    <AnimationCurve.Keyframes>
+      <Keyframe Time="0" Value="0.60 0 0 0" TangentMode="1"/>
+      <Keyframe Time="10" Value="0.40 0 0 0" TangentMode="1"/>
+    </AnimationCurve.Keyframes>
+  </AnimationCurve>
+</AnimationClip>

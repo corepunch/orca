@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_PanelPlate" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Opaque" Uniform.Color0="#1B1C20" Uniform.Color1="#121315" Uniform.Color2="#0B0B0C" Uniform.Pos0="0" Uniform.Pos1="0.5" Uniform.Pos2="1" Uniform.Intensity="1" Uniform.FadeIn="0" Uniform.FadeOut="0" Uniform.Soft="0" />

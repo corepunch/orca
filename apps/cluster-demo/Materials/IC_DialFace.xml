@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_DialFace" Shader="ClusterDemo/Shaders/IC_SpunMetal" BlendMode="Opaque" Uniform.ColorDark="#0C0D0E" Uniform.ColorLight="#3D4048" Uniform.Lobes="2" Uniform.Phase="0.125" Uniform.Sharpness="3" Uniform.Rings="150" Uniform.RingContrast="0.28" Uniform.EdgeDark="0" Uniform.Intensity="1" />

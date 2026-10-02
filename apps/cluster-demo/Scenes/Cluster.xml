@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Node3D Name="Cluster">
+  <Node3D Name="IC_Root" LayoutTransform="0 0 0  0 0 0  1 1 1">
+    <Model3D Name="Ambient_DialCool" LayoutTransform="-0.61815 0.3 -0.87638  89.99999 4.37676 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_DialCool" Material="ClusterDemo/Materials/IC_AmbientCool" />
+    <Model3D Name="Ambient_DialRed" LayoutTransform="0.61815 -0.05 -0.87638  89.99999 -4.37676 0  1.35 1 1.35" Mesh="ClusterDemo/Meshes/Ambient_DialRed" Material="ClusterDemo/Materials/IC_AmbientDial" />
+    <Model3D Name="Ambient_LeftRed" LayoutTransform="-2.38296 0 -0.54154  90 17.10916 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_LeftRed" Material="ClusterDemo/Materials/IC_AmbientRed" />
+    <Model3D Name="Ambient_RightRed" LayoutTransform="2.38296 0 -0.54154  90 -17.10916 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_RightRed" Material="ClusterDemo/Materials/IC_AmbientRed" />
+    <Node3D Name="IC_Panel_Rev" LayoutTransform="0 0 -0.34  90 0 0  1 1 1">
+      <Model3D Name="Rev_BezelGlow" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_BezelGlow" Material="ClusterDemo/Materials/IC_BezelGlow" />
+      <Model3D Name="Rev_Face" LayoutTransform="0 0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Face" Material="ClusterDemo/Materials/IC_DialFace" />
+      <Model3D Name="Rev_Bezel" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Bezel" Material="ClusterDemo/Materials/IC_DialBezel" />
+      <Model3D Name="Rev_Sweep" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Sweep" Material="ClusterDemo/Materials/IC_RevSweep" Uniform.Level="0.68" />
+      <Model3D Name="Rev_RedZone" LayoutTransform="0 0.05 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_RedZone" Material="ClusterDemo/Materials/IC_RedDim" />
+      <Model3D Name="Rev_RimGlow" LayoutTransform="0 0.06 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_RimGlow" Material="ClusterDemo/Materials/IC_RevRimGlow" />
+      <Model3D Name="Rev_Rim" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Rim" Material="ClusterDemo/Materials/IC_RevRim" />
+      <Model3D Name="Rev_TicksFine" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksFine" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Rev_TicksMajor" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMajor" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_TicksMajorRed" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMajorRed" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Rev_TicksMinor" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMinor" Material="ClusterDemo/Materials/IC_TickMinor" />
+      <Model3D Name="Turn_Left" LayoutTransform="-0.83 0.1 -0.69  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Turn_Left" Material="ClusterDemo/Materials/IC_GreenDim" />
+      <Model3D Name="Turn_Right" LayoutTransform="0.83 0.1 -0.69  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Turn_Right" Material="ClusterDemo/Materials/IC_GreenDim" />
+      <Model3D Name="Rev_Num3" LayoutTransform="-0.2639 0.12 -0.39495  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num3" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num4" LayoutTransform="0 0.12 -0.475  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num4" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num5" LayoutTransform="0.2639 0.12 -0.39495  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num5" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num0" LayoutTransform="-0.33588 0.12 0.33588  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num0" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num1" LayoutTransform="-0.46587 0.12 0.09267  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num1" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num2" LayoutTransform="-0.43884 0.12 -0.18177  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num2" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num6" LayoutTransform="0.43884 0.12 -0.18177  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num6" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_Num7" LayoutTransform="0.46587 0.12 0.09267  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num7" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Rev_Num8" LayoutTransform="0.33588 0.12 0.33588  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num8" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Rev_Needle" LayoutTransform="0 0.16 0  0 41.4 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Needle" Material="ClusterDemo/Materials/IC_Needle">
+        <Model3D Name="Rev_NeedleGlow" LayoutTransform="0 -0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_NeedleGlow" Material="ClusterDemo/Materials/IC_NeedleGlow" />
+      </Model3D>
+      <Model3D Name="Rev_Hub" LayoutTransform="0 0.2 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Hub" Material="ClusterDemo/Materials/IC_Hub" />
+      <Model3D Name="Rev_HubGroove" LayoutTransform="0 0.2 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_HubGroove" Material="ClusterDemo/Materials/IC_HubGroove" />
+      <Model3D Name="Rev_HubRing" LayoutTransform="0 0.21 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_HubRing" Material="ClusterDemo/Materials/IC_HubRing" />
+      <Model3D Name="Gear_Mode" LayoutTransform="-0.072 0.24 0.185  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Gear_Mode" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Gear_Number" LayoutTransform="0.04 0.24 0.18  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Gear_Number" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Rev_Scale" LayoutTransform="0 0.24 -0.187  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Scale" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Rev_Speed" LayoutTransform="0 0.24 -0.052  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Speed" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Rev_SpeedUnit" LayoutTransform="0 0.24 0.078  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_SpeedUnit" Material="ClusterDemo/Materials/IC_Grey" />
+    </Node3D>
+    <Node3D Name="IC_Panel_Lap" LayoutTransform="-1.48207 0 -0.1113  89.99998 11.45916 0  1 1 1">
+      <Model3D Name="Lap_Plate" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Plate" Material="ClusterDemo/Materials/IC_PanelPlate" />
+      <Model3D Name="Lap_ChevronGlow" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_ChevronGlow" Material="ClusterDemo/Materials/IC_ChevronGlow" />
+      <Model3D Name="Lap_Best" LayoutTransform="0.35 0.1 0.295  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Best" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Lap_Last" LayoutTransform="0.35 0.1 0.425  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Last" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Lap_Chevron" LayoutTransform="0 0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Chevron" Material="ClusterDemo/Materials/IC_Chevron" />
+      <Model3D Name="Lap_MapCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_MapCard" Material="ClusterDemo/Materials/IC_Card" />
+      <Model3D Name="Lap_TimesCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_TimesCard" Material="ClusterDemo/Materials/IC_Card" />
+      <Model3D Name="Lap_MapCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_MapCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
+      <Model3D Name="Lap_TimesCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_TimesCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
+      <Model3D Name="Lap_Car" LayoutTransform="0.28113 0.12 -0.37225  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Car" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Lap_Circuit" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Circuit" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Lap_CircuitDone" LayoutTransform="0 0.1 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_CircuitDone" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Lap_BestLabel" LayoutTransform="-0.25 0.08 0.295  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_BestLabel" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Lap_LastLabel" LayoutTransform="-0.25 0.08 0.425  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_LastLabel" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Lap_Count" LayoutTransform="-0.28 0.08 -0.555  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Count" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Lap_Delta" LayoutTransform="-0.28 0.1 0.105  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Delta" Material="ClusterDemo/Materials/IC_Green" />
+      <Model3D Name="Lap_Time" LayoutTransform="-0.28 0.1 -0.005  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Time" Material="ClusterDemo/Materials/IC_White" />
+    </Node3D>
+    <Node3D Name="IC_Panel_Vitals" LayoutTransform="1.48207 0 -0.1113  89.99998 -11.45916 0  1 1 1">
+      <Model3D Name="Vitals_BOOST_Label" LayoutTransform="-0.48 0.08 -0.08  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Label" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_WATER_Label" LayoutTransform="-0.48 0.08 -0.27  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Label" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_OIL_Label" LayoutTransform="-0.4 0.08 -0.46  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Label" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_Plate" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Plate" Material="ClusterDemo/Materials/IC_PanelPlate" />
+      <Model3D Name="Vitals_RangeLevel" LayoutTransform="-0.42 0.1 0.33  0 0 0  0.68 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeLevel" Material="ClusterDemo/Materials/IC_RangeFill" />
+      <Model3D Name="Vitals_ChevronGlow" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ChevronGlow" Material="ClusterDemo/Materials/IC_ChevronGlow" />
+      <Model3D Name="Vitals_Chevron" LayoutTransform="0 0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Chevron" Material="ClusterDemo/Materials/IC_Chevron" />
+      <Model3D Name="Vitals_BOOST_Caption" LayoutTransform="-0.245 0.08 -0.135  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Caption" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Vitals_OIL_Caption" LayoutTransform="-0.245 0.08 -0.515  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Caption" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Vitals_WATER_Caption" LayoutTransform="-0.245 0.08 -0.325  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Caption" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Vitals_ModeCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeCard" Material="ClusterDemo/Materials/IC_Card" />
+      <Model3D Name="Vitals_Selection" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Selection" Material="ClusterDemo/Materials/IC_Card" />
+      <Model3D Name="Vitals_ModeCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
+      <Model3D Name="Vitals_Selection_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Selection_Edge" Material="ClusterDemo/Materials/IC_ChipEdge" />
+      <Model3D Name="Vitals_ModeA" LayoutTransform="-0.21 0.1 0.5  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeA" Material="ClusterDemo/Materials/IC_Red" />
+      <Model3D Name="Vitals_RangeLabel" LayoutTransform="-0.05 0.08 0.1  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeLabel" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Vitals_BOOST_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Bar" Material="ClusterDemo/Materials/IC_Bar_Boost" Uniform.Level="0.68" />
+      <Model3D Name="Vitals_OIL_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Bar" Material="ClusterDemo/Materials/IC_Bar_Oil" Uniform.Level="0.68" />
+      <Model3D Name="Vitals_RangeTrack" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeTrack" Material="ClusterDemo/Materials/IC_BarTrack" />
+      <Model3D Name="Vitals_WATER_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Bar" Material="ClusterDemo/Materials/IC_Bar_Water" Uniform.Level="0.68" />
+      <Model3D Name="Vitals_Range" LayoutTransform="-0.05 0.1 0.215  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Range" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_ModeB" LayoutTransform="0.14 0.1 0.5  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeB" Material="ClusterDemo/Materials/IC_Grey" />
+      <Model3D Name="Vitals_BOOST_Value" LayoutTransform="0.39 0.1 -0.08  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Value" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_OIL_Value" LayoutTransform="0.39 0.1 -0.46  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Value" Material="ClusterDemo/Materials/IC_White" />
+      <Model3D Name="Vitals_WATER_Value" LayoutTransform="0.39 0.1 -0.27  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Value" Material="ClusterDemo/Materials/IC_White" />
+    </Node3D>
+  </Node3D>
+  <Node3D Name="Animations">
+    <AnimationPlayer Name="Gauge_Boost" Clip="ClusterDemo/Animations/Gauge_Boost" />
+    <AnimationPlayer Name="Gauge_Oil" Clip="ClusterDemo/Animations/Gauge_Oil" />
+    <AnimationPlayer Name="Gauge_Range" Clip="ClusterDemo/Animations/Gauge_Range" />
+    <AnimationPlayer Name="Gauge_Rev" Clip="ClusterDemo/Animations/Gauge_Rev" />
+    <AnimationPlayer Name="Gauge_Water" Clip="ClusterDemo/Animations/Gauge_Water" />
+  </Node3D>
+</Node3D>

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Card" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Opaque" Uniform.Color0="#101112" Uniform.Color1="#151618" Uniform.Color2="#1C1E22" Uniform.Pos0="0" Uniform.Pos1="0.5" Uniform.Pos2="1" Uniform.Intensity="1" Uniform.FadeIn="0" Uniform.FadeOut="0" Uniform.Soft="0" />
