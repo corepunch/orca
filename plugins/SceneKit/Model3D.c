@@ -8,7 +8,7 @@ _CollectUniforms(struct Object *hObject,
                  struct Material* mat,
                  struct ViewEntity* ent,
                  struct uniform* u,
-                 uint32_t blendMode)
+                 int blendMode)
 {
   ent->material.blendMode = (enum blend_mode)kBlendModeAlphaAutomatic;
   ent->material.uniforms = u;
@@ -23,7 +23,9 @@ _CollectUniforms(struct Object *hObject,
     OBJ_GetUniforms(CMP_GetObject(mat),
                     u + ent->material.numUniforms);
   }
-  if (blendMode != kBlendModeMixedAlpha) {
+  // The node's own Material.BlendMode only overrides when it names a real mode:
+  // unset reads back as -1 or AlphaAutomatic, which used to wipe out the material's.
+  if (blendMode > kBlendModeAlphaAutomatic && blendMode != kBlendModeMixedAlpha) {
     ent->material.blendMode = (enum blend_mode)blendMode;
   }
 }

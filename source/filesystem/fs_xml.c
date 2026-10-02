@@ -609,7 +609,7 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   }
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
-    if (t->type == XML_TEXT_NODE && xmlStrlen(t->content) > 0) {
+    if ((t->type == XML_TEXT_NODE || t->type == XML_CDATA_SECTION_NODE) && xmlStrlen(t->content) > 0) {
       lpcString_t text = (lpcString_t)t->content;
       OBJ_SetTextContent(o, text);
       return o;

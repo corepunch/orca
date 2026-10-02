@@ -39,8 +39,8 @@ An `AnimationClip` is an object loaded from an XML file (just like an `Image` or
   <AnimationCurve Name="OpacityCurve"
                   Property="Opacity">
     <AnimationCurve.Keyframes>
-      <Keyframe time="0"   value="1 0 0 0"/>
-      <Keyframe time="0.5" value="0 0 0 0"/>
+      <Keyframe Time="0"   Value="1 0 0 0"/>
+      <Keyframe Time="0.5" Value="0 0 0 0"/>
     </AnimationCurve.Keyframes>
   </AnimationCurve>
 
@@ -76,50 +76,56 @@ Each `AnimationCurve` is a child object of an `AnimationClip`. It targets exactl
 | Property | Type | Description |
 |---|---|---|
 | `Property` | string | Short property name to animate, e.g. `"Opacity"`, `"Position"` |
-| `Path` | string | Relative path from the player's host object to the target object. Empty means the host itself |
+| `Path` | string | Relative path from the object that carries the `AnimationPlayer` to the target object (`..` is supported). Empty means that object itself |
 | `Keyframes` | `Keyframe[]` | The keyframe array (see format below) |
 | `NumKeyframes` | int | Number of keyframes in the array (auto-generated from `array="true"`) |
 
 ### `Keyframe` struct
 
-Each keyframe is a `Keyframe` struct serialised as space-separated numbers. The `value`, `inSlope`, `outSlope`, `inWeight`, and `outWeight` fields are each a `Vector4D` (`x y z w`).
+Each keyframe is a `Keyframe` struct serialised as space-separated numbers. The `Value`, `InSlope`, `OutSlope`, `InWeight`, and `OutWeight` fields are each a `Vector4D` (`x y z w`).
 
 | Field | Type | Description |
 |---|---|---|
-| `time` | float | Time position in seconds |
-| `value` | vec4 | Animated value (only the components used by the target property are read) |
-| `inSlope` | vec4 | Incoming tangent slope for cubic bezier interpolation |
-| `outSlope` | vec4 | Outgoing tangent slope |
-| `inWeight` | vec4 | Incoming tangent weight |
-| `outWeight` | vec4 | Outgoing tangent weight |
-| `tangentMode` | int | `0` = cubic bezier (default); any other value = linear |
-| `weightedMode` | int | Whether tangent weights are active for this keyframe |
+| `Time` | float | Time position in seconds |
+| `Value` | vec4 | Animated value (only the components used by the target property are read) |
+| `InSlope` | vec4 | Incoming tangent slope for cubic bezier interpolation |
+| `OutSlope` | vec4 | Outgoing tangent slope |
+| `InWeight` | vec4 | Incoming tangent weight |
+| `OutWeight` | vec4 | Outgoing tangent weight |
+| `TangentMode` | int | `0` = cubic bezier (default); any other value = linear |
+| `WeightedMode` | int | Whether tangent weights are active for this keyframe |
 
-**Compact XML syntax** — keyframe values are written as a space-separated sequence in the order: `time value.x value.y value.z value.w`:
+> **Note — field names are case-sensitive in XML.** Write the attributes exactly as listed above. Lowercase names are rejected by the loader, e.g. `Could not set field 'time' on struct 'Keyframe'`.
+
+**Compact XML syntax** — each keyframe is a `<Keyframe>` element with `Time` and `Value` attributes; `Value` is a space-separated sequence in the order `x y z w`:
 
 ```xml
 <!-- Linear fade: Opacity from 1 at t=0 to 0 at t=1 -->
-<Keyframe time="0"   value="1 0 0 0"/>
-<Keyframe time="1.0" value="0 0 0 0"/>
+<Keyframe Time="0"   Value="1 0 0 0"/>
+<Keyframe Time="1.0" Value="0 0 0 0"/>
+
+<!-- Same fade with linear interpolation -->
+<Keyframe Time="0"   Value="1 0 0 0" TangentMode="1"/>
+<Keyframe Time="1.0" Value="0 0 0 0" TangentMode="1"/>
 ```
 
-For scalar properties (e.g. `Opacity`, `FontSize`) only `value.x` is used. For two-component properties (e.g. `Position`) `value.x` and `value.y` are used, and so on.
+For scalar properties (e.g. `Opacity`, `FontSize`) only `Value.x` is used. For two-component properties (e.g. `Position`) `Value.x` and `Value.y` are used, and so on.
 
 #### Tangent mode
 
-| `tangentMode` | Interpolation |
+| `TangentMode` | Interpolation |
 |---|---|
 | `0` | Cubic bezier (Unity-compatible, default) |
 | `1` | Linear |
 
-When `tangentMode == 0` the cubic bezier control points are derived from the slopes and weights:
+When `TangentMode == 0` the cubic bezier control points are derived from the slopes and weights:
 
 ```
-h0 = v0 + outSlope * outWeight * dt
-h1 = v1 - inSlope  * inWeight  * dt
+h0 = v0 + OutSlope * OutWeight * dt
+h1 = v1 - InSlope  * InWeight  * dt
 ```
 
-where `dt = kf[j].time - kf[i].time`.
+where `dt = kf[j].Time - kf[i].Time`.
 
 #### Bool properties
 
@@ -144,6 +150,8 @@ local player = obj:addComponent("AnimationPlayer")
 obj.Clip = require("MyApp/Animations/FadeOut")
 ```
 
+> **Note — XML placement.** An `<AnimationPlayer>` XML element is an object of its own: it is a child of the element it is written in. `AnimationCurve.Path` is resolved relative to that player object, and `..` is supported, so `Path=".."` targets the element the player is written in.
+
 ### Properties
 
 | Property | Type | Default | Description |
@@ -159,6 +167,8 @@ obj.Clip = require("MyApp/Animations/FadeOut")
 | `PlaybackMode` | `PlaybackMode` | `Normal` | Per-player playback direction; only consulted when `AnimationClip.Mode == PlayOnce` |
 | `DurationScale` | float | `0` | Additional speed multiplier applied on top of `Speed` (0 = no scaling) |
 | `RepeatCount` | int | `0` | How many times to repeat (`-1` = infinite, `0` = use clip's own mode) |
+
+> **Note — scrubbing.** Setting `CurrentTime` while the player is not playing applies the clip at that time. This lets a clip be bound to an input value (for example a slider or a data value) instead of the clock.
 
 ### `PlaybackMode` enum
 
@@ -267,9 +277,9 @@ This internally creates a `PropertyAnimation` component component that removes i
   <AnimationClip Name="PulseClip" Mode="Loop" StartTime="0" StopTime="1">
     <AnimationCurve Property="Opacity">
       <AnimationCurve.Keyframes>
-        <Keyframe time="0"   value="1 0 0 0"/>
-        <Keyframe time="0.5" value="0.3 0 0 0"/>
-        <Keyframe time="1"   value="1 0 0 0"/>
+        <Keyframe Time="0"   Value="1 0 0 0"/>
+        <Keyframe Time="0.5" Value="0.3 0 0 0"/>
+        <Keyframe Time="1"   Value="1 0 0 0"/>
       </AnimationCurve.Keyframes>
     </AnimationCurve>
   </AnimationClip>
@@ -277,8 +287,8 @@ This internally creates a `PropertyAnimation` component component that removes i
   <AnimationClip Name="SlideInClip" Mode="PlayOnce" StartTime="0" StopTime="0.3">
     <AnimationCurve Property="Position">
       <AnimationCurve.Keyframes>
-        <Keyframe time="0"   value="-50 0 0 0"/>
-        <Keyframe time="0.3" value="0  0 0 0"/>
+        <Keyframe Time="0"   Value="-50 0 0 0"/>
+        <Keyframe Time="0.3" Value="0  0 0 0"/>
       </AnimationCurve.Keyframes>
     </AnimationCurve>
   </AnimationClip>
@@ -316,5 +326,5 @@ end)
 - **`StopTime = 0` means no automatic stop.** The player will advance `CurrentTime` indefinitely. Always set `StopTime` to a positive value when you want the clip to end.
 - **`DurationScale = 0` means no extra scaling.** The effective speed is `Speed * (DurationScale > 0 ? DurationScale : 1)`. Setting `DurationScale = 0` does *not* freeze playback.
 - **`AnimationClip.Mode` overrides player-level looping.** If you set `Mode="Loop"` on the clip, the player's `Looping` property and `PlaybackMode` are ignored.
-- **Multi-component properties** (e.g. `Position` is a `vec2`). Write all relevant components in the keyframe's `value` field: `value="100 200 0 0"` for `x=100, y=200`.
-- **Path targeting.** If `AnimationCurve.Path` is non-empty, the engine calls `OBJ_FindByPath` relative to the player's host object each frame. Keep paths short; use the empty string to target the host object itself.
+- **Multi-component properties** (e.g. `Position` is a `vec2`). Write all relevant components in the keyframe's `Value` field: `Value="100 200 0 0"` for `x=100, y=200`.
+- **Path targeting.** If `AnimationCurve.Path` is non-empty, the engine calls `OBJ_FindByPath` relative to the object that carries the `AnimationPlayer` each frame (for an `<AnimationPlayer>` XML element that is the player object itself, so use `..` to reach the enclosing element). Keep paths short; an empty path targets the object that carries the player.

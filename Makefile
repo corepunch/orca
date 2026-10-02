@@ -80,7 +80,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -127,6 +127,13 @@ app: modules platform
 	$(Q)$(CC) $(CFLAGS) $(SOURCEDIR)/orca.c -Wall $(LIBS) -o $(TARGET) $(LDFLAGS)
 
 unite: directories buildunite buildlib buildplugins app copyshare
+
+# FBX -> .mesh converter used by tools/blender-export.py. Optional: needs the Autodesk FBX SDK.
+FBX_SDK ?= /Applications/Autodesk/FBX SDK/2020.2
+orca-fbx: directories
+	$(CXX) -std=c++17 -O2 -w -I. -Igenerated -I"$(FBX_SDK)/include" tools/fbx-import.cpp \
+		"$(FBX_SDK)/lib/clang/release/libfbxsdk.a" -framework CoreFoundation -liconv -lxml2 -lz \
+		-o $(BINDIR)/orca-fbx
 
 %.o: %.c $(HEADERS) | modules
 	$(Q)$(CC) $(CFLAGS) -c $< -o $(addprefix $(OBJECTDIR)/,$(notdir $@))

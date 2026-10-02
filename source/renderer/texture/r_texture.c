@@ -217,7 +217,9 @@ Texture_Create(PCREATEIMGSTRUCT _in, struct Texture** pImage)
   struct Texture* texture = ZeroAlloc(sizeof(struct Texture));
   if (!texture)
     return E_OUTOFMEMORY;
-  if (_in->ImageData) {
+  // tr.buffer is 0 until the renderer has a GL context (headless tests never get one).
+  bool_t const has_gl = tr.buffer != 0;
+  if (_in->ImageData && has_gl) {
     R_Call(glGenTextures, 1, &texture->texnum);
     Texture_Reallocate(texture, _in);
   }
@@ -225,7 +227,7 @@ Texture_Create(PCREATEIMGSTRUCT _in, struct Texture** pImage)
   texture->MagnificationFilter = _in->MagFilter;
   texture->WrapMode = _in->WrapMode;
 
-  R_ApplyImageParms(texture, GL_TEXTURE_2D, FALSE);
+  if (has_gl) R_ApplyImageParms(texture, GL_TEXTURE_2D, FALSE);
 
   *pImage = texture;
 

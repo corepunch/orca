@@ -9,7 +9,7 @@ _CollectUniforms(struct Object *,
                  struct Material*,
                  struct ViewEntity*,
                  struct uniform*,
-                 uint32_t);
+                 int);
 
 HANDLER(PlaneMeshNode, Node3D, Render)
 {

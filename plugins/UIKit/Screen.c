@@ -261,6 +261,8 @@ draw_screen(struct Object* hObject,
 
 // Screen_Paint
 HANDLER(Screen, Window, Paint) {
+  // Every painted frame moves the engine clock; time-based animation reads it.
+  core_AdvanceFrame();
   PROP_RunAllPrograms(hObject);
 
   R_BeginFrame(pScreen->ClearColor);

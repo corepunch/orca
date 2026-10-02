@@ -19,7 +19,7 @@ HANDLER(TextBlock3D, Node3D, Render)
     .bbox = BOX3_FromRect(((struct rect){-w/2,-h/2,w,h})),
     .material = (struct ViewMaterial) {
       .opacity = GetNode3D(hObject)->_opacity,
-      .color = {1,1,1,1},
+      .color = pTextBlock3D->Color,   // all zero (unset) draws white
       .texture = (struct Texture*)_SendMessage(hObject, TextBlockConcept, GetTexture),
       .blendMode = BLEND_MODE_PREMULTIPLIED_ALPHA,
     },

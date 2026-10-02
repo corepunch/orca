@@ -7,7 +7,7 @@ This guide will help you get started with the ORCA Framework by creating your fi
 1. [Prerequisites](#prerequisites)
 2. [Creating a New Project](#creating-a-new-project)
 3. [Scene File Formats](#scene-file-formats)
-4. [Package.xml Specification](#packagexml-specification)
+4. [Package.lua Specification](#packagelua-specification)
 5. [Building and Running](#building-and-running)
 6. [Examples](#examples)
 
@@ -26,7 +26,7 @@ To create a new ORCA project, you'll need to set up the following basic structur
 
 ```
 MyProject/
-├── package.xml          # Project configuration file
+├── package.lua          # Project configuration file
 ├── Screens/             # Directory for screen definitions
 │   └── Application.xml  # Main application screen
 └── Images/              # Directory for images (optional)
@@ -40,7 +40,7 @@ mkdir MyProject
 cd MyProject
 ```
 
-2. Create a `package.xml` file (see [Package.xml Specification](#packagexml-specification))
+2. Create a `package.lua` file (see [Package.lua Specification](#packagelua-specification))
 
 3. Create a `Screens` directory for your UI definitions:
 ```sh
@@ -182,116 +182,140 @@ class HomePage extends ui.StackView
 - Define routes with pattern matching
 - Apply CSS classes with `apply` method
 
-## Package.xml Specification
+## Package.lua Specification
 
-The `package.xml` file is the entry point for your ORCA project. It defines project metadata, libraries, and system messages.
+The `package.lua` file is the entry point for your ORCA project. It defines project metadata, libraries, and system messages. It is the only project manifest the runtime reads; `package.xml` is no longer loaded.
 
 ### Basic Structure
 
-```xml
-<?xml version="1.0"?>
-<Project Name="ProjectName" StartupScreen="ProjectName/Screens/ScreenName">
-  <!-- Project configuration -->
-</Project>
+`package.lua` is a Lua file in which each global assignment sets a property of the project:
+
+```lua
+Name = "ProjectName"
+StartupScreen = "ProjectName/Screens/ScreenName"
+-- Project configuration
 ```
 
-### Required Attributes
+### Required Properties
 
 - `Name`: The name of your project
-- `StartupScreen`: The path to the initial screen to load (format: `ProjectName/Path/To/Screen`)
+- `StartupScreen`: The path to the initial screen to load (format: `ProjectName/Path/To/Screen`). Script-driven applications set `StartupViewController` (and optionally `StartupRoute`) instead, as `samples/Weather` and `samples/Banking` do.
 
-### Optional Elements
+### Optional Properties
 
-#### ProjectReferenceLibrary
+#### WindowWidth / WindowHeight
+
+Initial window size in pixels:
+
+```lua
+WindowWidth = 1024
+WindowHeight = 768
+```
+
+#### ProjectReferences
 
 Define external project references and library paths:
 
-```xml
-<ProjectReferenceLibrary>
-  <ProjectReferenceItem Name="applications">applications</ProjectReferenceItem>
-  <ProjectReferenceItem Name="assets">assets</ProjectReferenceItem>
-  <ProjectReferenceItem Name="routing">lib/routing</ProjectReferenceItem>
-</ProjectReferenceLibrary>
+```lua
+ProjectReferences = {
+	{ Name = "views",  Path = "views" },
+	{ Name = "assets", Path = "assets" },
+	{ Name = "model",  Path = "model" },
+}
 ```
 
 #### ScreenLibrary
 
 Define screen libraries (can be external):
 
-```xml
-<ScreenLibrary Name="Screens" IsExternal="true"/>
+```lua
+ScreenLibrary = { IsExternal = true }
 ```
 
 #### ImageLibrary
 
 Define image libraries:
 
-```xml
-<ImageLibrary Name="Images" IsExternal="true"/>
+```lua
+ImageLibrary = { IsExternal = true }
 ```
 
-#### PropertyTypeLibrary
+#### PropertyTypes
 
 Define custom property types:
 
-```xml
-<PropertyTypeLibrary Name="Property Types">
-  <PropertyType Name="Speed" Type="float" Namespace="Custom"/>
-</PropertyTypeLibrary>
+```lua
+PropertyTypes = {
+	{ Name = "Title", Category = "NavigationBar", DataType = "String" },
+}
 ```
 
-#### MessageLibrary
+#### SystemMessages
 
 Define system message handlers:
 
-```xml
-<MessageLibrary Name="Messages">
-  <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-  <SystemMessage Message="WindowClosed">return</SystemMessage>
-  <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
-</MessageLibrary>
+```lua
+SystemMessages = {
+	{ Message = "KeyDown", Key = "q", Command = "return" },
+	{ Message = "WindowClosed", Command = "return" },
+	{ Message = "RequestReload", Command = "window:refresh()" },
+}
 ```
 
-**Note**: The attribute names are case-insensitive in ORCA. You may see both `Message`/`Key` (capital) and `message`/`key` (lowercase) in different samples. Both work correctly.
+**Note**: Field names are case-sensitive. A `SystemMessage` has the fields `Message`, `Key`, and `Command`.
+
+#### EnginePlugins
+
+Load engine plugins so their classes are available:
+
+```lua
+EnginePlugins = {
+	{ Name = "orca.UIKit" },
+}
+```
 
 ### Complete Examples
 
 #### Example 1: Minimal Project
 
-```xml
-<?xml version="1.0"?>
-<Project Name="Example" StartupScreen="Example/Screens/Application">
-  <ScreenLibrary Name="Screens" IsExternal="true"/>
-  <ImageLibrary Name="Images" IsExternal="true"/>
-  <MessageLibrary Name="Messages">
-    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-    <SystemMessage Message="WindowClosed">return</SystemMessage>
-  </MessageLibrary>
-</Project>
+```lua
+Name = "Example"
+StartupScreen = "Example/Screens/Application"
+WindowWidth = 1024
+WindowHeight = 768
+ScreenLibrary = { IsExternal = true }
+ImageLibrary = { IsExternal = true }
+SystemMessages = {
+	{ Message = "KeyDown", Key = "q", Command = "return" },
+	{ Message = "WindowClosed", Command = "return" },
+}
+EnginePlugins = {
+	{ Name = "orca.UIKit" },
+}
 ```
 
-#### Example 2: Complex Project with Libraries
+#### Example 2: Script Project with Project References
 
-```xml
-<?xml version="1.0"?>
-<Project Name="Banking" StartupScreen="Banking/App">
-  <ProjectReferenceLibrary>
-    <ProjectReferenceItem Name="applications">applications</ProjectReferenceItem>
-    <ProjectReferenceItem Name="assets">assets</ProjectReferenceItem>
-    <ProjectReferenceItem Name="appwrite">lib/appwrite</ProjectReferenceItem>
-    <ProjectReferenceItem Name="html">lib/html</ProjectReferenceItem>
-    <ProjectReferenceItem Name="routing">lib/routing</ProjectReferenceItem>
-    <ProjectReferenceItem Name="model">model</ProjectReferenceItem>
-    <ProjectReferenceItem Name="root">root</ProjectReferenceItem>
-    <ProjectReferenceItem Name="config">config</ProjectReferenceItem>
-    <ProjectReferenceItem Name="tailwind">tailwind</ProjectReferenceItem>
-  </ProjectReferenceLibrary>
-  <MessageLibrary Name="Messages">
-    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-    <SystemMessage Message="WindowClosed">return</SystemMessage>
-    <SystemMessage Message="RequestReload">window:refresh()</SystemMessage>
-  </MessageLibrary>
-</Project>
+This is `samples/Banking/package.lua`:
+
+```lua
+Name = "Banking"
+StartupViewController = "Banking/App"
+StartupRoute = "/"
+WindowWidth = 375
+WindowHeight = 812
+ProjectReferences = {
+	{ Name = "views",    Path = "views"       },
+	{ Name = "assets",   Path = "assets"      },
+	{ Name = "model",    Path = "model"       },
+	{ Name = "appwrite", Path = "lib/appwrite" },
+	{ Name = "config",   Path = "config"      },
+}
+SystemMessages = {
+	{ Message = "KeyDown",      Key = "q", Command = "return"             },
+	{ Message = "WindowClosed",            Command = "return"             },
+	{ Message = "RequestReload",           Command = "window:refresh()"   },
+}
 ```
 
 ## Building and Running
@@ -308,14 +332,14 @@ git submodule update --init --recursive
 make
 ```
 
-3. **Run your project**:
+3. **Run your project** by passing the project directory (the one containing `package.lua`):
 ```sh
-make run PROJECT=/path/to/your/project/package.xml
+build/bin/orca /path/to/your/project
 ```
 
-Or for a quick clean build and run:
+For example, to run the bundled sample:
 ```sh
-make andrun PROJECT=/path/to/your/project/package.xml
+build/bin/orca samples/Example
 ```
 
 ## Examples
@@ -325,21 +349,25 @@ make andrun PROJECT=/path/to/your/project/package.xml
 **Directory structure:**
 ```
 HelloWorld/
-├── package.xml
+├── package.lua
 └── Screens/
     └── Main.xml
 ```
 
-**package.xml:**
-```xml
-<?xml version="1.0"?>
-<Project Name="HelloWorld" StartupScreen="HelloWorld/Screens/Main">
-  <ScreenLibrary Name="Screens" IsExternal="true"/>
-  <MessageLibrary Name="Messages">
-    <SystemMessage Message="KeyDown" Key="q">return</SystemMessage>
-    <SystemMessage Message="WindowClosed">return</SystemMessage>
-  </MessageLibrary>
-</Project>
+**package.lua:**
+```lua
+Name = "HelloWorld"
+StartupScreen = "HelloWorld/Screens/Main"
+WindowWidth = 1024
+WindowHeight = 768
+ScreenLibrary = { IsExternal = true }
+SystemMessages = {
+	{ Message = "KeyDown", Key = "q", Command = "return" },
+	{ Message = "WindowClosed", Command = "return" },
+}
+EnginePlugins = {
+	{ Name = "orca.UIKit" },
+}
 ```
 
 **Screens/Main.xml:**
@@ -425,12 +453,12 @@ class MyApp extends Application
 - **Lua** is ideal for programmatic UI construction and complex logic
 - **MoonScript** offers a cleaner syntax for Lua and is great for application-level code
 - You can mix and match formats in the same project
-- Use the MessageLibrary to handle system events like key presses and window closing
-- External libraries can be referenced via ProjectReferenceLibrary for code organization
+- Use `SystemMessages` in `package.lua` to handle system events like key presses and window closing
+- External libraries can be referenced via `ProjectReferences` for code organization
 
 ## Common Issues
 
-- **Startup screen not found**: Ensure the StartupScreen path in package.xml matches your actual file structure
+- **Startup screen not found**: Ensure the `StartupScreen` path in `package.lua` matches your actual file structure
 - **Images not loading**: Check that image paths are relative to the project root (e.g., `ProjectName/Images/filename`)
 - **Build errors**: Make sure all dependencies are installed (see README.md)
 

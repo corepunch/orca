@@ -192,13 +192,13 @@ OBJ_AddComponentByName(lua_State* L, struct Object *pobj, lpcString_t className)
 
 static uint8_t find_tag(lpcString_t tag) {
   uint8_t i;
-  for (i = 0; i < MAX_TAGS; i++) {
+  for (i = 0; i < MAX_TAGS && *core.tags[i]; i++) {
     if (!strcmp(core.tags[i], tag)) {
       return i;
     }
   }
   if (i < MAX_TAGS) {
-    strcpy(core.tags[i], tag);
+    strncpy(core.tags[i], tag, sizeof(core.tags[i]) - 1);
     return i;
   }
   return 0xFF;
@@ -210,7 +210,7 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
   for (lpcString_t tag = strtok(tmp, ","); tag; tag = strtok(NULL, ",")) {
     uint8_t tag_id = find_tag(tag);
     if (tag_id != 0xFF) {
-      tags |= (1 << tag_id);
+      tags |= ((objectTags_t)1 << tag_id);
     }
   }
   free(tmp);

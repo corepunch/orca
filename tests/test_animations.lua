@@ -316,6 +316,37 @@ local function test_animation_player_reverse_start()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test 15: Scrubbing: setting CurrentTime on a stopped player applies the clip
+-- ---------------------------------------------------------------------------
+local function test_animation_player_scrub()
+  local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+  local node   = screen + ui.Node2D {}
+
+  node:addComponentByName("AnimationPlayer")
+
+  local clip = core.AnimationClip()
+  clip.StartTime = 0.0
+  clip.StopTime  = 1.0
+  local curve = clip + core.AnimationCurve()
+  curve.Property = "Opacity"
+  -- Two keyframes with zeroed values: enough to tell "curve applied" (0) from
+  -- "untouched" (1) without depending on how keyframe values are filled in.
+  curve.Keyframes = { { Time = 0.0 }, { Time = 1.0 } }
+  node.Clip = clip
+
+  node.Opacity = 1.0
+  test.expect(not node.Playing, "player is stopped")
+  test.expect_near(node.Opacity, 1.0, 0.001, "assigning a clip does not touch the target")
+
+  node.CurrentTime = 0.5
+  test.expect_near(node.Opacity, 0.0, 0.001, "setting CurrentTime applies the clip")
+  test.expect(not node.Playing, "scrubbing does not start playback")
+
+  node:removeFromParent()
+  print("PASS: test_animation_player_scrub")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_animation_player_initial_state()
@@ -332,5 +363,6 @@ test_animation_player_and_dotween_coexist()
 test_animation_player_duration_scale()
 test_animation_player_playback_mode()
 test_animation_player_reverse_start()
+test_animation_player_scrub()
 
 print("All animation tests passed.")

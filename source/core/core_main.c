@@ -540,7 +540,7 @@ static int f_parse_property(lua_State* L) {
   }
 }
 
-void core_AdvanceFrame(void) {
+ORCA_API void core_AdvanceFrame(void) {
   core.realtime = axGetMilliseconds();
   core.frame++;
 }

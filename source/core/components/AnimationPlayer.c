@@ -66,6 +66,43 @@ static float keyframe_evaluate(struct Keyframe const *kf, int n, float time, int
     return vec4_get(&kf[0].value, xyzw);
 }
 
+// Apply every AnimationCurve of the clip to its target at the given time.
+static void apply_clip(struct Object *hObject, struct AnimationClip *clip, float time) {
+    struct Object *clipObj = CMP_GetObject(clip);
+    if (!clipObj) return;
+    FOR_EACH_OBJECT(child, clipObj) {
+        struct AnimationCurve *curve = GetAnimationCurve(child);
+        if (!curve) continue;
+        if (!curve->Keyframes || curve->NumKeyframes == 0) continue;
+        if (!curve->Property || !curve->Property[0]) continue;
+
+        struct Object *target = (curve->Path && curve->Path[0])
+            ? OBJ_FindByPath(hObject, curve->Path)
+            : hObject;
+        if (!target) continue;
+
+        struct Property *property = OBJ_FindShortProperty(target, fnv1a32(curve->Property));
+        if (!property) continue;
+
+        float value[4];
+        for (int i = 0; i < 4; i++) {
+            value[i] = keyframe_evaluate(curve->Keyframes, curve->NumKeyframes, time, i);
+        }
+
+        if (PROP_GetType(property) == kDataTypeBool) {
+            float prev = keyframe_evaluate(
+                curve->Keyframes, curve->NumKeyframes, time - BOOL_EDGE_DELTA, 0);
+            // Treat a rising edge (prev < current) differently from steady/falling.
+            if (prev < value[0]) {
+                value[0] = (value[0] >= 1.0f) ? 1.0f : 0.0f;
+            } else {
+                value[0] = (value[0] > 0.0f) ? 1.0f : 0.0f;
+            }
+        }
+        PROP_SetValue(property, value);
+    }
+}
+
 // AnimationPlayer_Start
 HANDLER(AnimationPlayer, Object, Start) {
     struct AnimationClip *clip = pAnimationPlayer->Clip;
@@ -99,7 +136,8 @@ HANDLER(AnimationPlayer, Object, Animate) {
     // Initialise timing on the first frame after playback starts
     if (pAnimationPlayer->_prevRealtime == 0) {
         pAnimationPlayer->_prevRealtime = core.realtime;
-        return FALSE;
+        OBJ_RequestAnimate(hObject);   // keep the loop alive: this frame only primes the clock
+        return TRUE;
     }
 
     float dt = (float)(core.realtime - pAnimationPlayer->_prevRealtime) / 1000.0f;
@@ -107,44 +145,7 @@ HANDLER(AnimationPlayer, Object, Animate) {
     float scale = pAnimationPlayer->DurationScale > 0.0f ? pAnimationPlayer->DurationScale : 1.0f;
     pAnimationPlayer->CurrentTime += dt * pAnimationPlayer->Speed * scale;
 
-    // Evaluate all AnimationCurve child objects of the clip
-    struct Object *clipObj = CMP_GetObject(clip);
-    if (clipObj) {
-        FOR_EACH_OBJECT(child, clipObj) {
-            struct AnimationCurve *curve = GetAnimationCurve(child);
-            if (!curve) continue;
-            if (!curve->Keyframes || curve->NumKeyframes == 0) continue;
-            if (!curve->Property || !curve->Property[0]) continue;
-
-            struct Object *target = (curve->Path && curve->Path[0])
-                ? OBJ_FindByPath(hObject, curve->Path)
-                : hObject;
-            if (!target) continue;
-
-            struct Property *property = OBJ_FindShortProperty(target, fnv1a32(curve->Property));
-            if (!property) continue;
-
-            float value[4];
-            for (int i = 0; i < 4; i++) {
-                value[i] = keyframe_evaluate(
-                    curve->Keyframes, curve->NumKeyframes,
-                    pAnimationPlayer->CurrentTime, i);
-            }
-
-            if (PROP_GetType(property) == kDataTypeBool) {
-                float prev = keyframe_evaluate(
-                    curve->Keyframes, curve->NumKeyframes,
-                    pAnimationPlayer->CurrentTime - BOOL_EDGE_DELTA, 0);
-                // Treat a rising edge (prev < current) differently from steady/falling.
-                if (prev < value[0]) {
-                    value[0] = (value[0] >= 1.0f) ? 1.0f : 0.0f;
-                } else {
-                    value[0] = (value[0] > 0.0f) ? 1.0f : 0.0f;
-                }
-            }
-            PROP_SetValue(property, value);
-        }
-    }
+    apply_clip(hObject, clip, pAnimationPlayer->CurrentTime);
 
     // Check for end of clip
     if (clip->StopTime > 0.0f) {
@@ -192,6 +193,18 @@ HANDLER(AnimationPlayer, Object, Animate) {
     if (pAnimationPlayer->Playing) {
         OBJ_RequestAnimate(hObject);
     }
+    // Handled: the app loop answers with a paint, which is what advances core.realtime.
+    return TRUE;
+}
+
+// AnimationPlayer_PropertyChanged
+// Scrubbing: writing CurrentTime while the player is not playing poses the
+// targets at that time, so a clip can be driven by a value instead of the clock.
+HANDLER(AnimationPlayer, Object, PropertyChanged) {
+    if (!pPropertyChanged || !pPropertyChanged->Property) return FALSE;
+    if (PROP_GetLongIdentifier(pPropertyChanged->Property) != ID_AnimationPlayer_CurrentTime) return FALSE;
+    if (pAnimationPlayer->Playing || !pAnimationPlayer->Clip) return FALSE;
+    apply_clip(hObject, pAnimationPlayer->Clip, pAnimationPlayer->CurrentTime);
     return FALSE;
 }
 

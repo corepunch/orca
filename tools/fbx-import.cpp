@@ -9,19 +9,29 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wdocumentation-pedantic"
 #endif
 
+// FBX SDK 2020.2 misspells this member inside a template that is never
+// instantiated; recent clang rejects it anyway.
+#define mLefttChild mLeftChild
 #include <fbxsdk.h>
+#undef mLefttChild
 
 #if defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
 
 #include <stdio.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include <vector>
 
 #define MAKE_FOURCC(a, b, c, d) ((int)(d) << 24 | (int)(c) << 16 | (b) << 8 | (a))
 
 static int const IDMESHHEADER = MAKE_FOURCC('M', 'E', 'S', 'H');
+
+// Mirrors include/renderer.h, which this tool does not pull in.
+struct color32 { unsigned char r, g, b, a; };
 
 typedef uint32_t DRAWINDEX, *PDRAWINDEX;
 typedef uint32_t DRAWSURFATTR, *PSURFATTR;
@@ -120,7 +130,7 @@ static void API_Copy(const FbxColor &a, struct color32 &b) {
   color[0] = static_cast<uint8_t>(a[0] * 255);
   color[1] = static_cast<uint8_t>(a[1] * 255);
   color[2] = static_cast<uint8_t>(a[2] * 255);
-  color[3] = 255;
+  color[3] = static_cast<uint8_t>(a[3] * 255);
   memcpy(&b, color, 4);
 }
 
@@ -364,8 +374,9 @@ static void API_SaveModel(FbxMesh *mesh, FbxScene *scene, PDRAWSURF model, lpcSt
     fwrite(&IDMESHHEADER, sizeof(IDMESHHEADER), 1, fp);
     
     int num_uv = std::min(3, mesh->GetElementUVCount());
-    
-    uint32_t numAttributes = 4 + num_uv;
+    bool has_color = mesh->GetElementVertexColorCount() > 0;
+
+    uint32_t numAttributes = 4 + num_uv + (has_color ? 1 : 0);
 
     fwrite(&model->numVertices, sizeof(model->numVertices), 1, fp);
     fwrite(&model->numIndices, sizeof(model->numIndices), 1, fp);
@@ -396,6 +407,12 @@ static void API_SaveModel(FbxMesh *mesh, FbxScene *scene, PDRAWSURF model, lpcSt
     writeint(VERTEX_SEMANTIC_TANGENT, fp);
     writeint(VERTEX_ATTR_DATATYPE_FLOAT32, fp);
     for (int i = 0; i < model->numVertices; writevec3(&model->vertices[i++].tangent, fp, 1, axis));
+
+    if (has_color) {
+      writeint(VERTEX_SEMANTIC_COLOR, fp);
+      writeint(VERTEX_ATTR_DATATYPE_UINT8 | VERTEX_ATTR_DATATYPE_NORMALIZED, fp);
+      for (int i = 0; i < model->numVertices; fwrite(&model->vertices[i++].color, sizeof(struct color32), 1, fp));
+    }
 
     for (int j = 0; j < num_uv; j++) {
       writeint(VERTEX_SEMANTIC_TEXCOORD0+j, fp);
@@ -440,7 +457,7 @@ static void ExportMesh(FbxMesh *mesh, lpcString_t  directory) {
   FbxAMatrix rotationMatrix;
   rotationMatrix.SetR(geomTrans.GetR()); // Extract just rotation
 
-  for (int i = 0, v = 0; i < numPolygons; i++, v += mesh->GetPolygonSize(i)) {
+  for (int i = 0, v = 0; i < numPolygons; v += mesh->GetPolygonSize(i), i++) {
     std::vector<DRAWINDEX> *ptrIndices = &outIndices;
     if (materials) {
       auto k = materials->GetIndexArray().GetAt(i);
@@ -460,6 +477,7 @@ static void ExportMesh(FbxMesh *mesh, lpcString_t  directory) {
     for (int k = 0; k < 3; k++) {
       DRAWVERT vtx;
       uint32_t index;
+      memset(&vtx, 0, sizeof(vtx));
       auto   index0 = v + k;
       auto   index1 = mesh->GetPolygonVertex(i, k);
 
@@ -549,25 +567,19 @@ void ConvertCollada(lpcString_t  input, lpcString_t  output) {}
 
 int main(int argc, lpcString_t  argv[]) {
   if (argc < 3) {
-    Con_Error("fbxtool usage:");
-    Con_Error("fbxtool [-options] [input] [output]");
-    return 0;
+    fprintf(stderr, "usage: orca-fbx <input.fbx> <output-directory>\n"
+                    "Writes one <node name>.mesh per mesh node into the directory.\n");
+    return 1;
   }
   lpcString_t input = argv[1];
   lpcString_t output = argv[2];
-  
-//  input = "/Users/igor/Developer/titanium-ui/Titanium/MB/03_Contexts/01_Classic/00_Resources/Views/ArtRing/3D/230616_MB_CC_ART_Ring_+_Marker v2.fbx";
-//  output = "/Users/igor/Developer/titanium-ui-orca/Titanium/MB/03_Contexts/01_Classic/00_Resources/Views/ArtRing/3D/230616_MB_CC_ART_Ring_+_Marker v2";
+  int status = 0;
 
-//  input = "/Users/igor/Developer/titanium-ui/Titanium/MB/03_Contexts/01_Classic/00_Resources/Views/Tube/3D/MB_CC_Tube_Shine.fbx";
-//  output = "/Users/igor/Developer/titanium-ui-orca/Titanium/MB/03_Contexts/01_Classic/00_Resources/Views/Tube/3D/MB_CC_Tube_Shine";
+  if (mkdir(output, 0755) != 0 && errno != EEXIST) {
+    Con_Error("Can not create directory %s", output);
+    return 1;
+  }
 
-//  input = "/Users/igor/Developer/titanium-ui/Titanium/MB/02_GlobalElements/MB_Startup/3D/MB_Star.fbx";
-//  output = "/Users/igor/Developer/titanium-ui-orca/Titanium/MB/02_GlobalElements/MB_Startup/3D/MB_Star";
-
-  input = "/Users/igor/Developer/titanium-ui/Titanium/MB/02_GlobalElements/MB_Startup/3D/light_shadow.fbx";
-  output = "/Users/igor/Developer/titanium-ui-orca/Titanium/MB/02_GlobalElements/MB_Startup/3D/light_shadow";
-  
   FbxManager    *manager    = FbxManager::Create();
   FbxImporter   *importer   = FbxImporter::Create(manager, "");
   FbxIOSettings *iosettings = FbxIOSettings::Create(manager, IOSROOT);
@@ -590,16 +602,18 @@ int main(int argc, lpcString_t  argv[]) {
     } else {
       FbxString error = importer->GetStatus().GetErrorString();
       FBXSDK_printf("FbxImporter::Import(): %s\n\n", error.Buffer());
+      status = 1;
     }
     scene->Destroy();
   } else {
     FbxString error = importer->GetStatus().GetErrorString();
     FBXSDK_printf("FbxImporter::Initialize(): %s\n\n", error.Buffer());
+    status = 1;
   }
 
   iosettings->Destroy();
   importer->Destroy();
   manager->Destroy();
 
-  return 0;
+  return status;
 }

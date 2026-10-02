@@ -797,6 +797,20 @@ HANDLER(Shader, Object, Start) {
   for (struct Property *p=OBJ_GetProperties(hObject);p;p=PROP_GetNext(p)){
     struct uniform_def ud = {0};
     lpcString_t local = PROP_GetName(p);
+    switch (PROP_GetLongIdentifier(p)) {
+      case ID_Shader_BlendMode:
+        desc.UniversalTarget.HasBlendMode = TRUE;
+        desc.UniversalTarget.BlendMode = (enum blend_mode)pShader->BlendMode;
+        continue;
+      case ID_Shader_DepthTestFunction:
+        desc.UniversalTarget.HasDepthTestFunction = TRUE;
+        desc.UniversalTarget.DepthTestFunction = (enum compare_func)pShader->DepthTestFunction;
+        continue;
+      case ID_Shader_DepthWriteEnabled:
+        desc.UniversalTarget.HasDepthWriteEnabled = TRUE;
+        desc.UniversalTarget.DepthWriteEnabled = pShader->DepthWriteEnabled;
+        continue;
+    }
     if (strrchr(local, '.')) {
       local = strrchr(local, '.') + 1;
     }

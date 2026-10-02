@@ -58,7 +58,10 @@ OBJ_GetUniforms(struct Object *object, struct uniform* pUniforms)
             pUniforms->Type = UT_FLOAT_VEC4;
             PROP_CopyValue(property, pUniforms->Value);
             break;
+          default:
+            continue;
         }
+        break;
       case kDataTypeInt:
       case kDataTypeBool:
       case kDataTypeEnum:
