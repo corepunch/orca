@@ -87,7 +87,9 @@ HANDLER(Viewport3D, Node2D, ForegroundContent)
   lpcString_t camera = Viewport3D_camera(hObject);
   bool_t camalias = camera && *camera == '#';
   struct rect viewrect = _Node2D_GetRect(GetNode2D(hObject));
-  struct rect scrnrect = _Node2D_GetRect(GetNode2D(screen));
+  // Screen is a host object without a Node2D; fall back to the viewport's own rect.
+  struct Node2D *screen2D = screen ? GetNode2D(screen) : NULL;
+  struct rect scrnrect = screen2D ? _Node2D_GetRect(screen2D) : viewrect;
 
   // struct ViewEntity entity = {
   //   .type = ET_VIEWPORT,

@@ -689,6 +689,7 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
       <handles>
         <handle message="Object.Start"/>
         <handle message="Object.Animate"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="AnimationPlayer.Play"/>
         <handle message="AnimationPlayer.Resume"/>
         <handle message="AnimationPlayer.Stop"/>
@@ -700,7 +701,7 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
         <property name="Playing" type="bool">Whether the animation is currently advancing each frame</property>
         <property name="Looping" type="bool">If true, the animation restarts from StartTime when it reaches StopTime</property>
         <property name="Speed" type="float" default="1.0">Playback speed multiplier (1.0 = normal speed)</property>
-        <property name="CurrentTime" type="float">Current playback position within the animation in seconds</property>
+        <property name="CurrentTime" type="float">Current playback position within the animation in seconds. Setting it while the player is not playing applies the clip at that time (scrubbing)</property>
         <property name="AutoplayEnabled" type="bool">Enables or disables automatic playback on initialization.</property>
         <property name="RelativePlayback" type="bool">When true, playback is relative to the current state rather than starting from an absolute base state.</property>
         <property name="RestoreOriginalValuesAfterPlayback" type="bool">Restores the original property values after the animation ends.</property>

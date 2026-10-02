@@ -211,6 +211,7 @@ ORCA_API BOOL    UI_GetObjectProperty(struct Object *, lpcString_t, LPPROPDEF);
 ORCA_API BOOL    UI_GetProperty(DWORD, LPPROPDEF);
 ORCA_API void    UI_RefreshProperty(DWORD);
 ORCA_API TIME    UI_GetTime(void);
+ORCA_API void    core_AdvanceFrame(void);
 ORCA_API lpcString_t UI_LocalizeString(lpcString_t, LOCALE_TYPE);
 ORCA_API HRESULT UI_Save(lpcString_t);
 ORCA_API BOOL    UI_GetObjectItem(struct Object *, LPOBJDEF);

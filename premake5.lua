@@ -376,9 +376,11 @@ project "orca-fbx"
     targetdir "build/bin"
     language "C++"
     files {
-        "source/tools/fbx-import.cpp"
+        "tools/fbx-import.cpp"
     }
     includedirs {
+        ".",
+        "generated",
         "/Applications/Autodesk/FBX SDK/2020.2/include"
     }
     libdirs {
@@ -387,7 +389,11 @@ project "orca-fbx"
     links {
         "fbxsdk"
     }
-    
+    -- The static FBX SDK depends on these system libraries.
+    filter "system:macosx"
+        links { "CoreFoundation.framework", "iconv", "xml2", "z" }
+    filter {}
+
 -- Helper targets
 newaction {
     trigger = "run",

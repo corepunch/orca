@@ -25,9 +25,12 @@ HANDLER(PrefabView3D, Object, PropertyChanged)
 HANDLER(PrefabView3D, Node, LoadView)
 {
   if (pPrefabView3D->Prefab && *pPrefabView3D->Prefab) {
+    uint32_t const prefab = fnv1a32(pPrefabView3D->Prefab);
+    if (pPrefabView3D->_loaded == prefab) return TRUE;
     OBJ_Clear(hObject);
     struct Object *loaded = FS_LoadObject(pPrefabView3D->Prefab);
     if (loaded) {
+      pPrefabView3D->_loaded = prefab;
       OBJ_AddChild(hObject, loaded);
     } else {
       Con_Error("Failed to load prefab '%s'", pPrefabView3D->Prefab);

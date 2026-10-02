@@ -131,11 +131,11 @@
       <summary>3D camera for scene viewing and projection configuration</summary>
       <details>Defines the viewpoint and projection parameters for rendering 3D scenes. Supports both perspective and orthographic projections with configurable field of view, clipping planes, and stereo rendering.</details>
       <properties>
-        <property name="Fov" type="float">Field of view angle in degrees (60-90 typical for perspective cameras)</property>
+        <property name="Fov" type="float" default="60">Field of view angle in degrees (60-90 typical for perspective cameras)</property>
         <property name="FovType" type="FovType">Whether field of view is measured horizontally or vertically</property>
         <property name="ProjectionType" type="ProjectionType">Perspective or orthographic projection mode</property>
-        <property name="ZNear" type="float">Near clipping plane distance (objects closer than this are not rendered)</property>
-        <property name="ZFar" type="float">Far clipping plane distance (objects farther than this are not rendered)</property>
+        <property name="ZNear" type="float" default="0.1">Near clipping plane distance (objects closer than this are not rendered)</property>
+        <property name="ZFar" type="float" default="1000">Far clipping plane distance (objects farther than this are not rendered)</property>
         <property name="EyeSeparation" type="float">Distance between left and right eyes for stereoscopic rendering</property>
         <property name="FocalDistance" type="float">Focus distance for depth of field and stereo convergence</property>
         <property name="OrthogonalPlaneHeight" type="float">Height of viewing volume for orthographic projection</property>
@@ -182,6 +182,9 @@
       <properties>
         <property name="Prefab" type="string">Path to prefab asset file to instantiate</property>
       </properties>
+      <fields>
+        <field name="_loaded" type="uint">Hash of the prefab path currently instantiated</field>
+      </fields>
     </class>
     <class name="RenderPass" parent="Node">
       <summary>Base class for render pass components in the rendering pipeline</summary>
@@ -246,6 +249,9 @@
         <handle message="Node3D.Render"/>
         <handle message="Object.Create"/>
       </handles>
+      <properties>
+        <property name="Color" type="color">Text colour (white when unset)</property>
+      </properties>
       <fields>
         <field name="_node3D" type="Node3D" pointer="true"/>
       </fields>

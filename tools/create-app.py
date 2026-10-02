@@ -32,60 +32,72 @@ def ask_choice(q, choices, default=None):
 		print(f"  Please enter one of: {', '.join(choices)}")
 
 # ---------------------------------------------------------------------------
-# package.xml generators
+# package.lua generators
+#
+# The runtime loads only <project>/package.lua. It is a declarative Lua chunk
+# whose global assignments set properties of the Project object (see the
+# Project class in source/filesystem/filesystem.cgen).
 # ---------------------------------------------------------------------------
 
-def _system_messages(parent):
-	msgs = ET.SubElement(parent, "MessageLibrary", {"Name": "Messages"})
-	for attrs, text in [
-		({"Message": "KeyDown", "Key": "q"}, "return"),
-		({"Message": "WindowClosed"}, "return"),
-		({"Message": "RequestReload"}, "window:refresh()"),
-	]:
-		ET.SubElement(msgs, "SystemMessage", attrs).text = text
+SYSTEM_MESSAGES = [
+	{"Message": "KeyDown", "Key": "q", "Command": "return"},
+	{"Message": "WindowClosed", "Command": "return"},
+	{"Message": "RequestReload", "Command": "window:refresh()"},
+]
 
-def package_xml_script(name, flags, width, height):
-	"""package.xml for moonscript/lua projects (ProjectReferenceLibrary style)."""
-	root = ET.Element("Project", {
-		"Name": name,
-		"StartupScreen": f"{name}/App",
-		"Width": str(width),
-		"Height": str(height),
-	})
-	refs = ET.SubElement(root, "ProjectReferenceLibrary")
-	for k, v in {
+def _lua_value(v):
+	if isinstance(v, bool):
+		return "true" if v else "false"
+	if isinstance(v, int):
+		return str(v)
+	s = str(v).replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+	return f'"{s}"'
+
+def _lua_table(fields):
+	return "{ " + ", ".join(f"{k} = {_lua_value(v)}" for k, v in fields.items()) + " }"
+
+def _lua_array(name, items):
+	lines = [f"{name} = {{"]
+	lines += [f"\t{_lua_table(item)}," for item in items]
+	lines.append("}")
+	return lines
+
+def package_lua_script(name, flags, width, height):
+	"""package.lua for moonscript/lua projects (ProjectReferences style)."""
+	refs = {
 		"applications": "applications",
 		"assets": "assets",
 		"routing": "lib/routing",
 		"model": "model",
 		"config": "config",
-	}.items():
-		ET.SubElement(refs, "ProjectReferenceItem", {"Name": k}).text = v
+	}
 	for k in flags:
 		if flags[k]:
-			ET.SubElement(refs, "ProjectReferenceItem", {"Name": k}).text = f"lib/{k}"
-	ET.SubElement(root, "FontLibrary", {"Name": "fonts"})
-	_system_messages(root)
-	ET.indent(root, space="  ")
-	return ET.ElementTree(root)
+			refs[k] = f"lib/{k}"
+	lines = [
+		f"Name = {_lua_value(name)}",
+		f"StartupScreen = {_lua_value(f'{name}/App')}",
+		f"WindowWidth = {_lua_value(width)}",
+		f"WindowHeight = {_lua_value(height)}",
+	]
+	lines += _lua_array("ProjectReferences", [{"Name": k, "Path": v} for k, v in refs.items()])
+	lines.append(f"FontLibrary = {_lua_table({'Name': 'fonts'})}")
+	lines += _lua_array("SystemMessages", SYSTEM_MESSAGES)
+	return "\n".join(lines) + "\n"
 
-def package_xml_xml(name, width, height):
-	"""package.xml for xml projects (ScreenLibrary style, like Example/Volcano)."""
-	root = ET.Element("Project", {
-		"Name": name,
-		"StartupScreen": f"{name}/Screens/App",
-	})
-	ET.SubElement(root, "ScreenLibrary", {"Name": "Screens", "IsExternal": "true"})
-	ET.SubElement(root, "FontLibrary", {"Name": "fonts"})
-	sysmsg = ET.SubElement(root, "Project.SystemMessages")
-	for attrs in [
-		{"Message": "KeyDown", "Key": "q", "Command": "return"},
-		{"Message": "WindowClosed", "Command": "return"},
-		{"Message": "RequestReload", "Command": "window:refresh()"},
-	]:
-		ET.SubElement(sysmsg, "SystemMessage", attrs)
-	ET.indent(root, space="  ")
-	return ET.ElementTree(root)
+def package_lua_xml(name, width, height):
+	"""package.lua for xml projects (ScreenLibrary style, like Example/Adventure)."""
+	lines = [
+		f"Name = {_lua_value(name)}",
+		f"StartupScreen = {_lua_value(f'{name}/Screens/App')}",
+		f"WindowWidth = {_lua_value(width)}",
+		f"WindowHeight = {_lua_value(height)}",
+		f"ScreenLibrary = {_lua_table({'IsExternal': True})}",
+		f"FontLibrary = {_lua_table({'Name': 'fonts'})}",
+	]
+	lines += _lua_array("SystemMessages", SYSTEM_MESSAGES)
+	lines += _lua_array("EnginePlugins", [{"Name": "orca.UIKit"}])
+	return "\n".join(lines) + "\n"
 
 # ---------------------------------------------------------------------------
 # File generators: moonscript
@@ -290,16 +302,14 @@ def main():
 
 	if language == "moonscript":
 		create_moonscript(root_dir, name, flags)
-		package_xml_script(name, flags, width, height).write(
-			root_dir / "package.xml", encoding="utf-8", xml_declaration=True)
+		package = package_lua_script(name, flags, width, height)
 	elif language == "lua":
 		create_lua(root_dir, name, flags)
-		package_xml_script(name, flags, width, height).write(
-			root_dir / "package.xml", encoding="utf-8", xml_declaration=True)
+		package = package_lua_script(name, flags, width, height)
 	elif language == "xml":
 		create_xml(root_dir, name, width, height)
-		package_xml_xml(name, width, height).write(
-			root_dir / "package.xml", encoding="utf-8", xml_declaration=True)
+		package = package_lua_xml(name, width, height)
+	(root_dir / "package.lua").write_text(package, encoding="utf-8")
 
 	active_libs = [k for k, v in flags.items() if v]
 	summary = f"language={language}"
