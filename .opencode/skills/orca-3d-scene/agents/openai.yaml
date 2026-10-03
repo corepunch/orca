@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA 3D Scene"
+  short_description: "Set up, drive and debug ORCA 3D scene projects"
+  default_prompt: "Use $orca-3d-scene to create or debug an ORCA project with a SceneKit scene: package.lua, Viewport3D/Scene/Camera XML, shaders and materials, animation players bound to input values, and verifying the running app."
