@@ -31,9 +31,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
-            libpng-dev \
             libfreetype6-dev \
-            libjpeg-dev \
             liblua5.4-dev \
             libxml2-dev \
             liblz4-dev \

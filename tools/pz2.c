@@ -1,7 +1,6 @@
 #include <dirent.h>
 #include <errno.h>
 #include <include/orca.h>
-#include <libpng16/png.h>
 #include <sys/stat.h>
 
 #include <include/api.h>

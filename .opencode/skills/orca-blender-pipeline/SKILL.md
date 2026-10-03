@@ -16,8 +16,7 @@ running). This skill is about what the Blender file must look like.
 ## Setup
 
 ```bash
-brew install lz4 freetype jpeg libpng          # engine deps on macOS
-export PKG_CONFIG_PATH=/opt/homebrew/opt/jpeg/lib/pkgconfig:$PKG_CONFIG_PATH
+brew install lz4 freetype                     # engine deps on macOS
 make                                           # engine
 make orca-fbx                                  # needs /Applications/Autodesk/FBX SDK/2020.2
 ```

@@ -11,7 +11,7 @@
 #   emmake make wasm-deps
 #
 # Libraries available as Emscripten ports (no manual build needed):
-#   zlib, libpng, libjpeg, freetype  -- provided via -sUSE_* flags below.
+#   zlib, freetype  -- provided via -sUSE_* flags below.
 #
 # Usage:
 #   make webgl                          # build with share/ assets only
@@ -55,11 +55,11 @@ WEBGL_PLUGIN_SRCS = $(foreach p, $(WEBGL_PLUGINS), $(wildcard $(PLUGINDIR)/$(p)/
 WEBGL_PLUGINS_H   = $(WEBGL_DIR)/plugins_luaopen.h
 
 WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
-                -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
+                -sUSE_ZLIB=1 -sUSE_FREETYPE=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sFETCH=1
 
-WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
+WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_FREETYPE=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sINITIAL_MEMORY=64MB \
                 -sEXPORTED_RUNTIME_METHODS='["ccall","cwrap","FS"]' \

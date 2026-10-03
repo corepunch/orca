@@ -11,9 +11,7 @@ Before installing ORCA via LuaRocks, ensure you have the required system librari
 **Ubuntu/Debian:**
 ```bash
 sudo apt update && sudo apt install -y \
-    libpng-dev \
     libfreetype6-dev \
-    libjpeg-dev \
     liblua5.4-dev \
     libxml2-dev \
     liblz4-dev \
@@ -27,9 +25,7 @@ sudo apt update && sudo apt install -y \
 **Fedora:**
 ```bash
 sudo dnf install -y \
-    libpng-devel \
     freetype-devel \
-    libjpeg-turbo-devel \
     lua-devel \
     libxml2-devel \
     lz4-devel \
@@ -39,7 +35,7 @@ sudo dnf install -y \
 
 **macOS:**
 ```bash
-brew install libpng freetype jpeg-turbo lua libxml2 lz4 zlib curl pkg-config
+brew install freetype lua libxml2 lz4 zlib curl pkg-config
 ```
 
 ### Installing from Source
