@@ -44,8 +44,7 @@
 		781CA71F2E15370700FFCFD9 /* r_texture.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DB2AF3CC4E00AAAE53 /* r_texture.c */; };
 		781CA7202E15370700FFCFD9 /* r_image_astc.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136D52AF3CC4E00AAAE53 /* r_image_astc.c */; };
 		781CA7212E15370700FFCFD9 /* r_image_dds.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136D12AF3CC4E00AAAE53 /* r_image_dds.c */; };
-		781CA7222E15370700FFCFD9 /* r_image_jpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DE2AF3CC4E00AAAE53 /* r_image_jpeg.c */; };
-		781CA7232E15370700FFCFD9 /* r_image_png.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136E12AF3CC4E00AAAE53 /* r_image_png.c */; };
+		781CA7222E15370700FFCFD9 /* r_image_stb.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DE2AF3CC4E00AAAE53 /* r_image_stb.c */; };
 		781CA7242E15370700FFCFD9 /* r_image_pvr.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */; };
 		781CA7292E15374000FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		781CA7B02E20000000AABBCC /* VectorView.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7B12E20000000AABBCC /* VectorView.c */; };
@@ -600,9 +599,8 @@
 		78B136DB2AF3CC4E00AAAE53 /* r_texture.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_texture.c; sourceTree = "<group>"; };
 		78B136DC2AF3CC4E00AAAE53 /* r_model.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_model.c; sourceTree = "<group>"; };
 		78B136DD2AF3CC4E00AAAE53 /* r_font.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_font.c; sourceTree = "<group>"; };
-		78B136DE2AF3CC4E00AAAE53 /* r_image_jpeg.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_image_jpeg.c; sourceTree = "<group>"; };
+		78B136DE2AF3CC4E00AAAE53 /* r_image_stb.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_image_stb.c; sourceTree = "<group>"; };
 		78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_image_pvr.c; sourceTree = "<group>"; };
-		78B136E12AF3CC4E00AAAE53 /* r_image_png.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_image_png.c; sourceTree = "<group>"; };
 		78B136E22AF3CC4E00AAAE53 /* r_state.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = r_state.c; sourceTree = "<group>"; };
 		78B136F42AF3CC4E00AAAE53 /* filesystem.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = filesystem.c; sourceTree = "<group>"; };
 		78B137452AF3CC4E00AAAE53 /* shared.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = shared.h; sourceTree = "<group>"; };
@@ -1269,8 +1267,7 @@
 				78E4A9D82E9549F200E3A503 /* r_gradient_texture.c */,
 				78B136D52AF3CC4E00AAAE53 /* r_image_astc.c */,
 				78B136D12AF3CC4E00AAAE53 /* r_image_dds.c */,
-				78B136DE2AF3CC4E00AAAE53 /* r_image_jpeg.c */,
-				78B136E12AF3CC4E00AAAE53 /* r_image_png.c */,
+				78B136DE2AF3CC4E00AAAE53 /* r_image_stb.c */,
 				78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */,
 				78E4A9D42E9548B800E3A503 /* r_render_texture.c */,
 				78B136DB2AF3CC4E00AAAE53 /* r_texture.c */,
@@ -1851,8 +1848,7 @@
 				781CA71F2E15370700FFCFD9 /* r_texture.c in Sources */,
 				781CA7202E15370700FFCFD9 /* r_image_astc.c in Sources */,
 				781CA7212E15370700FFCFD9 /* r_image_dds.c in Sources */,
-				781CA7222E15370700FFCFD9 /* r_image_jpeg.c in Sources */,
-				781CA7232E15370700FFCFD9 /* r_image_png.c in Sources */,
+				781CA7222E15370700FFCFD9 /* r_image_stb.c in Sources */,
 				781CA7242E15370700FFCFD9 /* r_image_pvr.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2212,7 +2208,6 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				LIBRARY_SEARCH_PATHS = (
 					/opt/homebrew/lib,
-					/opt/homebrew/opt/jpeg/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				OTHER_LDFLAGS = "$(inherited)";
@@ -2234,7 +2229,6 @@
 				GCC_WARN_UNUSED_VARIABLE = NO;
 				LIBRARY_SEARCH_PATHS = (
 					/opt/homebrew/lib,
-					/opt/homebrew/opt/jpeg/lib,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				ONLY_ACTIVE_ARCH = YES;
@@ -2260,8 +2254,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				OTHER_LDFLAGS = (
 					"-llua",
-					"-ljpeg",
-					"-lpng",
 					"-lfreetype",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2283,8 +2275,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				OTHER_LDFLAGS = (
 					"-llua",
-					"-ljpeg",
-					"-lpng",
 					"-lfreetype",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2689,7 +2679,6 @@
 					"$(SRCROOT)/generated",
 					/opt/homebrew/include,
 					/opt/homebrew/include/freetype2,
-					/opt/homebrew/opt/jpeg/include,
 				);
 				LIBRARY_SEARCH_PATHS = /opt/homebrew/lib;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
@@ -2760,7 +2749,6 @@
 					"$(SRCROOT)/generated",
 					/opt/homebrew/include,
 					/opt/homebrew/include/freetype2,
-					/opt/homebrew/opt/jpeg/include,
 				);
 				LIBRARY_SEARCH_PATHS = /opt/homebrew/lib;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
