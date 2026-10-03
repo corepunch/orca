@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_BladeCyan" Shader="ClusterDemo/Shaders/IC_Surface" BlendMode="Opaque" Uniform.Tint="#090C10" Uniform.Accent="#23C7FF" Uniform.Reflectance="0.08" Uniform.Metallic="2.4" Uniform.Roughness="0.14" Uniform.Level="0.712" Uniform.Spill="1.6" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio" />

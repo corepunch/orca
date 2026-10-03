@@ -29,6 +29,9 @@ static lpcString_t uniforms[kShaderUniform_Count] = {
   "u_bboxMin",                      // kShaderUniform_BBoxMin
   "u_bboxMax",                      // kShaderUniform_BBoxMax
   "u_lights",                       // kShaderUniform_Lights
+  "u_sceneColor",                   // kShaderUniform_SceneColor
+  "u_sceneDepth",                   // kShaderUniform_SceneDepth
+  "u_sceneTextureSize",             // kShaderUniform_SceneTextureSize
 };
 
 #define VERT_FOFS(x) &((DRAWVERT*)NULL)->x
@@ -478,6 +481,10 @@ Shader_BindConstants(struct shader const* shader,
       *value = e->material.opacity;
     }
     struct Texture *ptr = *(struct Texture **)value;
+		// Reflection snapshots occupy units 3 and 4, after the legacy builtins.
+		if (nextunit == 3 && (shader->uniforms[kShaderUniform_SceneColor] >= 0 ||
+		                     shader->uniforms[kShaderUniform_SceneDepth] >= 0))
+			nextunit = 5;
 		// Don't set values that were already set with builtins
 		if (!is_set && desc->builtin)
 			continue;
@@ -649,6 +656,19 @@ Shader_BindMaterial(struct shader const* shader,
                -view->viewMatrix.v[13],
                -view->viewMatrix.v[14]);
         break;
+      case kShaderUniform_SceneColor:
+        Texture_Bind(view->sceneCapture ? view->sceneCapture->Color : tr.textures[TX_WHITE],
+                     GL_TEXTURE_2D, location, 3);
+        break;
+      case kShaderUniform_SceneDepth:
+        Texture_Bind(view->sceneCapture ? view->sceneCapture->Depth : tr.textures[TX_WHITE],
+                     GL_TEXTURE_2D, location, 4);
+        break;
+      case kShaderUniform_SceneTextureSize:
+        R_Call(glUniform2f, location,
+               view->sceneCapture ? view->sceneCapture->Color->Width : 0,
+               view->sceneCapture ? view->sceneCapture->Color->Height : 0);
+        break;
       case kShaderUniform_Radius:
         R_Call(glUniform4f, location,
                MAX(EPSILON, MIN(radiusLimit, ent->radius.x + ent->borderOffset)),
@@ -819,6 +839,9 @@ HANDLER(Shader, Object, Start) {
       case kDataTypeObject:
         if (!strcmp(PROP_GetUserData(p), "Texture")) {
           ud.Type = UT_SAMPLER_2D;
+          break;
+        } else if (!strcmp(PROP_GetUserData(p), "CubeMapTexture")) {
+          ud.Type = UT_SAMPLER_CUBE;
           break;
         } else {
           continue;

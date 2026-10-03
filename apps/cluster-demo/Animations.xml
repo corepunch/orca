@@ -1,15 +1,177 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Library>
+  <AnimationClip Name="Energy_Flow" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Cool_DotGrid.Phase" Path="../../IC_Root/Cool/Cool_Floor/Cool_DotGrid" Property="Phase">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="6.28319 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_Road.Phase" Path="../../IC_Root/Classic/Classic_Center/Classic_Road" Property="Phase">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="6.28319 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
   <AnimationClip Name="Gauge_Boost" Mode="PlayOnce" StartTime="0" StopTime="1">
-    <AnimationCurve Name="Vitals_BOOST_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_BOOST_Bar" Property="Level">
+    <AnimationCurve Name="Cool_Left_BarCore.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Card/Cool_Left_BarCore" Property="Level">
       <AnimationCurve.Keyframes>
         <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
         <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
       </AnimationCurve.Keyframes>
     </AnimationCurve>
-  </AnimationClip>
-  <AnimationClip Name="Gauge_Oil" Mode="PlayOnce" StartTime="0" StopTime="1">
-    <AnimationCurve Name="Vitals_OIL_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_OIL_Bar" Property="Level">
+    <AnimationCurve Name="Cool_Left_Bar.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Card/Cool_Left_Bar" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Value.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Card/Cool_Left_Value" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_3.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_5.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_0.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_0" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_2.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_1.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Blade_4.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Blade_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_3.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_2.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_5.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_4.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_1.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_0.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_0" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_3.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_3" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_2.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_2" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_5.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_5" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_4.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_4" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_1.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_1" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Neon_0.Bloom" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Neon_0" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_2.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_4.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_3.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_1.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_5.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Left_Core_0.Level" Path="../../IC_Root/Cool/Cool_Left/Cool_Left_Core_0" Property="Level">
       <AnimationCurve.Keyframes>
         <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
         <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
@@ -17,21 +179,281 @@
     </AnimationCurve>
   </AnimationClip>
   <AnimationClip Name="Gauge_Range" Mode="PlayOnce" StartTime="0" StopTime="1">
-    <AnimationCurve Name="Vitals_RangeLevel.LayoutTransformScale" Path="../../IC_Root/IC_Panel_Vitals/Vitals_RangeLevel" Property="LayoutTransformScale">
+    <AnimationCurve Name="Classic_RangeValue.Level" Path="../../IC_Root/Classic/Classic_Center/Classic_RangeValue" Property="Level">
       <AnimationCurve.Keyframes>
-        <Keyframe Time="0" Value="0 1 1 0" TangentMode="1" />
-        <Keyframe Time="1" Value="1 1 1 0" TangentMode="1" />
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_RangeValue.Level" Path="../../IC_Root/Cool/Cool_Floor/Cool_RangeValue" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
       </AnimationCurve.Keyframes>
     </AnimationCurve>
   </AnimationClip>
   <AnimationClip Name="Gauge_Rev" Mode="PlayOnce" StartTime="0" StopTime="1">
-    <AnimationCurve Name="Rev_Needle.LayoutTransformRotation" Path="../../IC_Root/IC_Panel_Rev/Rev_Needle" Property="LayoutTransformRotation">
+    <AnimationCurve Name="Classic_RPM_Needle.LayoutTransformRotation" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_Needle" Property="LayoutTransformRotation">
       <AnimationCurve.Keyframes>
         <Keyframe Time="0" Value="0 225.00001 0 0" TangentMode="1" />
         <Keyframe Time="1" Value="0 -45 0 0" TangentMode="1" />
       </AnimationCurve.Keyframes>
     </AnimationCurve>
-    <AnimationCurve Name="Rev_Sweep.Level" Path="../../IC_Root/IC_Panel_Rev/Rev_Sweep" Property="Level">
+    <AnimationCurve Name="Classic_RPM_Ring.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_Ring" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_RPM_Sweep.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_Sweep" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_BarCore.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Card/Cool_Right_BarCore" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Bar.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Card/Cool_Right_Bar" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Value.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Card/Cool_Right_Value" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_RPM_Hub.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_Needle/Classic_RPM_Hub" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_RPM_HubRing2.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_HubRing2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_RPM_HubRing.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_HubRing" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_HubRing2.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_HubRing2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_Bezel.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_Bezel" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_Hub.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_Needle/Classic_SPEED_Hub" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_HubRing.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_HubRing" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SpeedPlaqueRim.Level" Path="../../IC_Root/Classic/Classic_Center/Classic_SpeedPlaqueRim" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_RPM_Bezel.Level" Path="../../IC_Root/Classic/Classic_Right/Classic_RPM_Bezel" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.25 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_3.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_5.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_4.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_2.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_0.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_0" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Blade_1.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Blade_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.1 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_2.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_3.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_1.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_0.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_0" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_5.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_4.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_2.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_2" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_3.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_3" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_1.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_1" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_0.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_0" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_5.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_5" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Neon_4.Bloom" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Neon_4" Property="Bloom">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0.14 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0.48 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_2.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_2" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_3.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_3" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_4.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_4" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_1.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_1" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_0.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_0" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_Right_Core_5.Level" Path="../../IC_Root/Cool/Cool_Right/Cool_Right_Core_5" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+  <AnimationClip Name="Gauge_Speed" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Classic_SPEED_Needle.LayoutTransformRotation" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_Needle" Property="LayoutTransformRotation">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 225.00001 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0 -45 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_Ring.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_Ring" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SPEED_Sweep.Level" Path="../../IC_Root/Classic/Classic_Left/Classic_SPEED_Sweep" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Classic_SpeedValue.Level" Path="../../IC_Root/Classic/Classic_Center/Classic_SpeedValue" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Cool_SpeedValue.Level" Path="../../IC_Root/Cool/Cool_Center/Cool_SpeedValue" Property="Level">
       <AnimationCurve.Keyframes>
         <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
         <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
@@ -39,7 +461,7 @@
     </AnimationCurve>
   </AnimationClip>
   <AnimationClip Name="Gauge_Water" Mode="PlayOnce" StartTime="0" StopTime="1">
-    <AnimationCurve Name="Vitals_WATER_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_WATER_Bar" Property="Level">
+    <AnimationCurve Name="Cool_WaterValue.Level" Path="../../IC_Root/Cool/Cool_Floor/Cool_WaterValue" Property="Level">
       <AnimationCurve.Keyframes>
         <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
         <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />

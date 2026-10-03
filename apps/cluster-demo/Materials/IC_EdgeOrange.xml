@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_EdgeOrange" Shader="ClusterDemo/Shaders/IC_Neon" BlendMode="Additive" Uniform.Tint="#F23D0E" Uniform.HotTint="#FFC78F" Uniform.Intensity="0.35" Uniform.Core="0.12" Uniform.Bloom="0.3" Uniform.Spread="3" Uniform.Level="1" Uniform.Count="6" Uniform.Dim="1" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0.7" />

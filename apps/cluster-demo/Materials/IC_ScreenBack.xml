@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_ScreenBack" Shader="ClusterDemo/Shaders/IC_Plaque" BlendMode="Opaque" Uniform.Tint="#060B0D" Uniform.TopTint="#101921" Uniform.Rim="#294B60" Uniform.RimWidth="0.05" Uniform.Backlight="#0E283D" Uniform.Aspect="1.5" Uniform.Sheen="0" />

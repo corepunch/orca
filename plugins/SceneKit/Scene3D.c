@@ -14,3 +14,9 @@ HANDLER(Scene, Node, UpdateMatrix)
 
   return TRUE;
 }
+
+HANDLER(Scene, Object, Destroy)
+{
+  SSR_Release(&pScene->_reflectionCapture);
+  return TRUE;
+}

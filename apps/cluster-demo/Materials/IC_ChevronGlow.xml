@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_ChevronGlow" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Additive" Uniform.Color0="#FF2E20" Uniform.Color1="#FF5A32" Uniform.Color2="#FF2E20" Uniform.Pos0="0" Uniform.Pos1="0.5" Uniform.Pos2="1" Uniform.Intensity="0.5" Uniform.FadeIn="0.22" Uniform.FadeOut="0.22" Uniform.Soft="1" />

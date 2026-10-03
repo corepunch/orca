@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_LineFrame" Shader="ClusterDemo/Shaders/IC_Neon" BlendMode="Additive" Uniform.Tint="#336E91" Uniform.HotTint="#A8D5ED" Uniform.Intensity="0.55" Uniform.Core="0.12" Uniform.Bloom="0.25" Uniform.Spread="3" Uniform.Level="1" Uniform.Count="1" Uniform.Dim="0.25" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0" />

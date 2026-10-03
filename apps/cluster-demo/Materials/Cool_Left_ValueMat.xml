@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Cool_Left_ValueMat" Shader="ClusterDemo/Shaders/IC_Digits" BlendMode="Alpha" Uniform.Tint="#E7F3FF" Uniform.Level="0.68" Uniform.ReadoutMax="25" Uniform.ReadoutDigits="-2" Uniform.ReadoutMin="0" Uniform.GlyphPitch="0.094" />

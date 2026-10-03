@@ -150,27 +150,46 @@ _GetViewMatrix(struct view_camera* c)
   return MAT4_LookAt(&eye, &dir, &up);
 }
 
-void
-R_DrawEntities(struct Object *object,
+static bool_t
+_DrawEntities(struct Object *object,
                objectTags_t incl,
                objectTags_t excl,
-               struct ViewDef* viewdef)
+               struct ViewDef* viewdef,
+               bool_t reflection_pass)
 {
   struct Node* node = GetNode(object);
   if (OBJ_IsHidden(object) || (excl & get_tags(node, Tags, _tags)))
-    return;
+    return FALSE;
+  bool_t reflections = FALSE;
   if (!incl || (incl & get_tags(node, Tags, _tags))) {
-    _SendMessage(object, Node3D, Render, viewdef);
+    struct Model3D *model = GetModel3D(object);
+    reflections = model && model->ScreenSpaceReflectionEnabled;
+    // Reflective models draw their base in the main pass and add the traced
+    // reflection in a second pass, so glows over them survive and are captured.
+    if (reflections || !reflection_pass) _SendMessage(object, Node3D, Render, viewdef);
     FOR_EACH_OBJECT(node, object)
     {
-      R_DrawEntities(node, 0, excl, viewdef);
+      reflections |= _DrawEntities(node, 0, excl, viewdef, reflection_pass);
     }
   } else {
     FOR_EACH_OBJECT(node, object)
     {
-      R_DrawEntities(node, incl, excl, viewdef);
+      reflections |= _DrawEntities(node, incl, excl, viewdef, reflection_pass);
     }
   }
+  return reflections;
+}
+
+void
+R_DrawEntities(struct Object *scene, objectTags_t incl, objectTags_t excl,
+               struct ViewDef *viewdef)
+{
+  if (!_DrawEntities(scene, incl, excl, viewdef, FALSE)) return;
+  struct Scene *data = GetScene(scene);
+  if (data && SSR_CaptureFrame(&data->_reflectionCapture))
+    viewdef->sceneCapture = &data->_reflectionCapture;
+  _DrawEntities(scene, incl, excl, viewdef, TRUE);
+  viewdef->sceneCapture = NULL;
 }
 
 void
@@ -243,18 +262,6 @@ R_DefaultPipelineState(void)
 	};
 }
 
-static void
-DrawEntities(struct ViewDef* vd, struct Object *object)
-{
-  if (OBJ_IsHidden(object))
-    return;
-  _SendMessage(object, Node3D, Render, vd);
-  FOR_EACH_OBJECT(child, object)
-  {
-    DrawEntities(vd, child);
-  }
-}
-
 void
 R_RenderViewport(struct Object *scene, struct ViewDef* vd)
 {
@@ -283,7 +290,7 @@ R_RenderViewport(struct Object *scene, struct ViewDef* vd)
       Camera_WriteViewCamera(cam, &viewcam);
       vd->projectionMatrix = _GetProjectionMatrix(&viewcam, vd);
       vd->viewMatrix = _GetViewMatrix(&viewcam);
-      DrawEntities(vd, scene);
+      R_DrawEntities(scene, 0, 0, vd);
     }
   }
   R_SetPipelineState(&prev);

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Lacquer" Shader="ClusterDemo/Shaders/IC_Mirror" BlendMode="Opaque" Uniform.Tint="#0B0D11" Uniform.Accent="#23C7FF" Uniform.Reflectance="0.28" Uniform.Roughness="0.1" Uniform.Studio="1" Uniform.Level="0.5" Uniform.Spill="0" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio" />

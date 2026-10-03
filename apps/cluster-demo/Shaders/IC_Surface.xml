@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Surface" Uniform.Tint="#171F28" Uniform.Accent="#2ACDFF" Uniform.Reflectance="0.75" Uniform.Metallic="0.85" Uniform.Roughness="0.18" Uniform.Level="0.5" Uniform.Spill="0.15" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio">
+  <VertexShader>in vec3 a_position;
+in vec3 a_normal;
+in vec2 a_texcoord0;
+uniform mat4 u_modelTransform;
+uniform mat4 u_viewTransform;
+uniform mat4 u_modelViewProjectionTransform;
+out vec2 v_texcoord0;
+out vec3 v_worldPosition;
+out vec3 v_worldNormal;
+out vec3 v_eyePosition;
+void main() {
+  v_texcoord0=a_texcoord0;
+  v_worldPosition=(u_modelTransform*vec4(a_position,1.0)).xyz;
+  v_worldNormal=transpose(inverse(mat3(u_modelTransform)))*a_normal;
+  v_eyePosition=inverse(u_viewTransform)[3].xyz;
+  gl_Position=u_modelViewProjectionTransform*vec4(a_position,1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Surface: view-dependent reflected studio with Fresnel, microgrooves and accent light spill
+// Mirrors the Blender node group "IC_Surface"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+in vec3 v_worldPosition;
+in vec3 v_worldNormal;
+in vec3 v_eyePosition;
+void main() {
+  vec3 N = normalize(v_worldNormal);
+  vec3 V = normalize(v_eyePosition-v_worldPosition);
+  if (dot(N,V)&lt;0.0) N=-N;
+  vec3 R = reflect(-V,N);
+  // Filter the reflection by sampling adjacent directions; no mip chain required.
+  float spread=.004+Roughness*Roughness*.12;
+  vec3 T=normalize(cross(R,abs(R.y)&lt;.9?vec3(0,1,0):vec3(1,0,0)));
+  vec3 B=cross(R,T);
+  vec3 env=texture(EnvironmentMap,R).rgb*.5;
+  env+=(texture(EnvironmentMap,normalize(R+T*spread)).rgb+
+        texture(EnvironmentMap,normalize(R-T*spread)).rgb+
+        texture(EnvironmentMap,normalize(R+B*spread)).rgb+
+        texture(EnvironmentMap,normalize(R-B*spread)).rgb)*.125;
+  float ndv=max(dot(N,V),0.0);
+  float fresnel=pow(1.0-ndv,5.0);
+  float reflection=Reflectance*(.07+Metallic*.72)+fresnel*(.55-Metallic*.22);
+  float grooves=.975+.025*sin(v_texcoord0.y*960.0);
+  vec3 base=Tint.rgb*(.72+.28*max(N.y,0.0));
+  // Coloured light from the neon next to the part grazes its side walls.
+  vec3 spill=Accent.rgb*Level*Spill*pow(1.0-ndv,2.0);
+  FragColor=vec4(base+env*reflection*grooves+spill,1.0);
+}
+</FragmentShader>
+</Shader>

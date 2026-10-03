@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Road" Shader="ClusterDemo/Shaders/IC_Road" BlendMode="Additive" Uniform.Tint="#2FD1FF" Uniform.Intensity="0.8" Uniform.Phase="4.27257" Uniform.Dashes="7" />

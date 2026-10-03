@@ -12,6 +12,8 @@ Runs inside Blender and writes an ORCA project's 3D assets from the open file:
   Materials/   one <Material> per material built on such a group. Uniform
                values are the group node's inputs; "orca_blend" on the
                material is opaque | alpha | additive
+               "orca_environment_map" on a shader group adds a CubeMapTexture
+               EnvironmentMap uniform referring to an existing texture asset
   Images/      images used by Image Texture nodes
   Animations.xml  one <AnimationClip> per action, as an XML library
   Animations.lua  what each clip stands for
@@ -152,13 +154,16 @@ def shader_node(mat):
 
 
 def uniforms(node):
-    """[(name, 'Color' | 'Float', xml value)] from the group node's inputs."""
+    """[(name, uniform type, xml value)] from inputs and the environment asset."""
     out = []
     for sock in node.inputs:
         if sock.type == 'RGBA':
             out.append((sock.name, "Color", hex_color(sock.default_value)))
         elif sock.type == 'VALUE':
             out.append((sock.name, "Float", fmt(sock.default_value)))
+    environment = node.node_tree.get("orca_environment_map")
+    if environment:
+        out.append(("EnvironmentMap", "CubeMapTexture", environment))
     return out
 
 
@@ -172,6 +177,9 @@ def group_uniforms(group):
             out.append((item.name, "Color", hex_color(item.default_value)))
         elif item.socket_type == 'NodeSocketFloat':
             out.append((item.name, "Float", fmt(item.default_value)))
+    environment = group.get("orca_environment_map")
+    if environment:
+        out.append(("EnvironmentMap", "CubeMapTexture", environment))
     return out
 
 
@@ -409,16 +417,36 @@ def export_scene(objects, project, screen, out_dir, clips):
         for name, names in node_uniforms.items():
             animated_uniforms.setdefault(name, []).extend(names)
 
+    def blended(ob):
+        """0: only opaque surfaces below ob, 2: only blended ones, 1: mixed."""
+        kinds = set()
+        for o in [ob] + list(ob.children_recursive):
+            mat = o.material_slots[0].material if o in exported and o.type == 'MESH' and o.material_slots else None
+            if mat and shader_node(mat):
+                kinds.add(mat.get("orca_blend", "opaque") != "opaque")
+        return 1 if len(kinds) != 1 else 2 if True in kinds else 0
+
     def depth(ob):
-        return (cam_inv @ ob.matrix_world.translation).z      # camera looks down -Z: most negative is farthest
+        # Opaque first, then blended back to front (camera looks down -Z: most
+        # negative is farthest). Meshes are placed by their bounding-box centre.
+        centre = ob.matrix_world.translation
+        if ob.type == 'MESH' and ob.data.vertices:
+            centre = ob.matrix_world @ (sum((Vector(c) for c in ob.bound_box), Vector()) / 8)
+        return (blended(ob), (cam_inv @ centre).z)
 
     def element(ob):
         attrs = {"Name": ob.name, "LayoutTransform": transform_attr(ob)}
+        if "orca_readout_origin_x" in ob:
+            atoms = attrs["LayoutTransform"].split()
+            atoms[0] = fmt(float(ob["orca_readout_origin_x"]))
+            attrs["LayoutTransform"] = " ".join(atoms)
         node = shader_node(ob.material_slots[0].material) if ob.type == 'MESH' and ob.material_slots else None
         if node:
             mat = ob.material_slots[0].material
             attrs["Mesh"] = "{}/Meshes/{}".format(project, ob.name)
             attrs["Material"] = "{}/Materials/{}".format(project, mat.name)
+            if ob.get("orca_screen_reflection", False):
+                attrs["ScreenSpaceReflectionEnabled"] = "true"
             # Animated uniforms live on the node: every node loads its own material
             # instance, and node values take precedence over the material's.
             values = {n: v for n, _k, v in uniforms(node)}
@@ -427,7 +455,8 @@ def export_scene(objects, project, screen, out_dir, clips):
             el = ET.Element("Model3D", attrs)
         else:
             el = ET.Element("Node3D", attrs)
-        # Nodes draw in tree order with depth writes on, so siblings go back to front.
+        # Nodes draw in tree order; blended surfaces do not write depth, so they follow
+        # the opaque siblings, back to front.
         for child in sorted((c for c in ob.children if c in exported and c.type != 'CAMERA'), key=depth):
             el.append(element(child))
         return el
@@ -478,8 +507,10 @@ def property_types(materials):
     for _mat, node in materials:
         for name, kind, _value in uniforms(node):
             if types.setdefault(name, kind) != kind:
-                raise RuntimeError("uniform {} is both a colour and a float".format(name))
-    return ["\t{{ Name = \"{}\", Category = \"{}\", DataType = \"{}\" }},".format(n, UNIFORM_CATEGORY, k)
+                raise RuntimeError("uniform {} has conflicting types".format(name))
+    return ["\t{{ Name = \"{}\", Category = \"{}\", {} }},".format(n, UNIFORM_CATEGORY,
+            'DataType = "Object", TypeString = "CubeMapTexture"' if k == "CubeMapTexture"
+            else 'DataType = "{}"'.format(k))
             for n, k in sorted(types.items())]
 
 
@@ -489,7 +520,8 @@ def write_package(out_dir, project, screen, materials):
     types = property_types(materials)
     if os.path.exists(path):
         text = open(path, encoding="utf-8").read()
-        return [t.strip() for t in types if t.split('"')[1] not in text]
+        declared = set(re.findall(r'Name\s*=\s*"([^"]+)"', text))
+        return [t.strip() for t in types if t.split('"')[1] not in declared]
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join([
             'Name = "{}"'.format(project),

@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_DialBezel" Shader="ClusterDemo/Shaders/IC_SpunMetal" BlendMode="Opaque" Uniform.ColorDark="#111113" Uniform.ColorLight="#C1C7D1" Uniform.Lobes="2" Uniform.Phase="0.125" Uniform.Sharpness="9" Uniform.Rings="16" Uniform.RingContrast="0.45" Uniform.EdgeDark="0.75" Uniform.Intensity="1" />

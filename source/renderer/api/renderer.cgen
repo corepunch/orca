@@ -205,6 +205,24 @@
       </messages>
     </interface>
   </interfaces>
+  <structs>
+    <struct name="ScreenSpaceCapture" prefix="SSR_" sealed="true">
+      <summary>Reusable color and depth snapshots for screen-space reflection shaders.</summary>
+      <fields>
+        <field name="Color" type="Texture" pointer="true"/>
+        <field name="Depth" type="Texture" pointer="true"/>
+      </fields>
+      <methods>
+        <method name="CaptureFrame">
+          <summary>Copies the current physical viewport into color and depth textures. Returns false without a renderer or compatible depth buffer.</summary>
+          <returns type="bool"/>
+        </method>
+        <method name="Release">
+          <summary>Releases the owned GPU textures.</summary>
+        </method>
+      </methods>
+    </struct>
+  </structs>
   <classes>
     <class name="Texture">
       <summary>Base class for managing texture resources and their sampling parameters for rendering.</summary>

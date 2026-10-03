@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_RevRimGlow" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Additive" Uniform.Color0="#3D4048" Uniform.Color1="#FF5A32" Uniform.Color2="#FF2E20" Uniform.Pos0="0.45" Uniform.Pos1="0.62" Uniform.Pos2="0.74" Uniform.Intensity="0.55" Uniform.FadeIn="0.04" Uniform.FadeOut="0.03" Uniform.Soft="1" />

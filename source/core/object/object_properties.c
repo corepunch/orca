@@ -27,9 +27,11 @@ OBJ_GetUniforms(struct Object *object, struct uniform* pUniforms)
     pUniforms->Identifier = PROP_GetShortID(property);
     switch (PROP_GetType(property)) {
       case kDataTypeObject:
-        if (!strcmp(PROP_GetUserData(property), "Texture")) {
-          struct Texture *texture = GetTexture(*(void**)PROP_GetValue(property));
-          pUniforms->Type = UT_SAMPLER_2D;
+        if (!strcmp(PROP_GetUserData(property), "Texture") ||
+            !strcmp(PROP_GetUserData(property), "CubeMapTexture")) {
+          struct Texture *texture = GetTexture(PROP_GetObjectValue(property));
+          pUniforms->Type = !strcmp(PROP_GetUserData(property), "CubeMapTexture")
+                         ? UT_SAMPLER_CUBE : UT_SAMPLER_2D;
           memcpy(pUniforms->Value, &texture, sizeof(void*));
         } else {
           continue;

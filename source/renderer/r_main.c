@@ -342,19 +342,22 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
   
   struct shader_universal_target const *target = &shader->shader->target;
 
-  if (ent->material.blendMode != BLEND_MODE_INHERIT) {
-    R_SetBlendMode(ent->material.blendMode);
-  } else if (target->HasBlendMode) {
-    R_SetBlendMode(target->BlendMode);
-  }
-  
+  enum blend_mode blend = ent->material.blendMode != BLEND_MODE_INHERIT ? ent->material.blendMode
+                         : target->HasBlendMode ? target->BlendMode : BLEND_MODE_INHERIT;
+  // Screen-space reflection pass: shaders output only the reflected light,
+  // added on top of the surface drawn in the main pass.
+  if (view->sceneCapture) blend = BLEND_MODE_ADDITIVE;
+  if (blend != BLEND_MODE_INHERIT) R_SetBlendMode(blend);
+
+  // Blended surfaces test depth but do not write it, so glows and glass never
+  // hide what is drawn after them; a shader can still ask for depth writes.
+  bool_t write = view->sceneCapture ? FALSE
+               : target->HasDepthWriteEnabled ? target->DepthWriteEnabled
+               : blend == BLEND_MODE_INHERIT || blend == BLEND_MODE_OPAQUE;
   if (target->HasDepthTestFunction) {
-    R_SetDepthState(&(struct depth_state) {
-      .func = target->DepthTestFunction,
-      .write = target->HasDepthWriteEnabled ?
-        target->DepthWriteEnabled :
-        !target->HasBlendMode,
-    });
+    R_SetDepthState(&(struct depth_state) { .func = target->DepthTestFunction, .write = write });
+  } else {
+    R_Call(glDepthMask, write ? GL_TRUE : GL_FALSE);
   }
 
   Shader_BindMaterial(shader->shader, view, ent);

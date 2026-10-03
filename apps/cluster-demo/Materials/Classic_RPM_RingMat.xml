@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Classic_RPM_RingMat" Shader="ClusterDemo/Shaders/IC_Neon" BlendMode="Additive" Uniform.Tint="#16A7F0" Uniform.HotTint="#D3F8FF" Uniform.Intensity="1" Uniform.Core="0.09" Uniform.Bloom="0.42" Uniform.Spread="2.6" Uniform.Level="0.68" Uniform.Count="1" Uniform.Dim="0.3" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0" />

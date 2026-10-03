@@ -89,6 +89,7 @@
       <details>Represents a complete 3D scene that can be rendered to a viewport. Manages cameras, render passes, and global scene properties like environment lighting.</details>
       <handles>
         <handle message="Node.UpdateMatrix"/>
+        <handle message="Object.Destroy"/>
       </handles>
       <properties>
         <property name="Camera" type="string">Name of the primary camera used for scene rendering</property>
@@ -99,6 +100,9 @@
         <property name="ComposerOverride" type="RenderPass" pointer="true">Override render pass for post-processing composition effects</property>
         <property name="EnvironmentTexture" type="Texture" pointer="true">Environment map texture for reflections and ambient lighting</property>
       </properties>
+      <fields>
+        <field name="_reflectionCapture" type="ScreenSpaceCapture">Scene-owned screen-space reflection snapshots.</field>
+      </fields>
     </class>
     <class name="Model3D" parent="Node3D">
       <summary>3D model renderer that displays mesh geometry with materials</summary>
@@ -109,6 +113,7 @@
       <properties>
         <property name="Mesh" type="Mesh" pointer="true">3D mesh geometry defining the shape of the model</property>
         <property name="Material" type="Material" pointer="true">Material defining surface appearance, textures, and shading properties</property>
+        <property name="ScreenSpaceReflectionEnabled" type="bool">Draw after a scene color/depth snapshot. The shader can sample u_sceneColor, u_sceneDepth and u_sceneTextureSize for screen-space reflections.</property>
       </properties>
     </class>
     <class name="PlaneMeshNode" parent="Model3D">

@@ -399,6 +399,7 @@ struct ViewDef
   struct vec2 screenSize;
   struct Object *renderPass;
   struct Object *viewport;
+  struct ScreenSpaceCapture const *sceneCapture;
   struct view_light lights[MAX_VIEW_LIGHTS];
   float stereoSeparation;
   uint32_t flags;

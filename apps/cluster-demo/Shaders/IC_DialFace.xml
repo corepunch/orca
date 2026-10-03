@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_DialFace" Uniform.ColorDark="#090C10" Uniform.ColorLight="#2E3D4B" Uniform.Accent="#23C7FF" Uniform.Lobes="2" Uniform.Phase="0.125" Uniform.Sharpness="6" Uniform.Grooves="90" Uniform.Glow="0.35" Uniform.GlowWidth="0.1">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_DialFace: spun-metal dial: anisotropic conic sheen, lathe grooves, rim vignette and accent light from the ring
+// Mirrors the Blender node group "IC_DialFace"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float u=v_texcoord0.x, v=v_texcoord0.y;
+  float conic=pow(abs(cos((u+Phase)*Lobes*3.14159265)),Sharpness);
+  float groove=.5+.5*sin(v*Grooves*6.2831853);
+  float grain=fract(sin(floor(v*Grooves*.5)*12.9898)*43758.5453);
+  float sheen=conic*(.60+.25*groove+.15*grain)*(.25+.75*v);
+  float vignette=1.0-.55*pow(v,6.0);
+  float ring=Glow*exp(-pow((1.0-v)/GlowWidth,2.0));
+  FragColor=vec4(mix(ColorDark.rgb,ColorLight.rgb,sheen)*vignette+Accent.rgb*ring,1.0);
+}
+</FragmentShader>
+</Shader>

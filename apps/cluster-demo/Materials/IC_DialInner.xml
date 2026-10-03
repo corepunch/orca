@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_DialInner" Shader="ClusterDemo/Shaders/IC_DialFace" BlendMode="Opaque" Uniform.ColorDark="#06090C" Uniform.ColorLight="#222E3A" Uniform.Accent="#23C7FF" Uniform.Lobes="3" Uniform.Phase="0.125" Uniform.Sharpness="3" Uniform.Grooves="60" Uniform.Glow="0" Uniform.GlowWidth="0.1" />

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_BlackChrome" Shader="ClusterDemo/Shaders/IC_Mirror" BlendMode="Opaque" Uniform.Tint="#0C0E11" Uniform.Accent="#23C7FF" Uniform.Reflectance="0.62" Uniform.Roughness="0.05" Uniform.Studio="1" Uniform.Level="0.76" Uniform.Spill="0.15" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio" />

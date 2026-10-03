@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_PlaqueLow" Shader="ClusterDemo/Shaders/IC_Plaque" BlendMode="Opaque" Uniform.Tint="#090E12" Uniform.TopTint="#13202A" Uniform.Rim="#5FA5C5" Uniform.RimWidth="0.03" Uniform.Backlight="#0E202C" Uniform.Aspect="2" Uniform.Sheen="0.03" />

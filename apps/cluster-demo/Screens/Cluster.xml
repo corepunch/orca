@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
-<Screen Name="Cluster" Width="1920" Height="720" ClearColor="#000000">
+<Screen Controller="ClusterDemo/Scripts/Cluster" Name="Cluster" Width="1920" Height="720" ClearColor="#000000">
   <Viewport3D Name="Viewport" Width="1920" Height="720">
     <Scene Name="Scene" Camera="IC_DisplayCamera">
-      <Camera Name="IC_DisplayCamera" Fov="12.18886" FovType="Yfov" ZNear="1" ZFar="20" LayoutTransform="0 0 7.2  0 0 0  1 1 1" />
+      <Camera Name="IC_DisplayCamera" Fov="13.54432" FovType="Yfov" ZNear="0.1" ZFar="40" LayoutTransform="0 0.55 7.2  -4.36828 0 0  1 1 1" />
+      <AnimationPlayer Name="Navigation" />
       <PrefabView3D Name="ClusterView" Prefab="ClusterDemo/Scenes/Cluster" />
-      <!-- Demo input: a looping clip that scrubs every gauge player together.
-           Demo/DriveCycle is a more car-like alternative. A real app binds each
-           player's CurrentTime to its signal instead (see Animations.lua). -->
-      <AnimationPlayer Name="Demo" Clip="ClusterDemo/Demo/FillAll" AutoplayEnabled="true" />
+      <!-- Vehicle signals drive the native gauge clips; FillAll remains available
+           for checking each gauge's complete range. -->
+      <AnimationPlayer Name="Demo" Clip="ClusterDemo/Demo/DriveCycle" AutoplayEnabled="true" />
     </Scene>
   </Viewport3D>
 </Screen>

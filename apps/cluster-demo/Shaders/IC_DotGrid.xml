@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_DotGrid" Uniform.Tint="#128ECF" Uniform.HotTint="#9EF3FF" Uniform.Intensity="0.9" Uniform.CountU="13" Uniform.CountV="22" Uniform.DotSize="0.2" Uniform.Aspect="0.55" Uniform.Phase="0" Uniform.Fade="1.4">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_DotGrid: emitter dot matrix: anti-aliased dots, travelling charge waves, depth and side falloff
+// Mirrors the Blender node group "IC_DotGrid"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float u=v_texcoord0.x, v=v_texcoord0.y;
+  float cu=fract(u*CountU)-.5;
+  float cv=(fract(v*CountV)-.5)*Aspect;
+  float dots=clamp((DotSize-sqrt(cu*cu+cv*cv))*12.0,0.0,1.0);
+  float row=floor(v*CountV);
+  float wave=pow(.5+.5*sin(row*.55+Phase*2.0),4.0);
+  float fade=pow(max(1.0-v,0.0),Fade);
+  float side=1.0-.7*pow(abs(u*2.0-1.0),4.0);
+  vec3 color=mix(Tint.rgb,HotTint.rgb,clamp(wave*dots,0.0,1.0));
+  FragColor=vec4(color,clamp(Intensity*fade*side*(dots*(.30+.70*wave)+.04),0.0,1.0));
+}
+</FragmentShader>
+</Shader>

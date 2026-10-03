@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Cool_Right_BarCoreMat" Shader="ClusterDemo/Shaders/IC_Segments" BlendMode="Opaque" Uniform.ColorOn="#FFD59F" Uniform.ColorOff="#13222C" Uniform.Level="0.68" Uniform.Intensity="1" />
