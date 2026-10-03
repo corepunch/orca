@@ -1,2 +1,2 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_Red" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#FF2E20" Uniform.Intensity="1" />
+<Material Name="IC_Red" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#FF372A" Uniform.Intensity="1" />

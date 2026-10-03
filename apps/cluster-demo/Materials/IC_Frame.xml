@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Frame" Shader="ClusterDemo/Shaders/IC_Surface" BlendMode="Opaque" Uniform.Tint="#12181E" Uniform.Accent="#23C7FF" Uniform.Reflectance="0.8" Uniform.Metallic="0.9" Uniform.Roughness="0.12" Uniform.Level="0.5" Uniform.Spill="0.2" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio" />

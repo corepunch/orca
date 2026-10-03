@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_HubGroove" Shader="ClusterDemo/Shaders/IC_SpunMetal" BlendMode="Opaque" Uniform.ColorDark="#09090B" Uniform.ColorLight="#3E424A" Uniform.Lobes="2" Uniform.Phase="0.125" Uniform.Sharpness="4" Uniform.Rings="8" Uniform.RingContrast="0.5" Uniform.EdgeDark="0.85" Uniform.Intensity="1" />

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_RingDim" Shader="ClusterDemo/Shaders/IC_Neon" BlendMode="Additive" Uniform.Tint="#169ADF" Uniform.HotTint="#BCF4FF" Uniform.Intensity="1" Uniform.Core="0.1" Uniform.Bloom="0.35" Uniform.Spread="2.4" Uniform.Level="0" Uniform.Count="1" Uniform.Dim="0.28" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0" />

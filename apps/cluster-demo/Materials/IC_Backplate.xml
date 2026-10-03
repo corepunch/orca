@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Backplate" Shader="ClusterDemo/Shaders/IC_Glass" BlendMode="Opaque" Uniform.Tint="#000609" Uniform.TopTint="#0D1318" Uniform.Density="1" Uniform.Sheen="0.025" Uniform.SheenPos="0.95" Uniform.SheenWidth="0.1" />

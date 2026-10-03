@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Cool_WaterValueMat" Shader="ClusterDemo/Shaders/IC_Digits" BlendMode="Alpha" Uniform.Tint="#E7F3FF" Uniform.Level="0.68" Uniform.ReadoutMax="130" Uniform.ReadoutDigits="3" Uniform.ReadoutMin="50" Uniform.GlyphPitch="0.02632" />

@@ -103,6 +103,9 @@ enum shader_uniform
   kShaderUniform_BBoxMin,
   kShaderUniform_BBoxMax,
   kShaderUniform_Lights,
+  kShaderUniform_SceneColor,
+  kShaderUniform_SceneDepth,
+  kShaderUniform_SceneTextureSize,
   kShaderUniform_Count
 };
 

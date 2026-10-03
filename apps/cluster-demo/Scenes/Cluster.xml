@@ -1,97 +1,286 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Node3D Name="Cluster">
   <Node3D Name="IC_Root" LayoutTransform="0 0 0  0 0 0  1 1 1">
-    <Model3D Name="Ambient_DialCool" LayoutTransform="-0.61815 0.3 -0.87638  89.99999 4.37676 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_DialCool" Material="ClusterDemo/Materials/IC_AmbientCool" />
-    <Model3D Name="Ambient_DialRed" LayoutTransform="0.61815 -0.05 -0.87638  89.99999 -4.37676 0  1.35 1 1.35" Mesh="ClusterDemo/Meshes/Ambient_DialRed" Material="ClusterDemo/Materials/IC_AmbientDial" />
-    <Model3D Name="Ambient_LeftRed" LayoutTransform="-2.38296 0 -0.54154  90 17.10916 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_LeftRed" Material="ClusterDemo/Materials/IC_AmbientRed" />
-    <Model3D Name="Ambient_RightRed" LayoutTransform="2.38296 0 -0.54154  90 -17.10916 0  1 1 1" Mesh="ClusterDemo/Meshes/Ambient_RightRed" Material="ClusterDemo/Materials/IC_AmbientRed" />
-    <Node3D Name="IC_Panel_Rev" LayoutTransform="0 0 -0.34  90 0 0  1 1 1">
-      <Model3D Name="Rev_BezelGlow" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_BezelGlow" Material="ClusterDemo/Materials/IC_BezelGlow" />
-      <Model3D Name="Rev_Face" LayoutTransform="0 0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Face" Material="ClusterDemo/Materials/IC_DialFace" />
-      <Model3D Name="Rev_Bezel" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Bezel" Material="ClusterDemo/Materials/IC_DialBezel" />
-      <Model3D Name="Rev_Sweep" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Sweep" Material="ClusterDemo/Materials/IC_RevSweep" Uniform.Level="0.68" />
-      <Model3D Name="Rev_RedZone" LayoutTransform="0 0.05 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_RedZone" Material="ClusterDemo/Materials/IC_RedDim" />
-      <Model3D Name="Rev_RimGlow" LayoutTransform="0 0.06 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_RimGlow" Material="ClusterDemo/Materials/IC_RevRimGlow" />
-      <Model3D Name="Rev_Rim" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Rim" Material="ClusterDemo/Materials/IC_RevRim" />
-      <Model3D Name="Rev_TicksFine" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksFine" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Rev_TicksMajor" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMajor" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_TicksMajorRed" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMajorRed" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Rev_TicksMinor" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_TicksMinor" Material="ClusterDemo/Materials/IC_TickMinor" />
-      <Model3D Name="Turn_Left" LayoutTransform="-0.83 0.1 -0.69  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Turn_Left" Material="ClusterDemo/Materials/IC_GreenDim" />
-      <Model3D Name="Turn_Right" LayoutTransform="0.83 0.1 -0.69  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Turn_Right" Material="ClusterDemo/Materials/IC_GreenDim" />
-      <Model3D Name="Rev_Num3" LayoutTransform="-0.2639 0.12 -0.39495  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num3" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num4" LayoutTransform="0 0.12 -0.475  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num4" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num5" LayoutTransform="0.2639 0.12 -0.39495  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num5" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num0" LayoutTransform="-0.33588 0.12 0.33588  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num0" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num1" LayoutTransform="-0.46587 0.12 0.09267  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num1" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num2" LayoutTransform="-0.43884 0.12 -0.18177  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num2" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num6" LayoutTransform="0.43884 0.12 -0.18177  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num6" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_Num7" LayoutTransform="0.46587 0.12 0.09267  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num7" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Rev_Num8" LayoutTransform="0.33588 0.12 0.33588  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Num8" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Rev_Needle" LayoutTransform="0 0.16 0  0 41.4 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Needle" Material="ClusterDemo/Materials/IC_Needle">
-        <Model3D Name="Rev_NeedleGlow" LayoutTransform="0 -0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_NeedleGlow" Material="ClusterDemo/Materials/IC_NeedleGlow" />
-      </Model3D>
-      <Model3D Name="Rev_Hub" LayoutTransform="0 0.2 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Hub" Material="ClusterDemo/Materials/IC_Hub" />
-      <Model3D Name="Rev_HubGroove" LayoutTransform="0 0.2 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_HubGroove" Material="ClusterDemo/Materials/IC_HubGroove" />
-      <Model3D Name="Rev_HubRing" LayoutTransform="0 0.21 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_HubRing" Material="ClusterDemo/Materials/IC_HubRing" />
-      <Model3D Name="Gear_Mode" LayoutTransform="-0.072 0.24 0.185  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Gear_Mode" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Gear_Number" LayoutTransform="0.04 0.24 0.18  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Gear_Number" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Rev_Scale" LayoutTransform="0 0.24 -0.187  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Scale" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Rev_Speed" LayoutTransform="0 0.24 -0.052  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_Speed" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Rev_SpeedUnit" LayoutTransform="0 0.24 0.078  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Rev_SpeedUnit" Material="ClusterDemo/Materials/IC_Grey" />
+    <Node3D Name="Classic" LayoutTransform="0 0 0  0 0 0  1 1 1">
+      <Node3D Name="Classic_Center" LayoutTransform="0 0 -0.06  90 0 0  1 1 1">
+        <Model3D Name="Classic_ScreenBack" LayoutTransform="0 -1.25 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_ScreenBack" Material="ClusterDemo/Materials/IC_ScreenBack" />
+        <Model3D Name="Classic_RoadFloor" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RoadFloor" Material="ClusterDemo/Materials/IC_RoadFloor" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Classic_ScreenWalls" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_ScreenWalls" Material="ClusterDemo/Materials/IC_Backplate" />
+        <Model3D Name="Classic_GearN_Mesh" LayoutTransform="0 -0.42 0.1  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_GearN_Mesh" Material="ClusterDemo/Materials/IC_Dim" />
+        <Model3D Name="Classic_GearP_Mesh" LayoutTransform="-0.15 -0.42 0.1  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_GearP_Mesh" Material="ClusterDemo/Materials/IC_Dim" />
+        <Model3D Name="Classic_GearR_Mesh" LayoutTransform="-0.075 -0.42 0.1  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_GearR_Mesh" Material="ClusterDemo/Materials/IC_Dim" />
+        <Model3D Name="Classic_GearD_Mesh" LayoutTransform="0.11 -0.42 0.097  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_GearD_Mesh" Material="ClusterDemo/Materials/IC_Cyan" />
+        <Model3D Name="Classic_SpeedPlaqueRim" LayoutTransform="0 -0.415 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SpeedPlaqueRim" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Model3D Name="Classic_SpeedPlaque" LayoutTransform="0 -0.42 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SpeedPlaque" Material="ClusterDemo/Materials/IC_Plaque" />
+        <Model3D Name="Classic_SpeedUnit_Mesh" LayoutTransform="0 -0.405 -0.02  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SpeedUnit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_RangePlaque" LayoutTransform="0.46 -0.14 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RangePlaque" Material="ClusterDemo/Materials/IC_PlaqueLow" />
+        <Model3D Name="Classic_TripPlaque" LayoutTransform="-0.46 -0.14 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_TripPlaque" Material="ClusterDemo/Materials/IC_PlaqueLow" />
+        <Model3D Name="Classic_RangeUnit_Mesh" LayoutTransform="0.545 -0.135 0.51  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RangeUnit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_TripUnit_Mesh" LayoutTransform="-0.375 -0.135 0.51  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_TripUnit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_Trip_Mesh" LayoutTransform="-0.48 -0.135 0.505  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Trip_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RangeLabel_Mesh" LayoutTransform="0.46 -0.135 0.445  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RangeLabel_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_TripLabel_Mesh" LayoutTransform="-0.46 -0.135 0.445  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_TripLabel_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_WindowFrame" LayoutTransform="0 0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_WindowFrame" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Classic_StatusTabRim" LayoutTransform="0 0.026 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_StatusTabRim" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Classic_StatusTab" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_StatusTab" Material="ClusterDemo/Materials/IC_PlaqueTab" />
+        <Model3D Name="Classic_Clock_Mesh" LayoutTransform="0.3 0.03 -0.575  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Clock_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_Temp_Mesh" LayoutTransform="-0.3 0.03 -0.575  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Temp_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_Horizon" LayoutTransform="0 -1.24 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Horizon" Material="ClusterDemo/Materials/IC_LineCyan" />
+        <Model3D Name="Classic_BackBrow" LayoutTransform="0 -1.24 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_BackBrow" Material="ClusterDemo/Materials/IC_LineFrame" />
+        <Model3D Name="Classic_Road" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Road" Material="ClusterDemo/Materials/IC_Road" Uniform.Phase="4.27257" />
+        <Model3D Name="Classic_GearGlow" LayoutTransform="0 -0.419 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_GearGlow" Material="ClusterDemo/Materials/IC_LineCyan" />
+        <Model3D Name="Classic_SpeedValue" LayoutTransform="0 -0.405 -0.205 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Classic_SpeedValue" Material="ClusterDemo/Materials/Classic_SpeedValueMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_RangeValue" LayoutTransform="0.44 -0.135 0.505 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Classic_RangeValue" Material="ClusterDemo/Materials/Classic_RangeValueMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_WindowSill" LayoutTransform="0 0.035 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_WindowSill" Material="ClusterDemo/Materials/IC_LineCyan" />
+      </Node3D>
+      <Node3D Name="Classic_Floor" LayoutTransform="0 0 0  90 0 0  1 1 1">
+        <Model3D Name="Classic_Backplate" LayoutTransform="0 -1.45 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Backplate" Material="ClusterDemo/Materials/IC_Backplate" />
+        <Model3D Name="Classic_HousingLip" LayoutTransform="0 -0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_HousingLip" Material="ClusterDemo/Materials/IC_Lacquer" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Classic_CowlL" LayoutTransform="-1.25 0 -0.02  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_CowlL" Material="ClusterDemo/Materials/IC_Lacquer" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Classic_CowlR" LayoutTransform="1.25 0 -0.02  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_CowlR" Material="ClusterDemo/Materials/IC_Lacquer" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Classic_HousingEdge" LayoutTransform="0 -0.028 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_HousingEdge" Material="ClusterDemo/Materials/IC_Chrome" />
+        <Model3D Name="Classic_Chin" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_Chin" Material="ClusterDemo/Materials/IC_Chin" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Classic_ChinEdge" LayoutTransform="0 -0.09 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_ChinEdge" Material="ClusterDemo/Materials/IC_LineFrame" />
+        <Model3D Name="Classic_CowlLineL" LayoutTransform="0 -0.115 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_CowlLineL" Material="ClusterDemo/Materials/IC_LineFrame" />
+        <Model3D Name="Classic_CowlLineR" LayoutTransform="0 -0.115 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_CowlLineR" Material="ClusterDemo/Materials/IC_LineFrame" />
+        <Model3D Name="Classic_UnderglowL" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_UnderglowL" Material="ClusterDemo/Materials/IC_LineCyan" />
+        <Model3D Name="Classic_UnderglowR" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_UnderglowR" Material="ClusterDemo/Materials/IC_LineCyan" />
+      </Node3D>
+      <Node3D Name="Classic_Left" LayoutTransform="-1.25 0.02 0  90 3.43775 0  0.97 0.97 0.97">
+        <Model3D Name="Classic_SPEED_Mark_8_Mesh" LayoutTransform="0.27011 -0.114 0.27011  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_8_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_7_Mesh" LayoutTransform="0.37466 -0.114 0.07452  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_7_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Unit_Mesh" LayoutTransform="0 -0.114 0.36  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Unit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_SPEED_Mark_6_Mesh" LayoutTransform="0.35292 -0.114 -0.14619  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_6_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Face" LayoutTransform="0 -0.124 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Face" Material="ClusterDemo/Materials/IC_DialFace" />
+        <Model3D Name="Classic_SPEED_HubWell" LayoutTransform="0 -0.1235 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_HubWell" Material="ClusterDemo/Materials/IC_DialInner" />
+        <Model3D Name="Classic_SPEED_Mark_0_Mesh" LayoutTransform="-0.27011 -0.114 0.27011  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_0_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_HubRing" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_HubRing" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Model3D Name="Classic_SPEED_HubRing2" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_HubRing2" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Model3D Name="Classic_SPEED_Ticks" LayoutTransform="0 -0.116 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Ticks" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_5_Mesh" LayoutTransform="0.21223 -0.114 -0.31762  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_5_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_1_Mesh" LayoutTransform="-0.37466 -0.114 0.07452  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_1_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_4_Mesh" LayoutTransform="0 -0.114 -0.382  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_4_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_2_Mesh" LayoutTransform="-0.35292 -0.114 -0.14619  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_2_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Mark_3_Mesh" LayoutTransform="-0.21223 -0.114 -0.31762  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Mark_3_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_SPEED_Bezel" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Bezel" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Node3D Name="Classic_SPEED_Needle" LayoutTransform="0 -0.085 0  0 41.4 0  1 1 1">
+          <Model3D Name="Classic_SPEED_NeedleCore" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_NeedleCore" Material="ClusterDemo/Materials/IC_Red" />
+          <Model3D Name="Classic_SPEED_Hub" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Hub" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+          <Model3D Name="Classic_SPEED_HubCap" LayoutTransform="0 0.0305 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_HubCap" Material="ClusterDemo/Materials/IC_Black" />
+          <Model3D Name="Classic_SPEED_NeedleGlow" LayoutTransform="0 0.004 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_NeedleGlow" Material="ClusterDemo/Materials/IC_LineRed" />
+        </Node3D>
+        <Model3D Name="Classic_SPEED_Ambient" LayoutTransform="0 -0.42 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Ambient" Material="ClusterDemo/Materials/IC_AmbientDial" />
+        <Model3D Name="Classic_SPEED_RingGap" LayoutTransform="0 -0.1095 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_RingGap" Material="ClusterDemo/Materials/IC_RingDim" />
+        <Model3D Name="Classic_SPEED_Sweep" LayoutTransform="0 -0.1125 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Sweep" Material="ClusterDemo/Materials/Classic_SPEED_SweepMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_SPEED_Ring" LayoutTransform="0 -0.109 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_Ring" Material="ClusterDemo/Materials/Classic_SPEED_RingMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_SPEED_UnderGlow" LayoutTransform="0 -0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_SPEED_UnderGlow" Material="ClusterDemo/Materials/IC_LineCyan" />
+      </Node3D>
+      <Node3D Name="Classic_Right" LayoutTransform="1.25 0.02 0  90 -3.43775 0  0.97 0.97 0.97">
+        <Model3D Name="Classic_RPM_Mark_0_Mesh" LayoutTransform="-0.27011 -0.114 0.27011  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_0_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Mark_1_Mesh" LayoutTransform="-0.37466 -0.114 0.07452  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_1_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Unit_Mesh" LayoutTransform="0 -0.114 0.36  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Unit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Classic_RPM_Face" LayoutTransform="0 -0.124 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Face" Material="ClusterDemo/Materials/IC_DialFace" />
+        <Model3D Name="Classic_RPM_Mark_2_Mesh" LayoutTransform="-0.35292 -0.114 -0.14619  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_2_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_HubWell" LayoutTransform="0 -0.1235 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_HubWell" Material="ClusterDemo/Materials/IC_DialInner" />
+        <Model3D Name="Classic_RPM_Mark_8_Mesh" LayoutTransform="0.27011 -0.114 0.27011  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_8_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_HubRing" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_HubRing" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Model3D Name="Classic_RPM_HubRing2" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_HubRing2" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Model3D Name="Classic_RPM_Ticks" LayoutTransform="0 -0.116 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Ticks" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_RedTicks" LayoutTransform="0 -0.116 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_RedTicks" Material="ClusterDemo/Materials/IC_Red" />
+        <Model3D Name="Classic_RPM_Mark_3_Mesh" LayoutTransform="-0.21223 -0.114 -0.31762  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_3_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Mark_7_Mesh" LayoutTransform="0.37466 -0.114 0.07452  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_7_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Mark_4_Mesh" LayoutTransform="0 -0.114 -0.382  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_4_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Mark_6_Mesh" LayoutTransform="0.35292 -0.114 -0.14619  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_6_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Mark_5_Mesh" LayoutTransform="0.21223 -0.114 -0.31762  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Mark_5_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Classic_RPM_Bezel" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Bezel" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+        <Node3D Name="Classic_RPM_Needle" LayoutTransform="0 -0.085 0  0 41.4 0  1 1 1">
+          <Model3D Name="Classic_RPM_Hub" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Hub" Material="ClusterDemo/Materials/IC_BlackChrome" ScreenSpaceReflectionEnabled="true" Uniform.Level="0.76" />
+          <Model3D Name="Classic_RPM_NeedleCore" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_NeedleCore" Material="ClusterDemo/Materials/IC_Red" />
+          <Model3D Name="Classic_RPM_HubCap" LayoutTransform="0 0.0305 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_HubCap" Material="ClusterDemo/Materials/IC_Black" />
+          <Model3D Name="Classic_RPM_NeedleGlow" LayoutTransform="0 0.004 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_NeedleGlow" Material="ClusterDemo/Materials/IC_LineRed" />
+        </Node3D>
+        <Model3D Name="Classic_RPM_Ambient" LayoutTransform="0 -0.42 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Ambient" Material="ClusterDemo/Materials/IC_AmbientDial" />
+        <Model3D Name="Classic_RPM_RingGap" LayoutTransform="0 -0.1095 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_RingGap" Material="ClusterDemo/Materials/IC_RingDim" />
+        <Model3D Name="Classic_RPM_Sweep" LayoutTransform="0 -0.1125 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Sweep" Material="ClusterDemo/Materials/Classic_RPM_SweepMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_RPM_Ring" LayoutTransform="0 -0.109 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Ring" Material="ClusterDemo/Materials/Classic_RPM_RingMat" Uniform.Level="0.68" />
+        <Model3D Name="Classic_RPM_Redline" LayoutTransform="0 -0.108 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_Redline" Material="ClusterDemo/Materials/IC_LineRed" />
+        <Model3D Name="Classic_RPM_UnderGlow" LayoutTransform="0 -0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Classic_RPM_UnderGlow" Material="ClusterDemo/Materials/IC_LineCyan" />
+      </Node3D>
     </Node3D>
-    <Node3D Name="IC_Panel_Lap" LayoutTransform="-1.48207 0 -0.1113  89.99998 11.45916 0  1 1 1">
-      <Model3D Name="Lap_Plate" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Plate" Material="ClusterDemo/Materials/IC_PanelPlate" />
-      <Model3D Name="Lap_ChevronGlow" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_ChevronGlow" Material="ClusterDemo/Materials/IC_ChevronGlow" />
-      <Model3D Name="Lap_Best" LayoutTransform="0.35 0.1 0.295  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Best" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Lap_Last" LayoutTransform="0.35 0.1 0.425  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Last" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Lap_Chevron" LayoutTransform="0 0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Chevron" Material="ClusterDemo/Materials/IC_Chevron" />
-      <Model3D Name="Lap_MapCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_MapCard" Material="ClusterDemo/Materials/IC_Card" />
-      <Model3D Name="Lap_TimesCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_TimesCard" Material="ClusterDemo/Materials/IC_Card" />
-      <Model3D Name="Lap_MapCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_MapCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
-      <Model3D Name="Lap_TimesCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_TimesCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
-      <Model3D Name="Lap_Car" LayoutTransform="0.28113 0.12 -0.37225  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Car" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Lap_Circuit" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Circuit" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Lap_CircuitDone" LayoutTransform="0 0.1 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_CircuitDone" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Lap_BestLabel" LayoutTransform="-0.25 0.08 0.295  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_BestLabel" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Lap_LastLabel" LayoutTransform="-0.25 0.08 0.425  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_LastLabel" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Lap_Count" LayoutTransform="-0.28 0.08 -0.555  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Count" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Lap_Delta" LayoutTransform="-0.28 0.1 0.105  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Delta" Material="ClusterDemo/Materials/IC_Green" />
-      <Model3D Name="Lap_Time" LayoutTransform="-0.28 0.1 -0.005  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Lap_Time" Material="ClusterDemo/Materials/IC_White" />
-    </Node3D>
-    <Node3D Name="IC_Panel_Vitals" LayoutTransform="1.48207 0 -0.1113  89.99998 -11.45916 0  1 1 1">
-      <Model3D Name="Vitals_BOOST_Label" LayoutTransform="-0.48 0.08 -0.08  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Label" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_WATER_Label" LayoutTransform="-0.48 0.08 -0.27  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Label" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_OIL_Label" LayoutTransform="-0.4 0.08 -0.46  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Label" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_Plate" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Plate" Material="ClusterDemo/Materials/IC_PanelPlate" />
-      <Model3D Name="Vitals_RangeLevel" LayoutTransform="-0.42 0.1 0.33  0 0 0  0.68 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeLevel" Material="ClusterDemo/Materials/IC_RangeFill" />
-      <Model3D Name="Vitals_ChevronGlow" LayoutTransform="0 0.02 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ChevronGlow" Material="ClusterDemo/Materials/IC_ChevronGlow" />
-      <Model3D Name="Vitals_Chevron" LayoutTransform="0 0.03 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Chevron" Material="ClusterDemo/Materials/IC_Chevron" />
-      <Model3D Name="Vitals_BOOST_Caption" LayoutTransform="-0.245 0.08 -0.135  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Caption" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Vitals_OIL_Caption" LayoutTransform="-0.245 0.08 -0.515  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Caption" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Vitals_WATER_Caption" LayoutTransform="-0.245 0.08 -0.325  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Caption" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Vitals_ModeCard" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeCard" Material="ClusterDemo/Materials/IC_Card" />
-      <Model3D Name="Vitals_Selection" LayoutTransform="0 0.04 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Selection" Material="ClusterDemo/Materials/IC_Card" />
-      <Model3D Name="Vitals_ModeCard_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeCard_Edge" Material="ClusterDemo/Materials/IC_CardEdge" />
-      <Model3D Name="Vitals_Selection_Edge" LayoutTransform="0 0.045 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Selection_Edge" Material="ClusterDemo/Materials/IC_ChipEdge" />
-      <Model3D Name="Vitals_ModeA" LayoutTransform="-0.21 0.1 0.5  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeA" Material="ClusterDemo/Materials/IC_Red" />
-      <Model3D Name="Vitals_RangeLabel" LayoutTransform="-0.05 0.08 0.1  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeLabel" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Vitals_BOOST_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Bar" Material="ClusterDemo/Materials/IC_Bar_Boost" Uniform.Level="0.68" />
-      <Model3D Name="Vitals_OIL_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Bar" Material="ClusterDemo/Materials/IC_Bar_Oil" Uniform.Level="0.68" />
-      <Model3D Name="Vitals_RangeTrack" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_RangeTrack" Material="ClusterDemo/Materials/IC_BarTrack" />
-      <Model3D Name="Vitals_WATER_Bar" LayoutTransform="0 0.08 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Bar" Material="ClusterDemo/Materials/IC_Bar_Water" Uniform.Level="0.68" />
-      <Model3D Name="Vitals_Range" LayoutTransform="-0.05 0.1 0.215  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_Range" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_ModeB" LayoutTransform="0.14 0.1 0.5  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_ModeB" Material="ClusterDemo/Materials/IC_Grey" />
-      <Model3D Name="Vitals_BOOST_Value" LayoutTransform="0.39 0.1 -0.08  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_BOOST_Value" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_OIL_Value" LayoutTransform="0.39 0.1 -0.46  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_OIL_Value" Material="ClusterDemo/Materials/IC_White" />
-      <Model3D Name="Vitals_WATER_Value" LayoutTransform="0.39 0.1 -0.27  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Vitals_WATER_Value" Material="ClusterDemo/Materials/IC_White" />
+    <Node3D Name="Cool" LayoutTransform="5.6 0 0  0 0 0  1 1 1">
+      <Node3D Name="Cool_Center" LayoutTransform="0 0 0  90 0 0  1 1 1">
+        <Model3D Name="Cool_Unit_Mesh" LayoutTransform="0 -0.1 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Unit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Cool_StatusTabRim" LayoutTransform="0 0.306 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_StatusTabRim" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Cool_StatusTab" LayoutTransform="0 0.3 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_StatusTab" Material="ClusterDemo/Materials/IC_PlaqueTab" />
+        <Model3D Name="Cool_Clock_Mesh" LayoutTransform="0.27 0.31 -0.695  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Clock_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Cool_Temp_Mesh" LayoutTransform="-0.27 0.31 -0.695  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Temp_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Cool_SpeedValue" LayoutTransform="0 -0.1 -0.22 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Cool_SpeedValue" Material="ClusterDemo/Materials/Cool_SpeedValueMat" Uniform.Level="0.68" />
+      </Node3D>
+      <Node3D Name="Cool_Floor" LayoutTransform="0 0 0  90 0 0  1 1 1">
+        <Model3D Name="Cool_CurbL" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CurbL" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Cool_CurbR" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CurbR" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Cool_Deck" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Deck" Material="ClusterDemo/Materials/IC_Deck" ScreenSpaceReflectionEnabled="true" />
+        <Model3D Name="Cool_InfoBar" LayoutTransform="0 0.44 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_InfoBar" Material="ClusterDemo/Materials/IC_PlaqueBar" />
+        <Model3D Name="Cool_Mode_Mesh" LayoutTransform="0 0.45 0.67  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Mode_Mesh" Material="ClusterDemo/Materials/IC_Cyan" />
+        <Model3D Name="Cool_RangeUnit_Mesh" LayoutTransform="0.69 0.45 0.605  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_RangeUnit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Model3D Name="Cool_WaterUnit_Mesh" LayoutTransform="-0.45 0.45 0.605  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_WaterUnit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+        <Node3D Name="Cool_CoolantIcon" LayoutTransform="-0.7 0.45 0.6  0 0 0  1 1 1">
+          <Model3D Name="Cool_CoolantWave1" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CoolantWave1" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_CoolantWave0" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CoolantWave0" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_CoolantBulb" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CoolantBulb" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_CoolantStem" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_CoolantStem" Material="ClusterDemo/Materials/IC_Grey" />
+        </Node3D>
+        <Node3D Name="Cool_FuelIcon" LayoutTransform="0.44 0.45 0.6  0 0 0  1 1 1">
+          <Model3D Name="Cool_FuelBody" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FuelBody" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_FuelHose" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FuelHose" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_FuelWindow" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FuelWindow" Material="ClusterDemo/Materials/IC_Grey" />
+        </Node3D>
+        <Model3D Name="Cool_Gear_Mesh" LayoutTransform="0 0.45 0.555  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Gear_Mesh" Material="ClusterDemo/Materials/IC_White" />
+        <Model3D Name="Cool_Frame" LayoutTransform="0 0.48 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Frame" Material="ClusterDemo/Materials/IC_Frame" />
+        <Model3D Name="Cool_DotGrid" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_DotGrid" Material="ClusterDemo/Materials/IC_DotGrid" Uniform.Phase="4.27257" />
+        <Model3D Name="Cool_FloorEdgeL" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FloorEdgeL" Material="ClusterDemo/Materials/IC_FloorEdgeL" />
+        <Model3D Name="Cool_FloorEdgeR" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FloorEdgeR" Material="ClusterDemo/Materials/IC_FloorEdgeR" />
+        <Model3D Name="Cool_RangeValue" LayoutTransform="0.58 0.45 0.6 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Cool_RangeValue" Material="ClusterDemo/Materials/Cool_RangeValueMat" Uniform.Level="0.68" />
+        <Model3D Name="Cool_WaterValue" LayoutTransform="-0.56 0.45 0.6 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Cool_WaterValue" Material="ClusterDemo/Materials/Cool_WaterValueMat" Uniform.Level="0.68" />
+        <Model3D Name="Cool_InfoSill" LayoutTransform="0 0.445 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_InfoSill" Material="ClusterDemo/Materials/IC_LineCyan" />
+        <Model3D Name="Cool_FrameLine" LayoutTransform="0 0.486 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_FrameLine" Material="ClusterDemo/Materials/IC_LineFrame" />
+      </Node3D>
+      <Node3D Name="Cool_Left" LayoutTransform="-1.3 0.02 0  90 0 0  1 1 1">
+        <Model3D Name="Cool_Left_Blade_5" LayoutTransform="0 -2.06 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_5" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_5" LayoutTransform="0 -2.058 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_5" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Left_Blade_4" LayoutTransform="0 -1.62 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_4" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_4" LayoutTransform="0 -1.618 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_4" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Left_Blade_3" LayoutTransform="0 -1.18 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_3" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_3" LayoutTransform="0 -1.178 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_3" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Left_Blade_2" LayoutTransform="0 -0.74 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_2" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_2" LayoutTransform="0 -0.738 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_2" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Left_Blade_1" LayoutTransform="0 -0.3 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_1" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_1" LayoutTransform="0 -0.298 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_1" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Left_Blade_0" LayoutTransform="0 0.14 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Blade_0" Material="ClusterDemo/Materials/IC_BladeCyan" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Left_Core_0" LayoutTransform="0 0.142 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Core_0" Material="ClusterDemo/Materials/IC_RailCyan" Uniform.Level="0.68" />
+        <Node3D Name="Cool_Left_Card" LayoutTransform="0.32 0.03 -0.02  0 0 21.7724  1 1 1">
+          <Model3D Name="Cool_Left_Tick_1" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_1" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_2" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_2" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_0" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_0" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Tick_3" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_3" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_5" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_5" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_6" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_6" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_4" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_4" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Tick_7" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_7" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_9" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_9" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_10" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_10" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_8" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_8" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Tick_11" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_11" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_13" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_13" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_14" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_14" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_12" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_12" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Tick_15" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_15" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Scale_0_Mesh" LayoutTransform="-0.135 0.008 0.28  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_0_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_17" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_17" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_18" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_18" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_16" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_16" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Tick_19" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_19" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Scale_1_Mesh" LayoutTransform="-0.135 0.008 0.168  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_1_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Tick_20" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Tick_20" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Scale_2_Mesh" LayoutTransform="-0.135 0.008 0.056  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_2_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Scale_3_Mesh" LayoutTransform="-0.135 0.008 -0.056  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_3_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Scale_4_Mesh" LayoutTransform="-0.135 0.008 -0.168  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_4_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_CardRim" LayoutTransform="0 0.006 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_CardRim" Material="ClusterDemo/Materials/IC_Chrome" />
+          <Model3D Name="Cool_Left_Scale_5_Mesh" LayoutTransform="-0.135 0.008 -0.28  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Scale_5_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Glass" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Glass" Material="ClusterDemo/Materials/IC_PlaqueCard" />
+          <Model3D Name="Cool_Left_Unit_Mesh" LayoutTransform="0.05 0.009 0.12  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Unit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Left_Decimal_Mesh" LayoutTransform="0.05 0.01 -0.04  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Decimal_Mesh" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_Heading_Mesh" LayoutTransform="0.05 0.009 -0.23  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Heading_Mesh" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Left_BarTrack" LayoutTransform="0 0.007 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_BarTrack" Material="ClusterDemo/Materials/IC_Dim" />
+          <Model3D Name="Cool_Left_BarCore" LayoutTransform="0 0.009 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_BarCore" Material="ClusterDemo/Materials/Cool_Left_BarCoreMat" Uniform.Level="0.68" />
+          <Model3D Name="Cool_Left_Value" LayoutTransform="0.05 0.009 -0.05  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Value" Material="ClusterDemo/Materials/Cool_Left_ValueMat" Uniform.Level="0.68" />
+          <Model3D Name="Cool_Left_Bar" LayoutTransform="0 0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Bar" Material="ClusterDemo/Materials/Cool_Left_BarMat" Uniform.Level="0.68" />
+        </Node3D>
+        <Model3D Name="Cool_Left_Ambient" LayoutTransform="0 -2.6 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Ambient" Material="ClusterDemo/Materials/IC_Ambient" />
+        <Model3D Name="Cool_Left_Edge_5" LayoutTransform="0 -2.057 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_5" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_5" LayoutTransform="0 -2.056 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_5" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Left_Edge_4" LayoutTransform="0 -1.617 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_4" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_4" LayoutTransform="0 -1.616 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_4" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Left_Edge_3" LayoutTransform="0 -1.177 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_3" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_3" LayoutTransform="0 -1.176 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_3" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Left_Edge_2" LayoutTransform="0 -0.737 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_2" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_2" LayoutTransform="0 -0.736 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_2" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Left_Edge_1" LayoutTransform="0 -0.297 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_1" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_1" LayoutTransform="0 -0.296 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_1" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Left_Edge_0" LayoutTransform="0 0.143 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Edge_0" Material="ClusterDemo/Materials/IC_EdgeCyan" />
+        <Model3D Name="Cool_Left_Neon_0" LayoutTransform="0 0.144 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Left_Neon_0" Material="ClusterDemo/Materials/IC_NeonCyan" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+      </Node3D>
+      <Node3D Name="Cool_Right" LayoutTransform="1.3 0.02 0  90 0 0  1 1 1">
+        <Model3D Name="Cool_Right_Blade_5" LayoutTransform="0 -2.06 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_5" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_5" LayoutTransform="0 -2.058 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_5" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Right_Blade_4" LayoutTransform="0 -1.62 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_4" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_4" LayoutTransform="0 -1.618 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_4" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Right_Blade_3" LayoutTransform="0 -1.18 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_3" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_3" LayoutTransform="0 -1.178 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_3" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Right_Blade_2" LayoutTransform="0 -0.74 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_2" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_2" LayoutTransform="0 -0.738 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_2" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Right_Blade_1" LayoutTransform="0 -0.3 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_1" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_1" LayoutTransform="0 -0.298 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_1" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Model3D Name="Cool_Right_Blade_0" LayoutTransform="0 0.14 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Blade_0" Material="ClusterDemo/Materials/IC_BladeOrange" Uniform.Level="0.712" />
+        <Model3D Name="Cool_Right_Core_0" LayoutTransform="0 0.142 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Core_0" Material="ClusterDemo/Materials/IC_RailOrange" Uniform.Level="0.68" />
+        <Node3D Name="Cool_Right_Card" LayoutTransform="-0.32 0.03 -0.02  0 0 -21.7724  1 1 1">
+          <Model3D Name="Cool_Right_Tick_1" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_1" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_2" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_2" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_0" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_0" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_Tick_3" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_3" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_4" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_4" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_6" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_6" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_7" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_7" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_5" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_5" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_Tick_8" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_8" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_9" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_9" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_11" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_11" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_12" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_12" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_10" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_10" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_Tick_13" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_13" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_14" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_14" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Scale_0_Mesh" LayoutTransform="0.135 0.008 0.28  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Scale_0_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_16" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_16" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_17" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_17" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_15" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_15" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_Tick_18" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_18" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_19" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_19" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Scale_1_Mesh" LayoutTransform="0.135 0.008 0.14  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Scale_1_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Tick_20" LayoutTransform="0 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Tick_20" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_Scale_2_Mesh" LayoutTransform="0.135 0.008 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Scale_2_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Scale_3_Mesh" LayoutTransform="0.135 0.008 -0.14  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Scale_3_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_CardRim" LayoutTransform="0 0.006 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_CardRim" Material="ClusterDemo/Materials/IC_Chrome" />
+          <Model3D Name="Cool_Right_Scale_4_Mesh" LayoutTransform="0.135 0.008 -0.28  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Scale_4_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Glass" LayoutTransform="0 0 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Glass" Material="ClusterDemo/Materials/IC_PlaqueCard" />
+          <Model3D Name="Cool_Right_Unit_Mesh" LayoutTransform="-0.05 0.009 0.12  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Unit_Mesh" Material="ClusterDemo/Materials/IC_Grey" />
+          <Model3D Name="Cool_Right_Heading_Mesh" LayoutTransform="-0.05 0.009 -0.23  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Heading_Mesh" Material="ClusterDemo/Materials/IC_White" />
+          <Model3D Name="Cool_Right_BarTrack" LayoutTransform="0 0.007 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_BarTrack" Material="ClusterDemo/Materials/IC_Dim" />
+          <Model3D Name="Cool_Right_BarCore" LayoutTransform="0 0.009 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_BarCore" Material="ClusterDemo/Materials/Cool_Right_BarCoreMat" Uniform.Level="0.68" />
+          <Model3D Name="Cool_Right_Value" LayoutTransform="-0.05 0.009 -0.05 0 0 0 1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Value" Material="ClusterDemo/Materials/Cool_Right_ValueMat" Uniform.Level="0.68" />
+          <Model3D Name="Cool_Right_Bar" LayoutTransform="0 0.01 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Bar" Material="ClusterDemo/Materials/Cool_Right_BarMat" Uniform.Level="0.68" />
+        </Node3D>
+        <Model3D Name="Cool_Right_Ambient" LayoutTransform="0 -2.6 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Ambient" Material="ClusterDemo/Materials/IC_AmbientWarm" />
+        <Model3D Name="Cool_Right_Edge_5" LayoutTransform="0 -2.057 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_5" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_5" LayoutTransform="0 -2.056 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_5" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Right_Edge_4" LayoutTransform="0 -1.617 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_4" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_4" LayoutTransform="0 -1.616 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_4" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Right_Edge_3" LayoutTransform="0 -1.177 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_3" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_3" LayoutTransform="0 -1.176 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_3" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Right_Edge_2" LayoutTransform="0 -0.737 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_2" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_2" LayoutTransform="0 -0.736 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_2" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Right_Edge_1" LayoutTransform="0 -0.297 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_1" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_1" LayoutTransform="0 -0.296 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_1" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+        <Model3D Name="Cool_Right_Edge_0" LayoutTransform="0 0.143 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Edge_0" Material="ClusterDemo/Materials/IC_EdgeOrange" />
+        <Model3D Name="Cool_Right_Neon_0" LayoutTransform="0 0.144 0  0 0 0  1 1 1" Mesh="ClusterDemo/Meshes/Cool_Right_Neon_0" Material="ClusterDemo/Materials/IC_NeonOrange" Uniform.Level="0.68" Uniform.Bloom="0.3712" />
+      </Node3D>
     </Node3D>
   </Node3D>
   <Node3D Name="Animations">
+    <AnimationPlayer Name="Energy_Flow" Clip="ClusterDemo/Animations/Energy_Flow" />
     <AnimationPlayer Name="Gauge_Boost" Clip="ClusterDemo/Animations/Gauge_Boost" />
-    <AnimationPlayer Name="Gauge_Oil" Clip="ClusterDemo/Animations/Gauge_Oil" />
     <AnimationPlayer Name="Gauge_Range" Clip="ClusterDemo/Animations/Gauge_Range" />
     <AnimationPlayer Name="Gauge_Rev" Clip="ClusterDemo/Animations/Gauge_Rev" />
+    <AnimationPlayer Name="Gauge_Speed" Clip="ClusterDemo/Animations/Gauge_Speed" />
     <AnimationPlayer Name="Gauge_Water" Clip="ClusterDemo/Animations/Gauge_Water" />
   </Node3D>
 </Node3D>

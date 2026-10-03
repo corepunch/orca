@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_RailCyan" Shader="ClusterDemo/Shaders/IC_Segments" BlendMode="Opaque" Uniform.ColorOn="#8BEDFF" Uniform.ColorOff="#122733" Uniform.Level="0.68" Uniform.Intensity="1" />

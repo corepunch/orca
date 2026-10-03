@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_CardEdge" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#2E3136" Uniform.Intensity="1" />

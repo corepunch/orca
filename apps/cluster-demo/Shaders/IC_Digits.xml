@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Digits" Uniform.Tint="#E7F3FF" Uniform.Level="0.5" Uniform.ReadoutMax="320" Uniform.ReadoutDigits="3" Uniform.ReadoutMin="0" Uniform.GlyphPitch="0.15">
+  <VertexShader>in vec3 a_position;
+in vec2 a_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+out vec2 v_texcoord0;
+void main() {
+  float value=floor(ReadoutMin+clamp(Level,0.0,1.0)*(ReadoutMax-ReadoutMin)+.5);
+  float columns=abs(ReadoutDigits);
+  float occupied=clamp(floor(log(max(value,1.0))/log(10.0)+1e-4)+1.0,1.0,columns);
+  vec3 p=a_position;
+  if(ReadoutDigits&gt;0.0) p.x-=(columns-occupied)*GlyphPitch*.5;
+  v_texcoord0=a_texcoord0;
+  gl_Position=u_modelViewProjectionTransform*vec4(p,1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Digits: shader-selected numeral glyphs synchronized with a signal clip
+// Mirrors the Blender node group "IC_Digits"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+void main() {
+  float value=floor(ReadoutMin+clamp(Level,0.0,1.0)*(ReadoutMax-ReadoutMin)+.5);
+  float place=floor(v_texcoord0.y+.1);
+  float glyph=floor(v_texcoord0.x+.1);
+  float power=pow(10.0,place);
+  float digit=mod(floor(value/power),10.0);
+  if (abs(digit-glyph)&gt;.1 || (ReadoutDigits&gt;0.0 &amp;&amp; place&gt;.5 &amp;&amp; value&lt;power)) discard;
+  FragColor=vec4(Tint.rgb,1.0);
+}
+</FragmentShader>
+</Shader>

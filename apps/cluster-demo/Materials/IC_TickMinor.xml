@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_TickMinor" Shader="ClusterDemo/Shaders/IC_Flat" BlendMode="Opaque" Uniform.Tint="#9BA1AA" Uniform.Intensity="1" />

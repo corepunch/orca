@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_Deck" Shader="ClusterDemo/Shaders/IC_Mirror" BlendMode="Opaque" Uniform.Tint="#0B1013" Uniform.Accent="#23C7FF" Uniform.Reflectance="0.3" Uniform.Roughness="0.08" Uniform.Studio="1" Uniform.Level="0.5" Uniform.Spill="0" Uniform.EnvironmentMap="ClusterDemo/Textures/Studio" />

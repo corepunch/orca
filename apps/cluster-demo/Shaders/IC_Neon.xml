@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shader Name="IC_Neon" Uniform.Tint="#23C7FF" Uniform.HotTint="#E7FBFF" Uniform.Intensity="1" Uniform.Core="0.08" Uniform.Bloom="0.45" Uniform.Spread="2.5" Uniform.Level="1" Uniform.Count="1" Uniform.Dim="0.25" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0">
+  <VertexShader>
+in vec3 a_position;
+in vec2 a_texcoord0;
+out vec2 v_texcoord0;
+uniform mat4 u_modelViewProjectionTransform;
+void main() {
+  v_texcoord0 = a_texcoord0;
+  gl_Position = u_modelViewProjectionTransform * vec4(a_position, 1.0);
+}
+</VertexShader>
+  <FragmentShader Out="FragColor">
+// IC_Neon: gas-discharge tube: white-hot core, coloured Gaussian halo, value-driven fill across a stack
+// Mirrors the Blender node group "IC_Neon"; uniform names are its input names.
+// ORCA prepends the #version line and declares the FragColor output; colour
+// uniforms are vec4 display (sRGB) values and only .rgb is used.
+in vec2 v_texcoord0;
+
+uniform float u_time;
+void main() {
+  float u=v_texcoord0.x;
+  float index=floor(v_texcoord0.y);
+  float d=abs(fract(v_texcoord0.y)*2.0-1.0);
+  float core=exp(-pow(d/Core,2.0));
+  float halo=pow(max(1.0-d,0.0),Spread);
+  float fill=clamp((Level*Count-index-u)*40.0+.5,0.0,1.0);
+  float lit=Dim+(1.0-Dim)*fill;
+  float p=Phase+u_time*1.6;
+  float shimmer=.85+.15*sin(u*40.0-p*3.0-index*1.7);
+  float fade=(1.0-Fade*u)*(1.0-Falloff*index/max(Count,1.0));
+  vec3 color=mix(Tint.rgb,HotTint.rgb,clamp(core*fill,0.0,1.0));
+  FragColor=vec4(color,clamp(Intensity*lit*shimmer*fade*(core+Bloom*halo),0.0,1.0));
+}
+</FragmentShader>
+</Shader>

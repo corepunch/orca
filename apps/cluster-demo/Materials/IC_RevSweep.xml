@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_RevSweep" Shader="ClusterDemo/Shaders/IC_Sweep" BlendMode="Alpha" Uniform.Color0="#79140E" Uniform.Color1="#FF5A32" Uniform.Level="0.68" Uniform.Tail="0.17" Uniform.Intensity="0.8" Uniform.InnerFade="0.75" />

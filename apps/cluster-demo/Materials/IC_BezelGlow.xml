@@ -1,2 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Material Name="IC_BezelGlow" Shader="ClusterDemo/Shaders/IC_Gradient" BlendMode="Additive" Uniform.Color0="#212327" Uniform.Color1="#FF2E20" Uniform.Color2="#FF2E20" Uniform.Pos0="0.4" Uniform.Pos1="0.66" Uniform.Pos2="1" Uniform.Intensity="0.55" Uniform.FadeIn="0.06" Uniform.FadeOut="0.06" Uniform.Soft="1" />

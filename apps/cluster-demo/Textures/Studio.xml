@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CubeMapTexture Name="Studio" LeftImage="ClusterDemo/Images/Studio/Left" RightImage="ClusterDemo/Images/Studio/Right" TopImage="ClusterDemo/Images/Studio/Top" BottomImage="ClusterDemo/Images/Studio/Bottom" FrontImage="ClusterDemo/Images/Studio/Front" BackImage="ClusterDemo/Images/Studio/Back" />

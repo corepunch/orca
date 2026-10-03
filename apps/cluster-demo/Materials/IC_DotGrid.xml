@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_DotGrid" Shader="ClusterDemo/Shaders/IC_DotGrid" BlendMode="Additive" Uniform.Tint="#149ADF" Uniform.HotTint="#C7F8FF" Uniform.Intensity="1.25" Uniform.CountU="15" Uniform.CountV="26" Uniform.DotSize="0.22" Uniform.Aspect="0.55" Uniform.Phase="4.27257" Uniform.Fade="1.4" />

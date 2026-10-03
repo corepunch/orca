@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="Classic_SPEED_SweepMat" Shader="ClusterDemo/Shaders/IC_Sweep" BlendMode="Additive" Uniform.Color0="#0E3E5A" Uniform.Color1="#3DD5FF" Uniform.Level="0.68" Uniform.Tail="0.25" Uniform.Intensity="0.28" Uniform.InnerFade="0.95" />

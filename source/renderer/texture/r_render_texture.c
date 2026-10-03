@@ -69,3 +69,88 @@ HANDLER(RenderTargetTexture, Object, Start) {
   }, GetTexture(hObject));
   return TRUE;
 }
+
+void
+SSR_Release(struct ScreenSpaceCapture *capture)
+{
+  if (!capture) return;
+  capture->Color && Texture_Release(capture->Color);
+  capture->Depth && Texture_Release(capture->Depth);
+  memset(capture, 0, sizeof(*capture));
+}
+
+static void
+SSR_AllocateTexture(struct Texture *texture, GLenum format, GLint width, GLint height)
+{
+  if (!texture->texnum) glGenTextures(1, &texture->texnum);
+  glBindTexture(GL_TEXTURE_2D, texture->texnum);
+  glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0,
+               format == GL_DEPTH_COMPONENT24 ? GL_DEPTH_COMPONENT : GL_RGBA,
+               format == GL_DEPTH_COMPONENT24 ? GL_UNSIGNED_INT : GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  format == GL_DEPTH_COMPONENT24 ? GL_NEAREST : GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                  format == GL_DEPTH_COMPONENT24 ? GL_NEAREST : GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+  texture->Width = width;
+  texture->Height = height;
+  texture->Scale = 1;
+}
+
+bool_t
+SSR_CaptureFrame(struct ScreenSpaceCapture *capture)
+{
+  if (!capture || !tr.buffer) return FALSE;
+  GLint viewport[4], framebuffer, depth_size, samples, color_encoding;
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING, &framebuffer);
+  glGetIntegerv(GL_SAMPLES, &samples);
+  if (viewport[2] <= 0 || viewport[3] <= 0 || samples > 0) return FALSE;
+  glGetFramebufferAttachmentParameteriv(GL_READ_FRAMEBUFFER,
+    framebuffer ? GL_DEPTH_ATTACHMENT : GL_DEPTH,
+    GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE, &depth_size);
+  if (!depth_size) return FALSE;
+#ifdef GL_BACK_LEFT
+  GLenum default_color = GL_BACK_LEFT;
+#else
+  GLenum default_color = GL_BACK;
+#endif
+  glGetFramebufferAttachmentParameteriv(GL_READ_FRAMEBUFFER,
+    framebuffer ? GL_COLOR_ATTACHMENT0 : default_color,
+    GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING, &color_encoding);
+
+  GLint previous_unit, previous_texture;
+  glGetIntegerv(GL_ACTIVE_TEXTURE, &previous_unit);
+  glActiveTexture(GL_TEXTURE0 + 3);
+  glGetIntegerv(GL_TEXTURE_BINDING_2D, &previous_texture);
+  if (!capture->Color) capture->Color = ZeroAlloc(sizeof(struct Texture));
+  if (!capture->Depth) capture->Depth = ZeroAlloc(sizeof(struct Texture));
+  if (!capture->Color || !capture->Depth) {
+    glActiveTexture(previous_unit);
+    SSR_Release(capture);
+    return FALSE;
+  }
+  if (capture->Color->Width != viewport[2] || capture->Color->Height != viewport[3]) {
+    // Copy preserves encoded pixels; an sRGB texture decodes them exactly once on sampling.
+    SSR_AllocateTexture(capture->Color, color_encoding == GL_SRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8,
+                         viewport[2], viewport[3]);
+    SSR_AllocateTexture(capture->Depth, GL_DEPTH_COMPONENT24, viewport[2], viewport[3]);
+  }
+  glBindTexture(GL_TEXTURE_2D, capture->Color->texnum);
+  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                     viewport[0], viewport[1], viewport[2], viewport[3]);
+  glBindTexture(GL_TEXTURE_2D, capture->Depth->texnum);
+  glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0,
+                     viewport[0], viewport[1], viewport[2], viewport[3]);
+  GLenum error = glGetError();
+  glBindTexture(GL_TEXTURE_2D, previous_texture);
+  glActiveTexture(previous_unit);
+  if (error != GL_NO_ERROR) {
+    SSR_Release(capture);
+    return FALSE;
+  }
+  return TRUE;
+}

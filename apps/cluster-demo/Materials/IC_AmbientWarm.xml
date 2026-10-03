@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_AmbientWarm" Shader="ClusterDemo/Shaders/IC_RadialGlow" BlendMode="Additive" Uniform.Tint="#FF5B1B" Uniform.Intensity="0.14" Uniform.Power="3" />

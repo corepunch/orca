@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Material Name="IC_NeonCyan" Shader="ClusterDemo/Shaders/IC_Neon" BlendMode="Additive" Uniform.Tint="#129BF0" Uniform.HotTint="#B7F2FF" Uniform.Intensity="0.9" Uniform.Core="0.045" Uniform.Bloom="0.3712" Uniform.Spread="2.6" Uniform.Level="0.68" Uniform.Count="6" Uniform.Dim="0.38" Uniform.Fade="0" Uniform.Phase="0" Uniform.Falloff="0.6" />
