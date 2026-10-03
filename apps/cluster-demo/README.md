@@ -33,6 +33,7 @@ Run from the repository root:
 
 ```sh
 build/bin/orca apps/cluster-demo
+make cluster START=voltage   # builds first, opens on Voltage
 build/bin/orca -test=apps/cluster-demo/Tests/navigation.lua
 ```
 

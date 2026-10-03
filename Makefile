@@ -192,6 +192,10 @@ run:
 example:
 	$(TARGET) samples/Example
 
+# Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.
+cluster: unite
+	CLUSTER_DEMO_START=$(START) $(TARGET) apps/cluster-demo
+
 weather: copyshare
 	@if [ ! -x $(TARGET) ]; then \
 		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
