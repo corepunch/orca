@@ -1,0 +1,4 @@
+interface:
+  display_name: "ORCA Blender Pipeline"
+  short_description: "Author Blender scenes that export to ORCA"
+  default_prompt: "Use $orca-blender-pipeline to build or change a Blender scene (shader node groups, UV-driven materials, fill-up animations) and export it with tools/blender-export.py into an ORCA project."

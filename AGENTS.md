@@ -3,8 +3,10 @@
 ## Agents and skills
 
 Agents are classic implementation roles under `.opencode/agents/`; skills are
-task playbooks under `.opencode/skills/`. Choose the task skill first, then use
-an agent when delegation or specialist ownership is useful.
+task playbooks under `.opencode/skills/`. The same skills are reachable as
+`.claude/skills/` (Claude Code) and `.agents/skills/` (Codex); both are
+symlinks, so edit only `.opencode/skills/`. Choose the task skill first, then
+use an agent when delegation or specialist ownership is useful.
 
 | Typical task | Skill | Agent |
 |---|---|---|
@@ -14,6 +16,8 @@ an agent when delegation or specialist ownership is useful.
 | Write Lua or MoonScript programs | `orca-lua-authoring` | `lua-developer` |
 | Write UI/package XML | `orca-xml-authoring` | `xml-ui-developer` |
 | Define images, textures, shaders, font families, or scenes | `orca-xml-assets-scenes` | `renderer-developer` |
+| Build or debug a 3D app: SceneKit scene XML, shaders/materials, animation players bound to inputs, running it | `orca-3d-scene` | `renderer-developer` |
+| Author a Blender scene for ORCA and export it (`tools/blender-export.py`, `orca-fbx`) | `orca-blender-pipeline` | `renderer-developer` |
 | Bind Lua to XML with controllers, events, or data bindings | `orca-controller-binding` | `lua-developer` or `xml-ui-developer` |
 | Add or update tests | `orca-testing` | `test-writer` |
 | Apply C or CSS conventions | `orca-c-style` or `orca-css` | relevant implementation agent |
@@ -68,6 +72,7 @@ After `.cgen` changes, run `make modules`.
 | Lua API | generated Lua reference, then `docs/LUA_API.md` |
 | UI / layout / XML / style | `docs/UI_SYSTEM.md` |
 | Text rendering / fonts / glyphs | `docs/renderer-internals.md` → *Text Rendering Pipeline* |
+| 3D scene / Blender export | `apps/cluster-demo/` (reference project), `docs/animations.md` |
 | C style | `docs/CODING_STYLE.md` |
 
 ## Working rules

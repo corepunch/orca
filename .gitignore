@@ -20,6 +20,13 @@ generated/
 !.opencode/agents/**
 !.opencode/skills/
 !.opencode/skills/**
+# Skill entry points for Claude Code and Codex: symlinks to .opencode/skills
+!.claude/
+.claude/*
+!.claude/skills
+!.agents/
+.agents/*
+!.agents/skills
 .opencode/node_modules/
 .opencode/package.json
 .opencode/package-lock.json
@@ -103,3 +110,6 @@ samples/Weather/**/*.lua
 !samples/Weather/config/*.lua
 Error
 /samples/Book/Images
+
+# Blender auto-backups next to committed .blend files
+*.blend1

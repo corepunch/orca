@@ -42,7 +42,7 @@ local function test_navigationhost_push_pop()
     test.expect(navigation.CanGoBack, "navigation host should report that it can go back")
     test.expect(detail.DataContext ~= nil, "pushed page should inherit the card data context")
 
-    screen:findChild("GameBack", true):send("Node.LeftButtonUp")
+    screen:findChild("BackButton", true):send("Node.LeftButtonUp")
     pump_messages(screen)
 
     test.expect(root.Visible, "root page should be restored after pop")
