@@ -31,7 +31,6 @@ generated/
 .opencode/package.json
 .opencode/package-lock.json
 .DS_Store
-*.mesh
 amg
 amg-full
 **/vscode-syntax
