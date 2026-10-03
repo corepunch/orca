@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Library>
+  <AnimationClip Name="Gauge_Boost" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Vitals_BOOST_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_BOOST_Bar" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+  <AnimationClip Name="Gauge_Oil" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Vitals_OIL_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_OIL_Bar" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+  <AnimationClip Name="Gauge_Range" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Vitals_RangeLevel.LayoutTransformScale" Path="../../IC_Root/IC_Panel_Vitals/Vitals_RangeLevel" Property="LayoutTransformScale">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 1 1 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 1 1 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+  <AnimationClip Name="Gauge_Rev" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Rev_Needle.LayoutTransformRotation" Path="../../IC_Root/IC_Panel_Rev/Rev_Needle" Property="LayoutTransformRotation">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 225.00001 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="0 -45 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+    <AnimationCurve Name="Rev_Sweep.Level" Path="../../IC_Root/IC_Panel_Rev/Rev_Sweep" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+  <AnimationClip Name="Gauge_Water" Mode="PlayOnce" StartTime="0" StopTime="1">
+    <AnimationCurve Name="Vitals_WATER_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_WATER_Bar" Property="Level">
+      <AnimationCurve.Keyframes>
+        <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
+        <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
+      </AnimationCurve.Keyframes>
+    </AnimationCurve>
+  </AnimationClip>
+</Library>

@@ -620,55 +620,131 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
   return o;
 }
 
-static struct Object *
-load_doc(char const *xml, int len, lpcString_t name,
-         const struct ds_schema *schema)
+static struct _xmlDoc *
+read_doc(char const *xml, int len, lpcString_t name)
 {
   char *expanded = _ExpandXmlPositionalArgs(xml);
   struct _xmlDoc *doc = xmlReadMemory(expanded ? expanded : xml,
-                              expanded ? (int)strlen(expanded) : len,
-                              name, NULL, XML_FLAGS);
+                                      expanded ? (int)strlen(expanded) : len,
+                                      name, NULL, XML_FLAGS);
   free(expanded);
-  if (!doc) return NULL;
+  return doc;
+}
 
-  struct _xmlNode* root = xmlDocGetRootElement(doc);
-  /* When a schema is present the root tag is treated as the top-level entity. */
-  const char *root_entity = (schema && root)
-    ? (DS_FindEntity(schema, (const char *)root->name) ? (const char *)root->name : NULL)
-    : NULL;
-  struct Object *o = root ? node(root, schema, root_entity) : NULL;
+static struct _xmlDoc *
+read_file(lpcString_t path)
+{
+  struct file *fp = FS_LoadFile(path);
+  struct _xmlDoc *doc = fp ? read_doc((char const *)fp->data, fp->size, path) : NULL;
+  if (fp) FS_FreeFile(fp);
+  return doc;
+}
+
+/* Builds and starts the object for element x. source becomes its SourceFile:
+   the path FS_LoadObject resolves back to this element. */
+static struct Object *
+build(struct _xmlNode *x, lpcString_t source, const struct ds_schema *schema)
+{
+  /* With a schema, a top-level tag naming an entity is that entity. */
+  lpcString_t tag = (lpcString_t)x->name;
+  struct Object *o = node(x, schema, schema && DS_FindEntity(schema, tag) ? tag : NULL);
+  if (!o) return NULL;
+  if (source) OBJ_SetSourceFile(o, source);
+  OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
+  return o;
+}
+
+static struct Object *
+build_root(struct _xmlDoc *doc, lpcString_t source, const struct ds_schema *schema)
+{
+  if (!doc) return NULL;
+  struct _xmlNode *root = xmlDocGetRootElement(doc);
+  struct Object *o = root ? build(root, source, schema) : NULL;
   xmlFreeDoc(doc);
-  if (o) {
-    if (name) OBJ_SetSourceFile(o, name);
-    OBJ_SendMessageW(o, ID_Object_Start, 0, NULL);
-  }
+  return o;
+}
+
+static struct Object *
+load_file(lpcString_t path, const struct ds_schema *schema)
+{
+  struct Object *o = build_root(read_file(path), path, schema);
+  if (!o) Con_Error("Failed to parse '%s'", path);
   return o;
 }
 
 struct Object *
 FS_LoadObjectFromXml(lpcString_t path)
 {
-  struct file* fp = FS_LoadFile(path);
-  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, NULL) : NULL;
-  if (fp) FS_FreeFile(fp);
-  if (!o) Con_Error("Failed to parse '%s'", path);
-  return o;
+  return load_file(path, NULL);
 }
 
 struct Object *
 FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema)
 {
-  struct file* fp = FS_LoadFile(path);
-  struct Object *o = fp ? load_doc((char const *)fp->data, fp->size, path, schema) : NULL;
-  if (fp) FS_FreeFile(fp);
-  if (!o) Con_Error("Failed to parse '%s'", path);
+  return load_file(path, schema);
+}
+
+/* An XML library is one file holding many named objects: Dir.xml is a root
+   element (its tag is not instantiated) whose children are the entries, and
+   "Dir/Name" addresses the child with Name="Name". */
+
+static struct _xmlNode *
+find_entry(struct _xmlNode *root, lpcString_t name)
+{
+  xmlForEach(c, root) {
+    xmlChar *entry = xmlGetProp(c, XMLSTR("Name"));
+    bool_t match = entry && !strcmp((char const *)entry, name);
+    if (entry) xmlFree(entry);
+    if (match) return c;
+  }
+  return NULL;
+}
+
+static struct _xmlDoc *
+read_library(lpcString_t path, lpcString_t *entry)
+{
+  lpcString_t slash = strrchr(path, '/');
+  path_t file = {0};
+  if (!slash || !slash[1]) return NULL;
+  int n = snprintf(file, sizeof(file), "%.*s.xml", (int)(slash - path), path);
+  if (n <= 0 || n >= (int)sizeof(file) || !FS_FileExists(file)) return NULL;
+  *entry = slash + 1;
+  struct _xmlDoc *doc = read_file(file);
+  if (!doc) Con_Error("Failed to parse '%s'", file);
+  return doc;
+}
+
+struct Object *
+FS_LoadObjectFromXmlLibrary(lpcString_t path)
+{
+  lpcString_t name = NULL;
+  struct _xmlDoc *doc = read_library(path, &name);
+  if (!doc) return NULL;
+  struct _xmlNode *root = xmlDocGetRootElement(doc);
+  struct _xmlNode *x = root ? find_entry(root, name) : NULL;
+  struct Object *o = x ? build(x, path, NULL) : NULL;
+  if (!x) Con_Error("'%s' has no entry named '%s'", (char const *)doc->URL, name);
+  xmlFreeDoc(doc);
   return o;
+}
+
+void
+FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg)
+{
+  struct _xmlDoc *doc = read_file(path);
+  struct _xmlNode *root = doc ? xmlDocGetRootElement(doc) : NULL;
+  FOR_EACH_LIST(xmlNode, c, root ? root->children : NULL) {
+    xmlChar *name = c->type == XML_ELEMENT_NODE ? xmlGetProp(c, XMLSTR("Name")) : NULL;
+    if (name && *name) fn((lpcString_t)name, arg);
+    if (name) xmlFree(name);
+  }
+  if (doc) xmlFreeDoc(doc);
 }
 
 ORCA_API struct Object *
 FS_LoadObjectFromXmlString(lpcString_t xml_string)
 {
-  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL, NULL);
+  struct Object *o = build_root(read_doc(xml_string, (int)strlen(xml_string), NULL), NULL, NULL);
   if (!o) Con_Error("FS_LoadObjectFromXmlString: failed to parse XML string");
   return o;
 }
@@ -683,7 +759,7 @@ FS_LoadObjectFromXmlStringWithSchema(lpcString_t xml_string, lpcString_t schema_
        For now: parse schema from a temp string using xmlReadMemory directly. */
     schema = DS_ParseSchemaFromString(schema_xml);
   }
-  struct Object *o = load_doc(xml_string, (int)strlen(xml_string), NULL, schema);
+  struct Object *o = build_root(read_doc(xml_string, (int)strlen(xml_string), NULL), NULL, schema);
   if (!o) Con_Error("FS_LoadObjectFromXmlStringWithSchema: failed to parse XML");
   /* Schema classes stay registered until DS_FreeSchema; caller owns the schema.
      For the in-process test use-case we leave classes registered until shutdown. */

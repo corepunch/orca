@@ -37,7 +37,13 @@ inspect only the relevant `.cgen`: `source/filesystem/filesystem.cgen`,
    source files relative to the project conventions already in use.
 4. Give reusable resources stable `Name` values and reference those qualified
    resource names from consumers.
-5. Distinguish the declaration from its consumer: an `Image`/`Texture` loads
+5. Many small declarations of one kind can share a file. A reference
+   `<Project>/<Dir>/<Name>` loads `<Dir>/<Name>.xml` when it exists and
+   otherwise the child with `Name="<Name>"` of the XML library `<Dir>.xml`,
+   whose root (conventionally `<Library>`) is only a container. Each load
+   builds a fresh object, exactly as from a standalone file. Font libraries
+   register every entry of `<FontLibrary>.xml` as a family.
+6. Distinguish the declaration from its consumer: an `Image`/`Texture` loads
    data, while an `ImageView`, material, sprite, or scene property displays or
    samples it.
 

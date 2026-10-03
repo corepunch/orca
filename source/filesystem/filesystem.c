@@ -868,6 +868,22 @@ read_font_family_name(lpcString_t filename, lpcString_t fallback, LPSTR out, siz
   xmlFreeDoc(doc);
 }
 
+struct font_scope {
+  lpcString_t project;
+  lpcString_t library;
+};
+
+static void
+_RegisterLibraryFont(lpcString_t name, void *arg)
+{
+  struct font_scope const *scope = arg;
+  path_t object_path = {0};
+  snprintf(object_path, sizeof(object_path), "%s/%s/%s", scope->project, scope->library, name);
+  CORE_RegisterFontFamily(name, object_path);
+}
+
+// Font families come from a FontLibrary directory of one .xml per family,
+// a single "<FontLibrary>.xml" XML library, or both.
 static void
 _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 {
@@ -880,6 +896,11 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 
   path_t font_dir = {0};
   FS_JoinPaths(font_dir, sizeof(font_dir), szDirname, library_name);
+  path_t library_file = {0};
+  snprintf(library_file, sizeof(library_file), "%s.xml", font_dir);
+  FS_EnumXmlLibrary(library_file, _RegisterLibraryFont,
+                    &(struct font_scope){ project_name, library_name });
+
   DIR *dir = opendir(font_dir);
   if (!dir) return;
 
@@ -1095,6 +1116,30 @@ FS_LoadBundle(lua_State* L, lpcString_t szDirname)
 
 #include "../core/core_local.h" // for file_loader
 
+// The extension of the last path segment (".xml"), or NULL when it has none.
+static lpcString_t
+_PathExtension(lpcString_t path)
+{
+  lpcString_t dot = strrchr(path, '.');
+  lpcString_t slash = strrchr(path, '/');
+  return dot && (!slash || dot > slash) ? dot : NULL;
+}
+
+struct Object *
+FS_LoadXmlDataSource(lpcString_t source, lpcString_t schema_path)
+{
+  // Parse the schema first so its entity classes are registered before the
+  // data is read. They stay registered for the rest of the session.
+  struct file *schema_file = schema_path && *schema_path ? FS_LoadFile(schema_path) : NULL;
+  struct ds_schema const *schema = schema_file
+    ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
+  if (schema_file) FS_FreeFile(schema_file);
+  if (!schema) return FS_LoadObject(source);
+  path_t file = {0};
+  snprintf(file, sizeof(file), "%s%s", source, _PathExtension(source) ? "" : ".xml");
+  return FS_LoadObjectFromXmlWithSchema(file, schema);
+}
+
 struct Object *
 _xml_ds_fetch(const char *params)
 {
@@ -1108,29 +1153,16 @@ _xml_ds_fetch(const char *params)
   if (len >= sizeof(path)) len = sizeof(path) - 1;
   memcpy(path, p, len);
 
-  /* Extract optional Schema= param and load it so entity classes are
-     registered before the data XML is parsed. */
-  const struct ds_schema *schema = NULL;
   const char *sp = strstr(params, "Schema=");
+  char schema[MAX_PROPERTY_STRING] = {0};
   if (sp) {
     sp += 7;
     const char *send = strchr(sp, '&');
     size_t slen = send ? (size_t)(send - sp) : strlen(sp);
-    char spath[MAX_PROPERTY_STRING] = {0};
-    if (slen >= sizeof(spath)) slen = sizeof(spath) - 1;
-    memcpy(spath, sp, slen);
-    struct file *schema_file = FS_LoadFile(spath);
-    schema = schema_file
-      ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
-    if (schema_file) FS_FreeFile(schema_file);
+    if (slen >= sizeof(schema)) slen = sizeof(schema) - 1;
+    memcpy(schema, sp, slen);
   }
-
-  path_t source = {0};
-  const char *dot = strrchr(path, '.');
-  const char *slash = strrchr(path, '/');
-  snprintf(source, sizeof(source), "%s%s", path,
-           !dot || dot < slash ? ".xml" : "");
-  return schema ? FS_LoadObjectFromXmlWithSchema(source, schema) : FS_LoadObject(path);
+  return FS_LoadXmlDataSource(path, schema);
 }
 
 bool_t
@@ -1171,47 +1203,31 @@ _xml_ds_revert(struct Object *root, const char *params)
   return TRUE;
 }
 
-// Load object from a file, trying registered file loaders based on extension.
-// Returns NULL on failure.
-struct Object *FS_LoadObject(lpcString_t tmpl) {
-  path_t filename_only = {0};
-  strncpy(filename_only, tmpl, sizeof(filename_only) - 1);
-  filename_only[sizeof(filename_only) - 1] = '\0';
-
-  lpcString_t dot = strrchr(filename_only, '.');
-  lpcString_t slash = strrchr(filename_only, '/');
-  // Go over registered file loaders and find the first one that matches the extension (if any)
-  // or can load the file with an added extension (if no extension in path)
-  for (struct file_loader* loader = core.file_loaders;
+// Loads the object at path. A path with an extension goes to the loader
+// registered for it. A bare path tries each loader's extension in turn
+// ("Dir/Name" -> "Dir/Name.xml", "Dir/Name.png", ...) and then entry "Name" of
+// the XML library "Dir.xml".
+struct Object *
+FS_LoadObject(lpcString_t path)
+{
+  lpcString_t ext = _PathExtension(path);
+  for (struct file_loader *loader = core.file_loaders;
        loader < core.file_loaders + MAX_FILE_LOADERS && loader->extension;
        loader++)
   {
-    path_t resolved = {0};
-    const char* argv[2] = { NULL, NULL };
-    int argc = 1;
-
-    // If there's no dot or the dot is before the last slash, try adding the loader's extension.
-    if (!dot || dot < slash) {
-      int n = snprintf(resolved, sizeof(resolved), "%s%s", filename_only, loader->extension);
-      if (n <= 0 || n >= (int)sizeof(resolved)) {
-        Con_Error("FS_LoadObject: path too long: '%s'", tmpl);
-        return NULL;
-      }
-      if (FS_FileExists(resolved)) {
-        argv[0] = resolved;
-        return loader->fn(argc, argv);
-      }
-    } else if (dot > slash) {
-      // There's an extension: try loading directly if it matches the loader's extension
-      size_t ext_len = strlen(loader->extension), filename_len = strlen(filename_only);
-      if (filename_len > ext_len && strcmp(filename_only + filename_len - ext_len, loader->extension) == 0) {
-        argv[0] = filename_only;
-        return loader->fn(argc, argv);
-      }
+    path_t file = {0};
+    if (ext) {
+      if (!strcmp(ext, loader->extension)) return loader->fn(1, (const char *[]){ path });
+      continue;
+    }
+    int n = snprintf(file, sizeof(file), "%s%s", path, loader->extension);
+    if (n > 0 && n < (int)sizeof(file) && FS_FileExists(file)) {
+      return loader->fn(1, (const char *[]){ file });
     }
   }
-  Con_Error("No file loader found for '%s'", tmpl);
-  return NULL;
+  struct Object *o = ext ? NULL : FS_LoadObjectFromXmlLibrary(path);
+  if (!o) Con_Error("Cannot load object '%s'", path);
+  return o;
 }
 
 #include <filesystem/filesystem_export.c>

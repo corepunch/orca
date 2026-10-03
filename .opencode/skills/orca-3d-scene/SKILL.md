@@ -17,11 +17,16 @@ apps/<project>/
   package.lua          manifest (package.xml is NOT read any more)
   Screens/<S>.xml      Screen > Viewport3D > Scene > Camera + content
   Scenes/<S>.xml       Node3D prefab with the content (generated)
-  Meshes/<M>.xml       <Mesh Source="<Project>/Meshes/<M>.mesh"/>  (+ .mesh, gitignored)
+  Meshes/<M>.mesh      binary mesh data (committed)
+  Meshes.xml           <Library> of <Mesh Name="<M>" Source="<Project>/Meshes/<M>.mesh"/>
   Shaders/<G>.xml      <Shader> with VertexShader / FragmentShader text
   Materials/<Mat>.xml  <Material Shader=... BlendMode=... Uniform.X=.../>
-  Animations/<A>.xml   <AnimationClip> + Animations.lua index
+  Animations.xml       <Library> of <AnimationClip>, + Animations.lua index
 ```
+
+`<Project>/Meshes/<M>` resolves to `Meshes/<M>.xml` if present, otherwise to
+the entry `Name="<M>"` of the XML library `Meshes.xml`; the same holds for
+any directory.
 
 `package.lua` essentials (see `apps/cluster-demo/package.lua`):
 

@@ -3,8 +3,9 @@
 
 Runs inside Blender and writes an ORCA project's 3D assets from the open file:
 
-  Meshes/      FBX export + orca-fbx (tools/fbx-import.cpp): <object>.mesh and
-               a <Mesh> declaration next to it
+  Meshes/      FBX export + orca-fbx (tools/fbx-import.cpp): <object>.mesh
+  Meshes.xml   one <Mesh> declaration per mesh, as an XML library: the
+               reference "<project>/Meshes/<object>" resolves to its entry
   Shaders/     one <Shader> per shader node group that has a "<group>.frag"
                text block (GLSL fragment body); "<group>.vert" overrides the
                default vertex stage
@@ -12,7 +13,8 @@ Runs inside Blender and writes an ORCA project's 3D assets from the open file:
                values are the group node's inputs; "orca_blend" on the
                material is opaque | alpha | additive
   Images/      images used by Image Texture nodes
-  Animations/  one <AnimationClip> per action, plus Animations.lua describing them
+  Animations.xml  one <AnimationClip> per action, as an XML library
+  Animations.lua  what each clip stands for
   Scenes/      <name>.xml: the node hierarchy with transforms and one
                AnimationPlayer per clip (Animations/<clip>), as a prefab rooted
                in a Node3D
@@ -96,6 +98,14 @@ def write_xml(path, root, doctype=None):
             f.write(doctype + "\n")
         f.write(ET.tostring(root, encoding="unicode"))
         f.write("\n")
+
+
+def write_library(path, entries):
+    """Many named objects in one file: "<dir>/<Name>" resolves to the entry
+    Name="<Name>" of <dir>.xml when <dir>/<Name>.xml does not exist."""
+    root = ET.Element("Library")
+    root.extend(entries)
+    write_xml(path, root)
 
 
 # ---------------------------------------------------------------- transforms
@@ -209,8 +219,9 @@ def export_material(mat, node, project, out_dir):
 # ---------------------------------------------------------------- meshes
 
 
-def export_meshes(meshes, project, mesh_dir, orca_fbx):
-    """FBX -> orca-fbx, then one <Mesh> declaration per file."""
+def export_meshes(meshes, project, out_dir, orca_fbx):
+    """FBX -> orca-fbx, then Meshes.xml declaring a <Mesh> per file."""
+    mesh_dir = os.path.join(out_dir, "Meshes")
     if os.path.isdir(mesh_dir):
         shutil.rmtree(mesh_dir)
     with tempfile.TemporaryDirectory() as tmp:
@@ -232,11 +243,12 @@ def export_meshes(meshes, project, mesh_dir, orca_fbx):
         done = subprocess.run([orca_fbx, fbx, mesh_dir], capture_output=True, text=True)
         if done.returncode != 0:
             raise RuntimeError("orca-fbx failed: " + (done.stderr or done.stdout))
-    for ob in meshes:
-        if not os.path.exists(os.path.join(mesh_dir, ob.name + ".mesh")):
-            raise RuntimeError("orca-fbx wrote no mesh for " + ob.name)
-        write_xml(os.path.join(mesh_dir, ob.name + ".xml"),
-                  ET.Element("Mesh", {"Name": ob.name, "Source": "{}/Meshes/{}.mesh".format(project, ob.name)}))
+    missing = [ob.name for ob in meshes if not os.path.exists(os.path.join(mesh_dir, ob.name + ".mesh"))]
+    if missing:
+        raise RuntimeError("orca-fbx wrote no mesh for " + ", ".join(missing))
+    write_library(os.path.join(out_dir, "Meshes.xml"), [
+        ET.Element("Mesh", {"Name": ob.name, "Source": "{}/Meshes/{}.mesh".format(project, ob.name)})
+        for ob in meshes])
 
 
 # ---------------------------------------------------------------- animation
@@ -311,10 +323,11 @@ def uniform_curves(tree, fcurves):
 
 
 def export_animations(objects, node_path, project, out_dir):
-    """Write one clip per action. Returns [(action, duration, {object name: [uniform names]})]."""
+    """Write Animations.xml with one clip per action. Returns [(action, duration, {object name: [uniform names]})]."""
     fps = bpy.context.scene.render.fps / bpy.context.scene.render.fps_base
     exported = set(objects)
     clips = []
+    entries = []
     for action in bpy.data.actions:
         curves = []                 # (target object, property, keys)
         node_uniforms = {}
@@ -334,17 +347,22 @@ def export_animations(objects, node_path, project, out_dir):
         first = min(k[0][0] for _o, _p, k in curves)
         last = max(k[-1][0] for _o, _p, k in curves)
         duration = (last - first) / fps
-        root = ET.Element("AnimationClip", {"Name": action.name, "Mode": "PlayOnce", "StartTime": "0", "StopTime": fmt(duration)})
+        clip = ET.Element("AnimationClip", {"Name": action.name, "Mode": "PlayOnce", "StartTime": "0", "StopTime": fmt(duration)})
         for ob, prop, keys in curves:
             # Players sit under <prefab root>/Animations/<clip>, hence the two steps up.
-            curve = ET.SubElement(root, "AnimationCurve", {
+            curve = ET.SubElement(clip, "AnimationCurve", {
                 "Name": "{}.{}".format(ob.name, prop), "Path": "../../" + node_path[ob], "Property": prop})
             frames = ET.SubElement(curve, "AnimationCurve.Keyframes")
             for frame, value in keys:
                 value = list(value) + [0.0] * (4 - len(value))
                 ET.SubElement(frames, "Keyframe", {"Time": fmt((frame - first) / fps), "Value": vec(value), "TangentMode": "1"})
-        write_xml(os.path.join(out_dir, "Animations", action.name + ".xml"), root)
+        entries.append(clip)
         clips.append((action, duration, node_uniforms))
+    path = os.path.join(out_dir, "Animations.xml")
+    if entries:
+        write_library(path, entries)
+    elif os.path.exists(path):
+        os.remove(path)
     return clips
 
 
@@ -508,9 +526,9 @@ def export(out_dir, project=None, collection=None, screen="Cluster", orca_fbx=OR
         materials[mat.name] = (mat, shader_node(mat))
     groups = {node.node_tree.name: node.node_tree for _m, node in materials.values()}
 
-    for sub in ("Shaders", "Materials", "Animations"):
+    for sub in ("Shaders", "Materials"):
         shutil.rmtree(os.path.join(out_dir, sub), ignore_errors=True)
-    export_meshes(meshes, project, os.path.join(out_dir, "Meshes"), orca_fbx)
+    export_meshes(meshes, project, out_dir, orca_fbx)
     for group in groups.values():
         export_shader(group, os.path.join(out_dir, "Shaders", group.name + ".xml"))
     for mat, node in materials.values():

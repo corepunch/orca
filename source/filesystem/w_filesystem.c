@@ -389,18 +389,7 @@ HANDLER(XmlDataSource, Object, Start) {
   if (!pXmlDataSource->Source || !*pXmlDataSource->Source) return FALSE;
   if (!fs_can_start_datasource) return FALSE;
   struct DataSource *ds = GetDataSource(hObject);
-  struct file *schema_file = ds && ds->Schema ? FS_LoadFile(ds->Schema) : NULL;
-  struct ds_schema const *schema = schema_file
-    ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
-  if (schema_file) FS_FreeFile(schema_file);
-  path_t source = {0};
-  lpcString_t dot = strrchr(pXmlDataSource->Source, '.');
-  lpcString_t slash = strrchr(pXmlDataSource->Source, '/');
-  snprintf(source, sizeof(source), "%s%s", pXmlDataSource->Source,
-           !dot || dot < slash ? ".xml" : "");
-  struct Object *data = schema
-    ? FS_LoadObjectFromXmlWithSchema(source, schema)
-    : FS_LoadObject(source);
+  struct Object *data = FS_LoadXmlDataSource(pXmlDataSource->Source, ds ? ds->Schema : NULL);
   if (!data || !GetDataObject(data)) {
     Con_Printf("Could not load XmlDataSource '%s' from '%s'",
                OBJ_GetName(hObject), pXmlDataSource->Source);

@@ -38,6 +38,15 @@ FS_LoadObjectFromXml(lpcString_t path);
 struct Object *
 FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema);
 
+// Loads entry "Name" of the XML library "Dir.xml" for path "Dir/Name".
+// Returns NULL without logging when Dir.xml does not exist.
+struct Object *
+FS_LoadObjectFromXmlLibrary(lpcString_t path);
+
+// Calls fn with the Name of each entry in the XML library file at path.
+void
+FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
+
 void
 FS_RegisterDataSourceProvider(const char *type_name,
                              struct Object *(*fetch)(const char *params));
@@ -84,6 +93,11 @@ FS_SaveDataSource(const char *name);
 
 bool_t
 FS_RevertDataSource(const char *name);
+
+// Loads an XmlDataSource tree from source, typed by the schema file at
+// schema_path when one is given.
+struct Object *
+FS_LoadXmlDataSource(lpcString_t source, lpcString_t schema_path);
 
 struct Object *
 _xml_ds_fetch(const char *params);

@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<AnimationClip Name="Gauge_Boost" Mode="PlayOnce" StartTime="0" StopTime="1">
-  <AnimationCurve Name="Vitals_BOOST_Bar.Level" Path="../../IC_Root/IC_Panel_Vitals/Vitals_BOOST_Bar" Property="Level">
-    <AnimationCurve.Keyframes>
-      <Keyframe Time="0" Value="0 0 0 0" TangentMode="1" />
-      <Keyframe Time="1" Value="1 0 0 0" TangentMode="1" />
-    </AnimationCurve.Keyframes>
-  </AnimationCurve>
-</AnimationClip>

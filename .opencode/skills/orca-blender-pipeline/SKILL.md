@@ -117,10 +117,11 @@ runpy.run_path("tools/blender-export.py")["export"](
     "apps/<project>", collection="<Collection>")
 ```
 
-or headless (untested): `blender -b scene.blend --python tools/blender-export.py -- apps/<project> --collection <Collection>`.
+or headless: `blender -b scene.blend --python tools/blender-export.py -- apps/<project> --collection <Collection>`.
 
-Outputs: `Meshes/` (binary `.mesh` are gitignored; the `<Mesh>` XML next to
-them is committed), `Shaders/`, `Materials/`, `Animations/` + `Animations.lua`,
+Outputs: `Meshes/` (binary `.mesh`, committed) declared by the XML library
+`Meshes.xml`, `Shaders/`, `Materials/`, the XML library `Animations.xml` +
+`Animations.lua`,
 `Scenes/<Screen>.xml` (prefab, regenerated every time), and once only
 `Screens/<Screen>.xml` and `package.lua` (app-owned afterwards; the export
 result prints the camera element to copy if it changed, and lists property

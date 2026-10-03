@@ -80,7 +80,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-xml-library test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -297,7 +297,7 @@ $(eval $(call C_TEST_RULE,test-trigger-actions,tests/test_trigger_actions.c,$(TE
 $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT),$(TEST_EDITOR_BIN),$(EDITOR_PLUGIN_OBJECT),,$(TEST_LDFLAGS) -lplatform -lm))
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 
-HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost
+HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library
 
 $(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-state-manager,tests/test_state_manager.lua,app copyshare))
@@ -307,6 +307,7 @@ $(eval $(call LUA_TEST_RULE,test-styles-lua,tests/test_styles_lua.lua,app copysh
 $(eval $(call LUA_TEST_RULE,test-body,tests/test_body.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-console-view,tests/test_console_view.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-object-retention,tests/test_object_retention.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-xml-library,tests/test_xml_library.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-async,tests/test_async.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-widget,tests/widget_spec.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-router,tests/router_spec.lua,app copyshare))

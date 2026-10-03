@@ -6,7 +6,7 @@ with `tools/blender-export.py`. It is the reference project for the
 
 ```bash
 make && make orca-fbx                      # engine + FBX converter (needs the Autodesk FBX SDK)
-# regenerate the binary meshes (gitignored) and the other assets from Blender:
+# regenerate the meshes and the other assets from Blender:
 blender -b apps/cluster-demo/blender/cluster.blend --python tools/blender-export.py \
     -- apps/cluster-demo --collection InstrumentCluster
 build/bin/orca apps/cluster-demo
@@ -14,7 +14,8 @@ build/bin/orca apps/cluster-demo
 
 - `blender/build_cluster.py` builds the whole scene procedurally (run it inside
   Blender); `blender/cluster.blend` is its saved result.
-- Every gauge is an `AnimationClip` in `Animations/`; the app poses a gauge by
+- Meshes are binary `Meshes/*.mesh` files declared together in `Meshes.xml`.
+- Every gauge is an `AnimationClip` in `Animations.xml`; the app poses a gauge by
   setting its player's `CurrentTime` (0..1 = empty..full). `Animations.lua`
   lists each clip's signal name and range.
 - `Demo/FillAll.xml` (used by `Screens/Cluster.xml`) scrubs all gauges
