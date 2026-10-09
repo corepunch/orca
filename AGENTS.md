@@ -1,5 +1,9 @@
 # ORCA Agent Guide
 
+
+## UI design skill
+
+For designing or reviewing screens and components, use the [`orca-ui-design`](.opencode/skills/orca-ui-design/SKILL.md) skill (adapted from Apple HIG principles for ORCA's declarative modern UI).
 ## Agents and skills
 
 Agents are classic implementation roles under `.opencode/agents/`; skills are
