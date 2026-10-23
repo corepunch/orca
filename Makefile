@@ -203,6 +203,17 @@ weather: copyshare
 	fi
 	$(TARGET) samples/Book
 
+.PHONY: chat test-chat test-network-headers
+chat: copyshare
+	$(TARGET) apps/chat
+
+test-chat: copyshare
+	$(TARGET) -test=tests/test_chat_api.lua
+	$(TARGET) -test=tests/test_chat_app.lua
+
+test-network-headers:
+	python3 tests/test_network_headers.py --binary $(TARGET)
+
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)
 

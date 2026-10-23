@@ -1,0 +1,5 @@
+.chat-action:hover { opacity: 0.78; }
+.chat-action:focus { ring: 0 2 #c4adff; }
+.chat-input:focus { border-color: #a98bfa; }
+.conversation:hover { background-color: #1d1b2b; }
+.conversation:focus { border-color: #8b5cf6; }

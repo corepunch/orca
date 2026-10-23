@@ -28,6 +28,19 @@ int main(void)
   lua_pop(L, 1);
   renderer_Init(64, 64, TRUE);
 
+  RUN_TEST("solid_image_uses_initialized_white_texture", {
+    unsigned char pixel[4] = {0};
+    R_BeginFrame((struct color){0, 0, 0, 1});
+    R_DrawImage(&(DRAWIMAGESTRUCT){
+      .rect = {0, 0, 64, 64},
+      .uv = {0, 0, 1, 1},
+      .color = {1, 0, 0, 1},
+    });
+    glReadPixels(8, 8, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
+    EXPECT(pixel[0] == 255 && pixel[1] == 0 && pixel[2] == 0);
+    EXPECT(glGetError() == GL_NO_ERROR);
+  });
+
   struct ScreenSpaceCapture capture = {0};
   GLint original_fbo;
   GLuint verify_fbo = 0;

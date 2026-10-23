@@ -979,9 +979,10 @@ renderer_Init(uint32_t dwWidth, uint32_t dwHeight, bool_t bOffscreen)
     axCreateWindow("Window", dwWidth, dwHeight, 0);
   }
 
-  R_InitResources();
-
+  // Texture creation uses the vertex buffer to detect an initialized GL context.
   R_InitBuffers();
+
+  R_InitResources();
 
   /* Log the GL version and extension list on embedded/WebGL targets where the
    * available extension set can vary unexpectedly and is useful for debugging.

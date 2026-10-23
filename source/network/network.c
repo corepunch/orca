@@ -130,6 +130,7 @@ typedef struct
 {
   CURL* easy_handle;
   CURLM* multi_handle;
+  struct curl_slist* headers;
   buffer_t response;
   buffer_t header;
 } request_t;
@@ -137,6 +138,7 @@ typedef struct
 void
 free_request(request_t* req)
 {
+  curl_slist_free_all(req->headers);
   free(req->header.data);
   free(req->response.data);
   free(req);
@@ -261,9 +263,14 @@ int fetch_http(lua_State* L)
   
   //  CURLcode res;
   // Allocate the initial request structure
-  request_t* req = malloc(sizeof(request_t));
+  request_t* req = calloc(1, sizeof(*req));
+  if (!req) return luaL_error(L, "Failed to allocate HTTP request");
   alloc_buffer(&req->response);
   alloc_buffer(&req->header);
+  if (!req->response.data || !req->header.data) {
+    free_request(req);
+    return luaL_error(L, "Failed to allocate HTTP response buffers");
+  }
   
   // Initialize libcurl
   if (!(req->easy_handle = curl_easy_init())) {
@@ -271,7 +278,6 @@ int fetch_http(lua_State* L)
     return luaL_error(L, "curl_easy_init() failed");
   }
   
-  struct curl_slist* headers = NULL;
   bool_t noloadcookies = FALSE;
   
   if (lua_type(L, 2) == LUA_TTABLE) {
@@ -282,11 +288,24 @@ int fetch_http(lua_State* L)
     if (lua_type(L, -1) == LUA_TTABLE) {
       lua_pushnil(L);
       while (lua_next(L, -2)) {
-        static char entry[1024] = { 0 };
         lpcString_t key = luaL_checkstring(L, -2);
         lpcString_t value = luaL_checkstring(L, -1);
-        snprintf(entry, sizeof(entry), "%s: %s", key, value);
-        headers = curl_slist_append(headers, entry);
+        size_t entry_size = strlen(key) + strlen(value) + 3;
+        char* entry = malloc(entry_size);
+        if (!entry) {
+          curl_easy_cleanup(req->easy_handle);
+          free_request(req);
+          return luaL_error(L, "Failed to allocate HTTP header");
+        }
+        snprintf(entry, entry_size, "%s: %s", key, value);
+        struct curl_slist* headers = curl_slist_append(req->headers, entry);
+        free(entry);
+        if (!headers) {
+          curl_easy_cleanup(req->easy_handle);
+          free_request(req);
+          return luaL_error(L, "Failed to append HTTP header");
+        }
+        req->headers = headers;
         lua_pop(L, 1);
       }
       lua_pop(L, 1);
@@ -315,7 +334,7 @@ int fetch_http(lua_State* L)
   curl_easy_setopt(
                    req->easy_handle, CURLOPT_WRITEDATA, &req->response); // Buffer for response
   curl_easy_setopt(req->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
-  curl_easy_setopt(req->easy_handle, CURLOPT_HTTPHEADER, headers);
+  curl_easy_setopt(req->easy_handle, CURLOPT_HTTPHEADER, req->headers);
   //  curl_easy_setopt(req->easy_handle, CURLOPT_HEADERFUNCTION,
   // write_callback);   curl_easy_setopt(req->easy_handle,
   // CURLOPT_HEADERDATA,
@@ -404,7 +423,7 @@ NET_FetchBegin(const char *url)
 
   NET_Init();
 
-  request_t *req = malloc(sizeof(request_t));
+  request_t *req = calloc(1, sizeof(*req));
   if (!req) return NULL;
   alloc_buffer(&req->response);
   alloc_buffer(&req->header);
