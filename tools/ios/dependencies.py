@@ -8,6 +8,7 @@ from pathlib import Path
 import shlex
 import shutil
 import subprocess
+import tempfile
 
 
 SOURCES = {
@@ -72,8 +73,17 @@ def main():
                CFLAGS=shlex.join(flags), CPPFLAGS='', LDFLAGS=shlex.join(flags),
                PKG_CONFIG='/usr/bin/false', PKG_CONFIG_PATH='', PKG_CONFIG_LIBDIR='',
                CLANG_MODULE_CACHE_PATH=str(root / 'module-cache'))
-    for key in ('CPATH', 'C_INCLUDE_PATH', 'LIBRARY_PATH', 'SDKROOT', 'MACOSX_DEPLOYMENT_TARGET'):
+    for key in ('CPATH', 'C_INCLUDE_PATH', 'CPLUS_INCLUDE_PATH', 'LIBRARY_PATH', 'SDKROOT',
+                'SDK_NAME', 'SDK_VERSION', 'IPHONEOS_DEPLOYMENT_TARGET', 'TVOS_DEPLOYMENT_TARGET',
+                'WATCHOS_DEPLOYMENT_TARGET', 'XROS_DEPLOYMENT_TARGET', 'MACOSX_DEPLOYMENT_TARGET',
+                'CC_BUILD', 'CCexe', 'MAKEFLAGS', 'GNUMAKEFLAGS', 'MFLAGS', 'MAKELEVEL'):
         env.pop(key, None)
+    host_sdk = subprocess.check_output(['xcrun', '--sdk', 'macosx', '--show-sdk-path'],
+                                       env=env, text=True).strip()
+    host_compiler = subprocess.check_output(['xcrun', '--sdk', 'macosx', '--find', 'clang'],
+                                            env=env, text=True).strip()
+    env['CC_BUILD'] = shlex.join([host_compiler, '-arch', os.uname().machine, '-isysroot', host_sdk,
+                                  '-mmacosx-version-min=12.0'])
     jobs = str(min(os.cpu_count() or 2, 8))
     sources = {name: source_tree(name, cache) for name in SOURCES}
     lua = sources['lua-5.4.8'] / 'src'
@@ -110,20 +120,26 @@ def main():
                        '--disable-smtp', '--disable-gopher', '--disable-mqtt']),
     )
     for name, options in builds:
-        output = root / 'dependency-build' / name
-        if output.exists():
-            shutil.rmtree(output)
-        output.mkdir(parents=True)
         log = root / (name + '.log')
         print('Building ' + name + '; log: ' + str(log), flush=True)
-        with log.open('w') as stream:
-            commands = ([str(sources[name] / 'configure'), '--host=' + args.arch + '-apple-darwin',
-                         '--prefix=' + str(prefix), '--disable-shared', '--enable-static', *options],
-                        ['make', '-j' + jobs], ['make', 'install'])
-            for command in commands:
-                result = subprocess.run(command, cwd=output, env=env, stdout=stream, stderr=subprocess.STDOUT)
-                if result.returncode:
-                    raise SystemExit(name + ' failed; see ' + str(log))
+        # Upstream make/configure files do not support spaces in build or source paths.
+        # Keep only their transient work in a path without spaces, then retain static outputs.
+        with tempfile.TemporaryDirectory(prefix='orca-ios-', dir='/tmp') as temporary:
+            scratch = Path(temporary)
+            source, output, install = scratch / 'source', scratch / 'build', scratch / 'install'
+            shutil.copytree(sources[name], source)
+            output.mkdir()
+            with log.open('w') as stream:
+                commands = ([str(source / 'configure'), '--host=' + args.arch + '-apple-darwin',
+                             '--prefix=' + str(install), '--disable-shared', '--enable-static', *options],
+                            ['make', '-j' + jobs], ['make', 'install'])
+                for command in commands:
+                    result = subprocess.run(command, cwd=output, env=env, stdout=stream, stderr=subprocess.STDOUT)
+                    if result.returncode:
+                        raise SystemExit(name + ' failed; see ' + str(log))
+            shutil.copytree(install / 'include', prefix / 'include', dirs_exist_ok=True)
+            for library in (install / 'lib').glob('*.a'):
+                shutil.copy2(library, prefix / 'lib' / library.name)
     stamp.write_text(settings)
 
 

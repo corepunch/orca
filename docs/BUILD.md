@@ -44,6 +44,12 @@ Change the module `.cgen` or handwritten C source, then rerun `make modules`.
 
 ## iPhone and iPad
 
+Native Xcode projects live in each application folder: open
+`apps/chat/chat.xcodeproj` and select `chat-ios`, or
+`apps/cluster-demo/cluster-demo.xcodeproj` and select `cluster-demo-ios`.
+They support iPhone, iPad and Simulator, with shared schemes for Xcode Cloud.
+Regenerate them using `python3 tools/xcode/generate.py --all`.
+
 Build standalone iOS apps with Make and the Xcode command-line tools; no
 Xcode project is required. Start with `make ios-run` for the chat app in an
 iPhone simulator, or `make ios-run DEVICE_TYPE=iPad` for an iPad simulator.

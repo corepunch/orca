@@ -9,6 +9,9 @@ build/
 Build/
 DerivedData/
 generated/
+# Native Xcode project inputs are versioned with each app.
+!**/*.xcodeproj/Generated/
+!**/*.xcodeproj/Generated/**
 *.o
 *.so
 *.kzproj

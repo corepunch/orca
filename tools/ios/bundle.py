@@ -34,7 +34,8 @@ def main():
     for name, source in (('share', share), ('project', project)):
         target = bundle / name
         shutil.copytree(source, target, ignore=shutil.ignore_patterns(
-            '.git', '__pycache__', '.DS_Store', 'build', '*.mobileprovision'))
+            '.git', '__pycache__', '.DS_Store', 'build', '*.mobileprovision',
+            '*.xcodeproj', '*.xcworkspace', 'ci_scripts'))
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
                     'UIInterfaceOrientationLandscapeRight']
     info = {

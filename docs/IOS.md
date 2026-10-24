@@ -1,9 +1,44 @@
 # iPhone and iPad
 
-ORCA builds a standalone universal iOS `.app` directly with Make, `xcrun clang`
-and Apple SDKs. There is no `.xcodeproj` or Xcode build step. The build pattern
-follows the sibling `orion-ui/packaging/ipad/build.mk` and `lua-objc/scripts/ipad/`
-projects.
+ORCA builds universal iOS apps through either native Xcode projects or Make and
+`xcrun clang`. Each application has its own committed `.xcodeproj` beside its
+sources. The native project generator follows `orion-ui/tools/xcode/`; the Make
+build follows `orion-ui/packaging/ipad/build.mk` and `lua-objc/scripts/ipad/`.
+
+## Native Xcode projects and Xcode Cloud
+
+Open `apps/chat/chat.xcodeproj` and choose the shared `chat-ios` scheme, or
+`apps/cluster-demo/cluster-demo.xcodeproj` with `cluster-demo-ios`. Each scheme
+supports iPhone, iPad and Simulator, including Run and Archive actions.
+
+```sh
+python3 tools/xcode/generate.py chat        # Regenerate one app's project
+python3 tools/xcode/generate.py --all       # Regenerate apps/*/package.lua projects
+xcodebuild -project apps/chat/chat.xcodeproj -scheme chat-ios \
+  -destination 'generic/platform=iOS Simulator' \
+  -derivedDataPath build/xcode/chat CODE_SIGNING_ALLOWED=NO build
+```
+
+Commit the generated project, its `Generated/ios-Info.plist` and shared scheme.
+Set the development team in Xcode, then select this project and scheme when
+creating an Xcode Cloud workflow. The native build phases prepare the host code
+generator, static dependencies, API files and resources inside DerivedData;
+they need no existing local Make build. Regeneration preserves signing settings
+and customized shared schemes. No custom Cloud hooks are required for these
+build phases; optional hooks can later live in a `ci_scripts` directory beside
+the selected project, as described in
+[Apple's custom script guide](https://developer.apple.com/documentation/xcode/writing-custom-build-scripts).
+
+Ensure Xcode Cloud can fetch the submodule revisions referenced by ORCA and
+download the pinned dependency archives. Public submodules are supported
+directly; private repositories need Cloud access, as described in
+[Apple's dependency guide](https://developer.apple.com/documentation/xcode/making-dependencies-available-to-xcode-cloud).
+Push a changed `libs/platform` commit before publishing a parent revision that
+references it. No signing certificates or provisioning profiles belong in Git.
+
+See [the Xcode generator guide](../tools/xcode/README.md) for build commands,
+configuration options and regeneration behavior. The Make targets below remain
+available independently.
 
 ## Requirements
 
