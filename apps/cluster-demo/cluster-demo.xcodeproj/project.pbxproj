@@ -454,7 +454,7 @@
 "buildActionMask" = 2147483647;
 "name" = "Prepare ORCA sources and dependencies";
 "shellPath" = "/bin/sh";
-"shellScript" = "set -eu\n/usr/bin/python3 \"$ORCA_ROOT/tools/xcode/build.py\" prepare\n";
+"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" prepare\n";
 "inputPaths" = (
 "$(ORCA_ROOT)/tools/xcode/build.py",
 "$(ORCA_ROOT)/tools/xcode/common.py",
@@ -513,7 +513,7 @@
 "buildActionMask" = 2147483647;
 "name" = "Bundle ORCA runtime and app resources";
 "shellPath" = "/bin/sh";
-"shellScript" = "set -eu\n/usr/bin/python3 \"$ORCA_ROOT/tools/xcode/build.py\" resources\n";
+"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" resources\n";
 "runOnlyForDeploymentPostprocessing" = 0;
 "alwaysOutOfDate" = 1;
 };

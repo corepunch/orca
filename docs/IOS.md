@@ -12,14 +12,17 @@ Open `apps/chat/chat.xcodeproj` and choose the shared `chat-ios` scheme, or
 supports iPhone, iPad and Simulator, including Run and Archive actions.
 
 ```sh
-python3 tools/xcode/generate.py chat        # Regenerate one app's project
-python3 tools/xcode/generate.py --all       # Regenerate apps/*/package.lua projects
+sh tools/xcode/generate.sh chat        # Regenerate one app's project
+sh tools/xcode/generate.sh --all       # Regenerate apps/*/package.lua projects
 xcodebuild -project apps/chat/chat.xcodeproj -scheme chat-ios \
   -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath build/xcode/chat CODE_SIGNING_ALLOWED=NO build
 ```
 
 Commit the generated project, its `Generated/ios-Info.plist` and shared scheme.
+Generation is offline and uses an existing Python runtime directly; it never
+invokes Apple's Python launcher or installs developer tools. You can open the
+committed projects without regenerating them.
 Set the development team in Xcode, then select this project and scheme when
 creating an Xcode Cloud workflow. The native build phases prepare the host code
 generator, static dependencies, API files and resources inside DerivedData;

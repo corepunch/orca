@@ -1,5 +1,13 @@
 # ORCA Agent Guide
 
+## Application authoring
+
+For creating or reorganizing an app, start with
+[`orca-app-authoring`](.opencode/skills/orca-app-authoring/SKILL.md).
+The maintained conventions live in [Building ORCA applications](docs/app/index.md)
+and [App styling](docs/app/styling.md). They distinguish supported behavior,
+recommended defaults, and remaining engine gaps. Preserve an explicit user
+choice or an established project architecture when doing local feature work.
 
 ## UI design skill
 
@@ -14,6 +22,7 @@ use an agent when delegation or specialist ownership is useful.
 
 | Typical task | Skill | Agent |
 |---|---|---|
+| Create an app or choose its architecture, state, and navigation | `orca-app-authoring` | `lua-developer` or `xml-ui-developer` |
 | Add a class, property, field, method, message, struct, or enum | `orca-api-codegen` | `engine-developer` |
 | Implement a cross-cutting engine feature | `orca-feature-implementation` | `engine-developer` |
 | Expose an existing or new API to Lua | `orca-lua-exposure` | `lua-developer` |
@@ -71,10 +80,10 @@ After `.cgen` changes, run `make modules`.
 | Task | Read after its skill |
 |---|---|
 | Build / test | `docs/BUILD.md`, `docs/TESTING.md` |
-| Architecture | `docs/PROJECT_MAP.md`, `docs/ARCHITECTURE.md` |
+| Architecture / application structure | `docs/PROJECT_MAP.md`, `docs/app/index.md` |
 | Class / component | generated reference for its module, then related docs |
 | Lua API | generated Lua reference, then `docs/LUA_API.md` |
-| UI / layout / XML / style | `docs/UI_SYSTEM.md` |
+| UI / layout / XML / style | `docs/UI_SYSTEM.md`, `docs/app/styling.md` |
 | Text rendering / fonts / glyphs | `docs/renderer-internals.md` → *Text Rendering Pipeline* |
 | 3D scene / Blender export | `apps/cluster-demo/` (reference project), `docs/animations.md` |
 | C style | `docs/CODING_STYLE.md` |
@@ -104,8 +113,10 @@ first letter for Lua (`findChild`, `addChild`). The generated
 ## Icons
 
 Use [Lucide Icons](https://lucide.dev/icons) for SVG icons. Import raw,
-stroke-based SVG with `stroke="currentColor"` so CSS `color` and
-`-orca-tint-mode: template` control tint consistently.
+stroke-based SVG with `stroke="currentColor"`. `VectorView` automatically
+renders an SVG as a template alpha mask tinted by `Foreground` / CSS `color`.
+Verify supported properties for other image controls instead of assuming a
+`-orca-tint-mode` CSS declaration exists.
 
 ## `walk_prop` invariants
 

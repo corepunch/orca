@@ -46,6 +46,7 @@
 //}
 
 struct AXsize R_TexImagePNG(GLenum target, struct AXbuffer* sb, bool_t premultiply_alpha);
+struct AXsize R_ImageSize(struct AXbuffer* sb);
 struct AXsize R_TexImageDDS(GLenum target, struct AXbuffer* sb);
 struct AXsize R_TexImagePVR(GLenum target, struct AXbuffer* sb);
 
@@ -351,6 +352,17 @@ HANDLER(Image, Object, Start) {
   struct AXsize tex = MAKE_TEX_SIZE(0, 0);
   struct file* pFile;
   struct Texture* pTexture = GetTexture(hObject);
+  if (!tr.buffer) {
+    /* Headless layout needs dimensions without creating a GPU resource. */
+    if ((pFile = FS_LoadFile(pImage->Source))) {
+      struct AXbuffer sb = { (void*)pFile->data, pFile->size, pFile->size, 0 };
+      tex = R_ImageSize(&sb);
+      FS_FreeFile(pFile);
+    }
+    pTexture->Width = tex.width / MAX(1, pTexture->Scale);
+    pTexture->Height = tex.height / MAX(1, pTexture->Scale);
+    return TRUE;
+  }
   R_Call(glGenTextures, 1, &pTexture->texnum);
   R_Call(glBindTexture, GL_TEXTURE_2D, pTexture->texnum);
   if ((pFile = FS_LoadFile(pImage->Source))) {

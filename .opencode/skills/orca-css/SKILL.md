@@ -5,6 +5,10 @@ description: Create, edit, or review ORCA CSS stylesheets, selectors, classes, p
 
 # ORCA CSS Authoring
 
+The canonical application conventions are in
+[App styling](../../../docs/app/styling.md); use it for style ownership, semantic
+tokens, and the distinction between supported syntax and design conventions.
+
 ## Confirm support
 
 1. Read `docs/UI_SYSTEM.md` and `docs/css-compatibility.md`.
@@ -80,8 +84,9 @@ properties unless the local parser and tests explicitly support them.
   declarations may be ignored rather than reported.
 - Prefer data bindings over CSS classes when a layout value represents data,
   such as per-item indentation or visibility.
-- Use raw Lucide SVG with `stroke="currentColor"` and
-  `-orca-tint-mode: template` for tintable icons.
+- Use raw Lucide SVG with `stroke="currentColor"`. `VectorView` already renders
+  a template alpha mask tinted by inherited `Foreground` / CSS `color`; do not
+  invent `ForegroundHint = "Template"` or an unsupported `-orca-tint-mode` rule.
 
 ## Validate
 

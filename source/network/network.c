@@ -281,7 +281,6 @@ int fetch_http(lua_State* L)
   bool_t noloadcookies = FALSE;
   
   if (lua_type(L, 2) == LUA_TTABLE) {
-    luaX_parsefield(lpcString_t, body, 2, luaL_optstring, NULL);
     luaX_parsefield(lpcString_t, method, 2, luaL_optstring, NULL);
     luaX_parsefield(bool_t, nocookies, 2, lua_toboolean);
     lua_getfield(L, 2, "headers");
@@ -319,9 +318,15 @@ int fetch_http(lua_State* L)
     } else {
       curl_easy_setopt(req->easy_handle, CURLOPT_CUSTOMREQUEST, method);
     }
+    lua_getfield(L, 2, "body");
+    size_t body_size = 0;
+    char const *body = luaL_optlstring(L, -1, NULL, &body_size);
     if (body) {
-      curl_easy_setopt(req->easy_handle, CURLOPT_POSTFIELDS, body);
+      // Preserve embedded NUL bytes and own the payload while fetch yields.
+      curl_easy_setopt(req->easy_handle, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)body_size);
+      curl_easy_setopt(req->easy_handle, CURLOPT_COPYPOSTFIELDS, body);
     }
+    lua_pop(L, 1);
     noloadcookies = nocookies;
   }
   

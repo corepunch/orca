@@ -5,6 +5,12 @@ description: Write or refactor ORCA application code in Lua or MoonScript, inclu
 
 # ORCA Lua Authoring
 
+For application-level structure, use `orca-app-authoring` and
+[Building ORCA applications](../../../docs/app/index.md). Keep services,
+application state, and presentation separate; preserve an existing project's
+Lua/MoonScript approach rather than treating the XML-first default as a migration
+requirement.
+
 ## Gather the API
 
 1. Read `docs/LUA_API.md`.
@@ -51,6 +57,9 @@ return Card
   headless tests before asserting rebuilt children.
 - Prefer messages, properties, and bindings for communication across objects
   or subsystems.
+- Plain Lua state is not an observable binding source. Define its adapter to
+  `DataContext` explicitly. `ItemsSource` controls do not automatically reconcile
+  later collection mutations; choose one tested update path.
 - Preserve object ownership and lifecycle; do not retain stale scene objects
   across rebuild or removal.
 

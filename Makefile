@@ -45,7 +45,7 @@ CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -61,6 +61,8 @@ LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libxml-2.0 2>/
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
 	LIBS += -framework OpenGL -framework IOSurface
+	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation
+	UNITEOBJECTS += media_apple.o
 	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
 else
 	LIBS += -lGL
@@ -96,6 +98,12 @@ platform: | directories
 $(SOURCEMODULES2): | directories
 
 buildunite: modules $(SOURCEMODULES2)
+
+ifeq ($(UNAME_S),Darwin)
+buildunite: $(OBJECTDIR)/media_apple.o
+$(OBJECTDIR)/media_apple.o: source/media/media_apple.m source/media/media_native.h | directories
+	$(Q)$(CC) $(CFLAGS) -x objective-c -c $< -o $@
+endif
 
 buildlib: platform buildunite
 ifeq ($(shell uname -s),Darwin)
@@ -209,7 +217,26 @@ chat: copyshare
 
 test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_api.lua
+	$(TARGET) -test=tests/test_chat_mock.lua
+	$(TARGET) -test=tests/test_chat_models.lua
+	$(TARGET) -test=tests/test_chat_features.lua
 	$(TARGET) -test=tests/test_chat_app.lua
+
+NODE ?= node
+.PHONY: test-chat-finalizer test-media
+test-chat-finalizer:
+	$(NODE) tests/test_chat_photo_finalize.mjs
+	$(NODE) tests/test_chat_photo_cleanup.mjs
+
+ifeq ($(UNAME_S),Darwin)
+$(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules | directories
+	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
+
+test-media: $(BINDIR)/test_media
+	$<
+
+test-headless: test-media
+endif
 
 # iPhone/iPad .app bundles built directly with the Apple command-line tools.
 .PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools
@@ -340,6 +367,9 @@ $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TE
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
+HEADLESS_LUA_TESTS += test-imageview
+.PHONY: test-imageview
+$(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-state-manager,tests/test_state_manager.lua,app copyshare))

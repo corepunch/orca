@@ -7,10 +7,10 @@ import os
 from pathlib import Path
 import plistlib
 import re
-import subprocess
 import xml.etree.ElementTree as ET
 
 from common import ROOT, unity_sources, write
+from pbxproj import load
 
 
 def encode(value):
@@ -26,8 +26,10 @@ def encode(value):
 def read_project(path):
     if not path.exists():
         return {}
-    return json.loads(subprocess.check_output(
-        ['plutil', '-convert', 'json', '-o', '-', str(path)], text=True))['objects']
+    data = load(path)
+    if not isinstance(data, dict) or not isinstance(data.get('objects'), dict):
+        raise ValueError('Invalid Xcode project: ' + str(path))
+    return data['objects']
 
 
 class Project:
@@ -116,6 +118,8 @@ def generate(args, app):
     existing = read_project((args.settings_from or bundle) / 'project.pbxproj')
     project = Project(existing)
     units = unity_sources()
+    asset_catalog = app_dir / 'Assets.xcassets'
+    has_app_icon = (asset_catalog / 'AppIcon.appiconset').is_dir()
     common = {
         'ORCA_ROOT': '$(SRCROOT)/' + os.path.relpath(ROOT, output),
         'ORCA_PROJECT': '$(SRCROOT)/' + os.path.relpath(app_dir, output),
@@ -136,6 +140,8 @@ def generate(args, app):
         'MARKETING_VERSION': '1.0', 'CURRENT_PROJECT_VERSION': '1',
         'CODE_SIGN_STYLE': 'Automatic',
     }
+    if has_app_icon:
+        common['ASSETCATALOG_COMPILER_APPICON_NAME'] = 'AppIcon'
     overrides = {}
     if args.team is not None:
         overrides['DEVELOPMENT_TEAM'] = args.team
@@ -163,22 +169,31 @@ def generate(args, app):
             'COMPILER_FLAGS': ('-idirafter' if objc else '-I') + ' "$(DERIVED_FILE_DIR)/generated"'}))
     prepare = project.add('prepare', 'PBXShellScriptBuildPhase', buildActionMask=2147483647,
         name='Prepare ORCA sources and dependencies', shellPath='/bin/sh',
-        shellScript='set -eu\n/usr/bin/python3 "$ORCA_ROOT/tools/xcode/build.py" prepare\n',
+        shellScript='set -eu\n/bin/sh "$ORCA_ROOT/tools/xcode/python.sh" "$ORCA_ROOT/tools/xcode/build.py" prepare\n',
         inputPaths=['$(ORCA_ROOT)/tools/xcode/build.py', '$(ORCA_ROOT)/tools/xcode/common.py',
                     '$(ORCA_ROOT)/tools/ios/dependencies.py'],
         outputPaths=['$(DERIVED_FILE_DIR)/' + filename for filename in units],
         runOnlyForDeploymentPostprocessing=0, alwaysOutOfDate=1)
     compile_phase = project.add('sources', 'PBXSourcesBuildPhase', buildActionMask=2147483647,
                                 files=sources, runOnlyForDeploymentPostprocessing=0)
+    asset_reference, asset_phase = None, None
+    if has_app_icon:
+        asset_reference = project.add('assets/catalog', 'PBXFileReference', name=asset_catalog.name,
+            path=os.path.relpath(asset_catalog, output), sourceTree='SOURCE_ROOT',
+            lastKnownFileType='folder.assetcatalog')
+        asset_file = project.add('assets/build', 'PBXBuildFile', fileRef=asset_reference)
+        asset_phase = project.add('assets/resources', 'PBXResourcesBuildPhase', buildActionMask=2147483647,
+            files=[asset_file], runOnlyForDeploymentPostprocessing=0)
     resources = project.add('resources', 'PBXShellScriptBuildPhase', buildActionMask=2147483647,
         name='Bundle ORCA runtime and app resources', shellPath='/bin/sh',
-        shellScript='set -eu\n/usr/bin/python3 "$ORCA_ROOT/tools/xcode/build.py" resources\n',
+        shellScript='set -eu\n/bin/sh "$ORCA_ROOT/tools/xcode/python.sh" "$ORCA_ROOT/tools/xcode/build.py" resources\n',
         runOnlyForDeploymentPostprocessing=0, alwaysOutOfDate=1)
     product = project.add('product', 'PBXFileReference', path=name + '.app',
                           sourceTree='BUILT_PRODUCTS_DIR', explicitFileType='wrapper.application')
     target = project.add('target/' + name, 'PBXNativeTarget', name=target_name, productName=name,
                          productReference=product, productType='com.apple.product-type.application',
-                         buildConfigurationList=target_configs, buildPhases=[prepare, compile_phase, resources],
+                         buildConfigurationList=target_configs,
+                         buildPhases=[prepare, compile_phase] + ([asset_phase] if asset_phase else []) + [resources],
                          buildRules=[], dependencies=[])
     browse = []
     for label, path in (('Application resources', app_dir), ('Engine', ROOT / 'source'),
@@ -187,7 +202,9 @@ def generate(args, app):
                                   path=os.path.relpath(path, output), sourceTree='SOURCE_ROOT', lastKnownFileType='folder'))
     generated = project.add('group/generated', 'PBXGroup', name='Generated Sources', children=references, sourceTree='<group>')
     products = project.add('group/products', 'PBXGroup', name='Products', children=[product], sourceTree='<group>')
-    group = project.add('group/main', 'PBXGroup', children=browse + [generated, products], sourceTree='<group>')
+    group = project.add('group/main', 'PBXGroup',
+                        children=browse + ([asset_reference] if asset_reference else []) + [generated, products],
+                        sourceTree='<group>')
     root = project.add('project', 'PBXProject', buildConfigurationList=root_configs, compatibilityVersion='Xcode 14.0',
                        developmentRegion='en', knownRegions=['en', 'Base'], mainGroup=group,
                        productRefGroup=products, projectDirPath='', projectRoot='', targets=[target])

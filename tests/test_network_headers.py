@@ -16,6 +16,14 @@ import threading
 
 
 class Echo(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        data = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+        self.send_response(200)
+        self.send_header("Content-Type", "application/octet-stream")
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
     def do_GET(self):
         data = json.dumps({
             "authorization": self.headers.get("Authorization"),
@@ -68,7 +76,19 @@ assert(data.longValue == longValue, "Header value was truncated")
 assert(data.longName == "full-name", "Header name was truncated")
 data = fetch {Authorization="Bearer second", ["X-Long-Value"]="second", [longName]="second"}
 assert(data.authorization == "Bearer second" and data.longValue == "second" and data.longName == "second", "Headers leaked across requests")
-print("PASS: native HTTP header regression (9007-byte JWT, 6000-byte value, 1502-byte name, second request)")
+local binary = string.char(255,216,0,17,0,255) .. string.rep("binary", 2000) .. string.char(0,255,217)
+local returned
+local upload = coroutine.create(function()
+  local response = network.fetch(URL, {method="POST",body=binary,nocookies=true,
+    headers={["Content-Type"]="application/octet-stream"}})
+  returned = response:text()
+end)
+repeat
+  local ok, err = coroutine.resume(upload)
+  assert(ok, tostring(err))
+until coroutine.status(upload) == "dead"
+assert(returned == binary, "Binary upload/download must preserve all embedded NUL bytes")
+print("PASS: native HTTP headers and binary round-trip (long JWT/header values, request isolation, embedded NUL bytes)")
 '''.replace("URL", json.dumps("http://127.0.0.1:" + str(server.server_port))))
         result = subprocess.run([str(binary), "-test=" + str(script)], cwd=root, timeout=20)
         raise SystemExit(result.returncode)

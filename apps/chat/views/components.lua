@@ -104,12 +104,19 @@ function C.brand()
     })
 end
 
-function C.navItem(label, icon, action, active)
-    local color = active and colors.accentText or colors.dim
-    local button = C.button("", action, { Height = 58, Background = active and colors.soft or "#00000000" })
-    local grid = ui.Grid { Rows = "24px 18px", Padding = "8 8", Spacing = 2, IgnoreHitTest = true }
-    grid:addChild(C.icon(icon, 20, color))
-    grid:addChild(C.text(label, { FontSize = 10, FontWeight = "Bold", Foreground = color, TextHorizontalAlignment = "Center" }))
+function C.navItem(label, icon, key)
+    local button = ui.Tab {
+        Name = "Tab" .. key, Value = key, Height = 58, class = "chat-tab",
+        SelectedColor = colors.soft, UnselectedColor = colors.surface,
+    }
+    local grid = ui.Grid { Rows = "22px 16px", Padding = "8 8", Spacing = 2, IgnoreHitTest = true }
+    local image = C.icon(icon, 20, colors.muted)
+    image.Name = "Tab" .. key .. "Icon"
+    grid:addChild(image)
+    grid:addChild(C.text(label, {
+        Name = "Tab" .. key .. "Label", FontSize = 10, FontWeight = "Bold",
+        Foreground = colors.muted, TextHorizontalAlignment = "Center",
+    }))
     button:addChild(grid)
     return button
 end

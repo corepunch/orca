@@ -1,99 +1,198 @@
 # Chat Lua API
 
-`require "api.chat"` is an application Lua API, following ORCA's package
-`ProjectReferences` convention. It uses the existing `orca.network` and
-`orca.parsers.json` bindings; it does not add engine classes.
+`require "api.chat"` provides one client for Supabase and the offline mock.
+Only the HTTP adapter imports `orca.network` and `orca.parsers.json`. Remote
+methods yield through `network.fetch`; call them from an ORCA event coroutine.
 
 ```lua
 local Chat = require "api.chat"
-local client = Chat.demo() -- in-memory sample conversations; no network
-local rooms, err = client:listRooms()
-local messages = client:listMessages(rooms[1].id)
-local sent = client:sendMessage(rooms[1].id, "Hello!")
+local client = Chat.mock() -- isolated, signed out, no network
+assert(client:requestCode("demo@example.invalid"))
+assert(client:verifyCode("demo@example.invalid", "123456")) -- mock fixture code only
+local profile = assert(client:getProfile())
+local rooms = assert(client:listRooms())
+local sent = assert(client:sendMessage(rooms[1].id, "Hello!"))
 ```
 
-Demo messages last for this app process. Demo mode never sends a message to a
-real person and never invents replies. Start a fresh `Chat.demo()` to reset it.
+Methods return `value, nil` on success and `nil, error` on failure. A successful
+RPC may return `false`; test for `value == nil` when that distinction matters.
+Errors contain `code`, `message`, and an optional numeric HTTP `status`.
+Sessions and passwords stay in memory; restarting requires sign-in. Never log
+session objects. Protected requests use the user's JWT and a publishable key.
 
-For a real backend:
-
-```lua
-local client, err = Chat.supabase {
-  url = "https://YOUR_PROJECT.supabase.co",
-  publishableKey = "sb_publishable_YOUR_KEY",
-}
-local session, err = client:signIn("you@example.com", "your password")
-local room, err = client:createRoom("Weekend", { "OTHER_USER_UUID" })
-```
-
-Remote methods yield through `network.fetch`, so invoke them inside ORCA's
-event coroutine context. The UI can keep showing a loading state while they
-run. The implementation catches thrown HTTP response userdata and maps it to
-the same error contract as transport failures.
-
-All methods return `value, nil` on success and `nil, error` on failure. Errors
-have `code`, `message`, and an optional numeric HTTP `status`.
+## Identity and profiles
 
 | Method | Result |
 | --- | --- |
-| `getSession()` | Session copy or nil; no HTTP request |
-| `signIn(email, password)` | Session with `user`, access/refresh tokens and `expires_at` |
-| `signUp(email, password, displayName)` | Session, or `{confirmationRequired=true}` if email confirmation is enabled |
-| `refreshSession()` | Rotated session; automatically called near expiry or once after HTTP 401 |
-| `signOut()` | Clears local credentials and requests local-session revocation; can return an HTTP/network error |
-| `listRooms()` | Rooms `{id,name,created_at}` visible to the signed-in member |
-| `createRoom(name, memberIds)` | New room; include the other participants' Supabase Auth UUIDs |
-| `listMessages(roomId, {limit=100})` | Latest 1–100 messages in chronological order |
-| `sendMessage(roomId, body)` | Persisted message `{id,room_id,sender_id,body,created_at}` |
+| `requestCode(identifier)` | `{identifier,delivery,expires_in,retry_after}`; sends login/signup OTP |
+| `verifyCode(identifier,code)` | Session after six-digit OTP verification |
+| `requestIdentityLink(identifier)` | Starts a verified email/phone change for the current account |
+| `verifyIdentityLink(identifier,code)` | Verified self profile once the requested identifier is confirmed |
+| `getProfile()` | Self `{id,display_name,username,phone,email,discoverable_phone,discoverable_email}`; only verified identifiers |
+| `updateProfile(values)` | Self profile after changing public name, username or discovery flags |
+| `findPeople(query)` | Public `{id,display_name,username}` matches for an exact username or opted-in identifier |
+| `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
+| `getSession()` | Defensive session copy or nil; no request |
+| `refreshSession()` | Rotated session; also runs near expiry or once after an authenticated HTTP 401 |
+| `signOut()` | Clears local credentials and requests local-session revocation, including on network failure |
+| `signIn(email,password)` | Existing email/password login; returns a session |
+| `signUp(email,password,displayName)` | Existing password signup; session or `{confirmationRequired=true}` |
 
-Passwords, sessions, and tokens are held in memory only. Restarting requires
-sign-in. There is no insecure file persistence. Do not log session objects.
-The client accepts only publishable keys, so secret/service-role keys cannot
-be accidentally used in app configuration. Protected requests use the user's
-JWT; the publishable key identifies the app, and database RLS authorizes rows.
+An identifier is an email or an international phone number beginning with `+`.
+The client lowercases email and removes spaces, parentheses and hyphens from
+phones, requiring 8–15 digits with a nonzero country prefix. Usernames are
+unique lowercase strings of 3–32 letters, numbers or underscores, beginning
+with a letter. An empty username clears it. Profiles cannot edit Auth identifiers.
 
-The first version refreshes conversation history on request. It does not yet
-implement WebSocket subscriptions, push notifications, attachments, read
-receipts, member discovery, older-history pagination, or end-to-end encryption.
+Discovery flags default to false and require the corresponding verified
+identifier. Search uses exact matches, with optional `@` for usernames, and
+allows 20 lookups per minute per account. A known username does not grant room
+membership. Contacts come from authorized relationships; channel subscribers
+can see themselves and staff in the member list, without a peer subscriber
+directory. Owners and admins can see the full membership.
 
-## Supabase setup
+Linking verifies ownership and preserves the account ID. An identifier already
+owned by another account is rejected. The client checks the verified self
+profile after Auth verification; the same user ID alone is insufficient proof.
+With Supabase's [secure email change](https://supabase.com/docs/reference/javascript/auth-updateuser),
+both inboxes may need confirmation. Until the requested identifier appears in
+the verified profile, `verifyIdentityLink` returns `verification_pending` and
+the UI should keep the verification form open for the remaining code. A
+different-user verification response cannot replace the existing session.
 
-1. Create a Supabase project. No cloud project is created by this repository.
-2. Run `backend/schema.sql` once in its SQL editor. The migration creates
-   `chat_rooms`, `chat_members`, `chat_messages`, membership RLS policies, and
-   an atomic authenticated `create_chat_room` function. Anonymous access is
-   revoked. Members can read their rooms and send messages under their own ID.
-   A user cannot join an existing room by inserting a membership row.
-3. Enable email/password sign-in in Authentication. Keep email confirmation
-   enabled for real users; configure email delivery before inviting users.
-4. Copy the project URL and **publishable** key from the Connect dialog into
-   the app's local configuration. Never copy a secret or service-role key.
-5. Create and confirm two accounts. Copy the other account's UUID from the
-   project's Authentication users table to start a conversation. There is no
-   public user directory in this prototype.
-6. Sign into both accounts in separate clients and refresh to receive the
-   other user's messages. Test a third account: it must see no private rooms
-   and must be rejected when sending to a room it does not belong to.
+The mock uses a five-minute code lifetime, 60-second resend cooldown, and five
+attempts per challenge. Configure real Auth delivery, OTP lengths, expiry and
+rate limits as described in [backend setup](backend/README.md); the request
+result's timing fields are UI hints, not a replacement for server enforcement.
 
-The schema intentionally allows a signed-in user who knows another user's
-UUID to invite them into a newly created room. Production invitation consent,
-abuse limits, retention, and account management remain future product work.
-The SQL migration has not been applied against a live account automatically.
+## Conversations, roles and invitations
 
-## Testing and transport injection
+| Method | Result |
+| --- | --- |
+| `listRooms()` | Member-visible rooms, including `kind`, `visibility`, `role`, `can_post` |
+| `createRoom(name,memberIds,options)` | Room; options are `{kind="group",visibility="private"}` by default |
+| `listMembers(roomId)` | Authorized `{user_id,display_name,username,role}` rows |
+| `setMemberRole(roomId,userId,role)` | Owner-managed role change |
+| `removeMember(roomId,userId)` | Owner/admin removal subject to role restrictions |
+| `createInvite(roomId)` | `{code,room_id,expires_at,max_uses,uses,...}` |
+| `joinInvite(code)` | Joined room with role and posting capability |
+| `revokeInvite(roomId,code)` | Boolean; false when the invite is unknown |
+| `findChannels(query)` | Public channels matching a name query of at least two characters |
+| `joinPublicChannel(roomId)` | Public channel joined as a subscriber |
+| `listMessages(roomId,{limit=100})` | Latest 1–100 messages in chronological display order |
+| `sendMessage(roomId,body,attachmentIds)` | Persisted message with embedded `attachments` |
 
-Pass `transport = function(request) ... end` to `Chat.supabase` to substitute
-HTTP in tests. Requests contain `method`, `url`, `headers`, and an optional
-Lua table `body`; responses contain numeric `status` and a decoded table
-`body`. Pass `clock = function() return unixSeconds end` for expiry tests.
+Names contain 1–80 characters; `memberIds` contains up to 50 other Auth UUIDs.
+Groups and channels may start with an empty member list. The creator becomes
+owner automatically. A private direct chat requires exactly one other person;
+the canonical pair reuses its existing conversation in either participant order.
 
-From the repository root, run `lua tests/test_chat_api.lua` with Lua 5.3+, or
-use the ORCA headless runner's `-test=tests/test_chat_api.lua` option. The suite
-does not access the network or need credentials.
+Groups allow owners, admins and members to post. Channels allow owners and
+admins to post; ordinary members have role `subscriber` and `can_post=false`.
+Only owners change roles. Admins can remove ordinary members, while owners
+manage admins; the owner cannot be removed or demoted. Direct chats do not
+expose membership administration. Removing a member revokes room, message and
+private-photo access. Invitations require staff rights, expire after 24 hours,
+allow ten joins, and can be revoked. Rejoining with a valid invite does not use
+another allowance. Public channel discovery does not grant posting rights.
 
-Backend choice and protocol references: Supabase combines [Auth and JWT-backed
-database authorization](https://supabase.com/docs/guides/auth) with
-[Postgres row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security).
-Its [Auth API specification](https://github.com/supabase/auth/blob/master/openapi.yaml)
-documents password/refresh token grants. The [API key guide](https://supabase.com/docs/guides/getting-started/api-keys)
-specifies publishable keys for desktop and mobile clients and secret keys for servers.
+Messages allow up to 4000 UTF-8 bytes and four photos; photo-only messages use
+`body=""`. Publishing uses the atomic `post_chat_message` RPC, which derives
+the sender from Auth and attaches only ready, unexpired photos owned by that
+sender in that room. Direct REST inserts are disabled. History refresh is
+explicit; realtime subscriptions, push notifications, older-history pagination,
+read receipts and end-to-end encryption are not implemented.
+
+## Private photos
+
+```lua
+local media = require "orca.media"
+local photo, err = media.pickPhoto() -- or media.processPhoto(sourceBytes)
+if photo then
+  local attachment = assert(client:uploadPhoto(room.id, photo))
+  local message = assert(client:sendMessage(room.id, "", { attachment.id }))
+  local thumbnailJpeg = assert(client:getPhoto(message.attachments[1].id, true))
+end
+```
+
+`uploadPhoto(roomId,{jpeg,thumbnail,width,height})` returns attachment metadata:
+`id`, `room_id`, `uploader_id`, `status`, dimensions, byte counts, object keys
+and optional `message_id`. Native preparation also returns thumbnail dimensions
+and `mime_type="image/jpeg"`. `getPhoto(id,thumbnail)` returns raw JPEG bytes;
+`discardPhoto(id)` removes an unpublished photo and both private objects.
+
+The native macOS encoder decodes and orients source pixels, flattens alpha,
+converts to sRGB, strips source private metadata, and produces a JPEG plus a
+thumbnail. Output limits are 1,000,000 bytes per object, 1600 pixels on the
+photo's longest edge and 256 pixels for the thumbnail. Client preflight and
+the mock inspect JPEG structure, dimensions and location metadata. Harmless
+generated EXIF is accepted. The trusted Edge finalizer independently validates
+stored bytes and metadata before marking a reservation ready; its JPEG check
+is structural and does **not** fully decode compressed pixel entropy.
+
+Storage uses the private `chat-photos` bucket. Upload reserves a pending row,
+uploads immutable photo/thumbnail objects, then calls `finalize-chat-photo`.
+Photos transition `pending -> ready -> attached`, or `discarded` before posting.
+Unpublished photos are visible only to their uploader while still a member;
+attached photos are readable by room members. Publishing and finalization
+recheck posting rights. Reservations expire after one hour, with at most twenty
+unfinished recent uploads per user. Failed uploads attempt cleanup. Local
+preview files are private temporary files and the app clears them on logout.
+
+## Models and backend setup
+
+```lua
+local models = require("Chat/models").new(client)
+local room = assert(models.Rooms:create {
+  name = "News", member_ids = {}, kind = "channel", visibility = "private",
+})
+local messages = room:get_messages { limit = 20 }
+local sent = models.Messages:create { room_id = room.id, body = "Hello!" }
+local sender = sent:get_sender()
+```
+
+`Contacts`, `Rooms` and `Messages` are client-bound collections with `select`,
+`find`, and `table_name`. Rooms and Messages support `create`; message creation
+forwards `attachment_ids`. Rows expose fields plus custom methods and relations.
+`find` searches the fetched page; a message lookup needs `room_id` and only
+covers that history window. A missing row returns nil; API errors return
+`nil,error`. There are no SQL strings, update/delete operations, automatic
+observability or automatic relation preloading.
+
+Create the remote client with `Chat.supabase {url="https://PROJECT.supabase.co",
+publishableKey="sb_publishable_..."}`. Apply [schema.sql](backend/schema.sql),
+[002_contacts.sql](backend/002_contacts.sql), then
+[003_messenger.sql](backend/003_messenger.sql), and deploy the finalizer before
+photo uploads. Follow [backend setup](backend/README.md) for Auth providers,
+templates, private storage, Edge secrets and integration checks. The client
+rejects service/secret keys; those belong only in the trusted server function.
+No live project is provisioned or verified by the offline suites.
+
+## Mock and tests
+
+`Chat.mock {clock=function() return unixSeconds end}` creates a fresh isolated
+store. `Chat.demo()` additionally signs in as `demo@example.invalid` with
+password `password123`; Alex, Maya and Jules use `name@example.invalid` with
+the same password. The six-digit mock code is defined only in
+[mock_fixtures.lua](api/mock_fixtures.lua). Fixtures can be supplied as a table
+or `fixtures=function(now) return table end`. No fake replies are generated.
+
+The mock uses the same client, protocol paths, token refresh and models. Its
+IDs/tokens are readable fixture strings and password signup immediately returns
+a session. It emulates authorization and OTP limits in memory; it cannot test
+email/SMS delivery, JWT cryptography or actual database/storage RLS.
+
+Inject `transport=function(request) ... end` into `Chat.supabase` for protocol
+tests. Requests contain `method`, `url`, `headers`, optional table or binary
+string `body`, optional `responseType="binary"`, and explicit `arrayFields`
+for empty JSON array arguments. Responses contain numeric `status` and decoded
+JSON or raw binary `body`. The ORCA adapter preserves embedded NUL bytes and
+encodes marked empty lists as `[]`.
+
+Run `make test-chat` for API, mock, model, feature and headless UI checks.
+The four non-UI Lua suites also run with standalone Lua 5.3+, e.g.
+`lua tests/test_chat_features.lua`; ORCA additionally checks actual native
+photo processing when available. `make test-media` verifies macOS image
+preparation, `make test-chat-finalizer` checks the Edge handler and JPEG
+inspector, and `make test-network-headers` checks native binary HTTP and long
+headers against a local server. These checks need no Supabase credentials.

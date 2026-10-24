@@ -17,6 +17,15 @@
 #pragma clang diagnostic pop
 #endif
 
+struct AXsize
+R_ImageSize(struct AXbuffer* sb)
+{
+  int width = 0, height = 0, channels = 0;
+  if (!stbi_info_from_memory(sb->data, sb->cursize, &width, &height, &channels))
+    return MAKE_TEX_SIZE(0, 0);
+  return MAKE_TEX_SIZE(width, height);
+}
+
 static bool_t
 flip_vertical(byte_t* pixels, int width, int height, int channels)
 {

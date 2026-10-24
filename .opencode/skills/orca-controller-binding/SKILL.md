@@ -5,6 +5,10 @@ description: Connect ORCA XML views to Lua controllers and data using `Controlle
 
 # ORCA Controller Binding
 
+Use [Building ORCA applications](../../../docs/app/index.md) for ownership of
+state, services, and navigation. A controller translates events and state;
+reusable row layout belongs in its template.
+
 ## Establish the contract
 
 1. Read `docs/LUA_API.md`, `docs/UI_SYSTEM.md`, and
@@ -66,6 +70,11 @@ return Controller
 - Keep simple show/hide, message dispatch, and navigation reactions in XML
   actions. Use the controller for computation, validation, runtime state, or
   data mutation.
+- `ItemsSource` initialization is not automatic collection observability.
+  Current ListBox/GridBox controls build source items at `Object.Start`;
+  initialize their source/template before attachment and use one tested refresh
+  or adapter path for subsequent collection changes. Adventure's manual row
+  construction illustrates this gap and is not a template ownership standard.
 
 ## Diagnose in layers
 

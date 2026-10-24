@@ -37,6 +37,20 @@ Use this file when changing Lua-visible behavior.
 - Schema files (`DS_ParseSchema`, `DS_ParseSchemaFromString` in `source/data/data_schema.c`) register `ClassDesc` entries with typed column properties.
 - Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself.
 
+## Native photo preparation
+
+`require "orca.media"` exposes `pickPhoto()` (modal macOS file selection) and
+`processPhoto(encodedBytes)` (Apple ImageIO conversion). Both return a processed
+photo table or `nil, {code,message}`; picker cancellation uses code `cancelled`.
+The result contains binary JPEG/thumbnail strings, dimensions, byte counts,
+MIME type and quality. Input and output bounds, metadata behavior, and platform
+support are declared in `source/media/media.cgen`. These functions prepare
+bytes; storage and messaging remain application API responsibilities.
+
+Runtime vector userdata uses exported `X`/`Y` field names, for example
+`node.ContentOffset = { X = 0, Y = -100 }`. These differ from lowercase C struct
+members; verify runtime field names when constructing values for property setters.
+
 ## Good follow-up reads
 
 - `docs/lua-scripting.md`

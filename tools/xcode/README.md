@@ -1,13 +1,13 @@
 # Native Xcode projects
 
-Generate a project beside an application's sources with Python 3.9 or newer:
+Generate a project beside an application's sources with the offline launcher:
 
 ```sh
-python3 tools/xcode/generate.py chat
+sh tools/xcode/generate.sh chat
 open apps/chat/chat.xcodeproj
 
-python3 tools/xcode/generate.py cluster-demo
-python3 tools/xcode/generate.py --all
+sh tools/xcode/generate.sh cluster-demo
+sh tools/xcode/generate.sh --all
 ```
 
 Each project lives at `apps/<app>/<app>.xcodeproj` and provides a shared
@@ -16,10 +16,20 @@ Simulator, Build, Run and Archive. Choose a simulator to run immediately;
 select a development team in Xcode's Signing & Capabilities for a physical
 device. The default deployment target is iOS 16.
 
+Generation only reads and writes local files. It does not invoke `xcrun`,
+`xcodebuild`, `plutil`, installers or download tools. The launcher selects an
+existing Python 3.9+ runtime directly, including the one bundled with an installed
+Xcode. If none exists, it stops without installing anything. Override the runtime
+with `ORCA_PYTHON=/absolute/path/to/python3` if needed.
+
+Avoid the bare `python3` command when it resolves to Apple's `/usr/bin/python3`:
+that launcher can offer to download developer tools before our script starts.
+The committed `.xcodeproj` files can also be opened directly without regeneration.
+
 Generation accepts `--team`, `--bundle-id`, `--display-name` and `--minimum`:
 
 ```sh
-python3 tools/xcode/generate.py chat --team YOUR_TEAM \
+sh tools/xcode/generate.sh chat --team YOUR_TEAM \
   --bundle-id com.example.chat --display-name "My Chat" --minimum 16.0
 ```
 
@@ -33,6 +43,16 @@ without regenerating the project.
 Commit each `.xcodeproj`, its generated Info plist and shared schemes. User
 settings, DerivedData, certificates, provisioning profiles and build products
 remain local.
+
+## App icons
+
+Place an iOS icon in `Assets.xcassets/AppIcon.appiconset` inside the app folder.
+Chat includes the selected purple orca icon as a single 1024 × 1024 image.
+Regenerate the app's project after adding its first catalog. Xcode compiles the
+catalog and supplies the iPhone and iPad icon metadata automatically. Make
+packaging compiles the same catalog with `actool` and merges its icon metadata
+into the bundle's Info plist. Catalog sources are omitted from runtime resources.
+Generation itself does not run the asset compiler.
 
 ## Build phases and dependencies
 

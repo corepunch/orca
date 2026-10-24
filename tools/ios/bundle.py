@@ -4,6 +4,24 @@ import argparse
 from pathlib import Path
 import plistlib
 import shutil
+import subprocess
+import tempfile
+
+
+def compile_assets(project, bundle, sdk, minimum):
+    """Compile an optional native icon catalog during an actual Make build."""
+    catalog = project / 'Assets.xcassets'
+    if not (catalog / 'AppIcon.appiconset/Contents.json').is_file():
+        return {}
+    with tempfile.TemporaryDirectory(prefix='orca-app-icon-') as temporary:
+        partial = Path(temporary) / 'asset-info.plist'
+        subprocess.run([
+            'xcrun', '--sdk', sdk, 'actool', str(catalog), '--compile', str(bundle),
+            '--platform', sdk, '--minimum-deployment-target', minimum,
+            '--target-device', 'iphone', '--target-device', 'ipad', '--app-icon', 'AppIcon',
+            '--output-partial-info-plist', str(partial),
+        ], check=True)
+        return plistlib.loads(partial.read_bytes())
 
 
 def main():
@@ -35,7 +53,7 @@ def main():
         target = bundle / name
         shutil.copytree(source, target, ignore=shutil.ignore_patterns(
             '.git', '__pycache__', '.DS_Store', 'build', '*.mobileprovision',
-            '*.xcodeproj', '*.xcworkspace', 'ci_scripts'))
+            '*.xcodeproj', '*.xcworkspace', '*.xcassets', 'ci_scripts'))
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
                     'UIInterfaceOrientationLandscapeRight']
     info = {
@@ -56,6 +74,7 @@ def main():
             }]},
         },
     }
+    info.update(compile_assets(project, bundle, args.sdk, args.minimum))
     (bundle / 'Info.plist').write_bytes(plistlib.dumps(info))
     (bundle / 'PkgInfo').write_bytes(b'APPL????')
     print('Packaged ' + str(bundle))

@@ -6,7 +6,7 @@ Use this file when changing UIKit controls, layout, XML UI, popups, or styling b
 
 - `plugins/UIKit/UIKit.cgen`
 - `plugins/UIKit/*.c`
-- `docs/styling.md`
+- `docs/app/styling.md`
 - `docs/app/xml/triggers-actions-messages.md`
 - `tests/test_layout.lua`
 - `tests/test_styles_lua.lua`
@@ -118,6 +118,7 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 
 ## Good follow-up reads
 
-- `docs/styling.md`
+- [Application architecture and state](app/index.md)
+- [App styling](app/styling.md)
 - `docs/architecture/message-actions.md`
 - `docs/app/xml/triggers-actions-messages.md`

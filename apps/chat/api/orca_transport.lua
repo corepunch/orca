@@ -1,13 +1,30 @@
 local network = require "orca.network"
 local json = require "orca.parsers.json"
 
+local function encode(request)
+  if type(request.body) == "string" then return request.body end
+  if not request.body then return nil end
+  if not request.arrayFields then return json.encode(request.body) end
+  -- ORCA's JSON encoder treats an empty Lua table as an object. RPC array
+  -- arguments need an explicit [] even when there are no members or photos.
+  local fields = {}
+  for key, value in pairs(request.body) do
+    -- This encoder accepts table roots; preserve its escaping via a one-field
+    -- object instead of attempting to encode a scalar key or scalar value.
+    local field = json.encode({ [key] = value })
+    fields[#fields + 1] = request.arrayFields[key] and type(value) == "table" and next(value) == nil
+      and (field:sub(2, -4) .. "[]") or field:sub(2, -2)
+  end
+  return "{" .. table.concat(fields, ",") .. "}"
+end
+
 -- network.fetch yields until complete; invoke remote API methods from an ORCA
 -- event coroutine. HTTP errors are thrown response userdata in this binding.
 return function(request)
   local _, response = pcall(network.fetch, request.url, {
     method = request.method,
     headers = request.headers,
-    body = request.body and json.encode(request.body) or nil,
+    body = encode(request),
     nocookies = true,
   })
   if type(response) ~= "userdata" and type(response) ~= "table" then
@@ -18,6 +35,9 @@ return function(request)
     error("Chat network request failed", 0)
   end
   if status == 204 then return { status = status } end
+  if request.responseType == "binary" and status >= 200 and status < 300 then
+    return { status = status, body = response:text() }
+  end
   local decoded, body = pcall(function() return response:json() end)
   if not decoded or type(body) ~= "table" then
     -- Keep the status for refresh/retry even if an intermediary returns HTML.

@@ -1,11 +1,13 @@
 """Offline resource-copy regressions for native Xcode and standalone bundles."""
 import os
+import importlib.util
 from pathlib import Path
 import plistlib
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,7 +49,7 @@ class ResourceTests(unittest.TestCase):
 
     def add_development_files(self):
         for parent in (self.project, self.share):
-            for name in ('chat.xcodeproj', 'chat.xcworkspace', 'ci_scripts', '.git', 'build', '__pycache__'):
+            for name in ('chat.xcodeproj', 'chat.xcworkspace', 'Other.xcassets', 'ci_scripts', '.git', 'build', '__pycache__'):
                 directory = parent / name
                 directory.mkdir()
                 (directory / 'metadata').write_text('development only')
@@ -55,7 +57,7 @@ class ResourceTests(unittest.TestCase):
 
     def assert_development_files_absent(self, bundle):
         for parent in (bundle / 'project', bundle / 'share'):
-            for name in ('chat.xcodeproj', 'chat.xcworkspace', 'ci_scripts', '.git',
+            for name in ('chat.xcodeproj', 'chat.xcworkspace', 'Other.xcassets', 'ci_scripts', '.git',
                          'build', '__pycache__', 'development.mobileprovision'):
                 self.assertFalse((parent / name).exists(), str(parent / name))
 
@@ -121,6 +123,35 @@ class ResourceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_development_files_absent(bundle)
         self.assertEqual((bundle / 'Orca').read_bytes(), self.executable.read_bytes())
+
+    def test_make_icon_compiler_targets_both_devices_and_returns_generated_metadata(self):
+        spec = importlib.util.spec_from_file_location('orca_bundle', ROOT / 'tools/ios/bundle.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        catalog = self.project / 'Assets.xcassets'
+        iconset = catalog / 'AppIcon.appiconset'
+        iconset.mkdir(parents=True)
+        (iconset / 'Contents.json').write_text('{}')
+        metadata = {'CFBundleIcons': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}},
+                    'CFBundleIcons~ipad': {'CFBundlePrimaryIcon': {'CFBundleIconName': 'AppIcon'}}}
+
+        def fake_compile(command, check):
+            self.assertTrue(check)
+            self.assertEqual(command[:5], ['xcrun', '--sdk', 'iphonesimulator', 'actool', str(catalog)])
+            self.assertIn('--compile', command)
+            self.assertEqual(command[command.index('--compile') + 1], str(self.bundle))
+            self.assertEqual(command[command.index('--minimum-deployment-target') + 1], '16.0')
+            self.assertEqual(command[command.index('--app-icon') + 1], 'AppIcon')
+            devices = [command[i + 1] for i, value in enumerate(command) if value == '--target-device']
+            self.assertEqual(devices, ['iphone', 'ipad'])
+            Path(command[command.index('--output-partial-info-plist') + 1]).write_bytes(plistlib.dumps(metadata))
+
+        with patch.object(module.subprocess, 'run', side_effect=fake_compile) as compiler:
+            self.assertEqual(module.compile_assets(self.project, self.bundle, 'iphonesimulator', '16.0'), metadata)
+            compiler.assert_called_once()
+        (iconset / 'Contents.json').unlink()
+        with patch.object(module.subprocess, 'run', side_effect=AssertionError('Unexpected toolchain invocation')):
+            self.assertEqual(module.compile_assets(self.project, self.bundle, 'iphoneos', '16.0'), {})
 
 
 if __name__ == '__main__':

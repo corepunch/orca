@@ -30,9 +30,10 @@ Use this file to find the right subsystem before reading source.
 - Add/change Lua-visible API: `docs/LUA_API.md`
 - Add/change a component: `docs/ADDING_CLASSES.md`
 - UI or layout behavior: `docs/UI_SYSTEM.md`
+- Application architecture, navigation, and state: `docs/app/index.md`
+- Application themes, CSS, and visual verification: `docs/app/styling.md`
 - Test work: `docs/TESTING.md`
 - Build failures or command choice: `docs/BUILD.md`
-- High-level runtime model: `docs/ARCHITECTURE.md`
 
 ## Dependency boundaries
 

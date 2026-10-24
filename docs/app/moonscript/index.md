@@ -1,9 +1,16 @@
 # MoonScript App Writing
 
-This section collects the MoonScript-first app-authoring docs used by the Weather sample and the Lapis/StreakClub-inspired app patterns.
+MoonScript apps can compose UIKit objects through `Application` and `Widget`.
+Banking and Weather currently use this path; it remains supported alongside
+XML-first applications.
 
-Start here if you are building Orca apps in MoonScript:
+Start with [Building ORCA applications](../index.md) for startup, navigation,
+state, service boundaries, and the distinction between current support and
+recommended defaults. Use [App styling](../styling.md) for themes and CSS;
+Lua/MoonScript and XML share the same styling pipeline.
 
-- [Scene Loading, `rebuild()`, and Component Composition](scenes-and-rebuild.md)
-- [Link Navigation in MoonScript/UIKit apps](link-navigation.md)
+For a scoped implementation reference, read
+[Weather's app entry](../../../samples/Weather/App.moon) and the one screen
+relevant to the feature. API and workflow guidance lives in
+[Lua API](../../LUA_API.md).
 

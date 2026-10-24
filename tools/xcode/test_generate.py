@@ -1,15 +1,22 @@
 """Offline behavior checks for generated native iPhone/iPad Xcode projects."""
 import json
+from contextlib import redirect_stderr, redirect_stdout
+from io import StringIO
 import os
 from pathlib import Path
 import plistlib
 import re
+import runpy
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import xml.etree.ElementTree as ET
+
+import pbxproj
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -26,7 +33,6 @@ def openstep(value):
     return str(value) if isinstance(value, int) else json.dumps(value)
 
 
-@unittest.skipUnless(shutil.which('plutil'), 'Apple plutil is required to read Xcode project files')
 class GenerateProjectTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix='orca-xcode-generator-')
@@ -34,8 +40,21 @@ class GenerateProjectTests(unittest.TestCase):
         self.output = Path(self.temporary.name) / 'output'
 
     def run_generator(self, *args, generator=GENERATOR, success=True):
-        result = subprocess.run([sys.executable, str(generator), *map(str, args)],
-                                cwd=ROOT, capture_output=True, text=True)
+        argv = [str(generator), *map(str, args)]
+        stdout, stderr = StringIO(), StringIO()
+        returncode = 0
+        with patch.object(sys, 'argv', argv), patch.object(sys, 'path', [str(generator.parent), *sys.path]), \
+                patch.dict(sys.modules), redirect_stdout(stdout), redirect_stderr(stderr), \
+                patch.object(subprocess, 'Popen', side_effect=AssertionError('Generator launched a child process')), \
+                patch.object(socket, 'socket', side_effect=AssertionError('Generator opened a network socket')):
+            # A copied fixture must import its own repository configuration.
+            sys.modules.pop('common', None)
+            sys.modules.pop('pbxproj', None)
+            try:
+                runpy.run_path(str(generator), run_name='__main__')
+            except SystemExit as error:
+                returncode = error.code or 0
+        result = subprocess.CompletedProcess(argv, returncode, stdout.getvalue(), stderr.getvalue())
         if success:
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         else:
@@ -48,10 +67,7 @@ class GenerateProjectTests(unittest.TestCase):
         return destination / (app + '.xcodeproj')
 
     def read_project(self, bundle):
-        result = subprocess.run(['plutil', '-convert', 'json', '-o', '-',
-                                 str(bundle / 'project.pbxproj')], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        return json.loads(result.stdout)
+        return pbxproj.load(bundle / 'project.pbxproj')
 
     def configurations(self, project, owner):
         objects = project['objects']
@@ -136,6 +152,73 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertEqual(reference.get('BlueprintIdentifier'), target_id)
             self.assertEqual(reference.get('ReferencedContainer'), 'container:chat.xcodeproj')
 
+    def test_chat_icon_catalog_is_compiled_as_a_native_resource(self):
+        catalog = ROOT / 'apps/chat/Assets.xcassets'
+        self.assertTrue((catalog / 'AppIcon.appiconset').is_dir())
+        bundle = self.generate('chat', output=self.output / 'project with spaces')
+        project = self.read_project(bundle)
+        objects = project['objects']
+        _, target = self.application(project)
+        resource_phases = [objects[ref] for ref in target['buildPhases']
+                           if objects[ref]['isa'] == 'PBXResourcesBuildPhase']
+        self.assertEqual(len(resource_phases), 1)
+        self.assertEqual(len(resource_phases[0]['files']), 1)
+        build_file = objects[resource_phases[0]['files'][0]]
+        self.assertEqual(build_file['isa'], 'PBXBuildFile')
+        reference = objects[build_file['fileRef']]
+        self.assertEqual(reference['isa'], 'PBXFileReference')
+        self.assertEqual(reference['lastKnownFileType'], 'folder.assetcatalog')
+        self.assertEqual(reference['sourceTree'], 'SOURCE_ROOT')
+        self.assertEqual((bundle.parent / reference['path']).resolve(), catalog)
+        root = objects[project['rootObject']]
+        self.assertIn(build_file['fileRef'], objects[root['mainGroup']]['children'])
+        for settings in self.effective_configurations(project).values():
+            self.assertEqual(settings['ASSETCATALOG_COMPILER_APPICON_NAME'], 'AppIcon')
+        # Generating metadata never compiles images or changes the source catalog.
+        self.assertFalse((bundle / 'Assets.car').exists())
+
+    def test_application_without_an_icon_catalog_has_no_native_icon_resource(self):
+        fixture = Path(self.temporary.name) / 'repository'
+        shutil.copytree(ROOT / 'tools/xcode', fixture / 'tools/xcode',
+                        ignore=shutil.ignore_patterns('__pycache__'))
+        (fixture / 'tools/ios').mkdir()
+        shutil.copy2(ROOT / 'tools/ios/Makefile', fixture / 'tools/ios/Makefile')
+        app = fixture / 'apps/plain'
+        app.mkdir(parents=True)
+        (app / 'package.lua').write_text('Name = "Plain"\n')
+        # An unrelated catalog must not select an AppIcon set that does not exist.
+        (app / 'Assets.xcassets/AccentColor.colorset').mkdir(parents=True)
+        self.run_generator('plain', generator=fixture / 'tools/xcode/generate.py')
+        project = self.read_project(app / 'plain.xcodeproj')
+        _, target = self.application(project)
+        objects = project['objects']
+        self.assertFalse(any(objects[ref]['isa'] == 'PBXResourcesBuildPhase' for ref in target['buildPhases']))
+        self.assertFalse(any(obj.get('lastKnownFileType') == 'folder.assetcatalog' for obj in objects.values()))
+        for settings in self.effective_configurations(project).values():
+            self.assertNotIn('ASSETCATALOG_COMPILER_APPICON_NAME', settings)
+
+    def test_regeneration_preserves_custom_icon_settings_at_both_configuration_levels(self):
+        bundle = self.generate('chat')
+        project = self.read_project(bundle)
+        root = project['objects'][project['rootObject']]
+        _, target = self.application(project)
+        setting = 'ASSETCATALOG_COMPILER_APPICON_NAME'
+        for settings in self.configurations(project, root).values():
+            settings[setting] = 'ProjectIcon'
+        for settings in self.configurations(project, target).values():
+            settings[setting] = 'UserSelectedIcon'
+            settings[setting + '[sdk=iphoneos*]'] = 'DeviceIcon'
+        (bundle / 'project.pbxproj').write_text('// !$*UTF8*$!\n' + openstep(project) + '\n')
+        self.generate('chat')
+        project = self.read_project(bundle)
+        root = project['objects'][project['rootObject']]
+        _, target = self.application(project)
+        for settings in self.configurations(project, root).values():
+            self.assertEqual(settings[setting], 'ProjectIcon')
+        for settings in self.configurations(project, target).values():
+            self.assertEqual(settings[setting], 'UserSelectedIcon')
+            self.assertEqual(settings[setting + '[sdk=iphoneos*]'], 'DeviceIcon')
+
     def test_output_outside_apps_uses_relative_repository_paths_and_no_host_artifacts(self):
         bundle = self.generate()
         project = self.read_project(bundle)
@@ -170,6 +253,20 @@ class GenerateProjectTests(unittest.TestCase):
         for name, settings in expected.items():
             for key, value in settings.items():
                 self.assertEqual(actual[name][key], value, name + ': ' + key)
+        self.assertEqual(scheme_path.read_bytes(), customized)
+
+    def test_first_generation_and_regeneration_need_no_child_processes_or_network(self):
+        bundle = self.generate('chat', '--team', 'EXISTINGTEAM', '--bundle-id', 'example.offline.chat')
+        expected = self.customize_signing(bundle)
+        scheme_path = bundle / 'xcshareddata/xcschemes/chat-ios.xcscheme'
+        customized = scheme_path.read_bytes().replace(b'<LaunchAction ', b'<LaunchAction customFlag="YES" ')
+        scheme_path.write_bytes(customized)
+        # run_generator forbids every Popen/socket call, including readback on regeneration.
+        self.generate()
+        project = self.read_project(bundle)
+        for name, settings in self.configurations(project, self.application(project)[1]).items():
+            for key, value in expected[name].items():
+                self.assertEqual(settings[key], value)
         self.assertEqual(scheme_path.read_bytes(), customized)
 
     def test_explicit_identity_overrides_preserved_settings_when_copying_project(self):

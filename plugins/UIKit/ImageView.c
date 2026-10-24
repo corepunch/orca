@@ -201,9 +201,9 @@ HANDLER(ImageView, Object, Destroy)
  *
  *  Local file paths
  *  ----------------
- *  Load synchronously via FS_LoadObject. The returned Object already holds
- *  a fully initialised Texture component; we point Source at it and keep
- *  the Object alive in _src_object.
+ *  Load synchronously via FS_LoadObject, then start the resource through the
+ *  idempotent object lifecycle before exposing its Texture component.
+ *  Keep the Object alive in _src_object.
  */
 HANDLER(ImageView, Node, LoadView)
 {
@@ -281,11 +281,12 @@ HANDLER(ImageView, Node, LoadView)
     Con_Printf("ImageView: failed to load '%s'", src);
     return TRUE;
   }
+  OBJ_SendMessageW(file_obj, ID_Object_Start, 0, NULL);
 
   if (pImageView->_src_object) {
     OBJ_ReleaseRef((struct Object *)pImageView->_src_object);
   }
-  OBJ_AddRef(file_obj);
+  /* Transfer the loader's owned reference; cancellation releases it. */
   pImageView->_src_object = file_obj;
   pImageView->Source = GetTexture(file_obj);
 

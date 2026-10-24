@@ -5,6 +5,10 @@ description: Create or edit ORCA XML screens, pages, popups, prefabs, package de
 
 # ORCA XML Authoring
 
+For a whole application, use `orca-app-authoring` and the maintained
+[architecture guide](../../../docs/app/index.md). Keep page structure, reusable
+templates, controller behavior, and service/state ownership explicit.
+
 ## Gather the contract
 
 1. Read `docs/UI_SYSTEM.md`.
@@ -32,7 +36,9 @@ or browser behavior.
 4. Apply reusable presentation with `class`/`StyleClass`; use `$orca-css` to
    create or change stylesheets.
 5. Bind repeated layout to data with `ItemsSource`, `ItemTemplate`, and
-   `{Binding DataContext/...}` instead of duplicating nodes.
+   `{Binding DataContext/...}` instead of duplicating nodes. These controls
+   currently instantiate items at `Object.Start`; subsequent collection changes
+   need an explicit tested update path, not an assumed automatic refresh.
 6. Use exact generated property names. Qualify inherited properties when it
    removes ambiguity, such as `Node.PaddingLeft`.
 

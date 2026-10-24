@@ -11,6 +11,11 @@ description: >
 
 # ORCA UI Design Skill
 
+Use [Building ORCA applications](../../../docs/app/index.md) for architecture
+and [App styling](../../../docs/app/styling.md) for maintained theme, CSS,
+layout, and native verification conventions. These are recommended defaults;
+respect the user's product and an existing app's authoring approach.
+
 ORCA is a modern UI framework for Lua with declarative components, routing,
 Tailwind-style utilities, and cross-platform rendering. Write less code with
 MoonScript or XML. Good taste means applying established design principles

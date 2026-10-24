@@ -1,4 +1,4 @@
--- Application-level chat API. No engine globals are needed by the demo/tests.
+-- One application API; the transport selects network or in-process storage.
 local Chat = {}
 local Client = {}
 Client.__index = Client
@@ -32,7 +32,8 @@ function Client:getSession()
   return copy(self.session)
 end
 
-function Client:_request(method, path, body, authenticated, retried)
+function Client:_request(method, path, body, authenticated, retried, options)
+  options = options or {}
   if authenticated then
     if not self.session then return failure("unauthenticated", "Sign in to continue.") end
     if not retried and self.session.expires_at <= self.clock() + 30 then
@@ -41,10 +42,12 @@ function Client:_request(method, path, body, authenticated, retried)
     end
   end
   local headers = { apikey = self.key, ["Content-Type"] = "application/json" }
+  for key, value in pairs(options.headers or {}) do headers[key] = value end
   if authenticated then headers.Authorization = "Bearer " .. self.session.access_token end
   if method == "POST" and path:match("^/rest/") then headers.Prefer = "return=representation" end
   local ok, response = pcall(self.transport, {
-    method = method, url = self.url .. path, headers = headers, body = body,
+    method = method, url = self.url .. path, headers = headers, body = body, responseType = options.responseType,
+    arrayFields = options.arrayFields,
   })
   if not ok or type(response) ~= "table" or type(response.status) ~= "number" then
     return failure("network", "Could not reach the chat service. Please try again.")
@@ -52,14 +55,15 @@ function Client:_request(method, path, body, authenticated, retried)
   if response.status == 401 and authenticated and not retried then
     local session, err = self:refreshSession()
     if not session then return nil, err end
-    return self:_request(method, path, body, true, true)
+    return self:_request(method, path, body, true, true, options)
   end
   if response.status < 200 or response.status >= 300 then
     local data = type(response.body) == "table" and response.body or {}
     return failure(data.code or data.error_code or "http_error",
       data.message or data.msg or data.error_description or "The chat service rejected the request.", response.status)
   end
-  return response.body or true
+  if response.body == nil then return true end
+  return response.body
 end
 
 function Client:_setSession(data)
@@ -118,23 +122,42 @@ function Client:signOut()
 end
 
 function Client:listRooms()
-  local data, err = self:_request("GET", "/rest/v1/chat_rooms?select=id,name,created_at&order=created_at.desc", nil, true)
+  local data, err = self:_request("GET", "/rest/v1/chat_rooms?select=*,role,can_post&order=created_at.desc", nil, true)
   if not data then return nil, err end
   if type(data) ~= "table" then return failure("invalid_response", "The chat service returned invalid conversations.") end
   return data
 end
 
-function Client:createRoom(name, memberIds)
+function Client:listContacts()
+  if not self.session then return failure("unauthenticated", "Sign in to continue.") end
+  local path = "/rest/v1/chat_profiles?select=id,display_name&order=display_name.asc&id=neq." .. escape(self.session.user.id)
+  local data, err = self:_request("GET", path, nil, true)
+  if not data then return nil, err end
+  if type(data) ~= "table" then return failure("invalid_response", "The chat service returned invalid contacts.") end
+  return data
+end
+
+function Client:createRoom(name, memberIds, options)
+  options = options or {}
+  if type(options) ~= "table" then return failure("validation", "Provide conversation options.") end
+  local kind, visibility = options.kind or "group", options.visibility or "private"
+  if (kind ~= "direct" and kind ~= "group" and kind ~= "channel") or (visibility ~= "private" and visibility ~= "public") then
+    return failure("validation", "Choose a valid conversation type and visibility.")
+  end
   if not text(name) or #name > 80 then return failure("validation", "Use a conversation name of 1–80 characters.") end
-  if type(memberIds) ~= "table" or #memberIds == 0 then
-    return failure("validation", "Add at least one member's user ID.")
+  if type(memberIds) ~= "table" or #memberIds > 50 then
+    return failure("validation", "Choose at most 50 members.")
   end
   for _, id in ipairs(memberIds) do
     if not validId(id) then return failure("validation", "A member's user ID is invalid.") end
   end
+  if kind == "direct" and (#memberIds ~= 1 or visibility ~= "private"
+      or (self.session and memberIds[1] == self.session.user.id)) then
+    return failure("validation", "Choose exactly one other person for a private direct chat.")
+  end
   local data, err = self:_request("POST", "/rest/v1/rpc/create_chat_room", {
-    room_name = name, member_ids = memberIds,
-  }, true)
+    room_name = name, member_ids = memberIds, room_kind = kind, room_visibility = visibility,
+  }, true, nil, { arrayFields = { member_ids = true } })
   if not data then return nil, err end
   if type(data) ~= "table" or type(data[1]) ~= "table" then
     return failure("invalid_response", "The chat service did not return the new conversation.")
@@ -147,7 +170,7 @@ function Client:listMessages(roomId, options)
   options = options or {}
   local limit = tonumber(options.limit) or 100
   if limit % 1 ~= 0 or limit < 1 or limit > 100 then return failure("validation", "Message limit must be between 1 and 100.") end
-  local path = "/rest/v1/chat_messages?select=id,room_id,sender_id,body,created_at&room_id=eq."
+  local path = "/rest/v1/chat_messages?select=*,attachments&room_id=eq."
     .. escape(roomId) .. "&order=created_at.desc,id.desc&limit=" .. limit
   local data, err = self:_request("GET", path, nil, true)
   if not data then return nil, err end
@@ -157,19 +180,27 @@ function Client:listMessages(roomId, options)
   return messages
 end
 
-function Client:sendMessage(roomId, body)
+function Client:sendMessage(roomId, body, attachmentIds)
   if not validId(roomId) then return failure("validation", "Choose a conversation.") end
-  if not text(body) or #body > 4000 then return failure("validation", "Write a message of 1–4000 bytes.") end
+  if attachmentIds and (type(attachmentIds) ~= "table" or #attachmentIds > 4) then return failure("validation", "Attach at most four photos.") end
+  for _, id in ipairs(attachmentIds or {}) do
+    if not validId(id) then return failure("validation", "A photo ID is invalid.") end
+  end
+  body = body or ""
+  if type(body) ~= "string" or #body > 4000 or (not text(body) and not (attachmentIds and #attachmentIds > 0)) then
+    return failure("validation", "Write a message or attach a photo (maximum 4000 text bytes).")
+  end
   if not self.session then return failure("unauthenticated", "Sign in to continue.") end
-  local data, err = self:_request("POST", "/rest/v1/chat_messages", {
-    room_id = roomId, sender_id = self.session.user.id, body = body,
-  }, true)
+  local path, payload = "/rest/v1/rpc/post_chat_message", { target_room = roomId, message_body = body, attachment_ids = attachmentIds or {} }
+  local data, err = self:_request("POST", path, payload, true, nil, { arrayFields = { attachment_ids = true } })
   if not data then return nil, err end
   if type(data) ~= "table" or type(data[1]) ~= "table" then
     return failure("invalid_response", "The chat service did not return the sent message.")
   end
   return data[1]
 end
+
+require("api.features")(Client, { failure = failure, text = text, escape = escape, validId = validId })
 
 function Chat.supabase(options)
   options = options or {}
@@ -188,74 +219,23 @@ function Chat.supabase(options)
     transport = transport, clock = options.clock or os.time }, Client)
 end
 
-local Demo = {}
-Demo.__index = Demo
-function Demo:getSession() return copy(self.session) end
-function Demo:listRooms()
-  if not self.session then return failure("unauthenticated", "Open demo mode to continue.") end
-  return copy(self.rooms)
+-- Uses exactly the same client, endpoint paths and response validation as HTTP.
+function Chat.mock(options)
+  options = options or {}
+  local transport = require("api.mock_transport").new(options)
+  local client = assert(Chat.supabase {
+    url = "https://mock.invalid", publishableKey = "sb_publishable_mock",
+    transport = transport, clock = options.clock,
+  })
+  client.mode = "mock"
+  return client
 end
-function Demo:listMessages(roomId, options)
-  if not self.session then return failure("unauthenticated", "Open demo mode to continue.") end
-  if not self.messages[roomId] then return failure("not_found", "Conversation not found.") end
-  local result, messages = {}, self.messages[roomId]
-  local limit = options and options.limit or 100
-  if type(limit) ~= "number" or limit % 1 ~= 0 or limit < 1 or limit > 100 then
-    return failure("validation", "Message limit must be between 1 and 100.")
-  end
-  for i = math.max(1, #messages - limit + 1), #messages do result[#result + 1] = copy(messages[i]) end
-  return result
-end
-function Demo:sendMessage(roomId, body)
-  if not self.session then return failure("unauthenticated", "Open demo mode to continue.") end
-  if not self.messages[roomId] then return failure("not_found", "Conversation not found.") end
-  if not text(body) or #body > 4000 then return failure("validation", "Write a message of 1–4000 bytes.") end
-  self.sequence = self.sequence + 1
-  local message = { id = "demo-" .. self.sequence, room_id = roomId,
-    sender_id = self.session.user.id, body = body, created_at = os.date("!%Y-%m-%dT%H:%M:%SZ") }
-  self.messages[roomId][#self.messages[roomId] + 1] = message
-  for _, room in ipairs(self.rooms) do
-    if room.id == roomId then room.subtitle = body end
-  end
-  return copy(message)
-end
-function Demo:createRoom(name, memberIds)
-  if not self.session then return failure("unauthenticated", "Open demo mode to continue.") end
-  if not text(name) or #name > 80 then return failure("validation", "Use a conversation name of 1–80 characters.") end
-  self.sequence = self.sequence + 1
-  local room = { id = "room-" .. self.sequence, name = name, subtitle = "Start the conversation",
-    initials = name:sub(1, 2):upper(), color = "#6877d7", unread = 0 }
-  self.rooms[#self.rooms + 1] = room
-  self.messages[room.id] = {}
-  return copy(room)
-end
-function Demo:signOut() self.session = nil; return true end
-function Demo:refreshSession() return self:getSession() end
-function Demo:signIn() return failure("demo", "Use Supabase mode to sign in to an account.") end
-function Demo:signUp() return failure("demo", "Use Supabase mode to create an account.") end
 
-function Chat.demo()
-  local rooms = {
-    { id = "alex", name = "Alex Morgan", initials = "AM", color = "#d9a56f", subtitle = "See you at the little coffee place?", unread = 2 },
-    { id = "weekend", name = "Weekend people", initials = "WP", color = "#a7a3d3", subtitle = "Maya: That sounds like a plan", unread = 0 },
-    { id = "jules", name = "Jules Park", initials = "JP", color = "#82aaa0", subtitle = "The photos turned out so good", unread = 0 },
-  }
-  local function message(id, room, sender, body, time)
-    return { id = id, room_id = room, sender_id = sender, body = body, created_at = "2026-10-23T" .. time .. ":00Z" }
-  end
-  return setmetatable({ mode = "demo", sequence = 10, rooms = rooms,
-    session = { user = { id = "me", email = "demo@example.invalid", user_metadata = { display_name = "You" } } },
-    messages = {
-      alex = {
-        message("a1", "alex", "alex", "Hey! How's your morning going?", "09:32"),
-        message("a2", "alex", "me", "Pretty good. Just finished a long walk by the river.", "09:33"),
-        message("a3", "alex", "alex", "That sounds lovely. I'm ready for a coffee break.", "09:34"),
-        message("a4", "alex", "alex", "See you at the little coffee place?", "09:35"),
-      },
-      weekend = { message("w1", "weekend", "maya", "That sounds like a plan", "08:42") },
-      jules = { message("j1", "jules", "jules", "The photos turned out so good", "08:10") },
-    },
-  }, Demo)
+-- Compatibility helper for existing previews. Interactive mock mode starts at login.
+function Chat.demo(options)
+  local client = Chat.mock(options)
+  assert(client:signIn("demo@example.invalid", "password123"))
+  return client
 end
 
 return Chat

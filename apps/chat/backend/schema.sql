@@ -1,4 +1,4 @@
--- Run once in the Supabase SQL editor of a new project.
+-- Run once in the Supabase SQL editor of a new project, then run 002_contacts.sql.
 begin;
 
 create table public.chat_rooms (
