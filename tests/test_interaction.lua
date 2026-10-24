@@ -52,6 +52,21 @@ local function test_input_interaction()
 	input:removeFromParent()
 end
 
+local function test_input_unicode()
+	local input = screen + ui.Input { Width = 200, Height = 40 }
+	input:setFocus()
+	for _, text in ipairs { "П", "р", "и", "в", "е", "т", "🙂" } do
+		orca.system.dispatchMessage { target = screen, message = "Char", text = text }
+	end
+	test.expect_eq(input.Text, "Привет🙂", "Input should accept UTF-8 from the native keyboard")
+	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = 127 }
+	test.expect_eq(input.Text, "Привет", "Backspace should remove one complete UTF-8 character")
+	orca.system.dispatchMessage { target = screen, message = "KeyDown", key = 130 }
+	orca.system.dispatchMessage { target = screen, message = "Char", text = "!" }
+	test.expect_eq(input.Text, "Приве!т", "Left arrow should move across a complete UTF-8 character")
+	input:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Input (Checkbox): Checked property can be set and cleared
 -- ---------------------------------------------------------------------------
@@ -294,6 +309,7 @@ end
 
 test_button_interaction()
 test_input_interaction()
+test_input_unicode()
 test_input_checkbox()
 test_form_populate_inputs()
 test_radio_group_interaction()

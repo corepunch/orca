@@ -22,7 +22,8 @@ local App = Application:extend {
 
     frame = function(self, content)
         local screen = ui.Screen {
-            Width = 390, Height = 844, ResizeMode = "NoResize", ClearColor = colors.background,
+            Width = 390, Height = 844, ResizeMode = PLATFORM == "ios" and "CanResize" or "NoResize",
+            ClearColor = colors.background,
             StyleSheet = "Chat/Styles/app.css",
         }
         screen:addChild(content)
@@ -229,7 +230,8 @@ local App = Application:extend {
                 C.text("Send the first message below.", { Foreground = colors.muted, FontSize = 13 }),
             }))
         end
-        node:getRoot():UpdateLayout(390, 844)
+        local root = node:getRoot()
+        root:UpdateLayout(root.Width, root.Height)
         node.ContentOffset = { x = 0, y = math.min(0, node.ActualHeight - node.ScrollHeight) }
         self:notice(self.remote and "Synced · refresh for new messages" or "Demo conversation · messages stay in this session")
     end,

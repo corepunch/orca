@@ -15,8 +15,17 @@ CODEGEN := $(BINDIR)/cgen
 CODEGEN_SRC := $(shell find $(MODULE_ROOT)tools/codegen/src -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGIN_SRC := $(shell find $(MODULE_ROOT)tools/codegen/plugins -name "*.c" 2>/dev/null | sort)
 CODEGEN_PLUGINS := $(patsubst $(MODULE_ROOT)tools/codegen/plugins/%.c,$(BUILDDIR)/plugins/codegen/lib%.so,$(CODEGEN_PLUGIN_SRC))
-CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -I$(MODULE_ROOT)tools/codegen/include -I$(MODULE_ROOT)tools/codegen/src $(shell pkg-config --cflags libxml-2.0)
-CODEGEN_LDFLAGS := $(shell pkg-config --libs libxml-2.0) -ldl $(ARCH_FLAGS)
+HOST_XML_CFLAGS := $(shell pkg-config --cflags libxml-2.0 2>/dev/null)
+HOST_XML_LIBS := $(shell pkg-config --libs libxml-2.0 2>/dev/null)
+ifeq ($(shell uname -s),Darwin)
+ifeq ($(strip $(HOST_XML_LIBS)),)
+HOST_SDK := $(shell xcrun --sdk macosx --show-sdk-path)
+HOST_XML_CFLAGS := -isysroot "$(HOST_SDK)" -I"$(HOST_SDK)/usr/include/libxml2"
+HOST_XML_LIBS := -lxml2
+endif
+endif
+CODEGEN_CFLAGS := -O2 -Wall -Wextra -Werror -std=c11 -fPIC $(ARCH_FLAGS) -I$(MODULE_ROOT)tools/codegen/include -I$(MODULE_ROOT)tools/codegen/src $(HOST_XML_CFLAGS)
+CODEGEN_LDFLAGS := $(HOST_XML_LIBS) -ldl $(ARCH_FLAGS)
 CODEGEN_HEADER_PLUGIN := $(BUILDDIR)/plugins/codegen/libheader.so
 CODEGEN_PROPERTIES_PLUGIN := $(BUILDDIR)/plugins/codegen/libproperties.so
 CODEGEN_EXPORT_PLUGIN := $(BUILDDIR)/plugins/codegen/libexport.so

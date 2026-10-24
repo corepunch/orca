@@ -64,12 +64,19 @@ push_event_message(lua_State *L, struct AXmessage *msg)
   return 1;
 }
 
+#ifdef ORCA_IOS
+static int resume_get_message(lua_State *L, int status, lua_KContext context);
+#endif
+
 int f_get_message(lua_State* L)
 {
   struct AXmessage msg = {0};
   if (axPeekMessage(&msg)) {
     return push_event_message(L, &msg);
   }
+#ifdef ORCA_IOS
+  return lua_yieldk(L, 0, 0, resume_get_message);
+#else
   /* Wait up to 500ms so file-change detection runs even when the window
      receives no input events (e.g. after a CSS-only save). */
   if (axWaitMessage(500) > 0 && axPeekMessage(&msg)) {
@@ -79,7 +86,15 @@ int f_get_message(lua_State* L)
      hasChangedFiles() without needing real window activity. */
   msg.message = kEventTimer;
   return push_event_message(L, &msg);
+#endif
 }
+
+#ifdef ORCA_IOS
+static int resume_get_message(lua_State *L, int status, lua_KContext context)
+{
+  return f_get_message(L);
+}
+#endif
 
 int f_peek_message(lua_State* L)
 {

@@ -469,7 +469,7 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
   return object;
 }
 
-#if __APPLE__
+#if defined(__APPLE__) && !TARGET_OS_IPHONE
 #include <IOSurface/IOSurface.h>
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/glext.h>

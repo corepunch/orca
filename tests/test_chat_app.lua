@@ -18,6 +18,15 @@ assert(home:getFirstChild().ActualHeight >= 843, "App content must fill the port
 local firstRoom = home:findChild("Room1", true)
 assert(firstRoom.ActualWidth > 300 and firstRoom.ActualHeight > 60, "Conversation rows need usable hit areas")
 assert(home.StyleSheet, "The shared interactive stylesheet must load")
+local savedPlatform = PLATFORM
+PLATFORM = "ios"
+local mobile = app:frame(require("orca.UIKit").Grid { Rows = "1fr" })
+assert(mobile.ResizeMode == "CanResize", "iOS screens must track the drawable size")
+mobile:UpdateLayout(834, 1100)
+assert(mobile.Width == 834 and mobile.Height == 1100, "iPad layout must use available points")
+mobile:UpdateLayout(390, 460)
+assert(mobile.Width == 390 and mobile.Height == 460, "Layout must shrink above the iPhone keyboard")
+PLATFORM = savedPlatform
 assert(home:findChild("Search", true) and home:findChild("FilterUnread", true))
 app.searchInput.Text = "Jules"
 app:updateSearch()

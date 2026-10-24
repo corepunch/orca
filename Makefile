@@ -211,6 +211,26 @@ test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_api.lua
 	$(TARGET) -test=tests/test_chat_app.lua
 
+# iPhone/iPad .app bundles built directly with the Apple command-line tools.
+.PHONY: ios ios-sim ios-run ios-install ios-devices test-ios-tools
+ios:
+	$(MAKE) -f tools/ios/Makefile SDK=iphoneos app
+
+ios-sim:
+	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator app
+
+ios-run:
+	$(MAKE) -f tools/ios/Makefile SDK=iphonesimulator run
+
+ios-install:
+	$(MAKE) -f tools/ios/Makefile SDK=iphoneos install
+
+ios-devices:
+	$(MAKE) -f tools/ios/Makefile list-devices
+
+test-ios-tools:
+	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
+
 test-network-headers:
 	python3 tests/test_network_headers.py --binary $(TARGET)
 

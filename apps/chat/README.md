@@ -2,8 +2,9 @@
 
 A simple person-to-person chat app in Lua, following the existing
 `samples/Banking` application, route, package, and service-module patterns.
-Runs on macOS with a fixed **390 × 844** portrait viewport. No iPhone target,
-Xcode project, signing, or iOS build is created.
+Runs on macOS with a **390 × 844** portrait viewport and on iPhone/iPad with
+an adaptive viewport, touch scrolling and the native keyboard. iOS builds use
+Make and the Xcode command-line tools without an Xcode project.
 
 ![ORCA Messenger on macOS](preview.png)
 
@@ -38,10 +39,16 @@ build/bin/orca apps/chat
 make chat
 ```
 
+For iOS, use `make ios-run` (iPhone simulator),
+`make ios-run DEVICE_TYPE=iPad` (iPad simulator), or `make ios-install`
+(connected iPhone with matching development signing credentials).
+See [iOS setup and deployment](../../docs/IOS.md).
+
 With no backend configuration, three local sample conversations let you open
 threads, send messages, and create conversations immediately. Messages last
 until the app restarts; demo contacts do not generate automatic replies.
 Use the window close button to quit. Return or Send submits a message.
+On iOS, use the system app switcher to close the app.
 
 ## Connect Supabase
 
@@ -71,6 +78,10 @@ history and sending to room members. Sessions stay in memory, so restarting
 requires sign-in. The initial app supports text and the latest 100 messages;
 live subscriptions, push, attachments, and older-history pagination are future
 work. Supabase deployment and live multi-user validation require your project.
+
+For a physical iOS device, put the public project URL and publishable key in
+`config.lua` before building; terminal environment variables are not inherited
+by installed iOS apps. Leave the config unchanged to run the local demo.
 
 See [API.md](API.md) for the Lua interface, transport injection, schema details,
 and backend references.

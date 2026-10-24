@@ -10,9 +10,15 @@
  * glEnable() with it generates GL_INVALID_ENUM.  GL_SRGB8_ALPHA8 is valid
  * in WebGL 2 for textures, but without framebuffer sRGB support the colour
  * pipeline is inconsistent, so we disable both together when building for
- * Emscripten / WebGL.
+ * GLES targets, including native iOS and Emscripten / WebGL.
  */
-#ifndef __EMSCRIPTEN__
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+#if defined(__EMSCRIPTEN__) || defined(__QNX__) || (defined(__APPLE__) && TARGET_OS_IPHONE)
+#define R_USE_GLES
+#endif
+#ifndef R_USE_GLES
 #define R_USE_SRGB
 #endif
 

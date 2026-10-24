@@ -141,13 +141,15 @@ HANDLER(Input, Node, KeyDown)
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
+  pInput->Cursor = MAX(0, MIN(pInput->Cursor, (int)dwLength));
 
   switch (pKeyDown->keyCode) {
     case AX_KEY_BACKSPACE:
       if (pInput->Cursor > 0) {
-        pInput->Cursor--;
-        for (char *a = &szText[pInput->Cursor]; *a; *a = *(a + 1), a++)
-          ;
+        int end = pInput->Cursor--;
+        while (pInput->Cursor > 0 && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
+          pInput->Cursor--;
+        memmove(szText + pInput->Cursor, szText + end, dwLength - end + 1);
       }
       break;
     case AX_KEY_ESCAPE:
@@ -175,6 +177,8 @@ HANDLER(Input, Node, KeyDown)
       break;
     case AX_KEY_LEFTARROW:
       pInput->Cursor = MAX(pInput->Cursor - 1, 0);
+      while (pInput->Cursor > 0 && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
+        pInput->Cursor--;
       break;
     case AX_KEY_UPARROW:
       pInput->Cursor = dwLength;
@@ -184,6 +188,8 @@ HANDLER(Input, Node, KeyDown)
       break;
     case AX_KEY_RIGHTARROW:
       pInput->Cursor = MIN(pInput->Cursor + 1, dwLength);
+      while ((uint32_t)pInput->Cursor < dwLength && ((unsigned char)szText[pInput->Cursor] & 0xc0) == 0x80)
+        pInput->Cursor++;
       break;
     default:
       return FALSE;
@@ -197,21 +203,21 @@ HANDLER(Input, Node, KeyDown)
 }
 
 static bool_t
-_InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
+_InsertText(struct Object *hObject, struct Input *pInput, char const *text)
 {
   char szText[MAX_PROPERTY_STRING];
   const char *currentText = GetTextRun(hObject)->Text;
   strncpy(szText, currentText ? currentText : "", sizeof(szText) - 1);
   szText[sizeof(szText) - 1] = 0;
   uint32_t dwLength = (uint32_t)strlen(szText);
-  if (pInput->Cursor >= (int)sizeof(szText) - 1)
+  size_t length = strlen(text);
+  pInput->Cursor = MAX(0, MIN(pInput->Cursor, (int)dwLength));
+  if (!length || dwLength + length >= sizeof(szText))
     return FALSE;
-  if (dwLength + 1 < sizeof(szText) - 1) {
-    szText[dwLength + 1] = 0;
-    for (uint32_t s = dwLength; s > (uint32_t)pInput->Cursor; s--)
-      szText[s] = szText[s - 1];
-  }
-  szText[pInput->Cursor++] = (char)ch;
+  memmove(szText + pInput->Cursor + length, szText + pInput->Cursor,
+          dwLength - pInput->Cursor + 1);
+  memcpy(szText + pInput->Cursor, text, length);
+  pInput->Cursor += length;
   struct Property *prop = TextRun_GetProperty(hObject, kTextRunText);
   if (prop) PROP_SetStringValue(prop, szText);
   OBJ_SetDirty(hObject);
@@ -220,9 +226,10 @@ _InsertCharacter(struct Object *hObject, struct Input *pInput, unsigned char ch)
 
 HANDLER(Input, Node, TextInput)
 {
-  if (pTextInput->character >= 32 && (unsigned char)pTextInput->character < 127) {
-    _InsertCharacter(hObject, pInput, (unsigned char)pTextInput->character);
-  }
+  char fallback[] = { pTextInput->character, 0 };
+  char const *text = pTextInput->text && *pTextInput->text ? pTextInput->text : fallback;
+  unsigned char first = (unsigned char)*text;
+  if (first >= 32 && first != 127) _InsertText(hObject, pInput, text);
   return TRUE;
 }
 

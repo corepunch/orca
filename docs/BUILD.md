@@ -42,6 +42,15 @@ xvfb-run make test
 Never hand-edit files under `generated/`.
 Change the module `.cgen` or handwritten C source, then rerun `make modules`.
 
+## iPhone and iPad
+
+Build standalone iOS apps with Make and the Xcode command-line tools; no
+Xcode project is required. Start with `make ios-run` for the chat app in an
+iPhone simulator, or `make ios-run DEVICE_TYPE=iPad` for an iPad simulator.
+`make ios` builds an arm64 device bundle; `make ios-install` signs, installs,
+and launches it using an installed development profile and identity.
+See [iOS build and deployment](IOS.md) for prerequisites, outputs and options.
+
 ## Common failure meaning
 
 - `cgen: dlopen failed ... invalid ELF header` — rebuild artifacts for codegen plugins are stale or incompatible.
