@@ -1,661 +1,466 @@
 // !$*UTF8*$!
 {
-"archiveVersion" = 1;
-"classes" = {
-};
-"objectVersion" = 56;
-"objects" = {
-"09AA38CEF3EA53936A20C858" = {
-"isa" = "XCBuildConfiguration";
-"name" = "Debug";
-"buildSettings" = {
-"ORCA_ROOT" = "$(SRCROOT)/../..";
-"ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
-"SDKROOT" = "iphoneos";
-"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
-"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
-"TARGETED_DEVICE_FAMILY" = "1,2";
-"SUPPORTS_MACCATALYST" = "NO";
-"SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD" = "NO";
-"GCC_C_LANGUAGE_STANDARD" = "gnu11";
-"CLANG_ENABLE_OBJC_ARC" = "NO";
-"ENABLE_USER_SCRIPT_SANDBOXING" = "NO";
-"ALWAYS_SEARCH_USER_PATHS" = "NO";
-"HEADER_SEARCH_PATHS" = (
-"$(inherited)",
-"$(DERIVED_FILE_DIR)",
-"$(DERIVED_FILE_DIR)/include",
-"$(DERIVED_FILE_DIR)/dependencies/include",
-"$(DERIVED_FILE_DIR)/dependencies/include/freetype2",
-"$(ORCA_ROOT)",
-"$(SDKROOT)/usr/include/libxml2",
-);
-"LIBRARY_SEARCH_PATHS" = (
-"$(inherited)",
-"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
-);
-"GCC_PREPROCESSOR_DEFINITIONS" = (
-"$(inherited)",
-"ORCA_IOS=1",
-"ORCA_STATIC=1",
-"GL_SILENCE_DEPRECATION",
-);
-"OTHER_CFLAGS" = (
-"$(inherited)",
-"-Wno-deprecated-declarations",
-);
-"PRODUCT_NAME" = "chat";
-"PRODUCT_BUNDLE_IDENTIFIER" = "org.orca.chat";
-"MARKETING_VERSION" = "1.0";
-"CURRENT_PROJECT_VERSION" = "1";
-"CODE_SIGN_STYLE" = "Automatic";
-"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
-"GCC_OPTIMIZATION_LEVEL" = "0";
-"DEBUG_INFORMATION_FORMAT" = "dwarf";
-"ONLY_ACTIVE_ARCH" = "YES";
-};
-};
-"2C51B24F1BD0E37CCD3A85CD" = {
-"isa" = "XCBuildConfiguration";
-"name" = "Release";
-"buildSettings" = {
-"ORCA_ROOT" = "$(SRCROOT)/../..";
-"ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
-"SDKROOT" = "iphoneos";
-"SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
-"IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
-"TARGETED_DEVICE_FAMILY" = "1,2";
-"SUPPORTS_MACCATALYST" = "NO";
-"SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD" = "NO";
-"GCC_C_LANGUAGE_STANDARD" = "gnu11";
-"CLANG_ENABLE_OBJC_ARC" = "NO";
-"ENABLE_USER_SCRIPT_SANDBOXING" = "NO";
-"ALWAYS_SEARCH_USER_PATHS" = "NO";
-"HEADER_SEARCH_PATHS" = (
-"$(inherited)",
-"$(DERIVED_FILE_DIR)",
-"$(DERIVED_FILE_DIR)/include",
-"$(DERIVED_FILE_DIR)/dependencies/include",
-"$(DERIVED_FILE_DIR)/dependencies/include/freetype2",
-"$(ORCA_ROOT)",
-"$(SDKROOT)/usr/include/libxml2",
-);
-"LIBRARY_SEARCH_PATHS" = (
-"$(inherited)",
-"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
-);
-"GCC_PREPROCESSOR_DEFINITIONS" = (
-"$(inherited)",
-"ORCA_IOS=1",
-"ORCA_STATIC=1",
-"GL_SILENCE_DEPRECATION",
-);
-"OTHER_CFLAGS" = (
-"$(inherited)",
-"-Wno-deprecated-declarations",
-);
-"PRODUCT_NAME" = "chat";
-"PRODUCT_BUNDLE_IDENTIFIER" = "org.orca.chat";
-"MARKETING_VERSION" = "1.0";
-"CURRENT_PROJECT_VERSION" = "1";
-"CODE_SIGN_STYLE" = "Automatic";
-"ASSETCATALOG_COMPILER_APPICON_NAME" = "AppIcon";
-"GCC_OPTIMIZATION_LEVEL" = "s";
-"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
-"ONLY_ACTIVE_ARCH" = "NO";
-};
-};
-"1E4B6209DBC7689E3E7CF89C" = {
-"isa" = "XCConfigurationList";
-"buildConfigurations" = (
-"09AA38CEF3EA53936A20C858",
-"2C51B24F1BD0E37CCD3A85CD",
-);
-"defaultConfigurationIsVisible" = 0;
-"defaultConfigurationName" = "Debug";
-};
-"4D594E0E4837FB24935BF0EE" = {
-"isa" = "XCBuildConfiguration";
-"name" = "Debug";
-"buildSettings" = {
-"INFOPLIST_FILE" = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
-"GENERATE_INFOPLIST_FILE" = "NO";
-"OTHER_LDFLAGS" = (
-"$(inherited)",
-"-llua",
-"-lfreetype",
-"-llz4",
-"-lcurl",
-"-lxml2",
-"-lz",
-"-liconv",
-"-lm",
-"-framework",
-"UIKit",
-"-framework",
-"Foundation",
-"-framework",
-"OpenGLES",
-"-framework",
-"QuartzCore",
-"-framework",
-"CoreGraphics",
-"-framework",
-"CoreText",
-"-framework",
-"ImageIO",
-"-framework",
-"Security",
-"-framework",
-"SystemConfiguration",
-"-framework",
-"UniformTypeIdentifiers",
-"-framework",
-"AudioToolbox",
-);
-"SKIP_INSTALL" = "NO";
-"INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
-"GCC_OPTIMIZATION_LEVEL" = "0";
-"DEBUG_INFORMATION_FORMAT" = "dwarf";
-"ONLY_ACTIVE_ARCH" = "YES";
-};
-};
-"801E1DB2112CFD526020E856" = {
-"isa" = "XCBuildConfiguration";
-"name" = "Release";
-"buildSettings" = {
-"INFOPLIST_FILE" = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
-"GENERATE_INFOPLIST_FILE" = "NO";
-"OTHER_LDFLAGS" = (
-"$(inherited)",
-"-llua",
-"-lfreetype",
-"-llz4",
-"-lcurl",
-"-lxml2",
-"-lz",
-"-liconv",
-"-lm",
-"-framework",
-"UIKit",
-"-framework",
-"Foundation",
-"-framework",
-"OpenGLES",
-"-framework",
-"QuartzCore",
-"-framework",
-"CoreGraphics",
-"-framework",
-"CoreText",
-"-framework",
-"ImageIO",
-"-framework",
-"Security",
-"-framework",
-"SystemConfiguration",
-"-framework",
-"UniformTypeIdentifiers",
-"-framework",
-"AudioToolbox",
-);
-"SKIP_INSTALL" = "NO";
-"INSTALL_PATH" = "$(LOCAL_APPS_DIR)";
-"GCC_OPTIMIZATION_LEVEL" = "s";
-"DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
-"ONLY_ACTIVE_ARCH" = "NO";
-};
-};
-"5A4EC41AAD9253FBF9572ACE" = {
-"isa" = "XCConfigurationList";
-"buildConfigurations" = (
-"4D594E0E4837FB24935BF0EE",
-"801E1DB2112CFD526020E856",
-);
-"defaultConfigurationIsVisible" = 0;
-"defaultConfigurationName" = "Debug";
-};
-"01F1F2F42AD8F3900D9F74DC" = {
-"isa" = "PBXFileReference";
-"path" = "module_geometry.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"11E4BF7487039E9A3B03B299" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "01F1F2F42AD8F3900D9F74DC";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"573B22E7BA2C4FC367FC2CED" = {
-"isa" = "PBXFileReference";
-"path" = "module_orca.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"8AD6138C7FD2C5621899E463" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "573B22E7BA2C4FC367FC2CED";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"7F075BF07802E35982882991" = {
-"isa" = "PBXFileReference";
-"path" = "module_sysutil.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"D97936A2A86DC1771B9B7AF1" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "7F075BF07802E35982882991";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"FB9AF4E12BC1A8E0130AC20F" = {
-"isa" = "PBXFileReference";
-"path" = "module_console.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"FB65B79650A2EB034D905B15" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "FB9AF4E12BC1A8E0130AC20F";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"45C9AB9CB0AC4F0F299509EF" = {
-"isa" = "PBXFileReference";
-"path" = "module_parsers.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"41E3D5C40AE06CB140E9C58E" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "45C9AB9CB0AC4F0F299509EF";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"71BD4282855359074F49FE98" = {
-"isa" = "PBXFileReference";
-"path" = "module_debug.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"C0F63232DEA6E9F4F72AEC2E" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "71BD4282855359074F49FE98";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"D04D3CE13B392BC10BCF5A56" = {
-"isa" = "PBXFileReference";
-"path" = "module_network.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"DAAF2B9913C37D2178B986A1" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "D04D3CE13B392BC10BCF5A56";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"853FE876620D38415D699BC6" = {
-"isa" = "PBXFileReference";
-"path" = "module_renderer.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"7A0AAFEB0B62ED5EEFF9AED3" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "853FE876620D38415D699BC6";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"6A6262C6DD512C89FA16CFF2" = {
-"isa" = "PBXFileReference";
-"path" = "module_filesystem.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"0C677A21DD608C3E59E4F29B" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "6A6262C6DD512C89FA16CFF2";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"F6AAFF46EF92E4DFB813B042" = {
-"isa" = "PBXFileReference";
-"path" = "module_core.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"22F6FBAF73969F994D6269AD" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "F6AAFF46EF92E4DFB813B042";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"24C6BFF84A5B703F72A128D0" = {
-"isa" = "PBXFileReference";
-"path" = "module_data.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"B153EBBE0A2A9C3115830419" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "24C6BFF84A5B703F72A128D0";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"AC2DA5E9DF308F225F70AAF9" = {
-"isa" = "PBXFileReference";
-"path" = "module_media.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"6DA74A2527F593EC76874074" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "AC2DA5E9DF308F225F70AAF9";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"94DC855D8599B242FD46756C" = {
-"isa" = "PBXFileReference";
-"path" = "plugin_UIKit.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"7C7446CA7ABF66BE1A4CBF89" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "94DC855D8599B242FD46756C";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"54F441F8DB32626B1680E1C0" = {
-"isa" = "PBXFileReference";
-"path" = "plugin_SceneKit.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"4CE8CC7A38B24C2C199C0B57" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "54F441F8DB32626B1680E1C0";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"9E9CF9A0CB6FCCC4422A3520" = {
-"isa" = "PBXFileReference";
-"path" = "plugin_SpriteKit.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"8A5DA963E271C74211B921C3" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "9E9CF9A0CB6FCCC4422A3520";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"C411E94760BAEB963F766B91" = {
-"isa" = "PBXFileReference";
-"path" = "platform_unix.c";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.c";
-};
-"3AAFEB6F17AB4A9DAC881555" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "C411E94760BAEB963F766B91";
-"settings" = {
-"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"4A1D7E190E4DE5E974329025" = {
-"isa" = "PBXFileReference";
-"path" = "ios_runtime.m";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.objc";
-};
-"B3DB704ABC167581963A98C6" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "4A1D7E190E4DE5E974329025";
-"settings" = {
-"COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"BCBE196513D59F88F4B8718C" = {
-"isa" = "PBXFileReference";
-"path" = "native_modules.m";
-"sourceTree" = "DERIVED_FILE_DIR";
-"lastKnownFileType" = "sourcecode.c.objc";
-};
-"5297588D925865098767F1D7" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "BCBE196513D59F88F4B8718C";
-"settings" = {
-"COMPILER_FLAGS" = "-idirafter \"$(DERIVED_FILE_DIR)/generated\"";
-};
-};
-"45666D976BAB316D970EC459" = {
-"isa" = "PBXShellScriptBuildPhase";
-"buildActionMask" = 2147483647;
-"name" = "Prepare ORCA sources and dependencies";
-"shellPath" = "/bin/sh";
-"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" prepare\n";
-"inputPaths" = (
-"$(ORCA_ROOT)/tools/xcode/build.py",
-"$(ORCA_ROOT)/tools/xcode/common.py",
-"$(ORCA_ROOT)/tools/ios/dependencies.py",
-);
-"outputPaths" = (
-"$(DERIVED_FILE_DIR)/module_geometry.c",
-"$(DERIVED_FILE_DIR)/module_orca.c",
-"$(DERIVED_FILE_DIR)/module_sysutil.c",
-"$(DERIVED_FILE_DIR)/module_console.c",
-"$(DERIVED_FILE_DIR)/module_parsers.c",
-"$(DERIVED_FILE_DIR)/module_debug.c",
-"$(DERIVED_FILE_DIR)/module_network.c",
-"$(DERIVED_FILE_DIR)/module_renderer.c",
-"$(DERIVED_FILE_DIR)/module_filesystem.c",
-"$(DERIVED_FILE_DIR)/module_core.c",
-"$(DERIVED_FILE_DIR)/module_data.c",
-"$(DERIVED_FILE_DIR)/module_media.c",
-"$(DERIVED_FILE_DIR)/plugin_UIKit.c",
-"$(DERIVED_FILE_DIR)/plugin_SceneKit.c",
-"$(DERIVED_FILE_DIR)/plugin_SpriteKit.c",
-"$(DERIVED_FILE_DIR)/platform_unix.c",
-"$(DERIVED_FILE_DIR)/ios_runtime.m",
-"$(DERIVED_FILE_DIR)/native_modules.m",
-);
-"runOnlyForDeploymentPostprocessing" = 0;
-"alwaysOutOfDate" = 1;
-};
-"878A52FC5FF6A57D50B7B870" = {
-"isa" = "PBXSourcesBuildPhase";
-"buildActionMask" = 2147483647;
-"files" = (
-"11E4BF7487039E9A3B03B299",
-"8AD6138C7FD2C5621899E463",
-"D97936A2A86DC1771B9B7AF1",
-"FB65B79650A2EB034D905B15",
-"41E3D5C40AE06CB140E9C58E",
-"C0F63232DEA6E9F4F72AEC2E",
-"DAAF2B9913C37D2178B986A1",
-"7A0AAFEB0B62ED5EEFF9AED3",
-"0C677A21DD608C3E59E4F29B",
-"22F6FBAF73969F994D6269AD",
-"B153EBBE0A2A9C3115830419",
-"6DA74A2527F593EC76874074",
-"7C7446CA7ABF66BE1A4CBF89",
-"4CE8CC7A38B24C2C199C0B57",
-"8A5DA963E271C74211B921C3",
-"3AAFEB6F17AB4A9DAC881555",
-"B3DB704ABC167581963A98C6",
-"5297588D925865098767F1D7",
-);
-"runOnlyForDeploymentPostprocessing" = 0;
-};
-"4930BB2B935190FC0668B0B0" = {
-"isa" = "PBXFileReference";
-"name" = "Assets.xcassets";
-"path" = "Assets.xcassets";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder.assetcatalog";
-};
-"6274D928CACE8315E511B6EF" = {
-"isa" = "PBXBuildFile";
-"fileRef" = "4930BB2B935190FC0668B0B0";
-};
-"7899A95B247C4825828F736C" = {
-"isa" = "PBXResourcesBuildPhase";
-"buildActionMask" = 2147483647;
-"files" = (
-"6274D928CACE8315E511B6EF",
-);
-"runOnlyForDeploymentPostprocessing" = 0;
-};
-"41D311A605520FC7B8B9A980" = {
-"isa" = "PBXShellScriptBuildPhase";
-"buildActionMask" = 2147483647;
-"name" = "Bundle ORCA runtime and app resources";
-"shellPath" = "/bin/sh";
-"shellScript" = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" resources\n";
-"runOnlyForDeploymentPostprocessing" = 0;
-"alwaysOutOfDate" = 1;
-};
-"A8792157CB4F27FB949C035F" = {
-"isa" = "PBXFileReference";
-"path" = "chat.app";
-"sourceTree" = "BUILT_PRODUCTS_DIR";
-"explicitFileType" = "wrapper.application";
-};
-"D5185A653FD9C48F0A3B3C0B" = {
-"isa" = "PBXNativeTarget";
-"name" = "chat-ios";
-"productName" = "chat";
-"productReference" = "A8792157CB4F27FB949C035F";
-"productType" = "com.apple.product-type.application";
-"buildConfigurationList" = "5A4EC41AAD9253FBF9572ACE";
-"buildPhases" = (
-"45666D976BAB316D970EC459",
-"878A52FC5FF6A57D50B7B870",
-"7899A95B247C4825828F736C",
-"41D311A605520FC7B8B9A980",
-);
-"buildRules" = (
-);
-"dependencies" = (
-);
-};
-"2F57FC4A3FA941B68F299FA2" = {
-"isa" = "PBXFileReference";
-"name" = "Application resources";
-"path" = ".";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"79080F73FD96EE06C5482069" = {
-"isa" = "PBXFileReference";
-"name" = "Engine";
-"path" = "../../source";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"DD1EAB27EA302DC9E5A4C64E" = {
-"isa" = "PBXFileReference";
-"name" = "Plugins";
-"path" = "../../plugins";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"94B424AF89D6BF0839DD998F" = {
-"isa" = "PBXFileReference";
-"name" = "Platform";
-"path" = "../../libs/platform";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"2ED048981ABDBFA65761CF69" = {
-"isa" = "PBXGroup";
-"name" = "Generated Sources";
-"children" = (
-"01F1F2F42AD8F3900D9F74DC",
-"573B22E7BA2C4FC367FC2CED",
-"7F075BF07802E35982882991",
-"FB9AF4E12BC1A8E0130AC20F",
-"45C9AB9CB0AC4F0F299509EF",
-"71BD4282855359074F49FE98",
-"D04D3CE13B392BC10BCF5A56",
-"853FE876620D38415D699BC6",
-"6A6262C6DD512C89FA16CFF2",
-"F6AAFF46EF92E4DFB813B042",
-"24C6BFF84A5B703F72A128D0",
-"AC2DA5E9DF308F225F70AAF9",
-"94DC855D8599B242FD46756C",
-"54F441F8DB32626B1680E1C0",
-"9E9CF9A0CB6FCCC4422A3520",
-"C411E94760BAEB963F766B91",
-"4A1D7E190E4DE5E974329025",
-"BCBE196513D59F88F4B8718C",
-);
-"sourceTree" = "<group>";
-};
-"BEAD8915881B60FC177E63AB" = {
-"isa" = "PBXGroup";
-"name" = "Products";
-"children" = (
-"A8792157CB4F27FB949C035F",
-);
-"sourceTree" = "<group>";
-};
-"664F835B1ED89846DAB355B5" = {
-"isa" = "PBXGroup";
-"children" = (
-"2F57FC4A3FA941B68F299FA2",
-"79080F73FD96EE06C5482069",
-"DD1EAB27EA302DC9E5A4C64E",
-"94B424AF89D6BF0839DD998F",
-"4930BB2B935190FC0668B0B0",
-"2ED048981ABDBFA65761CF69",
-"BEAD8915881B60FC177E63AB",
-);
-"sourceTree" = "<group>";
-};
-"244210E48437B6556980A702" = {
-"isa" = "PBXProject";
-"buildConfigurationList" = "1E4B6209DBC7689E3E7CF89C";
-"compatibilityVersion" = "Xcode 14.0";
-"developmentRegion" = "en";
-"knownRegions" = (
-"en",
-"Base",
-);
-"mainGroup" = "664F835B1ED89846DAB355B5";
-"productRefGroup" = "BEAD8915881B60FC177E63AB";
-"projectDirPath" = "";
-"projectRoot" = "";
-"targets" = (
-"D5185A653FD9C48F0A3B3C0B",
-);
-"attributes" = {
-"LastUpgradeCheck" = "1600";
-};
-};
-};
-"rootObject" = "244210E48437B6556980A702";
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0C677A21DD608C3E59E4F29B /* module_filesystem.c in Sources */ = {isa = PBXBuildFile; fileRef = 6A6262C6DD512C89FA16CFF2 /* module_filesystem.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		11E4BF7487039E9A3B03B299 /* module_geometry.c in Sources */ = {isa = PBXBuildFile; fileRef = 01F1F2F42AD8F3900D9F74DC /* module_geometry.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		22F6FBAF73969F994D6269AD /* module_core.c in Sources */ = {isa = PBXBuildFile; fileRef = F6AAFF46EF92E4DFB813B042 /* module_core.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		3AAFEB6F17AB4A9DAC881555 /* platform_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = C411E94760BAEB963F766B91 /* platform_unix.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		41E3D5C40AE06CB140E9C58E /* module_parsers.c in Sources */ = {isa = PBXBuildFile; fileRef = 45C9AB9CB0AC4F0F299509EF /* module_parsers.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		4CE8CC7A38B24C2C199C0B57 /* plugin_SceneKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 54F441F8DB32626B1680E1C0 /* plugin_SceneKit.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		5297588D925865098767F1D7 /* native_modules.m in Sources */ = {isa = PBXBuildFile; fileRef = BCBE196513D59F88F4B8718C /* native_modules.m */; settings = {COMPILER_FLAGS = "-idirafter \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		6274D928CACE8315E511B6EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4930BB2B935190FC0668B0B0 /* Assets.xcassets */; };
+		6DA74A2527F593EC76874074 /* module_media.c in Sources */ = {isa = PBXBuildFile; fileRef = AC2DA5E9DF308F225F70AAF9 /* module_media.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		7A0AAFEB0B62ED5EEFF9AED3 /* module_renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 853FE876620D38415D699BC6 /* module_renderer.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		7C7446CA7ABF66BE1A4CBF89 /* plugin_UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 94DC855D8599B242FD46756C /* plugin_UIKit.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		8A5DA963E271C74211B921C3 /* plugin_SpriteKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		8AD6138C7FD2C5621899E463 /* module_orca.c in Sources */ = {isa = PBXBuildFile; fileRef = 573B22E7BA2C4FC367FC2CED /* module_orca.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		B153EBBE0A2A9C3115830419 /* module_data.c in Sources */ = {isa = PBXBuildFile; fileRef = 24C6BFF84A5B703F72A128D0 /* module_data.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		B3DB704ABC167581963A98C6 /* ios_runtime.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1D7E190E4DE5E974329025 /* ios_runtime.m */; settings = {COMPILER_FLAGS = "-idirafter \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		C0F63232DEA6E9F4F72AEC2E /* module_debug.c in Sources */ = {isa = PBXBuildFile; fileRef = 71BD4282855359074F49FE98 /* module_debug.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		D97936A2A86DC1771B9B7AF1 /* module_sysutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 7F075BF07802E35982882991 /* module_sysutil.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		DAAF2B9913C37D2178B986A1 /* module_network.c in Sources */ = {isa = PBXBuildFile; fileRef = D04D3CE13B392BC10BCF5A56 /* module_network.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		FB65B79650A2EB034D905B15 /* module_console.c in Sources */ = {isa = PBXBuildFile; fileRef = FB9AF4E12BC1A8E0130AC20F /* module_console.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		01F1F2F42AD8F3900D9F74DC /* module_geometry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_geometry.c; sourceTree = DERIVED_FILE_DIR; };
+		24C6BFF84A5B703F72A128D0 /* module_data.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_data.c; sourceTree = DERIVED_FILE_DIR; };
+		2F57FC4A3FA941B68F299FA2 /* Application resources */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Application resources"; path = .; sourceTree = SOURCE_ROOT; };
+		45C9AB9CB0AC4F0F299509EF /* module_parsers.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_parsers.c; sourceTree = DERIVED_FILE_DIR; };
+		4930BB2B935190FC0668B0B0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		4A1D7E190E4DE5E974329025 /* ios_runtime.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ios_runtime.m; sourceTree = DERIVED_FILE_DIR; };
+		54F441F8DB32626B1680E1C0 /* plugin_SceneKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin_SceneKit.c; sourceTree = DERIVED_FILE_DIR; };
+		573B22E7BA2C4FC367FC2CED /* module_orca.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_orca.c; sourceTree = DERIVED_FILE_DIR; };
+		6A6262C6DD512C89FA16CFF2 /* module_filesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_filesystem.c; sourceTree = DERIVED_FILE_DIR; };
+		71BD4282855359074F49FE98 /* module_debug.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_debug.c; sourceTree = DERIVED_FILE_DIR; };
+		79080F73FD96EE06C5482069 /* Engine */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Engine; path = ../../source; sourceTree = SOURCE_ROOT; };
+		7F075BF07802E35982882991 /* module_sysutil.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_sysutil.c; sourceTree = DERIVED_FILE_DIR; };
+		853FE876620D38415D699BC6 /* module_renderer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_renderer.c; sourceTree = DERIVED_FILE_DIR; };
+		94B424AF89D6BF0839DD998F /* Platform */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Platform; path = ../../libs/platform; sourceTree = SOURCE_ROOT; };
+		94DC855D8599B242FD46756C /* plugin_UIKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin_UIKit.c; sourceTree = DERIVED_FILE_DIR; };
+		9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin_SpriteKit.c; sourceTree = DERIVED_FILE_DIR; };
+		A8792157CB4F27FB949C035F /* chat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = chat.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AC2DA5E9DF308F225F70AAF9 /* module_media.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_media.c; sourceTree = DERIVED_FILE_DIR; };
+		BCBE196513D59F88F4B8718C /* native_modules.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = native_modules.m; sourceTree = DERIVED_FILE_DIR; };
+		C411E94760BAEB963F766B91 /* platform_unix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = platform_unix.c; sourceTree = DERIVED_FILE_DIR; };
+		D04D3CE13B392BC10BCF5A56 /* module_network.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_network.c; sourceTree = DERIVED_FILE_DIR; };
+		DD1EAB27EA302DC9E5A4C64E /* Plugins */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Plugins; path = ../../plugins; sourceTree = SOURCE_ROOT; };
+		F6AAFF46EF92E4DFB813B042 /* module_core.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_core.c; sourceTree = DERIVED_FILE_DIR; };
+		FB9AF4E12BC1A8E0130AC20F /* module_console.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_console.c; sourceTree = DERIVED_FILE_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		2ED048981ABDBFA65761CF69 /* Generated Sources */ = {
+			isa = PBXGroup;
+			children = (
+				01F1F2F42AD8F3900D9F74DC /* module_geometry.c */,
+				573B22E7BA2C4FC367FC2CED /* module_orca.c */,
+				7F075BF07802E35982882991 /* module_sysutil.c */,
+				FB9AF4E12BC1A8E0130AC20F /* module_console.c */,
+				45C9AB9CB0AC4F0F299509EF /* module_parsers.c */,
+				71BD4282855359074F49FE98 /* module_debug.c */,
+				D04D3CE13B392BC10BCF5A56 /* module_network.c */,
+				853FE876620D38415D699BC6 /* module_renderer.c */,
+				6A6262C6DD512C89FA16CFF2 /* module_filesystem.c */,
+				F6AAFF46EF92E4DFB813B042 /* module_core.c */,
+				24C6BFF84A5B703F72A128D0 /* module_data.c */,
+				AC2DA5E9DF308F225F70AAF9 /* module_media.c */,
+				94DC855D8599B242FD46756C /* plugin_UIKit.c */,
+				54F441F8DB32626B1680E1C0 /* plugin_SceneKit.c */,
+				9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */,
+				C411E94760BAEB963F766B91 /* platform_unix.c */,
+				4A1D7E190E4DE5E974329025 /* ios_runtime.m */,
+				BCBE196513D59F88F4B8718C /* native_modules.m */,
+			);
+			name = "Generated Sources";
+			sourceTree = "<group>";
+		};
+		664F835B1ED89846DAB355B5 = {
+			isa = PBXGroup;
+			children = (
+				2F57FC4A3FA941B68F299FA2 /* Application resources */,
+				79080F73FD96EE06C5482069 /* Engine */,
+				DD1EAB27EA302DC9E5A4C64E /* Plugins */,
+				94B424AF89D6BF0839DD998F /* Platform */,
+				4930BB2B935190FC0668B0B0 /* Assets.xcassets */,
+				2ED048981ABDBFA65761CF69 /* Generated Sources */,
+				BEAD8915881B60FC177E63AB /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		BEAD8915881B60FC177E63AB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A8792157CB4F27FB949C035F /* chat.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D5185A653FD9C48F0A3B3C0B /* chat-ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A4EC41AAD9253FBF9572ACE /* Build configuration list for PBXNativeTarget "chat-ios" */;
+			buildPhases = (
+				45666D976BAB316D970EC459 /* Prepare ORCA sources and dependencies */,
+				878A52FC5FF6A57D50B7B870 /* Sources */,
+				7899A95B247C4825828F736C /* Resources */,
+				41D311A605520FC7B8B9A980 /* Bundle ORCA runtime and app resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "chat-ios";
+			productName = chat;
+			productReference = A8792157CB4F27FB949C035F /* chat.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		244210E48437B6556980A702 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = 1E4B6209DBC7689E3E7CF89C /* Build configuration list for PBXProject "chat" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 664F835B1ED89846DAB355B5;
+			productRefGroup = BEAD8915881B60FC177E63AB /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D5185A653FD9C48F0A3B3C0B /* chat-ios */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7899A95B247C4825828F736C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6274D928CACE8315E511B6EF /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		41D311A605520FC7B8B9A980 /* Bundle ORCA runtime and app resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle ORCA runtime and app resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" resources\n";
+		};
+		45666D976BAB316D970EC459 /* Prepare ORCA sources and dependencies */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(ORCA_ROOT)/tools/xcode/build.py",
+				"$(ORCA_ROOT)/tools/xcode/common.py",
+				"$(ORCA_ROOT)/tools/ios/dependencies.py",
+			);
+			name = "Prepare ORCA sources and dependencies";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/module_geometry.c",
+				"$(DERIVED_FILE_DIR)/module_orca.c",
+				"$(DERIVED_FILE_DIR)/module_sysutil.c",
+				"$(DERIVED_FILE_DIR)/module_console.c",
+				"$(DERIVED_FILE_DIR)/module_parsers.c",
+				"$(DERIVED_FILE_DIR)/module_debug.c",
+				"$(DERIVED_FILE_DIR)/module_network.c",
+				"$(DERIVED_FILE_DIR)/module_renderer.c",
+				"$(DERIVED_FILE_DIR)/module_filesystem.c",
+				"$(DERIVED_FILE_DIR)/module_core.c",
+				"$(DERIVED_FILE_DIR)/module_data.c",
+				"$(DERIVED_FILE_DIR)/module_media.c",
+				"$(DERIVED_FILE_DIR)/plugin_UIKit.c",
+				"$(DERIVED_FILE_DIR)/plugin_SceneKit.c",
+				"$(DERIVED_FILE_DIR)/plugin_SpriteKit.c",
+				"$(DERIVED_FILE_DIR)/platform_unix.c",
+				"$(DERIVED_FILE_DIR)/ios_runtime.m",
+				"$(DERIVED_FILE_DIR)/native_modules.m",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -eu\n/bin/sh \"$ORCA_ROOT/tools/xcode/python.sh\" \"$ORCA_ROOT/tools/xcode/build.py\" prepare\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		878A52FC5FF6A57D50B7B870 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				11E4BF7487039E9A3B03B299 /* module_geometry.c in Sources */,
+				8AD6138C7FD2C5621899E463 /* module_orca.c in Sources */,
+				D97936A2A86DC1771B9B7AF1 /* module_sysutil.c in Sources */,
+				FB65B79650A2EB034D905B15 /* module_console.c in Sources */,
+				41E3D5C40AE06CB140E9C58E /* module_parsers.c in Sources */,
+				C0F63232DEA6E9F4F72AEC2E /* module_debug.c in Sources */,
+				DAAF2B9913C37D2178B986A1 /* module_network.c in Sources */,
+				7A0AAFEB0B62ED5EEFF9AED3 /* module_renderer.c in Sources */,
+				0C677A21DD608C3E59E4F29B /* module_filesystem.c in Sources */,
+				22F6FBAF73969F994D6269AD /* module_core.c in Sources */,
+				B153EBBE0A2A9C3115830419 /* module_data.c in Sources */,
+				6DA74A2527F593EC76874074 /* module_media.c in Sources */,
+				7C7446CA7ABF66BE1A4CBF89 /* plugin_UIKit.c in Sources */,
+				4CE8CC7A38B24C2C199C0B57 /* plugin_SceneKit.c in Sources */,
+				8A5DA963E271C74211B921C3 /* plugin_SpriteKit.c in Sources */,
+				3AAFEB6F17AB4A9DAC881555 /* platform_unix.c in Sources */,
+				B3DB704ABC167581963A98C6 /* ios_runtime.m in Sources */,
+				5297588D925865098767F1D7 /* native_modules.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		09AA38CEF3EA53936A20C858 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ORCA_IOS=1",
+					"ORCA_STATIC=1",
+					GL_SILENCE_DEPRECATION,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DERIVED_FILE_DIR)",
+					"$(DERIVED_FILE_DIR)/include",
+					"$(DERIVED_FILE_DIR)/dependencies/include",
+					"$(DERIVED_FILE_DIR)/dependencies/include/freetype2",
+					"$(ORCA_ROOT)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
+				);
+				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = YES;
+				ORCA_PROJECT = "$(SRCROOT)/.";
+				ORCA_ROOT = "$(SRCROOT)/../..";
+				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-Wno-deprecated-declarations",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orca.chat;
+				PRODUCT_NAME = chat;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		2C51B24F1BD0E37CCD3A85CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"ORCA_IOS=1",
+					"ORCA_STATIC=1",
+					GL_SILENCE_DEPRECATION,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DERIVED_FILE_DIR)",
+					"$(DERIVED_FILE_DIR)/include",
+					"$(DERIVED_FILE_DIR)/dependencies/include",
+					"$(DERIVED_FILE_DIR)/dependencies/include/freetype2",
+					"$(ORCA_ROOT)",
+					"$(SDKROOT)/usr/include/libxml2",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib",
+				);
+				MARKETING_VERSION = 1.0;
+				ONLY_ACTIVE_ARCH = NO;
+				ORCA_PROJECT = "$(SRCROOT)/.";
+				ORCA_ROOT = "$(SRCROOT)/../..";
+				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-Wno-deprecated-declarations",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = org.orca.chat;
+				PRODUCT_NAME = chat;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		4D594E0E4837FB24935BF0EE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = BM2R8F5YHC;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
+				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-llua",
+					"-lfreetype",
+					"-llz4",
+					"-lcurl",
+					"-lxml2",
+					"-lz",
+					"-liconv",
+					"-lm",
+					"-framework",
+					UIKit,
+					"-framework",
+					Foundation,
+					"-framework",
+					OpenGLES,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					CoreText,
+					"-framework",
+					ImageIO,
+					"-framework",
+					Security,
+					"-framework",
+					SystemConfiguration,
+					"-framework",
+					UniformTypeIdentifiers,
+					"-framework",
+					AudioToolbox,
+				);
+				SKIP_INSTALL = NO;
+			};
+			name = Debug;
+		};
+		801E1DB2112CFD526020E856 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = BM2R8F5YHC;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
+				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-llua",
+					"-lfreetype",
+					"-llz4",
+					"-lcurl",
+					"-lxml2",
+					"-lz",
+					"-liconv",
+					"-lm",
+					"-framework",
+					UIKit,
+					"-framework",
+					Foundation,
+					"-framework",
+					OpenGLES,
+					"-framework",
+					QuartzCore,
+					"-framework",
+					CoreGraphics,
+					"-framework",
+					CoreText,
+					"-framework",
+					ImageIO,
+					"-framework",
+					Security,
+					"-framework",
+					SystemConfiguration,
+					"-framework",
+					UniformTypeIdentifiers,
+					"-framework",
+					AudioToolbox,
+				);
+				SKIP_INSTALL = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1E4B6209DBC7689E3E7CF89C /* Build configuration list for PBXProject "chat" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				09AA38CEF3EA53936A20C858 /* Debug */,
+				2C51B24F1BD0E37CCD3A85CD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5A4EC41AAD9253FBF9572ACE /* Build configuration list for PBXNativeTarget "chat-ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D594E0E4837FB24935BF0EE /* Debug */,
+				801E1DB2112CFD526020E856 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 244210E48437B6556980A702 /* Project object */;
 }

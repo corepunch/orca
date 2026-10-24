@@ -1,0 +1,9 @@
+{
+  "id" : "fc8874f9-f52c-403e-93ce-c013aaa68ccd",
+  "targets" : [
+    {
+      "id" : "71108f07-c6f3-4f4c-9752-a2ed835102b7",
+      "name" : "chat-ios"
+    }
+  ]
+}
