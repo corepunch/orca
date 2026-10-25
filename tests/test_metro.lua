@@ -125,6 +125,35 @@ local function test_pivot()
   print("PASS: test_pivot")
 end
 
+-- Fixed header widths make allocation behavior deterministic without font faces.
+local function test_pivot_drag_reuse()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot { Title = "Messenger" }
+  for _, name in ipairs { "All", "Unread" } do
+    local _ = pivot + ui.PivotItem { Name = name, Header = name }
+  end
+  layout(screen)
+  for _, header in ipairs(children(pivot, "PivotHeaderItem")) do header.Width = 80 end
+  layout(screen)
+  local headers = children(pivot, "PivotHeaderItem")
+  test.expect_eq(#headers, 4, "Fixed-width headers fill the strip with two copies")
+  local spare = headers[4]
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDown", x = 40, y = 400 }
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDragged", x = 340, y = 400 }
+  layout(screen)
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), 4, "Dragging keeps spare header copies")
+  test.expect(not spare.Visible, "The spare copy is hidden beyond the strip edge")
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonDragged", x = 60, y = 400 }
+  layout(screen)
+  test.expect(spare.Visible, "Dragging back reuses the same header copy")
+  orca.system.dispatchMessage { target = screen, message = "LeftButtonUp", x = 60, y = 400 }
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 0, "A canceled drag retains the selected item")
+  test.expect_eq(pivot:findChild("All").Opacity, 1, "Settling back keeps the existing page opaque")
+  pump(screen)
+  print("PASS: test_pivot_drag_reuse")
+end
+
 local function test_application_bar()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local grid = screen + ui.Grid { Rows = "1fr 58px" }
@@ -263,6 +292,7 @@ local function test_pivot_fill()
 end
 
 test_pivot()
+test_pivot_drag_reuse()
 test_application_bar()
 test_panorama()
 test_xml()

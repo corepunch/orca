@@ -86,7 +86,7 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     GetPivotHeaderItem(header)->IsSelected = selected;
     Metro_SetText(header, GetPivotItem(items[i])->Header, tolower);
     Metro_Show(header, selected || !pPivot->IsLocked, selected ? 1 : METRO_DIM);
-    Metro_Show(items[i], selected, Metro_Ease(pPivot->_progress) * 0.8f + 0.2f);
+    Metro_Show(items[i], selected, 1);
   }
   return count;
 }
@@ -234,9 +234,12 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   }
   struct Object *unused[PIVOT_MAX_ITEMS];
   int unusedCount = 0;
+  // Keep spare copies as the moving strip crosses the edge; locking drops them.
   FOR_EACH_OBJECT(child, hObject) {
     struct PivotHeaderItem *header = GetPivotHeaderItem(child);
-    if (header && header->_repeat && repeats-- <= 0 && unusedCount < PIVOT_MAX_ITEMS) unused[unusedCount++] = child;
+    if (!header || !header->_repeat || repeats-- > 0) continue;
+    if (pPivot->IsLocked && unusedCount < PIVOT_MAX_ITEMS) unused[unusedCount++] = child;
+    else Metro_Show(child, FALSE, METRO_DIM);
   }
   for (int i = 0; i < unusedCount; i++) OBJ_RemoveFromParent(unused[i]);
 

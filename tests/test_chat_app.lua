@@ -68,15 +68,37 @@ app.searchInput.Text = ""
 app:updateSearch()
 app.filter = "Unread"
 app:renderRoomList()
-assert(home:findChild("Room1", true) and not home:findChild("Room2", true), "Unread filter must use unread counts")
+assert(app.roomLists.Unread:findChild("Room1", true) and not app.roomLists.Unread:findChild("Room2", true), "Unread filter must use unread counts")
 app.readRooms.alex = true
 app:renderRoomList()
-assert(not home:findChild("Room1", true), "Opening a chat must clear its local unread state")
+assert(not app.roomLists.Unread:findChild("Room1", true), "Opening a chat must clear its local unread state")
 app.filter = "Pinned"
 app:renderRoomList()
-assert(home:findChild("Room1", true) and home:findChild("Room2", true) and not home:findChild("Room3", true))
+assert(app.roomLists.Pinned:findChild("Room1", true) and app.roomLists.Pinned:findChild("Room2", true) and not app.roomLists.Pinned:findChild("Room3", true))
 app.filter = "All"
 app:renderRoomList()
+
+-- Pivot selection must reuse prepared pages, without rebuilding any rows.
+drain(app)
+home:UpdateLayout(390, 844)
+local retained = {}
+for filter, list in pairs(app.roomLists) do retained[filter] = list:getFirstChild() end
+assert(app.roomLists.All:findChild("Room3", true), "All conversations must stay prepared offscreen")
+assert(app.roomLists.Pinned:findChild("Room1", true), "Pinned conversations must be prepared before swiping")
+local renders, renderRoomList = 0, app.renderRoomList
+app.renderRoomList = function(self) renders = renders + 1; return renderRoomList(self) end
+for _, index in ipairs { 1, 2, 0 } do
+    app.pivot.SelectedIndex = index
+    drain(app)
+    home:UpdateLayout(390, 844)
+    assert(app.filter == ({ "All", "Unread", "Pinned" })[index + 1])
+    for filter, list in pairs(app.roomLists) do
+        assert(list:getFirstChild() == retained[filter], "Swiping must retain rows in " .. filter)
+    end
+end
+app:updateSearch()
+assert(renders == 0, "Selection and unchanged search input must not rebuild conversation rows")
+app.renderRoomList = renderRoomList
 
 app.room = app.client:listRooms()[1]
 local screen = app:dispatch("/thread").view

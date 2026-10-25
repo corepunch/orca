@@ -131,7 +131,9 @@ local App = Application:extend {
     end,
 
     updateSearch = function(self)
-        self.query = self.searchInput.Text or ""
+        local query = self.searchInput.Text or ""
+        if query == self.query then return end
+        self.query = query
         self:renderRoomList()
     end,
 
@@ -141,41 +143,45 @@ local App = Application:extend {
         end
         local index = ({ All = 0, Unread = 1, Pinned = 2 })[self.filter]
         if self.pivot.SelectedIndex ~= index then self.pivot.SelectedIndex = index end
-        local list, visible = self.roomLists[self.filter], 0
-        for index, room in ipairs(self.rooms) do
-            local unread = self:unread(room)
-            local matches = (room.name .. " " .. (room.subtitle or "")):lower():find(self.query:lower(), 1, true)
-            local inFilter = self.filter == "All" or (self.filter == "Unread" and unread > 0)
-                or (self.filter == "Pinned" and self.pinned[room.id])
-            if matches and inFilter then
-                visible = visible + 1
-                local row = ui.Button {
-                    Name = "Room" .. index, Height = 76, Background = colors.background,
-                    class = "conversation", Click = function() self:openRoom(room) end,
-                }
-                local content = ui.Grid { Columns = "56px 1fr 44px", Spacing = 14, Padding = "0 10", IgnoreHitTest = true }
-                content:addChild(C.avatar(room.name, 56, room.id))
-                content:addChild(C.stack({ JustifyContent = "Center", Spacing = 2, IgnoreHitTest = true }, {
-                    C.text(room.name, { FontSize = 22, TextOverflow = "Ellipsis" }),
-                    C.text(room.subtitle or "Start the conversation", {
-                        FontSize = 14, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
+        -- Prepare neighboring pages before a swipe; selection only changes the viewport.
+        local query = self.query:lower()
+        for filter, list in pairs(self.roomLists) do
+            local visible = 0
+            for index, room in ipairs(self.rooms) do
+                local unread = self:unread(room)
+                local matches = (room.name .. " " .. (room.subtitle or "")):lower():find(query, 1, true)
+                local inFilter = filter == "All" or (filter == "Unread" and unread > 0)
+                    or (filter == "Pinned" and self.pinned[room.id])
+                if matches and inFilter then
+                    visible = visible + 1
+                    local row = ui.Button {
+                        Name = "Room" .. index, Height = 76, Background = colors.background,
+                        class = "conversation", Click = function() self:openRoom(room) end,
+                    }
+                    local content = ui.Grid { Columns = "56px 1fr 44px", Spacing = 14, Padding = "0 10", IgnoreHitTest = true }
+                    content:addChild(C.avatar(room.name, 56, room.id))
+                    content:addChild(C.stack({ JustifyContent = "Center", Spacing = 2, IgnoreHitTest = true }, {
+                        C.text(room.name, { FontSize = 22, TextOverflow = "Ellipsis" }),
+                        C.text(room.subtitle or "Start the conversation", {
+                            FontSize = 14, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
+                        }),
+                    }))
+                    local meta = C.stack({ AlignItems = "End", Spacing = 8, Padding = "0 6", IgnoreHitTest = true }, {
+                        C.text(self:roomTime(room), { FontSize = 12, Foreground = unread > 0 and colors.accentText or colors.dim }),
+                    })
+                    if unread > 0 then meta:addChild(C.badge(unread, { Width = 20, Height = 20 }))
+                    elseif self.pinned[room.id] then meta:addChild(C.icon("pin", 14, colors.dim)) end
+                    content:addChild(meta); row:addChild(content); list:addChild(row)
+                end
+            end
+            if visible == 0 then
+                list:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
+                    C.text(self.query ~= "" and "no conversations found" or "you're all caught up", { FontSize = 22, Foreground = colors.muted }),
+                    C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or swipe to another list.", {
+                        FontSize = 14, Foreground = colors.dim, WordWrap = true,
                     }),
                 }))
-                local meta = C.stack({ AlignItems = "End", Spacing = 8, Padding = "0 6", IgnoreHitTest = true }, {
-                    C.text(self:roomTime(room), { FontSize = 12, Foreground = unread > 0 and colors.accentText or colors.dim }),
-                })
-                if unread > 0 then meta:addChild(C.badge(unread, { Width = 20, Height = 20 }))
-                elseif self.pinned[room.id] then meta:addChild(C.icon("pin", 14, colors.dim)) end
-                content:addChild(meta); row:addChild(content); list:addChild(row)
             end
-        end
-        if visible == 0 then
-            list:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
-                C.text(self.query ~= "" and "no conversations found" or "you're all caught up", { FontSize = 22, Foreground = colors.muted }),
-                C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or swipe to another list.", {
-                    FontSize = 14, Foreground = colors.dim, WordWrap = true,
-                }),
-            }))
         end
     end,
 
@@ -238,7 +244,7 @@ local App = Application:extend {
         self.pivot = ui.Pivot { Name = "Inbox", Title = "Messenger", Foreground = colors.ink,
             SelectionChanged = function(pivot)
                 local filter = filters[pivot.SelectedIndex + 1]
-                if filter ~= self.filter then self.filter = filter; self:renderRoomList() end
+                self.filter = filter
             end,
         }
         self.roomLists = {}

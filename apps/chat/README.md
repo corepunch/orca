@@ -44,6 +44,19 @@ view. Root pages keep their instances and form drafts when you switch pages.
 Conversation and sign-in screens are separate flows, and returning to the root
 reuses the same shell.
 
+The inbox prepares all three filtered lists when data or search changes. Swiping
+only updates selection, keeping row instances and scroll positions intact instead
+of allocating rows during the transition. Pivot also retains spare repeating
+headers while dragging and keeps the page opaque when a short swipe settles back.
+This trades a few retained lists for less work during touch interaction.
+
+The performance approach follows Windows Phone 7's use of GPU/composition-thread
+animations to reduce work on the UI thread ([Microsoft's WP7 performance article](https://download.microsoft.com/download/3/1/b/31b6c512-d66f-4138-b639-94711e95faca/msdn_0411dg.pdf)).
+Off-thread input for Panorama and Pivot was a later [Windows Phone 8 improvement](https://blogs.windows.com/windowsdeveloper/2012/11/05/windows-phone-8-developer-platform-highlights/).
+These changes remove allocation and a visible fade from ORCA's swipe path; ORCA
+still performs layout during animation, so device frame-time profiling remains
+necessary before claiming WP7-like smoothness.
+
 Search matches conversation names and message previews. The all, unread and
 pinned pivots filter locally; opening a conversation clears its local unread
 badge. Use pin in a conversation's application bar to add or remove it from
