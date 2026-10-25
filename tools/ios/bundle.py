@@ -53,7 +53,9 @@ def main():
         target = bundle / name
         shutil.copytree(source, target, ignore=shutil.ignore_patterns(
             '.git', '__pycache__', '.DS_Store', 'build', '*.mobileprovision',
-            '*.xcodeproj', '*.xcworkspace', '*.xcassets', 'ci_scripts'))
+            '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', 'ci_scripts'))
+    if (project / 'PrivacyInfo.xcprivacy').is_file():
+        shutil.copy2(project / 'PrivacyInfo.xcprivacy', bundle / 'PrivacyInfo.xcprivacy')
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
                     'UIInterfaceOrientationLandscapeRight']
     info = {
@@ -66,7 +68,7 @@ def main():
         'LSRequiresIPhoneOS': True, 'UIRequiredDeviceCapabilities': ['opengles-3'],
         'UILaunchScreen': {}, 'UISupportedInterfaceOrientations': orientations,
         'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown'],
-        'ORCAProject': 'project',
+        'ORCAProject': 'project', 'ITSAppUsesNonExemptEncryption': False,
         'UIApplicationSceneManifest': {
             'UIApplicationSupportsMultipleScenes': False,
             'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{

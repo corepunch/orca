@@ -130,7 +130,7 @@ def prepare(root, output):
 
 def resource_filter(directory, names):
     return [name for name in names if name.startswith('.') or name in ('build', 'ci_scripts', '__pycache__')
-            or name.endswith(('.xcodeproj', '.xcworkspace', '.xcassets', '.mobileprovision'))]
+            or name.endswith(('.xcodeproj', '.xcworkspace', '.xcassets', '.xcprivacy', '.mobileprovision'))]
 
 
 def resources(root, output):

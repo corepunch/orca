@@ -54,11 +54,12 @@ class ResourceTests(unittest.TestCase):
                 directory.mkdir()
                 (directory / 'metadata').write_text('development only')
             (parent / 'development.mobileprovision').write_text('signing profile')
+        (self.project / 'PrivacyInfo.xcprivacy').write_text('privacy manifest')
 
     def assert_development_files_absent(self, bundle):
         for parent in (bundle / 'project', bundle / 'share'):
             for name in ('chat.xcodeproj', 'chat.xcworkspace', 'Other.xcassets', 'ci_scripts', '.git',
-                         'build', '__pycache__', 'development.mobileprovision'):
+                         'build', '__pycache__', 'development.mobileprovision', 'PrivacyInfo.xcprivacy'):
                 self.assertFalse((parent / name).exists(), str(parent / name))
 
     def test_copy_keeps_xcode_managed_executable_and_info(self):
@@ -123,6 +124,9 @@ class ResourceTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_development_files_absent(bundle)
         self.assertEqual((bundle / 'Orca').read_bytes(), self.executable.read_bytes())
+        self.assertEqual((bundle / 'PrivacyInfo.xcprivacy').read_text(), 'privacy manifest')
+        with (bundle / 'Info.plist').open('rb') as stream:
+            self.assertIs(plistlib.load(stream)['ITSAppUsesNonExemptEncryption'], False)
 
     def test_make_icon_compiler_targets_both_devices_and_returns_generated_metadata(self):
         spec = importlib.util.spec_from_file_location('orca_bundle', ROOT / 'tools/ios/bundle.py')

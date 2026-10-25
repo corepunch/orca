@@ -26,10 +26,12 @@
 		D97936A2A86DC1771B9B7AF1 /* module_sysutil.c in Sources */ = {isa = PBXBuildFile; fileRef = 7F075BF07802E35982882991 /* module_sysutil.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		DAAF2B9913C37D2178B986A1 /* module_network.c in Sources */ = {isa = PBXBuildFile; fileRef = D04D3CE13B392BC10BCF5A56 /* module_network.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		FB65B79650A2EB034D905B15 /* module_console.c in Sources */ = {isa = PBXBuildFile; fileRef = FB9AF4E12BC1A8E0130AC20F /* module_console.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		FC4B7D372A3CB18A5967B478 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 05CA12FE5CD5232A3424FD73 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		01F1F2F42AD8F3900D9F74DC /* module_geometry.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_geometry.c; sourceTree = DERIVED_FILE_DIR; };
+		05CA12FE5CD5232A3424FD73 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = SOURCE_ROOT; };
 		24C6BFF84A5B703F72A128D0 /* module_data.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_data.c; sourceTree = DERIVED_FILE_DIR; };
 		2F57FC4A3FA941B68F299FA2 /* Application resources */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "Application resources"; path = .; sourceTree = SOURCE_ROOT; };
 		45C9AB9CB0AC4F0F299509EF /* module_parsers.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_parsers.c; sourceTree = DERIVED_FILE_DIR; };
@@ -89,6 +91,7 @@
 				DD1EAB27EA302DC9E5A4C64E /* Plugins */,
 				94B424AF89D6BF0839DD998F /* Platform */,
 				4930BB2B935190FC0668B0B0 /* Assets.xcassets */,
+				05CA12FE5CD5232A3424FD73 /* PrivacyInfo.xcprivacy */,
 				2ED048981ABDBFA65761CF69 /* Generated Sources */,
 				BEAD8915881B60FC177E63AB /* Products */,
 			);
@@ -155,6 +158,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6274D928CACE8315E511B6EF /* Assets.xcassets in Resources */,
+				FC4B7D372A3CB18A5967B478 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -54,6 +54,20 @@ packaging compiles the same catalog with `actool` and merges its icon metadata
 into the bundle's Info plist. Catalog sources are omitted from runtime resources.
 Generation itself does not run the asset compiler.
 
+## Privacy manifest and export compliance
+
+Place `PrivacyInfo.xcprivacy` in the app folder; generation adds it to the
+target's Resources phase and Xcode copies it to the bundle root. Make packaging
+copies the same file. Every ORCA app needs one for App Store and TestFlight
+uploads: the engine reads file metadata with `stat()`, so each
+manifest declares `NSPrivacyAccessedAPICategoryFileTimestamp` (`C617.1`, plus
+`3B52.1` when the app opens user-picked files). Also list the data the app
+collects. Chat's manifest is the reference.
+
+Generated Info plists set `ITSAppUsesNonExemptEncryption` to `false`: ORCA
+apps use only the system's HTTPS, so TestFlight builds need no manual export
+compliance answer. Change it if an app adds its own encryption.
+
 ## Build phases and dependencies
 
 The project uses Xcode's native compiler and linker. Its Prepare phase writes
@@ -100,5 +114,13 @@ the workflow. Configure the development team and distribution signing in Xcode
 and Xcode Cloud for archives. Cloud uses the same native preparation, compile,
 link and resource phases as a local build; no custom `ci_scripts` hooks are
 needed. Ensure Cloud can access the repository's Git submodules and the pinned
-dependency download hosts. The project does not contain private signing keys
-or provisioning profiles.
+dependency download hosts (lua.org, download.savannah.gnu.org, codeload.github.com
+and curl.se): every Cloud archive starts from a clean DerivedData and downloads
+them again. The project does not contain private signing keys or provisioning
+profiles.
+
+For TestFlight, create the App Store Connect app record for the project's bundle
+identifier (`org.orca.chat` for chat) under the same team before the first
+archive. Xcode Cloud assigns each build number. Chat's public Appwrite settings
+are defaults in `apps/chat/config.lua`, so Cloud needs no environment variables
+or secrets for it.
