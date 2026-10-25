@@ -8,6 +8,9 @@ local test = require "orca.test"
 -- Delivery tests below pump the real platform queue and coroutine dispatcher.
 
 local core = require "orca.core"
+-- Module registration initializes the native event loop (NSApp on macOS).
+-- Loading it does not create a render window or graphics context.
+require "orca.renderer"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
