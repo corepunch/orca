@@ -1,7 +1,7 @@
 # Chat Lua API
 
-`require "api.chat"` provides one client for Supabase and the offline mock.
-Only the HTTP adapter imports `orca.network` and `orca.parsers.json`. Remote
+`require "api.chat"` provides one client for Appwrite, Supabase and the offline mock.
+Only the HTTP adapter imports `orca.network`; `api.json` handles strict JSON. Remote
 methods yield through `network.fetch`; call them from an ORCA event coroutine.
 
 ```lua
@@ -18,7 +18,46 @@ Methods return `value, nil` on success and `nil, error` on failure. A successful
 RPC may return `false`; test for `value == nil` when that distinction matters.
 Errors contain `code`, `message`, and an optional numeric HTTP `status`.
 Sessions and passwords stay in memory; restarting requires sign-in. Never log
-session objects. Protected requests use the user's JWT and a publishable key.
+session objects. Supabase requests use a user JWT and publishable key. Appwrite
+Account requests use a private per-client session cookie; Function executions
+send a short-lived `X-Appwrite-JWT`. The Function verifies the Appwrite-provided
+runtime caller through Account on every protected operation.
+
+## Appwrite configuration
+
+```lua
+local client = assert(Chat.appwrite {
+  endpoint = "https://fra.cloud.appwrite.io/v1",
+  projectId = "69f1c06800389dc6a1a0", -- Octopus, public identifier
+  functionId = "orca-chat-api",
+})
+```
+
+This is the default in `config.lua`. `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`
+and `APPWRITE_CHAT_FUNCTION_ID` override the public configuration; no API key is
+accepted or bundled. `CHAT_BACKEND=mock` selects offline data explicitly.
+The shared methods below keep the same return shapes and model bindings.
+
+`api.appwrite_auth` handles signup, password sign-in, email/phone OTP,
+JWT renewal and logout through native Appwrite Account endpoints. Its private
+session cookie is extracted from response headers, retained only in that client,
+and never written to ORCA's shared cookie file. These operations work independently
+of Chat Function deployment. Native Auth owns OTP rate limits and delivery.
+
+`api.appwrite_transport` serializes authenticated domain requests as
+`{method,path,body}` and submits a synchronous Function execution with the user JWT.
+The function returns `{status,body}`; JPEG bodies use `encoding="base64"` in both
+directions. The adapter validates the execution result and decodes raw photo
+bytes before returning them to the shared client. Service failures never select
+mock data. JSON escaping and empty array arguments survive both envelope layers.
+
+The [Appwrite backend](backend/appwrite/README.md) owns authorization, role and
+invite checks, verification challenges, rate limits, and encrypted photo storage.
+Its seven private collections and indexes are provisioned in Octopus's existing
+`octopus-db`. The Function is deployed with execution restricted to signed-in users. Phone sign-in and
+identity linking also require delivery providers; missing providers produce an
+explicit error. Session refresh revalidates the native Account session and issues
+a new user JWT. It does not extend an expired native session or expose its cookie.
 
 ## Identity and profiles
 
@@ -82,7 +121,7 @@ result's timing fields are UI hints, not a replacement for server enforcement.
 | `listMessages(roomId,{limit=100})` | Latest 1–100 messages in chronological display order |
 | `sendMessage(roomId,body,attachmentIds)` | Persisted message with embedded `attachments` |
 
-Names contain 1–80 characters; `memberIds` contains up to 50 other Auth UUIDs.
+Names contain 1–80 characters; `memberIds` contains up to 50 other Auth user IDs.
 Groups and channels may start with an empty member list. The creator becomes
 owner automatically. A private direct chat requires exactly one other person;
 the canonical pair reuses its existing conversation in either participant order.
@@ -130,7 +169,7 @@ generated EXIF is accepted. The trusted Edge finalizer independently validates
 stored bytes and metadata before marking a reservation ready; its JPEG check
 is structural and does **not** fully decode compressed pixel entropy.
 
-Storage uses the private `chat-photos` bucket. Upload reserves a pending row,
+Supabase storage uses the private `chat-photos` bucket. Upload reserves a pending row,
 uploads immutable photo/thumbnail objects, then calls `finalize-chat-photo`.
 Photos transition `pending -> ready -> attached`, or `discarded` before posting.
 Unpublished photos are visible only to their uploader while still a member;
@@ -138,6 +177,14 @@ attached photos are readable by room members. Publishing and finalization
 recheck posting rights. Reservations expire after one hour, with at most twenty
 unfinished recent uploads per user. Failed uploads attempt cleanup. Local
 preview files are private temporary files and the app clears them on logout.
+
+Appwrite uses the same reservation/finalization/publishing API. Octopus's plan
+does not allow another bucket, so photo objects are encrypted with AES-256-GCM
+before upload to its public `post-images` bucket. Per-attachment keys remain in
+private Chat records and are removed from all client metadata. The Function
+rechecks membership and publication state before decrypting and returning bytes.
+This is server-side encryption; the server can read photos. See the Appwrite
+backend guide for reservation cleanup and concurrency/recovery limitations.
 
 ## Models and backend setup
 
@@ -152,12 +199,25 @@ local sender = sent:get_sender()
 ```
 
 `Contacts`, `Rooms` and `Messages` are client-bound collections with `select`,
-`find`, and `table_name`. Rooms and Messages support `create`; message creation
+`find`, `find_all` and `table_name`. `find_all(ids, options)` fetches one authorized
+provider result and filters exact IDs (or `options.key`) locally, preserving
+provider order; it does not add SQL or search beyond that provider's window.
+Rooms and Messages support `create`; message creation
 forwards `attachment_ids`. Rows expose fields plus custom methods and relations.
 `find` searches the fetched page; a message lookup needs `room_id` and only
 covers that history window. A missing row returns nil; API errors return
 `nil,error`. There are no SQL strings, update/delete operations, automatic
 observability or automatic relation preloading.
+
+Like [Lapis models](https://leafo.net/lapis/reference/models.html), model classes
+own collection operations while row instances own domain methods. A room also
+supports `get_members()`, `create_invite()` and `send_message(body, attachmentIds)`.
+Use `models.Messages:preload_senders(messages)` to load sender relations with
+one contact request per batch, including missing senders. Caches belong to that
+batch and current session, and invalidate after logout, account switch or token
+replacement. A session change during a yielding fetch rejects stale results.
+Server `routes.js` maps methods and paths to domain services, following
+[Lapis flows](https://leafo.net/lapis/reference/flows.html)'s separation of operations.
 
 Create the remote client with `Chat.supabase {url="https://PROJECT.supabase.co",
 publishableKey="sb_publishable_..."}`. Apply [schema.sql](backend/schema.sql),
@@ -166,7 +226,15 @@ publishableKey="sb_publishable_..."}`. Apply [schema.sql](backend/schema.sql),
 photo uploads. Follow [backend setup](backend/README.md) for Auth providers,
 templates, private storage, Edge secrets and integration checks. The client
 rejects service/secret keys; those belong only in the trusted server function.
-No live project is provisioned or verified by the offline suites.
+The offline suites do not verify live deployment or delivery. Octopus's Chat
+schema was provisioned separately through the Appwrite plugin. A separate native
+cloud check on 2026-10-25 verified signup, password sign-in/rejection, session
+cookies, JWT renewal and logout without a Chat Function. A second check against
+the deployed Function verified two-account text/photo exchange, profiles and
+discovery, direct/group/channel operations, invitations, role enforcement and
+revoked-member access. Public bucket reads returned encrypted photo bytes.
+All disposable accounts, documents and objects were deleted afterward.
+Live email/SMS delivery remains unverified and requires configured providers.
 
 ## Mock and tests
 

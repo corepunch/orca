@@ -1,0 +1,28 @@
+{
+  "projectId": "69f1c06800389dc6a1a0",
+  "databaseId": "octopus-db",
+  "bucketId": "post-images",
+  "collections": [
+    { "id": "chat_profiles", "name": "Chat profiles", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"username","type":"string","size":32,"required":false},{"key":"email","type":"string","size":254,"required":false},{"key":"phone","type":"string","size":16,"required":false}],
+      "indexes": [{"key":"username_unique","type":"unique","attributes":["username"]},{"key":"email_lookup","type":"key","attributes":["email"]},{"key":"phone_lookup","type":"key","attributes":["phone"]}] },
+    { "id": "chat_rooms", "name": "Chat conversations", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"kind","type":"string","size":16,"required":true},{"key":"visibility","type":"string","size":16,"required":true},{"key":"direct_key","type":"string","size":64,"required":false},{"key":"name_search","type":"string","size":80,"required":true}],
+      "indexes": [{"key":"direct_unique","type":"unique","attributes":["direct_key"]},{"key":"discovery","type":"key","attributes":["kind","visibility"]}] },
+    { "id": "chat_members", "name": "Chat membership", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":4096,"required":true},{"key":"room_id","type":"string","size":36,"required":true},{"key":"user_id","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"room_user_unique","type":"unique","attributes":["room_id","user_id"]},{"key":"by_user","type":"key","attributes":["user_id"]},{"key":"by_room","type":"key","attributes":["room_id"]}] },
+    { "id": "chat_messages", "name": "Chat messages", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"room_id","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"by_room","type":"key","attributes":["room_id"]}] },
+    { "id": "chat_attachments", "name": "Chat encrypted photo metadata", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"room_id","type":"string","size":36,"required":true},{"key":"uploader_id","type":"string","size":36,"required":true},{"key":"object_key","type":"string","size":128,"required":true},{"key":"thumbnail_key","type":"string","size":128,"required":true}],
+      "indexes": [{"key":"by_uploader","type":"key","attributes":["uploader_id"]},{"key":"photo_unique","type":"unique","attributes":["object_key"]},{"key":"thumbnail_unique","type":"unique","attributes":["thumbnail_key"]}] },
+    { "id": "chat_invites", "name": "Chat invitations", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":8192,"required":true},{"key":"room_id","type":"string","size":36,"required":true}],
+      "indexes": [{"key":"by_room","type":"key","attributes":["room_id"]}] },
+    { "id": "chat_state", "name": "Chat private locks, challenges and limits", "permissions": [], "documentSecurity": false,
+      "attributes": [{"key":"payload","type":"string","size":16384,"required":true},{"key":"kind","type":"string","size":32,"required":true}],
+      "indexes": [{"key":"by_kind","type":"key","attributes":["kind"]}] }
+  ]
+}

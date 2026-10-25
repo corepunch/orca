@@ -1,6 +1,6 @@
 # Messenger: identity, discovery, conversations, and media
 
-Implementation status, 2026-10-24. The app now implements phone/email OTP,
+Implementation status, 2026-10-25. The app now implements phone/email OTP,
 verified linking, usernames and opt-in exact discovery, direct/group/channel
 conversations, roles/invitations/public channel subscriptions, and JPEG photo
 messages through the shared client and offline mock. Native processing and
@@ -8,8 +8,17 @@ selection are available on macOS. Video, QR/profile sharing links, address-book
 matching, block/report UI, push, and live subscriptions remain later work.
 
 The [API contract](API.md) and [backend setup](backend/README.md) describe the
-implemented interfaces. Supabase migrations/functions are prepared locally;
-no live project has been created or deployed. The sections below retain the
+implemented interfaces. Appwrite's Octopus project is the default backend; its
+seven private Chat collections and indexes are provisioned. Native Account signup,
+password sign-in, JWT renewal and logout were verified against Octopus with a
+disposable account, which was then deleted. These operations do not require a
+Chat Function. The authenticated data Function is deployed in Octopus with its
+server verification secret configured. A two-account live check verified
+profiles/discovery, direct/group/channel operations, invitations, text/photo
+exchange and permission revocation; all test resources were removed afterward.
+Messaging providers are not configured, so verified identity linking still needs
+delivery setup.
+The optional Supabase migrations/functions remain available. The sections below retain the
 design rationale and distinguish the remaining roadmap from current behavior.
 
 ## Identity and login
@@ -19,7 +28,7 @@ as the main mobile entry and offer email OTP as an equal alternative; require
 at least one verified identifier, not both. Keep the current password flow
 during migration rather than breaking existing accounts.
 
-Use a stable internal user UUID for all messages, memberships, and attachments.
+Use a stable internal Auth user ID for all messages, memberships, and attachments.
 Phone numbers, email addresses, and usernames can change without rewriting
 history. Store phone numbers in international E.164 form and verify ownership.
 An account may have a verified phone, verified email, or both.

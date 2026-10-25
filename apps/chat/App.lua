@@ -18,13 +18,14 @@ local App = Application:extend {
         Application.__init(self)
         options = options or {}
         local config = require "Chat/config"
-        local backend = config.backend or ((config.url or config.publishableKey) and "supabase" or "mock")
+        local backend = config.backend or "appwrite"
         if options.client then self.client = options.client
+        elseif backend == "appwrite" then self.client, self.configurationError = Chat.appwrite(config)
         elseif backend == "supabase" then self.client, self.configurationError = Chat.supabase(config)
         elseif backend == "mock" then self.client = Chat.mock()
-        else self.configurationError = { message = "Choose CHAT_BACKEND=mock or CHAT_BACKEND=supabase." } end
+        else self.configurationError = { message = "Choose CHAT_BACKEND=appwrite, mock or supabase." } end
         self.media = options.media or require("Chat/media").new()
-        self.remote = self.client ~= nil and self.client.mode == "supabase"
+        self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
         self:resetSessionViews()
     end,
@@ -168,7 +169,7 @@ local App = Application:extend {
             return self:frame(C.stack({ Padding = "26 56", Spacing = 18 }, {
                 C.brand(), C.text("Connect your chat", { FontSize = 30, FontWeight = "Bold" }),
                 C.text(self.configurationError.message, { WordWrap = true, Foreground = colors.error }),
-                C.text("Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY, then restart the app.", { WordWrap = true }),
+                C.text("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID.", { WordWrap = true }),
             }))
         end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end

@@ -211,19 +211,26 @@ weather: copyshare
 	fi
 	$(TARGET) samples/Book
 
-.PHONY: chat test-chat test-network-headers
+.PHONY: chat test-chat test-chat-appwrite test-network-headers
 chat: copyshare
 	$(TARGET) apps/chat
 
 test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_api.lua
+	$(TARGET) -test=tests/test_chat_appwrite.lua
 	$(TARGET) -test=tests/test_chat_mock.lua
 	$(TARGET) -test=tests/test_chat_models.lua
 	$(TARGET) -test=tests/test_chat_features.lua
 	$(TARGET) -test=tests/test_chat_app.lua
 
+test-chat-appwrite: copyshare
+	$(TARGET) -test=tests/test_chat_appwrite.lua
+
 NODE ?= node
-.PHONY: test-chat-finalizer test-media
+.PHONY: test-chat-appwrite-backend test-chat-finalizer test-media
+test-chat-appwrite-backend:
+	$(NODE) --test apps/chat/backend/appwrite/test/*.test.js
+
 test-chat-finalizer:
 	$(NODE) tests/test_chat_photo_finalize.mjs
 	$(NODE) tests/test_chat_photo_cleanup.mjs

@@ -37,6 +37,21 @@ Use this file when changing Lua-visible behavior.
 - Schema files (`DS_ParseSchema`, `DS_ParseSchemaFromString` in `source/data/data_schema.c`) register `ClassDesc` entries with typed column properties.
 - Binding engine walks the `DataContext` chain: DataSource returns its root DataObject, DataObject returns itself.
 
+## HTTP responses and private sessions
+
+The handwritten `orca.network` response userdata provides `text()`, `json()`,
+`size()`, `code()` and `headers()`. Native `headers()` returns lowercase names
+mapped to arrays of values, preserving repeated `set-cookie` lines. Each call
+returns a fresh table and only the final HTTP response's headers are retained.
+The WebGL binding currently returns an empty header table; browser restrictions
+also prevent exposing session cookies through response headers.
+
+Use `network.fetch(url, {nocookies=true, ...})` with an explicit per-client
+`Cookie` header when a service needs isolated sessions. `nocookies` disables
+both loading and saving the legacy shared cookie jar. Session cookies must not
+be logged or stored in app assets. Chat's native Appwrite Account adapter
+demonstrates this boundary.
+
 ## Native photo preparation
 
 `require "orca.media"` exposes `pickPhoto()` (modal macOS file selection) and

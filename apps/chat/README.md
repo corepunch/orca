@@ -55,19 +55,70 @@ For iOS, use `make ios-run` (iPhone simulator),
 (connected iPhone with matching development signing credentials).
 See [iOS setup and deployment](../../docs/IOS.md).
 
-With no backend configuration, the app uses an offline mock API and starts at
-login. Enter **demo@example.invalid** or **+4915110000001**, then use verification
+The default backend is Appwrite's **Octopus** project in Frankfurt. Signup,
+password sign-in, verification-code sign-in, renewal and logout use Appwrite's
+Account API directly, just as Banking does. They do not require a Chat Function.
+The Function serves conversations and other Chat data; see [Appwrite setup](backend/appwrite/README.md).
+The app starts signed out and never falls back to demo data after a service error.
+
+For the offline mock, run `CHAT_BACKEND=mock make chat`.
+Enter **demo@example.invalid** or **+4915110000001**, then use verification
 code **123456** to see contacts, three conversations, and message history.
 Email/password login remains available with **demo@example.invalid / password123**.
-`CHAT_BACKEND=mock make chat` selects
-it explicitly even when Supabase credentials are present. The same client and
-models run in both modes; only the transport changes. Each mock client owns
+The same client and models run in both modes; only the transport changes. Each mock client owns
 fresh in-memory data. Sign-out keeps its data available for a later login;
 restarting resets it. Mock contacts do not generate automatic replies.
 Use the window close button to quit. Return or Send submits a message.
 On iOS, use the system app switcher to close the app.
 
-## Connect Supabase
+## Appwrite / Octopus
+
+The Lua client follows Banking's HTTP integration pattern while keeping Chat's
+shared models, validation, and views. Public configuration is in `config.lua`:
+
+```sh
+CHAT_BACKEND=appwrite APPWRITE_ENDPOINT=https://fra.cloud.appwrite.io/v1 \
+APPWRITE_PROJECT_ID=69f1c06800389dc6a1a0 \
+APPWRITE_CHAT_FUNCTION_ID=orca-chat-api make chat
+```
+
+Seven private `chat_` collections and their indexes are provisioned in the
+existing `octopus-db` database. They cover profiles and discovery, conversations,
+membership and roles, messages, photos, invitations, and verification/rate-limit
+state. Access goes through the trusted Function; clients have no direct database
+permissions and contain no API key. Each client retains its own session cookie
+in memory and uses a short-lived user JWT for authenticated Function calls.
+
+The Function implements verified identity linking, private direct/group chats,
+public/private channels, member
+management, invitations, and JPEG uploads/downloads. Linking identifiers needs
+configured Appwrite Messaging providers; phone sign-in needs an Auth SMS provider.
+These services are not simulated when their configuration is missing.
+
+Octopus's plan allows one database and one bucket. Chat uses its own prefixed
+collections and encrypts photo/thumbnail bytes with AES-256-GCM before writing to
+the existing `post-images` bucket. Keys stay in private Chat records; the Function
+checks membership before decrypting a photo. This protects photos in that public
+bucket and is server-side encryption, not end-to-end encryption.
+
+The Function is deployed in Octopus. Only signed-in users may execute it;
+it has no session-creation permission and exposes no login proxy. Its server-only
+verification secret is configured; delivery providers still need setup.
+See the [deployment manifest](backend/appwrite/appwrite.config.json) and
+[backend implementation/setup](backend/appwrite/README.md) for the exact requirements.
+Live delivery verification still requires configured email/SMS providers.
+Two disposable accounts verified live text/photo exchange, discovery,
+invitations, channel roles and membership revocation on 2026-10-25. The check
+confirmed ciphertext in the public bucket and removed all test data afterward.
+
+The architecture follows [Lapis](https://github.com/leafo/lapis)'s separation of
+models, rows, relations and reusable flows. Client-bound models expose domain
+methods such as `room:send_message()` and `room:get_members()`. Bulk selection
+and sender preloading avoid repeated contact requests and invalidate cached
+relations when the account or session changes. Native authentication, transport,
+server route handlers and domain services each have a separate owner.
+
+## Optional Supabase backend
 
 Supabase provides Postgres, authentication, a REST API, and row-level security
 without requiring a vendor-specific native chat SDK. Its HTTP interface fits
@@ -115,11 +166,15 @@ Supabase/Firebase choice and which live services you need to create.
 
 ```sh
 make test-chat
+make test-chat-appwrite-backend
 make test-media
 make test-chat-finalizer
 make test-network-headers
 ```
 
+The Appwrite backend suite covers server authorization, role and invitation rules,
+private encrypted photos, verification challenges, and database pagination without
+contacting the cloud or sending verification messages.
 The API suite exercises authentication, refresh, authorization headers, room
 creation, message ordering, validation, and HTTP failures. The mock suite
 checks the same client with isolated fixtures and guards against network

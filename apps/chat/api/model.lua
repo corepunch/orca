@@ -53,6 +53,25 @@ function Model:find(condition, options)
     end
 end
 
+-- Select once and match a set of exact keys within the provider's result window.
+-- This preserves provider ordering and never invents transport query syntax.
+function Model:find_all(keys, options)
+    assert(type(keys) == "table", "find_all needs a list of keys")
+    options = options or {}
+    local key, wanted = options.key or "id", {}
+    for _, value in ipairs(keys) do wanted[value] = true end
+    if next(wanted) == nil then return {} end
+    local query = {}
+    for field, value in pairs(options) do if field ~= "key" then query[field] = value end end
+    local rows, err = self:select(query)
+    if not rows then return nil, err end
+    local matches = {}
+    for _, row in ipairs(rows) do
+        if row[key] ~= nil and wanted[row[key]] then matches[#matches + 1] = row end
+    end
+    return matches
+end
+
 function Model:create(values)
     assert(self.client and self.insert, "This model does not support create")
     local value, err = self.insert(self.client, values)

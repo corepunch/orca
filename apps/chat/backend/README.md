@@ -1,8 +1,14 @@
 # Backend setup and deployment
 
-No Supabase account, project, database, bucket, provider subscription, or cloud
-function has been created by this work. The runnable default is the isolated
-offline mock. A live service requires a project owned by you or your organization.
+Chat defaults to the Appwrite **Octopus** project. Its seven private `chat_`
+collections and indexes have been provisioned in `octopus-db` through the Appwrite
+plugin. The trusted `orca-chat-api` Function is deployed and its server-only
+verification secret is configured. Messaging providers still need setup. See [Appwrite setup](appwrite/README.md)
+and its [schema](appwrite/schema.json) and [deployment manifest](appwrite/appwrite.config.json).
+
+Use `CHAT_BACKEND=mock make chat` for the isolated offline backend.
+The remaining instructions cover the optional Supabase implementation. No
+Supabase project, bucket, provider subscription, or Edge Function has been created.
 
 ## Why Supabase here
 
@@ -19,8 +25,8 @@ Firebase is a viable alternative, especially when adopting its mobile SDKs and
 Those benefits would require an ORCA native SDK integration; using REST alone
 does not provide the SDK's offline synchronization. Its
 [Apple phone-auth flow](https://firebase.google.com/docs/auth/ios/phone-auth)
-also needs app verification integration. For this Lua application, retain
-Supabase and the shared client/model boundary. The local mock is interchangeable
+also needs app verification integration. The shared Lua client/model boundary
+now also has an Appwrite Function adapter. The local mock is interchangeable
 with that client; a Firebase backend would need a separate protocol adapter,
 not just a different project URL.
 

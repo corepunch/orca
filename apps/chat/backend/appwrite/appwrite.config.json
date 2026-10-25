@@ -1,0 +1,20 @@
+{
+  "projectId": "69f1c06800389dc6a1a0",
+  "projectName": "Octopus",
+  "endpoint": "https://fra.cloud.appwrite.io/v1",
+  "functions": [{
+    "$id": "orca-chat-api",
+    "name": "ORCA Chat API",
+    "runtime": "node-22",
+    "path": ".",
+    "entrypoint": "src/main.js",
+    "commands": "npm install --omit=dev --ignore-scripts",
+    "execute": ["users"],
+    "events": [],
+    "schedule": "",
+    "timeout": 60,
+    "enabled": true,
+    "logging": false,
+    "scopes": ["users.read", "users.write", "documents.read", "documents.write", "files.read", "files.write", "targets.write", "messages.write"]
+  }]
+}

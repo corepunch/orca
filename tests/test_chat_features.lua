@@ -205,23 +205,11 @@ local modeledPhoto = assert(owner:uploadPhoto(modeled.id, photo))
 check(#assert(models.Messages:create { room_id = modeled.id, body = "", attachment_ids = { modeledPhoto.id } }).attachments == 1, "Message model forwards photo IDs")
 
 -- Exercise the native adapter's JSON shape without opening a network socket.
-local oldNetwork, oldJson, oldAdapter = package.loaded["orca.network"], package.loaded["orca.parsers.json"], package.loaded["api.orca_transport"]
-local ok, json = pcall(require, "orca.parsers.json")
-if not ok then
-    local function encode(value)
-        if type(value) == "string" then return string.format("%q", value) end
-        if type(value) ~= "table" then return tostring(value) end
-        local parts = {}
-        for key, item in pairs(value) do parts[#parts + 1] = encode(key) .. ":" .. encode(item) end
-        return "{" .. table.concat(parts, ",") .. "}"
-    end
-    json = { encode = encode }
-end
+local oldNetwork, oldAdapter = package.loaded["orca.network"], package.loaded["api.orca_transport"]
 local wire
-package.loaded["orca.parsers.json"] = json
 package.loaded["orca.network"] = { fetch = function(_, request)
     wire = request
-    return { code = function() return 200 end, json = function() return {} end, text = function() return jpeg end }
+    return { code = function() return 200 end, text = function() return request.body == jpeg and jpeg or "{}" end }
 end }
 package.loaded["api.orca_transport"] = nil
 local adapter = require "api.orca_transport"
@@ -232,5 +220,5 @@ adapter { method = "POST", url = "https://mock.invalid", body = { attachment_ids
 check(wire.body == '{"attachment_ids":[]}', "Empty attachment list encodes as JSON array")
 check(adapter { method = "POST", url = "https://mock.invalid", body = jpeg, responseType = "binary" }.body == jpeg and wire.body == jpeg,
     "Binary request and response must bypass JSON without changing bytes")
-package.loaded["orca.network"], package.loaded["orca.parsers.json"], package.loaded["api.orca_transport"] = oldNetwork, oldJson, oldAdapter
+package.loaded["orca.network"], package.loaded["api.orca_transport"] = oldNetwork, oldAdapter
 print("chat features: " .. checks .. " checks passed")

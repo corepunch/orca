@@ -10,6 +10,7 @@
 typedef struct
 {
   size_t size;
+  size_t header_size;
   long code;
   char data[];
 } response_t;
@@ -157,9 +158,9 @@ void
 grow_response_buffer(buffer_t* buffer, size_t additional_size)
 {
   // If we need more space for the response, resize the buffer
-  if (buffer->size + additional_size > buffer->capacity) {
+  if (buffer->size + additional_size + 1 > buffer->capacity) {
     buffer->capacity =
-    (buffer->size + additional_size) * 2; // Double the capacity
+    (buffer->size + additional_size + 1) * 2; // Double the capacity
     buffer->data = realloc(buffer->data, buffer->capacity);
     if (!buffer->data) {
       // Handle memory allocation failure
@@ -178,6 +179,15 @@ write_callback(void* ptr, size_t size, size_t nmemb, buffer_t* buffer)
   memcpy(buffer->data + buffer->size, ptr, total_size);
   buffer->size += total_size;
   return total_size;
+}
+
+static size_t
+header_callback(void* ptr, size_t size, size_t nmemb, buffer_t* buffer)
+{
+  size_t length = size * nmemb;
+  // Redirects and interim responses must not contribute headers to the final response.
+  if (length >= 5 && !memcmp(ptr, "HTTP/", 5)) buffer->size = 0;
+  return write_callback(ptr, size, nmemb, buffer);
 }
 
 #define HTTP_OK 200
@@ -225,11 +235,13 @@ int resume_fetch_http(lua_State* L, int status, lua_KContext ctx)
       
       // Push response data to Lua
       response_t* response =
-      lua_newuserdata(L, req->response.size + sizeof(response_t));
+      lua_newuserdata(L, sizeof(response_t) + req->response.size + req->header.size + 2);
       luaL_setmetatable(L, API_TYPE_RESPONSE);
       response->size = req->response.size;
+      response->header_size = req->header.size;
       response->code = response_code;
-      memcpy(response->data, req->response.data, req->response.size);
+      memcpy(response->data, req->response.data, req->response.size + 1);
+      memcpy(response->data + response->size + 1, req->header.data, req->header.size + 1);
       
       curl_multi_remove_handle(req->multi_handle, req->easy_handle);
       curl_easy_cleanup(req->easy_handle);
@@ -340,19 +352,17 @@ int fetch_http(lua_State* L)
                    req->easy_handle, CURLOPT_WRITEDATA, &req->response); // Buffer for response
   curl_easy_setopt(req->easy_handle, CURLOPT_FOLLOWLOCATION, 1L);
   curl_easy_setopt(req->easy_handle, CURLOPT_HTTPHEADER, req->headers);
-  //  curl_easy_setopt(req->easy_handle, CURLOPT_HEADERFUNCTION,
-  // write_callback);   curl_easy_setopt(req->easy_handle,
-  // CURLOPT_HEADERDATA,
-  //&req->header);
+  curl_easy_setopt(req->easy_handle, CURLOPT_HEADERFUNCTION, header_callback);
+  curl_easy_setopt(req->easy_handle, CURLOPT_HEADERDATA, &req->header);
   
   if (!noloadcookies) {
     curl_easy_setopt(req->easy_handle,
                      CURLOPT_COOKIEFILE,
                      "/tmp/cookies.txt"); // Load cookies from this file
+    curl_easy_setopt(req->easy_handle,
+                     CURLOPT_COOKIEJAR,
+                     "/tmp/cookies.txt"); // Save cookies to this file
   }
-  curl_easy_setopt(req->easy_handle,
-                   CURLOPT_COOKIEJAR,
-                   "/tmp/cookies.txt"); // Save cookies to this file
   
   //  print_cookies(req->easy_handle);
   
@@ -596,6 +606,7 @@ fetch_http_finish(lua_State* L, webgl_fetch_state_t* state)
   response_t* response = (response_t*)lua_newuserdata(L, sizeof(response_t) + size + 1);
   luaL_setmetatable(L, API_TYPE_RESPONSE);
   response->size = size;
+  response->header_size = 0;
   response->code = (long)fetch->status;
   if (size > 0) {
     memcpy(response->data, fetch->data, size);
@@ -877,6 +888,37 @@ int f_response_code(lua_State* L)
   return 1;
 }
 
+int f_response_headers(lua_State* L)
+{
+  response_t* res = luaL_checkudata(L, 1, API_TYPE_RESPONSE);
+  char const *cursor = res->data + res->size + 1, *end = cursor + res->header_size;
+  lua_newtable(L);
+  while (cursor < end) {
+    char const *line = memchr(cursor, '\n', end - cursor);
+    if (!line) line = end;
+    char const *colon = memchr(cursor, ':', line - cursor);
+    if (colon) {
+      size_t length = colon - cursor;
+      char *name = malloc(length + 1);
+      if (!name) return luaL_error(L, "Failed to allocate HTTP header name");
+      for (size_t i = 0; i < length; i++)
+        name[i] = cursor[i] >= 'A' && cursor[i] <= 'Z' ? cursor[i] + ('a' - 'A') : cursor[i];
+      name[length] = '\0';
+      char const *value = colon + 1, *value_end = line;
+      while (value < value_end && (*value == ' ' || *value == '\t')) value++;
+      while (value_end > value && (value_end[-1] == '\r' || value_end[-1] == ' ' || value_end[-1] == '\t')) value_end--;
+      lua_getfield(L, -1, name);
+      if (!lua_istable(L, -1)) { lua_pop(L, 1); lua_newtable(L); }
+      lua_pushlstring(L, value, value_end - value);
+      lua_rawseti(L, -2, lua_rawlen(L, -2) + 1);
+      lua_setfield(L, -2, name);
+      free(name);
+    }
+    cursor = line < end ? line + 1 : end;
+  }
+  return 1;
+}
+
 #ifndef __EMSCRIPTEN__
 #include <include/renderer.h>
 int f_response_image(lua_State* L)
@@ -900,6 +942,7 @@ static luaL_Reg const lib_response[] = { { "__tostring", f_response_text },
   { "json", f_response_json },
   { "size", f_response_size },
   { "code", f_response_code },
+  { "headers", f_response_headers },
   { NULL, NULL } };
 
 int f_network_shutdown(lua_State* L)

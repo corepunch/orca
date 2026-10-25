@@ -124,40 +124,42 @@ check(value == nil and err.code == "configuration", "Remote credentials require 
 -- that the adapter preserves its status instead of turning HTTP 401 into an
 -- undifferentiated network failure.
 local oldNetwork = package.loaded["orca.network"]
-local oldJson = package.loaded["orca.parsers.json"]
+local oldJson = require "api.json"
 local oldTransport = package.loaded["api.orca_transport"]
 local requestOptions
 local throwsResponse = true
 local response = { code = function() return 401 end,
-  json = function() return { message = "expired" } end }
+  text = function() return '{"message":"expired"}' end,
+  headers = function() return { ["set-cookie"] = { "first=value", "second=value" } } end }
 package.loaded["orca.network"] = { fetch = function(url, options)
   requestOptions = options
   if throwsResponse then error(response) end
   return response
 end }
-package.loaded["orca.parsers.json"] = { encode = function() return "encoded-json" end }
+package.loaded["api.json"] = { encode = function() return "encoded-json" end, decode = oldJson.decode }
 package.loaded["api.orca_transport"] = nil
 local transport = require "api.orca_transport"
 local result = transport { url = "https://example.supabase.co", method = "POST", headers = {}, body = {} }
 check(result.status == 401 and result.body.message == "expired", "Thrown HTTP responses must retain status and body")
+check(#result.headers["set-cookie"] == 2, "Response headers must preserve repeated Set-Cookie values for native authentication")
 check(requestOptions.body == "encoded-json" and requestOptions.nocookies == true, "Transport must encode JSON and disable shared cookie loading")
 response.code = function() return 204 end
-response.json = function() error("204 has no body") end
+response.text = function() error("204 has no body") end
 result = transport { url = "https://example.supabase.co", method = "POST", headers = {} }
 check(result.status == 204 and result.body == nil, "204 responses must not attempt JSON parsing")
 throwsResponse = false
 response.code = function() return 200 end
-response.json = function() return { id = "ok" } end
+response.text = function() return '{"id":"ok"}' end
 result = transport { url = "https://example.supabase.co", method = "GET", headers = {} }
 check(result.status == 200 and result.body.id == "ok", "Successful responses must decode JSON")
-response.json = function() error("invalid JSON") end
+response.text = function() return "invalid JSON" end
 local parsed = pcall(transport, { url = "https://example.supabase.co", method = "GET", headers = {} })
 check(not parsed, "Malformed success JSON must not masquerade as successful data")
 response.code = function() return 503 end
 result = transport { url = "https://example.supabase.co", method = "GET", headers = {} }
 check(result.status == 503 and result.body.code == "http_error", "Malformed error JSON must preserve the HTTP status")
 package.loaded["orca.network"] = oldNetwork
-package.loaded["orca.parsers.json"] = oldJson
+package.loaded["api.json"] = oldJson
 package.loaded["api.orca_transport"] = oldTransport
 
 print("PASS: chat API (" .. checks .. " checks)")

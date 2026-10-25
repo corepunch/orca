@@ -1,5 +1,5 @@
 local network = require "orca.network"
-local json = require "orca.parsers.json"
+local json = require "api.json"
 
 local function encode(request)
   if type(request.body) == "string" then return request.body end
@@ -34,15 +34,17 @@ return function(request)
   if not statusOk or type(status) ~= "number" or status == 0 then
     error("Chat network request failed", 0)
   end
-  if status == 204 then return { status = status } end
+  local headersOk, headers = pcall(function() return response:headers() end)
+  headers = headersOk and type(headers) == "table" and headers or {}
+  if status == 204 then return { status = status, headers = headers } end
   if request.responseType == "binary" and status >= 200 and status < 300 then
-    return { status = status, body = response:text() }
+    return { status = status, body = response:text(), headers = headers }
   end
-  local decoded, body = pcall(function() return response:json() end)
+  local decoded, body = pcall(function() return json.decode(response:text()) end)
   if not decoded or type(body) ~= "table" then
     -- Keep the status for refresh/retry even if an intermediary returns HTML.
     if status >= 200 and status < 300 then error("Chat service returned invalid JSON", 0) end
     body = { code = "http_error", message = "The chat service returned an HTTP error." }
   end
-  return { status = status, body = body }
+  return { status = status, body = body, headers = headers }
 end

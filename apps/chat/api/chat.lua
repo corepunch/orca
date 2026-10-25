@@ -25,7 +25,7 @@ local function escape(value)
 end
 
 local function validId(value)
-  return type(value) == "string" and value:match("^[%w%-]+$") ~= nil
+  return type(value) == "string" and #value <= 36 and value:match("^[%w][%w%._%-]*$") ~= nil
 end
 
 function Client:getSession()
@@ -201,6 +201,24 @@ function Client:sendMessage(roomId, body, attachmentIds)
 end
 
 require("api.features")(Client, { failure = failure, text = text, escape = escape, validId = validId })
+
+function Chat.appwrite(options)
+  options = options or {}
+  local endpoint = options.endpoint
+  if type(endpoint) ~= "string" or not (endpoint:match("^https://[%w%.%-]+/v1/?$")
+      or endpoint:match("^http://localhost:%d+/v1/?$") or endpoint:match("^http://127%.0%.0%.1:%d+/v1/?$")) then
+    return failure("configuration", "Set an Appwrite HTTPS endpoint ending in /v1.")
+  end
+  if not validId(options.projectId) or not validId(options.functionId) then
+    return failure("configuration", "Set the public Appwrite project ID and Chat function ID.")
+  end
+  if options.transport ~= nil and type(options.transport) ~= "function" then
+    return failure("configuration", "Provide an HTTP transport function.")
+  end
+  local transport = require("api.appwrite_transport").new(options)
+  return setmetatable({ mode = "appwrite", url = endpoint:gsub("/$", ""),
+    transport = transport, clock = options.clock or os.time }, Client)
+end
 
 function Chat.supabase(options)
   options = options or {}
