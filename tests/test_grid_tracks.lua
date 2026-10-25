@@ -122,6 +122,33 @@ local function test_implicit_tracks()
 	print("PASS: test_implicit_tracks")
 end
 
+local function test_nested_auto_footer()
+	-- The outer auto row measures its child with both axes unbounded. Packing
+	-- that infinite width must not corrupt the nested grid's finite height.
+	for _, childType in ipairs { ui.Node2D, ui.ApplicationBar } do
+		local s = screen(390, 844)
+		local outer = s + ui.Grid { Rows = "1fr auto", PaddingTop = 59 }
+		local body = outer + ui.Node2D {}
+		local footer = outer + ui.Grid { Rows = "58px", PaddingBottom = 34 }
+		local bar = footer + childType {}
+		layout(s)
+		test.expect_eq(outer.ActualHeight, 844, "An unbounded measurement must not enlarge the viewport")
+		test.expect_eq(footer.ActualHeight, 92, "The auto footer fits its fixed row and safe-area padding")
+		test.expect_eq(footer.ActualY, 752, "The auto footer remains at the viewport bottom")
+		test.expect_eq(bar.ActualHeight, 58, "The bar keeps its fixed row height")
+		test.expect_eq(footer.ActualY + bar.ActualY + bar.ActualHeight, 810,
+			"The controls end above the bottom safe area")
+	end
+	local s = screen(390, 844)
+	local outer = s + ui.Grid { Rows = "1fr auto" }
+	local body = outer + ui.Node2D {}
+	local bar = outer + ui.ApplicationBar {}
+	layout(s)
+	test.expect_eq(bar.ActualY, 786, "An unbounded application bar measurement keeps its finite height")
+	test.expect_eq(bar.ActualHeight, 58, "An auto row fits the application bar")
+	print("PASS: test_nested_auto_footer")
+end
+
 local function test_xml_tracks()
 	local filesystem = require "orca.filesystem"
 	-- A throwaway project, so the XML parser reads Rows exactly as authored.
@@ -161,4 +188,5 @@ test_spacing()
 test_star_clamps_to_zero()
 test_unbounded_grid_in_stack()
 test_implicit_tracks()
+test_nested_auto_footer()
 test_xml_tracks()

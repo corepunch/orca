@@ -218,6 +218,10 @@ chat: copyshare
 	$(TARGET) apps/chat
 
 test-chat: copyshare
+	$(TARGET) -test=tests/test_chat_polling.lua
+	$(TARGET) -test=tests/test_chat_sync.lua
+	$(TARGET) -test=tests/test_chat_refresh_race.lua
+	$(TARGET) -test=tests/test_chat_timeline.lua
 	$(TARGET) -test=tests/test_chat_session_store.lua
 	$(TARGET) -test=tests/test_chat_api.lua
 	$(TARGET) -test=tests/test_chat_appwrite.lua
@@ -384,6 +388,15 @@ $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capt
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
 HEADLESS_LUA_TESTS += test-credentials
+HEADLESS_LUA_TESTS += test-chat-polling
+
+.PHONY: test-chat-polling
+test-chat-polling: unite
+	$(TARGET) -test=tests/test_chat_polling.lua
+	$(TARGET) -test=tests/test_chat_sync.lua
+	$(TARGET) -test=tests/test_chat_refresh_race.lua
+	$(TARGET) -test=tests/test_chat_timeline.lua
+	$(TARGET) -test=tests/test_chat_app.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
 .PHONY: test-imageview

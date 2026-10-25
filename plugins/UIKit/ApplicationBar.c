@@ -89,7 +89,8 @@ HANDLER(ApplicationBar, Node2D, MeasureOverride)
       Metro_Measure(child, pMeasureOverride->Width, APPBAR_MENU_ITEM);
   }
   float height = pApplicationBar->Mode == kApplicationBarModeMinimized ? APPBAR_MINI_HEIGHT : APPBAR_HEIGHT;
-  return MAKEDWORD(pMeasureOverride->Width, height);
+  // An auto track can leave width unbounded; keep the packed height intact.
+  return MAKEDWORD(isfinite(pMeasureOverride->Width) ? pMeasureOverride->Width : 0, height);
 }
 
 HANDLER(ApplicationBar, Node2D, ArrangeOverride)

@@ -5,10 +5,12 @@ local test = require "orca.test"
 --
 -- "Short timer" tests verify that setTimer works correctly with small
 -- durations (including 0 ms, which is clamped to 1 ms by the engine).
--- Full callback delivery requires the event loop and is tested via CI
--- integration tests.
+-- Delivery tests below pump the real platform queue and coroutine dispatcher.
 
 local core = require "orca.core"
+-- Module registration initializes the native event loop (NSApp on macOS).
+-- Loading it does not create a render window or graphics context.
+require "orca.renderer"
 local ui   = require "orca.UIKit"
 
 -- ---------------------------------------------------------------------------
@@ -146,5 +148,45 @@ test_set_timer_zero_duration()
 test_set_timer_large_duration()
 test_set_timer_different_objects()
 test_set_timer_many()
+
+-- Use a nonvisual Timer without a parent: native events must keep their target
+-- instead of being retargeted to the screen passed to dispatchMessage.
+local system = require "orca.system"
+local screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+local heartbeat = core.Timer { Tick = function() end }
+local heartbeatId = heartbeat:setTimer(5)
+local function pumpUntil(done, milliseconds)
+  local deadline = system.getTime() + milliseconds
+  repeat
+    local event = system.getMessage()
+    if event and not event:is("Window.Paint") then system.dispatchMessage(screen, event) end
+  until done() or system.getTime() >= deadline
+end
+local delivered, resumed, receivedId = 0, false, nil
+local owner = core.Timer { Tick = function(node, args)
+  delivered, receivedId = delivered + 1, args.timerId
+  node:cancelTimer(args.timerId)
+  coroutine.yield()
+  resumed = true
+end }
+local id = owner:setTimer(20)
+pumpUntil(function() return resumed end, 2000)
+assert(resumed and delivered == 1 and receivedId == id,
+  "A native expiration must deliver the right ID to a yielding Timer.Tick handler")
+pumpUntil(function() return false end, 100)
+assert(delivered == 1, "Cancellation inside Tick must stop subsequent expirations")
+owner:cancelTimer(id)
+owner:cancelTimer(0)
+owner:cancelTimer(-1)
+local replacement = owner:setTimer(50)
+assert(replacement ~= id, "Cancel/recreate must not reuse a stale timer handle")
+owner:cancelTimer(replacement)
+pumpUntil(function() return false end, 100)
+assert(delivered == 1, "Cancelling before the first deadline must prevent delivery")
+heartbeat:cancelTimer(heartbeatId)
+
+assert(system.Event { message = "Window.Activated" }:is("Window.Activated"))
+assert(system.Event { message = "Window.Deactivated" }:is("Window.Deactivated"))
+print("PASS: native timer delivery, yielding callback, cancellation and lifecycle messages")
 
 print("All timer tests passed.")

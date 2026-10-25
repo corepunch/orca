@@ -68,8 +68,8 @@ function M.new(options)
     local ok, err = stored("clear")
     return err
   end
-  local function rejected(response)
-    if response.status == 401 or response.status == 403 then
+  local function rejected(response, credential)
+    if current == credential and (response.status == 401 or response.status == 403) then
       return forget() or response
     end
     return response
@@ -82,13 +82,13 @@ function M.new(options)
     end
     current = credential
     local userResponse = call("GET", "/account", nil, credential)
-    if not successful(userResponse) then return rejected(userResponse) end
+    if not successful(userResponse) then return rejected(userResponse, credential) end
     local user = userResponse.body
     if type(user) ~= "table" or type(user["$id"]) ~= "string" or user["$id"] == "" then
       return errorResponse("Appwrite returned an invalid account.")
     end
     local jwtResponse = call("POST", "/account/jwts", {}, credential)
-    if not successful(jwtResponse) then return rejected(jwtResponse) end
+    if not successful(jwtResponse) then return rejected(jwtResponse, credential) end
     local jwt = type(jwtResponse.body) == "table" and jwtResponse.body.jwt
     if type(jwt) ~= "string" or jwt == "" then return errorResponse("Appwrite did not return a user JWT.") end
     return { status = 200, body = { access_token = jwt, refresh_token = "appwrite-current-session", expires_in = 900,

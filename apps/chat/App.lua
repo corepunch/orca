@@ -2,12 +2,14 @@ local ui = require "orca.UIKit"
 local Application = require "orca.core.application"
 local Chat = require "api.chat"
 local Models = require "Chat/models"
+local Sync = require "Chat/sync"
 local system = require "orca.system"
 local renderer = require "orca.renderer"
 local C = require "Chat/views/components"
 local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
+local Timeline = require "Chat/views/timeline"
 local colors = C.colors
 local auto = 0/0
 
@@ -34,19 +36,28 @@ local App = Application:extend {
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end
         self:resetSessionViews()
+        if self.remote then self.polling = Sync.new(self) end
     end,
 
     resetSessionViews = function(self)
+        if self.polling then self.polling:stop() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         if self.media and self.media.clear then self.media:clear() end
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
+        self.timelineSnapshot, self.messageRefreshQueued = nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
         self.filter, self.query = "All", ""
+    end,
+
+    activate_controller = function(self, controller)
+        local result = Application.activate_controller(self, controller)
+        if self.polling then self.polling:activate() end
+        return result
     end,
 
     frame = function(self, content, tab)
@@ -69,6 +80,7 @@ local App = Application:extend {
     end,
 
     show = function(self, route)
+        if self.polling then self.polling:stop() end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
         local controller = self:dispatch(route or "/")
@@ -172,21 +184,21 @@ local App = Application:extend {
             end
         end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
-        local rooms, err = self.models.Rooms:select()
-        self.rooms = rooms or {}
-        local contacts, contactsError = self.models.Contacts:select()
+        local epoch = self.sessionEpoch
+        local function current()
+            return self.navigationEpoch == navigation and self.sessionEpoch == epoch and self.client:getSession() ~= nil
+        end
+        local _, err = Sync.refreshInbox(self, current, true)
         if self.navigationEpoch ~= navigation then return self.screen end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
-        self.contacts, self.contactsById = contacts or {}, {}
-        for _, contact in ipairs(self.contacts) do self.contactsById[contact.id] = contact end
-        err = err or contactsError
+        self.rooms, self.contacts, self.contactsById = self.rooms or {}, self.contacts or {}, self.contactsById or {}
         if self.shell and self.shell:has("Chats") then
             self.status = self.homeStatus
             self:renderRoomList()
-            self:notice(err and err.message or (self.remote and "Refresh to sync your conversations" or "Offline mock · make yourself at home"), err ~= nil)
+            self:notice(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"), err ~= nil)
             return self.shell:show("Chats")
         end
-        self.status = C.text(err and err.message or (self.remote and "Refresh to sync your conversations" or "Offline mock · make yourself at home"), {
+        self.status = C.text(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"), {
             FontSize = 11, Foreground = err and colors.error or colors.dim, TextHorizontalAlignment = "Center",
         })
         self.homeStatus = self.status
@@ -227,6 +239,8 @@ local App = Application:extend {
     end,
 
     signOut = function(self)
+        if self.polling then self.polling:stop() end
+        self.sessionEpoch = (self.sessionEpoch or 0) + 1
         local ok, err = self.client:signOut()
         self.restorePending = false
         self.logoutPending = not ok and err.code == "session_storage"
@@ -234,71 +248,7 @@ local App = Application:extend {
         if not ok and not self.logoutPending then self:notice(err.message, true) end
     end,
 
-    renderMessages = function(self)
-        local room, node = self.room, self.messageList
-        local messages, err = self.models.Messages:select { room_id = room.id, limit = 100 }
-        if self.room ~= room or self.messageList ~= node then return end
-        if not messages then self:notice(err.message, true); return end
-        local me = self.client:getSession().user.id
-        while node:getFirstChild() do node:getFirstChild():removeFromParent() end
-        node:addChild(C.text(#messages > 0 and C.date(messages[1].created_at) or "A FRESH START", {
-            FontSize = 12, Foreground = colors.dim, TextHorizontalAlignment = "Center", MarginTop = 4, MarginBottom = 6,
-        }))
-        for _, message in ipairs(messages) do
-            local mine = message.sender_id == me and self.room.kind ~= "channel"
-            local bubble = C.stack({
-                Name = "MessageBubble" .. message.id, Width = 272, Padding = "12 14", Spacing = 6,
-                Background = mine and colors.sent or colors.raised,
-                MarginLeft = mine and auto or 0, MarginRight = mine and 0 or auto,
-            })
-            if not mine then
-                local person = self.contactsById and self.contactsById[message.sender_id]
-                local sender = self.room.kind == "channel" and self.room.name
-                    or (person and person:get_display_name() or "Member " .. tostring(message.sender_id or ""):sub(1, 8))
-                bubble:addChild(C.text(sender, { FontSize = 12, FontWeight = "Bold", Foreground = colors.accentText }))
-            end
-            for _, attachment in ipairs(message.attachments or {}) do
-                local bytes, photoError = self.client:getPhoto(attachment.id, true)
-                if self.room ~= room or self.messageList ~= node then return end
-                local media = self:getMedia()
-                local path = bytes and media and media:storePreview(bytes, attachment.id)
-                if path then
-                    bubble:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path,
-                        Width = 250, Height = 180, Stretch = "Uniform", IgnoreHitTest = true })
-                else
-                    bubble:addChild(C.text(photoError and photoError.message or "Photo preview unavailable", {
-                        FontSize = 12, Foreground = colors.muted, WordWrap = true }))
-                end
-            end
-            if message.body and message.body ~= "" then
-                bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
-            end
-            bubble:addChild(C.text((mine and "Sent · " or "") .. (C.time(message.created_at) or ""), {
-                FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
-            }))
-            -- Incoming tails point up from the top-left; outgoing ones hang from the bottom-right.
-            local entry, tone = C.stack({ Spacing = 0 }), mine and colors.sent or colors.raised
-            if not mine then entry:addChild(C.tail(true, tone, false)) end
-            entry:addChild(bubble)
-            if mine then entry:addChild(C.tail(false, tone, true)) end
-            node:addChild(entry)
-        end
-        if #messages == 0 then
-            local channel, readOnly = self.room.kind == "channel", self.room.can_post == false
-            node:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
-                C.text(channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello", {
-                    Name = "EmptyTimeline", FontSize = 22, Foreground = colors.muted, WordWrap = true }),
-                C.text(channel and (readOnly and "New posts will appear here when the channel publishes."
-                    or "Publish your first update below.") or "Send the first message below.", {
-                    Foreground = colors.dim, FontSize = 14, WordWrap = true }),
-            }))
-        end
-        local root = node:getRoot()
-        root:UpdateLayout(root.Width, root.Height)
-        -- Property structs use exported X/Y fields; lowercase keys are ignored.
-        node.ContentOffset = { X = 0, Y = math.min(0, node.ActualHeight - node.ScrollHeight) }
-        self:notice(self.remote and "Synced · refresh for new messages" or "Offline mock · messages stay in this session")
-    end,
+    renderMessages = Timeline.refresh,
 
     sendMessage = function(self)
         if self.room.can_post == false then self:notice("Only channel admins can publish.", true); return end
@@ -340,7 +290,7 @@ local App = Application:extend {
         composer.Text = remaining
         if self.photoPreview then self.photoPreview.Visible = false end
         self:renderMessages()
-        self.composer:setFocus()
+        if self.room == room and self.composer == composer and self.sessionEpoch == epoch then composer:setFocus() end
     end,
 
     getMedia = function(self)
@@ -478,7 +428,14 @@ local App = Application:extend {
     run = function(self)
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
-            if message:is("Window.Closed") then return end
+            if message:is("Window.Closed") then
+                if self.polling then self.polling:stop() end
+                return
+            end
+            if self.polling then
+                if message:is("Window.Deactivated") then self.polling:setForeground(false)
+                elseif message:is("Window.Activated") then self.polling:setForeground(true) end
+            end
             local ok, result = pcall(system.dispatchMessage, self.screen, message)
             if not ok then io.stderr:write(tostring(result) .. "\n")
             elseif result and not message:is("Window.Paint") then self.screen:post("Window.Paint", renderer.getSize()) end

@@ -408,6 +408,15 @@ UI_HandleKeyEvent(lua_State *L, struct AXmessage* e)
 
 LRESULT ui_handle_event(lua_State *L, struct AXmessage* msg) {
   switch (msg->message) {
+    case kEventTimer: {
+      if (!msg->target) return FALSE;
+      struct Object_TimerEventArgs objectTick = { .timerId = (int)msg->wParam };
+      struct Timer_TickEventArgs tick = { .timerId = (int)msg->wParam };
+      struct AXmessage event = *msg;
+      event.message = GetTimer(msg->target) ? ID_Timer_Tick : ID_Object_Timer;
+      event.lParam = GetTimer(msg->target) ? (void *)&tick : (void *)&objectTick;
+      return CORE_HandleObjectMessage(L, &event);
+    }
     case kEventLeftButtonDown:
     case kEventRightButtonDown:
     case kEventOtherButtonDown:

@@ -118,11 +118,16 @@ int luaopen_orca(lua_State *L);
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
+  axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
   _displayLink.paused = YES;
   if (_lua) { axMakeCurrentContext(); glFinish(); }
 }
 
-- (void)sceneDidBecomeActive:(UIScene *)scene { _displayLink.paused = NO; }
+- (void)sceneDidBecomeActive:(UIScene *)scene
+{
+  axPostMessageW(NULL, ID_Window_Activated, 0, NULL);
+  _displayLink.paused = NO;
+}
 - (void)sceneDidDisconnect:(UIScene *)scene { [self stop]; }
 - (void)dealloc { [self stop]; [super dealloc]; }
 @end

@@ -265,7 +265,11 @@ assert(shellRoot.PaddingTop == 59 and shellRoot.PaddingLeft == 12 and shellRoot.
 assert(barFooter.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1,
     "The home gesture inset must be separate from the fixed application bar row")
 assert(math.abs(barFooter.ActualY + bar.ActualY + bar.ActualHeight - (844 - 34)) < 1,
-    "Application bar controls must end immediately above the home gesture area")
+    string.format("Application bar controls must end immediately above the home gesture area: " ..
+        "shell=%.1fx%.1f root=(%.1f,%.1f %.1fx%.1f) footer=(%.1f,%.1f %.1fx%.1f) bar=(%.1f,%.1f %.1fx%.1f) inset=%.1f",
+        shell.Width, shell.Height, shellRoot.ActualX, shellRoot.ActualY, shellRoot.ActualWidth, shellRoot.ActualHeight,
+        barFooter.ActualX, barFooter.ActualY, barFooter.ActualWidth, barFooter.ActualHeight,
+        bar.ActualX, bar.ActualY, bar.ActualWidth, bar.ActualHeight, barFooter.PaddingBottom))
 assert(math.abs(barFooter.ActualY + barFooter.ActualHeight - 844) < 1 and
     math.abs(barFooter.BackgroundColor.R - bar.BackgroundColor.R) < 0.001 and
     math.abs(barFooter.BackgroundColor.G - bar.BackgroundColor.G) < 0.001 and

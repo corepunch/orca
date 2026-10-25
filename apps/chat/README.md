@@ -50,6 +50,11 @@ badge. Use pin in a conversation's application bar to add or remove it from
 the pinned pivot. Drafts survive navigation
 and pinning. Pins and unread state last for this app session.
 
+Open conversations update automatically every 3 seconds; the visible inbox
+updates every 15 seconds. Polling pauses with the iOS scene and refreshes on
+return, backs off on service errors, and preserves scroll position and drafts.
+The manual refresh commands remain available.
+
 The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
 [Chat App Design on Behance](https://www.behance.net/gallery/186704313/Chat-App-Design-Dark-UI),
 and [Appetite UI's chat patterns](https://www.appetiteui.com/screens/patterns/chat).
