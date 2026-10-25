@@ -243,8 +243,11 @@ HANDLER(Grid, Node2D, MeasureOverride)
   if (layout.axes[kDirectionHorizontal].count) desired.width = _TracksExtent(&layout.axes[kDirectionHorizontal]);
   if (layout.axes[kDirectionVertical].count) desired.height = _TracksExtent(&layout.axes[kDirectionVertical]);
 
-  return MAKEDWORD(desired.width?desired.width:pMeasureOverride->Width,
-                   desired.height?desired.height:pMeasureOverride->Height);
+  // Auto tracks may measure both axes unbounded. Never cast infinity into a
+  // packed extent: the undefined conversion can corrupt the other axis on ARM.
+  float width = desired.width ? desired.width : pMeasureOverride->Width;
+  float height = desired.height ? desired.height : pMeasureOverride->Height;
+  return MAKEDWORD(isfinite(width) ? width : 0, isfinite(height) ? height : 0);
 }
 
 HANDLER(Grid, Node2D, ArrangeOverride)
