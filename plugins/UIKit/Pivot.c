@@ -25,9 +25,22 @@ Pivot_HeaderFor(struct Object *hObject, struct Object *item)
 {
   FOR_EACH_OBJECT(child, hObject) {
     struct PivotHeaderItem *header = GetPivotHeaderItem(child);
-    if (header && header->_item == item) return child;
+    if (header && !header->_repeat && header->_item == item) return child;
   }
   return NULL;
+}
+
+// The index-th dimmed copy that continues the strip, created on first use.
+static struct Object *
+Pivot_Repeat(struct Object *hObject, int index)
+{
+  FOR_EACH_OBJECT(child, hObject) {
+    struct PivotHeaderItem *header = GetPivotHeaderItem(child);
+    if (header && header->_repeat && index-- == 0) return child;
+  }
+  struct Object *copy = Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
+  if (copy) GetPivotHeaderItem(copy)->_repeat = TRUE;
+  return copy;
 }
 
 static float
@@ -202,6 +215,30 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     hx += LOWORD(size) + PIVOT_HEADER_SPACING;
     strip = MAX(strip, HIWORD(size));
   }
+
+  // Short strips keep cycling, dimmed, until they reach the right edge. Copies
+  // take the size of the header they repeat, which is already measured.
+  int repeats = 0;
+  for (int k = 0; !pPivot->IsLocked && count && hx < x + w && repeats < PIVOT_MAX_ITEMS; k++) {
+    struct Object *item = items[(pPivot->SelectedIndex + k) % count];
+    LRESULT size = Metro_Measure(Pivot_HeaderFor(hObject, item), 4096, 4096);
+    if (LOWORD(size) == 0) break;
+    struct Object *copy = Pivot_Repeat(hObject, repeats++);
+    if (!copy) break;
+    GetPivotHeaderItem(copy)->_item = item;
+    Metro_SetText(copy, GetPivotItem(item)->Header, tolower);
+    Metro_Show(copy, TRUE, METRO_DIM);
+    Metro_Measure(copy, 4096, 4096);
+    Metro_Arrange(copy, hx, stripY, LOWORD(size), HIWORD(size));
+    hx += LOWORD(size) + PIVOT_HEADER_SPACING;
+  }
+  struct Object *unused[PIVOT_MAX_ITEMS];
+  int unusedCount = 0;
+  FOR_EACH_OBJECT(child, hObject) {
+    struct PivotHeaderItem *header = GetPivotHeaderItem(child);
+    if (header && header->_repeat && repeats-- <= 0 && unusedCount < PIVOT_MAX_ITEMS) unused[unusedCount++] = child;
+  }
+  for (int i = 0; i < unusedCount; i++) OBJ_RemoveFromParent(unused[i]);
 
   float contentY = stripY + strip + PIVOT_CONTENT_TOP;
   if (count) {

@@ -1097,11 +1097,12 @@
       </properties>
       <fields>
         <field name="_item" type="Object" pointer="true">The PivotItem this header selects (private)</field>
+        <field name="_repeat" type="bool">A dimmed copy that continues the strip to the right edge (private)</field>
       </fields>
     </class>
     <class name="Pivot" parent="Node2D">
       <summary>Windows Phone pivot: a title, a strip of lowercase headers and one visible PivotItem</summary>
-      <details>Generates a small-caps Title and one PivotHeaderItem per PivotItem child. The selected header always leads the strip and the rest follow cyclically, dimmed. Tap a header or swipe horizontally across the content to change items; both directions wrap around. Selection changes animate the strip and slide the new content in. Style the generated parts with the "pivot-title" and "pivot-header" CSS classes.</details>
+      <details>Generates a small-caps Title and one PivotHeaderItem per PivotItem child. The selected header always leads the strip and the rest follow cyclically, dimmed; when they end before the right edge the cycle repeats until the strip fills the width, as on Windows Phone. Tap a header or swipe horizontally across the content to change items; both directions wrap around. Selection changes animate the strip and slide the new content in. Style the generated parts with the "pivot-title" and "pivot-header" CSS classes.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>

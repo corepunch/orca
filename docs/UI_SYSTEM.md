@@ -54,7 +54,8 @@ names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
 
 - `Pivot` with `PivotItem` children: a small-caps `Title`, then large
   lowercase headers. The selected header leads, the others follow dimmed and
-  wrap around. Tap a header or swipe the content; `SelectedIndex` and
+  wrap around; a short strip keeps repeating them until it reaches the right
+  edge. Tap a header or swipe the content; `SelectedIndex` and
   `SelectionChanged` report the item. `IsLocked` hides the other headers and
   disables swiping. Generated parts carry the `pivot-title` and
   `pivot-header` (`PivotHeaderItem`) CSS classes.
