@@ -18,6 +18,11 @@ local more = assert(client:listPosts { limit = 5, cursor = posts[5].id })
 assert(#more == 3 and more[1].id == "p-pivot", "Cursor pagination continues after the last post")
 local stats = assert(client:stats { "p-reef", "p-small", "p-tide" })
 assert(stats["p-reef"].likes == 3 and stats["p-reef"].comments == 2 and stats["p-reef"].reposts == 1)
+local sam = assert(client:userTimeline("u-sam"))
+assert(#sam == 2 and sam[1].post.id == "p-reef" and not sam[1].repostedBy, "Profiles list their own posts")
+local maya = assert(client:userTimeline("u-maya"))
+assert(maya[1].post.id == "p-eames" and maya[2].post.id == "p-small" and maya[2].repostedBy.name == "Maya Chen",
+    "Profiles include reposts at the time they were reposted")
 assert(stats["p-tide"].likes == 0 and not stats["p-reef"].liked, "Guests have no likes of their own")
 local tagged = assert(client:listPosts { tag = "#Reef" })
 assert(#tagged == 2 and tagged[1].id == "p-reef" and tagged[2].id == "p-arms", "Tags match without # and case")
@@ -34,7 +39,9 @@ local image = assert(client:getImage("f-reef"))
 assert(Octopus.imageKind(image) == "png", "The fixture photo is a decodable PNG")
 
 local _, err = client:homeTimeline()
-assert(err.code == "unauthenticated", "Following needs a session")
+assert(err.code == "unauthenticated", "The home timeline needs a session")
+_, err = client:activity()
+assert(err.code == "unauthenticated", "Connect needs a session")
 _, err = client:createPost { title = "Hi", content = "There" }
 assert(err.code == "unauthenticated")
 _, err = client:toggleLike("p-reef", "post")
@@ -45,9 +52,27 @@ _, err = client:signIn("demo@example.invalid", "wrong-password")
 assert(err.status == 401 and not client:getSession(), "Wrong passwords must not sign in")
 local session = assert(client:signIn(" demo@example.invalid ", "password123"))
 assert(session.user.id == "u-ada" and session.user.name == "Ada Reef")
-local timeline, following = client:homeTimeline()
-assert(timeline and #following == 2, "Ada follows Maya and Sam")
-for _, item in ipairs(timeline) do assert(item.authorId == "u-maya" or item.authorId == "u-sam") end
+-- Home: Ada's own posts, Maya's and Sam's posts, and what they reposted.
+local timeline, cursor = assert(client:homeTimeline { limit = 4 })
+assert(#timeline == 4 and cursor == timeline[4].at, "A full page continues from its last item")
+assert(timeline[1].post.id == "p-reef" and timeline[2].post.id == "p-eames")
+assert(timeline[3].post.id == "p-small" and timeline[3].repostedBy.id == "u-maya", "Reposts appear in the timeline")
+assert(timeline[4].post.id == "p-arms" and timeline[4].repostedBy.name == "Maya Chen")
+local rest = assert(client:homeTimeline { limit = 4, before = cursor })
+assert(rest[1].post.id == "p-hello" and rest[2].post.id == "p-pivot", "Your own posts are on your timeline")
+local seen = {}
+for _, item in ipairs(timeline) do seen[item.post.id] = true end
+for _, item in ipairs(rest) do assert(not seen[item.post.id], "Pages do not overlap") end
+-- Connect: who followed Ada and who liked, reposted or replied to her post.
+local activity = assert(client:activity())
+local kinds = {}
+for _, item in ipairs(activity) do
+    kinds[#kinds + 1] = item.kind .. ":" .. item.name
+    assert(item.userId ~= "u-ada", "Your own actions are not news")
+end
+assert(table.concat(kinds, ",") == "like:Noor Haddad,repost:Jules Park,comment:Jules Park,like:Maya Chen,"
+    .. "comment:Maya Chen,follow:Jules Park,follow:Maya Chen", table.concat(kinds, ","))
+assert(activity[3].body == "Hello from the website side." and activity[1].post.id == "p-hello")
 profile = assert(client:getProfile("u-ada"))
 assert(profile.followers == 2 and profile.following == 2 and profile.posts == 1)
 
@@ -162,4 +187,4 @@ local ok = pcall(remote.transport, { method = "GET", path = "/../secret" })
 assert(not ok, "Path traversal is rejected")
 assert(not Octopus.appwrite { endpoint = "http://example.invalid/v1", projectId = "p" }, "HTTPS is required")
 
-print("Octopus API: guest reads, sessions, posts of every type, likes, reposts, comments, follows, profiles, photos and HTTP queries passed")
+print("Octopus API: guest reads, home and profile timelines with reposts, connect activity, sessions, posts of every type, likes, reposts, comments, follows, profiles, photos and HTTP queries passed")

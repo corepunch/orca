@@ -6,15 +6,13 @@ local system = require "orca.system"
 local renderer = require "orca.renderer"
 local C = require "Octopus/views/components"
 local Shell = require "Octopus/views/shell"
-local Posts = require "Octopus/views/posts"
+local Home = require "Octopus/views/home"
 local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
 local colors = C.colors
 
-local FEEDS = { "discover", "following" }
-local PAGE_SIZE = 20
 
 local App = Application:extend {
     layout = function(self, ctx) return ctx.slots.inner end,
@@ -41,7 +39,8 @@ local App = Application:extend {
         self.shell, self.status, self.feeds, self.timelines, self.pivot = nil, nil, {}, {}, nil
         self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
         self.thread, self.profileView, self.composeView = nil, nil, nil
-        self.feed = "discover"
+        -- Readers start on their own timeline; guests on discover.
+        self.feed = self.client and self.client:getSession() and "home" or "discover"
     end,
 
     -- Run work that may wait on the network in an ORCA coroutine.
@@ -152,60 +151,7 @@ local App = Application:extend {
 
     -- Home --------------------------------------------------------------------
 
-    loadFeed = function(self, name, more)
-        local feed = self.feeds[name] or { posts = {}, stats = {} }
-        self.feeds[name] = feed
-        local list = self.timelines[name]
-        if not list or feed.loading or (more and feed.done) then return end
-        feed.loading, feed.error = true, nil
-        local session = self.sessionEpoch
-        if not more then
-            C.clear(list)
-            list:addChild(C.text("loading…", { Name = "Loading", FontSize = 22, Foreground = colors.muted }))
-        end
-        self:task(function()
-            local cursor = more and feed.posts[#feed.posts] and feed.posts[#feed.posts].id or nil
-            local posts, stats = Posts.fetch(self, function()
-                if name == "following" then return self.client:homeTimeline { limit = PAGE_SIZE, cursor = cursor } end
-                return self.client:listPosts { limit = PAGE_SIZE, cursor = cursor }
-            end)
-            feed.loading = false
-            if self.sessionEpoch ~= session or self.timelines[name] ~= list then return end
-            if not more then C.clear(list) end
-            local loadMore = list:findChild("LoadMore" .. name)
-            if loadMore then loadMore:removeFromParent() end
-            if not posts then
-                feed.error = stats
-                list:addChild(C.empty("can't load posts", stats.message .. " Use refresh to try again."))
-                self:notice(stats.message, true)
-                self:repaint()
-                return
-            end
-            for id, entry in pairs(stats) do feed.stats[id] = entry end
-            for _, post in ipairs(posts) do feed.posts[#feed.posts + 1] = post end
-            feed.done = #posts < PAGE_SIZE
-            Posts.append(self, list, posts, feed.stats)
-            if #feed.posts == 0 then
-                if name == "following" then
-                    list:addChild(C.empty("your timeline is quiet",
-                        "Follow people from their profile or search to see their posts here."))
-                else
-                    list:addChild(C.empty("no posts yet", "Be the first to write something."))
-                end
-            elseif not feed.done then
-                list:addChild(C.button("load more posts", function() self:loadFeed(name, true) end, {
-                    Name = "LoadMore" .. name, FontSize = 16 }))
-            end
-            self:notice(self.remote and "" or "Offline mock · posts stay in this session")
-            self:repaint()
-        end)
-    end,
-
-    selectFeed = function(self, name)
-        self.feed = name
-        if name == "following" and not self.client:getSession() then return end
-        if not self.feeds[name] then self:loadFeed(name) end
-    end,
+    selectFeed = function(self, name) Home.select(self, name) end,
 
     home = function(self)
         if not self.client then
@@ -214,40 +160,7 @@ local App = Application:extend {
                 C.text("Check APPWRITE_ENDPOINT and APPWRITE_PROJECT_ID, then restart.", { WordWrap = true }),
             })))
         end
-        if self.shell and self.shell:has("Home") then
-            self.status = self.homeStatus
-            local screen = self.shell:show("Home")
-            self:selectFeed(self.feed)
-            return screen
-        end
-        self.status = C.text("", { Name = "HomeStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
-        self.homeStatus = self.status
-        self.pivot = ui.Pivot { Name = "Timeline", Title = "Octopus", Foreground = colors.ink,
-            SelectedIndex = self.feed == "following" and 1 or 0,
-            SelectionChanged = function(pivot) self:selectFeed(FEEDS[pivot.SelectedIndex + 1]) end,
-        }
-        self.timelines = {}
-        for _, name in ipairs(FEEDS) do
-            local item = ui.PivotItem { Name = "Feed" .. name, Header = name }
-            local list = C.stack({ Name = "Timeline" .. name, Spacing = 26, Overflow = "hidden scroll" })
-            if name == "following" and not self.client:getSession() then
-                list:addChild(C.stack({ Spacing = 16 }, {
-                    C.empty("posts from people you follow", "Sign in to follow writers and build your own timeline."),
-                    C.primary("Sign in", function() self.authReturn = "/"; self:show("/auth") end, { Name = "FollowingSignIn" }),
-                    C.button("Create an account", function() self.authReturn = "/"; self:show("/auth/signup") end, {
-                        Name = "FollowingSignUp" }),
-                }))
-            else
-                self.timelines[name] = list
-            end
-            item:addChild(list)
-            self.pivot:addChild(item)
-        end
-        local grid = ui.Grid { Rows = "1fr 20px", Background = colors.background }
-        grid:addChild(self.pivot); grid:addChild(self.status)
-        local screen = self:frame(grid, "Home")
-        self:selectFeed(self.feed)
-        return screen
+        return Home.page(self)
     end,
 
     ["/"] = function(self) self.currentRoute = "/"; return self:home() end,

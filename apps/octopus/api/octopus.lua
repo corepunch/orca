@@ -40,6 +40,7 @@ function Q.orderDesc(attribute) return { method = "orderDesc", attribute = attri
 function Q.orderAsc(attribute) return { method = "orderAsc", attribute = attribute } end
 function Q.limit(count) return { method = "limit", values = { count } } end
 function Q.cursorAfter(id) return { method = "cursorAfter", values = { id } } end
+function Q.lessThan(attribute, value) return { method = "lessThan", attribute = attribute, values = { value } } end
 Octopus.Query = Q
 
 -- Tags follow the website: comma or space separated, lowercase, without '#'.
@@ -276,14 +277,132 @@ function Client:listFollowingIds(userId)
     return ids
 end
 
+-- Display names for user IDs, from their public profiles.
+function Client:names(userIds)
+    local names, wanted = {}, {}
+    for _, id in ipairs(userIds) do if not names[id] then names[id] = false; wanted[#wanted + 1] = id end end
+    for first = 1, #wanted, 100 do
+        local chunk = { table.unpack(wanted, first, math.min(#wanted, first + 99)) }
+        local docs, err = self:_listAll("profiles", { Q.equal("userId", chunk) }, 1)
+        if not docs then return nil, err end
+        for _, doc in ipairs(docs) do names[doc.userId] = doc.username end
+    end
+    for id, name in pairs(names) do if not name then names[id] = "Someone" end end
+    return names
+end
+
+-- A Twitter-style timeline: posts by `authorIds` and reposts by `reposterIds`,
+-- newest first. Each item is { post, at, repostedBy = { id, name } }. Paging
+-- uses the time of the last item; returns items, next cursor (nil when done).
+function Client:timeline(authorIds, reposterIds, options)
+    options = options or {}
+    local limit = tonumber(options.limit) or 20
+    local function page(name, field, ids)
+        if #ids == 0 then return { documents = {} } end
+        local query = { Q.equal(field, ids), Q.orderDesc("$createdAt"), Q.limit(limit) }
+        if options.before then query[#query + 1] = Q.lessThan("$createdAt", options.before) end
+        return self:_list(name, query)
+    end
+    local posts, err = page("posts", "authorId", authorIds)
+    if not posts then return nil, err end
+    local reposts
+    reposts, err = page("reposts", "userId", reposterIds)
+    if not reposts then return nil, err end
+    local items, originals, reposters = {}, {}, {}
+    for _, doc in ipairs(posts.documents) do items[#items + 1] = { post = post(doc), at = doc["$createdAt"] } end
+    if #reposts.documents > 0 then
+        local ids, users = {}, {}
+        for _, doc in ipairs(reposts.documents) do ids[#ids + 1], users[#users + 1] = doc.postId, doc.userId end
+        local found
+        found, err = self:_list("posts", { Q.equal("$id", ids), Q.limit(100) })
+        if not found then return nil, err end
+        for _, doc in ipairs(found.documents) do originals[doc["$id"]] = post(doc) end
+        reposters, err = self:names(users)
+        if not reposters then return nil, err end
+    end
+    for _, doc in ipairs(reposts.documents) do
+        -- A repost of a deleted post has nothing to show.
+        if originals[doc.postId] then
+            items[#items + 1] = { post = originals[doc.postId], at = doc["$createdAt"],
+                repostedBy = { id = doc.userId, name = reposters[doc.userId] } }
+        end
+    end
+    table.sort(items, function(a, b) return a.at > b.at end)
+    local result, seen = {}, {}
+    for _, item in ipairs(items) do
+        if #result == limit then break end
+        if not seen[item.post.id] then seen[item.post.id] = true; result[#result + 1] = item end
+    end
+    local more = #posts.documents == limit or #reposts.documents == limit
+    return result, more and #result > 0 and result[#result].at or nil
+end
+
+-- Your posts plus posts and reposts from the people you follow.
 function Client:homeTimeline(options)
+    local me = self:currentUserId()
     local ids, err = self:listFollowingIds()
     if not ids then return nil, err end
-    options = options or {}
-    local posts
-    posts, err = self:listPosts { limit = options.limit, cursor = options.cursor, authorIds = ids }
-    if not posts then return nil, err end
-    return posts, ids
+    local authors = { me }
+    for _, id in ipairs(ids) do authors[#authors + 1] = id end
+    return self:timeline(authors, ids, options)
+end
+
+-- A profile's posts with the posts they reposted.
+function Client:userTimeline(userId, options)
+    if not validId(userId) then return failure("validation", "Choose a person.") end
+    return self:timeline({ userId }, { userId }, options)
+end
+
+-- Connect: who liked, reposted or replied to your posts, and who followed you.
+-- Items are { kind, userId, name, at, post, body }, newest first.
+function Client:activity(options)
+    local session, err = self:_requireSession()
+    if not session then return nil, err end
+    local me, limit = session.user.id, (options and options.limit) or 40
+    local mine
+    mine, err = self:_list("posts", { Q.equal("authorId", me), Q.orderDesc("$createdAt"), Q.limit(100) })
+    if not mine then return nil, err end
+    local posts, ids = {}, {}
+    for _, doc in ipairs(mine.documents) do posts[doc["$id"]] = post(doc); ids[#ids + 1] = doc["$id"] end
+    local items = {}
+    local function add(name, query, build)
+        local data, listError = self:_list(name, query)
+        if not data then return listError end
+        for _, doc in ipairs(data.documents) do
+            local item = build(doc)
+            if item and item.userId ~= me then item.at = doc["$createdAt"]; items[#items + 1] = item end
+        end
+    end
+    local recent = { Q.orderDesc("$createdAt"), Q.limit(limit) }
+    local function query(...)
+        local result = { ... }
+        for _, q in ipairs(recent) do result[#result + 1] = q end
+        return result
+    end
+    err = add("follows", query(Q.equal("followingId", me)), function(doc)
+        return { kind = "follow", userId = doc.followerId }
+    end)
+    if not err and #ids > 0 then
+        err = add("likes", query(Q.equal("targetType", "post"), Q.equal("targetId", ids)), function(doc)
+            return { kind = "like", userId = doc.userId, post = posts[doc.targetId] }
+        end) or add("reposts", query(Q.equal("postId", ids)), function(doc)
+            return { kind = "repost", userId = doc.userId, post = posts[doc.postId] }
+        end) or add("comments", query(Q.equal("postId", ids)), function(doc)
+            return { kind = "comment", userId = doc.authorId, name = doc.authorName, post = posts[doc.postId], body = doc.body }
+        end)
+    end
+    if err then return nil, err end
+    local users = {}
+    for _, item in ipairs(items) do if not item.name then users[#users + 1] = item.userId end end
+    local names = {}
+    if #users > 0 then
+        names, err = self:names(users)
+        if not names then return nil, err end
+    end
+    for _, item in ipairs(items) do item.name = item.name or names[item.userId] end
+    table.sort(items, function(a, b) return a.at > b.at end)
+    for i = #items, limit + 1, -1 do items[i] = nil end
+    return items
 end
 
 -- Validates like the website's composer, uploads a photo when present, then publishes.

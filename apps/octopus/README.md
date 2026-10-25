@@ -7,17 +7,21 @@ bucket as the website, so posts, follows, likes, reposts and comments made in
 either place show up in both. It runs on macOS and Linux in a **390 × 844**
 portrait window and on iPhone/iPad with an adaptive viewport.
 
-Octopus works without an account. Guests read the discover timeline, posts,
+Octopus works without an account. Guests start on the discover timeline and read posts,
 comments, profiles and search; writing, liking, reposting, replying and
 following ask them to sign in, then return them to where they were.
 
 ## Design
 
-The app follows Windows Phone, sharing its building blocks with
-[Chat](../chat/README.md):
+The app follows Windows Phone and its Twitter client, sharing its building
+blocks with [Chat](../chat/README.md):
 
-- Home is a `Pivot` titled OCTOPUS whose items are the **discover** and
-  **following** timelines. Swipe or tap a header to switch.
+- Home is a `Pivot` titled OCTOPUS with Twitter's **home**, **connect** and
+  **discover** items. Home is your timeline: your posts, the posts of people
+  you follow, and what they reposted, each marked "Maya Chen reposted".
+  Connect lists who liked, reposted or replied to your posts and who followed
+  you. Discover is everyone's latest posts. Signed-in readers start on home and
+  guests on discover; swipe or tap a header to switch.
 - Every other page is a locked one-item `Pivot`, so its title and page name
   share the timeline metrics: **post**, **quote**, **link** or **photo** for a
   single post, the person's name for a profile, then **search**, **new post**
@@ -29,7 +33,9 @@ The app follows Windows Phone, sharing its building blocks with
 - Cards show a square avatar tile, the author and a relative time, the post by
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
   a photo), its tags, and comment/repost/like counts. Liked hearts turn red and
-  reposts green.
+  reposts green. Profiles list posts and reposts together, as on Twitter.
+- A post's page shows its full time and large like, repost and comment
+  counts between hairlines, then the threaded replies.
 - Text boxes are pale with dark text in both themes; primary commands are
   filled with the reef teal from the website, secondary ones are 2-pixel
   outlines and links are plain accent text. Icons are Lucide SVGs and the
@@ -64,6 +70,8 @@ permissions as the browser; there is no server function and no API key.
 | --- | --- |
 | Accounts | `POST /account`, email/password sessions, sign-out |
 | Timelines, search, tags | `posts` with `orderDesc($createdAt)`, `search(title)`, `equal(tags)` and cursor paging |
+| Home, profiles | `posts` and `reposts` merged by time, paged with `lessThan($createdAt)` |
+| Connect | `likes`, `reposts` and `comments` on your posts and `follows` of you, named from `profiles` |
 | Following | `follows` (readable by signed-in users only, so guests see no follower counts) |
 | Likes, reposts, comments | `likes` (posts and comments), `reposts`, `comments` with `parentId` replies |
 | Profiles | `profiles`, one document per user ID, created at sign-up or first sign-in |
@@ -87,7 +95,7 @@ open-in-browser API yet.
 | `api/octopus.lua` | The Octopus client: validation, Appwrite queries and response mapping |
 | `api/appwrite.lua` | HTTP over `orca.network`, query and JSON encoding |
 | `api/mock.lua`, `api/fixtures.lua` | An in-memory Appwrite with the website's permissions and unique indexes |
-| `views/` | The shell, post cards, post page, people and search, compose and sign-in screens |
+| `views/` | The shell, home/connect/discover, post cards, post page, people and search, compose and sign-in screens |
 | `media.lua` | Photo picking and the private image cache |
 
 Network calls run in `orca.async` coroutines, so pages appear immediately with
@@ -100,11 +108,12 @@ current before it updates the view.
 make test-octopus
 ```
 
-The API suite covers guest reads, sessions, every post type, validation,
+The API suite covers guest reads, home and profile timelines with reposts and
+paging, connect activity, sessions, every post type, validation,
 likes, reposts, comments, follows, profiles, photo upload and deletion, and
 the exact Appwrite query, cookie and body encoding of the HTTP transport. The
-UI suite drives the app through real clicks: the guest timeline, post,
+UI suite drives the app through real clicks: the guest discover timeline, post,
 profile and tag search, sign-in that returns to the page you came from,
-compose drafts and publishing, comments and replies, likes, reposts,
+home with reposts, connect, compose drafts and publishing, comments and replies, likes, reposts,
 following, profile editing, delete confirmation, sign-up and service errors.
 Neither suite contacts the network.
