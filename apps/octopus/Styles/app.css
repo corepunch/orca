@@ -1,0 +1,7 @@
+.octopus-action:hover { opacity: 0.78; }
+.octopus-action:focus { ring: 0 2 #0a7068; }
+.octopus-input:focus { border-color: #0e8f86; background-color: #ffffff; }
+.octopus-row:hover { background-color: #f2f2f2; }
+.octopus-action:focus:dark { ring: 0 2 #2cc5b8; }
+.octopus-input:focus:dark { border-color: #0e8f86; background-color: #ffffff; }
+.octopus-row:hover:dark { background-color: #1a1a1a; }
