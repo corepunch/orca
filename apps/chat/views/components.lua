@@ -8,6 +8,8 @@ function C.text(value, props)
     props.FontSize = props.FontSize or 15
     props.Foreground = props.Foreground or colors.ink
     props.IgnoreHitTest = true
+    -- Ellipsis applies to a single line; text otherwise wraps by default.
+    if props.TextOverflow == "Ellipsis" and not props.WordWrap then props.TextWrapping = "NoWrap" end
     return ui.TextBlock(props, value)
 end
 
@@ -28,20 +30,21 @@ function C.icon(name, size, color)
     }
 end
 
-function C.iconTile(name, size, iconSize)
-    local tile = ui.Grid { Width = size, Height = size, Background = colors.accent }
-    tile:addChild(C.icon(name, iconSize, colors.onAccent))
-    return tile
-end
-
+-- Windows Phone buttons: no background means a hyperlink, the accent fills a
+-- primary command, and anything else is the outlined 2-pixel button.
 function C.button(label, action, props)
     props = props or {}
-    props.Height = props.Height or 44
-    props.FontSize = props.FontSize or 14
-    props.FontWeight = props.FontWeight or "Bold"
-    props.Foreground = props.Foreground or colors.accentText
+    local link, primary = props.Background == nil, props.Background == colors.accent
+    props.Height = props.Height or 48
+    props.FontSize = props.FontSize or 15
+    props.FontWeight = props.FontWeight or (link and "Normal" or "Bold")
+    props.Foreground = props.Foreground or (link and colors.accentText or primary and colors.onAccent or colors.ink)
     props.Background = props.Background or "#00000000"
-    props.TextHorizontalAlignment, props.TextVerticalAlignment = "Center", "Center"
+    if not link and not primary and props.BorderWidth == nil then
+        props.BorderWidth, props.BorderColor = "2", colors.ink
+    end
+    props.TextHorizontalAlignment = props.TextHorizontalAlignment or "Center"
+    props.TextVerticalAlignment = "Center"
     props.Click, props.class = action, "chat-action"
     return ui.Button(props, label)
 end
@@ -50,19 +53,21 @@ function C.iconButton(name, action, props)
     props = props or {}
     local color = props.Foreground or colors.muted
     props.Width, props.Height = props.Width or 44, props.Height or 44
+    props.BorderWidth = props.BorderWidth or "0"
     local button = C.button("", action, props)
     button:addChild(C.icon(name, 20, color))
     return button
 end
 
+-- Windows Phone text box: pale fill and dark text in both themes.
 function C.input(name, placeholder, props)
     props = props or {}
     props.Name, props.PlaceholderText = name, placeholder
-    props.Height, props.FontSize = props.Height or 50, props.FontSize or 14
-    props.Padding = props.Padding or "16 0"
-    props.Background = props.Background or colors.surface
-    props.Foreground, props.PlaceholderColor = colors.ink, colors.dim
-    props.BorderWidth, props.BorderColor = "2", colors.line
+    props.Height, props.FontSize = props.Height or 48, props.FontSize or 15
+    props.Padding = props.Padding or "12 0"
+    props.Background = props.Background or colors.textbox
+    props.Foreground, props.PlaceholderColor = colors.textboxInk, colors.placeholder
+    props.BorderWidth, props.BorderColor = "2", props.Background
     props.class = "chat-input"
     return ui.Input(props)
 end
@@ -75,8 +80,7 @@ function C.avatar(name, size, key)
     local last = name:match("%s+([%w])[%w]*$")
     if last then initials = initials .. last end
     return C.text(initials:upper(), {
-        Width = size or 52, Height = size or 52, FontSize = (size or 52) < 40 and 12 or 17,
-        FontWeight = "Bold",
+        Width = size or 52, Height = size or 52, FontSize = (size or 52) < 40 and 12 or 18,
         Background = tone.background, Foreground = tone.foreground,
         TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
     })
@@ -91,35 +95,34 @@ function C.badge(value, props)
     return C.text(tostring(value), props)
 end
 
+-- Group header, as in a Windows Phone long list: lowercase in the accent.
 function C.eyebrow(value)
-    return C.text(value:lower(), { FontSize = 15, Foreground = colors.accentText })
+    return C.text(value:lower(), { FontSize = 18, Foreground = colors.accentText, MarginTop = 8 })
 end
 
--- Metro app title: small capitals above the page content.
-function C.brand()
-    return C.text("MESSENGER", { FontSize = 13, FontWeight = "Bold", LetterSpacing = 1.2, Height = 32,
-        TextVerticalAlignment = "Center" })
+-- A Windows Phone page: the application title and a large lowercase page
+-- name above the content. A locked Pivot with one item gives every page the
+-- same metrics as the inbox pivot.
+function C.page(header, content, props)
+    props = props or {}
+    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true, Foreground = colors.ink }
+    local item = ui.PivotItem { Header = header }
+    item:addChild(content)
+    pivot:addChild(item)
+    return pivot
 end
 
-function C.navItem(label, icon, key)
-    local button = ui.Tab {
-        Name = "Tab" .. key, Value = key, Height = 58, class = "chat-tab",
-        SelectedColor = colors.surface, UnselectedColor = colors.surface,
-    }
-    local grid = ui.Grid { Rows = "32px 16px", Padding = "2 8", Spacing = 2, IgnoreHitTest = true }
-    -- App-bar button: an outlined circle around the glyph.
-    local ring = ui.Grid { Name = "Tab" .. key .. "Ring", Width = 32, Height = 32, BorderRadius = "16", BorderWidth = "2",
-        BorderColor = colors.muted, MarginLeft = auto, MarginRight = auto, IgnoreHitTest = true }
-    local image = C.icon(icon, 16, colors.muted)
-    image.Name = "Tab" .. key .. "Icon"
-    ring:addChild(image)
-    grid:addChild(ring)
-    grid:addChild(C.text(label:lower(), {
-        Name = "Tab" .. key .. "Label", FontSize = 10, FontWeight = "Bold",
-        Foreground = colors.muted, TextHorizontalAlignment = "Center",
-    }))
-    button:addChild(grid)
-    return button
+-- An ApplicationBar from { name, icon, text, action } buttons and
+-- { name, text, action } menu items.
+function C.appBar(buttons, menu)
+    local bar = ui.ApplicationBar { Name = "AppBar", Background = colors.chrome, Foreground = colors.ink }
+    for _, b in ipairs(buttons) do
+        bar:addChild(ui.ApplicationBarIconButton {
+            Name = b[1], IconUri = "Chat/assets/icons/" .. b[2] .. ".svg", Text = b[3], Click = b[4],
+        })
+    end
+    for _, m in ipairs(menu or {}) do bar:addChild(ui.ApplicationBarMenuItem { Name = m[1], Text = m[2], Click = m[3] }) end
+    return bar
 end
 
 -- Speech-bubble tail, tinted like the bubble it joins.

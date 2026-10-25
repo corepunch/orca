@@ -12,7 +12,7 @@ function Identity.auth(self)
     local displayName = C.input("DisplayName", "Your name, for a new account")
     self.status = C.text(self.remote and "Your phone or email. Your people."
         or "Offline mock · demo@example.invalid\nVerification code: 123456", {
-        WordWrap = true, FontSize = 13, Foreground = colors.muted,
+        WordWrap = true, FontSize = 14, Foreground = colors.muted,
     })
     local function finish(session, err)
         if not session then self:notice(err and err.message or "Please try again.", true); return end
@@ -22,7 +22,7 @@ function Identity.auth(self)
     end
     local entry = C.stack({ Name = "IdentifierStep", Spacing = 12, Visible = not self.loginCodeRequested }, {
         C.eyebrow("PHONE NUMBER OR EMAIL"), identifier,
-        C.text("Use an international number, including + and country code.", { FontSize = 11, Foreground = colors.dim, WordWrap = true }),
+        C.text("Use an international number, including + and country code.", { FontSize = 13, Foreground = colors.dim, WordWrap = true }),
         C.button("Continue", function()
             if busy then return end
             busy = true; self:notice("Sending verification code…")
@@ -35,7 +35,7 @@ function Identity.auth(self)
     })
     local verification = C.stack({ Name = "CodeStep", Spacing = 12, Visible = self.loginCodeRequested == true }, {
         C.eyebrow("CHECK YOUR MESSAGES"),
-        C.text("Enter the code sent to " .. (self.loginIdentifier or "your phone or email"), { WordWrap = true, FontSize = 13 }), code,
+        C.text("Enter the code sent to " .. (self.loginIdentifier or "your phone or email"), { WordWrap = true, FontSize = 15 }), code,
         C.button("Verify & sign in", function()
             if busy then return end
             busy = true; self:notice("Verifying…")
@@ -49,7 +49,7 @@ function Identity.auth(self)
             local result, err = self.client:requestCode(self.loginIdentifier)
             busy = false
             self:notice(result and "A new code is on its way." or err.message, not result)
-        end, { Name = "ResendCode", Background = colors.soft }),
+        end, { Name = "ResendCode", Background = colors.surface }),
         C.button("Use a different phone or email", function() self.loginCodeRequested = false; self:show("/auth") end,
             { Name = "ChangeIdentifier" }),
     })
@@ -69,16 +69,18 @@ function Identity.auth(self)
             local session, err = self.client:signUp(email.Text, password.Text, displayName.Text)
             busy = false; finish(session, err)
         end,
-            { Name = "SignUp", Background = colors.soft }),
+            { Name = "SignUp", Background = colors.surface }),
     })
-    return self:frame(C.stack({ Padding = "28 36", Spacing = 22, Overflow = "hidden scroll", Background = colors.background }, {
-        C.brand(), C.iconTile("message-circle", 68, 30),
-        C.text(self.loginCodeRequested and "A little code.\nA big hello." or "Your people.\nOne message away.", {
-            FontSize = 33, FontWeight = "Bold", WordWrap = true }),
+    local body = C.stack({ Spacing = 20, Overflow = "hidden scroll" }, {
+        C.text(self.loginCodeRequested and "A little code. A big hello." or "Your people. One message away.", {
+            FontSize = 22, WordWrap = true }),
         self.status, entry, verification,
         C.button("Use email & password", function() passwordFields.Visible = not passwordFields.Visible end,
-            { Name = "UsePassword", Foreground = colors.muted }), passwordFields,
-    }))
+            { Name = "UsePassword" }), passwordFields,
+    })
+    local grid = ui.Grid { Background = colors.background, Foreground = colors.ink }
+    grid:addChild(C.page(self.loginCodeRequested and "verify" or "sign in", body))
+    return self:frame(grid)
 end
 
 function Identity.profile(self)
@@ -93,7 +95,7 @@ function Identity.profile(self)
     local username = C.input("Username", "Choose a public username", { Text = profile.username or "" })
     local identifier = C.input("LinkIdentifier", "Phone number or email to verify")
     local code = C.input("LinkCode", "Verification code")
-    local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 12, Foreground = colors.muted })
+    local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 14, Foreground = colors.muted })
     local function describe(p)
         local phone, email = p.phone or user.phone, p.email or user.email
         verified:setTextContent("Verified phone: " .. ((phone and phone ~= "") and phone or "Not added")
@@ -101,7 +103,7 @@ function Identity.profile(self)
     end
     describe(profile)
     self.status = C.text(err and err.message or "Your login details stay private. Choose how people find you.", {
-        Name = "ProfileStatus", WordWrap = true, FontSize = 12, Foreground = err and colors.error or colors.muted,
+        Name = "ProfileStatus", WordWrap = true, FontSize = 14, Foreground = err and colors.error or colors.muted,
     })
     self.profileStatus = self.status
     local epoch, status = self.sessionEpoch, self.status
@@ -128,14 +130,13 @@ function Identity.profile(self)
             if updated then describe(updated) end
             identifier.Text, code.Text = "", ""
             notice("Verified and linked to this account.")
-        end, { Name = "VerifyLink", Background = colors.soft }),
+        end, { Name = "VerifyLink", Background = colors.surface }),
     })
-    local body = C.stack({ Padding = "24 20", Spacing = 16, Overflow = "hidden scroll" }, {
-        C.avatar(profile.display_name or "You", 64, user.id),
-        C.text("Make it yours.", { FontSize = 29, FontWeight = "Bold" }), self.status,
+    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
+        C.avatar(profile.display_name or "You", 72, user.id), self.status,
         C.eyebrow("PUBLIC PROFILE"), name, username,
         C.text("People can find your exact username. Your phone and email are never shown in search results.", {
-            FontSize = 11, WordWrap = true, Foreground = colors.dim }), phoneToggle, emailToggle,
+            FontSize = 13, WordWrap = true, Foreground = colors.dim }), phoneToggle, emailToggle,
         C.button("Save profile", function()
             local result, saveError = self.client:updateProfile { display_name = name.Text, username = username.Text,
                 discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery }
@@ -149,16 +150,10 @@ function Identity.profile(self)
             if not result then notice(linkError.message, true); return end
             self.pendingIdentity, verification.Visible = identifier.Text, true
             notice(self.remote and "Enter the code sent to your new login detail." or "Offline verification code: 123456")
-        end, { Name = "RequestLink", Background = colors.soft }), verification,
-        C.button("Sign out", function()
-            local ok, signOutError = self.client:signOut()
-            if not ok then self:notice(signOutError.message, true); return end
-            self:resetSessionViews(); self:show()
-        end, { Name = "SignOut", Foreground = colors.error, Background = colors.surface, Height = 48 }),
+        end, { Name = "RequestLink", Background = colors.surface }), verification,
+        C.button("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error }),
     })
-    local grid = ui.Grid { Rows = "76px 1fr", Background = colors.background }
-    grid:addChild(self:pageHeader("Your profile")); grid:addChild(body)
-    return self:frame(grid, "Profile")
+    return self:frame(C.page("profile", body), "Profile")
 end
 
 return Identity

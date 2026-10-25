@@ -114,22 +114,18 @@ drain(app)
 assert(not app.newSelection.alex, "Selecting a contact again must remove it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
-assert(profile:findChild("BackToChats", true), "Profile must offer a return to chats")
+assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
 
--- Root tabs keep one shell and usable tab content through real selection events.
+-- Root pages keep one shell and one ApplicationBar through real Click events.
 local tabApp = mockApp()
 local shell = tabApp.screen
-local bar = assert(shell:findChild("TabBar", true), "Root screens need one shared tab bar")
+local bar = assert(shell:findChild("AppBar", true), "Root screens need one shared application bar")
 local tabs = {
-    { name = "TabChats", value = "Chats" },
-    { name = "TabNew", value = "New" },
-    { name = "TabProfile", value = "Profile" },
+    { name = "AppBarChats", value = "Chats" },
+    { name = "AppBarNew", value = "New" },
+    { name = "AppBarProfile", value = "Profile" },
 }
-for _, tab in ipairs(tabs) do
-    tab.view = assert(bar:findChild(tab.name, true), "Missing tab " .. tab.name)
-    tab.icon = assert(tab.view:findChild(tab.name .. "Icon", true), "Missing tab icon")
-    tab.label = assert(tab.view:findChild(tab.name .. "Label", true), "Missing tab label")
-end
+for _, tab in ipairs(tabs) do tab.view = assert(bar:findChild(tab.name, true), "Missing button " .. tab.name) end
 
 local function namedCount(node, name)
     local count = node.Name == name and 1 or 0
@@ -156,35 +152,31 @@ local function assertTabs(selected)
     core.advanceFrame()
     core.runAllPrograms(shell)
     shell:UpdateLayout(390, 844)
-    assert(tabApp.screen == shell, "Tab switches must keep the same screen")
+    assert(tabApp.screen == shell, "Page switches must keep the same screen")
     assert(shell.Name == "ChatShell" and namedCount(shell, "ChatShell") == 1,
-        "Tab switches must not nest or duplicate the application shell")
-    assert(namedCount(shell, "TabBar") == 1 and shell:findChild("TabBar", true) == bar,
-        "Tab switches must retain one tab-bar instance")
-    assert(bar.SelectedValue == selected, "Tab-bar selection must match the visible route")
+        "Page switches must not nest or duplicate the application shell")
+    assert(namedCount(shell, "AppBar") == 1 and shell:findChild("AppBar", true) == bar,
+        "Page switches must retain one application bar")
+    assert(tabApp.shell.active == selected, "The shell must show the requested page")
     for _, tab in ipairs(tabs) do
-        local view, icon, label = tab.view, tab.icon, tab.label
-        assert(bar:findChild(tab.name, true) == view, "Tab controls must survive navigation")
-        assert(view.IsSelected == (tab.value == selected), "Exactly the current tab must be selected")
-        assert(isShown(view) and isShown(icon) and isShown(label), "Every tab icon and label must remain visible")
-        assert(view.ActualWidth >= 80 and view.ActualHeight >= 44, "Tabs need usable hit areas")
-        assert(icon.ActualWidth >= 16 and icon.ActualHeight >= 16, "Tab icons must not collapse")
-        assert(label.ActualWidth >= 24 and label.ActualHeight >= 10, "Tab labels must not collapse")
-        assert(type(icon.Source) == "string" and icon.Source ~= "", "Each tab needs an SVG source")
-        assert(label:getTextContent():match("%S"), "Each tab needs a readable label")
-        assert(label.ActualY >= icon.ActualY + icon.ActualHeight - 1,
-            "Tab labels must sit below their icons without overlap")
+        local view = tab.view
+        assert(bar:findChild(tab.name, true) == view, "Bar buttons must survive navigation")
+        assert(view.IsEnabled == (tab.value ~= selected), "Only the current page's button is disabled")
+        assert(isShown(view), "Every bar button must remain visible")
+        assert(view.ActualWidth >= 44 and view.ActualHeight >= 44, "Bar buttons need usable hit areas")
+        assert(type(view.IconUri) == "string" and view.IconUri ~= "", "Each bar button needs an SVG icon")
+        assert(type(view.Text) == "string" and view.Text:match("%S"), "Each bar button needs a label")
         local page = shell:findChild("TabContent", true):findChild(tab.value)
-        if tab.value == selected then assert(page, "The selected tab page must exist") end
+        if tab.value == selected then assert(page, "The selected page must exist") end
         if page then
             assert(isShown(page) == (tab.value == selected), string.format(
-                "Tab selection must display only its own page: selected=%s page=%s visible=%s active=%s route=%s newLoaded=%s",
-                selected, tab.value, tostring(page.Visible), tostring(shell:findChild("TabContent", true).ActivePage),
-                tostring(tabApp.shell.active), tostring(tabApp.shell:has("New"))))
+                "Selection must display only its own page: selected=%s page=%s visible=%s active=%s",
+                selected, tab.value, tostring(page.Visible), tostring(shell:findChild("TabContent", true).ActivePage)))
         end
     end
 end
 
+-- The current page's button is disabled, so selecting it again is a no-op.
 local function selectTab(index)
     tabs[index].view:send("Node.LeftButtonUp")
     assertTabs(tabs[index].value)
@@ -197,25 +189,22 @@ local finder = assert(shell:findChild("FindPerson", true))
 roomName.Text, finder.Text = "Keep our conversation draft", "@alex"
 for _, index in ipairs({ 3, 1, 2, 3, 2, 1, 1, 3, 2 }) do selectTab(index) end
 for _, tab in ipairs(tabs) do
-    assert(shell:findChild("TabContent", true):findChild(tab.value), "Every visited tab page must remain retained")
+    assert(shell:findChild("TabContent", true):findChild(tab.value), "Every visited page must remain retained")
 end
 assert(shell:findChild("RoomName", true) == roomName and shell:findChild("FindPerson", true) == finder,
-    "Switching tabs must retain the new-conversation form")
+    "Switching pages must retain the new-conversation form")
 assert(roomName.Text == "Keep our conversation draft" and finder.Text == "@alex",
-    "Switching tabs must preserve unsent new-conversation fields")
+    "Switching pages must preserve unsent new-conversation fields")
 for _, width in ipairs({ 320, 834 }) do
     shell.Width = width
     core.advanceFrame()
     core.runAllPrograms(shell)
     shell:UpdateLayout(width, 844)
-    local previousRight = 0
+    local previousRight = -1
     for _, tab in ipairs(tabs) do
         local view = tab.view
-        assert(view.ActualWidth >= width / 4, "Tab hit areas must grow with the viewport")
         assert(view.ActualX >= previousRight - 1 and view.ActualX + view.ActualWidth <= width + 1,
-            "Tabs must remain ordered and fit inside narrow and tablet viewports")
-        assert(tab.icon.ActualWidth >= 16 and tab.label.ActualHeight >= 10,
-            "Resizing must keep tab icons and labels usable")
+            "Bar buttons must remain ordered and fit inside narrow and tablet viewports")
         previousRight = view.ActualX + view.ActualWidth
     end
 end
@@ -326,7 +315,7 @@ assert(otpApp.screen:findChild("FoundChannel" .. publicChannelId, true), "Public
 click(otpApp, "JoinChannel" .. publicChannelId)
 assert(otpApp.room.id == publicChannelId and otpApp.room.can_post == false, "Joining a public channel creates a subscriber membership")
 assert(not otpApp.screen:findChild("Composer", true).Visible, "Fresh public subscribers cannot publish")
-assert(otpApp.screen:findChild("EmptyTimeline", true):getTextContent() == "No posts yet.",
+assert(otpApp.screen:findChild("EmptyTimeline", true):getTextContent() == "no posts yet",
     "An empty subscriber timeline must not ask the reader to publish")
 
 -- The picker is injected; upload/storage/message operations remain the real mock API.
@@ -405,7 +394,7 @@ local raceShell = raceApp.screen
 interruptProfile = true
 raceApp:show("/profile")
 assert(not interruptProfile, "The race fixture must interleave at the real profile endpoint")
-assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp.shell.bar.SelectedValue == "New",
+assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp.shell.content.ActivePage == "New",
     "A late profile response must not replace a newer tab selection")
 assert(not raceApp.shell:has("Profile"), "A cancelled tab constructor must not mount stale content")
 

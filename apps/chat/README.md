@@ -1,7 +1,7 @@
 # ORCA Messenger
 
 A simple person-to-person chat app in Lua, using the `Application` entry point
-with separate service modules and a shared native tab shell.
+with separate service modules and a shared Windows Phone application shell.
 Runs on macOS with a **390 × 844** portrait viewport and on iPhone/iPad with
 an adaptive viewport, touch scrolling and the native keyboard. iOS builds use
 Make and the Xcode command-line tools without an Xcode project.
@@ -14,25 +14,40 @@ Make and the Xcode command-line tools without an Xcode project.
 
 ## Design
 
-The Metro design follows Facebook Messenger on Windows Phone. A small-caps
-MESSENGER title sits above lowercase pivot headers (all, unread, pinned). The
-app uses square, solid-colour avatar tiles, flat rows, and square bubbles with
-triangular tails. The app bar has outlined circular buttons. `theme.lua` holds
-a black and a white palette with Messenger blue. The OS appearance chooses
-between them; set `CHAT_APPEARANCE=light` or `dark` to override it. On Linux,
-ORCA reports dark mode when `GTK_THEME` contains `dark`. Reusable Lua
-components and `Styles/app.css` (with `:dark` variants) carry the design across
-the inbox, conversations, account, and forms. Icons are stroke-based Lucide
-SVGs with inherited tint.
+The app follows Facebook Messenger on Windows Phone and is built from the
+engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
 
-`views/shell.lua` owns one persistent `TabBar` for Chats, New chat, and Profile.
-Its selection binds to `PageHost.ActivePage`; root pages keep their instances
-and form drafts across tab switches. Conversation and sign-in screens are
-separate flows, and returning to the root reuses the same shell.
+- The inbox is a `Pivot` titled MESSENGER whose items are the all, unread
+  and pinned lists. Swipe the list or tap a header to switch.
+- Every other page is a locked one-item `Pivot`, so its title and page name
+  share the inbox metrics.
+- Commands live in an `ApplicationBar`. On the root pages its round buttons
+  switch between chats, new chat and profile, and its menu holds refresh and
+  sign out. In a conversation the bar holds back, attach, send and pin, with
+  conversation info and refresh in the menu.
+- Text boxes are pale with dark text in both themes and turn white with an
+  accent border when focused. Secondary buttons are 2-pixel outlines,
+  primary commands are filled with the accent, and links are plain accent
+  text.
+- Avatars are square solid-colour tiles. Message bubbles are square, with
+  Windows Phone tails.
 
-Search matches conversation names and message previews. All, Unread, and Pinned
-filters work locally; opening a conversation clears its local unread badge.
-Use the pin in a thread to add or remove a shortcut. Drafts survive navigation
+`theme.lua` holds a black and a white palette with Messenger blue. The OS
+appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
+override it. On Linux, ORCA reports dark mode when `GTK_THEME` contains
+`dark`. `Styles/app.css` adds hover and focus states with `:dark` variants.
+Icons are stroke-based Lucide SVGs with inherited tint.
+
+`views/shell.lua` owns one persistent `ApplicationBar` for Chats, New chat, and
+Profile. It sets `PageHost.ActivePage` and disables the button for the page in
+view. Root pages keep their instances and form drafts when you switch pages.
+Conversation and sign-in screens are separate flows, and returning to the root
+reuses the same shell.
+
+Search matches conversation names and message previews. The all, unread and
+pinned pivots filter locally; opening a conversation clears its local unread
+badge. Use pin in a conversation's application bar to add or remove it from
+the pinned pivot. Drafts survive navigation
 and pinning. Pins and unread state last for this app session.
 
 The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
@@ -180,8 +195,9 @@ creation, message ordering, validation, and HTTP failures. The mock suite
 checks the same client with isolated fixtures and guards against network
 imports. Model tests cover queries, row methods and relations. The UI test
 injects a mock client explicitly, logs in through the form, selects API contacts,
-manages groups/channels, sends photos, preserves rejected input, switches shared
-tabs, and signs out. Feature tests cover identity verification, privacy, roles,
+manages groups/channels, sends photos, preserves rejected input, switches pages
+through the shared application bar, and signs out. `make test-metro` covers the
+engine's Pivot, Panorama and ApplicationBar controls. Feature tests cover identity verification, privacy, roles,
 invitations, subscriptions, and attachment permissions.
 It does not depend on environment credentials or an external service.
 The HTTP regression uses a localhost echo server to verify that long JWT

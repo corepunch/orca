@@ -1,5 +1,6 @@
 -- Metro palette after Messenger on Windows Phone: black or white canvas,
--- Messenger blue, and solid tile colours. The OS appearance picks the
+-- Messenger blue, solid tile colours, the phone chrome and its pale text
+-- boxes. Surfaces are flat, so `surface` is transparent. The OS appearance picks the
 -- variant; CHAT_APPEARANCE=light|dark overrides it.
 local system = require "orca.system"
 
@@ -10,14 +11,16 @@ local tiles = {
 
 local palettes = {
     dark = {
-        background = "#000000", surface = "#1f1f1f", raised = "#2e2e2e",
+        background = "#000000", surface = "#00000000", raised = "#2e2e2e", chrome = "#1f1f1f",
+        textbox = "#bfbfbf", textboxInk = "#000000", placeholder = "#666666",
         ink = "#ffffff", muted = "#a6a6a6", dim = "#8a8a8a", faint = "#5c5c5c",
         line = "#3a3a3a", accent = "#0084ff", accentText = "#3d9eff", onAccent = "#ffffff",
         soft = "#0a2a4d", sent = "#0084ff", sentText = "#ffffff", sentMeta = "#cfe6ff",
         error = "#ff5c5c", avatar = tiles,
     },
     light = {
-        background = "#ffffff", surface = "#e9e9e9", raised = "#e6e6e6",
+        background = "#ffffff", surface = "#00000000", raised = "#e6e6e6", chrome = "#dddddd",
+        textbox = "#d9d9d9", textboxInk = "#000000", placeholder = "#6e6e6e",
         ink = "#000000", muted = "#555555", dim = "#7a7a7a", faint = "#b8b8b8",
         line = "#cccccc", accent = "#0078e7", accentText = "#006ad1", onAccent = "#ffffff",
         soft = "#dcebff", sent = "#0078e7", sentText = "#ffffff", sentMeta = "#d4e9ff",

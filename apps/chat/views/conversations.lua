@@ -17,7 +17,7 @@ function Conversations.newRoom(self)
     local query = C.input("FindPerson", "@username, phone number or email")
     local inviteCode = C.input("InviteCode", "Paste an invitation code")
     self.status = C.text("Find someone by their exact username, or a phone/email they allow people to find.", {
-        WordWrap = true, FontSize = 12, Foreground = colors.muted,
+        WordWrap = true, FontSize = 14, Foreground = colors.muted,
     })
     self.newStatus = self.status
     local status = self.newStatus
@@ -26,7 +26,7 @@ function Conversations.newRoom(self)
         status.Foreground = isError and colors.error or colors.muted
     end
     local epoch = self.sessionEpoch
-    local selected = C.text("No one selected", { Name = "SelectedPeople", FontSize = 11, Foreground = colors.accentText, WordWrap = true })
+    local selected = C.text("No one selected", { Name = "SelectedPeople", FontSize = 15, Foreground = colors.muted, WordWrap = true })
     local results = C.stack({ Name = "DiscoveryResults", Spacing = 8 })
     local findPeople, findChannels, peopleMode, channelsMode
     local personButtons, discoveryGeneration = {}, 0
@@ -49,12 +49,12 @@ function Conversations.newRoom(self)
             or "Find someone by their exact username, or a phone/email they allow people to find.")
     end
     peopleMode = C.button("People", function() searchMode(false) end,
-        { Name = "SearchPeople", Height = 38, Background = colors.soft, FontSize = 12 })
+        { Name = "SearchPeople", Background = colors.soft })
     channelsMode = C.button("Channels", function() searchMode(true) end,
-        { Name = "SearchChannels", Height = 38, Background = colors.surface, FontSize = 12 })
-    local modes = ui.Grid { Columns = "1fr 1fr", Spacing = 8, Height = 38 }
+        { Name = "SearchChannels", Background = colors.surface })
+    local modes = ui.Grid { Columns = "1fr 1fr", Spacing = 12, Height = 48 }
     modes:addChild(peopleMode); modes:addChild(channelsMode)
-    local people = C.stack({ Name = "Contacts", Spacing = 8 }, { C.eyebrow("YOUR PEOPLE") })
+    local people = C.stack({ Name = "Contacts", Spacing = 4 }, { C.eyebrow("YOUR PEOPLE") })
     local kindButtons = {}
     local visibilityButton
     local function updateSelection()
@@ -74,12 +74,13 @@ function Conversations.newRoom(self)
             else self.newSelection[person.id] = person end
             if kind == "direct" and self.newSelection[person.id] then self.newSelection = { [person.id] = person } end
             updateSelection()
-        end, { Name = prefix .. person.id, Background = self.newSelection[person.id] and colors.soft or colors.surface, Height = 48, FontSize = 12 })
+        end, { Name = prefix .. person.id, Background = self.newSelection[person.id] and colors.soft or colors.surface,
+            Height = 52, FontSize = 18, FontWeight = "Normal", BorderWidth = "0", Padding = "12 0", TextHorizontalAlignment = "Left" })
         personButtons[person.id] = personButtons[person.id] or {}
         table.insert(personButtons[person.id], button)
         parent:addChild(button)
     end
-    local kindRow = ui.Grid { Columns = "1fr 1fr 1fr", Spacing = 8, Height = 44 }
+    local kindRow = ui.Grid { Columns = "1fr 1fr 1fr", Spacing = 12, Height = 48 }
     for _, item in ipairs { { "direct", "Direct" }, { "group", "Group" }, { "channel", "Channel" } } do
         kindButtons[item[1]] = C.button(item[2], function()
             kind = item[1]
@@ -89,14 +90,14 @@ function Conversations.newRoom(self)
             if kind == "direct" then self.newSelection = {}; updateSelection() end
             notice(kind == "channel" and "A broadcast space. Only owners and admins can publish."
                 or kind == "group" and "A shared space where members can talk." or "Choose one person to start a private chat.")
-        end, { Name = "Kind" .. item[2], Background = item[1] == kind and colors.soft or colors.surface, FontSize = 12 })
+        end, { Name = "Kind" .. item[2], Background = item[1] == kind and colors.soft or colors.surface })
         kindRow:addChild(kindButtons[item[1]])
     end
     name.Visible = false
     visibilityButton = C.button("Private · invitation required", function()
         visibility = visibility == "private" and "public" or "private"
         visibilityButton:setTextContent(visibility == "private" and "Private · invitation required" or "Public · share with everyone")
-    end, { Name = "ConversationVisibility", Background = colors.surface, FontSize = 12, Visible = false })
+    end, { Name = "ConversationVisibility", Background = colors.surface, Visible = false })
     local contacts, contactsError = self.client:listContacts()
     if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return self.screen end
     if contactsError then people:addChild(C.text(contactsError.message, { WordWrap = true, Foreground = colors.error }))
@@ -111,7 +112,7 @@ function Conversations.newRoom(self)
         if #found == 0 then results:addChild(C.text("No matching person. Try a username or ask for an invite.", {
             FontSize = 12, Foreground = colors.muted, WordWrap = true })) end
         for _, person in ipairs(found) do addPerson(results, person, "FoundPerson") end
-    end, { Name = "FindPeople", Background = colors.soft })
+    end, { Name = "FindPeople", Background = colors.surface })
     findChannels = C.button("Find channels", function()
         clearResults()
         local generation = discoveryGeneration
@@ -121,22 +122,20 @@ function Conversations.newRoom(self)
         if #found == 0 then results:addChild(C.text("No public channels found. Try another name.", {
             FontSize = 12, Foreground = colors.muted, WordWrap = true })) end
         for _, channel in ipairs(found) do
-            local item = C.stack({ Name = "FoundChannel" .. channel.id, Spacing = 10, Padding = "14 12",
-                Background = colors.surface }, {
-                C.text(channel.name, { FontSize = 15, FontWeight = "Bold", WordWrap = true }),
-                C.text("Public broadcast channel", { FontSize = 11, Foreground = colors.muted }),
+            local item = C.stack({ Name = "FoundChannel" .. channel.id, Spacing = 8, Padding = "0 8" }, {
+                C.text(channel.name, { FontSize = 22, WordWrap = true }),
+                C.text("Public broadcast channel", { FontSize = 14, Foreground = colors.dim }),
                 C.button(channel.role and "Open channel" or "Subscribe", function()
                     local room, joinError = self.client:joinPublicChannel(channel.id)
                     if self.sessionEpoch ~= epoch or generation ~= discoveryGeneration then return end
                     if not room then notice(joinError.message, true); return end
                     if self.shell and self.screen == self.shell.screen and self.shell.active == "New" then self:openRoom(room) end
-                end, { Name = "JoinChannel" .. channel.id, Background = colors.soft }),
+                end, { Name = "JoinChannel" .. channel.id, Background = colors.surface }),
             })
             results:addChild(item)
         end
-    end, { Name = "FindChannels", Background = colors.soft, Visible = false })
-    local body = C.stack({ Padding = "24 18", Spacing = 16, Overflow = "hidden scroll" }, {
-        C.text("A space for\nyour people.", { FontSize = 30, FontWeight = "Bold", WordWrap = true }),
+    end, { Name = "FindChannels", Background = colors.surface, Visible = false })
+    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
         kindRow, name, visibilityButton, status,
         C.eyebrow("FIND PEOPLE & CHANNELS"), modes, query, findPeople, findChannels, results, people,
         C.eyebrow("SELECTED PEOPLE"), selected,
@@ -161,9 +160,7 @@ function Conversations.newRoom(self)
             if self.shell and self.screen == self.shell.screen and self.shell.active == "New" then self:openRoom(room) end
         end, { Name = "JoinInvite", Background = colors.surface }),
     })
-    local grid = ui.Grid { Rows = "76px 1fr", Background = colors.background }
-    grid:addChild(self:pageHeader("New conversation")); grid:addChild(body)
-    return self:frame(grid, "New")
+    return self:frame(C.page("new chat", body), "New")
 end
 
 function Conversations.details(self)
@@ -172,20 +169,20 @@ function Conversations.details(self)
     local members, err = self.client:listMembers(room.id)
     if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return self.screen end
     local canManage = room.role == "owner" or room.role == "admin"
-    local body = C.stack({ Padding = "24 20", Spacing = 14, Overflow = "hidden scroll" }, {
-        C.avatar(room.name, 72, room.id), C.text(room.name, { FontSize = 28, FontWeight = "Bold", WordWrap = true }),
+    local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
+        C.avatar(room.name, 72, room.id),
         C.badge((room.kind or "group"):upper(), { Width = 100, Background = colors.soft, Foreground = colors.accentText }),
     })
     self.status = C.text(err and err.message or (room.kind == "channel" and "Only owners and admins can publish here." or "A space for everyone in this conversation."), {
-        WordWrap = true, FontSize = 12, Foreground = err and colors.error or colors.muted })
+        WordWrap = true, FontSize = 14, Foreground = err and colors.error or colors.muted })
     body:addChild(self.status)
     body:addChild(C.eyebrow("PEOPLE"))
     for _, member in ipairs(members or {}) do
         local id = member.user_id or member.id
         local info = member.profile or member
-        local row = C.stack({ Name = "Member" .. id, Spacing = 8, Padding = "14 12", Background = colors.surface }, {
-            C.text(publicName(info), { FontWeight = "Bold", FontSize = 14 }),
-            C.text(member.role or "member", { FontSize = 11, Foreground = colors.muted }),
+        local row = C.stack({ Name = "Member" .. id, Spacing = 6, Padding = "0 6" }, {
+            C.text(publicName(info), { FontSize = 22 }),
+            C.text(member.role or "member", { FontSize = 14, Foreground = colors.dim }),
         })
         if canManage and id ~= self.client:getSession().user.id and member.role ~= "owner" then
             if room.role == "owner" then
@@ -193,19 +190,19 @@ function Conversations.details(self)
                     local ordinary = room.kind == "channel" and "subscriber" or "member"
                     local ok, roleError = self.client:setMemberRole(room.id, id, member.role == "admin" and ordinary or "admin")
                     if not ok then self:notice(roleError.message, true) else self:show("/details") end
-                end, { Name = "Role" .. id, Background = colors.soft, Height = 40, FontSize = 12 }))
+                end, { Name = "Role" .. id, Background = colors.surface }))
             end
             row:addChild(C.button("Remove", function()
                 local ok, removeError = self.client:removeMember(room.id, id)
                 if not ok then self:notice(removeError.message, true) else self:show("/details") end
-            end, { Name = "Remove" .. id, Foreground = colors.error, Height = 40, FontSize = 12 }))
+            end, { Name = "Remove" .. id, Foreground = colors.error }))
         end
         body:addChild(row)
     end
     if canManage and room.kind ~= "direct" then
         local invite = self.inviteCodes[room.id]
         local inviteText = C.text(invite and "Invitation: " .. invite or "Invitations expire and can be revoked.", {
-            Name = "Invitation", FontSize = 12, WordWrap = true, Foreground = colors.muted })
+            Name = "Invitation", FontSize = 14, WordWrap = true, Foreground = colors.muted })
         local inviteField = C.input("InvitationCode", "Invitation code", { Text = invite or "", Visible = invite ~= nil })
         body:addChild(C.eyebrow("INVITE PEOPLE")); body:addChild(inviteText)
         body:addChild(inviteField)
@@ -217,7 +214,7 @@ function Conversations.details(self)
             self.inviteCodes[room.id] = invite
             inviteField.Text, inviteField.Visible = tostring(invite), true
             inviteText:setTextContent("Invitation: " .. tostring(invite) .. "\nShare this code with someone you trust.")
-        end, { Name = "CreateInvite", Background = colors.soft }))
+        end, { Name = "CreateInvite", Background = colors.surface }))
         body:addChild(C.button("Revoke invitation", function()
             if not invite then self:notice("Create an invitation first."); return end
             local ok, revokeError = self.client:revokeInvite(room.id, invite)
@@ -226,11 +223,9 @@ function Conversations.details(self)
             inviteField.Text, inviteField.Visible = "", false
         end, { Name = "RevokeInvite", Foreground = colors.error }))
     end
-    local header = ui.Grid { Columns = "44px 1fr", Padding = "14 16", Spacing = 10 }
-    header:addChild(C.iconButton("arrow-left", function() self:show("/thread") end, { Name = "BackToThread" }))
-    header:addChild(C.text("Conversation info", { FontSize = 16, FontWeight = "Bold", TextVerticalAlignment = "Center" }))
-    local grid = ui.Grid { Rows = "76px 1fr", Background = colors.background }
-    grid:addChild(header); grid:addChild(body)
+    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
+    grid:addChild(C.page(room.name, body))
+    grid:addChild(C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } }))
     return self:frame(grid)
 end
 

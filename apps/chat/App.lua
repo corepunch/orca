@@ -34,8 +34,8 @@ local App = Application:extend {
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         if self.media and self.media.clear then self.media:clear() end
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
-        self.roomList, self.searchInput, self.filterButtons, self.rooms = nil, nil, nil, nil
-        self.messageList, self.composer, self.pinButton = nil, nil, nil
+        self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
+        self.messageList, self.composer, self.threadBody = nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
@@ -45,7 +45,10 @@ local App = Application:extend {
     frame = function(self, content, tab)
         if tab then
             if not self.shell then
-                self.shell = Shell.new(self:frame(), function(route) self:show(route) end)
+                self.shell = Shell.new(self:frame(), function(route) self:show(route) end, {
+                    { "AppBarRefresh", "refresh", function() self:show(self.shell.routes[self.shell.active]) end },
+                    { "AppBarSignOut", "sign out", function() self:signOut() end },
+                })
             end
             return self.shell:show(tab, content)
         end
@@ -91,40 +94,12 @@ local App = Application:extend {
     end,
 
     renderRoomList = function(self)
-        local list = self.roomList
-        while list:getFirstChild() do list:getFirstChild():removeFromParent() end
-        for label, button in pairs(self.filterButtons) do
-            button.Foreground = self.filter == label and colors.ink or colors.faint
+        for _, list in pairs(self.roomLists) do
+            while list:getFirstChild() do list:getFirstChild():removeFromParent() end
         end
-        if self.query == "" and self.filter == "All" then
-            local pinned = C.stack({ Spacing = 14, MarginBottom = 26 })
-            local circle = C.stack({ Direction = "Horizontal", Spacing = 18 })
-            for _, room in ipairs(self.rooms) do
-                if self.pinned[room.id] then
-                    local shortcut = C.button("", function() self:openRoom(room) end, { Width = 68, Height = 84 })
-                    local content = C.stack({ Spacing = 9, AlignItems = "Center", IgnoreHitTest = true }, {
-                        C.avatar(room.name, 52, room.id),
-                        C.text((room.name:match("^%S+") or room.name):lower(), {
-                            Width = 68, FontSize = 11, Foreground = colors.muted,
-                            TextHorizontalAlignment = "Center", TextOverflow = "Ellipsis",
-                        }),
-                    })
-                    shortcut:addChild(content)
-                    circle:addChild(shortcut)
-                end
-            end
-            if circle:getFirstChild() then
-                local label = C.stack({ Direction = "Horizontal", Spacing = 8, AlignItems = "Center" }, {
-                    C.icon("pin", 12, colors.dim), C.eyebrow("PINNED CONVERSATIONS"),
-                })
-                pinned:addChild(label); pinned:addChild(circle); list:addChild(pinned)
-            end
-        end
-        local heading = ui.Grid { Columns = "1fr 44px", Height = 36, MarginBottom = 8 }
-        heading:addChild(C.eyebrow(self.query ~= "" and "SEARCH RESULTS" or "CONVERSATIONS"))
-        heading:addChild(C.iconButton("refresh-cw", function() self:show() end, { Name = "RefreshChats", Height = 32 }))
-        list:addChild(heading)
-        local visible = 0
+        local index = ({ All = 0, Unread = 1, Pinned = 2 })[self.filter]
+        if self.pivot.SelectedIndex ~= index then self.pivot.SelectedIndex = index end
+        local list, visible = self.roomLists[self.filter], 0
         for index, room in ipairs(self.rooms) do
             local unread = self:unread(room)
             local matches = (room.name .. " " .. (room.subtitle or "")):lower():find(self.query:lower(), 1, true)
@@ -133,32 +108,31 @@ local App = Application:extend {
             if matches and inFilter then
                 visible = visible + 1
                 local row = ui.Button {
-                    Name = "Room" .. index, Height = 88, Background = colors.background,
+                    Name = "Room" .. index, Height = 76, Background = colors.background,
                     class = "conversation", Click = function() self:openRoom(room) end,
                 }
-                local content = ui.Grid { Columns = "52px 1fr 42px", Padding = "13 14", Spacing = 11, IgnoreHitTest = true }
-                content:addChild(C.avatar(room.name, 52, room.id))
+                local content = ui.Grid { Columns = "56px 1fr 44px", Spacing = 14, Padding = "0 10", IgnoreHitTest = true }
+                content:addChild(C.avatar(room.name, 56, room.id))
                 content:addChild(C.stack({ JustifyContent = "Center", Spacing = 2, IgnoreHitTest = true }, {
-                    C.text(room.name:lower(), { FontSize = 21, TextOverflow = "Ellipsis" }),
+                    C.text(room.name, { FontSize = 22, TextOverflow = "Ellipsis" }),
                     C.text(room.subtitle or "Start the conversation", {
-                        FontSize = 13, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
+                        FontSize = 14, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
                     }),
                 }))
-                local meta = C.stack({ AlignItems = "End", JustifyContent = "Center", Spacing = 9, IgnoreHitTest = true }, {
-                    C.text(self:roomTime(room), { FontSize = 10, Foreground = unread > 0 and colors.accentText or colors.dim }),
+                local meta = C.stack({ AlignItems = "End", Spacing = 8, Padding = "0 6", IgnoreHitTest = true }, {
+                    C.text(self:roomTime(room), { FontSize = 12, Foreground = unread > 0 and colors.accentText or colors.dim }),
                 })
                 if unread > 0 then meta:addChild(C.badge(unread, { Width = 20, Height = 20 }))
-                elseif self.pinned[room.id] then meta:addChild(C.icon("pin", 12, colors.dim)) end
+                elseif self.pinned[room.id] then meta:addChild(C.icon("pin", 14, colors.dim)) end
                 content:addChild(meta); row:addChild(content); list:addChild(row)
             end
         end
         if visible == 0 then
-            list:addChild(C.stack({ Spacing = 12, Padding = "10 24" }, {
-                C.text(self.query ~= "" and "No conversations found" or "You're all caught up", { FontSize = 21, FontWeight = "Bold" }),
-                C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or choose another filter.", {
-                    FontSize = 13, Foreground = colors.muted, WordWrap = true,
+            list:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
+                C.text(self.query ~= "" and "no conversations found" or "you're all caught up", { FontSize = 22, Foreground = colors.muted }),
+                C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or swipe to another list.", {
+                    FontSize = 14, Foreground = colors.dim, WordWrap = true,
                 }),
-                C.button("Start a conversation", function() self:show("/new") end, { Background = colors.soft }),
             }))
         end
     end,
@@ -166,11 +140,10 @@ local App = Application:extend {
     home = function(self)
         local navigation = self.navigationEpoch
         if not self.client then
-            return self:frame(C.stack({ Padding = "26 56", Spacing = 18 }, {
-                C.brand(), C.text("Connect your chat", { FontSize = 30, FontWeight = "Bold" }),
+            return self:frame(C.page("connect", C.stack({ Spacing = 16 }, {
                 C.text(self.configurationError.message, { WordWrap = true, Foreground = colors.error }),
                 C.text("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID.", { WordWrap = true }),
-            }))
+            })))
         end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
         local rooms, err = self.models.Rooms:select()
@@ -188,49 +161,49 @@ local App = Application:extend {
             return self.shell:show("Chats")
         end
         self.status = C.text(err and err.message or (self.remote and "Refresh to sync your conversations" or "Offline mock · make yourself at home"), {
-            FontSize = 10, Foreground = err and colors.error or colors.dim, TextHorizontalAlignment = "Center",
+            FontSize = 11, Foreground = err and colors.error or colors.dim, TextHorizontalAlignment = "Center",
         })
         self.homeStatus = self.status
-        local brand = ui.Grid { Columns = "1fr 36px", Height = 36 }
-        brand:addChild(C.brand())
-        local profile = C.button("", function() self:show("/profile") end, { Width = 36, Height = 36 })
-        profile:addChild(C.avatar("You", 34, "me")); brand:addChild(profile)
-        -- Pivot headers: the filters double as the page title.
-        local title = ui.Grid { Columns = "1fr 46px", Height = 52, MarginTop = 8 }
-        local filters = C.stack({ Direction = "Horizontal", Spacing = 16, Height = 52 })
-        title:addChild(filters)
-        title:addChild(C.iconButton("plus", function() self:show("/new") end, {
-            Name = "NewChat", Background = colors.accent, Foreground = colors.onAccent,
-        }))
-        self.searchInput = C.input("Search", "Search conversations", {
-            Text = self.query, Height = 46, Padding = "12 0", Background = "#00000000",
-            Submit = function() self:updateSearch() end,
-            KeyUp = function() self:updateSearch() end,
+        self.searchInput = C.input("Search", "search", {
+            Text = self.query, Submit = function() self:updateSearch() end, KeyUp = function() self:updateSearch() end,
         })
-        self.searchInput.BorderWidth = "0"
-        local search = ui.Grid { Columns = "22px 1fr 28px", Height = 48, Spacing = 4, Padding = "12 0", MarginTop = 12,
-            Background = colors.surface, BorderWidth = "2", BorderColor = colors.line }
-        search:addChild(C.icon("search", 18, colors.dim)); search:addChild(self.searchInput)
+        local search = ui.Grid { Columns = "1fr 44px", Height = 48, MarginBottom = 12 }
+        search:addChild(self.searchInput)
         search:addChild(C.iconButton("x", function()
             self.query, self.searchInput.Text = "", ""; self:renderRoomList(); self.searchInput:setFocus()
-        end, { Width = 28, Height = 44, Name = "ClearSearch" }))
-        self.filterButtons = {}
-        for _, pivot in ipairs { { "All", 46 }, { "Unread", 104 }, { "Pinned", 100 } } do
-            local label = pivot[1]
-            local button = C.button(label:lower(), function() self.filter = label; self:renderRoomList() end, {
-                Width = pivot[2], Height = 52, FontSize = 32, FontWeight = "Normal", Name = "Filter" .. label,
-            })
-            button.TextHorizontalAlignment = "Left"
-            self.filterButtons[label] = button; filters:addChild(button)
+        end, { Name = "ClearSearch", Foreground = colors.textboxInk, Background = colors.textbox }))
+        -- The filters are pivot items: swipe or tap a header to switch lists.
+        local filters = { "All", "Unread", "Pinned" }
+        self.pivot = ui.Pivot { Name = "Inbox", Title = "Messenger", Foreground = colors.ink,
+            SelectionChanged = function(pivot)
+                local filter = filters[pivot.SelectedIndex + 1]
+                if filter ~= self.filter then self.filter = filter; self:renderRoomList() end
+            end,
+        }
+        self.roomLists = {}
+        for _, filter in ipairs(filters) do
+            local item = ui.PivotItem { Name = "Filter" .. filter, Header = filter }
+            self.roomLists[filter] = C.stack({ Name = "ConversationList" .. filter, Overflow = "hidden scroll" })
+            if filter == "All" then
+                local body = ui.Grid { Rows = "60px 1fr" }
+                body:addChild(search); body:addChild(self.roomLists[filter])
+                item:addChild(body)
+            else
+                item:addChild(self.roomLists[filter])
+            end
+            self.pivot:addChild(item)
         end
-        local header = C.stack({ Padding = "22 22 22 12" }, { brand, title, search })
-        self.roomList = C.stack({ Name = "ConversationList", Padding = "22 12 22 20", Overflow = "hidden scroll" })
-        local footer = C.stack({ Padding = "0 2", Spacing = 8 }, { self.status })
-        local grid = ui.Grid { Rows = "190px 1fr 22px", Background = colors.background }
-        grid:addChild(header); grid:addChild(self.roomList); grid:addChild(footer)
+        local grid = ui.Grid { Rows = "1fr 24px", Background = colors.background }
+        grid:addChild(self.pivot); grid:addChild(self.status)
         local screen = self:frame(grid, "Chats")
         self:renderRoomList()
         return screen
+    end,
+
+    signOut = function(self)
+        local ok, err = self.client:signOut()
+        if not ok then self:notice(err.message, true); return end
+        self:resetSessionViews(); self:show()
     end,
 
     renderMessages = function(self)
@@ -241,12 +214,12 @@ local App = Application:extend {
         local me = self.client:getSession().user.id
         while node:getFirstChild() do node:getFirstChild():removeFromParent() end
         node:addChild(C.text(#messages > 0 and C.date(messages[1].created_at) or "A FRESH START", {
-            FontSize = 10, Foreground = colors.dim, LetterSpacing = 1, TextHorizontalAlignment = "Center", MarginTop = 16, MarginBottom = 20,
+            FontSize = 12, Foreground = colors.dim, TextHorizontalAlignment = "Center", MarginTop = 4, MarginBottom = 6,
         }))
         for _, message in ipairs(messages) do
             local mine = message.sender_id == me and self.room.kind ~= "channel"
             local bubble = C.stack({
-                Name = "MessageBubble" .. message.id, Width = 284, Padding = "15 12", Spacing = 8,
+                Name = "MessageBubble" .. message.id, Width = 272, Padding = "12 14", Spacing = 6,
                 Background = mine and colors.sent or colors.raised,
                 MarginLeft = mine and auto or 0, MarginRight = mine and 0 or auto,
             })
@@ -254,7 +227,7 @@ local App = Application:extend {
                 local person = self.contactsById and self.contactsById[message.sender_id]
                 local sender = self.room.kind == "channel" and self.room.name
                     or (person and person:get_display_name() or "Member " .. tostring(message.sender_id or ""):sub(1, 8))
-                bubble:addChild(C.text(sender, { FontSize = 10, FontWeight = "Bold", Foreground = colors.accentText }))
+                bubble:addChild(C.text(sender, { FontSize = 12, FontWeight = "Bold", Foreground = colors.accentText }))
             end
             for _, attachment in ipairs(message.attachments or {}) do
                 local bytes, photoError = self.client:getPhoto(attachment.id, true)
@@ -270,10 +243,10 @@ local App = Application:extend {
                 end
             end
             if message.body and message.body ~= "" then
-                bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 14, Foreground = mine and colors.sentText or colors.ink }))
+                bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
             end
             bubble:addChild(C.text((mine and "Sent · " or "") .. (C.time(message.created_at) or ""), {
-                FontSize = 9, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
+                FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
             }))
             -- Incoming tails point up from the top-left; outgoing ones hang from the bottom-right.
             local entry, tone = C.stack({ Spacing = 0 }), mine and colors.sent or colors.raised
@@ -284,12 +257,12 @@ local App = Application:extend {
         end
         if #messages == 0 then
             local channel, readOnly = self.room.kind == "channel", self.room.can_post == false
-            node:addChild(C.stack({ Spacing = 12, Padding = "16 32" }, {
-                C.text(channel and (readOnly and "No posts yet." or "Your channel\nstarts here.") or "Every good chat starts\nwith a hello.", {
-                    Name = "EmptyTimeline", FontSize = 27, FontWeight = "Bold", WordWrap = true }),
+            node:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
+                C.text(channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello", {
+                    Name = "EmptyTimeline", FontSize = 22, Foreground = colors.muted, WordWrap = true }),
                 C.text(channel and (readOnly and "New posts will appear here when the channel publishes."
                     or "Publish your first update below.") or "Send the first message below.", {
-                    Foreground = colors.muted, FontSize = 13, WordWrap = true }),
+                    Foreground = colors.dim, FontSize = 14, WordWrap = true }),
             }))
         end
         local root = node:getRoot()
@@ -337,7 +310,7 @@ local App = Application:extend {
         self.drafts[room.id] = remaining ~= "" and remaining or nil
         if self.room ~= room or self.composer ~= composer then return end
         composer.Text = remaining
-        if self.photoPreview then self.photoPreview.Visible = false end
+        if self.photoPreview then self.photoPreview.Visible = false; self:fitComposer() end
         self:renderMessages()
         self.composer:setFocus()
     end,
@@ -363,83 +336,72 @@ local App = Application:extend {
         if previous and previous.attachment then self.client:discardPhoto(previous.attachment.id) end
         self.photoDrafts[self.room.id] = photo
         self.photoPreview.Visible = true
+        self:fitComposer()
         self.photoLabel:setTextContent("Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB")
         self:notice("Photo ready. Add a caption or send it as it is.")
     end,
 
+    fitComposer = function(self)
+        local readOnly = self.room.can_post == false
+        local photo = not readOnly and self.photoDrafts[self.room.id] ~= nil
+        self.threadBody.Rows = ("1fr %dpx"):format(48 + (readOnly and 44 or 48) + (photo and 48 or 0))
+    end,
+
     thread = function(self)
         if not self.room then return self:home() end
-        local header = ui.Grid {
-            Columns = "38px 40px 1fr 38px 38px", Padding = "12 20", Spacing = 8,
-            Background = colors.background, BorderWidthBottom = 1, BorderColor = colors.line,
-        }
-        header:addChild(C.iconButton("arrow-left", function()
-            self.drafts[self.room.id] = self.composer.Text; self:show()
-        end, { Width = 38, Name = "BackToChats" }))
-        header:addChild(C.avatar(self.room.name, 40, self.room.id))
-        local info = C.button("", function()
-            self.drafts[self.room.id] = self.composer and self.composer.Text or ""
-            self:show("/details")
-        end, { Name = "ConversationInfo", Height = 52 })
-        info:addChild(C.stack({ Spacing = 5, JustifyContent = "Center", IgnoreHitTest = true }, {
-            C.text(self.room.name:lower(), { FontSize = 22, TextOverflow = "Ellipsis" }),
-            C.text((self.room.kind or "group") .. " · Tap for info", { FontSize = 10, Foreground = colors.dim }),
-        }))
-        header:addChild(info)
-        self.pinButton = C.iconButton("pin", function()
-            self.drafts[self.room.id] = self.composer.Text
-            self.pinned[self.room.id] = not self.pinned[self.room.id]
-            self:show("/thread")
-        end, { Width = 38, Name = "PinConversation", Background = self.pinned[self.room.id] and colors.soft or "#00000000",
-            Foreground = self.pinned[self.room.id] and colors.accentText or colors.dim })
-        header:addChild(self.pinButton)
-        header:addChild(C.iconButton("refresh-cw", function() self:renderMessages() end, { Width = 38, Name = "RefreshMessages" }))
-        self.messageList = C.stack({ Name = "Messages", Padding = "20 8", Spacing = 12, Overflow = "hidden scroll" })
-        self.status = C.text("", { FontSize = 9, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
-        self.composer = C.input("Message", "Write a message…", {
-            Text = self.drafts[self.room.id] or "", Height = 50, Submit = function() self:sendMessage() end,
+        local room = self.room
+        local function keepDraft() self.drafts[room.id] = self.composer and self.composer.Text or "" end
+        self.messageList = C.stack({ Name = "Messages", Spacing = 14, Overflow = "hidden scroll" })
+        self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
+        self.composer = C.input("Message", "type a message", {
+            Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end,
         })
-        local compose = ui.Grid { Name = "Composer", Columns = "40px 1fr 50px", Spacing = 8 }
-        compose:addChild(C.iconButton("plus", function() self:attachPhoto() end, {
-            Name = "AttachPhoto", Width = 40, Height = 50, Background = colors.soft }))
+        local compose = ui.Grid { Name = "Composer", Height = 48 }
         compose:addChild(self.composer)
-        compose:addChild(C.iconButton("arrow-up", function() self:sendMessage() end, {
-            Name = "SendMessage", Background = colors.accent, Foreground = colors.onAccent, Width = 50, Height = 50,
-        }))
-        self.photoLabel = C.text("Photo ready", { FontSize = 11, Foreground = colors.accentText, TextVerticalAlignment = "Center" })
-        self.photoPreview = ui.Grid { Name = "PhotoDraft", Columns = "1fr 40px", Height = 38,
-            Visible = self.photoDrafts[self.room.id] ~= nil, Background = colors.soft, Padding = "10 0" }
+        self.photoLabel = C.text("Photo ready", { FontSize = 13, Foreground = colors.accentText, TextVerticalAlignment = "Center" })
+        self.photoPreview = ui.Grid { Name = "PhotoDraft", Columns = "1fr 40px", Height = 40,
+            Visible = self.photoDrafts[room.id] ~= nil, Background = colors.soft, Padding = "12 0" }
         self.photoPreview:addChild(self.photoLabel)
         self.photoPreview:addChild(C.iconButton("x", function()
             if self.sending then self:notice("The photo is being sent. Please wait."); return end
-            local photo = self.photoDrafts[self.room.id]
+            local photo = self.photoDrafts[room.id]
             if photo and photo.attachment then
                 local ok, err = self.client:discardPhoto(photo.attachment.id)
                 if not ok then self:notice(err.message, true); return end
             end
-            self.photoDrafts[self.room.id], self.photoPreview.Visible = nil, false
+            self.photoDrafts[room.id], self.photoPreview.Visible = nil, false
+            self:fitComposer()
             self:notice("Photo removed. Your message is still here.")
-        end, { Name = "RemovePhoto", Width = 36, Height = 36 }))
-        local readOnly = self.room.can_post == false
-        compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[self.room.id] ~= nil
-        local footer = C.stack({ Padding = "16 10 16 14", Spacing = 8, Background = colors.surface,
-            BorderWidthTop = 1, BorderColor = colors.line }, { self.status, self.photoPreview, compose,
-                C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
-                    FontSize = 12, Foreground = colors.muted, TextHorizontalAlignment = "Center", WordWrap = true }),
-            })
-        local grid = ui.Grid { Rows = "90px 1fr 146px", Background = colors.background }
-        grid:addChild(header); grid:addChild(self.messageList); grid:addChild(footer)
+        end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
+        local readOnly = room.can_post == false
+        compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
+        local footer = C.stack({ Spacing = 8, Padding = "0 8" }, { self.status, self.photoPreview, compose,
+            C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
+                FontSize = 13, Foreground = colors.muted, WordWrap = true }),
+        })
+        -- Grid tracks are fixed or flexible, so the composer row is sized here.
+        self.threadBody = ui.Grid {}
+        self.threadBody:addChild(self.messageList); self.threadBody:addChild(footer)
+        self:fitComposer()
+        local pinned = self.pinned[room.id]
+        -- Windows Phone puts the conversation commands in the application bar.
+        local bar = C.appBar({
+            { "BackToChats", "arrow-left", "back", function() keepDraft(); self:show() end },
+            { "AttachPhoto", "plus", "attach", function() self:attachPhoto() end },
+            { "SendMessage", "arrow-up", "send", function() self:sendMessage() end },
+            { "PinConversation", "pin", pinned and "unpin" or "pin", function()
+                keepDraft(); self.pinned[room.id] = not self.pinned[room.id]; self:show("/thread")
+            end },
+        }, {
+            { "ConversationInfo", "conversation info", function() keepDraft(); self:show("/details") end },
+            { "RefreshMessages", "refresh", function() self:renderMessages() end },
+        })
+        bar:findChild("AttachPhoto").Visible, bar:findChild("SendMessage").Visible = not readOnly, not readOnly
+        local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
+        grid:addChild(C.page(room.name, self.threadBody)); grid:addChild(bar)
         local screen = self:frame(grid)
         self:renderMessages()
         return screen
-    end,
-
-    pageHeader = function(self, title)
-        local header = ui.Grid { Columns = "44px 1fr 44px", Padding = "14 16", Spacing = 10 }
-        header:addChild(C.iconButton("arrow-left", function() self:show() end, { Name = "BackToChats" }))
-        header:addChild(C.text(title, { FontSize = 16, FontWeight = "Bold", TextVerticalAlignment = "Center" }))
-        header:addChild(C.icon("message-circle", 21, colors.accentText))
-        return header
     end,
 
     newRoom = Conversations.newRoom,

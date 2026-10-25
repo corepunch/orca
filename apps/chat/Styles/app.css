@@ -1,11 +1,7 @@
 .chat-action:hover { opacity: 0.78; }
 .chat-action:focus { ring: 0 2 #0078e7; }
-.chat-input:focus { border-color: #0078e7; }
-.chat-tab:focus { ring: 0 2 #0078e7; }
+.chat-input:focus { border-color: #0078e7; background-color: #ffffff; }
 .conversation:hover { background-color: #f2f2f2; }
-.conversation:focus { border-color: #0078e7; }
 .chat-action:focus:dark { ring: 0 2 #3d9eff; }
-.chat-input:focus:dark { border-color: #0084ff; }
-.chat-tab:focus:dark { ring: 0 2 #3d9eff; }
+.chat-input:focus:dark { border-color: #0084ff; background-color: #ffffff; }
 .conversation:hover:dark { background-color: #1a1a1a; }
-.conversation:focus:dark { border-color: #0084ff; }

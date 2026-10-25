@@ -6,7 +6,7 @@
 #define PIVOT_HEADER_TOP     2.0f    // gap between title and header strip
 #define PIVOT_HEADER_SIZE    44.0f
 #define PIVOT_HEADER_SPACING 18.0f
-#define PIVOT_CONTENT_TOP    14.0f   // gap between header strip and content
+#define PIVOT_CONTENT_TOP    22.0f   // gap between header strip and content (28 px on WP)
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
 #define PIVOT_MAX_ITEMS      32
 
