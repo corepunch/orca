@@ -74,7 +74,8 @@ local function test_pivot()
   layout(screen)
 
   local headers = children(pivot, "PivotHeaderItem")
-  test.expect_eq(#headers, 3, "Pivot generates one header per PivotItem")
+  test.expect(#headers >= 3, "Pivot generates one header per PivotItem")
+  test.expect_eq(#headers, 3, "Without font faces headers measure zero and are not repeated")
   test.expect_eq(headers[1].Text, "all", "Pivot headers are lowercase")
   test.expect(headers[1].IsSelected and headers[1].Opacity == 1, "The first header starts selected and opaque")
   test.expect(headers[2].Opacity < 1, "Unselected headers are dimmed")
@@ -118,6 +119,7 @@ local function test_pivot()
   local shown = 0
   for _, header in ipairs(headers) do shown = shown + (header.Visible and 1 or 0) end
   test.expect_eq(shown, 1, "A locked Pivot shows only the selected header")
+  test.expect_eq(#headers, 3, "A locked Pivot does not repeat headers")
   swipe(screen, x + 200, y + 20, -120)
   test.expect_eq(pivot.SelectedIndex, 2, "A locked Pivot ignores swipes")
   print("PASS: test_pivot")
@@ -209,7 +211,47 @@ local function test_xml()
   print("PASS: test_xml")
 end
 
+-- Loads fonts so headers have real widths; runs last to leave the others unchanged.
+local function test_pivot_fill()
+  require("orca.core.startup").load_plugins()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot { Title = "Octopus" }
+  for _, header in ipairs { "Me", "You" } do local _ = pivot + ui.PivotItem { Name = header, Header = header } end
+  layout(screen)
+  local headers = children(pivot, "PivotHeaderItem")
+  if headers[1].ActualWidth == 0 then
+    test.expect_eq(#headers, 2, "Headers without font metrics are not repeated")
+    print("SKIP: test_pivot_fill (no font metrics)")
+    return
+  end
+  test.expect(#headers > 2, "A short header strip repeats its headers")
+  local right = 0
+  for i, header in ipairs(headers) do
+    test.expect_eq(header.Text, i % 2 == 1 and "me" or "you", "Copies continue the cycle in order")
+    test.expect(header.Visible and (i == 1 or header.Opacity < 1), "Only the leading header is opaque")
+    test.expect(i == 1 or header.ActualX > headers[i - 1].ActualX, "Copies run left to right")
+    right = math.max(right, header.ActualX + header.ActualWidth)
+  end
+  test.expect(right + 18 >= 390, "The header strip reaches the right edge")
+  test.expect(headers[#headers].ActualX < 390, "No copy starts beyond the right edge")
+
+  local count = #headers
+  layout(screen)
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), count, "Layout reuses the copies")
+  headers[4]:send("Node.LeftButtonUp")
+  pump(screen)
+  layout(screen)
+  test.expect_eq(pivot.SelectedIndex, 1, "Tapping a copy selects the item it repeats")
+  test.expect_eq(children(pivot, "PivotHeaderItem")[2].Opacity, 1, "The tapped item's header leads")
+
+  pivot.IsLocked = true
+  layout(screen)
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), 2, "A locked Pivot drops the copies")
+  print("PASS: test_pivot_fill")
+end
+
 test_pivot()
 test_application_bar()
 test_panorama()
 test_xml()
+test_pivot_fill()
