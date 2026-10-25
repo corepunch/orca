@@ -19,6 +19,7 @@ typedef struct _INSPECTORSTRUCT {
   BYTE     numitems;
   INSPITEM items[MAX_INSPECTOR_ITEMS];
   HEDWND   newprop;
+  struct Object *file_preview; // Owned; selected.object may instead be borrowed.
   struct {
     struct Object *    object;
     DWORD    file;
@@ -261,11 +262,9 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
       } else {
         ED_Echo(wnd, "Can't open file\n");
       }
-    } else if (strstr(szFilePath, ".xml")) {
-      struct Object *OBJ_LoadDocument(xmlDocPtr doc);
-      WITH(xmlDoc, doc, xmlReadFile(szFilePath, NULL, 0), xmlFreeDoc) {
-        inspector->selected.object = OBJ_LoadDocument(doc);
-      }
+    } else if (strstr(szFilePath, ".lisp")) {
+      if (!inspector->file_preview) inspector->file_preview = FS_LoadObject(szFilePath);
+      inspector->selected.object = inspector->file_preview;
       if (inspector->selected.object) {
         goto draw_object;
       }
@@ -637,6 +636,8 @@ ED_Inspector(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
         return FALSE;
       }
     case EVT_OBJECT_SELECTED:
+      if (inspector->file_preview) OBJ_ReleaseRef(inspector->file_preview);
+      inspector->file_preview = NULL;
       ED_ResetScroll(wnd);
       ED_SetSelectedItem(wnd, 1);
       ED_InvalidateWindow(wnd);
@@ -644,6 +645,8 @@ ED_Inspector(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
       inspector->selected.file = 0;
       return 1;
     case EVT_FILE_SELECTED:
+      if (inspector->file_preview) OBJ_ReleaseRef(inspector->file_preview);
+      inspector->file_preview = NULL;
       ED_ResetScroll(wnd);
       ED_SetSelectedItem(wnd, 1);
       ED_InvalidateWindow(wnd);
@@ -652,6 +655,9 @@ ED_Inspector(HEDWND wnd, DWORD msg, wParam_t wparm, lParam_t lparm)
       return 1;
     case EVT_GETTEXT:
       strncpy(lparm, "Inspector", wparm);
+      return 1;
+    case EVT_DESTROY:
+      if (inspector->file_preview) OBJ_ReleaseRef(inspector->file_preview);
       return 1;
   }
   return 0;

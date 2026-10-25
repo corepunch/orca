@@ -80,7 +80,11 @@ LPXMLDOC ED_FindXMLCache(lpcString_t filename) {
     }
   }
   path_t joined = {0};
-  LPXMLDOC doc = xmlReadFile(FS_JoinPaths(joined, sizeof(joined), editor.currentProject, filename), NULL, 0);
+  struct Object *object = FS_LoadObject(FS_JoinPaths(joined, sizeof(joined), editor.currentProject, filename));
+  if (!object) return NULL;
+  LPXMLDOC doc = xmlNewDoc(XMLSTR("1.0"));
+  if (doc) xmlDocSetRootElement(doc, ED_ConvertNode(object, NULL));
+  OBJ_ReleaseRef(object);
   if (doc) {
     LPEDCACHE cache = ZeroAlloc(sizeof(EDCACHE));
     strncpy(cache->path, filename, sizeof(cache->path));

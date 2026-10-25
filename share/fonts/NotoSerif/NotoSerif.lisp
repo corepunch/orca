@@ -1,7 +1,6 @@
-<?xml version='1.0' encoding='utf-8'?>
-<FontFamily
+(FontFamily
   Name="Noto Serif"
   Regular="NotoSerif-Regular.ttf"
   Bold="NotoSerif-Bold.ttf"
   Italic="NotoSerif-Italic.ttf"
-  BoldItalic="NotoSerif-BoldItalic.ttf" />
+  BoldItalic="NotoSerif-BoldItalic.ttf")

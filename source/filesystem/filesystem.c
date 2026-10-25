@@ -851,21 +851,24 @@ has_suffix(lpcString_t str, lpcString_t suffix)
   return slen >= xlen && !strcasecmp(str + slen - xlen, suffix);
 }
 
+struct font_name_result {
+  char *out;
+  size_t size;
+};
+
+static void
+_ReadFontFamilyName(lpcString_t name, void *arg)
+{
+  struct font_name_result *result = arg;
+  snprintf(result->out, result->size, "%s", name);
+}
+
 static void
 read_font_family_name(lpcString_t filename, lpcString_t fallback, LPSTR out, size_t out_size)
 {
   snprintf(out, out_size, "%s", fallback);
-  xmlDocPtr doc = xmlReadFile(filename, NULL, XML_PARSE_NONET);
-  if (!doc) return;
-  xmlNodePtr root = xmlDocGetRootElement(doc);
-  if (root) {
-    xmlChar *name = xmlGetProp(root, XMLSTR("Name"));
-    if (name && *name) {
-      snprintf(out, out_size, "%s", (char*)name);
-    }
-    if (name) xmlFree(name);
-  }
-  xmlFreeDoc(doc);
+  FS_EnumLispLibrary(filename, _ReadFontFamilyName,
+                    &(struct font_name_result){ out, out_size });
 }
 
 struct font_scope {
@@ -882,8 +885,8 @@ _RegisterLibraryFont(lpcString_t name, void *arg)
   CORE_RegisterFontFamily(name, object_path);
 }
 
-// Font families come from a FontLibrary directory of one .xml per family,
-// a single "<FontLibrary>.xml" XML library, or both.
+// Font families come from a directory of .lisp definitions, a single
+// "<FontLibrary>.lisp" library, or both.
 static void
 _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 {
@@ -897,8 +900,8 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
   path_t font_dir = {0};
   FS_JoinPaths(font_dir, sizeof(font_dir), szDirname, library_name);
   path_t library_file = {0};
-  snprintf(library_file, sizeof(library_file), "%s.xml", font_dir);
-  FS_EnumXmlLibrary(library_file, _RegisterLibraryFont,
+  snprintf(library_file, sizeof(library_file), "%s.lisp", font_dir);
+  FS_EnumLispLibrary(library_file, _RegisterLibraryFont,
                     &(struct font_scope){ project_name, library_name });
 
   DIR *dir = opendir(font_dir);
@@ -906,17 +909,17 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 
   struct dirent *entry;
   while ((entry = readdir(dir))) {
-    if (!has_suffix(entry->d_name, ".xml")) continue;
+    if (!has_suffix(entry->d_name, ".lisp")) continue;
     char stem[MAX_NAMELEN] = {0};
-    size_t stem_len = strlen(entry->d_name) - 4;
+    size_t stem_len = strlen(entry->d_name) - 5;
     if (stem_len >= sizeof(stem)) stem_len = sizeof(stem) - 1;
     memcpy(stem, entry->d_name, stem_len);
 
-    path_t xml_path = {0};
+    path_t lisp_path = {0};
     path_t object_path = {0};
     fixedString_t family_name = {0};
-    FS_JoinPaths(xml_path, sizeof(xml_path), font_dir, entry->d_name);
-    read_font_family_name(xml_path, stem, family_name, sizeof(family_name));
+    FS_JoinPaths(lisp_path, sizeof(lisp_path), font_dir, entry->d_name);
+    read_font_family_name(lisp_path, stem, family_name, sizeof(family_name));
     snprintf(object_path, sizeof(object_path), "%s/%s/%s", project_name, library_name, stem);
     CORE_RegisterFontFamily(family_name, object_path);
     if (strcasecmp(family_name, stem)) {
@@ -1134,10 +1137,9 @@ FS_LoadXmlDataSource(lpcString_t source, lpcString_t schema_path)
   struct ds_schema const *schema = schema_file
     ? DS_ParseSchemaFromString((char const *)schema_file->data) : NULL;
   if (schema_file) FS_FreeFile(schema_file);
-  if (!schema) return FS_LoadObject(source);
   path_t file = {0};
   snprintf(file, sizeof(file), "%s%s", source, _PathExtension(source) ? "" : ".xml");
-  return FS_LoadObjectFromXmlWithSchema(file, schema);
+  return FS_LoadXmlDataTree(file, schema);
 }
 
 struct Object *
@@ -1205,8 +1207,8 @@ _xml_ds_revert(struct Object *root, const char *params)
 
 // Loads the object at path. A path with an extension goes to the loader
 // registered for it. A bare path tries each loader's extension in turn
-// ("Dir/Name" -> "Dir/Name.xml", "Dir/Name.png", ...) and then entry "Name" of
-// the XML library "Dir.xml".
+// ("Dir/Name" -> "Dir/Name.lisp", "Dir/Name.png", ...) and then entry "Name" of
+// the Lisp library "Dir.lisp".
 struct Object *
 FS_LoadObject(lpcString_t path)
 {
@@ -1225,7 +1227,7 @@ FS_LoadObject(lpcString_t path)
       return loader->fn(1, (const char *[]){ file });
     }
   }
-  struct Object *o = ext ? NULL : FS_LoadObjectFromXmlLibrary(path);
+  struct Object *o = ext ? NULL : FS_LoadObjectFromLispLibrary(path);
   if (!o) Con_Error("Cannot load object '%s'", path);
   return o;
 }

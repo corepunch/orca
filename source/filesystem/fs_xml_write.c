@@ -204,8 +204,8 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
 
   lpcString_t text = OBJ_GetTextContent((struct Object *)object);
   if (text && *text) {
-    xmlNodeSetContent(node, XMLSTR(text));
-    return;
+    // Text must not erase property wrappers or binding nodes already emitted.
+    xmlAddChild(node, xmlNewText(XMLSTR(text)));
   }
 
   FOR_EACH_OBJECT(child, (struct Object *)object) {
@@ -217,8 +217,8 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
  * Public API
  * ---------------------------------------------------------------------- */
 
-const char*
-FS_SerializeObjectToXmlString(struct Object const *object)
+xmlDocPtr
+FS_SerializeObjectTree(struct Object const *object)
 {
   if (!object) return NULL;
 
@@ -239,6 +239,15 @@ FS_SerializeObjectToXmlString(struct Object const *object)
   xmlUnlinkNode(obj_node);
   xmlDocSetRootElement(doc, obj_node);
   xmlFreeNode(wrapper);
+
+  return doc;
+}
+
+const char*
+FS_SerializeObjectToXmlString(struct Object const *object)
+{
+  xmlDocPtr doc = FS_SerializeObjectTree(object);
+  if (!doc) return NULL;
 
   xmlChar *xml_buf = NULL;
   int xml_len = 0;

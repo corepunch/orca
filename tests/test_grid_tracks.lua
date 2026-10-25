@@ -193,9 +193,9 @@ local function test_resizable_safe_area_footer()
 	print("PASS: test_resizable_safe_area_footer")
 end
 
-local function test_xml_tracks()
+local function test_lisp_tracks()
 	local filesystem = require "orca.filesystem"
-	-- A throwaway project, so the XML parser reads Rows exactly as authored.
+	-- A throwaway project, so the Lisp parser reads Rows exactly as authored.
 	local root = os.tmpname()
 	os.remove(root)
 	os.execute("mkdir -p '" .. root .. "/Screens'")
@@ -205,22 +205,19 @@ local function test_xml_tracks()
 		f:close()
 	end
 	write("package.lua", 'Name = "Tracks"\nScreenLibrary = { IsExternal = true }\n')
-	write("Screens/Tracks.xml", [[
-<?xml version="1.0" encoding="UTF-8"?>
-<Screen Name="Tracks" Width="400" Height="600" ResizeMode="NoResize">
-	<Grid Rows="auto * 48">
-		<Node2D Name="Header" Height="50"/>
-		<Node2D Name="Body"/>
-		<Node2D Name="Footer"/>
-	</Grid>
-</Screen>]])
+	write("Screens/Tracks.lisp", [[
+(Screen Name="Tracks" Width=400 Height=600 ResizeMode="NoResize"
+  (Grid Rows="auto * 48"
+    (Node2D Name="Header" Height=50)
+    (Node2D Name="Body")
+    (Node2D Name="Footer")))]])
 	filesystem.init(root)
 	local s = filesystem.loadObject("Tracks/Screens/Tracks")
 	layout(s)
 	test.expect_eq(rows { s:findChild("Header", true), s:findChild("Body", true), s:findChild("Footer", true) },
-		"0+50 50+502 552+48", "XML Rows use the same track grammar")
+		"0+50 50+502 552+48", "Lisp Rows use the same track grammar")
 	os.execute("rm -rf '" .. root .. "'")
-	print("PASS: test_xml_tracks")
+	print("PASS: test_lisp_tracks")
 end
 
 
@@ -234,4 +231,4 @@ test_unbounded_grid_in_stack()
 test_implicit_tracks()
 test_nested_auto_footer()
 test_resizable_safe_area_footer()
-test_xml_tracks()
+test_lisp_tracks()

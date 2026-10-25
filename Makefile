@@ -84,7 +84,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-xml-library test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-lisp-library test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -410,8 +410,8 @@ $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TE
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 
-HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
-HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-lisp-library test-scene-reflections
+HEADLESS_LUA_TESTS += test-imageview test-lisp test-example-lisp test-lisp-serialization
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-chat-polling
@@ -434,6 +434,12 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_app.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
+.PHONY: test-example-lisp
+$(eval $(call LUA_TEST_RULE,test-example-lisp,tests/test_example_lisp.lua,unite))
+.PHONY: test-lisp-serialization
+$(eval $(call LUA_TEST_RULE,test-lisp-serialization,tests/test_lisp_serialization.lua,unite))
+.PHONY: test-lisp
+$(eval $(call LUA_TEST_RULE,test-lisp,tests/test_lisp.lua,unite))
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
 
@@ -445,7 +451,7 @@ $(eval $(call LUA_TEST_RULE,test-styles-lua,tests/test_styles_lua.lua,app copysh
 $(eval $(call LUA_TEST_RULE,test-body,tests/test_body.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-console-view,tests/test_console_view.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-object-retention,tests/test_object_retention.lua,app copyshare))
-$(eval $(call LUA_TEST_RULE,test-xml-library,tests/test_xml_library.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-lisp-library,tests/test_lisp_library.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-scene-reflections,tests/test_scene_reflections.lua,unite))
 .PHONY: test-scene-reflections
 $(eval $(call LUA_TEST_RULE,test-async,tests/test_async.lua,app copyshare))
@@ -473,7 +479,7 @@ $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms $(HEADLESS_LUA_TESTS)
 
-test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node test-node2d-scroll
+test: test-headless test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"
 	$(Q)$(TARGET) -test=tests/test.xml
 

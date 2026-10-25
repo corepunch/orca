@@ -552,7 +552,7 @@ PROP_Import(struct Property *prop,
         case kDataTypeInt:
         case kDataTypeBool:
         case kDataTypeEnum:
-          PROP_SetValue(prop, &(int){ *r->value });
+          PROP_SetValue(prop, &(float){ *r->value });
           return TRUE;
         case kDataTypeFloat:
           PROP_SetValue(prop, r->value);

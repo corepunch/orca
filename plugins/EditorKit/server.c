@@ -257,7 +257,7 @@ FS_EnumDir2(lpcString_t, void (*callback)(lpcString_t,void*), void*);
 static void load_library(lpcString_t def, void* param) {
   lua_State *L = ((void**)param)[0];
   lpcString_t path = ((void**)param)[1];
-  if (strrchr(def, '.') && !strcasecmp(strrchr(def, '.'), ".xml")) {
+  if (strrchr(def, '.') && !strcasecmp(strrchr(def, '.'), ".lisp")) {
     *strrchr(def, '.') = 0;
     char buf[512];
     snprintf(buf,sizeof(buf),"local r = require('orca.filesystem').getWorkspace():findByPath('%s/%s') or require('%s/%s')()",path,def,path,def);
@@ -298,13 +298,10 @@ SV_CMD(GET, whoami) {
 }
 
 ORCA_API struct Object *OBJ_LoadDocument(xmlDocPtr doc) {
-  xmlChar *xmlbuff;
-  int buffersize;
-  xmlDocDumpMemory(doc, &xmlbuff, &buffersize);
-  struct Object *obj = FS_LoadObjectFromXmlString((lpcString_t)xmlbuff);
-  xmlFree(xmlbuff);
+  xmlNodePtr root = doc ? xmlDocGetRootElement(doc) : NULL;
+  struct Object *obj = root ? FS_BuildObjectTree(root, NULL) : NULL;
   if (!obj) {
-    Con_Error("Failed to parse XML document");
+    Con_Error("Failed to build editor object tree");
   }
   return obj;
 }

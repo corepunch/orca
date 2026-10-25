@@ -311,19 +311,19 @@
       <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
       <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
     </function>
-    <function name="LoadObjectFromXml" export="loadObjectFromXml">
-      <summary>Loads an object tree from an XML file</summary>
-      <details>Parses the specified XML file and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
-      <arg name="path" type="string">The path to the XML file to load</arg>
-      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    <function name="LoadObjectFromLisp" export="loadObjectFromLisp">
+      <summary>Loads an object tree from a Lisp scene file</summary>
+      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata.</details>
+      <arg name="path" type="string">Path to the Lisp scene</arg>
+      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>
-    <function name="LoadObjectFromXmlString" export="loadObjectFromXmlString">
-      <summary>Parses an object tree from an XML string</summary>
-      <details>Parses the provided XML string and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
-      <arg name="xmlString" type="string">The XML string to parse</arg>
-      <returns type="Object" pointer="true">The root object constructed from the XML, or nil on failure</returns>
+    <function name="LoadObjectFromLispString" export="loadObjectFromLispString">
+      <summary>Parses a Lisp scene with scalar, object and binding property values</summary>
+      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata.</details>
+      <arg name="source" type="string">Scene source</arg>
+      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>
-    <function name="LoadObjectFromXmlStringWithSchema" export="loadObjectFromXmlStringWithSchema">
+    <function name="LoadXmlDataStringWithSchema" export="loadXmlDataStringWithSchema">
       <summary>Parses a data object tree from an XML string using a Schema XML string</summary>
       <details>Parses the schema XML string to register entity classes, then parses the data XML string using those classes so each record element maps directly to its entity class with column values as typed properties. Returns the root object on success, or nil on failure.</details>
       <arg name="xmlString" type="string">The data XML string to parse</arg>
@@ -336,6 +336,12 @@
       <!-- <arg name="themeGroup" type="Object" pointer="true">Pointer to the ThemeGroup object to query</arg> -->
       <arg name="key" type="string">The key identifying the specific theme value to retrieve</arg>
       <returns type="string">The value associated with the specified key in the current theme, or nil if not found</returns>
+    </function>
+    <function name="SerializeObjectToLispString" export="serializeObjectToLispString">
+      <summary>Serializes an object tree to a Lisp scene string.</summary>
+      <details>Preserves serializable properties, children, style classes, bindings, and prefab references. The caller must free the returned heap-allocated string. Returns NULL for a NULL object or on failure.</details>
+      <arg name="object" type="Object" const="true" pointer="true">The root object to serialize</arg>
+      <returns type="string">Heap-allocated Lisp scene string, or NULL</returns>
     </function>
     <function name="SerializeObjectToXmlString" export="serializeObjectToXmlString">
       <summary>Serializes an object tree to an XML string</summary>

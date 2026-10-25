@@ -160,13 +160,12 @@ LPXMLNODE ED_LoadXML(lpcString_t szFileName) {
   }
   PATHSTR filepath = {0};
   FS_JoinPaths(filepath, sizeof(filepath), pak->folder, relative+1);
-  strncat(filepath, ".xml", sizeof(filepath) - strlen(filepath) - 1);
-  LPXMLDOC doc = xmlReadFile(filepath, NULL, 0);
-  if (!doc) {
+  struct Object *object = FS_LoadObject(filepath);
+  if (!object) {
     ED_Printf("%s: file not found", szFileName);
     return NULL;
   }
-  LPXMLNODE root = xmlCopyNode(xmlDocGetRootElement(doc), TRUE);
-  xmlFreeDoc(doc);
+  LPXMLNODE root = ED_ConvertNode(object, NULL);
+  OBJ_ReleaseRef(object);
   return root;
 }

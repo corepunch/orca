@@ -339,18 +339,16 @@ test_generated_action_property_order(void)
 }
 
 static void
-test_generated_action_xml(void)
+test_generated_action_lisp(void)
 {
-  RUN_TEST("generated_action_xml", {
+  RUN_TEST("generated_action_lisp", {
     reset_observed();
 
-    struct Object *root = FS_LoadObjectFromXmlString(
-      "<TestTriggerHost Name=\"Root\">"
-      "<TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">"
-      "<TestTriggerSink Name=\"Target\"/>"
-      "<Object.Start Target=\"Target\"/>"
-      "</TestEventTriggerSource>"
-      "</TestTriggerHost>");
+    struct Object *root = FS_LoadObjectFromLispString(
+      "(TestTriggerHost Name=\"Root\" "
+      "(TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\" "
+      "(TestTriggerSink Name=\"Target\") "
+      "(Object.Start Target=\"Target\")))");
     EXPECT(root != NULL);
     reset_observed();
 
@@ -420,7 +418,7 @@ main(void)
   test_event_trigger_single_value();
   test_event_trigger_partial_payload_defaults_to_zero();
   test_generated_action_property_order();
-  test_generated_action_xml();
+  test_generated_action_lisp();
   test_generated_action_dispatch();
   test_generated_action_unset_target_dispatches_sender();
 

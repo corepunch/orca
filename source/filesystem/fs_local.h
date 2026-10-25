@@ -32,20 +32,13 @@ xmlSetProp(NODE, XMLSTR(PROP), XMLSTR(buf_##__LINE__)); \
 
 struct file *_ReadOnDisk(FILE *fp);
 
-struct Object *
-FS_LoadObjectFromXml(lpcString_t path);
+struct Object *FS_BuildObjectTree(struct _xmlNode *root, lpcString_t source);
+struct _xmlDoc *FS_SerializeObjectTree(struct Object const *object);
+struct Object *FS_LoadObjectFromLispLibrary(lpcString_t path);
+void FS_EnumLispLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
 
-struct Object *
-FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema);
-
-// Loads entry "Name" of the XML library "Dir.xml" for path "Dir/Name".
-// Returns NULL without logging when Dir.xml does not exist.
-struct Object *
-FS_LoadObjectFromXmlLibrary(lpcString_t path);
-
-// Calls fn with the Name of each entry in the XML library file at path.
-void
-FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
+/* XML is a datasource interchange format, not a scene loader. */
+struct Object *FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema);
 
 void
 FS_RegisterDataSourceProvider(const char *type_name,

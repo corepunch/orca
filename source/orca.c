@@ -101,40 +101,35 @@ static int scaffold(char const *name) {
   mkdir(dir, 0755); mkdir(screens, 0755); mkdir(images, 0755);
 #endif
 
-  /* package.xml */
-  char pkgpath[512]; snprintf(pkgpath, sizeof(pkgpath), "%s/package.xml", dir);
+  /* Keep new projects on the supported scene format. */
+  char pkgpath[512]; snprintf(pkgpath, sizeof(pkgpath), "%s/package.lua", dir);
   FILE *f = fopen(pkgpath, "w");
   if (f) {
     fprintf(f,
-      "<?xml version=\"1.0\"?>\n"
-      "<Project Name=\"%s\" StartupScreen=\"%s/Screens/Main\">\n"
-      "  <ScreenLibrary Name=\"Screens\" IsExternal=\"true\"/>\n"
-      "  <ImageLibrary Name=\"Images\" IsExternal=\"true\"/>\n"
-      "  <Project.SystemMessages>\n"
-      "    <SystemMessage Message=\"KeyDown\" Key=\"q\" Command=\"return\"/>\n"
-      "    <SystemMessage Message=\"WindowClosed\" Command=\"return\"/>\n"
-      "  </Project.SystemMessages>\n"
-      "</Project>\n", name, name);
+      "Name = \"%s\"\n"
+      "StartupScreen = \"%s/Screens/Main.lisp\"\n"
+      "ScreenLibrary = { IsExternal = true }\n"
+      "ImageLibrary = { IsExternal = true }\n"
+      "EnginePlugins = { { Name = \"orca.UIKit\" } }\n"
+      "SystemMessages = { { Name = \"WindowClosed\", Command = \"return\" } }\n",
+      name, name);
     fclose(f);
   }
 
-  /* Screens/Main.xml */
-  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main.xml", dir);
+  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main.lisp", dir);
   f = fopen(scrpath, "w");
   if (f) {
     fprintf(f,
-      "<?xml version=\"1.0\"?>\n"
-      "<Screen Name=\"Main\" Width=\"1024\" Height=\"768\">\n"
-      "  <TextBlock Text=\"Hello, %s!\" FontSize=\"48\" LayoutTransform=\"400 350 0 1 1\"/>\n"
-      "</Screen>\n", name);
+      "(Screen Name=\"Main\" Width=1024 Height=768\n"
+      "  (TextBlock Text=\"Hello, %s!\" FontSize=48 LayoutTransform=\"400 350 0 1 1\"))\n", name);
     fclose(f);
   }
 
   printf("Created '%s/'\n"
-         "  package.xml\n"
-         "  Screens/Main.xml\n"
+         "  package.lua\n"
+         "  Screens/Main.lisp\n"
          "  Images/\n\n"
-         "Run:  make run PROJECT=%s/package.xml\n", dir, dir);
+         "Run:  orca %s\n", dir, dir);
   return 0;
 }
 

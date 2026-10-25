@@ -192,7 +192,7 @@ HANDLER(Page, Object, Create) {
 // Page_Start — load page content from Source if set
 HANDLER(Page, Object, Start) {
   if (pPage->Source && pPage->Source[0]) {
-    struct Object *content = FS_LoadObjectFromXml(pPage->Source);
+    struct Object *content = FS_LoadObject(pPage->Source);
     if (content) {
       OBJ_AddChild(hObject, content);
     }

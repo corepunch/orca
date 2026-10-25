@@ -20,6 +20,7 @@ HANDLER(GridBox, Object, Start) {
       }
       PROP_SetValue(OBJ_FindLongProperty(item, ID_Node_DataContext), &data);
       OBJ_AddChild(hObject, item);
+      OBJ_ReleaseRef(item);
     }
     return TRUE;
   } else {
