@@ -309,7 +309,7 @@ local App = Application:extend {
         self.drafts[room.id] = remaining ~= "" and remaining or nil
         if self.room ~= room or self.composer ~= composer then return end
         composer.Text = remaining
-        if self.photoPreview then self.photoPreview.Visible = false; self:fitComposer() end
+        if self.photoPreview then self.photoPreview.Visible = false end
         self:renderMessages()
         self.composer:setFocus()
     end,
@@ -335,15 +335,8 @@ local App = Application:extend {
         if previous and previous.attachment then self.client:discardPhoto(previous.attachment.id) end
         self.photoDrafts[self.room.id] = photo
         self.photoPreview.Visible = true
-        self:fitComposer()
         self.photoLabel:setTextContent("Photo ready · " .. math.ceil(#photo.jpeg / 1000) .. " KB")
         self:notice("Photo ready. Add a caption or send it as it is.")
-    end,
-
-    fitComposer = function(self)
-        local readOnly = self.room.can_post == false
-        local photo = not readOnly and self.photoDrafts[self.room.id] ~= nil
-        self.threadBody.Rows = ("1fr %dpx"):format(48 + (readOnly and 44 or 48) + (photo and 48 or 0))
     end,
 
     thread = function(self)
@@ -369,7 +362,6 @@ local App = Application:extend {
                 if not ok then self:notice(err.message, true); return end
             end
             self.photoDrafts[room.id], self.photoPreview.Visible = nil, false
-            self:fitComposer()
             self:notice("Photo removed. Your message is still here.")
         end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
         local readOnly = room.can_post == false
@@ -378,10 +370,9 @@ local App = Application:extend {
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
                 FontSize = 13, Foreground = colors.muted, WordWrap = true }),
         })
-        -- Grid tracks are fixed or flexible, so the composer row is sized here.
-        self.threadBody = ui.Grid {}
+        -- The composer row fits its content: status, photo draft and input.
+        self.threadBody = ui.Grid { Rows = "1fr auto" }
         self.threadBody:addChild(self.messageList); self.threadBody:addChild(footer)
-        self:fitComposer()
         local pinned = self.pinned[room.id]
         -- Windows Phone puts the conversation commands in the application bar.
         local bar = C.appBar({
