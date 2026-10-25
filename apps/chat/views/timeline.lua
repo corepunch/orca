@@ -153,7 +153,7 @@ function Timeline.refresh(self, options)
         return true
     end
     self.messageRefreshBusy = true
-    local ok, result, err = pcall(refresh, self, options, room, node, current)
+    local ok, result, err = xpcall(refresh, debug.traceback, self, options, room, node, current)
     self.messageRefreshBusy = false
     if not ok then
         if current() and self.reportError then self:reportError(result, "Refreshing messages") end

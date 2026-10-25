@@ -41,7 +41,7 @@ function Polling:_tick()
     self.running, self.requested = true, false
     -- Lua's protected call is yieldable. The lock covers the whole request,
     -- including network yields, rather than only the timer event dispatch.
-    local ok, success = pcall(job.run, isCurrent)
+    local ok, success = xpcall(job.run, debug.traceback, isCurrent)
     self.running = false
     if not ok and isCurrent() and self.onError then self.onError(success) end
     if not self:_active() then return end

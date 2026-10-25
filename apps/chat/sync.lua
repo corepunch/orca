@@ -19,7 +19,7 @@ end
 function Sync.refreshInbox(app, current, quiet)
     if app.inboxRefreshBusy then return true end
     app.inboxRefreshBusy = true
-    local ok, result, err = pcall(function()
+    local ok, result, err = xpcall(function()
         local rooms, roomError = app.models.Rooms:select()
         if not current() then return true end
         if not rooms then return nil, roomError end
@@ -38,7 +38,7 @@ function Sync.refreshInbox(app, current, quiet)
             for key, list in pairs(app.roomLists) do list.ContentOffset = offsets[key] end
         end
         return true
-    end)
+    end, debug.traceback)
     app.inboxRefreshBusy = false
     if not ok then
         if current() and app.reportError then app:reportError(result, "Syncing conversations") end

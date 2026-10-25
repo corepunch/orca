@@ -17,17 +17,30 @@ end
 -- Also hide common credentials and identifiers accidentally embedded in errors.
 function Diagnostics.redact(err)
     local value = message(err)
-    for _, header in ipairs { "[Aa]uthorization", "[Cc]ookie", "[Ss]et%-[Cc]ookie" } do
-        value = value:gsub(header .. "%s*[:=][^\r\n]*", "[credentials redacted]")
+    for _, header in ipairs { "authorization", "cookie", "set%-cookie" } do
+        local pattern = header:gsub("%a", function(letter) return "[" .. letter .. letter:upper() .. "]" end)
+        value = value:gsub(pattern .. "%s*[:=][^\r\n]*", "[credentials redacted]")
     end
-    value = value:gsub("([%w_%-]+)([\"']?%s*[:=]%s*[\"']?)([^%s,;\"'}]+)", function(key, separator, text)
+    local parts, cursor = {}, 1
+    while true do
+        local first, last, key = value:find("([%w_%-]+)[\"']?%s*[:=]%s*", cursor)
+        if not first then parts[#parts + 1] = value:sub(cursor); break end
+        parts[#parts + 1] = value:sub(cursor, last)
         local name = key:lower()
         if name:find("password") or name:find("secret") or name:find("token") or name:find("jwt")
-            or name:find("session") or name == "code" or name == "otp" then text = "[redacted]" end
-        return key .. separator .. text
-    end)
+            or name:find("session") or name == "code" or name == "otp" then
+            local quote = value:sub(last + 1, last + 1)
+            local finish
+            if quote == '"' or quote == "'" then finish = value:find(quote, last + 2, true) end
+            finish = finish or ((value:find("[\r\n,;}]", last + 1) or (#value + 1)) - 1)
+            parts[#parts + 1] = "[redacted]"
+            last = finish
+        end
+        cursor = last + 1
+    end
+    value = table.concat(parts)
     value = value:gsub("[%w._%%+%-]+@[%w.%-]+%.[%a]+", "[email redacted]")
-    value = value:gsub("%+%d[%d%s%-]+%d", "[phone redacted]")
+    value = value:gsub("%+%d[%d \t%-]+%d", "[phone redacted]")
     value = value:gsub("[%w_%-]+%.[%w_%-]+%.[%w_%-]+", function(token)
         return #token > 80 and "[token redacted]" or token
     end)
@@ -42,6 +55,7 @@ function Diagnostics:controller(err, stage)
     local app = self.app
     if self.screen and app.screen == self.screen then return { view = self.screen } end
     if app.polling then app.polling:stop() end
+    if app.room and app.composer then app.drafts[app.room.id] = app.composer.Text or "" end
     local details = Diagnostics.redact((stage or "Application") .. "\nRoute: " .. (app.currentRoute or "/")
         .. "\nPlatform: " .. tostring(PLATFORM or "unknown") .. "\n\n" .. message(err))
     self.lastReport = details

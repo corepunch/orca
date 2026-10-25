@@ -14,6 +14,10 @@ orca.async = function(fn, ...) return fn(...) end
 local client = Chat.mock()
 assert(client:signIn("demo@example.invalid", "password123"))
 local session = client:getSession()
+local function sameSession()
+    local current = client:getSession()
+    return current and current.user.id == session.user.id and current.access_token == session.access_token
+end
 local app = App { client = client }
 app.drafts.alex = "Unsent message"
 app:show("/")
@@ -38,10 +42,10 @@ layout()
 local details = assert(app.screen:findChild("ErrorDetails", true))
 local recover = assert(app.screen:findChild("RecoverChat", true))
 assert(details.ActualHeight > 100 and recover.ActualHeight >= 44, "Error details and recovery must remain usable")
-assert(client:getSession() == session and app.drafts.alex == "Unsent message")
+assert(sameSession() and app.drafts.alex == "Unsent message")
 recover:send("Node.LeftButtonUp")
 assert(app.screen.Name == "ChatShell", "Recovery must open a rebuilt chat shell")
-assert(client:getSession() == session and app.drafts.alex == "Unsent message", "Recovery must retain login and drafts")
+assert(sameSession() and app.drafts.alex == "Unsent message", "Recovery must retain login and drafts")
 
 async.report_error("tests/handler.lua:12: callback failed\nstack traceback:")
 assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("tests/handler.lua:12", 1, true),
@@ -79,14 +83,20 @@ system.translateMessage = function() end
 app:run()
 system.getMessage, system.dispatchMessage, system.translateMessage = savedGet, savedDispatch, savedTranslate
 assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("event dispatcher failed", 1, true))
-assert(client:getSession() == session and app.drafts.alex == "Unsent message")
+assert(sameSession() and app.drafts.alex == "Unsent message")
 
-local redacted = Diagnostics.redact('password="secret-value" token=token-value\nAuthorization: Bearer bearer-value\n'
-    .. 'Cookie: a_session=private-cookie\nuser=demo@example.invalid phone=+491234567890')
-for _, secret in ipairs { "secret-value", "token-value", "bearer-value", "private-cookie", "demo@example.invalid", "+491234567890" } do
+local redacted = Diagnostics.redact('password="secret-value with spaces" token=token-value\nAUTHORIZATION: Bearer bearer-value\n'
+    .. 'Cookie: a_session=private-cookie\nuser=demo@example.invalid phone=+491234567890\n{"secret":"value with spaces"}')
+for _, secret in ipairs { "secret-value", "with spaces", "token-value", "bearer-value", "private-cookie", "demo@example.invalid", "+491234567890" } do
     assert(not redacted:find(secret, 1, true), "Private values must not appear in reports")
 end
 assert(Diagnostics.redact("apps/chat/App.lua:123: test error"):find("App.lua:123", 1, true))
+app:show("/")
+app.room = app.rooms[1]
+app:show("/thread")
+app.composer.Text = "Typed since last navigation"
+app:reportError("thread failed", "Test")
+assert(app.drafts[app.room.id] == "Typed since last navigation", "Entering diagnostics must save the live composer draft")
 async.set_error_handler(nil)
 orca.async = savedAsync
 print("PASS: Chat visible route/async/event/sync/layout errors, recovery and redaction")
