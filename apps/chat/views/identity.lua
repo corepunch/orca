@@ -31,7 +31,7 @@ function Identity.auth(self)
             if not result then self:notice(err.message, true); return end
             self.loginIdentifier, self.loginCodeRequested = identifier.Text, true
             self:show("/auth")
-        end, { Name = "RequestCode", Background = colors.accent, Foreground = colors.onAccent, Height = 52 }),
+        end, { Name = "RequestCode", Background = colors.accent, Foreground = colors.onAccent }),
     })
     local verification = C.stack({ Name = "CodeStep", Spacing = 12, Visible = self.loginCodeRequested == true }, {
         C.eyebrow("CHECK YOUR MESSAGES"),
@@ -42,7 +42,7 @@ function Identity.auth(self)
             local session, err = self.client:verifyCode(self.loginIdentifier, code.Text)
             busy = false; finish(session, err)
         end,
-            { Name = "VerifyCode", Background = colors.accent, Foreground = colors.onAccent, Height = 52 }),
+            { Name = "VerifyCode", Background = colors.accent, Foreground = colors.onAccent }),
         C.button("Resend code", function()
             if busy then return end
             busy = true; self:notice("Sending verification code…")
@@ -61,7 +61,7 @@ function Identity.auth(self)
             local session, err = self.client:signIn(email.Text, password.Text)
             busy = false; finish(session, err)
         end,
-            { Name = "SignIn", Background = colors.accent, Foreground = colors.onAccent, Height = 52 }),
+            { Name = "SignIn", Background = colors.accent, Foreground = colors.onAccent }),
         displayName,
         C.button("Create an account", function()
             if busy then return end
@@ -142,7 +142,7 @@ function Identity.profile(self)
                 discoverable_phone = phoneDiscovery, discoverable_email = emailDiscovery }
             if self.sessionEpoch ~= epoch then return end
             notice(result and "Profile saved." or saveError.message, not result)
-        end, { Name = "SaveProfile", Background = colors.accent, Foreground = colors.onAccent, Height = 50 }),
+        end, { Name = "SaveProfile", Background = colors.accent, Foreground = colors.onAccent }),
         C.eyebrow("VERIFIED LOGIN DETAILS"), verified, identifier,
         C.button("Send verification code", function()
             local result, linkError = self.client:requestIdentityLink(identifier.Text)

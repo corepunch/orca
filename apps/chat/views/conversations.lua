@@ -75,7 +75,7 @@ function Conversations.newRoom(self)
             if kind == "direct" and self.newSelection[person.id] then self.newSelection = { [person.id] = person } end
             updateSelection()
         end, { Name = prefix .. person.id, Background = self.newSelection[person.id] and colors.soft or colors.surface,
-            Height = 52, FontSize = 18, FontWeight = "Normal", BorderWidth = "0", Padding = "12 0", TextHorizontalAlignment = "Left" })
+            Height = 52, FontSize = 18, FontWeight = "Normal", BorderWidth = "0", TextHorizontalAlignment = "Left" })
         personButtons[person.id] = personButtons[person.id] or {}
         table.insert(personButtons[person.id], button)
         parent:addChild(button)
@@ -150,7 +150,7 @@ function Conversations.newRoom(self)
             if not room then notice(err.message, true); return end
             name.Text, self.newSelection = "", {}; updateSelection()
             if self.shell and self.screen == self.shell.screen and self.shell.active == "New" then self:openRoom(room) end
-        end, { Name = "CreateConversation", Background = colors.accent, Foreground = colors.onAccent, Height = 52 }),
+        end, { Name = "CreateConversation", Background = colors.accent, Foreground = colors.onAccent }),
         C.eyebrow("HAVE AN INVITATION?"), inviteCode,
         C.button("Join with invitation", function()
             local room, err = self.client:joinInvite(inviteCode.Text)

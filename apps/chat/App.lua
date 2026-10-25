@@ -171,7 +171,7 @@ local App = Application:extend {
         search:addChild(self.searchInput)
         search:addChild(C.iconButton("x", function()
             self.query, self.searchInput.Text = "", ""; self:renderRoomList(); self.searchInput:setFocus()
-        end, { Name = "ClearSearch", Foreground = colors.textboxInk, Background = colors.textbox }))
+        end, { Name = "ClearSearch", Height = 48, Foreground = colors.textboxInk, Background = colors.textbox }))
         -- The filters are pivot items: swipe or tap a header to switch lists.
         local filters = { "All", "Unread", "Pinned" }
         self.pivot = ui.Pivot { Name = "Inbox", Title = "Messenger", Foreground = colors.ink,

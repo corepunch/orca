@@ -2,6 +2,9 @@ local ui = require "orca.UIKit"
 local C = { colors = require "Chat/theme" }
 local colors = C.colors
 local auto = 0/0
+-- ORCA draws a border outside Width/Height (it counts as margin), so bordered
+-- controls subtract it to keep every control on the same 48-point grid.
+local BORDER = 2
 
 function C.text(value, props)
     props = props or {}
@@ -41,7 +44,8 @@ function C.button(label, action, props)
     props.Foreground = props.Foreground or (link and colors.accentText or primary and colors.onAccent or colors.ink)
     props.Background = props.Background or "#00000000"
     if not link and not primary and props.BorderWidth == nil then
-        props.BorderWidth, props.BorderColor = "2", colors.ink
+        props.BorderWidth, props.BorderColor = tostring(BORDER), colors.ink
+        props.Height = props.Height - 2 * BORDER
     end
     props.TextHorizontalAlignment = props.TextHorizontalAlignment or "Center"
     props.TextVerticalAlignment = "Center"
@@ -63,11 +67,11 @@ end
 function C.input(name, placeholder, props)
     props = props or {}
     props.Name, props.PlaceholderText = name, placeholder
-    props.Height, props.FontSize = props.Height or 48, props.FontSize or 15
+    props.Height, props.FontSize = (props.Height or 48) - 2 * BORDER, props.FontSize or 15
     props.Padding = props.Padding or "12 0"
     props.Background = props.Background or colors.textbox
     props.Foreground, props.PlaceholderColor = colors.textboxInk, colors.placeholder
-    props.BorderWidth, props.BorderColor = "2", props.Background
+    props.BorderWidth, props.BorderColor = tostring(BORDER), props.Background
     props.class = "chat-input"
     return ui.Input(props)
 end
