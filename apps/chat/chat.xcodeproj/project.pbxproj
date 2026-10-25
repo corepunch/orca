@@ -358,6 +358,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
 				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
+				MARKETING_VERSION = 1.1;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -405,6 +406,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = "$(PROJECT_FILE_PATH)/Generated/ios-Info.plist";
 				INSTALL_PATH = "$(LOCAL_APPS_DIR)";
+				MARKETING_VERSION = 1.1;
 				ONLY_ACTIVE_ARCH = NO;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
