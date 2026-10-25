@@ -59,7 +59,7 @@ return {
             { targetId = "p-eames", targetType = "post", userId = "u-ada", age = HOUR },
             { targetId = "p-eames", targetType = "post", userId = "u-jules", age = HOUR },
             { targetId = "p-small", targetType = "post", userId = "u-maya", age = 4 * HOUR },
-            { targetId = "p-hello", targetType = "post", userId = "u-maya", age = 20 * HOUR },
+            { targetId = "p-hello", targetType = "post", userId = "u-maya", age = 20 * HOUR + 30 * 60 },
             { targetId = "p-hello", targetType = "post", userId = "u-noor", age = 6 * HOUR },
             { targetId = "c-welcome", targetType = "comment", userId = "u-ada", age = 18 * HOUR },
         },
