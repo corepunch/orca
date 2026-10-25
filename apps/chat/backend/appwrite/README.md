@@ -132,8 +132,10 @@ creation validates up to fifty other native users, writes memberships with
 bounded concurrency, then commits visibility with the room document. Queries
 follow Appwrite cursors rather than silently returning the default first 25
 rows. The 10,000-document safety cap returns an explicit error, never a partial
-directory. History deliberately returns at most the requested latest 100
-messages; older-history pagination, realtime, push, receipts and end-to-end
+directory. The foreground client polls the open conversation every 3 seconds
+and the visible inbox every 15 seconds, with non-overlapping reads and retry
+backoff. History deliberately returns at most the requested latest 100
+messages; older-history pagination, realtime subscriptions, push, receipts and end-to-end
 encryption are outside the existing Chat feature set.
 
 New database and bucket creation were denied by the current plan quotas. The

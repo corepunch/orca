@@ -199,6 +199,14 @@
         <message name="Closed">
           <summary>Sent when the user requests closing the window.</summary>
         </message>
+        <message name="Activated">
+          <summary>Sent when the application scene becomes active.</summary>
+          <details>On iOS, queued before resuming the display loop. Applications may resume foreground work and refresh data. This is scene activity, not text-input focus.</details>
+        </message>
+        <message name="Deactivated">
+          <summary>Sent when the application scene resigns active.</summary>
+          <details>On iOS, queued before pausing the display loop. Lua execution is suspended while inactive, so queued lifecycle messages are consumed on resumption in order. Applications should cancel scheduled foreground work and invalidate pending results.</details>
+        </message>
         <message name="ChangedScreen">
           <summary>Sent when the window moves to a different display screen (e.g. monitor with different DPI).</summary>
         </message>

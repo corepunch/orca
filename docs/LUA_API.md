@@ -78,6 +78,23 @@ Runtime vector userdata uses exported `X`/`Y` field names, for example
 `node.ContentOffset = { X = 0, Y = -100 }`. These differ from lowercase C struct
 members; verify runtime field names when constructing values for property setters.
 
+## Timers and foreground work
+
+Use `core.Timer { Tick = function(owner, args) ... end }` as a nonvisual timer
+owner. `owner:setTimer(milliseconds)` starts a repeating native timer and returns
+its handle. Call `owner:cancelTimer(handle)` before a one-shot callback performs
+work or before rescheduling. Handlers receive `args.timerId` through the normal
+event coroutine dispatcher, so they may yield for network requests. Cancellation
+does not recall queued events: compare the ID and an application generation
+before starting or applying asynchronous work. Destroying the owner cancels its
+native timers; retain it while scheduled.
+
+On iOS, `Window.Deactivated` is queued before the display loop pauses and
+`Window.Activated` before it resumes. Lua does not advance while inactive; both
+messages are consumed in order on resumption. Cancel foreground work on
+deactivation and refresh on activation. These are scene events, independent of
+keyboard focus.
+
 ## Good follow-up reads
 
 - `docs/lua-scripting.md`

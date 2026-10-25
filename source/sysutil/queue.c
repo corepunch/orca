@@ -143,6 +143,8 @@ int f_dispatch_message(lua_State* L)
       case ID_Window_Resized:
       case ID_Window_ChangedScreen:
       case ID_Window_Closed:
+      case ID_Window_Activated:
+      case ID_Window_Deactivated:
         event->target = lua_isnil(L, 1) ? NULL : *(struct Object **)luaL_checkudata(L, 1, "Object");
         break;
     }

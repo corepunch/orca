@@ -143,9 +143,20 @@ another allowance. Public channel discovery does not grant posting rights.
 Messages allow up to 4000 UTF-8 bytes and four photos; photo-only messages use
 `body=""`. Publishing uses the atomic `post_chat_message` RPC, which derives
 the sender from Auth and attaches only ready, unexpired photos owned by that
-sender in that room. Direct REST inserts are disabled. History refresh is
-explicit; realtime subscriptions, push notifications, older-history pagination,
-read receipts and end-to-end encryption are not implemented.
+sender in that room. Direct REST inserts are disabled. While foregrounded, the
+open conversation polls the latest 100 messages every 3 seconds and the visible
+inbox polls conversations and contacts every 15 seconds. Intervals begin after
+the previous request completes; failures back off up to 60 seconds. Navigation,
+sign-out and iOS scene deactivation cancel scheduled work and invalidate stale
+responses. Foreground return requests an immediate refresh. Manual refresh is
+still available and shares the read locks.
+
+Polling uses a retained `core.Timer` component and `Timer.Tick`, canceling each
+native repeating timer before fetching or scheduling another. Unchanged results
+retain their existing rows; changed timelines preserve reading position and
+drafts, following new messages only if the reader was already at the bottom.
+Realtime subscriptions, push notifications, older-history pagination, read
+receipts and end-to-end encryption are not implemented.
 
 ## Private photos
 

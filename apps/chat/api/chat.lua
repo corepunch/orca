@@ -112,9 +112,13 @@ end
 
 function Client:refreshSession()
   if not self.session then return failure("unauthenticated", "Sign in to continue.") end
+  local previous = self.session
   local data, err = self:_request("POST", "/auth/v1/token?grant_type=refresh_token", {
     refresh_token = self.session.refresh_token,
   })
+  if self.session ~= previous then
+    return failure("session_changed", "The active account changed while refreshing the session.")
+  end
   if not data then
     if err.status == 400 or err.status == 401 or err.status == 403 then self.session = nil end
     return nil, err

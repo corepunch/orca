@@ -219,7 +219,13 @@ ORCA_API objectTags_t GetTagsFromString(lpcString_t value) {
 
 int OBJ_SetTimer(struct Object *self, int duration)
 {
-  return axSetTimer(self, MAX(duration, 1), NULL, TRUE);;
+  return axSetTimer(self, MAX(duration, 1), NULL, TRUE);
+}
+
+void OBJ_CancelTimer(struct Object *self, int timerId)
+{
+  (void)self;
+  if (timerId > 0) axCancelTimer((uint32_t)timerId);
 }
 
 struct Object *
