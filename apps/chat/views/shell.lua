@@ -17,7 +17,7 @@ local pages = {
 function Shell.new(screen, navigate, menu)
     local self = setmetatable({ screen = screen, pages = {}, items = {}, routes = {} }, Shell)
     screen.Name = "ChatShell"
-    local layout = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
+    local layout = ui.Grid { Rows = "1fr auto", Background = colors.background, Foreground = colors.ink }
     self.content = ui.PageHost { Name = "TabContent" }
     local buttons = {}
     for _, page in ipairs(pages) do
@@ -30,9 +30,17 @@ function Shell.new(screen, navigate, menu)
     end
     self.bar = C.appBar(buttons, menu)
     for _, page in ipairs(pages) do self.items[page.key] = self.bar:findChild("AppBar" .. page.key) end
+    -- Paint the home-indicator inset without moving the controls into it.
+    local footer = ui.Grid { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
+    footer:addChild(self.bar)
     layout:addChild(self.content)
-    layout:addChild(self.bar)
+    layout:addChild(footer)
     screen:addChild(layout)
+    screen.RespectSafeArea = false
+    for _, edge in ipairs { "Left", "Top", "Right" } do
+        layout:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+    end
+    footer:attachPropertyProgram("Node.PaddingBottom", "{Screen.SafeAreaBottom}", "OneWay", true)
     return self
 end
 
