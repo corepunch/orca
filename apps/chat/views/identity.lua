@@ -67,7 +67,7 @@ function Identity.auth(self, mode)
         local signup = mode == "signup"
         title = signup and "create account" or "sign in"
         description = signup and "A name, an email, and you're in." or "Welcome back. Pick up the conversation."
-        local email = input("Email", "you@example.com", draft.email)
+        local email = input("Email", "you@example.com", draft.email, { Type = "Email" })
         local password = input("Password", signup and "At least 8 characters" or "Your password", nil, { Type = "Password" })
         form = C.stack({ Name = signup and "SignUpPage" or "EmailPage", Spacing = 16 })
         if signup then
@@ -101,7 +101,7 @@ function Identity.auth(self, mode)
         form:addChild(link("Use phone number", "UsePhone", "/auth"))
     elseif mode == "code" then
         title, description = "check your messages", "Enter the code sent to " .. (self.loginIdentifier or "your phone") .. "."
-        local code = input("VerificationCode", "6-digit code")
+        local code = input("VerificationCode", "6-digit code", nil, { Type = "Number" })
         form = C.stack({ Name = "CodeStep", Spacing = 16 }, {
             field("Verification code", code),
             action("Verify & sign in", "VerifyCode", "Verifying…", function()
@@ -120,7 +120,7 @@ function Identity.auth(self, mode)
         code.Submit = function() form:findChild("VerifyCode"):send("Node.LeftButtonUp") end
     else
         title, description = "your phone", "Your people are one message away. Sign in or get started with your number."
-        local phone = input("Identifier", "+49 151 1234 5678", draft.phone)
+        local phone = input("Identifier", "+49 151 1234 5678", draft.phone, { Type = "Phone" })
         form = C.stack({ Name = "PhonePage", Spacing = 16 }, {
             field("Phone number", phone),
             C.text("Include + and your country code. We'll send you a verification code.", {
@@ -171,7 +171,7 @@ function Identity.profile(self)
     local name = C.input("ProfileName", "Your name", { Text = profile.display_name or "You" })
     local username = C.input("Username", "Choose a public username", { Text = profile.username or "" })
     local identifier = C.input("LinkIdentifier", "Phone number or email to verify")
-    local code = C.input("LinkCode", "Verification code")
+    local code = C.input("LinkCode", "Verification code", { Type = "Number" })
     local verified = C.text("", { Name = "VerifiedIdentities", WordWrap = true, FontSize = 14, Foreground = colors.muted })
     local function describe(p)
         local phone, email = p.phone or user.phone, p.email or user.email

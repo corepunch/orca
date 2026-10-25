@@ -85,7 +85,17 @@ int luaopen_orca(lua_State *L);
     lua_pop(_coroutine, nresults);
     struct Object *focus = core_GetFocus();
     struct Input *input = focus ? GetInput(focus) : NULL;
-    axIOSShowKeyboard(input && input->Type != kInputTypeCheckbox);
+    UIKeyboardType keyboard = UIKeyboardTypeDefault;
+    if (input) switch (input->Type) {
+      case kInputTypeNumber: keyboard = UIKeyboardTypeNumberPad; break;
+      case kInputTypePhone: keyboard = UIKeyboardTypePhonePad; break;
+      case kInputTypeEmail: keyboard = UIKeyboardTypeEmailAddress; break;
+      case kInputTypeUrl: keyboard = UIKeyboardTypeURL; break;
+      case kInputTypeDecimal: keyboard = UIKeyboardTypeDecimalPad; break;
+      default: break;
+    }
+    axIOSShowKeyboard(input && input->Type != kInputTypeCheckbox && input->Type != kInputTypeRadio,
+                      keyboard, input && input->Type == kInputTypePassword);
   } else {
     BOOL reload = status == LUA_OK && lua_type(_coroutine, -1) == LUA_TSTRING;
     if (status != LUA_OK) NSLog(@"ORCA: %s", lua_tostring(_coroutine, -1));

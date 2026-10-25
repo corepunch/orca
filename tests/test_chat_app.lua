@@ -87,6 +87,75 @@ screen:UpdateLayout(390, 844)
 assert(screen:findChild("Message", true), "Thread must have a composer")
 assert(app.composer.ActualHeight >= 44 and app.composer.ActualWidth > 200,
     string.format("Composer dimensions: %.1f x %.1f", app.composer.ActualWidth, app.composer.ActualHeight))
+local composerStrip = screen:findChild("Composer", true)
+local footer = screen:findChild("ThreadFooter", true)
+assert(math.abs(composerStrip.ActualWidth - 390) < 1 and math.abs(composerStrip.ActualX) < 1,
+    "The rectangular composer must span the full screen width")
+assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - 844) < 1,
+    "The composer must sit at the bottom without an application bar or padding beneath it")
+assert(not screen:findChild("AppBar", true), "The conversation must not keep a second bottom command bar")
+for _, name in ipairs { "AttachPhoto", "SendMessage" } do
+    local button = screen:findChild(name, true)
+    assert(button:getParent() == composerStrip and button.ActualWidth >= 44 and button.ActualHeight >= 44,
+        name .. " must be a usable target inside the composer strip")
+end
+for _, name in ipairs { "BackToChats", "ConversationMenu" } do
+    local button = screen:findChild(name, true)
+    assert(button.Visible and button:getParent().Name == "ThreadCommands" and button.ActualHeight >= 44,
+        name .. " must remain accessible above the messages")
+end
+local overflow = screen:findChild("ThreadOverflow", true)
+assert(not overflow.Visible, "Conversation commands must stay hidden behind the ellipsis")
+screen:findChild("ConversationMenu", true):send("Node.LeftButtonUp")
+drain(app)
+assert(overflow.Visible, "The ellipsis must open the conversation menu")
+screen:UpdateLayout(390, 844)
+for _, name in ipairs { "PinConversation", "ConversationInfo", "RefreshMessages" } do
+    local item = screen:findChild(name, true)
+    assert(item:getParent().Name == "ThreadOverflowMenu" and item.ActualHeight >= 44,
+        name .. " must be accessible in the overflow menu")
+end
+screen:findChild("DismissConversationMenu", true):send("Node.LeftButtonUp")
+drain(app)
+assert(not overflow.Visible, "Tapping outside must dismiss the conversation menu")
+screen:findChild("ConversationMenu", true):send("Node.LeftButtonUp")
+drain(app)
+screen:findChild("RefreshMessages", true):send("Node.LeftButtonUp")
+drain(app)
+assert(not overflow.Visible, "Choosing a menu command must dismiss the menu")
+screen.ResizeMode = "CanResize"
+screen:UpdateLayout(390, 460)
+assert(math.abs(composerStrip.ActualWidth - 390) < 1 and
+    math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - 460) < 1,
+    "The full-width composer must stay against the keyboard when the viewport shrinks")
+screen.ResizeMode = "NoResize"
+screen.Width, screen.Height = 390, 844
+screen:UpdateLayout(390, 844)
+assert(not screen.RespectSafeArea, "The thread must paint behind the home gesture area")
+screen.SafeAreaTop, screen.SafeAreaBottom = 59, 34
+screen.SafeAreaLeft, screen.SafeAreaRight = 12, 18
+core.flushQueue()
+core.advanceFrame()
+core.runAllPrograms(screen)
+screen:UpdateLayout(390, 844)
+local threadRoot = screen:getFirstChild()
+assert(threadRoot.PaddingTop == 59 and threadRoot.PaddingLeft == 12 and threadRoot.PaddingRight == 18,
+    "Thread content must follow the system's safe top and side insets")
+assert(footer.PaddingBottom == 34 and math.abs(composerStrip.ActualWidth - 360) < 1,
+    "The composer must leave safe room for the home gesture and landscape edges")
+assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - (844 - 34)) < 1,
+    "Composer controls must end immediately above the home gesture area")
+assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1 and
+    math.abs(footer.BackgroundColor.R - composerStrip.BackgroundColor.R) < 0.001,
+    "The composer background must continue to the physical bottom edge")
+screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
+screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
+core.flushQueue()
+core.advanceFrame()
+core.runAllPrograms(screen)
+screen:UpdateLayout(390, 844)
+assert(footer.PaddingBottom == 0 and threadRoot.PaddingTop == 0,
+    "Safe-area bindings must update when the keyboard or orientation changes")
 local before = #app.client:listMessages(app.room.id)
 app.composer.Text = "A quick hello from the UI test"
 app:sendMessage()
@@ -222,6 +291,7 @@ auth:findChild("UsePassword", true):send("Node.LeftButtonUp")
 drain(app)
 auth = app.screen
 assert(auth:findChild("Email", true) and auth:findChild("Password", true))
+assert(auth:findChild("Email", true).Type == "Email", "Email sign-in must request the email keyboard")
 assert(auth:findChild("Password", true).Type == "Password")
 
 -- Phone/email verification uses the same client and in-process mock protocol.
@@ -240,6 +310,7 @@ authApp:show()
 local phonePage = authApp.screen
 assert(phonePage:findChild("PhonePage", true) and not phonePage:findChild("Email", true),
     "Phone entry must contain only the phone form")
+assert(phonePage:findChild("Identifier", true).Type == "Phone", "Phone entry must request an international phone keypad")
 assert(namedCount(phonePage, "AuthLogo") == 1, "Authentication needs exactly one logo")
 local wordmark = phonePage:findChild("AuthWordmark", true)
 assert(wordmark:getTextContent() == "ORCA / CHAT" and wordmark.FontSize == 14,
@@ -260,6 +331,7 @@ click(authApp, "CreateAccount")
 assert(authApp.screen:findChild("SignUpPage", true) and not authApp.screen:findChild("SignIn", true),
     "Create account needs its own page and primary action")
 assert(authApp.screen:findChild("Email", true).Text == "demo@example.invalid")
+assert(authApp.screen:findChild("Email", true).Type == "Email", "Signup must also request the email keyboard")
 assert(authApp.screen:findChild("Password", true).Text == "", "Passwords must not carry between pages")
 authApp.screen:findChild("DisplayName", true).Text = "New friend"
 click(authApp, "UsePhone")
@@ -299,7 +371,9 @@ assert(authApp.authDraft == nil, "Successful authentication must clear form draf
 otpApp.screen:findChild("Identifier", true).Text = "+4915110000001"
 click(otpApp, "RequestCode")
 assert(otpApp.screen:findChild("CodeStep", true).Visible, "Requesting a code must show the verification step")
+assert(otpApp.screen:findChild("VerificationCode", true).Type == "Number", "Verification codes need a digits keyboard")
 otpApp.screen:findChild("VerificationCode", true).Text = "000000"
+assert(otpApp.screen:findChild("VerificationCode", true).Text == "000000", "Numeric entry must preserve leading zeroes")
 click(otpApp, "VerifyCode")
 assert(not otpApp.client:getSession(), "A wrong code must not log in")
 otpApp.screen:findChild("VerificationCode", true).Text = "123456"
@@ -313,6 +387,7 @@ assert(otpApp.client:getProfile().username == "test_person", "Save profile must 
 otpApp.screen:findChild("LinkIdentifier", true).Text = "+447700900987"
 click(otpApp, "RequestLink")
 assert(otpApp.screen:findChild("LinkVerification", true).Visible, "Linking must require verification")
+assert(otpApp.screen:findChild("LinkCode", true).Type == "Number", "Linked identities need the same digits keyboard")
 otpApp.screen:findChild("LinkCode", true).Text = "123456"
 click(otpApp, "VerifyLink")
 assert(otpApp.client:getProfile().phone == "+447700900987", "Verified phone must attach to the existing account")
@@ -329,6 +404,7 @@ otpApp.screen:findChild("RoomName", true).Text = "Our group"
 click(otpApp, "Contactalex")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
+click(otpApp, "ConversationMenu")
 click(otpApp, "ConversationInfo")
 click(otpApp, "CreateInvite")
 assert(otpApp.screen:findChild("Invitation", true):getTextContent():find("Invitation:", 1, true), "Admins must be able to create invitations")
@@ -355,6 +431,16 @@ otpApp:openRoom(subscriberRoom)
 assert(not otpApp.screen:findChild("Composer", true).Visible and otpApp.screen:findChild("ChannelReadOnly", true).Visible,
     "Channel subscribers must see a read-only timeline")
 assert(not isShown(otpApp.screen:findChild("AttachPhoto", true)), "Subscribers must not be offered media publishing")
+assert(not isShown(otpApp.screen:findChild("SendMessage", true)), "Subscribers must not be offered message publishing")
+for _, name in ipairs { "BackToChats", "ConversationMenu" } do
+    assert(isShown(otpApp.screen:findChild(name, true)), "Read-only subscribers still need " .. name)
+end
+assert(not isShown(otpApp.screen:findChild("ConversationInfo", true)), "Secondary commands start hidden for subscribers too")
+click(otpApp, "ConversationMenu")
+for _, name in ipairs { "PinConversation", "ConversationInfo", "RefreshMessages" } do
+    assert(isShown(otpApp.screen:findChild(name, true)), "Subscribers must retain overflow action " .. name)
+end
+click(otpApp, "DismissConversationMenu")
 
 -- Public channel discovery works for a new account without preassigned membership.
 otpApp:show("/new")

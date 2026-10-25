@@ -103,11 +103,16 @@
     </enum>
     <enum name="InputType">
       <summary>Input control behavior types for different data entry needs</summary>
+      <details>Text entry types select a suitable software keyboard where supported; they do not validate or restrict text. Validate submitted values in the application, including pasted and hardware-keyboard input.</details>
       <value name="Text">Single or multi-line text input </value>
       <value name="Password">Masked password input for security </value>
-      <value name="Number">Numeric input with validation </value>
+      <value name="Number">Digits keyboard for integer values and verification codes; text preserves leading zeroes</value>
       <value name="Checkbox">Boolean checkbox control </value>
       <value name="Radio">Radio button for exclusive selection </value>
+      <value name="Phone">Phone keypad with access to + for international country codes</value>
+      <value name="Email">Email address keyboard with convenient @ and period keys</value>
+      <value name="Url">URL keyboard with convenient URL punctuation</value>
+      <value name="Decimal">Numeric keyboard with a locale-appropriate decimal separator</value>
     </enum>
     <enum name="ResizeMode">
       <summary>Defines how the window can be resized by the user or system.</summary>
@@ -515,7 +520,7 @@
       </handles>
       <properties>
         <property name="Name" type="string">Input identifier for forms and data binding </property>
-        <property name="Type" type="InputType">Input behavior type (text, password, etc.) </property>
+        <property name="Type" type="InputType">Input behavior and software keyboard hint; text entry modes do not perform validation</property>
         <property name="Cursor" type="int">Current text cursor position </property>
         <property name="Multiline" type="bool">Allow multiple lines of text input </property>
         <property name="Checked" type="bool">Checked state for checkbox/radio types </property>
@@ -740,6 +745,11 @@
         <property name="DataContext" type="DataContext" pointer="true">Data source or data object used as the root for bindings and child content.</property>
         <property name="ClearColor" type="color">Background clear color for the screen </property>
         <property name="ResizeMode" type="ResizeMode">Specifies how the window can be resized or displayed</property>
+        <property name="RespectSafeArea" type="bool" default="TRUE">Lay out children within the safe area while retaining the full viewport and background. Set false for custom edge-to-edge content layouts.</property>
+        <property name="SafeAreaLeft" type="float">Left safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaTop" type="float">Top safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaRight" type="float">Right safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="SafeAreaBottom" type="float">Bottom safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
       </properties>
       <fields>
         <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
