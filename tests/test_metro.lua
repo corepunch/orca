@@ -148,9 +148,21 @@ local function test_application_bar()
   tap(screen, off)
   test.expect_eq(#clicks, 1, "Disabled buttons ignore taps")
 
+  -- The ellipsis is the generated part holding three dots.
+  local ellipsis = bar:getFirstChild()
+  while ellipsis and not (ellipsis.className == "Node2D" and #children(ellipsis, "Node2D") == 3) do
+    ellipsis = ellipsis:getNext()
+  end
+  local function middle(node) local _, y = origin(node); return y + node.ActualHeight / 2 end
+  local ring = 38 / 2
+  test.expect(ellipsis and math.abs(middle(ellipsis) - (select(2, origin(add)) + ring)) < 0.5,
+    "The ellipsis is vertically centred on the round buttons")
+
   tap(screen, bar, 360, 10)
   layout(screen)
   test.expect(bar.IsExpanded, "Tapping the ellipsis expands the bar")
+  test.expect(math.abs(middle(ellipsis) - (select(2, origin(add)) + ring)) < 0.5,
+    "The ellipsis stays centred on the buttons when expanded")
   test.expect(about.Visible, "Expanding reveals the menu")
   local aboutX, aboutY = origin(about)
   test.expect(aboutY < origin(bar) + 1e6 and select(2, origin(about)) > select(2, origin(add)),

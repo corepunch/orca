@@ -117,8 +117,10 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
   Metro_Show(pApplicationBar->_scrim, expanded, 1);
   Metro_Arrange(pApplicationBar->_scrim, x, top - 4096, w, 4096);
 
+  // The ellipsis lines up with the middle of the round buttons.
+  float ringY = expanded ? top + APPBAR_PAD : y + (h - APPBAR_RING) / 2;
   float dotsWidth = APPBAR_DOTS * APPBAR_DOT + (APPBAR_DOTS - 1) * APPBAR_DOT;
-  float dotsX = x + w - METRO_INSET - dotsWidth, dotsY = top + (minimized && !expanded ? (h - APPBAR_DOT) / 2 : 9);
+  float dotsX = x + w - METRO_INSET - dotsWidth, dotsY = ringY + (APPBAR_RING - APPBAR_DOT) / 2;
   Metro_Arrange(pApplicationBar->_ellipsis, dotsX, dotsY, dotsWidth, APPBAR_DOT);
   int dot = 0;
   FOR_EACH_OBJECT(child, pApplicationBar->_ellipsis) {
@@ -126,7 +128,6 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
     Metro_Arrange(child, dot++ * 2 * APPBAR_DOT, 0, APPBAR_DOT, APPBAR_DOT);
   }
 
-  float ringY = expanded ? top + APPBAR_PAD : y + (h - APPBAR_RING) / 2;
   float slotX = x + (w - buttons * APPBAR_SLOT) / 2, menuY = top + rows;
   FOR_EACH_OBJECT(child, hObject) {
     struct ApplicationBarIconButton *button = GetApplicationBarIconButton(child);
