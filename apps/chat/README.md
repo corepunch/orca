@@ -6,18 +6,24 @@ Runs on macOS with a **390 × 844** portrait viewport and on iPhone/iPad with
 an adaptive viewport, touch scrolling and the native keyboard. iOS builds use
 Make and the Xcode command-line tools without an Xcode project.
 
-![ORCA Messenger on macOS](preview.png)
+![ORCA Messenger in dark mode](preview.png)
 
-[Message thread preview](thread-preview.png)
+[Light mode](preview-light.png) · [Message thread preview](thread-preview.png)
 
 [New conversation](new-preview.png) · [Profile](profile-preview.png) · [Sign in](auth-preview.png)
 
 ## Design
 
-The midnight surfaces and violet accents follow `samples/Example`. A shared
-palette in `theme.lua`, reusable Lua components, and `Styles/app.css` carry
-the design across the inbox, conversations, account, and forms. Icons are
-stroke-based Lucide SVGs with inherited tint.
+The Metro design follows Facebook Messenger on Windows Phone. A small-caps
+MESSENGER title sits above lowercase pivot headers (all, unread, pinned). The
+app uses square, solid-colour avatar tiles, flat rows, and square bubbles with
+triangular tails. The app bar has outlined circular buttons. `theme.lua` holds
+a black and a white palette with Messenger blue. The OS appearance chooses
+between them; set `CHAT_APPEARANCE=light` or `dark` to override it. On Linux,
+ORCA reports dark mode when `GTK_THEME` contains `dark`. Reusable Lua
+components and `Styles/app.css` (with `:dark` variants) carry the design across
+the inbox, conversations, account, and forms. Icons are stroke-based Lucide
+SVGs with inherited tint.
 
 `views/shell.lua` owns one persistent `TabBar` for Chats, New chat, and Profile.
 Its selection binds to `PageHost.ActivePage`; root pages keep their instances

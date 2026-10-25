@@ -28,9 +28,9 @@ function C.icon(name, size, color)
     }
 end
 
-function C.iconTile(name, size, iconSize, radius)
-    local tile = ui.Grid { Width = size, Height = size, Background = colors.soft, BorderRadius = tostring(radius or 20) }
-    tile:addChild(C.icon(name, iconSize, colors.accentText))
+function C.iconTile(name, size, iconSize)
+    local tile = ui.Grid { Width = size, Height = size, Background = colors.accent }
+    tile:addChild(C.icon(name, iconSize, colors.onAccent))
     return tile
 end
 
@@ -41,7 +41,6 @@ function C.button(label, action, props)
     props.FontWeight = props.FontWeight or "Bold"
     props.Foreground = props.Foreground or colors.accentText
     props.Background = props.Background or "#00000000"
-    props.BorderRadius = props.BorderRadius or "14"
     props.TextHorizontalAlignment, props.TextVerticalAlignment = "Center", "Center"
     props.Click, props.class = action, "chat-action"
     return ui.Button(props, label)
@@ -63,7 +62,7 @@ function C.input(name, placeholder, props)
     props.Padding = props.Padding or "16 0"
     props.Background = props.Background or colors.surface
     props.Foreground, props.PlaceholderColor = colors.ink, colors.dim
-    props.BorderRadius, props.BorderWidth, props.BorderColor = "16", "1", colors.line
+    props.BorderWidth, props.BorderColor = "2", colors.line
     props.class = "chat-input"
     return ui.Input(props)
 end
@@ -77,7 +76,7 @@ function C.avatar(name, size, key)
     if last then initials = initials .. last end
     return C.text(initials:upper(), {
         Width = size or 52, Height = size or 52, FontSize = (size or 52) < 40 and 12 or 17,
-        FontWeight = "Bold", BorderRadius = tostring((size or 52) / 2),
+        FontWeight = "Bold",
         Background = tone.background, Foreground = tone.foreground,
         TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
     })
@@ -86,39 +85,49 @@ end
 function C.badge(value, props)
     props = props or {}
     props.Width, props.Height = props.Width or 24, props.Height or 24
-    props.Background, props.Foreground = props.Background or colors.accent, props.Foreground or "white"
-    props.FontSize, props.FontWeight, props.BorderRadius = 11, "Bold", "12"
+    props.Background, props.Foreground = props.Background or colors.accent, props.Foreground or colors.onAccent
+    props.FontSize, props.FontWeight = 11, "Bold"
     props.TextHorizontalAlignment, props.TextVerticalAlignment = "Center", "Center"
     return C.text(tostring(value), props)
 end
 
 function C.eyebrow(value)
-    return C.text(value, { FontSize = 10, FontWeight = "Bold", Foreground = colors.dim, LetterSpacing = 1.7 })
+    return C.text(value:lower(), { FontSize = 15, Foreground = colors.accentText })
 end
 
+-- Metro app title: small capitals above the page content.
 function C.brand()
-    return C.stack({ Direction = "Horizontal", AlignItems = "Center", Spacing = 9, Height = 32 }, {
-        C.iconTile("message-circle", 30, 17, 10),
-        C.text("orca", { FontSize = 17, FontWeight = "Bold", LetterSpacing = 0.5 }),
-        C.text("/ messenger", { FontSize = 12, Foreground = colors.dim }),
-    })
+    return C.text("MESSENGER", { FontSize = 13, FontWeight = "Bold", LetterSpacing = 1.2, Height = 32,
+        TextVerticalAlignment = "Center" })
 end
 
 function C.navItem(label, icon, key)
     local button = ui.Tab {
         Name = "Tab" .. key, Value = key, Height = 58, class = "chat-tab",
-        SelectedColor = colors.soft, UnselectedColor = colors.surface,
+        SelectedColor = colors.surface, UnselectedColor = colors.surface,
     }
-    local grid = ui.Grid { Rows = "22px 16px", Padding = "8 8", Spacing = 2, IgnoreHitTest = true }
-    local image = C.icon(icon, 20, colors.muted)
+    local grid = ui.Grid { Rows = "32px 16px", Padding = "2 8", Spacing = 2, IgnoreHitTest = true }
+    -- App-bar button: an outlined circle around the glyph.
+    local ring = ui.Grid { Name = "Tab" .. key .. "Ring", Width = 32, Height = 32, BorderRadius = "16", BorderWidth = "2",
+        BorderColor = colors.muted, MarginLeft = auto, MarginRight = auto, IgnoreHitTest = true }
+    local image = C.icon(icon, 16, colors.muted)
     image.Name = "Tab" .. key .. "Icon"
-    grid:addChild(image)
-    grid:addChild(C.text(label, {
+    ring:addChild(image)
+    grid:addChild(ring)
+    grid:addChild(C.text(label:lower(), {
         Name = "Tab" .. key .. "Label", FontSize = 10, FontWeight = "Bold",
         Foreground = colors.muted, TextHorizontalAlignment = "Center",
     }))
     button:addChild(grid)
     return button
+end
+
+-- Speech-bubble tail, tinted like the bubble it joins.
+function C.tail(up, color, mine)
+    return ui.VectorView {
+        Source = "Chat/assets/bubble-tail-" .. (up and "up" or "down") .. ".svg", Width = 14, Height = 12,
+        Foreground = color, MarginLeft = mine and auto or 16, MarginRight = mine and 16 or auto, IgnoreHitTest = true,
+    }
 end
 
 function C.time(iso)

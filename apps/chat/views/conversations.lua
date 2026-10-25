@@ -122,7 +122,7 @@ function Conversations.newRoom(self)
             FontSize = 12, Foreground = colors.muted, WordWrap = true })) end
         for _, channel in ipairs(found) do
             local item = C.stack({ Name = "FoundChannel" .. channel.id, Spacing = 10, Padding = "14 12",
-                Background = colors.surface, BorderRadius = "16" }, {
+                Background = colors.surface }, {
                 C.text(channel.name, { FontSize = 15, FontWeight = "Bold", WordWrap = true }),
                 C.text("Public broadcast channel", { FontSize = 11, Foreground = colors.muted }),
                 C.button(channel.role and "Open channel" or "Subscribe", function()
@@ -151,7 +151,7 @@ function Conversations.newRoom(self)
             if not room then notice(err.message, true); return end
             name.Text, self.newSelection = "", {}; updateSelection()
             if self.shell and self.screen == self.shell.screen and self.shell.active == "New" then self:openRoom(room) end
-        end, { Name = "CreateConversation", Background = colors.accent, Foreground = "white", Height = 52 }),
+        end, { Name = "CreateConversation", Background = colors.accent, Foreground = colors.onAccent, Height = 52 }),
         C.eyebrow("HAVE AN INVITATION?"), inviteCode,
         C.button("Join with invitation", function()
             local room, err = self.client:joinInvite(inviteCode.Text)
@@ -183,7 +183,7 @@ function Conversations.details(self)
     for _, member in ipairs(members or {}) do
         local id = member.user_id or member.id
         local info = member.profile or member
-        local row = C.stack({ Name = "Member" .. id, Spacing = 8, Padding = "14 12", Background = colors.surface, BorderRadius = "16" }, {
+        local row = C.stack({ Name = "Member" .. id, Spacing = 8, Padding = "14 12", Background = colors.surface }, {
             C.text(publicName(info), { FontWeight = "Bold", FontSize = 14 }),
             C.text(member.role or "member", { FontSize = 11, Foreground = colors.muted }),
         })

@@ -365,7 +365,8 @@ assert(photoView.Source, "The timeline thumbnail must load a real image texture 
 assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
     "The loaded thumbnail texture must be initialized with its actual image dimensions")
 photoApp.screen:UpdateLayout(390, 844)
-local timeline, bubble = photoApp.messageList, photoView:getParent()
+-- Measure the timeline entry: the bubble plus its tail.
+local timeline, bubble = photoApp.messageList, photoView:getParent():getParent()
 local offset = timeline.ContentOffset
 assert(timeline.ScrollHeight > timeline.ActualHeight, "The photo fixture must overflow the viewport to exercise scrolling")
 assert(math.abs(offset.Y - (timeline.ActualHeight - timeline.ScrollHeight)) < 1,

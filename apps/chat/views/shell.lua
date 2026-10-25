@@ -62,6 +62,7 @@ function Shell:show(key, content)
             local color = selected and colors.accentText or colors.muted
             item:findChild("Tab" .. value .. "Icon", true).Foreground = color
             item:findChild("Tab" .. value .. "Label", true).Foreground = color
+            item:findChild("Tab" .. value .. "Ring", true).BorderColor = color
         end
     end
     self.active = key

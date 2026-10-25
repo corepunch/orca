@@ -93,8 +93,7 @@ local App = Application:extend {
         local list = self.roomList
         while list:getFirstChild() do list:getFirstChild():removeFromParent() end
         for label, button in pairs(self.filterButtons) do
-            button.Background = self.filter == label and colors.accent or colors.surface
-            button.Foreground = self.filter == label and "white" or colors.muted
+            button.Foreground = self.filter == label and colors.ink or colors.faint
         end
         if self.query == "" and self.filter == "All" then
             local pinned = C.stack({ Spacing = 14, MarginBottom = 26 })
@@ -104,7 +103,7 @@ local App = Application:extend {
                     local shortcut = C.button("", function() self:openRoom(room) end, { Width = 68, Height = 84 })
                     local content = C.stack({ Spacing = 9, AlignItems = "Center", IgnoreHitTest = true }, {
                         C.avatar(room.name, 52, room.id),
-                        C.text(room.name:match("^%S+") or room.name, {
+                        C.text((room.name:match("^%S+") or room.name):lower(), {
                             Width = 68, FontSize = 11, Foreground = colors.muted,
                             TextHorizontalAlignment = "Center", TextOverflow = "Ellipsis",
                         }),
@@ -133,15 +132,15 @@ local App = Application:extend {
             if matches and inFilter then
                 visible = visible + 1
                 local row = ui.Button {
-                    Name = "Room" .. index, Height = 88, Background = colors.surface, BorderRadius = "20",
+                    Name = "Room" .. index, Height = 88, Background = colors.background,
                     class = "conversation", Click = function() self:openRoom(room) end,
                 }
                 local content = ui.Grid { Columns = "52px 1fr 42px", Padding = "13 14", Spacing = 11, IgnoreHitTest = true }
                 content:addChild(C.avatar(room.name, 52, room.id))
-                content:addChild(C.stack({ JustifyContent = "Center", Spacing = 6, IgnoreHitTest = true }, {
-                    C.text(room.name, { FontSize = 15, FontWeight = "Bold", TextOverflow = "Ellipsis" }),
+                content:addChild(C.stack({ JustifyContent = "Center", Spacing = 2, IgnoreHitTest = true }, {
+                    C.text(room.name:lower(), { FontSize = 21, TextOverflow = "Ellipsis" }),
                     C.text(room.subtitle or "Start the conversation", {
-                        FontSize = 12, Foreground = unread > 0 and colors.muted or colors.dim, TextOverflow = "Ellipsis",
+                        FontSize = 13, Foreground = unread > 0 and colors.accentText or colors.dim, TextOverflow = "Ellipsis",
                     }),
                 }))
                 local meta = C.stack({ AlignItems = "End", JustifyContent = "Center", Spacing = 9, IgnoreHitTest = true }, {
@@ -195,10 +194,12 @@ local App = Application:extend {
         brand:addChild(C.brand())
         local profile = C.button("", function() self:show("/profile") end, { Width = 36, Height = 36 })
         profile:addChild(C.avatar("You", 34, "me")); brand:addChild(profile)
-        local title = ui.Grid { Columns = "1fr 46px", Height = 52, MarginTop = 18 }
-        title:addChild(C.text("Messages", { FontSize = 34, FontWeight = "Bold", LetterSpacing = -0.7 }))
+        -- Pivot headers: the filters double as the page title.
+        local title = ui.Grid { Columns = "1fr 46px", Height = 52, MarginTop = 8 }
+        local filters = C.stack({ Direction = "Horizontal", Spacing = 16, Height = 52 })
+        title:addChild(filters)
         title:addChild(C.iconButton("plus", function() self:show("/new") end, {
-            Name = "NewChat", Background = colors.accent, Foreground = "white", BorderRadius = "16",
+            Name = "NewChat", Background = colors.accent, Foreground = colors.onAccent,
         }))
         self.searchInput = C.input("Search", "Search conversations", {
             Text = self.query, Height = 46, Padding = "12 0", Background = "#00000000",
@@ -207,23 +208,24 @@ local App = Application:extend {
         })
         self.searchInput.BorderWidth = "0"
         local search = ui.Grid { Columns = "22px 1fr 28px", Height = 48, Spacing = 4, Padding = "12 0", MarginTop = 12,
-            Background = colors.surface, BorderWidth = "1", BorderColor = colors.line, BorderRadius = "16" }
+            Background = colors.surface, BorderWidth = "2", BorderColor = colors.line }
         search:addChild(C.icon("search", 18, colors.dim)); search:addChild(self.searchInput)
         search:addChild(C.iconButton("x", function()
             self.query, self.searchInput.Text = "", ""; self:renderRoomList(); self.searchInput:setFocus()
         end, { Width = 28, Height = 44, Name = "ClearSearch" }))
-        local filters = C.stack({ Direction = "Horizontal", Spacing = 8, Height = 34, MarginTop = 14 })
         self.filterButtons = {}
-        for _, label in ipairs { "All", "Unread", "Pinned" } do
-            local button = C.button(label, function() self.filter = label; self:renderRoomList() end, {
-                Width = label == "All" and 66 or 84, Height = 34, FontSize = 12, BorderRadius = "17", Name = "Filter" .. label,
+        for _, pivot in ipairs { { "All", 46 }, { "Unread", 104 }, { "Pinned", 100 } } do
+            local label = pivot[1]
+            local button = C.button(label:lower(), function() self.filter = label; self:renderRoomList() end, {
+                Width = pivot[2], Height = 52, FontSize = 32, FontWeight = "Normal", Name = "Filter" .. label,
             })
+            button.TextHorizontalAlignment = "Left"
             self.filterButtons[label] = button; filters:addChild(button)
         end
-        local header = C.stack({ Padding = "22 22 22 12" }, { brand, title, search, filters })
-        self.roomList = C.stack({ Name = "ConversationList", Padding = "22 12 22 20", Spacing = 9, Overflow = "hidden scroll" })
+        local header = C.stack({ Padding = "22 22 22 12" }, { brand, title, search })
+        self.roomList = C.stack({ Name = "ConversationList", Padding = "22 12 22 20", Overflow = "hidden scroll" })
         local footer = C.stack({ Padding = "0 2", Spacing = 8 }, { self.status })
-        local grid = ui.Grid { Rows = "236px 1fr 22px", Background = colors.background }
+        local grid = ui.Grid { Rows = "190px 1fr 22px", Background = colors.background }
         grid:addChild(header); grid:addChild(self.roomList); grid:addChild(footer)
         local screen = self:frame(grid, "Chats")
         self:renderRoomList()
@@ -243,7 +245,7 @@ local App = Application:extend {
         for _, message in ipairs(messages) do
             local mine = message.sender_id == me and self.room.kind ~= "channel"
             local bubble = C.stack({
-                Name = "MessageBubble" .. message.id, Width = 284, Padding = "15 12", Spacing = 8, BorderRadius = "19",
+                Name = "MessageBubble" .. message.id, Width = 284, Padding = "15 12", Spacing = 8,
                 Background = mine and colors.sent or colors.raised,
                 MarginLeft = mine and auto or 0, MarginRight = mine and 0 or auto,
             })
@@ -267,12 +269,17 @@ local App = Application:extend {
                 end
             end
             if message.body and message.body ~= "" then
-                bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 14, Foreground = mine and "white" or colors.ink }))
+                bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 14, Foreground = mine and colors.sentText or colors.ink }))
             end
             bubble:addChild(C.text((mine and "Sent · " or "") .. (C.time(message.created_at) or ""), {
-                FontSize = 9, Foreground = mine and "#e1d4ff" or colors.dim, TextHorizontalAlignment = "Right",
+                FontSize = 9, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
             }))
-            node:addChild(bubble)
+            -- Incoming tails point up from the top-left; outgoing ones hang from the bottom-right.
+            local entry, tone = C.stack({ Spacing = 0 }), mine and colors.sent or colors.raised
+            if not mine then entry:addChild(C.tail(true, tone, false)) end
+            entry:addChild(bubble)
+            if mine then entry:addChild(C.tail(false, tone, true)) end
+            node:addChild(entry)
         end
         if #messages == 0 then
             local channel, readOnly = self.room.kind == "channel", self.room.can_post == false
@@ -363,7 +370,7 @@ local App = Application:extend {
         if not self.room then return self:home() end
         local header = ui.Grid {
             Columns = "38px 40px 1fr 38px 38px", Padding = "12 20", Spacing = 8,
-            Background = colors.surface, BorderWidthBottom = 1, BorderColor = colors.line,
+            Background = colors.background, BorderWidthBottom = 1, BorderColor = colors.line,
         }
         header:addChild(C.iconButton("arrow-left", function()
             self.drafts[self.room.id] = self.composer.Text; self:show()
@@ -374,7 +381,7 @@ local App = Application:extend {
             self:show("/details")
         end, { Name = "ConversationInfo", Height = 52 })
         info:addChild(C.stack({ Spacing = 5, JustifyContent = "Center", IgnoreHitTest = true }, {
-            C.text(self.room.name, { FontSize = 15, FontWeight = "Bold", TextOverflow = "Ellipsis" }),
+            C.text(self.room.name:lower(), { FontSize = 22, TextOverflow = "Ellipsis" }),
             C.text((self.room.kind or "group") .. " · Tap for info", { FontSize = 10, Foreground = colors.dim }),
         }))
         header:addChild(info)
@@ -396,11 +403,11 @@ local App = Application:extend {
             Name = "AttachPhoto", Width = 40, Height = 50, Background = colors.soft }))
         compose:addChild(self.composer)
         compose:addChild(C.iconButton("arrow-up", function() self:sendMessage() end, {
-            Name = "SendMessage", Background = colors.accent, Foreground = "white", Width = 50, Height = 50, BorderRadius = "17",
+            Name = "SendMessage", Background = colors.accent, Foreground = colors.onAccent, Width = 50, Height = 50,
         }))
         self.photoLabel = C.text("Photo ready", { FontSize = 11, Foreground = colors.accentText, TextVerticalAlignment = "Center" })
         self.photoPreview = ui.Grid { Name = "PhotoDraft", Columns = "1fr 40px", Height = 38,
-            Visible = self.photoDrafts[self.room.id] ~= nil, Background = colors.soft, Padding = "10 0", BorderRadius = "12" }
+            Visible = self.photoDrafts[self.room.id] ~= nil, Background = colors.soft, Padding = "10 0" }
         self.photoPreview:addChild(self.photoLabel)
         self.photoPreview:addChild(C.iconButton("x", function()
             if self.sending then self:notice("The photo is being sent. Please wait."); return end
