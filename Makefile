@@ -230,6 +230,14 @@ test-chat: copyshare
 test-chat-appwrite: copyshare
 	$(TARGET) -test=tests/test_chat_appwrite.lua
 
+.PHONY: octopus test-octopus
+octopus: copyshare
+	$(TARGET) apps/octopus
+
+test-octopus: copyshare
+	$(TARGET) -test=tests/test_octopus_api.lua
+	$(TARGET) -test=tests/test_octopus_app.lua
+
 NODE ?= node
 .PHONY: test-chat-appwrite-backend test-media
 test-chat-appwrite-backend:
