@@ -5,6 +5,7 @@ local test = require "orca.test"
 
 local orca = require "orca"
 local ui = require "orca.UIKit"
+local core = require "orca.core"
 
 local function screen(width, height)
 	return ui.Screen { Width = width or 400, Height = height or 600, ResizeMode = "NoResize" }
@@ -149,6 +150,49 @@ local function test_nested_auto_footer()
 	print("PASS: test_nested_auto_footer")
 end
 
+local function test_resizable_safe_area_footer()
+	local s = screen(390, 844)
+	s.ResizeMode, s.RespectSafeArea = "CanResize", false
+	local outer = s + ui.Grid { Rows = "1fr auto" }
+	local body = outer + ui.Node2D {}
+	local footer = outer + ui.Grid { Rows = "58px" }
+	local bar = footer + ui.ApplicationBar {}
+	for _, edge in ipairs { "Left", "Top", "Right" } do
+		outer:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+	end
+	footer:attachPropertyProgram("Node.PaddingBottom", "{Screen.SafeAreaBottom}", "OneWay", true)
+	-- Simulate the viewport and inset changes delivered by the native host.
+	-- Desktop tests supply the insets; only the device can validate UIKit's values.
+	local sizes = {
+		{ name = "portrait", width = 390, height = 844, top = 59, bottom = 34, left = 0, right = 0 },
+		{ name = "keyboard", width = 390, height = 500, top = 59, bottom = 0, left = 0, right = 0 },
+		{ name = "landscape", width = 844, height = 390, top = 0, bottom = 21, left = 59, right = 59 },
+		{ name = "tablet", width = 834, height = 1194, top = 24, bottom = 20, left = 0, right = 0 },
+		{ name = "portrait restored", width = 390, height = 844, top = 59, bottom = 34, left = 0, right = 0 },
+	}
+	for _, size in ipairs(sizes) do
+		s.SafeAreaTop, s.SafeAreaBottom = size.top, size.bottom
+		s.SafeAreaLeft, s.SafeAreaRight = size.left, size.right
+		core.flushQueue()
+		core.advanceFrame()
+		core.runAllPrograms(s)
+		s:UpdateLayout(size.width, size.height)
+		test.expect_eq(s.Width, size.width, size.name .. ": screen follows the native width")
+		test.expect_eq(s.Height, size.height, size.name .. ": screen follows the native height")
+		test.expect_eq(outer.ActualHeight, size.height, size.name .. ": root fits the viewport")
+		test.expect_eq(body.ActualHeight, size.height - size.top - 58 - size.bottom,
+			size.name .. ": content retains the space above the footer")
+		test.expect_eq(footer.ActualY + footer.ActualHeight, size.height,
+			size.name .. ": footer ends at the physical bottom")
+		test.expect_eq(footer.ActualHeight, 58 + size.bottom, size.name .. ": footer only adds the bottom inset")
+		test.expect_eq(footer.ActualY + bar.ActualY + bar.ActualHeight, size.height - size.bottom,
+			size.name .. ": controls remain above the home gesture area")
+		test.expect_eq(bar.ActualWidth, size.width - size.left - size.right,
+			size.name .. ": controls fit between the safe side insets")
+	end
+	print("PASS: test_resizable_safe_area_footer")
+end
+
 local function test_xml_tracks()
 	local filesystem = require "orca.filesystem"
 	-- A throwaway project, so the XML parser reads Rows exactly as authored.
@@ -189,4 +233,5 @@ test_star_clamps_to_zero()
 test_unbounded_grid_in_stack()
 test_implicit_tracks()
 test_nested_auto_footer()
+test_resizable_safe_area_footer()
 test_xml_tracks()

@@ -218,6 +218,7 @@ chat: copyshare
 	$(TARGET) apps/chat
 
 test-chat: copyshare
+	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_polling.lua
 	$(TARGET) -test=tests/test_chat_sync.lua
 	$(TARGET) -test=tests/test_chat_refresh_race.lua
@@ -396,6 +397,7 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_sync.lua
 	$(TARGET) -test=tests/test_chat_refresh_race.lua
 	$(TARGET) -test=tests/test_chat_timeline.lua
+	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_app.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))

@@ -40,7 +40,10 @@ function Sync.refreshInbox(app, current, quiet)
         return true
     end)
     app.inboxRefreshBusy = false
-    if not ok then result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." } end
+    if not ok then
+        if current() and app.reportError then app:reportError(result, "Syncing conversations") end
+        result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." }
+    end
     if not result and not quiet and current() then app:notice(err.message, true) end
     return result, err
 end
@@ -48,6 +51,9 @@ end
 function Sync.new(app, options)
     options = options or {}
     local self = setmetatable({ app = app }, Sync)
+    options.onError = options.onError or function(err)
+        if app.reportError then app:reportError(err, "Polling") end
+    end
     if not options.createTimer then
         -- One retained Timer owns the timer. Timer.Tick is dispatched through
         -- ORCA's yieldable event coroutine, just like button handlers.
@@ -115,6 +121,7 @@ function Sync:activate()
             else
                 result, err = Sync.refreshInbox(app, current, true)
             end
+            if not result and err and current() then app:notice(err.message, true) end
             -- A revoked session stops the job's valid predicate, but still
             -- needs to remove authenticated views from the active screen.
             if app.screen == screen and app.navigationEpoch == navigation and app.sessionEpoch == epoch

@@ -549,6 +549,35 @@ ORCA_API void core_AdvanceFrame(void) {
 static int _fps[MAX_FPS_CACHE]={0};
 static int _counter=0;
 
+static void
+CORE_ReportCoroutineError(lua_State *L, lua_State *thread)
+{
+  int top = lua_gettop(L);
+  lpcString_t error = lua_tostring(thread, -1);
+  if (!error) error = lua_typename(thread, lua_type(thread, -1));
+  luaL_traceback(L, thread, error, 1);
+  int traceback = lua_gettop(L);
+
+  /* Do not load application modules while handling a failed coroutine. */
+  lua_getfield(L, LUA_REGISTRYINDEX, LUA_LOADED_TABLE);
+  lua_getfield(L, -1, "orca.core.async");
+  if (lua_istable(L, -1)) {
+    lua_getfield(L, -1, "report_error");
+    if (lua_isfunction(L, -1)) {
+      lua_pushvalue(L, traceback);
+      if (lua_pcall(L, 1, 0, 0) == LUA_OK) {
+        lua_settop(L, top);
+        return;
+      }
+      lpcString_t handler_error = lua_tostring(L, -1);
+      fprintf(stderr, "async error handler: %s\n",
+              handler_error ? handler_error : "non-string error");
+    }
+  }
+  fprintf(stderr, "co.resume(): %s\n", lua_tostring(L, traceback));
+  lua_settop(L, top);
+}
+
 LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
   switch (e->message) {
     case kEventWindowPaint:
@@ -581,10 +610,7 @@ LRESULT CORE_ProcessMessage(lua_State *L, struct AXmessage* e) {
           break;
         default:
           axPostMessageW(e->target, kEventStopCoroutine, e->wParam, NULL);
-          if (!lua_isnil(e->target, -1)) {
-            lpcString_t err = lua_tostring(e->target, -1);
-            if (err) fprintf(stderr, "co.resume(): %s\n", err);
-          }
+          CORE_ReportCoroutineError(L, e->target);
           lua_pop(e->target, 1);
           break;
       }

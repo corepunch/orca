@@ -195,7 +195,82 @@ test_respond_to_case_insensitive()
 test_respond_to_unknown_method()
 test_pipeline_yield_error()
 
+-- Error reporting must not recursively invoke, or propagate failures from,
+-- the application's handler. This also covers non-string error values.
+local reports = 0
+async.set_error_handler(function(err)
+  reports = reports + 1
+  async.report_error("nested report")
+  error("broken error UI")
+end)
+local unprintable = setmetatable({}, { __tostring = function() error("bad tostring") end })
+test.expect(pcall(async.report_error, unprintable), "A broken error handler must be contained")
+test.expect_eq(reports, 1, "Nested reports must not recursively invoke the handler")
+async.set_error_handler(nil)
+
 -- Restore orca.async
 orca.async = original_raw_async
+
+-- Exercise the actual native coroutine dispatcher, bypassing async.run.
+-- Renderer registration initializes the platform queue, including NSApp.
+require "orca.renderer"
+local core = require "orca.core"
+local ui = require "orca.UIKit"
+local system = require "orca.system"
+local screen = ui.Screen { Width = 100, Height = 100, ResizeMode = "NoResize" }
+local function pumpUntil(done)
+  local deadline = system.getTime() + 2000
+  repeat
+    local event = system.getMessage()
+    if event and not event:is("Window.Paint") then system.dispatchMessage(screen, event) end
+  until done() or system.getTime() >= deadline
+  test.expect(done(), "Native coroutine dispatch must complete")
+end
+local captured, after_error = nil, false
+async.set_error_handler(function(err) captured = err end)
+local owner = core.Timer { Tick = function(node, args)
+  node:cancelTimer(args.timerId)
+  coroutine.yield()
+  error("native callback failure")
+end }
+owner:setTimer(1)
+pumpUntil(function() return captured ~= nil end)
+test.expect(captured:find("native callback failure", 1, true), "Native event failure must reach the handler")
+test.expect(captured:find("stack traceback", 1, true), "Native errors must include their traceback")
+original_raw_async(function() after_error = true end)
+pumpUntil(function() return after_error end)
+
+-- A failure in the installed handler must leave the native queue usable.
+local handler_called, survived_handler = false, false
+async.set_error_handler(function()
+  handler_called = true
+  error("native error handler failed")
+end)
+original_raw_async(function() error("another native failure") end)
+pumpUntil(function() return handler_called end)
+original_raw_async(function() survived_handler = true end)
+pumpUntil(function() return survived_handler end)
+async.set_error_handler(nil)
+
+-- The native protected call must also survive a damaged reporting module.
+local report_error = async.report_error
+local reporter_called, survived_reporter = false, false
+async.report_error = function()
+  reporter_called = true
+  error("reporter failed")
+end
+original_raw_async(function() error("native fallback failure") end)
+pumpUntil(function() return reporter_called end)
+async.report_error = report_error
+original_raw_async(function() survived_reporter = true end)
+pumpUntil(function() return survived_reporter end)
+
+-- Drain the final stop-coroutine events so native registry references release.
+while true do
+  local event = system.peekMessage()
+  if not event then break end
+  if not event:is("Window.Paint") then system.dispatchMessage(screen, event) end
+end
+print("PASS: native callback errors, traceback, handler isolation and later dispatch")
 
 print("All async tests passed.")

@@ -155,7 +155,10 @@ function Timeline.refresh(self, options)
     self.messageRefreshBusy = true
     local ok, result, err = pcall(refresh, self, options, room, node, current)
     self.messageRefreshBusy = false
-    if not ok then result, err = nil, { code = "refresh_failed", message = "Could not refresh messages. Please try again." } end
+    if not ok then
+        if current() and self.reportError then self:reportError(result, "Refreshing messages") end
+        result, err = nil, { code = "refresh_failed", message = "Could not refresh messages. Please try again." }
+    end
     if not result and current() and not options.quiet then self:notice(err.message, true) end
     local queued = self.messageRefreshQueued
     self.messageRefreshQueued = nil
