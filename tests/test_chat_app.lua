@@ -25,9 +25,10 @@ local function mockApp(media)
     app.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     app:show("/")
     local login = app.screen
-    assert(not app.client:getSession() and login:findChild("SignIn", true), "Mock mode must start at real login")
+    assert(not app.client:getSession() and login:findChild("RequestCode", true), "Mock mode must start at real login")
     login:findChild("UsePassword", true):send("Node.LeftButtonUp")
     drain(app)
+    login = app.screen
     login:findChild("Email", true).Text = "demo@example.invalid"
     login:findChild("Password", true).Text = "incorrect"
     login:findChild("SignIn", true):send("Node.LeftButtonUp")
@@ -217,6 +218,9 @@ profile:findChild("SignOut", true):send("Node.LeftButtonUp")
 drain(app)
 local auth = app.screen
 assert(not app.client:getSession() and app.shell == nil, "Signing out must discard protected views")
+auth:findChild("UsePassword", true):send("Node.LeftButtonUp")
+drain(app)
+auth = app.screen
 assert(auth:findChild("Email", true) and auth:findChild("Password", true))
 assert(auth:findChild("Password", true).Type == "Password")
 
@@ -228,7 +232,71 @@ local function click(app, name)
     assert(app.screen:findChild(name, true), "Missing action " .. name):send("Node.LeftButtonUp")
     drain(app)
 end
-otpApp.screen:findChild("Identifier", true).Text = "demo@example.invalid"
+-- Authentication methods are distinct pages; switching preserves useful drafts
+-- and never mounts a second, hidden form or retains a password.
+local authApp = App { client = Chat.mock() }
+authApp.show = function(self, route) self.screen = self:dispatch(route or "/").view end
+authApp:show()
+local phonePage = authApp.screen
+assert(phonePage:findChild("PhonePage", true) and not phonePage:findChild("Email", true),
+    "Phone entry must contain only the phone form")
+assert(namedCount(phonePage, "AuthLogo") == 1, "Authentication needs exactly one logo")
+local wordmark = phonePage:findChild("AuthWordmark", true)
+assert(wordmark:getTextContent() == "ORCA / CHAT" and wordmark.FontSize == 14,
+    "The auth wordmark must use the compact Metro capitals")
+phonePage:UpdateLayout(390, 844)
+local logo = phonePage:findChild("AuthLogo", true)
+assert(math.abs(wordmark.ActualY + wordmark.ActualHeight / 2 - logo.ActualY - logo.ActualHeight / 2) < 0.5,
+    "Wordmark and logo must share the same vertical center")
+phonePage:findChild("Identifier", true).Text = "+4915110000001"
+click(authApp, "UsePassword")
+assert(authApp.screen ~= phonePage and authApp.screen:findChild("EmailPage", true),
+    "Use email must navigate to a separate page")
+assert(not authApp.screen:findChild("Identifier", true) and not authApp.screen:findChild("DisplayName", true),
+    "Email sign-in must not append phone or registration fields")
+authApp.screen:findChild("Email", true).Text = "demo@example.invalid"
+authApp.screen:findChild("Password", true).Text = "do not retain this"
+click(authApp, "CreateAccount")
+assert(authApp.screen:findChild("SignUpPage", true) and not authApp.screen:findChild("SignIn", true),
+    "Create account needs its own page and primary action")
+assert(authApp.screen:findChild("Email", true).Text == "demo@example.invalid")
+assert(authApp.screen:findChild("Password", true).Text == "", "Passwords must not carry between pages")
+authApp.screen:findChild("DisplayName", true).Text = "New friend"
+click(authApp, "UsePhone")
+assert(authApp.screen:findChild("Identifier", true).Text == "+4915110000001", "Returning to phone must preserve the number")
+click(authApp, "CreateAccount")
+assert(authApp.screen:findChild("DisplayName", true).Text == "New friend", "Returning to signup must preserve the name")
+click(authApp, "BackToSignIn")
+local emailPage = authApp.screen
+local signIn = emailPage:findChild("SignIn", true)
+for _, size in ipairs({ {320, 568}, {390, 844}, {390, 460}, {834, 1100}, {390, 460} }) do
+    emailPage.Width, emailPage.Height = size[1], size[2]
+    core.flushQueue()
+    core.advanceFrame()
+    core.runAllPrograms(emailPage)
+    emailPage:UpdateLayout(size[1], size[2])
+    local email, password = emailPage:findChild("Email", true), emailPage:findChild("Password", true)
+    for _, control in ipairs({ email, password, signIn }) do
+        assert(control.Visible and control.ActualHeight + control.BorderWidthTop + control.BorderWidthBottom >= 50
+            and control.ActualWidth >= size[1] - 64,
+            "Auth fields and Sign in must retain full hit areas across resize/keyboard changes")
+    end
+    assert(signIn.ActualY >= password:getParent().ActualY + password:getParent().ActualHeight,
+        "Sign in must remain below the password field")
+end
+-- A failed request leaves the same page and primary action in place.
+emailPage:findChild("Password", true).Text = "incorrect"
+click(authApp, "SignIn")
+assert(authApp.screen == emailPage and signIn.Visible and signIn:getTextContent() == "Sign in")
+assert(emailPage:findChild("Email", true).Text == "demo@example.invalid")
+click(authApp, "CreateAccount")
+authApp.screen:findChild("Email", true).Text = "signup_ui@example.invalid"
+authApp.screen:findChild("Password", true).Text = "password123"
+click(authApp, "SignUp")
+assert(authApp.client:getSession() and authApp.screen:findChild("ConversationListAll", true), "Signup must reach the real mock service: " .. authApp.status:getTextContent())
+assert(authApp.authDraft == nil, "Successful authentication must clear form drafts")
+
+otpApp.screen:findChild("Identifier", true).Text = "+4915110000001"
 click(otpApp, "RequestCode")
 assert(otpApp.screen:findChild("CodeStep", true).Visible, "Requesting a code must show the verification step")
 otpApp.screen:findChild("VerificationCode", true).Text = "000000"
@@ -297,8 +365,9 @@ click(otpApp, "CreateConversation")
 assert(otpApp.room.visibility == "public", "The public channel option must reach the API")
 local publicChannelId = otpApp.room.id
 otpApp:show("/profile"); click(otpApp, "SignOut")
-otpApp.screen:findChild("Identifier", true).Text = "new_reader@example.invalid"
-click(otpApp, "RequestCode")
+click(otpApp, "UsePassword")
+otpApp.screen:findChild("Email", true).Text = "new_reader@example.invalid"
+click(otpApp, "SendEmailCode")
 otpApp.screen:findChild("VerificationCode", true).Text = "123456"
 click(otpApp, "VerifyCode")
 assert(otpApp.client:getSession().user.email == "new_reader@example.invalid", "OTP must register a fresh reader account")

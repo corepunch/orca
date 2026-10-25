@@ -5,15 +5,16 @@ void OBJ_SetFocus(struct Object *pobj)
 {
   if (core.focus == pobj || (pobj && (pobj->flags & OF_NOACTIVATE)))
     return;
-  if (core.focus) {
-    axPostMessageW(core.focus, ID_Node_KillFocus, 0, pobj);
-    _SendMessage(core.focus, StyleController, ThemeChanged, .recursive = FALSE);
+  struct Object *previous = core.focus;
+  core.focus = pobj;
+  if (previous) {
+    axPostMessageW(previous, ID_Node_KillFocus, 0, pobj);
+    _SendMessage(previous, StyleController, ThemeChanged, .recursive = FALSE);
   }
   if (pobj) {
-    axPostMessageW(pobj, ID_Node_SetFocus, 0, core.focus);
+    axPostMessageW(pobj, ID_Node_SetFocus, 0, previous);
     _SendMessage(pobj, StyleController, ThemeChanged, .recursive = FALSE);
   }
-  core.focus = pobj;
 }
 
 struct Object *

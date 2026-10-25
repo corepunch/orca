@@ -1703,4 +1703,35 @@ test_css_unit_vh_full()
 -- Run box-shadow shorthand test
 test_css_box_shadow_shorthand()
 
+local function test_focus_styles_follow_current_input()
+  local screen = ui.Screen {
+    Width = 300, Height = 300, ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString [[
+      .field { ring-width: 0; }
+      .field:focus { ring-width: 2; ring-color: #0084ff; }
+    ]],
+  }
+  local phone = screen + ui.Input { class = "field" }
+  local email = screen + ui.Input { class = "field" }
+  applyStyles(phone)
+  applyStyles(email)
+
+  phone:setFocus()
+  test.expect_near(phone.RingWidth, 2, 0.001, "focusing an input applies its focus ring immediately")
+  test.expect_near(email.RingWidth, 0, 0.001, "unfocused input keeps its base style")
+
+  email:setFocus()
+  test.expect_near(phone.RingWidth, 0, 0.001, "moving focus removes the previous input ring")
+  test.expect_near(email.RingWidth, 2, 0.001, "moving focus applies the new input ring")
+  test.expect_near(email.RingColor.B, 1, 0.001, "focus ring uses the focus colour")
+
+  screen:setFocus()
+  test.expect_near(email.RingWidth, 0, 0.001, "leaving an input removes its focus ring")
+  phone:removeFromParent()
+  email:removeFromParent()
+  print("PASS: test_focus_styles_follow_current_input")
+end
+
+test_focus_styles_follow_current_input()
+
 print("All style tests passed.")
