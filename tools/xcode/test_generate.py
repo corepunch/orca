@@ -138,6 +138,7 @@ class GenerateProjectTests(unittest.TestCase):
             info = self.read_info(bundle, settings)
             self.assertEqual(info['CFBundleDisplayName'], 'QA Chat')
             self.assertEqual(info['UIDeviceFamily'], [1, 2])
+            self.assertIs(info['ITSAppUsesNonExemptEncryption'], False)
             scene = info['UIApplicationSceneManifest']['UISceneConfigurations']
             delegates = scene['UIWindowSceneSessionRoleApplication']
             self.assertTrue(any(item['UISceneDelegateClassName'] == 'OrcaSceneDelegate' for item in delegates))
@@ -162,12 +163,14 @@ class GenerateProjectTests(unittest.TestCase):
         resource_phases = [objects[ref] for ref in target['buildPhases']
                            if objects[ref]['isa'] == 'PBXResourcesBuildPhase']
         self.assertEqual(len(resource_phases), 1)
-        self.assertEqual(len(resource_phases[0]['files']), 1)
-        build_file = objects[resource_phases[0]['files'][0]]
-        self.assertEqual(build_file['isa'], 'PBXBuildFile')
+        build_files = [objects[ref] for ref in resource_phases[0]['files']]
+        self.assertTrue(all(item['isa'] == 'PBXBuildFile' for item in build_files))
+        catalogs = [item for item in build_files
+                    if objects[item['fileRef']].get('lastKnownFileType') == 'folder.assetcatalog']
+        self.assertEqual(len(catalogs), 1)
+        build_file = catalogs[0]
         reference = objects[build_file['fileRef']]
         self.assertEqual(reference['isa'], 'PBXFileReference')
-        self.assertEqual(reference['lastKnownFileType'], 'folder.assetcatalog')
         self.assertEqual(reference['sourceTree'], 'SOURCE_ROOT')
         self.assertEqual((bundle.parent / reference['path']).resolve(), catalog)
         root = objects[project['rootObject']]
@@ -176,6 +179,24 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertEqual(settings['ASSETCATALOG_COMPILER_APPICON_NAME'], 'AppIcon')
         # Generating metadata never compiles images or changes the source catalog.
         self.assertFalse((bundle / 'Assets.car').exists())
+
+    def test_chat_privacy_manifest_is_a_native_bundle_resource(self):
+        manifest = ROOT / 'apps/chat/PrivacyInfo.xcprivacy'
+        with manifest.open('rb') as stream:
+            privacy = plistlib.load(stream)
+        self.assertIs(privacy['NSPrivacyTracking'], False)
+        # The engine reads file metadata with stat(), a required-reason API.
+        reasons = {item['NSPrivacyAccessedAPIType']: item['NSPrivacyAccessedAPITypeReasons']
+                   for item in privacy['NSPrivacyAccessedAPITypes']}
+        self.assertIn('C617.1', reasons['NSPrivacyAccessedAPICategoryFileTimestamp'])
+        bundle = self.generate('chat')
+        project = self.read_project(bundle)
+        objects = project['objects']
+        _, target = self.application(project)
+        files = [objects[ref] for phase in target['buildPhases'] if objects[phase]['isa'] == 'PBXResourcesBuildPhase'
+                 for ref in objects[phase]['files']]
+        paths = [(bundle.parent / objects[item['fileRef']]['path']).resolve() for item in files]
+        self.assertIn(manifest, paths)
 
     def test_application_without_an_icon_catalog_has_no_native_icon_resource(self):
         fixture = Path(self.temporary.name) / 'repository'

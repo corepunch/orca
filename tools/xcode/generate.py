@@ -99,7 +99,7 @@ def info_plist(display_name):
                 UIRequiredDeviceCapabilities=['opengles-3'], UILaunchScreen={},
                 UISupportedInterfaceOrientations=orientations,
                 **{'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown']},
-                ORCAProject='project', UIApplicationSceneManifest={
+                ORCAProject='project', ITSAppUsesNonExemptEncryption=False, UIApplicationSceneManifest={
                     'UIApplicationSupportsMultipleScenes': False,
                     'UISceneConfigurations': {'UIWindowSceneSessionRoleApplication': [{
                         'UISceneConfigurationName': 'ORCA', 'UISceneDelegateClassName': 'OrcaSceneDelegate',
@@ -120,6 +120,7 @@ def generate(args, app):
     units = unity_sources()
     asset_catalog = app_dir / 'Assets.xcassets'
     has_app_icon = (asset_catalog / 'AppIcon.appiconset').is_dir()
+    privacy_manifest = app_dir / 'PrivacyInfo.xcprivacy'
     common = {
         'ORCA_ROOT': '$(SRCROOT)/' + os.path.relpath(ROOT, output),
         'ORCA_PROJECT': '$(SRCROOT)/' + os.path.relpath(app_dir, output),
@@ -176,14 +177,20 @@ def generate(args, app):
         runOnlyForDeploymentPostprocessing=0, alwaysOutOfDate=1)
     compile_phase = project.add('sources', 'PBXSourcesBuildPhase', buildActionMask=2147483647,
                                 files=sources, runOnlyForDeploymentPostprocessing=0)
-    asset_reference, asset_phase = None, None
+    resource_references, resource_files, resource_phase = [], [], None
     if has_app_icon:
-        asset_reference = project.add('assets/catalog', 'PBXFileReference', name=asset_catalog.name,
+        resource_references.append(project.add('assets/catalog', 'PBXFileReference', name=asset_catalog.name,
             path=os.path.relpath(asset_catalog, output), sourceTree='SOURCE_ROOT',
-            lastKnownFileType='folder.assetcatalog')
-        asset_file = project.add('assets/build', 'PBXBuildFile', fileRef=asset_reference)
-        asset_phase = project.add('assets/resources', 'PBXResourcesBuildPhase', buildActionMask=2147483647,
-            files=[asset_file], runOnlyForDeploymentPostprocessing=0)
+            lastKnownFileType='folder.assetcatalog'))
+        resource_files.append(project.add('assets/build', 'PBXBuildFile', fileRef=resource_references[-1]))
+    if privacy_manifest.is_file():
+        resource_references.append(project.add('privacy/manifest', 'PBXFileReference', name=privacy_manifest.name,
+            path=os.path.relpath(privacy_manifest, output), sourceTree='SOURCE_ROOT',
+            lastKnownFileType='text.xml'))
+        resource_files.append(project.add('privacy/build', 'PBXBuildFile', fileRef=resource_references[-1]))
+    if resource_files:
+        resource_phase = project.add('assets/resources', 'PBXResourcesBuildPhase', buildActionMask=2147483647,
+            files=resource_files, runOnlyForDeploymentPostprocessing=0)
     resources = project.add('resources', 'PBXShellScriptBuildPhase', buildActionMask=2147483647,
         name='Bundle ORCA runtime and app resources', shellPath='/bin/sh',
         shellScript='set -eu\n/bin/sh "$ORCA_ROOT/tools/xcode/python.sh" "$ORCA_ROOT/tools/xcode/build.py" resources\n',
@@ -193,7 +200,7 @@ def generate(args, app):
     target = project.add('target/' + name, 'PBXNativeTarget', name=target_name, productName=name,
                          productReference=product, productType='com.apple.product-type.application',
                          buildConfigurationList=target_configs,
-                         buildPhases=[prepare, compile_phase] + ([asset_phase] if asset_phase else []) + [resources],
+                         buildPhases=[prepare, compile_phase] + ([resource_phase] if resource_phase else []) + [resources],
                          buildRules=[], dependencies=[])
     browse = []
     for label, path in (('Application resources', app_dir), ('Engine', ROOT / 'source'),
@@ -203,7 +210,7 @@ def generate(args, app):
     generated = project.add('group/generated', 'PBXGroup', name='Generated Sources', children=references, sourceTree='<group>')
     products = project.add('group/products', 'PBXGroup', name='Products', children=[product], sourceTree='<group>')
     group = project.add('group/main', 'PBXGroup',
-                        children=browse + ([asset_reference] if asset_reference else []) + [generated, products],
+                        children=browse + resource_references + [generated, products],
                         sourceTree='<group>')
     root = project.add('project', 'PBXProject', buildConfigurationList=root_configs, compatibilityVersion='Xcode 14.0',
                        developmentRegion='en', knownRegions=['en', 'Base'], mainGroup=group,
