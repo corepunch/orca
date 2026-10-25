@@ -80,10 +80,19 @@ instructions to estimate text width or position children manually.
 
 Use `StackView` for a linear row or column. Its `Direction`, `Spacing`,
 `AlignItems`, and `JustifyContent` describe that arrangement. Use `Grid` when
-the screen needs explicit tracks, such as `Rows="auto 1fr auto"` for header,
+the screen needs explicit tracks, such as `Rows="64px 1fr 96px"` for header,
 remaining content, and composer. Give remaining-space tracks a finite parent
 extent. `Rows` and `Columns` have their own track grammar; `1fr` there does
 not make browser flex declarations valid in CSS.
+
+**Track sizes:** a track is either fixed (`48px`) or flexible (`1fr`, `2fr`).
+An explicit `auto` is not content-sized; it takes an equal share of the space
+like `1fr`. In a 600-point grid, `Rows="auto 1fr auto"` makes three 200-point
+tracks, and a 50-point header sits at the top of its track. Content taller
+than an explicit `auto` track overflows into the next track rather than
+growing it. Give headers, footers and composers fixed tracks, and update
+`Rows` from code when their height depends on state. Only the tracks that
+`Grid` generates when `Rows` or `Columns` is omitted are content-sized.
 
 **Box model:** `Width` and `Height` size the padding box; a border is drawn
 outside it and layout counts it as margin. A control with `Height="48"` and
