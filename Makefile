@@ -88,7 +88,9 @@ default: directories modules unite
 all: default
 build: default
 
-/%: | modules directories
+# Phony: a module target such as /media must not match an existing root directory.
+.PHONY: $(SOURCEMODULES2)
+$(SOURCEMODULES2): /%: | modules directories
 	$(Q)echo "Compiling $(notdir $@)"
 	$(Q)find ${SOURCEDIR}$@ -name "*.c" 2>/dev/null | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $(OBJECTDIR)$@.o -
 
