@@ -671,8 +671,11 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
       <summary>Nonvisual owner for asynchronous timer callbacks.</summary>
       <details>Create a Timer with a Tick handler and use its inherited setTimer and cancelTimer methods. Keep the object alive while scheduled, cancel before rescheduling or doing one-shot work, and reject stale timerId values. No scene-tree attachment is required.</details>
       <messages>
-        <message name="Tick" same-as="Object.Timer">
+        <message name="Tick">
           <summary>Receives a platform timer expiration with its timerId.</summary>
+          <fields>
+            <field name="timerId" type="int">Timer identifier returned by setTimer</field>
+          </fields>
         </message>
       </messages>
     </class>
