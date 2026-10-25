@@ -5,7 +5,7 @@ Polling.__index = Polling
 
 function Polling.new(options)
     assert(type(options.createTimer) == "function", "Polling requires a timer factory")
-    return setmetatable({ createTimer = options.createTimer, foreground = true,
+    return setmetatable({ createTimer = options.createTimer, onError = options.onError, foreground = true,
         generation = 0, failures = 0, maxDelay = options.maxDelay or 60000 }, Polling)
 end
 
@@ -41,8 +41,9 @@ function Polling:_tick()
     self.running, self.requested = true, false
     -- Lua's protected call is yieldable. The lock covers the whole request,
     -- including network yields, rather than only the timer event dispatch.
-    local ok, success = pcall(job.run, isCurrent)
+    local ok, success = xpcall(job.run, debug.traceback, isCurrent)
     self.running = false
+    if not ok and isCurrent() and self.onError then self.onError(success) end
     if not self:_active() then return end
     if not isCurrent() or self.requested then
         self.requested = false

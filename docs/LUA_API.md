@@ -78,6 +78,15 @@ Runtime vector userdata uses exported `X`/`Y` field names, for example
 `node.ContentOffset = { X = 0, Y = -100 }`. These differ from lowercase C struct
 members; verify runtime field names when constructing values for property setters.
 
+## Asynchronous errors
+
+Load `orca.core.async` and call `set_error_handler(fn)` before starting an app
+to receive failures from `async.run` and native event callbacks. Native failures
+include a Lua traceback. Handlers run synchronously and must not yield.
+Use `async.report_error(err)` for failures caught by application code, and
+`set_error_handler(nil)` to restore stderr reporting. A failing or reentrant
+handler falls back to stderr so later events and coroutine cleanup can proceed.
+
 ## Timers and foreground work
 
 Use `core.Timer { Tick = function(owner, args) ... end }` as a nonvisual timer

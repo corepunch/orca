@@ -2,9 +2,8 @@
 -- Lua-level async helpers for orca.async.
 --
 -- orca.async (the C primitive) creates a coroutine and posts
--- kEventResumeCoroutine; if the body throws, the error goes to stderr and
--- the coroutine silently dies.  This module wraps that primitive with
--- pcall-based error handling and provides Lapis-inspired helpers for
+-- kEventResumeCoroutine. Native callback errors are routed to this module
+-- when it is loaded, or to stderr otherwise. It also provides helpers for
 -- ergonomic async control flow.
 --
 -- Usage:
@@ -32,27 +31,41 @@ local _raw_async = orca.async
 local M = {}
 
 -- Default error handler: print to stderr.
-local _error_handler = function(err)
-  io.stderr:write("async error: " .. tostring(err) .. "\n")
+local function default_error_handler(err)
+  local ok, message = pcall(tostring, err)
+  io.stderr:write("async error: " .. (ok and message or "unprintable error") .. "\n")
 end
+local _error_handler = default_error_handler
+local _reporting_error = false
 
--- Set a custom error handler invoked when an async.run body throws.
+-- Set a synchronous error handler for async.run and native event callbacks.
 -- Pass nil to reset to the default stderr handler.
 function M.set_error_handler(fn)
   if fn == nil then
-    _error_handler = function(err)
-      io.stderr:write("async error: " .. tostring(err) .. "\n")
-    end
+    _error_handler = default_error_handler
   else
     assert(type(fn) == "function", "error handler must be a function")
     _error_handler = fn
   end
 end
 
+-- Report without allowing a broken/reentrant handler to stop event dispatch.
+function M.report_error(err)
+  if _reporting_error then
+    pcall(default_error_handler, err)
+    return
+  end
+  _reporting_error = true
+  local ok, handler_error = pcall(_error_handler, err)
+  _reporting_error = false
+  if not ok then
+    pcall(default_error_handler, err)
+    pcall(default_error_handler, handler_error)
+  end
+end
+
 -- async.run(fn, ...) — start fn in a coroutine via orca.async.
--- Unlike calling orca.async directly, any error thrown by fn is caught by
--- pcall and routed to the registered error handler instead of silently
--- dying with a bare stderr message.
+-- Preserve the original error value for the registered error handler.
 function M.run(fn, ...)
   assert(type(fn) == "function", "async.run: expected a function")
   local nargs = select("#", ...)
@@ -60,7 +73,7 @@ function M.run(fn, ...)
   _raw_async(function()
     local ok, err = pcall(fn, table.unpack(args, 1, nargs))
     if not ok then
-      _error_handler(err)
+      M.report_error(err)
     end
   end)
 end

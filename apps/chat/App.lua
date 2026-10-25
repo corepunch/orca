@@ -10,6 +10,8 @@ local Shell = require "Chat/views/shell"
 local Identity = require "Chat/views/identity"
 local Conversations = require "Chat/views/conversations"
 local Timeline = require "Chat/views/timeline"
+local Diagnostics = require "Chat/diagnostics"
+local async = require "orca.core.async"
 local colors = C.colors
 local auto = 0/0
 
@@ -18,6 +20,7 @@ local App = Application:extend {
 
     __init = function(self, options)
         Application.__init(self)
+        self.diagnostics = Diagnostics.new(self)
         options = options or {}
         local config = require "Chat/config"
         local backend = config.backend or "appwrite"
@@ -55,9 +58,27 @@ local App = Application:extend {
     end,
 
     activate_controller = function(self, controller)
+        self:installErrorHandler()
         local result = Application.activate_controller(self, controller)
         if self.polling then self.polling:activate() end
         return result
+    end,
+
+    installErrorHandler = function(self)
+        async.set_error_handler(function(err) self:reportError(err, "Background action") end)
+    end,
+
+    reportError = function(self, err, stage)
+        self.diagnostics:show(err, stage)
+    end,
+
+    dispatch = function(self, request)
+        self:installErrorHandler()
+        self.currentRoute = type(request) == "string" and request
+            or type(request) == "table" and request.path or "/"
+        local ok, controller = xpcall(Application.dispatch, Diagnostics.traceback, self, request)
+        if ok then return controller end
+        return self.diagnostics:controller(controller, "Opening screen")
     end,
 
     frame = function(self, content, tab)
@@ -91,6 +112,8 @@ local App = Application:extend {
         if self.status then
             self.status:setTextContent(text or "")
             self.status.Foreground = error and colors.error or colors.dim
+        elseif error then
+            self:reportError(text, "Request")
         end
     end,
 
@@ -426,20 +449,25 @@ local App = Application:extend {
     ["/details"] = function(self) return self:details() end,
 
     run = function(self)
+        self:installErrorHandler()
         self.screen:post("Window.Paint", renderer.getSize())
         for message in system.getMessage do
             if message:is("Window.Closed") then
                 if self.polling then self.polling:stop() end
+                async.set_error_handler(nil)
                 return
             end
             if self.polling then
                 if message:is("Window.Deactivated") then self.polling:setForeground(false)
                 elseif message:is("Window.Activated") then self.polling:setForeground(true) end
             end
-            local ok, result = pcall(system.dispatchMessage, self.screen, message)
-            if not ok then io.stderr:write(tostring(result) .. "\n")
-            elseif result and not message:is("Window.Paint") then self.screen:post("Window.Paint", renderer.getSize()) end
-            system.translateMessage(message)
+            local ok, failure = xpcall(function()
+                local result = system.dispatchMessage(self.screen, message)
+                if message:is("Window.Paint") then self.diagnostics:checkLayout()
+                elseif result then self.screen:post("Window.Paint", renderer.getSize()) end
+                system.translateMessage(message)
+            end, Diagnostics.traceback)
+            if not ok then self:reportError(failure, "Event dispatch") end
         end
     end,
 }

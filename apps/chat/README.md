@@ -160,6 +160,13 @@ Installed iOS apps do not inherit terminal environment variables, so the public
 Appwrite values are defaults in `config.lua`. Set `CHAT_BACKEND=mock` for the
 offline mock on the desktop.
 
+Unexpected route, event, and background callback failures display a **Chat error**
+screen with source locations and a scrollable report. The report also catches
+an oversized or displaced home footer and includes its measured bounds. Common
+credentials and email/phone identifiers are redacted. **Return to chat** rebuilds
+the shell while retaining the session and message drafts; it does not retry sends.
+This reports errors while the process is running, not native crashes that terminate it.
+
 See [API.md](API.md) for the Lua interface, transport injection, schema details,
 and backend references.
 See [PRODUCT.md](PRODUCT.md) for implementation status and remaining product

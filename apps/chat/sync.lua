@@ -19,7 +19,7 @@ end
 function Sync.refreshInbox(app, current, quiet)
     if app.inboxRefreshBusy then return true end
     app.inboxRefreshBusy = true
-    local ok, result, err = pcall(function()
+    local ok, result, err = xpcall(function()
         local rooms, roomError = app.models.Rooms:select()
         if not current() then return true end
         if not rooms then return nil, roomError end
@@ -38,9 +38,12 @@ function Sync.refreshInbox(app, current, quiet)
             for key, list in pairs(app.roomLists) do list.ContentOffset = offsets[key] end
         end
         return true
-    end)
+    end, debug.traceback)
     app.inboxRefreshBusy = false
-    if not ok then result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." } end
+    if not ok then
+        if current() and app.reportError then app:reportError(result, "Syncing conversations") end
+        result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." }
+    end
     if not result and not quiet and current() then app:notice(err.message, true) end
     return result, err
 end
@@ -48,6 +51,9 @@ end
 function Sync.new(app, options)
     options = options or {}
     local self = setmetatable({ app = app }, Sync)
+    options.onError = options.onError or function(err)
+        if app.reportError then app:reportError(err, "Polling") end
+    end
     if not options.createTimer then
         -- One retained Timer owns the timer. Timer.Tick is dispatched through
         -- ORCA's yieldable event coroutine, just like button handlers.
@@ -115,6 +121,7 @@ function Sync:activate()
             else
                 result, err = Sync.refreshInbox(app, current, true)
             end
+            if not result and err and current() then app:notice(err.message, true) end
             -- A revoked session stops the job's valid predicate, but still
             -- needs to remove authenticated views from the active screen.
             if app.screen == screen and app.navigationEpoch == navigation and app.sessionEpoch == epoch
