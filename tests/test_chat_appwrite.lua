@@ -28,10 +28,10 @@ local function signedIn(tail)
   for _, response in ipairs(tail or {}) do responses[#responses + 1] = response end
   return responses
 end
-local function backend(responses)
+local function backend(responses, sessionStore)
   local requests, envelopes = {}, {}
   local options = { endpoint = endpoint, projectId = "69f1c06800389dc6a1a0", functionId = "orca-chat-api",
-    clock = function() return 1000 end, encode = json.encode, decode = json.decode,
+    clock = function() return 1000 end, encode = json.encode, decode = json.decode, sessionStore = sessionStore,
     transport = function(request)
       requests[#requests + 1] = request
       if request.url:find("/functions/", 1, true) then
@@ -198,6 +198,99 @@ client = backend(signedIn { { throws = true } })
 assert(client:signIn("you@example.test", "password"))
 value, err = client:signOut()
 check(not value and err.code == "network" and not client:getSession(), "Offline sign-out must forget local credentials")
+
+-- Recreating the client models a process crash: only the private store survives.
+local saved, saves, clears = nil, 0, 0
+local store = {
+  load = function() return saved and json.decode(saved) end,
+  save = function(credential) saved = json.encode(credential); saves = saves + 1; return true end,
+  clear = function() saved = nil; clears = clears + 1; return true end,
+}
+client, requests = backend(signedIn(), store)
+assert(client:signIn("you@example.test", "password"))
+check(saves == 1 and json.decode(saved).Cookie == "a_session_69f1c06800389dc6a1a0=cookie-one"
+  and not saved:find("jwt-one", 1, true) and not saved:find("password", 1, true),
+  "Sign-in must save only the private Account credential before it completes")
+local account = { status = 200, body = { ["$id"] = "user.with_underscore", name = "You" } }
+client, requests, envelopes = backend({ account, { status = 201, body = { jwt = "restored-jwt" } },
+  execution(200, {}) }, store)
+check(not client:getSession() and #requests == 0, "Constructing a client must not perform network requests")
+assert(client:restoreSession())
+check(client:getSession().access_token == "restored-jwt" and requests[1].url == endpoint .. "/account"
+  and requests[1].headers.Cookie == json.decode(saved).Cookie and requests[2].url == endpoint .. "/account/jwts",
+  "Restart must validate the stored Account session and obtain a fresh JWT")
+assert(client:listRooms())
+check(requests[3].headers["X-Appwrite-JWT"] == "restored-jwt" and not requests[3].headers.Cookie,
+  "A restored private cookie must not reach the Chat function")
+
+client, requests = backend({ { throws = true } }, store)
+value, err = client:restoreSession()
+check(not value and err.code == "network" and saved and clears == 0,
+  "An offline launch must preserve the saved login for retry")
+client = backend({ { status = 503, body = { message = "Unavailable" } } }, store)
+value, err = client:restoreSession()
+check(not value and err.status == 503 and saved and clears == 0,
+  "A service outage must not erase the saved login")
+client = backend({ { status = 401, body = { type = "user_unauthorized" } } }, store)
+value, err = client:restoreSession()
+check(not value and err.status == 401 and not saved and clears == 1 and not client:getSession(),
+  "A revoked Account session must be removed from secure storage")
+client, requests = backend({}, store)
+value, err = client:restoreSession()
+check(not value and err.code == "unauthenticated" and #requests == 0,
+  "First launch without a stored credential must not contact Appwrite")
+
+client, requests = backend(signedIn { { throws = true } }, store)
+assert(client:signIn("you@example.test", "password"))
+client.session.expires_at = 0
+value, err = client:signOut()
+check(not value and err.code == "network" and not saved and not client:getSession()
+  and requests[4].method == "DELETE" and #requests == 4,
+  "Offline logout must erase the saved session without refreshing an expired JWT")
+client, requests = backend({}, store)
+value, err = client:restoreSession()
+check(not value and err.code == "unauthenticated" and #requests == 0,
+  "Restart after offline logout must stay signed out")
+
+client = backend(signedIn(), store)
+assert(client:signIn("you@example.test", "password"))
+client, requests = backend({}, store)
+assert(client:signOut())
+check(not saved and #requests == 0, "Logout before restore must erase the stored credential")
+
+local interrupted = signedIn()
+interrupted[2] = { throws = true }
+client = backend(interrupted, store)
+value, err = client:signIn("you@example.test", "password")
+check(not value and err.code == "network" and saved,
+  "The Account credential must be durable before account lookup or JWT exchange can fail")
+client = backend({ account, { status = 201, body = { jwt = "after-interruption" } } }, store)
+check(client:restoreSession().access_token == "after-interruption", "Interrupted sign-in must be recoverable on restart")
+
+local brokenStore = { load = function() error("locked") end,
+  save = function() return nil, "locked" end, clear = function() return nil, "locked" end }
+client, requests = backend({}, brokenStore)
+value, err = client:restoreSession()
+check(not value and err.code == "session_storage" and #requests == 0,
+  "Keychain read failures must be distinguishable from a missing session")
+client, requests = backend(signedIn(), brokenStore)
+value, err = client:signIn("you@example.test", "password")
+check(not value and err.code == "session_storage" and not client:getSession() and #requests == 1,
+  "Failed credential persistence must not claim a durable sign-in succeeded")
+client = backend({}, brokenStore)
+value, err = client:signOut()
+check(not value and err.code == "session_storage", "Failure to erase a stored session must be reported")
+
+saved = json.encode { Cookie = "a_session_other=foreign", Authorization = "Bearer injected" }
+client, requests = backend({}, store)
+value, err = client:restoreSession()
+check(not value and not saved and #requests == 0,
+  "A stored cookie belonging to another project must be discarded without a request")
+saved = json.encode { ["X-Appwrite-Session"] = "private-secret", Authorization = "Bearer injected" }
+client, requests = backend({ account, { status = 201, body = { jwt = "secret-restored" } } }, store)
+assert(client:restoreSession())
+check(requests[1].headers["X-Appwrite-Session"] == "private-secret" and not requests[1].headers.Authorization,
+  "Restore must support native session secrets without restoring arbitrary headers")
 
 for _, response in ipairs {
   { status = 201, body = { status = "failed", responseStatusCode = 500, responseBody = '{}' } },

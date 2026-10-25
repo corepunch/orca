@@ -45,7 +45,7 @@ CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
-MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media
+MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials
 PLUGINS = $(notdir $(wildcard $(PLUGINDIR)/*))
 PLUGINLIBS = $(addprefix $(PLUGINLIBDIR)/,$(addsuffix .so,$(PLUGINS)))
 PLUGIN_DEPS_SceneKit = $(PLUGINLIBDIR)/UIKit.so
@@ -61,7 +61,7 @@ LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 freetype2 libxml-2.0 2>/
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
 	LIBS += -framework OpenGL -framework IOSurface
-	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation
+	LIBS += -framework ImageIO -framework CoreGraphics -framework Foundation -framework Security
 	UNITEOBJECTS += media_apple.o
 	LDFLAGS += -Wl,-rpath,@executable_path/../../$(LIBDIR)
 else
@@ -218,12 +218,14 @@ chat: copyshare
 	$(TARGET) apps/chat
 
 test-chat: copyshare
+	$(TARGET) -test=tests/test_chat_session_store.lua
 	$(TARGET) -test=tests/test_chat_api.lua
 	$(TARGET) -test=tests/test_chat_appwrite.lua
 	$(TARGET) -test=tests/test_chat_mock.lua
 	$(TARGET) -test=tests/test_chat_models.lua
 	$(TARGET) -test=tests/test_chat_features.lua
 	$(TARGET) -test=tests/test_chat_app.lua
+	$(TARGET) -test=tests/test_chat_session_ui.lua
 
 test-chat-appwrite: copyshare
 	$(TARGET) -test=tests/test_chat_appwrite.lua
@@ -373,6 +375,9 @@ $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capt
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-credentials
+
+$(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
 

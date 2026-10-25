@@ -17,8 +17,12 @@ local sent = assert(client:sendMessage(rooms[1].id, "Hello!"))
 Methods return `value, nil` on success and `nil, error` on failure. A successful
 RPC may return `false`; test for `value == nil` when that distinction matters.
 Errors contain `code`, `message`, and an optional numeric HTTP `status`.
-Sessions and passwords stay in memory; restarting requires sign-in. Never log
-session objects. Appwrite
+Passwords and short-lived JWTs stay in memory. On iOS and macOS, Chat saves its
+private Account credential synchronously in the app's Apple Keychain, scoped by
+endpoint and project. On launch it revalidates the account and requests a fresh
+JWT; temporary failures retain the credential and offer Retry. Expired/revoked
+sessions require sign-in. Platforms without secure storage remain memory-only.
+Never log session objects. Appwrite
 Account requests use a private per-client session cookie; Function executions
 send a short-lived `X-Appwrite-JWT`. The Function verifies the Appwrite-provided
 runtime caller through Account on every protected operation.
@@ -40,8 +44,9 @@ The shared methods below keep the same return shapes and model bindings.
 
 `api.appwrite_auth` handles signup, password sign-in, email/phone OTP,
 JWT renewal and logout through native Appwrite Account endpoints. Its private
-session cookie is extracted from response headers, retained only in that client,
-and never written to ORCA's shared cookie file. These operations work independently
+session cookie is extracted from response headers, kept private to that client,
+and optionally persisted through `sessionStore` (`load`, `save`, `clear`). It is
+never written to ORCA's shared cookie file. These operations work independently
 of Chat Function deployment. Native Auth owns OTP rate limits and delivery.
 
 `api.appwrite_transport` serializes authenticated domain requests as
@@ -72,6 +77,7 @@ a new user JWT. It does not extend an expired native session or expose its cooki
 | `findPeople(query)` | Public `{id,display_name,username}` matches for an exact username or opted-in identifier |
 | `listContacts()` | Other authorized shared-room profiles; no login identifiers or credentials |
 | `getSession()` | Defensive session copy or nil; no request |
+| `restoreSession()` | Validates the saved Appwrite credential and obtains a fresh JWT; called explicitly on app launch |
 | `refreshSession()` | Rotated session; also runs near expiry or once after an authenticated HTTP 401 |
 | `signOut()` | Clears local credentials and requests local-session revocation, including on network failure |
 | `signIn(email,password)` | Existing email/password login; returns a session |

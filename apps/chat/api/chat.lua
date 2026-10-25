@@ -100,6 +100,16 @@ function Client:signUp(email, password, displayName)
   return { confirmationRequired = true }
 end
 
+function Client:restoreSession()
+  if self.mode ~= "appwrite" then return failure("unauthenticated", "Sign in to continue.") end
+  local data, err = self:_request("POST", "/auth/v1/restore")
+  if not data then
+    if err.status == 401 or err.status == 403 then self.session = nil end
+    return nil, err
+  end
+  return self:_setSession(data)
+end
+
 function Client:refreshSession()
   if not self.session then return failure("unauthenticated", "Sign in to continue.") end
   local data, err = self:_request("POST", "/auth/v1/token?grant_type=refresh_token", {
@@ -113,8 +123,10 @@ function Client:refreshSession()
 end
 
 function Client:signOut()
-  if not self.session then return true end
-  local result, err = self:_request("POST", "/auth/v1/logout?scope=local", nil, true)
+  if not self.session and self.mode ~= "appwrite" then return true end
+  -- Appwrite revocation uses the private cookie; an expired JWT must not stop
+  -- local erasure or cause a refresh before logout.
+  local result, err = self:_request("POST", "/auth/v1/logout?scope=local", nil, self.mode ~= "appwrite")
   -- The local device must forget its credentials even when the server is offline.
   self.session = nil
   return result, err

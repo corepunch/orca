@@ -62,6 +62,18 @@ MIME type and quality. Input and output bounds, metadata behavior, and platform
 support are declared in `source/media/media.cgen`. These functions prepare
 bytes; storage and messaging remain application API responsibilities.
 
+## Secure credentials
+
+`require "orca.credentials"` exposes `supported()`, `get(key)`,
+`set(key, value)` and `delete(key)`. Apple platforms use the Keychain, scoped
+to the application bundle identifier. Writes complete synchronously and use
+device-only, unlocked-device accessibility; credentials are not synchronized.
+An absent key returns `nil`; failures return `nil, {code,message}`. Unsupported
+platforms return `unsupported` and never store credentials in plaintext.
+`supported()` only reports platform capability; a locked or inaccessible
+Keychain still returns an error. Apps must namespace keys by backend/project,
+validate restored sessions with their service, and delete credentials on logout.
+
 Runtime vector userdata uses exported `X`/`Y` field names, for example
 `node.ContentOffset = { X = 0, Y = -100 }`. These differ from lowercase C struct
 members; verify runtime field names when constructing values for property setters.
