@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<Screen Name="PanoramaDemo" Width="390" Height="844" ResizeMode="NoResize" ClearColor="#000000" StyleSheet="Metro/Screens/metro.css">
+	<Panorama Name="Panorama" Title="people" Foreground="#FFFFFF">
+		<PanoramaItem Name="Recent" Header="recent">
+			<StackView Spacing="22">
+				<TextBlock class="item">alex morgan</TextBlock>
+				<TextBlock class="item">maya chen</TextBlock>
+				<TextBlock class="item">jules park</TextBlock>
+			</StackView>
+		</PanoramaItem>
+		<PanoramaItem Name="All" Header="all">
+			<StackView Spacing="22">
+				<TextBlock class="item">alex morgan</TextBlock>
+				<TextBlock class="item">jules park</TextBlock>
+				<TextBlock class="item">maya chen</TextBlock>
+				<TextBlock class="item">sam rivera</TextBlock>
+			</StackView>
+		</PanoramaItem>
+		<PanoramaItem Name="WhatsNew" Header="what's new">
+			<TextBlock class="detail" WordWrap="true">Maya shared three photos from the weekend.</TextBlock>
+		</PanoramaItem>
+	</Panorama>
+</Screen>

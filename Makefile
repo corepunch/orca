@@ -373,7 +373,7 @@ $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
 
-HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
+HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
@@ -399,6 +399,7 @@ $(eval $(call LUA_TEST_RULE,test-parsers,tests/test_parsers.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-object-hierarchy,tests/test_object_hierarchy.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-tabbar,tests/test_tabbar.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-tab-interaction,tests/test_tab_interaction.lua,app copyshare))
+$(eval $(call LUA_TEST_RULE,test-metro,tests/test_metro.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-text-layout,tests/test_text_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-node2d-scroll,tests/test_node2d_scroll.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-stack-layout,tests/test_stack_layout.lua,app copyshare))

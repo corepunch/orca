@@ -46,6 +46,43 @@ Use the shorthand when it is clearer than a full trigger/action block.
 - Pop with `{NavigationHost.Pop}` and bind navigation chrome to `NavigationHost.CanGoBack` when conditional back UI is needed.
 - Pushed templates must have a `Page` root. Popups remain modal overlays and should not be used as navigation pages.
 
+## Windows Phone controls
+
+UIKit ships the Windows Phone 8 navigation controls under their original
+names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
+`samples/Metro` shows them in XML.
+
+- `Pivot` with `PivotItem` children: a small-caps `Title`, then large
+  lowercase headers. The selected header leads, the others follow dimmed and
+  wrap around. Tap a header or swipe the content; `SelectedIndex` and
+  `SelectionChanged` report the item. `IsLocked` hides the other headers and
+  disables swiping. Generated parts carry the `pivot-title` and
+  `pivot-header` (`PivotHeaderItem`) CSS classes.
+- `Panorama` with `PanoramaItem` children: an oversized lowercase `Title`
+  scrolls with parallax over sections that are slightly narrower than the
+  screen, so the next one peeks in. Swipes wrap from the last section to the
+  first. Generated parts carry `panorama-title` and `panorama-header`.
+- `ApplicationBar` with `ApplicationBarIconButton` (`IconUri`, `Text`,
+  `IsEnabled`, `Click`) and `ApplicationBarMenuItem` (`Text`, `IsEnabled`,
+  `Click`). Collapsed, it shows outlined round buttons and an ellipsis. Tap
+  the bar to expand it upwards with lowercase labels and the menu. Tapping a
+  command or anywhere outside collapses it. `Mode="Minimized"` keeps only the
+  ellipsis strip. Its `Background` and `Foreground` default to the WP chrome
+  and foreground colours for the current OS appearance.
+
+```xml
+<Grid Rows="1fr 58px">
+  <Pivot Title="Messenger">
+    <PivotItem Header="recent">...</PivotItem>
+    <PivotItem Header="online">...</PivotItem>
+  </Pivot>
+  <ApplicationBar>
+    <ApplicationBarIconButton IconUri="App/Icons/plus.svg" Text="new"/>
+    <ApplicationBarMenuItem Text="settings"/>
+  </ApplicationBar>
+</Grid>
+```
+
 ## Data-driven layout pattern
 
 Separate visual data from layout structure by driving layout properties through data bindings rather than CSS classes or hardcoded attributes.
