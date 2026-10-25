@@ -85,6 +85,21 @@ remaining content, and composer. Give remaining-space tracks a finite parent
 extent. `Rows` and `Columns` have their own track grammar; `1fr` there does
 not make browser flex declarations valid in CSS.
 
+**Box model:** `Width` and `Height` size the padding box; a border is drawn
+outside it and layout counts it as margin. A control with `Height="48"` and
+`BorderWidth="2"` therefore occupies 52 points, while the same control without
+a border occupies 48. To keep bordered and borderless controls on one grid,
+subtract the border from the bordered control's height. This is CSS
+content-box behaviour, not XAML's, where `Height` includes the border; it is
+kept for compatibility and may change. Children with no explicit height take
+the track size of a `Grid`, border included.
+
+**Thickness order:** in XML attributes and Lua properties, `Margin`,
+`Padding` and `BorderWidth` use XAML order: `"12"`, `"horizontal vertical"`,
+or `"left top right bottom"`. `Padding="12 0"` is 12 on the left and right.
+CSS declarations keep CSS order, so `padding: 12 0` is 12 at the top and
+bottom.
+
 **Convention:** let content determine intrinsic sizes and use a small spacing
 scale consistently. Reserve fixed sizing for intentional constraints such as
 icons and control heights. Prefer container layout over coordinate offsets.

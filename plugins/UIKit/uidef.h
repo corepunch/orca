@@ -23,6 +23,11 @@ typedef float actualPos_t[3];
 
 #define NODE2D_FRAME(node2d, param, num) node2d->_node->param.Axis[num]
 #define MARGIN_VALUE(value) ((value) != (value) ? 0 : (value))
+// Box model: Width/Height size the padding box, and the border is drawn
+// outside it. Border.Width is therefore folded into the margin below, so a
+// node with Height 48 and a 2-pixel border occupies 52 in its parent (CSS
+// content-box, unlike XAML where Height includes the border). Kept as is for
+// compatibility; see docs/app/styling.md, "Layout and sizing".
 #define MARGIN_TOP(node2d, axis) (MARGIN_VALUE(NODE2D_FRAME(node2d, Margin, axis)._RIGHT) + NODE2D_FRAME(node2d, Border.Width, axis)._RIGHT)
 #define MARGIN_BOTTOM(node2d, axis) (MARGIN_VALUE(NODE2D_FRAME(node2d, Margin, axis)._LEFT) + NODE2D_FRAME(node2d, Border.Width, axis)._LEFT)
 #define PADDING_TOP(node2d, axis) (NODE2D_FRAME(node2d, Padding, axis)._RIGHT)

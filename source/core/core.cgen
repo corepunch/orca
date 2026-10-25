@@ -189,7 +189,7 @@
     </struct>
     <struct name="Thickness">
       <summary>External spacing configuration for rectangular elements</summary>
-      <details>Allows independent control of the external spacing applied to each edge of an element.</details>
+      <details>Allows independent control of the external spacing applied to each edge of an element. String values use XAML order, not CSS order: "uniform", "horizontal vertical", or "left top right bottom".</details>
       <fields>
         <field name="Axis" type="EdgeShorthand" fixed-array="3">External spacing per axis</field>
       </fields>
@@ -197,7 +197,7 @@
     <struct name="BorderShorthand">
       <summary>Complete border definition for rectangular element</summary>
       <fields>
-        <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge</field>
+        <field name="Width" type="Thickness">Border thickness in pixels, specified for each edge. Drawn outside the node's Width and Height: layout counts it as margin, so a 48-pixel-high node with a 2-pixel border occupies 52 pixels.</field>
         <field name="Color" type="color">Border color</field>
         <field name="Style" type="BorderStyle">Visual style of the border</field>
         <field name="Radius" type="CornerRadius">Border radius definition per corner</field>
