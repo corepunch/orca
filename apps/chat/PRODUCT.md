@@ -18,8 +18,7 @@ profiles/discovery, direct/group/channel operations, invitations, text/photo
 exchange and permission revocation; all test resources were removed afterward.
 Messaging providers are not configured, so verified identity linking still needs
 delivery setup.
-The optional Supabase migrations/functions remain available. The sections below retain the
-design rationale and distinguish the remaining roadmap from current behavior.
+The sections below retain the design rationale and distinguish the remaining roadmap from current behavior.
 
 ## Identity and login
 
@@ -46,8 +45,8 @@ accounts is our deliberate extension of these patterns.
 Sources: [Telegram FAQ](https://telegram.org/faq#usernames-and-t-me),
 [WhatsApp usernames](https://www.whatsapp.com/usernames-faq/).
 
-Supabase supports [phone OTP](https://supabase.com/docs/guides/auth/phone-login)
-and [email OTP](https://supabase.com/docs/guides/auth/auth-email-passwordless).
+Appwrite supports [phone OTP](https://appwrite.io/docs/products/auth/phone-sms)
+and [email OTP](https://appwrite.io/docs/products/auth/email-otp).
 Phone OTP requires configuring an SMS delivery provider; email needs configured
 delivery/templates. The mock must simulate requests, verification, expiry,
 resend cooldown, wrong codes, and linking without sending SMS or email.
@@ -135,7 +134,7 @@ the OS does not automatically enforce our policy just because a photo is selecte
 
 ## Storage and message lifecycle
 
-Keep bytes in private object storage and metadata/relations in Postgres. Store
+Keep bytes in private object storage and metadata/relations in private database collections. Store
 room ID, uploader, object key, media kind, MIME type, byte count, dimensions,
 thumbnail key, and eventual message ID. Do not store permanent public URLs for
 private conversations.
@@ -150,9 +149,8 @@ revocation is required; temporary signed URLs are transferable bearer links.
 
 Enforce size/type limits in storage as well as the client. Validate actual
 media bytes and dimensions on the trusted backend before finalization; client
-metadata and filename extensions are not proof of image format. Supabase
-supports [storage policies](https://supabase.com/docs/guides/storage/security/access-control)
-and [bucket upload restrictions](https://supabase.com/docs/guides/storage/uploads/file-limits).
+metadata and filename extensions are not proof of image format. Appwrite
+buckets support [permissions and upload limits](https://appwrite.io/docs/products/storage/buckets).
 
 ## Video: next phase
 

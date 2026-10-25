@@ -113,9 +113,9 @@ not implemented by this backend.
 Settings use the app's writable Application Support directory. Bundled project
 resources are read-only; applications should use ORCA settings APIs for saved
 data. Terminal environment variables are not inherited by apps installed on
-physical devices. For the chat's Supabase mode, configure its public URL and
-publishable key in `apps/chat/config.lua` before packaging; the default is the
-local demo.
+physical devices. The chat's public Appwrite endpoint, project ID and Function
+ID are defaults in `apps/chat/config.lua`, so installed builds connect without
+environment variables.
 
 The backend lives in the `libs/platform` Git submodule. When committing this
 feature, include its `ios/` sources in that repository and update ORCA's submodule

@@ -16,7 +16,7 @@ end
 local function setup()
     local transport, state = Mock.new { clock = function() return now end }
     local function client(email)
-        local c = assert(Chat.supabase { url = "https://mock.invalid", publishableKey = "sb_publishable_test",
+        local c = assert(Chat.client { url = "https://mock.invalid",
             transport = transport, clock = function() return now end })
         if email then assert(c:signIn(email, "password123")) end
         return c
@@ -68,7 +68,7 @@ local proofRequests, proofResponses = {}, {
         user = { id = "someone-else", email = "other@example.invalid" } } },
     { status = 200, body = {} },
 }
-local proof = assert(Chat.supabase { url = "https://mock.invalid", publishableKey = "sb_publishable_test",
+local proof = assert(Chat.client { url = "https://mock.invalid",
     clock = function() return now end, transport = function(request)
         proofRequests[#proofRequests + 1] = request; return assert(table.remove(proofResponses, 1))
     end })

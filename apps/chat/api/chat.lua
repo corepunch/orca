@@ -41,10 +41,9 @@ function Client:_request(method, path, body, authenticated, retried, options)
       if not session then return nil, err end
     end
   end
-  local headers = { apikey = self.key, ["Content-Type"] = "application/json" }
+  local headers = { ["Content-Type"] = "application/json" }
   for key, value in pairs(options.headers or {}) do headers[key] = value end
   if authenticated then headers.Authorization = "Bearer " .. self.session.access_token end
-  if method == "POST" and path:match("^/rest/") then headers.Prefer = "return=representation" end
   local ok, response = pcall(self.transport, {
     method = method, url = self.url .. path, headers = headers, body = body, responseType = options.responseType,
     arrayFields = options.arrayFields,
@@ -202,6 +201,20 @@ end
 
 require("api.features")(Client, { failure = failure, text = text, escape = escape, validId = validId })
 
+-- Builds a client over any transport that serves the chat API paths.
+function Chat.client(options)
+  options = options or {}
+  local url = options.url
+  local path = type(url) == "string" and (url:match("^https://[%w%.%-]+(.*)$")
+    or url:match("^http://localhost:%d+(.*)$") or url:match("^http://127%.0%.0%.1:%d+(.*)$"))
+  if not path or not (path:match("^/?$") or path:match("^/v1/?$")) then
+    return failure("configuration", "Use an HTTPS chat service URL (or a localhost URL).")
+  end
+  if type(options.transport) ~= "function" then return failure("configuration", "Provide an HTTP transport function.") end
+  return setmetatable({ mode = options.mode or "custom", url = url:gsub("/$", ""),
+    transport = options.transport, clock = options.clock or os.time }, Client)
+end
+
 function Chat.appwrite(options)
   options = options or {}
   local endpoint = options.endpoint
@@ -215,38 +228,15 @@ function Chat.appwrite(options)
   if options.transport ~= nil and type(options.transport) ~= "function" then
     return failure("configuration", "Provide an HTTP transport function.")
   end
-  local transport = require("api.appwrite_transport").new(options)
-  return setmetatable({ mode = "appwrite", url = endpoint:gsub("/$", ""),
-    transport = transport, clock = options.clock or os.time }, Client)
-end
-
-function Chat.supabase(options)
-  options = options or {}
-  local url = options.url
-  if type(url) ~= "string" or not (url:match("^https://[%w%.%-]+/?$")
-      or url:match("^http://localhost:%d+/?$") or url:match("^http://127%.0%.0%.1:%d+/?$")) then
-    return failure("configuration", "Set a Supabase HTTPS project URL (or localhost URL).")
-  end
-  if type(options.publishableKey) ~= "string" or not options.publishableKey:match("^sb_publishable_[%w_%-]+$") then
-    return failure("configuration", "Use the project's sb_publishable_ key in the client.")
-  end
-  local transport = options.transport
-  if transport == nil then transport = require "api.orca_transport" end
-  if type(transport) ~= "function" then return failure("configuration", "Provide an HTTP transport function.") end
-  return setmetatable({ mode = "supabase", url = url:gsub("/$", ""), key = options.publishableKey,
-    transport = transport, clock = options.clock or os.time }, Client)
+  return Chat.client { mode = "appwrite", url = endpoint, clock = options.clock,
+    transport = require("api.appwrite_transport").new(options) }
 end
 
 -- Uses exactly the same client, endpoint paths and response validation as HTTP.
 function Chat.mock(options)
   options = options or {}
   local transport = require("api.mock_transport").new(options)
-  local client = assert(Chat.supabase {
-    url = "https://mock.invalid", publishableKey = "sb_publishable_mock",
-    transport = transport, clock = options.clock,
-  })
-  client.mode = "mock"
-  return client
+  return assert(Chat.client { mode = "mock", url = "https://mock.invalid", transport = transport, clock = options.clock })
 end
 
 -- Compatibility helper for existing previews. Interactive mock mode starts at login.

@@ -82,8 +82,8 @@ denied(value, err)
 check(#assert(client:listRooms()) == roomsBeforeRejectedCreate, "Rejected members must not leave a partial conversation")
 
 local normalRequests = 0
-local normal = assert(Chat.supabase {
-    url = "https://example.supabase.co", publishableKey = "sb_publishable_test", clock = clock,
+local normal = assert(Chat.client {
+    url = "https://chat.example.test", clock = clock,
     transport = function() normalRequests = normalRequests + 1; error("Invalid input must not reach transport") end,
 })
 check(getmetatable(client) == getmetatable(normal), "Mock and HTTP must share the same client implementation")

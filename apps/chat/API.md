@@ -1,6 +1,6 @@
 # Chat Lua API
 
-`require "api.chat"` provides one client for Appwrite, Supabase and the offline mock.
+`require "api.chat"` provides one client for Appwrite and the offline mock.
 Only the HTTP adapter imports `orca.network`; `api.json` handles strict JSON. Remote
 methods yield through `network.fetch`; call them from an ORCA event coroutine.
 
@@ -18,7 +18,7 @@ Methods return `value, nil` on success and `nil, error` on failure. A successful
 RPC may return `false`; test for `value == nil` when that distinction matters.
 Errors contain `code`, `message`, and an optional numeric HTTP `status`.
 Sessions and passwords stay in memory; restarting requires sign-in. Never log
-session objects. Supabase requests use a user JWT and publishable key. Appwrite
+session objects. Appwrite
 Account requests use a private per-client session cookie; Function executions
 send a short-lived `X-Appwrite-JWT`. The Function verifies the Appwrite-provided
 runtime caller through Account on every protected operation.
@@ -93,8 +93,7 @@ directory. Owners and admins can see the full membership.
 Linking verifies ownership and preserves the account ID. An identifier already
 owned by another account is rejected. The client checks the verified self
 profile after Auth verification; the same user ID alone is insufficient proof.
-With Supabase's [secure email change](https://supabase.com/docs/reference/javascript/auth-updateuser),
-both inboxes may need confirmation. Until the requested identifier appears in
+Email changes may need confirmation from both inboxes. Until the requested identifier appears in
 the verified profile, `verifyIdentityLink` returns `verification_pending` and
 the UI should keep the verification form open for the remaining code. A
 different-user verification response cannot replace the existing session.
@@ -165,11 +164,11 @@ converts to sRGB, strips source private metadata, and produces a JPEG plus a
 thumbnail. Output limits are 1,000,000 bytes per object, 1600 pixels on the
 photo's longest edge and 256 pixels for the thumbnail. Client preflight and
 the mock inspect JPEG structure, dimensions and location metadata. Harmless
-generated EXIF is accepted. The trusted Edge finalizer independently validates
+generated EXIF is accepted. The trusted Chat Function independently validates
 stored bytes and metadata before marking a reservation ready; its JPEG check
 is structural and does **not** fully decode compressed pixel entropy.
 
-Supabase storage uses the private `chat-photos` bucket. Upload reserves a pending row,
+Photos are encrypted in the private Appwrite bucket. Upload reserves a pending row,
 uploads immutable photo/thumbnail objects, then calls `finalize-chat-photo`.
 Photos transition `pending -> ready -> attached`, or `discarded` before posting.
 Unpublished photos are visible only to their uploader while still a member;
@@ -219,13 +218,11 @@ replacement. A session change during a yielding fetch rejects stale results.
 Server `routes.js` maps methods and paths to domain services, following
 [Lapis flows](https://leafo.net/lapis/reference/flows.html)'s separation of operations.
 
-Create the remote client with `Chat.supabase {url="https://PROJECT.supabase.co",
-publishableKey="sb_publishable_..."}`. Apply [schema.sql](backend/schema.sql),
-[002_contacts.sql](backend/002_contacts.sql), then
-[003_messenger.sql](backend/003_messenger.sql), and deploy the finalizer before
-photo uploads. Follow [backend setup](backend/README.md) for Auth providers,
-templates, private storage, Edge secrets and integration checks. The client
-rejects service/secret keys; those belong only in the trusted server function.
+Create the remote client with `Chat.appwrite {endpoint=..., projectId=...,
+functionId=...}`; [config.lua](config.lua) holds Octopus's public values. Follow
+[backend setup](backend/README.md) and [Appwrite setup](backend/appwrite/README.md)
+for the schema, Function deployment and integration checks. API keys and Function
+secrets belong only in the trusted server function, never in the client.
 The offline suites do not verify live deployment or delivery. Octopus's Chat
 schema was provisioned separately through the Appwrite plugin. A separate native
 cloud check on 2026-10-25 verified signup, password sign-in/rejection, session
@@ -248,9 +245,9 @@ or `fixtures=function(now) return table end`. No fake replies are generated.
 The mock uses the same client, protocol paths, token refresh and models. Its
 IDs/tokens are readable fixture strings and password signup immediately returns
 a session. It emulates authorization and OTP limits in memory; it cannot test
-email/SMS delivery, JWT cryptography or actual database/storage RLS.
+email/SMS delivery, JWT cryptography or actual Appwrite permissions.
 
-Inject `transport=function(request) ... end` into `Chat.supabase` for protocol
+Use `Chat.client {url=..., transport=function(request) ... end}` for protocol
 tests. Requests contain `method`, `url`, `headers`, optional table or binary
 string `body`, optional `responseType="binary"`, and explicit `arrayFields`
 for empty JSON array arguments. Responses contain numeric `status` and decoded
@@ -261,6 +258,6 @@ Run `make test-chat` for API, mock, model, feature and headless UI checks.
 The four non-UI Lua suites also run with standalone Lua 5.3+, e.g.
 `lua tests/test_chat_features.lua`; ORCA additionally checks actual native
 photo processing when available. `make test-media` verifies macOS image
-preparation, `make test-chat-finalizer` checks the Edge handler and JPEG
+preparation, `make test-chat-appwrite-backend` checks the Function and JPEG
 inspector, and `make test-network-headers` checks native binary HTTP and long
-headers against a local server. These checks need no Supabase credentials.
+headers against a local server. These checks need no Appwrite credentials.
