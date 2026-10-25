@@ -117,7 +117,9 @@ function M.new(options)
         insert("profiles", { userId = user.id, username = user.name, bio = user.bio or "" }, user.id, user.id, 864000)
     end
     state.files["f-reef"] = { bytes = reefPhoto(), owner = "u-sam" }
-    for name, docs in pairs(fixtures.collections) do
+    -- A fixed order keeps creation stamps, and so tie-breaks, reproducible.
+    for _, name in ipairs { "posts", "comments", "likes", "reposts", "follows" } do
+        local docs = fixtures.collections[name] or {}
         for _, data in ipairs(docs) do
             local values = copy(data)
             local id, owner, age = values.id, values.owner, values.age
