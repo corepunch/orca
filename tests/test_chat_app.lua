@@ -375,7 +375,7 @@ assert(not leftover, "Signing out must delete private photo preview files")
 -- requests still use the real client and mock endpoint implementation.
 local offlineTransport = require("api.mock_transport").new { clock = function() return 1700000000 end }
 local raceApp, interruptProfile
-local raceClient = assert(Chat.supabase { url = "https://mock.invalid", publishableKey = "sb_publishable_mock",
+local raceClient = assert(Chat.client { url = "https://mock.invalid",
     clock = function() return 1700000000 end,
     transport = function(request)
         if interruptProfile and request.url:find("/rpc/get_chat_profile", 1, true) then

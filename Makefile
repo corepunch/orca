@@ -227,13 +227,9 @@ test-chat-appwrite: copyshare
 	$(TARGET) -test=tests/test_chat_appwrite.lua
 
 NODE ?= node
-.PHONY: test-chat-appwrite-backend test-chat-finalizer test-media
+.PHONY: test-chat-appwrite-backend test-media
 test-chat-appwrite-backend:
 	$(NODE) --test apps/chat/backend/appwrite/test/*.test.js
-
-test-chat-finalizer:
-	$(NODE) tests/test_chat_photo_finalize.mjs
-	$(NODE) tests/test_chat_photo_cleanup.mjs
 
 ifeq ($(UNAME_S),Darwin)
 $(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules | directories

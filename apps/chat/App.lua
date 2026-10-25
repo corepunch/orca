@@ -21,9 +21,8 @@ local App = Application:extend {
         local backend = config.backend or "appwrite"
         if options.client then self.client = options.client
         elseif backend == "appwrite" then self.client, self.configurationError = Chat.appwrite(config)
-        elseif backend == "supabase" then self.client, self.configurationError = Chat.supabase(config)
         elseif backend == "mock" then self.client = Chat.mock()
-        else self.configurationError = { message = "Choose CHAT_BACKEND=appwrite, mock or supabase." } end
+        else self.configurationError = { message = "Choose CHAT_BACKEND=appwrite or mock." } end
         self.media = options.media or require("Chat/media").new()
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         if self.client then self.models = Models.new(self.client) end

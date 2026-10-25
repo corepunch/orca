@@ -1,4 +1,4 @@
--- Standalone Lua / ORCA headless test. No network or Supabase account required.
+-- Standalone Lua / ORCA headless test. No network or Appwrite account required.
 package.path = "apps/chat/?.lua;" .. package.path
 local Chat = require "api.chat"
 local checks = 0
@@ -14,8 +14,8 @@ end
 
 local function backend(responses)
   local requests = {}
-  local client = assert(Chat.supabase {
-    url = "https://example.supabase.co/", publishableKey = "sb_publishable_test",
+  local client = assert(Chat.client {
+    url = "https://chat.example.test/",
     clock = function() return 1000 end,
     transport = function(request)
       requests[#requests + 1] = request
@@ -56,8 +56,8 @@ local client, requests = backend {
 value, err = client:listRooms()
 check(value == nil and err.code == "unauthenticated" and #requests == 0, "Protected operations must not fetch without a session")
 local signedIn = assert(client:signIn("you@example.test", "password"))
-check(requests[1].url == "https://example.supabase.co/auth/v1/token?grant_type=password", "Use the password grant endpoint")
-check(requests[1].headers.Authorization == nil and requests[1].headers.apikey == "sb_publishable_test", "Publishable key must not be used as a bearer token")
+check(requests[1].url == "https://chat.example.test/auth/v1/token?grant_type=password", "Use the password grant endpoint")
+check(requests[1].headers.Authorization == nil, "Sign-in requests must not carry a bearer token")
 signedIn.access_token = "modified"
 check(client:getSession().access_token == "access-1", "Session result mutation must not change stored credentials")
 check(client:listRooms()[1].id == "room-1", "Room results must be returned")
@@ -115,10 +115,10 @@ check(value == nil and err.code == "refresh_token_not_found" and client:getSessi
 client = backend { { status = 200, body = { id = "user-2" } } }
 value = assert(client:signUp("a@b.test", "password", "A"))
 check(value.confirmationRequired and client:getSession() == nil, "Email confirmation must not fabricate a session")
-value, err = Chat.supabase { url = "https://example.supabase.co", publishableKey = "sb_secret_forbidden", transport = function() end }
-check(value == nil and err.code == "configuration", "Secret keys must be rejected by client configuration")
-value, err = Chat.supabase { url = "http://example.supabase.co", publishableKey = "sb_publishable_test", transport = function() end }
-check(value == nil and err.code == "configuration", "Remote credentials require HTTPS")
+value, err = Chat.client { url = "https://chat.example.test" }
+check(value == nil and err.code == "configuration", "A client requires a transport")
+value, err = Chat.client { url = "http://chat.example.test", transport = function() end }
+check(value == nil and err.code == "configuration", "Remote services require HTTPS")
 
 -- The native network binding throws its response object on non-2xx. Verify
 -- that the adapter preserves its status instead of turning HTTP 401 into an
@@ -139,24 +139,24 @@ end }
 package.loaded["api.json"] = { encode = function() return "encoded-json" end, decode = oldJson.decode }
 package.loaded["api.orca_transport"] = nil
 local transport = require "api.orca_transport"
-local result = transport { url = "https://example.supabase.co", method = "POST", headers = {}, body = {} }
+local result = transport { url = "https://chat.example.test", method = "POST", headers = {}, body = {} }
 check(result.status == 401 and result.body.message == "expired", "Thrown HTTP responses must retain status and body")
 check(#result.headers["set-cookie"] == 2, "Response headers must preserve repeated Set-Cookie values for native authentication")
 check(requestOptions.body == "encoded-json" and requestOptions.nocookies == true, "Transport must encode JSON and disable shared cookie loading")
 response.code = function() return 204 end
 response.text = function() error("204 has no body") end
-result = transport { url = "https://example.supabase.co", method = "POST", headers = {} }
+result = transport { url = "https://chat.example.test", method = "POST", headers = {} }
 check(result.status == 204 and result.body == nil, "204 responses must not attempt JSON parsing")
 throwsResponse = false
 response.code = function() return 200 end
 response.text = function() return '{"id":"ok"}' end
-result = transport { url = "https://example.supabase.co", method = "GET", headers = {} }
+result = transport { url = "https://chat.example.test", method = "GET", headers = {} }
 check(result.status == 200 and result.body.id == "ok", "Successful responses must decode JSON")
 response.text = function() return "invalid JSON" end
-local parsed = pcall(transport, { url = "https://example.supabase.co", method = "GET", headers = {} })
+local parsed = pcall(transport, { url = "https://chat.example.test", method = "GET", headers = {} })
 check(not parsed, "Malformed success JSON must not masquerade as successful data")
 response.code = function() return 503 end
-result = transport { url = "https://example.supabase.co", method = "GET", headers = {} }
+result = transport { url = "https://chat.example.test", method = "GET", headers = {} }
 check(result.status == 503 and result.body.code == "http_error", "Malformed error JSON must preserve the HTTP status")
 package.loaded["orca.network"] = oldNetwork
 package.loaded["api.json"] = oldJson

@@ -133,24 +133,9 @@ and sender preloading avoid repeated contact requests and invalidate cached
 relations when the account or session changes. Native authentication, transport,
 server route handlers and domain services each have a separate owner.
 
-## Optional Supabase backend
+## Using the live backend
 
-Supabase provides Postgres, authentication, a REST API, and row-level security
-without requiring a vendor-specific native chat SDK. Its HTTP interface fits
-ORCA's existing Lua networking. Stream is another strong option for a complete
-chat service, but its SDK/UI features add less value when ORCA owns the UI.
-
-1. Create a Supabase project and run the unapplied migrations in order:
-   `backend/schema.sql`, `backend/002_contacts.sql`, `backend/003_messenger.sql`.
-2. Configure phone/email code delivery and deploy the photo finalizer/cleanup
-   functions as described in [backend setup](backend/README.md).
-3. Launch with the public client configuration:
-
-```sh
-CHAT_BACKEND=supabase SUPABASE_URL=https://YOUR_PROJECT.supabase.co \
-SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_KEY \
-build/bin/orca apps/chat
-```
+`make chat` connects to the Octopus Appwrite project from [config.lua](config.lua).
 
 Sign in with a phone or email verification code. On New chat, choose a known
 contact or find an exact username, discoverable phone, or discoverable email.
@@ -159,23 +144,22 @@ manage members and invitations. Public channels support search and subscription.
 Open a second client with another account to exchange messages. **Refresh**
 checks for incoming messages.
 
-The client uses publishable keys and user JWTs. Database policies restrict
+The client uses Appwrite sessions and short-lived JWTs. The Chat Function restricts
 history and sending to room members. Sessions stay in memory, so restarting
 requires sign-in. Messages support text and JPEG photos, prepared with native
 resizing/compression and stored in a private bucket with thumbnails. History
 currently loads the latest 100 messages. Video, live subscriptions, push, and
-older-history pagination remain future work. Supabase deployment and live
-multi-user validation require your project.
+older-history pagination remain future work.
 
-For a physical iOS device, put the public project URL and publishable key in
-`config.lua` before building; terminal environment variables are not inherited
-by installed iOS apps. Leave the config unchanged to run the offline mock.
+Installed iOS apps do not inherit terminal environment variables, so the public
+Appwrite values are defaults in `config.lua`. Set `CHAT_BACKEND=mock` for the
+offline mock on the desktop.
 
 See [API.md](API.md) for the Lua interface, transport injection, schema details,
 and backend references.
 See [PRODUCT.md](PRODUCT.md) for implementation status and remaining product
-scope, including video. [Backend setup](backend/README.md) explains the
-Supabase/Firebase choice and which live services you need to create.
+scope, including video. [Backend setup](backend/README.md) describes the
+live Appwrite services.
 
 ## Verify
 
@@ -183,7 +167,6 @@ Supabase/Firebase choice and which live services you need to create.
 make test-chat
 make test-chat-appwrite-backend
 make test-media
-make test-chat-finalizer
 make test-network-headers
 ```
 
@@ -202,10 +185,8 @@ invitations, subscriptions, and attachment permissions.
 It does not depend on environment credentials or an external service.
 The HTTP regression uses a localhost echo server to verify that long JWT
 headers and binary JPEG bodies reach the server without truncation. Native
-ImageIO tests decode processed output and check orientation, size and metadata;
-Edge Function tests cover trusted finalization and expired-upload cleanup.
+ImageIO tests decode processed output and check orientation, size and metadata.
 
-Backend references: [Supabase Auth](https://supabase.com/docs/guides/auth),
-[row-level security](https://supabase.com/docs/guides/database/postgres/row-level-security),
-[client keys](https://supabase.com/docs/guides/getting-started/api-keys),
-and [Stream Chat](https://getstream.io/chat/docs/).
+Backend references: [Appwrite Auth](https://appwrite.io/docs/products/auth),
+[Functions](https://appwrite.io/docs/products/functions) and
+[Databases](https://appwrite.io/docs/products/databases).
