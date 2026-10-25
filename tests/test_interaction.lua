@@ -67,6 +67,19 @@ local function test_input_unicode()
 	input:removeFromParent()
 end
 
+local function test_input_native_event_routing()
+	pump_messages(screen)
+	local input = screen + ui.Input { Width = 200, Height = 40 }
+	input:setFocus()
+	local event = orca.system.Event { target = screen, message = "KeyDown", key = 97, modflags = 0, text = "" }
+	-- Native keyboards post Char events without an object target.
+	orca.system.dispatchMessage(nil, event)
+	orca.system.translateMessage(event)
+	pump_messages(screen)
+	test.expect_eq(input.Text, "a", "The application screen should route untargeted native text to the focused input")
+	input:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Input (Checkbox): Checked property can be set and cleared
 -- ---------------------------------------------------------------------------
@@ -310,6 +323,7 @@ end
 test_button_interaction()
 test_input_interaction()
 test_input_unicode()
+test_input_native_event_routing()
 test_input_checkbox()
 test_form_populate_inputs()
 test_radio_group_interaction()

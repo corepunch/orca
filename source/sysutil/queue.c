@@ -133,6 +133,7 @@ int f_dispatch_message(lua_State* L)
       case kEventScrollWheel:
       case kEventKeyDown:
       case kEventKeyUp:
+      case kEventChar:
       case kEventReadCommands:
 //      case kEventWindowPaint:
 //      case kEventWindowResized:

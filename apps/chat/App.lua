@@ -36,6 +36,7 @@ local App = Application:extend {
         self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
+        self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
         self.filter, self.query = "All", ""
@@ -404,6 +405,9 @@ local App = Application:extend {
     ["/new"] = function(self) return self:newRoom() end,
     ["/profile"] = function(self) return self:profile() end,
     ["/auth"] = function(self) return self:auth() end,
+    ["/auth/email"] = function(self) return Identity.auth(self, "email") end,
+    ["/auth/signup"] = function(self) return Identity.auth(self, "signup") end,
+    ["/auth/code"] = function(self) return Identity.auth(self, "code") end,
     ["/details"] = function(self) return self:details() end,
 
     run = function(self)
