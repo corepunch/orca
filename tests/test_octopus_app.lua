@@ -54,7 +54,8 @@ local app = newApp()
 local home = app.screen
 assert(home.Width == 390 and home.Height == 844 and home.ResizeMode == "NoResize")
 assert(not app.client:getSession(), "Octopus starts as a guest")
-assert(home:findChild("Timeline", true) and find(app, "Feeddiscover") and find(app, "Feedfollowing"))
+assert(find(app, "Feedhome") and find(app, "Feedconnect") and find(app, "Feeddiscover"))
+assert(app.pivot.SelectedIndex == 2, "Guests start on discover")
 assert(find(app, "Postp-reef") and find(app, "Postp-quote"), "The discover timeline lists posts for guests")
 assert(find(app, "Imagep-reef").Src == app.media:path("f-reef"), "Photo posts load their image")
 home:UpdateLayout(390, 844)
@@ -62,15 +63,16 @@ local card = find(app, "Postp-small")
 assert(card.ActualWidth > 300 and card.ActualHeight > 100, "Cards need a usable size: "
     .. card.ActualWidth .. "x" .. card.ActualHeight)
 assert(find(app, "Tagsoftware").ActualWidth > 40, "Tags need hit areas")
-assert(find(app, "FollowingSignIn"), "Following asks guests to sign in")
+assert(find(app, "SignInhome") and find(app, "SignInconnect"), "Home and connect ask guests to sign in")
 assert(find(app, "AppBarHome").IsEnabled == false and find(app, "AppBarSignIn"), "Guests get sign-in in the menu")
 
 -- Guests can read a post and its comments, but writing asks them to sign in.
 click(app, "Openp-hello")
 assert(app.currentRoute == "/post" and find(app, "PostPage"))
 assert(find(app, "Commentc-welcome") and find(app, "SignInToComment"))
-assert(find(app, "PostStats"):getTextContent() == "1 like · 0 reposts · 3 comments",
-    find(app, "PostStats"):getTextContent())
+local function stat(key) return find(app, "Stat" .. key):getTextContent() end
+assert(stat("likes") == "2" and stat("reposts") == "1" and stat("comments") == "3", "Post pages show live counts")
+assert(find(app, "PostTime"):getTextContent():match("^%d%d:%d%d · %d+ %a+ %d%d%d%d$"), "Posts show their full time")
 click(app, "LikePost")
 assert(app.currentRoute == "/auth" and find(app, "SignInPage"), "Liking as a guest opens sign in")
 assert(find(app, "AuthStatus"):getTextContent() == "Sign in to like posts.")
@@ -132,7 +134,7 @@ assert(find(app, "CommentInput").Text == "Adding a source link later.", "Comment
 local thread = app.thread
 require("Octopus/views/thread").send(app, thread)
 drain(app)
-assert(app.screen:findChild("PostStats", true):getTextContent():match("1 comment$"))
+assert(stat("comments") == "1")
 local comments = app.client:listComments(published)
 assert(#comments == 1 and comments[1].body == "Adding a source link later.")
 click(app, "Reply" .. comments[1].id)
@@ -145,10 +147,10 @@ assert(#comments == 2 and comments[2].parentId == comments[1].id, "Replies threa
 
 -- Like and repost from the post page and timeline.
 click(app, "LikePost")
-assert(find(app, "PostStats"):getTextContent():match("^1 like"))
+assert(stat("likes") == "1")
 assert(find(app, "LikePost").Text == "unlike")
 click(app, "LikePost")
-assert(find(app, "PostStats"):getTextContent():match("^0 likes"))
+assert(stat("likes") == "0")
 click(app, "BackFromPost")
 click(app, "Likep-small")
 local stats = app.client:stats { "p-small" }
@@ -156,16 +158,27 @@ assert(stats["p-small"].likes == 2 and stats["p-small"].liked, "Timeline likes r
 click(app, "Repostp-small")
 assert(app.client:stats({ "p-small" })["p-small"].reposted)
 
--- Following updates the following timeline.
+-- Signed-in readers land on home, with reposts from the people they follow.
+assert(app.pivot.SelectedIndex == 0 and app.feed == "home")
+assert(find(app, "RepostedByp-small") and find(app, "RepostedByp-arms"), "Reposts show who reposted them")
+
+-- Connect lists interactions with your posts, newest first.
+app:selectFeed("connect")
+drain(app)
+assert(app.pivot.SelectedIndex == 1 and find(app, "Activity1") and find(app, "Activity7"))
+click(app, "Activity1")
+assert(app.currentRoute == "/post" and app.post.id == "p-hello", "Activity opens the post it is about")
+click(app, "BackFromPost")
+app:selectFeed("home")
+
+-- Following adds people to the home timeline.
 click(app, "Authorp-small")
 assert(find(app, "Countfollowers"):getTextContent() == "0")
 click(app, "FollowButton")
 assert(find(app, "Countfollowers"):getTextContent() == "1" and app.client:followState("u-jules"))
+assert(not app.feeds.home, "Following reloads the home timeline")
 click(app, "BackFromProfile")
-app.pivot.SelectedIndex = 1
-app:selectFeed("following")
-drain(app)
-assert(find(app, "Postp-small") and app.feeds.following, "Following shows the people you follow")
+assert(find(app, "Timelinehome"):findChild("Postp-quote", true), "Home includes people you just followed")
 
 -- Your own profile: edit and sign out.
 click(app, "AppBarMe")
@@ -186,7 +199,7 @@ assert(err.status == 404 and app.currentRoute ~= "/post", "The second tap delete
 
 click(app, "AppBarMe")
 click(app, "SignOut")
-assert(not app.client:getSession() and app.currentRoute == "/" and find(app, "FollowingSignIn"))
+assert(not app.client:getSession() and app.currentRoute == "/" and find(app, "SignInhome"))
 
 -- Sign up creates the account and its public profile.
 local fresh = newApp()
@@ -211,4 +224,4 @@ offline:show("/")
 drain(offline)
 assert(offline.screen:findChild("HomeStatus", true):getTextContent():match("Could not reach Octopus"))
 
-print("Octopus UI: guest timeline/post/profile/search, sign-in return, compose drafts and publish, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up and errors passed")
+print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, compose drafts and publish, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up and errors passed")

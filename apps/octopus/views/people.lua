@@ -59,7 +59,7 @@ local function followButton(self, view)
                 view.profile.followers = view.profile.followers + (view.follow and 1 or 0) - (before and 1 or 0)
                 view.counts.followers:setTextContent(number(view.profile.followers))
             end
-            self.feeds.following = nil
+            self.feeds.home = nil
             followButton(self, view)
             self:notice(view.follow and "You'll see their posts in your following timeline." or "Unfollowed.")
             self:repaint()
@@ -93,7 +93,7 @@ local function loadProfile(self, view, after)
         end
         if after then after(profile) end
         local posts, stats = Posts.fetch(self, function()
-            return self.client:listPosts { authorIds = { view.userId }, limit = 30 }
+            return self.client:userTimeline(view.userId, { limit = 30 })
         end)
         if self.profileView ~= view or self.sessionEpoch ~= session then return end
         C.clear(view.posts)
@@ -260,8 +260,8 @@ function People.runSearch(self, list)
     self:task(function()
         local tag = query:match("^#(.+)$")
         local posts, stats = Posts.fetch(self, function()
-            if tag then return self.client:listPosts { tag = tag, limit = 30 } end
-            return self.client:listPosts { search = query, limit = 20 }
+            local found, err = self.client:listPosts(tag and { tag = tag, limit = 30 } or { search = query, limit = 20 })
+            return found and Posts.items(found), err
         end)
         local people, peopleError = {}, nil
         if posts and not tag then people, peopleError = self.client:searchPeople(query) end

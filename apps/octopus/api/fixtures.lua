@@ -60,11 +60,14 @@ return {
             { targetId = "p-eames", targetType = "post", userId = "u-jules", age = HOUR },
             { targetId = "p-small", targetType = "post", userId = "u-maya", age = 4 * HOUR },
             { targetId = "p-hello", targetType = "post", userId = "u-maya", age = 20 * HOUR },
+            { targetId = "p-hello", targetType = "post", userId = "u-noor", age = 6 * HOUR },
             { targetId = "c-welcome", targetType = "comment", userId = "u-ada", age = 18 * HOUR },
         },
         reposts = {
             { postId = "p-reef", userId = "u-noor", age = 12 * 60 },
             { postId = "p-small", userId = "u-maya", age = 3 * HOUR },
+            { postId = "p-arms", userId = "u-maya", age = 7 * HOUR },
+            { postId = "p-hello", userId = "u-jules", age = 19 * HOUR },
         },
         comments = {
             { id = "c-welcome", postId = "p-hello", authorId = "u-maya", authorName = "Maya Chen", parentId = "",

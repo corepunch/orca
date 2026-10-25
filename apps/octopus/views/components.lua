@@ -224,6 +224,13 @@ function C.ago(iso, now)
     return os.date("!%d %b", time):gsub("^0", ""):lower()
 end
 
+-- The full local time of a post, as on a tweet's own page: "14:05 · 24 oct 2026".
+function C.stamp(iso)
+    local time = epoch(iso)
+    if not time then return "" end
+    return (os.date("%H:%M · %d %b %Y", time):gsub("· 0", "· "):lower())
+end
+
 function C.count(value, singular, plural)
     value = value or 0
     return value .. " " .. (value == 1 and singular or (plural or singular .. "s"))

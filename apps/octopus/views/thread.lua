@@ -7,9 +7,26 @@ local Thread = {}
 
 local LABELS = { text = "post", photo = "photo", quote = "quote", link = "link" }
 
-local function statsLine(entry)
-    return C.count(entry.likes, "like") .. " · " .. C.count(entry.reposts, "repost") .. " · "
-        .. C.count(entry.comments, "comment")
+-- Count tiles under the post, like a tweet's detail page: big numbers over
+-- small labels, between hairlines.
+local function statTiles()
+    local tiles = ui.Grid { Name = "PostStats", Columns = "1fr 1fr 1fr", Height = 64 }
+    local labels = {}
+    for _, key in ipairs { "likes", "reposts", "comments" } do
+        labels[key] = { number = C.text("0", { Name = "Stat" .. key, FontSize = 28 }),
+            label = C.text(key, { FontSize = 13, Foreground = colors.dim }) }
+        tiles:addChild(C.stack({ Spacing = 0, JustifyContent = "Center" }, { labels[key].number, labels[key].label }))
+    end
+    local function rule() return ui.Grid { Height = 1, Background = colors.faint } end
+    local frame = C.stack({ Spacing = 6 }, { rule(), tiles, rule() })
+    return frame, function(entry)
+        local singular = { likes = "like", reposts = "repost", comments = "comment" }
+        for key, view in pairs(labels) do
+            local count = entry[key] or 0
+            view.number:setTextContent(tostring(count))
+            view.label:setTextContent(count == 1 and singular[key] or key)
+        end
+    end
 end
 
 -- Comments with their replies indented beneath, as on the website.
@@ -148,9 +165,9 @@ function Thread.page(self)
     author:addChild(C.avatar(post.authorName, 56, post.authorId))
     author:addChild(C.stack({ Spacing = 2, JustifyContent = "Center", IgnoreHitTest = true }, {
         C.text(post.authorName, { FontSize = 22, TextOverflow = "Ellipsis" }),
-        C.text(C.ago(post.createdAt, self.clock()) .. " · " .. LABELS[post.postType], { FontSize = 13, Foreground = colors.dim }),
+        C.text(LABELS[post.postType] .. " · " .. C.ago(post.createdAt, self.clock()), { FontSize = 13, Foreground = colors.dim }),
     }))
-    view.stats = C.text("", { Name = "PostStats", FontSize = 14, Foreground = colors.muted })
+    local stats, showStats = statTiles()
     view.comments = C.stack({ Name = "Comments", Spacing = 18 }, { C.text("loading comments…", { Foreground = colors.muted }) })
     local content = C.stack({ Name = "PostPage", Spacing = 16, Overflow = "hidden scroll" }, {
         C.area(author, function() self:openProfile(post.authorId, post.authorName) end, { Name = "PostAuthor", Height = 60 }),
@@ -164,7 +181,8 @@ function Thread.page(self)
             self:notice("Link copied: " .. post.linkUrl)
         end, { Name = "CopyLink" }))
     end
-    content:addChild(view.stats)
+    content:addChild(C.text(C.stamp(post.createdAt), { Name = "PostTime", FontSize = 13, Foreground = colors.dim }))
+    content:addChild(stats)
     content:addChild(C.eyebrow("comments"))
     content:addChild(view.comments)
 
@@ -226,7 +244,7 @@ function Thread.page(self)
         end } or nil,
     })
     function view.refreshStats()
-        view.stats:setTextContent(statsLine(view.entry))
+        showStats(view.entry)
         bar:findChild("LikePost").Text = view.entry.liked and "unlike" or "like"
         bar:findChild("RepostPost").Text = view.entry.reposted and "undo" or "repost"
     end

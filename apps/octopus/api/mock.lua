@@ -37,6 +37,8 @@ local function matches(doc, query)
     if query.method == "equal" then
         for _, wanted in ipairs(values) do if contains(value, wanted) then return true end end
         return false
+    elseif query.method == "lessThan" then
+        return value ~= nil and tostring(value) < tostring(values[1])
     elseif query.method == "notEqual" then
         return value ~= values[1]
     elseif query.method == "search" then

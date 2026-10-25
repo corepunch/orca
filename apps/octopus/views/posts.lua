@@ -105,19 +105,25 @@ function Posts.toggle(app, post, entry, kind, done)
     end)
 end
 
--- One timeline card: avatar tile, author line, the post and its actions.
-function Posts.card(app, post, entry)
+-- One timeline card: avatar tile, author line, the post and its actions. A
+-- repost carries a "reposted" line above the author, as on Twitter.
+function Posts.card(app, post, entry, repostedBy)
     local card = ui.Grid { Name = "Post" .. post.id, Columns = "52px 1fr", Spacing = 12 }
-    local avatar = C.area(C.avatar(post.authorName, 52, post.authorId), function() app:openProfile(post.authorId, post.authorName) end, {
-        Name = "Avatar" .. post.id, Width = 52, Height = 52 })
-    card:addChild(avatar)
+    local function author() app:openProfile(post.authorId, post.authorName) end
+    card:addChild(C.area(C.avatar(post.authorName, 52, post.authorId), author, {
+        Name = "Avatar" .. post.id, Width = 52, Height = 52, MarginTop = repostedBy and 26 or 0 }))
     local header = ui.Grid { Columns = "1fr auto", Spacing = 8, IgnoreHitTest = true }
     header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
     header:addChild(C.text(C.ago(post.createdAt, app.clock()), { FontSize = 13, Foreground = colors.dim }))
-    local column = C.stack({ Spacing = 6 }, {
-        C.area(header, function() app:openProfile(post.authorId, post.authorName) end, { Name = "Author" .. post.id, Height = 24 }),
-        C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }),
-    })
+    local column = C.stack({ Spacing = 6 })
+    if repostedBy then
+        column:addChild(C.area(C.row({ Spacing = 6, IgnoreHitTest = true }, {
+            C.icon("repeat-2", 14, colors.dim, { MarginLeft = 0, MarginRight = 0 }),
+            C.text(repostedBy.name .. " reposted", { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
+        }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = 20 }))
+    end
+    column:addChild(C.area(header, author, { Name = "Author" .. post.id, Height = 24 }))
+    column:addChild(C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }))
     local tags = Posts.tags(app, post)
     if tags then column:addChild(tags) end
     local actions = ui.Grid { Name = "Actions" .. post.id, Columns = "1fr 1fr 1fr", Height = 36 }
@@ -127,11 +133,21 @@ function Posts.card(app, post, entry)
     return card
 end
 
+-- Timeline items are { post, repostedBy }; plain post lists are wrapped.
+function Posts.items(posts)
+    local items = {}
+    for i, post in ipairs(posts) do items[i] = { post = post } end
+    return items
+end
+
 -- Add cards to a list, then fetch their photos in the background.
-function Posts.append(app, list, posts, stats)
-    for _, post in ipairs(posts) do
+function Posts.append(app, list, items, stats)
+    local posts = {}
+    for _, item in ipairs(items) do
+        local post = item.post
         stats[post.id] = stats[post.id] or { likes = 0, comments = 0, reposts = 0 }
-        list:addChild(Posts.card(app, post, stats[post.id]))
+        list:addChild(Posts.card(app, post, stats[post.id], item.repostedBy))
+        posts[#posts + 1] = post
     end
     Posts.loadPhotos(app, list, posts)
 end
@@ -161,14 +177,17 @@ function Posts.loadPhotos(app, root, posts)
     end)
 end
 
--- Load a page of posts with their counts. Returns posts, stats or nil, error.
+-- Load a page of timeline items with their counts. The loader returns items
+-- and a cursor; this returns items, stats, cursor or nil, error.
 function Posts.fetch(app, loader)
-    local posts, err = loader()
-    if not posts then return nil, err end
-    local ids = {}
-    for _, post in ipairs(posts) do ids[#ids + 1] = post.id end
+    local items, cursor = loader()
+    if not items then return nil, cursor end
+    local ids, seen = {}, {}
+    for _, item in ipairs(items) do
+        if not seen[item.post.id] then seen[item.post.id] = true; ids[#ids + 1] = item.post.id end
+    end
     local stats = app.client:stats(ids)
-    return posts, stats or {}
+    return items, stats or {}, cursor
 end
 
 return Posts
