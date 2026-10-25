@@ -19,6 +19,13 @@ local function sameSession()
     return current and current.user.id == session.user.id and current.access_token == session.access_token
 end
 local app = App { client = client }
+-- Keep routing and diagnostics real, but do not enqueue Paint against an
+-- uninitialized headless renderer (the normal Application activation does).
+app.activate_controller = function(self, controller)
+    self:installErrorHandler()
+    self.controller, self.screen = controller, controller.view
+    return controller
+end
 app.drafts.alex = "Unsent message"
 app:show("/")
 local home = app.screen
@@ -26,6 +33,15 @@ local function layout()
     core.flushQueue()
     core.runAllPrograms(app.screen)
     app.screen:UpdateLayout(390, 844)
+end
+local function returnToChat()
+    app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+    while true do
+        local event = system.peekMessage()
+        if not event then break end
+        if not event:is("Window.Paint") then system.dispatchMessage(app.screen, event) end
+    end
+    core.flushQueue()
 end
 layout()
 app.diagnostics:checkLayout()
@@ -43,7 +59,7 @@ local details = assert(app.screen:findChild("ErrorDetails", true))
 local recover = assert(app.screen:findChild("RecoverChat", true))
 assert(details.ActualHeight > 100 and recover.ActualHeight >= 44, "Error details and recovery must remain usable")
 assert(sameSession() and app.drafts.alex == "Unsent message")
-recover:send("Node.LeftButtonUp")
+returnToChat()
 assert(app.screen.Name == "ChatShell", "Recovery must open a rebuilt chat shell")
 assert(sameSession() and app.drafts.alex == "Unsent message", "Recovery must retain login and drafts")
 
@@ -53,7 +69,7 @@ assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("tests
 local first = app.screen
 async.report_error("second failure")
 assert(app.screen == first, "Repeated failures must not stack error screens")
-app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+returnToChat()
 layout()
 local footer = app.screen:findChild("AppBarFooter", true)
 footer.Height = 32000
@@ -61,7 +77,7 @@ layout()
 app.diagnostics:checkLayout()
 assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("footerHeight=", 1, true),
     "Oversized footer failures must show measured geometry even without an exception")
-app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+returnToChat()
 
 local originalSelect = app.models.Rooms.select
 app.models.Rooms.select = function() error("rooms callback exploded", 0) end
@@ -70,7 +86,7 @@ app.models.Rooms.select = originalSelect
 assert(not app.inboxRefreshBusy and app.screen.Name == "ChatError"
     and app.diagnostics.lastReport:find("rooms callback exploded", 1, true),
     "Caught refresh exceptions must release locks and retain their error details")
-app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+returnToChat()
 
 local savedGet, savedDispatch, savedTranslate = system.getMessage, system.dispatchMessage, system.translateMessage
 local calls = 0
