@@ -345,12 +345,18 @@ local App = Application:extend {
         local room = self.room
         local function keepDraft() self.drafts[room.id] = self.composer and self.composer.Text or "" end
         self.messageList = C.stack({ Name = "Messages", Spacing = 14, Overflow = "hidden scroll" })
-        self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
+        self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
+            Margin = "24 8" })
         self.composer = C.input("Message", "type a message", {
-            Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end,
+            Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end, BorderRadius = "0",
         })
-        local compose = ui.Grid { Name = "Composer", Height = 48 }
+        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 48,
+            Background = colors.textbox }
+        compose:addChild(C.iconButton("plus", function() self:attachPhoto() end,
+            { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.textboxInk }))
         compose:addChild(self.composer)
+        compose:addChild(C.iconButton("arrow-up", function() self:sendMessage() end,
+            { Name = "SendMessage", Width = 48, Height = 48, Foreground = colors.accentText }))
         self.photoLabel = C.text("Photo ready", { FontSize = 13, Foreground = colors.accentText, TextVerticalAlignment = "Center" })
         self.photoPreview = ui.Grid { Name = "PhotoDraft", Columns = "1fr 40px", Height = 40,
             Visible = self.photoDrafts[room.id] ~= nil, Background = colors.soft, Padding = "12 0" }
@@ -367,30 +373,61 @@ local App = Application:extend {
         end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
         local readOnly = room.can_post == false
         compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
-        local footer = C.stack({ Spacing = 8, Padding = "0 8" }, { self.status, self.photoPreview, compose,
+        local footer = C.stack({ Name = "ThreadFooter", Spacing = 0,
+            Background = readOnly and colors.background or colors.textbox }, { self.status, self.photoPreview, compose,
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
-                FontSize = 13, Foreground = colors.muted, WordWrap = true }),
+                FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
         })
-        -- The composer row fits its content: status, photo draft and input.
-        self.threadBody = ui.Grid { Rows = "1fr auto" }
-        self.threadBody:addChild(self.messageList); self.threadBody:addChild(footer)
         local pinned = self.pinned[room.id]
-        -- Windows Phone puts the conversation commands in the application bar.
-        local bar = C.appBar({
-            { "BackToChats", "arrow-left", "back", function() keepDraft(); self:show() end },
-            { "AttachPhoto", "plus", "attach", function() self:attachPhoto() end },
-            { "SendMessage", "arrow-up", "send", function() self:sendMessage() end },
-            { "PinConversation", "pin", pinned and "unpin" or "pin", function()
+        local screen, menuButton
+        local overflow = ui.Node2D { Name = "ThreadOverflow", Visible = false }
+        local function closeMenu() overflow.Visible = false end
+        overflow:addChild(C.button("", closeMenu, { Name = "DismissConversationMenu", Height = auto,
+            BorderWidth = "0", Background = "#00000000" }))
+        local menu = C.stack({ Name = "ThreadOverflowMenu", Width = 220, Height = 144,
+            MarginRight = auto, MarginBottom = auto, Background = colors.chrome })
+        overflow:addChild(menu)
+        local commands = ui.Grid { Name = "ThreadCommands", Columns = "44px 1fr 44px", Height = 44 }
+        commands:addChild(C.iconButton("arrow-left", function() keepDraft(); self:show() end,
+            { Name = "BackToChats", Foreground = colors.ink }))
+        commands:addChild(ui.Node2D { IgnoreHitTest = true })
+        menuButton = C.button("…", function()
+            if overflow.Visible then closeMenu(); return end
+            screen:UpdateLayout(screen.Width, screen.Height)
+            local x, y, node = 0, 0, menuButton
+            while node and node ~= screen do
+                x, y, node = x + node.ActualX, y + node.ActualY, node:getParent()
+            end
+            menu.MarginLeft = math.max(screen.SafeAreaLeft, x + menuButton.ActualWidth - menu.Width)
+            menu.MarginTop = math.max(screen.SafeAreaTop,
+                math.min(y + menuButton.ActualHeight, screen.Height - screen.SafeAreaBottom - menu.Height))
+            overflow.Visible = true
+        end, { Name = "ConversationMenu", Width = 44, Height = 44, FontSize = 28, Foreground = colors.ink })
+        commands:addChild(menuButton)
+        local actions = {
+            { "PinConversation", pinned and "unpin" or "pin", function()
                 keepDraft(); self.pinned[room.id] = not self.pinned[room.id]; self:show("/thread")
             end },
-        }, {
             { "ConversationInfo", "conversation info", function() keepDraft(); self:show("/details") end },
             { "RefreshMessages", "refresh", function() self:renderMessages() end },
-        })
-        bar:findChild("AttachPhoto").Visible, bar:findChild("SendMessage").Visible = not readOnly, not readOnly
-        local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
-        grid:addChild(C.page(room.name, self.threadBody)); grid:addChild(bar)
-        local screen = self:frame(grid)
+        }
+        for _, action in ipairs(actions) do
+            menu:addChild(C.button(action[2], function() closeMenu(); action[3]() end,
+                { Name = action[1], Height = 48, FontSize = 18, TextHorizontalAlignment = "Left",
+                    Padding = "16 0", Foreground = colors.ink, Background = colors.chrome, BorderWidth = "0" }))
+        end
+        self.threadBody = ui.Grid { Rows = "44px 1fr" }
+        self.threadBody:addChild(commands); self.threadBody:addChild(self.messageList)
+        -- Keep the rectangular composer outside the page's horizontal content margins.
+        local grid = ui.Grid { Rows = "1fr auto", Background = colors.background, Foreground = colors.ink }
+        grid:addChild(C.page(room.name, self.threadBody)); grid:addChild(footer)
+        screen = self:frame(grid)
+        screen:addChild(overflow)
+        screen.RespectSafeArea = false
+        for _, edge in ipairs { "Left", "Top", "Right" } do
+            grid:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+        end
+        footer:attachPropertyProgram("Node.PaddingBottom", "{Screen.SafeAreaBottom}", "OneWay", true)
         self:renderMessages()
         return screen
     end,

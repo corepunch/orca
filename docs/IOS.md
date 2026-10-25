@@ -104,9 +104,24 @@ loop; a display link resumes the Lua application coroutine each frame, and
 `system.getMessage` yields when the platform queue is empty.
 
 The platform backend uses UIWindowScene and OpenGL ES 3, Retina backing buffers,
-safe-area layout, tap/drag events, vertical swipe scrolling and UIKeyInput.
+tap/drag events, vertical swipe scrolling and UIKeyInput. The drawable fills the
+window, including the status-bar and home-indicator areas. `Screen.ClearColor`
+paints the entire canvas and determines status-bar text contrast. By default,
+`Screen.RespectSafeArea` keeps child controls inside the system insets while
+`Screen.Width` and `Height` retain the full drawable dimensions. The four
+`SafeAreaLeft`, `SafeAreaTop`, `SafeAreaRight`, and `SafeAreaBottom` properties
+update for native resizable screens. Set `RespectSafeArea=false` when a screen
+needs backgrounds or scrolling content under system chrome, then use those
+properties to inset its interactive controls. Avoid hardcoded device margins.
+
 The chat screen tracks the available size, including keyboard appearance and
-rotation. Input supports UTF-8 insertion and deletion. Marked-text IME composition,
+rotation. A docked keyboard reduces the drawable height; the bottom safe inset
+then disappears so the composer can meet the keyboard. `Input.Type` requests
+the native keyboard: `Phone` supports international phone entry, `Number` uses
+a digit keypad, and `Email`, `Url`, and `Decimal` select their corresponding
+layouts. `Password` enables secure native entry. Types are keyboard hints;
+applications still validate values, and numeric strings retain leading zeroes.
+Input supports UTF-8 insertion and deletion. Marked-text IME composition,
 native file dialogs, offscreen platform surfaces and multiple app windows are
 not implemented by this backend.
 

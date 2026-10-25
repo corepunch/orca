@@ -263,6 +263,69 @@ static void test_apply_styles_float_property(void) {
     }
 }
 
+static void test_specialized_restores_unset_property(void) {
+    WITH(struct Object, obj, make_styled_object(), destroy_object) {
+        struct Property *prop = OBJ_FindLongProperty(obj, 0xbfbb7a5bu);
+        EXPECT(prop != NULL);
+        EXPECT(PROP_IsNull(prop));
+        PROP_SetFlag(prop, PF_SPECIALIZED);
+        PROP_SetValue(prop, &(float){42.f});
+        PROP_ClearSpecialized(OBJ_GetProperties(obj));
+        EXPECT(PROP_IsNull(prop));
+        EXPECT(*(float *)PROP_GetValue(prop) == 0.f);
+    }
+}
+
+static void test_specialized_restores_string(void) {
+    WITH(struct Object, obj, OBJ_Create(ID_StyleRule), destroy_object) {
+        struct Property *prop = OBJ_FindLongProperty(obj, ID_StyleRule_ClassName);
+        EXPECT(prop != NULL);
+        PROP_SetStringValue(prop, "original");
+        PROP_SetFlag(prop, PF_SPECIALIZED);
+        PROP_SetStringValue(prop, "focused");
+        PROP_SetFlag(prop, PF_SPECIALIZED);
+        PROP_SetStringValue(prop, "focused-again");
+        PROP_ClearSpecialized(OBJ_GetProperties(obj));
+        EXPECT(!strcmp(*(char const **)PROP_GetValue(prop), "original"));
+        EXPECT(!PROP_IsNull(prop));
+        /* Destruction while specialized must also release the preserved string. */
+        PROP_SetFlag(prop, PF_SPECIALIZED);
+        PROP_SetStringValue(prop, "focused-at-release");
+    }
+}
+
+static void test_specialized_restores_owned_object(void) {
+    WITH(struct Object, original, OBJ_Create(ID_StyleSheet), destroy_object) {
+        WITH(struct Object, override, OBJ_Create(ID_StyleSheet), destroy_object) {
+            WITH(struct Object, obj, make_styled_object(), destroy_object) {
+                struct Property *prop = OBJ_FindLongProperty(obj, ID_StyleController_StyleSheet);
+                PROP_SetValue(prop, &original);
+                OBJ_AddChild(obj, original);
+                PROP_SetFlag(prop, PF_OWNS_OBJECT_CHILD);
+                PROP_SetFlag(prop, PF_SPECIALIZED);
+                PROP_SetValue(prop, &override);
+                EXPECT(OBJ_GetParent(original) == obj);
+                EXPECT(!(PROP_GetFlags(prop) & PF_OWNS_OBJECT_CHILD));
+                PROP_ClearSpecialized(OBJ_GetProperties(obj));
+                EXPECT(*(struct Object **)PROP_GetValue(prop) == original);
+                EXPECT(PROP_GetFlags(prop) & PF_OWNS_OBJECT_CHILD);
+                EXPECT(OBJ_GetParent(original) == obj);
+                PROP_Clear(prop);
+                EXPECT(OBJ_GetParent(original) == NULL);
+
+                /* Destroying an active override must also release snapshot ownership. */
+                PROP_SetValue(prop, &original);
+                OBJ_AddChild(obj, original);
+                PROP_SetFlag(prop, PF_OWNS_OBJECT_CHILD);
+                PROP_SetFlag(prop, PF_SPECIALIZED);
+                PROP_SetValue(prop, &override);
+                EXPECT(OBJ_GetParent(original) == obj);
+            }
+            EXPECT(OBJ_GetParent(original) == NULL);
+        }
+    }
+}
+
 /* ------------------------------------------------------------------ */
 /* CSS Unit Binding Tests                                               */
 /* ------------------------------------------------------------------ */
@@ -429,6 +492,9 @@ int main(void) {
         DECL_TEST(test_release_clears_classes_and_sheet),
         DECL_TEST(test_raw_style_classes_strip_pseudo_state),
         DECL_TEST(test_apply_styles_float_property),
+        DECL_TEST(test_specialized_restores_unset_property),
+        DECL_TEST(test_specialized_restores_string),
+        DECL_TEST(test_specialized_restores_owned_object),
         DECL_TEST(test_apply_styles_no_component),
         DECL_TEST(test_parse_class_multiple_pseudo_states),
         DECL_TEST(test_parse_class_base_name_only),

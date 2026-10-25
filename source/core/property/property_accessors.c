@@ -31,6 +31,27 @@ PROP_GetFlags(struct Property const *property)
 void
 PROP_SetFlag(struct Property *property, uint32_t value)
 {
+  if ((value & PF_SPECIALIZED) && !(property->flags & PF_SPECIALIZED) &&
+      !property->pdesc->IsArray) {
+    // State styles temporarily override the resolved value, including inline defaults.
+    struct Property *base = ZeroAlloc(sizeof(*base));
+    base->object = property->object;
+    base->pdesc = property->pdesc;
+    base->flags = property->flags & (PF_MODIFIED | PF_OWNS_OBJECT_CHILD);
+    property->flags &= ~PF_OWNS_OBJECT_CHILD;
+    base->value = ZeroAlloc(PROP_GetSize(property));
+    memcpy(base->value, property->value, PROP_GetSize(property));
+    if (PROP_GetType(property) == kDataTypeString) {
+      char *text = *(char **)property->value;
+      *(char **)base->value = text ? strdup(text) : NULL;
+    } else if (PROP_GetType(property) == kDataTypeObject) {
+      struct Object *object = PROP_GetObjectValue(property);
+      if (object) OBJ_AddRef(object);
+    }
+    base->binding = property->binding;
+    property->binding = NULL;
+    property->specializedBase = base;
+  }
   property->flags |= value;
 }
 

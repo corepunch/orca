@@ -175,6 +175,12 @@ OBJ_ReleaseProperties(struct Object *hobj)
   FOR_EACH_LIST(struct Property, p, OBJ_GetProperties(hobj))
   {
     PROP_Clear(p);
+    if (p->specializedBase) {
+      PROP_Clear(p->specializedBase);
+      _ReleaseBindingNode(p->specializedBase->binding);
+      free(p->specializedBase->value);
+      free(p->specializedBase);
+    }
     _ReleaseBindingNode(p->binding);
     p->binding = NULL;
     if (p->flags & PF_OWNS_STORAGE) {
@@ -212,8 +218,19 @@ PROP_ClearSpecialized(struct Property *pprop) {
   FOR_EACH_LIST(struct Property, p, pprop) {
     if (p->flags & PF_SPECIALIZED) {
       PROP_Clear(p);
-      p->flags = (p->flags & ~PF_SPECIALIZED);
-      memset(p->value, 0, PROP_GetSize(p));
+      p->flags &= ~PF_SPECIALIZED;
+      if (p->specializedBase) {
+        struct Property *base = p->specializedBase;
+        memcpy(p->value, base->value, PROP_GetSize(p));
+        p->flags |= base->flags;
+        _ReleaseBindingNode(p->binding);
+        p->binding = base->binding;
+        p->updateFrame = 0;
+        p->specializedBase = NULL;
+        free(base->value);
+        free(base);
+      }
+      PROP_NotifyChanged(p);
     }
   }
 }

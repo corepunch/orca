@@ -28,6 +28,56 @@ local function pump_messages(root)
 	end
 end
 
+local function test_screen_safe_area()
+	local safe = ui.Screen {
+		Width = 390, Height = 844, ResizeMode = "NoResize",
+		SafeAreaLeft = 10, SafeAreaTop = 47, SafeAreaRight = 20, SafeAreaBottom = 34,
+	}
+	local pressed = 0
+	local content = safe + ui.Node2D { LeftButtonDown = function() pressed = pressed + 1 end }
+	test.expect(safe.RespectSafeArea, "Screens should respect safe areas by default")
+	safe:UpdateLayout(390, 844)
+	test.expect_eq(safe.Width, 390, "Safe area must preserve the full screen width")
+	test.expect_eq(safe.Height, 844, "Safe area must preserve the full screen height")
+	test.expect_eq(content.ActualX, 10, "Safe content left edge")
+	test.expect_eq(content.ActualY, 47, "Safe content top edge")
+	test.expect_eq(content.ActualWidth, 360, "Asymmetric horizontal safe area")
+	test.expect_eq(content.ActualHeight, 763, "Asymmetric vertical safe area")
+	system.dispatchMessage { target = safe, message = "LeftButtonDown", x = 15, y = 50 }
+	system.dispatchMessage { target = safe, message = "LeftButtonUp", x = 15, y = 50 }
+	core.flushQueue()
+	test.expect_eq(pressed, 1, "Touch hits must include the safe-area layout offset")
+	system.dispatchMessage { target = safe, message = "LeftButtonDown", x = 5, y = 20 }
+	system.dispatchMessage { target = safe, message = "LeftButtonUp", x = 5, y = 20 }
+	core.flushQueue()
+	test.expect_eq(pressed, 1, "Touches in the excluded area must not hit content")
+
+	safe.SafeAreaLeft, safe.SafeAreaTop = 32, 0
+	safe.SafeAreaRight, safe.SafeAreaBottom = 8, 0
+	safe:UpdateLayout(390, 844)
+	test.expect_eq(content.ActualX, 32, "Changed safe-area origin must update without resizing")
+	test.expect_eq(content.ActualY, 0, "Changed top inset must update")
+	test.expect_eq(content.ActualWidth, 350, "Changed insets must remeasure content")
+	test.expect_eq(content.ActualHeight, 844, "Removing bottom inset must restore available height")
+
+	safe.RespectSafeArea = false
+	safe:UpdateLayout(390, 844)
+	test.expect_eq(content.ActualX, 0, "Full-bleed content starts at the screen edge")
+	test.expect_eq(content.ActualWidth, 390, "Safe-area opt-out restores full viewport width")
+	test.expect_eq(safe.SafeAreaLeft, 32, "Opt-out keeps insets available for custom layouts")
+
+	safe.RespectSafeArea = true
+	safe.SafeAreaLeft, safe.SafeAreaTop = -10, -20
+	safe.SafeAreaRight, safe.SafeAreaBottom = 500, 900
+	safe:UpdateLayout(390, 844)
+	test.expect_eq(content.ActualX, 0, "Negative safe-area insets must not move content offscreen")
+	test.expect_eq(content.ActualY, 0, "Negative safe-area top must clamp to zero")
+	test.expect_eq(content.ActualWidth, 0, "Oversized insets must not produce negative width")
+	test.expect_eq(content.ActualHeight, 0, "Oversized insets must not produce negative height")
+	content:removeFromParent()
+	print("PASS: test_screen_safe_area")
+end
+
 -- ---------------------------------------------------------------------------
 -- fr unit support in Grid columns/rows
 -- ---------------------------------------------------------------------------
@@ -1812,6 +1862,7 @@ end
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
+test_screen_safe_area()
 test_grid_fr_units()
 test_grid_auto_columns()
 test_uniform_grid_columns()

@@ -1708,24 +1708,34 @@ local function test_focus_styles_follow_current_input()
     Width = 300, Height = 300, ResizeMode = "NoResize",
     StyleSheet = ui.loadObjectFromCssString [[
       .field { ring-width: 0; }
-      .field:focus { ring-width: 2; ring-color: #0084ff; }
+      .field:focus { ring-width: 2; ring-color: #0084ff; background-color: #ffffff; border-color: #0084ff; }
     ]],
   }
-  local phone = screen + ui.Input { class = "field" }
-  local email = screen + ui.Input { class = "field" }
+  local phone = screen + ui.Input { class = "field", Background = "#d9d9d9", BorderColor = "#d9d9d9" }
+  local email = screen + ui.Input { class = "field", Background = "#cccccc", BorderColor = "#cccccc" }
   applyStyles(phone)
   applyStyles(email)
 
   phone:setFocus()
+  test.expect_near(phone.BackgroundColor.R, 1, 0.001, "focus applies white background")
+  applyStyles(phone)
+  test.expect_near(phone.BackgroundColor.R, 1, 0.001, "refreshing focused styles keeps the override")
   test.expect_near(phone.RingWidth, 2, 0.001, "focusing an input applies its focus ring immediately")
   test.expect_near(email.RingWidth, 0, 0.001, "unfocused input keeps its base style")
 
   email:setFocus()
+  test.expect_near(phone.BackgroundColor.R, 0xd9 / 255, 0.001, "blur restores inline background without a base CSS rule")
+  test.expect_near(phone.BackgroundColor.A, 1, 0.001, "blur restores opaque background")
+  test.expect_near(phone.BorderColor.R, 0xd9 / 255, 0.001, "blur restores inline border color")
   test.expect_near(phone.RingWidth, 0, 0.001, "moving focus removes the previous input ring")
   test.expect_near(email.RingWidth, 2, 0.001, "moving focus applies the new input ring")
   test.expect_near(email.RingColor.B, 1, 0.001, "focus ring uses the focus colour")
 
   screen:setFocus()
+  test.expect_near(email.BackgroundColor.R, 0xcc / 255, 0.001, "blur restores each input's own background")
+  phone:setFocus()
+  screen:setFocus()
+  test.expect_near(phone.BackgroundColor.R, 0xd9 / 255, 0.001, "repeated focus and blur preserve the base background")
   test.expect_near(email.RingWidth, 0, 0.001, "leaving an input removes its focus ring")
   phone:removeFromParent()
   email:removeFromParent()
@@ -1733,5 +1743,23 @@ local function test_focus_styles_follow_current_input()
 end
 
 test_focus_styles_follow_current_input()
+
+local function test_focus_styles_restore_component_defaults()
+  local screen = ui.Screen {
+    Width = 200, Height = 200, ResizeMode = "NoResize",
+    StyleSheet = ui.loadObjectFromCssString [[
+      .focus-only:focus { opacity: 0.5; }
+    ]],
+  }
+  local node = screen + ui.Node2D { class = "focus-only" }
+  node:setFocus()
+  test.expect_near(node.Opacity, 0.5, 0.001, "focus overrides the component default opacity")
+  screen:setFocus()
+  test.expect_near(node.Opacity, 1, 0.001, "blur restores the component default opacity")
+  node:removeFromParent()
+  print("PASS: test_focus_styles_restore_component_defaults")
+end
+
+test_focus_styles_restore_component_defaults()
 
 print("All style tests passed.")

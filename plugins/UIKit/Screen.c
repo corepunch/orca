@@ -265,6 +265,9 @@ HANDLER(Screen, Window, Paint) {
   core_AdvanceFrame();
   PROP_RunAllPrograms(hObject);
 
+#ifdef AX_PLATFORM_IOS
+  axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
+#endif
   R_BeginFrame(pScreen->ClearColor);
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
@@ -441,10 +444,36 @@ HANDLER(Screen, Screen, UpdateLayout) {
 
   pScreen->_size = MAKEDWORD(width, height);
 
+#ifdef AX_PLATFORM_IOS
+  if (pScreen->ResizeMode == kResizeModeCanResize) {
+    float left, top, right, bottom;
+    axIOSGetSafeArea(&left, &top, &right, &bottom);
+    bool_t changed = pScreen->SafeAreaLeft != left || pScreen->SafeAreaTop != top ||
+                     pScreen->SafeAreaRight != right || pScreen->SafeAreaBottom != bottom;
+    if (pScreen->SafeAreaLeft != left)
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaLeft), &left);
+    if (pScreen->SafeAreaTop != top)
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaTop), &top);
+    if (pScreen->SafeAreaRight != right)
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaRight), &right);
+    if (pScreen->SafeAreaBottom != bottom)
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaBottom), &bottom);
+    // Resolve custom content padding before the first layout with new insets.
+    if (changed) PROP_RunAllPrograms(hObject);
+  }
+#endif
+  float x = 0, y = 0;
+  if (pScreen->RespectSafeArea) {
+    x = fminf(fmaxf(pScreen->SafeAreaLeft, 0), fmaxf(width, 0));
+    y = fminf(fmaxf(pScreen->SafeAreaTop, 0), fmaxf(height, 0));
+    width = fmaxf(0, width - x - fmaxf(pScreen->SafeAreaRight, 0));
+    height = fmaxf(0, height - y - fmaxf(pScreen->SafeAreaBottom, 0));
+  }
+
   FOR_EACH_OBJECT(child, hObject) {
     if (!GetNode2D(child)) continue;
     _SendMessage(child, Node2D, Measure, .Width = width, .Height = height);
-    _SendMessage(child, Node2D, Arrange, .Width = width, .Height = height);
+    _SendMessage(child, Node2D, Arrange, .X = x, .Y = y, .Width = width, .Height = height);
     _SendMessage(child, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
   }
   PROP_RunAllPrograms(hObject);

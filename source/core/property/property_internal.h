@@ -30,6 +30,7 @@ struct Property
 {
   struct Property*           next;
   struct Binding*            binding;
+  struct Property*           specializedBase;
   struct Object*             object;
   struct PropertyType const *pdesc;
   void*                      value;
