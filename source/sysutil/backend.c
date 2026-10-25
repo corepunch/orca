@@ -105,6 +105,7 @@ int f_event_index(lua_State* L)
 
 int f_event_new(lua_State* L) {
   struct AXmessage* msg = lua_newuserdata(L, sizeof(struct AXmessage));
+  memset(msg, 0, sizeof(*msg));
   luaL_setmetatable(L, "Event");
   if (lua_type(L, 1) == LUA_TTABLE) {
     lua_pushnil(L);  // first key
