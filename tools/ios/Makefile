@@ -33,7 +33,7 @@ FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORC
 CFLAGS := $(FLAGS) -Igenerated
 # UIKit/UIKit.h in generated/ is the engine API, not Apple's framework header.
 OBJCFLAGS := $(FLAGS) -idirafter generated -fmodules-cache-path=$(ROOT)/module-cache
-MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media
+MODULES := geometry orca sysutil console parsers debug network renderer filesystem core data media credentials
 PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)

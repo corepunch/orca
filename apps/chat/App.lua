@@ -20,7 +20,14 @@ local App = Application:extend {
         local config = require "Chat/config"
         local backend = config.backend or "appwrite"
         if options.client then self.client = options.client
-        elseif backend == "appwrite" then self.client, self.configurationError = Chat.appwrite(config)
+        elseif backend == "appwrite" then
+            local settings = {}
+            for key, value in pairs(config) do settings[key] = value end
+            settings.sessionStore, self.configurationError = require("Chat/session_store").new(config)
+            if not self.configurationError then
+                self.client, self.configurationError = Chat.appwrite(settings)
+                self.restorePending = self.client ~= nil and settings.sessionStore ~= nil
+            end
         elseif backend == "mock" then self.client = Chat.mock()
         else self.configurationError = { message = "Choose CHAT_BACKEND=appwrite or mock." } end
         self.media = options.media or require("Chat/media").new()
@@ -145,6 +152,25 @@ local App = Application:extend {
                 C.text("Check your backend settings, then restart. Appwrite uses APPWRITE_ENDPOINT, APPWRITE_PROJECT_ID and APPWRITE_CHAT_FUNCTION_ID.", { WordWrap = true }),
             })))
         end
+        if self.logoutPending then
+            return self:frame(C.page("sign out", C.stack({ Spacing = 16 }, {
+                C.text("Couldn't remove your saved login. Please retry signing out.", { WordWrap = true, Foreground = colors.muted }),
+                C.button("Retry sign out", function() self:signOut() end, { Name = "RetrySignOut" }),
+            })))
+        end
+        if self.restorePending then
+            local restored, restoreError = self.client:restoreSession()
+            if self.navigationEpoch ~= navigation then return self.screen end
+            if restored or restoreError.code == "unauthenticated"
+                or restoreError.status == 401 or restoreError.status == 403 then
+                self.restorePending = false
+            else
+                return self:frame(C.page("reconnect", C.stack({ Spacing = 16 }, {
+                    C.text("Couldn't restore your session. Please try again.", { WordWrap = true, Foreground = colors.muted }),
+                    C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
+                })))
+            end
+        end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
         local rooms, err = self.models.Rooms:select()
         self.rooms = rooms or {}
@@ -202,8 +228,10 @@ local App = Application:extend {
 
     signOut = function(self)
         local ok, err = self.client:signOut()
-        if not ok then self:notice(err.message, true); return end
+        self.restorePending = false
+        self.logoutPending = not ok and err.code == "session_storage"
         self:resetSessionViews(); self:show()
+        if not ok and not self.logoutPending then self:notice(err.message, true) end
     end,
 
     renderMessages = function(self)

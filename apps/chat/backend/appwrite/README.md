@@ -91,8 +91,9 @@ The desktop's Account adapter owns signup, password login, email/phone OTP,
 session refresh and logout. It talks to native `/account`, `/account/sessions/*`,
 `/account/tokens/*` and `/account/jwts` endpoints without a server key. Appwrite
 therefore enforces its native Auth delivery, session and rate-limit policies.
-Native session cookies stay in the adapter's private memory and the adapter
-obtains short-lived user JWTs for authenticated function execution. Sign-out
+Native session cookies remain private to the adapter, with synchronous Apple
+Keychain persistence in the iOS/macOS app. Launch restores the credential and
+obtains a fresh short-lived user JWT for authenticated function execution. Sign-out
 revokes the current native session and clears local credentials, including on
 network failure. Backend deployment and database availability do not participate
 in those Account operations.

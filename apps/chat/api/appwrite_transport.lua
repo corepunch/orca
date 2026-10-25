@@ -47,7 +47,7 @@ function M.new(options)
   local transport = options.transport or require "api.orca_transport"
   local endpoint = options.endpoint:gsub("/$", "")
   local authenticate = require("api.appwrite_auth").new {
-    endpoint = endpoint, projectId = options.projectId, transport = transport, encode = encode,
+    endpoint = endpoint, projectId = options.projectId, transport = transport, encode = encode, sessionStore = options.sessionStore,
   }
   return function(request)
     -- The adapter may only forward this client's relative API paths.

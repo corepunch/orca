@@ -16,6 +16,7 @@
 		5297588D925865098767F1D7 /* native_modules.m in Sources */ = {isa = PBXBuildFile; fileRef = BCBE196513D59F88F4B8718C /* native_modules.m */; settings = {COMPILER_FLAGS = "-idirafter \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		6274D928CACE8315E511B6EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4930BB2B935190FC0668B0B0 /* Assets.xcassets */; };
 		6DA74A2527F593EC76874074 /* module_media.c in Sources */ = {isa = PBXBuildFile; fileRef = AC2DA5E9DF308F225F70AAF9 /* module_media.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
+		BEA12EC2F140B6EB514D92F4 /* module_credentials.c in Sources */ = {isa = PBXBuildFile; fileRef = DC3E06869B502B0209F961FD /* module_credentials.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		7A0AAFEB0B62ED5EEFF9AED3 /* module_renderer.c in Sources */ = {isa = PBXBuildFile; fileRef = 853FE876620D38415D699BC6 /* module_renderer.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		7C7446CA7ABF66BE1A4CBF89 /* plugin_UIKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 94DC855D8599B242FD46756C /* plugin_UIKit.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
 		8A5DA963E271C74211B921C3 /* plugin_SpriteKit.c in Sources */ = {isa = PBXBuildFile; fileRef = 9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */; settings = {COMPILER_FLAGS = "-I \"$(DERIVED_FILE_DIR)/generated\""; }; };
@@ -49,6 +50,7 @@
 		9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = plugin_SpriteKit.c; sourceTree = DERIVED_FILE_DIR; };
 		A8792157CB4F27FB949C035F /* chat.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = chat.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC2DA5E9DF308F225F70AAF9 /* module_media.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_media.c; sourceTree = DERIVED_FILE_DIR; };
+		DC3E06869B502B0209F961FD /* module_credentials.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_credentials.c; sourceTree = DERIVED_FILE_DIR; };
 		BCBE196513D59F88F4B8718C /* native_modules.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = native_modules.m; sourceTree = DERIVED_FILE_DIR; };
 		C411E94760BAEB963F766B91 /* platform_unix.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = platform_unix.c; sourceTree = DERIVED_FILE_DIR; };
 		D04D3CE13B392BC10BCF5A56 /* module_network.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = module_network.c; sourceTree = DERIVED_FILE_DIR; };
@@ -73,6 +75,7 @@
 				F6AAFF46EF92E4DFB813B042 /* module_core.c */,
 				24C6BFF84A5B703F72A128D0 /* module_data.c */,
 				AC2DA5E9DF308F225F70AAF9 /* module_media.c */,
+				DC3E06869B502B0209F961FD /* module_credentials.c */,
 				94DC855D8599B242FD46756C /* plugin_UIKit.c */,
 				54F441F8DB32626B1680E1C0 /* plugin_SceneKit.c */,
 				9E9CF9A0CB6FCCC4422A3520 /* plugin_SpriteKit.c */,
@@ -205,6 +208,7 @@
 				"$(DERIVED_FILE_DIR)/module_core.c",
 				"$(DERIVED_FILE_DIR)/module_data.c",
 				"$(DERIVED_FILE_DIR)/module_media.c",
+				"$(DERIVED_FILE_DIR)/module_credentials.c",
 				"$(DERIVED_FILE_DIR)/plugin_UIKit.c",
 				"$(DERIVED_FILE_DIR)/plugin_SceneKit.c",
 				"$(DERIVED_FILE_DIR)/plugin_SpriteKit.c",
@@ -235,6 +239,7 @@
 				22F6FBAF73969F994D6269AD /* module_core.c in Sources */,
 				B153EBBE0A2A9C3115830419 /* module_data.c in Sources */,
 				6DA74A2527F593EC76874074 /* module_media.c in Sources */,
+				BEA12EC2F140B6EB514D92F4 /* module_credentials.c in Sources */,
 				7C7446CA7ABF66BE1A4CBF89 /* plugin_UIKit.c in Sources */,
 				4CE8CC7A38B24C2C199C0B57 /* plugin_SceneKit.c in Sources */,
 				8A5DA963E271C74211B921C3 /* plugin_SpriteKit.c in Sources */,
@@ -283,7 +288,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				ORCA_PROJECT = "$(SRCROOT)/.";
 				ORCA_ROOT = "$(SRCROOT)/../..";
-				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c module_credentials.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-Wno-deprecated-declarations",
@@ -334,7 +339,7 @@
 				ONLY_ACTIVE_ARCH = NO;
 				ORCA_PROJECT = "$(SRCROOT)/.";
 				ORCA_ROOT = "$(SRCROOT)/../..";
-				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+				ORCA_XCODE_UNITS = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c module_credentials.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
 				OTHER_CFLAGS = (
 					"$(inherited)",
 					"-Wno-deprecated-declarations",

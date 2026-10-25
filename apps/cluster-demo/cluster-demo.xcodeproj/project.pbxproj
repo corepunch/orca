@@ -11,7 +11,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c module_credentials.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -61,7 +61,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c module_credentials.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -371,6 +371,19 @@
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
+"DC3E06869B502B0209F961FD" = {
+"isa" = "PBXFileReference";
+"path" = "module_credentials.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"BEA12EC2F140B6EB514D92F4" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "DC3E06869B502B0209F961FD";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
 "94DC855D8599B242FD46756C" = {
 "isa" = "PBXFileReference";
 "path" = "plugin_UIKit.c";
@@ -473,6 +486,7 @@
 "$(DERIVED_FILE_DIR)/module_core.c",
 "$(DERIVED_FILE_DIR)/module_data.c",
 "$(DERIVED_FILE_DIR)/module_media.c",
+"$(DERIVED_FILE_DIR)/module_credentials.c",
 "$(DERIVED_FILE_DIR)/plugin_UIKit.c",
 "$(DERIVED_FILE_DIR)/plugin_SceneKit.c",
 "$(DERIVED_FILE_DIR)/plugin_SpriteKit.c",
@@ -499,6 +513,7 @@
 "22F6FBAF73969F994D6269AD",
 "B153EBBE0A2A9C3115830419",
 "6DA74A2527F593EC76874074",
+"BEA12EC2F140B6EB514D92F4",
 "7C7446CA7ABF66BE1A4CBF89",
 "4CE8CC7A38B24C2C199C0B57",
 "8A5DA963E271C74211B921C3",
@@ -584,6 +599,7 @@
 "F6AAFF46EF92E4DFB813B042",
 "24C6BFF84A5B703F72A128D0",
 "AC2DA5E9DF308F225F70AAF9",
+"DC3E06869B502B0209F961FD",
 "94DC855D8599B242FD46756C",
 "54F441F8DB32626B1680E1C0",
 "9E9CF9A0CB6FCCC4422A3520",

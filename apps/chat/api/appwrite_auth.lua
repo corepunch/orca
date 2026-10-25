@@ -31,14 +31,14 @@ local function credentials(response, projectId)
   end
   if cookie or legacy then return { Cookie = cookie or legacy } end
   local secret = type(response.body) == "table" and response.body.secret
-  if type(secret) == "string" and secret ~= "" and not secret:find("[\r\n]") then
+  if type(secret) == "string" and secret ~= "" and not secret:find("[%z\1-\32\127]") then
     return { ["X-Appwrite-Session"] = secret }
   end
 end
 
 function M.new(options)
   local current, pending = nil, {}
-  local encode = options.encode
+  local encode, store = options.encode, options.sessionStore
   local endpoint = options.endpoint:gsub("/$", "")
   local function call(method, path, body, credential)
     local headers = { ["X-Appwrite-Project"] = options.projectId, ["Content-Type"] = "application/json" }
@@ -54,19 +54,43 @@ function M.new(options)
     end
     return response
   end
-  local function session(credential)
+  local function stored(operation, value)
+    if not store then return true end
+    local ok, result, err = pcall(store[operation], value)
+    if not ok or err or (operation ~= "load" and not result) then
+      return nil, { status = 503, body = { code = "session_storage",
+        message = "Could not access your saved login. Please try again." } }
+    end
+    return result
+  end
+  local function forget()
+    current, pending = nil, {}
+    local ok, err = stored("clear")
+    return err
+  end
+  local function rejected(response)
+    if response.status == 401 or response.status == 403 then
+      return forget() or response
+    end
+    return response
+  end
+  local function session(credential, persist)
     if not credential then return errorResponse("Appwrite did not return a private session cookie.") end
+    if persist then
+      local ok, err = stored("save", credential)
+      if not ok then return err end
+    end
+    current = credential
     local userResponse = call("GET", "/account", nil, credential)
-    if not successful(userResponse) then return userResponse end
+    if not successful(userResponse) then return rejected(userResponse) end
     local user = userResponse.body
     if type(user) ~= "table" or type(user["$id"]) ~= "string" or user["$id"] == "" then
       return errorResponse("Appwrite returned an invalid account.")
     end
     local jwtResponse = call("POST", "/account/jwts", {}, credential)
-    if not successful(jwtResponse) then return jwtResponse end
+    if not successful(jwtResponse) then return rejected(jwtResponse) end
     local jwt = type(jwtResponse.body) == "table" and jwtResponse.body.jwt
     if type(jwt) ~= "string" or jwt == "" then return errorResponse("Appwrite did not return a user JWT.") end
-    current = credential
     return { status = 200, body = { access_token = jwt, refresh_token = "appwrite-current-session", expires_in = 900,
       user = { id = user["$id"], email = user.email, phone = user.phone,
         user_metadata = { display_name = user.name or "" } } } }
@@ -74,7 +98,7 @@ function M.new(options)
   local function signIn(email, password)
     local response = call("POST", "/account/sessions/email", { email = email, password = password })
     if not successful(response) then return response end
-    return session(credentials(response, options.projectId))
+    return session(credentials(response, options.projectId), true)
   end
   return function(request, path)
     local body = request.body or {}
@@ -104,15 +128,26 @@ function M.new(options)
       local response = call("POST", "/account/sessions/token", { userId = userId, secret = body.token })
       if not successful(response) then return response end
       pending[key] = nil
-      return session(credentials(response, options.projectId))
+      return session(credentials(response, options.projectId), true)
+    elseif request.method == "POST" and path == "/auth/v1/restore" then
+      local saved, err
+      if store then saved, err = stored("load") end
+      if err then return err end
+      if not saved then return { status = 401, body = { code = "unauthenticated", message = "Sign in to continue." } } end
+      -- Never restore arbitrary headers, even from private device storage.
+      local credential = type(saved) == "table" and credentials({ headers = { ["set-cookie"] = saved.Cookie },
+        body = { secret = saved["X-Appwrite-Session"] } }, options.projectId)
+      if not credential then
+        return forget() or { status = 401, body = { code = "unauthenticated", message = "Sign in again." } }
+      end
+      return session(credential)
     elseif request.method == "POST" and path == "/auth/v1/token?grant_type=refresh_token" then
       if not current then return { status = 401, body = { code = "user_unauthorized", message = "Sign in again." } } end
-      local response = session(current)
-      if response.status == 401 or response.status == 403 then current = nil end
-      return response
+      return session(current)
     elseif request.method == "POST" and path == "/auth/v1/logout?scope=local" then
       local credential = current
-      current, pending = nil, {}
+      local err = forget()
+      if err then return err end
       if not credential then return { status = 204 } end
       return call("DELETE", "/account/sessions/current", nil, credential)
     end

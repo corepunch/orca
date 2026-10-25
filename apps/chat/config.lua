@@ -1,4 +1,4 @@
--- Public project credentials only. User sessions stay in memory.
+-- Public project credentials only. Private sessions use the app's secure store.
 return {
     backend = os.getenv("CHAT_BACKEND") or "appwrite",
     endpoint = os.getenv("APPWRITE_ENDPOINT") or "https://fra.cloud.appwrite.io/v1",
