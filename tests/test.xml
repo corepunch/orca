@@ -5,7 +5,7 @@
 	<!-- Test: v-stack > h-grid (auto cols) > v-stack > 2 nodes of known height.
 	     The grid must derive its height from the inner stack, not default to 0. -->
 	<StackView Name="outer-stack" Direction="Vertical">
-		<Grid Name="test-grid" Columns="auto auto auto">
+		<Grid Name="test-grid" Columns="1fr 1fr 1fr">
 			<StackView Name="inner-stack" Direction="Vertical">
 				<Node2D Name="node1" Height="50" />
 				<Node2D Name="node2" Height="50" />

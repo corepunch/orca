@@ -51,18 +51,19 @@ local function test_grid_fr_units()
 	print("PASS: test_grid_fr_units")
 end
 
--- auto columns behave identically to equal-weight fr units
+-- auto columns fit their content, as WPF Auto column definitions do
 local function test_grid_auto_columns()
 	local grid = screen + ui.Grid { Columns = "auto auto auto", Spacing = 0 }
 	local cells = {}
-	for i = 1, 3 do cells[i] = grid + ui.Node2D {} end
+	for i = 1, 3 do cells[i] = grid + ui.Node2D { Width = 40 + 10 * i } end
 
 	screen:UpdateLayout(screen.Width, screen.Height)
 
-	local expected = math.floor(screen.Width / 3)
+	local x = 0
 	for i = 1, 3 do
-		test.expect_near(cells[i].ActualWidth, expected, 1,
-			string.format("auto column %d width", i))
+		test.expect_near(cells[i].ActualX, x, 0.5, string.format("auto column %d position", i))
+		test.expect_near(cells[i].ActualWidth, 40 + 10 * i, 0.5, string.format("auto column %d width", i))
+		x = x + 40 + 10 * i
 	end
 
 	grid:removeFromParent()
@@ -95,7 +96,7 @@ end
 local function test_grid_in_vstack_height()
 	local node_h = 50
 	local outer = screen + ui.StackView { Direction = "Vertical" }
-	local grid  = outer  + ui.Grid { Columns = "auto auto auto" }
+	local grid  = outer  + ui.Grid { Columns = "1fr 1fr 1fr" }
 	local inner = grid   + ui.StackView { Direction = "Vertical" }
 	local n1    = inner  + ui.Node2D { Height = node_h }
 	local n2    = inner  + ui.Node2D { Height = node_h }
@@ -121,7 +122,7 @@ local function test_grid_image_matches_sibling_stack_height()
 	local top_h = 30
 	local bottom_h = 20
 	local outer = screen + ui.StackView { Direction = "Vertical" }
-	local grid  = outer  + ui.Grid { Columns = "auto auto", Spacing = 0 }
+	local grid  = outer  + ui.Grid { Columns = "1fr 1fr", Spacing = 0 }
 	local stack  = grid   + ui.StackView { Direction = "Vertical", Spacing = 0 }
 	local stack_top = stack + ui.Node2D { Height = top_h }
 	local stack_bottom = stack + ui.Node2D { Height = bottom_h }
@@ -224,7 +225,7 @@ local function test_grid_implicit_row_wrapping()
 	local cell_h = 40
 	local outer = screen + ui.StackView { Direction = "Vertical" }
 	-- 2 columns, 4 children → must produce 2 rows automatically
-	local grid = outer + ui.Grid { Columns = "auto auto", Spacing = 0 }
+	local grid = outer + ui.Grid { Columns = "1fr 1fr", Spacing = 0 }
 	local cells = {}
 	for i = 1, 4 do
 		cells[i] = grid + ui.Node2D { Height = cell_h }
@@ -1123,7 +1124,7 @@ end
 local function test_binding_expression_visible_reacts_to_resize()
 	local xml = [[
 	<Screen Name="binding-visible-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
+	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="0">
 	    <Node2D Name="HeroContent" Width="100" Height="40"/>
 	    <Node2D Name="HeroImage" Width="100" Height="40"/>
 	    <BindingExpression Target="Node.Visible">STEP(640, {./Node.ActualWidth})</BindingExpression>
@@ -1173,7 +1174,7 @@ end
 local function test_binding_expression_bare_path_resolves_from_bound_object()
 	local xml = [[
 	<Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <Grid Name="Hero" Columns="auto auto" Spacing="0">
+	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="0">
 	    <Node2D Name="HeroContent" Width="100" Height="40"/>
 	    <Node2D Name="HeroImage" Width="100" Height="40"/>
 	    <BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
@@ -1278,9 +1279,9 @@ local function test_example_application_xml()
 	local feature_section = xml:find('<GridBox Name="FeatureSection"')
 	local gallery_section = xml:find('<StackView Name="GallerySection"')
 	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>', 1, true)
+	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "1fr 1fr", "1fr")</BindingExpression>', 1, true)
 	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
-	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "auto auto", "auto")</Grid.Columns>', 1, true)
+	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "1fr 1fr", "1fr")</Grid.Columns>', 1, true)
 	local cta_button = find_named_tag(xml, "TextBlock", "CtaButtonPrimary")
 	local get_started_button = cta_button and cta_button:find('Text="Get Started"', 1, true)
 	local get_started_show = cta_button and cta_button:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
@@ -1787,8 +1788,8 @@ local function test_example_xml_parser_coverage()
 	-- shorthand, escaped ampersands in attribute values, and self-closing tags.
 	local syntax_xml = [[
 	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
-	  <Grid Name="Hero" Columns="auto auto" Spacing="24">
-	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "auto auto", "auto")</BindingExpression>
+	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="24">
+	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "1fr 1fr", "1fr")</BindingExpression>
 	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
 	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
 	      Card.Title="XML-first screens"

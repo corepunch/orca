@@ -109,7 +109,7 @@ After — `GridBox` + `ItemsSource` + `ItemTemplate`, indent lives in data:
 
 ```xml
 <!-- Screen layout — single GridBox, no CSS indent classes -->
-<GridBox Columns="auto"
+<GridBox Columns="1fr"
   ItemsSource="Example/DataSources/ApplicationData:XmlModel"
   ItemTemplate="Example/Prefabs/XmlModelNode"/>
 ```

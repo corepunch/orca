@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen Width="1280" Height="800" bg="gray-950"> <!-- Application -->
-  <Grid Rows="64px auto" gap="0"> <!-- Root -->
+  <Grid Rows="64px 1fr" gap="0"> <!-- Root -->
 
     <Node2D bg="gray-900"> <!-- NavBar -->
       <StackView dir="horizontal" gap="8" items="center" m="10"> <!-- NavLinks -->
@@ -14,7 +14,7 @@
     </Node2D>
 
     <StackView dir="vertical" gap="0" overflow-y="scroll" overflow="hidden"> <!-- Body -->
-      <Grid Columns="auto auto" gap="6" bg="gray-950"> <!-- Hero -->
+      <Grid Columns="1fr 1fr" gap="6" bg="gray-950"> <!-- Hero -->
         <Node2D p="14"> <!-- HeroContent -->
           <StackView dir="vertical" gap="0"> <!-- HeroStack -->
             <TextBlock text="5xl slate-100">Build stunning</TextBlock> <!-- HeadlineLine1 -->
@@ -22,7 +22,7 @@
             <Node2D h="5"/> <!-- HeadlineSpacer -->
             <TextBlock text="sm slate-500" wrap="true">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock> <!-- SubHeadline -->
             <Node2D h="10"/> <!-- MetricSpacer -->
-            <Grid Columns="auto auto auto" gap="4"> <!-- Metrics -->
+            <Grid Columns="1fr 1fr 1fr" gap="4"> <!-- Metrics -->
               <Node2D bg="gray-900" p="5" w="32"> <!-- MetricUsers -->
                 <StackView dir="vertical" gap="1">
                   <TextBlock text="3xl violet-500">2.4 M</TextBlock> <!-- MetricUsersValue -->
@@ -48,7 +48,7 @@
       </Grid>
 
       <Node2D bg="gray-950" p="10"> <!-- FeatureSection -->
-        <Grid Columns="auto auto auto" gap="5"> <!-- FeatureCards -->
+        <Grid Columns="1fr 1fr 1fr" gap="5"> <!-- FeatureCards -->
 
           <Node2D bg="gray-900" p="7"> <!-- CardText -->
             <StackView dir="vertical" gap="2"> <!-- CardTextStack -->

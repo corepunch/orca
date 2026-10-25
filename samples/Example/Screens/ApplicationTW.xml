@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Screen SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
 <Screen id="Application" Width="1280" Height="800" class="bg-gray-950">
-  <Grid id="Root" Rows="64px auto" class="gap-0">
+  <Grid id="Root" Rows="64px 1fr" class="gap-0">
 
     <Node2D id="NavBar" class="bg-gray-900">
       <StackView id="NavLinks" Direction="Horizontal" class="flex-row gap-8 items-center m-10">
@@ -14,7 +14,7 @@
     </Node2D>
 
     <StackView id="Body" Direction="Vertical" class="flex-col gap-0 overflow-y-scroll overflow-hidden">
-      <Grid id="Hero" Columns="auto auto" class="gap-6 bg-gray-950">
+      <Grid id="Hero" Columns="1fr 1fr" class="gap-6 bg-gray-950">
         <Node2D id="HeroContent" class="p-14">
           <StackView id="HeroStack" Direction="Vertical" class="flex-col gap-0">
             <TextBlock id="HeadlineLine1" class="text-5xl text-slate-100">Build stunning</TextBlock>
@@ -22,7 +22,7 @@
             <Node2D id="HeadlineSpacer" class="h-5"/>
             <TextBlock id="SubHeadline" class="text-sm text-slate-500 flex-wrap">A modern UI engine for games and native apps. Compose layouts from grids, stacks, text, and images — all rendered at 60 fps.</TextBlock>
             <Node2D id="MetricSpacer" class="h-10"/>
-            <Grid id="Metrics" Columns="auto auto auto" class="gap-4">
+            <Grid id="Metrics" Columns="1fr 1fr 1fr" class="gap-4">
               <Node2D id="MetricUsers" class="bg-gray-900 p-5 w-32">
                 <StackView Direction="Vertical" class="flex-col gap-1">
                   <TextBlock id="MetricUsersValue" class="text-3xl text-violet-500">2.4 M</TextBlock>
@@ -48,7 +48,7 @@
       </Grid>
 
       <Node2D id="FeatureSection" class="bg-gray-950 p-10">
-        <Grid id="FeatureCards" Columns="auto auto auto" class="gap-5">
+        <Grid id="FeatureCards" Columns="1fr 1fr 1fr" class="gap-5">
 
           <Node2D id="CardText" class="bg-gray-900 p-7">
             <StackView id="CardTextStack" Direction="Vertical" class="flex-col gap-2">

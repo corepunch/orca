@@ -1,5 +1,5 @@
 local test = require "orca.test"
--- Tests for Grid layout: px-specified rows, auto columns, fr-unit columns,
+-- Tests for Grid layout: px-specified rows, star columns, fr-unit columns,
 -- nested grids in stacks, and grid height derived from children.
 -- Part of the full `test` target.
 
@@ -10,7 +10,7 @@ local ui = require "orca.UIKit"
 local screen = ui.Screen { Width = 1000, Height = 1000, ResizeMode = "NoResize" }
 
 -- ---------------------------------------------------------------------------
--- Grid with px-sized header, auto content, and px-sized footer rows
+-- Grid with px-sized header, star content, and px-sized footer rows
 -- ---------------------------------------------------------------------------
 local function test_grid_view_layout()
 	local config = {
@@ -18,7 +18,7 @@ local function test_grid_view_layout()
 		footer = 48,
 		margin = 8,
 	}
-	local rows = string.format("%dpx auto %dpx", config.header, config.footer)
+	local rows = string.format("%dpx 1fr %dpx", config.header, config.footer)
 	local grid   = screen  + ui.Grid { Rows = rows }
 	local header  = grid   + ui.Node2D { Margin = core.Thickness(config.margin) }
 	local content = grid   + ui.Node2D { Margin = core.Thickness(config.margin) }
@@ -41,8 +41,8 @@ local function test_grid_view_in_stack_layout()
 		grid_margin = 8,
 	}
 	local stack = screen + ui.StackView { Direction = "Vertical", Spacing = config.stack_spacing }
-	local row1  = stack  + ui.Grid { Columns = "auto auto" }
-	local row2  = stack  + ui.Grid { Columns = "auto auto" }
+	local row1  = stack  + ui.Grid { Columns = "1fr 1fr" }
+	local row2  = stack  + ui.Grid { Columns = "1fr 1fr" }
 	local text11 = row1  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 16 }
 	local text12 = row1  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 24 }
 	local text21 = row2  + ui.TextBlock { Text = "Text", Margin = core.Thickness(config.grid_margin), FontSize = 18, Height = 22 }
@@ -91,7 +91,7 @@ end
 local function test_grid_in_vstack_height()
 	local node_height = 50
 	local outer_stack = screen + ui.StackView { Direction = "Vertical" }
-	local grid        = outer_stack + ui.Grid { Columns = "auto auto auto" }
+	local grid        = outer_stack + ui.Grid { Columns = "1fr 1fr 1fr" }
 	local inner_stack = grid        + ui.StackView { Direction = "Vertical" }
 	local node1       = inner_stack + ui.Node2D { Height = node_height }
 	local node2       = inner_stack + ui.Node2D { Height = node_height }
@@ -122,7 +122,7 @@ local function test_grid_auto_rows_respect_content_height()
 	-- Row 0: two 20px-tall cells.  Row 1: two 60px-tall cells.
 	-- The Grid should measure at 80px and arrange each row at its content height.
 	local outer = screen + ui.StackView { Direction = "Vertical" }
-	local grid  = outer  + ui.Grid { Columns = "auto auto" }
+	local grid  = outer  + ui.Grid { Columns = "1fr 1fr" }
 	local r0c0  = grid   + ui.Node2D { Height = 20 }
 	local r0c1  = grid   + ui.Node2D { Height = 20 }
 	local r1c0  = grid   + ui.Node2D { Height = 60 }

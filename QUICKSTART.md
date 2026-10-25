@@ -384,7 +384,7 @@ EnginePlugins = {
 ```xml
 <?xml version="1.0"?>
 <Screen xmlns="http://schemas.corepunch.com/orca/2006/xml/presentation" id="GridExample">
-  <Grid Columns="64px auto" Spacing="10">
+  <Grid Columns="64px 1fr" Spacing="10">
     <TextBlock Text="Row 1, Col 1" Background.Color="#FF0000"/>
     <TextBlock Text="Row 1, Col 2" Background.Color="#00FF00"/>
     <TextBlock Text="Row 2, Col 1" Background.Color="#0000FF"/>

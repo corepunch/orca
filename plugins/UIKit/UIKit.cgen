@@ -822,15 +822,15 @@
     </class>
     <class name="Grid" parent="Node2D">
       <summary>Grid-based layout container with configurable rows and columns</summary>
-      <details>Arranges children in a 2D grid pattern with flexible sizing. Supports both fixed and dynamic grid definitions.</details>
+      <details>Arranges children in a 2D grid pattern, filling cells in order. Track sizes follow WPF row and column definitions: a pixel track ("48px" or "48") keeps its size, an Auto track ("auto") fits its largest child including margins, and a star track ("1fr", "*", "2*") shares the space left after pixel and Auto tracks and Spacing by weight. With unbounded space, star tracks fit their content. When Rows or Columns is omitted, the generated tracks are Auto, and a single generated row fills the grid.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
       </handles>
       <properties>
-        <property name="Columns" type="string">Column definition string (e.g., "1fr 2fr 100px") </property>
-        <property name="Rows" type="string">Row definition string (e.g., "auto 1fr auto") </property>
+        <property name="Columns" type="string">Column definitions, e.g. "100px 1fr 2fr" or "auto *"</property>
+        <property name="Rows" type="string">Row definitions, e.g. "auto 1fr auto" for a header and footer that fit their content around a filling body</property>
         <property name="Direction" type="Direction">Primary fill direction for auto-placement </property>
         <property name="Spacing" type="float">Space between grid cells </property>
         <property name="CellWidth" type="float">Default width for auto-sized cells </property>

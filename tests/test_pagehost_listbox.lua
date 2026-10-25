@@ -1037,7 +1037,7 @@ local function test_selecteditem_gridbox()
 
   local template = ui.Node2D { Name = "T", Width = 100, Height = 50 }
   local grid = ui.GridBox {
-    Columns = "auto",
+    Columns = "1fr",
     ItemsSource = items, ItemTemplate = template,
   }
   screen:addChild(grid)
