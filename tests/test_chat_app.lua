@@ -253,6 +253,30 @@ local function selectTab(index)
 end
 
 assertTabs("Chats")
+-- The chrome fills the home-indicator inset without moving controls into it.
+local barFooter = assert(shell:findChild("AppBarFooter", true))
+local shellRoot = shell:getFirstChild()
+assert(not shell.RespectSafeArea, "The shell must paint behind the home gesture area")
+shell.SafeAreaTop, shell.SafeAreaBottom = 59, 34
+shell.SafeAreaLeft, shell.SafeAreaRight = 12, 18
+assertTabs("Chats")
+assert(shellRoot.PaddingTop == 59 and shellRoot.PaddingLeft == 12 and shellRoot.PaddingRight == 18,
+    "Shell content must follow the system's safe top and side insets")
+assert(barFooter.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1,
+    "The home gesture inset must be separate from the fixed application bar row")
+assert(math.abs(barFooter.ActualY + bar.ActualY + bar.ActualHeight - (844 - 34)) < 1,
+    "Application bar controls must end immediately above the home gesture area")
+assert(math.abs(barFooter.ActualY + barFooter.ActualHeight - 844) < 1 and
+    math.abs(barFooter.BackgroundColor.R - bar.BackgroundColor.R) < 0.001 and
+    math.abs(barFooter.BackgroundColor.G - bar.BackgroundColor.G) < 0.001 and
+    math.abs(barFooter.BackgroundColor.B - bar.BackgroundColor.B) < 0.001,
+    "The application bar background must continue to the physical bottom edge")
+shell.SafeAreaTop, shell.SafeAreaBottom = 0, 0
+shell.SafeAreaLeft, shell.SafeAreaRight = 0, 0
+assertTabs("Chats")
+assert(barFooter.PaddingBottom == 0 and shellRoot.PaddingTop == 0 and
+    math.abs(barFooter.ActualHeight - 58) < 1,
+    "Application bar safe-area bindings must update without leaving a bottom gap")
 selectTab(2)
 local roomName = assert(shell:findChild("RoomName", true))
 local finder = assert(shell:findChild("FindPerson", true))
