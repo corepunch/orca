@@ -3,6 +3,8 @@ orca.init()
 local filesystem = require "orca.filesystem"
 local core = require "orca.core"
 require "orca.UIKit"
+-- Text-sized tags need real font metrics, including in headless layout checks.
+require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/octopus")
 require("orca.core.startup").load_plugins()
 

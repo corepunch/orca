@@ -28,7 +28,7 @@ local function profileView(self, userId, name, own)
         counts:addChild(C.stack({ Spacing = 0 }, { view.counts[key], C.text(key, { FontSize = 13, Foreground = colors.dim }) }))
     end
     view.actions = C.stack({ Name = "ProfileActions", Spacing = 12 })
-    view.posts = C.stack({ Name = "ProfilePosts", Spacing = 26 }, { C.text("loading…", { FontSize = 22, Foreground = colors.muted }) })
+    view.posts = C.stack({ Name = "ProfilePosts", Spacing = C.spacing.post }, { C.text("loading…", { FontSize = 22, Foreground = colors.muted }) })
     view.content = C.stack({ Name = "ProfilePage", Spacing = 18, Overflow = "hidden scroll" }, {
         header, counts, view.actions, C.eyebrow("posts"), view.posts,
     })
@@ -266,7 +266,7 @@ local function renderResults(self, list)
     end
     if #results.posts > 0 then
         list:addChild(C.eyebrow(results.tag and ("#" .. results.tag) or "posts", { MarginTop = #results.people > 0 and 8 or 0 }))
-        local posts = C.stack({ Name = "SearchPosts", Spacing = 26 })
+        local posts = C.stack({ Name = "SearchPosts", Spacing = C.spacing.post })
         list:addChild(posts)
         Posts.append(self, posts, results.posts, results.stats)
     end
