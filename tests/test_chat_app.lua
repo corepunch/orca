@@ -609,20 +609,6 @@ assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp
     "A late profile response must not replace a newer tab selection")
 assert(not raceApp.shell:has("Profile"), "A cancelled tab constructor must not mount stale content")
 
--- Typing q must reach the focused control rather than close the application.
-local system = require "orca.system"
-local savedGet, savedDispatch, savedTranslate = system.getMessage, system.dispatchMessage, system.translateMessage
-local count, routed = 0, false
-local events = {
-    { key = "q", is = function(_, kind) return kind == "Node.KeyDown" end },
-    { is = function(_, kind) return kind == "Window.Closed" end },
-}
-system.getMessage = function() count = count + 1; return events[count] end
-system.dispatchMessage = function(_, message) routed = message.key == "q"; return false end
-system.translateMessage = function() end
-app:run()
-system.getMessage, system.dispatchMessage, system.translateMessage = savedGet, savedDispatch, savedTranslate
-assert(routed, "Typing q must not quit the chat app")
 -- Profile photos replace initials where a tile stands for one person.
 local Fixtures = require "api.mock_fixtures"
 local photoApp = mockApp(nil, Chat.mock { clock = function() return 1700000000 end, fixtures = function(at)
@@ -643,5 +629,19 @@ photoApp.screen = photoApp:dispatch("/details").view
 assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
     "Conversation members show their photos")
 
+-- Typing q must reach the focused control rather than close the application.
+local system = require "orca.system"
+local savedGet, savedDispatch, savedTranslate = system.getMessage, system.dispatchMessage, system.translateMessage
+local count, routed = 0, false
+local events = {
+    { key = "q", is = function(_, kind) return kind == "Node.KeyDown" end },
+    { is = function(_, kind) return kind == "Window.Closed" end },
+}
+system.getMessage = function() count = count + 1; return events[count] end
+system.dispatchMessage = function(_, message) routed = message.key == "q"; return false end
+system.translateMessage = function() end
+app:run()
+system.getMessage, system.dispatchMessage, system.translateMessage = savedGet, savedDispatch, savedTranslate
+assert(routed, "Typing q must not quit the chat app")
 orca.async = savedAsync
 print("Chat UI: password/OTP login, profile/linking, private/public discovery, groups/channels/invites, photo retry, navigation races, retained tabs, keyboard and profile photos passed")
