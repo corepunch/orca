@@ -315,6 +315,43 @@ check(client ~= nil and package.loaded["orca.network"] == nil and package.loaded
   "Injected transport and codec must not load native modules")
 package.loaded["orca.network"], package.loaded["orca.parsers.json"] = savedNetwork, savedNativeJson
 
+-- Profile photos read Octopus's public profiles natively, with the project ID only.
+local function unescape(value) return (value:gsub("%%(%x%x)", function(hex) return string.char(tonumber(hex, 16)) end)) end
+local jpegBytes = "\255\216\255\224photo\255\217"
+local photoClient, photoRequests, photoEnvelopes = backend(signedIn {
+  { status = 200, body = { total = 2, documents = { { userId = "alex", avatarId = "file.alex_1" }, { userId = "maya" } } } },
+  { status = 200, body = jpegBytes },
+  { status = 404, body = { message = "File not found", type = "storage_file_not_found" } },
+})
+assert(photoClient:signIn("you@example.test", "secret"))
+local avatars = assert(photoClient:getAvatars { "alex", "maya", "nobody" })
+check(avatars.alex == "file.alex_1" and avatars.maya == false and avatars.nobody == false,
+  "Appwrite profiles map to photo IDs, and to false without avatarId")
+local lookup = photoRequests[4]
+local profilesUrl = endpoint .. "/databases/octopus-db/collections/profiles/documents?queries[0]="
+check(lookup.method == "GET" and lookup.url:sub(1, #profilesUrl) == profilesUrl,
+  "Photo lookups list the shared Octopus profiles")
+local queries = {}
+for value in lookup.url:gmatch("queries%[%d%]=([^&]*)") do queries[#queries + 1] = json.decode(unescape(value)) end
+check(queries[1].method == "equal" and queries[1].attribute == "userId" and #queries[1].values == 3
+  and queries[1].values[1] == "alex" and queries[1].values[3] == "nobody", "Photo lookups filter by Auth user ID")
+check(queries[2].method == "select" and queries[3].method == "limit" and queries[3].values[1] == 100,
+  "Photo lookups select only the photo fields")
+check(assert(photoClient:getAvatar("file.alex_1")) == jpegBytes, "Photo bytes come back unchanged")
+check(photoRequests[5].url == endpoint .. "/storage/buckets/post-images/files/file.alex_1/view"
+  and photoRequests[5].responseType == "binary", "Photos are read from the public post-images bucket")
+for _, request in ipairs { photoRequests[4], photoRequests[5] } do
+  local names = {}
+  for name in pairs(request.headers) do names[#names + 1] = name end
+  check(#names == 1 and request.headers["X-Appwrite-Project"] == options.projectId,
+    "Public photo reads carry only the project ID, never the JWT or Account cookie")
+end
+value, err = photoClient:getAvatar("missing")
+check(not value and err.status == 404 and err.code == "storage_file_not_found", "Missing photos keep Appwrite's error")
+check(#photoEnvelopes == 0, "Profile photos never execute the Chat function")
+value, err = photoClient.transport { method = "POST", url = endpoint .. "/rest/v1/profile_photos?user_id=in.(alex)", headers = {} }
+check(value.status == 405, "Profile photo routes are read-only")
+
 value, err = Chat.appwrite { endpoint = "http://evil.test/v1", projectId = options.projectId, functionId = options.functionId }
 check(not value and err.code == "configuration", "Remote Appwrite endpoints require HTTPS")
 value, err = Chat.appwrite { endpoint = endpoint, projectId = "bad/project", functionId = options.functionId }

@@ -35,7 +35,7 @@ end
 local function activityRow(self, item, index)
     local style = ACTIVITY[item.kind]
     local row = ui.Grid { Columns = "52px 1fr", Spacing = 12, IgnoreHitTest = true }
-    row:addChild(C.avatar(item.name, 52, item.userId))
+    row:addChild(C.avatar(item.name, 52, item.userId, self))
     local line = ui.Grid { Columns = "18px 1fr auto", Spacing = 8, IgnoreHitTest = true }
     line:addChild(C.icon(style.icon, 16, colors[style.color], { MarginLeft = 0, MarginRight = 0 }))
     line:addChild(C.text(item.name .. style.text, { FontSize = 15, FontWeight = "Bold", TextOverflow = "Ellipsis" }))

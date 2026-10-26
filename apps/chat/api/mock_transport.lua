@@ -63,6 +63,18 @@ function Mock.new(options)
     state.users, state.rooms = state.users or {}, state.rooms or {}
     state.members, state.messages = state.members or {}, state.messages or {}
     for _, room in ipairs(state.rooms) do state.messages[room.id] = state.messages[room.id] or {} end
+    -- profilePhotos maps user IDs to photo IDs; photoFiles holds their bytes.
+    -- Fixture people use the demo portraits bundled with the app, when present.
+    state.profilePhotos, state.photoFiles = state.profilePhotos or {}, state.photoFiles or {}
+    for userId, name in pairs(state.avatars or {}) do
+        local file = state.profilePhotos[userId] == nil and io.open("Chat/assets/avatars/" .. name .. ".jpg", "rb")
+        if file then
+            local id = "avatar-" .. name
+            state.photoFiles[id] = file:read("*a")
+            file:close()
+            state.profilePhotos[userId] = id
+        end
+    end
     state.sessions, state.accessTokens, state.refreshTokens = {}, {}, {}
     state.sequence = { user = 0, room = 0, message = 0, token = 0 }
 
@@ -161,6 +173,22 @@ function Mock.new(options)
         local method = type(request.method) == "string" and request.method:upper() or "GET"
         local body = request.body or {}
         local headers = type(request.headers) == "table" and request.headers or {}
+        local photoId = path:match("^/storage/v1/object/public/profile%-photos/([^/]+)$")
+        if path == "/rest/v1/profile_photos" or photoId then
+            if method ~= "GET" then return failure(405, "method_not_allowed", "Profile photos are read-only.") end
+            if photoId then
+                local bytes = state.photoFiles[photoId]
+                if not bytes then return failure(404, "storage_file_not_found", "The profile photo could not be found.") end
+                return response(200, bytes)
+            end
+            local ids = params.user_id and params.user_id:match("^in%.%((.*)%)$")
+            if not ids then return failure(400, "bad_request", "Unsupported profile photo filter.") end
+            local rows = {}
+            for id in ids:gmatch("[^,]+") do
+                if state.profilePhotos[id] then rows[#rows + 1] = { user_id = id, avatar_id = state.profilePhotos[id] } end
+            end
+            return response(200, rows)
+        end
         local handled = product.handle(method, path, params, body, headers)
         if handled then return handled end
         if type(body) ~= "table" then return failure(400, "bad_request", "Request body must be a decoded JSON object.") end

@@ -114,7 +114,15 @@ function M.new(options)
 
     for _, user in ipairs(fixtures.users) do
         state.users[user.id] = { id = user.id, name = user.name, email = user.email, password = user.password }
-        insert("profiles", { userId = user.id, username = user.name, bio = user.bio or "" }, user.id, user.id, 864000)
+        -- Demo portraits ship with the app; ORCA's io.open reads project files.
+        local photo = user.avatar and io.open("Octopus/assets/avatars/" .. user.avatar .. ".jpg", "rb")
+        local avatarId = photo and "f-avatar-" .. user.avatar
+        if photo then
+            state.files[avatarId] = { bytes = photo:read("*a"), owner = user.id }
+            photo:close()
+        end
+        insert("profiles", { userId = user.id, username = user.name, bio = user.bio or "", avatarId = avatarId },
+            user.id, user.id, 864000)
     end
     state.files["f-reef"] = { bytes = reefPhoto(), owner = "u-sam" }
     -- A fixed order keeps creation stamps, and so tie-breaks, reproducible.

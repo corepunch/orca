@@ -127,4 +127,41 @@ return function(Client, helpers)
         local key = thumbnail and attachment.thumbnail_key or attachment.object_key
         return self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. key, nil, true, false, { responseType = "binary" })
     end
+    -- Public profile photos, shared with Octopus and keyed by Auth user ID.
+    -- Returns userId -> photo ID, or false for people without one. Answers are
+    -- cached per client; lookups need no session.
+    function Client:getAvatars(userIds)
+        if type(userIds) ~= "table" then return failure("validation", "Choose people.") end
+        local wanted, seen = {}, {}
+        for _, id in ipairs(userIds) do
+            if not validId(id) then return failure("validation", "Choose valid people.") end
+            if self.avatarIds[id] == nil and not seen[id] then seen[id] = true; wanted[#wanted + 1] = id end
+        end
+        for first = 1, #wanted, 100 do
+            local chunk = { table.unpack(wanted, first, math.min(#wanted, first + 99)) }
+            local rows, err = self:_request("GET", "/rest/v1/profile_photos?select=user_id,avatar_id&user_id=in.("
+                .. escape(table.concat(chunk, ",")) .. ")")
+            if not rows then return nil, err end
+            if type(rows) ~= "table" then return failure("invalid_response", "The chat service returned invalid profile photos.") end
+            for _, id in ipairs(chunk) do self.avatarIds[id] = false end
+            for _, row in ipairs(rows) do
+                if type(row) == "table" and seen[row.user_id] and validId(row.avatar_id) then
+                    self.avatarIds[row.user_id] = row.avatar_id
+                end
+            end
+        end
+        local avatars = {}
+        for _, id in ipairs(userIds) do avatars[id] = self.avatarIds[id] end
+        return avatars
+    end
+    function Client:getAvatar(avatarId)
+        if not validId(avatarId) then return failure("validation", "Choose a profile photo.") end
+        local bytes, err = self:_request("GET", "/storage/v1/object/public/profile-photos/" .. escape(avatarId), nil, false, false,
+            { responseType = "binary" })
+        if not bytes then return nil, err end
+        if type(bytes) ~= "string" or not (bytes:sub(1, 3) == "\255\216\255" or bytes:sub(1, 8) == "\137PNG\r\n\26\n") then
+            return failure("invalid_image", "This profile photo can't be shown.")
+        end
+        return bytes
+    end
 end

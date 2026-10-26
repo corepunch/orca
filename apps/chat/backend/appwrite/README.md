@@ -30,6 +30,9 @@ delivery providers are not configured.
 Active deployment: `6add961c522a0e94c9b8` (2026-10-25). The uploaded source archive
 contains `package.json` and `src/`, with SHA-256
 `553786d448292ace07989b75f1016d03621adc116e33ea57ce71191d24bfe889`.
+That deployment predates `peer_id` on direct rooms (the other member's user
+ID, which the app uses to show their profile photo); until the function is
+redeployed, direct chats show initials.
 
 ## Deployment and configuration
 

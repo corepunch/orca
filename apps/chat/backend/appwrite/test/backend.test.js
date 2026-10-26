@@ -90,6 +90,10 @@ test('direct chats reuse canonical pairs; membership and owners cannot be change
   const fixture = setup(), first = await room(fixture, 'direct');
   const response = await fixture.call('alice', '/rest/v1/rpc/create_chat_room', { room_name: 'Other name', member_ids: ['owner'], room_kind: 'direct' });
   assert.equal(response.body[0].id, first.id);
+  assert.equal(first.peer_id, 'alice'); assert.equal(response.body[0].peer_id, 'owner');
+  const listed = await fixture.call('alice', '/rest/v1/chat_rooms', {}, 'GET');
+  assert.equal(listed.body.find(value => value.id === first.id).peer_id, 'owner');
+  assert.equal((await room(fixture)).peer_id, undefined);
   assert.equal((await fixture.call('owner', '/rest/v1/rpc/remove_chat_member', { target_room: first.id, target_user: 'alice' })).status, 403);
   assert.equal((await fixture.call('eve', '/rest/v1/chat_messages?room_id=eq.' + first.id, {}, 'GET')).status, 403);
 });

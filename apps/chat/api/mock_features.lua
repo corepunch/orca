@@ -53,6 +53,10 @@ return function(state, env)
     function P.roomRow(room, id)
         local row = copy(room)
         row.role, row.can_post = role(room.id, id), P.canPost(room.id, id)
+        -- Direct chats name the other person, as the Appwrite function does.
+        if room.kind == "direct" then
+            for userId in pairs(state.members[room.id] or {}) do if userId ~= id then row.peer_id = userId end end
+        end
         return row
     end
     function P.messageRow(message)

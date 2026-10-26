@@ -29,7 +29,9 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   accent border when focused. Secondary buttons are 2-pixel outlines,
   primary commands are filled with the accent, and links are plain accent
   text.
-- Avatars are square solid-colour tiles. Message bubbles are square, with
+- Avatars are square solid-colour tiles with initials, replaced by the
+  person's Octopus profile photo in direct chats, member and contact lists and
+  your profile. Message bubbles are square, with
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
   chats, and the time sits on the last line of text when it fits. Photos fill
@@ -130,6 +132,10 @@ public/private channels, member
 management, invitations, and JPEG uploads/downloads. Linking identifiers needs
 configured Appwrite Messaging providers; phone sign-in needs an Auth SMS provider.
 These services are not simulated when their configuration is missing.
+
+Profile photos are Octopus's public `profiles.avatarId` files, read directly
+from Appwrite with the project ID alone; set yours on the Octopus website or
+app. See [profile photos](API.md#profile-photos).
 
 Octopus's plan allows one database and one bucket. Chat uses its own prefixed
 collections and encrypts photo/thumbnail bytes with AES-256-GCM before writing to

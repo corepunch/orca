@@ -113,7 +113,7 @@ end
 function Posts.card(app, post, entry, repostedBy)
     local card = ui.Grid { Name = "Post" .. post.id, Columns = "52px 1fr", Spacing = 12 }
     local function author() app:openProfile(post.authorId, post.authorName) end
-    card:addChild(C.area(C.avatar(post.authorName, 52, post.authorId), author, {
+    card:addChild(C.area(C.avatar(post.authorName, 52, post.authorId, app), author, {
         Name = "Avatar" .. post.id, Width = 52, Height = 52, MarginTop = repostedBy and 26 or 0 }))
     local header = ui.Grid { Columns = "1fr auto", Spacing = 8, IgnoreHitTest = true }
     header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))

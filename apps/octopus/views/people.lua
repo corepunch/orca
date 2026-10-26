@@ -15,7 +15,7 @@ end
 local function profileView(self, userId, name, own)
     local view = { userId = userId, own = own }
     view.avatar = ui.Grid { Name = "ProfileAvatar", Width = 96, Height = 96 }
-    view.avatar:addChild(C.avatar(name or "?", 96, userId))
+    view.avatar:addChild(C.avatar(name or "?", 96, userId, self))
     view.name = C.text(name or "", { Name = "ProfileName", FontSize = 26, WordWrap = true })
     view.bio = C.text("", { Name = "ProfileBio", FontSize = 14, Foreground = colors.muted, WordWrap = true })
     local header = ui.Grid { Columns = "96px 1fr", Spacing = 16 }
@@ -82,7 +82,7 @@ local function loadProfile(self, view, after)
         view.profile = profile
         if profile.exists or not view.name:getTextContent():match("%S") then
             view.name:setTextContent(profile.username)
-            C.clear(view.avatar):addChild(C.avatar(profile.username, 96, view.userId))
+            C.clear(view.avatar):addChild(C.avatar(profile.username, 96, view.userId, self))
         end
         view.bio:setTextContent(profile.bio ~= "" and profile.bio or (view.own and "Add a short bio below." or ""))
         for key, label in pairs(view.counts) do label:setTextContent(number(profile[key])) end
@@ -176,8 +176,33 @@ function People.me(self)
             self:repaint()
         end)
     end, { Name = "SaveProfile" })
+    local photo
+    photo = C.outline("Change photo", function()
+        if view.uploading then return end
+        local picked, err = self.media:pick()
+        if not picked then
+            if not (type(err) == "table" and err.code == "cancelled") then
+                self:notice(type(err) == "table" and err.message or tostring(err), true)
+            end
+            return
+        end
+        view.uploading = true
+        photo:setTextContent("Uploading photo…")
+        self:task(function()
+            local profile
+            profile, err = self.client:setAvatar(picked)
+            view.uploading = false
+            photo:setTextContent("Change photo")
+            if self.profileView ~= view then return end
+            if not profile then self:notice(err.message, true); return end
+            self.avatarPaths[session.user.id] = nil
+            C.clear(view.avatar):addChild(C.avatar(profile.username, 96, session.user.id, self))
+            self:notice("Photo updated. It shows on the website and in Chat too.")
+            self:repaint()
+        end)
+    end, { Name = "ChangePhoto" })
     view.actions:addChild(C.stack({ Name = "ProfileEditor", Spacing = 10 }, {
-        C.eyebrow("edit profile", { MarginTop = 0 }),
+        C.eyebrow("edit profile", { MarginTop = 0 }), photo,
         C.text("name", { FontSize = 14, Foreground = colors.muted }), nameInput,
         C.text("bio", { FontSize = 14, Foreground = colors.muted }), bioInput, save, self.status,
     }))
@@ -194,7 +219,7 @@ end
 
 local function personRow(self, person)
     local row = ui.Grid { Columns = "48px 1fr", Spacing = 12, IgnoreHitTest = true }
-    row:addChild(C.avatar(person.username, 48, person.userId))
+    row:addChild(C.avatar(person.username, 48, person.userId, self))
     row:addChild(C.stack({ Spacing = 2, JustifyContent = "Center", IgnoreHitTest = true }, {
         C.text(person.username, { FontSize = 20, TextOverflow = "Ellipsis" }),
         person.bio ~= "" and C.text(C.excerpt(person.bio, 80), {
