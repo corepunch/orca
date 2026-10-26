@@ -73,6 +73,15 @@ updates every 15 seconds. Polling pauses with the iOS scene and refreshes on
 return, backs off on service errors, and preserves scroll position and drafts.
 The manual refresh commands remain available.
 
+New Message follows Telegram's task flow within the existing Metro style:
+search, New Group, New Channel, and contacts. Tap a person to open a direct chat.
+Groups select members before the name step; Back preserves that selection and
+name draft. Channels start with a name and private/public visibility, and people
+join separately. Channel browsing and invitation entry have separate views.
+No contact is required for discovery: exact public usernames are searchable;
+email and phone require a verified identifier and that person's discovery opt-in
+in Profile. Display names are separate from public usernames.
+
 The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
 [Chat App Design on Behance](https://www.behance.net/gallery/186704313/Chat-App-Design-Dark-UI),
 and [Appetite UI's chat patterns](https://www.appetiteui.com/screens/patterns/chat).
@@ -202,11 +211,15 @@ make test-chat
 make test-chat-appwrite-backend
 make test-media
 make test-network-headers
+lua5.4 tests/test_chat_new_message.lua
 ```
 
 The Appwrite backend suite covers server authorization, role and invitation rules,
 private encrypted photos, verification challenges, and database pagination without
 contacting the cloud or sending verification messages.
+The standalone new-message controller test covers direct opening, group steps,
+channel visibility, invitations, rejected drafts, and stale search responses with
+UI doubles; native layout and interaction remain covered by the UI suite.
 The API suite exercises authentication, refresh, authorization headers, room
 creation, message ordering, validation, and HTTP failures. The mock suite
 checks the same client with isolated fixtures and guards against network

@@ -272,10 +272,16 @@ assert(newRoom:findChild("FindPerson", true), "New conversations must offer priv
 assert(newRoom:findChild("Contactalex", true), "Contacts must come from the API")
 newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
 drain(app)
-assert(app.newSelection.alex, "Selecting a contact must use its API ID")
+assert(app.room.kind == "direct" and app.room.peer_id == "alex", "Tapping a contact opens its direct chat immediately")
+app:show("/new")
+newRoom:findChild("KindGroup", true):send("Node.LeftButtonUp")
+drain(app)
 newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
 drain(app)
-assert(not app.newSelection.alex, "Selecting a contact again must remove it")
+assert(app.newSelection.alex, "Group member selection must use the API ID")
+newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
+drain(app)
+assert(not app.newSelection.alex, "Selecting a member again removes it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
 assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
@@ -518,12 +524,12 @@ otpApp.screen:findChild("FindPerson", true).Text = "@alex"
 click(otpApp, "FindPeople")
 assert(otpApp.screen:findChild("FoundPersonalex", true), "Exact username discovery must render API results")
 click(otpApp, "FoundPersonalex")
-click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "direct", "The direct action must open a canonical direct chat")
 otpApp:show("/new")
 click(otpApp, "KindGroup")
 otpApp.screen:findChild("RoomName", true).Text = "Our group"
 click(otpApp, "Contactalex")
+click(otpApp, "GroupNext")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
 click(otpApp, "ConversationMenu")
@@ -535,17 +541,18 @@ assert(otpApp.screen:findChild("Invitation", true):getTextContent() == "Invitati
 otpApp:show("/new")
 click(otpApp, "KindChannel")
 otpApp.screen:findChild("RoomName", true).Text = "Our announcements"
-click(otpApp, "Contactalex")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "channel" and otpApp.room.can_post, "Channel owners can publish")
 assert(otpApp.screen:findChild("Composer", true).Visible, "Channel owners need the composer")
 local channelId = otpApp.room.id
+local channelInvite = assert(otpApp.client:createInvite(channelId)).code
 otpApp:show("/profile")
 click(otpApp, "SignOut")
 click(otpApp, "UsePassword")
 otpApp.screen:findChild("Email", true).Text = "alex@example.invalid"
 otpApp.screen:findChild("Password", true).Text = "password123"
 click(otpApp, "SignIn")
+assert(otpApp.client:joinInvite(channelInvite))
 local subscriberRoom
 for _, room in ipairs(otpApp.client:listRooms()) do if room.id == channelId then subscriberRoom = room end end
 assert(subscriberRoom and subscriberRoom.can_post == false, "The mock API must return subscriber publishing restrictions")
@@ -585,10 +592,10 @@ assert(otpApp.screen:findChild("FindChannels", true).Visible and not otpApp.scre
     "Channel discovery must have its own visible search action")
 otpApp.screen:findChild("FindPerson", true).Text = "Our announcements"
 click(otpApp, "FindChannels")
-assert(not otpApp.screen:findChild("FoundChannel" .. channelId, true), "Private channels must not appear in discovery")
+assert(not otpApp.screen:findChild("JoinChannel" .. channelId, true), "Private channels must not appear in discovery")
 otpApp.screen:findChild("FindPerson", true).Text = "Open news"
 click(otpApp, "FindChannels")
-assert(otpApp.screen:findChild("FoundChannel" .. publicChannelId, true), "Public channel search must return API results")
+assert(otpApp.screen:findChild("JoinChannel" .. publicChannelId, true), "Public channel search must return API results")
 click(otpApp, "JoinChannel" .. publicChannelId)
 assert(otpApp.room.id == publicChannelId and otpApp.room.can_post == false, "Joining a public channel creates a subscriber membership")
 assert(not otpApp.screen:findChild("Composer", true).Visible, "Fresh public subscribers cannot publish")
