@@ -3,6 +3,14 @@
 
 #include <source/core/core_local.h>
 
+/* Generated components may end on a four-byte field. Their trailing property
+ * cache still needs pointer alignment on 64-bit targets. */
+static inline size_t CMP_PropertyOffset(size_t classSize)
+{
+  size_t alignment = _Alignof(struct Property *);
+  return (classSize + alignment - 1) & ~(alignment - 1);
+}
+
 // Closure for controller event handlers: self = controller table (with .view = root node).
 int _bind_handler_closure(lua_State *L);
 

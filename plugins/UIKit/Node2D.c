@@ -517,8 +517,8 @@ HANDLER(Node2D, Node, ScrollWheel)
     if (maxScroll < 0) {
       struct vec2 Offset = pNode2D->ContentOffset;
       Offset.y = MAX(MIN(Offset.y + pScrollWheel->deltaY, 0), maxScroll);
-      pNode2D->ContentOffset = Offset;
-      OBJ_SetDirty(hObject);
+      struct Property *property = OBJ_FindLongProperty(hObject, ID_Node2D_ContentOffset);
+      if (property) PROP_SetValue(property, &Offset);
       return TRUE;
     }
   }
@@ -729,8 +729,8 @@ HANDLER(Node2D, Node2D, SetScrollTop)
 {
   struct vec2 offset = pNode2D->ContentOffset;
   offset.y = fmin(0, Node2D_GetFrame(pNode2D, kBox3FieldHeight) - pSetScrollTop->Value);
-  pNode2D->ContentOffset = offset;
-  OBJ_SetDirty(hObject);
+  struct Property *property = OBJ_FindLongProperty(hObject, ID_Node2D_ContentOffset);
+  if (property) PROP_SetValue(property, &offset);
   return TRUE;
 }
 

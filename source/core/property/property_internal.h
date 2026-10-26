@@ -46,10 +46,12 @@ PROP_HasHandler(struct Property const *property)
       (PF_HASCHANGECALLBACK | PF_USED_IN_STATE_MANAGER | PF_USED_IN_TRIGGER)) != 0;
 }
 
-struct Object *PROP_GetObjectValue(struct Property const *property);
 void const *PROP_GetRawValueSlot(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 void PROP_NotifyChanged(struct Property *property);
+struct Property *PROP_ResolveBindingSource(struct Object *object, struct token *token);
+bool_t PROP_WriteBindingSource(struct Property *property);
+bool_t PROP_CanWriteBindingSource(struct Property const *target, struct Property const *source);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

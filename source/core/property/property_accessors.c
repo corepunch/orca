@@ -116,10 +116,11 @@ void
 PROP_SetDirty(struct Property *property)
 {
   property->flags |= PF_MODIFIED;
-  if (property->pdesc->FullIdentifier != ID_ContentOffset) {
+  if (PROP_GetShortID(property) != ID_ContentOffset) {
     OBJ_SetDirty(property->object);
   } else {
-    OBJ_SetFlags(property->object, OBJ_GetFlags(property->object) | OF_SCROLL);
+    for (struct Object *object = property->object; object; object = OBJ_GetParent(object))
+      OBJ_SetFlags(object, OBJ_GetFlags(object) | OF_SCROLL);
   }
 }
 
@@ -155,10 +156,12 @@ PROP_SetStoredValue(struct Property *property,
     return;
   }
   if (PROP_GetType(property) == kDataTypeString) {
+    // The source may be a substring of the value being replaced.
+    char *copy = strdup(*(char const *const *)source);
     if (*(LPSTR*)storage) {
       free(*(LPSTR*)storage);
     }
-    *(LPSTR*)storage = strdup(*(LPSTR*)source);
+    *(LPSTR*)storage = copy;
   } else if (PROP_GetType(property) == kDataTypeObject) {
     struct Object *object = *(struct Object **)source;
     struct Object *old_object = PROP_GetObjectValue(property);
@@ -269,6 +272,7 @@ PROP_SetValue(struct Property *property, void const* source)
     return;
   }
   PROP_NotifyChanged(property);
+  PROP_WriteBindingSource(property);
 }
 
 void

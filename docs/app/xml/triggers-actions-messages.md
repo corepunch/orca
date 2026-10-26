@@ -17,6 +17,64 @@ Triggers are children of `Node.Triggers`; actions are children of their trigger.
 
 ---
 
+## Form bindings
+
+Define the draft's data layout in a schema, independently of its controls:
+
+```xml
+<Schema>
+  <Entity Name="ProfileDraft">
+    <Column Name="DisplayName" Type="string"/>
+    <Column Name="Email" Type="string"/>
+    <Column Name="OptIn" Type="bool"/>
+  </Entity>
+</Schema>
+```
+
+Place a draft record in the form's `DataContext`, directly or through a managed
+XML datasource. Descendants inherit the nearest context:
+
+```xml
+<StackView>
+  <Input Text="{Binding DataContext/DisplayName, Mode=TwoWay}"/>
+  <Input Type="Email" Text="{Binding Path=DataContext/Email, Mode=TwoWay}"/>
+  <Input Type="Checkbox" Checked="{Binding DataContext/OptIn, Mode=TwoWay}"/>
+  <TextBlock Text="{Binding DataContext/DisplayName}"/>
+</StackView>
+```
+
+The equivalent explicit form is:
+
+```xml
+<Input>
+  <Binding Target="TextRun.Text" Mode="TwoWay" Expression="DataContext/Email"/>
+</Input>
+```
+
+| Mode | Behavior |
+|---|---|
+| `OneWay` | Default for XML binding markup. Reads the model; control edits do not write back. |
+| `TwoWay` | Initializes the control from the model, then writes actual control edits back. |
+| `OneWayToSource` | Writes control changes without reading the model or transferring the control's initial default. |
+| `Expression` | Evaluates a forward-only program, including calculations and concatenation. |
+
+Writable modes require one property path and matching source/target types.
+They reject computed reverse expressions, read-only properties and arrays.
+Use string draft fields for text entry; perform numeric parsing and domain
+validation in the validation/save layer. Password controls bind the underlying
+value while masking its display. Native text, clear and checkbox operations
+all use the property system, so controllers do not copy values from controls.
+
+Replacing `DataContext`, overriding it on a subtree, or reparenting a form
+re-resolves the path. Synchronization waits if its context is unavailable;
+edits made without a context are not queued into a later model. A missing field
+in the nearest context cannot write into a more distant context. Forward
+initialization and refresh are guarded against feedback into the source.
+
+`Enabled="false"` disables an explicit binding. XML serialization preserves
+mode and enabled state. See [the complete sample](../../../samples/MvvmForms/README.md)
+for separate schema, initial data, view, controller and committed snapshot.
+
 ## Trigger types
 
 ### `EventTrigger` — react to a routed event

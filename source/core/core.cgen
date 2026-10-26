@@ -916,7 +916,7 @@ object-tree children, iterated by ItemsControl and ListBox.</details>
     </class>
     <class name="Binding">
       <summary>Declarative property binding object that attaches a property program to its parent object.</summary>
-      <details>Binding is created from XML like any other object. Property wrappers compile it by sending Binding.Compile with the target Property pointer in lParam.</details>
+      <details>Binding is created from XML like any other object. Property wrappers compile it by sending Binding.Compile with the target Property pointer in lParam. TwoWay initializes the control from its source and writes subsequent edits back. OneWayToSource writes edits without initial source or target transfer. Writable modes require a single writable property path with matching source and target types; computed expressions remain forward-only. Relative paths and inherited DataContext are resolved against the current object hierarchy.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Binding.Compile"/>
@@ -930,6 +930,7 @@ object-tree children, iterated by ItemsControl and ListBox.</details>
         <field name="property" type="Property" pointer="true">Resolved target property slot.</field>
         <field name="token" type="token" pointer="true">Compiled VM token tree for this binding expression.</field>
         <field name="updateFrame" type="uint32">Last frame this binding executed.</field>
+        <field name="_updating" type="bool">Guards source/target propagation against feedback.</field>
       </fields>
       <messages>
         <message name="Compile">

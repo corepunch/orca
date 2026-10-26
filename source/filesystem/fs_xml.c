@@ -135,14 +135,57 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
   return FALSE;
 }
 
+static char *
+FS_BindingTrim(char *text)
+{
+  while (isspace((unsigned char)*text)) text++;
+  char *end = text + strlen(text);
+  while (end > text && isspace((unsigned char)end[-1])) *--end = 0;
+  return text;
+}
+
+static bool_t
+FS_BindingMode(char const *text, enum BindingMode *mode)
+{
+  const char *names[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression" };
+  for (int i = 0; i < ARRAY_SIZE(names); i++)
+    if (!strcmp(text, names[i])) { *mode = i; return TRUE; }
+  Con_Error("Unknown binding mode '%s'", text);
+  return FALSE;
+}
+
 static bool_t
 binding_attr(struct Object *o, struct PropertyType const *pd, lpcString_t value)
 {
   size_t n = strlen(value);
-  fixedString_t expr = {0};
   if (n <= 10 || strncmp(value, "{Binding ", 9) || value[n - 1] != '}') return FALSE;
-  snprintf(expr, sizeof(expr), "{%.*s}", (int)(n - 10), value + 9);
-  return OBJ_AttachPropertyProgram(o, pd->Name, expr, kBindingModeExpression, TRUE);
+  char body[MAX_PROPERTY_STRING], expression[MAX_PROPERTY_STRING];
+  if (n - 10 >= sizeof(body) - 2) {
+    Con_Error("Binding path is too long");
+    return TRUE;
+  }
+  memcpy(body, value + 9, n - 10);
+  body[n - 10] = 0;
+  enum BindingMode mode = kBindingModeOneWay;
+  char *save, *path = strtok_r(body, ",", &save), *source = NULL;
+  if (!path) return TRUE;
+  path = FS_BindingTrim(path);
+  if (!strncmp(path, "Path=", 5)) path = FS_BindingTrim(path + 5);
+  for (char *option = strtok_r(NULL, ",", &save); option; option = strtok_r(NULL, ",", &save)) {
+    option = FS_BindingTrim(option);
+    char *equal = strchr(option, '=');
+    if (!equal) { Con_Error("Binding option requires '='"); return TRUE; }
+    *equal++ = 0;
+    if (!strcmp(FS_BindingTrim(option), "Mode")) {
+      if (!FS_BindingMode(FS_BindingTrim(equal), &mode)) return TRUE;
+    } else if (!strcmp(FS_BindingTrim(option), "Source")) source = FS_BindingTrim(equal);
+    else { Con_Error("Unsupported binding option '%s'", option); return TRUE; }
+  }
+  int written = source ? snprintf(expression, sizeof(expression), "{%s, Source=%s}", path, source)
+                       : snprintf(expression, sizeof(expression), "{%s}", path);
+  if (written < 0 || written >= sizeof(expression)) { Con_Error("Binding path is too long"); return TRUE; }
+  PROP_SetBinding(OBJ_FindLongProperty(o, pd->FullIdentifier), expression, mode, TRUE);
+  return TRUE;
 }
 
 static bool_t
@@ -433,21 +476,35 @@ property_node(struct Object *o, struct PropertyType const *pd, struct _xmlNode* 
 static bool_t
 binding_node(struct Object *o, struct _xmlNode* x)
 {
-  lpcString_t tag = (lpcString_t)x->name;
-  if (strcmp(tag, "Binding") && strcmp(tag, "BindingExpression")) {
-    return FALSE;
-  }
+  char const *tag = (char const *)x->name;
+  bool_t expressionNode = !strcmp(tag, "BindingExpression");
+  if (strcmp(tag, "Binding") && !expressionNode) return FALSE;
   xmlChar *target = xmlGetProp(x, XMLSTR("Target"));
   if (!target) target = xmlGetProp(x, XMLSTR("target"));
-  xmlChar *text = xmlNodeGetContent(x);
-  if (target && text && *text) {
-    OBJ_AttachPropertyProgram(o, (lpcString_t)target, (lpcString_t)text,
-                              kBindingModeExpression, TRUE);
-  } else {
-    Con_Error("<%s> requires Target and text content", tag);
-  }
+  xmlChar *expression = xmlGetProp(x, XMLSTR("Expression"));
+  if (!expression) expression = xmlNodeGetContent(x);
+  xmlChar *modeText = xmlGetProp(x, XMLSTR("Mode"));
+  xmlChar *enabledText = xmlGetProp(x, XMLSTR("Enabled"));
+  enum BindingMode mode = expressionNode ? kBindingModeExpression : kBindingModeOneWay;
+  bool_t enabled = !enabledText || (strcasecmp((char *)enabledText, "false") && strcmp((char *)enabledText, "0"));
+  bool_t valid = !modeText || FS_BindingMode((char *)modeText, &mode);
+  if (valid && target && expression && (*expression || !enabled)) {
+    char *program = FS_BindingTrim((char *)expression);
+    char normalized[MAX_PROPERTY_STRING];
+    bool_t simplePath = *program != 0;
+    for (char const *c = program; *c; c++)
+      if (!isalnum((unsigned char)*c) && !strchr("_./#:", *c)) simplePath = FALSE;
+    if (!expressionNode && simplePath) {
+      int written = snprintf(normalized, sizeof(normalized), "{%s}", program);
+      if (written >= sizeof(normalized)) valid = FALSE;
+      program = normalized;
+    }
+    if (valid) OBJ_AttachPropertyProgram(o, (char *)target, program, mode, enabled);
+  } else if (valid) Con_Error("<%s> requires Target and an expression", tag);
   if (target) xmlFree(target);
-  if (text) xmlFree(text);
+  if (expression) xmlFree(expression);
+  if (modeText) xmlFree(modeText);
+  if (enabledText) xmlFree(enabledText);
   return TRUE;
 }
 

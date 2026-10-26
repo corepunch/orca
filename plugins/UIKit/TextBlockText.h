@@ -34,6 +34,8 @@ struct TextBlockText
   struct text_info info;
   bool_t placeholder;
   struct Texture *texture;
+  char *displayBuffer;
+  size_t displayCapacity;
   struct TextBlockTextRun run[UI_MAX_TEXT_RUNS];
 };
 

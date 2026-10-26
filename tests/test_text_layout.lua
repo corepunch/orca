@@ -261,6 +261,40 @@ local function test_text_line_height_property()
 	tall_height:removeFromParent()
 end
 
+local function test_password_input_masks_display()
+	local password = screen + ui.Input { Type = "Password", TextWrapping = "NoWrap" }
+	local expected = screen + ui.Input { TextWrapping = "NoWrap" }
+	local function expect_display(value, display)
+		password.Text, expected.Text = value, display
+		screen:UpdateLayout(screen.Width, screen.Height)
+		test.expect_eq(password.Text, value, "Password Text must retain the authentication value")
+		test.expect_eq(password.DesiredWidth, expected.DesiredWidth, "Password layout must use only mask characters")
+		test.expect_eq(password.DesiredHeight, expected.DesiredHeight, "Password display height must match the mask")
+	end
+	expect_display("secret", "******")
+	expect_display("W i\n🙂é", "******")
+	expect_display("密碼🙂", "***")
+	expect_display(string.rep("W", 300), string.rep("*", 300))
+	expect_display("i", "*")
+	password.Type = "Text"
+	expect_display("Visible again", "Visible again")
+	password.Type = "Password"
+	expect_display("secret", "******")
+	password.PlaceholderText, expected.PlaceholderText = "Your password", "Your password"
+	password:send("Input.Clear")
+	expect_display("", "")
+	local secretRun = ui.TextRun { Text = "Wide secret 密碼🙂" }
+	local maskedRun = ui.TextRun { Text = string.rep("*", 15) }
+	password:addChild(secretRun)
+	expected:addChild(maskedRun)
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_eq(password.DesiredWidth, expected.DesiredWidth,
+		"Placeholder must not expose child text runs in a password input")
+	test.expect_eq(secretRun.Text, "Wide secret 密碼🙂", "Masking must preserve child data")
+	password:removeFromParent()
+	expected:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
@@ -274,5 +308,6 @@ test_auto_margin_bubble_wraps_long_text()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()
 test_text_line_height_property()
+test_password_input_masks_display()
 
 print("All text layout tests passed.")

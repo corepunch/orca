@@ -46,20 +46,7 @@ OBJ_AttachPropertyProgram(struct Object *self,
                           eBindingMode_t mode,
                           bool_t enabled)
 {
-  (void)mode;
-  struct token *compiled = enabled ? Token_Create(program) : NULL;
-  struct Property *property = OBJ_FindLongProperty(self, fnv1a32(name));
-  if (property) {
-    PROP_AttachProgram(property, compiled);
-    if (property->binding) {
-      free((char *)property->binding->Expression);
-      property->binding->Expression = strdup(program);
-      property->binding->updateFrame = (uint32_t)-1;
-    }
-    PROP_SetFlag(property, PF_MODIFIED);
-    property->updateFrame = core.frame == 0 ? (uint32_t)-1 : core.frame - 1;
-    return TRUE;
-  } else {
-    return FALSE;
-  }
+  struct Property *property = strchr(name, '.') ? OBJ_FindLongProperty(self, fnv1a32(name))
+                                               : OBJ_FindShortProperty(self, fnv1a32(name));
+  return property && PROP_SetBinding(property, program, mode, enabled);
 }

@@ -14,6 +14,7 @@ function Posts.body(app, post, full)
             Background = colors.raised, IgnoreHitTest = true }
         frame:addChild(C.icon("image", 28, colors.dim))
         body:addChild(frame)
+        if post.imageId then app.photos:watch(frame, post.imageId, "Image" .. post.id) end
     end
     if kind == "photo" then
         if post.content ~= "" then
@@ -142,41 +143,13 @@ function Posts.items(posts)
     return items
 end
 
--- Add cards to a list, then fetch their photos in the background.
+-- Cards register photos for loading when their frame enters the viewport.
 function Posts.append(app, list, items, stats)
-    local posts = {}
     for _, item in ipairs(items) do
         local post = item.post
         stats[post.id] = stats[post.id] or { likes = 0, comments = 0, reposts = 0 }
         list:addChild(Posts.card(app, post, stats[post.id], item.repostedBy))
-        posts[#posts + 1] = post
     end
-    Posts.loadPhotos(app, list, posts)
-end
-
-function Posts.loadPhotos(app, root, posts)
-    local pending = {}
-    for _, post in ipairs(posts) do
-        if (post.postType == "photo" or post.postType == "quote") and post.imageId then pending[#pending + 1] = post end
-    end
-    if #pending == 0 then return end
-    local session = app.sessionEpoch
-    app:task(function()
-        for _, post in ipairs(pending) do
-            if app.sessionEpoch ~= session then return end
-            local path = app.media:path(post.imageId)
-            if not path then
-                local bytes = app.client:getImage(post.imageId)
-                path = bytes and app.media:store(bytes, post.imageId)
-            end
-            local frame = root:findChild("Photo" .. post.id, true)
-            if frame and path then
-                C.clear(frame)
-                frame:addChild(ui.ImageView { Name = "Image" .. post.id, Src = path, Stretch = "Uniform", IgnoreHitTest = true })
-                app:repaint()
-            end
-        end
-    end)
 end
 
 -- Load a page of timeline items with their counts. The loader returns items

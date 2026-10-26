@@ -149,6 +149,15 @@ static void _test_add_float_rule(struct Object *obj, lpcString_t className,
     OBJ_AddChild(sheetObj, ruleObj);
 }
 
+/* Theme queries create Cocoa autoreleased temporaries on Darwin. Initialize
+ * its runtime caches before tracking, and drain temporaries after each case. */
+static void warm_style_runtime(void)
+{
+    struct Object *obj = make_styled_object();
+    _SendMessage(obj, StyleController, AddClasses, "tracker-warmup");
+    destroy_object(obj);
+}
+
 /* ------------------------------------------------------------------ */
 /* Tests                                                               */
 /* ------------------------------------------------------------------ */
@@ -480,6 +489,9 @@ int main(void) {
     printf("=======================\n");
 
     register_styled_class();
+    MEM_AUTORELEASE_SCOPE(warm_style_runtime);
+    /* Exclude one-time platform clock/timezone caches from ownership baselines. */
+    core_AdvanceFrame();
     mem_init();
 
     static const struct { const char *name; void (*fn)(void); } tests[] = {
@@ -509,7 +521,7 @@ int main(void) {
         s_current_test = tests[i].name;
         s_tests_run++;
         printf("Running %s...\n", tests[i].name);
-        tests[i].fn();
+        MEM_AUTORELEASE_SCOPE(tests[i].fn);
         MEM_CHECK_LEAK(snap, tests[i].name);
     }
 

@@ -52,8 +52,8 @@ local function test_input_interaction()
 	input:removeFromParent()
 end
 
-local function test_input_unicode()
-	local input = screen + ui.Input { Width = 200, Height = 40 }
+local function test_input_unicode(input_type)
+	local input = screen + ui.Input { Type = input_type, Width = 200, Height = 40 }
 	input:setFocus()
 	for _, text in ipairs { "П", "р", "и", "в", "е", "т", "🙂" } do
 		orca.system.dispatchMessage { target = screen, message = "Char", text = text }
@@ -322,7 +322,8 @@ end
 
 test_button_interaction()
 test_input_interaction()
-test_input_unicode()
+test_input_unicode("Text")
+test_input_unicode("Password")
 test_input_native_event_routing()
 test_input_checkbox()
 test_form_populate_inputs()

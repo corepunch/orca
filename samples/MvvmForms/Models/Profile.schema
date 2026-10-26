@@ -1,0 +1,8 @@
+<Schema>
+  <Entity Name="ProfileDraft">
+    <Column Name="DisplayName" Type="string"/>
+    <Column Name="Email" Type="string"/>
+    <Column Name="OptIn" Type="bool"/>
+    <Column Name="Status" Type="string"/>
+  </Entity>
+</Schema>

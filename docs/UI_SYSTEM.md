@@ -22,6 +22,20 @@ Use this file when changing UIKit controls, layout, XML UI, popups, or styling b
 For tests with explicit dimensions, always set `ResizeMode="NoResize"` in XML or `ResizeMode = "NoResize"` in Lua.
 Otherwise the window size can override the intended test dimensions.
 
+## Password inputs
+
+Use `Input { Type = "Password" }` for passwords. UIKit masks the prepared
+display text with one `*` per Unicode codepoint while retaining the original
+`Text` value for editing and submission. Empty inputs show their placeholder.
+Applications should pass the real value to authentication without masking it.
+
+## Scrolling
+
+Set `ContentOffset` through the property system. Scroll-only frames reuse
+measurement and arrangement and update descendant transforms. Content changes
+and viewport resizing still invalidate layout. Native scroll-wheel and
+`Node2D.SetScrollTop` handling use this same path.
+
 ## XML message shorthand
 
 Common patterns:

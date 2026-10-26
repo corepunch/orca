@@ -83,26 +83,46 @@ PROP_SetBinding(struct Property *property,
                 eBindingMode_t mode,
                 bool_t enabled)
 {
-  (void)mode;
   if (!property) {
     Con_Error("PROP_SetBinding: target property is NULL");
     return FALSE;
   }
 
-  if (!expression || !*expression) {
+  if (!expression || (!*expression && enabled)) {
     Con_Error("PROP_SetBinding: empty binding expression for %s/%s",
               OBJ_GetClassName(property->object),
               PROP_GetName(property));
     return FALSE;
   }
 
+  // Rebinding may pass our own retained expression back to this function.
+  char *expressionCopy = strdup(expression);
+  if (!expressionCopy) return FALSE;
   struct token *compiled = enabled ? Token_Create(expression) : NULL;
+  if (enabled && (mode == kBindingModeTwoWay || mode == kBindingModeOneWayToSource) &&
+      (!compiled || compiled->type != tok_argument || compiled->next)) {
+    if (compiled) Token_Release(compiled);
+    free(expressionCopy);
+    Con_Error("Writable bindings require a single property path");
+    return FALSE;
+  }
+  if (enabled && (mode == kBindingModeTwoWay || mode == kBindingModeOneWayToSource)) {
+    struct Property *source = PROP_ResolveBindingSource(property->object, compiled);
+    if (source && !PROP_CanWriteBindingSource(property, source)) {
+      Token_Release(compiled);
+      free(expressionCopy);
+      Con_Error("Writable bindings require properties with matching types");
+      return FALSE;
+    }
+  }
   Con_Printf("DEBUG PROP_SetBinding: expression=%s compiled=%p\n", expression, compiled);
   PROP_AttachProgram(property, compiled);
   /* Store original expression text for serialization round-trips */
   if (property->binding) {
+    property->binding->Mode = mode;
+    property->binding->Enabled = enabled;
     free((char *)property->binding->Expression);
-    property->binding->Expression = strdup(expression);
+    property->binding->Expression = expressionCopy;
     /* Reset binding's updateFrame to force evaluation on next PROP_Update */
     property->binding->updateFrame = (uint32_t)-1;
   }

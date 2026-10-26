@@ -4,6 +4,8 @@
 #include <UIKit/UIKit.h>
 #include "TextBlockText.h"
 
+HANDLER(TextBlockConcept, TextBlockConcept, MakeText);
+
 float
 text_pos(struct EdgeShorthand padding, uint32_t align, float size, float space);
 
@@ -98,12 +100,55 @@ HANDLER(Input, Node2D, DrawForeground)
   return FALSE;
 }
 
+static size_t
+Input_CharacterCount(char const *text, size_t bytes)
+{
+  size_t count = 0;
+  for (size_t i = 0; i < bytes; i++)
+    if (((unsigned char)text[i] & 0xc0) != 0x80) count++;
+  return count;
+}
+
+static void
+Input_MaskText(struct TextBlockText *text)
+{
+  uint32_t first = text->placeholder ? 1 : 0;
+  size_t capacity = 0;
+  for (uint32_t i = first; i < text->numTextRuns; i++)
+    capacity += strlen(text->run[i].string ? text->run[i].string : "") + 1;
+  if (capacity > text->displayCapacity) {
+    char *buffer = realloc(text->displayBuffer, capacity);
+    if (!buffer) {
+      // Never fall back to the unmasked runs if allocation fails.
+      text->numTextRuns = 0;
+      return;
+    }
+    text->displayBuffer = buffer;
+    text->displayCapacity = capacity;
+  }
+  char *output = text->displayBuffer;
+  for (uint32_t i = first; i < text->numTextRuns; i++) {
+    char const *source = text->run[i].string ? text->run[i].string : "";
+    size_t count = Input_CharacterCount(source, strlen(source));
+    memset(output, '*', count);
+    output[count] = 0;
+    text->run[i].string = output;
+    output += count + 1;
+  }
+}
+
 HANDLER(Input, TextBlockConcept, MakeText)
 {
+  struct TextBlockConcept *concept = GetTextBlockConcept(hObject);
+  TextBlockConcept_MakeText(hObject, concept, wParam, pMakeText);
+  struct TextBlockText *display = concept->_text;
   const char* text = GetTextRun(hObject)->Text;
-  pInput->Cursor = MIN((int)strlen(text ? text : ""), pInput->Cursor);
-  GetTextBlockConcept(hObject)->_text->cursor = pInput->Cursor;
-  return FALSE;
+  pInput->Cursor = MAX(0, MIN((int)strlen(text ? text : ""), pInput->Cursor));
+  // Editing uses byte offsets; text layout tracks Unicode codepoints.
+  display->cursor = Input_CharacterCount(text, pInput->Cursor);
+  if (pInput->Type == kInputTypePassword)
+    Input_MaskText(display);
+  return TRUE;
 }
 
 static struct Object *
@@ -252,8 +297,8 @@ HANDLER(Input, Node, LeftButtonUp)
 {
   OBJ_SetFocus(hObject);
   if (pInput->Type == kInputTypeCheckbox) {
-    pInput->Checked = !pInput->Checked;
-    OBJ_SetDirty(hObject);
+    bool_t checked = !pInput->Checked;
+    PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Input_Checked), &checked);
   }
   return TRUE;
 }
@@ -270,7 +315,7 @@ HANDLER(Input, Input, Clear)
 {
   struct Property *text = OBJ_FindLongProperty(hObject, ID_TextRun_Text);
   if (text) {
-    PROP_Clear(text);
+    PROP_SetStringValue(text, "");
   }
   pInput->Cursor = 0;
   OBJ_SetDirty(hObject);

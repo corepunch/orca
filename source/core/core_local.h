@@ -222,6 +222,8 @@ void
 PROP_SetValuePtr(struct Property *, void*);
 struct Object *
 PROP_GetObject(struct Property const *);
+struct Object *
+PROP_GetObjectValue(struct Property const *);
 bool_t 
 PROP_RegisterChangedCallback(lua_State*, struct Property *, int);
 void
