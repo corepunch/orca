@@ -351,7 +351,7 @@ local App = Application:extend {
         if not self.room then return self:home() end
         local room = self.room
         local function keepDraft() self.drafts[room.id] = self.composer and self.composer.Text or "" end
-        self.messageList = C.stack({ Name = "Messages", Spacing = 14, Overflow = "hidden scroll" })
+        self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll" })
         self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
             Margin = "24 8" })
         self.composer = C.input("Message", "type a message", {

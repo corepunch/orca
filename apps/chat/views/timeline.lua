@@ -51,15 +51,20 @@ local function refresh(self, options, room, node, current)
     children[#children + 1] = C.text(#messages > 0 and C.date(messages[1].created_at) or "A FRESH START", {
         FontSize = 12, Foreground = colors.dim, TextHorizontalAlignment = "Center", MarginTop = 4, MarginBottom = 6,
     })
-    for _, message in ipairs(messages) do
+    -- Telegram-style density: bubbles hug their text, consecutive messages from
+    -- one sender stack tightly with a single tail, and names appear only in groups.
+    local group = room.kind == "group"
+    for i, message in ipairs(messages) do
         local mine = message.sender_id == me and room.kind ~= "channel"
+        local prev, nextMessage = messages[i - 1], messages[i + 1]
+        local first = not prev or prev.sender_id ~= message.sender_id
+        local last = not nextMessage or nextMessage.sender_id ~= message.sender_id
+        local tone = mine and colors.sent or colors.raised
         local bubble = C.stack({
-            Name = "MessageBubble" .. message.id, Width = 272, Padding = "12 14", Spacing = 6,
-            Background = mine and colors.sent or colors.raised,
-            MarginLeft = mine and auto or 0, MarginRight = mine and 0 or auto,
+            Name = "MessageBubble" .. message.id, Padding = "10 6", Spacing = 2, Background = tone,
         })
-        if not mine then
-            bubble:addChild(C.text(sender(self, room, message), { FontSize = 12, FontWeight = "Bold", Foreground = colors.accentText }))
+        if group and first and not mine then
+            bubble:addChild(C.text(sender(self, room, message), { FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText }))
         end
         for _, attachment in ipairs(message.attachments or {}) do
             local cached = previous and previous.node == node and previous.photos[attachment.id]
@@ -82,16 +87,24 @@ local function refresh(self, options, room, node, current)
                     FontSize = 12, Foreground = colors.muted, WordWrap = true }))
             end
         end
+        local time = C.time(message.created_at) or ""
+        local meta = { FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, MarginLeft = auto }
         if message.body and message.body ~= "" then
-            bubble:addChild(C.text(message.body, { WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
+            -- Non-breaking spaces reserve room for the time on the last line;
+            -- when that line is full they wrap and the time gets its own line.
+            bubble:addChild(C.text(message.body .. " " .. ("\u{a0}"):rep(#time + 4), {
+                WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
+            meta.MarginTop = -17
         end
-        bubble:addChild(C.text((mine and "Sent · " or "") .. (C.time(message.created_at) or ""), {
-            FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
-        }))
-        local entry, tone = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0 }), mine and colors.sent or colors.raised
-        if not mine then entry:addChild(C.tail(true, tone, false)) end
+        bubble:addChild(C.text(time, meta))
+        -- Cross-axis alignment, unlike auto margins, measures the bubble at the
+        -- row width so long text wraps inside it.
+        local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
+            MarginTop = i == 1 and 0 or first and 8 or 2,
+            PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })
+        if first and not mine then entry:addChild(C.tail(true, tone, false)) end
         entry:addChild(bubble)
-        if mine then entry:addChild(C.tail(false, tone, true)) end
+        if last and mine then entry:addChild(C.tail(false, tone, true)) end
         children[#children + 1], entries[#entries + 1] = entry, { id = message.id, node = entry }
     end
     if #messages == 0 then
@@ -122,6 +135,8 @@ local function refresh(self, options, room, node, current)
     while node:getFirstChild() do node:getFirstChild():removeFromParent() end
     for _, child in ipairs(children) do node:addChild(child) end
     self.timelineSnapshot = { node = node, signature = signature, entries = entries, photos = photos, retryPhotos = retryPhotos }
+    -- The notice can resize the footer, so set it before measuring the bottom.
+    if not options.quiet then self:notice(self.remote and "Synced · updates automatically" or "Offline mock · messages stay in this session") end
     local root = node:getRoot()
     root:UpdateLayout(root.Width, root.Height)
     bottom = math.min(0, node.ActualHeight - node.ScrollHeight)
@@ -131,7 +146,6 @@ local function refresh(self, options, room, node, current)
         end
     end
     node.ContentOffset = { X = oldX, Y = follow and bottom or math.max(bottom, math.min(0, oldY)) }
-    if not options.quiet then self:notice(self.remote and "Synced · updates automatically" or "Offline mock · messages stay in this session") end
     return true
 end
 
