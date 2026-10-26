@@ -243,7 +243,11 @@ static void replacement_clear_and_reuse_stress(void)
         assert(PROP_IsNull(p) && text(p) == NULL);
         PROP_SetStringValue(p, "");
         assert(!PROP_IsNull(p));
-        assert(MEM_SNAPSHOT() == baseline);
+        if (MEM_SNAPSHOT() != baseline) {
+            fprintf(stderr, "%s: allocation baseline %ld, actual %ld\n",
+                    s_current_test, baseline, MEM_SNAPSHOT());
+            abort();
+        }
     }
     OBJ_ReleaseRef(o);
 }
@@ -798,7 +802,11 @@ int main(int argc, char **argv)
         long baseline = MEM_SNAPSHOT();
         tests[i].run();
         MEM_CHECK_LEAK(baseline, s_current_test);
-        assert(MEM_SNAPSHOT() == baseline);
+        if (MEM_SNAPSHOT() != baseline) {
+            fprintf(stderr, "%s: allocation baseline %ld, actual %ld\n",
+                    s_current_test, baseline, MEM_SNAPSHOT());
+            abort();
+        }
         s_tests_run++;
     }
     assert(s_tests_run > 0);

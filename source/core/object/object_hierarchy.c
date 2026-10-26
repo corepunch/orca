@@ -87,21 +87,13 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
       if (child) {
         return OBJ_FindPropertyByPath(child, ++split);
       }
-      // Try as an object-typed property — read the component pointer and follow it
+      // Object values are normalized by the property API; do not reinterpret
+      // their storage as component userdata.
       struct Property *prop = memchr(path, '.', split - path)
         ? OBJ_FindLongProperty(object, identifier) : OBJ_FindShortProperty(object, identifier);
       if (prop && PROP_GetDesc(prop)->DataType == kDataTypeObject) {
-        void const *val = PROP_GetValue(prop);
-        if (val) {
-          struct component *cmp = NULL;
-          memcpy(&cmp, val, sizeof(cmp));
-          if (cmp) {
-            struct Object *target = CMP_GetObject(cmp);
-            if (target) {
-              return OBJ_FindPropertyByPath(target, ++split);
-            }
-          }
-        }
+        struct Object *target = PROP_GetObjectValue(prop);
+        if (target) return OBJ_FindPropertyByPath(target, ++split);
       }
       return NULL;
     }

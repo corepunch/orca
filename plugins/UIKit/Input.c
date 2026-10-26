@@ -112,8 +112,9 @@ Input_CharacterCount(char const *text, size_t bytes)
 static void
 Input_MaskText(struct TextBlockText *text)
 {
+  uint32_t first = text->placeholder ? 1 : 0;
   size_t capacity = 0;
-  for (uint32_t i = 0; i < text->numTextRuns; i++)
+  for (uint32_t i = first; i < text->numTextRuns; i++)
     capacity += strlen(text->run[i].string ? text->run[i].string : "") + 1;
   if (capacity > text->displayCapacity) {
     char *buffer = realloc(text->displayBuffer, capacity);
@@ -126,7 +127,7 @@ Input_MaskText(struct TextBlockText *text)
     text->displayCapacity = capacity;
   }
   char *output = text->displayBuffer;
-  for (uint32_t i = 0; i < text->numTextRuns; i++) {
+  for (uint32_t i = first; i < text->numTextRuns; i++) {
     char const *source = text->run[i].string ? text->run[i].string : "";
     size_t count = Input_CharacterCount(source, strlen(source));
     memset(output, '*', count);
@@ -145,7 +146,7 @@ HANDLER(Input, TextBlockConcept, MakeText)
   pInput->Cursor = MAX(0, MIN((int)strlen(text ? text : ""), pInput->Cursor));
   // Editing uses byte offsets; text layout tracks Unicode codepoints.
   display->cursor = Input_CharacterCount(text, pInput->Cursor);
-  if (pInput->Type == kInputTypePassword && !display->placeholder)
+  if (pInput->Type == kInputTypePassword)
     Input_MaskText(display);
   return TRUE;
 }

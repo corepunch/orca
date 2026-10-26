@@ -283,6 +283,14 @@ local function test_password_input_masks_display()
 	password.PlaceholderText, expected.PlaceholderText = "Your password", "Your password"
 	password:send("Input.Clear")
 	expect_display("", "")
+	local secretRun = ui.TextRun { Text = "Wide secret 密碼🙂" }
+	local maskedRun = ui.TextRun { Text = string.rep("*", 15) }
+	password:addChild(secretRun)
+	expected:addChild(maskedRun)
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_eq(password.DesiredWidth, expected.DesiredWidth,
+		"Placeholder must not expose child text runs in a password input")
+	test.expect_eq(secretRun.Text, "Wide secret 密碼🙂", "Masking must preserve child data")
 	password:removeFromParent()
 	expected:removeFromParent()
 end

@@ -149,6 +149,33 @@ scenario("XML save and reload preserve binding modes and enabled state", functio
     equal(model.Title, "restored title", "Reloaded disabled binding does not write back")
 end)
 
+scenario("object-valued property traversal follows replacement models", function()
+    local root, editor = ui.StackView {}, ui.Input {}
+    local first, second = draft("first object"), draft("replacement object")
+    root:addChild(editor)
+    root.DataContext = first
+    bind(editor, "TextRun.Text", "{../DataContext/Email}")
+    evaluate(root)
+    equal(editor.Text, "first object", "Object property traversal reads the model")
+    editor.Text = "edited object"
+    equal(first.Email, "edited object", "Object property traversal writes the model")
+    root.DataContext = second
+    evaluate(root)
+    equal(editor.Text, "replacement object", "Traversal resolves the replacement object")
+    editor.Text = "edited replacement"
+    equal(second.Email, "edited replacement", "Writeback follows the replacement object")
+    equal(first.Email, "edited object", "Writeback leaves the old object alone")
+    root.DataContext = nil
+    editor.Text = "detached"
+    equal(second.Email, "edited replacement", "Null object traversal does not write")
+    bind(editor, "TextRun.Text", "{../Node.DataContext/Email}")
+    root.DataContext = first
+    evaluate(root)
+    equal(editor.Text, "edited object", "Qualified object property traversal reads the model")
+    editor.Text = "qualified edit"
+    equal(first.Email, "qualified edit", "Qualified object property traversal writes the model")
+end)
+
 scenario("native keyboard edits update the draft", function()
     local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
     local root, editor, model = ui.StackView {}, ui.Input {}, draft("")

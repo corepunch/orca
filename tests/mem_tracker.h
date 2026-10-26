@@ -180,8 +180,15 @@ void free(void *ptr) {
     }
 }
 
-/* Note: strdup is NOT overridden here — it internally calls malloc, so
- * strdup allocations are automatically counted through our malloc wrapper. */
+/* libc may allocate strdup storage through private malloc-zone entry points
+ * (notably on macOS). Route string copies through the tracked allocator so a
+ * caller's intercepted free always has a corresponding counted allocation. */
+char *strdup(const char *source) {
+    size_t size = strlen(source) + 1;
+    char *copy = malloc(size);
+    if (copy) memcpy(copy, source, size);
+    return copy;
+}
 
 /* ---- snapshot / check macros ---- */
 
