@@ -91,8 +91,8 @@ local App = Application:extend {
                     if unusable then self.avatarPaths[id] = false end
                     if path then
                         self.avatarPaths[id] = path
+                        -- The run loop repaints after the resumed task, as for timeline photos.
                         for _, waitingTile in ipairs(waiting[id]) do C.photo(waitingTile, path) end
-                        if self.screen then pcall(function() self.screen:post("Window.Paint", renderer.getSize()) end) end
                     end
                 end
             end
