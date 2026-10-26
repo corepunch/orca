@@ -40,6 +40,11 @@ blocks with [Chat](../chat/README.md):
   filled with the reef teal from the website, secondary ones are 2-pixel
   outlines and links are plain accent text. Icons are Lucide SVGs and the
   octopus mark comes from the website.
+- Write uses a two-column icon chooser, taking inspiration from the
+  [official Tumblr Windows Phone app's post chooser](https://www.windowscentral.com/official-tumblr-app-comes-windows-phone-8).
+  Each type keeps its own draft, including tags and selected photos, when you
+  switch types or leave the page. Publishing clears the submitted draft;
+  newer edits and drafts for other types stay available.
 
 `theme.lua` holds black and white palettes. The OS appearance chooses between
 them; set `OCTOPUS_APPEARANCE=light` or `dark` to override it.
@@ -82,10 +87,22 @@ characters, creates the account, signs in and creates the profile, as the
 website does. The session cookie stays in memory for the client that created
 it, so restarting signs you out.
 
-Posts can be text, quote, link or photo. Photo posts need the native photo
-picker (macOS and iOS). Markdown reads as plain text on the phone; the website
-renders it. Links can be copied to the clipboard because ORCA has no
-open-in-browser API yet.
+The four compose forms match the
+[website's composer](https://github.com/corepunch/octopus/blob/main/js/pages/create.js):
+
+| Post type | Required | Optional |
+| --- | --- | --- |
+| Text | Title, post body | Tags |
+| Photo | Photo | Caption, tags |
+| Quote | Quote text | Source, background photo, your thoughts, tags |
+| Link | Title, HTTP or HTTPS address | Description, tags |
+
+Photo selection needs the native picker (macOS and iOS). Photo and quote
+forms show a preview and let you replace or remove the image. Quote images
+appear with the quote on the phone and as its background on the website.
+Cancelling the picker preserves the selection; upload failures keep the draft
+for retry. Markdown reads as plain text on the phone; the website renders it.
+Links can be copied to the clipboard because ORCA has no open-in-browser API yet.
 
 ## Code
 
@@ -114,6 +131,8 @@ likes, reposts, comments, follows, profiles, photo upload and deletion, and
 the exact Appwrite query, cookie and body encoding of the HTTP transport. The
 UI suite drives the app through real clicks: the guest discover timeline, post,
 profile and tag search, sign-in that returns to the page you came from,
-home with reposts, connect, compose drafts and publishing, comments and replies, likes, reposts,
-following, profile editing, delete confirmation, sign-up and service errors.
+home with reposts, connect, all four compose forms, independent drafts, photo
+selection and removal, upload retries, publishing during navigation, comments
+and replies, likes, reposts, following, profile editing, delete confirmation,
+sign-up and service errors.
 Neither suite contacts the network.

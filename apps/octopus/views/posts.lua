@@ -9,11 +9,13 @@ local PHOTO_HEIGHT = 196
 function Posts.body(app, post, full)
     local body = C.stack({ Spacing = 8, IgnoreHitTest = true })
     local kind = post.postType
-    if kind == "photo" then
+    if kind == "photo" or (kind == "quote" and post.imageId) then
         local frame = ui.Grid { Name = "Photo" .. post.id, Height = full and 260 or PHOTO_HEIGHT,
             Background = colors.raised, IgnoreHitTest = true }
         frame:addChild(C.icon("image", 28, colors.dim))
         body:addChild(frame)
+    end
+    if kind == "photo" then
         if post.content ~= "" then
             body:addChild(C.text(full and C.plain(post.content) or C.excerpt(post.content), { FontSize = 15, WordWrap = true }))
         end
@@ -155,7 +157,7 @@ end
 function Posts.loadPhotos(app, root, posts)
     local pending = {}
     for _, post in ipairs(posts) do
-        if post.postType == "photo" and post.imageId then pending[#pending + 1] = post end
+        if (post.postType == "photo" or post.postType == "quote") and post.imageId then pending[#pending + 1] = post end
     end
     if #pending == 0 then return end
     local session = app.sessionEpoch

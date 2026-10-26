@@ -418,7 +418,6 @@ function Client:createPost(values)
         data.title, data.content = trim(values.title), trim(values.content)
         if data.title == "" then return failure("validation", "Title is required.") end
         if data.content == "" then return failure("validation", "Write something before publishing.") end
-        if #data.title > 256 then return failure("validation", "Keep the title under 256 characters.") end
     elseif kind == "photo" then
         if not values.photo then return failure("validation", "Choose a photo to share.") end
         data.content = trim(values.content)
@@ -435,9 +434,10 @@ function Client:createPost(values)
             return failure("validation", "URL must start with http:// or https://")
         end
     end
+    if #data.title > 256 then return failure("validation", "Keep the title under 256 characters.") end
     if #data.content > 65535 then return failure("validation", "This post is too long.") end
     if #data.tags == 0 then data.tags = nil end
-    if values.photo then
+    if (kind == "photo" or kind == "quote") and values.photo then
         local file
         file, err = self:uploadImage(values.photo)
         if not file then return nil, err end
