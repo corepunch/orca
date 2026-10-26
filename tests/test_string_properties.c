@@ -794,7 +794,7 @@ int main(int argc, char **argv)
     tiny_property.FullIdentifier = fnv1a32("TinyPropertyOwner.TinyValue");
     OBJ_RegisterClass(&tiny_class);
     /* Exclude one-time platform clock/timezone caches from ownership baselines. */
-    (void)axGetMilliseconds();
+    core_AdvanceFrame();
     mem_init();
     const struct { const char *name; void (*run)(void); } tests[] = {
         TEST(engine_string_allocations_are_tracked), TEST(destruction_delivers_component_cleanup_message), TEST(mutable_stack_is_copied), TEST(heap_source_can_be_freed), TEST(properties_own_independent_copies),

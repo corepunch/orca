@@ -1822,7 +1822,7 @@ static void test_project_string_property_set_get(void) {
 
 int main(void) {
     /* Darwin lazily initializes timezone state on the first platform clock read. */
-    (void)axGetMilliseconds();
+    core_AdvanceFrame();
     mem_init();
 
     printf("ORCA property system tests\n");

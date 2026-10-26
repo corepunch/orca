@@ -481,7 +481,7 @@ int main(void) {
 
     register_styled_class();
     /* Exclude one-time platform clock/timezone caches from ownership baselines. */
-    (void)axGetMilliseconds();
+    core_AdvanceFrame();
     mem_init();
 
     static const struct { const char *name; void (*fn)(void); } tests[] = {
