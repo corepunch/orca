@@ -107,6 +107,27 @@ static char *pattern(size_t length, char fill)
     return value;
 }
 
+/* A zero baseline alone can pass when a platform bypasses interception.
+ * Verify an allocation made inside the dynamically linked engine is counted. */
+static void engine_string_allocations_are_tracked(void)
+{
+    struct Object *o = object();
+    struct Property *p = property(o, "Left");
+    long baseline = MEM_SNAPSHOT();
+    PROP_SetStringValue(p, "engine allocation canary");
+    expect_text(p, "engine allocation canary");
+#if TEST_MEMORY
+    if (MEM_SNAPSHOT() != baseline + 1) {
+        fprintf(stderr, "Engine allocation interception failed: expected %ld, actual %ld\n",
+                baseline + 1, MEM_SNAPSHOT());
+        abort();
+    }
+#endif
+    PROP_Clear(p);
+    assert(MEM_SNAPSHOT() == baseline);
+    OBJ_ReleaseRef(o);
+}
+
 static void destruction_delivers_component_cleanup_message(void)
 {
     int before = destroyed_components;
@@ -774,7 +795,7 @@ int main(int argc, char **argv)
     OBJ_RegisterClass(&tiny_class);
     mem_init();
     const struct { const char *name; void (*run)(void); } tests[] = {
-        TEST(destruction_delivers_component_cleanup_message), TEST(mutable_stack_is_copied), TEST(heap_source_can_be_freed), TEST(properties_own_independent_copies),
+        TEST(engine_string_allocations_are_tracked), TEST(destruction_delivers_component_cleanup_message), TEST(mutable_stack_is_copied), TEST(heap_source_can_be_freed), TEST(properties_own_independent_copies),
         TEST(equal_value_and_exact_alias_are_safe), TEST(interior_alias_string_setter),
         TEST(interior_alias_generic_setter), TEST(alias_at_terminator_becomes_empty),
         TEST(long_and_unicode_values_are_owned), TEST(replacement_clear_and_reuse_stress),

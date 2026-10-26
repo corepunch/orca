@@ -3,9 +3,9 @@
  *
  * Include this header in a test binary to get allocation tracking.  When the
  * binary is compiled with -DTEST_MEMORY, real replacements for malloc, calloc,
- * realloc, and free are provided that count live allocations.  Because the test
- * binary is linked dynamically against liborca.so, the dynamic linker prefers
- * the definitions here, so liborca allocations are counted too.
+ * realloc, free, and strdup count live allocations. ELF uses executable symbol
+ * interposition; Darwin uses explicit dyld interpose entries so two-level
+ * namespace imports in liborca are counted too.
  *
  * Usage:
  *   1. Call mem_init() at the top of main() before any test code.
@@ -73,16 +73,25 @@ static int s_init_in_progress = 0;
  * dlsym overhead) are served by the real libc but NOT counted. */
 static int s_tracking_active = 0;
 
-/* Resolve the real allocator function pointers via dlsym(RTLD_NEXT).
+/* Resolve the real allocator function pointers via dlsym(RTLD_NEXT) on ELF.
+ * Darwin excludes references from the interposing image itself, so its libc
+ * references reach the originals without a dlsym lookup of a replacement.
  * Safe to call from any intercepted allocator; the recursion guard
  * prevents re-entrancy.  Aborts if dlsym fails (indicates a broken
  * runtime environment where tests cannot run meaningfully). */
 static void init_alloc_funcs(void) {
     s_init_in_progress = 1;
+#ifdef __APPLE__
+    s_real_malloc = malloc;
+    s_real_calloc = calloc;
+    s_real_realloc = realloc;
+    s_real_free = free;
+#else
     s_real_malloc  = (malloc_fn_t)  dlsym(RTLD_NEXT, "malloc");
     s_real_calloc  = (calloc_fn_t)  dlsym(RTLD_NEXT, "calloc");
     s_real_realloc = (realloc_fn_t) dlsym(RTLD_NEXT, "realloc");
     s_real_free    = (free_fn_t)    dlsym(RTLD_NEXT, "free");
+#endif
     s_init_in_progress = 0;
     if (!s_real_malloc || !s_real_calloc || !s_real_realloc || !s_real_free) {
         /* Cannot locate libc allocators — tests cannot run. */
@@ -108,7 +117,13 @@ static void mem_init(void) {
 
 /* ---- replacement allocators ---- */
 
-void *malloc(size_t size) {
+#ifdef __APPLE__
+#define MEM_ALLOCATOR(name) orca_test_##name
+#else
+#define MEM_ALLOCATOR(name) name
+#endif
+
+void *MEM_ALLOCATOR(malloc)(size_t size) {
     if (!s_real_malloc) {
         if (s_init_in_progress) return bootstrap_alloc(size);
         init_alloc_funcs();
@@ -121,7 +136,7 @@ void *malloc(size_t size) {
     return p;
 }
 
-void *calloc(size_t n, size_t size) {
+void *MEM_ALLOCATOR(calloc)(size_t n, size_t size) {
     if (!s_real_calloc) {
         if (s_init_in_progress) {
             /* Called from dlsym — use the bootstrap buffer (zeroed by BSS). */
@@ -138,7 +153,7 @@ void *calloc(size_t n, size_t size) {
     return p;
 }
 
-void *realloc(void *ptr, size_t size) {
+void *MEM_ALLOCATOR(realloc)(void *ptr, size_t size) {
     if (is_bootstrap_ptr(ptr)) {
         /* Bootstrap pointers cannot be passed to the real realloc.
          * Copy to heap; in practice this path is never taken. */
@@ -170,7 +185,7 @@ void *realloc(void *ptr, size_t size) {
     return p;
 }
 
-void free(void *ptr) {
+void MEM_ALLOCATOR(free)(void *ptr) {
     if (!ptr) return;
     if (is_bootstrap_ptr(ptr)) return; /* bootstrap: silently ignore */
     if (!s_real_free) init_alloc_funcs(); /* aborts if dlsym fails */
@@ -183,12 +198,33 @@ void free(void *ptr) {
 /* libc may allocate strdup storage through private malloc-zone entry points
  * (notably on macOS). Route string copies through the tracked allocator so a
  * caller's intercepted free always has a corresponding counted allocation. */
-char *strdup(const char *source) {
+char *MEM_ALLOCATOR(strdup)(const char *source) {
     size_t size = strlen(source) + 1;
-    char *copy = malloc(size);
+    char *copy = MEM_ALLOCATOR(malloc)(size);
     if (copy) memcpy(copy, source, size);
     return copy;
 }
+
+#ifdef __APPLE__
+/* Distinct names keep the replacee references bound to libc. dyld deliberately
+ * leaves calls from this image alone; map the test's own calls explicitly. */
+#define MEM_INTERPOSE(name) \
+    __attribute__((used, section("__DATA,__interpose"))) \
+    static const struct { const void *replacement; const void *replacee; } \
+        s_interpose_##name = { (const void *)orca_test_##name, (const void *)name }
+MEM_INTERPOSE(malloc);
+MEM_INTERPOSE(calloc);
+MEM_INTERPOSE(realloc);
+MEM_INTERPOSE(free);
+MEM_INTERPOSE(strdup);
+#undef MEM_INTERPOSE
+#define malloc orca_test_malloc
+#define calloc orca_test_calloc
+#define realloc orca_test_realloc
+#define free orca_test_free
+#define strdup orca_test_strdup
+#endif
+#undef MEM_ALLOCATOR
 
 /* ---- snapshot / check macros ---- */
 
