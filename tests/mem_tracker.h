@@ -37,12 +37,15 @@
 extern void orca_test_memory_init(void);
 extern long orca_test_memory_snapshot(void);
 extern long orca_test_memory_total(void);
+extern void orca_test_memory_with_autorelease_pool(void (*callback)(void));
+#define MEM_AUTORELEASE_SCOPE(callback) orca_test_memory_with_autorelease_pool(callback)
 /* Existing test summaries read these counters directly. */
 #define s_alloc_count (orca_test_memory_snapshot())
 #define s_alloc_total (orca_test_memory_total())
 #define mem_init orca_test_memory_init
 #define MEM_SNAPSHOT() orca_test_memory_snapshot()
 #else
+#define MEM_AUTORELEASE_SCOPE(callback) (callback)()
 
 /* Small bootstrap buffer used *only* while dlsym() resolves the real
  * allocator pointers.  dlsym itself calls calloc() once internally (on
@@ -256,6 +259,7 @@ MEM_INTERPOSE(strdup);
 #else /* !TEST_MEMORY */
 
 static inline void __attribute__((unused)) mem_init(void) {}
+#define MEM_AUTORELEASE_SCOPE(callback) (callback)()
 #define MEM_SNAPSHOT()             (0L)
 #define MEM_CHECK_LEAK(snap, label) ((void)(snap))
 

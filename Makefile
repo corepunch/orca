@@ -370,8 +370,8 @@ $(EDITOR_PLUGIN_OBJECT): $(EDITOR_PLUGIN_SOURCES) buildlib | directories
 # An injected dylib owns both the interpose tuples and the shared test counter.
 ifeq ($(UNAME_S),Darwin)
 TEST_MEMORY_DYLIB = $(LIBDIR)/liborca_test_memory.dylib
-$(TEST_MEMORY_DYLIB): tests/mem_tracker_darwin.c tests/mem_tracker.h | directories
-	$(Q)$(CC) $(CFLAGS) -dynamiclib tests/mem_tracker_darwin.c -o $@ -Wl,-install_name,$(abspath $(TEST_MEMORY_DYLIB))
+$(TEST_MEMORY_DYLIB): tests/mem_tracker_darwin.m tests/mem_tracker.h | directories
+	$(Q)$(CC) $(CFLAGS) -dynamiclib tests/mem_tracker_darwin.m -framework Foundation -o $@ -Wl,-install_name,$(abspath $(TEST_MEMORY_DYLIB))
 endif
 
 define C_TEST_RULE
