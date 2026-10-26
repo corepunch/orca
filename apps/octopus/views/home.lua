@@ -55,20 +55,29 @@ end
 
 function Home.loadConnect(self, list)
     local session = self.sessionEpoch
-    self.feeds.connect = { loading = true }
-    C.clear(list):addChild(C.text("loading…", { Name = "Loading", FontSize = 22, Foreground = colors.muted }))
+    local feed = self.feeds.connect or {}
+    if feed.loading then return end
+    self.feeds.connect = feed
+    feed.loading = true
+    self.timelineLoading.connect.Visible = true
     self:task(function()
         local items, err = self.client:activity()
-        self.feeds.connect.loading = false
-        if self.sessionEpoch ~= session or self.timelines.connect ~= list then return end
-        C.clear(list)
+        feed.loading = false
+        if self.sessionEpoch ~= session or self.timelines.connect ~= list or self.feeds.connect ~= feed then return end
+        self.timelineLoading.connect.Visible = false
         if not items then
-            list:addChild(C.empty("can't load activity", err.message .. " Use refresh to try again."))
-            self:notice(err.message, true)
-        elseif #items == 0 then
-            list:addChild(C.empty("nothing yet", "When people like, repost or reply to your posts, or follow you, it shows up here."))
+            if not feed.items then
+                C.clear(list):addChild(C.empty("can't load activity", err.message .. " Use refresh to try again."))
+            end
+            if self.currentRoute == "/" then self:notice(err.message, true) end
         else
-            for index, item in ipairs(items) do list:addChild(activityRow(self, item, index)) end
+            feed.items = items
+            C.clear(list)
+            if #items == 0 then
+                list:addChild(C.empty("nothing yet", "When people like, repost or reply to your posts, or follow you, it shows up here."))
+            else
+                for index, item in ipairs(items) do list:addChild(activityRow(self, item, index)) end
+            end
         end
         self:repaint()
     end)
@@ -83,10 +92,8 @@ function Home.load(self, name, more)
     if feed.loading or (more and not feed.cursor) then return end
     feed.loading = true
     local session = self.sessionEpoch
-    if not more then
-        C.clear(list)
-        list:addChild(C.text("loading…", { Name = "Loading", FontSize = 22, Foreground = colors.muted }))
-    end
+    if more then list:addChild(C.loading { Name = "LoadingMore", Height = 64 })
+    else self.timelineLoading[name].Visible = true end
     self:task(function()
         local cursor = more and feed.cursor or nil
         local items, stats, nextCursor = Posts.fetch(self, function()
@@ -96,16 +103,24 @@ function Home.load(self, name, more)
             return Posts.items(posts), #posts == PAGE_SIZE and posts[#posts].id or nil
         end)
         feed.loading = false
-        if self.sessionEpoch ~= session or self.timelines[name] ~= list then return end
-        if not more then C.clear(list) end
-        local loadMore = list:findChild("LoadMore" .. name)
-        if loadMore then loadMore:removeFromParent() end
+        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed then return end
+        self.timelineLoading[name].Visible = false
+        local loadingMore = list:findChild("LoadingMore")
+        if loadingMore then loadingMore:removeFromParent() end
         if not items then
-            list:addChild(C.empty("can't load posts", stats.message .. " Use refresh to try again."))
-            self:notice(stats.message, true)
+            if #feed.items == 0 then
+                C.clear(list):addChild(C.empty("can't load posts", stats.message .. " Use refresh to try again."))
+            end
+            if self.currentRoute == "/" then self:notice(stats.message, true) end
             self:repaint()
             return
         end
+        if not more then
+            C.clear(list)
+            feed.items, feed.stats = {}, {}
+        end
+        local loadMore = list:findChild("LoadMore" .. name)
+        if loadMore then loadMore:removeFromParent() end
         for id, entry in pairs(stats) do feed.stats[id] = entry end
         for _, item in ipairs(items) do feed.items[#feed.items + 1] = item end
         feed.cursor = nextCursor
@@ -120,7 +135,7 @@ function Home.load(self, name, more)
             list:addChild(C.button("load more posts", function() Home.load(self, name, true) end, {
                 Name = "LoadMore" .. name, FontSize = 16 }))
         end
-        self:notice(self.remote and "" or "Offline mock · posts stay in this session")
+        if self.currentRoute == "/" then self:notice(self.remote and "" or "Offline mock · posts stay in this session") end
         self:repaint()
     end)
 end
@@ -149,13 +164,17 @@ function Home.page(self)
     self.pivot = ui.Pivot { Name = "Timeline", Title = "Octopus", Foreground = colors.ink,
         SelectionChanged = function(pivot) Home.select(self, Home.feeds[pivot.SelectedIndex + 1]) end,
     }
-    self.timelines = {}
+    self.timelines, self.timelineLoading = {}, {}
     for _, name in ipairs(Home.feeds) do
         local item = ui.PivotItem { Name = "Feed" .. name, Header = name }
         local list = C.stack({ Name = "Timeline" .. name, Spacing = C.spacing.post, Overflow = "hidden scroll" })
         if name ~= "discover" and not signedIn then list:addChild(guestPrompt(self, name))
         else self.timelines[name] = list end
-        item:addChild(list)
+        local area = ui.Grid()
+        local loading = C.loading { Name = "Loading" .. name, Visible = false }
+        self.timelineLoading[name] = loading
+        area:addChild(list); area:addChild(loading)
+        item:addChild(area)
         self.pivot:addChild(item)
     end
     local grid = ui.Grid { Rows = "1fr 20px", Background = colors.background }

@@ -82,6 +82,14 @@ No contact is required for discovery: exact public usernames are searchable;
 email and phone require a verified identifier and that person's discovery opt-in
 in Profile. Display names are separate from public usernames.
 
+Route constructors attach the shell, navigation and composer before scheduling
+Appwrite work with `orca.async`. Session restoration, inboxes, profiles, contacts,
+members and initial messages show UIKit's centered `ActivityIndicator` while their
+requests yield. Search and navigation remain usable; message loads preserve edits
+to the composer. Retained tabs may finish loading in the background without being
+selected, while session changes and discarded detail screens reject late results.
+Failed first loads offer retry and are distinct from empty conversations.
+
 The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
 [Chat App Design on Behance](https://www.behance.net/gallery/186704313/Chat-App-Design-Dark-UI),
 and [Appetite UI's chat patterns](https://www.appetiteui.com/screens/patterns/chat).

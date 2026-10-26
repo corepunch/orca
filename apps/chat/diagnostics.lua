@@ -102,12 +102,12 @@ function Diagnostics:checkLayout()
     local height = screen.Height
     if not footer or not root or not bar or height <= 0 then return end
     local bottom = root.ActualY + footer.ActualY + footer.ActualHeight
-    local expected = 58 + screen.SafeAreaBottom
+    local expected = 58 + math.max(screen.SafeAreaBottom, screen.KeyboardInsetBottom)
     if math.abs(bottom - height) <= 2 and math.abs(footer.ActualHeight - expected) <= 2 then return end
     self:show(string.format("Chat footer is outside its expected bounds.\n" ..
-        "screen=%.1fx%.1f rootHeight=%.1f footerY=%.1f footerHeight=%.1f barHeight=%.1f safeBottom=%.1f",
+        "screen=%.1fx%.1f rootHeight=%.1f footerY=%.1f footerHeight=%.1f barHeight=%.1f safeBottom=%.1f keyboardInsetBottom=%.1f",
         screen.Width, height, root.ActualHeight, footer.ActualY, footer.ActualHeight,
-        bar.ActualHeight, screen.SafeAreaBottom), "Layout")
+        bar.ActualHeight, screen.SafeAreaBottom, screen.KeyboardInsetBottom), "Layout")
 end
 
 return Diagnostics

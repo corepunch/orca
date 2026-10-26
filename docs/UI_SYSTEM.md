@@ -61,6 +61,35 @@ identifies an ordinary wheel event. Direct producers must send Begin before
 Update, and End or Cancel to finish the sequence. The iOS platform submodule
 and Orca must be rebuilt together for this event contract.
 
+## Loading content
+
+Attach the screen shell and usable controls before starting network work. Use
+`orca.async` or `orca.core.async.run` to fetch data and populate each pending
+content region as its result arrives. A coroutine that waits for every request
+before attaching the screen still leaves the user waiting for that screen.
+Keep existing content during refresh, and check the current request, route and
+session before applying a completion. Failed requests should leave a retry path.
+
+`ActivityIndicator` is UIKit's shared indeterminate loading control, available
+in Lua and XML. It draws twelve fading dots in a circle, inherits `Foreground`,
+and defaults to 32 by 32 points with auto margins for centering in its parent.
+It ignores hit testing. `IsActive=false` hides the dots and stops animation
+while retaining layout; hidden or detached indicators stop animation too.
+Place it in a Grid covering only the pending content region, so navigation and
+other controls remain interactive. Set `Width` and `Height` to change its size.
+
+```lua
+local pending = ui.Grid { IgnoreHitTest = true }
+pending:addChild(ui.ActivityIndicator { Foreground = colors.muted })
+content:addChild(pending)
+orca.async(function()
+    local result, err = service:load()
+    -- Check that this is still the current view/request before updating it.
+    pending:removeFromParent()
+    showResultOrRetry(result, err)
+end)
+```
+
 ## Images and viewport notifications
 
 Load network images asynchronously as their views need them. Apple recommends

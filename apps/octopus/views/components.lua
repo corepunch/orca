@@ -39,6 +39,16 @@ function C.clear(node)
     return node
 end
 
+-- Reserve content space while data is pending; the indicator never captures input.
+function C.loading(props)
+    props = props or {}
+    local name = props.Name or "Loading"
+    props.IgnoreHitTest = true
+    local area = ui.Grid(props)
+    area:addChild(ui.ActivityIndicator { Name = name .. "Indicator", Foreground = colors.dim })
+    return area
+end
+
 function C.icon(name, size, color, props)
     props = props or {}
     props.Source, props.Width, props.Height = ICONS .. name .. ".svg", size or 20, size or 20

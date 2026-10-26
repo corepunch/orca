@@ -26,6 +26,7 @@ local function make(props, text)
     return setmetatable(props, Node)
 end
 package.preload['orca.UIKit'] = function() return setmetatable({}, { __index = function() return make end }) end
+package.preload['orca.UIKit.Footer'] = function() return {} end
 package.preload['orca.system'] = function() return { is_dark_theme = function() return true end } end
 package.preload['Chat/theme'] = function() return dofile('apps/chat/theme.lua') end
 package.preload['Chat/views/components'] = function() return dofile('apps/chat/views/components.lua') end
@@ -57,11 +58,19 @@ end
 function app:avatarPhoto() end
 function app:frame(page) self.screen = page; return page end
 function app:openRoom(room) self.opened = room end
+local pending
+function app:load(work) pending = coroutine.create(work) end
 local screen = Conversations.newRoom(app)
 local function node(name) return assert(screen:findChild(name), name) end
 local function click(name) node(name):send() end
 local function text(name, value) node(name).Text = value end
 assert(node('NewChatActions').Visible and node('Contacts').Visible)
+assert(node('ContactsLoading').parent.Visible and not screen:findChild('Contactalex'),
+    'New message controls must mount before contacts load')
+click('KindGroup')
+assert(coroutine.resume(pending))
+assert(not node('ContactsLoading').parent.Visible and node('Contacts').Visible)
+click('NewChatBack')
 assert(not node('SelectedPeople').Visible and not node('CreateConversation').parent.Visible)
 assert(not node('InvitationSetup').Visible and not node('ConversationVisibility').Visible)
 click('Contactalex')
@@ -113,7 +122,7 @@ text('InviteCode', 'valid'); click('JoinInvite'); assert(app.opened.id == 'invit
 -- Changing flows or signing out while a lookup yields must discard its response.
 onFind = function() text('FindPerson', 'edited while waiting') end
 text('FindPerson', '@alex'); click('FindPeople')
-assert(not screen:findChild('FoundPersonalex'))
+assert(not screen:findChild('FoundPersonalex') and not screen:findChild('DiscoveryLoading'))
 onFind = function() click('KindChannel') end
 text('FindPerson', '@alex'); click('FindPeople')
 assert(not screen:findChild('FoundPersonalex'))

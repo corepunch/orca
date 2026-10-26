@@ -1,4 +1,5 @@
 local ui = require "orca.UIKit"
+local Footer = require "orca.UIKit.Footer"
 local C = require "Chat/views/components"
 local colors = C.colors
 local Conversations = {}
@@ -10,7 +11,7 @@ end
 function Conversations.newRoom(self)
     if not self.client or not self.client:getSession() then return self:home() end
     if self.shell and self.shell:has("New") then self.status = self.newStatus; return self.shell:show("New") end
-    local navigation, epoch = self.navigationEpoch, self.sessionEpoch
+    local epoch = self.sessionEpoch
     local mode, visibility, generation, busy = "direct", "private", 0, false
     local page
     self.newSelection = {}
@@ -46,6 +47,12 @@ function Conversations.newRoom(self)
                 if buttons[i].Name:match("^FoundPerson") then table.remove(buttons, i) end
             end
         end
+    end
+    local function discoveryLoading()
+        local pending = ui.Node2D { Height = 80 }
+        pending:addChild(ui.ActivityIndicator { Name = "DiscoveryLoading", Foreground = colors.muted })
+        results:addChild(pending)
+        return pending
     end
     local function updateSelection()
         local names = {}
@@ -163,9 +170,11 @@ function Conversations.newRoom(self)
         if busy or not active() or mode ~= "direct" and mode ~= "group" then return end
         clearResults(); notice("")
         if not query.Text:match("%S") then return end
-        local request, searched = generation, query.Text
+        local request, searched, pending = generation, query.Text, discoveryLoading()
         local found, err = self.client:findPeople(searched)
-        if not active() or generation ~= request or query.Text ~= searched then return end
+        if self.sessionEpoch ~= epoch or generation ~= request then return end
+        pending:removeFromParent()
+        if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
         if #found == 0 then results:addChild(C.text("No results. Ask them to set a public username in Profile, or enable Find me by email or phone for a verified login detail. You don't need to add a contact first.", {
             Name = "NoPeopleResults", FontSize = 14, Foreground = colors.muted, WordWrap = true })) end
@@ -174,9 +183,11 @@ function Conversations.newRoom(self)
     findChannels = C.iconButton("search", function()
         if busy or mode ~= "channels" or not active() then return end
         clearResults(); notice("")
-        local request, searched = generation, query.Text
+        local request, searched, pending = generation, query.Text, discoveryLoading()
         local found, err = self.client:findChannels(searched)
-        if not active() or generation ~= request or query.Text ~= searched then return end
+        if self.sessionEpoch ~= epoch or generation ~= request then return end
+        pending:removeFromParent()
+        if not active() or query.Text ~= searched then return end
         if not found then notice(err.message, true); return end
         if #found == 0 then results:addChild(C.text("No channels found.", { FontSize = 14, Foreground = colors.muted })) end
         for _, channel in ipairs(found) do
@@ -195,36 +206,52 @@ function Conversations.newRoom(self)
     query.Submit = function()
         if mode == "channels" then findChannels:send("Node.LeftButtonUp") else findPeople:send("Node.LeftButtonUp") end
     end
-    local contacts, contactsError = self.client:listContacts()
-    if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return self.screen end
     people:addChild(C.eyebrow("CONTACTS"))
-    if contactsError then people:addChild(C.text(contactsError.message, { WordWrap = true, Foreground = colors.error }))
-    elseif #contacts == 0 then people:addChild(C.text("No contacts yet. Search for someone by their exact username to start a chat.", { FontSize = 14, WordWrap = true, Foreground = colors.dim }))
-    else
-        table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)
-        for _, person in ipairs(contacts) do addPerson(people, person, "Contact") end
-    end
     local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
         backButton, heading, searchRow, actions, status, results, people,
         selected, nextButton, setup, invitation,
     })
     changeMode("direct")
     page = C.page("new message", body)
-    return self:frame(page, "New")
+    local screen = self:frame(page, "New")
+    local shell = self.shell
+    local pending = ui.Node2D { Height = 80 }
+    pending:addChild(ui.ActivityIndicator { Name = "ContactsLoading", Foreground = colors.muted })
+    people:addChild(pending)
+    local function loadContacts()
+        pending.Visible = true
+        self:load(function()
+            if self.sessionEpoch ~= epoch or self.shell ~= shell then return end
+            local contacts, err = self.client:listContacts()
+            if self.sessionEpoch ~= epoch or self.shell ~= shell then return end
+            if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
+            pending.Visible = false
+            if err then
+                notice(err.message, true)
+                local retry
+                retry = C.button("Retry contacts", function() retry:removeFromParent(); loadContacts() end, { Name = "RetryContacts" })
+                people:addChild(retry)
+            elseif #contacts == 0 then
+                people:addChild(C.text("No contacts yet. Search for someone by their exact username to start a chat.", {
+                    FontSize = 14, WordWrap = true, Foreground = colors.dim }))
+            else
+                table.sort(contacts, function(a, b) return publicName(a):lower() < publicName(b):lower() end)
+                for _, person in ipairs(contacts) do addPerson(people, person, "Contact") end
+            end
+        end)
+    end
+    loadContacts()
+    return screen
 end
 
-function Conversations.details(self)
-    if not self.room then return self:home() end
-    local room, navigation, epoch = self.room, self.navigationEpoch, self.sessionEpoch
-    local members, err = self.client:listMembers(room.id)
-    if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return self.screen end
+local function detailsBody(self, room, members)
     local canManage = room.role == "owner" or room.role == "admin"
     local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
         C.avatar(room.name, 72, room.id, self, room.kind == "direct" and room.peer_id or nil),
         C.badge((room.kind or "group"):upper(), { Width = 100, Background = colors.soft, Foreground = colors.accentText }),
     })
-    self.status = C.text(err and err.message or (room.kind == "channel" and "Only owners and admins can publish here." or "A space for everyone in this conversation."), {
-        WordWrap = true, FontSize = 14, Foreground = err and colors.error or colors.muted })
+    self.status = C.text((room.kind == "channel" and "Only owners and admins can publish here." or "A space for everyone in this conversation."), {
+        WordWrap = true, FontSize = 14, Foreground = colors.muted })
     body:addChild(self.status)
     body:addChild(C.eyebrow("PEOPLE"))
     for _, member in ipairs(members or {}) do
@@ -276,10 +303,20 @@ function Conversations.details(self)
             inviteField.Text, inviteField.Visible = "", false
         end, { Name = "RevokeInvite", Foreground = colors.error }))
     end
-    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
-    grid:addChild(C.page(room.name, body))
-    grid:addChild(C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } }))
-    return self:frame(grid)
+    return body
+end
+
+function Conversations.details(self)
+    if not self.room then return self:home() end
+    local room = self.room
+    local screen = self:loadingPage(room.name, nil, function() return self.client:listMembers(room.id) end,
+        function(members) return detailsBody(self, room, members) end)
+    local content = screen:getFirstChild()
+    content:removeFromParent()
+    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
+    footer:addChild(C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } }))
+    Footer.layout(screen, content, footer, { Background = colors.background, Foreground = colors.ink })
+    return screen
 end
 
 return Conversations

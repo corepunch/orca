@@ -761,6 +761,7 @@
         <property name="SafeAreaTop" type="float">Top safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
         <property name="SafeAreaRight" type="float">Right safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
         <property name="SafeAreaBottom" type="float">Bottom safe-area inset in logical pixels. Refreshed from iOS for CanResize screens; writable for other screens and tests.</property>
+        <property name="KeyboardInsetBottom" type="float">Bottom occlusion from a docked keyboard in logical pixels, zero when hidden or floating. Does not change the drawable dimensions or safe-area insets. Refreshed from iOS for CanResize screens; writable for other screens and tests. RespectSafeArea avoids the larger of this inset and SafeAreaBottom.</property>
       </properties>
       <fields>
         <field name="_rt" type="Texture" pointer="true">Internal render target for the screen</field>
@@ -899,6 +900,25 @@
       <fields>
         <field name="_fetch" type="void" pointer="true">In-flight HTTP fetch handle (private)</field>
         <field name="_src_object" type="void" pointer="true">Texture object loaded from HTTP data (private)</field>
+      </fields>
+    </class>
+    <class name="ActivityIndicator" parent="Node2D">
+      <summary>Centered, noninteractive circular indicator for indeterminate loading</summary>
+      <details>A ring of twelve fading dots advances while active and visible. Defaults to 32 by 32 points with auto margins to center within its allocated area. Foreground controls its color. Place it in the content region being loaded so surrounding controls remain usable. Set IsActive=false to stop and hide the dots without changing layout.</details>
+      <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Create"/>
+        <handle message="Object.Animate"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="Node2D.MeasureOverride"/>
+        <handle message="Node2D.ForegroundContent"/>
+        <handle message="Node2D.DrawForeground"/>
+      </handles>
+      <properties>
+        <property name="IsActive" type="bool" default="true">Animate and display the indicator while visible</property>
+      </properties>
+      <fields>
+        <field name="_step" type="uint32">Last animation step, in 80-millisecond intervals</field>
       </fields>
     </class>
     <class name="VectorView" parent="Node2D">

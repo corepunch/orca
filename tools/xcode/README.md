@@ -44,6 +44,21 @@ Commit each `.xcodeproj`, its generated Info plist and shared schemes. User
 settings, DerivedData, certificates, provisioning profiles and build products
 remain local.
 
+## Launch screens
+
+Place `LaunchScreen.storyboard` in the app folder and regenerate its project.
+The generator adds it to Xcode's native resources and sets
+`UILaunchStoryboardName`; apps without a storyboard retain the default launch
+screen. Any `Assets.xcassets` catalog is compiled, even without an app icon.
+
+Chat and Octopus use a centered white symbol in a 64-point image view on a
+solid full-screen background matching the symbol's accent color: blue for
+Chat and teal for Octopus, in both light and dark appearance.
+The layout adapts to iPhone, iPad and rotation. Launch screens contain no text,
+animation or artificial delay; iOS replaces them when the app is ready. Edit
+the app's `LaunchMark.imageset` and `LaunchBackground.colorset` to change the
+symbol or colors. These native screens apply to Xcode builds.
+
 ## App icons
 
 Place an iOS icon in `Assets.xcassets/AppIcon.appiconset` inside the app folder.
