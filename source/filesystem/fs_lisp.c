@@ -181,6 +181,9 @@ lisp_expression(struct lisp_reader *r, struct lisp_value *v, xmlBufferPtr b)
   if (!fn) { lisp_error(r, "unknown binding function"); return FALSE; }
   struct lisp_value *arg = v->items->next;
   if (!strcmp(fn, "bind")) {
+    if (arg && arg->next && arg->next->kind == LISP_ASSIGN) {
+      lisp_error(r, "binding options apply only when bind is a property's whole value"); return FALSE;
+    }
     if (!arg || arg->next || arg->kind != LISP_STRING || !*arg->text ||
         isdigit((unsigned char)*arg->text) || isspace((unsigned char)*arg->text) || strpbrk(arg->text, "{}\n\r")) {
       lisp_error(r, "bind expects one quoted property path"); return FALSE;
@@ -214,6 +217,33 @@ lisp_expression(struct lisp_reader *r, struct lisp_value *v, xmlBufferPtr b)
 
 static xmlNodePtr lisp_tree(struct lisp_reader *r, struct lisp_value *v);
 
+/* (bind "Path" Mode=TwoWay Enabled=false) as a property's whole value lowers to
+   a <Binding> node, which carries the mode and enabled state to the builder. */
+static void
+lisp_binding(struct lisp_reader *r, xmlNodePtr node, const char *target,
+             struct lisp_value *path, struct lisp_value *option)
+{
+  if (!path || path->kind != LISP_STRING || !*path->text || strpbrk(path->text, "{}\n\r")) {
+    lisp_error(r, "bind expects one quoted property path"); return;
+  }
+  xmlNodePtr binding = xmlNewChild(node, NULL, XMLSTR("Binding"), NULL);
+  if (!binding || !xmlSetProp(binding, XMLSTR("Target"), XMLSTR(target)) ||
+      !xmlSetProp(binding, XMLSTR("Expression"), XMLSTR(path->text))) {
+    lisp_error(r, "out of memory"); return;
+  }
+  for (; option && !r->failed; option = option->next) {
+    struct lisp_value *value = option->kind == LISP_ASSIGN ? option->items : NULL;
+    if (!value || value->kind == LISP_LIST) {
+      lisp_error(r, "bind options must be Name=value pairs"); return;
+    }
+    if (strcmp(option->text, "Mode") && strcmp(option->text, "Enabled")) {
+      lisp_error(r, "bind supports only the Mode and Enabled options"); return;
+    }
+    if (xmlHasProp(binding, XMLSTR(option->text))) { lisp_error(r, "duplicate bind option"); return; }
+    xmlSetProp(binding, XMLSTR(option->text), XMLSTR(value->text));
+  }
+}
+
 static void
 lisp_property(struct lisp_reader *r, xmlNodePtr node, struct lisp_value *v)
 {
@@ -231,6 +261,11 @@ lisp_property(struct lisp_reader *r, xmlNodePtr node, struct lisp_value *v)
     return;
   }
   const char *head = value->items->text;
+  struct lisp_value *option = value->items->next ? value->items->next->next : NULL;
+  if (!strcasecmp(head, "bind") && option && option->kind == LISP_ASSIGN) {
+    lisp_binding(r, node, v->text, value->items->next, option);
+    return;
+  }
   if (lisp_function(head)) {
     xmlBufferPtr expr = xmlBufferCreate();
     if (!expr) { lisp_error(r, "out of memory"); return; }

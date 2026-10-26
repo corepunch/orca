@@ -132,3 +132,29 @@ for i = 1, 5 do
 end
 test.expect_eq(core.objectCount(), list_baseline, 'typed list rows and selection released after GC')
 print('PASS: typed ListBox datasource and selection lifetime')
+
+-- bind options carry the binding mode and enabled state only where bind is a
+-- property's whole value; elsewhere they are rejected.
+local form = load([[(StackView DataContext=(LispTestRow Name="Draft" Title="draft")
+  (Input Name="Edit" Text=(bind "DataContext/Title" Mode=TwoWay))
+  (Input Name="Off" Text="kept" TextRun.Text=(bind "DataContext/Title" Mode=TwoWay Enabled=false))
+  (ImageView Name="Shown" Node.Visible=(bool "image.png"))
+  (ImageView Name="Hidden" Node.Visible=(bool "")))]])
+core.flushQueue()
+core.advanceFrame()
+core.runAllPrograms(form)
+test.expect_eq(form:findChild('Edit').Text, 'draft', 'Mode=TwoWay initializes from the model')
+test.expect_eq(form:findChild('Off').Text, 'kept', 'Enabled=false does not pull')
+form:findChild('Edit').Text = 'Edited'
+core.flushQueue()
+test.expect_eq(form.DataContext.Title, 'Edited', 'Mode=TwoWay writes edits back')
+test.expect_eq(form:findChild('Shown').Visible, true, 'bool of a non-empty string is true')
+test.expect_eq(form:findChild('Hidden').Visible, false, 'bool of an empty string is false')
+for _, source in ipairs {
+  '(Node2D Width=(+ (bind "Height" Mode=TwoWay) 1))',
+  '(Input Text=(bind "DataContext/Name" Source="x"))',
+  '(Input Text=(bind "DataContext/Name" Mode=TwoWay Mode=OneWay))',
+} do
+  test.expect(filesystem.loadObjectFromLispString(source) == nil, 'rejects ' .. source)
+end
+print('PASS: bind modes, enabled state and string truthiness')

@@ -1,4 +1,4 @@
--- XML-defined draft state and form controls share the core property binding
+-- Scene-defined draft state and form controls share the core property binding
 -- mechanism. Controllers do not copy values out of named controls.
 local orca = require "orca"
 orca.init()
@@ -39,7 +39,7 @@ local schema = [[<Schema><Entity Name="MvvmFormDraft">
     <Column Name="Secret" Type="string"/>
     <Column Name="OptIn" Type="bool"/>
 </Entity></Schema>]]
-local seed = assert(fs.loadObjectFromXmlStringWithSchema(
+local seed = assert(fs.loadXmlDataStringWithSchema(
     '<MvvmFormDraft Email="reader@example.invalid" Title="XML draft" Secret="initial secret" OptIn="true"/>', schema))
 local function draft(email, title, secret, optIn)
     local value = ui.Node2D {}
@@ -49,14 +49,15 @@ local function draft(email, title, secret, optIn)
     return value
 end
 
-scenario("XML form initialization, editor writeback and one-way display", function()
-    local form = assert(fs.loadObjectFromXmlString([[<StackView>
-        <Input Name="EmailEditor" Text="control default"><Binding Target="TextRun.Text" Mode="TwoWay" Expression="DataContext/Email"/></Input>
-        <Input Name="SecretEditor" Type="Password"><Binding Target="TextRun.Text" Mode="TwoWay">DataContext/Secret</Binding></Input>
-        <Input Name="OptInEditor" Type="Checkbox"><Binding Target="Input.Checked" Mode="TwoWay" Expression="DataContext/OptIn"/></Input>
-        <TextBlock Name="EmailDisplay"><Binding Target="TextRun.Text" Mode="OneWay">DataContext/Email</Binding></TextBlock>
-        <Input Name="DisabledEditor" Text="disabled default"><Binding Target="TextRun.Text" Mode="TwoWay" Enabled="false">DataContext/Title</Binding></Input>
-    </StackView>]]))
+scenario("Lisp form initialization, editor writeback and one-way display", function()
+    local form = assert(fs.loadObjectFromLispString([[(StackView
+        (Input Name="EmailEditor" Text="control default"
+          (Binding Target="TextRun.Text" Mode="TwoWay" Expression="DataContext/Email"))
+        (Input Name="SecretEditor" Type="Password" (Binding Target="TextRun.Text" Mode="TwoWay" "DataContext/Secret"))
+        (Input Name="OptInEditor" Type="Checkbox" (Binding Target="Input.Checked" Mode="TwoWay" Expression="DataContext/OptIn"))
+        (TextBlock Name="EmailDisplay" (Binding Target="TextRun.Text" Mode="OneWay" "DataContext/Email"))
+        (Input Name="DisabledEditor" Text="disabled default"
+          (Binding Target="TextRun.Text" Mode="TwoWay" Enabled="false" "DataContext/Title")))]]))
     form.DataContext = seed
     local email, secret = form:findChild("EmailEditor"), form:findChild("SecretEditor")
     local optIn, display = form:findChild("OptInEditor"), form:findChild("EmailDisplay")
@@ -66,10 +67,10 @@ scenario("XML form initialization, editor writeback and one-way display", functi
     equal(optIn.Checked, true, "Typed bool data initializes a checkbox")
     equal(display.Text, seed.Email, "Read-only display shares the same draft")
     local disabled = form:findChild("DisabledEditor")
-    equal(disabled.Text, "disabled default", "XML Enabled=false prevents initial synchronization")
+    equal(disabled.Text, "disabled default", "Enabled=false prevents initial synchronization")
     disabled.Text = "disabled edit"
     core.flushQueue()
-    equal(seed.Title, "XML draft", "Disabled XML bindings cannot write back")
+    equal(seed.Title, "XML draft", "Disabled bindings cannot write back")
     email.Text, secret.Text = "edited@example.invalid", "typed secret 密碼🙂"
     core.flushQueue()
     equal(seed.Email, "edited@example.invalid", "Text edits write back without controller copying")
@@ -89,33 +90,32 @@ scenario("XML form initialization, editor writeback and one-way display", functi
     equal(optIn.Checked, true, "Model bool changes update the checkbox")
 end)
 
-scenario("XML binding shorthand with positional and named paths", function()
-    local form = assert(fs.loadObjectFromXmlString([[<StackView>
-        <Input Name="Positional" Text="{Binding DataContext/Email, Mode=TwoWay}"/>
-        <Input Name="NamedPath" Text="{Binding Path=DataContext/Title, Mode=TwoWay}"/>
-        <Input Name="WriteOnly" Text="{Binding Path=DataContext/Secret, Mode=OneWayToSource}"/>
-        <TextBlock Name="DefaultDisplay" Text="{Binding DataContext/Email}"/>
-    </StackView>]]))
+scenario("bind shorthand with modes on property values", function()
+    local form = assert(fs.loadObjectFromLispString([[(StackView
+        (Input Name="Positional" Text=(bind "DataContext/Email" Mode=TwoWay))
+        (Input Name="NamedPath" Text=(bind "DataContext/Title" Mode="TwoWay"))
+        (Input Name="WriteOnly" Text=(bind "DataContext/Secret" Mode=OneWayToSource))
+        (TextBlock Name="DefaultDisplay" Text=(bind "DataContext/Email")))]]))
     local model = draft("email from draft", "title from draft", "keep secret")
     form.DataContext = model
     evaluate(form)
     local positional, named = form:findChild("Positional"), form:findChild("NamedPath")
     local writer, display = form:findChild("WriteOnly"), form:findChild("DefaultDisplay")
-    equal(positional.Text, "email from draft", "Attribute shorthand resolves its positional path")
-    equal(named.Text, "title from draft", "Path= shorthand resolves the same source mechanism")
+    equal(positional.Text, "email from draft", "bind with a mode resolves its path")
+    equal(named.Text, "title from draft", "A quoted mode name resolves the same source mechanism")
     equal(display.Text, model.Email, "Unspecified mode remains one-way display binding")
     equal(model.Secret, "keep secret", "OneWayToSource shorthand does not overwrite model initialization")
     positional.Text, named.Text, writer.Text = "email edited", "title edited", "secret edited"
     core.flushQueue()
-    equal(model.Email, "email edited", "Positional shorthand enables writeback")
-    equal(model.Title, "title edited", "Named path shorthand enables writeback")
+    equal(model.Email, "email edited", "bind Mode=TwoWay enables writeback")
+    equal(model.Title, "title edited", "A quoted TwoWay mode enables writeback")
     equal(model.Secret, "secret edited", "OneWayToSource shorthand writes actual edits")
     display.Text = "display override"
     core.flushQueue()
     equal(model.Email, "email edited", "Default shorthand cannot write back")
 end)
 
-scenario("XML save and reload preserve binding modes and enabled state", function()
+scenario("Lisp save and reload preserve binding modes and enabled state", function()
     local original = ui.StackView {}
     local editor = ui.Input { Name = "EditRoundtrip" }
     local writer = ui.Input { Name = "WriteRoundtrip", Text = "writer initial" }
@@ -125,12 +125,12 @@ scenario("XML save and reload preserve binding modes and enabled state", functio
     bind(writer, "TextRun.Text", "{DataContext/Secret}", "OneWayToSource")
     check(disabled:attachPropertyProgram("TextRun.Text", "{DataContext/Title}", "TwoWay", false),
         "Disabled TwoWay binding can retain its expression for serialization")
-    local xml = assert(fs.serializeObjectToXmlString(original))
-    check(xml:find('Mode="TwoWay"', 1, true), "Serialized binding includes TwoWay mode")
-    check(xml:find('Mode="OneWayToSource"', 1, true), "Serialized binding includes write-only mode")
-    check(xml:find('Enabled="false"', 1, true), "Serialized binding includes the disabled state")
-    local restored = assert(fs.loadObjectFromXmlString(xml))
-    original, xml = nil, nil
+    local lisp = assert(fs.serializeObjectToLispString(original))
+    check(lisp:find('Mode="TwoWay"', 1, true), "Serialized binding includes TwoWay mode")
+    check(lisp:find('Mode="OneWayToSource"', 1, true), "Serialized binding includes write-only mode")
+    check(lisp:find('Enabled="false"', 1, true), "Serialized binding includes the disabled state")
+    local restored = assert(fs.loadObjectFromLispString(lisp))
+    original, lisp = nil, nil
     collect()
     local model = draft("restored email", "restored title", "restored secret")
     restored.DataContext = model
@@ -197,9 +197,8 @@ scenario("native keyboard edits update the draft", function()
 end)
 
 scenario("OneWayToSource does not pull or erase model initialization", function()
-    local form = assert(fs.loadObjectFromXmlString([[<StackView>
-        <Input Name="Writer" Text="authored input"><Binding Target="TextRun.Text" Mode="OneWayToSource">DataContext/Email</Binding></Input>
-    </StackView>]]))
+    local form = assert(fs.loadObjectFromLispString([[(StackView
+        (Input Name="Writer" Text="authored input" (Binding Target="TextRun.Text" Mode="OneWayToSource" "DataContext/Email")))]]))
     local model = draft("keep model", "", "", false)
     form.DataContext = model
     local writer = form:findChild("Writer")

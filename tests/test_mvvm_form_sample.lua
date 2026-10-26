@@ -57,4 +57,4 @@ click("Cancel")
 assert(control("DisplayName").Text == "Saved name")
 app.form:UpdateLayout(390, 844)
 if native then app.form:send("Screen.RenderScreen", { width = 390, height = 844 }) end
-print("PASS: XML MVVM sample loads typed data, edits only its draft, validates Save, and discards changes through real buttons")
+print("PASS: MVVM sample loads typed data, edits only its draft, validates Save, and discards changes through real buttons")

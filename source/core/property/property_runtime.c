@@ -352,7 +352,16 @@ OPERATOR(CLAMP, fmax(v[0], fmin(v[1], v[2])));
 OPERATOR(LINEARSTEP, fmax(0, fmin(1, (v[2] - v[0]) / (v[1] - v[0]))));
 OPERATOR(MIX, (v[1] - v[0]) * v[2] + v[0]);
 OPERATOR(SCALE, fmax(0, fmin(1, (v[2] - v[0]) / (v[1] - v[0]))));
-OPERATOR(BOOL, v[0] != 0 ? 1 : 0);
+OPERATOR(BOOL_NUMBER, v[0] != 0 ? 1 : 0);
+/* A string is true when it is non-empty, as in IF. The generic operator would
+   type the result as a string and write a float into its pointer. */
+tok_op(BOOL) {
+  if (regs[0].type != kDataTypeString) return op_BOOL_NUMBER(token, regs, object, output);
+  const char *s = VM_REG_STR(&regs[0]);
+  InitOutput(output, kDataTypeInt, sizeof(float));
+  output->value[0] = s && *s ? 1 : 0;
+  return TRUE;
+}
 OPERATOR(AND, v[0] != 0 && v[1] != 0);
 OPERATOR(OR, v[0] != 0 || v[1] != 0);
 OPERATOR(ABS, fabs(v[0]));
