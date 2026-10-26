@@ -154,6 +154,39 @@ local function test_pivot_drag_reuse()
   print("PASS: test_pivot_drag_reuse")
 end
 
+local function test_pivot_header_metrics()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local pivot = screen + ui.Pivot {}
+  for _, name in ipairs { "All", "Unread" } do
+    local _ = pivot + ui.PivotItem { Header = name }
+  end
+  layout(screen)
+  local headers = children(pivot, "PivotHeaderItem")
+  headers[1].Width, headers[2].Width = 40, 80
+  layout(screen)
+  headers = children(pivot, "PivotHeaderItem")
+  test.expect_eq(#headers, 5, "Unequal header widths repeat until the strip is filled")
+  for i, x in ipairs { 20, 78, 176, 234, 332 } do
+    test.expect_eq(headers[i].ActualX, x, "Repeated headers use the source width and spacing")
+    test.expect_eq(headers[i].Text, i % 2 == 1 and "all" or "unread", "Copies keep their source text")
+  end
+  local spare = headers[5]
+  headers[1].Width = 100
+  layout(screen)
+  test.expect_eq(headers[3].ActualX, 236, "Changing a source width updates repeated positions")
+  test.expect_eq(headers[3].ActualWidth, 100, "Copies use fresh source metrics")
+  test.expect(not spare.Visible, "A wider strip hides spare copies")
+  screen.Width = 250
+  layout(screen)
+  test.expect(headers[3].Visible and not headers[4].Visible, "Resizing updates the visible repeat count")
+  screen.Width = 390
+  headers[1].Width = 40
+  layout(screen)
+  test.expect(spare.Visible, "Restoring the width reuses the spare copy")
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), 5, "Metric changes do not grow the copy pool")
+  print("PASS: test_pivot_header_metrics")
+end
+
 local function test_application_bar()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local grid = screen + ui.Grid { Rows = "1fr 58px" }
@@ -293,6 +326,7 @@ end
 
 test_pivot()
 test_pivot_drag_reuse()
+test_pivot_header_metrics()
 test_application_bar()
 test_panorama()
 test_xml()
