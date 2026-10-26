@@ -97,5 +97,37 @@ loader:watch(hidden, "hidden", "Hidden")
 app.screen:UpdateLayout(200, 450)
 loader:loadVisible()
 assert(not calls.hidden)
+-- Thread/profile routes temporarily replace the current screen while the shell
+-- keeps its timeline. Those offscreen registrations must survive the visit.
+app.shell = { screen = app.screen }
+app.screen = ui.Screen { Width = 200, Height = 450, ResizeMode = "NoResize" }
+loader:loadVisible()
+assert(loader.watching[hidden], "Retained shell photos must survive navigation to another screen")
+app.screen = app.shell.screen
+-- Scene ownership does not keep a Lua userdata wrapper alive. A photo built
+-- without an external Lua frame reference must survive GC before its first paint.
+app.sessionEpoch = app.sessionEpoch + 1
+local gcList = ui.StackView { Overflow = "hidden scroll" }
+app.screen:addChild(gcList)
+do
+    local frame = ui.Grid { Name = "CollectedFrame", Height = 100 }
+    gcList:addChild(frame)
+    loader:watch(frame, "gc-photo", "AfterGC")
+end
+collectgarbage("collect")
+collectgarbage("collect")
+app.screen:UpdateLayout(200, 450)
+loader:loadVisible()
+finishWorkers()
+assert(calls["gc-photo"] == 1 and gcList:findChild("CollectedFrame"):findChild("AfterGC"),
+    "Native-owned visible photos must remain registered across Lua GC")
+-- Detached frames and old sessions must release their strong registrations.
+local detached = ui.Grid { Height = 100 }
+gcList:addChild(detached)
+loader:watch(detached, "detached", "Detached")
+detached:removeFromParent()
+loader:loadVisible()
+assert(not loader.watching[detached] and not calls.detached)
+assert(next(loader.watching) == nil, "Completed, detached and stale frames must leave the registry")
 app.media:clear()
 print("PASS: viewport photo loading, bounded concurrency, deduplication, native resources, cache, retry and stale sessions")

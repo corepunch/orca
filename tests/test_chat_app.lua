@@ -49,6 +49,8 @@ assert(home:findChild("Room1", true), "Conversation list must be rendered")
 home:UpdateLayout(390, 844)
 assert(home:getFirstChild().ActualHeight >= 843, "App content must fill the portrait viewport")
 local firstRoom = home:findChild("Room1", true)
+local firstAvatar = assert(firstRoom:findChild("AvatarPhoto", true), "Bundled demo portraits must appear in chat rows")
+assert(firstAvatar.Source and firstAvatar.Source.Width > 100, "Chat portraits must resolve real image resources")
 assert(firstRoom.ActualWidth > 300 and firstRoom.ActualHeight > 60, "Conversation rows need usable hit areas")
 assert(home.StyleSheet, "The shared interactive stylesheet must load")
 local savedPlatform = PLATFORM

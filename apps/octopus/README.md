@@ -152,3 +152,11 @@ sign-up and service errors.
 The photo suite covers viewport loading, concurrent requests, cache reuse,
 retries and stale sessions, including native image resources. None of these
 suites contacts the network.
+
+## Demo portraits
+
+The shared [portrait library](../../demo-assets/profiles/README.md) contains 64
+generated JPGs, including teens and adults approximately ages 14–60, plus the
+original grid, splitter instructions and Appwrite file IDs. This app bundles
+portraits for its offline fixture identities. Live seed profiles use the same
+public `profiles.avatarId` data in both Chat and Octopus.
