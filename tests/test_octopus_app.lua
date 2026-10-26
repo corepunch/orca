@@ -58,11 +58,16 @@ assert(find(app, "Feedhome") and find(app, "Feedconnect") and find(app, "Feeddis
 assert(app.pivot.SelectedIndex == 2, "Guests start on discover")
 assert(find(app, "Postp-reef") and find(app, "Postp-quote"), "The discover timeline lists posts for guests")
 assert(not app.media:path("f-reef"), "Building the timeline must not fetch offscreen photos")
+collectgarbage("collect")
+collectgarbage("collect")
 home:UpdateLayout(390, 844)
 app.photos:loadVisible()
 drain(app)
 assert(find(app, "Imagep-reef").Src == app.media:path("f-reef"), "Visible photo posts load their image")
 assert(find(app, "Imagep-reef").Source, "Downloaded photos must resolve a native image resource")
+local profilePhoto = assert(find(app, "Postp-reef"):findChild("AvatarPhoto", true),
+    "Bundled demo portraits must appear beside Octopus posts")
+assert(profilePhoto.Source and profilePhoto.Source.Width > 100, "Octopus portraits must resolve real image resources")
 home:UpdateLayout(390, 844)
 local card = find(app, "Postp-small")
 assert(card.ActualWidth > 300 and card.ActualHeight > 100, "Cards need a usable size: "
@@ -70,6 +75,27 @@ assert(card.ActualWidth > 300 and card.ActualHeight > 100, "Cards need a usable 
 assert(find(app, "Tagsoftware").ActualWidth > 40, "Tags need hit areas")
 assert(find(app, "SignInhome") and find(app, "SignInconnect"), "Home and connect ask guests to sign in")
 assert(find(app, "AppBarHome").IsEnabled == false and find(app, "AppBarSignIn"), "Guests get sign-in in the menu")
+
+-- Both apps use the shared footer, including changing native safe insets.
+local footer = find(app, "AppBarFooter")
+local bar = find(app, "AppBar")
+home.SafeAreaTop, home.SafeAreaBottom = 59, 34
+home.SafeAreaLeft, home.SafeAreaRight = 12, 18
+core.advanceFrame()
+core.runAllPrograms(home)
+home:UpdateLayout(390, 844)
+assert(not home.RespectSafeArea and home:getFirstChild().PaddingTop == 59)
+assert(footer.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1)
+assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
+    "Octopus chrome must fill the area beneath its bottom bar")
+assert(math.abs(footer.ActualY + bar.ActualY + bar.ActualHeight - 810) < 1,
+    "Octopus bottom controls must stay above the home gesture")
+home.SafeAreaTop, home.SafeAreaBottom = 0, 0
+home.SafeAreaLeft, home.SafeAreaRight = 0, 0
+core.advanceFrame()
+core.runAllPrograms(home)
+home:UpdateLayout(390, 844)
+assert(footer.PaddingBottom == 0 and math.abs(footer.ActualHeight - 58) < 1)
 
 -- Guests can read a post and its comments, but writing asks them to sign in.
 click(app, "Openp-hello")
@@ -193,11 +219,13 @@ click(app, "SaveProfile")
 assert(find(app, "ProfileBio"):getTextContent() == "Testing the phone app")
 assert(find(app, "Countposts"):getTextContent() == "2")
 
--- A new profile photo replaces the initials, on the profile and on posts.
+-- A new profile photo replaces the bundled portrait, on the profile and posts.
 local photoBytes = assert(app.client:getImage("f-reef"))
+local previousPhoto = assert(find(app, "ProfileAvatar"):findChild("AvatarPhoto", true)).Src
 app.media.pick = function() return nil, { code = "cancelled", message = "Cancelled" } end
 click(app, "ChangePhoto")
-assert(not find(app, "ProfileAvatar"):findChild("AvatarPhoto", true), "Cancelling keeps the current photo")
+assert(find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == previousPhoto,
+    "Cancelling keeps the current photo")
 app.media.pick = function() return { jpeg = photoBytes } end
 click(app, "ChangePhoto")
 local adaPhoto = app.media:path(assert(app.client:getProfile("u-ada").avatarId))
@@ -333,12 +361,18 @@ assert(writer.currentRoute == "/write" and find(writer, "WriteStatus"):getTextCo
     and not find(writer, "Publish").IgnoreHitTest, "Upload failures keep the complete draft and allow retry")
 writer.client.uploadImage = upload
 click(writer, "Publish")
+writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
+writer.photos:loadVisible()
+drain(writer)
 assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "Image" .. writer.post.id))
 click(writer, "BackFromPost")
 click(writer, "AppBarWrite")
 click(writer, "Kindquote")
 assert(find(writer, "QuoteText").Text == "Stay curious." and isShown(find(writer, "QuotePhotoPreview")))
 click(writer, "Publish")
+writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
+writer.photos:loadVisible()
+drain(writer)
 assert(writer.post.postType == "quote" and writer.post.quoteSource == "A friend" and writer.post.userText == "A good reminder."
     and writer.post.imageId and find(writer, "Image" .. writer.post.id), "Quote photos are published and displayed")
 

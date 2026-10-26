@@ -117,6 +117,27 @@ scale consistently. Reserve fixed sizing for intentional constraints such as
 icons and control heights. Prefer container layout over coordinate offsets.
 Test narrow and resized windows before depending on one screenshot's bounds.
 
+For a Lua screen with bottom chrome, use the shared footer pattern by default:
+
+```lua
+local Footer = require "orca.UIKit.Footer"
+local footer = Footer { Rows = "58px", Background = colors.chrome }
+footer:addChild(applicationBar)
+Footer.layout(screen, pageContent, footer, { Background = colors.background })
+```
+
+`Footer` constructs a native `Grid`, so its rows, columns and children use the
+normal grid layout. It binds bottom padding to the containing screen's system
+inset. `Footer.layout` installs an `1fr auto` content/footer layout and owns the
+screen's safe-area policy: content avoids top and side insets, while the footer
+background extends through the home-indicator area. Keep the footer's content
+height in its rows, not in `Height` or a fixed parent row; the bottom inset adds
+to that height. Insets update through bindings on rotation and resizing, and
+zero-inset desktop windows need no special case. Chat and Octopus use this same
+component. Custom edge-to-edge layouts can instead place `Footer` in their own
+auto row with `Screen.RespectSafeArea = false`, taking responsibility for the
+remaining safe edges.
+
 For repeating items, bind layout values that represent data rather than
 creating `.indent-1`, `.indent-2`, and similar classes:
 

@@ -5,10 +5,9 @@ local C = require "Octopus/views/components"
 local Loader = {}
 Loader.__index = Loader
 local MAX_ACTIVE = 2
-local function watchers() return setmetatable({}, { __mode = "k" }) end
 
 function Loader.new(app)
-    return setmetatable({ app = app, active = 0, pending = {}, requests = {}, watching = watchers(), nextOrder = 0 }, Loader)
+    return setmetatable({ app = app, active = 0, pending = {}, requests = {}, watching = {}, nextOrder = 0 }, Loader)
 end
 
 -- Intersect a photo with each scrolling/clipping ancestor. Octopus uses
@@ -48,11 +47,27 @@ local function visible(app, frame, epoch)
     return false
 end
 
--- Called after Paint, once layout and scroll transforms have settled. Only
--- unloaded photo frames participate; completed frames leave this weak registry.
+-- A native parent retains the scene object, not its Lua userdata. Keep the
+-- userdata alive until loading finishes; a weak-key registry loses unloaded
+-- frames during Lua GC even while they are still on screen.
+local function attached(app, frame, epoch)
+    if app.sessionEpoch ~= epoch then return false end
+    local node = frame
+    while node do
+        if node == app.screen or (app.shell and node == app.shell.screen) then return true end
+        node = node:getParent()
+    end
+    return false
+end
+
+-- Called after Paint, once layout and scroll transforms have settled. Completed
+-- or detached frames leave the registry; hidden retained pages keep their work.
 function Loader:loadVisible()
     local ordered = {}
-    for _, target in pairs(self.watching) do ordered[#ordered + 1] = target end
+    for frame, target in pairs(self.watching) do
+        if attached(self.app, frame, target.epoch) then ordered[#ordered + 1] = target
+        else self.watching[frame] = nil end
+    end
     table.sort(ordered, function(a, b) return a.order < b.order end)
     for _, target in ipairs(ordered) do target.load() end
 end
@@ -114,7 +129,7 @@ function Loader:watch(frame, key, name)
         app:repaint()
     end
     self.nextOrder = self.nextOrder + 1
-    self.watching[frame] = { order = self.nextOrder, load = function()
+    self.watching[frame] = { order = self.nextOrder, epoch = epoch, load = function()
         if loaded or requested or failed or not valid() then return end
         local path = app.media:path(key)
         if path then finish(path); return end

@@ -224,3 +224,11 @@ ImageIO tests decode processed output and check orientation, size and metadata.
 Backend references: [Appwrite Auth](https://appwrite.io/docs/products/auth),
 [Functions](https://appwrite.io/docs/products/functions) and
 [Databases](https://appwrite.io/docs/products/databases).
+
+## Demo portraits
+
+The shared [portrait library](../../demo-assets/profiles/README.md) contains 64
+generated JPGs, including teens and adults approximately ages 14–60, plus the
+original grid, splitter instructions and Appwrite file IDs. This app bundles
+portraits for its offline fixture identities. Live seed profiles use the same
+public `profiles.avatarId` data in both Chat and Octopus.
