@@ -152,7 +152,7 @@ function Home.page(self)
     self.timelines = {}
     for _, name in ipairs(Home.feeds) do
         local item = ui.PivotItem { Name = "Feed" .. name, Header = name }
-        local list = C.stack({ Name = "Timeline" .. name, Spacing = name == "connect" and 20 or 26, Overflow = "hidden scroll" })
+        local list = C.stack({ Name = "Timeline" .. name, Spacing = C.spacing.post, Overflow = "hidden scroll" })
         if name ~= "discover" and not signedIn then list:addChild(guestPrompt(self, name))
         else self.timelines[name] = list end
         item:addChild(list)

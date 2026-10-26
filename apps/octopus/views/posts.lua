@@ -1,13 +1,16 @@
 local ui = require "orca.UIKit"
 local C = require "Octopus/views/components"
-local colors = C.colors
+local colors, space = C.colors, C.spacing
+local ACTION_HEIGHT = 44
+local ACTION_CONTENT_HEIGHT = 28
+local auto = 0/0
 local Posts = {}
 
 local PHOTO_HEIGHT = 196
 
 -- Type-specific content shared by timeline cards and the post page.
 function Posts.body(app, post, full)
-    local body = C.stack({ Spacing = 8, IgnoreHitTest = true })
+    local body = C.stack({ Spacing = space.inline, IgnoreHitTest = true })
     local kind = post.postType
     if kind == "photo" or (kind == "quote" and post.imageId) then
         local frame = ui.Grid { Name = "Photo" .. post.id, Height = full and 260 or PHOTO_HEIGHT,
@@ -22,9 +25,9 @@ function Posts.body(app, post, full)
         end
     elseif kind == "quote" then
         -- A quote sits beside an accent rule, like a Metro pull quote.
-        local quote = ui.Grid { Columns = "4px 1fr", Spacing = 14, IgnoreHitTest = true }
+        local quote = ui.Grid { Columns = "4px 1fr", Spacing = space.column, IgnoreHitTest = true }
         quote:addChild(ui.Grid { Background = colors.accent, IgnoreHitTest = true })
-        local words = C.stack({ Spacing = 6, IgnoreHitTest = true }, {
+        local words = C.stack({ Spacing = space.tight, IgnoreHitTest = true }, {
             C.text("“" .. C.plain(post.content) .. "”", { FontSize = full and 26 or 21, WordWrap = true }),
         })
         if post.quoteSource and post.quoteSource ~= "" then
@@ -36,11 +39,11 @@ function Posts.body(app, post, full)
             body:addChild(C.text(post.userText, { FontSize = 15, WordWrap = true }))
         end
     elseif kind == "link" then
-        local link = ui.Grid { Columns = "40px 1fr", Spacing = 12, IgnoreHitTest = true }
+        local link = ui.Grid { Columns = "40px 1fr", Spacing = space.column, IgnoreHitTest = true }
         local badge = ui.Grid { Width = 40, Height = 40, Background = colors.accent, IgnoreHitTest = true }
         badge:addChild(C.icon("link", 20, colors.onAccent))
         link:addChild(badge)
-        link:addChild(C.stack({ Spacing = 2, IgnoreHitTest = true }, {
+        link:addChild(C.stack({ Spacing = space.tight, IgnoreHitTest = true }, {
             C.text(post.title ~= "" and post.title or C.domain(post.linkUrl), {
                 FontSize = full and 22 or 17, Foreground = colors.accentText, WordWrap = true }),
             C.text(C.domain(post.linkUrl), { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
@@ -60,10 +63,12 @@ end
 
 function Posts.tags(app, post)
     if #post.tags == 0 then return nil end
-    local tags = C.row({ Spacing = 14, Height = 28 })
+    -- Let native text measurement size UTF-8 labels; byte counts are not glyph widths.
+    local tags = C.row({ Name = "Tags" .. post.id, Spacing = space.inline, Height = 28 })
     for _, tag in ipairs(post.tags) do
         tags:addChild(C.button("#" .. tag, function() app:openTag(tag) end, {
-            Name = "Tag" .. tag, Height = 28, FontSize = 14, Width = math.max(36, #tag * 8 + 18) }))
+            Name = "Tag" .. tag, Height = 28, FontSize = 14,
+            TextWrapping = "NoWrap" }))
     end
     return tags
 end
@@ -75,10 +80,12 @@ function Posts.fillActions(app, row, post, entry)
     local function refill() Posts.fillActions(app, row, post, entry) end
     local function action(name, icon, count, active, color, handler)
         local tint = active and color or colors.dim
-        local button = C.area(C.row({ Spacing = 8, IgnoreHitTest = true }, {
-            C.icon(icon, 18, tint, { MarginLeft = 0, MarginRight = 0 }),
+        -- Compact visible row, with a full 44-point touch area below it.
+        local button = C.area(C.row({ Spacing = space.inline, Height = ACTION_CONTENT_HEIGHT,
+            MarginBottom = auto, IgnoreHitTest = true }, {
+            C.icon(icon, 20, tint, { MarginLeft = 0, MarginRight = 0 }),
             C.text(count > 0 and tostring(count) or "", { FontSize = 13, Foreground = tint }),
-        }), handler, { Name = name .. post.id, Height = 36 })
+        }), handler, { Name = name .. post.id, Height = ACTION_HEIGHT })
         row:addChild(button)
     end
     action("Comment", "message-circle", entry.comments or 0, false, colors.ink, function() app:openPost(post) end)
@@ -111,16 +118,16 @@ end
 -- One timeline card: avatar tile, author line, the post and its actions. A
 -- repost carries a "reposted" line above the author, as on Twitter.
 function Posts.card(app, post, entry, repostedBy)
-    local card = ui.Grid { Name = "Post" .. post.id, Columns = "52px 1fr", Spacing = 12 }
+    local card = ui.Grid { Name = "Post" .. post.id, Columns = "52px 1fr", Spacing = space.column }
     local function author() app:openProfile(post.authorId, post.authorName) end
     card:addChild(C.area(C.avatar(post.authorName, 52, post.authorId, app), author, {
-        Name = "Avatar" .. post.id, Width = 52, Height = 52, MarginTop = repostedBy and 26 or 0 }))
-    local header = ui.Grid { Columns = "1fr auto", Spacing = 8, IgnoreHitTest = true }
+        Name = "Avatar" .. post.id, Width = 52, Height = 52, MarginTop = repostedBy and space.post or 0 }))
+    local header = ui.Grid { Columns = "1fr auto", Spacing = space.inline, IgnoreHitTest = true }
     header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
     header:addChild(C.text(C.ago(post.createdAt, app.clock()), { FontSize = 13, Foreground = colors.dim }))
-    local column = C.stack({ Spacing = 6 })
+    local column = C.stack({ Spacing = space.tight })
     if repostedBy then
-        column:addChild(C.area(C.row({ Spacing = 6, IgnoreHitTest = true }, {
+        column:addChild(C.area(C.row({ Spacing = space.tight, IgnoreHitTest = true }, {
             C.icon("repeat-2", 14, colors.dim, { MarginLeft = 0, MarginRight = 0 }),
             C.text(repostedBy.name .. " reposted", { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
         }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = 20 }))
@@ -129,7 +136,7 @@ function Posts.card(app, post, entry, repostedBy)
     column:addChild(C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }))
     local tags = Posts.tags(app, post)
     if tags then column:addChild(tags) end
-    local actions = ui.Grid { Name = "Actions" .. post.id, Columns = "1fr 1fr 1fr", Height = 36 }
+    local actions = ui.Grid { Name = "Actions" .. post.id, Columns = "1fr 1fr 1fr", Height = ACTION_HEIGHT }
     Posts.fillActions(app, actions, post, entry or { likes = 0, comments = 0, reposts = 0 })
     column:addChild(actions)
     card:addChild(column)

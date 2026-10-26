@@ -1,5 +1,7 @@
 local ui = require "orca.UIKit"
 local C = { colors = require "Octopus/theme" }
+-- A 4-point spacing scale shared by post lists and cards.
+C.spacing = { tight = 4, inline = 8, column = 12, section = 16, post = 24 }
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
