@@ -68,7 +68,19 @@ test_touch_physics(struct Object *screen, struct Object *list)
   touch_scroll(list, kScrollPhaseBegin, 0, 1100);
   animate_scroll(list, 16);
   assert(view->ContentOffset.y == interrupted && !view->_scrollAnimating);
-  touch_scroll(list, kScrollPhaseCancel, 0, 1110);
+  // The same new gesture can reverse direction immediately; stale animation
+  // callbacks must not overwrite the finger's position or retain old velocity.
+  touch_scroll(list, kScrollPhaseUpdate, 30, 1120);
+  float reversed = view->ContentOffset.y;
+  assert(fabsf(reversed - interrupted - 30) < 0.001f);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y == reversed);
+  touch_scroll(list, kScrollPhaseEnd, 0, 1121);
+  assert(view->_scrollAnimating && view->_scrollVelocity.y > 0);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y > reversed);
+  touch_scroll(list, kScrollPhaseBegin, 0, 1140);
+  touch_scroll(list, kScrollPhaseCancel, 0, 1141);
 
   // Slow overdrag resists both edges and cancellation springs back without fling.
   offset.y = 0;

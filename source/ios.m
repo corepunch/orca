@@ -79,6 +79,7 @@ int luaopen_orca(lua_State *L);
   if (_stepping || !_coroutine) return;
   _stepping = YES;
   axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), NULL);
+  ios_begin_message_frame();
   int nresults = 0;
   int status = lua_resume(_coroutine, _lua, 0, &nresults);
   if (status == LUA_YIELD) {
