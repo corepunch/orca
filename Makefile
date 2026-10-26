@@ -278,7 +278,7 @@ ios-install:
 ios-devices:
 	$(MAKE) -f tools/ios/Makefile list-devices
 
-test-ios-tools:
+test-ios-tools: test-ios-tmpname test-ios-message-frame
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
 test-network-headers:
@@ -387,6 +387,19 @@ $(1): $(3)
 	$(Q)$(TARGET) -test=$(2)
 endef
 
+.PHONY: test-ios-tmpname
+$(eval $(call C_TEST_RULE,test-ios-tmpname,tests/test_ios_tmpname.c,$(BINDIR)/test_ios_tmpname,directories tools/ios/lua_config.h,,))
+
+ifeq ($(UNAME_S),Darwin)
+.PHONY: test-ios-message-frame
+$(eval $(call C_TEST_RULE,test-ios-message-frame,tests/test_ios_message_frame.c source/sysutil/queue.c libs/platform/ios/ios_message_queue.m,$(BINDIR)/test_ios_message_frame,unite,-DORCA_IOS,$(TEST_LDFLAGS) -lplatform -framework CoreFoundation))
+HEADLESS_IOS_TESTS = test-ios-message-frame
+else
+.PHONY: test-ios-message-frame
+test-ios-message-frame:
+	@echo "iOS frame queue integration requires the Apple CoreFoundation framework"
+endif
+
 $(eval $(call C_TEST_RULE,test-properties,tests/test_properties.c,$(TEST_PROPERTIES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 STRING_MEMORY_TEST_FLAGS ?= -DTEST_MEMORY
 $(eval $(call C_TEST_RULE,test-string-properties,tests/test_string_properties.c,$(BINDIR)/test_string_properties,platform $(SOURCEMODULES2) buildlib,$(STRING_MEMORY_TEST_FLAGS),$(TEST_LDFLAGS)))
@@ -479,7 +492,7 @@ $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lu
 $(eval $(call LUA_TEST_RULE,test-navigationhost,tests/test_navigationhost.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
-test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms $(HEADLESS_LUA_TESTS)
+test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)
 
 test: test-headless test-text-layout test-stack-layout test-grid-layout test-interaction test-tab-interaction test-node test-node2d-scroll
 	$(Q)echo "Running test"

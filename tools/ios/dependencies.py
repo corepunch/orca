@@ -59,9 +59,11 @@ def main():
     compiler = subprocess.check_output(['xcrun', '--sdk', args.sdk, '--find', 'clang'], text=True).strip()
     minimum = '-miphoneos-version-min=' if args.sdk == 'iphoneos' else '-mios-simulator-version-min='
     flags = ['-arch', args.arch, '-isysroot', sdk, minimum + args.minimum, '-O2', '-g']
+    lua_config = Path(__file__).resolve().with_name('lua_config.h')
     stamp = prefix / 'settings.json'
     settings = json.dumps({'sdk': sdk, 'arch': args.arch, 'minimum': args.minimum,
-                           'sources': SOURCES, 'recipe': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}, sort_keys=True)
+                           'sources': SOURCES, 'recipe': hashlib.sha256(
+                               Path(__file__).read_bytes() + lua_config.read_bytes()).hexdigest()}, sort_keys=True)
     if stamp.exists() and stamp.read_text() == settings and all(
             (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'libfreetype.a', 'liblz4.a', 'libcurl.a')):
         return
@@ -94,7 +96,8 @@ def main():
         if path.name in ('lua.c', 'luac.c'):
             continue
         obj = output / (path.stem + '.o')
-        run(compiler, *flags, '-DLUA_USE_IOS', '-c', path, '-o', obj)
+        config = ['-include', lua_config] if path.name == 'loslib.c' else []
+        run(compiler, *flags, '-DLUA_USE_IOS', *config, '-c', path, '-o', obj)
         objects.append(obj)
     run('xcrun', '--sdk', args.sdk, 'ar', 'rcs', prefix / 'lib/liblua.a', *objects)
     for name in ('lua.h', 'luaconf.h', 'lauxlib.h', 'lualib.h', 'lua.hpp'):
