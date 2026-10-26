@@ -408,11 +408,12 @@ $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
-$(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
+$(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform -lm))
+$(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
-HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
+HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout test-touch-scroll-routing
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties

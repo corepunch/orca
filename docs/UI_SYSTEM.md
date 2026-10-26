@@ -36,6 +36,31 @@ measurement and arrangement and update descendant transforms. Content changes
 and viewport resizing still invalidate layout. Native scroll-wheel and
 `Node2D.SetScrollTop` handling use this same path.
 
+On iOS phone builds, vertical direct-finger scrolling has inertia and
+rubber-band edges by default on overflowing `Node2D` containers (including
+stacks and grids with `OverflowY = "Scroll"`). No application gesture handlers
+are needed. The touched container stays captured as its content moves; a new
+touch stops its momentum, release decelerates, and cancellation returns any
+overscroll to the edge without a fling. Taps and horizontal Pivot swipes keep
+their existing routing. Containers whose content fits pass through to an
+overflowing ancestor; they do not bounce on their own.
+
+Set `InertiaScrolling = false` to disable release momentum, or
+`RubberBandScrolling = false` to hard-clamp touch scrolling at the boundaries.
+Both default to true and affect direct-touch gestures only. Desktop wheel
+events stay immediate and clamped. Programmatic `ContentOffset` changes stop
+touch motion so a scheduled animation cannot overwrite the requested offset.
+Content-size changes use the current bounds when settling. Animation updates
+use the property system and reuse measurement/arrangement like ordinary scroll
+frames.
+
+The platform marks touch-wheel events with Begin/Update/End/Cancel and the
+sample's unsigned millisecond timestamp. UIKit exposes these as
+`Node.MouseMessage.scrollPhase` (`ScrollPhase`) and `timestamp`; phase `None`
+identifies an ordinary wheel event. Direct producers must send Begin before
+Update, and End or Cancel to finish the sequence. The iOS platform submodule
+and Orca must be rebuilt together for this event contract.
+
 ## XML message shorthand
 
 Common patterns:
