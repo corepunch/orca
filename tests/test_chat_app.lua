@@ -12,23 +12,32 @@ local App = require "Chat/App"
 local Chat = require "api.chat"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
+-- This suite verifies application state and explicit layout. Keep native fonts
+-- and avatar textures, but leave GPU painting to the rendering regressions.
+local function flushQueue()
+    while true do
+        local message = orca.system.peekMessage()
+        if not message then return end
+        if not message:is("Window.Paint") then orca.system.dispatchMessage(nil, message) end
+    end
+end
 local function drain(app)
-    core.flushQueue()
+    flushQueue()
     while true do
         local message = orca.system.peekMessage()
         if not message then break end
         if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
     end
-    core.flushQueue()
+    flushQueue()
     if app.screen then
         app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
         app:afterPaint()
-        core.flushQueue()
+        flushQueue()
     end
 end
 local function mockApp(media, client)
     local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
-    -- Keep navigation real while avoiding Paint on an uninitialized renderer.
+    -- Keep navigation real while the fixture controls layout and painting.
     app.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     app:show("/")
     local login = app.screen
@@ -66,8 +75,10 @@ local mobile = app:frame(require("orca.UIKit").Grid { Rows = "1fr" })
 assert(mobile.ResizeMode == "CanResize", "iOS screens must track the drawable size")
 mobile:UpdateLayout(834, 1100)
 assert(mobile.Width == 834 and mobile.Height == 1100, "iPad layout must use available points")
-mobile:UpdateLayout(390, 460)
-assert(mobile.Width == 390 and mobile.Height == 460, "Layout must shrink above the iPhone keyboard")
+mobile.KeyboardInsetBottom = 384
+mobile:UpdateLayout(390, 844)
+assert(mobile.Width == 390 and mobile.Height == 844 and mobile:getFirstChild().ActualHeight == 460,
+    "Keyboard avoidance must reserve content space while preserving the physical viewport")
 PLATFORM = savedPlatform
 assert(home:findChild("Search", true) and home:findChild("FilterUnread", true))
 app.searchInput.Text = "Jules"
@@ -113,7 +124,7 @@ app.room = app.client:listRooms()[1]
 local screen = app:dispatch("/thread").view
 app.screen = screen
 assert(screen:findChild("MessageBubblea1", true), "Render history before the first thread paint")
-core.flushQueue()
+flushQueue()
 screen:UpdateLayout(390, 844)
 assert(screen:findChild("Message", true), "Thread must have a composer")
 assert(app.composer.ActualHeight >= 44 and app.composer.ActualWidth > 200,
@@ -154,23 +165,19 @@ drain(app)
 screen:findChild("RefreshMessages", true):send("Node.LeftButtonUp")
 drain(app)
 assert(not overflow.Visible, "Choosing a menu command must dismiss the menu")
-screen.ResizeMode = "CanResize"
-screen:UpdateLayout(390, 460)
-assert(math.abs(composerStrip.ActualWidth - 390) < 1 and
-    math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - 460) < 1,
-    "The full-width composer must stay against the keyboard when the viewport shrinks")
 screen.ResizeMode = "NoResize"
 screen.Width, screen.Height = 390, 844
 screen:UpdateLayout(390, 844)
 assert(not screen.RespectSafeArea, "The thread must paint behind the home gesture area")
 screen.SafeAreaTop, screen.SafeAreaBottom = 59, 34
 screen.SafeAreaLeft, screen.SafeAreaRight = 12, 18
-core.flushQueue()
+flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
 local threadRoot = screen:getFirstChild()
-assert(threadRoot.PaddingTop == 59 and threadRoot.PaddingLeft == 12 and threadRoot.PaddingRight == 18,
+assert(threadRoot.PaddingTop == 59 and threadRoot:getFirstChild().PaddingLeft == 12
+    and threadRoot:getFirstChild().PaddingRight == 18,
     "Thread content must follow the system's safe top and side insets")
 assert(footer.PaddingBottom == 34 and math.abs(composerStrip.ActualWidth - 360) < 1,
     "The composer must leave safe room for the home gesture and landscape edges")
@@ -179,9 +186,22 @@ assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHei
 assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1 and
     math.abs(footer.BackgroundColor.R - composerStrip.BackgroundColor.R) < 0.001,
     "The composer background must continue to the physical bottom edge")
+for _, inset in ipairs { 384, 0 } do
+    screen.KeyboardInsetBottom = inset
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(390, 844)
+    local bottom = math.max(34, inset)
+    assert(screen.Height == 844 and footer.PaddingBottom == bottom,
+        "Keyboard show and hide must preserve the viewport and restore the home gesture inset")
+    assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - (844 - bottom)) < 1,
+        "Composer controls must stay immediately above the keyboard or home gesture area")
+    assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
+        "The composer background must extend under the keyboard to the physical bottom")
+end
 screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
 screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
-core.flushQueue()
+flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
@@ -253,7 +273,7 @@ assert(app:renderMessages())
 local before = #app.client:listMessages(app.room.id)
 app.composer.Text = "A quick hello from the UI test"
 app:sendMessage()
-core.flushQueue()
+flushQueue()
 local messages = app.client:listMessages(app.room.id)
 assert(#messages == before + 1)
 assert(messages[#messages].body == "A quick hello from the UI test")
@@ -312,13 +332,13 @@ local function isShown(node)
 end
 
 local function assertTabs(selected)
-    core.flushQueue()
+    flushQueue()
     while true do
         local message = orca.system.peekMessage()
         if not message then break end
         if not message:is("Window.Paint") then orca.system.dispatchMessage(shell, message) end
     end
-    core.flushQueue()
+    flushQueue()
     core.advanceFrame()
     core.runAllPrograms(shell)
     shell:UpdateLayout(390, 844)
@@ -360,7 +380,8 @@ assert(not shell.RespectSafeArea, "The shell must paint behind the home gesture 
 shell.SafeAreaTop, shell.SafeAreaBottom = 59, 34
 shell.SafeAreaLeft, shell.SafeAreaRight = 12, 18
 assertTabs("Chats")
-assert(shellRoot.PaddingTop == 59 and shellRoot.PaddingLeft == 12 and shellRoot.PaddingRight == 18,
+assert(shellRoot.PaddingTop == 59 and shellRoot:getFirstChild().PaddingLeft == 12
+    and shellRoot:getFirstChild().PaddingRight == 18,
     "Shell content must follow the system's safe top and side insets")
 assert(barFooter.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1,
     "The home gesture inset must be separate from the fixed application bar row")
@@ -471,7 +492,7 @@ local emailPage = authApp.screen
 local signIn = emailPage:findChild("SignIn", true)
 for _, size in ipairs({ {320, 568}, {390, 844}, {390, 460}, {834, 1100}, {390, 460} }) do
     emailPage.Width, emailPage.Height = size[1], size[2]
-    core.flushQueue()
+    flushQueue()
     core.advanceFrame()
     core.runAllPrograms(emailPage)
     emailPage:UpdateLayout(size[1], size[2])
@@ -686,7 +707,7 @@ raceApp:show("/profile")
 assert(not interruptProfile, "The race fixture must interleave at the real profile endpoint")
 assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp.shell.content.ActivePage == "New",
     "A late profile response must not replace a newer tab selection")
-assert(not raceApp.shell:has("Profile"), "A cancelled tab constructor must not mount stale content")
+assert(raceApp.shell:has("Profile"), "A completed profile load may populate its retained tab without selecting it")
 
 -- Profile photos replace initials where a tile stands for one person.
 local Fixtures = require "api.mock_fixtures"

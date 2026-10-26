@@ -232,6 +232,7 @@ test-chat: copyshare
 	$(TARGET) -test=tests/test_chat_models.lua
 	$(TARGET) -test=tests/test_chat_features.lua
 	$(TARGET) -test=tests/test_chat_app.lua
+	$(TARGET) -test=tests/test_chat_loading.lua
 	$(TARGET) -test=tests/test_chat_session_ui.lua
 
 test-chat-appwrite: copyshare
@@ -426,6 +427,9 @@ $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_rout
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-screen-paint-lifecycle
+HEADLESS_LUA_TESTS += test-activity-indicator
+$(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout test-touch-scroll-routing
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-chat-polling
@@ -453,10 +457,13 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_timeline.lua
 	$(TARGET) -test=tests/test_chat_diagnostics.lua
 	$(TARGET) -test=tests/test_chat_app.lua
+	$(TARGET) -test=tests/test_chat_loading.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
+.PHONY: test-screen-paint-lifecycle
+$(eval $(call LUA_TEST_RULE,test-screen-paint-lifecycle,tests/test_screen_paint_lifecycle.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-layout,tests/test_layout.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-state-manager,tests/test_state_manager.lua,app copyshare))

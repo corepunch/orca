@@ -120,9 +120,15 @@ update for native resizable screens. Set `RespectSafeArea=false` when a screen
 needs backgrounds or scrolling content under system chrome, then use those
 properties to inset its interactive controls. Avoid hardcoded device margins.
 
-The chat screen tracks the available size, including keyboard appearance and
-rotation. A docked keyboard reduces the drawable height; the bottom safe inset
-then disappears so the composer can meet the keyboard. `Input.Type` requests
+The drawable retains its full size when the keyboard appears.
+`Screen.KeyboardInsetBottom` reports the overlap of a docked, full-width
+keyboard in logical pixels; hidden and floating keyboards report zero.
+Safe-area insets retain their physical meaning. `RespectSafeArea` keeps content
+above the larger of the bottom safe inset and keyboard overlap. Edge-to-edge
+layouts use the shared `Footer` to apply that inset to controls while painting
+the footer background to the bottom of the window, beneath the keyboard.
+Viewport metrics and bindings are resolved before layout in the same frame.
+`Input.Type` requests
 the native keyboard: `Phone` supports international phone entry, `Number` uses
 a digit keypad, and `Email`, `Url`, and `Decimal` select their corresponding
 layouts. `Password` enables secure native entry. Types are keyboard hints;

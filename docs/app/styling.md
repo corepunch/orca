@@ -127,10 +127,18 @@ Footer.layout(screen, pageContent, footer, { Background = colors.background })
 ```
 
 `Footer` constructs a native `Grid`, so its rows, columns and children use the
-normal grid layout. It binds bottom padding to the containing screen's system
-inset. `Footer.layout` installs an `1fr auto` content/footer layout and owns the
+normal grid layout. It binds bottom padding to the larger of the containing
+screen's `SafeAreaBottom` and `KeyboardInsetBottom`. `Footer.layout` installs
+an `1fr auto` content/footer layout and owns the
 screen's safe-area policy: content avoids top and side insets, while the footer
-background extends through the home-indicator area. Keep the footer's content
+background extends through the home-indicator area and beneath a docked keyboard.
+Side insets belong to the content container and the footer's internal padding,
+so landscape cutouts do not leave gaps in the footer background. Use this same
+composition on detail pages with back/refresh bars, as well as tab shells;
+placing a fixed bar directly inside a safe-area screen leaves the screen's
+background visible below it.
+The drawable stays full-size while the footer's controls move above the keyboard.
+Keep the footer's content
 height in its rows, not in `Height` or a fixed parent row; the bottom inset adds
 to that height. Insets update through bindings on rotation and resizing, and
 zero-inset desktop windows need no special case. Chat and Octopus use this same

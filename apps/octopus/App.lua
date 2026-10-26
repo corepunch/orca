@@ -59,12 +59,16 @@ local App = Application:extend {
 
     -- Run work that may wait on the network in an ORCA coroutine.
     task = function(self, fn)
+        local session, navigation = self.sessionEpoch, self.navigationEpoch
         orca.async(function()
             local ok, err = pcall(fn)
             if not ok then
                 io.stderr:write("octopus: " .. tostring(err) .. "\n")
-                self:notice("Something went wrong. Please try again.", true)
+                if self.sessionEpoch == session and self.navigationEpoch == navigation then
+                    self:notice("Something went wrong. Please try again.", true)
+                end
             end
+            self:repaint()
         end)
     end,
 
@@ -160,6 +164,9 @@ local App = Application:extend {
 
     refresh = function(self)
         local route = self.currentRoute or "/"
+        if route == "/" then Home.load(self, self.feed); return end
+        if route == "/me" or route == "/user" then People.refresh(self); return end
+        if route == "/search" then People.runSearch(self, self.searchList); return end
         self:invalidate()
         self:show(route)
     end,

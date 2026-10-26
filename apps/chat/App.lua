@@ -1,4 +1,5 @@
 local ui = require "orca.UIKit"
+local Footer = require "orca.UIKit.Footer"
 local Application = require "orca.core.application"
 local Chat = require "api.chat"
 local Models = require "Chat/models"
@@ -66,10 +67,52 @@ local App = Application:extend {
         self.messageList, self.composer, self.threadBody = nil, nil, nil
         self.timelineSnapshot, self.messageRefreshQueued = nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
+        self.inboxError, self.inboxIndicators, self.messageLoading = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
         self.drafts, self.photoDrafts, self.readRooms, self.pinned = {}, {}, {}, { alex = true, weekend = true }
         self.newSelection, self.inviteCodes, self.profileStatus, self.pendingIdentity = {}, {}, nil, nil
         self.filter, self.query = "All", ""
+    end,
+
+    -- Route constructors attach their controls before any request can yield.
+    load = function(self, work)
+        orca.async(function()
+            local ok, err = xpcall(work, Diagnostics.traceback)
+            if not ok then self:reportError(err, "Loading content") end
+            if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end
+        end)
+    end,
+
+    loadingPage = function(self, title, tab, request, render)
+        local host = ui.Node2D { Name = "LoadingContent" }
+        local screen = self:frame(C.page(title, host), tab)
+        local epoch, navigation, route = self.sessionEpoch, self.navigationEpoch, self.currentRoute
+        local function current()
+            return self.sessionEpoch == epoch and (tab ~= nil or self.navigationEpoch == navigation)
+        end
+        local function load()
+            while host:getFirstChild() do host:getFirstChild():removeFromParent() end
+            host:addChild(ui.ActivityIndicator { Name = "ContentLoading", Foreground = colors.muted })
+            self:load(function()
+                if not current() then return end
+                local value, err = request()
+                if not current() then return end
+                if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
+                while host:getFirstChild() do host:getFirstChild():removeFromParent() end
+                if value then
+                    local status = self.status
+                    host:addChild(render(value))
+                    if tab and self.currentRoute ~= route then self.status = status end
+                else
+                    host:addChild(C.stack({ Spacing = 16, JustifyContent = "Center" }, {
+                        C.text(err and err.message or "Could not load this page.", { WordWrap = true, Foreground = colors.error }),
+                        C.button("Retry", load, { Name = "RetryContent" }),
+                    }))
+                end
+            end)
+        end
+        load()
+        return screen
     end,
 
     avatarPhoto = function(self, tile, userId)
@@ -171,7 +214,7 @@ local App = Application:extend {
         local query = self.query:lower()
         for filter, list in pairs(self.roomLists) do
             local visible = 0
-            for index, room in ipairs(self.rooms) do
+            for index, room in ipairs(self.rooms or {}) do
                 local unread = self:unread(room)
                 local matches = (room.name .. " " .. (room.subtitle or "")):lower():find(query, 1, true)
                 local inFilter = filter == "All" or (filter == "Unread" and unread > 0)
@@ -198,7 +241,13 @@ local App = Application:extend {
                     content:addChild(meta); row:addChild(content); list:addChild(row)
                 end
             end
-            if visible == 0 then
+            if self.inboxIndicators then self.inboxIndicators[filter].Visible = self.rooms == nil and self.inboxError == nil end
+            if self.inboxError and not self.rooms then
+                list:addChild(C.stack({ Spacing = 12, Padding = "0 8" }, {
+                    C.text("Couldn't load conversations.", { FontSize = 22, Foreground = colors.muted }),
+                    C.button("Retry", function() self:show("/") end, { Name = "RetryInbox" .. filter }),
+                }))
+            elseif visible == 0 and self.rooms ~= nil then
                 list:addChild(C.stack({ Spacing = 8, Padding = "0 8" }, {
                     C.text(self.query ~= "" and "no conversations found" or "you're all caught up", { FontSize = 22, Foreground = colors.muted }),
                     C.text(self.query ~= "" and "Try another name or message." or "Start a new chat, or swipe to another list.", {
@@ -224,35 +273,52 @@ local App = Application:extend {
             })))
         end
         if self.restorePending then
-            local restored, restoreError = self.client:restoreSession()
-            if self.navigationEpoch ~= navigation then return self.screen end
-            if restored or restoreError.code == "unauthenticated"
-                or restoreError.status == 401 or restoreError.status == 403 then
-                self.restorePending = false
-            else
-                return self:frame(C.page("reconnect", C.stack({ Spacing = 16 }, {
-                    C.text("Couldn't restore your session. Please try again.", { WordWrap = true, Foreground = colors.muted }),
-                    C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
-                })))
-            end
+            local screen = self:frame(C.page("connecting", ui.ActivityIndicator {
+                Name = "SessionLoading", Foreground = colors.muted,
+            }))
+            local epoch = self.sessionEpoch
+            self:load(function()
+                if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return end
+                local restored, err = self.client:restoreSession()
+                if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return end
+                if restored or (err and (err.code == "unauthenticated" or err.status == 401 or err.status == 403)) then
+                    self.restorePending = false
+                    self:show("/")
+                else
+                    while screen:getFirstChild() do screen:getFirstChild():removeFromParent() end
+                    screen:addChild(C.page("reconnect", C.stack({ Spacing = 16 }, {
+                        C.text("Couldn't restore your session. Please try again.", { WordWrap = true, Foreground = colors.muted }),
+                        C.button("Retry", function() self:show("/") end, { Name = "RetrySessionRestore" }),
+                    })))
+                end
+            end)
+            return screen
         end
         if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
         local epoch = self.sessionEpoch
-        local function current()
-            return self.navigationEpoch == navigation and self.sessionEpoch == epoch and self.client:getSession() ~= nil
+        local function refresh()
+            self.inboxError = nil
+            self:renderRoomList()
+            self:load(function()
+                local function current() return self.sessionEpoch == epoch and self.client:getSession() ~= nil end
+                if not current() then return end
+                local _, err = Sync.refreshInbox(self, current, true)
+                if self.sessionEpoch ~= epoch then return end
+                if not self.client:getSession() then self:resetSessionViews(); self:show("/"); return end
+                self.inboxError = err
+                if err and not self.rooms then self:renderRoomList() end
+                self.homeStatus:setTextContent(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"))
+                self.homeStatus.Foreground = err and colors.error or colors.dim
+            end)
         end
-        local _, err = Sync.refreshInbox(self, current, true)
-        if self.navigationEpoch ~= navigation then return self.screen end
-        if not self.client:getSession() then self:resetSessionViews(); return self:auth() end
-        self.rooms, self.contacts, self.contactsById = self.rooms or {}, self.contacts or {}, self.contactsById or {}
         if self.shell and self.shell:has("Chats") then
             self.status = self.homeStatus
             self:renderRoomList()
-            self:notice(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"), err ~= nil)
+            refresh()
             return self.shell:show("Chats")
         end
-        self.status = C.text(err and err.message or (self.remote and "Conversations update automatically" or "Offline mock · make yourself at home"), {
-            FontSize = 11, Foreground = err and colors.error or colors.dim, TextHorizontalAlignment = "Center",
+        self.status = C.text("", {
+            FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
         })
         self.homeStatus = self.status
         self.searchInput = C.input("Search", "search", {
@@ -271,16 +337,20 @@ local App = Application:extend {
                 self.filter = filter
             end,
         }
-        self.roomLists = {}
+        self.roomLists, self.inboxIndicators = {}, {}
         for _, filter in ipairs(filters) do
             local item = ui.PivotItem { Name = "Filter" .. filter, Header = filter }
             self.roomLists[filter] = C.stack({ Name = "ConversationList" .. filter, Overflow = "hidden scroll" })
+            local area = ui.Node2D {}
+            area:addChild(self.roomLists[filter])
+            self.inboxIndicators[filter] = ui.ActivityIndicator { Name = "InboxLoading" .. filter, Foreground = colors.muted }
+            area:addChild(self.inboxIndicators[filter])
             if filter == "All" then
                 local body = ui.Grid { Rows = "60px 1fr" }
-                body:addChild(search); body:addChild(self.roomLists[filter])
+                body:addChild(search); body:addChild(area)
                 item:addChild(body)
             else
-                item:addChild(self.roomLists[filter])
+                item:addChild(area)
             end
             self.pivot:addChild(item)
         end
@@ -288,6 +358,7 @@ local App = Application:extend {
         grid:addChild(self.pivot); grid:addChild(self.status)
         local screen = self:frame(grid, "Chats")
         self:renderRoomList()
+        refresh()
         return screen
     end,
 
@@ -301,7 +372,13 @@ local App = Application:extend {
         if not ok and not self.logoutPending then self:notice(err.message, true) end
     end,
 
-    renderMessages = Timeline.refresh,
+    renderMessages = function(self, options)
+        local indicator, node, epoch = self.messageLoading, self.messageList, self.sessionEpoch
+        local result, err = Timeline.refresh(self, options)
+        if self.sessionEpoch == epoch and not self.client:getSession() then self:resetSessionViews(); self:show("/"); return result, err end
+        if indicator and (err or (self.timelineSnapshot and self.timelineSnapshot.node == node)) then indicator.Visible = false end
+        return result, err
+    end,
 
     sendMessage = function(self)
         if self.room.can_post == false then self:notice("Only channel admins can publish.", true); return end
@@ -404,11 +481,12 @@ local App = Application:extend {
         end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
         local readOnly = room.can_post == false
         compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
-        local footer = C.stack({ Name = "ThreadFooter", Spacing = 0,
-            Background = readOnly and colors.background or colors.textbox }, { self.status, self.photoPreview, compose,
+        local footer = Footer { Name = "ThreadFooter",
+            Background = readOnly and colors.background or colors.textbox }
+        footer:addChild(C.stack({ Spacing = 0 }, { self.status, self.photoPreview, compose,
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
                 FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
-        })
+        }))
         local pinned = self.pinned[room.id]
         local screen, menuButton
         local overflow = ui.Node2D { Name = "ThreadOverflow", Visible = false }
@@ -448,18 +526,22 @@ local App = Application:extend {
                     Padding = "16 0", Foreground = colors.ink, Background = colors.chrome, BorderWidth = "0" }))
         end
         self.threadBody = ui.Grid { Rows = "44px 1fr" }
-        self.threadBody:addChild(commands); self.threadBody:addChild(self.messageList)
+        local timeline = ui.Node2D {}
+        timeline:addChild(self.messageList)
+        self.messageLoading = ui.ActivityIndicator { Name = "MessagesLoading", Foreground = colors.muted }
+        timeline:addChild(self.messageLoading)
+        self.threadBody:addChild(commands); self.threadBody:addChild(timeline)
         -- Keep the rectangular composer outside the page's horizontal content margins.
-        local grid = ui.Grid { Rows = "1fr auto", Background = colors.background, Foreground = colors.ink }
-        grid:addChild(C.page(room.name, self.threadBody)); grid:addChild(footer)
-        screen = self:frame(grid)
+        screen = self:frame()
+        Footer.layout(screen, C.page(room.name, self.threadBody), footer,
+            { Background = colors.background, Foreground = colors.ink })
         screen:addChild(overflow)
-        screen.RespectSafeArea = false
-        for _, edge in ipairs { "Left", "Top", "Right" } do
-            grid:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
-        end
-        footer:attachPropertyProgram("Node.PaddingBottom", "{Screen.SafeAreaBottom}", "OneWay", true)
-        self:renderMessages()
+        local node, epoch, navigation = self.messageList, self.sessionEpoch, self.navigationEpoch
+        self:load(function()
+            if self.messageList == node and self.sessionEpoch == epoch and self.navigationEpoch == navigation then
+                self:renderMessages()
+            end
+        end)
         return screen
     end,
 

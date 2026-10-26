@@ -936,6 +936,7 @@ R_InitBuffers(void)
 HRESULT
 R_BeginFrame(struct color color)
 {
+  if (!tr.buffer) return E_FAIL;
   struct AXsize size;
   
   axGetSize(&size);
@@ -952,6 +953,7 @@ R_BeginFrame(struct color color)
 HRESULT
 R_EndFrame(void)
 {
+  if (!tr.buffer) return E_FAIL;
   tr.frame++;
 
   glFlush();

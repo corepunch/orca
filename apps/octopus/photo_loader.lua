@@ -81,11 +81,11 @@ function Loader:watch(frame, key, name)
             failed = true
             frame.IgnoreHitTest = false
             C.clear(frame)
-            frame:addChild(C.button("photo unavailable · retry", function()
+            frame:addChild(C.area(C.icon("image-off", 28, C.colors.dim, { Name = "Unavailable" .. name }), function()
                 failed = false
                 C.clear(frame):addChild(C.icon("image", 28, C.colors.dim))
                 app:repaint()
-            end, { Name = "Retry" .. name, FontSize = 13, Height = 48 }))
+            end, { Name = "Retry" .. name }))
         end
         app:repaint()
     end

@@ -268,7 +268,7 @@ HANDLER(Screen, Window, Paint) {
 #ifdef AX_PLATFORM_IOS
   axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
 #endif
-  R_BeginFrame(pScreen->ClearColor);
+  if (R_BeginFrame(pScreen->ClearColor) != NOERROR) return TRUE;
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
 
@@ -449,8 +449,10 @@ HANDLER(Screen, Screen, UpdateLayout) {
   if (pScreen->ResizeMode == kResizeModeCanResize) {
     float left, top, right, bottom;
     axIOSGetSafeArea(&left, &top, &right, &bottom);
+    float keyboard = axIOSGetKeyboardInset();
     bool_t changed = pScreen->SafeAreaLeft != left || pScreen->SafeAreaTop != top ||
-                     pScreen->SafeAreaRight != right || pScreen->SafeAreaBottom != bottom;
+                     pScreen->SafeAreaRight != right || pScreen->SafeAreaBottom != bottom ||
+                     pScreen->KeyboardInsetBottom != keyboard;
     if (pScreen->SafeAreaLeft != left)
       PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaLeft), &left);
     if (pScreen->SafeAreaTop != top)
@@ -459,8 +461,13 @@ HANDLER(Screen, Screen, UpdateLayout) {
       PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaRight), &right);
     if (pScreen->SafeAreaBottom != bottom)
       PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_SafeAreaBottom), &bottom);
-    // Resolve custom content padding before the first layout with new insets.
-    if (changed) PROP_RunAllPrograms(hObject);
+    if (pScreen->KeyboardInsetBottom != keyboard)
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_Screen_KeyboardInsetBottom), &keyboard);
+    // Invalidate cached bindings even when only occlusion changed this frame.
+    if (changed) {
+      core_AdvanceFrame();
+      PROP_RunAllPrograms(hObject);
+    }
   }
 #endif
   float x = 0, y = 0;
@@ -468,7 +475,8 @@ HANDLER(Screen, Screen, UpdateLayout) {
     x = fminf(fmaxf(pScreen->SafeAreaLeft, 0), fmaxf(width, 0));
     y = fminf(fmaxf(pScreen->SafeAreaTop, 0), fmaxf(height, 0));
     width = fmaxf(0, width - x - fmaxf(pScreen->SafeAreaRight, 0));
-    height = fmaxf(0, height - y - fmaxf(pScreen->SafeAreaBottom, 0));
+    float bottom = fmaxf(0, fmaxf(pScreen->SafeAreaBottom, pScreen->KeyboardInsetBottom));
+    height = fmaxf(0, height - y - bottom);
   }
 
   uint32_t flags = OBJ_GetFlags(hObject);
