@@ -534,7 +534,10 @@ photoMedia.pick = function()
     return nextPhoto
 end
 local photoApp = mockApp(photoMedia)
-photoApp:openRoom(photoApp.client:listRooms()[1])
+local photoRoom = photoApp.client:listRooms()[1]
+-- Compact bubbles fit the fixture history on screen; add enough to scroll.
+for i = 1, 12 do assert(photoApp.client:sendMessage(photoRoom.id, "Earlier message " .. i)) end
+photoApp:openRoom(photoRoom)
 photoApp.composer.Text = "A caption worth keeping"
 cancelPick = true
 click(photoApp, "AttachPhoto")

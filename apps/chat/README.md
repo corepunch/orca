@@ -30,7 +30,9 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   primary commands are filled with the accent, and links are plain accent
   text.
 - Avatars are square solid-colour tiles. Message bubbles are square, with
-  Windows Phone tails.
+  Windows Phone tails, and sized to their text. Consecutive messages from one
+  sender stack tightly and share one tail, sender names appear only in group
+  chats, and the time sits on the last line of text when it fits.
 
 `theme.lua` holds a black and a white palette with Messenger blue. The OS
 appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
