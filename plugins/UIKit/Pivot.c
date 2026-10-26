@@ -30,19 +30,6 @@ Pivot_HeaderFor(struct Object *hObject, struct Object *item)
   return NULL;
 }
 
-// The index-th dimmed copy that continues the strip, created on first use.
-static struct Object *
-Pivot_Repeat(struct Object *hObject, int index)
-{
-  FOR_EACH_OBJECT(child, hObject) {
-    struct PivotHeaderItem *header = GetPivotHeaderItem(child);
-    if (header && header->_repeat && index-- == 0) return child;
-  }
-  struct Object *copy = Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
-  if (copy) GetPivotHeaderItem(copy)->_repeat = TRUE;
-  return copy;
-}
-
 static float
 Pivot_Width(struct Object *o)
 {
@@ -201,6 +188,19 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   float x = pArrangeOverride->X, y = pArrangeOverride->Y;
   float w = pArrangeOverride->Width, h = pArrangeOverride->Height;
   float settle = 1 - Metro_Ease(pPivot->_progress);
+  struct Object *headers[PIVOT_MAX_ITEMS], *copies[PIVOT_MAX_ITEMS];
+  LRESULT sizes[PIVOT_MAX_ITEMS];
+  int copyCount = 0;
+  // Keep metrics local to this pass so text, style and viewport changes still
+  // remeasure, while repeated labels reuse their source header's metrics.
+  for (int i = 0; i < count; i++) {
+    headers[i] = Pivot_HeaderFor(hObject, items[i]);
+    sizes[i] = Metro_Measure(headers[i], 4096, 4096);
+  }
+  FOR_EACH_OBJECT(child, hObject) {
+    struct PivotHeaderItem *header = GetPivotHeaderItem(child);
+    if (header && header->_repeat && copyCount < PIVOT_MAX_ITEMS) copies[copyCount++] = child;
+  }
 
   LRESULT title = Metro_Measure(pPivot->_title, w, h);
   Metro_Arrange(pPivot->_title, x + METRO_INSET, y + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
@@ -209,9 +209,9 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   // The selected header leads; the others follow in order and wrap around.
   float hx = x + METRO_INSET + pPivot->_headerFrom * settle + pPivot->_dragX * 0.3f;
   for (int k = 0; k < count; k++) {
-    struct Object *header = Pivot_HeaderFor(hObject, items[(pPivot->SelectedIndex + k) % count]);
-    LRESULT size = Metro_Measure(header, 4096, 4096);
-    Metro_Arrange(header, hx, stripY, LOWORD(size), HIWORD(size));
+    int index = (pPivot->SelectedIndex + k) % count;
+    LRESULT size = sizes[index];
+    Metro_Arrange(headers[index], hx, stripY, LOWORD(size), HIWORD(size));
     hx += LOWORD(size) + PIVOT_HEADER_SPACING;
     strip = MAX(strip, HIWORD(size));
   }
@@ -220,11 +220,16 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   // take the size of the header they repeat, which is already measured.
   int repeats = 0;
   for (int k = 0; !pPivot->IsLocked && count && hx < x + w && repeats < PIVOT_MAX_ITEMS; k++) {
-    struct Object *item = items[(pPivot->SelectedIndex + k) % count];
-    LRESULT size = Metro_Measure(Pivot_HeaderFor(hObject, item), 4096, 4096);
+    int index = (pPivot->SelectedIndex + k) % count;
+    struct Object *item = items[index];
+    LRESULT size = sizes[index];
     if (LOWORD(size) == 0) break;
-    struct Object *copy = Pivot_Repeat(hObject, repeats++);
+    struct Object *copy = repeats < copyCount ? copies[repeats] :
+      Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
     if (!copy) break;
+    GetPivotHeaderItem(copy)->_repeat = TRUE;
+    if (repeats == copyCount) copies[copyCount++] = copy;
+    repeats++;
     GetPivotHeaderItem(copy)->_item = item;
     Metro_SetText(copy, GetPivotItem(item)->Header, tolower);
     Metro_Show(copy, TRUE, METRO_DIM);
@@ -232,16 +237,11 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     Metro_Arrange(copy, hx, stripY, LOWORD(size), HIWORD(size));
     hx += LOWORD(size) + PIVOT_HEADER_SPACING;
   }
-  struct Object *unused[PIVOT_MAX_ITEMS];
-  int unusedCount = 0;
   // Keep spare copies as the moving strip crosses the edge; locking drops them.
-  FOR_EACH_OBJECT(child, hObject) {
-    struct PivotHeaderItem *header = GetPivotHeaderItem(child);
-    if (!header || !header->_repeat || repeats-- > 0) continue;
-    if (pPivot->IsLocked && unusedCount < PIVOT_MAX_ITEMS) unused[unusedCount++] = child;
-    else Metro_Show(child, FALSE, METRO_DIM);
+  for (int i = repeats; i < copyCount; i++) {
+    if (pPivot->IsLocked) OBJ_RemoveFromParent(copies[i]);
+    else Metro_Show(copies[i], FALSE, METRO_DIM);
   }
-  for (int i = 0; i < unusedCount; i++) OBJ_RemoveFromParent(unused[i]);
 
   float contentY = stripY + strip + PIVOT_CONTENT_TOP;
   if (count) {
