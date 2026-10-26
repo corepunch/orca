@@ -3,6 +3,8 @@ orca.init()
 local filesystem = require "orca.filesystem"
 local core = require "orca.core"
 require "orca.UIKit"
+-- Avatar textures need a current graphics context on macOS as well as real font metrics.
+require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
 
