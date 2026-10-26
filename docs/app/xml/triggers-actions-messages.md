@@ -72,7 +72,7 @@ in the nearest context cannot write into a more distant context. Forward
 initialization and refresh are guarded against feedback into the source.
 
 `Enabled="false"` disables an explicit binding. XML serialization preserves
-mode and enabled state. See [the complete sample](../../../samples/MvvmForms/README.md)
+mode and enabled state. See [the complete sample](../../../apps/MvvmForms/README.md)
 for separate schema, initial data, view, controller and committed snapshot.
 
 ## Trigger types
