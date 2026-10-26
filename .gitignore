@@ -108,10 +108,10 @@ build/webgl/plugins_luaopen.h
 site/
 docs/quickstart.md
 gdb.txt
-samples/Weather/**/*.lua
-!samples/Weather/config/*.lua
+apps/Weather/**/*.lua
+!apps/Weather/config/*.lua
 Error
-/samples/Book/Images
+/apps/Book/Images
 
 # Blender auto-backups next to committed .blend files
 *.blend1

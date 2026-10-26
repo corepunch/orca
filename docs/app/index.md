@@ -199,10 +199,10 @@ Treat samples as references for specific mechanisms, not complete standards.
 
 | Reference | Useful evidence | Boundary |
 | --- | --- | --- |
-| [Adventure shell](../../samples/Adventure/Screens/Adventures.xml) | XML shell, tab bindings, native page navigation | Its play controller also constructs message rows manually; this is not the preferred collection ownership pattern. |
-| [Banking app](../../samples/Banking/App.moon) | `Application`, separate views/layout, authentication routing | Banking was migrated to Widget/Application in commit `2071831f`; its old routing plugin was removed. |
-| [Weather app](../../samples/Weather/App.moon) | The same Widget/Application entry; separate model/service modules | Some views obtain remote data during content construction; prefer explicit request state for new work. |
-| [Example package](../../samples/Example/package.lua) | Semantic theme values, CSS, resources, and reusable presentation | Its dark/violet palette is one app design, not a universal ORCA theme. |
+| [Adventure shell](../../apps/Adventure/Screens/Adventures.xml) | XML shell, tab bindings, native page navigation | Its play controller also constructs message rows manually; this is not the preferred collection ownership pattern. |
+| [Banking app](../../apps/Banking/App.moon) | `Application`, separate views/layout, authentication routing | Banking was migrated to Widget/Application in commit `2071831f`; its old routing plugin was removed. |
+| [Weather app](../../apps/Weather/App.moon) | The same Widget/Application entry; separate model/service modules | Some views obtain remote data during content construction; prefer explicit request state for new work. |
+| [Example package](../../apps/Example/package.lua) | Semantic theme values, CSS, resources, and reusable presentation | Its dark/violet palette is one app design, not a universal ORCA theme. |
 | [Chat app](../../apps/chat/App.lua) | A Lua service adapter, working app states, and a native portrait preview | The app is still a prototype with much of its UI/state in one module; the recommended separation has not been applied to it. |
 
 Read one relevant example for the mechanism being implemented. The XML and

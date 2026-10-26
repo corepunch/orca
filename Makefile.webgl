@@ -15,9 +15,9 @@
 #
 # Usage:
 #   make webgl                          # build with share/ assets only
-#   make webgl WEBGL_DATA=samples/Example  # bundle a project into the build
-#   make webgl-demo                     # build with WEBGL_DEMO (default: samples/Example)
-#   make webgl-demo WEBGL_DEMO=samples/MyProject  # override the demo project
+#   make webgl WEBGL_DATA=apps/Example  # bundle a project into the build
+#   make webgl-demo                     # build with WEBGL_DEMO (default: apps/Example)
+#   make webgl-demo WEBGL_DEMO=apps/MyProject  # override the demo project
 #   make webgl-debug                    # debug build with source maps + assertions
 #   make webgl-debug-demo               # debug build bundling WEBGL_DEMO project
 #
@@ -30,7 +30,7 @@
 
 WEBGL_DIR      = build/webgl
 WEBGL_DATA    ?=
-WEBGL_DEMO    ?= samples/Example
+WEBGL_DEMO    ?= apps/Example
 WEBGL_EMCC     = emcc
 WEBGL_HOST_CC ?= cc
 WEBGL_SHELL   ?= web/shell.html
@@ -140,7 +140,7 @@ webgl: webgl-modules $(WEBGL_PLUGINS_H) $(WEBGL_DIR)
 
 # Bundle the demo project (WEBGL_DEMO) and deploy-ready share/ assets.
 # Override WEBGL_DEMO from the command line to bundle a different project:
-#   make webgl-demo WEBGL_DEMO=samples/MyProject
+#   make webgl-demo WEBGL_DEMO=apps/MyProject
 webgl-demo:
 	$(MAKE) webgl WEBGL_DATA=$(WEBGL_DEMO)
 
@@ -177,7 +177,7 @@ webgl-demo:
 #
 # Usage:
 #   emmake make webgl-debug
-#   emmake make webgl-debug WEBGL_DATA=samples/Example
+#   emmake make webgl-debug WEBGL_DATA=apps/Example
 #   python3 -m http.server --directory build/webgl
 #   # Open http://localhost:8000/orca.html — errors now report C file + line.
 # ──────────────────────────────────────────────────────────────────────────

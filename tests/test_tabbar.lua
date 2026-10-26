@@ -24,7 +24,7 @@ local filesystem_initialized = false
 
 local function ensure_filesystem_init()
   if filesystem_initialized then return end
-  filesystem.init("samples/Example")
+  filesystem.init("apps/Example")
   filesystem_initialized = true
 end
 

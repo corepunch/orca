@@ -6,7 +6,7 @@ local orca = require "orca"
 orca.init()
 local filesystem = require "orca.filesystem"
 local ui   = require "orca.UIKit"
-filesystem.init("samples/Metro")
+filesystem.init("apps/Metro")
 
 orca.async = function (fn, ...) fn(...) end
 

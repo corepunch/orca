@@ -9,7 +9,7 @@ a browser declaration, unit, selector, or shorthand.
 ## Theme and style ownership
 
 **Supported:** package `ThemeLibrary` entries define named theme values.
-`samples/Example/package.lua` uses semantic roles such as `surface`,
+`apps/Example/package.lua` uses semantic roles such as `surface`,
 `card-background`, `text-primary`, `text-secondary`, and `accent`:
 
 ```lua
@@ -39,7 +39,7 @@ do not move every visual constant into runtime construction code.
 
 **Supported:** load a stylesheet through `StyleSheet` on the consuming screen
 or node, and assign classes through XML/Lua `class` or `StyleClass`. Imports
-are relative to their stylesheet. `samples/Example/Styles/app.css` is a small
+are relative to their stylesheet. `apps/Example/Styles/app.css` is a small
 manifest importing base, layout, typography, component, and page styles.
 
 ```css

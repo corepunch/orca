@@ -461,7 +461,7 @@ _GetDefaultThemeValue(lpcString_t key)
 }
 
 static bool_t
-_BuildSamplePath(lpcString_t input, fixedString_t output)
+_BuildAppPath(lpcString_t input, fixedString_t output)
 {
   if (!input || !*input) {
     return FALSE;
@@ -469,7 +469,7 @@ _BuildSamplePath(lpcString_t input, fixedString_t output)
   if (strstr(input, "..")) {
     return FALSE;
   }
-  int written = snprintf(output, sizeof(fixedString_t), "samples/%s", input);
+  int written = snprintf(output, sizeof(fixedString_t), "apps/%s", input);
   return written > 0 && written < (int)sizeof(fixedString_t);
 }
 
@@ -713,9 +713,9 @@ FS_FileExists(lpcString_t path)
       fclose(fp);
       return TRUE;
     }
-    fixedString_t sample_path = {0};
-    if (_BuildSamplePath(path, sample_path)) {
-      fp = fopen(sample_path, "rb");
+    fixedString_t app_path = {0};
+    if (_BuildAppPath(path, app_path)) {
+      fp = fopen(app_path, "rb");
       if (fp) {
         fclose(fp);
         return TRUE;
@@ -746,9 +746,9 @@ FS_LoadFile(lpcString_t szFileName)
     return pFile;
   }
   {
-    fixedString_t sample_path = {0};
-    if (_BuildSamplePath(szFileName, sample_path)) {
-      if ((fp = fopen(sample_path, "rb"))) {
+    fixedString_t app_path = {0};
+    if (_BuildAppPath(szFileName, app_path)) {
+      if ((fp = fopen(app_path, "rb"))) {
         pFile = _ReadOnDisk(fp);
         fclose(fp);
         return pFile;

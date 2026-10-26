@@ -202,7 +202,7 @@ run:
 	$(TARGET) $(DATADIR)
 
 example:
-	$(TARGET) samples/Example
+	$(TARGET) apps/Example
 
 # Instrument cluster demo; Left/Right switch clusters. START=voltage opens on Voltage.
 cluster: unite
@@ -213,7 +213,7 @@ weather: copyshare
 		echo "Missing $(TARGET). Build the app before running 'make weather'."; \
 		exit 1; \
 	fi
-	$(TARGET) samples/Book
+	$(TARGET) apps/Book
 
 .PHONY: chat test-chat test-chat-appwrite test-network-headers
 chat: copyshare

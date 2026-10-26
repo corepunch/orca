@@ -64,7 +64,7 @@ Use the shorthand when it is clearer than a full trigger/action block.
 
 UIKit ships the Windows Phone 8 navigation controls under their original
 names. Metrics follow the WP8 templates scaled to a 390-point portrait screen.
-`samples/Metro` shows them in XML.
+`apps/Metro` shows them in XML.
 
 - `Pivot` with `PivotItem` children: a small-caps `Title`, then large
   lowercase headers. The selected header leads, the others follow dimmed and

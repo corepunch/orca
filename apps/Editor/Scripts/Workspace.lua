@@ -5,7 +5,7 @@ local core = require "orca.core"
 local plugs = "-plugins=~/Developer/icui/plugins"
 local server = "-server=true"
 -- local proj = "/Users/icherna/Developer/icui/ICHMIMain"
-local proj = "~/Developer/orca/samples/Example"
+local proj = "~/Developer/orca/apps/Example"
 
 local system = require "orca.system"
 

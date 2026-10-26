@@ -113,7 +113,7 @@ This stays readable because the colors live in the theme, not in the layout itse
 ## Example Application Theme
 
 The Example app in this repository defines its own theme keys in
-[samples/Example/package.lua](../samples/Example/package.lua),
+[apps/Example/package.lua](../apps/Example/package.lua),
 including:
 
 - `panel-background`

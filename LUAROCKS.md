@@ -187,8 +187,8 @@ make
 ### Running Examples
 
 ```bash
-make example  # Runs samples/Example
-build/bin/orca samples/Banking
+make example  # Runs apps/Example
+build/bin/orca apps/Banking
 ```
 
 ## License
