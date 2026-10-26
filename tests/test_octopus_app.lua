@@ -31,6 +31,9 @@ end
 local function click(app, name)
     find(app, name):send("Node.LeftButtonUp")
     drain(app)
+    app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+    app:afterPaint()
+    drain(app)
 end
 
 local function isShown(node)
@@ -63,7 +66,7 @@ assert(not app.media:path("f-reef"), "Building the timeline must not fetch offsc
 collectgarbage("collect")
 collectgarbage("collect")
 home:UpdateLayout(390, 844)
-app.photos:loadVisible()
+app:afterPaint()
 drain(app)
 assert(find(app, "Imagep-reef").Src == app.media:path("f-reef"), "Visible photo posts load their image")
 assert(find(app, "Imagep-reef").Source, "Downloaded photos must resolve a native image resource")
@@ -364,7 +367,7 @@ assert(writer.currentRoute == "/write" and find(writer, "WriteStatus"):getTextCo
 writer.client.uploadImage = upload
 click(writer, "Publish")
 writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
-writer.photos:loadVisible()
+writer:afterPaint()
 drain(writer)
 assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "Image" .. writer.post.id))
 click(writer, "BackFromPost")
@@ -373,7 +376,7 @@ click(writer, "Kindquote")
 assert(find(writer, "QuoteText").Text == "Stay curious." and isShown(find(writer, "QuotePhotoPreview")))
 click(writer, "Publish")
 writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
-writer.photos:loadVisible()
+writer:afterPaint()
 drain(writer)
 assert(writer.post.postType == "quote" and writer.post.quoteSource == "A friend" and writer.post.userText == "A good reminder."
     and writer.post.imageId and find(writer, "Image" .. writer.post.id), "Quote photos are published and displayed")

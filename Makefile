@@ -419,7 +419,11 @@ HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-mvvm-form
-HEADLESS_LUA_TESTS += test-footer
+HEADLESS_LUA_TESTS += test-footer test-viewport-observer test-avatar-loader test-chat-photo-loader
+
+$(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-chat-photo-loader,tests/test_chat_photo_loader.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
 

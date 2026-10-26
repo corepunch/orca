@@ -195,7 +195,7 @@ function People.me(self)
             photo:setTextContent("Change photo")
             if self.profileView ~= view then return end
             if not profile then self:notice(err.message, true); return end
-            self.avatarPaths[session.user.id] = nil
+            self.avatars:invalidate(session.user.id)
             C.clear(view.avatar):addChild(C.avatar(profile.username, 96, session.user.id, self))
             self:notice("Photo updated. It shows on the website and in Chat too.")
             self:repaint()
