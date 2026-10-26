@@ -12,6 +12,14 @@
     <external struct="style_selector"/>
   </externals>
   <enums>
+    <enum name="ScrollPhase">
+      <summary>Direct-touch scrolling lifecycle; None preserves ordinary wheel scrolling.</summary>
+      <value name="None">Discrete wheel event</value>
+      <value name="Begin">Finger down; interrupt ongoing momentum</value>
+      <value name="Update">Finger drag</value>
+      <value name="End">Finger released; start deceleration</value>
+      <value name="Cancel">Gesture cancelled; settle without momentum</value>
+    </enum>
     <enum name="MessageRouting">
       <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
       <value name="Bubbling">Messages are bubbled up the hierarchy.</value>
@@ -1141,6 +1149,8 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
             <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
             <field name="button" type="MouseButton">The mouse button involved in this event</field>
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
+            <field name="scrollPhase" type="ScrollPhase">Direct-touch scroll lifecycle, or None for a wheel</field>
+            <field name="timestamp" type="uint">Touch sample time in milliseconds; wraps as an unsigned clock</field>
           </fields>
         </message>
         <message name="LeftButtonDown" same-as="MouseMessage">

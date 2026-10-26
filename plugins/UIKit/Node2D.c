@@ -509,20 +509,173 @@ HANDLER(Node2D, Object, Destroy)
   return FALSE;
 }
 
-HANDLER(Node2D, Node, ScrollWheel)
+// Scrolling uses ContentOffset's property path, so frames reuse layout and
+// still invalidate descendant transforms and painting.
+static void
+Node2D_ScrollOffset(struct Object *object, struct Node2D *view, float y)
 {
-  struct Node *node = pNode2D->_node;
-  if (pNode2D->Overflow.y == kOverflowScroll) {
-    float maxScroll = MIN(0, node->Size.Axis[1].Actual - node->Size.Axis[1].Scroll);
-    if (maxScroll < 0) {
-      struct vec2 Offset = pNode2D->ContentOffset;
-      Offset.y = MAX(MIN(Offset.y + pScrollWheel->deltaY, 0), maxScroll);
-      struct Property *property = OBJ_FindLongProperty(hObject, ID_Node2D_ContentOffset);
-      if (property) PROP_SetValue(property, &Offset);
-      return TRUE;
-    }
+  struct vec2 offset = view->ContentOffset;
+  offset.y = y;
+  struct Property *property = OBJ_FindLongProperty(object, ID_Node2D_ContentOffset);
+  view->_scrollWriting = TRUE;
+  if (property) PROP_SetValue(property, &offset);
+  view->_scrollWriting = FALSE;
+}
+
+static float
+Node2D_ScrollLimit(struct Node2D *view)
+{
+  return MIN(0, view->_node->Size.Axis[1].Actual - view->_node->Size.Axis[1].Scroll);
+}
+
+static float
+Scroll_Clamp(float value, float minimum) { return MAX(minimum, MIN(0, value)); }
+
+// Bounded edge resistance with a matching inverse: grabbing a bouncing list
+// preserves its current visual position rather than snapping it to an edge.
+static float
+Scroll_Rubber(float value, float minimum, float extent)
+{
+  float edge = Scroll_Clamp(value, minimum), distance = value - edge;
+  return edge + distance * 0.55f / (1 + fabsf(distance) * 0.55f / MAX(extent, 1));
+}
+
+static float
+Scroll_Unrubber(float value, float minimum, float extent)
+{
+  float edge = Scroll_Clamp(value, minimum), distance = value - edge;
+  float ratio = MIN(fabsf(distance) / MAX(extent, 1), 0.95f);
+  return edge + distance / (0.55f * (1 - ratio));
+}
+
+static bool_t
+Node2D_ScrollVisible(struct Object *object)
+{
+  for (struct Object *node = object; node; node = OBJ_GetParent(node)) {
+    struct Screen *screen = GetScreen(node);
+    if (screen) return screen->Visible;
+    if (GetNode(node) && OBJ_IsHidden(node)) return FALSE;
   }
   return FALSE;
+}
+
+static void
+Node2D_ScrollRelease(struct Object *object, struct Node2D *view, bool_t cancelled, uint32_t timestamp)
+{
+  view->_scrollTracking = FALSE;
+  if (cancelled || !view->InertiaScrolling || timestamp - view->_scrollSampleTime > 100)
+    view->_scrollVelocity.y = 0;
+  float y = view->ContentOffset.y, minimum = Node2D_ScrollLimit(view);
+  view->_scrollAnimating = fabsf(view->_scrollVelocity.y) > 5 || fabsf(y - Scroll_Clamp(y, minimum)) > 0.25f;
+  view->_scrollAnimTime = axGetMilliseconds();
+  if (view->_scrollAnimating) OBJ_RequestAnimate(object);
+}
+
+HANDLER(Node2D, Node, ScrollWheel)
+{
+  float minimum = Node2D_ScrollLimit(pNode2D);
+  if (pScrollWheel->scrollPhase == kScrollPhaseBegin) {
+    if (pNode2D->Overflow.y != kOverflowScroll || minimum >= 0) return FALSE;
+    pNode2D->_scrollAnimating = FALSE;
+    pNode2D->_scrollTracking = TRUE;
+    pNode2D->_scrollVelocity.y = 0;
+    pNode2D->_scrollRawOffset.y = Scroll_Unrubber(pNode2D->ContentOffset.y, minimum,
+                                                pNode2D->_node->Size.Axis[1].Actual);
+    pNode2D->_scrollSampleTime = pScrollWheel->timestamp;
+    return TRUE;
+  }
+  if (pScrollWheel->scrollPhase != kScrollPhaseNone) {
+    if (!pNode2D->_scrollTracking) return FALSE;
+    if (pNode2D->Overflow.y != kOverflowScroll || !Node2D_ScrollVisible(hObject)) {
+      pNode2D->_scrollTracking = pNode2D->_scrollAnimating = FALSE;
+      pNode2D->_scrollVelocity.y = 0;
+      Node2D_ScrollOffset(hObject, pNode2D, Scroll_Clamp(pNode2D->ContentOffset.y, minimum));
+      return FALSE;
+    }
+    if (pScrollWheel->scrollPhase == kScrollPhaseEnd || pScrollWheel->scrollPhase == kScrollPhaseCancel) {
+      Node2D_ScrollRelease(hObject, pNode2D, pScrollWheel->scrollPhase == kScrollPhaseCancel,
+                           pScrollWheel->timestamp);
+      return TRUE;
+    }
+    if (pScrollWheel->scrollPhase != kScrollPhaseUpdate) return FALSE;
+    uint32_t elapsed = pScrollWheel->timestamp - pNode2D->_scrollSampleTime;
+    pNode2D->_scrollRawOffset.y += pScrollWheel->deltaY;
+    float raw = pNode2D->_scrollRawOffset.y;
+    float y = pNode2D->RubberBandScrolling ? Scroll_Rubber(raw, minimum, pNode2D->_node->Size.Axis[1].Actual)
+                                        : Scroll_Clamp(raw, minimum);
+    // Sample visual movement, not uncompressed overdrag, to avoid an edge fling.
+    if (elapsed > 0 && elapsed <= 100) {
+      float velocity = (y - pNode2D->ContentOffset.y) * 1000 / elapsed;
+      float weight = 1 - expf(-(float)elapsed / 35);
+      pNode2D->_scrollVelocity.y += (CLAMP(velocity, -6000, 6000) - pNode2D->_scrollVelocity.y) * weight;
+    } else if (elapsed > 100) pNode2D->_scrollVelocity.y = 0;
+    pNode2D->_scrollSampleTime = pScrollWheel->timestamp;
+    if (!pNode2D->RubberBandScrolling) pNode2D->_scrollRawOffset.y = y;
+    Node2D_ScrollOffset(hObject, pNode2D, y);
+    return TRUE;
+  }
+  if (pNode2D->Overflow.y != kOverflowScroll || minimum >= 0) return FALSE;
+  pNode2D->_scrollTracking = pNode2D->_scrollAnimating = FALSE;
+  pNode2D->_scrollVelocity.y = 0;
+  Node2D_ScrollOffset(hObject, pNode2D, Scroll_Clamp(pNode2D->ContentOffset.y + pScrollWheel->deltaY, minimum));
+  return TRUE;
+}
+
+HANDLER(Node2D, Object, PropertyChanged)
+{
+  if (!pPropertyChanged->Property || pNode2D->_scrollWriting) return FALSE;
+  uint32_t id = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  if (id == ID_Node2D_InertiaScrolling && !pNode2D->InertiaScrolling)
+    pNode2D->_scrollVelocity.y = 0;
+  if (id == ID_Node2D_ContentOffset) {
+    pNode2D->_scrollTracking = pNode2D->_scrollAnimating = FALSE;
+    pNode2D->_scrollVelocity.y = 0;
+  }
+  return FALSE;
+}
+
+HANDLER(Node2D, Object, Animate)
+{
+  if (!pNode2D->_scrollAnimating) return FALSE;
+  uint32_t now = axGetMilliseconds();
+  float dt = MIN((uint32_t)(now - pNode2D->_scrollAnimTime), 64u) / 1000.0f;
+  pNode2D->_scrollAnimTime = now;
+  float minimum = Node2D_ScrollLimit(pNode2D), y = pNode2D->ContentOffset.y;
+  float velocity = pNode2D->_scrollVelocity.y;
+  if (!Node2D_ScrollVisible(hObject) || pNode2D->Overflow.y != kOverflowScroll) {
+    pNode2D->_scrollAnimating = FALSE;
+    pNode2D->_scrollVelocity.y = 0;
+    Node2D_ScrollOffset(hObject, pNode2D, Scroll_Clamp(y, minimum));
+    return FALSE;
+  }
+  // Short integration steps keep the spring stable at 30/60/120 Hz and after
+  // delayed frames. Critically damped return settles without repeated bounces.
+  while (dt > 0) {
+    float step = MIN(dt, 1.0f / 240), edge = Scroll_Clamp(y, minimum);
+    if (y != edge && pNode2D->RubberBandScrolling) {
+      velocity += (-180 * (y - edge) - 26.833f * velocity) * step;
+      y += velocity * step;
+    } else {
+      float decay = expf(-4.2f * step);
+      y += velocity * (1 - decay) / 4.2f;
+      velocity *= decay;
+    }
+    if (!pNode2D->RubberBandScrolling) {
+      float clamped = Scroll_Clamp(y, minimum);
+      if (clamped != y) velocity = 0;
+      y = clamped;
+    }
+    dt -= step;
+  }
+  if (fabsf(velocity) < 5 && fabsf(y - Scroll_Clamp(y, minimum)) < 0.25f) {
+    y = Scroll_Clamp(y, minimum);
+    velocity = 0;
+    pNode2D->_scrollAnimating = FALSE;
+  }
+  pNode2D->_scrollVelocity.y = velocity;
+  Node2D_ScrollOffset(hObject, pNode2D, y);
+  if (pNode2D->_scrollAnimating) OBJ_RequestAnimate(hObject);
+  return TRUE;
 }
 
 HANDLER(Node2D, Node, MouseMoved)

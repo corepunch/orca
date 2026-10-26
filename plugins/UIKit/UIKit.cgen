@@ -329,6 +329,8 @@
         <handle message="Node.UpdateMatrix"/>
         <handle message="Object.Create"/>
         <handle message="Object.Destroy"/>
+        <handle message="Object.Animate"/>
+        <handle message="Object.PropertyChanged"/>
         <handle message="Node2D.UpdateGeometry"/>
         <handle message="Node2D.DrawBackground"/>
         <handle message="Node2D.DrawForeground"/>
@@ -345,6 +347,8 @@
         <property name="LayoutTransform" type="transform2" default=".scale={1,1}">Transformation applied during layout calculations. Affects size and positioning but does not influence local rendering.</property>
         <property name="RenderTransform" type="transform2" default=".scale={1,1}">Transformation applied at render time. Affects how the element is drawn (rotation, scale, skew, etc.) without altering layout.</property>
         <property name="RenderTransformOrigin" type="vec2">The origin point for applying RenderTransform. Defines the pivot point relative to the element.</property>
+        <property name="InertiaScrolling" type="bool" default="true">Direct-touch scrolling decelerates after release. Does not affect wheel input.</property>
+        <property name="RubberBandScrolling" type="bool" default="true">Direct-touch drags resist at scroll boundaries and spring back on release.</property>
         <property name="ContentOffset" type="vec2">Pixel offset applied to the element's content. Can be used for subpixel positioning or scrolling adjustments.</property>
         <property name="Matrix" type="mat4" private="true">Final transformation matrix applied to the node. Computed result of layout, render, and parent transforms.</property>
         <property name="RenderTarget" type="Texture" pointer="true">Optional render target for offscreen drawing. When set, the node is rendered into this texture/image instead of directly on screen.</property>
@@ -367,6 +371,13 @@
         <property name="ForegroundHint" type="ForegroundHint">Hint for how foreground should be rendered. May be used for accessibility, high-contrast, or text rendering optimizations.</property>
       </properties>
       <fields>
+        <field name="_scrollVelocity" type="vec2">Touch scroll velocity in points per second</field>
+        <field name="_scrollRawOffset" type="vec2">Uncompressed drag position before edge resistance</field>
+        <field name="_scrollSampleTime" type="uint">Last direct-touch sample time</field>
+        <field name="_scrollAnimTime" type="uint">Last scroll animation tick time</field>
+        <field name="_scrollWriting" type="bool">Internal offset property update guard</field>
+        <field name="_scrollTracking" type="bool">Direct-touch scroll sequence is active</field>
+        <field name="_scrollAnimating" type="bool">Momentum or spring return is active</field>
         <field name="_node" type="Node" pointer="true">Internal node reference </field>
         <field name="_object" type="Object" pointer="true">Internal object reference </field>
         <field name="_userdata" type="int">User-defined data storage </field>
