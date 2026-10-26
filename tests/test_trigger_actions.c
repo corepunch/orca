@@ -3,6 +3,7 @@
 #include <lualib.h>
 
 #include <include/orca.h>
+#include <include/scene_format.h>
 #include <include/codegen.h>
 #include <core/core.h>
 #include <filesystem/filesystem.h>
@@ -339,16 +340,26 @@ test_generated_action_property_order(void)
 }
 
 static void
-test_generated_action_lisp(void)
+test_generated_action_scene(void)
 {
-  RUN_TEST("generated_action_lisp", {
+  RUN_TEST("generated_action_scene", {
     reset_observed();
 
-    struct Object *root = FS_LoadObjectFromLispString(
+#if ORCA_HAS_LISP
+    const char *scene =
       "(TestTriggerHost Name=\"Root\" "
       "(TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\" "
       "(TestTriggerSink Name=\"Target\") "
-      "(Object.Start Target=\"Target\")))");
+      "(Object.Start Target=\"Target\")))";
+#else
+    const char *scene =
+      "<TestTriggerHost Name=\"Root\">"
+      "<TestEventTriggerSource Name=\"Source\" RoutedEvent=\"Node.LeftButtonUp\">"
+      "<TestTriggerSink Name=\"Target\"/>"
+      "<Object.Start Target=\"Target\"/>"
+      "</TestEventTriggerSource></TestTriggerHost>";
+#endif
+    struct Object *root = ORCA_LOAD_SCENE_STRING(scene);
     EXPECT(root != NULL);
     reset_observed();
 
@@ -418,7 +429,7 @@ main(void)
   test_event_trigger_single_value();
   test_event_trigger_partial_payload_defaults_to_zero();
   test_generated_action_property_order();
-  test_generated_action_lisp();
+  test_generated_action_scene();
   test_generated_action_dispatch();
   test_generated_action_unset_target_dispatches_sender();
 

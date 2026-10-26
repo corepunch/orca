@@ -5,6 +5,8 @@
 #include <source/core/core_local.h>
 #include <ctype.h>
 
+#if ORCA_HAS_LISP
+
 #define LISP_MAX_DEPTH 128
 #define LISP_MAX_ARGS TOKEN_MAX_ARGS
 
@@ -408,3 +410,11 @@ FS_EnumLispLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), vo
   }
   if (root) xmlFreeNode(root);
 }
+
+#else
+ORCA_API struct Object *FS_LoadObjectFromLisp(lpcString_t path) { (void)path; return NULL; }
+ORCA_API struct Object *FS_LoadObjectFromLispString(lpcString_t source) { (void)source; return NULL; }
+struct Object *FS_LoadObjectFromLispLibrary(lpcString_t path) { (void)path; return NULL; }
+void FS_EnumLispLibrary(lpcString_t path, void (*fn)(lpcString_t, void *), void *arg)
+{ (void)path; (void)fn; (void)arg; }
+#endif

@@ -36,8 +36,22 @@ struct Object *FS_BuildObjectTree(struct _xmlNode *root, lpcString_t source);
 struct _xmlDoc *FS_SerializeObjectTree(struct Object const *object);
 struct Object *FS_LoadObjectFromLispLibrary(lpcString_t path);
 void FS_EnumLispLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
+struct Object *FS_LoadObjectFromXmlLibrary(lpcString_t path);
+void FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), void *arg);
+#if ORCA_HAS_LISP
+#define FS_LoadObjectFromSceneLibrary FS_LoadObjectFromLispLibrary
+#define FS_EnumSceneLibrary FS_EnumLispLibrary
+#else
+#define FS_LoadObjectFromSceneLibrary FS_LoadObjectFromXmlLibrary
+#define FS_EnumSceneLibrary FS_EnumXmlLibrary
+#endif
 
-/* XML is a datasource interchange format, not a scene loader. */
+#define FS_XML_SCENE_DOCUMENT 2
+#if ORCA_HAS_XML
+bool_t FS_NormalizeXmlSceneAttributes(struct Object *object, struct _xmlNode *node);
+#endif
+
+/* Datasource XML remains available regardless of the scene-format selection. */
 struct Object *FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema);
 
 void

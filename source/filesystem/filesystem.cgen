@@ -311,15 +311,27 @@
       <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
       <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
     </function>
+    <function name="LoadObjectFromXml" export="loadObjectFromXml">
+      <summary>Loads an object tree from an XML scene file when XML scenes are enabled</summary>
+      <details>Returns an owning reference in C, transferred to Lua userdata. The Lua API is absent in Lisp builds; the C function returns NULL.</details>
+      <arg name="path" type="string">Path to the XML scene</arg>
+      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromXmlString" export="loadObjectFromXmlString">
+      <summary>Parses an XML scene when XML scenes are enabled</summary>
+      <details>Supports legacy binding and inline-object shorthand through the shared scene builder. Returns an owning reference in C, transferred to Lua userdata. The Lua API is absent in Lisp builds; the C function returns NULL.</details>
+      <arg name="source" type="string">Scene source</arg>
+      <returns type="Object" pointer="true">Root object, or nil on failure</returns>
+    </function>
     <function name="LoadObjectFromLisp" export="loadObjectFromLisp">
       <summary>Loads an object tree from a Lisp scene file</summary>
-      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata.</details>
+      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata. The Lua API is absent in XML builds; the C function returns NULL.</details>
       <arg name="path" type="string">Path to the Lisp scene</arg>
       <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromLispString" export="loadObjectFromLispString">
       <summary>Parses a Lisp scene with scalar, object and binding property values</summary>
-      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata.</details>
+      <details>Returns an owning reference in C. Lua transfers that reference to the returned userdata. The Lua API is absent in XML builds; the C function returns NULL.</details>
       <arg name="source" type="string">Scene source</arg>
       <returns type="Object" pointer="true">Root object, or nil on failure</returns>
     </function>

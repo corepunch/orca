@@ -38,10 +38,10 @@ alternate scene examples; `Application.lisp` is the active application.
 existing `XmlDataSource`. The Lua package, CSS, SVG icons, and data-source format
 are independent of the scene syntax and are not converted by this migration.
 
-The scene loader accepts Lisp only: `.xml` scene registration and the
-`loadObjectFromXml*` scene APIs have been removed. Other sample applications
-have not been migrated. XML data/schema parsing and XML export remain separate
-from scene loading.
+Example requires the default `SCENE_FORMAT=lisp` build. The alternative
+`SCENE_FORMAT=xml` build enables XML scenes for unmigrated applications and
+disables Lisp scene loading. See [build options](../../docs/BUILD.md).
+XML data/schema parsing and serialization are independent of this selection.
 
 This is a declarative scene and binding language, not a general-purpose Lisp
 interpreter. Binding expressions use the existing reactive property evaluator;

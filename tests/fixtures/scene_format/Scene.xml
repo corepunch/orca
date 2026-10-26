@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Node2D Name="FormatScene" Width="100" Height="80">
+  <Node.DataContext><SceneFormatDraft Name="Context" Title="draft"/></Node.DataContext>
+  <TextBlock Name="Label" Text="A &amp; B &lt;tag&gt; &quot;quoted&quot;&#10;Привет"/>
+  <Input Name="Edit" Text="{Binding DataContext/Title, Mode=TwoWay}"/>
+  <Node2D Name="Computed" Width="{Binding ../Width}">
+    <BindingExpression Target="Node.Height">IF(STEP(90, {../Width}), 40, 20)</BindingExpression>
+  </Node2D>
+  <Node2D Name="Target" Visible="true"/>
+  <Node2D Name="Hide" LeftButtonUp="{HideAction Path=../Target}"/>
+</Node2D>

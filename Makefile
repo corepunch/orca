@@ -1,4 +1,12 @@
 APPNAME = orca
+SCENE_FORMAT ?= lisp
+ifeq ($(SCENE_FORMAT),lisp)
+SCENE_FORMAT_FLAGS = -DORCA_SCENE_FORMAT=1
+else ifeq ($(SCENE_FORMAT),xml)
+SCENE_FORMAT_FLAGS = -DORCA_SCENE_FORMAT=2
+else
+$(error SCENE_FORMAT must be lisp or xml)
+endif
 LIBNAME = orca
 BUILDDIR = build
 SOURCEDIR = source
@@ -377,7 +385,7 @@ endif
 define C_TEST_RULE
 $(1): $(4) $(if $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB))
 	$(Q)echo "Building $(1)"
-	$(Q)$(CC) $(CFLAGS) $(5) -Wall $(2) -o $(3) $(6) $(if $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB))
+	$(Q)$(CC) $$(CFLAGS) $(5) -Wall $(2) -o $(3) $(6) $(if $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB))
 	$(Q)$(if $(and $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB)),DYLD_INSERT_LIBRARIES="$(abspath $(TEST_MEMORY_DYLIB))") $(3)
 endef
 
@@ -418,6 +426,14 @@ HEADLESS_LUA_TESTS += test-chat-polling
 HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-mvvm-form
+HEADLESS_LUA_TESTS += test-scene-format
+# Scene fixtures belong to their format; common engine tests run in both builds.
+ifeq ($(SCENE_FORMAT),xml)
+HEADLESS_LUA_TESTS := $(filter-out test-layout test-styles-lua test-widget test-metro test-grid-tracks test-pagehost-listbox test-navigationhost test-lisp-library test-scene-reflections test-lisp test-example-lisp test-lisp-serialization test-string-bindings test-two-way-bindings test-mvvm-form,$(HEADLESS_LUA_TESTS))
+endif
+.PHONY: test-scene-format
+test-scene-format: unite
+	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
 
 $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
@@ -484,3 +500,6 @@ test: test-headless test-text-layout test-stack-layout test-grid-layout test-gri
 	$(Q)$(TARGET) -test=tests/test.xml
 
 include Makefile.webgl
+
+# Apply selection after all ordinary flags, including command-line overrides.
+override CFLAGS += $(SCENE_FORMAT_FLAGS)

@@ -261,9 +261,9 @@ UI_EnumObjectAliases(struct Object *object, EnumAliasProc proc, void* args)
 struct Object *
 OBJ_Instantiate(struct Object *prefab)
 {
-  const char* lisp = FS_SerializeObjectToLispString(prefab);
-  struct Object* obj = FS_LoadObjectFromLispString(lisp);
-  free((char*)lisp);
+  const char* scene = ORCA_SERIALIZE_SCENE(prefab);
+  struct Object* obj = ORCA_LOAD_SCENE_STRING(scene);
+  free((char*)scene);
   return obj;
 }
 

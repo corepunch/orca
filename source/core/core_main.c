@@ -902,9 +902,24 @@ ORCA_API void core_RunAllPrograms(lua_State* L, struct Object* root) {
 
 
 
+static int
+l_instantiate_owned(lua_State *L)
+{
+  struct Object *object = OBJ_Instantiate(luaX_checkObject(L, 1));
+  luaX_pushObject(L, object);
+  if (object) OBJ_ReleaseRef(object);
+  return 1;
+}
+
 void
 after_core_module_registered(lua_State* L)
 {
+  // Instantiate returns an owning reference; transfer it to the userdata.
+  luaL_getmetatable(L, API_TYPE_OBJECT);
+  lua_pushcfunction(L, l_instantiate_owned);
+  lua_setfield(L, -2, "instantiate");
+  lua_pop(L, 1);
+
   // Override the default positional-args 'new' for struct types that have
   // special numeric-shorthand construction (e.g. Thickness(10) means all
   // sides, not just the first positional field).

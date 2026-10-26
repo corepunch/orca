@@ -652,6 +652,14 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
     return NULL;
   }
 
+#if ORCA_HAS_XML
+  if (x->doc && x->doc->_private == (void *)FS_XML_SCENE_DOCUMENT &&
+      !FS_NormalizeXmlSceneAttributes(o, x)) {
+    OBJ_ReleaseRef(o);
+    return NULL;
+  }
+#endif
+
   FOR_EACH_LIST(xmlAttr, a, x->properties) {
     visit_attr(o, a);
   }

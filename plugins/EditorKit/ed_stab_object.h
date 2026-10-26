@@ -344,8 +344,8 @@ ORCA_API bool_t OBJ_SaveDocument(struct Object *object) {
   const char *slash = strrchr(src, '/');
   if (extension && slash && extension < slash) extension = NULL;
   snprintf(path, sizeof(path), "%s%s", src,
-           extension && !strcmp(extension, ".lisp") ? "" : ".lisp");
-  const char *text = FS_SerializeObjectToLispString(object);
+           extension && !strcmp(extension, ORCA_SCENE_EXTENSION) ? "" : ORCA_SCENE_EXTENSION);
+  const char *text = ORCA_SERIALIZE_SCENE(object);
   if (!text) return FALSE;
   FILE *file = fopen(path, "w");
   if (!file) { free((char *)text); return FALSE; }

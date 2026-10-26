@@ -59,6 +59,7 @@ WEBGL_CFLAGS  = -Oz -flto -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sFETCH=1
 
+
 WEBGL_LDFLAGS = -sUSE_ZLIB=1 -sUSE_FREETYPE=1 \
                 -sUSE_WEBGL2=1 -sMIN_WEBGL_VERSION=1 -sMAX_WEBGL_VERSION=2 \
                 -sINITIAL_MEMORY=64MB \
@@ -191,6 +192,7 @@ WEBGL_DEBUG_CFLAGS  = -g -O1 -I. -I$(CURDIR) -Igenerated -I$(PLATFORM_LIBDIR) \
                       -I$(WEBGL_DIR) \
                       -DSHAREDIR='"/share"'
 
+
 # Debug LDFLAGS: no --closure, ASSERTIONS=1, SAFE_HEAP, source map, stack traces.
 # (ASSERTIONS=1 rather than 2: see comment above for why 2 crashes on iOS touch)
 WEBGL_DEBUG_LDFLAGS = -sUSE_ZLIB=1 -sUSE_LIBPNG=1 -sUSE_FREETYPE=1 -sUSE_LIBJPEG=1 \
@@ -299,3 +301,7 @@ $(WASM_DEPS_DIR)/lib/libxml2.a:
 	    --without-zlib --without-lzma --without-iconv \
 	    CFLAGS="-O2 -DNDEBUG"
 	cd /tmp/wasm-xml2 && emmake make -j$(shell nproc) install
+
+# Apply selection after all ordinary flags, including command-line overrides.
+override WEBGL_CFLAGS += $(SCENE_FORMAT_FLAGS)
+override WEBGL_DEBUG_CFLAGS += $(SCENE_FORMAT_FLAGS)

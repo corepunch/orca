@@ -1,4 +1,4 @@
-/* Focused C tests for the Lisp scene reader. */
+/* Focused C tests for the selected scene reader. */
 
 #include "test_local.h"
 #include "mem_tracker.h"
@@ -13,6 +13,7 @@
 #include <assert.h>
 
 #include <include/orca.h>
+#include <include/scene_format.h>
 #include <core/core.h>
 #include <filesystem/filesystem.h>
 
@@ -41,12 +42,16 @@ ensure_class_registry(void)
 /* Tests                                                               */
 /* ------------------------------------------------------------------ */
 
-static void test_lisp_tree(void)
+static void test_scene_tree(void)
 {
-    RUN_TEST("lisp_tree_preserves_names_and_children", {
+    RUN_TEST("scene_tree_preserves_names_and_children", {
         ensure_class_registry();
-        struct Object *root = FS_LoadObjectFromLispString(
-            "(Object Name=\"Root\" (Object Name=\"Child & \\\"quoted\\\"\"))");
+#if ORCA_HAS_LISP
+        const char *source = "(Object Name=\"Root\" (Object Name=\"Child & \\\"quoted\\\"\"))";
+#else
+        const char *source = "<Object Name=\"Root\"><Object Name=\"Child &amp; &quot;quoted&quot;\"/></Object>";
+#endif
+        struct Object *root = ORCA_LOAD_SCENE_STRING(source);
         EXPECT(root != NULL);
         EXPECT_STR_EQ(OBJ_GetName(root), "Root");
         struct Object *child = root ? OBJ_FindChild(root, "Child & \"quoted\"", FALSE) : NULL;
@@ -58,12 +63,19 @@ static void test_lisp_tree(void)
     });
 }
 
-static void test_lisp_rejects_malformed_input(void)
+static void test_scene_rejects_malformed_input(void)
 {
-    RUN_TEST("lisp_rejects_unterminated_and_trailing_input", {
+    RUN_TEST("scene_rejects_unterminated_and_trailing_input", {
         ensure_class_registry();
-        EXPECT(FS_LoadObjectFromLispString("(Object Name=\"broken\"") == NULL);
-        EXPECT(FS_LoadObjectFromLispString("(Object) (Object)") == NULL);
+#if ORCA_HAS_LISP
+        const char *unterminated = "(Object Name=\"broken\"";
+        const char *trailing = "(Object) (Object)";
+#else
+        const char *unterminated = "<Object Name=\"broken\">";
+        const char *trailing = "<Object/><Object/>";
+#endif
+        EXPECT(ORCA_LOAD_SCENE_STRING(unterminated) == NULL);
+        EXPECT(ORCA_LOAD_SCENE_STRING(trailing) == NULL);
     });
 }
 
@@ -73,8 +85,8 @@ static void test_lisp_rejects_malformed_input(void)
 
 int main(void)
 {
-    test_lisp_tree();
-    test_lisp_rejects_malformed_input();
+    test_scene_tree();
+    test_scene_rejects_malformed_input();
 
     printf("\n%d test(s) run, %d failure(s)\n", s_tests_run, s_tests_failed);
     return s_tests_failed == 0 ? 0 : 1;

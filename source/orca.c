@@ -107,7 +107,7 @@ static int scaffold(char const *name) {
   if (f) {
     fprintf(f,
       "Name = \"%s\"\n"
-      "StartupScreen = \"%s/Screens/Main.lisp\"\n"
+      "StartupScreen = \"%s/Screens/Main" ORCA_SCENE_EXTENSION "\"\n"
       "ScreenLibrary = { IsExternal = true }\n"
       "ImageLibrary = { IsExternal = true }\n"
       "EnginePlugins = { { Name = \"orca.UIKit\" } }\n"
@@ -116,18 +116,25 @@ static int scaffold(char const *name) {
     fclose(f);
   }
 
-  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main.lisp", dir);
+  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main" ORCA_SCENE_EXTENSION, dir);
   f = fopen(scrpath, "w");
   if (f) {
+#if ORCA_HAS_LISP
     fprintf(f,
       "(Screen Name=\"Main\" Width=1024 Height=768\n"
       "  (TextBlock Text=\"Hello, %s!\" FontSize=48 LayoutTransform=\"400 350 0 1 1\"))\n", name);
+#else
+    fprintf(f,
+      "<Screen Name=\"Main\" Width=\"1024\" Height=\"768\">\n"
+      "  <TextBlock Text=\"Hello, %s!\" FontSize=\"48\" LayoutTransform=\"400 350 0 1 1\"/>\n"
+      "</Screen>\n", name);
+#endif
     fclose(f);
   }
 
   printf("Created '%s/'\n"
          "  package.lua\n"
-         "  Screens/Main.lisp\n"
+         "  Screens/Main" ORCA_SCENE_EXTENSION "\n"
          "  Images/\n\n"
          "Run:  orca %s\n", dir, dir);
   return 0;
