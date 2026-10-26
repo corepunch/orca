@@ -4,8 +4,9 @@
  * Include this header in a test binary to get allocation tracking.  When the
  * binary is compiled with -DTEST_MEMORY, real replacements for malloc, calloc,
  * realloc, free, and strdup count live allocations. ELF uses executable symbol
- * interposition; Darwin uses explicit dyld interpose entries so two-level
- * namespace imports in liborca are counted too.
+ * interposition; Darwin injects a helper dylib with dyld interpose entries so
+ * two-level namespace imports in liborca are counted too. Its counter is
+ * shared with the test binary through a small exported interface.
  *
  * Usage:
  *   1. Call mem_init() at the top of main() before any test code.
@@ -29,6 +30,15 @@
 #include <stddef.h>
 #include <stdlib.h>  /* abort() */
 #include <string.h>  /* memset, memcpy, strlen — provided by libc directly */
+
+#if defined(__APPLE__) && !defined(ORCA_MEMORY_INTERPOSER)
+/* Implemented by the injected test helper, which owns the allocator hooks and
+ * counters. Keeping hooks in a dylib lets dyld replace liborca's imports. */
+extern void orca_test_memory_init(void);
+extern long orca_test_memory_snapshot(void);
+#define mem_init orca_test_memory_init
+#define MEM_SNAPSHOT() orca_test_memory_snapshot()
+#else
 
 /* Small bootstrap buffer used *only* while dlsym() resolves the real
  * allocator pointers.  dlsym itself calls calloc() once internally (on
@@ -206,8 +216,8 @@ char *MEM_ALLOCATOR(strdup)(const char *source) {
 }
 
 #ifdef __APPLE__
-/* Distinct names keep the replacee references bound to libc. dyld deliberately
- * leaves calls from this image alone; map the test's own calls explicitly. */
+/* dyld leaves references from this helper image bound to libc, so wrappers
+ * reach the real allocator while imports in the test and liborca are replaced. */
 #define MEM_INTERPOSE(name) \
     __attribute__((used, section("__DATA,__interpose"))) \
     static const struct { const void *replacement; const void *replacee; } \
@@ -218,21 +228,17 @@ MEM_INTERPOSE(realloc);
 MEM_INTERPOSE(free);
 MEM_INTERPOSE(strdup);
 #undef MEM_INTERPOSE
-#define malloc orca_test_malloc
-#define calloc orca_test_calloc
-#define realloc orca_test_realloc
-#define free orca_test_free
-#define strdup orca_test_strdup
 #endif
 #undef MEM_ALLOCATOR
 
 /* ---- snapshot / check macros ---- */
 
 #define MEM_SNAPSHOT()   ((long)s_alloc_count)
+#endif /* Darwin client or allocator implementation */
 
 #define MEM_CHECK_LEAK(snap, label)                                          \
     do {                                                                     \
-        long _now  = (long)s_alloc_count;                                    \
+        long _now  = MEM_SNAPSHOT();                                    \
         long _snap = (snap);                                                 \
         if (_now > _snap) {                                                 \
             fprintf(stderr,                                                  \

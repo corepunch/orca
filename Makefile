@@ -366,11 +366,19 @@ $(EDITOR_PLUGIN_OBJECT): $(EDITOR_PLUGIN_SOURCES) buildlib | directories
 	$(Q)echo "Compiling plugin EditorKit"
 	$(Q)find $(PLUGINDIR)/EditorKit -name "*.c" | sed 's/.*/#include "&"/' | $(CC) $(CFLAGS) -x c -c -o $@ -
 
+# Darwin's two-level namespace bypasses allocator definitions in an executable.
+# An injected dylib owns both the interpose tuples and the shared test counter.
+ifeq ($(UNAME_S),Darwin)
+TEST_MEMORY_DYLIB = $(LIBDIR)/liborca_test_memory.dylib
+$(TEST_MEMORY_DYLIB): tests/mem_tracker_darwin.c tests/mem_tracker.h | directories
+	$(Q)$(CC) $(CFLAGS) -dynamiclib tests/mem_tracker_darwin.c -o $@ -Wl,-install_name,$(abspath $(TEST_MEMORY_DYLIB))
+endif
+
 define C_TEST_RULE
-$(1): $(4)
+$(1): $(4) $(if $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB))
 	$(Q)echo "Building $(1)"
-	$(Q)$(CC) $(CFLAGS) $(5) -Wall $(2) -o $(3) $(6)
-	$(Q)$(3)
+	$(Q)$(CC) $(CFLAGS) $(5) -Wall $(2) -o $(3) $(6) $(if $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB))
+	$(Q)$(if $(and $(filter -DTEST_MEMORY,$(5)),$(TEST_MEMORY_DYLIB)),DYLD_INSERT_LIBRARIES="$(abspath $(TEST_MEMORY_DYLIB))") $(3)
 endef
 
 define LUA_TEST_RULE
