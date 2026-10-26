@@ -150,6 +150,40 @@ local function test_textblock_auto_margin_bubble_measures_full_phrase()
 	column:removeFromParent()
 end
 
+local function test_auto_margin_bubble_wraps_long_text()
+	local auto = 0 / 0
+	local column = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 200,
+		Height = 600,
+	}
+	local short = column + ui.StackView {
+		Padding = core.Thickness(8, 4),
+		MarginRight = auto,
+	}
+	local shortText = short + ui.TextBlock { Text = "Hi", FontSize = 16 }
+	local long = column + ui.StackView {
+		Padding = core.Thickness(8, 4),
+		MarginRight = auto,
+	}
+	local longText = long + ui.TextBlock {
+		Text = "This message is far too long to fit on one line of a narrow column",
+		FontSize = 16,
+	}
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect(short.ActualWidth < 100, "A short auto-margin bubble should still shrink to its text")
+	test.expect(long.ActualWidth <= column.ActualWidth,
+		"A long auto-margin bubble should not exceed the available width")
+	test.expect(longText.ActualHeight > shortText.ActualHeight * 2,
+		"Long text in an auto-margin bubble should wrap onto several lines")
+	test.expect_near(long.ActualHeight, longText.ActualHeight + 8, 0.01,
+		"An auto-margin bubble should be as tall as its wrapped text")
+
+	column:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Empty TextBlock: render texture lookup must tolerate no resolved text
 -- ---------------------------------------------------------------------------
@@ -236,6 +270,7 @@ test_text_block_layout()
 test_text_single_line_layout()
 test_text_nowrap_keeps_metric_value_on_one_line()
 test_textblock_auto_margin_bubble_measures_full_phrase()
+test_auto_margin_bubble_wraps_long_text()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()
 test_text_line_height_property()
