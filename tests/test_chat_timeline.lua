@@ -19,7 +19,7 @@ local C = { colors = setmetatable({}, { __index = function(_, key) return key en
 C.stack, C.tail = node, function() return node() end
 C.text = function(value, props) local n = node(props); n.Text = value; return n end
 C.date, C.time = tostring, tostring
-package.loaded["orca.UIKit"] = { ImageView = node }
+package.loaded["orca.UIKit"] = { ImageView = node, Grid = node }
 package.loaded["Chat/views/components"] = C
 local Timeline = require "views.timeline"
 
@@ -49,6 +49,24 @@ local function fixture()
         if app.readHook then app.readHook() end
         return app.rows, app.error
     end
+    app.messagePhotos = { pending = {} }
+    function app.messagePhotos:watch(frame, attachment, done)
+        self.pending[#self.pending + 1] = { frame = frame, attachment = attachment, done = done }
+    end
+    -- Protocol tests explicitly demand registered previews after committed layout.
+    -- Native viewport/concurrency behavior is covered by test_chat_photo_loader.
+    function app:loadPhotos()
+        local pending = self.messagePhotos.pending
+        self.messagePhotos.pending = {}
+        for _, target in ipairs(pending) do
+            local ancestor = target.frame
+            while ancestor and ancestor ~= list do ancestor = ancestor.parent end
+            if ancestor == list then
+                local bytes, err = self.client:getPhoto(target.attachment.id, true)
+                target.done(bytes and "preview.jpg", err)
+            end
+        end
+    end
     function app:getMedia() return { storePreview = function() return "preview.jpg" end } end
     function app:notice(message) self.noticeText = message end
     function app:logout() session = nil end
@@ -57,7 +75,9 @@ end
 
 local app, list = fixture()
 assert(Timeline.refresh(app))
-assert(list.ContentOffset.Y == -500 and app.photos == 1)
+assert(list.ContentOffset.Y == -500 and app.photos == 0, "Building rows must not fetch previews")
+app:loadPhotos()
+assert(app.photos == 1)
 local first = list.children[1]
 assert(Timeline.refresh(app, { preserveScroll = true, quiet = true }))
 assert(list.children[1] == first and app.photos == 1, "Unchanged polls must retain rows and skip photo requests")
@@ -72,11 +92,12 @@ app.rows[#app.rows + 1] = { id = "8", body = "Another", sender_id = "other", cre
 assert(Timeline.refresh(app, { preserveScroll = true }))
 assert(list.ContentOffset.Y == -700, "A reader at the bottom must follow new messages")
 
--- A user scroll during a photo request takes precedence over the old bottom position.
+-- Deferred photo work cannot overwrite scrolling after rows are committed.
 app.rows[1].body = "Edited"
 app.rows[1].attachments[1].updated_at = "changed"
 app.photoHook = function() list.ContentOffset = { X = 0, Y = -200 } end
 assert(Timeline.refresh(app, { preserveScroll = true }))
+app:loadPhotos()
 assert(list.ContentOffset.Y == -200)
 app.photoHook = nil
 
@@ -93,15 +114,19 @@ assert(Timeline.refresh(app, { preserveScroll = true }))
 assert(list.children[1] == oldFirst, "Navigation during a fetch must discard its result")
 app.readHook = nil
 
--- All photo work completes before the existing list is replaced.
+-- Row construction commits atomically before yielding preview downloads start.
 app, list = fixture()
 assert(Timeline.refresh(app))
 oldFirst = list.children[1]
 app.rows[1].body = "Pending photo"
 app.rows[1].attachments[1].updated_at = "changed"
-app.photoHook = function() assert(list.children[1] == oldFirst); app:logout() end
+app.photoHook = function() assert(list.children[1] ~= oldFirst); app:logout() end
 assert(Timeline.refresh(app, { preserveScroll = true }))
-assert(list.children[1] == oldFirst, "Logout while fetching a photo must not publish partial messages")
+local committed = list.children[1]
+assert(committed ~= oldFirst and #list.children == 7, "Rows commit without waiting for photo downloads")
+app:loadPhotos()
+assert(list.children[1] == committed and not app.timelineSnapshot.photos.photo1,
+    "Logout during deferred preview work must not apply stale photo results")
 
 app, list = fixture()
 local photoCalls = 0
@@ -111,8 +136,10 @@ app.client.getPhoto = function()
     return "jpeg"
 end
 assert(Timeline.refresh(app))
+app:loadPhotos()
 assert(app.timelineSnapshot.retryPhotos)
 assert(Timeline.refresh(app, { preserveScroll = true }))
+app:loadPhotos()
 assert(photoCalls == 2 and not app.timelineSnapshot.retryPhotos,
     "A failed photo preview must retry even if the message snapshot is unchanged")
 assert(Timeline.refresh(app, { preserveScroll = true }) and photoCalls == 2)

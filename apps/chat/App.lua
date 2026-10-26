@@ -13,6 +13,7 @@ local Timeline = require "Chat/views/timeline"
 local Diagnostics = require "Chat/diagnostics"
 local async = require "orca.core.async"
 local orca = require "orca"
+local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local colors = C.colors
 local auto = 0/0
 
@@ -46,9 +47,20 @@ local App = Application:extend {
     resetSessionViews = function(self)
         if self.polling then self.polling:stop() end
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
+        if self.avatars then self.avatars:clear() end
+        self.avatarPaths = {}
+        self.avatars = AvatarLoader.new(self, {
+            lookup = function(ids) return self.client:getAvatars(ids) end,
+            fetch = function(id) return self.client:getAvatar(id) end,
+            cached = function(id) return self.media.keys and self.media.keys["avatar-" .. id] end,
+            store = function(bytes, id) return self.media:storePreview(bytes, "avatar-" .. id) end,
+            apply = C.photo,
+            schedule = function(fn) orca.async(fn) end,
+            repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
+        })
+        if self.messagePhotos then self.messagePhotos:clear() end
+        self.messagePhotos = require("Chat/photo_loader").new(self)
         if self.media and self.media.clear then self.media:clear() end
-        -- Clearing media removes the cached photo files, so forget their paths.
-        self.avatarPaths, self.avatarWaiting = {}, {}
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
@@ -60,48 +72,13 @@ local App = Application:extend {
         self.filter, self.query = "All", ""
     end,
 
-    -- Show a person's profile photo in an avatar tile. Tiles built in one pass
-    -- wait for a single task, so a screen costs one profile photo lookup.
     avatarPhoto = function(self, tile, userId)
-        local path = self.avatarPaths[userId]
-        if path then return C.photo(tile, path) end
-        if path == false or not self.client or not self.media then return end
-        self.avatarWaiting[userId] = self.avatarWaiting[userId] or {}
-        table.insert(self.avatarWaiting[userId], tile)
-        if self.avatarTask then return end
-        self.avatarTask = true
-        local function load()
-            while next(self.avatarWaiting) do
-                local waiting, ids = self.avatarWaiting, {}
-                self.avatarWaiting = {}
-                for id in pairs(waiting) do ids[#ids + 1] = id end
-                table.sort(ids)
-                -- Failures leave the initials and allow a retry on the next screen.
-                local avatars = self.client:getAvatars(ids) or {}
-                for _, id in ipairs(ids) do
-                    local avatarId = avatars[id]
-                    path = avatarId and self.media.keys and self.media.keys["avatar-" .. avatarId]
-                    local unusable = avatarId == false
-                    if avatarId and not path then
-                        local bytes = self.client:getAvatar(avatarId)
-                        path = bytes and self.media:storePreview(bytes, "avatar-" .. avatarId)
-                        -- Previews are JPEG only; keep initials for other formats.
-                        unusable = bytes ~= nil and not path
-                    end
-                    if unusable then self.avatarPaths[id] = false end
-                    if path then
-                        self.avatarPaths[id] = path
-                        -- The run loop repaints after the resumed task, as for timeline photos.
-                        for _, waitingTile in ipairs(waiting[id]) do C.photo(waitingTile, path) end
-                    end
-                end
-            end
-        end
-        orca.async(function()
-            local ok, err = pcall(load)
-            self.avatarTask = nil
-            if not ok then io.stderr:write("chat: profile photos: " .. tostring(err) .. "\n") end
-        end)
+        if self.client and self.media then self.avatars:watch(tile, userId) end
+    end,
+
+    afterPaint = function(self)
+        if self.avatars then self.avatars:loadVisible() end
+        if self.messagePhotos then self.messagePhotos:loadVisible() end
     end,
 
     activate_controller = function(self, controller)
@@ -516,7 +493,7 @@ local App = Application:extend {
             end
             local ok, failure = xpcall(function()
                 local result = system.dispatchMessage(self.screen, message)
-                if message:is("Window.Paint") then self.diagnostics:checkLayout()
+                if message:is("Window.Paint") then self.diagnostics:checkLayout(); self:afterPaint()
                 elseif result then self.screen:post("Window.Paint", renderer.getSize()) end
                 system.translateMessage(message)
             end, Diagnostics.traceback)

@@ -162,6 +162,10 @@ Application = Widget:extend {
     return self:activate_controller(self:dispatch(normalized_req))
   end,
 
+  -- Geometry-dependent consumers run after a successful paint, never during
+  -- measurement. Overrides should enqueue asynchronous work, not block rendering.
+  afterPaint = function(self) end,
+
   run = function(self)
     local startup_dark_theme = system.get_theme()
     self.screen:post("Window.Paint", renderer.getSize())
@@ -183,6 +187,7 @@ Application = Widget:extend {
         elseif result and not msg:is "Window.Paint" then
           self.screen:post("Window.Paint", renderer.getSize())
         end
+        if ok and msg:is "Window.Paint" then self:afterPaint() end
         system.translateMessage(msg)
       end
     end

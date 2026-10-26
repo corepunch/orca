@@ -55,8 +55,8 @@ local function refresh(self, options, room, node, current)
         end
         return true
     end
-    -- Build detached rows so a yielding photo request never exposes a partial list.
-    local children, entries, photos, retryPhotos = {}, {}, {}, false
+    -- Build detached rows without network image requests; fixed frames avoid layout jumps.
+    local children, entries, photos, failedPhotos = {}, {}, {}, {}
     children[#children + 1] = C.text(#messages > 0 and C.date(messages[1].created_at) or "A FRESH START", {
         FontSize = 12, Foreground = colors.dim, TextHorizontalAlignment = "Center", MarginTop = 4, MarginBottom = 6,
     })
@@ -86,24 +86,25 @@ local function refresh(self, options, room, node, current)
         for _, attachment in ipairs(attachments) do
             local cached = previous and previous.node == node and previous.photos[attachment.id]
             local path = cached and cached.updated_at == attachment.updated_at and cached.path
-            local photoError
-            if not path then
-                local bytes
-                bytes, photoError = self.client:getPhoto(attachment.id, true)
-                if not current() then return true end
-                local media = self:getMedia()
-                path = bytes and media and media:storePreview(bytes, attachment.id)
-            end
+            local frame = ui.Grid { Name = "PhotoFrame" .. attachment.id, Width = PHOTO_WIDTH,
+                Height = photoHeight(attachment), Background = colors.soft }
+            bubble:addChild(frame)
             if path then
                 photos[attachment.id] = { updated_at = attachment.updated_at, path = path }
-                -- ImageView tints with Foreground; white keeps the photo's own colours
-                -- under the light theme's black ink.
-                bubble:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
-                    Width = PHOTO_WIDTH, Height = photoHeight(attachment), Stretch = "UniformToFill", IgnoreHitTest = true })
+                frame:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
+                    Stretch = "UniformToFill", IgnoreHitTest = true })
             else
-                retryPhotos = true
-                bubble:addChild(C.text(photoError and photoError.message or "Photo preview unavailable", {
-                    FontSize = 12, Foreground = colors.muted, WordWrap = true, Padding = "10 6" }))
+                frame:addChild(C.text("Loading photo…", { FontSize = 12, Foreground = colors.muted,
+                    TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center" }))
+                self.messagePhotos:watch(frame, attachment, function(loaded, photoError)
+                    if not current() then return end
+                    if loaded then photos[attachment.id] = { updated_at = attachment.updated_at, path = loaded } end
+                    local active = self.timelineSnapshot
+                    if active and active.photos == photos then
+                        failedPhotos[attachment.id] = not loaded and photoError ~= nil or nil
+                        active.retryPhotos = next(failedPhotos) ~= nil
+                    end
+                end)
             end
         end
         local time = C.time(message.created_at) or ""
@@ -159,7 +160,7 @@ local function refresh(self, options, room, node, current)
     end
     while node:getFirstChild() do node:getFirstChild():removeFromParent() end
     for _, child in ipairs(children) do node:addChild(child) end
-    self.timelineSnapshot = { node = node, signature = signature, entries = entries, photos = photos, retryPhotos = retryPhotos }
+    self.timelineSnapshot = { node = node, signature = signature, entries = entries, photos = photos, retryPhotos = false }
     -- The notice can resize the footer, so set it before measuring the bottom.
     if not options.quiet then self:notice(self.remote and "Synced · updates automatically" or "Offline mock · messages stay in this session") end
     local root = node:getRoot()

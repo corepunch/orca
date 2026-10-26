@@ -18,6 +18,11 @@ local function drain(app)
         if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
     end
     core.flushQueue()
+    if app.screen then
+        app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+        app:afterPaint()
+        core.flushQueue()
+    end
 end
 local function mockApp(media, client)
     local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
@@ -565,8 +570,8 @@ assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
     "The loaded thumbnail texture must be initialized with its actual image dimensions")
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
-local timeline, bubble = photoApp.messageList, photoView:getParent():getParent()
-local photoBubble = photoView:getParent()
+local photoBubble = photoView:getParent():getParent()
+local timeline, bubble = photoApp.messageList, photoBubble:getParent()
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
 local offset = timeline.ContentOffset
