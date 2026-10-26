@@ -202,6 +202,6 @@ MoonScript compiles to readable Lua, so you get the best of both worlds: concise
 
 ## Next Steps
 
-- Explore the [sample applications](../samples/) for real-world examples.
+- Explore the [sample applications](../apps/) for real-world examples.
 - Read the [Module Codegen Guide](MODULE_XML_GUIDE.md) to learn how to define API bindings between C modules and Lua.
 - Check [LUAROCKS.md](../LUAROCKS.md) for advanced LuaRocks configuration.

@@ -16,8 +16,8 @@ reusable row layout belongs in its template.
 2. Read the relevant class, event, and property pages under
    `.opencode/generated/{xml,lua}/<module>/`.
 3. Inspect at most one nearby controller-backed view; use
-   `samples/Adventure/Pages/Play.xml` and
-   `samples/Adventure/Scripts/Play.lua` for the basic pattern.
+   `apps/Adventure/Pages/Play.xml` and
+   `apps/Adventure/Scripts/Play.lua` for the basic pattern.
 4. Generate missing API pages with `make modules`; if generation is
    unavailable, inspect only the owning `.cgen`.
 

@@ -608,7 +608,7 @@ local function test_xml_loading_struct_arrays()
     <PropertyType Name="CardWidth" Category="Card" DataType="Int" />
   </Project.PropertyTypes>
   <Project.ProjectReferences>
-    <ProjectReference Name="Example" Path="samples/Example" />
+    <ProjectReference Name="Example" Path="apps/Example" />
   </Project.ProjectReferences>
   <Project.ThemeLibrary>
     <ThemeValue Key="panel-background" Value="#1A1A28" />
@@ -1315,9 +1315,9 @@ local function test_example_application_xml()
 	local function find_named_tag(haystack, tag, name)
 		return haystack:match("<" .. tag .. "%s+[^>]-Name=\"" .. name .. "\"[^>]*/>")
 	end
-	local xml = filesystem.readTextFile("samples/Example/Screens/Application.xml")
-	local appdata_xml = filesystem.readTextFile("samples/Example/Data/ApplicationData.xml")
-	local package_lua = filesystem.readTextFile("samples/Example/package.lua")
+	local xml = filesystem.readTextFile("apps/Example/Screens/Application.xml")
+	local appdata_xml = filesystem.readTextFile("apps/Example/Data/ApplicationData.xml")
+	local package_lua = filesystem.readTextFile("apps/Example/package.lua")
 	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
 	test.expect(appdata_xml ~= nil and appdata_xml ~= "", "Example ApplicationData.xml should be readable")
 	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
@@ -1335,10 +1335,10 @@ local function test_example_application_xml()
 	local cta_button = find_named_tag(xml, "TextBlock", "CtaButtonPrimary")
 	local get_started_button = cta_button and cta_button:find('Text="Get Started"', 1, true)
 	local get_started_show = cta_button and cta_button:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
-	local popup_screen = filesystem.readTextFile("samples/Example/Screens/GetStartedPopup.xml")
-	local tree_css = filesystem.readTextFile("samples/Example/Styles/components/tree.css")
-	local media_css = filesystem.readTextFile("samples/Example/Styles/components/media.css")
-	local typography_css = filesystem.readTextFile("samples/Example/Styles/typography.css")
+	local popup_screen = filesystem.readTextFile("apps/Example/Screens/GetStartedPopup.xml")
+	local tree_css = filesystem.readTextFile("apps/Example/Styles/components/tree.css")
+	local media_css = filesystem.readTextFile("apps/Example/Styles/components/media.css")
+	local typography_css = filesystem.readTextFile("apps/Example/Styles/typography.css")
 	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
 	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
 	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
@@ -1370,10 +1370,10 @@ local function test_example_application_xml()
 		and xml_model_tab_icon < xml_model_grid_icon
 	local xml_model_nested_padding = appdata_xml:find('Indent="48"', 1, true)
 	local xml_model_leaf_padding = xml_model_nested_padding
-	local xml_model_node_prefab = filesystem.readTextFile("samples/Example/Prefabs/XmlModelNode.xml")
+	local xml_model_node_prefab = filesystem.readTextFile("apps/Example/Prefabs/XmlModelNode.xml")
 	local xml_model_indent_binding = xml_model_node_prefab
 		and xml_model_node_prefab:find('Node.PaddingLeft="{Binding DataContext/Indent}"', 1, true)
-	local icon_card = filesystem.readTextFile("samples/Example/Prefabs/IconCard.xml")
+	local icon_card = filesystem.readTextFile("apps/Example/Prefabs/IconCard.xml")
 	test.expect(icon_card ~= nil and icon_card ~= "", "IconCard prefab should be readable")
 	local icon_card_uses_image = icon_card:find("<VectorView Name=\"IconCardImage\"", 1, true)
 	local icon_card_header = icon_card:find('<StackView Name="IconCardHeader" class="icon-card-header"', 1, true)
@@ -1397,19 +1397,19 @@ local function test_example_application_xml()
 	local control_border = package_lua:find('Key = "control-border", Value = "#2B3142"', 1, true)
 	local control_muted = package_lua:find('Key = "control-muted", Value = "#64748B"', 1, true)
 	local deploy_command_link = xml:find('Name="DeployCommandLink"', 1, true)
-	local deploy_command_value = xml:find('make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca samples/Example', 1, true)
-	local tab_icon_file = filesystem.readTextFile("samples/Example/Icons/panel-top.svg")
-	local text_icon_file = filesystem.readTextFile("samples/Example/Icons/type.svg")
-	local brand_icon_file = filesystem.readTextFile("samples/Example/Icons/blocks.svg")
-	local input_icon_file = filesystem.readTextFile("samples/Example/Icons/mouse-pointer-click.svg")
-	local state_icon_file = filesystem.readTextFile("samples/Example/Icons/database.svg")
-	local binding_icon_file = filesystem.readTextFile("samples/Example/Icons/link-2.svg")
+	local deploy_command_value = xml:find('make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca apps/Example', 1, true)
+	local tab_icon_file = filesystem.readTextFile("apps/Example/Icons/panel-top.svg")
+	local text_icon_file = filesystem.readTextFile("apps/Example/Icons/type.svg")
+	local brand_icon_file = filesystem.readTextFile("apps/Example/Icons/blocks.svg")
+	local input_icon_file = filesystem.readTextFile("apps/Example/Icons/mouse-pointer-click.svg")
+	local state_icon_file = filesystem.readTextFile("apps/Example/Icons/database.svg")
+	local binding_icon_file = filesystem.readTextFile("apps/Example/Icons/link-2.svg")
 	local tab_source = filesystem.readTextFile("plugins/UIKit/Tab.c")
 	local radio_source = filesystem.readTextFile("plugins/UIKit/RadioButton.c")
 	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
 	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
 	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
-	local metric_prefab = filesystem.readTextFile("samples/Example/Prefabs/Mertic.xml")
+	local metric_prefab = filesystem.readTextFile("apps/Example/Prefabs/Mertic.xml")
 	local metric_value_nowrap = metric_prefab and metric_prefab:find('Name="MetricUsersValue"', 1, true)
 		and metric_prefab:find('class="metric-value"', 1, true)
 		and typography_css
@@ -1508,8 +1508,8 @@ end
 -- package.lua should be able to declare datasource provider type and params
 -- ---------------------------------------------------------------------------
 local function test_package_datasource_declarations()
-	local project = filesystem.init("samples/Example")
-	local package_lua = filesystem.readTextFile("samples/Example/package.lua")
+	local project = filesystem.init("apps/Example")
+	local package_lua = filesystem.readTextFile("apps/Example/package.lua")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
 	if not project then
@@ -1539,7 +1539,7 @@ end
 -- should resolve that owned root.
 -- ---------------------------------------------------------------------------
 local function test_datasource_provider_resolution()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	if not project then
 		return
@@ -1586,7 +1586,7 @@ end
 -- DataContextSource with child selector should resolve name and find child
 -- ---------------------------------------------------------------------------
 local function test_datasource_provider_with_child()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	if not project then
 		return
@@ -1617,7 +1617,7 @@ end
 -- datasource object itself (not only a direct DataObject child).
 -- ---------------------------------------------------------------------------
 local function test_datasource_getdata_from_source_context()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	if not project then
 		return
@@ -1652,13 +1652,13 @@ end
 -- wire item DataContext/selection from provider-backed ItemsSource.
 -- ---------------------------------------------------------------------------
 local function test_adventure_footer_listbox_datasource_binding()
-	local project = filesystem.init("samples/Adventure")
+	local project = filesystem.init("apps/Adventure")
 	test.expect(project ~= nil, "filesystem.init should load the Adventure project")
 	if not project then
 		return
 	end
 
-	local screen_xml = filesystem.readTextFile("samples/Adventure/Screens/Adventures.xml")
+	local screen_xml = filesystem.readTextFile("apps/Adventure/Screens/Adventures.xml")
 	test.expect(screen_xml ~= nil and screen_xml ~= "", "Adventure screen XML should be readable")
 	if not screen_xml or screen_xml == "" then
 		filesystem.unloadProject(project)
@@ -1710,7 +1710,7 @@ end
 -- using the stripped path before applying the child selector
 -- ---------------------------------------------------------------------------
 local function test_datasource_path_fallback_with_child()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	if not project then return end
 	local xml = '<Node2D Name="ds-path-child-test" DataContextSource="Example/Data/ApplicationData:Signals"/>'
@@ -1731,7 +1731,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_datasource_lifecycle_cleanup()
   -- Load Example project — registers ApplicationData datasource
-  local project = filesystem.init("samples/Example")
+  local project = filesystem.init("apps/Example")
   test.expect(project ~= nil, "Should load Example project")
   if not project then return end
 
@@ -1757,7 +1757,7 @@ local function test_datasource_lifecycle_cleanup()
     "DataContextSource should NOT resolve after project cleanup (entries cleared)")
 
   -- Reload the project — entries should be re-registered
-  local project2 = filesystem.init("samples/Example")
+  local project2 = filesystem.init("apps/Example")
   test.expect(project2 ~= nil, "Should reload Example project after cleanup")
   if not project2 then return end
 
@@ -1779,7 +1779,7 @@ end
 -- ---------------------------------------------------------------------------
 local function test_datasource_repeated_load_unload()
   for cycle = 1, 3 do
-    local project = filesystem.init("samples/Example")
+    local project = filesystem.init("apps/Example")
     test.expect(project ~= nil, "Cycle " .. cycle .. ": should load Example project")
     if not project then return end
 
@@ -1805,18 +1805,18 @@ end
 -- ---------------------------------------------------------------------------
 local function test_example_xml_parser_coverage()
 	local files = {
-		"samples/Example/Screens/GetStartedPopup.xml",
-		"samples/Example/Prefabs/FeatureCard.xml",
-		"samples/Example/Prefabs/FeatureImageCard.xml",
-		"samples/Example/Prefabs/GalleryCard.xml",
-		"samples/Example/Prefabs/IconCard.xml",
-		"samples/Example/Prefabs/ImageCaptionCard.xml",
-		"samples/Example/Prefabs/Mertic.xml",
-		"samples/Example/Prefabs/Quote.xml",
-		"samples/Example/Prefabs/SignalCard.xml",
-		"samples/Example/Prefabs/TabPanelHeader.xml",
-		"samples/Example/Prefabs/WorkflowStep.xml",
-		"samples/Example/Prefabs/XmlModelNode.xml",
+		"apps/Example/Screens/GetStartedPopup.xml",
+		"apps/Example/Prefabs/FeatureCard.xml",
+		"apps/Example/Prefabs/FeatureImageCard.xml",
+		"apps/Example/Prefabs/GalleryCard.xml",
+		"apps/Example/Prefabs/IconCard.xml",
+		"apps/Example/Prefabs/ImageCaptionCard.xml",
+		"apps/Example/Prefabs/Mertic.xml",
+		"apps/Example/Prefabs/Quote.xml",
+		"apps/Example/Prefabs/SignalCard.xml",
+		"apps/Example/Prefabs/TabPanelHeader.xml",
+		"apps/Example/Prefabs/WorkflowStep.xml",
+		"apps/Example/Prefabs/XmlModelNode.xml",
 	}
 
 	for _, path in ipairs(files) do
@@ -1917,11 +1917,11 @@ test_modal_attach_applies_screen_stylesheet_to_popup_content()
 -- Schema: datasource schema file is loaded and column metadata accessible
 -- ---------------------------------------------------------------------------
 local function test_datasource_schema_loaded()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "Should load Example project")
 	if not project then return end
 
-	local schema_file = filesystem.readTextFile("samples/Example/Data/ApplicationData.schema")
+	local schema_file = filesystem.readTextFile("apps/Example/Data/ApplicationData.schema")
 	test.expect(schema_file ~= nil and schema_file ~= "",
 		"Schema file should exist and be readable")
 	test.expect(schema_file:find("<Schema>", 1, true) ~= nil,
@@ -1944,7 +1944,7 @@ end
 -- Schema: datasource Params contain Schema= after registration
 -- ---------------------------------------------------------------------------
 local function test_datasource_schema_in_params()
-	local project = filesystem.init("samples/Example")
+	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "Should load Example project")
 	if not project then return end
 

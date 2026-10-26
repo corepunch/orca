@@ -292,7 +292,7 @@ The replacement is name-based datasource/view resolution:
 Migration status:
 
 1. ~~Add provider table-path resolution and provider-backed record binding.~~ ✓ DataContext hierarchy and binding resolution implemented.
-2. ~~Port `samples/Example` and `samples/Adventure` from file/child paths.~~ ✓ Migrated to `DataSources/Name:Child` syntax.
+2. ~~Port `apps/Example` and `apps/Adventure` from file/child paths.~~ ✓ Migrated to `DataSources/Name:Child` syntax.
 3. Emit a deprecation warning whenever provider lookup fails and the direct-file fallback is taken. (in progress — `FS_FindDataSource` added for non-resolving lookups)
 4. Remove colon child selection for provider-backed sources after all in-tree users migrate.
 5. Remove the direct `FS_LoadObject` fallback in the next compatibility-breaking release.

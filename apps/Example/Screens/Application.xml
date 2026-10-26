@@ -113,7 +113,7 @@
 							<VectorView Name="DeployCommandIcon" class="command-icon" Source="Example/Icons/monitor.svg"/>
 							<StackView Name="DeployCommandCopy" class="command-copy">
 								<TextBlock Name="DeployCommandLabel" class="command-label" Text="Desktop build"/>
-								<TextBlock Name="DeployCommandValue" class="command-value" Text="make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca samples/Example"/>
+								<TextBlock Name="DeployCommandValue" class="command-value" Text="make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca apps/Example"/>
 							</StackView>
 						</StackView>
 					</StackView>

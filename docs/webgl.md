@@ -34,7 +34,7 @@ the bundle via `--exclude-file *.xcf`.
 To bundle a project's data directory into the build as well:
 
 ```bash
-make webgl WEBGL_DATA=samples/Example
+make webgl WEBGL_DATA=apps/Example
 ```
 
 This additionally packs the project directory and compiles `PROJECTDIR` into
@@ -61,7 +61,7 @@ get C file names and line numbers instead:
 
 ```bash
 emmake make webgl-debug                          # share/ assets only
-emmake make webgl-debug WEBGL_DATA=samples/Example  # bundle a project
+emmake make webgl-debug WEBGL_DATA=apps/Example  # bundle a project
 # or use the convenience alias:
 emmake make webgl-debug-demo
 ```

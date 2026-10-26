@@ -199,7 +199,7 @@ StartupScreen = "ProjectName/Screens/ScreenName"
 ### Required Properties
 
 - `Name`: The name of your project
-- `StartupScreen`: The path to the initial screen to load (format: `ProjectName/Path/To/Screen`). Script-driven applications set `StartupViewController` (and optionally `StartupRoute`) instead, as `samples/Weather` and `samples/Banking` do.
+- `StartupScreen`: The path to the initial screen to load (format: `ProjectName/Path/To/Screen`). Script-driven applications set `StartupViewController` (and optionally `StartupRoute`) instead, as `apps/Weather` and `apps/Banking` do.
 
 ### Optional Properties
 
@@ -296,7 +296,7 @@ EnginePlugins = {
 
 #### Example 2: Script Project with Project References
 
-This is `samples/Banking/package.lua`:
+This is `apps/Banking/package.lua`:
 
 ```lua
 Name = "Banking"
@@ -339,7 +339,7 @@ build/bin/orca /path/to/your/project
 
 For example, to run the bundled sample:
 ```sh
-build/bin/orca samples/Example
+build/bin/orca apps/Example
 ```
 
 ## Examples
@@ -442,10 +442,10 @@ class MyApp extends Application
 
 ## Next Steps
 
-- Explore the `samples/` directory for more complex examples
+- Explore the `apps/` directory for more complex examples
 - Read the documentation in `docs/` for detailed API reference
-- Check out the Banking sample (`samples/Banking/`) for a full-featured application
-- Review the Editor sample (`samples/Editor/`) to see advanced UI techniques
+- Check out the Banking sample (`apps/Banking/`) for a full-featured application
+- Review the Editor sample (`apps/Editor/`) to see advanced UI techniques
 
 ## Tips
 
@@ -462,4 +462,4 @@ class MyApp extends Application
 - **Images not loading**: Check that image paths are relative to the project root (e.g., `ProjectName/Images/filename`)
 - **Build errors**: Make sure all dependencies are installed (see README.md)
 
-For more help, refer to the samples in the `samples/` directory or check the project documentation.
+For more help, refer to the samples in the `apps/` directory or check the project documentation.

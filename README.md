@@ -87,7 +87,7 @@ make
 After building, you can run the example application:
 
 ```sh
-build/bin/orca samples/Example
+build/bin/orca apps/Example
 ```
 
 Or simply use:
@@ -97,7 +97,7 @@ make example
 ```
 
 The Example sample uses SVG icons sourced from [Lucide](https://lucide.dev/) and the Lucide GitHub repository.
-See `samples/Example/Icons/README.md` for the icon asset notes.
+See `apps/Example/Icons/README.md` for the icon asset notes.
 
 ## Why MoonScript?
 
@@ -333,7 +333,7 @@ For better XML editing experience in VSCode with autocomplete and validation:
 
 1. Install the **Red Hat XML** extension in VSCode
 
-2. Create a `.vscode/settings.json` file in your project directory (e.g., `samples/Example/.vscode/settings.json`):
+2. Create a `.vscode/settings.json` file in your project directory (e.g., `apps/Example/.vscode/settings.json`):
 
 ```json
 {
