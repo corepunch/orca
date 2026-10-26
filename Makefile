@@ -43,6 +43,8 @@ CFLAGS ?= -O2 -g
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
+CFLAGS += $(SANITIZER_FLAGS)
+LDFLAGS += $(SANITIZER_FLAGS)
 CFLAGS += $(ARCH_FLAGS)
 LDFLAGS += $(ARCH_FLAGS)
 MODULES = geometry orca platform sysutil console parsers debug network renderer filesystem core data media credentials
@@ -241,6 +243,7 @@ octopus: copyshare
 
 test-octopus: copyshare
 	$(TARGET) -test=tests/test_octopus_api.lua
+	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
@@ -377,6 +380,18 @@ $(1): $(3)
 endef
 
 $(eval $(call C_TEST_RULE,test-properties,tests/test_properties.c,$(TEST_PROPERTIES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
+STRING_MEMORY_TEST_FLAGS ?= -DTEST_MEMORY
+$(eval $(call C_TEST_RULE,test-string-properties,tests/test_string_properties.c,$(BINDIR)/test_string_properties,platform $(SOURCEMODULES2) buildlib,$(STRING_MEMORY_TEST_FLAGS),$(TEST_LDFLAGS)))
+.PHONY: test-string-memory test-string-memory-sanitized
+test-string-memory: test-string-properties test-string-bindings
+
+test-string-memory-sanitized:
+	ASAN_OPTIONS=detect_leaks=1:halt_on_error=1 UBSAN_OPTIONS=halt_on_error=1 \
+		LD_LIBRARY_PATH="$(abspath $(BUILDDIR)/string-sanitized/lib)" $(MAKE) \
+		BUILDDIR=$(BUILDDIR)/string-sanitized \
+		SANITIZER_FLAGS="-O1 -fsanitize=address,undefined -fno-omit-frame-pointer" \
+		STRING_MEMORY_TEST_FLAGS= \
+		test-string-memory
 $(eval $(call C_TEST_RULE,test-styles,tests/test_styles.c,$(TEST_STYLES_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-filesystem,tests/test_filesystem.c,$(TEST_FILESYSTEM_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-message-registry,tests/test_message_registry.c,$(TEST_MESSAGE_REGISTRY_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
@@ -385,11 +400,21 @@ $(eval $(call C_TEST_RULE,test-editor,tests/test_editor.c $(EDITOR_PLUGIN_OBJECT
 $(eval $(call C_TEST_RULE,test-xml-serialization,tests/test_xml_serialization.c,$(TEST_XML_SERIALIZATION_BIN),platform $(SOURCEMODULES2) buildlib,-DTEST_MEMORY,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-shader-uniforms,tests/test_shader_uniforms.c,$(TEST_SHADER_UNIFORMS_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-screen-space-capture,tests/test_screen_space_capture.c,$(TEST_SCREEN_SPACE_CAPTURE_BIN),platform $(SOURCEMODULES2) buildlib,,$(TEST_LDFLAGS) $(TEST_GL_LIBS)))
+$(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR)/test_scroll_layout,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 
 HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-xml-library test-scene-reflections
 HEADLESS_LUA_TESTS += test-imageview
+HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-credentials
 HEADLESS_LUA_TESTS += test-chat-polling
+HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
+HEADLESS_LUA_TESTS += test-two-way-bindings
+HEADLESS_LUA_TESTS += test-mvvm-form
+
+$(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-mvvm-form,tests/test_mvvm_form_sample.lua,unite))
+
+$(eval $(call LUA_TEST_RULE,test-string-bindings,tests/test_string_bindings.lua,unite))
 
 .PHONY: test-chat-polling
 test-chat-polling: unite

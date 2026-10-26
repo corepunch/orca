@@ -429,6 +429,7 @@ HANDLER(Screen, Window, Resized) {
 
 // Screen_UpdateLayout
 HANDLER(Screen, Screen, UpdateLayout) {
+  uint32_t previousSize = pScreen->_size;
   float width = pUpdateLayout->Width;
   float height = pUpdateLayout->Height;
 
@@ -470,10 +471,15 @@ HANDLER(Screen, Screen, UpdateLayout) {
     height = fmaxf(0, height - y - fmaxf(pScreen->SafeAreaBottom, 0));
   }
 
+  uint32_t flags = OBJ_GetFlags(hObject);
+  bool_t scrollOnly = previousSize == pScreen->_size && (flags & OF_SCROLL) && !(flags & OF_DIRTY);
   FOR_EACH_OBJECT(child, hObject) {
     if (!GetNode2D(child)) continue;
-    _SendMessage(child, Node2D, Measure, .Width = width, .Height = height);
-    _SendMessage(child, Node2D, Arrange, .X = x, .Y = y, .Width = width, .Height = height);
+    // Scrolling changes descendant transforms, not the measured layout.
+    if (!scrollOnly) {
+      _SendMessage(child, Node2D, Measure, .Width = width, .Height = height);
+      _SendMessage(child, Node2D, Arrange, .X = x, .Y = y, .Width = width, .Height = height);
+    }
     _SendMessage(child, Node, UpdateMatrix, .parent = MAT4_Identity(), .opacity = 1);
   }
   PROP_RunAllPrograms(hObject);

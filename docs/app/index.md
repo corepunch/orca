@@ -130,6 +130,14 @@ when exposing store values through `DataContext`. Application data schemas
 describe record properties; changes to native engine API shape still belong
 in `.cgen` and require generation.
 
+For forms, bind controls to an XML-schema-defined **draft** through
+`DataContext`. `Mode=TwoWay` initializes each editor from its draft field and
+writes edits back through the shared property system. A controller validates
+and submits a snapshot on Save; Cancel restores or discards the draft. Services
+and committed application state should not be the direct target of keystrokes.
+See the runnable [MVVM form sample](../../samples/MvvmForms/README.md) and
+[binding modes](xml/triggers-actions-messages.md#form-bindings).
+
 For repeated content, prefer `ItemsSource` + `ItemTemplate`. A reusable row
 template binds its fields through `DataContext`; values such as indentation or
 visibility belong to data when they vary by item. Use ordinary explicit layout

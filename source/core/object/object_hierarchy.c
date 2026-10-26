@@ -88,7 +88,8 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
         return OBJ_FindPropertyByPath(child, ++split);
       }
       // Try as an object-typed property — read the component pointer and follow it
-      struct Property *prop = OBJ_FindLongProperty(object, identifier);
+      struct Property *prop = memchr(path, '.', split - path)
+        ? OBJ_FindLongProperty(object, identifier) : OBJ_FindShortProperty(object, identifier);
       if (prop && PROP_GetDesc(prop)->DataType == kDataTypeObject) {
         void const *val = PROP_GetValue(prop);
         if (val) {
@@ -105,7 +106,8 @@ OBJ_FindPropertyByPath(struct Object *object, lpcString_t path)
       return NULL;
     }
   } else {
-    return OBJ_FindLongProperty(object, fnv1a32(path));
+    return strchr(path, '.') ? OBJ_FindLongProperty(object, fnv1a32(path))
+                             : OBJ_FindShortProperty(object, fnv1a32(path));
   }
 }
 

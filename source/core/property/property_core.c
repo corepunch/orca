@@ -47,6 +47,15 @@ static bool_t
 _RunBinding(struct Property *property, struct Binding *binding)
 {
   if (!binding->token) return TRUE;
+  if (binding->_updating || binding->Mode == kBindingModeOneWayToSource) return TRUE;
+  if (binding->Mode == kBindingModeTwoWay) {
+    struct Property *source = PROP_ResolveBindingSource(property->object, binding->token);
+    if (!source) return TRUE;
+    if (!PROP_CanWriteBindingSource(property, source)) {
+      Con_Error("TwoWay binding requires writable properties with matching types");
+      return FALSE;
+    }
+  }
   if (binding->updateFrame == core.frame) return TRUE;
   binding->updateFrame = core.frame;
 
@@ -60,7 +69,10 @@ _RunBinding(struct Property *property, struct Binding *binding)
               property->pdesc->Name);
     return FALSE;
   }
-  if (!PROP_Import(property, &r)) {
+  binding->_updating = TRUE;
+  bool_t imported = PROP_Import(property, &r);
+  binding->_updating = FALSE;
+  if (!imported) {
 #ifdef DEBUG_PROGRAM
     print_name(property->object);
 #endif
@@ -69,6 +81,47 @@ _RunBinding(struct Property *property, struct Binding *binding)
               property->pdesc->Name);
     return FALSE;
   }
+  return TRUE;
+}
+
+bool_t
+PROP_CanWriteBindingSource(struct Property const *target, struct Property const *source)
+{
+  if (!target || !source || target == source || target->pdesc->IsReadOnly ||
+      source->pdesc->IsReadOnly || source->pdesc->IsArray || target->pdesc->IsArray ||
+      PROP_GetType(source) != PROP_GetType(target) || PROP_GetSize(source) != PROP_GetSize(target)) return FALSE;
+  eDataType_t type = PROP_GetType(target);
+  if (type == kDataTypeEnum && target->pdesc->EnumValues != source->pdesc->EnumValues) return FALSE;
+  if (type == kDataTypeObject || type == kDataTypeStruct) {
+    const char *a = target->pdesc->TypeString, *b = source->pdesc->TypeString;
+    if (a != b && (!a || !b || strcmp(a, b))) return FALSE;
+  }
+  return TRUE;
+}
+
+bool_t
+PROP_WriteBindingSource(struct Property *property)
+{
+  struct Binding *binding = property ? property->binding : NULL;
+  if (!binding || !binding->token || binding->_updating ||
+      (property->flags & PF_SPECIALIZED) ||
+      (binding->Mode != kBindingModeTwoWay && binding->Mode != kBindingModeOneWayToSource)) return FALSE;
+  struct Property *source = PROP_ResolveBindingSource(property->object, binding->token);
+  if (!source) return FALSE;
+  if (!PROP_CanWriteBindingSource(property, source)) {
+    Con_Error("Binding writeback requires writable properties with matching types");
+    return FALSE;
+  }
+  binding->_updating = TRUE;
+  if (PROP_IsNull(property)) {
+    PROP_Clear(source);
+    PROP_NotifyChanged(source);
+    PROP_WriteBindingSource(source);
+  } else {
+    void const *value = PROP_GetValue(property);
+    if (value) PROP_SetValue(source, value);
+  }
+  binding->_updating = FALSE;
   return TRUE;
 }
 

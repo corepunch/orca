@@ -51,5 +51,8 @@ void const *PROP_GetRawValueSlot(struct Property const *property);
 bool_t _AssignCallback(lua_State* L, struct Property *property);
 void PROP_FireNotification(lua_State* L, struct Property *property, struct Object *object);
 void PROP_NotifyChanged(struct Property *property);
+struct Property *PROP_ResolveBindingSource(struct Object *object, struct token *token);
+bool_t PROP_WriteBindingSource(struct Property *property);
+bool_t PROP_CanWriteBindingSource(struct Property const *target, struct Property const *source);
 
 #endif /* __PROPERTY_INTERNAL_H__ */

@@ -20,8 +20,8 @@ OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
     Con_Error("Class ID 0x%08x not found\n", class_id);
     return NULL;
   }
-  uint32_t clsSize = sizeof(struct component) + cls->ClassSize;
-  uint32_t propsSize = cls->NumProperties * sizeof(void*);
+  size_t clsSize = sizeof(struct component) + CMP_PropertyOffset(cls->ClassSize);
+  size_t propsSize = cls->NumProperties * sizeof(void*);
   struct component* comp = ZeroAlloc(clsSize + propsSize);
 
   assert(comp);
@@ -323,7 +323,7 @@ CMP_SetProperty(struct component* comp, struct Property *property)
   {
     struct PropertyType const *pdesc = comp->pcls->Properties + index;
     if (PROP_GetLongIdentifier(property) == pdesc->FullIdentifier) {
-      struct Property ** properties = (void*)(comp->pUserData + comp->pcls->ClassSize);
+      struct Property ** properties = (void*)(comp->pUserData + CMP_PropertyOffset(comp->pcls->ClassSize));
       properties[index] = property;
       PROP_SetFlag(property, PF_PROPERTY_TYPE);
       PROP_SetValuePtr(property, comp->pUserData + pdesc->Offset);

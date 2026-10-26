@@ -84,7 +84,7 @@ OBJ_SetDirty(struct Object *pobj)
 void
 OBJ_ClearDirtyFlags(struct Object *pobj)
 {
-  pobj->flags &= ~OF_DIRTY;
+  pobj->flags &= ~(OF_DIRTY | OF_SCROLL);
   FOR_EACH_CHILD(pobj, OBJ_ClearDirtyFlags);
 }
 
@@ -120,7 +120,7 @@ OBJ_Release(struct Object *pobj)
 #endif
   g_object_count--;
   OBJ_Clear(pobj);
-  OBJ_SendMessage(pobj, "Destroy", 0, NULL);
+  OBJ_SendMessageW(pobj, ID_Object_Destroy, 0, NULL);
   OBJ_DetachFromParent(pobj);
   if (core.focus == pobj) core.focus = NULL;
   if (core.hover == pobj) core.hover = NULL;

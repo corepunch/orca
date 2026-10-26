@@ -25,15 +25,27 @@ op_evaluate(struct token*,
             struct vm_register*);
 
 /* --------------------------------------------------------------------------
- * Circular string pool for VM register strings.
+ * Evaluation scratch and circular result pool for VM register strings.
  *
  * String-typed vm_registers store a (const char *) pointer into this pool
- * rather than inline bytes.  The pool is large enough that strings from
- * previous evaluations remain valid for the duration of a single frame.
+ * rather than inline bytes. Live operands must not be overwritten when a
+ * complex expression exceeds the fixed scratch buffer. Overflow slabs stay
+ * pinned across nested binding evaluations and are freed at the outer return.
+ * The result pool preserves the existing bounded register-result lifetime;
+ * properties import their own copies before subsequent evaluations reuse it.
  * -------------------------------------------------------------------------- */
 #define VM_STRPOOL_SIZE 0x10000
 static char     s_strpool[VM_STRPOOL_SIZE];
 static uint32_t s_strpool_head = 0;
+static char s_evalpool[VM_STRPOOL_SIZE];
+static size_t s_evalpool_head;
+static unsigned s_eval_depth;
+static bool_t s_eval_failed;
+static struct vm_string_slab {
+  struct vm_string_slab *next;
+  size_t used;
+  char data[VM_STRPOOL_SIZE];
+} *s_eval_slabs;
 
 static const char *
 vm_strtmp(const char *str)
@@ -43,11 +55,31 @@ vm_strtmp(const char *str)
   size_t len = strlen(str);
   if (len >= VM_STRPOOL_SIZE) len = VM_STRPOOL_SIZE - 1;
   size_t total = len + 1;
+  if (s_eval_depth) {
+    char *dest;
+    if (s_evalpool_head + total <= sizeof(s_evalpool)) {
+      dest = s_evalpool + s_evalpool_head;
+      s_evalpool_head += total;
+    } else {
+      if (!s_eval_slabs || s_eval_slabs->used + total > VM_STRPOOL_SIZE) {
+        struct vm_string_slab *slab = malloc(sizeof(*slab));
+        if (!slab) { s_eval_failed = TRUE; return ""; }
+        slab->next = s_eval_slabs;
+        slab->used = 0;
+        s_eval_slabs = slab;
+      }
+      dest = s_eval_slabs->data + s_eval_slabs->used;
+      s_eval_slabs->used += total;
+    }
+    memcpy(dest, str, len);
+    dest[len] = 0;
+    return dest;
+  }
   if (s_strpool_head + total > VM_STRPOOL_SIZE) {
     s_strpool_head = 0;   /* wrap around */
   }
   char *dest = s_strpool + s_strpool_head;
-  memcpy(dest, str, len);
+  memmove(dest, str, len);
   dest[len] = '\0';
   s_strpool_head += (uint32_t)total;
   return dest;
@@ -666,76 +698,85 @@ _FindDataContextObject(struct Object *object, void **component)
   return NULL;
 }
 
+/* Resolve again for writes: DataContext and relative paths can change when a
+ * retained form is rebound or reparented. Never retain a source Property. */
+static struct Property *
+ResolveArgumentProperty(struct Object *object, struct token *token, struct Object **dataRoot)
+{
+  char const *path = token->text;
+  if (dataRoot) *dataRoot = NULL;
+  if (!strncmp(path, "DataContext/", 12)) {
+    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
+      struct Object *context = _FindDataContextObject(it, NULL);
+      if (!context) continue;
+      char contextPath[MAX_PROPERTY_STRING] = {0};
+      char const *name = strrchr(path + 12, '/');
+      if (name) {
+        size_t length = (size_t)(name - (path + 12));
+        if (length >= sizeof(contextPath)) return NULL;
+        memcpy(contextPath, path + 12, length);
+        name++;
+      } else name = path + 12;
+      struct DataObject *data = (struct DataObject *)_SendMessage(
+          context, DataContext, GetData, .Path = contextPath);
+      struct Object *root = data ? CMP_GetObject(data) : NULL;
+      if (dataRoot) *dataRoot = root;
+      return root ? OBJ_FindPropertyByPath(root, name) : NULL;
+    }
+    return NULL;
+  }
+  if (*path == '.') return OBJ_FindPropertyByPath(object, path);
+  if (*path == '#') {
+    char const *separator = strchr(path, '/');
+    if (!separator) return NULL;
+    if (!strncmp(path, "##Root/", 7))
+      return token->rootnode ? OBJ_FindPropertyByPath(token->rootnode, separator + 1) : NULL;
+    if (!strncmp(path, "##Template/", 11)) {
+      for (struct Object *it = OBJ_GetParent(object); it; it = OBJ_GetParent(it))
+        if (OBJ_GetFlags(it) & OF_TEMPLATE) return OBJ_FindPropertyByPath(it, separator + 1);
+      return NULL;
+    }
+    struct Object *child = OBJ_FindChildByAlias(object, fnv1a32_range(path + 1, separator));
+    return child ? OBJ_FindPropertyByPath(child, separator + 1) : NULL;
+  }
+  struct Object *scope = _BindingTemplateOrRoot(object);
+  struct Property *property = OBJ_FindPropertyByPath(object, path);
+  if (scope && scope != object && (!property || !_BindingPropertyHasEffectiveValue(property))) {
+    struct Property *scoped = OBJ_FindPropertyByPath(scope, path);
+    if (scoped && (_BindingPropertyHasEffectiveValue(scoped) || !property)) property = scoped;
+  }
+  return property;
+}
+
+struct Property *
+PROP_ResolveBindingSource(struct Object *object, struct token *token)
+{
+  if (!token || token->type != tok_argument || token->next ||
+      !strcmp(token->text, "DataContext") || strstr(token->text, "Service/")) return NULL;
+  return ResolveArgumentProperty(object, token, NULL);
+}
+
 tok_op(argument)
 {
   struct Property *p = NULL;
   int isDataContextPath = 0;
-  if (token->cache.property) {
-    p = token->cache.property;
-    if (_BindingPropertyHasEffectiveValue(p)) {
-      goto return_value;
+  // Relative paths and DataContext can be rebound or reparented between reads.
+  // A cached raw Property pointer cannot survive those lifetime changes.
+  if (*token->text == '#' || *token->text == '.' || !strncmp(token->text, "DataContext/", 12)) {
+    struct Object *dataRoot = NULL;
+    isDataContextPath = !strncmp(token->text, "DataContext/", 12);
+    p = ResolveArgumentProperty(object, token, &dataRoot);
+    if (isDataContextPath && !p) {
+      const char *name = strrchr(token->text, '/');
+      if (dataRoot && name && (!strcmp(name + 1, "Name") || !strcmp(name + 1, "id"))) {
+        InitOutput(output, kDataTypeString, sizeof(const char *));
+        VM_REG_SET_STR(output, vm_strtmp(OBJ_GetName(dataRoot)));
+        return TRUE;
+      }
+      memset(output, 0, sizeof(*output));
+      InitOutput(output, kDataTypeFloat, sizeof(float));
+      return TRUE;
     }
-    token->cache.property = NULL;
-    p = NULL;
-  }
-  if (*token->text == '#') {
-    lpcString_t eon = strchr(token->text, '/');
-    if (!strncmp(token->text, "##Template/", 11)) {
-      object = OBJ_GetParent(object);
-      for (; object; object = OBJ_GetParent(object)) {
-        if (OBJ_GetFlags(object) & OF_TEMPLATE) {
-          p = OBJ_FindPropertyByPath(object, ++eon);
-          break;
-        }
-      }
-    } else if (!strncmp(token->text, "##Root/", 7)) {
-      if (!token->rootnode) {
-        Con_Error("##Root/ binding requires a root node — set root_node before compiling bindings");
-        p = NULL;
-      } else {
-        p = OBJ_FindPropertyByPath(token->rootnode, ++eon);
-      }
-    } else /*for (; object; object = OBJ_GetParent(object))*/ if (object) {
-      uint32_t ident = fnv1a32_range(token->text + 1, eon);
-      struct Object *child = OBJ_FindChildByAlias(object, ident);
-      if (child) {
-        p = OBJ_FindPropertyByPath(child, ++eon);
-      }
-//      break;
-    }
-  } else if (*token->text == '.') {
-    p = OBJ_FindPropertyByPath(object, token->text);
-  } else if (!strncmp(token->text, "DataContext/", 12)) {
-    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
-      struct Object *context = _FindDataContextObject(it, NULL);
-      if (context) {
-        char path[MAX_PROPERTY_STRING] = {0};
-        char const *property_path = token->text + 12;
-        char const *property_name = strrchr(property_path, '/');
-        if (property_name) {
-          size_t path_len = MIN((size_t)(property_name - property_path), sizeof(path) - 1);
-          memcpy(path, property_path, path_len);
-          property_name++;
-        } else {
-          property_name = property_path;
-        }
-        struct DataObject *data = (struct DataObject *)_SendMessage(
-            context, DataContext, GetData, .Path = path);
-        struct Object *root = data ? CMP_GetObject(data) : NULL;
-        if (root && (p = OBJ_FindPropertyByPath(root, property_name))) {
-          isDataContextPath = 1;
-          goto return_value;
-        }
-        if (root && (!strcmp(property_name, "Name") || !strcmp(property_name, "id"))) {
-          InitOutput(output, kDataTypeString, sizeof(const char *));
-          VM_REG_SET_STR(output, vm_strtmp(OBJ_GetName(root)));
-          return TRUE;
-        }
-      }
-    }
-    memset(output->value, 0, sizeof(*output->value));
-    InitOutput(output, kDataTypeFloat, sizeof(float));
-    return TRUE;
   } else if (!strcmp(token->text, "DataContext")) {
     for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
       void *dataContext = NULL;
@@ -779,24 +820,9 @@ tok_op(argument)
       }
     }
   } else {
-    /* Default: bare paths first target the bound object. If not found, keep
-       compatibility with template/root-scoped bindings. Project property types
-       can auto-create empty properties, so an unmodified local property should
-       not block a real value on the template root. */
-    struct Object *scope = _BindingTemplateOrRoot(object);
-    p = OBJ_FindPropertyByPath(object, token->text);
-    if (scope && scope != object && (!p || !_BindingPropertyHasEffectiveValue(p))) {
-      struct Property *scoped = OBJ_FindPropertyByPath(scope, token->text);
-      if (scoped && (_BindingPropertyHasEffectiveValue(scoped) || !p)) {
-        p = scoped;
-      }
-    }
+    p = ResolveArgumentProperty(object, token, NULL);
   }
-return_value:
   if (p) {
-    if (_BindingPropertyHasEffectiveValue(p) && !isDataContextPath) {
-      token->cache.property = p;
-    }
     return PROP_Export(p, output);
   } else {
     Con_Error("Can't find property \"%s\"", token->text);
@@ -849,11 +875,27 @@ OBJ_RunProgram(struct Object *object,
                struct vm_register* output)
 {
   struct vm_register vm[MAX_PROG_REGS];
+  bool_t success = TRUE;
+  if (!s_eval_depth++) {
+    s_evalpool_head = 0;
+    s_eval_failed = FALSE;
+  }
   FOR_EACH_LIST(struct token, tok, token)
   {
     if (!op_evaluate(tok, vm, object, output)) {
-      return show_error();
+      success = FALSE;
+      break;
     }
   }
-  return TRUE;
+  success = success && !s_eval_failed;
+  if (!--s_eval_depth) {
+    if (success && output->type == kDataTypeString)
+      VM_REG_SET_STR(output, vm_strtmp(VM_REG_STR(output)));
+    while (s_eval_slabs) {
+      struct vm_string_slab *slab = s_eval_slabs;
+      s_eval_slabs = slab->next;
+      free(slab);
+    }
+  }
+  return success;
 }

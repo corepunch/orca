@@ -119,6 +119,13 @@ Network calls run in `orca.async` coroutines, so pages appear immediately with
 a loading state. Each request checks that its page and session are still
 current before it updates the view.
 
+`photo_loader.lua` checks unloaded photo frames after painting, including scroll
+offsets, clipping, Pivot positions and hidden pages. Only photos intersecting
+the viewport are requested, with at most two requests at once. Repeated photos
+share a request and cached file; each card owns its image view. Downloads that
+finish after navigation or sign-out cannot update an inactive view. Failed
+downloads show a retry control. Photos use a white image tint in both themes.
+
 ## Verify
 
 ```sh
@@ -135,4 +142,6 @@ home with reposts, connect, all four compose forms, independent drafts, photo
 selection and removal, upload retries, publishing during navigation, comments
 and replies, likes, reposts, following, profile editing, delete confirmation,
 sign-up and service errors.
-Neither suite contacts the network.
+The photo suite covers viewport loading, concurrent requests, cache reuse,
+retries and stale sessions, including native image resources. None of these
+suites contacts the network.

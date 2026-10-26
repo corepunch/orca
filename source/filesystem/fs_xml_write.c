@@ -1,5 +1,6 @@
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
+#include <source/core/property/property_internal.h>
 #include <core/core_properties.h>
 
 #include <libxml/tree.h>
@@ -21,7 +22,7 @@ static void
 serialize_bindings(struct Object const *object, xmlNodePtr node)
 {
   FOR_EACH_PROPERTY(p, OBJ_GetProperties((struct Object *)object)) {
-    if (!PROP_HasProgram((struct Property *)p)) continue;
+    if (!PROP_HasProgram((struct Property *)p) && !PROP_GetBindingExpression(p)) continue;
     struct PropertyType const *pd = PROP_GetDesc(p);
     if (!pd) continue;
 
@@ -35,6 +36,10 @@ serialize_bindings(struct Object const *object, xmlNodePtr node)
     xmlNodePtr bnd = xmlNewChild(node, NULL, XMLSTR("BindingExpression"),
                                   expr ? XMLSTR(expr) : NULL);
     xmlSetProp(bnd, XMLSTR("Target"), XMLSTR(target));
+    static char const *modes[] = { "OneWay", "TwoWay", "OneWayToSource", "Expression" };
+    if (p->binding && p->binding->Mode >= 0 && p->binding->Mode < ARRAY_SIZE(modes))
+      xmlSetProp(bnd, XMLSTR("Mode"), XMLSTR(modes[p->binding->Mode]));
+    if (!PROP_HasProgram((struct Property *)p)) xmlSetProp(bnd, XMLSTR("Enabled"), XMLSTR("false"));
   }
 }
 
@@ -115,7 +120,8 @@ serialize_property_cb(struct Object const *object,
   if (!prop)
     return;
   if (!prop || PROP_IsNull(prop)) return;
-  if (PROP_HasProgram(prop)) return; /* serialised as <BindingExpression> */
+  if (PROP_HasProgram(prop) &&
+      (!prop->binding || prop->binding->Mode != kBindingModeOneWayToSource)) return;
 
   if (pd->IsArray) {
     serialize_array_property(object, pd, prop, node);

@@ -59,7 +59,7 @@ local function photoField(self, view, field)
     local preview = ui.Grid { Name = field[2], Height = draft.photo and 200 or 0, Visible = draft.photo ~= nil,
         Background = colors.raised }
     local path = draft.photo and self.media:store(draft.photo.jpeg, "draft-" .. tostring(draft.photo))
-    if path then preview:addChild(ui.ImageView { Src = path, Stretch = "Uniform", IgnoreHitTest = true }) end
+    if path then preview:addChild(ui.ImageView { Src = path, Stretch = "Uniform", Foreground = "#ffffff", IgnoreHitTest = true }) end
     group:addChild(preview)
     group:addChild(C.outline(draft.photo and "Choose another photo" or "Choose a photo", function()
         if draft.publishing then return end

@@ -375,6 +375,8 @@ luaX_readProperty(lua_State* L, int idx, struct Property *p)
       *(event_t *)p->value = 0;
     }
     PROP_Clear(p);
+    PROP_NotifyChanged(p);
+    PROP_WriteBindingSource(p);
     return 0;
   }
 
@@ -385,6 +387,14 @@ luaX_readProperty(lua_State* L, int idx, struct Property *p)
       OBJ_AddChild(p->object, object);
       PROP_SetFlag(p, PF_OWNS_OBJECT_CHILD);
     }
+    return 0;
+  }
+
+  // Pointer-string properties copy the Lua bytes themselves; an intermediate
+  // read_property allocation would be duplicated and then abandoned.
+  if (PROP_GetType(p) == kDataTypeString && !p->pdesc->IsArray &&
+      p->pdesc->DataSize <= sizeof(char *)) {
+    PROP_SetStringValue(p, luaL_checkstring(L, idx));
     return 0;
   }
 

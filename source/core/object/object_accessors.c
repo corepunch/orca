@@ -122,6 +122,6 @@ OBJ_GetPropertyAtIndex(struct Object *object,
   void* userdata = OBJ_GetComponent(object, classid);
   if (!userdata)
     return NULL;
-  struct Property ** props = (void*)(userdata + classsize);
+  struct Property ** props = (void*)((char *)userdata + CMP_PropertyOffset(classsize));
   return props[index];
 }

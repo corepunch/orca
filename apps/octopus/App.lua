@@ -28,6 +28,7 @@ local App = Application:extend {
         else self.configurationError = { message = "Choose OCTOPUS_BACKEND=appwrite or mock." } end
         self.clock = self.client and self.client.clock or os.time
         self.media = options.media or require("Octopus/media").new()
+        self.photos = require("Octopus/photo_loader").new(self)
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         self:resetSessionViews()
     end,
@@ -180,6 +181,7 @@ local App = Application:extend {
             local ok, result = pcall(system.dispatchMessage, self.screen, message)
             if not ok then io.stderr:write(tostring(result) .. "\n")
             elseif result and not message:is("Window.Paint") then self.screen:post("Window.Paint", renderer.getSize()) end
+            if ok and message:is("Window.Paint") then self.photos:loadVisible() end
             system.translateMessage(message)
         end
     end,

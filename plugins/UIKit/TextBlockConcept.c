@@ -820,6 +820,7 @@ TextBlockText_Release(struct TextBlockText *text)
 {
   if (!text) return;
   SafeDelete(text->texture, Texture_Release);
+  free(text->displayBuffer);
   free(text);
 }
 

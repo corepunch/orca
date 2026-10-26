@@ -252,7 +252,6 @@ function Thread.page(self)
     local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
     grid:addChild(C.page(LABELS[post.postType], body)); grid:addChild(bar)
     local screen = self:frame(grid)
-    Posts.loadPhotos(self, content, { post })
     Thread.load(self, view)
     return screen
 end

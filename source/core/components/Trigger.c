@@ -57,7 +57,7 @@ _BindingGetStringProperty(struct Object *obj, uint32_t ident)
 static int
 _BindingGetIntProperty(struct Object *obj, uint32_t ident, int fallback)
 {
-  struct Property *prop = OBJ_FindShortProperty(obj, ident);
+  struct Property *prop = OBJ_FindLongProperty(obj, ident);
   if (!prop) {
     return fallback;
   }
