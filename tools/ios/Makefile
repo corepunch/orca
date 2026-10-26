@@ -29,7 +29,7 @@ BUNDLE := $(ROOT)/Orca.app
 SDK_PATH := $(shell xcrun --sdk $(SDK) --show-sdk-path)
 CC := xcrun --sdk $(SDK) clang
 MIN_FLAG := $(if $(filter iphoneos,$(SDK)),-miphoneos-version-min,-mios-simulator-version-min)=$(IOS_MIN)
-FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I$(DEPS)/include/freetype2 -I"$(SDK_PATH)/usr/include/libxml2"
+FLAGS := -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) -O2 -g -MMD -MP -DORCA_IOS=1 -DORCA_STATIC=1 -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I. -I$(ROOT)/include -I$(DEPS)/include -I"$(SDK_PATH)/usr/include/libxml2"
 CFLAGS := $(FLAGS) -Igenerated
 # UIKit/UIKit.h in generated/ is the engine API, not Apple's framework header.
 OBJCFLAGS := $(FLAGS) -idirafter generated -fmodules-cache-path=$(ROOT)/module-cache
@@ -38,7 +38,7 @@ PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a libfreetype.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules

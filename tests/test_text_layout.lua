@@ -98,6 +98,60 @@ local function test_text_single_line_layout()
 	two_words:removeFromParent()
 end
 
+local function test_font_size_preserves_em_size()
+	local family = renderer.FontFamily {
+		Regular = "share/fonts/NotoSansMono/NotoSansMono-Regular.ttf",
+	}
+	family:send("Object.Start")
+
+	-- This bundled font has 1000 units/em and a 600-unit advance for M.
+	-- FontSize must size the em as FreeType did. Scaling the 1362-unit
+	-- ascent/descent span to FontSize instead would shrink these widths by 27%.
+	for _, size in ipairs { 10, 20, 40 } do
+		local text = screen + ui.TextBlock {
+			Text = "MMMMMMMMMM",
+			FontFamily = family,
+			FontSize = size,
+			FontWeight = "Normal",
+			FontStyle = "Normal",
+			LetterSpacing = 0,
+			TextWrapping = "NoWrap",
+			Padding = core.Thickness(0),
+		}
+		screen:UpdateLayout(screen.Width, screen.Height)
+		test.expect_near(text.DesiredWidth, 6 * size, 1,
+			"FontSize=" .. size .. " must preserve the FreeType em size")
+		text:removeFromParent()
+	end
+
+	-- A 48000-pixel word exceeds the range of a signed 16.16 accumulator.
+	local column = screen + ui.StackView {
+		Direction = "Vertical",
+		Width = 1000,
+		AlignItems = "Start",
+	}
+	local wrapped = column + ui.TextBlock {
+		Text = ("M"):rep(2000),
+		FontFamily = family,
+		FontSize = 40,
+		TextWrapping = "Wrap",
+	}
+	local nowrap = column + ui.TextBlock {
+		Text = wrapped.Text,
+		FontFamily = family,
+		FontSize = 40,
+		TextWrapping = "NoWrap",
+	}
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_near(nowrap.DesiredWidth, 48000, 1,
+		"Long NoWrap text must retain its full advance without fixed-point overflow")
+	test.expect(wrapped.DesiredWidth > 0 and wrapped.DesiredWidth <= column.Width,
+		"Long words must wrap inside the available width without fixed-point overflow")
+	test.expect(wrapped.DesiredHeight >= nowrap.DesiredHeight * 40,
+		"Wrapping a long word must retain its glyphs across all required lines")
+	column:removeFromParent()
+end
+
 local function test_text_nowrap_keeps_metric_value_on_one_line()
 	local container = screen + ui.StackView {
 		Direction = "Vertical",
@@ -332,6 +386,7 @@ orca.async = function (callback) callback() end
 
 test_text_block_layout()
 test_text_single_line_layout()
+test_font_size_preserves_em_size()
 test_text_nowrap_keeps_metric_value_on_one_line()
 test_textblock_auto_margin_bubble_measures_full_phrase()
 test_auto_margin_bubble_wraps_long_text()

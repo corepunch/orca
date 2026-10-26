@@ -14,6 +14,23 @@ Use this file as the fast path for local setup and command selection.
 git submodule update --init --recursive
 ```
 
+On macOS, install the desktop build dependencies with Homebrew:
+
+```bash
+brew install pkgconf lua lz4 libxml2
+```
+
+The build uses `pkg-config` to find headers and libraries. It prefers the
+`lua5.4` package when available, then falls back to `lua`. Missing packages
+are reported by name; having the `lua` executable alone does not establish
+that all build dependencies are available.
+
+To build without LZ4-compressed package support (and without installing `lz4`):
+
+```bash
+CFLAGS='-O2 -g -DORCA_NO_LZ4' make
+```
+
 ## Authoritative commands
 
 ```bash

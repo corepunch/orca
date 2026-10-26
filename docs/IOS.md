@@ -55,7 +55,7 @@ available independently.
   profile. The profile must cover the bundle identifier and device UDID.
 
 Initialize submodules as described in [BUILD.md](BUILD.md). First builds
-download pinned, SHA256-verified Lua 5.4.8, FreeType 2.13.3, LZ4 1.10.0 and
+download pinned, SHA256-verified Lua 5.4.8, LZ4 1.10.0 and
 curl 8.10.1 sources, then build static libraries for the selected SDK and CPU.
 Downloads are cached under `build/ios/`. curl uses Apple's Secure Transport
 for HTTPS. Host Homebrew libraries are never linked into iOS executables.
