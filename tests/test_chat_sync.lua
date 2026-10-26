@@ -84,6 +84,22 @@ assert(app.reads == reads)
 assert(coroutine.resume(pending) and not app.inboxRefreshBusy)
 app.readHook = nil
 
+-- A replacement session starts immediately, and an old completion cannot unlock it.
+local raced = fixture()
+raced.readHook = function() coroutine.yield() end
+local oldEpoch = raced.sessionEpoch
+local old = coroutine.create(function()
+    Sync.refreshInbox(raced, function() return raced.sessionEpoch == oldEpoch end, true)
+end)
+assert(coroutine.resume(old))
+raced.sessionEpoch = oldEpoch + 1
+local replacement = coroutine.create(function() Sync.refreshInbox(raced, function() return true end, true) end)
+assert(coroutine.resume(replacement) and raced.reads == 2, "A new session must not wait on the old session's inbox lock")
+local lock = raced.inboxRefreshBusy
+assert(coroutine.resume(old) and raced.inboxRefreshBusy == lock and #raced.rooms == 0,
+    "Old responses must neither publish rows nor release a newer session's lock")
+assert(coroutine.resume(replacement) and not raced.inboxRefreshBusy and raced.rooms[1].id == "one")
+
 -- Thread polling preserves scroll/drafts and uses its own three-second cadence.
 app.room = { id = "thread" }
 app.messageList = { getRoot = function() return app.screen end }

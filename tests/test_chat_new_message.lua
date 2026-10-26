@@ -31,7 +31,7 @@ package.preload['Chat/theme'] = function() return dofile('apps/chat/theme.lua') 
 package.preload['Chat/views/components'] = function() return dofile('apps/chat/views/components.lua') end
 local Conversations = dofile('apps/chat/views/conversations.lua')
 local app = { navigationEpoch = 1, sessionEpoch = 1, models = { Rooms = {} } }
-local creates, searches = {}, 0
+local creates, searches, loads = {}, 0, {}
 local createError, onFind
 app.client = {
     getSession = function() return { user = { id = 'me' } } end,
@@ -54,6 +54,7 @@ function app.models.Rooms:create(values)
     if createError then return nil, { message = 'Please retry' } end
     return { id = 'room', kind = values.kind, peer_id = values.member_ids[1] }
 end
+function app:load(work) loads[#loads + 1] = work end
 function app:avatarPhoto() end
 function app:frame(page) self.screen = page; return page end
 function app:openRoom(room) self.opened = room end
@@ -61,6 +62,11 @@ local screen = Conversations.newRoom(app)
 local function node(name) return assert(screen:findChild(name), name) end
 local function click(name) node(name):send() end
 local function text(name, value) node(name).Text = value end
+assert(node('ContactsLoading').parent.Visible and node('NewChatActions').Visible and not screen:findChild('Contactalex'),
+    'New-message controls must mount before the contacts request starts')
+assert(#loads == 1)
+table.remove(loads, 1)()
+assert(not node('ContactsLoading').parent.Visible and node('Contactalex'), 'Contact results replace their loading state')
 assert(node('NewChatActions').Visible and node('Contacts').Visible)
 assert(not node('SelectedPeople').Visible and not node('CreateConversation').parent.Visible)
 assert(not node('InvitationSetup').Visible and not node('ConversationVisibility').Visible)

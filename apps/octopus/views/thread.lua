@@ -1,4 +1,5 @@
 local ui = require "orca.UIKit"
+local Footer = require "orca.UIKit.Footer"
 local system = require "orca.system"
 local C = require "Octopus/views/components"
 local Posts = require "Octopus/views/posts"
@@ -100,33 +101,55 @@ local function renderComments(self, view, comments, likes)
 end
 
 function Thread.load(self, view)
-    local post, session = view.post, self.sessionEpoch
+    if view.loading then return end
+    view.loading = true
+    local loading = view.comments:findChild("CommentsLoading")
+    if not loading then
+        loading = C.loading { Name = "CommentsLoading", Height = 64 }
+        view.comments:addChild(loading)
+    end
+    local post, session, navigation = view.post, self.sessionEpoch, self.navigationEpoch
     self:task(function()
         local fresh, err = self.client:getPost(post.id)
-        if self.thread ~= view or self.sessionEpoch ~= session then return end
+        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then
+            view.loading = false
+            return
+        end
         if not fresh then
-            C.clear(view.comments):addChild(C.empty(err.status == 404 and "this post is gone" or "can't load this post",
-                err.message))
+            view.loading = false
+            loading:removeFromParent()
+            if not view.commentsLoaded then
+                C.clear(view.comments):addChild(C.empty(err.status == 404 and "this post is gone" or "can't load this post",
+                    err.message))
+            end
             self:notice(err.message, true); self:repaint()
             return
         end
         local stats = self.client:stats { post.id }
+        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then
+            view.loading = false
+            return
+        end
+        if stats and stats[post.id] then
+            for key, value in pairs(stats[post.id]) do view.entry[key] = value end
+            view.refreshStats()
+            self:repaint()
+        end
         local comments, commentError = self.client:listComments(post.id)
         local ids = {}
         for _, comment in ipairs(comments or {}) do ids[#ids + 1] = comment.id end
         local likes = comments and self.client:stats(ids, "comment") or {}
-        if self.thread ~= view or self.sessionEpoch ~= session then return end
-        if stats then
-            for key, value in pairs(stats[post.id]) do view.entry[key] = value end
-            view.refreshStats()
-        end
+        view.loading = false
+        if self.thread ~= view or self.sessionEpoch ~= session or self.navigationEpoch ~= navigation then return end
+        loading:removeFromParent()
         if comments then
+            view.commentsLoaded = true
             view.entry.comments = #comments
             view.refreshStats()
             renderComments(self, view, comments, likes or {})
             self:notice("")
         else
-            C.clear(view.comments):addChild(C.empty("can't load comments", commentError.message))
+            if not view.commentsLoaded then C.clear(view.comments):addChild(C.empty("can't load comments", commentError.message)) end
             self:notice(commentError.message, true)
         end
         self:repaint()
@@ -158,7 +181,7 @@ function Thread.page(self)
     local mine = session and session.user.id == post.authorId
     local view = { post = post, entry = { likes = 0, comments = 0, reposts = 0 } }
     self.thread = view
-    self.status = C.text("Loading…", { Name = "PostStatus", FontSize = 11, Foreground = colors.dim,
+    self.status = C.text("", { Name = "PostStatus", FontSize = 11, Foreground = colors.dim,
         TextHorizontalAlignment = "Center" })
 
     local author = ui.Grid { Columns = "56px 1fr", Spacing = 14, IgnoreHitTest = true }
@@ -168,7 +191,7 @@ function Thread.page(self)
         C.text(LABELS[post.postType] .. " · " .. C.ago(post.createdAt, self.clock()), { FontSize = 13, Foreground = colors.dim }),
     }))
     local stats, showStats = statTiles()
-    view.comments = C.stack({ Name = "Comments", Spacing = 18 }, { C.text("loading comments…", { Foreground = colors.muted }) })
+    view.comments = C.stack({ Name = "Comments", Spacing = 18 }, { C.loading { Name = "CommentsLoading", Height = 160 } })
     local content = C.stack({ Name = "PostPage", Spacing = 16, Overflow = "hidden scroll" }, {
         C.area(author, function() self:openProfile(post.authorId, post.authorName) end, { Name = "PostAuthor", Height = 60 }),
         Posts.body(self, post, true),
@@ -249,9 +272,11 @@ function Thread.page(self)
         bar:findChild("RepostPost").Text = view.entry.reposted and "undo" or "repost"
     end
     view.refreshStats()
-    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
-    grid:addChild(C.page(LABELS[post.postType], body)); grid:addChild(bar)
-    local screen = self:frame(grid)
+    local screen = self:frame()
+    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
+    footer:addChild(bar)
+    Footer.layout(screen, C.page(LABELS[post.postType], body), footer,
+        { Background = colors.background, Foreground = colors.ink })
     Thread.load(self, view)
     return screen
 end

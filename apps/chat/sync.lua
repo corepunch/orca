@@ -17,18 +17,15 @@ end
 
 -- All inbox reads share a lock, including manual refresh/navigation.
 function Sync.refreshInbox(app, current, quiet)
-    if app.inboxRefreshBusy then return true end
-    app.inboxRefreshBusy = true
+    if app.inboxRefreshBusy and app.inboxRefreshBusy.epoch == app.sessionEpoch then return true end
+    local request = { epoch = app.sessionEpoch }
+    app.inboxRefreshBusy = request
     local ok, result, err = xpcall(function()
         local rooms, roomError = app.models.Rooms:select()
         if not current() then return true end
         if not rooms then return nil, roomError end
-        local contacts, contactError = app.models.Contacts:select()
-        if not current() then return true end
-        if not contacts then return nil, contactError end
-        local changed = not equal(rooms, app.rooms) or not equal(contacts, app.contacts)
-        app.rooms, app.contacts, app.contactsById = rooms, contacts, {}
-        for _, contact in ipairs(contacts) do app.contactsById[contact.id] = contact end
+        local changed = not equal(rooms, app.rooms)
+        app.rooms = rooms
         if changed and app.roomLists then
             local offsets = {}
             for key, list in pairs(app.roomLists) do
@@ -37,9 +34,15 @@ function Sync.refreshInbox(app, current, quiet)
             app:renderRoomList()
             for key, list in pairs(app.roomLists) do list.ContentOffset = offsets[key] end
         end
+        -- Rooms are usable before the separate contacts request completes.
+        local contacts, contactError = app.models.Contacts:select()
+        if not current() then return true end
+        if not contacts then return nil, contactError end
+        app.contacts, app.contactsById = contacts, {}
+        for _, contact in ipairs(contacts) do app.contactsById[contact.id] = contact end
         return true
     end, debug.traceback)
-    app.inboxRefreshBusy = false
+    if app.inboxRefreshBusy == request then app.inboxRefreshBusy = nil end
     if not ok then
         if current() and app.reportError then app:reportError(result, "Syncing conversations") end
         result, err = nil, { code = "network", message = "Could not sync conversations. Please try again." }

@@ -54,6 +54,53 @@ local function newApp()
     return app
 end
 
+local function assertDetailFooter(app)
+    local screen = app.screen
+    local footer = find(app, "AppBarFooter")
+    local bar = assert(footer:getFirstChild(), "The footer must contain the application bar")
+    local function position(node)
+        local x, y = 0, 0
+        while node and node ~= screen do
+            x, y = x + node.ActualX, y + node.ActualY
+            node = node:getParent()
+        end
+        return x, y
+    end
+    for _, size in ipairs { { 430, 932, 59, 34, 0, 0 }, { 932, 430, 0, 21, 59, 59 } } do
+        screen.Width, screen.Height = size[1], size[2]
+        screen.SafeAreaTop, screen.SafeAreaBottom = size[3], size[4]
+        screen.SafeAreaLeft, screen.SafeAreaRight = size[5], size[6]
+        for _, keyboard in ipairs { 0, 300, 0 } do
+            screen.KeyboardInsetBottom = keyboard
+            core.advanceFrame()
+            core.runAllPrograms(screen)
+            screen:UpdateLayout(size[1], size[2])
+            local footerX, footerY = position(footer)
+            local barX, barY = position(bar)
+            local bottomInset = math.max(size[4], keyboard)
+            assert(not screen.RespectSafeArea and screen.Height == size[2],
+                "Detail pages retain the physical viewport during keyboard changes")
+            assert(math.abs(footerX) < 1 and math.abs(footer.ActualWidth - size[1]) < 1
+                and math.abs(footerY + footer.ActualHeight - size[2]) < 1,
+                "Detail footer backgrounds must reach every physical bottom edge: " .. app.currentRoute)
+            assert(math.abs(barY + bar.ActualHeight - (size[2] - bottomInset)) < 1
+                and math.abs(bar.ActualHeight - 58) < 1
+                and barX >= size[5] and barX + bar.ActualWidth <= size[1] - size[6] + 1,
+                "Detail footer controls must avoid the home gesture, keyboard, and landscape cutouts")
+            for _, channel in ipairs { "R", "G", "B", "A" } do
+                assert(math.abs(footer.BackgroundColor[channel] - bar.BackgroundColor[channel]) < 0.001,
+                    "The inset area must use the application bar background")
+            end
+        end
+    end
+    screen.Width, screen.Height = 390, 844
+    screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
+    screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(390, 844)
+end
+
 -- Guests land on the public timeline.
 local app = newApp()
 local home = app.screen
@@ -106,6 +153,7 @@ assert(footer.PaddingBottom == 0 and math.abs(footer.ActualHeight - 58) < 1)
 click(app, "Openp-hello")
 assert(app.currentRoute == "/post" and find(app, "PostPage"))
 assert(find(app, "Commentc-welcome") and find(app, "SignInToComment"))
+assertDetailFooter(app)
 local function stat(key) return find(app, "Stat" .. key):getTextContent() end
 assert(stat("likes") == "2" and stat("reposts") == "1" and stat("comments") == "3", "Post pages show live counts")
 assert(find(app, "PostTime"):getTextContent():match("^%d%d:%d%d · %d+ %a+ %d%d%d%d$"), "Posts show their full time")
@@ -122,6 +170,7 @@ click(app, "Authorp-reef")
 assert(app.currentRoute == "/user" and find(app, "ProfileName"):getTextContent() == "Sam Rivera")
 assert(find(app, "Countposts"):getTextContent() == "2" and find(app, "Countfollowers"):getTextContent() == "–")
 assert(find(app, "Postp-tide") and find(app, "SignInToFollow"))
+assertDetailFooter(app)
 click(app, "BackFromProfile")
 click(app, "Tagreef")
 assert(app.currentRoute == "/search" and find(app, "SearchInput").Text == "#reef")
@@ -425,4 +474,124 @@ drain(writer)
 assert(#assert(writer.client:listPosts { limit = 100 }) == before and find(writer, "PostContent").Text == "",
     "Signing in again starts fresh forms and cancels the previous session's queued publish")
 
-print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up and errors passed")
+-- Suspended fetches leave navigation and existing content available.
+local asyncInline, requests = orca.async, {}
+local delayed = App { client = Octopus.mock { clock = function() return NOW end } }
+local task = delayed.task
+delayed.task = function(self, fn)
+    orca.async = function(work) requests[#requests + 1] = coroutine.create(work) end
+    task(self, fn)
+    orca.async = asyncInline
+end
+delayed.activate_controller = function(self, controller) self.screen = controller.view; return controller end
+delayed.repaint = function() end
+local listPosts, failRefresh = delayed.client.listPosts, false
+delayed.client.listPosts = function(self, query)
+    coroutine.yield()
+    if failRefresh then return nil, { message = "Temporarily offline" } end
+    return listPosts(self, query)
+end
+local function step(request)
+    local ok, err = coroutine.resume(request)
+    assert(ok, err)
+end
+delayed:show("/")
+local firstRequest = requests[1]
+assert(delayed.screen and find(delayed, "Loadingdiscover").Visible and #requests == 1,
+    "The shell and indicator must exist before the fetch begins")
+delayed.screen:UpdateLayout(390, 844)
+local loading = find(delayed, "Loadingdiscover")
+local indicator = find(delayed, "LoadingdiscoverIndicator")
+assert(loading.IgnoreHitTest and indicator.IgnoreHitTest
+    and indicator.ActualWidth > 0 and indicator.ActualHeight > 0
+    and math.abs(indicator.ActualX + indicator.ActualWidth / 2 - loading.ActualWidth / 2) < 1
+    and math.abs(indicator.ActualY + indicator.ActualHeight / 2 - loading.ActualHeight / 2) < 1,
+    "The loading indicator is centered without intercepting navigation")
+step(firstRequest)
+click(delayed, "AppBarSearch")
+local searchScreen = delayed.screen
+assert(delayed.currentRoute == "/search" and find(delayed, "SearchInput"), "Navigation works while a fetch is suspended")
+step(firstRequest)
+assert(delayed.screen == searchScreen and delayed.currentRoute == "/search",
+    "A finished timeline fetch cannot navigate away from the current page")
+delayed:show("/")
+local retainedScreen, retainedPost = delayed.screen, find(delayed, "Postp-reef")
+failRefresh = true
+delayed:refresh()
+local refreshRequest = requests[#requests]
+step(refreshRequest)
+assert(delayed.screen == retainedScreen and find(delayed, "Postp-reef") == retainedPost
+    and find(delayed, "Loadingdiscover").Visible, "Refreshing keeps the existing feed visible")
+step(refreshRequest)
+assert(find(delayed, "Postp-reef") == retainedPost and not find(delayed, "Loadingdiscover").Visible
+    and find(delayed, "HomeStatus"):getTextContent() == "Temporarily offline",
+    "A refresh error preserves content and leaves refresh available")
+failRefresh = false
+delayed:refresh()
+refreshRequest = requests[#requests]
+step(refreshRequest); step(refreshRequest)
+assert(find(delayed, "Postp-reef") and not find(delayed, "Loadingdiscover").Visible)
+-- Post counts populate while the comments section is still waiting.
+local listComments = delayed.client.listComments
+delayed.client.listComments = function(self, id) coroutine.yield(); return listComments(self, id) end
+local hello
+for _, post in ipairs(listPosts(delayed.client, { limit = 100 })) do if post.id == "p-hello" then hello = post end end
+delayed:openPost(assert(hello))
+local threadRequest = requests[#requests]
+step(threadRequest)
+assert(find(delayed, "Statlikes"):getTextContent() == "2" and find(delayed, "CommentsLoading"),
+    "Post counts populate before comments finish loading")
+step(threadRequest)
+assert(find(delayed, "Commentc-welcome") and not delayed.screen:findChild("CommentsLoading", true))
+-- Search posts populate before the independent people lookup finishes.
+delayed:show("/search")
+local searchPeople = delayed.client.searchPeople
+delayed.client.searchPeople = function(self, query) coroutine.yield(); return searchPeople(self, query) end
+find(delayed, "SearchInput").Text = "reef"
+local partialIndex = #requests + 1
+click(delayed, "RunSearch")
+local partialSearch = requests[partialIndex]
+step(partialSearch); step(partialSearch)
+assert(delayed.searchState.results and delayed.searchState.results.posts and find(delayed, "Searching").Visible,
+    "Search posts populate while people are still loading")
+step(partialSearch)
+assert(not find(delayed, "Searching").Visible)
+-- A failed people lookup must not remove the successful post section.
+delayed.client.searchPeople = function()
+    coroutine.yield()
+    return nil, { message = "People lookup unavailable" }
+end
+find(delayed, "SearchInput").Text = hello.title
+partialIndex = #requests + 1
+click(delayed, "RunSearch")
+partialSearch = requests[partialIndex]
+step(partialSearch); step(partialSearch)
+local partialPost = find(delayed, "Post" .. hello.id)
+step(partialSearch)
+assert(find(delayed, "Post" .. hello.id) == partialPost
+    and delayed.searchState.results.peopleError.message == "People lookup unavailable"
+    and find(delayed, "RetryPeopleSearch") and not find(delayed, "Searching").Visible,
+    "People lookup failure keeps the rendered posts and offers retry")
+delayed.client.searchPeople = searchPeople
+partialIndex = #requests + 1
+click(delayed, "RetryPeopleSearch")
+partialSearch = requests[partialIndex]
+step(partialSearch); step(partialSearch)
+assert(find(delayed, "Post" .. hello.id) and not delayed.searchState.results.peopleError
+    and not delayed.screen:findChild("PeopleSearchError", true), "Retry clears the people error while retaining post results")
+-- Clearing a search invalidates its in-flight response.
+delayed:show("/search")
+find(delayed, "SearchInput").Text = "reef"
+local searchIndex = #requests + 1
+click(delayed, "RunSearch")
+local searchRequest = requests[searchIndex]
+step(searchRequest)
+assert(find(delayed, "Searching").Visible)
+find(delayed, "SearchInput").Text = ""
+click(delayed, "RunSearch")
+step(searchRequest)
+assert(not delayed.searchState.results and not find(delayed, "Searching").Visible,
+    "A cleared query cannot be replaced by an older response")
+orca.async = asyncInline
+
+print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up, delayed fetches, retained refresh and errors passed")

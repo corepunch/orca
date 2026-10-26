@@ -268,7 +268,7 @@ HANDLER(Screen, Window, Paint) {
 #ifdef AX_PLATFORM_IOS
   axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
 #endif
-  R_BeginFrame(pScreen->ClearColor);
+  if (R_BeginFrame(pScreen->ClearColor) != NOERROR) return TRUE;
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
 

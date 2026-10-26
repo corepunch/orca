@@ -160,12 +160,7 @@ function Identity.auth(self, mode)
     return self:frame(body)
 end
 
-function Identity.profile(self)
-    if not self.client or not self.client:getSession() then return self:home() end
-    if self.shell and self.shell:has("Profile") then self.status = self.profileStatus; return self.shell:show("Profile") end
-    local navigation, generation = self.navigationEpoch, self.sessionEpoch
-    local profile, err = self.client:getProfile()
-    if self.navigationEpoch ~= navigation or self.sessionEpoch ~= generation then return self.screen end
+local function profileBody(self, profile)
     local user = self.client:getSession().user
     profile = profile or { display_name = (user.user_metadata or {}).display_name or "You" }
     local name = C.input("ProfileName", "Your name", { Text = profile.display_name or "You" })
@@ -179,8 +174,8 @@ function Identity.profile(self)
             .. "\nVerified email: " .. ((email and email ~= "") and email or "Not added"))
     end
     describe(profile)
-    self.status = C.text(err and err.message or "Your login details stay private. Choose how people find you.", {
-        Name = "ProfileStatus", WordWrap = true, FontSize = 14, Foreground = err and colors.error or colors.muted,
+    self.status = C.text("Your login details stay private. Choose how people find you.", {
+        Name = "ProfileStatus", WordWrap = true, FontSize = 14, Foreground = colors.muted,
     })
     self.profileStatus = self.status
     local epoch, status = self.sessionEpoch, self.status
@@ -230,7 +225,14 @@ function Identity.profile(self)
         end, { Name = "RequestLink", Background = colors.surface }), verification,
         C.button("Sign out", function() self:signOut() end, { Name = "SignOut", Foreground = colors.error }),
     })
-    return self:frame(C.page("profile", body), "Profile")
+    return body
+end
+
+function Identity.profile(self)
+    if not self.client or not self.client:getSession() then return self:home() end
+    if self.shell and self.shell:has("Profile") then self.status = self.profileStatus; return self.shell:show("Profile") end
+    return self:loadingPage("profile", "Profile", function() return self.client:getProfile() end,
+        function(profile) return profileBody(self, profile) end)
 end
 
 return Identity

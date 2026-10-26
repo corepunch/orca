@@ -1,4 +1,5 @@
 local ui = require "orca.UIKit"
+local Footer = require "orca.UIKit.Footer"
 local C = require "Octopus/views/components"
 local Posts = require "Octopus/views/posts"
 local colors = C.colors
@@ -28,7 +29,7 @@ local function profileView(self, userId, name, own)
         counts:addChild(C.stack({ Spacing = 0 }, { view.counts[key], C.text(key, { FontSize = 13, Foreground = colors.dim }) }))
     end
     view.actions = C.stack({ Name = "ProfileActions", Spacing = 12 })
-    view.posts = C.stack({ Name = "ProfilePosts", Spacing = C.spacing.post }, { C.text("loading…", { FontSize = 22, Foreground = colors.muted }) })
+    view.posts = C.stack({ Name = "ProfilePosts", Spacing = C.spacing.post }, { C.loading { Name = "ProfileLoading", Height = 160 } })
     view.content = C.stack({ Name = "ProfilePage", Spacing = 18, Overflow = "hidden scroll" }, {
         header, counts, view.actions, C.eyebrow("posts"), view.posts,
     })
@@ -69,13 +70,27 @@ local function followButton(self, view)
 end
 
 local function loadProfile(self, view, after)
-    local session = self.sessionEpoch
+    if view.loading then return end
+    view.loading = true
+    local loading = view.posts:findChild("ProfileLoading")
+    if not loading then
+        loading = C.loading { Name = "ProfileLoading", Height = 64 }
+        view.posts:addChild(loading)
+    end
+    local session, navigation = self.sessionEpoch, self.navigationEpoch
+    local function current()
+        if self.profileView == view and self.sessionEpoch == session and self.navigationEpoch == navigation then return true end
+        view.loading = false
+        return false
+    end
     self:task(function()
         local profile, err = self.client:getProfile(view.userId)
-        if self.profileView ~= view or self.sessionEpoch ~= session then return end
+        if not current() then return end
         if not profile then
+            view.loading = false
+            loading:removeFromParent()
             self:notice(err.message, true)
-            C.clear(view.posts):addChild(C.empty("can't load this profile", err.message))
+            if not view.profile then C.clear(view.posts):addChild(C.empty("can't load this profile", err.message)) end
             self:repaint()
             return
         end
@@ -86,27 +101,37 @@ local function loadProfile(self, view, after)
         end
         view.bio:setTextContent(profile.bio ~= "" and profile.bio or (view.own and "Add a short bio below." or ""))
         for key, label in pairs(view.counts) do label:setTextContent(number(profile[key])) end
+        if after then after(profile) end
+        self:repaint()
         if not view.own then
             view.follow = self.client:followState(view.userId) or nil
-            if self.profileView ~= view then return end
+            if not current() then return end
             followButton(self, view)
         end
-        if after then after(profile) end
+        self:repaint()
         local posts, stats = Posts.fetch(self, function()
             return self.client:userTimeline(view.userId, { limit = 30 })
         end)
-        if self.profileView ~= view or self.sessionEpoch ~= session then return end
-        C.clear(view.posts)
+        view.loading = false
+        if not current() then return end
+        loading:removeFromParent()
         if not posts then
-            view.posts:addChild(C.empty("can't load posts", stats.message))
-        elseif #posts == 0 then
-            view.posts:addChild(C.empty("no posts yet", view.own and "Use write to share your first post." or nil))
+            if not view.postsLoaded then C.clear(view.posts):addChild(C.empty("can't load posts", stats.message)) end
+            self:notice(stats.message, true)
         else
-            Posts.append(self, view.posts, posts, stats)
+            C.clear(view.posts)
+            view.postsLoaded = true
+            if #posts == 0 then
+                view.posts:addChild(C.empty("no posts yet", view.own and "Use write to share your first post." or nil))
+            else Posts.append(self, view.posts, posts, stats) end
+            self:notice("")
         end
-        self:notice("")
         self:repaint()
     end)
+end
+
+function People.refresh(self)
+    if self.profileView then loadProfile(self, self.profileView) end
 end
 
 function People.profile(self)
@@ -122,11 +147,13 @@ function People.profile(self)
             local route = self.profileReturn
             self:show(route and route ~= "/user" and route or "/")
         end },
-        { "RefreshProfile", "refresh-cw", "refresh", function() self:show("/user") end },
+        { "RefreshProfile", "refresh-cw", "refresh", function() loadProfile(self, view) end },
     })
-    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
-    grid:addChild(C.page((self.profileName or "profile"):lower(), body)); grid:addChild(bar)
-    local screen = self:frame(grid)
+    local screen = self:frame()
+    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
+    footer:addChild(bar)
+    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body), footer,
+        { Background = colors.background, Foreground = colors.ink })
     followButton(self, view)
     loadProfile(self, view)
     return screen
@@ -242,6 +269,13 @@ local function trendingTags(self)
     return { table.unpack(tags, 1, math.min(#tags, 6)) }
 end
 
+local function renderPeopleError(self, list, results)
+    list:addChild(C.stack({ Name = "PeopleSearchError", Spacing = 8 }, {
+        C.empty("can't load people", results.peopleError.message),
+        C.button("retry search", function() People.runSearch(self, list) end, { Name = "RetryPeopleSearch" }),
+    }))
+end
+
 local function renderResults(self, list)
     local state = self.searchState
     C.clear(list)
@@ -270,31 +304,50 @@ local function renderResults(self, list)
         list:addChild(posts)
         Posts.append(self, posts, results.posts, results.stats)
     end
-    if #results.people == 0 and #results.posts == 0 then
+    if results.peopleError then renderPeopleError(self, list, results)
+    elseif #results.people == 0 and #results.posts == 0 then
         list:addChild(C.empty("nothing found", "No posts or people match “" .. results.query .. "”. Try another word or tag."))
     end
 end
 
 function People.runSearch(self, list)
     local query = (self.searchState.query or ""):match("^%s*(.-)%s*$")
-    if query == "" then self.searchState.results = nil; renderResults(self, list); return end
     local session = self.sessionEpoch
     self.searchEpoch = (self.searchEpoch or 0) + 1
     local epoch = self.searchEpoch
-    C.clear(list):addChild(C.text("searching…", { Name = "Searching", FontSize = 22, Foreground = colors.muted }))
+    local loading = self.searchLoading
+    if query == "" then
+        loading.Visible = false
+        self.searchState.results = nil
+        renderResults(self, list)
+        return
+    end
+    loading.Visible = true
     self:task(function()
         local tag = query:match("^#(.+)$")
         local posts, stats = Posts.fetch(self, function()
             local found, err = self.client:listPosts(tag and { tag = tag, limit = 30 } or { search = query, limit = 20 })
             return found and Posts.items(found), err
         end)
+        if self.searchEpoch ~= epoch or self.sessionEpoch ~= session then return end
+        if posts and not tag then
+            self.searchState.results = { query = query, posts = posts, stats = stats, people = {} }
+            if self.searchList == list then renderResults(self, list) end
+            self:repaint()
+        end
         local people, peopleError = {}, nil
         if posts and not tag then people, peopleError = self.client:searchPeople(query) end
         if self.searchEpoch ~= epoch or self.sessionEpoch ~= session then return end
-        local err = (not posts and stats) or (not people and peopleError)
-        self.searchState.results = err and { error = err, query = query } or {
-            query = query, tag = tag and tag:lower(), posts = posts, stats = stats, people = people }
-        if self.searchList == list then renderResults(self, list) end
+        loading.Visible = false
+        self.searchState.results = not posts and { error = stats, query = query } or {
+            query = query, tag = tag and tag:lower(), posts = posts, stats = stats,
+            people = people or {}, peopleError = peopleError }
+        if self.searchList == list then
+            if posts and not people then
+                -- The post section is already on screen; only add the failed section.
+                renderPeopleError(self, list, self.searchState.results)
+            else renderResults(self, list) end
+        end
         self:repaint()
     end)
 end
@@ -304,6 +357,9 @@ function People.search(self)
     self.status = C.text("", { FontSize = 11, Foreground = colors.dim })
     local list = C.stack({ Name = "SearchResults", Spacing = 14, Overflow = "hidden scroll" })
     self.searchList = list
+    local results = ui.Grid()
+    self.searchLoading = C.loading { Name = "Searching", Visible = false }
+    results:addChild(list); results:addChild(self.searchLoading)
     local input
     input = C.input("SearchInput", "Posts, people or #tags", {
         Text = state.query, Submit = function() state.query = input.Text; People.runSearch(self, list) end,
@@ -317,7 +373,7 @@ function People.search(self)
     go:addChild(C.icon("search", 20, colors.onAccent))
     bar:addChild(go)
     local body = ui.Grid { Rows = "48px 1fr auto", Spacing = 16 }
-    body:addChild(bar); body:addChild(list); body:addChild(self.status)
+    body:addChild(bar); body:addChild(results); body:addChild(self.status)
     local screen = self:tab("Search", C.page("search", body))
     -- A tag opened from a post searches straight away.
     if state.results == nil and state.query:match("^#") then People.runSearch(self, list)

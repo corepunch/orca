@@ -70,6 +70,16 @@ finishWorkers()
 assert(duplicate:findChild("Cached") and calls.same == 1)
 assert(calls.sixth == 1 and calls.bad == 1, "Scrolling exposes only newly visible photos")
 local retry = assert(frames[7]:findChild("RetryPhoto7"), "Failures need an explicit retry control")
+local unavailable = assert(retry:findChild("UnavailablePhoto7"), "Failed photos need a broken-image icon")
+assert(unavailable.Source == "Octopus/assets/icons/image-off.svg" and (retry.Text or "") == "",
+    "Failed photos show the broken-image icon without retry text")
+app.screen:UpdateLayout(200, 450)
+assert(retry.ActualWidth == frames[7].ActualWidth and retry.ActualHeight == frames[7].ActualHeight,
+    "The retry area must fill the reserved photo frame")
+assert(math.abs(unavailable.ActualX + unavailable.ActualWidth / 2 - retry.ActualWidth / 2) < 1
+    and math.abs(unavailable.ActualY + unavailable.ActualHeight / 2 - retry.ActualHeight / 2) < 1,
+    "The broken-image icon must stay centered in the reserved photo frame")
+if native then app.screen:send("Screen.RenderScreen", { width = 200, height = 450 }) end
 loader:loadVisible()
 assert(calls.bad == 1, "Paints must not spin on failed downloads")
 retry:send("Node.LeftButtonUp")

@@ -230,7 +230,36 @@ class GenerateProjectTests(unittest.TestCase):
         paths = [(bundle.parent / objects[item['fileRef']]['path']).resolve() for item in files]
         self.assertIn(manifest, paths)
 
-    def test_application_without_an_icon_catalog_has_no_native_icon_resource(self):
+    def test_launch_screens_are_bundled_for_chat_and_octopus(self):
+        for app in ('chat', 'octopus'):
+            with self.subTest(app=app):
+                bundle = self.generate(app, output=self.output / 'project with spaces')
+                project = self.read_project(bundle)
+                objects = project['objects']
+                _, target = self.application(project)
+                resources = [objects[objects[ref]['fileRef']]
+                             for phase in target['buildPhases']
+                             if objects[phase]['isa'] == 'PBXResourcesBuildPhase'
+                             for ref in objects[phase]['files']]
+                paths = {(bundle.parent / item['path']).resolve() for item in resources}
+                app_dir = ROOT / 'apps' / app
+                self.assertIn(app_dir / 'LaunchScreen.storyboard', paths)
+                self.assertIn(app_dir / 'Assets.xcassets', paths)
+                for settings in self.effective_configurations(project).values():
+                    info = self.read_info(bundle, settings)
+                    self.assertEqual(info['UILaunchStoryboardName'], 'LaunchScreen')
+                    self.assertNotIn('UILaunchScreen', info)
+                # Every named storyboard resource must exist in the compiled catalog.
+                screen = ET.parse(app_dir / 'LaunchScreen.storyboard').getroot()
+                self.assertEqual(screen.get('launchScreen'), 'YES')
+                for resource in screen.find('resources'):
+                    kind = 'imageset' if resource.tag == 'image' else 'colorset'
+                    asset = app_dir / 'Assets.xcassets' / (resource.get('name') + '.' + kind)
+                    data = json.loads((asset / 'Contents.json').read_text())
+                    for image in data.get('images', []):
+                        self.assertTrue((asset / image['filename']).is_file())
+
+    def test_application_without_an_app_icon_still_bundles_its_asset_catalog(self):
         fixture = Path(self.temporary.name) / 'repository'
         shutil.copytree(ROOT / 'tools/xcode', fixture / 'tools/xcode',
                         ignore=shutil.ignore_patterns('__pycache__'))
@@ -245,10 +274,13 @@ class GenerateProjectTests(unittest.TestCase):
         project = self.read_project(app / 'plain.xcodeproj')
         _, target = self.application(project)
         objects = project['objects']
-        self.assertFalse(any(objects[ref]['isa'] == 'PBXResourcesBuildPhase' for ref in target['buildPhases']))
-        self.assertFalse(any(obj.get('lastKnownFileType') == 'folder.assetcatalog' for obj in objects.values()))
+        self.assertTrue(any(objects[ref]['isa'] == 'PBXResourcesBuildPhase' for ref in target['buildPhases']))
+        self.assertTrue(any(obj.get('lastKnownFileType') == 'folder.assetcatalog' for obj in objects.values()))
         for settings in self.effective_configurations(project).values():
             self.assertNotIn('ASSETCATALOG_COMPILER_APPICON_NAME', settings)
+            info = self.read_info(app / 'plain.xcodeproj', settings)
+            self.assertEqual(info['UILaunchScreen'], {})
+            self.assertNotIn('UILaunchStoryboardName', info)
 
     def test_regeneration_preserves_custom_icon_settings_at_both_configuration_levels(self):
         bundle = self.generate('chat')
