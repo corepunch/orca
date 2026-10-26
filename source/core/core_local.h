@@ -174,8 +174,6 @@ OBJ_MoveToFront(struct Object *);
 void
 OBJ_ClearStyleClasses(struct Object *);
 
-void
-OBJ_RequestAnimate(struct Object *);
   
 ORCA_API void
 OBJ_SetAlias(struct Object *, uint32_t);

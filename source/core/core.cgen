@@ -433,6 +433,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <arg name="style" type="uint">Style flags bitmask to apply</arg>
         </method>
         <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
+        <method name="RequestAnimate">
+          <summary>Enqueues one Object.Animate callback, coalescing repeated requests until it is dispatched.</summary>
+          <details>Call again from Object.Animate while animation remains active. Uses the shared animation queue rather than starting a separate timer.</details>
+        </method>
         <method name="DoTween" lua="true">
           <summary>Tween an object property over time.</summary>
           <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
