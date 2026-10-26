@@ -6,7 +6,7 @@ require "orca.UIKit"
 local renderer = require "orca.renderer"
 local native = os.getenv("ORCA_MVVM_NATIVE") == "1"
 if native then renderer.init(390, 844, true) end
-fs.init("samples/MvvmForms")
+fs.init("apps/MvvmForms")
 local Application = require "orca.core.application"
 local App = require "MvvmForms/App"
 local app = App()

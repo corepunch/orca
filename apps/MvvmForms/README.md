@@ -1,6 +1,6 @@
 # XML draft forms
 
-Run `build/bin/orca samples/MvvmForms` after `make unite`.
+Run `build/bin/orca apps/MvvmForms` after `make unite`.
 
 The schema in `Models/Profile.schema` defines the view-model's string and bool
 fields. `Models/Profile.xml` supplies initial values through a managed XML

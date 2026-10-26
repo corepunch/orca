@@ -135,7 +135,7 @@ For forms, bind controls to an XML-schema-defined **draft** through
 writes edits back through the shared property system. A controller validates
 and submits a snapshot on Save; Cancel restores or discards the draft. Services
 and committed application state should not be the direct target of keystrokes.
-See the runnable [MVVM form sample](../../samples/MvvmForms/README.md) and
+See the runnable [MVVM form sample](../../apps/MvvmForms/README.md) and
 [binding modes](xml/triggers-actions-messages.md#form-bindings).
 
 For repeated content, prefer `ItemsSource` + `ItemTemplate`. A reusable row
