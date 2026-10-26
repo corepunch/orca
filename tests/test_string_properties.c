@@ -778,6 +778,23 @@ static void destruction_order_stress(void)
     }
 }
 
+/* Darwin retains per-thread dtoa/locale caches after the first %g conversion.
+ * Warm the formats used by STRING(number) and numeric property imports before
+ * ownership baselines, including the integer range used by the stress case. */
+static void warm_numeric_formatting(void)
+{
+    char buffer[128];
+    for (int i = 0; i < 1000; i++) {
+        if (snprintf(buffer, sizeof(buffer), "%g", (double)i) <= 0) abort();
+        if (snprintf(buffer, sizeof(buffer), "%.0g", (double)i) <= 0) abort();
+    }
+    const double values[] = { -999.0, 0.125, 1e-20, 1e20, 3.14159265 };
+    for (size_t i = 0; i < ARRAY_SIZE(values); i++) {
+        if (snprintf(buffer, sizeof(buffer), "%g", values[i]) <= 0) abort();
+        if (snprintf(buffer, sizeof(buffer), "%.0g", values[i]) <= 0) abort();
+    }
+}
+
 #define TEST(name) { #name, name }
 int main(int argc, char **argv)
 {
@@ -795,6 +812,7 @@ int main(int argc, char **argv)
     OBJ_RegisterClass(&tiny_class);
     /* Exclude one-time platform clock/timezone caches from ownership baselines. */
     core_AdvanceFrame();
+    warm_numeric_formatting();
     mem_init();
     const struct { const char *name; void (*run)(void); } tests[] = {
         TEST(engine_string_allocations_are_tracked), TEST(destruction_delivers_component_cleanup_message), TEST(mutable_stack_is_copied), TEST(heap_source_can_be_freed), TEST(properties_own_independent_copies),
