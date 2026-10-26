@@ -16,7 +16,8 @@ local function node(props, children)
     return n
 end
 local C = { colors = setmetatable({}, { __index = function(_, key) return key end }) }
-C.stack, C.tail = node, function() return node() end
+C.stack = node
+C.tail = function(incoming) return node { Tail = true, Incoming = incoming } end
 C.text = function(value, props) local n = node(props); n.Text = value; return n end
 C.date, C.time = tostring, tostring
 package.loaded["orca.UIKit"] = { ImageView = node, Grid = node }
@@ -72,6 +73,55 @@ local function fixture()
     function app:logout() session = nil end
     return app, list
 end
+
+local function named(parent, name)
+    for _, child in ipairs(parent.children) do
+        if child.Name == name then return child end
+    end
+end
+local function count(parent, match)
+    local total = match(parent) and 1 or 0
+    for _, child in ipairs(parent.children) do total = total + count(child, match) end
+    return total
+end
+
+-- Grouping changes decoration, not the independently addressable message rows.
+for _, kind in ipairs { "group", "direct", "channel" } do
+    local grouped, groupedList = fixture()
+    grouped.room.kind, grouped.room.name = kind, "Newsroom"
+    grouped.contactsById = { other = { get_display_name = function() return "Alex" end } }
+    grouped.rows = {}
+    for i, senderId in ipairs { "other", "other", "me", "me", "other" } do
+        grouped.rows[i] = { id = tostring(i), body = "Body " .. i, sender_id = senderId, created_at = "time" }
+    end
+    assert(Timeline.refresh(grouped))
+    local expectedTails = kind == "channel" and { 1, 0, 1, 0, 1 } or { 1, 0, 0, 1, 1 }
+    for i = 1, 5 do
+        local entry = assert(named(groupedList, "MessageEntry" .. i), "Every grouped message needs its own row")
+        assert(named(entry, "MessageBubble" .. i), "Every grouped message needs its own bubble")
+        assert(count(entry, function(child) return child.Tail end) == expectedTails[i],
+            kind .. " must decorate only the appropriate edge of each sender run")
+        local expectedNames = kind == "group" and (i == 1 or i == 5) and 1 or 0
+        assert(count(entry, function(child) return child.Text == "Alex" end) == expectedNames,
+            "Sender names belong only on the first incoming message in each group-chat run")
+    end
+    assert(count(groupedList, function(child) return child.Text == "Newsroom" end) == 0,
+        "Channel messages must not repeat the channel title")
+    assert(count(groupedList, function(child) return child.Tail and not child.Incoming end)
+        == (kind == "channel" and 0 or 1), "Channel posts must never use outgoing decoration")
+end
+
+-- A notice can consume footer space; bottom alignment must use its final viewport.
+local noticeApp, noticeList = fixture()
+local noticeRoot = noticeList:getRoot()
+local originalLayout = noticeRoot.UpdateLayout
+function noticeRoot:UpdateLayout(...)
+    noticeList.ActualHeight = noticeApp.noticeText and 160 or 200
+    originalLayout(self, ...)
+end
+assert(Timeline.refresh(noticeApp))
+assert(noticeApp.noticeText and noticeList.ActualHeight == 160 and noticeList.ContentOffset.Y == -540,
+    "Refresh must publish the footer notice before layout and bottom alignment")
 
 local app, list = fixture()
 assert(Timeline.refresh(app))
@@ -161,4 +211,4 @@ local ok, err = Timeline.refresh(app, { preserveScroll = true, quiet = true })
 assert(not ok and err.code == "refresh_failed" and not app.messageRefreshBusy, "Exceptions must release the read lock")
 package.loaded["orca.UIKit"], package.loaded["Chat/views/components"] = savedUI, savedComponents
 package.loaded["views.timeline"] = nil
-print("PASS: Chat timeline polling snapshots, scrolling, stale results and serialization")
+print("PASS: Chat timeline grouping, footer layout, polling snapshots, scrolling, stale results and serialization")

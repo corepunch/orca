@@ -187,6 +187,69 @@ core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
 assert(footer.PaddingBottom == 0 and threadRoot.PaddingTop == 0,
     "Safe-area bindings must update when the keyboard or orientation changes")
+
+-- Compact bubbles keep the body verbatim and let layout reserve metadata space.
+local layoutMessages = {}
+for _, body in ipairs { "Hi", ("A longer message that needs to wrap. "):rep(8),
+    "First line\nSecond line\n", "Привет · 你好 · café", ("unbroken"):rep(40) } do
+    layoutMessages[#layoutMessages + 1] = assert(app.client:sendMessage(app.room.id, body))
+end
+assert(app:renderMessages())
+for _, width in ipairs { 320, 390, 834 } do
+    for _, fontSize in ipairs { 16, 24 } do
+        screen.Width = width
+        for _, message in ipairs(layoutMessages) do
+            local bubble = assert(screen:findChild("MessageBubble" .. message.id, true))
+            local body = bubble:getFirstChild()
+            assert(body:getTextContent() == message.body, "Layout must not append padding characters to message text")
+            body.FontSize = fontSize
+            -- Metadata must remain separate even if its font metrics change.
+            for child in bubble.children do
+                if child ~= body then child.FontSize = fontSize - 3 end
+            end
+        end
+        screen:UpdateLayout(width, 844)
+        for _, message in ipairs(layoutMessages) do
+            local bubble = screen:findChild("MessageBubble" .. message.id, true)
+            local entry, body, time = bubble:getParent(), bubble:getFirstChild()
+            for child in bubble.children do time = child end
+            assert(bubble.ActualX >= entry.PaddingLeft - 1 and
+                bubble.ActualX + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
+                string.format("Message bubble %s must fit its gutter at %d/%d: x=%.1f width=%.1f entry=%.1f",
+                    message.id, width, fontSize, bubble.ActualX, bubble.ActualWidth, entry.ActualWidth))
+            assert(time.ActualY >= body.ActualY + body.ActualHeight,
+                "Timestamp must not overlap the message at any tested width or font size")
+            assert(time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
+                "Bubble height must include the timestamp")
+        end
+    end
+end
+screen.Width = 390
+screen:UpdateLayout(390, 844)
+assert(app:renderMessages())
+
+-- Appending to a sender run moves its tail without moving an earlier reading anchor.
+local reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
+app.messageList.ContentOffset = { X = 0, Y = -reading.ActualY - 5 }
+local readingY = reading.ActualY + app.messageList.ContentOffset.Y
+assert(app.client:sendMessage(app.room.id, "Another message from the same sender"))
+assert(app:renderMessages { preserveScroll = true, quiet = true })
+reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
+assert(math.abs(reading.ActualY + app.messageList.ContentOffset.Y - readingY) < 1,
+    "Moving a grouped sender's tail must preserve the visible message anchor")
+
+local incoming = app.client:listMessages(app.room.id)[1]
+local savedContact, savedKind = app.contactsById[incoming.sender_id], app.room.kind
+app.contactsById[incoming.sender_id] = { get_display_name = function() return ("LongName"):rep(20) end }
+app.room.kind, screen.Width = "group", 320
+assert(app:renderMessages())
+local namedBubble = screen:findChild("MessageBubble" .. incoming.id, true)
+assert(namedBubble.ActualWidth <= namedBubble:getParent().ActualWidth - 56 + 1,
+    "An unbroken sender name must wrap inside a narrow group-chat bubble")
+app.contactsById[incoming.sender_id], app.room.kind = savedContact, savedKind
+screen.Width = 390
+assert(app:renderMessages())
+
 local before = #app.client:listMessages(app.room.id)
 app.composer.Text = "A quick hello from the UI test"
 app:sendMessage()

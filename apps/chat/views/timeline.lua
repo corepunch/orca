@@ -1,8 +1,8 @@
 local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
-local colors, auto = C.colors, 0/0
+local colors = C.colors
 local Timeline = {}
-local PHOTO_WIDTH, TIME_CHIP = 260, 19
+local PHOTO_WIDTH = 260
 
 -- Keep the photo's aspect ratio within a band that never dominates the thread.
 local function photoHeight(attachment)
@@ -81,7 +81,8 @@ local function refresh(self, options, room, node, current)
             return inset
         end
         if group and first and not mine then
-            section():addChild(C.text(sender(self, room, message), { FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText }))
+            section():addChild(C.text(sender(self, room, message), {
+                FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText, TextWrapping = "Wrap" }))
         end
         for _, attachment in ipairs(attachments) do
             local cached = previous and previous.node == node and previous.photos[attachment.id]
@@ -107,24 +108,14 @@ local function refresh(self, options, room, node, current)
                 end)
             end
         end
-        local time = C.time(message.created_at) or ""
-        local meta = { FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, MarginLeft = auto }
+        local caption = section()
         if message.body and message.body ~= "" then
-            local caption = section()
-            -- Non-breaking spaces reserve room for the time on the last line;
-            -- when that line is full they wrap and the time gets its own line.
-            caption:addChild(C.text(message.body .. " " .. ("\u{a0}"):rep(#time + 4), {
-                WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
-            meta.MarginTop = -17
-            caption:addChild(C.text(time, meta))
-        elseif photo then
-            -- Without a caption the time sits on the photo, as a dark chip.
-            meta.Foreground, meta.Background, meta.Padding = "#ffffff", "#00000099", "6 2"
-            meta.MarginRight, meta.MarginTop, meta.MarginBottom = 6, -TIME_CHIP - 6, 6
-            bubble:addChild(C.text(time, meta))
-        else
-            bubble:addChild(C.text(time, meta))
+            caption:addChild(C.text(message.body, {
+                TextWrapping = "Wrap", FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
         end
+        caption:addChild(C.text(C.time(message.created_at) or "", {
+            FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
+        }))
         local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
             MarginTop = i == 1 and 0 or first and 8 or 2,
             PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })

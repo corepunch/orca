@@ -34,8 +34,8 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   your profile. Message bubbles are square, with
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
-  chats, and the time sits on the last line of text when it fits. Photos fill
-  their bubble edge to edge; without a caption the time sits on the photo.
+  chats, and the time has its own trailing row so text and metadata cannot overlap.
+  Photos fill their bubble edge to edge above the caption and time.
 
 `theme.lua` holds a black and a white palette with Messenger blue. The OS
 appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
