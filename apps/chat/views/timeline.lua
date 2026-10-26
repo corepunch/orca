@@ -2,6 +2,15 @@ local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local colors, auto = C.colors, 0/0
 local Timeline = {}
+local PHOTO_WIDTH, TIME_CHIP = 260, 19
+
+-- Keep the photo's aspect ratio within a band that never dominates the thread.
+local function photoHeight(attachment)
+    local w = attachment.thumbnail_width or attachment.width
+    local h = attachment.thumbnail_height or attachment.height
+    local height = (w and h and w > 0) and PHOTO_WIDTH * h / w or PHOTO_WIDTH * 3 / 4
+    return math.floor(math.max(140, math.min(340, height)))
+end
 
 local function equal(a, b)
     if type(a) ~= type(b) then return false end
@@ -60,13 +69,21 @@ local function refresh(self, options, room, node, current)
         local first = not prev or prev.sender_id ~= message.sender_id
         local last = not nextMessage or nextMessage.sender_id ~= message.sender_id
         local tone = mine and colors.sent or colors.raised
-        local bubble = C.stack({
-            Name = "MessageBubble" .. message.id, Padding = "10 6", Spacing = 2, Background = tone,
-        })
-        if group and first and not mine then
-            bubble:addChild(C.text(sender(self, room, message), { FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText }))
+        -- Photos fill the bubble edge to edge; name and caption keep the text inset.
+        local attachments = message.attachments or {}
+        local photo = #attachments > 0
+        local bubble = C.stack({ Name = "MessageBubble" .. message.id, Background = tone,
+            Width = photo and PHOTO_WIDTH or nil, Padding = photo and "0" or "10 6", Spacing = photo and 0 or 2 })
+        local function section()
+            if not photo then return bubble end
+            local inset = C.stack({ Padding = "10 6", Spacing = 2 })
+            bubble:addChild(inset)
+            return inset
         end
-        for _, attachment in ipairs(message.attachments or {}) do
+        if group and first and not mine then
+            section():addChild(C.text(sender(self, room, message), { FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText }))
+        end
+        for _, attachment in ipairs(attachments) do
             local cached = previous and previous.node == node and previous.photos[attachment.id]
             local path = cached and cached.updated_at == attachment.updated_at and cached.path
             local photoError
@@ -79,26 +96,34 @@ local function refresh(self, options, room, node, current)
             end
             if path then
                 photos[attachment.id] = { updated_at = attachment.updated_at, path = path }
-                bubble:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path,
-                    Width = 250, Height = 180, Stretch = "Uniform", IgnoreHitTest = true })
+                -- ImageView tints with Foreground; white keeps the photo's own colours
+                -- under the light theme's black ink.
+                bubble:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
+                    Width = PHOTO_WIDTH, Height = photoHeight(attachment), Stretch = "UniformToFill", IgnoreHitTest = true })
             else
                 retryPhotos = true
                 bubble:addChild(C.text(photoError and photoError.message or "Photo preview unavailable", {
-                    FontSize = 12, Foreground = colors.muted, WordWrap = true }))
+                    FontSize = 12, Foreground = colors.muted, WordWrap = true, Padding = "10 6" }))
             end
         end
         local time = C.time(message.created_at) or ""
         local meta = { FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, MarginLeft = auto }
         if message.body and message.body ~= "" then
+            local caption = section()
             -- Non-breaking spaces reserve room for the time on the last line;
             -- when that line is full they wrap and the time gets its own line.
-            bubble:addChild(C.text(message.body .. " " .. ("\u{a0}"):rep(#time + 4), {
+            caption:addChild(C.text(message.body .. " " .. ("\u{a0}"):rep(#time + 4), {
                 WordWrap = true, FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
             meta.MarginTop = -17
+            caption:addChild(C.text(time, meta))
+        elseif photo then
+            -- Without a caption the time sits on the photo, as a dark chip.
+            meta.Foreground, meta.Background, meta.Padding = "#ffffff", "#00000099", "6 2"
+            meta.MarginRight, meta.MarginTop, meta.MarginBottom = 6, -TIME_CHIP - 6, 6
+            bubble:addChild(C.text(time, meta))
+        else
+            bubble:addChild(C.text(time, meta))
         end
-        bubble:addChild(C.text(time, meta))
-        -- Cross-axis alignment, unlike auto margins, measures the bubble at the
-        -- row width so long text wraps inside it.
         local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
             MarginTop = i == 1 and 0 or first and 8 or 2,
             PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })

@@ -564,6 +564,9 @@ assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
 local timeline, bubble = photoApp.messageList, photoView:getParent():getParent()
+local photoBubble = photoView:getParent()
+assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
+    "Photos must fill their bubble edge to edge")
 local offset = timeline.ContentOffset
 assert(timeline.ScrollHeight > timeline.ActualHeight, "The photo fixture must overflow the viewport to exercise scrolling")
 assert(math.abs(offset.Y - (timeline.ActualHeight - timeline.ScrollHeight)) < 1,

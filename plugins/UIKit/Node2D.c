@@ -616,10 +616,28 @@ _ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
 HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
+  float space[2] = { pMeasure->Width - TOTAL_MARGIN(n, 0), pMeasure->Height - TOTAL_MARGIN(n, 1) };
+  float avail[2] = { _MeasureAxis(n, space[0], 0), _MeasureAxis(n, space[1], 1) };
   LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
-    .Width  = _MeasureAxis(n, pMeasure->Width  - TOTAL_MARGIN(n, 0), 0) - TOTAL_PADDING(n, 0),
-    .Height = _MeasureAxis(n, pMeasure->Height - TOTAL_MARGIN(n, 1), 1) - TOTAL_PADDING(n, 1),
+    .Width  = avail[0] - TOTAL_PADDING(n, 0),
+    .Height = avail[1] - TOTAL_PADDING(n, 1),
   );
+  // Auto margins measure at max-content; content wider than the real space is
+  // measured again within it, so wrapping text reports its wrapped height.
+  bool_t clamp = FALSE;
+  FOR_LOOP(i, 2) {
+    float content = (i ? HIWORD(size) : LOWORD(size)) + TOTAL_PADDING(n, i);
+    if (isinf(avail[i]) && !isinf(space[i]) && content > space[i]) {
+      avail[i] = space[i];
+      clamp = TRUE;
+    }
+  }
+  if (clamp) {
+    size = _SendMessage(hObject, Node2D, MeasureOverride,
+      .Width  = avail[0] - TOTAL_PADDING(n, 0),
+      .Height = avail[1] - TOTAL_PADDING(n, 1),
+    );
+  }
   if (isnan(NODE2D_FRAME(n, Size, 0).Requested)) {
     NODE2D_FRAME(n, Size, 0).Desired = LOWORD(size) + TOTAL_PADDING(n, 0);
   } else {
