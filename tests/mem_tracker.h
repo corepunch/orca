@@ -36,6 +36,10 @@
  * counters. Keeping hooks in a dylib lets dyld replace liborca's imports. */
 extern void orca_test_memory_init(void);
 extern long orca_test_memory_snapshot(void);
+extern long orca_test_memory_total(void);
+/* Existing test summaries read these counters directly. */
+#define s_alloc_count (orca_test_memory_snapshot())
+#define s_alloc_total (orca_test_memory_total())
 #define mem_init orca_test_memory_init
 #define MEM_SNAPSHOT() orca_test_memory_snapshot()
 #else

@@ -13,3 +13,8 @@ long orca_test_memory_snapshot(void)
 {
     return MEM_SNAPSHOT();
 }
+
+long orca_test_memory_total(void)
+{
+    return s_alloc_total;
+}
