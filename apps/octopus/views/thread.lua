@@ -1,5 +1,4 @@
 local ui = require "orca.UIKit"
-local Footer = require "orca.UIKit.Footer"
 local system = require "orca.system"
 local C = require "Octopus/views/components"
 local Posts = require "Octopus/views/posts"
@@ -272,11 +271,9 @@ function Thread.page(self)
         bar:findChild("RepostPost").Text = view.entry.reposted and "undo" or "repost"
     end
     view.refreshStats()
-    local screen = self:frame()
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(bar)
-    Footer.layout(screen, C.page(LABELS[post.postType], body), footer,
-        { Background = colors.background, Foreground = colors.ink })
+    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
+    grid:addChild(C.page(LABELS[post.postType], body)); grid:addChild(bar)
+    local screen = self:frame(grid)
     Thread.load(self, view)
     return screen
 end

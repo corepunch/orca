@@ -1,5 +1,4 @@
 local ui = require "orca.UIKit"
-local Footer = require "orca.UIKit.Footer"
 local C = require "Octopus/views/components"
 local Posts = require "Octopus/views/posts"
 local colors = C.colors
@@ -149,11 +148,9 @@ function People.profile(self)
         end },
         { "RefreshProfile", "refresh-cw", "refresh", function() loadProfile(self, view) end },
     })
-    local screen = self:frame()
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(bar)
-    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body), footer,
-        { Background = colors.background, Foreground = colors.ink })
+    local grid = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
+    grid:addChild(C.page((self.profileName or "profile"):lower(), body)); grid:addChild(bar)
+    local screen = self:frame(grid)
     followButton(self, view)
     loadProfile(self, view)
     return screen

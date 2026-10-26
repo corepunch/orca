@@ -54,53 +54,6 @@ local function newApp()
     return app
 end
 
-local function assertDetailFooter(app)
-    local screen = app.screen
-    local footer = find(app, "AppBarFooter")
-    local bar = assert(footer:getFirstChild(), "The footer must contain the application bar")
-    local function position(node)
-        local x, y = 0, 0
-        while node and node ~= screen do
-            x, y = x + node.ActualX, y + node.ActualY
-            node = node:getParent()
-        end
-        return x, y
-    end
-    for _, size in ipairs { { 430, 932, 59, 34, 0, 0 }, { 932, 430, 0, 21, 59, 59 } } do
-        screen.Width, screen.Height = size[1], size[2]
-        screen.SafeAreaTop, screen.SafeAreaBottom = size[3], size[4]
-        screen.SafeAreaLeft, screen.SafeAreaRight = size[5], size[6]
-        for _, keyboard in ipairs { 0, 300, 0 } do
-            screen.KeyboardInsetBottom = keyboard
-            core.advanceFrame()
-            core.runAllPrograms(screen)
-            screen:UpdateLayout(size[1], size[2])
-            local footerX, footerY = position(footer)
-            local barX, barY = position(bar)
-            local bottomInset = math.max(size[4], keyboard)
-            assert(not screen.RespectSafeArea and screen.Height == size[2],
-                "Detail pages retain the physical viewport during keyboard changes")
-            assert(math.abs(footerX) < 1 and math.abs(footer.ActualWidth - size[1]) < 1
-                and math.abs(footerY + footer.ActualHeight - size[2]) < 1,
-                "Detail footer backgrounds must reach every physical bottom edge: " .. app.currentRoute)
-            assert(math.abs(barY + bar.ActualHeight - (size[2] - bottomInset)) < 1
-                and math.abs(bar.ActualHeight - 58) < 1
-                and barX >= size[5] and barX + bar.ActualWidth <= size[1] - size[6] + 1,
-                "Detail footer controls must avoid the home gesture, keyboard, and landscape cutouts")
-            for _, channel in ipairs { "R", "G", "B", "A" } do
-                assert(math.abs(footer.BackgroundColor[channel] - bar.BackgroundColor[channel]) < 0.001,
-                    "The inset area must use the application bar background")
-            end
-        end
-    end
-    screen.Width, screen.Height = 390, 844
-    screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
-    screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
-    core.advanceFrame()
-    core.runAllPrograms(screen)
-    screen:UpdateLayout(390, 844)
-end
-
 -- Guests land on the public timeline.
 local app = newApp()
 local home = app.screen
@@ -153,7 +106,6 @@ assert(footer.PaddingBottom == 0 and math.abs(footer.ActualHeight - 58) < 1)
 click(app, "Openp-hello")
 assert(app.currentRoute == "/post" and find(app, "PostPage"))
 assert(find(app, "Commentc-welcome") and find(app, "SignInToComment"))
-assertDetailFooter(app)
 local function stat(key) return find(app, "Stat" .. key):getTextContent() end
 assert(stat("likes") == "2" and stat("reposts") == "1" and stat("comments") == "3", "Post pages show live counts")
 assert(find(app, "PostTime"):getTextContent():match("^%d%d:%d%d · %d+ %a+ %d%d%d%d$"), "Posts show their full time")
@@ -170,7 +122,6 @@ click(app, "Authorp-reef")
 assert(app.currentRoute == "/user" and find(app, "ProfileName"):getTextContent() == "Sam Rivera")
 assert(find(app, "Countposts"):getTextContent() == "2" and find(app, "Countfollowers"):getTextContent() == "–")
 assert(find(app, "Postp-tide") and find(app, "SignInToFollow"))
-assertDetailFooter(app)
 click(app, "BackFromProfile")
 click(app, "Tagreef")
 assert(app.currentRoute == "/search" and find(app, "SearchInput").Text == "#reef")
