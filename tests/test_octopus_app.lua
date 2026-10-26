@@ -224,4 +224,149 @@ offline:show("/")
 drain(offline)
 assert(offline.screen:findChild("HomeStatus", true):getTextContent():match("Could not reach Octopus"))
 
-print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, compose drafts and publish, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up and errors passed")
+-- All four composers use independent fields and drafts, including optional quote photos.
+local writer = newApp()
+assert(writer.client:signIn("demo@example.invalid", "password123"))
+writer:show("/write")
+drain(writer)
+local fields = { "PostTitle", "PostContent", "PhotoCaption", "QuoteText", "QuoteSource", "QuoteThoughts",
+    "LinkTitle", "LinkUrl", "LinkDescription", "ChoosePhoto" }
+local function form(expected)
+    for _, name in ipairs(fields) do
+        assert((writer.screen:findChild(name, true) ~= nil) == (expected[name] == true), "Wrong field: " .. name)
+    end
+    assert(find(writer, "PostTags") and find(writer, "Publish"))
+end
+form { PostTitle = true, PostContent = true }
+for _, size in ipairs { { 320, 640 }, { 390, 844 }, { 768, 1024 } } do
+    writer.screen.Width, writer.screen.Height = size[1], size[2]
+    writer.screen:UpdateLayout(size[1], size[2])
+    for _, kind in ipairs { "text", "photo", "quote", "link" } do
+        local tile = find(writer, "Kind" .. kind)
+        assert(tile.ActualWidth > 100 and tile.ActualHeight >= 80, "Post types must have usable touch targets")
+    end
+    assert(find(writer, "PostTitle").ActualWidth > 250, "Composer fields adapt to the viewport")
+end
+find(writer, "PostTitle").Text = "A text draft"
+find(writer, "PostContent").Text = "Text stays here."
+find(writer, "PostTags").Text = "writing"
+click(writer, "Kindlink")
+form { LinkTitle = true, LinkUrl = true, LinkDescription = true }
+assert(find(writer, "LinkTitle").Text == "" and find(writer, "LinkDescription").Text == ""
+    and find(writer, "PostTags").Text == "", "A new type starts with its own empty draft")
+find(writer, "LinkTitle").Text = "A link draft"
+find(writer, "LinkUrl").Text = "javascript:alert(1)"
+click(writer, "Publish")
+assert(find(writer, "WriteStatus"):getTextContent() == "URL must start with http:// or https://")
+find(writer, "LinkUrl").Text = "https://example.com"
+find(writer, "LinkDescription").Text = "A useful read."
+click(writer, "Kindphoto")
+form { ChoosePhoto = true, PhotoCaption = true }
+click(writer, "Publish")
+assert(find(writer, "WriteStatus"):getTextContent() == "Choose a photo to share.")
+find(writer, "PhotoCaption").Text = "A photo draft"
+writer.media.pick = function() return nil, { code = "cancelled", message = "Cancelled" } end
+click(writer, "ChoosePhoto")
+assert(not isShown(find(writer, "PhotoPreview")) and find(writer, "PhotoCaption").Text == "A photo draft"
+    and find(writer, "WriteStatus"):getTextContent() == "", "Cancelling preserves the form without an error")
+writer.media.pick = function() return nil, { code = "unsupported", message = "Photo picker unavailable." } end
+click(writer, "ChoosePhoto")
+assert(find(writer, "WriteStatus"):getTextContent() == "Photo picker unavailable.")
+local imageBytes = assert(writer.client:getImage("f-reef"))
+writer.media.pick = function() return { jpeg = imageBytes } end
+click(writer, "ChoosePhoto")
+assert(isShown(find(writer, "PhotoPreview")) and find(writer, "RemovePhoto"))
+local photoDraft = writer.composeDraft
+click(writer, "Kindquote")
+form { QuoteText = true, QuoteSource = true, QuoteThoughts = true, ChoosePhoto = true }
+assert(find(writer, "QuoteText").Text == "" and not isShown(find(writer, "QuotePhotoPreview")),
+    "Photo captions and selections never leak into quotes")
+find(writer, "QuoteText").Text = "Stay curious."
+find(writer, "QuoteSource").Text = "A friend"
+find(writer, "QuoteThoughts").Text = "A good reminder."
+click(writer, "ChoosePhoto")
+assert(isShown(find(writer, "QuotePhotoPreview")))
+click(writer, "RemovePhoto")
+assert(not isShown(find(writer, "QuotePhotoPreview")) and find(writer, "QuoteText").Text == "Stay curious.")
+click(writer, "ChoosePhoto")
+click(writer, "Kindtext")
+assert(find(writer, "PostTitle").Text == "A text draft" and find(writer, "PostContent").Text == "Text stays here."
+    and find(writer, "PostTags").Text == "writing", "Every field survives switching types")
+click(writer, "AppBarHome")
+click(writer, "AppBarWrite")
+assert(find(writer, "PostContent").Text == "Text stays here.", "Drafts survive leaving the composer")
+click(writer, "Publish")
+assert(writer.currentRoute == "/post" and writer.post.postType == "text" and not writer.post.imageId)
+click(writer, "BackFromPost")
+click(writer, "AppBarWrite")
+assert(find(writer, "PostContent").Text == "", "Only the published type is cleared")
+click(writer, "Kindlink")
+assert(find(writer, "LinkTitle").Text == "A link draft" and find(writer, "LinkDescription").Text == "A useful read.")
+click(writer, "Publish")
+assert(writer.post.postType == "link" and writer.post.linkUrl == "https://example.com" and not writer.post.imageId)
+click(writer, "BackFromPost")
+click(writer, "AppBarWrite")
+click(writer, "Kindphoto")
+assert(writer.composeDraft == photoDraft and isShown(find(writer, "PhotoPreview")))
+local upload = writer.client.uploadImage
+writer.client.uploadImage = function() return nil, { code = "network", message = "Upload failed." } end
+click(writer, "Publish")
+assert(writer.currentRoute == "/write" and find(writer, "WriteStatus"):getTextContent() == "Upload failed. Your draft is safe."
+    and writer.composeDraft.photo and find(writer, "PhotoCaption").Text == "A photo draft"
+    and not find(writer, "Publish").IgnoreHitTest, "Upload failures keep the complete draft and allow retry")
+writer.client.uploadImage = upload
+click(writer, "Publish")
+assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "Image" .. writer.post.id))
+click(writer, "BackFromPost")
+click(writer, "AppBarWrite")
+click(writer, "Kindquote")
+assert(find(writer, "QuoteText").Text == "Stay curious." and isShown(find(writer, "QuotePhotoPreview")))
+click(writer, "Publish")
+assert(writer.post.postType == "quote" and writer.post.quoteSource == "A friend" and writer.post.userText == "A good reminder."
+    and writer.post.imageId and find(writer, "Image" .. writer.post.id), "Quote photos are published and displayed")
+
+-- A pending publish belongs to its draft, even after leaving and returning to it.
+click(writer, "BackFromPost")
+click(writer, "AppBarWrite")
+click(writer, "Kindtext")
+find(writer, "PostTitle").Text = "The submitted title"
+find(writer, "PostContent").Text = "The submitted body"
+local inline, pending = writer.task, {}
+writer.task = function(self, fn) pending[#pending + 1] = fn end
+click(writer, "Publish")
+assert(find(writer, "Publish").IgnoreHitTest and find(writer, "Publish").Opacity == 0.5)
+find(writer, "PostContent").Text = "Newer edits"
+click(writer, "Kindlink")
+find(writer, "LinkTitle").Text = "A different draft"
+click(writer, "Kindtext")
+click(writer, "Publish")
+assert(#pending == 1 and find(writer, "Publish").IgnoreHitTest, "Revisiting a pending draft cannot publish it twice")
+click(writer, "Kindlink")
+writer.task = inline
+pending[1]()
+drain(writer)
+assert(writer.currentRoute == "/write" and writer.composeDraft.postType == "link"
+    and find(writer, "LinkTitle").Text == "A different draft", "Finishing a publish preserves the current form")
+click(writer, "Kindtext")
+assert(find(writer, "PostContent").Text == "Newer edits" and not find(writer, "Publish").IgnoreHitTest,
+    "Edits made while publishing remain in the draft")
+local sent = assert(writer.client:listPosts { limit = 1 })[1]
+assert(sent.title == "The submitted title" and sent.content == "The submitted body", "Publish uses a snapshot of the form")
+
+-- Work queued by a previous session must not publish after signing in again.
+local before = #assert(writer.client:listPosts { limit = 100 })
+pending = {}
+writer.task = function(self, fn) pending[#pending + 1] = fn end
+click(writer, "Publish")
+assert(#pending == 1)
+writer.task = inline
+assert(writer.client:signOut())
+assert(writer.client:signIn("demo@example.invalid", "password123"))
+writer:resetSessionViews()
+writer:show("/write")
+pending[1]()
+drain(writer)
+assert(#assert(writer.client:listPosts { limit = 100 }) == before and find(writer, "PostContent").Text == "",
+    "Signing in again starts fresh forms and cancels the previous session's queued publish")
+
+print("Octopus UI: guest discover/post/profile/search, home with reposts, connect, sign-in return, all four compose forms, independent drafts, photos, upload retry, pending publishes, comments and replies, likes, reposts, follows, profile editing, delete confirmation, sign-up and errors passed")

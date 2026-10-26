@@ -38,6 +38,7 @@ local App = Application:extend {
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
         self.shell, self.status, self.feeds, self.timelines, self.pivot = nil, nil, {}, {}, nil
         self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
+        self.composeDrafts = { text = self.composeDraft }
         self.thread, self.profileView, self.composeView = nil, nil, nil
         -- Readers start on their own timeline; guests on discover.
         self.feed = self.client and self.client:getSession() and "home" or "discover"

@@ -89,6 +89,33 @@ assert((client:listPosts { limit = 1 })[1].id == text.id, "A new post tops the t
 local photo = assert(client:createPost { postType = "photo", content = "Shared from ORCA", photo = { jpeg = image } })
 assert(photo.imageId and client:getImage(photo.imageId) == image, "Uploaded photos round-trip through storage")
 
+-- Each composer type enforces its own required fields and ignores hidden images.
+_, err = client:createPost { postType = "text", title = "Title", content = "   " }
+assert(err.code == "validation" and err.message == "Write something before publishing.")
+_, err = client:createPost { postType = "photo", content = "Caption without a photo" }
+assert(err.code == "validation" and err.message == "Choose a photo to share.")
+_, err = client:createPost { postType = "quote", quoteSource = "Someone" }
+assert(err.code == "validation" and err.message == "Quote text is required.")
+_, err = client:createPost { postType = "link", title = "A link" }
+assert(err.code == "validation" and err.message == "URL is required.")
+_, err = client:createPost { postType = "link", title = string.rep("x", 257), linkUrl = "https://example.com" }
+assert(err.code == "validation" and err.message == "Keep the title under 256 characters.")
+local link = assert(client:createPost { postType = "link", title = "A link", linkUrl = "https://example.com",
+    photo = { jpeg = "invalid hidden photo" } })
+assert(link.linkUrl == "https://example.com" and link.content == "" and not link.imageId,
+    "Links support an optional description and never upload a hidden photo")
+local plain = assert(client:createPost { postType = "text", title = "Text", content = "Body",
+    photo = { jpeg = "invalid hidden photo" } })
+assert(not plain.imageId, "Text posts never upload a hidden photo")
+local bare = assert(client:createPost { postType = "quote", content = "Just the words" })
+assert(bare.quoteSource == "" and not bare.userText and not bare.imageId, "Only the quote text is required")
+local illustrated = assert(client:createPost { postType = "quote", content = "Stay curious.",
+    quoteSource = "A friend", userText = "A good reminder.", photo = { jpeg = image } })
+assert(illustrated.quoteSource == "A friend" and illustrated.userText == "A good reminder." and illustrated.imageId
+    and client:getImage(illustrated.imageId) == image, "Quote background photos and thoughts round-trip")
+local captionless = assert(client:createPost { postType = "photo", photo = { jpeg = image } })
+assert(captionless.content == "" and captionless.imageId, "Photo captions are optional")
+
 local like = assert(client:toggleLike("p-reef", "post"))
 stats = assert(client:stats { "p-reef" })
 assert(stats["p-reef"].likes == 4 and stats["p-reef"].liked == like)
