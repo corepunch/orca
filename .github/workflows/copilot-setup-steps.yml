@@ -31,7 +31,6 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
-            libfreetype6-dev \
             liblua5.4-dev \
             libxml2-dev \
             liblz4-dev \

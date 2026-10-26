@@ -119,6 +119,7 @@ FontFace_GetMetrics(struct fontface* face,
   int line_gap;
   stbtt_GetFontVMetrics(&face->info, &ascent, &descent, &line_gap);
   float const device_height = logical_height * device_scale;
+  // Match FreeType's pixel sizes: FontSize specifies the em, not ascent minus descent.
   metrics->raster_scale = stbtt_ScaleForMappingEmToPixels(&face->info, device_height);
   metrics->ascender = (int)ceilf(ascent * metrics->raster_scale);
   metrics->descender = (int)floorf(descent * metrics->raster_scale);

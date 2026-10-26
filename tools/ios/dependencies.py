@@ -14,8 +14,6 @@ import tempfile
 SOURCES = {
     'lua-5.4.8': ('https://www.lua.org/ftp/lua-5.4.8.tar.gz',
                   '4f18ddae154e793e46eeab727c59ef1c0c0c2b744e7b94219710d76f530629ae'),
-    'freetype-2.13.3': ('https://download.savannah.gnu.org/releases/freetype/freetype-2.13.3.tar.xz',
-                       '0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289'),
     'lz4-1.10.0': ('https://codeload.github.com/lz4/lz4/tar.gz/refs/tags/v1.10.0',
                    '537512904744b35e232912055ccf8ec66d768639ff3abe5788d90d792ec5f48b'),
     'curl-8.10.1': ('https://curl.se/download/curl-8.10.1.tar.xz',
@@ -65,7 +63,7 @@ def main():
                            'sources': SOURCES, 'recipe': hashlib.sha256(
                                Path(__file__).read_bytes() + lua_config.read_bytes()).hexdigest()}, sort_keys=True)
     if stamp.exists() and stamp.read_text() == settings and all(
-            (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'libfreetype.a', 'liblz4.a', 'libcurl.a')):
+            (prefix / 'lib' / name).is_file() for name in ('liblua.a', 'liblz4.a', 'libcurl.a')):
         return
     (prefix / 'lib').mkdir(parents=True, exist_ok=True)
     (prefix / 'include').mkdir(exist_ok=True)
@@ -114,7 +112,6 @@ def main():
     for path in lz4.glob('*.h'):
         shutil.copy2(path, prefix / 'include' / path.name)
     builds = (
-        ('freetype-2.13.3', ['--without-harfbuzz', '--without-bzip2', '--without-png', '--without-brotli']),
         ('curl-8.10.1', ['--with-secure-transport', '--without-openssl', '--without-libpsl',
                        '--without-libidn2', '--without-nghttp2', '--without-brotli', '--without-zstd',
                        '--without-ca-bundle', '--without-ca-path', '--disable-ldap', '--disable-ldaps',

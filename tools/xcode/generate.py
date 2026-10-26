@@ -134,7 +134,6 @@ def generate(args, app):
         'ENABLE_USER_SCRIPT_SANDBOXING': 'NO', 'ALWAYS_SEARCH_USER_PATHS': 'NO',
         'HEADER_SEARCH_PATHS': ['$(inherited)', '$(DERIVED_FILE_DIR)', '$(DERIVED_FILE_DIR)/include',
                                 '$(DERIVED_FILE_DIR)/dependencies/include',
-                                '$(DERIVED_FILE_DIR)/dependencies/include/freetype2',
                                 '$(ORCA_ROOT)', '$(SDKROOT)/usr/include/libxml2'],
         'LIBRARY_SEARCH_PATHS': ['$(inherited)', '$(DERIVED_FILE_DIR)/dependencies/$(PLATFORM_NAME)-$(CURRENT_ARCH)/deps/lib'],
         'GCC_PREPROCESSOR_DEFINITIONS': ['$(inherited)', 'ORCA_IOS=1', 'ORCA_STATIC=1', 'GL_SILENCE_DEPRECATION'],
@@ -154,7 +153,7 @@ def generate(args, app):
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
                   'ImageIO', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox')
-    linker = ['$(inherited)', '-llua', '-lfreetype', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
+    linker = ['$(inherited)', '-llua', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]
     target_configs = project.configurations(target_name, {

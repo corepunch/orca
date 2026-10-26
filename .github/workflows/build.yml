@@ -27,7 +27,6 @@ jobs:
           sudo apt update
           sudo apt install -y \
             luarocks \
-            libfreetype6-dev \
             liblua5.4-dev \
             libxml2-dev \
             liblz4-dev \
@@ -80,7 +79,6 @@ jobs:
       - name: Install dependencies
         run: |
           brew install \
-            freetype \
             lua@5.4 \
             luarocks \
             libxml2 \

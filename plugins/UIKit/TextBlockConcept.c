@@ -163,8 +163,8 @@ T_MeasureWord(struct fontface* face,
               uint32_t *last_glyph_index_inout,
               int maxWidth)
 {
-  int32_t  width16 = 0;   /* 16.16 accumulator for subpixel precision */
-  uint32_t   prev  = *last_glyph_index_inout;
+  int64_t width16 = 0;   /* 16.16 accumulator for subpixel precision */
+  uint32_t prev = *last_glyph_index_inout;
   bool_t hasGlyph = FALSE;
 
   lpcString_t p = *src;
@@ -180,7 +180,7 @@ T_MeasureWord(struct fontface* face,
     uint32_t const gi = T_LoadChar(face, ch);
     if (!gi) { prev = 0; continue; }
 
-    int32_t nextWidth = width16 + FontFace_GetGlyphAdvance(face, gi, font_scale);
+    int64_t nextWidth = width16 + FontFace_GetGlyphAdvance(face, gi, font_scale);
     nextWidth += FontFace_GetGlyphKerning(face, prev, gi, font_scale);
     if (maxWidth > 0 && hasGlyph && FONT_SCALE_16_16(nextWidth) > maxWidth) {
       p = before;
@@ -259,7 +259,7 @@ T_BlitWord(struct fontface* face,
   lpcString_t p  = word_start;
   uint32_t prev = *prev_gi_inout;
 
-  int32_t pen16 = (int32_t)(*x) << 16;
+  int64_t pen16 = (int64_t)(*x) << 16;
   while (p < word_end) {
     if (!strncmp(p, "<u>",  3)) { p += 3; continue; }
     if (!strncmp(p, "</u>", 4)) { p += 4; continue; }
@@ -302,7 +302,7 @@ T_BlitEllipsis(struct fontface* face,
                int              y,
                int              baseline)
 {
-  int32_t pen16 = (int32_t)x << 16;
+  int64_t pen16 = (int64_t)x << 16;
   for (int i = 0; i < 3; i++) {
     uint32_t const glyph_index = T_LoadChar(face, '.');
     if (!glyph_index) continue;
@@ -320,9 +320,9 @@ T_BlitEllipsis(struct fontface* face,
 static int
 T_EllipsisWidth(struct fontface* face, float font_scale)
 {
-  int32_t width16 = 0;
+  int64_t width16 = 0;
   uint32_t const glyph = T_LoadChar(face, '.');
-  if (glyph) width16 = 3 * FontFace_GetGlyphAdvance(face, glyph, font_scale);
+  if (glyph) width16 = 3LL * FontFace_GetGlyphAdvance(face, glyph, font_scale);
   return FONT_SCALE_16_16(width16);
 }
 
@@ -504,7 +504,7 @@ T_LayoutText(LayoutCtx *ctx)
 
         /* cursor: walk the word char-by-char to count and find x if needed */
         {
-          int32_t cx16 = (int32_t)ls.lineX << 16;
+          int64_t cx16 = (int64_t)ls.lineX << 16;
           uint32_t prev_gi2 = 0;
           lpcString_t wp = word_start;
           while (wp < word_p) {
@@ -682,7 +682,7 @@ T_LayoutText(LayoutCtx *ctx)
                           ls.lineX, ls.lineX + spacePrefix,
                           ls.lineY + ls.baseline, m.underlinePos, ul_thick);
         ls.lineX += spacePrefix;
-        int32_t epen16 = (int32_t)ls.lineX << 16;
+        int64_t epen16 = (int64_t)ls.lineX << 16;
         lpcString_t q = word_start;
         while (q < word_end) {
           if (!strncmp(q, "<u>",  3)) { q += 3; continue; }
@@ -694,7 +694,7 @@ T_LayoutText(LayoutCtx *ctx)
           if (!qgi) { prev_gi = 0; continue; }
           epen16 += FontFace_GetGlyphKerning(m.face, prev_gi, qgi, m.fontScale);
           int const px = FONT_SCALE_16_16(epen16);
-          int32_t const nextPen = epen16 + FontFace_GetGlyphAdvance(m.face, qgi, m.fontScale);
+          int64_t const nextPen = epen16 + FontFace_GetGlyphAdvance(m.face, qgi, m.fontScale);
           if (FONT_SCALE_16_16(nextPen) > cutX) {
             ellipsis_x    = px;
             ellipsis_y    = ls.lineY;

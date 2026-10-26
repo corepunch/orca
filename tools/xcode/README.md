@@ -99,7 +99,7 @@ includes its implementation sources. Generated Objective-C units appear under Na
 the raw engine, plugin and platform directories are not added to the navigator.
 
 Host code generation uses the macOS SDK, independently of the iOS target SDK.
-Lua, FreeType, LZ4 and curl are built as static libraries for every architecture
+Lua, LZ4 and curl are built as static libraries for every architecture
 in `ARCHS`; curl uses Apple's Secure Transport for HTTPS. Source archives are
 pinned and checked with SHA256 by `tools/ios/dependencies.py`. The first build
 downloads their sources, so it needs network access. Later builds reuse their
@@ -107,7 +107,7 @@ DerivedData cache. Existing verified archives in `build/ios/downloads` can seed
 that cache but are optional.
 
 All generated code, native dependency libraries and host tools stay in
-DerivedData. Upstream FreeType and curl builds use temporary scratch directories
+DerivedData. Upstream curl builds use temporary scratch directories
 under `/tmp`, then copy their static libraries and headers into DerivedData;
 the scratch directories are removed afterward. Xcode builds do not write to the repository's
 `generated/` or reuse Makefile-built libraries. The existing command-line

@@ -71,8 +71,16 @@ HEADERS = $(wildcard *.h)
 SOURCEMODULES2 = $(addprefix /, $(MODULES))
 UNITEOBJECTS = $(addsuffix .o, $(MODULES))
 UNITE = $(patsubst %.c, %.o, $(foreach dir,$(SOURCEMODULES),$(shell find $(dir) -name "*.c" 2>/dev/null)))
-CFLAGS += $(shell pkg-config --cflags zlib liblz4 lua5.4 libxml-2.0 2>/dev/null || pkg-config --cflags zlib liblz4 lua libxml-2.0 2>/dev/null)
-LDFLAGS += $(shell pkg-config --libs zlib liblz4 lua5.4 libxml-2.0 2>/dev/null || pkg-config --libs zlib liblz4 lua libxml-2.0 2>/dev/null)
+LUA_PKG := $(shell pkg-config --exists lua5.4 && echo lua5.4 || echo lua)
+PKG_DEPS := zlib $(LUA_PKG) libxml-2.0
+ifeq ($(filter -DORCA_NO_LZ4,$(CFLAGS)),)
+PKG_DEPS += liblz4
+endif
+# Keep available flags when another dependency is missing, and show its diagnostic.
+PKG_CFLAGS := $(foreach dep,$(PKG_DEPS),$(shell pkg-config --cflags $(dep)))
+PKG_LIBS := $(foreach dep,$(PKG_DEPS),$(shell pkg-config --libs $(dep)))
+CFLAGS += $(PKG_CFLAGS)
+LDFLAGS += $(PKG_LIBS)
 
 ifeq ($(UNAME_S),Darwin)
 	CFLAGS += -DGL_SILENCE_DEPRECATION
