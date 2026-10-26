@@ -214,4 +214,18 @@ local ok = pcall(remote.transport, { method = "GET", path = "/../secret" })
 assert(not ok, "Path traversal is rejected")
 assert(not Octopus.appwrite { endpoint = "http://example.invalid/v1", projectId = "p" }, "HTTPS is required")
 
-print("Octopus API: guest reads, home and profile timelines with reposts, connect activity, sessions, posts of every type, likes, reposts, comments, follows, profiles, photos and HTTP queries passed")
+-- Profile photos live in profiles.avatarId, shared with the website and Chat.
+local photos = Octopus.mock { clock = clock }
+local lookups, transport = 0, photos.transport
+photos.transport = function(request) lookups = lookups + 1; return transport(request) end
+local avatars = assert(photos:avatars { "u-jules", "u-nobody" })
+assert(avatars["u-nobody"] == false, "People without a profile have no photo")
+assert(lookups == 1 and photos:avatars { "u-nobody" } and lookups == 1, "Photo lookups are batched and cached")
+assert(not photos:setAvatar(image), "Setting a photo needs a session")
+assert(photos:signIn("demo@example.invalid", "password123"))
+local mine = assert(photos:setAvatar(image))
+assert(mine.avatarId and photos:getImage(mine.avatarId) == image, "The photo is uploaded")
+assert(photos:avatars({ "u-ada" })["u-ada"] == mine.avatarId and photos:getProfile("u-ada").avatarId == mine.avatarId)
+assert(photos:searchPeople("ada")[1].avatarId == mine.avatarId, "Search results carry photos")
+
+print("Octopus API: guest reads, home and profile timelines with reposts, connect activity, sessions, posts of every type, likes, reposts, comments, follows, profiles, profile photos, photos and HTTP queries passed")

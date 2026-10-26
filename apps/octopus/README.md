@@ -30,7 +30,8 @@ blocks with [Chat](../chat/README.md):
   its menu holds refresh and sign in, create account or sign out. A post page's
   bar holds back, like, repost and comment, with the author, refresh and
   delete (for your own posts) in the menu. Delete asks for a second tap.
-- Cards show a square avatar tile, the author and a relative time, the post by
+- Cards show a square avatar tile (the author's profile photo, or their
+  initials on a tile colour), the author and a relative time, the post by
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
   a photo), its tags, and comment/repost/like counts. Liked hearts turn red and
   reposts green. Profiles list posts and reposts together, as on Twitter.
@@ -80,6 +81,7 @@ permissions as the browser; there is no server function and no API key.
 | Following | `follows` (readable by signed-in users only, so guests see no follower counts) |
 | Likes, reposts, comments | `likes` (posts and comments), `reposts`, `comments` with `parentId` replies |
 | Profiles | `profiles`, one document per user ID, created at sign-up or first sign-in |
+| Profile photos | `profiles.avatarId`, a `post-images` file shared with the website and Chat |
 | Photos | `post-images`; JPEG and PNG are shown directly, other formats through the preview endpoint |
 
 Sign-up asks for a name, email and a confirmed password of at least eight
@@ -96,6 +98,11 @@ The four compose forms match the
 | Photo | Photo | Caption, tags |
 | Quote | Quote text | Source, background photo, your thoughts, tags |
 | Link | Title, HTTP or HTTPS address | Description, tags |
+
+**Change photo** on the me page uploads a profile photo, the same
+`avatarId` the website's **Change Photo** sets, so it appears on both and in
+Chat. Avatar tiles built in one pass share a single `profiles` lookup, and
+file IDs are cached for the session.
 
 Photo selection needs the native picker (macOS and iOS). Photo and quote
 forms show a preview and let you replace or remove the image. Quote images

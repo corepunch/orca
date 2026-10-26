@@ -38,6 +38,72 @@ local function invalid(message)
   return { status = 502, body = { code = "invalid_response", message = message } }
 end
 
+local function urlEncode(value)
+  return (tostring(value):gsub("[^%w%-_%.~]", function(c) return string.format("%%%02X", c:byte()) end))
+end
+
+local function validId(value)
+  return type(value) == "string" and #value <= 36 and value:match("^[%w][%w%._%-]*$") ~= nil
+end
+
+-- Profile photos are public Octopus data: profiles.avatarId points at a
+-- post-images file. Read them natively with the project ID alone, never with
+-- the user's JWT or Account cookie.
+local PROFILES = "/databases/octopus-db/collections/profiles/documents"
+local PHOTOS = "/storage/buckets/post-images/files/"
+
+local function publicPhotos(request, path, options, endpoint, transport, encode)
+  local list = path:match("^/rest/v1/profile_photos%?(.*)$")
+  local photo = path:match("^/storage/v1/object/public/profile%-photos/([^/?]+)$")
+  if not list and not photo then return nil end
+  if request.method ~= "GET" then
+    return { status = 405, body = { code = "method_not_allowed", message = "Profile photos are read-only." } }
+  end
+  local headers = { ["X-Appwrite-Project"] = options.projectId }
+  local function normalized(response)
+    if type(response) ~= "table" or type(response.status) ~= "number" then
+      return invalid("Appwrite returned an invalid profile photo response.")
+    end
+    if (response.status < 200 or response.status >= 300) and type(response.body) == "table" then
+      response.body.code = response.body.type or response.body.code
+    end
+    return response
+  end
+  if photo then
+    if not validId(photo) then return { status = 400, body = { code = "validation", message = "Choose a profile photo." } } end
+    return normalized(transport { method = "GET", url = endpoint .. PHOTOS .. photo .. "/view", headers = headers,
+      responseType = "binary" })
+  end
+  local encoded = ("&" .. list):match("&user_id=in%.%%28([^&]*)%%29") or ("&" .. list):match("&user_id=in%.%(([^&]*)%)")
+  local ids = {}
+  for id in (encoded or ""):gsub("%%2C", ","):gmatch("[^,]+") do
+    if not validId(id) then return { status = 400, body = { code = "validation", message = "Choose valid people." } } end
+    ids[#ids + 1] = id
+  end
+  if #ids == 0 or #ids > 100 then
+    return { status = 400, body = { code = "validation", message = "Ask for 1 to 100 profile photos." } }
+  end
+  local queries = {
+    { method = "equal", attribute = "userId", values = ids },
+    { method = "select", values = { "userId", "avatarId" } },
+    { method = "limit", values = { 100 } },
+  }
+  local params = {}
+  for i, query in ipairs(queries) do params[i] = "queries[" .. (i - 1) .. "]=" .. urlEncode(encode(query)) end
+  local response = normalized(transport { method = "GET", url = endpoint .. PROFILES .. "?" .. table.concat(params, "&"),
+    headers = headers })
+  if response.status < 200 or response.status >= 300 then return response end
+  local documents = type(response.body) == "table" and response.body.documents
+  if type(documents) ~= "table" then return invalid("Appwrite returned invalid profiles.") end
+  local rows = {}
+  for _, doc in ipairs(documents) do
+    if type(doc) == "table" and validId(doc.userId) and validId(doc.avatarId) then
+      rows[#rows + 1] = { user_id = doc.userId, avatar_id = doc.avatarId }
+    end
+  end
+  return { status = 200, body = rows }
+end
+
 function M.new(options)
   local encode, decode = options.encode, options.decode
   if not encode or not decode then
@@ -67,6 +133,8 @@ function M.new(options)
           or path:match("^/storage/v1/") or path:match("^/functions/v1/")) then
       error("Unsupported Chat API path", 0)
     end
+    local photoResponse = publicPhotos(request, path, options, endpoint, transport, encode)
+    if photoResponse then return photoResponse end
     local accountResponse = authenticate(request, path)
     if accountResponse then return accountResponse end
     local headers = request.headers or {}

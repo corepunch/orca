@@ -202,6 +202,29 @@ rechecks membership and publication state before decrypting and returning bytes.
 This is server-side encryption; the server can read photos. See the Appwrite
 backend guide for reservation cleanup and concurrency/recovery limitations.
 
+## Profile photos
+
+| Method | Result |
+| --- | --- |
+| `getAvatars(userIds)` | `{[userId]=photoId or false}`; no session needed, cached per client |
+| `getAvatar(photoId)` | JPEG or PNG bytes |
+
+Photos are public Octopus data: `profiles.avatarId` names a `post-images` file,
+set from the Octopus website or app and keyed by the shared Appwrite user ID.
+The contract routes are read-only and unauthenticated:
+
+| Route | Appwrite |
+| --- | --- |
+| `GET /rest/v1/profile_photos?select=user_id,avatar_id&user_id=in.(a,b)` → `[{user_id,avatar_id}]` | `GET /databases/octopus-db/collections/profiles/documents` with `equal(userId)`, `select` and `limit(100)` queries |
+| `GET /storage/v1/object/public/profile-photos/<photoId>` → bytes | `GET /storage/buckets/post-images/files/<photoId>/view` |
+
+The Appwrite adapter answers both natively with only `X-Appwrite-Project`: no
+JWT, Account cookie or Function execution. Lookups take up to 100 IDs per
+request; people without an Octopus profile or photo map to `false`. Chat shows
+photos only where a tile stands for one person (direct chats with `peer_id`,
+members, contacts and your profile); groups and channels keep their initials.
+Previews are JPEG only, so PNG photos also keep the initials.
+
 ## Models and backend setup
 
 ```lua
@@ -258,6 +281,9 @@ password `password123`; Alex, Maya and Jules use `name@example.invalid` with
 the same password. The six-digit mock code is defined only in
 [mock_fixtures.lua](api/mock_fixtures.lua). Fixtures can be supplied as a table
 or `fixtures=function(now) return table end`. No fake replies are generated.
+Fixture `avatars` maps user IDs to demo portraits in `assets/avatars/<name>.jpg`,
+loaded when present; tests can set `profilePhotos` (user ID → photo ID) and
+`photoFiles` (photo ID → bytes) directly.
 
 The mock uses the same client, protocol paths, token refresh and models. Its
 IDs/tokens are readable fixture strings and password signup immediately returns

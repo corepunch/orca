@@ -210,7 +210,7 @@ function Identity.profile(self)
         end, { Name = "VerifyLink", Background = colors.surface }),
     })
     local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
-        C.avatar(profile.display_name or "You", 72, user.id), self.status,
+        C.avatar(profile.display_name or "You", 72, user.id, self, user.id), self.status,
         C.eyebrow("PUBLIC PROFILE"), name, username,
         C.text("People can find your exact username. Your phone and email are never shown in search results.", {
             FontSize = 13, WordWrap = true, Foreground = colors.dim }), phoneToggle, emailToggle,

@@ -44,7 +44,7 @@ local function renderComments(self, view, comments, likes)
         likes[comment.id] = entry
         local row = ui.Grid { Name = "Comment" .. comment.id, Columns = "36px 1fr", Spacing = 12, MarginLeft = nested and 48 or 0 }
         local function author() self:openProfile(comment.authorId, comment.authorName) end
-        row:addChild(C.area(C.avatar(comment.authorName, 36, comment.authorId), author, {
+        row:addChild(C.area(C.avatar(comment.authorName, 36, comment.authorId, self), author, {
             Name = "CommentAvatar" .. comment.id, Width = 36, Height = 36 }))
         local header = ui.Grid { Columns = "1fr auto", Spacing = 8, IgnoreHitTest = true }
         header:addChild(C.text(comment.authorName, { FontSize = 14, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
@@ -162,7 +162,7 @@ function Thread.page(self)
         TextHorizontalAlignment = "Center" })
 
     local author = ui.Grid { Columns = "56px 1fr", Spacing = 14, IgnoreHitTest = true }
-    author:addChild(C.avatar(post.authorName, 56, post.authorId))
+    author:addChild(C.avatar(post.authorName, 56, post.authorId, self))
     author:addChild(C.stack({ Spacing = 2, JustifyContent = "Center", IgnoreHitTest = true }, {
         C.text(post.authorName, { FontSize = 22, TextOverflow = "Ellipsis" }),
         C.text(LABELS[post.postType] .. " · " .. C.ago(post.createdAt, self.clock()), { FontSize = 13, Foreground = colors.dim }),

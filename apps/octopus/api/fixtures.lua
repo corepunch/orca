@@ -3,15 +3,15 @@ local HOUR, DAY = 3600, 86400
 
 return {
     users = {
-        { id = "u-ada", name = "Ada Reef", email = "demo@example.invalid", password = "password123",
+        { id = "u-ada", avatar = "ada", name = "Ada Reef", email = "demo@example.invalid", password = "password123",
           bio = "Trying Octopus from the ORCA phone app." },
-        { id = "u-maya", name = "Maya Chen", email = "maya@example.invalid", password = "password123",
+        { id = "u-maya", avatar = "maya", name = "Maya Chen", email = "maya@example.invalid", password = "password123",
           bio = "Interface designer. Collects tide tables and typefaces." },
-        { id = "u-jules", name = "Jules Park", email = "jules@example.invalid", password = "password123",
+        { id = "u-jules", avatar = "jules", name = "Jules Park", email = "jules@example.invalid", password = "password123",
           bio = "Writes about small software and the people who make it." },
-        { id = "u-sam", name = "Sam Rivera", email = "sam@example.invalid", password = "password123",
+        { id = "u-sam", avatar = "sam", name = "Sam Rivera", email = "sam@example.invalid", password = "password123",
           bio = "Marine biologist. Part-time octopus whisperer." },
-        { id = "u-noor", name = "Noor Haddad", email = "noor@example.invalid", password = "password123",
+        { id = "u-noor", avatar = "noor", name = "Noor Haddad", email = "noor@example.invalid", password = "password123",
           bio = "Reading the internet so you don't have to." },
     },
     collections = {

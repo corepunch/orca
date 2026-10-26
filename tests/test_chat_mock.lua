@@ -148,6 +148,27 @@ local demo = Chat.demo { clock = clock }
 check(getmetatable(demo) == getmetatable(client) and demo:getSession().user.id == "me",
     "The demo helper must remain a signed-in convenience for the same normal client")
 
+-- Profile photos come from the shared Octopus profiles, without a session.
+local photoFile = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
+local jpeg = photoFile:read("*a"); photoFile:close()
+local Fixtures = require "api.mock_fixtures"
+local photos = assert(Chat.mock { clock = clock, fixtures = function(at)
+    local data = Fixtures.new(at)
+    data.avatars, data.profilePhotos, data.photoFiles = {}, { alex = "photo-alex" }, { ["photo-alex"] = jpeg }
+    return data
+end })
+local lookups, transport = 0, photos.transport
+photos.transport = function(request) lookups = lookups + 1; return transport(request) end
+local avatars = assert(photos:getAvatars { "alex", "maya", "nobody", "alex" })
+check(avatars.alex == "photo-alex" and avatars.maya == false and avatars.nobody == false,
+    "Photo lookups return file IDs, or false for people without one")
+check(lookups == 1 and photos:getAvatars({ "maya", "alex" }).alex == "photo-alex" and lookups == 1,
+    "Photo lookups are batched and cached per client")
+check(assert(photos:getAvatar("photo-alex")) == jpeg and lookups == 2, "Profile photo bytes round-trip unchanged")
+value, err = photos:getAvatar("missing"); denied(value, err)
+value, err = photos:getAvatars { "bad/id" }; denied(value, err, "validation")
+value, err = photos:getAvatar("../secret"); denied(value, err, "validation")
+
 check(networkLoads == 0, "Offline operations must never import the network transport")
 for _, name in ipairs(guarded) do
     check(package.loaded[name] == nil, "Offline operations must not load " .. name)

@@ -19,8 +19,8 @@ local function drain(app)
     end
     core.flushQueue()
 end
-local function mockApp(media)
-    local app = App { client = Chat.mock { clock = function() return 1700000000 end }, media = media }
+local function mockApp(media, client)
+    local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
     -- Keep navigation real while avoiding Paint on an uninitialized renderer.
     app.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     app:show("/")
@@ -623,5 +623,25 @@ system.translateMessage = function() end
 app:run()
 system.getMessage, system.dispatchMessage, system.translateMessage = savedGet, savedDispatch, savedTranslate
 assert(routed, "Typing q must not quit the chat app")
+-- Profile photos replace initials where a tile stands for one person.
+local Fixtures = require "api.mock_fixtures"
+local photoApp = mockApp(nil, Chat.mock { clock = function() return 1700000000 end, fixtures = function(at)
+    local data = Fixtures.new(at)
+    data.avatars, data.profilePhotos, data.photoFiles = {}, { alex = "photo-alex" }, { ["photo-alex"] = jpeg }
+    return data
+end })
+local function avatarPhoto(node) return node and node:findChild("AvatarPhoto", true) end
+local alexPhoto = avatarPhoto(photoApp.screen:findChild("Room1", true))
+assert(alexPhoto and alexPhoto.Src == photoApp.media.keys["avatar-photo-alex"], "Direct chats show the other person's photo")
+assert(not avatarPhoto(photoApp.screen:findChild("Room2", true)), "Groups keep their initials")
+assert(not avatarPhoto(photoApp.screen:findChild("Room3", true)), "People without a photo keep their initials")
+assert(photoApp.avatarPaths.jules == false, "People without a photo are remembered for the session")
+photoApp.screen = photoApp:dispatch("/new").view
+assert(avatarPhoto(photoApp.screen:findChild("Contactalex", true):getParent()), "Contacts show their photos")
+photoApp.room = photoApp.rooms[1]
+photoApp.screen = photoApp:dispatch("/details").view
+assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
+    "Conversation members show their photos")
+
 orca.async = savedAsync
-print("Chat UI: password/OTP login, profile/linking, private/public discovery, groups/channels/invites, photo retry, navigation races, retained tabs and keyboard passed")
+print("Chat UI: password/OTP login, profile/linking, private/public discovery, groups/channels/invites, photo retry, navigation races, retained tabs, keyboard and profile photos passed")

@@ -228,7 +228,7 @@ function Chat.client(options)
   end
   if type(options.transport) ~= "function" then return failure("configuration", "Provide an HTTP transport function.") end
   return setmetatable({ mode = options.mode or "custom", url = url:gsub("/$", ""),
-    transport = options.transport, clock = options.clock or os.time }, Client)
+    transport = options.transport, clock = options.clock or os.time, avatarIds = {} }, Client)
 end
 
 function Chat.appwrite(options)

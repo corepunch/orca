@@ -32,6 +32,8 @@ function Fixtures.new(now)
             maya = { id = "maya", display_name = "Maya Chen", username = "maya", discoverable_phone = false, discoverable_email = false },
             jules = { id = "jules", display_name = "Jules Park", username = "jules", discoverable_phone = false, discoverable_email = false },
         },
+        -- Demo portraits (assets/avatars/<name>.jpg) by user ID.
+        avatars = { me = "you", alex = "alex", maya = "maya", jules = "jules" },
         users = {
             user("me", "demo@example.invalid", "You"),
             user("alex", "alex@example.invalid", "Alex Morgan"),

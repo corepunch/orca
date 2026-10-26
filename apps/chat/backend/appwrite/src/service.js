@@ -90,11 +90,17 @@ export class ChatService {
   roomView(room, member) {
     const { direct_key, ...result } = room; return { ...result, role: member.role, can_post: !!posting(room, member) };
   }
+  // A direct chat names the other person, so clients can show their profile photo.
+  async withPeer(view, userId) {
+    if (view.kind !== 'direct') return view;
+    const peer = (await this.repo.list('members', [eq('room_id', view.id)], 2)).find(member => member.user_id !== userId);
+    return peer ? { ...view, peer_id: peer.user_id } : view;
+  }
   async listRooms(user) {
     const memberships = await this.repo.list('members', [eq('user_id', user.$id)]), rooms = [];
     await mapConcurrent(memberships, async member => {
       const room = await this.repo.get('rooms', member.room_id);
-      if (room) rooms.push(this.roomView(room, member));
+      if (room) rooms.push(await this.withPeer(this.roomView(room, member), user.$id));
     });
     return rooms.sort((a, b) => b.created_at.localeCompare(a.created_at));
   }
@@ -109,7 +115,7 @@ export class ChatService {
     return this.repo.lock('create:' + (directKey || randomUUID()), async () => {
       if (directKey) {
         const existing = await this.repo.list('rooms', [eq('direct_key', directKey)], 1);
-        if (existing[0]) return [this.roomView(existing[0], await this.membership(existing[0].id, user.$id))];
+        if (existing[0]) return [await this.withPeer(this.roomView(existing[0], await this.membership(existing[0].id, user.$id)), user.$id)];
       }
       await mapConcurrent(userIds, userId => this.auth.rest.request('GET', '/users/' + encodeURIComponent(userId)));
       const roomId = randomUUID(), created = [], room = { name: name.trim(), kind, visibility, direct_key: directKey, created_by: user.$id, created_at: this.timestamp() };
@@ -121,7 +127,8 @@ export class ChatService {
         });
         // Room creation is the visibility commit; unfinished membership rows cannot authorize anything.
         const committed = await this.repo.create('rooms', room, roomId);
-        return [this.roomView(committed, created.find(member => member.user_id === user.$id))];
+        const view = this.roomView(committed, created.find(member => member.user_id === user.$id));
+        return [directKey ? { ...view, peer_id: userIds[0] } : view];
       } catch (error) {
         if (!await this.repo.get('rooms', roomId)) for (const member of created) await this.repo.remove('members', member.id);
         throw error;

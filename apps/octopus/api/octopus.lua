@@ -71,7 +71,8 @@ end
 
 local function profile(doc, userId)
     return { id = doc and doc["$id"] or userId, userId = doc and doc.userId or userId,
-        username = doc and doc.username or "Unknown", bio = doc and doc.bio or "", exists = doc ~= nil }
+        username = doc and doc.username or "Unknown", bio = doc and doc.bio or "", exists = doc ~= nil,
+        avatarId = doc and validId(doc.avatarId) and doc.avatarId or nil }
 end
 
 -- Appwrite returns its session as a cookie named after the project.
@@ -277,18 +278,42 @@ function Client:listFollowingIds(userId)
     return ids
 end
 
--- Display names for user IDs, from their public profiles.
-function Client:names(userIds)
-    local names, wanted = {}, {}
-    for _, id in ipairs(userIds) do if not names[id] then names[id] = false; wanted[#wanted + 1] = id end end
+-- Public profiles for user IDs, keyed by user ID. Their photos are remembered
+-- for `avatars`.
+function Client:_profiles(userIds)
+    local found, wanted, seen = {}, {}, {}
+    for _, id in ipairs(userIds) do if not seen[id] then seen[id] = true; wanted[#wanted + 1] = id end end
     for first = 1, #wanted, 100 do
         local chunk = { table.unpack(wanted, first, math.min(#wanted, first + 99)) }
         local docs, err = self:_listAll("profiles", { Q.equal("userId", chunk) }, 1)
         if not docs then return nil, err end
-        for _, doc in ipairs(docs) do names[doc.userId] = doc.username end
+        for _, doc in ipairs(docs) do found[doc.userId] = profile(doc) end
     end
-    for id, name in pairs(names) do if not name then names[id] = "Someone" end end
+    for _, id in ipairs(wanted) do self.avatarIds[id] = found[id] and found[id].avatarId or false end
+    return found
+end
+
+-- Display names for user IDs, from their public profiles.
+function Client:names(userIds)
+    local found, err = self:_profiles(userIds)
+    if not found then return nil, err end
+    local names = {}
+    for _, id in ipairs(userIds) do names[id] = found[id] and found[id].username or "Someone" end
     return names
+end
+
+-- Profile photo file IDs for user IDs, or false for people without one. The
+-- website, this app and Chat share profiles.avatarId, keyed by Appwrite user.
+function Client:avatars(userIds)
+    local wanted = {}
+    for _, id in ipairs(userIds) do if self.avatarIds[id] == nil then wanted[#wanted + 1] = id end end
+    if #wanted > 0 then
+        local ok, err = self:_profiles(wanted)
+        if not ok then return nil, err end
+    end
+    local avatars = {}
+    for _, id in ipairs(userIds) do avatars[id] = self.avatarIds[id] end
+    return avatars
 end
 
 -- A Twitter-style timeline: posts by `authorIds` and reposts by `reposterIds`,
@@ -567,6 +592,7 @@ function Client:getProfile(userId)
     local doc, err = self:_request("GET", self:collection("profiles") .. "/" .. escape(userId))
     if not doc and err.status ~= 404 then return nil, err end
     local result = profile(doc, userId)
+    self.avatarIds[userId] = result.avatarId or false
     local posts = self:_list("posts", { Q.equal("authorId", userId), Q.limit(1) })
     result.posts = posts and posts.total
     if self.session then
@@ -593,12 +619,31 @@ function Client:updateProfile(values)
     return profile(doc)
 end
 
+-- Upload a photo and make it the reader's profile photo.
+function Client:setAvatar(photo)
+    local session, err = self:_requireSession()
+    if not session then return nil, err end
+    local ok, file, doc
+    ok, err = self:ensureProfile()
+    if not ok then return nil, err end
+    file, err = self:uploadImage(photo)
+    if not file then return nil, err end
+    doc, err = self:_request("PATCH", self:collection("profiles") .. "/" .. escape(session.user.id),
+        { body = { data = { avatarId = file } } })
+    if not doc then return nil, err end
+    self.avatarIds[session.user.id] = file
+    return profile(doc)
+end
+
 function Client:searchPeople(query)
     if not text(query) then return {} end
     local data, err = self:_list("profiles", { Q.search("username", trim(query)), Q.limit(10) })
     if not data then return nil, err end
     local people = {}
-    for _, doc in ipairs(data.documents) do people[#people + 1] = profile(doc) end
+    for _, doc in ipairs(data.documents) do
+        people[#people + 1] = profile(doc)
+        self.avatarIds[doc.userId] = people[#people].avatarId or false
+    end
     return people
 end
 
@@ -692,7 +737,7 @@ function Octopus.client(options)
     end
     return setmetatable({ mode = options.mode or "custom", transport = options.transport,
         projectId = options.projectId, databaseId = options.databaseId or "octopus-db",
-        bucketId = options.bucketId or "post-images", clock = options.clock or os.time }, Client)
+        bucketId = options.bucketId or "post-images", clock = options.clock or os.time, avatarIds = {} }, Client)
 end
 
 function Octopus.appwrite(options)

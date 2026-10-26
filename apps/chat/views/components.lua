@@ -76,18 +76,31 @@ function C.input(name, placeholder, props)
     return ui.Input(props)
 end
 
-function C.avatar(name, size, key)
+-- Initials on a tile colour until `app` has the person's profile photo.
+-- `userId` is given only where the tile stands for one person.
+function C.avatar(name, size, key, app, userId)
     local hash = 0
     for i = 1, #(key or name) do hash = hash + (key or name):byte(i) * i end
     local tone = colors.avatar[hash % #colors.avatar + 1]
     local initials = name:match("^([%w])") or "C"
     local last = name:match("%s+([%w])[%w]*$")
     if last then initials = initials .. last end
-    return C.text(initials:upper(), {
-        Width = size or 52, Height = size or 52, FontSize = (size or 52) < 40 and 12 or 18,
-        Background = tone.background, Foreground = tone.foreground,
+    size = size or 52
+    local tile = ui.Grid { Width = size, Height = size, Background = tone.background, IgnoreHitTest = true }
+    tile:addChild(C.text(initials:upper(), {
+        FontSize = size < 40 and 12 or 18, Foreground = tone.foreground,
         TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
-    })
+    }))
+    if app and userId then app:avatarPhoto(tile, userId) end
+    return tile
+end
+
+-- Replace an avatar tile's initials with a photo file. White keeps the
+-- photo's own colours under the light theme's ink.
+function C.photo(tile, path)
+    while tile:getFirstChild() do tile:getFirstChild():removeFromParent() end
+    tile:addChild(ui.ImageView { Name = "AvatarPhoto", Src = path, Foreground = "#ffffff",
+        Stretch = "UniformToFill", IgnoreHitTest = true })
 end
 
 function C.badge(value, props)

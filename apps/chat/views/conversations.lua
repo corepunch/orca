@@ -78,7 +78,10 @@ function Conversations.newRoom(self)
             Height = 52, FontSize = 18, FontWeight = "Normal", BorderWidth = "0", TextHorizontalAlignment = "Left" })
         personButtons[person.id] = personButtons[person.id] or {}
         table.insert(personButtons[person.id], button)
-        parent:addChild(button)
+        local row = ui.Grid { Columns = "52px 1fr", Spacing = 10, Height = 52 }
+        row:addChild(C.avatar(publicName(person), 52, person.id, self, person.id))
+        row:addChild(button)
+        parent:addChild(row)
     end
     local kindRow = ui.Grid { Columns = "1fr 1fr 1fr", Spacing = 12, Height = 48 }
     for _, item in ipairs { { "direct", "Direct" }, { "group", "Group" }, { "channel", "Channel" } } do
@@ -170,7 +173,7 @@ function Conversations.details(self)
     if self.navigationEpoch ~= navigation or self.sessionEpoch ~= epoch then return self.screen end
     local canManage = room.role == "owner" or room.role == "admin"
     local body = C.stack({ Spacing = 14, Overflow = "hidden scroll" }, {
-        C.avatar(room.name, 72, room.id),
+        C.avatar(room.name, 72, room.id, self, room.kind == "direct" and room.peer_id or nil),
         C.badge((room.kind or "group"):upper(), { Width = 100, Background = colors.soft, Foreground = colors.accentText }),
     })
     self.status = C.text(err and err.message or (room.kind == "channel" and "Only owners and admins can publish here." or "A space for everyone in this conversation."), {
@@ -180,10 +183,13 @@ function Conversations.details(self)
     for _, member in ipairs(members or {}) do
         local id = member.user_id or member.id
         local info = member.profile or member
-        local row = C.stack({ Name = "Member" .. id, Spacing = 6, Padding = "0 6" }, {
-            C.text(publicName(info), { FontSize = 22 }),
+        local person = ui.Grid { Columns = "52px 1fr", Spacing = 12 }
+        person:addChild(C.avatar(publicName(info), 52, id, self, id))
+        person:addChild(C.stack({ Spacing = 2, JustifyContent = "Center" }, {
+            C.text(publicName(info), { FontSize = 22, TextOverflow = "Ellipsis" }),
             C.text(member.role or "member", { FontSize = 14, Foreground = colors.dim }),
-        })
+        }))
+        local row = C.stack({ Name = "Member" .. id, Spacing = 6, Padding = "0 6" }, { person })
         if canManage and id ~= self.client:getSession().user.id and member.role ~= "owner" then
             if room.role == "owner" then
                 row:addChild(C.button(member.role == "admin" and "Make member" or "Make admin", function()

@@ -193,9 +193,21 @@ click(app, "SaveProfile")
 assert(find(app, "ProfileBio"):getTextContent() == "Testing the phone app")
 assert(find(app, "Countposts"):getTextContent() == "2")
 
+-- A new profile photo replaces the initials, on the profile and on posts.
+local photoBytes = assert(app.client:getImage("f-reef"))
+app.media.pick = function() return nil, { code = "cancelled", message = "Cancelled" } end
+click(app, "ChangePhoto")
+assert(not find(app, "ProfileAvatar"):findChild("AvatarPhoto", true), "Cancelling keeps the current photo")
+app.media.pick = function() return { jpeg = photoBytes } end
+click(app, "ChangePhoto")
+local adaPhoto = app.media:path(assert(app.client:getProfile("u-ada").avatarId))
+assert(adaPhoto and find(app, "ProfileAvatar"):findChild("AvatarPhoto", true).Src == adaPhoto,
+    "The uploaded photo shows on your profile")
+
 -- Deleting needs a second tap.
 click(app, "AppBarHome")
 click(app, "Open" .. published)
+assert(find(app, "PostAuthor"):findChild("AvatarPhoto", true).Src == adaPhoto, "Posts show the author's photo")
 click(app, "DeletePost")
 assert(app.client:getPost(published), "The first tap only asks for confirmation")
 click(app, "DeletePost")
