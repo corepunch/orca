@@ -22,6 +22,61 @@ xvfb-run make test
 - Headless Lua/UI/layout work: use `make test-headless`.
 - Display-backed behavior: use `xvfb-run make test`.
 
+## String property ownership
+
+Run the focused allocation and binding suites with:
+
+```bash
+make test-string-memory
+```
+
+`tests/test_string_properties.c` checks ownership of literals, stack/heap
+buffers, interior aliases, empty and large Unicode strings, independent
+copies, inheritance, state overrides, binding expressions and tokens. Its
+stress cases exercise chained and conditional bindings, fan-out, temporary
+storage overflow within and across nested evaluations, recovery after failed
+evaluation, and destruction in different orders. Each case must return to its
+exact live-allocation baseline using `mem_tracker.h`.
+
+`tests/test_string_bindings.lua` exercises the public Lua and XML APIs,
+repeated binding replacement, inherited DataContext replacement, snapshots,
+reparenting and garbage collection. Lua-created graph tests also check native
+object counts after collection; XML tests check expression and string lifetime.
+Both suites run in `make test-headless`.
+
+On Linux with GCC or Clang sanitizer support:
+
+```bash
+make test-string-memory-sanitized
+```
+
+This rebuilds the engine, plugins and tests in `build/string-sanitized`, runs
+both suites with AddressSanitizer, UndefinedBehaviorSanitizer and leak
+detection, and disables the test allocator interposition so the sanitizers
+can intercept allocations themselves. The ordinary build remains separate.
+For a focused C reproduction, pass a case-name substring to
+`build/bin/test_string_properties`, for example `interior_alias`.
+
+The Lua suite currently exposes additional loader lifetime leaks under
+LeakSanitizer: XML loaders retain their initial root reference, and
+`loadObjectFromXmlStringWithSchema` leaves its inline schema registered without
+returning an owner that can free it. The sanitizer target reports these as
+failures. The allocation-tracked C ownership suite is independently leak-clean.
+
+## MVVM form bindings
+
+```bash
+make test-two-way-bindings test-mvvm-form
+ORCA_MVVM_NATIVE=1 xvfb-run -a build/bin/orca -test=tests/test_mvvm_form_sample.lua
+```
+
+The binding suite covers immediate draft edits, inherited and replaced data
+contexts, reparenting, XML shorthand, serialization, binding chains, Unicode,
+null values, invalid reverse expressions, and object reclamation. The sample
+suite exercises XML-defined fields and real Save, Discard, and checkbox events.
+Text fields bind to string draft properties; parse numeric input during Save
+validation. Computed expressions remain forward-only.
+
 ## C test shape
 
 C tests in this repo are standalone binaries wired in `Makefile` through `C_TEST_RULE`.

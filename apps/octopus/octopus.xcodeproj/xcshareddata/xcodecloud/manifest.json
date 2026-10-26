@@ -1,0 +1,9 @@
+{
+  "id" : "93625dc3-e6fb-4e56-b605-a4df5be95bb6",
+  "targets" : [
+    {
+      "id" : "9752c3e5-9009-4941-a8b0-ce0ac61ff744",
+      "name" : "octopus-ios"
+    }
+  ]
+}
