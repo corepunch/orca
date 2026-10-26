@@ -125,8 +125,22 @@ and curl.se): every Cloud archive starts from a clean DerivedData and downloads
 them again. The project does not contain private signing keys or provisioning
 profiles.
 
-For TestFlight, create the App Store Connect app record for the project's bundle
-identifier (`org.orca.chat` for chat) under the same team before the first
-archive. Xcode Cloud assigns each build number. Chat's public Appwrite settings
-are defaults in `apps/chat/config.lua`, so Cloud needs no environment variables
-or secrets for it.
+Xcode Cloud workflows belong to one app, so each app that ships needs its own:
+a workflow for Chat does not build Octopus. For each app:
+
+1. In App Store Connect, create the app record for the project's bundle
+   identifier under the project's team (`BM2R8F5YHC`): `org.orca.chat` for
+   Chat, `org.orca.octopus` for Octopus.
+2. Open `apps/<app>/<app>.xcodeproj` in Xcode and choose
+   **Integrate › Create Workflow…** (or **Product › Xcode Cloud**). Select the
+   `<app>-ios` scheme, add an **Archive** action for iOS with
+   **TestFlight (Internal Testing Only)** or App Store distribution, and add a
+   **TestFlight Internal Testing** post-action with a tester group.
+3. Choose a start condition, such as branch changes on `main`. To skip
+   builds for unrelated commits, add a files-and-folders condition for
+   `apps/<app>`, `source`, `plugins`, `share`, `libs` and `tools/xcode`.
+4. Grant Cloud access to the repository and its submodules when asked.
+
+Xcode Cloud assigns each build number. Chat's and Octopus's public Appwrite
+settings are defaults in `apps/<app>/config.lua`, so Cloud needs no
+environment variables or secrets for them.

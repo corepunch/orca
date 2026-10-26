@@ -7,7 +7,8 @@ build follows `orion-ui/packaging/ipad/build.mk` and `lua-objc/scripts/ipad/`.
 
 ## Native Xcode projects and Xcode Cloud
 
-Open `apps/chat/chat.xcodeproj` and choose the shared `chat-ios` scheme, or
+Open `apps/chat/chat.xcodeproj` and choose the shared `chat-ios` scheme,
+`apps/octopus/octopus.xcodeproj` with `octopus-ios`, or
 `apps/cluster-demo/cluster-demo.xcodeproj` with `cluster-demo-ios`. Each scheme
 supports iPhone, iPad and Simulator, including Run and Archive actions.
 
@@ -24,7 +25,8 @@ Generation is offline and uses an existing Python runtime directly; it never
 invokes Apple's Python launcher or installs developer tools. You can open the
 committed projects without regenerating them.
 Set the development team in Xcode, then select this project and scheme when
-creating an Xcode Cloud workflow. The native build phases prepare the host code
+creating an Xcode Cloud workflow. Each app needs its own App Store Connect
+record and workflow; see [Xcode Cloud](../tools/xcode/README.md#xcode-cloud). The native build phases prepare the host code
 generator, static dependencies, API files and resources inside DerivedData;
 they need no existing local Make build. Regeneration preserves signing settings
 and customized shared schemes. No custom Cloud hooks are required for these
