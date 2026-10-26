@@ -1821,7 +1821,9 @@ static void test_project_string_property_set_get(void) {
 #define DECL_TEST(func) { #func, func }
 
 int main(void) {
-    mem_init(); /* must be first: resolves real malloc/free via RTLD_NEXT */
+    /* Darwin lazily initializes timezone state on the first platform clock read. */
+    (void)axGetMilliseconds();
+    mem_init();
 
     printf("ORCA property system tests\n");
     printf("==========================\n");
