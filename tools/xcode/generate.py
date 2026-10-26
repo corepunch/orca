@@ -9,7 +9,7 @@ import plistlib
 import re
 import xml.etree.ElementTree as ET
 
-from common import ROOT, unity_sources, write
+from common import ROOT, configuration, unity_sources, write
 from pbxproj import load
 
 
@@ -160,12 +160,18 @@ def generate(args, app):
         'GENERATE_INFOPLIST_FILE': 'NO', 'OTHER_LDFLAGS': linker,
         'SKIP_INSTALL': 'NO', 'INSTALL_PATH': '$(LOCAL_APPS_DIR)',
     }, overrides)
-    sources, references = [], []
+    plugin_units = {'u_' + name + '.c' for name in configuration()['PLUGINS']}
+    sources, engine_references, plugin_references, native_references = [], [], [], []
     for filename in units:
         objc = filename.endswith('.m')
         ref = project.add('unity/' + filename, 'PBXFileReference', path=filename,
                           sourceTree='DERIVED_FILE_DIR', lastKnownFileType='sourcecode.c.objc' if objc else 'sourcecode.c.c')
-        references.append(ref)
+        if objc:
+            native_references.append(ref)
+        elif filename in plugin_units:
+            plugin_references.append(ref)
+        else:
+            engine_references.append(ref)
         sources.append(project.add('source/' + filename, 'PBXBuildFile', fileRef=ref, settings={
             'COMPILER_FLAGS': ('-idirafter' if objc else '-I') + ' "$(DERIVED_FILE_DIR)/generated"'}))
     prepare = project.add('prepare', 'PBXShellScriptBuildPhase', buildActionMask=2147483647,
@@ -202,15 +208,14 @@ def generate(args, app):
                          buildConfigurationList=target_configs,
                          buildPhases=[prepare, compile_phase] + ([resource_phase] if resource_phase else []) + [resources],
                          buildRules=[], dependencies=[])
-    browse = []
-    for label, path in (('Application resources', app_dir), ('Engine', ROOT / 'source'),
-                        ('Plugins', ROOT / 'plugins'), ('Platform', ROOT / 'libs/platform')):
-        browse.append(project.add('browse/' + label, 'PBXFileReference', name=label,
-                                  path=os.path.relpath(path, output), sourceTree='SOURCE_ROOT', lastKnownFileType='folder'))
-    generated = project.add('group/generated', 'PBXGroup', name='Generated Sources', children=references, sourceTree='<group>')
+    application = project.add('browse/Application resources', 'PBXFileReference', name='Application resources',
+                              path=os.path.relpath(app_dir, output), sourceTree='SOURCE_ROOT', lastKnownFileType='folder')
+    engine = project.add('group/engine', 'PBXGroup', name='Engine', children=engine_references, sourceTree='<group>')
+    plugins = project.add('group/plugins', 'PBXGroup', name='Plugins', children=plugin_references, sourceTree='<group>')
+    native = project.add('group/native', 'PBXGroup', name='Native Sources', children=native_references, sourceTree='<group>')
     products = project.add('group/products', 'PBXGroup', name='Products', children=[product], sourceTree='<group>')
     group = project.add('group/main', 'PBXGroup',
-                        children=browse + resource_references + [generated, products],
+                        children=[application, engine, plugins, native] + resource_references + [products],
                         sourceTree='<group>')
     root = project.add('project', 'PBXProject', buildConfigurationList=root_configs, compatibilityVersion='Xcode 14.0',
                        developmentRegion='en', knownRegions=['en', 'Base'], mainGroup=group,

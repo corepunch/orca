@@ -77,6 +77,12 @@ application into `share/` and `project/` inside Xcode's application bundle. It
 does not replace Xcode's Info plist or the entire bundle. Nested Xcode projects,
 workspaces, `ci_scripts`, hidden development files and build folders are omitted.
 
+The navigator's Engine group contains only generated `u_*.c` unity files, one
+per engine module plus the Unix platform unit. The Plugins group contains the
+generated plugin unity files, including UIKit, SceneKit and SpriteKit. Each file
+includes its implementation sources. Generated Objective-C units appear under Native Sources;
+the raw engine, plugin and platform directories are not added to the navigator.
+
 Host code generation uses the macOS SDK, independently of the iOS target SDK.
 Lua, FreeType, LZ4 and curl are built as static libraries for every architecture
 in `ARCHS`; curl uses Apple's Secure Transport for HTTPS. Source archives are

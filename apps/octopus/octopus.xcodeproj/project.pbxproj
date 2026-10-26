@@ -11,7 +11,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -62,7 +62,7 @@
 "buildSettings" = {
 "ORCA_ROOT" = "$(SRCROOT)/../..";
 "ORCA_PROJECT" = "$(SRCROOT)/.";
-"ORCA_XCODE_UNITS" = "module_geometry.c module_orca.c module_sysutil.c module_console.c module_parsers.c module_debug.c module_network.c module_renderer.c module_filesystem.c module_core.c module_data.c module_media.c plugin_UIKit.c plugin_SceneKit.c plugin_SpriteKit.c platform_unix.c ios_runtime.m native_modules.m";
+"ORCA_XCODE_UNITS" = "u_geometry.c u_orca.c u_sysutil.c u_console.c u_parsers.c u_debug.c u_network.c u_renderer.c u_filesystem.c u_core.c u_data.c u_media.c u_credentials.c u_UIKit.c u_SceneKit.c u_SpriteKit.c u_platform_unix.c ios_runtime.m native_modules.m";
 "SDKROOT" = "iphoneos";
 "SUPPORTED_PLATFORMS" = "iphoneos iphonesimulator";
 "IPHONEOS_DEPLOYMENT_TARGET" = "16.0";
@@ -160,6 +160,7 @@
 "GCC_OPTIMIZATION_LEVEL" = "0";
 "DEBUG_INFORMATION_FORMAT" = "dwarf";
 "ONLY_ACTIVE_ARCH" = "YES";
+"DEVELOPMENT_TEAM" = "BM2R8F5YHC";
 };
 };
 "010460FF95DB662BD3C6729B" = {
@@ -206,6 +207,7 @@
 "GCC_OPTIMIZATION_LEVEL" = "s";
 "DEBUG_INFORMATION_FORMAT" = "dwarf-with-dsym";
 "ONLY_ACTIVE_ARCH" = "NO";
+"DEVELOPMENT_TEAM" = "BM2R8F5YHC";
 };
 };
 "11B0A35C88C28C7060D8C812" = {
@@ -217,210 +219,223 @@
 "defaultConfigurationIsVisible" = 0;
 "defaultConfigurationName" = "Debug";
 };
-"01F1F2F42AD8F3900D9F74DC" = {
+"3BF2B439D83108F1AA9584F0" = {
 "isa" = "PBXFileReference";
-"path" = "module_geometry.c";
+"path" = "u_geometry.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"11E4BF7487039E9A3B03B299" = {
+"65521147251D803FB1F338F0" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "01F1F2F42AD8F3900D9F74DC";
+"fileRef" = "3BF2B439D83108F1AA9584F0";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"573B22E7BA2C4FC367FC2CED" = {
+"FE17040419202473A0450F3F" = {
 "isa" = "PBXFileReference";
-"path" = "module_orca.c";
+"path" = "u_orca.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"8AD6138C7FD2C5621899E463" = {
+"3DDFAAC86ED5E907DB209A7D" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "573B22E7BA2C4FC367FC2CED";
+"fileRef" = "FE17040419202473A0450F3F";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"7F075BF07802E35982882991" = {
+"D2181FDA8DD894232D039594" = {
 "isa" = "PBXFileReference";
-"path" = "module_sysutil.c";
+"path" = "u_sysutil.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"D97936A2A86DC1771B9B7AF1" = {
+"D5CCDEEFEF9D374DC96FF70A" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "7F075BF07802E35982882991";
+"fileRef" = "D2181FDA8DD894232D039594";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"FB9AF4E12BC1A8E0130AC20F" = {
+"740FBD71F2D3BB7A5874ECA8" = {
 "isa" = "PBXFileReference";
-"path" = "module_console.c";
+"path" = "u_console.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"FB65B79650A2EB034D905B15" = {
+"73D83E24C5843D59D0B62AC3" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "FB9AF4E12BC1A8E0130AC20F";
+"fileRef" = "740FBD71F2D3BB7A5874ECA8";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"45C9AB9CB0AC4F0F299509EF" = {
+"34E5FBBCBE3176AD042506AC" = {
 "isa" = "PBXFileReference";
-"path" = "module_parsers.c";
+"path" = "u_parsers.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"41E3D5C40AE06CB140E9C58E" = {
+"0AF39FE5F7387655AD9A8FB1" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "45C9AB9CB0AC4F0F299509EF";
+"fileRef" = "34E5FBBCBE3176AD042506AC";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"71BD4282855359074F49FE98" = {
+"E9C8ACFED7B1B1C0E7136156" = {
 "isa" = "PBXFileReference";
-"path" = "module_debug.c";
+"path" = "u_debug.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"C0F63232DEA6E9F4F72AEC2E" = {
+"B50528024333B06007BD0C60" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "71BD4282855359074F49FE98";
+"fileRef" = "E9C8ACFED7B1B1C0E7136156";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"D04D3CE13B392BC10BCF5A56" = {
+"6713268E31C5FA584C7185CE" = {
 "isa" = "PBXFileReference";
-"path" = "module_network.c";
+"path" = "u_network.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"DAAF2B9913C37D2178B986A1" = {
+"7C397BC6875E6C3DB0CF731E" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "D04D3CE13B392BC10BCF5A56";
+"fileRef" = "6713268E31C5FA584C7185CE";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"853FE876620D38415D699BC6" = {
+"431F787BDBBF945B98E0B459" = {
 "isa" = "PBXFileReference";
-"path" = "module_renderer.c";
+"path" = "u_renderer.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"7A0AAFEB0B62ED5EEFF9AED3" = {
+"F9DB4963FA17E56ED4163393" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "853FE876620D38415D699BC6";
+"fileRef" = "431F787BDBBF945B98E0B459";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"6A6262C6DD512C89FA16CFF2" = {
+"8B2402E161C703FDC7E91BF0" = {
 "isa" = "PBXFileReference";
-"path" = "module_filesystem.c";
+"path" = "u_filesystem.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"0C677A21DD608C3E59E4F29B" = {
+"9CAEA638192CB14230AB6D21" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "6A6262C6DD512C89FA16CFF2";
+"fileRef" = "8B2402E161C703FDC7E91BF0";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"F6AAFF46EF92E4DFB813B042" = {
+"E751426A76E21A414369B694" = {
 "isa" = "PBXFileReference";
-"path" = "module_core.c";
+"path" = "u_core.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"22F6FBAF73969F994D6269AD" = {
+"91BDAFBD6A82CB7CCCFAEF94" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "F6AAFF46EF92E4DFB813B042";
+"fileRef" = "E751426A76E21A414369B694";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"24C6BFF84A5B703F72A128D0" = {
+"EF46FF2EF79FF736DA7D848A" = {
 "isa" = "PBXFileReference";
-"path" = "module_data.c";
+"path" = "u_data.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"B153EBBE0A2A9C3115830419" = {
+"4ACD369103D458DCF7F60CE9" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "24C6BFF84A5B703F72A128D0";
+"fileRef" = "EF46FF2EF79FF736DA7D848A";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"AC2DA5E9DF308F225F70AAF9" = {
+"564321233673841F3EAAA9D9" = {
 "isa" = "PBXFileReference";
-"path" = "module_media.c";
+"path" = "u_media.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"6DA74A2527F593EC76874074" = {
+"FEF57507BE2F55D969D8B592" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "AC2DA5E9DF308F225F70AAF9";
+"fileRef" = "564321233673841F3EAAA9D9";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"94DC855D8599B242FD46756C" = {
+"A1A1B0A559963F72918AC739" = {
 "isa" = "PBXFileReference";
-"path" = "plugin_UIKit.c";
+"path" = "u_credentials.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"7C7446CA7ABF66BE1A4CBF89" = {
+"480BCB49654A5F61FDA6F4F0" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "94DC855D8599B242FD46756C";
+"fileRef" = "A1A1B0A559963F72918AC739";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"54F441F8DB32626B1680E1C0" = {
+"162B92800E3AD53CEC9CB5BC" = {
 "isa" = "PBXFileReference";
-"path" = "plugin_SceneKit.c";
+"path" = "u_UIKit.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"4CE8CC7A38B24C2C199C0B57" = {
+"A338AA3F9DCFD32CA0E3E6C2" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "54F441F8DB32626B1680E1C0";
+"fileRef" = "162B92800E3AD53CEC9CB5BC";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"9E9CF9A0CB6FCCC4422A3520" = {
+"709706B0DA7D53D275ED0C03" = {
 "isa" = "PBXFileReference";
-"path" = "plugin_SpriteKit.c";
+"path" = "u_SceneKit.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"8A5DA963E271C74211B921C3" = {
+"DBD48EDB615D4D3FFB4140F0" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "9E9CF9A0CB6FCCC4422A3520";
+"fileRef" = "709706B0DA7D53D275ED0C03";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
 };
-"C411E94760BAEB963F766B91" = {
+"83424ACAA6CAF4EEAD77DE73" = {
 "isa" = "PBXFileReference";
-"path" = "platform_unix.c";
+"path" = "u_SpriteKit.c";
 "sourceTree" = "DERIVED_FILE_DIR";
 "lastKnownFileType" = "sourcecode.c.c";
 };
-"3AAFEB6F17AB4A9DAC881555" = {
+"E1331E22DDDAAB2050635741" = {
 "isa" = "PBXBuildFile";
-"fileRef" = "C411E94760BAEB963F766B91";
+"fileRef" = "83424ACAA6CAF4EEAD77DE73";
+"settings" = {
+"COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
+};
+};
+"F99A1494E406C50D0A5CE0FD" = {
+"isa" = "PBXFileReference";
+"path" = "u_platform_unix.c";
+"sourceTree" = "DERIVED_FILE_DIR";
+"lastKnownFileType" = "sourcecode.c.c";
+};
+"67655E313DB73FD02ECE5C4A" = {
+"isa" = "PBXBuildFile";
+"fileRef" = "F99A1494E406C50D0A5CE0FD";
 "settings" = {
 "COMPILER_FLAGS" = "-I \"$(DERIVED_FILE_DIR)/generated\"";
 };
@@ -463,22 +478,23 @@
 "$(ORCA_ROOT)/tools/ios/dependencies.py",
 );
 "outputPaths" = (
-"$(DERIVED_FILE_DIR)/module_geometry.c",
-"$(DERIVED_FILE_DIR)/module_orca.c",
-"$(DERIVED_FILE_DIR)/module_sysutil.c",
-"$(DERIVED_FILE_DIR)/module_console.c",
-"$(DERIVED_FILE_DIR)/module_parsers.c",
-"$(DERIVED_FILE_DIR)/module_debug.c",
-"$(DERIVED_FILE_DIR)/module_network.c",
-"$(DERIVED_FILE_DIR)/module_renderer.c",
-"$(DERIVED_FILE_DIR)/module_filesystem.c",
-"$(DERIVED_FILE_DIR)/module_core.c",
-"$(DERIVED_FILE_DIR)/module_data.c",
-"$(DERIVED_FILE_DIR)/module_media.c",
-"$(DERIVED_FILE_DIR)/plugin_UIKit.c",
-"$(DERIVED_FILE_DIR)/plugin_SceneKit.c",
-"$(DERIVED_FILE_DIR)/plugin_SpriteKit.c",
-"$(DERIVED_FILE_DIR)/platform_unix.c",
+"$(DERIVED_FILE_DIR)/u_geometry.c",
+"$(DERIVED_FILE_DIR)/u_orca.c",
+"$(DERIVED_FILE_DIR)/u_sysutil.c",
+"$(DERIVED_FILE_DIR)/u_console.c",
+"$(DERIVED_FILE_DIR)/u_parsers.c",
+"$(DERIVED_FILE_DIR)/u_debug.c",
+"$(DERIVED_FILE_DIR)/u_network.c",
+"$(DERIVED_FILE_DIR)/u_renderer.c",
+"$(DERIVED_FILE_DIR)/u_filesystem.c",
+"$(DERIVED_FILE_DIR)/u_core.c",
+"$(DERIVED_FILE_DIR)/u_data.c",
+"$(DERIVED_FILE_DIR)/u_media.c",
+"$(DERIVED_FILE_DIR)/u_credentials.c",
+"$(DERIVED_FILE_DIR)/u_UIKit.c",
+"$(DERIVED_FILE_DIR)/u_SceneKit.c",
+"$(DERIVED_FILE_DIR)/u_SpriteKit.c",
+"$(DERIVED_FILE_DIR)/u_platform_unix.c",
 "$(DERIVED_FILE_DIR)/ios_runtime.m",
 "$(DERIVED_FILE_DIR)/native_modules.m",
 );
@@ -489,22 +505,23 @@
 "isa" = "PBXSourcesBuildPhase";
 "buildActionMask" = 2147483647;
 "files" = (
-"11E4BF7487039E9A3B03B299",
-"8AD6138C7FD2C5621899E463",
-"D97936A2A86DC1771B9B7AF1",
-"FB65B79650A2EB034D905B15",
-"41E3D5C40AE06CB140E9C58E",
-"C0F63232DEA6E9F4F72AEC2E",
-"DAAF2B9913C37D2178B986A1",
-"7A0AAFEB0B62ED5EEFF9AED3",
-"0C677A21DD608C3E59E4F29B",
-"22F6FBAF73969F994D6269AD",
-"B153EBBE0A2A9C3115830419",
-"6DA74A2527F593EC76874074",
-"7C7446CA7ABF66BE1A4CBF89",
-"4CE8CC7A38B24C2C199C0B57",
-"8A5DA963E271C74211B921C3",
-"3AAFEB6F17AB4A9DAC881555",
+"65521147251D803FB1F338F0",
+"3DDFAAC86ED5E907DB209A7D",
+"D5CCDEEFEF9D374DC96FF70A",
+"73D83E24C5843D59D0B62AC3",
+"0AF39FE5F7387655AD9A8FB1",
+"B50528024333B06007BD0C60",
+"7C397BC6875E6C3DB0CF731E",
+"F9DB4963FA17E56ED4163393",
+"9CAEA638192CB14230AB6D21",
+"91BDAFBD6A82CB7CCCFAEF94",
+"4ACD369103D458DCF7F60CE9",
+"FEF57507BE2F55D969D8B592",
+"480BCB49654A5F61FDA6F4F0",
+"A338AA3F9DCFD32CA0E3E6C2",
+"DBD48EDB615D4D3FFB4140F0",
+"E1331E22DDDAAB2050635741",
+"67655E313DB73FD02ECE5C4A",
 "B3DB704ABC167581963A98C6",
 "5297588D925865098767F1D7",
 );
@@ -581,47 +598,41 @@
 "sourceTree" = "SOURCE_ROOT";
 "lastKnownFileType" = "folder";
 };
-"79080F73FD96EE06C5482069" = {
-"isa" = "PBXFileReference";
-"name" = "Engine";
-"path" = "../../source";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"DD1EAB27EA302DC9E5A4C64E" = {
-"isa" = "PBXFileReference";
-"name" = "Plugins";
-"path" = "../../plugins";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"94B424AF89D6BF0839DD998F" = {
-"isa" = "PBXFileReference";
-"name" = "Platform";
-"path" = "../../libs/platform";
-"sourceTree" = "SOURCE_ROOT";
-"lastKnownFileType" = "folder";
-};
-"2ED048981ABDBFA65761CF69" = {
+"2D25A9B56DCCB8131EBB5456" = {
 "isa" = "PBXGroup";
-"name" = "Generated Sources";
+"name" = "Engine";
 "children" = (
-"01F1F2F42AD8F3900D9F74DC",
-"573B22E7BA2C4FC367FC2CED",
-"7F075BF07802E35982882991",
-"FB9AF4E12BC1A8E0130AC20F",
-"45C9AB9CB0AC4F0F299509EF",
-"71BD4282855359074F49FE98",
-"D04D3CE13B392BC10BCF5A56",
-"853FE876620D38415D699BC6",
-"6A6262C6DD512C89FA16CFF2",
-"F6AAFF46EF92E4DFB813B042",
-"24C6BFF84A5B703F72A128D0",
-"AC2DA5E9DF308F225F70AAF9",
-"94DC855D8599B242FD46756C",
-"54F441F8DB32626B1680E1C0",
-"9E9CF9A0CB6FCCC4422A3520",
-"C411E94760BAEB963F766B91",
+"3BF2B439D83108F1AA9584F0",
+"FE17040419202473A0450F3F",
+"D2181FDA8DD894232D039594",
+"740FBD71F2D3BB7A5874ECA8",
+"34E5FBBCBE3176AD042506AC",
+"E9C8ACFED7B1B1C0E7136156",
+"6713268E31C5FA584C7185CE",
+"431F787BDBBF945B98E0B459",
+"8B2402E161C703FDC7E91BF0",
+"E751426A76E21A414369B694",
+"EF46FF2EF79FF736DA7D848A",
+"564321233673841F3EAAA9D9",
+"A1A1B0A559963F72918AC739",
+"F99A1494E406C50D0A5CE0FD",
+);
+"sourceTree" = "<group>";
+};
+"90C4A5508CD24F3833987AAE" = {
+"isa" = "PBXGroup";
+"name" = "Plugins";
+"children" = (
+"162B92800E3AD53CEC9CB5BC",
+"709706B0DA7D53D275ED0C03",
+"83424ACAA6CAF4EEAD77DE73",
+);
+"sourceTree" = "<group>";
+};
+"D20ADA84B682F079A05DF86A" = {
+"isa" = "PBXGroup";
+"name" = "Native Sources";
+"children" = (
 "4A1D7E190E4DE5E974329025",
 "BCBE196513D59F88F4B8718C",
 );
@@ -639,12 +650,11 @@
 "isa" = "PBXGroup";
 "children" = (
 "2F57FC4A3FA941B68F299FA2",
-"79080F73FD96EE06C5482069",
-"DD1EAB27EA302DC9E5A4C64E",
-"94B424AF89D6BF0839DD998F",
+"2D25A9B56DCCB8131EBB5456",
+"90C4A5508CD24F3833987AAE",
+"D20ADA84B682F079A05DF86A",
 "4930BB2B935190FC0668B0B0",
 "05CA12FE5CD5232A3424FD73",
-"2ED048981ABDBFA65761CF69",
 "BEAD8915881B60FC177E63AB",
 );
 "sourceTree" = "<group>";

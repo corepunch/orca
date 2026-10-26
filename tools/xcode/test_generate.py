@@ -153,6 +153,38 @@ class GenerateProjectTests(unittest.TestCase):
             self.assertEqual(reference.get('BlueprintIdentifier'), target_id)
             self.assertEqual(reference.get('ReferencedContainer'), 'container:chat.xcodeproj')
 
+    def test_engine_navigator_contains_only_generated_unity_sources(self):
+        project = self.read_project(self.generate())
+        objects = project['objects']
+        main = objects[objects[project['rootObject']]['mainGroup']]
+        groups = {objects[uid].get('name'): objects[uid] for uid in main['children']}
+        engine = groups['Engine']
+        self.assertEqual(engine['isa'], 'PBXGroup')
+        paths = set()
+        for uid in engine['children']:
+            reference = objects[uid]
+            self.assertEqual(reference['isa'], 'PBXFileReference')
+            self.assertEqual(reference['sourceTree'], 'DERIVED_FILE_DIR')
+            self.assertRegex(reference['path'], r'^u_[\w-]+\.c$')
+            paths.add(reference['path'])
+        self.assertTrue({'u_core.c', 'u_renderer.c', 'u_credentials.c'} <= paths)
+        plugins = groups['Plugins']
+        self.assertEqual(plugins['isa'], 'PBXGroup')
+        plugin_paths = {objects[uid]['path'] for uid in plugins['children']}
+        self.assertEqual(plugin_paths, {'u_UIKit.c', 'u_SceneKit.c', 'u_SpriteKit.c'})
+        self.assertTrue(paths.isdisjoint(plugin_paths))
+        self.assertTrue(all(objects[uid]['sourceTree'] == 'DERIVED_FILE_DIR' for uid in plugins['children']))
+        self.assertNotIn('Platform', groups)
+        self.assertNotIn('Generated Sources', groups)
+        folders = [obj for obj in objects.values() if obj.get('lastKnownFileType') == 'folder']
+        self.assertEqual([obj['name'] for obj in folders], ['Application resources'])
+        _, target = self.application(project)
+        compiled = {objects[objects[uid]['fileRef']]['path']
+                    for phase in target['buildPhases'] if objects[phase]['isa'] == 'PBXSourcesBuildPhase'
+                    for uid in objects[phase]['files']}
+        native = {objects[uid]['path'] for uid in groups['Native Sources']['children']}
+        self.assertEqual(compiled, paths | plugin_paths | native)
+
     def test_chat_icon_catalog_is_compiled_as_a_native_resource(self):
         catalog = ROOT / 'apps/chat/Assets.xcassets'
         self.assertTrue((catalog / 'AppIcon.appiconset').is_dir())

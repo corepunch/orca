@@ -27,11 +27,10 @@ def configuration(root=ROOT):
 def unity_sources(root=ROOT):
     config = configuration(root)
     units = {}
-    for folder, names, prefix in (('source', config['MODULES'], 'module_'),
-                                  ('plugins', config['PLUGINS'], 'plugin_')):
+    for folder, names in (('source', config['MODULES']), ('plugins', config['PLUGINS'])):
         for name in names:
-            units[prefix + name + '.c'] = sorted((root / folder / name).rglob('*.c'))
-    units['platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
+            units['u_' + name + '.c'] = sorted((root / folder / name).rglob('*.c'))
+    units['u_platform_unix.c'] = sorted((root / 'libs/platform/unix').glob('*.c'))
     units['ios_runtime.m'] = [root / 'source/ios.m', *sorted((root / 'libs/platform/ios').glob('*.m'))]
     units['native_modules.m'] = [path for name in config['MODULES']
                                   for path in sorted((root / 'source' / name).rglob('*.m'))]
