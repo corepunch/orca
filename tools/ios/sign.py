@@ -8,6 +8,7 @@ import plistlib
 import re
 import shutil
 import subprocess
+import tempfile
 
 
 def matches(pattern, identifier):
@@ -25,16 +26,76 @@ def signing_entitlements(identifier, team, allowed_groups):
     }
 
 
+def simulated_entitlements(bundle_id):
+    if not isinstance(bundle_id, str) or not bundle_id:
+        raise ValueError('Simulator bundle has no application identifier')
+    # The simulator Keychain uses the application identifier as each app's
+    # private default group. This local prefix needs no team or profile.
+    return {'application-identifier': 'ORCASIM000.' + bundle_id}
+
+
+def simulator_entitlements(bundle):
+    if bundle.get('CFBundleSupportedPlatforms') != ['iPhoneSimulator']:
+        raise ValueError('Ad hoc simulator signing requires an iPhoneSimulator bundle')
+    return simulated_entitlements(bundle.get('CFBundleIdentifier'))
+
+
+def write_simulated_entitlements(path, bundle_id):
+    """Write the linker section inputs, touching them only when they change."""
+    data = plistlib.dumps(simulated_entitlements(bundle_id))
+    if path.is_file() and path.read_bytes() == data and path.with_suffix(path.suffix + '.der').is_file():
+        return
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix('.tmp')
+    temporary.write_bytes(data)
+    subprocess.run(['derq', 'query', '-f', 'xml', '-i', str(temporary), '-o',
+                    str(path.with_suffix(path.suffix + '.der')), '--raw'], check=True)
+    temporary.replace(path)
+
+
+def linked_entitlements(binary):
+    with tempfile.TemporaryDirectory() as folder:
+        section = Path(folder) / 'entitlements.plist'
+        result = subprocess.run(['segedit', str(binary), '-extract', '__TEXT', '__entitlements', str(section)],
+                                capture_output=True)
+        return plistlib.loads(section.read_bytes()) if result.returncode == 0 and section.is_file() else None
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('app', type=Path)
+    parser.add_argument('app', type=Path, nargs='?')
     parser.add_argument('--team')
     parser.add_argument('--device')
     parser.add_argument('--profile', type=Path)
+    parser.add_argument('--simulator', action='store_true')
+    parser.add_argument('--simulated-entitlements', type=Path, metavar='PATH')
+    parser.add_argument('--identifier')
     args = parser.parse_args()
+    if args.simulated_entitlements:
+        try:
+            write_simulated_entitlements(args.simulated_entitlements, args.identifier)
+        except ValueError as error:
+            raise SystemExit(str(error))
+        return
+    if not args.app:
+        parser.error('the app bundle is required')
     app = args.app.resolve()
-    bundle_id = plistlib.loads((app / 'Info.plist').read_bytes())['CFBundleIdentifier']
+    bundle = plistlib.loads((app / 'Info.plist').read_bytes())
+    bundle_id = bundle['CFBundleIdentifier']
     entitlement_path = app.parent / (app.stem + '.entitlements.plist')
+    if args.simulator:
+        try:
+            entitlements = simulator_entitlements(bundle)
+        except ValueError as error:
+            raise SystemExit(str(error))
+        # Simulators refuse to launch ad hoc signatures that carry entitlements.
+        # As with Xcode, the identity is linked into the binary instead.
+        if linked_entitlements(app / bundle['CFBundleExecutable']) != entitlements:
+            raise SystemExit('Relink ' + bundle_id + ' with its simulated entitlements (make -f tools/ios/Makefile)')
+        subprocess.run(['codesign', '--force', '--sign', '-', str(app)], check=True)
+        subprocess.run(['codesign', '--verify', '--strict', str(app)], check=True)
+        print('Signed simulator ' + bundle_id + ' with its private Keychain group')
+        return
     identities = subprocess.check_output(['security', 'find-identity', '-v', '-p', 'codesigning'], text=True)
     valid = set()
     for line in identities.splitlines():

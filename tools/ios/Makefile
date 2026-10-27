@@ -38,7 +38,7 @@ PLUGINS := UIKit SceneKit SpriteKit
 OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(MODULES))) $(addprefix $(ROOT)/obj/plugin_,$(addsuffix .o,$(PLUGINS))) $(ROOT)/obj/source/media/media_apple.o
 PLATFORM_SOURCES := $(wildcard libs/platform/ios/*.m) $(wildcard libs/platform/unix/*.c)
 PLATFORM_OBJECTS := $(addprefix $(ROOT)/obj/,$(addsuffix .o,$(basename $(PLATFORM_SOURCES))))
-LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox
+LIBS := $(addprefix $(DEPS)/lib/,liblua.a liblz4.a libcurl.a) -lxml2 -lz -liconv -lm -framework UIKit -framework Foundation -framework OpenGLES -framework QuartzCore -framework CoreGraphics -framework ImageIO -framework PhotosUI -framework CoreText -framework Security -framework SystemConfiguration -framework UniformTypeIdentifiers -framework AudioToolbox
 .PHONY: app dependencies generated settings run install list-devices
 generated:
 	$(MAKE) ARCH=$(shell uname -m) modules
@@ -67,12 +67,22 @@ $(ROOT)/obj/%.o: %.m $(ROOT)/settings tools/ios/Makefile | dependencies generate
 $(ROOT)/obj/%.o: %.c $(ROOT)/settings tools/ios/Makefile | dependencies generated
 	@mkdir -p "$(@D)"
 	$(CC) $(CFLAGS) -c "$<" -o "$@"
-$(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(ROOT)/obj/source/ios.o $(DEPS_STAMP)
-	$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(ROOT)/obj/source/ios.o $(LIBS) -o "$@"
+ifeq ($(SDK),iphonesimulator)
+# Simulators refuse entitlements in ad hoc signatures. Like Xcode, link the
+# app identity into the binary, where the simulator Keychain reads it.
+SIMULATED := $(ROOT)/simulated.xcent
+LINK_FLAGS := -Wl,-sectcreate,__TEXT,__entitlements,$(SIMULATED) -Wl,-sectcreate,__TEXT,__ents_der,$(SIMULATED).der
+.PHONY: simulated
+simulated:
+	@python3 tools/ios/sign.py --simulated-entitlements "$(SIMULATED)" --identifier "$(BUNDLE_ID)"
+$(SIMULATED): simulated
+endif
+$(ROOT)/Orca: $(OBJECTS) $(PLATFORM_OBJECTS) $(ROOT)/obj/source/ios.o $(DEPS_STAMP) $(SIMULATED)
+	$(CC) -arch $(ARCH) -isysroot "$(SDK_PATH)" $(MIN_FLAG) $(OBJECTS) $(PLATFORM_OBJECTS) $(ROOT)/obj/source/ios.o $(LIBS) $(LINK_FLAGS) -o "$@"
 app: $(ROOT)/Orca
 	python3 tools/ios/bundle.py --binary "$<" --bundle "$(BUNDLE)" --project "$(PROJECT)" --sdk $(SDK) --identifier "$(BUNDLE_ID)" --minimum $(IOS_MIN) --display-name "$(DISPLAY_NAME)"
 ifeq ($(SDK),iphonesimulator)
-	codesign --force --sign - "$(BUNDLE)"
+	python3 tools/ios/sign.py --simulator "$(BUNDLE)"
 endif
 run: app
 	@test "$(SDK)" = iphonesimulator || { echo 'Use SDK=iphonesimulator for run'; exit 1; }

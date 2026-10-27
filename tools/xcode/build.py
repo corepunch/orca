@@ -128,12 +128,11 @@ def prepare(root, output):
     copy_headers(cache / (sdk + '-' + architectures[0]) / 'deps/include', cache / 'include')
 
 
-def resource_filter(directory, names):
-    return [name for name in names if name.startswith('.') or name in ('build', 'ci_scripts', '__pycache__')
-            or name.endswith(('.xcodeproj', '.xcworkspace', '.xcassets', '.xcprivacy', '.mobileprovision'))]
-
-
 def resources(root, output):
+    spec = importlib.util.spec_from_file_location('orca_ios_bundle',
+                                                Path(__file__).resolve().parents[1] / 'ios/bundle.py')
+    bundle = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bundle)
     project = Path(os.environ['ORCA_PROJECT']).resolve()
     if not (project / 'package.lua').is_file():
         raise ValueError('ORCA_PROJECT must contain package.lua')
@@ -157,7 +156,7 @@ def resources(root, output):
             target.unlink()
         elif target.exists():
             shutil.rmtree(target)
-        shutil.copytree(source, target, ignore=resource_filter)
+        shutil.copytree(source, target, ignore=bundle.resource_filter)
 
 
 def main():

@@ -41,11 +41,50 @@ int media_ProcessPhoto(lua_State *L, char const *bytes) {
   return media_push_photo(L, &photo);
 }
 
+#if defined(ORCA_IOS)
+static int media_picker_gc(lua_State *L) {
+  void **request = lua_touserdata(L, 1);
+  if (*request) Media_ReleasePhotoPicker(*request);
+  *request = NULL;
+  return 0;
+}
+
+static int media_picker_resume(lua_State *L, int status, lua_KContext context) {
+  (void)status;
+  void **request = (void **)context;
+  struct MediaPhoto photo = {0};
+  struct MediaError error = {0};
+  int result = Media_PollPickedPhoto(*request, &photo, &error);
+  if (!result) return lua_yieldk(L, 0, context, media_picker_resume);
+  Media_ReleasePhotoPicker(*request);
+  *request = NULL;
+  return result > 0 ? media_push_photo(L, &photo) : media_push_error(L, &error);
+}
+#endif
+
 int media_PickPhoto(lua_State *L) {
+#if defined(ORCA_IOS)
+  struct MediaError error = {0};
+  if (!lua_isyieldable(L)) {
+    error = (struct MediaError){ "not_yieldable", "Photo selection must run in an application coroutine." };
+    return media_push_error(L, &error);
+  }
+  // The suspended C call retains this userdata; GC cancels abandoned requests.
+  void **request = lua_newuserdatauv(L, sizeof(*request), 0);
+  *request = NULL;
+  if (luaL_newmetatable(L, "orca.media.PhotoPicker")) {
+    lua_pushcfunction(L, media_picker_gc); lua_setfield(L, -2, "__gc");
+  }
+  lua_setmetatable(L, -2);
+  *request = Media_BeginPickPhoto(&error);
+  if (!*request) return media_push_error(L, &error);
+  return lua_yieldk(L, 0, (lua_KContext)request, media_picker_resume);
+#else
   struct MediaPhoto photo = {0};
   struct MediaError error = {0};
   if (!Media_PickPhoto(&photo, &error)) return media_push_error(L, &error);
   return media_push_photo(L, &photo);
+#endif
 }
 
 #if !defined(__APPLE__)

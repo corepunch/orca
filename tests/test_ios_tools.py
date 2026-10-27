@@ -2,6 +2,7 @@
 import importlib.util
 from pathlib import Path
 import plistlib
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -88,6 +89,36 @@ class SigningTests(unittest.TestCase):
         entitlements = sign.signing_entitlements('TEAM.org.orca.chat', 'TEAM', ['TEAM.*'])
         self.assertEqual(entitlements['keychain-access-groups'], ['TEAM.org.orca.chat'])
         self.assertEqual(entitlements['application-identifier'], 'TEAM.org.orca.chat')
+
+    def test_simulator_identity_keeps_keychain_groups_private_to_each_app(self):
+        def bundle(identifier):
+            return {'CFBundleSupportedPlatforms': ['iPhoneSimulator'], 'CFBundleIdentifier': identifier}
+        chat = sign.simulator_entitlements(bundle('org.orca.chat'))
+        other = sign.simulator_entitlements(bundle('org.orca.other'))
+        # Only the identity is simulated; simulators refuse entitled ad hoc signatures.
+        self.assertEqual(chat, {'application-identifier': 'ORCASIM000.org.orca.chat'})
+        self.assertNotEqual(chat, other)
+
+    @unittest.skipUnless(shutil.which('derq'), 'derq is part of macOS')
+    def test_simulated_entitlements_are_rewritten_only_when_the_app_changes(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'simulated.xcent'
+            sign.write_simulated_entitlements(path, 'org.orca.chat')
+            der = path.with_suffix('.xcent.der')
+            self.assertEqual(plistlib.loads(path.read_bytes()), {'application-identifier': 'ORCASIM000.org.orca.chat'})
+            self.assertIn(b'ORCASIM000.org.orca.chat', der.read_bytes())
+            stamp = path.stat().st_mtime_ns
+            sign.write_simulated_entitlements(path, 'org.orca.chat')
+            self.assertEqual(path.stat().st_mtime_ns, stamp, 'An unchanged identity must not relink')
+            sign.write_simulated_entitlements(path, 'org.orca.octopus')
+            self.assertIn(b'org.orca.octopus', der.read_bytes())
+
+    def test_simulator_signing_refuses_physical_bundles_and_missing_identity(self):
+        for bundle in ({'CFBundleSupportedPlatforms': ['iPhoneOS'], 'CFBundleIdentifier': 'org.orca.chat'},
+                       {'CFBundleSupportedPlatforms': ['iPhoneSimulator']},
+                       {'CFBundleIdentifier': 'org.orca.chat'}):
+            with self.subTest(bundle=bundle), self.assertRaises(ValueError):
+                sign.simulator_entitlements(bundle)
 
 
 class BuildConfigurationTests(unittest.TestCase):

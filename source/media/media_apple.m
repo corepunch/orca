@@ -9,6 +9,138 @@
 #include <sys/stat.h>
 #include "media_native.h"
 
+#if TARGET_OS_IOS
+#import <UIKit/UIKit.h>
+#import <PhotosUI/PhotosUI.h>
+
+@interface OrcaPhotoPicker : NSObject <PHPickerViewControllerDelegate, UIAdaptivePresentationControllerDelegate> {
+@public
+  BOOL done, cancelled;
+  struct MediaPhoto photo;
+  struct MediaError error;
+  PHPickerViewController *picker;
+}
+- (void)dismiss;
+@end
+
+static OrcaPhotoPicker *activePicker;
+
+@implementation OrcaPhotoPicker
+- (void)dismiss {
+  picker.delegate = nil;
+  picker.presentationController.delegate = nil;
+  if (picker.presentingViewController) [picker dismissViewControllerAnimated:YES completion:nil];
+  [picker release];
+  picker = nil;
+}
+
+- (void)presentationControllerDidDismiss:(UIPresentationController *)presentationController {
+  [self dismiss];
+  error = (struct MediaError){ "cancelled", "Photo selection was cancelled." };
+  done = YES;
+}
+
+- (void)picker:(PHPickerViewController *)controller didFinishPicking:(NSArray<PHPickerResult *> *)results {
+  [self dismiss];
+  if (!results.count) {
+    error = (struct MediaError){ "cancelled", "Photo selection was cancelled." };
+    done = YES;
+    return;
+  }
+  NSItemProvider *provider = results.firstObject.itemProvider;
+  if (![provider hasItemConformingToTypeIdentifier:@"public.image"]) {
+    error = (struct MediaError){ "unsupported_image", "Choose one readable still image." };
+    done = YES;
+    return;
+  }
+  // Read the temporary provider URL before its callback returns. Processing
+  // shares the same orientation, metadata removal and size policy as macOS.
+  [provider loadFileRepresentationForTypeIdentifier:@"public.image" completionHandler:^(NSURL *url, NSError *readError) {
+    struct MediaPhoto prepared = {0};
+    struct MediaError failure = { "read", "The selected photo could not be read." };
+    if (url && !readError) {
+      NSNumber *size = nil;
+      [url getResourceValue:&size forKey:NSURLFileSizeKey error:NULL];
+      if (size.unsignedLongLongValue > MEDIA_INPUT_LIMIT)
+        failure = (struct MediaError){ "input_too_large", "The source photo exceeds 32 MiB." };
+      else {
+        NSData *bytes = [NSData dataWithContentsOfURL:url options:NSDataReadingMappedIfSafe error:NULL];
+        if (bytes) Media_ProcessPhoto(bytes.bytes, bytes.length, &prepared, &failure);
+      }
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+      if (cancelled) {
+        free(prepared.jpeg);
+        free(prepared.thumbnail);
+      } else {
+        photo = prepared;
+        error = failure;
+        done = YES;
+      }
+    });
+  }];
+}
+
+- (void)dealloc {
+  if (activePicker == self) activePicker = nil;
+  [self dismiss];
+  free(photo.jpeg);
+  free(photo.thumbnail);
+  [super dealloc];
+}
+@end
+
+void *Media_BeginPickPhoto(struct MediaError *error) {
+  if (![NSThread isMainThread]) {
+    *error = (struct MediaError){ "thread", "Photo selection must start on the main thread." };
+    return NULL;
+  }
+  if (activePicker) {
+    *error = (struct MediaError){ "busy", "Finish choosing the current photo first." };
+    return NULL;
+  }
+  UIViewController *presenter = nil;
+  for (UIScene *scene in UIApplication.sharedApplication.connectedScenes) {
+    if (![scene isKindOfClass:[UIWindowScene class]] || scene.activationState != UISceneActivationStateForegroundActive) continue;
+    for (UIWindow *window in ((UIWindowScene *)scene).windows) {
+      if (window.isKeyWindow) { presenter = window.rootViewController; break; }
+    }
+    if (presenter) break;
+  }
+  if (!presenter || presenter.presentedViewController) {
+    *error = (struct MediaError){ "busy", "Photo selection needs an active app window without another dialog." };
+    return NULL;
+  }
+  OrcaPhotoPicker *request = [[OrcaPhotoPicker alloc] init];
+  PHPickerConfiguration *config = [[[PHPickerConfiguration alloc] init] autorelease];
+  config.filter = PHPickerFilter.imagesFilter;
+  config.selectionLimit = 1;
+  request->picker = [[PHPickerViewController alloc] initWithConfiguration:config];
+  request->picker.delegate = request;
+  activePicker = request;
+  [presenter presentViewController:request->picker animated:YES completion:nil];
+  request->picker.presentationController.delegate = request;
+  return request;
+}
+
+int Media_PollPickedPhoto(void *state, struct MediaPhoto *photo, struct MediaError *error) {
+  OrcaPhotoPicker *request = state;
+  if (!request->done) return 0;
+  *error = request->error;
+  *photo = request->photo;
+  request->photo = (struct MediaPhoto){0};
+  return photo->jpeg ? 1 : -1;
+}
+
+void Media_ReleasePhotoPicker(void *state) {
+  OrcaPhotoPicker *request = state;
+  request->cancelled = YES;
+  if (activePicker == request) activePicker = nil;
+  [request dismiss];
+  [request release];
+}
+#endif
+
 static int Media_Fail(struct MediaError *error, char const *code, char const *message) {
   *error = (struct MediaError){ code, message };
   return 0;

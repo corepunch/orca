@@ -146,9 +146,22 @@ not implemented by this backend.
 
 Settings use the app's writable Application Support directory. Bundled project
 resources are read-only; applications should use ORCA settings APIs for saved
-data. The iOS Lua build creates `os.tmpname()` files in the app's `TMPDIR`,
+data. Simulator builds receive a local application identity
+(`ORCASIM000.<bundle id>`), so saved sessions use the same secure-storage API as
+devices, in a Keychain group private to each app. As with Xcode, the identity is
+linked into the binary as simulated entitlements and the ad hoc signature
+carries none, because simulators refuse to launch entitled ad hoc signatures.
+The simulator signing helper refuses physical-device bundles, which retain
+profile-authorized signing and Keychain groups.
+The iOS Lua build creates `os.tmpname()` files in the app's `TMPDIR`,
 with private permissions, so downloaded photos and avatars can be cached inside
 the sandbox. The system-wide `/tmp` directory is not writable by device apps.
+Chat attaches still images through the system photo picker. Selection yields
+the app coroutine while UIKit remains responsive and grants access only to the
+selected image; no photo-library permission is requested. The selected photo
+uses the shared native orientation, metadata removal, resizing and JPEG
+compression pipeline before preview or upload. Cancelling retains the current
+message draft.
 Terminal environment variables are not inherited by apps installed on
 physical devices. The chat's public Appwrite endpoint, project ID and Function
 ID are defaults in `apps/chat/config.lua`, so installed builds connect without

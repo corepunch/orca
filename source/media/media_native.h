@@ -19,4 +19,10 @@ struct MediaError { char const *code, *message; };
 int Media_ProcessPhoto(void const *bytes, size_t size, struct MediaPhoto *photo, struct MediaError *error);
 int Media_PickPhoto(struct MediaPhoto *photo, struct MediaError *error);
 
+#if defined(ORCA_IOS)
+void *Media_BeginPickPhoto(struct MediaError *error);
+int Media_PollPickedPhoto(void *request, struct MediaPhoto *photo, struct MediaError *error);
+void Media_ReleasePhotoPicker(void *request);
+#endif
+
 #endif
