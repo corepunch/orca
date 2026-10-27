@@ -109,7 +109,7 @@ else
 Q = @
 endif
 
-.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-lisp-library test-async test-tabbar test-tab-interaction test-layout test-listbox
+.PHONY: default all CLEAN directories unite orca-fbx buildlib buildplugins app platform example weather install codegen-host codegen-clean codegen-sample modules modules-c-preview modules-c-diff test test-headless test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-xml-serialization test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-widget test-router test-application test-geometry test-parsers test-object-hierarchy test-object-retention test-async test-tabbar test-tab-interaction test-layout test-listbox
 
 default: directories modules unite
 all: default
@@ -477,8 +477,8 @@ $(eval $(call C_TEST_RULE,test-scroll-layout,tests/test_scroll_layout.c,$(BINDIR
 $(eval $(call C_TEST_RULE,test-touch-scroll-routing,tests/test_touch_scroll_routing.c,$(BINDIR)/test_touch_scroll_routing,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS)))
 $(eval $(call C_TEST_RULE,test-timer-cancel,tests/test_timer_cancel.c,$(BINDIR)/test_timer_cancel,unite,,$(PLUGINLIBDIR)/UIKit.so $(TEST_LDFLAGS) -lplatform))
 
-HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox test-navigationhost test-lisp-library test-scene-reflections
-HEADLESS_LUA_TESTS += test-imageview test-lisp test-example-lisp test-lisp-serialization
+HEADLESS_LUA_TESTS = test-listbox test-layout test-state-manager test-animations test-timers test-styles-lua test-body test-console-view test-object-retention test-async test-widget test-router test-application test-url-for test-geometry test-parsers test-object-hierarchy test-tabbar test-tab-interaction test-metro test-text-layout test-stack-layout test-grid-layout test-grid-tracks test-interaction test-adventure-header-hit test-node test-pagehost-listbox
+HEADLESS_LUA_TESTS += test-imageview
 HEADLESS_LUA_TESTS += test-node2d-scroll test-scroll-layout
 HEADLESS_LUA_TESTS += test-screen-paint-lifecycle test-activity-indicator test-touch-scroll-routing test-timer-cancel
 $(eval $(call LUA_TEST_RULE,test-activity-indicator,tests/test_activity_indicator.lua,unite))
@@ -489,10 +489,14 @@ HEADLESS_LUA_TESTS += test-string-bindings test-string-properties
 HEADLESS_LUA_TESTS += test-two-way-bindings
 HEADLESS_LUA_TESTS += test-mvvm-form
 HEADLESS_LUA_TESTS += test-scene-format
-# Scene fixtures belong to their format; common engine tests run in both builds.
-ifeq ($(SCENE_FORMAT),xml)
-HEADLESS_LUA_TESTS := $(filter-out test-layout test-styles-lua test-widget test-metro test-pagehost-listbox test-navigationhost test-lisp-library test-scene-reflections test-lisp test-example-lisp test-lisp-serialization test-string-bindings test-two-way-bindings test-mvvm-form,$(HEADLESS_LUA_TESTS))
-endif
+# Tests in tests/ run in both scene formats. Tests that need one format's loader
+# or fixtures live in tests/<format>/ and run only in that build; tests/lisp/
+# test_metro_lisp.lua becomes test-metro-lisp.
+FORMAT_LUA_TESTS := $(patsubst tests/$(SCENE_FORMAT)/test_%.lua,test-%,$(wildcard tests/$(SCENE_FORMAT)/test_*.lua))
+FORMAT_LUA_TESTS := $(subst _,-,$(FORMAT_LUA_TESTS))
+$(foreach t,$(FORMAT_LUA_TESTS),$(eval $(call LUA_TEST_RULE,$(t),tests/$(SCENE_FORMAT)/$(subst -,_,$(t)).lua,unite)))
+.PHONY: $(FORMAT_LUA_TESTS)
+HEADLESS_LUA_TESTS += $(FORMAT_LUA_TESTS)
 .PHONY: test-scene-format
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
@@ -522,12 +526,6 @@ test-chat-polling: unite
 	$(TARGET) -test=tests/test_chat_loading.lua
 
 $(eval $(call LUA_TEST_RULE,test-credentials,tests/test_credentials.lua,unite))
-.PHONY: test-example-lisp
-$(eval $(call LUA_TEST_RULE,test-example-lisp,tests/test_example_lisp.lua,unite))
-.PHONY: test-lisp-serialization
-$(eval $(call LUA_TEST_RULE,test-lisp-serialization,tests/test_lisp_serialization.lua,unite))
-.PHONY: test-lisp
-$(eval $(call LUA_TEST_RULE,test-lisp,tests/test_lisp.lua,unite))
 .PHONY: test-imageview
 $(eval $(call LUA_TEST_RULE,test-imageview,tests/test_imageview.lua,unite))
 .PHONY: test-screen-paint-lifecycle
@@ -541,9 +539,6 @@ $(eval $(call LUA_TEST_RULE,test-styles-lua,tests/test_styles_lua.lua,app copysh
 $(eval $(call LUA_TEST_RULE,test-body,tests/test_body.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-console-view,tests/test_console_view.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-object-retention,tests/test_object_retention.lua,app copyshare))
-$(eval $(call LUA_TEST_RULE,test-lisp-library,tests/test_lisp_library.lua,app copyshare))
-$(eval $(call LUA_TEST_RULE,test-scene-reflections,tests/test_scene_reflections.lua,unite))
-.PHONY: test-scene-reflections
 $(eval $(call LUA_TEST_RULE,test-async,tests/test_async.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-widget,tests/widget_spec.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-router,tests/router_spec.lua,app copyshare))
@@ -564,7 +559,6 @@ $(eval $(call LUA_TEST_RULE,test-interaction,tests/test_interaction.lua,app copy
 $(eval $(call LUA_TEST_RULE,test-adventure-header-hit,tests/test_adventure_header_hit.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-node,tests/test_node.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-pagehost-listbox,tests/test_pagehost_listbox.lua,app copyshare))
-$(eval $(call LUA_TEST_RULE,test-navigationhost,tests/test_navigationhost.lua,app copyshare))
 $(eval $(call LUA_TEST_RULE,test-listbox,tests/test_listbox.lua,app copyshare))
 
 test-headless: unite test-properties test-styles test-filesystem test-message-registry test-trigger-actions test-editor test-shader-uniforms $(HEADLESS_LUA_TESTS) $(HEADLESS_IOS_TESTS)

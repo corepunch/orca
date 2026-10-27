@@ -371,16 +371,6 @@ local function test_panorama()
   print("PASS: test_panorama")
 end
 
-local function test_lisp()
-  local screen = filesystem.loadObject("tests/fixtures/metro/Pivot.lisp")
-  layout(screen)
-  local pivot = screen:findChild("Pivot", true)
-  test.expect(pivot and #children(pivot, "PivotHeaderItem") == 3, "Lisp declares Pivot and PivotItem")
-  local bar = screen:findChild("AppBar", true)
-  test.expect(bar and #children(bar, "ApplicationBarIconButton") == 3, "Lisp declares the ApplicationBar")
-  print("PASS: test_lisp")
-end
-
 -- Loads fonts so headers have real widths; runs last to leave the others unchanged.
 local function test_pivot_fill()
   require("orca.core.startup").load_plugins()
@@ -427,5 +417,4 @@ test_pivot_back()
 test_pivot_transitions()
 test_application_bar()
 test_panorama()
-test_lisp()
 test_pivot_fill()

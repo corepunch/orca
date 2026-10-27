@@ -244,7 +244,7 @@ SSR:
   Model3D opt-in. Builtin uniform declarations survive stripping. Object
   `orca_readout_origin_x` restores authored local X on export, since Blender's
   driver centers digits while IC_Digits.vert performs centering in the engine.
-- `tests/test_screen_space_capture.c`, `tests/test_scene_reflections.lua`.
+- `tests/test_screen_space_capture.c`, `tests/lisp/test_scene_reflections.lua`.
 - `make modules` and `make unite` succeeded; focused headless capture/sampler
   cases and Model3D XML opt-in test passed.
 - **Full headless suite was not rerun after SSR. GPU copy/raymarch visual behavior

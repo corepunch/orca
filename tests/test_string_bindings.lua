@@ -147,22 +147,6 @@ scenario("binding replacement and expression string ownership", function()
     equal(sink.Text, "manual", "An explicitly detached binding must not resume writing")
 end)
 
-scenario("Lisp-authored expression lifetime", function()
-    local lisp = [[(StackView (TextBlock Name="Source" Text="escaped & quoted \"text\"")
-        (TextBlock Name="Sink" (Binding Target="TextRun.Text" "\"<\" + {../Source/Text} + \">\"")))]]
-    local root = assert(fs.loadObjectFromLispString(lisp))
-    lisp = nil
-    collectgarbage("collect")
-    local source, sink = root:findChild("Source"), root:findChild("Sink")
-    evaluate(root)
-    equal(sink.Text, '<escaped & quoted "text">', "Scene source storage must outlive binding compilation")
-    for i = 1, 150 do
-        source.Text = "lisp-update-" .. i
-        evaluate(root)
-        equal(sink.Text, "<lisp-update-" .. i .. ">", "Lisp expression survives later source changes")
-    end
-end)
-
 scenario("inherited DataContext replacement and source collection", function()
     local schema = [[<Schema><Entity Name="StringBindingRecord">
         <Column Name="Title" Type="string"/><Column Name="Detail" Type="string"/>
