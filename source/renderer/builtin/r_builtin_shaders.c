@@ -603,3 +603,55 @@ struct shader_desc shader_blur_v = {
   "  fragColor = vec4(a,a,a,a) * u_opacity;\n"
   "}\n"
 };
+
+// Separable Gaussian blur of a backdrop capture, one axis per pass.
+// u_texelSize is one texel along the pass axis; 13 taps cover 3 sigma for the
+// sigma of at most 2 texels that the capture is downsampled to. Saturation is
+// linear, so it commutes with the blur and is applied by the last pass only.
+struct shader_desc shader_backdrop_blur = {
+  .Name = "Backdrop Blur Shader",
+  .Version = 150,
+  .Precision = PRECISION_LOW,
+  .FragmentOut = "fragColor",
+  .Uniforms = {
+    { "u_modelViewProjectionTransform", UT_FLOAT_MAT4, PRECISION_HIGH },
+    { "u_textureTransform",             UT_FLOAT_MAT3, PRECISION_HIGH },
+    { "u_texture",                      UT_SAMPLER_2D, PRECISION_LOW  },
+    { "u_texelSize",                    UT_FLOAT_VEC2, PRECISION_HIGH },
+    { "u_sigma",                        UT_FLOAT,      PRECISION_LOW  },
+    { "u_saturation",                   UT_FLOAT,      PRECISION_LOW  },
+    { "u_bboxMin",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+    { "u_bboxMax",                      UT_FLOAT_VEC3, PRECISION_LOW  },
+  },
+  .Attributes = {
+    { "a_position",  UT_FLOAT_VEC4 },
+    { "a_texcoord0", UT_FLOAT_VEC2 },
+    { "a_texcoord1", UT_FLOAT_VEC2 },
+  },
+  .Shared = {
+    { "v_texcoord0", UT_FLOAT_VEC2 },
+  },
+  .VertexShader =
+  "void main() {\n"
+  "  vec2 rectSize = u_bboxMax.xy - u_bboxMin.xy;\n"
+  "  vec2 pos = a_position.xy * rectSize;\n"
+  "  vec3 tex = vec3(pos.x / rectSize.x, 1.0 - pos.y / rectSize.y, 1.0);\n"
+  "  v_texcoord0 = (u_textureTransform * tex).xy;\n"
+  "  gl_Position = u_modelViewProjectionTransform * vec4(pos + u_bboxMin.xy, 0.0, 1.0);\n"
+  "}\n",
+  .FragmentShader =
+  "void main() {\n"
+  "  float s = max(u_sigma, 0.001);\n"
+  "  vec3 sum = texture(u_texture, v_texcoord0).rgb;\n"
+  "  float total = 1.0;\n"
+  "  for (int i = 1; i <= 6; i++) {\n"
+  "    float w = exp(-float(i * i) / (2.0 * s * s));\n"
+  "    vec2 d = u_texelSize * float(i);\n"
+  "    sum += w * (texture(u_texture, v_texcoord0 + d).rgb + texture(u_texture, v_texcoord0 - d).rgb);\n"
+  "    total += 2.0 * w;\n"
+  "  }\n"
+  "  vec3 color = sum / total;\n"
+  "  float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));\n"
+  "  fragColor = vec4(mix(vec3(luma), color, u_saturation), 1.0);\n"
+  "}\n"
+};

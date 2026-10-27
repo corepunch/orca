@@ -62,12 +62,12 @@ for _, inset in ipairs { 0, 318, 352, 0 } do
     layout()
     app.diagnostics:checkLayout()
     assert(app.screen == search, "Showing, resizing or hiding the keyboard during user search must retain the chat screen")
-    local footer = search:findChild("AppBarFooter", true)
+    local footer = search:findChild("AppBar", true)
     local bottom = math.max(34, inset)
     assert(math.abs(footer.ActualY - (932 - bottom - 58)) < 1,
         "Search commands must stay above the keyboard or home indicator")
     assert(math.abs(footer.ActualY + footer.ActualHeight - 932) < 1,
-        "Search footer background must extend to the full viewport bottom")
+        "The frosted search bar must extend to the full viewport bottom")
 end
 search.Width, search.Height = 390, 844
 search.SafeAreaTop, search.SafeAreaBottom = 0, 0
@@ -99,13 +99,13 @@ assert(app.screen == first, "Repeated failures must not stack error screens")
 returnToChat()
 app.screen.KeyboardInsetBottom = 318
 layout()
-local footer = app.screen:findChild("AppBarFooter", true)
-footer.Height = 32000
+local bar = app.screen:findChild("AppBar", true)
+bar.Height = 32000
 layout()
 app.diagnostics:checkLayout()
-assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("footerHeight=", 1, true)
+assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("barHeight=", 1, true)
     and app.diagnostics.lastReport:find("keyboardInsetBottom=318.0", 1, true),
-    "Oversized footer failures must show measured geometry even without an exception")
+    "Oversized bar failures must show measured geometry even without an exception")
 returnToChat()
 
 local originalSelect = app.models.Rooms.select

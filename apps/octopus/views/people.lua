@@ -140,8 +140,8 @@ function People.profile(self)
     local view = profileView(self, userId, self.profileName)
     self.profileView = view
     self.status = C.text("", { Name = "ProfileStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
-    local body = ui.Grid { Rows = "1fr auto" }
-    body:addChild(view.content); body:addChild(self.status)
+    local body = ui.Node2D {}
+    body:addChild(view.content); body:addChild(C.toolbar("Bottom", { self.status }, { Name = "ProfileStatusBar" }))
     local bar = C.appBar({
         { "BackFromProfile", "arrow-left", "back", function()
             local route = self.profileReturn
@@ -150,9 +150,7 @@ function People.profile(self)
         { "RefreshProfile", "refresh-cw", "refresh", function() loadProfile(self, view) end },
     })
     local screen = self:frame()
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(bar)
-    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body), footer,
+    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body, { ExtendBodyBehindHeader = true }), bar,
         { Background = colors.background, Foreground = colors.ink })
     followButton(self, view)
     loadProfile(self, view)
@@ -177,10 +175,10 @@ function People.me(self)
     local session = self.client:getSession()
     self.status = C.text("", { Name = "MeStatus", FontSize = 13, Foreground = colors.dim, WordWrap = true })
     if not session then
-        local body = ui.Grid { Rows = "1fr auto" }
-        body:addChild(welcome(self)); body:addChild(self.status)
+        local body = ui.Node2D {}
+        body:addChild(welcome(self)); body:addChild(C.toolbar("Bottom", { self.status }, { Name = "MeStatusBar" }))
         self.profileView = nil
-        return self:tab("Me", C.page("me", body))
+        return self:tab("Me", C.page("me", body, { ExtendBodyBehindHeader = true }))
     end
     local view = profileView(self, session.user.id, session.user.name, true)
     self.profileView = view
@@ -372,9 +370,11 @@ function People.search(self)
         Name = "RunSearch", Width = 48, Height = 48, Background = colors.accent })
     go:addChild(C.icon("search", 20, colors.onAccent))
     bar:addChild(go)
-    local body = ui.Grid { Rows = "48px 1fr auto", Spacing = 16 }
-    body:addChild(bar); body:addChild(results); body:addChild(self.status)
-    local screen = self:tab("Search", C.page("search", body))
+    local body = ui.Node2D {}
+    body:addChild(results)
+    body:addChild(C.toolbar("Top", { bar }, { Name = "SearchBar", Padding = "20 0 20 16" }))
+    body:addChild(C.toolbar("Bottom", { self.status }, { Name = "SearchStatusBar" }))
+    local screen = self:tab("Search", C.page("search", body, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
     -- A tag opened from a post searches straight away.
     if state.results == nil and state.query:match("^#") then People.runSearch(self, list)
     else renderResults(self, list) end

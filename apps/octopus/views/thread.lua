@@ -221,14 +221,15 @@ function Thread.page(self)
         view.replyBar:addChild(C.button("", function() view.replyTo, view.replyBar.Visible = nil, false end, {
             Name = "CancelReply", Width = 36, Height = 32 }))
         view.replyBar:findChild("CancelReply"):addChild(C.icon("x", 16, colors.muted))
-        footer = C.stack({ Spacing = 6 }, { self.status, view.replyBar, view.input })
+        footer = C.toolbar("Bottom", { C.stack({ Spacing = 6 }, { self.status, view.replyBar, view.input }) },
+            { Name = "CommentBar", Padding = "20 8" })
         self.leaving = function() self.commentDrafts[post.id] = view.input.Text end
     else
-        footer = C.stack({ Spacing = 0 }, { self.status,
+        footer = C.toolbar("Bottom", { C.stack({ Spacing = 0 }, { self.status,
             C.button("Sign in to comment", function() self.authReturn = "/post"; self:show("/auth") end, {
-                Name = "SignInToComment", Height = 40 }) })
+                Name = "SignInToComment", Height = 40 }) }) }, { Name = "CommentBar", Padding = "20 8" })
     end
-    local body = ui.Grid { Rows = "1fr auto", Spacing = 8 }
+    local body = ui.Node2D {}
     body:addChild(content); body:addChild(footer)
 
     local function back()
@@ -273,9 +274,7 @@ function Thread.page(self)
     end
     view.refreshStats()
     local screen = self:frame()
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(bar)
-    Footer.layout(screen, C.page(LABELS[post.postType], body), footer,
+    Footer.layout(screen, C.page(LABELS[post.postType], body, { ExtendBodyBehindHeader = true }), bar,
         { Background = colors.background, Foreground = colors.ink })
     Thread.load(self, view)
     return screen

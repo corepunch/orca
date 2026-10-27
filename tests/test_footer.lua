@@ -19,7 +19,7 @@ local function check(width, height, top, right, bottom, left, keyboard)
     core.runAllPrograms(screen)
     screen:UpdateLayout(width, height)
     assert(not screen.RespectSafeArea)
-    assert(root.PaddingTop == top)
+    assert(footer.SafeAreaEdge == "Bottom")
     assert(content:getParent().PaddingLeft == left and content:getParent().PaddingRight == right)
     assert(footer.PaddingLeft == left and footer.PaddingRight == right)
     assert(footer.ActualX == 0 and footer.ActualWidth == width,
@@ -29,7 +29,8 @@ local function check(width, height, top, right, bottom, left, keyboard)
     assert(math.abs(footer.ActualY + footer.ActualHeight - height) < 1, "Footer must reach physical bottom")
     assert(math.abs(footer.ActualY + controls.ActualY + controls.ActualHeight - (height - inset)) < 1,
         "Footer controls must remain above the system gesture area and keyboard")
-    assert(math.abs(content.ActualHeight - (height - top - inset - 58)) < 1)
+    assert(content.ActualY == 0 and math.abs(content.ActualHeight - height) < 1,
+        "Content must run edge to edge, under the status bar and the footer")
     assert(math.abs(controls.ActualWidth - (width - left - right)) < 1)
 end
 
@@ -54,4 +55,16 @@ for _, keyboard in ipairs { 0, 318, 352, 0 } do
     assert(safeContent.ActualY == 59)
     assert(safeContent.ActualHeight == 932 - 59 - math.max(34, keyboard))
 end
+-- In a Grid row the footer is laid out as a row, as before it docked.
+local rowScreen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize", RespectSafeArea = false,
+    SafeAreaBottom = 34 }
+local rows = ui.Grid { Rows = "1fr auto" }
+local rowContent, rowFooter = ui.Node2D {}, Footer { Rows = "58px" }
+rows:addChild(rowContent); rows:addChild(rowFooter)
+rowScreen:addChild(rows)
+core.advanceFrame()
+core.runAllPrograms(rowScreen)
+rowScreen:UpdateLayout(390, 844)
+assert(math.abs(rowContent.ActualHeight - (844 - 58 - 34)) < 1, "A footer row must still shrink the content row")
+assert(math.abs(rowFooter.ActualY + rowFooter.ActualHeight - 844) < 1)
 print("PASS: footer and safe-area content respond to keyboard, rotation and zero insets")

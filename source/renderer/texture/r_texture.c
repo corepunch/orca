@@ -99,6 +99,7 @@ wrap_to_gl(enum TextureWrap value)
     case kTextureWrapRepeat: return GL_REPEAT;
     case kTextureWrapClamp: return GL_CLAMP_TO_EDGE;
     case kTextureWrapBase: return GL_CLAMP_TO_EDGE;
+    case kTextureWrapMirror: return GL_MIRRORED_REPEAT;
   }
 }
 

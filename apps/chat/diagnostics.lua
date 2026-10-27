@@ -97,17 +97,17 @@ end
 function Diagnostics:checkLayout()
     local app, screen = self.app, self.app.screen
     if not screen or not app.shell or app.shell.screen ~= screen then return end
-    local footer = screen:findChild("AppBarFooter", true)
+    -- The docked bar extends through the home indicator or keyboard to the bottom.
     local root, bar = screen:getFirstChild(), app.shell.bar
     local height = screen.Height
-    if not footer or not root or not bar or height <= 0 then return end
-    local bottom = root.ActualY + footer.ActualY + footer.ActualHeight
+    if not root or not bar or height <= 0 then return end
+    local bottom = root.ActualY + bar.ActualY + bar.ActualHeight
     local expected = 58 + math.max(screen.SafeAreaBottom, screen.KeyboardInsetBottom)
-    if math.abs(bottom - height) <= 2 and math.abs(footer.ActualHeight - expected) <= 2 then return end
-    self:show(string.format("Chat footer is outside its expected bounds.\n" ..
-        "screen=%.1fx%.1f rootHeight=%.1f footerY=%.1f footerHeight=%.1f barHeight=%.1f safeBottom=%.1f keyboardInsetBottom=%.1f",
-        screen.Width, height, root.ActualHeight, footer.ActualY, footer.ActualHeight,
-        bar.ActualHeight, screen.SafeAreaBottom, screen.KeyboardInsetBottom), "Layout")
+    if math.abs(bottom - height) <= 2 and math.abs(bar.ActualHeight - expected) <= 2 then return end
+    self:show(string.format("Chat application bar is outside its expected bounds.\n" ..
+        "screen=%.1fx%.1f rootHeight=%.1f barY=%.1f barHeight=%.1f safeBottom=%.1f keyboardInsetBottom=%.1f",
+        screen.Width, height, root.ActualHeight, bar.ActualY, bar.ActualHeight,
+        screen.SafeAreaBottom, screen.KeyboardInsetBottom), "Layout")
 end
 
 return Diagnostics

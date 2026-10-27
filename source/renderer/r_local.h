@@ -257,6 +257,7 @@ extern struct shader_desc shader_button;
 extern struct shader_desc shader_roundedbox;
 extern struct shader_desc shader_blur_h;
 extern struct shader_desc shader_blur_v;
+extern struct shader_desc shader_backdrop_blur;
 
 // font
 struct fontface*

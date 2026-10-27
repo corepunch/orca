@@ -324,7 +324,7 @@ local App = Application:extend {
         self.searchInput = C.input("Search", "search", {
             Text = self.query, Submit = function() self:updateSearch() end, KeyUp = function() self:updateSearch() end,
         })
-        local search = ui.Grid { Columns = "1fr 44px", Height = 48, MarginBottom = 12 }
+        local search = ui.Grid { Columns = "1fr 44px", Height = 48 }
         search:addChild(self.searchInput)
         search:addChild(C.iconButton("x", function()
             self.query, self.searchInput.Text = "", ""; self:renderRoomList(); self.searchInput:setFocus()
@@ -332,6 +332,7 @@ local App = Application:extend {
         -- The filters are pivot items: swipe or tap a header to switch lists.
         local filters = { "All", "Unread", "Pinned" }
         self.pivot = ui.Pivot { Name = "Inbox", Title = "Messenger", Foreground = colors.ink,
+            ExtendBodyBehindHeader = true, class = "toolbar-page",
             SelectionChanged = function(pivot)
                 local filter = filters[pivot.SelectedIndex + 1]
                 self.filter = filter
@@ -346,16 +347,19 @@ local App = Application:extend {
             self.inboxIndicators[filter] = ui.ActivityIndicator { Name = "InboxLoading" .. filter, Foreground = colors.muted }
             area:addChild(self.inboxIndicators[filter])
             if filter == "All" then
-                local body = ui.Grid { Rows = "60px 1fr" }
-                body:addChild(search); body:addChild(area)
+                local body = ui.Node2D {}
+                body:addChild(area)
+                body:addChild(C.toolbar("Top", { search }, { Name = "SearchBar", Padding = "20 0 20 12" }))
                 item:addChild(body)
             else
                 item:addChild(area)
             end
             self.pivot:addChild(item)
         end
-        local grid = ui.Grid { Rows = "1fr 24px", Background = colors.background }
-        grid:addChild(self.pivot); grid:addChild(self.status)
+        local statusBar = ui.Grid { Name = "InboxStatus", Rows = "24px", SafeAreaEdge = "Bottom", class = "frosted" }
+        statusBar:addChild(self.status)
+        local grid = ui.Node2D { Background = colors.background }
+        grid:addChild(self.pivot); grid:addChild(statusBar)
         local screen = self:frame(grid, "Chats")
         self:renderRoomList()
         refresh()
@@ -541,8 +545,8 @@ local App = Application:extend {
         self.composer = C.input("Message", "type a message", {
             Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end, BorderRadius = "0",
         })
-        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 48,
-            Background = colors.textbox }
+        -- The text field sits in the frosted composer bar, as in iOS Messages.
+        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 48 }
         compose:addChild(C.iconButton("plus", function() self:attachPhoto() end,
             { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.textboxInk }))
         compose:addChild(self.composer)
@@ -570,8 +574,7 @@ local App = Application:extend {
         if self.editing then self.composer.Text = self.editing.message.body or "" end
         local readOnly = room.can_post == false
         compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
-        local footer = Footer { Name = "ThreadFooter",
-            Background = readOnly and colors.background or colors.textbox }
+        local footer = Footer { Name = "ThreadFooter", class = "frosted bar-top" }
         footer:addChild(C.stack({ Spacing = 0 }, { self.status, self.editBanner, self.photoPreview, compose,
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
                 FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
@@ -614,15 +617,17 @@ local App = Application:extend {
                 { Name = action[1], Height = 48, FontSize = 18, TextHorizontalAlignment = "Left",
                     Padding = "16 0", Foreground = colors.ink, Background = colors.chrome, BorderWidth = "0" }))
         end
-        self.threadBody = ui.Grid { Rows = "44px 1fr" }
+        -- Messages scroll under the commands, the page header and the composer.
+        self.threadBody = ui.Node2D {}
         local timeline = ui.Node2D {}
         timeline:addChild(self.messageList)
         self.messageLoading = ui.ActivityIndicator { Name = "MessagesLoading", Foreground = colors.muted }
         timeline:addChild(self.messageLoading)
-        self.threadBody:addChild(commands); self.threadBody:addChild(timeline)
+        self.threadBody:addChild(timeline)
+        self.threadBody:addChild(C.toolbar("Top", { commands }, { Name = "ThreadToolbar" }))
         -- Keep the rectangular composer outside the page's horizontal content margins.
         screen = self:frame()
-        Footer.layout(screen, C.page(room.name, self.threadBody), footer,
+        Footer.layout(screen, C.page(room.name, self.threadBody, { ExtendBodyBehindHeader = true, class = "thread-page" }), footer,
             { Background = colors.background, Foreground = colors.ink })
         screen:addChild(overflow)
         -- A bottom sheet for one message's actions, dismissed by tapping outside.

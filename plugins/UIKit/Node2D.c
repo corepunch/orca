@@ -505,6 +505,7 @@ HANDLER(Node2D, Node, UpdateMatrix)
 HANDLER(Node2D, Object, Destroy)
 {
   SafeDelete(pNode2D->_shadowTexture, Texture_Release);
+  SafeDelete(pNode2D->_backdrop, R_ReleaseBackdrop);
   if (!pNode2D->OffscreenRendering) {
     SafeDelete(pNode2D->RenderTarget, Texture_Release);
   }
@@ -775,6 +776,54 @@ _ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
   return available - TOTAL_MARGIN(n, axis);
 }
 
+// Clamped distances that a parent's top and bottom insets reach into a child
+// at y with height h. Zero insets never reach, even past the parent's bounds.
+static struct vec2
+_InsetOverlap(struct vec2 inset, float parentHeight, float y, float h)
+{
+  return (struct vec2){
+    inset.x > 0 ? CLAMP(inset.x - y, 0, h) : 0,
+    inset.y > 0 ? CLAMP(y + h - (parentHeight - inset.y), 0, h) : 0,
+  };
+}
+
+// The safe area reaches a node through its parent: the bars docked by its
+// ancestors and, at the root, the system insets of a Screen that lets its
+// content run edge to edge.
+static void
+Node2D_InheritSafeArea(struct Object *object, struct Node2D *node)
+{
+  struct Object *parent = OBJ_GetParent(object);
+  struct Node2D *p = parent ? GetNode2D(parent) : NULL;
+  struct Screen *screen = parent && !p ? GetScreen(parent) : NULL;
+  struct vec2 safeArea = { 0 }, bars = { 0 };
+  float height = 0;
+  if (p) {
+    safeArea = p->_safeArea, bars = p->_barInset;
+    height = Node2D_GetFrame(p, kBox3FieldHeight);
+  } else if (screen && !screen->RespectSafeArea) {
+    safeArea.x = screen->SafeAreaTop;
+    safeArea.y = MAX(screen->SafeAreaBottom, screen->KeyboardInsetBottom);
+    height = screen->Height;
+  }
+  float y = Node2D_GetFrame(node, kBox3FieldY), h = Node2D_GetFrame(node, kBox3FieldHeight);
+  node->_safeArea = _InsetOverlap(safeArea, height, y, h);
+  node->_barInset = _InsetOverlap(bars, height, y, h);
+}
+
+// A node that insets its content keeps its children clear of the safe area,
+// so none of it reaches them.
+static struct vec2
+Node2D_AdjustedContentInset(struct Node2D *node)
+{
+  bool_t adjust = node->ContentInsetAdjustment == kContentInsetAdjustmentAlways ||
+    (node->ContentInsetAdjustment == kContentInsetAdjustmentAutomatic && node->Overflow.y == kOverflowScroll);
+  if (!adjust) return (struct vec2){ 0 };
+  struct vec2 inset = node->_safeArea;
+  node->_safeArea = node->_barInset = (struct vec2){ 0 };
+  return inset;
+}
+
 HANDLER(Node2D, Node2D, Measure)
 {
   struct Node2D *n = pNode2D;
@@ -841,18 +890,30 @@ HANDLER(Node2D, Node2D, Arrange)
     .height = s.height,
   };
 
+  // Children read the frame and safe area of their ancestors while arranging.
+  Node2D_SetFrame(n, kBox3FieldX,      rect.x);
+  Node2D_SetFrame(n, kBox3FieldY,      rect.y);
+  Node2D_SetFrame(n, kBox3FieldWidth,  rect.width);
+  Node2D_SetFrame(n, kBox3FieldHeight, rect.height);
+  Node2D_InheritSafeArea(hObject, n);
+  struct vec2 inset = n->_contentInset = Node2D_AdjustedContentInset(n);
+
   LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
     .X      = PADDING_TOP(n, 0),
-    .Y      = PADDING_TOP(n, 1),
+    .Y      = PADDING_TOP(n, 1) + inset.x,
     .Width  = rect.width  - TOTAL_PADDING(n, 0),
-    .Height = rect.height - TOTAL_PADDING(n, 1),
+    .Height = rect.height - TOTAL_PADDING(n, 1) - inset.x - inset.y,
   );
 
   // Final frame is the outer rect (including padding, excluding margin)
-  Node2D_SetFrame(n, kBox3FieldX,      rect.x);
-  Node2D_SetFrame(n, kBox3FieldY,      rect.y);
   Node2D_SetFrame(n, kBox3FieldWidth,  LOWORD(size) + TOTAL_PADDING(n, 0));
-  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1));
+  Node2D_SetFrame(n, kBox3FieldHeight, HIWORD(size) + TOTAL_PADDING(n, 1) + inset.x + inset.y);
+  if (inset.y > 0) {
+    float scroll = n->_node->Size.Axis[1].Scroll + inset.y;
+    struct Property *property = OBJ_FindLongProperty(hObject, ID_Node_ScrollHeight);
+    if (property) PROP_SetValue(property, &scroll);
+    else n->_node->Size.Axis[1].Scroll = scroll;
+  }
 
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
@@ -861,9 +922,12 @@ HANDLER(Node2D, Node2D, MeasureOverride)
 {
   uint16_t width = 0, height = 0;
   FOR_EACH_OBJECT(hChild, hObject) {
+    // Docked bars take their content's height, like an auto row.
+    struct Node2D *child = GetNode2D(hChild);
+    bool_t docked = child && child->SafeAreaEdge != kSafeAreaEdgeNone;
     uint32_t size = (uint32_t)_SendMessage(hChild, Node2D, Measure,
                                            .Width = pMeasureOverride->Width,
-                                           .Height = pMeasureOverride->Height);
+                                           .Height = docked ? INFINITY : pMeasureOverride->Height);
     width  = MAX(width,  LOWORD(size));
     height = MAX(height, HIWORD(size));
   }
@@ -871,13 +935,60 @@ HANDLER(Node2D, Node2D, MeasureOverride)
                    isinf(pMeasureOverride->Height) ? height : 0);
 }
 
+// Docked bars stack at their edge below the bars of the ancestors. The
+// other children are laid out under them, and the area the bars cover joins
+// the safe area that reaches those children. A bar that always insets its
+// content extends through the system inset at its edge, like an iOS toolbar
+// under the home indicator, while its content stays clear of it.
+static void
+Node2D_ArrangeBars(struct Object *hObject, struct Node2D *pNode2D,
+                   Node2D_ArrangeOverrideMsgPtr pArrangeOverride)
+{
+  float height = Node2D_GetFrame(pNode2D, kBox3FieldHeight);
+  float top = MAX(pArrangeOverride->Y, pNode2D->_barInset.x);
+  float bottom = MIN(pArrangeOverride->Y + pArrangeOverride->Height, height - pNode2D->_barInset.y);
+  struct vec2 system = {
+    MAX(pNode2D->_safeArea.x - top, 0),
+    MAX(pNode2D->_safeArea.y - (height - bottom), 0),
+  };
+  bool_t docked[2] = { FALSE, FALSE };
+  FOR_EACH_LAYOUTABLE(hChild, hObject) {
+    struct Node2D *child = GetNode2D(hChild);
+    if (child->SafeAreaEdge == kSafeAreaEdgeNone) continue;
+    bool_t atTop = child->SafeAreaEdge == kSafeAreaEdgeTop;
+    float size = NODE2D_FRAME(child, Size, 1).Desired + TOTAL_MARGIN(child, 1);
+    if (child->ContentInsetAdjustment == kContentInsetAdjustmentAlways && !docked[!atTop])
+      size += atTop ? system.x : system.y;
+    _SendMessage(hChild, Node2D, Arrange,
+                 .X = pArrangeOverride->X,
+                 .Y = atTop ? top : bottom - size,
+                 .Width = pArrangeOverride->Width,
+                 .Height = size);
+    if (atTop) top += size; else bottom -= size;
+    docked[!atTop] = TRUE;
+  }
+  if (docked[0]) {
+    pNode2D->_barInset.x = MAX(pNode2D->_barInset.x, top);
+    pNode2D->_safeArea.x = MAX(pNode2D->_safeArea.x, top);
+  }
+  if (docked[1]) {
+    pNode2D->_barInset.y = MAX(pNode2D->_barInset.y, height - bottom);
+    pNode2D->_safeArea.y = MAX(pNode2D->_safeArea.y, height - bottom);
+  }
+}
+
 HANDLER(Node2D, Node2D, ArrangeOverride)
 {
-  FOR_EACH_CHILD(hObject, _SendMessage, Node2D, Arrange,
+  Node2D_ArrangeBars(hObject, pNode2D, pArrangeOverride);
+  FOR_EACH_OBJECT(hChild, hObject) {
+    struct Node2D *child = GetNode2D(hChild);
+    if (child && child->SafeAreaEdge != kSafeAreaEdgeNone && !OBJ_IsHidden(hChild)) continue;
+    _SendMessage(hChild, Node2D, Arrange,
                  .X = pArrangeOverride->X,
                  .Y = pArrangeOverride->Y,
                  .Width = pArrangeOverride->Width,
                  .Height = pArrangeOverride->Height);
+  }
 
   float scroll[2] = { 0, 0 };
   FOR_EACH_LAYOUTABLE(hChild, hObject) {
@@ -913,6 +1024,24 @@ _Node2DGetForegroundBrush(struct Object *object)
   Node2D_ReadProperty(object, Foreground.Material, &brush.Material);
 
   return brush;
+}
+
+// Blurs and saturates what is already drawn behind the background box. The
+// background brush, drawn next, tints the result.
+static void
+_DrawBackdrop(struct Node2D *pNode2D, struct ViewDef *viewdef)
+{
+  struct BackdropFilterShorthand const *filter = &pNode2D->BackdropFilter;
+  if (filter->BlurRadius <= 0 && filter->Saturation == 1) {
+    SafeDelete(pNode2D->_backdrop, R_ReleaseBackdrop);
+    return;
+  }
+  struct ViewEntity entity;
+  Node2D_GetViewEntity(pNode2D, &entity, NULL, NULL);
+  entity.bbox = BOX3_FromRect(Node2D_GetBackgroundRect(pNode2D));
+  float sigma = filter->BlurRadius * (float)axGetScaling();
+  if (SUCCEEDED(R_FilterBackdrop(&pNode2D->_backdrop, viewdef, &entity, sigma, filter->Saturation)))
+    R_DrawEntity(viewdef, &entity);
 }
 
 static void
@@ -1020,6 +1149,7 @@ HANDLER(Node2D, Node2D, Draw2DContent)
   struct BrushShorthand foregroundBrush = _Node2DGetForegroundBrush(hObject);
 
   if (!pDraw2DContent->OnlyDecorations) {
+    _DrawBackdrop(pNode2D, &viewdef);
     _SendMessage(hObject, Node2D, DrawBackground,
      .projection = pDraw2DContent->ProjectionMatrix,
      .brush = pNode2D->Background,

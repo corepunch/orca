@@ -15,6 +15,7 @@
     <external struct="ViewDef"/>
     <external struct="text_info"/>
     <external struct="lua_State"/>
+    <external struct="BackdropCache"/>
   </externals>
   <enums>
     <enum name="Direction">
@@ -160,6 +161,18 @@
       <value name="Dotted">A dotted line</value>
       <value name="Double">Two parallel lines</value>
     </enum>
+    <enum name="SafeAreaEdge">
+      <summary>Edge of its parent that a child docks to as an overlay bar, after SwiftUI safeAreaInset(edge:)</summary>
+      <value name="None">The child takes part in its parent's ordinary layout</value>
+      <value name="Top">The child is docked to the top edge, over the content</value>
+      <value name="Bottom">The child is docked to the bottom edge, over the content</value>
+    </enum>
+    <enum name="ContentInsetAdjustment">
+      <summary>Whether a node insets its content by the safe area it overlaps, after UIScrollView contentInsetAdjustmentBehavior</summary>
+      <value name="Automatic">Scrolling nodes inset their content; other nodes leave it under the bars</value>
+      <value name="Never">Never inset the content</value>
+      <value name="Always">Always inset the content, whether or not the node scrolls</value>
+    </enum>
     <enum name="ApplicationBarMode">
       <summary>Display modes of an ApplicationBar, after Windows Phone</summary>
       <value name="Default">Icon buttons and the ellipsis; labels and menu items appear when expanded</value>
@@ -193,6 +206,14 @@
         <field name="BlurRadius" type="float">Blur amount for shadow softness</field>
         <field name="SpreadRadius" type="float">Shadow expansion beyond element bounds</field>
         <field name="Color" type="color">Shadow color and opacity</field>
+      </fields>
+    </struct>
+    <struct name="BackdropFilterShorthand">
+      <summary>Filter applied to whatever is drawn behind an element, as CSS backdrop-filter</summary>
+      <details>The backdrop is captured within the element's background box, blurred with edges mirrored, and saturated. The element's background color then tints the result, so translucent bars keep the look of iOS frosted bars.</details>
+      <fields>
+        <field name="BlurRadius" type="float">Standard deviation of the Gaussian blur in device-independent pixels, as CSS blur()</field>
+        <field name="Saturation" type="float">Saturation multiplier, as CSS saturate(); 1 leaves colors unchanged</field>
       </fields>
     </struct>
     <struct name="RingShorthand">
@@ -355,7 +376,10 @@
         <property name="Background" type="BrushShorthand">Background brush for the element. Supports solid color, image, or material.</property>
         <property name="Foreground" type="BrushShorthand" inherited="true">Foreground brush for the element. Typically used for text or shape fills.</property>
         <property name="BoxShadow" type="ShadowShorthand">Shadow applied to the element's box.</property>
+        <property name="BackdropFilter" type="BackdropFilterShorthand" default=".Saturation=1">Filter applied to the content behind the element before its background is drawn, as CSS backdrop-filter. A translucent Background tints the filtered backdrop.</property>
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
+        <property name="SafeAreaEdge" type="SafeAreaEdge">Docks the element to an edge of its parent as an overlay bar. A plain Node2D parent stacks docked children at that edge, below the bars of its ancestors, and lays its other children out under them; the area the bars cover becomes safe-area inset for the descendants.</property>
+        <property name="ContentInsetAdjustment" type="ContentInsetAdjustment">How the element insets its content by the safe area it overlaps: the system insets of a Screen that does not respect its safe area, and the bars docked by its ancestors. An inset scrolling element still draws under the bars, but its content starts below the top bars and scrolls clear of the bottom ones.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
         <property name="BorderImage" type="BorderImageShorthand">Border image nine-patch configuration. Combines source, slice, and repeat.</property>
         <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
@@ -388,6 +412,10 @@
         <field name="_bbox_flags" type="int">Internal bounding box flags </field>
         <field name="_shadowTexture" type="Texture" pointer="true">Cached blurred shadow texture</field>
         <field name="_shadowRevision" type="int">Shadow cache revision counter</field>
+        <field name="_backdrop" type="BackdropCache" pointer="true">Cached backdrop capture and blur targets</field>
+        <field name="_safeArea" type="vec2">Top and bottom safe-area insets visible to the children, in this node's frame</field>
+        <field name="_barInset" type="vec2">Part of _safeArea covered by docked bars rather than by system insets</field>
+        <field name="_contentInset" type="vec2">Top and bottom insets applied to the content during the last arrange</field>
       </fields>
       <methods>
         <method name="SetFrame">
@@ -1150,9 +1178,11 @@
         <property name="Title" type="string">Application title shown above the headers in small capitals</property>
         <property name="SelectedIndex" type="int">Index of the selected PivotItem among the PivotItem children</property>
         <property name="IsLocked" type="bool">When true, only the selected header is shown and swiping is disabled</property>
+        <property name="ExtendBodyBehindHeader" type="bool">When true, the selected PivotItem extends under the title and header strip, which become a top bar: scrolling content starts below it and scrolls under it. Style the bar behind them with the "pivot-bar" CSS class.</property>
       </properties>
       <fields>
         <field name="_title" type="Object" pointer="true">Generated title TextBlock (private)</field>
+        <field name="_bar" type="Object" pointer="true">Generated bar behind the title and headers when the body extends behind them (private)</field>
         <field name="_pressX" type="float">Pointer x at press (private)</field>
         <field name="_pressY" type="float">Pointer y at press (private)</field>
         <field name="_dragX" type="float">Current horizontal drag offset (private)</field>

@@ -16,6 +16,93 @@ extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
 extern int luaopen_orca_renderer(lua_State *L);
 
+// Draws red and blue halves into a 64x64 target and filters the backdrop of
+// a bar along the top. EXPECT breaks out of the checks; cleanup always runs.
+static void
+test_backdrop_filter(void)
+{
+  GLint previous_fbo, bound_fbo;
+  GLuint fbo, color, depth;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo);
+  glGenFramebuffers(1, &fbo);
+  glGenTextures(1, &color);
+  glGenRenderbuffers(1, &depth);
+  glBindTexture(GL_TEXTURE_2D, color);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindRenderbuffer(GL_RENDERBUFFER, depth);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 64, 64);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color, 0);
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth);
+  // Pipeline rects are in logical pixels; size them to 64 physical pixels.
+  PIPELINESTATE state;
+  GLint viewport[4];
+  R_GetPipelineState(&state);
+  state.viewport = state.scissor = (struct rect){0, 0, 64, 64};
+  R_SetPipelineState(&state);
+  glGetIntegerv(GL_VIEWPORT, viewport);
+  float size = 64 * 64.f / viewport[2];
+  state.viewport = state.scissor = (struct rect){0, 0, size, size};
+  R_SetPipelineState(&state);
+  glClearColor(1, 1, 1, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  struct BackdropCache *cache = NULL;
+  do {
+    // Red on the left half and blue on the right, under a bar along the top.
+    struct ViewDef view = {
+      .viewMatrix = MAT4_Identity(),
+      .projectionMatrix = MAT4_Ortho(0, 64, 64, 0, -1, 1),
+    };
+    struct ViewEntity half = {
+      .matrix = MAT4_Identity(),
+      .bbox = {.min = {0, 0, 0}, .max = {32, 64, 0}},
+      .material = {.textureMatrix = MAT3_Identity(), .color = {1, 0, 0, 1}, .opacity = 1,
+                   .blendMode = BLEND_MODE_OPAQUE},
+    };
+    EXPECT_OK(R_DrawEntity(&view, &half));
+    half.bbox = (struct box3){.min = {32, 0, 0}, .max = {64, 64, 0}};
+    half.material.color = (struct color){0, 0, 1, 1};
+    EXPECT_OK(R_DrawEntity(&view, &half));
+
+    struct ViewEntity bar = {
+      .matrix = MAT4_Identity(),
+      .bbox = {.min = {0, 0, 0}, .max = {64, 16, 0}},
+      .material = {.textureMatrix = MAT3_Identity(), .opacity = 1, .blendMode = BLEND_MODE_OPAQUE},
+    };
+    unsigned char row[64 * 4], below[4];
+    EXPECT_OK(R_FilterBackdrop(&cache, &view, &bar, 4, 1));
+    EXPECT(bar.material.texture != NULL);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &bound_fbo);
+    EXPECT(bound_fbo == (GLint)fbo);
+    EXPECT_OK(R_DrawEntity(&view, &bar));
+    glReadPixels(0, 56, 64, 1, GL_RGBA, GL_UNSIGNED_BYTE, row);
+    glReadPixels(31, 8, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, below);
+    // The blur mixes the halves at the seam; mirrored edges keep the sides pure.
+    EXPECT(row[4 * 31] > 60 && row[4 * 31 + 2] > 60);
+    EXPECT(row[4 * 32] > 60 && row[4 * 32 + 2] > 60);
+    EXPECT(row[4 * 2] > 200 && row[4 * 2 + 2] < 60);
+    EXPECT(row[4 * 61] < 60 && row[4 * 61 + 2] > 200);
+    EXPECT(below[0] == 255 && below[2] == 0);
+
+    // Zero saturation leaves gray at the luminance of red.
+    EXPECT_OK(R_FilterBackdrop(&cache, &view, &bar, 0, 0));
+    EXPECT_OK(R_DrawEntity(&view, &bar));
+    glReadPixels(0, 56, 64, 1, GL_RGBA, GL_UNSIGNED_BYTE, row);
+    EXPECT(abs(row[4 * 2] - row[4 * 2 + 1]) < 3 && abs(row[4 * 2 + 1] - row[4 * 2 + 2]) < 3);
+    EXPECT(row[4 * 2] > 30 && row[4 * 2] < 90);
+
+    bar.bbox = (struct box3){.min = {100, 100, 0}, .max = {120, 120, 0}};
+    EXPECT(FAILED(R_FilterBackdrop(&cache, &view, &bar, 4, 1)));
+  } while (0);
+  R_ReleaseBackdrop(cache);
+  do { EXPECT(glGetError() == GL_NO_ERROR); } while (0);
+  glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo);
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteTextures(1, &color);
+  glDeleteRenderbuffers(1, &depth);
+}
+
 int main(void)
 {
   lua_State *L = luaL_newstate();
@@ -88,6 +175,8 @@ int main(void)
     EXPECT(reference[4 * (55 * 64 + 8)] == 0);
     EXPECT(glGetError() == GL_NO_ERROR);
   });
+
+  RUN_TEST("backdrop_filter_blurs_what_is_drawn_behind_an_entity", test_backdrop_filter(););
 
   struct ScreenSpaceCapture capture = {0};
   GLint original_fbo;

@@ -176,16 +176,25 @@ core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
 local threadRoot = screen:getFirstChild()
-assert(threadRoot.PaddingTop == 59 and threadRoot:getFirstChild().PaddingLeft == 12
+local function screenY(node)
+    local y = 0
+    while node and node ~= screen do y, node = y + node.ActualY, node:getParent() end
+    return y
+end
+local commands = screen:findChild("ThreadCommands", true)
+assert(threadRoot.ActualY == 0 and threadRoot.ActualHeight == 844 and threadRoot:getFirstChild().PaddingLeft == 12
     and threadRoot:getFirstChild().PaddingRight == 18,
-    "Thread content must follow the system's safe top and side insets")
+    "Thread content must run edge to edge, following the system's side insets")
+local commandsY = screenY(commands)
+assert(commandsY >= 59 + 44, "The page header and its commands must clear the status bar")
+assert(screenY(app.messageList) == 0 and app.messageList.ActualHeight == 844,
+    "Messages must scroll under the header and the composer")
 assert(footer.PaddingBottom == 34 and math.abs(composerStrip.ActualWidth - 360) < 1,
     "The composer must leave safe room for the home gesture and landscape edges")
 assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - (844 - 34)) < 1,
     "Composer controls must end immediately above the home gesture area")
-assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1 and
-    math.abs(footer.BackgroundColor.R - composerStrip.BackgroundColor.R) < 0.001,
-    "The composer background must continue to the physical bottom edge")
+assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1 and footer.BackdropFilterBlurRadius > 0,
+    "The frosted composer bar must continue to the physical bottom edge")
 for _, inset in ipairs { 384, 0 } do
     screen.KeyboardInsetBottom = inset
     core.advanceFrame()
@@ -205,7 +214,7 @@ flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
-assert(footer.PaddingBottom == 0 and threadRoot.PaddingTop == 0,
+assert(footer.PaddingBottom == 0 and math.abs(screenY(commands) - (commandsY - 59)) < 1,
     "Safe-area bindings must update when the keyboard or orientation changes")
 
 -- Compact bubbles keep the body verbatim and let layout reserve metadata space.
@@ -376,35 +385,28 @@ local function selectTab(index)
 end
 
 assertTabs("Chats")
--- The chrome fills the home-indicator inset without moving controls into it.
-local barFooter = assert(shell:findChild("AppBarFooter", true))
+-- The frosted bar fills the home-indicator inset without moving controls into it.
 local shellRoot = shell:getFirstChild()
+local firstButton = tabs[1].view
 assert(not shell.RespectSafeArea, "The shell must paint behind the home gesture area")
 shell.SafeAreaTop, shell.SafeAreaBottom = 59, 34
 shell.SafeAreaLeft, shell.SafeAreaRight = 12, 18
 assertTabs("Chats")
-assert(shellRoot.PaddingTop == 59 and shellRoot:getFirstChild().PaddingLeft == 12
-    and shellRoot:getFirstChild().PaddingRight == 18,
-    "Shell content must follow the system's safe top and side insets")
-assert(barFooter.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1,
-    "The home gesture inset must be separate from the fixed application bar row")
-assert(math.abs(barFooter.ActualY + bar.ActualY + bar.ActualHeight - (844 - 34)) < 1,
-    string.format("Application bar controls must end immediately above the home gesture area: " ..
-        "shell=%.1fx%.1f root=(%.1f,%.1f %.1fx%.1f) footer=(%.1f,%.1f %.1fx%.1f) bar=(%.1f,%.1f %.1fx%.1f) inset=%.1f",
-        shell.Width, shell.Height, shellRoot.ActualX, shellRoot.ActualY, shellRoot.ActualWidth, shellRoot.ActualHeight,
-        barFooter.ActualX, barFooter.ActualY, barFooter.ActualWidth, barFooter.ActualHeight,
-        bar.ActualX, bar.ActualY, bar.ActualWidth, bar.ActualHeight, barFooter.PaddingBottom))
-assert(math.abs(barFooter.ActualY + barFooter.ActualHeight - 844) < 1 and
-    math.abs(barFooter.BackgroundColor.R - bar.BackgroundColor.R) < 0.001 and
-    math.abs(barFooter.BackgroundColor.G - bar.BackgroundColor.G) < 0.001 and
-    math.abs(barFooter.BackgroundColor.B - bar.BackgroundColor.B) < 0.001,
-    "The application bar background must continue to the physical bottom edge")
+assert(shellRoot.ActualY == 0 and shellRoot:getFirstChild().PaddingLeft == 12
+    and shellRoot:getFirstChild().PaddingRight == 18 and bar.PaddingLeft == 12 and bar.PaddingRight == 18,
+    "Shell content must run edge to edge, following the system's side insets")
+assert(math.abs(bar.ActualY + bar.ActualHeight - 844) < 1 and math.abs(bar.ActualHeight - 58 - 34) < 1
+    and bar.BackdropFilterBlurRadius > 0,
+    string.format("The frosted application bar must continue to the physical bottom edge: bar=(%.1f,%.1f %.1fx%.1f)",
+        bar.ActualX, bar.ActualY, bar.ActualWidth, bar.ActualHeight))
+-- The 38-point ring; its label below only shows while the bar is expanded.
+assert(bar.ActualY + firstButton.ActualY + 38 <= 844 - 34 + 0.5,
+    "Application bar controls must stay above the home gesture area")
 shell.SafeAreaTop, shell.SafeAreaBottom = 0, 0
 shell.SafeAreaLeft, shell.SafeAreaRight = 0, 0
 assertTabs("Chats")
-assert(barFooter.PaddingBottom == 0 and shellRoot.PaddingTop == 0 and
-    math.abs(barFooter.ActualHeight - 58) < 1,
-    "Application bar safe-area bindings must update without leaving a bottom gap")
+assert(math.abs(bar.ActualHeight - 58) < 1 and math.abs(bar.ActualY + bar.ActualHeight - 844) < 1,
+    "Application bar safe-area insets must update without leaving a bottom gap")
 selectTab(2)
 local roomName = assert(shell:findChild("RoomName", true))
 local finder = assert(shell:findChild("FindPerson", true))

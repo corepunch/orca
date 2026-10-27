@@ -122,34 +122,51 @@ scale consistently. Reserve fixed sizing for intentional constraints such as
 icons and control heights. Prefer container layout over coordinate offsets.
 Test narrow and resized windows before depending on one screenshot's bounds.
 
-For a Lua screen with bottom chrome, use the shared footer pattern by default:
+For a Lua screen with bottom chrome, use the shared edge-to-edge shell by
+default:
 
 ```lua
 local Footer = require "orca.UIKit.Footer"
-local footer = Footer { Rows = "58px", Background = colors.chrome }
-footer:addChild(applicationBar)
+local footer = Footer { Rows = "58px", class = "frosted" }
+footer:addChild(controls)
 Footer.layout(screen, pageContent, footer, { Background = colors.background })
 ```
 
-`Footer` constructs a native `Grid`, so its rows, columns and children use the
-normal grid layout. It binds bottom padding to the larger of the containing
-screen's `SafeAreaBottom` and `KeyboardInsetBottom`. `Footer.layout` installs
-an `1fr auto` content/footer layout and owns the
-screen's safe-area policy: content avoids top and side insets, while the footer
-background extends through the home-indicator area and beneath a docked keyboard.
-Side insets belong to the content container and the footer's internal padding,
-so landscape cutouts do not leave gaps in the footer background. Use this same
-composition on detail pages with back/refresh bars, as well as tab shells;
-placing a fixed bar directly inside a safe-area screen leaves the screen's
-background visible below it.
-The drawable stays full-size while the footer's controls move above the keyboard.
-Keep the footer's content
-height in its rows, not in `Height` or a fixed parent row; the bottom inset adds
-to that height. Insets update through bindings on rotation and resizing, and
-zero-inset desktop windows need no special case. Chat and Octopus use this same
-component. Custom edge-to-edge layouts can instead place `Footer` in their own
-auto row with `Screen.RespectSafeArea = false`, taking responsibility for the
-remaining safe edges.
+`Footer.layout` sets `RespectSafeArea = false` and lets the content fill the
+screen, under the status bar and the footer. The footer docks to the bottom
+(`SafeAreaEdge = "Bottom"`). Scrolling content insets itself by the footer and
+the system insets: it rests below the status bar and scrolls clear of the
+footer, but draws under both. A `Pivot` page keeps its header clear of the
+status bar. Side insets belong to the content container and the footer's
+internal padding, so landscape cutouts do not leave gaps in the footer
+background. See [docked bars](../UI_SYSTEM.md#safe-area-and-docked-bars) for
+the layout rules.
+
+`Footer` constructs a native `Grid` docked to the bottom. It binds bottom
+padding to the larger of the containing screen's `SafeAreaBottom` and
+`KeyboardInsetBottom`, so its background extends through the home-indicator
+area and beneath a docked keyboard while its controls move above them. Keep
+the footer's content height in its rows, not in `Height`; the bottom inset adds
+to that height. Placed in an `auto` row of a `Grid` instead, `Footer` is laid
+out as that row. Any node can be the docked bar: an `ApplicationBar` with
+`SafeAreaEdge = "Bottom"` and `ContentInsetAdjustment = "Always"` extends
+through the bottom inset by itself, as Chat and Octopus do.
+
+**Translucent bars:** frost a bar with a backdrop filter and a translucent
+background, which tints the blurred content, as iOS 7 bars do:
+
+```css
+.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
+.frosted:dark { background-color: #161616c7; }
+.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
+```
+
+`pivot-bar` styles the bar a `Pivot` generates behind its title and headers
+when `ExtendBodyBehindHeader` is true. Use the bar's border, for example
+`border-bottom-width: 0.5`, for the hairline between a bar and the content.
+Content that does not scroll is not inset: keep it below the bars with
+`ContentInsetAdjustment = "Always"` or a layout that avoids them. Chat and
+Octopus extend a page under its header only when its content scrolls.
 
 For repeating items, bind layout values that represent data rather than
 creating `.indent-1`, `.indent-2`, and similar classes:

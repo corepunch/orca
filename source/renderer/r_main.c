@@ -641,6 +641,7 @@ R_InitResources(void)
   Shader_LoadFromDef(&shader_roundedbox, &tr.shaders[SHADER_ROUNDEDBOX].shader);
   Shader_LoadFromDef(&shader_blur_h, &tr.shaders[SHADER_BLUR_H].shader);
   Shader_LoadFromDef(&shader_blur_v, &tr.shaders[SHADER_BLUR_V].shader);
+  Shader_LoadFromDef(&shader_backdrop_blur, &tr.shaders[SHADER_BACKDROP_BLUR].shader);
 #ifdef GL_SAMPLER_2D_RECT
   Shader_LoadFromDef(&shader_rect, &tr.shaders[SHADER_2D_RECT].shader);
 #endif
