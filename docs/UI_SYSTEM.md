@@ -84,7 +84,10 @@ is inset, as `adjustedContentInset` insets it on iOS.
   default, insets scrolling content: it rests below the top bars and scrolls
   clear of the bottom ones. `Always` insets any content, and a docked bar with
   `Always` also extends through the system inset at its edge, keeping its own
-  content clear of it. `Never` leaves the content under the bars.
+  content clear of it. `Never` leaves the content under the bars. Layout
+  publishes the applied inset as `AdjustedContentInsetTop` and
+  `AdjustedContentInsetBottom`: the visible part of a scrolling node lies
+  between them, for example to find the first message below the header.
 - A node that insets its content consumes the safe area: its children see none.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which

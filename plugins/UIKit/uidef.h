@@ -22,6 +22,7 @@ typedef float actualPos_t[3];
 #endif
 
 #define NODE2D_FRAME(node2d, param, num) node2d->_node->param.Axis[num]
+#define NODE2D_INSET(node2d) (node2d)->AdjustedContentInset.Axis[1]
 #define MARGIN_VALUE(value) ((value) != (value) ? 0 : (value))
 // Box model: Width/Height size the padding box, and the border is drawn
 // outside it. Border.Width is therefore folded into the margin below, so a

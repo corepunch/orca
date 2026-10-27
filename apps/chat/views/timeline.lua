@@ -159,8 +159,10 @@ local function refresh(self, options, room, node, current)
     local follow = not options.preserveScroll or math.abs(oldY - bottom) <= 8
     local anchor, anchorY
     if not follow and previous and previous.node == node then
+        -- Messages scroll under the header: the first visible one is below its inset.
+        local visibleTop = node.AdjustedContentInsetTop
         for _, entry in ipairs(previous.entries) do
-            if entry.node.ActualY + entry.node.ActualHeight + oldY > 0 then
+            if entry.node.ActualY + entry.node.ActualHeight + oldY > visibleTop then
                 anchor, anchorY = entry.id, entry.node.ActualY
                 break
             end

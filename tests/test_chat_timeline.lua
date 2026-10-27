@@ -28,7 +28,7 @@ local function fixture()
     local messages = {}
     for i = 1, 6 do messages[i] = { id = tostring(i), body = "Message " .. i, sender_id = "me", created_at = "time" } end
     messages[1].attachments = { { id = "photo1" } }
-    local list = node { ActualHeight = 200, ScrollHeight = 0, ContentOffset = { X = 0, Y = 0 } }
+    local list = node { ActualHeight = 200, ScrollHeight = 0, AdjustedContentInsetTop = 0, ContentOffset = { X = 0, Y = 0 } }
     local root = { Width = 390, Height = 844 }
     function root:UpdateLayout()
         for i, child in ipairs(list.children) do child.ActualY, child.ActualHeight = (i - 1) * 100, 100 end
