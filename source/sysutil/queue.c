@@ -72,6 +72,7 @@ int f_get_message(lua_State* L)
 {
   struct AXmessage msg = {0};
   if (axPeekMessage(&msg)) {
+    OBJ_BeginMessage(msg.target);
     return push_event_message(L, &msg);
   }
 #ifdef ORCA_IOS
@@ -80,6 +81,7 @@ int f_get_message(lua_State* L)
   /* Wait up to 500ms so file-change detection runs even when the window
      receives no input events (e.g. after a CSS-only save). */
   if (axWaitMessage(500) > 0 && axPeekMessage(&msg)) {
+    OBJ_BeginMessage(msg.target);
     return push_event_message(L, &msg);
   }
   /* Timeout: synthesise a timer tick so the Lua loop can check
@@ -102,6 +104,7 @@ int f_peek_message(lua_State* L)
   if (!axPeekMessage(&msg)) {
     return 0;
   }
+  OBJ_BeginMessage(msg.target);
   return push_event_message(L, &msg);
 }
 
@@ -183,7 +186,8 @@ int f_dispatch_message(lua_State* L)
 typedef LRESULT (*message_proc_t)(lua_State*, struct AXmessage*);
 static message_proc_t clients[MAX_CLIENTS];
 
-ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
+static bool_t
+dispatch_message(lua_State* L, struct AXmessage* msg) {
   if (!msg->target) {
     switch (msg->message) {
       case kEventClearReference:
@@ -201,6 +205,13 @@ ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
     }
   }
   return FALSE;
+}
+
+ORCA_API bool_t SV_DispatchMessage(lua_State* L, struct AXmessage* msg) {
+  void *target = msg->target;
+  bool_t handled = dispatch_message(L, msg);
+  OBJ_EndMessage(target);
+  return handled;
 }
 
 ORCA_API void

@@ -138,11 +138,44 @@ local function test_child_remove_from_parent_keeps_lua_owner_alive()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test: a message taken from the queue keeps its target until dispatched
+--
+-- Scenario: the app drops a screen while a message to one of its nodes is
+-- queued, such as an animation tick. The loop has already taken the message
+-- from the queue when garbage collection releases the screen. The node must
+-- survive until the message is dispatched, and be freed once it is.
+-- ---------------------------------------------------------------------------
+local function test_message_in_flight_keeps_target()
+  local orca = require "orca"
+  while orca.system.peekMessage() do end
+  fullGC()
+  local baseline = core.objectCount()
+
+  local screen = ui.Screen { Width = 400, Height = 400, ResizeMode = "NoResize" }
+  local node = screen + ui.Node2D {}
+  screen:addChild(ui.Node2D {})
+  node:post("Object.Animate")
+  node = nil
+
+  local message = orca.system.peekMessage()
+  test.expect(message and message:is("Object.Animate"), "the node's message is in flight")
+  screen = nil
+  fullGC()
+  test.expect_eq(core.objectCount(), baseline + 1, "only the target of the message in flight stays alive")
+
+  orca.system.dispatchMessage(nil, message)
+  test.expect_eq(core.objectCount(), baseline, "the target is freed once its message is dispatched")
+
+  print("PASS: test_message_in_flight_keeps_target")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_both_objects_freed_after_owner_release()
 test_standalone_resource_freed_immediately()
 test_root_remove_from_parent_keeps_lua_owner_alive()
 test_child_remove_from_parent_keeps_lua_owner_alive()
+test_message_in_flight_keeps_target()
 
 print("All object-retention tests passed.")
