@@ -466,13 +466,13 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
         </method>
         <method name="SetTimer">
           <summary>Set a timer on the object.</summary>
-          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Timer events already queued before cancellation may still arrive; compare timerId against the currently active handle. Lua handlers run through the event coroutine dispatcher and may yield.</details>
+          <details>Starts a repeating platform timer. The UI dispatcher delivers Object.Timer with timerId, or Timer.Tick for a Timer component. Duration is clamped to at least 1 millisecond. Destroying the object cancels its timers. For a one-shot callback, cancel the matching timer before doing work in its handler. Cancelling also drops the timer's ticks that are already queued, so no tick of a cancelled timer is delivered afterwards. Lua handlers run through the event coroutine dispatcher and may yield.</details>
           <arg name="duration" type="int">Duration of the timer in milliseconds</arg>
           <returns type="int">Positive timer identifier, or zero if creation fails</returns>
         </method>
         <method name="CancelTimer">
           <summary>Stops a timer previously created with setTimer.</summary>
-          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Events already queued or handlers already started are not recalled; clear the application's active handle before cancelling and ignore stale timerId values.</details>
+          <details>Cancellation is idempotent. Zero, negative, or already cancelled handles do nothing. Ticks of this timer already queued are removed, so none is delivered after cancelTimer returns; a handler already running is not interrupted.</details>
           <arg name="timerId" type="int">Timer identifier returned by setTimer</arg>
         </method>
         <topic title="Identity and State">Accesses name, class, flags, aliases, text content, and Lua state.</topic>
@@ -681,7 +681,7 @@ Do not query layout geometry or child tree in Create — hierarchy may be incomp
   <classes>
     <class name="Timer">
       <summary>Nonvisual owner for asynchronous timer callbacks.</summary>
-      <details>Create a Timer with a Tick handler and use its inherited setTimer and cancelTimer methods. Keep the object alive while scheduled, cancel before rescheduling or doing one-shot work, and reject stale timerId values. No scene-tree attachment is required.</details>
+      <details>Create a Timer with a Tick handler and use its inherited setTimer and cancelTimer methods. Keep the object alive while scheduled, cancel before rescheduling or doing one-shot work, and use timerId to tell several timers apart. No scene-tree attachment is required.</details>
       <messages>
         <message name="Tick">
           <summary>Receives a platform timer expiration with its timerId.</summary>
