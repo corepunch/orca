@@ -26,6 +26,10 @@ make test-network-headers         # Localhost-only headers and binary-byte regre
 make test-headless
 ```
 
+Live checks against the deployed backend are manual and never run in CI:
+`make test-live-setup` once, then `make test-live`. See
+[live tests](appwrite/live/README.md).
+
 App/API/mock tests use no network. The HTTP regression deliberately uses a
 loopback echo server to test the engine transport, with no external service.
 The Function suite injects in-memory Appwrite REST and repository responses.

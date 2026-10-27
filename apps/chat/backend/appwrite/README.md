@@ -239,3 +239,5 @@ channel privacy and roles, invitations, image encryption/tamper checks,
 publication failure, membership revocation, expiry and cleanup, cursor pagination,
 and concurrent immutable rate claims. It uses injected REST/repositories and
 does not claim live delivery, runtime deployment or provider verification.
+For the deployed Function, run the manual [live suite](live/README.md)
+(`make test-live`) with persistent test accounts.
