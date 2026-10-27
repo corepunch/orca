@@ -129,8 +129,11 @@ The drawable retains its full size when the keyboard appears.
 keyboard in logical pixels; hidden and floating keyboards report zero.
 Safe-area insets retain their physical meaning. `RespectSafeArea` keeps content
 above the larger of the bottom safe inset and keyboard overlap. Edge-to-edge
-layouts use the shared `Footer` to apply that inset to controls while painting
-the footer background to the bottom of the window, beneath the keyboard.
+layouts dock their bars with `SafeAreaEdge`: scrolling content runs under them
+and is inset by them and by the system insets, while the bar backgrounds reach
+the bottom of the window, beneath the keyboard. The shared `Footer` and the
+Chat and Octopus application bars work this way; see
+[docked bars](UI_SYSTEM.md#safe-area-and-docked-bars).
 Viewport metrics and bindings are resolved before layout in the same frame.
 `Input.Type` requests
 the native keyboard: `Phone` supports international phone entry, `Number` uses

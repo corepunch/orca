@@ -112,6 +112,34 @@ Viewport3D_Node2D_ForegroundContent (Viewport3D.c)
 
 ---
 
+## Backdrop Filter
+
+`R_FilterBackdrop` (`source/renderer/r_backdrop.c`) implements CSS
+`backdrop-filter` for `Node2D.BackdropFilter`. `Node2D_Draw2DContent` calls it
+after the box shadow and before the background, so the filtered backdrop sits
+under the background tint, border and children.
+
+1. The entity's box is projected to window pixels and `glBlitFramebuffer`
+   copies that region of the bound framebuffer, at full resolution, into a
+   cached target. Copying exactly the box and sampling it with
+   `kTextureWrapMirror` gives CSS's mirrored edges, so content beyond the box
+   or the screen edge never smears in.
+2. Bilinear passes halve the copy until the blur is at most two texels,
+   up to five times.
+3. `SHADER_BACKDROP_BLUR` blurs horizontally and then vertically with 13 taps.
+   The vertical pass also applies the Rec. 709 saturation matrix; saturation
+   is linear, so it commutes with the blur.
+4. The entity's texture and texture matrix are pointed at the result, mapped
+   back onto its box. The caller draws it with the default UI shader, which
+   applies corner radius and opacity.
+
+The bound framebuffer and pipeline state are restored. The cache
+(`struct BackdropCache`) belongs to the node and is rebuilt only when the
+captured size or the number of halvings changes. Multisampled framebuffers
+cannot be cropped by a blit, so the function returns `E_NOTIMPL` and the node
+draws its background without the backdrop. The capture reads the box's
+axis-aligned bounds, so rotated nodes are not supported.
+
 ## Mesh Boxing
 
 The `mesh` field of `ViewEntity` is a `struct Mesh const*`, but it also accepts **boxed enum values** for built-in geometry types:

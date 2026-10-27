@@ -44,6 +44,7 @@
       <value name="Clamp">Clamps texture coordinates to [0, 1] range, repeating edge pixels beyond boundaries.</value>
       <value name="Repeat">Repeats the texture pattern when coordinates exceed [0, 1] range.</value>
       <value name="Base">Uses base texture addressing mode (platform-specific default behavior).</value>
+      <value name="Mirror">Mirrors the texture at every boundary, so sampling past an edge reads the pixels just inside it.</value>
     </enum>
     <enum name="TextureFormat">
       <summary>Defines the internal pixel format for texture storage.</summary>

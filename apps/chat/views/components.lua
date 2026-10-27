@@ -119,10 +119,14 @@ end
 
 -- A Windows Phone page: the application title and a large lowercase page
 -- name above the content. A locked Pivot with one item gives every page the
--- same metrics as the inbox pivot.
+-- same metrics as the inbox pivot. Scrolling content runs under the frosted
+-- header; other content stays below it unless the page asks otherwise.
 function C.page(header, content, props)
     props = props or {}
-    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true, Foreground = colors.ink }
+    local extend = props.ExtendBodyBehindHeader
+    if extend == nil then extend = content.OverflowY == "Scroll" end
+    local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true, Foreground = colors.ink,
+        ExtendBodyBehindHeader = extend, class = props.class }
     local item = ui.PivotItem { Header = header }
     item:addChild(content)
     pivot:addChild(item)
@@ -130,15 +134,32 @@ function C.page(header, content, props)
 end
 
 -- An ApplicationBar from { name, icon, text, action } buttons and
--- { name, text, action } menu items.
+-- { name, text, action } menu items. It docks to the bottom of Footer.layout as
+-- a frosted bar that extends under the home indicator; pages scroll under it.
 function C.appBar(buttons, menu)
-    local bar = ui.ApplicationBar { Name = "AppBar", Background = colors.chrome, Foreground = colors.ink }
+    local bar = ui.ApplicationBar { Name = "AppBar", class = "frosted bar-top", Foreground = colors.ink,
+        SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
+    for _, edge in ipairs { "Left", "Right" } do
+        bar:attachPropertyProgram("Node.Padding" .. edge, "{Screen.SafeArea" .. edge .. "}", "OneWay", true)
+    end
     for _, b in ipairs(buttons) do
         bar:addChild(ui.ApplicationBarIconButton {
             Name = b[1], IconUri = "Chat/assets/icons/" .. b[2] .. ".svg", Text = b[3], Click = b[4],
         })
     end
     for _, m in ipairs(menu or {}) do bar:addChild(ui.ApplicationBarMenuItem { Name = m[1], Text = m[2], Click = m[3] }) end
+    return bar
+end
+
+-- A frosted toolbar docked to the "Top" or "Bottom" of a page body. Inside a
+-- page it spans the horizontal margins, so the frost meets the screen edges.
+function C.toolbar(edge, children, props)
+    props = props or {}
+    props.SafeAreaEdge, props.class = edge, edge == "Top" and "frosted bar-bottom" or "frosted bar-top"
+    props.MarginLeft, props.MarginRight = -20, -20
+    props.Padding = props.Padding or "20 0"
+    local bar = ui.Node2D(props)
+    for _, child in ipairs(children) do bar:addChild(child) end
     return bar
 end
 

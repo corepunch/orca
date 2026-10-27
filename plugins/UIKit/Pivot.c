@@ -42,6 +42,14 @@ static int
 Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
 {
   int count = Pivot_Items(hObject, items);
+  // The bar precedes the title so that it draws over the items and under the
+  // title and headers.
+  if (!pPivot->_bar) {
+    pPivot->_bar = OBJ_Create(ID_Node2D);
+    _SendMessage(pPivot->_bar, StyleController, AddClass, .ClassName = "pivot-bar");
+    OBJ_AddChild(hObject, pPivot->_bar);
+  }
+  Metro_Show(pPivot->_bar, pPivot->ExtendBodyBehindHeader, 1);
   if (!pPivot->_title) {
     pPivot->_title = Metro_CreateText(hObject, ID_TextBlock, "pivot-title", PIVOT_TITLE_SIZE, TRUE);
     GetNode2D(pPivot->_title)->IgnoreHitTest = TRUE;
@@ -147,7 +155,8 @@ HANDLER(Pivot, Object, PropertyChanged)
   if (id == ID_Pivot_SelectedIndex) {
     Pivot_Transition(hObject, pPivot, Pivot_SelectedHeaderIndex(hObject));
   }
-  if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked) {
+  if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
+      id == ID_Pivot_ExtendBodyBehindHeader) {
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -188,6 +197,9 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   float x = pArrangeOverride->X, y = pArrangeOverride->Y;
   float w = pArrangeOverride->Width, h = pArrangeOverride->Height;
   float settle = 1 - Metro_Ease(pPivot->_progress);
+  // The title keeps clear of the top safe area, like a navigation bar.
+  struct Node2D *node = GetNode2D(hObject);
+  float top = MAX(y, node->_safeArea.x);
   struct Object *headers[PIVOT_MAX_ITEMS], *copies[PIVOT_MAX_ITEMS];
   LRESULT sizes[PIVOT_MAX_ITEMS];
   int copyCount = 0;
@@ -203,8 +215,8 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   }
 
   LRESULT title = Metro_Measure(pPivot->_title, w, h);
-  Metro_Arrange(pPivot->_title, x + METRO_INSET, y + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
-  float stripY = y + PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0;
+  Metro_Arrange(pPivot->_title, x + METRO_INSET, top + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
+  float stripY = top + PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0;
 
   // The selected header leads; the others follow in order and wrap around.
   float hx = x + METRO_INSET + pPivot->_headerFrom * settle + pPivot->_dragX * 0.3f;
@@ -243,11 +255,18 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
     else Metro_Show(copies[i], FALSE, METRO_DIM);
   }
 
+  // A body extending behind the header starts at the top and takes the
+  // header as its top safe area; otherwise the header consumes it.
   float contentY = stripY + strip + PIVOT_CONTENT_TOP;
+  bool_t extend = pPivot->ExtendBodyBehindHeader;
+  node->_safeArea.x = node->_barInset.x = extend ? contentY : 0;
+  Metro_Measure(pPivot->_bar, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
+  Metro_Arrange(pPivot->_bar, 0, 0, Node2D_GetFrame(node, kBox3FieldWidth), contentY);
   if (count) {
+    float bodyY = extend ? y : contentY;
     Metro_Arrange(items[pPivot->SelectedIndex],
-      x + METRO_INSET + pPivot->_contentFrom * settle + pPivot->_dragX, contentY,
-      MAX(w - 2 * METRO_INSET, 0), MAX(y + h - contentY, 0));
+      x + METRO_INSET + pPivot->_contentFrom * settle + pPivot->_dragX, bodyY,
+      MAX(w - 2 * METRO_INSET, 0), MAX(y + h - bodyY, 0));
   }
   return MAKEDWORD(w, h);
 }

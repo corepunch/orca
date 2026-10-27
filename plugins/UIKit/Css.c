@@ -290,6 +290,8 @@ k_css_prop_map[] = {
   { "box-shadow-blur-radius", "Node2D.BoxShadowBlurRadius", ID_Node2D_BoxShadowBlurRadius },
   { "box-shadow-spread", "Node2D.BoxShadowSpreadRadius",  ID_Node2D_BoxShadowSpreadRadius },
   { "box-shadow-spread-radius", "Node2D.BoxShadowSpreadRadius", ID_Node2D_BoxShadowSpreadRadius },
+  { "backdrop-filter", "Node2D.BackdropFilter",     ID_Node2D_BackdropFilter },
+  { "-webkit-backdrop-filter", "Node2D.BackdropFilter", ID_Node2D_BackdropFilter },
   { "overflow",      "Node2D.Overflow",         ID_Node2D_Overflow },
   { "overflow-x",    "Node2D.OverflowX",        ID_Node2D_OverflowX },
   { "overflow-y",    "Node2D.OverflowY",        ID_Node2D_OverflowY },

@@ -68,6 +68,32 @@ Touch never hovers. A finger leaves no pointer behind, so an event carrying
 `:hover` rules apply only to a mouse, trackpad or pencil. Give touch feedback
 through the pressed or selected state, not `:hover`.
 
+## Safe area and docked bars
+
+Edge-to-edge screens (`Screen.RespectSafeArea = false`) let scrolling content
+run under the status bar, the home indicator and translucent bars, like a
+full-screen `UIScrollView`. Its frame covers the whole screen; only its content
+is inset, as `adjustedContentInset` insets it on iOS.
+
+- A child with `SafeAreaEdge = "Top"` or `"Bottom"` is a docked bar. A plain
+  `Node2D` parent measures it like an `auto` row, stacks it at that edge below
+  the bars of its ancestors, and lays its other children out under it.
+- The safe area reaching a node is what it overlaps of the system insets of
+  its `Screen` and of the bars docked by its ancestors.
+- `ContentInsetAdjustment` decides what a node does with it. `Automatic`, the
+  default, insets scrolling content: it rests below the top bars and scrolls
+  clear of the bottom ones. `Always` insets any content, and a docked bar with
+  `Always` also extends through the system inset at its edge, keeping its own
+  content clear of it. `Never` leaves the content under the bars.
+- A node that insets its content consumes the safe area: its children see none.
+  A `Pivot` consumes the top inset with its header; with
+  `ExtendBodyBehindHeader = true`, its items extend behind the header, which
+  becomes a top bar styled by the generated `pivot-bar` part.
+
+`share/orca/UIKit/Footer.lua` builds this shell for applications; see
+[App styling](app/styling.md#layout-and-sizing). Frost the bars with
+`backdrop-filter` and a translucent background.
+
 ## Loading content
 
 Attach the screen shell and usable controls before starting network work. Use

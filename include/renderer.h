@@ -315,6 +315,7 @@ enum shader_type {
   SHADER_2D_RECT,
   SHADER_BLUR_H,
   SHADER_BLUR_V,
+  SHADER_BACKDROP_BLUR,
   SHADER_COUNT,
 };
 
@@ -566,6 +567,12 @@ ORCA_API HRESULT R_BindFramebuffer(struct Texture*);
 ORCA_API HRESULT RenderTexture_Create(PCREATERTSTRUCT, struct Texture**);
 ORCA_API HRESULT R_BlurTexture(struct Texture const *src, struct Texture *dst,
                                 struct Texture *scratch, float sigma);
+// Capture of the framebuffer behind an entity and its blur targets, reused
+// across frames by the object that owns it.
+struct BackdropCache;
+ORCA_API HRESULT R_FilterBackdrop(struct BackdropCache **cache, struct ViewDef const *view,
+                                   struct ViewEntity *entity, float sigma, float saturation);
+ORCA_API void R_ReleaseBackdrop(struct BackdropCache *cache);
 ORCA_API HRESULT Image_GetInfo(struct Texture const*, struct image_info*);
 ORCA_API HRESULT Shader_EnumUniforms(struct shader const*, SHADERENUMPROC, void*);
 ORCA_API HRESULT Shape_GetPointLocation(struct shape const*, float, struct vec3*);

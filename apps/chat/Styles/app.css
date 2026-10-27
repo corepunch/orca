@@ -5,3 +5,15 @@
 .chat-action:focus:dark { ring: 0 2 #3d9eff; }
 .chat-input:focus:dark { border-color: #0084ff; background-color: #ffffff; }
 .conversation:hover:dark { background-color: #1a1a1a; }
+/* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */
+.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
+.frosted:dark { background-color: #161616c7; }
+.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; border-bottom-width: 0.5; border-color: #0000004d; }
+.pivot-bar:dark { background-color: #161616c7; border-color: #ffffff26; }
+.bar-top { border-top-width: 0.5; border-color: #0000004d; }
+.bar-top:dark { border-color: #ffffff26; }
+.bar-bottom { border-bottom-width: 0.5; border-color: #0000004d; }
+.bar-bottom:dark { border-color: #ffffff26; }
+/* A docked toolbar continues the header, so the hairline moves below it. */
+.thread-page .pivot-bar { border-bottom-width: 0; }
+.toolbar-page .pivot-bar { border-bottom-width: 0; }

@@ -67,6 +67,8 @@ For text alignment, use the CSS-native `text-align` property for horizontal text
 | `box-shadow-blur-radius` | `Node2D.BoxShadowBlurRadius` | float |
 | `box-shadow-spread` | `Node2D.BoxShadowSpreadRadius` | float |
 | `box-shadow-spread-radius` | `Node2D.BoxShadowSpreadRadius` | float |
+| `backdrop-filter` | `Node2D.BackdropFilter` | BackdropFilterShorthand |
+| `-webkit-backdrop-filter` | `Node2D.BackdropFilter` | BackdropFilterShorthand |
 | `overflow` | `Node2D.Overflow` | OverflowShorthand |
 | `overflow-x` | `Node2D.OverflowX` | enum: Overflow |
 | `overflow-y` | `Node2D.OverflowY` | enum: Overflow |
@@ -116,6 +118,7 @@ For text alignment, use the CSS-native `text-align` property for horizontal text
 - Enum values are matched case-insensitively and may use CSS-style separators; for example `text-overflow: ellipsis;` maps to `TextOverflow = "Ellipsis"`.
 - `font-family` accepts a comma-separated CSS family list. Registered family names and generic aliases such as `serif`, `sans-serif`, and `monospace` are resolved before falling back to explicit object paths.
 - `box-shadow` uses `x-offset y-offset blur-radius spread-radius color` with bare numeric values, for example `box-shadow: 2 2 0 0 black`. On `TextBlock`, the offset and color are rendered through the text glyph mask; blur and spread are parsed but are not yet rendered.
+- `backdrop-filter` accepts `none` or a list of `blur(<length>)` and `saturate(<number or percentage>)`, for example `backdrop-filter: blur(20) saturate(180%)`. The blur radius is a standard deviation, as in CSS. Other filter functions make the declaration invalid. The backdrop is blurred within the element's background box with mirrored edges, and a translucent `background-color` tints it.
 - `visibility` is normalized before parsing: `visible` becomes `true`; `hidden` and `collapse` become `false`.
 - `width: auto` and `width: 100%` normalize to `NaN`, which stretches in finite layout space unless that axis has an auto margin.
 - `margin-* : auto` normalizes to `NaN` and is used for alignment.

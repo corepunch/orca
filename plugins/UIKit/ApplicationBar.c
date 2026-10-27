@@ -111,8 +111,10 @@ HANDLER(ApplicationBar, Node2D, ArrangeOverride)
   float top = expanded ? y + h - panel : y;
 
   // The expanded bar grows upwards over the page; taps above it collapse it.
-  struct color chrome = GetNode2D(hObject)->Background.Color;
-  AppBar_SetColor(pApplicationBar->_panel, ID_Node2D_BackgroundColor, chrome);
+  // The panel continues the bar's surface, translucent bars included.
+  struct Node2D *bar = GetNode2D(hObject);
+  AppBar_SetColor(pApplicationBar->_panel, ID_Node2D_BackgroundColor, bar->Background.Color);
+  GetNode2D(pApplicationBar->_panel)->BackdropFilter = bar->BackdropFilter;
   Metro_Show(pApplicationBar->_panel, expanded, 1);
   Metro_Arrange(pApplicationBar->_panel, x, top, w, panel);
   Metro_Show(pApplicationBar->_scrim, expanded, 1);

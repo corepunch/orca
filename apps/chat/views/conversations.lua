@@ -313,9 +313,8 @@ function Conversations.details(self)
         function(members) return detailsBody(self, room, members) end)
     local content = screen:getFirstChild()
     content:removeFromParent()
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } }))
-    Footer.layout(screen, content, footer, { Background = colors.background, Foreground = colors.ink })
+    local bar = C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } })
+    Footer.layout(screen, content, bar, { Background = colors.background, Foreground = colors.ink })
     return screen
 end
 

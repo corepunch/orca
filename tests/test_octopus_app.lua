@@ -56,8 +56,7 @@ end
 
 local function assertDetailFooter(app)
     local screen = app.screen
-    local footer = find(app, "AppBarFooter")
-    local bar = assert(footer:getFirstChild(), "The footer must contain the application bar")
+    local bar = find(app, "AppBar")
     local function position(node)
         local x, y = 0, 0
         while node and node ~= screen do
@@ -75,22 +74,16 @@ local function assertDetailFooter(app)
             core.advanceFrame()
             core.runAllPrograms(screen)
             screen:UpdateLayout(size[1], size[2])
-            local footerX, footerY = position(footer)
             local barX, barY = position(bar)
             local bottomInset = math.max(size[4], keyboard)
             assert(not screen.RespectSafeArea and screen.Height == size[2],
                 "Detail pages retain the physical viewport during keyboard changes")
-            assert(math.abs(footerX) < 1 and math.abs(footer.ActualWidth - size[1]) < 1
-                and math.abs(footerY + footer.ActualHeight - size[2]) < 1,
-                "Detail footer backgrounds must reach every physical bottom edge: " .. app.currentRoute)
-            assert(math.abs(barY + bar.ActualHeight - (size[2] - bottomInset)) < 1
-                and math.abs(bar.ActualHeight - 58) < 1
-                and barX >= size[5] and barX + bar.ActualWidth <= size[1] - size[6] + 1,
-                "Detail footer controls must avoid the home gesture, keyboard, and landscape cutouts")
-            for _, channel in ipairs { "R", "G", "B", "A" } do
-                assert(math.abs(footer.BackgroundColor[channel] - bar.BackgroundColor[channel]) < 0.001,
-                    "The inset area must use the application bar background")
-            end
+            assert(math.abs(barX) < 1 and math.abs(bar.ActualWidth - size[1]) < 1
+                and math.abs(barY + bar.ActualHeight - size[2]) < 1 and bar.BackdropFilterBlurRadius > 0,
+                "Detail bar frosted backgrounds must reach every physical bottom edge: " .. app.currentRoute)
+            assert(math.abs(bar.ActualHeight - 58 - bottomInset) < 1
+                and bar.PaddingLeft == size[5] and bar.PaddingRight == size[6],
+                "Detail bar controls must avoid the home gesture, keyboard, and landscape cutouts")
         end
     end
     screen.Width, screen.Height = 390, 844
@@ -128,26 +121,27 @@ assert(find(app, "Tagsoftware").ActualWidth > 40, "Tags need hit areas")
 assert(find(app, "SignInhome") and find(app, "SignInconnect"), "Home and connect ask guests to sign in")
 assert(find(app, "AppBarHome").IsEnabled == false and find(app, "AppBarSignIn"), "Guests get sign-in in the menu")
 
--- Both apps use the shared footer, including changing native safe insets.
-local footer = find(app, "AppBarFooter")
+-- Both apps dock the frosted application bar, including changing native safe insets.
 local bar = find(app, "AppBar")
 home.SafeAreaTop, home.SafeAreaBottom = 59, 34
 home.SafeAreaLeft, home.SafeAreaRight = 12, 18
 core.advanceFrame()
 core.runAllPrograms(home)
 home:UpdateLayout(390, 844)
-assert(not home.RespectSafeArea and home:getFirstChild().PaddingTop == 59)
-assert(footer.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1)
-assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
+assert(not home.RespectSafeArea and home:getFirstChild().ActualY == 0, "Octopus content runs edge to edge")
+assert(math.abs(bar.ActualHeight - 58 - 34) < 1 and math.abs(bar.ActualY + bar.ActualHeight - 844) < 1,
     "Octopus chrome must fill the area beneath its bottom bar")
-assert(math.abs(footer.ActualY + bar.ActualY + bar.ActualHeight - 810) < 1,
+-- The 38-point ring; its label below only shows while the bar is expanded.
+assert(bar.ActualY + find(app, "AppBarHome").ActualY + 38 <= 810 + 0.5,
     "Octopus bottom controls must stay above the home gesture")
+local status = find(app, "HomeStatusBar")
+assert(math.abs(status.ActualY + status.ActualHeight - bar.ActualY) < 1, "The status strip docks above the bar")
 home.SafeAreaTop, home.SafeAreaBottom = 0, 0
 home.SafeAreaLeft, home.SafeAreaRight = 0, 0
 core.advanceFrame()
 core.runAllPrograms(home)
 home:UpdateLayout(390, 844)
-assert(footer.PaddingBottom == 0 and math.abs(footer.ActualHeight - 58) < 1)
+assert(math.abs(bar.ActualHeight - 58) < 1)
 
 -- Guests can read a post and its comments, but writing asks them to sign in.
 click(app, "Openp-hello")

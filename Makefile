@@ -490,13 +490,14 @@ endif
 .PHONY: test-scene-format
 test-scene-format: unite
 	$(Q)ORCA_EXPECT_SCENE_FORMAT=$(SCENE_FORMAT) $(TARGET) -test=tests/test_scene_format.lua
-HEADLESS_LUA_TESTS += test-footer test-viewport-observer test-avatar-loader test-chat-photo-loader
+HEADLESS_LUA_TESTS += test-footer test-safe-area test-viewport-observer test-avatar-loader test-chat-photo-loader
 
 $(eval $(call LUA_TEST_RULE,test-viewport-observer,tests/test_viewport_observer.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-avatar-loader,tests/test_avatar_loader.lua,unite))
 $(eval $(call LUA_TEST_RULE,test-chat-photo-loader,tests/test_chat_photo_loader.lua,unite))
 
 $(eval $(call LUA_TEST_RULE,test-footer,tests/test_footer.lua,unite))
+$(eval $(call LUA_TEST_RULE,test-safe-area,tests/test_safe_area.lua,unite))
 
 
 $(eval $(call LUA_TEST_RULE,test-two-way-bindings,tests/test_two_way_bindings.lua,unite))

@@ -31,9 +31,7 @@ function Shell.new(screen, navigate, menu)
     end
     self.bar = C.appBar(buttons, menu)
     for _, page in ipairs(Shell.pages) do self.items[page.key] = self.bar:findChild("AppBar" .. page.key) end
-    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
-    footer:addChild(self.bar)
-    Footer.layout(screen, self.content, footer, { Foreground = colors.ink })
+    Footer.layout(screen, self.content, self.bar, { Foreground = colors.ink })
     return self
 end
 

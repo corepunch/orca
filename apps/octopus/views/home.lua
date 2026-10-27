@@ -161,7 +161,7 @@ function Home.page(self)
     self.status = C.text("", { Name = "HomeStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
     self.homeStatus = self.status
     local signedIn = self.client:getSession() ~= nil
-    self.pivot = ui.Pivot { Name = "Timeline", Title = "Octopus", Foreground = colors.ink,
+    self.pivot = ui.Pivot { Name = "Timeline", Title = "Octopus", Foreground = colors.ink, ExtendBodyBehindHeader = true,
         SelectionChanged = function(pivot) Home.select(self, Home.feeds[pivot.SelectedIndex + 1]) end,
     }
     self.timelines, self.timelineLoading = {}, {}
@@ -177,8 +177,10 @@ function Home.page(self)
         item:addChild(area)
         self.pivot:addChild(item)
     end
-    local grid = ui.Grid { Rows = "1fr 20px" }
-    grid:addChild(self.pivot); grid:addChild(self.status)
+    local status = ui.Grid { Name = "HomeStatusBar", Rows = "20px", SafeAreaEdge = "Bottom", class = "frosted" }
+    status:addChild(self.status)
+    local grid = ui.Node2D {}
+    grid:addChild(self.pivot); grid:addChild(status)
     local screen = self:frame(grid, "Home")
     Home.select(self, self.feed)
     return screen

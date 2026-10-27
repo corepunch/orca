@@ -57,6 +57,33 @@ c_parse_shadow_shorthand(const char* str, void* dst, size_t sz)
   }
 }
 
+// CSS backdrop-filter: "none" or a list of blur(<length>) and saturate(<number>
+// or <percentage>). Other filter functions make the whole value invalid.
+static int
+c_parse_backdrop_filter(const char* str, void* dst, size_t sz)
+{
+  if (!dst || sz != sizeof(struct BackdropFilterShorthand)) return FALSE;
+  struct BackdropFilterShorthand self = { .Saturation = 1 };
+  while (isspace((unsigned char)*str)) str++;
+  if (!strncmp(str, "none", 4)) return *(struct BackdropFilterShorthand*)dst = self, TRUE;
+  while (*str) {
+    char name[16] = {0};
+    float value = 0;
+    int used = 0;
+    if (sscanf(str, " %15[a-z-] ( %f%n", name, &value, &used) != 2) return FALSE;
+    str += used;
+    bool_t percent = *str == '%';
+    while (*str && *str != ')') str++;
+    if (*str++ != ')') return FALSE;
+    if (!strcmp(name, "blur")) self.BlurRadius = MAX(value, 0);
+    else if (!strcmp(name, "saturate")) self.Saturation = MAX(percent ? value / 100 : value, 0);
+    else return FALSE;
+    while (isspace((unsigned char)*str)) str++;
+  }
+  *(struct BackdropFilterShorthand*)dst = self;
+  return TRUE;
+}
+
 static int
 c_parse_transform2(const char* str, void* dst, size_t sz)
 {
@@ -94,6 +121,7 @@ void on_ui_module_registered(lua_State* L) {
   luaX_require(L, "orca.core", 0);
   OBJ_RegisterStructParser("Transform2D", c_parse_transform2);
   OBJ_RegisterStructParser("ShadowShorthand", c_parse_shadow_shorthand);
+  OBJ_RegisterStructParser("BackdropFilterShorthand", c_parse_backdrop_filter);
   lua_getglobal(L, "SERVER");
   is_server = lua_toboolean(L, -1);
   lua_pop(L, 1);
