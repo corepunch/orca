@@ -103,15 +103,17 @@ is inset, as `adjustedContentInset` insets it on iOS.
   left edge, fires `BackRequested`, so a page needs no row for its back
   button. Tapping the selected header fires `HeaderClick`, for example to
   open details of a conversation.
-- `Pivot.Turnstile` plays the Windows Phone page transition from the next
-  frame: the whole page swings in perspective about a vertical hinge 40 points
-  left of the screen and settles flat in 300 ms (the WinJS `turnstileForwardIn`
-  and `turnstileBackwardIn` curves). `ForwardIn` starts at 80° with the right
-  edge receding; `BackwardIn` starts at -50° with it raised towards you. The
-  property returns to `None` when the page is flat. Hit testing follows the
-  turned page, so taps during the swing do not reach controls it has moved.
-  The navigation owner chooses the direction; `share/orca/UIKit/Turnstile.lua`
-  finds a screen's visible page and plays it.
+- A `Pivot` is also the unit of page navigation. `NavigationTransition`
+  (`TransitionType`: `Turnstile` by default, `Slide`, `Fade` or `None`) is its
+  motion, and setting `TransitionMode` plays a phase of it from the next frame.
+  `ForwardOut` or `BackwardOut` takes the page you leave away and holds it
+  there; `ForwardIn` or `BackwardIn` brings the next page in and returns to
+  `None`. `TransitionCompleted` fires at the end, and the page takes no input
+  meanwhile. The turnstile turns the page about a hinge left of the screen,
+  feathered: lower parts start later. `share/orca/UIKit/PageTransition.lua`
+  plays the page a screen shows out and then the next page in. See
+  [Windows Phone page transitions](windows-phone-transitions.md) for the
+  sources, values and parts.
 
 `share/orca/UIKit/Footer.lua` builds this shell for applications; see
 [App styling](app/styling.md#layout-and-sizing). Frost the bars with

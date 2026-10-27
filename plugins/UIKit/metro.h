@@ -94,4 +94,10 @@ Metro_Show(struct Object *o, bool_t visible, float opacity)
   OBJ_SetDirty(o);
 }
 
+// Page transitions (PageTransition.c). Apply moves a laid-out page's parts
+// `elapsed` milliseconds into the transition; Duration is when the last part
+// finishes. A type without motion for a mode lasts 0 ms.
+float PageTransition_Duration(struct Object *page, enum TransitionType type, enum TransitionMode mode);
+void PageTransition_Apply(struct Object *page, enum TransitionType type, enum TransitionMode mode, float elapsed);
+
 #endif

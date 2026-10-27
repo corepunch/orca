@@ -176,15 +176,29 @@ for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do
 end
 drain(app)
 assert(app.screen:findChild("ThreadPage", true), "The info page's title line must return to the conversation")
--- The app's own navigation turns pages in on the left edge, as on Windows Phone.
+-- The app's own navigation turns the page in view out, then the next page in,
+-- on a hinge at the left edge as on Windows Phone.
+local function pumpUntil(done)
+    while not done() do
+        local message = assert(orca.system.peekMessage(), "The transition must finish")
+        if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
+    end
+end
 app.activate_controller = function(self, controller) self.screen = controller.view; return controller end
-App.show(app, "/details", "ForwardIn")
-assert(app.screen:findChild("DetailsPage", true).Turnstile == "ForwardIn", "Opening a conversation's info must turn it in")
-App.show(app, "/thread", "BackwardIn")
-assert(app.screen:findChild("ThreadPage", true).Turnstile == "BackwardIn", "Going back must turn the conversation back in")
+local threadScreen = app.screen
+App.show(app, "/details", "Forward")
+assert(app.screen:findChild("ThreadPage", true).TransitionMode == "ForwardOut", "Opening a conversation's info must turn the conversation out first")
+pumpUntil(function() return app.screen ~= threadScreen end)
+assert(app.screen:findChild("DetailsPage", true).TransitionMode == "ForwardIn", "Then the info must turn in")
+drain(app)
+local detailsScreen = app.screen
+App.show(app, "/thread", "Backward")
+assert(app.screen:findChild("DetailsPage", true).TransitionMode == "BackwardOut", "Going back must turn the info out first")
+pumpUntil(function() return app.screen ~= detailsScreen end)
+assert(app.screen:findChild("ThreadPage", true).TransitionMode == "BackwardIn", "Then the conversation must turn back in")
 app.activate_controller = nil
 drain(app)
-assert(app.screen:findChild("ThreadPage", true).Turnstile == "None", "The turnstile must settle")
+assert(app.screen:findChild("ThreadPage", true).TransitionMode == "None", "The turnstile must settle")
 screen = app.screen
 screen:UpdateLayout(390, 844)
 for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do

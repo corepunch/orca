@@ -16,13 +16,9 @@
 #define PIVOT_EDGE           24.0f   // width of the strip a back swipe starts in
 #define PIVOT_BACK_SWIPE     96.0f   // distance that commits a back swipe
 #define PIVOT_MAX_ITEMS      32
-// Turnstile page transitions, after WinJS turnstileForwardIn/BackwardIn: a
-// 600-point perspective about a hinge 40 points left of the screen.
-#define TURNSTILE_HINGE      40.0f
-#define TURNSTILE_DEPTH      600.0f
-#define TURNSTILE_MS         300
-#define TURNSTILE_FORWARD    80.0f   // degrees a page gone into starts at
-#define TURNSTILE_BACKWARD   -50.0f  // degrees a page returned to starts at
+
+HANDLER(Node2D, Node, UpdateMatrix);
+HANDLER(Node2D, Node, HitTest);
 
 static int
 Pivot_Items(struct Object *hObject, struct Object **items)
@@ -186,42 +182,9 @@ Pivot_Select(struct Object *hObject, int index)
   Metro_SetProperty(hObject, ID_Pivot_SelectedIndex, &value);
 }
 
-// WinJS's turnstile curve, cubic-bezier(0.01, 0.975, 0.4775, 0.9775): the
-// page covers most of its swing at once and then settles.
-static float
-Turnstile_Ease(float t)
-{
-  float const x1 = 0.01f, y1 = 0.975f, x2 = 0.4775f, y2 = 0.9775f;
-  float lo = 0, hi = 1, u = t;
-  for (int i = 0; i < 20; i++) {
-    u = (lo + hi) / 2;
-    float x = 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u;
-    if (x < t) lo = u; else hi = u;
-  }
-  return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u;
-}
-
-// The page's rotation in its parent's space: perspective(600) rotateY(angle)
-// about a vertical hinge left of the page, half way down it, as in CSS.
-static struct mat4
-Turnstile_Matrix(struct rect frame, float degrees)
-{
-  float a = degrees * (float)M_PI / 180, c = cosf(a), s = sinf(a);
-  struct vec2 hinge = { frame.x - TURNSTILE_HINGE, frame.y + frame.height / 2 };
-  struct mat4 to = MAT4_Identity(), from = MAT4_Identity(), turn = MAT4_Identity();
-  to.v[12] = hinge.x, to.v[13] = hinge.y;
-  from.v[12] = -hinge.x, from.v[13] = -hinge.y;
-  // x' = x cos + z sin, z' = z cos - x sin, w = 1 - z' / depth
-  turn.v[0] = c, turn.v[2] = -s, turn.v[3] = s / TURNSTILE_DEPTH;
-  turn.v[8] = s, turn.v[10] = c, turn.v[11] = -c / TURNSTILE_DEPTH;
-  struct mat4 m = MAT4_Multiply(&to, &turn);
-  return MAT4_Multiply(&m, &from);
-}
-
 HANDLER(Pivot, Object, Create)
 {
   pPivot->_progress = 1;
-  pPivot->_turn = 1;
   return FALSE;
 }
 
@@ -232,13 +195,13 @@ HANDLER(Pivot, Object, PropertyChanged)
   if (id == ID_Pivot_SelectedIndex) {
     Pivot_Transition(hObject, pPivot, Pivot_SelectedHeaderIndex(hObject));
   }
-  if (id == ID_Pivot_Turnstile) {
+  if (id == ID_Pivot_TransitionMode) {
     // The clock starts with the first frame, after the page is built.
-    pPivot->_turn = pPivot->Turnstile == kTurnstileModeNone ? 1 : -1;
-    OBJ_RequestAnimate(hObject);
+    pPivot->_transitionElapsed = -1;
+    if (pPivot->TransitionMode != kTransitionModeNone) OBJ_RequestAnimate(hObject);
   }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
-      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon || id == ID_Pivot_Turnstile) {
+      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon || id == ID_Pivot_TransitionMode) {
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -247,30 +210,45 @@ HANDLER(Pivot, Object, PropertyChanged)
 HANDLER(Pivot, Object, Animate)
 {
   pPivot->_progress = MIN(Metro_Elapsed(pPivot->_animStart), 1);
-  if (pPivot->Turnstile != kTurnstileModeNone) {
-    if (pPivot->_turn < 0) pPivot->_turnStart = (int32_t)axGetMilliseconds();
-    pPivot->_turn = MIN((float)((int32_t)axGetMilliseconds() - pPivot->_turnStart) / TURNSTILE_MS, 1);
-    if (pPivot->_turn >= 1) {
-      enum TurnstileMode none = kTurnstileModeNone;
-      Metro_SetProperty(hObject, ID_Pivot_Turnstile, &none);
+  bool_t moving = FALSE;
+  enum TransitionMode mode = pPivot->TransitionMode;
+  if (mode != kTransitionModeNone) {
+    float total = PageTransition_Duration(hObject, pPivot->NavigationTransition, mode);
+    bool_t done = pPivot->_transitionElapsed >= total;
+    if (pPivot->_transitionElapsed < 0) pPivot->_transitionStart = (int32_t)axGetMilliseconds();
+    pPivot->_transitionElapsed = MIN((float)((int32_t)axGetMilliseconds() - pPivot->_transitionStart), total);
+    moving = pPivot->_transitionElapsed < total;
+    if (!moving && !done) {
+      // A page that went out stays away until the next mode.
+      if (mode == kTransitionModeForwardIn || mode == kTransitionModeBackwardIn) {
+        enum TransitionMode none = kTransitionModeNone;
+        Metro_SetProperty(hObject, ID_Pivot_TransitionMode, &none);
+      }
+      axPostMessageW(hObject, ID_Pivot_TransitionCompleted, 0, 0);
     }
   }
   OBJ_SetDirty(hObject);
-  if (pPivot->_progress < 1 || pPivot->Turnstile != kTurnstileModeNone) OBJ_RequestAnimate(hObject);
+  if (pPivot->_progress < 1 || moving) OBJ_RequestAnimate(hObject);
   return TRUE;
 }
 
-// Turns the page on its hinge before Node2D composes its matrix. Until the
-// first frame starts the clock, the page waits at its starting angle.
+// Lays the page out in place, then moves its parts along the transition.
+// Until the first frame starts the clock, every part waits at its start.
 HANDLER(Pivot, Node, UpdateMatrix)
 {
-  if (pPivot->Turnstile == kTurnstileModeNone) return FALSE;
-  float from = pPivot->Turnstile == kTurnstileModeForwardIn ? TURNSTILE_FORWARD : TURNSTILE_BACKWARD;
-  float degrees = from * (1 - Turnstile_Ease(MAX(pPivot->_turn, 0)));
-  struct mat4 turn = Turnstile_Matrix(Node2D_GetRect(GetNode2D(hObject)), degrees);
-  pUpdateMatrix->parent = MAT4_Multiply(&pUpdateMatrix->parent, &turn);
-  pUpdateMatrix->force = TRUE;
-  return FALSE;
+  if (pPivot->TransitionMode == kTransitionModeNone) return FALSE;
+  Node2D_UpdateMatrix(hObject, GetNode2D(hObject), wParam, pUpdateMatrix);
+  PageTransition_Apply(hObject, pPivot->NavigationTransition, pPivot->TransitionMode,
+    MAX(pPivot->_transitionElapsed, 0));
+  return TRUE;
+}
+
+// A page in transition takes no input: the pivot catches what would reach
+// its content, and ignores it.
+HANDLER(Pivot, Node, HitTest)
+{
+  if (pPivot->TransitionMode == kTransitionModeNone) return FALSE;
+  return Node2D_HitTest(hObject, GetNode2D(hObject), wParam, pHitTest) ? (LRESULT)(intptr_t)hObject : FALSE;
 }
 
 HANDLER(Pivot, Node2D, MeasureOverride)
@@ -398,6 +376,7 @@ Pivot_HitsBack(struct Pivot *pPivot, float x, float y)
 
 HANDLER(Pivot, Node, LeftButtonDown)
 {
+  if (pPivot->TransitionMode != kTransitionModeNone) return TRUE;
   bool_t back = pPivot->_back && GetNode(pPivot->_back)->Visible;
   pPivot->_tracking = TRUE;
   pPivot->_dragging = FALSE;
@@ -414,6 +393,7 @@ HANDLER(Pivot, Node, LeftButtonDown)
 
 HANDLER(Pivot, Node, LeftButtonDragged)
 {
+  if (pPivot->TransitionMode != kTransitionModeNone) return TRUE;
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(hObject, items);
   bool_t edge = pPivot->_edge;
@@ -440,6 +420,7 @@ HANDLER(Pivot, Node, LeftButtonDragged)
 
 HANDLER(Pivot, Node, LeftButtonUp)
 {
+  if (pPivot->TransitionMode != kTransitionModeNone) return TRUE;
   bool_t dragging = pPivot->_dragging, edge = pPivot->_edge;
   bool_t back = pPivot->_backPressed && Pivot_HitsBack(pPivot, pLeftButtonUp->x, pLeftButtonUp->y);
   float dx = pPivot->_dragX;

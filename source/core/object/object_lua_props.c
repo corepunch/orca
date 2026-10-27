@@ -142,7 +142,7 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
   if (property) {
     if (PROP_GetType(property) == kDataTypeEvent &&
         (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
-      axRemoveFromQueue(self);
+      OBJ_RemoveFromQueue(self);
     }
     luaX_readProperty(L, 3, property);
     return TRUE;

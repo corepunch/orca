@@ -48,6 +48,7 @@
 		781CA7242E15370700FFCFD9 /* r_image_pvr.c in Sources */ = {isa = PBXBuildFile; fileRef = 78B136DF2AF3CC4E00AAAE53 /* r_image_pvr.c */; };
 		781CA7292E15374000FFCFD9 /* liborca.renderer.so in Frameworks */ = {isa = PBXBuildFile; fileRef = 781CA7052E15369F00FFCFD9 /* liborca.renderer.so */; };
 		781CA7B22E20000000AABBCC /* ActivityIndicator.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7B32E20000000AABBCC /* ActivityIndicator.c */; };
+		781CA7B42E20000000AABBCC /* PageTransition.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7B52E20000000AABBCC /* PageTransition.c */; };
 		781CA7B02E20000000AABBCC /* VectorView.c in Sources */ = {isa = PBXBuildFile; fileRef = 781CA7B12E20000000AABBCC /* VectorView.c */; };
 		781CA7392E154E4A00FFCFD9 /* SpriteView.c in Sources */ = {isa = PBXBuildFile; fileRef = 786F2A882E0EB75200B519AB /* SpriteView.c */; };
 		781CA73A2E154E4A00FFCFD9 /* Light3D.c in Sources */ = {isa = PBXBuildFile; fileRef = 780C82682E01EE7100228DEC /* Light3D.c */; };
@@ -623,6 +624,7 @@
 		78BC7E182D4161A500907913 /* nanosvgrast.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = nanosvgrast.h; sourceTree = "<group>"; };
 		78BC7E1E2D4BE7D800907913 /* p_json.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = p_json.c; sourceTree = "<group>"; };
 		781CA7B32E20000000AABBCC /* ActivityIndicator.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ActivityIndicator.c; sourceTree = "<group>"; };
+		781CA7B52E20000000AABBCC /* PageTransition.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = PageTransition.c; sourceTree = "<group>"; };
 		781CA7B12E20000000AABBCC /* VectorView.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = VectorView.c; sourceTree = "<group>"; };
 		78BCC20C2E61C23300CA0A41 /* Makefile */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
 		78BCC20D2E62FA3A00CA0A41 /* ../../generated/UIKit/UIKit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ../../generated/UIKit/UIKit.h; sourceTree = "<group>"; };
@@ -1243,6 +1245,7 @@
 				78AF62CA2F58BE5B008D08A3 /* UIKit.c */,
 				781CA7A22E20000000AABBCC /* UniformGrid.c */,
 				781CA7B32E20000000AABBCC /* ActivityIndicator.c */,
+				781CA7B52E20000000AABBCC /* PageTransition.c */,
 				781CA7B12E20000000AABBCC /* VectorView.c */,
 				78BC7E172D4161A500907913 /* nanosvg.h */,
 				78BC7E182D4161A500907913 /* nanosvgrast.h */,
@@ -1918,6 +1921,7 @@
 				7834B8D72F479D980071F07F /* PageHost.c in Sources */,
 				781CA7602E15571400FFCFD9 /* TextBlock.c in Sources */,
 				781CA7B22E20000000AABBCC /* ActivityIndicator.c in Sources */,
+				781CA7B42E20000000AABBCC /* PageTransition.c in Sources */,
 				781CA7B02E20000000AABBCC /* VectorView.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

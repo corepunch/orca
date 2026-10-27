@@ -87,6 +87,9 @@ local room = app.rooms[1]
 local messagesSelect = app.models.Messages.select
 app.models.Messages.select = function(self, ...) coroutine.yield("messages"); return messagesSelect(self, ...) end
 app:openRoom(room)
+-- The page in view turns out; its completion handler then shows the thread.
+core.flushQueue()
+nextRequest()
 local thread = app.screen
 assert(thread:findChild("MessagesLoading", true).Visible and thread:findChild("ThreadPage", true).BackIcon ~= ""
     and thread:findChild("Message", true), "Thread header and composer must mount before loading messages")

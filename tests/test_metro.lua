@@ -234,28 +234,53 @@ local function test_pivot_back()
   print("PASS: test_pivot_back")
 end
 
-local function test_pivot_turnstile()
+local function test_pivot_transitions()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
-  local taps = 0
-  local pivot = screen + ui.Pivot { Title = "Messenger", IsLocked = true }
+  local taps, completed = 0, 0
+  local pivot = screen + ui.Pivot { Title = "Messenger", IsLocked = true,
+    TransitionCompleted = function () completed = completed + 1 end }
   local item = pivot + ui.PivotItem { Header = "Simon" }
   local row = item + ui.Button { Name = "Row", Height = 60, Click = function () taps = taps + 1 end }
   layout(screen)
-  test.expect_eq(pivot.Turnstile, "None", "Pages start flat")
-  for _, mode in ipairs { "ForwardIn", "BackwardIn" } do
-    pivot.Turnstile = mode
+  test.expect_eq(pivot.NavigationTransition, "Turnstile", "Pages turn like a turnstile by default")
+  test.expect_eq(pivot.TransitionMode, "None", "Pages start in place")
+  local function play(mode)
+    taps, completed = 0, 0
+    pivot.TransitionMode = mode
     layout(screen)
-    test.expect_eq(pivot.Turnstile, mode, mode .. " waits for its first frame")
-    -- Pumping runs the animation frames until the page settles.
+    test.expect_eq(pivot.TransitionMode, mode, mode .. " waits for its first frame")
+    -- Pumping runs the animation frames until the transition finishes.
     tap(screen, row, 360)
-    test.expect_eq(taps, 0, mode .. " starts with the page turned away from where it lies flat")
-    test.expect_eq(pivot.Turnstile, "None", mode .. " finishes on its own")
+    test.expect_eq(completed, 1, mode .. " reports its end")
     layout(screen)
-    tap(screen, row, 360)
-    test.expect_eq(taps, 1, mode .. " settles the page flat")
-    taps = 0
   end
-  print("PASS: test_pivot_turnstile")
+  -- A page comes in, taking no input until it settles where it lies.
+  for _, mode in ipairs { "ForwardIn", "BackwardIn" } do
+    play(mode)
+    test.expect_eq(taps, 0, mode .. " takes no input while it plays")
+    test.expect_eq(pivot.TransitionMode, "None", mode .. " ends in place")
+    tap(screen, row, 360)
+    test.expect_eq(taps, 1, mode .. " settles the page in place")
+  end
+  -- A page goes out and stays away, taking no input, until the mode changes.
+  for _, kind in ipairs { "Turnstile", "Slide", "Fade" } do
+    pivot.NavigationTransition = kind
+    for _, mode in ipairs { "ForwardOut", "BackwardOut" } do
+      play(mode)
+      pivot:send("Object.Animate")
+      pump(screen)
+      tap(screen, row, 360)
+      test.expect_eq(pivot.TransitionMode, mode, kind .. " " .. mode .. " holds the page away")
+      test.expect_eq(taps, 0, kind .. " " .. mode .. " leaves nothing to tap")
+      test.expect_eq(completed, 1, kind .. " " .. mode .. " reports its end once")
+      pivot.TransitionMode = "None"
+      layout(screen)
+      tap(screen, row, 360)
+      test.expect_eq(taps, 1, "None returns a page held away")
+    end
+  end
+  pivot.TransitionMode, pivot.NavigationTransition = "None", "Turnstile"
+  print("PASS: test_pivot_transitions")
 end
 
 local function test_application_bar()
@@ -399,7 +424,7 @@ test_pivot()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_back()
-test_pivot_turnstile()
+test_pivot_transitions()
 test_application_bar()
 test_panorama()
 test_lisp()

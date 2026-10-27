@@ -169,21 +169,32 @@ core.runAllPrograms(home)
 home:UpdateLayout(390, 844)
 assert(math.abs(bar.ActualHeight - 58) < 1)
 
--- Going into a post turns it in from the left edge, as on Windows Phone, and
--- coming back turns the timeline back in. Pages you go into get a round back
--- button before the title instead of a back command in the bar.
-local Turnstile = require "orca.UIKit.Turnstile"
+-- Going into a post turns the timeline out and then the post in, on a hinge at
+-- the left edge as on Windows Phone; coming back does the reverse. Pages you
+-- go into get a round back button before the title instead of a back command.
+local PageTransition = require "orca.UIKit.PageTransition"
+local function pumpUntil(app, done)
+    while not done() do
+        local message = assert(orca.system.peekMessage(), "The transition stopped before it finished")
+        if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
+    end
+end
 app:openPost(assert(app.client:getPost("p-hello")))
+assert(app.screen == home and PageTransition.page(home).TransitionMode == "ForwardOut", "The timeline turns out first")
+pumpUntil(app, function() return app.screen ~= home end)
 local postView = find(app, "PostView")
-assert(Turnstile.page(app.screen) == postView and postView.Turnstile == "ForwardIn", "Opening a post turns it in")
+assert(PageTransition.page(app.screen) == postView and postView.TransitionMode == "ForwardIn", "Then the post turns in")
 assert(postView.BackIcon:find("arrow-left", 1, true) and not app.screen:findChild("BackFromPost", true),
     "The post goes back from its title line")
 drain(app)
-assert(postView.Turnstile == "None", "The turnstile settles")
+assert(postView.TransitionMode == "None", "The turnstile settles")
 app:goBack("/")
-assert(app.screen == home and Turnstile.page(home).Turnstile == "BackwardIn", "Going back turns the timeline back in")
-assert((Turnstile.page(home).BackIcon or "") == "", "Root pages have no back button")
+assert(postView.TransitionMode == "BackwardOut", "Going back turns the post out first")
+pumpUntil(app, function() return app.screen == home end)
+assert(PageTransition.page(home).TransitionMode == "BackwardIn", "Then the timeline turns back in")
+assert((PageTransition.page(home).BackIcon or "") == "", "Root pages have no back button")
 drain(app)
+assert(PageTransition.page(home).TransitionMode == "None")
 
 -- Guests can read a post and its comments, but writing asks them to sign in.
 click(app, "Openp-hello")
@@ -573,6 +584,7 @@ delayed.client.listComments = function(self, id) coroutine.yield(); return listC
 local hello
 for _, post in ipairs(listPosts(delayed.client, { limit = 100 })) do if post.id == "p-hello" then hello = post end end
 delayed:openPost(assert(hello))
+drain(delayed)
 local threadRequest = requests[#requests]
 step(threadRequest)
 assert(find(delayed, "Statlikes"):getTextContent() == "2" and find(delayed, "CommentsLoading"),
