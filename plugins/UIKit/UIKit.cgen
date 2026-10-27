@@ -173,6 +173,11 @@
       <value name="Never">Never inset the content</value>
       <value name="Always">Always inset the content, whether or not the node scrolls</value>
     </enum>
+    <enum name="ScrollAnchor">
+      <summary>Edge a scrolling element stays at when its content or insets change, after SwiftUI defaultScrollAnchor</summary>
+      <value name="Top">Keep the content offset; content added below appears under the visible part</value>
+      <value name="Bottom">An element scrolled to its end stays at its end, as a chat stays at its newest message</value>
+    </enum>
     <enum name="ApplicationBarMode">
       <summary>Display modes of an ApplicationBar, after Windows Phone</summary>
       <value name="Default">Icon buttons and the ellipsis; labels and menu items appear when expanded</value>
@@ -380,6 +385,7 @@
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
         <property name="SafeAreaEdge" type="SafeAreaEdge">Docks the element to an edge of its parent as an overlay bar. A plain Node2D parent stacks docked children at that edge, below the bars of its ancestors, and lays its other children out under them; the area the bars cover becomes safe-area inset for the descendants.</property>
         <property name="ContentInsetAdjustment" type="ContentInsetAdjustment">How the element insets its content by the safe area it overlaps: the system insets of a Screen that does not respect its safe area, and the bars docked by its ancestors. An inset scrolling element still draws under the bars, but its content starts below the top bars and scrolls clear of the bottom ones.</property>
+        <property name="ScrollAnchor" type="ScrollAnchor">Edge the element stays at when layout changes its content size or insets. With Bottom, an element scrolled to its end stays there when content is added or the keyboard and bottom bars grow; an element scrolled elsewhere keeps its offset.</property>
         <property name="AdjustedContentInset" type="Thickness">Insets applied to the content by ContentInsetAdjustment during the last layout, as UIScrollView adjustedContentInset. Written by layout: read AdjustedContentInsetTop and AdjustedContentInsetBottom to find the visible part of a scrolling element, which lies between them although the element draws under the bars.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
         <property name="BorderImage" type="BorderImageShorthand">Border image nine-patch configuration. Combines source, slice, and repeat.</property>

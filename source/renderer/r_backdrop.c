@@ -3,6 +3,7 @@
 // Backdrop filtering, as CSS backdrop-filter: copy the framebuffer behind an
 // entity, halve it until the blur is at most BACKDROP_LEVEL_SIGMA texels,
 // blur it in two passes and saturate it. The entity then samples the result.
+// The copy itself does the first halving, so no full-resolution target is kept.
 
 #define BACKDROP_LEVELS 6
 #define BACKDROP_LEVEL_SIGMA 2.0f
@@ -13,7 +14,7 @@
 
 struct BackdropCache
 {
-  struct Texture *levels[BACKDROP_LEVELS]; // levels[0] holds the capture
+  struct Texture *levels[BACKDROP_LEVELS]; // levels[first] holds the capture
   struct Texture *scratch, *result;
   int width, height, count;
 };
@@ -54,7 +55,7 @@ _PrepareCache(struct BackdropCache **cache, int width, int height, int count)
   if (!c) return NULL;
   c->width = width, c->height = height, c->count = count;
   bool_t ok = TRUE;
-  FOR_LOOP(i, count + 1) ok = ok && (c->levels[i] = _CreateTarget(width >> i, height >> i));
+  for (int i = count > 0; i <= count; i++) ok = ok && (c->levels[i] = _CreateTarget(width >> i, height >> i));
   ok = ok && (c->scratch = _CreateTarget(width >> count, height >> count));
   ok = ok && (c->result = _CreateTarget(width >> count, height >> count));
   if (ok) return c;
@@ -101,7 +102,7 @@ _Blur(struct BackdropCache *c, float sigma, float saturation)
     { .Type = UT_FLOAT, .Identifier = HASH_U_SATURATION, .Value = { 1 } },
   };
   struct Shader const *shader = &tr.shaders[SHADER_BACKDROP_BLUR];
-  FOR_LOOP(i, c->count) _Pass(c->levels[i], c->levels[i + 1], NULL, NULL, 0);
+  for (int i = c->count > 0; i < c->count; i++) _Pass(c->levels[i], c->levels[i + 1], NULL, NULL, 0);
   _Pass(level, c->scratch, shader, uniforms, 3);
   uniforms[0].Value[0] = 0;
   uniforms[0].Value[1] = 1.f / level->Height;
@@ -162,10 +163,13 @@ R_FilterBackdrop(struct BackdropCache **cache, struct ViewDef const *view,
   passes.stencil = (struct stencil_state){ .func = COMPARE_FUNC_ALWAYS };
   R_SetPipelineState(&passes);
 
+  // A linear blit to half size averages each 2x2 block, as a halving pass does.
+  struct Texture *capture = c->levels[count > 0];
   R_Call(glBindFramebuffer, GL_READ_FRAMEBUFFER, framebuffer);
-  R_Call(glBindFramebuffer, GL_DRAW_FRAMEBUFFER, c->levels[0]->framebuffer);
-  R_Call(glScissor, 0, 0, width, height);
-  R_Call(glBlitFramebuffer, x0, y0, x1, y1, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  R_Call(glBindFramebuffer, GL_DRAW_FRAMEBUFFER, capture->framebuffer);
+  R_Call(glScissor, 0, 0, capture->Width, capture->Height);
+  R_Call(glBlitFramebuffer, x0, y0, x1, y1, 0, 0, capture->Width, capture->Height,
+         GL_COLOR_BUFFER_BIT, count > 0 ? GL_LINEAR : GL_NEAREST);
   _Blur(c, sigma, saturation);
 
   R_Call(glBindFramebuffer, GL_FRAMEBUFFER, framebuffer);

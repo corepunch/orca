@@ -120,12 +120,13 @@ after the box shadow and before the background, so the filtered backdrop sits
 under the background tint, border and children.
 
 1. The entity's box is projected to window pixels and `glBlitFramebuffer`
-   copies that region of the bound framebuffer, at full resolution, into a
-   cached target. Copying exactly the box and sampling it with
-   `kTextureWrapMirror` gives CSS's mirrored edges, so content beyond the box
-   or the screen edge never smears in.
-2. Bilinear passes halve the copy until the blur is at most two texels,
-   up to five times.
+   copies that region of the bound framebuffer into a cached target. When the
+   blur needs downsampling, a linear blit to half size does the first halving,
+   so no full-resolution copy is kept. Copying exactly the box and sampling it
+   with `kTextureWrapMirror` gives CSS's mirrored edges, so content beyond the
+   box or the screen edge never smears in.
+2. Bilinear passes halve the copy further until the blur is at most two
+   texels, up to five halvings in all.
 3. `SHADER_BACKDROP_BLUR` blurs horizontally and then vertically with 13 taps.
    The vertical pass also applies the Rec. 709 saturation matrix; saturation
    is linear, so it commutes with the blur.
@@ -139,6 +140,15 @@ captured size or the number of halvings changes. Multisampled framebuffers
 cannot be cropped by a blit, so the function returns `E_NOTIMPL` and the node
 draws its background without the backdrop. The capture reads the box's
 axis-aligned bounds, so rotated nodes are not supported.
+
+Cost per filtered node and painted frame: one half-resolution blit of its
+box and a few passes over targets at most a quarter of that size. A 20-point
+blur on a 3x screen halves five times, to 1/32 of the box, below the 1/4–1/8
+of Apple's materials, so no lower-quality mode is needed. Each node captures
+only its own box: one capture spanning a header and a footer would read the
+whole screen between them. The engine has no damage regions, so a node cannot
+tell whether its backdrop changed and filters it on every paint; screens paint
+only when something on them changes.
 
 ## Mesh Boxing
 
