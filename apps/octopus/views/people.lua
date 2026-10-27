@@ -141,7 +141,8 @@ function People.profile(self)
     self.profileView = view
     self.status = C.text("", { Name = "ProfileStatus", FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center" })
     local body = ui.Node2D {}
-    body:addChild(view.content); body:addChild(C.toolbar("Bottom", { self.status }, { Name = "ProfileStatusBar" }))
+    self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "ProfileStatusBar", Visible = false })
+    body:addChild(view.content); body:addChild(self.statusBar)
     local bar = C.appBar({
         { "BackFromProfile", "arrow-left", "back", function()
             local route = self.profileReturn
@@ -174,9 +175,11 @@ end
 function People.me(self)
     local session = self.client:getSession()
     self.status = C.text("", { Name = "MeStatus", FontSize = 13, Foreground = colors.dim, WordWrap = true })
+    self.statusBar = nil
     if not session then
+        self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "MeStatusBar", Visible = false })
         local body = ui.Node2D {}
-        body:addChild(welcome(self)); body:addChild(C.toolbar("Bottom", { self.status }, { Name = "MeStatusBar" }))
+        body:addChild(welcome(self)); body:addChild(self.statusBar)
         self.profileView = nil
         return self:tab("Me", C.page("me", body, { ExtendBodyBehindHeader = true }))
     end
@@ -373,7 +376,8 @@ function People.search(self)
     local body = ui.Node2D {}
     body:addChild(results)
     body:addChild(C.toolbar("Top", { bar }, { Name = "SearchBar", Padding = "20 0 20 16" }))
-    body:addChild(C.toolbar("Bottom", { self.status }, { Name = "SearchStatusBar" }))
+    self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "SearchStatusBar", Visible = false })
+    body:addChild(self.statusBar)
     local screen = self:tab("Search", C.page("search", body, { ExtendBodyBehindHeader = true, class = "toolbar-page" }))
     -- A tag opened from a post searches straight away.
     if state.results == nil and state.query:match("^#") then People.runSearch(self, list)

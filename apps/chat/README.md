@@ -23,8 +23,10 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   share the inbox metrics.
 - Commands live in an `ApplicationBar`. On the root pages its round buttons
   switch between chats, new chat and profile, and its menu holds refresh and
-  sign out. In a conversation the bar holds back, attach, send and pin, with
-  conversation info and refresh in the menu.
+  sign out. A conversation has no command row, after Windows Phone
+  Messenger: its title line (‹ MESSENGER) goes back, as does a swipe in from
+  the left edge, and tapping its name opens the conversation info, whose bar
+  holds back and pin. Attach and send sit in the composer.
 - Text boxes are pale with dark text in both themes and turn white with an
   accent border when focused. Secondary buttons are 2-pixel outlines,
   primary commands are filled with the accent, and links are plain accent
@@ -64,8 +66,8 @@ necessary before claiming WP7-like smoothness.
 
 Search matches conversation names and message previews. The all, unread and
 pinned pivots filter locally; opening a conversation clears its local unread
-badge. Use pin in a conversation's application bar to add or remove it from
-the pinned pivot. Drafts survive navigation
+badge. Use pin in a conversation's info (tap its name) to add or remove it
+from the pinned pivot. Drafts survive navigation
 and pinning. Pins and unread state last for this app session.
 
 Open conversations update automatically every 3 seconds; the visible inbox

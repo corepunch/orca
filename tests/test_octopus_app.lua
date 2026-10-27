@@ -110,6 +110,13 @@ app:afterPaint()
 drain(app)
 assert(find(app, "Imagep-reef").Src == app.media:path("f-reef"), "Visible photo posts load their image")
 assert(find(app, "Imagep-reef").Source, "Downloaded photos must resolve a native image resource")
+home:UpdateLayout(390, 844)
+local reef, reefImage = find(app, "Photop-reef"), find(app, "Imagep-reef")
+assert(math.abs(reef.AspectRatio - 156 / 104) < 0.01 and math.abs(reef.ActualWidth / reef.ActualHeight - 1.5) < 0.02,
+    "A photo frame takes the photo's shape instead of leaving empty space beneath it")
+assert(reefImage.Stretch == "UniformToFill" and math.abs(reefImage.ActualHeight - reef.ActualHeight) < 1,
+    "A shaped frame is filled edge to edge")
+assert(app.photos:aspect("f-reef") == reef.AspectRatio, "Rebuilt cards reserve the decoded shape")
 local profilePhoto = assert(find(app, "Postp-reef"):findChild("AvatarPhoto", true),
     "Bundled demo portraits must appear beside Octopus posts")
 assert(profilePhoto.Source and profilePhoto.Source.Width > 100, "Octopus portraits must resolve real image resources")
@@ -135,7 +142,13 @@ assert(math.abs(bar.ActualHeight - 58 - 34) < 1 and math.abs(bar.ActualY + bar.A
 assert(bar.ActualY + find(app, "AppBarHome").ActualY + 38 <= 810 + 0.5,
     "Octopus bottom controls must stay above the home gesture")
 local status = find(app, "HomeStatusBar")
-assert(math.abs(status.ActualY + status.ActualHeight - bar.ActualY) < 1, "The status strip docks above the bar")
+assert(status.Visible and math.abs(status.ActualY + status.ActualHeight - bar.ActualY) < 1,
+    "A status strip with a notice docks above the bar")
+app:notice("")
+home:UpdateLayout(390, 844)
+assert(not status.Visible, "An empty status strip leaves no frosted band above the bar")
+app:notice("Offline mock · posts stay in this session")
+home:UpdateLayout(390, 844)
 home.SafeAreaTop, home.SafeAreaBottom = 0, 0
 home.SafeAreaLeft, home.SafeAreaRight = 0, 0
 core.advanceFrame()

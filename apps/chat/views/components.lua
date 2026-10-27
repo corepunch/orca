@@ -121,12 +121,16 @@ end
 -- name above the content. A locked Pivot with one item gives every page the
 -- same metrics as the inbox pivot. Scrolling content runs under the frosted
 -- header; other content stays below it unless the page asks otherwise.
+-- `back` turns the title line into a back button that the left-edge swipe
+-- also triggers; `details` runs when the page name is tapped.
 function C.page(header, content, props)
     props = props or {}
     local extend = props.ExtendBodyBehindHeader
     if extend == nil then extend = content.OverflowY == "Scroll" end
     local pivot = ui.Pivot { Name = props.Name, Title = props.Title or "Messenger", IsLocked = true, Foreground = colors.ink,
-        ExtendBodyBehindHeader = extend, class = props.class }
+        ExtendBodyBehindHeader = extend, class = props.class,
+        BackIcon = props.back and "Chat/assets/icons/chevron-left.svg" or "", BackRequested = props.back,
+        HeaderClick = props.details }
     local item = ui.PivotItem { Header = header }
     item:addChild(content)
     pivot:addChild(item)

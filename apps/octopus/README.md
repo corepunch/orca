@@ -33,7 +33,7 @@ blocks with [Chat](../chat/README.md):
 - Cards show a square avatar tile (the author's profile photo, or their
   initials on a tile colour), the author and a relative time, the post by
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
-  a photo), its tags, and comment/repost/like counts. Liked hearts turn red and
+  a photo shaped like the picture, between 4:5 and 1.91:1), its tags, and comment/repost/like counts. Liked hearts turn red and
   reposts green. Profiles list posts and reposts together, as on Twitter.
 - A post's page shows its full time and large like, repost and comment
   counts between hairlines, then the threaded replies.

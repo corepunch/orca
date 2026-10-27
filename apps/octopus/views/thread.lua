@@ -181,8 +181,10 @@ function Thread.page(self)
     local mine = session and session.user.id == post.authorId
     local view = { post = post, entry = { likes = 0, comments = 0, reposts = 0 } }
     self.thread = view
+    -- The status line only takes room in the comment bar while it has text.
     self.status = C.text("", { Name = "PostStatus", FontSize = 11, Foreground = colors.dim,
-        TextHorizontalAlignment = "Center" })
+        TextHorizontalAlignment = "Center", Visible = false })
+    self.statusBar = self.status
 
     local author = ui.Grid { Columns = "56px 1fr", Spacing = 14, IgnoreHitTest = true }
     author:addChild(C.avatar(post.authorName, 56, post.authorId, self))

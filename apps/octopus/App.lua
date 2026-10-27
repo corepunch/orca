@@ -49,7 +49,7 @@ local App = Application:extend {
             schedule = function(fn) self:task(fn) end,
             repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
         })
-        self.shell, self.status, self.feeds, self.timelines, self.pivot = nil, nil, {}, {}, nil
+        self.shell, self.status, self.statusBar, self.feeds, self.timelines, self.pivot = nil, nil, nil, {}, {}, nil
         self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
         self.composeDrafts = { text = self.composeDraft }
         self.thread, self.profileView, self.composeView = nil, nil, nil
@@ -124,11 +124,14 @@ local App = Application:extend {
         if self.navigationEpoch == epoch then return self:activate_controller(controller) end
     end,
 
+    -- A page's status line. Where it has its own strip (self.statusBar), the
+    -- strip only shows while there is something to say.
     notice = function(self, text, isError)
         if self.status then
             self.status:setTextContent(text or "")
             self.status.Foreground = isError and colors.error or colors.dim
         end
+        if self.statusBar then self.statusBar.Visible = (text or "") ~= "" end
     end,
 
     -- Guests can read everything; writing asks them to sign in and come back.

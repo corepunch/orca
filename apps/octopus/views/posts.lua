@@ -12,8 +12,9 @@ function Posts.body(app, post, full)
     local body = C.stack({ Spacing = space.inline, IgnoreHitTest = true })
     local kind = post.postType
     if kind == "photo" or (kind == "quote" and post.imageId) then
-        -- A square as wide as the column, as on Twitter: narrower phones get shorter photos.
-        local frame = ui.Grid { Name = "Photo" .. post.id, AspectRatio = 1,
+        -- As wide as the column and shaped like the photo, as on Twitter, so
+        -- the frame never leaves empty space beside or beneath it.
+        local frame = ui.Grid { Name = "Photo" .. post.id, AspectRatio = app.photos:aspect(post.imageId),
             Background = colors.raised, IgnoreHitTest = true }
         frame:addChild(C.icon("image", 28, colors.dim))
         body:addChild(frame)

@@ -8,6 +8,11 @@
 #define PIVOT_HEADER_SPACING 18.0f
 #define PIVOT_CONTENT_TOP    8.0f    // gap between header strip and content; the header line already ends below its descenders
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
+#define PIVOT_BACK_ICON      16.0f   // back glyph before the title
+#define PIVOT_BACK_GAP       6.0f
+#define PIVOT_BACK_MIN       44.0f   // smallest back tap target
+#define PIVOT_EDGE           24.0f   // width of the strip a back swipe starts in
+#define PIVOT_BACK_SWIPE     96.0f   // distance that commits a back swipe
 #define PIVOT_MAX_ITEMS      32
 
 static int
@@ -56,6 +61,23 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
   }
   Metro_SetText(pPivot->_title, pPivot->Title, toupper);
   Metro_Show(pPivot->_title, pPivot->Title && *pPivot->Title, 1);
+  // The back tap area follows the title so it takes the taps over the bar.
+  bool_t back = pPivot->BackIcon && *pPivot->BackIcon;
+  if (back && !pPivot->_back) {
+    pPivot->_back = OBJ_Create(ID_Node2D);
+    OBJ_AddChild(hObject, pPivot->_back);
+    pPivot->_backIcon = OBJ_Create(ID_VectorView);
+    GetNode2D(pPivot->_backIcon)->IgnoreHitTest = TRUE;
+    Metro_SetFloat(pPivot->_backIcon, ID_Node_Width, PIVOT_BACK_ICON);
+    Metro_SetFloat(pPivot->_backIcon, ID_Node_Height, PIVOT_BACK_ICON);
+    OBJ_AddChild(pPivot->_back, pPivot->_backIcon);
+  }
+  if (pPivot->_back) {
+    struct VectorView *icon = GetVectorView(pPivot->_backIcon);
+    if (back && (!icon->Source || strcmp(icon->Source, pPivot->BackIcon)))
+      PROP_SetStringValue(OBJ_FindLongProperty(pPivot->_backIcon, ID_VectorView_Source), pPivot->BackIcon);
+    Metro_Show(pPivot->_back, back, 1);
+  }
 
   struct Object *stale[PIVOT_MAX_ITEMS];
   int staleCount = 0;
@@ -156,7 +178,7 @@ HANDLER(Pivot, Object, PropertyChanged)
     Pivot_Transition(hObject, pPivot, Pivot_SelectedHeaderIndex(hObject));
   }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
-      id == ID_Pivot_ExtendBodyBehindHeader) {
+      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon) {
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -215,8 +237,19 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   }
 
   LRESULT title = Metro_Measure(pPivot->_title, w, h);
-  Metro_Arrange(pPivot->_title, x + METRO_INSET, top + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
+  bool_t back = pPivot->_back && GetNode(pPivot->_back)->Visible;
+  float titleX = x + METRO_INSET + (back ? PIVOT_BACK_ICON + PIVOT_BACK_GAP : 0);
+  Metro_Arrange(pPivot->_title, titleX, top + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
   float stripY = top + PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0;
+  if (back) {
+    // The whole title line, up through the status bar, is the back button.
+    float right = MAX(titleX + LOWORD(title) + METRO_INSET, x + PIVOT_BACK_MIN);
+    float bottom = MAX(stripY, top + PIVOT_BACK_MIN);
+    Metro_Arrange(pPivot->_back, x, y, right - x, bottom - y);
+    Metro_Measure(pPivot->_backIcon, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
+    Metro_Arrange(pPivot->_backIcon, METRO_INSET,
+      top - y + PIVOT_TITLE_TOP + (HIWORD(title) - PIVOT_BACK_ICON) / 2, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
+  }
 
   // The selected header leads; the others follow in order and wrap around.
   float hx = x + METRO_INSET + pPivot->_headerFrom * settle + pPivot->_dragX * 0.3f;
@@ -271,12 +304,25 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
   return MAKEDWORD(w, h);
 }
 
+static bool_t
+Pivot_HitsBack(struct Pivot *pPivot, float x, float y)
+{
+  return pPivot->_back && _SendMessage(pPivot->_back, Node, HitTest, .x = x, .y = y);
+}
+
 HANDLER(Pivot, Node, LeftButtonDown)
 {
+  bool_t back = pPivot->_back && GetNode(pPivot->_back)->Visible;
   pPivot->_tracking = TRUE;
   pPivot->_dragging = FALSE;
   pPivot->_pressX = pLeftButtonDown->x;
   pPivot->_pressY = pLeftButtonDown->y;
+  pPivot->_backPressed = back && Pivot_HitsBack(pPivot, pLeftButtonDown->x, pLeftButtonDown->y);
+  if (back) {
+    struct mat4 inv = MAT4_Inverse(&GetNode2D(hObject)->Matrix);
+    struct vec3 local = MAT4_MultiplyVector3D(&inv, &(struct vec3){ pLeftButtonDown->x, pLeftButtonDown->y, 0 });
+    pPivot->_edge = local.x < PIVOT_EDGE;
+  } else pPivot->_edge = FALSE;
   return FALSE;
 }
 
@@ -284,41 +330,55 @@ HANDLER(Pivot, Node, LeftButtonDragged)
 {
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(hObject, items);
-  if (!pPivot->_tracking || pPivot->IsLocked || count < 2) return FALSE;
+  bool_t edge = pPivot->_edge;
+  if (!pPivot->_tracking || (!edge && (pPivot->IsLocked || count < 2)) || !count) return FALSE;
   float dx = pLeftButtonDragged->x - pPivot->_pressX;
   float dy = pLeftButtonDragged->y - pPivot->_pressY;
   if (!pPivot->_dragging) {
     if (fabsf(dx) < METRO_DRAG_START || fabsf(dx) < fabsf(dy) * 1.5f) return FALSE;
+    // A back swipe moves right only; a leftward one may still change items.
+    if (edge && dx < 0) {
+      pPivot->_edge = edge = FALSE;
+      if (pPivot->IsLocked || count < 2) return FALSE;
+    }
     pPivot->_dragging = TRUE;
+    pPivot->_backPressed = FALSE;
     pPivot->_progress = 1;
     // Hide the content from hit testing so releasing the swipe is not a tap.
     GetNode2D(items[pPivot->SelectedIndex])->IgnoreHitTest = TRUE;
   }
-  pPivot->_dragX = dx;
+  pPivot->_dragX = edge ? MAX(dx, 0) : dx;
   OBJ_SetDirty(hObject);
   return TRUE;
 }
 
 HANDLER(Pivot, Node, LeftButtonUp)
 {
-  bool_t dragging = pPivot->_dragging;
+  bool_t dragging = pPivot->_dragging, edge = pPivot->_edge;
+  bool_t back = pPivot->_backPressed && Pivot_HitsBack(pPivot, pLeftButtonUp->x, pLeftButtonUp->y);
   float dx = pPivot->_dragX;
-  pPivot->_tracking = pPivot->_dragging = FALSE;
+  pPivot->_tracking = pPivot->_dragging = pPivot->_backPressed = pPivot->_edge = FALSE;
   pPivot->_dragX = 0;
+  if (back && !dragging) {
+    axPostMessageW(hObject, ID_Pivot_BackRequested, 0, 0);
+    return TRUE;
+  }
   if (!dragging) return FALSE;
 
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(hObject, items);
   if (!count) return TRUE;
   GetNode2D(items[pPivot->SelectedIndex])->IgnoreHitTest = FALSE;
-  if (fabsf(dx) >= METRO_SWIPE) {
+  if (edge && dx >= PIVOT_BACK_SWIPE) {
+    axPostMessageW(hObject, ID_Pivot_BackRequested, 0, 0);
+  } else if (!edge && fabsf(dx) >= METRO_SWIPE) {
     Pivot_Select(hObject, (pPivot->SelectedIndex + (dx < 0 ? 1 : count - 1)) % count);
-  } else {
-    // Not far enough: settle back into place.
-    pPivot->_headerFrom = dx * 0.3f;
-    pPivot->_contentFrom = dx;
-    Pivot_StartAnimation(hObject, pPivot);
+    return TRUE;
   }
+  // Not far enough, or the page stays while the app goes back: settle into place.
+  pPivot->_headerFrom = dx * 0.3f;
+  pPivot->_contentFrom = dx;
+  Pivot_StartAnimation(hObject, pPivot);
   return TRUE;
 }
 
@@ -330,7 +390,9 @@ HANDLER(PivotHeaderItem, Node, LeftButtonUp)
   struct Object *items[PIVOT_MAX_ITEMS];
   int count = Pivot_Items(pivot, items);
   for (int i = 0; i < count; i++) {
-    if (items[i] == pPivotHeaderItem->_item) Pivot_Select(pivot, i);
+    if (items[i] != pPivotHeaderItem->_item) continue;
+    if (i == pPivot->SelectedIndex) axPostMessageW(pivot, ID_Pivot_HeaderClick, 0, 0);
+    else Pivot_Select(pivot, i);
   }
   pPivot->_tracking = FALSE;
   return TRUE;

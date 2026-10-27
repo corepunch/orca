@@ -31,7 +31,7 @@ function Identity.auth(self, mode)
     end
     self.status = C.text(self.authReason or "", { Name = "AuthStatus", WordWrap = true, FontSize = 13,
         Foreground = colors.muted })
-    self.authReason = nil
+    self.statusBar, self.authReason = nil, nil
 
     local form = C.stack({ Name = signup and "SignUpPage" or "SignInPage", Spacing = 16 })
     if signup then form:addChild(field("Your name", input("DisplayName", "How people will see you", draft.name))) end

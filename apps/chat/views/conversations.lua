@@ -313,7 +313,15 @@ function Conversations.details(self)
         function(members) return detailsBody(self, room, members) end)
     local content = screen:getFirstChild()
     content:removeFromParent()
-    local bar = C.appBar({ { "BackToThread", "arrow-left", "back", function() self:show("/thread") end } })
+    -- Pinning lives with the conversation's info, which its name opens.
+    local bar
+    bar = C.appBar({
+        { "BackToThread", "arrow-left", "back", function() self:show("/thread") end },
+        { "PinConversation", "pin", self.pinned[room.id] and "unpin" or "pin", function()
+            self.pinned[room.id] = not self.pinned[room.id] or nil
+            bar:findChild("PinConversation").Text = self.pinned[room.id] and "unpin" or "pin"
+        end },
+    })
     Footer.layout(screen, content, bar, { Background = colors.background, Foreground = colors.ink })
     return screen
 end

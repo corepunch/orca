@@ -153,7 +153,7 @@ end
 
 function Home.page(self)
     if self.shell and self.shell:has("Home") then
-        self.status = self.homeStatus
+        self.status, self.statusBar = self.homeStatus, self.homeStatusBar
         local screen = self.shell:show("Home")
         Home.select(self, self.feed)
         return screen
@@ -177,8 +177,10 @@ function Home.page(self)
         item:addChild(area)
         self.pivot:addChild(item)
     end
-    local status = ui.Grid { Name = "HomeStatusBar", Rows = "20px", SafeAreaEdge = "Bottom", class = "frosted" }
+    local status = ui.Grid { Name = "HomeStatusBar", Rows = "20px", SafeAreaEdge = "Bottom", class = "frosted",
+        Visible = false }
     status:addChild(self.status)
+    self.statusBar, self.homeStatusBar = status, status
     local grid = ui.Node2D {}
     grid:addChild(self.pivot); grid:addChild(status)
     local screen = self:frame(grid, "Home")

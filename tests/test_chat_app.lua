@@ -21,6 +21,13 @@ local function flushQueue()
         if not message:is("Window.Paint") then orca.system.dispatchMessage(nil, message) end
     end
 end
+-- The generated header of a single-page Pivot.
+local function headerOf(pivot)
+    local child = pivot:getFirstChild()
+    while child and child.className ~= "PivotHeaderItem" do child = child:getNext() end
+    return assert(child, "Missing page header")
+end
+
 local function drain(app)
     flushQueue()
     while true do
@@ -35,6 +42,11 @@ local function drain(app)
         flushQueue()
     end
 end
+local function press(app, name)
+    assert(app.screen:findChild(name, true), "Missing " .. name):send("Node.LeftButtonUp")
+    drain(app)
+end
+
 local function mockApp(media, client)
     local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
     -- Keep navigation real while the fixture controls layout and painting.
@@ -141,30 +153,37 @@ for _, name in ipairs { "AttachPhoto", "SendMessage" } do
     assert(button:getParent() == composerStrip and button.ActualWidth >= 44 and button.ActualHeight >= 44,
         name .. " must be a usable target inside the composer strip")
 end
-for _, name in ipairs { "BackToChats", "ConversationMenu" } do
-    local button = screen:findChild(name, true)
-    assert(button.Visible and button:getParent().Name == "ThreadCommands" and button.ActualHeight >= 44,
-        name .. " must remain accessible above the messages")
-end
-local overflow = screen:findChild("ThreadOverflow", true)
-assert(not overflow.Visible, "Conversation commands must stay hidden behind the ellipsis")
-screen:findChild("ConversationMenu", true):send("Node.LeftButtonUp")
+-- After Messenger: no command row under the header. The title line and a
+-- swipe from the left edge go back; the conversation's name opens its info.
+local threadPage = screen:findChild("ThreadPage", true)
+assert(threadPage.BackIcon:find("chevron-left", 1, true) and not screen:findChild("ThreadCommands", true)
+    and not screen:findChild("ThreadOverflow", true), "The thread must not spend a row on its commands")
+local threadRoom = app.room
+headerOf(threadPage):send("Node.LeftButtonUp")
 drain(app)
-assert(overflow.Visible, "The ellipsis must open the conversation menu")
+assert(app.screen:findChild("PinConversation", true) and app.screen:findChild("BackToThread", true),
+    "Tapping the conversation's name must open its info, where pinning lives")
+local pinned = app.pinned[threadRoom.id]
+press(app, "PinConversation")
+assert(app.pinned[threadRoom.id] == (not pinned or nil)
+    and app.screen:findChild("PinConversation", true).Text == (pinned and "pin" or "unpin"),
+    "Pinning from the info page must toggle the conversation and relabel the command")
+press(app, "PinConversation")
+press(app, "BackToThread")
+screen = app.screen
 screen:UpdateLayout(390, 844)
-for _, name in ipairs { "PinConversation", "ConversationInfo", "RefreshMessages" } do
-    local item = screen:findChild(name, true)
-    assert(item:getParent().Name == "ThreadOverflowMenu" and item.ActualHeight >= 44,
-        name .. " must be accessible in the overflow menu")
+for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do
+    orca.system.dispatchMessage { target = screen, message = message, x = 20, y = 20 }
 end
-screen:findChild("DismissConversationMenu", true):send("Node.LeftButtonUp")
 drain(app)
-assert(not overflow.Visible, "Tapping outside must dismiss the conversation menu")
-screen:findChild("ConversationMenu", true):send("Node.LeftButtonUp")
-drain(app)
-screen:findChild("RefreshMessages", true):send("Node.LeftButtonUp")
-drain(app)
-assert(not overflow.Visible, "Choosing a menu command must dismiss the menu")
+assert(app.screen:findChild("Inbox", true), "Going back from the title line must return to the conversations")
+app.room = threadRoom
+screen = app:dispatch("/thread").view
+app.screen = screen
+flushQueue()
+screen:UpdateLayout(390, 844)
+footer = screen:findChild("ThreadFooter", true)
+composerStrip = screen:findChild("Composer", true)
 screen.ResizeMode = "NoResize"
 screen.Width, screen.Height = 390, 844
 screen:UpdateLayout(390, 844)
@@ -181,13 +200,15 @@ local function screenY(node)
     while node and node ~= screen do y, node = y + node.ActualY, node:getParent() end
     return y
 end
-local commands = screen:findChild("ThreadCommands", true)
+local header = headerOf(screen:findChild("ThreadPage", true))
 assert(threadRoot.ActualY == 0 and threadRoot.ActualHeight == 844 and threadRoot:getFirstChild().PaddingLeft == 12
     and threadRoot:getFirstChild().PaddingRight == 18,
     "Thread content must run edge to edge, following the system's side insets")
-local commandsY = screenY(commands)
-assert(commandsY >= 59 + 44, "The page header and its commands must clear the status bar")
-assert(screenY(app.messageList) == 0 and app.messageList.ActualHeight == 844,
+local headerY = screenY(header)
+assert(headerY >= 59 + 14, "The page title and name must clear the status bar")
+-- Frames pack to whole points, so the composer's half-point hairline can
+-- leave the list's hidden bottom edge half a point short.
+assert(screenY(app.messageList) == 0 and math.abs(app.messageList.ActualHeight - 844) < 1,
     "Messages must scroll under the header and the composer")
 assert(footer.PaddingBottom == 34 and math.abs(composerStrip.ActualWidth - 360) < 1,
     "The composer must leave safe room for the home gesture and landscape edges")
@@ -250,7 +271,7 @@ flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
-assert(footer.PaddingBottom == 0 and math.abs(screenY(commands) - (commandsY - 59)) < 1,
+assert(footer.PaddingBottom == 0 and math.abs(screenY(header) - (headerY - 59)) < 1,
     "Safe-area bindings must update when the keyboard or orientation changes")
 
 -- Compact bubbles keep the body verbatim and let layout reserve metadata space.
@@ -300,8 +321,8 @@ assert(app:renderMessages())
 -- Messages scroll under the header, so the reading position is just above its bottom edge.
 local reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
 local visibleTop = app.messageList.AdjustedContentInsetTop
-local toolbar = screen:findChild("ThreadToolbar", true)
-assert(math.abs(visibleTop - (screenY(toolbar) + toolbar.ActualHeight)) < 1,
+header = headerOf(screen:findChild("ThreadPage", true))
+assert(math.abs(visibleTop - (screenY(header) + header.ActualHeight + 8)) < 1,
     "The message list's top inset must end at the bottom of the header")
 app.messageList.ContentOffset = { X = 0, Y = visibleTop - reading.ActualY - 5 }
 local readingY = reading.ActualY + app.messageList.ContentOffset.Y
@@ -599,8 +620,8 @@ click(otpApp, "Contactalex")
 click(otpApp, "GroupNext")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
-click(otpApp, "ConversationMenu")
-click(otpApp, "ConversationInfo")
+headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
+drain(otpApp)
 click(otpApp, "CreateInvite")
 assert(otpApp.screen:findChild("Invitation", true):getTextContent():find("Invitation:", 1, true), "Admins must be able to create invitations")
 click(otpApp, "RevokeInvite")
@@ -628,15 +649,11 @@ assert(not otpApp.screen:findChild("Composer", true).Visible and otpApp.screen:f
     "Channel subscribers must see a read-only timeline")
 assert(not isShown(otpApp.screen:findChild("AttachPhoto", true)), "Subscribers must not be offered media publishing")
 assert(not isShown(otpApp.screen:findChild("SendMessage", true)), "Subscribers must not be offered message publishing")
-for _, name in ipairs { "BackToChats", "ConversationMenu" } do
-    assert(isShown(otpApp.screen:findChild(name, true)), "Read-only subscribers still need " .. name)
-end
-assert(not isShown(otpApp.screen:findChild("ConversationInfo", true)), "Secondary commands start hidden for subscribers too")
-click(otpApp, "ConversationMenu")
-for _, name in ipairs { "PinConversation", "ConversationInfo", "RefreshMessages" } do
-    assert(isShown(otpApp.screen:findChild(name, true)), "Subscribers must retain overflow action " .. name)
-end
-click(otpApp, "DismissConversationMenu")
+assert(otpApp.screen:findChild("ThreadPage", true).Title == "Messenger · channel"
+    and otpApp.screen:findChild("ThreadPage", true).BackIcon ~= "", "Read-only subscribers can still go back")
+headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
+drain(otpApp)
+assert(otpApp.screen:findChild("PinConversation", true), "Subscribers can still open the info and pin the channel")
 
 -- Public channel discovery works for a new account without preassigned membership.
 otpApp:show("/new")
