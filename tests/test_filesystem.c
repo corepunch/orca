@@ -51,7 +51,7 @@ static void test_scene_tree(void)
 #else
         const char *source = "<Object Name=\"Root\"><Object Name=\"Child &amp; &quot;quoted&quot;\"/></Object>";
 #endif
-        struct Object *root = ORCA_LOAD_SCENE_STRING(source);
+        struct Object *root = FS_LoadObjectFromString(source);
         EXPECT(root != NULL);
         EXPECT_STR_EQ(OBJ_GetName(root), "Root");
         struct Object *child = root ? OBJ_FindChild(root, "Child & \"quoted\"", FALSE) : NULL;
@@ -74,8 +74,8 @@ static void test_scene_rejects_malformed_input(void)
         const char *unterminated = "<Object Name=\"broken\">";
         const char *trailing = "<Object/><Object/>";
 #endif
-        EXPECT(ORCA_LOAD_SCENE_STRING(unterminated) == NULL);
-        EXPECT(ORCA_LOAD_SCENE_STRING(trailing) == NULL);
+        EXPECT(FS_LoadObjectFromString(unterminated) == NULL);
+        EXPECT(FS_LoadObjectFromString(trailing) == NULL);
     });
 }
 

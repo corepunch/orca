@@ -48,6 +48,13 @@ compiled and its Lua file/string loader APIs are absent; C entry points remain
 as unavailable stubs for the generated ABI. The generic loader, library/font
 lookup, cloning, editor scene saves and project scaffolding follow the selection.
 
+The public I/O API is format-neutral: `loadObjectFromDisk(path)`,
+`loadObjectFromString(source)`, and `serializeObjectToString(object)`.
+Legacy format-specific names remain compatibility aliases for the active
+reader. Parser selection lives in one `fs_scene.c` block; the configuration
+header contains the other format-selection block. The readers share object
+construction and registration through one immutable descriptor.
+
 Example and MvvmForms include both XML and Lisp scenes; extensionless startup
 paths select the matching assets. Other applications still using XML require
 the default XML build. This switch concerns scene

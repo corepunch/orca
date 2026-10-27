@@ -11,19 +11,38 @@ test.expect(has_lisp ~= has_xml, 'exactly one scene string loader is exported')
 test.expect_eq(filesystem.loadObjectFromLisp ~= nil, has_lisp, 'Lisp file and string API selection agrees')
 test.expect_eq(filesystem.loadObjectFromXml ~= nil, has_xml, 'XML file and string API selection agrees')
 
-local extension = has_lisp and 'lisp' or 'xml'
+test.expect(type(filesystem.loadObjectFromDisk) == 'function', 'format-independent disk loader is exported')
+test.expect(type(filesystem.loadObjectFromString) == 'function', 'format-independent string loader is exported')
+test.expect(type(filesystem.serializeObjectToString) == 'function', 'format-independent serializer is exported')
+test.expect(type(filesystem.getSceneExtension) == 'function', 'selected extension query is exported')
+test.expect(type(filesystem.getSceneTemplate) == 'function', 'selected template query is exported')
+local scene_extension = filesystem.getSceneExtension()
+test.expect_eq(scene_extension, has_lisp and '.lisp' or '.xml', 'extension query agrees with the active compatibility API')
+local extension = scene_extension:sub(2)
 local disabled = has_lisp and 'xml' or 'lisp'
 local expected = os.getenv('ORCA_EXPECT_SCENE_FORMAT')
 if expected then
   test.expect_eq(extension, expected, 'loaded binary uses the requested scene format')
 end
-local load_string = has_lisp and filesystem.loadObjectFromLispString or filesystem.loadObjectFromXmlString
-local load_file = has_lisp and filesystem.loadObjectFromLisp or filesystem.loadObjectFromXml
-local serialize = has_lisp and filesystem.serializeObjectToLispString or filesystem.serializeObjectToXmlString
+local load_string = filesystem.loadObjectFromString
+local load_file = filesystem.loadObjectFromDisk
+local serialize = filesystem.serializeObjectToString
 local fixture = 'tests/fixtures/scene_format/Scene'
 local source = filesystem.readTextFile(fixture .. '.' .. extension)
 test.expect(source ~= nil and source ~= '', 'selected fixture exists')
 test.expect(serialize ~= nil, 'selected serializer is available')
+
+local scaffold = filesystem.getSceneTemplate()
+test.expect(type(scaffold) == 'string' and scaffold ~= '', 'selected scene template is available')
+local starter = load_string(string.format(scaffold, 'SceneFormat'))
+test.expect(starter ~= nil, 'generic string loader parses the selected scene template')
+test.expect_eq(starter.Name, 'Main', 'selected template constructs its screen')
+local greeting
+for child in starter.children do
+  if child:getClassName() == 'TextBlock' then greeting = child.Text end
+end
+test.expect_eq(greeting, 'Hello, SceneFormat!', 'selected template preserves the application name')
+starter = nil
 
 -- DataContext paths address schema fields rather than Object's metadata names.
 local model = filesystem.loadXmlDataStringWithSchema(
@@ -75,13 +94,16 @@ local function check_scene(root)
   test.expect(not target.Visible, 'message action executes against its relative target')
 end
 
--- Direct file, generic file and extensionless paths must select the same reader.
+-- The format-independent APIs select one reader without callers branching on syntax.
 check_scene(load_string(source))
 check_scene(load_file(fixture .. '.' .. extension))
-check_scene(filesystem.loadObject(fixture .. '.' .. extension))
-check_scene(filesystem.loadObject(fixture))
-test.expect(filesystem.loadObject(fixture .. '.' .. disabled) == nil,
-  'generic loader rejects an existing file of the disabled scene format')
+check_scene(load_file(fixture))
+check_scene(filesystem.loadObject(fixture)) -- Existing generic API remains compatible.
+test.expect(load_file(fixture .. '.' .. disabled) == nil,
+  'generic disk loader rejects an existing file of the disabled scene format')
+local disabled_source = filesystem.readTextFile(fixture .. '.' .. disabled)
+test.expect(load_string(disabled_source) == nil,
+  'generic string loader rejects the disabled syntax rather than auto-selecting another reader')
 print('PASS: exclusive ' .. extension .. ' API and file registration, bindings, objects and actions')
 
 local function roundtrip()
@@ -140,7 +162,7 @@ local function check_example_startup()
   local project = filesystem.init('apps/Example')
   test.expect(project ~= nil, 'Example package initializes in the selected build')
   test.expect_eq(project.StartupScreen, 'Example/Screens/Application', 'Example startup is independent of scene format')
-  local root = filesystem.loadObject(project.StartupScreen)
+  local root = load_file(project.StartupScreen)
   test.expect(root ~= nil, 'generic startup loader opens the selected Example scene')
   test.expect(root:getSourceFile():match('%.' .. extension .. '$') ~= nil,
     'extensionless Example startup selects the compiled scene format')
@@ -204,7 +226,7 @@ check_example_startup()
 local function check_mvvm_form()
   local project = filesystem.init('apps/MvvmForms')
   test.expect(project ~= nil, 'MvvmForms package initializes')
-  local form = filesystem.loadObject('MvvmForms/Views/Form')
+  local form = load_file('MvvmForms/Views/Form')
   test.expect(form ~= nil, 'generic loader opens the actual MvvmForms form')
   test.expect(form:getSourceFile():match('%.' .. extension .. '$') ~= nil, 'MvvmForms selects the compiled format')
   evaluate(form)
@@ -260,7 +282,7 @@ if has_xml then
   -- Exercise an existing app asset unchanged, including its {Binding ...} markup.
   local project = filesystem.init('apps/Adventure')
   test.expect(project ~= nil, 'legacy Adventure package initializes')
-  local template = filesystem.loadObject('Adventure/Prefabs/TabItem.xml')
+  local template = load_file('Adventure/Prefabs/TabItem.xml')
   test.expect(template ~= nil, 'generic XML loader reads the existing Adventure prefab')
   local host = load_string('<Node2D DataContextSource="Adventure/DataSources/Tabs:TabAdventures"/>')
   test.expect(host.DataContext ~= nil, 'legacy datasource reference resolves')

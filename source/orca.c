@@ -1,6 +1,7 @@
 #include <include/api.h>
 #include <include/renderer.h>
 #include <include/version.h>
+#include <include/scene_format.h>
 #include <libxml/tree.h>
 #include <libxml/parser.h>
 #include <stdio.h>
@@ -87,6 +88,7 @@ static int chdir_project(char const *input, path_t out) {
 
 /* ── scaffold ─────────────────────────────────────────────────────────────── */
 static int scaffold(char const *name) {
+  const char *scene_extension = orca_scene_extension();
   path_t dir; snprintf(dir, sizeof(dir), "%s", name);
   struct stat st;
   if (!stat(dir, &st)) { fprintf(stderr, "error: '%s' already exists\n", dir); return 1; }
@@ -107,36 +109,27 @@ static int scaffold(char const *name) {
   if (f) {
     fprintf(f,
       "Name = \"%s\"\n"
-      "StartupScreen = \"%s/Screens/Main" ORCA_SCENE_EXTENSION "\"\n"
+      "StartupScreen = \"%s/Screens/Main%s\"\n"
       "ScreenLibrary = { IsExternal = true }\n"
       "ImageLibrary = { IsExternal = true }\n"
       "EnginePlugins = { { Name = \"orca.UIKit\" } }\n"
       "SystemMessages = { { Name = \"WindowClosed\", Command = \"return\" } }\n",
-      name, name);
+      name, name, scene_extension);
     fclose(f);
   }
 
-  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main" ORCA_SCENE_EXTENSION, dir);
+  char scrpath[512]; snprintf(scrpath, sizeof(scrpath), "%s/Screens/Main%s", dir, scene_extension);
   f = fopen(scrpath, "w");
   if (f) {
-#if ORCA_HAS_LISP
-    fprintf(f,
-      "(Screen Name=\"Main\" Width=1024 Height=768\n"
-      "  (TextBlock Text=\"Hello, %s!\" FontSize=48 LayoutTransform=\"400 350 0 1 1\"))\n", name);
-#else
-    fprintf(f,
-      "<Screen Name=\"Main\" Width=\"1024\" Height=\"768\">\n"
-      "  <TextBlock Text=\"Hello, %s!\" FontSize=\"48\" LayoutTransform=\"400 350 0 1 1\"/>\n"
-      "</Screen>\n", name);
-#endif
+    fprintf(f, orca_scene_template(), name);
     fclose(f);
   }
 
   printf("Created '%s/'\n"
          "  package.lua\n"
-         "  Screens/Main" ORCA_SCENE_EXTENSION "\n"
+         "  Screens/Main%s\n"
          "  Images/\n\n"
-         "Run:  orca %s\n", dir, dir);
+         "Run:  orca %s\n", dir, scene_extension, dir);
   return 0;
 }
 

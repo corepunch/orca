@@ -257,7 +257,7 @@ FS_EnumDir2(lpcString_t, void (*callback)(lpcString_t,void*), void*);
 static void load_library(lpcString_t def, void* param) {
   lua_State *L = ((void**)param)[0];
   lpcString_t path = ((void**)param)[1];
-  if (strrchr(def, '.') && !strcasecmp(strrchr(def, '.'), ORCA_SCENE_EXTENSION)) {
+  if (strrchr(def, '.') && !strcasecmp(strrchr(def, '.'), FS_GetSceneExtension())) {
     *strrchr(def, '.') = 0;
     char buf[512];
     snprintf(buf,sizeof(buf),"local r = require('orca.filesystem').getWorkspace():findByPath('%s/%s') or require('%s/%s')()",path,def,path,def);
