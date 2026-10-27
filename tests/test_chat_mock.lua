@@ -169,6 +169,34 @@ value, err = photos:getAvatar("missing"); denied(value, err)
 value, err = photos:getAvatars { "bad/id" }; denied(value, err, "validation")
 value, err = photos:getAvatar("../secret"); denied(value, err, "validation")
 
+-- Editing and deleting follow the Appwrite policy: authors edit their own text;
+-- authors, or staff outside direct chats, delete for everyone.
+assert(client:signIn("demo@example.invalid", "password123"))
+local draft = assert(client:sendMessage("weekend", "Lunch at noon?"))
+local edited = assert(client:editMessage(draft.id, "Lunch at one?"))
+check(edited.id == draft.id and edited.body == "Lunch at one?" and type(edited.edited_at) == "string",
+    "Editing returns the same message with new text and an edit time")
+local stored = find(assert(client:listMessages("weekend")), draft.id)
+check(stored.body == "Lunch at one?" and stored.edited_at == edited.edited_at, "Edits persist for every reader")
+check(find(assert(client:listRooms()), "weekend").subtitle == "Lunch at one?", "Editing the latest message updates the inbox preview")
+value, err = client:editMessage(draft.id, " \n "); denied(value, err, "validation")
+value, err = client:editMessage(draft.id, string.rep("x", 4001)); denied(value, err, "validation")
+value, err = client:editMessage("bad&id", "x"); denied(value, err, "validation")
+value, err = client:deleteMessage("bad&id"); denied(value, err, "validation")
+value, err = client:editMessage("a1", "Not my words"); denied(value, err)
+check(err.status == 403, "Nobody edits another person's message")
+value, err = client:deleteMessage("a1"); denied(value, err)
+check(err.status == 403 and find(assert(client:listMessages("alex")), "a1"), "Direct chats have no moderators")
+check(assert(client:deleteMessage("w1")) == true and not find(assert(client:listMessages("weekend")), "w1"),
+    "Group owners delete members' messages")
+check(assert(client:deleteMessage(draft.id)) == true and not find(assert(client:listMessages("weekend")), draft.id),
+    "Authors delete their own messages for everyone")
+check(find(assert(client:listRooms()), "weekend").subtitle == "Start the conversation", "Deleting the last message clears the preview")
+value, err = client:deleteMessage(draft.id); denied(value, err, "not_found")
+value, err = client:editMessage(draft.id, "Gone"); denied(value, err, "not_found")
+value, err = newcomer:deleteMessage("a2"); denied(value, err)
+check(err.status == 403, "Non-members cannot delete messages")
+
 check(networkLoads == 0, "Offline operations must never import the network transport")
 for _, name in ipairs(guarded) do
     check(package.loaded[name] == nil, "Offline operations must not load " .. name)

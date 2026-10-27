@@ -141,4 +141,25 @@ describe('photos: private encrypted attachments', () => {
     await w.alice.removeMember(shared.id, w.carol.id);
     await rejects(w.carol.readObject(sent.thumbnail_key), 403);
   });
+
+  it('a caption can be removed by editing, keeping the photo', async () => {
+    const sent = await w.alice.uploadPhoto(room.id, photo());
+    const captioned = await w.alice.sendMessage(room.id, 'caption', [sent.id]);
+    const edited = await w.alice.editMessage(captioned.id, '');
+    assert.equal(edited.body, '');
+    assert.deepEqual(edited.attachments.map(row => row.id), [sent.id]);
+    for (const field of PRIVATE_FIELDS) assert.equal(edited.attachments[0][field], undefined, field);
+  });
+
+  it('deleting a message deletes its photos for everyone', async () => {
+    const sent = await w.alice.uploadPhoto(room.id, photo());
+    const message = await w.alice.sendMessage(room.id, 'short-lived photo', [sent.id]);
+    assert.ok((await w.bob.getPhoto(sent.id)).length > 0);
+    assert.equal(await w.alice.deleteMessage(message.id), true);
+    await rejects(w.bob.getPhoto(sent.id), 404);
+    await rejects(w.alice.readObject(sent.object_key), 404);
+    const fileId = key('photo:' + sent.object_key);
+    const stored = await w.alice.api.call('GET', `/storage/buckets/${w.cfg.bucketId}/files/${fileId}/view`, { binary: true });
+    assert.notEqual(stored.status, 200, 'the encrypted object is removed from the bucket');
+  });
 });

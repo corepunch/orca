@@ -36,6 +36,8 @@ rpc('revoke_chat_invite', (s, c) => s.revokeInvite(c.user, c.body.target_room, c
 rpc('find_chat_channels', (s, c) => s.findChannels(c.body.query));
 rpc('join_public_chat_channel', (s, c) => s.joinPublic(c.user, c.body.target_room));
 rpc('post_chat_message', (s, c) => s.postMessage(c.user, c.body));
+rpc('edit_chat_message', (s, c) => s.editMessage(c.user, c.body));
+rpc('delete_chat_message', (s, c) => s.deleteMessage(c.user, c.body));
 rpc('reserve_chat_photo', (s, c) => s.reservePhoto(c.user, c.body));
 rpc('discard_chat_photo', (s, c) => s.discardPhoto(c.user, c.body.attachment_id));
 

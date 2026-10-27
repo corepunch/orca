@@ -31,6 +31,14 @@ local Rooms = Model:extend("rooms", {
 local Messages = Model:extend("messages", {
     fetch = function(api, options) return api:listMessages(options.room_id, { limit = options.limit }) end,
     insert = function(api, values) return api:sendMessage(values.room_id, values.body, values.attachment_ids) end,
+    -- Like a Lapis row update: the row takes the server's edited fields.
+    edit = function(self, body)
+        local row, err = self._model.client:editMessage(self.id, body)
+        if not row then return nil, err end
+        for key, value in pairs(row) do self[key] = value end
+        return self
+    end,
+    delete = function(self) return self._model.client:deleteMessage(self.id) end,
     get_sender = function(self)
         local contacts = self._model.models.Contacts
         local scope, session = sessionScope(self._model.client)

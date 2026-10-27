@@ -129,8 +129,8 @@ channel subscribers see themselves and staff, without a peer subscriber list.
 
 All existing direct, group and channel operations are implemented: canonical
 direct pairs, owner/admin/member/subscriber roles, member removal, private
-invitations, public channel discovery/join, recent message history and up to
-four JPEG attachments per message. A group or channel may start empty. Room
+invitations, public channel discovery/join, recent message history, editing and
+deleting messages, and up to four JPEG attachments per message. A group or channel may start empty. Room
 creation validates up to fifty other native users, writes memberships with
 bounded concurrency, then commits visibility with the room document. Queries
 follow Appwrite cursors rather than silently returning the default first 25
@@ -162,7 +162,7 @@ up to three expired unpublished photos and their encrypted objects, including
 uploads left behind after a failure. This lazy cleanup does not replace periodic
 administrator maintenance for abandoned accounts.
 
-A single immutable message document is the publication commit marker. The
+A single message document is the publication commit marker. The
 function first validates sender, room, expiry and attachment ownership under the
 room lock, updates attachment references, then creates that message. A failed
 commit leaves photo references private and retryable. Membership is required
@@ -170,6 +170,15 @@ to read attached photos; unpublished photos additionally require uploader
 ownership and an unexpired reservation. Removing membership revokes future
 history and photo requests. Explicit discard also works for an uploader who no
 longer belongs to the room and deletes both ciphertext objects.
+
+`edit_chat_message` and `delete_chat_message` re-read the message under the same
+room lock. An edit only rewrites the author's text and `edited_at`, while the
+author can still post there. Deletion is allowed for the author, or for owners
+and admins outside direct chats. It removes the message document first, which
+unpublishes it immediately, then deletes its attachment rows and both encrypted
+objects. If that cleanup is interrupted, the photo rows reference an absent
+message. They become private to their uploader and are reclaimed after their
+reservation expiry, like any other unpublished photo.
 
 ## Serialization, failure recovery and maintenance
 

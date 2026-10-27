@@ -257,6 +257,44 @@ export class ChatService {
       return [await this.messageView(message, room)];
     });
   }
+  // Edit and delete serialize on the room lock and re-read the message inside it,
+  // so they never race a concurrent post, edit, delete or membership change.
+  async messageAction(user, messageId, action) {
+    const initial = await this.repo.get('messages', id(messageId));
+    if (!initial) reject(404, 'not_found', 'The message was not found.');
+    return this.repo.lock('room:' + initial.room_id, async () => {
+      const message = await this.repo.get('messages', messageId);
+      if (!message) reject(404, 'not_found', 'The message was not found.');
+      return action(message, await this.access(message.room_id, user.$id));
+    });
+  }
+  async editMessage(user, body) {
+    const text = body.message_body;
+    if (typeof text !== 'string' || Buffer.byteLength(text) > 4000) reject(400, 'validation', 'Write a message of at most 4000 text bytes.');
+    return this.messageAction(user, body.target_message, async (message, { room, member }) => {
+      // Only the author edits, and only while they may still post here.
+      if (message.sender_id !== user.$id || !posting(room, member)) reject(403, 'forbidden', 'You can edit only your own messages.');
+      if (!text.trim() && !message.attachment_ids?.length) reject(400, 'validation', 'A message without photos needs text.');
+      if (text === message.body) return [await this.messageView(message, room)];
+      const edited = await this.repo.update('messages', message.id, { ...message, body: text, edited_at: this.timestamp() });
+      return [await this.messageView(edited, room)];
+    });
+  }
+  async deleteMessage(user, body) {
+    return this.messageAction(user, body.target_message, async (message, { room, member }) => {
+      // Authors delete their own messages; group and channel staff moderate everyone's.
+      if (message.sender_id !== user.$id && !(room.kind !== 'direct' && staff(member))) reject(403, 'forbidden', 'You cannot delete this message.');
+      // Removing the commit marker unpublishes it at once; photos are then reclaimed.
+      await this.repo.remove('messages', message.id);
+      for (const attachmentId of message.attachment_ids || []) {
+        const photo = await this.repo.get('attachments', attachmentId);
+        if (photo?.message_id !== message.id) continue;
+        await this.repo.removeFile(photo.object_key); await this.repo.removeFile(photo.thumbnail_key);
+        await this.repo.remove('attachments', photo.id);
+      }
+      return true;
+    });
+  }
   async reservePhoto(user, body) {
     const roomId = id(body.target_room), fields = ['photo_width', 'photo_height', 'photo_bytes', 'thumbnail_width', 'thumbnail_height', 'thumbnail_bytes'];
     if (fields.some(field => !Number.isInteger(body[field]) || body[field] < 1) || body.photo_bytes > 1000000 || body.thumbnail_bytes > 1000000

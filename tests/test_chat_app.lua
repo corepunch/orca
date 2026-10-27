@@ -231,12 +231,15 @@ for _, width in ipairs { 320, 390, 834 } do
         screen:UpdateLayout(width, 844)
         for _, message in ipairs(layoutMessages) do
             local bubble = screen:findChild("MessageBubble" .. message.id, true)
-            local entry, body, time = bubble:getParent(), bubble:getFirstChild()
+            local holder, body, time = bubble:getParent(), bubble:getFirstChild()
+            local entry, x = holder:getParent(), holder.ActualX + bubble.ActualX
             for child in bubble.children do time = child end
-            assert(bubble.ActualX >= entry.PaddingLeft - 1 and
-                bubble.ActualX + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
+            assert(x >= entry.PaddingLeft - 1 and x + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
                 string.format("Message bubble %s must fit its gutter at %d/%d: x=%.1f width=%.1f entry=%.1f",
-                    message.id, width, fontSize, bubble.ActualX, bubble.ActualWidth, entry.ActualWidth))
+                    message.id, width, fontSize, x, bubble.ActualWidth, entry.ActualWidth))
+            local actions = assert(holder:findChild("MessageActions" .. message.id), "Own messages offer actions")
+            assert(math.abs(actions.ActualWidth - bubble.ActualWidth) < 1 and math.abs(actions.ActualHeight - bubble.ActualHeight) < 1,
+                "The action target must cover exactly its bubble")
             assert(time.ActualY >= body.ActualY + body.ActualHeight,
                 "Timestamp must not overlap the message at any tested width or font size")
             assert(time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
@@ -264,7 +267,7 @@ app.contactsById[incoming.sender_id] = { get_display_name = function() return ("
 app.room.kind, screen.Width = "group", 320
 assert(app:renderMessages())
 local namedBubble = screen:findChild("MessageBubble" .. incoming.id, true)
-assert(namedBubble.ActualWidth <= namedBubble:getParent().ActualWidth - 56 + 1,
+assert(namedBubble.ActualWidth <= namedBubble:getParent():getParent().ActualWidth - 56 + 1,
     "An unbroken sender name must wrap inside a narrow group-chat bubble")
 app.contactsById[incoming.sender_id], app.room.kind = savedContact, savedKind
 screen.Width = 390
@@ -664,7 +667,7 @@ assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
 local photoBubble = photoView:getParent():getParent()
-local timeline, bubble = photoApp.messageList, photoBubble:getParent()
+local timeline, bubble = photoApp.messageList, photoBubble:getParent():getParent()
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
 local offset = timeline.ContentOffset
@@ -681,6 +684,64 @@ photoApp:show("/profile"); click(photoApp, "SignOut")
 local leftover = io.open(previewPath, "rb")
 if leftover then leftover:close() end
 assert(not leftover, "Signing out must delete private photo preview files")
+
+-- Editing and deleting: tap a bubble, pick an action; unsent drafts survive.
+local editApp = mockApp()
+local function roomById(id) for _, room in ipairs(editApp.client:listRooms()) do if room.id == id then return room end end end
+local typo = assert(editApp.client:sendMessage("weekend", "Typo heer"))
+editApp:openRoom(roomById("weekend"))
+drain(editApp)
+local actionsMenu = editApp.screen:findChild("MessageActionsMenu", true)
+local function storedBody(id)
+    for _, message in ipairs(editApp.client:listMessages("weekend")) do if message.id == id then return message.body, message end end
+end
+assert(not actionsMenu.Visible, "Message actions stay hidden until a bubble is tapped")
+editApp.composer.Text = "unsent draft"
+click(editApp, "MessageActions" .. typo.id)
+assert(actionsMenu.Visible and editApp.screen:findChild("EditMessage", true) and editApp.screen:findChild("DeleteMessage", true),
+    "Tapping your own message offers edit and delete")
+editApp.screen:UpdateLayout(390, 844)
+local sheet = editApp.screen:findChild("MessageActionSheet", true)
+assert(sheet.ActualY + sheet.ActualHeight <= 844 + 1 and sheet.ActualY > 844 / 2, "The action sheet sits at the bottom of the screen")
+click(editApp, "EditMessage")
+assert(not actionsMenu.Visible and editApp.screen:findChild("EditingMessage", true).Visible, "Editing shows its banner")
+assert(editApp.composer.Text == "Typo heer", "Editing loads the message text into the composer")
+editApp.composer.Text = "Typo here"
+click(editApp, "SendMessage")
+local body, stored = storedBody(typo.id)
+assert(body == "Typo here" and stored.edited_at, "Sending in edit mode saves the edit")
+assert(editApp.composer.Text == "unsent draft" and not editApp.screen:findChild("EditingMessage", true).Visible,
+    "Saving an edit restores the unsent draft")
+local bubble = editApp.screen:findChild("MessageBubble" .. typo.id, true)
+local meta
+for child in bubble.children do meta = child end
+assert(bubble:getFirstChild():getTextContent() == "Typo here" and meta:getTextContent():match("^edited "),
+    "The timeline shows the new text with an edited mark")
+click(editApp, "MessageActions" .. typo.id)
+click(editApp, "EditMessage")
+editApp.composer.Text = "never saved"
+click(editApp, "CancelEdit")
+assert(storedBody(typo.id) == "Typo here" and editApp.composer.Text == "unsent draft", "Cancelling an edit discards it")
+click(editApp, "MessageActions" .. typo.id)
+click(editApp, "DeleteMessage")
+assert(actionsMenu.Visible and editApp.screen:findChild("ConfirmDeleteMessage", true), "Deleting asks for confirmation")
+click(editApp, "CancelDeleteMessage")
+assert(not actionsMenu.Visible and storedBody(typo.id), "Cancelling keeps the message")
+click(editApp, "MessageActions" .. typo.id)
+click(editApp, "DeleteMessage")
+click(editApp, "ConfirmDeleteMessage")
+assert(not storedBody(typo.id) and not editApp.screen:findChild("MessageBubble" .. typo.id, true),
+    "Confirmed deletion removes the message for everyone and from the timeline")
+assert(editApp.composer.Text == "unsent draft", "Deleting a message keeps the draft")
+click(editApp, "MessageActionsw1")
+assert(actionsMenu.Visible and not editApp.screen:findChild("EditMessage", true) and editApp.screen:findChild("DeleteMessage", true),
+    "Group owners may delete, but not edit, other people's messages")
+click(editApp, "DismissMessageActions")
+assert(not actionsMenu.Visible, "Tapping outside dismisses the actions")
+editApp:openRoom(roomById("alex"))
+drain(editApp)
+assert(editApp.screen:findChild("MessageBubblea1", true) and not editApp.screen:findChild("MessageActionsa1", true),
+    "Other people's messages in a direct chat have no actions")
 
 -- Interleave a newer tab request inside the offline transport response. Both
 -- requests still use the real client and mock endpoint implementation.

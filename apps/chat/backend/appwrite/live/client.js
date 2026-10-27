@@ -195,6 +195,12 @@ export class ChatClient {
     if (!Array.isArray(rows) || !rows[0]) throw new ChatError(502, 'invalid_response', 'The chat service did not return the sent message.');
     return rows[0];
   }
+  async editMessage(messageId, body) {
+    const rows = await this.rpc('edit_chat_message', { target_message: messageId, message_body: body });
+    if (!Array.isArray(rows) || !rows[0]) throw new ChatError(502, 'invalid_response', 'The chat service did not return the edited message.');
+    return rows[0];
+  }
+  deleteMessage(messageId) { return this.rpc('delete_chat_message', { target_message: messageId }); }
   reservePhoto(roomId, photo) {
     return this.rpc('reserve_chat_photo', { target_room: roomId, photo_width: photo.width, photo_height: photo.height,
       photo_bytes: photo.jpeg.length, thumbnail_width: photo.thumbnailWidth, thumbnail_height: photo.thumbnailHeight,

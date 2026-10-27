@@ -23,6 +23,11 @@ assert(#created:get_messages() == 0)
 assert(#created:get_members() == 2)
 assert(created:create_invite().room_id == created.id)
 assert(created:send_message("Room relation write"):get_sender():get_display_name() == "You")
+local editable = assert(created:send_message("Draft words"))
+assert(editable:edit("Final words") == editable and editable.body == "Final words" and editable.edited_at,
+    "Editing a row updates it in place")
+assert(created:get_messages { limit = 1 }[1].body == "Final words")
+assert(editable:delete() == true and #created:get_messages() == 1, "Deleting a row removes the message")
 local value, failure = models.Messages:create { room_id = created.id, body = " " }
 assert(not value and failure.code == "validation", "Model writes must share the normal client's validation")
 

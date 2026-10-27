@@ -215,6 +215,30 @@ function Client:sendMessage(roomId, body, attachmentIds)
   return data[1]
 end
 
+-- Authors edit their own text; the server records edited_at and keeps photos.
+function Client:editMessage(messageId, body)
+  if not validId(messageId) then return failure("validation", "Choose a message.") end
+  if type(body) ~= "string" or #body > 4000 then
+    return failure("validation", "Write a message of at most 4000 text bytes.")
+  end
+  if not self.session then return failure("unauthenticated", "Sign in to continue.") end
+  local data, err = self:_request("POST", "/rest/v1/rpc/edit_chat_message", { target_message = messageId, message_body = body }, true)
+  if not data then return nil, err end
+  if type(data) ~= "table" or type(data[1]) ~= "table" then
+    return failure("invalid_response", "The chat service did not return the edited message.")
+  end
+  return data[1]
+end
+
+-- Deletes for everyone: authors, or group/channel staff for any message.
+function Client:deleteMessage(messageId)
+  if not validId(messageId) then return failure("validation", "Choose a message.") end
+  if not self.session then return failure("unauthenticated", "Sign in to continue.") end
+  local data, err = self:_request("POST", "/rest/v1/rpc/delete_chat_message", { target_message = messageId }, true)
+  if data == nil then return nil, err end
+  return true
+end
+
 require("api.features")(Client, { failure = failure, text = text, escape = escape, validId = validId })
 
 -- Builds a client over any transport that serves the chat API paths.

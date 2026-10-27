@@ -142,6 +142,39 @@ return function(state, env)
         find(state.rooms, roomId).subtitle = text ~= "" and text or "Photo"
         return response(status or 200, { P.messageRow(message) })
     end
+    -- Same policy as the Appwrite function: authors edit their own text; authors,
+    -- or staff outside direct chats, delete for everyone along with the photos.
+    function P.changeMessage(name, user, body)
+        local message, list, index
+        for _, messages in pairs(state.messages) do
+            for i, item in ipairs(messages) do if item.id == body.target_message then message, list, index = item, messages, i end end
+        end
+        if not message then return fail(404, "not_found", "The message was not found.") end
+        local room, value = find(state.rooms, message.room_id), role(message.room_id, user.id)
+        if not value then return fail(403, "42501", "Conversation unavailable.") end
+        local latest = index == #list
+        if name == "edit_chat_message" then
+            local text = body.message_body
+            if message.sender_id ~= user.id or not P.canPost(room.id, user.id) then return fail(403, "42501", "You can edit only your own messages.") end
+            if type(text) ~= "string" or #text > 4000 then return fail(400, "validation", "Write a message of at most 4000 text bytes.") end
+            if not text:match("%S") and #P.messageRow(message).attachments == 0 then return fail(400, "validation", "A message without photos needs text.") end
+            if text ~= message.body then message.body, message.edited_at = text, timestamp() end
+            if latest then room.subtitle = text ~= "" and text or "Photo" end
+            return response(200, { P.messageRow(message) })
+        end
+        if message.sender_id ~= user.id and not (room.kind ~= "direct" and (value == "owner" or value == "admin")) then
+            return fail(403, "42501", "You cannot delete this message.")
+        end
+        table.remove(list, index)
+        for id, a in pairs(state.attachments) do
+            if a.message_id == message.id then state.objects[a.object_key], state.objects[a.thumbnail_key], state.attachments[id] = nil, nil, nil end
+        end
+        if latest then
+            local last = list[#list]
+            room.subtitle = last and (last.body ~= "" and last.body or "Photo") or "Start the conversation"
+        end
+        return response(200, true)
+    end
     local function addMember(room, user)
         state.members[room.id][user.id] = true
         state.roles[room.id][user.id] = state.roles[room.id][user.id] or (room.kind == "channel" and "subscriber" or "member")
@@ -275,6 +308,7 @@ return function(state, env)
             if not member(room.id, user.id) then addMember(room, user) end
             return response(200, P.roomRow(room, user.id))
         elseif name == "post_chat_message" then return P.postMessage(user, body.target_room, body.message_body, body.attachment_ids)
+        elseif name == "edit_chat_message" or name == "delete_chat_message" then return P.changeMessage(name, user, body)
         end
     end
 
@@ -327,7 +361,8 @@ return function(state, env)
         local name = path:match("^/rest/v1/rpc/(.+)$")
         local known = name and ({ get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
             set_chat_member_role=1,remove_chat_member=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
-            find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,reserve_chat_photo=1,discard_chat_photo=1 })[name]
+            find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
+            reserve_chat_photo=1,discard_chat_photo=1 })[name]
         local storageKey = path:match("^/storage/v1/object/chat%-photos/(.+)$")
         local downloadKey = path:match("^/storage/v1/object/authenticated/chat%-photos/(.+)$")
         if not known and not storageKey and not downloadKey and path ~= "/storage/v1/object/chat-photos"
