@@ -752,6 +752,13 @@ static float _MeasureAxis(struct Node2D *n, float space, int axis)
   }
 }
 
+// A positive AspectRatio derives an auto height from a finite width.
+static bool_t
+_HasAspectRatio(struct Node2D *n, float width)
+{
+  return n->AspectRatio > 0 && isnan(NODE2D_FRAME(n, Size, 1).Requested) && !isinf(width);
+}
+
 static float
 _ArrangeAxisSize(struct Node2D *n, float available, enum Direction axis)
 {
@@ -771,6 +778,8 @@ HANDLER(Node2D, Node2D, Measure)
   struct Node2D *n = pNode2D;
   float space[2] = { pMeasure->Width - TOTAL_MARGIN(n, 0), pMeasure->Height - TOTAL_MARGIN(n, 1) };
   float avail[2] = { _MeasureAxis(n, space[0], 0), _MeasureAxis(n, space[1], 1) };
+  bool_t const aspect = _HasAspectRatio(n, avail[0]);
+  if (aspect) avail[1] = avail[0] / n->AspectRatio;
   LRESULT size = _SendMessage(hObject, Node2D, MeasureOverride,
     .Width  = avail[0] - TOTAL_PADDING(n, 0),
     .Height = avail[1] - TOTAL_PADDING(n, 1),
@@ -796,7 +805,9 @@ HANDLER(Node2D, Node2D, Measure)
   } else {
     NODE2D_FRAME(n, Size, 0).Desired = NODE2D_FRAME(n, Size, 0).Requested;
   }
-  if (isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
+  if (aspect) {
+    NODE2D_FRAME(n, Size, 1).Desired = avail[1];
+  } else if (isnan(NODE2D_FRAME(n, Size, 1).Requested)) {
     NODE2D_FRAME(n, Size, 1).Desired = HIWORD(size) + TOTAL_PADDING(n, 1);
   } else {
     NODE2D_FRAME(n, Size, 1).Desired = NODE2D_FRAME(n, Size, 1).Requested;
@@ -812,6 +823,7 @@ HANDLER(Node2D, Node2D, Arrange)
     _ArrangeAxisSize(n, pArrange->Width, 0),
     _ArrangeAxisSize(n, pArrange->Height, 1),
   };
+  if (_HasAspectRatio(n, s.width)) s.height = s.width / n->AspectRatio;
 
   struct rect m = {
     pArrange->X + MARGIN_TOP(n, 0),

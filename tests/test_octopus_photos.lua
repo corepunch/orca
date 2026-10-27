@@ -79,9 +79,9 @@ for i = 1, 5 do
 end
 app.screen:UpdateLayout(200, 450)
 local fitted = frames[1]:findChild("Photo1")
-assert(math.abs(fitted.ActualX + fitted.ActualWidth / 2 - frames[1].ActualWidth / 2) < 1
-    and math.abs(fitted.ActualY + fitted.ActualHeight / 2 - frames[1].ActualHeight / 2) < 1,
-    "Aspect-fitted photos must be centered inside their transparent reserved frame")
+assert(math.abs(fitted.ActualX) < 1 and math.abs(fitted.ActualY) < 1
+    and fitted.ActualWidth <= frames[1].ActualWidth and fitted.ActualHeight <= frames[1].ActualHeight,
+    "Aspect-fitted photos must sit in the top-left corner of their transparent reserved frame")
 if native then app.screen:send("Screen.RenderScreen", { width = 200, height = 450 }) end
 -- Returning to a retained page should reuse the file without refetching it.
 local duplicate = ui.Grid { Height = 100 }

@@ -245,8 +245,8 @@ end
 -- Search -----------------------------------------------------------------------
 
 local function personRow(self, person)
-    local row = ui.Grid { Columns = "48px 1fr", Spacing = 12, IgnoreHitTest = true }
-    row:addChild(C.avatar(person.username, 48, person.userId, self))
+    local row = ui.Grid { Columns = C.AVATAR .. "px 1fr", Spacing = C.spacing.inline, IgnoreHitTest = true }
+    row:addChild(C.avatar(person.username, C.AVATAR, person.userId, self))
     row:addChild(C.stack({ Spacing = 2, JustifyContent = "Center", IgnoreHitTest = true }, {
         C.text(person.username, { FontSize = 20, TextOverflow = "Ellipsis" }),
         person.bio ~= "" and C.text(C.excerpt(person.bio, 80), {

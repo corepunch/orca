@@ -342,12 +342,21 @@ handle_touch_scroll(lua_State *L, struct Object *root, struct AXmessage *event)
   return handled;
 }
 
+void CORE_UpdateHover(void);
+
 LRESULT
 UI_HandleMouseEvent(lua_State* L, struct Object *root, struct AXmessage* e)
 {
   uint16_t x = LOWORD(e->wParam), y = HIWORD(e->wParam);
   struct Object *sender = NULL;
   bool_t success = FALSE;
+  // A finger leaves no pointer behind, so touch never hovers; it also clears
+  // a hover left by a trackpad or pencil.
+  bool_t const touch = (e->pointer.flags & AX_POINTER_TOUCH) != 0;
+  if (touch) {
+    OBJ_SetHover(NULL);
+    CORE_UpdateHover();
+  }
   while (OBJ_GetNext(root)) {
     root = OBJ_GetNext(root);
   }
@@ -409,9 +418,9 @@ handle:
   // if the user releases the mouse button to drop an item, we need to clear
   // the drag session and make the dragged view visible again, even if the
   // drop target doesn't handle the event.
-  void CORE_UpdateHover(void);
   switch (e->message) {
     case kEventMouseMoved:
+      if (touch) OBJ_SetHover(NULL);
       CORE_UpdateHover();
       break;
     case kEventDragDrop:

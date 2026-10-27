@@ -87,9 +87,10 @@ function Loader:watch(frame, key, name)
         requested = false
         loading(false)
         if path then
+            -- Fit inside the frame, aligned to its top-left corner like the text.
             local image = ui.ImageView { Name = name, Src = path, Stretch = "Uniform",
                 Foreground = "#ffffff", IgnoreHitTest = true,
-                MarginLeft = 0/0, MarginRight = 0/0, MarginTop = 0/0, MarginBottom = 0/0 }
+                MarginLeft = 0, MarginRight = 0/0, MarginTop = 0, MarginBottom = 0/0 }
             image:send("Node.LoadView")
             if not image.Source then
                 app.media:discard(key)

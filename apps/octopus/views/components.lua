@@ -1,7 +1,10 @@
 local ui = require "orca.UIKit"
 local C = { colors = require "Octopus/theme" }
--- A 4-point spacing scale shared by post lists and cards.
-C.spacing = { tight = 4, inline = 8, column = 12, section = 16, post = 24 }
+-- A 4-point spacing scale shared by post lists and cards. Lists keep
+-- Twitter's density: posts sit 12 points apart below their action row.
+C.spacing = { tight = 4, inline = 8, column = 12, section = 16, post = 12 }
+-- Avatar tile in timelines and people lists.
+C.AVATAR = 44
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
@@ -135,7 +138,7 @@ end
 -- profile photo. `key` is their user ID.
 function C.avatar(name, size, key, app)
     local color = tone(key or name or "")
-    size = size or 52
+    size = size or C.AVATAR
     local tile = ui.Grid { Width = size, Height = size, Background = color.background, IgnoreHitTest = true }
     tile:addChild(C.text(C.initials(name), {
         FontSize = size < 40 and 13 or (size > 80 and 34 or 19), Foreground = color.foreground,
