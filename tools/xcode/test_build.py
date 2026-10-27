@@ -47,6 +47,14 @@ class ResourceTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         return result
 
+    def standalone(self, bundle):
+        result = subprocess.run([
+            sys.executable, str(ROOT / 'tools/ios/bundle.py'), '--binary', str(self.executable),
+            '--bundle', str(bundle), '--project', str(self.project), '--sdk', 'iphonesimulator',
+            '--identifier', 'example.standalone.chat', '--minimum', '16.0', '--display-name', 'QA Chat'],
+            cwd=self.root, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def add_development_files(self):
         for parent in (self.project, self.share):
             for name in ('chat.xcodeproj', 'chat.xcworkspace', 'Other.xcassets', 'ci_scripts', '.git', 'build', '__pycache__'):
@@ -116,17 +124,48 @@ class ResourceTests(unittest.TestCase):
     def test_standalone_packaging_also_excludes_xcode_and_ci_metadata(self):
         self.add_development_files()
         bundle = Path(self.temporary.name) / 'standalone/chat.app'
-        result = subprocess.run([
-            sys.executable, str(ROOT / 'tools/ios/bundle.py'), '--binary', str(self.executable),
-            '--bundle', str(bundle), '--project', str(self.project), '--sdk', 'iphonesimulator',
-            '--identifier', 'example.standalone.chat', '--minimum', '16.0', '--display-name', 'QA Chat'],
-            cwd=self.root, capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.standalone(bundle)
         self.assert_development_files_absent(bundle)
         self.assertEqual((bundle / 'Orca').read_bytes(), self.executable.read_bytes())
         self.assertEqual((bundle / 'PrivacyInfo.xcprivacy').read_text(), 'privacy manifest')
         with (bundle / 'Info.plist').open('rb') as stream:
             self.assertIs(plistlib.load(stream)['ITSAppUsesNonExemptEncryption'], False)
+
+    def test_both_packagers_remove_private_accounts_and_server_resources_but_keep_runtime_dotfiles(self):
+        backend = self.project / 'backend/appwrite'
+        backend.mkdir(parents=True)
+        (backend / 'package.json').write_text('{"name":"server-only"}')
+        (backend / 'server.js').write_text('server implementation')
+        (backend.parent / '.live-accounts.json').write_text('synthetic private account fixture')
+        private = ('.live-accounts.json', '.live-run.lock', '.env', '.env.local', 'node_modules')
+        for source in (self.project, self.share):
+            assets = source / '.runtime'
+            assets.mkdir()
+            (assets / 'asset.bin').write_bytes(b'needed at runtime')
+            ordinary = source / 'assets/backend'
+            ordinary.mkdir(parents=True)
+            (ordinary / 'catalog.json').write_text('{}')
+            for name in private:
+                (assets / name).write_text('synthetic developer data')
+        standalone = Path(self.temporary.name) / 'standalone/chat.app'
+        for label, bundle in (('Xcode', self.bundle), ('Make', standalone)):
+            with self.subTest(packager=label):
+                # Also prove that rebuilding removes credentials from an older bundle.
+                stale = bundle / 'project/backend'
+                stale.mkdir(parents=True)
+                (stale / '.live-accounts.json').write_text('synthetic stale account fixture')
+                (bundle / 'project/.live-accounts.json').write_text('synthetic stale account fixture')
+                if label == 'Xcode':
+                    self.resources()
+                else:
+                    self.standalone(bundle)
+                self.assertFalse((bundle / 'project/backend').exists())
+                self.assertFalse((bundle / 'project/.live-accounts.json').exists())
+                for target in (bundle / 'project', bundle / 'share'):
+                    self.assertEqual((target / '.runtime/asset.bin').read_bytes(), b'needed at runtime')
+                    self.assertTrue((target / 'assets/backend/catalog.json').is_file())
+                    for name in private:
+                        self.assertFalse((target / '.runtime' / name).exists(), str(target / '.runtime' / name))
 
     def test_make_icon_compiler_targets_both_devices_and_returns_generated_metadata(self):
         spec = importlib.util.spec_from_file_location('orca_bundle', ROOT / 'tools/ios/bundle.py')

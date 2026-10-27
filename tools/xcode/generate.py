@@ -152,7 +152,7 @@ def generate(args, app):
     root_configs = project.configurations('project', common, overrides)
     target_name = name + '-ios'
     frameworks = ('UIKit', 'Foundation', 'OpenGLES', 'QuartzCore', 'CoreGraphics', 'CoreText',
-                  'ImageIO', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox')
+                  'ImageIO', 'PhotosUI', 'Security', 'SystemConfiguration', 'UniformTypeIdentifiers', 'AudioToolbox')
     linker = ['$(inherited)', '-llua', '-llz4', '-lcurl', '-lxml2', '-lz', '-liconv', '-lm']
     for framework in frameworks:
         linker += ['-framework', framework]

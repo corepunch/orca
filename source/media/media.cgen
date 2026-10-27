@@ -6,8 +6,8 @@
   </includes>
   <functions>
     <function name="PickPhoto" lua="true">
-      <summary>Selects and prepares one still photo using the native macOS file dialog.</summary>
-      <details>Synchronous, modal user action. Returns the same result as processPhoto, or nil and a table containing code and message. Cancel returns code cancelled. Picking is unsupported on other platforms; Apple image processing remains available independently. No file is uploaded or retained.</details>
+      <summary>Selects and prepares one still photo using the native macOS file dialog or iOS photo picker.</summary>
+      <details>Returns the same result as processPhoto, or nil and a table containing code and message. Cancel returns code cancelled. The macOS dialog is synchronous and modal. On iOS, selection yields the application coroutine while the system picker is open; calls outside a yieldable coroutine return not_yieldable and overlapping pickers return busy. Abandoning the coroutine dismisses its picker. The iOS picker grants access only to the selected photo without requesting photo-library permission. Picking is unsupported on non-Apple platforms. No file is uploaded or retained.</details>
       <returns type="nresults">A processed-photo table, or nil and a structured error.</returns>
     </function>
     <function name="ProcessPhoto" lua="true">

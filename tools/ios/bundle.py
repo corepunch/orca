@@ -1,11 +1,25 @@
 #!/usr/bin/env python3
 """Package an ORCA project as a standalone universal iPhone/iPad application."""
 import argparse
+import fnmatch
 from pathlib import Path
 import plistlib
 import shutil
 import subprocess
 import tempfile
+
+
+def resource_filter(directory, names):
+    """Keep runtime assets, excluding developer credentials and server-only trees."""
+    patterns = ('.git', '.DS_Store', '.env', '.env.*', '.live-*', '.appwrite',
+                '__pycache__', 'node_modules', 'build', '*.mobileprovision',
+                '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', 'ci_scripts')
+    ignored = [name for name in names if any(fnmatch.fnmatchcase(name, pattern) for pattern in patterns)]
+    # Chat's Appwrite Function, fixtures and local account sessions never run on-device.
+    backend = Path(directory) / 'backend'
+    if 'backend' in names and (backend / 'appwrite/package.json').is_file():
+        ignored.append('backend')
+    return ignored
 
 
 def compile_assets(project, bundle, sdk, minimum):
@@ -51,9 +65,7 @@ def main():
     shutil.copy2(binary, bundle / 'Orca')
     for name, source in (('share', share), ('project', project)):
         target = bundle / name
-        shutil.copytree(source, target, ignore=shutil.ignore_patterns(
-            '.git', '__pycache__', '.DS_Store', 'build', '*.mobileprovision',
-            '*.xcodeproj', '*.xcworkspace', '*.xcassets', '*.xcprivacy', 'ci_scripts'))
+        shutil.copytree(source, target, ignore=resource_filter)
     if (project / 'PrivacyInfo.xcprivacy').is_file():
         shutil.copy2(project / 'PrivacyInfo.xcprivacy', bundle / 'PrivacyInfo.xcprivacy')
     orientations = ['UIInterfaceOrientationPortrait', 'UIInterfaceOrientationLandscapeLeft',
