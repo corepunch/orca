@@ -113,6 +113,10 @@ as `edit_chat_message`. The report shows these items as `# TODO`. They don't
 fail the run. When a feature ships, update its probe to the real contract and
 remove `todo`, so it becomes a regular regression test.
 
+Gaps that still need work, such as delivery providers, a staging project, the
+Lua client run live and limits that need time or more accounts, are listed in
+the repository [TODO](../../../../../TODO.md#chat-complete-live-backend-testing).
+
 ## Running notes
 
 - Tests run one after another, and each Function call takes a fraction of a
