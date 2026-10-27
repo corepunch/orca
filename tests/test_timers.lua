@@ -170,9 +170,12 @@ local owner = core.Timer { Tick = function(node, args)
   resumed = true
 end }
 local id = owner:setTimer(20)
+local started = system.getTime()
 pumpUntil(function() return resumed end, 2000)
-assert(resumed and delivered == 1 and receivedId == id,
-  "A native expiration must deliver the right ID to a yielding Timer.Tick handler")
+assert(resumed and delivered == 1 and receivedId == id, string.format(
+  "A native expiration must deliver the right ID to a yielding Timer.Tick handler "
+  .. "(resumed=%s delivered=%d receivedId=%s id=%s after %d ms)",
+  tostring(resumed), delivered, tostring(receivedId), tostring(id), system.getTime() - started))
 pumpUntil(function() return false end, 100)
 assert(delivered == 1, "Cancellation inside Tick must stop subsequent expirations")
 owner:cancelTimer(id)
