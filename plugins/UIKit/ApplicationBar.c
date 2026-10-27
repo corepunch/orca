@@ -30,6 +30,7 @@ AppBar_Round(struct Object *o, float radius)
   n->Border.Radius = (struct CornerRadius){ radius, radius, radius, radius };
 }
 
+// Like Metro_CreateText, the caller keeps the creation reference.
 static struct Object *
 AppBar_Part(struct Object *parent, uint32_t class_id)
 {
@@ -70,9 +71,19 @@ HANDLER(ApplicationBar, Object, Create)
   GetNode2D(pApplicationBar->_panel)->IgnoreHitTest = FALSE;
   pApplicationBar->_ellipsis = AppBar_Part(hObject, ID_Node2D);
   for (int i = 0; i < APPBAR_DOTS; i++) {
-    AppBar_Round(AppBar_Part(pApplicationBar->_ellipsis, ID_Node2D), APPBAR_DOT / 2);
+    struct Object *dot = AppBar_Part(pApplicationBar->_ellipsis, ID_Node2D);
+    AppBar_Round(dot, APPBAR_DOT / 2);
+    OBJ_ReleaseRef(dot);  // the ellipsis owns its dots
   }
   _SendMessage(pApplicationBar->_ellipsis, StyleController, AddClass, .ClassName = "appbar-ellipsis");
+  return FALSE;
+}
+
+HANDLER(ApplicationBar, Object, Destroy)
+{
+  OBJ_ReleaseRef(pApplicationBar->_scrim);
+  OBJ_ReleaseRef(pApplicationBar->_panel);
+  OBJ_ReleaseRef(pApplicationBar->_ellipsis);
   return FALSE;
 }
 
@@ -189,6 +200,14 @@ AppBarButton_Sync(struct Object *hObject, struct ApplicationBarIconButton *pButt
   AppBar_SetColor(pButton->_ring, ID_Node_BorderColor, AppBar_Foreground(OBJ_GetParent(hObject)));
 }
 
+HANDLER(ApplicationBarIconButton, Object, Destroy)
+{
+  OBJ_ReleaseRef(pApplicationBarIconButton->_ring);
+  OBJ_ReleaseRef(pApplicationBarIconButton->_icon);
+  OBJ_ReleaseRef(pApplicationBarIconButton->_label);
+  return FALSE;
+}
+
 HANDLER(ApplicationBarIconButton, Object, PropertyChanged)
 {
   OBJ_SetDirty(hObject);
@@ -225,6 +244,12 @@ HANDLER(ApplicationBarIconButton, Node, LeftButtonUp)
     axPostMessageW(hObject, ID_ApplicationBarIconButton_Click, 0, 0);
   }
   return TRUE;
+}
+
+HANDLER(ApplicationBarMenuItem, Object, Destroy)
+{
+  OBJ_ReleaseRef(pApplicationBarMenuItem->_label);
+  return FALSE;
 }
 
 HANDLER(ApplicationBarMenuItem, Object, PropertyChanged)

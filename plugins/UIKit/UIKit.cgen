@@ -1181,6 +1181,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.Destroy"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Animate"/>
         <handle message="Node.UpdateMatrix"/>
@@ -1243,11 +1244,14 @@
       <summary>One section of a Panorama, titled by its Header</summary>
       <details>Content container hosted by a Panorama. Items are laid out side by side, slightly narrower than the screen so the next section peeks in.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
+      <handles>
+        <handle message="Object.Destroy"/>
+      </handles>
       <properties>
         <property name="Header" type="string">Section header shown above the content in lowercase</property>
       </properties>
       <fields>
-        <field name="_header" type="Object" pointer="true">Generated header TextBlock owned by the Panorama (private)</field>
+        <field name="_header" type="Object" pointer="true">Generated header TextBlock, a child of the Panorama; the item holds a reference (private)</field>
       </fields>
     </class>
     <class name="Panorama" parent="Node2D">
@@ -1256,6 +1260,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.Destroy"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Animate"/>
         <handle message="Node2D.MeasureOverride"/>
@@ -1296,6 +1301,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
+        <handle message="Object.Destroy"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
@@ -1318,6 +1324,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Destroy"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node.LeftButtonUp"/>
@@ -1344,6 +1351,7 @@
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.PropertyChanged"/>
+        <handle message="Object.Destroy"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node.LeftButtonUp"/>

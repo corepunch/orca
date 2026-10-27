@@ -170,6 +170,88 @@ local function test_message_in_flight_keeps_target()
 end
 
 -- ---------------------------------------------------------------------------
+-- Test: Metro controls release the parts they generate
+--
+-- Pivot, Panorama and ApplicationBar create their title, headers, bar and
+-- button parts in C. A dropped page must take all of them with it.
+-- BackIcon and IconUri only need to be set; the missing SVG is logged.
+-- ---------------------------------------------------------------------------
+local metroPages = {
+  { "locked pivot", function(screen)
+    local pivot = screen + ui.Pivot { IsLocked = true, Title = "app", BackIcon = "missing.svg" }
+    pivot:addChild(ui.PivotItem { Header = "one" })
+    pivot:addChild(ui.PivotItem { Header = "two" })
+  end },
+  { "pivot", function(screen)
+    local pivot = screen + ui.Pivot { Title = "app" }
+    pivot:addChild(ui.PivotItem { Header = "one" })
+    pivot:addChild(ui.PivotItem { Header = "two" })
+  end },
+  { "panorama", function(screen)
+    local panorama = screen + ui.Panorama { Title = "app" }
+    panorama:addChild(ui.PanoramaItem { Header = "one" })
+  end },
+  { "application bar", function(screen)
+    local bar = screen + ui.ApplicationBar { IsExpanded = true }
+    bar:addChild(ui.ApplicationBarIconButton { Text = "add", IconUri = "missing.svg" })
+    bar:addChild(ui.ApplicationBarMenuItem { Text = "settings" })
+  end },
+}
+
+local function layoutPage(build)
+  local screen = ui.Screen { Width = 400, Height = 400, ResizeMode = "NoResize" }
+  build(screen)
+  screen:UpdateLayout(400, 400)
+end
+
+local function test_metro_controls_release_generated_parts()
+  for _, page in ipairs(metroPages) do
+    fullGC()
+    local baseline = core.objectCount()
+    for i = 1, 3 do
+      layoutPage(page[2])
+      fullGC()
+      test.expect_eq(core.objectCount(), baseline,
+        "dropped " .. page[1] .. " page " .. i .. " should return to baseline")
+    end
+  end
+  print("PASS: test_metro_controls_release_generated_parts")
+end
+
+-- ---------------------------------------------------------------------------
+-- Test: generated parts outlive a clear() and a re-attached section
+--
+-- The controls keep pointers to their parts, so a part taken off the control
+-- by clear() or by dropping a stale header must stay valid until the control
+-- or item that refers to it is released.
+-- ---------------------------------------------------------------------------
+local function test_metro_parts_survive_detach()
+  fullGC()
+  local baseline = core.objectCount()
+  layoutPage(function(screen)
+    local pivot = screen + ui.Pivot { Title = "app", BackIcon = "missing.svg" }
+    pivot:addChild(ui.PivotItem { Header = "one" })
+    screen:UpdateLayout(400, 400)
+    pivot:clear()
+    pivot:addChild(ui.PivotItem { Header = "two" })
+  end)
+  fullGC()
+  test.expect_eq(core.objectCount(), baseline, "cleared pivot page should return to baseline")
+
+  layoutPage(function(screen)
+    local panorama = screen + ui.Panorama { Title = "app" }
+    local item = panorama + ui.PanoramaItem { Header = "one" }
+    screen:UpdateLayout(400, 400)
+    item:removeFromParent()
+    screen:UpdateLayout(400, 400)
+    panorama:addChild(item)
+  end)
+  fullGC()
+  test.expect_eq(core.objectCount(), baseline, "re-attached panorama item page should return to baseline")
+  print("PASS: test_metro_parts_survive_detach")
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 test_both_objects_freed_after_owner_release()
@@ -177,5 +259,7 @@ test_standalone_resource_freed_immediately()
 test_root_remove_from_parent_keeps_lua_owner_alive()
 test_child_remove_from_parent_keeps_lua_owner_alive()
 test_message_in_flight_keeps_target()
+test_metro_controls_release_generated_parts()
+test_metro_parts_survive_detach()
 
 print("All object-retention tests passed.")

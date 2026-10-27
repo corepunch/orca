@@ -56,7 +56,8 @@ Metro_SetText(struct Object *o, lpcString_t text, int (*transform)(int))
   if (p) PROP_SetStringValue(p, buf);
 }
 
-// Creates a non-interactive text part owned by a control.
+// Creates a non-interactive text part under parent. The caller keeps the
+// creation reference: it releases it at once or when it drops the pointer.
 static inline struct Object *
 Metro_CreateText(struct Object *parent, uint32_t class_id, lpcString_t css, float size, bool_t bold)
 {

@@ -115,6 +115,7 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     struct Object *header = Pivot_HeaderFor(hObject, items[i]);
     if (!header) {
       header = Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
+      OBJ_ReleaseRef(header);  // found again among the children
       GetPivotHeaderItem(header)->_item = items[i];
     }
     bool_t selected = i == pPivot->SelectedIndex;
@@ -185,6 +186,17 @@ Pivot_Select(struct Object *hObject, int index)
 HANDLER(Pivot, Object, Create)
 {
   pPivot->_progress = 1;
+  return FALSE;
+}
+
+// The parts were cleared off the pivot already; drop the references it kept.
+HANDLER(Pivot, Object, Destroy)
+{
+  OBJ_ReleaseRef(pPivot->_bar);
+  OBJ_ReleaseRef(pPivot->_title);
+  OBJ_ReleaseRef(pPivot->_back);
+  OBJ_ReleaseRef(pPivot->_backRing);
+  OBJ_ReleaseRef(pPivot->_backIcon);
   return FALSE;
 }
 
@@ -337,7 +349,10 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
       Metro_CreateText(hObject, ID_PivotHeaderItem, "pivot-header", PIVOT_HEADER_SIZE, FALSE);
     if (!copy) break;
     GetPivotHeaderItem(copy)->_repeat = TRUE;
-    if (repeats == copyCount) copies[copyCount++] = copy;
+    if (repeats == copyCount) {
+      copies[copyCount++] = copy;
+      OBJ_ReleaseRef(copy);  // found again among the children
+    }
     repeats++;
     GetPivotHeaderItem(copy)->_item = item;
     Metro_SetText(copy, GetPivotItem(item)->Header, tolower);
