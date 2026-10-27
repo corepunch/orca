@@ -200,7 +200,7 @@ local function test_pivot_back()
   layout(screen)
   local title = pivot:getFirstChild()
   while title and title.className ~= "TextBlock" do title = title:getNext() end
-  test.expect(title.ActualX > 12, "A back glyph precedes the title")
+  test.expect(title.ActualX >= 12 + 30, "A round back button precedes the title")
 
   tap(screen, title, 4, 4)
   test.expect_eq(events[1], "back", "Tapping the title line goes back")
@@ -232,6 +232,30 @@ local function test_pivot_back()
   test.expect_eq(count("back"), 0, "Without a BackIcon the title and edge stay inert")
   test.expect_eq(title.ActualX, 12, "Without a BackIcon the title keeps the page margin")
   print("PASS: test_pivot_back")
+end
+
+local function test_pivot_turnstile()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local taps = 0
+  local pivot = screen + ui.Pivot { Title = "Messenger", IsLocked = true }
+  local item = pivot + ui.PivotItem { Header = "Simon" }
+  local row = item + ui.Button { Name = "Row", Height = 60, Click = function () taps = taps + 1 end }
+  layout(screen)
+  test.expect_eq(pivot.Turnstile, "None", "Pages start flat")
+  for _, mode in ipairs { "ForwardIn", "BackwardIn" } do
+    pivot.Turnstile = mode
+    layout(screen)
+    test.expect_eq(pivot.Turnstile, mode, mode .. " waits for its first frame")
+    -- Pumping runs the animation frames until the page settles.
+    tap(screen, row, 360)
+    test.expect_eq(taps, 0, mode .. " starts with the page turned away from where it lies flat")
+    test.expect_eq(pivot.Turnstile, "None", mode .. " finishes on its own")
+    layout(screen)
+    tap(screen, row, 360)
+    test.expect_eq(taps, 1, mode .. " settles the page flat")
+    taps = 0
+  end
+  print("PASS: test_pivot_turnstile")
 end
 
 local function test_application_bar()
@@ -375,6 +399,7 @@ test_pivot()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_pivot_back()
+test_pivot_turnstile()
 test_application_bar()
 test_panorama()
 test_lisp()

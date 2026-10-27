@@ -156,20 +156,35 @@ end
 -- After Messenger: no command row under the header. The title line and a
 -- swipe from the left edge go back; the conversation's name opens its info.
 local threadPage = screen:findChild("ThreadPage", true)
-assert(threadPage.BackIcon:find("chevron-left", 1, true) and not screen:findChild("ThreadCommands", true)
+assert(threadPage.BackIcon:find("arrow-left", 1, true) and not screen:findChild("ThreadCommands", true)
     and not screen:findChild("ThreadOverflow", true), "The thread must not spend a row on its commands")
 local threadRoom = app.room
 headerOf(threadPage):send("Node.LeftButtonUp")
 drain(app)
-assert(app.screen:findChild("PinConversation", true) and app.screen:findChild("BackToThread", true),
-    "Tapping the conversation's name must open its info, where pinning lives")
+assert(app.screen:findChild("PinConversation", true) and app.screen:findChild("DetailsPage", true).BackIcon ~= ""
+    and not app.screen:findChild("BackToThread", true),
+    "Tapping the conversation's name must open its info, where pinning lives, with a round back button")
 local pinned = app.pinned[threadRoom.id]
 press(app, "PinConversation")
 assert(app.pinned[threadRoom.id] == (not pinned or nil)
     and app.screen:findChild("PinConversation", true).Text == (pinned and "pin" or "unpin"),
     "Pinning from the info page must toggle the conversation and relabel the command")
 press(app, "PinConversation")
-press(app, "BackToThread")
+app.screen:UpdateLayout(390, 844)
+for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do
+    orca.system.dispatchMessage { target = app.screen, message = message, x = 20, y = 20 }
+end
+drain(app)
+assert(app.screen:findChild("ThreadPage", true), "The info page's title line must return to the conversation")
+-- The app's own navigation turns pages in on the left edge, as on Windows Phone.
+app.activate_controller = function(self, controller) self.screen = controller.view; return controller end
+App.show(app, "/details", "ForwardIn")
+assert(app.screen:findChild("DetailsPage", true).Turnstile == "ForwardIn", "Opening a conversation's info must turn it in")
+App.show(app, "/thread", "BackwardIn")
+assert(app.screen:findChild("ThreadPage", true).Turnstile == "BackwardIn", "Going back must turn the conversation back in")
+app.activate_controller = nil
+drain(app)
+assert(app.screen:findChild("ThreadPage", true).Turnstile == "None", "The turnstile must settle")
 screen = app.screen
 screen:UpdateLayout(390, 844)
 for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do

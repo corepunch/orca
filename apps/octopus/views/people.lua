@@ -143,15 +143,16 @@ function People.profile(self)
     local body = ui.Node2D {}
     self.statusBar = C.toolbar("Bottom", { self.status }, { Name = "ProfileStatusBar", Visible = false })
     body:addChild(view.content); body:addChild(self.statusBar)
+    local function back()
+        local route = self.profileReturn
+        self:goBack(route and route ~= "/user" and route or "/")
+    end
     local bar = C.appBar({
-        { "BackFromProfile", "arrow-left", "back", function()
-            local route = self.profileReturn
-            self:show(route and route ~= "/user" and route or "/")
-        end },
         { "RefreshProfile", "refresh-cw", "refresh", function() loadProfile(self, view) end },
     })
     local screen = self:frame()
-    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body, { ExtendBodyBehindHeader = true }), bar,
+    Footer.layout(screen, C.page((self.profileName or "profile"):lower(), body,
+        { Name = "ProfileView", ExtendBodyBehindHeader = true, back = back }), bar,
         { Background = colors.background, Foreground = colors.ink })
     followButton(self, view)
     loadProfile(self, view)

@@ -169,12 +169,15 @@ end
 -- name above the content. A locked Pivot with one item gives every page the
 -- same metrics as the timeline pivot. Scrolling content runs under the frosted
 -- header; other content stays below it unless the page asks otherwise.
+-- Pages you go into pass `back`: a round back button before the title, which
+-- the title line and a swipe in from the left edge also trigger.
 function C.page(header, content, props)
     props = props or {}
     local extend = props.ExtendBodyBehindHeader
     if extend == nil then extend = content.OverflowY == "Scroll" end
     local pivot = ui.Pivot { Name = props.Name, Title = "Octopus", IsLocked = true, Foreground = colors.ink,
-        ExtendBodyBehindHeader = extend, class = props.class }
+        ExtendBodyBehindHeader = extend, class = props.class,
+        BackIcon = props.back and ICONS .. "arrow-left.svg" or "", BackRequested = props.back }
     local item = ui.PivotItem { Header = header }
     item:addChild(content)
     pivot:addChild(item)

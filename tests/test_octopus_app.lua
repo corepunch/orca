@@ -36,6 +36,19 @@ local function click(app, name)
     drain(app)
 end
 
+-- Pages you go into go back from their round title button, like a user would.
+local function back(app)
+    local screen = app.screen
+    screen:UpdateLayout(screen.Width, screen.Height)
+    for _, message in ipairs { "LeftButtonDown", "LeftButtonUp" } do
+        orca.system.dispatchMessage { target = screen, message = message, x = 20, y = 20 }
+    end
+    drain(app)
+    app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+    app:afterPaint()
+    drain(app)
+end
+
 local function isShown(node)
     while node do
         if node.Visible == false then return false end
@@ -156,6 +169,22 @@ core.runAllPrograms(home)
 home:UpdateLayout(390, 844)
 assert(math.abs(bar.ActualHeight - 58) < 1)
 
+-- Going into a post turns it in from the left edge, as on Windows Phone, and
+-- coming back turns the timeline back in. Pages you go into get a round back
+-- button before the title instead of a back command in the bar.
+local Turnstile = require "orca.UIKit.Turnstile"
+app:openPost(assert(app.client:getPost("p-hello")))
+local postView = find(app, "PostView")
+assert(Turnstile.page(app.screen) == postView and postView.Turnstile == "ForwardIn", "Opening a post turns it in")
+assert(postView.BackIcon:find("arrow-left", 1, true) and not app.screen:findChild("BackFromPost", true),
+    "The post goes back from its title line")
+drain(app)
+assert(postView.Turnstile == "None", "The turnstile settles")
+app:goBack("/")
+assert(app.screen == home and Turnstile.page(home).Turnstile == "BackwardIn", "Going back turns the timeline back in")
+assert((Turnstile.page(home).BackIcon or "") == "", "Root pages have no back button")
+drain(app)
+
 -- Guests can read a post and its comments, but writing asks them to sign in.
 click(app, "Openp-hello")
 assert(app.currentRoute == "/post" and find(app, "PostPage"))
@@ -169,7 +198,7 @@ assert(app.currentRoute == "/auth" and find(app, "SignInPage"), "Liking as a gue
 assert(find(app, "AuthStatus"):getTextContent() == "Sign in to like posts.")
 click(app, "ContinueAsGuest")
 assert(app.currentRoute == "/post", "Continuing as a guest returns to the post")
-click(app, "BackFromPost")
+back(app)
 assert(app.currentRoute == "/" and app.screen == home, "Back returns to the retained timeline")
 
 -- Profiles and tags are public too.
@@ -178,7 +207,7 @@ assert(app.currentRoute == "/user" and find(app, "ProfileName"):getTextContent()
 assert(find(app, "Countposts"):getTextContent() == "2" and find(app, "Countfollowers"):getTextContent() == "–")
 assert(find(app, "Postp-tide") and find(app, "SignInToFollow"))
 assertDetailFooter(app)
-click(app, "BackFromProfile")
+back(app)
 click(app, "Tagreef")
 assert(app.currentRoute == "/search" and find(app, "SearchInput").Text == "#reef")
 local results = find(app, "SearchResults")
@@ -219,7 +248,7 @@ local published = app.post.id
 
 -- Comment and reply.
 find(app, "CommentInput").Text = "Adding a source link later."
-click(app, "BackFromPost")
+back(app)
 assert(find(app, "Post" .. published), "New posts top the timeline")
 click(app, "Open" .. published)
 assert(find(app, "CommentInput").Text == "Adding a source link later.", "Comment drafts survive navigation")
@@ -243,7 +272,7 @@ assert(stat("likes") == "1")
 assert(find(app, "LikePost").Text == "unlike")
 click(app, "LikePost")
 assert(stat("likes") == "0")
-click(app, "BackFromPost")
+back(app)
 click(app, "Likep-small")
 local stats = app.client:stats { "p-small" }
 assert(stats["p-small"].likes == 2 and stats["p-small"].liked, "Timeline likes reach the service")
@@ -260,7 +289,7 @@ drain(app)
 assert(app.pivot.SelectedIndex == 1 and find(app, "Activity1") and find(app, "Activity7"))
 click(app, "Activity1")
 assert(app.currentRoute == "/post" and app.post.id == "p-hello", "Activity opens the post it is about")
-click(app, "BackFromPost")
+back(app)
 app:selectFeed("home")
 
 -- Following adds people to the home timeline.
@@ -269,7 +298,7 @@ assert(find(app, "Countfollowers"):getTextContent() == "0")
 click(app, "FollowButton")
 assert(find(app, "Countfollowers"):getTextContent() == "1" and app.client:followState("u-jules"))
 assert(not app.feeds.home, "Following reloads the home timeline")
-click(app, "BackFromProfile")
+back(app)
 assert(find(app, "Timelinehome"):findChild("Postp-quote", true), "Home includes people you just followed")
 
 -- Your own profile: edit and sign out.
@@ -403,14 +432,14 @@ click(writer, "AppBarWrite")
 assert(find(writer, "PostContent").Text == "Text stays here.", "Drafts survive leaving the composer")
 click(writer, "Publish")
 assert(writer.currentRoute == "/post" and writer.post.postType == "text" and not writer.post.imageId)
-click(writer, "BackFromPost")
+back(writer)
 click(writer, "AppBarWrite")
 assert(find(writer, "PostContent").Text == "", "Only the published type is cleared")
 click(writer, "Kindlink")
 assert(find(writer, "LinkTitle").Text == "A link draft" and find(writer, "LinkDescription").Text == "A useful read.")
 click(writer, "Publish")
 assert(writer.post.postType == "link" and writer.post.linkUrl == "https://example.com" and not writer.post.imageId)
-click(writer, "BackFromPost")
+back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindphoto")
 assert(writer.composeDraft == photoDraft and isShown(find(writer, "PhotoPreview")))
@@ -426,7 +455,7 @@ writer.screen:UpdateLayout(writer.screen.Width, writer.screen.Height)
 writer:afterPaint()
 drain(writer)
 assert(writer.post.postType == "photo" and writer.post.content == "A photo draft" and find(writer, "Image" .. writer.post.id))
-click(writer, "BackFromPost")
+back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindquote")
 assert(find(writer, "QuoteText").Text == "Stay curious." and isShown(find(writer, "QuotePhotoPreview")))
@@ -438,7 +467,7 @@ assert(writer.post.postType == "quote" and writer.post.quoteSource == "A friend"
     and writer.post.imageId and find(writer, "Image" .. writer.post.id), "Quote photos are published and displayed")
 
 -- A pending publish belongs to its draft, even after leaving and returning to it.
-click(writer, "BackFromPost")
+back(writer)
 click(writer, "AppBarWrite")
 click(writer, "Kindtext")
 find(writer, "PostTitle").Text = "The submitted title"

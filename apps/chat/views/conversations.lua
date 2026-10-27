@@ -354,13 +354,13 @@ function Conversations.details(self)
     if not self.room then return self:home() end
     local room = self.room
     local screen = self:loadingPage(room.name, nil, function() return self.client:listMembers(room.id) end,
-        function(members) return detailsBody(self, room, members) end)
+        function(members) return detailsBody(self, room, members) end,
+        { Name = "DetailsPage", back = function() self:goBack("/thread") end })
     local content = screen:getFirstChild()
     content:removeFromParent()
     -- Pinning lives with the conversation's info, which its name opens.
     local bar
     bar = C.appBar({
-        { "BackToThread", "arrow-left", "back", function() self:show("/thread") end },
         { "PinConversation", "pin", self.pinned[room.id] and "unpin" or "pin", function()
             self.pinned[room.id] = not self.pinned[room.id] or nil
             bar:findChild("PinConversation").Text = self.pinned[room.id] and "unpin" or "pin"

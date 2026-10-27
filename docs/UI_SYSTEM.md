@@ -98,10 +98,20 @@ is inset, as `adjustedContentInset` insets it on iOS.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which
   becomes a top bar styled by the generated `pivot-bar` part. A `BackIcon`
-  puts a back glyph before the title: tapping the title line, or swiping in
-  from the left edge, fires `BackRequested`, so a page needs no row for its
-  back button. Tapping the selected header fires `HeaderClick`, for example to
+  puts a back glyph in a ring (the `pivot-back` part) before the title, which
+  moves right to make room: tapping the title line, or swiping in from the
+  left edge, fires `BackRequested`, so a page needs no row for its back
+  button. Tapping the selected header fires `HeaderClick`, for example to
   open details of a conversation.
+- `Pivot.Turnstile` plays the Windows Phone page transition from the next
+  frame: the whole page swings in perspective about a vertical hinge 40 points
+  left of the screen and settles flat in 300 ms (the WinJS `turnstileForwardIn`
+  and `turnstileBackwardIn` curves). `ForwardIn` starts at 80° with the right
+  edge receding; `BackwardIn` starts at -50° with it raised towards you. The
+  property returns to `None` when the page is flat. Hit testing follows the
+  turned page, so taps during the swing do not reach controls it has moved.
+  The navigation owner chooses the direction; `share/orca/UIKit/Turnstile.lua`
+  finds a screen's visible page and plays it.
 
 `share/orca/UIKit/Footer.lua` builds this shell for applications; see
 [App styling](app/styling.md#layout-and-sizing). Frost the bars with

@@ -5,6 +5,7 @@
 
 #include <UIKit/UIKit.h>
 
+#include <float.h>
 #include <string.h>
 
 #define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
@@ -182,10 +183,15 @@ _ExitStencilClip(struct Node2D *pNode2D,
   R_SetPipelineState(&ps);
 }
 
+// Finds the point on the node's plane (z = 0) that projects to (x, y). This
+// stays exact when the matrix carries perspective, as during a turnstile.
 static struct vec3 _Node2DToLocalPoint(struct Node2D *pNode2D, float x, float y) {
-  struct mat4 inv = MAT4_Inverse(&pNode2D->Matrix);
-	struct vec3 point = {x,y,0};
-  return MAT4_MultiplyVector3D(&inv, &point);
+  float const *m = pNode2D->Matrix.v;
+  float a = m[0] - x * m[3], b = m[4] - x * m[7], e = x * m[15] - m[12];
+  float c = m[1] - y * m[3], d = m[5] - y * m[7], f = y * m[15] - m[13];
+  float det = a * d - b * c;
+  if (fabsf(det) < 1e-12f) return (struct vec3){ -FLT_MAX, -FLT_MAX, 0 };
+  return (struct vec3){ (e * d - b * f) / det, (a * f - e * c) / det, 0 };
 }
 
 static bool_t _ContainsPoint(struct Node2D *pNode2D, float x, float y) {

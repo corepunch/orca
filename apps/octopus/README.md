@@ -28,8 +28,12 @@ blocks with [Chat](../chat/README.md):
   and **me**.
 - One persistent `ApplicationBar` switches between home, search, write and me;
   its menu holds refresh and sign in, create account or sign out. A post page's
-  bar holds back, like, repost and comment, with the author, refresh and
+  bar holds like, repost and comment, with the author, refresh and
   delete (for your own posts) in the menu. Delete asks for a second tap.
+- Opening a post or a profile turns it in on a hinge at the left edge of the
+  screen, as on Windows Phone, and going back turns the previous page back in.
+  Those pages get a round back button before the small OCTOPUS title; the
+  title line and a swipe in from the left edge go back too.
 - Cards show a square avatar tile (the author's profile photo, or their
   initials on a tile colour), the author and a relative time, the post by
   type (title and excerpt, a pull quote beside an accent rule, a link badge, or
