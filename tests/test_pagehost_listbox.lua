@@ -202,18 +202,12 @@ end
 -- PageHost: NavigateToPage passes a DataContext to the destination
 -- ---------------------------------------------------------------------------
 local function test_pagehost_navigation_context()
-    local screen = filesystem.loadObjectFromXmlString([[
-      <Screen Name="Test" Width="400" Height="800" ResizeMode="NoResize">
-        <PageHost Name="Host" Width="400" Height="800" ActivePage="alpha">
-          <Page Name="alpha" Path="/alpha" Width="400" Height="800">
-            <TextBlock Name="Card" Width="400" Height="100" Text="Game"
-              DataContext="{DataObject Name=zork1}"
-              LeftButtonUp="{PageHost.NavigateToPage '/beta'}"/>
-          </Page>
-          <Page Name="beta" Path="/beta" Width="400" Height="800"/>
-        </PageHost>
-      </Screen>
-    ]])
+    local screen = filesystem.loadObjectFromLispString([[
+(Screen Name="Test" Width=400 Height=800 ResizeMode="NoResize"
+  (PageHost Name="Host" Width=400 Height=800 ActivePage="alpha"
+    (Page Name="alpha" Path="/alpha" Width=400 Height=800
+      (TextBlock Name="Card" Width=400 Height=100 Text="Game" DataContext=(DataObject Name="zork1") LeftButtonUp=(PageHost.NavigateToPage URL="/beta")))
+    (Page Name="beta" Path="/beta" Width=400 Height=800)))]])
     local card = screen:findChild("Card", true)
     local page_b = screen:findChild("beta", true)
 
@@ -386,7 +380,7 @@ end
 local function test_listbox_valueproperty_dataobject_value()
         local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-        local items = filesystem.loadObjectFromXmlStringWithSchema([[
+        local items = filesystem.loadXmlDataStringWithSchema([[
             <Tabs>
                 <FooterTab name="TabGames"   Key="games"   Label="Adventures"/>
                 <FooterTab name="TabLibrary" Key="library" Label="Library"/>
@@ -860,7 +854,7 @@ end
 local function test_selecteditem_custom_valueproperty()
   local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
-  local items = filesystem.loadObjectFromXmlStringWithSchema([[
+  local items = filesystem.loadXmlDataStringWithSchema([[
     <Catalog>
       <SelectedGame name="Game1" Key="rpg" Title="Fantasy Quest"/>
       <SelectedGame name="Game2" Key="shooter" Title="Blaster"/>
@@ -969,7 +963,7 @@ local function test_selecteditem_path_resolution()
   local screen = ui.Screen { Width = 400, Height = 800, ResizeMode = "NoResize" }
 
   -- Create items where each has Title and Comments children
-  local items = filesystem.loadObjectFromXmlStringWithSchema([[
+  local items = filesystem.loadXmlDataStringWithSchema([[
     <Catalog>
       <SelectedGameDetail name="GameA" Title="Alpha Quest">
         <Comments><SelectedComment name="C1" Text="Great!"/><SelectedComment name="C2" Text="Fun"/></Comments>

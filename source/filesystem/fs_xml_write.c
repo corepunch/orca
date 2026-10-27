@@ -116,9 +116,15 @@ serialize_property_cb(struct Object const *object,
   if (pd->IsReadOnly) return;   /* Issue 5: skip runtime-computed properties */
   if (pd->Name[0] == '_') return;
 
-  struct Property *prop = OBJ_FindLongProperty((struct Object *)object, pd->FullIdentifier);
-  if (!prop)
-    return;
+  /* Serialization must not materialize unset properties. In particular an
+     array's count field shares storage with the array and is not independent. */
+  struct Property *prop = NULL;
+  FOR_EACH_PROPERTY(candidate, OBJ_GetProperties((struct Object *)object)) {
+    if (PROP_GetLongIdentifier(candidate) == pd->FullIdentifier) {
+      prop = (struct Property *)candidate;
+      break;
+    }
+  }
   if (!prop || PROP_IsNull(prop)) return;
   if (PROP_HasProgram(prop) &&
       (!prop->binding || prop->binding->Mode != kBindingModeOneWayToSource)) return;
@@ -204,8 +210,8 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
 
   lpcString_t text = OBJ_GetTextContent((struct Object *)object);
   if (text && *text) {
-    xmlNodeSetContent(node, XMLSTR(text));
-    return;
+    // Text must not erase property wrappers or binding nodes already emitted.
+    xmlAddChild(node, xmlNewText(XMLSTR(text)));
   }
 
   FOR_EACH_OBJECT(child, (struct Object *)object) {
@@ -217,8 +223,8 @@ serialize_object_impl(struct Object const *object, xmlNodePtr parent)
  * Public API
  * ---------------------------------------------------------------------- */
 
-const char*
-FS_SerializeObjectToXmlString(struct Object const *object)
+xmlDocPtr
+FS_SerializeObjectTree(struct Object const *object)
 {
   if (!object) return NULL;
 
@@ -239,6 +245,15 @@ FS_SerializeObjectToXmlString(struct Object const *object)
   xmlUnlinkNode(obj_node);
   xmlDocSetRootElement(doc, obj_node);
   xmlFreeNode(wrapper);
+
+  return doc;
+}
+
+const char*
+FS_SerializeObjectToXmlString(struct Object const *object)
+{
+  xmlDocPtr doc = FS_SerializeObjectTree(object);
+  if (!doc) return NULL;
 
   xmlChar *xml_buf = NULL;
   int xml_len = 0;

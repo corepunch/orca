@@ -275,14 +275,14 @@ local function test_panorama()
   print("PASS: test_panorama")
 end
 
-local function test_xml()
-  local screen = filesystem.loadObject("Metro/Screens/Pivot")
+local function test_lisp()
+  local screen = filesystem.loadObject("tests/fixtures/metro/Pivot.lisp")
   layout(screen)
   local pivot = screen:findChild("Pivot", true)
-  test.expect(pivot and #children(pivot, "PivotHeaderItem") == 3, "XML declares Pivot and PivotItem")
+  test.expect(pivot and #children(pivot, "PivotHeaderItem") == 3, "Lisp declares Pivot and PivotItem")
   local bar = screen:findChild("AppBar", true)
-  test.expect(bar and #children(bar, "ApplicationBarIconButton") == 3, "XML declares the ApplicationBar")
-  print("PASS: test_xml")
+  test.expect(bar and #children(bar, "ApplicationBarIconButton") == 3, "Lisp declares the ApplicationBar")
+  print("PASS: test_lisp")
 end
 
 -- Loads fonts so headers have real widths; runs last to leave the others unchanged.
@@ -329,5 +329,5 @@ test_pivot_drag_reuse()
 test_pivot_header_metrics()
 test_application_bar()
 test_panorama()
-test_xml()
+test_lisp()
 test_pivot_fill()

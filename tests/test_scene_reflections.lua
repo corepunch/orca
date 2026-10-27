@@ -8,15 +8,13 @@ assert(model.ScreenSpaceReflectionEnabled == false)
 model.ScreenSpaceReflectionEnabled = true
 assert(model.ScreenSpaceReflectionEnabled == true)
 
-local loaded = fs.loadObjectFromXmlString [[
-  <Scene Name="ReflectionScene">
-    <Model3D Name="Ordinary"/>
-    <Model3D Name="Deck" ScreenSpaceReflectionEnabled="true"/>
-  </Scene>
-]]
+local loaded = fs.loadObjectFromLispString [[
+(Scene Name="ReflectionScene"
+  (Model3D Name="Ordinary")
+  (Model3D Name="Deck" ScreenSpaceReflectionEnabled=true))]]
 assert(loaded:findChild("Ordinary").ScreenSpaceReflectionEnabled == false)
 assert(loaded:findChild("Deck").ScreenSpaceReflectionEnabled == true)
 loaded:findChild("Deck").ScreenSpaceReflectionEnabled = false
 assert(loaded:findChild("Deck").ScreenSpaceReflectionEnabled == false)
 core.flushQueue()
-print("PASS: reflection model opt-in and XML loading")
+print("PASS: reflection model opt-in and Lisp loading")

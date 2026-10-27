@@ -147,19 +147,19 @@ scenario("binding replacement and expression string ownership", function()
     equal(sink.Text, "manual", "An explicitly detached binding must not resume writing")
 end)
 
-scenario("XML-authored expression lifetime", function()
-    local xml = [[<StackView><TextBlock Name="Source" Text="escaped &amp; quoted &quot;text&quot;"/>
-        <TextBlock Name="Sink"><Binding Target="TextRun.Text">"&lt;" + {../Source/Text} + "&gt;"</Binding></TextBlock></StackView>]]
-    local root = assert(fs.loadObjectFromXmlString(xml))
-    xml = nil
+scenario("Lisp-authored expression lifetime", function()
+    local lisp = [[(StackView (TextBlock Name="Source" Text="escaped & quoted \"text\"")
+        (TextBlock Name="Sink" (Binding Target="TextRun.Text" "\"<\" + {../Source/Text} + \">\"")))]]
+    local root = assert(fs.loadObjectFromLispString(lisp))
+    lisp = nil
     collectgarbage("collect")
     local source, sink = root:findChild("Source"), root:findChild("Sink")
     evaluate(root)
-    equal(sink.Text, '<escaped & quoted "text">', "XML document storage must outlive binding compilation")
+    equal(sink.Text, '<escaped & quoted "text">', "Scene source storage must outlive binding compilation")
     for i = 1, 150 do
-        source.Text = "xml-update-" .. i
+        source.Text = "lisp-update-" .. i
         evaluate(root)
-        equal(sink.Text, "<xml-update-" .. i .. ">", "XML expression survives later source changes")
+        equal(sink.Text, "<lisp-update-" .. i .. ">", "Lisp expression survives later source changes")
     end
 end)
 
@@ -167,7 +167,7 @@ scenario("inherited DataContext replacement and source collection", function()
     local schema = [[<Schema><Entity Name="StringBindingRecord">
         <Column Name="Title" Type="string"/><Column Name="Detail" Type="string"/>
         <Column Name="Choice" Type="string"/></Entity></Schema>]]
-    local seed = assert(fs.loadObjectFromXmlStringWithSchema(
+    local seed = assert(fs.loadXmlDataStringWithSchema(
         '<StringBindingRecord Title="first" Detail="fallback" Choice="yes"/>', schema))
     local function record(title, detail, choice)
         local value = ui.Node2D {}

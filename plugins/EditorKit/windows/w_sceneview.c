@@ -33,13 +33,9 @@ EDWINPROC(SceneView) {
   LPSCENEVIEW data = ED_GetUserData(wnd);
   switch (msg) {
     case EVT_CREATE:
-      WITH(xmlDoc, doc, xmlReadFile(lparm, NULL, 0), xmlFreeDoc) {
-        PATHSTR path = {0};
-        strncpy(path, lparm, sizeof(path));
-        if (strrchr(path, '.')) *strrchr(path, '.') = 0;
-        xmlNodeSetName((xmlNodePtr)doc, BAD_CAST path);
-        
-        struct Object *root = OBJ_LoadDocument(doc);
+      {
+        struct Object *root = FS_LoadObject(lparm);
+        if (!root) return FALSE;
         ED_SplitView(wnd, msg, wparm, &(SPLITVIEWDESC) {
           .left = { ED_HierarchyNavigator, 0, root },
           .right = { ED_CanvasView, 0, root },
@@ -50,6 +46,9 @@ EDWINPROC(SceneView) {
         data->scene = root;
       }
       return TRUE;
+    case EVT_DESTROY:
+      if (data && data->scene) OBJ_ReleaseRef(data->scene);
+      return ED_SplitView(wnd, msg, wparm, lparm);
     case EVT_GETTEXT:
       if (editor.screen || data->scene) {
         lpcString_t filename = OBJ_GetSourceFile(data->scene?data->scene:editor.screen);

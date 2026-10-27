@@ -304,49 +304,45 @@ local function test_grid_implicit_row_wrapping()
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading via filesystem.loadObjectFromXmlString: verify properties are parsed and children built
+-- Lisp loading via filesystem.loadObjectFromLispString: verify properties are parsed and children built
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_properties()
-	local xml = [[
-<Screen Name="xml-screen" Width="800" Height="600" ResizeMode="NoResize">
-  <Node2D Name="child-node" Width="100" Height="50" />
-  <Node2D Name="legacy-aligned" Width="120" Height="60" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-</Screen>]]
+local function test_lisp_loading_properties()
+	local lisp = [[
+(Screen Name="xml-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (Node2D Name="child-node" Width="100" Height="50")
+  (Node2D Name="legacy-aligned" Width="120" Height="60" HorizontalAlignment="Center" VerticalAlignment="Bottom"))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "loadObjectFromXmlString should return a non-nil object")
-	test.expect_eq(root.Name, "xml-screen", "Name property from XML")
-	test.expect_eq(root.Width, 800, "Width property from XML")
-	test.expect_eq(root.Height, 600, "Height property from XML")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "loadObjectFromLispString should return a non-nil object")
+	test.expect_eq(root.Name, "xml-screen", "Name property from Lisp")
+	test.expect_eq(root.Width, 800, "Width property from Lisp")
+	test.expect_eq(root.Height, 600, "Height property from Lisp")
 
 	local child = root:findChild("child-node", true)
 	test.expect(child ~= nil, "child-node should exist")
-	test.expect_eq(child.Width, 100, "child Width from XML")
-	test.expect_eq(child.Height, 50, "child Height from XML")
+	test.expect_eq(child.Width, 100, "child Width from Lisp")
+	test.expect_eq(child.Height, 50, "child Height from Lisp")
 
 	local aligned = root:findChild("legacy-aligned", true)
 	test.expect(aligned ~= nil, "legacy-aligned should exist")
-	test.expect(aligned.MarginLeft ~= aligned.MarginLeft, "HorizontalAlignment XML should map to auto left margin")
-	test.expect(aligned.MarginRight ~= aligned.MarginRight, "HorizontalAlignment XML should map to auto right margin")
-	test.expect(aligned.MarginTop ~= aligned.MarginTop, "VerticalAlignment XML should map to auto top margin")
-	test.expect_near(aligned.MarginBottom, 0, 0.001, "VerticalAlignment XML should clear bottom margin")
+	test.expect(aligned.MarginLeft ~= aligned.MarginLeft, "HorizontalAlignment Lisp should map to auto left margin")
+	test.expect(aligned.MarginRight ~= aligned.MarginRight, "HorizontalAlignment Lisp should map to auto right margin")
+	test.expect(aligned.MarginTop ~= aligned.MarginTop, "VerticalAlignment Lisp should map to auto top margin")
+	test.expect_near(aligned.MarginBottom, 0, 0.001, "VerticalAlignment Lisp should clear bottom margin")
 
-	print("PASS: test_xml_loading_properties")
+	print("PASS: test_lisp_loading_properties")
 end
 
 local function test_inherited_foreground_color()
-	local xml = [[
-<Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize">
-  <Node2D Name="visual-root" ForegroundColor="#336699">
-    <StackView Name="parent-stack">
-      <TextBlock Name="inherited-text" Text="Inherited" />
-      <TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300" />
-    </StackView>
-  </Node2D>
-</Screen>]]
+	local lisp = [[
+(Screen Name="inherit-root" Width="800" Height="600" ResizeMode="NoResize"
+  (Node2D Name="visual-root" ForegroundColor="#336699"
+    (StackView Name="parent-stack"
+      (TextBlock Name="inherited-text" Text="Inherited")
+      (TextBlock Name="local-text" Text="Local" ForegroundColor="#CC3300"))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "inherited foreground XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "inherited foreground Lisp should load")
 
 	local inherited = root:findChild("inherited-text", true)
 	local local_text = root:findChild("local-text", true)
@@ -376,17 +372,13 @@ local function test_inherited_foreground_color()
 end
 
 local function test_binding_expression_reads_inherited_property()
-	local xml = [[
-<Screen Name="binding-inherited-root" Width="800" Height="600" ResizeMode="NoResize">
-  <Node2D Name="visual-root" ForegroundColor="#336699">
-    <TextBlock Name="bound-text" Text="Inherited binding">
-      <BindingExpression Target="Node2D.BackgroundColor">{./Node2D.ForegroundColor}</BindingExpression>
-    </TextBlock>
-  </Node2D>
-</Screen>]]
+	local lisp = [[
+(Screen Name="binding-inherited-root" Width="800" Height="600" ResizeMode="NoResize"
+  (Node2D Name="visual-root" ForegroundColor="#336699"
+    (TextBlock Name="bound-text" Text="Inherited binding" Node2D.BackgroundColor=(bind "./Node2D.ForegroundColor"))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "inherited binding XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "inherited binding Lisp should load")
 
 	local text = root and root:findChild("bound-text", true) or nil
 	test.expect(text ~= nil, "bound text should exist")
@@ -430,20 +422,18 @@ local function test_attached_inherited_text_font_family()
 	print("PASS: test_attached_inherited_text_font_family")
 end
 
-local function test_xml_registered_font_family()
-	local root = filesystem.loadObjectFromXmlString([[
-<Screen Width="800" Height="600" ResizeMode="NoResize">
-  <StackView AlignItems="Start">
-    <TextBlock Name="font-text" Text="Book" FontSize="40" FontFamily="Noto Sans Mono"/>
-  </StackView>
-</Screen>]])
+local function test_lisp_registered_font_family()
+	local root = filesystem.loadObjectFromLispString([[
+(Screen Width="800" Height="600" ResizeMode="NoResize"
+  (StackView AlignItems="Start"
+    (TextBlock Name="font-text" Text="Book" FontSize="40" FontFamily="Noto Sans Mono")))]])
 	test.expect(root ~= nil, "TextBlock with registered FontFamily should load")
 	local text = root and root:findChild("font-text", true) or nil
 	test.expect(text and text.FontFamily ~= nil,
-		"registered FontFamily XML attribute should resolve to a FontFamily object")
+		"registered FontFamily Lisp attribute should resolve to a FontFamily object")
 	if text and text.FontFamily then
 		test.expect_eq(text.FontFamily.Name, "Noto Sans Mono",
-			"registered FontFamily XML attribute should select Noto Sans Mono")
+			"registered FontFamily Lisp attribute should select Noto Sans Mono")
 	end
 
 	if root then
@@ -451,7 +441,7 @@ local function test_xml_registered_font_family()
 		root = nil
 	end
 	collectgarbage()
-	print("PASS: test_xml_registered_font_family")
+	print("PASS: test_lisp_registered_font_family")
 end
 
 local function test_attached_inherited_text_font_leaves()
@@ -508,49 +498,41 @@ local function test_partial_font_shorthand_preserves_inherited_size()
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: object-typed attributes should accept inline object expressions.
+-- Lisp loading: object-typed attributes should accept inline object expressions.
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_inline_xml_attribute()
-	local xml = [[
-<Screen Name="inline-xml-screen"
-        Width="800"
-        Height="600"
-        ResizeMode="NoResize"
-        DataContext="{DataObject Name='inline-context'}">
-  <Node2D Name="child-node" Width="100" Height="50" BorderRadius="{12}" />
-</Screen>]]
+local function test_lisp_loading_inline_node_attribute()
+	local lisp = [[
+(Screen Name="inline-xml-screen" Width="800" Height="600" ResizeMode="NoResize" DataContext=(DataObject Name="inline-context")
+  (Node2D Name="child-node" Width="100" Height="50" BorderRadius=(BorderRadius TopLeftRadius=12)))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "inline XML attribute loadObjectFromXmlString should return a non-nil object")
-	test.expect(root.DataContext ~= nil, "DataContext should be created from inline XML")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "nested Lisp attribute loadObjectFromLispString should return a non-nil object")
+	test.expect(root.DataContext ~= nil, "DataContext should be created from nested Lisp")
 	test.expect_eq(root.DataContext:getClassName(), "DataObject", "DataContext should be a DataObject")
-	test.expect_eq(root.DataContext.Name, "inline-context", "inline XML attribute should preserve nested attributes")
+	test.expect_eq(root.DataContext.Name, "inline-context", "nested Lisp attribute should preserve nested attributes")
 	local child = root:findChild("child-node", true)
 	test.expect(child ~= nil, "regular child objects should still load")
-	test.expect_eq(child.BorderRadius.TopLeftRadius, 12, "positional inline struct syntax should map to the first field")
-	test.expect_eq(child.BorderRadius.TopRightRadius, 0, "positional inline struct syntax should leave later fields at default values")
+	test.expect_eq(child.BorderRadius.TopLeftRadius, 12, "nested struct value should set the named field")
+	test.expect_eq(child.BorderRadius.TopRightRadius, 0, "nested struct value should leave unspecified fields at default values")
 
 	root:clear()
 	root = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_inline_xml_attribute")
+	print("PASS: test_lisp_loading_inline_node_attribute")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: inline object syntax should work for ImageView.Source.
+-- Lisp loading: inline object syntax should work for ImageView.Source.
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_inline_imageview_source()
-	local xml = [[
-<ImageView Name="inline-image-view"
-           Width="32"
-           Height="32"
-           Source="{Texture Width=48, Height=24}" />]]
+local function test_lisp_loading_inline_imageview_source()
+	local lisp = [[
+(ImageView Name="inline-image-view" Width="32" Height="32" Source=(Texture Width="48" Height="24"))]]
 
-	local image_view = filesystem.loadObjectFromXmlString(xml)
+	local image_view = filesystem.loadObjectFromLispString(lisp)
 	test.expect(image_view ~= nil, "inline ImageView should load")
 	test.expect_eq(image_view:getClassName(), "ImageView", "inline ImageView should be an ImageView")
-	test.expect(image_view.Source ~= nil, "ImageView.Source should be created from inline XML")
+	test.expect(image_view.Source ~= nil, "ImageView.Source should be created from nested Lisp")
 	test.expect_eq(image_view.Source:getClassName(), "Texture", "ImageView.Source should be a Texture object")
 	test.expect_eq(image_view.Source.Width, 48, "inline Texture should preserve Width")
 	test.expect_eq(image_view.Source.Height, 24, "inline Texture should preserve Height")
@@ -559,24 +541,19 @@ local function test_xml_loading_inline_imageview_source()
 	image_view = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_inline_imageview_source")
+	print("PASS: test_lisp_loading_inline_imageview_source")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: event-typed properties should synthesize EventTrigger wrappers
+-- Lisp loading: event-typed properties should synthesize EventTrigger wrappers
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_inline_event_trigger()
-	local xml = [[
-<Screen Name="inline-trigger-screen" Width="800" Height="600" ResizeMode="NoResize">
-  <TextBlock Name="inline-trigger-target"
-             Text="Target"
-             Visible="true" />
-  <TextBlock Name="inline-trigger-button"
-             Text="Hide target"
-             LeftButtonUp="{HideAction Path=../inline-trigger-target}" />
-</Screen>]]
+local function test_lisp_loading_inline_event_trigger()
+	local lisp = [[
+(Screen Name="inline-trigger-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="inline-trigger-target" Text="Target" Visible="true")
+  (TextBlock Name="inline-trigger-button" Text="Hide target" LeftButtonUp=(HideAction Path="../inline-trigger-target")))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
+	local root = filesystem.loadObjectFromLispString(lisp)
 	test.expect(root ~= nil, "inline event trigger screen should load")
 	local target = root:findChild("inline-trigger-target", true)
 	local textblock = root:findChild("inline-trigger-button", true)
@@ -594,31 +571,27 @@ local function test_xml_loading_inline_event_trigger()
 	root = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_inline_event_trigger")
+	print("PASS: test_lisp_loading_inline_event_trigger")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: struct arrays on Project should parse via the C loader
+-- Lisp loading: struct arrays on Project should parse via the C loader
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_struct_arrays()
-	local xml = [[
-<Project Name="struct-array-project">
-  <Project.PropertyTypes>
-    <PropertyType Name="URL" Category="Card" DataType="String" />
-    <PropertyType Name="CardWidth" Category="Card" DataType="Int" />
-  </Project.PropertyTypes>
-  <Project.ProjectReferences>
-    <ProjectReference Name="Example" Path="apps/Example" />
-  </Project.ProjectReferences>
-  <Project.ThemeLibrary>
-    <ThemeValue Key="panel-background" Value="#1A1A28" />
-    <ThemeValue Key="accent-background" Value="#2A2145" />
-  </Project.ThemeLibrary>
-</Project>]]
+local function test_lisp_loading_struct_arrays()
+	local lisp = [[
+(Project Name="struct-array-project"
+  (Project.PropertyTypes
+    (PropertyType Name="URL" Category="Card" DataType="String")
+    (PropertyType Name="CardWidth" Category="Card" DataType="Int"))
+  (Project.ProjectReferences
+    (ProjectReference Name="Example" Path="apps/Example"))
+  (Project.ThemeLibrary
+    (ThemeValue Key="panel-background" Value="#1A1A28")
+    (ThemeValue Key="accent-background" Value="#2A2145")))]]
 
-	local project = filesystem.loadObjectFromXmlString(xml)
-	test.expect(project ~= nil, "struct-array XML should load")
-	test.expect_eq(project.Name, "struct-array-project", "Project name from XML")
+	local project = filesystem.loadObjectFromLispString(lisp)
+	test.expect(project ~= nil, "struct-array Lisp should load")
+	test.expect_eq(project.Name, "struct-array-project", "Project name from Lisp")
 	test.expect_eq(project.NumPropertyTypes, 2, "Project.PropertyTypes should contain two entries")
 	test.expect_eq(project.NumProjectReferences, 1, "Project.ProjectReferences should contain one entry")
 	test.expect_eq(project.NumThemeLibrary, 2, "Project.ThemeLibrary should contain two entries")
@@ -627,31 +600,26 @@ local function test_xml_loading_struct_arrays()
 	project = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_struct_arrays")
+	print("PASS: test_lisp_loading_struct_arrays")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: TabView trees should wire TabBar selection to matching panels
+-- Lisp loading: TabView trees should wire TabBar selection to matching panels
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_tabview()
-	local xml = [[
-<Screen Name="tab-screen" Width="800" Height="600" ResizeMode="NoResize">
-  <TabView Name="main-tabs" Width="800" Height="600">
-    <TabBar Name="tab-header" Width="800" Height="40">
-      <Tab Name="overview-tab" Value="overview" Width="120" Height="40">Overview</Tab>
-      <Tab Name="details-tab" Value="details" Width="120" Height="40">Details</Tab>
-    </TabBar>
-    <Node2D Name="overview" Width="800" Height="560">
-      <Node2D Name="overview-child" Width="100" Height="50" />
-    </Node2D>
-    <Node2D Name="details" Width="800" Height="560">
-      <Node2D Name="details-child" Width="100" Height="50" />
-    </Node2D>
-  </TabView>
-</Screen>]]
+local function test_lisp_loading_tabview()
+	local lisp = [[
+(Screen Name="tab-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TabView Name="main-tabs" Width="800" Height="600"
+    (TabBar Name="tab-header" Width="800" Height="40"
+      (Tab Name="overview-tab" Value="overview" Width="120" Height="40" "Overview")
+      (Tab Name="details-tab" Value="details" Width="120" Height="40" "Details"))
+    (Node2D Name="overview" Width="800" Height="560"
+      (Node2D Name="overview-child" Width="100" Height="50"))
+    (Node2D Name="details" Width="800" Height="560"
+      (Node2D Name="details-child" Width="100" Height="50"))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "loadObjectFromXmlString should return a non-nil object")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "loadObjectFromLispString should return a non-nil object")
 
 	local view = root:findChild("main-tabs", true)
 	local bar = root:findChild("tab-header", true)
@@ -660,43 +628,41 @@ local function test_xml_loading_tabview()
 	local overview_panel = root:findChild("overview", true)
 	local details_panel = root:findChild("details", true)
 
-	test.expect(view ~= nil, "TabView should be created from XML")
-	test.expect(bar ~= nil, "TabBar should be created from XML")
-	test.expect(overview_tab ~= nil, "overview tab should be created from XML")
-	test.expect(details_tab ~= nil, "details tab should be created from XML")
-	test.expect(overview_panel ~= nil, "overview panel should be created from XML")
-	test.expect(details_panel ~= nil, "details panel should be created from XML")
+	test.expect(view ~= nil, "TabView should be created from Lisp")
+	test.expect(bar ~= nil, "TabBar should be created from Lisp")
+	test.expect(overview_tab ~= nil, "overview tab should be created from Lisp")
+	test.expect(details_tab ~= nil, "details tab should be created from Lisp")
+	test.expect(overview_panel ~= nil, "overview panel should be created from Lisp")
+	test.expect(details_panel ~= nil, "details panel should be created from Lisp")
 
-	test.expect_eq(view.SelectedValue, "overview", "TabView should auto-select the first tab from XML")
-	test.expect(overview_tab.IsSelected, "First XML tab should be selected after Start")
-	test.expect(not details_tab.IsSelected, "Second XML tab should remain unselected after Start")
+	test.expect_eq(view.SelectedValue, "overview", "TabView should auto-select the first tab from Lisp")
+	test.expect(overview_tab.IsSelected, "First Lisp tab should be selected after Start")
+	test.expect(not details_tab.IsSelected, "Second Lisp tab should remain unselected after Start")
 	test.expect(overview_panel.Visible, "overview panel should be visible after Start")
 	test.expect(not details_panel.Visible, "details panel should be hidden after Start")
 
 	details_tab:send("Node.LeftButtonUp")
 	pump_messages(root)
 
-	test.expect_eq(view.SelectedValue, "details", "TabView should update SelectedValue after clicking the second XML tab")
+	test.expect_eq(view.SelectedValue, "details", "TabView should update SelectedValue after clicking the second Lisp tab")
 	test.expect(not overview_panel.Visible, "overview panel should be hidden after switching tabs")
 	test.expect(details_panel.Visible, "details panel should be visible after switching tabs")
 
-	print("PASS: test_xml_loading_tabview")
+	print("PASS: test_lisp_loading_tabview")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: trigger/action wiring should resolve object references and
+-- Lisp loading: trigger/action wiring should resolve object references and
 -- toggle a popup panel from a click.
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_trigger_action_popup()
-	local xml = [[
-	<Screen Name="popup-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF">
-	    <Node.Triggers/>
-	  </TextBlock>
-	</Screen>]]
+local function test_lisp_loading_trigger_action_popup()
+	local lisp = [[
+(Screen Name="popup-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="PopupClose" Text="Close" FontSize="14" ForegroundColor="#FFFFFF"
+    (Node.Triggers)))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "popup XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "popup Lisp should load")
 
 	local close = root:findChild("PopupClose", true)
 
@@ -705,27 +671,23 @@ local function test_xml_loading_trigger_action_popup()
 	root = nil
 	collectgarbage()
 
-	print("PASS: test_xml_loading_trigger_action_popup")
+	print("PASS: test_lisp_loading_trigger_action_popup")
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: trigger/action components should be attachable from XML and
+-- Lisp loading: trigger/action components should be attachable from Lisp and
 -- drive a modal popup without Lua setup.
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_trigger_action_components()
-	local xml = [[
-	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
-	    <Node.Triggers>
-	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
-	      </EventTrigger>
-	    </Node.Triggers>
-	  </TextBlock>
-	</Screen>]]
+local function test_lisp_loading_trigger_action_components()
+	local lisp = [[
+(Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
+    (Node.Triggers
+      (EventTrigger RoutedEvent="Node.LeftButtonUp"
+        (Screen.ShowModal Path="Example/Screens/GetStartedPopup")))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "trigger/action XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "trigger/action Lisp should load")
 
 	local button = root:findChild("SettingsButton", true)
 
@@ -744,18 +706,16 @@ local function test_xml_loading_trigger_action_components()
 	popup = nil
 	button = nil
 
-	print("PASS: test_xml_loading_trigger_action_components")
+	print("PASS: test_lisp_loading_trigger_action_components")
 end
 
 local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
-	local xml = [[
-	<Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA"
-	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
-	</Screen>]]
+	local lisp = [[
+(Screen Name="inline-trigger-mouse-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="OpenPopup" Text="Open" Width="120" Height="40" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" LeftButtonUp=(Screen.ShowModal Path="Example/Screens/GetStartedPopup")))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "inline trigger mouse XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "inline trigger mouse Lisp should load")
 	root:UpdateLayout(root.Width, root.Height)
 
 	local handled = system.dispatchMessage {
@@ -778,14 +738,12 @@ local function test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
 end
 
 local function test_inline_show_modal_popup_flow()
-	local xml = [[
-	<Screen Name="inline-show-modal-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="OpenPopup" Text="Open" Width="140" Height="44" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
-	    LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
-	</Screen>]]
+	local lisp = [[
+(Screen Name="inline-show-modal-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="OpenPopup" Text="Open" Width="140" Height="44" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16" LeftButtonUp=(Screen.ShowModal Path="Example/Screens/GetStartedPopup")))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "inline show modal XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "inline show modal Lisp should load")
 
 	local button = root and root:findChild("OpenPopup", true) or nil
 	test.expect(button ~= nil, "OpenPopup button should exist")
@@ -1053,23 +1011,19 @@ local function test_modal_attach_applies_screen_stylesheet_to_popup_content()
 end
 
 -- ---------------------------------------------------------------------------
--- XML loading: Popup.ClosePopup should dismiss a modal popup and detach it
+-- Lisp loading: Popup.ClosePopup should dismiss a modal popup and detach it
 -- from the screen chain.
 -- ---------------------------------------------------------------------------
-local function test_xml_loading_close_popup_action_components()
-	local xml = [[
-	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
-	    <Node.Triggers>
-	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
-	      </EventTrigger>
-	    </Node.Triggers>
-	  </TextBlock>
-	</Screen>]]
+local function test_lisp_loading_close_popup_action_components()
+	local lisp = [[
+(Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="SettingsButton" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
+    (Node.Triggers
+      (EventTrigger RoutedEvent="Node.LeftButtonUp"
+        (Screen.ShowModal Path="Example/Screens/GetStartedPopup")))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "close-popup XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "close-popup Lisp should load")
 
 	local button = root:findChild("SettingsButton", true)
 
@@ -1096,23 +1050,19 @@ local function test_xml_loading_close_popup_action_components()
 	popup2 = nil
 	button = nil
 
-	print("PASS: test_xml_loading_close_popup_action_components")
+	print("PASS: test_lisp_loading_close_popup_action_components")
 end
 
-local function test_xml_loading_event_trigger_components()
-	local xml = [[
-	<Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16">
-	    <Node.Triggers>
-	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <Screen.ShowModal Path="Example/Screens/GetStartedPopup"/>
-	      </EventTrigger>
-	    </Node.Triggers>
-	  </TextBlock>
-	</Screen>]]
+local function test_lisp_loading_event_trigger_components()
+	local lisp = [[
+(Screen Name="trigger-action-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="HotkeyTarget" Text="Open settings" FontSize="16" ForegroundColor="#FFFFFF" BackgroundColor="#4444AA" Padding="16"
+    (Node.Triggers
+      (EventTrigger RoutedEvent="Node.RightButtonUp"
+        (Screen.ShowModal Path="Example/Screens/GetStartedPopup")))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "event trigger XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "event trigger Lisp should load")
 
 	local target = root:findChild("HotkeyTarget", true)
 
@@ -1125,31 +1075,24 @@ local function test_xml_loading_event_trigger_components()
 	test.expect(root:getNext() ~= nil, "Popup should become visible when RoutedEvent matches")
 	target = nil
 
-	print("PASS: test_xml_loading_event_trigger_components")
+	print("PASS: test_lisp_loading_event_trigger_components")
 end
 
-local function test_xml_loading_send_message_action_components()
-	local xml = [[
-	<Screen Name="generated-message-action-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF">
-	    <Node.Triggers>
-	      <EventTrigger RoutedEvent="Node.LeftButtonUp">
-	        <Node.RightButtonUp Target="../Receiver"/>
-	      </EventTrigger>
-	    </Node.Triggers>
-	  </TextBlock>
-	  <TextBlock Name="Victim" Text="Should hide" Visible="TRUE" FontSize="16" ForegroundColor="#FFFFFF"/>
-	  <TextBlock Name="Receiver" Text="Receiver" FontSize="16" ForegroundColor="#FFFFFF">
-	    <Node.Triggers>
-	      <EventTrigger RoutedEvent="Node.RightButtonUp">
-	        <HideAction Path="../Victim"/>
-	      </EventTrigger>
-	    </Node.Triggers>
-	  </TextBlock>
-	</Screen>]]
+local function test_lisp_loading_send_message_action_components()
+	local lisp = [[
+(Screen Name="generated-message-action-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (TextBlock Name="Source" Text="Bootstrap sender" FontSize="16" ForegroundColor="#FFFFFF"
+    (Node.Triggers
+      (EventTrigger RoutedEvent="Node.LeftButtonUp"
+        (Node.RightButtonUp Target="../Receiver"))))
+  (TextBlock Name="Victim" Text="Should hide" Visible="TRUE" FontSize="16" ForegroundColor="#FFFFFF")
+  (TextBlock Name="Receiver" Text="Receiver" FontSize="16" ForegroundColor="#FFFFFF"
+    (Node.Triggers
+      (EventTrigger RoutedEvent="Node.RightButtonUp"
+        (HideAction Path="../Victim")))))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "generated message action XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "generated message action Lisp should load")
 
 	local source = root:findChild("Source", true)
 	local receiver = root:findChild("Receiver", true)
@@ -1165,24 +1108,21 @@ local function test_xml_loading_send_message_action_components()
 	receiver = nil
 	victim = nil
 
-	print("PASS: test_xml_loading_send_message_action_components")
+	print("PASS: test_lisp_loading_send_message_action_components")
 end
 
 -- ---------------------------------------------------------------------------
 -- BindingExpression Target="Node.Visible" must react to layout width changes.
 -- ---------------------------------------------------------------------------
 local function test_binding_expression_visible_reacts_to_resize()
-	local xml = [[
-	<Screen Name="binding-visible-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="0">
-	    <Node2D Name="HeroContent" Width="100" Height="40"/>
-	    <Node2D Name="HeroImage" Width="100" Height="40"/>
-	    <BindingExpression Target="Node.Visible">STEP(640, {./Node.ActualWidth})</BindingExpression>
-	  </Grid>
-	</Screen>]]
+	local lisp = [[
+(Screen Name="binding-visible-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (Grid Name="Hero" Columns="1fr 1fr" Spacing="0" Node.Visible=(step 640 (bind "./Node.ActualWidth"))
+    (Node2D Name="HeroContent" Width="100" Height="40")
+    (Node2D Name="HeroImage" Width="100" Height="40")))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "binding-visible XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "binding-visible Lisp should load")
 
 	local hero = root and root:findChild("Hero", true) or nil
 	test.expect(hero ~= nil, "Hero grid should exist")
@@ -1222,17 +1162,14 @@ end
 -- This keeps {Node.ActualWidth} usable on elements inside non-Node Screen trees.
 -- ---------------------------------------------------------------------------
 local function test_binding_expression_bare_path_resolves_from_bound_object()
-	local xml = [[
-	<Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize">
-	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="0">
-	    <Node2D Name="HeroContent" Width="100" Height="40"/>
-	    <Node2D Name="HeroImage" Width="100" Height="40"/>
-	    <BindingExpression Target="Node.Visible">STEP(640, {Node.ActualWidth})</BindingExpression>
-	  </Grid>
-	</Screen>]]
+	local lisp = [[
+(Screen Name="binding-bare-path-screen" Width="800" Height="600" ResizeMode="NoResize"
+  (Grid Name="Hero" Columns="1fr 1fr" Spacing="0" Node.Visible=(step 640 (bind "Node.ActualWidth"))
+    (Node2D Name="HeroContent" Width="100" Height="40")
+    (Node2D Name="HeroImage" Width="100" Height="40")))]]
 
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "binding-bare-path XML should load")
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "binding-bare-path Lisp should load")
 
 	local hero = root and root:findChild("Hero", true) or nil
 	test.expect(hero ~= nil, "Hero grid should exist")
@@ -1297,214 +1234,6 @@ local function test_tabview_measures_active_panel_only()
 end
 
 -- ---------------------------------------------------------------------------
--- Example application XML should still load and initialize the tabbed section
--- ---------------------------------------------------------------------------
-local function test_example_application_xml()
-	local function count_occurrences(haystack, needle)
-		local count = 0
-		local pos = 1
-		while true do
-			local found = haystack:find(needle, pos, true)
-			if not found then
-				return count
-			end
-			count = count + 1
-			pos = found + #needle
-		end
-	end
-	local function find_named_tag(haystack, tag, name)
-		return haystack:match("<" .. tag .. "%s+[^>]-Name=\"" .. name .. "\"[^>]*/>")
-	end
-	local xml = filesystem.readTextFile("apps/Example/Screens/Application.xml")
-	local appdata_xml = filesystem.readTextFile("apps/Example/Data/ApplicationData.xml")
-	local package_lua = filesystem.readTextFile("apps/Example/package.lua")
-	test.expect(xml ~= nil and xml ~= "", "Example Application.xml should be readable")
-	test.expect(appdata_xml ~= nil and appdata_xml ~= "", "Example ApplicationData.xml should be readable")
-	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
-
-	local tab_section = xml:find('<StackView Name="TabbedTechSection"')
-	local signals = xml:find('<GridBox Name="OrcaSignals"')
-	local brand_mark = xml:find('<StackView Name="BrandMark"', 1, true)
-	local brand_icon = xml:find('BrandIcon', 1, true)
-	local feature_section = xml:find('<GridBox Name="FeatureSection"')
-	local gallery_section = xml:find('<StackView Name="GallerySection"')
-	local tabs = xml:find('<TabView Name="OrcaTabs" SelectedValue="xml">')
-	local hero_columns_expr = xml:find('<BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "1fr 1fr", "1fr")</BindingExpression>', 1, true)
-	local body_padding_expr = xml:find('<BindingExpression Target="Node.HorizontalPadding">IF(STEP(640, {Screen.Width}), Vector2(40,40), Vector2(8,8))</BindingExpression>', 1, true)
-	local legacy_hero_columns_expr = xml:find('<Grid.Columns>IF(STEP(640, {../../../Node.ActualWidth}), "1fr 1fr", "1fr")</Grid.Columns>', 1, true)
-	local cta_button = find_named_tag(xml, "TextBlock", "CtaButtonPrimary")
-	local get_started_button = cta_button and cta_button:find('Text="Get Started"', 1, true)
-	local get_started_show = cta_button and cta_button:find('LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"', 1, true)
-	local popup_screen = filesystem.readTextFile("apps/Example/Screens/GetStartedPopup.xml")
-	local tree_css = filesystem.readTextFile("apps/Example/Styles/components/tree.css")
-	local media_css = filesystem.readTextFile("apps/Example/Styles/components/media.css")
-	local typography_css = filesystem.readTextFile("apps/Example/Styles/typography.css")
-	local popup_screen_root = popup_screen and popup_screen:find('<Popup Name="GetStartedPopup"', 1, true)
-	local popup_screen_name = popup_screen and popup_screen:find('Name="GetStartedPopup"', 1, true)
-	local popup_screen_overlay = popup_screen and popup_screen:find('Name="GetStartedPopupOverlay"', 1, true)
-	local popup_screen_card = popup_screen and popup_screen:find('Name="GetStartedPopupCard"', 1, true)
-	local popup_screen_close = popup_screen and popup_screen:find('Name="GetStartedPopupClose"', 1, true)
-	local popup_screen_close_message = popup_screen and popup_screen:find('LeftButtonUp="{Popup.ClosePopup}"', 1, true)
-	local city_image = appdata_xml:find("orca-tab-city", 1, true) or xml:find("orca-tab-city", 1, true)
-	local lights_image = appdata_xml:find("orca-tab-lights", 1, true) or xml:find("orca-tab-lights", 1, true)
-	local icon_count = count_occurrences(xml, "Example/Icons/") + count_occurrences(appdata_xml or "", "Example/Icons/")
-	-- SVG icons are VectorViews now; the "&type=mask" loader query no longer exists.
-	local legacy_mask_count = count_occurrences(xml, "&amp;type=mask") + count_occurrences(appdata_xml or "", "&amp;type=mask")
-	local vector_icon_count = count_occurrences(xml, "<VectorView")
-	local broken_icon_palette = xml:find('ForegroundColor="$icon-', 1, true)
-	local symbol_icon = xml:find('Card.Icon="()"', 1, true) or xml:find('Card.Icon="{}"', 1, true) or xml:find('Card.Icon="->"', 1, true)
-	local placeholder_refs = xml:find('Example/Icons/device-desktop.svg', 1, true)
-		or xml:find('Example/Icons/bolt.svg', 1, true)
-		or xml:find('Example/Icons/tabs.svg', 1, true)
-		or xml:find('Example/Icons/layers-intersect.svg', 1, true)
-		or xml:find('Example/Icons/world.svg', 1, true)
-		or xml:find('Example/Icons/palette.svg', 1, true)
-		or xml:find('Example/Icons/text.svg', 1, true)
-		or xml:find('Example/Icons/file-code.svg', 1, true)
-		or xml:find('Example/Icons/rocket.svg', 1, true)
-	local xml_model_tab_icon = appdata_xml:find('name="XmlModelLine2"', 1, true)
-	local xml_model_grid_icon = appdata_xml:find('name="XmlModelLine3"', 1, true)
-	local xml_model_image_icon = appdata_xml:find('name="XmlModelLine5"', 1, true)
-	local xml_model_text_icon = appdata_xml:find('name="XmlModelLine6"', 1, true)
-	local xml_model_tab_color = xml_model_tab_icon and xml_model_grid_icon
-		and xml_model_tab_icon < xml_model_grid_icon
-	local xml_model_nested_padding = appdata_xml:find('Indent="48"', 1, true)
-	local xml_model_leaf_padding = xml_model_nested_padding
-	local xml_model_node_prefab = filesystem.readTextFile("apps/Example/Prefabs/XmlModelNode.xml")
-	local xml_model_indent_binding = xml_model_node_prefab
-		and xml_model_node_prefab:find('Node.PaddingLeft="{Binding DataContext/Indent}"', 1, true)
-	local icon_card = filesystem.readTextFile("apps/Example/Prefabs/IconCard.xml")
-	test.expect(icon_card ~= nil and icon_card ~= "", "IconCard prefab should be readable")
-	local icon_card_uses_image = icon_card:find("<VectorView Name=\"IconCardImage\"", 1, true)
-	local icon_card_header = icon_card:find('<StackView Name="IconCardHeader" class="icon-card-header"', 1, true)
-	local icon_card_title_binding = icon_card:find('Text="{Binding DataContext/Title}"', 1, true)
-	local icon_card_uses_deep_icon_binding = icon_card:find('Source="{Binding DataContext/Icon}"', 1, true)
-	local icon_card_body_binding = icon_card:find('Text="{Binding DataContext/Body}"', 1, true)
-	local icon_card_square_badge = icon_card:find('Name="IconCardBadge" class="icon-badge"', 1, true)
-		and media_css
-		and media_css:find(".icon-badge { width: 48; height: 48;", 1, true)
-	local icon_card_badge_is_stackview = icon_card:find('<StackView Name="IconCardBadge"', 1, true)
-	local icon_card_badge_centers_icon = media_css
-		and media_css:find("align-items: center", 1, true)
-		and media_css:find("justify-content: center", 1, true)
-	local icon_card_badge_uses_data_context_bg = icon_card:find('BackgroundColor="{Binding DataContext/IconBackground}"', 1, true)
-	local icon_card_badge_uses_binding = icon_card:find('<Node2D.BackgroundColor>{../Card.IconBackground}</Node2D.BackgroundColor>', 1, true)
-	local icon_bg_blue = package_lua:find('Key = "icon-bg-blue", Value = "#10203A"', 1, true)
-	local accent_background = package_lua:find('Key = "accent-background", Value = "#2A2145"', 1, true)
-	local accent_foreground = package_lua:find('Key = "accent-foreground", Value = "#FFFFFF"', 1, true)
-	local control_background = package_lua:find('Key = "control-background", Value = "#141420"', 1, true)
-	local control_foreground = package_lua:find('Key = "control-foreground", Value = "#F1F5F9"', 1, true)
-	local control_border = package_lua:find('Key = "control-border", Value = "#2B3142"', 1, true)
-	local control_muted = package_lua:find('Key = "control-muted", Value = "#64748B"', 1, true)
-	local deploy_command_link = xml:find('Name="DeployCommandLink"', 1, true)
-	local deploy_command_value = xml:find('make clean &amp;&amp; make -j8 &amp;&amp; build/bin/orca apps/Example', 1, true)
-	local tab_icon_file = filesystem.readTextFile("apps/Example/Icons/panel-top.svg")
-	local text_icon_file = filesystem.readTextFile("apps/Example/Icons/type.svg")
-	local brand_icon_file = filesystem.readTextFile("apps/Example/Icons/blocks.svg")
-	local input_icon_file = filesystem.readTextFile("apps/Example/Icons/mouse-pointer-click.svg")
-	local state_icon_file = filesystem.readTextFile("apps/Example/Icons/database.svg")
-	local binding_icon_file = filesystem.readTextFile("apps/Example/Icons/link-2.svg")
-	local tab_source = filesystem.readTextFile("plugins/UIKit/Tab.c")
-	local radio_source = filesystem.readTextFile("plugins/UIKit/RadioButton.c")
-	local tabview_source = filesystem.readTextFile("plugins/UIKit/TabView.c")
-	local input_source = filesystem.readTextFile("plugins/UIKit/Input.c")
-	local object_lua_msg_source = filesystem.readTextFile("source/core/object/object_lua_msg.c")
-	local metric_prefab = filesystem.readTextFile("apps/Example/Prefabs/Mertic.xml")
-	local metric_value_nowrap = metric_prefab and metric_prefab:find('Name="MetricUsersValue"', 1, true)
-		and metric_prefab:find('class="metric-value"', 1, true)
-		and typography_css
-		and typography_css:find(".metric-value { font-size: 28; text-wrap: nowrap; }", 1, true)
-	test.expect(tab_icon_file ~= nil and tab_icon_file ~= "404: Not Found", "panel-top.svg should be a real icon file")
-	test.expect(text_icon_file ~= nil and text_icon_file ~= "404: Not Found", "type.svg should be a real icon file")
-	test.expect(brand_icon_file ~= nil and brand_icon_file ~= "404: Not Found", "blocks.svg should be a real icon file")
-	test.expect(input_icon_file ~= nil and input_icon_file ~= "404: Not Found", "mouse-pointer-click.svg should be a real icon file")
-	test.expect(state_icon_file ~= nil and state_icon_file ~= "404: Not Found", "database.svg should be a real icon file")
-	test.expect(binding_icon_file ~= nil and binding_icon_file ~= "404: Not Found", "link-2.svg should be a real icon file")
-
-	test.expect(tab_section ~= nil, "TabbedTechSection should exist in Example Application.xml")
-	test.expect(signals ~= nil, "OrcaSignals should exist in Example Application.xml")
-	test.expect(brand_mark ~= nil, "Example Navbar should include a brand mark wrapper")
-	test.expect(brand_icon ~= nil, "Example Navbar should include a brand icon")
-	test.expect(get_started_button ~= nil, "Example CTA should wire the Get Started button")
-	test.expect(get_started_show ~= nil, "Example CTA should use the inline LeftButtonUp trigger shorthand")
-	test.expect(popup_screen ~= nil and popup_screen ~= "", "GetStartedPopup screen should be readable")
-	test.expect(popup_screen_root ~= nil, "GetStartedPopup screen should define a Popup root")
-	test.expect(popup_screen_name ~= nil, "GetStartedPopup screen should define the popup root")
-	test.expect(popup_screen_overlay ~= nil, "GetStartedPopup screen should define an overlay container")
-	test.expect(popup_screen_card ~= nil, "GetStartedPopup screen should define the popup card")
-	test.expect(popup_screen_close ~= nil, "GetStartedPopup screen should define the close label")
-	test.expect(popup_screen_close_message ~= nil, "GetStartedPopup screen should use the inline LeftButtonUp trigger shorthand")
-	test.expect(feature_section ~= nil, "FeatureSection should exist in Example Application.xml")
-	test.expect(gallery_section ~= nil, "GallerySection should exist in Example Application.xml")
-	test.expect(tab_section < feature_section, "TabView section should appear before the restored landing sections")
-	test.expect(tabs ~= nil, "OrcaTabs should default to the XML tab in Example Application.xml")
-	test.expect(hero_columns_expr ~= nil, "Application.xml should use explicit <BindingExpression Target=\"...\"> for Hero Grid.Columns")
-	test.expect(body_padding_expr ~= nil, "Application.xml should use explicit <BindingExpression Target=\"...\"> for body horizontal padding")
-	test.expect(legacy_hero_columns_expr == nil, "Application.xml should not use legacy inline expression text for Hero Grid.Columns")
-	test.expect(xml_model_tab_icon ~= nil, "XmlModel should include a TabView line")
-	test.expect(xml_model_grid_icon ~= nil, "XmlModel should include a Grid line")
-	test.expect(xml_model_tab_icon < xml_model_grid_icon, "XmlModel should show TabView before Grid")
-	test.expect(xml_model_tab_color ~= nil, "XmlModel TabView should use the same muted color as Grid")
-	test.expect(appdata_xml:find('mouse-pointer-click.svg', 1, true) ~= nil, "Lua Input card should use a mouse-pointer icon")
-	test.expect(appdata_xml:find('database.svg', 1, true) ~= nil, "Lua State card should use a database icon")
-	test.expect(appdata_xml:find('link-2.svg', 1, true) ~= nil, "Lua Binding card should use a link icon")
-	test.expect(icon_bg_blue ~= nil, "Example package.lua should define icon-bg-blue for muted blue badges")
-	test.expect(accent_background ~= nil, "Example package.lua should define accent-background")
-	test.expect(accent_foreground ~= nil, "Example package.lua should define accent-foreground")
-	test.expect(control_background ~= nil, "Example package.lua should define control-background")
-	test.expect(control_foreground ~= nil, "Example package.lua should define control-foreground")
-	test.expect(control_border ~= nil, "Example package.lua should define control-border")
-	test.expect(control_muted ~= nil, "Example package.lua should define control-muted")
-	test.expect(deploy_command_link ~= nil, "Deploy tab should include a desktop build callout")
-	test.expect(deploy_command_value ~= nil, "Deploy tab should show the desktop build command")
-	test.expect(xml:find('ItemsSource="Example/DataSources/ApplicationData:DeployImages"', 1, true) ~= nil,
-		"Deploy images should be sourced from ApplicationData:DeployImages")
-	test.expect(xml:find('ItemTemplate="Example/Prefabs/ImageCaptionCard"', 1, true) ~= nil,
-		"Deploy images GridBox should use ImageCaptionCard template")
-	test.expect(city_image ~= nil, "Example Application.xml should reference the downloaded city image")
-	test.expect(lights_image ~= nil, "Example Application.xml should reference the downloaded lights image")
-	test.expect(icon_count >= 10, "Example Application.xml should reference at least 10 SVG icons")
-	test.expect(legacy_mask_count == 0, "Example Application.xml should not use the removed mask query for icons")
-	test.expect(vector_icon_count >= 1, "Example Application.xml should render SVG icons with VectorView")
-	test.expect(broken_icon_palette == nil, "Example Application.xml should not use the custom icon-* palette")
-	test.expect(symbol_icon == nil, "Example Application.xml should not use text glyphs for card icons")
-	test.expect(placeholder_refs == nil, "Example Application.xml should not reference placeholder icon filenames")
-	test.expect(xml_model_tab_icon ~= nil, "XmlModel should include a TabView icon")
-	test.expect(xml_model_image_icon ~= nil, "XmlModel should include an ImageView icon")
-	test.expect(xml_model_text_icon ~= nil, "XmlModel should include a TextBlock icon")
-	test.expect(xml_model_nested_padding ~= nil, "XmlModel nested rows should have Indent=48 in data")
-	test.expect(xml_model_leaf_padding ~= nil, "XmlModel leaf rows should have Indent=48 in data")
-	test.expect(xml_model_indent_binding ~= nil, "XmlModelNode prefab should bind Node.PaddingLeft to DataContext/Indent")
-	test.expect(icon_card_uses_image ~= nil, "IconCard prefab should render its icon as a vector image")
-	test.expect(icon_card_header ~= nil, "IconCard should place its title and icon in a header row")
-	test.expect(icon_card_title_binding ~= nil, "IconCard title should bind from DataContext")
-	test.expect(icon_card_uses_deep_icon_binding ~= nil, "IconCard prefab should bind its icon from DataContext")
-	test.expect(icon_card_body_binding ~= nil, "IconCard prefab should bind its body from DataContext")
-	test.expect(icon_card_square_badge ~= nil, "IconCard prefab should use a square badge")
-	test.expect(icon_card_badge_is_stackview ~= nil, "IconCard badge should be a StackView so alignment props work")
-	test.expect(icon_card_badge_centers_icon ~= nil, "IconCard badge should center the icon")
-	test.expect(icon_card_badge_uses_data_context_bg ~= nil, "IconCard badge should bind its background color from DataContext/IconBackground")
-	test.expect(icon_card_badge_uses_binding == nil, "IconCard should not use the legacy inline binding element form")
-	test.expect(tab_source ~= nil and tab_source:find("axPostMessageDataW(bar, ID_TabBar_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
-		"Tab should post SelectionChanged through the buffered helper")
-	test.expect(radio_source ~= nil and radio_source:find("axPostMessageDataW(group, ID_RadioGroup_SelectionChanged, 0, &args, sizeof(args));", 1, true) ~= nil,
-		"RadioButton should post SelectionChanged through the buffered helper")
-	test.expect(tabview_source ~= nil and tabview_source:find("axPostMessageDataW(hObject, ID_TabView_SelectionChanged, 0,", 1, true) ~= nil,
-		"TabView should post SelectionChanged through the buffered helper")
-	test.expect(tabview_source ~= nil and tabview_source:find("sizeof(struct TabView_SelectionChangedEventArgs)", 1, true) ~= nil,
-		"TabView should size its buffered SelectionChanged payload")
-	test.expect(input_source ~= nil and input_source:find('axPostMessageDataW(hObject, ID_Input_Submit, 0, &args, sizeof(args));', 1, true) ~= nil,
-		"Input should copy its Submit payload before posting")
-	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('_CreateMessageAction(L, message, TRUE)', 1, true) ~= nil,
-		"Lua object post helper should dispatch through generated message action classes")
-	test.expect(object_lua_msg_source ~= nil and object_lua_msg_source:find('SV_PostMessageData(self, message, 0, payload, payload_size);', 1, true) == nil,
-		"Lua object post helper should no longer build message payload buffers by hand")
-	test.expect(metric_value_nowrap ~= nil, "Metric value should not wrap numeric units onto a second line")
-
-	print("PASS: test_example_application_xml")
-end
-
--- ---------------------------------------------------------------------------
 -- package.lua should be able to declare datasource provider type and params
 -- ---------------------------------------------------------------------------
 local function test_package_datasource_declarations()
@@ -1557,22 +1286,20 @@ local function test_datasource_provider_resolution()
 	test.expect_eq(data and data:getClassName(), "DataObject",
 		"XmlDataSource should own a DataObject tree")
 
-	local xml = '<Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData"/>'
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "XML with DataContextSource name should load")
+	local lisp = '(Node2D Name="ds-test" DataContextSource="Example/DataSources/ApplicationData")'
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "Lisp with DataContextSource name should load")
 	test.expect(root.DataContext ~= nil,
 		"DataContextSource='ApplicationData' should resolve the datasource-owned tree; got DataContext=" .. tostring(root.DataContext))
 	test.expect_eq(root.DataContext:getClassName(), "XmlDataSource",
 		"Root DataContext should remain the XmlDataSource")
 
-	local bound = filesystem.loadObjectFromXmlString([[
-		<StackView DataContextSource="Example/DataSources/ApplicationData">
-			<TextBlock Name="source-bound-title" Text="{Binding DataContext/Signals/SignalXml/Title}"/>
-		</StackView>
-	]])
+	local bound = filesystem.loadObjectFromLispString([[
+(StackView DataContextSource="Example/DataSources/ApplicationData"
+  (TextBlock Name="source-bound-title" Text=(bind "DataContext/Signals/SignalXml/Title")))]])
 	core.runAllPrograms(bound)
 	local title = bound and bound:findChild("source-bound-title", true) or nil
-	test.expect_eq(title and title.Text, "XML-first screens",
+	test.expect_eq(title and title.Text, "Declarative screens",
 		"Bindings should enter the DataObject tree through DataSource.getData")
 
 	filesystem.unloadProject(project)
@@ -1592,16 +1319,16 @@ local function test_datasource_provider_with_child()
 		return
 	end
 
-	local xml = '<Node2D Name="ds-child-test" DataContextSource="Example/DataSources/ApplicationData:Signals"/>'
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "XML with DataContextSource name:child should load")
+	local lisp = '(Node2D Name="ds-child-test" DataContextSource="Example/DataSources/ApplicationData:Signals")'
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "Lisp with DataContextSource name:child should load")
 	test.expect(root.DataContext ~= nil,
 		"DataContextSource='ApplicationData:Signals' should resolve through provider registry")
 	test.expect_eq(root.DataContext.Name, "Signals",
 		"DataContextSource name:child should find the named child")
 
-	local nested = filesystem.loadObjectFromXmlString(
-		'<Node2D DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader/XmlPanelHeader"/>')
+	local nested = filesystem.loadObjectFromLispString(
+		'(Node2D DataContextSource="Example/DataSources/ApplicationData:XmlPanelHeader/XmlPanelHeader")')
 	test.expect_eq(nested and nested.DataContext and nested.DataContext.Name, "XmlPanelHeader",
 		"DataContextSource child selector should resolve a nested path")
 
@@ -1636,7 +1363,7 @@ local function test_datasource_getdata_from_source_context()
 	title:attachPropertyProgram("TextRun.Text", "{DataContext/Signals/SignalXml/Title}", "OneWay", true)
 	core.runAllPrograms(host)
 
-	test.expect_eq(title.Text, "XML-first screens",
+	test.expect_eq(title.Text, "Declarative screens",
 		"DataContext.GetData should resolve nested path from XmlDataSource context")
 
 	host:clear()
@@ -1658,15 +1385,12 @@ local function test_adventure_footer_listbox_datasource_binding()
 		return
 	end
 
-	local screen_xml = filesystem.readTextFile("apps/Adventure/Screens/Adventures.xml")
-	test.expect(screen_xml ~= nil and screen_xml ~= "", "Adventure screen XML should be readable")
-	if not screen_xml or screen_xml == "" then
-		filesystem.unloadProject(project)
-		return
-	end
-
-	local root = filesystem.loadObjectFromXmlString(screen_xml)
-	test.expect(root ~= nil, "Adventure screen XML should parse")
+	local root = filesystem.loadObjectFromLispString([[
+(Screen Name="AdventureFooterFixture" Width=400 Height=800 ResizeMode="NoResize"
+  (ListBox Name="Footer" ItemsSource="Adventure/DataSources/Tabs"
+    ItemTemplate="tests/fixtures/layout/TabItem.lisp"
+    ValueProperty="Key" SelectedValue="games"))]])
+	test.expect(root ~= nil, "Adventure footer Lisp fixture should parse")
 	if not root then
 		filesystem.unloadProject(project)
 		return
@@ -1713,9 +1437,9 @@ local function test_datasource_path_fallback_with_child()
 	local project = filesystem.init("apps/Example")
 	test.expect(project ~= nil, "filesystem.init should load the Example project")
 	if not project then return end
-	local xml = '<Node2D Name="ds-path-child-test" DataContextSource="Example/Data/ApplicationData:Signals"/>'
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "XML with direct path DataContextSource should load")
+	local lisp = '(Node2D Name="ds-path-child-test" DataContextSource="Example/Data/ApplicationData:Signals")'
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "Lisp with direct path DataContextSource should load")
 	test.expect(root.DataContext ~= nil,
 		"Direct path DataContextSource with child selector should still resolve")
 	test.expect_eq(root.DataContext.Name, "Signals",
@@ -1736,9 +1460,9 @@ local function test_datasource_lifecycle_cleanup()
   if not project then return end
 
   -- Verify DataContextSource resolves through provider registry
-  local xml = '<Node2D Name="lifecycle-test" DataContextSource="Example/DataSources/ApplicationData"/>'
-  local root = filesystem.loadObjectFromXmlString(xml)
-  test.expect(root ~= nil, "XML with DataContextSource should load while project is active")
+  local lisp = '(Node2D Name="lifecycle-test" DataContextSource="Example/DataSources/ApplicationData")'
+  local root = filesystem.loadObjectFromLispString(lisp)
+  test.expect(root ~= nil, "Lisp with DataContextSource should load while project is active")
   test.expect(root.DataContext ~= nil,
     "DataContextSource should resolve while project is active")
   root:clear()
@@ -1750,9 +1474,9 @@ local function test_datasource_lifecycle_cleanup()
   collectgarbage()
 
   -- After cleanup, DataContextSource resolution should fall through (no provider entry)
-  local xml2 = '<Node2D Name="lifecycle-after" DataContextSource="Example/DataSources/ApplicationData"/>'
-  local root2 = filesystem.loadObjectFromXmlString(xml2)
-  test.expect(root2 ~= nil, "XML should still load after project cleanup")
+  local lisp2 = '(Node2D Name="lifecycle-after" DataContextSource="Example/DataSources/ApplicationData")'
+  local root2 = filesystem.loadObjectFromLispString(lisp2)
+  test.expect(root2 ~= nil, "Lisp should still load after project cleanup")
   test.expect(root2.DataContext == nil,
     "DataContextSource should NOT resolve after project cleanup (entries cleared)")
 
@@ -1761,9 +1485,9 @@ local function test_datasource_lifecycle_cleanup()
   test.expect(project2 ~= nil, "Should reload Example project after cleanup")
   if not project2 then return end
 
-  local xml3 = '<Node2D Name="lifecycle-reload" DataContextSource="Example/DataSources/ApplicationData"/>'
-  local root3 = filesystem.loadObjectFromXmlString(xml3)
-  test.expect(root3 ~= nil, "XML should load after project reload")
+  local lisp3 = '(Node2D Name="lifecycle-reload" DataContextSource="Example/DataSources/ApplicationData")'
+  local root3 = filesystem.loadObjectFromLispString(lisp3)
+  test.expect(root3 ~= nil, "Lisp should load after project reload")
   test.expect(root3.DataContext ~= nil,
     "DataContextSource should resolve again after project reload")
 
@@ -1784,9 +1508,9 @@ local function test_datasource_repeated_load_unload()
     if not project then return end
 
     -- Verify resolution works
-    local xml = '<Node2D Name="cycle-' .. cycle .. '" DataContextSource="Example/DataSources/ApplicationData"/>'
-    local root = filesystem.loadObjectFromXmlString(xml)
-    test.expect(root ~= nil, "Cycle " .. cycle .. ": XML should load")
+    local lisp = '(Node2D Name="cycle-' .. cycle .. '" DataContextSource="Example/DataSources/ApplicationData")'
+    local root = filesystem.loadObjectFromLispString(lisp)
+    test.expect(root ~= nil, "Cycle " .. cycle .. ": Lisp should load")
     test.expect(root.DataContext ~= nil, "Cycle " .. cycle .. ": DataContext should resolve")
     root:clear()
     root = nil
@@ -1797,66 +1521,6 @@ local function test_datasource_repeated_load_unload()
     collectgarbage()
   end
   print("PASS: test_datasource_repeated_load_unload")
-end
-
--- ---------------------------------------------------------------------------
--- Parser coverage: every XML syntax shape used by Example screens/prefabs
--- should be accepted by loadObjectFromXmlString.
--- ---------------------------------------------------------------------------
-local function test_example_xml_parser_coverage()
-	local files = {
-		"apps/Example/Screens/GetStartedPopup.xml",
-		"apps/Example/Prefabs/FeatureCard.xml",
-		"apps/Example/Prefabs/FeatureImageCard.xml",
-		"apps/Example/Prefabs/GalleryCard.xml",
-		"apps/Example/Prefabs/IconCard.xml",
-		"apps/Example/Prefabs/ImageCaptionCard.xml",
-		"apps/Example/Prefabs/Mertic.xml",
-		"apps/Example/Prefabs/Quote.xml",
-		"apps/Example/Prefabs/SignalCard.xml",
-		"apps/Example/Prefabs/TabPanelHeader.xml",
-		"apps/Example/Prefabs/WorkflowStep.xml",
-		"apps/Example/Prefabs/XmlModelNode.xml",
-	}
-
-	for _, path in ipairs(files) do
-		local xml = filesystem.readTextFile(path)
-		test.expect(xml ~= nil and xml ~= "", path .. " should be readable")
-
-		if xml and xml ~= "" then
-			local root = filesystem.loadObjectFromXmlString(xml)
-			test.expect(root ~= nil, path .. " should parse successfully")
-			if root then
-				root:clear()
-				root = nil
-			end
-		end
-	end
-
-	-- Cover Application.xml parser syntax with focused snippets:
-	-- BindingExpression formulas, dotted placeholder properties, inline action
-	-- shorthand, escaped ampersands in attribute values, and self-closing tags.
-	local syntax_xml = [[
-	<Screen Name="SyntaxCoverage" Width="800" Height="600" ResizeMode="NoResize" ClearColor="#111111">
-	  <Grid Name="Hero" Columns="1fr 1fr" Spacing="24">
-	    <BindingExpression Target="Grid.Columns">IF(STEP(640, {Screen.Width}), "1fr 1fr", "1fr")</BindingExpression>
-	    <LayerPrefabPlaceholder Name="Card" PlaceholderTemplate="Example/Prefabs/IconCard"
-	      Card.Icon="Example/Icons/code.svg?width=28&amp;type=mask"
-	      Card.Title="XML-first screens"
-	      Card.Body="Layouts stay readable."
-	      Card.PrimaryColor="#55AAFF"/>
-	  </Grid>
-	  <TextBlock Name="OpenPopup" Text="Open" LeftButtonUp="{Screen.ShowModal Path=Example/Screens/GetStartedPopup}"/>
-	</Screen>]]
-
-	local syntax_root = filesystem.loadObjectFromXmlString(syntax_xml)
-	test.expect(syntax_root ~= nil, "Application-style parser syntax should load from XML string")
-	if syntax_root then
-		syntax_root:clear()
-		syntax_root = nil
-	end
-
-	print("PASS: test_example_xml_parser_coverage")
 end
 
 -- ---------------------------------------------------------------------------
@@ -1872,28 +1536,27 @@ test_grid_fixed_column_image_fits()
 test_node2d_container_height()
 test_grid_mixed_px_fr()
 test_grid_implicit_row_wrapping()
-test_xml_loading_properties()
+test_lisp_loading_properties()
 test_inherited_foreground_color()
 test_binding_expression_reads_inherited_property()
 test_attached_inherited_text_font_family()
-test_xml_registered_font_family()
+test_lisp_registered_font_family()
 test_attached_inherited_text_font_leaves()
 test_partial_font_shorthand_preserves_inherited_size()
-test_xml_loading_inline_xml_attribute()
-test_xml_loading_inline_imageview_source()
-test_xml_loading_inline_event_trigger()
-test_xml_loading_struct_arrays()
-test_xml_loading_tabview()
--- test_xml_loading_trigger_action_popup()
-test_xml_loading_trigger_action_components()
+test_lisp_loading_inline_node_attribute()
+test_lisp_loading_inline_imageview_source()
+test_lisp_loading_inline_event_trigger()
+test_lisp_loading_struct_arrays()
+test_lisp_loading_tabview()
+-- test_lisp_loading_trigger_action_popup()
+test_lisp_loading_trigger_action_components()
 test_inline_trigger_mouse_dispatch_does_not_shadow_actions()
-test_xml_loading_close_popup_action_components()
-test_xml_loading_event_trigger_components()
-test_xml_loading_send_message_action_components()
+test_lisp_loading_close_popup_action_components()
+test_lisp_loading_event_trigger_components()
+test_lisp_loading_send_message_action_components()
 test_binding_expression_visible_reacts_to_resize()
 test_binding_expression_bare_path_resolves_from_bound_object()
 test_tabview_measures_active_panel_only()
-test_example_application_xml()
 test_package_datasource_declarations()
 test_datasource_provider_resolution()
 test_datasource_provider_with_child()
@@ -1902,7 +1565,6 @@ test_adventure_footer_listbox_datasource_binding()
 test_datasource_path_fallback_with_child()
 test_datasource_lifecycle_cleanup()
 test_datasource_repeated_load_unload()
-test_example_xml_parser_coverage()
 test_inline_show_modal_popup_flow()
 test_lua_set_modal_object_dispatches_message()
 test_lua_set_modal_object_table_dispatches_message()
@@ -1911,7 +1573,7 @@ test_lua_post_generated_message_with_payload()
 test_stackview_align_items_preserves_child_stretch_width()
 test_css_popup_padding_insets_stretched_panel()
 test_modal_attach_applies_screen_stylesheet_to_popup_content()
---test_prefab_data_context_source_xml() -- requires prefab instantiation from XML string
+--test_prefab_data_context_source_xml() -- requires prefab instantiation from Lisp string
 
 -- ---------------------------------------------------------------------------
 -- Schema: datasource schema file is loaded and column metadata accessible
@@ -1950,9 +1612,9 @@ local function test_datasource_schema_in_params()
 
 	-- The Schema field from package.lua should be appended to params as &Schema=...
 	-- We verify this indirectly by resolving the datasource, which parses Schema=
-	local xml = '<Node2D Name="schema-param-test" DataContextSource="Example/DataSources/ApplicationData"/>'
-	local root = filesystem.loadObjectFromXmlString(xml)
-	test.expect(root ~= nil, "XML with DataContextSource should load")
+	local lisp = '(Node2D Name="schema-param-test" DataContextSource="Example/DataSources/ApplicationData")'
+	local root = filesystem.loadObjectFromLispString(lisp)
+	test.expect(root ~= nil, "Scene with DataContextSource should load")
 	test.expect(root.DataContext ~= nil,
 		"DataContext should resolve through provider with schema in params")
 

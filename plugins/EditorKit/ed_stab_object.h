@@ -327,22 +327,33 @@ void build_path(struct Object *obj, char *buf) {
 }
 
 ORCA_API bool_t OBJ_SaveDocument(struct Object *object) {
-  xmlDocPtr doc = xmlNewDoc(XMLSTR("1.0"));
-  xmlDocSetRootElement(doc, ED_ConvertNode(object, NULL));
   PATHSTR path = {0};
   PATHSTR src = {0};
-//  sprintf(path, "%s/%s", object->SourceFile, object->SourceFile);
-//  *strrchr(path, '/') = 0;
-//  mkdir_recursive(path);
   if (GetProject(object)) {
-    sprintf(path, "%s/package.xml", object->SourceFile);
-  } else {
-    build_path(object, src);
-    sprintf(path, "%s.xml", src);
+    xmlDocPtr doc = xmlNewDoc(XMLSTR("1.0"));
+    xmlDocSetRootElement(doc, ED_ConvertNode(object, NULL));
+    snprintf(path, sizeof(path), "%s/package.xml", object->SourceFile);
+    int result = xmlSaveFormatFile(path, doc, 1);
+    xmlFreeDoc(doc);
+    return result >= 0;
   }
-  fprintf(stderr, "Saved %s\n", path);
-  xmlSaveFormatFile(path, doc, 1);
-  return TRUE;
+  const char *source = OBJ_GetSourceFile(object);
+  if (source && *source) snprintf(src, sizeof(src), "%s", source);
+  else build_path(object, src);
+  const char *extension = strrchr(src, '.');
+  const char *slash = strrchr(src, '/');
+  if (extension && slash && extension < slash) extension = NULL;
+  snprintf(path, sizeof(path), "%s%s", src,
+           extension && !strcmp(extension, ORCA_SCENE_EXTENSION) ? "" : ORCA_SCENE_EXTENSION);
+  const char *text = ORCA_SERIALIZE_SCENE(object);
+  if (!text) return FALSE;
+  FILE *file = fopen(path, "w");
+  if (!file) { free((char *)text); return FALSE; }
+  bool_t result = fputs(text, file) >= 0;
+  if (fclose(file) != 0) result = FALSE;
+  free((char *)text);
+  if (result) Con_Printf("Saved %s", path);
+  return result;
 }
 
 // post/node/Example/Prefabs?source=Example/Screens/Application/Image&name=Image

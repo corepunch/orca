@@ -2,6 +2,7 @@
 #define __ORCA_H__
 
 #include "orcadef.h"
+#include "scene_format.h"
 
 #include <libs/platform/platform.h>
 #include <stddef.h>

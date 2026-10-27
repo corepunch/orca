@@ -128,8 +128,8 @@ ListBox_SetSelected(struct Object *hObject, struct ListBox *pListBox, struct Obj
   if (itemNode && itemNode->DataContext) {
     struct ItemsControl *ic = GetItemsControl(hObject);
     if (ic) {
-      ic->SelectedItem = GetDataObject(CMP_GetObject(itemNode->DataContext));
-      PROP_NotifyChanged(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem));
+      struct Object *data = CMP_GetObject(itemNode->DataContext);
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem), &data);
     }
   }
 
@@ -156,8 +156,8 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
       // Sync SelectedItem to this child's DataContext
       struct Node *itemNode = GetNode(child);
       if (itemNode && itemNode->DataContext && ic) {
-        ic->SelectedItem = GetDataObject(CMP_GetObject(itemNode->DataContext));
-        PROP_NotifyChanged(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem));
+        struct Object *data = CMP_GetObject(itemNode->DataContext);
+        PROP_SetValue(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem), &data);
       }
     } else {
       ListBox_SetItemSelected(child, FALSE);
@@ -182,10 +182,9 @@ HANDLER(ListBox, Object, Start) {
       char *text = "Item";
       PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), &text);
     }
-    // set DataContext directly on Node (binding system reads it from here)
-    struct Node *n = GetNode(item);
-    n && (n->DataContext = GetDataContext(data));
+    PROP_SetValue(OBJ_FindLongProperty(item, ID_Node_DataContext), &data);
     OBJ_AddChild(hObject, item);
+    OBJ_ReleaseRef(item);
   }
   if (!pListBox->SelectedValue || !*pListBox->SelectedValue) {
     // no selection yet -> auto-select first child

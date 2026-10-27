@@ -32,28 +32,28 @@ Define the draft's data layout in a schema, independently of its controls:
 ```
 
 Place a draft record in the form's `DataContext`, directly or through a managed
-XML datasource. Descendants inherit the nearest context:
+XML datasource. Scenes are written in Lisp; descendants inherit the nearest
+context:
 
-```xml
-<StackView>
-  <Input Text="{Binding DataContext/DisplayName, Mode=TwoWay}"/>
-  <Input Type="Email" Text="{Binding Path=DataContext/Email, Mode=TwoWay}"/>
-  <Input Type="Checkbox" Checked="{Binding DataContext/OptIn, Mode=TwoWay}"/>
-  <TextBlock Text="{Binding DataContext/DisplayName}"/>
-</StackView>
+```lisp
+(StackView
+  (Input Text=(bind "DataContext/DisplayName" Mode=TwoWay))
+  (Input Type="Email" Text=(bind "DataContext/Email" Mode=TwoWay))
+  (Input Type="Checkbox" Checked=(bind "DataContext/OptIn" Mode=TwoWay))
+  (TextBlock Text=(bind "DataContext/DisplayName")))
 ```
 
-The equivalent explicit form is:
+Options apply only when `bind` is a property's whole value; a `bind` inside a
+calculation is always forward-only. The equivalent explicit form is a
+`Binding` child node, which serialization also writes:
 
-```xml
-<Input>
-  <Binding Target="TextRun.Text" Mode="TwoWay" Expression="DataContext/Email"/>
-</Input>
+```lisp
+(Input (Binding Target="TextRun.Text" Mode="TwoWay" Expression="DataContext/Email"))
 ```
 
 | Mode | Behavior |
 |---|---|
-| `OneWay` | Default for XML binding markup. Reads the model; control edits do not write back. |
+| `OneWay` | Default for `bind` and `Binding`. Reads the model; control edits do not write back. |
 | `TwoWay` | Initializes the control from the model, then writes actual control edits back. |
 | `OneWayToSource` | Writes control changes without reading the model or transferring the control's initial default. |
 | `Expression` | Evaluates a forward-only program, including calculations and concatenation. |
@@ -71,8 +71,8 @@ edits made without a context are not queued into a later model. A missing field
 in the nearest context cannot write into a more distant context. Forward
 initialization and refresh are guarded against feedback into the source.
 
-`Enabled="false"` disables an explicit binding. XML serialization preserves
-mode and enabled state. See [the complete sample](../../../apps/MvvmForms/README.md)
+`Enabled=false` disables a binding. Lisp serialization preserves mode and
+enabled state. See [the complete sample](../../../apps/MvvmForms/README.md)
 for separate schema, initial data, view, controller and committed snapshot.
 
 ## Trigger types

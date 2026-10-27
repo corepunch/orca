@@ -37,8 +37,12 @@ if native then screen:send("Screen.RenderScreen", { width = 320, height = 240 })
 indicator:removeFromParent()
 assert(not indicator:send("Object.Animate"), "Detached indicators must not keep animating")
 
-local xml = filesystem.loadObjectFromXmlString('<ActivityIndicator IsActive="False" Width="24" Height="24"/>')
-assert(xml and not xml.IsActive and xml.Width == 24 and xml.IgnoreHitTest,
-    "The loading control must support declarative XML as well as Lua")
+local load_scene = filesystem.loadObjectFromXmlString or filesystem.loadObjectFromLispString
+local source = filesystem.loadObjectFromXmlString
+    and '<ActivityIndicator IsActive="False" Width="24" Height="24"/>'
+    or '(ActivityIndicator IsActive=false Width=24 Height=24)'
+local scene = load_scene(source)
+assert(scene and not scene.IsActive and scene.Width == 24 and scene.IgnoreHitTest,
+    "The loading control must support the selected declarative scene format as well as Lua")
 screen:clear()
-print("PASS: ActivityIndicator defaults, centering, sizing, inactive/hidden/detached states and XML")
+print("PASS: ActivityIndicator defaults, centering, sizing, inactive/hidden/detached states and scene loading")

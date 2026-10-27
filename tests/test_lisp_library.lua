@@ -1,9 +1,9 @@
 local test = require "orca.test"
--- Headless tests for XML libraries: one file holding many named objects.
+-- Headless tests for Lisp libraries: one file holding many named objects.
 -- filesystem.loadObject("Dir/Name") falls back to the entry Name="Name" of
--- Dir.xml when Dir/Name.xml does not exist.
+-- Dir.lisp when Dir/Name.lisp does not exist.
 --
--- Run with: $(TARGET) -test=tests/test_xml_library.lua
+-- Run with: $(TARGET) -test=tests/test_lisp_library.lua
 
 local filesystem = require "orca.filesystem"
 require "orca.UIKit"
@@ -32,7 +32,7 @@ end
 
 local function test_standalone_file_wins()
   local o = filesystem.loadObject(LIB .. "/Override")
-  test.expect_eq(o.Width, 2, "Dir/Name.xml takes precedence over the entry in Dir.xml")
+  test.expect_eq(o.Width, 2, "Dir/Name.lisp takes precedence over the entry in Dir.lisp")
   print("PASS: test_standalone_file_wins")
 end
 

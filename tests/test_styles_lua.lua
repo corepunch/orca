@@ -50,14 +50,13 @@ local function test_styleclass_lua_alias()
   print("PASS: test_styleclass_lua_alias")
 end
 
-local function test_styleclass_xml_alias()
-  local root = filesystem.loadObjectFromXmlString [[
-<Screen Name="styleclass-root" Width="200" Height="200" ResizeMode="NoResize">
-  <Node2D Name="pascal-style" StyleClass="pascal-alias" Opacity="1" />
-  <Node2D Name="html-style" class="html-alias" Opacity="1" />
-</Screen>]]
+local function test_styleclass_lisp_alias()
+  local root = filesystem.loadObjectFromLispString [[
+(Screen Name="styleclass-root" Width=200 Height=200 ResizeMode="NoResize"
+  (Node2D Name="pascal-style" StyleClass="pascal-alias" Opacity=1)
+  (Node2D Name="html-style" class="html-alias" Opacity=1))]]
 
-  test.expect(root ~= nil, "StyleClass XML should load")
+  test.expect(root ~= nil, "StyleClass Lisp should load")
   root.StyleSheet = ui.loadObjectFromCssString [[
     .pascal-alias { opacity: 0.42; }
     .html-alias { opacity: 0.24; }
@@ -65,17 +64,17 @@ local function test_styleclass_xml_alias()
 
   local pascal = root:findChild("pascal-style", true)
   local html = root:findChild("html-style", true)
-  test.expect(pascal ~= nil, "StyleClass XML child should exist")
-  test.expect(html ~= nil, "class XML child should exist")
+  test.expect(pascal ~= nil, "StyleClass Lisp child should exist")
+  test.expect(html ~= nil, "class Lisp child should exist")
 
   applyStyles(pascal)
   applyStyles(html)
 
-  test.expect_near(pascal.Opacity, 0.42, 0.001, "StyleClass XML alias applies style classes")
-  test.expect_near(html.Opacity, 0.24, 0.001, "class XML alias still applies style classes")
+  test.expect_near(pascal.Opacity, 0.42, 0.001, "StyleClass Lisp alias applies style classes")
+  test.expect_near(html.Opacity, 0.24, 0.001, "class Lisp alias still applies style classes")
 
-  root:removeFromParent()
-  print("PASS: test_styleclass_xml_alias")
+  root:clear()
+  print("PASS: test_styleclass_lisp_alias")
 end
 
 -- ---------------------------------------------------------------------------
@@ -1298,7 +1297,7 @@ end
 
 
 test_styleclass_lua_alias()
-test_styleclass_xml_alias()
+test_styleclass_lisp_alias()
 test_style_applies_opacity()
 test_style_not_applied_without_class()
 test_style_multiple_properties()
