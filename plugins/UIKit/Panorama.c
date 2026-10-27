@@ -80,6 +80,19 @@ HANDLER(Panorama, Object, Create)
   return FALSE;
 }
 
+HANDLER(Panorama, Object, Destroy)
+{
+  OBJ_ReleaseRef(pPanorama->_title);
+  return FALSE;
+}
+
+// The header stays a child of the panorama, which drops it once stale.
+HANDLER(PanoramaItem, Object, Destroy)
+{
+  OBJ_ReleaseRef(pPanoramaItem->_header);
+  return FALSE;
+}
+
 HANDLER(Panorama, Object, PropertyChanged)
 {
   if (!pPropertyChanged->Property) return FALSE;
