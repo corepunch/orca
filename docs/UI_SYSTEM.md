@@ -43,7 +43,9 @@ are needed. The touched container stays captured as its content moves; a new
 touch stops its momentum, release decelerates, and cancellation returns any
 overscroll to the edge without a fling. Taps and horizontal Pivot swipes keep
 their existing routing. Containers whose content fits pass through to an
-overflowing ancestor; they do not bounce on their own.
+overflowing ancestor; they do not bounce on their own. Release momentum uses
+the normal UIScrollView deceleration rate of 0.998 velocity retention per
+millisecond, integrated over elapsed time independently of frame cadence.
 
 Set `InertiaScrolling = false` to disable release momentum, or
 `RubberBandScrolling = false` to hard-clamp touch scrolling at the boundaries.

@@ -8,6 +8,8 @@
 #include <string.h>
 
 #define STENCIL_VISIBLE_OVERFLOW_EXTENT 100000.0f
+// Normal UIScrollView retention is 0.998 per millisecond: -1000 * log(0.998).
+#define SCROLL_DECELERATION_RATE 2.00200267f
 
 // Node2D_Draw2DContent
 HANDLER(Node2D, Node2D, Draw2DContent);
@@ -656,9 +658,9 @@ HANDLER(Node2D, Object, Animate)
       velocity += (-180 * (y - edge) - 26.833f * velocity) * step;
       y += velocity * step;
     } else {
-      float decay = expf(-4.2f * step);
-      y += velocity * (1 - decay) / 4.2f;
-      velocity *= decay;
+      float loss = -expm1f(-SCROLL_DECELERATION_RATE * step);
+      y += velocity * loss / SCROLL_DECELERATION_RATE;
+      velocity *= 1 - loss;
     }
     if (!pNode2D->RubberBandScrolling) {
       float clamped = Scroll_Clamp(y, minimum);

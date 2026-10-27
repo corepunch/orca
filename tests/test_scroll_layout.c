@@ -41,11 +41,36 @@ touch_scroll(struct Object *list, enum ScrollPhase phase, int dy, uint32_t time)
   assert(_SendMessage(list, Node, ScrollWheel, .scrollPhase = phase, .deltaY = dy, .timestamp = time));
 }
 
-static void
+static int
 animate_scroll(struct Object *list, int milliseconds)
 {
-  GetNode2D(list)->_scrollAnimTime = axGetMilliseconds() - milliseconds;
+  uint32_t previous = axGetMilliseconds() - milliseconds;
+  GetNode2D(list)->_scrollAnimTime = previous;
   OBJ_SendMessageW(list, ID_Object_Animate, 0, NULL);
+  return MIN(GetNode2D(list)->_scrollAnimTime - previous, 64u);
+}
+
+static void
+test_normal_deceleration(struct Object *list)
+{
+  struct Node2D *view = GetNode2D(list);
+  int cadences[] = { 33, 16, 8 };
+  for (int i = 0; i < 3; i++) {
+    struct vec2 offset = { 0, -40 };
+    PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+    touch_scroll(list, kScrollPhaseBegin, 0, 100);
+    touch_scroll(list, kScrollPhaseUpdate, -20, 120);
+    touch_scroll(list, kScrollPhaseEnd, 0, 121);
+    // Isolate coasting from release-velocity sampling at 30/60/120 Hz.
+    view->_scrollVelocity.y = -1000;
+    int elapsed = 0;
+    while (elapsed < 1000) elapsed += animate_scroll(list, MIN(cadences[i], 1000 - elapsed));
+    double retained = pow(0.998, elapsed);
+    double distance = 1000 * (1 - retained) / (-1000 * log(0.998));
+    assert(fabs(view->_scrollVelocity.y + 1000 * retained) < 0.05);
+    assert(fabs(view->ContentOffset.y + 60 + distance) < 0.05);
+    assert(view->_scrollAnimating);
+  }
 }
 
 static void
@@ -213,6 +238,7 @@ int main(void)
   layout(screen);
   assert(measure_count > 0);
 
+  test_normal_deceleration(list);
   test_touch_physics(screen, list);
 
   OBJ_ReleaseRef(row);
