@@ -1299,7 +1299,7 @@ local function test_datasource_provider_resolution()
   (TextBlock Name="source-bound-title" Text=(bind "DataContext/Signals/SignalXml/Title")))]])
 	core.runAllPrograms(bound)
 	local title = bound and bound:findChild("source-bound-title", true) or nil
-	test.expect_eq(title and title.Text, "Lisp-first screens",
+	test.expect_eq(title and title.Text, "Declarative screens",
 		"Bindings should enter the DataObject tree through DataSource.getData")
 
 	filesystem.unloadProject(project)
@@ -1363,7 +1363,7 @@ local function test_datasource_getdata_from_source_context()
 	title:attachPropertyProgram("TextRun.Text", "{DataContext/Signals/SignalXml/Title}", "OneWay", true)
 	core.runAllPrograms(host)
 
-	test.expect_eq(title.Text, "Lisp-first screens",
+	test.expect_eq(title.Text, "Declarative screens",
 		"DataContext.GetData should resolve nested path from XmlDataSource context")
 
 	host:clear()

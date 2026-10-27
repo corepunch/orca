@@ -53,6 +53,7 @@ bool_t FS_NormalizeXmlSceneAttributes(struct Object *object, struct _xmlNode *no
 
 /* Datasource XML remains available regardless of the scene-format selection. */
 struct Object *FS_LoadXmlDataTree(lpcString_t path, const struct ds_schema *schema);
+struct Object *FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema);
 
 void
 FS_RegisterDataSourceProvider(const char *type_name,

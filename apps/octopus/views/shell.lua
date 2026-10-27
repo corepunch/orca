@@ -1,5 +1,6 @@
 local ui = require "orca.UIKit"
 local core = require "orca.core"
+local Footer = require "orca.UIKit.Footer"
 local C = require "Octopus/views/components"
 local colors = C.colors
 
@@ -18,7 +19,6 @@ Shell.pages = {
 function Shell.new(screen, navigate, menu)
     local self = setmetatable({ screen = screen, pages = {}, items = {}, routes = {} }, Shell)
     screen.Name = "OctopusShell"
-    local layout = ui.Grid { Rows = "1fr 58px", Background = colors.background, Foreground = colors.ink }
     self.content = ui.PageHost { Name = "TabContent" }
     local buttons = {}
     for _, page in ipairs(Shell.pages) do
@@ -31,9 +31,9 @@ function Shell.new(screen, navigate, menu)
     end
     self.bar = C.appBar(buttons, menu)
     for _, page in ipairs(Shell.pages) do self.items[page.key] = self.bar:findChild("AppBar" .. page.key) end
-    layout:addChild(self.content)
-    layout:addChild(self.bar)
-    screen:addChild(layout)
+    local footer = Footer { Name = "AppBarFooter", Rows = "58px", Background = colors.chrome }
+    footer:addChild(self.bar)
+    Footer.layout(screen, self.content, footer, { Background = colors.background, Foreground = colors.ink })
     return self
 end
 

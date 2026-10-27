@@ -5,6 +5,8 @@
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
 
+static char scroll_capture_key;
+
 extern struct Property *
 luaX_getobjectcallback(lua_State* L, struct Object *object, uint32_t id);
 
@@ -119,7 +121,14 @@ convert_mouse_message(struct AXmessage* e, uint32_t* out_msg, Node_MouseMessageM
     .deltaY = e->dy,
     .button = kMouseButtonNone,
     .clickCount = 0,
+    .timestamp = e->pointer.time,
   };
+  if (e->message == kEventScrollWheel && (e->pointer.flags & AX_POINTER_TOUCH)) {
+    if (e->pointer.flags & AX_POINTER_SCROLL_BEGIN) out_mouse->scrollPhase = kScrollPhaseBegin;
+    else if (e->pointer.flags & AX_POINTER_SCROLL_UPDATE) out_mouse->scrollPhase = kScrollPhaseUpdate;
+    else if (e->pointer.flags & AX_POINTER_SCROLL_END) out_mouse->scrollPhase = kScrollPhaseEnd;
+    else if (e->pointer.flags & AX_POINTER_SCROLL_CANCEL) out_mouse->scrollPhase = kScrollPhaseCancel;
+  }
   switch (e->message) {
     case kEventLeftButtonUp:        *out_msg = ID_Node_LeftButtonUp;        out_mouse->button = kMouseButtonLeft; out_mouse->clickCount = 1; break;
     case kEventRightButtonUp:       *out_msg = ID_Node_RightButtonUp;       out_mouse->button = kMouseButtonRight; out_mouse->clickCount = 1; break;
@@ -270,6 +279,69 @@ build_key_msg(struct AXmessage const* e, Node_KeyMessageMsg_t* key, uint32_t *ms
   return true;
 }
 
+static bool_t
+send_scroll(lua_State *L, struct Object *target, Node_MouseMessageMsg_t *mouse)
+{
+  return CORE_HandleObjectMessage(L, &(struct AXmessage) {
+    .target = target, .message = ID_Node_ScrollWheel, .lParam = mouse,
+  });
+}
+
+static bool_t
+scroll_attached(struct Object *root, struct Object *target)
+{
+  for (struct Object *node = target; node; node = OBJ_GetParent(node)) {
+    if (GetScreen(node) && !GetScreen(node)->Visible) return FALSE;
+    if (GetNode(node) && OBJ_IsHidden(node)) return FALSE;
+    if (node == root) return TRUE;
+  }
+  return FALSE;
+}
+
+/* Capture a native scroll container, not the item that happened to be hit.
+   Its userdata keeps it alive until release even if scrolling rebuilds items. */
+static bool_t
+handle_touch_scroll(lua_State *L, struct Object *root, struct AXmessage *event)
+{
+  uint32_t ignored;
+  Node_MouseMessageMsg_t mouse;
+  convert_mouse_message(event, &ignored, &mouse);
+  lua_rawgetp(L, LUA_REGISTRYINDEX, &scroll_capture_key);
+  struct Object *captured = NULL, *owner = NULL;
+  if (lua_istable(L, -1)) {
+    lua_geti(L, -1, 1); owner = luaX_checkObject(L, -1); lua_pop(L, 1);
+    lua_geti(L, -1, 2); captured = luaX_checkObject(L, -1); lua_pop(L, 1);
+  }
+  if (captured && (mouse.scrollPhase == kScrollPhaseBegin || owner != root || !scroll_attached(root, captured))) {
+    Node_MouseMessageMsg_t cancel = mouse;
+    cancel.scrollPhase = kScrollPhaseCancel;
+    send_scroll(L, captured, &cancel);
+    captured = NULL;
+  }
+  lua_pop(L, 1);
+  if (mouse.scrollPhase == kScrollPhaseBegin) {
+    struct Object *hit = (struct Object *)_SendMessage(root, Node, HitTest, event->x, event->y);
+    for (struct Object *node = hit; node; node = OBJ_GetParent(node)) {
+      struct Node2D *view = GetNode2D(node);
+      if (view && view->Overflow.y == kOverflowScroll &&
+          view->_node->Size.Axis[1].Scroll > view->_node->Size.Axis[1].Actual) {
+        captured = node;
+        break;
+      }
+    }
+  }
+  bool_t handled = captured && send_scroll(L, captured, &mouse);
+  if (mouse.scrollPhase == kScrollPhaseEnd || mouse.scrollPhase == kScrollPhaseCancel)
+    captured = NULL;
+  if (captured) {
+    lua_createtable(L, 2, 0);
+    luaX_pushObject(L, root); lua_seti(L, -2, 1);
+    luaX_pushObject(L, captured); lua_seti(L, -2, 2);
+  } else lua_pushnil(L);
+  lua_rawsetp(L, LUA_REGISTRYINDEX, &scroll_capture_key);
+  return handled;
+}
+
 LRESULT
 UI_HandleMouseEvent(lua_State* L, struct Object *root, struct AXmessage* e)
 {
@@ -279,6 +351,10 @@ UI_HandleMouseEvent(lua_State* L, struct Object *root, struct AXmessage* e)
   while (OBJ_GetNext(root)) {
     root = OBJ_GetNext(root);
   }
+  if (e->message == kEventScrollWheel && (e->pointer.flags & AX_POINTER_TOUCH) &&
+      (e->pointer.flags & (AX_POINTER_SCROLL_BEGIN | AX_POINTER_SCROLL_UPDATE |
+                          AX_POINTER_SCROLL_END | AX_POINTER_SCROLL_CANCEL)))
+    return handle_touch_scroll(L, root, e);
   // If the focused object has the OF_NOACTIVATE flag, we need to check
   // if the mouse event is targeting it or any of its parents before falling back
   // to hit testing from the root. This allows for interactive elements that

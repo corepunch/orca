@@ -34,8 +34,8 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   your profile. Message bubbles are square, with
   Windows Phone tails, and sized to their text. Consecutive messages from one
   sender stack tightly and share one tail, sender names appear only in group
-  chats, and the time sits on the last line of text when it fits. Photos fill
-  their bubble edge to edge; without a caption the time sits on the photo.
+  chats, and the time has its own trailing row so text and metadata cannot overlap.
+  Photos fill their bubble edge to edge above the caption and time.
 
 `theme.lua` holds a black and a white palette with Messenger blue. The OS
 appearance chooses between them; set `CHAT_APPEARANCE=light` or `dark` to
@@ -72,6 +72,23 @@ Open conversations update automatically every 3 seconds; the visible inbox
 updates every 15 seconds. Polling pauses with the iOS scene and refreshes on
 return, backs off on service errors, and preserves scroll position and drafts.
 The manual refresh commands remain available.
+
+New Message follows Telegram's task flow within the existing Metro style:
+search, New Group, New Channel, and contacts. Tap a person to open a direct chat.
+Groups select members before the name step; Back preserves that selection and
+name draft. Channels start with a name and private/public visibility, and people
+join separately. Channel browsing and invitation entry have separate views.
+No contact is required for discovery: exact public usernames are searchable;
+email and phone require a verified identifier and that person's discovery opt-in
+in Profile. Display names are separate from public usernames.
+
+Route constructors attach the shell, navigation and composer before scheduling
+Appwrite work with `orca.async`. Session restoration, inboxes, profiles, contacts,
+members and initial messages show UIKit's centered `ActivityIndicator` while their
+requests yield. Search and navigation remain usable; message loads preserve edits
+to the composer. Retained tabs may finish loading in the background without being
+selected, while session changes and discarded detail screens reject late results.
+Failed first loads offer retry and are distinct from empty conversations.
 
 The visual research included [Orbit Messenger on Dribbble](https://dribbble.com/shots/27279050-Orbit-Messenger-Dark-Mode-UI-Concept),
 [Chat App Design on Behance](https://www.behance.net/gallery/186704313/Chat-App-Design-Dark-UI),
@@ -202,11 +219,15 @@ make test-chat
 make test-chat-appwrite-backend
 make test-media
 make test-network-headers
+lua5.4 tests/test_chat_new_message.lua
 ```
 
 The Appwrite backend suite covers server authorization, role and invitation rules,
 private encrypted photos, verification challenges, and database pagination without
 contacting the cloud or sending verification messages.
+The standalone new-message controller test covers direct opening, group steps,
+channel visibility, invitations, rejected drafts, and stale search responses with
+UI doubles; native layout and interaction remain covered by the UI suite.
 The API suite exercises authentication, refresh, authorization headers, room
 creation, message ordering, validation, and HTTP failures. The mock suite
 checks the same client with isolated fixtures and guards against network
@@ -224,3 +245,11 @@ ImageIO tests decode processed output and check orientation, size and metadata.
 Backend references: [Appwrite Auth](https://appwrite.io/docs/products/auth),
 [Functions](https://appwrite.io/docs/products/functions) and
 [Databases](https://appwrite.io/docs/products/databases).
+
+## Demo portraits
+
+The shared [portrait library](../../demo-assets/profiles/README.md) contains 64
+generated JPGs, including teens and adults approximately ages 14–60, plus the
+original grid, splitter instructions and Appwrite file IDs. This app bundles
+portraits for its offline fixture identities. Live seed profiles use the same
+public `profiles.avatarId` data in both Chat and Octopus.

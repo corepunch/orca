@@ -89,14 +89,15 @@ def scheme(path, project_name, name, target, product):
     write(path, '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding='unicode') + '\n')
 
 
-def info_plist(display_name):
+def info_plist(display_name, launch_storyboard=None):
     orientations = ['UIInterfaceOrientation' + name for name in ('Portrait', 'LandscapeLeft', 'LandscapeRight')]
     return dict(CFBundleExecutable='$(EXECUTABLE_NAME)', CFBundleIdentifier='$(PRODUCT_BUNDLE_IDENTIFIER)',
                 CFBundleName=display_name, CFBundleDisplayName=display_name,
                 CFBundleInfoDictionaryVersion='6.0', CFBundlePackageType='APPL',
                 CFBundleShortVersionString='$(MARKETING_VERSION)', CFBundleVersion='$(CURRENT_PROJECT_VERSION)',
                 CFBundleDevelopmentRegion='en', UIDeviceFamily=[1, 2], LSRequiresIPhoneOS=True,
-                UIRequiredDeviceCapabilities=['opengles-3'], UILaunchScreen={},
+                UIRequiredDeviceCapabilities=['opengles-3'],
+                **({'UILaunchStoryboardName': launch_storyboard} if launch_storyboard else {'UILaunchScreen': {}}),
                 UISupportedInterfaceOrientations=orientations,
                 **{'UISupportedInterfaceOrientations~ipad': orientations + ['UIInterfaceOrientationPortraitUpsideDown']},
                 ORCAProject='project', ITSAppUsesNonExemptEncryption=False, UIApplicationSceneManifest={
@@ -120,6 +121,7 @@ def generate(args, app):
     units = unity_sources()
     asset_catalog = app_dir / 'Assets.xcassets'
     has_app_icon = (asset_catalog / 'AppIcon.appiconset').is_dir()
+    launch_screen = app_dir / 'LaunchScreen.storyboard'
     privacy_manifest = app_dir / 'PrivacyInfo.xcprivacy'
     common = {
         'ORCA_ROOT': '$(SRCROOT)/' + os.path.relpath(ROOT, output),
@@ -184,11 +186,16 @@ def generate(args, app):
     compile_phase = project.add('sources', 'PBXSourcesBuildPhase', buildActionMask=2147483647,
                                 files=sources, runOnlyForDeploymentPostprocessing=0)
     resource_references, resource_files, resource_phase = [], [], None
-    if has_app_icon:
+    if asset_catalog.is_dir():
         resource_references.append(project.add('assets/catalog', 'PBXFileReference', name=asset_catalog.name,
             path=os.path.relpath(asset_catalog, output), sourceTree='SOURCE_ROOT',
             lastKnownFileType='folder.assetcatalog'))
         resource_files.append(project.add('assets/build', 'PBXBuildFile', fileRef=resource_references[-1]))
+    if launch_screen.is_file():
+        resource_references.append(project.add('launch/storyboard', 'PBXFileReference', name=launch_screen.name,
+            path=os.path.relpath(launch_screen, output), sourceTree='SOURCE_ROOT',
+            lastKnownFileType='file.storyboard'))
+        resource_files.append(project.add('launch/build', 'PBXBuildFile', fileRef=resource_references[-1]))
     if privacy_manifest.is_file():
         resource_references.append(project.add('privacy/manifest', 'PBXFileReference', name=privacy_manifest.name,
             path=os.path.relpath(privacy_manifest, output), sourceTree='SOURCE_ROOT',
@@ -225,7 +232,8 @@ def generate(args, app):
     write(bundle / 'project.pbxproj', '// !$*UTF8*$!\n' + encode(dict(
         archiveVersion=1, classes={}, objectVersion=56, objects=project.objects, rootObject=root)) + '\n')
     display_name = args.display_name or 'ORCA ' + name.replace('-', ' ').title()
-    write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info_plist(display_name)).decode())
+    write(bundle / 'Generated/ios-Info.plist', plistlib.dumps(info_plist(
+        display_name, launch_screen.stem if launch_screen.is_file() else None)).decode())
     scheme(bundle / 'xcshareddata/xcschemes' / (target_name + '.xcscheme'), bundle.name,
            target_name, target, name + '.app')
     print(bundle)

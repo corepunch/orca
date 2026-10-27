@@ -1,19 +1,14 @@
 #ifndef ORCA_SCENE_FORMAT_H
 #define ORCA_SCENE_FORMAT_H
 
-#define ORCA_SCENE_FORMAT_LISP 1
-#define ORCA_SCENE_FORMAT_XML 2
-
-/* Non-Make builds can set this with a compiler definition too. */
-#ifndef ORCA_SCENE_FORMAT
-#define ORCA_SCENE_FORMAT ORCA_SCENE_FORMAT_LISP
+/* Define ORCA_USE_LISP to opt into Lisp; ordinary builds use XML. */
+#ifdef ORCA_USE_LISP
+#define ORCA_HAS_LISP 1
+#define ORCA_HAS_XML 0
+#else
+#define ORCA_HAS_LISP 0
+#define ORCA_HAS_XML 1
 #endif
-#if ORCA_SCENE_FORMAT != ORCA_SCENE_FORMAT_LISP && ORCA_SCENE_FORMAT != ORCA_SCENE_FORMAT_XML
-#error "ORCA_SCENE_FORMAT must be ORCA_SCENE_FORMAT_LISP or ORCA_SCENE_FORMAT_XML"
-#endif
-
-#define ORCA_HAS_LISP (ORCA_SCENE_FORMAT == ORCA_SCENE_FORMAT_LISP)
-#define ORCA_HAS_XML (ORCA_SCENE_FORMAT == ORCA_SCENE_FORMAT_XML)
 
 #if ORCA_HAS_LISP
 #define ORCA_SCENE_EXTENSION ".lisp"

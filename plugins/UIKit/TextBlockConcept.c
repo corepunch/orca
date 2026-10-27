@@ -147,14 +147,16 @@ T_BeginRun(struct TextBlockTextRun const *run, float scale, RunMetrics *m)
  * Measure one "word" — a run of non-whitespace codepoints starting at *src.
  * On return *src points past the last character of the word.
  * Returns pixel advance width (kerning-aware).
- * The word is bounded by whitespace or end-of-string.
+ * The word is bounded by whitespace or end-of-string. A positive maxWidth
+ * returns a fitting prefix, consuming at least one glyph to guarantee progress.
  * Inline markup tags (<u> / </u>) are consumed but not counted.
  */
 static FT_Pos
-T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
+T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout, FT_Pos maxWidth)
 {
   FT_Fixed  width16 = 0;   /* 16.16 accumulator for subpixel precision */
   FT_UInt   prev  = *last_glyph_index_inout;
+  bool_t hasGlyph = FALSE;
 
   lpcString_t p = *src;
   while (*p) {
@@ -164,17 +166,23 @@ T_MeasureWord(FT_Face face, lpcString_t *src, FT_UInt *last_glyph_index_inout)
 
     lpcString_t before = p;
     FT_UInt ch = u8_readchar(&p);
-    if (isspace(ch)) { p = before; break; }  /* stop before space */
+    if (ch < 128 && isspace(ch)) { p = before; break; }  /* stop before space */
 
     if (!T_LoadChar(face, ch)) { prev = 0; continue; }
     FT_UInt gi = FT_Get_Char_Index(face, ch);
 
+    FT_Fixed nextWidth = width16 + face->glyph->linearHoriAdvance;
     if (prev && gi) {
       FT_Vector kern;
       if (FT_Get_Kerning(face, prev, gi, FT_KERNING_UNFITTED, &kern) == 0)
-        width16 += kern.x << 10;  /* 26.6 -> 16.16 */
+        nextWidth += kern.x << 10;  /* 26.6 -> 16.16 */
     }
-    width16 += face->glyph->linearHoriAdvance;
+    if (maxWidth > 0 && hasGlyph && FT_SCALE_16_16(nextWidth) > maxWidth) {
+      p = before;
+      break;
+    }
+    width16 = nextWidth;
+    hasGlyph = TRUE;
     prev = gi;
   }
 
@@ -252,7 +260,7 @@ T_BlitWord(FT_Face          face,
 
     lpcString_t before = p;
     FT_UInt ch = u8_readchar(&p);
-    if (isspace(ch)) { p = before; break; }
+    if (ch < 128 && isspace(ch)) { p = before; break; }
 
     if (!T_LoadChar(face, ch)) { prev = 0; continue; }
     FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL);
@@ -388,6 +396,7 @@ T_LayoutText(LayoutCtx *ctx)
   FT_Pos const wrapW   = (text->availableWidth > 0 && text->textWrapping != TEXT_WRAP_NO_WRAP)
   ? (FT_Pos)(text->availableWidth * scale)
   : 0;
+  bool_t const breakWords = wrapW > 0 && text->textWrapping == TEXT_WRAP_WRAP;
 
   /* ── First pass: compute pixel dimensions ── */
   /* We always need to know the final size before allocating the bitmap,
@@ -413,6 +422,8 @@ T_LayoutText(LayoutCtx *ctx)
       ls.baseline   = MAX(ls.baseline,   FT_SCALE(m.ascender));
 
       lpcString_t p = run->string;
+      lpcString_t tokenEnd = NULL;
+      bool_t continuation = FALSE;
       while (*p) {
         /* skip tags */
         if (!strncmp(p, "<u>", 3))  { p += 3; continue; }
@@ -441,7 +452,7 @@ T_LayoutText(LayoutCtx *ctx)
           continue;
         }
 
-        if (isspace(ch)) {
+        if (ch < 128 && isspace(ch)) {
           /* A plain space: just advance, no measurement needed here;
            word tokens already carry their own space prefix below. */
           if (!ctx->cursorSet && current_char == text->cursor) {
@@ -461,11 +472,15 @@ T_LayoutText(LayoutCtx *ctx)
         lpcString_t word_start = before;
         FT_UInt dummy_gi = 0;
         lpcString_t word_p = word_start;
-        FT_Pos wordW = T_MeasureWord(m.face, &word_p, &dummy_gi);
+        FT_Pos wordW = T_MeasureWord(m.face, &word_p, &dummy_gi, continuation ? wrapW : 0);
+        if (!continuation) tokenEnd = word_p;
         /* word_p now points past the word */
 
         /* Decide whether to wrap before this word */
-        if (wrapW > 0 && ls.lineHasContent) {
+        if (continuation) {
+          measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
+          LS_NewLine(&ls, &m);
+        } else if (wrapW > 0 && ls.lineHasContent) {
           FT_Pos needed = ls.lineX + m.spaceAdv + wordW;
           if (needed > wrapW) {
             measuredSize.width = MAX(measuredSize.width, (uint32_t)ls.lineX);
@@ -476,6 +491,12 @@ T_LayoutText(LayoutCtx *ctx)
         } else if (ls.lineHasContent) {
           ls.lineX += m.spaceAdv;
         }
+        if (breakWords && wordW > wrapW - ls.lineX) {
+          word_p = word_start;
+          dummy_gi = 0;
+          wordW = T_MeasureWord(m.face, &word_p, &dummy_gi, MAX(1, wrapW - ls.lineX));
+        }
+        continuation = word_p < tokenEnd;
 
         /* cursor: walk the word char-by-char to count and find x if needed */
         {
@@ -585,6 +606,8 @@ T_LayoutText(LayoutCtx *ctx)
     }
 
     lpcString_t p = run->string;
+    lpcString_t tokenEnd = NULL;
+    bool_t continuation = FALSE;
     while (*p && !bDone) {
       /* consume markup tags at any position */
       if (!strncmp(p, "<u>",  3)) { p += 3; ul_depth++; continue; }
@@ -603,22 +626,24 @@ T_LayoutText(LayoutCtx *ctx)
         continue;
       }
 
-      if (isspace(ch)) continue;  /* spacing handled at word boundary */
+      if (ch < 128 && isspace(ch)) continue;  /* spacing handled at word boundary */
 
       /* ── We have a word ── */
       lpcString_t word_start = before;
 
       /* Measure word without side-effects */
+      if (breakWords) prev_gi = 0;
       FT_UInt measure_gi = prev_gi;
       lpcString_t word_end = word_start;
-      FT_Pos wordW = T_MeasureWord(m.face, &word_end, &measure_gi);
+      FT_Pos wordW = T_MeasureWord(m.face, &word_end, &measure_gi, continuation ? wrapW : 0);
+      if (!continuation) tokenEnd = word_end;
 
       /* Determine inter-word space */
       FT_Pos spacePrefix = ls.lineHasContent ? m.spaceAdv : 0;
 
       /* Wrap decision */
       if (wrapW > 0 && ls.lineHasContent) {
-        if (ls.lineX + spacePrefix + wordW > wrapW) {
+        if (continuation || ls.lineX + spacePrefix + wordW > wrapW) {
           ls.lineY      += FT_SCALE(ls.lineHeight);
           ls.lineX       = 0;
           ls.lineHeight  = m.height;
@@ -628,6 +653,12 @@ T_LayoutText(LayoutCtx *ctx)
           spacePrefix = 0;
         }
       }
+      if (breakWords && wordW > wrapW - ls.lineX - spacePrefix) {
+        word_end = word_start;
+        measure_gi = 0;
+        T_MeasureWord(m.face, &word_end, &measure_gi, MAX(1, wrapW - ls.lineX - spacePrefix));
+      }
+      continuation = word_end < tokenEnd;
 
       /* Ellipsis: would even one char of this word push past the cut? */
       if (ellipsisW > 0) {
@@ -656,7 +687,7 @@ T_LayoutText(LayoutCtx *ctx)
           if (!strncmp(q, "</u>", 4)) { q += 4; continue; }
           lpcString_t qb = q;
           FT_UInt qch = u8_readchar(&q);
-          if (isspace(qch)) break;
+          if (qch < 128 && isspace(qch)) break;
           if (!T_LoadChar(m.face, qch)) { prev_gi = 0; continue; }
           FT_Render_Glyph(m.face->glyph, FT_RENDER_MODE_NORMAL);
           FT_UInt  qgi  = FT_Get_Char_Index(m.face, qch);

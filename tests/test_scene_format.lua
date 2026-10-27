@@ -1,4 +1,4 @@
--- Run unchanged in both SCENE_FORMAT=lisp and SCENE_FORMAT=xml builds.
+-- Run unchanged in the default XML build and with -DORCA_USE_LISP.
 local test = require 'orca.test'
 local core = require 'orca.core'
 local filesystem = require 'orca.filesystem'
@@ -115,6 +115,115 @@ print('PASS: ' .. extension .. ' serialization, instantiation and lifetime')
 -- XML remains a data format even when its scene reader is not compiled in.
 local data = filesystem.loadXmlDataStringWithSchema('<Node2D Width="12"/>', '')
 test.expect_eq(data:getClassName(), 'DataObject', 'XML data parser cannot construct scene classes')
+local legacy_data_loader = filesystem.loadObjectFromXmlStringWithSchema
+test.expect(type(legacy_data_loader) == 'function', 'legacy XML data API remains available in both builds')
+local legacy_data = legacy_data_loader('<Node2D Width="12"/>', '')
+test.expect_eq(legacy_data:getClassName(), 'DataObject', 'legacy XML data API cannot construct scene classes')
+local legacy_record = legacy_data_loader('<SceneFormatLegacyRow Title="kept"/>',
+  '<Schema><Entity Name="SceneFormatLegacyRow"><Column Name="Title" Type="string"/></Entity></Schema>')
+test.expect_eq(legacy_record.Title, 'kept', 'legacy XML data API preserves typed schema fields')
+legacy_data, legacy_record = nil, nil
+core.flushQueue()
+collectgarbage(); collectgarbage()
+local data_baseline = core.objectCount()
+for _ = 1, 5 do
+  local row = legacy_data_loader('<DataObject Name="temporary"/>', '')
+  row = nil
+  core.flushQueue()
+  collectgarbage(); collectgarbage()
+end
+test.expect_eq(core.objectCount(), data_baseline, 'legacy XML data loader transfers its owning reference to Lua')
+
+-- The package uses one extensionless startup path in both builds. Exercise the
+-- real screens, CSS, data-backed templates and popup rather than a copied UI.
+local function check_example_startup()
+  local project = filesystem.init('apps/Example')
+  test.expect(project ~= nil, 'Example package initializes in the selected build')
+  test.expect_eq(project.StartupScreen, 'Example/Screens/Application', 'Example startup is independent of scene format')
+  local root = filesystem.loadObject(project.StartupScreen)
+  test.expect(root ~= nil, 'generic startup loader opens the selected Example scene')
+  test.expect(root:getSourceFile():match('%.' .. extension .. '$') ~= nil,
+    'extensionless Example startup selects the compiled scene format')
+  test.expect(root.StyleSheet ~= nil, 'Example stylesheet loads')
+  test.expect_near(root.ClearColor.R, 0x0B / 255, 0.001, 'Example surface theme resolves red')
+  test.expect_near(root.ClearColor.B, 0x12 / 255, 0.001, 'Example surface theme resolves blue')
+
+  root.ResizeMode = 'NoResize'
+  root.Height = 600
+  local hero = root:findChild('Hero', true)
+  local body = root:findChild('Body', true)
+  test.expect(hero ~= nil and body ~= nil, 'Example startup constructs the main layout')
+  for _, size in ipairs {
+    { width = 800, columns = '1fr 1fr', padding = 40 },
+    { width = 500, columns = '1fr', padding = 8 },
+  } do
+    root.Width = size.width
+    evaluate(root)
+    root:UpdateLayout(root.Width, root.Height)
+    test.expect_eq(hero.Columns, size.columns, 'Example columns react to width in ' .. extension .. ' mode')
+    test.expect_near(body.PaddingLeft, size.padding, 0.001, 'Example padding reacts to width in ' .. extension .. ' mode')
+  end
+
+  local source = project.DataSourceLibrary:findChild('ApplicationData', false)
+  local signal = source and source:findChild('SignalXml', true)
+  local metric = source and source:findChild('MetricUsers', true)
+  test.expect(signal ~= nil and signal.Title ~= nil and signal.Title ~= '', 'Example signal datasource contains a title')
+  test.expect(metric ~= nil and metric.Title ~= nil and metric.Title ~= '', 'Example metric datasource contains a value')
+  local signal_title = root:findChild('SignalCardTitle', true)
+  local metric_value = root:findChild('MetricUsersValue', true)
+  test.expect(signal_title ~= nil and metric_value ~= nil, 'Example instantiates signal and metric templates')
+  test.expect_eq(signal_title.Text, signal.Title, 'Example signal template binds the shared data')
+  test.expect_eq(metric_value.Text, metric.Title, 'Example metric template binds the shared data')
+  local original_title = signal.Title
+  signal.Title = 'Updated by scene-format test'
+  evaluate(root)
+  test.expect_eq(signal_title.Text, signal.Title, 'Example template reacts to datasource edits')
+  signal.Title = original_title
+
+  local tabs = root:findChild('OrcaTabs', true)
+  root:findChild('LuaTab', true):send('Node.LeftButtonUp')
+  pump(root)
+  test.expect_eq(tabs.SelectedValue, 'lua', 'Example tabs still switch')
+  root:findChild('CtaButtonPrimary', true):send('Node.LeftButtonUp')
+  pump(root)
+  local popup = root:getNext()
+  test.expect(popup ~= nil, 'Example CTA loads its popup in the selected format')
+  test.expect_eq(popup:getClassName(), 'Popup', 'Example modal uses the Popup class')
+  local close = popup:findChild('GetStartedPopupClose', true)
+  test.expect(close ~= nil, 'Example popup contains its close action')
+  close:send('Node.LeftButtonUp')
+  pump(root)
+  test.expect_eq(root:getNext(), nil, 'Example popup close action detaches the modal')
+  root:clear()
+  filesystem.unloadProject(project)
+  print('PASS: Example ' .. extension .. ' startup, theme, data, responsive layout and popup')
+end
+
+check_example_startup()
+
+local function check_mvvm_form()
+  local project = filesystem.init('apps/MvvmForms')
+  test.expect(project ~= nil, 'MvvmForms package initializes')
+  local form = filesystem.loadObject('MvvmForms/Views/Form')
+  test.expect(form ~= nil, 'generic loader opens the actual MvvmForms form')
+  test.expect(form:getSourceFile():match('%.' .. extension .. '$') ~= nil, 'MvvmForms selects the compiled format')
+  evaluate(form)
+  local name = form:findChild('DisplayName', true)
+  local preview = form:findChild('Preview', true)
+  local draft = form:findChild('DraftForm', true).DataContext
+  test.expect(name ~= nil and preview ~= nil and draft ~= nil, 'MvvmForms constructs its fields and typed draft')
+  test.expect_eq(name.Text, 'Sam Rivera', 'MvvmForms initializes from its real XML datasource')
+  test.expect_eq(preview.Text, name.Text, 'MvvmForms preview reflects the initial draft')
+  name.Text = 'Scene format draft'
+  evaluate(form)
+  test.expect_eq(draft.DisplayName, 'Scene format draft', 'MvvmForms two-way binding updates the draft')
+  test.expect_eq(preview.Text, 'Scene format draft', 'MvvmForms preview reacts to the edited draft')
+  form:clear()
+  filesystem.unloadProject(project)
+  print('PASS: MvvmForms ' .. extension .. ' loading and two-way bindings')
+end
+
+check_mvvm_form()
 
 if has_xml then
   for _, invalid in ipairs {

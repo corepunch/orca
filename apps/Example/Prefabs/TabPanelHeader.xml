@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="TabPanelHeader" class="tab-panel-header">
+	<VectorView Name="TabPanelHeaderIcon" class="tab-panel-icon" Source="{Binding DataContext/Icon}"/>
+	<TextBlock Name="TabPanelHeaderTitle" class="tab-panel-title" Text="{Binding DataContext/Title}"/>
+</StackView>

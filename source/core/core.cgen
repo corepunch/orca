@@ -12,6 +12,14 @@
     <external struct="style_selector"/>
   </externals>
   <enums>
+    <enum name="ScrollPhase">
+      <summary>Direct-touch scrolling lifecycle; None preserves ordinary wheel scrolling.</summary>
+      <value name="None">Discrete wheel event</value>
+      <value name="Begin">Finger down; interrupt ongoing momentum</value>
+      <value name="Update">Finger drag</value>
+      <value name="End">Finger released; start deceleration</value>
+      <value name="Cancel">Gesture cancelled; settle without momentum</value>
+    </enum>
     <enum name="MessageRouting">
       <summary>Defines the routing strategy for messages sent to objects. This determines how messages propagate through the object hierarchy and which handlers are invoked.</summary>
       <value name="Bubbling">Messages are bubbled up the hierarchy.</value>
@@ -425,6 +433,10 @@ This is the idiomatic way to build object hierarchies in Lua scripts and tests.<
           <arg name="style" type="uint">Style flags bitmask to apply</arg>
         </method>
         <topic title="Animation">Attaches, plays, and transitions keyframe animations on this object.</topic>
+        <method name="RequestAnimate">
+          <summary>Enqueues one Object.Animate callback, coalescing repeated requests until it is dispatched.</summary>
+          <details>Call again from Object.Animate while animation remains active. Uses the shared animation queue rather than starting a separate timer.</details>
+        </method>
         <method name="DoTween" lua="true">
           <summary>Tween an object property over time.</summary>
           <details>Creates and initiates a smooth animation transition (tween) that interpolates an object property from its current value to a target value over a specified duration. Supports various easing functions and animation curves. The tween system handles different property types including scalars, vectors, and colors. Multiple tweens can run simultaneously on different properties of the same object.</details>
@@ -1141,6 +1153,8 @@ Use Node.ViewDidLoad for tree manipulation, Lua attachment, or layout queries.
             <field name="deltaY" type="int">Scroll wheel rotation amount along the Y axis; positive values scroll up/forward</field>
             <field name="button" type="MouseButton">The mouse button involved in this event</field>
             <field name="clickCount" type="int">Number of consecutive clicks (1 for single click, 2 for double click)</field>
+            <field name="scrollPhase" type="ScrollPhase">Direct-touch scroll lifecycle, or None for a wheel</field>
+            <field name="timestamp" type="uint">Touch sample time in milliseconds; wraps as an unsigned clock</field>
           </fields>
         </message>
         <message name="LeftButtonDown" same-as="MouseMessage">

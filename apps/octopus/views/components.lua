@@ -1,5 +1,7 @@
 local ui = require "orca.UIKit"
 local C = { colors = require "Octopus/theme" }
+-- A 4-point spacing scale shared by post lists and cards.
+C.spacing = { tight = 4, inline = 8, column = 12, section = 16, post = 24 }
 local colors = C.colors
 local auto = 0/0
 -- ORCA draws a border outside Width/Height (it counts as margin), so bordered
@@ -35,6 +37,16 @@ end
 function C.clear(node)
     while node:getFirstChild() do node:getFirstChild():removeFromParent() end
     return node
+end
+
+-- Reserve content space while data is pending; the indicator never captures input.
+function C.loading(props)
+    props = props or {}
+    local name = props.Name or "Loading"
+    props.IgnoreHitTest = true
+    local area = ui.Grid(props)
+    area:addChild(ui.ActivityIndicator { Name = name .. "Indicator", Foreground = colors.dim })
+    return area
 end
 
 function C.icon(name, size, color, props)

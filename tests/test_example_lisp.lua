@@ -39,8 +39,8 @@ local function test_example_application_lisp()
 	test.expect(lisp ~= nil and lisp ~= "", "Example Application.lisp should be readable")
 	test.expect(appdata_xml ~= nil and appdata_xml ~= "", "Example ApplicationData.xml should be readable")
 	test.expect(package_lua ~= nil and package_lua ~= "", "Example package.lua should be readable")
-	test.expect(package_lua:find('StartupScreen = "Example/Screens/Application.lisp"', 1, true) ~= nil,
-		"Example startup should select the Lisp scene")
+	test.expect(package_lua:find('StartupScreen = "Example/Screens/Application"', 1, true) ~= nil,
+		"Example startup should let the selected build choose its scene format")
 
 	local tab_section = lisp:find('(StackView Name="TabbedTechSection"', 1, true)
 	local signals = lisp:find('(GridBox Name="OrcaSignals"', 1, true)
@@ -246,7 +246,10 @@ local function test_example_application_lisp()
 			local signal_title = root:findChild("SignalCardTitle", true)
 			test.expect(signal_title ~= nil, "Example should instantiate its Lisp SignalCard template")
 			if signal_title then
-				test.expect_eq(signal_title.Text, "Lisp-first screens", "Lisp prefab should bind to its data context")
+				local source = project.DataSourceLibrary:findChild("ApplicationData", false)
+				local row = source:findChild("SignalXml", true)
+				test.expect(row ~= nil and row.Title ~= nil and row.Title ~= "", "Example signal data should contain a title")
+				test.expect_eq(signal_title.Text, row.Title, "Lisp prefab should bind to its data context")
 			end
 			local tabs = root:findChild("OrcaTabs", true)
 			root:findChild("LuaTab", true):send("Node.LeftButtonUp")

@@ -70,6 +70,16 @@ finishWorkers()
 assert(duplicate:findChild("Cached") and calls.same == 1)
 assert(calls.sixth == 1 and calls.bad == 1, "Scrolling exposes only newly visible photos")
 local retry = assert(frames[7]:findChild("RetryPhoto7"), "Failures need an explicit retry control")
+local unavailable = assert(retry:findChild("UnavailablePhoto7"), "Failed photos need a broken-image icon")
+assert(unavailable.Source == "Octopus/assets/icons/image-off.svg" and (retry.Text or "") == "",
+    "Failed photos show the broken-image icon without retry text")
+app.screen:UpdateLayout(200, 450)
+assert(retry.ActualWidth == frames[7].ActualWidth and retry.ActualHeight == frames[7].ActualHeight,
+    "The retry area must fill the reserved photo frame")
+assert(math.abs(unavailable.ActualX + unavailable.ActualWidth / 2 - retry.ActualWidth / 2) < 1
+    and math.abs(unavailable.ActualY + unavailable.ActualHeight / 2 - retry.ActualHeight / 2) < 1,
+    "The broken-image icon must stay centered in the reserved photo frame")
+if native then app.screen:send("Screen.RenderScreen", { width = 200, height = 450 }) end
 loader:loadVisible()
 assert(calls.bad == 1, "Paints must not spin on failed downloads")
 retry:send("Node.LeftButtonUp")
@@ -97,5 +107,37 @@ loader:watch(hidden, "hidden", "Hidden")
 app.screen:UpdateLayout(200, 450)
 loader:loadVisible()
 assert(not calls.hidden)
+-- Thread/profile routes temporarily replace the current screen while the shell
+-- keeps its timeline. Those offscreen registrations must survive the visit.
+app.shell = { screen = app.screen }
+app.screen = ui.Screen { Width = 200, Height = 450, ResizeMode = "NoResize" }
+loader:loadVisible()
+assert(loader.watching[hidden], "Retained shell photos must survive navigation to another screen")
+app.screen = app.shell.screen
+-- Scene ownership does not keep a Lua userdata wrapper alive. A photo built
+-- without an external Lua frame reference must survive GC before its first paint.
+app.sessionEpoch = app.sessionEpoch + 1
+local gcList = ui.StackView { Overflow = "hidden scroll" }
+app.screen:addChild(gcList)
+do
+    local frame = ui.Grid { Name = "CollectedFrame", Height = 100 }
+    gcList:addChild(frame)
+    loader:watch(frame, "gc-photo", "AfterGC")
+end
+collectgarbage("collect")
+collectgarbage("collect")
+app.screen:UpdateLayout(200, 450)
+loader:loadVisible()
+finishWorkers()
+assert(calls["gc-photo"] == 1 and gcList:findChild("CollectedFrame"):findChild("AfterGC"),
+    "Native-owned visible photos must remain registered across Lua GC")
+-- Detached frames and old sessions must release their strong registrations.
+local detached = ui.Grid { Height = 100 }
+gcList:addChild(detached)
+loader:watch(detached, "detached", "Detached")
+detached:removeFromParent()
+loader:loadVisible()
+assert(not loader.watching[detached] and not calls.detached)
+assert(next(loader.watching) == nil, "Completed, detached and stale frames must leave the registry")
 app.media:clear()
 print("PASS: viewport photo loading, bounded concurrency, deduplication, native resources, cache, retry and stale sessions")

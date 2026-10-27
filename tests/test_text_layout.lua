@@ -184,6 +184,36 @@ local function test_auto_margin_bubble_wraps_long_text()
 	column:removeFromParent()
 end
 
+local function test_text_wrap_breaks_oversized_words()
+	for _, value in ipairs { ("AVATAR"):rep(12), ("éЖλ"):rep(24), "Prefix " .. ("longword"):rep(20) } do
+		local column = screen + ui.StackView { Direction = "Vertical", Width = 100, AlignItems = "Start" }
+		local wrapped = column + ui.TextBlock { Text = value, FontSize = 16, TextWrapping = "Wrap" }
+		local overflow = column + ui.TextBlock { Text = value, FontSize = 16, TextWrapping = "WrapWithOverflow" }
+		local nowrap = column + ui.TextBlock { Text = value, FontSize = 16, TextWrapping = "NoWrap" }
+		screen:UpdateLayout(screen.Width, screen.Height)
+		test.expect(wrapped.DesiredWidth <= 100 and wrapped.ActualWidth <= 100,
+			"Wrap must break oversized UTF-8 words inside the available width")
+		test.expect(wrapped.DesiredHeight > overflow.DesiredHeight,
+			"Character wrapping must retain oversized word content on additional lines")
+		test.expect(overflow.DesiredWidth > 100 and nowrap.DesiredWidth > 100,
+			"WrapWithOverflow and NoWrap must retain their existing oversized-word behavior")
+		test.expect_eq(wrapped.Text, value, "Wrapping must preserve the original string")
+		ui.resetTextStats()
+		test.expect(wrapped:send("Node2D.ForegroundContent"), "Wrapped text must rasterize successfully")
+		test.expect_eq(ui.getTextRenderCount(), 1, "Oversized words must also traverse the rasterization pass")
+		column:removeFromParent()
+	end
+
+	-- One glyph may be wider than the container; it must still be consumed.
+	local narrow = screen + ui.StackView { Direction = "Vertical", Width = 1, AlignItems = "Start" }
+	local single = narrow + ui.TextBlock { Text = "W", FontSize = 16, TextWrapping = "Wrap" }
+	local pair = narrow + ui.TextBlock { Text = "WW", FontSize = 16, TextWrapping = "Wrap" }
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_near(pair.DesiredHeight, single.DesiredHeight * 2, 1,
+		"An oversized glyph must make progress and wrap the following glyph")
+	narrow:removeFromParent()
+end
+
 -- ---------------------------------------------------------------------------
 -- Empty TextBlock: render texture lookup must tolerate no resolved text
 -- ---------------------------------------------------------------------------
@@ -305,6 +335,7 @@ test_text_single_line_layout()
 test_text_nowrap_keeps_metric_value_on_one_line()
 test_textblock_auto_margin_bubble_measures_full_phrase()
 test_auto_margin_bubble_wraps_long_text()
+test_text_wrap_breaks_oversized_words()
 test_empty_text_block_foreground_content()
 test_text_layout_uses_cached_measurement()
 test_text_line_height_property()

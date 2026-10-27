@@ -1,8 +1,14 @@
-# Example: Lisp scenes and bindings
+# Example: XML and Lisp scenes
 
-`package.lua` starts `Screens/Application.lisp`. Screens and prefabs use the
-same parenthesized syntax for objects, binding expressions, and message actions.
-CSS still owns presentation; `class` and theme references work as before.
+Example keeps both XML and Lisp screens and prefabs. `package.lua` uses the
+extensionless startup path `Example/Screens/Application`, so the compiled scene
+reader selects the corresponding file. XML is the default; define
+`ORCA_USE_LISP` (`-DORCA_USE_LISP`) to build the Lisp reader instead.
+See [build options](../../docs/BUILD.md).
+
+The Lisp variants use the same parenthesized syntax for objects, binding
+expressions, and message actions. CSS owns presentation in both formats;
+`class` and theme references work the same way.
 
 ```lisp
 (StackView Name="FeatureCard" class="card stack-card feature-card"
@@ -30,17 +36,23 @@ the same syntax:
   `if`, `step`, `bool`, and `vector2` compose binding expressions.
 - Message attributes accept action nodes, for example
   `LeftButtonUp=(Popup.ClosePopup)`.
-- Scene and template paths include `.lisp` explicitly.
+- Lisp scene and template paths include `.lisp` explicitly. XML paths are
+  extensionless and resolve through the XML reader. The shared startup path is
+  extensionless so either build can launch the app.
 
-`Screens/Application2.lisp`, `ApplicationTW.lisp`, and `some.lisp` are retained
-alternate scene examples; `Application.lisp` is the active application.
+`Screens/Application2`, `ApplicationTW`, and `some` are retained alternate
+scene examples in both formats; `Application` is the active application.
+The XML metric prefab retains its existing `Mertic.xml` filename; its Lisp
+counterpart is `Metric.lisp`. Each screen references the appropriate asset.
 `Data/ApplicationData.xml` and `ApplicationData.schema` remain inputs to the
 existing `XmlDataSource`. The Lua package, CSS, SVG icons, and data-source format
 are independent of the scene syntax and are not converted by this migration.
 
-Example requires the default `SCENE_FORMAT=lisp` build. The alternative
-`SCENE_FORMAT=xml` build enables XML scenes for unmigrated applications and
-disables Lisp scene loading. See [build options](../../docs/BUILD.md).
+After building either mode, run its executable with `apps/Example`, for example
+`build/bin/orca apps/Example` for the default build. Check that cards show their
+data, resizing switches the responsive columns, and **Get Started** opens a
+popup whose **Close** action works. The scene reader is chosen at compile time;
+there is no runtime fallback to the other format.
 XML data/schema parsing and serialization are independent of this selection.
 
 This is a declarative scene and binding language, not a general-purpose Lisp

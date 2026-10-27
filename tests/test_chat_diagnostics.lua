@@ -29,23 +29,50 @@ end
 app.drafts.alex = "Unsent message"
 app:show("/")
 local home = app.screen
-local function layout()
-    core.flushQueue()
-    core.runAllPrograms(app.screen)
-    app.screen:UpdateLayout(390, 844)
-end
-local function returnToChat()
-    app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+local function flushEvents()
+    -- Loaders can request a repaint independently of controller activation.
+    -- Dispatch their other queued events, but keep this fixture renderer-free.
     while true do
         local event = system.peekMessage()
         if not event then break end
         if not event:is("Window.Paint") then system.dispatchMessage(app.screen, event) end
     end
-    core.flushQueue()
+end
+local function layout()
+    flushEvents()
+    core.advanceFrame()
+    core.runAllPrograms(app.screen)
+    app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+end
+local function returnToChat()
+    app.screen:findChild("RecoverChat", true):send("Node.LeftButtonUp")
+    flushEvents()
 end
 layout()
 app.diagnostics:checkLayout()
 assert(app.screen == home, "A healthy layout must not display an error")
+
+app:show("/new")
+local search = app.screen
+search.ResizeMode = "NoResize"
+search.Width, search.Height = 430, 932
+search.SafeAreaTop, search.SafeAreaBottom = 59, 34
+for _, inset in ipairs { 0, 318, 352, 0 } do
+    search.KeyboardInsetBottom = inset
+    layout()
+    app.diagnostics:checkLayout()
+    assert(app.screen == search, "Showing, resizing or hiding the keyboard during user search must retain the chat screen")
+    local footer = search:findChild("AppBarFooter", true)
+    local bottom = math.max(34, inset)
+    assert(math.abs(footer.ActualY - (932 - bottom - 58)) < 1,
+        "Search commands must stay above the keyboard or home indicator")
+    assert(math.abs(footer.ActualY + footer.ActualHeight - 932) < 1,
+        "Search footer background must extend to the full viewport bottom")
+end
+search.Width, search.Height = 390, 844
+search.SafeAreaTop, search.SafeAreaBottom = 0, 0
+app:show("/")
+layout()
 
 local originalHome = app.home
 app.home = function() error("route render failed token=private-value", 0) end
@@ -70,12 +97,14 @@ local first = app.screen
 async.report_error("second failure")
 assert(app.screen == first, "Repeated failures must not stack error screens")
 returnToChat()
+app.screen.KeyboardInsetBottom = 318
 layout()
 local footer = app.screen:findChild("AppBarFooter", true)
 footer.Height = 32000
 layout()
 app.diagnostics:checkLayout()
-assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("footerHeight=", 1, true),
+assert(app.screen.Name == "ChatError" and app.diagnostics.lastReport:find("footerHeight=", 1, true)
+    and app.diagnostics.lastReport:find("keyboardInsetBottom=318.0", 1, true),
     "Oversized footer failures must show measured geometry even without an exception")
 returnToChat()
 

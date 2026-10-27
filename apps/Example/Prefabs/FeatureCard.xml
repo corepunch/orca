@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE StackView SYSTEM "https://corepunch.github.io/orca/schemas/orca.dtd">
+<StackView Name="FeatureCard" class="card stack-card feature-card">
+	<TextBlock Name="FeatureCardIcon" class="feature-card-icon"
+		Text="{Binding DataContext/Icon}" ForegroundColor="{Binding DataContext/PrimaryColor}" BackgroundColor="{Binding DataContext/IconBackground}"/>
+	<Node2D Name="FeatureCardSpacer" class="feature-card-spacer"/>
+	<TextBlock Name="FeatureCardTitle" class="card-title" Text="{Binding DataContext/Title}"/>
+	<TextBlock Name="FeatureCardBody" class="card-body" Text="{Binding DataContext/Body}"/>
+</StackView>

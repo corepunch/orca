@@ -36,6 +36,106 @@ measurement and arrangement and update descendant transforms. Content changes
 and viewport resizing still invalidate layout. Native scroll-wheel and
 `Node2D.SetScrollTop` handling use this same path.
 
+On iOS phone builds, vertical direct-finger scrolling has inertia and
+rubber-band edges by default on overflowing `Node2D` containers (including
+stacks and grids with `OverflowY = "Scroll"`). No application gesture handlers
+are needed. The touched container stays captured as its content moves; a new
+touch stops its momentum, release decelerates, and cancellation returns any
+overscroll to the edge without a fling. Taps and horizontal Pivot swipes keep
+their existing routing. Containers whose content fits pass through to an
+overflowing ancestor; they do not bounce on their own.
+
+Set `InertiaScrolling = false` to disable release momentum, or
+`RubberBandScrolling = false` to hard-clamp touch scrolling at the boundaries.
+Both default to true and affect direct-touch gestures only. Desktop wheel
+events stay immediate and clamped. Programmatic `ContentOffset` changes stop
+touch motion so a scheduled animation cannot overwrite the requested offset.
+Content-size changes use the current bounds when settling. Animation updates
+use the property system and reuse measurement/arrangement like ordinary scroll
+frames.
+
+The platform marks touch-wheel events with Begin/Update/End/Cancel and the
+sample's unsigned millisecond timestamp. UIKit exposes these as
+`Node.MouseMessage.scrollPhase` (`ScrollPhase`) and `timestamp`; phase `None`
+identifies an ordinary wheel event. Direct producers must send Begin before
+Update, and End or Cancel to finish the sequence. The iOS platform submodule
+and Orca must be rebuilt together for this event contract.
+
+## Loading content
+
+Attach the screen shell and usable controls before starting network work. Use
+`orca.async` or `orca.core.async.run` to fetch data and populate each pending
+content region as its result arrives. A coroutine that waits for every request
+before attaching the screen still leaves the user waiting for that screen.
+Keep existing content during refresh, and check the current request, route and
+session before applying a completion. Failed requests should leave a retry path.
+
+`ActivityIndicator` is UIKit's shared indeterminate loading control, available
+in Lua and XML. It draws twelve fading dots in a circle, inherits `Foreground`,
+and defaults to 32 by 32 points with auto margins for centering in its parent.
+It ignores hit testing. `IsActive=false` hides the dots and stops animation
+while retaining layout; hidden or detached indicators stop animation too.
+Place it in a Grid covering only the pending content region, so navigation and
+other controls remain interactive. Set `Width` and `Height` to change its size.
+
+```lua
+local pending = ui.Grid { IgnoreHitTest = true }
+pending:addChild(ui.ActivityIndicator { Foreground = colors.muted })
+content:addChild(pending)
+orca.async(function()
+    local result, err = service:load()
+    -- Check that this is still the current view/request before updating it.
+    pending:removeFromParent()
+    showResultOrRetry(result, err)
+end)
+```
+
+## Images and viewport notifications
+
+Load network images asynchronously as their views need them. Apple recommends
+[cached asynchronous image loading](https://developer.apple.com/documentation/uikit/asynchronously-loading-images-into-table-and-collection-views)
+and [prefetching upcoming cells](https://developer.apple.com/documentation/uikit/prefetching-collection-view-data),
+with cancellation of unnecessary work. A small displayed avatar can still point
+to a large original file; its visual size is not a reason to download an entire
+list's images.
+
+Lua applications can override `Application.afterPaint()` to update a shared
+`orca.UIKit.ViewportObserver`. Custom run loops must invoke the hook after
+successful `Window.Paint` dispatch, once layout and scroll transforms settle.
+
+```lua
+local Observer = require "orca.UIKit.ViewportObserver"
+local observer = Observer.new { root = function() return app.screen end, margin = 0 }
+local unsubscribe = observer:observe(frame, function(event)
+    -- event.isVisible changes at viewport entry/exit; event.detached retires a view.
+    -- Enqueue asynchronous work here; never fetch or decode inside layout.
+end)
+-- In afterPaint:
+observer:update()
+```
+
+The observer intersects axis-aligned view bounds with clipping ancestors and
+scroll/Pivot translations, suppresses hidden pages, and retains registrations
+through Lua GC. `retainedRoot` can preserve a shell while another screen is
+active. Unsubscribe completed work; detached registrations are removed. This
+Lua helper does not calculate occlusion or arbitrary rotated 3D geometry.
+
+Octopus post photos and Chat attachment previews load only when visible, with
+fixed-size placeholders and two concurrent downloads per loader. Shared
+`orca.UIKit.AvatarLoader` batches profile metadata for visible/nearby people,
+prioritizes visible avatars, and prefetches within 128 points. It deduplicates
+file requests and reuses cached files. Cached avatars can be applied immediately
+without networking, even when rebuilding a retained page.
+
+Queued requests with no visible consumers are skipped. An already running,
+shared request may finish and populate the cache; session and view guards
+prevent stale completions from changing another reader's UI. Failed requests
+do not retry on every paint. Large photos offer explicit retry; avatar failures
+leave initials and can retry when a new view is created. These caches belong to
+the app/session; they are not a persistent cache or list virtualization system.
+The demo portraits are already 256-pixel JPEGs. Production uploads should provide
+small avatar variants rather than assuming full-size originals are inexpensive.
+
 ## XML message shorthand
 
 Common patterns:

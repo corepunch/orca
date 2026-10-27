@@ -103,7 +103,11 @@ and uses `devicectl` to install and launch it.
 The bundle contains `share/` and a copy of the chosen project in `project/`.
 Lua modules and engine plugins are linked statically. UIKit owns the main run
 loop; a display link resumes the Lua application coroutine each frame, and
-`system.getMessage` yields when the platform queue is empty.
+`system.getMessage` yields when the display callback's message batch is drained.
+Each display callback snapshots the queued messages before resuming Lua. Work
+posted while that batch runs waits for the next display callback, so animation
+callbacks cannot keep UIKit from delivering a new touch during deceleration.
+The queue boundary also applies to peeking and explicit queue flushes.
 
 The platform backend uses UIWindowScene and OpenGL ES 3, Retina backing buffers,
 tap/drag events, vertical swipe scrolling and UIKeyInput. The drawable fills the
@@ -116,9 +120,15 @@ update for native resizable screens. Set `RespectSafeArea=false` when a screen
 needs backgrounds or scrolling content under system chrome, then use those
 properties to inset its interactive controls. Avoid hardcoded device margins.
 
-The chat screen tracks the available size, including keyboard appearance and
-rotation. A docked keyboard reduces the drawable height; the bottom safe inset
-then disappears so the composer can meet the keyboard. `Input.Type` requests
+The drawable retains its full size when the keyboard appears.
+`Screen.KeyboardInsetBottom` reports the overlap of a docked, full-width
+keyboard in logical pixels; hidden and floating keyboards report zero.
+Safe-area insets retain their physical meaning. `RespectSafeArea` keeps content
+above the larger of the bottom safe inset and keyboard overlap. Edge-to-edge
+layouts use the shared `Footer` to apply that inset to controls while painting
+the footer background to the bottom of the window, beneath the keyboard.
+Viewport metrics and bindings are resolved before layout in the same frame.
+`Input.Type` requests
 the native keyboard: `Phone` supports international phone entry, `Number` uses
 a digit keypad, and `Email`, `Url`, and `Decimal` select their corresponding
 layouts. `Password` enables secure native entry. Types are keyboard hints;
@@ -129,7 +139,10 @@ not implemented by this backend.
 
 Settings use the app's writable Application Support directory. Bundled project
 resources are read-only; applications should use ORCA settings APIs for saved
-data. Terminal environment variables are not inherited by apps installed on
+data. The iOS Lua build creates `os.tmpname()` files in the app's `TMPDIR`,
+with private permissions, so downloaded photos and avatars can be cached inside
+the sandbox. The system-wide `/tmp` directory is not writable by device apps.
+Terminal environment variables are not inherited by apps installed on
 physical devices. The chat's public Appwrite endpoint, project ID and Function
 ID are defaults in `apps/chat/config.lua`, so installed builds connect without
 environment variables.

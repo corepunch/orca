@@ -17,7 +17,7 @@
   <Signals>
     <Signal name="SignalXml"  
       Icon="Example/Icons/code.svg"   
-      Title="Lisp-first screens"
+      Title="Declarative screens"
       Body="Layouts stay readable."           
       PrimaryColor="$accent"/>
     <Signal name="SignalLua"  
@@ -49,7 +49,7 @@
   <XmlPanelHeader>
     <PanelHeader name="XmlPanelHeader"
       Icon="Example/Icons/grid.svg" 
-      Title="Lisp reads like a blueprint"
+      Title="Scenes read like a blueprint"
       PrimaryColor="$accent"/>
   </XmlPanelHeader>
   <XmlModel>
@@ -106,7 +106,7 @@
     <Card name="LuaCard3"
       Icon="Example/Icons/link-2.svg"             
       Title="Binding"
-      Body="Let Lua connect the moving pieces while Lisp keeps the hierarchy in view."
+      Body="Let Lua connect the moving pieces while the scene keeps the hierarchy in view."
       PrimaryColor="$accent-green"
       IconBackground="$icon-bg-green"/>
   </LuaCards>
@@ -153,7 +153,7 @@
   <FeatureCards>
     <Card name="FeatureXmlCard"  
       Icon="Example/Icons/layers.svg" 
-      Title="Lisp stays readable"
+      Title="Scene structure stays readable"
       Body="The layout tree is right there in the page, so structure and spacing stay easy to tune."                           
       PrimaryColor="$accent-blue"/>
     <Card name="FeatureLuaCard"  
@@ -187,7 +187,7 @@
       Title="01"
       Subtitle="Define Layout" 
       PrimaryColor="$accent"      
-      Body="Write your screen as a Lisp file with familiar Grid and StackView containers."/>
+      Body="Describe your screen with familiar Grid and StackView containers."/>
     <WorkflowStep name="Step2"
       Title="02"
       Subtitle="Load Assets"   
@@ -209,12 +209,12 @@
       PrimaryColor="$accent"      
       Title="— Alex R."   
       Subtitle="Lead Engineer" 
-      Body="ORCA lets us ship native-quality UI on every platform from a single Lisp source. It changed how we build products."/>
+      Body="ORCA lets us ship native-quality UI on every platform from a single scene description. It changed how we build products."/>
     <Quote name="Quote2"
       PrimaryColor="$accent-green"
       Title="— Sam T."    
       Subtitle="UI Architect"  
-      Body="The declarative layout system is a joy to work with. Our designers write Lisp and developers hook up the logic — perfect split."/>
+      Body="The declarative layout system is a joy to work with. Our designers compose scenes and developers hook up the logic — perfect split."/>
     <Quote name="Quote3"
       PrimaryColor="$accent-blue" 
       Title="— Jordan M." 

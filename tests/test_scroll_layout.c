@@ -6,6 +6,7 @@
 #include <UIKit/UIKit.h>
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 
 extern int luaopen_orca(lua_State *L);
 extern int luaopen_orca_core(lua_State *L);
@@ -32,6 +33,127 @@ layout(struct Object *screen)
 {
   _SendMessage(screen, Screen, UpdateLayout, .Width = GetScreen(screen)->Width,
                .Height = GetScreen(screen)->Height);
+}
+
+static void
+touch_scroll(struct Object *list, enum ScrollPhase phase, int dy, uint32_t time)
+{
+  assert(_SendMessage(list, Node, ScrollWheel, .scrollPhase = phase, .deltaY = dy, .timestamp = time));
+}
+
+static void
+animate_scroll(struct Object *list, int milliseconds)
+{
+  GetNode2D(list)->_scrollAnimTime = axGetMilliseconds() - milliseconds;
+  OBJ_SendMessageW(list, ID_Object_Animate, 0, NULL);
+}
+
+static void
+test_touch_physics(struct Object *screen, struct Object *list)
+{
+  struct Node2D *view = GetNode2D(list);
+  assert(view->InertiaScrolling && view->RubberBandScrolling);
+  struct vec2 offset = { 0, -100 };
+  PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+  touch_scroll(list, kScrollPhaseBegin, 0, 1000);
+  touch_scroll(list, kScrollPhaseUpdate, -40, 1020);
+  touch_scroll(list, kScrollPhaseUpdate, -40, 1040);
+  touch_scroll(list, kScrollPhaseEnd, 0, 1045);
+  assert(view->_scrollAnimating && !view->_scrollTracking);
+  float released = view->ContentOffset.y;
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y < released); // release continues in drag direction
+  // A new finger stops momentum without moving the content.
+  float interrupted = view->ContentOffset.y;
+  touch_scroll(list, kScrollPhaseBegin, 0, 1100);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y == interrupted && !view->_scrollAnimating);
+  // The same new gesture can reverse direction immediately; stale animation
+  // callbacks must not overwrite the finger's position or retain old velocity.
+  touch_scroll(list, kScrollPhaseUpdate, 30, 1120);
+  float reversed = view->ContentOffset.y;
+  assert(fabsf(reversed - interrupted - 30) < 0.001f);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y == reversed);
+  touch_scroll(list, kScrollPhaseEnd, 0, 1121);
+  assert(view->_scrollAnimating && view->_scrollVelocity.y > 0);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y > reversed);
+  touch_scroll(list, kScrollPhaseBegin, 0, 1140);
+  touch_scroll(list, kScrollPhaseCancel, 0, 1141);
+
+  // Slow overdrag resists both edges and cancellation springs back without fling.
+  offset.y = 0;
+  PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+  touch_scroll(list, kScrollPhaseBegin, 0, 2000);
+  touch_scroll(list, kScrollPhaseUpdate, 100, 2020);
+  assert(view->ContentOffset.y > 0 && view->ContentOffset.y < 100);
+  touch_scroll(list, kScrollPhaseCancel, 0, 2021);
+  for (int i = 0; i < 300 && view->_scrollAnimating; i++) animate_scroll(list, 16);
+  assert(!view->_scrollAnimating && view->ContentOffset.y == 0);
+  float minimum = view->_node->Size.Axis[1].Actual - view->_node->Size.Axis[1].Scroll;
+  offset.y = minimum;
+  PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+  touch_scroll(list, kScrollPhaseBegin, 0, 3000);
+  touch_scroll(list, kScrollPhaseUpdate, -100, 3020);
+  assert(view->ContentOffset.y < minimum && view->ContentOffset.y > minimum - 100);
+  touch_scroll(list, kScrollPhaseEnd, 0, 3200); // held before release: no fling
+  assert(view->_scrollVelocity.y == 0);
+  for (int i = 0; i < 300 && view->_scrollAnimating; i++) animate_scroll(list, 16);
+  assert(!view->_scrollAnimating && view->ContentOffset.y == minimum);
+
+  // Opt-outs keep hard bounds and release without momentum.
+  view->RubberBandScrolling = view->InertiaScrolling = FALSE;
+  touch_scroll(list, kScrollPhaseBegin, 0, 4000);
+  touch_scroll(list, kScrollPhaseUpdate, -100, 4020);
+  touch_scroll(list, kScrollPhaseEnd, 0, 4021);
+  assert(view->ContentOffset.y == minimum && !view->_scrollAnimating);
+  view->RubberBandScrolling = view->InertiaScrolling = TRUE;
+  // Animation must not remeasure layout, including spring frames.
+  OBJ_ClearDirtyFlags(screen);
+  measure_count = 0;
+  offset.y = -100;
+  PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+  touch_scroll(list, kScrollPhaseBegin, 0, UINT32_MAX - 10);
+  touch_scroll(list, kScrollPhaseUpdate, -20, 9); // sample clock wraps
+  touch_scroll(list, kScrollPhaseEnd, 0, 10);
+  animate_scroll(list, 16);
+  layout(screen);
+  assert(measure_count == 0 && view->ContentOffset.y < -120);
+  // Programmatic offsets interrupt motion instead of being overwritten next tick.
+  offset.y = -80;
+  PROP_SetValue(OBJ_FindLongProperty(list, ID_Node2D_ContentOffset), &offset);
+  assert(!view->_scrollAnimating && !view->_scrollTracking);
+  animate_scroll(list, 16);
+  assert(view->ContentOffset.y == -80);
+  touch_scroll(list, kScrollPhaseBegin, 0, 5000);
+  touch_scroll(list, kScrollPhaseUpdate, -20, 5020);
+  touch_scroll(list, kScrollPhaseEnd, 0, 5021);
+  // Hiding a retained ancestor stops child motion, rather than scrolling offscreen.
+  struct Object *page = OBJ_Create(ID_Node2D);
+  OBJ_AddChild(screen, page);
+  OBJ_RemoveFromParent(list);
+  OBJ_AddChild(page, list);
+  GetNode(page)->Visible = FALSE;
+  animate_scroll(list, 16);
+  assert(!view->_scrollAnimating);
+  OBJ_RemoveFromParent(list);
+  OBJ_AddChild(screen, list);
+  OBJ_RemoveFromParent(page);
+  OBJ_ReleaseRef(page);
+  touch_scroll(list, kScrollPhaseBegin, 0, 5100);
+  view->Overflow.y = kOverflowHidden;
+  float before = view->ContentOffset.y;
+  assert(!_SendMessage(list, Node, ScrollWheel, .scrollPhase = kScrollPhaseUpdate, .deltaY = -20, .timestamp = 5120));
+  assert(!view->_scrollTracking && view->ContentOffset.y == before);
+  view->Overflow.y = kOverflowScroll;
+  touch_scroll(list, kScrollPhaseBegin, 0, 5200);
+  touch_scroll(list, kScrollPhaseUpdate, -20, 5220);
+  touch_scroll(list, kScrollPhaseEnd, 0, 5221);
+  // Shrinking content while decelerating converges to the new boundary.
+  GetNode(list)->Size.Axis[1].Scroll = GetNode(list)->Size.Axis[1].Actual;
+  for (int i = 0; i < 300 && view->_scrollAnimating; i++) animate_scroll(list, 33);
+  assert(!view->_scrollAnimating && fabsf(view->ContentOffset.y) < 0.25f);
 }
 
 int main(void)
@@ -91,10 +213,12 @@ int main(void)
   layout(screen);
   assert(measure_count > 0);
 
+  test_touch_physics(screen, list);
+
   OBJ_ReleaseRef(row);
   OBJ_ReleaseRef(list);
   OBJ_ReleaseRef(screen);
   lua_close(L);
-  puts("PASS: scroll-only frames reuse layout, update transforms, and invalidate on content/size changes");
+  puts("PASS: scroll layout reuse, touch inertia, rubber-band return, interruption, opt-outs and resized content");
   return 0;
 }

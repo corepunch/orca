@@ -3,6 +3,8 @@ orca.init()
 local filesystem = require "orca.filesystem"
 local core = require "orca.core"
 require "orca.UIKit"
+-- Avatar textures need a current graphics context on macOS as well as real font metrics.
+require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
 
@@ -10,18 +12,32 @@ local App = require "Chat/App"
 local Chat = require "api.chat"
 local savedAsync = orca.async
 orca.async = function(fn, ...) return fn(...) end
+-- This suite verifies application state and explicit layout. Keep native fonts
+-- and avatar textures, but leave GPU painting to the rendering regressions.
+local function flushQueue()
+    while true do
+        local message = orca.system.peekMessage()
+        if not message then return end
+        if not message:is("Window.Paint") then orca.system.dispatchMessage(nil, message) end
+    end
+end
 local function drain(app)
-    core.flushQueue()
+    flushQueue()
     while true do
         local message = orca.system.peekMessage()
         if not message then break end
         if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
     end
-    core.flushQueue()
+    flushQueue()
+    if app.screen then
+        app.screen:UpdateLayout(app.screen.Width, app.screen.Height)
+        app:afterPaint()
+        flushQueue()
+    end
 end
 local function mockApp(media, client)
     local app = App { client = client or Chat.mock { clock = function() return 1700000000 end }, media = media }
-    -- Keep navigation real while avoiding Paint on an uninitialized renderer.
+    -- Keep navigation real while the fixture controls layout and painting.
     app.show = function(self, route) self.screen = self:dispatch(route or "/").view end
     app:show("/")
     local login = app.screen
@@ -49,6 +65,8 @@ assert(home:findChild("Room1", true), "Conversation list must be rendered")
 home:UpdateLayout(390, 844)
 assert(home:getFirstChild().ActualHeight >= 843, "App content must fill the portrait viewport")
 local firstRoom = home:findChild("Room1", true)
+local firstAvatar = assert(firstRoom:findChild("AvatarPhoto", true), "Bundled demo portraits must appear in chat rows")
+assert(firstAvatar.Source and firstAvatar.Source.Width > 100, "Chat portraits must resolve real image resources")
 assert(firstRoom.ActualWidth > 300 and firstRoom.ActualHeight > 60, "Conversation rows need usable hit areas")
 assert(home.StyleSheet, "The shared interactive stylesheet must load")
 local savedPlatform = PLATFORM
@@ -57,8 +75,10 @@ local mobile = app:frame(require("orca.UIKit").Grid { Rows = "1fr" })
 assert(mobile.ResizeMode == "CanResize", "iOS screens must track the drawable size")
 mobile:UpdateLayout(834, 1100)
 assert(mobile.Width == 834 and mobile.Height == 1100, "iPad layout must use available points")
-mobile:UpdateLayout(390, 460)
-assert(mobile.Width == 390 and mobile.Height == 460, "Layout must shrink above the iPhone keyboard")
+mobile.KeyboardInsetBottom = 384
+mobile:UpdateLayout(390, 844)
+assert(mobile.Width == 390 and mobile.Height == 844 and mobile:getFirstChild().ActualHeight == 460,
+    "Keyboard avoidance must reserve content space while preserving the physical viewport")
 PLATFORM = savedPlatform
 assert(home:findChild("Search", true) and home:findChild("FilterUnread", true))
 app.searchInput.Text = "Jules"
@@ -104,7 +124,7 @@ app.room = app.client:listRooms()[1]
 local screen = app:dispatch("/thread").view
 app.screen = screen
 assert(screen:findChild("MessageBubblea1", true), "Render history before the first thread paint")
-core.flushQueue()
+flushQueue()
 screen:UpdateLayout(390, 844)
 assert(screen:findChild("Message", true), "Thread must have a composer")
 assert(app.composer.ActualHeight >= 44 and app.composer.ActualWidth > 200,
@@ -145,23 +165,19 @@ drain(app)
 screen:findChild("RefreshMessages", true):send("Node.LeftButtonUp")
 drain(app)
 assert(not overflow.Visible, "Choosing a menu command must dismiss the menu")
-screen.ResizeMode = "CanResize"
-screen:UpdateLayout(390, 460)
-assert(math.abs(composerStrip.ActualWidth - 390) < 1 and
-    math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - 460) < 1,
-    "The full-width composer must stay against the keyboard when the viewport shrinks")
 screen.ResizeMode = "NoResize"
 screen.Width, screen.Height = 390, 844
 screen:UpdateLayout(390, 844)
 assert(not screen.RespectSafeArea, "The thread must paint behind the home gesture area")
 screen.SafeAreaTop, screen.SafeAreaBottom = 59, 34
 screen.SafeAreaLeft, screen.SafeAreaRight = 12, 18
-core.flushQueue()
+flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
 local threadRoot = screen:getFirstChild()
-assert(threadRoot.PaddingTop == 59 and threadRoot.PaddingLeft == 12 and threadRoot.PaddingRight == 18,
+assert(threadRoot.PaddingTop == 59 and threadRoot:getFirstChild().PaddingLeft == 12
+    and threadRoot:getFirstChild().PaddingRight == 18,
     "Thread content must follow the system's safe top and side insets")
 assert(footer.PaddingBottom == 34 and math.abs(composerStrip.ActualWidth - 360) < 1,
     "The composer must leave safe room for the home gesture and landscape edges")
@@ -170,18 +186,94 @@ assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHei
 assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1 and
     math.abs(footer.BackgroundColor.R - composerStrip.BackgroundColor.R) < 0.001,
     "The composer background must continue to the physical bottom edge")
+for _, inset in ipairs { 384, 0 } do
+    screen.KeyboardInsetBottom = inset
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(390, 844)
+    local bottom = math.max(34, inset)
+    assert(screen.Height == 844 and footer.PaddingBottom == bottom,
+        "Keyboard show and hide must preserve the viewport and restore the home gesture inset")
+    assert(math.abs(footer.ActualY + composerStrip.ActualY + composerStrip.ActualHeight - (844 - bottom)) < 1,
+        "Composer controls must stay immediately above the keyboard or home gesture area")
+    assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
+        "The composer background must extend under the keyboard to the physical bottom")
+end
 screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
 screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
-core.flushQueue()
+flushQueue()
 core.advanceFrame()
 core.runAllPrograms(screen)
 screen:UpdateLayout(390, 844)
 assert(footer.PaddingBottom == 0 and threadRoot.PaddingTop == 0,
     "Safe-area bindings must update when the keyboard or orientation changes")
+
+-- Compact bubbles keep the body verbatim and let layout reserve metadata space.
+local layoutMessages = {}
+for _, body in ipairs { "Hi", ("A longer message that needs to wrap. "):rep(8),
+    "First line\nSecond line\n", "Привет · 你好 · café", ("unbroken"):rep(40) } do
+    layoutMessages[#layoutMessages + 1] = assert(app.client:sendMessage(app.room.id, body))
+end
+assert(app:renderMessages())
+for _, width in ipairs { 320, 390, 834 } do
+    for _, fontSize in ipairs { 16, 24 } do
+        screen.Width = width
+        for _, message in ipairs(layoutMessages) do
+            local bubble = assert(screen:findChild("MessageBubble" .. message.id, true))
+            local body = bubble:getFirstChild()
+            assert(body:getTextContent() == message.body, "Layout must not append padding characters to message text")
+            body.FontSize = fontSize
+            -- Metadata must remain separate even if its font metrics change.
+            for child in bubble.children do
+                if child ~= body then child.FontSize = fontSize - 3 end
+            end
+        end
+        screen:UpdateLayout(width, 844)
+        for _, message in ipairs(layoutMessages) do
+            local bubble = screen:findChild("MessageBubble" .. message.id, true)
+            local entry, body, time = bubble:getParent(), bubble:getFirstChild()
+            for child in bubble.children do time = child end
+            assert(bubble.ActualX >= entry.PaddingLeft - 1 and
+                bubble.ActualX + bubble.ActualWidth <= entry.ActualWidth - entry.PaddingRight + 1,
+                string.format("Message bubble %s must fit its gutter at %d/%d: x=%.1f width=%.1f entry=%.1f",
+                    message.id, width, fontSize, bubble.ActualX, bubble.ActualWidth, entry.ActualWidth))
+            assert(time.ActualY >= body.ActualY + body.ActualHeight,
+                "Timestamp must not overlap the message at any tested width or font size")
+            assert(time.ActualY + time.ActualHeight <= bubble.ActualHeight - bubble.PaddingBottom + 1,
+                "Bubble height must include the timestamp")
+        end
+    end
+end
+screen.Width = 390
+screen:UpdateLayout(390, 844)
+assert(app:renderMessages())
+
+-- Appending to a sender run moves its tail without moving an earlier reading anchor.
+local reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
+app.messageList.ContentOffset = { X = 0, Y = -reading.ActualY - 5 }
+local readingY = reading.ActualY + app.messageList.ContentOffset.Y
+assert(app.client:sendMessage(app.room.id, "Another message from the same sender"))
+assert(app:renderMessages { preserveScroll = true, quiet = true })
+reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
+assert(math.abs(reading.ActualY + app.messageList.ContentOffset.Y - readingY) < 1,
+    "Moving a grouped sender's tail must preserve the visible message anchor")
+
+local incoming = app.client:listMessages(app.room.id)[1]
+local savedContact, savedKind = app.contactsById[incoming.sender_id], app.room.kind
+app.contactsById[incoming.sender_id] = { get_display_name = function() return ("LongName"):rep(20) end }
+app.room.kind, screen.Width = "group", 320
+assert(app:renderMessages())
+local namedBubble = screen:findChild("MessageBubble" .. incoming.id, true)
+assert(namedBubble.ActualWidth <= namedBubble:getParent().ActualWidth - 56 + 1,
+    "An unbroken sender name must wrap inside a narrow group-chat bubble")
+app.contactsById[incoming.sender_id], app.room.kind = savedContact, savedKind
+screen.Width = 390
+assert(app:renderMessages())
+
 local before = #app.client:listMessages(app.room.id)
 app.composer.Text = "A quick hello from the UI test"
 app:sendMessage()
-core.flushQueue()
+flushQueue()
 local messages = app.client:listMessages(app.room.id)
 assert(#messages == before + 1)
 assert(messages[#messages].body == "A quick hello from the UI test")
@@ -200,10 +292,16 @@ assert(newRoom:findChild("FindPerson", true), "New conversations must offer priv
 assert(newRoom:findChild("Contactalex", true), "Contacts must come from the API")
 newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
 drain(app)
-assert(app.newSelection.alex, "Selecting a contact must use its API ID")
+assert(app.room.kind == "direct" and app.room.peer_id == "alex", "Tapping a contact opens its direct chat immediately")
+app:show("/new")
+newRoom:findChild("KindGroup", true):send("Node.LeftButtonUp")
+drain(app)
 newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
 drain(app)
-assert(not app.newSelection.alex, "Selecting a contact again must remove it")
+assert(app.newSelection.alex, "Group member selection must use the API ID")
+newRoom:findChild("Contactalex", true):send("Node.LeftButtonUp")
+drain(app)
+assert(not app.newSelection.alex, "Selecting a member again removes it")
 local profile = app:dispatch("/profile").view
 profile:UpdateLayout(390, 844)
 assert(profile:findChild("AppBarChats", true), "Profile must offer a return to chats")
@@ -234,13 +332,13 @@ local function isShown(node)
 end
 
 local function assertTabs(selected)
-    core.flushQueue()
+    flushQueue()
     while true do
         local message = orca.system.peekMessage()
         if not message then break end
         if not message:is("Window.Paint") then orca.system.dispatchMessage(shell, message) end
     end
-    core.flushQueue()
+    flushQueue()
     core.advanceFrame()
     core.runAllPrograms(shell)
     shell:UpdateLayout(390, 844)
@@ -282,7 +380,8 @@ assert(not shell.RespectSafeArea, "The shell must paint behind the home gesture 
 shell.SafeAreaTop, shell.SafeAreaBottom = 59, 34
 shell.SafeAreaLeft, shell.SafeAreaRight = 12, 18
 assertTabs("Chats")
-assert(shellRoot.PaddingTop == 59 and shellRoot.PaddingLeft == 12 and shellRoot.PaddingRight == 18,
+assert(shellRoot.PaddingTop == 59 and shellRoot:getFirstChild().PaddingLeft == 12
+    and shellRoot:getFirstChild().PaddingRight == 18,
     "Shell content must follow the system's safe top and side insets")
 assert(barFooter.PaddingBottom == 34 and math.abs(bar.ActualHeight - 58) < 1,
     "The home gesture inset must be separate from the fixed application bar row")
@@ -393,7 +492,7 @@ local emailPage = authApp.screen
 local signIn = emailPage:findChild("SignIn", true)
 for _, size in ipairs({ {320, 568}, {390, 844}, {390, 460}, {834, 1100}, {390, 460} }) do
     emailPage.Width, emailPage.Height = size[1], size[2]
-    core.flushQueue()
+    flushQueue()
     core.advanceFrame()
     core.runAllPrograms(emailPage)
     emailPage:UpdateLayout(size[1], size[2])
@@ -446,12 +545,12 @@ otpApp.screen:findChild("FindPerson", true).Text = "@alex"
 click(otpApp, "FindPeople")
 assert(otpApp.screen:findChild("FoundPersonalex", true), "Exact username discovery must render API results")
 click(otpApp, "FoundPersonalex")
-click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "direct", "The direct action must open a canonical direct chat")
 otpApp:show("/new")
 click(otpApp, "KindGroup")
 otpApp.screen:findChild("RoomName", true).Text = "Our group"
 click(otpApp, "Contactalex")
+click(otpApp, "GroupNext")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
 click(otpApp, "ConversationMenu")
@@ -463,17 +562,18 @@ assert(otpApp.screen:findChild("Invitation", true):getTextContent() == "Invitati
 otpApp:show("/new")
 click(otpApp, "KindChannel")
 otpApp.screen:findChild("RoomName", true).Text = "Our announcements"
-click(otpApp, "Contactalex")
 click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "channel" and otpApp.room.can_post, "Channel owners can publish")
 assert(otpApp.screen:findChild("Composer", true).Visible, "Channel owners need the composer")
 local channelId = otpApp.room.id
+local channelInvite = assert(otpApp.client:createInvite(channelId)).code
 otpApp:show("/profile")
 click(otpApp, "SignOut")
 click(otpApp, "UsePassword")
 otpApp.screen:findChild("Email", true).Text = "alex@example.invalid"
 otpApp.screen:findChild("Password", true).Text = "password123"
 click(otpApp, "SignIn")
+assert(otpApp.client:joinInvite(channelInvite))
 local subscriberRoom
 for _, room in ipairs(otpApp.client:listRooms()) do if room.id == channelId then subscriberRoom = room end end
 assert(subscriberRoom and subscriberRoom.can_post == false, "The mock API must return subscriber publishing restrictions")
@@ -513,10 +613,10 @@ assert(otpApp.screen:findChild("FindChannels", true).Visible and not otpApp.scre
     "Channel discovery must have its own visible search action")
 otpApp.screen:findChild("FindPerson", true).Text = "Our announcements"
 click(otpApp, "FindChannels")
-assert(not otpApp.screen:findChild("FoundChannel" .. channelId, true), "Private channels must not appear in discovery")
+assert(not otpApp.screen:findChild("JoinChannel" .. channelId, true), "Private channels must not appear in discovery")
 otpApp.screen:findChild("FindPerson", true).Text = "Open news"
 click(otpApp, "FindChannels")
-assert(otpApp.screen:findChild("FoundChannel" .. publicChannelId, true), "Public channel search must return API results")
+assert(otpApp.screen:findChild("JoinChannel" .. publicChannelId, true), "Public channel search must return API results")
 click(otpApp, "JoinChannel" .. publicChannelId)
 assert(otpApp.room.id == publicChannelId and otpApp.room.can_post == false, "Joining a public channel creates a subscriber membership")
 assert(not otpApp.screen:findChild("Composer", true).Visible, "Fresh public subscribers cannot publish")
@@ -563,8 +663,8 @@ assert(photoView.Source.Width == 32 and photoView.Source.Height == 24,
     "The loaded thumbnail texture must be initialized with its actual image dimensions")
 photoApp.screen:UpdateLayout(390, 844)
 -- Measure the timeline entry: the bubble plus its tail.
-local timeline, bubble = photoApp.messageList, photoView:getParent():getParent()
-local photoBubble = photoView:getParent()
+local photoBubble = photoView:getParent():getParent()
+local timeline, bubble = photoApp.messageList, photoBubble:getParent()
 assert(photoView.ActualX == 0 and photoView.ActualWidth == photoBubble.ActualWidth,
     "Photos must fill their bubble edge to edge")
 local offset = timeline.ContentOffset
@@ -607,7 +707,7 @@ raceApp:show("/profile")
 assert(not interruptProfile, "The race fixture must interleave at the real profile endpoint")
 assert(raceApp.screen == raceShell and raceApp.shell.active == "New" and raceApp.shell.content.ActivePage == "New",
     "A late profile response must not replace a newer tab selection")
-assert(not raceApp.shell:has("Profile"), "A cancelled tab constructor must not mount stale content")
+assert(raceApp.shell:has("Profile"), "A completed profile load may populate its retained tab without selecting it")
 
 -- Profile photos replace initials where a tile stands for one person.
 local Fixtures = require "api.mock_fixtures"

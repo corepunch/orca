@@ -11,6 +11,7 @@ local Thread = require "Octopus/views/thread"
 local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
+local AvatarLoader = require "orca.UIKit.AvatarLoader"
 local colors = C.colors
 
 
@@ -29,7 +30,6 @@ local App = Application:extend {
         self.clock = self.client and self.client.clock or os.time
         self.media = options.media or require("Octopus/media").new()
         self.photos = require("Octopus/photo_loader").new(self)
-        self.avatarPaths, self.avatarWaiting = {}, {}
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         self:resetSessionViews()
     end,
@@ -38,6 +38,17 @@ local App = Application:extend {
     -- fresh shell, timelines and drafts.
     resetSessionViews = function(self)
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
+        if self.avatars then self.avatars:clear() end
+        self.avatarPaths = {}
+        self.avatars = AvatarLoader.new(self, {
+            lookup = function(ids) return self.client:avatars(ids) end,
+            fetch = function(id) return self.client:getImage(id) end,
+            cached = function(id) return self.media:path(id) end,
+            store = function(bytes, id) return self.media:store(bytes, id) end,
+            apply = C.photo,
+            schedule = function(fn) self:task(fn) end,
+            repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,
+        })
         self.shell, self.status, self.feeds, self.timelines, self.pivot = nil, nil, {}, {}, nil
         self.searchState, self.composeDraft, self.commentDrafts = { query = "" }, { postType = "text" }, {}
         self.composeDrafts = { text = self.composeDraft }
@@ -48,12 +59,16 @@ local App = Application:extend {
 
     -- Run work that may wait on the network in an ORCA coroutine.
     task = function(self, fn)
+        local session, navigation = self.sessionEpoch, self.navigationEpoch
         orca.async(function()
             local ok, err = pcall(fn)
             if not ok then
                 io.stderr:write("octopus: " .. tostring(err) .. "\n")
-                self:notice("Something went wrong. Please try again.", true)
+                if self.sessionEpoch == session and self.navigationEpoch == navigation then
+                    self:notice("Something went wrong. Please try again.", true)
+                end
             end
+            self:repaint()
         end)
     end,
 
@@ -61,45 +76,13 @@ local App = Application:extend {
         if self.screen then pcall(function() self.screen:post("Window.Paint", renderer.getSize()) end) end
     end,
 
-    -- Show a person's profile photo in an avatar tile. Tiles built in one pass
-    -- wait for a single task, so a timeline costs one profiles lookup.
     avatarPhoto = function(self, tile, userId)
-        local path = self.avatarPaths[userId]
-        if path then return C.photo(tile, path) end
-        if path == false or not self.client then return end
-        self.avatarWaiting[userId] = self.avatarWaiting[userId] or {}
-        table.insert(self.avatarWaiting[userId], tile)
-        if self.avatarTask then return end
-        self.avatarTask = true
-        local function load()
-            while next(self.avatarWaiting) do
-                local waiting, ids = self.avatarWaiting, {}
-                self.avatarWaiting = {}
-                for id in pairs(waiting) do ids[#ids + 1] = id end
-                table.sort(ids)
-                -- Failures leave the initials and allow a retry on the next page.
-                local avatars = self.client:avatars(ids) or {}
-                for _, id in ipairs(ids) do
-                    local fileId = avatars[id]
-                    path = fileId and self.media:path(fileId)
-                    if fileId and not path then
-                        local bytes = self.client:getImage(fileId)
-                        path = bytes and self.media:store(bytes, fileId)
-                    end
-                    if fileId == false then self.avatarPaths[id] = false end
-                    if path then
-                        self.avatarPaths[id] = path
-                        for _, waitingTile in ipairs(waiting[id]) do C.photo(waitingTile, path) end
-                        self:repaint()
-                    end
-                end
-            end
-        end
-        self:task(function()
-            local ok, err = pcall(load)
-            self.avatarTask = nil
-            if not ok then error(err, 0) end
-        end)
+        if self.client and self.media then self.avatars:watch(tile, userId) end
+    end,
+
+    afterPaint = function(self)
+        if self.avatars then self.avatars:loadVisible() end
+        if self.photos then self.photos:loadVisible() end
     end,
 
     frame = function(self, content, tab)
@@ -181,6 +164,9 @@ local App = Application:extend {
 
     refresh = function(self)
         local route = self.currentRoute or "/"
+        if route == "/" then Home.load(self, self.feed); return end
+        if route == "/me" or route == "/user" then People.refresh(self); return end
+        if route == "/search" then People.runSearch(self, self.searchList); return end
         self:invalidate()
         self:show(route)
     end,
@@ -223,7 +209,7 @@ local App = Application:extend {
             local ok, result = pcall(system.dispatchMessage, self.screen, message)
             if not ok then io.stderr:write(tostring(result) .. "\n")
             elseif result and not message:is("Window.Paint") then self.screen:post("Window.Paint", renderer.getSize()) end
-            if ok and message:is("Window.Paint") then self.photos:loadVisible() end
+            if ok and message:is("Window.Paint") then self:afterPaint() end
             system.translateMessage(message)
         end
     end,

@@ -5,6 +5,19 @@
 #include <ctype.h>
 #include <limits.h>
 
+/* These legacy names describe XML data, independent of the scene reader. */
+struct Object *
+FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema)
+{
+  return FS_LoadXmlDataTree(path, schema);
+}
+
+ORCA_API struct Object *
+FS_LoadObjectFromXmlStringWithSchema(lpcString_t source, lpcString_t schema)
+{
+  return FS_LoadXmlDataStringWithSchema(source, schema);
+}
+
 #if ORCA_HAS_XML
 
 struct xml_scene_reader { const char *p, *end; bool_t failed; };

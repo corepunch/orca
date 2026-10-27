@@ -550,6 +550,17 @@ l_load_object_owned(lua_State *L)
   return 1;
 }
 
+static int
+l_load_xml_data_owned(lua_State *L)
+{
+  const char *source = luaL_checkstring(L, 1);
+  const char *schema = luaL_checkstring(L, 2);
+  struct Object *object = FS_LoadXmlDataStringWithSchema(source, schema);
+  luaX_pushObject(L, object);
+  if (object) OBJ_ReleaseRef(object);
+  return 1;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
   OBJ_RegisterFileLoader(ORCA_SCENE_EXTENSION, _scene_file_loader);
@@ -569,6 +580,10 @@ void on_filesystem_module_registered(lua_State* L)
     lua_pushcclosure(L, l_load_object_owned, 1);
     lua_setfield(L, -2, loaders[i]);
   }
+  lua_pushcfunction(L, l_load_xml_data_owned);
+  lua_setfield(L, -2, "loadXmlDataStringWithSchema");
+  lua_pushcfunction(L, l_load_xml_data_owned);
+  lua_setfield(L, -2, "loadObjectFromXmlStringWithSchema");
   FS_RegisterDataProvider("Xml", _xml_ds_fetch, _xml_ds_save, _xml_ds_revert);
   register_shared_fonts(L);
 

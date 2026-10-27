@@ -25,14 +25,14 @@ xvfb-run make test
 
 ## Scene format selection
 
-Scene readers are selected at compile time. Lisp is the default; XML is an
+Scene readers are selected at compile time. XML is the default; Lisp is enabled with `-DORCA_USE_LISP`, an
 alternative build using the same object construction and lifetime handling:
 
 ```bash
-make SCENE_FORMAT=lisp unite
-make SCENE_FORMAT=xml BUILDDIR=build-xml unite
-make SCENE_FORMAT=lisp test-headless
-make SCENE_FORMAT=xml BUILDDIR=build-xml test-headless
+make unite
+make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp unite
+make test-headless
+make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless
 ```
 
 Use separate output directories to keep both binaries. `test-headless` runs the
@@ -40,15 +40,17 @@ common engine tests and the selected-format loader regression in both builds;
 Lisp application/fixture tests run only in the Lisp build. `test-scene-format`
 is the focused selection test.
 
-Other build systems can define `ORCA_SCENE_FORMAT=1` (Lisp) or
-`ORCA_SCENE_FORMAT=2` (XML), as declared in `include/scene_format.h`. Make's
-WebGL builds also receive `SCENE_FORMAT`. The unselected scene reader is not
+Define `ORCA_USE_LISP` in any build system to choose Lisp, as declared in
+`include/scene_format.h`. Make also accepts `SCENE_FORMAT=lisp` as a shorthand
+for adding `-DORCA_USE_LISP`; raw flags in `CPPFLAGS` or `CFLAGS` select the same
+mode. WebGL builds receive the same selection. The unselected scene reader is not
 compiled and its Lua file/string loader APIs are absent; C entry points remain
 as unavailable stubs for the generated ABI. The generic loader, library/font
 lookup, cloning, editor scene saves and project scaffolding follow the selection.
 
-Assets must match the build: Example and MvvmForms currently use Lisp scenes;
-unmigrated XML applications require the XML build. This switch concerns scene
+Example and MvvmForms include both XML and Lisp scenes; extensionless startup
+paths select the matching assets. Other applications still using XML require
+the default XML build. This switch concerns scene
 reading only. XML data/schema parsing, libxml2, and both serialization utilities
 remain available independently.
 

@@ -1,5 +1,5 @@
 Name = "Example"
-StartupScreen = "Example/Screens/Application.lisp"
+StartupScreen = "Example/Screens/Application"
 WindowWidth = 1024
 WindowHeight = 768
 ScreenLibrary = { IsExternal = true }

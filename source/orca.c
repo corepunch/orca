@@ -154,7 +154,7 @@ static void RunTest(lua_State *L, char const *file) {
                "local filesystem = require 'orca.filesystem'\norca.init()\n");
   FOR_LOOP(i, sizeof(requires) / sizeof(*requires))
     fprintf(mem, "require '%s'\n", requires[i]);
-  fprintf(mem, "filesystem.loadObject('%s')\n", file);
+  fprintf(mem, "assert(filesystem.loadObject('%s'), 'Test scene failed to load')\n", file);
   fclose(mem);
   if (luaL_loadbuffer(L, buf, sz, "@main") || lua_pcall(L, 0, 1, 0)) {
     fprintf(stderr, "Uncaught exception: %s\n", lua_tostring(L, -1));
@@ -292,7 +292,7 @@ int main(int argc, LPSTR *argv) {
         static path_t result; strncpy(result, lua_tostring(co, -1), sizeof(result));
         szProject = result;
       } else szProject = NULL;
-    } else if (strstr(g_args.test, ".xml")) {
+    } else if (strstr(g_args.test, ".xml") || strstr(g_args.test, ".lisp")) {
       RunTest(L, g_args.test);
     } else if (strstr(g_args.test, ".moon")) {
       char const *moon =

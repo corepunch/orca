@@ -193,9 +193,9 @@ local function test_resizable_safe_area_footer()
 	print("PASS: test_resizable_safe_area_footer")
 end
 
-local function test_lisp_tracks()
+local function test_scene_tracks()
 	local filesystem = require "orca.filesystem"
-	-- A throwaway project, so the Lisp parser reads Rows exactly as authored.
+	-- A throwaway project, so the selected parser reads Rows exactly as authored.
 	local root = os.tmpname()
 	os.remove(root)
 	os.execute("mkdir -p '" .. root .. "/Screens'")
@@ -205,19 +205,29 @@ local function test_lisp_tracks()
 		f:close()
 	end
 	write("package.lua", 'Name = "Tracks"\nScreenLibrary = { IsExternal = true }\n')
-	write("Screens/Tracks.lisp", [[
+	local has_lisp = filesystem.loadObjectFromLispString ~= nil
+	local source = has_lisp and [[
 (Screen Name="Tracks" Width=400 Height=600 ResizeMode="NoResize"
   (Grid Rows="auto * 48"
     (Node2D Name="Header" Height=50)
     (Node2D Name="Body")
-    (Node2D Name="Footer")))]])
+    (Node2D Name="Footer")))]] or [[
+<Screen Name="Tracks" Width="400" Height="600" ResizeMode="NoResize">
+  <Grid Rows="auto * 48">
+    <Node2D Name="Header" Height="50"/>
+    <Node2D Name="Body"/>
+    <Node2D Name="Footer"/>
+  </Grid>
+</Screen>]]
+	write("Screens/Tracks." .. (has_lisp and "lisp" or "xml"), source)
 	filesystem.init(root)
 	local s = filesystem.loadObject("Tracks/Screens/Tracks")
+	test.expect(s ~= nil, "Track fixture loads through the selected scene reader")
 	layout(s)
 	test.expect_eq(rows { s:findChild("Header", true), s:findChild("Body", true), s:findChild("Footer", true) },
-		"0+50 50+502 552+48", "Lisp Rows use the same track grammar")
+		"0+50 50+502 552+48", "Scene Rows use the same track grammar")
 	os.execute("rm -rf '" .. root .. "'")
-	print("PASS: test_lisp_tracks")
+	print("PASS: test_scene_tracks")
 end
 
 
@@ -231,4 +241,4 @@ test_unbounded_grid_in_stack()
 test_implicit_tracks()
 test_nested_auto_footer()
 test_resizable_safe_area_footer()
-test_lisp_tracks()
+test_scene_tracks()

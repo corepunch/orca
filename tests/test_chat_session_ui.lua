@@ -4,18 +4,23 @@ orca.init()
 local filesystem = require "orca.filesystem"
 local core = require "orca.core"
 require "orca.UIKit"
+require("orca.renderer").init(390, 844, true)
 filesystem.init("apps/chat")
 require("orca.core.startup").load_plugins()
 
 local App = require "Chat/App"
 local Chat = require "api.chat"
 local savedAsync = orca.async
-orca.async = function(fn, ...) return fn(...) end
+local queued = {}
+orca.async = function(fn) queued[#queued + 1] = fn end
+local function settle()
+    while #queued > 0 do table.remove(queued, 1)() end
+end
 
 local function appFor(client)
     local app = App { client = client }
     -- Keep route/view construction real without painting an uninitialized renderer.
-    app.show = function(self, route) self.screen = self:dispatch(route or "/").view end
+    app.show = function(self, route) self.screen = self:dispatch(route or "/").view; settle() end
     return app
 end
 local function click(app, name)
@@ -27,6 +32,7 @@ local function click(app, name)
         if not message:is("Window.Paint") then orca.system.dispatchMessage(app.screen, message) end
     end
     core.flushQueue()
+    settle()
 end
 local function mock()
     return Chat.mock { clock = function() return 1700000000 end }

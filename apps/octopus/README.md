@@ -123,15 +123,21 @@ Links can be copied to the clipboard because ORCA has no open-in-browser API yet
 | `media.lua` | Photo picking and the private image cache |
 
 Network calls run in `orca.async` coroutines, so pages appear immediately with
-a loading state. Each request checks that its page and session are still
-current before it updates the view.
+a centered shared activity indicator over the content being loaded. Navigation
+and inputs stay available while requests are suspended. Feed refresh keeps the
+existing posts until a successful response replaces them; failures keep those
+posts and expose an error with refresh still available. Each request checks its
+page, request and session before applying results.
+Sections populate as results arrive: profile details appear before the timeline,
+post counts before comments, and search posts before the people lookup finishes.
 
 `photo_loader.lua` checks unloaded photo frames after painting, including scroll
 offsets, clipping, Pivot positions and hidden pages. Only photos intersecting
 the viewport are requested, with at most two requests at once. Repeated photos
 share a request and cached file; each card owns its image view. Downloads that
 finish after navigation or sign-out cannot update an inactive view. Failed
-downloads show a retry control. Photos use a white image tint in both themes.
+downloads show a centered broken-image icon in the reserved photo area; tapping
+that area retries the download. Photos use a white image tint in both themes.
 
 ## Verify
 
@@ -152,3 +158,11 @@ sign-up and service errors.
 The photo suite covers viewport loading, concurrent requests, cache reuse,
 retries and stale sessions, including native image resources. None of these
 suites contacts the network.
+
+## Demo portraits
+
+The shared [portrait library](../../demo-assets/profiles/README.md) contains 64
+generated JPGs, including teens and adults approximately ages 14–60, plus the
+original grid, splitter instructions and Appwrite file IDs. This app bundles
+portraits for its offline fixture identities. Live seed profiles use the same
+public `profiles.avatarId` data in both Chat and Octopus.
