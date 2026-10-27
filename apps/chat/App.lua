@@ -15,7 +15,7 @@ local Diagnostics = require "Chat/diagnostics"
 local async = require "orca.core.async"
 local orca = require "orca"
 local AvatarLoader = require "orca.UIKit.AvatarLoader"
-local Turnstile = require "orca.UIKit.Turnstile"
+local PageTransition = require "orca.UIKit.PageTransition"
 local colors = C.colors
 local auto = 0/0
 
@@ -168,20 +168,30 @@ local App = Application:extend {
         return screen
     end,
 
-    -- `turnstile` turns the page in as on Windows Phone: "ForwardIn" going
-    -- into a conversation or its info, "BackwardIn" coming back out.
-    show = function(self, route, turnstile)
+    -- `direction` navigates as on Windows Phone: "Forward" going into a
+    -- conversation or its info, "Backward" coming back out. The page in view goes out
+    -- first and the next page comes in once it has gone.
+    show = function(self, route, direction)
+        local request = {}
+        self.pendingShow = request
+        local leaving = PageTransition.leave(self.screen, direction, function()
+            if self.pendingShow == request then self:navigate(route, direction) end
+        end)
+        if not leaving then return self:navigate(route, direction) end
+    end,
+
+    navigate = function(self, route, direction)
         if self.polling then self.polling:stop() end
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
         local controller = self:dispatch(route or "/")
         if self.navigationEpoch ~= epoch then return end
         local result = self:activate_controller(controller)
-        if result and turnstile then Turnstile.play(self.screen, turnstile) end
+        if result then PageTransition.enter(self.screen, direction) end
         return result
     end,
 
-    goBack = function(self, route) return self:show(route, "BackwardIn") end,
+    goBack = function(self, route) return self:show(route, "Backward") end,
 
     notice = function(self, text, error)
         if self.status then
@@ -194,7 +204,7 @@ local App = Application:extend {
 
     openRoom = function(self, room)
         self.room, self.readRooms[room.id] = room, true
-        self:show("/thread", "ForwardIn")
+        self:show("/thread", "Forward")
     end,
 
     unread = function(self, room)
@@ -602,7 +612,7 @@ local App = Application:extend {
         local kind = room.kind == "group" and "Messenger · group" or room.kind == "channel" and "Messenger · channel" or nil
         Footer.layout(screen, C.page(room.name, self.threadBody, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
             back = function() keepDraft(); self:goBack() end,
-            details = function() keepDraft(); self:show("/details", "ForwardIn") end }), footer,
+            details = function() keepDraft(); self:show("/details", "Forward") end }), footer,
             { Background = colors.background, Foreground = colors.ink })
         -- A bottom sheet for one message's actions, dismissed by tapping outside.
         self.messageActions = ui.Node2D { Name = "MessageActionsMenu", Visible = false }

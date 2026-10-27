@@ -511,6 +511,15 @@ OBJ_SendMessage(struct Object *pobj, lpcString_t Msg, wParam_t wParam, lParam_t 
   return OBJ_SendMessageW(pobj, fnv1a32(Msg), wParam, lParam);
 }
 
+// Drops the object's queued messages. A queued Object.Animate goes with them,
+// so the next OBJ_RequestAnimate must post a new one.
+void
+OBJ_RemoveFromQueue(struct Object *pobj)
+{
+  axRemoveFromQueue(pobj);
+  OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
+}
+
 void
 OBJ_RequestAnimate(struct Object *pobj)
 {

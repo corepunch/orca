@@ -28,9 +28,10 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   as does a swipe in from the left edge, and tapping its name opens the
   conversation info, which goes back the same way and whose bar holds pin.
   Attach and send sit in the composer.
-- Opening a conversation or its info turns the page in on a hinge at the left
-  edge of the screen, the Windows Phone turnstile; going back turns the
-  previous page back in.
+- Opening a conversation or its info plays the Windows Phone turnstile: the
+  page in view turns away on a hinge at the left edge of the screen, top to
+  bottom, then the next page turns in the same way. Going back plays it in
+  reverse.
 - Text boxes are pale with dark text in both themes and turn white with an
   accent border when focused. Secondary buttons are 2-pixel outlines,
   primary commands are filled with the accent, and links are plain accent

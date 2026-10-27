@@ -106,7 +106,7 @@ OBJ_RemoveFromParent(struct Object *self)
   if (core.focus == self) core.focus = NULL;
   if (core.hover == self) core.hover = NULL;
   if (core.hover2 == self) core.hover2 = NULL;
-  axRemoveFromQueue(self);
+  OBJ_RemoveFromQueue(self);
   if (had_parent) {
     OBJ_ReleaseRef(self);
   }
@@ -125,7 +125,7 @@ OBJ_Release(struct Object *pobj)
   if (core.focus == pobj) core.focus = NULL;
   if (core.hover == pobj) core.hover = NULL;
   if (core.hover2 == pobj) core.hover2 = NULL;
-  axRemoveFromQueue(pobj);
+  OBJ_RemoveFromQueue(pobj);
 
   for (struct Property *p = pobj->properties; p; p = PROP_GetNext(p)) {
     if (PROP_GetType(p) == kDataTypeEvent && *(event_t*)PROP_GetValue(p)) {

@@ -143,6 +143,9 @@ OBJ_ReleaseRef(struct Object *);
 void
 OBJ_DetachFromParent(struct Object *);
 
+void
+OBJ_RemoveFromQueue(struct Object *);
+
 struct Object *
 OBJ_FindImmediateChild(struct Object *object, uint32_t ident);
 
