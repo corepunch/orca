@@ -539,7 +539,9 @@ local App = Application:extend {
             else self.drafts[room.id] = self.composer and self.composer.Text or "" end
         end
         if self.editing and self.editing.room.id ~= room.id then self.editing = nil end
-        self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll" })
+        -- At the newest message, the list stays there as the keyboard and composer grow.
+        self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll",
+            ScrollAnchor = "Bottom" })
         self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
             Margin = "24 8" })
         self.composer = C.input("Message", "type a message", {

@@ -149,6 +149,39 @@ local function test_adjusting_bars_extend_through_system_insets()
     print("PASS: test_adjusting_bars_extend_through_system_insets")
 end
 
+local function test_bottom_anchor_stays_at_the_end()
+    local screen = edgeToEdge { SafeAreaBottom = 34 }
+    local host = ui.Node2D {}
+    local anchored = list(40, 50, { ScrollAnchor = "Bottom" })
+    local plain = list(40, 50)
+    local composer = ui.Node2D { SafeAreaEdge = "Bottom", ContentInsetAdjustment = "Always" }
+    composer:addChild(ui.Node2D { Height = 58 })
+    host:addChild(anchored); host:addChild(plain); host:addChild(composer)
+    screen:addChild(host)
+    layout(screen)
+    local last = anchored:findChild("Row40")
+    local function lastBottom() return last.ActualY + last.ActualHeight + anchored.ContentOffset.Y end
+    test.expect_near(lastBottom(), H - 58 - 34, 0.01, "a bottom-anchored list starts at its newest row")
+    test.expect_near(plain.ContentOffset.Y, 0, 0.01, "a top-anchored list starts at its first row")
+
+    screen.KeyboardInsetBottom = 300
+    layout(screen)
+    test.expect_near(lastBottom(), H - 58 - 300, 0.01, "the newest row stays above the keyboard")
+    test.expect_near(plain.ContentOffset.Y, 0, 0.01, "a top-anchored list keeps its offset")
+
+    anchored:addChild(ui.Node2D { Name = "Row41", Height = 50 })
+    layout(screen)
+    last = anchored:findChild("Row41")
+    test.expect_near(lastBottom(), H - 58 - 300, 0.01, "a list at its end follows added rows")
+
+    anchored.ContentOffset = { X = 0, Y = -100 }
+    screen.KeyboardInsetBottom = 0
+    layout(screen)
+    test.expect_near(anchored.ContentOffset.Y, -100, 0.01, "a list scrolled away from its end keeps its offset")
+    screen:clear()
+    print("PASS: test_bottom_anchor_stays_at_the_end")
+end
+
 local function pivotPage(extend)
     local pivot = ui.Pivot { Title = "Messenger", IsLocked = true, ExtendBodyBehindHeader = extend }
     local item = ui.PivotItem { Header = "room" }
@@ -225,6 +258,7 @@ test_system_insets_reach_scrolling_content()
 test_content_inset_adjustment_modes()
 test_bars_stack_below_ancestor_bars()
 test_adjusting_bars_extend_through_system_insets()
+test_bottom_anchor_stays_at_the_end()
 test_pivot_body_extends_behind_header()
 test_pivot_header_consumes_top_inset()
 test_backdrop_filter_css()

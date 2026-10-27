@@ -899,6 +899,11 @@ HANDLER(Node2D, Node2D, Arrange)
     .height = s.height,
   };
 
+  // Read before the frame changes: a bottom-anchored node at its end stays
+  // there, unless a touch is moving it.
+  bool_t atEnd = n->ScrollAnchor == kScrollAnchorBottom && n->Overflow.y == kOverflowScroll &&
+    !n->_scrollTracking && !n->_scrollAnimating && fabsf(n->ContentOffset.y - Node2D_ScrollLimit(n)) < 1;
+
   // Children read the frame and safe area of their ancestors while arranging.
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
   Node2D_SetFrame(n, kBox3FieldY,      rect.y);
@@ -923,6 +928,8 @@ HANDLER(Node2D, Node2D, Arrange)
     if (property) PROP_SetValue(property, &scroll);
     else n->_node->Size.Axis[1].Scroll = scroll;
   }
+  if (atEnd && n->ContentOffset.y != Node2D_ScrollLimit(n))
+    Node2D_ScrollOffset(hObject, n, Node2D_ScrollLimit(n));
 
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
