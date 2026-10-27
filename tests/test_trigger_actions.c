@@ -359,7 +359,7 @@ test_generated_action_scene(void)
       "<Object.Start Target=\"Target\"/>"
       "</TestEventTriggerSource></TestTriggerHost>";
 #endif
-    struct Object *root = ORCA_LOAD_SCENE_STRING(scene);
+    struct Object *root = FS_LoadObjectFromString(scene);
     EXPECT(root != NULL);
     reset_observed();
 

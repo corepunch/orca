@@ -1,25 +1,4 @@
-/* Optional XML scene front end. Attribute shorthand is normalized into the
-   same tree consumed by the Lisp reader; object ownership stays in fs_object. */
-#include <source/filesystem/fs_local.h>
-#include <source/core/core_local.h>
-#include <ctype.h>
-#include <limits.h>
-
-/* These legacy names describe XML data, independent of the scene reader. */
-struct Object *
-FS_LoadObjectFromXmlWithSchema(lpcString_t path, const struct ds_schema *schema)
-{
-  return FS_LoadXmlDataTree(path, schema);
-}
-
-ORCA_API struct Object *
-FS_LoadObjectFromXmlStringWithSchema(lpcString_t source, lpcString_t schema)
-{
-  return FS_LoadXmlDataStringWithSchema(source, schema);
-}
-
-#if ORCA_HAS_XML
-
+/* XML scene reader, included only by fs_scene.c in XML builds. */
 struct xml_scene_reader { const char *p, *end; bool_t failed; };
 
 static void
@@ -269,9 +248,10 @@ xml_scene_binding(const char *target, const char *text)
 
 /* Called after prefab/class creation, so inherited properties and aliases are
    resolved against the actual object rather than guessed from the XML tag. */
-bool_t
+static bool_t
 FS_NormalizeXmlSceneAttributes(struct Object *object, xmlNodePtr node)
 {
+  if (!node->doc || node->doc->_private != (void *)FS_XML_SCENE_DOCUMENT) return TRUE;
   for (xmlAttrPtr attr = node->properties, next; attr; attr = next) {
     next = attr->next;
     xmlChar *text = xmlGetProp(node, attr->name);
@@ -369,13 +349,3 @@ FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t name, void *arg), voi
   }
   if (doc) xmlFreeDoc(doc);
 }
-
-#else
-/* Keep generated C exports linkable; the disabled reader has no parser code
-   and its Lua functions/file extension are not registered. */
-ORCA_API struct Object *FS_LoadObjectFromXml(lpcString_t path) { (void)path; return NULL; }
-ORCA_API struct Object *FS_LoadObjectFromXmlString(lpcString_t source) { (void)source; return NULL; }
-struct Object *FS_LoadObjectFromXmlLibrary(lpcString_t path) { (void)path; return NULL; }
-void FS_EnumXmlLibrary(lpcString_t path, void (*fn)(lpcString_t, void *), void *arg)
-{ (void)path; (void)fn; (void)arg; }
-#endif

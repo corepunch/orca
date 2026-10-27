@@ -437,11 +437,7 @@ HANDLER(XmlDataSource, Object, Attached) {
 int luaopen_io_open_override(lua_State* L);
 
 static struct Object* _scene_file_loader(int argc, const char* argv[]) {
-#if ORCA_HAS_LISP
-  return argc > 0 ? FS_LoadObjectFromLisp(argv[0]) : NULL;
-#else
-  return argc > 0 ? FS_LoadObjectFromXml(argv[0]) : NULL;
-#endif
+  return argc > 0 ? FS_GetSceneFormat()->Load(argv[0]) : NULL;
 }
 
 static void
@@ -458,7 +454,7 @@ find_shared_font_paths(lpcString_t share, path_t sans, path_t serif, path_t mono
   path_t test = {0};
   if (!share || !*share) return FALSE;
   snprintf(sans, sizeof(path_t), "%s/fonts/NotoSans/NotoSans", share);
-  snprintf(test, sizeof(test), "%s%s", sans, ORCA_SCENE_EXTENSION);
+  snprintf(test, sizeof(test), "%s%s", sans, FS_GetSceneExtension());
   if (!FS_FileExists(test)) return FALSE;
   snprintf(serif, sizeof(path_t), "%s/fonts/NotoSerif/NotoSerif", share);
   snprintf(mono, sizeof(path_t), "%s/fonts/NotoSansMono/NotoSansMono", share);
@@ -538,13 +534,8 @@ l_load_object_owned(lua_State *L)
 {
   const char *source = luaL_checkstring(L, 1);
   int kind = (int)lua_tointeger(L, lua_upvalueindex(1));
-  struct Object *object;
-  if (kind == 0) object = FS_LoadObject(source);
-#if ORCA_HAS_LISP
-  else object = kind == 1 ? FS_LoadObjectFromLisp(source) : FS_LoadObjectFromLispString(source);
-#else
-  else object = kind == 1 ? FS_LoadObjectFromXml(source) : FS_LoadObjectFromXmlString(source);
-#endif
+  struct Object *object = kind == 0 ? FS_LoadObjectFromDisk(source)
+    : kind == 1 ? FS_GetSceneFormat()->Load(source) : FS_LoadObjectFromString(source);
   luaX_pushObject(L, object);
   if (object) OBJ_ReleaseRef(object);
   return 1;
@@ -561,22 +552,30 @@ l_load_xml_data_owned(lua_State *L)
   return 1;
 }
 
+static int
+l_serialize_object_owned(lua_State *L)
+{
+  const char *text = FS_SerializeObjectToString(luaX_checkObject(L, 1));
+  lua_pushstring(L, text);
+  free((void *)text);
+  return 1;
+}
+
 void on_filesystem_module_registered(lua_State* L)
 {
-  OBJ_RegisterFileLoader(ORCA_SCENE_EXTENSION, _scene_file_loader);
-#if ORCA_HAS_LISP
-  const char *loaders[] = { "loadObject", "loadObjectFromLisp", "loadObjectFromLispString" };
-  const char *disabled[] = { "loadObjectFromXml", "loadObjectFromXmlString" };
-#else
-  const char *loaders[] = { "loadObject", "loadObjectFromXml", "loadObjectFromXmlString" };
-  const char *disabled[] = { "loadObjectFromLisp", "loadObjectFromLispString" };
-#endif
+  const struct SceneFormat *format = FS_GetSceneFormat();
+  OBJ_RegisterFileLoader(format->Extension, _scene_file_loader);
+  const char *loaders[] = {
+    "loadObject", "loadObjectFromDisk", "loadObjectFromString", format->FileApi, format->StringApi
+  };
+  const int kinds[] = { 0, 0, 2, 1, 2 };
+  const char *disabled[] = { format->DisabledFileApi, format->DisabledStringApi };
   for (int i = 0; i < 2; i++) {
     lua_pushnil(L);
     lua_setfield(L, -2, disabled[i]);
   }
-  for (int i = 0; i < 3; i++) {
-    lua_pushinteger(L, i);
+  for (int i = 0; i < ARRAY_SIZE(loaders); i++) {
+    lua_pushinteger(L, kinds[i]);
     lua_pushcclosure(L, l_load_object_owned, 1);
     lua_setfield(L, -2, loaders[i]);
   }
@@ -584,6 +583,8 @@ void on_filesystem_module_registered(lua_State* L)
   lua_setfield(L, -2, "loadXmlDataStringWithSchema");
   lua_pushcfunction(L, l_load_xml_data_owned);
   lua_setfield(L, -2, "loadObjectFromXmlStringWithSchema");
+  lua_pushcfunction(L, l_serialize_object_owned);
+  lua_setfield(L, -2, "serializeObjectToString");
   FS_RegisterDataProvider("Xml", _xml_ds_fetch, _xml_ds_save, _xml_ds_revert);
   register_shared_fonts(L);
 

@@ -867,7 +867,7 @@ static void
 read_font_family_name(lpcString_t filename, lpcString_t fallback, LPSTR out, size_t out_size)
 {
   snprintf(out, out_size, "%s", fallback);
-  FS_EnumSceneLibrary(filename, _ReadFontFamilyName,
+  FS_GetSceneFormat()->EnumLibrary(filename, _ReadFontFamilyName,
                     &(struct font_name_result){ out, out_size });
 }
 
@@ -900,8 +900,8 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
   path_t font_dir = {0};
   FS_JoinPaths(font_dir, sizeof(font_dir), szDirname, library_name);
   path_t library_file = {0};
-  snprintf(library_file, sizeof(library_file), "%s" ORCA_SCENE_EXTENSION, font_dir);
-  FS_EnumSceneLibrary(library_file, _RegisterLibraryFont,
+  snprintf(library_file, sizeof(library_file), "%s%s", font_dir, FS_GetSceneExtension());
+  FS_GetSceneFormat()->EnumLibrary(library_file, _RegisterLibraryFont,
                     &(struct font_scope){ project_name, library_name });
 
   DIR *dir = opendir(font_dir);
@@ -909,9 +909,9 @@ _RegisterProjectFonts(struct Project *project, lpcString_t szDirname)
 
   struct dirent *entry;
   while ((entry = readdir(dir))) {
-    if (!has_suffix(entry->d_name, ORCA_SCENE_EXTENSION)) continue;
+    if (!has_suffix(entry->d_name, FS_GetSceneExtension())) continue;
     char stem[MAX_NAMELEN] = {0};
-    size_t stem_len = strlen(entry->d_name) - strlen(ORCA_SCENE_EXTENSION);
+    size_t stem_len = strlen(entry->d_name) - strlen(FS_GetSceneExtension());
     if (stem_len >= sizeof(stem)) stem_len = sizeof(stem) - 1;
     memcpy(stem, entry->d_name, stem_len);
 
@@ -1227,7 +1227,7 @@ FS_LoadObject(lpcString_t path)
       return loader->fn(1, (const char *[]){ file });
     }
   }
-  struct Object *o = ext ? NULL : FS_LoadObjectFromSceneLibrary(path);
+  struct Object *o = ext ? NULL : FS_GetSceneFormat()->LoadLibrary(path);
   if (!o) Con_Error("Cannot load object '%s'", path);
   return o;
 }

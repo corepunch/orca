@@ -342,10 +342,11 @@ ORCA_API bool_t OBJ_SaveDocument(struct Object *object) {
   else build_path(object, src);
   const char *extension = strrchr(src, '.');
   const char *slash = strrchr(src, '/');
+  const char *scene_extension = FS_GetSceneExtension();
   if (extension && slash && extension < slash) extension = NULL;
   snprintf(path, sizeof(path), "%s%s", src,
-           extension && !strcmp(extension, ORCA_SCENE_EXTENSION) ? "" : ORCA_SCENE_EXTENSION);
-  const char *text = ORCA_SERIALIZE_SCENE(object);
+           extension && !strcmp(extension, scene_extension) ? "" : scene_extension);
+  const char *text = FS_SerializeObjectToString(object);
   if (!text) return FALSE;
   FILE *file = fopen(path, "w");
   if (!file) { free((char *)text); return FALSE; }

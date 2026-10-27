@@ -262,7 +262,7 @@ ED_PrintInspector(HEDWND wnd, LPINSPSTRUCT inspector)
       } else {
         ED_Echo(wnd, "Can't open file\n");
       }
-    } else if (strstr(szFilePath, ORCA_SCENE_EXTENSION)) {
+    } else if (strstr(szFilePath, FS_GetSceneExtension())) {
       if (!inspector->file_preview) inspector->file_preview = FS_LoadObject(szFilePath);
       inspector->selected.object = inspector->file_preview;
       if (inspector->selected.object) {

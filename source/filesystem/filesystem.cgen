@@ -306,10 +306,36 @@
       <returns type="nresults">The contents of the text file, or nil if the file could not be read</returns>
     </function>
     <function name="LoadObject" export="loadObject">
-      <summary>Loads an object tree from an XML or other supported file</summary>
-      <details>Parses the specified XML file and constructs a hierarchy of engine objects from it. Each XML element corresponds to a registered class; attributes are parsed as properties and child elements become child objects. Returns the root object on success, or nil on failure.</details>
+      <summary>Loads an object through the registered file loaders</summary>
+      <details>Loads the named file or resource using its registered loader. Scene syntax follows the compile-time reader selection. Returns the root object on success, or nil on failure.</details>
       <arg name="path" type="string">The path to the file to load with or without a file extension</arg>
       <returns type="Object" pointer="true">The root object constructed from the file, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromDisk" export="loadObjectFromDisk">
+      <summary>Loads an object from disk through the registered file loaders</summary>
+      <details>C callers own the returned reference; Lua transfers ownership to userdata.</details>
+      <arg name="path" type="string">File or resource path</arg>
+      <returns type="Object" pointer="true">Result, or nil on failure</returns>
+    </function>
+    <function name="LoadObjectFromString" export="loadObjectFromString">
+      <summary>Parses a scene using the reader selected at compile time</summary>
+      <details>C callers own the returned reference; Lua transfers ownership to userdata.</details>
+      <arg name="source" type="string">Scene source</arg>
+      <returns type="Object" pointer="true">Result, or nil on failure</returns>
+    </function>
+    <function name="SerializeObjectToString" export="serializeObjectToString">
+      <summary>Serializes a scene using the format selected at compile time</summary>
+      <details>C callers must free the returned heap-allocated string.</details>
+      <arg name="object" type="Object" const="true" pointer="true">Object tree</arg>
+      <returns type="string">Result, or nil on failure</returns>
+    </function>
+    <function name="GetSceneExtension" export="getSceneExtension">
+      <summary>Returns the selected scene file extension</summary>
+      <returns type="string">Result, or nil on failure</returns>
+    </function>
+    <function name="GetSceneTemplate" export="getSceneTemplate">
+      <summary>Returns the selected new-project scene printf template</summary>
+      <returns type="string">Result, or nil on failure</returns>
     </function>
     <function name="LoadObjectFromXml" export="loadObjectFromXml">
       <summary>Loads an object tree from an XML scene file when XML scenes are enabled</summary>
