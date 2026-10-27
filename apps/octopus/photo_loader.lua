@@ -18,6 +18,7 @@ end
 function Loader:loadVisible()
     for frame, target in pairs(self.watching) do
         if self.app.sessionEpoch ~= target.epoch then
+            target.cancel()
             target.stop()
             self.watching[frame] = nil
         end
@@ -66,19 +67,46 @@ end
 function Loader:watch(frame, key, name)
     local app, epoch = self.app, self.app.sessionEpoch
     local requested, loaded, failed = false, false, false
-    local stop
+    local stop, indicator
+    local function loading(active)
+        if active and not indicator then
+            indicator = ui.ActivityIndicator { Name = "Loading" .. name, Foreground = C.colors.dim }
+            C.clear(frame):addChild(indicator)
+        elseif not active and indicator then
+            indicator.IsActive = false
+            indicator:removeFromParent()
+            indicator = nil
+        end
+    end
+    local function cancel()
+        requested = false
+        loading(false)
+    end
     local function valid() return app.sessionEpoch == epoch and self.observer:isVisible(frame) end
     local function finish(path, err)
         requested = false
+        loading(false)
         if path then
-            C.clear(frame)
-            frame:addChild(ui.ImageView { Name = name, Src = path, Stretch = "Uniform",
-                Foreground = "#ffffff", IgnoreHitTest = true })
+            local image = ui.ImageView { Name = name, Src = path, Stretch = "Uniform",
+                Foreground = "#ffffff", IgnoreHitTest = true,
+                MarginLeft = 0/0, MarginRight = 0/0, MarginTop = 0/0, MarginBottom = 0/0 }
+            image:send("Node.LoadView")
+            if not image.Source then
+                app.media:discard(key)
+                path, err = nil, { message = "This photo could not be decoded." }
+            else
+                C.clear(frame):addChild(image)
+                frame.Background = "#00000000"
+                frame.IgnoreHitTest = true
+            end
+        end
+        if path then
             loaded = true
             if stop then stop() end
             self.watching[frame] = nil
         elseif err then
             failed = true
+            frame.Background = C.colors.raised
             frame.IgnoreHitTest = false
             C.clear(frame)
             frame:addChild(C.area(C.icon("image-off", 28, C.colors.dim, { Name = "Unavailable" .. name }), function()
@@ -90,12 +118,13 @@ function Loader:watch(frame, key, name)
         app:repaint()
     end
     self.nextOrder = self.nextOrder + 1
-    local target = { order = self.nextOrder, epoch = epoch, load = function()
+    local target = { order = self.nextOrder, epoch = epoch, cancel = cancel, load = function()
         if loaded or requested or failed or not valid() then return end
         local path = app.media:path(key)
         if path then finish(path); return end
         requested = true
-        local target = { valid = valid, done = finish, cancel = function() requested = false end }
+        loading(true)
+        local target = { valid = valid, done = finish, cancel = cancel }
         local identity = epoch .. ":" .. key
         local request = self.requests[identity]
         if not request then
@@ -109,6 +138,7 @@ function Loader:watch(frame, key, name)
     self.watching[frame] = target
     stop = self.observer:observe(frame, function(event)
         target.inRange = event.isVisible
+        loading(event.isVisible and requested)
         if event.detached then self.watching[frame] = nil end
     end)
     target.stop = stop

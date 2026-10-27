@@ -5,20 +5,77 @@
 #import <UIKit/UISceneConfiguration.h>
 #import <UIKit/UIWindowScene.h>
 #import <QuartzCore/CADisplayLink.h>
+#import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES3/gl.h>
 
 #include <include/api.h>
 #include <core/core.h>
 #include <generated/UIKit/UIKit.h>
 #include <libs/platform/ios/ios_local.h>
+#include <float.h>
 #include <unistd.h>
 
 int luaopen_orca(lua_State *L);
+
+struct OrcaFrameProfile {
+  BOOL enabled;
+  unsigned callbacks, gaps;
+  double start, last, lastTimestamp;
+  double resumeTotal, resumeMax, callbackTotal, callbackMax;
+  double gapTotal, gapMax, timestampGapTotal, timestampGapMax;
+  double durationTotal, intervalTotal, targetLeadTotal, targetLeadMin;
+};
+
+static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
+                           double started, double resumeDuration, double finished)
+{
+  if (!p->start) {
+    p->start = started;
+    p->targetLeadMin = link.targetTimestamp - started;
+  }
+  if (p->last) {
+    double gap = started - p->last, timestampGap = link.timestamp - p->lastTimestamp;
+    p->gapTotal += gap;
+    p->gapMax = MAX(p->gapMax, gap);
+    p->timestampGapTotal += timestampGap;
+    p->timestampGapMax = MAX(p->timestampGapMax, timestampGap);
+    p->gaps++;
+  }
+  p->last = started;
+  p->lastTimestamp = link.timestamp;
+  p->callbacks++;
+  p->resumeTotal += resumeDuration;
+  p->resumeMax = MAX(p->resumeMax, resumeDuration);
+  p->callbackTotal += finished - started;
+  p->callbackMax = MAX(p->callbackMax, finished - started);
+  p->durationTotal += link.duration;
+  p->intervalTotal += link.targetTimestamp - link.timestamp;
+  p->targetLeadTotal += link.targetTimestamp - started;
+  p->targetLeadMin = MIN(p->targetLeadMin, link.targetTimestamp - started);
+  double elapsed = finished - p->start;
+  if (elapsed < 1) return;
+  double count = p->callbacks, gaps = MAX(p->gaps, 1u);
+  fprintf(stderr, "[ios frames] callbacks=%u elapsed=%.3fs rate=%.2f/s "
+    "resume_ms=%.2f/max%.2f callback_ms=%.2f/max%.2f "
+    "wall_gap_ms=%.2f/max%.2f display_gap_ms=%.2f/max%.2f "
+    "duration_ms=%.2f target_interval_ms=%.2f target_lead_ms=%.2f/min%.2f preferred_fps=%ld\n",
+    p->callbacks, elapsed, count / elapsed,
+    p->resumeTotal * 1000 / count, p->resumeMax * 1000,
+    p->callbackTotal * 1000 / count, p->callbackMax * 1000,
+    p->gapTotal * 1000 / gaps, p->gapMax * 1000,
+    p->timestampGapTotal * 1000 / gaps, p->timestampGapMax * 1000,
+    p->durationTotal * 1000 / count, p->intervalTotal * 1000 / count,
+    p->targetLeadTotal * 1000 / count, p->targetLeadMin * 1000,
+    (long)link.preferredFramesPerSecond);
+  *p = (struct OrcaFrameProfile){ .enabled = YES, .start = finished,
+    .last = started, .lastTimestamp = link.timestamp, .targetLeadMin = DBL_MAX };
+}
 
 @interface OrcaSceneDelegate : UIResponder <UIWindowSceneDelegate> {
   lua_State *_lua, *_coroutine;
   CADisplayLink *_displayLink;
   BOOL _stepping;
+  struct OrcaFrameProfile _frameProfile;
 }
 @end
 
@@ -34,6 +91,8 @@ int luaopen_orca(lua_State *L);
 
 - (BOOL)start
 {
+  char const *profile = getenv("ORCA_PROFILE_FRAMES");
+  _frameProfile.enabled = profile && *profile && strcmp(profile, "0");
   NSString *resources = [NSBundle mainBundle].resourcePath;
   NSString *project = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"ORCAProject"] ?: @"project";
   project = [resources stringByAppendingPathComponent:project];
@@ -59,6 +118,7 @@ int luaopen_orca(lua_State *L);
   lua_setglobal(_lua, "DATADIR");
   luaL_requiref(_lua, "orca", luaopen_orca, 0);
   lua_pop(_lua, 1);
+  ios_set_paint_message(ID_Window_Paint);
   char const *bootstrap =
     "package.path = SHAREDIR..'/?.lua;'..SHAREDIR..'/?/init.lua;'..package.path\n"
     "local Application = require 'orca.core.application'\n"
@@ -78,10 +138,13 @@ int luaopen_orca(lua_State *L);
 {
   if (_stepping || !_coroutine) return;
   _stepping = YES;
-  axPostMessageW(NULL, kEventWindowPaint, axGetSize(NULL), NULL);
+  double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
+  ios_post_display_paint(axGetSize(NULL));
   ios_begin_message_frame();
   int nresults = 0;
+  double resumeStarted = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int status = lua_resume(_coroutine, _lua, 0, &nresults);
+  double resumed = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   if (status == LUA_YIELD) {
     lua_pop(_coroutine, nresults);
     struct Object *focus = core_GetFocus();
@@ -107,6 +170,7 @@ int luaopen_orca(lua_State *L);
     } else [self stop];
   }
   _stepping = NO;
+  if (_frameProfile.enabled) profile_frame(&_frameProfile, sender, started, resumed - resumeStarted, CACurrentMediaTime());
 }
 
 - (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session

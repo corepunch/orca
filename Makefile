@@ -54,6 +54,9 @@ endif
 
 # Allow CFLAGS to be passed from luarocks, but ensure we have base flags
 CFLAGS ?= -O2 -g
+ifneq ($(filter no-lz4,$(MAKECMDGOALS)),)
+CFLAGS += -DORCA_NO_LZ4
+endif
 # Always add these flags, even if CFLAGS is passed from outside
 CFLAGS += -fpic -I. -I$(CURDIR) -Igenerated
 LDFLAGS = -L$(LIBDIR)
@@ -111,6 +114,9 @@ endif
 default: directories modules unite
 all: default
 build: default
+
+.PHONY: no-lz4
+no-lz4: default
 
 # Phony: a module target such as /media must not match an existing root directory.
 .PHONY: $(SOURCEMODULES2)

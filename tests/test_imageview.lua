@@ -11,12 +11,13 @@ local fixture = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = fixture:read("*a")
 fixture:close()
 local paths = {}
-for i = 1, 2 do
+local variants = { jpeg, jpeg:sub(1, 2) .. "\255\226\0\4OR" .. jpeg:sub(3), "\255\216\255\226\0" }
+for i = 1, #variants do
     local temporary = os.tmpname()
     paths[i] = temporary .. ".jpg"
     assert(os.rename(temporary, paths[i]))
     local file = assert(io.open(paths[i], "wb"))
-    assert(file:write(jpeg)); file:close()
+    assert(file:write(variants[i])); file:close()
 end
 
 local screen = ui.Screen { Width = 64, Height = 64, ResizeMode = "NoResize" }
@@ -45,6 +46,9 @@ local function exercise()
     assertLoaded(image)
     assert(first.Width == 32 and first.Height == 24,
         "A caller-held source must remain alive after the view replaces its owned resource")
+    image.Src = paths[3]
+    core.flushQueue()
+    assert(image.Source == nil, "A corrupt JPEG must not expose a checkerboard error texture as a loaded photo")
     image.Src = ""
     core.flushQueue()
     assert(image.Source == nil, "Clearing Src must release and clear the owned texture")

@@ -177,7 +177,7 @@ function Home.page(self)
         item:addChild(area)
         self.pivot:addChild(item)
     end
-    local grid = ui.Grid { Rows = "1fr 20px", Background = colors.background }
+    local grid = ui.Grid { Rows = "1fr 20px" }
     grid:addChild(self.pivot); grid:addChild(self.status)
     local screen = self:frame(grid, "Home")
     Home.select(self, self.feed)

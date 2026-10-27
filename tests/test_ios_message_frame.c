@@ -6,6 +6,8 @@
 /* Exercise the iOS queue and yielding Lua iterator on the host without UIKit. */
 extern void ios_begin_message_frame(void);
 extern void ios_enqueue(struct AXmessage message);
+extern void ios_set_paint_message(uint32_t message);
+extern void ios_post_display_paint(uint32_t size);
 extern void ios_shutdown_messages(void);
 extern int f_get_message(lua_State *L);
 
@@ -84,6 +86,55 @@ int main(void)
   int idle = handled;
   frame(L, thread);
   assert(handled == idle); // Empty batches still suspend instead of ending the iterator.
+  ios_shutdown_messages();
+
+  // Generated application paints keep their receiver and latest payload. They
+  // already cover the single iOS drawable, so the display link adds no duplicate.
+  ios_set_paint_message(ID_Window_Paint);
+  int first, second;
+  Window_PaintMsg_t old_size = { .WindowWidth = 320, .WindowHeight = 480 };
+  Window_PaintMsg_t new_size = { .WindowWidth = 390, .WindowHeight = 844 };
+  axPostMessageW(&first, ID_Window_Paint, 1, &old_size);
+  axPostMessageW(&first, ID_Window_Paint, 2, &new_size);
+  axPostMessageW(&second, ID_Window_Paint, 3, &old_size);
+  ios_post_display_paint(MAKEDWORD(390, 844));
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message));
+  assert(message.message == ID_Window_Paint && message.target == &first);
+  assert(message.wParam == 2 && message.lParam == &new_size);
+  assert(axPeekMessage(&message));
+  assert(message.message == ID_Window_Paint && message.target == &second);
+  assert(message.wParam == 3 && message.lParam == &old_size);
+  assert(!axPeekMessage(&message));
+
+  // New paints posted while draining still wait for the next callback.
+  axPostMessageW(&first, ID_Window_Paint, 4, &old_size);
+  axPostMessageW(&first, ID_Window_Paint, 5, &new_size);
+  assert(!axPeekMessage(&message));
+  ios_post_display_paint(MAKEDWORD(390, 844));
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message));
+  assert(message.target == &first && message.wParam == 5 && message.lParam == &new_size);
+  assert(!axPeekMessage(&message));
+
+  // Empty frames still tick animations; unrelated messages retain their order.
+  axPostMessageW(&first, kEventTimer, 6, &old_size);
+  ios_post_display_paint(MAKEDWORD(390, 844));
+  ios_post_display_paint(MAKEDWORD(390, 844));
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message) && message.message == kEventTimer);
+  assert(message.target == &first && message.lParam == &old_size);
+  assert(axPeekMessage(&message) && message.message == kEventWindowPaint);
+  assert(message.target == NULL && message.wParam == MAKEDWORD(390, 844));
+  assert(!axPeekMessage(&message));
+
+  axPostMessageW(&first, kEventWindowPaint, 7, NULL);
+  axPostMessageW(&first, kEventWindowPaint, 8, NULL);
+  axPostMessageW(&second, kEventWindowPaint, 9, NULL);
+  ios_begin_message_frame();
+  assert(axPeekMessage(&message) && message.target == &first && message.wParam == 8);
+  assert(axPeekMessage(&message) && message.target == &second && message.wParam == 9);
+  assert(!axPeekMessage(&message));
   ios_shutdown_messages();
   lua_close(L);
   puts("PASS: iOS Lua frame pump yields during inertia, accepts fresh touches and resumes early yields");

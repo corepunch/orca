@@ -28,7 +28,7 @@ that all build dependencies are available.
 To build without LZ4-compressed package support (and without installing `lz4`):
 
 ```bash
-CFLAGS='-O2 -g -DORCA_NO_LZ4' make
+make no-lz4
 ```
 
 ## Authoritative commands
