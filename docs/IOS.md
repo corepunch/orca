@@ -102,8 +102,12 @@ and uses `devicectl` to install and launch it.
 
 The bundle contains `share/` and a copy of the chosen project in `project/`.
 Lua modules and engine plugins are linked statically. UIKit owns the main run
-loop; a display link resumes the Lua application coroutine each frame, and
-`system.getMessage` yields when the display callback's message batch is drained.
+loop; a display link resumes the Lua application coroutine on frames that have
+queued messages, and `system.getMessage` yields when the display callback's
+message batch is drained. Rendering is event-driven as on desktop: the display
+link posts no paint of its own and pauses while the queue is empty, so an idle
+app draws nothing. A run-loop observer resumes it when a touch, timer, network
+completion, animation step or application paint is queued.
 Each display callback snapshots the queued messages before resuming Lua. Work
 posted while that batch runs waits for the next display callback, so animation
 callbacks cannot keep UIKit from delivering a new touch during deceleration.

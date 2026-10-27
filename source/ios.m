@@ -74,14 +74,38 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
 @interface OrcaSceneDelegate : UIResponder <UIWindowSceneDelegate> {
   lua_State *_lua, *_coroutine;
   CADisplayLink *_displayLink;
-  BOOL _stepping;
+  CFRunLoopObserverRef _wakeObserver;
+  BOOL _stepping, _booted, _active;
   struct OrcaFrameProfile _frameProfile;
 }
+- (void)wake;
 @end
 
+// Rendering is event-driven: the display link only paces queued messages and
+// pauses while the queue is empty. Messages wake the main run loop, and this
+// observer resumes the link when one is waiting.
+static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activity, void *delegate)
+{
+  (void)observer; (void)activity;
+  [(OrcaSceneDelegate *)delegate wake];
+}
+
 @implementation OrcaSceneDelegate
+- (void)wake
+{
+  // Never widen the batch of a running frame; nested run loops can call this.
+  if (_stepping || !_active || !_displayLink.paused) return;
+  ios_begin_message_frame();
+  if (ios_messages_ready()) _displayLink.paused = NO;
+}
+
 - (void)stop
 {
+  if (_wakeObserver) {
+    CFRunLoopRemoveObserver(CFRunLoopGetMain(), _wakeObserver, kCFRunLoopCommonModes);
+    CFRelease(_wakeObserver);
+    _wakeObserver = NULL;
+  }
   [_displayLink invalidate];
   [_displayLink release];
   _displayLink = nil;
@@ -100,6 +124,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
     NSLog(@"ORCA: cannot open project at %@", project);
     return NO;
   }
+  _booted = NO;
   _lua = luaL_newstate();
   if (!_lua) return NO;
   *(void **)lua_getextraspace(_lua) = NULL;
@@ -138,9 +163,15 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
 {
   if (_stepping || !_coroutine) return;
   _stepping = YES;
-  double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
-  ios_post_display_paint(axGetSize(NULL));
   ios_begin_message_frame();
+  // Nothing changed: draw nothing and sleep until the next message.
+  if (_booted && !ios_messages_ready()) {
+    _displayLink.paused = YES;
+    _stepping = NO;
+    return;
+  }
+  _booted = YES;
+  double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int nresults = 0;
   double resumeStarted = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int status = lua_resume(_coroutine, _lua, 0, &nresults);
@@ -179,11 +210,16 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
   if (![scene isKindOfClass:[UIWindowScene class]] || ![self start]) return;
   _displayLink = [[CADisplayLink displayLinkWithTarget:self selector:@selector(frame:)] retain];
   [_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+  CFRunLoopObserverContext context = { .info = self };
+  _wakeObserver = CFRunLoopObserverCreate(NULL, kCFRunLoopBeforeWaiting | kCFRunLoopAfterWaiting,
+                                          true, 0, wake_display, &context);
+  CFRunLoopAddObserver(CFRunLoopGetMain(), _wakeObserver, kCFRunLoopCommonModes);
 }
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
   axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
+  _active = NO;
   _displayLink.paused = YES;
   if (_lua) { axMakeCurrentContext(); glFinish(); }
 }
@@ -191,6 +227,7 @@ static void profile_frame(struct OrcaFrameProfile *p, CADisplayLink *link,
 - (void)sceneDidBecomeActive:(UIScene *)scene
 {
   axPostMessageW(NULL, ID_Window_Activated, 0, NULL);
+  _active = YES;
   _displayLink.paused = NO;
 }
 - (void)sceneDidDisconnect:(UIScene *)scene { [self stop]; }
