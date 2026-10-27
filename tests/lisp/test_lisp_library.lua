@@ -3,7 +3,7 @@ local test = require "orca.test"
 -- filesystem.loadObject("Dir/Name") falls back to the entry Name="Name" of
 -- Dir.lisp when Dir/Name.lisp does not exist.
 --
--- Run with: $(TARGET) -test=tests/test_lisp_library.lua
+-- Run with: $(TARGET) -test=tests/lisp/test_lisp_library.lua
 
 local filesystem = require "orca.filesystem"
 require "orca.UIKit"

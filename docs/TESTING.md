@@ -7,6 +7,20 @@ Use this file as the default map for adding or fixing tests.
 - C tests: `tests/test_*.c`
 - Lua tests: `tests/test_*.lua`
 - Lua spec-style tests: `tests/*_spec.lua`
+- Scene-format tests: `tests/lisp/test_*.lua` and `tests/xml/test_*.lua`
+
+Tests in `tests/` run in both scene-format builds. A test that needs one
+format's loader or fixtures (`loadObjectFromLispString`, a `.lisp` file) goes in
+`tests/<format>/`, and only that build runs it. The Makefile picks these files
+up by wildcard: `tests/lisp/test_metro_lisp.lua` becomes `make test-metro-lisp`
+in the Lisp build. When a test file mixes both kinds of case, keep the
+format-independent cases in `tests/` and move the others to
+`tests/<format>/test_<name>_<format>.lua`.
+
+```bash
+make test-headless                                              # XML build
+make CPPFLAGS=-DORCA_USE_LISP BUILDDIR=build-lisp test-headless # Lisp build
+```
 
 ## Authoritative commands
 
