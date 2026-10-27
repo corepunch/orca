@@ -97,15 +97,14 @@ the repository or the app.
 | `groups` | Owner and roles, inbox role, everyone posts, empty groups, name and member limits, unknown members leave nothing behind, admin and owner powers, protected staff, removed members lose access |
 | `channels` | Subscribers are read-only, posts show the channel as sender, subscribers see only staff, promote/demote, channel-only roles, the public channel can be found case-insensitively and joined, private rooms aren't discoverable |
 | `invites` | Code format and expiry, joining sees history, rejoining is harmless, staff-only creation, revocation, cross-room revocation, malformed codes, a removed member can rejoin, channel invites |
-| `messages` | Message shape, exact Unicode/RTL/NUL/markup round-trip, 4000-byte boundary, empty text, the sender is always the caller, burst ordering, `limit` window, rooms don't leak into each other, bad room IDs |
-| `photos` | Reserve → upload → finalize, key never returned, exact photo and thumbnail bytes for members, ciphertext only in the public bucket, four-photo and photo-only messages, privacy before publishing, no stolen, reused or cross-room photos, discard, immutable and mismatched objects, non-JPEG/GPS rejected, limits, channel and outsider rules, revocation |
+| `messages` | Message shape, exact Unicode/RTL/NUL/markup round-trip, 4000-byte boundary, empty text, the sender is always the caller, burst ordering, `limit` window, rooms don't leak into each other, bad room IDs; **editing** (author only, `edited_at`, limits) and **deleting** (author, owner/admin moderation, none in direct chats, removed members, channels) |
+| `photos` | Reserve → upload → finalize, key never returned, exact photo and thumbnail bytes for members, ciphertext only in the public bucket, four-photo and photo-only messages, privacy before publishing, no stolen, reused or cross-room photos, discard, immutable and mismatched objects, non-JPEG/GPS rejected, limits, channel and outsider rules, revocation, removing a caption by editing, deleting a message deletes its photos |
 | `security` | Chat collections are closed to clients, fixed route allowlist, malformed envelopes, no internals in errors, ID validation, discovery rate limit (runs last) |
 | `parity` | Telegram parity checklist, without video or calls (see below) |
 
 ### Telegram parity checklist
 
-`suites/parity.js` lists the Telegram features Chat doesn't have yet: editing,
-deleting, replies, forwards, reactions, pins, mentions, formatting, unread
+`suites/parity.js` lists the Telegram features Chat doesn't have yet: replies, forwards, reactions, pins, mentions, formatting, unread
 counts and read receipts, typing and last seen, inbox previews and ordering,
 Saved Messages, leaving a group, renaming, transferring ownership, bans, slow
 mode, polls, people search by name or prefix, blocking, files, voice messages

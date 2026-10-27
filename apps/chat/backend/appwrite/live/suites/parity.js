@@ -25,25 +25,6 @@ describe('Telegram parity (TODO probes; not counted as failures)', () => {
   });
 
   describe('messages', () => {
-    probe('edit own message; others see the new text and an edited mark', async () => {
-      await w.alice.rpc('edit_chat_message', { target_message: message.id, message_body: 'edited' });
-      const seen = (await w.bob.listMessages(group.id)).find(row => row.id === message.id);
-      assert.equal(seen.body, 'edited'); assert.ok(seen.edited_at);
-    });
-    probe('cannot edit someone else\'s message', async () => {
-      const result = await w.bob.send('POST', '/rest/v1/rpc/edit_chat_message', { target_message: message.id, message_body: 'hijack' });
-      assert.equal(result.status, 403);
-    });
-    probe('delete own message for everyone', async () => {
-      const doomed = await w.alice.sendMessage(group.id, 'delete me');
-      await w.alice.rpc('delete_chat_message', { target_message: doomed.id });
-      assert.ok(!(await w.bob.listMessages(group.id)).some(row => row.id === doomed.id));
-    });
-    probe('admins delete other members\' messages in groups', async () => {
-      const spam = await w.bob.sendMessage(group.id, 'spam');
-      await w.alice.rpc('delete_chat_message', { target_message: spam.id });
-      assert.ok(!(await w.carol.listMessages(group.id)).some(row => row.id === spam.id));
-    });
     probe('reply to a message', async () => {
       const reply = (await w.bob.rpc('post_chat_message', { target_room: group.id, message_body: 'reply', attachment_ids: [], reply_to: message.id }))[0];
       assert.equal(reply.reply_to, message.id);

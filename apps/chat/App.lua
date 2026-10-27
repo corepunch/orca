@@ -65,7 +65,7 @@ local App = Application:extend {
         self.shell, self.room, self.contacts, self.contactsById = nil, nil, nil, nil
         self.roomLists, self.searchInput, self.pivot, self.rooms = nil, nil, nil, nil
         self.messageList, self.composer, self.threadBody = nil, nil, nil
-        self.timelineSnapshot, self.messageRefreshQueued = nil, nil
+        self.timelineSnapshot, self.messageRefreshQueued, self.editing = nil, nil, nil
         self.status, self.homeStatus, self.newStatus = nil, nil, nil
         self.inboxError, self.inboxIndicators, self.messageLoading = nil, nil, nil
         self.authDraft, self.loginIdentifier, self.loginReturnRoute = nil, nil, nil
@@ -381,6 +381,7 @@ local App = Application:extend {
     end,
 
     sendMessage = function(self)
+        if self.editing then return self:saveEdit() end
         if self.room.can_post == false then self:notice("Only channel admins can publish.", true); return end
         if self.sending then return end
         local room, composer, epoch = self.room, self.composer, self.sessionEpoch
@@ -423,12 +424,89 @@ local App = Application:extend {
         if self.room == room and self.composer == composer and self.sessionEpoch == epoch then composer:setFocus() end
     end,
 
+    -- Message actions: tapping your own message (or any message, for group and
+    -- channel staff) offers edit and delete; deletion asks once more.
+    openMessageActions = function(self, message, canEdit, canDelete)
+        local overlay, sheet = self.messageActions, self.messageActionSheet
+        if not overlay or self.sending then return end
+        local function show(items)
+            while sheet:getFirstChild() do sheet:getFirstChild():removeFromParent() end
+            for _, item in ipairs(items) do
+                sheet:addChild(C.button(item[2], function() overlay.Visible = false; item[3]() end, { Name = item[1],
+                    Height = 52, FontSize = 20, TextHorizontalAlignment = "Left", Padding = "16 0",
+                    Foreground = item[4] or colors.ink, Background = colors.chrome, BorderWidth = "0" }))
+            end
+            sheet.Height, overlay.Visible = #items * 52 + 16, #items > 0
+        end
+        local items = {}
+        if canEdit then items[#items + 1] = { "EditMessage", "edit", function() self:startEdit(message) end } end
+        if canDelete then
+            -- Deleting removes the message for everyone, so confirm it first.
+            items[#items + 1] = { "DeleteMessage", "delete", function()
+                show {
+                    { "ConfirmDeleteMessage", "delete for everyone", function() self:deleteMessage(message) end, colors.error },
+                    { "CancelDeleteMessage", "cancel", function() end },
+                }
+            end, colors.error }
+        end
+        show(items)
+    end,
+
+    startEdit = function(self, message)
+        local room, composer = self.room, self.composer
+        if not room or not composer or message.room_id ~= room.id then return end
+        if self.photoDrafts[room.id] then self:notice("Send or remove the photo before editing a message.", true); return end
+        -- The unsent draft returns once the edit is saved or cancelled.
+        if not self.editing then self.drafts[room.id] = composer.Text ~= "" and composer.Text or nil end
+        self.editing = { room = room, message = message }
+        composer.Text = message.body or ""
+        self.editBanner.Visible = true
+        self:notice("")
+        composer:setFocus()
+    end,
+
+    cancelEdit = function(self)
+        local editing = self.editing
+        if not editing then return end
+        self.editing = nil
+        if self.editBanner then self.editBanner.Visible = false end
+        if self.room and self.room.id == editing.room.id and self.composer then self.composer.Text = self.drafts[editing.room.id] or "" end
+    end,
+
+    saveEdit = function(self)
+        local editing, composer, epoch = self.editing, self.composer, self.sessionEpoch
+        if self.sending or not editing then return end
+        local text = composer.Text or ""
+        if text == (editing.message.body or "") then self:cancelEdit(); return end
+        self.sending = true
+        local edited, err = editing.message:edit(text)
+        self.sending = false
+        if self.sessionEpoch ~= epoch or self.editing ~= editing then return end
+        if not edited then self:notice(err.message, true); return end
+        self:cancelEdit()
+        self:renderMessages { preserveScroll = true }
+    end,
+
+    deleteMessage = function(self, message)
+        local room, epoch = self.room, self.sessionEpoch
+        if self.sending then return end
+        self.sending = true
+        local ok, err = message:delete()
+        self.sending = false
+        if self.sessionEpoch ~= epoch or not self.room or self.room.id ~= room.id then return end
+        if not ok then self:notice(err.message, true); return end
+        if self.editing and self.editing.message.id == message.id then self:cancelEdit() end
+        self:renderMessages { preserveScroll = true, quiet = true }
+        self:notice("Message deleted.")
+    end,
+
     getMedia = function(self)
         return self.media
     end,
 
     attachPhoto = function(self)
         if self.sending then self:notice("Finish sending before adding another photo."); return end
+        if self.editing then self:notice("Finish editing before adding a photo."); return end
         local media = self:getMedia()
         if not media then self:notice("Photo selection is unavailable on this platform.", true); return end
         self:notice("Preparing photo…")
@@ -451,7 +529,12 @@ local App = Application:extend {
     thread = function(self)
         if not self.room then return self:home() end
         local room = self.room
-        local function keepDraft() self.drafts[room.id] = self.composer and self.composer.Text or "" end
+        -- Leaving the thread abandons an edit but keeps the unsent draft.
+        local function keepDraft()
+            if self.editing then self.editing = nil
+            else self.drafts[room.id] = self.composer and self.composer.Text or "" end
+        end
+        if self.editing and self.editing.room.id ~= room.id then self.editing = nil end
         self.messageList = C.stack({ Name = "Messages", Spacing = 0, PaddingBottom = 8, Overflow = "hidden scroll" })
         self.status = C.text("", { FontSize = 11, Foreground = colors.dim, TextHorizontalAlignment = "Center",
             Margin = "24 8" })
@@ -479,11 +562,17 @@ local App = Application:extend {
             self.photoDrafts[room.id], self.photoPreview.Visible = nil, false
             self:notice("Photo removed. Your message is still here.")
         end, { Name = "RemovePhoto", Width = 36, Height = 36, Foreground = colors.ink }))
+        self.editBanner = ui.Grid { Name = "EditingMessage", Columns = "1fr 40px", Height = 40,
+            Visible = self.editing ~= nil, Background = colors.soft, Padding = "12 0" }
+        self.editBanner:addChild(C.text("Editing message", { FontSize = 13, Foreground = colors.accentText, TextVerticalAlignment = "Center" }))
+        self.editBanner:addChild(C.iconButton("x", function() self:cancelEdit() end,
+            { Name = "CancelEdit", Width = 36, Height = 36, Foreground = colors.ink }))
+        if self.editing then self.composer.Text = self.editing.message.body or "" end
         local readOnly = room.can_post == false
         compose.Visible, self.photoPreview.Visible = not readOnly, not readOnly and self.photoDrafts[room.id] ~= nil
         local footer = Footer { Name = "ThreadFooter",
             Background = readOnly and colors.background or colors.textbox }
-        footer:addChild(C.stack({ Spacing = 0 }, { self.status, self.photoPreview, compose,
+        footer:addChild(C.stack({ Spacing = 0 }, { self.status, self.editBanner, self.photoPreview, compose,
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
                 FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
         }))
@@ -536,6 +625,14 @@ local App = Application:extend {
         Footer.layout(screen, C.page(room.name, self.threadBody), footer,
             { Background = colors.background, Foreground = colors.ink })
         screen:addChild(overflow)
+        -- A bottom sheet for one message's actions, dismissed by tapping outside.
+        self.messageActions = ui.Node2D { Name = "MessageActionsMenu", Visible = false }
+        self.messageActions:addChild(C.button("", function() self.messageActions.Visible = false end,
+            { Name = "DismissMessageActions", Height = auto, BorderWidth = "0", Background = "#00000000" }))
+        self.messageActionSheet = C.stack({ Name = "MessageActionSheet", Height = 120, MarginTop = auto,
+            Padding = "0 8", Background = colors.chrome })
+        self.messageActions:addChild(self.messageActionSheet)
+        screen:addChild(self.messageActions)
         local node, epoch, navigation = self.messageList, self.sessionEpoch, self.navigationEpoch
         self:load(function()
             if self.messageList == node and self.sessionEpoch == epoch and self.navigationEpoch == navigation then

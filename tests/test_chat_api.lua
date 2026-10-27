@@ -77,6 +77,32 @@ value, err = client:sendMessage("room-1", string.rep("a", 4001))
 check(value == nil and err.code == "validation" and #requests == 5, "Oversized messages must fail before HTTP")
 
 client, requests = backend {
+  { status = 200, body = session() },
+  { status = 200, body = { { id = "m3", body = "edited", edited_at = "2026-10-27T10:00:00Z" } } },
+  { status = 200, body = true },
+  { status = 403, body = { code = "forbidden", message = "You cannot delete this message." } },
+}
+assert(client:signIn("a@b.test", "password"))
+local edited = assert(client:editMessage("m3", "edited"))
+check(edited.body == "edited" and edited.edited_at and requests[2].url:match("/rpc/edit_chat_message$")
+  and requests[2].body.target_message == "m3" and requests[2].body.message_body == "edited",
+  "Editing uses the edit RPC with the message ID and new text")
+check(client:deleteMessage("m3") == true and requests[3].url:match("/rpc/delete_chat_message$")
+  and requests[3].body.target_message == "m3", "Deleting uses the delete RPC")
+value, err = client:deleteMessage("m4")
+check(value == nil and err.status == 403 and err.code == "forbidden", "Delete permission failures reach the caller")
+for _, operation in ipairs {
+  function() return client:editMessage("bad&id", "x") end,
+  function() return client:editMessage("m3", string.rep("a", 4001)) end,
+  function() return client:editMessage("m3", nil) end,
+  function() return client:deleteMessage("bad&id") end,
+} do
+  value, err = operation()
+  check(value == nil and err.code == "validation", "Invalid edits and deletes fail before HTTP")
+end
+check(#requests == 4, "Rejected input never reaches the transport")
+
+client, requests = backend {
   { status = 200, body = session("old", "old-refresh", 10) },
   { status = 200, body = session("new", "new-refresh") },
   { status = 200, body = {} },

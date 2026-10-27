@@ -26,15 +26,22 @@ local function sender(self, room, message)
         or (person and person:get_display_name() or "Member " .. tostring(message.sender_id or ""):sub(1, 8))
 end
 
+-- What the reader may do with a message; the server enforces the same rules.
+local function permissions(room, message, me)
+    local mine = message.sender_id == me
+    local staff = room.role == "owner" or room.role == "admin"
+    return mine and room.can_post ~= false, mine or (room.kind ~= "direct" and staff)
+end
+
 local function snapshot(self, room, messages)
-    local rows = { kind = room.kind, name = room.name, can_post = room.can_post }
+    local rows = { kind = room.kind, name = room.name, can_post = room.can_post, role = room.role }
     for i, message in ipairs(messages) do
         local attachments = {}
         for j, item in ipairs(message.attachments or {}) do
             attachments[j] = { id = item.id, updated_at = item.updated_at }
         end
         rows[i] = { id = message.id, body = message.body, sender_id = message.sender_id,
-            created_at = message.created_at, updated_at = message.updated_at,
+            created_at = message.created_at, updated_at = message.updated_at, edited_at = message.edited_at,
             sender = sender(self, room, message), attachments = attachments }
     end
     return rows
@@ -113,14 +120,24 @@ local function refresh(self, options, room, node, current)
             caption:addChild(C.text(message.body, {
                 TextWrapping = "Wrap", FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
         end
-        caption:addChild(C.text(C.time(message.created_at) or "", {
+        local time = C.time(message.created_at) or ""
+        caption:addChild(C.text(message.edited_at and "edited " .. time or time, {
             FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
         }))
         local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
             MarginTop = i == 1 and 0 or first and 8 or 2,
             PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })
         if first and not mine then entry:addChild(C.tail(true, tone, false)) end
-        entry:addChild(bubble)
+        -- A transparent button over the bubble opens its actions; the bubble's
+        -- StackView keeps sizing itself to the text.
+        local holder = ui.Grid { Name = "MessageHolder" .. message.id }
+        holder:addChild(bubble)
+        local canEdit, canDelete = permissions(room, message, me)
+        if canEdit or canDelete then
+            holder:addChild(ui.Button { Name = "MessageActions" .. message.id, Background = "#00000000", BorderWidth = "0",
+                Click = function() if current() then self:openMessageActions(message, canEdit, canDelete) end end })
+        end
+        entry:addChild(holder)
         if last and mine then entry:addChild(C.tail(false, tone, true)) end
         children[#children + 1], entries[#entries + 1] = entry, { id = message.id, node = entry }
     end

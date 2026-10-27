@@ -20,7 +20,7 @@ C.stack = node
 C.tail = function(incoming) return node { Tail = true, Incoming = incoming } end
 C.text = function(value, props) local n = node(props); n.Text = value; return n end
 C.date, C.time = tostring, tostring
-package.loaded["orca.UIKit"] = { ImageView = node, Grid = node }
+package.loaded["orca.UIKit"] = { ImageView = node, Grid = node, Button = node }
 package.loaded["Chat/views/components"] = C
 local Timeline = require "views.timeline"
 
@@ -98,7 +98,7 @@ for _, kind in ipairs { "group", "direct", "channel" } do
     local expectedTails = kind == "channel" and { 1, 0, 1, 0, 1 } or { 1, 0, 0, 1, 1 }
     for i = 1, 5 do
         local entry = assert(named(groupedList, "MessageEntry" .. i), "Every grouped message needs its own row")
-        assert(named(entry, "MessageBubble" .. i), "Every grouped message needs its own bubble")
+        assert(named(assert(named(entry, "MessageHolder" .. i)), "MessageBubble" .. i), "Every grouped message needs its own bubble")
         assert(count(entry, function(child) return child.Tail end) == expectedTails[i],
             kind .. " must decorate only the appropriate edge of each sender run")
         local expectedNames = kind == "group" and (i == 1 or i == 5) and 1 or 0

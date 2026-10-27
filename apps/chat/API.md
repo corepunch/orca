@@ -125,6 +125,8 @@ result's timing fields are UI hints, not a replacement for server enforcement.
 | `joinPublicChannel(roomId)` | Public channel joined as a subscriber |
 | `listMessages(roomId,{limit=100})` | Latest 1–100 messages in chronological display order |
 | `sendMessage(roomId,body,attachmentIds)` | Persisted message with embedded `attachments` |
+| `editMessage(messageId,body)` | The author's message with new text and `edited_at` |
+| `deleteMessage(messageId)` | `true`; the message and its photos are removed for everyone |
 
 Names contain 1–80 characters; `memberIds` contains up to 50 other Auth user IDs.
 Groups and channels may start with an empty member list. The creator becomes
@@ -143,7 +145,21 @@ another allowance. Public channel discovery does not grant posting rights.
 Messages allow up to 4000 UTF-8 bytes and four photos; photo-only messages use
 `body=""`. Publishing uses the atomic `post_chat_message` RPC, which derives
 the sender from Auth and attaches only ready, unexpired photos owned by that
-sender in that room. Direct REST inserts are disabled. While foregrounded, the
+sender in that room. Direct REST inserts are disabled.
+
+Only the author edits a message, and only while they may still post in that
+room. An edit changes the text, sets `edited_at` and keeps `created_at`, the
+timeline position and photos. A photo message's caption can be removed. Edits
+follow the same 4000-byte rule. A message deletes for everyone. Its author can
+delete it while still a member, and group or channel owners and admins can delete
+any message. Direct chats have no moderators. Deleting a message also deletes its
+encrypted photos. In the app, tapping a message you may change opens a bottom
+sheet with **edit** and **delete**. Edit loads the text into the composer under an
+"Editing message" banner. Sending saves the edit and cancelling discards it, and
+either way the unsent draft comes back. Delete asks for confirmation. Readers see
+"edited" next to the time.
+
+While foregrounded, the
 open conversation polls the latest 100 messages every 3 seconds and the visible
 inbox polls conversations and contacts every 15 seconds. Intervals begin after
 the previous request completes; failures back off up to 60 seconds. Navigation,
@@ -245,7 +261,8 @@ Rooms and Messages support `create`; message creation
 forwards `attachment_ids`. Rows expose fields plus custom methods and relations.
 `find` searches the fetched page; a message lookup needs `room_id` and only
 covers that history window. A missing row returns nil; API errors return
-`nil,error`. There are no SQL strings, update/delete operations, automatic
+`nil,error`. Message rows support `row:edit(body)`, which updates the row in place,
+and `row:delete()`. There are no SQL strings, other update/delete operations, automatic
 observability or automatic relation preloading.
 
 Like [Lapis models](https://leafo.net/lapis/reference/models.html), model classes

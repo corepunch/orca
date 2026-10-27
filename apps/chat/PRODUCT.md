@@ -2,8 +2,9 @@
 
 Implementation status, 2026-10-25. The app now implements phone/email OTP,
 verified linking, usernames and opt-in exact discovery, direct/group/channel
-conversations, roles/invitations/public channel subscriptions, and JPEG photo
-messages through the shared client and offline mock. Native processing and
+conversations, roles/invitations/public channel subscriptions, JPEG photo
+messages, and editing and deleting messages through the shared client and
+offline mock. Native processing and
 selection are available on macOS. Video, QR/profile sharing links, address-book
 matching, block/report UI, push, and live subscriptions remain later work.
 
