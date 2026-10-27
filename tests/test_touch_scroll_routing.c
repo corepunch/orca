@@ -120,10 +120,30 @@ int main(void)
   float minimum = GetNode(second)->Size.Axis[1].Actual - GetNode(second)->Size.Axis[1].Scroll;
   assert(GetNode2D(second)->ContentOffset.y == minimum);
 
+  /* A finger never hovers: touch clears the mouse hover instead of moving it. */
+  struct Object *hoverScreen = OBJ_Create(ID_Screen), *target = OBJ_Create(ID_Node2D);
+  GetScreen(hoverScreen)->Width = GetScreen(hoverScreen)->Height = 200;
+  GetScreen(hoverScreen)->ResizeMode = kResizeModeNoResize;
+  OBJ_SetFlags(target, OBJ_GetFlags(target) | OF_HOVERABLE);
+  OBJ_AddChild(hoverScreen, target);
+  layout(hoverScreen);
+  struct AXmessage move = { .message = kEventMouseMoved, .wParam = MAKEDWORD(50, 50) };
+  UI_HandleMouseEvent(L, hoverScreen, &move);
+  assert(core_GetHover() == target);
+  struct AXmessage touchMove = move, touchDown = { .message = kEventLeftButtonDown, .wParam = MAKEDWORD(50, 50) };
+  touchMove.pointer.flags = touchDown.pointer.flags = AX_POINTER_TOUCH;
+  UI_HandleMouseEvent(L, hoverScreen, &touchMove);
+  assert(core_GetHover() == NULL);
+  UI_HandleMouseEvent(L, hoverScreen, &move);
+  UI_HandleMouseEvent(L, hoverScreen, &touchDown);
+  assert(core_GetHover() == NULL);
+  OBJ_ReleaseRef(target);
+  OBJ_ReleaseRef(hoverScreen);
+
   OBJ_ReleaseRef(first);
   OBJ_ReleaseRef(second);
   OBJ_ReleaseRef(screen);
   lua_close(L);
-  puts("PASS: touch scroll captures its container, ends/cancels safely, and preserves mouse wheel behavior");
+  puts("PASS: touch scroll captures its container, ends/cancels safely, preserves mouse wheel behavior, and never hovers");
   return 0;
 }

@@ -361,6 +361,7 @@
         <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
         <property name="CompositionDesignSize" type="vec2">Virtual design size when using composition rendering. Defines the expected size for the composition surface.</property>
         <property name="SizeToContent" type="bool">Whether the element resizes itself to fit its content.</property>
+        <property name="AspectRatio" type="float">Width-to-height ratio of the padding box, as CSS aspect-ratio. When positive and Height is auto, the height follows the laid-out width: 1 makes a square as wide as its slot. 0 turns it off.</property>
         <property name="OffscreenRendering" type="bool">Enables rendering to an offscreen surface before compositing. Useful for caching effects or complex visuals.</property>
         <property name="ForceComposition" type="bool">Forces use of the composition system even when not required. Equivalent to enabling composition layers for debugging or effects.</property>
         <property name="CacheResult" type="bool">Enables caching of rendering results. Reduces redraw cost at the expense of memory.</property>

@@ -88,7 +88,7 @@ local function test_pivot()
     "Only the selected PivotItem is visible")
   test.expect(pivot:findChild("All").ActualY > headers[1].ActualY + headers[1].ActualHeight - 1,
     "Content starts below the header strip")
-  test.expect_eq(pivot:findChild("All").ActualX, 20, "Content keeps the 20-point page margin")
+  test.expect_eq(pivot:findChild("All").ActualX, 12, "Content keeps the 12-point page margin")
 
   -- Headless runs have no font faces, so headers measure zero; send the tap directly.
   headers[3]:send("Node.LeftButtonUp")
@@ -165,15 +165,15 @@ local function test_pivot_header_metrics()
   headers[1].Width, headers[2].Width = 40, 80
   layout(screen)
   headers = children(pivot, "PivotHeaderItem")
-  test.expect_eq(#headers, 5, "Unequal header widths repeat until the strip is filled")
-  for i, x in ipairs { 20, 78, 176, 234, 332 } do
+  test.expect_eq(#headers, 6, "Unequal header widths repeat until the strip is filled")
+  for i, x in ipairs { 12, 70, 168, 226, 324, 382 } do
     test.expect_eq(headers[i].ActualX, x, "Repeated headers use the source width and spacing")
     test.expect_eq(headers[i].Text, i % 2 == 1 and "all" or "unread", "Copies keep their source text")
   end
   local spare = headers[5]
   headers[1].Width = 100
   layout(screen)
-  test.expect_eq(headers[3].ActualX, 236, "Changing a source width updates repeated positions")
+  test.expect_eq(headers[3].ActualX, 228, "Changing a source width updates repeated positions")
   test.expect_eq(headers[3].ActualWidth, 100, "Copies use fresh source metrics")
   test.expect(not spare.Visible, "A wider strip hides spare copies")
   screen.Width = 250
@@ -183,7 +183,7 @@ local function test_pivot_header_metrics()
   headers[1].Width = 40
   layout(screen)
   test.expect(spare.Visible, "Restoring the width reuses the spare copy")
-  test.expect_eq(#children(pivot, "PivotHeaderItem"), 5, "Metric changes do not grow the copy pool")
+  test.expect_eq(#children(pivot, "PivotHeaderItem"), 6, "Metric changes do not grow the copy pool")
   print("PASS: test_pivot_header_metrics")
 end
 

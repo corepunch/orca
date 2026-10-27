@@ -221,6 +221,30 @@ local function test_stack_view_align_items_end()
 end
 
 -- ---------------------------------------------------------------------------
+-- AspectRatio: an auto height follows the stretched width
+-- ---------------------------------------------------------------------------
+local function test_stack_view_aspect_ratio()
+	local stack = screen + ui.StackView { Name = "test_stack_view_aspect_ratio", Width = 300, Spacing = 10 }
+	local square = stack + ui.Grid { AspectRatio = 1 }
+	local wide = stack + ui.Grid { AspectRatio = 2, Padding = core.Thickness(10) }
+	local fixed = stack + ui.Grid { AspectRatio = 1, Height = 40 }
+
+	screen:UpdateLayout(screen.Width, screen.Height)
+
+	test.expect_eq(square.ActualWidth, 300, "AspectRatio keeps the stretched width")
+	test.expect_eq(square.ActualHeight, 300, "AspectRatio=1 makes a square as wide as the column")
+	test.expect_eq(wide.ActualHeight, 150, "The ratio applies to the padding box")
+	test.expect_eq(fixed.ActualHeight, 40, "An explicit Height wins over AspectRatio")
+	test.expect_eq(stack.DesiredHeight, 300 + 150 + 40 + 2 * 10, "The stack measures the derived heights")
+
+	stack.Width = 200
+	screen:UpdateLayout(screen.Width, screen.Height)
+	test.expect_eq(square.ActualHeight, 200, "A narrower column gives a shorter square")
+
+	screen:clear()
+end
+
+-- ---------------------------------------------------------------------------
 -- Run all tests
 -- ---------------------------------------------------------------------------
 orca.async = function (callback) callback() end
@@ -233,5 +257,6 @@ test_stack_view_align_items_center()
 test_stack_view_align_items_center_implicit_height()
 test_stack_view_align_items_start()
 test_stack_view_align_items_end()
+test_stack_view_aspect_ratio()
 
 print("All StackView layout tests passed.")

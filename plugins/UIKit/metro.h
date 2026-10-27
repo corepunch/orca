@@ -10,7 +10,7 @@
 #include <source/core/core_local.h>
 #include <UIKit/UIKit.h>
 
-#define METRO_INSET          20.0f   // page margin: 12 + 12 on Windows Phone
+#define METRO_INSET          12.0f   // page margin: the outer 12 of Windows Phone's 12 + 12
 #define METRO_ANIM_MS        300
 #define METRO_SWIPE          48.0f   // distance that commits a swipe
 #define METRO_DRAG_START     12.0f   // distance before a press becomes a swipe

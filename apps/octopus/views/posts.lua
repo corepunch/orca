@@ -3,17 +3,17 @@ local C = require "Octopus/views/components"
 local colors, space = C.colors, C.spacing
 local ACTION_HEIGHT = 44
 local ACTION_CONTENT_HEIGHT = 28
+local REPOSTED_HEIGHT = 20
 local auto = 0/0
 local Posts = {}
-
-local PHOTO_HEIGHT = 196
 
 -- Type-specific content shared by timeline cards and the post page.
 function Posts.body(app, post, full)
     local body = C.stack({ Spacing = space.inline, IgnoreHitTest = true })
     local kind = post.postType
     if kind == "photo" or (kind == "quote" and post.imageId) then
-        local frame = ui.Grid { Name = "Photo" .. post.id, Height = full and 260 or PHOTO_HEIGHT,
+        -- A square as wide as the column, as on Twitter: narrower phones get shorter photos.
+        local frame = ui.Grid { Name = "Photo" .. post.id, AspectRatio = 1,
             Background = colors.raised, IgnoreHitTest = true }
         frame:addChild(C.icon("image", 28, colors.dim))
         body:addChild(frame)
@@ -118,10 +118,12 @@ end
 -- One timeline card: avatar tile, author line, the post and its actions. A
 -- repost carries a "reposted" line above the author, as on Twitter.
 function Posts.card(app, post, entry, repostedBy)
-    local card = ui.Grid { Name = "Post" .. post.id, Columns = "52px 1fr", Spacing = space.column }
+    local card = ui.Grid { Name = "Post" .. post.id, Columns = C.AVATAR .. "px 1fr", Spacing = space.inline }
     local function author() app:openProfile(post.authorId, post.authorName) end
-    card:addChild(C.area(C.avatar(post.authorName, 52, post.authorId, app), author, {
-        Name = "Avatar" .. post.id, Width = 52, Height = 52, MarginTop = repostedBy and space.post or 0 }))
+    -- A repost's avatar lines up with the author, below the "reposted" line.
+    card:addChild(C.area(C.avatar(post.authorName, C.AVATAR, post.authorId, app), author, {
+        Name = "Avatar" .. post.id, Width = C.AVATAR, Height = C.AVATAR,
+        MarginTop = repostedBy and REPOSTED_HEIGHT + space.tight or 0 }))
     local header = ui.Grid { Columns = "1fr auto", Spacing = space.inline, IgnoreHitTest = true }
     header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
     header:addChild(C.text(C.ago(post.createdAt, app.clock()), { FontSize = 13, Foreground = colors.dim }))
@@ -130,7 +132,7 @@ function Posts.card(app, post, entry, repostedBy)
         column:addChild(C.area(C.row({ Spacing = space.tight, IgnoreHitTest = true }, {
             C.icon("repeat-2", 14, colors.dim, { MarginLeft = 0, MarginRight = 0 }),
             C.text(repostedBy.name .. " reposted", { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
-        }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = 20 }))
+        }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = REPOSTED_HEIGHT }))
     end
     column:addChild(C.area(header, author, { Name = "Author" .. post.id, Height = 24 }))
     column:addChild(C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }))

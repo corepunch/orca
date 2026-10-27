@@ -106,6 +106,11 @@ content-box behaviour, not XAML's, where `Height` includes the border; it is
 kept for compatibility and may change. Children with no explicit height take
 the track size of a `Grid`, border included.
 
+**Aspect ratio:** `AspectRatio` sets an auto height from the laid-out width,
+as CSS `aspect-ratio` does. `AspectRatio = 1` on a child of a vertical
+`StackView` gives a square as wide as the column, so a narrower phone gets a
+shorter square. An explicit `Height` wins over it.
+
 **Thickness order:** in XML attributes and Lua properties, `Margin`,
 `Padding` and `BorderWidth` use XAML order: `"12"`, `"horizontal vertical"`,
 or `"left top right bottom"`. `Padding="12 0"` is 12 on the left and right.

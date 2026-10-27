@@ -61,6 +61,11 @@ identifies an ordinary wheel event. Direct producers must send Begin before
 Update, and End or Cancel to finish the sequence. The iOS platform submodule
 and Orca must be rebuilt together for this event contract.
 
+Touch never hovers. A finger leaves no pointer behind, so an event carrying
+`AX_POINTER_TOUCH` clears the hovered object instead of setting it, and
+`:hover` rules apply only to a mouse, trackpad or pencil. Give touch feedback
+through the pressed or selected state, not `:hover`.
+
 ## Loading content
 
 Attach the screen shell and usable controls before starting network work. Use
