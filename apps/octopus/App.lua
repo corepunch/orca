@@ -12,6 +12,7 @@ local People = require "Octopus/views/people"
 local Compose = require "Octopus/views/compose"
 local Identity = require "Octopus/views/identity"
 local AvatarLoader = require "orca.UIKit.AvatarLoader"
+local Turnstile = require "orca.UIKit.Turnstile"
 local colors = C.colors
 
 
@@ -113,7 +114,9 @@ local App = Application:extend {
         return self:frame(content, key)
     end,
 
-    show = function(self, route)
+    -- `turnstile` turns the page in as on Windows Phone: "ForwardIn" going
+    -- into a post or profile, "BackwardIn" coming back out of one.
+    show = function(self, route, turnstile)
         -- Pages with inputs keep their drafts when you navigate away.
         local leaving = self.leaving
         self.leaving = nil
@@ -121,8 +124,13 @@ local App = Application:extend {
         self.navigationEpoch = (self.navigationEpoch or 0) + 1
         local epoch = self.navigationEpoch
         local controller = self:dispatch(route or "/")
-        if self.navigationEpoch == epoch then return self:activate_controller(controller) end
+        if self.navigationEpoch ~= epoch then return end
+        local result = self:activate_controller(controller)
+        if result and turnstile then Turnstile.play(self.screen, turnstile) end
+        return result
     end,
+
+    goBack = function(self, route) return self:show(route, "BackwardIn") end,
 
     -- A page's status line. Where it has its own strip (self.statusBar), the
     -- strip only shows while there is something to say.
@@ -144,14 +152,14 @@ local App = Application:extend {
 
     openPost = function(self, post)
         self.post, self.postReturn = post, self.currentRoute
-        self:show("/post")
+        self:show("/post", "ForwardIn")
     end,
 
     openProfile = function(self, userId, name)
         if self.client:getSession() and userId == self.client:currentUserId() then return self:show("/me") end
         self.profileId, self.profileName = userId, name
         self.profileReturn = self.currentRoute ~= "/user" and self.currentRoute or self.profileReturn
-        self:show("/user")
+        self:show("/user", "ForwardIn")
     end,
 
     openTag = function(self, tag)

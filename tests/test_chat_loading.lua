@@ -101,7 +101,7 @@ local listMembers = client.listMembers
 client.listMembers = function(self, ...) coroutine.yield("members"); return listMembers(self, ...) end
 app:show("/details")
 local details = app.screen
-assert(details:findChild("ContentLoading", true) and details:findChild("BackToThread", true))
+assert(details:findChild("ContentLoading", true) and details:findChild("DetailsPage", true).BackIcon ~= "")
 local members = nextRequest()
 app:show("/thread")
 local replacement = app.screen

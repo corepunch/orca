@@ -235,11 +235,10 @@ function Thread.page(self)
     body:addChild(content); body:addChild(footer)
 
     local function back()
-        self:show(self.postReturn and self.postReturn ~= "/post" and self.postReturn or "/")
+        self:goBack(self.postReturn and self.postReturn ~= "/post" and self.postReturn or "/")
     end
     local bar
     bar = C.appBar({
-        { "BackFromPost", "arrow-left", "back", back },
         { "LikePost", "heart", "like", function()
             Posts.toggle(self, post, view.entry, "like", function() view.refreshStats() end)
         end },
@@ -276,7 +275,7 @@ function Thread.page(self)
     end
     view.refreshStats()
     local screen = self:frame()
-    Footer.layout(screen, C.page(LABELS[post.postType], body, { ExtendBodyBehindHeader = true }), bar,
+    Footer.layout(screen, C.page(LABELS[post.postType], body, { Name = "PostView", ExtendBodyBehindHeader = true, back = back }), bar,
         { Background = colors.background, Foreground = colors.ink })
     Thread.load(self, view)
     return screen

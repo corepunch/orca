@@ -8,12 +8,21 @@
 #define PIVOT_HEADER_SPACING 18.0f
 #define PIVOT_CONTENT_TOP    8.0f    // gap between header strip and content; the header line already ends below its descenders
 #define PIVOT_SLIDE          80.0f   // distance the incoming content slides
-#define PIVOT_BACK_ICON      16.0f   // back glyph before the title
-#define PIVOT_BACK_GAP       6.0f
+#define PIVOT_BACK_ICON      16.0f   // back glyph, centred in its ring
+#define PIVOT_BACK_RING      30.0f   // round back button before the title
+#define PIVOT_BACK_BORDER    2.0f
+#define PIVOT_BACK_GAP       10.0f
 #define PIVOT_BACK_MIN       44.0f   // smallest back tap target
 #define PIVOT_EDGE           24.0f   // width of the strip a back swipe starts in
 #define PIVOT_BACK_SWIPE     96.0f   // distance that commits a back swipe
 #define PIVOT_MAX_ITEMS      32
+// Turnstile page transitions, after WinJS turnstileForwardIn/BackwardIn: a
+// 600-point perspective about a hinge 40 points left of the screen.
+#define TURNSTILE_HINGE      40.0f
+#define TURNSTILE_DEPTH      600.0f
+#define TURNSTILE_MS         300
+#define TURNSTILE_FORWARD    80.0f   // degrees a page gone into starts at
+#define TURNSTILE_BACKWARD   -50.0f  // degrees a page returned to starts at
 
 static int
 Pivot_Items(struct Object *hObject, struct Object **items)
@@ -66,6 +75,15 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
   if (back && !pPivot->_back) {
     pPivot->_back = OBJ_Create(ID_Node2D);
     OBJ_AddChild(hObject, pPivot->_back);
+    pPivot->_backRing = OBJ_Create(ID_Node2D);
+    GetNode2D(pPivot->_backRing)->IgnoreHitTest = TRUE;
+    struct Node *ring = GetNode(pPivot->_backRing);
+    float radius = PIVOT_BACK_RING / 2;
+    ring->Border.Radius = (struct CornerRadius){ radius, radius, radius, radius };
+    ring->Border.Width.Axis[0].Left = ring->Border.Width.Axis[0].Right = PIVOT_BACK_BORDER;
+    ring->Border.Width.Axis[1].Left = ring->Border.Width.Axis[1].Right = PIVOT_BACK_BORDER;
+    _SendMessage(pPivot->_backRing, StyleController, AddClass, .ClassName = "pivot-back");
+    OBJ_AddChild(pPivot->_back, pPivot->_backRing);
     pPivot->_backIcon = OBJ_Create(ID_VectorView);
     GetNode2D(pPivot->_backIcon)->IgnoreHitTest = TRUE;
     Metro_SetFloat(pPivot->_backIcon, ID_Node_Width, PIVOT_BACK_ICON);
@@ -76,6 +94,10 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
     struct VectorView *icon = GetVectorView(pPivot->_backIcon);
     if (back && (!icon->Source || strcmp(icon->Source, pPivot->BackIcon)))
       PROP_SetStringValue(OBJ_FindLongProperty(pPivot->_backIcon, ID_VectorView_Source), pPivot->BackIcon);
+    // The ring is drawn in the page's ink, like an application bar button.
+    struct color ink = GetNode2D(hObject)->Foreground.Color;
+    struct Property *border = OBJ_FindLongProperty(pPivot->_backRing, ID_Node_BorderColor);
+    if (border && memcmp(PROP_GetValue(border), &ink, sizeof(ink))) PROP_SetValue(border, &ink);
     Metro_Show(pPivot->_back, back, 1);
   }
 
@@ -164,9 +186,42 @@ Pivot_Select(struct Object *hObject, int index)
   Metro_SetProperty(hObject, ID_Pivot_SelectedIndex, &value);
 }
 
+// WinJS's turnstile curve, cubic-bezier(0.01, 0.975, 0.4775, 0.9775): the
+// page covers most of its swing at once and then settles.
+static float
+Turnstile_Ease(float t)
+{
+  float const x1 = 0.01f, y1 = 0.975f, x2 = 0.4775f, y2 = 0.9775f;
+  float lo = 0, hi = 1, u = t;
+  for (int i = 0; i < 20; i++) {
+    u = (lo + hi) / 2;
+    float x = 3 * (1 - u) * (1 - u) * u * x1 + 3 * (1 - u) * u * u * x2 + u * u * u;
+    if (x < t) lo = u; else hi = u;
+  }
+  return 3 * (1 - u) * (1 - u) * u * y1 + 3 * (1 - u) * u * u * y2 + u * u * u;
+}
+
+// The page's rotation in its parent's space: perspective(600) rotateY(angle)
+// about a vertical hinge left of the page, half way down it, as in CSS.
+static struct mat4
+Turnstile_Matrix(struct rect frame, float degrees)
+{
+  float a = degrees * (float)M_PI / 180, c = cosf(a), s = sinf(a);
+  struct vec2 hinge = { frame.x - TURNSTILE_HINGE, frame.y + frame.height / 2 };
+  struct mat4 to = MAT4_Identity(), from = MAT4_Identity(), turn = MAT4_Identity();
+  to.v[12] = hinge.x, to.v[13] = hinge.y;
+  from.v[12] = -hinge.x, from.v[13] = -hinge.y;
+  // x' = x cos + z sin, z' = z cos - x sin, w = 1 - z' / depth
+  turn.v[0] = c, turn.v[2] = -s, turn.v[3] = s / TURNSTILE_DEPTH;
+  turn.v[8] = s, turn.v[10] = c, turn.v[11] = -c / TURNSTILE_DEPTH;
+  struct mat4 m = MAT4_Multiply(&to, &turn);
+  return MAT4_Multiply(&m, &from);
+}
+
 HANDLER(Pivot, Object, Create)
 {
   pPivot->_progress = 1;
+  pPivot->_turn = 1;
   return FALSE;
 }
 
@@ -177,8 +232,13 @@ HANDLER(Pivot, Object, PropertyChanged)
   if (id == ID_Pivot_SelectedIndex) {
     Pivot_Transition(hObject, pPivot, Pivot_SelectedHeaderIndex(hObject));
   }
+  if (id == ID_Pivot_Turnstile) {
+    // The clock starts with the first frame, after the page is built.
+    pPivot->_turn = pPivot->Turnstile == kTurnstileModeNone ? 1 : -1;
+    OBJ_RequestAnimate(hObject);
+  }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
-      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon) {
+      id == ID_Pivot_ExtendBodyBehindHeader || id == ID_Pivot_BackIcon || id == ID_Pivot_Turnstile) {
     OBJ_SetDirty(hObject);
   }
   return FALSE;
@@ -187,9 +247,30 @@ HANDLER(Pivot, Object, PropertyChanged)
 HANDLER(Pivot, Object, Animate)
 {
   pPivot->_progress = MIN(Metro_Elapsed(pPivot->_animStart), 1);
+  if (pPivot->Turnstile != kTurnstileModeNone) {
+    if (pPivot->_turn < 0) pPivot->_turnStart = (int32_t)axGetMilliseconds();
+    pPivot->_turn = MIN((float)((int32_t)axGetMilliseconds() - pPivot->_turnStart) / TURNSTILE_MS, 1);
+    if (pPivot->_turn >= 1) {
+      enum TurnstileMode none = kTurnstileModeNone;
+      Metro_SetProperty(hObject, ID_Pivot_Turnstile, &none);
+    }
+  }
   OBJ_SetDirty(hObject);
-  if (pPivot->_progress < 1) OBJ_RequestAnimate(hObject);
+  if (pPivot->_progress < 1 || pPivot->Turnstile != kTurnstileModeNone) OBJ_RequestAnimate(hObject);
   return TRUE;
+}
+
+// Turns the page on its hinge before Node2D composes its matrix. Until the
+// first frame starts the clock, the page waits at its starting angle.
+HANDLER(Pivot, Node, UpdateMatrix)
+{
+  if (pPivot->Turnstile == kTurnstileModeNone) return FALSE;
+  float from = pPivot->Turnstile == kTurnstileModeForwardIn ? TURNSTILE_FORWARD : TURNSTILE_BACKWARD;
+  float degrees = from * (1 - Turnstile_Ease(MAX(pPivot->_turn, 0)));
+  struct mat4 turn = Turnstile_Matrix(Node2D_GetRect(GetNode2D(hObject)), degrees);
+  pUpdateMatrix->parent = MAT4_Multiply(&pUpdateMatrix->parent, &turn);
+  pUpdateMatrix->force = TRUE;
+  return FALSE;
 }
 
 HANDLER(Pivot, Node2D, MeasureOverride)
@@ -238,17 +319,22 @@ HANDLER(Pivot, Node2D, ArrangeOverride)
 
   LRESULT title = Metro_Measure(pPivot->_title, w, h);
   bool_t back = pPivot->_back && GetNode(pPivot->_back)->Visible;
-  float titleX = x + METRO_INSET + (back ? PIVOT_BACK_ICON + PIVOT_BACK_GAP : 0);
+  float titleX = x + METRO_INSET + (back ? PIVOT_BACK_RING + PIVOT_BACK_GAP : 0);
   Metro_Arrange(pPivot->_title, titleX, top + PIVOT_TITLE_TOP, LOWORD(title), HIWORD(title));
   float stripY = top + PIVOT_TITLE_TOP + HIWORD(title) + PIVOT_HEADER_TOP, strip = 0;
   if (back) {
     // The whole title line, up through the status bar, is the back button.
+    // The ring is centred on the title line and may reach into the gaps
+    // above and below it, so the page's metrics stay the same.
     float right = MAX(titleX + LOWORD(title) + METRO_INSET, x + PIVOT_BACK_MIN);
     float bottom = MAX(stripY, top + PIVOT_BACK_MIN);
+    float ringX = METRO_INSET, ringY = top - y + PIVOT_TITLE_TOP + (HIWORD(title) - PIVOT_BACK_RING) / 2;
     Metro_Arrange(pPivot->_back, x, y, right - x, bottom - y);
+    Metro_Measure(pPivot->_backRing, PIVOT_BACK_RING, PIVOT_BACK_RING);
+    Metro_Arrange(pPivot->_backRing, ringX, ringY, PIVOT_BACK_RING, PIVOT_BACK_RING);
     Metro_Measure(pPivot->_backIcon, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
-    Metro_Arrange(pPivot->_backIcon, METRO_INSET,
-      top - y + PIVOT_TITLE_TOP + (HIWORD(title) - PIVOT_BACK_ICON) / 2, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
+    Metro_Arrange(pPivot->_backIcon, ringX + (PIVOT_BACK_RING - PIVOT_BACK_ICON) / 2,
+      ringY + (PIVOT_BACK_RING - PIVOT_BACK_ICON) / 2, PIVOT_BACK_ICON, PIVOT_BACK_ICON);
   }
 
   // The selected header leads; the others follow in order and wrap around.

@@ -129,7 +129,7 @@ function Compose.publish(self, view)
         self:invalidate()
         if visible and clear then
             self.post, self.postReturn = post, "/"
-            self:show("/post")
+            self:show("/post", "ForwardIn")
         else self:show(self.currentRoute) end
     end)
 end

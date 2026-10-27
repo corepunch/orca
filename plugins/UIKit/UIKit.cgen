@@ -183,6 +183,12 @@
       <value name="Default">Icon buttons and the ellipsis; labels and menu items appear when expanded</value>
       <value name="Minimized">A thin strip with only the ellipsis until expanded</value>
     </enum>
+    <enum name="TurnstileMode">
+      <summary>Windows Phone turnstile page transitions: the page swings in on a hinge just left of the screen</summary>
+      <value name="None">No transition, or the transition has finished</value>
+      <value name="ForwardIn">A page you go into swings in from 80 degrees, its right edge first receding into the screen</value>
+      <value name="BackwardIn">A page you return to swings back from -50 degrees, its right edge first raised towards you</value>
+    </enum>
   </enums>
   <structs>
     <struct name="FontShorthand">
@@ -1168,12 +1174,13 @@
     </class>
     <class name="Pivot" parent="Node2D">
       <summary>Windows Phone pivot: a title, a strip of lowercase headers and one visible PivotItem</summary>
-      <details>Generates a small-caps Title and one PivotHeaderItem per PivotItem child. The selected header always leads the strip and the rest follow cyclically, dimmed; when they end before the right edge the cycle repeats until the strip fills the width, as on Windows Phone. Tap a header or swipe horizontally across the content to change items; both directions wrap around. Selection changes animate the strip and slide the new content in. With a BackIcon, the title line becomes a back button and a swipe in from the left edge goes back too, as in an iOS navigation bar. Style the generated parts with the "pivot-title" and "pivot-header" CSS classes.</details>
+      <details>Generates a small-caps Title and one PivotHeaderItem per PivotItem child. The selected header always leads the strip and the rest follow cyclically, dimmed; when they end before the right edge the cycle repeats until the strip fills the width, as on Windows Phone. Tap a header or swipe horizontally across the content to change items; both directions wrap around. Selection changes animate the strip and slide the new content in. With a BackIcon, the title line becomes a back button, its glyph in a ring before the title, and a swipe in from the left edge goes back too, as in an iOS navigation bar. Set Turnstile to rotate the page in when navigating. Style the generated parts with the "pivot-title", "pivot-header" and "pivot-back" CSS classes.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Object.Animate"/>
+        <handle message="Node.UpdateMatrix"/>
         <handle message="Node2D.MeasureOverride"/>
         <handle message="Node2D.ArrangeOverride"/>
         <handle message="Node.LeftButtonDown"/>
@@ -1185,11 +1192,13 @@
         <property name="SelectedIndex" type="int">Index of the selected PivotItem among the PivotItem children</property>
         <property name="IsLocked" type="bool">When true, only the selected header is shown and swiping is disabled</property>
         <property name="ExtendBodyBehindHeader" type="bool">When true, the selected PivotItem extends under the title and header strip, which become a top bar: scrolling content starts below it and scrolls under it. Style the bar behind them with the "pivot-bar" CSS class.</property>
-        <property name="BackIcon" type="string">Asset path of an SVG back glyph shown before the Title. When set, tapping the title line or swiping in from the left edge fires BackRequested; the content follows the swipe.</property>
+        <property name="BackIcon" type="string">Asset path of an SVG back glyph shown in a ring before the Title, which moves right to make room. When set, tapping the title line or swiping in from the left edge fires BackRequested; the content follows the swipe.</property>
+        <property name="Turnstile" type="TurnstileMode">Plays a Windows Phone turnstile transition from the next frame: the whole page rotates in perspective about a vertical hinge 40 points left of the screen and settles flat in 300 ms. Returns to None when it finishes. The navigation owner sets it, ForwardIn on a page it goes into and BackwardIn on the one it returns to.</property>
       </properties>
       <fields>
         <field name="_title" type="Object" pointer="true">Generated title TextBlock (private)</field>
         <field name="_back" type="Object" pointer="true">Generated tap area over the title line when BackIcon is set (private)</field>
+        <field name="_backRing" type="Object" pointer="true">Generated ring around the back glyph (private)</field>
         <field name="_backIcon" type="Object" pointer="true">Generated back glyph (private)</field>
         <field name="_backPressed" type="bool">The press started on the back tap area (private)</field>
         <field name="_edge" type="bool">The press started at the left edge and may become a back swipe (private)</field>
@@ -1203,6 +1212,8 @@
         <field name="_contentFrom" type="float">Content offset at the start of the animation (private)</field>
         <field name="_animStart" type="int">Animation start time in milliseconds (private)</field>
         <field name="_progress" type="float">Animation progress from 0 to 1 (private)</field>
+        <field name="_turnStart" type="int">Turnstile start time in milliseconds (private)</field>
+        <field name="_turn" type="float">Turnstile progress from 0 to 1, or -1 until its first frame (private)</field>
       </fields>
       <messages>
         <message name="SelectionChanged">

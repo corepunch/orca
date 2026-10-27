@@ -108,6 +108,14 @@ selection, visible content, and retained form drafts. The chat app's
 [shared shell](../../apps/chat/views/shell.lua) demonstrates this in Lua with
 native `TabBar`/`Tab` selection and retained `Page` instances.
 
+On Windows Phone the frame, not each page, ran the turnstile transition on
+every navigation, so a page could not forget it. Keep that ownership: the
+code that navigates sets `Pivot.Turnstile` on the page it shows, `ForwardIn`
+going into a page (a post, a profile, a conversation) and `BackwardIn` coming
+back out, and those pages get a `BackIcon`. Chat and Octopus pass the
+direction to `App:show(route, turnstile)`, which plays it with
+`orca.UIKit.Turnstile` after activating the screen; tab switches play none.
+
 The existing Lua `Application` router is also supported. In its current dispatch
 path, widget views and layouts are constructed when a route is activated;
 switching routes does not by itself preserve a native back stack, scroll

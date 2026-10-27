@@ -24,9 +24,13 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
 - Commands live in an `ApplicationBar`. On the root pages its round buttons
   switch between chats, new chat and profile, and its menu holds refresh and
   sign out. A conversation has no command row, after Windows Phone
-  Messenger: its title line (‹ MESSENGER) goes back, as does a swipe in from
-  the left edge, and tapping its name opens the conversation info, whose bar
-  holds back and pin. Attach and send sit in the composer.
+  Messenger: its title line, a round back button before MESSENGER, goes back,
+  as does a swipe in from the left edge, and tapping its name opens the
+  conversation info, which goes back the same way and whose bar holds pin.
+  Attach and send sit in the composer.
+- Opening a conversation or its info turns the page in on a hinge at the left
+  edge of the screen, the Windows Phone turnstile; going back turns the
+  previous page back in.
 - Text boxes are pale with dark text in both themes and turn white with an
   accent border when focused. Secondary buttons are 2-pixel outlines,
   primary commands are filled with the accent, and links are plain accent
