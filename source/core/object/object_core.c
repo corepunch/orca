@@ -224,8 +224,10 @@ int OBJ_SetTimer(struct Object *self, int duration)
 
 void OBJ_CancelTimer(struct Object *self, int timerId)
 {
-  (void)self;
-  if (timerId > 0) axCancelTimer((uint32_t)timerId);
+  if (timerId <= 0) return;
+  axCancelTimer((uint32_t)timerId);
+  // A tick queued before cancellation must not reach the handler.
+  axRemoveMessages(self, kEventTimer, (uint32_t)timerId);
 }
 
 struct Object *

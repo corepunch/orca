@@ -162,37 +162,27 @@ local function pumpUntil(done, milliseconds)
     if event and not event:is("Window.Paint") then system.dispatchMessage(screen, event) end
   until done() or system.getTime() >= deadline
 end
--- A late first tick can find the next one already queued, and the coroutine
--- resumes after it. As documented for cancelTimer, the handler ignores ticks
--- that no longer match its active handle; `raw` counts every delivery.
-local delivered, raw, resumed, receivedId, active = 0, 0, false, nil, nil
+local delivered, resumed, receivedId = 0, false, nil
 local owner = core.Timer { Tick = function(node, args)
-  raw = raw + 1
-  if args.timerId ~= active then return end
-  active = nil
   delivered, receivedId = delivered + 1, args.timerId
   node:cancelTimer(args.timerId)
   coroutine.yield()
   resumed = true
 end }
 local id = owner:setTimer(20)
-active = id
 pumpUntil(function() return resumed end, 2000)
 assert(resumed and delivered == 1 and receivedId == id,
   "A native expiration must deliver the right ID to a yielding Timer.Tick handler")
 pumpUntil(function() return false end, 100)
-local settled = raw
-pumpUntil(function() return false end, 100)
-assert(delivered == 1 and raw == settled, "Cancellation inside Tick must stop subsequent expirations")
+assert(delivered == 1, "Cancellation inside Tick must stop subsequent expirations")
 owner:cancelTimer(id)
 owner:cancelTimer(0)
 owner:cancelTimer(-1)
 local replacement = owner:setTimer(50)
 assert(replacement ~= id, "Cancel/recreate must not reuse a stale timer handle")
-active = replacement
 owner:cancelTimer(replacement)
 pumpUntil(function() return false end, 100)
-assert(delivered == 1 and raw == settled, "Cancelling before the first deadline must prevent delivery")
+assert(delivered == 1, "Cancelling before the first deadline must prevent delivery")
 heartbeat:cancelTimer(heartbeatId)
 
 assert(system.Event { message = "Window.Activated" }:is("Window.Activated"))
