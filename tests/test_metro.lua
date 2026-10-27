@@ -187,6 +187,53 @@ local function test_pivot_header_metrics()
   print("PASS: test_pivot_header_metrics")
 end
 
+local function test_pivot_back()
+  local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
+  local events = {}
+  local pivot = screen + ui.Pivot {
+    Title = "Messenger", IsLocked = true, BackIcon = "Metro/Icons/plus.svg",
+    BackRequested = function () events[#events + 1] = "back" end,
+    HeaderClick = function () events[#events + 1] = "header" end,
+  }
+  local item = pivot + ui.PivotItem { Name = "Thread", Header = "Simon" }
+  local row = item + ui.Button { Name = "Row", Height = 60, Click = function () events[#events + 1] = "row" end }
+  layout(screen)
+  local title = pivot:getFirstChild()
+  while title and title.className ~= "TextBlock" do title = title:getNext() end
+  test.expect(title.ActualX > 12, "A back glyph precedes the title")
+
+  tap(screen, title, 4, 4)
+  test.expect_eq(events[1], "back", "Tapping the title line goes back")
+  local _, y = origin(row)
+  swipe(screen, 8, y + 20, 140)
+  layout(screen)
+  test.expect_eq(events[2], "back", "Swiping in from the left edge goes back")
+  test.expect_eq(#events, 2, "Releasing a back swipe over a button does not click it")
+  swipe(screen, 8, y + 20, 40)
+  swipe(screen, 200, y + 20, 140)
+  swipe(screen, 8, y + 20, -140)
+  local function count(name)
+    local n = 0
+    for _, event in ipairs(events) do n = n + (event == name and 1 or 0) end
+    return n
+  end
+  test.expect_eq(count("back"), 2, "Short, mid-screen and leftward swipes do not go back")
+  events = {}
+  tap(screen, row)
+  test.expect_eq(events[1], "row", "Taps still reach the content")
+  children(pivot, "PivotHeaderItem")[1]:send("Node.LeftButtonUp")
+  pump(screen)
+  test.expect_eq(events[2], "header", "Tapping the selected header reports HeaderClick")
+
+  pivot.BackIcon = ""
+  layout(screen)
+  tap(screen, title, 4, 4)
+  swipe(screen, 8, y + 20, 140)
+  test.expect_eq(count("back"), 0, "Without a BackIcon the title and edge stay inert")
+  test.expect_eq(title.ActualX, 12, "Without a BackIcon the title keeps the page margin")
+  print("PASS: test_pivot_back")
+end
+
 local function test_application_bar()
   local screen = ui.Screen { Width = 390, Height = 844, ResizeMode = "NoResize" }
   local grid = screen + ui.Grid { Rows = "1fr 58px" }
@@ -327,6 +374,7 @@ end
 test_pivot()
 test_pivot_drag_reuse()
 test_pivot_header_metrics()
+test_pivot_back()
 test_application_bar()
 test_panorama()
 test_lisp()

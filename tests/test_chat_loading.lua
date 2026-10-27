@@ -88,7 +88,7 @@ local messagesSelect = app.models.Messages.select
 app.models.Messages.select = function(self, ...) coroutine.yield("messages"); return messagesSelect(self, ...) end
 app:openRoom(room)
 local thread = app.screen
-assert(thread:findChild("MessagesLoading", true).Visible and thread:findChild("BackToChats", true)
+assert(thread:findChild("MessagesLoading", true).Visible and thread:findChild("ThreadPage", true).BackIcon ~= ""
     and thread:findChild("Message", true), "Thread header and composer must mount before loading messages")
 local messages = nextRequest()
 app.composer.Text = "Draft written during loading"

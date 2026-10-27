@@ -109,7 +109,10 @@ the track size of a `Grid`, border included.
 **Aspect ratio:** `AspectRatio` sets an auto height from the laid-out width,
 as CSS `aspect-ratio` does. `AspectRatio = 1` on a child of a vertical
 `StackView` gives a square as wide as the column, so a narrower phone gets a
-shorter square. An explicit `Height` wins over it.
+shorter square. An explicit `Height` wins over it. For photos, set it to the
+photo's own width-to-height ratio once it has loaded rather than reserving a
+fixed square, so the frame leaves no empty band around the picture (Octopus
+clamps it between 4:5 and 1.91:1 and centre-crops beyond that).
 
 **Thickness order:** in XML attributes and Lua properties, `Margin`,
 `Padding` and `BorderWidth` use XAML order: `"12"`, `"horizontal vertical"`,

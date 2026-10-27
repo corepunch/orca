@@ -15,5 +15,4 @@
 .bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }
 .bar-bottom:dark { border-color: #38383a; }
 /* A docked toolbar continues the header, so the hairline moves below it. */
-.thread-page .pivot-bar { border-bottom-width: 0; }
 .toolbar-page .pivot-bar { border-bottom-width: 0; }

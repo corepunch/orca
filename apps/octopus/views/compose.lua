@@ -141,6 +141,7 @@ function Compose.page(self)
     self.composeView = view
     self.status = C.text(draft.notice or "", { Name = "WriteStatus", FontSize = 13,
         Foreground = draft.error and colors.error or colors.dim, WordWrap = true })
+    self.statusBar = nil
     function view.capture()
         for key, input in pairs(view.inputs) do draft[key] = input.Text end
     end

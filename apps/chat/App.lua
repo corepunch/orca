@@ -581,57 +581,21 @@ local App = Application:extend {
             C.text("You’re subscribed · Only admins can publish", { Name = "ChannelReadOnly", Visible = readOnly,
                 FontSize = 13, Foreground = colors.muted, WordWrap = true, Padding = "24 12" }),
         }))
-        local pinned = self.pinned[room.id]
-        local screen, menuButton
-        local overflow = ui.Node2D { Name = "ThreadOverflow", Visible = false }
-        local function closeMenu() overflow.Visible = false end
-        overflow:addChild(C.button("", closeMenu, { Name = "DismissConversationMenu", Height = auto,
-            BorderWidth = "0", Background = "#00000000" }))
-        local menu = C.stack({ Name = "ThreadOverflowMenu", Width = 220, Height = 144,
-            MarginRight = auto, MarginBottom = auto, Background = colors.chrome })
-        overflow:addChild(menu)
-        local commands = ui.Grid { Name = "ThreadCommands", Columns = "44px 1fr 44px", Height = 44 }
-        commands:addChild(C.iconButton("arrow-left", function() keepDraft(); self:show() end,
-            { Name = "BackToChats", Foreground = colors.ink }))
-        commands:addChild(ui.Node2D { IgnoreHitTest = true })
-        menuButton = C.button("…", function()
-            if overflow.Visible then closeMenu(); return end
-            screen:UpdateLayout(screen.Width, screen.Height)
-            local x, y, node = 0, 0, menuButton
-            while node and node ~= screen do
-                x, y, node = x + node.ActualX, y + node.ActualY, node:getParent()
-            end
-            menu.MarginLeft = math.max(screen.SafeAreaLeft, x + menuButton.ActualWidth - menu.Width)
-            menu.MarginTop = math.max(screen.SafeAreaTop,
-                math.min(y + menuButton.ActualHeight, screen.Height - screen.SafeAreaBottom - menu.Height))
-            overflow.Visible = true
-        end, { Name = "ConversationMenu", Width = 44, Height = 44, FontSize = 28, Foreground = colors.ink })
-        commands:addChild(menuButton)
-        local actions = {
-            { "PinConversation", pinned and "unpin" or "pin", function()
-                keepDraft(); self.pinned[room.id] = not self.pinned[room.id]; self:show("/thread")
-            end },
-            { "ConversationInfo", "conversation info", function() keepDraft(); self:show("/details") end },
-            { "RefreshMessages", "refresh", function() self:renderMessages() end },
-        }
-        for _, action in ipairs(actions) do
-            menu:addChild(C.button(action[2], function() closeMenu(); action[3]() end,
-                { Name = action[1], Height = 48, FontSize = 18, TextHorizontalAlignment = "Left",
-                    Padding = "16 0", Foreground = colors.ink, Background = colors.chrome, BorderWidth = "0" }))
-        end
-        -- Messages scroll under the commands, the page header and the composer.
+        -- After Messenger: no command row. The title line goes back, as does a
+        -- swipe in from the left edge, and the conversation's name opens its info.
         self.threadBody = ui.Node2D {}
         local timeline = ui.Node2D {}
         timeline:addChild(self.messageList)
         self.messageLoading = ui.ActivityIndicator { Name = "MessagesLoading", Foreground = colors.muted }
         timeline:addChild(self.messageLoading)
         self.threadBody:addChild(timeline)
-        self.threadBody:addChild(C.toolbar("Top", { commands }, { Name = "ThreadToolbar" }))
         -- Keep the rectangular composer outside the page's horizontal content margins.
-        screen = self:frame()
-        Footer.layout(screen, C.page(room.name, self.threadBody, { ExtendBodyBehindHeader = true, class = "thread-page" }), footer,
+        local screen = self:frame()
+        local kind = room.kind == "group" and "Messenger · group" or room.kind == "channel" and "Messenger · channel" or nil
+        Footer.layout(screen, C.page(room.name, self.threadBody, { Name = "ThreadPage", Title = kind, ExtendBodyBehindHeader = true,
+            back = function() keepDraft(); self:show() end,
+            details = function() keepDraft(); self:show("/details") end }), footer,
             { Background = colors.background, Foreground = colors.ink })
-        screen:addChild(overflow)
         -- A bottom sheet for one message's actions, dismissed by tapping outside.
         self.messageActions = ui.Node2D { Name = "MessageActionsMenu", Visible = false }
         self.messageActions:addChild(C.button("", function() self.messageActions.Visible = false end,

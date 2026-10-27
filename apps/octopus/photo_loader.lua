@@ -6,9 +6,12 @@ local Observer = require "orca.UIKit.ViewportObserver"
 local Loader = {}
 Loader.__index = Loader
 local MAX_ACTIVE = 2
+-- Frames that follow their photo keep its shape between Instagram's limits:
+-- 4:5 portrait to 1.91:1 landscape. Beyond them the photo is centre-cropped.
+local TALLEST, WIDEST, GUESS = 4 / 5, 1.91, 4 / 3
 
 function Loader.new(app)
-    return setmetatable({ app = app, active = 0, pending = {}, requests = {}, watching = {}, nextOrder = 0,
+    return setmetatable({ app = app, active = 0, pending = {}, requests = {}, watching = {}, nextOrder = 0, ratios = {},
         observer = Observer.new { root = function() return app.screen end,
             retainedRoot = function() return app.shell and app.shell.screen end } }, Loader)
 end
@@ -30,6 +33,11 @@ function Loader:loadVisible()
     end
     table.sort(ordered, function(a, b) return a.order < b.order end)
     for _, target in ipairs(ordered) do target.load() end
+end
+
+-- The aspect ratio to reserve for a photo: its own once it has been decoded.
+function Loader:aspect(key)
+    return self.ratios[key] or GUESS
 end
 
 function Loader:pump()
@@ -87,15 +95,22 @@ function Loader:watch(frame, key, name)
         requested = false
         loading(false)
         if path then
-            -- Fit inside the frame, aligned to its top-left corner like the text.
-            local image = ui.ImageView { Name = name, Src = path, Stretch = "Uniform",
-                Foreground = "#ffffff", IgnoreHitTest = true,
-                MarginLeft = 0, MarginRight = 0/0, MarginTop = 0, MarginBottom = 0/0 }
+            -- A frame with an aspect ratio takes the photo's shape and is filled
+            -- edge to edge; a fixed frame fits the photo in its top-left corner.
+            local shaped = frame.AspectRatio > 0
+            local image = ui.ImageView { Name = name, Src = path, Foreground = "#ffffff", IgnoreHitTest = true,
+                Stretch = shaped and "UniformToFill" or "Uniform" }
+            if not shaped then image.MarginLeft, image.MarginRight, image.MarginTop, image.MarginBottom = 0, 0/0, 0, 0/0 end
             image:send("Node.LoadView")
             if not image.Source then
                 app.media:discard(key)
                 path, err = nil, { message = "This photo could not be decoded." }
             else
+                local width, height = image.Source.Width, image.Source.Height
+                if shaped and width > 0 and height > 0 then
+                    self.ratios[key] = math.max(TALLEST, math.min(WIDEST, width / height))
+                    frame.AspectRatio = self.ratios[key]
+                end
                 C.clear(frame):addChild(image)
                 frame.Background = "#00000000"
                 frame.IgnoreHitTest = true

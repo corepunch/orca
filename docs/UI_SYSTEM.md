@@ -97,7 +97,11 @@ is inset, as `adjustedContentInset` insets it on iOS.
 - A node that insets its content consumes the safe area: its children see none.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which
-  becomes a top bar styled by the generated `pivot-bar` part.
+  becomes a top bar styled by the generated `pivot-bar` part. A `BackIcon`
+  puts a back glyph before the title: tapping the title line, or swiping in
+  from the left edge, fires `BackRequested`, so a page needs no row for its
+  back button. Tapping the selected header fires `HeaderClick`, for example to
+  open details of a conversation.
 
 `share/orca/UIKit/Footer.lua` builds this shell for applications; see
 [App styling](app/styling.md#layout-and-sizing). Frost the bars with
