@@ -208,6 +208,42 @@ for _, inset in ipairs { 384, 0 } do
     assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
         "The composer background must extend under the keyboard to the physical bottom")
 end
+
+-- With a scrolling history, the keyboard keeps the newest message above the
+-- composer, and keeps what was being read in view when scrolled back.
+for i = 1, 14 do assert(app.client:sendMessage(app.room.id, "Keyboard history " .. i)) end
+assert(app:renderMessages())
+local list = app.messageList
+local function keyboard(inset)
+    screen.KeyboardInsetBottom = inset
+    core.advanceFrame()
+    core.runAllPrograms(screen)
+    screen:UpdateLayout(390, 844)
+end
+local function lastBottom()
+    local entries = {}
+    for child in list.children do entries[#entries + 1] = child end
+    local last = entries[#entries]
+    return screenY(last) + last.ActualHeight + list.ContentOffset.Y
+end
+keyboard(0)
+assert(list.ScrollHeight > list.ActualHeight, "The keyboard check needs a scrolling history")
+for _, inset in ipairs { 336, 0, 291, 0 } do
+    keyboard(inset)
+    local composerTop = screenY(footer)
+    assert(lastBottom() <= composerTop + 0.5 and lastBottom() >= composerTop - 12,
+        string.format("The newest message must stay right above the composer with a %d-point keyboard: %.1f vs %.1f",
+            inset, lastBottom(), composerTop))
+end
+list.ContentOffset = { X = 0, Y = list.ContentOffset.Y + 300 }
+screen:UpdateLayout(390, 844)
+local readingEdge = screenY(footer) - list.ContentOffset.Y
+keyboard(336)
+assert(math.abs(screenY(footer) - list.ContentOffset.Y - readingEdge) < 1,
+    "Opening the keyboard mid-history must keep the message being read in view")
+keyboard(0)
+assert(math.abs(screenY(footer) - list.ContentOffset.Y - readingEdge) < 1,
+    "Closing the keyboard mid-history must restore the reading position")
 screen.SafeAreaTop, screen.SafeAreaBottom = 0, 0
 screen.SafeAreaLeft, screen.SafeAreaRight = 0, 0
 flushQueue()

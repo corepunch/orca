@@ -88,11 +88,12 @@ is inset, as `adjustedContentInset` insets it on iOS.
   publishes the applied inset as `AdjustedContentInsetTop` and
   `AdjustedContentInsetBottom`: the visible part of a scrolling node lies
   between them, for example to find the first message below the header.
-- `ScrollAnchor = "Bottom"` keeps a scrolling node that is at its end at its
-  end when layout changes its content or insets, after SwiftUI's
-  `defaultScrollAnchor(.bottom)`. A chat stays at its newest message as the
-  keyboard opens or the composer grows; a list scrolled elsewhere keeps its
-  offset, and touch scrolling in progress is left alone.
+- `ScrollAnchor = "Bottom"`, after SwiftUI's `defaultScrollAnchor(.bottom)`,
+  keeps a scrolling node that is at its end at its end when layout changes its
+  content or insets: a chat stays at its newest message as the keyboard opens
+  or the composer grows. Scrolled elsewhere, the node keeps the content at its
+  visible bottom edge in place when that edge moves, so the keyboard does not
+  cover what was being read. Touch scrolling in progress is left alone.
 - A node that insets its content consumes the safe area: its children see none.
   A `Pivot` consumes the top inset with its header; with
   `ExtendBodyBehindHeader = true`, its items extend behind the header, which

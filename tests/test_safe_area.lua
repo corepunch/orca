@@ -174,10 +174,22 @@ local function test_bottom_anchor_stays_at_the_end()
     last = anchored:findChild("Row41")
     test.expect_near(lastBottom(), H - 58 - 300, 0.01, "a list at its end follows added rows")
 
-    anchored.ContentOffset = { X = 0, Y = -100 }
+    -- Scrolled back through history, the keyboard keeps the content at the
+    -- visible bottom edge in view, as in iOS Messages.
     screen.KeyboardInsetBottom = 0
     layout(screen)
-    test.expect_near(anchored.ContentOffset.Y, -100, 0.01, "a list scrolled away from its end keeps its offset")
+    anchored.ContentOffset = { X = 0, Y = -200 }
+    layout(screen)
+    test.expect_near(anchored.ContentOffset.Y, -200, 0.01, "a list scrolled away from its end keeps its offset")
+    local visible = (H - 58 - 34) - anchored.ContentOffset.Y
+    screen.KeyboardInsetBottom = 300
+    layout(screen)
+    test.expect_near((H - 58 - 300) - anchored.ContentOffset.Y, visible, 0.01,
+        "the keyboard keeps the content at the visible bottom edge in view")
+    test.expect_near(plain.ContentOffset.Y, 0, 0.01, "a top-anchored list keeps its offset")
+    screen.KeyboardInsetBottom = 0
+    layout(screen)
+    test.expect_near(anchored.ContentOffset.Y, -200, 0.01, "closing the keyboard restores the offset")
     screen:clear()
     print("PASS: test_bottom_anchor_stays_at_the_end")
 end

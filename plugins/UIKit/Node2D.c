@@ -899,10 +899,13 @@ HANDLER(Node2D, Node2D, Arrange)
     .height = s.height,
   };
 
-  // Read before the frame changes: a bottom-anchored node at its end stays
-  // there, unless a touch is moving it.
-  bool_t atEnd = n->ScrollAnchor == kScrollAnchorBottom && n->Overflow.y == kOverflowScroll &&
-    !n->_scrollTracking && !n->_scrollAnimating && fabsf(n->ContentOffset.y - Node2D_ScrollLimit(n)) < 1;
+  // Read before the frame changes. A bottom-anchored node at its end stays
+  // there; elsewhere it keeps the content at its visible bottom edge in place,
+  // as the keyboard or a bottom bar grows. A touch in progress is left alone.
+  bool_t anchored = n->ScrollAnchor == kScrollAnchorBottom && n->Overflow.y == kOverflowScroll &&
+    !n->_scrollTracking && !n->_scrollAnimating;
+  bool_t atEnd = anchored && fabsf(n->ContentOffset.y - Node2D_ScrollLimit(n)) < 1;
+  float visibleBottom = Node2D_GetFrame(n, kBox3FieldHeight) - NODE2D_INSET(n)._LEFT;
 
   // Children read the frame and safe area of their ancestors while arranging.
   Node2D_SetFrame(n, kBox3FieldX,      rect.x);
@@ -928,8 +931,12 @@ HANDLER(Node2D, Node2D, Arrange)
     if (property) PROP_SetValue(property, &scroll);
     else n->_node->Size.Axis[1].Scroll = scroll;
   }
-  if (atEnd && n->ContentOffset.y != Node2D_ScrollLimit(n))
-    Node2D_ScrollOffset(hObject, n, Node2D_ScrollLimit(n));
+  if (anchored) {
+    float limit = Node2D_ScrollLimit(n);
+    float moved = Node2D_GetFrame(n, kBox3FieldHeight) - NODE2D_INSET(n)._LEFT - visibleBottom;
+    float y = atEnd ? limit : Scroll_Clamp(n->ContentOffset.y + moved, limit);
+    if (y != n->ContentOffset.y) Node2D_ScrollOffset(hObject, n, y);
+  }
 
   return MAKEDWORD(rect.width + TOTAL_MARGIN(n, 0), rect.height + TOTAL_MARGIN(n, 1));
 }
