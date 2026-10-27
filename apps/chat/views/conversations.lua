@@ -253,6 +253,23 @@ local function detailsBody(self, room, members)
     self.status = C.text((room.kind == "channel" and "Only owners and admins can publish here." or "A space for everyone in this conversation."), {
         WordWrap = true, FontSize = 14, Foreground = colors.muted })
     body:addChild(self.status)
+    if room.kind ~= "direct" and room.role == "owner" then
+        local name = C.input("RenameRoomName", "Conversation name", { Text = room.name })
+        local busy = false
+        body:addChild(C.eyebrow("CONVERSATION NAME")); body:addChild(name)
+        body:addChild(C.button("Save name", function()
+            if busy then return end
+            busy = true
+            local epoch, screen = self.sessionEpoch, self.screen
+            local updated, renameError = self.client:renameRoom(room.id, name.Text)
+            busy = false
+            if self.sessionEpoch ~= epoch or self.room ~= room or self.screen ~= screen then return end
+            if not updated then self:notice(renameError.message, true); return end
+            room.name = updated.name
+            for _, row in ipairs(self.rooms or {}) do if row.id == room.id then row.name = updated.name end end
+            self:show("/details")
+        end, { Name = "RenameRoom", Background = colors.surface }))
+    end
     body:addChild(C.eyebrow("PEOPLE"))
     for _, member in ipairs(members or {}) do
         local id = member.user_id or member.id
@@ -302,6 +319,33 @@ local function detailsBody(self, room, members)
             inviteText:setTextContent("Invitation revoked."); invite, self.inviteCodes[room.id] = nil, nil
             inviteField.Text, inviteField.Visible = "", false
         end, { Name = "RevokeInvite", Foreground = colors.error }))
+    end
+    if room.kind ~= "direct" and room.role ~= "owner" then
+        local busy = false
+        local confirmation = C.stack({ Name = "LeaveRoomConfirmation", Visible = false, Spacing = 8 }, {
+            C.text("Leave this conversation? You will need an invitation to return to a private conversation.", {
+                WordWrap = true, FontSize = 14, Foreground = colors.muted }),
+        })
+        body:addChild(C.button(room.kind == "channel" and "Leave channel" or "Leave group", function()
+            confirmation.Visible = true
+        end, { Name = "LeaveRoom", Foreground = colors.error }))
+        confirmation:addChild(C.button("Leave conversation", function()
+            if busy then return end
+            busy = true
+            local epoch, screen = self.sessionEpoch, self.screen
+            local ok, leaveError = self.client:leaveRoom(room.id)
+            busy = false
+            if self.sessionEpoch ~= epoch or self.room ~= room or self.screen ~= screen then return end
+            if not ok then self:notice(leaveError.message, true); return end
+            for index = #(self.rooms or {}), 1, -1 do
+                if self.rooms[index].id == room.id then table.remove(self.rooms, index) end
+            end
+            self.room, self.drafts[room.id], self.photoDrafts[room.id] = nil, nil, nil
+            self.readRooms[room.id], self.pinned[room.id], self.inviteCodes[room.id] = nil, nil, nil
+            self:show("/")
+        end, { Name = "ConfirmLeaveRoom", Foreground = colors.error }))
+        confirmation:addChild(C.button("Cancel", function() confirmation.Visible = false end, { Name = "CancelLeaveRoom", Background = colors.surface }))
+        body:addChild(confirmation)
     end
     return body
 end

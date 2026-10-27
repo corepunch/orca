@@ -266,6 +266,12 @@ test-chat: copyshare
 test-chat-appwrite: copyshare
 	$(TARGET) -test=tests/test_chat_appwrite.lua
 
+# Explicitly opted in: real native HTTP and secure session storage against
+# Appwrite. Never make this a dependency of test/test-headless/test-chat.
+.PHONY: test-chat-live
+test-chat-live: copyshare
+	$(TARGET) -test=tests/test_chat_live.lua
+
 .PHONY: octopus test-octopus
 octopus: copyshare
 	$(TARGET) apps/octopus
@@ -282,20 +288,20 @@ test-chat-appwrite-backend:
 
 # Manual end-to-end checks against the deployed Chat backend; never part of CI or
 # `make test`. See apps/chat/backend/appwrite/live/README.md.
-CHAT_LIVE = apps/chat/backend/appwrite/live
+CHAT_LIVE_DIR = apps/chat/backend/appwrite/live
 .PHONY: test-live test-live-setup test-live-clean test-live-emulated
 test-live:
-	$(NODE) --test-reporter=spec $(CHAT_LIVE)/run.js
+	$(NODE) --test-reporter=spec $(CHAT_LIVE_DIR)/run.js
 
 test-live-setup:
-	$(NODE) $(CHAT_LIVE)/setup.js
+	$(NODE) $(CHAT_LIVE_DIR)/setup.js
 
 test-live-clean:
-	$(NODE) $(CHAT_LIVE)/setup.js --clean
+	$(NODE) $(CHAT_LIVE_DIR)/setup.js --clean
 
 # Offline self-check of the live suite against an in-memory Appwrite emulator.
 test-live-emulated:
-	$(NODE) --test-reporter=spec $(CHAT_LIVE)/emulated.js
+	$(NODE) --test-reporter=spec $(CHAT_LIVE_DIR)/emulated.js
 
 ifeq ($(UNAME_S),Darwin)
 $(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules | directories

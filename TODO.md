@@ -11,43 +11,56 @@
 
 The manual live suite (`make test-live`, see
 [`apps/chat/backend/appwrite/live`](apps/chat/backend/appwrite/live/README.md))
-has only run against the offline emulator so far. Remaining work to test the
-deployed backend end to end:
+now has persistent Appwrite test accounts provisioned through the plugin, plus
+an opt-in real Lua/native client test. See the live README for the latest run
+results and [PRODUCT.md](apps/chat/PRODUCT.md#current-scope-and-deferred-work)
+for the deliberately deferred feature scope. Remaining work:
 
-- [ ] **First real run.** Run `make test-live-setup` and `make test-live`
-  against Octopus, then fix or record every real failure.
-- [ ] **Redeploy `orca-chat-api`.** The active deployment `6add961c522a0e94c9b8`
-  predates `peer_id` and the `edit_chat_message`/`delete_chat_message` RPCs.
-  Record the new deployment ID and archive hash in the backend README, then run
-  `CHAT_LIVE_ONLY=direct,messages,photos make test-live`.
+- [x] **Provision real accounts.** Alice/Bob/Carol/Dave exist in Octopus. Tests
+  use their ordinary Account sessions. Dave's email is marked verified by the
+  plugin for discovery tests; this is not delivery verification. Credentials
+  stay in the ignored mode-0600 accounts file.
+- [x] **First complete real run.** On 2026-10-27, all 123 checks across 11
+  suites passed against Octopus in 14m38s, with no skips or TODOs. The initial
+  run caught nine missing edit/delete routes in the old deployment. The update
+  fixed them. The full run retained 28 conversations in the test accounts.
+- [x] **Redeploy `orca-chat-api`.** Deployment `6ae08dfcb0d301fbdd7b` is active
+  (2026-10-27), including `peer_id`, edit/delete, leave and rename. Archive hash
+  is recorded in the backend README. No schema or permission changes.
 - [ ] **Staging project.** Live runs currently write to production Octopus.
   Create a separate Appwrite project with the same `schema.json`, function and
   variables. Make it the default live target (`CHAT_LIVE_PROJECT_ID`) and keep
   production runs as a short smoke check.
-- [ ] **Scoped server key for cleanup.** Create a dedicated `APPWRITE_API_KEY`
-  with `documents.read/write`, `files.write` and `users.read/write`, stored
-  outside the repo. Without it, runs leave conversations behind and the
-  verified-email discovery test is skipped.
-- [ ] **Scheduled run.** Add a `workflow_dispatch` plus weekly scheduled GitHub
-  Actions job, not part of PR CI. It runs the suite against staging using the
-  accounts file and the key as secrets, then uploads the report.
+- [ ] **Plugin-based fixture cleanup.** Runs intentionally retain their
+  conversations without a server key. Use the Appwrite plugin to inspect/delete
+  only test-owned rooms and their dependent rows/files; preserve real people's
+  rooms that include a test account. Verified-email discovery no longer needs a
+  server key. Tests should continue to use only the test accounts.
+- [ ] **Later automation.** Keep runs manual for now. After staging exists,
+  consider `workflow_dispatch` and scheduled runs with private account secrets
+  and uploaded reports; keep cloud traffic out of PR CI.
 - [ ] **Delivery providers.** Configure Appwrite Messaging email and SMS
   providers and `CHAT_OTP_HMAC_KEY`. Then add live tests for identity linking,
   email OTP sign-in and phone OTP sign-in. These need a readable test inbox (a
   catch-all domain or a mail-testing service) and test phone numbers (check
   Auth mock numbers or the SMS provider's test credentials). None of these
   flows has been verified live.
-- [ ] **Run the real Lua client live.** The Node suite mirrors the Lua paths but
-  doesn't run them. Add an opt-in ORCA test (`tests/test_chat_live.lua`, skipped
-  unless `CHAT_LIVE=1`) that drives `api.chat` through `api.orca_transport` and
-  checks native HTTP, Account cookie extraction, JWT renewal and binary photo
-  bytes. Then do a manual pass on an iOS device: sign in, find a friend, chat,
+- [x] **Add real Lua client coverage.** `CHAT_LIVE=1 make test-chat-live` runs
+  `tests/test_chat_live.lua` through the real `api.orca_transport`, Account HTTP,
+  isolated actual Keychain storage, JWT renewal and native-processed photo bytes.
+  No opt-in reports a skip; missing native capabilities fail an opted-in run.
+- [x] **Run the native client live.** On 2026-10-27 all 33 checks passed against
+  real Appwrite, including secure session restoration, JWT renewal, discovery,
+  direct messaging, edit/delete and native-processed photo/thumbnail byte equality.
+  Cleanup completed. Run after the Node suite, not concurrently on shared accounts.
+- [ ] **Verify device behavior.** Do a manual iOS pass: sign in, find a friend, chat,
   send a photo, edit, delete, and check Keychain restore after relaunch.
-- [ ] **Real photos.** Live photo tests upload structural JPEGs. Add one
-  real photo prepared by `media.processPhoto` (macOS) so decode and display are
-  verified with the deployed function.
-- [ ] **Limits that need time or more accounts.** These need the server key, to
-  backdate documents or create disposable users through the Users API:
+- [ ] **Photo display on device.** Native `media.processPhoto` preparation and
+  exact photo/thumbnail downloads passed live. Verify decode/display in the
+  actual device UI.
+- [ ] **Limits that need time or more accounts.** Use the Appwrite plugin for
+  fixture backdating or disposable-account creation, then assert behavior
+  through those accounts' normal sessions:
   - invitation exhaustion (10 uses) and 24-hour expiry;
   - photo reservation expiry and lazy cleanup (1 hour), and the limit of 20
     unfinished uploads;

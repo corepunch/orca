@@ -622,6 +622,11 @@ click(otpApp, "CreateConversation")
 assert(otpApp.room.kind == "group" and otpApp.room.can_post, "Group creation must return posting membership")
 headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
 drain(otpApp)
+assert(otpApp.screen:findChild("RenameRoom", true) and not otpApp.screen:findChild("LeaveRoom", true), "Owners can rename and must retain ownership")
+otpApp.screen:findChild("RenameRoomName", true).Text = "Renamed group"
+click(otpApp, "RenameRoom")
+assert(otpApp.room.name == "Renamed group", "Saving a name must update the current conversation")
+assert(otpApp.screen:findChild("RenameRoomName", true).Text == "Renamed group", "Details must reload the persisted name")
 click(otpApp, "CreateInvite")
 assert(otpApp.screen:findChild("Invitation", true):getTextContent():find("Invitation:", 1, true), "Admins must be able to create invitations")
 click(otpApp, "RevokeInvite")
@@ -654,6 +659,14 @@ assert(otpApp.screen:findChild("ThreadPage", true).Title == "Messenger · channe
 headerOf(otpApp.screen:findChild("ThreadPage", true)):send("Node.LeftButtonUp")
 drain(otpApp)
 assert(otpApp.screen:findChild("PinConversation", true), "Subscribers can still open the info and pin the channel")
+assert(not otpApp.screen:findChild("RenameRoom", true) and otpApp.screen:findChild("LeaveRoom", true), "Subscribers can leave but cannot rename")
+click(otpApp, "LeaveRoom")
+assert(otpApp.screen:findChild("LeaveRoomConfirmation", true).Visible, "Leaving must offer confirmation")
+click(otpApp, "CancelLeaveRoom")
+assert(not otpApp.screen:findChild("LeaveRoomConfirmation", true).Visible and otpApp.room == subscriberRoom, "Cancel keeps membership and details")
+click(otpApp, "LeaveRoom"); click(otpApp, "ConfirmLeaveRoom")
+assert(otpApp.room == nil and otpApp.screen:findChild("ConversationListAll", true), "Leaving returns to the inbox")
+for _, room in ipairs(assert(otpApp.client:listRooms())) do assert(room.id ~= channelId, "Left conversations disappear from the API inbox") end
 
 -- Public channel discovery works for a new account without preassigned membership.
 otpApp:show("/new")

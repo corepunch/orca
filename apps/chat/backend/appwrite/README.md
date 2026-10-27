@@ -27,12 +27,16 @@ photo keys were absent from API responses. All test accounts, documents, state
 and objects were removed afterward. No email/SMS code deliveries were performed;
 delivery providers are not configured.
 
-Active deployment: `6add961c522a0e94c9b8` (2026-10-25). The uploaded source archive
+Active deployment: `6ae08dfcb0d301fbdd7b` (2026-10-27). The uploaded source archive
 contains `package.json` and `src/`, with SHA-256
-`553786d448292ace07989b75f1016d03621adc116e33ea57ce71191d24bfe889`.
-That deployment predates `peer_id` on direct rooms (the other member's user
-ID, which the app uses to show their profile photo); until the function is
-redeployed, direct chats show initials.
+`5a3525d8b1d449dc58b88fd73cd2204858f4c544cfe65d1401e80b4afef7fc6e`.
+It includes direct-room `peer_id`, message editing/deletion, non-owner group/channel
+leave and owner-only renaming. Schema and permissions are unchanged. A live check
+against the previous deployment caught nine edit/delete failures (missing routes);
+the manual suite must be rerun after deployment, rather than relying on local tests.
+The full supported live suite passed all 123 checks on this deployment on
+2026-10-27, with no failures, skips or TODOs. It used only four dedicated test
+accounts, with no server key; see [run details](live/README.md#latest-real-backend-run--2026-10-27).
 
 ## Deployment and configuration
 
@@ -130,7 +134,8 @@ channel subscribers see themselves and staff, without a peer subscriber list.
 All existing direct, group and channel operations are implemented: canonical
 direct pairs, owner/admin/member/subscriber roles, member removal, private
 invitations, public channel discovery/join, recent message history, editing and
-deleting messages, and up to four JPEG attachments per message. A group or channel may start empty. Room
+deleting messages, non-owner leaving, owner renaming, and up to four JPEG
+attachments per message. A group or channel may start empty. Room
 creation validates up to fifty other native users, writes memberships with
 bounded concurrency, then commits visibility with the room document. Queries
 follow Appwrite cursors rather than silently returning the default first 25

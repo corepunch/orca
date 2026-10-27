@@ -122,11 +122,8 @@ describe('Telegram parity (TODO probes; not counted as failures)', () => {
   });
 
   describe('groups and channels', () => {
-    probe('a member can leave a group', async () => {
-      await w.carol.rpc('leave_chat_room', { target_room: group.id });
-      assert.ok(!(await w.carol.listRooms()).some(row => row.id === group.id));
-    });
-    probe('rename a group and set its description', async () => {
+    // Leaving and owner renaming are required regressions in groups.js.
+    probe('set a group description', async () => {
       await w.alice.rpc('update_chat_room', { target_room: group.id, room_name: 'Renamed', description: 'About' });
       const seen = (await w.bob.listRooms()).find(row => row.id === group.id);
       assert.equal(seen.name, 'Renamed'); assert.equal(seen.description, 'About');

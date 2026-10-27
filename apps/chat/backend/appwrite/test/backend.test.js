@@ -113,6 +113,47 @@ test('channels expose staff and self to subscribers, enforce posting, role chang
   assert.equal((await fixture.call('bob', '/rest/v1/rpc/list_chat_members', { target_room: channel.id })).status, 403);
 });
 
+test('group/channel leave revokes access and rejoining does not restore staff rights', async () => {
+  for (const kind of ['group', 'channel']) {
+    const fixture = setup(), conversation = await room(fixture, kind, ['alice', 'bob']);
+    const body = { target_room: conversation.id };
+    await fixture.call('owner', '/rest/v1/rpc/set_chat_member_role', { ...body, target_user: 'alice', member_role: 'admin' });
+    const invite = (await fixture.call('owner', '/rest/v1/rpc/create_chat_invite', body)).body;
+    for (const user of ['owner', 'eve']) assert.equal((await fixture.call(user, '/rest/v1/rpc/leave_chat_room', body)).status, 403);
+    for (const user of ['alice', 'bob']) {
+      assert.deepEqual(await fixture.call(user, '/rest/v1/rpc/leave_chat_room', body), { status: 200, body: true });
+      assert.ok(!(await fixture.call(user, '/rest/v1/chat_rooms', {}, 'GET')).body.some(row => row.id === conversation.id));
+      assert.ok(!(await fixture.call('owner', '/rest/v1/rpc/list_chat_members', body)).body.some(row => row.user_id === user));
+      assert.equal((await fixture.call(user, '/rest/v1/chat_messages?room_id=eq.' + conversation.id, {}, 'GET')).status, 403);
+      assert.equal((await fixture.call(user, '/rest/v1/rpc/post_chat_message', { ...body, message_body: 'Gone' })).status, 403);
+      assert.equal((await fixture.call(user, '/rest/v1/rpc/leave_chat_room', body)).status, 403);
+      const joined = await fixture.call(user, '/rest/v1/rpc/join_chat_invite', { invite_code: invite.code });
+      assert.equal(joined.status, 200); assert.equal(joined.body.role, kind === 'channel' ? 'subscriber' : 'member');
+    }
+  }
+  const fixture = setup(), direct = await room(fixture, 'direct');
+  for (const user of ['owner', 'alice']) assert.equal((await fixture.call(user, '/rest/v1/rpc/leave_chat_room', { target_room: direct.id })).status, 403);
+});
+
+test('only owners rename groups/channels and names persist without changing membership or room metadata', async () => {
+  for (const kind of ['group', 'channel']) {
+    const fixture = setup(), conversation = await room(fixture, kind, ['alice', 'bob']);
+    const rename = (user, name, extra = {}) => fixture.call(user, '/rest/v1/rpc/update_chat_room', { target_room: conversation.id, room_name: name, ...extra });
+    await fixture.call('owner', '/rest/v1/rpc/set_chat_member_role', { target_room: conversation.id, target_user: 'alice', member_role: 'admin' });
+    for (const user of ['alice', 'bob', 'eve']) assert.equal((await rename(user, 'Forbidden')).status, 403);
+    for (const name of ['', '   ', 'я'.repeat(81), null, 123]) assert.equal((await rename('owner', name)).status, 400);
+    assert.equal((await rename('owner', 'Name', { description: 'Unsupported' })).status, 400);
+    assert.equal((await rename('owner', 'Name', { room_kind: 'direct' })).status, 400);
+    const name = 'я'.repeat(80), renamed = await rename('owner', name);
+    assert.equal(renamed.status, 200);
+    assert.deepEqual(renamed.body, { ...conversation, name });
+    for (const user of ['owner', 'alice', 'bob']) assert.equal((await fixture.call(user, '/rest/v1/chat_rooms', {}, 'GET')).body.find(row => row.id === conversation.id).name, name);
+    assert.equal((await rename('owner', '  Trimmed  ')).body.name, 'Trimmed');
+  }
+  const fixture = setup(), direct = await room(fixture, 'direct');
+  assert.equal((await fixture.call('owner', '/rest/v1/rpc/update_chat_room', { target_room: direct.id, room_name: 'Changed' })).status, 403);
+});
+
 test('verified opt-in exact discovery and rate limits never reveal identifiers in public profiles', async () => {
   const fixture = setup();
   await fixture.call('alice', '/rest/v1/rpc/update_chat_profile', { values: { username: 'alice_name' } });

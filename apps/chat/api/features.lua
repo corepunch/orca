@@ -82,6 +82,10 @@ return function(Client, helpers)
     function Client:removeMember(roomId, userId)
         return self:_rpc("remove_chat_member", { target_room = roomId, target_user = userId })
     end
+    function Client:leaveRoom(roomId) return self:_rpc("leave_chat_room", { target_room = roomId }) end
+    function Client:renameRoom(roomId, name)
+        return self:_rpc("update_chat_room", { target_room = roomId, room_name = name })
+    end
     function Client:createInvite(roomId) return self:_rpc("create_chat_invite", { target_room = roomId }) end
     function Client:joinInvite(code) return self:_rpc("join_chat_invite", { invite_code = code }) end
     function Client:revokeInvite(roomId, code) return self:_rpc("revoke_chat_invite", { target_room = roomId, invite_code = code }) end
