@@ -548,7 +548,7 @@ local App = Application:extend {
         -- The text field sits in the frosted composer bar, as in iOS Messages.
         local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 48 }
         compose:addChild(C.iconButton("plus", function() self:attachPhoto() end,
-            { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.textboxInk }))
+            { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.ink }))
         compose:addChild(self.composer)
         compose:addChild(C.iconButton("arrow-up", function() self:sendMessage() end,
             { Name = "SendMessage", Width = 48, Height = 48, Foreground = colors.accentText }))
