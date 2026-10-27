@@ -812,15 +812,24 @@ Node2D_InheritSafeArea(struct Object *object, struct Node2D *node)
 }
 
 // A node that insets its content keeps its children clear of the safe area,
-// so none of it reaches them.
+// so none of it reaches them. The inset is published like ScrollHeight, so
+// applications can find the visible part of the content.
 static struct vec2
-Node2D_AdjustedContentInset(struct Node2D *node)
+Node2D_AdjustContentInset(struct Object *object, struct Node2D *node)
 {
   bool_t adjust = node->ContentInsetAdjustment == kContentInsetAdjustmentAlways ||
     (node->ContentInsetAdjustment == kContentInsetAdjustmentAutomatic && node->Overflow.y == kOverflowScroll);
-  if (!adjust) return (struct vec2){ 0 };
-  struct vec2 inset = node->_safeArea;
-  node->_safeArea = node->_barInset = (struct vec2){ 0 };
+  struct vec2 inset = adjust ? node->_safeArea : (struct vec2){ 0 };
+  if (adjust) node->_safeArea = node->_barInset = (struct vec2){ 0 };
+  float values[2] = { inset.x, inset.y };
+  uint32_t const ids[2] = { ID_Node2D_AdjustedContentInsetTop, ID_Node2D_AdjustedContentInsetBottom };
+  float *edges[2] = { &NODE2D_INSET(node)._RIGHT, &NODE2D_INSET(node)._LEFT };
+  FOR_LOOP(i, 2) {
+    if (*edges[i] == values[i]) continue;
+    struct Property *property = OBJ_FindLongProperty(object, ids[i]);
+    if (property) PROP_SetValue(property, &values[i]);
+    else *edges[i] = values[i];
+  }
   return inset;
 }
 
@@ -896,7 +905,7 @@ HANDLER(Node2D, Node2D, Arrange)
   Node2D_SetFrame(n, kBox3FieldWidth,  rect.width);
   Node2D_SetFrame(n, kBox3FieldHeight, rect.height);
   Node2D_InheritSafeArea(hObject, n);
-  struct vec2 inset = n->_contentInset = Node2D_AdjustedContentInset(n);
+  struct vec2 inset = Node2D_AdjustContentInset(hObject, n);
 
   LRESULT size = _SendMessage(hObject, Node2D, ArrangeOverride,
     .X      = PADDING_TOP(n, 0),

@@ -261,8 +261,13 @@ screen:UpdateLayout(390, 844)
 assert(app:renderMessages())
 
 -- Appending to a sender run moves its tail without moving an earlier reading anchor.
+-- Messages scroll under the header, so the reading position is just above its bottom edge.
 local reading = screen:findChild("MessageEntry" .. layoutMessages[2].id, true)
-app.messageList.ContentOffset = { X = 0, Y = -reading.ActualY - 5 }
+local visibleTop = app.messageList.AdjustedContentInsetTop
+local toolbar = screen:findChild("ThreadToolbar", true)
+assert(math.abs(visibleTop - (screenY(toolbar) + toolbar.ActualHeight)) < 1,
+    "The message list's top inset must end at the bottom of the header")
+app.messageList.ContentOffset = { X = 0, Y = visibleTop - reading.ActualY - 5 }
 local readingY = reading.ActualY + app.messageList.ContentOffset.Y
 assert(app.client:sendMessage(app.room.id, "Another message from the same sender"))
 assert(app:renderMessages { preserveScroll = true, quiet = true })

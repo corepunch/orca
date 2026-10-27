@@ -380,6 +380,7 @@
         <property name="Overflow" type="OverflowShorthand">Defines overflow behavior for child content. Controls clipping and scroll behavior.</property>
         <property name="SafeAreaEdge" type="SafeAreaEdge">Docks the element to an edge of its parent as an overlay bar. A plain Node2D parent stacks docked children at that edge, below the bars of its ancestors, and lays its other children out under them; the area the bars cover becomes safe-area inset for the descendants.</property>
         <property name="ContentInsetAdjustment" type="ContentInsetAdjustment">How the element insets its content by the safe area it overlaps: the system insets of a Screen that does not respect its safe area, and the bars docked by its ancestors. An inset scrolling element still draws under the bars, but its content starts below the top bars and scrolls clear of the bottom ones.</property>
+        <property name="AdjustedContentInset" type="Thickness">Insets applied to the content by ContentInsetAdjustment during the last layout, as UIScrollView adjustedContentInset. Written by layout: read AdjustedContentInsetTop and AdjustedContentInsetBottom to find the visible part of a scrolling element, which lies between them although the element draws under the bars.</property>
         <property name="Ring" type="RingShorthand">Decorative ring effect applied around the element.</property>
         <property name="BorderImage" type="BorderImageShorthand">Border image nine-patch configuration. Combines source, slice, and repeat.</property>
         <property name="CompositionBrush" type="Material" pointer="true">Custom composition brush for advanced rendering. Equivalent to UWP `CompositionBrush`. Can be used for effects or visuals beyond standard brushes.</property>
@@ -415,7 +416,6 @@
         <field name="_backdrop" type="BackdropCache" pointer="true">Cached backdrop capture and blur targets</field>
         <field name="_safeArea" type="vec2">Top and bottom safe-area insets visible to the children, in this node's frame</field>
         <field name="_barInset" type="vec2">Part of _safeArea covered by docked bars rather than by system insets</field>
-        <field name="_contentInset" type="vec2">Top and bottom insets applied to the content during the last arrange</field>
       </fields>
       <methods>
         <method name="SetFrame">
