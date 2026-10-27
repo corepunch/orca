@@ -312,6 +312,14 @@ R_DrawEntity(struct ViewDef const* view, struct ViewEntity* ent)
         break;
     }
   }
+
+  // Square UI fills do not need the rounded mesh's degenerate corner fans.
+  // Custom shaders may depend on the rounded mesh's corner attributes.
+  if (!ent->shader && fallback == SHADER_UI &&
+      model == tr.models[MD_ROUNDED_RECT] && ent->borderOffset == 0 &&
+      !memcmp(&ent->radius, &zero, sizeof(zero)) &&
+      !memcmp(&ent->borderWidth, &zero, sizeof(zero)))
+    model = tr.models[MD_RECTANGLE];
   
   if (ent->flags & RF_DRAW_DEBUG) {
     _DrawDebug(ent, view);

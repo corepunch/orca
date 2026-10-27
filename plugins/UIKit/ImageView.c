@@ -276,6 +276,7 @@ HANDLER(ImageView, Node, LoadView)
   }
 
   /* Local file path: load synchronously. */
+  if (pImageView->_src_object) return TRUE;
   struct Object *file_obj = FS_LoadObject(src);
   if (!file_obj) {
     Con_Printf("ImageView: failed to load '%s'", src);
@@ -283,12 +284,19 @@ HANDLER(ImageView, Node, LoadView)
   }
   OBJ_SendMessageW(file_obj, ID_Object_Start, 0, NULL);
 
+  struct Texture *texture = GetTexture(file_obj);
+  if (!texture || texture->Width <= 0 || texture->Height <= 0) {
+    Con_Printf("ImageView: failed to decode image from '%s'", src);
+    OBJ_ReleaseRef(file_obj);
+    return TRUE;
+  }
+
   if (pImageView->_src_object) {
     OBJ_ReleaseRef((struct Object *)pImageView->_src_object);
   }
   /* Transfer the loader's owned reference; cancellation releases it. */
   pImageView->_src_object = file_obj;
-  pImageView->Source = GetTexture(file_obj);
+  pImageView->Source = texture;
 
   OBJ_SetDirty(hObject);
 

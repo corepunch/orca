@@ -148,8 +148,10 @@ end
 -- Replace an avatar tile's initials with a photo file. White keeps the
 -- photo's own colours under the theme's ink.
 function C.photo(tile, path)
-    C.clear(tile):addChild(ui.ImageView { Name = "AvatarPhoto", Src = path, Foreground = "#ffffff",
-        Stretch = "UniformToFill", IgnoreHitTest = true })
+    local image = ui.ImageView { Name = "AvatarPhoto", Src = path, Foreground = "#ffffff",
+        Stretch = "UniformToFill", IgnoreHitTest = true }
+    image:send("Node.LoadView")
+    if image.Source then C.clear(tile):addChild(image) end
 end
 
 -- Group header, as in a Windows Phone long list: lowercase in the accent.

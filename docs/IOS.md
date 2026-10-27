@@ -109,6 +109,10 @@ posted while that batch runs waits for the next display callback, so animation
 callbacks cannot keep UIKit from delivering a new touch during deceleration.
 The queue boundary also applies to peeking and explicit queue flushes.
 
+Set `ORCA_PROFILE_FRAMES=1` in the Xcode scheme's Run environment to log
+display callback rates, frame durations and missed display intervals once per
+second. This works with optimized builds and is disabled by default.
+
 The platform backend uses UIWindowScene and OpenGL ES 3, Retina backing buffers,
 tap/drag events, vertical swipe scrolling and UIKeyInput. The drawable fills the
 window, including the status-bar and home-indicator areas. `Screen.ClearColor`

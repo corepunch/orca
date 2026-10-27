@@ -136,8 +136,11 @@ offsets, clipping, Pivot positions and hidden pages. Only photos intersecting
 the viewport are requested, with at most two requests at once. Repeated photos
 share a request and cached file; each card owns its image view. Downloads that
 finish after navigation or sign-out cannot update an inactive view. Failed
-downloads show a centered broken-image icon in the reserved photo area; tapping
+downloads or image decode failures show a centered broken-image icon in the reserved photo area; tapping
 that area retries the download. Photos use a white image tint in both themes.
+Visible pending photos show a centered activity indicator. Once loaded, the
+placeholder background disappears and the full image is centered without
+cropping or changing the reserved height. Offscreen indicators stop animating.
 
 ## Verify
 

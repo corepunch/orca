@@ -29,6 +29,14 @@ function Media:path(key)
     return self.keys[tostring(key)]
 end
 
+function Media:discard(key)
+    key = tostring(key)
+    local path = self.keys[key]
+    if not path then return end
+    os.remove(path)
+    self.files[path], self.keys[key] = nil, nil
+end
+
 function Media:store(bytes, key)
     local extension = kind(bytes)
     if not extension or #bytes > 12000000 then return failure("invalid_image", "This photo can't be shown here.") end

@@ -250,7 +250,13 @@ R_TexImage(GLenum target,
            struct Texture* pTexture,
            struct Image* pImage)
 {
-  uint32_t const header = *(uint32_t const*)sb->data;
+  if (!sb || !sb->data || sb->cursize < 4) return MAKE_TEX_SIZE(0, 0);
+  byte_t const* bytes = sb->data;
+  /* JPEG may start with any marker, including APP2 for an ICC profile. */
+  if (bytes[0] == 0xff && bytes[1] == 0xd8 && bytes[2] == 0xff)
+    return R_TexImageJPEG(target, sb);
+  uint32_t header;
+  memcpy(&header, bytes, sizeof header);
   switch (header) {
     case PNG_HEADER:
       return R_TexImagePNG(target, sb, pImage->PremultiplyAlpha);
@@ -371,14 +377,11 @@ HANDLER(Image, Object, Start) {
     R_ApplyImageParms(pTexture, GL_TEXTURE_2D, pImage->HasMipmaps);
     // Con_Error("%d %d %s", texture_size.width, texture_size.height, filename);
     FS_FreeFile(pFile);
-  } else {
-    Con_Error("%s: can't load image", pImage->Source);
-    tex = texture_make_error(GL_TEXTURE_2D);
-    R_ApplyImageParms(pTexture, GL_TEXTURE_2D, FALSE);
-  }
+  } else Con_Error("%s: can't load image", pImage->Source);
   if (tex.width == 0 || tex.height == 0) {
-    tex = texture_make_error(GL_TEXTURE_2D);
-    R_ApplyImageParms(pTexture, GL_TEXTURE_2D, FALSE);
+    Texture_Cleanup(pTexture);
+    pTexture->Width = pTexture->Height = 0;
+    return FALSE;
   }
   pTexture->Width = tex.width / MAX(1, pTexture->Scale);
   pTexture->Height = tex.height / MAX(1, pTexture->Scale);
@@ -472,7 +475,9 @@ R_LoadImageFromMemory(void* pBuffer, uint32_t dwSize)
   struct AXsize size = R_TexImage(GL_TEXTURE_2D, &sb, texture,
                                   &(struct Image) {.Source = "[Memory]"});
   if (size.width == 0 || size.height == 0) {
-    size = texture_make_error(GL_TEXTURE_2D);
+    Texture_Cleanup(texture);
+    OBJ_ReleaseRef(object);
+    return NULL;
   }
   texture->Width = size.width;
   texture->Height = size.height;

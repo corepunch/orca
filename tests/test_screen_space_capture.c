@@ -41,6 +41,54 @@ int main(void)
     EXPECT(glGetError() == GL_NO_ERROR);
   });
 
+  RUN_TEST("square_ui_uses_two_triangles_without_changing_pixels", {
+    struct ViewDef view = ((struct ViewDef){
+      .viewMatrix = MAT4_Identity(),
+      .projectionMatrix = MAT4_Ortho(0, 64, 64, 0, -1, 1),
+    });
+    struct ViewEntity entity = ((struct ViewEntity){
+      .matrix = MAT4_Identity(),
+      .bbox = {.min = {8, 8, 0}, .max = {56, 56, 0}},
+      .material = {
+        .textureMatrix = MAT3_Identity(),
+        .color = {1, 0, 0, 1},
+        .opacity = 0.5f,
+        .blendMode = BLEND_MODE_ALPHA,
+      },
+    });
+    unsigned char square[64 * 64 * 4];
+    unsigned char reference[sizeof(square)];
+    GLint square_indices = 0;
+    GLint rounded_indices = 0;
+    R_BeginFrame((struct color){0, 0, 0, 1});
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &square_indices);
+    glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, square);
+    EXPECT(square_indices == 6 * sizeof(DRAWINDEX));
+    EXPECT(square[4 * (32 * 64 + 32)] > 100);
+    EXPECT(square[4 * (4 * 64 + 4)] == 0);
+
+    // An explicit shader preserves the previous rounded-mesh attribute contract.
+    entity.shader = BOX_PTR(Shader, SHADER_UI);
+    R_BeginFrame((struct color){0, 0, 0, 1});
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &rounded_indices);
+    glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, reference);
+    EXPECT(rounded_indices > square_indices);
+    EXPECT(memcmp(square, reference, sizeof(square)) == 0);
+
+    entity.shader = NULL;
+    entity.radius = ((struct vec4){12, 12, 12, 12});
+    R_BeginFrame((struct color){0, 0, 0, 1});
+    EXPECT_OK(R_DrawEntity(&view, &entity));
+    glGetBufferParameteriv(GL_ELEMENT_ARRAY_BUFFER, GL_BUFFER_SIZE, &rounded_indices);
+    glReadPixels(0, 0, 64, 64, GL_RGBA, GL_UNSIGNED_BYTE, reference);
+    EXPECT(rounded_indices > square_indices);
+    EXPECT(reference[4 * (32 * 64 + 32)] > 100);
+    EXPECT(reference[4 * (55 * 64 + 8)] == 0);
+    EXPECT(glGetError() == GL_NO_ERROR);
+  });
+
   struct ScreenSpaceCapture capture = {0};
   GLint original_fbo;
   GLuint verify_fbo = 0;
