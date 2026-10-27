@@ -6,10 +6,10 @@
 .chat-input:focus:dark { border-color: #0084ff; background-color: #ffffff; }
 .conversation:hover:dark { background-color: #1a1a1a; }
 /* iOS 7 frosted bars: content scrolling under them is blurred, saturated and tinted. */
-.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
-.frosted:dark { background-color: #161616c7; }
-.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; border-bottom-width: 0.5; border-color: #c6c6c8; }
-.pivot-bar:dark { background-color: #161616c7; border-color: #38383a; }
+.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
+.frosted:dark { background-color: #16161695; }
+.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; border-bottom-width: 0.5; border-color: #c6c6c8; }
+.pivot-bar:dark { background-color: #16161695; border-color: #38383a; }
 .bar-top { border-top-width: 0.5; border-color: #c6c6c8; }
 .bar-top:dark { border-color: #38383a; }
 .bar-bottom { border-bottom-width: 0.5; border-color: #c6c6c8; }

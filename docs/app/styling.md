@@ -159,9 +159,9 @@ through the bottom inset by itself, as Chat and Octopus do.
 background, which tints the blurred content, as iOS 7 bars do:
 
 ```css
-.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
-.frosted:dark { background-color: #161616c7; }
-.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f7d1; }
+.frosted { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
+.frosted:dark { background-color: #16161695; }
+.pivot-bar { backdrop-filter: blur(20) saturate(1.8); background-color: #f7f7f79d; }
 ```
 
 `pivot-bar` styles the bar a `Pivot` generates behind its title and headers
