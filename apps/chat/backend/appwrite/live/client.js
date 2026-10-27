@@ -181,6 +181,8 @@ export class ChatClient {
   listMembers(roomId) { return this.rpc('list_chat_members', { target_room: roomId }); }
   setMemberRole(roomId, userId, role) { return this.rpc('set_chat_member_role', { target_room: roomId, target_user: userId, member_role: role }); }
   removeMember(roomId, userId) { return this.rpc('remove_chat_member', { target_room: roomId, target_user: userId }); }
+  leaveRoom(roomId) { return this.rpc('leave_chat_room', { target_room: roomId }); }
+  renameRoom(roomId, name) { return this.rpc('update_chat_room', { target_room: roomId, room_name: name }); }
   createInvite(roomId) { return this.rpc('create_chat_invite', { target_room: roomId }); }
   joinInvite(code) { return this.rpc('join_chat_invite', { invite_code: code }); }
   revokeInvite(roomId, code) { return this.rpc('revoke_chat_invite', { target_room: roomId, invite_code: code }); }

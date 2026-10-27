@@ -1,9 +1,10 @@
 # Messenger: identity, discovery, conversations, and media
 
-Implementation status, 2026-10-25. The app now implements phone/email OTP,
+Implementation status, 2026-10-27. The app now implements phone/email OTP,
 verified linking, usernames and opt-in exact discovery, direct/group/channel
 conversations, roles/invitations/public channel subscriptions, JPEG photo
-messages, and editing and deleting messages through the shared client and
+messages, editing and deleting messages, owner renaming and non-owner leaving
+groups/channels through the shared client and
 offline mock. Native processing and
 selection are available on macOS. Video, QR/profile sharing links, address-book
 matching, block/report UI, push, and live subscriptions remain later work.
@@ -20,6 +21,40 @@ exchange and permission revocation; all test resources were removed afterward.
 Messaging providers are not configured, so verified identity linking still needs
 delivery setup.
 The sections below retain the design rationale and distinguish the remaining roadmap from current behavior.
+
+## Current scope and deferred work
+
+The current acceptance target is reliable core messaging on real Appwrite:
+find a person by username or verified opted-in identifier, open a canonical
+direct conversation, exchange text/photos, edit/delete, manage groups/channels,
+invite people, change roles, rename and leave. Contacts currently come from
+shared conversations; there is no separate friendship-request system.
+Use the manual [live suites](backend/appwrite/live/README.md) and the actual
+Lua/native client test before calling those flows verified. Neither the offline
+emulator nor non-failing parity TODO probes establish live feature coverage.
+
+Videos and calls are excluded. Full Telegram parity is a longer-term reference,
+not the acceptance requirement for this release. Prioritize these additions
+separately:
+
+| Deferred area | Work needed |
+| --- | --- |
+| Reactions, stickers and GIFs | Emoji selection/rendering, reaction persistence/counts and permissions; optional for now |
+| Replies, forwards, mentions, formatting and link previews | Message metadata, authorization, composer/timeline UI and preview handling |
+| Older history and message search | Stable cursors, indexes, pagination/search APIs and scroll behavior |
+| Unread/read receipts, typing and online status | Persistent per-user state, privacy rules and delivery updates |
+| Saved Messages, archive/mute and synced pins | Personal conversation/settings storage and inbox UI; existing pins/unread badges are session-local |
+| Group descriptions/photos, ownership transfer, adding members, bans and granular rights | Additional policy, storage and administration UI; owners currently cannot leave |
+| Polls, scheduled messages and channel comments/view counts | New domain models, jobs and interaction flows |
+| Blocking/reporting, contact naming and prefix/name search | Privacy/abuse policy, personal contact storage and discovery changes |
+| Files, voice messages and non-JPEG media | Upload validation, playback/recording, storage limits and native adapters |
+| Realtime and push | Authorized subscriptions, provider/device-token setup and lifecycle handling; polling remains supported |
+| OTP delivery and identity linking verification | Readable test inbox/SMS provider and delivery configuration; admin-marked email fixtures test discovery only |
+
+Group/channel rename and leave require no schema changes and are included in
+the required live suite. Leaving revokes history/posting access; a fresh invite
+can rejoin with an ordinary role. Only owners rename, and direct chats keep
+their participant-derived names and membership.
 
 ## Identity and login
 

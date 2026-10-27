@@ -102,8 +102,14 @@ describe('discovery: finding a friend and starting to talk', () => {
     assert.equal(fromDave?.peer_id, w.carol.id);
   });
 
-  it('with a server key: a verified, opted-in email is discoverable and opting out hides it', { skip: !process.env.APPWRITE_API_KEY && 'needs APPWRITE_API_KEY' }, async () => {
-    await w.admin.setEmailVerified(w.dave.id, true);
+  it('a verified test account is discoverable by email only while opted in', async t => {
+    // Provision this fixture through the Appwrite plugin, outside the test. All
+    // assertions and opt-in changes below use Dave's ordinary Account session.
+    const account = await w.dave.account('GET', '/account');
+    if (!account.emailVerification) {
+      t.skip('Mark the dedicated Dave fixture email verified with the Appwrite plugin (not an OTP delivery test).');
+      return;
+    }
     try {
       assert.deepEqual(await w.alice.findPeople(w.dave.email), [], 'verified but not opted in');
       const profile = await w.dave.updateProfile({ discoverable_email: true });
@@ -116,7 +122,6 @@ describe('discovery: finding a friend and starting to talk', () => {
       assert.deepEqual(await w.alice.findPeople(w.dave.email), []);
     } finally {
       await w.dave.updateProfile({ discoverable_email: false }).catch(() => {});
-      await w.admin.setEmailVerified(w.dave.id, false);
       await w.dave.getProfile();
     }
   });

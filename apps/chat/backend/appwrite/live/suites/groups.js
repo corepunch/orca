@@ -119,4 +119,60 @@ describe('groups: creation, posting and roles', () => {
     await rejects(w.dave.sendMessage(group.id, 'hello?'), 403, 'forbidden');
     await rejects(w.dave.createInvite(group.id), 403, 'forbidden');
   });
+
+  for (const kind of ['group', 'channel']) {
+    it(`${kind}: members and admins can leave; access is revoked and invitations permit rejoining`, async () => {
+      const room = w.track(await w.alice.createRoom(w.name('leave ' + kind), [w.bob.id, w.carol.id], { kind }));
+      await w.alice.sendMessage(room.id, 'Before leaving');
+      await w.alice.setMemberRole(room.id, w.carol.id, 'admin');
+      const invite = await w.alice.createInvite(room.id);
+      await rejects(w.alice.leaveRoom(room.id), 403, 'forbidden');
+      await rejects(w.dave.leaveRoom(room.id), 403, 'forbidden');
+      for (const client of [w.bob, w.carol]) {
+        assert.equal(await client.leaveRoom(room.id), true);
+        assert.ok(!(await client.listRooms()).some(row => row.id === room.id));
+        assert.ok(!(await w.alice.listMembers(room.id)).some(row => row.user_id === client.id));
+        await rejects(client.listMessages(room.id), 403, 'forbidden');
+        await rejects(client.sendMessage(room.id, 'After leaving'), 403, 'forbidden');
+        await rejects(client.createInvite(room.id), 403, 'forbidden');
+        await rejects(client.leaveRoom(room.id), 403, 'forbidden');
+        const joined = await client.joinInvite(invite.code);
+        assert.equal(joined.id, room.id);
+        assert.equal(joined.role, kind === 'channel' ? 'subscriber' : 'member', 'rejoining never restores admin rights');
+        assert.ok((await client.listMessages(room.id)).some(row => row.body === 'Before leaving'));
+      }
+    });
+
+    it(`${kind}: only the owner renames; every member sees the persisted name`, async () => {
+      const room = w.track(await w.alice.createRoom(w.name('rename ' + kind), [w.bob.id, w.carol.id], { kind }));
+      await w.alice.setMemberRole(room.id, w.carol.id, 'admin');
+      for (const client of [w.bob, w.carol, w.dave]) await rejects(client.renameRoom(room.id, 'Forbidden'), 403, 'forbidden');
+      for (const name of ['', '   ', 'я'.repeat(81), null, 123, {}]) await rejects(w.alice.renameRoom(room.id, name), 400, 'validation');
+      await rejects(w.alice.rpc('update_chat_room', { target_room: room.id, room_name: 'Ignored', description: 'Unsupported' }), 400, 'validation');
+      for (const client of [w.alice, w.bob, w.carol]) assert.equal((await client.listRooms()).find(row => row.id === room.id).name, room.name);
+      const name = 'я'.repeat(80), renamed = await w.alice.renameRoom(room.id, name);
+      assert.equal(renamed.id, room.id); assert.equal(renamed.name, name); assert.equal(renamed.kind, kind);
+      assert.equal(renamed.created_at, room.created_at); assert.equal(renamed.role, 'owner');
+      for (const client of [w.alice, w.bob, w.carol]) assert.equal((await client.listRooms()).find(row => row.id === room.id).name, name);
+      assert.equal((await w.alice.renameRoom(room.id, '  Trimmed name  ')).name, 'Trimmed name');
+      const sent = await w.alice.sendMessage(room.id, 'After renaming');
+      assert.ok((await w.bob.listMessages(room.id)).some(row => row.id === sent.id));
+    });
+  }
+
+  it('direct conversations cannot be left or renamed', async () => {
+    const direct = await w.alice.createRoom('Bob', [w.bob.id], { kind: 'direct' });
+    for (const client of [w.alice, w.bob]) {
+      await rejects(client.leaveRoom(direct.id), 403, 'forbidden');
+      await rejects(client.renameRoom(direct.id, 'Changed'), 403, 'forbidden');
+      assert.ok((await client.listRooms()).some(row => row.id === direct.id));
+    }
+  });
+
+  it('leave and rename reject missing or malformed conversation IDs', async () => {
+    for (const roomId of [null, '', '../other-room', {}, 123]) {
+      await rejects(w.alice.leaveRoom(roomId), 400, 'validation');
+      await rejects(w.alice.renameRoom(roomId, 'Name'), 400, 'validation');
+    }
+  });
 });

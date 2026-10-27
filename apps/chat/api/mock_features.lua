@@ -261,6 +261,24 @@ return function(state, env)
             end
             table.sort(rows, function(a, b) return a.role == b.role and a.display_name < b.display_name or a.role < b.role end)
             return response(200, rows)
+        elseif name == "leave_chat_room" then
+            local r, value = find(state.rooms, body.target_room), role(body.target_room, user.id)
+            if not r or not value or r.kind == "direct" or value == "owner" then
+                return fail(403, "42501", "Only non-owner group and channel members can leave.")
+            end
+            state.members[r.id][user.id], state.roles[r.id][user.id] = nil, nil
+            return response(200, true)
+        elseif name == "update_chat_room" then
+            for field in pairs(body) do
+                if field ~= "target_room" and field ~= "room_name" then return fail(400, "validation", "Only the conversation name can be changed.") end
+            end
+            local name = body.room_name
+            local length = type(name) == "string" and select(2, name:gsub("[^\128-\191]", "")) or 0
+            if type(name) ~= "string" or not name:match("%S") or length > 80 then return fail(400, "validation", "Use a conversation name of 1–80 characters.") end
+            local r, value = find(state.rooms, body.target_room), role(body.target_room, user.id)
+            if not r or r.kind == "direct" or value ~= "owner" then return fail(403, "42501", "Only the owner can rename a group or channel.") end
+            r.name = name:match("^%s*(.-)%s*$")
+            return response(200, P.roomRow(r, user.id))
         elseif name == "set_chat_member_role" or name == "remove_chat_member" then
             local r = find(state.rooms, body.target_room)
             local actor, target = role(body.target_room, user.id), role(body.target_room, body.target_user)
@@ -360,7 +378,7 @@ return function(state, env)
         end
         local name = path:match("^/rest/v1/rpc/(.+)$")
         local known = name and ({ get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
-            set_chat_member_role=1,remove_chat_member=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
+            set_chat_member_role=1,remove_chat_member=1,leave_chat_room=1,update_chat_room=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
             find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
             reserve_chat_photo=1,discard_chat_photo=1 })[name]
         local storageKey = path:match("^/storage/v1/object/chat%-photos/(.+)$")

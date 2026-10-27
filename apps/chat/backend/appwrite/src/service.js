@@ -165,6 +165,24 @@ export class ChatService {
       await this.repo.update('members', target.id, { ...target, role: body.member_role }); return true;
     });
   }
+  async leaveRoom(user, roomId) {
+    return this.repo.lock('room:' + id(roomId), async () => {
+      const { room, member } = await this.access(roomId, user.$id);
+      if (room.kind === 'direct' || member.role === 'owner') reject(403, 'forbidden', 'Only non-owner group and channel members can leave.');
+      await this.repo.remove('members', member.id); return true;
+    });
+  }
+  async updateRoom(user, body) {
+    const roomId = id(body.target_room);
+    if (Object.keys(body).some(field => !['target_room', 'room_name'].includes(field))) reject(400, 'validation', 'Only the conversation name can be changed.');
+    const name = body.room_name;
+    if (typeof name !== 'string' || !name.trim() || [...name].length > 80) reject(400, 'validation', 'Use a conversation name of 1–80 characters.');
+    return this.repo.lock('room:' + roomId, async () => {
+      const { room, member } = await this.access(roomId, user.$id);
+      if (room.kind === 'direct' || member.role !== 'owner') reject(403, 'forbidden', 'Only the owner can rename a group or channel.');
+      return this.roomView(await this.repo.update('rooms', roomId, { ...room, name: name.trim() }), member);
+    });
+  }
   async createInvite(user, roomId) {
     return this.repo.lock('room:' + id(roomId), async () => {
       const { room, member } = await this.access(roomId, user.$id);

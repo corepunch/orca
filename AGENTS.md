@@ -104,6 +104,46 @@ After `.cgen` changes, run `make modules`.
 - In change mode, coordinate agents for independent work and run the relevant
   lint, type check, build, and tests after each feature.
 
+## Chat: manual Appwrite integration checks
+
+For changes to `apps/chat` authentication, discovery/contacts, conversations,
+roles, invitations, messages, or photos, use the real Appwrite suite after the
+focused offline checks. It is manual for now; keep it out of default tests and
+PR CI. See [live test instructions](apps/chat/backend/appwrite/live/README.md).
+
+```bash
+make test-live-setup                       # once, or reconnect expired sessions
+make test-live                             # supported features on real Appwrite
+CHAT_LIVE_ONLY=discovery,direct,messages make test-live  # focused iteration
+CHAT_LIVE=1 make test-chat-live             # actual Lua/native client, macOS
+```
+
+Run the affected suites while iterating and the full live suite before claiming
+the Chat integration works end to end. Run Node and native live suites
+sequentially when they share accounts: normalization, locks and lookup rate
+limits can interfere with concurrent runs. Run the native suite after changes to
+Account authentication, session storage/renewal, native HTTP, or photo handling;
+finish UI changes with a two-account device pass. Network and macOS Keychain
+access must be available. A skipped or emulated run is not live verification.
+
+Reuse Alice/Bob/Carol/Dave in the ignored
+`apps/chat/backend/.live-accounts.json` (mode 0600). The Appwrite plugin can
+create the accounts; setup signs them in and initializes usernames. Never print
+or commit passwords, cookies, JWTs or server keys, and never bundle the accounts
+file in the Function archive. Tests use ordinary user sessions. Provision Dave's
+verified-email fixture through the Appwrite plugin; this checks discovery,
+not OTP delivery. No server key is needed for these assertions. Use the plugin
+for administrative fixture setup/cleanup; never broaden the app's permissions.
+Report skipped cases, retained test data, target project, active deployment and
+test results. Deployments must contain the routes being tested; record stale
+deployment failures rather than substituting mocks. Preserve existing project
+permissions and unrelated users/data.
+
+The default suite tests supported features. `CHAT_LIVE_ONLY=parity make test-live`
+is an optional exploratory backlog, whose TODO probes do not establish parity.
+Reactions/emoji, videos and calls are not current acceptance requirements; see
+[the scoped roadmap](apps/chat/PRODUCT.md#current-scope-and-deferred-work).
+
 ## Lua API naming
 
 `.cgen` methods use PascalCase (`FindChild`, `AddChild`). Codegen lowercases the

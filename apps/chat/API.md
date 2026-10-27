@@ -118,6 +118,8 @@ result's timing fields are UI hints, not a replacement for server enforcement.
 | `listMembers(roomId)` | Authorized `{user_id,display_name,username,role}` rows |
 | `setMemberRole(roomId,userId,role)` | Owner-managed role change |
 | `removeMember(roomId,userId)` | Owner/admin removal subject to role restrictions |
+| `leaveRoom(roomId)` | Non-owner leaves a group/channel; membership and access are revoked |
+| `renameRoom(roomId,name)` | Owner renames a group/channel; returns the updated room |
 | `createInvite(roomId)` | `{code,room_id,expires_at,max_uses,uses,...}` |
 | `joinInvite(code)` | Joined room with role and posting capability |
 | `revokeInvite(roomId,code)` | Boolean; false when the invite is unknown |

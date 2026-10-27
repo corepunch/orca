@@ -1,6 +1,6 @@
 // Manual end-to-end suite for the deployed Chat backend. It is deliberately not
 // part of `make test` or CI: it talks to a real Appwrite project with real accounts.
-//   make test-live                      # every suite
+//   make test-live                      # all supported features
 //   CHAT_LIVE_ONLY=discovery,direct make test-live
 import { after } from 'node:test';
 import { cleanup, config, world } from './world.js';
@@ -17,4 +17,6 @@ try { await world(); }
 catch (error) { console.error(`Live test setup failed: ${error.message}`); process.exit(1); }
 
 after(cleanup);
-for (const suite of SUITES) if (!only || only.includes(suite)) await import(`./suites/${suite}.js`);
+// Deferred product ideas are probes, not acceptance checks. Run them explicitly
+// with CHAT_LIVE_ONLY=parity; the default run covers the supported feature set.
+for (const suite of SUITES) if (only ? only.includes(suite) : suite !== 'parity') await import(`./suites/${suite}.js`);

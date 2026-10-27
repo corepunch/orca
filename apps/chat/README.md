@@ -172,6 +172,12 @@ Two disposable accounts verified live text/photo exchange, discovery,
 invitations, channel roles and membership revocation on 2026-10-25. The check
 confirmed ciphertext in the public bucket and removed all test data afterward.
 
+On 2026-10-27 the full manual suite passed 123 checks against the updated deployed
+Function using four persistent test accounts, and the real Lua/native client
+passed another 33 checks including Keychain restore and native-processed photos.
+See [live testing](backend/appwrite/live/README.md) for repeatable manual commands,
+fixture setup, retained test data and remaining device/provider checks.
+
 The architecture follows [Lapis](https://github.com/leafo/lapis)'s separation of
 models, rows, relations and reusable flows. Client-bound models expose domain
 methods such as `room:send_message()` and `room:get_members()`. Bulk selection
@@ -191,9 +197,11 @@ Open a second client with another account to exchange messages. **Refresh**
 checks for incoming messages.
 
 The client uses Appwrite sessions and short-lived JWTs. The Chat Function restricts
-history and sending to room members. Sessions stay in memory, so restarting
-requires sign-in. Messages support text and JPEG photos, prepared with native
-resizing/compression and stored in a private bucket with thumbnails. History
+history and sending to room members. On macOS/iOS, private Account credentials
+survive relaunch in Keychain and obtain a fresh JWT after validation. Messages
+support text and JPEG photos, prepared with native resizing/compression and
+stored encrypted in the shared bucket with thumbnails. Owners can rename
+groups/channels; other members can leave from conversation info. History
 currently loads the latest 100 messages. Video, live subscriptions, push, and
 older-history pagination remain future work.
 
