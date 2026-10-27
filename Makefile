@@ -280,6 +280,23 @@ NODE ?= node
 test-chat-appwrite-backend:
 	$(NODE) --test apps/chat/backend/appwrite/test/*.test.js
 
+# Manual end-to-end checks against the deployed Chat backend; never part of CI or
+# `make test`. See apps/chat/backend/appwrite/live/README.md.
+CHAT_LIVE = apps/chat/backend/appwrite/live
+.PHONY: test-live test-live-setup test-live-clean test-live-emulated
+test-live:
+	$(NODE) --test-reporter=spec $(CHAT_LIVE)/run.js
+
+test-live-setup:
+	$(NODE) $(CHAT_LIVE)/setup.js
+
+test-live-clean:
+	$(NODE) $(CHAT_LIVE)/setup.js --clean
+
+# Offline self-check of the live suite against an in-memory Appwrite emulator.
+test-live-emulated:
+	$(NODE) --test-reporter=spec $(CHAT_LIVE)/emulated.js
+
 ifeq ($(UNAME_S),Darwin)
 $(BINDIR)/test_media: tests/test_media.m source/media/media.c source/media/media_apple.m source/media/media_native.h modules | directories
 	$(CC) $(CFLAGS) tests/test_media.m source/media/media.c source/media/media_apple.m -O2 $(LDFLAGS) -framework Foundation -framework CoreGraphics -framework ImageIO -o $@
