@@ -883,6 +883,7 @@ ORCA_API void core_FlushQueue(lua_State* L) {
   struct AXmessage msg;
   int top = lua_gettop(L);
   while (axPeekMessage(&msg)) {
+    OBJ_BeginMessage(msg.target);
     SV_DispatchMessage(L, &msg);
     lua_settop(L, top);
   }

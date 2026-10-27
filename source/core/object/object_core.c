@@ -14,6 +14,11 @@ static uint32_t unique_counter = 0;
 static int64_t g_object_count = 0;
 static void OBJ_Release(struct Object *pobj);
 
+static struct {
+  void *target;             // target of the message taken from the queue
+  struct Object *released;  // that target, once its last reference went
+} in_flight;
+
 int64_t OBJ_GetObjectCount(void) { return g_object_count; }
 
 uint32_t
@@ -35,10 +40,29 @@ OBJ_ReleaseRef(struct Object *pobj)
     --pobj->refcount;
   }
   if (pobj->refcount == 0) {
-    OBJ_Release(pobj);
+    if (pobj == in_flight.target) in_flight.released = pobj;
+    else OBJ_Release(pobj);
     return 0;
   }
   return pobj->refcount;
+}
+
+void
+OBJ_EndMessage(void *target)
+{
+  if (target != in_flight.target) return;
+  struct Object *released = in_flight.released;
+  in_flight.target = NULL;
+  in_flight.released = NULL;
+  // A handler may have taken a new reference since.
+  if (released && released->refcount == 0) OBJ_Release(released);
+}
+
+void
+OBJ_BeginMessage(void *target)
+{
+  OBJ_EndMessage(in_flight.target);
+  in_flight.target = target;
 }
 
 ORCA_API struct Object *

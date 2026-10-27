@@ -415,6 +415,15 @@ OBJ_SendMessage(struct Object *, lpcString_t, wParam_t, lParam_t);
 ORCA_API LRESULT
 OBJ_SendMessageW(struct Object *, uint32_t, wParam_t, lParam_t);
 
+// A message taken from the queue holds its target until it is dispatched:
+// should the object lose its last reference meanwhile, from script garbage
+// collection or the dispatch itself, it is freed when the message is done.
+ORCA_API void
+OBJ_BeginMessage(void *target);
+
+ORCA_API void
+OBJ_EndMessage(void *target);
+
 ORCA_API uint32_t
 OBJ_GetUniforms(struct Object *, struct uniform*);
 
