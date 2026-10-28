@@ -592,8 +592,10 @@ local App = Application:extend {
         self.composer = C.input("Message", "type a message", {
             Text = self.drafts[room.id] or "", Submit = function() self:sendMessage() end, BorderRadius = "0",
         })
-        -- The text field sits in the frosted composer bar, as in iOS Messages.
-        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 48 }
+        -- Match the compact ApplicationBar's 58-point height, with breathing
+        -- room around the 48-point controls. Footer adds system insets separately.
+        local compose = ui.Grid { Name = "Composer", Columns = "48px 1fr 48px", Height = 58,
+            PaddingTop = 5, PaddingBottom = 5 }
         compose:addChild(C.iconButton("plus", function() self:attachPhoto() end,
             { Name = "AttachPhoto", Width = 48, Height = 48, Foreground = colors.ink }))
         compose:addChild(self.composer)

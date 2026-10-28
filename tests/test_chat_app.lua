@@ -145,6 +145,18 @@ assert(app.composer.ActualHeight >= 44 and app.composer.ActualWidth > 200,
     string.format("Composer dimensions: %.1f x %.1f", app.composer.ActualWidth, app.composer.ActualHeight))
 local composerStrip = screen:findChild("Composer", true)
 local footer = screen:findChild("ThreadFooter", true)
+local appBar = assert(home:findChild("AppBar", true))
+assert(math.abs(composerStrip.ActualHeight - appBar.ActualHeight) < 1,
+    "The composer and compact navigation bar must have the same content height")
+local function assertComposerPadding()
+    -- Input borders are outside ActualHeight, so measure the visible field.
+    local top = app.composer.ActualY - app.composer.BorderWidthTop
+    local bottom = composerStrip.ActualHeight - app.composer.ActualY
+        - app.composer.ActualHeight - app.composer.BorderWidthBottom
+    assert(top >= 5 and bottom >= 5 and math.abs(top - bottom) < 1,
+        string.format("The message field needs equal top and bottom padding: %.1f / %.1f", top, bottom))
+end
+assertComposerPadding()
 assert(not app.status.Visible and app.status:getTextContent() == "",
     "A healthy thread must not show a routine sync caption")
 assert(math.abs(footer.ActualHeight - composerStrip.ActualHeight) < 1,
@@ -270,6 +282,7 @@ for _, inset in ipairs { 384, 0 } do
         "Composer controls must stay immediately above the keyboard or home gesture area")
     assert(math.abs(footer.ActualY + footer.ActualHeight - 844) < 1,
         "The composer background must extend under the keyboard to the physical bottom")
+    assertComposerPadding()
 end
 
 -- With a scrolling history, the keyboard keeps the newest message above the
