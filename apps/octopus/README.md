@@ -174,13 +174,13 @@ select only IDs and relation keys, skip unused exact list totals, and page throu
 rows instead of silently stopping at 1,000. Profile name/avatar lookups select
 only those fields; author labels already come from the posts.
 
-For a bounded startup response, deploy and backfill the optional
-[public feed materializer](backend/README.md), verify its schema/indexes, then
-set `OCTOPUS_FEED_COLLECTION_ID=post-feed`. It maintains short summaries,
+Startup uses the provisioned `post-feed` summaries by default. The
+[public feed materializer](backend/README.md) maintains short summaries,
 public avatar IDs and counts from website/mobile writes. Guests need only one
 feed request; signed-in readers query only their own reaction state afterward.
-Leaving this variable unset uses the existing collections. Deployment is
-separate from building the client; the PR does not change the live project.
+Set `OCTOPUS_FEED_COLLECTION_ID` to another provisioned feed collection, or set
+it to an empty string to use the original source collections. For a separate
+Appwrite project, provision and backfill the feed before enabling this path.
 
 Live clients cache the guest discover page for up to 24 hours and guest image
 variants for seven days, scoped to endpoint/project/database/bucket/feed. The
