@@ -176,13 +176,12 @@ end }
 id = owner:setTimer(20)
 local started = system.getTime()
 pumpUntil(function() return resumed > 0 end, 2000)
-assert(resumed > 0 and delivered >= 1 and receivedId == id and resumedId == id, string.format(
+assert(resumed == 1 and delivered == 1 and receivedId == id and resumedId == id, string.format(
   "A native expiration must deliver the right ID to a yielding Timer.Tick handler "
   .. "(resumed=%d delivered=%d receivedId=%s resumedId=%s id=%s after %d ms)",
   resumed, delivered, tostring(receivedId), tostring(resumedId), tostring(id), system.getTime() - started))
--- A slow event loop can dispatch several expirations into callback coroutines
--- before the first callback starts and cancels. Let those callbacks finish;
--- cancellation must prevent any subsequent native deliveries.
+-- A slow event loop may queue several callbacks before the first starts.
+-- Cancellation suppresses those that have not begun and lets this one finish.
 core.flushQueue()
 local deliveredAtCancellation = delivered
 assert(resumed == deliveredAtCancellation, "Every dispatched Tick callback must resume after yielding")
