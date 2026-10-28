@@ -154,22 +154,54 @@ template binds its fields through `DataContext`; values such as indentation or
 visibility belong to data when they vary by item. Use ordinary explicit layout
 for unique headers and other non-repeating sections.
 
-Property changes and collection membership changes are separate contracts.
-Currently `ListBox` and `GridBox` instantiate source children at `Object.Start`;
-automatic reconciliation after appends, removals, reordering, or source
-replacement is not implemented. Configure the source/template before attaching
-a newly constructed control; starting it is one-shot. Use one explicit,
-tested refresh/adapter path for changing collections, rather than promising
-automatic observability. Verify insertion, removal, ordering, and selection
-preservation in that path. Avoid a controller adding a data record and separately
-reimplementing the same row's layout as a second source of truth.
+`ItemsControl` owns generated rows for `ListBox`, `GridBox`, or a layout node
+with an attached `ItemsControl` component. Its `ItemsSource` is a `DataObject`
+whose direct DataObject children are the records. Adding, removing, moving,
+clearing, or replacing that source updates the generated rows automatically.
+Rows retain their native identity and DataContext while their record remains
+in the collection. Changing `ItemTemplate` recreates the generated rows;
+authored children are preserved. `send("ItemsControl.Refresh")` synchronizes immediately when a
+caller needs the rows before the next normal binding evaluation.
 
-Use partial updates or a component `rebuild()` at the intended boundary when
-needed. Calling `rebuild()` on an existing list does not replay `Object.Start`
-or reconcile its source. A refresh must recreate the configured list within its
-owning component or explicitly instantiate/update row templates through the
-adapter. Preserve focus, drafts, selection, and scroll position deliberately;
-do not assume recreating the entire screen is a reactive update mechanism.
+Use `record:moveBefore(sibling)` to reorder a record without restarting its
+view; `nil` moves it to the end. `source:beginUpdate()` / `source:endUpdate()`
+coalesce a group of membership changes into one notification, with nesting.
+Always end a batch, including after an error. Field edits use the ordinary
+property binding system and do not recreate the row. A source replacement can
+retain rows if it contains the same DataObjects; a fresh service table with the
+same ID is not itself the same native record.
+
+The [ItemsView adapter](../../share/orca/UIKit/ItemsView.lua) is the small Lua
+presentation boundary used by Chat and Octopus. It maps service keys to stable,
+typed DataObjects and batches membership edits. Native ItemsControl owns view
+creation and ordering; XML owns the layout. Its `record(name, columns)` registers
+a presentation schema once, and `new { node, template, record, key, fields,
+update }` creates a collection presenter. `presenter:refresh(values)` updates
+bound fields and returns retained `{ key, data, node, value }` entries. An
+optional update hook wires actions or photo loading; it must not duplicate the
+XML row layout. Give this adapter a container whose children it owns.
+
+Templates can share sections with bound `Visible` properties. Chat derives
+text, captioned-photo and photo-only presentation flags, sender grouping and
+tails from the message model; it keeps the last photo's timestamp overlay
+outside the loader's replaceable content. StateManager remains useful for
+property overrides controlled by a host state. Neither mechanism requires
+recreating a whole screen when a caption or delivery field changes.
+
+Bindings resolve the nearest DataContext again when it is replaced or a view
+is reparented. `{Binding DataContext}` supplies the provider's root DataObject;
+`{Binding DataContext/Items}` can supply a named child collection. Binding a
+node's DataContext through `DataContext/...` reads the inherited context rather
+than its own previous binding result. Missing object sources clear the target.
+
+This is a retained collection and binding foundation, not full WPF parity:
+there is no virtualizing item panel, collection-view sorting/filtering layer,
+automatic template selector, or automatic observation of arbitrary Lua tables.
+Low-level collection observers receive native messages; assigning a Lua
+`CollectionChanged` callback alone does not register synchronous observation.
+Use ItemsControl/ItemsView for Lua application collection presentation.
+Preserve reading anchors, focus, drafts and selection deliberately at the app
+boundary; retained row identity alone does not define a scrolling policy.
 
 ## Requests and view lifetimes
 
@@ -214,7 +246,7 @@ Treat samples as references for specific mechanisms, not complete standards.
 | [Banking app](../../apps/Banking/App.moon) | `Application`, separate views/layout, authentication routing | Banking was migrated to Widget/Application in commit `2071831f`; its old routing plugin was removed. |
 | [Weather app](../../apps/Weather/App.moon) | The same Widget/Application entry; separate model/service modules | Some views obtain remote data during content construction; prefer explicit request state for new work. |
 | [Example package](../../apps/Example/package.lua) | Semantic theme values, CSS, resources, and reusable presentation | Its dark/violet palette is one app design, not a universal ORCA theme. |
-| [Chat app](../../apps/chat/App.lua) | A Lua service adapter, working app states, and a native portrait preview | The app is still a prototype with much of its UI/state in one module; the recommended separation has not been applied to it. |
+| [Chat app](../../apps/chat/App.lua) | A Lua service adapter, working app states, and a native portrait preview | Its application shell remains Lua; message and photo rows use XML templates with typed, retained ItemsSource records. |
 
 Read one relevant example for the mechanism being implemented. The XML and
 MoonScript-specific entry points remain under [XML](xml/index.md) and

@@ -140,10 +140,6 @@ OBJ_SetProperty(lua_State* L, struct Object *self, lpcString_t name)
   }
   struct Property *property = OBJ_FindShortProperty(self, ident);
   if (property) {
-    if (PROP_GetType(property) == kDataTypeEvent &&
-        (lua_type(L, 3) == LUA_TFUNCTION || lua_isnil(L, 3))) {
-      OBJ_RemoveFromQueue(self);
-    }
     luaX_readProperty(L, 3, property);
     return TRUE;
   } else if (OBJ_SetShorthandValueFromLua(L, self, name, 3)) {

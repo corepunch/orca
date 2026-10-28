@@ -13,6 +13,8 @@ static inline size_t CMP_PropertyOffset(size_t classSize)
 
 // Closure for controller event handlers: self = controller table (with .view = root node).
 int _bind_handler_closure(lua_State *L);
+void OBJ_NotifyCollectionChanged(struct Object *object);
+void OBJ_ClearCollectionObservers(struct Object *object);
 
 struct component
 {

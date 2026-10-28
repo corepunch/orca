@@ -1,0 +1,44 @@
+<StackView Name="MessageEntry" Spacing="0" JustifyContent="Start">
+  <TextBlock Name="TimelineDate" Visible="{Binding DataContext/ShowDate}" Text="{Binding DataContext/Date}"
+             FontSize="12" ForegroundColor="{Binding DataContext/Dim}" TextHorizontalAlignment="Center"
+             MarginTop="4" MarginBottom="6" IgnoreHitTest="true"/>
+  <StackView Name="EmptyState" Visible="{Binding DataContext/Empty}" Spacing="8" Padding="0 8">
+    <TextBlock Name="EmptyTimeline" Text="{Binding DataContext/EmptyTitle}" FontSize="22"
+               ForegroundColor="{Binding DataContext/Muted}" TextWrapping="Wrap" IgnoreHitTest="true"/>
+    <TextBlock Text="{Binding DataContext/EmptyHint}" FontSize="14"
+               ForegroundColor="{Binding DataContext/Dim}" TextWrapping="Wrap" IgnoreHitTest="true"/>
+  </StackView>
+  <StackView Name="MessageRow" Visible="{Binding DataContext/HasMessage}" Spacing="0" JustifyContent="Start"
+             AlignItems="{Binding DataContext/Alignment}" MarginTop="{Binding DataContext/Gap}"
+             PaddingLeft="{Binding DataContext/LeftInset}" PaddingRight="{Binding DataContext/RightInset}">
+    <VectorView Name="IncomingTail" Source="Chat/assets/bubble-tail-up.svg" Visible="{Binding DataContext/IncomingTail}"
+                Width="14" Height="12" ForegroundColor="{Binding DataContext/Tone}" MarginLeft="16" MarginRight="auto" IgnoreHitTest="true"/>
+    <Grid Name="MessageHolder">
+      <StackView Name="MessageBubble" BackgroundColor="{Binding DataContext/Tone}"
+                 Width="{Binding DataContext/BubbleWidth}" PaddingLeft="{Binding DataContext/Inset}"
+                 PaddingRight="{Binding DataContext/Inset}" PaddingTop="{Binding DataContext/VerticalInset}"
+                 PaddingBottom="{Binding DataContext/VerticalInset}" Spacing="{Binding DataContext/SectionGap}" JustifyContent="Start">
+        <StackView Name="SenderSection" Visible="{Binding DataContext/ShowSender}" PaddingLeft="{Binding DataContext/PhotoInset}"
+                   PaddingRight="{Binding DataContext/PhotoInset}" PaddingTop="{Binding DataContext/PhotoVerticalInset}"
+                   PaddingBottom="{Binding DataContext/PhotoVerticalInset}" JustifyContent="Start">
+          <TextBlock Text="{Binding DataContext/Sender}" FontSize="13" FontWeight="Bold"
+                     ForegroundColor="{Binding DataContext/Accent}" TextWrapping="Wrap" IgnoreHitTest="true"/>
+        </StackView>
+        <StackView Name="PhotoSection" Visible="{Binding DataContext/HasPhotos}" Spacing="0" JustifyContent="Start">
+          <StackView Name="Photos" Spacing="0" JustifyContent="Start"/>
+        </StackView>
+        <StackView Name="Caption" Visible="{Binding DataContext/ShowCaption}" Spacing="2" JustifyContent="Start"
+                   PaddingLeft="{Binding DataContext/PhotoInset}" PaddingRight="{Binding DataContext/PhotoInset}"
+                   PaddingTop="{Binding DataContext/PhotoVerticalInset}" PaddingBottom="{Binding DataContext/PhotoVerticalInset}">
+          <TextBlock Name="MessageBody" Visible="{Binding DataContext/HasBody}" Text="{Binding DataContext/Body}"
+                     FontSize="16" ForegroundColor="{Binding DataContext/Ink}" TextWrapping="Wrap" IgnoreHitTest="true"/>
+          <TextBlock Name="MessageTime" Text="{Binding DataContext/Timestamp}"
+                     FontSize="11" ForegroundColor="{Binding DataContext/Meta}" TextHorizontalAlignment="Right" IgnoreHitTest="true"/>
+        </StackView>
+      </StackView>
+      <Button Name="MessageActions" Visible="{Binding DataContext/CanAct}" Background="#00000000" BorderWidth="0"/>
+    </Grid>
+    <VectorView Name="OutgoingTail" Source="Chat/assets/bubble-tail-down.svg" Visible="{Binding DataContext/OutgoingTail}"
+                Width="14" Height="12" ForegroundColor="{Binding DataContext/Tone}" MarginLeft="auto" MarginRight="16" IgnoreHitTest="true"/>
+  </StackView>
+</StackView>

@@ -2,6 +2,170 @@
 #include <source/core/core_local.h>
 #include <source/core/property/property_internal.h>
 
+struct ItemsControlEntry {
+  struct Object *data, *view;
+  struct ItemsControlEntry *next;
+  bool_t seen;
+};
+
+static void
+ItemsControl_ReleaseEntry(struct Object *owner, struct ItemsControlEntry *entry)
+{
+  if (OBJ_GetParent(entry->view) == owner) OBJ_RemoveFromParent(entry->view);
+  OBJ_ReleaseRef(entry->view);
+  OBJ_ReleaseRef(entry->data);
+  free(entry);
+}
+
+static struct ItemsControlEntry **
+ItemsControl_FindSlot(struct ItemsControlEntry **table, size_t capacity, struct Object *data)
+{
+  size_t slot = ((uintptr_t)data >> 4) & (capacity - 1);
+  while (table[slot] && table[slot]->data != data) slot = (slot + 1) & (capacity - 1);
+  return table + slot;
+}
+
+static void
+ItemsControl_Synchronize(struct ItemsControl *ic)
+{
+  if (!ic) return;
+  struct Object *hObject = CMP_GetObject(ic);
+  ic->_started = TRUE;
+  if (ic->_refreshing) { ic->_refreshPending = TRUE; return; }
+  ic->_refreshing = TRUE;
+  do {
+    ic->_refreshPending = FALSE;
+    struct Object *source = ic->ItemsSource ? CMP_GetObject(ic->ItemsSource) : NULL;
+    if (source != ic->_observedSource) {
+      if (source) OBJ_AddRef(source);
+      if (ic->_observedSource) {
+        core_UnobserveCollection(ic->_observedSource, hObject);
+        OBJ_ReleaseRef(ic->_observedSource);
+      }
+      ic->_observedSource = source;
+      if (source) core_ObserveCollection(source, hObject);
+    }
+    if (ic->_appliedTemplate != ic->ItemTemplate) {
+      while (ic->_entries) {
+        struct ItemsControlEntry *entry = ic->_entries;
+        ic->_entries = entry->next;
+        ItemsControl_ReleaseEntry(hObject, entry);
+      }
+      ic->_appliedTemplate = ic->ItemTemplate;
+    }
+
+    size_t count = 0, oldCount = 0, capacity = 8;
+    if (source) FOR_EACH_OBJECT(data, source) { if (GetDataObject(data)) count++; }
+    for (struct ItemsControlEntry *entry = ic->_entries; entry; entry = entry->next) oldCount++;
+    while (capacity < (count + oldCount) * 2) capacity *= 2;
+    struct ItemsControlEntry **table = calloc(capacity, sizeof(*table));
+    struct ItemsControlEntry **ordered = count ? calloc(count, sizeof(*ordered)) : NULL;
+    struct Object **snapshot = count ? calloc(count, sizeof(*snapshot)) : NULL;
+    if (!table || (count && (!ordered || !snapshot))) {
+      free(table); free(ordered); free(snapshot);
+      break;
+    }
+    size_t index = 0;
+    bool_t selectionPresent = !ic->SelectedItem;
+    /* A template's Start handler may mutate the source while rows are created. */
+    if (source) FOR_EACH_OBJECT(data, source) {
+      if (!GetDataObject(data)) continue;
+      if (ic->SelectedItem && data == CMP_GetObject(ic->SelectedItem)) selectionPresent = TRUE;
+      snapshot[index++] = data;
+      OBJ_AddRef(data);
+    }
+    for (struct ItemsControlEntry *entry = ic->_entries; entry; entry = entry->next) {
+      entry->seen = FALSE;
+      *ItemsControl_FindSlot(table, capacity, entry->data) = entry;
+    }
+    for (index = 0; index < count; index++) {
+      struct Object *data = snapshot[index];
+      struct ItemsControlEntry **slot = ItemsControl_FindSlot(table, capacity, data);
+      struct ItemsControlEntry *entry = *slot;
+      if (!entry) {
+        struct Object *view = ic->ItemTemplate
+          ? OBJ_Instantiate(CMP_GetObject(ic->ItemTemplate)) : OBJ_Create(ID_TextBlock);
+        if (!view) { OBJ_ReleaseRef(data); continue; }
+        entry = calloc(1, sizeof(*entry));
+        if (!entry) { OBJ_ReleaseRef(view); OBJ_ReleaseRef(data); continue; }
+        entry->data = data;
+        entry->view = view;
+        entry->next = ic->_entries;
+        ic->_entries = entry;
+        *slot = entry;
+        if (!ic->ItemTemplate) PROP_SetStringValue(OBJ_FindLongProperty(view, ID_TextRun_Text), "Item");
+        PROP_SetValue(OBJ_FindLongProperty(view, ID_Node_DataContext), &data);
+      } else {
+        OBJ_ReleaseRef(data);
+      }
+      entry->seen = TRUE;
+      ordered[index] = entry;
+      if (OBJ_GetParent(entry->view) != hObject) OBJ_AddChild(hObject, entry->view);
+    }
+    struct ItemsControlEntry **link = &ic->_entries;
+    while (*link) {
+      struct ItemsControlEntry *entry = *link;
+      if (entry->seen) { link = &entry->next; continue; }
+      *link = entry->next;
+      ItemsControl_ReleaseEntry(hObject, entry);
+    }
+    struct Object *before = NULL;
+    for (index = count; index > 0; index--) {
+      struct ItemsControlEntry *entry = ordered[index - 1];
+      if (!entry) continue;
+      if (OBJ_GetNext(entry->view) != before) OBJ_MoveBefore(entry->view, before);
+      before = entry->view;
+    }
+    if (!selectionPresent) {
+      struct Object *none = NULL;
+      PROP_SetValue(OBJ_FindLongProperty(hObject, ID_ItemsControl_SelectedItem), &none);
+    }
+    free(snapshot); free(ordered); free(table);
+    _SendMessage(hObject, ItemsControl, ItemsChanged);
+  } while (ic->_refreshPending);
+  ic->_refreshing = FALSE;
+}
+
+HANDLER(ItemsControl, Object, Start) {
+  pItemsControl->_started = TRUE;
+  ItemsControl_Synchronize(pItemsControl);
+  return TRUE;
+}
+
+HANDLER(ItemsControl, Object, PropertyChanged) {
+  if (!pPropertyChanged->Property) return FALSE;
+  uint32_t identifier = PROP_GetLongIdentifier(pPropertyChanged->Property);
+  if (identifier != ID_ItemsControl_ItemsSource && identifier != ID_ItemsControl_ItemTemplate) return FALSE;
+  if (pItemsControl->_started || pItemsControl->_observedSource || pItemsControl->_entries)
+    ItemsControl_Synchronize(pItemsControl);
+  return FALSE;
+}
+
+HANDLER(ItemsControl, DataObject, CollectionChanged) {
+  if (pCollectionChanged->Source != pItemsControl->_observedSource) return FALSE;
+  ItemsControl_Synchronize(pItemsControl);
+  return TRUE;
+}
+
+HANDLER(ItemsControl, ItemsControl, Refresh) {
+  ItemsControl_Synchronize(pItemsControl);
+  return TRUE;
+}
+
+HANDLER(ItemsControl, Object, Destroy) {
+  if (pItemsControl->_observedSource) {
+    core_UnobserveCollection(pItemsControl->_observedSource, hObject);
+    OBJ_ReleaseRef(pItemsControl->_observedSource);
+    pItemsControl->_observedSource = NULL;
+  }
+  while (pItemsControl->_entries) {
+    struct ItemsControlEntry *entry = pItemsControl->_entries;
+    pItemsControl->_entries = entry->next;
+    ItemsControl_ReleaseEntry(hObject, entry);
+  }
+  return TRUE;
+}
+
 static const char *
 ListBox_GetItemValue(struct Object *hObject, struct ListBox *pListBox, struct Object *item)
 {
@@ -165,27 +329,7 @@ ListBox_SyncToSelectedValue(struct Object *hObject, struct ListBox *pListBox)
   }
 }
 
-// ListBox_Start
-HANDLER(ListBox, Object, Start) {
-  OBJ_Clear(hObject); // wipe existing children
-  struct ItemsControl *ic = GetItemsControl(hObject);
-  if (!ic->ItemsSource) return FALSE; // nothing to bind
-  struct Node2D *tpl = ic->ItemTemplate;
-  FOR_EACH_OBJECT(data, CMP_GetObject(ic->ItemsSource)) { // iterate data items
-    // instantiate template, or fall back to a plain TextBlock
-    struct Object *item = tpl ? OBJ_Instantiate(CMP_GetObject(tpl)) : OBJ_Create(ID_TextBlock);
-    if (!item) {
-      Con_Printf("Can not instantiate ListBox item template");
-      return FALSE;
-    }
-    if (!tpl) {
-      char *text = "Item";
-      PROP_SetValue(OBJ_FindLongProperty(item, ID_TextRun_Text), &text);
-    }
-    PROP_SetValue(OBJ_FindLongProperty(item, ID_Node_DataContext), &data);
-    OBJ_AddChild(hObject, item);
-    OBJ_ReleaseRef(item);
-  }
+HANDLER(ListBox, ItemsControl, ItemsChanged) {
   if (!pListBox->SelectedValue || !*pListBox->SelectedValue) {
     // no selection yet -> auto-select first child
     struct Object *first = NULL;

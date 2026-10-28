@@ -3,6 +3,8 @@
 extern struct Object *FS_LoadObject(lpcString_t path);
 extern lpcString_t FS_GetThemeValue(lpcString_t key);
 
+static struct Property *s_binding_target;
+
 #define tok_op(name)                                                           \
   bool_t op_##name(struct token* token,                                        \
                    struct vm_register* regs,                                   \
@@ -686,6 +688,15 @@ _BindingPropertyHasEffectiveValue(struct Property *prop)
 #include <UIKit/UIKit.h> // for GetNode/GetScreen
 
 static struct Object *
+BindingContextStart(struct Object *object)
+{
+  // A DataContext binding reads its inherited context, not its previous result.
+  if (s_binding_target && PROP_GetObject(s_binding_target) == object &&
+      !strcmp(PROP_GetDesc(s_binding_target)->Name, "DataContext")) return OBJ_GetParent(object);
+  return object;
+}
+
+static struct Object *
 _FindDataContextObject(struct Object *object, void **component)
 {
   struct Node *node = GetNode(object);
@@ -715,7 +726,7 @@ ResolveArgumentProperty(struct Object *object, struct token *token, struct Objec
   char const *path = token->text;
   if (dataRoot) *dataRoot = NULL;
   if (!strncmp(path, "DataContext/", 12)) {
-    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
+    for (struct Object *it = BindingContextStart(object); it; it = OBJ_GetParent(it)) {
       struct Object *context = _FindDataContextObject(it, NULL);
       if (!context) continue;
       char contextPath[MAX_PROPERTY_STRING] = {0};
@@ -777,25 +788,39 @@ tok_op(argument)
     p = ResolveArgumentProperty(object, token, &dataRoot);
     if (isDataContextPath && !p) {
       const char *name = strrchr(token->text, '/');
+      struct Object *child = dataRoot && name ? OBJ_FindByPath(dataRoot, name + 1) : NULL;
+      if (child) {
+        InitOutput(output, kDataTypeObject, sizeof(child));
+        memcpy(output->value, &child, sizeof(child));
+        return TRUE;
+      }
       if (dataRoot && name && (!strcmp(name + 1, "Name") || !strcmp(name + 1, "id"))) {
         InitOutput(output, kDataTypeString, sizeof(const char *));
         VM_REG_SET_STR(output, vm_strtmp(OBJ_GetName(dataRoot)));
         return TRUE;
       }
       memset(output, 0, sizeof(*output));
+      if (s_binding_target && PROP_GetType(s_binding_target) == kDataTypeObject) {
+        InitOutput(output, kDataTypeObject, sizeof(struct Object *));
+        return TRUE;
+      }
       InitOutput(output, kDataTypeFloat, sizeof(float));
       return TRUE;
     }
   } else if (!strcmp(token->text, "DataContext")) {
-    for (struct Object *it = object; it; it = OBJ_GetParent(it)) {
-      void *dataContext = NULL;
-      if (_FindDataContextObject(it, &dataContext)) {
-        memcpy(output->value, &dataContext, sizeof(void*));
+    for (struct Object *it = BindingContextStart(object); it; it = OBJ_GetParent(it)) {
+      struct Object *context = _FindDataContextObject(it, NULL);
+      if (context) {
+        struct DataObject *data = (struct DataObject *)_SendMessage(context, DataContext, GetData, .Path = "");
+        struct Object *root = data ? CMP_GetObject(data) : context;
+        memcpy(output->value, &root, sizeof(root));
         InitOutput(output, kDataTypeObject, sizeof(handle_t));
         return TRUE;
       }
     }
-    return FALSE;
+    memset(output, 0, sizeof(*output));
+    InitOutput(output, kDataTypeObject, sizeof(struct Object *));
+    return TRUE;
   } else if (strstr(token->text, "Service/")) {
     shortStr_t name = { 0 };
     lpcString_t sep = strchr(token->text, '/');
@@ -907,4 +932,14 @@ OBJ_RunProgram(struct Object *object,
     }
   }
   return success;
+}
+
+bool_t
+PROP_RunBindingProgram(struct Property *property, struct token *token, struct vm_register *output)
+{
+  struct Property *previous = s_binding_target;
+  s_binding_target = property;
+  bool_t result = OBJ_RunProgram(PROP_GetObject(property), token, output);
+  s_binding_target = previous;
+  return result;
 }

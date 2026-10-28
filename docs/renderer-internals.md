@@ -4,6 +4,22 @@ This page documents internal conventions and non-obvious behaviours of the ORCA 
 
 ---
 
+## Display density
+
+Normal renderer windows request `AX_WINDOW_HIGHDPI` while keeping layout and
+pointer coordinates in logical points. On macOS, `axGetScaling()` reports the
+OpenGL view's backing scale; viewport/scissor dimensions, text rasterization
+and SVG textures use that multiplier for physical pixels. Backing-property and
+screen changes update the context and queue a logical resize/repaint, so text
+and vectors refresh at the new density. Offscreen surfaces keep their requested
+pixel dimensions at scale 1.
+
+`make test-macos-retina` exercises the real desktop window, backing changes,
+logical sizing, and physical viewport dimensions. It requires a macOS display
+and is excluded from the headless suite.
+
+---
+
 ## Shader Selection
 
 `R_DrawEntity` picks a shader in this order:

@@ -1,5 +1,27 @@
 #include "property_internal.h"
 
+bool_t
+PROP_BindHandler(struct Property *property, char const *name)
+{
+  if (!property || PROP_GetType(property) != kDataTypeEvent || !name) return FALSE;
+  char *retained = strdup(name);
+  if (!retained) return FALSE;
+  event_t *slot = (event_t *)PROP_GetValue(property);
+  if (slot && *slot) {
+    axPostMessageW(NULL, kEventClearReference, *slot, NULL);
+    *slot = 0;
+  }
+  free(property->handlerName);
+  property->handlerName = retained;
+  property->handlerOverride = FALSE;
+  PROP_SetFlag(property, PF_MODIFIED);
+  struct Object_BindHandlerEventArgs args = {
+    .PropertyId = PROP_GetLongIdentifier(property), .FunctionName = retained,
+  };
+  axPostMessageDataW(property->object, ID_Object_BindHandler, 1, &args, sizeof(args));
+  return TRUE;
+}
+
 static lpcString_t
 PROP_GetShortName(struct Property const *property)
 {

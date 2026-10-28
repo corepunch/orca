@@ -762,6 +762,9 @@
         <field name="Offset" type="uint">Byte offset of the property within the structure.</field>
         <field name="DataSize" type="uint">Size of the property data in bytes.</field>
         <field name="IsArray" type="bool">Indicates whether the property is an array type, will generate Num* property to indicate the number of elements.</field>
+        <field name="IsPointer" type="bool">The reflected field stores a pointer rather than an inline struct or scalar.</field>
+        <field name="IsUnsigned" type="bool">An Int field stores an unsigned 32-bit value; Lua conversion preserves its full range.</field>
+        <field name="FixedCount" type="uint">Number of inline fixed-array elements; zero identifies a scalar field.</field>
       </fields>
       <!-- Additional internal fields for property metadata -->
     </struct>

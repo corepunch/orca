@@ -217,6 +217,29 @@ The shorthand works for any event-typed property, including custom ones:
     Submit="{Screen.ShowModal Path=MyApp/Screens/Help}"/>
 ```
 
+### Named controller handlers and serialization
+
+A plain event attribute names a function on the nearest controller:
+
+```xml
+<StackView Controller="MyApp/Scripts/Compose">
+  <Input Name="Message" Submit="SendMessage"/>
+</StackView>
+```
+
+The controller path and handler name survive scene serialization and template
+instantiation. Each instance loads its own controller. Controller loading is
+queued before named handlers regardless of attribute order; an explicit name
+takes precedence over the `ChildName_EventName` naming convention.
+
+Lua can replace a handler with a function, rebind it by assigning a controller
+function name, or clear it with `nil`. Replacing a pending declaration prevents
+that declaration from restoring the old handler and leaves other queued events
+intact. Lua closures and registry references are runtime values and are omitted
+from serialized scenes. Persist named declarations when a cloned template must
+recreate behavior. An explicit clear serializes as an empty event declaration,
+so a controller naming convention cannot silently restore it on reload.
+
 ---
 
 ## How dispatch works

@@ -16,6 +16,7 @@
     <external struct="text_info"/>
     <external struct="lua_State"/>
     <external struct="BackdropCache"/>
+    <external struct="ItemsControlEntry"/>
   </externals>
   <enums>
     <enum name="Direction">
@@ -948,7 +949,7 @@
     </class>
     <class name="ActivityIndicator" parent="Node2D">
       <summary>Centered, noninteractive circular indicator for indeterminate loading</summary>
-      <details>A ring of twelve fading dots advances while active and visible. Defaults to 32 by 32 points with auto margins to center within its allocated area. Foreground controls its color. Place it in the content region being loaded so surrounding controls remain usable. Set IsActive=false to stop and hide the dots without changing layout.</details>
+      <details>A ring of twelve fading dots advances while active and visible. Defaults to 64 by 64 points, shrinking uniformly to fit smaller content regions, with auto margins to center within its allocated area. Foreground controls its color. Place it in the content region being loaded so surrounding controls remain usable. Set IsActive=false to stop and hide the dots without changing layout.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
         <handle message="Object.Create"/>
@@ -1383,19 +1384,43 @@
       </properties>
     </class>
     <class name="ItemsControl">
-      <summary>Base class for controls that present a collection of items</summary>
+      <summary>Presents observable DataObject collections through retained item templates.</summary>
+      <details>Attach to a Node2D layout container or use ListBox/GridBox. Each direct DataObject child of ItemsSource receives one instantiated ItemTemplate with its DataContext assigned before attachment. Source membership and ordering changes update automatically while retaining views by data object identity. Replacing ItemTemplate recreates only generated views; authored children are preserved. Without a template each item uses a TextBlock. Sending ItemsControl.Refresh synchronizes immediately, including when the component is configured before attachment.</details>
+      <handles>
+        <handle message="Object.Start"/>
+        <handle message="Object.Destroy"/>
+        <handle message="Object.PropertyChanged"/>
+        <handle message="DataObject.CollectionChanged"/>
+        <handle message="ItemsControl.Refresh"/>
+      </handles>
       <properties>
         <property name="ItemsSource" type="DataObject" pointer="true">The collection of items to display</property>
         <property name="ItemTemplate" type="Node2D" pointer="true">The template used to represent each item</property>
         <property name="SelectedItem" type="DataObject" pointer="true">The DataObject of the currently selected item. Set automatically by ListBox on selection. Bind a detail view's ItemsSource or DataContext to this for master-detail.</property>
       </properties>
+      <fields>
+        <field name="_entries" type="ItemsControlEntry" pointer="true">Owned generated views and their source identities.</field>
+        <field name="_observedSource" type="Object" pointer="true">Owned reference to the collection currently observed, retained until unsubscribe.</field>
+        <field name="_appliedTemplate" type="Node2D" pointer="true">Template used by the current generated views.</field>
+        <field name="_started" type="bool"/>
+        <field name="_refreshing" type="bool"/>
+        <field name="_refreshPending" type="bool"/>
+      </fields>
+      <messages>
+        <message name="Refresh">
+          <summary>Synchronizes generated rows with ItemsSource immediately, preserving existing views for retained data objects. Send from Lua with object:send("ItemsControl.Refresh").</summary>
+        </message>
+        <message name="ItemsChanged">
+          <summary>Sent synchronously after generated views and DataContexts match the current collection; ListBox uses this to restore selection.</summary>
+        </message>
+      </messages>
     </class>
     <class name="ListBox" parent="StackView,ItemsControl">
       <summary>A list box that allows the user to select one or more items from a collection</summary>
-      <details>Handles Object.Start to populate its children: verifies that ItemsSource and ItemTemplate are both set, iterates over each DataObject in the ItemsSource collection, and for each item instantiates the ItemTemplate via OBJ_Instantiate (falling back to a default TextBlock with text "Item" when no template is provided). Sets Node.DataContext on each instantiated item to the corresponding DataObject. Returns FALSE and logs an error if ItemsSource or ItemTemplate is not set.</details>
+      <details>Combines StackView layout and ItemsControl collection presentation with selection. ItemsControl retains and updates generated rows; ListBox restores SelectedValue after collection changes and selects the first item when no value has been chosen.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
       <handles>
-        <handle message="Object.Start"/>
+        <handle message="ItemsControl.ItemsChanged"/>
         <handle message="Object.PropertyChanged"/>
         <handle message="Node.LeftButtonUp"/>
         <handle message="ListBox.SelectItem"/>
@@ -1424,9 +1449,6 @@
       <summary>Grid layout container that data-binds items from a collection into wrapping rows</summary>
       <details>Combines Grid's 2D layout with ItemsControl's data-binding. Specify Columns (and optionally Rows/Spacing), provide ItemsSource and ItemTemplate, and items fill the grid with automatic row wrapping when only Columns is specified.</details>
       <xmlns>http://schemas.corepunch.com/orca/2006/xml/presentation</xmlns>
-      <handles>
-        <handle message="Object.Start"/>
-      </handles>
     </class>
   </classes>
 </module>

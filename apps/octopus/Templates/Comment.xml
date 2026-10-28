@@ -1,0 +1,21 @@
+<Grid Columns="36px 1fr" Spacing="12" MarginLeft="{Binding DataContext/Indent}" ForegroundColor="{Binding DataContext/Ink}">
+  <Button Name="Avatar" Width="36" Height="36" BackgroundColor="#00000000" class="octopus-row"/>
+  <StackView Spacing="4">
+    <Grid Columns="1fr auto" Spacing="8" IgnoreHitTest="true">
+      <TextBlock ForegroundColor="{Binding DataContext/Ink}" Text="{Binding DataContext/AuthorName}" FontSize="14" FontWeight="Bold" TextOverflow="Ellipsis" TextWrapping="NoWrap" IgnoreHitTest="true"/>
+      <TextBlock Text="{Binding DataContext/Age}" FontSize="12" ForegroundColor="{Binding DataContext/Dim}" IgnoreHitTest="true"/>
+    </Grid>
+    <TextBlock ForegroundColor="{Binding DataContext/Ink}" Text="{Binding DataContext/Body}" FontSize="15" WordWrap="true" IgnoreHitTest="true"/>
+    <StackView Direction="Horizontal" AlignItems="Center" Spacing="20" Height="30">
+      <Button Name="Like" Height="30" Width="64" BackgroundColor="#00000000" class="octopus-row">
+        <StackView Direction="Horizontal" AlignItems="Center" Spacing="6" IgnoreHitTest="true">
+          <VectorView Source="Octopus/assets/icons/heart.svg" Width="16" Height="16" MarginTop="auto" MarginBottom="auto"
+                      ForegroundColor="{Binding DataContext/LikeColor}" IgnoreHitTest="true"/>
+          <TextBlock Text="{Binding DataContext/Likes}" FontSize="13" ForegroundColor="{Binding DataContext/LikeColor}" IgnoreHitTest="true"/>
+        </StackView>
+      </Button>
+      <Button Name="Reply" Text="reply" Height="30" Width="48" FontSize="13" TextHorizontalAlignment="Left"
+              TextVerticalAlignment="Center" ForegroundColor="{Binding DataContext/AccentText}" BackgroundColor="#00000000" class="octopus-action"/>
+    </StackView>
+  </StackView>
+</Grid>

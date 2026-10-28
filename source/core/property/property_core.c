@@ -60,7 +60,7 @@ _RunBinding(struct Property *property, struct Binding *binding)
   binding->updateFrame = core.frame;
 
   struct vm_register r = { 0 };
-  if (!OBJ_RunProgram(property->object, binding->token, &r)) {
+  if (!PROP_RunBindingProgram(property, binding->token, &r)) {
 #ifdef DEBUG_PROGRAM
     print_name(property->object);
 #endif
@@ -171,6 +171,9 @@ PROP_IsNull(struct Property const *property)
 void
 PROP_Clear(struct Property *property)
 {
+  free(property->handlerName);
+  property->handlerName = NULL;
+  property->handlerOverride = FALSE;
   void *storage = property ? (void *)PROP_GetRawValueSlot(property) : NULL;
   void *old_array = NULL;
   if (property->pdesc->DataType == kDataTypeString && storage && *(LPSTR*)storage) {
@@ -310,7 +313,8 @@ PDESC_Print(struct PropertyType const *pdesc, LPSTR buffer, uint32_t len, float 
       strcpy(buffer, *(int*)pf ? "true" : "false");
       break;
     case kDataTypeInt:
-      snprintf(buffer, len, "%dd", *(int*)pf);
+      if (pdesc->IsUnsigned) snprintf(buffer, len, "%u", *(uint32_t const *)pf);
+      else snprintf(buffer, len, "%dd", *(int*)pf);
       break;
     case kDataTypeEnum:
       strncpy(buffer, pdesc->EnumValues[*(int*)pf], len);
@@ -318,7 +322,7 @@ PDESC_Print(struct PropertyType const *pdesc, LPSTR buffer, uint32_t len, float 
     case kDataTypeColor: {
       byte_t r = pf[0] * 255, g = pf[1] * 255, b = pf[2] * 255, a = pf[3] * 255;
       if (pf[3] < 1) {
-        snprintf(buffer, len, "#%02x%02x%02x%02x", a, r, g, b);
+        snprintf(buffer, len, "#%02x%02x%02x%02x", r, g, b, a);
       } else {
         snprintf(buffer, len, "#%02x%02x%02x", r, g, b);
       }
@@ -416,12 +420,14 @@ _FormatValueToBuffer(struct PropertyType const *pd,
 {
   if (!value || !len) return FALSE;
   buf[0] = 0;
+  if (pd->IsPointer && pd->DataType != kDataTypeString && pd->DataType != kDataTypeObject) return FALSE;
   switch (pd->DataType) {
     case kDataTypeBool:
       snprintf(buf, len, "%s", *(int const *)value ? "true" : "false");
       return TRUE;
     case kDataTypeInt:
-      snprintf(buf, len, "%d", *(int const *)value);
+      if (pd->IsUnsigned) snprintf(buf, len, "%u", *(uint32_t const *)value);
+      else snprintf(buf, len, "%d", *(int const *)value);
       return TRUE;
     case kDataTypeEnum: {
       lpcString_t const *ev = pd->EnumValues;
@@ -440,7 +446,7 @@ _FormatValueToBuffer(struct PropertyType const *pd,
       uint8_t b = (uint8_t)(f[2] * 255.0f + 0.5f);
       uint8_t a = (uint8_t)(f[3] * 255.0f + 0.5f);
       if (a < 255)
-        snprintf(buf, len, "#%02x%02x%02x%02x", a, r, g, b);
+        snprintf(buf, len, "#%02x%02x%02x%02x", r, g, b, a);
       else
         snprintf(buf, len, "#%02x%02x%02x", r, g, b);
       return TRUE;

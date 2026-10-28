@@ -128,7 +128,7 @@ local function loadProfile(self, view, after)
             if #posts == 0 then
                 view.posts:addChild(C.empty("no posts yet", view.own and "Use write to share your first post." or nil))
             else Posts.append(self, view.posts, posts, stats) end
-            Posts.enrich(self, posts, stats, current, function() Posts.refresh(self, view.posts, posts, stats) end)
+            Posts.enrich(self, posts, stats, current, function() Posts.refreshStats(self, view.posts, posts, stats) end)
         end
         self:repaint()
     end)
@@ -345,7 +345,7 @@ function People.runSearch(self, list)
             self.searchState.results = { query = query, tag = tag and tag:lower(), posts = posts, stats = stats, people = {} }
             renderResults(self, list)
             self:repaint()
-            Posts.enrich(self, posts, stats, current, function() Posts.refresh(self, list, posts, stats) end)
+            Posts.enrich(self, posts, stats, current, function() Posts.refreshStats(self, list, posts, stats) end)
         end
         local people, peopleError = {}, nil
         if posts and not tag then people, peopleError = self.client:searchPeople(query) end

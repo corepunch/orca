@@ -130,7 +130,8 @@ session before applying a completion. Failed requests should leave a retry path.
 
 `ActivityIndicator` is UIKit's shared indeterminate loading control, available
 in Lua and XML. It draws twelve fading dots in a circle, inherits `Foreground`,
-and defaults to 32 by 32 points with auto margins for centering in its parent.
+and defaults to 64 by 64 points with auto margins for centering in its parent.
+It shrinks uniformly to fit a smaller content region, including its padding.
 It ignores hit testing. `IsActive=false` hides the dots and stops animation
 while retaining layout; hidden or detached indicators stop animation too.
 Place it in a Grid covering only the pending content region, so navigation and

@@ -1,6 +1,7 @@
 #include <UIKit/UIKit.h>
 #include <include/api.h>
 #include <source/core/object/object_internal.h>
+#include <source/core/property/property_internal.h>
 
 #define DRAG_SESSION "__DRAG_SESSION__"
 #define DRAG_THRESHOLD 4
@@ -30,11 +31,11 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     struct Object_LoadControllerEventArgs *args = (void *)msg->lParam;
     if (args->Path && *args->Path)
       OBJ_LoadController(L, msg->target, args->Path);
-    free((char *)args->Path);
     return TRUE;
   }
 
-  if (msg->message == ID_Node_ViewDidLoad && msg->target) {
+  if (msg->message == ID_Node_ViewDidLoad && msg->target &&
+      !((struct Object *)msg->target)->controller_ref) {
     struct Property *cprop = OBJ_FindLongProperty(msg->target, ID_Node_Controller);
     if (cprop && PROP_GetType(cprop) == kDataTypeString) {
       const char *path = *(const char **)PROP_GetValue(cprop);
@@ -47,6 +48,18 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
     struct Object_BindHandlerEventArgs *args = (void *)msg->lParam;
     uint32_t prop_id = args->PropertyId;
     const char *func_name = args->FunctionName;
+    struct Property *ep = OBJ_FindLongProperty(target, prop_id);
+    if (msg->wParam == 1 && (!ep || !ep->handlerName || !func_name || strcmp(ep->handlerName, func_name)))
+      return TRUE;
+    if (!ep || PROP_GetType(ep) != kDataTypeEvent) return FALSE;
+    if (msg->wParam != 1) {
+      event_t *slot = (event_t *)PROP_GetValue(ep);
+      if (*slot) luaL_unref(L, LUA_REGISTRYINDEX, *slot);
+      *slot = 0;
+      free(ep->handlerName);
+      ep->handlerName = strdup(func_name ? func_name : "");
+      ep->handlerOverride = FALSE;
+    }
     bool_t handled = FALSE;
     if (func_name && *func_name) {
       // Walk up parents looking for a controller with this function.
@@ -74,7 +87,6 @@ CORE_HandleObjectMessage(lua_State *L, struct AXmessage* msg)
         lua_pop(L, 2); // nil, table
       }
     }
-    free((char *)func_name);
     return handled;
   }
 

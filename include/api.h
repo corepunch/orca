@@ -39,6 +39,11 @@ int f_find_module(lua_State* L);
 
 ORCA_API void luaX_pushProperty(lua_State*, struct Property const *);
 ORCA_API int luaX_readProperty(lua_State*, int, struct Property *);
+ORCA_API void luaX_pushStruct(lua_State*, struct StructDesc const*, void const*);
+ORCA_API int luaX_newStruct(lua_State*, struct StructDesc const*);
+ORCA_API void luaX_readStructProperty(lua_State*, int, struct PropertyType const*, void*);
+ORCA_API void read_property(lua_State*, int, struct PropertyType const*, void*);
+ORCA_API int write_property(lua_State*, struct PropertyType const*, void const*);
 
 
 #define API_MODULE_SHUTDOWN(L, func)                                           \

@@ -1,6 +1,8 @@
 #ifndef ORCA_CODEGEN_H
 #define ORCA_CODEGEN_H
 
+#include "api.h"
+
 #define DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(((struct CLASS *)NULL)->FIELD), .DataType=TYPE, ##__VA_ARGS__ }
 #define ARRAY_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) { .Name=#NAME, .Category=#CLASS, .ShortIdentifier=SHORT, .FullIdentifier=ID_##CLASS##_##NAME, .Offset=offsetof(struct CLASS, FIELD), .DataSize=sizeof(*((struct CLASS *)NULL)->FIELD), .DataType=TYPE, .IsArray=TRUE, ##__VA_ARGS__ }
 #define UIDATA_DECL(SHORT, CLASS, NAME, FIELD, TYPE,...) DECL(SHORT, CLASS, NAME, FIELD, TYPE, ##__VA_ARGS__)
@@ -29,23 +31,15 @@ static struct StructDesc _##NAME##_StructDesc = { \
 }; \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
+	luaX_pushStruct(L, &_##NAME##_StructDesc, data); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME self; \
-	memset(&self, 0, sizeof(struct NAME)); \
-	if (lua_islightuserdata(L, 1)) { \
-		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
-	} else if (lua_istable(L, 1)) \
-		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
-			if (lua_getfield(L, 1, _##NAME[i].Name)) \
-				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
-	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
-	luaX_push##NAME(L, &self); \
-	return 1; \
+	return luaX_newStruct(L, &_##NAME##_StructDesc); \
+} \
+static int f_##NAME##___gc(lua_State *L) { \
+	core_ClearStructPayload(&_##NAME##_StructDesc, luaX_check##NAME(L, 1)); \
+	return 0; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
@@ -62,7 +56,7 @@ static int f_##NAME##___index(lua_State *L) { \
 static int f_##NAME##___newindex(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
+			return (luaX_readStructProperty(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___call(lua_State *L) { \
@@ -75,6 +69,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	luaL_newmetatable(L, #EXPORT); \
 	luaL_setfuncs(L, ((luaL_Reg[]) { \
 		{ "new", f_new_##NAME }, \
+		{ "__gc", f_##NAME##___gc }, \
 		{ "__newindex", f_##NAME##___newindex }, \
 		{ "__index", f_##NAME##___index }, \
 		{ NULL, NULL }, \
@@ -98,23 +93,15 @@ static struct StructDesc _##NAME##_StructDesc = { \
 }; \
 void luaX_push##NAME(lua_State *L, struct NAME const* data) { \
 	if (data == NULL) { lua_pushnil(L); return; } \
-	memcpy(lua_newuserdata(L, sizeof(struct NAME)), data, sizeof(struct NAME)); \
-	luaL_setmetatable(L, #EXPORT); \
+	luaX_pushStruct(L, &_##NAME##_StructDesc, data); \
 } \
 struct NAME* luaX_check##NAME(lua_State *L, int idx) { return luaL_checkudata(L, idx, #EXPORT); } \
 static int f_new_##NAME(lua_State *L) { \
-	struct NAME self; \
-	memset(&self, 0, sizeof(struct NAME)); \
-	if (lua_islightuserdata(L, 1)) { \
-		memcpy(&self, lua_touserdata(L, 1), sizeof(struct NAME)); \
-	} else if (lua_istable(L, 1)) \
-		for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); lua_pop(L, 1), i++) { \
-			if (lua_getfield(L, 1, _##NAME[i].Name)) \
-				read_property(L, -1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); } \
-	else for (uint32_t i = 0; i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
-		read_property(L, i + 1, &_##NAME[i], ((char*)&self)+_##NAME[i].Offset); \
-	luaX_push##NAME(L, &self); \
-	return 1; \
+	return luaX_newStruct(L, &_##NAME##_StructDesc); \
+} \
+static int f_##NAME##___gc(lua_State *L) { \
+	core_ClearStructPayload(&_##NAME##_StructDesc, luaX_check##NAME(L, 1)); \
+	return 0; \
 } \
 static int f_##NAME##___index(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
@@ -131,7 +118,7 @@ static int f_##NAME##___index(lua_State *L) { \
 static int f_##NAME##___newindex(lua_State *L) { \
 	for (uint32_t i = 0, j = fnv1a32(luaL_checkstring(L, 2)); i < sizeof(_##NAME) / sizeof(*_##NAME); i++) \
 		if (_##NAME[i].ShortIdentifier == j) \
-			return (read_property(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
+			return (luaX_readStructProperty(L, 3, &_##NAME[i], ((char*)luaX_check##NAME(L, 1))+_##NAME[i].Offset), 0); \
 	return luaL_error(L, "Unknown field in " #NAME ": %s", luaL_checkstring(L, 2)); \
 } \
 static int f_##NAME##___call(lua_State *L) { \
@@ -144,6 +131,7 @@ int luaopen_orca_##NAME(lua_State *L) { \
 	luaL_newmetatable(L, #EXPORT); \
 	luaL_setfuncs(L, ((luaL_Reg[]) { \
 		{ "new", f_new_##NAME }, \
+		{ "__gc", f_##NAME##___gc }, \
 		{ "__newindex", f_##NAME##___newindex }, \
 		{ "__index", f_##NAME##___index }, \
 		{ NULL, NULL }, \

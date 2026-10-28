@@ -50,7 +50,7 @@ runs require an explicit user request, even when they are offline.
 For app-only Chat presentation changes, `make test-chat-ui` runs the offline
 timeline, photo-loader, and footer checks using the existing binary. It does
 not rebuild the engine or contact Appwrite. Run only the affected test file
-when possible, for example `lua tests/test_chat_timeline.lua` or
+when possible, for example `build/bin/orca -test=tests/test_chat_timeline.lua` or
 `build/bin/orca -test=tests/test_chat_photo_loader.lua`.
 
 Rebuild with `make unite` when native code/API changes or the binary is
@@ -104,6 +104,19 @@ LeakSanitizer: XML loaders retain their initial root reference, and
 `loadObjectFromXmlStringWithSchema` leaves its inline schema registered without
 returning an owner that can free it. The sanitizer target reports these as
 failures. The allocation-tracked C ownership suite is independently leak-clean.
+
+## Event arguments and controller serialization
+
+```bash
+make test-message-registry test-message-payload test-event-args test-event-serialization test-controllers
+```
+
+These offline suites cover reflected payload snapshots, string and object
+ownership, component fields, unsigned values, rejected cyclic/deep graphs,
+queue cancellation/coalescing/disposal, and abandoned Lua events. Controller
+tests assert callback behavior across named declarations, conventions, reload,
+cloning, explicit clearing, and handler replacement. They also round-trip long
+Unicode message strings and native lowercase field names.
 
 ## MVVM form bindings
 

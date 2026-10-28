@@ -110,7 +110,7 @@ local rows = filesystem.loadXmlDataStringWithSchema(
   '<Schema><Entity Name="LispTestRow"><Column Name="Title" Type="string"/></Entity></Schema>')
 test.expect_eq(rows:findChild('one').Title, 'kept', 'same-name XML data collection preserves schema records')
 
--- Typed rows must outlive the collection while SelectedItem still refers to one.
+-- Selection owns typed rows; an explicitly retained row also outlives its source.
 collectgarbage(); collectgarbage()
 local list_baseline = core.objectCount()
 for i = 1, 5 do
@@ -122,10 +122,13 @@ for i = 1, 5 do
   test.expect_eq(list.SelectedItem.Title, 'first', 'typed row selected')
   list.SelectedValue = 'second'
   test.expect_eq(list.SelectedItem.Title, 'second', 'selection owns replacement row')
+  local selected = list.SelectedItem
   list.ItemsSource = nil
   list:clear()
   collectgarbage(); collectgarbage()
-  test.expect_eq(list.SelectedItem.Title, 'second', 'selection retains row after items are removed')
+  test.expect_eq(list.SelectedItem, nil, 'removing the source clears selection')
+  test.expect_eq(selected.Title, 'second', 'retained typed row outlives its source')
+  selected = nil
   list = nil
   core.flushQueue()
   collectgarbage(); collectgarbage()

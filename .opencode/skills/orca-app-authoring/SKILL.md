@@ -32,10 +32,10 @@ documents rather than duplicating them in skills.
 3. Separate UI composition, event handling, application state, and service
    transport. Add only the modules the application actually needs.
 4. Define how service data reaches bindings. Plain Lua tables are not automatic
-   observable `DataContext` sources. Current ListBox/GridBox items are built at
-   `Object.Start`; later membership changes need one explicit adapter/refresh
-   path. `rebuild()` alone does not replay that initialization. Do not maintain
-   duplicate row layout in both a template and its controller.
+   observable `DataContext` sources. Use typed DataObjects and native
+   ItemsControl for retained collection updates; ItemsView maps service keys to
+   stable records and batches membership edits. Keep row layout in templates,
+   and actions/presentation calculations in the controller.
 5. Keep requests out of layout construction where possible. Use the supported
    coroutine context, explicit loading/error state, and a view/request lifetime
    check when results can arrive after navigation or a newer request.

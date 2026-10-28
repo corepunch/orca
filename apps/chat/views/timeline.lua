@@ -1,8 +1,8 @@
-local ui = require "orca.UIKit"
 local C = require "Chat/views/components"
 local colors = C.colors
 local Timeline = {}
 local PHOTO_WIDTH = 260
+local MessageItems = require "Chat/views/message_items"
 
 -- Keep the photo's aspect ratio within a band that never dominates the thread.
 local function photoHeight(attachment)
@@ -62,118 +62,63 @@ local function refresh(self, options, room, node, current)
         end
         return true
     end
-    -- Build detached rows without network image requests; fixed frames avoid layout jumps.
-    local children, entries, photos, failedPhotos = {}, {}, {}, {}
-    children[#children + 1] = C.text(#messages > 0 and C.date(messages[1].created_at) or "A FRESH START", {
-        FontSize = 12, Foreground = colors.dim, TextHorizontalAlignment = "Center", MarginTop = 4, MarginBottom = 6,
-    })
-    -- Telegram-style density: bubbles hug their text, consecutive messages from
-    -- one sender stack tightly with a single tail, and names appear only in groups.
+    local rows, photos = {}, {}
+    local previousPhotos = previous and previous.node == node and previous.photos or {}
     local group = room.kind == "group"
     for i, message in ipairs(messages) do
         local mine = message.sender_id == me and room.kind ~= "channel"
         local prev, nextMessage = messages[i - 1], messages[i + 1]
         local first = not prev or prev.sender_id ~= message.sender_id
         local last = not nextMessage or nextMessage.sender_id ~= message.sender_id
-        local tone = mine and colors.sent or colors.raised
-        -- Photos fill the bubble edge to edge; name and caption keep the text inset.
         local attachments = message.attachments or {}
         local photo = #attachments > 0
         local photoOnly = photo and (not message.body or message.body == "")
         local time = C.time(message.created_at) or ""
         local timestamp = message.edited_at and "edited " .. time or time
-        local bubble = C.stack({ Name = "MessageBubble" .. message.id, Background = tone,
-            Width = photo and PHOTO_WIDTH or nil, Padding = photo and "0" or "10 6", Spacing = photo and 0 or 2 })
-        local function section()
-            if not photo then return bubble end
-            local inset = C.stack({ Padding = "10 6", Spacing = 2 })
-            bubble:addChild(inset)
-            return inset
-        end
-        if group and first and not mine then
-            section():addChild(C.text(sender(self, room, message), {
-                FontSize = 13, FontWeight = "Bold", Foreground = colors.accentText, TextWrapping = "Wrap" }))
-        end
-        for index, attachment in ipairs(attachments) do
-            local cached = previous and previous.node == node and previous.photos[attachment.id]
-            local path = cached and cached.updated_at == attachment.updated_at and cached.path
-            local frame = ui.Grid { Name = "PhotoFrame" .. attachment.id, Width = PHOTO_WIDTH,
-                Height = photoHeight(attachment), Background = colors.soft }
-            bubble:addChild(frame)
-            -- Loading replaces content; keep tap targets and timestamps outside it.
-            local content = ui.Grid { Name = "PhotoContent" .. attachment.id }
-            frame:addChild(content)
-            if photoOnly and index == #attachments then
-                frame:addChild(C.text(timestamp, {
-                    Name = "MessageTime" .. message.id, FontSize = 11, Foreground = "#ffffff",
-                    Background = "#00000099", Padding = "4 2", MarginTop = 0/0, MarginLeft = 0/0,
-                    MarginRight = 6, MarginBottom = 6,
-                }))
-            end
-            local open = ui.Button { Name = "OpenPhoto" .. attachment.id,
-                Background = "#00000000", BorderWidth = "0",
-                Click = function() if current() then self:openPhoto(attachment) end end }
-            frame:addChild(open)
-            if path then
-                photos[attachment.id] = { updated_at = attachment.updated_at, path = path }
-                content:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = path, Foreground = "#ffffff",
-                    Stretch = "UniformToFill", IgnoreHitTest = true })
-            else
-                content:addChild(C.text("Loading photo…", { FontSize = 12, Foreground = colors.muted,
-                    TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center" }))
-                self.messagePhotos:watch(content, attachment, function(loaded, photoError)
-                    if not current() then return end
-                    open.IgnoreHitTest = not loaded and photoError ~= nil
-                    if loaded then photos[attachment.id] = { updated_at = attachment.updated_at, path = loaded } end
-                    local active = self.timelineSnapshot
-                    if active and active.photos == photos then
-                        failedPhotos[attachment.id] = not loaded and photoError ~= nil or nil
-                        active.retryPhotos = next(failedPhotos) ~= nil
-                    end
-                end)
-            end
-        end
-        if not photoOnly then
-            local caption = section()
-            if message.body and message.body ~= "" then
-                caption:addChild(C.text(message.body, {
-                    TextWrapping = "Wrap", FontSize = 16, Foreground = mine and colors.sentText or colors.ink }))
-            end
-            caption:addChild(C.text(timestamp, {
-                FontSize = 11, Foreground = mine and colors.sentMeta or colors.dim, TextHorizontalAlignment = "Right",
-            }))
-        end
-        local entry = C.stack({ Name = "MessageEntry" .. message.id, Spacing = 0, AlignItems = mine and "End" or "Start",
-            MarginTop = i == 1 and 0 or first and 8 or 2,
-            PaddingLeft = mine and 56 or 0, PaddingRight = mine and 0 or 56 })
-        if first and not mine and not photoOnly then entry:addChild(C.tail(true, tone, false)) end
-        -- A transparent button over the bubble opens its actions; the bubble's
-        -- StackView keeps sizing itself to the text.
-        local holder = ui.Grid { Name = "MessageHolder" .. message.id }
-        holder:addChild(bubble)
         local canEdit, canDelete = permissions(room, message, me)
-        if canEdit or canDelete then
-            holder:addChild(ui.Button { Name = "MessageActions" .. message.id,
-                Background = photo and "#00000099" or "#00000000", BorderWidth = "0",
-                Width = photo and 44 or nil, Height = photo and 44 or nil,
-                MarginLeft = photo and 0/0 or 0, MarginBottom = photo and 0/0 or 0,
-                Text = photo and "…" or "", FontSize = 22, Foreground = "#ffffff",
-                TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center",
-                Click = function() if current() then self:openMessageActions(message, canEdit, canDelete) end end })
+        local row = { key = message.id, message = message, canEdit = canEdit, canDelete = canDelete, photos = {}, fields = {
+            EntryName = "MessageEntry" .. message.id, HolderName = "MessageHolder" .. message.id,
+            BubbleName = "MessageBubble" .. message.id, ActionsName = (canEdit or canDelete) and "MessageActions" .. message.id or "",
+            TimeName = not photoOnly and "MessageTime" .. message.id or "",
+            ShowDate = i == 1, Date = C.date(messages[1].created_at), Empty = false, HasMessage = true,
+            EmptyTitle = "", EmptyHint = "", Sender = sender(self, room, message), Body = message.body or "", Timestamp = timestamp,
+            ShowSender = group and first and not mine, HasPhotos = photo, ShowCaption = not photoOnly,
+            HasBody = message.body ~= nil and message.body ~= "", CanAct = canEdit or canDelete,
+            IncomingTail = first and not mine and not photoOnly, OutgoingTail = last and mine and not photoOnly,
+            Alignment = mine and "End" or "Start", Gap = i == 1 and 0 or first and 8 or 2,
+            LeftInset = mine and 56 or 0, RightInset = mine and 0 or 56,
+            BubbleWidth = photo and PHOTO_WIDTH or 0/0, Inset = photo and 0 or 10,
+            VerticalInset = photo and 0 or 6, SectionGap = photo and 0 or 2,
+            PhotoInset = photo and 10 or 0, PhotoVerticalInset = photo and 6 or 0,
+            Tone = mine and colors.sent or colors.raised, Ink = mine and colors.sentText or colors.ink,
+            Meta = mine and colors.sentMeta or colors.dim, Dim = colors.dim, Muted = colors.muted, Accent = colors.accentText,
+        } }
+        for index, attachment in ipairs(attachments) do
+            local cached = previousPhotos[attachment.id]
+            if cached and cached.updated_at == attachment.updated_at then photos[attachment.id] = cached end
+            row.photos[index] = { attachment = attachment,
+                path = cached and cached.updated_at == attachment.updated_at and cached.path,
+                fields = { FrameName = "PhotoFrame" .. attachment.id, ContentName = "PhotoContent" .. attachment.id,
+                    Height = photoHeight(attachment), Soft = colors.soft, Muted = colors.muted,
+                    ShowTime = photoOnly and index == #attachments,
+                    TimeName = photoOnly and index == #attachments and "MessageTime" .. message.id or "", Timestamp = timestamp } }
         end
-        entry:addChild(holder)
-        if last and mine and not photoOnly then entry:addChild(C.tail(false, tone, true)) end
-        children[#children + 1], entries[#entries + 1] = entry, { id = message.id, node = entry }
+        rows[i] = row
     end
     if #messages == 0 then
         local channel, readOnly = room.kind == "channel", room.can_post == false
-        children[#children + 1] = C.stack({ Spacing = 8, Padding = "0 8" }, {
-            C.text(channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello", {
-                Name = "EmptyTimeline", FontSize = 22, Foreground = colors.muted, WordWrap = true }),
-            C.text(channel and (readOnly and "New posts will appear here when the channel publishes."
-                or "Publish your first update below.") or "Send the first message below.", {
-                Foreground = colors.dim, FontSize = 14, WordWrap = true }),
-        })
+        rows[1] = { key = "__empty", photos = {}, fields = {
+            EntryName = "EmptyTimelineEntry", HolderName = "", BubbleName = "", ActionsName = "", TimeName = "",
+            ShowDate = true, Date = "A FRESH START", Empty = true, HasMessage = false,
+            EmptyTitle = channel and (readOnly and "no posts yet" or "your channel starts here") or "every good chat starts with a hello",
+            EmptyHint = channel and (readOnly and "New posts will appear here when the channel publishes."
+                or "Publish your first update below.") or "Send the first message below.",
+            Sender = "", Body = "", Timestamp = "", Alignment = "Start", Tone = colors.raised, Ink = colors.ink,
+            Meta = colors.dim, Dim = colors.dim, Muted = colors.muted, Accent = colors.accentText,
+            ShowSender = false, HasPhotos = false, ShowCaption = false, HasBody = false, CanAct = false,
+            IncomingTail = false, OutgoingTail = false, Gap = 0, LeftInset = 0, RightInset = 0, BubbleWidth = 0/0,
+            Inset = 0, VerticalInset = 0, PhotoInset = 0, PhotoVerticalInset = 0, SectionGap = 0,
+        } }
     end
     if not current() then return true end
     -- Read scrolling now: the user may have moved while the request was in flight.
@@ -192,9 +137,12 @@ local function refresh(self, options, room, node, current)
             end
         end
     end
-    while node:getFirstChild() do node:getFirstChild():removeFromParent() end
-    for _, child in ipairs(children) do node:addChild(child) end
-    self.timelineSnapshot = { node = node, signature = signature, entries = entries, photos = photos, retryPhotos = false }
+    local items = previous and previous.node == node and previous.items or MessageItems.new(self, node)
+    local bound = items:refresh(rows)
+    local entries = {}
+    for i, entry in ipairs(bound) do entries[i] = { id = rows[i].key, node = entry.node } end
+    self.timelineSnapshot = { node = node, signature = signature, entries = entries, items = items,
+        photos = photos, failedPhotos = {}, retryPhotos = false }
     -- Clear request feedback before measuring the composer's final viewport.
     if not options.quiet then self:notice("") end
     local root = node:getRoot()

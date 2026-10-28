@@ -1,264 +1,143 @@
-local test = require "orca.test"
--- Headless tests for OBJ_LoadController, wire_controller, and BindHandler.
---
--- Run with: $(TARGET) -test=tests/test_controllers.lua
-
+require("orca").init()
+require "orca.filesystem"
 local core = require "orca.core"
-local ui   = require "orca.UIKit"
+local ui = require "orca.UIKit"
+local ID_Input_Submit = 0xbbc22157 -- generated Input.Submit identifier
+local controller = "tests/fixtures/controllers/test_ctrl"
 
-local function flush()
-  core.flushQueue()
+local function flush() core.flushQueue() end
+local function input(name)
+  return ui.Input { Name = name or "Editor", Text = "unchanged" }
+end
+local function submit(view, text)
+  _G.__controllerProbe = nil
+  view:post("Input.Submit", { Text = text or "payload" })
+  flush()
+  return _G.__controllerProbe
+end
+local function bind(view, name)
+  view:post("Object.BindHandler", { PropertyId = ID_Input_Submit, FunctionName = name })
+  flush()
+end
+local function expect_probe(probe, view, sender, version, text)
+  assert(probe, "Controller callback must run")
+  assert(probe.view == view and probe.controller.view == view,
+    "Controller self.view must identify the object that loaded it")
+  assert(probe.sender == sender and probe.text == text,
+    "Callback must receive the original sender and typed event payload")
+  assert(probe.version == version, "Expected controller implementation must run")
 end
 
--- Pre-computed property IDs (avoid runtime fnv1a32 calls)
-local ID_Input_Submit = 0x5208fc2d  -- fnv1a32("Input.Submit")
+local direct = input()
+direct:loadController(controller .. "1")
+flush()
+expect_probe(submit(direct, "direct"), direct, direct, 1, "direct")
+assert(direct.Text == "one:direct", "Direct loading wires the root event convention")
+print("PASS: direct controller loading invokes a root convention handler")
 
--- ---------------------------------------------------------------------------
--- Test 1: OBJ_LoadController loads a controller table
--- ---------------------------------------------------------------------------
-local function test_load_controller()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
+local posted = input()
+posted:post("Object.LoadController", { Path = controller .. "1" })
+flush()
+expect_probe(submit(posted, "posted"), posted, posted, 1, "posted")
+assert(posted.Text == "one:posted")
+print("PASS: queued LoadController loads and wires the controller")
 
-  node:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
+local named = input()
+named:loadController(controller .. "1")
+flush()
+named.Submit = nil
+bind(named, "on_submit")
+expect_probe(submit(named, "named"), named, named, 1, "named")
+assert(named.Text == "one:named")
+print("PASS: queued BindHandler resolves an explicit function")
 
-  test.expect(true, "loadController should not crash")
-  node:removeFromParent()
-  print("PASS: test_load_controller")
+local parent = core.Node { Name = "Parent" }
+local child = input("MyInput")
+parent:addChild(child)
+parent:loadController(controller .. "1")
+flush()
+bind(child, "on_submit")
+expect_probe(submit(child, "ancestor"), parent, child, 1, "ancestor")
+assert(child.Text == "one:ancestor")
+print("PASS: named handlers find an ancestor controller and preserve sender/view identity")
+
+local wired = core.Node { Name = "Target" }
+local wiredInput = input("MyInput")
+wired:addChild(wiredInput)
+wired:loadController(controller .. "_wired")
+flush()
+local first = submit(wiredInput, "first")
+expect_probe(first, wired, wiredInput, "wired", "first")
+local second = submit(wiredInput, "second")
+expect_probe(second, wired, wiredInput, "wired", "second")
+assert(first.controller == second.controller and second.calls == first.calls + 1,
+  "Convention callbacks share their bound controller instance across invocations")
+assert(wiredInput.Text == "wired:second")
+print("PASS: descendant convention wiring binds the controller closure")
+
+local reloaded = input()
+reloaded:loadController(controller .. "1")
+flush()
+local previous = submit(reloaded, "before")
+expect_probe(previous, reloaded, reloaded, 1, "before")
+reloaded:loadController(controller .. "2")
+flush()
+local replacement = submit(reloaded, "after")
+expect_probe(replacement, reloaded, reloaded, 2, "after")
+assert(replacement.controller ~= previous.controller and replacement.calls == 1,
+  "Reloading replaces the old controller and handler closure")
+assert(reloaded.Text == "two:after")
+reloaded:loadController("")
+flush()
+expect_probe(submit(reloaded, "kept"), reloaded, reloaded, 2, "kept")
+assert(reloaded.Text == "two:kept", "An empty controller path leaves the current controller usable")
+print("PASS: controller reload replaces callbacks; an empty load preserves the current controller")
+
+local explicit = input()
+explicit:loadController(controller .. "1")
+flush()
+bind(explicit, "on_submit")
+local oldNamed = submit(explicit, "old named")
+expect_probe(oldNamed, explicit, explicit, 1, "old named")
+explicit:loadController(controller .. "2")
+flush()
+local newNamed = submit(explicit, "new named")
+expect_probe(newNamed, explicit, explicit, 2, "new named")
+assert(newNamed.controller ~= oldNamed.controller and newNamed.calls == 1,
+  "Reloading must replace an explicit named closure bound to the previous controller")
+assert(explicit.Text == "two:new named")
+print("PASS: explicit named handlers resolve the replacement controller on reload")
+
+local lateParent = core.Node { Name = "LateParent" }
+local lateChild = input("LateChild")
+lateParent:addChild(lateChild)
+lateChild.Submit = "on_submit"
+flush()
+assert(not submit(lateChild) and lateChild.Text == "unchanged",
+  "A named declaration waits until a controller can resolve it")
+lateParent:loadController(controller .. "1")
+flush()
+expect_probe(submit(lateChild, "late ancestor"), lateParent, lateChild, 1, "late ancestor")
+assert(lateChild.Text == "one:late ancestor")
+print("PASS: pending child declarations resolve when an ancestor controller loads")
+
+for _, missing in ipairs { "nonexistent_function", "" } do
+  bind(named, "on_submit")
+  expect_probe(submit(named, "active"), named, named, 1, "active")
+  bind(named, missing)
+  named.Text = "unchanged"
+  assert(not submit(named), "Missing or empty named replacements must remove the old callback")
+  assert(named.Text == "unchanged")
 end
+bind(named, "on_submit")
+assert(submit(named), "Cleared handlers can be rebound")
+named.Submit = nil
+named.Text = "unchanged"
+assert(not submit(named) and named.Text == "unchanged", "Explicit nil clears the callback")
+local unbound = input()
+bind(unbound, "on_submit")
+assert(not submit(unbound) and unbound.Text == "unchanged", "Binding without a controller invokes no callback")
+print("PASS: missing, empty and cleared handlers stop callbacks; absent controllers remain unbound")
 
--- ---------------------------------------------------------------------------
--- Test 2: LoadController message loads controller
--- ---------------------------------------------------------------------------
-local function test_load_controller_message()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
-
-  node:send("Object.LoadController", { Path = "tests/fixtures/controllers/test_ctrl1" })
-  flush()
-
-  test.expect(true, "LoadController message should not crash")
-  node:removeFromParent()
-  print("PASS: test_load_controller_message")
-end
-
--- ---------------------------------------------------------------------------
--- Test 3: BindHandler binds function from controller to event property
--- ---------------------------------------------------------------------------
-local function test_bind_handler()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local input = screen + ui.Input { Name = "MyInput" }
-
-  -- Load controller first
-  input:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  -- Bind Submit event to "on_submit" function in controller
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "on_submit",
-  })
-  flush()
-
-  test.expect(true, "BindHandler should not crash")
-  input:removeFromParent()
-  print("PASS: test_bind_handler")
-end
-
--- ---------------------------------------------------------------------------
--- Test 4: BindHandler walks up parents to find controller
--- ---------------------------------------------------------------------------
-local function test_bind_handler_walks_parents()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local parent = screen + core.Node { Name = "Parent" }
-  local input = parent + ui.Input { Name = "MyInput" }
-
-  -- Load controller on parent
-  parent:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  -- BindHandler on input should find controller on parent
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "on_submit",
-  })
-  flush()
-
-  test.expect(true, "BindHandler should walk up parents without error")
-  parent:removeFromParent()
-  print("PASS: test_bind_handler_walks_parents")
-end
-
--- ---------------------------------------------------------------------------
--- Test 5: BindHandler with non-existent function returns false
--- ---------------------------------------------------------------------------
-local function test_bind_handler_missing_function()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local input = screen + ui.Input { Name = "MyInput" }
-
-  input:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "nonexistent_function",
-  })
-  flush()
-
-  test.expect(true, "BindHandler with missing function should not crash")
-  input:removeFromParent()
-  print("PASS: test_bind_handler_missing_function")
-end
-
--- ---------------------------------------------------------------------------
--- Test 6: wire_controller with ChildName_EventName convention
--- ---------------------------------------------------------------------------
-local function test_wire_controller_convention()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
-  local input = node + ui.Input { Name = "MyInput" }
-
-  -- Load controller with "MyInput_Submit" key
-  node:loadController("tests/fixtures/controllers/test_ctrl_wired")
-  flush()
-
-  test.expect(true, "wire_controller convention should not crash")
-  node:removeFromParent()
-  print("PASS: test_wire_controller_convention")
-end
-
--- ---------------------------------------------------------------------------
--- Test 7: Controller loaded twice replaces previous
--- ---------------------------------------------------------------------------
-local function test_controller_reload()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
-
-  node:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  node:loadController("tests/fixtures/controllers/test_ctrl2")
-  flush()
-
-  test.expect(true, "Reloading controller should not crash")
-  node:removeFromParent()
-  print("PASS: test_controller_reload")
-end
-
--- ---------------------------------------------------------------------------
--- Test 8: Empty path does nothing
--- ---------------------------------------------------------------------------
-local function test_empty_path()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
-
-  node:loadController("")
-  flush()
-
-  -- nil path is rejected by Lua binding, just test empty string
-  test.expect(true, "Empty path should not crash")
-  node:removeFromParent()
-  print("PASS: test_empty_path")
-end
-
--- ---------------------------------------------------------------------------
--- Test 9: BindHandler without controller returns false
--- ---------------------------------------------------------------------------
-local function test_bind_handler_no_controller()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local input = screen + ui.Input { Name = "MyInput" }
-
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "on_submit",
-  })
-  flush()
-
-  test.expect(true, "BindHandler without controller should not crash")
-  input:removeFromParent()
-  print("PASS: test_bind_handler_no_controller")
-end
-
--- ---------------------------------------------------------------------------
--- Test 10: BindHandler with empty function name
--- ---------------------------------------------------------------------------
-local function test_bind_handler_empty_function()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local input = screen + ui.Input { Name = "MyInput" }
-
-  input:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "",
-  })
-  flush()
-
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = nil,
-  })
-  flush()
-
-  test.expect(true, "BindHandler with empty function name should not crash")
-  input:removeFromParent()
-  print("PASS: test_bind_handler_empty_function")
-end
-
--- ---------------------------------------------------------------------------
--- Test 11: controller.view is set after loadController
--- ---------------------------------------------------------------------------
-local function test_controller_view_is_set()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local parent = screen + core.Node { Name = "Parent" }
-  local input = parent + ui.Input { Name = "MyInput" }
-
-  parent:loadController("tests/fixtures/controllers/test_ctrl1")
-  flush()
-
-  input:send("Object.BindHandler", {
-    PropertyId = ID_Input_Submit,
-    FunctionName = "on_submit",
-  })
-  flush()
-
-  test.expect(true, "loadController with view assignment should not crash")
-  parent:removeFromParent()
-  print("PASS: test_controller_view_is_set")
-end
-
--- ---------------------------------------------------------------------------
--- Test 12: wire_controller wraps functions with controller closure
--- ---------------------------------------------------------------------------
-local function test_wire_controller_wraps_function()
-  local screen = ui.Screen { Width = 400, Height = 300, ResizeMode = "NoResize" }
-  local node = screen + core.Node { Name = "Target" }
-  local input = node + ui.Input { Name = "MyInput" }
-
-  node:loadController("tests/fixtures/controllers/test_ctrl_wired")
-  flush()
-
-  test.expect(true, "wire_controller with closure wrapping should not crash")
-  node:removeFromParent()
-  print("PASS: test_wire_controller_wraps_function")
-end
-
--- ---------------------------------------------------------------------------
--- Run all tests
--- ---------------------------------------------------------------------------
-test_load_controller()
-test_load_controller_message()
-test_bind_handler()
-test_bind_handler_walks_parents()
-test_bind_handler_missing_function()
-test_wire_controller_convention()
-test_controller_reload()
-test_empty_path()
-test_bind_handler_no_controller()
-test_bind_handler_empty_function()
-test_controller_view_is_set()
-test_wire_controller_wraps_function()
-
-print("All controller tests passed.")
+_G.__controllerProbe = nil
+print("All controller behavior tests passed.")

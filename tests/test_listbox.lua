@@ -1,19 +1,13 @@
 local test = require "orca.test"
 -- Headless tests for ListBox.
--- Covers: ItemsSource / ItemTemplate properties, Object.Start handler,
+-- Covers: ItemsSource / ItemTemplate properties, initial presentation,
 -- template instantiation, default TextBlock fallback, and DataContext wiring.
 -- No renderer required — uses UIKit headlessly.
 --
 -- Run with: $(TARGET) -test=tests/test_listbox.lua
 --
--- IMPORTANT: Object.Start is one-shot (OF_STARTED flag). When a ListBox is
--- created inside screen:addChild(ui.ListBox{...}), OBJ_AddChild fires Start
--- BEFORE _ParseArguments processes the table — so ItemsSource is nil during
--- Start. The correct pattern is to create the ListBox WITHOUT a parent, pass
--- properties in the constructor table, then add to screen:
---
---   local listbox = ui.ListBox { ItemsSource = items, ItemTemplate = template }
---   screen:addChild(listbox)
+-- Observable membership changes, template replacement, and retained-row
+-- identity are covered by test_itemscontrol.lua.
 
 local core = require "orca.core"
 local ui   = require "orca.UIKit"

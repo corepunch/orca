@@ -1,6 +1,7 @@
--- test_ctrl2.lua — second controller (different instance)
-return {
-  on_submit = function(self, args, sender)
-    -- handler body (different implementation)
-  end,
-}
+local function submit(self, args, sender)
+  self.calls = (self.calls or 0) + 1
+  _G.__controllerProbe = { controller = self, view = self.view, sender = sender,
+    text = args.Text, calls = self.calls, version = 2 }
+  sender.Text = "two:" .. args.Text
+end
+return { on_submit = submit, Submit = submit }

@@ -1,5 +1,6 @@
 #include <source/filesystem/fs_local.h>
 #include <source/core/core_local.h>
+#include <source/core/property/property_internal.h>
 #include <core/core_properties.h>
 #include <source/data/data_schema.h>
 #include "fs_struct.h"
@@ -86,9 +87,11 @@ special_attr(struct Object *o, lpcString_t name, lpcString_t value)
     return TRUE;
   }
   if (!strcmp(name, "Controller")) {
+    struct PropertyType const *pd = propdesc(o, name);
+    if (pd && pd->DataType == kDataTypeString)
+      PROP_SetStringValue(OBJ_FindLongProperty(o, pd->FullIdentifier), value);
     // Queue controller load immediately so it's processed before any BindHandler.
-    // Must copy value — xmlFree'd at end of visit_attr.
-    struct Object_LoadControllerEventArgs args = { .Path = strdup(value) };
+    struct Object_LoadControllerEventArgs args = { .Path = value };
     axPostMessageDataW(o, ID_Object_LoadController, 0, &args, sizeof(args));
     return TRUE;
   }
@@ -249,11 +252,7 @@ set_text(struct Object *o, struct PropertyType const *pd, lpcString_t value)
   }
   // Plain string on an event property → defer to BindHandler (controller not loaded yet).
   if (pd->DataType == kDataTypeEvent) {
-    struct Object_BindHandlerEventArgs args = {
-      .PropertyId = pd->FullIdentifier,
-      .FunctionName = strdup(value),
-    };
-    axPostMessageDataW(o, ID_Object_BindHandler, 0, &args, sizeof(args));
+    PROP_BindHandler(p, value);
     return;
   }
   if (!parse_property(value, pd, tmp)) {
@@ -486,7 +485,10 @@ visit_attr(struct Object *o, xmlAttrPtr a)
   xmlChar *value = xmlGetProp(a->parent, a->name);
   fixedString_t norm = {0};
   lpcString_t name = canonical_attr_name((lpcString_t)a->name, norm);
-  struct PropertyType const *pd = propdesc(o, name);
+  struct PropertyType const *pd = propdesc(o, (lpcString_t)a->name);
+  // Native message fields retain their declared casing (for example timestamp).
+  if (pd) name = pd->Name;
+  else pd = propdesc(o, name);
 
   if (!value) return;
   if (!special_attr(o, name, (lpcString_t)value)) {
@@ -657,9 +659,11 @@ node(struct _xmlNode* x, const struct ds_schema *schema, const char *entity_name
     return NULL;
   }
 
-  FOR_EACH_LIST(xmlAttr, a, x->properties) {
-    visit_attr(o, a);
-  }
+  // Controller loading precedes named handlers regardless of attribute order.
+  FOR_EACH_LIST(xmlAttr, a, x->properties)
+    if (!strcasecmp((char const *)a->name, "Controller")) visit_attr(o, a);
+  FOR_EACH_LIST(xmlAttr, a, x->properties)
+    if (strcasecmp((char const *)a->name, "Controller")) visit_attr(o, a);
 
   FOR_EACH_LIST(xmlNode, t, x->children) {
     if ((t->type == XML_TEXT_NODE || t->type == XML_CDATA_SECTION_NODE) && xmlStrlen(t->content) > 0) {

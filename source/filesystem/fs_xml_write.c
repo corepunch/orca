@@ -125,7 +125,12 @@ serialize_property_cb(struct Object const *object,
       break;
     }
   }
-  if (!prop || PROP_IsNull(prop)) return;
+  if (!prop) return;
+  if (pd->DataType == kDataTypeEvent) {
+    if (prop->handlerName) xmlSetProp(node, XMLSTR(pd->Name), XMLSTR(prop->handlerName));
+    return;
+  }
+  if (PROP_IsNull(prop)) return;
   if (PROP_HasProgram(prop) &&
       (!prop->binding || prop->binding->Mode != kBindingModeOneWayToSource)) return;
 
@@ -150,7 +155,11 @@ serialize_property_cb(struct Object const *object,
     return;
   }
 
-  if (pd->DataType == kDataTypeEvent) return;
+  if (pd->DataType == kDataTypeString && pd->DataSize <= sizeof(char *)) {
+    char const *text = *(char const *const *)value;
+    if (text) xmlSetProp(node, XMLSTR(pd->Name), XMLSTR(text));
+    return;
+  }
 
   /* Scalar / struct → attribute using the public formatter (Issue 1) */
   char tmp[MAX_PROPERTY_STRING] = {0};

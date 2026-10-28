@@ -36,9 +36,10 @@ or browser behavior.
 4. Apply reusable presentation with `class`/`StyleClass`; use `$orca-css` to
    create or change stylesheets.
 5. Bind repeated layout to data with `ItemsSource`, `ItemTemplate`, and
-   `{Binding DataContext/...}` instead of duplicating nodes. These controls
-   currently instantiate items at `Object.Start`; subsequent collection changes
-   need an explicit tested update path, not an assumed automatic refresh.
+   `{Binding DataContext/...}` instead of duplicating nodes. ItemsControl
+   observes native DataObject collection changes and retains rows by record
+   identity; replacing ItemTemplate recreates generated rows. Plain Lua tables
+   need a typed presentation adapter such as ItemsView.
 6. Use exact generated property names. Qualify inherited properties when it
    removes ambiguity, such as `Node.PaddingLeft`.
 

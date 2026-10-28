@@ -1,64 +1,22 @@
-local ui = require "orca.UIKit"
 local C = require "Octopus/views/components"
+local P = require "Octopus/views/presentation"
+local Items = require "orca.UIKit.ItemsView"
 local colors, space = C.colors, C.spacing
-local ACTION_HEIGHT = 44
-local ACTION_CONTENT_HEIGHT = 28
-local REPOSTED_HEIGHT = 20
-local AUTHOR_HEIGHT = 24
-local auto = 0/0
 local Posts = {}
 
 -- Type-specific content shared by timeline cards and the post page.
-function Posts.body(app, post, full)
-    local body = C.stack({ Spacing = space.inline, IgnoreHitTest = true })
-    local kind = post.postType
-    if kind == "photo" or (kind == "quote" and post.imageId) then
-        -- As wide as the column and shaped like the photo, as on Twitter, so
-        -- the frame never leaves empty space beside or beneath it.
-        local frame = ui.Grid { Name = "Photo" .. post.id, AspectRatio = app.photos:aspect(post.imageId),
-            Background = colors.raised, IgnoreHitTest = true }
-        frame:addChild(C.icon("image", 28, colors.dim))
-        body:addChild(frame)
-        if post.imageId then app.photos:watch(frame, post.imageId, "Image" .. post.id) end
+function Posts.body(app, post, full, data)
+    local body = P.template("PostBody"):instantiate()
+    if not data then
+        data = P.record("Post"):instantiate()
+        P.assign(data, P.post(app, post, full))
     end
-    if kind == "photo" then
-        if post.content ~= "" then
-            body:addChild(C.text(full and C.plain(post.content) or C.excerpt(post.content), { FontSize = 15, WordWrap = true }))
-        end
-    elseif kind == "quote" then
-        -- A quote sits beside an accent rule, like a Metro pull quote.
-        local quote = ui.Grid { Columns = "4px 1fr", Spacing = space.column, IgnoreHitTest = true }
-        quote:addChild(ui.Grid { Background = colors.accent, IgnoreHitTest = true })
-        local words = C.stack({ Spacing = space.tight, IgnoreHitTest = true }, {
-            C.text("“" .. C.plain(post.content) .. "”", { FontSize = full and 26 or 21, WordWrap = true }),
-        })
-        if post.quoteSource and post.quoteSource ~= "" then
-            words:addChild(C.text("— " .. post.quoteSource, { FontSize = 14, Foreground = colors.muted, WordWrap = true }))
-        end
-        quote:addChild(words)
-        body:addChild(quote)
-        if post.userText and post.userText ~= "" then
-            body:addChild(C.text(post.userText, { FontSize = 15, WordWrap = true }))
-        end
-    elseif kind == "link" then
-        local link = ui.Grid { Columns = "40px 1fr", Spacing = space.column, IgnoreHitTest = true }
-        local badge = ui.Grid { Width = 40, Height = 40, Background = colors.accent, IgnoreHitTest = true }
-        badge:addChild(C.icon("link", 20, colors.onAccent))
-        link:addChild(badge)
-        link:addChild(C.stack({ Spacing = space.tight, IgnoreHitTest = true }, {
-            C.text(post.title ~= "" and post.title or C.domain(post.linkUrl), {
-                FontSize = full and 22 or 17, Foreground = colors.accentText, WordWrap = true }),
-            C.text(C.domain(post.linkUrl), { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
-        }))
-        body:addChild(link)
-        if post.content ~= "" then
-            body:addChild(C.text(full and C.plain(post.content) or C.excerpt(post.content), {
-                FontSize = 15, Foreground = full and colors.ink or colors.muted, WordWrap = true }))
-        end
-    else
-        body:addChild(C.text(post.title, { FontSize = full and 30 or 20, WordWrap = true }))
-        body:addChild(C.text(full and C.plain(post.content) or C.excerpt(post.content), {
-            FontSize = full and 16 or 15, Foreground = full and colors.ink or colors.muted, WordWrap = true }))
+    body.DataContext = data
+    local frame = body:findChild("PhotoFrame", true)
+    frame.Name = "Photo" .. post.id
+    frame.AspectRatio, frame.Background = app.photos:aspect(post.imageId), colors.raised
+    if post.imageId and (post.postType == "photo" or post.postType == "quote") then
+        app.photos:watch(frame, post.imageId, "Image" .. post.id)
     end
     return body
 end
@@ -73,29 +31,6 @@ function Posts.tags(app, post)
             TextWrapping = "NoWrap" }))
     end
     return tags
-end
-
--- Comment, repost and like with counts. Liked and reposted states take the
--- Twitter colours so they read at a glance.
-function Posts.fillActions(app, row, post, entry)
-    C.clear(row)
-    local function refill() Posts.fillActions(app, row, post, entry) end
-    local function action(name, icon, count, active, color, handler)
-        local tint = active and color or colors.dim
-        -- Compact visible row, with a full 44-point touch area below it.
-        local button = C.area(C.row({ Spacing = space.inline, Height = ACTION_CONTENT_HEIGHT,
-            MarginBottom = auto, IgnoreHitTest = true }, {
-            C.icon(icon, 20, tint, { MarginLeft = 0, MarginRight = 0 }),
-            C.text(count == nil and "…" or (count > 0 and tostring(count) or ""), { FontSize = 13, Foreground = tint }),
-        }), handler, { Name = name .. post.id, Height = ACTION_HEIGHT })
-        if name ~= "Comment" and entry.pending then button.IgnoreHitTest, button.Opacity = true, 0.5 end
-        row:addChild(button)
-    end
-    action("Comment", "message-circle", entry.comments, false, colors.ink, function() app:openPost(post) end)
-    action("Repost", "repeat-2", entry.reposts, entry.reposted ~= nil, colors.reposted,
-        function() Posts.toggle(app, post, entry, "repost", refill) end)
-    action("Like", "heart", entry.likes, entry.liked ~= nil, colors.liked,
-        function() Posts.toggle(app, post, entry, "like", refill) end)
 end
 
 -- Like or repost, then call `done` to redraw whatever shows the counts.
@@ -121,35 +56,100 @@ function Posts.toggle(app, post, entry, kind, done)
     end)
 end
 
--- One timeline card: avatar tile, author line, the post and its actions. A
--- repost carries a "reposted" line above the author, as on Twitter.
-function Posts.card(app, post, entry, repostedBy)
-    local card = ui.Grid { Name = "Post" .. post.id, Columns = C.AVATAR .. "px 1fr", Spacing = space.inline }
-    local function author() app:openProfile(post.authorId, post.authorName) end
-    -- The avatar lines up with the post content, below the author line and,
-    -- on a repost, the "reposted" line above it.
-    local above = AUTHOR_HEIGHT + space.tight + (repostedBy and REPOSTED_HEIGHT + space.tight or 0)
-    card:addChild(C.area(C.avatar(post.authorName, C.AVATAR, post.authorId, app), author, {
-        Name = "Avatar" .. post.id, Width = C.AVATAR, Height = C.AVATAR, MarginTop = above }))
-    local header = ui.Grid { Columns = "1fr auto", Spacing = space.inline, IgnoreHitTest = true }
-    header:addChild(C.text(post.authorName, { FontSize = 16, FontWeight = "Bold", TextOverflow = "Ellipsis" }))
-    header:addChild(C.text(C.ago(post.createdAt, app.clock()), { FontSize = 13, Foreground = colors.dim }))
-    local column = C.stack({ Spacing = space.tight })
-    if repostedBy then
-        column:addChild(C.area(C.row({ Spacing = space.tight, IgnoreHitTest = true }, {
-            C.icon("repeat-2", 14, colors.dim, { MarginLeft = 0, MarginRight = 0 }),
-            C.text(repostedBy.name .. " reposted", { FontSize = 13, Foreground = colors.dim, TextOverflow = "Ellipsis" }),
-        }), function() app:openProfile(repostedBy.id, repostedBy.name) end, { Name = "RepostedBy" .. post.id, Height = REPOSTED_HEIGHT }))
+-- Layout belongs to PostCard/PostBody. This hook supplies actions and existing
+-- avatar/photo services after the collection assigns the row's DataContext.
+local function updateCard(app, entry, item, created)
+    local post, row = item.post, entry.node
+    row.Name = "Post" .. post.id
+    if created then
+        entry.controls = {}
+        for _, name in ipairs { "Avatar", "Author", "Open", "RepostedBy", "Comment", "Repost", "Like", "Actions", "TagsHost" } do
+            entry.controls[name] = assert(row:findChild(name, true))
+        end
+        entry.controls.Avatar:addChild(C.avatar(post.authorName, C.AVATAR, post.authorId, app))
     end
-    column:addChild(C.area(header, author, { Name = "Author" .. post.id, Height = AUTHOR_HEIGHT }))
-    column:addChild(C.area(Posts.body(app, post), function() app:openPost(post) end, { Name = "Open" .. post.id }))
-    local tags = Posts.tags(app, post)
-    if tags then column:addChild(tags) end
-    local actions = ui.Grid { Name = "Actions" .. post.id, Columns = "1fr 1fr 1fr", Height = ACTION_HEIGHT }
-    Posts.fillActions(app, actions, post, entry or { pending = true })
-    column:addChild(actions)
-    card:addChild(column)
-    return card
+    local controls = entry.controls
+    if not entry.body or entry.imageId ~= post.imageId then
+        -- Keep decoded photos during ordinary refresh; a changed media identity
+        -- gets a new frame so late downloads can only reach the detached body.
+        C.clear(controls.Open)
+        entry.body = Posts.body(app, post, false, entry.data)
+        controls.Open:addChild(entry.body)
+        entry.imageId = post.imageId
+    end
+    for name, control in pairs(controls) do
+        if name ~= "TagsHost" then control.Name = name .. post.id end
+    end
+    local function author() app:openProfile(item.post.authorId, item.post.authorName) end
+    controls.Avatar.Click, controls.Author.Click = author, author
+    controls.Open.Click = function() app:openPost(item.post) end
+    controls.Comment.Click = controls.Open.Click
+    controls.RepostedBy.Click = function()
+        if item.repostedBy then app:openProfile(item.repostedBy.id, item.repostedBy.name) end
+    end
+    for _, control in ipairs { controls.Like, controls.Repost } do
+        control.IgnoreHitTest, control.Opacity = item.entry.pending == true, item.entry.pending and 0.5 or 1
+    end
+    local function refreshCounts()
+        P.assign(entry.data, P.post(app, item.post, false, item.entry, item.repostedBy))
+    end
+    controls.Like.Click = function() Posts.toggle(app, item.post, item.entry, "like", refreshCounts) end
+    controls.Repost.Click = function() Posts.toggle(app, item.post, item.entry, "repost", refreshCounts) end
+    local tagsKey = table.concat(post.tags or {}, "\0")
+    if entry.tagsKey ~= tagsKey then
+        C.clear(controls.TagsHost)
+        local tags = Posts.tags(app, post)
+        if tags then controls.TagsHost:addChild(tags) end
+        entry.tagsKey = tagsKey
+    end
+end
+
+function Posts.card(app, post, entry, repostedBy)
+    local data = P.record("Post"):instantiate()
+    P.assign(data, P.post(app, post, false, entry, repostedBy))
+    local row = P.template("PostCard"):instantiate()
+    row.DataContext = data
+    updateCard(app, { node = row, data = data }, {
+        post = post, entry = entry or { pending = true }, repostedBy = repostedBy,
+    }, true)
+    return row
+end
+
+local collections = setmetatable({}, { __mode = "k" })
+local function collection(app, list)
+    local state = collections[list]
+    if not state or state.node:getParent() ~= list then
+        local node = C.stack { Name = "PostItems", Spacing = space.post }
+        list:addChild(node)
+        state = { node = node, values = {} }
+        state.adapter = Items.new {
+            node = node, template = P.template("PostCard"), record = P.record("Post"),
+            key = function(item) return item.key end,
+            fields = function(item) return P.post(app, item.post, false, item.entry, item.repostedBy) end,
+            update = function(entry, item, created) updateCard(app, entry, item, created) end,
+        }
+        collections[list] = state
+    end
+    return state
+end
+
+local function values(items, stats)
+    local result, occurrences = {}, {}
+    for _, item in ipairs(items) do
+        local post, repost = item.post, item.repostedBy
+        stats[post.id] = stats[post.id] or item.entry or { pending = true }
+        local identity = post.id .. (repost and ":repost:" .. repost.id or ":post")
+        occurrences[identity] = (occurrences[identity] or 0) + 1
+        result[#result + 1] = { key = identity .. ":" .. occurrences[identity], post = post,
+            entry = stats[post.id], repostedBy = repost }
+    end
+    return result
+end
+
+function Posts.refresh(app, list, items, stats)
+    local state = collection(app, list)
+    state.values = values(items, stats)
+    return state.adapter:refresh(state.values)
 end
 
 -- Timeline items are { post, repostedBy }; plain post lists are wrapped.
@@ -161,11 +161,12 @@ end
 
 -- Cards register photos for loading when their frame enters the viewport.
 function Posts.append(app, list, items, stats)
-    for _, item in ipairs(items) do
-        local post = item.post
-        stats[post.id] = stats[post.id] or { pending = true }
-        list:addChild(Posts.card(app, post, stats[post.id], item.repostedBy))
-    end
+    local state = collection(app, list)
+    local combined = {}
+    for _, value in ipairs(state.values) do combined[#combined + 1] = value end
+    for _, item in ipairs(items) do combined[#combined + 1] = item end
+    state.values = values(combined, stats)
+    return state.adapter:refresh(state.values)
 end
 
 -- Fetch content first. Counts and reader reaction IDs arrive independently.
@@ -182,11 +183,14 @@ function Posts.fetch(app, loader)
     return items, stats, cursor
 end
 
-function Posts.refresh(app, list, items, stats)
-    for _, item in ipairs(items) do
-        local row = list:findChild("Actions" .. item.post.id, true)
-        if row then Posts.fillActions(app, row, item.post, stats[item.post.id]) end
+-- Enrichment changes only row fields, preserving all loaded pages and their order.
+function Posts.refreshStats(app, list, items, stats)
+    local state = collections[list]
+    if not state or state.node:getParent() ~= list then return end
+    for _, value in ipairs(state.values) do
+        if stats[value.post.id] then value.entry = stats[value.post.id] end
     end
+    return state.adapter:refresh(state.values)
 end
 
 -- Keep entry identities stable: visible cards and detail controls share them.
