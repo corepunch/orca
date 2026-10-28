@@ -71,6 +71,18 @@ int main(void)
   assert(observer->calls == 2);
   puts("PASS: Duplicate subscriptions, reentrant mutation and peer/self unsubscription");
 
+  observer->other = NULL;
+  observer->calls = 0;
+  assert(core_ObserveCollection(source, other));
+  assert(core_ObserveCollection(source, self));
+  struct Object *trigger = OBJ_Create(ID_DataObject);
+  OBJ_AddChild(source, trigger);
+  OBJ_ReleaseRef(trigger);
+  assert(observer->calls == 2 && skipped->calls == 2);
+  assert(observer->version == skipped->version);
+  core_UnobserveCollection(source, other);
+  puts("PASS: Reentrant changes reach all observers in increasing version order");
+
   observer->reenter = FALSE;
   assert(core_ObserveCollection(source, self));
   struct Object *nested = OBJ_Create(ID_DataObject);

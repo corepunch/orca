@@ -504,20 +504,11 @@ read_struct_table(lua_State *L, int idx, struct StructDesc const *desc, void *va
   }
 }
 
-static struct Object *
-create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
+static int
+populate_object_from_table(lua_State *L)
 {
-  struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
-  if (!cls) {
-    luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name);
-  }
-
-  struct Object *obj = OBJ_Create(cls->ClassID);
-  if (!obj) {
-    luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name);
-  }
-
-  int table_idx = lua_absindex(L, idx);
+  struct Object *obj = lua_touserdata(L, lua_upvalueindex(1));
+  int table_idx = 1;
   lua_pushnil(L);
   while (lua_next(L, table_idx) != 0) {
     if (lua_type(L, -2) == LUA_TSTRING) {
@@ -539,6 +530,30 @@ create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
     lua_pop(L, 1);
   }
 
+  return 0;
+}
+
+static struct Object *
+create_object_from_table(lua_State *L, int idx, struct PropertyType const *prop)
+{
+  struct ClassDesc const *cls = OBJ_FindClass(prop->TypeString);
+  if (!cls)
+    return luaL_error(L, "Class '%s' not found for property '%s'", prop->TypeString, prop->Name), NULL;
+
+  struct Object *obj = OBJ_Create(cls->ClassID);
+  if (!obj)
+    return luaL_error(L, "Failed to create object of class '%s' for property '%s'", prop->TypeString, prop->Name), NULL;
+
+  idx = lua_absindex(L, idx);
+  lua_pushlightuserdata(L, obj);
+  lua_pushcclosure(L, populate_object_from_table, 1);
+  lua_pushvalue(L, idx);
+  // The payload cannot own this object until all its properties are populated.
+  if (lua_pcall(L, 1, 0, 0) != LUA_OK) {
+    OBJ_ReleaseRef(obj);
+    lua_error(L);
+    return NULL;
+  }
   return obj;
 }
 ORCA_API int

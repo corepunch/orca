@@ -80,6 +80,24 @@ end), "message population rejects objects without the required component")
 collectgarbage("collect")
 collectgarbage("collect")
 assert(core.objectCount() == beforeMessage, "invalid message arguments release their temporary action and objects")
+local tableOwner = ui.NavigationHost_PushEventArgs { DataContext = { Name = "Table context" } }
+assert(tableOwner.DataContext.Name == "Table context", "object payload tables populate their owned object")
+assert(not pcall(function() tableOwner.DataContext = { strings } end),
+  "object payload replacement rejects non-object children")
+assert(tableOwner.DataContext.Name == "Table context", "failed object table replacement preserves the previous owned object")
+tableOwner = nil
+collectgarbage("collect")
+collectgarbage("collect")
+assert(core.objectCount() == beforeMessage, "object payload tables release their owned objects")
+for _, construct in ipairs {
+  function() return ui.NavigationHost_PushEventArgs { DataContext = { strings } } end,
+  function() target:post("NavigationHost.Push", { DataContext = { strings } }) end,
+} do
+  assert(not pcall(construct), "object payload tables reject non-object children")
+  collectgarbage("collect")
+  collectgarbage("collect")
+  assert(core.objectCount() == beforeMessage, "failed object payload tables release partially populated objects")
+end
 local queuedContext = core.DataObject { Name = "Queued component context" }
 target:post("NavigationHost.Push", { Path = unicode, DataContext = queuedContext })
 queuedContext = nil

@@ -73,6 +73,8 @@ DispatchCollectionChanged(struct Object *object, struct DataObject *data)
     targets[index++] = it->target;
     OBJ_AddRef(it->target);
   }
+  // Finish this version for every receiver before delivering reentrant edits.
+  OBJ_BeginUpdate(object);
   // Snapshot receivers: a callback may unsubscribe itself or mutate the source.
   for (size_t i = 0; i < count; i++) {
     for (struct collection_observer *it = data->_collectionObservers; it; it = it->next) {
@@ -83,6 +85,7 @@ DispatchCollectionChanged(struct Object *object, struct DataObject *data)
     OBJ_ReleaseRef(targets[i]);
   }
   free(targets);
+  OBJ_EndUpdate(object);
   OBJ_ReleaseRef(object);
 }
 
