@@ -19,6 +19,9 @@ ORCA_API bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const 
   uint64_t generation, OrcaIOSPageTransitionCompletion completion);
 // Refresh newly rendered incoming content without restarting its native turn.
 ORCA_API void ORCA_IOS_UpdatePageTransition(uint64_t generation);
+// A coalesced content refresh requests one paint if its entrance still owns
+// the screen. Stale timers carry only a generation, never an engine pointer.
+ORCA_API void ORCA_IOS_RequestPageTransitionRefresh(uint64_t generation);
 ORCA_API void ORCA_IOS_ClearPageTransition(void);
 // Lifecycle teardown also cancels a request that has not reached its capture
 // paint yet. This private hook is implemented by UIKit's transition owner.

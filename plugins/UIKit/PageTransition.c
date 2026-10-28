@@ -266,6 +266,13 @@ PageTransition_NativeChanged(struct Object *page, enum TransitionType type, enum
 
 bool_t PageTransition_NativeActive(struct Object *page) { return native_transition.page == page; }
 
+void ORCA_IOS_RequestPageTransitionRefresh(uint64_t generation)
+{
+  if (native_transition.generation == generation && native_transition.phase == NativeTransitionPlaying &&
+      (native_transition.mode == kTransitionModeForwardIn || native_transition.mode == kTransitionModeBackwardIn))
+    OBJ_RequestAnimate(native_transition.page);
+}
+
 bool_t
 PageTransition_NativeAnimate(struct Object *page)
 {
