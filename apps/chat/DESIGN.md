@@ -85,6 +85,8 @@ claiming historical fidelity.
   loading, then replace it with the full JPEG. If the full download fails, keep
   the thumbnail visible with a retry action. A thumbnail never counts as a
   completed full-photo download.
+  Pending photos use a centred loading icon. Queued visible thumbnails take
+  priority over queued full downloads.
 
 These are Chat decisions agreed during the 2026-10-28 review, rather than
 requirements established by the linked Microsoft article. Clipping an image

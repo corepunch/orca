@@ -70,7 +70,9 @@ function Loader:paint(target, path, err, preview)
             if target.preview then
                 target.frame:findChild("RetryPhoto" .. target.id):removeFromParent()
             else
-                clear(target.frame):addChild(C.text("Loading photo…", { FontSize = 12, Foreground = C.colors.muted }))
+                local loading = C.icon("refresh-cw", 32, C.colors.muted)
+                loading.Name = "PhotoLoading" .. target.id
+                clear(target.frame):addChild(loading)
             end
             self:loadVisible()
         end, { Name = "RetryPhoto" .. target.id, Height = 44, FontSize = 12 }))
@@ -85,7 +87,12 @@ end
 
 function Loader:pump()
     while self.active < MAX_ACTIVE and #self.pending > 0 do
-        local request = table.remove(self.pending, 1)
+        -- Finish the visible thumbnails before spending slots on full images.
+        local nextRequest = 1
+        for i, queued in ipairs(self.pending) do
+            if queued.stage == "preview" then nextRequest = i; break end
+        end
+        local request = table.remove(self.pending, nextRequest)
         local wanted = false
         for _, target in ipairs(request.targets) do
             if self:valid(target) and self.observer:isVisible(target.frame) then wanted = true; break end
@@ -96,26 +103,46 @@ function Loader:pump()
         else
             self.active = self.active + 1
             local function work()
-                local path, err = self.cache[request.key]
-                local ok = pcall(function()
-                    if path then return end
-                    local bytes
-                    local function onPreview(thumbnail)
-                        if request.generation ~= self.generation or request.epoch ~= self.app.sessionEpoch then return false end
+                local current = false
+                for _, target in ipairs(request.targets) do
+                    if self:valid(target) and self.observer:isVisible(target.frame) then current = true; break end
+                end
+                if not current then
+                    self.active = self.active - 1
+                    if self.requests[request.identity] == request then self.requests[request.identity] = nil end
+                    for _, target in ipairs(request.targets) do target.requested = false end
+                    self:pump()
+                    return
+                end
+                if request.stage == "preview" then
+                    local ok, bytes = pcall(function() return self.app.client:getPhoto(request.attachment, true) end)
+                    if request.generation == self.generation and request.epoch == self.app.sessionEpoch then
                         local visible = false
                         for _, target in ipairs(request.targets) do
                             if self:valid(target) and self.observer:isVisible(target.frame) then visible = true; break end
                         end
-                        if not visible then return false end
-                        local media = self.app:getMedia()
-                        local preview = media and media:storePreview(thumbnail, "message-photo-preview-" .. request.key)
-                        if preview then
-                            self.previews[request.key] = preview
-                            for _, target in ipairs(request.targets) do self:paint(target, preview, nil, true) end
+                        if ok and bytes and visible then
+                            pcall(function()
+                                local media = self.app:getMedia()
+                                local preview = media and media:storePreview(bytes, "message-photo-preview-" .. request.key)
+                                if preview then
+                                    self.previews[request.key] = preview
+                                    for _, target in ipairs(request.targets) do self:paint(target, preview, nil, true) end
+                                end
+                            end)
                         end
+                        request.stage = "full"
+                        self.pending[#self.pending + 1] = request
                     end
-                    bytes, err = self.app.client:getPhoto(request.id, false,
-                        not self.previews[request.key] and onPreview or nil)
+                    self.active = self.active - 1
+                    self:pump()
+                    return
+                end
+                local path, err = self.cache[request.key]
+                local ok = pcall(function()
+                    if path then return end
+                    local bytes
+                    bytes, err = self.app.client:getPhoto(request.attachment, false)
                     if request.generation ~= self.generation or request.epoch ~= self.app.sessionEpoch then return end
                     local media = self.app:getMedia()
                     if bytes and media then path, err = media:storePreview(bytes, "message-photo-" .. request.key) end
@@ -152,8 +179,8 @@ function Loader:loadVisible()
                 local identity = target.generation .. ":" .. target.key
                 local request = self.requests[identity]
                 if not request then
-                    request = { id = target.id, key = target.key, identity = identity, epoch = target.epoch,
-                        generation = target.generation, targets = {} }
+                    request = { attachment = target.attachment, key = target.key, identity = identity, epoch = target.epoch,
+                        generation = target.generation, targets = {}, stage = self.previews[target.key] and "full" or "preview" }
                     self.requests[identity] = request
                     self.pending[#self.pending + 1] = request
                 end
@@ -165,7 +192,7 @@ function Loader:loadVisible()
 end
 
 function Loader:watch(frame, attachment, done)
-    local target = { frame = frame, id = attachment.id, key = key(attachment),
+    local target = { frame = frame, id = attachment.id, attachment = attachment, key = key(attachment),
         epoch = self.app.sessionEpoch, generation = self.generation, done = done or function() end }
     self.targets[frame] = target
     target.unsubscribe = self.observer:observe(frame, function(event)

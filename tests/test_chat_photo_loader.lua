@@ -8,20 +8,20 @@ local Media = require "Chat/media"
 local f = assert(io.open("tests/fixtures/chat/photo.jpg", "rb"))
 local jpeg = f:read("*a"); f:close()
 local invalidJpeg = "\255\216\255\226\0\255\217"
-local workers, calls = {}, {}
+local workers, calls, fullCalls, stages = {}, {}, {}, {}
 local app = { screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }, sessionEpoch = 1,
     media = Media.new(), client = {} }
 function app:task(fn) workers[#workers + 1] = coroutine.create(fn) end
 function app:getMedia() return self.media end
 function app:repaint() end
-function app.client:getPhoto(id, thumbnail, onPreview)
-    assert(thumbnail == false, "Every staged load must finish with the full JPEG")
-    calls[id] = (calls[id] or 0) + 1
+function app.client:getPhoto(attachment, thumbnail)
+    local id = attachment.id
+    stages[#stages + 1] = { id = id, thumbnail = thumbnail }
+    local counts = thumbnail and calls or fullCalls
+    counts[id] = (counts[id] or 0) + 1
     coroutine.yield()
-    if onPreview then
-        if onPreview(id == "broken-preview" and invalidJpeg or jpeg) == false then return nil, { code = "cancelled" } end
-        coroutine.yield()
-    end
+    if thumbnail and id == "missing-preview" then return nil, { message = "Thumbnail unavailable" } end
+    if thumbnail then return id == "broken-preview" and invalidJpeg or jpeg end
     if id == "bad" then return nil, { message = "Download failed" } end
     if id == "corrupt-full" then return invalidJpeg end
     return jpeg
@@ -66,6 +66,12 @@ assert(frames[1]:findChild("Photosame").Src == preview and frames[2]:findChild("
 assert(not results[1] and not loader:cached { id = "same" } and loader.active > 0 and loader.active <= 2,
     "A preview does not finish the request, notify completion or enter the full-image cache")
 finish()
+local previews = {}
+for _, stage in ipairs(stages) do
+    if stage.thumbnail then previews[stage.id] = true
+    else assert(previews.same and previews.third and previews.fourth,
+        "Every visible thumbnail starts before a full image can occupy a download slot") end
+end
 assert(calls.same == 1 and calls.third == 1 and calls.fourth == 1 and not calls.bad,
     "Visible duplicate previews share one fetch; offscreen photos wait")
 assert(results[1] == results[2] and frames[1]:findChild("Photosame"), "All duplicate visible frames receive the preview")
@@ -84,7 +90,8 @@ loader:loadVisible(); finish()
 assert(calls.bad == 1, "Painting cannot repeatedly retry a failed photo")
 frames[5]:findChild("RetryPhotobad"):send("Node.LeftButtonUp")
 require("orca.core").flushQueue(); finish()
-assert(calls.bad == 2)
+assert(calls.bad == 1, "Retry reuses the thumbnail and fetches only the full image")
+assert(fullCalls.bad == 2, "Retry must start another full-image request")
 -- Rebuilt rows share the versioned file cache, but changed versions must fetch.
 local cached = ui.Grid { Height = 60 }
 list:addChild(cached)
@@ -116,6 +123,7 @@ app.sessionEpoch = 2
 loader:clear(); app.media:clear()
 finish()
 assert(next(app.media.keys) == nil, "Late full responses cannot recreate cleared private files")
+assert(not fullCalls.late, "A queued full download must not start after logout")
 assert(not loader:cached { id = "same" }, "Session reset clears full-size photos")
 assert(not loader:preview { id = "same" }, "Session reset clears thumbnail references")
 -- Invalid image data in either stage must not suppress the usable stage.
@@ -123,10 +131,11 @@ app.screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
 loader = Loader.new(app)
 local stack = ui.StackView {}
 app.screen:addChild(stack)
-local brokenPreview, corruptFull = ui.Grid { Height = 60 }, ui.Grid { Height = 60 }
-stack:addChild(brokenPreview); stack:addChild(corruptFull)
+local brokenPreview, corruptFull, missingPreview = ui.Grid { Height = 60 }, ui.Grid { Height = 60 }, ui.Grid { Height = 60 }
+stack:addChild(brokenPreview); stack:addChild(corruptFull); stack:addChild(missingPreview)
 loader:watch(brokenPreview, { id = "broken-preview" })
 loader:watch(corruptFull, { id = "corrupt-full" })
+loader:watch(missingPreview, { id = "missing-preview" })
 app.screen:UpdateLayout(200, 200)
 loader:loadVisible(); finish()
 assert(brokenPreview:findChild("Photobroken-preview") and loader:cached { id = "broken-preview" },
@@ -134,5 +143,18 @@ assert(brokenPreview:findChild("Photobroken-preview") and loader:cached { id = "
 assert(corruptFull:findChild("Photocorrupt-full") and corruptFull:findChild("RetryPhotocorrupt-full")
     and not loader:cached { id = "corrupt-full" },
     "An undecodable final image must retain the good preview, offer retry and leave the full cache empty")
+assert(missingPreview:findChild("Photomissing-preview") and loader:cached { id = "missing-preview" },
+    "A failed thumbnail request must release its slot and continue with the full JPEG")
+local neverStarted = ui.Grid { Height = 200 }
+app.screen = ui.Screen { Width = 200, Height = 200, ResizeMode = "NoResize" }
+app.screen:addChild(neverStarted)
+loader = Loader.new(app)
+loader:watch(neverStarted, { id = "never-started" })
+app.screen:UpdateLayout(200, 200)
+loader:loadVisible()
+app.sessionEpoch = app.sessionEpoch + 1
+loader:clear()
+finish()
+assert(not calls["never-started"] and loader.active == 0, "Logout cancels an unstarted preview and releases its slot")
 app.media:clear()
 print("PASS: staged Chat photos, thumbnail replacement, concurrency, deduplication, retry and session cleanup")

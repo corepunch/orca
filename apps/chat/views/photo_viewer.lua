@@ -89,7 +89,7 @@ function Viewer.open(app, attachment)
             local path, err
             local ok = pcall(function()
                 local bytes
-                bytes, err = app.client:getPhoto(attachment.id, false, function(previewBytes)
+                bytes, err = app.client:getPhoto(attachment, false, function(previewBytes)
                     if not current() or viewer.attempt ~= attempt then return false end
                     local media = app:getMedia()
                     if media then

@@ -123,15 +123,42 @@ return function(Client, helpers)
         if not ready then self:discardPhoto(attachment.id); return nil, err end
         return ready
     end
+    local function photoKey(value)
+        if type(value) ~= "string" or #value == 0 or #value > 1024
+            or value:find("[^%w%._%/%-]") or value:sub(1, 1) == "/" or value:sub(-1) == "/"
+            or value:find("//", 1, true) then return false end
+        for segment in value:gmatch("[^/]+") do
+            if segment == "." or segment == ".." then return false end
+        end
+        return true
+    end
+    -- A message attachment already includes its file keys, avoiding a metadata
+    -- round trip. Object downloads still perform their own authorization.
     -- onPreview receives the stored thumbnail before the full photo. It may
     -- return false to cancel; preview failures/errors do not block the full file.
     function Client:getPhoto(id, thumbnail, onPreview)
+        local attachment = type(id) == "table" and id or nil
+        if attachment then id = attachment.id end
         if not validId(id) then return failure("validation", "Choose a photo.") end
-        local rows, err = self:_request("GET", "/rest/v1/chat_attachments?select=*&id=eq." .. escape(id), nil, true)
-        if not rows then return nil, err end
-        local attachment = rows[1]
-        if not attachment then return failure("not_found", "Photo is unavailable.") end
-        if thumbnail == false and type(onPreview) == "function" and attachment.thumbnail_key then
+        if attachment then
+            for _, field in ipairs { "object_key", "thumbnail_key" } do
+                if attachment[field] ~= nil and not photoKey(attachment[field]) then
+                    return failure("validation", "Choose a valid photo object.")
+                end
+            end
+        end
+        local staged = thumbnail == false and type(onPreview) == "function"
+        if not attachment or not attachment[thumbnail and "thumbnail_key" or "object_key"]
+            or staged and not attachment.thumbnail_key then
+            local rows, err = self:_request("GET", "/rest/v1/chat_attachments?select=*&id=eq." .. escape(id), nil, true)
+            if not rows then return nil, err end
+            attachment = rows[1]
+            if not attachment then return failure("not_found", "Photo is unavailable.") end
+        end
+        if type(attachment) ~= "table" then return failure("invalid_response", "The chat service returned an invalid photo object.") end
+        local key = attachment[thumbnail and "thumbnail_key" or "object_key"]
+        if not photoKey(key) then return failure("invalid_response", "The chat service returned an invalid photo object.") end
+        if staged and photoKey(attachment.thumbnail_key) then
             local bytes = self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. attachment.thumbnail_key,
                 nil, true, false, { responseType = "binary" })
             if bytes then
@@ -139,7 +166,6 @@ return function(Client, helpers)
                 if ok and proceed == false then return failure("cancelled", "Photo loading was cancelled.") end
             end
         end
-        local key = thumbnail and attachment.thumbnail_key or attachment.object_key
         return self:_request("GET", "/storage/v1/object/authenticated/chat-photos/" .. key, nil, true, false, { responseType = "binary" })
     end
     -- Public profile photos, shared with Octopus and keyed by Auth user ID.

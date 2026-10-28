@@ -18,7 +18,8 @@ function app:getMedia() return self.media end
 function app:load(fn) workers[#workers + 1] = coroutine.create(fn) end
 function app:repaint() repaints = repaints + 1 end
 function app.client:getSession() return session end
-function app.client:getPhoto(id, thumbnail, onPreview)
+function app.client:getPhoto(attachment, thumbnail, onPreview)
+    local id = attachment.id
     assert(thumbnail == false, "The viewer must fetch the full JPEG")
     calls = calls + 1
     coroutine.yield()

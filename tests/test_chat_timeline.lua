@@ -48,13 +48,16 @@ local function fixture(height)
     local status = ui.TextBlock { Height = 40, Visible = false }
     layout:addChild(list); layout:addChild(status); screen:addChild(layout)
     local app = { room = { id = "room1", kind = "direct" }, messageList = list, screen = screen,
-        sessionEpoch = 1, navigationEpoch = 1, rows = {}, reads = 0, photos = 0,
+        sessionEpoch = 1, navigationEpoch = 1, rows = {}, reads = 0, photos = 0, photoStages = {},
         composer = ui.Input { Text = "draft remains" }, photoDrafts = { room1 = "draft-photo" } }
     for i = 1, 6 do app.rows[i] = message(i, "Message " .. i) end
     app.rows[1].attachments = { { id = "photo1" } }
     local session = { user = { id = "me" } }
     app.client = { getSession = function() return session end }
-    function app.client:getPhoto()
+    function app.client:getPhoto(attachment, thumbnail)
+        assert(type(attachment) == "table" and attachment.id, "The loader reuses the known attachment metadata")
+        app.photoStages[#app.photoStages + 1] = thumbnail and "preview" or "full"
+        if thumbnail then return "local fixture JPEG" end
         app.photos = app.photos + 1
         if app.photoHook then app.photoHook() end
         return "local fixture JPEG", nil
@@ -137,9 +140,19 @@ for _, kind in ipairs { "direct", "group", "channel" } do
             assert(visibleCount(entry, function(child) return child.Name == "MessageTimealbum" end) == 1)
             assert(not shown(named(bubble, "Caption")) and tails(entry) == 0, "Photo-only rows have neither footer nor tail")
             assert(shown(named(bubble, "SenderSection")) == (kind == "group" and sender == "other"))
-            assert(visibleCount(content, function(child) return child:getTextContent() == "Loading photo…" end) == 1)
+            local loading = named(content, "PhotoLoadingtwo")
+            assert(shown(loading) and loading.IgnoreHitTest and loading.Width == 32 and loading.Height == 32,
+                "Pending photos show a centered loading icon")
+            assert(loading.Source == "Chat/assets/icons/refresh-cw.svg", "The placeholder reuses the packaged SVG icon")
+            near(loading.ActualX + loading.ActualWidth / 2, content.ActualWidth / 2, "The loading icon centers horizontally")
+            near(loading.ActualY + loading.ActualHeight / 2, content.ActualHeight / 2, "The loading icon centers vertically")
+            assert(visibleCount(content, function(child) return child:getTextContent() == "Loading photo…" end) == 0,
+                "The photo placeholder has no loading caption")
             app:loadPhotos()
             assert(app.photos == 2 and named(content, "Phototwo").Source, "Visible local previews resolve native resources")
+            assert(table.concat(app.photoStages, ",") == "preview,preview,full,full",
+                "Every visible album preview starts before any full download")
+            assert(not content:findChild("PhotoLoadingtwo", true), "Loaded photos remove the loading icon")
             app.rows[1].updated_at = "message edit"
             refresh(app, { preserveScroll = true })
             app:loadPhotos()
@@ -233,14 +246,19 @@ near(list.ContentOffset.Y, -50, "Deferred image work does not overwrite scrollin
 app, list = fixture()
 refresh(app)
 list.ContentOffset = { X = 0, Y = 0 }
-app.photoHook = function() app:logout() end
+app.photoHook = function()
+    app.previewBeforeLogout = list:findChild("Photophoto1", true)
+    app:logout()
+end
 app:loadPhotos()
-assert(not app.timelineSnapshot.photos.photo1 and not list:findChild("Photophoto1", true), "Logout discards deferred photo results")
+assert(not app.timelineSnapshot.photos.photo1 and list:findChild("Photophoto1", true) == app.previewBeforeLogout,
+    "Logout discards the deferred full photo without replacing the earlier preview")
 
--- Failed previews retry on the next unchanged-snapshot refresh.
+-- Failed full downloads retain their preview and retry on an unchanged snapshot.
 app, list = fixture()
 local calls = 0
-app.client.getPhoto = function()
+app.client.getPhoto = function(_, attachment, thumbnail)
+    if thumbnail then return "local fixture JPEG" end
     calls = calls + 1
     if calls == 1 then return nil, { message = "Temporarily unavailable" } end
     return "local fixture JPEG"
