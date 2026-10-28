@@ -35,10 +35,10 @@ export class AppwriteRest {
 
 function attributes(collection, row) {
   switch (collection) {
-    case 'profiles': return { username: row.username || null, email: row.email || null, phone: row.phone || null };
+    case 'directory': return { handle: row.handle || null, email: row.email || null, phone: row.phone || null };
     case 'rooms': return { kind: row.kind, visibility: row.visibility, direct_key: row.direct_key || null, name_search: row.name.toLowerCase() };
     case 'members': return { room_id: row.room_id, user_id: row.user_id };
-    case 'messages': return { room_id: row.room_id };
+    case 'messages': return { room_id: row.room_id, created_at: row.created_at };
     case 'attachments': return { room_id: row.room_id, uploader_id: row.uploader_id, object_key: row.object_key, thumbnail_key: row.thumbnail_key };
     case 'invites': return { room_id: row.room_id };
     case 'state': return { kind: row.kind };
@@ -47,21 +47,69 @@ function attributes(collection, row) {
 }
 const unpack = doc => ({ ...JSON.parse(doc.payload), id: doc.$id });
 
+// Logical service names are an internal API; storage belongs to the shared app.
+// Only public display metadata lives in profiles. Identifier discovery and
+// preferences stay in an administrator-only collection.
+export const COLLECTIONS = Object.freeze({ profiles: 'profiles', directory: 'account-directory',
+  rooms: 'conversations', members: 'conversation-members', messages: 'messages',
+  attachments: 'attachments', invites: 'invitations', state: 'service-state' });
+export const privateIdentity = row => ({ email: row.email || null, phone: row.phone || null,
+  discoverable_email: !!row.discoverable_email, discoverable_phone: !!row.discoverable_phone });
+
+export const directoryIdentity = row => ({ ...privateIdentity(row), handle: row.username ?? row.handle ?? null });
+
 export class Repository {
   constructor(rest, databaseId, bucketId) { this.rest = rest; this.databaseId = databaseId; this.bucketId = bucketId; }
   path(collection, id) {
-    return `/databases/${enc(this.databaseId)}/collections/chat_${collection}/documents${id ? '/' + enc(id) : ''}`;
+    if (!COLLECTIONS[collection]) throw new Error('Unknown collection');
+    return `/databases/${enc(this.databaseId)}/collections/${COLLECTIONS[collection]}/documents${id ? '/' + enc(id) : ''}`;
   }
-  async get(collection, id) {
-    try { return unpack(await this.rest.request('GET', this.path(collection, id))); }
+  async document(collection, id) {
+    try { return await this.rest.request('GET', this.path(collection, id)); }
     catch (error) { if (error.status === 404) return null; throw error; }
   }
+  async get(collection, id) {
+    if (collection !== 'profiles') {
+      const doc = await this.document(collection, id);
+      return doc ? unpack(doc) : null;
+    }
+    const [profile, directory] = await Promise.all([this.document('profiles', id), this.document('directory', id)]);
+    if (!profile && !directory) return null;
+    return { ...privateIdentity(directory ? unpack(directory) : {}), id,
+      display_name: profile?.username || '', username: directory?.handle || null,
+      avatar_id: profile?.avatarId || null };
+  }
+  async saveProfile(id, row) {
+    // Claim the handle through the private unique index before publishing a label.
+    // Public profiles are owner writable and cannot establish identity authority.
+    const identity = directoryIdentity(row), existing = await this.document('directory', id);
+    try {
+      if (!existing) await this.create('directory', identity, id);
+      else if (JSON.stringify(directoryIdentity(unpack(existing))) !== JSON.stringify(identity))
+        await this.update('directory', id, identity);
+    } catch (error) {
+      if (error.status === 409) reject(409, 'handle_taken', 'This account name is already in use. Choose another.');
+      throw error;
+    }
+    const previous = await this.document('profiles', id), data = { username: row.display_name || '' };
+    if (previous) {
+      if (previous.username !== data.username)
+        await this.rest.request('PATCH', this.path('profiles', id), { body: { data } });
+    } else {
+      await this.rest.request('POST', this.path('profiles'), { body: { documentId: id,
+        data: { ...data, userId: id, bio: '' }, permissions: ['read("any")', `update("user:${id}")`] } });
+    }
+    return { ...privateIdentity(identity), id, display_name: data.username, username: identity.handle,
+      avatar_id: previous?.avatarId || null };
+  }
   async create(collection, row, id = randomUUID()) {
+    if (collection === 'profiles') return this.saveProfile(id, row);
     return unpack(await this.rest.request('POST', this.path(collection), {
       body: { documentId: id, data: { ...attributes(collection, row), payload: JSON.stringify(row) }, permissions: [] },
     }));
   }
   async update(collection, id, row) {
+    if (collection === 'profiles') return this.saveProfile(id, row);
     return unpack(await this.rest.request('PATCH', this.path(collection, id), {
       body: { data: { ...attributes(collection, row), payload: JSON.stringify(row) } },
     }));
@@ -71,16 +119,27 @@ export class Repository {
     catch (error) { if (error.status === 404) return false; throw error; }
   }
   async list(collection, queries = [], limit) {
-    const rows = []; let cursor;
+    if (collection === 'profiles') {
+      const filters = queries.map(query => ({ ...query,
+        ...(query.attribute === 'username' ? { attribute: 'handle' } : {}) }));
+      const docs = await this.listDocuments('directory', filters, limit);
+      return (await Promise.all(docs.map(doc => this.get('profiles', doc.$id)))).filter(Boolean);
+    }
+    return (await this.listDocuments(collection, queries, limit)).map(unpack);
+  }
+  async listDocuments(collection, queries = [], limit) {
+    const rows = []; let cursor = queries.find(query => query.method === 'cursorAfter')?.values?.[0];
+    queries = queries.filter(query => query.method !== 'cursorAfter');
     // Cursor pagination prevents Appwrite's default 25-row page from hiding members.
     // The explicit cap fails the request rather than returning a partial directory.
     for (let page = 0; page < 100; page++) {
       const count = limit ? Math.min(100, limit - rows.length) : 100;
       const filters = [...queries, { method: 'limit', values: [count] }];
+      if (collection === 'messages') filters.push({ method: 'select', values: ['$id', 'payload'] });
       if (cursor) filters.push({ method: 'cursorAfter', values: [cursor] });
-      const params = new URLSearchParams(); filters.forEach(query => params.append('queries[]', JSON.stringify(query)));
+      const params = new URLSearchParams({ total: 'false' }); filters.forEach(query => params.append('queries[]', JSON.stringify(query)));
       const result = await this.rest.request('GET', this.path(collection) + '?' + params);
-      rows.push(...result.documents.map(unpack));
+      rows.push(...result.documents);
       if (result.documents.length < count || (limit && rows.length === limit)) return rows;
       cursor = result.documents.at(-1).$id;
     }

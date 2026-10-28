@@ -9,7 +9,8 @@ const posting = (room, member) => member && (room.kind !== 'channel' || staff(me
 const validId = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,35}$/.test(value);
 const id = value => { if (!validId(value)) reject(400, 'validation', 'Choose a valid resource.'); return value; };
 const memberId = (roomId, userId) => key('member:' + roomId + ':' + userId);
-const publicProfile = profile => ({ id: profile.id, display_name: profile.display_name, username: profile.username });
+const publicProfile = profile => ({ id: profile.id, display_name: profile.display_name, username: profile.username,
+  avatar_id: profile.avatar_id || null });
 async function mapConcurrent(items, action, width = 8) {
   const results = new Array(items.length); let next = 0, failure;
   await Promise.all(Array.from({ length: Math.min(width, items.length) }, async () => {
@@ -27,7 +28,8 @@ export class ChatService {
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {
     const email = user.emailVerification ? user.email.toLowerCase() : null, phone = user.phoneVerification ? user.phone : null;
-    const values = previous => ({ display_name: previous?.display_name ?? user.name ?? '', username: previous?.username || null,
+    const values = previous => ({ display_name: previous?.display_name || user.name || '', username: previous?.username || null,
+      avatar_id: previous?.avatar_id || null,
       email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
       discoverable_phone: !!(phone && previous?.phone === phone && previous.discoverable_phone) });
     const unchanged = (previous, row) => previous && Object.entries(row).every(([field, value]) => previous[field] === value);
@@ -52,11 +54,20 @@ export class ChatService {
     return this.repo.lock('profile:' + user.$id, async () => {
       const row = await this.repo.get('profiles', user.$id);
       if ('display_name' in values) {
-        if (typeof values.display_name !== 'string' || !values.display_name.trim() || [...values.display_name].length > 80) reject(400, 'validation', 'Use a display name of 1–80 characters.');
+        if (typeof values.display_name !== 'string' || !values.display_name.trim() || [...values.display_name].length > 128) reject(400, 'validation', 'Use a display name of 1–128 characters.');
         row.display_name = values.display_name.trim();
       }
       if ('username' in values) {
-        if (typeof values.username !== 'string' || values.username && !/^[a-z][a-z0-9_]{2,31}$/.test(values.username)) reject(400, 'validation', 'Use a lowercase username of 3–32 letters, digits or underscores.');
+        if (typeof values.username !== 'string' || values.username && !/^[a-z0-9][a-z0-9._-]{0,35}$/.test(values.username))
+          reject(400, 'validation', 'Use a lowercase account name of 1–36 letters, digits, dots, underscores or hyphens.');
+        if (row.username === user.$id && values.username !== row.username)
+          reject(400, 'stable_account_name', 'Your account name is also your account ID and cannot be changed.');
+        if (values.username && values.username !== row.username) {
+          try {
+            const account = await this.auth.rest.request('GET', '/users/' + encodeURIComponent(values.username));
+            if (account.$id !== user.$id) reject(409, 'handle_taken', 'This account name belongs to another account.');
+          } catch (error) { if (error.status !== 404) throw error; }
+        }
         row.username = values.username || null;
       }
       for (const field of ['email', 'phone']) if ('discoverable_' + field in values) {
@@ -64,7 +75,12 @@ export class ChatService {
         if (typeof value !== 'boolean' || value && !row[field]) reject(400, 'validation', 'Discovery needs a verified identifier.');
         row['discoverable_' + field] = value;
       }
-      return this.repo.update('profiles', user.$id, row);
+      const saved = await this.repo.update('profiles', user.$id, row);
+      if (saved.display_name !== user.name) {
+        try { await this.auth.rest.request('PATCH', '/users/' + encodeURIComponent(user.$id) + '/name', { body: { name: saved.display_name } }); }
+        catch { reject(503, 'profile_sync', 'Your shared profile was saved, but the account display name could not be synced. Retry Save to finish syncing.'); }
+      }
+      return saved;
     });
   }
   async findPeople(user, query) {
@@ -256,12 +272,37 @@ export class ChatService {
     }
     return result;
   }
-  async listMessages(user, roomId, limit) {
+  async pageMessages(user, roomId, limit, before) {
     const { room } = await this.access(roomId, user.$id);
-    limit = limit === undefined ? 100 : Number(limit);
-    if (!Number.isInteger(limit) || limit < 1 || limit > 100) reject(400, 'validation', 'Message limit must be between 1 and 100.');
-    const rows = await this.repo.list('messages', [eq('room_id', roomId), order('$createdAt', true), order('$id', true)], limit);
-    return mapConcurrent(rows, row => this.messageView(row, room));
+    if (limit === undefined) limit = 30;
+    else if (typeof limit !== 'number' && (typeof limit !== 'string' || !/^-?\d+$/.test(limit)))
+      reject(400, 'validation', 'Message limit must be a whole number.');
+    limit = Number(limit);
+    if (!Number.isSafeInteger(limit)) reject(400, 'validation', 'Message limit must be a whole number.');
+    limit = Math.max(1, Math.min(100, limit));
+    const queries = [eq('room_id', roomId), order('created_at', true), order('$id', true)];
+    if (before !== undefined && before !== null && before !== '') {
+      const anchor = await this.repo.get('messages', id(before));
+      if (!anchor || anchor.room_id !== roomId)
+        reject(409, 'stale_cursor', 'This history cursor is no longer available. Reload the latest messages.');
+      queries.push({ method: 'cursorAfter', values: [before] });
+    }
+    let rows;
+    try { rows = await this.repo.list('messages', queries, limit + 1); }
+    catch (error) {
+      // An anchor can be deleted after validation but before the list request.
+      if (error.code === 'general_cursor_not_found' || before && error.status === 404) reject(409, 'stale_cursor', 'This history cursor is no longer available. Reload the latest messages.');
+      throw error;
+    }
+    const hasMore = rows.length > limit, selected = rows.slice(0, limit);
+    const cursor = hasMore ? selected.at(-1).id : null;
+    return { messages: await mapConcurrent(selected.reverse(), row => this.messageView(row, room)),
+      next_cursor: cursor, has_more: hasMore };
+  }
+  async listMessages(user, roomId, limit, before) {
+    // Preserve the legacy descending rows response while the explicit page RPC
+    // returns chronological messages and pagination metadata.
+    return (await this.pageMessages(user, roomId, limit, before)).messages.reverse();
   }
   async postMessage(user, body) {
     const roomId = id(body.target_room), text = body.message_body ?? '', attachmentIds = body.attachment_ids ?? [];

@@ -42,6 +42,27 @@ check(value == nil and err.code == "validation", "Blank messages must fail")
 value, err = demo:sendMessage("missing", "hello")
 check(value == nil and err.status == 403, "Unknown conversations must reject writes like the remote API")
 check(#demo:listMessages(roomId, { limit = 1 }) == 1, "Limit must select the newest messages")
+-- Multiple same-timestamp pages must remain stable and bounded.
+for i = 1, 65 do assert(demo:sendMessage(roomId, "History " .. i)) end
+local page = assert(demo:listMessagePage(roomId))
+check(#page.messages == 30 and page.has_more and page.next_cursor == page.messages[1].id, "Initial message page defaults to 30 with an oldest-row cursor")
+local seen, total = {}, 0
+while true do
+  for _, message in ipairs(page.messages) do
+    check(not seen[message.id], "Cursor pages must not repeat message IDs")
+    seen[message.id], total = true, total + 1
+  end
+  if not page.has_more then break end
+  page = assert(demo:listMessagePage(roomId, { before = page.next_cursor }))
+  check(#page.messages <= 30, "Every history page stays within the request limit")
+end
+check(total == original + 66, "Traversing history returns every message exactly once")
+page, err = demo:listMessagePage(roomId, { before = "deleted-message" })
+check(not page and err.status == 409 and err.code == "stale_cursor", "Deleted cursors require explicit recovery")
+for _, options in ipairs { { limit = 0 }, { limit = 101 }, { limit = 1.5 }, { limit = "invalid" }, { before = "bad&id" } } do
+  page, err = demo:listMessagePage(roomId, options)
+  check(not page and err.code == "validation", "Invalid page sizes and cursors fail before transport")
+end
 demo:signOut()
 value, err = demo:listRooms()
 check(value == nil and err.code == "unauthenticated", "Signed-out demo must reject room access")
@@ -75,6 +96,25 @@ value, err = client:sendMessage("bad&id", "hello")
 check(value == nil and err.code == "validation" and #requests == 5, "IDs must not inject PostgREST filters")
 value, err = client:sendMessage("room-1", string.rep("a", 4001))
 check(value == nil and err.code == "validation" and #requests == 5, "Oversized messages must fail before HTTP")
+
+client, requests = backend {
+  { status = 200, body = session() },
+  { status = 200, body = { messages = { { id = "m1" }, { id = "m2" } }, has_more = true, next_cursor = "m1" } },
+  { status = 200, body = { messages = { { id = "m0" } }, has_more = false } },
+  { status = 200, body = { messages = { { id = "x" }, { id = "x" } }, has_more = false } },
+  { status = 200, body = { messages = { { id = "x" } }, has_more = true, next_cursor = "wrong" } },
+}
+assert(client:signIn("a@b.test", "password"))
+page = assert(client:listMessagePage("room-1"))
+check(requests[2].method == "POST" and requests[2].url:match("/rpc/list_chat_messages$")
+    and requests[2].body.target_room == "room-1" and requests[2].body.limit == 30 and requests[2].body.before == nil,
+    "Latest loading uses one bounded authenticated RPC")
+assert(client:listMessagePage("room-1", { before = page.next_cursor, limit = 100 }))
+check(requests[3].body.before == "m1" and requests[3].body.limit == 100, "Older RPC carries an opaque cursor and allows the explicit maximum")
+page, err = client:listMessagePage("room-1")
+check(not page and err.code == "invalid_response", "Repeated response IDs must not corrupt the timeline")
+page, err = client:listMessagePage("room-1")
+check(not page and err.code == "invalid_response", "Inconsistent response cursors must not loop history loading")
 
 client, requests = backend {
   { status = 200, body = session() },

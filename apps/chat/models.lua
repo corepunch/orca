@@ -55,6 +55,15 @@ local Messages = Model:extend("messages", {
     end,
 })
 
+function Messages:page(options)
+    options = options or {}
+    local page, err = self.client:listMessagePage(options.room_id, options)
+    if not page then return nil, err end
+    local rows = {}
+    for i, values in ipairs(page.messages) do rows[i] = self:load(values) end
+    return { messages = rows, next_cursor = page.next_cursor, has_more = page.has_more }
+end
+
 -- Relations belong to this batch and session, including missing contacts. A new
 -- batch refetches the authorized directory rather than retaining a global cache.
 function Messages:preload_senders(messages)

@@ -185,6 +185,7 @@ local identity = client(transport)
 local session = assert(identity:signUp("Display Name", "unique@example.invalid", "password123", "password123", "  My.Handle  "))
 assert(session.user.id == "my.handle" and state.users["my.handle"].name == "Display Name",
     "Signup must use the canonical lowercase account name as its unique Appwrite ID")
+assert(assert(identity:getProfile("my.handle")).handle == "my.handle", "Signup must claim the shared unique profile handle")
 assert(identity:updateProfile { username = "Updated Name", bio = "A short bio" })
 assert(state.users["my.handle"].name == "Updated Name" and identity:getSession().user.name == "Updated Name")
 local published = assert(identity:createPost { title = "A post", content = "Body" })
@@ -217,5 +218,155 @@ assert(err.status == 409, "Canonical account names must collide even when email 
 for index, handle in ipairs { "", "has spaces", "_leading", string.rep("x", 37), "ümlaut" } do
     _, err = identity:signUp("Person", "valid@example.invalid", "password123", "password123", handle)
     assert(err.code == "validation", "Invalid account handles must fail before account creation")
+end
+-- Public mirrors are writable presentation data and never establish identity.
+local legacyProfile
+for _, public in ipairs(state.collections.profiles) do
+    if public.userId == "u-sam" then legacyProfile = public end
+end
+legacyProfile = assert(legacyProfile)
+legacyProfile.handle = "forged-public-name"
+state.directory["u-sam"] = { handle = "reserved-name" }
+local registered, aliasError = identity:signUp("New Display", "reserved@example.invalid", "password123", "password123", "Reserved-Name")
+assert(not registered and aliasError.code == "handle_taken" and aliasError.status == 409 and aliasError.accountCreated
+    and state.users["reserved-name"] and state.directory["u-sam"].handle == "reserved-name",
+    "Protected alias collisions must be explicit recoverable partial signup failures")
+assert(assert(identity:getProfile("u-sam")).handle == nil, "Writable public handles must not enter public identity DTOs")
+assert(identity:signIn("demo@example.invalid", "password123").user.id == "u-ada")
+assert(assert(identity:getAccountProfile()).handle == nil, "Existing Account IDs must never imply handles")
+assert(assert(identity:ensureProfile()).handle == nil, "Legacy sign-in must not claim an implicit alias")
+local denied, namespaceError = identity:claimHandle("u-sam")
+assert(not denied and namespaceError.code == "handle_taken", "Protected alias claims must reserve native Account IDs")
+assert(identity:signOut())
+
+local json = require "Octopus/api/json"
+local jwtRequests, profileExecutions = 0, 0
+local protected = client(function(request)
+    for _, q in ipairs(request.query or {}) do assert(q.attribute ~= "handle", "Public handle queries are not authoritative") end
+    assert(not request.body or not request.body.data or request.body.data.handle == nil,
+        "The client must never write public handle mirrors")
+    if request.path == "/account/jwts" then jwtRequests = jwtRequests + 1 end
+    if request.path:match("^/functions/") then
+        profileExecutions = profileExecutions + 1
+        assert(type(request.headers["X-Appwrite-JWT"]) == "string" and request.body.async == false)
+        local envelope = json.decode(request.body.body)
+        assert(envelope.method == "POST" and envelope.path:match("^/rest/v1/rpc/[a-z_]+$"))
+    end
+    return transport(request)
+end)
+assert(protected:signIn("unique@example.invalid", "password123"))
+assert(assert(protected:getAccountProfile()).handle == "my.handle")
+assert(assert(protected:claimHandle("my.handle")).handle == "my.handle")
+assert(jwtRequests == 1 and profileExecutions == 2, "Protected profile calls reuse only the in-memory short-lived JWT")
+local publishedProfile
+for _, public in ipairs(state.collections.profiles) do if public.userId == "my.handle" then publishedProfile = public end end
+publishedProfile.handle = "forged-public-name"
+assert(assert(protected:getAccountProfile()).handle == "my.handle", "Public profile edits cannot spoof a protected handle")
+local changed, stable = protected:claimHandle("different-name")
+assert(not changed and stable.code == "stable_account_name", "Readable Account IDs remain reserved and stable")
+assert(not protected:getSession().jwt and not protected:getSession().user.jwt, "Public session DTOs must exclude private JWTs")
+assert(protected:signOut())
+
+-- Account creation and protected Function claims are separate operations. Both
+-- a racing unique claim and an unavailable Function must explain recovery.
+for _, collision in ipairs { true, false } do
+    local claim = collision and "racing-name" or "retry-name"
+    local email = collision and "race@example.invalid" or "retry@example.invalid"
+    local once = true
+    local racing = client(function(request)
+        if once and request.method == "POST" and request.path:match("^/functions/") then
+            local envelope = json.decode(request.body.body)
+            if envelope.path == "/rest/v1/rpc/update_chat_profile" then
+                once = false
+                if collision then state.directory["u-sam"].handle = claim
+                else return reply({ message = "Unavailable" }, 503) end
+            end
+        end
+        return transport(request)
+    end)
+    local result, partial = racing:signUp("Racing Display", email, "password123", "password123", claim)
+    assert(not result and partial.accountCreated and partial.message:find("Sign in with your email", 1, true)
+        and state.users[claim] and not racing:getSession(), "Partial signup preserves the account and clears the local session")
+    assert((partial.code == "handle_taken" and partial.status == 409) == collision)
+    local resumed = assert(racing:signIn(email, "password123"))
+    assert(resumed.user.id == claim and not assert(racing:getAccountProfile()).handle,
+        "Recovery must preserve the new Account ID without stealing another account's alias")
+    if collision then
+        local claimed, taken = racing:claimHandle(claim)
+        assert(not claimed and taken.code == "handle_taken" and state.directory["u-sam"].handle == claim)
+    else
+        assert(assert(racing:claimHandle(claim)).handle == claim, "Protected claims allow explicit authenticated retry")
+    end
+    assert(racing:signOut())
+end
+
+-- Malformed or mismatched Function responses never become trusted identities.
+for _, bad in ipairs { { status = "waiting" },
+    { status = "completed", responseStatusCode = 200, responseBody = "invalid JSON" },
+    { status = "completed", responseStatusCode = 200, responseBody = json.encode { status = 200, body = { id = "other", username = "spoof" } } },
+    { status = "completed", responseStatusCode = 200, responseBody = json.encode { status = 200, body = { id = "alice", username = "INVALID" } } } } do
+    local malformed = reader(client(function(request)
+        if request.path == "/account/jwts" then return reply { jwt = "private-jwt" } end
+        return reply(bad)
+    end))
+    local result, responseError = malformed:getAccountProfile()
+    assert(not result and responseError.code == "invalid_response")
+end
+-- Equal timestamps and independent source tails survive page boundaries.
+do
+    local send, data = require("Octopus/api/mock").new { projectId = "test" }
+    data.collections.posts, data.collections.reposts = {}, {}
+    local stamp = "2026-10-28T12:00:00Z"
+    local function document(id, author, at)
+        return { ["$id"] = id, ["$createdAt"] = at or stamp, authorId = author or "u-ada",
+            authorName = "Ada", postType = "text", title = id, content = "Body", tags = {} }
+    end
+    for n = 1, 5 do data.collections.posts[#data.collections.posts + 1] = document("p-tie-" .. n) end
+    for n = 1, 4 do
+        local id = "p-original-" .. n
+        data.collections.posts[#data.collections.posts + 1] = document(id, "u-sam", "2026-10-20T12:00:00Z")
+        data.collections.reposts[#data.collections.reposts + 1] = {
+            ["$id"] = "r-tie-" .. n, ["$createdAt"] = stamp, postId = id, userId = "u-ada" }
+    end
+    -- Several full pages of deleted reposts must be consumed before valid events.
+    for n = 1, 7 do data.collections.reposts[#data.collections.reposts + 1] = {
+        ["$id"] = "r-deleted-" .. n, ["$createdAt"] = "2026-10-29T12:00:00Z", postId = "deleted-" .. n, userId = "u-ada" } end
+    local streamReads = 0
+    local service = client(function(request)
+        if (request.path:match("/posts/documents$") and query(request, "equal", "authorId"))
+            or (request.path:match("/reposts/documents$") and query(request, "equal", "userId")) then streamReads = streamReads + 1 end
+        return send(request)
+    end)
+    local first = assert(service:listPosts { authorIds = { "u-ada" }, limit = 2 })
+    assert(first[1].id == "p-tie-5" and first[2].id == "p-tie-4", "Post ties use ID descending")
+    local nextPosts = assert(service:listPosts { authorIds = { "u-ada" }, limit = 2, cursor = first[2].id })
+    assert(nextPosts[1].id == "p-tie-3" and nextPosts[2].id == "p-tie-2")
+    local before, found, seen, pages = nil, {}, {}, 0
+    repeat
+        local encoded = before and json.encode(before)
+        streamReads = 0
+        local items, nextCursor = service:userTimeline("u-ada", { limit = 2, before = before })
+        assert(items, nextCursor and nextCursor.message)
+        assert(not encoded or encoded == json.encode(before), "Pagination cannot mutate the caller's cursor")
+        assert(#items <= 2 and streamReads <= 2, "Each request must read at most one batch per source")
+        for _, item in ipairs(items) do
+            assert(not seen[item.post.id], "Each timeline event must appear once")
+            seen[item.post.id] = true
+            found[#found + 1] = item.post.id
+        end
+        before, pages = nextCursor, pages + 1
+        assert(pages <= 12, "Even empty pages must advance and terminate")
+    until not before
+    assert(table.concat(found, ",") == "p-original-4,p-original-3,p-original-2,p-original-1,p-tie-5,p-tie-4,p-tie-3,p-tie-2,p-tie-1",
+        "Merge order must preserve unconsumed equal-time events in both streams")
+    for _, limit in ipairs { 0, -1, 1.5, 101 } do
+        local result, err = service:userTimeline("u-ada", { limit = limit })
+        assert(not result and err.code == "validation")
+    end
+    for _, before in ipairs { {}, { version = 1, posts = false }, { version = 1, posts = { after = {} } },
+        { version = 1, before = false } } do
+        local result, err = service:userTimeline("u-ada", { before = before })
+        assert(not result and err.code == "validation")
+    end
 end
 print("PASS: projected startup queries, materialized and legacy counters, pagination, public cache contracts, image variants and readable account identity")

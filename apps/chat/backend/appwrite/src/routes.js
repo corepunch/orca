@@ -15,7 +15,7 @@ route('POST', '/auth/v1/verify', (s, c) => {
 });
 route('GET', '/rest/v1/chat_rooms', (s, c) => s.listRooms(c.user));
 route('GET', '/rest/v1/chat_profiles', (s, c) => s.listContacts(c.user));
-route('GET', '/rest/v1/chat_messages', (s, c) => s.listMessages(c.user, equalValue(c.url, 'room_id'), c.url.searchParams.get('limit') ?? undefined));
+route('GET', '/rest/v1/chat_messages', (s, c) => s.listMessages(c.user, equalValue(c.url, 'room_id'), c.url.searchParams.get('limit') ?? undefined, c.url.searchParams.get('before') ?? undefined));
 route('GET', '/rest/v1/chat_attachments', async (s, c) => {
   const { row, committed } = await s.photoAccess(c.user, equalValue(c.url, 'id'));
   return [s.photoView(row, committed ? row.message_id : null)];
@@ -23,6 +23,7 @@ route('GET', '/rest/v1/chat_attachments', async (s, c) => {
 route('POST', '/functions/v1/finalize-chat-photo', (s, c) => s.finalizePhoto(c.user, c.body.attachment_id));
 route('DELETE', '/storage/v1/object/chat-photos', (s, c) => s.removeObjects(c.user, c.body.prefixes));
 
+rpc('list_chat_messages', (s, c) => s.pageMessages(c.user, c.body.target_room, c.body.limit, c.body.before));
 rpc('get_chat_profile', (s, c) => c.profile);
 rpc('update_chat_profile', (s, c) => s.updateProfile(c.user, c.body.values));
 rpc('find_chat_people', (s, c) => s.findPeople(c.user, c.body.query));

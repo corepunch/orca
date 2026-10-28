@@ -206,7 +206,27 @@ return function(state, env)
         return response(200, { P.roomRow(room, user.id) })
     end
     local function rpc(name, body, user)
-        if name == "get_chat_profile" then return response(200, ownProfile(user))
+        if name == "list_chat_messages" then
+            if not member(body.target_room, user.id) then return fail(403, "forbidden", "Join this conversation first.") end
+            local limit = tonumber(body.limit) or 30
+            limit = math.max(1, math.min(100, math.floor(limit)))
+            local rows = copy(state.messages[body.target_room] or {})
+            table.sort(rows, function(a, b)
+                if a.created_at ~= b.created_at then return a.created_at > b.created_at end
+                return a.id > b.id
+            end)
+            local start = 1
+            if body.before then
+                local found
+                for i, row in ipairs(rows) do if row.id == body.before then start, found = i + 1, true; break end end
+                if not found then return fail(409, "stale_cursor", "History changed. Reload the latest messages.") end
+            end
+            local last = math.min(#rows, start + limit - 1)
+            local messages = {}
+            for i = last, start, -1 do messages[#messages + 1] = P.messageRow(rows[i]) end
+            local more = last < #rows
+            return response(200, { messages = messages, has_more = more, next_cursor = more and messages[1].id or nil })
+        elseif name == "get_chat_profile" then return response(200, ownProfile(user))
         elseif name == "update_chat_profile" then
             local values, profile = body.values, state.profiles[user.id]
             if type(values) ~= "table" then return fail(400, "validation", "Provide profile fields.") end
@@ -377,7 +397,7 @@ return function(state, env)
             if method == "GET" then return response(200, { id = user.id, phone = user.phone, email = user.email, user_metadata = copy(user.user_metadata) }) end
         end
         local name = path:match("^/rest/v1/rpc/(.+)$")
-        local known = name and ({ get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
+        local known = name and ({ list_chat_messages=1,get_chat_profile=1,update_chat_profile=1,find_chat_people=1,create_chat_room=1,list_chat_members=1,
             set_chat_member_role=1,remove_chat_member=1,leave_chat_room=1,update_chat_room=1,create_chat_invite=1,join_chat_invite=1,revoke_chat_invite=1,
             find_chat_channels=1,join_public_chat_channel=1,post_chat_message=1,edit_chat_message=1,delete_chat_message=1,
             reserve_chat_photo=1,discard_chat_photo=1 })[name]

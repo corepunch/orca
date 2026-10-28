@@ -939,6 +939,37 @@ photoApp.screen = photoApp:dispatch("/details").view
 assert(avatarPhoto(photoApp.screen:findChild("Memberalex", true)) and not avatarPhoto(photoApp.screen:findChild("Memberme", true)),
     "Conversation members show their photos")
 
+-- Exercise pagination through real native layout and the after-paint scroll hook.
+local historyClient = Chat.demo { clock = function() return 1700000000 end }
+local historyRoom = historyClient:listRooms()[1].id
+for i = 1, 65 do assert(historyClient:sendMessage(historyRoom, "History row " .. i)) end
+historyClient:signOut()
+local historyReads, originalPage = {}, historyClient.listMessagePage
+historyClient.listMessagePage = function(self, id, options)
+    historyReads[#historyReads + 1] = { limit = options.limit, before = options.before }
+    return originalPage(self, id, options)
+end
+local historyApp = mockApp(nil, historyClient)
+press(historyApp, "Room1")
+assert(#historyApp.timelinePage.messages == 30 and #historyReads == 1 and historyReads[1].limit == 30,
+    "Opening a long conversation must request and render only the latest 30 messages")
+local historyList = historyApp.messageList
+historyApp.composer.Text = "Keep this unsent draft"
+historyList.ContentOffset = { X = 0, Y = -120 }
+local visibleEntry
+for _, entry in ipairs(historyApp.timelineSnapshot.entries) do
+    if entry.node.ActualY + entry.node.ActualHeight - 120 > historyList.AdjustedContentInsetTop then visibleEntry = entry; break end
+end
+assert(visibleEntry, "The pagination fixture needs a visible message")
+local beforeY = visibleEntry.node.ActualY + historyList.ContentOffset.Y
+historyApp:afterPaint()
+assert(#historyReads == 2 and historyReads[2].limit == 30 and historyReads[2].before,
+    "Scrolling near the top must request exactly one bounded older page")
+local afterEntry = assert(historyApp.screen:findChild("MessageEntry" .. visibleEntry.id, true))
+assert(math.abs(afterEntry.ActualY + historyList.ContentOffset.Y - beforeY) < 1,
+    "Prepending a real history page must preserve the visible message within one pixel")
+assert(#historyApp.timelinePage.messages == 60 and historyApp.composer.Text == "Keep this unsent draft")
+
 -- Typing q must reach the focused control rather than close the application.
 local system = require "orca.system"
 local savedGet, savedDispatch, savedTranslate = system.getMessage, system.dispatchMessage, system.translateMessage

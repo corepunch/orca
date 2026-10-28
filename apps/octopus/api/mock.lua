@@ -93,7 +93,7 @@ function M.new(options)
     options = options or {}
     local clock = options.clock or os.time
     local projectId = options.projectId or "octopus-mock"
-    local state = { users = {}, sessions = {}, collections = {}, files = {}, sequence = 0 }
+    local state = { users = {}, sessions = {}, collections = {}, files = {}, directory = {}, jwts = {}, sequence = 0 }
     for name in pairs(COLLECTIONS) do state.collections[name] = {} end
 
     local function stamp(offset)
@@ -177,6 +177,11 @@ function M.new(options)
                 end
             end
             return problem(401, "user_invalid_credentials", "Invalid credentials. Please check the email and password.")
+        elseif method == "POST" and path == "/account/jwts" then
+            if not user then return unauthorized() end
+            local jwt = "mock-jwt-" .. newId("j")
+            state.jwts[jwt] = user.id
+            return reply(201, { jwt = jwt })
         elseif method == "PATCH" and path == "/account/name" then
             if not user then return unauthorized() end
             user.name = body.name
@@ -192,26 +197,29 @@ function M.new(options)
     end
 
     local function list(name, docs, query)
-        local filtered, order, limit, offset, cursor, fields = {}, nil, 25, 0, nil, nil
+        local filtered, orders, limit, offset, cursor, fields = {}, {}, 25, 0, nil, nil
         for _, doc in ipairs(docs) do
             local keep = true
             for _, q in ipairs(query or {}) do if not matches(doc, q) then keep = false; break end end
             if keep then filtered[#filtered + 1] = doc end
         end
         for _, q in ipairs(query or {}) do
-            if q.method == "orderDesc" or q.method == "orderAsc" then order = q
+            if q.method == "orderDesc" or q.method == "orderAsc" then orders[#orders + 1] = q
             elseif q.method == "limit" then limit = q.values[1]
             elseif q.method == "offset" then offset = q.values[1]
             elseif q.method == "cursorAfter" then cursor = q.values[1]
             elseif q.method == "select" then fields = q.values end
         end
-        if order then
-            local attribute, descending = order.attribute, order.method == "orderDesc"
+        if #orders > 0 then
             table.sort(filtered, function(a, b)
-                local x, y = tostring(a[attribute] or ""), tostring(b[attribute] or "")
-                if x == y then return a["$id"] < b["$id"] end
-                if descending then return x > y end
-                return x < y
+                for _, order in ipairs(orders) do
+                    local x, y = tostring(a[order.attribute] or ""), tostring(b[order.attribute] or "")
+                    if x ~= y then
+                        if order.method == "orderDesc" then return x > y end
+                        return x < y
+                    end
+                end
+                return a["$id"] < b["$id"]
             end)
         end
         local start = offset + 1
@@ -303,9 +311,49 @@ function M.new(options)
         return problem(405, "general_not_implemented", "Not supported by the mock.")
     end
 
+    local function executeProfile(request)
+        local json = require "Octopus/api/json"
+        local actor = state.users[state.jwts[request.headers and request.headers["X-Appwrite-JWT"]]]
+        local function execution(status, body)
+            return reply(201, { status = "completed", responseStatusCode = 200,
+                responseBody = json.encode { status = status, body = body } })
+        end
+        if not actor then return execution(401, { code = "unauthenticated", message = "Sign in to continue." }) end
+        local ok, envelope = pcall(json.decode, type(request.body) == "table" and request.body.body or "")
+        if not ok or type(envelope) ~= "table" then return problem(400, "validation", "Invalid execution envelope.") end
+        local public
+        for _, doc in ipairs(state.collections.profiles) do if doc["$id"] == actor.id then public = doc end end
+        local trusted = state.directory[actor.id] or {}
+        if envelope.path == "/rest/v1/rpc/update_chat_profile" and envelope.method == "POST" then
+            local values = type(envelope.body) == "table" and envelope.body.values
+            local handle = type(values) == "table" and values.username
+            if type(handle) ~= "string" or not handle:match("^[a-z0-9][a-z0-9._-]*$") or #handle > 36 then
+                return execution(400, { code = "validation", message = "Choose a valid account name." })
+            end
+            if trusted.handle == actor.id and handle ~= trusted.handle then
+                return execution(400, { code = "stable_account_name", message = "Your account name is also your account ID and cannot be changed." })
+            end
+            for owner, entry in pairs(state.directory) do
+                if owner ~= actor.id and entry.handle == handle then
+                    return execution(409, { code = "handle_taken", message = "This account name is already taken." })
+                end
+            end
+            if state.users[handle] and handle ~= actor.id then
+                return execution(409, { code = "handle_taken", message = "This account name belongs to another account." })
+            end
+            trusted.handle = handle
+            state.directory[actor.id] = trusted
+        elseif envelope.path ~= "/rest/v1/rpc/get_chat_profile" or envelope.method ~= "POST" then
+            return execution(404, { code = "not_found", message = "Unknown profile operation." })
+        end
+        return execution(200, { id = actor.id, display_name = public and public.username or actor.name,
+            username = trusted.handle, avatar_id = public and public.avatarId })
+    end
+
     local transport = function(request)
         local user = currentUser(request.headers)
         local path = request.path or ""
+        if request.method == "POST" and path:match("^/functions/[^/]+/executions$") then return executeProfile(request) end
         local response = account(request.method, path, type(request.body) == "table" and request.body or {}, user)
         if response then return response end
         local name, id = path:match("^/databases/[^/]+/collections/([^/]+)/documents/?([^/?]*)$")

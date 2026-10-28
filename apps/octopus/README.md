@@ -81,14 +81,15 @@ keeps changes for the session. For iOS, open `octopus.xcodeproj` and run the
 
 `config.lua` holds the website's public values: the Frankfurt endpoint, the
 Octopus project, the `octopus-db` database and the `post-images` bucket. The
-client calls Appwrite's REST API directly with the same document-level
-permissions as the browser; there is no server function and no API key.
+client calls Appwrite's REST API with the same document-level permissions as
+the browser. Protected handle claims use the shared account Function with a
+short-lived Account JWT. The client contains no server API key.
 
 | Feature | Appwrite |
 | --- | --- |
 | Accounts | `POST /account`, email/password sessions, sign-out |
 | Timelines, search, tags | `posts` with `orderDesc($createdAt)`, `search(title)`, `equal(tags)` and cursor paging |
-| Home, profiles | `posts` and `reposts` merged by time, paged with `lessThan($createdAt)` |
+| Home, profiles | `posts` and `reposts` merged by time, with independent document cursors for each stream |
 | Connect | `likes`, `reposts` and `comments` on your posts and `follows` of you, named from `profiles` |
 | Following | `follows` (readable by signed-in users only, so guests see no follower counts) |
 | Likes, reposts, comments | `likes` (posts and comments), `reposts`, `comments` with `parentId` replies |
@@ -104,6 +105,11 @@ their IDs. The account works on the website too; other registration clients
 must adopt the same handle policy to offer the same signup experience. Profile
 edits synchronize the account/session display name used for new posts and
 comments. The session cookie stays in memory, so restarting signs you out.
+Unique handles are owned by the private account directory and claimed through
+the shared Function (`OCTOPUS_FUNCTION_ID`, default `orca-chat-api`). Public
+profile display labels remain editable. If Account creation succeeds but the
+claim fails, the error explicitly reports that the account already exists;
+signing in can retry the claim without creating another account.
 
 The four compose forms match the
 [website's composer](https://github.com/corepunch/octopus/blob/main/js/pages/create.js):
@@ -144,6 +150,14 @@ and inputs stay available while requests are suspended. Feed refresh keeps the
 existing posts until a successful response replaces them; failures keep those
 posts and expose an error with refresh still available. Each request checks its
 page, request and session before applying results.
+Discover requests 20 posts per page. Home merges at most 20 posts/reposts from
+two bounded source pages, using separate stable document cursors so equal
+timestamps cannot skip events. After the reader scrolls, Home and Discover
+prefetch within one viewport of the bottom (240–800 points), with one request
+in flight. Repeated posts are deduplicated. Standing still never drains further
+pages, and failures pause prefetch until the reader uses the retry button or
+refresh. This follows Appwrite's recommended
+[cursor pagination for feeds and chat history](https://appwrite.io/docs/products/databases/documentsdb/pagination).
 Posts appear as soon as their page arrives; counters and reader reaction IDs
 load independently. Unknown counts show an ellipsis, and like/repost controls
 stay disabled until the reader state is known. Failed counters do not discard

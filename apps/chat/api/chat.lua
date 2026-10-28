@@ -195,6 +195,36 @@ function Client:listMessages(roomId, options)
   return messages
 end
 
+-- Cursor pages are chronological; the cursor points to the oldest returned row.
+function Client:listMessagePage(roomId, options)
+  if not validId(roomId) then return failure("validation", "Choose a conversation.") end
+  options = options or {}
+  local limit = options.limit == nil and 30 or tonumber(options.limit)
+  if not limit or limit % 1 ~= 0 or limit < 1 or limit > 100 then
+    return failure("validation", "Message limit must be between 1 and 100.")
+  end
+  if options.before ~= nil and not validId(options.before) then return failure("validation", "Choose a valid message cursor.") end
+  local page, err = self:_request("POST", "/rest/v1/rpc/list_chat_messages", {
+    target_room = roomId, limit = limit, before = options.before,
+  }, true)
+  if not page then return nil, err end
+  if type(page) ~= "table" or type(page.messages) ~= "table" or type(page.has_more) ~= "boolean"
+      or #page.messages > limit or (page.has_more and (#page.messages == 0 or not validId(page.next_cursor))) then
+    return failure("invalid_response", "The chat service returned an invalid message page.")
+  end
+  local ids = {}
+  for _, message in ipairs(page.messages) do
+    if type(message) ~= "table" or not validId(message.id) or ids[message.id] then
+      return failure("invalid_response", "The chat service returned invalid messages.")
+    end
+    ids[message.id] = true
+  end
+  if page.has_more and (page.next_cursor ~= page.messages[1].id or page.next_cursor == options.before) then
+    return failure("invalid_response", "The chat service returned an invalid message cursor.")
+  end
+  return { messages = page.messages, has_more = page.has_more, next_cursor = page.has_more and page.next_cursor or nil }
+end
+
 function Client:sendMessage(roomId, body, attachmentIds)
   if not validId(roomId) then return failure("validation", "Choose a conversation.") end
   if attachmentIds and (type(attachmentIds) ~= "table" or #attachmentIds > 4) then return failure("validation", "Attach at most four photos.") end

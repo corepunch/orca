@@ -29,6 +29,8 @@ class MemoryRepository {
       const field = query.attribute === '$createdAt' ? 'created_at' : query.attribute === '$id' ? 'id' : query.attribute;
       return String(a[field]).localeCompare(String(b[field])) * (query.method === 'orderDesc' ? -1 : 1);
     });
+    const cursor = queries.find(query => query.method === 'cursorAfter')?.values?.[0];
+    if (cursor) rows = rows.slice(rows.findIndex(row => row.id === cursor) + 1);
     return limit ? rows.slice(0, limit) : rows;
   }
   async lock(name, action) {
@@ -535,4 +537,21 @@ test('authors and group staff delete messages for everyone, removing their encry
   assert.equal((await remove('owner', hello.id)).status, 403, 'direct chats have no moderators');
   assert.equal((await remove('alice', hello.id)).status, 200);
   assert.equal(fixture.repo.locks.size, 0);
+});
+
+
+test('message page RPC returns bounded chronological pages while legacy GET keeps rows', async () => {
+  const fixture = setup(), conversation = await room(fixture);
+  for (let index = 0; index < 35; index++) {
+    const messageId = 'message-' + String(index).padStart(3, '0');
+    await fixture.repo.create('messages', { room_id: conversation.id, sender_id: 'owner', body: messageId,
+      created_at: new Date(fixture.clock.now + index * 1000).toISOString(), attachment_ids: [] }, messageId);
+  }
+  const first = await fixture.call('owner', '/rest/v1/rpc/list_chat_messages', { target_room: conversation.id });
+  assert.equal(first.status, 200); assert.equal(first.body.messages.length, 30); assert.equal(first.body.has_more, true);
+  assert.equal(first.body.messages[0].id, 'message-005'); assert.equal(first.body.next_cursor, 'message-005');
+  const older = await fixture.call('owner', '/rest/v1/rpc/list_chat_messages', { target_room: conversation.id, before: first.body.next_cursor });
+  assert.equal(older.body.messages.length, 5); assert.equal(older.body.has_more, false); assert.equal(older.body.next_cursor, null);
+  const legacy = await fixture.call('owner', '/rest/v1/chat_messages?room_id=eq.' + conversation.id + '&limit=2&before=message-005', {}, 'GET');
+  assert.equal(legacy.status, 200); assert.deepEqual(legacy.body.map(row => row.id), ['message-004', 'message-003']);
 });
