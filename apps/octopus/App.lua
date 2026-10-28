@@ -24,12 +24,21 @@ local App = Application:extend {
         options = options or {}
         local config = require "Octopus/config"
         local backend = config.backend or "appwrite"
+        local cache
+        if backend == "appwrite" and not options.client then
+            cache = require("Octopus/cache").new {
+                namespace = table.concat({ config.endpoint, config.projectId, config.databaseId, config.bucketId,
+                    config.feedCollectionId or "posts" }, "|"),
+            }
+            config = setmetatable({ cache = cache, schedule = function(fn) orca.async(fn) end }, { __index = config })
+        end
         if options.client then self.client = options.client
         elseif backend == "appwrite" then self.client, self.configurationError = Octopus.appwrite(config)
         elseif backend == "mock" then self.client = Octopus.mock()
         else self.configurationError = { message = "Choose OCTOPUS_BACKEND=appwrite or mock." } end
         self.clock = self.client and self.client.clock or os.time
-        self.media = options.media or require("Octopus/media").new()
+        self.media = options.media or require("Octopus/media").new { cache = cache }
+        self.publicCache = cache
         self.photos = require("Octopus/photo_loader").new(self)
         self.remote = self.client ~= nil and self.client.mode ~= "mock"
         self:resetSessionViews()
@@ -39,13 +48,19 @@ local App = Application:extend {
     -- fresh shell, timelines and drafts.
     resetSessionViews = function(self)
         self.sessionEpoch = (self.sessionEpoch or 0) + 1
+        if self.media and self.media.clear then self.media:clear() end
+        -- Persist only public guest images; authenticated media stays temporary.
+        if self.media then
+            if self.client and self.client:getSession() then self.media.cache = nil
+            else self.media.cache = self.publicCache end
+        end
         if self.avatars then self.avatars:clear() end
         self.avatarPaths = {}
         self.avatars = AvatarLoader.new(self, {
             lookup = function(ids) return self.client:avatars(ids) end,
-            fetch = function(id) return self.client:getImage(id) end,
-            cached = function(id) return self.media:path(id) end,
-            store = function(bytes, id) return self.media:store(bytes, id) end,
+            fetch = function(id) return self.client:getImage(id, "avatar") end,
+            cached = function(id) return self.media:path("avatar:" .. id) end,
+            store = function(bytes, id) return self.media:store(bytes, "avatar:" .. id) end,
             apply = C.photo,
             schedule = function(fn) self:task(fn) end,
             repaint = function() if self.screen then self.screen:post("Window.Paint", renderer.getSize()) end end,

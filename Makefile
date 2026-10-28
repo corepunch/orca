@@ -243,7 +243,7 @@ weather: copyshare
 	fi
 	$(TARGET) apps/Book
 
-.PHONY: chat test-chat test-chat-ui test-chat-appwrite test-network-headers
+.PHONY: chat test-chat test-chat-ui test-chat-appwrite test-network-headers test-octopus-cache
 chat: copyshare
 	$(TARGET) apps/chat
 
@@ -281,16 +281,22 @@ test-chat-appwrite:
 test-chat-live: copyshare
 	$(TARGET) -test=tests/test_chat_live.lua
 
-.PHONY: octopus test-octopus
+.PHONY: octopus test-octopus test-octopus-startup-api test-octopus-backend
 octopus: copyshare
 	$(TARGET) apps/octopus
 
-test-octopus: copyshare
+test-octopus: copyshare test-octopus-cache test-octopus-startup-api test-octopus-backend
 	$(TARGET) -test=tests/test_octopus_api.lua
 	$(TARGET) -test=tests/test_octopus_photos.lua
 	$(TARGET) -test=tests/test_octopus_app.lua
 
 NODE ?= node
+test-octopus-startup-api:
+	$(LUA) tests/test_octopus_startup_api.lua
+
+test-octopus-backend:
+	$(NODE) --test apps/octopus/backend/test/*.test.js
+
 .PHONY: test-chat-appwrite-backend test-media
 test-chat-appwrite-backend:
 	$(NODE) --test apps/chat/backend/appwrite/test/*.test.js
@@ -342,8 +348,14 @@ ios-devices:
 test-ios-tools: test-ios-tmpname test-ios-message-frame
 	PYTHONPYCACHEPREFIX=build/ios/pycache python3 -m unittest discover -s tests -p 'test_ios_tools.py'
 
+test-octopus-cache:
+	$(LUA) tests/test_octopus_cache.lua
+
+# Build the engine first with make unite after native changes. The C driver
+# receives its loopback fixture URL from Python, so it is not a C_TEST_RULE case.
 test-network-headers:
-	python3 tests/test_network_headers.py --binary $(TARGET)
+	$(Q)$(CC) $(CFLAGS) -Wall tests/test_network_fetch.c -o $(BINDIR)/test_network_fetch $(TEST_LDFLAGS)
+	python3 tests/test_network_headers.py --binary $(TARGET) --native-binary $(BINDIR)/test_network_fetch
 
 debug:
 	gdb -ex "run $(DATADIR)" -ex "bt" -ex "quit" --args $(TARGET) $(DATADIR)

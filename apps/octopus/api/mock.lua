@@ -21,7 +21,7 @@ end
 local function reply(status, body, headers) return { status = status, body = body, headers = headers or {} } end
 local function problem(status, kind, message) return reply(status, { code = status, type = kind, message = message }) end
 local function unauthorized()
-    return unauthorized()
+    return problem(401, "general_unauthorized_scope", "Sign in to continue.")
 end
 
 local function contains(value, wanted)
@@ -159,12 +159,12 @@ function M.new(options)
                 return problem(400, "general_argument_invalid", "Invalid `password` param: Password must be at least 8 characters")
             end
             for _, existing in pairs(state.users) do
-                if existing.email:lower() == body.email:lower() then
+                if existing.email:lower() == body.email:lower() or existing.id == body.userId then
                     return problem(409, "user_already_exists",
                         "A user with the same id, email, or phone already exists in this project.")
                 end
             end
-            local id = newId("u")
+            local id = body.userId ~= "unique()" and body.userId or newId("u")
             state.users[id] = { id = id, name = body.name or "", email = body.email, password = body.password }
             return reply(201, public(state.users[id]))
         elseif method == "POST" and path == "/account/sessions/email" then
@@ -177,6 +177,10 @@ function M.new(options)
                 end
             end
             return problem(401, "user_invalid_credentials", "Invalid credentials. Please check the email and password.")
+        elseif method == "PATCH" and path == "/account/name" then
+            if not user then return unauthorized() end
+            user.name = body.name
+            return reply(200, public(user))
         elseif method == "GET" and path == "/account" then
             if not user then return problem(401, "general_unauthorized_scope", "User (role: guests) missing scope (account)") end
             return reply(200, public(user))
@@ -188,7 +192,7 @@ function M.new(options)
     end
 
     local function list(name, docs, query)
-        local filtered, order, limit, offset, cursor = {}, nil, 25, 0, nil
+        local filtered, order, limit, offset, cursor, fields = {}, nil, 25, 0, nil, nil
         for _, doc in ipairs(docs) do
             local keep = true
             for _, q in ipairs(query or {}) do if not matches(doc, q) then keep = false; break end end
@@ -198,7 +202,8 @@ function M.new(options)
             if q.method == "orderDesc" or q.method == "orderAsc" then order = q
             elseif q.method == "limit" then limit = q.values[1]
             elseif q.method == "offset" then offset = q.values[1]
-            elseif q.method == "cursorAfter" then cursor = q.values[1] end
+            elseif q.method == "cursorAfter" then cursor = q.values[1]
+            elseif q.method == "select" then fields = q.values end
         end
         if order then
             local attribute, descending = order.attribute, order.method == "orderDesc"
@@ -218,7 +223,15 @@ function M.new(options)
             end
         end
         local page = {}
-        for i = start, math.min(#filtered, start + limit - 1) do page[#page + 1] = copy(filtered[i]) end
+        for i = start, math.min(#filtered, start + limit - 1) do
+            local doc = copy(filtered[i])
+            if fields then
+                local selected = {}
+                for _, field in ipairs(fields) do selected[field] = doc[field] end
+                doc = selected
+            end
+            page[#page + 1] = doc
+        end
         return reply(200, { total = #filtered, documents = page })
     end
 

@@ -1,0 +1,12 @@
+{
+  "name": "orca-octopus-feed",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "migrate": "node src/migrate.js",
+    "reconcile": "node src/admin.js reconcile"
+  }
+}

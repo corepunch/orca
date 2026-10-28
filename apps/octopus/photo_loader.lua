@@ -52,12 +52,12 @@ function Loader:pump()
                     if target.valid() then wanted = true; break end
                 end
                 if not wanted then return end
-                path = self.app.media:path(request.key)
+                path = self.app.media:path("photo:" .. request.key)
                 if not path then
                     local bytes
-                    bytes, err = self.app.client:getImage(request.key)
+                    bytes, err = self.app.client:getImage(request.key, "photo")
                     if bytes and self.app.sessionEpoch == request.epoch then
-                        path, err = self.app.media:store(bytes, request.key)
+                        path, err = self.app.media:store(bytes, "photo:" .. request.key)
                     end
                 end
             end)
@@ -103,7 +103,7 @@ function Loader:watch(frame, key, name)
             if not shaped then image.MarginLeft, image.MarginRight, image.MarginTop, image.MarginBottom = 0, 0/0, 0, 0/0 end
             image:send("Node.LoadView")
             if not image.Source then
-                app.media:discard(key)
+                app.media:discard("photo:" .. key)
                 path, err = nil, { message = "This photo could not be decoded." }
             else
                 local width, height = image.Source.Width, image.Source.Height
@@ -136,7 +136,7 @@ function Loader:watch(frame, key, name)
     self.nextOrder = self.nextOrder + 1
     local target = { order = self.nextOrder, epoch = epoch, cancel = cancel, load = function()
         if loaded or requested or failed or not valid() then return end
-        local path = app.media:path(key)
+        local path = app.media:path("photo:" .. key)
         if path then finish(path); return end
         requested = true
         loading(true)

@@ -39,6 +39,7 @@ function Q.search(attribute, value) return { method = "search", attribute = attr
 function Q.orderDesc(attribute) return { method = "orderDesc", attribute = attribute } end
 function Q.orderAsc(attribute) return { method = "orderAsc", attribute = attribute } end
 function Q.limit(count) return { method = "limit", values = { count } } end
+function Q.select(fields) return { method = "select", values = fields } end
 function Q.cursorAfter(id) return { method = "cursorAfter", values = { id } } end
 function Q.lessThan(attribute, value) return { method = "lessThan", attribute = attribute, values = { value } } end
 Octopus.Query = Q
@@ -56,11 +57,17 @@ end
 local function post(doc)
     local tags = {}
     for _, tag in ipairs(type(doc.tags) == "table" and doc.tags or {}) do tags[#tags + 1] = tag end
+    local avatarId
+    if doc.sourceCreatedAt then avatarId = validId(doc.avatarId) and doc.avatarId or false end
     return {
-        id = doc["$id"], createdAt = doc["$createdAt"], title = doc.title or "", content = doc.content or "",
+        id = doc["$id"], createdAt = doc.sourceCreatedAt or doc["$createdAt"], title = doc.title or "", content = doc.content or "",
         authorId = doc.authorId, authorName = doc.authorName or "Someone", tags = tags,
-        postType = POST_TYPES[doc.postType] and doc.postType or "text", imageId = doc.imageId,
+        postType = POST_TYPES[doc.postType] and doc.postType or "text", imageId = validId(doc.imageId) and doc.imageId or nil,
+        avatarId = avatarId,
         linkUrl = doc.linkUrl, quoteSource = doc.quoteSource, userText = doc.userText,
+        summary = doc.sourceCreatedAt ~= nil,
+        stats = doc.statsUpdatedAt and { likes = doc.likeCount, comments = doc.commentCount,
+            reposts = doc.repostCount, pending = true } or nil,
     }
 end
 
@@ -107,7 +114,7 @@ function Client:_request(method, path, options)
     if self.session then headers.Cookie = self.session.cookie end
     local ok, response = pcall(self.transport, {
         method = method, path = path, query = options.query, body = options.body, headers = headers,
-        binary = options.binary,
+        binary = options.binary, params = options.params,
     })
     if not ok or type(response) ~= "table" or type(response.status) ~= "number" then
         return failure("network", "Could not reach Octopus. Check your connection and try again.")
@@ -123,8 +130,9 @@ function Client:_request(method, path, options)
     return response.body
 end
 
-function Client:_list(name, query)
-    local data, err = self:_request("GET", self:collection(name), { query = query })
+function Client:_list(name, query, includeTotal)
+    local data, err = self:_request("GET", self:collection(name), { query = query,
+        params = { total = includeTotal == true } })
     if not data then return nil, err end
     if type(data) ~= "table" or type(data.documents) ~= "table" then
         return failure("invalid_response", "Octopus returned an invalid list.")
@@ -132,10 +140,12 @@ function Client:_list(name, query)
     return data
 end
 
--- Walk every page of a filtered collection, up to `pages` requests.
+-- Walk filtered pages without silently truncating totals on popular posts.
 function Client:_listAll(name, filters, pages)
     local documents, cursor = {}, nil
-    for _ = 1, pages or 10 do
+    local page = 0
+    while true do
+        page = page + 1
         local query = {}
         for i, filter in ipairs(filters) do query[i] = filter end
         query[#query + 1] = Q.limit(PAGE)
@@ -144,6 +154,7 @@ function Client:_listAll(name, filters, pages)
         if not data then return nil, err end
         for _, doc in ipairs(data.documents) do documents[#documents + 1] = doc end
         if #data.documents < PAGE then break end
+        if pages and page >= pages then break end
         cursor = data.documents[#data.documents]["$id"]
     end
     return documents
@@ -160,6 +171,24 @@ end
 function Client:_requireSession()
     if not self.session then return failure("unauthenticated", "Sign in to continue.") end
     return self.session
+end
+
+-- At most three independent requests per group; injected unit clients remain
+-- synchronous. Each scheduled job always settles, including thrown failures.
+function Client:_parallel(jobs)
+    local results, remaining = {}, #jobs
+    local function run(index, job)
+        local ok, value, err = pcall(job)
+        if ok then results[index] = { value, err }
+        else results[index] = { nil, { code = "network", message = "Could not load Octopus data. Try refresh." } } end
+        remaining = remaining - 1
+    end
+    for index, job in ipairs(jobs) do
+        if self.schedule and coroutine.isyieldable() then self.schedule(function() run(index, job) end)
+        else run(index, job) end
+    end
+    while remaining > 0 do coroutine.yield() end
+    return results
 end
 
 -- Account ------------------------------------------------------------------
@@ -190,12 +219,13 @@ function Client:signIn(email, password)
         return failure("invalid_response", "Octopus returned an invalid account.")
     end
     self.session = { cookie = cookie, user = { id = account["$id"], name = account.name ~= "" and account.name
-        or email:match("^[^@]+"), email = account.email } }
-    self:ensureProfile()
+        or email:match("^[^@]+"), email = account.email, accountName = account.name } }
+    local public = self:ensureProfile()
+    if public and public.exists and text(public.username) then self.session.user.name = public.username end
     return self:getSession()
 end
 
-function Client:signUp(name, email, password, confirm)
+function Client:signUp(name, email, password, confirm, handle)
     name, email = trim(name), trim(email)
     if not text(name) or #name > 128 then return failure("validation", "Enter a display name of up to 128 characters.") end
     if not email:match("^[^%s@]+@[^%s@]+%.[^%s@]+$") then return failure("validation", "Enter a valid email address.") end
@@ -203,8 +233,12 @@ function Client:signUp(name, email, password, confirm)
         return failure("validation", "Password must be at least 8 characters.")
     end
     if confirm ~= nil and confirm ~= password then return failure("validation", "Passwords do not match.") end
+    handle = trim(handle):lower()
+    if #handle < 1 or #handle > 36 or not handle:match("^[a-z0-9][a-z0-9._-]*$") then
+        return failure("validation", "Choose an account name of 1–36 letters, digits, dots, underscores or hyphens, starting with a letter or digit.")
+    end
     local created, err = self:_request("POST", "/account",
-        { body = { userId = "unique()", email = email, password = password, name = name } })
+        { body = { userId = handle, email = email, password = password, name = name } })
     if not created then return nil, err end
     return self:signIn(email, password)
 end
@@ -232,6 +266,64 @@ end
 
 -- Posts --------------------------------------------------------------------
 
+-- Enable only after the materialized collection has been provisioned/backfilled.
+function Client:_postList(query)
+    if not self.feedCollectionId then return self:_list("posts", query) end
+    local selected = {}
+    for i, q in ipairs(query) do
+        if q.attribute == "$createdAt" then
+            selected[i] = { method = q.method, attribute = "sourceCreatedAt", values = q.values }
+        else selected[i] = q end
+    end
+    local data, err = self:_list(self.feedCollectionId, selected)
+    if not data then return nil, err end
+    for _, doc in ipairs(data.documents) do
+        self.avatarIds[doc.authorId] = validId(doc.avatarId) and doc.avatarId or false
+    end
+    return data
+end
+
+function Client:readFeedCache(name)
+    if not self.cache or self.session or name ~= "discover" then return nil end
+    local saved = self.cache:readJSON("discover", 86400)
+    if type(saved) ~= "table" or type(saved.items) ~= "table" or #saved.items > 20
+        or (saved.cursor ~= nil and not validId(saved.cursor)) then return nil end
+    for _, item in ipairs(saved.items) do
+        if type(item) ~= "table" or type(item.post) ~= "table" or not validId(item.post.id)
+            or not validId(item.post.authorId) or type(item.post.tags) ~= "table"
+            or type(item.post.createdAt) ~= "string" or type(item.post.content) ~= "string"
+            or type(item.post.title) ~= "string" or type(item.post.authorName) ~= "string"
+            or not POST_TYPES[item.post.postType] then return nil end
+        local p = item.post
+        if #p.tags > 10 or (item.at ~= nil and type(item.at) ~= "string") then return nil end
+        for _, tag in ipairs(p.tags) do if type(tag) ~= "string" or #tag > 64 then return nil end end
+        if p.imageId ~= nil and not validId(p.imageId) then return nil end
+        if p.avatarId ~= nil and p.avatarId ~= false and not validId(p.avatarId) then return nil end
+        for _, field in ipairs { "linkUrl", "quoteSource", "userText" } do
+            if p[field] ~= nil and type(p[field]) ~= "string" then return nil end
+        end
+        if p.stats ~= nil then
+            if type(p.stats) ~= "table" then return nil end
+            for _, field in ipairs { "likes", "reposts", "comments" } do
+                local n = p.stats[field]
+                if type(n) ~= "number" or n < 0 or n % 1 ~= 0 or n == math.huge then return nil end
+            end
+        end
+        if item.repostedBy ~= nil and (type(item.repostedBy) ~= "table" or not validId(item.repostedBy.id)
+            or type(item.repostedBy.name) ~= "string") then return nil end
+    end
+    for _, item in ipairs(saved.items) do
+        if item.post.avatarId ~= nil then self.avatarIds[item.post.authorId] = item.post.avatarId end
+    end
+    return saved.items, saved.cursor
+end
+
+function Client:writeFeedCache(name, items, cursor)
+    if self.cache and not self.session and name == "discover" and #items <= 20 then
+        self.cache:writeJSON("discover", { items = items, cursor = cursor })
+    end
+end
+
 -- options: limit, cursor (load posts after this ID), authorIds, tag, search.
 function Client:listPosts(options)
     options = options or {}
@@ -251,7 +343,7 @@ function Client:listPosts(options)
     query[#query + 1] = Q.orderDesc("$createdAt")
     query[#query + 1] = Q.limit(limit)
     if options.cursor then query[#query + 1] = Q.cursorAfter(options.cursor) end
-    local data, err = self:_list("posts", query)
+    local data, err = self:_postList(query)
     if not data then return nil, err end
     local posts = {}
     for _, doc in ipairs(data.documents) do posts[#posts + 1] = post(doc) end
@@ -271,7 +363,7 @@ end
 function Client:listFollowingIds(userId)
     userId = userId or self:currentUserId()
     if not validId(userId) then return failure("unauthenticated", "Sign in to see who you follow.") end
-    local docs, err = self:_listAll("follows", { Q.equal("followerId", userId) }, 1)
+    local docs, err = self:_listAll("follows", { Q.equal("followerId", userId), Q.select { "$id", "followingId" } })
     if not docs then return nil, err end
     local ids = {}
     for _, doc in ipairs(docs) do ids[#ids + 1] = doc.followingId end
@@ -282,14 +374,21 @@ end
 -- for `avatars`.
 function Client:_profiles(userIds)
     local found, wanted, seen = {}, {}, {}
-    for _, id in ipairs(userIds) do if not seen[id] then seen[id] = true; wanted[#wanted + 1] = id end end
+    for _, id in ipairs(userIds) do
+        if self.profiles[id] and self.clock() - self.profiles[id].at < 300 then found[id] = self.profiles[id].value
+        elseif not seen[id] then seen[id] = true; wanted[#wanted + 1] = id end
+    end
     for first = 1, #wanted, 100 do
         local chunk = { table.unpack(wanted, first, math.min(#wanted, first + 99)) }
-        local docs, err = self:_listAll("profiles", { Q.equal("userId", chunk) }, 1)
+        local docs, err = self:_listAll("profiles", { Q.equal("userId", chunk),
+            Q.select { "$id", "userId", "username", "avatarId" } }, 1)
         if not docs then return nil, err end
         for _, doc in ipairs(docs) do found[doc.userId] = profile(doc) end
     end
-    for _, id in ipairs(wanted) do self.avatarIds[id] = found[id] and found[id].avatarId or false end
+    for _, id in ipairs(wanted) do
+        self.avatarIds[id] = found[id] and found[id].avatarId or false
+        self.profiles[id] = { value = found[id], at = self.clock() }
+    end
     return found
 end
 
@@ -326,20 +425,26 @@ function Client:timeline(authorIds, reposterIds, options)
         if #ids == 0 then return { documents = {} } end
         local query = { Q.equal(field, ids), Q.orderDesc("$createdAt"), Q.limit(limit) }
         if options.before then query[#query + 1] = Q.lessThan("$createdAt", options.before) end
+        if name == "posts" then return self:_postList(query) end
+        query[#query + 1] = Q.select { "$id", "$createdAt", "postId", "userId" }
         return self:_list(name, query)
     end
-    local posts, err = page("posts", "authorId", authorIds)
+    local pages = self:_parallel {
+        function() return page("posts", "authorId", authorIds) end,
+        function() return page("reposts", "userId", reposterIds) end,
+    }
+    local posts, err = table.unpack(pages[1], 1, 2)
     if not posts then return nil, err end
     local reposts
-    reposts, err = page("reposts", "userId", reposterIds)
+    reposts, err = table.unpack(pages[2], 1, 2)
     if not reposts then return nil, err end
     local items, originals, reposters = {}, {}, {}
-    for _, doc in ipairs(posts.documents) do items[#items + 1] = { post = post(doc), at = doc["$createdAt"] } end
+    for _, doc in ipairs(posts.documents) do items[#items + 1] = { post = post(doc), at = doc.sourceCreatedAt or doc["$createdAt"] } end
     if #reposts.documents > 0 then
         local ids, users = {}, {}
         for _, doc in ipairs(reposts.documents) do ids[#ids + 1], users[#users + 1] = doc.postId, doc.userId end
         local found
-        found, err = self:_list("posts", { Q.equal("$id", ids), Q.limit(100) })
+        found, err = self:_postList { Q.equal("$id", ids), Q.limit(100) }
         if not found then return nil, err end
         for _, doc in ipairs(found.documents) do originals[doc["$id"]] = post(doc) end
         reposters, err = self:names(users)
@@ -487,34 +592,72 @@ end
 
 -- Likes, reposts and comment counts for a set of posts (or comments), with the
 -- signed-in reader's own like/repost document IDs for undoing them.
-function Client:stats(ids, targetType)
+function Client:stats(ids, targetType, posts)
     targetType = targetType or "post"
-    local result, me = {}, self:currentUserId()
-    for _, id in ipairs(ids) do result[id] = { likes = 0, comments = 0, reposts = 0 } end
+    local result, me, missing, snapshots = {}, self:currentUserId(), {}, {}
+    for _, item in ipairs(posts or {}) do snapshots[item.id] = item.stats end
+    for _, id in ipairs(ids) do
+        local counts = targetType == "post" and snapshots[id]
+        result[id] = { likes = counts and counts.likes or 0, comments = counts and counts.comments or 0,
+            reposts = counts and counts.reposts or 0 }
+        if not counts then missing[#missing + 1] = id end
+    end
     if #ids == 0 then return result end
-    local likes, err = self:_listAll("likes", { Q.equal("targetType", targetType), Q.equal("targetId", ids) })
+    -- Materialized counts need no reaction download. Only retrieve this reader's
+    -- undo IDs; guests need no additional requests at all.
+    if #missing == 0 then
+        if not me then return result end
+        local lists = self:_parallel {
+            function() return self:_listAll("likes", { Q.equal("targetType", targetType), Q.equal("targetId", ids),
+                Q.equal("userId", me), Q.select { "$id", "targetId" } }) end,
+            function() return self:_listAll("reposts", { Q.equal("postId", ids), Q.equal("userId", me),
+                Q.select { "$id", "postId" } }) end,
+        }
+        local likes, err = table.unpack(lists[1], 1, 2)
+        if not likes then return nil, err end
+        for _, doc in ipairs(likes) do if result[doc.targetId] then result[doc.targetId].liked = doc["$id"] end end
+        local reposts
+        reposts, err = table.unpack(lists[2], 1, 2)
+        if not reposts then return nil, err end
+        for _, doc in ipairs(reposts) do if result[doc.postId] then result[doc.postId].reposted = doc["$id"] end end
+        return result
+    end
+    -- Legacy collections remain supported until the feed migration is enabled.
+    local lists = self:_parallel {
+        function() return self:_listAll("likes", { Q.equal("targetType", targetType), Q.equal("targetId", ids),
+            Q.select { "$id", "targetId", "userId" } }) end,
+        function()
+            if targetType ~= "post" then return {} end
+            return self:_listAll("comments", { Q.equal("postId", missing), Q.select { "$id", "postId" } })
+        end,
+        function()
+            if targetType ~= "post" then return {} end
+            return self:_listAll("reposts", { Q.equal("postId", ids), Q.select { "$id", "postId", "userId" } })
+        end,
+    }
+    local likes, err = table.unpack(lists[1], 1, 2)
     if not likes then return nil, err end
     for _, doc in ipairs(likes) do
         local entry = result[doc.targetId]
         if entry then
-            entry.likes = entry.likes + 1
+            if not snapshots[doc.targetId] then entry.likes = entry.likes + 1 end
             if doc.userId == me then entry.liked = doc["$id"] end
         end
     end
     if targetType ~= "post" then return result end
     local comments
-    comments, err = self:_listAll("comments", { Q.equal("postId", ids) })
+    comments, err = table.unpack(lists[2], 1, 2)
     if not comments then return nil, err end
     for _, doc in ipairs(comments) do
         if result[doc.postId] then result[doc.postId].comments = result[doc.postId].comments + 1 end
     end
     local reposts
-    reposts, err = self:_listAll("reposts", { Q.equal("postId", ids) })
+    reposts, err = table.unpack(lists[3], 1, 2)
     if not reposts then return nil, err end
     for _, doc in ipairs(reposts) do
         local entry = result[doc.postId]
         if entry then
-            entry.reposts = entry.reposts + 1
+            if not snapshots[doc.postId] then entry.reposts = entry.reposts + 1 end
             if doc.userId == me then entry.reposted = doc["$id"] end
         end
     end
@@ -593,11 +736,11 @@ function Client:getProfile(userId)
     if not doc and err.status ~= 404 then return nil, err end
     local result = profile(doc, userId)
     self.avatarIds[userId] = result.avatarId or false
-    local posts = self:_list("posts", { Q.equal("authorId", userId), Q.limit(1) })
+    local posts = self:_list("posts", { Q.equal("authorId", userId), Q.limit(1), Q.select { "$id" } }, true)
     result.posts = posts and posts.total
     if self.session then
-        local followers = self:_list("follows", { Q.equal("followingId", userId), Q.limit(1) })
-        local following = self:_list("follows", { Q.equal("followerId", userId), Q.limit(1) })
+        local followers = self:_list("follows", { Q.equal("followingId", userId), Q.limit(1), Q.select { "$id" } }, true)
+        local following = self:_list("follows", { Q.equal("followerId", userId), Q.limit(1), Q.select { "$id" } }, true)
         result.followers, result.following = followers and followers.total, following and following.total
     end
     return result
@@ -612,10 +755,25 @@ function Client:updateProfile(values)
     local ok
     ok, err = self:ensureProfile()
     if not ok then return nil, err end
+    ok, err = self:_request("PATCH", "/account/name", { body = { name = username } })
+    if not ok then return nil, err end
     local doc
     doc, err = self:_request("PATCH", self:collection("profiles") .. "/" .. escape(session.user.id),
         { body = { data = { username = username, bio = bio } } })
-    if not doc then return nil, err end
+    if not doc then
+        -- Account and Databases cannot share a transaction. Keep a failed Save
+        -- from silently changing the name used by subsequent posts.
+        local restored = self:_request("PATCH", "/account/name", {
+            body = { name = session.user.accountName or session.user.name },
+        })
+        if not restored then
+            session.user.accountName = username
+            return failure("profile_sync", "Your account display name changed, but the profile could not be saved. Retry Save to finish syncing.", err.status)
+        end
+        return nil, err
+    end
+    session.user.name, session.user.accountName = username, username
+    self.profiles[session.user.id] = nil
     return profile(doc)
 end
 
@@ -632,6 +790,7 @@ function Client:setAvatar(photo)
         { body = { data = { avatarId = file } } })
     if not doc then return nil, err end
     self.avatarIds[session.user.id] = file
+    self.profiles[session.user.id] = nil
     return profile(doc)
 end
 
@@ -689,9 +848,15 @@ Octopus.imageKind = imageKind
 
 -- ORCA decodes JPEG and PNG; other uploads from the website are converted by
 -- Appwrite's preview endpoint.
-function Client:getImage(fileId)
+function Client:getImage(fileId, variant)
     if not validId(fileId) then return failure("validation", "This post has no photo.") end
     local base = "/storage/buckets/" .. self.bucketId .. "/files/" .. escape(fileId)
+    if variant then
+        if variant ~= "avatar" and variant ~= "photo" then return failure("validation", "Choose an image size.") end
+        local size = variant == "avatar" and "width=192&height=192" or "width=780"
+        local bytes = self:_request("GET", base .. "/preview?" .. size .. "&output=jpg&quality=80", { binary = true })
+        if bytes and imageKind(bytes) then return bytes end
+    end
     local bytes, err = self:_request("GET", base .. "/view", { binary = true })
     if bytes and imageKind(bytes) then return bytes end
     if not bytes and err.status == 404 then return nil, err end
@@ -732,12 +897,14 @@ function Octopus.client(options)
     options = options or {}
     if type(options.transport) ~= "function" then return failure("configuration", "Provide a transport function.") end
     if not validId(options.projectId) or not validId(options.databaseId or "octopus-db")
+        or (options.feedCollectionId and not validId(options.feedCollectionId))
         or not validId(options.bucketId or "post-images") then
         return failure("configuration", "Set the public Appwrite project, database and bucket IDs.")
     end
     return setmetatable({ mode = options.mode or "custom", transport = options.transport,
         projectId = options.projectId, databaseId = options.databaseId or "octopus-db",
-        bucketId = options.bucketId or "post-images", clock = options.clock or os.time, avatarIds = {} }, Client)
+        bucketId = options.bucketId or "post-images", clock = options.clock or os.time, avatarIds = {}, profiles = {},
+        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule }, Client)
 end
 
 function Octopus.appwrite(options)
@@ -751,7 +918,8 @@ function Octopus.appwrite(options)
         endpoint = endpoint, projectId = options.projectId, fetch = options.fetch,
     }
     return Octopus.client { mode = "appwrite", transport = transport, projectId = options.projectId,
-        databaseId = options.databaseId, bucketId = options.bucketId, clock = options.clock }
+        databaseId = options.databaseId, bucketId = options.bucketId, clock = options.clock,
+        feedCollectionId = options.feedCollectionId, cache = options.cache, schedule = options.schedule }
 end
 
 -- The offline mock serves the same REST paths from in-memory fixtures.

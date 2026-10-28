@@ -72,6 +72,8 @@ end
 local function loadProfile(self, view, after)
     if view.loading then return end
     view.loading = true
+    view.request = {}
+    local request = view.request
     local loading = view.posts:findChild("ProfileLoading")
     if not loading then
         loading = C.loading { Name = "ProfileLoading", Height = 64 }
@@ -79,21 +81,16 @@ local function loadProfile(self, view, after)
     end
     local session, navigation = self.sessionEpoch, self.navigationEpoch
     local function current()
-        if self.profileView == view and self.sessionEpoch == session and self.navigationEpoch == navigation then return true end
-        view.loading = false
+        if self.profileView == view and self.sessionEpoch == session and self.navigationEpoch == navigation
+            and view.request == request then return true end
         return false
     end
+    -- Profile metadata and the timeline have independent loading/error states.
     self:task(function()
+        if not current() then return end
         local profile, err = self.client:getProfile(view.userId)
         if not current() then return end
-        if not profile then
-            view.loading = false
-            loading:removeFromParent()
-            self:notice(err.message, true)
-            if not view.profile then C.clear(view.posts):addChild(C.empty("can't load this profile", err.message)) end
-            self:repaint()
-            return
-        end
+        if not profile then self:notice(err.message, true); self:repaint(); return end
         view.profile = profile
         if profile.exists or not view.name:getTextContent():match("%S") then
             view.name:setTextContent(profile.username)
@@ -103,17 +100,24 @@ local function loadProfile(self, view, after)
         for key, label in pairs(view.counts) do label:setTextContent(number(profile[key])) end
         if after then after(profile) end
         self:repaint()
-        if not view.own then
-            view.follow = self.client:followState(view.userId) or nil
+    end)
+    if not view.own then
+        self:task(function()
             if not current() then return end
+            local follow = self.client:followState(view.userId)
+            if not current() then return end
+            view.follow = follow or nil
             followButton(self, view)
-        end
-        self:repaint()
+            self:repaint()
+        end)
+    end
+    self:task(function()
+        if not current() then return end
         local posts, stats = Posts.fetch(self, function()
             return self.client:userTimeline(view.userId, { limit = 30 })
         end)
-        view.loading = false
         if not current() then return end
+        view.loading = false
         loading:removeFromParent()
         if not posts then
             if not view.postsLoaded then C.clear(view.posts):addChild(C.empty("can't load posts", stats.message)) end
@@ -124,7 +128,7 @@ local function loadProfile(self, view, after)
             if #posts == 0 then
                 view.posts:addChild(C.empty("no posts yet", view.own and "Use write to share your first post." or nil))
             else Posts.append(self, view.posts, posts, stats) end
-            self:notice("")
+            Posts.enrich(self, posts, stats, current, function() Posts.refresh(self, view.posts, posts, stats) end)
         end
         self:repaint()
     end)
@@ -314,10 +318,14 @@ end
 
 function People.runSearch(self, list)
     local query = (self.searchState.query or ""):match("^%s*(.-)%s*$")
-    local session = self.sessionEpoch
+    local session, navigation = self.sessionEpoch, self.navigationEpoch
     self.searchEpoch = (self.searchEpoch or 0) + 1
     local epoch = self.searchEpoch
     local loading = self.searchLoading
+    local function current()
+        return self.searchEpoch == epoch and self.sessionEpoch == session and self.navigationEpoch == navigation
+            and self.searchList == list
+    end
     if query == "" then
         loading.Visible = false
         self.searchState.results = nil
@@ -326,21 +334,24 @@ function People.runSearch(self, list)
     end
     loading.Visible = true
     self:task(function()
+        if not current() then return end
         local tag = query:match("^#(.+)$")
         local posts, stats = Posts.fetch(self, function()
             local found, err = self.client:listPosts(tag and { tag = tag, limit = 30 } or { search = query, limit = 20 })
             return found and Posts.items(found), err
         end)
-        if self.searchEpoch ~= epoch or self.sessionEpoch ~= session then return end
-        if posts and not tag then
-            self.searchState.results = { query = query, posts = posts, stats = stats, people = {} }
-            if self.searchList == list then renderResults(self, list) end
+        if not current() then return end
+        if posts then
+            self.searchState.results = { query = query, tag = tag and tag:lower(), posts = posts, stats = stats, people = {} }
+            renderResults(self, list)
             self:repaint()
+            Posts.enrich(self, posts, stats, current, function() Posts.refresh(self, list, posts, stats) end)
         end
         local people, peopleError = {}, nil
         if posts and not tag then people, peopleError = self.client:searchPeople(query) end
-        if self.searchEpoch ~= epoch or self.sessionEpoch ~= session then return end
+        if not current() then return end
         loading.Visible = false
+        if not posts and self.searchState.results then self:notice(stats.message, true); self:repaint(); return end
         self.searchState.results = not posts and { error = stats, query = query } or {
             query = query, tag = tag and tag:lower(), posts = posts, stats = stats,
             people = people or {}, peopleError = peopleError }

@@ -1,5 +1,5 @@
 -- Photo picking and the app's private image cache. ImageView loads files, so
--- downloaded post photos are written once per file ID and removed on exit.
+-- downloaded photos use a bounded persistent cache when one is supplied.
 local Media = {}
 Media.__index = Media
 
@@ -13,8 +13,8 @@ local function kind(bytes)
     if bytes:sub(1, 8) == "\137PNG\r\n\26\n" then return ".png" end
 end
 
-function Media.new()
-    return setmetatable({ files = {}, keys = {} }, Media)
+function Media.new(options)
+    return setmetatable({ files = {}, keys = {}, cache = options and options.cache }, Media)
 end
 
 function Media:pick()
@@ -26,11 +26,13 @@ function Media:pick()
 end
 
 function Media:path(key)
-    return self.keys[tostring(key)]
+    key = tostring(key)
+    return self.keys[key] or (self.cache and self.cache:path(key))
 end
 
 function Media:discard(key)
     key = tostring(key)
+    if self.cache then self.cache:discard(key) end
     local path = self.keys[key]
     if not path then return end
     os.remove(path)
@@ -41,7 +43,12 @@ function Media:store(bytes, key)
     local extension = kind(bytes)
     if not extension or #bytes > 12000000 then return failure("invalid_image", "This photo can't be shown here.") end
     key = tostring(key or "photo")
-    if self.keys[key] then return self.keys[key] end
+    local existing = self:path(key)
+    if existing then return existing end
+    if self.cache then
+        local path = self.cache:store(bytes, key)
+        if path then return path end
+    end
     -- os.tmpname creates the file with private permissions; keep that inode.
     local temporary = os.tmpname()
     local path = temporary .. extension

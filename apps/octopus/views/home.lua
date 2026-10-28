@@ -89,12 +89,25 @@ function Home.load(self, name, more)
     if name == "connect" then return Home.loadConnect(self, list) end
     local feed = self.feeds[name] or { items = {}, stats = {} }
     self.feeds[name] = feed
+    if not feed.cacheRead and #feed.items == 0 and name == "discover" and self.client.readFeedCache then
+        feed.cacheRead = true
+        local items, cursor = self.client:readFeedCache(name)
+        if items and #items > 0 then
+            local cached, stats = Posts.fetch(self, function() return items, cursor end)
+            feed.items, feed.stats, feed.cursor = cached, stats, cursor
+            Posts.append(self, list, cached, stats)
+        end
+    end
     if feed.loading or (more and not feed.cursor) then return end
     feed.loading = true
     local session = self.sessionEpoch
+    local request = {}
+    feed.request = request
     if more then list:addChild(C.loading { Name = "LoadingMore", Height = 64 })
     else self.timelineLoading[name].Visible = true end
     self:task(function()
+        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed
+            or feed.request ~= request then feed.loading = false; return end
         local cursor = more and feed.cursor or nil
         local items, stats, nextCursor = Posts.fetch(self, function()
             if name == "home" then return self.client:homeTimeline { limit = PAGE_SIZE, before = cursor } end
@@ -103,7 +116,7 @@ function Home.load(self, name, more)
             return Posts.items(posts), #posts == PAGE_SIZE and posts[#posts].id or nil
         end)
         feed.loading = false
-        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed then return end
+        if self.sessionEpoch ~= session or self.timelines[name] ~= list or self.feeds[name] ~= feed or feed.request ~= request then return end
         self.timelineLoading[name].Visible = false
         local loadingMore = list:findChild("LoadingMore")
         if loadingMore then loadingMore:removeFromParent() end
@@ -125,6 +138,12 @@ function Home.load(self, name, more)
         for _, item in ipairs(items) do feed.items[#feed.items + 1] = item end
         feed.cursor = nextCursor
         Posts.append(self, list, items, feed.stats)
+        if not more and self.client.writeFeedCache then self.client:writeFeedCache(name, items, nextCursor) end
+        local entries = feed.stats
+        Posts.enrich(self, items, entries, function()
+            return self.sessionEpoch == session and self.feeds[name] == feed and feed.stats == entries
+                and self.timelines[name] == list
+        end, function() Posts.refresh(self, list, items, entries) end)
         if #feed.items == 0 then
             if name == "home" then
                 list:addChild(C.empty("your timeline is quiet", "Follow people from discover or search to see their posts here."))

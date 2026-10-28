@@ -126,7 +126,7 @@ loader:loadVisible()
 finishWorkers()
 assert(corrupt:findChild("RetryCorrupt") and not corrupt:findChild("Corrupt"),
     "Decode failures need the same retry placeholder as download failures")
-assert(not app.media:path("corrupt"), "Failed decodes must evict corrupt cached bytes")
+assert(not app.media:path("photo:corrupt"), "Failed decodes must evict corrupt cached bytes")
 corrupt:findChild("RetryCorrupt"):send("Node.LeftButtonUp")
 core.flushQueue()
 loader:loadVisible()
@@ -146,7 +146,7 @@ app.sessionEpoch = app.sessionEpoch + 1
 loader:loadVisible()
 assert(not late:findChild("LoadingLate"), "Changing sessions must stop stale loading indicators")
 resume(worker)
-assert(not late:findChild("Late") and not app.media:path("late"), "Stale session results must be discarded")
+assert(not late:findChild("Late") and not app.media:path("photo:late"), "Stale session results must be discarded")
 -- Hidden retained pages cannot start downloads.
 local hidden = ui.Grid { Height = 100, Visible = false }
 list:addChild(hidden)
