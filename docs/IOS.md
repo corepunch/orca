@@ -221,8 +221,10 @@ one plane; the engine backend's staggered per-element feather is not reproduced
 by a single page snapshot. Navigation still exits the old page before entering
 the new one. Incoming snapshots refresh when newly loaded content triggers an
 actual paint, so it participates in the ongoing rotation without restarting
-the animation. Outgoing snapshots remain fixed. Core Animation still owns the
-motion between paints; this does not schedule engine frames just to animate.
+the animation. After the first refresh, readbacks are limited to once per
+50 ms; intervening updates coalesce into one deferred content paint. Outgoing
+snapshots remain fixed. Core Animation still owns the motion between paints;
+this does not schedule engine frames just to animate.
 
 Scroll containers use native gesture recognition and physics while ORCA retains
 content rendering. Native offsets update the engine's content position and

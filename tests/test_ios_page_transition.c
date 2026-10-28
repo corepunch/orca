@@ -14,6 +14,7 @@
 #define PageTransition_NativeAnimate TestTransition_NativeAnimate
 #define PageTransition_NativeActive TestTransition_NativeActive
 #define PageTransition_NativePresent TestTransition_NativePresent
+#define ORCA_IOS_RequestPageTransitionRefresh TestTransition_RequestRefresh
 #include <plugins/UIKit/PageTransition.c>
 
 extern int luaopen_orca(lua_State *L);
@@ -77,6 +78,15 @@ static void finish(void)
   OrcaIOSPageTransitionCompletion callback = captured_completion;
   captured_completion = NULL;
   callback(captured_generation, TRUE);
+}
+
+static int animation_requests(struct Object *page)
+{
+  int count = 0;
+  struct AXmessage message;
+  while (axPeekMessage(&message))
+    if (message.target == page && message.message == ID_Object_Animate) count++;
+  return count;
 }
 
 int main(void)
@@ -188,6 +198,13 @@ int main(void)
     assert(updates == before);
     uint64_t entrance_generation = captured_generation;
     OrcaIOSPageTransitionCompletion entrance_completion = captured_completion;
+    OBJ_RemoveFromQueue(incoming);
+    ORCA_IOS_RequestPageTransitionRefresh(exit_generation);
+    assert(animation_requests(incoming) == 0); // stale trailing refresh
+    ORCA_IOS_RequestPageTransitionRefresh(entrance_generation);
+    ORCA_IOS_RequestPageTransitionRefresh(entrance_generation);
+    assert(animation_requests(incoming) == 1); // coalesce pending-content paints
+    OBJ_RemoveFromQueue(incoming);
     PageTransition_NativePresent(other, 390, 844); // async content was painted
     assert(updates == before + 1 && captured_generation == entrance_generation);
     assert(captured_completion == entrance_completion);
@@ -195,6 +212,8 @@ int main(void)
     assert(GetPivot(incoming)->TransitionMode == kTransitionModeNone && completions(incoming) == 1);
     PageTransition_NativePresent(other, 390, 844);
     assert(updates == before + 1 && !overlay);
+    ORCA_IOS_RequestPageTransitionRefresh(entrance_generation);
+    assert(animation_requests(incoming) == 0); // completed entrance
   }
 
   capture_ok = FALSE;

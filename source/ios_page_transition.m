@@ -1,6 +1,7 @@
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/ES3/gl.h>
+#import <dispatch/dispatch.h>
 
 #include <libs/platform/ios/ios_local.h>
 #include "ios_page_transition.h"
@@ -10,6 +11,9 @@
 @property(nonatomic, retain) UIView *overlay;
 @property(nonatomic, retain) CALayer *page;
 @property(nonatomic) CGRect captureRect;
+@property(nonatomic) CFTimeInterval nextCaptureTime;
+@property(nonatomic) uint64_t refreshTicket;
+@property(nonatomic) BOOL refreshPending;
 @property(nonatomic) uint64_t generation;
 @property(nonatomic) BOOL hold;
 @property(nonatomic) BOOL presentsWithTransaction;
@@ -140,6 +144,27 @@ void ORCA_IOS_UpdatePageTransition(uint64_t generation)
   OrcaPageSnapshot *snapshot = page_snapshot;
   if (!snapshot || snapshot.generation != generation || snapshot.hold ||
       !snapshot.completion || !ORCA_IOS_CanPageTransition()) return;
+  // Bound readbacks while coalescing a trailing paint so the last content
+  // update is delivered even when no more application paints follow it.
+  CFTimeInterval now = CACurrentMediaTime();
+  if (now < snapshot.nextCaptureTime) {
+    if (!snapshot.refreshPending) {
+      snapshot.refreshPending = YES;
+      uint64_t ticket = ++snapshot.refreshTicket;
+      int64_t delay = (int64_t)ceil((snapshot.nextCaptureTime - now) * NSEC_PER_SEC);
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, delay), dispatch_get_main_queue(), ^{
+        OrcaPageSnapshot *current = page_snapshot;
+        if (!current || current.generation != generation || !current.completion || current.hold ||
+            !current.refreshPending || current.refreshTicket != ticket) return;
+        current.refreshPending = NO;
+        ORCA_IOS_RequestPageTransitionRefresh(generation);
+      });
+    }
+    return;
+  }
+  snapshot.refreshPending = NO;
+  snapshot.refreshTicket++;
+  snapshot.nextCaptureTime = now + .050;
   CGImageRef image = Snapshot_CopyPage(snapshot.captureRect);
   if (!image) {
     Snapshot_Log(@"refresh-capture-failed", generation, snapshot.hold);
