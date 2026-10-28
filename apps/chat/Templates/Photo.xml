@@ -1,7 +1,7 @@
 <Grid Name="PhotoFrame" Width="260" Height="{Binding DataContext/Height}" BackgroundColor="{Binding DataContext/Soft}">
   <Grid Name="PhotoContent">
-    <TextBlock Text="Loading photo…" FontSize="12" ForegroundColor="{Binding DataContext/Muted}"
-               TextHorizontalAlignment="Center" TextVerticalAlignment="Center" IgnoreHitTest="true"/>
+    <VectorView Source="Chat/assets/icons/refresh-cw.svg" Width="32" Height="32"
+                ForegroundColor="{Binding DataContext/Muted}" Margin="auto" IgnoreHitTest="true"/>
   </Grid>
   <TextBlock Name="PhotoTime" Visible="{Binding DataContext/ShowTime}" Text="{Binding DataContext/Timestamp}"
              FontSize="11" ForegroundColor="#ffffff" BackgroundColor="#00000099" Padding="4 2"

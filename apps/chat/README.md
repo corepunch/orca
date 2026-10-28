@@ -49,6 +49,8 @@ engine's Windows Phone controls (see `docs/UI_SYSTEM.md`):
   chats, and text or captioned-photo bubbles have a trailing timestamp row.
   Photos fill their bubble edge to edge. A photo without text has no footer or
   tail; its timestamp overlays the bottom-right of the image on a dark backing.
+  Pending photos show a loading icon. Queued thumbnails take priority over
+  queued full downloads and reuse the attachment metadata already in the message.
   Visible photos show the stored thumbnail while the full JPEG loads, then
   replace it automatically. Tapping opens a black, letterboxed viewer with a
   close action and the same preview-to-full behavior. New uploads preserve aspect

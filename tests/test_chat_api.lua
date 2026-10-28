@@ -312,4 +312,63 @@ check(client:getPhoto("photo-1", true, function() called = true end) == "small-b
   and not called and #requests == 3 and requests[3].url:match("/small.jpg$"),
   "Thumbnail-only requests keep their original one-file behavior")
 
+local knownPhoto = { id = "photo-1", object_key = "user/photo-1/full.jpg", thumbnail_key = "user/photo-1/small.jpg" }
+client, requests = backend {
+  { status = 200, body = session() }, { status = 200, body = "small-bytes" },
+  { status = 200, body = "full-bytes" },
+}
+assert(client:signIn("a@b.test", "password"))
+local previewCount = 0
+check(client:getPhoto(knownPhoto, false, function(preview)
+  previewCount = previewCount + 1
+  check(preview == "small-bytes" and #requests == 2 and requests[2].url:match("/small.jpg$"),
+    "Known attachments request the preview immediately without a metadata round trip")
+end) == "full-bytes" and previewCount == 1 and #requests == 3
+  and requests[3].url:match("/full.jpg$")
+  and requests[2].headers.Authorization == "Bearer access-1"
+  and requests[3].headers.Authorization == "Bearer access-1",
+  "Known attachment stages retain authenticated object downloads")
+
+for _, attachment in ipairs {
+  { id = "photo-1" }, { id = "photo-1", object_key = "full.jpg" },
+  { id = "photo-1", thumbnail_key = "small.jpg" },
+} do
+  client, requests = backend {
+    { status = 200, body = session() }, { status = 200, body = photoRows },
+    { status = 200, body = "small-bytes" }, { status = 200, body = "full-bytes" },
+  }
+  assert(client:signIn("a@b.test", "password"))
+  check(client:getPhoto(attachment, false, function() end) == "full-bytes" and #requests == 4
+    and requests[2].url:find("/chat_attachments?", 1, true),
+    "Incomplete attachment metadata falls back to the existing metadata lookup")
+end
+
+client, requests = backend {
+  { status = 200, body = session() }, { status = 200, body = "small-bytes" },
+}
+assert(client:signIn("a@b.test", "password"))
+check(client:getPhoto({ id = "photo-1", thumbnail_key = "small.jpg" }, true) == "small-bytes"
+  and #requests == 2, "Thumbnail-only callers need only the known thumbnail key")
+
+client, requests = backend {
+  { status = 200, body = session() }, { status = 200, body = "small-bytes" },
+}
+assert(client:signIn("a@b.test", "password"))
+value, err = client:getPhoto(knownPhoto, false, function() return false end)
+check(value == nil and err.code == "cancelled" and #requests == 2,
+  "Known attachment preview cancellation skips the full request")
+
+for _, invalidKey in ipairs { "", "../photo.jpg", "user/../photo.jpg", "user/./photo.jpg",
+  "/photo.jpg", "user//photo.jpg", "user/photo.jpg/", "user/%2e%2e/photo.jpg",
+  "photo.jpg?token=other", "photo.jpg#fragment", "user\\photo.jpg", 42, false } do
+  client, requests = backend {}
+  value, err = client:getPhoto({ id = "photo-1", object_key = invalidKey }, false)
+  check(value == nil and err.code == "validation" and #requests == 0,
+    "Malformed known object keys cannot reach the HTTP transport")
+end
+client, requests = backend {}
+value, err = client:getPhoto({ id = {}, object_key = "full.jpg" }, false)
+check(value == nil and err.code == "validation" and #requests == 0,
+  "Known attachments still require a valid attachment ID")
+
 print("PASS: chat API (" .. checks .. " checks)")

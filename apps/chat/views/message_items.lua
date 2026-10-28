@@ -65,8 +65,9 @@ function MessageItems.new(app, node)
                             content:addChild(ui.ImageView { Name = "Photo" .. attachment.id, Src = photo.path,
                                 Foreground = "#ffffff", Stretch = "UniformToFill", IgnoreHitTest = true })
                         else
-                            content:addChild(C.text("Loading photo…", { FontSize = 12, Foreground = colors.muted,
-                                TextHorizontalAlignment = "Center", TextVerticalAlignment = "Center" }))
+                            local loading = C.icon("refresh-cw", 32, colors.muted)
+                            loading.Name = "PhotoLoading" .. attachment.id
+                            content:addChild(loading)
                             app.messagePhotos:watch(content, attachment, function(path, err)
                                 if not current() or item.revision ~= revision then return end
                                 item.failed = not path and err ~= nil
