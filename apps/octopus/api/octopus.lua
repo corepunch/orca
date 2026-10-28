@@ -44,6 +44,7 @@ function Q.equal(attribute, values)
     return { method = "equal", attribute = attribute, values = type(values) == "table" and values or { values } }
 end
 function Q.notEqual(attribute, value) return { method = "notEqual", attribute = attribute, values = { value } } end
+function Q.contains(attribute, value) return { method = "contains", attribute = attribute, values = { value } } end
 function Q.search(attribute, value) return { method = "search", attribute = attribute, values = { value } } end
 function Q.orderDesc(attribute) return { method = "orderDesc", attribute = attribute } end
 function Q.orderAsc(attribute) return { method = "orderAsc", attribute = attribute } end
@@ -422,7 +423,7 @@ function Client:listPosts(options)
         if #options.authorIds == 0 then return {} end
         query[#query + 1] = Q.equal("authorId", options.authorIds)
     end
-    if options.tag then query[#query + 1] = Q.equal("tags", (tostring(options.tag):gsub("^#+", ""):lower())) end
+    if options.tag then query[#query + 1] = Q.contains("tags", (tostring(options.tag):gsub("^#+", ""):lower())) end
     if options.search then
         if not text(options.search) then return {} end
         query[#query + 1] = Q.search("title", trim(options.search))

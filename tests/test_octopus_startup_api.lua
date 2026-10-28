@@ -47,6 +47,9 @@ assert(counts["post-one"].likes == 10 and counts["post-one"].comments == 3 and c
     and #feedRequests == 1, "Guests consume materialized counters without further requests")
 assert(feed:timeline({ "alice" }, {}, { before = "2026-10-27T00:00:00Z" }))
 assert(query(feedRequests[2], "lessThan", "sourceCreatedAt").values[1] == "2026-10-27T00:00:00Z")
+assert(feed:listPosts { tag = "#Reef", limit = 20 })
+assert(query(feedRequests[3], "contains", "tags").values[1] == "reef"
+    and query(feedRequests[3], "limit").values[1] == 20, "Summary tag pages must use bounded array-contains queries")
 local legacy = client(function(request)
     assert(request.path:match("/posts/documents$") and query(request, "orderDesc", "$createdAt"))
     return reply { documents = {} }
