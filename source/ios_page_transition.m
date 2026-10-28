@@ -151,6 +151,9 @@ bool_t ORCA_IOS_StartPageTransition(struct OrcaIOSPageTransition const *spec,
   snapshot.overlay.userInteractionEnabled = NO;
   snapshot.overlay.clipsToBounds = YES;
   snapshot.overlay.backgroundColor = UIColor.clearColor;
+  CAShapeLayer *clip = [CAShapeLayer layer];
+  clip.path = [UIBezierPath bezierPathWithRect:rect].CGPath;
+  snapshot.overlay.layer.mask = clip;
   CALayer *cover = [CALayer layer];
   cover.frame = rect;
   cover.backgroundColor = [UIColor colorWithRed:spec->background[0] green:spec->background[1]
