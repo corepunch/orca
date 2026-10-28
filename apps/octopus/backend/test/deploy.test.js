@@ -8,7 +8,7 @@ import { promisify } from 'node:util';
 import { configureFunction, deployFunction, sourceArchive, waitForIdle, enableFunctions } from '../src/deploy.js';
 
 const config = { $id: 'feed', name: 'Feed', runtime: 'node-22', enabled: true, execute: [],
-  events: ['databases.*.collections.posts.documents.*.create'], schedule: '*/5 * * * *', timeout: 600,
+  events: ['databases.*.collections.posts.documents.*.create'], schedule: '', interval: 60, timeout: 600,
   entrypoint: 'src/main.js', commands: 'npm install', scopes: ['documents.read'] };
 
 function service(statuses = ['ready']) {
@@ -37,13 +37,20 @@ test('deployment preserves secret variables and keeps traffic paused until ready
   assert.equal(updates[0].body.enabled, false);
   assert.deepEqual(updates[0].body.events, []);
   assert.equal(updates[0].body.schedule, '');
+  assert.equal(updates[0].body.interval, 0);
   assert.deepEqual(deployed.settings.events, config.events);
-  assert.equal(deployed.settings.schedule, config.schedule);
+  assert.equal(deployed.settings.schedule, '');
+  assert.equal(deployed.settings.interval, 60);
   assert(!rest.calls.some(call => call.path.endsWith('/variables/private') && call.method !== 'GET'));
   const upload = rest.calls.find(call => call.method === 'POST' && call.path.endsWith('/deployments'));
   assert.equal(upload.body.get('activate'), 'false');
   assert.equal(upload.body.get('entrypoint'), 'src/main.js');
   assert(rest.calls.findIndex(call => call.method === 'PATCH') > rest.calls.findIndex(call => call.path.includes('/deployments/')));
+  await enableFunctions(rest, [deployed]);
+  const activation = rest.calls.filter(call => call.method === 'PUT' && call.path === '/functions/feed').at(-1);
+  assert.equal(activation.body.enabled, true);
+  assert.equal(activation.body.schedule, '');
+  assert.equal(activation.body.interval, 60);
 });
 
 test('failed builds never activate or reenable the function', async () => {
@@ -52,7 +59,7 @@ test('failed builds never activate or reenable the function', async () => {
     archive: async () => Buffer.from('archive'), progress() {},
   }), /failed/);
   assert(!rest.calls.some(call => call.method === 'PATCH'));
-  assert(rest.calls.filter(call => call.method === 'PUT').every(call => call.body.enabled === false));
+  assert(rest.calls.filter(call => call.method === 'PUT').every(call => call.body.enabled === false && call.body.interval === 0));
 });
 
 test('configuration refuses to overwrite a saved secret and waits for active executions to drain', async () => {
@@ -83,14 +90,29 @@ test('source archive excludes credential files, fixtures and repository metadata
 
 test('partial traffic activation pauses both Functions again', async () => {
   const enabled = { chat: false, feed: false };
-  const calls = [];
+  const calls = [], intervals = { chat: 0, feed: 60 };
   const rest = { async request(method, path, { body }) {
     calls.push(body);
     const id = path.split('/').at(-1);
     if (id === 'feed' && body.enabled) throw new Error('Activation unavailable');
     enabled[id] = body.enabled;
+    intervals[id] = body.interval;
   } };
-  await assert.rejects(enableFunctions(rest, Object.keys(enabled).map(id => ({ id, settings: { enabled: true } }))), /Activation unavailable/);
+  await assert.rejects(enableFunctions(rest, Object.keys(enabled).map(id => ({ id, settings: { enabled: true, schedule: '', interval: id === 'feed' ? 60 : 0 } }))), /Activation unavailable/);
   assert.deepEqual(enabled, { chat: false, feed: false });
-  assert(calls.filter(body => !body.enabled).every(body => body.schedule === '' && body.events.length === 0 && body.execute.length === 0));
+  assert.deepEqual(intervals, { chat: 0, feed: 0 });
+  assert(calls.filter(body => !body.enabled).every(body => body.schedule === '' && body.interval === 0 && body.events.length === 0 && body.execute.length === 0));
+});
+
+
+test('cron deployment explicitly disables interval scheduling', async () => {
+  const rest = service();
+  const deployed = await deployFunction(rest, { ...config, schedule: '*/5 * * * *', interval: 0 }, '.', {}, {
+    archive: async () => Buffer.from('archive'), progress() {},
+  });
+  const staging = rest.calls.find(call => call.method === 'PUT' && call.path === '/functions/feed');
+  assert.equal(staging.body.interval, 0);
+  assert.equal(staging.body.schedule, '');
+  assert.equal(deployed.settings.interval, 0);
+  assert.equal(deployed.settings.schedule, '*/5 * * * *');
 });
