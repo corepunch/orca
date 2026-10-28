@@ -26,15 +26,18 @@ export class ChatService {
   constructor(repo, auth, { now = Date.now } = {}) { this.repo = repo; this.auth = auth; this.now = now; }
   timestamp() { return new Date(this.now()).toISOString(); }
   async profile(user) {
+    const email = user.emailVerification ? user.email.toLowerCase() : null, phone = user.phoneVerification ? user.phone : null;
+    const values = previous => ({ display_name: previous?.display_name ?? user.name ?? '', username: previous?.username || null,
+      email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
+      discoverable_phone: !!(phone && previous?.phone === phone && previous.discoverable_phone) });
+    const unchanged = (previous, row) => previous && Object.entries(row).every(([field, value]) => previous[field] === value);
+    const previous = await this.repo.get('profiles', user.$id);
+    if (unchanged(previous, values(previous))) return previous;
     return this.repo.lock('profile:' + user.$id, async () => {
-      const previous = await this.repo.get('profiles', user.$id), email = user.emailVerification ? user.email.toLowerCase() : null,
-        phone = user.phoneVerification ? user.phone : null;
-      const row = { display_name: previous?.display_name ?? user.name ?? '', username: previous?.username || null,
-        email, phone, discoverable_email: !!(email && previous?.email === email && previous.discoverable_email),
-        discoverable_phone: !!(phone && previous?.phone === phone && previous.discoverable_phone) };
-      if (!previous) return this.repo.create('profiles', row, user.$id);
-      if (JSON.stringify({ ...previous, id: undefined }) !== JSON.stringify(row)) return this.repo.update('profiles', user.$id, row);
-      return previous;
+      const current = await this.repo.get('profiles', user.$id), row = values(current);
+      if (!current) return this.repo.create('profiles', row, user.$id);
+      if (!unchanged(current, row)) return this.repo.update('profiles', user.$id, row);
+      return current;
     });
   }
   async profileById(userId) {
@@ -144,11 +147,17 @@ export class ChatService {
     return result;
   }
   async listContacts(user) {
-    const rooms = await this.listRooms(user), contacts = new Map();
-    for (const room of rooms) for (const member of await this.listMembers(user, room.id)) {
-      if (member.user_id !== user.$id) contacts.set(member.user_id, { id: member.user_id, display_name: member.display_name, username: member.username });
-    }
-    return [...contacts.values()].sort((a, b) => a.display_name.localeCompare(b.display_name));
+    const memberships = await this.repo.list('members', [eq('user_id', user.$id)]), peers = new Set();
+    await mapConcurrent(memberships, async membership => {
+      const room = await this.repo.get('rooms', membership.room_id);
+      if (!room) return;
+      const member = await this.membership(room.id, user.$id);
+      if (!member) reject(403, 'forbidden', 'You are not a member of this conversation.');
+      const members = await this.repo.list('members', [eq('room_id', room.id)]);
+      for (const other of members) if (other.user_id !== user.$id && (room.kind !== 'channel' || staff(member) || staff(other))) peers.add(other.user_id);
+    });
+    const contacts = await mapConcurrent([...peers], async userId => publicProfile(await this.profileById(userId)));
+    return contacts.sort((a, b) => a.display_name.localeCompare(b.display_name));
   }
   async setRole(user, body, remove = false) {
     const roomId = id(body.target_room), userId = id(body.target_user);

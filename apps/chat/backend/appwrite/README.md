@@ -203,6 +203,19 @@ though the manifest permits a 60-second runtime timeout; network calls have a
 reads use concurrency of eight to reduce the risk for large rooms. Production
 latency and timeout behavior require deployment verification.
 
+Read requests still verify the caller through Appwrite Account. An unchanged
+Chat profile needs one document read without taking a persistent lock. Profile
+creation and verified-identifier changes take the profile lock and re-read the
+current document before writing, preserving concurrent profile edits and
+resetting discovery opt-ins when an identifier changes.
+
+Contact lookup enumerates shared rooms with current membership and channel
+visibility checks, ignores unfinished rooms, and fetches each distinct peer's
+profile once per request. Room and profile reads use bounded concurrency rather
+than walking rooms serially. The client publishes inbox rows before contacts
+finish and skips the contacts request for an empty inbox. Message history is
+loaded only when a conversation opens.
+
 For a stuck `busy` response, first disable new executions or otherwise quiesce
 the function, verify the old execution has ended, and inspect `chat_state` rows
 with `kind=lock`. Their private `name`, `token` and `acquired_at` identify the

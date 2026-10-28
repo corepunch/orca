@@ -86,6 +86,55 @@ test('every protected request validates the platform JWT, including deleted or f
   fixture.users.delete('owner'); assert.equal((await fixture.call('owner', '/rest/v1/rpc/get_chat_profile')).status, 401);
 });
 
+test('unchanged profiles need one read and no persistent lock or writes on protected requests', async () => {
+  const fixture = setup();
+  await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  const previous = await fixture.repo.get('profiles', 'owner');
+  fixture.repo.table('profiles').set('owner', { id: previous.id, ...previous });
+  const get = fixture.repo.get.bind(fixture.repo); let reads = 0;
+  fixture.repo.get = async (name, id) => { reads++; return get(name, id); };
+  for (const method of ['lock', 'create', 'update', 'remove']) fixture.repo[method] = async () => assert.fail('Unchanged profile must not ' + method);
+  const response = await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  assert.equal(response.status, 200); assert.deepEqual(response.body, previous); assert.equal(reads, 1);
+  assert.equal(fixture.calls.filter(call => call.path === '/account').length, 2);
+});
+
+test('profile identifier changes re-read under lock and preserve concurrent profile edits', async () => {
+  const fixture = setup(), user = fixture.users.get('owner');
+  user.phone = '+49123456789'; user.phoneVerification = true;
+  await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  await fixture.call('owner', '/rest/v1/rpc/update_chat_profile', { values: { discoverable_email: true, discoverable_phone: true } });
+  user.email = 'changed@example.invalid';
+  const lock = fixture.repo.lock.bind(fixture.repo); let locked = 0;
+  fixture.repo.lock = async (name, action) => {
+    assert.equal(name, 'profile:owner'); locked++;
+    const current = await fixture.repo.get('profiles', 'owner');
+    await fixture.repo.update('profiles', 'owner', { ...current, display_name: 'Latest name', username: 'latest_name', discoverable_phone: false });
+    return lock(name, action);
+  };
+  const response = await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  assert.equal(response.status, 200); assert.equal(locked, 1);
+  assert.equal(response.body.display_name, 'Latest name'); assert.equal(response.body.username, 'latest_name');
+  assert.equal(response.body.email, user.email); assert.equal(response.body.discoverable_email, false);
+  assert.equal(response.body.phone, user.phone); assert.equal(response.body.discoverable_phone, false);
+  fixture.repo.lock = lock; user.emailVerification = false; user.phoneVerification = false;
+  const revoked = await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  assert.equal(revoked.body.email, null); assert.equal(revoked.body.phone, null);
+  assert.equal(revoked.body.discoverable_email, false); assert.equal(revoked.body.discoverable_phone, false);
+});
+
+test('profile creation re-checks a concurrent creator before writing', async () => {
+  const fixture = setup(), lock = fixture.repo.lock.bind(fixture.repo);
+  fixture.repo.lock = async (name, action) => {
+    await fixture.repo.create('profiles', { display_name: 'Created elsewhere', username: 'created_elsewhere',
+      email: 'owner@example.invalid', phone: null, discoverable_email: true, discoverable_phone: false }, 'owner');
+    return lock(name, action);
+  };
+  const response = await fixture.call('owner', '/rest/v1/rpc/get_chat_profile');
+  assert.equal(response.status, 200); assert.equal(response.body.display_name, 'Created elsewhere');
+  assert.equal(response.body.username, 'created_elsewhere'); assert.equal(response.body.discoverable_email, true);
+});
+
 test('direct chats reuse canonical pairs; membership and owners cannot be changed through direct routes', async () => {
   const fixture = setup(), first = await room(fixture, 'direct');
   const response = await fixture.call('alice', '/rest/v1/rpc/create_chat_room', { room_name: 'Other name', member_ids: ['owner'], room_kind: 'direct' });
@@ -96,6 +145,74 @@ test('direct chats reuse canonical pairs; membership and owners cannot be change
   assert.equal((await room(fixture)).peer_id, undefined);
   assert.equal((await fixture.call('owner', '/rest/v1/rpc/remove_chat_member', { target_room: first.id, target_user: 'alice' })).status, 403);
   assert.equal((await fixture.call('eve', '/rest/v1/chat_messages?room_id=eq.' + first.id, {}, 'GET')).status, 403);
+});
+
+test('contacts fetch each peer once across shared rooms without reloading the caller profile', async () => {
+  const fixture = setup();
+  await room(fixture, 'direct'); await room(fixture, 'group', ['alice', 'bob']);
+  for (const user of ['alice', 'bob']) await fixture.call(user, '/rest/v1/rpc/get_chat_profile');
+  const get = fixture.repo.get.bind(fixture.repo), list = fixture.repo.list.bind(fixture.repo), profileReads = [], memberLists = [];
+  let activePeers = 0, peakPeers = 0;
+  fixture.repo.get = async (name, id) => {
+    if (name === 'profiles') profileReads.push(id);
+    if (name !== 'profiles' || id === 'owner') return get(name, id);
+    peakPeers = Math.max(peakPeers, ++activePeers);
+    await new Promise(resolve => setImmediate(resolve));
+    try { return await get(name, id); } finally { activePeers--; }
+  };
+  fixture.repo.list = async (name, queries, limit) => {
+    if (name === 'members') memberLists.push(queries);
+    return list(name, queries, limit);
+  };
+  const response = await fixture.call('owner', '/rest/v1/chat_profiles', {}, 'GET');
+  assert.equal(response.status, 200); assert.deepEqual(response.body.map(value => value.id), ['alice', 'bob']);
+  assert.deepEqual(profileReads.sort(), ['alice', 'bob', 'owner']); assert.equal(peakPeers, 2);
+  assert.equal(memberLists.length, 3);
+  assert.equal(memberLists.filter(queries => queries[0].attribute === 'user_id').length, 1);
+  assert.equal(memberLists.filter(queries => queries[0].attribute === 'room_id').length, 2);
+});
+
+test('contacts skip uncommitted rooms and never expose their members', async () => {
+  const fixture = setup();
+  for (const user_id of ['owner', 'eve']) await fixture.repo.create('members', {
+    room_id: 'unfinished', user_id, role: 'member', created_at: fixture.service.timestamp(),
+  });
+  const list = fixture.repo.list.bind(fixture.repo);
+  fixture.repo.list = async (name, queries, limit) => {
+    if (name === 'members') assert.equal(queries[0].attribute, 'user_id');
+    return list(name, queries, limit);
+  };
+  const response = await fixture.call('owner', '/rest/v1/chat_profiles', {}, 'GET');
+  assert.equal(response.status, 200); assert.deepEqual(response.body, []);
+});
+
+test('contacts recheck membership before exposing a room after removal', async () => {
+  const fixture = setup(), conversation = await room(fixture), get = fixture.repo.get.bind(fixture.repo);
+  fixture.repo.get = async (name, id) => {
+    if (name === 'rooms' && id === conversation.id) {
+      const own = [...fixture.repo.table('members').values()].find(row => row.room_id === id && row.user_id === 'owner');
+      fixture.repo.table('members').delete(own.id);
+    }
+    return get(name, id);
+  };
+  assert.equal((await fixture.call('owner', '/rest/v1/chat_profiles', {}, 'GET')).status, 403);
+});
+
+test('contacts use current channel roles and hide other subscribers after demotion', async () => {
+  const fixture = setup(), channel = await room(fixture, 'channel', ['alice', 'bob']);
+  await fixture.call('owner', '/rest/v1/rpc/set_chat_member_role', { target_room: channel.id, target_user: 'alice', member_role: 'admin' });
+  const get = fixture.repo.get.bind(fixture.repo), profiles = [];
+  fixture.repo.get = async (name, id) => {
+    if (name === 'profiles') profiles.push(id);
+    if (name === 'rooms' && id === channel.id) {
+      const own = [...fixture.repo.table('members').values()].find(row => row.room_id === id && row.user_id === 'alice');
+      own.role = 'subscriber';
+    }
+    return get(name, id);
+  };
+  const response = await fixture.call('alice', '/rest/v1/chat_profiles', {}, 'GET');
+  assert.equal(response.status, 200); assert.deepEqual(response.body.map(value => value.id), ['owner']);
+  assert.ok(!profiles.includes('bob'));
 });
 
 test('channels expose staff and self to subscribers, enforce posting, role changes and removal', async () => {
