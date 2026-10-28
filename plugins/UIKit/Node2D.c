@@ -1,3 +1,4 @@
+#include <source/core/animation.h>
 #include <include/api.h>
 #include <include/orca.h>
 #include <include/plugapi.h>
@@ -586,7 +587,7 @@ Node2D_ScrollRelease(struct Object *object, struct Node2D *view, bool_t cancelle
     view->_scrollVelocity.y = 0;
   float y = view->ContentOffset.y, minimum = Node2D_ScrollLimit(view);
   view->_scrollAnimating = fabsf(view->_scrollVelocity.y) > 5 || fabsf(y - Scroll_Clamp(y, minimum)) > 0.25f;
-  view->_scrollAnimTime = axGetMilliseconds();
+  view->_scrollAnimTime = ANIM_GetTime();
   if (view->_scrollAnimating) OBJ_RequestAnimate(object);
 }
 
@@ -662,7 +663,7 @@ HANDLER(Node2D, Object, Animate)
   if (ORCA_IOS_ApplyNativeScroll(hObject)) return TRUE;
 #endif
   if (!pNode2D->_scrollAnimating) return FALSE;
-  uint32_t now = axGetMilliseconds();
+  uint32_t now = ANIM_GetTime();
   float dt = MIN((uint32_t)(now - pNode2D->_scrollAnimTime), 64u) / 1000.0f;
   pNode2D->_scrollAnimTime = now;
   float minimum = Node2D_ScrollLimit(pNode2D), y = pNode2D->ContentOffset.y;

@@ -107,7 +107,7 @@ HANDLER(Panorama, Object, PropertyChanged)
       bool_t forward = (sel - old + count) % count <= count / 2;
       // Keep the swipe position when a drag committed this change.
       pPanorama->_offsetFrom = pPanorama->_dragX + (forward ? width : -width);
-      pPanorama->_animStart = (int32_t)axGetMilliseconds();
+      pPanorama->_animStart = (int32_t)ANIM_GetTime();
       pPanorama->_progress = 0;
       pPanorama->_current = sel;
       OBJ_RequestAnimate(hObject);
@@ -218,7 +218,7 @@ HANDLER(Panorama, Node, LeftButtonUp)
     Metro_SetProperty(hObject, ID_Panorama_SelectedIndex, &next);
   } else {
     pPanorama->_offsetFrom = dx;
-    pPanorama->_animStart = (int32_t)axGetMilliseconds();
+    pPanorama->_animStart = (int32_t)ANIM_GetTime();
     pPanorama->_progress = 0;
     OBJ_RequestAnimate(hObject);
   }

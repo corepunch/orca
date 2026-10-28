@@ -17,7 +17,8 @@
 #include <float.h>
 #include <unistd.h>
 #include "ios_scroll.h"
-#include "ios_page_transition.h"
+#include "ios_animation.h"
+#include <source/core/animation.h>
 #include "notifications/notifications_native.h"
 
 int luaopen_orca(lua_State *L);
@@ -146,13 +147,15 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   // Never widen the batch of a running frame; nested run loops can call this.
   if (_stepping || !_active || !_displayLink.paused) return;
   ios_begin_message_frame();
-  if (ios_messages_ready()) _displayLink.paused = NO;
+  if (ios_messages_ready()) {
+    ORCA_IOS_PauseAnimationClock(FALSE);
+    _displayLink.paused = NO;
+  }
 }
 
 - (void)stop
 {
-  ORCA_IOS_ClearPageTransition();
-  ORCA_IOS_CancelPageTransitionRequests();
+  ORCA_IOS_ClearAnimationClock();
   ORCA_IOS_ClearScrollViews();
   if (_wakeObserver) {
     CFRunLoopRemoveObserver(CFRunLoopGetMain(), _wakeObserver, kCFRunLoopCommonModes);
@@ -178,6 +181,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
     NSLog(@"ORCA: cannot open project at %@", project);
     return NO;
   }
+  ORCA_IOS_PauseAnimationClock(FALSE);
   _booted = NO;
   _lua = luaL_newstate();
   if (!_lua) return NO;
@@ -219,19 +223,20 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
   _stepping = YES;
   CGSize viewport = ios_view.bounds.size;
   if (!CGSizeEqualToSize(viewport, _nativeViewport)) {
-    ORCA_IOS_ClearPageTransition();
-    ORCA_IOS_CancelPageTransitionRequests();
     ORCA_IOS_ClearScrollViews();
     _nativeViewport = viewport;
   }
   ios_begin_message_frame();
   // Nothing changed: draw nothing and sleep until the next message.
   if (_booted && !ios_messages_ready()) {
+    ORCA_IOS_PauseAnimationClock(TRUE);
     _displayLink.paused = YES;
     _stepping = NO;
     return;
   }
   _booted = YES;
+  ORCA_IOS_SyncAnimationClock();
+  ANIM_BeginFrame();
   double started = _frameProfile.enabled ? CACurrentMediaTime() : 0;
   int nresults = 0;
   double resumeStarted = _frameProfile.enabled ? CACurrentMediaTime() : 0;
@@ -258,14 +263,14 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
     BOOL reload = status == LUA_OK && lua_type(_coroutine, -1) == LUA_TSTRING;
     if (status != LUA_OK) NSLog(@"ORCA: %s", lua_tostring(_coroutine, -1));
     if (reload) {
-      ORCA_IOS_ClearPageTransition();
-      ORCA_IOS_CancelPageTransitionRequests();
+      ORCA_IOS_ClearAnimationClock();
       ORCA_IOS_ClearScrollViews();
       lua_close(_lua);
       _lua = _coroutine = NULL;
       if (![self start]) [self stop];
     } else [self stop];
   }
+  ANIM_EndFrame();
   _stepping = NO;
   if (_frameProfile.enabled) profile_frame(&_frameProfile, sender, started, resumed - resumeStarted, CACurrentMediaTime());
 }
@@ -288,8 +293,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)sceneWillResignActive:(UIScene *)scene
 {
-  ORCA_IOS_ClearPageTransition();
-  ORCA_IOS_CancelPageTransitionRequests();
+  ORCA_IOS_PauseAnimationClock(TRUE);
   ORCA_IOS_ClearScrollViews();
   axPostMessageW(NULL, ID_Window_Deactivated, 0, NULL);
   _active = NO;
@@ -299,6 +303,7 @@ static void wake_display(CFRunLoopObserverRef observer, CFRunLoopActivity activi
 
 - (void)sceneDidBecomeActive:(UIScene *)scene
 {
+  ORCA_IOS_PauseAnimationClock(FALSE);
   axPostMessageW(NULL, ID_Window_Activated, 0, NULL);
   _active = YES;
   _displayLink.paused = NO;

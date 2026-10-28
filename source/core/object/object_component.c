@@ -1,4 +1,5 @@
 #include "object_internal.h"
+#include <source/core/animation.h>
 
 extern int parse_property(const char* str,
                           struct PropertyType const* prop,
@@ -11,6 +12,53 @@ extern int luaX_readProperty(lua_State* L, int idx, struct Property *p);
 extern int write_property(lua_State *L,
                           struct PropertyType const* prop,
                           void const* valueptr);
+
+struct AnimationDispatch {
+  struct AnimationDispatch *previous;
+  struct component **components;
+  size_t count;
+};
+
+static struct AnimationDispatch *animation_dispatch;
+
+static void
+AnimationDispatch_Forget(struct component *component)
+{
+  // Invalidate before freeing: a replacement can reuse the same address.
+  for (struct AnimationDispatch *dispatch = animation_dispatch; dispatch; dispatch = dispatch->previous)
+    for (size_t i = 0; i < dispatch->count; i++)
+      if (dispatch->components[i] == component) dispatch->components[i] = NULL;
+}
+
+static LRESULT
+OBJ_AnimateComponents(struct Object *object, wParam_t wParam, lParam_t lParam)
+{
+  struct component *local[16], **components = local;
+  size_t count = 0;
+  FOR_EACH_LIST(struct component, component, object->components) count++;
+  if (count > sizeof(local) / sizeof(*local)) {
+    components = malloc(count * sizeof(*components));
+    if (!components) return FALSE;
+  }
+  size_t i = 0;
+  FOR_EACH_LIST(struct component, component, object->components) components[i++] = component;
+  struct AnimationDispatch dispatch = { animation_dispatch, components, count };
+  animation_dispatch = &dispatch;
+  OBJ_AddRef(object);
+  ANIM_BeginFrame();
+  LRESULT handled = FALSE;
+  for (i = 0; i < count; i++) {
+    struct component *component = components[i];
+    if (component && component->pcls->ObjProc &&
+        component->pcls->ObjProc(object, component->pUserData, ID_Object_Animate, wParam, lParam))
+      handled = TRUE;
+  }
+  ANIM_EndFrame();
+  animation_dispatch = dispatch.previous;
+  if (components != local) free(components);
+  OBJ_ReleaseRef(object);
+  return handled;
+}
 
 struct component*
 OBJ_AddComponent(struct Object *pobj, uint32_t class_id)
@@ -480,6 +528,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
   }
   if (MsgID == ID_Object_Animate) {
     OBJ_SetFlags(pobj, OBJ_GetFlags(pobj) & ~OF_ANIMATE_QUEUED);
+    return OBJ_AnimateComponents(pobj, wParam, lParam);
   }
 //#ifndef KANZI_SUPPORT
 //	if (MsgID == kMsgUpdateLayout && !(OBJ_GetFlags(pobj) & OF_DIRTY))
@@ -489,9 +538,7 @@ OBJ_SendMessageW(struct Object *pobj, uint32_t MsgID, wParam_t wParam, lParam_t 
     struct component *next = cmp->next;
     if (cmp->pcls->ObjProc) {
       LRESULT res = cmp->pcls->ObjProc(pobj, cmp->pUserData, MsgID, wParam, lParam);
-      if (res) {
-        return res;
-      }
+      if (res) return res;
     }
     cmp = next;
   }
@@ -553,6 +600,7 @@ OBJ_ReleaseComponents(struct Object *pobj)
 {
   FOR_EACH_LIST(struct component, cmp, pobj->components)
   {
+    AnimationDispatch_Forget(cmp);
     free(cmp);
   }
 }
@@ -566,6 +614,7 @@ CMP_Detach(void* userdata)
   struct component *self = (struct component*)((char*)userdata - offsetof(struct component, pUserData));
   struct Object *pobj = self->pobj;
   REMOVE_FROM_LIST(struct component, self, pobj->components);
+  AnimationDispatch_Forget(self);
   free(self);
 }
 

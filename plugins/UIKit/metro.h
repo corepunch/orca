@@ -8,6 +8,7 @@
 #include <math.h>
 #include <include/orca.h>
 #include <source/core/core_local.h>
+#include <source/core/animation.h>
 #include <UIKit/UIKit.h>
 
 #define METRO_INSET          12.0f   // page margin: the outer 12 of Windows Phone's 12 + 12
@@ -26,7 +27,7 @@ Metro_Ease(float t)
 static inline float
 Metro_Elapsed(int32_t start)
 {
-  return (float)((int32_t)axGetMilliseconds() - start) / METRO_ANIM_MS;
+  return (float)(uint32_t)(ANIM_GetTime() - (uint32_t)start) / METRO_ANIM_MS;
 }
 
 static inline void
@@ -100,9 +101,5 @@ Metro_Show(struct Object *o, bool_t visible, float opacity)
 // finishes. A type without motion for a mode lasts 0 ms.
 float PageTransition_Duration(struct Object *page, enum TransitionType type, enum TransitionMode mode);
 void PageTransition_Apply(struct Object *page, enum TransitionType type, enum TransitionMode mode, float elapsed);
-void PageTransition_NativeChanged(struct Object *page, enum TransitionType type, enum TransitionMode mode);
-bool_t PageTransition_NativeAnimate(struct Object *page);
-bool_t PageTransition_NativeActive(struct Object *page);
-void PageTransition_NativePresent(struct Object *screen, uint32_t width, uint32_t height);
 
 #endif

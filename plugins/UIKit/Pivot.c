@@ -130,7 +130,7 @@ Pivot_Sync(struct Object *hObject, struct Pivot *pPivot, struct Object **items)
 static void
 Pivot_StartAnimation(struct Object *hObject, struct Pivot *pPivot)
 {
-  pPivot->_animStart = (int32_t)axGetMilliseconds();
+  pPivot->_animStart = (int32_t)ANIM_GetTime();
   pPivot->_progress = 0;
   OBJ_SetDirty(hObject);
   OBJ_RequestAnimate(hObject);
@@ -210,7 +210,6 @@ HANDLER(Pivot, Object, PropertyChanged)
   if (id == ID_Pivot_TransitionMode) {
     // The clock starts with the first frame, after the page is built.
     pPivot->_transitionElapsed = -1;
-    PageTransition_NativeChanged(hObject, pPivot->NavigationTransition, pPivot->TransitionMode);
     if (pPivot->TransitionMode != kTransitionModeNone) OBJ_RequestAnimate(hObject);
   }
   if (id == ID_Pivot_SelectedIndex || id == ID_Pivot_Title || id == ID_Pivot_IsLocked ||
@@ -222,16 +221,14 @@ HANDLER(Pivot, Object, PropertyChanged)
 
 HANDLER(Pivot, Object, Animate)
 {
-  // Core Animation owns intermediate frames; its completion wakes this handler.
-  if (PageTransition_NativeAnimate(hObject)) return TRUE;
   pPivot->_progress = MIN(Metro_Elapsed(pPivot->_animStart), 1);
   bool_t moving = FALSE;
   enum TransitionMode mode = pPivot->TransitionMode;
   if (mode != kTransitionModeNone) {
     float total = PageTransition_Duration(hObject, pPivot->NavigationTransition, mode);
     bool_t done = pPivot->_transitionElapsed >= total;
-    if (pPivot->_transitionElapsed < 0) pPivot->_transitionStart = (int32_t)axGetMilliseconds();
-    pPivot->_transitionElapsed = MIN((float)((int32_t)axGetMilliseconds() - pPivot->_transitionStart), total);
+    if (pPivot->_transitionElapsed < 0) pPivot->_transitionStart = (int32_t)ANIM_GetTime();
+    pPivot->_transitionElapsed = MIN((float)(uint32_t)(ANIM_GetTime() - (uint32_t)pPivot->_transitionStart), total);
     moving = pPivot->_transitionElapsed < total;
     if (!moving && !done) {
       // A page that went out stays away until the next mode.
@@ -253,7 +250,6 @@ HANDLER(Pivot, Node, UpdateMatrix)
 {
   if (pPivot->TransitionMode == kTransitionModeNone) return FALSE;
   Node2D_UpdateMatrix(hObject, GetNode2D(hObject), wParam, pUpdateMatrix);
-  if (PageTransition_NativeActive(hObject)) return TRUE;
   PageTransition_Apply(hObject, pPivot->NavigationTransition, pPivot->TransitionMode,
     MAX(pPivot->_transitionElapsed, 0));
   return TRUE;

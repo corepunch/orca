@@ -4,8 +4,8 @@
 #include <filesystem/filesystem.h>
 #include <source/core/object/object_internal.h>
 #include <source/core/property/property_internal.h>
+#include <source/core/animation.h>
 #ifdef AX_PLATFORM_IOS
-#include "metro.h"
 #include <source/ios_scroll.h>
 #endif
 
@@ -269,7 +269,8 @@ draw_screen(struct Object* hObject,
 
 // Screen_Paint
 HANDLER(Screen, Window, Paint) {
-  // Every painted frame moves the engine clock; time-based animation reads it.
+  ANIM_BeginFrame();
+  // Paint advances engine bookkeeping; the animation clock is sampled separately.
   core_AdvanceFrame();
   TRACE_Begin(kTracePhasePrograms);
   PROP_RunAllPrograms(hObject);
@@ -278,19 +279,22 @@ HANDLER(Screen, Window, Paint) {
 #ifdef AX_PLATFORM_IOS
   axIOSSetBackgroundColor(pScreen->ClearColor.r, pScreen->ClearColor.g, pScreen->ClearColor.b);
 #endif
-  if (R_BeginFrame(pScreen->ClearColor) != NOERROR) return TRUE;
+  if (R_BeginFrame(pScreen->ClearColor) != NOERROR) {
+    ANIM_EndFrame();
+    return TRUE;
+  }
 
   draw_screen(hObject, pScreen, pPaint->WindowWidth, pPaint->WindowHeight);
 
 #ifdef AX_PLATFORM_IOS
   ORCA_IOS_SyncScrollViews(hObject);
-  // Capture before presenting: iOS discards the non-retained GL backing.
-  PageTransition_NativePresent(hObject, pPaint->WindowWidth, pPaint->WindowHeight);
 #endif
 
   TRACE_Begin(kTracePhasePresent);
   R_EndFrame();
   TRACE_End(kTracePhasePresent);
+
+  ANIM_EndFrame();
 
   return TRUE;
 }
